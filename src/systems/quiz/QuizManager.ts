@@ -20,8 +20,8 @@ const ENEMY_TIMER_MULT: Record<EnemyTier, number> = {
   weak: 1.5,
   normal: 1.0,
   strong: 0.85,
-  boss: 0.6,
-  finalBoss: 0.4,
+  boss: 0.5,
+  finalBoss: 0.3,
 };
 
 // Grade levels in order for mercy system

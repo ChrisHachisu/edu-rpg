@@ -3,7 +3,7 @@ import { QuizManager } from './systems/quiz/QuizManager';
 import { EncounterManager } from './systems/combat/EncounterManager';
 import { SaveManager } from './systems/progression/SaveManager';
 import { GradeLevel } from './utils/types';
-import { setLocale } from './i18n/i18n';
+import { setLocale, getLocale } from './i18n/i18n';
 
 class GameStateManager {
   player!: Player;
@@ -13,14 +13,17 @@ class GameStateManager {
   startTime = 0;
 
   newGame(difficulty: GradeLevel): void {
+    // Preserve current locale selection (set on title screen) before Player reset
+    const currentLocale = getLocale();
     this.player = new Player();
+    this.player.state.locale = currentLocale;
     this.quizManager = new QuizManager();
     this.quizManager.setDifficulty(difficulty);
     this.player.state.quizDifficulty = difficulty;
     this.encounterManager = new EncounterManager();
     this.playtime = 0;
     this.startTime = Date.now();
-    setLocale(this.player.state.locale);
+    setLocale(currentLocale);
   }
 
   loadGame(): boolean {

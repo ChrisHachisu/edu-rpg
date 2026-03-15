@@ -1,7 +1,7 @@
 import { SaveData, PlayerState } from '../../utils/types';
 
 const SAVE_KEY = 'edu-rpg-save';
-const SAVE_VERSION = 1;
+const SAVE_VERSION = 2;
 
 export class SaveManager {
   static save(playerState: PlayerState, playtime: number, quizStats: SaveData['quizStats']): void {
@@ -20,6 +20,11 @@ export class SaveManager {
     if (!raw) return null;
     try {
       const data: SaveData = JSON.parse(raw);
+      // v1 → v2 migration: add floor to position
+      if (data.version === 1) {
+        data.player.position.floor = 1;
+        data.version = 2;
+      }
       if (data.version !== SAVE_VERSION) return null;
       return data;
     } catch {

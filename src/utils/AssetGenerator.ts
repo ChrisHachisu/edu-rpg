@@ -1387,7 +1387,8 @@ function generateTilesets(scene: Phaser.Scene): void {
     g.fillRect(5, 10, 6, 5);
   });
 
-  // Dungeon tiles: 0=floor, 1=wall, 2=cracked, 3=door, 4=treasure, 5=lava, 6=exit, 7=boss
+  // Dungeon tiles: 0=floor, 1=wall, 2=cracked, 3=door, 4=treasure, 5=lava, 6=stairs-up, 7=boss
+  //   8=opened-chest, 9=stairs-down, 10=boss-exit-portal
   generateTile(scene, 'dng-0', 0x444444, 0x3a3a3a);
   generateTile(scene, 'dng-1', 0x222222, 0x1a1a1a, g => {
     g.lineStyle(1, 0x333333);
@@ -1502,6 +1503,49 @@ function generateTilesets(scene: Phaser.Scene): void {
     g.fillRect(3, 4, 10, 5);
     g.lineStyle(1, 0x333322);
     g.lineBetween(3, 8, 13, 8);
+  });
+  // 9 = stairs going down (descend deeper into dungeon)
+  generateTile(scene, 'dng-9', 0x444444, 0x3a3a3a, g => {
+    // Stairway descending — 4 steps going down (right to left)
+    g.fillStyle(0x888888);
+    g.fillRect(2, 1, 3, 3);     // top step
+    g.fillStyle(0x777777);
+    g.fillRect(2, 4, 6, 3);     // second step
+    g.fillStyle(0x666666);
+    g.fillRect(2, 7, 9, 3);     // third step
+    g.fillStyle(0x555555);
+    g.fillRect(2, 10, 12, 3);   // bottom step
+    // Step edges (darker lines)
+    g.lineStyle(1, 0x444444);
+    g.lineBetween(2, 4, 5, 4);
+    g.lineBetween(2, 7, 8, 7);
+    g.lineBetween(2, 10, 11, 10);
+    g.lineBetween(2, 13, 14, 13);
+    // Small down arrow hint
+    g.fillStyle(0xffcc00);
+    g.fillTriangle(12, 14, 10, 12, 14, 12);
+  });
+  // 10 = boss-exit portal (glowing blue portal arch — appears after boss defeat)
+  generateTile(scene, 'dng-10', 0x444444, 0x3a3a3a, g => {
+    // Portal arch frame
+    g.fillStyle(0x4444aa);
+    g.fillRect(3, 2, 2, 12);    // left pillar
+    g.fillRect(11, 2, 2, 12);   // right pillar
+    g.fillRect(3, 1, 10, 2);    // arch top
+    // Glowing blue interior
+    g.fillStyle(0x3366ff);
+    g.fillRect(5, 3, 6, 10);
+    // Bright center swirl
+    g.fillStyle(0x66aaff);
+    g.fillCircle(8, 7, 2);
+    g.fillStyle(0xaaddff);
+    g.fillCircle(8, 7, 1);
+    // Sparkles around portal
+    g.fillStyle(0x88ccff);
+    g.fillRect(6, 4, 1, 1);
+    g.fillRect(9, 5, 1, 1);
+    g.fillRect(7, 10, 1, 1);
+    g.fillRect(10, 9, 1, 1);
   });
 }
 

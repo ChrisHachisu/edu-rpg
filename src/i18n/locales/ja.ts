@@ -323,4 +323,10 @@ export const jaStrings: Record<string, string> = {
   'victory.subtitle': 'エルドラビアに ひかりが もどった。おばあちゃんも きっと ほこりに おもっているよ。',
   'victory.thanks': 'あそんでくれて ありがとう！',
   'victory.stats': 'せいかいりつ: {correct}/{total} ({pct}%)',
+  'victory.time': 'クリアタイム: {time}',
+  'victory.pressEnter': 'エンターキーでもどる',
+  'dungeon.stairsDown': 'ダンジョンの おくへと おりていく…',
+  'dungeon.stairsUp': 'かいだんを あがった…',
+  'dungeon.bossExitGate': 'ふしぎな ポータルが あらわれた…むこうの だいちへ つながっている！',
+  'dungeon.bossExitReturn': 'ふしぎな ポータルが あらわれた…そとに もどれそうだ！',
 };

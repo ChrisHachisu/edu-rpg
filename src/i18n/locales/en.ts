@@ -323,4 +323,10 @@ export const enStrings: Record<string, string> = {
   'victory.subtitle': 'Light has returned to Eldravia. Your grandmother would be proud.',
   'victory.thanks': 'Thank you for playing!',
   'victory.stats': 'Quiz Accuracy: {correct}/{total} ({pct}%)',
+  'victory.time': 'Clear Time: {time}',
+  'victory.pressEnter': 'Press ENTER',
+  'dungeon.stairsDown': 'You descend deeper...',
+  'dungeon.stairsUp': 'You ascend the stairs...',
+  'dungeon.bossExitGate': 'A mysterious portal appears... It leads to the land beyond!',
+  'dungeon.bossExitReturn': 'A mysterious portal appears... It will take you back outside!',
 };

@@ -41,6 +41,7 @@ export interface Position {
   mapId: string;
   x: number;
   y: number;
+  floor?: number; // 1-based floor index within multi-floor dungeons
 }
 
 export interface PlayerState {

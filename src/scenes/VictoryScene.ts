@@ -39,10 +39,22 @@ export class VictoryScene extends Phaser.Scene {
       align: 'center',
     }).setOrigin(0.5);
 
+    // Clear time
+    const totalSeconds = Math.floor(gameState.playtime + (Date.now() - gameState.startTime) / 1000);
+    const hours = Math.floor(totalSeconds / 3600);
+    const mins = Math.floor((totalSeconds % 3600) / 60);
+    const secs = totalSeconds % 60;
+    const timeStr = hours > 0
+      ? `${hours}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`
+      : `${mins}:${String(secs).padStart(2, '0')}`;
+    this.add.text(GAME_WIDTH / 2, 200, t('victory.time', { time: timeStr }), {
+      fontSize: '12px', color: COLORS.TEXT_YELLOW, fontFamily: 'monospace',
+    }).setOrigin(0.5);
+
     // Quiz stats
     const stats = gameState.quizManager.getStats();
     const pct = stats.totalAsked > 0 ? Math.round(stats.totalCorrect / stats.totalAsked * 100) : 0;
-    this.add.text(GAME_WIDTH / 2, 220, t('victory.stats', {
+    this.add.text(GAME_WIDTH / 2, 240, t('victory.stats', {
       correct: stats.totalCorrect,
       total: stats.totalAsked,
       pct,
@@ -52,15 +64,15 @@ export class VictoryScene extends Phaser.Scene {
 
     // Hero
     if (this.textures.exists('hero-walk')) {
-      this.add.image(GAME_WIDTH / 2, 300, 'hero-walk', 0).setScale(6);
+      this.add.image(GAME_WIDTH / 2, 320, 'hero-walk', 0).setScale(6);
     }
 
-    this.add.text(GAME_WIDTH / 2, 380, t('victory.thanks'), {
+    this.add.text(GAME_WIDTH / 2, 390, t('victory.thanks'), {
       fontSize: '14px', color: COLORS.TEXT_YELLOW, fontFamily: 'monospace',
     }).setOrigin(0.5);
 
     // Press any key to return to title
-    this.add.text(GAME_WIDTH / 2, 420, 'Press ENTER', {
+    this.add.text(GAME_WIDTH / 2, 420, t('victory.pressEnter'), {
       fontSize: '10px', color: COLORS.TEXT_GRAY, fontFamily: 'monospace',
     }).setOrigin(0.5);
 

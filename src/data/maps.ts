@@ -11,6 +11,8 @@ export interface MapDef {
   shopId?: string;
   savePoint?: { x: number; y: number };
   bossId?: string;
+  floors?: number; // number of dungeon floors (default 1)
+  exitConnection?: { toX: number; toY: number }; // gate dungeon: boss-exit overworld coordinates
 }
 
 export const mapDefs: Record<string, MapDef> = {
@@ -211,8 +213,9 @@ export const mapDefs: Record<string, MapDef> = {
     ],
     npcs: [],
     bossId: 'giantToad',
+    floors: 1,
   },
-  // Act 1 main dungeon
+  // Act 1 main dungeon — GATE: river barrier (entrance south, exit north)
   crystalCave: {
     id: 'crystalCave',
     nameKey: 'Crystal Cave',
@@ -225,6 +228,8 @@ export const mapDefs: Record<string, MapDef> = {
     ],
     npcs: [],
     bossId: 'serpent',
+    floors: 3,
+    exitConnection: { toX: 42, toY: 26 }, // north of river barrier
   },
   // Act 2 water-themed
   coralTunnels: {
@@ -239,8 +244,9 @@ export const mapDefs: Record<string, MapDef> = {
     ],
     npcs: [],
     bossId: 'kraken',
+    floors: 2,
   },
-  // Act 2 main dungeon
+  // Act 2 main dungeon — GATE: mountain barrier (entrance south, exit north)
   shadowTower: {
     id: 'shadowTower',
     nameKey: 'Shadow Tower',
@@ -253,6 +259,8 @@ export const mapDefs: Record<string, MapDef> = {
     ],
     npcs: [],
     bossId: 'dragon',
+    floors: 3,
+    exitConnection: { toX: 50, toY: 13 }, // north of mountain barrier
   },
   // Act 3 ice-themed
   frostpeakCavern: {
@@ -267,6 +275,7 @@ export const mapDefs: Record<string, MapDef> = {
     ],
     npcs: [],
     bossId: 'iceWyrm',
+    floors: 2,
   },
   // Act 4 ancient ruin
   sunkenRuins: {
@@ -281,8 +290,9 @@ export const mapDefs: Record<string, MapDef> = {
     ],
     npcs: [],
     bossId: 'lich',
+    floors: 3,
   },
-  // Act 4 volcano
+  // Act 4 volcano — GATE: lava barrier (entrance south, exit north)
   volcanicForge: {
     id: 'volcanicForge',
     nameKey: 'Volcanic Forge',
@@ -295,8 +305,10 @@ export const mapDefs: Record<string, MapDef> = {
     ],
     npcs: [],
     bossId: 'flameTitan',
+    floors: 3,
+    exitConnection: { toX: 56, toY: 5 }, // north of lava barrier
   },
-  // Act 5 final dungeon (expanded)
+  // Act 5 final dungeon (expanded, 5 floors)
   demonCastle: {
     id: 'demonCastle',
     nameKey: 'Demon Castle',
@@ -309,5 +321,6 @@ export const mapDefs: Record<string, MapDef> = {
     ],
     npcs: [],
     bossId: 'demonKing',
+    floors: 5,
   },
 };

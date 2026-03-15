@@ -4,7 +4,8 @@
 // Overworld tiles: 0=grass, 1=path, 2=water, 3=tree, 4=mountain, 5=bridge, 6=town, 7=cave
 // Town tiles: 0=floor, 1=wall, 2=house-roof, 3=grass, 4=water, 5=path, 6=save, 7=exit
 //   8=shop-awning, 9=house-wall-window, 10=house-wall-door, 11=shop-wall-display, 12=shop-wall-door
-// Dungeon tiles: 0=floor, 1=wall, 2=cracked, 3=door, 4=treasure, 5=lava, 6=stairs, 7=boss
+// Dungeon tiles: 0=floor, 1=wall, 2=cracked, 3=door, 4=treasure, 5=lava, 6=stairs-up, 7=boss
+//   8=opened-chest, 9=stairs-down, 10=boss-exit-portal
 
 function seededRandom(seed: number): () => number {
   let s = seed;
@@ -387,8 +388,24 @@ interface Room {
   cx: number; cy: number; // center
 }
 
-export function generateDungeonMap(width: number, height: number, seed: number): number[][] {
-  const rand = seededRandom(seed);
+/**
+ * Generate a dungeon floor map.
+ * @param width    - map width in tiles
+ * @param height   - map height in tiles
+ * @param seed     - base seed for this dungeon
+ * @param floor    - 1-based floor index (default 1)
+ * @param totalFloors - total number of floors in this dungeon (default 1)
+ */
+export function generateDungeonMap(
+  width: number, height: number, seed: number,
+  floor: number = 1, totalFloors: number = 1,
+): number[][] {
+  // Unique seed per floor
+  const floorSeed = seed + (floor - 1) * 997;
+  const rand = seededRandom(floorSeed);
+
+  const isFirstFloor = floor === 1;
+  const isFinalFloor = floor === totalFloors;
 
   // Start with all walls
   const map: number[][] = Array.from({ length: height }, () => new Array(width).fill(1));
@@ -403,7 +420,7 @@ export function generateDungeonMap(width: number, height: number, seed: number):
     const rw = minRoomSize + Math.floor(rand() * (maxRoomSize - minRoomSize + 1));
     const rh = minRoomSize + Math.floor(rand() * (maxRoomSize - minRoomSize + 1));
     const rx = 1 + Math.floor(rand() * (width - rw - 2));
-    const ry = 2 + Math.floor(rand() * (height - rh - 4)); // leave row 0-1 for entrance, last 2 for boss
+    const ry = 2 + Math.floor(rand() * (height - rh - 4)); // leave row 0-1 for entrance, last 2 for boss/stairs
 
     // Check overlap (with 1-tile margin)
     let overlaps = false;
@@ -487,7 +504,7 @@ export function generateDungeonMap(width: number, height: number, seed: number):
     }
   }
 
-  // --- Entrance room at top ---
+  // --- Entrance at top ---
   const entranceX = Math.floor(width / 2);
   // Carve entrance area
   for (let dx = -1; dx <= 1; dx++) {
@@ -497,33 +514,40 @@ export function generateDungeonMap(width: number, height: number, seed: number):
       map[2][ex] = 0;
     }
   }
-  map[0][entranceX] = 6; // stairs exit
+  // Floor 1: stairs-up exits to overworld; deeper floors: stairs-up goes to previous floor
+  map[0][entranceX] = 6; // tile 6 = stairs-up
   // Connect entrance to nearest room
   if (rooms.length > 0) {
     carveLCorridor(map, entranceX, 2, rooms[0].cx, rooms[0].cy, rand);
   }
 
-  // --- Boss room at bottom ---
-  const bossX = Math.floor(width / 2);
-  const bossRoomY = height - 3;
-  // Carve boss room (5×3)
+  // --- Bottom area: boss (final floor) or stairs-down (non-final floor) ---
+  const bottomX = Math.floor(width / 2);
+  const bottomRoomY = height - 3;
+  // Carve bottom room (5×3)
   for (let dy = 0; dy < 3; dy++) {
     for (let dx = -2; dx <= 2; dx++) {
-      const bx = bossX + dx;
-      const by = bossRoomY + dy;
+      const bx = bottomX + dx;
+      const by = bottomRoomY + dy;
       if (bx > 0 && bx < width - 1 && by > 0 && by < height - 1) {
         map[by][bx] = 0;
       }
     }
   }
-  // Boss marker at center of boss room
-  map[bossRoomY + 1][bossX] = 7;
-  // Boss room entrance (regular floor — no door marker)
-  map[bossRoomY - 1][bossX] = 0;
-  // Connect last room to boss room entrance
+  // Bottom room entrance
+  map[bottomRoomY - 1][bottomX] = 0;
+  // Connect last room to bottom room
   if (rooms.length > 0) {
     const lastRoom = rooms[rooms.length - 1];
-    carveLCorridor(map, lastRoom.cx, lastRoom.cy, bossX, bossRoomY - 1, rand);
+    carveLCorridor(map, lastRoom.cx, lastRoom.cy, bottomX, bottomRoomY - 1, rand);
+  }
+
+  if (isFinalFloor) {
+    // Boss marker at center of bottom room
+    map[bottomRoomY + 1][bottomX] = 7;
+  } else {
+    // Stairs-down to next floor
+    map[bottomRoomY + 1][bottomX] = 9; // tile 9 = stairs-down
   }
 
   return map;

@@ -35,6 +35,8 @@ export class WorldMapScene extends Phaser.Scene {
   private dialogCallback?: () => void;
   private pendingBossId?: string;
   private currentEncounterZone?: string;
+  private currentFloor = 1;
+  private floorText?: Phaser.GameObjects.Text;
 
   // Field item overlay
   private itemOverlayOpen = false;
@@ -58,6 +60,7 @@ export class WorldMapScene extends Phaser.Scene {
     this.currentMapId = pos.mapId;
     this.heroTileX = pos.x;
     this.heroTileY = pos.y;
+    this.currentFloor = pos.floor ?? 1;
 
     this.loadMap(this.currentMapId);
     this.setupInput();
@@ -87,19 +90,25 @@ export class WorldMapScene extends Phaser.Scene {
     } else if (def.type === 'town') {
       this.mapData = generateTownMap(def.width, def.height, mapId.charCodeAt(0) * 137);
     } else if (def.type === 'dungeon') {
-      this.mapData = generateDungeonMap(def.width, def.height, mapId.charCodeAt(0) * 251);
+      const totalFloors = def.floors ?? 1;
+      this.mapData = generateDungeonMap(
+        def.width, def.height,
+        mapId.charCodeAt(0) * 251,
+        this.currentFloor, totalFloors,
+      );
       // Mark already-opened chests and remove defeated boss tiles
+      const isFinalFloor = this.currentFloor === totalFloors;
       for (let y = 0; y < this.mapData.length; y++) {
         for (let x = 0; x < this.mapData[y].length; x++) {
           if (this.mapData[y][x] === 4) {
-            const chestKey = `chest.${mapId}.${x}.${y}`;
+            const chestKey = `chest.${mapId}.f${this.currentFloor}.${x}.${y}`;
             if (gameState.player.state.storyFlags[chestKey]) {
               this.mapData[y][x] = 8; // opened
             }
           }
-          if (this.mapData[y][x] === 7 && def.bossId) {
+          if (this.mapData[y][x] === 7 && def.bossId && isFinalFloor) {
             if (gameState.player.state.storyFlags[`boss.${def.bossId}.defeated`]) {
-              this.mapData[y][x] = 0; // remove boss tile
+              this.mapData[y][x] = 10; // replace boss with exit portal
             }
           }
         }
@@ -348,7 +357,7 @@ export class WorldMapScene extends Phaser.Scene {
       }
     }
 
-    // Dungeon exit tiles
+    // Town/dungeon exit tiles
     if (this.currentMapId !== 'overworld') {
       const tile = this.mapData[y]?.[x];
       if (tile === 7 && mapDefs[this.currentMapId].type === 'town') { // town exit
@@ -356,9 +365,35 @@ export class WorldMapScene extends Phaser.Scene {
           return { targetMap: conn.targetMap, toX: conn.toX, toY: conn.toY };
         }
       }
-      if (tile === 6 && mapDefs[this.currentMapId].type === 'dungeon') { // dungeon exit
-        for (const conn of def.connections) {
-          return { targetMap: conn.targetMap, toX: conn.toX, toY: conn.toY };
+      if (mapDefs[this.currentMapId].type === 'dungeon') {
+        // Tile 6 = stairs up
+        if (tile === 6) {
+          if (this.currentFloor > 1) {
+            // Go up one floor
+            return { targetMap: '__floor_up__', toX: 0, toY: 0 };
+          } else {
+            // Floor 1: exit to overworld
+            for (const conn of def.connections) {
+              return { targetMap: conn.targetMap, toX: conn.toX, toY: conn.toY };
+            }
+          }
+        }
+        // Tile 9 = stairs down
+        if (tile === 9) {
+          return { targetMap: '__floor_down__', toX: 0, toY: 0 };
+        }
+        // Tile 10 = boss-exit portal
+        if (tile === 10) {
+          if (def.exitConnection) {
+            // Gate dungeon: exit to other side of terrain barrier
+            return { targetMap: 'overworld', toX: def.exitConnection.toX, toY: def.exitConnection.toY };
+          } else {
+            // Non-gate dungeon: teleport back to overworld entrance
+            const conn = def.connections[0];
+            if (conn) {
+              return { targetMap: conn.targetMap, toX: conn.toX, toY: conn.toY };
+            }
+          }
         }
       }
     }
@@ -369,11 +404,38 @@ export class WorldMapScene extends Phaser.Scene {
   private performTransition(target: { targetMap: string; toX: number; toY: number }): void {
     this.cameras.main.fadeOut(200, 0, 0, 0);
     this.cameras.main.once('camerafadeoutcomplete', () => {
-      this.heroTileX = target.toX;
-      this.heroTileY = target.toY;
-      this.updatePosition();
-      gameState.encounterManager.reset();
-      this.loadMap(target.targetMap);
+      const def = mapDefs[this.currentMapId];
+      const totalFloors = def.floors ?? 1;
+
+      if (target.targetMap === '__floor_down__') {
+        // Descend to next floor
+        this.currentFloor++;
+        const entranceX = Math.floor(def.width / 2);
+        this.heroTileX = entranceX;
+        this.heroTileY = 1; // just below the stairs-up tile at top
+        this.updatePosition();
+        this.showMessage(t('dungeon.stairsDown'));
+        this.loadMap(this.currentMapId);
+      } else if (target.targetMap === '__floor_up__') {
+        // Ascend to previous floor
+        this.currentFloor--;
+        // Position near the stairs-down tile at bottom of upper floor
+        const bottomX = Math.floor(def.width / 2);
+        const bottomRoomY = def.height - 2; // one tile above the stairs-down position
+        this.heroTileX = bottomX;
+        this.heroTileY = bottomRoomY;
+        this.updatePosition();
+        this.showMessage(t('dungeon.stairsUp'));
+        this.loadMap(this.currentMapId);
+      } else {
+        // Normal map transition — reset floor
+        this.currentFloor = 1;
+        this.heroTileX = target.toX;
+        this.heroTileY = target.toY;
+        this.updatePosition();
+        gameState.encounterManager.reset();
+        this.loadMap(target.targetMap);
+      }
       this.cameras.main.fadeIn(200, 0, 0, 0);
     });
   }
@@ -512,7 +574,10 @@ export class WorldMapScene extends Phaser.Scene {
     if (y < 0 || y >= this.mapData.length || x < 0 || x >= this.mapData[0].length) return false;
     if (this.mapData[y][x] !== 4) return false;
 
-    const chestKey = `chest.${this.currentMapId}.${x}.${y}`;
+    const def = mapDefs[this.currentMapId];
+    const chestKey = def.type === 'dungeon'
+      ? `chest.${this.currentMapId}.f${this.currentFloor}.${x}.${y}`
+      : `chest.${this.currentMapId}.${x}.${y}`;
     if (gameState.player.state.storyFlags[chestKey]) {
       this.showMessage(t('treasure.empty'));
       return true;
@@ -632,6 +697,7 @@ export class WorldMapScene extends Phaser.Scene {
   private updateHUD(): void {
     this.hpText?.destroy();
     this.guideText?.destroy();
+    this.floorText?.destroy();
 
     const p = gameState.player;
     this.hpText = this.add.text(
@@ -639,6 +705,16 @@ export class WorldMapScene extends Phaser.Scene {
       `${t('menu.level')}${p.state.level}  ${t('menu.hp')} ${p.state.hp}/${p.totalMaxHp}`,
       { fontSize: '10px', color: COLORS.TEXT_WHITE, fontFamily: 'monospace', backgroundColor: '#1a1a3ecc', padding: { x: 4, y: 2 } }
     ).setDepth(100).setScrollFactor(0);
+
+    // Floor indicator (only in multi-floor dungeons)
+    const def = mapDefs[this.currentMapId];
+    if (def.type === 'dungeon' && (def.floors ?? 1) > 1) {
+      this.floorText = this.add.text(
+        8, 24,
+        `B${this.currentFloor}F`,
+        { fontSize: '10px', color: COLORS.TEXT_YELLOW, fontFamily: 'monospace', backgroundColor: '#1a1a3ecc', padding: { x: 4, y: 2 } }
+      ).setDepth(100).setScrollFactor(0);
+    }
 
     // Floating key guide (bottom-right corner)
     const guide = `↑↓←→: ${t('guide.move')}  Z: ${t('guide.talk')}  I: ${t('guide.item')}  ESC: ${t('guide.menu')}`;
@@ -664,6 +740,7 @@ export class WorldMapScene extends Phaser.Scene {
       mapId: this.currentMapId,
       x: this.heroTileX,
       y: this.heroTileY,
+      floor: this.currentFloor,
     };
   }
 
@@ -727,19 +804,23 @@ export class WorldMapScene extends Phaser.Scene {
           });
         }
 
-        // Remove boss tile after sparkle starts
+        // Remove boss tile and place exit portal (tile 10) below boss position
         this.time.delayedCall(800, () => {
-          this.mapData[bossTileY][bossTileX] = 0;
+          this.mapData[bossTileY][bossTileX] = 10; // exit portal replaces boss
           this.renderMap();
           this.createHero();
           this.updateCamera();
         });
 
-        // Show defeat dialog, then crystal/victory dialog
+        // Show defeat dialog, then portal/victory dialog
         this.time.delayedCall(1600, () => {
           const defeatMsg = t(`dungeon.${this.currentMapId}.boss.defeat`);
+          const curDef = mapDefs[this.currentMapId];
+          const portalMsg = curDef.exitConnection
+            ? t('dungeon.bossExitGate')
+            : t('dungeon.bossExitReturn');
           const victoryMsg = t(`dungeon.${this.currentMapId}.victory`);
-          this.showDialogSequence([defeatMsg, victoryMsg]);
+          this.showDialogSequence([defeatMsg, portalMsg, victoryMsg]);
         });
       }
     }

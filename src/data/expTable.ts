@@ -1,38 +1,38 @@
 // EXP required to reach each level (index = level)
-// Growth curve: tuned for ~2 hour game with 5 acts
+// Growth curve: tuned for ~3-4 hour game with 5 acts, 22 dungeon floors
 // Act 1 end ~Lv 6, Act 2 end ~Lv 12, Act 3 end ~Lv 18, Act 4 end ~Lv 24, final boss ~Lv 28-30
 export const expTable: number[] = [
   0,      // Lv 0 (unused)
   0,      // Lv 1 (start)
-  10,     // Lv 2
-  30,     // Lv 3
-  60,     // Lv 4
-  100,    // Lv 5
-  160,    // Lv 6
-  240,    // Lv 7
-  340,    // Lv 8
-  470,    // Lv 9
-  620,    // Lv 10
-  820,    // Lv 11 (+40% from here)
-  1080,   // Lv 12
-  1400,   // Lv 13
-  1800,   // Lv 14
-  2280,   // Lv 15
-  2850,   // Lv 16
-  3520,   // Lv 17
-  4300,   // Lv 18
-  5200,   // Lv 19
-  6250,   // Lv 20
-  7450,   // Lv 21
-  8850,   // Lv 22
-  10500,  // Lv 23
-  12400,  // Lv 24
-  14600,  // Lv 25
-  17100,  // Lv 26
-  19900,  // Lv 27
-  23100,  // Lv 28
-  26000,  // Lv 29
-  30000,  // Lv 30
+  17,     // Lv 2
+  50,     // Lv 3
+  100,    // Lv 4
+  170,    // Lv 5
+  270,    // Lv 6
+  410,    // Lv 7
+  580,    // Lv 8
+  800,    // Lv 9
+  1060,   // Lv 10
+  1400,   // Lv 11
+  1840,   // Lv 12
+  2400,   // Lv 13
+  3060,   // Lv 14
+  3880,   // Lv 15
+  4850,   // Lv 16
+  5980,   // Lv 17
+  7400,   // Lv 18
+  8900,   // Lv 19
+  10700,  // Lv 20
+  12700,  // Lv 21
+  15000,  // Lv 22
+  17900,  // Lv 23
+  21500,  // Lv 24
+  25000,  // Lv 25
+  29000,  // Lv 26
+  34000,  // Lv 27
+  39500,  // Lv 28
+  45000,  // Lv 29
+  52000,  // Lv 30
 ];
 
 // Stat gains per level: [hp, atk, def, spd]
