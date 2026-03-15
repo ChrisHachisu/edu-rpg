@@ -18,7 +18,6 @@ export const jaStrings: Record<string, string> = {
   'settings.timerOff': 'なし（じかんむせいげん）',
 
   // Grade levels
-  'grade.pre-k': 'ようちえん',
   'grade.k': 'ようちえん',
   'grade.1': '1ねんせい',
   'grade.2': '2ねんせい',
@@ -80,6 +79,14 @@ export const jaStrings: Record<string, string> = {
   'guide.move': 'いどう',
   'guide.talk': 'はなす',
   'guide.menu': 'メニュー',
+  'guide.item': 'どうぐ',
+
+  // Field items
+  'field.itemTitle': 'どうぐ',
+  'field.noItems': 'つかえるどうぐが ない。',
+  'field.use': 'つかう',
+  'field.itemUsed': '{item}を つかった！HPが {value} かいふくした！',
+  'field.hpFull': 'HPは まんたんだ！',
 
   // Shop
   'shop.welcome': 'いらっしゃい！なにを おもとめですか？',

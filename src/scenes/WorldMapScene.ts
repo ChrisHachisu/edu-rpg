@@ -7,6 +7,13 @@ import { mapDefs } from '../data/maps';
 import { monsters } from '../data/monsters';
 import { items } from '../data/items';
 
+interface FieldItemEntry {
+  itemId: string;
+  nameKey: string;
+  quantity: number;
+  healValue: number;
+}
+
 export class WorldMapScene extends Phaser.Scene {
   private hero!: Phaser.GameObjects.Sprite;
   private mapData: number[][] = [];
@@ -27,6 +34,16 @@ export class WorldMapScene extends Phaser.Scene {
   private dialogQueue: string[] = [];
   private dialogCallback?: () => void;
   private pendingBossId?: string;
+  private currentEncounterZone?: string;
+
+  // Field item overlay
+  private itemOverlayOpen = false;
+  private itemOverlayItems: FieldItemEntry[] = [];
+  private itemOverlayIndex = 0;
+  private itemOverlayBox?: Phaser.GameObjects.Rectangle;
+  private itemOverlayTitle?: Phaser.GameObjects.Text;
+  private itemOverlayTexts: Phaser.GameObjects.Text[] = [];
+  private itemOverlayCursor?: Phaser.GameObjects.Text;
 
   constructor() {
     super('WorldMapScene');
@@ -153,6 +170,10 @@ export class WorldMapScene extends Phaser.Scene {
 
     // Menu key
     this.input.keyboard?.on('keydown-ESC', () => {
+      if (this.itemOverlayOpen) {
+        this.hideFieldItemMenu();
+        return;
+      }
       if (!this.showingMessage) {
         this.scene.launch('MenuScene');
         this.scene.pause();
@@ -161,6 +182,10 @@ export class WorldMapScene extends Phaser.Scene {
 
     // Interact key
     this.input.keyboard?.on('keydown-Z', () => {
+      if (this.itemOverlayOpen) {
+        this.useFieldItem();
+        return;
+      }
       if (this.showingMessage) {
         this.advanceDialog();
         return;
@@ -168,16 +193,48 @@ export class WorldMapScene extends Phaser.Scene {
       this.interact();
     });
     this.input.keyboard?.on('keydown-ENTER', () => {
+      if (this.itemOverlayOpen) {
+        this.useFieldItem();
+        return;
+      }
       if (this.showingMessage) {
         this.advanceDialog();
         return;
       }
       this.interact();
     });
+
+    // Close overlay
+    this.input.keyboard?.on('keydown-X', () => {
+      if (this.itemOverlayOpen) {
+        this.hideFieldItemMenu();
+      }
+    });
+
+    // Navigate overlay
+    this.input.keyboard?.on('keydown-UP', () => {
+      if (this.itemOverlayOpen && this.itemOverlayItems.length > 0) {
+        this.itemOverlayIndex = Math.max(0, this.itemOverlayIndex - 1);
+        this.updateFieldItemSelection();
+      }
+    });
+    this.input.keyboard?.on('keydown-DOWN', () => {
+      if (this.itemOverlayOpen && this.itemOverlayItems.length > 0) {
+        this.itemOverlayIndex = Math.min(this.itemOverlayItems.length - 1, this.itemOverlayIndex + 1);
+        this.updateFieldItemSelection();
+      }
+    });
+
+    // Field item shortcut
+    this.input.keyboard?.on('keydown-I', () => {
+      if (!this.showingMessage && !this.isMoving && !this.itemOverlayOpen) {
+        this.showFieldItemMenu();
+      }
+    });
   }
 
   update(): void {
-    if (this.isMoving || this.showingMessage) return;
+    if (this.isMoving || this.showingMessage || this.itemOverlayOpen) return;
 
     let dx = 0, dy = 0;
     let dir = 0;
@@ -238,7 +295,7 @@ export class WorldMapScene extends Phaser.Scene {
     // Tile collision
     let passable = false;
     if (def.type === 'overworld') {
-      passable = tile !== 2 && tile !== 3 && tile !== 4;
+      passable = tile !== 2 && tile !== 4;
     } else if (def.type === 'town') {
       // Town: walls, roofs, water, buildings, shop parts, and save crystal are impassable
       passable = tile !== 1 && tile !== 2 && tile !== 4 && tile !== 6 && tile !== 8
@@ -325,6 +382,8 @@ export class WorldMapScene extends Phaser.Scene {
 
     if (!zone) return;
 
+    this.currentEncounterZone = zone;
+
     // Random encounter
     const monster = gameState.encounterManager.onStep(zone);
     if (monster) {
@@ -333,7 +392,7 @@ export class WorldMapScene extends Phaser.Scene {
   }
 
   private startBattle(monster: typeof monsters[string]): void {
-    this.scene.launch('BattleScene', { monster });
+    this.scene.launch('BattleScene', { monster, zone: this.currentEncounterZone });
     this.scene.pause();
   }
 
@@ -420,6 +479,7 @@ export class WorldMapScene extends Phaser.Scene {
     if (!boss) return false;
 
     this.pendingBossId = def.bossId;
+    this.currentEncounterZone = def.encounterZone;
 
     // Build pre-battle dialog from i18n keys
     const dialogMessages = [
@@ -547,7 +607,7 @@ export class WorldMapScene extends Phaser.Scene {
     ).setDepth(100).setScrollFactor(0);
 
     // Floating key guide (bottom-right corner)
-    const guide = `↑↓←→: ${t('guide.move')}  Z: ${t('guide.talk')}  ESC: ${t('guide.menu')}`;
+    const guide = `↑↓←→: ${t('guide.move')}  Z: ${t('guide.talk')}  I: ${t('guide.item')}  ESC: ${t('guide.menu')}`;
     this.guideText = this.add.text(
       GAME_WIDTH - 8, GAME_HEIGHT - 8,
       guide,
@@ -649,5 +709,129 @@ export class WorldMapScene extends Phaser.Scene {
         });
       }
     }
+  }
+
+  // ── Field Item Overlay ──────────────────────────────
+
+  private showFieldItemMenu(): void {
+    this.itemOverlayOpen = true;
+    this.itemOverlayIndex = 0;
+    this.itemOverlayTexts = [];
+
+    // Gather consumable heal items from inventory
+    this.itemOverlayItems = [];
+    for (const slot of gameState.player.state.inventory) {
+      const def = items[slot.itemId];
+      if (def && def.type === 'consumable' && def.effect?.type === 'heal') {
+        this.itemOverlayItems.push({
+          itemId: slot.itemId,
+          nameKey: def.nameKey,
+          quantity: slot.quantity,
+          healValue: def.effect.value,
+        });
+      }
+    }
+
+    // Draw overlay box
+    const boxW = 200;
+    const itemCount = Math.max(this.itemOverlayItems.length, 1);
+    const boxH = 36 + itemCount * 24;
+    const boxX = GAME_WIDTH / 2;
+    const boxY = GAME_HEIGHT / 2;
+
+    this.itemOverlayBox = this.add.rectangle(boxX, boxY, boxW, boxH, COLORS.MENU_BG, 0.95)
+      .setStrokeStyle(2, COLORS.MENU_BORDER)
+      .setDepth(200)
+      .setScrollFactor(0);
+
+    // Title
+    this.itemOverlayTitle = this.add.text(boxX, boxY - boxH / 2 + 14, t('field.itemTitle'), {
+      fontSize: '12px', color: COLORS.TEXT_YELLOW, fontFamily: 'monospace',
+    }).setOrigin(0.5).setDepth(201).setScrollFactor(0);
+
+    if (this.itemOverlayItems.length === 0) {
+      const noItems = this.add.text(boxX, boxY, t('field.noItems'), {
+        fontSize: '10px', color: COLORS.TEXT_GRAY, fontFamily: 'monospace',
+      }).setOrigin(0.5).setDepth(201).setScrollFactor(0);
+      this.itemOverlayTexts.push(noItems);
+      return;
+    }
+
+    // Draw items
+    const startY = boxY - boxH / 2 + 36;
+    for (let i = 0; i < this.itemOverlayItems.length; i++) {
+      const entry = this.itemOverlayItems[i];
+      const label = `${t(entry.nameKey)} x${entry.quantity}  +${entry.healValue}HP`;
+      const txt = this.add.text(boxX - boxW / 2 + 24, startY + i * 24, label, {
+        fontSize: '10px',
+        color: i === 0 ? COLORS.TEXT_YELLOW : COLORS.TEXT_WHITE,
+        fontFamily: 'monospace',
+      }).setDepth(201).setScrollFactor(0);
+      this.itemOverlayTexts.push(txt);
+    }
+
+    // Cursor
+    this.itemOverlayCursor = this.add.text(
+      boxX - boxW / 2 + 12, startY, '>', {
+        fontSize: '10px', color: COLORS.TEXT_YELLOW, fontFamily: 'monospace',
+      }
+    ).setDepth(201).setScrollFactor(0);
+  }
+
+  private hideFieldItemMenu(): void {
+    this.itemOverlayOpen = false;
+    this.itemOverlayBox?.destroy();
+    this.itemOverlayTitle?.destroy();
+    this.itemOverlayTexts.forEach(t => t.destroy());
+    this.itemOverlayTexts = [];
+    this.itemOverlayCursor?.destroy();
+    this.itemOverlayItems = [];
+  }
+
+  private updateFieldItemSelection(): void {
+    // Update text colors
+    this.itemOverlayTexts.forEach((txt, i) => {
+      txt.setColor(i === this.itemOverlayIndex ? COLORS.TEXT_YELLOW : COLORS.TEXT_WHITE);
+    });
+    // Move cursor
+    if (this.itemOverlayCursor && this.itemOverlayTexts[this.itemOverlayIndex]) {
+      this.itemOverlayCursor.y = this.itemOverlayTexts[this.itemOverlayIndex].y;
+    }
+  }
+
+  private useFieldItem(): void {
+    if (this.itemOverlayItems.length === 0) {
+      this.hideFieldItemMenu();
+      return;
+    }
+
+    const entry = this.itemOverlayItems[this.itemOverlayIndex];
+    if (!entry) return;
+
+    const p = gameState.player;
+
+    // Check if HP is already full
+    if (p.state.hp >= p.totalMaxHp) {
+      this.hideFieldItemMenu();
+      this.showMessage(t('field.hpFull'));
+      return;
+    }
+
+    // Use the item
+    const healed = Math.min(entry.healValue, p.totalMaxHp - p.state.hp);
+    p.state.hp = Math.min(p.state.hp + entry.healValue, p.totalMaxHp);
+
+    // Remove from inventory
+    const invSlot = p.state.inventory.find(s => s.itemId === entry.itemId);
+    if (invSlot) {
+      invSlot.quantity--;
+      if (invSlot.quantity <= 0) {
+        p.state.inventory = p.state.inventory.filter(s => s.quantity > 0);
+      }
+    }
+
+    this.hideFieldItemMenu();
+    this.updateHUD();
+    this.showMessage(t('field.itemUsed', { item: t(entry.nameKey), value: healed }));
   }
 }

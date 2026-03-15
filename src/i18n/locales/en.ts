@@ -18,7 +18,6 @@ export const enStrings: Record<string, string> = {
   'settings.timerOff': 'OFF (Unlimited)',
 
   // Grade levels
-  'grade.pre-k': 'Kindergarten',
   'grade.k': 'Kindergarten',
   'grade.1': '1st Grade',
   'grade.2': '2nd Grade',
@@ -80,6 +79,14 @@ export const enStrings: Record<string, string> = {
   'guide.move': 'Move',
   'guide.talk': 'Talk',
   'guide.menu': 'Menu',
+  'guide.item': 'Items',
+
+  // Field items
+  'field.itemTitle': 'Items',
+  'field.noItems': 'No usable items.',
+  'field.use': 'Use',
+  'field.itemUsed': 'Used {item}! HP restored by {value}.',
+  'field.hpFull': 'HP is already full!',
 
   // Shop
   'shop.welcome': 'Welcome! What would you like?',

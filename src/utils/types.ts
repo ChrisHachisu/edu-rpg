@@ -1,6 +1,8 @@
 export type Locale = 'en' | 'ja';
 
-export type GradeLevel = 'pre-k' | 'k' | '1' | '2' | '3' | '4' | '5' | '6';
+export type GradeLevel = 'k' | '1' | '2' | '3' | '4' | '5' | '6';
+
+export type DifficultyTier = 'easy' | 'medium' | 'hard';
 
 export type ItemType = 'consumable' | 'weapon' | 'armor' | 'shield' | 'helmet' | 'accessory' | 'key';
 
@@ -98,6 +100,7 @@ export interface QuizQuestion {
   }[];
   category: string;
   gradeLevel: GradeLevel;
+  difficultyTier: DifficultyTier;
 }
 
 export interface EncounterZone {

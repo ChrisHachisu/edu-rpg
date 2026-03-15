@@ -1,10 +1,9 @@
-import { QuizQuestion, GradeLevel } from '../../utils/types';
+import { QuizQuestion, GradeLevel, DifficultyTier } from '../../utils/types';
 import { generateMathQuestion } from './generators/MathQuizGenerator';
 
 // Base timer in seconds per grade level
 // Generous timers — educational game, kids should not feel rushed
 const BASE_TIMER: Record<GradeLevel, number> = {
-  'pre-k': 30,
   'k': 30,
   '1': 20,
   '2': 18,
@@ -25,7 +24,26 @@ const ENEMY_TIMER_MULT: Record<EnemyTier, number> = {
 };
 
 // Grade levels in order for mercy system
-const GRADE_ORDER: GradeLevel[] = ['pre-k', 'k', '1', '2', '3', '4', '5', '6'];
+const GRADE_ORDER: GradeLevel[] = ['k', '1', '2', '3', '4', '5', '6'];
+
+// Map encounter zones to difficulty tiers
+const ZONE_TIER_MAP: Record<string, DifficultyTier> = {
+  'greenhollow-plains': 'easy',
+  'whispering-woods': 'easy',
+  'crystal-coast': 'easy',
+  'crystal-cave': 'easy',
+  'iron-mountains': 'medium',
+  'shadow-tower': 'medium',
+  'scorched-wastes': 'hard',
+  'demon-castle': 'hard',
+};
+
+// Bosses get one tier above their act's base
+const BOSS_TIER_UPGRADE: Record<DifficultyTier, DifficultyTier> = {
+  'easy': 'medium',
+  'medium': 'hard',
+  'hard': 'hard',
+};
 
 export class QuizManager {
   private difficulty: GradeLevel = '1';
@@ -45,10 +63,20 @@ export class QuizManager {
     return this.difficulty;
   }
 
-  getQuestion(): QuizQuestion {
+  getQuestion(zone?: string, isBoss?: boolean): QuizQuestion {
     // Mercy system: after 2 consecutive wrong, drop question difficulty by 1 grade
     const effectiveGrade = this.getEffectiveGrade();
-    return generateMathQuestion(effectiveGrade);
+
+    // Determine tier from zone
+    let tier: DifficultyTier = 'medium';
+    if (zone) {
+      tier = ZONE_TIER_MAP[zone] ?? 'medium';
+      if (isBoss) {
+        tier = BOSS_TIER_UPGRADE[tier];
+      }
+    }
+
+    return generateMathQuestion(effectiveGrade, tier);
   }
 
   /** Get the timer duration in seconds for a quiz, factoring in all variables */

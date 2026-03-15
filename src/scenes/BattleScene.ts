@@ -39,13 +39,15 @@ export class BattleScene extends Phaser.Scene {
   private quizTimerEvent?: Phaser.Time.TimerEvent;
   private quizTimerTween?: Phaser.Tweens.Tween;
   private quizTimerSeconds = 10;
+  private currentZone?: string;
 
   constructor() {
     super('BattleScene');
   }
 
-  init(data: { monster: MonsterTemplate }): void {
+  init(data: { monster: MonsterTemplate; zone?: string }): void {
     this.monster = data.monster;
+    this.currentZone = data.zone;
   }
 
   private getEnemyTier(): EnemyTier {
@@ -331,7 +333,8 @@ export class BattleScene extends Phaser.Scene {
   }
 
   private showQuiz(headerText: string): void {
-    this.quizQuestion = gameState.quizManager.getQuestion();
+    const isBoss = this.monster.aiPattern === 'boss';
+    this.quizQuestion = gameState.quizManager.getQuestion(this.currentZone, isBoss);
     this.quizSelectedIndex = 0;
     this.phase = this.quizForPlayer ? 'playerQuiz' : 'enemyQuiz';
 
