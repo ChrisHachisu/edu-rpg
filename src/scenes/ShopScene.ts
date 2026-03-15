@@ -1,0 +1,204 @@
+import Phaser from 'phaser';
+import { GAME_WIDTH, GAME_HEIGHT, COLORS } from '../utils/constants';
+import { t } from '../i18n/i18n';
+import { gameState } from '../GameState';
+import { items } from '../data/items';
+import { shops } from '../data/shops';
+
+export class ShopScene extends Phaser.Scene {
+  private shopId = '';
+  private mode: 'menu' | 'buy' | 'sell' = 'menu';
+  private menuIndex = 0;
+  private listIndex = 0;
+  private message = '';
+
+  constructor() {
+    super('ShopScene');
+  }
+
+  init(data: { shopId: string }): void {
+    this.shopId = data.shopId;
+  }
+
+  create(): void {
+    this.mode = 'menu';
+    this.menuIndex = 0;
+    this.listIndex = 0;
+    this.message = '';
+    this.drawShop();
+    this.setupInput();
+  }
+
+  private drawShop(): void {
+    this.children.removeAll();
+
+    // Background
+    this.add.rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, GAME_WIDTH, GAME_HEIGHT, COLORS.MENU_BG, 0.95);
+
+    // Title
+    this.add.text(GAME_WIDTH / 2, 20, t('shop.welcome'), {
+      fontSize: '12px', color: COLORS.TEXT_WHITE, fontFamily: 'monospace',
+      wordWrap: { width: GAME_WIDTH - 40 },
+    }).setOrigin(0.5);
+
+    // Gold display
+    this.add.text(GAME_WIDTH - 16, 20, `${gameState.player.state.gold}G`, {
+      fontSize: '12px', color: COLORS.TEXT_YELLOW, fontFamily: 'monospace',
+    }).setOrigin(1, 0.5);
+
+    if (this.mode === 'menu') {
+      this.drawMainMenu();
+    } else if (this.mode === 'buy') {
+      this.drawBuyList();
+    } else if (this.mode === 'sell') {
+      this.drawSellList();
+    }
+
+    // Message
+    if (this.message) {
+      this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 32, this.message, {
+        fontSize: '12px', color: COLORS.TEXT_YELLOW, fontFamily: 'monospace',
+      }).setOrigin(0.5);
+    }
+  }
+
+  private drawMainMenu(): void {
+    const options = [
+      { key: 'shop.buy', action: 'buy' },
+      { key: 'shop.sell', action: 'sell' },
+      { key: 'shop.leave', action: 'leave' },
+    ];
+
+    options.forEach((opt, i) => {
+      this.add.text(GAME_WIDTH / 2, 100 + i * 36, t(opt.key), {
+        fontSize: '14px',
+        color: i === this.menuIndex ? COLORS.TEXT_YELLOW : COLORS.TEXT_WHITE,
+        fontFamily: 'monospace',
+      }).setOrigin(0.5);
+    });
+  }
+
+  private drawBuyList(): void {
+    const shop = shops[this.shopId];
+    if (!shop) return;
+
+    shop.items.forEach((itemId, i) => {
+      const item = items[itemId];
+      if (!item) return;
+      const canAfford = gameState.player.state.gold >= item.buyPrice;
+      this.add.text(32, 64 + i * 28, `${t(item.nameKey)}  ${item.buyPrice}G`, {
+        fontSize: '10px',
+        color: i === this.listIndex ? COLORS.TEXT_YELLOW : (canAfford ? COLORS.TEXT_WHITE : COLORS.TEXT_GRAY),
+        fontFamily: 'monospace',
+      });
+
+      // Show stats
+      if (item.stats) {
+        const statText = Object.entries(item.stats).map(([k, v]) => `+${v}${k.toUpperCase()}`).join(' ');
+        this.add.text(GAME_WIDTH - 16, 64 + i * 28, statText, {
+          fontSize: '9px', color: COLORS.TEXT_GRAY, fontFamily: 'monospace',
+        }).setOrigin(1, 0);
+      }
+    });
+  }
+
+  private drawSellList(): void {
+    const inv = gameState.player.state.inventory;
+    if (inv.length === 0) {
+      this.add.text(GAME_WIDTH / 2, 120, 'No items to sell', {
+        fontSize: '12px', color: COLORS.TEXT_GRAY, fontFamily: 'monospace',
+      }).setOrigin(0.5);
+      return;
+    }
+
+    inv.forEach((slot, i) => {
+      const item = items[slot.itemId];
+      if (!item) return;
+      this.add.text(32, 64 + i * 28, `${t(item.nameKey)} x${slot.quantity}  ${item.sellPrice}G`, {
+        fontSize: '10px',
+        color: i === this.listIndex ? COLORS.TEXT_YELLOW : COLORS.TEXT_WHITE,
+        fontFamily: 'monospace',
+      });
+    });
+  }
+
+  private setupInput(): void {
+    this.input.keyboard?.on('keydown-UP', () => {
+      if (this.mode === 'menu') this.menuIndex = Math.max(0, this.menuIndex - 1);
+      else this.listIndex = Math.max(0, this.listIndex - 1);
+      this.drawShop();
+    });
+
+    this.input.keyboard?.on('keydown-DOWN', () => {
+      if (this.mode === 'menu') this.menuIndex = Math.min(2, this.menuIndex + 1);
+      else this.listIndex++;
+      this.drawShop();
+    });
+
+    this.input.keyboard?.on('keydown-Z', () => this.confirm());
+    this.input.keyboard?.on('keydown-ENTER', () => this.confirm());
+
+    this.input.keyboard?.on('keydown-X', () => {
+      if (this.mode !== 'menu') {
+        this.mode = 'menu';
+        this.menuIndex = 0;
+        this.listIndex = 0;
+        this.message = '';
+        this.drawShop();
+      }
+    });
+    this.input.keyboard?.on('keydown-ESC', () => this.leave());
+  }
+
+  private confirm(): void {
+    if (this.mode === 'menu') {
+      if (this.menuIndex === 0) { this.mode = 'buy'; this.listIndex = 0; }
+      else if (this.menuIndex === 1) { this.mode = 'sell'; this.listIndex = 0; }
+      else this.leave();
+      this.message = '';
+      this.drawShop();
+    } else if (this.mode === 'buy') {
+      this.buyItem();
+    } else if (this.mode === 'sell') {
+      this.sellItem();
+    }
+  }
+
+  private buyItem(): void {
+    const shop = shops[this.shopId];
+    if (!shop) return;
+    const itemId = shop.items[this.listIndex];
+    if (!itemId) return;
+    const item = items[itemId];
+    if (!item) return;
+
+    if (gameState.player.state.gold < item.buyPrice) {
+      this.message = t('shop.cantAfford');
+    } else if (!gameState.player.addItem(itemId, 1)) {
+      this.message = t('shop.inventoryFull');
+    } else {
+      gameState.player.state.gold -= item.buyPrice;
+      this.message = t('shop.bought', { item: t(item.nameKey) });
+    }
+    this.drawShop();
+  }
+
+  private sellItem(): void {
+    const inv = gameState.player.state.inventory;
+    if (this.listIndex >= inv.length) return;
+    const slot = inv[this.listIndex];
+    const item = items[slot.itemId];
+    if (!item) return;
+
+    gameState.player.state.gold += item.sellPrice;
+    gameState.player.removeItem(slot.itemId, 1);
+    this.message = t('shop.sold', { item: t(item.nameKey) });
+    if (this.listIndex > 0) this.listIndex--;
+    this.drawShop();
+  }
+
+  private leave(): void {
+    this.scene.stop();
+    this.scene.resume('WorldMapScene');
+  }
+}
