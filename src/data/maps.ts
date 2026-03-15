@@ -31,17 +31,17 @@ export const mapDefs: Record<string, MapDef> = {
       { targetMap: 'ironkeep', fromX: 48, fromY: 25, toX: 8, toY: 14 },
       { targetMap: 'moonvale', fromX: 42, fromY: 21, toX: 8, toY: 14 },
       { targetMap: 'ruinsCamp', fromX: 48, fromY: 11, toX: 8, toY: 14 },
-      { targetMap: 'ashfall', fromX: 55, fromY: 15, toX: 8, toY: 14 },
+      { targetMap: 'ashfall', fromX: 55, fromY: 13, toX: 8, toY: 14 },
       { targetMap: 'lastBastion', fromX: 56, fromY: 5, toX: 8, toY: 14 },
       // ── Dungeon entrances ──
       { targetMap: 'mistyGrotto', fromX: 16, fromY: 45, toX: 7, toY: 2 },
-      { targetMap: 'crystalCave', fromX: 42, fromY: 45, toX: 10, toY: 2 },
-      { targetMap: 'coralTunnels', fromX: 45, fromY: 42, toX: 9, toY: 2 },
-      { targetMap: 'shadowTower', fromX: 50, fromY: 20, toX: 12, toY: 2 },
-      { targetMap: 'frostpeakCavern', fromX: 44, fromY: 22, toX: 11, toY: 2 },
-      { targetMap: 'sunkenRuins', fromX: 50, fromY: 12, toX: 13, toY: 2 },
-      { targetMap: 'volcanicForge', fromX: 56, fromY: 10, toX: 12, toY: 2 },
-      { targetMap: 'demonCastle', fromX: 58, fromY: 5, toX: 16, toY: 2 },
+      { targetMap: 'crystalCave', fromX: 40, fromY: 31, toX: 10, toY: 2 },
+      { targetMap: 'coralTunnels', fromX: 44, fromY: 25, toX: 9, toY: 2 },
+      { targetMap: 'shadowTower', fromX: 50, fromY: 19, toX: 12, toY: 2 },
+      { targetMap: 'frostpeakCavern', fromX: 45, fromY: 13, toX: 11, toY: 2 },
+      { targetMap: 'sunkenRuins', fromX: 52, fromY: 11, toX: 13, toY: 2 },
+      { targetMap: 'volcanicForge', fromX: 56, fromY: 9, toX: 12, toY: 2 },
+      { targetMap: 'demonCastle', fromX: 58, fromY: 4, toX: 16, toY: 2 },
     ],
     npcs: [],
   },
@@ -170,7 +170,7 @@ export const mapDefs: Record<string, MapDef> = {
     width: 16,
     height: 16,
     connections: [
-      { targetMap: 'overworld', fromX: 8, fromY: 15, toX: 55, toY: 16 },
+      { targetMap: 'overworld', fromX: 8, fromY: 15, toX: 55, toY: 14 },
     ],
     npcs: [
       { id: 'oldwarrior', dialogueKey: 'npc.oldwarrior', x: 3, y: 5 },
@@ -200,7 +200,7 @@ export const mapDefs: Record<string, MapDef> = {
   //   DUNGEONS — 8 total
   // ═══════════════════════════════════════════════════════════════════
 
-  // Act 1 tutorial dungeon
+  // Act 1 tutorial dungeon — near Greenhollow in the southern plains
   mistyGrotto: {
     id: 'mistyGrotto',
     nameKey: 'Misty Grotto',
@@ -215,7 +215,8 @@ export const mapDefs: Record<string, MapDef> = {
     bossId: 'giantToad',
     floors: 1,
   },
-  // Act 1 main dungeon — GATE: river barrier (entrance south, exit north)
+  // Act 1 GATE dungeon — tunnels UNDER the river barrier
+  // Entrance at south bank (40,31), exit at north bank (40,25)
   crystalCave: {
     id: 'crystalCave',
     nameKey: 'Crystal Cave',
@@ -224,14 +225,14 @@ export const mapDefs: Record<string, MapDef> = {
     width: 21,
     height: 21,
     connections: [
-      { targetMap: 'overworld', fromX: 10, fromY: 0, toX: 42, toY: 46 },
+      { targetMap: 'overworld', fromX: 10, fromY: 0, toX: 40, toY: 32 },
     ],
     npcs: [],
     bossId: 'serpent',
     floors: 3,
-    exitConnection: { toX: 42, toY: 26 }, // north of river barrier
+    exitConnection: { toX: 40, toY: 25 },
   },
-  // Act 2 water-themed
+  // Act 2 water-themed — north of river near coral formations
   coralTunnels: {
     id: 'coralTunnels',
     nameKey: 'Coral Tunnels',
@@ -240,13 +241,14 @@ export const mapDefs: Record<string, MapDef> = {
     width: 19,
     height: 19,
     connections: [
-      { targetMap: 'overworld', fromX: 9, fromY: 0, toX: 45, toY: 43 },
+      { targetMap: 'overworld', fromX: 9, fromY: 0, toX: 44, toY: 26 },
     ],
     npcs: [],
     bossId: 'kraken',
     floors: 2,
   },
-  // Act 2 main dungeon — GATE: mountain barrier (entrance south, exit north)
+  // Act 2 GATE dungeon — passage THROUGH the mountain barrier
+  // Entrance at south face (50,19), exit at north face (50,14)
   shadowTower: {
     id: 'shadowTower',
     nameKey: 'Shadow Tower',
@@ -255,14 +257,14 @@ export const mapDefs: Record<string, MapDef> = {
     width: 25,
     height: 25,
     connections: [
-      { targetMap: 'overworld', fromX: 12, fromY: 0, toX: 50, toY: 21 },
+      { targetMap: 'overworld', fromX: 12, fromY: 0, toX: 50, toY: 20 },
     ],
     npcs: [],
     bossId: 'dragon',
     floors: 3,
-    exitConnection: { toX: 50, toY: 13 }, // north of mountain barrier
+    exitConnection: { toX: 50, toY: 14 },
   },
-  // Act 3 ice-themed
+  // Act 3 ice-themed — in the cold foothills north of mountains
   frostpeakCavern: {
     id: 'frostpeakCavern',
     nameKey: 'Frostpeak Cavern',
@@ -271,13 +273,13 @@ export const mapDefs: Record<string, MapDef> = {
     width: 23,
     height: 23,
     connections: [
-      { targetMap: 'overworld', fromX: 11, fromY: 0, toX: 44, toY: 23 },
+      { targetMap: 'overworld', fromX: 11, fromY: 0, toX: 45, toY: 14 },
     ],
     npcs: [],
     bossId: 'iceWyrm',
     floors: 2,
   },
-  // Act 4 ancient ruin
+  // Act 4 ancient ruin — deep in the wasteland between mountains and lava
   sunkenRuins: {
     id: 'sunkenRuins',
     nameKey: 'Sunken Ruins',
@@ -286,13 +288,14 @@ export const mapDefs: Record<string, MapDef> = {
     width: 27,
     height: 27,
     connections: [
-      { targetMap: 'overworld', fromX: 13, fromY: 0, toX: 50, toY: 13 },
+      { targetMap: 'overworld', fromX: 13, fromY: 0, toX: 52, toY: 12 },
     ],
     npcs: [],
     bossId: 'lich',
     floors: 3,
   },
-  // Act 4 volcano — GATE: lava barrier (entrance south, exit north)
+  // Act 4 GATE dungeon — forging through the lava barrier
+  // Entrance at south edge (56,9), exit at north edge (56,6)
   volcanicForge: {
     id: 'volcanicForge',
     nameKey: 'Volcanic Forge',
@@ -301,12 +304,12 @@ export const mapDefs: Record<string, MapDef> = {
     width: 25,
     height: 25,
     connections: [
-      { targetMap: 'overworld', fromX: 12, fromY: 0, toX: 56, toY: 11 },
+      { targetMap: 'overworld', fromX: 12, fromY: 0, toX: 56, toY: 10 },
     ],
     npcs: [],
     bossId: 'flameTitan',
     floors: 3,
-    exitConnection: { toX: 56, toY: 5 }, // north of lava barrier
+    exitConnection: { toX: 56, toY: 6 },
   },
   // Act 5 final dungeon (expanded, 5 floors)
   demonCastle: {
@@ -317,7 +320,7 @@ export const mapDefs: Record<string, MapDef> = {
     width: 33,
     height: 33,
     connections: [
-      { targetMap: 'overworld', fromX: 16, fromY: 0, toX: 58, toY: 6 },
+      { targetMap: 'overworld', fromX: 16, fromY: 0, toX: 58, toY: 5 },
     ],
     npcs: [],
     bossId: 'demonKing',

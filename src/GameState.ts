@@ -64,24 +64,15 @@ class GameStateManager {
   }
 
   getOverworldZone(x: number, y: number): string {
-    // Determine zone by position on overworld
-    // Act 5 — demons-threshold (very top, above lava barrier)
-    if (y <= 8) return 'demons-threshold';
-    // Act 4 — scorched-wastes (upper-middle area)
-    if (y <= 12) return 'scorched-wastes';
-    // Act 2/3 — between river and mountains
-    if (y <= 22) {
-      if (x > 45) return 'iron-mountains';
-      return 'scorched-wastes';
-    }
-    // Act 1 — southern region
-    if (y > 35) {
-      if (x < 35) return 'greenhollow-plains';
-      return 'crystal-coast';
-    }
-    // Between river and southern area
-    if (x < 35) return 'whispering-woods';
-    return 'iron-mountains';
+    // Determine zone by position on overworld — aligned with terrain barriers:
+    // River ≈ y=27-29, Mountains ≈ y=15-18, Lava ≈ y=7-9
+    if (y <= 7) return 'demons-threshold';       // Act 5 — above lava barrier
+    if (y <= 15) return 'scorched-wastes';        // Act 3/4 — between mountains and lava
+    if (y <= 26) return 'iron-mountains';         // Act 2 — between river and mountains
+    // Act 1 — south of river
+    if (x < 25 && y > 40) return 'greenhollow-plains'; // Western plains near starting village
+    if (x >= 35) return 'crystal-coast';                // Eastern coast near Port Sapphire
+    return 'whispering-woods';                          // Forest area between towns
   }
 }
 

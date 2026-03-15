@@ -64,27 +64,31 @@ export function generateOverworldMap(width: number, height: number, storyFlags?:
   }
 
   // Carve paths between key locations (expanded 5-act network)
+  // Paths are organized by act — NO cross-barrier paths
   const paths: [number, number][] = [
-    // Act 1 — starting area and first towns
+    // ── Act 1 — south of river ──
     ...pathBetween(10, 50, 16, 45),   // greenhollow → mistyGrotto
     ...pathBetween(10, 50, 20, 38),   // greenhollow → oakshade
     ...pathBetween(20, 38, 38, 40),   // oakshade → portSapphire
-    ...pathBetween(38, 40, 42, 45),   // portSapphire → crystalCave
     ...pathBetween(38, 40, 44, 38),   // portSapphire → tidepools
-    ...pathBetween(44, 38, 45, 42),   // tidepools → coralTunnels
-    // Act 2 — cross the river
-    ...pathBetween(44, 38, 48, 25),   // tidepools → ironkeep
-    ...pathBetween(48, 25, 50, 20),   // ironkeep → shadowTower
+    ...pathBetween(38, 40, 40, 31),   // portSapphire → crystalCave entrance (river south bank)
+    ...pathBetween(40, 31, 40, 25),   // guide path through river gap area (overwritten by river, reconnects when gap opens)
+    // ── Act 2 — between river and mountains ──
+    ...pathBetween(40, 25, 44, 25),   // crystalCave exit → coralTunnels
+    ...pathBetween(44, 25, 48, 25),   // coralTunnels → ironkeep
     ...pathBetween(48, 25, 42, 21),   // ironkeep → moonvale
-    ...pathBetween(42, 21, 44, 22),   // moonvale → frostpeakCavern
-    // Act 3/4 — beyond mountains
-    ...pathBetween(42, 21, 48, 11),   // moonvale → ruinsCamp
-    ...pathBetween(48, 11, 50, 12),   // ruinsCamp → sunkenRuins
-    ...pathBetween(48, 11, 55, 15),   // ruinsCamp → ashfall
-    ...pathBetween(55, 15, 56, 10),   // ashfall → volcanicForge
-    // Act 5 — endgame
-    ...pathBetween(55, 15, 56, 5),    // ashfall → lastBastion
-    ...pathBetween(56, 5, 58, 5),     // lastBastion → demonCastle
+    ...pathBetween(48, 25, 50, 19),   // ironkeep → shadowTower entrance (mountain south face)
+    ...pathBetween(50, 19, 50, 14),   // guide path through mountain gap area
+    // ── Act 3/4 — between mountains and lava ──
+    ...pathBetween(50, 14, 45, 13),   // shadowTower exit → frostpeakCavern
+    ...pathBetween(50, 14, 48, 11),   // shadowTower exit → ruinsCamp
+    ...pathBetween(48, 11, 52, 11),   // ruinsCamp → sunkenRuins
+    ...pathBetween(48, 11, 55, 13),   // ruinsCamp → ashfall
+    ...pathBetween(55, 13, 56, 9),    // ashfall → volcanicForge entrance (lava south edge)
+    ...pathBetween(56, 9, 56, 6),     // guide path through lava gap area
+    // ── Act 5 — north of lava ──
+    ...pathBetween(56, 6, 56, 5),     // volcanicForge exit → lastBastion
+    ...pathBetween(56, 5, 58, 4),     // lastBastion → demonCastle
   ];
 
   for (const [px, py] of paths) {
@@ -100,7 +104,7 @@ export function generateOverworldMap(width: number, height: number, storyFlags?:
   // Place town markers (9 towns)
   const towns: [number, number][] = [
     [10, 50], [20, 38], [38, 40], [44, 38], [48, 25],
-    [42, 21], [48, 11], [55, 15], [56, 5],
+    [42, 21], [48, 11], [55, 13], [56, 5],
   ];
   for (const [tx, ty] of towns) {
     map[ty][tx] = 6;
@@ -108,8 +112,8 @@ export function generateOverworldMap(width: number, height: number, storyFlags?:
 
   // Place dungeon entrances (8 dungeons)
   const dungeons: [number, number][] = [
-    [16, 45], [42, 45], [45, 42], [50, 20],
-    [44, 22], [50, 12], [56, 10], [58, 5],
+    [16, 45], [40, 31], [44, 25], [50, 19],
+    [45, 13], [52, 11], [56, 9], [58, 4],
   ];
   for (const [dx, dy] of dungeons) {
     map[dy][dx] = 7;
@@ -136,8 +140,8 @@ export function generateOverworldMap(width: number, height: number, storyFlags?:
     const riverTop = centerY;
     const riverBot = centerY + 1 + extraWidth;
 
-    // Bridge crossing at x=47-49 — only opens when serpent defeated
-    const isBridge = x >= 47 && x <= 49;
+    // Bridge crossing at x=39-41 — at Crystal Cave gate dungeon location
+    const isBridge = x >= 39 && x <= 41;
 
     for (let ry = riverTop; ry <= riverBot; ry++) {
       if (ry >= 2 && ry < height - 2) {
@@ -182,8 +186,8 @@ export function generateOverworldMap(width: number, height: number, storyFlags?:
     const mtTop = centerY;
     const mtBot = centerY + 1 + extraWidth;
 
-    // Mountain pass at x=54-56 — only opens when dragon defeated
-    const isPass = x >= 54 && x <= 56;
+    // Mountain pass at x=49-51 — at Shadow Tower gate dungeon location
+    const isPass = x >= 49 && x <= 51;
 
     for (let my = mtTop; my <= mtBot; my++) {
       if (my >= 2 && my < height - 2) {
