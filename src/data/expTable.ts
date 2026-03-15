@@ -1,5 +1,6 @@
 // EXP required to reach each level (index = level)
-// Growth curve: roughly level^2.2 * 8, tuned for ~3 hour game
+// Growth curve: tuned for ~2 hour game with 5 acts
+// Act 1 end ~Lv 6, Act 2 end ~Lv 12, Act 3 end ~Lv 18, Act 4 end ~Lv 24, final boss ~Lv 28-30
 export const expTable: number[] = [
   0,      // Lv 0 (unused)
   0,      // Lv 1 (start)
@@ -12,26 +13,26 @@ export const expTable: number[] = [
   340,    // Lv 8
   470,    // Lv 9
   620,    // Lv 10
-  800,    // Lv 11
-  1010,   // Lv 12
-  1260,   // Lv 13
-  1550,   // Lv 14
-  1880,   // Lv 15
-  2260,   // Lv 16
-  2700,   // Lv 17
-  3200,   // Lv 18
-  3780,   // Lv 19
-  4440,   // Lv 20
-  5200,   // Lv 21
-  6060,   // Lv 22
-  7040,   // Lv 23
-  8150,   // Lv 24
-  9400,   // Lv 25
-  10800,  // Lv 26
-  12400,  // Lv 27
-  14200,  // Lv 28
-  16300,  // Lv 29
-  18700,  // Lv 30
+  820,    // Lv 11 (+40% from here)
+  1080,   // Lv 12
+  1400,   // Lv 13
+  1800,   // Lv 14
+  2280,   // Lv 15
+  2850,   // Lv 16
+  3520,   // Lv 17
+  4300,   // Lv 18
+  5200,   // Lv 19
+  6250,   // Lv 20
+  7450,   // Lv 21
+  8850,   // Lv 22
+  10500,  // Lv 23
+  12400,  // Lv 24
+  14600,  // Lv 25
+  17100,  // Lv 26
+  19900,  // Lv 27
+  23100,  // Lv 28
+  26000,  // Lv 29
+  30000,  // Lv 30
 ];
 
 // Stat gains per level: [hp, atk, def, spd]

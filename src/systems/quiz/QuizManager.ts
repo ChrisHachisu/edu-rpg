@@ -15,12 +15,13 @@ const BASE_TIMER: Record<GradeLevel, number> = {
 
 // Enemy strength multiplier for timer
 // Higher = more time, lower = less time (pressure)
-export type EnemyTier = 'weak' | 'normal' | 'strong' | 'boss';
+export type EnemyTier = 'weak' | 'normal' | 'strong' | 'boss' | 'finalBoss';
 const ENEMY_TIMER_MULT: Record<EnemyTier, number> = {
   weak: 1.5,
   normal: 1.0,
   strong: 0.85,
-  boss: 0.75,
+  boss: 0.6,
+  finalBoss: 0.4,
 };
 
 // Grade levels in order for mercy system
@@ -31,10 +32,16 @@ const ZONE_TIER_MAP: Record<string, DifficultyTier> = {
   'greenhollow-plains': 'easy',
   'whispering-woods': 'easy',
   'crystal-coast': 'easy',
+  'misty-grotto': 'easy',
   'crystal-cave': 'easy',
+  'coral-tunnels': 'medium',
   'iron-mountains': 'medium',
   'shadow-tower': 'medium',
+  'frostpeak-cavern': 'medium',
   'scorched-wastes': 'hard',
+  'sunken-ruins': 'hard',
+  'volcanic-forge': 'hard',
+  'demons-threshold': 'hard',
   'demon-castle': 'hard',
 };
 

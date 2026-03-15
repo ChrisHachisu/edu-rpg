@@ -51,6 +51,7 @@ export class BattleScene extends Phaser.Scene {
   }
 
   private getEnemyTier(): EnemyTier {
+    if (this.monster.id === 'demonKing') return 'finalBoss';
     if (this.monster.aiPattern === 'boss') return 'boss';
     const totalStat = this.monster.baseHp + this.monster.baseAtk + this.monster.baseDef;
     if (totalStat < 25) return 'weak';
@@ -591,7 +592,7 @@ export class BattleScene extends Phaser.Scene {
 
   private showVictory(result: CombatResult): void {
     // Mark boss as defeated
-    if (this.monster.aiPattern === 'boss' || ['serpent', 'dragon', 'demonKing'].includes(this.monster.id)) {
+    if (this.monster.aiPattern === 'boss') {
       gameState.player.state.storyFlags[`boss.${this.monster.id}.defeated`] = true;
     }
 

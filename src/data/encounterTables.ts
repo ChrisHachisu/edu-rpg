@@ -18,8 +18,10 @@ export const encounterZones: Record<string, EncounterZone> = {
     encounterRate: 0.06,
     minStepsBetween: 8,
     monsters: [
-      { monsterId: 'mushroom', weight: 5 },
-      { monsterId: 'wolf', weight: 5 },
+      { monsterId: 'mushroom', weight: 4 },
+      { monsterId: 'wolf', weight: 4 },
+      { monsterId: 'bandit', weight: 2 },
+      { monsterId: 'bat', weight: 2 },
     ],
   },
   'crystal-coast': {
@@ -29,6 +31,16 @@ export const encounterZones: Record<string, EncounterZone> = {
     monsters: [
       { monsterId: 'spider', weight: 5 },
       { monsterId: 'crab', weight: 5 },
+    ],
+  },
+  'misty-grotto': {
+    zoneId: 'misty-grotto',
+    encounterRate: 0.07,
+    minStepsBetween: 7,
+    monsters: [
+      { monsterId: 'mushroom', weight: 4 },
+      { monsterId: 'bat', weight: 3 },
+      { monsterId: 'bandit', weight: 3 },
     ],
   },
   'crystal-cave': {
@@ -43,6 +55,16 @@ export const encounterZones: Record<string, EncounterZone> = {
 
   // ── Act 2 — Unlocked after defeating Serpent ───────────────────────
 
+  'coral-tunnels': {
+    zoneId: 'coral-tunnels',
+    encounterRate: 0.07,
+    minStepsBetween: 7,
+    monsters: [
+      { monsterId: 'jellyfish', weight: 4 },
+      { monsterId: 'piranha', weight: 3 },
+      { monsterId: 'merfolk', weight: 3 },
+    ],
+  },
   'iron-mountains': {
     zoneId: 'iron-mountains',
     encounterRate: 0.06,
@@ -64,6 +86,16 @@ export const encounterZones: Record<string, EncounterZone> = {
 
   // ── Act 3 — Unlocked after defeating Dragon ───────────────────────
 
+  'frostpeak-cavern': {
+    zoneId: 'frostpeak-cavern',
+    encounterRate: 0.07,
+    minStepsBetween: 7,
+    monsters: [
+      { monsterId: 'blizzardBear', weight: 4 },
+      { monsterId: 'iceSprite', weight: 3 },
+      { monsterId: 'darkSorcerer', weight: 3 },
+    ],
+  },
   'scorched-wastes': {
     zoneId: 'scorched-wastes',
     encounterRate: 0.07,
@@ -73,14 +105,50 @@ export const encounterZones: Record<string, EncounterZone> = {
       { monsterId: 'knight', weight: 5 },
     ],
   },
+
+  // ── Act 4 — Unlocked after defeating Ice Wyrm ────────────────────
+
+  'sunken-ruins': {
+    zoneId: 'sunken-ruins',
+    encounterRate: 0.07,
+    minStepsBetween: 6,
+    monsters: [
+      { monsterId: 'skeleton', weight: 4 },
+      { monsterId: 'wraith', weight: 3 },
+      { monsterId: 'fireElemental', weight: 3 },
+    ],
+  },
+  'volcanic-forge': {
+    zoneId: 'volcanic-forge',
+    encounterRate: 0.08,
+    minStepsBetween: 6,
+    monsters: [
+      { monsterId: 'fireElemental', weight: 4 },
+      { monsterId: 'lavaGolem', weight: 3 },
+      { monsterId: 'wraith', weight: 3 },
+    ],
+  },
+
+  // ── Act 5 — Unlocked after defeating Flame Titan ──────────────────
+
+  'demons-threshold': {
+    zoneId: 'demons-threshold',
+    encounterRate: 0.08,
+    minStepsBetween: 6,
+    monsters: [
+      { monsterId: 'chimera', weight: 3 },
+      { monsterId: 'demon', weight: 4 },
+      { monsterId: 'shadow', weight: 3 },
+    ],
+  },
   'demon-castle': {
     zoneId: 'demon-castle',
     encounterRate: 0.09,
     minStepsBetween: 5,
     monsters: [
-      { monsterId: 'lizard', weight: 3 },
-      { monsterId: 'knight', weight: 3 },
-      { monsterId: 'chimera', weight: 4 },
+      { monsterId: 'chimera', weight: 3 },
+      { monsterId: 'demon', weight: 3 },
+      { monsterId: 'shadow', weight: 4 },
     ],
   },
 };

@@ -204,21 +204,45 @@ function generateHeroSprites(scene: Phaser.Scene): void {
 
 function generateMonsterSprites(scene: Phaser.Scene): void {
   const monsterDefs: { key: string; color: number; shape: string }[] = [
+    // Act 1 — early
     { key: 'monster-slime', color: 0x44cc88, shape: 'slime' },
     { key: 'monster-bug', color: 0x886622, shape: 'bug' },
     { key: 'monster-rabbit', color: 0xccaa88, shape: 'rabbit' },
     { key: 'monster-wolf', color: 0x555577, shape: 'wolf' },
     { key: 'monster-mushroom', color: 0xaa44aa, shape: 'mushroom' },
+    { key: 'monster-bandit', color: 0x774422, shape: 'knight' },
+    { key: 'monster-bat', color: 0x443355, shape: 'harpy' },
     { key: 'monster-spider', color: 0x333333, shape: 'spider' },
     { key: 'monster-crab', color: 0xcc4422, shape: 'crab' },
-    { key: 'monster-serpent', color: 0x2266aa, shape: 'serpent' },
     { key: 'monster-golem', color: 0x888877, shape: 'golem' },
+    { key: 'monster-giantToad', color: 0x337722, shape: 'slime' },
+    { key: 'monster-serpent', color: 0x2266aa, shape: 'serpent' },
+    // Act 2
+    { key: 'monster-jellyfish', color: 0x8844cc, shape: 'slime' },
+    { key: 'monster-piranha', color: 0x4488cc, shape: 'crab' },
+    { key: 'monster-merfolk', color: 0x22aa88, shape: 'serpent' },
     { key: 'monster-harpy', color: 0xddaadd, shape: 'harpy' },
     { key: 'monster-wyvern', color: 0x44aa66, shape: 'wyvern' },
+    { key: 'monster-kraken', color: 0x552288, shape: 'serpent' },
+    { key: 'monster-dragon', color: 0xcc2222, shape: 'dragon' },
+    // Act 3
+    { key: 'monster-blizzardBear', color: 0xaaccee, shape: 'wolf' },
+    { key: 'monster-iceSprite', color: 0x88ddff, shape: 'slime' },
+    { key: 'monster-darkSorcerer', color: 0x223366, shape: 'boss' },
+    { key: 'monster-iceWyrm', color: 0x66aadd, shape: 'dragon' },
+    // Act 4
     { key: 'monster-lizard', color: 0xcc6622, shape: 'lizard' },
     { key: 'monster-knight', color: 0x332244, shape: 'knight' },
-    { key: 'monster-dragon', color: 0xcc2222, shape: 'dragon' },
+    { key: 'monster-skeleton', color: 0xccccbb, shape: 'knight' },
+    { key: 'monster-wraith', color: 0x775599, shape: 'boss' },
+    { key: 'monster-fireElemental', color: 0xff6622, shape: 'slime' },
+    { key: 'monster-lavaGolem', color: 0xcc3311, shape: 'golem' },
+    { key: 'monster-lich', color: 0x225533, shape: 'boss' },
+    { key: 'monster-flameTitan', color: 0xee4400, shape: 'dragon' },
+    // Act 5
     { key: 'monster-chimera', color: 0x996633, shape: 'chimera' },
+    { key: 'monster-demon', color: 0x881122, shape: 'chimera' },
+    { key: 'monster-shadow', color: 0x221133, shape: 'wolf' },
     { key: 'monster-demonKing', color: 0x660066, shape: 'boss' },
   ];
 

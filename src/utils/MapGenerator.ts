@@ -62,17 +62,28 @@ export function generateOverworldMap(width: number, height: number, storyFlags?:
     map.push(row);
   }
 
-  // Carve paths between key locations
+  // Carve paths between key locations (expanded 5-act network)
   const paths: [number, number][] = [
-    // Starting area to first town
-    ...pathBetween(10, 50, 20, 38),
-    ...pathBetween(20, 38, 38, 40),
-    ...pathBetween(38, 40, 48, 25),
-    ...pathBetween(48, 25, 55, 15),
-    ...pathBetween(55, 15, 58, 5),
-    // Branch to dungeons
-    ...pathBetween(38, 40, 42, 45),
-    ...pathBetween(48, 25, 50, 20),
+    // Act 1 — starting area and first towns
+    ...pathBetween(10, 50, 16, 45),   // greenhollow → mistyGrotto
+    ...pathBetween(10, 50, 20, 38),   // greenhollow → oakshade
+    ...pathBetween(20, 38, 38, 40),   // oakshade → portSapphire
+    ...pathBetween(38, 40, 42, 45),   // portSapphire → crystalCave
+    ...pathBetween(38, 40, 44, 38),   // portSapphire → tidepools
+    ...pathBetween(44, 38, 45, 42),   // tidepools → coralTunnels
+    // Act 2 — cross the river
+    ...pathBetween(44, 38, 48, 25),   // tidepools → ironkeep
+    ...pathBetween(48, 25, 50, 20),   // ironkeep → shadowTower
+    ...pathBetween(48, 25, 42, 21),   // ironkeep → moonvale
+    ...pathBetween(42, 21, 44, 22),   // moonvale → frostpeakCavern
+    // Act 3/4 — beyond mountains
+    ...pathBetween(42, 21, 48, 11),   // moonvale → ruinsCamp
+    ...pathBetween(48, 11, 50, 12),   // ruinsCamp → sunkenRuins
+    ...pathBetween(48, 11, 55, 15),   // ruinsCamp → ashfall
+    ...pathBetween(55, 15, 56, 10),   // ashfall → volcanicForge
+    // Act 5 — endgame
+    ...pathBetween(55, 15, 56, 5),    // ashfall → lastBastion
+    ...pathBetween(56, 5, 58, 5),     // lastBastion → demonCastle
   ];
 
   for (const [px, py] of paths) {
@@ -85,14 +96,20 @@ export function generateOverworldMap(width: number, height: number, storyFlags?:
     }
   }
 
-  // Place town markers
-  const towns: [number, number][] = [[10, 50], [20, 38], [38, 40], [48, 25], [55, 15]];
+  // Place town markers (9 towns)
+  const towns: [number, number][] = [
+    [10, 50], [20, 38], [38, 40], [44, 38], [48, 25],
+    [42, 21], [48, 11], [55, 15], [56, 5],
+  ];
   for (const [tx, ty] of towns) {
     map[ty][tx] = 6;
   }
 
-  // Place dungeon entrances
-  const dungeons: [number, number][] = [[42, 45], [50, 20], [58, 5]];
+  // Place dungeon entrances (8 dungeons)
+  const dungeons: [number, number][] = [
+    [16, 45], [42, 45], [45, 42], [50, 20],
+    [44, 22], [50, 12], [56, 10], [58, 5],
+  ];
   for (const [dx, dy] of dungeons) {
     map[dy][dx] = 7;
   }
@@ -100,6 +117,7 @@ export function generateOverworldMap(width: number, height: number, storyFlags?:
   // ── Physical terrain barriers (natural, gap-free) ────────────────
   const serpentDefeated = storyFlags?.['boss.serpent.defeated'] ?? false;
   const dragonDefeated = storyFlags?.['boss.dragon.defeated'] ?? false;
+  const flameTitanDefeated = storyFlags?.['boss.flameTitan.defeated'] ?? false;
 
   // --- River barrier between Act 1 and Act 2 ---
   // Meanders around y≈29 with sinusoidal variation, 2-3 tiles wide
@@ -183,6 +201,33 @@ export function generateOverworldMap(width: number, height: number, storyFlags?:
           && (map[below][x] === 0 || map[below][x] === 1)
           && Math.sin(x * 0.6 + 1) > 0.4) {
         map[below][x] = 3; // tree at mountain base
+      }
+    }
+  }
+
+  // --- Lava barrier between Act 4 and Act 5 ---
+  // Meanders around y≈8 with sinusoidal variation, 1-2 tiles wide
+  const lavaBaseY = 8;
+  for (let x = 2; x <= width - 3; x++) {
+    const meander = Math.round(
+      Math.sin(x * 0.14 + 3) * 1.5 + Math.cos(x * 0.08 + 2) * 0.8
+    );
+    const centerY = lavaBaseY + meander;
+    const extraWidth = Math.sin(x * 0.25 + 1.5) > 0.4 ? 1 : 0;
+    const lavaTop = centerY;
+    const lavaBot = centerY + extraWidth;
+
+    // Pass at x=55-57 — opens when flameTitan defeated
+    const isPass = x >= 55 && x <= 57;
+
+    for (let ly = lavaTop; ly <= lavaBot; ly++) {
+      if (ly >= 2 && ly < height - 2) {
+        if (isPass && flameTitanDefeated) {
+          map[ly][x] = 1; // path through pass
+        } else {
+          // Use mountain tile (impassable) for lava barrier
+          map[ly][x] = 4;
+        }
       }
     }
   }

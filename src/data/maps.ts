@@ -21,19 +21,33 @@ export const mapDefs: Record<string, MapDef> = {
     width: 64,
     height: 64,
     connections: [
-      // Town entrances on overworld
+      // ── Town entrances on overworld ──
       { targetMap: 'greenhollow', fromX: 10, fromY: 50, toX: 8, toY: 14 },
       { targetMap: 'oakshade', fromX: 20, fromY: 38, toX: 8, toY: 14 },
       { targetMap: 'portSapphire', fromX: 38, fromY: 40, toX: 8, toY: 14 },
+      { targetMap: 'tidepools', fromX: 44, fromY: 38, toX: 8, toY: 14 },
       { targetMap: 'ironkeep', fromX: 48, fromY: 25, toX: 8, toY: 14 },
+      { targetMap: 'moonvale', fromX: 42, fromY: 21, toX: 8, toY: 14 },
+      { targetMap: 'ruinsCamp', fromX: 48, fromY: 11, toX: 8, toY: 14 },
       { targetMap: 'ashfall', fromX: 55, fromY: 15, toX: 8, toY: 14 },
-      // Dungeon entrances
+      { targetMap: 'lastBastion', fromX: 56, fromY: 5, toX: 8, toY: 14 },
+      // ── Dungeon entrances ──
+      { targetMap: 'mistyGrotto', fromX: 16, fromY: 45, toX: 7, toY: 2 },
       { targetMap: 'crystalCave', fromX: 42, fromY: 45, toX: 10, toY: 2 },
+      { targetMap: 'coralTunnels', fromX: 45, fromY: 42, toX: 9, toY: 2 },
       { targetMap: 'shadowTower', fromX: 50, fromY: 20, toX: 12, toY: 2 },
-      { targetMap: 'demonCastle', fromX: 58, fromY: 5, toX: 14, toY: 2 },
+      { targetMap: 'frostpeakCavern', fromX: 44, fromY: 22, toX: 11, toY: 2 },
+      { targetMap: 'sunkenRuins', fromX: 50, fromY: 12, toX: 13, toY: 2 },
+      { targetMap: 'volcanicForge', fromX: 56, fromY: 10, toX: 12, toY: 2 },
+      { targetMap: 'demonCastle', fromX: 58, fromY: 5, toX: 16, toY: 2 },
     ],
     npcs: [],
   },
+
+  // ═══════════════════════════════════════════════════════════════════
+  //   TOWNS — 9 total
+  // ═══════════════════════════════════════════════════════════════════
+
   greenhollow: {
     id: 'greenhollow',
     nameKey: 'Greenhollow Village',
@@ -83,6 +97,22 @@ export const mapDefs: Record<string, MapDef> = {
     shopId: 'portSapphire',
     savePoint: { x: 8, y: 10 },
   },
+  tidepools: {
+    id: 'tidepools',
+    nameKey: 'Tidepools',
+    type: 'town',
+    width: 16,
+    height: 16,
+    connections: [
+      { targetMap: 'overworld', fromX: 8, fromY: 15, toX: 44, toY: 39 },
+    ],
+    npcs: [
+      { id: 'fisherman', dialogueKey: 'npc.fisherman', x: 3, y: 5 },
+      { id: 'diver', dialogueKey: 'npc.diver', x: 12, y: 5 },
+    ],
+    shopId: 'tidepools',
+    savePoint: { x: 8, y: 10 },
+  },
   ironkeep: {
     id: 'ironkeep',
     nameKey: 'Ironkeep Fortress',
@@ -97,6 +127,38 @@ export const mapDefs: Record<string, MapDef> = {
       { id: 'blacksmith', dialogueKey: 'npc.blacksmith', x: 3, y: 5 },
     ],
     shopId: 'ironkeep',
+    savePoint: { x: 8, y: 10 },
+  },
+  moonvale: {
+    id: 'moonvale',
+    nameKey: 'Moonvale Hamlet',
+    type: 'town',
+    width: 16,
+    height: 16,
+    connections: [
+      { targetMap: 'overworld', fromX: 8, fromY: 15, toX: 42, toY: 22 },
+    ],
+    npcs: [
+      { id: 'hermit', dialogueKey: 'npc.hermit', x: 3, y: 5 },
+      { id: 'miner', dialogueKey: 'npc.miner', x: 12, y: 5 },
+    ],
+    shopId: 'moonvale',
+    savePoint: { x: 8, y: 10 },
+  },
+  ruinsCamp: {
+    id: 'ruinsCamp',
+    nameKey: 'Ruins Camp',
+    type: 'town',
+    width: 16,
+    height: 16,
+    connections: [
+      { targetMap: 'overworld', fromX: 8, fromY: 15, toX: 48, toY: 12 },
+    ],
+    npcs: [
+      { id: 'archaeologist', dialogueKey: 'npc.archaeologist', x: 3, y: 5 },
+      { id: 'explorer', dialogueKey: 'npc.explorer', x: 12, y: 5 },
+    ],
+    shopId: 'ruinsCamp',
     savePoint: { x: 8, y: 10 },
   },
   ashfall: {
@@ -115,6 +177,42 @@ export const mapDefs: Record<string, MapDef> = {
     shopId: 'ashfall',
     savePoint: { x: 8, y: 10 },
   },
+  lastBastion: {
+    id: 'lastBastion',
+    nameKey: 'Last Bastion',
+    type: 'town',
+    width: 16,
+    height: 16,
+    connections: [
+      { targetMap: 'overworld', fromX: 8, fromY: 15, toX: 56, toY: 6 },
+    ],
+    npcs: [
+      { id: 'veteran', dialogueKey: 'npc.veteran', x: 3, y: 5 },
+      { id: 'priestess', dialogueKey: 'npc.priestess', x: 12, y: 5 },
+    ],
+    shopId: 'lastBastion',
+    savePoint: { x: 8, y: 10 },
+  },
+
+  // ═══════════════════════════════════════════════════════════════════
+  //   DUNGEONS — 8 total
+  // ═══════════════════════════════════════════════════════════════════
+
+  // Act 1 tutorial dungeon
+  mistyGrotto: {
+    id: 'mistyGrotto',
+    nameKey: 'Misty Grotto',
+    type: 'dungeon',
+    encounterZone: 'misty-grotto',
+    width: 15,
+    height: 15,
+    connections: [
+      { targetMap: 'overworld', fromX: 7, fromY: 0, toX: 16, toY: 46 },
+    ],
+    npcs: [],
+    bossId: 'giantToad',
+  },
+  // Act 1 main dungeon
   crystalCave: {
     id: 'crystalCave',
     nameKey: 'Crystal Cave',
@@ -128,6 +226,21 @@ export const mapDefs: Record<string, MapDef> = {
     npcs: [],
     bossId: 'serpent',
   },
+  // Act 2 water-themed
+  coralTunnels: {
+    id: 'coralTunnels',
+    nameKey: 'Coral Tunnels',
+    type: 'dungeon',
+    encounterZone: 'coral-tunnels',
+    width: 19,
+    height: 19,
+    connections: [
+      { targetMap: 'overworld', fromX: 9, fromY: 0, toX: 45, toY: 43 },
+    ],
+    npcs: [],
+    bossId: 'kraken',
+  },
+  // Act 2 main dungeon
   shadowTower: {
     id: 'shadowTower',
     nameKey: 'Shadow Tower',
@@ -141,15 +254,58 @@ export const mapDefs: Record<string, MapDef> = {
     npcs: [],
     bossId: 'dragon',
   },
+  // Act 3 ice-themed
+  frostpeakCavern: {
+    id: 'frostpeakCavern',
+    nameKey: 'Frostpeak Cavern',
+    type: 'dungeon',
+    encounterZone: 'frostpeak-cavern',
+    width: 23,
+    height: 23,
+    connections: [
+      { targetMap: 'overworld', fromX: 11, fromY: 0, toX: 44, toY: 23 },
+    ],
+    npcs: [],
+    bossId: 'iceWyrm',
+  },
+  // Act 4 ancient ruin
+  sunkenRuins: {
+    id: 'sunkenRuins',
+    nameKey: 'Sunken Ruins',
+    type: 'dungeon',
+    encounterZone: 'sunken-ruins',
+    width: 27,
+    height: 27,
+    connections: [
+      { targetMap: 'overworld', fromX: 13, fromY: 0, toX: 50, toY: 13 },
+    ],
+    npcs: [],
+    bossId: 'lich',
+  },
+  // Act 4 volcano
+  volcanicForge: {
+    id: 'volcanicForge',
+    nameKey: 'Volcanic Forge',
+    type: 'dungeon',
+    encounterZone: 'volcanic-forge',
+    width: 25,
+    height: 25,
+    connections: [
+      { targetMap: 'overworld', fromX: 12, fromY: 0, toX: 56, toY: 11 },
+    ],
+    npcs: [],
+    bossId: 'flameTitan',
+  },
+  // Act 5 final dungeon (expanded)
   demonCastle: {
     id: 'demonCastle',
     nameKey: 'Demon Castle',
     type: 'dungeon',
     encounterZone: 'demon-castle',
-    width: 29,
-    height: 29,
+    width: 33,
+    height: 33,
     connections: [
-      { targetMap: 'overworld', fromX: 14, fromY: 0, toX: 58, toY: 6 },
+      { targetMap: 'overworld', fromX: 16, fromY: 0, toX: 58, toY: 6 },
     ],
     npcs: [],
     bossId: 'demonKing',

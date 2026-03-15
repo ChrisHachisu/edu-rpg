@@ -29,6 +29,15 @@ export const items: Record<string, ItemDefinition> = {
     buyPrice: 100,
     sellPrice: 50,
   },
+  elixir: {
+    id: 'elixir',
+    nameKey: 'item.elixir',
+    descriptionKey: 'item.elixir.desc',
+    type: 'consumable',
+    effect: { type: 'heal', value: 500 },
+    buyPrice: 300,
+    sellPrice: 150,
+  },
   smokeBomb: {
     id: 'smokeBomb',
     nameKey: 'item.smokeBomb',
@@ -39,7 +48,7 @@ export const items: Record<string, ItemDefinition> = {
     sellPrice: 10,
   },
 
-  // Weapons
+  // ── Weapons (8 tiers) ──────────────────────────────────────────────
   woodenSword: {
     id: 'woodenSword',
     nameKey: 'equip.woodenSword',
@@ -48,6 +57,15 @@ export const items: Record<string, ItemDefinition> = {
     stats: { atk: 5 },
     buyPrice: 20,
     sellPrice: 10,
+  },
+  bronzeSword: {
+    id: 'bronzeSword',
+    nameKey: 'equip.bronzeSword',
+    descriptionKey: 'equip.bronzeSword.desc',
+    type: 'weapon',
+    stats: { atk: 10 },
+    buyPrice: 50,
+    sellPrice: 25,
   },
   ironSword: {
     id: 'ironSword',
@@ -67,6 +85,15 @@ export const items: Record<string, ItemDefinition> = {
     buyPrice: 350,
     sellPrice: 175,
   },
+  mithrilSword: {
+    id: 'mithrilSword',
+    nameKey: 'equip.mithrilSword',
+    descriptionKey: 'equip.mithrilSword.desc',
+    type: 'weapon',
+    stats: { atk: 35 },
+    buyPrice: 500,
+    sellPrice: 250,
+  },
   flameSword: {
     id: 'flameSword',
     nameKey: 'equip.flameSword',
@@ -75,6 +102,15 @@ export const items: Record<string, ItemDefinition> = {
     stats: { atk: 42 },
     buyPrice: 800,
     sellPrice: 400,
+  },
+  crystalBlade: {
+    id: 'crystalBlade',
+    nameKey: 'equip.crystalBlade',
+    descriptionKey: 'equip.crystalBlade.desc',
+    type: 'weapon',
+    stats: { atk: 50 },
+    buyPrice: 1200,
+    sellPrice: 600,
   },
   holyBlade: {
     id: 'holyBlade',
@@ -86,7 +122,7 @@ export const items: Record<string, ItemDefinition> = {
     sellPrice: 1000,
   },
 
-  // Armor
+  // ── Armor (8 tiers) ────────────────────────────────────────────────
   clothArmor: {
     id: 'clothArmor',
     nameKey: 'equip.clothArmor',
@@ -95,6 +131,15 @@ export const items: Record<string, ItemDefinition> = {
     stats: { def: 3 },
     buyPrice: 15,
     sellPrice: 7,
+  },
+  bronzeArmor: {
+    id: 'bronzeArmor',
+    nameKey: 'equip.bronzeArmor',
+    descriptionKey: 'equip.bronzeArmor.desc',
+    type: 'armor',
+    stats: { def: 6 },
+    buyPrice: 40,
+    sellPrice: 20,
   },
   leatherArmor: {
     id: 'leatherArmor',
@@ -114,6 +159,15 @@ export const items: Record<string, ItemDefinition> = {
     buyPrice: 300,
     sellPrice: 150,
   },
+  mithrilArmor: {
+    id: 'mithrilArmor',
+    nameKey: 'equip.mithrilArmor',
+    descriptionKey: 'equip.mithrilArmor.desc',
+    type: 'armor',
+    stats: { def: 28 },
+    buyPrice: 500,
+    sellPrice: 250,
+  },
   plateArmor: {
     id: 'plateArmor',
     nameKey: 'equip.plateArmor',
@@ -122,6 +176,15 @@ export const items: Record<string, ItemDefinition> = {
     stats: { def: 35 },
     buyPrice: 700,
     sellPrice: 350,
+  },
+  dragonscaleArmor: {
+    id: 'dragonscaleArmor',
+    nameKey: 'equip.dragonscaleArmor',
+    descriptionKey: 'equip.dragonscaleArmor.desc',
+    type: 'armor',
+    stats: { def: 42 },
+    buyPrice: 1200,
+    sellPrice: 600,
   },
   holyArmor: {
     id: 'holyArmor',
@@ -133,7 +196,7 @@ export const items: Record<string, ItemDefinition> = {
     sellPrice: 900,
   },
 
-  // Shields
+  // ── Shields (4 tiers) ──────────────────────────────────────────────
   woodenShield: {
     id: 'woodenShield',
     nameKey: 'equip.woodenShield',
@@ -152,8 +215,26 @@ export const items: Record<string, ItemDefinition> = {
     buyPrice: 200,
     sellPrice: 100,
   },
+  steelShield: {
+    id: 'steelShield',
+    nameKey: 'equip.steelShield',
+    descriptionKey: 'equip.steelShield.desc',
+    type: 'shield',
+    stats: { def: 20 },
+    buyPrice: 350,
+    sellPrice: 175,
+  },
+  mithrilShield: {
+    id: 'mithrilShield',
+    nameKey: 'equip.mithrilShield',
+    descriptionKey: 'equip.mithrilShield.desc',
+    type: 'shield',
+    stats: { def: 30 },
+    buyPrice: 800,
+    sellPrice: 400,
+  },
 
-  // Helmets
+  // ── Helmets (4 tiers) ──────────────────────────────────────────────
   leatherCap: {
     id: 'leatherCap',
     nameKey: 'equip.leatherCap',
@@ -171,5 +252,23 @@ export const items: Record<string, ItemDefinition> = {
     stats: { def: 10 },
     buyPrice: 180,
     sellPrice: 90,
+  },
+  steelHelm: {
+    id: 'steelHelm',
+    nameKey: 'equip.steelHelm',
+    descriptionKey: 'equip.steelHelm.desc',
+    type: 'helmet',
+    stats: { def: 16 },
+    buyPrice: 300,
+    sellPrice: 150,
+  },
+  mithrilHelm: {
+    id: 'mithrilHelm',
+    nameKey: 'equip.mithrilHelm',
+    descriptionKey: 'equip.mithrilHelm.desc',
+    type: 'helmet',
+    stats: { def: 24 },
+    buyPrice: 700,
+    sellPrice: 350,
   },
 };

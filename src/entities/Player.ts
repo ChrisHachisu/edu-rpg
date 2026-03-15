@@ -16,7 +16,7 @@ const DEFAULT_STATE: PlayerState = {
   equipment: { weapon: null, armor: null, shield: null, helmet: null, accessory: null },
   inventory: [{ itemId: 'herb', quantity: 3 }],
   gold: 30,
-  position: { mapId: 'overworld', x: 10, y: 50 },
+  position: { mapId: 'greenhollow', x: 8, y: 10 },
   storyFlags: {},
   timerEnabled: true,
   quizDifficulty: '1',
@@ -111,6 +111,14 @@ export class Player {
     if (prev) this.addItem(prev, 1);
 
     return prev;
+  }
+
+  unequip(slot: EquipSlot): string | null {
+    const itemId = this.state.equipment[slot];
+    if (!itemId) return null;
+    this.state.equipment[slot] = null;
+    this.addItem(itemId, 1);
+    return itemId;
   }
 
   addItem(itemId: string, quantity: number): boolean {

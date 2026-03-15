@@ -3,7 +3,7 @@ import { GAME_WIDTH, GAME_HEIGHT, COLORS } from '../utils/constants';
 import { t, setLocale, getLocale } from '../i18n/i18n';
 import { gameState } from '../GameState';
 import { items } from '../data/items';
-import { GradeLevel } from '../utils/types';
+import { GradeLevel, EquipSlot } from '../utils/types';
 
 type MenuTab = 'status' | 'items' | 'equip' | 'settings';
 
@@ -13,6 +13,11 @@ export class MenuScene extends Phaser.Scene {
   private listIndex = 0;
   private tabs: MenuTab[] = ['status', 'items', 'equip', 'settings'];
 
+  // Equipment tab state
+  private equipMode: 'equipped' | 'inventory' = 'equipped';
+  private equipSlotIndex = 0;
+  private equipInventoryIndex = 0;
+
   constructor() {
     super('MenuScene');
   }
@@ -21,6 +26,9 @@ export class MenuScene extends Phaser.Scene {
     this.tabIndex = 0;
     this.listIndex = 0;
     this.currentTab = 'status';
+    this.equipMode = 'equipped';
+    this.equipSlotIndex = 0;
+    this.equipInventoryIndex = 0;
     this.drawMenu();
     this.setupInput();
   }
@@ -114,7 +122,7 @@ export class MenuScene extends Phaser.Scene {
     const p = gameState.player;
     const y = 52;
     const ff = 'monospace';
-    const slotKeys = ['weapon', 'armor', 'shield', 'helmet'] as const;
+    const slotKeys: EquipSlot[] = ['weapon', 'armor', 'shield', 'helmet'];
     const slotNameKeys: Record<string, string> = {
       weapon: 'equip.slot.weapon',
       armor: 'equip.slot.armor',
@@ -123,10 +131,21 @@ export class MenuScene extends Phaser.Scene {
     };
 
     // Section header: current equipment
-    this.add.text(32, y, t('menu.equip'), { fontSize: '14px', color: COLORS.TEXT_YELLOW, fontFamily: ff });
+    this.add.text(32, y, t('menu.equip'), {
+      fontSize: '14px',
+      color: COLORS.TEXT_YELLOW,
+      fontFamily: ff,
+    });
 
-    // Equipped items with localized slot names and stats
+    // Hint text
+    const hintText = this.equipMode === 'equipped' ? 'Z: Unequip' : 'Z: Equip';
+    this.add.text(GAME_WIDTH - 32, y, hintText, {
+      fontSize: '9px', color: COLORS.TEXT_GRAY, fontFamily: ff,
+    }).setOrigin(1, 0);
+
+    // Equipped items with cursor
     slotKeys.forEach((slot, i) => {
+      const isSelected = this.equipMode === 'equipped' && i === this.equipSlotIndex;
       const itemId = p.state.equipment[slot];
       const slotLabel = t(slotNameKeys[slot]);
       const itemName = itemId ? t(items[itemId].nameKey) : t('equip.empty');
@@ -136,15 +155,25 @@ export class MenuScene extends Phaser.Scene {
           + (item.stats.def ? ` +${item.stats.def} ${t('menu.def')}` : '')
         : '';
 
+      // Cursor
+      const cursor = isSelected ? '>' : ' ';
+      this.add.text(20, y + 28 + i * 28, cursor, {
+        fontSize: '10px', color: COLORS.TEXT_YELLOW, fontFamily: ff,
+      });
+
       this.add.text(32, y + 28 + i * 28, `${slotLabel}:`, {
-        fontSize: '10px', color: COLORS.TEXT_GRAY, fontFamily: ff,
+        fontSize: '10px',
+        color: isSelected ? COLORS.TEXT_YELLOW : COLORS.TEXT_GRAY,
+        fontFamily: ff,
       });
       this.add.text(120, y + 28 + i * 28, itemName, {
-        fontSize: '10px', color: itemId ? COLORS.TEXT_WHITE : COLORS.TEXT_GRAY, fontFamily: ff,
+        fontSize: '10px',
+        color: isSelected ? COLORS.TEXT_YELLOW : (itemId ? COLORS.TEXT_WHITE : COLORS.TEXT_GRAY),
+        fontFamily: ff,
       });
       if (statStr) {
         this.add.text(300, y + 28 + i * 28, statStr, {
-          fontSize: '9px', color: COLORS.TEXT_YELLOW, fontFamily: ff,
+          fontSize: '9px', color: isSelected ? COLORS.TEXT_YELLOW : '#88aa88', fontFamily: ff,
         });
       }
     });
@@ -166,9 +195,15 @@ export class MenuScene extends Phaser.Scene {
     } else {
       equipItems.forEach((slot, i) => {
         const item = items[slot.itemId];
+        const isSelected = this.equipMode === 'inventory' && i === this.equipInventoryIndex;
         const statStr = (item.stats?.atk ? `+${item.stats.atk} ${t('menu.atk')}` : '')
           + (item.stats?.def ? ` +${item.stats.def} ${t('menu.def')}` : '');
-        const isSelected = i === this.listIndex;
+
+        // Cursor
+        const cursor = isSelected ? '>' : ' ';
+        this.add.text(20, y + 188 + i * 24, cursor, {
+          fontSize: '10px', color: COLORS.TEXT_YELLOW, fontFamily: ff,
+        });
 
         this.add.text(32, y + 188 + i * 24, `${t(item.nameKey)}`, {
           fontSize: '10px', color: isSelected ? COLORS.TEXT_YELLOW : COLORS.TEXT_WHITE, fontFamily: ff,
@@ -177,6 +212,43 @@ export class MenuScene extends Phaser.Scene {
           fontSize: '9px', color: isSelected ? COLORS.TEXT_YELLOW : COLORS.TEXT_GRAY, fontFamily: ff,
         });
       });
+
+      // Stat comparison when hovering an inventory item
+      if (this.equipMode === 'inventory' && this.equipInventoryIndex < equipItems.length) {
+        const hoveredSlot = equipItems[this.equipInventoryIndex];
+        const hoveredItem = items[hoveredSlot.itemId];
+        const targetSlot = hoveredItem.type as EquipSlot;
+        const currentItemId = p.state.equipment[targetSlot];
+        const currentItem = currentItemId ? items[currentItemId] : null;
+
+        const compY = y + 188 + equipItems.length * 24 + 8;
+        this.add.line(0, compY - 4, 32, 0, GAME_WIDTH - 32, 0, COLORS.MENU_BORDER, 0.2).setOrigin(0);
+
+        // ATK comparison
+        if (hoveredItem.stats?.atk !== undefined) {
+          const oldAtk = currentItem?.stats?.atk ?? 0;
+          const newAtk = hoveredItem.stats.atk;
+          const diff = newAtk - oldAtk;
+          const diffColor = diff > 0 ? '#44cc44' : diff < 0 ? '#cc4444' : COLORS.TEXT_WHITE;
+          const diffStr = diff > 0 ? `(+${diff})` : diff < 0 ? `(${diff})` : '';
+          this.add.text(32, compY, `${t('menu.atk')}: +${oldAtk} -> +${newAtk} ${diffStr}`, {
+            fontSize: '9px', color: diffColor, fontFamily: ff,
+          });
+        }
+
+        // DEF comparison
+        if (hoveredItem.stats?.def !== undefined) {
+          const oldDef = currentItem?.stats?.def ?? 0;
+          const newDef = hoveredItem.stats.def;
+          const diff = newDef - oldDef;
+          const diffColor = diff > 0 ? '#44cc44' : diff < 0 ? '#cc4444' : COLORS.TEXT_WHITE;
+          const diffStr = diff > 0 ? `(+${diff})` : diff < 0 ? `(${diff})` : '';
+          const offsetY = hoveredItem.stats?.atk !== undefined ? 16 : 0;
+          this.add.text(32, compY + offsetY, `${t('menu.def')}: +${oldDef} -> +${newDef} ${diffStr}`, {
+            fontSize: '9px', color: diffColor, fontFamily: ff,
+          });
+        }
+      }
     }
   }
 
@@ -224,6 +296,9 @@ export class MenuScene extends Phaser.Scene {
         this.tabIndex = Math.max(0, this.tabIndex - 1);
         this.currentTab = this.tabs[this.tabIndex];
         this.listIndex = 0;
+        this.equipMode = 'equipped';
+        this.equipSlotIndex = 0;
+        this.equipInventoryIndex = 0;
         this.drawMenu();
       }
     });
@@ -235,28 +310,117 @@ export class MenuScene extends Phaser.Scene {
         this.tabIndex = Math.min(this.tabs.length - 1, this.tabIndex + 1);
         this.currentTab = this.tabs[this.tabIndex];
         this.listIndex = 0;
+        this.equipMode = 'equipped';
+        this.equipSlotIndex = 0;
+        this.equipInventoryIndex = 0;
         this.drawMenu();
       }
     });
 
     this.input.keyboard?.on('keydown-UP', () => {
-      this.listIndex = Math.max(0, this.listIndex - 1);
-      this.drawMenu();
+      if (this.currentTab === 'equip') {
+        this.handleEquipUp();
+      } else {
+        this.listIndex = Math.max(0, this.listIndex - 1);
+        this.drawMenu();
+      }
     });
 
     this.input.keyboard?.on('keydown-DOWN', () => {
-      const maxIndex = this.currentTab === 'settings' ? 2
-        : this.currentTab === 'items' ? Math.max(0, gameState.player.state.inventory.length - 1)
-        : 99;
-      this.listIndex = Math.min(maxIndex, this.listIndex + 1);
-      this.drawMenu();
+      if (this.currentTab === 'equip') {
+        this.handleEquipDown();
+      } else {
+        const maxIndex = this.currentTab === 'settings' ? 2
+          : this.currentTab === 'items' ? Math.max(0, gameState.player.state.inventory.length - 1)
+          : 99;
+        this.listIndex = Math.min(maxIndex, this.listIndex + 1);
+        this.drawMenu();
+      }
     });
 
     this.input.keyboard?.on('keydown-Z', () => {
       if (this.currentTab === 'items') this.useItem();
-      else if (this.currentTab === 'equip') this.equipItem();
+      else if (this.currentTab === 'equip') this.handleEquipAction();
+    });
+    this.input.keyboard?.on('keydown-ENTER', () => {
+      if (this.currentTab === 'items') this.useItem();
+      else if (this.currentTab === 'equip') this.handleEquipAction();
     });
   }
+
+  // ── Equipment tab navigation ──────────────────────────
+
+  private handleEquipUp(): void {
+    if (this.equipMode === 'equipped') {
+      this.equipSlotIndex = Math.max(0, this.equipSlotIndex - 1);
+    } else {
+      // In inventory mode
+      if (this.equipInventoryIndex === 0) {
+        // Switch to equipped mode, select last slot
+        this.equipMode = 'equipped';
+        this.equipSlotIndex = 3;
+      } else {
+        this.equipInventoryIndex--;
+      }
+    }
+    this.drawMenu();
+  }
+
+  private handleEquipDown(): void {
+    const equipItems = this.getEquipInventoryItems();
+
+    if (this.equipMode === 'equipped') {
+      if (this.equipSlotIndex === 3) {
+        // Switch to inventory mode if there are items
+        if (equipItems.length > 0) {
+          this.equipMode = 'inventory';
+          this.equipInventoryIndex = 0;
+        }
+      } else {
+        this.equipSlotIndex++;
+      }
+    } else {
+      // In inventory mode
+      this.equipInventoryIndex = Math.min(equipItems.length - 1, this.equipInventoryIndex + 1);
+    }
+    this.drawMenu();
+  }
+
+  private handleEquipAction(): void {
+    if (this.equipMode === 'equipped') {
+      // Unequip the selected slot
+      const slotKeys: EquipSlot[] = ['weapon', 'armor', 'shield', 'helmet'];
+      const slot = slotKeys[this.equipSlotIndex];
+      gameState.player.unequip(slot);
+    } else {
+      // Equip from inventory
+      const equipItems = this.getEquipInventoryItems();
+      if (this.equipInventoryIndex >= equipItems.length) return;
+      const slot = equipItems[this.equipInventoryIndex];
+      gameState.player.equip(slot.itemId);
+      // Reset inventory index if we went past the end
+      const newItems = this.getEquipInventoryItems();
+      if (this.equipInventoryIndex >= newItems.length) {
+        if (newItems.length === 0) {
+          this.equipMode = 'equipped';
+          this.equipSlotIndex = 0;
+        } else {
+          this.equipInventoryIndex = newItems.length - 1;
+        }
+      }
+    }
+    this.drawMenu();
+  }
+
+  private getEquipInventoryItems() {
+    const equipSlotTypes = ['weapon', 'armor', 'shield', 'helmet'];
+    return gameState.player.state.inventory.filter(s => {
+      const item = items[s.itemId];
+      return item && equipSlotTypes.includes(item.type);
+    });
+  }
+
+  // ── Settings handlers ──────────────────────────
 
   private handleSettingsLeft(): void {
     const grades: GradeLevel[] = ['k', '1', '2', '3', '4', '5', '6'];
@@ -305,19 +469,6 @@ export class MenuScene extends Phaser.Scene {
       gameState.player.heal(item.effect.value);
       gameState.player.removeItem(slot.itemId, 1);
     }
-    this.drawMenu();
-  }
-
-  private equipItem(): void {
-    const p = gameState.player;
-    const equipSlots = ['weapon', 'armor', 'shield', 'helmet', 'accessory'];
-    const equipItems = p.state.inventory.filter(s => {
-      const item = items[s.itemId];
-      return item && equipSlots.includes(item.type);
-    });
-    if (this.listIndex >= equipItems.length) return;
-    const slot = equipItems[this.listIndex];
-    p.equip(slot.itemId);
     this.drawMenu();
   }
 }

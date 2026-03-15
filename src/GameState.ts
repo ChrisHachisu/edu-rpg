@@ -48,8 +48,13 @@ class GameStateManager {
     // Map ID to encounter zone mapping
     const zoneMap: Record<string, string> = {
       overworld: 'greenhollow-plains', // Default, actual zone determined by position
+      mistyGrotto: 'misty-grotto',
       crystalCave: 'crystal-cave',
+      coralTunnels: 'coral-tunnels',
       shadowTower: 'shadow-tower',
+      frostpeakCavern: 'frostpeak-cavern',
+      sunkenRuins: 'sunken-ruins',
+      volcanicForge: 'volcanic-forge',
       demonCastle: 'demon-castle',
     };
     return zoneMap[mapId] ?? null;
@@ -57,21 +62,23 @@ class GameStateManager {
 
   getOverworldZone(x: number, y: number): string {
     // Determine zone by position on overworld
-    // Extended greenhollow-plains so the path to first town stays in the easy zone
-    if (y > 35) {
-      if (x < 35) return 'greenhollow-plains';
-      if (x < 42) return 'crystal-coast';
-      return 'crystal-coast';
-    }
-    if (y > 22) {
-      if (x < 35) return 'whispering-woods';
-      return 'iron-mountains';
-    }
-    if (y > 12) {
+    // Act 5 — demons-threshold (very top, above lava barrier)
+    if (y <= 8) return 'demons-threshold';
+    // Act 4 — scorched-wastes (upper-middle area)
+    if (y <= 12) return 'scorched-wastes';
+    // Act 2/3 — between river and mountains
+    if (y <= 22) {
       if (x > 45) return 'iron-mountains';
       return 'scorched-wastes';
     }
-    return 'scorched-wastes';
+    // Act 1 — southern region
+    if (y > 35) {
+      if (x < 35) return 'greenhollow-plains';
+      return 'crystal-coast';
+    }
+    // Between river and southern area
+    if (x < 35) return 'whispering-woods';
+    return 'iron-mountains';
   }
 }
 

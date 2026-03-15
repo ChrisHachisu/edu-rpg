@@ -62,6 +62,19 @@ export class WorldMapScene extends Phaser.Scene {
     this.loadMap(this.currentMapId);
     this.setupInput();
     this.createHUD();
+
+    // Intro dialog — plays once when starting in greenhollow for the first time
+    if (!gameState.player.state.storyFlags['intro.done'] && this.currentMapId === 'greenhollow') {
+      const introMessages = [
+        t('intro.elder1'),
+        t('intro.elder2'),
+        t('intro.elder3'),
+        t('intro.elder4'),
+      ];
+      this.showDialogSequence(introMessages, () => {
+        gameState.player.state.storyFlags['intro.done'] = true;
+      });
+    }
   }
 
   private loadMap(mapId: string): void {
@@ -536,18 +549,39 @@ export class WorldMapScene extends Phaser.Scene {
     const mapId = this.currentMapId;
     const rand = Math.random();
 
-    if (mapId === 'crystalCave') {
-      if (rand < 0.5) return { gold: 15, itemId: 'herb' };
-      if (rand < 0.8) return { gold: 25 };
-      return { gold: 10, itemId: 'potion' };
-    } else if (mapId === 'shadowTower') {
-      if (rand < 0.4) return { gold: 40, itemId: 'potion' };
-      if (rand < 0.7) return { gold: 60 };
-      return { gold: 30, itemId: 'hiPotion' };
-    } else {
-      if (rand < 0.4) return { gold: 80, itemId: 'hiPotion' };
-      if (rand < 0.7) return { gold: 100 };
-      return { gold: 60, itemId: 'hiPotion' };
+    switch (mapId) {
+      case 'mistyGrotto':
+        if (rand < 0.5) return { gold: 10, itemId: 'herb' };
+        if (rand < 0.8) return { gold: 15 };
+        return { gold: 5, itemId: 'potion' };
+      case 'crystalCave':
+        if (rand < 0.5) return { gold: 15, itemId: 'herb' };
+        if (rand < 0.8) return { gold: 25 };
+        return { gold: 10, itemId: 'potion' };
+      case 'coralTunnels':
+        if (rand < 0.4) return { gold: 30, itemId: 'potion' };
+        if (rand < 0.7) return { gold: 40 };
+        return { gold: 20, itemId: 'hiPotion' };
+      case 'shadowTower':
+        if (rand < 0.4) return { gold: 40, itemId: 'potion' };
+        if (rand < 0.7) return { gold: 60 };
+        return { gold: 30, itemId: 'hiPotion' };
+      case 'frostpeakCavern':
+        if (rand < 0.4) return { gold: 60, itemId: 'hiPotion' };
+        if (rand < 0.7) return { gold: 80 };
+        return { gold: 50, itemId: 'hiPotion' };
+      case 'sunkenRuins':
+        if (rand < 0.4) return { gold: 80, itemId: 'hiPotion' };
+        if (rand < 0.7) return { gold: 100 };
+        return { gold: 60, itemId: 'elixir' };
+      case 'volcanicForge':
+        if (rand < 0.4) return { gold: 100, itemId: 'hiPotion' };
+        if (rand < 0.7) return { gold: 120 };
+        return { gold: 80, itemId: 'elixir' };
+      default: // demonCastle
+        if (rand < 0.4) return { gold: 120, itemId: 'elixir' };
+        if (rand < 0.7) return { gold: 150 };
+        return { gold: 100, itemId: 'elixir' };
     }
   }
 
