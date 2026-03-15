@@ -507,19 +507,49 @@ export const monsters: Record<string, MonsterTemplate> = {
     color: 0xee4400,
   },
 
-  // ── Final Boss — Demon Castle (1.5x HP from original 200) ────────
+  // ── Final Boss — Demon Castle ─────────────────────────────────────
   demonKing: {
     id: 'demonKing',
     nameKey: 'monster.demonKing',
     spriteKey: 'monster-demonKing',
-    baseHp: 300,
-    baseAtk: 50,
-    baseDef: 32,
+    baseHp: 1500,
+    baseAtk: 200,
+    baseDef: 150,
     baseSpd: 20,
     expReward: 0,
     goldReward: 0,
     drops: [],
     aiPattern: 'boss',
     color: 0x660066,
+  },
+
+  // ── Legendary Bosses — Hidden Dungeons in Act 5 ─────────────────
+  swordWraith: {
+    id: 'swordWraith',
+    nameKey: 'monster.swordWraith',
+    spriteKey: 'monster-swordWraith',
+    baseHp: 250,
+    baseAtk: 45,
+    baseDef: 28,
+    baseSpd: 16,
+    expReward: 300,
+    goldReward: 200,
+    drops: [],
+    aiPattern: 'boss',
+    color: 0x4466aa,
+  },
+  celestialGuardian: {
+    id: 'celestialGuardian',
+    nameKey: 'monster.celestialGuardian',
+    spriteKey: 'monster-celestialGuardian',
+    baseHp: 800,
+    baseAtk: 48,
+    baseDef: 30,
+    baseSpd: 14,
+    expReward: 350,
+    goldReward: 250,
+    drops: [],
+    aiPattern: 'boss',
+    color: 0xddcc88,
   },
 };

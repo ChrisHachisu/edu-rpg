@@ -151,4 +151,27 @@ export const encounterZones: Record<string, EncounterZone> = {
       { monsterId: 'shadow', weight: 4 },
     ],
   },
+
+  // ── Hidden Legendary Dungeons (Act 5) ────────────────────────────
+
+  'sealed-sanctum': {
+    zoneId: 'sealed-sanctum',
+    encounterRate: 0.08,
+    minStepsBetween: 6,
+    monsters: [
+      { monsterId: 'wraith', weight: 3 },
+      { monsterId: 'darkSorcerer', weight: 3 },
+      { monsterId: 'chimera', weight: 4 },
+    ],
+  },
+  'celestial-vault': {
+    zoneId: 'celestial-vault',
+    encounterRate: 0.08,
+    minStepsBetween: 6,
+    monsters: [
+      { monsterId: 'demon', weight: 3 },
+      { monsterId: 'shadow', weight: 4 },
+      { monsterId: 'fireElemental', weight: 3 },
+    ],
+  },
 };

@@ -244,6 +244,9 @@ function generateMonsterSprites(scene: Phaser.Scene): void {
     { key: 'monster-demon', color: 0x881122, shape: 'chimera' },
     { key: 'monster-shadow', color: 0x221133, shape: 'wolf' },
     { key: 'monster-demonKing', color: 0x660066, shape: 'boss' },
+    // Legendary bosses
+    { key: 'monster-swordWraith', color: 0x4466aa, shape: 'knight' },
+    { key: 'monster-celestialGuardian', color: 0xddcc88, shape: 'boss' },
   ];
 
   const size = 48; // Monster sprite size

@@ -271,4 +271,26 @@ export const items: Record<string, ItemDefinition> = {
     buyPrice: 700,
     sellPrice: 350,
   },
+
+  // ── Legendary Equipment (unsellable, unremoveable) ──────────────────
+  excalibur: {
+    id: 'excalibur',
+    nameKey: 'equip.excalibur',
+    descriptionKey: 'equip.excalibur.desc',
+    type: 'weapon',
+    stats: { atk: 200 },
+    buyPrice: 0,
+    sellPrice: 0,
+    unsellable: true,
+  },
+  aegisOfDawn: {
+    id: 'aegisOfDawn',
+    nameKey: 'equip.aegisOfDawn',
+    descriptionKey: 'equip.aegisOfDawn.desc',
+    type: 'armor',
+    stats: { def: 150 },
+    buyPrice: 0,
+    sellPrice: 0,
+    unsellable: true,
+  },
 };

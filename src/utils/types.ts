@@ -91,6 +91,7 @@ export interface ItemDefinition {
   };
   buyPrice: number;
   sellPrice: number;
+  unsellable?: boolean; // Legendary items: cannot sell, cannot unequip
 }
 
 export interface QuizQuestion {

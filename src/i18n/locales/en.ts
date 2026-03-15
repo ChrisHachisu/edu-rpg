@@ -97,6 +97,7 @@ export const enStrings: Record<string, string> = {
   'shop.sold': 'Sold {item}!',
   'shop.cantAfford': 'Not enough Gold!',
   'shop.inventoryFull': 'Inventory is full!',
+  'shop.cantSell': 'This item cannot be sold!',
 
   // ── Intro Dialog ───────────────────────────────────────────────────
   'intro.elder1': 'Welcome, young hero. I am the Elder of Greenhollow Village. Dark times have fallen upon our world...',
@@ -108,26 +109,26 @@ export const enStrings: Record<string, string> = {
   'story.intro1': 'Long ago, the land of Eldravia was protected by five Crystals of Knowledge.',
   'story.intro2': 'But the Demon King Malachar stole the crystals, and darkness covered the world.',
   'story.intro3': 'Now, a young hero must set out to reclaim the crystals and bring back the light!',
-  'npc.elder.greeting': 'Welcome, young hero. Your grandmother once sealed the Demon King, but the seal has broken and the Crystals of Knowledge were stolen! Head east to find the dungeons and reclaim the crystals. Stop at Oakshade Town along the way to prepare!',
+  'npc.elder.greeting': 'Welcome, young hero. Your grandmother once sealed the Demon King using two sacred relics — a legendary blade and divine armor. The seal has broken and the Crystals of Knowledge were stolen! Head east to reclaim the crystals, and seek the relics in the demon realm!',
   'npc.elder.quest': 'Head east to the Misty Grotto first. Defeat the Giant Toad, then take on the Crystal Cave and its serpent!',
-  'npc.villager1': 'Be careful outside the village! Monsters appeared after the crystals were stolen. Head east toward Oakshade Town — the guards there know the way to the dungeons.',
+  'npc.villager1': 'Be careful outside the village! Monsters appeared after the crystals were stolen. I\'ve heard that ancient sanctums are hidden in the far reaches of the demon\'s domain...',
   'npc.villager2': 'The shop sells herbs and gear. Stock up before you go! You\'ll need potions to survive the caves.',
   'npc.guard': 'The Misty Grotto lies to the southwest, and the Crystal Cave to the east. Defeat the bosses inside to reclaim the crystals! Each crystal opens new paths forward.',
-  'npc.scholar': 'The Crystals of Knowledge give power to those who learn. In battle, answer questions wisely to deal more damage! Each crystal you recover will unlock new paths forward.',
+  'npc.scholar': 'The Crystals of Knowledge give power to those who learn. Legend says a blade called Excalibur was sealed away in a forgotten sanctum to the far west of the demon realm.',
   'npc.sailor': 'Beyond the river to the north, I\'ve seen the Shadow Tower rising above the clouds. A mighty dragon nests at the top. You\'ll need to defeat the serpent to open the bridge!',
-  'npc.wisewoman': 'That dragon in the tower was once a gentle creature, but Malachar\'s darkness corrupted it. Free it with your courage! Its crystal will open the mountain pass to the north.',
+  'npc.wisewoman': 'Divine armor called the Aegis of Dawn lies in a celestial vault beyond the lava fields. But only Excalibur can break its seal. Find the blade first!',
   'npc.fisherman': 'The seas around here have gotten dangerous. Strange creatures from the deep — jellyfish and piranha — swarm the Coral Tunnels south of here. A terrible Kraken lurks in the depths!',
   'npc.diver': 'I\'ve explored the Coral Tunnels before the darkness came. The Kraken sleeps at the very bottom. Defeat it and you\'ll earn the Crystal of the Deep!',
   'npc.soldier': 'The Frostpeak Cavern lies beyond the mountains. Beware the Ice Wyrm that guards the Crystal of Frost. Prepare well — the cold is deadly!',
-  'npc.blacksmith': 'Your grandmother\'s sword was legendary — she fought her way through these very lands! Stock up on the best gear you can before heading to the next dungeon.',
-  'npc.hermit': 'I\'ve lived in these mountains for decades. The Frostpeak Cavern to the east hides an ancient Ice Wyrm. Its crystal controls the frozen passes beyond.',
+  'npc.blacksmith': 'Your grandmother wielded a legendary blade called Excalibur, sealed away after the great war. They say it rests in a hidden sanctum in the demon realm\'s far west.',
+  'npc.hermit': 'I\'ve seen a golden light in the far northeast beyond the lava fields. Something divine awaits there... but the entrance seems sealed by ancient magic.',
   'npc.miner': 'We used to mine in these mountains, but the monsters drove us out. Blizzard Bears and Ice Sprites roam the caves now. Be careful in there!',
-  'npc.archaeologist': 'The Sunken Ruins are remnants of an ancient civilization. A powerful Lich has taken up residence there. Beyond lies the Volcanic Forge — a place of immense heat!',
+  'npc.archaeologist': 'Ancient texts mention a sealed sanctum and celestial vault hidden at the edges of the demon realm. Two legendary relics sleep within, waiting for a worthy hero.',
   'npc.explorer': 'I\'ve mapped most of Eldravia, but the northern wastes are too dangerous. Two dungeons remain up there — the Sunken Ruins and the Volcanic Forge. Good luck!',
   'npc.oldwarrior': 'I once fought alongside your grandmother against the Demon King. She never gave up, and neither should you! Prepare well and save your progress!',
   'npc.refugee': 'We fled from the north... The Demon King\'s army is everywhere around his castle. But you\'ve come so far — you can do this! Save Eldravia!',
-  'npc.veteran': 'This is the Last Bastion — the final outpost before the Demon Castle. Beyond the lava fields lies Malachar\'s fortress. Make sure you have the strongest equipment!',
-  'npc.priestess': 'I will pray for your safe return, hero. The Demon King is incredibly powerful, but the crystals you\'ve gathered will give you strength. May the light guide you!',
+  'npc.veteran': 'Your grandmother defeated Malachar with two legendary relics — Excalibur and the Aegis of Dawn. Find them in the demon\'s territory before facing him!',
+  'npc.priestess': 'Without both legendary relics, the Demon King is invincible. Seek the Sealed Sanctum to the far west and the Celestial Vault to the far east before facing him!',
   'npc.shopkeeper': 'Welcome to my shop! Take a look around.',
   'npc.innkeeper': 'Rest here to recover your strength. Your progress will be saved.',
   'npc.savePoint': 'Your adventure has been saved!',
@@ -247,6 +248,8 @@ export const enStrings: Record<string, string> = {
   'monster.shadow': 'Shadow',
   'monster.flameTitan': 'Flame Titan',
   'monster.demonKing': 'Demon King Malachar',
+  'monster.swordWraith': 'Sword Wraith',
+  'monster.celestialGuardian': 'Celestial Guardian',
 
   // ── Items ─────────────────────────────────────────────────────────
   'item.herb': 'Herb',
@@ -311,6 +314,10 @@ export const enStrings: Record<string, string> = {
   'equip.steelHelm.desc': 'A reinforced steel helmet.',
   'equip.mithrilHelm': 'Mithril Helm',
   'equip.mithrilHelm.desc': 'A gleaming mithril helmet.',
+  'equip.excalibur': 'Excalibur',
+  'equip.excalibur.desc': 'The legendary blade of heroes. Its radiance pierces all darkness.',
+  'equip.aegisOfDawn': 'Aegis of Dawn',
+  'equip.aegisOfDawn.desc': 'Divine armor that shields against even the mightiest blows.',
 
   // Game Over
   'gameover.title': 'Game Over',
@@ -325,8 +332,26 @@ export const enStrings: Record<string, string> = {
   'victory.stats': 'Quiz Accuracy: {correct}/{total} ({pct}%)',
   'victory.time': 'Clear Time: {time}',
   'victory.pressEnter': 'Press ENTER',
+  // Sealed Sanctum (Excalibur)
+  'dungeon.sealedSanctum.boss.dialog1': 'The air grows deathly cold... A spectral figure guards a radiant blade.',
+  'dungeon.sealedSanctum.boss.dialog2': 'The Sword Wraith draws a ghostly blade. "None shall claim Excalibur!"',
+  'dungeon.sealedSanctum.boss.dialog3': 'The Wraith charges! Prove your worth to claim the legendary sword!',
+  'dungeon.sealedSanctum.boss.defeat': 'The Sword Wraith dissolves... "You are... worthy..."',
+  'dungeon.sealedSanctum.victory': 'The sanctum fills with golden light as Excalibur reveals itself!',
+
+  // Celestial Vault (Aegis of Dawn)
+  'dungeon.celestialVault.boss.dialog1': 'Blinding light fills the chamber... A divine presence watches.',
+  'dungeon.celestialVault.boss.dialog2': 'The Celestial Guardian descends. "Only the truly brave may bear this armor."',
+  'dungeon.celestialVault.boss.dialog3': 'The Guardian raises its shield! Prove your courage to claim the Aegis of Dawn!',
+  'dungeon.celestialVault.boss.defeat': 'The Guardian bows... "Go forth, champion. May the Aegis protect you."',
+  'dungeon.celestialVault.victory': 'Divine light coalesces into the Aegis of Dawn — armor of the gods!',
+  'dungeon.celestialVault.locked': 'A powerful seal guards the entrance... The ancient runes pulse with energy. Only a blade of legendary might could break through.',
+
+  // Legendary item obtainment
+  'legendary.excalibur.obtained': 'You obtained Excalibur! The legendary blade gleams with ancient power. It has been equipped automatically!',
+  'legendary.aegis.obtained': 'You obtained the Aegis of Dawn! Divine light wraps around you like an impenetrable shield. It has been equipped automatically!',
+
   'dungeon.stairsDown': 'You descend deeper...',
   'dungeon.stairsUp': 'You ascend the stairs...',
-  'dungeon.bossExitGate': 'A mysterious portal appears... It leads to the land beyond!',
   'dungeon.bossExitReturn': 'A mysterious portal appears... It will take you back outside!',
 };

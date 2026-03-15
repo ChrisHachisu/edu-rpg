@@ -59,6 +59,8 @@ class GameStateManager {
       sunkenRuins: 'sunken-ruins',
       volcanicForge: 'volcanic-forge',
       demonCastle: 'demon-castle',
+      sealedSanctum: 'sealed-sanctum',
+      celestialVault: 'celestial-vault',
     };
     return zoneMap[mapId] ?? null;
   }

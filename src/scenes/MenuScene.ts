@@ -166,7 +166,10 @@ export class MenuScene extends Phaser.Scene {
         color: isSelected ? COLORS.TEXT_YELLOW : COLORS.TEXT_GRAY,
         fontFamily: ff,
       });
-      this.add.text(120, y + 28 + i * 28, itemName, {
+      // Show lock icon for legendary (unsellable) equipment
+      const isLegendary = itemId && items[itemId]?.unsellable;
+      const displayName = isLegendary ? `${itemName} [LOCK]` : itemName;
+      this.add.text(120, y + 28 + i * 28, displayName, {
         fontSize: '10px',
         color: isSelected ? COLORS.TEXT_YELLOW : (itemId ? COLORS.TEXT_WHITE : COLORS.TEXT_GRAY),
         fontFamily: ff,

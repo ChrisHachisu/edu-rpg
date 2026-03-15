@@ -52,6 +52,8 @@ export class BattleScene extends Phaser.Scene {
 
   private getEnemyTier(): EnemyTier {
     if (this.monster.id === 'demonKing') return 'finalBoss';
+    if (this.monster.id === 'swordWraith') return 'finalBoss';
+    if (this.monster.id === 'celestialGuardian') return 'finalBoss';
     if (this.monster.aiPattern === 'boss') return 'boss';
     const totalStat = this.monster.baseHp + this.monster.baseAtk + this.monster.baseDef;
     if (totalStat < 25) return 'weak';

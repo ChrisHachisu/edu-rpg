@@ -103,7 +103,7 @@ export class ShopScene extends Phaser.Scene {
   }
 
   private drawSellList(): void {
-    const inv = gameState.player.state.inventory;
+    const inv = gameState.player.state.inventory.filter(s => !items[s.itemId]?.unsellable);
     if (inv.length === 0) {
       this.add.text(GAME_WIDTH / 2, 120, 'No items to sell', {
         fontSize: '12px', color: COLORS.TEXT_GRAY, fontFamily: 'monospace',
@@ -184,11 +184,17 @@ export class ShopScene extends Phaser.Scene {
   }
 
   private sellItem(): void {
-    const inv = gameState.player.state.inventory;
+    const inv = gameState.player.state.inventory.filter(s => !items[s.itemId]?.unsellable);
     if (this.listIndex >= inv.length) return;
     const slot = inv[this.listIndex];
     const item = items[slot.itemId];
     if (!item) return;
+
+    if (item.unsellable) {
+      this.message = t('shop.cantSell');
+      this.drawShop();
+      return;
+    }
 
     gameState.player.state.gold += item.sellPrice;
     gameState.player.removeItem(slot.itemId, 1);

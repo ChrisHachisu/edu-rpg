@@ -86,7 +86,7 @@ export class WorldMapScene extends Phaser.Scene {
 
     // Generate map data
     if (mapId === 'overworld') {
-      this.mapData = generateOverworldMap(def.width, def.height, gameState.player.state.storyFlags);
+      this.mapData = generateOverworldMap(def.width, def.height);
     } else if (def.type === 'town') {
       this.mapData = generateTownMap(def.width, def.height, mapId.charCodeAt(0) * 137);
     } else if (def.type === 'dungeon') {
@@ -382,17 +382,11 @@ export class WorldMapScene extends Phaser.Scene {
         if (tile === 9) {
           return { targetMap: '__floor_down__', toX: 0, toY: 0 };
         }
-        // Tile 10 = boss-exit portal
+        // Tile 10 = boss-exit portal — always teleport back to overworld entrance
         if (tile === 10) {
-          if (def.exitConnection) {
-            // Gate dungeon: exit to other side of terrain barrier
-            return { targetMap: 'overworld', toX: def.exitConnection.toX, toY: def.exitConnection.toY };
-          } else {
-            // Non-gate dungeon: teleport back to overworld entrance
-            const conn = def.connections[0];
-            if (conn) {
-              return { targetMap: conn.targetMap, toX: conn.toX, toY: conn.toY };
-            }
+          const conn = def.connections[0];
+          if (conn) {
+            return { targetMap: conn.targetMap, toX: conn.toX, toY: conn.toY };
           }
         }
       }
@@ -402,6 +396,13 @@ export class WorldMapScene extends Phaser.Scene {
   }
 
   private performTransition(target: { targetMap: string; toX: number; toY: number }): void {
+    // Block Celestial Vault entry until Sword Wraith defeated (Excalibur obtained)
+    if (target.targetMap === 'celestialVault' && !gameState.player.state.storyFlags['boss.swordWraith.defeated']) {
+      this.isMoving = false;
+      this.showMessage(t('dungeon.celestialVault.locked'));
+      return;
+    }
+
     // Block movement during transition to prevent re-entry
     this.isMoving = true;
     this.cameras.main.fadeOut(200, 0, 0, 0);
@@ -642,6 +643,14 @@ export class WorldMapScene extends Phaser.Scene {
         if (rand < 0.4) return { gold: 100, itemId: 'hiPotion' };
         if (rand < 0.7) return { gold: 120 };
         return { gold: 80, itemId: 'elixir' };
+      case 'sealedSanctum':
+        if (rand < 0.4) return { gold: 100, itemId: 'hiPotion' };
+        if (rand < 0.7) return { gold: 130 };
+        return { gold: 80, itemId: 'elixir' };
+      case 'celestialVault':
+        if (rand < 0.4) return { gold: 120, itemId: 'elixir' };
+        if (rand < 0.7) return { gold: 150 };
+        return { gold: 100, itemId: 'elixir' };
       default: // demonCastle
         if (rand < 0.4) return { gold: 120, itemId: 'elixir' };
         if (rand < 0.7) return { gold: 150 };
@@ -811,15 +820,30 @@ export class WorldMapScene extends Phaser.Scene {
           this.updateCamera();
         });
 
+        // Auto-equip legendary items on boss defeat
+        if (bossId === 'swordWraith') {
+          gameState.player.addItem('excalibur', 1);
+          gameState.player.equip('excalibur');
+        }
+        if (bossId === 'celestialGuardian') {
+          gameState.player.addItem('aegisOfDawn', 1);
+          gameState.player.equip('aegisOfDawn');
+        }
+
         // Show defeat dialog, then portal/victory dialog
         this.time.delayedCall(1600, () => {
           const defeatMsg = t(`dungeon.${this.currentMapId}.boss.defeat`);
-          const curDef = mapDefs[this.currentMapId];
-          const portalMsg = curDef.exitConnection
-            ? t('dungeon.bossExitGate')
-            : t('dungeon.bossExitReturn');
+          const portalMsg = t('dungeon.bossExitReturn');
           const victoryMsg = t(`dungeon.${this.currentMapId}.victory`);
-          this.showDialogSequence([defeatMsg, portalMsg, victoryMsg]);
+
+          // Legendary item obtainment dialog
+          if (bossId === 'swordWraith') {
+            this.showDialogSequence([defeatMsg, t('legendary.excalibur.obtained'), portalMsg, victoryMsg]);
+          } else if (bossId === 'celestialGuardian') {
+            this.showDialogSequence([defeatMsg, t('legendary.aegis.obtained'), portalMsg, victoryMsg]);
+          } else {
+            this.showDialogSequence([defeatMsg, portalMsg, victoryMsg]);
+          }
         });
       }
     }

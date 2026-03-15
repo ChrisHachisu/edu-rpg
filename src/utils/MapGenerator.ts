@@ -15,7 +15,7 @@ function seededRandom(seed: number): () => number {
   };
 }
 
-export function generateOverworldMap(width: number, height: number, storyFlags?: Record<string, boolean>): number[][] {
+export function generateOverworldMap(width: number, height: number): number[][] {
   const rand = seededRandom(42);
   const map: number[][] = [];
 
@@ -89,6 +89,10 @@ export function generateOverworldMap(width: number, height: number, storyFlags?:
     // ── Act 5 — north of lava ──
     ...pathBetween(56, 6, 56, 5),     // volcanicForge exit → lastBastion
     ...pathBetween(56, 5, 58, 4),     // lastBastion → demonCastle
+    // ── Hidden legendary dungeon paths (Act 5 — remote corners) ──
+    ...pathBetween(56, 5, 30, 5),     // lastBastion → westward through demon realm
+    ...pathBetween(30, 5, 4, 4),      // → far northwest: Sealed Sanctum
+    ...pathBetween(58, 4, 75, 4),     // demonCastle → far northeast: Celestial Vault
   ];
 
   for (const [px, py] of paths) {
@@ -110,103 +114,75 @@ export function generateOverworldMap(width: number, height: number, storyFlags?:
     map[ty][tx] = 6;
   }
 
-  // Place dungeon entrances (8 dungeons)
+  // Place dungeon entrances (10 dungeons — 8 original + 2 hidden legendary)
   const dungeons: [number, number][] = [
     [16, 45], [40, 31], [44, 25], [50, 19],
     [45, 13], [52, 11], [56, 9], [58, 4],
+    [4, 4], [75, 4],
   ];
   for (const [dx, dy] of dungeons) {
     map[dy][dx] = 7;
   }
 
-  // ── Physical terrain barriers (natural, gap-free) ────────────────
-  const serpentDefeated = storyFlags?.['boss.serpent.defeated'] ?? false;
-  const dragonDefeated = storyFlags?.['boss.dragon.defeated'] ?? false;
-  const flameTitanDefeated = storyFlags?.['boss.flameTitan.defeated'] ?? false;
+  // ── Physical terrain barriers (always solid — portals provide inter-act travel) ──
 
   // --- River barrier between Act 1 and Act 2 ---
   // Meanders around y≈29 with sinusoidal variation, 2-3 tiles wide
-  // Extends from x=2 to x=width-3 (connects seamlessly to water borders)
   const riverBaseY = 29;
   for (let x = 2; x <= width - 3; x++) {
-    // Sinusoidal meander: ±2 tiles from base
     const meander = Math.round(
       Math.sin(x * 0.12) * 2 + Math.cos(x * 0.07 + 1.5) * 1
     );
     const centerY = riverBaseY + meander;
-
-    // Width varies: 2-3 tiles thick
     const extraWidth = Math.sin(x * 0.22 + 0.7) > 0.3 ? 1 : 0;
     const riverTop = centerY;
     const riverBot = centerY + 1 + extraWidth;
 
-    // Bridge crossing at x=39-41 — at Crystal Cave gate dungeon location
-    const isBridge = x >= 39 && x <= 41;
-
     for (let ry = riverTop; ry <= riverBot; ry++) {
       if (ry >= 2 && ry < height - 2) {
-        if (isBridge && serpentDefeated) {
-          map[ry][x] = 5; // bridge
-        } else {
-          map[ry][x] = 2; // water
-        }
+        map[ry][x] = 2; // water — always solid
       }
     }
 
     // Scatter trees along riverbanks for organic look
-    if (!isBridge) {
-      const above = riverTop - 1;
-      const below = riverBot + 1;
-      if (above >= 2 && above < height - 2
-          && (map[above][x] === 0 || map[above][x] === 1)
-          && Math.sin(x * 0.5) > 0.5) {
-        map[above][x] = 3; // tree along north bank
-      }
-      if (below >= 2 && below < height - 2
-          && (map[below][x] === 0 || map[below][x] === 1)
-          && Math.cos(x * 0.4) > 0.5) {
-        map[below][x] = 3; // tree along south bank
-      }
+    const above = riverTop - 1;
+    const below = riverBot + 1;
+    if (above >= 2 && above < height - 2
+        && (map[above][x] === 0 || map[above][x] === 1)
+        && Math.sin(x * 0.5) > 0.5) {
+      map[above][x] = 3;
+    }
+    if (below >= 2 && below < height - 2
+        && (map[below][x] === 0 || map[below][x] === 1)
+        && Math.cos(x * 0.4) > 0.5) {
+      map[below][x] = 3;
     }
   }
 
   // --- Mountain barrier between Act 2 and Act 3 ---
   // Meanders around y≈16 with sinusoidal ridgeline, 2-3 tiles wide
-  // Extends from x=2 to x=width-3 (connects seamlessly to water borders)
   const mtBaseY = 16;
   for (let x = 2; x <= width - 3; x++) {
-    // Sinusoidal ridgeline: ±2 tiles from base
     const meander = Math.round(
       Math.sin(x * 0.1 + 2) * 1.5 + Math.cos(x * 0.06) * 1
     );
     const centerY = mtBaseY + meander;
-
-    // Width varies: 2-3 tiles thick
     const extraWidth = Math.cos(x * 0.18 + 1) > 0.2 ? 1 : 0;
     const mtTop = centerY;
     const mtBot = centerY + 1 + extraWidth;
 
-    // Mountain pass at x=49-51 — at Shadow Tower gate dungeon location
-    const isPass = x >= 49 && x <= 51;
-
     for (let my = mtTop; my <= mtBot; my++) {
       if (my >= 2 && my < height - 2) {
-        if (isPass && dragonDefeated) {
-          map[my][x] = 1; // path through pass
-        } else {
-          map[my][x] = 4; // mountain
-        }
+        map[my][x] = 4; // mountain — always solid
       }
     }
 
-    // Scatter trees at mountain base for natural transition
-    if (!isPass) {
-      const below = mtBot + 1;
-      if (below >= 2 && below < height - 2
-          && (map[below][x] === 0 || map[below][x] === 1)
-          && Math.sin(x * 0.6 + 1) > 0.4) {
-        map[below][x] = 3; // tree at mountain base
-      }
+    // Scatter trees at mountain base
+    const below = mtBot + 1;
+    if (below >= 2 && below < height - 2
+        && (map[below][x] === 0 || map[below][x] === 1)
+        && Math.sin(x * 0.6 + 1) > 0.4) {
+      map[below][x] = 3;
     }
   }
 
@@ -222,17 +198,9 @@ export function generateOverworldMap(width: number, height: number, storyFlags?:
     const lavaTop = centerY;
     const lavaBot = centerY + extraWidth;
 
-    // Pass at x=55-57 — opens when flameTitan defeated
-    const isPass = x >= 55 && x <= 57;
-
     for (let ly = lavaTop; ly <= lavaBot; ly++) {
       if (ly >= 2 && ly < height - 2) {
-        if (isPass && flameTitanDefeated) {
-          map[ly][x] = 1; // path through pass
-        } else {
-          // Use mountain tile (impassable) for lava barrier
-          map[ly][x] = 4;
-        }
+        map[ly][x] = 4; // mountain tile (impassable) — always solid
       }
     }
   }

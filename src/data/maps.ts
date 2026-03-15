@@ -20,8 +20,8 @@ export const mapDefs: Record<string, MapDef> = {
     id: 'overworld',
     nameKey: 'Eldravia',
     type: 'overworld',
-    width: 64,
-    height: 64,
+    width: 80,
+    height: 80,
     connections: [
       // ── Town entrances on overworld ──
       { targetMap: 'greenhollow', fromX: 10, fromY: 50, toX: 8, toY: 14 },
@@ -42,6 +42,9 @@ export const mapDefs: Record<string, MapDef> = {
       { targetMap: 'sunkenRuins', fromX: 52, fromY: 11, toX: 13, toY: 2 },
       { targetMap: 'volcanicForge', fromX: 56, fromY: 9, toX: 12, toY: 2 },
       { targetMap: 'demonCastle', fromX: 58, fromY: 4, toX: 16, toY: 2 },
+      // ── Hidden legendary dungeons (Act 5 — far corners) ──
+      { targetMap: 'sealedSanctum', fromX: 4, fromY: 4, toX: 14, toY: 2 },
+      { targetMap: 'celestialVault', fromX: 75, fromY: 4, toX: 14, toY: 2 },
     ],
     npcs: [],
   },
@@ -230,7 +233,6 @@ export const mapDefs: Record<string, MapDef> = {
     npcs: [],
     bossId: 'serpent',
     floors: 3,
-    exitConnection: { toX: 40, toY: 25 },
   },
   // Act 2 water-themed — north of river near coral formations
   coralTunnels: {
@@ -262,7 +264,6 @@ export const mapDefs: Record<string, MapDef> = {
     npcs: [],
     bossId: 'dragon',
     floors: 3,
-    exitConnection: { toX: 50, toY: 14 },
   },
   // Act 3 ice-themed — in the cold foothills north of mountains
   frostpeakCavern: {
@@ -309,9 +310,8 @@ export const mapDefs: Record<string, MapDef> = {
     npcs: [],
     bossId: 'flameTitan',
     floors: 3,
-    exitConnection: { toX: 56, toY: 6 },
   },
-  // Act 5 final dungeon (expanded, 5 floors)
+  // Act 5 final dungeon (expanded, 10 floors)
   demonCastle: {
     id: 'demonCastle',
     nameKey: 'Demon Castle',
@@ -324,6 +324,42 @@ export const mapDefs: Record<string, MapDef> = {
     ],
     npcs: [],
     bossId: 'demonKing',
-    floors: 5,
+    floors: 10,
+  },
+
+  // ═══════════════════════════════════════════════════════════════════
+  //   HIDDEN LEGENDARY DUNGEONS — Act 5 corners
+  // ═══════════════════════════════════════════════════════════════════
+
+  // Sealed Sanctum — far northwest corner of Act 5, guards Excalibur
+  sealedSanctum: {
+    id: 'sealedSanctum',
+    nameKey: 'Sealed Sanctum',
+    type: 'dungeon',
+    encounterZone: 'sealed-sanctum',
+    width: 29,
+    height: 29,
+    connections: [
+      { targetMap: 'overworld', fromX: 14, fromY: 0, toX: 4, toY: 5 },
+    ],
+    npcs: [],
+    bossId: 'swordWraith',
+    floors: 7,
+  },
+  // Celestial Vault — far northeast corner of Act 5, guards Aegis of Dawn
+  // Locked until Excalibur obtained (Sword Wraith defeated)
+  celestialVault: {
+    id: 'celestialVault',
+    nameKey: 'Celestial Vault',
+    type: 'dungeon',
+    encounterZone: 'celestial-vault',
+    width: 29,
+    height: 29,
+    connections: [
+      { targetMap: 'overworld', fromX: 14, fromY: 0, toX: 75, toY: 5 },
+    ],
+    npcs: [],
+    bossId: 'celestialGuardian',
+    floors: 7,
   },
 };

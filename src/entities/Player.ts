@@ -101,7 +101,10 @@ export class Player {
     const slot = item.type as EquipSlot;
     if (!['weapon', 'armor', 'shield', 'helmet', 'accessory'].includes(slot)) return null;
 
+    // Cannot replace legendary (unsellable) equipment
     const prev = this.state.equipment[slot];
+    if (prev && items[prev]?.unsellable) return null;
+
     this.state.equipment[slot] = itemId;
 
     // Remove equipped item from inventory
@@ -116,6 +119,8 @@ export class Player {
   unequip(slot: EquipSlot): string | null {
     const itemId = this.state.equipment[slot];
     if (!itemId) return null;
+    // Cannot unequip legendary (unsellable) items
+    if (items[itemId]?.unsellable) return null;
     this.state.equipment[slot] = null;
     this.addItem(itemId, 1);
     return itemId;
