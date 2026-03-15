@@ -402,10 +402,11 @@ export class WorldMapScene extends Phaser.Scene {
   }
 
   private performTransition(target: { targetMap: string; toX: number; toY: number }): void {
+    // Block movement during transition to prevent re-entry
+    this.isMoving = true;
     this.cameras.main.fadeOut(200, 0, 0, 0);
     this.cameras.main.once('camerafadeoutcomplete', () => {
       const def = mapDefs[this.currentMapId];
-      const totalFloors = def.floors ?? 1;
 
       if (target.targetMap === '__floor_down__') {
         // Descend to next floor
@@ -414,18 +415,15 @@ export class WorldMapScene extends Phaser.Scene {
         this.heroTileX = entranceX;
         this.heroTileY = 1; // just below the stairs-up tile at top
         this.updatePosition();
-        this.showMessage(t('dungeon.stairsDown'));
         this.loadMap(this.currentMapId);
       } else if (target.targetMap === '__floor_up__') {
         // Ascend to previous floor
         this.currentFloor--;
-        // Position near the stairs-down tile at bottom of upper floor
+        // Position near bottom of upper floor (above stairs-down tile)
         const bottomX = Math.floor(def.width / 2);
-        const bottomRoomY = def.height - 2; // one tile above the stairs-down position
         this.heroTileX = bottomX;
-        this.heroTileY = bottomRoomY;
+        this.heroTileY = def.height - 4; // safely above the stairs-down tile
         this.updatePosition();
-        this.showMessage(t('dungeon.stairsUp'));
         this.loadMap(this.currentMapId);
       } else {
         // Normal map transition — reset floor
@@ -436,6 +434,7 @@ export class WorldMapScene extends Phaser.Scene {
         gameState.encounterManager.reset();
         this.loadMap(target.targetMap);
       }
+      this.isMoving = false;
       this.cameras.main.fadeIn(200, 0, 0, 0);
     });
   }
