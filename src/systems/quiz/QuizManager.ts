@@ -36,7 +36,7 @@ const ZONE_TIER_MAP: Record<string, DifficultyTier> = {
   'crystal-cave': 'easy',
   'coral-tunnels': 'medium',
   'iron-mountains': 'medium',
-  'shadow-tower': 'medium',
+  'shadow-cave': 'medium',
   'frostpeak-cavern': 'medium',
   'scorched-wastes': 'hard',
   'sunken-ruins': 'hard',

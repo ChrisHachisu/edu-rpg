@@ -102,38 +102,38 @@ export const jaStrings: Record<string, string> = {
   'shop.inventoryFull': 'もちものが いっぱいだ！',
   'shop.cantSell': 'この どうぐは うれません！',
 
-  // ── Intro Dialog ───────────────────────────────────────────────────
+  // ── Intro Dialog (3 messages) ────────────────────────────────────
   'intro.elder1': 'よくきたな わかきゆうしゃよ。わしは グリーンホロウむらの ちょうろうじゃ。くらいじだいが やってきた…',
-  'intro.elder2': 'まおうマラカールが おまえの おばあちゃんの ふういんを やぶった。ちしきのクリスタルが うばわれ やみが エルドラビアに ひろがっておる！',
-  'intro.elder3': 'ひがしへ たびだち つよくなり クリスタルを ひとつずつ とりもどすのじゃ。まずは みなみにしの きりのどうくつへ むかうのじゃ。さいしょの しれんじゃ。つぎは ひがしの サファイアみなとの さきにある すいしょうのどうくつへ いくがよい！',
-  'intro.elder4': 'でかけるまえに おみせで じゅんびするのじゃ。まちのまんなかの クリスタルで セーブできるぞ。ちしきが みちを てらさんことを！',
+  'intro.elder2': 'まおうマラカールが ちしきのクリスタルを うばった！やみが エルドラビアに ひろがっておる。クリスタルを とりもどすのじゃ！',
+  'intro.elder3': 'まずは みなみにしの きりのどうくつへ むかうのじゃ。つぎは ひがしの すいしょうのどうくつだ。でかけるまえに おみせで じゅんびするのじゃ！',
 
   // ── NPCs / Story ──────────────────────────────────────────────────
   'story.intro1': 'むかしむかし エルドラビアは いつつの「ちしきのクリスタル」に まもられていました。',
   'story.intro2': 'しかし まおうマラカールが クリスタルを うばい せかいは やみに つつまれました。',
   'story.intro3': 'いま ひとりのゆうしゃが クリスタルを とりもどし ひかりを よみがえらせるたびに でます！',
-  'npc.elder.greeting': 'きをつけて いくのじゃ ゆうしゃよ。きりのどうくつは みなみにし、すいしょうのどうくつは サファイアみなとの ひがしにあるぞ。でかけるまえに おみせで じゅんびするのじゃ！',
-  'npc.elder.quest': 'まずは きりのどうくつへ むかうのじゃ。おおガエルを たおし つぎに すいしょうのどうくつの うみへびに いどむのじゃ！',
-  'npc.villager1': 'むらの そとは きをつけてね！クリスタルが うばわれてから モンスターが でるようになったの。まおうのりょうどの はてに いにしえの せいいきが かくされているらしいわ…',
-  'npc.villager2': 'おみせで やくそうや そうびを かっていきなよ！どうくつの なかで きっと ひつようになるよ。',
-  'npc.guard': 'きりのどうくつは みなみにし すいしょうのどうくつは ひがしにある。なかの ボスを たおして クリスタルを とりもどすのじゃ！クリスタルが あれば あたらしいみちが ひらけるぞ。',
-  'npc.scholar': 'ちしきのクリスタルは まなぶものに ちからを あたえるの。ずっと けんきゅうしてきたわ。エクスカリバーという でんせつのけんが まおうのりょうどの はるかにしに ふういんされているそうよ。',
-  'npc.sailor': 'きたの かわの むこうに かげのとうが みえる…きょだいな ドラゴンが すんでいるそうだ。うみへびを たおして はしを ひらくひつようが あるぞ。',
-  'npc.wisewoman': 'あけぼののイージスという しんせいなよろいが ようがんちたいの むこうの てんくうのほこらに ねむっている。でも エクスカリバーがないと ふういんは とけないのじゃ！',
-  'npc.fisherman': 'このあたりの うみは きけんに なった。くらげや ピラニアが サンゴのトンネルに うようよしている。おくには おそろしい クラーケンが いるそうじゃ！',
-  'npc.diver': 'くらやみが くるまえに サンゴのトンネルを たんけんしたことがあるの。いちばん おくに クラーケンが ねむっているわ。いちど にげだしたことがあるの！たおせば うみのクリスタルが てにはいるわよ！',
-  'npc.soldier': 'ひがしの やまを つらぬく かげのとうがある。あかいドラゴンが きたのちへの みちを まもっている。たおして みちを ひらくのだ！',
-  'npc.blacksmith': 'たくさんの ぶきを きたえてきたけど エクスカリバーに かなうものは ないわ。おばあちゃんの でんせつのけんよ。せんそうの あと ふういんされたの。まおうのりょうどの はるかにしに あるそうよ。',
-  'npc.hermit': 'ながいあいだ ひとりで このやまに くらしているの。ようがんちたいの はるかひがしに きんいろの ひかりを みたことがあるわ。なにか しんせいなものが ありそうだけど…いりぐちは いにしえの まほうで ふういんされているようね。',
-  'npc.miner': 'むかしは このやまで ほっていたが モンスターに おいだされた。ブリザードベアや こおりのようせいが どうくつに うろついている。きをつけてな！',
-  'npc.archaeologist': 'わたしの けんきゅうによると ふういんされたせいいきと てんくうのほこらが まおうのりょうどの はしに かくされているの。ふたつの でんせつのぶきが ゆうしゃを まっているのよ。',
-  'npc.explorer': 'ひがしの ようがんちたいの はてに かざんのかじばがある。えんのきょじんが まおうのりょうどへの みちを まもっている！しっかり じゅんびしてくれ！',
-  'npc.oldwarrior': 'わしは かつて おまえの おばあちゃんと まおうに たちむかった。あのひとは けっして あきらめなかった。しっかり じゅんびして セーブするんじゃぞ！',
-  'npc.refugee': 'かぞくと いっしょに きたから にげてきたの…まおうのぐんだんが しろの まわりに いっぱい いるのよ。でも ここまで きたあなたなら きっと できるわ。しんじているわ！',
-  'npc.veteran': 'わたしは おばあちゃんと いっしょに マラカールと たたかったの。ふたつの でんせつのぶき — エクスカリバーと あけぼののイージスで たおしたのよ。まおうのりょうどで それらを みつけてね！',
-  'npc.priestess': 'でんせつのぶきが ふたつとも なければ まおうには かてません。にしの ふういんされたせいいきと ひがしの てんくうのほこらを さがしてください！',
+
+  // Greenhollow (Act 1)
+  'npc.elder.greeting': 'きをつけるのじゃ ゆうしゃよ。きりのどうくつは みなみにしだ。つよくなったら もどってくるのじゃ！',
+  'npc.villager1': 'モンスターが いっぱい でてきたの！きをつけてね！',
+  'npc.villager2': 'おみせで やくそうを かっていきなよ！',
+
+  // Port Sapphire (Act 1)
+  'npc.sailor': 'きたの どうくつに ドラゴンが すんでいるそうだ。おそろしいのう！',
+  'npc.wisewoman': 'クリスタルは まなぶものに ちからを あたえるの。がんばってね ゆうしゃさん！',
+
+  // Ironkeep (Act 2)
+  'npc.soldier': 'ひがしに かげのどうくつがある。あかいドラゴンが きたへの みちを ふさいでいる。たおすのだ！',
+  'npc.blacksmith': 'わたしが つくった そうびは いちばんよ！どうくつに いくまえに おみせを みてね。',
+
+  // Ruins Camp (Act 3/4)
+  'npc.archaeologist': 'ようがんちたいは きけんよ。じゅうぶん きをつけてね！',
+  'npc.explorer': 'ひがしに かざんのかじばがある。えんのきょじんが まおうのりょうどへの みちを まもっている！',
+
+  // Last Bastion (Act 5) — THE ONLY legendary hints
+  'npc.veteran': 'おばあちゃんは エクスカリバーと あけぼののイージスで まおうを ふういんしたの。にしの ふういんされたせいいきに エクスカリバーが あるわ！',
+  'npc.priestess': 'あけぼののイージスは ひがしの てんくうのほこらに あるわ。でも ふういんを とくには エクスカリバーが ひつようよ！',
+
   'npc.shopkeeper': 'いらっしゃい！ゆっくり みていってね。',
-  'npc.innkeeper': 'ここで やすんでいきなさい。ぼうけんを セーブするよ。',
   'npc.savePoint': 'ぼうけんのきろくを セーブしました！',
 
   // Treasure
@@ -160,42 +160,16 @@ export const jaStrings: Record<string, string> = {
   'dungeon.crystalCave.boss.dialog3': 'うみへびが ふかみから すがたを あらわした！たたかいの じゅんびを！',
   'dungeon.crystalCave.boss.defeat': 'うみへびが きらきらひかって きえていく…みずが しずかに なった。',
   'dungeon.crystalCave.victory': 'ゆうきのクリスタルを てにいれた！あたたかいひかりが ちからを くれる。',
+  'dungeon.crystalCave.locked': 'ふしぎな ちからが いりぐちを ふさいでいる…きりのどうくつの クリスタルが あれば ひらけるかもしれない。',
 
-  // Coral Tunnels
-  'dungeon.coralTunnels.enter': 'トンネルが ひかるサンゴで かがやいている…なみの おとが ひびく。',
-  'dungeon.coralTunnels.boss': 'クラーケンが ふかみから あらわれた！',
-  'dungeon.coralTunnels.boss.dialog1': 'すいいが あがってくる…しょくしゅが かべに ふれている。',
-  'dungeon.coralTunnels.boss.dialog2': 'サンゴが くだけ きょだいな なにかが おしよせてくる！',
-  'dungeon.coralTunnels.boss.dialog3': 'クラーケンが すがたを あらわした！めが やみの ちからで ひかっている！たたかいの じゅんびを！',
-  'dungeon.coralTunnels.boss.defeat': 'クラーケンが しんかいに しずんでいく…みずが おだやかに なり サンゴが あかるく かがやく。',
-  'dungeon.coralTunnels.victory': 'うみのクリスタルを てにいれた！いにしえの うみの ちえが ながれこむ。',
-
-  // Shadow Tower
-  'dungeon.shadowTower.enter': 'とうは くらいくもの なかまで のびている…',
-  'dungeon.shadowTower.boss': 'あかいドラゴンが ものすごい ほうこうと ともに めざめた！',
-  'dungeon.shadowTower.boss.dialog1': 'とうの てっぺんは もえるように あつい…かべに つめあとが のこっている。',
-  'dungeon.shadowTower.boss.dialog2': 'ものすごい ほうこうが とうぜんたいを ゆらした！',
-  'dungeon.shadowTower.boss.dialog3': 'あかいドラゴンが つばさを ひろげた！やみのほのおが めに もえている！',
-  'dungeon.shadowTower.boss.defeat': 'ドラゴンから やみが はなれていく…やさしいひかりの なかに きえていった。',
-  'dungeon.shadowTower.victory': 'ちえのクリスタルを てにいれた！いにしえの ちしきが あたまに ながれこんでくる。',
-
-  // Frostpeak Cavern
-  'dungeon.frostpeakCavern.enter': 'こおりのトンネルに こごえるかぜが ふきあれる…いきが しろくなる。',
-  'dungeon.frostpeakCavern.boss': 'こおりのワイアームが こおったかべから つきやぶってきた！',
-  'dungeon.frostpeakCavern.boss.dialog1': 'きゅうに おんどが さがる…くうきちゅうに こおりの けっしょうが できる。',
-  'dungeon.frostpeakCavern.boss.dialog2': 'どうくつの かべが ものすごい おとを たてて くだけた！',
-  'dungeon.frostpeakCavern.boss.dialog3': 'こおりのワイアームが あらわれた！あごから こおりが ふきだしている！たたかいの じゅんびを！',
-  'dungeon.frostpeakCavern.boss.defeat': 'こおりのワイアームが うつくしい こおりに なって かたまった…どうくつが あたたかくなった。',
-  'dungeon.frostpeakCavern.victory': 'こおりのクリスタルを てにいれた！ふゆの ちからが からだを めぐる。',
-
-  // Sunken Ruins
-  'dungeon.sunkenRuins.enter': 'いにしえの いしばしらが いりぐちに ならんでいる…やみから ささやきが きこえる。',
-  'dungeon.sunkenRuins.boss': 'リッチが つえを かかげ やみのエネルギーを よびだした！',
-  'dungeon.sunkenRuins.boss.dialog1': 'ささやきが おおきくなる…いにしえの もじが あやしく ひかる。',
-  'dungeon.sunkenRuins.boss.dialog2': 'さいだんから がいこつの すがたが たちあがった！',
-  'dungeon.sunkenRuins.boss.dialog3': 'リッチが つえを かかげた！「わしが たつかぎり クリスタルは わたさん！」',
-  'dungeon.sunkenRuins.boss.defeat': 'リッチが ちりと なって くずれた…「ついに…わしは…じゆうに…」',
-  'dungeon.sunkenRuins.victory': 'じだいのクリスタルを てにいれた！いにしえの ちえが こころに みちる。',
+  // Shadow Cave (renamed from Shadow Tower)
+  'dungeon.shadowCave.enter': 'どうくつは くらいやまの おくまで つづいている…',
+  'dungeon.shadowCave.boss': 'あかいドラゴンが ものすごい ほうこうと ともに めざめた！',
+  'dungeon.shadowCave.boss.dialog1': 'いちばんおくの へやは もえるように あつい…かべに つめあとが のこっている。',
+  'dungeon.shadowCave.boss.dialog2': 'ものすごい ほうこうが どうくつぜんたいを ゆらした！',
+  'dungeon.shadowCave.boss.dialog3': 'あかいドラゴンが つばさを ひろげた！やみのほのおが めに もえている！',
+  'dungeon.shadowCave.boss.defeat': 'ドラゴンから やみが はなれていく…やさしいひかりの なかに きえていった。',
+  'dungeon.shadowCave.victory': 'ちえのクリスタルを てにいれた！いにしえの ちしきが あたまに ながれこんでくる。',
 
   // Volcanic Forge
   'dungeon.volcanicForge.enter': 'かざんの いりぐちから ねっぱが おしよせる…したに ようがんが ながれている。',
@@ -339,6 +313,7 @@ export const jaStrings: Record<string, string> = {
   'victory.stats': 'せいかいりつ: {correct}/{total} ({pct}%)',
   'victory.time': 'クリアタイム: {time}',
   'victory.pressEnter': 'エンターキーでもどる',
+
   // Sealed Sanctum (Excalibur)
   'dungeon.sealedSanctum.boss.dialog1': 'くうきが こおりつく…ぼうれいが かがやくけんを まもっている。',
   'dungeon.sealedSanctum.boss.dialog2': 'けんのぼうれいが ゆうれいのけんを ぬいた。「エクスカリバーは わたさぬ！」',
@@ -373,7 +348,7 @@ export const jaStrings: Record<string, string> = {
   'map.lastBastion': 'さいごのとりで',
   'map.mistyGrotto': 'きりのどうくつ',
   'map.crystalCave': 'すいしょうのどうくつ',
-  'map.shadowTower': 'かげのとう',
+  'map.shadowCave': 'かげのどうくつ',
   'map.volcanicForge': 'かざんのかじば',
   'map.demonCastle': 'まおうのしろ',
   'map.sealedSanctum': 'ふういんのせいいき',

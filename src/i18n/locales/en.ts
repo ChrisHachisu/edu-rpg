@@ -102,38 +102,38 @@ export const enStrings: Record<string, string> = {
   'shop.inventoryFull': 'Inventory is full!',
   'shop.cantSell': 'This item cannot be sold!',
 
-  // ── Intro Dialog ───────────────────────────────────────────────────
-  'intro.elder1': 'Welcome, young hero. I am the Elder of Greenhollow Village. Dark times have fallen upon our world...',
-  'intro.elder2': 'The Demon King Malachar has broken free of the seal your grandmother placed upon him. He has stolen the Crystals of Knowledge, and darkness spreads across Eldravia!',
-  'intro.elder3': 'You must journey east, grow stronger, and reclaim the crystals one by one. Head to the Misty Grotto to the southwest first — it\'s the first challenge on your path. Then travel east to the Crystal Cave beyond Port Sapphire!',
-  'intro.elder4': 'Stock up at our shop before you go. Save your progress at the crystal in the center of town. May knowledge guide your path, young hero!',
+  // ── Intro Dialog (3 messages) ────────────────────────────────────
+  'intro.elder1': 'Welcome, young hero. I am the Elder of Greenhollow Village. Dark times are upon us...',
+  'intro.elder2': 'The Demon King Malachar stole the Crystals of Knowledge! Darkness spreads across Eldravia. You must reclaim them!',
+  'intro.elder3': 'Head to the Misty Grotto to the southwest first. Then go east to the Crystal Cave. Buy supplies at the shop before you leave!',
 
   // ── NPCs / Story ──────────────────────────────────────────────────
   'story.intro1': 'Long ago, the land of Eldravia was protected by five Crystals of Knowledge.',
   'story.intro2': 'But the Demon King Malachar stole the crystals, and darkness covered the world.',
   'story.intro3': 'Now, a young hero must set out to reclaim the crystals and bring back the light!',
-  'npc.elder.greeting': 'Be careful out there, young hero. Remember — the Misty Grotto is to the southwest, and the Crystal Cave lies beyond Port Sapphire to the east. Stock up at the shop before you go!',
-  'npc.elder.quest': 'Head to the Misty Grotto first. Defeat the Giant Toad, then take on the Crystal Cave and its serpent!',
-  'npc.villager1': 'Please be careful outside the village, dear! Monsters appeared after the crystals were stolen. I\'ve heard that ancient sanctums are hidden in the far reaches of the demon\'s domain...',
-  'npc.villager2': 'The shop sells herbs and gear. Stock up before you go! You\'ll need potions to survive the caves.',
-  'npc.guard': 'The Misty Grotto lies to the southwest, and the Crystal Cave to the east. Defeat the bosses inside to reclaim the crystals! Each crystal opens new paths forward.',
-  'npc.scholar': 'I\'ve studied the Crystals of Knowledge my whole life — they give power to those who learn. My research suggests a blade called Excalibur was sealed in a forgotten sanctum to the far west of the demon realm.',
-  'npc.sailor': 'Beyond the river to the north, I\'ve seen the Shadow Tower rising above the clouds. A mighty dragon nests at the top. You\'ll need to defeat the serpent to open the bridge!',
-  'npc.wisewoman': 'Divine armor called the Aegis of Dawn lies in a celestial vault beyond the lava fields. But only Excalibur can break its seal. Find the blade first!',
-  'npc.fisherman': 'The seas around here have gotten dangerous. Strange creatures from the deep — jellyfish and piranha — swarm the Coral Tunnels south of here. A terrible Kraken lurks in the depths!',
-  'npc.diver': 'I used to dive in the Coral Tunnels before the darkness came. The Kraken sleeps at the very bottom — I barely escaped it once! Defeat it and you\'ll earn the Crystal of the Deep!',
-  'npc.soldier': 'The Shadow Tower pierces through the mountains to the east. A Red Dragon guards the passage to the northern lands. Defeat it to open the way forward!',
-  'npc.blacksmith': 'I\'ve forged many weapons, but none compare to Excalibur — your grandmother\'s legendary blade, sealed away after the great war. They say it rests in a hidden sanctum in the demon realm\'s far west.',
-  'npc.hermit': 'I\'ve lived alone in these mountains for years. Once, I saw a golden light in the far northeast beyond the lava fields. Something divine awaits there... but the entrance is sealed by ancient magic.',
-  'npc.miner': 'We used to mine in these mountains, but the monsters drove us out. Blizzard Bears and Ice Sprites roam the caves now. Be careful in there!',
-  'npc.archaeologist': 'My research into ancient texts reveals a sealed sanctum and celestial vault hidden at the edges of the demon realm. Two legendary relics sleep within, waiting for a worthy hero.',
-  'npc.explorer': 'The Volcanic Forge lies to the east, at the edge of the lava fields. The Flame Titan guards the passage to the demon realm beyond! Prepare well!',
-  'npc.oldwarrior': 'I once fought alongside your grandmother against the Demon King. She never gave up, and neither should you! Prepare well and save your progress!',
-  'npc.refugee': 'My family and I fled from the north... The Demon King\'s army is everywhere around his castle. But you\'ve come so far — I believe in you! Save Eldravia!',
-  'npc.veteran': 'I fought alongside your grandmother when she defeated Malachar. She used two legendary relics — Excalibur and the Aegis of Dawn. Find them in the demon\'s territory before facing him!',
-  'npc.priestess': 'Without both legendary relics, the Demon King is invincible. Seek the Sealed Sanctum to the far west and the Celestial Vault to the far east before facing him!',
+
+  // Greenhollow (Act 1)
+  'npc.elder.greeting': 'Be safe, hero. The Misty Grotto is southwest. Come back when you\'re stronger!',
+  'npc.villager1': 'Monsters appeared everywhere! Be careful out there!',
+  'npc.villager2': 'Buy herbs at the shop before you go!',
+
+  // Port Sapphire (Act 1)
+  'npc.sailor': 'I hear a dragon lives in the caves to the north. Scary stuff!',
+  'npc.wisewoman': 'The crystals give power to those who study hard. Keep learning, hero!',
+
+  // Ironkeep (Act 2)
+  'npc.soldier': 'The Shadow Cave is east of here. A Red Dragon blocks the way north. Defeat it!',
+  'npc.blacksmith': 'I make the best gear around! Check the shop before heading into the caves.',
+
+  // Ruins Camp (Act 3/4)
+  'npc.archaeologist': 'The lava fields are dangerous. Be very careful!',
+  'npc.explorer': 'The Volcanic Forge is east. The Flame Titan guards the way to the demon realm!',
+
+  // Last Bastion (Act 5) — THE ONLY legendary hints
+  'npc.veteran': 'Your grandmother used Excalibur and the Aegis of Dawn to seal Malachar. Find them before facing him! Excalibur is in a sanctum to the far west.',
+  'npc.priestess': 'The Aegis of Dawn is in the Celestial Vault to the far east. But you need Excalibur first to break its seal!',
+
   'npc.shopkeeper': 'Welcome to my shop! Take a look around.',
-  'npc.innkeeper': 'Rest here to recover your strength. Your progress will be saved.',
   'npc.savePoint': 'Your adventure has been saved!',
 
   // Treasure
@@ -160,42 +160,16 @@ export const enStrings: Record<string, string> = {
   'dungeon.crystalCave.boss.dialog3': 'The Sea Serpent rises from the deep! Prepare for battle!',
   'dungeon.crystalCave.boss.defeat': 'The Sea Serpent dissolves into sparkling light... The water grows calm.',
   'dungeon.crystalCave.victory': 'You found the Crystal of Courage! Its warm light fills you with strength.',
+  'dungeon.crystalCave.locked': 'A mysterious force blocks the cave entrance... Perhaps a crystal from the Misty Grotto would open the way.',
 
-  // Coral Tunnels
-  'dungeon.coralTunnels.enter': 'The tunnels glow with bioluminescent coral... The sound of crashing waves echoes.',
-  'dungeon.coralTunnels.boss': 'The Kraken emerges from the deep!',
-  'dungeon.coralTunnels.boss.dialog1': 'The water level rises... Tentacles brush against the walls.',
-  'dungeon.coralTunnels.boss.dialog2': 'The coral shatters as something enormous pushes through!',
-  'dungeon.coralTunnels.boss.dialog3': 'The Kraken rises, its eyes glowing with dark power! Prepare for battle!',
-  'dungeon.coralTunnels.boss.defeat': 'The Kraken sinks back into the abyss... The waters calm and the coral glows brighter.',
-  'dungeon.coralTunnels.victory': 'You found the Crystal of the Deep! Ancient ocean wisdom flows through you.',
-
-  // Shadow Tower
-  'dungeon.shadowTower.enter': 'The tower stretches high into the dark clouds...',
-  'dungeon.shadowTower.boss': 'The Red Dragon awakens with a thunderous roar!',
-  'dungeon.shadowTower.boss.dialog1': 'The top of the tower is scorching hot... Claw marks scar the walls.',
-  'dungeon.shadowTower.boss.dialog2': 'A thunderous roar shakes the entire tower!',
-  'dungeon.shadowTower.boss.dialog3': 'The Red Dragon spreads its wings! Its eyes burn with dark fire!',
-  'dungeon.shadowTower.boss.defeat': 'The darkness lifts from the Dragon... It fades away in a gentle glow.',
-  'dungeon.shadowTower.victory': 'You found the Crystal of Wisdom! Ancient knowledge flows into your mind.',
-
-  // Frostpeak Cavern
-  'dungeon.frostpeakCavern.enter': 'Freezing winds howl through the icy tunnels... Your breath turns to mist.',
-  'dungeon.frostpeakCavern.boss': 'The Ice Wyrm bursts from the frozen wall!',
-  'dungeon.frostpeakCavern.boss.dialog1': 'The temperature drops suddenly... Ice crystals form in the air.',
-  'dungeon.frostpeakCavern.boss.dialog2': 'The cavern wall shatters with a deafening crack!',
-  'dungeon.frostpeakCavern.boss.dialog3': 'The Ice Wyrm emerges, frost pouring from its jaws! Prepare for battle!',
-  'dungeon.frostpeakCavern.boss.defeat': 'The Ice Wyrm crystallizes into beautiful ice... The cavern grows warm.',
-  'dungeon.frostpeakCavern.victory': 'You found the Crystal of Frost! The power of winter courses through you.',
-
-  // Sunken Ruins
-  'dungeon.sunkenRuins.enter': 'Ancient stone pillars line the entrance... Whispers echo from the darkness.',
-  'dungeon.sunkenRuins.boss': 'The Lich raises its staff, summoning dark energy!',
-  'dungeon.sunkenRuins.boss.dialog1': 'The whispers grow louder... Ancient runes glow with sinister light.',
-  'dungeon.sunkenRuins.boss.dialog2': 'A skeletal figure rises from the altar!',
-  'dungeon.sunkenRuins.boss.dialog3': 'The Lich raises its staff! "None shall claim the crystal while I stand!"',
-  'dungeon.sunkenRuins.boss.defeat': 'The Lich crumbles to dust... "At last... I am... free..."',
-  'dungeon.sunkenRuins.victory': 'You found the Crystal of Ages! The wisdom of the ancients fills your mind.',
+  // Shadow Cave (renamed from Shadow Tower)
+  'dungeon.shadowCave.enter': 'The cave stretches deep into the dark mountainside...',
+  'dungeon.shadowCave.boss': 'The Red Dragon awakens with a thunderous roar!',
+  'dungeon.shadowCave.boss.dialog1': 'The deepest chamber is scorching hot... Claw marks scar the walls.',
+  'dungeon.shadowCave.boss.dialog2': 'A thunderous roar shakes the entire cave!',
+  'dungeon.shadowCave.boss.dialog3': 'The Red Dragon spreads its wings! Its eyes burn with dark fire!',
+  'dungeon.shadowCave.boss.defeat': 'The darkness lifts from the Dragon... It fades away in a gentle glow.',
+  'dungeon.shadowCave.victory': 'You found the Crystal of Wisdom! Ancient knowledge flows into your mind.',
 
   // Volcanic Forge
   'dungeon.volcanicForge.enter': 'Waves of heat blast from the volcanic entrance... Lava flows below.',
@@ -339,6 +313,7 @@ export const enStrings: Record<string, string> = {
   'victory.stats': 'Quiz Accuracy: {correct}/{total} ({pct}%)',
   'victory.time': 'Clear Time: {time}',
   'victory.pressEnter': 'Press ENTER',
+
   // Sealed Sanctum (Excalibur)
   'dungeon.sealedSanctum.boss.dialog1': 'The air grows deathly cold... A spectral figure guards a radiant blade.',
   'dungeon.sealedSanctum.boss.dialog2': 'The Sword Wraith draws a ghostly blade. "None shall claim Excalibur!"',
@@ -373,7 +348,7 @@ export const enStrings: Record<string, string> = {
   'map.lastBastion': 'Last Bastion',
   'map.mistyGrotto': 'Misty Grotto',
   'map.crystalCave': 'Crystal Cave',
-  'map.shadowTower': 'Shadow Tower',
+  'map.shadowCave': 'Shadow Cave',
   'map.volcanicForge': 'Volcanic Forge',
   'map.demonCastle': 'Demon Castle',
   'map.sealedSanctum': 'Sealed Sanctum',

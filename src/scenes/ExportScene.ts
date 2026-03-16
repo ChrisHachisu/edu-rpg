@@ -360,7 +360,7 @@ ${sections.join('\n')}
 
     // Intro
     html += '<h3>Introduction</h3>';
-    for (let i = 1; i <= 4; i++) {
+    for (let i = 1; i <= 3; i++) {
       const key = `intro.elder${i}`;
       html += `<div class="dialog-box">
         <div class="dialog-label">Elder:</div>
@@ -444,7 +444,7 @@ ${sections.join('\n')}
     // Game progression
     html += '<h3>Progression</h3>';
     html += '<p>Act 1 (Lv 1-6): Greenhollow → Misty Grotto → Crystal Cave (gate to Act 2)</p>';
-    html += '<p>Act 2 (Lv 7-12): Port Sapphire → Ironkeep → Shadow Tower (gate to Act 3)</p>';
+    html += '<p>Act 2 (Lv 7-12): Port Sapphire → Ironkeep → Shadow Cave (gate to Act 3)</p>';
     html += '<p>Act 3/4 (Lv 13-24): Ruins Camp → Volcanic Forge (gate to Act 5)</p>';
     html += '<p>Act 5 (Lv 25-30): Last Bastion → Sealed Sanctum + Celestial Vault → Demon Castle → Final Boss</p>';
 

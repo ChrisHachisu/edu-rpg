@@ -35,8 +35,8 @@ export function generateOverworldMap(width: number, height: number): number[][] 
         continue;
       }
 
-      // Mountains in upper area
-      if (y < 20 && x > 40) {
+      // Mountains in upper-middle area (Act 3/4 and Act 5)
+      if (y < 35 && x > 40) {
         const mtNoise = Math.sin(x * 0.4) * Math.cos(y * 0.3);
         if (mtNoise > 0.2 && rand() > 0.3) {
           row.push(4);
@@ -44,8 +44,8 @@ export function generateOverworldMap(width: number, height: number): number[][] 
         }
       }
 
-      // Dense forests
-      if ((x > 15 && x < 30 && y > 30 && y < 45) || (x > 25 && x < 35 && y > 20 && y < 35)) {
+      // Dense forests (Act 1 and Act 2 areas)
+      if ((x > 15 && x < 35 && y > 62 && y < 75) || (x > 25 && x < 40 && y > 48 && y < 58)) {
         if (rand() > 0.35) {
           row.push(3);
           continue;
@@ -66,28 +66,26 @@ export function generateOverworldMap(width: number, height: number): number[][] 
   // Carve paths between key locations (5-act network)
   // Paths are organized by act — NO cross-barrier paths
   const paths: [number, number][] = [
-    // ── Act 1 — south of river ──
-    ...pathBetween(10, 50, 16, 45),   // greenhollow → mistyGrotto
-    ...pathBetween(10, 50, 38, 40),   // greenhollow → portSapphire (direct)
-    ...pathBetween(38, 40, 40, 31),   // portSapphire → crystalCave entrance
-    ...pathBetween(40, 31, 40, 25),   // guide path through river gap area
-    // ── Act 2 — between river and mountains ──
-    ...pathBetween(40, 26, 40, 25),   // crystalCave north → Act 2 path
-    ...pathBetween(40, 25, 48, 25),   // crystalCave exit → ironkeep (direct)
-    ...pathBetween(48, 25, 50, 19),   // ironkeep → shadowTower south entrance
-    ...pathBetween(50, 19, 50, 14),   // guide path through mountain gap area
-    // ── Act 3/4 — between mountains and lava ──
-    ...pathBetween(50, 14, 48, 11),   // shadowTower north → ruinsCamp
-    ...pathBetween(48, 11, 56, 9),    // ruinsCamp → volcanicForge south (direct)
-    ...pathBetween(56, 9, 56, 6),     // guide path through lava gap area
-    // ── Act 5 — north of lava ──
-    ...pathBetween(56, 7, 56, 6),     // volcanicForge north → existing path
-    ...pathBetween(56, 6, 56, 5),     // → lastBastion
-    ...pathBetween(56, 5, 58, 4),     // lastBastion → demonCastle
+    // ── Act 1 — south of river (y=59-77) ──
+    ...pathBetween(10, 70, 16, 66),   // greenhollow → mistyGrotto
+    ...pathBetween(10, 70, 30, 63),   // greenhollow → portSapphire
+    ...pathBetween(30, 63, 40, 59),   // portSapphire → crystalCave S
+    ...pathBetween(40, 59, 40, 57),   // guide through river gap
+    // ── Act 2 — between river and mountains (y=41-57) ──
+    ...pathBetween(40, 57, 48, 49),   // crystalCave N → ironkeep
+    ...pathBetween(48, 49, 50, 42),   // ironkeep → shadowCave S
+    ...pathBetween(50, 42, 50, 38),   // guide through mountain gap
+    // ── Act 3/4 — between mountains and lava (y=23-39) ──
+    ...pathBetween(50, 38, 48, 32),   // shadowCave N → ruinsCamp
+    ...pathBetween(48, 32, 56, 24),   // ruinsCamp → volcanicForge S
+    ...pathBetween(56, 24, 56, 20),   // guide through lava gap
+    // ── Act 5 — north of lava (y=2-21) ──
+    ...pathBetween(56, 20, 56, 14),   // volcanicForge N → lastBastion
+    ...pathBetween(56, 14, 58, 8),    // lastBastion → demonCastle
     // ── Hidden legendary dungeon paths (Act 5 — remote corners) ──
-    ...pathBetween(56, 5, 30, 5),     // lastBastion → westward through demon realm
-    ...pathBetween(30, 5, 4, 4),      // → far northwest: Sealed Sanctum
-    ...pathBetween(58, 4, 75, 4),     // demonCastle → far northeast: Celestial Vault
+    ...pathBetween(56, 14, 30, 10),   // lastBastion → westward
+    ...pathBetween(30, 10, 4, 6),     // → far northwest: Sealed Sanctum
+    ...pathBetween(58, 8, 75, 6),     // demonCastle → far northeast: Celestial Vault
   ];
 
   for (const [px, py] of paths) {
@@ -102,10 +100,10 @@ export function generateOverworldMap(width: number, height: number): number[][] 
 
   // Place town markers (5 towns)
   const towns: [number, number][] = [
-    [10, 50], [38, 40],  // Act 1: Greenhollow, Port Sapphire
-    [48, 25],             // Act 2: Ironkeep
-    [48, 11],             // Act 3/4: Ruins Camp
-    [56, 5],              // Act 5: Last Bastion
+    [10, 70], [30, 63],  // Act 1: Greenhollow, Port Sapphire
+    [48, 49],             // Act 2: Ironkeep
+    [48, 32],             // Act 3/4: Ruins Camp
+    [56, 14],             // Act 5: Last Bastion
   ];
   for (const [tx, ty] of towns) {
     map[ty][tx] = 6;
@@ -113,11 +111,11 @@ export function generateOverworldMap(width: number, height: number): number[][] 
 
   // Place dungeon entrances (9 — 5 story + 2 gate norths + 2 hidden legendary)
   const dungeons: [number, number][] = [
-    [16, 45], [40, 31], [40, 26],  // Act 1: Misty Grotto, Crystal Cave S/N
-    [50, 19], [50, 14],             // Act 2→3: Shadow Tower S/N
-    [56, 9], [56, 7],               // Act 4→5: Volcanic Forge S/N
-    [58, 4],                        // Act 5: Demon Castle
-    [4, 4], [75, 4],                // Legendary: Sanctum, Vault
+    [16, 66], [40, 59], [40, 57],  // Act 1: Misty Grotto, Crystal Cave S/N
+    [50, 42], [50, 38],             // Act 2→3: Shadow Cave S/N
+    [56, 24], [56, 20],             // Act 3/4→5: Volcanic Forge S/N
+    [58, 8],                        // Act 5: Demon Castle
+    [4, 6], [75, 6],                // Legendary: Sanctum, Vault
   ];
   for (const [dx, dy] of dungeons) {
     map[dy][dx] = 7;
@@ -126,8 +124,8 @@ export function generateOverworldMap(width: number, height: number): number[][] 
   // ── Physical terrain barriers (always solid — portals provide inter-act travel) ──
 
   // --- River barrier between Act 1 and Act 2 ---
-  // Meanders around y≈29 with sinusoidal variation, 2-3 tiles wide
-  const riverBaseY = 29;
+  // Meanders around y≈58 with sinusoidal variation, 2-3 tiles wide
+  const riverBaseY = 58;
   for (let x = 2; x <= width - 3; x++) {
     const meander = Math.round(
       Math.sin(x * 0.12) * 2 + Math.cos(x * 0.07 + 1.5) * 1
@@ -159,8 +157,8 @@ export function generateOverworldMap(width: number, height: number): number[][] 
   }
 
   // --- Mountain barrier between Act 2 and Act 3 ---
-  // Meanders around y≈16 with sinusoidal ridgeline, 2-3 tiles wide
-  const mtBaseY = 16;
+  // Meanders around y≈40 with sinusoidal ridgeline, 2-3 tiles wide
+  const mtBaseY = 40;
   for (let x = 2; x <= width - 3; x++) {
     const meander = Math.round(
       Math.sin(x * 0.1 + 2) * 1.5 + Math.cos(x * 0.06) * 1
@@ -185,9 +183,9 @@ export function generateOverworldMap(width: number, height: number): number[][] 
     }
   }
 
-  // --- Lava barrier between Act 4 and Act 5 ---
-  // Meanders around y≈8 with sinusoidal variation, 1-2 tiles wide
-  const lavaBaseY = 8;
+  // --- Lava barrier between Act 3/4 and Act 5 ---
+  // Meanders around y≈22 with sinusoidal variation, 1-2 tiles wide
+  const lavaBaseY = 22;
   for (let x = 2; x <= width - 3; x++) {
     const meander = Math.round(
       Math.sin(x * 0.14 + 3) * 1.5 + Math.cos(x * 0.08 + 2) * 0.8

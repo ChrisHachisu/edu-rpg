@@ -56,10 +56,7 @@ class GameStateManager {
       overworld: 'greenhollow-plains', // Default, actual zone determined by position
       mistyGrotto: 'misty-grotto',
       crystalCave: 'crystal-cave',
-      coralTunnels: 'coral-tunnels',
-      shadowTower: 'shadow-tower',
-      frostpeakCavern: 'frostpeak-cavern',
-      sunkenRuins: 'sunken-ruins',
+      shadowCave: 'shadow-cave',
       volcanicForge: 'volcanic-forge',
       demonCastle: 'demon-castle',
       sealedSanctum: 'sealed-sanctum',
@@ -70,13 +67,13 @@ class GameStateManager {
 
   getOverworldZone(x: number, y: number): string {
     // Determine zone by position on overworld — aligned with terrain barriers:
-    // River ≈ y=27-29, Mountains ≈ y=15-18, Lava ≈ y=7-9
-    if (y <= 7) return 'demons-threshold';       // Act 5 — above lava barrier
-    if (y <= 15) return 'scorched-wastes';        // Act 3/4 — between mountains and lava
-    if (y <= 26) return 'iron-mountains';         // Act 2 — between river and mountains
+    // River ≈ y=58, Mountains ≈ y=40, Lava ≈ y=22
+    if (y <= 21) return 'demons-threshold';       // Act 5 — above lava barrier
+    if (y <= 39) return 'scorched-wastes';        // Act 3/4 — between mountains and lava
+    if (y <= 57) return 'iron-mountains';         // Act 2 — between river and mountains
     // Act 1 — south of river
-    if (x < 25 && y > 40) return 'greenhollow-plains'; // Western plains near starting village
-    if (x >= 35) return 'crystal-coast';                // Eastern coast near Port Sapphire
+    if (x < 25 && y > 62) return 'greenhollow-plains'; // Western plains near starting village
+    if (x >= 28) return 'crystal-coast';                // Eastern coast near Port Sapphire
     return 'whispering-woods';                          // Forest area between towns
   }
 }

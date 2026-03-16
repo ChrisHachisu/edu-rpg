@@ -76,7 +76,6 @@ export class WorldMapScene extends Phaser.Scene {
         t('intro.elder1'),
         t('intro.elder2'),
         t('intro.elder3'),
-        t('intro.elder4'),
       ];
       this.showDialogSequence(introMessages, () => {
         gameState.player.state.storyFlags['intro.done'] = true;
@@ -163,8 +162,8 @@ export class WorldMapScene extends Phaser.Scene {
   }
 
   private static readonly FEMALE_NPCS = new Set([
-    'villager1', 'scholar', 'wisewoman', 'diver', 'blacksmith',
-    'hermit', 'archaeologist', 'refugee', 'veteran', 'priestess',
+    'villager1', 'wisewoman', 'blacksmith',
+    'archaeologist', 'veteran', 'priestess',
   ]);
 
   private renderNPCs(def: typeof mapDefs[string]): void {
@@ -438,6 +437,13 @@ export class WorldMapScene extends Phaser.Scene {
   }
 
   private performTransition(target: { targetMap: string; toX: number; toY: number; toFloor?: number }): void {
+    // Block Crystal Cave entry until Giant Toad defeated (crystal required)
+    if (target.targetMap === 'crystalCave' && !gameState.player.state.storyFlags['boss.giantToad.defeated']) {
+      this.isMoving = false;
+      this.showMessage(t('dungeon.crystalCave.locked'));
+      return;
+    }
+
     // Block Celestial Vault entry until Sword Wraith defeated (Excalibur obtained)
     if (target.targetMap === 'celestialVault' && !gameState.player.state.storyFlags['boss.swordWraith.defeated']) {
       this.isMoving = false;
@@ -679,7 +685,7 @@ export class WorldMapScene extends Phaser.Scene {
         if (rand < 0.5) return { gold: 15, itemId: 'herb' };
         if (rand < 0.8) return { gold: 25 };
         return { gold: 10, itemId: 'potion' };
-      case 'shadowTower':
+      case 'shadowCave':
         if (rand < 0.4) return { gold: 40, itemId: 'potion' };
         if (rand < 0.7) return { gold: 60 };
         return { gold: 30, itemId: 'hiPotion' };

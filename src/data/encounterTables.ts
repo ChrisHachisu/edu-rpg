@@ -74,8 +74,8 @@ export const encounterZones: Record<string, EncounterZone> = {
       { monsterId: 'wyvern', weight: 5 },
     ],
   },
-  'shadow-tower': {
-    zoneId: 'shadow-tower',
+  'shadow-cave': {
+    zoneId: 'shadow-cave',
     encounterRate: 0.08,
     minStepsBetween: 6,
     monsters: [

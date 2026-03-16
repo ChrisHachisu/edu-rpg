@@ -269,7 +269,7 @@ export const monsters: Record<string, MonsterTemplate> = {
     color: 0x552288,
   },
 
-  // ── Boss 4 — Shadow Tower (1.5x HP from original 90) ──────────────
+  // ── Boss 4 — Shadow Cave (1.5x HP from original 90) ──────────────
   dragon: {
     id: 'dragon',
     nameKey: 'monster.dragon',
