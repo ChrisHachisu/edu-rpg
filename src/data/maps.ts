@@ -36,7 +36,7 @@ export const mapDefs: Record<string, MapDef> = {
       // ── Dungeon entrances ──
       { targetMap: 'mistyGrotto', fromX: 16, fromY: 45, toX: 7, toY: 2 },
       { targetMap: 'crystalCave', fromX: 40, fromY: 31, toX: 10, toY: 60 },
-      { targetMap: 'crystalCave', fromX: 40, fromY: 26, toX: 10, toY: 5 },
+      { targetMap: 'crystalCave', fromX: 40, fromY: 26, toX: 10, toY: 1 },
       { targetMap: 'coralTunnels', fromX: 44, fromY: 25, toX: 9, toY: 2 },
       { targetMap: 'shadowTower', fromX: 50, fromY: 19, toX: 12, toY: 2 },
       { targetMap: 'frostpeakCavern', fromX: 45, fromY: 13, toX: 11, toY: 2 },

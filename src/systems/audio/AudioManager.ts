@@ -59,6 +59,10 @@ class AudioManagerImpl {
   playBgm(track: BgmTrack): void {
     if (!this.initialized || !this.soundEnabled || !this.composer) return;
     if (this.composer.currentBgm === track) return;
+    // Resume AudioContext if suspended (e.g., after tab background / inactivity)
+    if (this.ctx?.state === 'suspended') {
+      this.ctx.resume().catch(() => {});
+    }
     this.composer.play(track).catch(e => console.warn('[AudioManager] BGM error:', e));
   }
 
@@ -67,7 +71,11 @@ class AudioManagerImpl {
   }
 
   playSfx(id: SfxId): void {
-    if (!this.initialized || !this.soundEnabled || !this.sfx) return;
+    if (!this.initialized || !this.soundEnabled || !this.sfx || !this.ctx) return;
+    // Resume AudioContext if suspended (e.g., after tab background / inactivity)
+    if (this.ctx.state === 'suspended') {
+      this.ctx.resume().catch(() => {});
+    }
     this.sfx.play(id);
   }
 

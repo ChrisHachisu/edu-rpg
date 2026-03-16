@@ -96,15 +96,18 @@ export class SfxLibrary {
   // ── SFX Implementations ─────────────────────────────────────────
 
   private attackHit(): void {
-    // Sharp impact: noise burst + descending sine
-    this.noise(0.06, 0.25);
-    this.sweep('sine', 600, 100, 0.1, 0.3);
+    // Meaty impact: layered noise burst + low thud + descending crack
+    this.noise(0.12, 0.35);                        // crunchy high-freq impact
+    this.osc('square', 60, 0.1, 0.35);             // low body thud
+    this.sweep('sawtooth', 800, 80, 0.12, 0.3);    // descending crack
+    this.osc('triangle', 120, 0.06, 0.2, 0.02);    // secondary rumble
   }
 
   private attackMiss(): void {
-    // Whoosh: sine sweep up then down
-    this.sweep('sine', 200, 800, 0.1, 0.15);
-    this.sweep('sine', 800, 200, 0.15, 0.15, 0.1);
+    // Pronounced whoosh: layered sine sweeps + air noise
+    this.sweep('sine', 150, 1200, 0.12, 0.2);      // rising whoosh
+    this.sweep('sine', 1200, 150, 0.18, 0.2, 0.12); // falling whoosh
+    this.noise(0.15, 0.08);                          // air rush
   }
 
   private heal(): void {
@@ -193,9 +196,11 @@ export class SfxLibrary {
   }
 
   private damageTaken(): void {
-    // Thud: low square + noise
-    this.osc('square', 80, 0.08, 0.25);
-    this.noise(0.05, 0.2);
+    // Heavy body hit: deep thud + impact noise + pain crunch
+    this.osc('square', 55, 0.12, 0.35);            // deep bass thud
+    this.osc('sawtooth', 100, 0.08, 0.25, 0.01);   // mid rumble
+    this.noise(0.1, 0.3);                            // impact crunch
+    this.sweep('square', 300, 50, 0.08, 0.15, 0.03); // descending pain tone
   }
 
   private shopBuy(): void {

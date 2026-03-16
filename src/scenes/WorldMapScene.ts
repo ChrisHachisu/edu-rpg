@@ -111,7 +111,8 @@ export class WorldMapScene extends Phaser.Scene {
           }
           if (this.mapData[y][x] === 7 && def.bossId && isFinalFloor) {
             if (gameState.player.state.storyFlags[`boss.${def.bossId}.defeated`]) {
-              this.mapData[y][x] = 10; // replace boss with exit portal
+              const isGate = def.connections.length > 1;
+              this.mapData[y][x] = isGate ? 0 : 10; // gate → floor (walk-through), normal → exit portal
             }
           }
         }

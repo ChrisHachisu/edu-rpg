@@ -488,29 +488,23 @@ export function generateDungeonMap(
   if (gate) {
     // ── Gate dungeon: stairs at BOTH top and bottom, boss near top ──
 
-    // --- North exit area (top): stair + boss room ---
+    // --- North exit area (top): stair + boss blocking corridor ---
     map[0][entranceX] = 6; // stairs-up → Act 2 exit
-    for (let dx = -1; dx <= 1; dx++) {
-      const ex = entranceX + dx;
-      if (ex > 0 && ex < width - 1) {
-        map[1][ex] = 0;
-        map[2][ex] = 0;
-      }
-    }
-    // Boss room (5×3) at y=3..5
+    // Boss at y=1 in a 1-tile-wide corridor — cannot be walked around
+    map[1][entranceX] = 7; // boss tile — blocks only passage to north stair
+    // Boss fight room (5×3) at y=2..4 — open area south of boss
     for (let dy = 0; dy < 3; dy++) {
       for (let dx = -2; dx <= 2; dx++) {
         const bx = entranceX + dx;
-        const by = 3 + dy;
+        const by = 2 + dy;
         if (bx > 0 && bx < width - 1 && by > 0 && by < height - 1) {
           map[by][bx] = 0;
         }
       }
     }
-    map[4][entranceX] = 7; // boss tile — blocks north-south passage
-    // Connect first room to boss room (south side at y=5)
+    // Connect first room to boss fight room (south side at y=4)
     if (rooms.length > 0) {
-      carveLCorridor(map, entranceX, 5, rooms[0].cx, rooms[0].cy, rand);
+      carveLCorridor(map, entranceX, 4, rooms[0].cx, rooms[0].cy, rand);
     }
 
     // --- South entrance area (bottom): stair + room ---

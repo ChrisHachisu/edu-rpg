@@ -30,21 +30,40 @@ export class MusicComposer {
   async play(track: BgmTrack): Promise<void> {
     if (this.currentTrack === track) return;
     this.stop();
-    this.currentTrack = track;
 
     const builder = this.trackBuilders[track];
     if (!builder) return;
 
-    this.active = builder();
+    try {
+      this.active = builder();
+      this.currentTrack = track; // Set AFTER building succeeds
 
-    if (!this.started) {
-      await Tone.start();
-      this.started = true;
+      if (!this.started) {
+        await Tone.start();
+        this.started = true;
+      }
+
+      // Ensure AudioContext is running (may suspend after tab background / inactivity)
+      if (Tone.getContext().state !== 'running') {
+        await Tone.getContext().resume();
+      }
+
+      const transport = Tone.getTransport();
+      transport.stop();
+      transport.cancel();
+      transport.position = 0; // Reset position for clean loop start
+      transport.bpm.value = this.getBpm(track);
+      this.active.parts.forEach(p => p.start(0));
+      transport.start();
+    } catch (e) {
+      console.warn('[MusicComposer] Failed to play track:', track, e);
+      // Reset state so the next playBgm() call can retry this track
+      this.currentTrack = null;
+      if (this.active) {
+        try { this.active.dispose(); } catch { /* ignore */ }
+        this.active = null;
+      }
     }
-    Tone.getTransport().cancel();
-    Tone.getTransport().bpm.value = this.getBpm(track);
-    this.active.parts.forEach(p => p.start(0));
-    Tone.getTransport().start();
   }
 
   stop(): void {
