@@ -502,8 +502,8 @@ export class WorldMapScene extends Phaser.Scene {
     this.stepCount++;
     const def = mapDefs[this.currentMapId];
 
-    // No encounters in towns
-    if (def.type === 'town') return;
+    // No encounters in towns or dev mode
+    if (def.type === 'town' || gameState.devMode) return;
 
     // Determine zone
     let zone: string | null;

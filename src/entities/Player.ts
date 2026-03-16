@@ -26,6 +26,8 @@ const DEFAULT_STATE: PlayerState = {
 };
 
 export class Player {
+  /** Set by GameState when dev mode is active (?dev=1) */
+  static devMode = false;
   state: PlayerState;
 
   constructor(state?: Partial<PlayerState>) {
@@ -33,6 +35,8 @@ export class Player {
   }
 
   get totalAtk(): number {
+    // Dev mode: one-shot everything (flag set by GameState from ?dev=1)
+    if (Player.devMode) return 999;
     let bonus = 0;
     for (const slot of Object.values(this.state.equipment)) {
       if (slot) {

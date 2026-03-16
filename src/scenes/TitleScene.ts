@@ -69,6 +69,16 @@ export class TitleScene extends Phaser.Scene {
       fontFamily: 'monospace',
     }).setOrigin(0.5);
 
+    // Dev mode indicator
+    if (gameState.devMode) {
+      this.add.text(8, 8, '[DEV]', {
+        fontSize: '10px',
+        color: '#ff4444',
+        fontFamily: 'monospace',
+        fontStyle: 'bold',
+      });
+    }
+
     // Decorative hero sprite
     if (this.textures.exists('hero-walk')) {
       this.add.image(GAME_WIDTH / 2, 180, 'hero-walk', 0).setScale(6);

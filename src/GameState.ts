@@ -12,8 +12,12 @@ class GameStateManager {
   encounterManager!: EncounterManager;
   playtime = 0;
   startTime = 0;
+  /** Dev mode: no encounters + 999 ATK. Activate via ?dev=1 in URL. */
+  devMode = new URLSearchParams(window.location.search).get('dev') === '1';
 
   newGame(difficulty: GradeLevel): void {
+    // Propagate dev mode to Player (avoids circular import)
+    Player.devMode = this.devMode;
     // Preserve current locale selection (set on title screen) before Player reset
     const currentLocale = getLocale();
     this.player = new Player();
@@ -28,6 +32,7 @@ class GameStateManager {
   }
 
   loadGame(): boolean {
+    Player.devMode = this.devMode;
     const data = SaveManager.load();
     if (!data) return false;
     this.player = new Player(data.player);
