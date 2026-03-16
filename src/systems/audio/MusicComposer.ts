@@ -18,6 +18,7 @@ export class MusicComposer {
   private currentTrack: BgmTrack | null = null;
   private masterVol: Tone.Volume;
   private started = false;
+  private watchdogId: number | null = null;
 
   constructor() {
     this.masterVol = new Tone.Volume(-6).toDestination();
@@ -49,12 +50,15 @@ export class MusicComposer {
       }
 
       const transport = Tone.getTransport();
-      transport.stop();
-      transport.cancel();
-      transport.position = 0; // Reset position for clean loop start
+      // Transport was already stopped by this.stop() — no need to stop again.
+      // Just set position and BPM, schedule parts, and start.
+      transport.position = 0;
       transport.bpm.value = this.getBpm(track);
       this.active.parts.forEach(p => p.start(0));
       transport.start();
+
+      // Start watchdog to detect & recover from unexpected Transport stops
+      this.startWatchdog();
     } catch (e) {
       console.warn('[MusicComposer] Failed to play track:', track, e);
       // Reset state so the next playBgm() call can retry this track
@@ -67,17 +71,63 @@ export class MusicComposer {
   }
 
   stop(): void {
+    this.stopWatchdog();
+    const transport = Tone.getTransport();
+
+    // 1. Stop Transport first — prevents any more Part callbacks from firing
+    transport.stop();
+
     if (this.active) {
-      Tone.getTransport().stop();
-      Tone.getTransport().cancel();
-      this.active.dispose();
+      // 2. Stop all Parts — unregister from Transport
+      this.active.parts.forEach(p => {
+        try { p.stop(); } catch { /* ignore */ }
+      });
+
+      // 3. Cancel remaining Transport events (cleanup stragglers)
+      transport.cancel();
+
+      // 4. Dispose Parts and Synths (Parts already stopped, so dispose won't race)
+      try { this.active.dispose(); } catch { /* ignore */ }
       this.active = null;
+    } else {
+      transport.cancel();
     }
+
     this.currentTrack = null;
   }
 
   setVolume(db: number): void {
     this.masterVol.volume.value = db;
+  }
+
+  // ── Watchdog ────────────────────────────────────────────────────
+  // Detects when the Transport should be playing but has stopped unexpectedly,
+  // and restarts it. This catches Tone.js Transport state corruption.
+
+  private startWatchdog(): void {
+    this.stopWatchdog();
+    this.watchdogId = window.setInterval(() => {
+      if (this.currentTrack && this.active) {
+        const transport = Tone.getTransport();
+        if (transport.state !== 'started') {
+          console.warn('[MusicComposer] Watchdog: Transport stopped unexpectedly, restarting', this.currentTrack);
+          try {
+            transport.position = 0;
+            this.active.parts.forEach(p => { try { p.start(0); } catch { /* ignore */ } });
+            transport.start();
+          } catch (e) {
+            console.warn('[MusicComposer] Watchdog restart failed:', e);
+          }
+        }
+      }
+    }, 2000);
+  }
+
+  private stopWatchdog(): void {
+    if (this.watchdogId !== null) {
+      clearInterval(this.watchdogId);
+      this.watchdogId = null;
+    }
   }
 
   private getBpm(track: BgmTrack): number {
@@ -128,7 +178,10 @@ export class MusicComposer {
 
   private buildPart(synth: Tone.Synth, notes: [string, string, string][], loop = true): Tone.Part {
     const part = new Tone.Part((time, value) => {
-      synth.triggerAttackRelease(value.note, value.dur, time);
+      // Guard against disposed synth — prevents Part death from killing the loop
+      try {
+        synth.triggerAttackRelease(value.note, value.dur, time);
+      } catch { /* synth was disposed, ignore */ }
     }, notes.map(([time, note, dur]) => ({ time, note, dur })));
     part.loop = loop;
     part.loopEnd = notes.length > 0 ? this.getLoopEnd(notes) : '4m';
@@ -158,8 +211,8 @@ export class MusicComposer {
       parts,
       synths,
       dispose: () => {
-        parts.forEach(p => { p.stop(); p.dispose(); });
-        synths.forEach(s => s.dispose());
+        parts.forEach(p => { try { p.stop(); p.dispose(); } catch { /* ignore */ } });
+        synths.forEach(s => { try { s.dispose(); } catch { /* ignore */ } });
       },
     };
   }
