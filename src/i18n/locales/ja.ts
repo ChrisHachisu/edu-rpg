@@ -267,6 +267,10 @@ export const jaStrings: Record<string, string> = {
   'item.escapeRope.desc': 'ダンジョンから だっしゅつできる。',
   'item.smokeBomb': 'けむりだま',
   'item.smokeBomb.desc': 'たたかいから にげられる。',
+  'item.used': '{name}を つかった！',
+  'item.healed': 'HPが {value} かいふくした！',
+  'item.cantUseHere': 'ここでは つかえない。',
+  'item.alreadyFull': 'HPは まんたんだ！',
 
   // ── Equipment ─────────────────────────────────────────────────────
   'equip.woodenSword': 'きのつるぎ',

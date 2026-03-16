@@ -267,6 +267,10 @@ export const enStrings: Record<string, string> = {
   'item.escapeRope.desc': 'Escape from a dungeon.',
   'item.smokeBomb': 'Smoke Bomb',
   'item.smokeBomb.desc': 'Flee from battle.',
+  'item.used': 'Used {name}!',
+  'item.healed': 'HP restored by {value}!',
+  'item.cantUseHere': "Can't use that here.",
+  'item.alreadyFull': 'HP is already full!',
 
   // ── Equipment ─────────────────────────────────────────────────────
   'equip.woodenSword': 'Wooden Sword',

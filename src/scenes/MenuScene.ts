@@ -504,9 +504,42 @@ export class MenuScene extends Phaser.Scene {
     if (!item || item.type !== 'consumable' || !item.effect) return;
 
     if (item.effect.type === 'heal') {
+      // Check if HP is already full
+      if (gameState.player.state.hp >= gameState.player.totalMaxHp) {
+        this.showItemMessage(t('item.alreadyFull'));
+        return;
+      }
+      const hpBefore = gameState.player.state.hp;
       gameState.player.heal(item.effect.value);
+      const healed = gameState.player.state.hp - hpBefore;
       gameState.player.removeItem(slot.itemId, 1);
+      audioManager.playSfx('heal');
+      this.showItemMessage(`${t('item.used', { name: t(item.nameKey) })} ${t('item.healed', { value: healed })}`);
+      // Adjust cursor if the last item was consumed
+      if (this.listIndex >= gameState.player.state.inventory.length) {
+        this.listIndex = Math.max(0, gameState.player.state.inventory.length - 1);
+      }
+    } else if (item.effect.type === 'escape') {
+      // Smoke bombs can only be used in battle — not from the menu
+      this.showItemMessage(t('item.cantUseHere'));
+      return;
     }
+
     this.drawMenu();
+  }
+
+  private showItemMessage(msg: string): void {
+    // Show a temporary message overlay on the items tab
+    const y = GAME_HEIGHT - 52;
+    const box = this.add.rectangle(GAME_WIDTH / 2, y, GAME_WIDTH - 16, 28, COLORS.MENU_BG, 0.95)
+      .setStrokeStyle(1, COLORS.MENU_BORDER).setDepth(100);
+    const text = this.add.text(GAME_WIDTH / 2, y, msg, {
+      fontSize: '11px', color: COLORS.TEXT_YELLOW, fontFamily: 'monospace',
+    }).setOrigin(0.5).setDepth(101);
+    // Auto-dismiss after 1.5 seconds
+    this.time.delayedCall(1500, () => {
+      box.destroy();
+      text.destroy();
+    });
   }
 }
