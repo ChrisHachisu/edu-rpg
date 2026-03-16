@@ -8,6 +8,21 @@ export class BootScene extends Phaser.Scene {
   }
 
   create(): void {
+    // Render text at 2× internal resolution — pixelArt:true applies NEAREST
+    // filtering to ALL textures including text. Higher-res text textures give
+    // WebGL more detail to work with, producing smoother readable text.
+    {
+      const textRes = Math.max(window.devicePixelRatio || 1, 2);
+      const orig = Phaser.GameObjects.GameObjectFactory.prototype.text;
+      (Phaser.GameObjects.GameObjectFactory.prototype as any).text = function (
+        this: Phaser.GameObjects.GameObjectFactory,
+        x: number, y: number, text: string | string[],
+        style?: Phaser.Types.GameObjects.Text.TextStyle
+      ): Phaser.GameObjects.Text {
+        return orig.call(this, x, y, text, { ...(style || {}), resolution: textRes });
+      };
+    }
+
     // Show loading text
     const text = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'Loading...', {
       fontSize: '14px',
