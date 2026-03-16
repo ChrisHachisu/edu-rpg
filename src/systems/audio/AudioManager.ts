@@ -1,6 +1,7 @@
 // Singleton audio manager — coordinates BGM (Tone.js) and SFX (Web Audio API)
 // Lazy-initializes on first user gesture (required by Chrome/Safari autoplay policy)
 
+import * as Tone from 'tone';
 import { MusicComposer, BgmTrack } from './MusicComposer';
 import { SfxLibrary, SfxId } from './SfxLibrary';
 
@@ -28,7 +29,16 @@ class AudioManagerImpl {
 
   private async _init(): Promise<void> {
     try {
-      this.ctx = new AudioContext();
+      // Start Tone.js FIRST — must happen in user gesture context before any
+      // other awaits, otherwise the browser blocks the AudioContext as autoplay.
+      await Tone.start();
+
+      // Reuse Tone's AudioContext for SFX (single context = better compatibility)
+      const toneRaw = Tone.getContext().rawContext;
+      this.ctx = toneRaw instanceof AudioContext
+        ? toneRaw
+        : new AudioContext();
+
       if (this.ctx.state === 'suspended') {
         await this.ctx.resume();
       }
@@ -40,8 +50,8 @@ class AudioManagerImpl {
       this.sfx = new SfxLibrary(this.ctx, this.masterGain);
 
       this.initialized = true;
-    } catch {
-      // Audio not available — silently degrade
+    } catch (e) {
+      console.warn('[AudioManager] init failed:', e);
       this.initialized = false;
     }
   }
@@ -49,7 +59,7 @@ class AudioManagerImpl {
   playBgm(track: BgmTrack): void {
     if (!this.initialized || !this.soundEnabled || !this.composer) return;
     if (this.composer.currentBgm === track) return;
-    this.composer.play(track);
+    this.composer.play(track).catch(e => console.warn('[AudioManager] BGM error:', e));
   }
 
   stopBgm(): void {

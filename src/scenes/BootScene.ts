@@ -8,6 +8,21 @@ export class BootScene extends Phaser.Scene {
   }
 
   create(): void {
+    // Patch text factory to render at higher resolution — pixelArt:true + CSS
+    // image-rendering:pixelated applies nearest-neighbor to the entire canvas,
+    // which makes thin/small text look fuzzy. Higher-res text textures fix this.
+    {
+      const textRes = Math.max(window.devicePixelRatio || 1, 2);
+      const orig = Phaser.GameObjects.GameObjectFactory.prototype.text;
+      (Phaser.GameObjects.GameObjectFactory.prototype as any).text = function (
+        this: Phaser.GameObjects.GameObjectFactory,
+        x: number, y: number, text: string | string[],
+        style?: Phaser.Types.GameObjects.Text.TextStyle
+      ): Phaser.GameObjects.Text {
+        return orig.call(this, x, y, text, { ...(style || {}), resolution: textRes });
+      };
+    }
+
     // Show loading text
     const text = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'Loading...', {
       fontSize: '14px',
