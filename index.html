@@ -14,7 +14,9 @@
       min-height: 100vh;
       overflow: hidden;
     }
-    canvas { image-rendering: pixelated; -webkit-image-rendering: pixelated; }
+    /* Sprites use WebGL NEAREST filtering (pixelArt:true) — no CSS override needed.
+       Removing image-rendering:pixelated lets the browser smoothly scale the canvas,
+       keeping text readable while sprites stay sharp at the framebuffer level. */
   </style>
 </head>
 <body>
