@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { generateAssets } from '../utils/AssetGenerator';
 import { GAME_WIDTH, GAME_HEIGHT, COLORS } from '../utils/constants';
+import { enableSmoothText } from '../utils/text';
 
 export class BootScene extends Phaser.Scene {
   constructor() {
@@ -8,6 +9,11 @@ export class BootScene extends Phaser.Scene {
   }
 
   create(): void {
+    // Override text texture filtering: pixelArt:true forces NEAREST on all
+    // textures including text, making it unreadable. This patches the factory
+    // so every this.add.text() call uses LINEAR filtering instead.
+    enableSmoothText();
+
     // Show loading text
     const text = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'Loading...', {
       fontSize: '14px',
