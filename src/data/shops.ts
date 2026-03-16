@@ -7,43 +7,22 @@ export const shops: Record<string, ShopData> = {
     nameKey: 'npc.shopkeeper',
     items: ['herb', 'smokeBomb', 'woodenSword', 'clothArmor', 'woodenShield', 'leatherCap'],
   },
-  oakshade: {
-    id: 'oakshade',
-    nameKey: 'npc.shopkeeper',
-    items: ['herb', 'potion', 'smokeBomb', 'bronzeSword', 'bronzeArmor', 'woodenShield', 'leatherCap'],
-  },
   portSapphire: {
     id: 'portSapphire',
     nameKey: 'npc.shopkeeper',
-    items: ['potion', 'smokeBomb', 'ironSword', 'leatherArmor', 'ironShield', 'ironHelm'],
+    items: ['herb', 'potion', 'smokeBomb', 'bronzeSword', 'ironSword', 'bronzeArmor', 'leatherArmor', 'ironShield', 'leatherCap', 'ironHelm'],
   },
   // Act 2 — mid-early
-  tidepools: {
-    id: 'tidepools',
-    nameKey: 'npc.shopkeeper',
-    items: ['potion', 'smokeBomb', 'steelSword', 'chainMail', 'ironShield', 'ironHelm'],
-  },
   ironkeep: {
     id: 'ironkeep',
     nameKey: 'npc.shopkeeper',
-    items: ['potion', 'hiPotion', 'smokeBomb', 'mithrilSword', 'mithrilArmor', 'steelShield', 'steelHelm'],
+    items: ['potion', 'hiPotion', 'smokeBomb', 'steelSword', 'mithrilSword', 'chainMail', 'mithrilArmor', 'steelShield', 'steelHelm'],
   },
-  // Act 3 — mid game
-  moonvale: {
-    id: 'moonvale',
-    nameKey: 'npc.shopkeeper',
-    items: ['hiPotion', 'smokeBomb', 'flameSword', 'plateArmor', 'steelShield', 'steelHelm'],
-  },
-  // Act 4 — late game
+  // Act 3/4 — mid-late game
   ruinsCamp: {
     id: 'ruinsCamp',
     nameKey: 'npc.shopkeeper',
-    items: ['hiPotion', 'elixir', 'smokeBomb', 'crystalBlade', 'dragonscaleArmor', 'mithrilShield', 'mithrilHelm'],
-  },
-  ashfall: {
-    id: 'ashfall',
-    nameKey: 'npc.shopkeeper',
-    items: ['hiPotion', 'elixir', 'smokeBomb', 'crystalBlade', 'dragonscaleArmor', 'mithrilShield', 'mithrilHelm'],
+    items: ['hiPotion', 'elixir', 'smokeBomb', 'flameSword', 'crystalBlade', 'plateArmor', 'dragonscaleArmor', 'mithrilShield', 'mithrilHelm'],
   },
   // Act 5 — endgame
   lastBastion: {

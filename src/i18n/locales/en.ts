@@ -105,7 +105,7 @@ export const enStrings: Record<string, string> = {
   // ── Intro Dialog ───────────────────────────────────────────────────
   'intro.elder1': 'Welcome, young hero. I am the Elder of Greenhollow Village. Dark times have fallen upon our world...',
   'intro.elder2': 'The Demon King Malachar has broken free of the seal your grandmother placed upon him. He has stolen the Crystals of Knowledge, and darkness spreads across Eldravia!',
-  'intro.elder3': 'You must journey east, grow stronger, and reclaim the crystals one by one. Start by visiting Oakshade Town — the guards there know the way to the Misty Grotto.',
+  'intro.elder3': 'You must journey east, grow stronger, and reclaim the crystals one by one. Head to the Misty Grotto to the southwest first — it\'s the first challenge on your path. Then travel east to the Crystal Cave beyond Port Sapphire!',
   'intro.elder4': 'Stock up at our shop before you go. Save your progress at the crystal in the center of town. May knowledge guide your path, young hero!',
 
   // ── NPCs / Story ──────────────────────────────────────────────────
@@ -122,12 +122,12 @@ export const enStrings: Record<string, string> = {
   'npc.wisewoman': 'Divine armor called the Aegis of Dawn lies in a celestial vault beyond the lava fields. But only Excalibur can break its seal. Find the blade first!',
   'npc.fisherman': 'The seas around here have gotten dangerous. Strange creatures from the deep — jellyfish and piranha — swarm the Coral Tunnels south of here. A terrible Kraken lurks in the depths!',
   'npc.diver': 'I used to dive in the Coral Tunnels before the darkness came. The Kraken sleeps at the very bottom — I barely escaped it once! Defeat it and you\'ll earn the Crystal of the Deep!',
-  'npc.soldier': 'The Frostpeak Cavern lies beyond the mountains. Beware the Ice Wyrm that guards the Crystal of Frost. Prepare well — the cold is deadly!',
+  'npc.soldier': 'The Shadow Tower pierces through the mountains to the east. A Red Dragon guards the passage to the northern lands. Defeat it to open the way forward!',
   'npc.blacksmith': 'I\'ve forged many weapons, but none compare to Excalibur — your grandmother\'s legendary blade, sealed away after the great war. They say it rests in a hidden sanctum in the demon realm\'s far west.',
   'npc.hermit': 'I\'ve lived alone in these mountains for years. Once, I saw a golden light in the far northeast beyond the lava fields. Something divine awaits there... but the entrance is sealed by ancient magic.',
   'npc.miner': 'We used to mine in these mountains, but the monsters drove us out. Blizzard Bears and Ice Sprites roam the caves now. Be careful in there!',
   'npc.archaeologist': 'My research into ancient texts reveals a sealed sanctum and celestial vault hidden at the edges of the demon realm. Two legendary relics sleep within, waiting for a worthy hero.',
-  'npc.explorer': 'I\'ve mapped most of Eldravia, but the northern wastes are too dangerous. Two dungeons remain up there — the Sunken Ruins and the Volcanic Forge. Good luck!',
+  'npc.explorer': 'The Volcanic Forge lies to the east, at the edge of the lava fields. The Flame Titan guards the passage to the demon realm beyond! Prepare well!',
   'npc.oldwarrior': 'I once fought alongside your grandmother against the Demon King. She never gave up, and neither should you! Prepare well and save your progress!',
   'npc.refugee': 'My family and I fled from the north... The Demon King\'s army is everywhere around his castle. But you\'ve come so far — I believe in you! Save Eldravia!',
   'npc.veteran': 'I fought alongside your grandmother when she defeated Malachar. She used two legendary relics — Excalibur and the Aegis of Dawn. Find them in the demon\'s territory before facing him!',
@@ -362,4 +362,5 @@ export const enStrings: Record<string, string> = {
   'dungeon.stairsUp': 'You ascend the stairs...',
   'dungeon.bossExitReturn': 'A mysterious portal appears... It will take you back outside!',
   'dungeon.gatePassageOpen': 'The way ahead is now clear! You can travel freely through the cave.',
+  'dungeon.gateBlocked': 'Dark power seals this passage... You must find another way through.',
 };

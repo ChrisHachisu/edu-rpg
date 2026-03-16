@@ -92,12 +92,15 @@ export class WorldMapScene extends Phaser.Scene {
       this.mapData = generateTownMap(def.width, def.height, mapId.charCodeAt(0) * 137);
     } else if (def.type === 'dungeon') {
       const totalFloors = def.floors ?? 1;
-      const isGate = def.connections.length > 1;
+      const isSingleFloorGate = def.connections.length > 1 && totalFloors === 1;
+      const isMultiFloorGate = def.connections.length > 1 && totalFloors > 1;
+      const isGateFinalFloor = isMultiFloorGate && this.currentFloor === totalFloors;
       this.mapData = generateDungeonMap(
         def.width, def.height,
         mapId.charCodeAt(0) * 251,
         this.currentFloor, totalFloors,
-        isGate,
+        isSingleFloorGate,
+        isGateFinalFloor,
       );
       // Mark already-opened chests and remove defeated boss tiles
       const isFinalFloor = this.currentFloor === totalFloors;
@@ -111,8 +114,8 @@ export class WorldMapScene extends Phaser.Scene {
           }
           if (this.mapData[y][x] === 7 && def.bossId && isFinalFloor) {
             if (gameState.player.state.storyFlags[`boss.${def.bossId}.defeated`]) {
-              const isGate = def.connections.length > 1;
-              this.mapData[y][x] = isGate ? 0 : 10; // gate → floor (walk-through), normal → exit portal
+              const isGateDungeon = def.connections.length > 1;
+              this.mapData[y][x] = isGateDungeon ? 0 : 10; // gate → floor (walk to stairs), normal → exit portal
             }
           }
         }
@@ -352,11 +355,11 @@ export class WorldMapScene extends Phaser.Scene {
     return true;
   }
 
-  private checkTransition(x: number, y: number): { targetMap: string; toX: number; toY: number } | null {
+  private checkTransition(x: number, y: number): { targetMap: string; toX: number; toY: number; toFloor?: number } | null {
     const def = mapDefs[this.currentMapId];
     for (const conn of def.connections) {
       if (conn.fromX === x && conn.fromY === y) {
-        return { targetMap: conn.targetMap, toX: conn.toX, toY: conn.toY };
+        return { targetMap: conn.targetMap, toX: conn.toX, toY: conn.toY, toFloor: conn.toFloor };
       }
     }
 
@@ -367,7 +370,7 @@ export class WorldMapScene extends Phaser.Scene {
         // Find which connection this is
         for (const conn of def.connections) {
           if (Math.abs(conn.fromX - x) <= 1 && Math.abs(conn.fromY - y) <= 1) {
-            return { targetMap: conn.targetMap, toX: conn.toX, toY: conn.toY };
+            return { targetMap: conn.targetMap, toX: conn.toX, toY: conn.toY, toFloor: conn.toFloor };
           }
         }
       }
@@ -385,6 +388,19 @@ export class WorldMapScene extends Phaser.Scene {
         // Tile 6 = stairs up
         if (tile === 6) {
           if (this.currentFloor > 1) {
+            // Check if bottom stairs on final floor of gate dungeon → exit to next act
+            const isGate = def.connections.length > 1;
+            const isFinal = this.currentFloor === (def.floors ?? 1);
+            if (isGate && isFinal && y > def.height / 2) {
+              // Exit to overworld via closest connection (matches connection[1])
+              let best = def.connections[0];
+              let bestDist = Infinity;
+              for (const conn of def.connections) {
+                const d = Math.abs(conn.fromX - x) + Math.abs(conn.fromY - y);
+                if (d < bestDist) { bestDist = d; best = conn; }
+              }
+              return { targetMap: best.targetMap, toX: best.toX, toY: best.toY };
+            }
             // Go up one floor
             return { targetMap: '__floor_up__', toX: 0, toY: 0 };
           } else {
@@ -404,9 +420,10 @@ export class WorldMapScene extends Phaser.Scene {
         if (tile === 9) {
           return { targetMap: '__floor_down__', toX: 0, toY: 0 };
         }
-        // Tile 10 = boss-exit portal — always teleport back to overworld entrance
+        // Tile 10 = boss-exit portal — gate dungeons use last connection, others use first
         if (tile === 10) {
-          const conn = def.connections[0];
+          const isGate = def.connections.length > 1;
+          const conn = isGate ? def.connections[def.connections.length - 1] : def.connections[0];
           if (conn) {
             return { targetMap: conn.targetMap, toX: conn.toX, toY: conn.toY };
           }
@@ -417,12 +434,22 @@ export class WorldMapScene extends Phaser.Scene {
     return null;
   }
 
-  private performTransition(target: { targetMap: string; toX: number; toY: number }): void {
+  private performTransition(target: { targetMap: string; toX: number; toY: number; toFloor?: number }): void {
     // Block Celestial Vault entry until Sword Wraith defeated (Excalibur obtained)
     if (target.targetMap === 'celestialVault' && !gameState.player.state.storyFlags['boss.swordWraith.defeated']) {
       this.isMoving = false;
       this.showMessage(t('dungeon.celestialVault.locked'));
       return;
+    }
+
+    // Block gate dungeon north entrance until boss defeated
+    if (target.toFloor && target.toFloor > 1) {
+      const targetDef = mapDefs[target.targetMap];
+      if (targetDef?.bossId && !gameState.player.state.storyFlags[`boss.${targetDef.bossId}.defeated`]) {
+        this.isMoving = false;
+        this.showMessage(t('dungeon.gateBlocked'));
+        return;
+      }
     }
 
     // Block movement during transition to prevent re-entry
@@ -449,8 +476,8 @@ export class WorldMapScene extends Phaser.Scene {
         this.updatePosition();
         this.loadMap(this.currentMapId);
       } else {
-        // Normal map transition — reset floor
-        this.currentFloor = 1;
+        // Normal map transition — use target floor (for gate re-entry) or reset
+        this.currentFloor = target.toFloor ?? 1;
         this.heroTileX = target.toX;
         this.heroTileY = target.toY;
         this.updatePosition();
@@ -649,22 +676,10 @@ export class WorldMapScene extends Phaser.Scene {
         if (rand < 0.5) return { gold: 15, itemId: 'herb' };
         if (rand < 0.8) return { gold: 25 };
         return { gold: 10, itemId: 'potion' };
-      case 'coralTunnels':
-        if (rand < 0.4) return { gold: 30, itemId: 'potion' };
-        if (rand < 0.7) return { gold: 40 };
-        return { gold: 20, itemId: 'hiPotion' };
       case 'shadowTower':
         if (rand < 0.4) return { gold: 40, itemId: 'potion' };
         if (rand < 0.7) return { gold: 60 };
         return { gold: 30, itemId: 'hiPotion' };
-      case 'frostpeakCavern':
-        if (rand < 0.4) return { gold: 60, itemId: 'hiPotion' };
-        if (rand < 0.7) return { gold: 80 };
-        return { gold: 50, itemId: 'hiPotion' };
-      case 'sunkenRuins':
-        if (rand < 0.4) return { gold: 80, itemId: 'hiPotion' };
-        if (rand < 0.7) return { gold: 100 };
-        return { gold: 60, itemId: 'elixir' };
       case 'volcanicForge':
         if (rand < 0.4) return { gold: 100, itemId: 'hiPotion' };
         if (rand < 0.7) return { gold: 120 };
@@ -740,12 +755,22 @@ export class WorldMapScene extends Phaser.Scene {
       { fontSize: '10px', color: COLORS.TEXT_WHITE, fontFamily: 'monospace', backgroundColor: '#1a1a3ecc', padding: { x: 4, y: 2 } }
     ).setDepth(100).setScrollFactor(0);
 
-    // Floor indicator (only in multi-floor dungeons)
+    // Dungeon/town name indicator
     const def = mapDefs[this.currentMapId];
-    if (def.type === 'dungeon' && (def.floors ?? 1) > 1) {
+    if (def.type === 'dungeon' || def.type === 'town') {
+      const totalFloors = def.floors ?? 1;
+      let label = def.nameKey;
+      if (totalFloors > 1) {
+        const isGate = def.connections.length > 1;
+        const midpoint = Math.ceil(totalFloors / 2);
+        const displayFloor = (isGate && this.currentFloor > midpoint)
+          ? totalFloors - this.currentFloor + 1
+          : this.currentFloor;
+        label += ` — B${displayFloor}F`;
+      }
       this.floorText = this.add.text(
         8, 24,
-        `B${this.currentFloor}F`,
+        label,
         { fontSize: '10px', color: COLORS.TEXT_YELLOW, fontFamily: 'monospace', backgroundColor: '#1a1a3ecc', padding: { x: 4, y: 2 } }
       ).setDepth(100).setScrollFactor(0);
     }

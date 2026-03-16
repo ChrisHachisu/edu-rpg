@@ -63,32 +63,26 @@ export function generateOverworldMap(width: number, height: number): number[][] 
     map.push(row);
   }
 
-  // Carve paths between key locations (expanded 5-act network)
+  // Carve paths between key locations (5-act network)
   // Paths are organized by act — NO cross-barrier paths
   const paths: [number, number][] = [
     // ── Act 1 — south of river ──
     ...pathBetween(10, 50, 16, 45),   // greenhollow → mistyGrotto
-    ...pathBetween(10, 50, 20, 38),   // greenhollow → oakshade
-    ...pathBetween(20, 38, 38, 40),   // oakshade → portSapphire
-    ...pathBetween(38, 40, 44, 38),   // portSapphire → tidepools
-    ...pathBetween(38, 40, 40, 31),   // portSapphire → crystalCave entrance (river south bank)
-    ...pathBetween(40, 31, 40, 25),   // guide path through river gap area (overwritten by river, reconnects when gap opens)
+    ...pathBetween(10, 50, 38, 40),   // greenhollow → portSapphire (direct)
+    ...pathBetween(38, 40, 40, 31),   // portSapphire → crystalCave entrance
+    ...pathBetween(40, 31, 40, 25),   // guide path through river gap area
     // ── Act 2 — between river and mountains ──
-    ...pathBetween(40, 26, 40, 25),   // crystalCave north entrance → Act 2 path
-    ...pathBetween(40, 25, 44, 25),   // crystalCave exit → coralTunnels
-    ...pathBetween(44, 25, 48, 25),   // coralTunnels → ironkeep
-    ...pathBetween(48, 25, 42, 21),   // ironkeep → moonvale
-    ...pathBetween(48, 25, 50, 19),   // ironkeep → shadowTower entrance (mountain south face)
+    ...pathBetween(40, 26, 40, 25),   // crystalCave north → Act 2 path
+    ...pathBetween(40, 25, 48, 25),   // crystalCave exit → ironkeep (direct)
+    ...pathBetween(48, 25, 50, 19),   // ironkeep → shadowTower south entrance
     ...pathBetween(50, 19, 50, 14),   // guide path through mountain gap area
     // ── Act 3/4 — between mountains and lava ──
-    ...pathBetween(50, 14, 45, 13),   // shadowTower exit → frostpeakCavern
-    ...pathBetween(50, 14, 48, 11),   // shadowTower exit → ruinsCamp
-    ...pathBetween(48, 11, 52, 11),   // ruinsCamp → sunkenRuins
-    ...pathBetween(48, 11, 55, 13),   // ruinsCamp → ashfall
-    ...pathBetween(55, 13, 56, 9),    // ashfall → volcanicForge entrance (lava south edge)
+    ...pathBetween(50, 14, 48, 11),   // shadowTower north → ruinsCamp
+    ...pathBetween(48, 11, 56, 9),    // ruinsCamp → volcanicForge south (direct)
     ...pathBetween(56, 9, 56, 6),     // guide path through lava gap area
     // ── Act 5 — north of lava ──
-    ...pathBetween(56, 6, 56, 5),     // volcanicForge exit → lastBastion
+    ...pathBetween(56, 7, 56, 6),     // volcanicForge north → existing path
+    ...pathBetween(56, 6, 56, 5),     // → lastBastion
     ...pathBetween(56, 5, 58, 4),     // lastBastion → demonCastle
     // ── Hidden legendary dungeon paths (Act 5 — remote corners) ──
     ...pathBetween(56, 5, 30, 5),     // lastBastion → westward through demon realm
@@ -106,20 +100,24 @@ export function generateOverworldMap(width: number, height: number): number[][] 
     }
   }
 
-  // Place town markers (9 towns)
+  // Place town markers (5 towns)
   const towns: [number, number][] = [
-    [10, 50], [20, 38], [38, 40], [44, 38], [48, 25],
-    [42, 21], [48, 11], [55, 13], [56, 5],
+    [10, 50], [38, 40],  // Act 1: Greenhollow, Port Sapphire
+    [48, 25],             // Act 2: Ironkeep
+    [48, 11],             // Act 3/4: Ruins Camp
+    [56, 5],              // Act 5: Last Bastion
   ];
   for (const [tx, ty] of towns) {
     map[ty][tx] = 6;
   }
 
-  // Place dungeon entrances (11 dungeons — 8 original + 1 gate north + 2 hidden legendary)
+  // Place dungeon entrances (9 — 5 story + 2 gate norths + 2 hidden legendary)
   const dungeons: [number, number][] = [
-    [16, 45], [40, 31], [40, 26], [44, 25], [50, 19],
-    [45, 13], [52, 11], [56, 9], [58, 4],
-    [4, 4], [75, 4],
+    [16, 45], [40, 31], [40, 26],  // Act 1: Misty Grotto, Crystal Cave S/N
+    [50, 19], [50, 14],             // Act 2→3: Shadow Tower S/N
+    [56, 9], [56, 7],               // Act 4→5: Volcanic Forge S/N
+    [58, 4],                        // Act 5: Demon Castle
+    [4, 4], [75, 4],                // Legendary: Sanctum, Vault
   ];
   for (const [dx, dy] of dungeons) {
     map[dy][dx] = 7;
@@ -368,12 +366,14 @@ interface Room {
  * @param seed     - base seed for this dungeon
  * @param floor    - 1-based floor index (default 1)
  * @param totalFloors - total number of floors in this dungeon (default 1)
- * @param gate     - gate dungeon mode: stairs at BOTH top and bottom, boss near top
+ * @param gate     - gate dungeon mode: stairs at BOTH top and bottom, boss near top (Crystal Cave)
+ * @param gateFinalFloor - gate dungeon final floor: boss blocks 1-tile corridor to exit stairs
  */
 export function generateDungeonMap(
   width: number, height: number, seed: number,
   floor: number = 1, totalFloors: number = 1,
   gate: boolean = false,
+  gateFinalFloor: boolean = false,
 ): number[][] {
   // Unique seed per floor
   const floorSeed = seed + (floor - 1) * 997;
@@ -571,7 +571,40 @@ export function generateDungeonMap(
       carveLCorridor(map, lastRoom.cx, lastRoom.cy, bottomX, bottomRoomY - 1, rand);
     }
 
-    if (isFinalFloor) {
+    if (gateFinalFloor && isFinalFloor) {
+      // Gate dungeon final floor: boss blocks 1-tile corridor to exit stairs
+      // Override the standard bottom room with a boss-blocked bottleneck layout
+
+      // Boss fight room (5×3) higher up
+      const bossRoomY = height - 7;
+      for (let dy = 0; dy < 3; dy++) {
+        for (let dx = -2; dx <= 2; dx++) {
+          const bx = entranceX + dx;
+          const by = bossRoomY + dy;
+          if (bx > 0 && bx < width - 1 && by > 0 && by < height - 1) {
+            map[by][bx] = 0;
+          }
+        }
+      }
+      // Connect last room to boss fight room
+      if (rooms.length > 0) {
+        const lastRoom = rooms[rooms.length - 1];
+        carveLCorridor(map, lastRoom.cx, lastRoom.cy, entranceX, bossRoomY, rand);
+      }
+
+      // Narrow 1-tile corridor leading to boss (only entranceX is passable)
+      for (let cy = height - 4; cy <= height - 3; cy++) {
+        if (cy > 0 && cy < height - 1) {
+          map[cy][entranceX] = 0;
+        }
+      }
+
+      // Boss at entranceX, height-2 — blocks the only passage
+      map[height - 2][entranceX] = 7;
+
+      // Exit stairs behind boss (hidden until boss defeated)
+      map[height - 1][entranceX] = 6;
+    } else if (isFinalFloor) {
       // Boss marker at center of bottom room
       map[bottomRoomY + 1][bottomX] = 7;
     } else {

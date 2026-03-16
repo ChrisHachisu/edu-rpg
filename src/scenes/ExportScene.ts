@@ -443,11 +443,10 @@ ${sections.join('\n')}
 
     // Game progression
     html += '<h3>Progression</h3>';
-    html += '<p>Act 1 (Lv 1-6): Greenhollow → Misty Grotto → Crystal Cave</p>';
-    html += '<p>Act 2 (Lv 7-12): Oakshade/Port Sapphire → Coral Tunnels → Shadow Tower</p>';
-    html += '<p>Act 3 (Lv 13-18): Ironkeep/Moonvale → Frostpeak Cavern → Sunken Ruins</p>';
-    html += '<p>Act 4 (Lv 19-24): Ruins Camp/Ashfall → Volcanic Forge → Sealed Sanctum + Celestial Vault</p>';
-    html += '<p>Act 5 (Lv 25-30): Last Bastion → Demon Castle → Final Boss</p>';
+    html += '<p>Act 1 (Lv 1-6): Greenhollow → Misty Grotto → Crystal Cave (gate to Act 2)</p>';
+    html += '<p>Act 2 (Lv 7-12): Port Sapphire → Ironkeep → Shadow Tower (gate to Act 3)</p>';
+    html += '<p>Act 3/4 (Lv 13-24): Ruins Camp → Volcanic Forge (gate to Act 5)</p>';
+    html += '<p>Act 5 (Lv 25-30): Last Bastion → Sealed Sanctum + Celestial Vault → Demon Castle → Final Boss</p>';
 
     // Starting stats
     html += '<h3>Starting Stats</h3>';
