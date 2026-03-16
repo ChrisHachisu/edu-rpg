@@ -146,12 +146,18 @@ export class WorldMapScene extends Phaser.Scene {
     }
   }
 
+  private static readonly FEMALE_NPCS = new Set([
+    'villager1', 'scholar', 'wisewoman', 'diver', 'blacksmith',
+    'hermit', 'archaeologist', 'refugee', 'veteran', 'priestess',
+  ]);
+
   private renderNPCs(def: typeof mapDefs[string]): void {
     for (const npc of def.npcs) {
+      const spriteKey = WorldMapScene.FEMALE_NPCS.has(npc.id) ? 'npc-f' : 'npc';
       const sprite = this.add.sprite(
         npc.x * TILE_SIZE + TILE_SIZE / 2,
         npc.y * TILE_SIZE + TILE_SIZE / 2,
-        'npc'
+        spriteKey
       ).setOrigin(0.5).setScale(2);
       this.npcSprites.push(sprite);
     }

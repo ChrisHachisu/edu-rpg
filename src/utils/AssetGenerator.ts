@@ -1570,6 +1570,27 @@ function generateUIAssets(scene: Phaser.Scene): void {
   gn.generateTexture('npc', 16, 16);
   gn.destroy();
 
+  // Female NPC sprite
+  const gf = scene.add.graphics().setVisible(false);
+  gf.fillStyle(0xddbb88); // skin
+  gf.fillRect(6, 2, 4, 4);
+  gf.fillStyle(0x663322); // hair (longer, darker brown)
+  gf.fillRect(5, 1, 6, 2);
+  gf.fillRect(5, 3, 1, 3); // hair sides (longer)
+  gf.fillRect(10, 3, 1, 3);
+  gf.fillStyle(0x7744aa); // clothes (purple)
+  gf.fillRect(5, 6, 6, 4);
+  gf.fillStyle(0x6633aa); // skirt (slightly darker purple, A-line)
+  gf.fillRect(4, 10, 8, 2);
+  gf.fillStyle(0x000000); // eyes
+  gf.fillRect(7, 4, 1, 1);
+  gf.fillRect(9, 4, 1, 1);
+  gf.fillStyle(0x553311); // boots
+  gf.fillRect(6, 12, 2, 3);
+  gf.fillRect(8, 12, 2, 3);
+  gf.generateTexture('npc-f', 16, 16);
+  gf.destroy();
+
   // Save point — glowing crystal on pedestal
   const gs = scene.add.graphics().setVisible(false);
   // Pedestal base
