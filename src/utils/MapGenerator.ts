@@ -74,6 +74,7 @@ export function generateOverworldMap(width: number, height: number): number[][] 
     ...pathBetween(38, 40, 40, 31),   // portSapphire → crystalCave entrance (river south bank)
     ...pathBetween(40, 31, 40, 25),   // guide path through river gap area (overwritten by river, reconnects when gap opens)
     // ── Act 2 — between river and mountains ──
+    ...pathBetween(40, 26, 40, 25),   // crystalCave north entrance → Act 2 path
     ...pathBetween(40, 25, 44, 25),   // crystalCave exit → coralTunnels
     ...pathBetween(44, 25, 48, 25),   // coralTunnels → ironkeep
     ...pathBetween(48, 25, 42, 21),   // ironkeep → moonvale
@@ -114,9 +115,9 @@ export function generateOverworldMap(width: number, height: number): number[][] 
     map[ty][tx] = 6;
   }
 
-  // Place dungeon entrances (10 dungeons — 8 original + 2 hidden legendary)
+  // Place dungeon entrances (11 dungeons — 8 original + 1 gate north + 2 hidden legendary)
   const dungeons: [number, number][] = [
-    [16, 45], [40, 31], [44, 25], [50, 19],
+    [16, 45], [40, 31], [40, 26], [44, 25], [50, 19],
     [45, 13], [52, 11], [56, 9], [58, 4],
     [4, 4], [75, 4],
   ];
@@ -367,10 +368,12 @@ interface Room {
  * @param seed     - base seed for this dungeon
  * @param floor    - 1-based floor index (default 1)
  * @param totalFloors - total number of floors in this dungeon (default 1)
+ * @param gate     - gate dungeon mode: stairs at BOTH top and bottom, boss near top
  */
 export function generateDungeonMap(
   width: number, height: number, seed: number,
   floor: number = 1, totalFloors: number = 1,
+  gate: boolean = false,
 ): number[][] {
   // Unique seed per floor
   const floorSeed = seed + (floor - 1) * 997;
@@ -388,11 +391,15 @@ export function generateDungeonMap(
   const minRoomSize = 3;
   const maxRoomSize = Math.min(7, Math.floor(width / 4));
 
+  // Gate dungeons reserve extra rows at both ends for boss room (top) and south entrance (bottom)
+  const roomYMin = gate ? 6 : 2;
+  const roomYMax = gate ? height - 6 : height - 4;
+
   for (let attempt = 0; attempt < 200 && rooms.length < roomCount; attempt++) {
     const rw = minRoomSize + Math.floor(rand() * (maxRoomSize - minRoomSize + 1));
     const rh = minRoomSize + Math.floor(rand() * (maxRoomSize - minRoomSize + 1));
     const rx = 1 + Math.floor(rand() * (width - rw - 2));
-    const ry = 2 + Math.floor(rand() * (height - rh - 4)); // leave row 0-1 for entrance, last 2 for boss/stairs
+    const ry = roomYMin + Math.floor(rand() * (roomYMax - rh - roomYMin)); // leave reserved rows
 
     // Check overlap (with 1-tile margin)
     let overlaps = false;
@@ -476,50 +483,107 @@ export function generateDungeonMap(
     }
   }
 
-  // --- Entrance at top ---
   const entranceX = Math.floor(width / 2);
-  // Carve entrance area
-  for (let dx = -1; dx <= 1; dx++) {
-    const ex = entranceX + dx;
-    if (ex > 0 && ex < width - 1) {
-      map[1][ex] = 0;
-      map[2][ex] = 0;
-    }
-  }
-  // Floor 1: stairs-up exits to overworld; deeper floors: stairs-up goes to previous floor
-  map[0][entranceX] = 6; // tile 6 = stairs-up
-  // Connect entrance to nearest room
-  if (rooms.length > 0) {
-    carveLCorridor(map, entranceX, 2, rooms[0].cx, rooms[0].cy, rand);
-  }
 
-  // --- Bottom area: boss (final floor) or stairs-down (non-final floor) ---
-  const bottomX = Math.floor(width / 2);
-  const bottomRoomY = height - 3;
-  // Carve bottom room (5×3)
-  for (let dy = 0; dy < 3; dy++) {
-    for (let dx = -2; dx <= 2; dx++) {
-      const bx = bottomX + dx;
-      const by = bottomRoomY + dy;
-      if (bx > 0 && bx < width - 1 && by > 0 && by < height - 1) {
-        map[by][bx] = 0;
+  if (gate) {
+    // ── Gate dungeon: stairs at BOTH top and bottom, boss near top ──
+
+    // --- North exit area (top): stair + boss room ---
+    map[0][entranceX] = 6; // stairs-up → Act 2 exit
+    for (let dx = -1; dx <= 1; dx++) {
+      const ex = entranceX + dx;
+      if (ex > 0 && ex < width - 1) {
+        map[1][ex] = 0;
+        map[2][ex] = 0;
       }
     }
-  }
-  // Bottom room entrance
-  map[bottomRoomY - 1][bottomX] = 0;
-  // Connect last room to bottom room
-  if (rooms.length > 0) {
-    const lastRoom = rooms[rooms.length - 1];
-    carveLCorridor(map, lastRoom.cx, lastRoom.cy, bottomX, bottomRoomY - 1, rand);
-  }
+    // Boss room (5×3) at y=3..5
+    for (let dy = 0; dy < 3; dy++) {
+      for (let dx = -2; dx <= 2; dx++) {
+        const bx = entranceX + dx;
+        const by = 3 + dy;
+        if (bx > 0 && bx < width - 1 && by > 0 && by < height - 1) {
+          map[by][bx] = 0;
+        }
+      }
+    }
+    map[4][entranceX] = 7; // boss tile — blocks north-south passage
+    // Connect first room to boss room (south side at y=5)
+    if (rooms.length > 0) {
+      carveLCorridor(map, entranceX, 5, rooms[0].cx, rooms[0].cy, rand);
+    }
 
-  if (isFinalFloor) {
-    // Boss marker at center of bottom room
-    map[bottomRoomY + 1][bottomX] = 7;
+    // --- South entrance area (bottom): stair + room ---
+    map[height - 1][entranceX] = 6; // stairs-up → Act 1 exit
+    for (let dx = -1; dx <= 1; dx++) {
+      const ex = entranceX + dx;
+      if (ex > 0 && ex < width - 1) {
+        map[height - 2][ex] = 0;
+        map[height - 3][ex] = 0;
+      }
+    }
+    // South room (5×3) at y=(height-6)..(height-4)
+    for (let dy = 0; dy < 3; dy++) {
+      for (let dx = -2; dx <= 2; dx++) {
+        const bx = entranceX + dx;
+        const by = (height - 6) + dy;
+        if (bx > 0 && bx < width - 1 && by > 0 && by < height - 1) {
+          map[by][bx] = 0;
+        }
+      }
+    }
+    // Connect last room to south entrance area
+    if (rooms.length > 0) {
+      const lastRoom = rooms[rooms.length - 1];
+      carveLCorridor(map, lastRoom.cx, lastRoom.cy, entranceX, height - 6, rand);
+    }
   } else {
-    // Stairs-down to next floor
-    map[bottomRoomY + 1][bottomX] = 9; // tile 9 = stairs-down
+    // ── Standard dungeon: entrance at top, boss/stairs at bottom ──
+
+    // --- Entrance at top ---
+    // Carve entrance area
+    for (let dx = -1; dx <= 1; dx++) {
+      const ex = entranceX + dx;
+      if (ex > 0 && ex < width - 1) {
+        map[1][ex] = 0;
+        map[2][ex] = 0;
+      }
+    }
+    // Floor 1: stairs-up exits to overworld; deeper floors: stairs-up goes to previous floor
+    map[0][entranceX] = 6; // tile 6 = stairs-up
+    // Connect entrance to nearest room
+    if (rooms.length > 0) {
+      carveLCorridor(map, entranceX, 2, rooms[0].cx, rooms[0].cy, rand);
+    }
+
+    // --- Bottom area: boss (final floor) or stairs-down (non-final floor) ---
+    const bottomX = entranceX;
+    const bottomRoomY = height - 3;
+    // Carve bottom room (5×3)
+    for (let dy = 0; dy < 3; dy++) {
+      for (let dx = -2; dx <= 2; dx++) {
+        const bx = bottomX + dx;
+        const by = bottomRoomY + dy;
+        if (bx > 0 && bx < width - 1 && by > 0 && by < height - 1) {
+          map[by][bx] = 0;
+        }
+      }
+    }
+    // Bottom room entrance
+    map[bottomRoomY - 1][bottomX] = 0;
+    // Connect last room to bottom room
+    if (rooms.length > 0) {
+      const lastRoom = rooms[rooms.length - 1];
+      carveLCorridor(map, lastRoom.cx, lastRoom.cy, bottomX, bottomRoomY - 1, rand);
+    }
+
+    if (isFinalFloor) {
+      // Boss marker at center of bottom room
+      map[bottomRoomY + 1][bottomX] = 7;
+    } else {
+      // Stairs-down to next floor
+      map[bottomRoomY + 1][bottomX] = 9; // tile 9 = stairs-down
+    }
   }
 
   return map;

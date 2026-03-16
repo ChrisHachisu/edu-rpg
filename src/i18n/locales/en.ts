@@ -357,4 +357,5 @@ export const enStrings: Record<string, string> = {
   'dungeon.stairsDown': 'You descend deeper...',
   'dungeon.stairsUp': 'You ascend the stairs...',
   'dungeon.bossExitReturn': 'A mysterious portal appears... It will take you back outside!',
+  'dungeon.gatePassageOpen': 'The way ahead is now clear! You can travel freely through the cave.',
 };

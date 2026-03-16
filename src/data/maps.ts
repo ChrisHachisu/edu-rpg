@@ -35,7 +35,8 @@ export const mapDefs: Record<string, MapDef> = {
       { targetMap: 'lastBastion', fromX: 56, fromY: 5, toX: 8, toY: 14 },
       // ── Dungeon entrances ──
       { targetMap: 'mistyGrotto', fromX: 16, fromY: 45, toX: 7, toY: 2 },
-      { targetMap: 'crystalCave', fromX: 40, fromY: 31, toX: 10, toY: 2 },
+      { targetMap: 'crystalCave', fromX: 40, fromY: 31, toX: 10, toY: 60 },
+      { targetMap: 'crystalCave', fromX: 40, fromY: 26, toX: 10, toY: 5 },
       { targetMap: 'coralTunnels', fromX: 44, fromY: 25, toX: 9, toY: 2 },
       { targetMap: 'shadowTower', fromX: 50, fromY: 19, toX: 12, toY: 2 },
       { targetMap: 'frostpeakCavern', fromX: 45, fromY: 13, toX: 11, toY: 2 },
@@ -219,20 +220,22 @@ export const mapDefs: Record<string, MapDef> = {
     floors: 1,
   },
   // Act 1 GATE dungeon — tunnels UNDER the river barrier
-  // Entrance at south bank (40,31), exit at north bank (40,25)
+  // South entrance at (40,31) Act 1 side, north exit at (40,26) Act 2 side
+  // Single tall floor (21×63) — boss blocks north passage until defeated
   crystalCave: {
     id: 'crystalCave',
     nameKey: 'Crystal Cave',
     type: 'dungeon',
     encounterZone: 'crystal-cave',
     width: 21,
-    height: 21,
+    height: 63,
     connections: [
-      { targetMap: 'overworld', fromX: 10, fromY: 0, toX: 40, toY: 32 },
+      { targetMap: 'overworld', fromX: 10, fromY: 62, toX: 40, toY: 32 }, // south exit → Act 1
+      { targetMap: 'overworld', fromX: 10, fromY: 0, toX: 40, toY: 25 },  // north exit → Act 2
     ],
     npcs: [],
     bossId: 'serpent',
-    floors: 3,
+    floors: 1,
   },
   // Act 2 water-themed — north of river near coral formations
   coralTunnels: {

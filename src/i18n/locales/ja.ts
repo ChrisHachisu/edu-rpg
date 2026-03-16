@@ -357,4 +357,5 @@ export const jaStrings: Record<string, string> = {
   'dungeon.stairsDown': 'ダンジョンの おくへと おりていく…',
   'dungeon.stairsUp': 'かいだんを あがった…',
   'dungeon.bossExitReturn': 'ふしぎな ポータルが あらわれた…そとに もどれそうだ！',
+  'dungeon.gatePassageOpen': 'みちが ひらけた！どうくつを じゆうに いききできるようになった。',
 };

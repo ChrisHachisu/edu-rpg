@@ -92,10 +92,12 @@ export class WorldMapScene extends Phaser.Scene {
       this.mapData = generateTownMap(def.width, def.height, mapId.charCodeAt(0) * 137);
     } else if (def.type === 'dungeon') {
       const totalFloors = def.floors ?? 1;
+      const isGate = def.connections.length > 1;
       this.mapData = generateDungeonMap(
         def.width, def.height,
         mapId.charCodeAt(0) * 251,
         this.currentFloor, totalFloors,
+        isGate,
       );
       // Mark already-opened chests and remove defeated boss tiles
       const isFinalFloor = this.currentFloor === totalFloors;
@@ -385,9 +387,15 @@ export class WorldMapScene extends Phaser.Scene {
             // Go up one floor
             return { targetMap: '__floor_up__', toX: 0, toY: 0 };
           } else {
-            // Floor 1: exit to overworld
+            // Floor 1: exit to overworld — match closest connection by position
+            let best = def.connections[0];
+            let bestDist = Infinity;
             for (const conn of def.connections) {
-              return { targetMap: conn.targetMap, toX: conn.toX, toY: conn.toY };
+              const d = Math.abs(conn.fromX - x) + Math.abs(conn.fromY - y);
+              if (d < bestDist) { bestDist = d; best = conn; }
+            }
+            if (best) {
+              return { targetMap: best.targetMap, toX: best.toX, toY: best.toY };
             }
           }
         }
@@ -836,9 +844,10 @@ export class WorldMapScene extends Phaser.Scene {
           });
         }
 
-        // Remove boss tile and place exit portal (tile 10) below boss position
+        // Remove boss tile — gate dungeons open a walkable path, others get exit portal
+        const isGateDungeon = def.connections.length > 1;
         this.time.delayedCall(800, () => {
-          this.mapData[bossTileY][bossTileX] = 10; // exit portal replaces boss
+          this.mapData[bossTileY][bossTileX] = isGateDungeon ? 0 : 10;
           this.renderMap();
           this.createHero();
           this.updateCamera();
@@ -855,10 +864,10 @@ export class WorldMapScene extends Phaser.Scene {
           gameState.player.equip('aegisOfDawn');
         }
 
-        // Show defeat dialog, then portal/victory dialog
+        // Show defeat dialog, then portal/passage/victory dialog
         this.time.delayedCall(1600, () => {
           const defeatMsg = t(`dungeon.${this.currentMapId}.boss.defeat`);
-          const portalMsg = t('dungeon.bossExitReturn');
+          const portalMsg = isGateDungeon ? t('dungeon.gatePassageOpen') : t('dungeon.bossExitReturn');
           const victoryMsg = t(`dungeon.${this.currentMapId}.victory`);
 
           // Legendary item obtainment dialog
