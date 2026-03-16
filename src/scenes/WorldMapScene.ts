@@ -762,7 +762,7 @@ export class WorldMapScene extends Phaser.Scene {
     const def = mapDefs[this.currentMapId];
     if (def.type === 'dungeon' || def.type === 'town') {
       const totalFloors = def.floors ?? 1;
-      let label = def.nameKey;
+      let label = t(def.nameKey);
       if (totalFloors > 1) {
         const isGate = def.connections.length > 1;
         const midpoint = Math.ceil(totalFloors / 2);

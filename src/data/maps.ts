@@ -18,7 +18,7 @@ export interface MapDef {
 export const mapDefs: Record<string, MapDef> = {
   overworld: {
     id: 'overworld',
-    nameKey: 'Eldravia',
+    nameKey: 'map.overworld',
     type: 'overworld',
     width: 80,
     height: 80,
@@ -51,7 +51,7 @@ export const mapDefs: Record<string, MapDef> = {
 
   greenhollow: {
     id: 'greenhollow',
-    nameKey: 'Greenhollow Village',
+    nameKey: 'map.greenhollow',
     type: 'town',
     width: 16,
     height: 16,
@@ -68,7 +68,7 @@ export const mapDefs: Record<string, MapDef> = {
   },
   portSapphire: {
     id: 'portSapphire',
-    nameKey: 'Port Sapphire',
+    nameKey: 'map.portSapphire',
     type: 'town',
     width: 16,
     height: 16,
@@ -84,7 +84,7 @@ export const mapDefs: Record<string, MapDef> = {
   },
   ironkeep: {
     id: 'ironkeep',
-    nameKey: 'Ironkeep Fortress',
+    nameKey: 'map.ironkeep',
     type: 'town',
     width: 16,
     height: 16,
@@ -100,7 +100,7 @@ export const mapDefs: Record<string, MapDef> = {
   },
   ruinsCamp: {
     id: 'ruinsCamp',
-    nameKey: 'Ruins Camp',
+    nameKey: 'map.ruinsCamp',
     type: 'town',
     width: 16,
     height: 16,
@@ -116,7 +116,7 @@ export const mapDefs: Record<string, MapDef> = {
   },
   lastBastion: {
     id: 'lastBastion',
-    nameKey: 'Last Bastion',
+    nameKey: 'map.lastBastion',
     type: 'town',
     width: 16,
     height: 16,
@@ -138,7 +138,7 @@ export const mapDefs: Record<string, MapDef> = {
   // Act 1 tutorial dungeon — near Greenhollow in the southern plains
   mistyGrotto: {
     id: 'mistyGrotto',
-    nameKey: 'Misty Grotto',
+    nameKey: 'map.mistyGrotto',
     type: 'dungeon',
     encounterZone: 'misty-grotto',
     width: 15,
@@ -155,7 +155,7 @@ export const mapDefs: Record<string, MapDef> = {
   // Single tall floor (21×63) — boss blocks north passage until defeated
   crystalCave: {
     id: 'crystalCave',
-    nameKey: 'Crystal Cave',
+    nameKey: 'map.crystalCave',
     type: 'dungeon',
     encounterZone: 'crystal-cave',
     width: 21,
@@ -172,7 +172,7 @@ export const mapDefs: Record<string, MapDef> = {
   // Entrance at south face (50,19), exit at north face (50,14)
   shadowTower: {
     id: 'shadowTower',
-    nameKey: 'Shadow Tower',
+    nameKey: 'map.shadowTower',
     type: 'dungeon',
     encounterZone: 'shadow-tower',
     width: 25,
@@ -189,7 +189,7 @@ export const mapDefs: Record<string, MapDef> = {
   // Entrance at south edge (56,9), exit at north edge (56,6)
   volcanicForge: {
     id: 'volcanicForge',
-    nameKey: 'Volcanic Forge',
+    nameKey: 'map.volcanicForge',
     type: 'dungeon',
     encounterZone: 'volcanic-forge',
     width: 25,
@@ -205,7 +205,7 @@ export const mapDefs: Record<string, MapDef> = {
   // Act 5 final dungeon (expanded, 10 floors)
   demonCastle: {
     id: 'demonCastle',
-    nameKey: 'Demon Castle',
+    nameKey: 'map.demonCastle',
     type: 'dungeon',
     encounterZone: 'demon-castle',
     width: 33,
@@ -225,7 +225,7 @@ export const mapDefs: Record<string, MapDef> = {
   // Sealed Sanctum — far northwest corner of Act 5, guards Excalibur
   sealedSanctum: {
     id: 'sealedSanctum',
-    nameKey: 'Sealed Sanctum',
+    nameKey: 'map.sealedSanctum',
     type: 'dungeon',
     encounterZone: 'sealed-sanctum',
     width: 29,
@@ -241,7 +241,7 @@ export const mapDefs: Record<string, MapDef> = {
   // Locked until Excalibur obtained (Sword Wraith defeated)
   celestialVault: {
     id: 'celestialVault',
-    nameKey: 'Celestial Vault',
+    nameKey: 'map.celestialVault',
     type: 'dungeon',
     encounterZone: 'celestial-vault',
     width: 29,

@@ -363,4 +363,19 @@ export const enStrings: Record<string, string> = {
   'dungeon.bossExitReturn': 'A mysterious portal appears... It will take you back outside!',
   'dungeon.gatePassageOpen': 'The way ahead is now clear! You can travel freely through the cave.',
   'dungeon.gateBlocked': 'Dark power seals this passage... You must find another way through.',
+
+  // ── Map Names ───────────────────────────────────────────────────────
+  'map.overworld': 'Eldravia',
+  'map.greenhollow': 'Greenhollow Village',
+  'map.portSapphire': 'Port Sapphire',
+  'map.ironkeep': 'Ironkeep Fortress',
+  'map.ruinsCamp': 'Ruins Camp',
+  'map.lastBastion': 'Last Bastion',
+  'map.mistyGrotto': 'Misty Grotto',
+  'map.crystalCave': 'Crystal Cave',
+  'map.shadowTower': 'Shadow Tower',
+  'map.volcanicForge': 'Volcanic Forge',
+  'map.demonCastle': 'Demon Castle',
+  'map.sealedSanctum': 'Sealed Sanctum',
+  'map.celestialVault': 'Celestial Vault',
 };

@@ -363,4 +363,19 @@ export const jaStrings: Record<string, string> = {
   'dungeon.bossExitReturn': 'ふしぎな ポータルが あらわれた…そとに もどれそうだ！',
   'dungeon.gatePassageOpen': 'みちが ひらけた！どうくつを じゆうに いききできるようになった。',
   'dungeon.gateBlocked': 'やみの ちからが この みちを ふうじている…べつのみちを さがさなければ。',
+
+  // ── Map Names ───────────────────────────────────────────────────────
+  'map.overworld': 'エルドラビア',
+  'map.greenhollow': 'グリーンホロウむら',
+  'map.portSapphire': 'サファイアみなと',
+  'map.ironkeep': 'アイアンキープようさい',
+  'map.ruinsCamp': 'いせきキャンプ',
+  'map.lastBastion': 'さいごのとりで',
+  'map.mistyGrotto': 'きりのどうくつ',
+  'map.crystalCave': 'すいしょうのどうくつ',
+  'map.shadowTower': 'かげのとう',
+  'map.volcanicForge': 'かざんのかじば',
+  'map.demonCastle': 'まおうのしろ',
+  'map.sealedSanctum': 'ふういんのせいいき',
+  'map.celestialVault': 'てんくうのほこら',
 };
