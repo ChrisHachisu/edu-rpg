@@ -16,7 +16,7 @@ const DEFAULT_STATE: PlayerState = {
   equipment: { weapon: null, armor: null, shield: null, helmet: null, accessory: null },
   inventory: [{ itemId: 'herb', quantity: 3 }],
   gold: 30,
-  position: { mapId: 'greenhollow', x: 8, y: 10 },
+  position: { mapId: 'greenhollow', x: 8, y: 4 },
   storyFlags: {},
   timerEnabled: true,
   quizDifficulty: '1',

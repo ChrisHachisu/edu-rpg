@@ -68,7 +68,10 @@ export class WorldMapScene extends Phaser.Scene {
     this.createHUD();
 
     // Intro dialog — plays once when starting in greenhollow for the first time
+    // Player faces north toward the elder NPC
     if (!gameState.player.state.storyFlags['intro.done'] && this.currentMapId === 'greenhollow') {
+      this.heroDir = 3; // face up (toward elder)
+      this.hero.setFrame(3 * 3); // frame 9 = facing up
       const introMessages = [
         t('intro.elder1'),
         t('intro.elder2'),
