@@ -475,7 +475,7 @@ export class WorldMapScene extends Phaser.Scene {
         // Position near bottom of upper floor (above stairs-down tile)
         const bottomX = Math.floor(def.width / 2);
         this.heroTileX = bottomX;
-        this.heroTileY = def.height - 4; // safely above the stairs-down tile
+        this.heroTileY = def.height - 3; // one tile above the stairs-down tile
         this.updatePosition();
         this.loadMap(this.currentMapId);
       } else {
@@ -893,19 +893,18 @@ export class WorldMapScene extends Phaser.Scene {
           gameState.player.equip('aegisOfDawn');
         }
 
-        // Show defeat dialog, then portal/passage/victory dialog
+        // Show defeat dialog, then victory dialog
         this.time.delayedCall(1600, () => {
           const defeatMsg = t(`dungeon.${this.currentMapId}.boss.defeat`);
-          const portalMsg = isGateDungeon ? t('dungeon.gatePassageOpen') : t('dungeon.bossExitReturn');
           const victoryMsg = t(`dungeon.${this.currentMapId}.victory`);
 
           // Legendary item obtainment dialog
           if (bossId === 'swordWraith') {
-            this.showDialogSequence([defeatMsg, t('legendary.excalibur.obtained'), portalMsg, victoryMsg]);
+            this.showDialogSequence([defeatMsg, t('legendary.excalibur.obtained'), victoryMsg]);
           } else if (bossId === 'celestialGuardian') {
-            this.showDialogSequence([defeatMsg, t('legendary.aegis.obtained'), portalMsg, victoryMsg]);
+            this.showDialogSequence([defeatMsg, t('legendary.aegis.obtained'), victoryMsg]);
           } else {
-            this.showDialogSequence([defeatMsg, portalMsg, victoryMsg]);
+            this.showDialogSequence([defeatMsg, victoryMsg]);
           }
         });
       }
