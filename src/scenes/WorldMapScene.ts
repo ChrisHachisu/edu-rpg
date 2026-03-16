@@ -6,6 +6,7 @@ import { generateOverworldMap, generateTownMap, generateDungeonMap } from '../ut
 import { mapDefs } from '../data/maps';
 import { monsters } from '../data/monsters';
 import { items } from '../data/items';
+import { audioManager, BgmTrack } from '../systems/audio/AudioManager';
 
 interface FieldItemEntry {
   itemId: string;
@@ -121,6 +122,12 @@ export class WorldMapScene extends Phaser.Scene {
     this.renderNPCs(def);
     this.createHero();
     this.updateCamera();
+
+    // Play appropriate BGM based on map type
+    const bgm: BgmTrack = def.type === 'town' ? 'town'
+      : def.type === 'dungeon' ? 'dungeon'
+      : 'overworld';
+    audioManager.playBgm(bgm);
   }
 
   private renderMap(): void {
@@ -491,6 +498,7 @@ export class WorldMapScene extends Phaser.Scene {
     // Check if facing the save point
     if (def.savePoint && def.savePoint.x === facedX && def.savePoint.y === facedY) {
       gameState.saveGame();
+      audioManager.playSfx('save');
       this.showMessage(t('npc.savePoint'));
       gameState.player.fullHeal();
       this.updateHUD();
@@ -515,6 +523,7 @@ export class WorldMapScene extends Phaser.Scene {
     if (def.savePoint) {
       if (Math.abs(def.savePoint.x - this.heroTileX) <= 1 && Math.abs(def.savePoint.y - this.heroTileY) <= 1) {
         gameState.saveGame();
+        audioManager.playSfx('save');
         this.showMessage(t('npc.savePoint'));
         gameState.player.fullHeal();
         this.updateHUD();
@@ -561,6 +570,7 @@ export class WorldMapScene extends Phaser.Scene {
 
     this.pendingBossId = def.bossId;
     this.currentEncounterZone = def.encounterZone;
+    audioManager.playSfx('boss_intro');
 
     // Build pre-battle dialog from i18n keys
     const dialogMessages = [
@@ -591,6 +601,7 @@ export class WorldMapScene extends Phaser.Scene {
 
     // Mark as opened
     gameState.player.state.storyFlags[chestKey] = true;
+    audioManager.playSfx('treasure_open');
 
     // Change tile to opened (cracked floor)
     this.mapData[y][x] = 8; // opened treasure tile
@@ -766,6 +777,13 @@ export class WorldMapScene extends Phaser.Scene {
       return;
     }
 
+    // Resume map BGM after battle
+    const def = mapDefs[this.currentMapId];
+    const bgm: BgmTrack = def.type === 'town' ? 'town'
+      : def.type === 'dungeon' ? 'dungeon'
+      : 'overworld';
+    audioManager.playBgm(bgm);
+
     // Boss defeat handling
     if (this.pendingBossId && gameState.player.state.storyFlags[`boss.${this.pendingBossId}.defeated`]) {
       const bossId = this.pendingBossId;
@@ -826,7 +844,8 @@ export class WorldMapScene extends Phaser.Scene {
           this.updateCamera();
         });
 
-        // Auto-equip legendary items on boss defeat
+        // Auto-equip legendary items on boss defeat + crystal obtain SFX
+        audioManager.playSfx('crystal_obtain');
         if (bossId === 'swordWraith') {
           gameState.player.addItem('excalibur', 1);
           gameState.player.equip('excalibur');
@@ -962,6 +981,7 @@ export class WorldMapScene extends Phaser.Scene {
     }
 
     // Use the item
+    audioManager.playSfx('heal');
     const healed = Math.min(entry.healValue, p.totalMaxHp - p.state.hp);
     p.state.hp = Math.min(p.state.hp + entry.healValue, p.totalMaxHp);
 

@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { GAME_WIDTH, GAME_HEIGHT, COLORS } from '../utils/constants';
 import { t } from '../i18n/i18n';
 import { gameState } from '../GameState';
+import { audioManager } from '../systems/audio/AudioManager';
 
 export class VictoryScene extends Phaser.Scene {
   constructor() {
@@ -10,6 +11,7 @@ export class VictoryScene extends Phaser.Scene {
 
   create(): void {
     this.cameras.main.setBackgroundColor(0x112244);
+    audioManager.playBgm('victory');
 
     // Stars effect
     for (let i = 0; i < 30; i++) {

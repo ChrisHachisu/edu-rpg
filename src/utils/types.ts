@@ -62,6 +62,8 @@ export interface PlayerState {
   timerEnabled: boolean;
   quizDifficulty: GradeLevel;
   locale: Locale;
+  soundEnabled: boolean;
+  masterVolume: number; // 0.0 - 1.0
 }
 
 export interface MonsterTemplate {

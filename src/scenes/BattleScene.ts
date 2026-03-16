@@ -6,6 +6,7 @@ import { CombatEngine, CombatResult } from '../systems/combat/CombatEngine';
 import { EnemyTier } from '../systems/quiz/QuizManager';
 import { MonsterTemplate, QuizQuestion } from '../utils/types';
 import { items as itemsData } from '../data/items';
+import { audioManager, BgmTrack } from '../systems/audio/AudioManager';
 
 type BattlePhase = 'intro' | 'playerMenu' | 'playerQuiz' | 'enemyQuiz' | 'message' | 'victory' | 'defeat' | 'itemSelect';
 
@@ -66,6 +67,12 @@ export class BattleScene extends Phaser.Scene {
     this.engine = new CombatEngine(gameState.player, this.monster);
     this.menuIndex = 0;
     this.messageQueue = [];
+
+    // Select and play battle BGM
+    let bgm: BgmTrack = 'battle';
+    if (this.monster.id === 'demonKing') bgm = 'finalBoss';
+    else if (this.monster.aiPattern === 'boss') bgm = 'bossBattle';
+    audioManager.playBgm(bgm);
 
     this.drawBattleBackground();
     this.drawMonster();
@@ -264,6 +271,7 @@ export class BattleScene extends Phaser.Scene {
   private confirmMenuAction(): void {
     const action = this.menuItems[this.menuIndex]?.getData('action');
     if (!action) return;
+    audioManager.playSfx('menu_select');
 
     if (action === 'item') {
       this.showItemMenu();
@@ -329,6 +337,7 @@ export class BattleScene extends Phaser.Scene {
     const itemId = this.itemMenuItems[this.itemMenuIndex]?.getData('itemId');
     if (!itemId) return;
     this.clearItemMenu();
+    audioManager.playSfx('heal');
     const result = this.engine.selectAction('item', itemId);
     if (result !== 'quiz') {
       this.handleCombatResult(result);
@@ -552,8 +561,9 @@ export class BattleScene extends Phaser.Scene {
   private handleCombatResult(result: CombatResult): void {
     this.updateHpBars();
 
-    // Monster hit animation
+    // Monster hit animation + SFX
     if (result.damage && result.damage > 0 && this.quizForPlayer) {
+      audioManager.playSfx('attack_hit');
       this.tweens.add({
         targets: this.monsterSprite,
         alpha: 0.3,
@@ -563,19 +573,27 @@ export class BattleScene extends Phaser.Scene {
       });
     }
 
-    // Player hit animation
+    // Player hit animation + SFX
     if (result.damage && result.damage > 0 && !this.quizForPlayer) {
+      audioManager.playSfx('damage_taken');
       this.cameras.main.shake(150, 0.01);
+    }
+
+    // Miss SFX
+    if (result.damage === 0 && result.state !== 'fled' && result.state !== 'victory' && result.state !== 'defeat') {
+      audioManager.playSfx('attack_miss');
     }
 
     if (result.state === 'victory') {
       this.showVictory(result);
     } else if (result.state === 'defeat') {
+      audioManager.playSfx('defeat');
       this.showBattleMessage(result.message, () => {
         this.scene.stop();
         this.scene.start('GameOverScene');
       });
     } else if (result.state === 'fled') {
+      audioManager.playSfx('flee');
       this.showBattleMessage(result.message, () => this.endBattle());
     } else if (result.state === 'enemyResolve') {
       // After enemy resolves, back to player turn
@@ -598,6 +616,8 @@ export class BattleScene extends Phaser.Scene {
       gameState.player.state.storyFlags[`boss.${this.monster.id}.defeated`] = true;
     }
 
+    audioManager.playSfx('victory_fanfare');
+
     // Monster death animation
     this.tweens.add({
       targets: this.monsterSprite,
@@ -610,7 +630,11 @@ export class BattleScene extends Phaser.Scene {
     let msg = result.message;
     if (result.expGain) msg += '\n' + t('battle.expGain', { exp: result.expGain });
     if (result.goldGain) msg += '\n' + t('battle.goldGain', { gold: result.goldGain });
-    if (result.levelUp) msg += '\n' + t('battle.levelUp', { name: gameState.player.state.name, level: result.levelUp.newLevel });
+    if (result.levelUp) {
+      msg += '\n' + t('battle.levelUp', { name: gameState.player.state.name, level: result.levelUp.newLevel });
+      // Delayed level up SFX after victory fanfare
+      this.time.delayedCall(600, () => audioManager.playSfx('level_up'));
+    }
 
     // Check if this was the demon king
     if (this.monster.id === 'demonKing') {

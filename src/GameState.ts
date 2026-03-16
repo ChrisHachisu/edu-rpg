@@ -4,6 +4,7 @@ import { EncounterManager } from './systems/combat/EncounterManager';
 import { SaveManager } from './systems/progression/SaveManager';
 import { GradeLevel } from './utils/types';
 import { setLocale, getLocale } from './i18n/i18n';
+import { audioManager } from './systems/audio/AudioManager';
 
 class GameStateManager {
   player!: Player;
@@ -37,6 +38,8 @@ class GameStateManager {
     this.playtime = data.playtime;
     this.startTime = Date.now();
     setLocale(data.player.locale);
+    // Restore audio settings
+    audioManager.loadSettings(data.player.soundEnabled, data.player.masterVolume);
     return true;
   }
 

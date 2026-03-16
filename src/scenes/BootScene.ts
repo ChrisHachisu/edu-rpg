@@ -18,22 +18,7 @@ export class BootScene extends Phaser.Scene {
     // Generate all procedural assets
     generateAssets(this);
 
-    // Apply NEAREST filtering to sprite/tile textures (keeps pixel art crisp)
-    // Text uses default LINEAR filtering for sharp readable edges
-    this.textures.list && Object.keys(this.textures.list).forEach(key => {
-      if (key.startsWith('ow-') || key.startsWith('town-') || key.startsWith('dng-') ||
-          key.startsWith('hero') || key.startsWith('monster-') ||
-          key === 'npc' || key === 'save-point' || key === 'shopkeeper') {
-        const tex = this.textures.get(key);
-        if (tex?.source?.[0]?.glTexture) {
-          tex.setFilter(Phaser.Textures.FilterMode.NEAREST);
-        }
-      }
-    });
-
-    // Override Phaser's inline pixelated style so text renders with smooth edges
-    const canvas = this.sys.game.canvas;
-    canvas.style.imageRendering = 'auto';
+    // pixelArt: true in GameConfig handles NEAREST filtering globally
 
     text.setText('Ready!');
 

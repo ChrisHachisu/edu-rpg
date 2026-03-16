@@ -1,7 +1,7 @@
 import { SaveData, PlayerState } from '../../utils/types';
 
 const SAVE_KEY = 'edu-rpg-save';
-const SAVE_VERSION = 2;
+const SAVE_VERSION = 3;
 
 export class SaveManager {
   static save(playerState: PlayerState, playtime: number, quizStats: SaveData['quizStats']): void {
@@ -24,6 +24,12 @@ export class SaveManager {
       if (data.version === 1) {
         data.player.position.floor = 1;
         data.version = 2;
+      }
+      // v2 → v3 migration: add sound settings
+      if (data.version === 2) {
+        data.player.soundEnabled = data.player.soundEnabled ?? true;
+        data.player.masterVolume = data.player.masterVolume ?? 0.7;
+        data.version = 3;
       }
       if (data.version !== SAVE_VERSION) return null;
       return data;

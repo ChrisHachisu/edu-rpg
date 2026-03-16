@@ -4,6 +4,7 @@ import { t, setLocale, getLocale } from '../i18n/i18n';
 import { gameState } from '../GameState';
 import { items } from '../data/items';
 import { GradeLevel, EquipSlot } from '../utils/types';
+import { audioManager } from '../systems/audio/AudioManager';
 
 type MenuTab = 'status' | 'items' | 'equip' | 'settings';
 
@@ -284,6 +285,24 @@ export class MenuScene extends Phaser.Scene {
     this.add.text(32, y + 172, `< ${timerEnabled ? t('settings.timerOn') : t('settings.timerOff')} >`, {
       fontSize: '12px', color: COLORS.TEXT_YELLOW, fontFamily: ff,
     });
+
+    // Sound toggle
+    const soundEnabled = gameState.player.state.soundEnabled;
+    this.add.text(32, y + 216, t('settings.sound'), {
+      fontSize: '12px', color: this.listIndex === 3 ? COLORS.TEXT_YELLOW : COLORS.TEXT_WHITE, fontFamily: ff,
+    });
+    this.add.text(32, y + 244, `< ${soundEnabled ? t('settings.soundOn') : t('settings.soundOff')} >`, {
+      fontSize: '12px', color: COLORS.TEXT_YELLOW, fontFamily: ff,
+    });
+
+    // Volume
+    const vol = Math.round(gameState.player.state.masterVolume * 100);
+    this.add.text(32, y + 280, t('settings.volume'), {
+      fontSize: '12px', color: this.listIndex === 4 ? COLORS.TEXT_YELLOW : COLORS.TEXT_WHITE, fontFamily: ff,
+    });
+    this.add.text(32, y + 308, `< ${vol}% >`, {
+      fontSize: '12px', color: COLORS.TEXT_YELLOW, fontFamily: ff,
+    });
   }
 
   private setupInput(): void {
@@ -333,7 +352,7 @@ export class MenuScene extends Phaser.Scene {
       if (this.currentTab === 'equip') {
         this.handleEquipDown();
       } else {
-        const maxIndex = this.currentTab === 'settings' ? 2
+        const maxIndex = this.currentTab === 'settings' ? 4
           : this.currentTab === 'items' ? Math.max(0, gameState.player.state.inventory.length - 1)
           : 99;
         this.listIndex = Math.min(maxIndex, this.listIndex + 1);
@@ -394,13 +413,15 @@ export class MenuScene extends Phaser.Scene {
       // Unequip the selected slot
       const slotKeys: EquipSlot[] = ['weapon', 'armor', 'shield', 'helmet'];
       const slot = slotKeys[this.equipSlotIndex];
-      gameState.player.unequip(slot);
+      const result = gameState.player.unequip(slot);
+      if (result) audioManager.playSfx('equip');
     } else {
       // Equip from inventory
       const equipItems = this.getEquipInventoryItems();
       if (this.equipInventoryIndex >= equipItems.length) return;
       const slot = equipItems[this.equipInventoryIndex];
       gameState.player.equip(slot.itemId);
+      audioManager.playSfx('equip');
       // Reset inventory index if we went past the end
       const newItems = this.getEquipInventoryItems();
       if (this.equipInventoryIndex >= newItems.length) {
@@ -439,6 +460,13 @@ export class MenuScene extends Phaser.Scene {
       gameState.player.state.locale = newLocale;
     } else if (this.listIndex === 2) {
       gameState.player.state.timerEnabled = !gameState.player.state.timerEnabled;
+    } else if (this.listIndex === 3) {
+      gameState.player.state.soundEnabled = !gameState.player.state.soundEnabled;
+      audioManager.setMuted(!gameState.player.state.soundEnabled);
+    } else if (this.listIndex === 4) {
+      const vol = Math.max(0, gameState.player.state.masterVolume - 0.1);
+      gameState.player.state.masterVolume = Math.round(vol * 10) / 10;
+      audioManager.setVolume(gameState.player.state.masterVolume);
     }
     this.drawMenu();
   }
@@ -457,6 +485,13 @@ export class MenuScene extends Phaser.Scene {
       gameState.player.state.locale = newLocale;
     } else if (this.listIndex === 2) {
       gameState.player.state.timerEnabled = !gameState.player.state.timerEnabled;
+    } else if (this.listIndex === 3) {
+      gameState.player.state.soundEnabled = !gameState.player.state.soundEnabled;
+      audioManager.setMuted(!gameState.player.state.soundEnabled);
+    } else if (this.listIndex === 4) {
+      const vol = Math.min(1, gameState.player.state.masterVolume + 0.1);
+      gameState.player.state.masterVolume = Math.round(vol * 10) / 10;
+      audioManager.setVolume(gameState.player.state.masterVolume);
     }
     this.drawMenu();
   }

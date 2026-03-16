@@ -8,12 +8,14 @@ import { MenuScene } from './scenes/MenuScene';
 import { ShopScene } from './scenes/ShopScene';
 import { GameOverScene } from './scenes/GameOverScene';
 import { VictoryScene } from './scenes/VictoryScene';
+import { ExportScene } from './scenes/ExportScene';
 
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
   width: GAME_WIDTH,
   height: GAME_HEIGHT,
   zoom: ZOOM,
+  pixelArt: true,
   roundPixels: true,
   backgroundColor: '#111111',
   scale: {
@@ -29,6 +31,7 @@ const config: Phaser.Types.Core.GameConfig = {
     ShopScene,
     GameOverScene,
     VictoryScene,
+    ExportScene,
   ],
 };
 

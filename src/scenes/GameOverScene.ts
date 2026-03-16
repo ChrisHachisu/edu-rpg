@@ -3,6 +3,7 @@ import { GAME_WIDTH, GAME_HEIGHT, COLORS } from '../utils/constants';
 import { t } from '../i18n/i18n';
 import { SaveManager } from '../systems/progression/SaveManager';
 import { gameState } from '../GameState';
+import { audioManager } from '../systems/audio/AudioManager';
 
 export class GameOverScene extends Phaser.Scene {
   private menuIndex = 0;
@@ -14,6 +15,7 @@ export class GameOverScene extends Phaser.Scene {
   create(): void {
     this.cameras.main.setBackgroundColor(0x110000);
     this.menuIndex = 0;
+    audioManager.playBgm('gameOver');
 
     this.add.text(GAME_WIDTH / 2, 120, t('gameover.title'), {
       fontSize: '22px', color: '#cc2222', fontFamily: 'monospace', fontStyle: 'bold',

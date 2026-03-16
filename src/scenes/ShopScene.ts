@@ -4,6 +4,7 @@ import { t } from '../i18n/i18n';
 import { gameState } from '../GameState';
 import { items } from '../data/items';
 import { shops } from '../data/shops';
+import { audioManager } from '../systems/audio/AudioManager';
 
 export class ShopScene extends Phaser.Scene {
   private shopId = '';
@@ -179,6 +180,7 @@ export class ShopScene extends Phaser.Scene {
     } else {
       gameState.player.state.gold -= item.buyPrice;
       this.message = t('shop.bought', { item: t(item.nameKey) });
+      audioManager.playSfx('shop_buy');
     }
     this.drawShop();
   }
@@ -192,6 +194,7 @@ export class ShopScene extends Phaser.Scene {
 
     if (item.unsellable) {
       this.message = t('shop.cantSell');
+      audioManager.playSfx('menu_cancel');
       this.drawShop();
       return;
     }
@@ -199,6 +202,7 @@ export class ShopScene extends Phaser.Scene {
     gameState.player.state.gold += item.sellPrice;
     gameState.player.removeItem(slot.itemId, 1);
     this.message = t('shop.sold', { item: t(item.nameKey) });
+    audioManager.playSfx('shop_sell');
     if (this.listIndex > 0) this.listIndex--;
     this.drawShop();
   }

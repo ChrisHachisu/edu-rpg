@@ -4,6 +4,7 @@ import { t, setLocale, getLocale } from '../i18n/i18n';
 import { SaveManager } from '../systems/progression/SaveManager';
 import { GradeLevel } from '../utils/types';
 import { gameState } from '../GameState';
+import { audioManager } from '../systems/audio/AudioManager';
 
 export class TitleScene extends Phaser.Scene {
   private menuItems: Phaser.GameObjects.Text[] = [];
@@ -16,12 +17,32 @@ export class TitleScene extends Phaser.Scene {
     super('TitleScene');
   }
 
+  private audioInitialized = false;
+
   create(): void {
     this.cameras.main.setBackgroundColor(COLORS.DARK_BLUE);
     this.selectedIndex = 0;
     this.settingsMode = false;
     this.drawTitle();
     this.setupInput();
+    this.initAudioOnGesture();
+  }
+
+  private initAudioOnGesture(): void {
+    if (this.audioInitialized) {
+      // Already initialized — just play title BGM
+      audioManager.playBgm('title');
+      return;
+    }
+    // Initialize audio on first user gesture (required by Chrome/Safari autoplay policy)
+    const initHandler = async () => {
+      if (this.audioInitialized) return;
+      this.audioInitialized = true;
+      await audioManager.init();
+      audioManager.playBgm('title');
+    };
+    this.input.keyboard?.on('keydown', initHandler);
+    this.input.on('pointerdown', initHandler);
   }
 
   private drawTitle(): void {
@@ -136,6 +157,14 @@ export class TitleScene extends Phaser.Scene {
   }
 
   private setupInput(): void {
+    // Export shortcut: Ctrl+E (or Cmd+E on Mac)
+    this.input.keyboard?.on('keydown-E', (event: KeyboardEvent) => {
+      if (event.ctrlKey || event.metaKey) {
+        event.preventDefault();
+        this.scene.start('ExportScene');
+      }
+    });
+
     this.input.keyboard?.on('keydown-UP', () => this.moveSelection(-1));
     this.input.keyboard?.on('keydown-DOWN', () => this.moveSelection(1));
     this.input.keyboard?.on('keydown-LEFT', () => {
@@ -156,7 +185,9 @@ export class TitleScene extends Phaser.Scene {
   }
 
   private moveSelection(dir: number): void {
+    const prev = this.selectedIndex;
     this.selectedIndex = Math.max(0, Math.min(this.menuItems.length - 1, this.selectedIndex + dir));
+    if (this.selectedIndex !== prev) audioManager.playSfx('menu_select');
     this.updateSelection();
   }
 
@@ -186,6 +217,7 @@ export class TitleScene extends Phaser.Scene {
     }
 
     const action = this.menuItems[this.selectedIndex]?.getData('action');
+    audioManager.playSfx('menu_select');
     if (action === 'new') {
       gameState.newGame(this.difficultyOptions[this.difficultyIndex]);
       this.scene.start('WorldMapScene');

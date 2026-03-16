@@ -21,6 +21,8 @@ const DEFAULT_STATE: PlayerState = {
   timerEnabled: true,
   quizDifficulty: '1',
   locale: 'ja',
+  soundEnabled: true,
+  masterVolume: 0.7,
 };
 
 export class Player {
