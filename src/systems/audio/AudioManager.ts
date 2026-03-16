@@ -63,7 +63,7 @@ class AudioManagerImpl {
     if (this.ctx?.state === 'suspended') {
       this.ctx.resume().catch(() => {});
     }
-    this.composer.play(track).catch(e => console.warn('[AudioManager] BGM error:', e));
+    this.composer.play(track);
   }
 
   stopBgm(): void {

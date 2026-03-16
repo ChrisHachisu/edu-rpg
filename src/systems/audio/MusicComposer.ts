@@ -17,7 +17,6 @@ export class MusicComposer {
   private active: ActiveTrack | null = null;
   private currentTrack: BgmTrack | null = null;
   private masterVol: Tone.Volume;
-  private started = false;
   private watchdogId: number | null = null;
 
   constructor() {
@@ -28,7 +27,9 @@ export class MusicComposer {
     return this.currentTrack;
   }
 
-  async play(track: BgmTrack): Promise<void> {
+  // Fully synchronous — AudioManager handles Tone.start() and context resume.
+  // No awaits means no race conditions between track switches.
+  play(track: BgmTrack): void {
     if (this.currentTrack === track) return;
     this.stop();
 
@@ -39,19 +40,7 @@ export class MusicComposer {
       this.active = builder();
       this.currentTrack = track; // Set AFTER building succeeds
 
-      if (!this.started) {
-        await Tone.start();
-        this.started = true;
-      }
-
-      // Ensure AudioContext is running (may suspend after tab background / inactivity)
-      if (Tone.getContext().state !== 'running') {
-        await Tone.getContext().resume();
-      }
-
       const transport = Tone.getTransport();
-      // Transport was already stopped by this.stop() — no need to stop again.
-      // Just set position and BPM, schedule parts, and start.
       transport.position = 0;
       transport.bpm.value = this.getBpm(track);
       this.active.parts.forEach(p => p.start(0));
@@ -154,7 +143,7 @@ export class MusicComposer {
     };
   }
 
-  private makeSynth(type: 'square' | 'sawtooth' | 'triangle' | 'sine', vol = -8): Tone.Synth {
+  private makeSynth(type: 'square' | 'sawtooth' | 'triangle' | 'sine', vol = -8, nodes: Tone.ToneAudioNode[]): Tone.Synth {
     const s = new Tone.Synth({
       oscillator: { type },
       envelope: { attack: 0.005, decay: 0.15, sustain: 0.3, release: 0.3 },
@@ -162,10 +151,11 @@ export class MusicComposer {
     const v = new Tone.Volume(vol);
     s.connect(v);
     v.connect(this.masterVol);
+    nodes.push(s, v); // Track both for proper disposal
     return s;
   }
 
-  private makeBassSynth(type: 'sawtooth' | 'triangle' | 'square' | 'sine' = 'triangle', vol = -10): Tone.Synth {
+  private makeBassSynth(type: 'sawtooth' | 'triangle' | 'square' | 'sine' = 'triangle', vol = -10, nodes: Tone.ToneAudioNode[]): Tone.Synth {
     const s = new Tone.Synth({
       oscillator: { type },
       envelope: { attack: 0.01, decay: 0.2, sustain: 0.4, release: 0.4 },
@@ -173,6 +163,7 @@ export class MusicComposer {
     const v = new Tone.Volume(vol);
     s.connect(v);
     v.connect(this.masterVol);
+    nodes.push(s, v); // Track both for proper disposal
     return s;
   }
 
@@ -193,26 +184,26 @@ export class MusicComposer {
     return '4m';
   }
 
-  private buildTrack(melodySynth: Tone.Synth, bassSynth: Tone.Synth,
+  private buildTrack(nodes: Tone.ToneAudioNode[], melodySynth: Tone.Synth, bassSynth: Tone.Synth,
     melodyNotes: [string, string, string][], bassNotes: [string, string, string][],
     harmonySynth?: Tone.Synth, harmonyNotes?: [string, string, string][]): ActiveTrack {
     const parts: Tone.Part[] = [];
-    const synths: Tone.ToneAudioNode[] = [melodySynth, bassSynth];
 
     parts.push(this.buildPart(melodySynth, melodyNotes));
     parts.push(this.buildPart(bassSynth, bassNotes));
 
     if (harmonySynth && harmonyNotes) {
       parts.push(this.buildPart(harmonySynth, harmonyNotes));
-      synths.push(harmonySynth);
     }
 
     return {
       parts,
-      synths,
+      synths: nodes,
       dispose: () => {
         parts.forEach(p => { try { p.stop(); p.dispose(); } catch { /* ignore */ } });
-        synths.forEach(s => { try { s.dispose(); } catch { /* ignore */ } });
+        // Disconnect all nodes from audio graph, then dispose
+        nodes.forEach(n => { try { n.disconnect(); } catch { /* ignore */ } });
+        nodes.forEach(n => { try { n.dispose(); } catch { /* ignore */ } });
       },
     };
   }
@@ -220,8 +211,9 @@ export class MusicComposer {
   // ── Town BGM — C major pentatonic, warm & gentle ────────────────
 
   private buildTown(): ActiveTrack {
-    const lead = this.makeSynth('square', -12);
-    const bass = this.makeBassSynth('triangle', -14);
+    const nodes: Tone.ToneAudioNode[] = [];
+    const lead = this.makeSynth('square', -12, nodes);
+    const bass = this.makeBassSynth('triangle', -14, nodes);
 
     // Gentle melody in C major pentatonic
     const melody: [string, string, string][] = [
@@ -243,15 +235,16 @@ export class MusicComposer {
       ['3:0:0', 'C3', '4n'], ['3:1:0', 'D3', '4n'], ['3:2:0', 'E3', '4n'], ['3:3:0', 'G3', '4n'],
     ];
 
-    return this.buildTrack(lead, bass, melody, bassLine);
+    return this.buildTrack(nodes, lead, bass, melody, bassLine);
   }
 
   // ── Overworld BGM — G major, adventurous ────────────────────────
 
   private buildOverworld(): ActiveTrack {
-    const lead = this.makeSynth('square', -10);
-    const bass = this.makeBassSynth('sawtooth', -14);
-    const harm = this.makeSynth('triangle', -16);
+    const nodes: Tone.ToneAudioNode[] = [];
+    const lead = this.makeSynth('square', -10, nodes);
+    const bass = this.makeBassSynth('sawtooth', -14, nodes);
+    const harm = this.makeSynth('triangle', -16, nodes);
 
     const melody: [string, string, string][] = [
       ['0:0:0', 'G4', '8n'], ['0:0:2', 'B4', '8n'], ['0:1:0', 'D5', '8n'], ['0:1:2', 'G5', '8n'],
@@ -279,14 +272,15 @@ export class MusicComposer {
       ['3:0:0', 'B4', '8n'], ['3:1:0', 'D5', '8n'], ['3:2:0', 'G4', '8n'], ['3:3:0', 'B4', '8n'],
     ];
 
-    return this.buildTrack(lead, bass, melody, bassLine, harm, harmony);
+    return this.buildTrack(nodes, lead, bass, melody, bassLine, harm, harmony);
   }
 
   // ── Dungeon BGM — A minor, tense & mysterious ──────────────────
 
   private buildDungeon(): ActiveTrack {
-    const lead = this.makeSynth('sawtooth', -14);
-    const bass = this.makeBassSynth('sawtooth', -12);
+    const nodes: Tone.ToneAudioNode[] = [];
+    const lead = this.makeSynth('sawtooth', -14, nodes);
+    const bass = this.makeBassSynth('sawtooth', -12, nodes);
 
     // Sparse, unsettling minor melody
     const melody: [string, string, string][] = [
@@ -304,15 +298,16 @@ export class MusicComposer {
       ['3:0:0', 'A2', '2n'], ['3:2:0', 'E2', '2n'],
     ];
 
-    return this.buildTrack(lead, bass, melody, bassLine);
+    return this.buildTrack(nodes, lead, bass, melody, bassLine);
   }
 
   // ── Battle BGM — D minor, fast & urgent ─────────────────────────
 
   private buildBattle(): ActiveTrack {
-    const lead = this.makeSynth('square', -8);
-    const bass = this.makeBassSynth('square', -12);
-    const harm = this.makeSynth('sawtooth', -14);
+    const nodes: Tone.ToneAudioNode[] = [];
+    const lead = this.makeSynth('square', -8, nodes);
+    const bass = this.makeBassSynth('square', -12, nodes);
+    const harm = this.makeSynth('sawtooth', -14, nodes);
 
     // Fast aggressive arpeggios
     const melody: [string, string, string][] = [
@@ -350,15 +345,16 @@ export class MusicComposer {
       ['3:1:0', 'G3', '16n'], ['3:3:0', 'D4', '16n'],
     ];
 
-    return this.buildTrack(lead, bass, melody, bassLine, harm, harmony);
+    return this.buildTrack(nodes, lead, bass, melody, bassLine, harm, harmony);
   }
 
   // ── Boss Battle BGM — E minor, epic & heavy ─────────────────────
 
   private buildBossBattle(): ActiveTrack {
-    const lead = this.makeSynth('square', -8);
-    const bass = this.makeBassSynth('sawtooth', -10);
-    const harm = this.makeSynth('sawtooth', -12);
+    const nodes: Tone.ToneAudioNode[] = [];
+    const lead = this.makeSynth('square', -8, nodes);
+    const bass = this.makeBassSynth('sawtooth', -10, nodes);
+    const harm = this.makeSynth('sawtooth', -12, nodes);
 
     const melody: [string, string, string][] = [
       ['0:0:0', 'E5', '8n'], ['0:0:2', 'G5', '8n'], ['0:1:0', 'B5', '4n'],
@@ -391,15 +387,16 @@ export class MusicComposer {
       ['3:0:0', 'E4', '8n'], ['3:2:0', 'A4', '8n'],
     ];
 
-    return this.buildTrack(lead, bass, melody, bassLine, harm, harmony);
+    return this.buildTrack(nodes, lead, bass, melody, bassLine, harm, harmony);
   }
 
   // ── Final Boss BGM — C minor modulating, dramatic & climactic ───
 
   private buildFinalBoss(): ActiveTrack {
-    const lead = this.makeSynth('square', -6);
-    const bass = this.makeBassSynth('sawtooth', -10);
-    const harm = this.makeSynth('sawtooth', -10);
+    const nodes: Tone.ToneAudioNode[] = [];
+    const lead = this.makeSynth('square', -6, nodes);
+    const bass = this.makeBassSynth('sawtooth', -10, nodes);
+    const harm = this.makeSynth('sawtooth', -10, nodes);
 
     // Dramatic melody with chromatic tension
     const melody: [string, string, string][] = [
@@ -433,14 +430,15 @@ export class MusicComposer {
       ['3:0:0', 'C4', '8n'], ['3:1:0', 'Eb4', '8n'], ['3:2:0', 'G4', '8n'], ['3:3:0', 'C4', '8n'],
     ];
 
-    return this.buildTrack(lead, bass, melody, bassLine, harm, harmony);
+    return this.buildTrack(nodes, lead, bass, melody, bassLine, harm, harmony);
   }
 
   // ── Victory BGM — C major, triumphant ───────────────────────────
 
   private buildVictory(): ActiveTrack {
-    const lead = this.makeSynth('square', -8);
-    const bass = this.makeBassSynth('triangle', -12);
+    const nodes: Tone.ToneAudioNode[] = [];
+    const lead = this.makeSynth('square', -8, nodes);
+    const bass = this.makeBassSynth('triangle', -12, nodes);
 
     const melody: [string, string, string][] = [
       ['0:0:0', 'C5', '8n'], ['0:0:2', 'E5', '8n'], ['0:1:0', 'G5', '8n'], ['0:1:2', 'C6', '8n'],
@@ -459,14 +457,15 @@ export class MusicComposer {
       ['3:0:0', 'C3', '2n'], ['3:2:0', 'C3', '2n'],
     ];
 
-    return this.buildTrack(lead, bass, melody, bassLine);
+    return this.buildTrack(nodes, lead, bass, melody, bassLine);
   }
 
   // ── Game Over BGM — D minor, somber & slow ──────────────────────
 
   private buildGameOver(): ActiveTrack {
-    const lead = this.makeSynth('triangle', -12);
-    const bass = this.makeBassSynth('sine', -14);
+    const nodes: Tone.ToneAudioNode[] = [];
+    const lead = this.makeSynth('triangle', -12, nodes);
+    const bass = this.makeBassSynth('sine', -14, nodes);
 
     const melody: [string, string, string][] = [
       ['0:0:0', 'D4', '2n'], ['0:2:0', 'C4', '4n'], ['0:3:0', 'Bb3', '4n'],
@@ -482,7 +481,7 @@ export class MusicComposer {
       ['3:0:0', 'D2', '1m'],
     ];
 
-    return this.buildTrack(lead, bass, melody, bassLine);
+    return this.buildTrack(nodes, lead, bass, melody, bassLine);
   }
 
   // ── Title BGM — Reuse overworld with slight variation ───────────
