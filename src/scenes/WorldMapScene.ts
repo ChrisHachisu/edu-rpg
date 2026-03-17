@@ -362,9 +362,15 @@ export class WorldMapScene extends Phaser.Scene {
 
   private checkTransition(x: number, y: number): { targetMap: string; toX: number; toY: number; toFloor?: number } | null {
     const def = mapDefs[this.currentMapId];
-    for (const conn of def.connections) {
-      if (conn.fromX === x && conn.fromY === y) {
-        return { targetMap: conn.targetMap, toX: conn.toX, toY: conn.toY, toFloor: conn.toFloor };
+    // Skip connection-based exits on deeper dungeon floors — tile-based
+    // floor navigation (__floor_up__/__floor_down__) handles these instead.
+    // Only floor 1 should match connections (entrance/exit to overworld).
+    const skipConns = def.type === 'dungeon' && this.currentFloor > 1;
+    if (!skipConns) {
+      for (const conn of def.connections) {
+        if (conn.fromX === x && conn.fromY === y) {
+          return { targetMap: conn.targetMap, toX: conn.toX, toY: conn.toY, toFloor: conn.toFloor };
+        }
       }
     }
 
