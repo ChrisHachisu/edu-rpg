@@ -224,6 +224,7 @@ function generateMonsterSprites(scene: Phaser.Scene): void {
     { key: 'monster-harpy', color: 0xddaadd, shape: 'harpy' },
     { key: 'monster-wyvern', color: 0x44aa66, shape: 'wyvern' },
     { key: 'monster-kraken', color: 0x552288, shape: 'serpent' },
+    { key: 'monster-stormHarpy', color: 0x6644aa, shape: 'harpy' },
     { key: 'monster-dragon', color: 0xcc2222, shape: 'dragon' },
     // Act 3
     { key: 'monster-blizzardBear', color: 0xaaccee, shape: 'wolf' },

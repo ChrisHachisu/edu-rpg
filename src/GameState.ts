@@ -61,6 +61,7 @@ class GameStateManager {
       overworld: 'greenhollow-plains', // Default, actual zone determined by position
       mistyGrotto: 'misty-grotto',
       crystalCave: 'crystal-cave',
+      stormNest: 'storm-nest',
       shadowCave: 'shadow-cave',
       volcanicForge: 'volcanic-forge',
       demonCastle: 'demon-castle',

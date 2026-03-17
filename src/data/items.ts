@@ -293,4 +293,15 @@ export const items: Record<string, ItemDefinition> = {
     sellPrice: 0,
     unsellable: true,
   },
+
+  // ── Key Items ──────────────────────────────────────────────────────
+  shadowCrystal: {
+    id: 'shadowCrystal',
+    nameKey: 'item.shadowCrystal',
+    descriptionKey: 'item.shadowCrystal.desc',
+    type: 'key',
+    buyPrice: 0,
+    sellPrice: 0,
+    unsellable: true,
+  },
 };

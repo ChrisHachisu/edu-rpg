@@ -119,12 +119,12 @@ export const jaStrings: Record<string, string> = {
   'npc.villager2': 'おみせで やくそうを かっていきなよ！',
 
   // Port Sapphire (Act 1)
-  'npc.sailor': 'きたの どうくつに ドラゴンが すんでいるそうだ。おそろしいのう！',
+  'npc.sailor': 'きたの どうくつに ドラゴンが すんでいるそうだ。くらい けっかいで ふうじられているらしい。おそろしいのう！',
   'npc.wisewoman': 'クリスタルは まなぶものに ちからを あたえるの。がんばってね ゆうしゃさん！',
 
   // Ironkeep (Act 2)
-  'npc.soldier': 'ひがしに かげのどうくつがある。あかいドラゴンが きたへの みちを ふさいでいる。たおすのだ！',
-  'npc.blacksmith': 'わたしが つくった そうびは いちばんよ！どうくつに いくまえに おみせを みてね。',
+  'npc.soldier': 'ひがしの かげのどうくつは くらい けっかいで ふうじられている。にしの はるかかなたに あらしのすがある。そこの あらしのハーピーが もつ クリスタルで ふういんを とけるはずだ！',
+  'npc.blacksmith': 'わたしが つくった そうびは いちばんよ！ひがしに いくまえに にしの あらしのすに いってみて。そこで だいじなものが みつかるわ！',
 
   // Ruins Camp (Act 3/4)
   'npc.archaeologist': 'ようがんちたいは きけんよ。じゅうぶん きをつけてね！',
@@ -162,6 +162,13 @@ export const jaStrings: Record<string, string> = {
   'dungeon.crystalCave.boss.defeat': 'うみへびが きらきらひかって きえていく…みずが しずかに なった。',
   'dungeon.crystalCave.victory': 'ゆうきのクリスタルを てにいれた！あたたかいひかりが ちからを くれる。',
   'dungeon.crystalCave.locked': 'ふしぎな ちからが いりぐちを ふさいでいる…きりのどうくつの クリスタルが あれば ひらけるかもしれない。',
+
+  // Storm Nest (prerequisite for Shadow Cave)
+  'dungeon.stormNest.boss.dialog1': 'いなずまが へやを つらぬく…はねが あらしのかぜに まっている。',
+  'dungeon.stormNest.boss.dialog2': 'するどい さけびごえが うえから ひびいた！',
+  'dungeon.stormNest.boss.dialog3': 'あらしのハーピーが つめを むきだしに おりてきた！たたかいの じゅんびを！',
+  'dungeon.stormNest.boss.defeat': 'あらしのハーピーの つばさが たたまれる…かぜが やさしい そよかぜに なった。',
+  'dungeon.stormNest.victory': 'ハーピーのすから くらいクリスタルが おちてきた。やみのエネルギーが はどうしている。',
 
   // Shadow Cave (renamed from Shadow Tower)
   'dungeon.shadowCave.enter': 'どうくつは くらいやまの おくまで つづいている…',
@@ -209,6 +216,7 @@ export const jaStrings: Record<string, string> = {
   'monster.harpy': 'ハーピー',
   'monster.wyvern': 'ワイバーン',
   'monster.kraken': 'クラーケン',
+  'monster.stormHarpy': 'あらしのハーピー',
   'monster.dragon': 'あかいドラゴン',
   'monster.blizzardBear': 'ブリザードベア',
   'monster.iceSprite': 'こおりのようせい',
@@ -330,6 +338,11 @@ export const jaStrings: Record<string, string> = {
   'dungeon.celestialVault.victory': 'しんせいな ひかりが あつまり あけぼののイージスに なった — かみの よろいだ！',
   'dungeon.celestialVault.locked': 'つよい ふういんが いりぐちを まもっている…いにしえの もじが ひかっている。でんせつの けんの ちからだけが これを やぶれるだろう。',
 
+  // Key item obtainment
+  'item.shadowCrystal': 'やみのクリスタル',
+  'item.shadowCrystal.desc': 'かげのどうくつの ふういんを とく くらいクリスタル。',
+  'item.shadowCrystal.obtained': 'やみのクリスタルを てにいれた！くらいエネルギーが ちからづよく はどうしている。かげのどうくつの ふういんを とけるようになった！',
+
   // Legendary item obtainment
   'legendary.excalibur.obtained': 'エクスカリバーを てにいれた！でんせつのけんが いにしえの ちからで かがやく。じどうで そうびされた！',
   'legendary.aegis.obtained': 'あけぼののイージスを てにいれた！しんせいな ひかりが てっぺきの たてとなって つつみこむ。じどうで そうびされた！',
@@ -338,6 +351,7 @@ export const jaStrings: Record<string, string> = {
   'dungeon.stairsUp': 'かいだんを あがった…',
   'dungeon.bossExitReturn': 'ふしぎな ポータルが あらわれた…そとに もどれそうだ！',
   'dungeon.gatePassageOpen': 'みちが ひらけた！どうくつを じゆうに いききできるようになった。',
+  'dungeon.shadowCave.locked': 'くらい けっかいが いりぐちを ふさいでいる…にしの あらしのすの クリスタルが あれば やぶれるかもしれない。',
   'dungeon.gateBlocked': 'やみの ちからが この みちを ふうじている…べつのみちを さがさなければ。',
 
   // ── Map Names ───────────────────────────────────────────────────────
@@ -349,6 +363,7 @@ export const jaStrings: Record<string, string> = {
   'map.lastBastion': 'さいごのとりで',
   'map.mistyGrotto': 'きりのどうくつ',
   'map.crystalCave': 'すいしょうのどうくつ',
+  'map.stormNest': 'あらしのす',
   'map.shadowCave': 'かげのどうくつ',
   'map.volcanicForge': 'かざんのかじば',
   'map.demonCastle': 'まおうのしろ',

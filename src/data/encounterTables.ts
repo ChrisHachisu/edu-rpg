@@ -84,6 +84,16 @@ export const encounterZones: Record<string, EncounterZone> = {
     ],
   },
 
+  'storm-nest': {
+    zoneId: 'storm-nest',
+    encounterRate: 0.08,
+    minStepsBetween: 6,
+    monsters: [
+      { monsterId: 'harpy', weight: 5 },
+      { monsterId: 'wyvern', weight: 5 },
+    ],
+  },
+
   // ── Act 3 — Unlocked after defeating Dragon ───────────────────────
 
   'frostpeak-cavern': {

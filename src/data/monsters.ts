@@ -285,6 +285,22 @@ export const monsters: Record<string, MonsterTemplate> = {
     color: 0xcc2222,
   },
 
+  // ── Boss 3.5 — Storm Nest (prerequisite for Shadow Cave) ──────────
+  stormHarpy: {
+    id: 'stormHarpy',
+    nameKey: 'monster.stormHarpy',
+    spriteKey: 'monster-stormHarpy',
+    baseHp: 120,
+    baseAtk: 28,
+    baseDef: 16,
+    baseSpd: 20,
+    expReward: 95,
+    goldReward: 55,
+    drops: [{ itemId: 'shadowCrystal', chance: 1 }],
+    aiPattern: 'boss',
+    color: 0x6644aa,
+  },
+
   // ── Tier 4 — frostpeak-cavern (Lv 12-15) ─────────────────────────
   blizzardBear: {
     id: 'blizzardBear',

@@ -453,6 +453,16 @@ export class WorldMapScene extends Phaser.Scene {
       return;
     }
 
+    // Block Shadow Cave entry until Storm Harpy defeated (Shadow Crystal required)
+    // Bypass if dragon already defeated (save compatibility)
+    if (target.targetMap === 'shadowCave'
+        && !gameState.player.state.storyFlags['boss.stormHarpy.defeated']
+        && !gameState.player.state.storyFlags['boss.dragon.defeated']) {
+      this.isMoving = false;
+      this.showMessage(t('dungeon.shadowCave.locked'));
+      return;
+    }
+
     // Block gate dungeon north entrance until boss defeated
     if (target.toFloor && target.toFloor > 1) {
       const targetDef = mapDefs[target.targetMap];
@@ -698,6 +708,10 @@ export class WorldMapScene extends Phaser.Scene {
         if (rand < 0.5) return { gold: 15, itemId: 'herb' };
         if (rand < 0.8) return { gold: 25 };
         return { gold: 10, itemId: 'potion' };
+      case 'stormNest':
+        if (rand < 0.4) return { gold: 35, itemId: 'potion' };
+        if (rand < 0.7) return { gold: 50 };
+        return { gold: 25, itemId: 'hiPotion' };
       case 'shadowCave':
         if (rand < 0.4) return { gold: 40, itemId: 'potion' };
         if (rand < 0.7) return { gold: 60 };
@@ -914,6 +928,9 @@ export class WorldMapScene extends Phaser.Scene {
           gameState.player.addItem('aegisOfDawn', 1);
           gameState.player.equip('aegisOfDawn');
         }
+        if (bossId === 'stormHarpy') {
+          gameState.player.addItem('shadowCrystal', 1);
+        }
 
         // Show defeat dialog promptly (200ms — just enough for sparkle to register)
         // isMoving stays true until dialog sequence completes
@@ -927,6 +944,8 @@ export class WorldMapScene extends Phaser.Scene {
             this.showDialogSequence([defeatMsg, t('legendary.excalibur.obtained'), victoryMsg], onDone);
           } else if (bossId === 'celestialGuardian') {
             this.showDialogSequence([defeatMsg, t('legendary.aegis.obtained'), victoryMsg], onDone);
+          } else if (bossId === 'stormHarpy') {
+            this.showDialogSequence([defeatMsg, t('item.shadowCrystal.obtained'), victoryMsg], onDone);
           } else {
             this.showDialogSequence([defeatMsg, victoryMsg], onDone);
           }

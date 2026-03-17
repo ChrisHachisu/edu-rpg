@@ -47,6 +47,7 @@ export const mapDefs: Record<string, MapDef> = {
       { targetMap: 'mistyGrotto', fromX: 16, fromY: 106, toX: 7, toY: 1 },
       { targetMap: 'crystalCave', fromX: 40, fromY: 97, toX: 10, toY: 61 },
       { targetMap: 'crystalCave', fromX: 40, fromY: 95, toX: 10, toY: 1 },
+      { targetMap: 'stormNest', fromX: 10, fromY: 86, toX: 12, toY: 1 },
       { targetMap: 'shadowCave', fromX: 50, fromY: 82, toX: 12, toY: 1 },
       { targetMap: 'shadowCave', fromX: 50, fromY: 80, toX: 12, toY: 23, toFloor: 5 },
       { targetMap: 'volcanicForge', fromX: 8, fromY: 62, toX: 12, toY: 1 },
@@ -181,6 +182,22 @@ export const mapDefs: Record<string, MapDef> = {
     npcs: [],
     bossId: 'serpent',
     floors: 1,
+  },
+  // Act 2 side dungeon — Storm Nest (prerequisite for Shadow Cave)
+  // Hidden far west of Act 2 — no overworld path, player must explore
+  stormNest: {
+    id: 'stormNest',
+    nameKey: 'map.stormNest',
+    type: 'dungeon',
+    encounterZone: 'storm-nest',
+    width: 25,
+    height: 25,
+    connections: [
+      { targetMap: 'overworld', fromX: 12, fromY: 0, toX: 10, toY: 87 },
+    ],
+    npcs: [],
+    bossId: 'stormHarpy',
+    floors: 5,
   },
   // Act 2 GATE dungeon — passage THROUGH the mountain barrier
   // Entrance at south face (50,83), exit at north face (50,79)

@@ -213,6 +213,7 @@ export function generateOverworldMap(width: number, height: number): number[][] 
   // ── Phase 6: Dungeon entrance markers ──
   const caveDungeons: [number, number][] = [
     [16, 106], [40, 97], [40, 95],  // Act 1→2: Misty Grotto, Crystal Cave S/N
+    [10, 86],                         // Act 2: Storm Nest (hidden — no path)
     [50, 82], [50, 80],              // Act 2→3: Shadow Cave S/N (touching mountains)
     [8, 62], [8, 59],                // Act 3/4→5: Volcanic Forge S/N (relocated west)
     [4, 46], [75, 46],               // Legendary: Sanctum, Vault

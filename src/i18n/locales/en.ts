@@ -119,12 +119,12 @@ export const enStrings: Record<string, string> = {
   'npc.villager2': 'Buy herbs at the shop before you go!',
 
   // Port Sapphire (Act 1)
-  'npc.sailor': 'I hear a dragon lives in the caves to the north. Scary stuff!',
+  'npc.sailor': 'I hear a dragon lives in the caves to the north, sealed behind a dark barrier. Scary stuff!',
   'npc.wisewoman': 'The crystals give power to those who study hard. Keep learning, hero!',
 
   // Ironkeep (Act 2)
-  'npc.soldier': 'The Shadow Cave is east of here. A Red Dragon blocks the way north. Defeat it!',
-  'npc.blacksmith': 'I make the best gear around! Check the shop before heading into the caves.',
+  'npc.soldier': 'A dark barrier seals the Shadow Cave to the east. But there\'s a cave far to the west where a Storm Harpy guards a crystal that can break the seal!',
+  'npc.blacksmith': 'I make the best gear around! Before heading east, try the Storm Nest to the west. You\'ll need what you find there!',
 
   // Ruins Camp (Act 3/4)
   'npc.archaeologist': 'The lava fields are dangerous. Be very careful!',
@@ -162,6 +162,13 @@ export const enStrings: Record<string, string> = {
   'dungeon.crystalCave.boss.defeat': 'The Sea Serpent dissolves into sparkling light... The water grows calm.',
   'dungeon.crystalCave.victory': 'You found the Crystal of Courage! Its warm light fills you with strength.',
   'dungeon.crystalCave.locked': 'A mysterious force blocks the cave entrance... Perhaps a crystal from the Misty Grotto would open the way.',
+
+  // Storm Nest (prerequisite for Shadow Cave)
+  'dungeon.stormNest.boss.dialog1': 'Lightning crackles through the chamber... Feathers drift on howling winds.',
+  'dungeon.stormNest.boss.dialog2': 'A piercing shriek echoes from above!',
+  'dungeon.stormNest.boss.dialog3': 'The Storm Harpy descends with talons bared! Prepare for battle!',
+  'dungeon.stormNest.boss.defeat': 'The Storm Harpy\'s wings fold... The winds die down to a gentle breeze.',
+  'dungeon.stormNest.victory': 'A dark crystal falls from the harpy\'s nest, pulsing with shadowy energy.',
 
   // Shadow Cave (renamed from Shadow Tower)
   'dungeon.shadowCave.enter': 'The cave stretches deep into the dark mountainside...',
@@ -209,6 +216,7 @@ export const enStrings: Record<string, string> = {
   'monster.harpy': 'Harpy',
   'monster.wyvern': 'Wyvern',
   'monster.kraken': 'Kraken',
+  'monster.stormHarpy': 'Storm Harpy',
   'monster.dragon': 'Red Dragon',
   'monster.blizzardBear': 'Blizzard Bear',
   'monster.iceSprite': 'Ice Sprite',
@@ -330,6 +338,11 @@ export const enStrings: Record<string, string> = {
   'dungeon.celestialVault.victory': 'Divine light coalesces into the Aegis of Dawn — armor of the gods!',
   'dungeon.celestialVault.locked': 'A powerful seal guards the entrance... The ancient runes pulse with energy. Only a blade of legendary might could break through.',
 
+  // Key item obtainment
+  'item.shadowCrystal': 'Shadow Crystal',
+  'item.shadowCrystal.desc': 'A dark crystal that can break the seal on Shadow Cave.',
+  'item.shadowCrystal.obtained': 'You obtained the Shadow Crystal! Its dark energy pulses with power. The seal on Shadow Cave can now be broken!',
+
   // Legendary item obtainment
   'legendary.excalibur.obtained': 'You obtained Excalibur! The legendary blade gleams with ancient power. It has been equipped automatically!',
   'legendary.aegis.obtained': 'You obtained the Aegis of Dawn! Divine light wraps around you like an impenetrable shield. It has been equipped automatically!',
@@ -338,6 +351,7 @@ export const enStrings: Record<string, string> = {
   'dungeon.stairsUp': 'You ascend the stairs...',
   'dungeon.bossExitReturn': 'A mysterious portal appears... It will take you back outside!',
   'dungeon.gatePassageOpen': 'The way ahead is now clear! You can travel freely through the cave.',
+  'dungeon.shadowCave.locked': 'A dark barrier seals the cave entrance... Perhaps a crystal from the Storm Nest to the west could break it.',
   'dungeon.gateBlocked': 'Dark power seals this passage... You must find another way through.',
 
   // ── Map Names ───────────────────────────────────────────────────────
@@ -349,6 +363,7 @@ export const enStrings: Record<string, string> = {
   'map.lastBastion': 'Last Bastion',
   'map.mistyGrotto': 'Misty Grotto',
   'map.crystalCave': 'Crystal Cave',
+  'map.stormNest': 'Storm Nest',
   'map.shadowCave': 'Shadow Cave',
   'map.volcanicForge': 'Volcanic Forge',
   'map.demonCastle': 'Demon Castle',
