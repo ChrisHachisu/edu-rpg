@@ -79,10 +79,10 @@ export function generateOverworldMap(width: number, height: number): number[][] 
     // ── Act 1 — south of river (y=99-117) ──
     ...pathBetween(10, 110, 16, 106),  // greenhollow → mistyGrotto
     ...pathBetween(10, 110, 30, 103),  // greenhollow → portSapphire
-    ...pathBetween(30, 103, 40, 99),   // portSapphire → crystalCave S
-    ...pathBetween(40, 99, 40, 97),    // guide through river gap
+    ...pathBetween(30, 103, 40, 97),   // portSapphire → crystalCave S
+    // (NO path between Crystal Cave S and N — water blocks direct passage)
     // ── Act 2 — between river and mountains (y=81-97) ──
-    ...pathBetween(40, 97, 48, 89),    // crystalCave N → ironkeep
+    ...pathBetween(40, 95, 48, 89),    // crystalCave N → ironkeep
     ...pathBetween(48, 89, 50, 83),    // ironkeep → shadowCave S
     ...pathBetween(50, 83, 50, 79),    // guide through mountain gap
     // ── Act 3/4 — between mountains and lava (y=63-79) ──
@@ -203,7 +203,7 @@ export function generateOverworldMap(width: number, height: number): number[][] 
 
   // ── Phase 6: Dungeon entrance markers ──
   const caveDungeons: [number, number][] = [
-    [16, 106], [40, 99], [40, 97],  // Act 1: Misty Grotto, Crystal Cave S/N
+    [16, 106], [40, 97], [40, 95],  // Act 1→2: Misty Grotto, Crystal Cave S/N
     [50, 83], [50, 79],              // Act 2→3: Shadow Cave S/N
     [8, 63], [8, 59],                // Act 3/4→5: Volcanic Forge S/N (relocated west)
     [4, 46], [75, 46],               // Legendary: Sanctum, Vault
@@ -307,6 +307,13 @@ export function generateOverworldMap(width: number, height: number): number[][] 
         }
       }
     }
+  }
+
+  // ── Phase 9: Water barrier between Crystal Cave entrances ──
+  // Placed AFTER marker adjacency clearing so it isn't removed.
+  // Crystal Cave S is at (40,97), N is at (40,95) — water at y=96 blocks direct passage.
+  for (let wx = 37; wx <= 43; wx++) {
+    map[96][wx] = 2; // water strip
   }
 
   return map;

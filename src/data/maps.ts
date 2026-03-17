@@ -45,8 +45,8 @@ export const mapDefs: Record<string, MapDef> = {
       { targetMap: 'lastBastion', fromX: 56, fromY: 54, toX: 8, toY: 14 },
       // ── Dungeon entrances (toY: 1 = one tile south of stairs at y=0) ──
       { targetMap: 'mistyGrotto', fromX: 16, fromY: 106, toX: 7, toY: 1 },
-      { targetMap: 'crystalCave', fromX: 40, fromY: 99, toX: 10, toY: 61 },
-      { targetMap: 'crystalCave', fromX: 40, fromY: 97, toX: 10, toY: 1 },
+      { targetMap: 'crystalCave', fromX: 40, fromY: 97, toX: 10, toY: 61 },
+      { targetMap: 'crystalCave', fromX: 40, fromY: 95, toX: 10, toY: 1 },
       { targetMap: 'shadowCave', fromX: 50, fromY: 83, toX: 12, toY: 1 },
       { targetMap: 'shadowCave', fromX: 50, fromY: 79, toX: 12, toY: 23, toFloor: 5 },
       { targetMap: 'volcanicForge', fromX: 8, fromY: 63, toX: 12, toY: 1 },
@@ -175,8 +175,8 @@ export const mapDefs: Record<string, MapDef> = {
     width: 21,
     height: 63,
     connections: [
-      { targetMap: 'overworld', fromX: 10, fromY: 62, toX: 40, toY: 100 }, // south exit → Act 1
-      { targetMap: 'overworld', fromX: 10, fromY: 0, toX: 40, toY: 96 },  // north exit → Act 2
+      { targetMap: 'overworld', fromX: 10, fromY: 62, toX: 40, toY: 98 }, // south exit → Act 1
+      { targetMap: 'overworld', fromX: 10, fromY: 0, toX: 40, toY: 94 },  // north exit → Act 2
     ],
     npcs: [],
     bossId: 'serpent',
