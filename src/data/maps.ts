@@ -53,34 +53,34 @@ export const mapDefs: Record<string, MapDef> = {
       { targetMap: 'havensEdge', fromX: 65, fromY: 40, toX: 8, toY: 14 },
 
       // ── Act 1 Dungeons ──
-      { targetMap: 'sunkenCellar', fromX: 25, fromY: 148, toX: 15, toY: 1 },
-      { targetMap: 'mistyGrotto', fromX: 85, fromY: 144, toX: 15, toY: 1 },
+      { targetMap: 'sunkenCellar', fromX: 25, fromY: 148, toX: 11, toY: 1 },
+      { targetMap: 'mistyGrotto', fromX: 85, fromY: 144, toX: 11, toY: 1 },
       // Crystal Cave: gate dungeon (S entrance Act 1 side, N exit Act 2 side)
       { targetMap: 'crystalCave', fromX: 66, fromY: 130, toX: 10, toY: 61 },
       { targetMap: 'crystalCave', fromX: 66, fromY: 127, toX: 10, toY: 1 },
 
       // ── Act 2 Dungeons ──
-      { targetMap: 'stormNest', fromX: 25, fromY: 108, toX: 25, toY: 1 },
-      { targetMap: 'frozenLake', fromX: 100, fromY: 112, toX: 20, toY: 2 },
+      { targetMap: 'stormNest', fromX: 25, fromY: 108, toX: 15, toY: 1 },
+      { targetMap: 'frozenLake', fromX: 100, fromY: 112, toX: 13, toY: 2 },
       // Shadow Cave: gate dungeon (S entrance Act 2 side, N exit Act 3 side)
-      { targetMap: 'shadowCave', fromX: 90, fromY: 102, toX: 27, toY: 1 },
-      { targetMap: 'shadowCave', fromX: 90, fromY: 100, toX: 27, toY: 53, toFloor: 5 },
+      { targetMap: 'shadowCave', fromX: 90, fromY: 102, toX: 17, toY: 1 },
+      { targetMap: 'shadowCave', fromX: 90, fromY: 100, toX: 17, toY: 32, toFloor: 5 },
 
       // ── Act 3 Dungeons ──
-      { targetMap: 'desertTomb', fromX: 60, fromY: 95, toX: 27, toY: 1 },
-      { targetMap: 'banditHideout', fromX: 10, fromY: 88, toX: 19, toY: 1 },
+      { targetMap: 'desertTomb', fromX: 60, fromY: 95, toX: 17, toY: 1 },
+      { targetMap: 'banditHideout', fromX: 10, fromY: 88, toX: 12, toY: 1 },
 
       // ── Act 4 Dungeons ──
-      { targetMap: 'magmaTunnels', fromX: 25, fromY: 80, toX: 24, toY: 1 },
+      { targetMap: 'magmaTunnels', fromX: 25, fromY: 80, toX: 17, toY: 1 },
       // Volcanic Forge: gate dungeon (S entrance, N exit into Act 5)
-      { targetMap: 'volcanicForge', fromX: 12, fromY: 70, toX: 30, toY: 1 },
-      { targetMap: 'volcanicForge', fromX: 12, fromY: 67, toX: 30, toY: 58, toFloor: 9 },
+      { targetMap: 'volcanicForge', fromX: 12, fromY: 70, toX: 20, toY: 1 },
+      { targetMap: 'volcanicForge', fromX: 12, fromY: 67, toX: 20, toY: 38, toFloor: 9 },
 
       // ── Act 5 Dungeons ──
-      { targetMap: 'demonCastle', fromX: 55, fromY: 15, toX: 35, toY: 68 },
+      { targetMap: 'demonCastle', fromX: 55, fromY: 15, toX: 25, toY: 48 },
       // Hidden legendary dungeons (deep in maze)
-      { targetMap: 'sealedSanctum', fromX: 8, fromY: 10, toX: 31, toY: 1 },
-      { targetMap: 'celestialVault', fromX: 110, fromY: 10, toX: 31, toY: 1 },
+      { targetMap: 'sealedSanctum', fromX: 8, fromY: 10, toX: 22, toY: 1 },
+      { targetMap: 'celestialVault', fromX: 110, fromY: 10, toX: 22, toY: 1 },
     ],
     npcs: [],
   },
@@ -256,10 +256,10 @@ export const mapDefs: Record<string, MapDef> = {
     nameKey: 'map.mistyGrotto',
     type: 'dungeon',
     encounterZone: 'misty-grotto',
-    width: 30,
-    height: 30,
+    width: 22,
+    height: 22,
     connections: [
-      { targetMap: 'overworld', fromX: 15, fromY: 0, toX: 85, toY: 145 },
+      { targetMap: 'overworld', fromX: 11, fromY: 0, toX: 85, toY: 145 },
     ],
     npcs: [],
     bossId: 'giantToad',
@@ -272,10 +272,10 @@ export const mapDefs: Record<string, MapDef> = {
     nameKey: 'map.sunkenCellar',
     type: 'dungeon',
     encounterZone: 'sunken-cellar',
-    width: 30,
-    height: 30,
+    width: 22,
+    height: 22,
     connections: [
-      { targetMap: 'overworld', fromX: 15, fromY: 0, toX: 25, toY: 149 },
+      { targetMap: 'overworld', fromX: 11, fromY: 0, toX: 25, toY: 149 },
     ],
     npcs: [],
     bossId: 'giantCrab',
@@ -307,10 +307,10 @@ export const mapDefs: Record<string, MapDef> = {
     nameKey: 'map.stormNest',
     type: 'dungeon',
     encounterZone: 'storm-nest',
-    width: 50,
-    height: 50,
+    width: 30,
+    height: 30,
     connections: [
-      { targetMap: 'overworld', fromX: 25, fromY: 0, toX: 25, toY: 109 },
+      { targetMap: 'overworld', fromX: 15, fromY: 0, toX: 25, toY: 109 },
     ],
     npcs: [],
     bossId: 'stormHarpy',
@@ -323,10 +323,10 @@ export const mapDefs: Record<string, MapDef> = {
     nameKey: 'map.frozenLake',
     type: 'dungeon',
     encounterZone: 'frozen-lake',
-    width: 40,
-    height: 40,
+    width: 26,
+    height: 26,
     connections: [
-      { targetMap: 'overworld', fromX: 20, fromY: 0, toX: 100, toY: 113 },
+      { targetMap: 'overworld', fromX: 13, fromY: 0, toX: 100, toY: 113 },
     ],
     npcs: [],
     bossId: 'iceWyrm',
@@ -339,11 +339,11 @@ export const mapDefs: Record<string, MapDef> = {
     nameKey: 'map.shadowCave',
     type: 'dungeon',
     encounterZone: 'shadow-cave',
-    width: 55,
-    height: 55,
+    width: 34,
+    height: 34,
     connections: [
-      { targetMap: 'overworld', fromX: 27, fromY: 0, toX: 90, toY: 103 },   // south exit (floor 1)
-      { targetMap: 'overworld', fromX: 27, fromY: 54, toX: 90, toY: 99 },   // north exit (floor 5)
+      { targetMap: 'overworld', fromX: 17, fromY: 0, toX: 90, toY: 103 },   // south exit (floor 1)
+      { targetMap: 'overworld', fromX: 17, fromY: 33, toX: 90, toY: 99 },   // north exit (floor 5)
     ],
     npcs: [],
     bossId: 'dragon',
@@ -358,10 +358,10 @@ export const mapDefs: Record<string, MapDef> = {
     nameKey: 'map.desertTomb',
     type: 'dungeon',
     encounterZone: 'desert-tomb',
-    width: 55,
-    height: 55,
+    width: 34,
+    height: 34,
     connections: [
-      { targetMap: 'overworld', fromX: 27, fromY: 0, toX: 60, toY: 96 },
+      { targetMap: 'overworld', fromX: 17, fromY: 0, toX: 60, toY: 96 },
     ],
     npcs: [],
     bossId: 'sandGolem',
@@ -374,10 +374,10 @@ export const mapDefs: Record<string, MapDef> = {
     nameKey: 'map.banditHideout',
     type: 'dungeon',
     encounterZone: 'bandit-hideout',
-    width: 38,
-    height: 38,
+    width: 24,
+    height: 24,
     connections: [
-      { targetMap: 'overworld', fromX: 19, fromY: 0, toX: 10, toY: 89 },
+      { targetMap: 'overworld', fromX: 12, fromY: 0, toX: 10, toY: 89 },
     ],
     npcs: [],
     bossId: 'banditLord',
@@ -392,10 +392,10 @@ export const mapDefs: Record<string, MapDef> = {
     nameKey: 'map.magmaTunnels',
     type: 'dungeon',
     encounterZone: 'magma-tunnels',
-    width: 48,
-    height: 48,
+    width: 34,
+    height: 34,
     connections: [
-      { targetMap: 'overworld', fromX: 24, fromY: 0, toX: 25, toY: 81 },
+      { targetMap: 'overworld', fromX: 17, fromY: 0, toX: 25, toY: 81 },
     ],
     npcs: [],
     bossId: 'lavaWyrm',
@@ -408,11 +408,11 @@ export const mapDefs: Record<string, MapDef> = {
     nameKey: 'map.volcanicForge',
     type: 'dungeon',
     encounterZone: 'volcanic-forge',
-    width: 60,
-    height: 60,
+    width: 40,
+    height: 40,
     connections: [
-      { targetMap: 'overworld', fromX: 30, fromY: 0, toX: 12, toY: 71 },   // south exit (floor 1)
-      { targetMap: 'overworld', fromX: 30, fromY: 59, toX: 13, toY: 67 },  // north exit (floor 9)
+      { targetMap: 'overworld', fromX: 20, fromY: 0, toX: 12, toY: 71 },   // south exit (floor 1)
+      { targetMap: 'overworld', fromX: 20, fromY: 39, toX: 13, toY: 67 },  // north exit (floor 9)
     ],
     npcs: [],
     bossId: 'flameTitan',
@@ -427,10 +427,10 @@ export const mapDefs: Record<string, MapDef> = {
     nameKey: 'map.demonCastle',
     type: 'dungeon',
     encounterZone: 'demon-castle',
-    width: 70,
-    height: 70,
+    width: 50,
+    height: 50,
     connections: [
-      { targetMap: 'overworld', fromX: 35, fromY: 69, toX: 55, toY: 16 },
+      { targetMap: 'overworld', fromX: 25, fromY: 49, toX: 55, toY: 16 },
     ],
     npcs: [],
     bossId: 'demonKing',
@@ -447,10 +447,10 @@ export const mapDefs: Record<string, MapDef> = {
     nameKey: 'map.sealedSanctum',
     type: 'dungeon',
     encounterZone: 'sealed-sanctum',
-    width: 62,
-    height: 62,
+    width: 44,
+    height: 44,
     connections: [
-      { targetMap: 'overworld', fromX: 31, fromY: 0, toX: 8, toY: 11 },
+      { targetMap: 'overworld', fromX: 22, fromY: 0, toX: 8, toY: 11 },
     ],
     npcs: [],
     bossId: 'swordWraith',
@@ -461,10 +461,10 @@ export const mapDefs: Record<string, MapDef> = {
     nameKey: 'map.celestialVault',
     type: 'dungeon',
     encounterZone: 'celestial-vault',
-    width: 62,
-    height: 62,
+    width: 44,
+    height: 44,
     connections: [
-      { targetMap: 'overworld', fromX: 31, fromY: 0, toX: 110, toY: 11 },
+      { targetMap: 'overworld', fromX: 22, fromY: 0, toX: 110, toY: 11 },
     ],
     npcs: [],
     bossId: 'celestialGuardian',
