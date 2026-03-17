@@ -86,7 +86,8 @@ export function generateOverworldMap(width: number, height: number): number[][] 
     ...pathBetween(48, 89, 50, 82),    // ironkeep → shadowCave S
     ...pathBetween(50, 82, 50, 80),    // guide through mountain gap
     // ── Act 3/4 — between mountains and lava (y=63-79) ──
-    ...pathBetween(50, 80, 20, 68),    // shadowCave N → ruinsCamp (relocated west)
+    ...pathBetween(50, 80, 50, 76),    // shadowCave N → south (clear of mountains)
+    ...pathBetween(50, 76, 20, 68),    // → ruinsCamp (relocated west)
     ...pathBetween(20, 68, 8, 62),     // ruinsCamp → volcanicForge S
     // (NO path between VF S and VF N — mountains block direct passage)
     // ── Act 5 main road — north of lava (y=2-61) ──
@@ -316,6 +317,10 @@ export function generateOverworldMap(width: number, height: number): number[][] 
   for (let wx = 37; wx <= 43; wx++) {
     map[96][wx] = 2; // water strip
   }
+
+  // Shadow Cave: mountain north of Act 2 entrance, walkable north of Act 3 exit
+  map[81][50] = 4; // mountain — north of SC S (50,82), blocks Act 2 side
+  map[79][50] = 1; // walkable — north of SC N (50,80), lets player exit into Act 3
 
   // Volcanic Forge: mountains fill between S(8,62) and N(8,59)
   map[60][8] = 4; // mountain
