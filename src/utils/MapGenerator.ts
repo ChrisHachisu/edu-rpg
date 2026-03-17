@@ -512,30 +512,68 @@ export function generateOverworldMap(width: number, height: number): number[][] 
   map[67][13] = 1;  // east exit walkable
   map[67][14] = 1;
 
-  // ── [6] Oasis Haven: river barrier EAST of Desert Tomb ──
-  // Blocks direct east approach from Ruins Camp; forces player through Oasis Haven
-  for (let ry = 89; ry <= 99; ry++) {
-    for (let rx = 64; rx <= 66; rx++) {
+  // ── [6] Oasis Haven + Desert Tomb: comprehensive water barriers ──
+  // Block ALL east access: water extends from north of Oasis Haven eastward
+  // to connect with the winding stream, and south of Desert Tomb to prevent sneaking below.
+
+  // 1. Water strip NORTH of Oasis Haven extending east to connect with winding stream (~x=42)
+  //    Oasis Haven is at (45,92), stream runs around x=42. Extend water east from x=46 to x=80+
+  for (let rx = 46; rx <= 85; rx++) {
+    for (let ry = 88; ry <= 90; ry++) {
       if (rx >= 2 && rx < width - 2 && ry >= 2 && ry < height - 2) {
-        // Don't overwrite path, town, cave markers
-        if (map[ry][rx] !== 1 && map[ry][rx] !== 6 && map[ry][rx] !== 7 && map[ry][rx] !== 8) {
-          map[ry][rx] = 2;  // water barrier
+        if (map[ry][rx] !== 6 && map[ry][rx] !== 7 && map[ry][rx] !== 8) {
+          map[ry][rx] = 2;
         }
       }
     }
   }
-  // Re-stamp Desert Tomb cave marker and ensure path from Oasis Haven reaches it
+
+  // 2. Water barrier EAST of Desert Tomb (original + extended south)
+  //    Desert Tomb at (60,95). Block east approach from Ruins Camp (80,85).
+  for (let ry = 88; ry <= 100; ry++) {
+    for (let rx = 64; rx <= 67; rx++) {
+      if (rx >= 2 && rx < width - 2 && ry >= 2 && ry < height - 2) {
+        if (map[ry][rx] !== 6 && map[ry][rx] !== 7 && map[ry][rx] !== 8) {
+          map[ry][rx] = 2;
+        }
+      }
+    }
+  }
+
+  // 3. Water SOUTH of Desert Tomb extending east — blocks sneaking below
+  //    From (60,98) extending east to (80,100)
+  for (let rx = 58; rx <= 85; rx++) {
+    for (let ry = 98; ry <= 100; ry++) {
+      if (rx >= 2 && rx < width - 2 && ry >= 2 && ry < height - 2) {
+        if (map[ry][rx] !== 6 && map[ry][rx] !== 7 && map[ry][rx] !== 8) {
+          map[ry][rx] = 2;
+        }
+      }
+    }
+  }
+
+  // Re-stamp Desert Tomb cave marker
   map[95][60] = 7;
-  // Walkable tiles between Oasis Haven and Desert Tomb (ensure path isn't flooded)
-  for (let px = 55; px <= 62; px++) {
-    if (map[95][px] === 2) map[95][px] = 1;
-    if (map[96][px] === 2) map[96][px] = 1;
+  // Walkable corridor between Oasis Haven (45,92) and Desert Tomb (60,95)
+  for (let px = 44; px <= 63; px++) {
+    for (let py = 91; py <= 97; py++) {
+      if (map[py][px] === 2 && py >= 91 && py <= 97 && px >= 44 && px <= 63) {
+        map[py][px] = 1;
+      }
+    }
+  }
+  // Re-stamp path tiles along the Oasis Haven → Desert Tomb route
+  for (let px = 45; px <= 60; px++) {
+    if (map[92][px] === 2) map[92][px] = 0;
+    if (map[93][px] === 2) map[93][px] = 0;
+    if (map[94][px] === 2) map[94][px] = 0;
+    if (map[95][px] === 2) map[95][px] = 0;
   }
 
   // Extra walkable clearance around Oasis Haven (8-directional)
   const ohX = 45, ohY = 92;
-  for (let dy = -2; dy <= 2; dy++) {
-    for (let dx = -2; dx <= 2; dx++) {
+  for (let dy = -3; dy <= 3; dy++) {
+    for (let dx = -3; dx <= 3; dx++) {
       const ax = ohX + dx, ay = ohY + dy;
       if (ax >= 2 && ax < width - 2 && ay >= 2 && ay < height - 2) {
         if (map[ay][ax] === 4 || map[ay][ax] === 2) {
@@ -719,24 +757,26 @@ export function generateDungeonMap(
 
   const map: number[][] = Array.from({ length: height }, () => new Array(width).fill(1));
 
-  // --- Generate rooms ---
+  // --- Generate rooms (scaled to map size) ---
   const rooms: Room[] = [];
-  const roomCount = Math.floor(5 + (width + height) / 10);
-  const minRoomSize = 3;
-  const maxRoomSize = Math.min(7, Math.floor(width / 4));
+  const roomCount = Math.min(22, Math.floor(4 + Math.sqrt(width * height) / 4));
+  const minRoomSize = Math.max(3, Math.floor(width / 12));
+  const maxRoomSize = Math.max(minRoomSize + 3, Math.min(12, Math.floor(width / 5)));
 
   const roomYMin = gate ? 6 : 2;
   const roomYMax = gate ? height - 6 : height - 4;
+  const spacing = width >= 30 ? 2 : 1;
 
-  for (let attempt = 0; attempt < 200 && rooms.length < roomCount; attempt++) {
+  for (let attempt = 0; attempt < roomCount * 50 && rooms.length < roomCount; attempt++) {
     const rw = minRoomSize + Math.floor(rand() * (maxRoomSize - minRoomSize + 1));
     const rh = minRoomSize + Math.floor(rand() * (maxRoomSize - minRoomSize + 1));
-    const rx = 1 + Math.floor(rand() * (width - rw - 2));
-    const ry = roomYMin + Math.floor(rand() * (roomYMax - rh - roomYMin));
+    const rx = 1 + Math.floor(rand() * Math.max(1, width - rw - 2));
+    const ry = roomYMin + Math.floor(rand() * Math.max(1, roomYMax - rh - roomYMin));
 
     let overlaps = false;
     for (const r of rooms) {
-      if (rx - 1 < r.x + r.w && rx + rw + 1 > r.x && ry - 1 < r.y + r.h && ry + rh + 1 > r.y) {
+      if (rx - spacing < r.x + r.w && rx + rw + spacing > r.x &&
+          ry - spacing < r.y + r.h && ry + rh + spacing > r.y) {
         overlaps = true;
         break;
       }
@@ -757,97 +797,112 @@ export function generateDungeonMap(
     }
   }
 
-  // --- Connect rooms ---
+  // --- Connect rooms via MST (Prim's algorithm) for clean, non-circular paths ---
   const isStandardDungeon = !gate && !castle;
-  for (let i = 0; i < rooms.length - 1; i++) {
-    const a = rooms[i];
-    const b = rooms[i + 1];
-    carveLCorridor(map, a.cx, a.cy, b.cx, b.cy, rand);
-  }
-
-  // Cross-connections: fewer in standard dungeons for more isolated feel
-  const crossChance = isStandardDungeon ? 0.75 : 0.55;
-  for (let i = 0; i < rooms.length - 2; i++) {
-    if (rand() > crossChance) {
-      const a = rooms[i];
-      const b = rooms[i + 2];
-      carveLCorridor(map, a.cx, a.cy, b.cx, b.cy, rand);
-    }
-  }
-
-  // Extra corridor loops for standard dungeons (non-linear maze feel)
-  if (isStandardDungeon && rooms.length >= 4) {
-    const loopCount = 2 + Math.floor(rand() * 2);
-    for (let l = 0; l < loopCount; l++) {
-      const aIdx = Math.floor(rand() * rooms.length);
-      let bIdx = Math.floor(rand() * rooms.length);
-      if (Math.abs(aIdx - bIdx) > 1 && aIdx !== bIdx) {
-        carveLCorridor(map, rooms[aIdx].cx, rooms[aIdx].cy, rooms[bIdx].cx, rooms[bIdx].cy, rand);
+  if (rooms.length > 1) {
+    const inMST = new Set<number>();
+    const mstEdges: [number, number][] = [];
+    inMST.add(0);
+    while (inMST.size < rooms.length) {
+      let bestDist = Infinity;
+      let bestFrom = -1;
+      let bestTo = -1;
+      for (const from of inMST) {
+        for (let to = 0; to < rooms.length; to++) {
+          if (inMST.has(to)) continue;
+          const dist = Math.abs(rooms[from].cx - rooms[to].cx) + Math.abs(rooms[from].cy - rooms[to].cy);
+          if (dist < bestDist) {
+            bestDist = dist;
+            bestFrom = from;
+            bestTo = to;
+          }
+        }
       }
+      if (bestTo === -1) break;
+      inMST.add(bestTo);
+      mstEdges.push([bestFrom, bestTo]);
     }
-  }
-
-  // --- Dead-end branches with treasure ---
-  const MIN_TREASURE_DIST = 8;
-  const treasurePositions: [number, number][] = [];
-
-  const mainPathTiles: Set<string> = new Set();
-  for (let y = 0; y < height; y++) {
-    for (let x = 0; x < width; x++) {
-      if (map[y][x] !== 1) mainPathTiles.add(`${x},${y}`);
+    // Carve MST corridors
+    for (const [a, b] of mstEdges) {
+      carveLCorridor(map, rooms[a].cx, rooms[a].cy, rooms[b].cx, rooms[b].cy, rand);
     }
-  }
-
-  const isFarEnoughFromOther = (x: number, y: number): boolean =>
-    treasurePositions.every(([tx, ty]) => Math.abs(x - tx) + Math.abs(y - ty) >= MIN_TREASURE_DIST);
-
-  const MIN_PATH_DIST = 3;
-  const isFarFromMainPath = (x: number, y: number): boolean => {
-    for (let dy = -MIN_PATH_DIST; dy <= MIN_PATH_DIST; dy++) {
-      for (let dx = -MIN_PATH_DIST; dx <= MIN_PATH_DIST; dx++) {
-        if (Math.abs(dx) + Math.abs(dy) <= MIN_PATH_DIST
-            && mainPathTiles.has(`${x + dx},${y + dy}`)) {
-          return false;
+    // Add 1-2 short extra connections for variety (shortest non-MST edges)
+    const extraCount = 1 + Math.floor(rand() * 2);
+    const mstSet = new Set(mstEdges.map(([a, b]) => `${Math.min(a, b)},${Math.max(a, b)}`));
+    const nonMSTEdges: { a: number; b: number; dist: number }[] = [];
+    for (let i = 0; i < rooms.length; i++) {
+      for (let j = i + 1; j < rooms.length; j++) {
+        if (!mstSet.has(`${i},${j}`)) {
+          nonMSTEdges.push({ a: i, b: j, dist: Math.abs(rooms[i].cx - rooms[j].cx) + Math.abs(rooms[i].cy - rooms[j].cy) });
         }
       }
     }
-    return true;
+    nonMSTEdges.sort((ea, eb) => ea.dist - eb.dist);
+    for (let e = 0; e < Math.min(extraCount, nonMSTEdges.length); e++) {
+      const edge = nonMSTEdges[e];
+      carveLCorridor(map, rooms[edge.a].cx, rooms[edge.a].cy, rooms[edge.b].cx, rooms[edge.b].cy, rand);
+    }
+  }
+
+  // --- Dead-end branches (straight corridors into uncarved walls) ---
+  // Carve a STRAIGHT dead-end from a room edge. Returns endpoint if >= 4 tiles, else null.
+  const carveDeadEnd = (room: Room, ddx: number, ddy: number, length: number): [number, number] | null => {
+    const startX = ddx > 0 ? room.x + room.w : ddx < 0 ? room.x - 1 : room.cx;
+    const startY = ddy > 0 ? room.y + room.h : ddy < 0 ? room.y - 1 : room.cy;
+    const tiles: [number, number][] = [];
+    for (let step = 0; step < length; step++) {
+      const tx = startX + ddx * step;
+      const ty = startY + ddy * step;
+      if (tx <= 0 || tx >= width - 1 || ty <= 1 || ty >= height - 2) break;
+      if (map[ty][tx] !== 1) break; // Hit open tile — stop
+      // Check perpendicular neighbors are walls (prevents connecting to adjacent corridors)
+      if (step > 0) {
+        if (ddx !== 0) {
+          if ((ty - 1 >= 0 && map[ty - 1][tx] !== 1) || (ty + 1 < height && map[ty + 1][tx] !== 1)) break;
+        } else {
+          if ((tx - 1 >= 0 && map[ty][tx - 1] !== 1) || (tx + 1 < width && map[ty][tx + 1] !== 1)) break;
+        }
+      }
+      tiles.push([tx, ty]);
+    }
+    if (tiles.length < 4) return null;
+    for (const [tx, ty] of tiles) { map[ty][tx] = 0; }
+    return tiles[tiles.length - 1];
   };
+
+  // Treasure branches
+  const MIN_TREASURE_DIST = 8;
+  const treasurePositions: [number, number][] = [];
+  const isFarEnoughFromOther = (x: number, y: number): boolean =>
+    treasurePositions.every(([tx, ty]) => Math.abs(x - tx) + Math.abs(y - ty) >= MIN_TREASURE_DIST);
 
   for (let i = 0; i < rooms.length; i++) {
     if (rand() > 0.3 && treasurePositions.length < Math.floor(roomCount / 2)) {
       const room = rooms[i];
-      const dirs = shuffleArray([[0, -1], [0, 1], [-1, 0], [1, 0]], rand);
-      for (const [dx, dy] of dirs) {
-        const branchLen = 6 + Math.floor(rand() * 5);
-        let ex = room.cx + dx * (Math.floor(room.w / 2) + branchLen);
-        let ey = room.cy + dy * (Math.floor(room.h / 2) + branchLen);
-        ex = Math.max(1, Math.min(width - 2, ex));
-        ey = Math.max(2, Math.min(height - 4, ey));
-
-        if (map[ey][ex] === 1 && isFarEnoughFromOther(ex, ey) && isFarFromMainPath(ex, ey)) {
-          carveLCorridor(map, room.cx, room.cy, ex, ey, rand);
-          map[ey][ex] = 0;
-          treasurePositions.push([ex, ey]);
+      const dirs = shuffleArray([[0, -1], [0, 1], [-1, 0], [1, 0]] as [number, number][], rand);
+      for (const [ddx, ddy] of dirs) {
+        const branchLen = 6 + Math.floor(rand() * 8);
+        const endpoint = carveDeadEnd(room, ddx, ddy, branchLen);
+        if (endpoint && isFarEnoughFromOther(endpoint[0], endpoint[1])) {
+          treasurePositions.push(endpoint);
           break;
         }
       }
     }
   }
 
-  // Fallback
+  // Fallback: place treasure at room corners if no dead-end branches worked
   if (treasurePositions.length === 0) {
     for (let i = 1; i < rooms.length - 1 && treasurePositions.length < 2; i++) {
       const r = rooms[i];
-      const alcoveDirs = shuffleArray([[0, -1], [0, 1], [-1, 0], [1, 0]], rand);
-      for (const [dx, dy] of alcoveDirs) {
-        const ax = r.cx + dx * (Math.floor(r.w / 2) + 4);
-        const ay = r.cy + dy * (Math.floor(r.h / 2) + 4);
-        if (ax > 0 && ax < width - 1 && ay > 1 && ay < height - 3
-            && map[ay][ax] === 1 && isFarEnoughFromOther(ax, ay)) {
-          carveLCorridor(map, r.cx, r.cy, ax, ay, rand);
-          map[ay][ax] = 0;
-          treasurePositions.push([ax, ay]);
+      const corners: [number, number][] = shuffleArray([
+        [r.x, r.y], [r.x + r.w - 1, r.y],
+        [r.x, r.y + r.h - 1], [r.x + r.w - 1, r.y + r.h - 1],
+      ] as [number, number][], rand);
+      for (const [cx2, cy2] of corners) {
+        if (cx2 > 0 && cx2 < width - 1 && cy2 > 1 && cy2 < height - 3
+            && (map[cy2][cx2] === 0 || map[cy2][cx2] === 2) && isFarEnoughFromOther(cx2, cy2)) {
+          treasurePositions.push([cx2, cy2]);
           break;
         }
       }
@@ -869,25 +924,14 @@ export function generateDungeonMap(
     treasurePositions.splice(worstIdx, 1);
   }
 
-  // --- Extra dead-end branches for standard dungeons (no treasure, just maze) ---
-  if (isStandardDungeon) {
-    for (let i = 0; i < rooms.length; i++) {
-      if (rand() > 0.5) {
-        const room = rooms[i];
-        const dirs = shuffleArray([[0, -1], [0, 1], [-1, 0], [1, 0]], rand);
-        for (const [dx, dy] of dirs) {
-          const branchLen = 4 + Math.floor(rand() * 6);
-          let ex = room.cx + dx * (Math.floor(room.w / 2) + branchLen);
-          let ey = room.cy + dy * (Math.floor(room.h / 2) + branchLen);
-          ex = Math.max(1, Math.min(width - 2, ex));
-          ey = Math.max(2, Math.min(height - 4, ey));
-
-          if (map[ey][ex] === 1) {
-            carveLCorridor(map, room.cx, room.cy, ex, ey, rand);
-            map[ey][ex] = 0;
-            break;
-          }
-        }
+  // Extra maze dead-end branches (no treasure, exploration variety)
+  for (let i = 0; i < rooms.length; i++) {
+    if (rand() < 0.6) { // 60% of rooms get a maze branch
+      const room = rooms[i];
+      const dirs = shuffleArray([[0, -1], [0, 1], [-1, 0], [1, 0]] as [number, number][], rand);
+      for (const [ddx, ddy] of dirs) {
+        const branchLen = 5 + Math.floor(rand() * 10);
+        if (carveDeadEnd(room, ddx, ddy, branchLen)) break;
       }
     }
   }
@@ -985,37 +1029,17 @@ export function generateDungeonMap(
       carveLCorridor(map, entranceX, 2, rooms[0].cx, rooms[0].cy, rand);
     }
 
-    // Goal room: pick room FARTHEST from entrance (Manhattan distance)
-    let goalRoom = rooms.length > 0 ? rooms[rooms.length - 1] : null;
-    if (rooms.length > 1) {
-      let maxDist = 0;
-      for (const r of rooms) {
-        const dist = Math.abs(r.cx - entranceX) + Math.abs(r.cy - 1);
-        if (dist > maxDist) {
-          maxDist = dist;
-          goalRoom = r;
-        }
-      }
-    }
+    // Goal room: bottom-most room (opposite from entrance at top)
+    // Rooms are sorted by cy ascending, so last room has highest cy
+    const goalRoom = rooms.length > 0 ? rooms[rooms.length - 1] : null;
 
     // Carve goal room area and connect to nearest room
     const goalX = goalRoom ? goalRoom.cx : entranceX;
     const goalY = goalRoom ? goalRoom.cy : height - 3;
 
     if (gateFinalFloor && isFinalFloor) {
-      // Gate final floor: boss room + exit at bottom
-      const bossRoomY = goalY;
-      for (let dy = -1; dy <= 1; dy++) {
-        for (let dx = -2; dx <= 2; dx++) {
-          const bx = goalX + dx;
-          const by = bossRoomY + dy;
-          if (bx > 0 && bx < width - 1 && by > 0 && by < height - 1) {
-            map[by][bx] = 0;
-          }
-        }
-      }
-      map[bossRoomY][goalX] = 7;  // boss at goal room
-      // Gate exit at bottom center
+      // Gate final floor: boss blocks the exit at bottom
+      // Exit at bottom center
       map[height - 1][entranceX] = 6;
       for (let dx = -1; dx <= 1; dx++) {
         const ex2 = entranceX + dx;
@@ -1024,16 +1048,50 @@ export function generateDungeonMap(
           map[height - 3][ex2] = 0;
         }
       }
+      // Boss RIGHT IN FRONT of exit, blocking passage
+      const bossY = height - 4;
+      map[bossY][entranceX] = 7;
+      // Clear boss arena around the boss
+      for (let bdy = -1; bdy <= 1; bdy++) {
+        for (let bdx = -3; bdx <= 3; bdx++) {
+          const bx2 = entranceX + bdx;
+          const by2 = bossY + bdy;
+          if (bx2 > 0 && bx2 < width - 1 && by2 > 0 && by2 < height - 1 && map[by2][bx2] === 1) {
+            map[by2][bx2] = 0;
+          }
+        }
+      }
+      // Connect rooms to boss arena
       if (rooms.length > 0) {
         const lastRoom = rooms[rooms.length - 1];
-        carveLCorridor(map, lastRoom.cx, lastRoom.cy, entranceX, height - 3, rand);
+        carveLCorridor(map, lastRoom.cx, lastRoom.cy, entranceX, bossY - 1, rand);
       }
     } else if (isFinalFloor) {
-      // Boss on final floor at goal room center
+      // Boss on final floor at bottom room center
       map[goalY][goalX] = 7;
+      // Ensure boss has a clear room around it
+      for (let bdy = -1; bdy <= 1; bdy++) {
+        for (let bdx = -2; bdx <= 2; bdx++) {
+          const bx2 = goalX + bdx;
+          const by2 = goalY + bdy;
+          if (bx2 > 0 && bx2 < width - 1 && by2 > 0 && by2 < height - 1 && map[by2][bx2] === 1) {
+            map[by2][bx2] = 0;
+          }
+        }
+      }
     } else {
-      // Stairs-down at goal room center
+      // Stairs-down at bottom room center
       map[goalY][goalX] = 9;
+      // Ensure stairs area is clear
+      for (let bdy = -1; bdy <= 1; bdy++) {
+        for (let bdx = -1; bdx <= 1; bdx++) {
+          const bx2 = goalX + bdx;
+          const by2 = goalY + bdy;
+          if (bx2 > 0 && bx2 < width - 1 && by2 > 0 && by2 < height - 1 && map[by2][bx2] === 1) {
+            map[by2][bx2] = 0;
+          }
+        }
+      }
     }
   }
 
