@@ -719,54 +719,46 @@ export function generateDungeonMap(
     treasurePositions.splice(worstIdx, 1);
   }
 
-  // Place treasure chests — verify each doesn't block a corridor
+  // Place treasure chests — must be against a wall so players can walk around
+  const isWall = (x: number, y: number) =>
+    y < 0 || y >= height || x < 0 || x >= width || map[y][x] === 1 || map[y][x] === 5;
+  const hasWallNeighbor = (x: number, y: number): boolean =>
+    isWall(x, y - 1) || isWall(x, y + 1) || isWall(x - 1, y) || isWall(x + 1, y);
+
   for (let ti = treasurePositions.length - 1; ti >= 0; ti--) {
     const [tx, ty] = treasurePositions[ti];
-    if (tx <= 0 || tx >= width - 1 || ty <= 0 || ty >= height - 1) continue;
+    if (tx <= 0 || tx >= width - 1 || ty <= 0 || ty >= height - 1) {
+      treasurePositions.splice(ti, 1);
+      continue;
+    }
 
-    // Check if placing here would block passage (floor on opposing sides = corridor)
-    const isFloor = (x: number, y: number) =>
-      y >= 0 && y < height && x >= 0 && x < width && map[y][x] !== 1 && map[y][x] !== 5;
-    const n = isFloor(tx, ty - 1);
-    const s = isFloor(tx, ty + 1);
-    const w = isFloor(tx - 1, ty);
-    const e = isFloor(tx + 1, ty);
-
-    if ((n && s) || (w && e)) {
-      // Corridor tile — relocate to a room interior (corner away from center)
+    if (hasWallNeighbor(tx, ty)) {
+      // Good placement — against a wall, player can walk around
+      map[ty][tx] = 4;
+    } else {
+      // In the middle of a room or corridor — relocate to a wall-adjacent tile in a room
       let relocated = false;
       for (const room of shuffleArray([...rooms], rand)) {
-        // Try corners of the room (away from center/doors)
-        const corners = shuffleArray([
-          [room.x + 1, room.y + 1],
-          [room.x + room.w - 2, room.y + 1],
-          [room.x + 1, room.y + room.h - 2],
-          [room.x + room.w - 2, room.y + room.h - 2],
-        ], rand);
-        for (const [cx, cy] of corners) {
-          if (cx > 0 && cx < width - 1 && cy > 0 && cy < height - 1
-              && (map[cy][cx] === 0 || map[cy][cx] === 2)) {
-            // Verify this corner doesn't block passage either
-            const cn = isFloor(cx, cy - 1);
-            const cs = isFloor(cx, cy + 1);
-            const cw = isFloor(cx - 1, cy);
-            const ce = isFloor(cx + 1, cy);
-            if (!(cn && cs) && !(cw && ce)) {
-              map[cy][cx] = 4;
-              treasurePositions[ti] = [cx, cy];
-              relocated = true;
-              break;
+        // Collect all wall-adjacent floor tiles along room edges
+        const edgeTiles: [number, number][] = [];
+        for (let rx = room.x; rx < room.x + room.w; rx++) {
+          for (let ry = room.y; ry < room.y + room.h; ry++) {
+            if ((map[ry][rx] === 0 || map[ry][rx] === 2) && hasWallNeighbor(rx, ry)) {
+              edgeTiles.push([rx, ry]);
             }
           }
         }
-        if (relocated) break;
+        if (edgeTiles.length > 0) {
+          const [cx, cy] = edgeTiles[Math.floor(rand() * edgeTiles.length)];
+          map[cy][cx] = 4;
+          treasurePositions[ti] = [cx, cy];
+          relocated = true;
+          break;
+        }
       }
       if (!relocated) {
-        // Can't find safe spot — just remove this treasure
         treasurePositions.splice(ti, 1);
       }
-    } else {
-      map[ty][tx] = 4;
     }
   }
 
