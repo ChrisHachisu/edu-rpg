@@ -152,15 +152,7 @@ export function generateOverworldMap(width: number, height: number): number[][] 
     ...pathBetween(85, 114, 100, 112),
     ...pathBetween(70, 118, 90, 102),   // ironkeep → shadowCave S
 
-    // ── Act 3 — between mountains and lava (y=72-100) ──
-    ...pathBetween(90, 100, 80, 85),    // shadowCave N → ruinsCamp
-    ...pathBetween(80, 85, 45, 92),     // ruinsCamp → oasisHaven
-    ...pathBetween(45, 92, 60, 95),     // oasisHaven → desertTomb
-    ...pathBetween(80, 85, 30, 78),     // ruinsCamp → embersRest
-
-    // ── Act 4 — volcanic area (y=72-80) ──
-    ...pathBetween(30, 78, 25, 80),     // embersRest → magmaTunnels
-    ...pathBetween(25, 80, 12, 70),     // magmaTunnels → volcanicForge S
+    // ── Act 3/4 paths drawn LATER in Phase 9b (after terrain/stream) ──
 
     // ── Act 5 — north of lava (y=2-70) ──
     ...pathBetween(13, 67, 85, 58),     // volcanicForge N exit → lastBastion
@@ -328,9 +320,9 @@ export function generateOverworldMap(width: number, height: number): number[][] 
     [25, 108], [100, 112],            // Storm Nest (west), Frozen Lake (east)
     [90, 102], [90, 100],             // Shadow Cave S/N
     // Act 3
-    [60, 95], [10, 88],               // Desert Tomb, Bandit Hideout (far west)
+    [60, 95], [10, 103],              // Desert Tomb, Bandit Hideout (far west, south)
     // Act 4
-    [25, 80],                          // Magma Tunnels
+    [25, 84],                          // Magma Tunnels
     [12, 70], [12, 67],               // Volcanic Forge S/N
     // Act 5
     [8, 10], [110, 10],               // Legendary: Sanctum (NW), Vault (NE)
@@ -584,6 +576,55 @@ export function generateOverworldMap(width: number, height: number): number[][] 
   }
   // Re-stamp Oasis Haven town marker
   map[ohY][ohX] = 6;
+
+  // ── Phase 9b: Act 3/4 paths (drawn AFTER terrain/stream to avoid breakage) ──
+  const act34Paths: [number, number][] = [
+    // shadowCave N exit (90,100) → ruinsCamp (80,85)
+    ...pathBetween(90, 100, 80, 85),
+    // ruinsCamp (80,85) → oasisHaven (45,92): route via waypoints to avoid stream
+    ...pathBetween(80, 85, 63, 85),     // east of water barriers
+    ...pathBetween(63, 85, 45, 92),     // south-west to oasis haven (crosses stream)
+    // oasisHaven (45,92) → desertTomb (60,95)
+    ...pathBetween(45, 92, 60, 95),
+    // ruinsCamp (80,85) → embersRest (30,78): route south of water, cross stream
+    ...pathBetween(80, 85, 63, 85),     // (reuse segment)
+    ...pathBetween(63, 85, 42, 85),     // cross stream
+    ...pathBetween(42, 85, 30, 78),     // west to ember's rest
+    // embersRest (30,78) → magmaTunnels (25,84)
+    ...pathBetween(30, 78, 25, 84),
+    // magmaTunnels (25,84) → volcanicForge S (12,70)
+    ...pathBetween(25, 84, 12, 70),
+  ];
+  for (const [px, py] of act34Paths) {
+    if (px >= 0 && px < width && py >= 0 && py < height) {
+      // Bridge over water, path elsewhere. Don't overwrite markers.
+      if (map[py][px] === 6 || map[py][px] === 7 || map[py][px] === 8) continue;
+      map[py][px] = map[py][px] === 2 ? 5 : 1;
+    }
+  }
+
+  // Re-stamp Act 3/4 markers after path drawing
+  map[85][80] = 6;   // ruinsCamp
+  map[92][45] = 6;   // oasisHaven
+  map[95][60] = 7;   // desertTomb
+  map[78][30] = 6;   // embersRest
+  map[84][25] = 7;   // magmaTunnels
+  map[103][10] = 7;  // banditHideout
+
+  // Clean stray road tiles inside water barrier zone (east of Desert Tomb)
+  for (let ry = 88; ry <= 100; ry++) {
+    for (let rx = 64; rx <= 85; rx++) {
+      if (map[ry][rx] === 1 && ry !== 85) { // keep path at y=85 only
+        // Check if this road tile is isolated (not connecting anything useful)
+        const adj = [[0,-1],[0,1],[-1,0],[1,0]].filter(([dx,dy]) => {
+          const nx = rx+dx, ny = ry+dy;
+          return nx >= 0 && nx < width && ny >= 0 && ny < height
+            && (map[ny][nx] === 1 || map[ny][nx] === 5 || map[ny][nx] === 6 || map[ny][nx] === 7);
+        });
+        if (adj.length <= 1) map[ry][rx] = 0; // isolated road → grass
+      }
+    }
+  }
 
   return map;
 }
@@ -939,15 +980,15 @@ export function generateDungeonMap(
   const entranceX = Math.floor(width / 2);
 
   if (gate) {
-    // ── Gate dungeon ──
-    map[0][entranceX] = 6;
-    map[1][entranceX] = 7;
-    for (let dy = 0; dy < 3; dy++) {
+    // ── Gate dungeon (single floor) ──
+    // Boss ON the exit stairs at top — blocks passage to next act
+    map[0][entranceX] = 7;
+    // Clear approach area below boss
+    for (let dy = 1; dy <= 4; dy++) {
       for (let dx = -2; dx <= 2; dx++) {
         const bx = entranceX + dx;
-        const by = 2 + dy;
-        if (bx > 0 && bx < width - 1 && by > 0 && by < height - 1) {
-          map[by][bx] = 0;
+        if (bx > 0 && bx < width - 1 && dy < height - 1) {
+          map[dy][bx] = 0;
         }
       }
     }
@@ -955,6 +996,7 @@ export function generateDungeonMap(
       carveLCorridor(map, entranceX, 4, rooms[0].cx, rooms[0].cy, rand);
     }
 
+    // Entrance at bottom (player enters from previous act)
     map[height - 1][entranceX] = 6;
     for (let dx = -1; dx <= 1; dx++) {
       const ex = entranceX + dx;
@@ -1038,25 +1080,14 @@ export function generateDungeonMap(
     const goalY = goalRoom ? goalRoom.cy : height - 3;
 
     if (gateFinalFloor && isFinalFloor) {
-      // Gate final floor: boss blocks the exit at bottom
-      // Exit at bottom center
-      map[height - 1][entranceX] = 6;
-      for (let dx = -1; dx <= 1; dx++) {
-        const ex2 = entranceX + dx;
-        if (ex2 > 0 && ex2 < width - 1) {
-          map[height - 2][ex2] = 0;
-          map[height - 3][ex2] = 0;
-        }
-      }
-      // Boss RIGHT IN FRONT of exit, blocking passage
-      const bossY = height - 4;
-      map[bossY][entranceX] = 7;
-      // Clear boss arena around the boss
-      for (let bdy = -1; bdy <= 1; bdy++) {
+      // Gate final floor: boss ON the exit stairs at bottom — blocks passage to next act
+      map[height - 1][entranceX] = 7;
+      // Clear boss arena above the boss for approach
+      for (let bdy = -3; bdy <= -1; bdy++) {
         for (let bdx = -3; bdx <= 3; bdx++) {
           const bx2 = entranceX + bdx;
-          const by2 = bossY + bdy;
-          if (bx2 > 0 && bx2 < width - 1 && by2 > 0 && by2 < height - 1 && map[by2][bx2] === 1) {
+          const by2 = (height - 1) + bdy;
+          if (bx2 > 0 && bx2 < width - 1 && by2 > 0 && by2 < height - 1) {
             map[by2][bx2] = 0;
           }
         }
@@ -1064,7 +1095,7 @@ export function generateDungeonMap(
       // Connect rooms to boss arena
       if (rooms.length > 0) {
         const lastRoom = rooms[rooms.length - 1];
-        carveLCorridor(map, lastRoom.cx, lastRoom.cy, entranceX, bossY - 1, rand);
+        carveLCorridor(map, lastRoom.cx, lastRoom.cy, entranceX, height - 4, rand);
       }
     } else if (isFinalFloor) {
       // Boss on final floor at bottom room center

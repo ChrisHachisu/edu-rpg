@@ -68,10 +68,10 @@ export const mapDefs: Record<string, MapDef> = {
 
       // ── Act 3 Dungeons ──
       { targetMap: 'desertTomb', fromX: 60, fromY: 95, toX: 17, toY: 1 },
-      { targetMap: 'banditHideout', fromX: 10, fromY: 88, toX: 12, toY: 1 },
+      { targetMap: 'banditHideout', fromX: 10, fromY: 103, toX: 12, toY: 1 },
 
       // ── Act 4 Dungeons ──
-      { targetMap: 'magmaTunnels', fromX: 25, fromY: 80, toX: 17, toY: 1 },
+      { targetMap: 'magmaTunnels', fromX: 25, fromY: 84, toX: 17, toY: 1 },
       // Volcanic Forge: gate dungeon (S entrance, N exit into Act 5)
       { targetMap: 'volcanicForge', fromX: 12, fromY: 70, toX: 20, toY: 1 },
       { targetMap: 'volcanicForge', fromX: 12, fromY: 67, toX: 20, toY: 38, toFloor: 9 },
@@ -377,7 +377,7 @@ export const mapDefs: Record<string, MapDef> = {
     width: 24,
     height: 24,
     connections: [
-      { targetMap: 'overworld', fromX: 12, fromY: 0, toX: 10, toY: 89 },
+      { targetMap: 'overworld', fromX: 12, fromY: 0, toX: 10, toY: 104 },
     ],
     npcs: [],
     bossId: 'banditLord',
@@ -395,7 +395,7 @@ export const mapDefs: Record<string, MapDef> = {
     width: 34,
     height: 34,
     connections: [
-      { targetMap: 'overworld', fromX: 17, fromY: 0, toX: 25, toY: 81 },
+      { targetMap: 'overworld', fromX: 17, fromY: 0, toX: 25, toY: 85 },
     ],
     npcs: [],
     bossId: 'lavaWyrm',

@@ -982,7 +982,7 @@ export class WorldMapScene extends Phaser.Scene {
         // Remove boss tile — gate dungeons open a walkable path, others get exit portal
         const isGateDungeon = def.connections.length > 1;
         this.time.delayedCall(800, () => {
-          const newTile = isGateDungeon ? 0 : 10;
+          const newTile = isGateDungeon ? 6 : 10;
           this.mapData[bossTileY][bossTileX] = newTile;
           // Update single tile in-place (same pattern as treasure chest) — avoids camera snap
           const mapWidth = this.mapData[0].length;
