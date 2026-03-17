@@ -221,7 +221,7 @@ export class TitleScene extends Phaser.Scene {
     if (this.textures.exists('hero-walk')) {
       this.heroPreview = this.add.image(cx, y + 18, 'hero-walk', 0).setScale(5);
     }
-    y += 60;
+    y += 82;
 
     // ── Difficulty ──
     const diffSelected = this.createRow === 'difficulty';
