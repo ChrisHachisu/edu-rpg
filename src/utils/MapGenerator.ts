@@ -634,39 +634,49 @@ export function generateDungeonMap(
     }
   }
 
-  // --- Add dead-end branches with treasure ---
+  // --- Add dead-end branches with treasure (well away from main path) ---
   const MIN_TREASURE_DIST = 8; // minimum Manhattan distance between chests
   const treasurePositions: [number, number][] = [];
 
-  const isFarEnough = (x: number, y: number): boolean =>
+  // Snapshot main path tiles BEFORE adding treasure branches
+  const mainPathTiles: Set<string> = new Set();
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      if (map[y][x] !== 1) mainPathTiles.add(`${x},${y}`);
+    }
+  }
+
+  const isFarEnoughFromOther = (x: number, y: number): boolean =>
     treasurePositions.every(([tx, ty]) => Math.abs(x - tx) + Math.abs(y - ty) >= MIN_TREASURE_DIST);
 
-  // Helper: check if a tile is a dead-end (only 1 adjacent floor neighbour)
-  const isDeadEnd = (x: number, y: number): boolean => {
-    let floorNeighbours = 0;
-    for (const [dx, dy] of [[0, -1], [0, 1], [-1, 0], [1, 0]]) {
-      const nx = x + dx, ny = y + dy;
-      if (ny >= 0 && ny < height && nx >= 0 && nx < width && map[ny][nx] !== 1) floorNeighbours++;
+  // Ensure treasure endpoint is at least 3 Manhattan tiles from any main path tile
+  const MIN_PATH_DIST = 3;
+  const isFarFromMainPath = (x: number, y: number): boolean => {
+    for (let dy = -MIN_PATH_DIST; dy <= MIN_PATH_DIST; dy++) {
+      for (let dx = -MIN_PATH_DIST; dx <= MIN_PATH_DIST; dx++) {
+        if (Math.abs(dx) + Math.abs(dy) <= MIN_PATH_DIST
+            && mainPathTiles.has(`${x + dx},${y + dy}`)) {
+          return false;
+        }
+      }
     }
-    return floorNeighbours <= 1;
+    return true;
   };
 
   for (let i = 0; i < rooms.length; i++) {
-    if (rand() > 0.4 && treasurePositions.length < Math.floor(roomCount / 2)) {
-      // Extend a branch from this room in a random direction
+    if (rand() > 0.3 && treasurePositions.length < Math.floor(roomCount / 2)) {
       const room = rooms[i];
       const dirs = shuffleArray([[0, -1], [0, 1], [-1, 0], [1, 0]], rand);
       for (const [dx, dy] of dirs) {
-        const branchLen = 3 + Math.floor(rand() * 4); // longer branches = more spread
+        const branchLen = 6 + Math.floor(rand() * 5); // 6-10 tiles from room edge
         let ex = room.cx + dx * (Math.floor(room.w / 2) + branchLen);
         let ey = room.cy + dy * (Math.floor(room.h / 2) + branchLen);
         ex = Math.max(1, Math.min(width - 2, ex));
         ey = Math.max(2, Math.min(height - 4, ey));
 
-        // Only if target is still a wall AND far enough from other treasure
-        if (map[ey][ex] === 1 && isFarEnough(ex, ey)) {
+        // Only place if: wall tile, far from other treasure, AND far from main path
+        if (map[ey][ex] === 1 && isFarEnoughFromOther(ex, ey) && isFarFromMainPath(ex, ey)) {
           carveLCorridor(map, room.cx, room.cy, ex, ey, rand);
-          // Small alcove at end
           map[ey][ex] = 0;
           treasurePositions.push([ex, ey]);
           break;
@@ -675,17 +685,16 @@ export function generateDungeonMap(
     }
   }
 
-  // Fallback: carve alcoves off rooms that are far from existing treasure
+  // Fallback: try shorter branches but still require distance from main path
   if (treasurePositions.length === 0) {
     for (let i = 1; i < rooms.length - 1 && treasurePositions.length < 2; i++) {
       const r = rooms[i];
-      // Try each wall of the room for an alcove
       const alcoveDirs = shuffleArray([[0, -1], [0, 1], [-1, 0], [1, 0]], rand);
       for (const [dx, dy] of alcoveDirs) {
-        const ax = r.cx + dx * (Math.floor(r.w / 2) + 2);
-        const ay = r.cy + dy * (Math.floor(r.h / 2) + 2);
+        const ax = r.cx + dx * (Math.floor(r.w / 2) + 4);
+        const ay = r.cy + dy * (Math.floor(r.h / 2) + 4);
         if (ax > 0 && ax < width - 1 && ay > 1 && ay < height - 3
-            && map[ay][ax] === 1 && isFarEnough(ax, ay)) {
+            && map[ay][ax] === 1 && isFarEnoughFromOther(ax, ay)) {
           carveLCorridor(map, r.cx, r.cy, ax, ay, rand);
           map[ay][ax] = 0;
           treasurePositions.push([ax, ay]);
@@ -695,8 +704,7 @@ export function generateDungeonMap(
     }
   }
 
-  // Cap at 2 treasure chests per floor (prevents loot inflation)
-  // When removing, drop the ones closest to another treasure
+  // Cap at 2 treasure chests per floor
   while (treasurePositions.length > 2) {
     let worstIdx = 0;
     let worstDist = Infinity;
@@ -711,7 +719,7 @@ export function generateDungeonMap(
     treasurePositions.splice(worstIdx, 1);
   }
 
-  // Place treasure chests — only at dead-ends or alcoves (not on corridor tiles)
+  // Place treasure chests
   for (const [tx, ty] of treasurePositions) {
     if (tx > 0 && tx < width - 1 && ty > 0 && ty < height - 1) {
       map[ty][tx] = 4;
