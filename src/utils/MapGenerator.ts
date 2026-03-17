@@ -719,11 +719,23 @@ export function generateDungeonMap(
     treasurePositions.splice(worstIdx, 1);
   }
 
-  // Place treasure chests — must be against a wall so players can walk around
-  const isWall = (x: number, y: number) =>
+  // Place treasure chests — must be against a wall AND not blocking a corridor
+  const isWallTile = (x: number, y: number) =>
     y < 0 || y >= height || x < 0 || x >= width || map[y][x] === 1 || map[y][x] === 5;
-  const hasWallNeighbor = (x: number, y: number): boolean =>
-    isWall(x, y - 1) || isWall(x, y + 1) || isWall(x - 1, y) || isWall(x + 1, y);
+
+  // Valid = against a wall, and NOT on a corridor (no floor on opposing sides)
+  const isValidTreasureSpot = (x: number, y: number): boolean => {
+    const nWall = isWallTile(x, y - 1);
+    const sWall = isWallTile(x, y + 1);
+    const wWall = isWallTile(x - 1, y);
+    const eWall = isWallTile(x + 1, y);
+    // Must have at least 1 wall neighbor
+    if (!nWall && !sWall && !wWall && !eWall) return false;
+    // Must NOT have floor on opposing sides (would block a corridor)
+    if (!nWall && !sWall) return false; // floor on N and S = N-S corridor
+    if (!wWall && !eWall) return false; // floor on W and E = E-W corridor
+    return true;
+  };
 
   for (let ti = treasurePositions.length - 1; ti >= 0; ti--) {
     const [tx, ty] = treasurePositions[ti];
@@ -732,24 +744,22 @@ export function generateDungeonMap(
       continue;
     }
 
-    if (hasWallNeighbor(tx, ty)) {
-      // Good placement — against a wall, player can walk around
+    if (isValidTreasureSpot(tx, ty)) {
       map[ty][tx] = 4;
     } else {
-      // In the middle of a room or corridor — relocate to a wall-adjacent tile in a room
+      // Bad spot — relocate to a valid wall-adjacent, non-corridor tile in a room
       let relocated = false;
       for (const room of shuffleArray([...rooms], rand)) {
-        // Collect all wall-adjacent floor tiles along room edges
-        const edgeTiles: [number, number][] = [];
+        const candidates: [number, number][] = [];
         for (let rx = room.x; rx < room.x + room.w; rx++) {
           for (let ry = room.y; ry < room.y + room.h; ry++) {
-            if ((map[ry][rx] === 0 || map[ry][rx] === 2) && hasWallNeighbor(rx, ry)) {
-              edgeTiles.push([rx, ry]);
+            if ((map[ry][rx] === 0 || map[ry][rx] === 2) && isValidTreasureSpot(rx, ry)) {
+              candidates.push([rx, ry]);
             }
           }
         }
-        if (edgeTiles.length > 0) {
-          const [cx, cy] = edgeTiles[Math.floor(rand() * edgeTiles.length)];
+        if (candidates.length > 0) {
+          const [cx, cy] = candidates[Math.floor(rand() * candidates.length)];
           map[cy][cx] = 4;
           treasurePositions[ti] = [cx, cy];
           relocated = true;
