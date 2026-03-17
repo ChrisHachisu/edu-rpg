@@ -118,21 +118,42 @@ export const jaStrings: Record<string, string> = {
   'npc.villager1': 'モンスターが いっぱい でてきたの！きをつけてね！',
   'npc.villager2': 'おみせで やくそうを かっていきなよ！',
 
+  // Millbrook (Act 1)
+  'npc.miller': 'ふるい ふうしゃは まだ まわっているが はたけは モンスターだらけだ。ひがしに いくなら サファイアみなとに よるといいぞ！',
+  'npc.herbalist': 'おみせの やくそうを そだてているの。やせいの ポーションを みつけたら とっておいてね — あとで ひつようになるわよ！',
+
   // Port Sapphire (Act 1)
   'npc.sailor': 'きたの どうくつに ドラゴンが すんでいるそうだ。くらい けっかいで ふうじられているらしい。おそろしいのう！',
+  'npc.fisherman': 'まちの ひがしの ふるいちかしつに いちばんの つりざおを わすれてきた。なにか おおきなものが いるらしい… おおきなカニかもしれない？',
   'npc.wisewoman': 'クリスタルは まなぶものに ちからを あたえるの。がんばってね ゆうしゃさん！',
 
   // Ironkeep (Act 2)
   'npc.soldier': 'きたの かげのどうくつは くらい けっかいで ふうじられている。にしの はるかかなたに あらしのすがある。そこの あらしのハーピーが もつ クリスタルで ふういんを とけるはずだ！',
   'npc.blacksmith': 'わたしが つくった そうびは いちばんよ！ひがしに いくまえに にしの あらしのすに いってみて。そこで だいじなものが みつかるわ！',
 
+  // Highwatch (Act 2)
+  'npc.scout': 'このみはりだいから にしの こおりのみずうみが みえるわ。こおりのワイアームが こおりの したで ねむっているそうよ… つよいけんを まもっているんだって！',
+  'npc.mountaineer': 'やまは けわしいぞ。どうくつに いくまえに ポーションを じゅうぶん かっておけ！',
+
+  // Oasis Haven (Act 3)
+  'npc.oasisElder': 'ひがしの さばくのはかには いにしえの ばんにんが いる。たおせば かざんちたいへの みちが ひらけるぞ！',
+  'npc.refugee': 'さんぞくに おわれて みなみから にげてきたの。ちかくに さんぞくの アジトが あるから きをつけてね…',
+
   // Ruins Camp (Act 3/4)
   'npc.archaeologist': 'ようがんちたいは きけんよ。じゅうぶん きをつけてね！',
   'npc.explorer': 'にしに かざんのかじばがある。えんのきょじんが まおうのりょうどへの みちを まもっている！',
 
+  // Ember's Rest (Act 4)
+  'npc.forgemaster': 'このしたの マグマトンネルは かざんのかじばに つながっておる。だが まずは さばくのはかの ばんにんを たおさなければ！',
+  'npc.lavaMiner': 'むかしは したの トンネルで ほっていたが ようがんワイアームに おいだされた。かざんより あつい ひを はくんだ！',
+
   // Last Bastion (Act 5) — THE ONLY legendary hints
   'npc.veteran': 'おばあちゃんは エクスカリバーと あけぼののイージスで まおうを ふういんしたの。にしの ふういんされたせいいきに エクスカリバーが あるわ！',
   'npc.priestess': 'あけぼののイージスは ひがしの てんくうのほこらに あるわ。でも ふういんを とくには エクスカリバーが ひつようよ！',
+
+  // Haven's Edge (Act 5)
+  'npc.grizzledKnight': 'まおうのしろは きたの めいろの むこうにある。じゅんびを しっかりしてから いけ… もう もどれないぞ！',
+  'npc.prophetess': 'ゆうしゃよ おおきな ちからを かんじるわ。まおうに いどむまえに このくらいだいちの はしに かくされた でんせつの たからを さがしなさい。',
 
   'npc.shopkeeper': 'いらっしゃい！ゆっくり みていってね。',
   'npc.savePoint': 'ぼうけんのきろくを セーブしました！',
@@ -153,6 +174,14 @@ export const jaStrings: Record<string, string> = {
   'dungeon.mistyGrotto.boss.defeat': 'おおガエルが きりのなかに しりぞいていく…きりが はれはじめた。',
   'dungeon.mistyGrotto.victory': 'こころのクリスタルを てにいれた！やさしい あたたかさが けついを くれる。',
 
+  // Sunken Cellar
+  'dungeon.sunkenCellar.enter': 'うみの みずが くずれた かべから したたる…しおと くさりの においが する。',
+  'dungeon.sunkenCellar.boss.dialog1': 'じめんに われた かいがらが ちらばっている…なにか おおきなものが すんでいる。',
+  'dungeon.sunkenCellar.boss.dialog2': 'きょだいな ハサミが やみから あらわれた！',
+  'dungeon.sunkenCellar.boss.dialog3': 'おおガニが ものすごいおとで ハサミを ならした！たたかいの じゅんびを！',
+  'dungeon.sunkenCellar.boss.defeat': 'おおガニが からのなかに ひっこんだ…ちかしつが しずかになった。',
+  'dungeon.sunkenCellar.victory': 'おおガニの たからのなかから コーラルブレードを みつけた！',
+
   // Crystal Cave
   'dungeon.crystalCave.enter': 'どうくつから つめたいかぜが ふいてくる…ゆうきのクリスタルが おくに あるはず。',
   'dungeon.crystalCave.boss': 'うみへびが くらいみずから あらわれた！',
@@ -170,6 +199,14 @@ export const jaStrings: Record<string, string> = {
   'dungeon.stormNest.boss.defeat': 'あらしのハーピーの つばさが たたまれる…かぜが やさしい そよかぜに なった。',
   'dungeon.stormNest.victory': 'ハーピーのすから くらいクリスタルが おちてきた。やみのエネルギーが はどうしている。',
 
+  // Frozen Lake
+  'dungeon.frozenLake.enter': 'つめたい くうきが さす…こおりが すべてを おおい かべが ダイヤのように ひかる。',
+  'dungeon.frozenLake.boss.dialog1': 'あしもとの こおりが われる…こおった ふかみで なにかが うごいている。',
+  'dungeon.frozenLake.boss.dialog2': 'きょだいな へびのような すがたが こおりを つきやぶった！',
+  'dungeon.frozenLake.boss.dialog3': 'こおりのワイアームが こごえる ほうこうとともに あらわれた！たたかいの じゅんびを！',
+  'dungeon.frozenLake.boss.defeat': 'こおりのワイアームが こおったみずうみに しずんでいく…こおりが ふたたび とざした。',
+  'dungeon.frozenLake.victory': 'ワイアームの たからのなかから いにしえの フロストブランドを みつけた！',
+
   // Shadow Cave (renamed from Shadow Tower)
   'dungeon.shadowCave.enter': 'どうくつは くらいやまの おくまで つづいている…',
   'dungeon.shadowCave.boss': 'あかいドラゴンが ものすごい ほうこうと ともに めざめた！',
@@ -178,6 +215,32 @@ export const jaStrings: Record<string, string> = {
   'dungeon.shadowCave.boss.dialog3': 'あかいドラゴンが つばさを ひろげた！やみのほのおが めに もえている！',
   'dungeon.shadowCave.boss.defeat': 'ドラゴンから やみが はなれていく…やさしいひかりの なかに きえていった。',
   'dungeon.shadowCave.victory': 'ちえのクリスタルを てにいれた！いにしえの ちしきが あたまに ながれこんでくる。',
+  'dungeon.shadowCave.locked': 'くらい けっかいが いりぐちを ふさいでいる…にしの あらしのすの クリスタルが あれば やぶれるかもしれない。',
+
+  // Desert Tomb
+  'dungeon.desertTomb.enter': 'すなが いにしえの いりぐちの まわりで まいあがる…はかは わすれられた まほうで ふういんされている。',
+  'dungeon.desertTomb.boss.dialog1': 'かべが ふるえはじめた…てんじょうの ひびから すなが ながれおちる。',
+  'dungeon.desertTomb.boss.dialog2': 'いしと すなの きょだいな すがたが いせきから くみたてられた！',
+  'dungeon.desertTomb.boss.dialog3': 'すなのゴーレムが ものすごい ほうこうとともに こぶしを あげた！たたかいの じゅんびを！',
+  'dungeon.desertTomb.boss.defeat': 'すなのゴーレムが すなに くずれた…いにしえの はかが しずかになった。',
+  'dungeon.desertTomb.victory': 'かざんへの みちの ふういんが くだけた！みなみへの みちが ひらけた。',
+
+  // Bandit Hideout
+  'dungeon.banditHideout.enter': 'ぬすまれた ものの においが どうくつに ただよう…まえに たいまつの ひが ゆれている。',
+  'dungeon.banditHideout.boss.dialog1': 'わらいごえが アジトに こだまする…おくに おやぶんが まっている。',
+  'dungeon.banditHideout.boss.dialog2': 'きずだらけの おとこが やみから あらわれ けんを ぬいた！',
+  'dungeon.banditHideout.boss.dialog3': 'さんぞくの おやぶんが うなった。「おれの アジトに いどむとは！」たたかいの じゅんびを！',
+  'dungeon.banditHideout.boss.defeat': 'さんぞくの おやぶんが ぶきを おとした…「まいった…すきなものを もっていけ…」',
+  'dungeon.banditHideout.victory': 'ぬすまれた たからのなかから さんぞくのダガーを みつけた！',
+
+  // Magma Tunnels
+  'dungeon.magmaTunnels.enter': 'あつさが たえられない…ほそい みぞを ようがんが ながれている。',
+  'dungeon.magmaTunnels.boss.dialog1': 'ようがんが はげしく うごく…なにか きょだいなものが したで うごいている。',
+  'dungeon.magmaTunnels.boss.dialog2': 'ようがんの へびのような すがたが マグマから ふきだした！',
+  'dungeon.magmaTunnels.boss.dialog3': 'ようがんワイアームが まきつき しろくかがやく ほのおの めで にらんだ！たたかいの じゅんびを！',
+  'dungeon.magmaTunnels.boss.defeat': 'ようがんワイアームが マグマに とけて もどった…トンネルが すこし さめた。',
+  'dungeon.magmaTunnels.victory': 'ワイアームの ようがんの すみかから でんせつの マグマブレードを みつけた！',
+  'dungeon.magmaTunnels.locked': 'はげしい ねつが みちを ふさいでいる…さばくのはかの ばんにんを たおさなければ。',
 
   // Volcanic Forge
   'dungeon.volcanicForge.enter': 'かざんの いりぐちから ねっぱが おしよせる…したに ようがんが ながれている。',
@@ -187,6 +250,7 @@ export const jaStrings: Record<string, string> = {
   'dungeon.volcanicForge.boss.dialog3': 'えんのきょじんが ほうこうし ほのおの なみを おくった！たたかいの じゅんびを！',
   'dungeon.volcanicForge.boss.defeat': 'えんのきょじんが ひえて くずれた…かざんが しずかに なった。',
   'dungeon.volcanicForge.victory': 'ほのおのクリスタルを てにいれた！もえる ちからが けついを つよくする。',
+  'dungeon.volcanicForge.locked': 'やけつく ねつの かべが いりぐちを ふさいでいる…さばくのはかの ばんにんを たおして ふういんを とかなければ。',
 
   // Demon Castle
   'dungeon.demonCastle.enter': 'まおうのしろの もんが きしみながら ひらく…これが さいごの たたかいだ。',
@@ -236,6 +300,19 @@ export const jaStrings: Record<string, string> = {
   'monster.demonKing': 'まおうマラカール',
   'monster.swordWraith': 'けんのぼうれい',
   'monster.celestialGuardian': 'てんくうのしゅごしゃ',
+  // V2 new monsters
+  'monster.giantCrab': 'おおガニ',
+  'monster.seaStar': 'ヒトデ',
+  'monster.frostWolf': 'こおりおおかみ',
+  'monster.frozenSkeleton': 'こおりのがいこつ',
+  'monster.sandWraith': 'すなのレイス',
+  'monster.mummy': 'ミイラ',
+  'monster.banditArcher': 'さんぞくゆみし',
+  'monster.magmaSlime': 'マグマスライム',
+  'monster.flameBat': 'ほのおコウモリ',
+  'monster.sandGolem': 'すなのゴーレム',
+  'monster.banditLord': 'さんぞくのおやぶん',
+  'monster.lavaWyrm': 'ようがんワイアーム',
 
   // ── Items ─────────────────────────────────────────────────────────
   'item.herb': 'やくそう',
@@ -308,6 +385,27 @@ export const jaStrings: Record<string, string> = {
   'equip.excalibur.desc': 'でんせつの ゆうしゃのけん。そのかがやきは すべての やみを きりさく。',
   'equip.aegisOfDawn': 'あけぼののイージス',
   'equip.aegisOfDawn.desc': 'しんせいな よろい。どんな こうげきも はねかえす。',
+  // V2 dungeon reward equipment
+  'equip.toadShield': 'ガエルのたて',
+  'equip.toadShield.desc': 'おおガエルの かたいかわで つくったたて。',
+  'equip.coralBlade': 'コーラルブレード',
+  'equip.coralBlade.desc': 'しんかいの サンゴで つくった するどいけん。',
+  'equip.crystalPendant': 'クリスタルペンダント',
+  'equip.crystalPendant.desc': 'まもりの クリスタルエネルギーを はなつ ペンダント。',
+  'equip.galeBow': 'はやてのゆみ',
+  'equip.galeBow.desc': 'あらしの ちからで やを はなつゆみ。',
+  'equip.frostbrand': 'フロストブランド',
+  'equip.frostbrand.desc': 'えいえんの こおりに つつまれた いにしえのけん。',
+  'equip.dragonheartAmulet': 'りゅうしんのアミュレット',
+  'equip.dragonheartAmulet.desc': 'ドラゴンの しんぞうのいしで つくった アミュレット。',
+  'equip.sandstormCloak': 'すなあらしのマント',
+  'equip.sandstormCloak.desc': 'さばくの かぜで おられた マント。すべての げんそから まもる。',
+  'equip.banditDagger': 'さんぞくのダガー',
+  'equip.banditDagger.desc': 'さんぞくのおやぶんから うばった するどいダガー。',
+  'equip.magmaBlade': 'マグマブレード',
+  'equip.magmaBlade.desc': 'かざんの しんぞうで きたえたけん。えいえんの ほのおが もえる。',
+  'equip.moltenGreaves': 'ようがんのすねあて',
+  'equip.moltenGreaves.desc': 'ひえた マグマで つくった あしのよろい。ほぼ むてきの かたさ。',
 
   // Game Over
   'gameover.title': 'ゲームオーバー',
@@ -351,20 +449,29 @@ export const jaStrings: Record<string, string> = {
   'dungeon.stairsUp': 'かいだんを あがった…',
   'dungeon.bossExitReturn': 'ふしぎな ポータルが あらわれた…そとに もどれそうだ！',
   'dungeon.gatePassageOpen': 'みちが ひらけた！どうくつを じゆうに いききできるようになった。',
-  'dungeon.shadowCave.locked': 'くらい けっかいが いりぐちを ふさいでいる…にしの あらしのすの クリスタルが あれば やぶれるかもしれない。',
   'dungeon.gateBlocked': 'やみの ちからが この みちを ふうじている…べつのみちを さがさなければ。',
 
   // ── Map Names ───────────────────────────────────────────────────────
   'map.overworld': 'エルドラビア',
   'map.greenhollow': 'グリーンホロウむら',
+  'map.millbrook': 'ミルブルック',
   'map.portSapphire': 'サファイアみなと',
   'map.ironkeep': 'アイアンキープようさい',
+  'map.highwatch': 'ハイウォッチ',
+  'map.oasisHaven': 'オアシスのやかた',
   'map.ruinsCamp': 'いせきキャンプ',
+  'map.embersRest': 'ひのこのやすらぎ',
   'map.lastBastion': 'さいごのとりで',
+  'map.havensEdge': 'あんそくのふち',
   'map.mistyGrotto': 'きりのどうくつ',
+  'map.sunkenCellar': 'しずんだちかしつ',
   'map.crystalCave': 'すいしょうのどうくつ',
   'map.stormNest': 'あらしのす',
+  'map.frozenLake': 'こおりのみずうみ',
   'map.shadowCave': 'かげのどうくつ',
+  'map.desertTomb': 'さばくのはか',
+  'map.banditHideout': 'さんぞくのアジト',
+  'map.magmaTunnels': 'マグマトンネル',
   'map.volcanicForge': 'かざんのかじば',
   'map.demonCastle': 'まおうのしろ',
   'map.sealedSanctum': 'ふういんのせいいき',

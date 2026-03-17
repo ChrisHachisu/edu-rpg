@@ -60,9 +60,14 @@ class GameStateManager {
     const zoneMap: Record<string, string> = {
       overworld: 'greenhollow-plains', // Default, actual zone determined by position
       mistyGrotto: 'misty-grotto',
+      sunkenCellar: 'sunken-cellar',
       crystalCave: 'crystal-cave',
       stormNest: 'storm-nest',
+      frozenLake: 'frozen-lake',
       shadowCave: 'shadow-cave',
+      desertTomb: 'desert-tomb',
+      banditHideout: 'bandit-hideout',
+      magmaTunnels: 'magma-tunnels',
       volcanicForge: 'volcanic-forge',
       demonCastle: 'demon-castle',
       sealedSanctum: 'sealed-sanctum',
@@ -72,15 +77,14 @@ class GameStateManager {
   }
 
   getOverworldZone(x: number, y: number): string {
-    // Determine zone by position on overworld — aligned with terrain barriers:
-    // Map: 80×120. River ≈ y=98, Mountains ≈ y=80, Lava ≈ y=62
-    if (y <= 61) return 'demons-threshold';       // Act 5 — above lava barrier
-    if (y <= 79) return 'scorched-wastes';        // Act 3/4 — between mountains and lava
-    if (y <= 97) return 'iron-mountains';         // Act 2 — between river and mountains
+    // V2 map: 120×160. River ≈ y=131, Mountains ≈ y=101, Lava ≈ y=71
+    if (y <= 70) return 'demons-threshold';       // Act 5 — above lava barrier
+    if (y <= 100) return 'scorched-wastes';        // Act 3/4 — between mountains and lava
+    if (y <= 130) return 'iron-mountains';         // Act 2 — between river and mountains
     // Act 1 — south of river
-    if (x < 25 && y > 102) return 'greenhollow-plains'; // Western plains near starting village
-    if (x >= 28) return 'crystal-coast';                 // Eastern coast near Port Sapphire
-    return 'whispering-woods';                           // Forest area between towns
+    if (x < 35 && y > 145) return 'greenhollow-plains'; // Western plains near starting village
+    if (x >= 70) return 'crystal-coast';                  // Eastern coast near Port Sapphire
+    return 'whispering-woods';                            // Forest area between towns
   }
 }
 

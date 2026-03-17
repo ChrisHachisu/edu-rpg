@@ -118,21 +118,42 @@ export const enStrings: Record<string, string> = {
   'npc.villager1': 'Monsters appeared everywhere! Be careful out there!',
   'npc.villager2': 'Buy herbs at the shop before you go!',
 
+  // Millbrook (Act 1)
+  'npc.miller': 'The old mill still turns, but the fields are full of monsters now. If you\'re heading east, stop by Port Sapphire!',
+  'npc.herbalist': 'I grow herbs for the shop. If you find any potions in the wild, hold on to them — you\'ll need them later!',
+
   // Port Sapphire (Act 1)
   'npc.sailor': 'I hear a dragon lives in the caves to the north, sealed behind a dark barrier. Scary stuff!',
+  'npc.fisherman': 'I lost my best rod in the old cellar east of town. Something big moved in down there... a giant crab, maybe?',
   'npc.wisewoman': 'The crystals give power to those who study hard. Keep learning, hero!',
 
   // Ironkeep (Act 2)
   'npc.soldier': 'A dark barrier seals the Shadow Cave to the north. But there\'s a cave far to the west where a Storm Harpy guards a crystal that can break the seal!',
   'npc.blacksmith': 'I make the best gear around! Before heading east, try the Storm Nest to the west. You\'ll need what you find there!',
 
+  // Highwatch (Act 2)
+  'npc.scout': 'From this watchtower I can see the Frozen Lake to the west. They say an Ice Wyrm sleeps beneath the ice... and guards a powerful blade!',
+  'npc.mountaineer': 'The mountains are treacherous. Be sure to stock up on potions before venturing into the caves!',
+
+  // Oasis Haven (Act 3)
+  'npc.oasisElder': 'The Desert Tomb to the east holds an ancient guardian. Defeat it, and the way to the volcanic region will open!',
+  'npc.refugee': 'We fled from the south when the bandits took over. Their hideout is nearby... be careful if you go there!',
+
   // Ruins Camp (Act 3/4)
   'npc.archaeologist': 'The lava fields are dangerous. Be very careful!',
   'npc.explorer': 'The Volcanic Forge is west. The Flame Titan guards the way to the demon realm!',
 
+  // Ember\'s Rest (Act 4)
+  'npc.forgemaster': 'The magma tunnels beneath us lead to the Volcanic Forge. But first, you must defeat the guardian of the Desert Tomb!',
+  'npc.lavaMiner': 'I used to mine in the tunnels below, but a Lava Wyrm drove us out. It breathes fire hotter than the forge itself!',
+
   // Last Bastion (Act 5) — THE ONLY legendary hints
   'npc.veteran': 'Your grandmother used Excalibur and the Aegis of Dawn to seal Malachar. Find them before facing him! Excalibur is in a sanctum to the far west.',
   'npc.priestess': 'The Aegis of Dawn is in the Celestial Vault to the far east. But you need Excalibur first to break its seal!',
+
+  // Haven's Edge (Act 5)
+  'npc.grizzledKnight': 'The Demon Castle lies beyond the maze to the north. Make sure you\'re fully prepared before you go... there\'s no turning back!',
+  'npc.prophetess': 'I sense great power in you, hero. Seek the legendary relics hidden in the far corners of this dark land before facing the Demon King.',
 
   'npc.shopkeeper': 'Welcome to my shop! Take a look around.',
   'npc.savePoint': 'Your adventure has been saved!',
@@ -153,6 +174,14 @@ export const enStrings: Record<string, string> = {
   'dungeon.mistyGrotto.boss.defeat': 'The Giant Toad shrinks back into the mist... The fog begins to clear.',
   'dungeon.mistyGrotto.victory': 'You found the Crystal of Heart! Its gentle warmth fills you with determination.',
 
+  // Sunken Cellar
+  'dungeon.sunkenCellar.enter': 'Seawater drips from the crumbling walls... The air smells of salt and rot.',
+  'dungeon.sunkenCellar.boss.dialog1': 'The ground is littered with broken shells... Something large lives here.',
+  'dungeon.sunkenCellar.boss.dialog2': 'A massive pair of claws emerges from the shadows!',
+  'dungeon.sunkenCellar.boss.dialog3': 'The Giant Crab snaps its claws with a thunderous crack! Prepare for battle!',
+  'dungeon.sunkenCellar.boss.defeat': 'The Giant Crab retreats into its shell... The cellar grows quiet.',
+  'dungeon.sunkenCellar.victory': 'You found the Coral Blade among the crab\'s treasures!',
+
   // Crystal Cave
   'dungeon.crystalCave.enter': 'A cold wind blows from inside the cave... The Crystal of Courage must be deep within.',
   'dungeon.crystalCave.boss': 'The Sea Serpent rises from the dark water!',
@@ -170,6 +199,14 @@ export const enStrings: Record<string, string> = {
   'dungeon.stormNest.boss.defeat': 'The Storm Harpy\'s wings fold... The winds die down to a gentle breeze.',
   'dungeon.stormNest.victory': 'A dark crystal falls from the harpy\'s nest, pulsing with shadowy energy.',
 
+  // Frozen Lake
+  'dungeon.frozenLake.enter': 'The air bites with cold... Ice covers every surface, and the walls glitter like diamonds.',
+  'dungeon.frozenLake.boss.dialog1': 'The ice beneath your feet cracks... Something stirs in the frozen depths.',
+  'dungeon.frozenLake.boss.dialog2': 'A massive serpentine shape crashes through the ice!',
+  'dungeon.frozenLake.boss.dialog3': 'The Ice Wyrm rises with a bone-chilling roar! Prepare for battle!',
+  'dungeon.frozenLake.boss.defeat': 'The Ice Wyrm sinks back into the frozen lake... The ice reforms, sealing it away forever.',
+  'dungeon.frozenLake.victory': 'You found the ancient Frostbrand sword, frozen in the wyrm\'s hoard!',
+
   // Shadow Cave (renamed from Shadow Tower)
   'dungeon.shadowCave.enter': 'The cave stretches deep into the dark mountainside...',
   'dungeon.shadowCave.boss': 'The Red Dragon awakens with a thunderous roar!',
@@ -178,6 +215,32 @@ export const enStrings: Record<string, string> = {
   'dungeon.shadowCave.boss.dialog3': 'The Red Dragon spreads its wings! Its eyes burn with dark fire!',
   'dungeon.shadowCave.boss.defeat': 'The darkness lifts from the Dragon... It fades away in a gentle glow.',
   'dungeon.shadowCave.victory': 'You found the Crystal of Wisdom! Ancient knowledge flows into your mind.',
+  'dungeon.shadowCave.locked': 'A dark barrier seals the cave entrance... Perhaps a crystal from the Storm Nest to the west could break it.',
+
+  // Desert Tomb
+  'dungeon.desertTomb.enter': 'Sand swirls around the ancient entrance... The tomb is sealed with forgotten magic.',
+  'dungeon.desertTomb.boss.dialog1': 'The walls begin to tremble... Sand pours from cracks in the ceiling.',
+  'dungeon.desertTomb.boss.dialog2': 'A colossal figure of stone and sand assembles itself from the ruins!',
+  'dungeon.desertTomb.boss.dialog3': 'The Sand Golem raises its fists with a thunderous roar! Prepare for battle!',
+  'dungeon.desertTomb.boss.defeat': 'The Sand Golem crumbles into dust... The ancient tomb grows still.',
+  'dungeon.desertTomb.victory': 'The seal on the volcanic passage shatters! The way to the south is now open.',
+
+  // Bandit Hideout
+  'dungeon.banditHideout.enter': 'The stench of stolen goods fills the cave... Torch light flickers ahead.',
+  'dungeon.banditHideout.boss.dialog1': 'Laughter echoes through the hideout... The leader awaits at the end.',
+  'dungeon.banditHideout.boss.dialog2': 'A scarred figure steps from the shadows, blade drawn!',
+  'dungeon.banditHideout.boss.dialog3': 'The Bandit Lord snarls, "You dare challenge me in MY hideout?!" Prepare for battle!',
+  'dungeon.banditHideout.boss.defeat': 'The Bandit Lord drops his weapon... "I yield... Take whatever you want..."',
+  'dungeon.banditHideout.victory': 'You found the Bandit\'s Dagger among the stolen loot!',
+
+  // Magma Tunnels
+  'dungeon.magmaTunnels.enter': 'The heat is unbearable... Rivers of lava flow through narrow channels.',
+  'dungeon.magmaTunnels.boss.dialog1': 'The lava churns violently... Something enormous moves beneath the surface.',
+  'dungeon.magmaTunnels.boss.dialog2': 'A serpentine shape of molten rock bursts from the magma!',
+  'dungeon.magmaTunnels.boss.dialog3': 'The Lava Wyrm coils around you, eyes blazing with white-hot fire! Prepare for battle!',
+  'dungeon.magmaTunnels.boss.defeat': 'The Lava Wyrm dissolves back into the magma... The tunnels cool slightly.',
+  'dungeon.magmaTunnels.victory': 'You found the legendary Magma Blade in the wyrm\'s molten lair!',
+  'dungeon.magmaTunnels.locked': 'Intense heat blocks the way... You must defeat the guardian of the Desert Tomb first.',
 
   // Volcanic Forge
   'dungeon.volcanicForge.enter': 'Waves of heat blast from the volcanic entrance... Lava flows below.',
@@ -187,6 +250,7 @@ export const enStrings: Record<string, string> = {
   'dungeon.volcanicForge.boss.dialog3': 'The Flame Titan roars, sending waves of fire in all directions! Prepare for battle!',
   'dungeon.volcanicForge.boss.defeat': 'The Flame Titan cools and crumbles... The volcano grows quiet.',
   'dungeon.volcanicForge.victory': 'You found the Crystal of Flame! Its blazing power strengthens your resolve.',
+  'dungeon.volcanicForge.locked': 'A wall of searing heat blocks the entrance... You must defeat the guardian of the Desert Tomb to break the seal.',
 
   // Demon Castle
   'dungeon.demonCastle.enter': 'The gates of the Demon Castle creak open... This is the final battle.',
@@ -236,6 +300,19 @@ export const enStrings: Record<string, string> = {
   'monster.demonKing': 'Demon King Malachar',
   'monster.swordWraith': 'Sword Wraith',
   'monster.celestialGuardian': 'Celestial Guardian',
+  // V2 new monsters
+  'monster.giantCrab': 'Giant Crab',
+  'monster.seaStar': 'Sea Star',
+  'monster.frostWolf': 'Frost Wolf',
+  'monster.frozenSkeleton': 'Frozen Skeleton',
+  'monster.sandWraith': 'Sand Wraith',
+  'monster.mummy': 'Mummy',
+  'monster.banditArcher': 'Bandit Archer',
+  'monster.magmaSlime': 'Magma Slime',
+  'monster.flameBat': 'Flame Bat',
+  'monster.sandGolem': 'Sand Golem',
+  'monster.banditLord': 'Bandit Lord',
+  'monster.lavaWyrm': 'Lava Wyrm',
 
   // ── Items ─────────────────────────────────────────────────────────
   'item.herb': 'Herb',
@@ -308,6 +385,27 @@ export const enStrings: Record<string, string> = {
   'equip.excalibur.desc': 'The legendary blade of heroes. Its radiance pierces all darkness.',
   'equip.aegisOfDawn': 'Aegis of Dawn',
   'equip.aegisOfDawn.desc': 'Divine armor that shields against even the mightiest blows.',
+  // V2 dungeon reward equipment
+  'equip.toadShield': 'Toad Shield',
+  'equip.toadShield.desc': 'A shield made from the Giant Toad\'s tough hide.',
+  'equip.coralBlade': 'Coral Blade',
+  'equip.coralBlade.desc': 'A sharp sword carved from deep-sea coral.',
+  'equip.crystalPendant': 'Crystal Pendant',
+  'equip.crystalPendant.desc': 'A pendant that radiates protective crystal energy.',
+  'equip.galeBow': 'Gale Bow',
+  'equip.galeBow.desc': 'A bow that fires arrows with the force of a storm.',
+  'equip.frostbrand': 'Frostbrand',
+  'equip.frostbrand.desc': 'An ancient blade encased in eternal ice.',
+  'equip.dragonheartAmulet': 'Dragonheart Amulet',
+  'equip.dragonheartAmulet.desc': 'An amulet forged from a dragon\'s heartstone.',
+  'equip.sandstormCloak': 'Sandstorm Cloak',
+  'equip.sandstormCloak.desc': 'A cloak woven from desert winds. Shields against all elements.',
+  'equip.banditDagger': 'Bandit\'s Dagger',
+  'equip.banditDagger.desc': 'A wickedly sharp dagger claimed from the Bandit Lord.',
+  'equip.magmaBlade': 'Magma Blade',
+  'equip.magmaBlade.desc': 'A blade forged in the heart of a volcano. Burns with eternal fire.',
+  'equip.moltenGreaves': 'Molten Greaves',
+  'equip.moltenGreaves.desc': 'Leg armor forged from cooled magma. Nearly indestructible.',
 
   // Game Over
   'gameover.title': 'Game Over',
@@ -351,20 +449,29 @@ export const enStrings: Record<string, string> = {
   'dungeon.stairsUp': 'You ascend the stairs...',
   'dungeon.bossExitReturn': 'A mysterious portal appears... It will take you back outside!',
   'dungeon.gatePassageOpen': 'The way ahead is now clear! You can travel freely through the cave.',
-  'dungeon.shadowCave.locked': 'A dark barrier seals the cave entrance... Perhaps a crystal from the Storm Nest to the west could break it.',
   'dungeon.gateBlocked': 'Dark power seals this passage... You must find another way through.',
 
   // ── Map Names ───────────────────────────────────────────────────────
   'map.overworld': 'Eldravia',
   'map.greenhollow': 'Greenhollow Village',
+  'map.millbrook': 'Millbrook',
   'map.portSapphire': 'Port Sapphire',
   'map.ironkeep': 'Ironkeep Fortress',
+  'map.highwatch': 'Highwatch',
+  'map.oasisHaven': 'Oasis Haven',
   'map.ruinsCamp': 'Ruins Camp',
+  'map.embersRest': 'Ember\'s Rest',
   'map.lastBastion': 'Last Bastion',
+  'map.havensEdge': 'Haven\'s Edge',
   'map.mistyGrotto': 'Misty Grotto',
+  'map.sunkenCellar': 'Sunken Cellar',
   'map.crystalCave': 'Crystal Cave',
   'map.stormNest': 'Storm Nest',
+  'map.frozenLake': 'Frozen Lake',
   'map.shadowCave': 'Shadow Cave',
+  'map.desertTomb': 'Desert Tomb',
+  'map.banditHideout': 'Bandit Hideout',
+  'map.magmaTunnels': 'Magma Tunnels',
   'map.volcanicForge': 'Volcanic Forge',
   'map.demonCastle': 'Demon Castle',
   'map.sealedSanctum': 'Sealed Sanctum',

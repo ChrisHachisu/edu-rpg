@@ -15,6 +15,15 @@ function seededRandom(seed: number): () => number {
   };
 }
 
+// Perlin-like noise helper for organic terrain
+function noiseAt(x: number, y: number, scale: number, seed: number): number {
+  const nx = x * scale + seed;
+  const ny = y * scale + seed * 0.7;
+  return Math.sin(nx * 1.3 + ny * 0.7) * Math.cos(ny * 1.1 + nx * 0.3)
+       + Math.sin(nx * 0.4 + ny * 1.6) * 0.5
+       + Math.cos(nx * 2.1 - ny * 0.9) * 0.3;
+}
+
 export function generateOverworldMap(width: number, height: number): number[][] {
   const rand = seededRandom(42);
   const map: number[][] = [];
@@ -29,44 +38,94 @@ export function generateOverworldMap(width: number, height: number): number[][] 
         continue;
       }
 
-      // Act 5 (y=2-61): fill with mountains — maze carved later
-      if (y <= 61) {
+      // Act 5 (y=2-70): fill with mountains — maze carved later
+      if (y <= 70) {
         row.push(4);
         continue;
       }
 
-      // Acts 1-4 (y=63-117): normal terrain generation
+      // ── Act 3/4 terrain (y=72-100): desert east + volcanic west ──
+      if (y >= 72 && y <= 100) {
+        // Scattered mountains (volcanic terrain west, rocky desert east)
+        const volcNoise = noiseAt(x, y, 0.15, 3.0);
+        if (x < 40 && volcNoise > 0.6 && rand() > 0.3) {
+          row.push(4); // volcanic mountains
+          continue;
+        }
+        // Desert sand patches (represented as grass for now, trees are sparse)
+        if (x > 50 && rand() > 0.95) {
+          row.push(3); // sparse scrub
+          continue;
+        }
+        // Lava pools in volcanic area
+        if (x < 35 && y > 74 && y < 98) {
+          const lavaNoise = noiseAt(x, y, 0.25, 5.0);
+          if (lavaNoise > 1.0 && rand() > 0.4) {
+            row.push(2); // lava/water pool
+            continue;
+          }
+        }
+        row.push(0);
+        continue;
+      }
 
-      // Scattered water bodies in Act 1/2 area
-      const adjustedY = y - 40; // use adjusted Y to maintain similar noise patterns
-      const waterNoise = Math.sin(x * 0.3) * Math.cos(adjustedY * 0.25) + Math.sin(x * 0.1 + adjustedY * 0.15);
-      if (waterNoise > 1.2 && y > 100 && y < height - 10) {
+      // ── Act 2 terrain (y=102-130): mountain forests ──
+      if (y >= 102 && y <= 130) {
+        // Dense forests
+        if (x > 40 && x < 80 && y > 110 && y < 125) {
+          if (rand() > 0.4) { row.push(3); continue; }
+        }
+        // Mountain clusters (west side has frozen peaks)
+        if (x < 30 && y > 105 && y < 120) {
+          const mtNoise = noiseAt(x, y, 0.2, 2.0);
+          if (mtNoise > 0.4 && rand() > 0.35) {
+            row.push(4);
+            continue;
+          }
+        }
+        // Staggered lake in Act 2 (creates natural barrier shape)
+        const lakeCx = 50, lakeCy = 120;
+        const lakeDist = Math.sqrt((x - lakeCx) ** 2 + (y - lakeCy) ** 2);
+        const lakeNoise = noiseAt(x, y, 0.3, 7.0);
+        if (lakeDist < 8 + lakeNoise * 3 && lakeDist > 2) {
+          row.push(2);
+          continue;
+        }
+        // Scattered trees
+        if (rand() > 0.88) { row.push(3); continue; }
+        row.push(0);
+        continue;
+      }
+
+      // ── Act 1 terrain (y=132-157): plains and coast ──
+
+      // Coastal water (east/southeast — staggered coastline)
+      const coastNoise = noiseAt(x, y, 0.1, 1.5);
+      if (x > 95 + coastNoise * 8 && y > 138) {
         row.push(2);
         continue;
       }
 
-      // Mountains in Act 3/4 area (east side)
-      if (y >= 63 && y <= 79 && x > 40) {
-        const mtNoise = Math.sin(x * 0.4) * Math.cos(adjustedY * 0.3);
-        if (mtNoise > 0.2 && rand() > 0.3) {
-          row.push(4);
-          continue;
-        }
-      }
-
-      // Dense forests (Act 1 — between towns; Act 2 — wooded hills)
-      if ((x > 15 && x < 35 && y > 102 && y < 115) || (x > 25 && x < 40 && y > 88 && y < 97)) {
-        if (rand() > 0.35) {
-          row.push(3);
-          continue;
-        }
-      }
-
-      // Scattered trees (Acts 1-4 only — Act 5 is mountains)
-      if (rand() > 0.88 && y > 63) {
-        row.push(3);
+      // Small pond/lake in Act 1 (natural feature)
+      const pondCx = 60, pondCy = 148;
+      const pondDist = Math.sqrt((x - pondCx) ** 2 + (y - pondCy) ** 2);
+      if (pondDist < 4 + noiseAt(x, y, 0.4, 4.0) * 2) {
+        row.push(2);
         continue;
       }
+
+      // Dense forests (between Greenhollow and Millbrook)
+      if (x > 22 && x < 42 && y > 146 && y < 154) {
+        if (rand() > 0.35) { row.push(3); continue; }
+      }
+
+      // Light forests (between Millbrook and Port Sapphire)
+      if (x > 50 && x < 75 && y > 140 && y < 150) {
+        if (rand() > 0.75) { row.push(3); continue; }
+      }
+
+      // Scattered trees
+      if (rand() > 0.9) { row.push(3); continue; }
 
       row.push(0); // grass default
     }
@@ -74,26 +133,36 @@ export function generateOverworldMap(width: number, height: number): number[][] 
   }
 
   // ── Phase 2: Carve paths between key locations ──
-  // Paths organized by act — NO cross-barrier paths
   const paths: [number, number][] = [
-    // ── Act 1 — south of river (y=99-117) ──
-    ...pathBetween(10, 110, 16, 106),  // greenhollow → mistyGrotto
-    ...pathBetween(10, 110, 30, 103),  // greenhollow → portSapphire
-    ...pathBetween(30, 103, 40, 97),   // portSapphire → crystalCave S
-    // (NO path between Crystal Cave S and N — water blocks direct passage)
-    // ── Act 2 — between river and mountains (y=81-97) ──
-    ...pathBetween(40, 95, 48, 89),    // crystalCave N → ironkeep
-    ...pathBetween(48, 89, 50, 82),    // ironkeep → shadowCave S
-    ...pathBetween(50, 82, 50, 80),    // guide through mountain gap
-    // ── Act 3/4 — between mountains and lava (y=63-79) ──
-    ...pathBetween(50, 80, 50, 76),    // shadowCave N → south (clear of mountains)
-    ...pathBetween(50, 76, 20, 68),    // → ruinsCamp (relocated west)
-    ...pathBetween(20, 68, 8, 62),     // ruinsCamp → volcanicForge S
-    // (NO path between VF S and VF N — mountains block direct passage)
-    // ── Act 5 main road — north of lava (y=2-61) ──
-    ...pathBetween(9, 59, 56, 54),     // volcanicForge N exit → lastBastion
-    ...pathBetween(56, 54, 40, 22),    // lastBastion → south end of Demon Castle land bridge
-    // Legendary dungeon paths carved separately in Phase 3b (winding maze with dead-ends)
+    // ── Act 1 — south of river (y=132-157) ──
+    ...pathBetween(15, 150, 25, 148),   // greenhollow → mistyGrotto
+    ...pathBetween(15, 150, 45, 145),   // greenhollow → millbrook
+    ...pathBetween(45, 145, 80, 140),   // millbrook → portSapphire
+    ...pathBetween(80, 140, 85, 144),   // portSapphire → sunkenCellar
+    ...pathBetween(45, 145, 55, 131),   // millbrook → crystalCave S
+
+    // ── Act 2 — between river and mountains (y=102-130) ──
+    ...pathBetween(55, 129, 70, 118),   // crystalCave N → ironkeep
+    ...pathBetween(70, 118, 35, 112),   // ironkeep → highwatch
+    ...pathBetween(35, 112, 15, 115),   // highwatch → stormNest (hidden path)
+    ...pathBetween(35, 112, 25, 108),   // highwatch → frozenLake
+    ...pathBetween(70, 118, 90, 102),   // ironkeep → shadowCave S
+
+    // ── Act 3 — between mountains and lava (y=72-100) ──
+    ...pathBetween(90, 100, 80, 85),    // shadowCave N → ruinsCamp
+    ...pathBetween(80, 85, 45, 92),     // ruinsCamp → oasisHaven
+    ...pathBetween(45, 92, 60, 95),     // oasisHaven → desertTomb
+    ...pathBetween(45, 92, 35, 88),     // oasisHaven → banditHideout
+    ...pathBetween(80, 85, 30, 78),     // ruinsCamp → embersRest
+
+    // ── Act 4 — volcanic area (y=72-80) ──
+    ...pathBetween(30, 78, 18, 75),     // embersRest → magmaTunnels
+    ...pathBetween(18, 75, 12, 72),     // magmaTunnels → volcanicForge S
+
+    // ── Act 5 — north of lava (y=2-70) ──
+    ...pathBetween(13, 69, 85, 58),     // volcanicForge N exit → lastBastion
+    ...pathBetween(85, 58, 65, 40),     // lastBastion → havensEdge
+    ...pathBetween(65, 40, 55, 25),     // havensEdge → south of Demon Castle approach
   ];
 
   for (const [px, py] of paths) {
@@ -103,11 +172,10 @@ export function generateOverworldMap(width: number, height: number): number[][] 
   }
 
   // ── Phase 3: Act 5 mountain maze ──
-  // Carve maze corridors branching from the main Act 5 road
   const act5Top = 3;
-  const act5Bot = 60;
+  const act5Bot = 69;
 
-  // Collect all path/grass tiles in Act 5 as starting points for maze branches
+  // Collect path/grass seeds in Act 5
   const act5Seeds: [number, number][] = [];
   for (let y = act5Top; y <= act5Bot; y++) {
     for (let x = 3; x < width - 3; x++) {
@@ -118,17 +186,15 @@ export function generateOverworldMap(width: number, height: number): number[][] 
   }
 
   // Random-walk corridors branching from the main road
-  for (let branch = 0; branch < 80; branch++) {
+  for (let branch = 0; branch < 120; branch++) {
     if (act5Seeds.length === 0) break;
     const startIdx = Math.floor(rand() * act5Seeds.length);
     let [x, y] = act5Seeds[startIdx];
 
-    // Pick a primary direction with some randomness
-    const primaryDir = Math.floor(rand() * 4); // 0=N, 1=S, 2=W, 3=E
-    const walkLen = 10 + Math.floor(rand() * 30);
+    const primaryDir = Math.floor(rand() * 4);
+    const walkLen = 10 + Math.floor(rand() * 35);
 
     for (let step = 0; step < walkLen; step++) {
-      // 55% follow primary direction, 45% random turn
       const dir = rand() > 0.45 ? primaryDir : Math.floor(rand() * 4);
       const dx = [0, 0, -1, 1][dir];
       const dy = [-1, 1, 0, 0][dir];
@@ -139,44 +205,36 @@ export function generateOverworldMap(width: number, height: number): number[][] 
         x = nx;
         y = ny;
         if (map[y][x] === 4) {
-          map[y][x] = 0; // carve grass clearing
+          map[y][x] = 0;
           act5Seeds.push([x, y]);
         }
       }
     }
   }
 
-  // ── Phase 3b: Winding 1-block maze paths to legendary dungeons with dead-ends ──
-  // These paths are intentionally hard to find — player must explore the maze
-
-  // Helper: carve a single tile if it's mountain
+  // ── Phase 3b: Winding maze paths to legendary dungeons ──
   const carve = (cx: number, cy: number) => {
     if (cx >= 2 && cx < width - 2 && cy >= 3 && cy <= act5Bot) {
       if (map[cy][cx] === 4) map[cy][cx] = 0;
     }
   };
 
-  // Helper: carve a winding 1-block path from (sx,sy) toward (ex,ey) with dead-end branches
   const carveMazePath = (sx: number, sy: number, ex: number, ey: number) => {
     let x = sx, y = sy;
     const visited: Set<string> = new Set();
 
-    // Main path: winding toward target
     let safety = 0;
-    while ((x !== ex || y !== ey) && safety++ < 500) {
+    while ((x !== ex || y !== ey) && safety++ < 600) {
       carve(x, y);
       visited.add(`${x},${y}`);
 
-      // 60% move toward target, 40% random perpendicular step (creates winding)
       if (rand() < 0.6) {
-        // Toward target — prefer the axis with more distance
         if (Math.abs(x - ex) >= Math.abs(y - ey)) {
           x += x < ex ? 1 : -1;
         } else {
           y += y < ey ? 1 : -1;
         }
       } else {
-        // Perpendicular wander
         if (Math.abs(x - ex) >= Math.abs(y - ey)) {
           y += rand() > 0.5 ? 1 : -1;
         } else {
@@ -184,29 +242,26 @@ export function generateOverworldMap(width: number, height: number): number[][] 
         }
       }
 
-      // Clamp
       x = Math.max(3, Math.min(width - 4, x));
       y = Math.max(3, Math.min(act5Bot, y));
     }
-    carve(ex, ey); // ensure endpoint is carved
+    carve(ex, ey);
 
-    // Dead-end branches: sprout from random points along the main path
+    // Dead-end branches
     const pathTiles = Array.from(visited);
-    const numBranches = 6 + Math.floor(rand() * 5); // 6-10 dead-ends
+    const numBranches = 8 + Math.floor(rand() * 6);
     for (let b = 0; b < numBranches; b++) {
       const startTile = pathTiles[Math.floor(rand() * pathTiles.length)];
       const [bx, by] = startTile.split(',').map(Number);
 
-      // Pick a random direction
       const dirs = [[0, -1], [0, 1], [-1, 0], [1, 0]];
       const dir = dirs[Math.floor(rand() * dirs.length)];
-      const branchLen = 3 + Math.floor(rand() * 6); // 3-8 tiles long
+      const branchLen = 3 + Math.floor(rand() * 8);
 
       let dx = bx, dy = by;
       for (let s = 0; s < branchLen; s++) {
         dx += dir[0];
         dy += dir[1];
-        // Small chance to turn mid-branch (makes it less obvious)
         if (rand() < 0.25) {
           const turnDir = dirs[Math.floor(rand() * dirs.length)];
           dx += turnDir[0];
@@ -219,43 +274,43 @@ export function generateOverworldMap(width: number, height: number): number[][] 
     }
   };
 
-  // Sealed Sanctum (5,8) — path starts from near the main road, winds northwest
-  carveMazePath(14, 54, 5, 8);
-
-  // Celestial Vault (74,8) — path starts from near Last Bastion, winds northeast
-  carveMazePath(58, 52, 74, 8);
+  // Sealed Sanctum (8,10) — NW
+  carveMazePath(20, 58, 8, 10);
+  // Celestial Vault (110,10) — NE
+  carveMazePath(88, 56, 110, 10);
 
   // ── Phase 4: Demon Castle island ──
-  // Water moat around (40,10) with land bridge from south
-  for (let dy = -6; dy <= 6; dy++) {
-    for (let dx = -6; dx <= 6; dx++) {
-      const ix = 40 + dx;
-      const iy = 10 + dy;
+  const castleX = 55, castleY = 15;
+  for (let dy = -7; dy <= 7; dy++) {
+    for (let dx = -7; dx <= 7; dx++) {
+      const ix = castleX + dx;
+      const iy = castleY + dy;
       if (ix >= 2 && ix < width - 2 && iy >= 2 && iy < height - 2) {
         const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist >= 3.5 && dist <= 5.5) {
+        if (dist >= 4 && dist <= 6.5) {
           map[iy][ix] = 2; // water moat
-        } else if (dist < 3.5) {
+        } else if (dist < 4) {
           map[iy][ix] = 0; // island ground
         }
       }
     }
   }
 
-  // Land bridge south of island through moat to mainland (y=13 to y=22)
-  for (let y = 13; y <= 22; y++) {
+  // Land bridge south of island (y=19 to y=27)
+  for (let y = 19; y <= 27; y++) {
     if (y >= 2 && y < height - 2) {
-      map[y][40] = 1; // path
-      map[y][41] = 1;
+      map[y][castleX] = 1;
+      map[y][castleX + 1] = 1;
     }
   }
 
-  // ── Phase 5: Town markers (placed BEFORE barriers, re-stamped in Phase 8) ──
+  // ── Phase 5: Town markers ──
   const towns: [number, number][] = [
-    [10, 110], [30, 103],  // Act 1: Greenhollow, Port Sapphire
-    [48, 89],               // Act 2: Ironkeep
-    [20, 68],               // Act 3/4: Ruins Camp (relocated west)
-    [56, 54],               // Act 5: Last Bastion
+    [15, 150], [45, 145], [80, 140],  // Act 1
+    [70, 118], [35, 112],              // Act 2
+    [45, 92], [80, 85],                // Act 3
+    [30, 78],                           // Act 4
+    [85, 58], [65, 40],                // Act 5
   ];
   for (const [tx, ty] of towns) {
     map[ty][tx] = 6;
@@ -263,38 +318,47 @@ export function generateOverworldMap(width: number, height: number): number[][] 
 
   // ── Phase 6: Dungeon entrance markers ──
   const caveDungeons: [number, number][] = [
-    [16, 106], [40, 97], [40, 95],  // Act 1→2: Misty Grotto, Crystal Cave S/N
-    [10, 86],                         // Act 2: Storm Nest (hidden — no path)
-    [50, 82], [50, 80],              // Act 2→3: Shadow Cave S/N (touching mountains)
-    [8, 62], [8, 59],                // Act 3/4→5: Volcanic Forge S/N (relocated west)
-    [5, 8], [74, 8],                  // Legendary: Sanctum (NW), Vault (NE)
+    // Act 1
+    [25, 148], [85, 144],             // Misty Grotto, Sunken Cellar
+    [55, 131], [55, 129],             // Crystal Cave S/N
+    // Act 2
+    [15, 115], [25, 108],             // Storm Nest, Frozen Lake
+    [90, 102], [90, 100],             // Shadow Cave S/N
+    // Act 3
+    [60, 95], [35, 88],               // Desert Tomb, Bandit Hideout
+    // Act 4
+    [18, 75],                          // Magma Tunnels
+    [12, 72], [12, 69],               // Volcanic Forge S/N
+    // Act 5
+    [8, 10], [110, 10],               // Legendary: Sanctum (NW), Vault (NE)
   ];
   for (const [dx, dy] of caveDungeons) {
     map[dy][dx] = 7;
   }
-  // Demon Castle uses castle tile (8) instead of cave (7)
-  map[10][40] = 8;
+  // Demon Castle uses castle tile (8)
+  map[castleY][castleX] = 8;
 
-  // ── Phase 7: Physical terrain barriers (always solid) ──
+  // ── Phase 7: Physical terrain barriers (organic, not straight lines) ──
 
-  // --- River barrier between Act 1 and Act 2 (y≈98) ---
-  const riverBaseY = 98;
+  // --- River barrier between Act 1 and Act 2 (y≈131) ---
+  const riverBaseY = 131;
   for (let x = 2; x <= width - 3; x++) {
     const meander = Math.round(
-      Math.sin(x * 0.12) * 2 + Math.cos(x * 0.07 + 1.5) * 1
+      Math.sin(x * 0.08) * 3 + Math.cos(x * 0.05 + 1.5) * 2
+      + Math.sin(x * 0.15 + 2.5) * 1.5
     );
     const centerY = riverBaseY + meander;
-    const extraWidth = Math.sin(x * 0.22 + 0.7) > 0.3 ? 1 : 0;
+    const extraWidth = Math.sin(x * 0.18 + 0.7) > 0.2 ? 1 : 0;
     const riverTop = centerY;
     const riverBot = centerY + 1 + extraWidth;
 
     for (let ry = riverTop; ry <= riverBot; ry++) {
       if (ry >= 2 && ry < height - 2) {
-        map[ry][x] = 2; // water — always solid
+        map[ry][x] = 2;
       }
     }
 
-    // Scatter trees along riverbanks
+    // Riverbank trees
     const above = riverTop - 1;
     const below = riverBot + 1;
     if (above >= 2 && above < height - 2
@@ -309,20 +373,21 @@ export function generateOverworldMap(width: number, height: number): number[][] 
     }
   }
 
-  // --- Mountain barrier between Act 2 and Act 3 (y≈80) ---
-  const mtBaseY = 80;
+  // --- Mountain barrier between Act 2 and Act 3 (y≈101) ---
+  const mtBaseY = 101;
   for (let x = 2; x <= width - 3; x++) {
     const meander = Math.round(
-      Math.sin(x * 0.1 + 2) * 1.5 + Math.cos(x * 0.06) * 1
+      Math.sin(x * 0.07 + 2) * 2 + Math.cos(x * 0.04) * 1.5
+      + Math.sin(x * 0.12 + 1) * 1
     );
     const centerY = mtBaseY + meander;
-    const extraWidth = Math.cos(x * 0.18 + 1) > 0.2 ? 1 : 0;
+    const extraWidth = Math.cos(x * 0.15 + 1) > 0.1 ? 1 : 0;
     const mtTop = centerY;
     const mtBot = centerY + 1 + extraWidth;
 
     for (let my = mtTop; my <= mtBot; my++) {
       if (my >= 2 && my < height - 2) {
-        map[my][x] = 4; // mountain — always solid
+        map[my][x] = 4;
       }
     }
 
@@ -334,65 +399,90 @@ export function generateOverworldMap(width: number, height: number): number[][] 
     }
   }
 
-  // --- Lava barrier between Act 3/4 and Act 5 (y≈62) ---
-  const lavaBaseY = 62;
+  // --- Lava barrier between Act 3/4 and Act 5 (y≈71) ---
+  const lavaBaseY = 71;
   for (let x = 2; x <= width - 3; x++) {
     const meander = Math.round(
-      Math.sin(x * 0.14 + 3) * 1.5 + Math.cos(x * 0.08 + 2) * 0.8
+      Math.sin(x * 0.09 + 3) * 2 + Math.cos(x * 0.06 + 2) * 1.5
     );
     const centerY = lavaBaseY + meander;
-    const extraWidth = Math.sin(x * 0.25 + 1.5) > 0.4 ? 1 : 0;
+    const extraWidth = Math.sin(x * 0.2 + 1.5) > 0.3 ? 1 : 0;
     const lavaTop = centerY;
     const lavaBot = centerY + extraWidth;
 
     for (let ly = lavaTop; ly <= lavaBot; ly++) {
       if (ly >= 2 && ly < height - 2) {
-        map[ly][x] = 4; // mountain tile (impassable) — always solid
+        map[ly][x] = 4;
       }
     }
   }
 
-  // ── Phase 8: Re-stamp markers AFTER barriers (prevents barrier overwriting) ──
+  // ── Phase 7b: Staggered water bodies for organic feel ──
+
+  // Coastal inlet in Act 1 (SE corner — makes coastline feel natural)
+  for (let y = 150; y <= 156; y++) {
+    for (let x = 90; x < width - 2; x++) {
+      const coastShape = noiseAt(x, y, 0.15, 6.0);
+      if (x > 95 + coastShape * 6 - (y - 150) * 1.5) {
+        if (y >= 2 && y < height - 2 && x >= 2 && x < width - 2) {
+          map[y][x] = 2;
+        }
+      }
+    }
+  }
+
+  // Winding stream in Act 3 (separates desert and volcanic regions)
+  for (let y = 74; y <= 98; y++) {
+    const streamX = Math.round(42 + Math.sin(y * 0.15) * 5 + Math.cos(y * 0.08 + 1) * 3);
+    if (streamX >= 2 && streamX < width - 2 && y >= 2 && y < height - 2) {
+      map[y][streamX] = 2;
+      if (streamX + 1 < width - 2 && Math.sin(y * 0.3) > 0.3) {
+        map[y][streamX + 1] = 2;
+      }
+    }
+  }
+
+  // ── Phase 8: Re-stamp markers AFTER barriers ──
   for (const [tx, ty] of towns) map[ty][tx] = 6;
   for (const [dx, dy] of caveDungeons) map[dy][dx] = 7;
-  map[10][40] = 8; // Demon Castle
+  map[castleY][castleX] = 8;
 
   // Ensure adjacent tiles around all markers are walkable
-  const allMarkers: [number, number][] = [...towns, ...caveDungeons, [40, 10]];
+  const allMarkers: [number, number][] = [...towns, ...caveDungeons, [castleX, castleY]];
   for (const [mx, my] of allMarkers) {
     for (const [adjDx, adjDy] of [[0, -1], [0, 1], [-1, 0], [1, 0]]) {
       const ax = mx + adjDx, ay = my + adjDy;
       if (ax >= 2 && ax < width - 2 && ay >= 2 && ay < height - 2) {
         if (map[ay][ax] === 4 || map[ay][ax] === 2) {
-          map[ay][ax] = 1; // clear path around marker
+          map[ay][ax] = 1;
         }
       }
     }
   }
 
   // ── Phase 9: Post-adjacency terrain overrides ──
-  // Placed AFTER marker adjacency clearing so they aren't removed.
 
-  // Crystal Cave: water at y=96 blocks direct passage between S(40,97) and N(40,95)
-  for (let wx = 37; wx <= 43; wx++) {
-    map[96][wx] = 2; // water strip
+  // Crystal Cave: water at y=130 blocks direct passage between S(55,131) and N(55,129)
+  for (let wx = 52; wx <= 58; wx++) {
+    if (wx >= 2 && wx < width - 2) {
+      map[130][wx] = 2;
+    }
   }
 
   // Shadow Cave: mountain north of Act 2 entrance, walkable north of Act 3 exit
-  map[81][50] = 4; // mountain — north of SC S (50,82), blocks Act 2 side
-  map[79][50] = 1; // walkable — north of SC N (50,80), lets player exit into Act 3
+  map[101][90] = 4;  // mountain — north of SC S (90,102)
+  map[99][90] = 1;   // walkable — north of SC N (90,100)
 
-  // Volcanic Forge: mountains fill between S(8,62) and N(8,59)
-  map[60][8] = 4; // mountain
-  map[61][8] = 4; // mountain
+  // Volcanic Forge: mountains fill between S(12,72) and N(12,69)
+  map[70][12] = 4;
+  map[71][12] = 4;
 
   // Volcanic Forge N: mountains surround N/S/W — player exits east
-  map[58][8] = 4; // north of VF N
-  map[60][8] = 4; // south of VF N (already set above)
-  map[59][7] = 4; // west of VF N
-  // Ensure east exit tile is walkable
-  map[59][9] = 1;
-  map[59][10] = 1;
+  map[68][12] = 4;  // north of VF N
+  map[70][12] = 4;  // south of VF N
+  map[69][11] = 4;  // west of VF N
+  map[69][13] = 1;  // east exit walkable
+  map[69][14] = 1;
 
   return map;
 }
@@ -403,7 +493,6 @@ function pathBetween(x1: number, y1: number, x2: number, y2: number): [number, n
 
   while (x !== x2 || y !== y2) {
     points.push([x, y]);
-    // Prefer horizontal then vertical
     if (x !== x2) {
       x += x2 > x ? 1 : -1;
     } else {
@@ -502,22 +591,22 @@ export function generateTownMap(width: number, height: number, seed: number): nu
     }
   }
 
-  // Place houses (3×2 each): top-left corner of each house
+  // Place houses
   const houses: { x: number; y: number }[] = [
-    { x: 2, y: 2 },                                  // top-left house
-    { x: width - 5, y: 2 },                          // top-right house
-    { x: 2, y: 7 },                                  // mid-left house
-    { x: width - 5, y: 7 },                          // mid-right house
-    { x: 2, y: 11 },                                 // bottom-left house
+    { x: 2, y: 2 },
+    { x: width - 5, y: 2 },
+    { x: 2, y: 7 },
+    { x: width - 5, y: 7 },
+    { x: 2, y: 11 },
   ];
   for (const h of houses) placeHouse(h.x, h.y);
 
-  // Place shop (3×2, bottom-right area)
+  // Place shop
   const shopX = width - 5;
   const shopY = 11;
   placeShop(shopX, shopY);
 
-  // Side paths connecting buildings to main road
+  // Side paths
   const allBuildings = [...houses, { x: shopX + 1, y: shopY }];
   for (const b of allBuildings) {
     const frontY = b.y + 2;
@@ -530,10 +619,10 @@ export function generateTownMap(width: number, height: number, seed: number): nu
     }
   }
 
-  // Save point on main road
+  // Save point
   map[10][cx] = 6;
 
-  // Small water feature near plaza (varies by seed)
+  // Water feature
   if (rand() > 0.4) {
     const wx = cx + (rand() > 0.5 ? 2 : -3);
     if (wx > 1 && wx < width - 2 && map[4][wx] === 3) {
@@ -546,19 +635,11 @@ export function generateTownMap(width: number, height: number, seed: number): nu
 
 interface Room {
   x: number; y: number; w: number; h: number;
-  cx: number; cy: number; // center
+  cx: number; cy: number;
 }
 
 /**
  * Generate a dungeon floor map.
- * @param width    - map width in tiles
- * @param height   - map height in tiles
- * @param seed     - base seed for this dungeon
- * @param floor    - 1-based floor index (default 1)
- * @param totalFloors - total number of floors in this dungeon (default 1)
- * @param gate     - gate dungeon mode: stairs at BOTH top and bottom, boss near top (Crystal Cave)
- * @param gateFinalFloor - gate dungeon final floor: boss blocks 1-tile corridor to exit stairs
- * @param castle   - castle mode: entrance at bottom, climb upward, boss at top of final floor
  */
 export function generateDungeonMap(
   width: number, height: number, seed: number,
@@ -567,23 +648,20 @@ export function generateDungeonMap(
   gateFinalFloor: boolean = false,
   castle: boolean = false,
 ): number[][] {
-  // Unique seed per floor
   const floorSeed = seed + (floor - 1) * 997;
   const rand = seededRandom(floorSeed);
 
   const isFirstFloor = floor === 1;
   const isFinalFloor = floor === totalFloors;
 
-  // Start with all walls
   const map: number[][] = Array.from({ length: height }, () => new Array(width).fill(1));
 
   // --- Generate rooms ---
   const rooms: Room[] = [];
-  const roomCount = Math.floor(5 + (width + height) / 10); // 7-11 rooms depending on size
+  const roomCount = Math.floor(5 + (width + height) / 10);
   const minRoomSize = 3;
   const maxRoomSize = Math.min(7, Math.floor(width / 4));
 
-  // Gate dungeons reserve extra rows at both ends for boss room (top) and south entrance (bottom)
   const roomYMin = gate ? 6 : 2;
   const roomYMax = gate ? height - 6 : height - 4;
 
@@ -591,9 +669,8 @@ export function generateDungeonMap(
     const rw = minRoomSize + Math.floor(rand() * (maxRoomSize - minRoomSize + 1));
     const rh = minRoomSize + Math.floor(rand() * (maxRoomSize - minRoomSize + 1));
     const rx = 1 + Math.floor(rand() * (width - rw - 2));
-    const ry = roomYMin + Math.floor(rand() * (roomYMax - rh - roomYMin)); // leave reserved rows
+    const ry = roomYMin + Math.floor(rand() * (roomYMax - rh - roomYMin));
 
-    // Check overlap (with 1-tile margin)
     let overlaps = false;
     for (const r of rooms) {
       if (rx - 1 < r.x + r.w && rx + rw + 1 > r.x && ry - 1 < r.y + r.h && ry + rh + 1 > r.y) {
@@ -606,26 +683,24 @@ export function generateDungeonMap(
     rooms.push({ x: rx, y: ry, w: rw, h: rh, cx: rx + Math.floor(rw / 2), cy: ry + Math.floor(rh / 2) });
   }
 
-  // Sort rooms top-to-bottom for progression
   rooms.sort((a, b) => a.cy - b.cy);
 
   // --- Carve rooms ---
   for (const room of rooms) {
     for (let ry = room.y; ry < room.y + room.h; ry++) {
       for (let rx = room.x; rx < room.x + room.w; rx++) {
-        map[ry][rx] = rand() > 0.92 ? 2 : 0; // mostly floor, occasional cracked
+        map[ry][rx] = rand() > 0.92 ? 2 : 0;
       }
     }
   }
 
-  // --- Connect rooms with L-shaped corridors ---
+  // --- Connect rooms ---
   for (let i = 0; i < rooms.length - 1; i++) {
     const a = rooms[i];
     const b = rooms[i + 1];
     carveLCorridor(map, a.cx, a.cy, b.cx, b.cy, rand);
   }
 
-  // --- Add a few extra connections for loops (makes it less linear) ---
   for (let i = 0; i < rooms.length - 2; i++) {
     if (rand() > 0.55) {
       const a = rooms[i];
@@ -634,11 +709,10 @@ export function generateDungeonMap(
     }
   }
 
-  // --- Add dead-end branches with treasure (well away from main path) ---
-  const MIN_TREASURE_DIST = 8; // minimum Manhattan distance between chests
+  // --- Dead-end branches with treasure ---
+  const MIN_TREASURE_DIST = 8;
   const treasurePositions: [number, number][] = [];
 
-  // Snapshot main path tiles BEFORE adding treasure branches
   const mainPathTiles: Set<string> = new Set();
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
@@ -649,7 +723,6 @@ export function generateDungeonMap(
   const isFarEnoughFromOther = (x: number, y: number): boolean =>
     treasurePositions.every(([tx, ty]) => Math.abs(x - tx) + Math.abs(y - ty) >= MIN_TREASURE_DIST);
 
-  // Ensure treasure endpoint is at least 3 Manhattan tiles from any main path tile
   const MIN_PATH_DIST = 3;
   const isFarFromMainPath = (x: number, y: number): boolean => {
     for (let dy = -MIN_PATH_DIST; dy <= MIN_PATH_DIST; dy++) {
@@ -668,13 +741,12 @@ export function generateDungeonMap(
       const room = rooms[i];
       const dirs = shuffleArray([[0, -1], [0, 1], [-1, 0], [1, 0]], rand);
       for (const [dx, dy] of dirs) {
-        const branchLen = 6 + Math.floor(rand() * 5); // 6-10 tiles from room edge
+        const branchLen = 6 + Math.floor(rand() * 5);
         let ex = room.cx + dx * (Math.floor(room.w / 2) + branchLen);
         let ey = room.cy + dy * (Math.floor(room.h / 2) + branchLen);
         ex = Math.max(1, Math.min(width - 2, ex));
         ey = Math.max(2, Math.min(height - 4, ey));
 
-        // Only place if: wall tile, far from other treasure, AND far from main path
         if (map[ey][ex] === 1 && isFarEnoughFromOther(ex, ey) && isFarFromMainPath(ex, ey)) {
           carveLCorridor(map, room.cx, room.cy, ex, ey, rand);
           map[ey][ex] = 0;
@@ -685,7 +757,7 @@ export function generateDungeonMap(
     }
   }
 
-  // Fallback: try shorter branches but still require distance from main path
+  // Fallback
   if (treasurePositions.length === 0) {
     for (let i = 1; i < rooms.length - 1 && treasurePositions.length < 2; i++) {
       const r = rooms[i];
@@ -704,7 +776,7 @@ export function generateDungeonMap(
     }
   }
 
-  // Cap at 2 treasure chests per floor
+  // Cap at 2
   while (treasurePositions.length > 2) {
     let worstIdx = 0;
     let worstDist = Infinity;
@@ -719,19 +791,12 @@ export function generateDungeonMap(
     treasurePositions.splice(worstIdx, 1);
   }
 
-  // NOTE: Treasure tile placement is deferred until AFTER entrance/boss/stairs
-  // code runs, so the validation can see the final map layout. See end of function.
-
   const entranceX = Math.floor(width / 2);
 
   if (gate) {
-    // ── Gate dungeon: stairs at BOTH top and bottom, boss near top ──
-
-    // --- North exit area (top): stair + boss blocking corridor ---
-    map[0][entranceX] = 6; // stairs-up → Act 2 exit
-    // Boss at y=1 in a 1-tile-wide corridor — cannot be walked around
-    map[1][entranceX] = 7; // boss tile — blocks only passage to north stair
-    // Boss fight room (5×3) at y=2..4 — open area south of boss
+    // ── Gate dungeon ──
+    map[0][entranceX] = 6;
+    map[1][entranceX] = 7;
     for (let dy = 0; dy < 3; dy++) {
       for (let dx = -2; dx <= 2; dx++) {
         const bx = entranceX + dx;
@@ -741,13 +806,11 @@ export function generateDungeonMap(
         }
       }
     }
-    // Connect first room to boss fight room (south side at y=4)
     if (rooms.length > 0) {
       carveLCorridor(map, entranceX, 4, rooms[0].cx, rooms[0].cy, rand);
     }
 
-    // --- South entrance area (bottom): stair + room ---
-    map[height - 1][entranceX] = 6; // stairs-up → Act 1 exit
+    map[height - 1][entranceX] = 6;
     for (let dx = -1; dx <= 1; dx++) {
       const ex = entranceX + dx;
       if (ex > 0 && ex < width - 1) {
@@ -755,7 +818,6 @@ export function generateDungeonMap(
         map[height - 3][ex] = 0;
       }
     }
-    // South room (5×3) at y=(height-6)..(height-4)
     for (let dy = 0; dy < 3; dy++) {
       for (let dx = -2; dx <= 2; dx++) {
         const bx = entranceX + dx;
@@ -765,17 +827,13 @@ export function generateDungeonMap(
         }
       }
     }
-    // Connect last room to south entrance area
     if (rooms.length > 0) {
       const lastRoom = rooms[rooms.length - 1];
       carveLCorridor(map, lastRoom.cx, lastRoom.cy, entranceX, height - 6, rand);
     }
   } else if (castle) {
-    // ── Castle dungeon: entrance at bottom, climb upward to boss ──
-
-    // --- Bottom entrance area ---
-    // Floor 1: tile 6 exits to overworld; deeper floors: tile 6 goes to previous floor
-    map[height - 1][entranceX] = 6; // tile 6 = stairs/exit
+    // ── Castle dungeon ──
+    map[height - 1][entranceX] = 6;
     for (let dx = -1; dx <= 1; dx++) {
       const ex = entranceX + dx;
       if (ex > 0 && ex < width - 1) {
@@ -783,16 +841,13 @@ export function generateDungeonMap(
         map[height - 3][ex] = 0;
       }
     }
-    // Connect bottom entrance to nearest bottom room
     if (rooms.length > 0) {
-      const lastRoom = rooms[rooms.length - 1]; // bottom-most room
+      const lastRoom = rooms[rooms.length - 1];
       carveLCorridor(map, entranceX, height - 3, lastRoom.cx, lastRoom.cy, rand);
     }
 
-    // --- Top area: stairs to next floor or boss on final floor ---
     const topX = entranceX;
     const topRoomY = 2;
-    // Carve top room (5×3)
     for (let dy = 0; dy < 3; dy++) {
       for (let dx = -2; dx <= 2; dx++) {
         const bx = topX + dx;
@@ -802,27 +857,20 @@ export function generateDungeonMap(
         }
       }
     }
-    // Corridor connecting to top room
     map[topRoomY + 3][topX] = 0;
-    // Connect top-most room to top area
     if (rooms.length > 0) {
       carveLCorridor(map, rooms[0].cx, rooms[0].cy, topX, topRoomY + 3, rand);
     }
 
     if (isFinalFloor) {
-      // Boss at center of top room — final confrontation
       map[topRoomY + 1][topX] = 7;
     } else {
-      // Stairs to next floor at very top
-      map[0][entranceX] = 9; // tile 9 = stairs (goes to next floor)
-      map[1][entranceX] = 0; // clear space below stairs
+      map[0][entranceX] = 9;
+      map[1][entranceX] = 0;
     }
 
   } else {
-    // ── Standard dungeon: entrance at top, boss/stairs at bottom ──
-
-    // --- Entrance at top ---
-    // Carve entrance area
+    // ── Standard dungeon ──
     for (let dx = -1; dx <= 1; dx++) {
       const ex = entranceX + dx;
       if (ex > 0 && ex < width - 1) {
@@ -830,17 +878,13 @@ export function generateDungeonMap(
         map[2][ex] = 0;
       }
     }
-    // Floor 1: stairs-up exits to overworld; deeper floors: stairs-up goes to previous floor
-    map[0][entranceX] = 6; // tile 6 = stairs-up
-    // Connect entrance to nearest room
+    map[0][entranceX] = 6;
     if (rooms.length > 0) {
       carveLCorridor(map, entranceX, 2, rooms[0].cx, rooms[0].cy, rand);
     }
 
-    // --- Bottom area: boss (final floor) or stairs-down (non-final floor) ---
     const bottomX = entranceX;
     const bottomRoomY = height - 3;
-    // Carve bottom room (5×3)
     for (let dy = 0; dy < 3; dy++) {
       for (let dx = -2; dx <= 2; dx++) {
         const bx = bottomX + dx;
@@ -850,19 +894,13 @@ export function generateDungeonMap(
         }
       }
     }
-    // Bottom room entrance
     map[bottomRoomY - 1][bottomX] = 0;
-    // Connect last room to bottom room
     if (rooms.length > 0) {
       const lastRoom = rooms[rooms.length - 1];
       carveLCorridor(map, lastRoom.cx, lastRoom.cy, bottomX, bottomRoomY - 1, rand);
     }
 
     if (gateFinalFloor && isFinalFloor) {
-      // Gate dungeon final floor: boss blocks 1-tile corridor to exit stairs
-      // Override the standard bottom room with a boss-blocked bottleneck layout
-
-      // Boss fight room (5×3) higher up
       const bossRoomY = height - 7;
       for (let dy = 0; dy < 3; dy++) {
         for (let dx = -2; dx <= 2; dx++) {
@@ -873,35 +911,27 @@ export function generateDungeonMap(
           }
         }
       }
-      // Connect last room to boss fight room
       if (rooms.length > 0) {
         const lastRoom = rooms[rooms.length - 1];
         carveLCorridor(map, lastRoom.cx, lastRoom.cy, entranceX, bossRoomY, rand);
       }
 
-      // Narrow 1-tile corridor leading to boss (only entranceX is passable)
       for (let cy = height - 4; cy <= height - 3; cy++) {
         if (cy > 0 && cy < height - 1) {
           map[cy][entranceX] = 0;
         }
       }
 
-      // Boss at entranceX, height-2 — blocks the only passage
       map[height - 2][entranceX] = 7;
-
-      // Exit stairs behind boss (hidden until boss defeated)
       map[height - 1][entranceX] = 6;
     } else if (isFinalFloor) {
-      // Boss marker at center of bottom room
       map[bottomRoomY + 1][bottomX] = 7;
     } else {
-      // Stairs-down to next floor
-      map[bottomRoomY + 1][bottomX] = 9; // tile 9 = stairs-down
+      map[bottomRoomY + 1][bottomX] = 9;
     }
   }
 
-  // ── Final step: Place treasure tiles AFTER all corridors/entrance/boss carved ──
-  // This ensures validation sees the complete map layout.
+  // ── Place treasure tiles ──
   const isWallTile = (x: number, y: number) =>
     y < 0 || y >= height || x < 0 || x >= width || map[y][x] === 1 || map[y][x] === 5;
 
@@ -910,9 +940,7 @@ export function generateDungeonMap(
     const sWall = isWallTile(x, y + 1);
     const wWall = isWallTile(x - 1, y);
     const eWall = isWallTile(x + 1, y);
-    // Must have at least 1 wall neighbor (against a wall)
     if (!nWall && !sWall && !wWall && !eWall) return false;
-    // Must NOT have floor on opposing sides (would block a corridor)
     if (!nWall && !sWall) return false;
     if (!wWall && !eWall) return false;
     return true;
@@ -928,7 +956,6 @@ export function generateDungeonMap(
     if (isValidTreasureSpot(tx, ty)) {
       map[ty][tx] = 4;
     } else {
-      // Bad spot — relocate to a valid wall-adjacent, non-corridor tile in a room
       let relocated = false;
       for (const room of shuffleArray([...rooms], rand)) {
         const candidates: [number, number][] = [];
@@ -965,20 +992,17 @@ function carveLCorridor(
   const height = map.length;
   const width = map[0].length;
 
-  // L-shaped: go horizontal first or vertical first (random)
   const horizFirst = rand() > 0.5;
 
   let cx = x1, cy = y1;
 
   if (horizFirst) {
-    // Horizontal leg
     while (cx !== x2) {
       if (cx > 0 && cx < width - 1 && cy > 0 && cy < height - 1 && map[cy][cx] === 1) {
         map[cy][cx] = 0;
       }
       cx += cx < x2 ? 1 : -1;
     }
-    // Vertical leg
     while (cy !== y2) {
       if (cx > 0 && cx < width - 1 && cy > 0 && cy < height - 1 && map[cy][cx] === 1) {
         map[cy][cx] = 0;
@@ -986,14 +1010,12 @@ function carveLCorridor(
       cy += cy < y2 ? 1 : -1;
     }
   } else {
-    // Vertical leg
     while (cy !== y2) {
       if (cx > 0 && cx < width - 1 && cy > 0 && cy < height - 1 && map[cy][cx] === 1) {
         map[cy][cx] = 0;
       }
       cy += cy < y2 ? 1 : -1;
     }
-    // Horizontal leg
     while (cx !== x2) {
       if (cx > 0 && cx < width - 1 && cy > 0 && cy < height - 1 && map[cy][cx] === 1) {
         map[cy][cx] = 0;
@@ -1001,7 +1023,6 @@ function carveLCorridor(
       cx += cx < x2 ? 1 : -1;
     }
   }
-  // Carve final tile
   if (cx > 0 && cx < width - 1 && cy > 0 && cy < height - 1 && map[cy][cx] === 1) {
     map[cy][cx] = 0;
   }

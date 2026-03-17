@@ -43,6 +43,15 @@ export const encounterZones: Record<string, EncounterZone> = {
       { monsterId: 'bandit', weight: 3 },
     ],
   },
+  'sunken-cellar': {
+    zoneId: 'sunken-cellar',
+    encounterRate: 0.07,
+    minStepsBetween: 7,
+    monsters: [
+      { monsterId: 'crab', weight: 5 },
+      { monsterId: 'seaStar', weight: 5 },
+    ],
+  },
   'crystal-cave': {
     zoneId: 'crystal-cave',
     encounterRate: 0.08,
@@ -83,7 +92,6 @@ export const encounterZones: Record<string, EncounterZone> = {
       { monsterId: 'wyvern', weight: 5 },
     ],
   },
-
   'storm-nest': {
     zoneId: 'storm-nest',
     encounterRate: 0.08,
@@ -91,6 +99,16 @@ export const encounterZones: Record<string, EncounterZone> = {
     monsters: [
       { monsterId: 'harpy', weight: 5 },
       { monsterId: 'wyvern', weight: 5 },
+    ],
+  },
+  'frozen-lake': {
+    zoneId: 'frozen-lake',
+    encounterRate: 0.07,
+    minStepsBetween: 7,
+    monsters: [
+      { monsterId: 'frostWolf', weight: 4 },
+      { monsterId: 'frozenSkeleton', weight: 3 },
+      { monsterId: 'iceSprite', weight: 3 },
     ],
   },
 
@@ -115,9 +133,39 @@ export const encounterZones: Record<string, EncounterZone> = {
       { monsterId: 'knight', weight: 5 },
     ],
   },
+  'desert-tomb': {
+    zoneId: 'desert-tomb',
+    encounterRate: 0.07,
+    minStepsBetween: 7,
+    monsters: [
+      { monsterId: 'sandWraith', weight: 4 },
+      { monsterId: 'mummy', weight: 4 },
+      { monsterId: 'skeleton', weight: 2 },
+    ],
+  },
+  'bandit-hideout': {
+    zoneId: 'bandit-hideout',
+    encounterRate: 0.07,
+    minStepsBetween: 7,
+    monsters: [
+      { monsterId: 'banditArcher', weight: 5 },
+      { monsterId: 'bandit', weight: 3 },
+      { monsterId: 'wolf', weight: 2 },
+    ],
+  },
 
-  // ── Act 4 — Unlocked after defeating Ice Wyrm ────────────────────
+  // ── Act 4 — Volcanic area ──────────────────────────────────────────
 
+  'magma-tunnels': {
+    zoneId: 'magma-tunnels',
+    encounterRate: 0.08,
+    minStepsBetween: 6,
+    monsters: [
+      { monsterId: 'magmaSlime', weight: 3 },
+      { monsterId: 'flameBat', weight: 3 },
+      { monsterId: 'fireElemental', weight: 4 },
+    ],
+  },
   'sunken-ruins': {
     zoneId: 'sunken-ruins',
     encounterRate: 0.07,

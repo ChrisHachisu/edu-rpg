@@ -568,4 +568,194 @@ export const monsters: Record<string, MonsterTemplate> = {
     aiPattern: 'boss',
     color: 0xddcc88,
   },
+
+  // ── V2 NEW Bosses ────────────────────────────────────────────────
+
+  // Giant Crab — Sunken Cellar boss (Act 1 optional)
+  giantCrab: {
+    id: 'giantCrab',
+    nameKey: 'monster.giantCrab',
+    spriteKey: 'monster-crab',  // reuse crab sprite (bigger version)
+    baseHp: 55,
+    baseAtk: 16,
+    baseDef: 18,
+    baseSpd: 5,
+    expReward: 35,
+    goldReward: 20,
+    drops: [{ itemId: 'potion', chance: 0.25 }],
+    aiPattern: 'boss',
+    color: 0xcc5533,
+  },
+
+  // Sand Golem — Desert Tomb boss (Act 3 gate)
+  sandGolem: {
+    id: 'sandGolem',
+    nameKey: 'monster.sandGolem',
+    spriteKey: 'monster-golem',  // reuse golem sprite (sand color)
+    baseHp: 180,
+    baseAtk: 32,
+    baseDef: 24,
+    baseSpd: 6,
+    expReward: 140,
+    goldReward: 80,
+    drops: [{ itemId: 'hiPotion', chance: 0.2 }],
+    aiPattern: 'boss',
+    color: 0xccaa55,
+  },
+
+  // Bandit Lord — Bandit Hideout boss (Act 3 optional)
+  banditLord: {
+    id: 'banditLord',
+    nameKey: 'monster.banditLord',
+    spriteKey: 'monster-bandit',  // reuse bandit sprite (larger)
+    baseHp: 150,
+    baseAtk: 30,
+    baseDef: 18,
+    baseSpd: 16,
+    expReward: 120,
+    goldReward: 100,
+    drops: [{ itemId: 'smokeBomb', chance: 0.3 }],
+    aiPattern: 'boss',
+    color: 0x884422,
+  },
+
+  // Lava Wyrm — Magma Tunnels boss (Act 4 required)
+  lavaWyrm: {
+    id: 'lavaWyrm',
+    nameKey: 'monster.lavaWyrm',
+    spriteKey: 'monster-dragon',  // reuse dragon sprite (lava color)
+    baseHp: 200,
+    baseAtk: 35,
+    baseDef: 22,
+    baseSpd: 14,
+    expReward: 170,
+    goldReward: 100,
+    drops: [{ itemId: 'elixir', chance: 0.15 }],
+    aiPattern: 'boss',
+    color: 0xff5511,
+  },
+
+  // ── V2 NEW Regular Monsters ──────────────────────────────────────
+
+  // Sunken Cellar zone
+  seaStar: {
+    id: 'seaStar',
+    nameKey: 'monster.seaStar',
+    spriteKey: 'monster-spider',  // reuse spider shape
+    baseHp: 15,
+    baseAtk: 11,
+    baseDef: 8,
+    baseSpd: 4,
+    expReward: 6,
+    goldReward: 4,
+    drops: [{ itemId: 'herb', chance: 0.2 }],
+    aiPattern: 'basic',
+    color: 0xff8844,
+  },
+
+  // Frozen Lake zone
+  frostWolf: {
+    id: 'frostWolf',
+    nameKey: 'monster.frostWolf',
+    spriteKey: 'monster-wolf',  // reuse wolf sprite (frost color)
+    baseHp: 30,
+    baseAtk: 22,
+    baseDef: 14,
+    baseSpd: 15,
+    expReward: 28,
+    goldReward: 18,
+    drops: [{ itemId: 'potion', chance: 0.1 }],
+    aiPattern: 'aggressive',
+    color: 0x99bbdd,
+  },
+  frozenSkeleton: {
+    id: 'frozenSkeleton',
+    nameKey: 'monster.frozenSkeleton',
+    spriteKey: 'monster-skeleton',  // reuse skeleton (ice color)
+    baseHp: 25,
+    baseAtk: 18,
+    baseDef: 16,
+    baseSpd: 8,
+    expReward: 26,
+    goldReward: 16,
+    drops: [],
+    aiPattern: 'defensive',
+    color: 0xaaddee,
+  },
+
+  // Desert Tomb zone
+  sandWraith: {
+    id: 'sandWraith',
+    nameKey: 'monster.sandWraith',
+    spriteKey: 'monster-wraith',
+    baseHp: 35,
+    baseAtk: 26,
+    baseDef: 14,
+    baseSpd: 16,
+    expReward: 42,
+    goldReward: 25,
+    drops: [],
+    aiPattern: 'aggressive',
+    color: 0xccaa66,
+  },
+  mummy: {
+    id: 'mummy',
+    nameKey: 'monster.mummy',
+    spriteKey: 'monster-golem',  // reuse golem shape (wrapped)
+    baseHp: 42,
+    baseAtk: 24,
+    baseDef: 20,
+    baseSpd: 6,
+    expReward: 45,
+    goldReward: 28,
+    drops: [{ itemId: 'potion', chance: 0.1 }],
+    aiPattern: 'defensive',
+    color: 0xbbaa77,
+  },
+
+  // Bandit Hideout zone
+  banditArcher: {
+    id: 'banditArcher',
+    nameKey: 'monster.banditArcher',
+    spriteKey: 'monster-bandit',
+    baseHp: 28,
+    baseAtk: 24,
+    baseDef: 10,
+    baseSpd: 14,
+    expReward: 38,
+    goldReward: 22,
+    drops: [{ itemId: 'smokeBomb', chance: 0.15 }],
+    aiPattern: 'aggressive',
+    color: 0x665533,
+  },
+
+  // Magma Tunnels zone
+  magmaSlime: {
+    id: 'magmaSlime',
+    nameKey: 'monster.magmaSlime',
+    spriteKey: 'monster-slime',
+    baseHp: 45,
+    baseAtk: 26,
+    baseDef: 20,
+    baseSpd: 4,
+    expReward: 50,
+    goldReward: 30,
+    drops: [{ itemId: 'hiPotion', chance: 0.1 }],
+    aiPattern: 'defensive',
+    color: 0xff4400,
+  },
+  flameBat: {
+    id: 'flameBat',
+    nameKey: 'monster.flameBat',
+    spriteKey: 'monster-bat',
+    baseHp: 35,
+    baseAtk: 30,
+    baseDef: 12,
+    baseSpd: 20,
+    expReward: 48,
+    goldReward: 28,
+    drops: [],
+    aiPattern: 'aggressive',
+    color: 0xee5500,
+  },
 };

@@ -166,6 +166,7 @@ export class WorldMapScene extends Phaser.Scene {
   private static readonly FEMALE_NPCS = new Set([
     'villager1', 'wisewoman', 'blacksmith',
     'archaeologist', 'veteran', 'priestess',
+    'herbalist', 'scout', 'refugee', 'prophetess',
   ]);
 
   private renderNPCs(def: typeof mapDefs[string]): void {
@@ -463,6 +464,24 @@ export class WorldMapScene extends Phaser.Scene {
       return;
     }
 
+    // Block Volcanic Forge entry until Sand Golem defeated (Desert Tomb seal)
+    if (target.targetMap === 'volcanicForge'
+        && !gameState.player.state.storyFlags['boss.sandGolem.defeated']
+        && !gameState.player.state.storyFlags['boss.flameTitan.defeated']) {
+      this.isMoving = false;
+      this.showMessage(t('dungeon.volcanicForge.locked'));
+      return;
+    }
+
+    // Block Magma Tunnels entry until Sand Golem defeated
+    if (target.targetMap === 'magmaTunnels'
+        && !gameState.player.state.storyFlags['boss.sandGolem.defeated']
+        && !gameState.player.state.storyFlags['boss.lavaWyrm.defeated']) {
+      this.isMoving = false;
+      this.showMessage(t('dungeon.magmaTunnels.locked'));
+      return;
+    }
+
     // Block gate dungeon north entrance until boss defeated
     if (target.toFloor && target.toFloor > 1) {
       const targetDef = mapDefs[target.targetMap];
@@ -704,6 +723,10 @@ export class WorldMapScene extends Phaser.Scene {
         if (rand < 0.5) return { gold: 10, itemId: 'herb' };
         if (rand < 0.8) return { gold: 15 };
         return { gold: 5, itemId: 'potion' };
+      case 'sunkenCellar':
+        if (rand < 0.5) return { gold: 12, itemId: 'herb' };
+        if (rand < 0.8) return { gold: 18 };
+        return { gold: 8, itemId: 'potion' };
       case 'crystalCave':
         if (rand < 0.5) return { gold: 15, itemId: 'herb' };
         if (rand < 0.8) return { gold: 25 };
@@ -712,10 +735,26 @@ export class WorldMapScene extends Phaser.Scene {
         if (rand < 0.4) return { gold: 35, itemId: 'potion' };
         if (rand < 0.7) return { gold: 50 };
         return { gold: 25, itemId: 'hiPotion' };
+      case 'frozenLake':
+        if (rand < 0.4) return { gold: 40, itemId: 'potion' };
+        if (rand < 0.7) return { gold: 55 };
+        return { gold: 30, itemId: 'hiPotion' };
       case 'shadowCave':
         if (rand < 0.4) return { gold: 40, itemId: 'potion' };
         if (rand < 0.7) return { gold: 60 };
         return { gold: 30, itemId: 'hiPotion' };
+      case 'desertTomb':
+        if (rand < 0.4) return { gold: 60, itemId: 'hiPotion' };
+        if (rand < 0.7) return { gold: 80 };
+        return { gold: 50, itemId: 'elixir' };
+      case 'banditHideout':
+        if (rand < 0.4) return { gold: 70, itemId: 'potion' };
+        if (rand < 0.7) return { gold: 90 };
+        return { gold: 50, itemId: 'hiPotion' };
+      case 'magmaTunnels':
+        if (rand < 0.4) return { gold: 90, itemId: 'hiPotion' };
+        if (rand < 0.7) return { gold: 110 };
+        return { gold: 70, itemId: 'elixir' };
       case 'volcanicForge':
         if (rand < 0.4) return { gold: 100, itemId: 'hiPotion' };
         if (rand < 0.7) return { gold: 120 };
@@ -918,7 +957,7 @@ export class WorldMapScene extends Phaser.Scene {
           this.updateCamera();
         });
 
-        // Auto-equip legendary items on boss defeat + crystal obtain SFX
+        // Auto-equip items on boss defeat + crystal obtain SFX
         audioManager.playSfx('crystal_obtain');
         if (bossId === 'swordWraith') {
           gameState.player.addItem('excalibur', 1);
@@ -930,6 +969,34 @@ export class WorldMapScene extends Phaser.Scene {
         }
         if (bossId === 'stormHarpy') {
           gameState.player.addItem('shadowCrystal', 1);
+        }
+        // V2 dungeon reward items
+        if (bossId === 'giantToad') {
+          gameState.player.addItem('toadShield', 1);
+        }
+        if (bossId === 'giantCrab') {
+          gameState.player.addItem('coralBlade', 1);
+        }
+        if (bossId === 'serpent') {
+          gameState.player.addItem('crystalPendant', 1);
+        }
+        if (bossId === 'iceWyrm') {
+          gameState.player.addItem('frostbrand', 1);
+        }
+        if (bossId === 'dragon') {
+          gameState.player.addItem('dragonheartAmulet', 1);
+        }
+        if (bossId === 'sandGolem') {
+          gameState.player.addItem('sandstormCloak', 1);
+        }
+        if (bossId === 'banditLord') {
+          gameState.player.addItem('banditDagger', 1);
+        }
+        if (bossId === 'lavaWyrm') {
+          gameState.player.addItem('magmaBlade', 1);
+        }
+        if (bossId === 'flameTitan') {
+          gameState.player.addItem('moltenGreaves', 1);
         }
 
         // Show defeat dialog promptly (200ms — just enough for sparkle to register)
