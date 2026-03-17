@@ -139,10 +139,10 @@ export function generateOverworldMap(width: number, height: number): number[][] 
     ...pathBetween(15, 150, 45, 145),   // greenhollow → millbrook
     ...pathBetween(45, 145, 80, 140),   // millbrook → portSapphire
     ...pathBetween(80, 140, 85, 144),   // portSapphire → sunkenCellar
-    ...pathBetween(45, 145, 55, 131),   // millbrook → crystalCave S
+    ...pathBetween(45, 145, 66, 130),   // millbrook → crystalCave S
 
     // ── Act 2 — between river and mountains (y=102-130) ──
-    ...pathBetween(55, 129, 70, 118),   // crystalCave N → ironkeep
+    ...pathBetween(66, 127, 70, 118),   // crystalCave N → ironkeep
     ...pathBetween(70, 118, 35, 112),   // ironkeep → highwatch
     ...pathBetween(35, 112, 15, 115),   // highwatch → stormNest (hidden path)
     ...pathBetween(35, 112, 25, 108),   // highwatch → frozenLake
@@ -320,7 +320,7 @@ export function generateOverworldMap(width: number, height: number): number[][] 
   const caveDungeons: [number, number][] = [
     // Act 1
     [25, 148], [85, 144],             // Misty Grotto, Sunken Cellar
-    [55, 131], [55, 129],             // Crystal Cave S/N
+    [66, 130], [66, 127],             // Crystal Cave S/N
     // Act 2
     [15, 115], [25, 108],             // Storm Nest, Frozen Lake
     [90, 102], [90, 100],             // Shadow Cave S/N
@@ -462,12 +462,17 @@ export function generateOverworldMap(width: number, height: number): number[][] 
 
   // ── Phase 9: Post-adjacency terrain overrides ──
 
-  // Crystal Cave: water at y=130 blocks direct passage between S(55,131) and N(55,129)
-  for (let wx = 52; wx <= 58; wx++) {
+  // Crystal Cave: water at y=128-129 blocks passage between S(66,130) and N(66,127)
+  // Phase 8 clears adjacent tiles around cave markers, so we re-add water here
+  for (let wx = 63; wx <= 69; wx++) {
     if (wx >= 2 && wx < width - 2) {
-      map[130][wx] = 2;
+      map[128][wx] = 2;
+      map[129][wx] = 2;
     }
   }
+  // Ensure cave tiles are preserved (Phase 8 stamps them, Phase 9 must not overwrite)
+  map[127][66] = 7;  // north exit
+  map[130][66] = 7;  // south entrance
 
   // Shadow Cave: mountain north of Act 2 entrance, walkable north of Act 3 exit
   map[101][90] = 4;  // mountain — north of SC S (90,102)

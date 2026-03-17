@@ -57,8 +57,8 @@ export const mapDefs: Record<string, MapDef> = {
       { targetMap: 'mistyGrotto', fromX: 25, fromY: 148, toX: 7, toY: 1 },
       { targetMap: 'sunkenCellar', fromX: 85, fromY: 144, toX: 7, toY: 1 },
       // Crystal Cave: gate dungeon (S entrance Act 1 side, N exit Act 2 side)
-      { targetMap: 'crystalCave', fromX: 55, fromY: 131, toX: 10, toY: 61 },
-      { targetMap: 'crystalCave', fromX: 55, fromY: 129, toX: 10, toY: 1 },
+      { targetMap: 'crystalCave', fromX: 66, fromY: 130, toX: 10, toY: 61 },
+      { targetMap: 'crystalCave', fromX: 66, fromY: 127, toX: 10, toY: 1 },
 
       // ── Act 2 Dungeons ──
       { targetMap: 'stormNest', fromX: 15, fromY: 115, toX: 12, toY: 1 },
@@ -308,8 +308,8 @@ export const mapDefs: Record<string, MapDef> = {
     width: 21,
     height: 63,
     connections: [
-      { targetMap: 'overworld', fromX: 10, fromY: 62, toX: 55, toY: 132 },  // south exit → Act 1
-      { targetMap: 'overworld', fromX: 10, fromY: 0, toX: 55, toY: 128 },   // north exit → Act 2
+      { targetMap: 'overworld', fromX: 10, fromY: 62, toX: 66, toY: 131 },  // south exit → Act 1
+      { targetMap: 'overworld', fromX: 10, fromY: 0, toX: 66, toY: 126 },   // north exit → Act 2
     ],
     npcs: [],
     bossId: 'serpent',
