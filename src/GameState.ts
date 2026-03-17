@@ -2,7 +2,7 @@ import { Player } from './entities/Player';
 import { QuizManager } from './systems/quiz/QuizManager';
 import { EncounterManager } from './systems/combat/EncounterManager';
 import { SaveManager } from './systems/progression/SaveManager';
-import { GradeLevel } from './utils/types';
+import { GradeLevel, HeroColorScheme } from './utils/types';
 import { setLocale, getLocale } from './i18n/i18n';
 import { audioManager } from './systems/audio/AudioManager';
 
@@ -15,12 +15,14 @@ class GameStateManager {
   /** Dev mode: no encounters + 999 ATK. Activate via ?dev=1 in URL. */
   devMode = new URLSearchParams(window.location.search).get('dev') === '1';
 
-  newGame(difficulty: GradeLevel): void {
+  newGame(difficulty: GradeLevel, heroName = 'Hero', heroColor: HeroColorScheme = 'gray'): void {
     // Propagate dev mode to Player (avoids circular import)
     Player.devMode = this.devMode;
     // Preserve current locale selection (set on title screen) before Player reset
     const currentLocale = getLocale();
     this.player = new Player();
+    this.player.state.name = heroName;
+    this.player.state.heroColor = heroColor;
     this.player.state.locale = currentLocale;
     this.quizManager = new QuizManager();
     this.quizManager.setDifficulty(difficulty);

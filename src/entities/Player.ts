@@ -5,6 +5,7 @@ import { MAX_LEVEL, MAX_INVENTORY_SIZE, GOLD_SELL_RATIO } from '../utils/constan
 
 const DEFAULT_STATE: PlayerState = {
   name: 'Hero',
+  heroColor: 'gray',
   level: 1,
   exp: 0,
   expToNext: expTable[2],

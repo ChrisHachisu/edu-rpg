@@ -1,29 +1,52 @@
 import Phaser from 'phaser';
+import type { HeroColorScheme } from './types';
 
 // Procedural pixel art generator — creates all game sprites at runtime
 // so we don't need any external image files
 
+// Hero color scheme definitions
+export const HERO_COLOR_SCHEMES: Record<HeroColorScheme, {
+  armor: number; armorDark: number; helmet: number;
+  plume: number; cape: number; capeDark: number;
+  shield: number; shieldEdge: number;
+}> = {
+  gray:  { armor: 0x8899bb, armorDark: 0x667799, helmet: 0x7788aa, plume: 0xcc2222, cape: 0x2244aa, capeDark: 0x1a3388, shield: 0x2244aa, shieldEdge: 0xddaa33 },
+  blue:  { armor: 0x4477dd, armorDark: 0x3355aa, helmet: 0x3366cc, plume: 0xffffff, cape: 0x2255cc, capeDark: 0x1a44aa, shield: 0x2255cc, shieldEdge: 0xccccdd },
+  pink:  { armor: 0xcc6699, armorDark: 0xaa4477, helmet: 0xbb5588, plume: 0xffeeff, cape: 0xdd4488, capeDark: 0xbb3366, shield: 0xdd4488, shieldEdge: 0xffc0cb },
+  black: { armor: 0x444455, armorDark: 0x333344, helmet: 0x333344, plume: 0xcc2222, cape: 0x222233, capeDark: 0x111122, shield: 0x333344, shieldEdge: 0x888899 },
+};
+
 export function generateAssets(scene: Phaser.Scene): void {
-  generateHeroSprites(scene);
+  generateHeroSprites(scene, 'gray');
   generateMonsterSprites(scene);
   generateTilesets(scene);
   generateUIAssets(scene);
 }
 
-function drawKnight(g: Phaser.GameObjects.Graphics, ox: number, oy: number, dir: number, frame: number): void {
+/** Regenerate hero sprites with the given color scheme */
+export function regenerateHeroSprites(scene: Phaser.Scene, scheme: HeroColorScheme): void {
+  // Remove old texture if it exists
+  if (scene.textures.exists('hero-walk')) {
+    scene.textures.remove('hero-walk');
+  }
+  generateHeroSprites(scene, scheme);
+}
+
+function drawKnight(g: Phaser.GameObjects.Graphics, ox: number, oy: number, dir: number, frame: number, scheme: HeroColorScheme = 'gray'): void {
   // dir: 0=down, 1=left, 2=right, 3=up
-  // Knight colors
-  const armor = 0x8899bb;      // Silver-blue armor
-  const armorDark = 0x667799;  // Darker armor
-  const helmet = 0x7788aa;     // Helmet
-  const visor = 0x222233;      // Visor/face guard
-  const plume = 0xcc2222;      // Red plume on helmet
-  const cape = 0x2244aa;       // Blue cape
-  const capeDark = 0x1a3388;
+  // Knight colors from scheme
+  const cs = HERO_COLOR_SCHEMES[scheme];
+  const armor = cs.armor;
+  const armorDark = cs.armorDark;
+  const helmet = cs.helmet;
+  const visor = 0x222233;      // Visor/face guard (always dark)
+  const plume = cs.plume;
+  const cape = cs.cape;
+  const capeDark = cs.capeDark;
   const sword = 0xccccdd;      // Sword blade
   const hilt = 0xddaa33;       // Gold hilt
-  const shield = 0x2244aa;     // Blue shield
-  const shieldEdge = 0xddaa33; // Gold shield edge
+  const shield = cs.shield;
+  const shieldEdge = cs.shieldEdge;
   const boots = 0x554433;
 
   const legOffset = frame === 1 ? 1 : frame === 2 ? -1 : 0;
@@ -52,11 +75,11 @@ function drawKnight(g: Phaser.GameObjects.Graphics, ox: number, oy: number, dir:
     // Plume on top
     g.fillStyle(plume);
     g.fillRect(ox + 7, oy + 0, 2, 2);
-    // Sword in right hand
+    // Sword in right hand (blade longer upward)
     g.fillStyle(sword);
     g.fillRect(ox + 11, oy + 4, 2, 7);
     g.fillStyle(hilt);
-    g.fillRect(ox + 10, oy + 6, 4, 1);
+    g.fillRect(ox + 10, oy + 8, 4, 1);
     // Shield in left hand
     g.fillStyle(shield);
     g.fillRect(ox + 2, oy + 5, 3, 5);
@@ -98,11 +121,11 @@ function drawKnight(g: Phaser.GameObjects.Graphics, ox: number, oy: number, dir:
     g.fillStyle(shieldEdge);
     g.fillRect(ox + 2, oy + 5, 1, 5);
     g.fillRect(ox + 4, oy + 5, 1, 5);
-    // Sword behind
+    // Sword behind (blade longer upward)
     g.fillStyle(sword);
     g.fillRect(ox + 10, oy + 3, 1, 8);
     g.fillStyle(hilt);
-    g.fillRect(ox + 9, oy + 6, 3, 1);
+    g.fillRect(ox + 9, oy + 8, 3, 1);
     // Boots
     g.fillStyle(boots);
     g.fillRect(ox + 5 + legOffset, oy + 12, 3, 3);
@@ -132,11 +155,11 @@ function drawKnight(g: Phaser.GameObjects.Graphics, ox: number, oy: number, dir:
     // Plume
     g.fillStyle(plume);
     g.fillRect(ox + 7, oy + 0, 2, 2);
-    // Sword in front (right side)
+    // Sword in front (right side, blade longer upward)
     g.fillStyle(sword);
     g.fillRect(ox + 12, oy + 3, 1, 8);
     g.fillStyle(hilt);
-    g.fillRect(ox + 11, oy + 6, 3, 1);
+    g.fillRect(ox + 11, oy + 8, 3, 1);
     // Shield behind
     g.fillStyle(shield);
     g.fillRect(ox + 11, oy + 5, 3, 5);
@@ -166,11 +189,11 @@ function drawKnight(g: Phaser.GameObjects.Graphics, ox: number, oy: number, dir:
     g.fillStyle(plume);
     g.fillRect(ox + 7, oy + 0, 2, 3);
     g.fillRect(ox + 6, oy + 0, 4, 1);
-    // Sword on back
+    // Sword on back (blade longer upward)
     g.fillStyle(sword);
     g.fillRect(ox + 11, oy + 2, 1, 9);
     g.fillStyle(hilt);
-    g.fillRect(ox + 10, oy + 5, 3, 1);
+    g.fillRect(ox + 10, oy + 7, 3, 1);
     // Shield on back
     g.fillStyle(shield);
     g.fillRect(ox + 3, oy + 4, 2, 4);
@@ -181,7 +204,7 @@ function drawKnight(g: Phaser.GameObjects.Graphics, ox: number, oy: number, dir:
   }
 }
 
-function generateHeroSprites(scene: Phaser.Scene): void {
+function generateHeroSprites(scene: Phaser.Scene, scheme: HeroColorScheme = 'gray'): void {
   // Hero walking sprite sheet: 4 directions × 3 frames = 12 frames, each 16×16
   const g = scene.add.graphics().setVisible(false);
   const frameW = 16, frameH = 16;
@@ -189,7 +212,7 @@ function generateHeroSprites(scene: Phaser.Scene): void {
   for (let dir = 0; dir < 4; dir++) {
     for (let frame = 0; frame < 3; frame++) {
       const ox = (dir * 3 + frame) * frameW;
-      drawKnight(g, ox, 0, dir, frame);
+      drawKnight(g, ox, 0, dir, frame, scheme);
     }
   }
 

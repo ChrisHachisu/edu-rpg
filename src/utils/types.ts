@@ -44,8 +44,11 @@ export interface Position {
   floor?: number; // 1-based floor index within multi-floor dungeons
 }
 
+export type HeroColorScheme = 'gray' | 'blue' | 'pink' | 'black';
+
 export interface PlayerState {
   name: string;
+  heroColor: HeroColorScheme;
   level: number;
   exp: number;
   expToNext: number;

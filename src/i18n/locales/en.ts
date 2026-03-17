@@ -7,6 +7,14 @@ export const enStrings: Record<string, string> = {
   'title.settings': 'Settings',
   'title.pressStart': 'Press ENTER to Start',
 
+  // Character Creation
+  'create.title': 'Create Your Hero',
+  'create.name': 'Hero Name',
+  'create.namePlaceholder': 'Enter name...',
+  'create.color': 'Hero Color',
+  'create.startGame': 'Start Game',
+  'create.nameRequired': 'Please enter a name!',
+
   // Settings
   'settings.title': 'Settings',
   'settings.difficulty': 'Quiz Difficulty',

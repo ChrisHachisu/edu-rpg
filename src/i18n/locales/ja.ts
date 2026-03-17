@@ -7,6 +7,14 @@ export const jaStrings: Record<string, string> = {
   'title.settings': 'せってい',
   'title.pressStart': 'エンターキーでスタート',
 
+  // Character Creation
+  'create.title': 'ゆうしゃをつくろう',
+  'create.name': 'なまえ',
+  'create.namePlaceholder': 'なまえをいれてね...',
+  'create.color': 'いろ',
+  'create.startGame': 'ぼうけんにでる',
+  'create.nameRequired': 'なまえをいれてね！',
+
   // Settings
   'settings.title': 'せってい',
   'settings.difficulty': 'もんだいのむずかしさ',
