@@ -132,8 +132,8 @@ export const enStrings: Record<string, string> = {
   'npc.blacksmith': 'I make the best gear around! Before heading east, try the Storm Nest to the west. You\'ll need what you find there!',
 
   // Highwatch (Act 2)
-  'npc.scout': 'From this watchtower I can see the Frozen Lake to the west. They say an Ice Wyrm sleeps beneath the ice... and guards a powerful blade!',
-  'npc.mountaineer': 'The mountains are treacherous. Be sure to stock up on potions before venturing into the caves!',
+  'npc.scout': 'Head west to the Frozen Lake first! An Ice Wyrm guards a legendary blade there. You\'ll need that weapon before tackling what lies to the east.',
+  'npc.mountaineer': 'Far to the east lies the Storm Nest... a winding, treacherous path through the mountains. Only go there once you\'re strong enough. The Storm Harpy is no joke!',
 
   // Oasis Haven (Act 3)
   'npc.oasisElder': 'The Desert Tomb to the east holds an ancient guardian. Defeat it, and the way to the volcanic region will open!',

@@ -61,8 +61,8 @@ export const mapDefs: Record<string, MapDef> = {
       { targetMap: 'crystalCave', fromX: 66, fromY: 127, toX: 10, toY: 1 },
 
       // ── Act 2 Dungeons ──
-      { targetMap: 'stormNest', fromX: 15, fromY: 115, toX: 12, toY: 1 },
-      { targetMap: 'frozenLake', fromX: 25, fromY: 108, toX: 12, toY: 1 },
+      { targetMap: 'stormNest', fromX: 100, fromY: 112, toX: 12, toY: 1 },
+      { targetMap: 'frozenLake', fromX: 25, fromY: 108, toX: 10, toY: 2 },
       // Shadow Cave: gate dungeon (S entrance Act 2 side, N exit Act 3 side)
       { targetMap: 'shadowCave', fromX: 90, fromY: 102, toX: 12, toY: 1 },
       { targetMap: 'shadowCave', fromX: 90, fromY: 100, toX: 12, toY: 23, toFloor: 5 },
@@ -327,7 +327,7 @@ export const mapDefs: Record<string, MapDef> = {
     width: 25,
     height: 25,
     connections: [
-      { targetMap: 'overworld', fromX: 12, fromY: 0, toX: 15, toY: 116 },
+      { targetMap: 'overworld', fromX: 12, fromY: 0, toX: 100, toY: 113 },
     ],
     npcs: [],
     bossId: 'stormHarpy',

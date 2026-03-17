@@ -698,9 +698,19 @@ export class WorldMapScene extends Phaser.Scene {
 
     // Change tile to opened (cracked floor)
     this.mapData[y][x] = 8; // opened treasure tile
-    this.renderMap();
-    this.createHero();
-    this.updateCamera();
+    // Update just the single tile sprite — no full re-render to avoid camera snap
+    const tileIdx = y * this.mapData[0].length + x;
+    const tileObj = this.tileLayer.getAt(tileIdx) as Phaser.GameObjects.Image;
+    const prefix = mapDefs[this.currentMapId].castle ? 'castle' : 'dng';
+    tileObj.setTexture(`${prefix}-8`);
+    // Face the hero toward the chest
+    const dx = x - this.heroTileX, dy = y - this.heroTileY;
+    if (Math.abs(dx) > Math.abs(dy)) {
+      this.heroDir = dx > 0 ? 2 : 1; // right or left
+    } else {
+      this.heroDir = dy > 0 ? 0 : 3; // down or up
+    }
+    this.hero.setFrame(this.heroDir * 3);
 
     // Determine reward based on dungeon difficulty
     const goldReward = this.getTreasureReward();

@@ -144,7 +144,12 @@ export function generateOverworldMap(width: number, height: number): number[][] 
     // ── Act 2 — between river and mountains (y=102-130) ──
     ...pathBetween(66, 127, 70, 118),   // crystalCave N → ironkeep
     ...pathBetween(70, 118, 35, 112),   // ironkeep → highwatch
-    ...pathBetween(35, 112, 15, 115),   // highwatch → stormNest (hidden path)
+    // highwatch → stormNest (windy east path via waypoints)
+    ...pathBetween(35, 112, 50, 108),
+    ...pathBetween(50, 108, 65, 116),
+    ...pathBetween(65, 116, 80, 108),
+    ...pathBetween(80, 108, 95, 114),
+    ...pathBetween(95, 114, 100, 112),
     ...pathBetween(35, 112, 25, 108),   // highwatch → frozenLake
     ...pathBetween(70, 118, 90, 102),   // ironkeep → shadowCave S
 
@@ -322,7 +327,7 @@ export function generateOverworldMap(width: number, height: number): number[][] 
     [25, 148], [85, 144],             // Misty Grotto, Sunken Cellar
     [66, 130], [66, 127],             // Crystal Cave S/N
     // Act 2
-    [15, 115], [25, 108],             // Storm Nest, Frozen Lake
+    [100, 112], [25, 108],            // Storm Nest (far east), Frozen Lake
     [90, 102], [90, 100],             // Shadow Cave S/N
     // Act 3
     [60, 95], [35, 88],               // Desert Tomb, Bandit Hideout
@@ -473,6 +478,27 @@ export function generateOverworldMap(width: number, height: number): number[][] 
   // Ensure cave tiles are preserved (Phase 8 stamps them, Phase 9 must not overwrite)
   map[127][66] = 7;  // north exit
   map[130][66] = 7;  // south entrance
+
+  // Storm Nest approach: scatter tree/mountain obstacles along the windy path
+  // This makes the route feel treacherous — player must weave through obstacles
+  const stormObstacles: [number, number, number][] = [
+    // Tree clusters flanking the path segments
+    [45, 106, 3], [45, 110, 3], [48, 107, 4], [52, 110, 3],
+    [55, 114, 3], [58, 112, 4], [60, 117, 3], [63, 114, 4],
+    [68, 108, 3], [72, 110, 4], [75, 106, 3], [78, 112, 3],
+    [82, 110, 4], [85, 114, 3], [88, 110, 4], [92, 112, 3],
+    [95, 110, 4], [98, 114, 3],
+    // Mountain blocks near the cave entrance
+    [102, 110, 4], [102, 114, 4], [99, 110, 4],
+  ];
+  for (const [ox, oy, tile] of stormObstacles) {
+    if (ox >= 2 && ox < width - 2 && oy >= 2 && oy < height - 2) {
+      // Don't overwrite path, town, cave, or castle tiles
+      if (map[oy][ox] === 0 || map[oy][ox] === 3) {
+        map[oy][ox] = tile;
+      }
+    }
+  }
 
   // Shadow Cave: mountain north of Act 2 entrance, walkable north of Act 3 exit
   map[101][90] = 4;  // mountain — north of SC S (90,102)
@@ -940,16 +966,58 @@ export function generateDungeonMap(
   const isWallTile = (x: number, y: number) =>
     y < 0 || y >= height || x < 0 || x >= width || map[y][x] === 1 || map[y][x] === 5;
 
+  const isWalkable = (t: number) => t !== 1 && t !== 5 && t !== 4 && t !== 7 && t !== 8;
+
   const isValidTreasureSpot = (x: number, y: number): boolean => {
     const nWall = isWallTile(x, y - 1);
     const sWall = isWallTile(x, y + 1);
     const wWall = isWallTile(x - 1, y);
     const eWall = isWallTile(x + 1, y);
+    // Must have at least one wall neighbor
     if (!nWall && !sWall && !wWall && !eWall) return false;
+    // Not in a straight corridor (open on opposite sides)
     if (!nWall && !sWall) return false;
     if (!wWall && !eWall) return false;
+    // Not at an intersection (3+ open sides — would block multi-path travel)
+    const openCount = [!nWall, !sWall, !wWall, !eWall].filter(Boolean).length;
+    if (openCount >= 3) return false;
     return true;
   };
+
+  // BFS reachability check: can we walk from (sx,sy) to (gx,gy) without crossing blockedSet?
+  const canReach = (sx: number, sy: number, gx: number, gy: number, blocked: Set<string>): boolean => {
+    if (sx === gx && sy === gy) return true;
+    const visited = new Set<string>();
+    const queue: [number, number][] = [[sx, sy]];
+    visited.add(`${sx},${sy}`);
+    while (queue.length > 0) {
+      const [cx, cy] = queue.shift()!;
+      for (const [dx, dy] of [[0, -1], [0, 1], [-1, 0], [1, 0]]) {
+        const nx = cx + dx, ny = cy + dy;
+        const key = `${nx},${ny}`;
+        if (nx === gx && ny === gy) return true;
+        if (nx < 0 || nx >= width || ny < 0 || ny >= height) continue;
+        if (visited.has(key) || blocked.has(key)) continue;
+        if (!isWalkable(map[ny][nx])) continue;
+        visited.add(key);
+        queue.push([nx, ny]);
+      }
+    }
+    return false;
+  };
+
+  // Find the critical destination tile (stairs-down or boss)
+  let goalX = entranceX, goalY = height - 2;
+  for (let y2 = height - 1; y2 >= 0; y2--) {
+    for (let x2 = 0; x2 < width; x2++) {
+      if (map[y2][x2] === 9 || map[y2][x2] === 7 || map[y2][x2] === 6 && y2 === height - 1) {
+        goalX = x2; goalY = y2; break;
+      }
+    }
+    if (goalX !== entranceX || goalY !== height - 2) break;
+  }
+
+  const placedChests = new Set<string>();
 
   for (let ti = treasurePositions.length - 1; ti >= 0; ti--) {
     const [tx, ty] = treasurePositions[ti];
@@ -958,22 +1026,36 @@ export function generateDungeonMap(
       continue;
     }
 
+    let placed = false;
     if (isValidTreasureSpot(tx, ty)) {
-      map[ty][tx] = 4;
-    } else {
+      // Verify placing here doesn't block path from entrance to goal
+      const testBlocked = new Set([...placedChests, `${tx},${ty}`]);
+      if (canReach(entranceX, 1, goalX, goalY, testBlocked)) {
+        map[ty][tx] = 4;
+        placedChests.add(`${tx},${ty}`);
+        placed = true;
+      }
+    }
+
+    if (!placed) {
+      // Relocate to a room spot that doesn't block paths
       let relocated = false;
       for (const room of shuffleArray([...rooms], rand)) {
         const candidates: [number, number][] = [];
         for (let rx = room.x; rx < room.x + room.w; rx++) {
           for (let ry = room.y; ry < room.y + room.h; ry++) {
             if ((map[ry][rx] === 0 || map[ry][rx] === 2) && isValidTreasureSpot(rx, ry)) {
-              candidates.push([rx, ry]);
+              const tb = new Set([...placedChests, `${rx},${ry}`]);
+              if (canReach(entranceX, 1, goalX, goalY, tb)) {
+                candidates.push([rx, ry]);
+              }
             }
           }
         }
         if (candidates.length > 0) {
           const [cx, cy] = candidates[Math.floor(rand() * candidates.length)];
           map[cy][cx] = 4;
+          placedChests.add(`${cx},${cy}`);
           treasurePositions[ti] = [cx, cy];
           relocated = true;
           break;
