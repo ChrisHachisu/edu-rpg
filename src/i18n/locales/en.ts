@@ -123,7 +123,7 @@ export const enStrings: Record<string, string> = {
   'npc.wisewoman': 'The crystals give power to those who study hard. Keep learning, hero!',
 
   // Ironkeep (Act 2)
-  'npc.soldier': 'A dark barrier seals the Shadow Cave to the east. But there\'s a cave far to the west where a Storm Harpy guards a crystal that can break the seal!',
+  'npc.soldier': 'A dark barrier seals the Shadow Cave to the north. But there\'s a cave far to the west where a Storm Harpy guards a crystal that can break the seal!',
   'npc.blacksmith': 'I make the best gear around! Before heading east, try the Storm Nest to the west. You\'ll need what you find there!',
 
   // Ruins Camp (Act 3/4)

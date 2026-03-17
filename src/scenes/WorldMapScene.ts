@@ -945,7 +945,7 @@ export class WorldMapScene extends Phaser.Scene {
           } else if (bossId === 'celestialGuardian') {
             this.showDialogSequence([defeatMsg, t('legendary.aegis.obtained'), victoryMsg], onDone);
           } else if (bossId === 'stormHarpy') {
-            this.showDialogSequence([defeatMsg, t('item.shadowCrystal.obtained'), victoryMsg], onDone);
+            this.showDialogSequence([defeatMsg, victoryMsg, t('item.shadowCrystal.obtained')], onDone);
           } else {
             this.showDialogSequence([defeatMsg, victoryMsg], onDone);
           }
