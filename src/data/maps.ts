@@ -47,9 +47,9 @@ export const mapDefs: Record<string, MapDef> = {
       { targetMap: 'mistyGrotto', fromX: 16, fromY: 106, toX: 7, toY: 1 },
       { targetMap: 'crystalCave', fromX: 40, fromY: 97, toX: 10, toY: 61 },
       { targetMap: 'crystalCave', fromX: 40, fromY: 95, toX: 10, toY: 1 },
-      { targetMap: 'shadowCave', fromX: 50, fromY: 83, toX: 12, toY: 1 },
-      { targetMap: 'shadowCave', fromX: 50, fromY: 79, toX: 12, toY: 23, toFloor: 5 },
-      { targetMap: 'volcanicForge', fromX: 8, fromY: 63, toX: 12, toY: 1 },
+      { targetMap: 'shadowCave', fromX: 50, fromY: 82, toX: 12, toY: 1 },
+      { targetMap: 'shadowCave', fromX: 50, fromY: 80, toX: 12, toY: 23, toFloor: 5 },
+      { targetMap: 'volcanicForge', fromX: 8, fromY: 62, toX: 12, toY: 1 },
       { targetMap: 'volcanicForge', fromX: 8, fromY: 59, toX: 12, toY: 23, toFloor: 7 },
       { targetMap: 'demonCastle', fromX: 40, fromY: 10, toX: 16, toY: 31 },
       // ── Hidden legendary dungeons (Act 5 — deep in maze) ──
@@ -193,8 +193,8 @@ export const mapDefs: Record<string, MapDef> = {
     width: 25,
     height: 25,
     connections: [
-      { targetMap: 'overworld', fromX: 12, fromY: 0, toX: 50, toY: 84 },  // south exit (floor 1)
-      { targetMap: 'overworld', fromX: 12, fromY: 24, toX: 50, toY: 78 }, // north exit (floor 5)
+      { targetMap: 'overworld', fromX: 12, fromY: 0, toX: 50, toY: 83 },  // south exit (floor 1)
+      { targetMap: 'overworld', fromX: 12, fromY: 24, toX: 50, toY: 79 }, // north exit (floor 5)
     ],
     npcs: [],
     bossId: 'dragon',
@@ -211,8 +211,8 @@ export const mapDefs: Record<string, MapDef> = {
     width: 25,
     height: 25,
     connections: [
-      { targetMap: 'overworld', fromX: 12, fromY: 0, toX: 8, toY: 64 },   // south exit (floor 1)
-      { targetMap: 'overworld', fromX: 12, fromY: 24, toX: 8, toY: 58 },  // north exit (floor 7)
+      { targetMap: 'overworld', fromX: 12, fromY: 0, toX: 8, toY: 63 },   // south exit (floor 1)
+      { targetMap: 'overworld', fromX: 12, fromY: 24, toX: 10, toY: 59 },  // north exit (floor 7) — east of entrance
     ],
     npcs: [],
     bossId: 'flameTitan',

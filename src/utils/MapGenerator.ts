@@ -83,14 +83,14 @@ export function generateOverworldMap(width: number, height: number): number[][] 
     // (NO path between Crystal Cave S and N — water blocks direct passage)
     // ── Act 2 — between river and mountains (y=81-97) ──
     ...pathBetween(40, 95, 48, 89),    // crystalCave N → ironkeep
-    ...pathBetween(48, 89, 50, 83),    // ironkeep → shadowCave S
-    ...pathBetween(50, 83, 50, 79),    // guide through mountain gap
+    ...pathBetween(48, 89, 50, 82),    // ironkeep → shadowCave S
+    ...pathBetween(50, 82, 50, 80),    // guide through mountain gap
     // ── Act 3/4 — between mountains and lava (y=63-79) ──
-    ...pathBetween(50, 79, 20, 68),    // shadowCave N → ruinsCamp (relocated west)
-    ...pathBetween(20, 68, 8, 63),     // ruinsCamp → volcanicForge S (relocated west)
-    ...pathBetween(8, 63, 8, 59),      // guide through lava gap
+    ...pathBetween(50, 80, 20, 68),    // shadowCave N → ruinsCamp (relocated west)
+    ...pathBetween(20, 68, 8, 62),     // ruinsCamp → volcanicForge S
+    // (NO path between VF S and VF N — mountains block direct passage)
     // ── Act 5 main road — north of lava (y=2-61) ──
-    ...pathBetween(8, 59, 56, 54),     // volcanicForge N → lastBastion
+    ...pathBetween(10, 59, 56, 54),    // volcanicForge N exit (east) → lastBastion
     ...pathBetween(56, 54, 40, 22),    // lastBastion → south end of Demon Castle land bridge
     // NO paths to Sealed Sanctum or Celestial Vault — must explore maze
   ];
@@ -204,8 +204,8 @@ export function generateOverworldMap(width: number, height: number): number[][] 
   // ── Phase 6: Dungeon entrance markers ──
   const caveDungeons: [number, number][] = [
     [16, 106], [40, 97], [40, 95],  // Act 1→2: Misty Grotto, Crystal Cave S/N
-    [50, 83], [50, 79],              // Act 2→3: Shadow Cave S/N
-    [8, 63], [8, 59],                // Act 3/4→5: Volcanic Forge S/N (relocated west)
+    [50, 82], [50, 80],              // Act 2→3: Shadow Cave S/N (touching mountains)
+    [8, 62], [8, 59],                // Act 3/4→5: Volcanic Forge S/N (relocated west)
     [4, 46], [75, 46],               // Legendary: Sanctum, Vault
   ];
   for (const [dx, dy] of caveDungeons) {
@@ -309,12 +309,25 @@ export function generateOverworldMap(width: number, height: number): number[][] 
     }
   }
 
-  // ── Phase 9: Water barrier between Crystal Cave entrances ──
-  // Placed AFTER marker adjacency clearing so it isn't removed.
-  // Crystal Cave S is at (40,97), N is at (40,95) — water at y=96 blocks direct passage.
+  // ── Phase 9: Post-adjacency terrain overrides ──
+  // Placed AFTER marker adjacency clearing so they aren't removed.
+
+  // Crystal Cave: water at y=96 blocks direct passage between S(40,97) and N(40,95)
   for (let wx = 37; wx <= 43; wx++) {
     map[96][wx] = 2; // water strip
   }
+
+  // Volcanic Forge: mountains fill between S(8,62) and N(8,59)
+  map[60][8] = 4; // mountain
+  map[61][8] = 4; // mountain
+
+  // Volcanic Forge N: mountains surround N/S/W — player exits east
+  map[58][8] = 4; // north of VF N
+  map[60][8] = 4; // south of VF N (already set above)
+  map[59][7] = 4; // west of VF N
+  // Ensure east exit tile is walkable
+  map[59][9] = 1;
+  map[59][10] = 1;
 
   return map;
 }
