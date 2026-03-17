@@ -101,6 +101,7 @@ export const jaStrings: Record<string, string> = {
   'shop.cantAfford': 'おかねが たりない！',
   'shop.inventoryFull': 'もちものが いっぱいだ！',
   'shop.cantSell': 'この どうぐは うれません！',
+  'shop.done': 'もどる',
 
   // ── Intro Dialog (3 messages) ────────────────────────────────────
   'intro.elder1': 'よくきたな わかきゆうしゃよ。わしは グリーンホロウむらの ちょうろうじゃ。くらいじだいが やってきた…',

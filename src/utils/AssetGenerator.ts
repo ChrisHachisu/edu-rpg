@@ -238,7 +238,7 @@ function generateMonsterSprites(scene: Phaser.Scene): void {
     { key: 'monster-fireElemental', color: 0xff6622, shape: 'slime' },
     { key: 'monster-lavaGolem', color: 0xcc3311, shape: 'golem' },
     { key: 'monster-lich', color: 0x225533, shape: 'boss' },
-    { key: 'monster-flameTitan', color: 0xee4400, shape: 'dragon' },
+    { key: 'monster-flameTitan', color: 0xee4400, shape: 'golem' },
     // Act 5
     { key: 'monster-chimera', color: 0x996633, shape: 'chimera' },
     { key: 'monster-demon', color: 0x881122, shape: 'chimera' },
@@ -647,7 +647,11 @@ function drawMonster(g: Phaser.GameObjects.Graphics, shape: string, color: numbe
     }
 
     case 'golem': {
-      // Rocky body with cracks, glowing eyes, moss
+      // Rocky body with cracks, glowing eyes, moss/magma
+      // Warm-colored golems (red channel > 0xaa) get fiery accents instead of moss
+      const isWarm = ((color >> 16) & 0xff) > 0xaa;
+      const eyeGlow = isWarm ? 0xff6600 : 0x44ff88;
+      const mossColor = isWarm ? 0xcc6622 : 0x447744;
       // Body — blocky
       g.fillStyle(color);
       g.fillRect(cx - 12, cy - 2, 24, 22);
@@ -657,7 +661,7 @@ function drawMonster(g: Phaser.GameObjects.Graphics, shape: string, color: numbe
       g.fillRect(cx - 10, cy + 8, 20, 2);
       g.fillRect(cx - 10, cy + 14, 20, 2);
       // Cracks
-      g.lineStyle(1, 0x555544);
+      g.lineStyle(1, isWarm ? 0xff4400 : 0x555544);
       g.lineBetween(cx - 4, cy - 2, cx - 6, cy + 6);
       g.lineBetween(cx - 6, cy + 6, cx - 2, cy + 12);
       g.lineBetween(cx + 6, cy + 2, cx + 8, cy + 10);
@@ -672,11 +676,11 @@ function drawMonster(g: Phaser.GameObjects.Graphics, shape: string, color: numbe
       g.fillStyle(0x000000);
       g.fillRect(cx - 7, cy - 12, 6, 4);
       g.fillRect(cx + 1, cy - 12, 6, 4);
-      g.fillStyle(0x44ff88);
+      g.fillStyle(eyeGlow);
       g.fillRect(cx - 6, cy - 11, 4, 2);
       g.fillRect(cx + 2, cy - 11, 4, 2);
-      // Mossy patches
-      g.fillStyle(0x447744, 0.6);
+      // Mossy patches (or magma glow for warm golems)
+      g.fillStyle(mossColor, 0.6);
       g.fillEllipse(cx - 8, cy + 4, 6, 4);
       g.fillEllipse(cx + 10, cy + 12, 5, 3);
       g.fillEllipse(cx - 4, cy - 16, 4, 3);
@@ -1160,7 +1164,7 @@ function generateTile(scene: Phaser.Scene, key: string, color: number, alt: numb
 }
 
 function generateTilesets(scene: Phaser.Scene): void {
-  // Overworld tiles: 0=grass, 1=path, 2=water, 3=tree, 4=mountain, 5=bridge, 6=town, 7=cave
+  // Overworld tiles: 0=grass, 1=path, 2=water, 3=tree, 4=mountain, 5=bridge, 6=town, 7=cave, 8=castle
   generateTile(scene, 'ow-0', 0x44aa44, 0x55bb55);
   generateTile(scene, 'ow-1', 0xccbb88, 0xbbaa77);
   generateTile(scene, 'ow-2', 0x2255cc, 0x3366dd, g => {
@@ -1214,6 +1218,171 @@ function generateTilesets(scene: Phaser.Scene): void {
     g.fillRect(2, 4, 12, 11);
     g.fillStyle(0x111111);
     g.fillEllipse(8, 8, 8, 7);
+  });
+  // ow-8: Castle facade — turrets and gate on grass
+  generateTile(scene, 'ow-8', 0x44aa44, 0x55bb55, g => {
+    // Castle body
+    g.fillStyle(0x555566);
+    g.fillRect(2, 5, 12, 10);
+    // Battlements (crenellations)
+    g.fillStyle(0x666677);
+    g.fillRect(2, 3, 3, 3);
+    g.fillRect(7, 3, 3, 3);
+    g.fillRect(11, 3, 3, 3);
+    // Left turret
+    g.fillStyle(0x555566);
+    g.fillRect(1, 1, 4, 14);
+    g.fillStyle(0x666677);
+    g.fillRect(1, 0, 4, 2);
+    // Right turret
+    g.fillRect(11, 0, 4, 2);
+    g.fillStyle(0x555566);
+    g.fillRect(11, 1, 4, 14);
+    // Gate
+    g.fillStyle(0x332211);
+    g.fillRect(5, 9, 6, 6);
+    g.fillStyle(0x221100);
+    g.fillRect(6, 9, 4, 6);
+    // Pennant on left turret
+    g.fillStyle(0xcc2222);
+    g.fillTriangle(3, 0, 1, 2, 5, 2);
+    // Pennant on right turret
+    g.fillTriangle(13, 0, 11, 2, 15, 2);
+  });
+
+  // Castle interior tiles (castle-0 through castle-10): gray stone, red carpet, torch sconces
+  // 0=floor, 1=wall, 2=cracked, 3=door, 4=treasure, 5=lava, 6=stairs, 7=boss
+  // 8=opened-chest, 9=stairs-down, 10=boss-exit-portal
+  generateTile(scene, 'castle-0', 0x555566, 0x4a4a5a, g => {
+    // Gray stone floor with subtle red carpet strip
+    g.fillStyle(0x882222, 0.3);
+    g.fillRect(6, 0, 4, 16);
+  });
+  generateTile(scene, 'castle-1', 0x333344, 0x2a2a3a, g => {
+    // Dark stone wall with mortar lines
+    g.lineStyle(1, 0x444455);
+    g.lineBetween(0, 5, 16, 5);
+    g.lineBetween(0, 11, 16, 11);
+    g.lineBetween(8, 0, 8, 5);
+    g.lineBetween(4, 5, 4, 11);
+    g.lineBetween(12, 5, 12, 11);
+    g.lineBetween(8, 11, 8, 16);
+  });
+  generateTile(scene, 'castle-2', 0x555566, 0x4a4a5a, g => {
+    // Cracked stone floor
+    g.lineStyle(1, 0x333344);
+    g.lineBetween(3, 2, 7, 9);
+    g.lineBetween(10, 3, 12, 11);
+  });
+  generateTile(scene, 'castle-3', 0x555566, 0x4a4a5a, g => {
+    // Ornate archway — stone pillars with red banner
+    g.fillStyle(0x666677);
+    g.fillRect(1, 2, 3, 12);
+    g.fillRect(12, 2, 3, 12);
+    g.fillRect(1, 1, 14, 2);
+    g.fillStyle(0x111122);
+    g.fillRect(4, 3, 8, 11);
+    // Red banner
+    g.fillStyle(0x882222);
+    g.fillRect(7, 1, 2, 3);
+  });
+  generateTile(scene, 'castle-4', 0x555566, 0x4a4a5a, g => {
+    // Treasure chest on stone floor
+    g.fillStyle(0xaa7722);
+    g.fillRect(3, 6, 10, 8);
+    g.fillStyle(0xffcc00);
+    g.fillRect(4, 4, 8, 3);
+    g.fillStyle(0x886611);
+    g.fillRect(7, 7, 2, 2);
+  });
+  generateTile(scene, 'castle-5', 0x331111, 0x221111, g => {
+    // Lava (same as dungeon)
+    g.fillStyle(0xcc3300);
+    g.fillRect(1, 1, 14, 14);
+    g.fillStyle(0xff6600);
+    g.fillRect(2, 3, 5, 3);
+    g.fillRect(9, 8, 4, 3);
+    g.fillStyle(0xffaa22);
+    g.fillCircle(5, 5, 2);
+    g.fillCircle(11, 10, 1);
+  });
+  generateTile(scene, 'castle-6', 0x555566, 0x4a4a5a, g => {
+    // Castle stairs — stone steps with red carpet
+    g.fillStyle(0x777788);
+    g.fillRect(2, 12, 12, 3);
+    g.fillStyle(0x888899);
+    g.fillRect(2, 9, 9, 3);
+    g.fillStyle(0x9999aa);
+    g.fillRect(2, 6, 6, 3);
+    g.fillStyle(0xaaaabb);
+    g.fillRect(2, 3, 3, 3);
+    // Red carpet on steps
+    g.fillStyle(0x882222, 0.5);
+    g.fillRect(6, 12, 4, 3);
+    g.fillRect(5, 9, 3, 3);
+    g.fillRect(4, 6, 2, 3);
+    // Up arrow
+    g.fillStyle(0xffcc00);
+    g.fillTriangle(4, 1, 2, 3, 6, 3);
+  });
+  generateTile(scene, 'castle-7', 0x555566, 0x4a4a5a, g => {
+    // Boss tile — throne on dark carpet
+    g.fillStyle(0x442222);
+    g.fillRect(2, 2, 12, 12);
+    g.fillStyle(0x331111);
+    g.fillRect(4, 1, 8, 14);
+    // Throne silhouette
+    g.fillStyle(0x220000);
+    g.fillRect(5, 3, 6, 8);
+    g.fillRect(6, 2, 4, 2);
+    g.fillRect(4, 4, 8, 6);
+    // Glowing red eyes
+    g.fillStyle(0xff2222);
+    g.fillRect(6, 4, 1, 1);
+    g.fillRect(9, 4, 1, 1);
+  });
+  generateTile(scene, 'castle-8', 0x555566, 0x4a4a5a, g => {
+    // Opened treasure chest (empty)
+    g.fillStyle(0x665533);
+    g.fillRect(3, 8, 10, 6);
+    g.fillStyle(0x554422);
+    g.fillRect(3, 4, 10, 5);
+    g.lineStyle(1, 0x333322);
+    g.lineBetween(3, 8, 13, 8);
+  });
+  generateTile(scene, 'castle-9', 0x555566, 0x4a4a5a, g => {
+    // Castle stairs going up to next floor
+    g.fillStyle(0x777788);
+    g.fillRect(2, 1, 3, 3);
+    g.fillStyle(0x666677);
+    g.fillRect(2, 4, 6, 3);
+    g.fillStyle(0x555566);
+    g.fillRect(2, 7, 9, 3);
+    g.fillStyle(0x444455);
+    g.fillRect(2, 10, 12, 3);
+    // Red carpet on stairs
+    g.fillStyle(0x882222, 0.5);
+    g.fillRect(3, 1, 2, 3);
+    g.fillRect(5, 4, 2, 3);
+    g.fillRect(7, 7, 3, 3);
+    g.fillRect(9, 10, 3, 3);
+    // Up arrow hint
+    g.fillStyle(0xffcc00);
+    g.fillTriangle(12, 14, 10, 12, 14, 12);
+  });
+  generateTile(scene, 'castle-10', 0x555566, 0x4a4a5a, g => {
+    // Boss-exit portal — glowing golden portal in stone arch
+    g.fillStyle(0x666677);
+    g.fillRect(3, 2, 2, 12);
+    g.fillRect(11, 2, 2, 12);
+    g.fillRect(3, 1, 10, 2);
+    // Golden interior
+    g.fillStyle(0xddaa33);
+    g.fillRect(5, 3, 6, 10);
+    g.fillStyle(0xffcc44);
+    g.fillCircle(8, 7, 2);
+    g.fillStyle(0xffeeaa);
+    g.fillCircle(8, 7, 1);
   });
 
   // Town tiles: 0=floor, 1=wall, 2=building, 3=grass, 4=water, 5=path, 6=save, 7=exit

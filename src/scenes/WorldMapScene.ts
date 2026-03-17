@@ -103,6 +103,7 @@ export class WorldMapScene extends Phaser.Scene {
         this.currentFloor, totalFloors,
         isSingleFloorGate,
         isGateFinalFloor,
+        def.castle ?? false,
       );
       // Mark already-opened chests and remove defeated boss tiles
       const isFinalFloor = this.currentFloor === totalFloors;
@@ -147,7 +148,8 @@ export class WorldMapScene extends Phaser.Scene {
 
     const def = mapDefs[this.currentMapId];
     const prefix = def.type === 'overworld' ? 'ow'
-      : def.type === 'town' ? 'town' : 'dng';
+      : def.type === 'town' ? 'town'
+      : def.castle ? 'castle' : 'dng';
 
     for (let y = 0; y < this.mapData.length; y++) {
       for (let x = 0; x < this.mapData[y].length; x++) {
@@ -368,8 +370,8 @@ export class WorldMapScene extends Phaser.Scene {
     // Special: town/dungeon tile on overworld
     if (def.type === 'overworld') {
       const tile = this.mapData[y]?.[x];
-      if (tile === 6 || tile === 7) {
-        // Find which connection this is
+      if (tile === 6 || tile === 7 || tile === 8) {
+        // Find which connection this is (town=6, cave=7, castle=8)
         for (const conn of def.connections) {
           if (Math.abs(conn.fromX - x) <= 1 && Math.abs(conn.fromY - y) <= 1) {
             return { targetMap: conn.targetMap, toX: conn.toX, toY: conn.toY, toFloor: conn.toFloor };
@@ -468,20 +470,31 @@ export class WorldMapScene extends Phaser.Scene {
       const def = mapDefs[this.currentMapId];
 
       if (target.targetMap === '__floor_down__') {
-        // Descend to next floor
+        // Go to next floor (deeper into dungeon)
         this.currentFloor++;
         const entranceX = Math.floor(def.width / 2);
         this.heroTileX = entranceX;
-        this.heroTileY = 1; // just below the stairs-up tile at top
+        if (def.castle) {
+          // Castle: next floor entered from bottom (climbed up from below)
+          this.heroTileY = def.height - 2;
+        } else {
+          // Standard: next floor entered from top (descended from above)
+          this.heroTileY = 1;
+        }
         this.updatePosition();
         this.loadMap(this.currentMapId);
       } else if (target.targetMap === '__floor_up__') {
-        // Ascend to previous floor
+        // Go to previous floor (toward entrance)
         this.currentFloor--;
-        // Position near bottom of upper floor (above stairs-down tile)
-        const bottomX = Math.floor(def.width / 2);
-        this.heroTileX = bottomX;
-        this.heroTileY = def.height - 3; // one tile above the stairs-down tile
+        const centerX = Math.floor(def.width / 2);
+        this.heroTileX = centerX;
+        if (def.castle) {
+          // Castle: previous floor reached by going down, appear near top (below progression stairs)
+          this.heroTileY = 2;
+        } else {
+          // Standard: previous floor reached by going up, appear near bottom (above stairs-down)
+          this.heroTileY = def.height - 3;
+        }
         this.updatePosition();
         this.loadMap(this.currentMapId);
       } else {
@@ -775,7 +788,8 @@ export class WorldMapScene extends Phaser.Scene {
         const displayFloor = (isGate && this.currentFloor > midpoint)
           ? totalFloors - this.currentFloor + 1
           : this.currentFloor;
-        label += ` — B${displayFloor}F`;
+        // Castle: "1F, 2F, 3F..." (ascending); Standard: "B1F, B2F..." (basement)
+        label += def.castle ? ` — ${displayFloor}F` : ` — B${displayFloor}F`;
       }
       this.floorText = this.add.text(
         8, 24,
@@ -814,6 +828,8 @@ export class WorldMapScene extends Phaser.Scene {
 
   // Called when returning from battle
   wake(): void {
+    // Block movement immediately — prevents auto-step from held keys after battle
+    this.isMoving = true;
     this.updateHUD();
     if (!gameState.player.isAlive) {
       this.scene.start('GameOverScene');
@@ -899,22 +915,28 @@ export class WorldMapScene extends Phaser.Scene {
           gameState.player.equip('aegisOfDawn');
         }
 
-        // Show defeat dialog, then victory dialog
-        this.time.delayedCall(1600, () => {
+        // Show defeat dialog promptly (200ms — just enough for sparkle to register)
+        // isMoving stays true until dialog sequence completes
+        this.time.delayedCall(200, () => {
           const defeatMsg = t(`dungeon.${this.currentMapId}.boss.defeat`);
           const victoryMsg = t(`dungeon.${this.currentMapId}.victory`);
+          const onDone = () => { this.isMoving = false; };
 
           // Legendary item obtainment dialog
           if (bossId === 'swordWraith') {
-            this.showDialogSequence([defeatMsg, t('legendary.excalibur.obtained'), victoryMsg]);
+            this.showDialogSequence([defeatMsg, t('legendary.excalibur.obtained'), victoryMsg], onDone);
           } else if (bossId === 'celestialGuardian') {
-            this.showDialogSequence([defeatMsg, t('legendary.aegis.obtained'), victoryMsg]);
+            this.showDialogSequence([defeatMsg, t('legendary.aegis.obtained'), victoryMsg], onDone);
           } else {
-            this.showDialogSequence([defeatMsg, victoryMsg]);
+            this.showDialogSequence([defeatMsg, victoryMsg], onDone);
           }
         });
       }
+      return; // Boss defeat handled — don't apply regular cooldown
     }
+
+    // Regular battle — brief cooldown then unblock movement
+    this.time.delayedCall(200, () => { this.isMoving = false; });
   }
 
   // ── Field Item Overlay ──────────────────────────────

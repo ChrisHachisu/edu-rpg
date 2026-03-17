@@ -101,6 +101,7 @@ export const enStrings: Record<string, string> = {
   'shop.cantAfford': 'Not enough Gold!',
   'shop.inventoryFull': 'Inventory is full!',
   'shop.cantSell': 'This item cannot be sold!',
+  'shop.done': 'Done',
 
   // ── Intro Dialog (3 messages) ────────────────────────────────────
   'intro.elder1': 'Welcome, young hero. I am the Elder of Greenhollow Village. Dark times are upon us...',

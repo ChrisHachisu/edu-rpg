@@ -101,6 +101,14 @@ export class ShopScene extends Phaser.Scene {
         }).setOrigin(1, 0);
       }
     });
+
+    // "Done" option at the bottom
+    const doneY = 64 + shop.items.length * 28;
+    this.add.text(32, doneY, `▸ ${t('shop.done')}`, {
+      fontSize: '10px',
+      color: this.listIndex === shop.items.length ? COLORS.TEXT_YELLOW : COLORS.TEXT_GRAY,
+      fontFamily: 'monospace',
+    });
   }
 
   private drawSellList(): void {
@@ -109,17 +117,24 @@ export class ShopScene extends Phaser.Scene {
       this.add.text(GAME_WIDTH / 2, 120, 'No items to sell', {
         fontSize: '12px', color: COLORS.TEXT_GRAY, fontFamily: 'monospace',
       }).setOrigin(0.5);
-      return;
+    } else {
+      inv.forEach((slot, i) => {
+        const item = items[slot.itemId];
+        if (!item) return;
+        this.add.text(32, 64 + i * 28, `${t(item.nameKey)} x${slot.quantity}  ${item.sellPrice}G`, {
+          fontSize: '10px',
+          color: i === this.listIndex ? COLORS.TEXT_YELLOW : COLORS.TEXT_WHITE,
+          fontFamily: 'monospace',
+        });
+      });
     }
 
-    inv.forEach((slot, i) => {
-      const item = items[slot.itemId];
-      if (!item) return;
-      this.add.text(32, 64 + i * 28, `${t(item.nameKey)} x${slot.quantity}  ${item.sellPrice}G`, {
-        fontSize: '10px',
-        color: i === this.listIndex ? COLORS.TEXT_YELLOW : COLORS.TEXT_WHITE,
-        fontFamily: 'monospace',
-      });
+    // "Done" option at the bottom
+    const doneY = 64 + inv.length * 28;
+    this.add.text(32, doneY, `▸ ${t('shop.done')}`, {
+      fontSize: '10px',
+      color: this.listIndex === inv.length ? COLORS.TEXT_YELLOW : COLORS.TEXT_GRAY,
+      fontFamily: 'monospace',
     });
   }
 
@@ -131,8 +146,11 @@ export class ShopScene extends Phaser.Scene {
     });
 
     this.input.keyboard?.on('keydown-DOWN', () => {
-      if (this.mode === 'menu') this.menuIndex = Math.min(2, this.menuIndex + 1);
-      else this.listIndex++;
+      if (this.mode === 'menu') {
+        this.menuIndex = Math.min(2, this.menuIndex + 1);
+      } else {
+        this.listIndex = Math.min(this.listIndex + 1, this.getListMaxIndex());
+      }
       this.drawShop();
     });
 
@@ -141,14 +159,22 @@ export class ShopScene extends Phaser.Scene {
 
     this.input.keyboard?.on('keydown-X', () => {
       if (this.mode !== 'menu') {
-        this.mode = 'menu';
-        this.menuIndex = 0;
-        this.listIndex = 0;
-        this.message = '';
-        this.drawShop();
+        // Exit shop directly from buy/sell mode (more natural than going back to menu)
+        this.leave();
       }
     });
     this.input.keyboard?.on('keydown-ESC', () => this.leave());
+  }
+
+  /** Returns the max valid listIndex (including the "Done" entry at the end). */
+  private getListMaxIndex(): number {
+    if (this.mode === 'buy') {
+      const shop = shops[this.shopId];
+      return shop ? shop.items.length : 0; // last index = "Done"
+    }
+    // sell
+    const inv = gameState.player.state.inventory.filter(s => !items[s.itemId]?.unsellable);
+    return inv.length; // last index = "Done"
   }
 
   private confirm(): void {
@@ -158,6 +184,9 @@ export class ShopScene extends Phaser.Scene {
       else this.leave();
       this.message = '';
       this.drawShop();
+    } else if (this.listIndex === this.getListMaxIndex()) {
+      // "Done" selected — exit shop
+      this.leave();
     } else if (this.mode === 'buy') {
       this.buyItem();
     } else if (this.mode === 'sell') {
