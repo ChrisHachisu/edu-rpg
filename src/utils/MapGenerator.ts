@@ -91,17 +91,9 @@ export function generateOverworldMap(width: number, height: number): number[][] 
     ...pathBetween(20, 68, 8, 62),     // ruinsCamp → volcanicForge S
     // (NO path between VF S and VF N — mountains block direct passage)
     // ── Act 5 main road — north of lava (y=2-61) ──
-    ...pathBetween(10, 59, 56, 54),    // volcanicForge N exit (east) → lastBastion
+    ...pathBetween(9, 59, 56, 54),     // volcanicForge N exit → lastBastion
     ...pathBetween(56, 54, 40, 22),    // lastBastion → south end of Demon Castle land bridge
-    // ── Maze paths to legendary dungeons (zigzag through Act 5 mountains) ──
-    ...pathBetween(12, 59, 12, 52),    // branch north from main road
-    ...pathBetween(12, 52, 6, 52),     // west
-    ...pathBetween(6, 52, 6, 46),      // north
-    ...pathBetween(6, 46, 4, 46),      // west to Sealed Sanctum
-    ...pathBetween(56, 54, 56, 48),    // branch north from Last Bastion
-    ...pathBetween(56, 48, 66, 48),    // east
-    ...pathBetween(66, 48, 66, 46),    // north
-    ...pathBetween(66, 46, 75, 46),    // east to Celestial Vault
+    // Legendary dungeon paths carved separately in Phase 3b (winding maze with dead-ends)
   ];
 
   for (const [px, py] of paths) {
@@ -154,25 +146,84 @@ export function generateOverworldMap(width: number, height: number): number[][] 
     }
   }
 
-  // Ensure west side has reachable corridors (toward Sealed Sanctum at 4,46)
-  for (let y = act5Top + 4; y <= act5Bot - 4; y += 5) {
-    for (let dx = 0; dx < 3; dx++) {
-      const px = 3 + Math.floor(rand() * 12) + dx;
-      if (px >= 2 && px < width - 2 && map[y][px] === 4) {
-        map[y][px] = 0;
-      }
-    }
-  }
+  // ── Phase 3b: Winding 1-block maze paths to legendary dungeons with dead-ends ──
+  // These paths are intentionally hard to find — player must explore the maze
 
-  // Ensure east side has reachable corridors (toward Celestial Vault at 75,46)
-  for (let y = act5Top + 4; y <= act5Bot - 4; y += 5) {
-    for (let dx = 0; dx < 3; dx++) {
-      const px = 62 + Math.floor(rand() * 12) + dx;
-      if (px >= 2 && px < width - 2 && map[y][px] === 4) {
-        map[y][px] = 0;
+  // Helper: carve a single tile if it's mountain
+  const carve = (cx: number, cy: number) => {
+    if (cx >= 2 && cx < width - 2 && cy >= 3 && cy <= act5Bot) {
+      if (map[cy][cx] === 4) map[cy][cx] = 0;
+    }
+  };
+
+  // Helper: carve a winding 1-block path from (sx,sy) toward (ex,ey) with dead-end branches
+  const carveMazePath = (sx: number, sy: number, ex: number, ey: number) => {
+    let x = sx, y = sy;
+    const visited: Set<string> = new Set();
+
+    // Main path: winding toward target
+    let safety = 0;
+    while ((x !== ex || y !== ey) && safety++ < 500) {
+      carve(x, y);
+      visited.add(`${x},${y}`);
+
+      // 60% move toward target, 40% random perpendicular step (creates winding)
+      if (rand() < 0.6) {
+        // Toward target — prefer the axis with more distance
+        if (Math.abs(x - ex) >= Math.abs(y - ey)) {
+          x += x < ex ? 1 : -1;
+        } else {
+          y += y < ey ? 1 : -1;
+        }
+      } else {
+        // Perpendicular wander
+        if (Math.abs(x - ex) >= Math.abs(y - ey)) {
+          y += rand() > 0.5 ? 1 : -1;
+        } else {
+          x += rand() > 0.5 ? 1 : -1;
+        }
+      }
+
+      // Clamp
+      x = Math.max(3, Math.min(width - 4, x));
+      y = Math.max(3, Math.min(act5Bot, y));
+    }
+    carve(ex, ey); // ensure endpoint is carved
+
+    // Dead-end branches: sprout from random points along the main path
+    const pathTiles = Array.from(visited);
+    const numBranches = 6 + Math.floor(rand() * 5); // 6-10 dead-ends
+    for (let b = 0; b < numBranches; b++) {
+      const startTile = pathTiles[Math.floor(rand() * pathTiles.length)];
+      const [bx, by] = startTile.split(',').map(Number);
+
+      // Pick a random direction
+      const dirs = [[0, -1], [0, 1], [-1, 0], [1, 0]];
+      const dir = dirs[Math.floor(rand() * dirs.length)];
+      const branchLen = 3 + Math.floor(rand() * 6); // 3-8 tiles long
+
+      let dx = bx, dy = by;
+      for (let s = 0; s < branchLen; s++) {
+        dx += dir[0];
+        dy += dir[1];
+        // Small chance to turn mid-branch (makes it less obvious)
+        if (rand() < 0.25) {
+          const turnDir = dirs[Math.floor(rand() * dirs.length)];
+          dx += turnDir[0];
+          dy += turnDir[1];
+        }
+        dx = Math.max(3, Math.min(width - 4, dx));
+        dy = Math.max(3, Math.min(act5Bot, dy));
+        carve(dx, dy);
       }
     }
-  }
+  };
+
+  // Sealed Sanctum (5,8) — path starts from near the main road, winds northwest
+  carveMazePath(14, 54, 5, 8);
+
+  // Celestial Vault (74,8) — path starts from near Last Bastion, winds northeast
+  carveMazePath(58, 52, 74, 8);
 
   // ── Phase 4: Demon Castle island ──
   // Water moat around (40,10) with land bridge from south
@@ -216,7 +267,7 @@ export function generateOverworldMap(width: number, height: number): number[][] 
     [10, 86],                         // Act 2: Storm Nest (hidden — no path)
     [50, 82], [50, 80],              // Act 2→3: Shadow Cave S/N (touching mountains)
     [8, 62], [8, 59],                // Act 3/4→5: Volcanic Forge S/N (relocated west)
-    [4, 46], [75, 46],               // Legendary: Sanctum, Vault
+    [5, 8], [74, 8],                  // Legendary: Sanctum (NW), Vault (NE)
   ];
   for (const [dx, dy] of caveDungeons) {
     map[dy][dx] = 7;

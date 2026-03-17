@@ -54,8 +54,8 @@ export const mapDefs: Record<string, MapDef> = {
       { targetMap: 'volcanicForge', fromX: 8, fromY: 59, toX: 12, toY: 23, toFloor: 7 },
       { targetMap: 'demonCastle', fromX: 40, fromY: 10, toX: 16, toY: 31 },
       // ── Hidden legendary dungeons (Act 5 — deep in maze) ──
-      { targetMap: 'sealedSanctum', fromX: 4, fromY: 46, toX: 14, toY: 1 },
-      { targetMap: 'celestialVault', fromX: 75, fromY: 46, toX: 14, toY: 1 },
+      { targetMap: 'sealedSanctum', fromX: 5, fromY: 8, toX: 14, toY: 1 },
+      { targetMap: 'celestialVault', fromX: 74, fromY: 8, toX: 14, toY: 1 },
     ],
     npcs: [],
   },
@@ -229,7 +229,7 @@ export const mapDefs: Record<string, MapDef> = {
     height: 25,
     connections: [
       { targetMap: 'overworld', fromX: 12, fromY: 0, toX: 8, toY: 63 },   // south exit (floor 1)
-      { targetMap: 'overworld', fromX: 12, fromY: 24, toX: 10, toY: 59 },  // north exit (floor 7) — east of entrance
+      { targetMap: 'overworld', fromX: 12, fromY: 24, toX: 9, toY: 59 },  // north exit (floor 7) — adjacent to entrance
     ],
     npcs: [],
     bossId: 'flameTitan',
@@ -266,7 +266,7 @@ export const mapDefs: Record<string, MapDef> = {
     width: 29,
     height: 29,
     connections: [
-      { targetMap: 'overworld', fromX: 14, fromY: 0, toX: 4, toY: 47 },
+      { targetMap: 'overworld', fromX: 14, fromY: 0, toX: 5, toY: 9 },
     ],
     npcs: [],
     bossId: 'swordWraith',
@@ -282,7 +282,7 @@ export const mapDefs: Record<string, MapDef> = {
     width: 29,
     height: 29,
     connections: [
-      { targetMap: 'overworld', fromX: 14, fromY: 0, toX: 75, toY: 47 },
+      { targetMap: 'overworld', fromX: 14, fromY: 0, toX: 74, toY: 9 },
     ],
     npcs: [],
     bossId: 'celestialGuardian',
