@@ -93,7 +93,15 @@ export function generateOverworldMap(width: number, height: number): number[][] 
     // ── Act 5 main road — north of lava (y=2-61) ──
     ...pathBetween(10, 59, 56, 54),    // volcanicForge N exit (east) → lastBastion
     ...pathBetween(56, 54, 40, 22),    // lastBastion → south end of Demon Castle land bridge
-    // NO paths to Sealed Sanctum or Celestial Vault — must explore maze
+    // ── Maze paths to legendary dungeons (zigzag through Act 5 mountains) ──
+    ...pathBetween(12, 59, 12, 52),    // branch north from main road
+    ...pathBetween(12, 52, 6, 52),     // west
+    ...pathBetween(6, 52, 6, 46),      // north
+    ...pathBetween(6, 46, 4, 46),      // west to Sealed Sanctum
+    ...pathBetween(56, 54, 56, 48),    // branch north from Last Bastion
+    ...pathBetween(56, 48, 66, 48),    // east
+    ...pathBetween(66, 48, 66, 46),    // north
+    ...pathBetween(66, 46, 75, 46),    // east to Celestial Vault
   ];
 
   for (const [px, py] of paths) {
@@ -183,8 +191,8 @@ export function generateOverworldMap(width: number, height: number): number[][] 
     }
   }
 
-  // Land bridge south of island connecting to mainland (y=16 to y=22)
-  for (let y = 16; y <= 22; y++) {
+  // Land bridge south of island through moat to mainland (y=13 to y=22)
+  for (let y = 13; y <= 22; y++) {
     if (y >= 2 && y < height - 2) {
       map[y][40] = 1; // path
       map[y][41] = 1;
