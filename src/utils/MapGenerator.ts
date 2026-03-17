@@ -719,58 +719,8 @@ export function generateDungeonMap(
     treasurePositions.splice(worstIdx, 1);
   }
 
-  // Place treasure chests — must be against a wall AND not blocking a corridor
-  const isWallTile = (x: number, y: number) =>
-    y < 0 || y >= height || x < 0 || x >= width || map[y][x] === 1 || map[y][x] === 5;
-
-  // Valid = against a wall, and NOT on a corridor (no floor on opposing sides)
-  const isValidTreasureSpot = (x: number, y: number): boolean => {
-    const nWall = isWallTile(x, y - 1);
-    const sWall = isWallTile(x, y + 1);
-    const wWall = isWallTile(x - 1, y);
-    const eWall = isWallTile(x + 1, y);
-    // Must have at least 1 wall neighbor
-    if (!nWall && !sWall && !wWall && !eWall) return false;
-    // Must NOT have floor on opposing sides (would block a corridor)
-    if (!nWall && !sWall) return false; // floor on N and S = N-S corridor
-    if (!wWall && !eWall) return false; // floor on W and E = E-W corridor
-    return true;
-  };
-
-  for (let ti = treasurePositions.length - 1; ti >= 0; ti--) {
-    const [tx, ty] = treasurePositions[ti];
-    if (tx <= 0 || tx >= width - 1 || ty <= 0 || ty >= height - 1) {
-      treasurePositions.splice(ti, 1);
-      continue;
-    }
-
-    if (isValidTreasureSpot(tx, ty)) {
-      map[ty][tx] = 4;
-    } else {
-      // Bad spot — relocate to a valid wall-adjacent, non-corridor tile in a room
-      let relocated = false;
-      for (const room of shuffleArray([...rooms], rand)) {
-        const candidates: [number, number][] = [];
-        for (let rx = room.x; rx < room.x + room.w; rx++) {
-          for (let ry = room.y; ry < room.y + room.h; ry++) {
-            if ((map[ry][rx] === 0 || map[ry][rx] === 2) && isValidTreasureSpot(rx, ry)) {
-              candidates.push([rx, ry]);
-            }
-          }
-        }
-        if (candidates.length > 0) {
-          const [cx, cy] = candidates[Math.floor(rand() * candidates.length)];
-          map[cy][cx] = 4;
-          treasurePositions[ti] = [cx, cy];
-          relocated = true;
-          break;
-        }
-      }
-      if (!relocated) {
-        treasurePositions.splice(ti, 1);
-      }
-    }
-  }
+  // NOTE: Treasure tile placement is deferred until AFTER entrance/boss/stairs
+  // code runs, so the validation can see the final map layout. See end of function.
 
   const entranceX = Math.floor(width / 2);
 
@@ -947,6 +897,59 @@ export function generateDungeonMap(
     } else {
       // Stairs-down to next floor
       map[bottomRoomY + 1][bottomX] = 9; // tile 9 = stairs-down
+    }
+  }
+
+  // ── Final step: Place treasure tiles AFTER all corridors/entrance/boss carved ──
+  // This ensures validation sees the complete map layout.
+  const isWallTile = (x: number, y: number) =>
+    y < 0 || y >= height || x < 0 || x >= width || map[y][x] === 1 || map[y][x] === 5;
+
+  const isValidTreasureSpot = (x: number, y: number): boolean => {
+    const nWall = isWallTile(x, y - 1);
+    const sWall = isWallTile(x, y + 1);
+    const wWall = isWallTile(x - 1, y);
+    const eWall = isWallTile(x + 1, y);
+    // Must have at least 1 wall neighbor (against a wall)
+    if (!nWall && !sWall && !wWall && !eWall) return false;
+    // Must NOT have floor on opposing sides (would block a corridor)
+    if (!nWall && !sWall) return false;
+    if (!wWall && !eWall) return false;
+    return true;
+  };
+
+  for (let ti = treasurePositions.length - 1; ti >= 0; ti--) {
+    const [tx, ty] = treasurePositions[ti];
+    if (tx <= 0 || tx >= width - 1 || ty <= 0 || ty >= height - 1) {
+      treasurePositions.splice(ti, 1);
+      continue;
+    }
+
+    if (isValidTreasureSpot(tx, ty)) {
+      map[ty][tx] = 4;
+    } else {
+      // Bad spot — relocate to a valid wall-adjacent, non-corridor tile in a room
+      let relocated = false;
+      for (const room of shuffleArray([...rooms], rand)) {
+        const candidates: [number, number][] = [];
+        for (let rx = room.x; rx < room.x + room.w; rx++) {
+          for (let ry = room.y; ry < room.y + room.h; ry++) {
+            if ((map[ry][rx] === 0 || map[ry][rx] === 2) && isValidTreasureSpot(rx, ry)) {
+              candidates.push([rx, ry]);
+            }
+          }
+        }
+        if (candidates.length > 0) {
+          const [cx, cy] = candidates[Math.floor(rand() * candidates.length)];
+          map[cy][cx] = 4;
+          treasurePositions[ti] = [cx, cy];
+          relocated = true;
+          break;
+        }
+      }
+      if (!relocated) {
+        treasurePositions.splice(ti, 1);
+      }
     }
   }
 
