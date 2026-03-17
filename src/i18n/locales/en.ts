@@ -114,7 +114,7 @@ export const enStrings: Record<string, string> = {
   // ── Intro Dialog (3 messages) ────────────────────────────────────
   'intro.elder1': 'Welcome, young hero. I am the Elder of Greenhollow Village. Dark times are upon us...',
   'intro.elder2': 'The Demon King Malachar stole the Crystals of Knowledge! Darkness spreads across Eldravia. You must reclaim them!',
-  'intro.elder3': 'Head to the Misty Grotto to the southwest first. Then go east to the Crystal Cave. Buy supplies at the shop before you leave!',
+  'intro.elder3': 'Head east to the Misty Grotto first. The boss there guards a crystal you\'ll need to open the Crystal Cave to the north. Buy supplies at the shop before you leave!',
 
   // ── NPCs / Story ──────────────────────────────────────────────────
   'story.intro1': 'Long ago, the land of Eldravia was protected by five Crystals of Knowledge.',
@@ -122,7 +122,7 @@ export const enStrings: Record<string, string> = {
   'story.intro3': 'Now, a young hero must set out to reclaim the crystals and bring back the light!',
 
   // Greenhollow (Act 1)
-  'npc.elder.greeting': 'Be safe, hero. The Misty Grotto is southwest. Come back when you\'re stronger!',
+  'npc.elder.greeting': 'Be safe, hero. Head east toward the Misty Grotto. You\'ll need the crystal from its guardian to open the way north!',
   'npc.villager1': 'Monsters appeared everywhere! Be careful out there!',
   'npc.villager2': 'Buy herbs at the shop before you go!',
 
@@ -132,8 +132,8 @@ export const enStrings: Record<string, string> = {
 
   // Port Sapphire (Act 1)
   'npc.sailor': 'I hear a dragon lives in the caves to the north, sealed behind a dark barrier. Scary stuff!',
-  'npc.fisherman': 'I lost my best rod in the old cellar east of town. Something big moved in down there... a giant crab, maybe?',
-  'npc.wisewoman': 'The crystals give power to those who study hard. Keep learning, hero!',
+  'npc.fisherman': 'I lost my best rod in the old cellar south of the village. Something big moved in down there... a giant crab, maybe?',
+  'npc.wisewoman': 'The Misty Grotto lies to the east. A Giant Toad guards a crystal there — you\'ll need it to unseal the Crystal Cave to the north!',
 
   // Ironkeep (Act 2)
   'npc.soldier': 'A dark barrier seals the Shadow Cave to the north. But there\'s a cave far to the west where a Storm Harpy guards a crystal that can break the seal!',

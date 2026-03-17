@@ -40,7 +40,7 @@ export const mapDefs: Record<string, MapDef> = {
       // ── Act 1 Towns ──
       { targetMap: 'greenhollow', fromX: 15, fromY: 150, toX: 8, toY: 14 },
       { targetMap: 'millbrook', fromX: 45, fromY: 145, toX: 8, toY: 14 },
-      { targetMap: 'portSapphire', fromX: 80, fromY: 140, toX: 8, toY: 14 },
+      { targetMap: 'portSapphire', fromX: 66, fromY: 138, toX: 8, toY: 14 },
       // ── Act 2 Towns ──
       { targetMap: 'ironkeep', fromX: 70, fromY: 118, toX: 8, toY: 14 },
       { targetMap: 'highwatch', fromX: 35, fromY: 112, toX: 8, toY: 14 },
@@ -54,8 +54,8 @@ export const mapDefs: Record<string, MapDef> = {
       { targetMap: 'havensEdge', fromX: 65, fromY: 40, toX: 8, toY: 14 },
 
       // ── Act 1 Dungeons ──
-      { targetMap: 'mistyGrotto', fromX: 25, fromY: 148, toX: 7, toY: 1 },
-      { targetMap: 'sunkenCellar', fromX: 85, fromY: 144, toX: 7, toY: 1 },
+      { targetMap: 'sunkenCellar', fromX: 25, fromY: 148, toX: 7, toY: 1 },
+      { targetMap: 'mistyGrotto', fromX: 85, fromY: 144, toX: 7, toY: 1 },
       // Crystal Cave: gate dungeon (S entrance Act 1 side, N exit Act 2 side)
       { targetMap: 'crystalCave', fromX: 66, fromY: 130, toX: 10, toY: 61 },
       { targetMap: 'crystalCave', fromX: 66, fromY: 127, toX: 10, toY: 1 },
@@ -104,6 +104,7 @@ export const mapDefs: Record<string, MapDef> = {
       { id: 'elder', dialogueKey: 'npc.elder.greeting', x: 8, y: 3 },
       { id: 'villager1', dialogueKey: 'npc.villager1', x: 3, y: 5 },
       { id: 'villager2', dialogueKey: 'npc.villager2', x: 12, y: 5 },
+      { id: 'fisherman', dialogueKey: 'npc.fisherman', x: 13, y: 10 },
     ],
     shopId: 'greenhollow',
     savePoint: { x: 8, y: 10 },
@@ -131,11 +132,11 @@ export const mapDefs: Record<string, MapDef> = {
     width: 16,
     height: 16,
     connections: [
-      { targetMap: 'overworld', fromX: 8, fromY: 15, toX: 80, toY: 141 },
+      { targetMap: 'overworld', fromX: 8, fromY: 15, toX: 66, toY: 139 },
     ],
     npcs: [
       { id: 'sailor', dialogueKey: 'npc.sailor', x: 3, y: 5 },
-      { id: 'fisherman', dialogueKey: 'npc.fisherman', x: 12, y: 5 },
+      { id: 'wisewoman', dialogueKey: 'npc.wisewoman', x: 12, y: 5 },
     ],
     shopId: 'portSapphire',
     savePoint: { x: 8, y: 10 },
@@ -276,7 +277,7 @@ export const mapDefs: Record<string, MapDef> = {
     width: 15,
     height: 15,
     connections: [
-      { targetMap: 'overworld', fromX: 7, fromY: 0, toX: 25, toY: 149 },
+      { targetMap: 'overworld', fromX: 7, fromY: 0, toX: 85, toY: 145 },
     ],
     npcs: [],
     bossId: 'giantToad',
@@ -292,7 +293,7 @@ export const mapDefs: Record<string, MapDef> = {
     width: 15,
     height: 15,
     connections: [
-      { targetMap: 'overworld', fromX: 7, fromY: 0, toX: 85, toY: 145 },
+      { targetMap: 'overworld', fromX: 7, fromY: 0, toX: 25, toY: 149 },
     ],
     npcs: [],
     bossId: 'giantCrab',

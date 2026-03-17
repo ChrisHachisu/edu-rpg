@@ -135,11 +135,11 @@ export function generateOverworldMap(width: number, height: number): number[][] 
   // ── Phase 2: Carve paths between key locations ──
   const paths: [number, number][] = [
     // ── Act 1 — south of river (y=132-157) ──
-    ...pathBetween(15, 150, 25, 148),   // greenhollow → mistyGrotto
+    ...pathBetween(15, 150, 25, 148),   // greenhollow → sunkenCellar (optional, SW)
     ...pathBetween(15, 150, 45, 145),   // greenhollow → millbrook
-    ...pathBetween(45, 145, 80, 140),   // millbrook → portSapphire
-    ...pathBetween(80, 140, 85, 144),   // portSapphire → sunkenCellar
-    ...pathBetween(45, 145, 66, 130),   // millbrook → crystalCave S
+    ...pathBetween(45, 145, 66, 138),   // millbrook → portSapphire (3-way junction)
+    ...pathBetween(66, 138, 85, 144),   // portSapphire → mistyGrotto (E)
+    ...pathBetween(66, 138, 66, 130),   // portSapphire → crystalCave S (N)
 
     // ── Act 2 — between river and mountains (y=102-130) ──
     ...pathBetween(66, 127, 70, 118),   // crystalCave N → ironkeep
@@ -311,7 +311,7 @@ export function generateOverworldMap(width: number, height: number): number[][] 
 
   // ── Phase 5: Town markers ──
   const towns: [number, number][] = [
-    [15, 150], [45, 145], [80, 140],  // Act 1
+    [15, 150], [45, 145], [66, 138],  // Act 1
     [70, 118], [35, 112],              // Act 2
     [45, 92], [80, 85],                // Act 3
     [30, 78],                           // Act 4
@@ -324,7 +324,7 @@ export function generateOverworldMap(width: number, height: number): number[][] 
   // ── Phase 6: Dungeon entrance markers ──
   const caveDungeons: [number, number][] = [
     // Act 1
-    [25, 148], [85, 144],             // Misty Grotto, Sunken Cellar
+    [25, 148], [85, 144],             // Sunken Cellar (SW), Misty Grotto (E)
     [66, 130], [66, 127],             // Crystal Cave S/N
     // Act 2
     [100, 112], [25, 108],            // Storm Nest (far east), Frozen Lake
