@@ -143,29 +143,27 @@ export function generateOverworldMap(width: number, height: number): number[][] 
 
     // ── Act 2 — between river and mountains (y=102-130) ──
     ...pathBetween(66, 127, 70, 118),   // crystalCave N → ironkeep
-    ...pathBetween(70, 118, 35, 112),   // ironkeep → highwatch
-    // highwatch → stormNest (windy east path via waypoints)
-    ...pathBetween(35, 112, 50, 108),
-    ...pathBetween(50, 108, 65, 116),
-    ...pathBetween(65, 116, 80, 108),
-    ...pathBetween(80, 108, 95, 114),
-    ...pathBetween(95, 114, 100, 112),
-    ...pathBetween(35, 112, 25, 108),   // highwatch → frozenLake
+    // ironkeep → stormNest (west, windy path)
+    ...pathBetween(70, 118, 55, 114),
+    ...pathBetween(55, 114, 40, 110),
+    ...pathBetween(40, 110, 25, 108),
+    // ironkeep → frozenLake (east)
+    ...pathBetween(70, 118, 85, 114),
+    ...pathBetween(85, 114, 100, 112),
     ...pathBetween(70, 118, 90, 102),   // ironkeep → shadowCave S
 
     // ── Act 3 — between mountains and lava (y=72-100) ──
     ...pathBetween(90, 100, 80, 85),    // shadowCave N → ruinsCamp
     ...pathBetween(80, 85, 45, 92),     // ruinsCamp → oasisHaven
     ...pathBetween(45, 92, 60, 95),     // oasisHaven → desertTomb
-    ...pathBetween(45, 92, 35, 88),     // oasisHaven → banditHideout
     ...pathBetween(80, 85, 30, 78),     // ruinsCamp → embersRest
 
     // ── Act 4 — volcanic area (y=72-80) ──
-    ...pathBetween(30, 78, 18, 75),     // embersRest → magmaTunnels
-    ...pathBetween(18, 75, 12, 72),     // magmaTunnels → volcanicForge S
+    ...pathBetween(30, 78, 25, 80),     // embersRest → magmaTunnels
+    ...pathBetween(25, 80, 12, 70),     // magmaTunnels → volcanicForge S
 
     // ── Act 5 — north of lava (y=2-70) ──
-    ...pathBetween(13, 69, 85, 58),     // volcanicForge N exit → lastBastion
+    ...pathBetween(13, 67, 85, 58),     // volcanicForge N exit → lastBastion
     ...pathBetween(85, 58, 65, 40),     // lastBastion → havensEdge
     ...pathBetween(65, 40, 55, 25),     // havensEdge → south of Demon Castle approach
   ];
@@ -312,7 +310,7 @@ export function generateOverworldMap(width: number, height: number): number[][] 
   // ── Phase 5: Town markers ──
   const towns: [number, number][] = [
     [15, 150], [45, 145], [66, 138],  // Act 1
-    [70, 118], [35, 112],              // Act 2
+    [70, 118],                          // Act 2
     [45, 92], [80, 85],                // Act 3
     [30, 78],                           // Act 4
     [85, 58], [65, 40],                // Act 5
@@ -327,13 +325,13 @@ export function generateOverworldMap(width: number, height: number): number[][] 
     [25, 148], [85, 144],             // Sunken Cellar (SW), Misty Grotto (E)
     [66, 130], [66, 127],             // Crystal Cave S/N
     // Act 2
-    [100, 112], [25, 108],            // Storm Nest (far east), Frozen Lake
+    [25, 108], [100, 112],            // Storm Nest (west), Frozen Lake (east)
     [90, 102], [90, 100],             // Shadow Cave S/N
     // Act 3
-    [60, 95], [35, 88],               // Desert Tomb, Bandit Hideout
+    [60, 95], [10, 88],               // Desert Tomb, Bandit Hideout (far west)
     // Act 4
-    [18, 75],                          // Magma Tunnels
-    [12, 72], [12, 69],               // Volcanic Forge S/N
+    [25, 80],                          // Magma Tunnels
+    [12, 70], [12, 67],               // Volcanic Forge S/N
     // Act 5
     [8, 10], [110, 10],               // Legendary: Sanctum (NW), Vault (NE)
   ];
@@ -479,17 +477,16 @@ export function generateOverworldMap(width: number, height: number): number[][] 
   map[127][66] = 7;  // north exit
   map[130][66] = 7;  // south entrance
 
-  // Storm Nest approach: scatter tree/mountain obstacles along the windy path
-  // This makes the route feel treacherous — player must weave through obstacles
+  // Storm Nest approach: scatter tree/mountain obstacles along the windy west path
+  // ironkeep(70,118) → (55,114) → (40,110) → stormNest(25,108)
   const stormObstacles: [number, number, number][] = [
-    // Tree clusters flanking the path segments
-    [45, 106, 3], [45, 110, 3], [48, 107, 4], [52, 110, 3],
-    [55, 114, 3], [58, 112, 4], [60, 117, 3], [63, 114, 4],
-    [68, 108, 3], [72, 110, 4], [75, 106, 3], [78, 112, 3],
-    [82, 110, 4], [85, 114, 3], [88, 110, 4], [92, 112, 3],
-    [95, 110, 4], [98, 114, 3],
-    // Mountain blocks near the cave entrance
-    [102, 110, 4], [102, 114, 4], [99, 110, 4],
+    // Tree/mountain clusters flanking the westward path
+    [65, 116, 3], [62, 112, 4], [58, 116, 3], [55, 112, 4],
+    [52, 108, 3], [48, 112, 3], [45, 108, 4], [42, 112, 3],
+    [38, 108, 4], [35, 112, 3], [32, 106, 4], [30, 110, 3],
+    [28, 106, 4], [27, 110, 3],
+    // Mountain blocks near Storm Nest entrance
+    [23, 106, 4], [23, 110, 4], [27, 106, 4],
   ];
   for (const [ox, oy, tile] of stormObstacles) {
     if (ox >= 2 && ox < width - 2 && oy >= 2 && oy < height - 2) {
@@ -504,16 +501,51 @@ export function generateOverworldMap(width: number, height: number): number[][] 
   map[101][90] = 4;  // mountain — north of SC S (90,102)
   map[99][90] = 1;   // walkable — north of SC N (90,100)
 
-  // Volcanic Forge: mountains fill between S(12,72) and N(12,69)
-  map[70][12] = 4;
-  map[71][12] = 4;
+  // Volcanic Forge: mountains fill between S(12,70) and N(12,67)
+  map[68][12] = 4;
+  map[69][12] = 4;
 
   // Volcanic Forge N: mountains surround N/S/W — player exits east
-  map[68][12] = 4;  // north of VF N
-  map[70][12] = 4;  // south of VF N
-  map[69][11] = 4;  // west of VF N
-  map[69][13] = 1;  // east exit walkable
-  map[69][14] = 1;
+  map[66][12] = 4;  // north of VF N
+  map[68][12] = 4;  // south of VF N
+  map[67][11] = 4;  // west of VF N
+  map[67][13] = 1;  // east exit walkable
+  map[67][14] = 1;
+
+  // ── [6] Oasis Haven: river barrier EAST of Desert Tomb ──
+  // Blocks direct east approach from Ruins Camp; forces player through Oasis Haven
+  for (let ry = 89; ry <= 99; ry++) {
+    for (let rx = 64; rx <= 66; rx++) {
+      if (rx >= 2 && rx < width - 2 && ry >= 2 && ry < height - 2) {
+        // Don't overwrite path, town, cave markers
+        if (map[ry][rx] !== 1 && map[ry][rx] !== 6 && map[ry][rx] !== 7 && map[ry][rx] !== 8) {
+          map[ry][rx] = 2;  // water barrier
+        }
+      }
+    }
+  }
+  // Re-stamp Desert Tomb cave marker and ensure path from Oasis Haven reaches it
+  map[95][60] = 7;
+  // Walkable tiles between Oasis Haven and Desert Tomb (ensure path isn't flooded)
+  for (let px = 55; px <= 62; px++) {
+    if (map[95][px] === 2) map[95][px] = 1;
+    if (map[96][px] === 2) map[96][px] = 1;
+  }
+
+  // Extra walkable clearance around Oasis Haven (8-directional)
+  const ohX = 45, ohY = 92;
+  for (let dy = -2; dy <= 2; dy++) {
+    for (let dx = -2; dx <= 2; dx++) {
+      const ax = ohX + dx, ay = ohY + dy;
+      if (ax >= 2 && ax < width - 2 && ay >= 2 && ay < height - 2) {
+        if (map[ay][ax] === 4 || map[ay][ax] === 2) {
+          map[ay][ax] = 0;
+        }
+      }
+    }
+  }
+  // Re-stamp Oasis Haven town marker
+  map[ohY][ohX] = 6;
 
   return map;
 }
@@ -726,17 +758,32 @@ export function generateDungeonMap(
   }
 
   // --- Connect rooms ---
+  const isStandardDungeon = !gate && !castle;
   for (let i = 0; i < rooms.length - 1; i++) {
     const a = rooms[i];
     const b = rooms[i + 1];
     carveLCorridor(map, a.cx, a.cy, b.cx, b.cy, rand);
   }
 
+  // Cross-connections: fewer in standard dungeons for more isolated feel
+  const crossChance = isStandardDungeon ? 0.75 : 0.55;
   for (let i = 0; i < rooms.length - 2; i++) {
-    if (rand() > 0.55) {
+    if (rand() > crossChance) {
       const a = rooms[i];
       const b = rooms[i + 2];
       carveLCorridor(map, a.cx, a.cy, b.cx, b.cy, rand);
+    }
+  }
+
+  // Extra corridor loops for standard dungeons (non-linear maze feel)
+  if (isStandardDungeon && rooms.length >= 4) {
+    const loopCount = 2 + Math.floor(rand() * 2);
+    for (let l = 0; l < loopCount; l++) {
+      const aIdx = Math.floor(rand() * rooms.length);
+      let bIdx = Math.floor(rand() * rooms.length);
+      if (Math.abs(aIdx - bIdx) > 1 && aIdx !== bIdx) {
+        carveLCorridor(map, rooms[aIdx].cx, rooms[aIdx].cy, rooms[bIdx].cx, rooms[bIdx].cy, rand);
+      }
     }
   }
 
@@ -822,6 +869,29 @@ export function generateDungeonMap(
     treasurePositions.splice(worstIdx, 1);
   }
 
+  // --- Extra dead-end branches for standard dungeons (no treasure, just maze) ---
+  if (isStandardDungeon) {
+    for (let i = 0; i < rooms.length; i++) {
+      if (rand() > 0.5) {
+        const room = rooms[i];
+        const dirs = shuffleArray([[0, -1], [0, 1], [-1, 0], [1, 0]], rand);
+        for (const [dx, dy] of dirs) {
+          const branchLen = 4 + Math.floor(rand() * 6);
+          let ex = room.cx + dx * (Math.floor(room.w / 2) + branchLen);
+          let ey = room.cy + dy * (Math.floor(room.h / 2) + branchLen);
+          ex = Math.max(1, Math.min(width - 2, ex));
+          ey = Math.max(2, Math.min(height - 4, ey));
+
+          if (map[ey][ex] === 1) {
+            carveLCorridor(map, room.cx, room.cy, ex, ey, rand);
+            map[ey][ex] = 0;
+            break;
+          }
+        }
+      }
+    }
+  }
+
   const entranceX = Math.floor(width / 2);
 
   if (gate) {
@@ -902,6 +972,7 @@ export function generateDungeonMap(
 
   } else {
     // ── Standard dungeon ──
+    // Entrance always at top (entranceX, 0)
     for (let dx = -1; dx <= 1; dx++) {
       const ex = entranceX + dx;
       if (ex > 0 && ex < width - 1) {
@@ -914,51 +985,101 @@ export function generateDungeonMap(
       carveLCorridor(map, entranceX, 2, rooms[0].cx, rooms[0].cy, rand);
     }
 
-    const bottomX = entranceX;
-    const bottomRoomY = height - 3;
-    for (let dy = 0; dy < 3; dy++) {
-      for (let dx = -2; dx <= 2; dx++) {
-        const bx = bottomX + dx;
-        const by = bottomRoomY + dy;
-        if (bx > 0 && bx < width - 1 && by > 0 && by < height - 1) {
-          map[by][bx] = 0;
+    // Goal room: pick room FARTHEST from entrance (Manhattan distance)
+    let goalRoom = rooms.length > 0 ? rooms[rooms.length - 1] : null;
+    if (rooms.length > 1) {
+      let maxDist = 0;
+      for (const r of rooms) {
+        const dist = Math.abs(r.cx - entranceX) + Math.abs(r.cy - 1);
+        if (dist > maxDist) {
+          maxDist = dist;
+          goalRoom = r;
         }
       }
     }
-    map[bottomRoomY - 1][bottomX] = 0;
-    if (rooms.length > 0) {
-      const lastRoom = rooms[rooms.length - 1];
-      carveLCorridor(map, lastRoom.cx, lastRoom.cy, bottomX, bottomRoomY - 1, rand);
-    }
+
+    // Carve goal room area and connect to nearest room
+    const goalX = goalRoom ? goalRoom.cx : entranceX;
+    const goalY = goalRoom ? goalRoom.cy : height - 3;
 
     if (gateFinalFloor && isFinalFloor) {
-      const bossRoomY = height - 7;
-      for (let dy = 0; dy < 3; dy++) {
+      // Gate final floor: boss room + exit at bottom
+      const bossRoomY = goalY;
+      for (let dy = -1; dy <= 1; dy++) {
         for (let dx = -2; dx <= 2; dx++) {
-          const bx = entranceX + dx;
+          const bx = goalX + dx;
           const by = bossRoomY + dy;
           if (bx > 0 && bx < width - 1 && by > 0 && by < height - 1) {
             map[by][bx] = 0;
           }
         }
       }
-      if (rooms.length > 0) {
-        const lastRoom = rooms[rooms.length - 1];
-        carveLCorridor(map, lastRoom.cx, lastRoom.cy, entranceX, bossRoomY, rand);
-      }
-
-      for (let cy = height - 4; cy <= height - 3; cy++) {
-        if (cy > 0 && cy < height - 1) {
-          map[cy][entranceX] = 0;
+      map[bossRoomY][goalX] = 7;  // boss at goal room
+      // Gate exit at bottom center
+      map[height - 1][entranceX] = 6;
+      for (let dx = -1; dx <= 1; dx++) {
+        const ex2 = entranceX + dx;
+        if (ex2 > 0 && ex2 < width - 1) {
+          map[height - 2][ex2] = 0;
+          map[height - 3][ex2] = 0;
         }
       }
-
-      map[height - 2][entranceX] = 7;
-      map[height - 1][entranceX] = 6;
+      if (rooms.length > 0) {
+        const lastRoom = rooms[rooms.length - 1];
+        carveLCorridor(map, lastRoom.cx, lastRoom.cy, entranceX, height - 3, rand);
+      }
     } else if (isFinalFloor) {
-      map[bottomRoomY + 1][bottomX] = 7;
+      // Boss on final floor at goal room center
+      map[goalY][goalX] = 7;
     } else {
-      map[bottomRoomY + 1][bottomX] = 9;
+      // Stairs-down at goal room center
+      map[goalY][goalX] = 9;
+    }
+  }
+
+  // ── BFS reachability validation: ensure goal is reachable from entrance ──
+  // Find the goal tile (stairs-down=9, boss=7, or gate exit=6 at bottom)
+  let goalTileX = entranceX, goalTileY = 1;
+  for (let y2 = height - 1; y2 >= 0; y2--) {
+    for (let x2 = 0; x2 < width; x2++) {
+      const tile = map[y2][x2];
+      if (tile === 9 || tile === 7) {
+        goalTileX = x2;
+        goalTileY = y2;
+      }
+    }
+  }
+
+  // BFS from entrance to goal
+  {
+    const visited = new Set<string>();
+    const queue: [number, number][] = [[entranceX, 1]];
+    visited.add(`${entranceX},1`);
+    let reached = false;
+    while (queue.length > 0) {
+      const [cx, cy] = queue.shift()!;
+      if (cx === goalTileX && cy === goalTileY) { reached = true; break; }
+      for (const [dx, dy] of [[0, -1], [0, 1], [-1, 0], [1, 0]]) {
+        const nx = cx + dx, ny = cy + dy;
+        const key = `${nx},${ny}`;
+        if (nx < 0 || nx >= width || ny < 0 || ny >= height) continue;
+        if (visited.has(key)) continue;
+        const t = map[ny][nx];
+        if (t === 1 || t === 5) continue; // wall or lava = impassable
+        visited.add(key);
+        queue.push([nx, ny]);
+      }
+    }
+    // If unreachable, carve fallback L-corridor to connect
+    if (!reached) {
+      // Find nearest connected tile to goal
+      let bestX = entranceX, bestY = 2, bestDist = Infinity;
+      for (const key of visited) {
+        const [vx, vy] = key.split(',').map(Number);
+        const dist = Math.abs(vx - goalTileX) + Math.abs(vy - goalTileY);
+        if (dist < bestDist) { bestDist = dist; bestX = vx; bestY = vy; }
+      }
+      carveLCorridor(map, bestX, bestY, goalTileX, goalTileY, rand);
     }
   }
 

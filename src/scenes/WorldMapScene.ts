@@ -166,7 +166,7 @@ export class WorldMapScene extends Phaser.Scene {
   private static readonly FEMALE_NPCS = new Set([
     'villager1', 'wisewoman', 'blacksmith',
     'archaeologist', 'veteran', 'priestess',
-    'herbalist', 'scout', 'refugee', 'prophetess',
+    'herbalist', 'refugee', 'prophetess',
   ]);
 
   private renderNPCs(def: typeof mapDefs[string]): void {
@@ -521,17 +521,32 @@ export class WorldMapScene extends Phaser.Scene {
       } else if (target.targetMap === '__floor_up__') {
         // Go to previous floor (toward entrance)
         this.currentFloor--;
-        const centerX = Math.floor(def.width / 2);
-        this.heroTileX = centerX;
+        this.loadMap(this.currentMapId);
+        // After regenerating the map, scan for stairs-down (tile 9) to spawn near
         if (def.castle) {
-          // Castle: previous floor reached by going down, appear near top (below progression stairs)
+          // Castle: previous floor reached by going down, appear near top
+          this.heroTileX = Math.floor(def.width / 2);
           this.heroTileY = 2;
         } else {
-          // Standard: previous floor reached by going up, appear near bottom (above stairs-down)
-          this.heroTileY = def.height - 3;
+          // Standard: scan mapData for stairs-down tile and spawn adjacent
+          let foundStairs = false;
+          for (let sy = 0; sy < this.mapData.length && !foundStairs; sy++) {
+            for (let sx = 0; sx < this.mapData[sy].length; sx++) {
+              if (this.mapData[sy][sx] === 9) {
+                this.heroTileX = sx;
+                this.heroTileY = Math.max(1, sy - 1);
+                foundStairs = true;
+                break;
+              }
+            }
+          }
+          if (!foundStairs) {
+            // Fallback: center bottom
+            this.heroTileX = Math.floor(def.width / 2);
+            this.heroTileY = def.height - 3;
+          }
         }
         this.updatePosition();
-        this.loadMap(this.currentMapId);
       } else {
         // Normal map transition — use target floor (for gate re-entry) or reset
         this.currentFloor = target.toFloor ?? 1;
@@ -967,10 +982,14 @@ export class WorldMapScene extends Phaser.Scene {
         // Remove boss tile — gate dungeons open a walkable path, others get exit portal
         const isGateDungeon = def.connections.length > 1;
         this.time.delayedCall(800, () => {
-          this.mapData[bossTileY][bossTileX] = isGateDungeon ? 0 : 10;
-          this.renderMap();
-          this.createHero();
-          this.updateCamera();
+          const newTile = isGateDungeon ? 0 : 10;
+          this.mapData[bossTileY][bossTileX] = newTile;
+          // Update single tile in-place (same pattern as treasure chest) — avoids camera snap
+          const mapWidth = this.mapData[0].length;
+          const tileIdx = bossTileY * mapWidth + bossTileX;
+          const tileObj = this.tileLayer.getAt(tileIdx) as Phaser.GameObjects.Image;
+          const prefix = def.castle ? 'castle' : 'dng';
+          tileObj.setTexture(`${prefix}-${newTile}`);
         });
 
         // Auto-equip items on boss defeat + crystal obtain SFX

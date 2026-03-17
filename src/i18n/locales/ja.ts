@@ -136,16 +136,12 @@ export const jaStrings: Record<string, string> = {
   'npc.wisewoman': 'ひがしに きりのどうくつが あるわ。おおガエルが クリスタルを まもっている — きたの すいしょうのどうくつを ひらくには それが ひつようよ！',
 
   // Ironkeep (Act 2)
-  'npc.soldier': 'きたの かげのどうくつは くらい けっかいで ふうじられている。にしの はるかかなたに あらしのすがある。そこの あらしのハーピーが もつ クリスタルで ふういんを とけるはずだ！',
-  'npc.blacksmith': 'わたしが つくった そうびは いちばんよ！ひがしに いくまえに にしの あらしのすに いってみて。そこで だいじなものが みつかるわ！',
-
-  // Highwatch (Act 2)
-  'npc.scout': 'まず にしの こおりのみずうみへ いきなさい！ こおりのワイアームが でんせつの けんを まもっているわ。ひがしに いくまえに そのぶきが ひつようよ！',
-  'npc.mountaineer': 'はるか ひがしに あらしのす が ある… やまを ぬける くねくねした けわしいみちだ。じゅうぶん つよくなってから いけ。あらしのハーピーは てごわいぞ！',
+  'npc.soldier': 'はるか ひがしに こおりのみずうみが ある。こおりのワイアームが でんせつの フロストブランドを まもっている。そのぶきは これからの たびに やくだつぞ！',
+  'npc.blacksmith': 'きたの かげのどうくつは くらい けっかいで ふうじられているの。にしの あらしのすへ いって — あらしのハーピーが もつ クリスタルで ふういんを とけるわ！',
 
   // Oasis Haven (Act 3)
   'npc.oasisElder': 'ひがしの さばくのはかには いにしえの ばんにんが いる。たおせば かざんちたいへの みちが ひらけるぞ！',
-  'npc.refugee': 'さんぞくに おわれて みなみから にげてきたの。ちかくに さんぞくの アジトが あるから きをつけてね…',
+  'npc.refugee': 'さんぞくの おやぶんの アジトは ここから はるか にしに かくれているの。みちは ないけど… つよい ぶきを もっているらしいわ！',
 
   // Ruins Camp (Act 3/4)
   'npc.archaeologist': 'ようがんちたいは きけんよ。じゅうぶん きをつけてね！',
@@ -427,6 +423,9 @@ export const jaStrings: Record<string, string> = {
   'victory.thanks': 'あそんでくれて ありがとう！',
   'victory.stats': 'せいかいりつ: {correct}/{total} ({pct}%)',
   'victory.time': 'クリアタイム: {time}',
+  'victory.difficulty': 'なんいど: {grade}',
+  'victory.ngplus': 'つよくてニューゲーム',
+  'victory.titleScreen': 'タイトルにもどる',
   'victory.pressEnter': 'エンターキーでもどる',
 
   // Sealed Sanctum (Excalibur)
@@ -465,7 +464,6 @@ export const jaStrings: Record<string, string> = {
   'map.millbrook': 'ミルブルック',
   'map.portSapphire': 'サファイアみなと',
   'map.ironkeep': 'アイアンキープようさい',
-  'map.highwatch': 'ハイウォッチ',
   'map.oasisHaven': 'オアシスのやかた',
   'map.ruinsCamp': 'いせきキャンプ',
   'map.embersRest': 'ひのこのやすらぎ',

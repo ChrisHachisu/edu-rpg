@@ -6,6 +6,14 @@ import { GradeLevel, HeroColorScheme } from './utils/types';
 import { setLocale, getLocale } from './i18n/i18n';
 import { audioManager } from './systems/audio/AudioManager';
 
+interface NgPlusData {
+  inventory: { itemId: string; quantity: number }[];
+  equipment: { weapon: string | null; armor: string | null; shield: string | null; helmet: string | null; accessory: string | null };
+  gold: number;
+  heroName: string;
+  heroColor: HeroColorScheme;
+}
+
 class GameStateManager {
   player!: Player;
   quizManager!: QuizManager;
@@ -14,6 +22,8 @@ class GameStateManager {
   startTime = 0;
   /** Dev mode: no encounters + 999 ATK. Activate via ?dev=1 in URL. */
   devMode = new URLSearchParams(window.location.search).get('dev') === '1';
+  /** Stored NG+ carryover data */
+  ngPlusData: NgPlusData | null = null;
 
   newGame(difficulty: GradeLevel, heroName = 'Hero', heroColor: HeroColorScheme = 'gray'): void {
     // Propagate dev mode to Player (avoids circular import)
@@ -54,6 +64,27 @@ class GameStateManager {
     this.playtime += (Date.now() - this.startTime) / 1000;
     this.startTime = Date.now();
     SaveManager.save(this.player.state, this.playtime, this.quizManager.getStats());
+  }
+
+  prepareNewGamePlus(): void {
+    this.ngPlusData = {
+      inventory: this.player.state.inventory.map(s => ({ itemId: s.itemId, quantity: s.quantity })),
+      equipment: { ...this.player.state.equipment },
+      gold: this.player.state.gold,
+      heroName: this.player.state.name,
+      heroColor: this.player.state.heroColor,
+    };
+  }
+
+  newGamePlus(difficulty: GradeLevel, heroColor: HeroColorScheme = 'gray'): void {
+    if (!this.ngPlusData) return;
+    const name = this.ngPlusData.heroName;
+    this.newGame(difficulty, name, heroColor);
+    // Restore NG+ carryover
+    this.player.state.inventory = this.ngPlusData.inventory;
+    this.player.state.equipment = this.ngPlusData.equipment;
+    this.player.state.gold = this.ngPlusData.gold;
+    this.ngPlusData = null;
   }
 
   getCurrentEncounterZone(): string | null {

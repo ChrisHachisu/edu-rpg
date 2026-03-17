@@ -136,16 +136,12 @@ export const enStrings: Record<string, string> = {
   'npc.wisewoman': 'The Misty Grotto lies to the east. A Giant Toad guards a crystal there — you\'ll need it to unseal the Crystal Cave to the north!',
 
   // Ironkeep (Act 2)
-  'npc.soldier': 'A dark barrier seals the Shadow Cave to the north. But there\'s a cave far to the west where a Storm Harpy guards a crystal that can break the seal!',
-  'npc.blacksmith': 'I make the best gear around! Before heading east, try the Storm Nest to the west. You\'ll need what you find there!',
-
-  // Highwatch (Act 2)
-  'npc.scout': 'Head west to the Frozen Lake first! An Ice Wyrm guards a legendary blade there. You\'ll need that weapon before tackling what lies to the east.',
-  'npc.mountaineer': 'Far to the east lies the Storm Nest... a winding, treacherous path through the mountains. Only go there once you\'re strong enough. The Storm Harpy is no joke!',
+  'npc.soldier': 'Far to the east lies the Frozen Lake. An Ice Wyrm guards the legendary Frostbrand sword there. That weapon will serve you well on the road ahead!',
+  'npc.blacksmith': 'A dark barrier seals the Shadow Cave to the north. Head west to the Storm Nest — a Storm Harpy there guards a crystal that can break the seal!',
 
   // Oasis Haven (Act 3)
   'npc.oasisElder': 'The Desert Tomb to the east holds an ancient guardian. Defeat it, and the way to the volcanic region will open!',
-  'npc.refugee': 'We fled from the south when the bandits took over. Their hideout is nearby... be careful if you go there!',
+  'npc.refugee': 'The Bandit Lord\'s hideout is hidden far to the west of here. No roads lead to it... but he carries a powerful weapon if you can find him!',
 
   // Ruins Camp (Act 3/4)
   'npc.archaeologist': 'The lava fields are dangerous. Be very careful!',
@@ -427,6 +423,9 @@ export const enStrings: Record<string, string> = {
   'victory.thanks': 'Thank you for playing!',
   'victory.stats': 'Quiz Accuracy: {correct}/{total} ({pct}%)',
   'victory.time': 'Clear Time: {time}',
+  'victory.difficulty': 'Difficulty: {grade}',
+  'victory.ngplus': 'New Game+',
+  'victory.titleScreen': 'Title Screen',
   'victory.pressEnter': 'Press ENTER',
 
   // Sealed Sanctum (Excalibur)
@@ -465,7 +464,6 @@ export const enStrings: Record<string, string> = {
   'map.millbrook': 'Millbrook',
   'map.portSapphire': 'Port Sapphire',
   'map.ironkeep': 'Ironkeep Fortress',
-  'map.highwatch': 'Highwatch',
   'map.oasisHaven': 'Oasis Haven',
   'map.ruinsCamp': 'Ruins Camp',
   'map.embersRest': 'Ember\'s Rest',

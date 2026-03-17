@@ -24,12 +24,6 @@ export const shops: Record<string, ShopData> = {
     nameKey: 'npc.shopkeeper',
     items: ['potion', 'hiPotion', 'smokeBomb', 'steelSword', 'mithrilSword', 'chainMail', 'mithrilArmor', 'steelShield', 'steelHelm'],
   },
-  highwatch: {
-    id: 'highwatch',
-    nameKey: 'npc.shopkeeper',
-    items: ['potion', 'hiPotion', 'smokeBomb', 'steelSword', 'chainMail', 'steelShield', 'ironHelm', 'steelHelm'],
-  },
-
   // ── Act 3 — mid game ──
   oasisHaven: {
     id: 'oasisHaven',

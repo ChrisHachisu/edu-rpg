@@ -263,6 +263,7 @@ function generateMonsterSprites(scene: Phaser.Scene): void {
     { key: 'monster-lavaGolem', color: 0xcc3311, shape: 'golem' },
     { key: 'monster-lich', color: 0x225533, shape: 'boss' },
     { key: 'monster-flameTitan', color: 0xee4400, shape: 'golem' },
+    { key: 'monster-lavaWyrm', color: 0xff5511, shape: 'lava-wyrm' },
     // Act 5
     { key: 'monster-chimera', color: 0x996633, shape: 'chimera' },
     { key: 'monster-demon', color: 0x881122, shape: 'chimera' },
@@ -1012,6 +1013,61 @@ function drawMonster(g: Phaser.GameObjects.Graphics, shape: string, color: numbe
       g.fillStyle(0x222222);
       g.fillTriangle(cx - 10, cy + 20, cx - 8, cy + 18, cx - 6, cy + 22);
       g.fillTriangle(cx + 8, cy + 20, cx + 6, cy + 18, cx + 4, cy + 22);
+      break;
+    }
+
+    case 'lava-wyrm': {
+      // Serpentine lava creature — no wings, no legs, glowing cracks
+      // Tail (far right, curving up)
+      g.fillStyle(darker);
+      g.fillTriangle(cx + 18, cy + 8, cx + 24, cy + 2, cx + 22, cy + 14);
+      g.fillStyle(0xff6600, 0.5);
+      g.fillTriangle(cx + 20, cy + 6, cx + 23, cy + 4, cx + 22, cy + 12);
+      // Main body — S-curve of overlapping ellipses
+      g.fillStyle(color);
+      g.fillEllipse(cx + 12, cy + 6, 14, 10);
+      g.fillEllipse(cx, cy, 16, 12);
+      g.fillEllipse(cx - 10, cy - 4, 14, 10);
+      // Underbelly glow (lava cracks)
+      g.fillStyle(0xff8800, 0.7);
+      g.fillEllipse(cx + 12, cy + 8, 8, 4);
+      g.fillEllipse(cx, cy + 2, 10, 4);
+      g.fillEllipse(cx - 10, cy - 2, 8, 4);
+      // Lava vein dots along body
+      g.fillStyle(0xffcc00, 0.6);
+      for (let i = -14; i < 18; i += 4) {
+        g.fillCircle(cx + i, cy + Math.sin(i * 0.3) * 4, 1.5);
+      }
+      // Scale ridge along spine
+      g.fillStyle(darker);
+      for (let i = -12; i < 16; i += 5) {
+        g.fillTriangle(cx + i, cy + Math.sin(i * 0.3) * 4 - 5, cx + i - 2, cy + Math.sin(i * 0.3) * 4 - 2, cx + i + 2, cy + Math.sin(i * 0.3) * 4 - 2);
+      }
+      // Head (leftmost, raised)
+      g.fillStyle(color);
+      g.fillEllipse(cx - 18, cy - 10, 14, 10);
+      // Head crest
+      g.fillStyle(darker);
+      g.fillTriangle(cx - 20, cy - 18, cx - 16, cy - 12, cx - 24, cy - 12);
+      g.fillTriangle(cx - 16, cy - 17, cx - 13, cy - 12, cx - 19, cy - 12);
+      // Eyes — glowing white-hot
+      g.fillStyle(0xffffff);
+      g.fillCircle(cx - 21, cy - 12, 2.5);
+      g.fillCircle(cx - 15, cy - 12, 2.5);
+      g.fillStyle(0xff4400);
+      g.fillCircle(cx - 21, cy - 11, 1.5);
+      g.fillCircle(cx - 15, cy - 11, 1.5);
+      // Open mouth with lava dripping
+      g.fillStyle(darker);
+      g.fillEllipse(cx - 22, cy - 6, 8, 4);
+      g.fillStyle(0xff4400);
+      g.fillTriangle(cx - 24, cy - 6, cx - 28, cy, cx - 22, cy - 2);
+      g.fillStyle(0xffaa00);
+      g.fillTriangle(cx - 24, cy - 6, cx - 26, cy - 2, cx - 22, cy - 4);
+      // Molten drips from body
+      g.fillStyle(0xff6600, 0.7);
+      g.fillEllipse(cx + 4, cy + 10, 3, 6);
+      g.fillEllipse(cx - 8, cy + 6, 3, 5);
       break;
     }
 

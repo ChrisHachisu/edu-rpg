@@ -623,7 +623,7 @@ export const monsters: Record<string, MonsterTemplate> = {
   lavaWyrm: {
     id: 'lavaWyrm',
     nameKey: 'monster.lavaWyrm',
-    spriteKey: 'monster-dragon',  // reuse dragon sprite (lava color)
+    spriteKey: 'monster-lavaWyrm',
     baseHp: 200,
     baseAtk: 35,
     baseDef: 22,

@@ -3,7 +3,7 @@ import { GAME_WIDTH, GAME_HEIGHT, COLORS } from '../utils/constants';
 import { t, setLocale, getLocale } from '../i18n/i18n';
 import { gameState } from '../GameState';
 import { items } from '../data/items';
-import { GradeLevel, EquipSlot } from '../utils/types';
+import { EquipSlot } from '../utils/types';
 import { audioManager } from '../systems/audio/AudioManager';
 
 type MenuTab = 'status' | 'items' | 'equip' | 'settings';
@@ -260,47 +260,38 @@ export class MenuScene extends Phaser.Scene {
     const y = 60;
     const ff = 'monospace';
 
-    // Difficulty
-    this.add.text(32, y, t('settings.difficulty'), {
+    // Language
+    this.add.text(32, y, t('settings.language'), {
       fontSize: '12px', color: this.listIndex === 0 ? COLORS.TEXT_YELLOW : COLORS.TEXT_WHITE, fontFamily: ff,
     });
-    const currentGrade = gameState.player.state.quizDifficulty;
-    this.add.text(32, y + 28, `< ${t('grade.' + currentGrade)} >`, {
-      fontSize: '12px', color: COLORS.TEXT_YELLOW, fontFamily: ff,
-    });
-
-    // Language
-    this.add.text(32, y + 72, t('settings.language'), {
-      fontSize: '12px', color: this.listIndex === 1 ? COLORS.TEXT_YELLOW : COLORS.TEXT_WHITE, fontFamily: ff,
-    });
-    this.add.text(32, y + 100, `< ${getLocale() === 'ja' ? '日本語' : 'English'} >`, {
+    this.add.text(32, y + 28, `< ${getLocale() === 'ja' ? '日本語' : 'English'} >`, {
       fontSize: '12px', color: COLORS.TEXT_YELLOW, fontFamily: ff,
     });
 
     // Timer toggle
     const timerEnabled = gameState.player.state.timerEnabled;
-    this.add.text(32, y + 144, t('settings.timer'), {
-      fontSize: '12px', color: this.listIndex === 2 ? COLORS.TEXT_YELLOW : COLORS.TEXT_WHITE, fontFamily: ff,
+    this.add.text(32, y + 72, t('settings.timer'), {
+      fontSize: '12px', color: this.listIndex === 1 ? COLORS.TEXT_YELLOW : COLORS.TEXT_WHITE, fontFamily: ff,
     });
-    this.add.text(32, y + 172, `< ${timerEnabled ? t('settings.timerOn') : t('settings.timerOff')} >`, {
+    this.add.text(32, y + 100, `< ${timerEnabled ? t('settings.timerOn') : t('settings.timerOff')} >`, {
       fontSize: '12px', color: COLORS.TEXT_YELLOW, fontFamily: ff,
     });
 
     // Sound toggle
     const soundEnabled = gameState.player.state.soundEnabled;
-    this.add.text(32, y + 216, t('settings.sound'), {
-      fontSize: '12px', color: this.listIndex === 3 ? COLORS.TEXT_YELLOW : COLORS.TEXT_WHITE, fontFamily: ff,
+    this.add.text(32, y + 144, t('settings.sound'), {
+      fontSize: '12px', color: this.listIndex === 2 ? COLORS.TEXT_YELLOW : COLORS.TEXT_WHITE, fontFamily: ff,
     });
-    this.add.text(32, y + 244, `< ${soundEnabled ? t('settings.soundOn') : t('settings.soundOff')} >`, {
+    this.add.text(32, y + 172, `< ${soundEnabled ? t('settings.soundOn') : t('settings.soundOff')} >`, {
       fontSize: '12px', color: COLORS.TEXT_YELLOW, fontFamily: ff,
     });
 
     // Volume
     const vol = Math.round(gameState.player.state.masterVolume * 100);
-    this.add.text(32, y + 280, t('settings.volume'), {
-      fontSize: '12px', color: this.listIndex === 4 ? COLORS.TEXT_YELLOW : COLORS.TEXT_WHITE, fontFamily: ff,
+    this.add.text(32, y + 216, t('settings.volume'), {
+      fontSize: '12px', color: this.listIndex === 3 ? COLORS.TEXT_YELLOW : COLORS.TEXT_WHITE, fontFamily: ff,
     });
-    this.add.text(32, y + 308, `< ${vol}% >`, {
+    this.add.text(32, y + 244, `< ${vol}% >`, {
       fontSize: '12px', color: COLORS.TEXT_YELLOW, fontFamily: ff,
     });
   }
@@ -352,7 +343,7 @@ export class MenuScene extends Phaser.Scene {
       if (this.currentTab === 'equip') {
         this.handleEquipDown();
       } else {
-        const maxIndex = this.currentTab === 'settings' ? 4
+        const maxIndex = this.currentTab === 'settings' ? 3
           : this.currentTab === 'items' ? Math.max(0, gameState.player.state.inventory.length - 1)
           : 99;
         this.listIndex = Math.min(maxIndex, this.listIndex + 1);
@@ -447,23 +438,16 @@ export class MenuScene extends Phaser.Scene {
   // ── Settings handlers ──────────────────────────
 
   private handleSettingsLeft(): void {
-    const grades: GradeLevel[] = ['k', '1', '2', '3', '4', '5', '6'];
     if (this.listIndex === 0) {
-      const idx = grades.indexOf(gameState.player.state.quizDifficulty);
-      if (idx > 0) {
-        gameState.player.state.quizDifficulty = grades[idx - 1];
-        gameState.quizManager.setDifficulty(grades[idx - 1]);
-      }
-    } else if (this.listIndex === 1) {
       const newLocale = getLocale() === 'ja' ? 'en' : 'ja';
       setLocale(newLocale);
       gameState.player.state.locale = newLocale;
-    } else if (this.listIndex === 2) {
+    } else if (this.listIndex === 1) {
       gameState.player.state.timerEnabled = !gameState.player.state.timerEnabled;
-    } else if (this.listIndex === 3) {
+    } else if (this.listIndex === 2) {
       gameState.player.state.soundEnabled = !gameState.player.state.soundEnabled;
       audioManager.setMuted(!gameState.player.state.soundEnabled);
-    } else if (this.listIndex === 4) {
+    } else if (this.listIndex === 3) {
       const vol = Math.max(0, gameState.player.state.masterVolume - 0.1);
       gameState.player.state.masterVolume = Math.round(vol * 10) / 10;
       audioManager.setVolume(gameState.player.state.masterVolume);
@@ -472,23 +456,16 @@ export class MenuScene extends Phaser.Scene {
   }
 
   private handleSettingsRight(): void {
-    const grades: GradeLevel[] = ['k', '1', '2', '3', '4', '5', '6'];
     if (this.listIndex === 0) {
-      const idx = grades.indexOf(gameState.player.state.quizDifficulty);
-      if (idx < grades.length - 1) {
-        gameState.player.state.quizDifficulty = grades[idx + 1];
-        gameState.quizManager.setDifficulty(grades[idx + 1]);
-      }
-    } else if (this.listIndex === 1) {
       const newLocale = getLocale() === 'ja' ? 'en' : 'ja';
       setLocale(newLocale);
       gameState.player.state.locale = newLocale;
-    } else if (this.listIndex === 2) {
+    } else if (this.listIndex === 1) {
       gameState.player.state.timerEnabled = !gameState.player.state.timerEnabled;
-    } else if (this.listIndex === 3) {
+    } else if (this.listIndex === 2) {
       gameState.player.state.soundEnabled = !gameState.player.state.soundEnabled;
       audioManager.setMuted(!gameState.player.state.soundEnabled);
-    } else if (this.listIndex === 4) {
+    } else if (this.listIndex === 3) {
       const vol = Math.min(1, gameState.player.state.masterVolume + 0.1);
       gameState.player.state.masterVolume = Math.round(vol * 10) / 10;
       audioManager.setVolume(gameState.player.state.masterVolume);

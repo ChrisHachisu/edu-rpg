@@ -29,6 +29,7 @@ export class TitleScene extends Phaser.Scene {
   private errorText: Phaser.GameObjects.Text | null = null;
   private heroPreview: Phaser.GameObjects.Image | null = null;
   private blinkTimer: Phaser.Time.TimerEvent | null = null;
+  private ngPlus = false;
 
   constructor() {
     super('TitleScene');
@@ -36,13 +37,29 @@ export class TitleScene extends Phaser.Scene {
 
   private audioInitialized = false;
 
-  create(): void {
+  create(data?: { ngPlus?: boolean }): void {
     this.cameras.main.setBackgroundColor(COLORS.DARK_BLUE);
     this.selectedIndex = 0;
-    this.mode = 'title';
     this.heroName = '';
     this.colorIndex = 0;
     this.createRow = 'name';
+    this.ngPlus = data?.ngPlus ?? false;
+
+    if (this.ngPlus && gameState.ngPlusData) {
+      // NG+: skip title, go straight to create screen with locked name
+      this.mode = 'create';
+      this.heroName = gameState.ngPlusData.heroName;
+      // Map heroColor to colorIndex
+      const savedColor = gameState.ngPlusData.heroColor;
+      const colorIdx = this.colorOptions.indexOf(savedColor);
+      if (colorIdx >= 0) this.colorIndex = colorIdx;
+      // Skip name row in NG+ mode
+      this.createRow = 'color';
+    } else {
+      this.mode = 'title';
+      this.ngPlus = false;
+    }
+
     this.draw();
     this.setupInput();
     this.initAudioOnGesture();
@@ -161,23 +178,23 @@ export class TitleScene extends Phaser.Scene {
     const nameSelected = this.createRow === 'name';
     this.add.text(cx, y, t('create.name'), {
       fontSize: '12px',
-      color: nameSelected ? COLORS.TEXT_YELLOW : COLORS.TEXT_WHITE,
+      color: this.ngPlus ? COLORS.TEXT_GRAY : (nameSelected ? COLORS.TEXT_YELLOW : COLORS.TEXT_WHITE),
       fontFamily: 'monospace',
     }).setOrigin(0.5);
     y += 22;
 
     // Name display (the actual editing uses a hidden DOM input)
     const displayName = this.heroName || t('create.namePlaceholder');
-    const nameDisplay = this.add.text(cx, y, `[ ${displayName} ]`, {
+    const nameDisplay = this.add.text(cx, y, this.ngPlus ? `[ ${displayName} ]` : `[ ${displayName} ]`, {
       fontSize: '14px',
-      color: this.heroName ? COLORS.TEXT_WHITE : COLORS.TEXT_GRAY,
+      color: this.ngPlus ? COLORS.TEXT_GRAY : (this.heroName ? COLORS.TEXT_WHITE : COLORS.TEXT_GRAY),
       fontFamily: 'monospace',
     }).setOrigin(0.5);
     nameDisplay.setData('row', 'name');
     this.menuItems.push(nameDisplay);
 
-    // Blinking cursor when name row is selected
-    if (nameSelected) {
+    // Blinking cursor when name row is selected (not in NG+ mode)
+    if (nameSelected && !this.ngPlus) {
       const cursorX = cx + (this.heroName.length * 4) + 8;
       const cursor = this.add.text(cursorX, y, '|', {
         fontSize: '14px',
@@ -403,9 +420,16 @@ export class TitleScene extends Phaser.Scene {
     // ESC to go back from create screen
     this.input.keyboard?.on('keydown-ESC', () => {
       if (this.mode === 'create') {
-        this.mode = 'title';
-        this.selectedIndex = 0;
-        this.draw();
+        if (this.ngPlus) {
+          // In NG+, ESC goes back to Victory screen
+          this.removeNameInput();
+          gameState.ngPlusData = null;
+          this.scene.start('TitleScene');
+        } else {
+          this.mode = 'title';
+          this.selectedIndex = 0;
+          this.draw();
+        }
       }
     });
   }
@@ -435,7 +459,11 @@ export class TitleScene extends Phaser.Scene {
     }
 
     const idx = this.createRows.indexOf(this.createRow);
-    const next = Math.max(0, Math.min(this.createRows.length - 1, idx + dir));
+    let next = Math.max(0, Math.min(this.createRows.length - 1, idx + dir));
+    // In NG+ mode, skip the name row
+    if (this.ngPlus && this.createRows[next] === 'name') {
+      next = Math.max(0, Math.min(this.createRows.length - 1, next + dir));
+    }
     if (next !== idx) {
       this.createRow = this.createRows[next];
       audioManager.playSfx('menu_select');
@@ -506,7 +534,11 @@ export class TitleScene extends Phaser.Scene {
       audioManager.playSfx('menu_select');
       const scheme = this.colorOptions[this.colorIndex];
       const difficulty = this.difficultyOptions[this.difficultyIndex];
-      gameState.newGame(difficulty, this.heroName.trim(), scheme);
+      if (this.ngPlus) {
+        gameState.newGamePlus(difficulty, scheme);
+      } else {
+        gameState.newGame(difficulty, this.heroName.trim(), scheme);
+      }
       // Ensure hero sprites match selected color
       regenerateHeroSprites(this, scheme);
       this.removeNameInput();
