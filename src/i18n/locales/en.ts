@@ -128,7 +128,7 @@ export const enStrings: Record<string, string> = {
 
   // Ruins Camp (Act 3/4)
   'npc.archaeologist': 'The lava fields are dangerous. Be very careful!',
-  'npc.explorer': 'The Volcanic Forge is east. The Flame Titan guards the way to the demon realm!',
+  'npc.explorer': 'The Volcanic Forge is west. The Flame Titan guards the way to the demon realm!',
 
   // Last Bastion (Act 5) — THE ONLY legendary hints
   'npc.veteran': 'Your grandmother used Excalibur and the Aegis of Dawn to seal Malachar. Find them before facing him! Excalibur is in a sanctum to the far west.',

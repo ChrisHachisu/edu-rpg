@@ -128,7 +128,7 @@ export const jaStrings: Record<string, string> = {
 
   // Ruins Camp (Act 3/4)
   'npc.archaeologist': 'ようがんちたいは きけんよ。じゅうぶん きをつけてね！',
-  'npc.explorer': 'ひがしに かざんのかじばがある。えんのきょじんが まおうのりょうどへの みちを まもっている！',
+  'npc.explorer': 'にしに かざんのかじばがある。えんのきょじんが まおうのりょうどへの みちを まもっている！',
 
   // Last Bastion (Act 5) — THE ONLY legendary hints
   'npc.veteran': 'おばあちゃんは エクスカリバーと あけぼののイージスで まおうを ふういんしたの。にしの ふういんされたせいいきに エクスカリバーが あるわ！',
