@@ -651,12 +651,14 @@ export class WorldMapScene extends Phaser.Scene {
         this.currentFloor++;
         gameState.encounterManager.reset();
         this.loadMap(this.currentMapId);
-        // Use effective dimensions (set by loadMap) for spawn position
-        this.heroTileX = Math.floor(this.effectiveWidth / 2);
-        if (def.castle) {
-          this.heroTileY = this.effectiveHeight - 2;
+        // Scan for entrance tile (stairs-up, tile 6) and spawn adjacent
+        const entrance = this.findDungeonEntrance(def.castle ? this.effectiveHeight : 0);
+        if (entrance) {
+          this.heroTileX = entrance.x;
+          this.heroTileY = entrance.y;
         } else {
-          this.heroTileY = 1;
+          this.heroTileX = Math.floor(this.effectiveWidth / 2);
+          this.heroTileY = def.castle ? this.effectiveHeight - 2 : 1;
         }
         this.updatePosition();
       } else if (target.targetMap === '__floor_up__') {
@@ -666,9 +668,22 @@ export class WorldMapScene extends Phaser.Scene {
         this.loadMap(this.currentMapId);
         // After regenerating the map, scan for stairs-down (tile 9) to spawn near
         if (def.castle) {
-          // Castle: previous floor reached by going down, appear near top
-          this.heroTileX = Math.floor(this.effectiveWidth / 2);
-          this.heroTileY = 2;
+          // Castle: previous floor reached by going down, appear near stairs-down (tile 9)
+          let foundCastleStairs = false;
+          for (let sy = 0; sy < this.mapData.length && !foundCastleStairs; sy++) {
+            for (let sx = 0; sx < this.mapData[sy].length; sx++) {
+              if (this.mapData[sy][sx] === 9) {
+                this.heroTileX = sx;
+                this.heroTileY = Math.min(this.effectiveHeight - 2, sy + 1);
+                foundCastleStairs = true;
+                break;
+              }
+            }
+          }
+          if (!foundCastleStairs) {
+            this.heroTileX = Math.floor(this.effectiveWidth / 2);
+            this.heroTileY = 2;
+          }
         } else {
           // Standard: scan mapData for stairs-down tile and spawn adjacent
           let foundStairs = false;
@@ -702,10 +717,54 @@ export class WorldMapScene extends Phaser.Scene {
         this.updatePosition();
         gameState.encounterManager.reset();
         this.loadMap(target.targetMap);
+
+        // For dungeons: connection toX/toY are based on full-size dimensions.
+        // Grade scaling shrinks the map, moving the entrance tile.
+        // Scan for the actual entrance and snap the player to it.
+        if (targetDef?.type === 'dungeon') {
+          const spawn = this.findDungeonEntrance(target.toY);
+          if (spawn) {
+            this.heroTileX = spawn.x;
+            this.heroTileY = spawn.y;
+            this.updatePosition();
+            this.createHero();
+            this.updateCamera();
+          }
+        }
       }
       this.isMoving = false;
       this.cameras.main.fadeIn(200, 0, 0, 0);
     });
+  }
+
+  /** Scan dungeon map for the entrance tile (6=stairs-up) closest to the
+   *  requested entry side (top or bottom) and return the adjacent walkable tile. */
+  private findDungeonEntrance(requestedY: number): { x: number; y: number } | null {
+    const h = this.mapData.length;
+    const w = this.mapData[0]?.length ?? 0;
+    // Determine if entering from top or bottom based on requested Y
+    const enterFromBottom = requestedY > h / 2;
+
+    // Collect all stairs-up tiles (tile 6)
+    const stairs: { x: number; y: number }[] = [];
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        if (this.mapData[y][x] === 6) stairs.push({ x, y });
+      }
+    }
+    if (stairs.length === 0) return null;
+
+    // Pick the one closest to the expected side
+    let best = stairs[0];
+    if (enterFromBottom) {
+      // Bottom entrance: pick stairs with highest y
+      for (const s of stairs) { if (s.y > best.y) best = s; }
+      return { x: best.x, y: Math.max(0, best.y - 1) };
+    } else {
+      // Top entrance: pick stairs with lowest y
+      for (const s of stairs) { if (s.y < best.y) best = s; }
+      return { x: best.x, y: Math.min(h - 1, best.y + 1) };
+    }
   }
 
   private onStep(): void {
