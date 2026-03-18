@@ -274,7 +274,10 @@ export class BattleScene extends Phaser.Scene {
       if (this.phase === 'playerMenu') this.confirmMenuAction();
       else if (this.phase === 'playerQuiz' || this.phase === 'enemyQuiz') this.confirmQuizAnswer();
       else if (this.phase === 'message') this.advanceMessage();
-      else if (this.phase === 'itemSelect') this.confirmItemSelection();
+      else if (this.phase === 'itemSelect') {
+        if (this.itemMenuItems.length === 0) { this.clearItemMenu(); this.drawMenu(); }
+        else this.confirmItemSelection();
+      }
     };
 
     this.input.keyboard?.on('keydown-Z', confirm);
@@ -612,10 +615,8 @@ export class BattleScene extends Phaser.Scene {
       this.cameras.main.shake(150, 0.01);
     }
 
-    // Partial hit SFX (reduced volume) or miss SFX
-    if (result.partial && result.damage && result.damage > 0) {
-      audioManager.playSfx('attack_hit');
-    } else if (result.damage === 0 && result.state !== 'fled' && result.state !== 'victory' && result.state !== 'defeat') {
+    // Miss SFX (no damage dealt and not a special state)
+    if (result.damage === 0 && result.state !== 'fled' && result.state !== 'victory' && result.state !== 'defeat') {
       audioManager.playSfx('attack_miss');
     }
 
