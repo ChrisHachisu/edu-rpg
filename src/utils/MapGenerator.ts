@@ -865,7 +865,7 @@ export function generateTownMap(width: number, height: number, seed: number): nu
     }
   }
 
-  // Helper: place a 3×2 clinic (row 0 = green roof with cross, row 1 = wall with window/door/window)
+  // Helper: place a 3×2 clinic (row 0 = green roof with cross, row 1 = wall/counter/wall)
   function placeClinic(cx: number, cy: number): void {
     for (let dx = 0; dx < 3; dx++) {
       const px = cx + dx;
@@ -874,7 +874,7 @@ export function generateTownMap(width: number, height: number, seed: number): nu
       }
       const wy = cy + 1;
       if (wy > 0 && wy < height - 1 && px > 0 && px < width - 1) {
-        map[wy][px] = dx === 1 ? 15 : 14; // center=door, sides=window
+        map[wy][px] = dx === 1 ? 15 : 14; // center=counter, sides=window
       }
     }
     // Floor in front

@@ -8,7 +8,6 @@ export const jaKanjiStrings: Record<string, string> = {
   'title.newGame': '初めから',
   'title.continue': '続きから',
   'title.settings': '設定',
-  'title.pressStart': 'エンターキーでスタート',
 
   // Character Creation
   'create.title': '勇者をつくろう',
@@ -24,11 +23,7 @@ export const jaKanjiStrings: Record<string, string> = {
   'settings.language': '言葉',
   'settings.back': '戻る',
   'settings.sound': '音',
-  'settings.soundOn': 'あり',
-  'settings.soundOff': 'なし',
   'settings.volume': '音量',
-  'settings.timer': 'クイズタイマー',
-  'settings.timerOn': 'あり',
   'settings.timerOff': 'なし（時間無制限）',
 
   // Grade levels
@@ -48,8 +43,6 @@ export const jaKanjiStrings: Record<string, string> = {
   'battle.appeared': '{monster}が 現れた！',
   'battle.playerAttack': '{name}の 攻撃！',
   'battle.playerDefend': '{name}は 身を守っている！',
-  'battle.hit': '{damage}の ダメージ！',
-  'battle.miss': 'ミス！',
   'battle.partialHit': '{damage}の ダメージ（半減）！',
   'battle.speedBonus': '素早い答え！',
   'battle.enemyPartialHit': '{damage}の ダメージ（半減）！',
@@ -72,11 +65,9 @@ export const jaKanjiStrings: Record<string, string> = {
   'quiz.answerToDefend': '答えて かわせ！',
 
   // Menu
-  'menu.status': 'ステータス',
   'menu.items': '道具',
   'menu.noItems': '道具がない',
   'menu.equip': '装備',
-  'menu.save': 'セーブ',
   'menu.settings': '設定',
   'menu.close': '閉じる',
   'menu.level': 'Lv',

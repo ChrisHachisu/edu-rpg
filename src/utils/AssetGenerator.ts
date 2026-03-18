@@ -1721,27 +1721,36 @@ function generateTilesets(scene: Phaser.Scene): void {
     g.fillStyle(0xddeecc);
     g.fillRect(3, 9, 10, 1);
   });
-  // town-15: clinic door (green-framed door)
+  // town-15: clinic open counter (matches shop town-12 pattern — wide dark interior + counter)
   generateTile(scene, 'town-15', 0xeeeedd, 0xddddcc, g => {
-    // White wall
-    g.fillStyle(0xeeeedd);
-    g.fillRect(0, 0, 16, 16);
-    g.fillStyle(0xddddcc);
-    g.fillRect(0, 5, 16, 1);
-    g.fillRect(0, 10, 16, 1);
-    // Door frame (green)
-    g.fillStyle(0x338833);
-    g.fillRect(4, 3, 8, 13);
-    // Door
-    g.fillStyle(0x55bb55);
-    g.fillRect(5, 4, 6, 12);
-    // Door handle
-    g.fillStyle(0xddaa33);
-    g.fillRect(9, 10, 1, 1);
-    // Red cross above door
+    // Dark interior behind counter (full width, like shop)
+    g.fillStyle(0x223333);
+    g.fillRect(0, 0, 16, 10);
+    // Shelves in background
+    g.fillStyle(0x334444);
+    g.fillRect(2, 1, 12, 1);
+    g.fillRect(2, 4, 12, 1);
+    // Medical supplies on shelves
+    g.fillStyle(0xcc4444);
+    g.fillRect(3, 2, 2, 2); // red potion
+    g.fillStyle(0x44cc44);
+    g.fillRect(7, 2, 2, 2); // green herb
+    g.fillStyle(0xffffff);
+    g.fillRect(11, 2, 2, 2); // bandage
+    // Wooden counter (full width, like shop)
+    g.fillStyle(0x886633);
+    g.fillRect(0, 10, 16, 4);
+    g.fillStyle(0xaa8844);
+    g.fillRect(0, 10, 16, 1); // counter top edge
+    g.fillStyle(0x775522);
+    g.fillRect(0, 13, 16, 1); // counter bottom edge
+    // Red cross on counter front
     g.fillStyle(0xdd3333);
-    g.fillRect(7, 1, 2, 1);
-    g.fillRect(6, 0, 4, 1);
+    g.fillRect(7, 11, 2, 2); // vertical
+    g.fillRect(6, 12, 4, 1); // horizontal
+    // Floor below counter
+    g.fillStyle(0xaa9977);
+    g.fillRect(0, 14, 16, 2);
   });
 
   // Dungeon tiles: 0=floor, 1=wall, 2=cracked, 3=door, 4=treasure, 5=lava, 6=stairs-up, 7=boss
@@ -1987,12 +1996,20 @@ function generateUIAssets(scene: Phaser.Scene): void {
   gs.generateTexture('save-point', 16, 16);
   gs.destroy();
 
-  // Healer NPC sprite — feminine, blue-themed with white cross
+  // Healer NPC sprite — feminine, blue-themed with white cross + nurse hat
   const gh = scene.add.graphics().setVisible(false);
+  gh.fillStyle(0xffffff); // white nurse's hat
+  gh.fillRect(6, 0, 4, 1); // hat brim
+  gh.fillRect(7, 0, 2, 1); // hat top (slightly narrower accent)
+  gh.fillStyle(0xdd3333); // red cross on hat
+  gh.fillRect(7, 0, 2, 1);
+  gh.fillStyle(0xffffff); // hat body
+  gh.fillRect(5, 1, 6, 1); // wider brim at hair line
   gh.fillStyle(0xddbb88); // skin
   gh.fillRect(6, 2, 4, 4);
   gh.fillStyle(0x3377bb); // blue hair (longer, feminine)
-  gh.fillRect(5, 1, 6, 2);
+  gh.fillRect(5, 2, 1, 1); // hair left of face
+  gh.fillRect(10, 2, 1, 1); // hair right of face
   gh.fillRect(5, 3, 1, 3); // hair sides (longer like npc-f)
   gh.fillRect(10, 3, 1, 3);
   gh.fillStyle(0x2266bb); // blue robe top
