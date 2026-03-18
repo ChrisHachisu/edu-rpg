@@ -194,7 +194,7 @@ export class WorldMapScene extends Phaser.Scene {
         const px = x * TILE_SIZE;
         const py = y * TILE_SIZE;
         const tileKey = `${prefix}-${tileIndex}`;
-        const tile = this.add.image(px, py, tileKey).setOrigin(0).setScale(2);
+        const tile = this.add.image(px, py, tileKey).setOrigin(0).setScale(1);
         this.tileLayer.add(tile);
       }
     }
@@ -238,7 +238,7 @@ export class WorldMapScene extends Phaser.Scene {
         npc.x * TILE_SIZE + TILE_SIZE / 2,
         npc.y * TILE_SIZE + TILE_SIZE / 2,
         spriteKey
-      ).setOrigin(0.5).setScale(2);
+      ).setOrigin(0.5).setScale(1);
       this.npcSprites.push(sprite);
     }
 
@@ -250,7 +250,7 @@ export class WorldMapScene extends Phaser.Scene {
         sx * TILE_SIZE + TILE_SIZE / 2,
         sy * TILE_SIZE + TILE_SIZE / 2 - 4, // nudge up so head pokes above counter
         'shopkeeper'
-      ).setOrigin(0.5).setScale(2).setDepth(5);
+      ).setOrigin(0.5).setScale(1).setDepth(5);
       this.npcSprites.push(sprite);
     }
 
@@ -262,7 +262,7 @@ export class WorldMapScene extends Phaser.Scene {
         hx * TILE_SIZE + TILE_SIZE / 2,
         hy * TILE_SIZE + TILE_SIZE / 2 - 4,
         'npc-healer'
-      ).setOrigin(0.5).setScale(2).setDepth(5);
+      ).setOrigin(0.5).setScale(1).setDepth(5);
       this.npcSprites.push(sprite);
     }
 
@@ -272,7 +272,7 @@ export class WorldMapScene extends Phaser.Scene {
         def.savePoint.x * TILE_SIZE + TILE_SIZE / 2,
         def.savePoint.y * TILE_SIZE + TILE_SIZE / 2,
         'save-point'
-      ).setOrigin(0.5).setScale(2);
+      ).setOrigin(0.5).setScale(1);
     }
   }
 
@@ -282,7 +282,7 @@ export class WorldMapScene extends Phaser.Scene {
       this.heroTileX * TILE_SIZE + TILE_SIZE / 2,
       this.heroTileY * TILE_SIZE + TILE_SIZE / 2,
       'hero-walk', 0
-    ).setOrigin(0.5).setDepth(10).setScale(2);
+    ).setOrigin(0.5).setDepth(10).setScale(1);
   }
 
   private setupInput(): void {

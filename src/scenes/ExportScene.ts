@@ -169,7 +169,7 @@ ${sections.join('\n')}
 
   private buildHeroSection(): string {
     let html = '<h2 id="hero">1. Hero Sprites</h2>';
-    html += '<p>16×16 pixel sprites, shown at 4× scale. 4 directions × 3 animation frames = 12 frames.</p>';
+    html += '<p>32×32 pixel sprites, shown at 2× scale. 4 directions × 3 animation frames = 12 frames.</p>';
     html += '<div class="sprite-gallery">';
     const dirs = ['Down', 'Left', 'Right', 'Up'];
     for (let dir = 0; dir < 4; dir++) {

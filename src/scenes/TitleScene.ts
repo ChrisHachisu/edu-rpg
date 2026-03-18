@@ -144,7 +144,7 @@ export class TitleScene extends Phaser.Scene {
 
     // Decorative hero sprite
     if (this.textures.exists('hero-walk')) {
-      this.add.image(cx, 190, 'hero-walk', 0).setScale(6);
+      this.add.image(cx, 190, 'hero-walk', 0).setScale(3);
     }
 
     // Menu options
@@ -251,7 +251,7 @@ export class TitleScene extends Phaser.Scene {
 
     // ── Hero Preview (centered, compact) ──
     if (this.textures.exists('hero-walk')) {
-      this.heroPreview = this.add.image(cx, y + 20, 'hero-walk', 0).setScale(4);
+      this.heroPreview = this.add.image(cx, y + 20, 'hero-walk', 0).setScale(2);
     }
     y += 62;
 

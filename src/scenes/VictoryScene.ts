@@ -85,7 +85,7 @@ export class VictoryScene extends Phaser.Scene {
 
     // Hero
     if (this.textures.exists('hero-walk')) {
-      this.add.image(GAME_WIDTH / 2, 290, 'hero-walk', 0).setScale(6);
+      this.add.image(GAME_WIDTH / 2, 290, 'hero-walk', 0).setScale(3);
     }
 
     this.add.text(GAME_WIDTH / 2, 355, t('victory.thanks'), {

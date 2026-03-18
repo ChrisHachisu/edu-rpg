@@ -128,7 +128,7 @@ export class BattleScene extends Phaser.Scene {
 
   private drawMonster(): void {
     this.monsterSprite = this.add.image(GAME_WIDTH / 2, GAME_HEIGHT * 0.32, this.monster.spriteKey)
-      .setScale(4)
+      .setScale(2)
       .setOrigin(0.5);
 
     // Entrance animation
