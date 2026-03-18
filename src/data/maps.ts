@@ -2,7 +2,7 @@
 export interface MapDef {
   id: string;
   nameKey: string;
-  type: 'overworld' | 'town' | 'dungeon';
+  type: 'overworld' | 'town' | 'dungeon' | 'portal-overworld';
   encounterZone?: string;
   width: number;
   height: number;
@@ -14,6 +14,7 @@ export interface MapDef {
   floors?: number; // number of dungeon floors (default 1)
   exitConnection?: { toX: number; toY: number }; // gate dungeon: boss-exit overworld coordinates
   castle?: boolean; // castle dungeon: upward progression, entrance at bottom
+  theme?: 'sky' | 'ice' | 'ancient' | 'shadow'; // portal land theme
 }
 
 export const mapDefs: Record<string, MapDef> = {
@@ -71,16 +72,18 @@ export const mapDefs: Record<string, MapDef> = {
       { targetMap: 'banditHideout', fromX: 10, fromY: 103, toX: 12, toY: 1 },
 
       // ── Act 4 Dungeons ──
-      { targetMap: 'magmaTunnels', fromX: 25, fromY: 84, toX: 17, toY: 1 },
+      { targetMap: 'magmaTunnels', fromX: 25, fromY: 89, toX: 17, toY: 1 },
       // Volcanic Forge: gate dungeon (S entrance, N exit into Act 5)
       { targetMap: 'volcanicForge', fromX: 12, fromY: 70, toX: 20, toY: 1 },
       { targetMap: 'volcanicForge', fromX: 12, fromY: 67, toX: 20, toY: 38, toFloor: 9 },
 
       // ── Act 5 Dungeons ──
       { targetMap: 'demonCastle', fromX: 55, fromY: 15, toX: 25, toY: 48 },
-      // Hidden legendary dungeons (deep in maze)
-      { targetMap: 'sealedSanctum', fromX: 8, fromY: 10, toX: 22, toY: 1 },
-      { targetMap: 'celestialVault', fromX: 110, fromY: 10, toX: 22, toY: 1 },
+      // Portal lands (4 legendary relic locations)
+      { targetMap: 'stormreachIsles', fromX: 15, fromY: 25, toX: 20, toY: 38 },
+      { targetMap: 'frostfallPeaks', fromX: 100, fromY: 25, toX: 20, toY: 38 },
+      { targetMap: 'sunkenTempleIsle', fromX: 35, fromY: 45, toX: 20, toY: 38 },
+      { targetMap: 'twilightRealm', fromX: 80, fromY: 45, toX: 20, toY: 38 },
     ],
     npcs: [],
   },
@@ -101,6 +104,7 @@ export const mapDefs: Record<string, MapDef> = {
     ],
     npcs: [
       { id: 'elder', dialogueKey: 'npc.elder.greeting', x: 8, y: 3 },
+      { id: 'healer', dialogueKey: 'npc.healer', x: 8, y: 13 },
       { id: 'villager1', dialogueKey: 'npc.villager1', x: 3, y: 5 },
       { id: 'villager2', dialogueKey: 'npc.villager2', x: 12, y: 5 },
       { id: 'fisherman', dialogueKey: 'npc.fisherman', x: 13, y: 10 },
@@ -118,6 +122,7 @@ export const mapDefs: Record<string, MapDef> = {
       { targetMap: 'overworld', fromX: 8, fromY: 15, toX: 45, toY: 146 },
     ],
     npcs: [
+      { id: 'healer', dialogueKey: 'npc.healer', x: 8, y: 13 },
       { id: 'miller', dialogueKey: 'npc.miller', x: 3, y: 5 },
       { id: 'herbalist', dialogueKey: 'npc.herbalist', x: 12, y: 5 },
     ],
@@ -134,6 +139,7 @@ export const mapDefs: Record<string, MapDef> = {
       { targetMap: 'overworld', fromX: 8, fromY: 15, toX: 66, toY: 139 },
     ],
     npcs: [
+      { id: 'healer', dialogueKey: 'npc.healer', x: 8, y: 13 },
       { id: 'sailor', dialogueKey: 'npc.sailor', x: 3, y: 5 },
       { id: 'wisewoman', dialogueKey: 'npc.wisewoman', x: 12, y: 5 },
     ],
@@ -152,6 +158,7 @@ export const mapDefs: Record<string, MapDef> = {
       { targetMap: 'overworld', fromX: 8, fromY: 15, toX: 70, toY: 119 },
     ],
     npcs: [
+      { id: 'healer', dialogueKey: 'npc.healer', x: 8, y: 13 },
       { id: 'soldier', dialogueKey: 'npc.soldier', x: 7, y: 10 },
       { id: 'blacksmith', dialogueKey: 'npc.blacksmith', x: 3, y: 5 },
     ],
@@ -169,6 +176,7 @@ export const mapDefs: Record<string, MapDef> = {
       { targetMap: 'overworld', fromX: 8, fromY: 15, toX: 45, toY: 93 },
     ],
     npcs: [
+      { id: 'healer', dialogueKey: 'npc.healer', x: 8, y: 13 },
       { id: 'oasisElder', dialogueKey: 'npc.oasisElder', x: 3, y: 5 },
       { id: 'refugee', dialogueKey: 'npc.refugee', x: 12, y: 5 },
     ],
@@ -185,6 +193,7 @@ export const mapDefs: Record<string, MapDef> = {
       { targetMap: 'overworld', fromX: 8, fromY: 15, toX: 80, toY: 86 },
     ],
     npcs: [
+      { id: 'healer', dialogueKey: 'npc.healer', x: 8, y: 13 },
       { id: 'archaeologist', dialogueKey: 'npc.archaeologist', x: 3, y: 5 },
       { id: 'explorer', dialogueKey: 'npc.explorer', x: 12, y: 5 },
     ],
@@ -203,6 +212,7 @@ export const mapDefs: Record<string, MapDef> = {
       { targetMap: 'overworld', fromX: 8, fromY: 15, toX: 30, toY: 79 },
     ],
     npcs: [
+      { id: 'healer', dialogueKey: 'npc.healer', x: 8, y: 13 },
       { id: 'forgemaster', dialogueKey: 'npc.forgemaster', x: 3, y: 5 },
       { id: 'lavaMiner', dialogueKey: 'npc.lavaMiner', x: 12, y: 5 },
     ],
@@ -221,6 +231,7 @@ export const mapDefs: Record<string, MapDef> = {
       { targetMap: 'overworld', fromX: 8, fromY: 15, toX: 85, toY: 59 },
     ],
     npcs: [
+      { id: 'healer', dialogueKey: 'npc.healer', x: 8, y: 13 },
       { id: 'veteran', dialogueKey: 'npc.veteran', x: 3, y: 5 },
       { id: 'priestess', dialogueKey: 'npc.priestess', x: 12, y: 5 },
     ],
@@ -237,6 +248,7 @@ export const mapDefs: Record<string, MapDef> = {
       { targetMap: 'overworld', fromX: 8, fromY: 15, toX: 65, toY: 41 },
     ],
     npcs: [
+      { id: 'healer', dialogueKey: 'npc.healer', x: 8, y: 13 },
       { id: 'grizzledKnight', dialogueKey: 'npc.grizzledKnight', x: 3, y: 5 },
       { id: 'prophetess', dialogueKey: 'npc.prophetess', x: 12, y: 5 },
     ],
@@ -377,7 +389,7 @@ export const mapDefs: Record<string, MapDef> = {
     width: 24,
     height: 24,
     connections: [
-      { targetMap: 'overworld', fromX: 12, fromY: 0, toX: 10, toY: 104 },
+      { targetMap: 'overworld', fromX: 12, fromY: 0, toX: 10, toY: 102 },
     ],
     npcs: [],
     bossId: 'banditLord',
@@ -395,7 +407,7 @@ export const mapDefs: Record<string, MapDef> = {
     width: 34,
     height: 34,
     connections: [
-      { targetMap: 'overworld', fromX: 17, fromY: 0, toX: 25, toY: 85 },
+      { targetMap: 'overworld', fromX: 17, fromY: 0, toX: 25, toY: 88 },
     ],
     npcs: [],
     bossId: 'lavaWyrm',
@@ -434,40 +446,191 @@ export const mapDefs: Record<string, MapDef> = {
     ],
     npcs: [],
     bossId: 'demonKing',
-    floors: 10,
+    floors: 7,
     castle: true,
   },
 
   // ═══════════════════════════════════════════════════════════════════
-  //   HIDDEN LEGENDARY DUNGEONS — Act 5 maze, no direct paths
+  //   PORTAL LANDS — 4 legendary relic locations in Act 5
   // ═══════════════════════════════════════════════════════════════════
 
-  sealedSanctum: {
-    id: 'sealedSanctum',
-    nameKey: 'map.sealedSanctum',
-    type: 'dungeon',
-    encounterZone: 'sealed-sanctum',
-    width: 44,
-    height: 44,
+  // ── Stormreach Isles (sky/wind) — Gale Shield ──
+  stormreachIsles: {
+    id: 'stormreachIsles',
+    nameKey: 'map.stormreachIsles',
+    type: 'portal-overworld',
+    encounterZone: 'stormreach-isles',
+    theme: 'sky',
+    width: 40,
+    height: 40,
     connections: [
-      { targetMap: 'overworld', fromX: 22, fromY: 0, toX: 8, toY: 11 },
+      { targetMap: 'overworld', fromX: 20, fromY: 39, toX: 15, toY: 25 },
+    ],
+    npcs: [],
+  },
+  stormreachVillage: {
+    id: 'stormreachVillage',
+    nameKey: 'map.stormreachVillage',
+    type: 'town',
+    width: 16,
+    height: 16,
+    connections: [
+      { targetMap: 'stormreachIsles', fromX: 8, fromY: 15, toX: 10, toY: 20 },
+    ],
+    npcs: [
+      { id: 'healer', dialogueKey: 'npc.healer', x: 8, y: 13 },
+      { id: 'skyKeeper', dialogueKey: 'npc.skyKeeper', x: 12, y: 5 },
+    ],
+    shopId: 'stormreachVillage',
+    savePoint: { x: 8, y: 10 },
+  },
+  stormreachSpire: {
+    id: 'stormreachSpire',
+    nameKey: 'map.stormreachSpire',
+    type: 'dungeon',
+    encounterZone: 'stormreach-isles',
+    width: 30,
+    height: 30,
+    connections: [
+      { targetMap: 'stormreachIsles', fromX: 15, fromY: 0, toX: 25, toY: 10 },
+    ],
+    npcs: [],
+    bossId: 'stormSentinel',
+    floors: 5,
+  },
+
+  // ── Frostfall Peaks (ice) — Crown of Wisdom ──
+  frostfallPeaks: {
+    id: 'frostfallPeaks',
+    nameKey: 'map.frostfallPeaks',
+    type: 'portal-overworld',
+    encounterZone: 'frostfall-peaks',
+    theme: 'ice',
+    width: 40,
+    height: 40,
+    connections: [
+      { targetMap: 'overworld', fromX: 20, fromY: 39, toX: 100, toY: 25 },
+    ],
+    npcs: [],
+  },
+  frostfallVillage: {
+    id: 'frostfallVillage',
+    nameKey: 'map.frostfallVillage',
+    type: 'town',
+    width: 16,
+    height: 16,
+    connections: [
+      { targetMap: 'frostfallPeaks', fromX: 8, fromY: 15, toX: 10, toY: 20 },
+    ],
+    npcs: [
+      { id: 'healer', dialogueKey: 'npc.healer', x: 8, y: 13 },
+      { id: 'frostSage', dialogueKey: 'npc.frostSage', x: 12, y: 5 },
+    ],
+    shopId: 'frostfallVillage',
+    savePoint: { x: 8, y: 10 },
+  },
+  frostfallCavern: {
+    id: 'frostfallCavern',
+    nameKey: 'map.frostfallCavern',
+    type: 'dungeon',
+    encounterZone: 'frostfall-peaks',
+    width: 30,
+    height: 30,
+    connections: [
+      { targetMap: 'frostfallPeaks', fromX: 15, fromY: 0, toX: 25, toY: 10 },
+    ],
+    npcs: [],
+    bossId: 'frostMonarch',
+    floors: 5,
+  },
+
+  // ── Sunken Temple Isle (ancient/holy) — Excalibur ──
+  sunkenTempleIsle: {
+    id: 'sunkenTempleIsle',
+    nameKey: 'map.sunkenTempleIsle',
+    type: 'portal-overworld',
+    encounterZone: 'sunken-temple',
+    theme: 'ancient',
+    width: 40,
+    height: 40,
+    connections: [
+      { targetMap: 'overworld', fromX: 20, fromY: 39, toX: 35, toY: 45 },
+    ],
+    npcs: [],
+  },
+  sunkenTempleVillage: {
+    id: 'sunkenTempleVillage',
+    nameKey: 'map.sunkenTempleVillage',
+    type: 'town',
+    width: 16,
+    height: 16,
+    connections: [
+      { targetMap: 'sunkenTempleIsle', fromX: 8, fromY: 15, toX: 10, toY: 20 },
+    ],
+    npcs: [
+      { id: 'healer', dialogueKey: 'npc.healer', x: 8, y: 13 },
+      { id: 'templeScholar', dialogueKey: 'npc.templeScholar', x: 12, y: 5 },
+    ],
+    shopId: 'sunkenTempleVillage',
+    savePoint: { x: 8, y: 10 },
+  },
+  sunkenTempleDungeon: {
+    id: 'sunkenTempleDungeon',
+    nameKey: 'map.sunkenTempleDungeon',
+    type: 'dungeon',
+    encounterZone: 'sunken-temple',
+    width: 30,
+    height: 30,
+    connections: [
+      { targetMap: 'sunkenTempleIsle', fromX: 15, fromY: 0, toX: 25, toY: 10 },
     ],
     npcs: [],
     bossId: 'swordWraith',
-    floors: 7,
+    floors: 5,
   },
-  celestialVault: {
-    id: 'celestialVault',
-    nameKey: 'map.celestialVault',
-    type: 'dungeon',
-    encounterZone: 'celestial-vault',
-    width: 44,
-    height: 44,
+
+  // ── Twilight Realm (shadow/void) — Aegis of Dawn ──
+  twilightRealm: {
+    id: 'twilightRealm',
+    nameKey: 'map.twilightRealm',
+    type: 'portal-overworld',
+    encounterZone: 'twilight-realm',
+    theme: 'shadow',
+    width: 40,
+    height: 40,
     connections: [
-      { targetMap: 'overworld', fromX: 22, fromY: 0, toX: 110, toY: 11 },
+      { targetMap: 'overworld', fromX: 20, fromY: 39, toX: 80, toY: 45 },
+    ],
+    npcs: [],
+  },
+  twilightVillage: {
+    id: 'twilightVillage',
+    nameKey: 'map.twilightVillage',
+    type: 'town',
+    width: 16,
+    height: 16,
+    connections: [
+      { targetMap: 'twilightRealm', fromX: 8, fromY: 15, toX: 10, toY: 20 },
+    ],
+    npcs: [
+      { id: 'healer', dialogueKey: 'npc.healer', x: 8, y: 13 },
+      { id: 'shadowWatcher', dialogueKey: 'npc.shadowWatcher', x: 12, y: 5 },
+    ],
+    shopId: 'twilightVillage',
+    savePoint: { x: 8, y: 10 },
+  },
+  twilightDungeon: {
+    id: 'twilightDungeon',
+    nameKey: 'map.twilightDungeon',
+    type: 'dungeon',
+    encounterZone: 'twilight-realm',
+    width: 30,
+    height: 30,
+    connections: [
+      { targetMap: 'twilightRealm', fromX: 15, fromY: 0, toX: 25, toY: 10 },
     ],
     npcs: [],
     bossId: 'celestialGuardian',
-    floors: 7,
+    floors: 5,
   },
 };

@@ -40,8 +40,14 @@ export class VictoryScene extends Phaser.Scene {
       fontSize: '22px', color: COLORS.TEXT_YELLOW, fontFamily: 'monospace', fontStyle: 'bold',
     }).setOrigin(0.5);
 
-    this.add.text(GAME_WIDTH / 2, 110, t('victory.message'), {
+    this.add.text(GAME_WIDTH / 2, 100, t('victory.message'), {
       fontSize: '12px', color: COLORS.TEXT_WHITE, fontFamily: 'monospace',
+      wordWrap: { width: GAME_WIDTH - 64 },
+      align: 'center',
+    }).setOrigin(0.5);
+
+    this.add.text(GAME_WIDTH / 2, 130, t('victory.subtitle'), {
+      fontSize: '11px', color: '#88ccff', fontFamily: 'monospace',
       wordWrap: { width: GAME_WIDTH - 64 },
       align: 'center',
     }).setOrigin(0.5);

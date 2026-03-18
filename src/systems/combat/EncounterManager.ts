@@ -5,6 +5,8 @@ import { MAX_ENCOUNTER_RATE, ENCOUNTER_RATE_GROWTH } from '../../utils/constants
 
 export class EncounterManager {
   private stepsSinceLastEncounter = 0;
+  /** Multiplier applied to encounter rates. Lower = fewer encounters. Set by GameState based on difficulty. */
+  encounterRateMultiplier = 1;
 
   onStep(zoneId: string): MonsterTemplate | null {
     const zone = encounterZones[zoneId];
@@ -12,11 +14,14 @@ export class EncounterManager {
 
     this.stepsSinceLastEncounter++;
 
-    if (this.stepsSinceLastEncounter < zone.minStepsBetween) return null;
+    // Scale minimum steps inversely with multiplier (lower multiplier = more steps between fights)
+    const adjustedMinSteps = Math.ceil(zone.minStepsBetween / Math.max(0.1, this.encounterRateMultiplier));
+    if (this.stepsSinceLastEncounter < adjustedMinSteps) return null;
 
-    const stepsOver = this.stepsSinceLastEncounter - zone.minStepsBetween;
+    const stepsOver = this.stepsSinceLastEncounter - adjustedMinSteps;
+    const adjustedRate = zone.encounterRate * this.encounterRateMultiplier;
     const probability = Math.min(
-      zone.encounterRate * (1 + stepsOver * ENCOUNTER_RATE_GROWTH),
+      adjustedRate * (1 + stepsOver * ENCOUNTER_RATE_GROWTH),
       MAX_ENCOUNTER_RATE
     );
 

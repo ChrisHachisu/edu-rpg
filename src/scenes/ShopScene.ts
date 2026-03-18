@@ -114,7 +114,7 @@ export class ShopScene extends Phaser.Scene {
   private drawSellList(): void {
     const inv = gameState.player.state.inventory.filter(s => !items[s.itemId]?.unsellable);
     if (inv.length === 0) {
-      this.add.text(GAME_WIDTH / 2, 120, 'No items to sell', {
+      this.add.text(GAME_WIDTH / 2, 120, t('shop.noItemsToSell'), {
         fontSize: '12px', color: COLORS.TEXT_GRAY, fontFamily: 'monospace',
       }).setOrigin(0.5);
     } else {

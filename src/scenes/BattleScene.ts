@@ -40,6 +40,7 @@ export class BattleScene extends Phaser.Scene {
   private quizTimerEvent?: Phaser.Time.TimerEvent;
   private quizTimerTween?: Phaser.Tweens.Tween;
   private quizTimerSeconds = 10;
+  private quizTimerBarFullWidth = 0; // For speed bonus calculation
   private currentZone?: string;
 
   constructor() {
@@ -47,14 +48,29 @@ export class BattleScene extends Phaser.Scene {
   }
 
   init(data: { monster: MonsterTemplate; zone?: string }): void {
-    this.monster = data.monster;
+    // Scale monster stats by grade
+    const grade = gameState.player.state.quizDifficulty;
+    const mult = ['k', '1', '2'].includes(grade) ? 0.7 : ['5', '6'].includes(grade) ? 1.3 : 1.0;
+    if (mult !== 1.0) {
+      this.monster = {
+        ...data.monster,
+        baseHp: Math.round(data.monster.baseHp * mult),
+        baseAtk: Math.round(data.monster.baseAtk * mult),
+      };
+    } else {
+      this.monster = data.monster;
+    }
     this.currentZone = data.zone;
   }
 
   private getEnemyTier(): EnemyTier {
     if (this.monster.id === 'demonKing') return 'finalBoss';
-    if (this.monster.id === 'swordWraith') return 'finalBoss';
-    if (this.monster.id === 'celestialGuardian') return 'finalBoss';
+    // Late bosses: Act 4-5 (portal land bosses, flame titan, legendary guardians)
+    const lateBosses = ['flameTitan', 'swordWraith', 'celestialGuardian', 'stormSentinel', 'frostMonarch'];
+    if (lateBosses.includes(this.monster.id)) return 'lateBoss';
+    // Mid bosses: Act 2-3
+    const midBosses = ['dragon', 'sandGolem', 'iceWyrm', 'lavaWyrm', 'stormHarpy', 'banditLord'];
+    if (midBosses.includes(this.monster.id)) return 'midBoss';
     if (this.monster.aiPattern === 'boss') return 'boss';
     const totalStat = this.monster.baseHp + this.monster.baseAtk + this.monster.baseDef;
     if (totalStat < 25) return 'weak';
@@ -304,7 +320,7 @@ export class BattleScene extends Phaser.Scene {
       .setData('isMenu', true);
 
     if (consumables.length === 0) {
-      this.add.text(GAME_WIDTH / 2, boxY + 40, 'No items', {
+      this.add.text(GAME_WIDTH / 2, boxY + 40, t('menu.noItems'), {
         fontSize: '12px', color: COLORS.TEXT_GRAY, fontFamily: 'monospace',
       }).setOrigin(0.5).setData('isMenu', true);
       return;
@@ -374,6 +390,7 @@ export class BattleScene extends Phaser.Scene {
 
     if (timerOn) {
       // Timer bar at top of quiz box
+      this.quizTimerBarFullWidth = timerBarW;
       this.quizTimerBg = this.add.rectangle(boxX, timerY, timerBarW, 10, 0x333344).setDepth(51);
       this.quizTimerBar = this.add.rectangle(boxX - timerBarW / 2, timerY, timerBarW, 10, COLORS.CORRECT_GREEN).setOrigin(0, 0.5).setDepth(51);
       this.quizContainer.add(this.quizTimerBg);
@@ -514,6 +531,12 @@ export class BattleScene extends Phaser.Scene {
     if (this.phase !== 'playerQuiz' && this.phase !== 'enemyQuiz') return;
     this.phase = 'message'; // Lock phase immediately
 
+    // Capture remaining time ratio for speed bonus before stopping timer
+    let timeRatio = 0;
+    if (this.quizTimerBar && this.quizTimerBarFullWidth > 0) {
+      timeRatio = this.quizTimerBar.displayWidth / this.quizTimerBarFullWidth;
+    }
+
     // Stop the timer
     this.stopQuizTimer();
 
@@ -549,7 +572,7 @@ export class BattleScene extends Phaser.Scene {
       // Resolve combat based on quiz result
       let result: CombatResult;
       if (this.quizForPlayer) {
-        result = this.engine.resolvePlayerAttack(correct);
+        result = this.engine.resolvePlayerAttack(correct, timeRatio);
       } else {
         result = this.engine.resolveEnemyAttack(correct);
       }
@@ -579,8 +602,10 @@ export class BattleScene extends Phaser.Scene {
       this.cameras.main.shake(150, 0.01);
     }
 
-    // Miss SFX
-    if (result.damage === 0 && result.state !== 'fled' && result.state !== 'victory' && result.state !== 'defeat') {
+    // Partial hit SFX (reduced volume) or miss SFX
+    if (result.partial && result.damage && result.damage > 0) {
+      audioManager.playSfx('attack_hit');
+    } else if (result.damage === 0 && result.state !== 'fled' && result.state !== 'victory' && result.state !== 'defeat') {
       audioManager.playSfx('attack_miss');
     }
 
@@ -638,6 +663,13 @@ export class BattleScene extends Phaser.Scene {
 
     // Check if this was the demon king
     if (this.monster.id === 'demonKing') {
+      // Combine 5 crystal shards into Crystal of Math Knowledge
+      const shardCount = gameState.player.getItemCount('shadowCrystal');
+      if (shardCount >= 5) {
+        gameState.player.removeItem('shadowCrystal', shardCount);
+        gameState.player.addItem('crystalOfKnowledge', 1);
+        msg += '\n' + t('crystal.combined');
+      }
       this.showBattleMessage(msg, () => {
         this.scene.stop();
         this.scene.start('VictoryScene');
@@ -689,6 +721,12 @@ export class BattleScene extends Phaser.Scene {
       this._messageCallback = undefined;
       cb();
     }
+  }
+
+  shutdown(): void {
+    this.input.keyboard?.removeAllListeners();
+    this.stopQuizTimer();
+    this._autoAdvanceTimer?.remove();
   }
 
   private endBattle(): void {

@@ -269,10 +269,11 @@ export function generateOverworldMap(width: number, height: number): number[][] 
     }
   };
 
-  // Sealed Sanctum (8,10) — NW
-  carveMazePath(20, 58, 8, 10);
-  // Celestial Vault (110,10) — NE
-  carveMazePath(88, 56, 110, 10);
+  // 4 Portal positions scattered in Act 5 maze
+  carveMazePath(20, 58, 15, 25);   // Stormreach portal (NW)
+  carveMazePath(88, 56, 100, 25);  // Frostfall portal (NE)
+  carveMazePath(30, 55, 35, 45);   // Sunken Temple portal (SW)
+  carveMazePath(70, 55, 80, 45);   // Twilight portal (SE)
 
   // ── Phase 4: Demon Castle island ──
   const castleX = 55, castleY = 15;
@@ -322,16 +323,25 @@ export function generateOverworldMap(width: number, height: number): number[][] 
     // Act 3
     [60, 95], [10, 103],              // Desert Tomb, Bandit Hideout (far west, south)
     // Act 4
-    [25, 84],                          // Magma Tunnels
+    [25, 89],                          // Magma Tunnels
     [12, 70], [12, 67],               // Volcanic Forge S/N
-    // Act 5
-    [8, 10], [110, 10],               // Legendary: Sanctum (NW), Vault (NE)
   ];
   for (const [dx, dy] of caveDungeons) {
     map[dy][dx] = 7;
   }
   // Demon Castle uses castle tile (8)
   map[castleY][castleX] = 8;
+
+  // Portal tiles (tile 9) for 4 portal lands
+  const portals: [number, number][] = [
+    [15, 25],   // Stormreach Isles
+    [100, 25],  // Frostfall Peaks
+    [35, 45],   // Sunken Temple Isle
+    [80, 45],   // Twilight Realm
+  ];
+  for (const [px, py] of portals) {
+    map[py][px] = 9;
+  }
 
   // ── Phase 7: Physical terrain barriers (organic, not straight lines) ──
 
@@ -489,9 +499,19 @@ export function generateOverworldMap(width: number, height: number): number[][] 
     }
   }
 
-  // Shadow Cave: mountain north of Act 2 entrance, walkable north of Act 3 exit
-  map[101][90] = 4;  // mountain — north of SC S (90,102)
-  map[99][90] = 1;   // walkable — north of SC N (90,100)
+  // Shadow Cave: mountain wall between S(90,102) and N(90,100)
+  // Phase 8 clears adjacent tiles around cave markers, creating gaps at x=89-91.
+  // Fill mountains across y=101 to block Act 2→3 bypass.
+  for (let bx = 86; bx <= 93; bx++) {
+    if (bx !== 90) map[101][bx] = 4;  // skip cave column
+  }
+  map[101][90] = 4;  // between cave entrances (cave column itself)
+  // Re-stamp cave markers
+  map[102][90] = 7;  // SC S (Act 2 side)
+  map[100][90] = 7;  // SC N (Act 3 side)
+  // Ensure approach tiles are walkable
+  map[103][90] = 1;  // south approach to SC S
+  map[99][90] = 1;   // north approach to SC N
 
   // Volcanic Forge: mountains fill between S(12,70) and N(12,67)
   map[68][12] = 4;
@@ -577,23 +597,48 @@ export function generateOverworldMap(width: number, height: number): number[][] 
   // Re-stamp Oasis Haven town marker
   map[ohY][ohX] = 6;
 
+  // ── River barrier: block direct ruinsCamp→oasisHaven shortcut ──
+  // Water band connecting winding stream (~x=42) to east water barrier zone
+  for (let rx = 38; rx <= 63; rx++) {
+    for (let ry = 87; ry <= 89; ry++) {
+      if (rx >= 2 && rx < width - 2 && ry >= 2 && ry < height - 2) {
+        if (map[ry][rx] !== 6 && map[ry][rx] !== 7 && map[ry][rx] !== 8) {
+          map[ry][rx] = 2;
+        }
+      }
+    }
+  }
+
+  // Bandit Hideout: mountain south, walkable north (exit point)
+  map[104][10] = 4;  // mountain south of cave entrance
+  map[102][10] = 1;  // walkable north of cave (player exits here)
+
+  // Magma Tunnels (25,89): mountains E/S/W — embedded in terrain, approach from north
+  map[89][24] = 4;   // west
+  map[89][26] = 4;   // east
+  map[90][25] = 4;   // south
+  map[90][24] = 4;   // SW
+  map[90][26] = 4;   // SE
+  map[88][25] = 1;   // north approach (walkable path)
+
   // ── Phase 9b: Act 3/4 paths (drawn AFTER terrain/stream to avoid breakage) ──
   const act34Paths: [number, number][] = [
-    // shadowCave N exit (90,100) → ruinsCamp (80,85)
-    ...pathBetween(90, 100, 80, 85),
-    // ruinsCamp (80,85) → oasisHaven (45,92): route via waypoints to avoid stream
-    ...pathBetween(80, 85, 63, 85),     // east of water barriers
-    ...pathBetween(63, 85, 45, 92),     // south-west to oasis haven (crosses stream)
+    // shadowCave N exit (90,100) → north to y=98, then west to ruinsCamp (80,85)
+    // Route via y=98 so 3-wide path (py+1) stays at y=99, not y=101 (barrier)
+    ...pathBetween(90, 100, 90, 98),
+    ...pathBetween(90, 98, 80, 85),
+    // ruinsCamp (80,85) → north to y=78 → west to embersRest (30,78)
+    ...pathBetween(80, 85, 80, 78),     // north from ruinsCamp
+    ...pathBetween(80, 78, 30, 78),     // west to embersRest
+    // embersRest (30,78) → oasisHaven (45,92): south then east (bridges over water)
+    ...pathBetween(30, 78, 30, 90),     // south from embersRest
+    ...pathBetween(30, 90, 45, 92),     // east to oasisHaven
     // oasisHaven (45,92) → desertTomb (60,95)
     ...pathBetween(45, 92, 60, 95),
-    // ruinsCamp (80,85) → embersRest (30,78): route south of water, cross stream
-    ...pathBetween(80, 85, 63, 85),     // (reuse segment)
-    ...pathBetween(63, 85, 42, 85),     // cross stream
-    ...pathBetween(42, 85, 30, 78),     // west to ember's rest
-    // embersRest (30,78) → magmaTunnels (25,84)
-    ...pathBetween(30, 78, 25, 84),
-    // magmaTunnels (25,84) → volcanicForge S (12,70)
-    ...pathBetween(25, 84, 12, 70),
+    // embersRest (30,78) → magmaTunnels (25,89)
+    ...pathBetween(30, 78, 25, 89),
+    // magmaTunnels (25,89) → volcanicForge S (12,70)
+    ...pathBetween(25, 89, 12, 70),
   ];
   for (const [px, py] of act34Paths) {
     if (px >= 0 && px < width && py >= 0 && py < height) {
@@ -608,13 +653,13 @@ export function generateOverworldMap(width: number, height: number): number[][] 
   map[92][45] = 6;   // oasisHaven
   map[95][60] = 7;   // desertTomb
   map[78][30] = 6;   // embersRest
-  map[84][25] = 7;   // magmaTunnels
+  map[89][25] = 7;   // magmaTunnels
   map[103][10] = 7;  // banditHideout
 
   // Clean stray road tiles inside water barrier zone (east of Desert Tomb)
   for (let ry = 88; ry <= 100; ry++) {
     for (let rx = 64; rx <= 85; rx++) {
-      if (map[ry][rx] === 1 && ry !== 85) { // keep path at y=85 only
+      if (map[ry][rx] === 1) { // clean up isolated road tiles in water zone
         // Check if this road tile is isolated (not connecting anything useful)
         const adj = [[0,-1],[0,1],[-1,0],[1,0]].filter(([dx,dy]) => {
           const nx = rx+dx, ny = ry+dy;
@@ -625,6 +670,22 @@ export function generateOverworldMap(width: number, height: number): number[][] 
       }
     }
   }
+
+  // ── FINAL: Seal mountain barrier at y=101 across ENTIRE map width ──
+  // The Phase 7 barrier meanders ±4.5 tiles, leaving gaps at some x values.
+  // This pass guarantees a continuous wall at y=101 so Act 2 and Act 3 are
+  // fully separated. Only the Shadow Cave dungeon allows passage.
+  for (let x = 2; x < width - 2; x++) {
+    const tile = map[101][x];
+    if (tile !== 6 && tile !== 7 && tile !== 8 && tile !== 5) {
+      map[101][x] = 4;
+    }
+  }
+  // Re-stamp markers and approach tiles near y=101
+  map[100][90] = 7;  // Shadow Cave N (Act 3 side)
+  map[102][90] = 7;  // Shadow Cave S (Act 2 side)
+  map[99][90] = 1;   // north approach to SC N
+  map[103][90] = 1;  // south approach to SC S
 
   return map;
 }
@@ -651,6 +712,77 @@ function pathBetween(x1: number, y1: number, x2: number, y2: number): [number, n
     wide.push([px, py + 1]);
   }
   return wide;
+}
+
+/**
+ * Generate a 40×40 portal land mini-overworld.
+ * Layout: grass with paths, village entrance (tile 6), dungeon entrance (tile 7), portal exit (tile 9).
+ * Uses overworld tile set (ow-*).
+ */
+export function generatePortalLandMap(width: number, height: number, seed: number): number[][] {
+  const rand = seededRandom(seed);
+
+  // Fill with grass (0) and scatter some terrain
+  const map: number[][] = Array.from({ length: height }, () => new Array(width).fill(0));
+
+  // Border: mountains (4)
+  for (let x = 0; x < width; x++) {
+    map[0][x] = 4;
+    map[height - 1][x] = 4;
+  }
+  for (let y = 0; y < height; y++) {
+    map[y][0] = 4;
+    map[y][width - 1] = 4;
+  }
+
+  // Random forest patches (3)
+  for (let i = 0; i < Math.floor(width * height * 0.12); i++) {
+    const fx = 2 + Math.floor(rand() * (width - 4));
+    const fy = 2 + Math.floor(rand() * (height - 4));
+    if (map[fy][fx] === 0) map[fy][fx] = 3;
+  }
+
+  // Random mountain patches (4) in clusters
+  for (let i = 0; i < 6; i++) {
+    const cx = 5 + Math.floor(rand() * (width - 10));
+    const cy = 5 + Math.floor(rand() * (height - 10));
+    for (let dy = -1; dy <= 1; dy++) {
+      for (let dx = -1; dx <= 1; dx++) {
+        if (rand() < 0.5 && cy + dy > 0 && cy + dy < height - 1 && cx + dx > 0 && cx + dx < width - 1) {
+          map[cy + dy][cx + dx] = 4;
+        }
+      }
+    }
+  }
+
+  // Village entrance (tile 6) — center-left area
+  const villageX = 10, villageY = 20;
+  map[villageY][villageX] = 6;
+
+  // Dungeon entrance (tile 7) — upper-right area
+  const dungeonX = 25, dungeonY = 10;
+  map[dungeonY][dungeonX] = 7;
+
+  // Portal exit (tile 9) — bottom center
+  const portalX = Math.floor(width / 2), portalY = height - 2;
+  map[portalY][portalX] = 9;
+
+  // Carve paths between key locations using pathBetween
+  const carvePortalPath = (x1: number, y1: number, x2: number, y2: number) => {
+    for (const [px, py] of pathBetween(x1, y1, x2, y2)) {
+      if (py > 0 && py < height - 1 && px > 0 && px < width - 1) {
+        if (map[py][px] !== 6 && map[py][px] !== 7 && map[py][px] !== 9) {
+          map[py][px] = 1; // path
+        }
+      }
+    }
+  };
+
+  // Connect portal → village → dungeon
+  carvePortalPath(portalX, portalY, villageX, villageY);
+  carvePortalPath(villageX, villageY, dungeonX, dungeonY);
+
+  return map;
 }
 
 export function generateTownMap(width: number, height: number, seed: number): number[][] {
@@ -733,23 +865,48 @@ export function generateTownMap(width: number, height: number, seed: number): nu
     }
   }
 
+  // Helper: place a 3×2 clinic (row 0 = green roof with cross, row 1 = wall with window/door/window)
+  function placeClinic(cx: number, cy: number): void {
+    for (let dx = 0; dx < 3; dx++) {
+      const px = cx + dx;
+      if (cy > 0 && cy < height - 1 && px > 0 && px < width - 1) {
+        map[cy][px] = 13; // clinic roof
+      }
+      const wy = cy + 1;
+      if (wy > 0 && wy < height - 1 && px > 0 && px < width - 1) {
+        map[wy][px] = dx === 1 ? 15 : 14; // center=door, sides=window
+      }
+    }
+    // Floor in front
+    for (let dx = 0; dx < 3; dx++) {
+      const fy = cy + 2, fx = cx + dx;
+      if (fy > 0 && fy < height - 1 && fx > 0 && fx < width - 1) {
+        if (map[fy][fx] === 3) map[fy][fx] = 0;
+      }
+    }
+  }
+
   // Place houses
   const houses: { x: number; y: number }[] = [
     { x: 2, y: 2 },
     { x: width - 5, y: 2 },
     { x: 2, y: 7 },
     { x: width - 5, y: 7 },
-    { x: 2, y: 11 },
   ];
   for (const h of houses) placeHouse(h.x, h.y);
 
-  // Place shop
+  // Place clinic (left of shop, bottom row)
+  const clinicX = width - 9;
+  const clinicY = 11;
+  placeClinic(clinicX, clinicY);
+
+  // Place shop (bottom-right)
   const shopX = width - 5;
   const shopY = 11;
   placeShop(shopX, shopY);
 
   // Side paths
-  const allBuildings = [...houses, { x: shopX + 1, y: shopY }];
+  const allBuildings = [...houses, { x: clinicX + 1, y: clinicY }, { x: shopX + 1, y: shopY }];
   for (const b of allBuildings) {
     const frontY = b.y + 2;
     const startX = Math.min(b.x, cx - 1);
@@ -1034,24 +1191,54 @@ export function generateDungeonMap(
     }
 
     const topX = entranceX;
-    const topRoomY = 2;
-    for (let dy = 0; dy < 3; dy++) {
-      for (let dx = -2; dx <= 2; dx++) {
-        const bx = topX + dx;
-        const by = topRoomY + dy;
-        if (bx > 0 && bx < width - 1 && by > 0 && by < height - 1) {
-          map[by][bx] = 0;
+    if (isFinalFloor) {
+      // Grand throne room: 13-wide × 9-tall
+      const topRoomY = 2;
+      for (let dy = 0; dy < 9; dy++) {
+        for (let dx = -6; dx <= 6; dx++) {
+          const bx = topX + dx;
+          const by = topRoomY + dy;
+          if (bx > 0 && bx < width - 1 && by > 0 && by < height - 1) {
+            map[by][bx] = 0;
+          }
         }
       }
-    }
-    map[topRoomY + 3][topX] = 0;
-    if (rooms.length > 0) {
-      carveLCorridor(map, rooms[0].cx, rooms[0].cy, topX, topRoomY + 3, rand);
-    }
-
-    if (isFinalFloor) {
+      // Decorative pillars (wall tiles)
+      const pillarOffsets = [-4, 4];
+      const pillarRows = [2, 4, 6];
+      for (const pdx of pillarOffsets) {
+        for (const pdy of pillarRows) {
+          const px = topX + pdx;
+          const py = topRoomY + pdy;
+          if (px > 0 && px < width - 1 && py > 0 && py < height - 1) {
+            map[py][px] = 1;
+          }
+        }
+      }
+      // Boss on throne at center-back
       map[topRoomY + 1][topX] = 7;
+      // Connect corridor from room below into throne room entrance
+      map[topRoomY + 9][topX] = 0;
+      map[topRoomY + 10][topX] = 0;
+      if (rooms.length > 0) {
+        carveLCorridor(map, rooms[0].cx, rooms[0].cy, topX, topRoomY + 10, rand);
+      }
     } else {
+      // Non-final floor: smaller top room with stairs
+      const topRoomY = 2;
+      for (let dy = 0; dy < 3; dy++) {
+        for (let dx = -2; dx <= 2; dx++) {
+          const bx = topX + dx;
+          const by = topRoomY + dy;
+          if (bx > 0 && bx < width - 1 && by > 0 && by < height - 1) {
+            map[by][bx] = 0;
+          }
+        }
+      }
+      map[topRoomY + 3][topX] = 0;
+      if (rooms.length > 0) {
+        carveLCorridor(map, rooms[0].cx, rooms[0].cy, topX, topRoomY + 3, rand);
+      }
       map[0][entranceX] = 9;
       map[1][entranceX] = 0;
     }

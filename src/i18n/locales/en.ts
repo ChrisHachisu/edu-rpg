@@ -47,6 +47,9 @@ export const enStrings: Record<string, string> = {
   'battle.playerDefend': '{name} defends!',
   'battle.hit': '{damage} damage!',
   'battle.miss': 'Miss!',
+  'battle.partialHit': '{damage} damage (partial)!',
+  'battle.speedBonus': 'Quick answer!',
+  'battle.enemyPartialHit': '{damage} damage (partial)!',
   'battle.enemyAttack': '{monster} attacks!',
   'battle.enemyMiss': '{monster} missed!',
   'battle.victory': 'Victory!',
@@ -68,6 +71,7 @@ export const enStrings: Record<string, string> = {
   // Menu
   'menu.status': 'Status',
   'menu.items': 'Items',
+  'menu.noItems': 'No items',
   'menu.equip': 'Equip',
   'menu.save': 'Save',
   'menu.settings': 'Settings',
@@ -104,6 +108,7 @@ export const enStrings: Record<string, string> = {
   'shop.buy': 'Buy',
   'shop.sell': 'Sell',
   'shop.leave': 'Leave',
+  'shop.noItemsToSell': 'No items to sell',
   'shop.bought': 'Bought {item}!',
   'shop.sold': 'Sold {item}!',
   'shop.cantAfford': 'Not enough Gold!',
@@ -113,16 +118,16 @@ export const enStrings: Record<string, string> = {
 
   // ── Intro Dialog (3 messages) ────────────────────────────────────
   'intro.elder1': 'Welcome, young hero. I am the Elder of Greenhollow Village. Dark times are upon us...',
-  'intro.elder2': 'The Demon King Malachar stole the Crystals of Knowledge! Darkness spreads across Eldravia. You must reclaim them!',
-  'intro.elder3': 'Head east to the Misty Grotto first. The boss there guards a crystal you\'ll need to open the Crystal Cave to the north. Buy supplies at the shop before you leave!',
+  'intro.elder2': 'The Demon King Malachar shattered the Crystal of Math Knowledge into 5 shards and scattered them! Darkness spreads across Eldravia. You must reclaim the shards!',
+  'intro.elder3': 'Head east to the Misty Grotto first. The boss there guards a crystal shard. Buy supplies at the shop before you leave!',
 
   // ── NPCs / Story ──────────────────────────────────────────────────
-  'story.intro1': 'Long ago, the land of Eldravia was protected by five Crystals of Knowledge.',
-  'story.intro2': 'But the Demon King Malachar stole the crystals, and darkness covered the world.',
-  'story.intro3': 'Now, a young hero must set out to reclaim the crystals and bring back the light!',
+  'story.intro1': 'Long ago, the land of Eldravia was protected by the Crystal of Math Knowledge.',
+  'story.intro2': 'But the Demon King Malachar shattered the crystal into 5 shards and scattered them across the world.',
+  'story.intro3': 'Now, a young hero must set out to reclaim the crystal shards and restore the light!',
 
   // Greenhollow (Act 1)
-  'npc.elder.greeting': 'Be safe, hero. Head east toward the Misty Grotto. You\'ll need the crystal from its guardian to open the way north!',
+  'npc.elder.greeting': 'Be safe, hero. Head east toward the Misty Grotto. You\'ll need the crystal shard from its guardian to open the way north!',
   'npc.villager1': 'Monsters appeared everywhere! Be careful out there!',
   'npc.villager2': 'Buy herbs at the shop before you go!',
 
@@ -133,11 +138,11 @@ export const enStrings: Record<string, string> = {
   // Port Sapphire (Act 1)
   'npc.sailor': 'I hear a dragon lives in the caves to the north, sealed behind a dark barrier. Scary stuff!',
   'npc.fisherman': 'I lost my best rod in the old cellar south of the village. Something big moved in down there... a giant crab, maybe?',
-  'npc.wisewoman': 'The Misty Grotto lies to the east. A Giant Toad guards a crystal there — you\'ll need it to unseal the Crystal Cave to the north!',
+  'npc.wisewoman': 'The Misty Grotto lies to the east. A Giant Toad guards a crystal shard there — you\'ll need it to unseal the Crystal Cave to the north!',
 
   // Ironkeep (Act 2)
   'npc.soldier': 'Far to the east lies the Frozen Lake. An Ice Wyrm guards the legendary Frostbrand sword there. That weapon will serve you well on the road ahead!',
-  'npc.blacksmith': 'A dark barrier seals the Shadow Cave to the north. Head west to the Storm Nest — a Storm Harpy there guards a crystal that can break the seal!',
+  'npc.blacksmith': 'A dark barrier seals the Shadow Cave to the north. Head west to the Storm Nest — a Storm Harpy there guards a crystal shard that can break the seal!',
 
   // Oasis Haven (Act 3)
   'npc.oasisElder': 'The Desert Tomb to the east holds an ancient guardian. Defeat it, and the way to the volcanic region will open!',
@@ -159,7 +164,18 @@ export const enStrings: Record<string, string> = {
   'npc.grizzledKnight': 'The Demon Castle lies beyond the maze to the north. Make sure you\'re fully prepared before you go... there\'s no turning back!',
   'npc.prophetess': 'I sense great power in you, hero. Seek the legendary relics hidden in the far corners of this dark land before facing the Demon King.',
 
+  // Portal land NPCs
+  'npc.skyKeeper': 'The Storm Sentinel guards the Gale Shield at the top of the Spire. Only the bravest can reach it!',
+  'npc.frostSage': 'The Frost Monarch rules these frozen peaks. Defeat it to claim the Crown of Wisdom.',
+  'npc.templeScholar': 'This ancient temple holds a sword of legend — Excalibur. Its guardian will not yield easily.',
+  'npc.shadowWatcher': 'The void between worlds holds the Aegis of Dawn. Be wary of its celestial guardian.',
+
   'npc.shopkeeper': 'Welcome to my shop! Take a look around.',
+  'npc.healer': 'Welcome to the clinic! I can heal your wounds.',
+  'npc.healer.fullHp': 'You look perfectly healthy! No healing needed.',
+  'npc.healer.healFree': 'There you go, all healed up! Stay safe out there.',
+  'npc.healer.noGold': 'Healing costs {price} G, but you don\'t have enough gold...',
+  'npc.healer.healed': 'All healed up! That will be {price} G. Take care!',
   'npc.savePoint': 'Your adventure has been saved!',
 
   // Treasure
@@ -176,7 +192,7 @@ export const enStrings: Record<string, string> = {
   'dungeon.mistyGrotto.boss.dialog2': 'A massive shadow looms in the mist!',
   'dungeon.mistyGrotto.boss.dialog3': 'The Giant Toad leaps out with a thunderous croak! Prepare for battle!',
   'dungeon.mistyGrotto.boss.defeat': 'The Giant Toad shrinks back into the mist... The fog begins to clear.',
-  'dungeon.mistyGrotto.victory': 'You found the Crystal of Heart! Its gentle warmth fills you with determination.',
+  'dungeon.mistyGrotto.victory': 'You found a Crystal Shard! Its gentle warmth fills you with determination.',
 
   // Sunken Cellar
   'dungeon.sunkenCellar.enter': 'Seawater drips from the crumbling walls... The air smells of salt and rot.',
@@ -193,15 +209,15 @@ export const enStrings: Record<string, string> = {
   'dungeon.crystalCave.boss.dialog2': 'A massive shape breaks the surface!',
   'dungeon.crystalCave.boss.dialog3': 'The Sea Serpent rises from the deep! Prepare for battle!',
   'dungeon.crystalCave.boss.defeat': 'The Sea Serpent dissolves into sparkling light... The water grows calm.',
-  'dungeon.crystalCave.victory': 'You found the Crystal of Courage! Its warm light fills you with strength.',
-  'dungeon.crystalCave.locked': 'A mysterious force blocks the cave entrance... Perhaps a crystal from the Misty Grotto would open the way.',
+  'dungeon.crystalCave.victory': 'You found a Crystal Shard! Its warm light fills you with strength.',
+  'dungeon.crystalCave.locked': 'A mysterious force blocks the cave entrance... Perhaps a crystal shard from the Misty Grotto would open the way.',
 
   // Storm Nest (prerequisite for Shadow Cave)
   'dungeon.stormNest.boss.dialog1': 'Lightning crackles through the chamber... Feathers drift on howling winds.',
   'dungeon.stormNest.boss.dialog2': 'A piercing shriek echoes from above!',
   'dungeon.stormNest.boss.dialog3': 'The Storm Harpy descends with talons bared! Prepare for battle!',
   'dungeon.stormNest.boss.defeat': 'The Storm Harpy\'s wings fold... The winds die down to a gentle breeze.',
-  'dungeon.stormNest.victory': 'A dark crystal falls from the harpy\'s nest, pulsing with shadowy energy.',
+  'dungeon.stormNest.victory': 'A Crystal Shard falls from the harpy\'s nest, pulsing with ancient energy.',
 
   // Frozen Lake
   'dungeon.frozenLake.enter': 'The air bites with cold... Ice covers every surface, and the walls glitter like diamonds.',
@@ -218,8 +234,8 @@ export const enStrings: Record<string, string> = {
   'dungeon.shadowCave.boss.dialog2': 'A thunderous roar shakes the entire cave!',
   'dungeon.shadowCave.boss.dialog3': 'The Red Dragon spreads its wings! Its eyes burn with dark fire!',
   'dungeon.shadowCave.boss.defeat': 'The darkness lifts from the Dragon... It fades away in a gentle glow.',
-  'dungeon.shadowCave.victory': 'You found the Crystal of Wisdom! Ancient knowledge flows into your mind.',
-  'dungeon.shadowCave.locked': 'A dark barrier seals the cave entrance... Perhaps a crystal from the Storm Nest to the west could break it.',
+  'dungeon.shadowCave.victory': 'You found a Crystal Shard! Ancient knowledge flows into your mind.',
+  'dungeon.shadowCave.locked': 'A dark barrier seals the cave entrance... Perhaps a crystal shard from the Storm Nest to the west could break it.',
 
   // Desert Tomb
   'dungeon.desertTomb.enter': 'Sand swirls around the ancient entrance... The tomb is sealed with forgotten magic.',
@@ -253,10 +269,11 @@ export const enStrings: Record<string, string> = {
   'dungeon.volcanicForge.boss.dialog2': 'A colossal figure of fire and stone rises from the magma!',
   'dungeon.volcanicForge.boss.dialog3': 'The Flame Titan roars, sending waves of fire in all directions! Prepare for battle!',
   'dungeon.volcanicForge.boss.defeat': 'The Flame Titan cools and crumbles... The volcano grows quiet.',
-  'dungeon.volcanicForge.victory': 'You found the Crystal of Flame! Its blazing power strengthens your resolve.',
+  'dungeon.volcanicForge.victory': 'You found a Crystal Shard! Its blazing power strengthens your resolve.',
   'dungeon.volcanicForge.locked': 'A wall of searing heat blocks the entrance... You must defeat the guardian of the Desert Tomb to break the seal.',
 
   // Demon Castle
+  'demonCastle.sealed': 'The seal of the four relics bars the way. Missing: {missing}',
   'dungeon.demonCastle.enter': 'The gates of the Demon Castle creak open... This is the final battle.',
   'dungeon.demonCastle.boss': 'Malachar sits upon his throne of shadows. "So, the grandchild of that hero dares to face me?"',
   'dungeon.demonCastle.boss.dialog1': 'A cold presence fills the throne room...',
@@ -317,6 +334,17 @@ export const enStrings: Record<string, string> = {
   'monster.sandGolem': 'Sand Golem',
   'monster.banditLord': 'Bandit Lord',
   'monster.lavaWyrm': 'Lava Wyrm',
+  // Portal land monsters
+  'monster.stormRaptor': 'Storm Raptor',
+  'monster.cloudWraith': 'Cloud Wraith',
+  'monster.frostStalker': 'Frost Stalker',
+  'monster.glacialGolem': 'Glacial Golem',
+  'monster.templeGuard': 'Temple Guard',
+  'monster.ancientSphinx': 'Ancient Sphinx',
+  'monster.voidShade': 'Void Shade',
+  'monster.darkKnight': 'Dark Knight',
+  'monster.stormSentinel': 'Storm Sentinel',
+  'monster.frostMonarch': 'Frost Monarch',
 
   // ── Items ─────────────────────────────────────────────────────────
   'item.herb': 'Herb',
@@ -410,15 +438,21 @@ export const enStrings: Record<string, string> = {
   'equip.magmaBlade.desc': 'A blade forged in the heart of a volcano. Burns with eternal fire.',
   'equip.moltenGreaves': 'Molten Greaves',
   'equip.moltenGreaves.desc': 'Leg armor forged from cooled magma. Nearly indestructible.',
+  // Portal land equipment
+  'equip.galeShield': 'Gale Shield',
+  'equip.galeShield.desc': 'A legendary shield woven from storm winds. DEF +30',
+  'equip.crownOfWisdom': 'Crown of Wisdom',
+  'equip.crownOfWisdom.desc': 'A legendary crown radiating ancient knowledge. DEF +25',
 
   // Game Over
   'gameover.title': 'Game Over',
   'gameover.retry': 'Try Again',
+  'gameover.restart_save': 'Restart from Save Point',
   'gameover.title_screen': 'Title Screen',
 
   // Victory
   'victory.title': 'Congratulations!',
-  'victory.message': 'You defeated the Demon King and restored the Crystals of Knowledge!',
+  'victory.message': 'You defeated the Demon King and restored the Crystal of Math Knowledge!',
   'victory.subtitle': 'Light has returned to Eldravia. Your grandmother would be proud.',
   'victory.thanks': 'Thank you for playing!',
   'victory.stats': 'Quiz Accuracy: {correct}/{total} ({pct}%)',
@@ -428,29 +462,51 @@ export const enStrings: Record<string, string> = {
   'victory.titleScreen': 'Title Screen',
   'victory.pressEnter': 'Press ENTER',
 
-  // Sealed Sanctum (Excalibur)
-  'dungeon.sealedSanctum.boss.dialog1': 'The air grows deathly cold... A spectral figure guards a radiant blade.',
-  'dungeon.sealedSanctum.boss.dialog2': 'The Sword Wraith draws a ghostly blade. "None shall claim Excalibur!"',
-  'dungeon.sealedSanctum.boss.dialog3': 'The Wraith charges! Prove your worth to claim the legendary sword!',
-  'dungeon.sealedSanctum.boss.defeat': 'The Sword Wraith dissolves... "You are... worthy..."',
-  'dungeon.sealedSanctum.victory': 'The sanctum fills with golden light as Excalibur reveals itself!',
+  // Stormreach Spire
+  'dungeon.stormreachSpire.enter': 'The Stormreach Spire looms above, crackling with lightning!',
+  'dungeon.stormreachSpire.boss.dialog1': 'The wind howls as you reach the summit...',
+  'dungeon.stormreachSpire.boss.dialog2': 'Storm Sentinel: You dare challenge the master of storms?',
+  'dungeon.stormreachSpire.boss.dialog3': 'Storm Sentinel: Then feel the fury of the tempest!',
+  'dungeon.stormreachSpire.boss.defeat': 'The Storm Sentinel fades into calm winds...',
+  'dungeon.stormreachSpire.victory': 'The Stormreach Spire falls silent. You claimed the Gale Shield!',
 
-  // Celestial Vault (Aegis of Dawn)
-  'dungeon.celestialVault.boss.dialog1': 'Blinding light fills the chamber... A divine presence watches.',
-  'dungeon.celestialVault.boss.dialog2': 'The Celestial Guardian descends. "Only the truly brave may bear this armor."',
-  'dungeon.celestialVault.boss.dialog3': 'The Guardian raises its shield! Prove your courage to claim the Aegis of Dawn!',
-  'dungeon.celestialVault.boss.defeat': 'The Guardian bows... "Go forth, champion. May the Aegis protect you."',
-  'dungeon.celestialVault.victory': 'Divine light coalesces into the Aegis of Dawn — armor of the gods!',
-  'dungeon.celestialVault.locked': 'A powerful seal guards the entrance... The ancient runes pulse with energy. Only a blade of legendary might could break through.',
+  // Frostfall Cavern
+  'dungeon.frostfallCavern.enter': 'The Frostfall Cavern glitters with ice crystals!',
+  'dungeon.frostfallCavern.boss.dialog1': 'The temperature drops as you enter the frozen throne room...',
+  'dungeon.frostfallCavern.boss.dialog2': 'Frost Monarch: Kneel before the eternal winter!',
+  'dungeon.frostfallCavern.boss.dialog3': 'Frost Monarch: Your warmth will be extinguished!',
+  'dungeon.frostfallCavern.boss.defeat': 'The Frost Monarch shatters into crystals of light...',
+  'dungeon.frostfallCavern.victory': 'The ice melts away. The Crown of Wisdom is yours!',
+
+  // Sunken Temple Dungeon
+  'dungeon.sunkenTempleDungeon.enter': 'Ancient runes glow as you enter the Sunken Temple!',
+  'dungeon.sunkenTempleDungeon.boss.dialog1': 'A spectral knight materializes from the shadows...',
+  'dungeon.sunkenTempleDungeon.boss.dialog2': 'Sword Wraith: I have guarded this blade for a thousand years!',
+  'dungeon.sunkenTempleDungeon.boss.dialog3': 'Sword Wraith: Prove your worth in combat!',
+  'dungeon.sunkenTempleDungeon.boss.defeat': 'The Sword Wraith bows and fades away...',
+  'dungeon.sunkenTempleDungeon.victory': 'The temple seals open. Excalibur shines before you!',
+
+  // Twilight Dungeon
+  'dungeon.twilightDungeon.enter': 'The boundary between worlds blurs as you step into twilight!',
+  'dungeon.twilightDungeon.boss.dialog1': 'Light and shadow swirl around a celestial figure...',
+  'dungeon.twilightDungeon.boss.dialog2': 'Celestial Guardian: Only the worthy may wield the Aegis of Dawn!',
+  'dungeon.twilightDungeon.boss.dialog3': 'Celestial Guardian: Face the judgment of the stars!',
+  'dungeon.twilightDungeon.boss.defeat': 'The Celestial Guardian smiles and ascends into light...',
+  'dungeon.twilightDungeon.victory': 'Dawn breaks through the twilight. The Aegis of Dawn is yours!',
 
   // Key item obtainment
-  'item.shadowCrystal': 'Shadow Crystal',
-  'item.shadowCrystal.desc': 'A dark crystal that can break the seal on Shadow Cave.',
-  'item.shadowCrystal.obtained': 'You obtained the Shadow Crystal! Its dark energy pulses with power. The seal on Shadow Cave can now be broken!',
+  'item.crystalShard': 'Crystal Shard',
+  'item.crystalShard.desc': 'A glowing shard of the legendary Crystal of Math Knowledge.',
+  'item.crystalShard.obtained': 'You obtained a Crystal Shard! It pulses with ancient power.',
+  'item.crystalOfKnowledge': 'Crystal of Math Knowledge',
+  'item.crystalOfKnowledge.desc': 'The legendary crystal, restored from 5 shards. Its power illuminates the mind.',
+  'crystal.combined': 'The 5 Crystal Shards combine into the Crystal of Math Knowledge!',
 
   // Legendary item obtainment
   'legendary.excalibur.obtained': 'You obtained Excalibur! The legendary blade gleams with ancient power. It has been equipped automatically!',
   'legendary.aegis.obtained': 'You obtained the Aegis of Dawn! Divine light wraps around you like an impenetrable shield. It has been equipped automatically!',
+  'legendary.galeShield.obtained': 'You obtained the Gale Shield! The winds of the storm now protect you.',
+  'legendary.crownOfWisdom.obtained': 'You obtained the Crown of Wisdom! Ancient knowledge flows through you.',
 
   'dungeon.stairsDown': 'You descend deeper...',
   'dungeon.stairsUp': 'You ascend the stairs...',
@@ -480,6 +536,17 @@ export const enStrings: Record<string, string> = {
   'map.magmaTunnels': 'Magma Tunnels',
   'map.volcanicForge': 'Volcanic Forge',
   'map.demonCastle': 'Demon Castle',
-  'map.sealedSanctum': 'Sealed Sanctum',
-  'map.celestialVault': 'Celestial Vault',
+  // Portal lands
+  'map.stormreachIsles': 'Stormreach Isles',
+  'map.stormreachVillage': 'Stormreach Village',
+  'map.stormreachSpire': 'Stormreach Spire',
+  'map.frostfallPeaks': 'Frostfall Peaks',
+  'map.frostfallVillage': 'Frostfall Village',
+  'map.frostfallCavern': 'Frostfall Cavern',
+  'map.sunkenTempleIsle': 'Sunken Temple Isle',
+  'map.sunkenTempleVillage': 'Sunken Temple Village',
+  'map.sunkenTempleDungeon': 'Sunken Temple',
+  'map.twilightRealm': 'Twilight Realm',
+  'map.twilightVillage': 'Twilight Village',
+  'map.twilightDungeon': 'Twilight Sanctum',
 };

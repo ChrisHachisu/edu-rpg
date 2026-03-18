@@ -38,6 +38,7 @@ class GameStateManager {
     this.quizManager.setDifficulty(difficulty);
     this.player.state.quizDifficulty = difficulty;
     this.encounterManager = new EncounterManager();
+    this.encounterManager.encounterRateMultiplier = this.getEncounterMultiplier(difficulty);
     this.playtime = 0;
     this.startTime = Date.now();
     setLocale(currentLocale);
@@ -52,6 +53,7 @@ class GameStateManager {
     this.quizManager.setDifficulty(data.player.quizDifficulty);
     this.quizManager.loadStats(data.quizStats);
     this.encounterManager = new EncounterManager();
+    this.encounterManager.encounterRateMultiplier = this.getEncounterMultiplier(data.player.quizDifficulty);
     this.playtime = data.playtime;
     this.startTime = Date.now();
     setLocale(data.player.locale);
@@ -64,6 +66,45 @@ class GameStateManager {
     this.playtime += (Date.now() - this.startTime) / 1000;
     this.startTime = Date.now();
     SaveManager.save(this.player.state, this.playtime, this.quizManager.getStats());
+  }
+
+  /** Auto-save to a separate slot (used before boss fights for quick retry) */
+  autoSave(): void {
+    this.playtime += (Date.now() - this.startTime) / 1000;
+    this.startTime = Date.now();
+    SaveManager.autoSave(this.player.state, this.playtime, this.quizManager.getStats());
+  }
+
+  /** Load from auto-save slot (retry boss fight) */
+  loadAutoSave(): boolean {
+    Player.devMode = this.devMode;
+    const data = SaveManager.loadAutoSave();
+    if (!data) return false;
+    this.player = new Player(data.player);
+    this.quizManager = new QuizManager();
+    this.quizManager.setDifficulty(data.player.quizDifficulty);
+    this.quizManager.loadStats(data.quizStats);
+    this.encounterManager = new EncounterManager();
+    this.encounterManager.encounterRateMultiplier = this.getEncounterMultiplier(data.player.quizDifficulty);
+    this.playtime = data.playtime;
+    this.startTime = Date.now();
+    setLocale(data.player.locale);
+    audioManager.loadSettings(data.player.soundEnabled, data.player.masterVolume);
+    return true;
+  }
+
+  /** Load manual save + merge boss-encountered flags from auto-save (for portal access) */
+  loadGameWithPortalFlags(): boolean {
+    if (!this.loadGame()) return false;
+    const autoData = SaveManager.loadAutoSave();
+    if (autoData) {
+      for (const [key, val] of Object.entries(autoData.player.storyFlags)) {
+        if (key.endsWith('.encountered') && val) {
+          this.player.state.storyFlags[key] = true;
+        }
+      }
+    }
+    return true;
   }
 
   prepareNewGamePlus(): void {
@@ -109,6 +150,19 @@ class GameStateManager {
     return zoneMap[mapId] ?? null;
   }
 
+  /** Encounter rate multiplier based on quiz difficulty — younger kids get fewer fights */
+  private getEncounterMultiplier(grade: GradeLevel): number {
+    switch (grade) {
+      case 'k': return 0.4;   // Preschool: 40% encounter rate, ~2.5× more steps between
+      case '1': return 0.55;  // Grade 1: 55% encounter rate
+      case '2': return 0.7;   // Grade 2: 70% encounter rate
+      case '3': return 0.85;  // Grade 3: 85% encounter rate
+      case '5': return 1.1;   // Grade 5: 110% encounter rate
+      case '6': return 1.2;   // Grade 6: 120% encounter rate
+      default:  return 1.0;   // Grade 4: normal encounter rate
+    }
+  }
+
   getOverworldZone(x: number, y: number): string {
     // V2 map: 120×160. River ≈ y=131, Mountains ≈ y=101, Lava ≈ y=71
     if (y <= 70) return 'demons-threshold';       // Act 5 — above lava barrier
@@ -122,3 +176,4 @@ class GameStateManager {
 }
 
 export const gameState = new GameStateManager();
+(window as any).__GAME_STATE__ = gameState;

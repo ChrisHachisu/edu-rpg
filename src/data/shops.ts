@@ -54,4 +54,26 @@ export const shops: Record<string, ShopData> = {
     nameKey: 'npc.shopkeeper',
     items: ['elixir', 'smokeBomb', 'holyBlade', 'holyArmor', 'mithrilShield', 'mithrilHelm'],
   },
+
+  // ── Portal Land Villages ──
+  stormreachVillage: {
+    id: 'stormreachVillage',
+    nameKey: 'npc.shopkeeper',
+    items: ['elixir', 'smokeBomb', 'holyBlade', 'holyArmor', 'mithrilShield', 'mithrilHelm'],
+  },
+  frostfallVillage: {
+    id: 'frostfallVillage',
+    nameKey: 'npc.shopkeeper',
+    items: ['elixir', 'smokeBomb', 'holyBlade', 'holyArmor', 'mithrilShield', 'mithrilHelm'],
+  },
+  sunkenTempleVillage: {
+    id: 'sunkenTempleVillage',
+    nameKey: 'npc.shopkeeper',
+    items: ['elixir', 'smokeBomb', 'holyBlade', 'holyArmor', 'mithrilShield', 'mithrilHelm'],
+  },
+  twilightVillage: {
+    id: 'twilightVillage',
+    nameKey: 'npc.shopkeeper',
+    items: ['elixir', 'smokeBomb', 'holyBlade', 'holyArmor', 'mithrilShield', 'mithrilHelm'],
+  },
 };

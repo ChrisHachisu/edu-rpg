@@ -25,6 +25,8 @@ export interface CombatResult {
   state: CombatState;
   message: string;
   damage?: number;
+  partial?: boolean;
+  speedBonus?: boolean;
   expGain?: number;
   goldGain?: number;
   levelUp?: { newLevel: number };
@@ -103,9 +105,14 @@ export class CombatEngine {
     }
   }
 
-  resolvePlayerAttack(quizCorrect: boolean): CombatResult {
+  resolvePlayerAttack(quizCorrect: boolean, timeRatio?: number): CombatResult {
     if (quizCorrect) {
-      const damage = this.calculateDamage(this.player.totalAtk, this.monster.baseDef);
+      let damage = this.calculateDamage(this.player.totalAtk, this.monster.baseDef);
+      // Speed bonus: 1.2x damage for answering within 50% of time
+      const speedBonus = timeRatio !== undefined && timeRatio >= 0.5;
+      if (speedBonus) {
+        damage = Math.floor(damage * 1.2);
+      }
       this.monsterHp -= damage;
       if (this.monsterHp <= 0) {
         this.monsterHp = 0;
@@ -114,12 +121,27 @@ export class CombatEngine {
       this.state = 'enemyTurn';
       return {
         state: 'playerResolve',
-        message: t('battle.hit', { damage }),
+        message: speedBonus
+          ? t('battle.speedBonus') + ' ' + t('battle.hit', { damage })
+          : t('battle.hit', { damage }),
         damage,
+        speedBonus,
       };
     } else {
+      // Wrong answer: partial damage (50%)
+      const damage = Math.max(1, Math.floor(this.calculateDamage(this.player.totalAtk, this.monster.baseDef) * 0.5));
+      this.monsterHp -= damage;
+      if (this.monsterHp <= 0) {
+        this.monsterHp = 0;
+        return this.victory();
+      }
       this.state = 'enemyTurn';
-      return { state: 'playerResolve', message: t('battle.miss') };
+      return {
+        state: 'playerResolve',
+        message: t('battle.partialHit', { damage }),
+        damage,
+        partial: true,
+      };
     }
   }
 
@@ -138,8 +160,9 @@ export class CombatEngine {
         message: t('battle.enemyMiss', { monster: t(this.monster.nameKey) }),
       };
     } else {
-      // Player answered incorrectly — enemy hits
-      let damage = this.calculateDamage(this.monster.baseAtk, this.player.totalDef);
+      // Player answered incorrectly — enemy hits at 50% damage
+      const effectiveAtk = this.monster.baseAtk;
+      let damage = Math.max(1, Math.floor(this.calculateDamage(effectiveAtk, this.player.totalDef) * 0.5));
       if (this.isDefending) damage = Math.max(1, Math.floor(damage * DEFEND_DAMAGE_MULTIPLIER));
       this.isDefending = false;
       this.player.takeDamage(damage);
@@ -150,14 +173,16 @@ export class CombatEngine {
           state: 'defeat',
           message: t('battle.hit', { damage }) + ' ' + t('battle.defeated', { name: this.player.state.name }),
           damage,
+          partial: true,
         };
       }
 
       this.state = 'playerTurn';
       return {
         state: 'enemyResolve',
-        message: t('battle.enemyAttack', { monster: t(this.monster.nameKey) }) + ' ' + t('battle.hit', { damage }),
+        message: t('battle.enemyAttack', { monster: t(this.monster.nameKey) }) + ' ' + t('battle.partialHit', { damage }),
         damage,
+        partial: true,
       };
     }
   }
@@ -191,7 +216,8 @@ export class CombatEngine {
   }
 
   private calculateDamage(atk: number, def: number): number {
-    const base = Math.max(1, atk - Math.floor(def / 2));
+    // Minimum damage = 15% of ATK, so high-DEF can't reduce damage to 1
+    const base = Math.max(Math.ceil(atk * 0.15), atk - Math.floor(def / 2));
     const variance = DAMAGE_VARIANCE_MIN + Math.random() * (DAMAGE_VARIANCE_MAX - DAMAGE_VARIANCE_MIN);
     return Math.max(1, Math.floor(base * variance));
   }

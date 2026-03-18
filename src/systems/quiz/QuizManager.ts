@@ -15,13 +15,15 @@ const BASE_TIMER: Record<GradeLevel, number> = {
 
 // Enemy strength multiplier for timer
 // Higher = more time, lower = less time (pressure)
-export type EnemyTier = 'weak' | 'normal' | 'strong' | 'boss' | 'finalBoss';
+export type EnemyTier = 'weak' | 'normal' | 'strong' | 'boss' | 'midBoss' | 'lateBoss' | 'finalBoss';
 const ENEMY_TIMER_MULT: Record<EnemyTier, number> = {
   weak: 1.5,
   normal: 1.0,
   strong: 0.85,
-  boss: 0.5,
-  finalBoss: 0.3,
+  midBoss: 0.85,
+  boss: 0.75,
+  lateBoss: 0.6,
+  finalBoss: 0.5,
 };
 
 // Grade levels in order for mercy system
@@ -43,6 +45,10 @@ const ZONE_TIER_MAP: Record<string, DifficultyTier> = {
   'volcanic-forge': 'hard',
   'demons-threshold': 'hard',
   'demon-castle': 'hard',
+  'stormreach-isles': 'hard',
+  'frostfall-peaks': 'hard',
+  'sunken-temple': 'hard',
+  'twilight-realm': 'hard',
 };
 
 // Bosses get one tier above their act's base
@@ -90,9 +96,11 @@ export class QuizManager {
   getTimerSeconds(enemyTier: EnemyTier): number {
     const base = BASE_TIMER[this.difficulty];
     const enemyMult = ENEMY_TIMER_MULT[enemyTier];
+    // Grade multiplier: younger = more time, older = less time
+    const gradeMult = ['k', '1', '2'].includes(this.difficulty) ? 1.2 : ['5', '6'].includes(this.difficulty) ? 0.8 : 1.0;
     // Streak bonus: +1s per 3 correct in a row, max +3s
     const streakBonus = Math.min(3, Math.floor(this.consecutiveCorrect / 3));
-    return Math.max(3, Math.round(base * enemyMult + streakBonus));
+    return Math.max(3, Math.round(base * enemyMult * gradeMult + streakBonus));
   }
 
   recordAnswer(category: string, correct: boolean): void {

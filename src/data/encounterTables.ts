@@ -210,26 +210,42 @@ export const encounterZones: Record<string, EncounterZone> = {
     ],
   },
 
-  // ── Hidden Legendary Dungeons (Act 5) ────────────────────────────
+  // ── Portal Lands (Post-game) ─────────────────────────────────────
 
-  'sealed-sanctum': {
-    zoneId: 'sealed-sanctum',
+  'stormreach-isles': {
+    zoneId: 'stormreach-isles',
     encounterRate: 0.08,
     minStepsBetween: 6,
     monsters: [
-      { monsterId: 'wraith', weight: 3 },
-      { monsterId: 'darkSorcerer', weight: 3 },
-      { monsterId: 'chimera', weight: 4 },
+      { monsterId: 'stormRaptor', weight: 5 },
+      { monsterId: 'cloudWraith', weight: 5 },
     ],
   },
-  'celestial-vault': {
-    zoneId: 'celestial-vault',
+  'frostfall-peaks': {
+    zoneId: 'frostfall-peaks',
     encounterRate: 0.08,
     minStepsBetween: 6,
     monsters: [
-      { monsterId: 'demon', weight: 3 },
-      { monsterId: 'shadow', weight: 4 },
-      { monsterId: 'fireElemental', weight: 3 },
+      { monsterId: 'frostStalker', weight: 5 },
+      { monsterId: 'glacialGolem', weight: 5 },
+    ],
+  },
+  'sunken-temple': {
+    zoneId: 'sunken-temple',
+    encounterRate: 0.08,
+    minStepsBetween: 6,
+    monsters: [
+      { monsterId: 'templeGuard', weight: 5 },
+      { monsterId: 'ancientSphinx', weight: 5 },
+    ],
+  },
+  'twilight-realm': {
+    zoneId: 'twilight-realm',
+    encounterRate: 0.08,
+    minStepsBetween: 6,
+    monsters: [
+      { monsterId: 'voidShade', weight: 5 },
+      { monsterId: 'darkKnight', weight: 5 },
     ],
   },
 };

@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import { GAME_WIDTH, GAME_HEIGHT, TILE_SIZE, COLORS } from '../utils/constants';
 import { t } from '../i18n/i18n';
 import { gameState } from '../GameState';
-import { generateOverworldMap, generateTownMap, generateDungeonMap } from '../utils/MapGenerator';
+import { generateOverworldMap, generateTownMap, generateDungeonMap, generatePortalLandMap } from '../utils/MapGenerator';
 import { mapDefs } from '../data/maps';
 import { monsters } from '../data/monsters';
 import { items } from '../data/items';
@@ -90,10 +90,12 @@ export class WorldMapScene extends Phaser.Scene {
     // Generate map data
     if (mapId === 'overworld') {
       this.mapData = generateOverworldMap(def.width, def.height);
+    } else if (def.type === 'portal-overworld') {
+      this.mapData = generatePortalLandMap(def.width, def.height, mapId.charCodeAt(0) * 197);
     } else if (def.type === 'town') {
       this.mapData = generateTownMap(def.width, def.height, mapId.charCodeAt(0) * 137);
     } else if (def.type === 'dungeon') {
-      const totalFloors = def.floors ?? 1;
+      const totalFloors = WorldMapScene.gradeCappedFloors(def.floors ?? 1);
       const isSingleFloorGate = def.connections.length > 1 && totalFloors === 1;
       const isMultiFloorGate = def.connections.length > 1 && totalFloors > 1;
       const isGateFinalFloor = isMultiFloorGate && this.currentFloor === totalFloors;
@@ -123,6 +125,27 @@ export class WorldMapScene extends Phaser.Scene {
           }
         }
       }
+      // Boss warp portal: place on floor 1 near entrance if boss encountered but not defeated
+      if (this.currentFloor === 1 && def.bossId && totalFloors > 1
+          && gameState.player.state.storyFlags[`boss.${def.bossId}.encountered`]
+          && !gameState.player.state.storyFlags[`boss.${def.bossId}.defeated`]) {
+        const entrX = Math.floor(def.width / 2);
+        if (def.castle) {
+          // Castle: entrance at bottom, portal beside entrance
+          const portalY = def.height - 2;
+          const portalX = entrX + 2;
+          if (portalX < def.width - 1 && this.mapData[portalY]?.[portalX] === 0) {
+            this.mapData[portalY][portalX] = 11;
+          }
+        } else {
+          // Standard dungeon: entrance at top, portal beside entrance
+          const portalY = 1;
+          const portalX = entrX + 2;
+          if (portalX < def.width - 1 && this.mapData[portalY]?.[portalX] === 0) {
+            this.mapData[portalY][portalX] = 11;
+          }
+        }
+      }
       // Reset pending boss state on map load
       this.pendingBossId = undefined;
     }
@@ -147,7 +170,7 @@ export class WorldMapScene extends Phaser.Scene {
     this.npcSprites = [];
 
     const def = mapDefs[this.currentMapId];
-    const prefix = def.type === 'overworld' ? 'ow'
+    const prefix = (def.type === 'overworld' || def.type === 'portal-overworld') ? 'ow'
       : def.type === 'town' ? 'town'
       : def.castle ? 'castle' : 'dng';
 
@@ -167,10 +190,27 @@ export class WorldMapScene extends Phaser.Scene {
     'villager1', 'wisewoman', 'blacksmith',
     'archaeologist', 'veteran', 'priestess',
     'herbalist', 'refugee', 'prophetess',
+    'healer',
   ]);
+
+  private static readonly HEALER_PRICES: Record<string, number> = {
+    greenhollow: 0, millbrook: 15, portSapphire: 25,
+    ironkeep: 50, oasisHaven: 80, ruinsCamp: 80,
+    embersRest: 120, lastBastion: 150, havensEdge: 150,
+    stormreachVillage: 150, frostfallVillage: 150,
+    sunkenTempleVillage: 150, twilightVillage: 150,
+  };
+
+  /** Clamp dungeon floors by grade: G1-2 max 3, G3-4 max 5, G5-6 all */
+  private static gradeCappedFloors(floors: number): number {
+    const grade = gameState.player.state.quizDifficulty;
+    const max = ['k', '1', '2'].includes(grade) ? 3 : ['3', '4'].includes(grade) ? 5 : Infinity;
+    return Math.min(floors, max);
+  }
 
   private renderNPCs(def: typeof mapDefs[string]): void {
     for (const npc of def.npcs) {
+      if (npc.id === 'healer') continue; // healer rendered separately inside clinic
       const spriteKey = WorldMapScene.FEMALE_NPCS.has(npc.id) ? 'npc-f' : 'npc';
       const sprite = this.add.sprite(
         npc.x * TILE_SIZE + TILE_SIZE / 2,
@@ -188,6 +228,18 @@ export class WorldMapScene extends Phaser.Scene {
         sx * TILE_SIZE + TILE_SIZE / 2,
         sy * TILE_SIZE + TILE_SIZE / 2 - 4, // nudge up so head pokes above counter
         'shopkeeper'
+      ).setOrigin(0.5).setScale(2).setDepth(5);
+      this.npcSprites.push(sprite);
+    }
+
+    // Healer (inside clinic behind counter, same pattern as shopkeeper)
+    if (def.type === 'town') {
+      const hx = def.width - 8; // center tile of 3-wide clinic starting at width-9
+      const hy = 12; // wall row
+      const sprite = this.add.sprite(
+        hx * TILE_SIZE + TILE_SIZE / 2,
+        hy * TILE_SIZE + TILE_SIZE / 2 - 4,
+        'npc-healer'
       ).setOrigin(0.5).setScale(2).setDepth(5);
       this.npcSprites.push(sprite);
     }
@@ -340,15 +392,16 @@ export class WorldMapScene extends Phaser.Scene {
 
     // Tile collision
     let passable = false;
-    if (def.type === 'overworld') {
+    if (def.type === 'overworld' || def.type === 'portal-overworld') {
       passable = tile !== 2 && tile !== 4;
     } else if (def.type === 'town') {
       // Town: walls, roofs, water, buildings, shop parts, and save crystal are impassable
       passable = tile !== 1 && tile !== 2 && tile !== 4 && tile !== 6 && tile !== 8
-        && tile !== 9 && tile !== 10 && tile !== 11 && tile !== 12;
+        && tile !== 9 && tile !== 10 && tile !== 11 && tile !== 12
+        && tile !== 13 && tile !== 14 && tile !== 15;
     } else {
-      // Dungeon: walls, lava, treasure chests, opened chests, and boss tiles are impassable
-      passable = tile !== 1 && tile !== 5 && tile !== 4 && tile !== 7 && tile !== 8;
+      // Dungeon: walls, lava, treasure chests, and boss tiles are impassable (opened chests ARE walkable)
+      passable = tile !== 1 && tile !== 5 && tile !== 4 && tile !== 7;
     }
     if (!passable) return false;
 
@@ -374,15 +427,41 @@ export class WorldMapScene extends Phaser.Scene {
       }
     }
 
-    // Special: town/dungeon tile on overworld
+    // Special: town/dungeon/portal tile on overworld
     if (def.type === 'overworld') {
       const tile = this.mapData[y]?.[x];
-      if (tile === 6 || tile === 7 || tile === 8) {
-        // Find which connection this is (town=6, cave=7, castle=8)
+      if (tile === 6 || tile === 7 || tile === 8 || tile === 9) {
+        // Find which connection this is (town=6, cave=7, castle=8, portal=9)
         for (const conn of def.connections) {
           if (Math.abs(conn.fromX - x) <= 1 && Math.abs(conn.fromY - y) <= 1) {
             return { targetMap: conn.targetMap, toX: conn.toX, toY: conn.toY, toFloor: conn.toFloor };
           }
+        }
+      }
+    }
+
+    // Portal-overworld: tile 6=village, tile 7=dungeon, tile 9=exit portal
+    if (def.type === 'portal-overworld') {
+      const tile = this.mapData[y]?.[x];
+      if (tile === 6 || tile === 7) {
+        for (const conn of def.connections) {
+          // Villages and dungeons have their own map defs with connections back
+          const targets = Object.values(mapDefs).filter(m =>
+            m.connections.some(c => c.targetMap === this.currentMapId)
+            && ((tile === 6 && m.type === 'town') || (tile === 7 && m.type === 'dungeon'))
+          );
+          if (targets.length > 0) {
+            const target = targets[0];
+            const conn2 = target.connections.find(c => c.targetMap === this.currentMapId);
+            return { targetMap: target.id, toX: conn2?.fromX ?? 8, toY: conn2?.fromY ?? 14 };
+          }
+        }
+      }
+      if (tile === 9) {
+        // Exit back to overworld
+        const conn = def.connections[0];
+        if (conn) {
+          return { targetMap: conn.targetMap, toX: conn.toX, toY: conn.toY };
         }
       }
     }
@@ -401,7 +480,7 @@ export class WorldMapScene extends Phaser.Scene {
           if (this.currentFloor > 1) {
             // Check if bottom stairs on final floor of gate dungeon → exit to next act
             const isGate = def.connections.length > 1;
-            const isFinal = this.currentFloor === (def.floors ?? 1);
+            const isFinal = this.currentFloor === WorldMapScene.gradeCappedFloors(def.floors ?? 1);
             if (isGate && isFinal && y > def.height / 2) {
               // Exit to overworld via closest connection (matches connection[1])
               let best = def.connections[0];
@@ -439,6 +518,11 @@ export class WorldMapScene extends Phaser.Scene {
             return { targetMap: conn.targetMap, toX: conn.toX, toY: conn.toY };
           }
         }
+        // Tile 11 = boss warp portal — teleport to boss floor
+        if (tile === 11) {
+          const totalFloors = WorldMapScene.gradeCappedFloors(def.floors ?? 1);
+          return { targetMap: '__boss_warp__', toX: 0, toY: 0, toFloor: totalFloors };
+        }
       }
     }
 
@@ -450,13 +534,6 @@ export class WorldMapScene extends Phaser.Scene {
     if (target.targetMap === 'crystalCave' && !gameState.player.state.storyFlags['boss.giantToad.defeated']) {
       this.isMoving = false;
       this.showMessage(t('dungeon.crystalCave.locked'));
-      return;
-    }
-
-    // Block Celestial Vault entry until Sword Wraith defeated (Excalibur obtained)
-    if (target.targetMap === 'celestialVault' && !gameState.player.state.storyFlags['boss.swordWraith.defeated']) {
-      this.isMoving = false;
-      this.showMessage(t('dungeon.celestialVault.locked'));
       return;
     }
 
@@ -488,8 +565,24 @@ export class WorldMapScene extends Phaser.Scene {
       return;
     }
 
-    // Block gate dungeon north entrance until boss defeated
-    if (target.toFloor && target.toFloor > 1) {
+    // Hard gate: Demon Castle requires all 4 legendary relics
+    if (target.targetMap === 'demonCastle') {
+      const eq = gameState.player.state.equipment;
+      const needed: Record<string, string> = {
+        weapon: 'excalibur', armor: 'aegisOfDawn', shield: 'galeShield', helmet: 'crownOfWisdom',
+      };
+      const missing = Object.entries(needed)
+        .filter(([slot, id]) => eq[slot as keyof typeof eq] !== id)
+        .map(([, id]) => t(items[id].nameKey));
+      if (missing.length > 0) {
+        this.isMoving = false;
+        this.showMessage(t('demonCastle.sealed', { missing: missing.join(', ') }));
+        return;
+      }
+    }
+
+    // Block gate dungeon north entrance until boss defeated (skip for boss warp portals)
+    if (target.targetMap !== '__boss_warp__' && target.toFloor && target.toFloor > 1) {
       const targetDef = mapDefs[target.targetMap];
       if (targetDef?.bossId && !gameState.player.state.storyFlags[`boss.${targetDef.bossId}.defeated`]) {
         this.isMoving = false;
@@ -504,7 +597,31 @@ export class WorldMapScene extends Phaser.Scene {
     this.cameras.main.once('camerafadeoutcomplete', () => {
       const def = mapDefs[this.currentMapId];
 
-      if (target.targetMap === '__floor_down__') {
+      if (target.targetMap === '__boss_warp__') {
+        // Boss warp portal — teleport directly to boss floor
+        this.currentFloor = target.toFloor ?? WorldMapScene.gradeCappedFloors(def.floors ?? 1);
+        this.loadMap(this.currentMapId);
+        // Scan for boss tile (7) and spawn nearby
+        let foundBoss = false;
+        for (let sy = 0; sy < this.mapData.length && !foundBoss; sy++) {
+          for (let sx = 0; sx < this.mapData[sy].length; sx++) {
+            if (this.mapData[sy][sx] === 7) {
+              this.heroTileX = sx;
+              this.heroTileY = Math.min(this.mapData.length - 2, sy + 2);
+              foundBoss = true;
+              break;
+            }
+          }
+        }
+        if (!foundBoss) {
+          // Fallback: entrance position
+          this.heroTileX = Math.floor(def.width / 2);
+          this.heroTileY = def.castle ? def.height - 2 : 1;
+        }
+        this.updatePosition();
+        this.createHero();
+        this.updateCamera();
+      } else if (target.targetMap === '__floor_down__') {
         // Go to next floor (deeper into dungeon)
         this.currentFloor++;
         const entranceX = Math.floor(def.width / 2);
@@ -547,6 +664,9 @@ export class WorldMapScene extends Phaser.Scene {
           }
         }
         this.updatePosition();
+        // Re-create hero at corrected position (loadMap created it at old position)
+        this.createHero();
+        this.updateCamera();
       } else {
         // Normal map transition — use target floor (for gate re-entry) or reset
         this.currentFloor = target.toFloor ?? 1;
@@ -616,6 +736,10 @@ export class WorldMapScene extends Phaser.Scene {
     // Check if facing an NPC
     for (const npc of def.npcs) {
       if (npc.x === facedX && npc.y === facedY) {
+        if (npc.id === 'healer') {
+          this.handleHealer();
+          return;
+        }
         this.showMessage(t(npc.dialogueKey));
         return;
       }
@@ -642,6 +766,10 @@ export class WorldMapScene extends Phaser.Scene {
     // Fallback: check NPCs within ±1 range
     for (const npc of def.npcs) {
       if (Math.abs(npc.x - this.heroTileX) <= 1 && Math.abs(npc.y - this.heroTileY) <= 1) {
+        if (npc.id === 'healer') {
+          this.handleHealer();
+          return;
+        }
         this.showMessage(t(npc.dialogueKey));
         return;
       }
@@ -665,6 +793,40 @@ export class WorldMapScene extends Phaser.Scene {
     }
   }
 
+  private handleHealer(): void {
+    const p = gameState.player;
+
+    // Already full HP
+    if (p.state.hp >= p.totalMaxHp) {
+      this.showMessage(t('npc.healer.fullHp'));
+      return;
+    }
+
+    const price = WorldMapScene.HEALER_PRICES[this.currentMapId] ?? 100;
+
+    // Free healing (Greenhollow)
+    if (price === 0) {
+      p.fullHeal();
+      audioManager.playSfx('save');
+      this.showMessage(t('npc.healer.healFree'));
+      this.updateHUD();
+      return;
+    }
+
+    // Not enough gold
+    if (p.state.gold < price) {
+      this.showMessage(t('npc.healer.noGold', { price }));
+      return;
+    }
+
+    // Heal
+    p.state.gold -= price;
+    p.fullHeal();
+    audioManager.playSfx('save');
+    this.showMessage(t('npc.healer.healed', { price }));
+    this.updateHUD();
+  }
+
   private tryBossInteract(x: number, y: number): boolean {
     if (y < 0 || y >= this.mapData.length || x < 0 || x >= this.mapData[0].length) return false;
     if (this.mapData[y][x] !== 7) return false;
@@ -679,6 +841,13 @@ export class WorldMapScene extends Phaser.Scene {
     this.pendingBossId = def.bossId;
     this.currentEncounterZone = def.encounterZone;
     audioManager.playSfx('boss_intro');
+
+    // Mark boss as encountered and auto-save so portal is available on retry
+    const encFlag = `boss.${def.bossId}.encountered`;
+    if (!gameState.player.state.storyFlags[encFlag]) {
+      gameState.player.state.storyFlags[encFlag] = true;
+      gameState.autoSave();
+    }
 
     // Build pre-battle dialog from i18n keys
     const dialogMessages = [
@@ -864,7 +1033,7 @@ export class WorldMapScene extends Phaser.Scene {
     // Dungeon/town name indicator
     const def = mapDefs[this.currentMapId];
     if (def.type === 'dungeon' || def.type === 'town') {
-      const totalFloors = def.floors ?? 1;
+      const totalFloors = WorldMapScene.gradeCappedFloors(def.floors ?? 1);
       let label = t(def.nameKey);
       if (totalFloors > 1) {
         const isGate = def.connections.length > 1;
@@ -1002,6 +1171,14 @@ export class WorldMapScene extends Phaser.Scene {
           gameState.player.addItem('aegisOfDawn', 1);
           gameState.player.equip('aegisOfDawn');
         }
+        if (bossId === 'stormSentinel') {
+          gameState.player.addItem('galeShield', 1);
+          gameState.player.equip('galeShield');
+        }
+        if (bossId === 'frostMonarch') {
+          gameState.player.addItem('crownOfWisdom', 1);
+          gameState.player.equip('crownOfWisdom');
+        }
         if (bossId === 'stormHarpy') {
           gameState.player.addItem('shadowCrystal', 1);
         }
@@ -1046,8 +1223,12 @@ export class WorldMapScene extends Phaser.Scene {
             this.showDialogSequence([defeatMsg, t('legendary.excalibur.obtained'), victoryMsg], onDone);
           } else if (bossId === 'celestialGuardian') {
             this.showDialogSequence([defeatMsg, t('legendary.aegis.obtained'), victoryMsg], onDone);
+          } else if (bossId === 'stormSentinel') {
+            this.showDialogSequence([defeatMsg, t('legendary.galeShield.obtained'), victoryMsg], onDone);
+          } else if (bossId === 'frostMonarch') {
+            this.showDialogSequence([defeatMsg, t('legendary.crownOfWisdom.obtained'), victoryMsg], onDone);
           } else if (bossId === 'stormHarpy') {
-            this.showDialogSequence([defeatMsg, victoryMsg, t('item.shadowCrystal.obtained')], onDone);
+            this.showDialogSequence([defeatMsg, victoryMsg, t('item.crystalShard.obtained')], onDone);
           } else {
             this.showDialogSequence([defeatMsg, victoryMsg], onDone);
           }
@@ -1183,5 +1364,9 @@ export class WorldMapScene extends Phaser.Scene {
     this.hideFieldItemMenu();
     this.updateHUD();
     this.showMessage(t('field.itemUsed', { item: t(entry.nameKey), value: healed }));
+  }
+
+  shutdown(): void {
+    this.input.keyboard?.removeAllListeners();
   }
 }

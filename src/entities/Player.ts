@@ -32,7 +32,14 @@ export class Player {
   state: PlayerState;
 
   constructor(state?: Partial<PlayerState>) {
-    this.state = { ...DEFAULT_STATE, ...state };
+    this.state = {
+      ...DEFAULT_STATE,
+      equipment: { ...DEFAULT_STATE.equipment },
+      inventory: DEFAULT_STATE.inventory.map(s => ({ ...s })),
+      position: { ...DEFAULT_STATE.position },
+      storyFlags: { ...DEFAULT_STATE.storyFlags },
+      ...state,
+    };
   }
 
   get totalAtk(): number {

@@ -104,7 +104,7 @@ export class MenuScene extends Phaser.Scene {
     const y = 52;
 
     if (inv.length === 0) {
-      this.add.text(GAME_WIDTH / 2, y + 80, 'No items', { fontSize: '12px', color: COLORS.TEXT_GRAY, fontFamily: 'monospace' }).setOrigin(0.5);
+      this.add.text(GAME_WIDTH / 2, y + 80, t('menu.noItems'), { fontSize: '12px', color: COLORS.TEXT_GRAY, fontFamily: 'monospace' }).setOrigin(0.5);
       return;
     }
 

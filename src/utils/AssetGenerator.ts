@@ -1330,6 +1330,29 @@ function generateTilesets(scene: Phaser.Scene): void {
     g.fillTriangle(13, 0, 11, 2, 15, 2);
   });
 
+  // ow-9: Portal tile (swirling blue/purple arch on grass)
+  generateTile(scene, 'ow-9', 0x44aa44, 0x55bb55, g => {
+    // Portal arch
+    g.fillStyle(0x5533aa);
+    g.fillRect(2, 3, 2, 12);
+    g.fillRect(12, 3, 2, 12);
+    g.fillRect(2, 1, 12, 3);
+    // Inner glow
+    g.fillStyle(0x7744dd);
+    g.fillRect(4, 4, 8, 10);
+    // Swirling energy
+    g.fillStyle(0x9966ff);
+    g.fillRect(5, 5, 6, 8);
+    g.fillStyle(0xbb88ff);
+    g.fillRect(6, 6, 4, 6);
+    // Bright center
+    g.fillStyle(0xddbbff);
+    g.fillRect(7, 7, 2, 4);
+    // Keystone
+    g.fillStyle(0x6633cc);
+    g.fillRect(6, 1, 4, 2);
+  });
+
   // Castle interior tiles (castle-0 through castle-10): gray stone, red carpet, torch sconces
   // 0=floor, 1=wall, 2=cracked, 3=door, 4=treasure, 5=lava, 6=stairs, 7=boss
   // 8=opened-chest, 9=stairs-down, 10=boss-exit-portal
@@ -1463,6 +1486,23 @@ function generateTilesets(scene: Phaser.Scene): void {
     g.fillCircle(8, 7, 2);
     g.fillStyle(0xffeeaa);
     g.fillCircle(8, 7, 1);
+  });
+
+  // 11 = boss warp portal (purple swirl — teleport to boss floor)
+  generateTile(scene, 'castle-11', 0x555566, 0x4a4a5a, g => {
+    g.fillStyle(0x332255);
+    g.fillCircle(8, 8, 6);
+    g.fillStyle(0x5533aa);
+    g.fillCircle(8, 8, 5);
+    g.fillStyle(0x7744cc);
+    g.fillCircle(8, 8, 3);
+    g.fillStyle(0xaa66ff);
+    g.fillCircle(8, 8, 1);
+    g.fillStyle(0xccaaff);
+    g.fillRect(5, 4, 1, 1);
+    g.fillRect(10, 6, 1, 1);
+    g.fillRect(7, 11, 1, 1);
+    g.fillRect(3, 8, 1, 1);
   });
 
   // Town tiles: 0=floor, 1=wall, 2=building, 3=grass, 4=water, 5=path, 6=save, 7=exit
@@ -1639,6 +1679,71 @@ function generateTilesets(scene: Phaser.Scene): void {
     g.fillRect(5, 10, 6, 5);
   });
 
+  // town-13: clinic roof (white/green with red cross)
+  generateTile(scene, 'town-13', 0xeeffee, 0xddeecc, g => {
+    // White-green peaked roof
+    g.fillStyle(0xeeffee);
+    g.fillRect(0, 4, 16, 12);
+    g.fillStyle(0xccddbb);
+    g.fillRect(0, 7, 16, 2);
+    g.fillRect(0, 11, 16, 2);
+    // Ridge line
+    g.fillStyle(0xddeedd);
+    g.fillRect(0, 3, 16, 2);
+    // Red cross on roof
+    g.fillStyle(0xdd3333);
+    g.fillRect(6, 5, 4, 1);
+    g.fillRect(7, 4, 2, 3);
+    // Eave shadow
+    g.fillStyle(0xaabbaa);
+    g.fillRect(0, 14, 16, 2);
+  });
+  // town-14: clinic wall with window + green cross
+  generateTile(scene, 'town-14', 0xeeeedd, 0xddddcc, g => {
+    // White wall
+    g.fillStyle(0xeeeedd);
+    g.fillRect(0, 0, 16, 16);
+    // Subtle horizontal lines
+    g.fillStyle(0xddddcc);
+    g.fillRect(0, 5, 16, 1);
+    g.fillRect(0, 10, 16, 1);
+    // Window frame
+    g.fillStyle(0x447744);
+    g.fillRect(4, 2, 8, 7);
+    // Window glass
+    g.fillStyle(0xccffcc);
+    g.fillRect(5, 3, 6, 5);
+    // Green cross in window
+    g.fillStyle(0x33aa33);
+    g.fillRect(7, 3, 2, 5);
+    g.fillRect(5, 5, 6, 1);
+    // Window sill
+    g.fillStyle(0xddeecc);
+    g.fillRect(3, 9, 10, 1);
+  });
+  // town-15: clinic door (green-framed door)
+  generateTile(scene, 'town-15', 0xeeeedd, 0xddddcc, g => {
+    // White wall
+    g.fillStyle(0xeeeedd);
+    g.fillRect(0, 0, 16, 16);
+    g.fillStyle(0xddddcc);
+    g.fillRect(0, 5, 16, 1);
+    g.fillRect(0, 10, 16, 1);
+    // Door frame (green)
+    g.fillStyle(0x338833);
+    g.fillRect(4, 3, 8, 13);
+    // Door
+    g.fillStyle(0x55bb55);
+    g.fillRect(5, 4, 6, 12);
+    // Door handle
+    g.fillStyle(0xddaa33);
+    g.fillRect(9, 10, 1, 1);
+    // Red cross above door
+    g.fillStyle(0xdd3333);
+    g.fillRect(7, 1, 2, 1);
+    g.fillRect(6, 0, 4, 1);
+  });
+
   // Dungeon tiles: 0=floor, 1=wall, 2=cracked, 3=door, 4=treasure, 5=lava, 6=stairs-up, 7=boss
   //   8=opened-chest, 9=stairs-down, 10=boss-exit-portal
   generateTile(scene, 'dng-0', 0x444444, 0x3a3a3a);
@@ -1799,6 +1904,23 @@ function generateTilesets(scene: Phaser.Scene): void {
     g.fillRect(7, 10, 1, 1);
     g.fillRect(10, 9, 1, 1);
   });
+  // 11 = boss warp portal (purple swirl — teleport to boss floor)
+  generateTile(scene, 'dng-11', 0x444444, 0x3a3a3a, g => {
+    g.fillStyle(0x332255);
+    g.fillCircle(8, 8, 6);
+    g.fillStyle(0x5533aa);
+    g.fillCircle(8, 8, 5);
+    g.fillStyle(0x7744cc);
+    g.fillCircle(8, 8, 3);
+    g.fillStyle(0xaa66ff);
+    g.fillCircle(8, 8, 1);
+    // Sparkle dots
+    g.fillStyle(0xccaaff);
+    g.fillRect(5, 4, 1, 1);
+    g.fillRect(10, 6, 1, 1);
+    g.fillRect(7, 11, 1, 1);
+    g.fillRect(3, 8, 1, 1);
+  });
 }
 
 function generateUIAssets(scene: Phaser.Scene): void {
@@ -1864,6 +1986,29 @@ function generateUIAssets(scene: Phaser.Scene): void {
   gs.fillRect(6, 1, 1, 1);
   gs.generateTexture('save-point', 16, 16);
   gs.destroy();
+
+  // Healer NPC sprite — blue-themed with white cross on chest
+  const gh = scene.add.graphics().setVisible(false);
+  gh.fillStyle(0xddbb88); // skin
+  gh.fillRect(6, 2, 4, 4);
+  gh.fillStyle(0x4488cc); // blue hair/cap
+  gh.fillRect(5, 1, 6, 2);
+  gh.fillStyle(0x2266bb); // blue robe
+  gh.fillRect(5, 6, 6, 6);
+  gh.fillStyle(0x1155aa); // darker blue sleeves
+  gh.fillRect(4, 7, 1, 3);
+  gh.fillRect(11, 7, 1, 3);
+  gh.fillStyle(0xffffff); // white cross on chest
+  gh.fillRect(7, 7, 2, 4); // vertical bar
+  gh.fillRect(6, 8, 4, 2); // horizontal bar
+  gh.fillStyle(0x000000); // eyes
+  gh.fillRect(7, 4, 1, 1);
+  gh.fillRect(9, 4, 1, 1);
+  gh.fillStyle(0x2255aa); // blue boots
+  gh.fillRect(6, 12, 2, 3);
+  gh.fillRect(8, 12, 2, 3);
+  gh.generateTexture('npc-healer', 16, 16);
+  gh.destroy();
 
   // Shop icon
   const gsh = scene.add.graphics().setVisible(false);

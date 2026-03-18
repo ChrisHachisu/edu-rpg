@@ -1,6 +1,7 @@
 import { SaveData, PlayerState } from '../../utils/types';
 
 const SAVE_KEY = 'edu-rpg-save';
+const AUTO_SAVE_KEY = 'edu-rpg-autosave';
 const SAVE_VERSION = 3;
 
 export class SaveManager {
@@ -15,8 +16,28 @@ export class SaveManager {
     localStorage.setItem(SAVE_KEY, JSON.stringify(data));
   }
 
+  /** Auto-save to a separate slot (used before boss fights for quick retry) */
+  static autoSave(playerState: PlayerState, playtime: number, quizStats: SaveData['quizStats']): void {
+    const data: SaveData = {
+      version: SAVE_VERSION,
+      timestamp: Date.now(),
+      player: { ...playerState },
+      playtime,
+      quizStats,
+    };
+    localStorage.setItem(AUTO_SAVE_KEY, JSON.stringify(data));
+  }
+
   static load(): SaveData | null {
-    const raw = localStorage.getItem(SAVE_KEY);
+    return this.loadSlot(SAVE_KEY);
+  }
+
+  static loadAutoSave(): SaveData | null {
+    return this.loadSlot(AUTO_SAVE_KEY);
+  }
+
+  private static loadSlot(key: string): SaveData | null {
+    const raw = localStorage.getItem(key);
     if (!raw) return null;
     try {
       const data: SaveData = JSON.parse(raw);
@@ -42,7 +63,15 @@ export class SaveManager {
     return localStorage.getItem(SAVE_KEY) !== null;
   }
 
+  static hasAutoSave(): boolean {
+    return localStorage.getItem(AUTO_SAVE_KEY) !== null;
+  }
+
   static deleteSave(): void {
     localStorage.removeItem(SAVE_KEY);
+  }
+
+  static deleteAutoSave(): void {
+    localStorage.removeItem(AUTO_SAVE_KEY);
   }
 }
