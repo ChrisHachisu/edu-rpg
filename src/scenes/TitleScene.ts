@@ -73,6 +73,7 @@ export class TitleScene extends Phaser.Scene {
   }
 
   shutdown(): void {
+    this.input.keyboard?.removeAllListeners();
     this.removeNameInput();
   }
 

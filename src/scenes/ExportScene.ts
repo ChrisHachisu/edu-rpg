@@ -16,6 +16,10 @@ export class ExportScene extends Phaser.Scene {
     super('ExportScene');
   }
 
+  shutdown(): void {
+    this.input.keyboard?.removeAllListeners();
+  }
+
   create(): void {
     this.cameras.main.setZoom(ZOOM);
     this.cameras.main.setScroll(-GAME_WIDTH * (ZOOM - 1) / 2, -GAME_HEIGHT * (ZOOM - 1) / 2);

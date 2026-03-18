@@ -58,6 +58,7 @@ export class BattleScene extends Phaser.Scene {
         ...data.monster,
         baseHp: Math.round(data.monster.baseHp * mult),
         baseAtk: Math.round(data.monster.baseAtk * mult),
+        baseDef: Math.round(data.monster.baseDef * mult),
       };
     } else {
       this.monster = data.monster;

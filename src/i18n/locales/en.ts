@@ -200,7 +200,7 @@ export const enStrings: Record<string, string> = {
   'dungeon.mistyGrotto.boss.dialog2': 'A massive shadow looms in the mist!',
   'dungeon.mistyGrotto.boss.dialog3': 'The Giant Toad leaps out with a thunderous croak! Prepare for battle!',
   'dungeon.mistyGrotto.boss.defeat': 'The Giant Toad shrinks back into the mist... The fog begins to clear.',
-  'dungeon.mistyGrotto.victory': 'You found a Crystal Shard! Its gentle warmth fills you with determination.',
+  'dungeon.mistyGrotto.victory': 'The fog lifts as the Giant Toad falls! The path ahead is clear.',
 
   // Sunken Cellar
   'dungeon.sunkenCellar.enter': 'Seawater drips from the crumbling walls... The air smells of salt and rot.',

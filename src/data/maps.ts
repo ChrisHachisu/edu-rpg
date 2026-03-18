@@ -75,7 +75,7 @@ export const mapDefs: Record<string, MapDef> = {
       { targetMap: 'magmaTunnels', fromX: 25, fromY: 89, toX: 17, toY: 1 },
       // Volcanic Forge: gate dungeon (S entrance, N exit into Act 5)
       { targetMap: 'volcanicForge', fromX: 12, fromY: 70, toX: 20, toY: 1 },
-      { targetMap: 'volcanicForge', fromX: 12, fromY: 67, toX: 20, toY: 38, toFloor: 9 },
+      { targetMap: 'volcanicForge', fromX: 12, fromY: 67, toX: 20, toY: 38, toFloor: 5 },
 
       // ── Act 5 Dungeons ──
       { targetMap: 'demonCastle', fromX: 55, fromY: 15, toX: 25, toY: 48 },

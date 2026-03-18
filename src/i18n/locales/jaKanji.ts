@@ -195,7 +195,7 @@ export const jaKanjiStrings: Record<string, string> = {
   'dungeon.mistyGrotto.boss.dialog2': '霧の中に 巨大な 影が 現れた！',
   'dungeon.mistyGrotto.boss.dialog3': '大ガエルが ものすごい 鳴き声とともに 飛び出した！戦いの 準備を！',
   'dungeon.mistyGrotto.boss.defeat': '大ガエルが 霧の中に 退いていく…霧が 晴れ始めた。',
-  'dungeon.mistyGrotto.victory': 'クリスタルの欠片を 手に入れた！優しい 温かさが 決意を くれる。',
+  'dungeon.mistyGrotto.victory': '霧が晴れた！大ガエルが倒れ、道が開けた！',
 
   // Sunken Cellar
   'dungeon.sunkenCellar.enter': '海の 水が 崩れた 壁から したたる…潮と 腐った 匂いが する。',

@@ -200,7 +200,7 @@ export const jaStrings: Record<string, string> = {
   'dungeon.mistyGrotto.boss.dialog2': 'きりのなかに きょだいな かげが あらわれた！',
   'dungeon.mistyGrotto.boss.dialog3': 'おおガエルが ものすごい なきごえとともに とびだした！たたかいの じゅんびを！',
   'dungeon.mistyGrotto.boss.defeat': 'おおガエルが きりのなかに しりぞいていく…きりが はれはじめた。',
-  'dungeon.mistyGrotto.victory': 'クリスタルのかけらを てにいれた！やさしい あたたかさが けついを くれる。',
+  'dungeon.mistyGrotto.victory': 'きりが はれた！おおガエルが たおれ、みちが ひらけた！',
 
   // Sunken Cellar
   'dungeon.sunkenCellar.enter': 'うみの みずが くずれた かべから したたる…しおと くさった においが する。',
