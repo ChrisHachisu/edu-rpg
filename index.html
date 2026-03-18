@@ -17,9 +17,13 @@
       src: url('./fonts/PixelMplus12-Regular.ttf') format('truetype');
       font-display: block;
     }
-    /* 2x internal canvas + smooth browser scaling = crisp at Retina DPR */
+    /* Force nearest-neighbor on the canvas CSS downscale to keep pixel edges sharp */
+    canvas {
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+    }
   </style>
-  <script type="module" crossorigin src="/edu-rpg/assets/index-BkvSaUtJ.js"></script>
+  <script type="module" crossorigin src="/edu-rpg/assets/index-1zQIyC3m.js"></script>
 </head>
 <body>
 </body>
