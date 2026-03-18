@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { generateAssets } from '../utils/AssetGenerator';
-import { GAME_WIDTH, GAME_HEIGHT, COLORS } from '../utils/constants';
-import { enableSmoothText } from '../utils/text';
+import { GAME_WIDTH, GAME_HEIGHT, ZOOM, COLORS, FONT_FAMILY } from '../utils/constants';
+// enableSmoothText removed — DPR-aware canvas + NEAREST filtering keeps pixel font crisp
 
 export class BootScene extends Phaser.Scene {
   constructor() {
@@ -9,22 +9,23 @@ export class BootScene extends Phaser.Scene {
   }
 
   create(): void {
-    // Override text texture filtering: pixelArt:true forces NEAREST on all
-    // textures including text, making it unreadable. This patches the factory
-    // so every this.add.text() call uses LINEAR filtering instead.
-    enableSmoothText();
+    this.cameras.main.setZoom(ZOOM);
+    this.cameras.main.setScroll(-GAME_WIDTH * (ZOOM - 1) / 2, -GAME_HEIGHT * (ZOOM - 1) / 2);
+    // With DPR-aware canvas resolution (4× on Retina), the browser downscales
+    // rather than upscales. pixelArt:true NEAREST filtering keeps the pixel font
+    // crisp — LINEAR would blur it. No smoothText patch needed.
+
+    // Font is pre-loaded in main.ts before Phaser starts
 
     // Show loading text
     const text = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'Loading...', {
       fontSize: '14px',
       color: COLORS.TEXT_WHITE,
-      fontFamily: 'monospace',
+      fontFamily: FONT_FAMILY,
     }).setOrigin(0.5);
 
     // Generate all procedural assets
     generateAssets(this);
-
-    // pixelArt: true in GameConfig handles NEAREST filtering globally
 
     text.setText('Ready!');
 

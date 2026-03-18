@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, TILE_SIZE, COLORS } from '../utils/constants';
+import { GAME_WIDTH, GAME_HEIGHT, TILE_SIZE, ZOOM, COLORS, FONT_FAMILY, UI_OFFSET_X, UI_OFFSET_Y } from '../utils/constants';
 import { t } from '../i18n/i18n';
 import { gameState } from '../GameState';
 import { generateOverworldMap, generateTownMap, generateDungeonMap, generatePortalLandMap } from '../utils/MapGenerator';
@@ -38,6 +38,9 @@ export class WorldMapScene extends Phaser.Scene {
   private currentEncounterZone?: string;
   private currentFloor = 1;
   private floorText?: Phaser.GameObjects.Text;
+  /** Actual map dimensions (may differ from def for grade-scaled dungeons) */
+  private effectiveWidth = 0;
+  private effectiveHeight = 0;
 
   // Field item overlay
   private itemOverlayOpen = false;
@@ -53,6 +56,8 @@ export class WorldMapScene extends Phaser.Scene {
   }
 
   create(): void {
+    this.cameras.main.setZoom(ZOOM);
+    this.cameras.main.setScroll(-GAME_WIDTH * (ZOOM - 1) / 2, -GAME_HEIGHT * (ZOOM - 1) / 2);
     this.isMoving = false;
     this.showingMessage = false;
     this.npcSprites = [];
@@ -100,8 +105,10 @@ export class WorldMapScene extends Phaser.Scene {
       const isSingleFloorGate = def.connections.length > 1 && totalFloors === 1;
       const isMultiFloorGate = def.connections.length > 1 && totalFloors > 1;
       const isGateFinalFloor = isMultiFloorGate && this.currentFloor === totalFloors;
+      const scaledW = WorldMapScene.gradeScaledSize(def.width);
+      const scaledH = WorldMapScene.gradeScaledSize(def.height);
       this.mapData = generateDungeonMap(
-        def.width, def.height,
+        scaledW, scaledH,
         mapId.charCodeAt(0) * 251,
         this.currentFloor, totalFloors,
         isSingleFloorGate,
@@ -130,19 +137,21 @@ export class WorldMapScene extends Phaser.Scene {
       if (this.currentFloor === 1 && def.bossId && totalFloors > 1
           && gameState.player.state.storyFlags[`boss.${def.bossId}.encountered`]
           && !gameState.player.state.storyFlags[`boss.${def.bossId}.defeated`]) {
-        const entrX = Math.floor(def.width / 2);
+        const mapW = this.mapData[0]?.length ?? scaledW;
+        const mapH = this.mapData.length;
+        const entrX = Math.floor(mapW / 2);
         if (def.castle) {
           // Castle: entrance at bottom, portal beside entrance
-          const portalY = def.height - 2;
+          const portalY = mapH - 2;
           const portalX = entrX + 2;
-          if (portalX < def.width - 1 && this.mapData[portalY]?.[portalX] === 0) {
+          if (portalX < mapW - 1 && this.mapData[portalY]?.[portalX] === 0) {
             this.mapData[portalY][portalX] = 11;
           }
         } else {
           // Standard dungeon: entrance at top, portal beside entrance
           const portalY = 1;
           const portalX = entrX + 2;
-          if (portalX < def.width - 1 && this.mapData[portalY]?.[portalX] === 0) {
+          if (portalX < mapW - 1 && this.mapData[portalY]?.[portalX] === 0) {
             this.mapData[portalY][portalX] = 11;
           }
         }
@@ -150,6 +159,10 @@ export class WorldMapScene extends Phaser.Scene {
       // Reset pending boss state on map load
       this.pendingBossId = undefined;
     }
+
+    // Track effective map dimensions (may differ from def for grade-scaled dungeons)
+    this.effectiveWidth = this.mapData[0]?.length ?? def.width;
+    this.effectiveHeight = this.mapData.length ?? def.height;
 
     this.renderMap();
     this.renderNPCs(def);
@@ -207,6 +220,14 @@ export class WorldMapScene extends Phaser.Scene {
     const grade = gameState.player.state.quizDifficulty;
     const max = ['k', '1', '2'].includes(grade) ? 3 : ['3', '4'].includes(grade) ? 5 : Infinity;
     return Math.min(floors, max);
+  }
+
+  /** Scale dungeon floor dimensions by grade: K/1/2 = 60%, 3/4 = 80%, 5/6 = 100% */
+  private static gradeScaledSize(size: number): number {
+    const grade = gameState.player.state.quizDifficulty;
+    const mult = ['k', '1', '2'].includes(grade) ? 0.6 : ['3', '4'].includes(grade) ? 0.8 : 1.0;
+    // Ensure minimum 16 and even number for room generation
+    return Math.max(16, Math.round(size * mult / 2) * 2);
   }
 
   private renderNPCs(def: typeof mapDefs[string]): void {
@@ -482,7 +503,7 @@ export class WorldMapScene extends Phaser.Scene {
             // Check if bottom stairs on final floor of gate dungeon → exit to next act
             const isGate = def.connections.length > 1;
             const isFinal = this.currentFloor === WorldMapScene.gradeCappedFloors(def.floors ?? 1);
-            if (isGate && isFinal && y > def.height / 2) {
+            if (isGate && isFinal && y > this.effectiveHeight / 2) {
               // Exit to overworld via closest connection (matches connection[1])
               let best = def.connections[0];
               let bestDist = Infinity;
@@ -619,8 +640,8 @@ export class WorldMapScene extends Phaser.Scene {
         }
         if (!foundBoss) {
           // Fallback: entrance position
-          this.heroTileX = Math.floor(def.width / 2);
-          this.heroTileY = def.castle ? def.height - 2 : 1;
+          this.heroTileX = Math.floor(this.effectiveWidth / 2);
+          this.heroTileY = def.castle ? this.effectiveHeight - 2 : 1;
         }
         this.updatePosition();
         this.createHero();
@@ -629,17 +650,15 @@ export class WorldMapScene extends Phaser.Scene {
         // Go to next floor (deeper into dungeon)
         this.currentFloor++;
         gameState.encounterManager.reset();
-        const entranceX = Math.floor(def.width / 2);
-        this.heroTileX = entranceX;
+        this.loadMap(this.currentMapId);
+        // Use effective dimensions (set by loadMap) for spawn position
+        this.heroTileX = Math.floor(this.effectiveWidth / 2);
         if (def.castle) {
-          // Castle: next floor entered from bottom (climbed up from below)
-          this.heroTileY = def.height - 2;
+          this.heroTileY = this.effectiveHeight - 2;
         } else {
-          // Standard: next floor entered from top (descended from above)
           this.heroTileY = 1;
         }
         this.updatePosition();
-        this.loadMap(this.currentMapId);
       } else if (target.targetMap === '__floor_up__') {
         // Go to previous floor (toward entrance)
         this.currentFloor--;
@@ -648,7 +667,7 @@ export class WorldMapScene extends Phaser.Scene {
         // After regenerating the map, scan for stairs-down (tile 9) to spawn near
         if (def.castle) {
           // Castle: previous floor reached by going down, appear near top
-          this.heroTileX = Math.floor(def.width / 2);
+          this.heroTileX = Math.floor(this.effectiveWidth / 2);
           this.heroTileY = 2;
         } else {
           // Standard: scan mapData for stairs-down tile and spawn adjacent
@@ -665,8 +684,8 @@ export class WorldMapScene extends Phaser.Scene {
           }
           if (!foundStairs) {
             // Fallback: center bottom
-            this.heroTileX = Math.floor(def.width / 2);
-            this.heroTileY = def.height - 3;
+            this.heroTileX = Math.floor(this.effectiveWidth / 2);
+            this.heroTileY = this.effectiveHeight - 3;
           }
         }
         this.updatePosition();
@@ -978,15 +997,15 @@ export class WorldMapScene extends Phaser.Scene {
     this.showingMessage = true;
 
     this.messageBox = this.add.rectangle(
-      GAME_WIDTH / 2, GAME_HEIGHT - 60,
+      UI_OFFSET_X + GAME_WIDTH / 2, UI_OFFSET_Y + GAME_HEIGHT - 60,
       GAME_WIDTH - 32, 80,
       COLORS.MENU_BG, 0.9
     ).setDepth(100).setStrokeStyle(1, COLORS.MENU_BORDER).setScrollFactor(0);
 
     this.messageText = this.add.text(
-      32, GAME_HEIGHT - 88,
+      UI_OFFSET_X + 32, UI_OFFSET_Y + GAME_HEIGHT - 88,
       text,
-      { fontSize: '12px', color: COLORS.TEXT_WHITE, fontFamily: 'monospace', wordWrap: { width: GAME_WIDTH - 64 } }
+      { fontSize: '12px', color: COLORS.TEXT_WHITE, fontFamily: FONT_FAMILY, wordWrap: { width: GAME_WIDTH - 64 } }
     ).setDepth(101).setScrollFactor(0);
   }
 
@@ -1025,9 +1044,9 @@ export class WorldMapScene extends Phaser.Scene {
 
     const p = gameState.player;
     this.hpText = this.add.text(
-      8, 8,
+      UI_OFFSET_X + 8, UI_OFFSET_Y + 8,
       `${t('menu.level')}${p.state.level}  ${t('menu.hp')} ${p.state.hp}/${p.totalMaxHp}`,
-      { fontSize: '10px', color: COLORS.TEXT_WHITE, fontFamily: 'monospace', backgroundColor: '#1a1a3ecc', padding: { x: 4, y: 2 } }
+      { fontSize: '10px', color: COLORS.TEXT_WHITE, fontFamily: FONT_FAMILY, backgroundColor: '#1a1a3ecc', padding: { x: 4, y: 2 } }
     ).setDepth(100).setScrollFactor(0);
 
     // Dungeon/town name indicator
@@ -1045,18 +1064,18 @@ export class WorldMapScene extends Phaser.Scene {
         label += def.castle ? ` — ${displayFloor}F` : ` — B${displayFloor}F`;
       }
       this.floorText = this.add.text(
-        8, 24,
+        UI_OFFSET_X + 8, UI_OFFSET_Y + 24,
         label,
-        { fontSize: '10px', color: COLORS.TEXT_YELLOW, fontFamily: 'monospace', backgroundColor: '#1a1a3ecc', padding: { x: 4, y: 2 } }
+        { fontSize: '10px', color: COLORS.TEXT_YELLOW, fontFamily: FONT_FAMILY, backgroundColor: '#1a1a3ecc', padding: { x: 4, y: 2 } }
       ).setDepth(100).setScrollFactor(0);
     }
 
     // Floating key guide (bottom-right corner)
     const guide = `↑↓←→: ${t('guide.move')}  Z: ${t('guide.talk')}  I: ${t('guide.item')}  ESC: ${t('guide.menu')}`;
     this.guideText = this.add.text(
-      GAME_WIDTH - 8, GAME_HEIGHT - 8,
+      UI_OFFSET_X + GAME_WIDTH - 8, UI_OFFSET_Y + GAME_HEIGHT - 8,
       guide,
-      { fontSize: '8px', color: '#aaaaaa', fontFamily: 'monospace', backgroundColor: '#1a1a3e99', padding: { x: 4, y: 2 } }
+      { fontSize: '8px', color: '#aaaaaa', fontFamily: FONT_FAMILY, backgroundColor: '#1a1a3e99', padding: { x: 4, y: 2 } }
     ).setOrigin(1, 1).setDepth(100).setScrollFactor(0).setAlpha(0.7);
   }
 
@@ -1270,8 +1289,8 @@ export class WorldMapScene extends Phaser.Scene {
     const boxW = 200;
     const itemCount = Math.max(this.itemOverlayItems.length, 1);
     const boxH = 36 + itemCount * 24;
-    const boxX = GAME_WIDTH / 2;
-    const boxY = GAME_HEIGHT / 2;
+    const boxX = UI_OFFSET_X + GAME_WIDTH / 2;
+    const boxY = UI_OFFSET_Y + GAME_HEIGHT / 2;
 
     this.itemOverlayBox = this.add.rectangle(boxX, boxY, boxW, boxH, COLORS.MENU_BG, 0.95)
       .setStrokeStyle(2, COLORS.MENU_BORDER)
@@ -1280,12 +1299,12 @@ export class WorldMapScene extends Phaser.Scene {
 
     // Title
     this.itemOverlayTitle = this.add.text(boxX, boxY - boxH / 2 + 14, t('field.itemTitle'), {
-      fontSize: '12px', color: COLORS.TEXT_YELLOW, fontFamily: 'monospace',
+      fontSize: '12px', color: COLORS.TEXT_YELLOW, fontFamily: FONT_FAMILY,
     }).setOrigin(0.5).setDepth(201).setScrollFactor(0);
 
     if (this.itemOverlayItems.length === 0) {
       const noItems = this.add.text(boxX, boxY, t('field.noItems'), {
-        fontSize: '10px', color: COLORS.TEXT_GRAY, fontFamily: 'monospace',
+        fontSize: '10px', color: COLORS.TEXT_GRAY, fontFamily: FONT_FAMILY,
       }).setOrigin(0.5).setDepth(201).setScrollFactor(0);
       this.itemOverlayTexts.push(noItems);
       return;
@@ -1299,7 +1318,7 @@ export class WorldMapScene extends Phaser.Scene {
       const txt = this.add.text(boxX - boxW / 2 + 24, startY + i * 24, label, {
         fontSize: '10px',
         color: i === 0 ? COLORS.TEXT_YELLOW : COLORS.TEXT_WHITE,
-        fontFamily: 'monospace',
+        fontFamily: FONT_FAMILY,
       }).setDepth(201).setScrollFactor(0);
       this.itemOverlayTexts.push(txt);
     }
@@ -1307,7 +1326,7 @@ export class WorldMapScene extends Phaser.Scene {
     // Cursor
     this.itemOverlayCursor = this.add.text(
       boxX - boxW / 2 + 12, startY, '>', {
-        fontSize: '10px', color: COLORS.TEXT_YELLOW, fontFamily: 'monospace',
+        fontSize: '10px', color: COLORS.TEXT_YELLOW, fontFamily: FONT_FAMILY,
       }
     ).setDepth(201).setScrollFactor(0);
   }

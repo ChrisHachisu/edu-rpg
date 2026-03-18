@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, COLORS } from '../utils/constants';
+import { GAME_WIDTH, GAME_HEIGHT, ZOOM, COLORS, FONT_FAMILY } from '../utils/constants';
 import { t, setLocale, getLocale, setKanjiMode, getKanjiMode } from '../i18n/i18n';
 import { gameState } from '../GameState';
 import { items } from '../data/items';
@@ -24,6 +24,8 @@ export class MenuScene extends Phaser.Scene {
   }
 
   create(): void {
+    this.cameras.main.setZoom(ZOOM);
+    this.cameras.main.setScroll(-GAME_WIDTH * (ZOOM - 1) / 2, -GAME_HEIGHT * (ZOOM - 1) / 2);
     this.tabIndex = 0;
     this.listIndex = 0;
     this.currentTab = 'status';
@@ -46,7 +48,7 @@ export class MenuScene extends Phaser.Scene {
       this.add.text(16 + i * 120, 12, t(key), {
         fontSize: '12px',
         color: i === this.tabIndex ? COLORS.TEXT_YELLOW : COLORS.TEXT_WHITE,
-        fontFamily: 'monospace',
+        fontFamily: FONT_FAMILY,
       });
     });
 
@@ -59,9 +61,12 @@ export class MenuScene extends Phaser.Scene {
       case 'settings': this.drawSettings(); break;
     }
 
-    // Close hint
-    this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 16, 'ESC: ' + t('menu.close'), {
-      fontSize: '9px', color: COLORS.TEXT_GRAY, fontFamily: 'monospace',
+    // Close hint + settings hint
+    const hints = this.currentTab === 'settings'
+      ? 'Z: ' + t('settings.change') + '    ESC: ' + t('menu.close')
+      : 'ESC: ' + t('menu.close');
+    this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 16, hints, {
+      fontSize: '9px', color: COLORS.TEXT_GRAY, fontFamily: FONT_FAMILY,
     }).setOrigin(0.5);
   }
 
@@ -104,7 +109,7 @@ export class MenuScene extends Phaser.Scene {
     const y = 52;
 
     if (inv.length === 0) {
-      this.add.text(GAME_WIDTH / 2, y + 80, t('menu.noItems'), { fontSize: '12px', color: COLORS.TEXT_GRAY, fontFamily: 'monospace' }).setOrigin(0.5);
+      this.add.text(GAME_WIDTH / 2, y + 80, t('menu.noItems'), { fontSize: '12px', color: COLORS.TEXT_GRAY, fontFamily: FONT_FAMILY }).setOrigin(0.5);
       return;
     }
 
@@ -114,7 +119,7 @@ export class MenuScene extends Phaser.Scene {
       this.add.text(32, y + i * 24, `${t(item.nameKey)} x${slot.quantity}`, {
         fontSize: '10px',
         color: i === this.listIndex ? COLORS.TEXT_YELLOW : COLORS.TEXT_WHITE,
-        fontFamily: 'monospace',
+        fontFamily: FONT_FAMILY,
       });
     });
   }
@@ -258,7 +263,7 @@ export class MenuScene extends Phaser.Scene {
 
   /** Returns ordered list of setting IDs visible in the current locale */
   private get settingsList(): string[] {
-    const list = ['language'];
+    const list = ['difficulty', 'language'];
     if (getLocale() === 'ja') list.push('kanji');
     list.push('timer', 'sound', 'volume');
     return list;
@@ -272,28 +277,34 @@ export class MenuScene extends Phaser.Scene {
     settings.forEach((id, i) => {
       const selected = this.listIndex === i;
       const labelColor = selected ? COLORS.TEXT_YELLOW : COLORS.TEXT_WHITE;
+      const cursor = selected ? '>' : ' ';
+      this.add.text(20, y, cursor, { fontSize: '12px', color: COLORS.TEXT_YELLOW, fontFamily: ff });
 
-      if (id === 'language') {
+      if (id === 'difficulty') {
+        const grade = gameState.player.state.quizDifficulty;
+        this.add.text(32, y, t('settings.difficulty'), { fontSize: '12px', color: labelColor, fontFamily: ff });
+        this.add.text(200, y, t(`grade.${grade}`), { fontSize: '12px', color: COLORS.TEXT_GRAY, fontFamily: ff });
+      } else if (id === 'language') {
         this.add.text(32, y, t('settings.language'), { fontSize: '12px', color: labelColor, fontFamily: ff });
-        this.add.text(32, y + 28, `< ${getLocale() === 'ja' ? '日本語' : 'English'} >`, { fontSize: '12px', color: COLORS.TEXT_YELLOW, fontFamily: ff });
+        this.add.text(200, y, getLocale() === 'ja' ? '日本語' : 'English', { fontSize: '12px', color: COLORS.TEXT_YELLOW, fontFamily: ff });
       } else if (id === 'kanji') {
         this.add.text(32, y, 'もじ', { fontSize: '12px', color: labelColor, fontFamily: ff });
         const kanjiLabel = getKanjiMode() ? 'むずかしい' : 'かんたん';
-        this.add.text(32, y + 28, `< ${kanjiLabel} >`, { fontSize: '12px', color: COLORS.TEXT_YELLOW, fontFamily: ff });
+        this.add.text(200, y, kanjiLabel, { fontSize: '12px', color: COLORS.TEXT_YELLOW, fontFamily: ff });
       } else if (id === 'timer') {
         const timerEnabled = gameState.player.state.timerEnabled;
         this.add.text(32, y, t('settings.timer'), { fontSize: '12px', color: labelColor, fontFamily: ff });
-        this.add.text(32, y + 28, `< ${timerEnabled ? t('settings.timerOn') : t('settings.timerOff')} >`, { fontSize: '12px', color: COLORS.TEXT_YELLOW, fontFamily: ff });
+        this.add.text(200, y, timerEnabled ? t('settings.timerOn') : t('settings.timerOff'), { fontSize: '12px', color: COLORS.TEXT_YELLOW, fontFamily: ff });
       } else if (id === 'sound') {
         const soundEnabled = gameState.player.state.soundEnabled;
         this.add.text(32, y, t('settings.sound'), { fontSize: '12px', color: labelColor, fontFamily: ff });
-        this.add.text(32, y + 28, `< ${soundEnabled ? t('settings.soundOn') : t('settings.soundOff')} >`, { fontSize: '12px', color: COLORS.TEXT_YELLOW, fontFamily: ff });
+        this.add.text(200, y, soundEnabled ? t('settings.soundOn') : t('settings.soundOff'), { fontSize: '12px', color: COLORS.TEXT_YELLOW, fontFamily: ff });
       } else if (id === 'volume') {
         const vol = Math.round(gameState.player.state.masterVolume * 100);
         this.add.text(32, y, t('settings.volume'), { fontSize: '12px', color: labelColor, fontFamily: ff });
-        this.add.text(32, y + 28, `< ${vol}% >`, { fontSize: '12px', color: COLORS.TEXT_YELLOW, fontFamily: ff });
+        this.add.text(200, y, `${vol}%`, { fontSize: '12px', color: COLORS.TEXT_YELLOW, fontFamily: ff });
       }
-      y += 62;
+      y += 28;
     });
   }
 
@@ -304,31 +315,23 @@ export class MenuScene extends Phaser.Scene {
     });
 
     this.input.keyboard?.on('keydown-LEFT', () => {
-      if (this.currentTab === 'settings') {
-        this.handleSettingsLeft();
-      } else {
-        this.tabIndex = Math.max(0, this.tabIndex - 1);
-        this.currentTab = this.tabs[this.tabIndex];
-        this.listIndex = 0;
-        this.equipMode = 'equipped';
-        this.equipSlotIndex = 0;
-        this.equipInventoryIndex = 0;
-        this.drawMenu();
-      }
+      this.tabIndex = Math.max(0, this.tabIndex - 1);
+      this.currentTab = this.tabs[this.tabIndex];
+      this.listIndex = 0;
+      this.equipMode = 'equipped';
+      this.equipSlotIndex = 0;
+      this.equipInventoryIndex = 0;
+      this.drawMenu();
     });
 
     this.input.keyboard?.on('keydown-RIGHT', () => {
-      if (this.currentTab === 'settings') {
-        this.handleSettingsRight();
-      } else {
-        this.tabIndex = Math.min(this.tabs.length - 1, this.tabIndex + 1);
-        this.currentTab = this.tabs[this.tabIndex];
-        this.listIndex = 0;
-        this.equipMode = 'equipped';
-        this.equipSlotIndex = 0;
-        this.equipInventoryIndex = 0;
-        this.drawMenu();
-      }
+      this.tabIndex = Math.min(this.tabs.length - 1, this.tabIndex + 1);
+      this.currentTab = this.tabs[this.tabIndex];
+      this.listIndex = 0;
+      this.equipMode = 'equipped';
+      this.equipSlotIndex = 0;
+      this.equipInventoryIndex = 0;
+      this.drawMenu();
     });
 
     this.input.keyboard?.on('keydown-UP', () => {
@@ -355,10 +358,12 @@ export class MenuScene extends Phaser.Scene {
     this.input.keyboard?.on('keydown-Z', () => {
       if (this.currentTab === 'items') this.useItem();
       else if (this.currentTab === 'equip') this.handleEquipAction();
+      else if (this.currentTab === 'settings') this.handleSettingToggle(1);
     });
     this.input.keyboard?.on('keydown-ENTER', () => {
       if (this.currentTab === 'items') this.useItem();
       else if (this.currentTab === 'equip') this.handleEquipAction();
+      else if (this.currentTab === 'settings') this.handleSettingToggle(1);
     });
   }
 
@@ -440,6 +445,7 @@ export class MenuScene extends Phaser.Scene {
 
   private handleSettingToggle(dir: -1 | 1): void {
     const id = this.settingsList[this.listIndex];
+    if (id === 'difficulty') return; // read-only
     if (id === 'language') {
       const newLocale = getLocale() === 'ja' ? 'en' : 'ja';
       setLocale(newLocale);
@@ -463,21 +469,13 @@ export class MenuScene extends Phaser.Scene {
       gameState.player.state.soundEnabled = !gameState.player.state.soundEnabled;
       audioManager.setMuted(!gameState.player.state.soundEnabled);
     } else if (id === 'volume') {
-      const vol = dir === -1
-        ? Math.max(0, gameState.player.state.masterVolume - 0.1)
-        : Math.min(1, gameState.player.state.masterVolume + 0.1);
-      gameState.player.state.masterVolume = Math.round(vol * 10) / 10;
+      // Cycle 0→10→20→...→100→0
+      const cur = Math.round(gameState.player.state.masterVolume * 10);
+      const next = (cur + 1) % 11;
+      gameState.player.state.masterVolume = Math.round(next) / 10;
       audioManager.setVolume(gameState.player.state.masterVolume);
     }
     this.drawMenu();
-  }
-
-  private handleSettingsLeft(): void {
-    this.handleSettingToggle(-1);
-  }
-
-  private handleSettingsRight(): void {
-    this.handleSettingToggle(1);
   }
 
   private useItem(): void {
@@ -518,7 +516,7 @@ export class MenuScene extends Phaser.Scene {
     const box = this.add.rectangle(GAME_WIDTH / 2, y, GAME_WIDTH - 16, 28, COLORS.MENU_BG, 0.95)
       .setStrokeStyle(1, COLORS.MENU_BORDER).setDepth(100);
     const text = this.add.text(GAME_WIDTH / 2, y, msg, {
-      fontSize: '11px', color: COLORS.TEXT_YELLOW, fontFamily: 'monospace',
+      fontSize: '11px', color: COLORS.TEXT_YELLOW, fontFamily: FONT_FAMILY,
     }).setOrigin(0.5).setDepth(101);
     // Auto-dismiss after 1.5 seconds
     this.time.delayedCall(1500, () => {

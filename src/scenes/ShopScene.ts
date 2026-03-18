@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, COLORS } from '../utils/constants';
+import { GAME_WIDTH, GAME_HEIGHT, ZOOM, COLORS, FONT_FAMILY } from '../utils/constants';
 import { t } from '../i18n/i18n';
 import { gameState } from '../GameState';
 import { items } from '../data/items';
@@ -22,6 +22,8 @@ export class ShopScene extends Phaser.Scene {
   }
 
   create(): void {
+    this.cameras.main.setZoom(ZOOM);
+    this.cameras.main.setScroll(-GAME_WIDTH * (ZOOM - 1) / 2, -GAME_HEIGHT * (ZOOM - 1) / 2);
     this.mode = 'menu';
     this.menuIndex = 0;
     this.listIndex = 0;
@@ -38,13 +40,13 @@ export class ShopScene extends Phaser.Scene {
 
     // Title
     this.add.text(GAME_WIDTH / 2, 20, t('shop.welcome'), {
-      fontSize: '12px', color: COLORS.TEXT_WHITE, fontFamily: 'monospace',
+      fontSize: '12px', color: COLORS.TEXT_WHITE, fontFamily: FONT_FAMILY,
       wordWrap: { width: GAME_WIDTH - 40 },
     }).setOrigin(0.5);
 
     // Gold display
     this.add.text(GAME_WIDTH - 16, 20, `${gameState.player.state.gold}G`, {
-      fontSize: '12px', color: COLORS.TEXT_YELLOW, fontFamily: 'monospace',
+      fontSize: '12px', color: COLORS.TEXT_YELLOW, fontFamily: FONT_FAMILY,
     }).setOrigin(1, 0.5);
 
     if (this.mode === 'menu') {
@@ -58,7 +60,7 @@ export class ShopScene extends Phaser.Scene {
     // Message
     if (this.message) {
       this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 32, this.message, {
-        fontSize: '12px', color: COLORS.TEXT_YELLOW, fontFamily: 'monospace',
+        fontSize: '12px', color: COLORS.TEXT_YELLOW, fontFamily: FONT_FAMILY,
       }).setOrigin(0.5);
     }
   }
@@ -74,7 +76,7 @@ export class ShopScene extends Phaser.Scene {
       this.add.text(GAME_WIDTH / 2, 100 + i * 36, t(opt.key), {
         fontSize: '14px',
         color: i === this.menuIndex ? COLORS.TEXT_YELLOW : COLORS.TEXT_WHITE,
-        fontFamily: 'monospace',
+        fontFamily: FONT_FAMILY,
       }).setOrigin(0.5);
     });
   }
@@ -90,14 +92,14 @@ export class ShopScene extends Phaser.Scene {
       this.add.text(32, 64 + i * 28, `${t(item.nameKey)}  ${item.buyPrice}G`, {
         fontSize: '10px',
         color: i === this.listIndex ? COLORS.TEXT_YELLOW : (canAfford ? COLORS.TEXT_WHITE : COLORS.TEXT_GRAY),
-        fontFamily: 'monospace',
+        fontFamily: FONT_FAMILY,
       });
 
       // Show stats
       if (item.stats) {
         const statText = Object.entries(item.stats).map(([k, v]) => `+${v}${k.toUpperCase()}`).join(' ');
         this.add.text(GAME_WIDTH - 16, 64 + i * 28, statText, {
-          fontSize: '9px', color: COLORS.TEXT_GRAY, fontFamily: 'monospace',
+          fontSize: '9px', color: COLORS.TEXT_GRAY, fontFamily: FONT_FAMILY,
         }).setOrigin(1, 0);
       }
     });
@@ -107,7 +109,7 @@ export class ShopScene extends Phaser.Scene {
     this.add.text(32, doneY, `▸ ${t('shop.done')}`, {
       fontSize: '10px',
       color: this.listIndex === shop.items.length ? COLORS.TEXT_YELLOW : COLORS.TEXT_GRAY,
-      fontFamily: 'monospace',
+      fontFamily: FONT_FAMILY,
     });
   }
 
@@ -115,7 +117,7 @@ export class ShopScene extends Phaser.Scene {
     const inv = gameState.player.state.inventory.filter(s => !items[s.itemId]?.unsellable);
     if (inv.length === 0) {
       this.add.text(GAME_WIDTH / 2, 120, t('shop.noItemsToSell'), {
-        fontSize: '12px', color: COLORS.TEXT_GRAY, fontFamily: 'monospace',
+        fontSize: '12px', color: COLORS.TEXT_GRAY, fontFamily: FONT_FAMILY,
       }).setOrigin(0.5);
     } else {
       inv.forEach((slot, i) => {
@@ -124,7 +126,7 @@ export class ShopScene extends Phaser.Scene {
         this.add.text(32, 64 + i * 28, `${t(item.nameKey)} x${slot.quantity}  ${item.sellPrice}G`, {
           fontSize: '10px',
           color: i === this.listIndex ? COLORS.TEXT_YELLOW : COLORS.TEXT_WHITE,
-          fontFamily: 'monospace',
+          fontFamily: FONT_FAMILY,
         });
       });
     }
@@ -134,7 +136,7 @@ export class ShopScene extends Phaser.Scene {
     this.add.text(32, doneY, `▸ ${t('shop.done')}`, {
       fontSize: '10px',
       color: this.listIndex === inv.length ? COLORS.TEXT_YELLOW : COLORS.TEXT_GRAY,
-      fontFamily: 'monospace',
+      fontFamily: FONT_FAMILY,
     });
   }
 

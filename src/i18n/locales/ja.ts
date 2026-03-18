@@ -14,6 +14,10 @@ export const jaStrings: Record<string, string> = {
   'create.color': 'いろ',
   'create.startGame': 'ぼうけんにでる',
   'create.nameRequired': 'なまえをいれてね！',
+  'color.gray': 'はいいろ',
+  'color.blue': 'あお',
+  'color.pink': 'ピンク',
+  'color.black': 'くろ',
 
   // Settings
   'settings.title': 'せってい',
@@ -27,6 +31,7 @@ export const jaStrings: Record<string, string> = {
   'settings.timer': 'クイズタイマー',
   'settings.timerOn': 'あり',
   'settings.timerOff': 'なし（じかんむせいげん）',
+  'settings.change': 'へんこう',
 
   // Grade levels
   'grade.k': 'ようちえん',
@@ -47,9 +52,9 @@ export const jaStrings: Record<string, string> = {
   'battle.playerDefend': '{name}は みをまもっている！',
   'battle.hit': '{damage}の ダメージ！',
   'battle.miss': 'ミス！',
-  'battle.partialHit': '{damage}の ダメージ（へんげん）！',
+  'battle.partialHit': '{damage}の ダメージ（はんげん）！',
   'battle.speedBonus': 'すばやいこたえ！',
-  'battle.enemyPartialHit': '{damage}の ダメージ（へんげん）！',
+  'battle.enemyPartialHit': '{damage}の ダメージ（はんげん）！',
   'battle.enemyAttack': '{monster}の こうげき！',
   'battle.enemyMiss': '{monster}の こうげきは はずれた！',
   'battle.victory': 'たたかいに かった！',
@@ -121,13 +126,13 @@ export const jaStrings: Record<string, string> = {
 
   // ── Intro Dialog (3 messages) ────────────────────────────────────
   'intro.elder1': 'よくきたな わかきゆうしゃよ。わしは グリーンホロウむらの ちょうろうじゃ。くらいじだいが やってきた…',
-  'intro.elder2': 'まおうマラカールが さんすうのクリスタルを 5つのかけらに くだいて ちらした！やみが エルドラビアに ひろがっておる。かけらを とりもどすのじゃ！',
+  'intro.elder2': 'まおうマラカールが さんすうのクリスタルを 5つのかけらに くだいて ばらまいた！やみが エルドラビアに ひろがっておる。かけらを とりもどすのじゃ！',
   'intro.elder3': 'まずは ひがしの きりのどうくつへ むかうのじゃ。ボスが まもる クリスタルのかけらを てにいれるのじゃ。でかけるまえに おみせで じゅんびするのじゃ！',
 
   // ── NPCs / Story ──────────────────────────────────────────────────
   'story.intro1': 'むかしむかし エルドラビアは さんすうのクリスタルに まもられていました。',
-  'story.intro2': 'しかし まおうマラカールが クリスタルを 5つのかけらに くだき せかいは やみに つつまれました。',
-  'story.intro3': 'いま ひとりのゆうしゃが クリスタルのかけらを とりもどし ひかりを よみがえらせるたびに でます！',
+  'story.intro2': 'しかし まおうマラカールが クリスタルを 5つのかけらに くだき せかいを やみに つつみました。',
+  'story.intro3': 'いま ひとりの ゆうしゃが クリスタルのかけらを とりもどし ひかりを よみがえらせる たびに でます！',
 
   // Greenhollow (Act 1)
   'npc.elder.greeting': 'きをつけるのじゃ ゆうしゃよ。ひがしの きりのどうくつへ むかうのじゃ。ボスの クリスタルのかけらが きたへの みちを ひらくぞ！',
@@ -140,7 +145,7 @@ export const jaStrings: Record<string, string> = {
 
   // Port Sapphire (Act 1)
   'npc.sailor': 'きたの どうくつに ドラゴンが すんでいるそうだ。くらい けっかいで ふうじられているらしい。おそろしいのう！',
-  'npc.fisherman': 'むらの みなみの ふるいちかしつに いちばんの つりざおを わすれてきた。なにか おおきなものが いるらしい… おおきなカニかもしれない？',
+  'npc.fisherman': 'むらの みなみの ふるい ちかしつに だいじな つりざおを わすれてきた。なにか おおきなものが いるらしい… おおきなカニかもしれない？',
   'npc.wisewoman': 'ひがしに きりのどうくつが あるわ。おおガエルが クリスタルのかけらを まもっている — きたの すいしょうのどうくつを ひらくには それが ひつようよ！',
 
   // Ironkeep (Act 2)
@@ -174,12 +179,12 @@ export const jaStrings: Record<string, string> = {
   'npc.shadowWatcher': 'せかいの はざまに あけぼののイージスが ある。てんくうの ばんにんに きをつけるのだ。',
 
   'npc.shopkeeper': 'いらっしゃい！ゆっくり みていってね。',
-  'npc.healer': 'クリニックへようこそ！ケガをなおしますよ。',
-  'npc.healer.fullHp': 'げんきそうですね！かいふくのひつようはありません。',
-  'npc.healer.healFree': 'はい、ぜんかいふく！きをつけてね。',
-  'npc.healer.noGold': 'かいふくには {price}Gひつようですが、おかねがたりません…',
-  'npc.healer.healed': 'ぜんかいふくしました！{price}Gいただきます。おだいじに！',
-  'npc.savePoint': 'ぼうけんのきろくを セーブしました！',
+  'npc.healer': 'ようこそ！おけがを なおしますよ。',
+  'npc.healer.fullHp': 'げんきそうですね！かいふくの ひつようは ありません。',
+  'npc.healer.healFree': 'はい、ぜんかいふく！きを つけてね。',
+  'npc.healer.noGold': 'かいふくには {price}G ひつようですが、おかねが たりません…',
+  'npc.healer.healed': 'ぜんかいふく しました！{price}G いただきます。おだいじに！',
+  'npc.savePoint': 'ぼうけんの きろくを セーブしました！',
 
   // Treasure
   'treasure.found': 'たからばこを みつけた！',
@@ -198,15 +203,15 @@ export const jaStrings: Record<string, string> = {
   'dungeon.mistyGrotto.victory': 'クリスタルのかけらを てにいれた！やさしい あたたかさが けついを くれる。',
 
   // Sunken Cellar
-  'dungeon.sunkenCellar.enter': 'うみの みずが くずれた かべから したたる…しおと くさりの においが する。',
+  'dungeon.sunkenCellar.enter': 'うみの みずが くずれた かべから したたる…しおと くさった においが する。',
   'dungeon.sunkenCellar.boss.dialog1': 'じめんに われた かいがらが ちらばっている…なにか おおきなものが すんでいる。',
   'dungeon.sunkenCellar.boss.dialog2': 'きょだいな ハサミが やみから あらわれた！',
   'dungeon.sunkenCellar.boss.dialog3': 'おおガニが ものすごいおとで ハサミを ならした！たたかいの じゅんびを！',
-  'dungeon.sunkenCellar.boss.defeat': 'おおガニが からのなかに ひっこんだ…ちかしつが しずかになった。',
-  'dungeon.sunkenCellar.victory': 'おおガニの たからのなかから コーラルブレードを みつけた！',
+  'dungeon.sunkenCellar.boss.defeat': 'おおガニが くずれおちて にごったみずに しずんだ…ちかしつが しずかになった。',
+  'dungeon.sunkenCellar.victory': 'おおガニが コーラルブレードを おとした！',
 
   // Crystal Cave
-  'dungeon.crystalCave.enter': 'どうくつから つめたいかぜが ふいてくる…クリスタルのかけらが おくに あるはず。',
+  'dungeon.crystalCave.enter': 'どうくつから つめたい かぜが ふいてくる…クリスタルのかけらが おくに あるはず。',
   'dungeon.crystalCave.boss': 'うみへびが くらいみずから あらわれた！',
   'dungeon.crystalCave.boss.dialog1': 'どうくつが ゆれている…くらいみずの むこうで なにかが うごいている。',
   'dungeon.crystalCave.boss.dialog2': 'みずめんから きょだいな かげが あらわれた！',
@@ -229,7 +234,7 @@ export const jaStrings: Record<string, string> = {
   'dungeon.frozenLake.boss.dialog2': 'きょだいな へびのような すがたが こおりを つきやぶった！',
   'dungeon.frozenLake.boss.dialog3': 'こおりのワイアームが こごえる ほうこうとともに あらわれた！たたかいの じゅんびを！',
   'dungeon.frozenLake.boss.defeat': 'こおりのワイアームが こおったみずうみに しずんでいく…こおりが ふたたび とざした。',
-  'dungeon.frozenLake.victory': 'ワイアームの たからのなかから いにしえの フロストブランドを みつけた！',
+  'dungeon.frozenLake.victory': 'こおりのワイアームが いにしえの フロストブランドを おとした！',
 
   // Shadow Cave (renamed from Shadow Tower)
   'dungeon.shadowCave.enter': 'どうくつは くらいやまの おくまで つづいている…',
@@ -255,7 +260,7 @@ export const jaStrings: Record<string, string> = {
   'dungeon.banditHideout.boss.dialog2': 'きずだらけの おとこが やみから あらわれ けんを ぬいた！',
   'dungeon.banditHideout.boss.dialog3': 'さんぞくの おやぶんが うなった。「おれの アジトに いどむとは！」たたかいの じゅんびを！',
   'dungeon.banditHideout.boss.defeat': 'さんぞくの おやぶんが ぶきを おとした…「まいった…すきなものを もっていけ…」',
-  'dungeon.banditHideout.victory': 'ぬすまれた たからのなかから さんぞくのダガーを みつけた！',
+  'dungeon.banditHideout.victory': 'さんぞくの おやぶんが さんぞくのダガーを おとした！',
 
   // Magma Tunnels
   'dungeon.magmaTunnels.enter': 'あつさが たえられない…ほそい みぞを ようがんが ながれている。',
@@ -263,7 +268,7 @@ export const jaStrings: Record<string, string> = {
   'dungeon.magmaTunnels.boss.dialog2': 'ようがんの へびのような すがたが マグマから ふきだした！',
   'dungeon.magmaTunnels.boss.dialog3': 'ようがんワイアームが まきつき しろくかがやく ほのおの めで にらんだ！たたかいの じゅんびを！',
   'dungeon.magmaTunnels.boss.defeat': 'ようがんワイアームが マグマに とけて もどった…トンネルが すこし さめた。',
-  'dungeon.magmaTunnels.victory': 'ワイアームの ようがんの すみかから でんせつの マグマブレードを みつけた！',
+  'dungeon.magmaTunnels.victory': 'ようがんワイアームが でんせつの マグマブレードを おとした！',
   'dungeon.magmaTunnels.locked': 'はげしい ねつが みちを ふさいでいる…さばくのはかの ばんにんを たおさなければ。',
 
   // Volcanic Forge

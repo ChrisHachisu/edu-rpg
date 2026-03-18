@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, COLORS } from '../utils/constants';
+import { GAME_WIDTH, GAME_HEIGHT, ZOOM, COLORS, FONT_FAMILY } from '../utils/constants';
 import { t, setLocale, getLocale, setKanjiMode, getKanjiMode } from '../i18n/i18n';
 import { SaveManager } from '../systems/progression/SaveManager';
 import { GradeLevel, HeroColorScheme } from '../utils/types';
@@ -43,6 +43,8 @@ export class TitleScene extends Phaser.Scene {
   private audioInitialized = false;
 
   create(data?: { ngPlus?: boolean }): void {
+    this.cameras.main.setZoom(ZOOM);
+    this.cameras.main.setScroll(-GAME_WIDTH * (ZOOM - 1) / 2, -GAME_HEIGHT * (ZOOM - 1) / 2);
     this.cameras.main.setBackgroundColor(COLORS.DARK_BLUE);
     this.selectedIndex = 0;
     this.heroName = '';
@@ -106,47 +108,59 @@ export class TitleScene extends Phaser.Scene {
   }
 
   private drawTitleScreen(): void {
-    // Title
-    this.add.text(GAME_WIDTH / 2, 80, t('title.gameName'), {
-      fontSize: '20px',
-      color: COLORS.TEXT_YELLOW,
-      fontFamily: 'monospace',
-      fontStyle: 'bold',
-    }).setOrigin(0.5);
-
-    this.add.text(GAME_WIDTH / 2, 112, t('title.subtitle'), {
-      fontSize: '12px',
-      color: COLORS.TEXT_GRAY,
-      fontFamily: 'monospace',
-    }).setOrigin(0.5);
+    const cx = GAME_WIDTH / 2;
 
     // Dev mode indicator
     if (gameState.devMode) {
       this.add.text(8, 8, '[DEV]', {
         fontSize: '10px',
         color: '#ff4444',
-        fontFamily: 'monospace',
+        fontFamily: FONT_FAMILY,
         fontStyle: 'bold',
       });
     }
 
+    // Title
+    this.add.text(cx, 70, t('title.gameName'), {
+      fontSize: '20px',
+      color: COLORS.TEXT_YELLOW,
+      fontFamily: FONT_FAMILY,
+      fontStyle: 'bold',
+    }).setOrigin(0.5);
+
+    // Decorative divider
+    const divider = '\u2500\u2500\u2500  \u2726  \u2500\u2500\u2500';
+    this.add.text(cx, 94, divider, {
+      fontSize: '10px',
+      color: '#4466aa',
+      fontFamily: FONT_FAMILY,
+    }).setOrigin(0.5);
+
+    this.add.text(cx, 112, t('title.subtitle'), {
+      fontSize: '12px',
+      color: COLORS.TEXT_GRAY,
+      fontFamily: FONT_FAMILY,
+    }).setOrigin(0.5);
+
     // Decorative hero sprite
     if (this.textures.exists('hero-walk')) {
-      this.add.image(GAME_WIDTH / 2, 180, 'hero-walk', 0).setScale(6);
+      this.add.image(cx, 190, 'hero-walk', 0).setScale(6);
     }
 
-    // Menu options — no more Settings button
-    const menuY = 260;
+    // Menu options
+    const menuY = 270;
     const options = [
       { key: 'title.newGame', action: 'new' },
       ...(SaveManager.hasSave() ? [{ key: 'title.continue', action: 'continue' }] : []),
     ];
 
     options.forEach((opt, i) => {
-      const text = this.add.text(GAME_WIDTH / 2, menuY + i * 36, t(opt.key), {
+      const selected = i === this.selectedIndex;
+      const prefix = selected ? '\u25B8 ' : '  ';
+      const text = this.add.text(cx, menuY + i * 32, prefix + t(opt.key), {
         fontSize: '14px',
-        color: i === this.selectedIndex ? COLORS.TEXT_YELLOW : COLORS.TEXT_WHITE,
-        fontFamily: 'monospace',
+        color: selected ? COLORS.TEXT_YELLOW : COLORS.TEXT_WHITE,
+        fontFamily: FONT_FAMILY,
       }).setOrigin(0.5);
       text.setData('action', opt.action);
       this.menuItems.push(text);
@@ -157,7 +171,7 @@ export class TitleScene extends Phaser.Scene {
     this.add.text(GAME_WIDTH - 16, GAME_HEIGHT - 20, langText, {
       fontSize: '10px',
       color: COLORS.TEXT_GRAY,
-      fontFamily: 'monospace',
+      fontFamily: FONT_FAMILY,
     }).setOrigin(1, 0.5).setInteractive().on('pointerdown', () => {
       setLocale(getLocale() === 'ja' ? 'en' : 'ja');
       this.draw();
@@ -166,46 +180,112 @@ export class TitleScene extends Phaser.Scene {
     this.updateSelection();
   }
 
+  /** Draw a single ◀ value ▶ selector row */
+  private drawSelectorRow(cx: number, y: number, label: string, value: string, isSelected: boolean): void {
+    const labelColor = isSelected ? COLORS.TEXT_YELLOW : COLORS.TEXT_WHITE;
+    const valColor = isSelected ? COLORS.TEXT_YELLOW : COLORS.TEXT_WHITE;
+
+    // Label on the left
+    this.add.text(cx - 140, y, label, {
+      fontSize: '12px',
+      color: labelColor,
+      fontFamily: FONT_FAMILY,
+    }).setOrigin(0, 0.5);
+
+    // ◀ value ▶ on the right
+    const arrows = isSelected ? `\u25C0  ${value}  \u25B6` : value;
+    this.add.text(cx + 60, y, arrows, {
+      fontSize: '12px',
+      color: valColor,
+      fontFamily: FONT_FAMILY,
+    }).setOrigin(0.5, 0.5);
+  }
+
+  /** Draw a pointed cursor ▸ next to the active row */
+  private drawRowCursor(cx: number, y: number): void {
+    this.add.text(cx - 158, y, '\u25B8', {
+      fontSize: '12px',
+      color: COLORS.TEXT_YELLOW,
+      fontFamily: FONT_FAMILY,
+    }).setOrigin(0, 0.5);
+  }
+
   private drawCreate(): void {
     const cx = GAME_WIDTH / 2;
-    let y = 28;
+    const panelX = 56;
+    const panelW = GAME_WIDTH - 112;
+    const panelY = 12;
+    const panelH = GAME_HEIGHT - 24;
 
-    // Title
-    this.add.text(cx, y, t('create.title'), {
+    // ── RPG-style panel border ──
+    const g = this.add.graphics();
+    // Outer border (bright)
+    g.lineStyle(2, 0xe0e0ff, 1);
+    g.strokeRect(panelX, panelY, panelW, panelH);
+    // Inner fill
+    g.fillStyle(0x111133, 0.92);
+    g.fillRect(panelX + 2, panelY + 2, panelW - 4, panelH - 4);
+    // Inner border accent
+    g.lineStyle(1, 0x4444aa, 0.6);
+    g.strokeRect(panelX + 4, panelY + 4, panelW - 8, panelH - 8);
+
+    let y = panelY + 28;
+
+    // ── Title ──
+    this.add.text(cx, y, `\u2726  ${t('create.title')}  \u2726`, {
       fontSize: '16px',
       color: COLORS.TEXT_YELLOW,
-      fontFamily: 'monospace',
+      fontFamily: FONT_FAMILY,
       fontStyle: 'bold',
-    }).setOrigin(0.5);
-    y += 36;
-
-    // ── Name ──
-    const nameSelected = this.createRow === 'name';
-    this.add.text(cx, y, t('create.name'), {
-      fontSize: '12px',
-      color: this.ngPlus ? COLORS.TEXT_GRAY : (nameSelected ? COLORS.TEXT_YELLOW : COLORS.TEXT_WHITE),
-      fontFamily: 'monospace',
     }).setOrigin(0.5);
     y += 22;
 
-    // Name display (the actual editing uses a hidden DOM input)
-    const displayName = this.heroName || t('create.namePlaceholder');
-    const nameDisplay = this.add.text(cx, y, this.ngPlus ? `[ ${displayName} ]` : `[ ${displayName} ]`, {
-      fontSize: '14px',
-      color: this.ngPlus ? COLORS.TEXT_GRAY : (this.heroName ? COLORS.TEXT_WHITE : COLORS.TEXT_GRAY),
-      fontFamily: 'monospace',
+    // Decorative divider
+    const dividerLine = '\u2500'.repeat(30);
+    this.add.text(cx, y, dividerLine, {
+      fontSize: '10px',
+      color: '#4466aa',
+      fontFamily: FONT_FAMILY,
     }).setOrigin(0.5);
+    y += 18;
+
+    // ── Hero Preview (centered, compact) ──
+    if (this.textures.exists('hero-walk')) {
+      this.heroPreview = this.add.image(cx, y + 20, 'hero-walk', 0).setScale(4);
+    }
+    y += 62;
+
+    // ── Name ──
+    const nameSelected = this.createRow === 'name';
+    const nameLabel = t('create.name');
+    const displayName = this.heroName || t('create.namePlaceholder');
+    const nameColor = this.ngPlus ? COLORS.TEXT_GRAY : (nameSelected ? COLORS.TEXT_YELLOW : COLORS.TEXT_WHITE);
+
+    if (nameSelected) this.drawRowCursor(cx, y);
+
+    this.add.text(cx - 140, y, nameLabel, {
+      fontSize: '12px',
+      color: nameColor,
+      fontFamily: FONT_FAMILY,
+    }).setOrigin(0, 0.5);
+
+    const nameDisplay = this.add.text(cx + 60, y, displayName, {
+      fontSize: '12px',
+      color: this.ngPlus ? COLORS.TEXT_GRAY : (this.heroName ? COLORS.TEXT_WHITE : COLORS.TEXT_GRAY),
+      fontFamily: FONT_FAMILY,
+    }).setOrigin(0.5, 0.5);
     nameDisplay.setData('row', 'name');
     this.menuItems.push(nameDisplay);
 
-    // Blinking cursor when name row is selected (not in NG+ mode)
+    // Blinking cursor when name row is selected
     if (nameSelected && !this.ngPlus) {
-      const cursorX = cx + (this.heroName.length * 4) + 8;
-      const cursor = this.add.text(cursorX, y, '|', {
-        fontSize: '14px',
+      const nameW = nameDisplay.width;
+      const cursorX = cx + 60 + nameW / 2 + 4;
+      const cursor = this.add.text(cursorX, y, '_', {
+        fontSize: '12px',
         color: COLORS.TEXT_YELLOW,
-        fontFamily: 'monospace',
-      }).setOrigin(0.5);
+        fontFamily: FONT_FAMILY,
+      }).setOrigin(0, 0.5);
       if (this.blinkTimer) this.blinkTimer.destroy();
       this.blinkTimer = this.time.addEvent({
         delay: 400,
@@ -213,108 +293,53 @@ export class TitleScene extends Phaser.Scene {
         callback: () => { cursor.visible = !cursor.visible; },
       });
     }
-    y += 36;
+    y += 34;
 
-    // ── Hero Color ──
+    // ── Color ──
     const colorSelected = this.createRow === 'color';
-    this.add.text(cx, y, t('create.color'), {
-      fontSize: '12px',
-      color: colorSelected ? COLORS.TEXT_YELLOW : COLORS.TEXT_WHITE,
-      fontFamily: 'monospace',
-    }).setOrigin(0.5);
-    y += 24;
-
-    // Color option chips
-    const chipW = 80;
-    const totalW = this.colorOptions.length * chipW;
-    const startX = cx - totalW / 2 + chipW / 2;
-    this.colorOptions.forEach((color, i) => {
-      const isActive = i === this.colorIndex;
-      const label = color.charAt(0).toUpperCase() + color.slice(1);
-      this.add.text(startX + i * chipW, y, isActive ? `\u25B8${label}\u25C2` : label, {
-        fontSize: '11px',
-        color: isActive ? COLORS.TEXT_YELLOW : COLORS.TEXT_WHITE,
-        fontFamily: 'monospace',
-      }).setOrigin(0.5);
-    });
-
-    // Hero preview sprite
-    y += 28;
-    if (this.textures.exists('hero-walk')) {
-      this.heroPreview = this.add.image(cx, y + 18, 'hero-walk', 0).setScale(5);
-    }
-    y += 82;
+    if (colorSelected) this.drawRowCursor(cx, y);
+    const colorId = this.colorOptions[this.colorIndex];
+    const colorName = t(`color.${colorId}`);
+    this.drawSelectorRow(cx, y, t('create.color'), colorName, colorSelected);
+    y += 30;
 
     // ── Difficulty ──
     const diffSelected = this.createRow === 'difficulty';
-    this.add.text(cx, y, t('settings.difficulty'), {
-      fontSize: '12px',
-      color: diffSelected ? COLORS.TEXT_YELLOW : COLORS.TEXT_WHITE,
-      fontFamily: 'monospace',
-    }).setOrigin(0.5);
-    y += 22;
-
-    const dChipW = 70;
-    const cols = 4;
-    const rows = Math.ceil(this.difficultyOptions.length / cols);
-    const dTotalW = cols * dChipW;
-    const dStartX = cx - dTotalW / 2 + dChipW / 2;
-    this.difficultyOptions.forEach((grade, i) => {
-      const row = Math.floor(i / cols);
-      const col = i % cols;
-      const isActive = i === this.difficultyIndex;
-      this.add.text(dStartX + col * dChipW, y + row * 22, t(`grade.${grade}`), {
-        fontSize: '10px',
-        color: isActive ? COLORS.TEXT_YELLOW : COLORS.TEXT_WHITE,
-        fontFamily: 'monospace',
-      }).setOrigin(0.5);
-    });
-    y += rows * 22 + 14;
+    if (diffSelected) this.drawRowCursor(cx, y);
+    this.drawSelectorRow(cx, y, t('settings.difficulty'), t(`grade.${this.difficultyOptions[this.difficultyIndex]}`), diffSelected);
+    y += 30;
 
     // ── Language ──
     const langSelected = this.createRow === 'language';
-    this.add.text(cx, y, t('settings.language'), {
-      fontSize: '12px',
-      color: langSelected ? COLORS.TEXT_YELLOW : COLORS.TEXT_WHITE,
-      fontFamily: 'monospace',
+    if (langSelected) this.drawRowCursor(cx, y);
+    const langValue = getLocale() === 'ja' ? '\u65E5\u672C\u8A9E' : 'English';
+    this.drawSelectorRow(cx, y, t('settings.language'), langValue, langSelected);
+    y += 30;
+
+    // ── Kanji (Japanese only) ──
+    if (getLocale() === 'ja') {
+      const kanjiSelected = this.createRow === 'kanji';
+      if (kanjiSelected) this.drawRowCursor(cx, y);
+      const kanjiValue = getKanjiMode() ? '\u3080\u305A\u304B\u3057\u3044' : '\u304B\u3093\u305F\u3093';
+      this.drawSelectorRow(cx, y, '\u3082\u3058', kanjiValue, kanjiSelected);
+      y += 30;
+    }
+
+    // Divider before start
+    y += 4;
+    this.add.text(cx, y, dividerLine, {
+      fontSize: '10px',
+      color: '#4466aa',
+      fontFamily: FONT_FAMILY,
     }).setOrigin(0.5);
     y += 22;
 
-    const langLabel = getLocale() === 'ja' ? '\u25C0 \u65E5\u672C\u8A9E \u25B6' : '\u25C0 English \u25B6';
-    this.add.text(cx, y, langLabel, {
-      fontSize: '12px',
-      color: langSelected ? COLORS.TEXT_YELLOW : COLORS.TEXT_WHITE,
-      fontFamily: 'monospace',
-    }).setOrigin(0.5);
-    y += 32;
-
-    // ── Kanji toggle (Japanese only) ──
-    if (getLocale() === 'ja') {
-      const kanjiSelected = this.createRow === 'kanji';
-      this.add.text(cx, y, 'もじ', {
-        fontSize: '12px',
-        color: kanjiSelected ? COLORS.TEXT_YELLOW : COLORS.TEXT_WHITE,
-        fontFamily: 'monospace',
-      }).setOrigin(0.5);
-      y += 22;
-
-      const kanjiLabel = getKanjiMode()
-        ? '\u25C0 むずかしい \u25B6'
-        : '\u25C0 かんたん \u25B6';
-      this.add.text(cx, y, kanjiLabel, {
-        fontSize: '12px',
-        color: kanjiSelected ? COLORS.TEXT_YELLOW : COLORS.TEXT_WHITE,
-        fontFamily: 'monospace',
-      }).setOrigin(0.5);
-      y += 32;
-    }
-
     // ── Start Game button ──
     const startSelected = this.createRow === 'start';
-    this.add.text(cx, y, `\u2605 ${t('create.startGame')} \u2605`, {
+    this.add.text(cx, y, `\u2605  ${t('create.startGame')}  \u2605`, {
       fontSize: '14px',
       color: startSelected ? COLORS.TEXT_YELLOW : COLORS.TEXT_WHITE,
-      fontFamily: 'monospace',
+      fontFamily: FONT_FAMILY,
       fontStyle: 'bold',
     }).setOrigin(0.5);
 
@@ -322,7 +347,14 @@ export class TitleScene extends Phaser.Scene {
     this.errorText = this.add.text(cx, y + 24, '', {
       fontSize: '10px',
       color: '#ff4444',
-      fontFamily: 'monospace',
+      fontFamily: FONT_FAMILY,
+    }).setOrigin(0.5);
+
+    // ESC hint at bottom
+    this.add.text(cx, panelY + panelH - 16, 'ESC: ' + (getLocale() === 'ja' ? '\u623B\u308B' : 'Back'), {
+      fontSize: '9px',
+      color: '#666688',
+      fontFamily: FONT_FAMILY,
     }).setOrigin(0.5);
 
     // Ensure name input is set up

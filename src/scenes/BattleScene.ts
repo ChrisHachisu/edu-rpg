@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, COLORS, QUIZ_FEEDBACK_DURATION } from '../utils/constants';
+import { GAME_WIDTH, GAME_HEIGHT, ZOOM, COLORS, QUIZ_FEEDBACK_DURATION, FONT_FAMILY } from '../utils/constants';
 import { t, getLocale } from '../i18n/i18n';
 import { gameState } from '../GameState';
 import { CombatEngine, CombatResult } from '../systems/combat/CombatEngine';
@@ -81,6 +81,8 @@ export class BattleScene extends Phaser.Scene {
   }
 
   create(): void {
+    this.cameras.main.setZoom(ZOOM);
+    this.cameras.main.setScroll(-GAME_WIDTH * (ZOOM - 1) / 2, -GAME_HEIGHT * (ZOOM - 1) / 2);
     this.cameras.main.setBackgroundColor(0x111122);
     this.engine = new CombatEngine(gameState.player, this.monster);
     this.menuIndex = 0;
@@ -146,7 +148,7 @@ export class BattleScene extends Phaser.Scene {
 
     const p = gameState.player;
     this.add.text(GAME_WIDTH - 240, y - 20, `${p.state.name}  Lv${p.state.level}`, {
-      fontSize: '16px', color: COLORS.TEXT_WHITE, fontFamily: 'monospace',
+      fontSize: '16px', color: COLORS.TEXT_WHITE, fontFamily: FONT_FAMILY,
     });
 
     // HP bar
@@ -154,7 +156,7 @@ export class BattleScene extends Phaser.Scene {
     const hpRatio = p.state.hp / p.totalMaxHp;
     this.hpBar = this.add.rectangle(GAME_WIDTH - 180, y + 6, 120 * hpRatio, 10, COLORS.HP_GREEN).setOrigin(0, 0.5);
     this.hpLabel = this.add.text(GAME_WIDTH - 240, y + 2, `HP ${p.state.hp}/${p.totalMaxHp}`, {
-      fontSize: '9px', color: COLORS.TEXT_WHITE, fontFamily: 'monospace',
+      fontSize: '9px', color: COLORS.TEXT_WHITE, fontFamily: FONT_FAMILY,
     });
   }
 
@@ -163,7 +165,7 @@ export class BattleScene extends Phaser.Scene {
     this.add.rectangle(140, y, 240, 42, COLORS.MENU_BG, 0.85)
       .setStrokeStyle(1, COLORS.MENU_BORDER);
     this.add.text(32, y - 16, t(this.monster.nameKey), {
-      fontSize: '16px', color: COLORS.TEXT_WHITE, fontFamily: 'monospace',
+      fontSize: '16px', color: COLORS.TEXT_WHITE, fontFamily: FONT_FAMILY,
     });
     this.enemyHpBarBg = this.add.rectangle(32, y + 10, 120, 8, 0x333333).setOrigin(0, 0.5);
     this.enemyHpBar = this.add.rectangle(32, y + 10, 120, 8, COLORS.HP_RED).setOrigin(0, 0.5);
@@ -202,7 +204,7 @@ export class BattleScene extends Phaser.Scene {
       const txt = this.add.text(x, y, t(act.key), {
         fontSize: '12px',
         color: i === 0 ? COLORS.TEXT_YELLOW : COLORS.TEXT_WHITE,
-        fontFamily: 'monospace',
+        fontFamily: FONT_FAMILY,
       }).setData('action', act.action).setData('isMenu', true);
       this.menuItems.push(txt);
     });
@@ -323,7 +325,7 @@ export class BattleScene extends Phaser.Scene {
 
     if (consumables.length === 0) {
       this.add.text(GAME_WIDTH / 2, boxY + 40, t('menu.noItems'), {
-        fontSize: '12px', color: COLORS.TEXT_GRAY, fontFamily: 'monospace',
+        fontSize: '12px', color: COLORS.TEXT_GRAY, fontFamily: FONT_FAMILY,
       }).setOrigin(0.5).setData('isMenu', true);
       return;
     }
@@ -333,7 +335,7 @@ export class BattleScene extends Phaser.Scene {
       const txt = this.add.text(32, boxY + 12 + i * 24, `${t(item.nameKey)} x${slot.quantity}`, {
         fontSize: '16px',
         color: i === 0 ? COLORS.TEXT_YELLOW : COLORS.TEXT_WHITE,
-        fontFamily: 'monospace',
+        fontFamily: FONT_FAMILY,
       }).setData('itemId', slot.itemId).setData('isMenu', true);
       this.itemMenuItems.push(txt);
     });
@@ -400,7 +402,7 @@ export class BattleScene extends Phaser.Scene {
 
       // Timer text
       const timerText = this.add.text(boxX + timerBarW / 2 + 8, timerY, `${this.quizTimerSeconds}s`, {
-        fontSize: '9px', color: COLORS.TEXT_WHITE, fontFamily: 'monospace',
+        fontSize: '9px', color: COLORS.TEXT_WHITE, fontFamily: FONT_FAMILY,
       }).setOrigin(0, 0.5).setDepth(51);
       this.quizContainer.add(timerText);
 
@@ -435,7 +437,7 @@ export class BattleScene extends Phaser.Scene {
 
     // Header
     const header = this.add.text(boxX, boxY - 130, headerText, {
-      fontSize: '12px', color: COLORS.TEXT_YELLOW, fontFamily: 'monospace',
+      fontSize: '12px', color: COLORS.TEXT_YELLOW, fontFamily: FONT_FAMILY,
     }).setOrigin(0.5);
     this.quizContainer.add(header);
 
@@ -443,7 +445,7 @@ export class BattleScene extends Phaser.Scene {
     const locale = getLocale();
     const qText = this.quizQuestion.questionText[locale];
     const question = this.add.text(boxX, boxY - 88, qText, {
-      fontSize: '16px', color: COLORS.TEXT_WHITE, fontFamily: 'monospace',
+      fontSize: '16px', color: COLORS.TEXT_WHITE, fontFamily: FONT_FAMILY,
       wordWrap: { width: boxW - 20 },
     }).setOrigin(0.5);
     this.quizContainer.add(question);
@@ -459,7 +461,7 @@ export class BattleScene extends Phaser.Scene {
       const btnText = this.add.text(0, 0, answer.text[locale], {
         fontSize: '14px',
         color: i === 0 ? COLORS.TEXT_YELLOW : COLORS.TEXT_WHITE,
-        fontFamily: 'monospace',
+        fontFamily: FONT_FAMILY,
       }).setOrigin(0.5);
 
       btnContainer.add([btnBg, btnText]);
@@ -500,7 +502,7 @@ export class BattleScene extends Phaser.Scene {
     const feedbackText = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 140, '⏱ ' + t('quiz.incorrect'), {
       fontSize: '16px',
       color: '#cc2244',
-      fontFamily: 'monospace',
+      fontFamily: FONT_FAMILY,
       fontStyle: 'bold',
     }).setOrigin(0.5).setDepth(51);
 
@@ -563,7 +565,7 @@ export class BattleScene extends Phaser.Scene {
     const feedbackText = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 140, correct ? t('quiz.correct') : t('quiz.incorrect'), {
       fontSize: '16px',
       color: correct ? '#22cc44' : '#cc2244',
-      fontFamily: 'monospace',
+      fontFamily: FONT_FAMILY,
       fontStyle: 'bold',
     }).setOrigin(0.5).setDepth(51);
 
@@ -695,7 +697,7 @@ export class BattleScene extends Phaser.Scene {
     this.messageBox = this.add.rectangle(GAME_WIDTH / 2, y + 24, GAME_WIDTH - 16, 64, COLORS.MENU_BG, 0.9)
       .setStrokeStyle(1, COLORS.MENU_BORDER).setDepth(40);
     this.messageText = this.add.text(24, y, text, {
-      fontSize: '12px', color: COLORS.TEXT_WHITE, fontFamily: 'monospace',
+      fontSize: '12px', color: COLORS.TEXT_WHITE, fontFamily: FONT_FAMILY,
       wordWrap: { width: GAME_WIDTH - 48 },
     }).setDepth(41);
 

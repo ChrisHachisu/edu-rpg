@@ -2,7 +2,22 @@
 export const GAME_WIDTH = 512;
 export const GAME_HEIGHT = 448;
 export const TILE_SIZE = 32;
-export const ZOOM = 2;
+// Pixel-perfect zoom: pick the largest integer multiplier whose canvas fits
+// inside the viewport at native physical pixels (no fractional CSS scaling).
+const dpr = typeof window !== 'undefined' ? (window.devicePixelRatio || 1) : 1;
+const maxN = typeof window !== 'undefined'
+  ? Math.floor(Math.min(
+      (window.innerWidth * dpr) / GAME_WIDTH,
+      (window.innerHeight * dpr) / GAME_HEIGHT,
+    ))
+  : 2;
+export const ZOOM = Math.max(1, maxN);
+// CSS dimensions for the canvas — exactly ZOOM * GAME / dpr so physical pixels = canvas pixels (1:1)
+export const CANVAS_CSS_WIDTH = (ZOOM * GAME_WIDTH) / dpr;
+export const CANVAS_CSS_HEIGHT = (ZOOM * GAME_HEIGHT) / dpr;
+// Offset for scrollFactor(0) UI elements — aligns raw canvas pixels to the visible game area
+export const UI_OFFSET_X = GAME_WIDTH * (ZOOM - 1) / 2;
+export const UI_OFFSET_Y = GAME_HEIGHT * (ZOOM - 1) / 2;
 
 // Map dimensions in tiles
 export const MAP_WIDTH_TILES = 40;
@@ -27,6 +42,9 @@ export const QUIZ_FEEDBACK_DURATION = 1000; // ms
 export const MAX_LEVEL = 30;
 export const MAX_INVENTORY_SIZE = 20;
 export const GOLD_SELL_RATIO = 0.5;
+
+// Font
+export const FONT_FAMILY = 'PixelMplus12, monospace';
 
 // Colors
 export const COLORS = {

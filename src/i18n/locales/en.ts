@@ -14,6 +14,10 @@ export const enStrings: Record<string, string> = {
   'create.color': 'Hero Color',
   'create.startGame': 'Start Game',
   'create.nameRequired': 'Please enter a name!',
+  'color.gray': 'Gray',
+  'color.blue': 'Blue',
+  'color.pink': 'Pink',
+  'color.black': 'Black',
 
   // Settings
   'settings.title': 'Settings',
@@ -27,6 +31,7 @@ export const enStrings: Record<string, string> = {
   'settings.timer': 'Quiz Timer',
   'settings.timerOn': 'ON',
   'settings.timerOff': 'OFF (Unlimited)',
+  'settings.change': 'Change',
 
   // Grade levels
   'grade.k': 'Kindergarten',
@@ -202,11 +207,11 @@ export const enStrings: Record<string, string> = {
   'dungeon.sunkenCellar.boss.dialog1': 'The ground is littered with broken shells... Something large lives here.',
   'dungeon.sunkenCellar.boss.dialog2': 'A massive pair of claws emerges from the shadows!',
   'dungeon.sunkenCellar.boss.dialog3': 'The Giant Crab snaps its claws with a thunderous crack! Prepare for battle!',
-  'dungeon.sunkenCellar.boss.defeat': 'The Giant Crab retreats into its shell... The cellar grows quiet.',
-  'dungeon.sunkenCellar.victory': 'You found the Coral Blade among the crab\'s treasures!',
+  'dungeon.sunkenCellar.boss.defeat': 'The Giant Crab collapses and sinks beneath the murky water... The cellar grows quiet.',
+  'dungeon.sunkenCellar.victory': 'The Giant Crab dropped the Coral Blade!',
 
   // Crystal Cave
-  'dungeon.crystalCave.enter': 'A cold wind blows from inside the cave... The Crystal of Courage must be deep within.',
+  'dungeon.crystalCave.enter': 'A cold wind blows from inside the cave... A crystal shard must be deep within.',
   'dungeon.crystalCave.boss': 'The Sea Serpent rises from the dark water!',
   'dungeon.crystalCave.boss.dialog1': 'The cave trembles... Something stirs in the dark water ahead.',
   'dungeon.crystalCave.boss.dialog2': 'A massive shape breaks the surface!',
@@ -229,7 +234,7 @@ export const enStrings: Record<string, string> = {
   'dungeon.frozenLake.boss.dialog2': 'A massive serpentine shape crashes through the ice!',
   'dungeon.frozenLake.boss.dialog3': 'The Ice Wyrm rises with a bone-chilling roar! Prepare for battle!',
   'dungeon.frozenLake.boss.defeat': 'The Ice Wyrm sinks back into the frozen lake... The ice reforms, sealing it away forever.',
-  'dungeon.frozenLake.victory': 'You found the ancient Frostbrand sword, frozen in the wyrm\'s hoard!',
+  'dungeon.frozenLake.victory': 'The Ice Wyrm dropped the ancient Frostbrand!',
 
   // Shadow Cave (renamed from Shadow Tower)
   'dungeon.shadowCave.enter': 'The cave stretches deep into the dark mountainside...',
@@ -255,7 +260,7 @@ export const enStrings: Record<string, string> = {
   'dungeon.banditHideout.boss.dialog2': 'A scarred figure steps from the shadows, blade drawn!',
   'dungeon.banditHideout.boss.dialog3': 'The Bandit Lord snarls, "You dare challenge me in MY hideout?!" Prepare for battle!',
   'dungeon.banditHideout.boss.defeat': 'The Bandit Lord drops his weapon... "I yield... Take whatever you want..."',
-  'dungeon.banditHideout.victory': 'You found the Bandit\'s Dagger among the stolen loot!',
+  'dungeon.banditHideout.victory': 'The Bandit Lord dropped the Bandit\'s Dagger!',
 
   // Magma Tunnels
   'dungeon.magmaTunnels.enter': 'The heat is unbearable... Rivers of lava flow through narrow channels.',
@@ -263,7 +268,7 @@ export const enStrings: Record<string, string> = {
   'dungeon.magmaTunnels.boss.dialog2': 'A serpentine shape of molten rock bursts from the magma!',
   'dungeon.magmaTunnels.boss.dialog3': 'The Lava Wyrm coils around you, eyes blazing with white-hot fire! Prepare for battle!',
   'dungeon.magmaTunnels.boss.defeat': 'The Lava Wyrm dissolves back into the magma... The tunnels cool slightly.',
-  'dungeon.magmaTunnels.victory': 'You found the legendary Magma Blade in the wyrm\'s molten lair!',
+  'dungeon.magmaTunnels.victory': 'The Lava Wyrm dropped the legendary Magma Blade!',
   'dungeon.magmaTunnels.locked': 'Intense heat blocks the way... You must defeat the guardian of the Desert Tomb first.',
 
   // Volcanic Forge

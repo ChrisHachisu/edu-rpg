@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, COLORS } from '../utils/constants';
+import { GAME_WIDTH, GAME_HEIGHT, ZOOM, COLORS, FONT_FAMILY } from '../utils/constants';
 import { mapDefs } from '../data/maps';
 import { monsters } from '../data/monsters';
 import { items } from '../data/items';
@@ -17,14 +17,16 @@ export class ExportScene extends Phaser.Scene {
   }
 
   create(): void {
+    this.cameras.main.setZoom(ZOOM);
+    this.cameras.main.setScroll(-GAME_WIDTH * (ZOOM - 1) / 2, -GAME_HEIGHT * (ZOOM - 1) / 2);
     this.cameras.main.setBackgroundColor(0x222222);
 
     const statusText = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 20, 'Exporting...', {
-      fontSize: '14px', color: COLORS.TEXT_YELLOW, fontFamily: 'monospace',
+      fontSize: '14px', color: COLORS.TEXT_YELLOW, fontFamily: FONT_FAMILY,
     }).setOrigin(0.5);
 
     const detailText = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 10, 'Extracting textures...', {
-      fontSize: '10px', color: COLORS.TEXT_WHITE, fontFamily: 'monospace',
+      fontSize: '10px', color: COLORS.TEXT_WHITE, fontFamily: FONT_FAMILY,
     }).setOrigin(0.5);
 
     // Run export asynchronously to avoid blocking

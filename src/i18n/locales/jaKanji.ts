@@ -21,6 +21,10 @@ export const jaKanjiStrings: Record<string, string> = {
   'create.color': '色',
   'create.startGame': '冒険に出る',
   'create.nameRequired': '名前を入れてね！',
+  'color.gray': '灰色',
+  'color.blue': '青',
+  'color.pink': 'ピンク',
+  'color.black': '黒',
 
   // Settings
   'settings.title': '設定',
@@ -30,6 +34,7 @@ export const jaKanjiStrings: Record<string, string> = {
   'settings.sound': '音',
   'settings.volume': '音量',
   'settings.timerOff': 'なし（時間無制限）',
+  'settings.change': '変更',
 
   // Grade levels
   'grade.k': '幼稚園',
@@ -117,13 +122,13 @@ export const jaKanjiStrings: Record<string, string> = {
 
   // Intro Dialog
   'intro.elder1': 'よく来たな 若き勇者よ。わしは グリーンホロウ村の 長老じゃ。暗い時代が やってきた…',
-  'intro.elder2': '魔王マラカールが 算数のクリスタルを 5つの欠片に 砕いて 散らした！闇が エルドラビアに 広がっておる。欠片を 取り戻すのじゃ！',
+  'intro.elder2': '魔王マラカールが 算数のクリスタルを 5つの欠片に 砕いて ばらまいた！闇が エルドラビアに 広がっておる。欠片を 取り戻すのじゃ！',
   'intro.elder3': 'まずは 東の 霧の洞窟へ 向かうのじゃ。ボスが 守る クリスタルの欠片を 手に入れるのじゃ。出かける前に お店で 準備するのじゃ！',
 
   // Story
   'story.intro1': '昔々 エルドラビアは 算数のクリスタルに 守られていました。',
-  'story.intro2': 'しかし 魔王マラカールが クリスタルを 5つの欠片に 砕き 世界は 闇に 包まれました。',
-  'story.intro3': '今 一人の勇者が クリスタルの欠片を 取り戻し 光を 蘇らせる旅に 出ます！',
+  'story.intro2': 'しかし 魔王マラカールが クリスタルを 5つの欠片に 砕き 世界を 闇に 包みました。',
+  'story.intro3': '今 一人の 勇者が クリスタルの欠片を 取り戻し 光を 蘇らせる 旅に 出ます！',
 
   // Greenhollow
   'npc.elder.greeting': '気をつけるのじゃ 勇者よ。東の 霧の洞窟へ 向かうのじゃ。ボスの クリスタルの欠片が 北への 道を 開くぞ！',
@@ -136,7 +141,7 @@ export const jaKanjiStrings: Record<string, string> = {
 
   // Port Sapphire
   'npc.sailor': '北の 洞窟に ドラゴンが 住んでいるそうだ。暗い 結界で 封じられているらしい。恐ろしいのう！',
-  'npc.fisherman': '村の 南の 古い地下室に 一番の 釣り竿を 忘れてきた。何か 大きなものが いるらしい… 大きなカニかもしれない？',
+  'npc.fisherman': '村の 南の 古い 地下室に 大事な 釣り竿を 忘れてきた。何か 大きなものが いるらしい… 大きなカニかもしれない？',
   'npc.wisewoman': '東に 霧の洞窟が あるわ。大ガエルが クリスタルの欠片を 守っている — 北の 水晶の洞窟を 開くには それが 必要よ！',
 
   // Ironkeep
@@ -170,11 +175,11 @@ export const jaKanjiStrings: Record<string, string> = {
   'npc.shadowWatcher': '世界の 狭間に 暁のイージスが ある。天空の 番人に 気をつけるのだ。',
 
   'npc.shopkeeper': 'いらっしゃい！ゆっくり 見ていってね。',
-  'npc.healer': 'クリニックへようこそ！怪我を治しますよ。',
-  'npc.healer.fullHp': '元気そうですね！回復の必要はありません。',
-  'npc.healer.healFree': 'はい、全回復！気をつけてね。',
-  'npc.healer.noGold': '回復には {price}G必要ですが、お金が足りません…',
-  'npc.healer.healed': '全回復しました！{price}Gいただきます。お大事に！',
+  'npc.healer': 'ようこそ！お怪我を 治しますよ。',
+  'npc.healer.fullHp': '元気そうですね！回復の 必要は ありません。',
+  'npc.healer.healFree': 'はい、全回復！気を つけてね。',
+  'npc.healer.noGold': '回復には {price}G 必要ですが、お金が 足りません…',
+  'npc.healer.healed': '全回復 しました！{price}G いただきます。お大事に！',
   'npc.savePoint': '冒険の記録を セーブしました！',
 
   // Treasure
@@ -193,12 +198,12 @@ export const jaKanjiStrings: Record<string, string> = {
   'dungeon.mistyGrotto.victory': 'クリスタルの欠片を 手に入れた！優しい 温かさが 決意を くれる。',
 
   // Sunken Cellar
-  'dungeon.sunkenCellar.enter': '海の 水が 崩れた 壁から したたる…潮と 腐りの 匂いが する。',
+  'dungeon.sunkenCellar.enter': '海の 水が 崩れた 壁から したたる…潮と 腐った 匂いが する。',
   'dungeon.sunkenCellar.boss.dialog1': '地面に 割れた 貝殻が 散らばっている…何か 大きなものが 住んでいる。',
   'dungeon.sunkenCellar.boss.dialog2': '巨大な ハサミが 闇から 現れた！',
   'dungeon.sunkenCellar.boss.dialog3': '大ガニが ものすごい音で ハサミを 鳴らした！戦いの 準備を！',
-  'dungeon.sunkenCellar.boss.defeat': '大ガニが 殻の中に 引っ込んだ…地下室が 静かになった。',
-  'dungeon.sunkenCellar.victory': '大ガニの 宝の中から コーラルブレードを 見つけた！',
+  'dungeon.sunkenCellar.boss.defeat': '大ガニが 崩れ落ちて 濁った水に 沈んだ…地下室が 静かになった。',
+  'dungeon.sunkenCellar.victory': '大ガニが コーラルブレードを 落とした！',
 
   // Crystal Cave
   'dungeon.crystalCave.enter': '洞窟から 冷たい風が 吹いてくる…クリスタルの欠片が 奥に あるはず。',
@@ -224,7 +229,7 @@ export const jaKanjiStrings: Record<string, string> = {
   'dungeon.frozenLake.boss.dialog2': '巨大な 蛇のような 姿が 氷を 突き破った！',
   'dungeon.frozenLake.boss.dialog3': '氷のワイアームが 凍える 咆哮とともに 現れた！戦いの 準備を！',
   'dungeon.frozenLake.boss.defeat': '氷のワイアームが 凍った湖に 沈んでいく…氷が 再び 閉じた。',
-  'dungeon.frozenLake.victory': 'ワイアームの 宝の中から 古の フロストブランドを 見つけた！',
+  'dungeon.frozenLake.victory': '氷のワイアームが 古の フロストブランドを 落とした！',
 
   // Shadow Cave
   'dungeon.shadowCave.enter': '洞窟は 暗い山の 奥まで 続いている…',
@@ -250,7 +255,7 @@ export const jaKanjiStrings: Record<string, string> = {
   'dungeon.banditHideout.boss.dialog2': '傷だらけの 男が 闇から 現れ 剣を 抜いた！',
   'dungeon.banditHideout.boss.dialog3': '山賊の 親分が 唸った。「俺の アジトに 挑むとは！」戦いの 準備を！',
   'dungeon.banditHideout.boss.defeat': '山賊の 親分が 武器を 落とした…「参った…好きなものを 持っていけ…」',
-  'dungeon.banditHideout.victory': '盗まれた 宝の中から 山賊のダガーを 見つけた！',
+  'dungeon.banditHideout.victory': '山賊の 親分が 山賊のダガーを 落とした！',
 
   // Magma Tunnels
   'dungeon.magmaTunnels.enter': '暑さが 耐えられない…細い 溝を 溶岩が 流れている。',
@@ -258,7 +263,7 @@ export const jaKanjiStrings: Record<string, string> = {
   'dungeon.magmaTunnels.boss.dialog2': '溶岩の 蛇のような 姿が マグマから 噴き出した！',
   'dungeon.magmaTunnels.boss.dialog3': '溶岩ワイアームが 巻きつき 白く輝く 炎の 目で 睨んだ！戦いの 準備を！',
   'dungeon.magmaTunnels.boss.defeat': '溶岩ワイアームが マグマに 溶けて 戻った…トンネルが 少し 冷めた。',
-  'dungeon.magmaTunnels.victory': 'ワイアームの 溶岩の 住処から 伝説の マグマブレードを 見つけた！',
+  'dungeon.magmaTunnels.victory': '溶岩ワイアームが 伝説の マグマブレードを 落とした！',
   'dungeon.magmaTunnels.locked': '激しい 熱が 道を 塞いでいる…砂漠の墓の 番人を 倒さなければ。',
 
   // Volcanic Forge

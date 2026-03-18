@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, COLORS } from '../utils/constants';
+import { GAME_WIDTH, GAME_HEIGHT, ZOOM, COLORS, FONT_FAMILY } from '../utils/constants';
 import { t } from '../i18n/i18n';
 import { gameState } from '../GameState';
 import { audioManager } from '../systems/audio/AudioManager';
@@ -13,6 +13,8 @@ export class VictoryScene extends Phaser.Scene {
   }
 
   create(): void {
+    this.cameras.main.setZoom(ZOOM);
+    this.cameras.main.setScroll(-GAME_WIDTH * (ZOOM - 1) / 2, -GAME_HEIGHT * (ZOOM - 1) / 2);
     this.menuIndex = 0;
     this.menuItems = [];
     this.cameras.main.setBackgroundColor(0x112244);
@@ -37,17 +39,17 @@ export class VictoryScene extends Phaser.Scene {
     }
 
     this.add.text(GAME_WIDTH / 2, 60, t('victory.title'), {
-      fontSize: '22px', color: COLORS.TEXT_YELLOW, fontFamily: 'monospace', fontStyle: 'bold',
+      fontSize: '22px', color: COLORS.TEXT_YELLOW, fontFamily: FONT_FAMILY, fontStyle: 'bold',
     }).setOrigin(0.5);
 
     this.add.text(GAME_WIDTH / 2, 100, t('victory.message'), {
-      fontSize: '12px', color: COLORS.TEXT_WHITE, fontFamily: 'monospace',
+      fontSize: '12px', color: COLORS.TEXT_WHITE, fontFamily: FONT_FAMILY,
       wordWrap: { width: GAME_WIDTH - 64 },
       align: 'center',
     }).setOrigin(0.5);
 
     this.add.text(GAME_WIDTH / 2, 130, t('victory.subtitle'), {
-      fontSize: '11px', color: '#88ccff', fontFamily: 'monospace',
+      fontSize: '11px', color: '#88ccff', fontFamily: FONT_FAMILY,
       wordWrap: { width: GAME_WIDTH - 64 },
       align: 'center',
     }).setOrigin(0.5);
@@ -61,13 +63,13 @@ export class VictoryScene extends Phaser.Scene {
       ? `${hours}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`
       : `${mins}:${String(secs).padStart(2, '0')}`;
     this.add.text(GAME_WIDTH / 2, 165, t('victory.time', { time: timeStr }), {
-      fontSize: '12px', color: COLORS.TEXT_YELLOW, fontFamily: 'monospace',
+      fontSize: '12px', color: COLORS.TEXT_YELLOW, fontFamily: FONT_FAMILY,
     }).setOrigin(0.5);
 
     // Difficulty display
     const grade = gameState.player.state.quizDifficulty;
     this.add.text(GAME_WIDTH / 2, 190, t('victory.difficulty', { grade: t(`grade.${grade}`) }), {
-      fontSize: '12px', color: COLORS.TEXT_WHITE, fontFamily: 'monospace',
+      fontSize: '12px', color: COLORS.TEXT_WHITE, fontFamily: FONT_FAMILY,
     }).setOrigin(0.5);
 
     // Quiz stats
@@ -78,7 +80,7 @@ export class VictoryScene extends Phaser.Scene {
       total: stats.totalAsked,
       pct,
     }), {
-      fontSize: '12px', color: COLORS.TEXT_WHITE, fontFamily: 'monospace',
+      fontSize: '12px', color: COLORS.TEXT_WHITE, fontFamily: FONT_FAMILY,
     }).setOrigin(0.5);
 
     // Hero
@@ -87,18 +89,18 @@ export class VictoryScene extends Phaser.Scene {
     }
 
     this.add.text(GAME_WIDTH / 2, 355, t('victory.thanks'), {
-      fontSize: '14px', color: COLORS.TEXT_YELLOW, fontFamily: 'monospace',
+      fontSize: '14px', color: COLORS.TEXT_YELLOW, fontFamily: FONT_FAMILY,
     }).setOrigin(0.5);
 
     // NG+ / Title Screen menu
     const menuY = 395;
     const ngPlusText = this.add.text(GAME_WIDTH / 2, menuY, t('victory.ngplus'), {
-      fontSize: '12px', color: COLORS.TEXT_YELLOW, fontFamily: 'monospace',
+      fontSize: '12px', color: COLORS.TEXT_YELLOW, fontFamily: FONT_FAMILY,
     }).setOrigin(0.5);
     this.menuItems.push(ngPlusText);
 
     const titleText = this.add.text(GAME_WIDTH / 2, menuY + 28, t('victory.titleScreen'), {
-      fontSize: '12px', color: COLORS.TEXT_WHITE, fontFamily: 'monospace',
+      fontSize: '12px', color: COLORS.TEXT_WHITE, fontFamily: FONT_FAMILY,
     }).setOrigin(0.5);
     this.menuItems.push(titleText);
 

@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { GAME_WIDTH, COLORS } from '../utils/constants';
+import { GAME_WIDTH, GAME_HEIGHT, ZOOM, COLORS, FONT_FAMILY } from '../utils/constants';
 import { t } from '../i18n/i18n';
 import { gameState } from '../GameState';
 import { audioManager } from '../systems/audio/AudioManager';
@@ -15,6 +15,8 @@ export class GameOverScene extends Phaser.Scene {
   }
 
   create(): void {
+    this.cameras.main.setZoom(ZOOM);
+    this.cameras.main.setScroll(-GAME_WIDTH * (ZOOM - 1) / 2, -GAME_HEIGHT * (ZOOM - 1) / 2);
     // CRITICAL: Remove ALL stale keyboard listeners from any previous scene run
     // Without this, listeners stack on every scene restart causing duplicate handlers
     this.input.keyboard?.removeAllListeners();
@@ -27,7 +29,7 @@ export class GameOverScene extends Phaser.Scene {
     audioManager.playBgm('gameOver');
 
     this.add.text(GAME_WIDTH / 2, 120, t('gameover.title'), {
-      fontSize: '22px', color: '#cc2222', fontFamily: 'monospace', fontStyle: 'bold',
+      fontSize: '22px', color: '#cc2222', fontFamily: FONT_FAMILY, fontStyle: 'bold',
     }).setOrigin(0.5);
 
     // Options: Retry (auto-save), Restart from save point (manual save + portal flags), Title
@@ -46,7 +48,7 @@ export class GameOverScene extends Phaser.Scene {
         fontSize: '14px',
         color: isDisabled ? COLORS.TEXT_GRAY
           : i === this.menuIndex ? COLORS.TEXT_YELLOW : COLORS.TEXT_WHITE,
-        fontFamily: 'monospace',
+        fontFamily: FONT_FAMILY,
       }).setOrigin(0.5).setData('action', opt.action).setData('disabled', isDisabled);
     });
 
@@ -54,7 +56,7 @@ export class GameOverScene extends Phaser.Scene {
 
     // Cursor indicator
     this.add.text(GAME_WIDTH / 2 - 80, 220 + this.menuIndex * 36, '▶', {
-      fontSize: '14px', color: COLORS.TEXT_YELLOW, fontFamily: 'monospace',
+      fontSize: '14px', color: COLORS.TEXT_YELLOW, fontFamily: FONT_FAMILY,
     }).setOrigin(0.5).setName('cursor');
 
     // Register input handlers (safe — we cleared all listeners above)
