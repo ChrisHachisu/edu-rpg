@@ -2,6 +2,11 @@
 // Only includes keys where kanji version differs from hiragana-only ja.ts
 // Particles and grammatical endings stay in hiragana
 export const jaKanjiStrings: Record<string, string> = {
+  // Equip hints
+  'equip.hintEquip': 'Z: 装備',
+  'equip.hintUnequip': 'Z: 外す',
+  'equip.locked': '[固定]',
+
   // Title
   'title.gameName': '知識の冒険',
   'title.subtitle': '学びのRPG',
@@ -206,6 +211,7 @@ export const jaKanjiStrings: Record<string, string> = {
   'dungeon.crystalCave.locked': '不思議な 力が 入口を 塞いでいる…霧の洞窟の クリスタルの欠片が あれば 開けるかもしれない。',
 
   // Storm Nest
+  'dungeon.stormNest.enter': '雷が 上で 鳴っている…登るにつれて 体が ビリビリする。',
   'dungeon.stormNest.boss.dialog1': '稲妻が 部屋を 貫く…羽が 嵐の風に 舞っている。',
   'dungeon.stormNest.boss.dialog2': '鋭い 叫び声が 上から 響いた！',
   'dungeon.stormNest.boss.dialog3': '嵐のハーピーが 爪を むき出しに 降りてきた！戦いの 準備を！',
@@ -298,6 +304,9 @@ export const jaKanjiStrings: Record<string, string> = {
   'monster.lizard': '炎トカゲ',
   'monster.knight': '暗黒騎士',
   'monster.skeleton': '骸骨',
+  'monster.merfolk': '人魚',
+  'monster.frostWolf': '氷狼',
+  'monster.frozenSkeleton': '氷の骸骨',
   'monster.wraith': 'レイス',
   'monster.fireElemental': '炎の精霊',
   'monster.lavaGolem': '溶岩ゴーレム',
@@ -317,7 +326,22 @@ export const jaKanjiStrings: Record<string, string> = {
   'monster.flameBat': '炎コウモリ',
   'monster.sandGolem': '砂のゴーレム',
   'monster.banditLord': '山賊の親分',
+  'monster.jellyfish': '海月',
+  'monster.piranha': 'ピラニア',
+  'monster.seaStar': '海星',
+  'monster.wyvern': '飛竜',
+  'monster.kraken': '大王烏賊',
   'monster.lavaWyrm': '溶岩ワイアーム',
+  'monster.stormRaptor': '嵐の猛禽',
+  'monster.cloudWraith': '雲のレイス',
+  'monster.frostStalker': '氷の追跡者',
+  'monster.glacialGolem': '氷河のゴーレム',
+  'monster.templeGuard': '神殿の守衛',
+  'monster.ancientSphinx': '古代スフィンクス',
+  'monster.voidShade': '虚空の影',
+  'monster.darkKnight': '暗黒騎士',
+  'monster.stormSentinel': '嵐の番人',
+  'monster.frostMonarch': '氷の君主',
 
   // Items
   'item.herb': '薬草',

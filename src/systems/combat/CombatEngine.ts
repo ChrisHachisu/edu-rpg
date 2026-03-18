@@ -216,8 +216,8 @@ export class CombatEngine {
   }
 
   private calculateDamage(atk: number, def: number): number {
-    // Minimum damage = 15% of ATK, so high-DEF can't reduce damage to 1
-    const base = Math.max(Math.ceil(atk * 0.15), atk - Math.floor(def / 2));
+    // Minimum damage = 25% of ATK, so high-DEF can't trivialize combat
+    const base = Math.max(Math.ceil(atk * 0.25), atk - Math.floor(def / 2));
     const variance = DAMAGE_VARIANCE_MIN + Math.random() * (DAMAGE_VARIANCE_MAX - DAMAGE_VARIANCE_MIN);
     return Math.max(1, Math.floor(base * variance));
   }

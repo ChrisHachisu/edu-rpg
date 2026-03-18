@@ -91,7 +91,8 @@ export class WorldMapScene extends Phaser.Scene {
     if (mapId === 'overworld') {
       this.mapData = generateOverworldMap(def.width, def.height);
     } else if (def.type === 'portal-overworld') {
-      this.mapData = generatePortalLandMap(def.width, def.height, mapId.charCodeAt(0) * 197);
+      const portalSeed = Array.from(mapId).reduce((h, c) => (h * 31 + c.charCodeAt(0)) | 0, 0);
+      this.mapData = generatePortalLandMap(def.width, def.height, Math.abs(portalSeed));
     } else if (def.type === 'town') {
       this.mapData = generateTownMap(def.width, def.height, mapId.charCodeAt(0) * 137);
     } else if (def.type === 'dungeon') {
@@ -568,12 +569,14 @@ export class WorldMapScene extends Phaser.Scene {
     // Hard gate: Demon Castle requires all 4 legendary relics
     if (target.targetMap === 'demonCastle') {
       const eq = gameState.player.state.equipment;
+      const inv = gameState.player.state.inventory;
       const needed: Record<string, string> = {
         weapon: 'excalibur', armor: 'aegisOfDawn', shield: 'galeShield', helmet: 'crownOfWisdom',
       };
-      const missing = Object.entries(needed)
-        .filter(([slot, id]) => eq[slot as keyof typeof eq] !== id)
-        .map(([, id]) => t(items[id].nameKey));
+      const hasItem = (id: string) => eq[Object.keys(needed).find(s => needed[s] === id)! as keyof typeof eq] === id || inv.some(s => s.itemId === id);
+      const missing = Object.values(needed)
+        .filter(id => !hasItem(id))
+        .map(id => t(items[id].nameKey));
       if (missing.length > 0) {
         this.isMoving = false;
         this.showMessage(t('demonCastle.sealed', { missing: missing.join(', ') }));
@@ -600,6 +603,7 @@ export class WorldMapScene extends Phaser.Scene {
       if (target.targetMap === '__boss_warp__') {
         // Boss warp portal — teleport directly to boss floor
         this.currentFloor = target.toFloor ?? WorldMapScene.gradeCappedFloors(def.floors ?? 1);
+        gameState.encounterManager.reset();
         this.loadMap(this.currentMapId);
         // Scan for boss tile (7) and spawn nearby
         let foundBoss = false;
@@ -624,6 +628,7 @@ export class WorldMapScene extends Phaser.Scene {
       } else if (target.targetMap === '__floor_down__') {
         // Go to next floor (deeper into dungeon)
         this.currentFloor++;
+        gameState.encounterManager.reset();
         const entranceX = Math.floor(def.width / 2);
         this.heroTileX = entranceX;
         if (def.castle) {
@@ -638,6 +643,7 @@ export class WorldMapScene extends Phaser.Scene {
       } else if (target.targetMap === '__floor_up__') {
         // Go to previous floor (toward entrance)
         this.currentFloor--;
+        gameState.encounterManager.reset();
         this.loadMap(this.currentMapId);
         // After regenerating the map, scan for stairs-down (tile 9) to spawn near
         if (def.castle) {
@@ -668,8 +674,10 @@ export class WorldMapScene extends Phaser.Scene {
         this.createHero();
         this.updateCamera();
       } else {
-        // Normal map transition — use target floor (for gate re-entry) or reset
-        this.currentFloor = target.toFloor ?? 1;
+        // Normal map transition — clamp target floor to grade cap (for gate re-entry)
+        const targetDef = mapDefs[target.targetMap];
+        const maxFloor = targetDef ? WorldMapScene.gradeCappedFloors(targetDef.floors ?? 1) : 999;
+        this.currentFloor = Math.min(target.toFloor ?? 1, maxFloor);
         this.heroTileX = target.toX;
         this.heroTileY = target.toY;
         this.updatePosition();
@@ -959,15 +967,7 @@ export class WorldMapScene extends Phaser.Scene {
         if (rand < 0.4) return { gold: 100, itemId: 'hiPotion' };
         if (rand < 0.7) return { gold: 120 };
         return { gold: 80, itemId: 'elixir' };
-      case 'sealedSanctum':
-        if (rand < 0.4) return { gold: 100, itemId: 'hiPotion' };
-        if (rand < 0.7) return { gold: 130 };
-        return { gold: 80, itemId: 'elixir' };
-      case 'celestialVault':
-        if (rand < 0.4) return { gold: 120, itemId: 'elixir' };
-        if (rand < 0.7) return { gold: 150 };
-        return { gold: 100, itemId: 'elixir' };
-      default: // demonCastle
+      default: // demonCastle + portal dungeons
         if (rand < 0.4) return { gold: 120, itemId: 'elixir' };
         if (rand < 0.7) return { gold: 150 };
         return { gold: 100, itemId: 'elixir' };
@@ -1191,15 +1191,18 @@ export class WorldMapScene extends Phaser.Scene {
         }
         if (bossId === 'serpent') {
           gameState.player.addItem('crystalPendant', 1);
+          gameState.player.addItem('shadowCrystal', 1);
         }
         if (bossId === 'iceWyrm') {
           gameState.player.addItem('frostbrand', 1);
         }
         if (bossId === 'dragon') {
           gameState.player.addItem('dragonheartAmulet', 1);
+          gameState.player.addItem('shadowCrystal', 1);
         }
         if (bossId === 'sandGolem') {
           gameState.player.addItem('sandstormCloak', 1);
+          gameState.player.addItem('shadowCrystal', 1);
         }
         if (bossId === 'banditLord') {
           gameState.player.addItem('banditDagger', 1);
@@ -1209,6 +1212,7 @@ export class WorldMapScene extends Phaser.Scene {
         }
         if (bossId === 'flameTitan') {
           gameState.player.addItem('moltenGreaves', 1);
+          gameState.player.addItem('shadowCrystal', 1);
         }
 
         // Show defeat dialog promptly (200ms — just enough for sparkle to register)
@@ -1227,7 +1231,7 @@ export class WorldMapScene extends Phaser.Scene {
             this.showDialogSequence([defeatMsg, t('legendary.galeShield.obtained'), victoryMsg], onDone);
           } else if (bossId === 'frostMonarch') {
             this.showDialogSequence([defeatMsg, t('legendary.crownOfWisdom.obtained'), victoryMsg], onDone);
-          } else if (bossId === 'stormHarpy') {
+          } else if (bossId === 'stormHarpy' || bossId === 'serpent' || bossId === 'dragon' || bossId === 'sandGolem' || bossId === 'flameTitan') {
             this.showDialogSequence([defeatMsg, victoryMsg, t('item.crystalShard.obtained')], onDone);
           } else {
             this.showDialogSequence([defeatMsg, victoryMsg], onDone);

@@ -91,6 +91,9 @@ export const enStrings: Record<string, string> = {
   'equip.slot.helmet': 'Helmet',
   'equip.empty': 'None',
   'equip.owned': 'Owned',
+  'equip.hintEquip': 'Z: Equip',
+  'equip.hintUnequip': 'Z: Unequip',
+  'equip.locked': '[LOCK]',
   'guide.move': 'Move',
   'guide.talk': 'Talk',
   'guide.menu': 'Menu',
@@ -213,6 +216,7 @@ export const enStrings: Record<string, string> = {
   'dungeon.crystalCave.locked': 'A mysterious force blocks the cave entrance... Perhaps a crystal shard from the Misty Grotto would open the way.',
 
   // Storm Nest (prerequisite for Shadow Cave)
+  'dungeon.stormNest.enter': 'Thunder rumbles above... the air crackles with static as you climb into the nest.',
   'dungeon.stormNest.boss.dialog1': 'Lightning crackles through the chamber... Feathers drift on howling winds.',
   'dungeon.stormNest.boss.dialog2': 'A piercing shriek echoes from above!',
   'dungeon.stormNest.boss.dialog3': 'The Storm Harpy descends with talons bared! Prepare for battle!',

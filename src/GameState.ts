@@ -146,8 +146,10 @@ class GameStateManager {
       magmaTunnels: 'magma-tunnels',
       volcanicForge: 'volcanic-forge',
       demonCastle: 'demon-castle',
-      sealedSanctum: 'sealed-sanctum',
-      celestialVault: 'celestial-vault',
+      stormreachIsles: 'stormreach-isles',
+      frostfallPeaks: 'frostfall-peaks',
+      sunkenTempleIsle: 'sunken-temple',
+      twilightRealm: 'twilight-realm',
     };
     return zoneMap[mapId] ?? null;
   }

@@ -91,6 +91,9 @@ export const jaStrings: Record<string, string> = {
   'equip.slot.helmet': 'かぶと',
   'equip.empty': 'なし',
   'equip.owned': 'もちもの',
+  'equip.hintEquip': 'Z: そうび',
+  'equip.hintUnequip': 'Z: はずす',
+  'equip.locked': '[こてい]',
   'guide.move': 'いどう',
   'guide.talk': 'はなす',
   'guide.menu': 'メニュー',
@@ -213,6 +216,7 @@ export const jaStrings: Record<string, string> = {
   'dungeon.crystalCave.locked': 'ふしぎな ちからが いりぐちを ふさいでいる…きりのどうくつの クリスタルのかけらが あれば ひらけるかもしれない。',
 
   // Storm Nest (prerequisite for Shadow Cave)
+  'dungeon.stormNest.enter': 'かみなりが うえで なっている…のぼるにつれて からだが ビリビリする。',
   'dungeon.stormNest.boss.dialog1': 'いなずまが へやを つらぬく…はねが あらしのかぜに まっている。',
   'dungeon.stormNest.boss.dialog2': 'するどい さけびごえが うえから ひびいた！',
   'dungeon.stormNest.boss.dialog3': 'あらしのハーピーが つめを むきだしに おりてきた！たたかいの じゅんびを！',

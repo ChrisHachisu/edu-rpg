@@ -240,4 +240,8 @@ export class ShopScene extends Phaser.Scene {
     this.scene.stop();
     this.scene.resume('WorldMapScene');
   }
+
+  shutdown(): void {
+    this.input.keyboard?.removeAllListeners();
+  }
 }

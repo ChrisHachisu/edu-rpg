@@ -135,4 +135,8 @@ export class VictoryScene extends Phaser.Scene {
       this.scene.start('TitleScene');
     }
   }
+
+  shutdown(): void {
+    this.input.keyboard?.removeAllListeners();
+  }
 }

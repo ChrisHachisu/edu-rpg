@@ -42,12 +42,14 @@ export class BattleScene extends Phaser.Scene {
   private quizTimerSeconds = 10;
   private quizTimerBarFullWidth = 0; // For speed bonus calculation
   private currentZone?: string;
+  private sceneActive = true;
 
   constructor() {
     super('BattleScene');
   }
 
   init(data: { monster: MonsterTemplate; zone?: string }): void {
+    this.sceneActive = true;
     // Scale monster stats by grade
     const grade = gameState.player.state.quizDifficulty;
     const mult = ['k', '1', '2'].includes(grade) ? 0.7 : ['5', '6'].includes(grade) ? 1.3 : 1.0;
@@ -68,8 +70,8 @@ export class BattleScene extends Phaser.Scene {
     // Late bosses: Act 4-5 (portal land bosses, flame titan, legendary guardians)
     const lateBosses = ['flameTitan', 'swordWraith', 'celestialGuardian', 'stormSentinel', 'frostMonarch'];
     if (lateBosses.includes(this.monster.id)) return 'lateBoss';
-    // Mid bosses: Act 2-3
-    const midBosses = ['dragon', 'sandGolem', 'iceWyrm', 'lavaWyrm', 'stormHarpy', 'banditLord'];
+    // Mid bosses: Act 1-3
+    const midBosses = ['giantToad', 'serpent', 'giantCrab', 'kraken', 'dragon', 'sandGolem', 'iceWyrm', 'lavaWyrm', 'stormHarpy', 'banditLord', 'lich'];
     if (midBosses.includes(this.monster.id)) return 'midBoss';
     if (this.monster.aiPattern === 'boss') return 'boss';
     const totalStat = this.monster.baseHp + this.monster.baseAtk + this.monster.baseDef;
@@ -105,7 +107,7 @@ export class BattleScene extends Phaser.Scene {
       this.drawMenu();
     });
     this.time.delayedCall(1200, () => {
-      if (this.phase === 'intro') {
+      if (this.sceneActive && this.phase === 'intro') {
         this.advanceMessage();
       }
     });
@@ -511,6 +513,7 @@ export class BattleScene extends Phaser.Scene {
     });
 
     this.time.delayedCall(QUIZ_FEEDBACK_DURATION, () => {
+      if (!this.sceneActive) return;
       feedbackText.destroy();
       this.quizContainer?.destroy();
       this.quizContainer = undefined;
@@ -565,6 +568,7 @@ export class BattleScene extends Phaser.Scene {
     }).setOrigin(0.5).setDepth(51);
 
     this.time.delayedCall(QUIZ_FEEDBACK_DURATION, () => {
+      if (!this.sceneActive) return;
       feedbackText.destroy();
       this.quizContainer?.destroy();
       this.quizContainer = undefined;
@@ -658,7 +662,7 @@ export class BattleScene extends Phaser.Scene {
     if (result.levelUp) {
       msg += '\n' + t('battle.levelUp', { name: gameState.player.state.name, level: result.levelUp.newLevel });
       // Delayed level up SFX after victory fanfare
-      this.time.delayedCall(600, () => audioManager.playSfx('level_up'));
+      this.time.delayedCall(600, () => { if (this.sceneActive) audioManager.playSfx('level_up'); });
     }
 
     // Check if this was the demon king
@@ -724,6 +728,7 @@ export class BattleScene extends Phaser.Scene {
   }
 
   shutdown(): void {
+    this.sceneActive = false;
     this.input.keyboard?.removeAllListeners();
     this.stopQuizTimer();
     this._autoAdvanceTimer?.remove();

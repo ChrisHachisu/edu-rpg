@@ -139,7 +139,7 @@ export class MenuScene extends Phaser.Scene {
     });
 
     // Hint text
-    const hintText = this.equipMode === 'equipped' ? 'Z: Unequip' : 'Z: Equip';
+    const hintText = this.equipMode === 'equipped' ? t('equip.hintUnequip') : t('equip.hintEquip');
     this.add.text(GAME_WIDTH - 32, y, hintText, {
       fontSize: '9px', color: COLORS.TEXT_GRAY, fontFamily: ff,
     }).setOrigin(1, 0);
@@ -169,7 +169,7 @@ export class MenuScene extends Phaser.Scene {
       });
       // Show lock icon for legendary (unsellable) equipment
       const isLegendary = itemId && items[itemId]?.unsellable;
-      const displayName = isLegendary ? `${itemName} [LOCK]` : itemName;
+      const displayName = isLegendary ? `${itemName} ${t('equip.locked')}` : itemName;
       this.add.text(120, y + 28 + i * 28, displayName, {
         fontSize: '10px',
         color: isSelected ? COLORS.TEXT_YELLOW : (itemId ? COLORS.TEXT_WHITE : COLORS.TEXT_GRAY),
@@ -444,6 +444,11 @@ export class MenuScene extends Phaser.Scene {
       const newLocale = getLocale() === 'ja' ? 'en' : 'ja';
       setLocale(newLocale);
       gameState.player.state.locale = newLocale;
+      // Reset kanji mode when switching away from Japanese
+      if (newLocale === 'en') {
+        setKanjiMode(false);
+        gameState.player.state.kanjiMode = false;
+      }
       // Clamp listIndex if kanji row appeared/disappeared
       if (this.listIndex >= this.settingsList.length) {
         this.listIndex = this.settingsList.length - 1;
@@ -520,5 +525,9 @@ export class MenuScene extends Phaser.Scene {
       box.destroy();
       text.destroy();
     });
+  }
+
+  shutdown(): void {
+    this.input.keyboard?.removeAllListeners();
   }
 }

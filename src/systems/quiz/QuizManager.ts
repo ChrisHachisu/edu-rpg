@@ -23,7 +23,7 @@ const ENEMY_TIMER_MULT: Record<EnemyTier, number> = {
   midBoss: 0.85,
   boss: 0.75,
   lateBoss: 0.6,
-  finalBoss: 0.5,
+  finalBoss: 0.6,
 };
 
 // Grade levels in order for mercy system
@@ -36,12 +36,18 @@ const ZONE_TIER_MAP: Record<string, DifficultyTier> = {
   'crystal-coast': 'easy',
   'misty-grotto': 'easy',
   'crystal-cave': 'easy',
+  'sunken-cellar': 'easy',
+  'storm-nest': 'easy',
   'coral-tunnels': 'medium',
   'iron-mountains': 'medium',
   'shadow-cave': 'medium',
   'frostpeak-cavern': 'medium',
+  'frozen-lake': 'medium',
+  'desert-tomb': 'medium',
+  'bandit-hideout': 'medium',
   'scorched-wastes': 'hard',
   'sunken-ruins': 'hard',
+  'magma-tunnels': 'hard',
   'volcanic-forge': 'hard',
   'demons-threshold': 'hard',
   'demon-castle': 'hard',
