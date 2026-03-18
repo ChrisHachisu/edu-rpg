@@ -661,6 +661,8 @@ export class WorldMapScene extends Phaser.Scene {
           this.heroTileY = def.castle ? this.effectiveHeight - 2 : 1;
         }
         this.updatePosition();
+        this.createHero();
+        this.updateCamera();
       } else if (target.targetMap === '__floor_up__') {
         // Go to previous floor (toward entrance)
         this.currentFloor--;
