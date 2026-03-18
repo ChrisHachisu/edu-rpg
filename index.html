@@ -17,9 +17,10 @@
       src: url('/edu-rpg/fonts/PixelMplus12-Regular.ttf') format('truetype');
       font-display: block;
     }
-    /* Sprites use WebGL NEAREST filtering (pixelArt:true) internally.
-       Browser smoothly upscales the canvas to fill the viewport,
-       avoiding uneven pixel sizes at non-integer scale factors. */
+    canvas {
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+    }
   </style>
   <script type="module" crossorigin src="/edu-rpg/assets/index-BndRqm4l.js"></script>
 </head>
