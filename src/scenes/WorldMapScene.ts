@@ -466,17 +466,15 @@ export class WorldMapScene extends Phaser.Scene {
     if (def.type === 'portal-overworld') {
       const tile = this.mapData[y]?.[x];
       if (tile === 6 || tile === 7) {
-        for (const conn of def.connections) {
-          // Villages and dungeons have their own map defs with connections back
-          const targets = Object.values(mapDefs).filter(m =>
-            m.connections.some(c => c.targetMap === this.currentMapId)
-            && ((tile === 6 && m.type === 'town') || (tile === 7 && m.type === 'dungeon'))
-          );
-          if (targets.length > 0) {
-            const target = targets[0];
-            const conn2 = target.connections.find(c => c.targetMap === this.currentMapId);
-            return { targetMap: target.id, toX: conn2?.fromX ?? 8, toY: conn2?.fromY ?? 14 };
-          }
+        // Find the village or dungeon map that connects back to this portal land
+        const targets = Object.values(mapDefs).filter(m =>
+          m.connections.some(c => c.targetMap === this.currentMapId)
+          && ((tile === 6 && m.type === 'town') || (tile === 7 && m.type === 'dungeon'))
+        );
+        if (targets.length > 0) {
+          const target = targets[0];
+          const conn2 = target.connections.find(c => c.targetMap === this.currentMapId);
+          return { targetMap: target.id, toX: conn2?.fromX ?? 8, toY: conn2?.fromY ?? 14 };
         }
       }
       if (tile === 9) {
@@ -648,6 +646,8 @@ export class WorldMapScene extends Phaser.Scene {
         this.updateCamera();
       } else if (target.targetMap === '__floor_down__') {
         // Go to next floor (deeper into dungeon)
+        const maxFloor = WorldMapScene.gradeCappedFloors(def.floors ?? 1);
+        if (this.currentFloor >= maxFloor) return; // Safety: don't exceed grade-capped floor count
         this.currentFloor++;
         gameState.encounterManager.reset();
         this.loadMap(this.currentMapId);
@@ -665,6 +665,7 @@ export class WorldMapScene extends Phaser.Scene {
         this.updateCamera();
       } else if (target.targetMap === '__floor_up__') {
         // Go to previous floor (toward entrance)
+        if (this.currentFloor <= 1) return; // Safety: don't go below floor 1
         this.currentFloor--;
         gameState.encounterManager.reset();
         this.loadMap(this.currentMapId);

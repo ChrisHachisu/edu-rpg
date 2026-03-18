@@ -37,18 +37,22 @@ export class EncounterManager {
     this.stepsSinceLastEncounter = 0;
   }
 
-  private rollEncounter(zone: EncounterZone): MonsterTemplate {
+  private rollEncounter(zone: EncounterZone): MonsterTemplate | null {
     const totalWeight = zone.monsters.reduce((sum, m) => sum + m.weight, 0);
     let roll = Math.random() * totalWeight;
 
     for (const entry of zone.monsters) {
       roll -= entry.weight;
       if (roll <= 0) {
-        return monsters[entry.monsterId];
+        const monster = monsters[entry.monsterId];
+        if (!monster) { console.warn(`Missing monster: ${entry.monsterId}`); return null; }
+        return monster;
       }
     }
 
     // Fallback
-    return monsters[zone.monsters[0].monsterId];
+    const fallback = monsters[zone.monsters[0].monsterId];
+    if (!fallback) { console.warn(`Missing fallback monster: ${zone.monsters[0].monsterId}`); return null; }
+    return fallback;
   }
 }

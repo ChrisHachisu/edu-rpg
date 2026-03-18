@@ -127,7 +127,7 @@ export const enStrings: Record<string, string> = {
   // ── Intro Dialog (3 messages) ────────────────────────────────────
   'intro.elder1': 'Welcome, young hero. I am the Elder of Greenhollow Village. Dark times are upon us...',
   'intro.elder2': 'The Demon King Malachar shattered the Crystal of Math Knowledge into 5 shards and scattered them! Darkness spreads across Eldravia. You must reclaim the shards!',
-  'intro.elder3': 'Head east to the Misty Grotto first. The boss there guards a crystal shard. Buy supplies at the shop before you leave!',
+  'intro.elder3': 'Head east to the Misty Grotto first. Defeat the guardian there to open the way north to the Crystal Cave. Buy supplies at the shop before you leave!',
 
   // ── NPCs / Story ──────────────────────────────────────────────────
   'story.intro1': 'Long ago, the land of Eldravia was protected by the Crystal of Math Knowledge.',
@@ -135,7 +135,7 @@ export const enStrings: Record<string, string> = {
   'story.intro3': 'Now, a young hero must set out to reclaim the crystal shards and restore the light!',
 
   // Greenhollow (Act 1)
-  'npc.elder.greeting': 'Be safe, hero. Head east toward the Misty Grotto. You\'ll need the crystal shard from its guardian to open the way north!',
+  'npc.elder.greeting': 'Be safe, hero. Head east toward the Misty Grotto. Defeat its guardian to prove your worth and open the path to the Crystal Cave!',
   'npc.villager1': 'Monsters appeared everywhere! Be careful out there!',
   'npc.villager2': 'Buy herbs at the shop before you go!',
 
@@ -146,7 +146,7 @@ export const enStrings: Record<string, string> = {
   // Port Sapphire (Act 1)
   'npc.sailor': 'I hear a dragon lives in the caves to the north, sealed behind a dark barrier. Scary stuff!',
   'npc.fisherman': 'I lost my best rod in the old cellar south of the village. Something big moved in down there... a giant crab, maybe?',
-  'npc.wisewoman': 'The Misty Grotto lies to the east. A Giant Toad guards a crystal shard there — you\'ll need it to unseal the Crystal Cave to the north!',
+  'npc.wisewoman': 'The Misty Grotto lies to the east. Defeat the Giant Toad there to unseal the Crystal Cave to the north — that\'s where the first crystal shard awaits!',
 
   // Ironkeep (Act 2)
   'npc.soldier': 'Far to the east lies the Frozen Lake. An Ice Wyrm guards the legendary Frostbrand sword there. That weapon will serve you well on the road ahead!',

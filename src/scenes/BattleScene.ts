@@ -319,19 +319,22 @@ export class BattleScene extends Phaser.Scene {
     const allItems = itemsData;
     const consumables = gameState.player.state.inventory.filter(s => allItems[s.itemId]?.type === 'consumable');
 
-    const boxY = GAME_HEIGHT - 120;
-    this.add.rectangle(GAME_WIDTH / 2, boxY + 40, GAME_WIDTH - 32, 100, COLORS.MENU_BG, 0.95)
+    const maxVisible = 4;
+    const visibleCount = Math.min(consumables.length, maxVisible);
+    const boxHeight = Math.max(60, visibleCount * 24 + 24);
+    const boxY = GAME_HEIGHT - boxHeight - 20;
+    this.add.rectangle(GAME_WIDTH / 2, boxY + boxHeight / 2, GAME_WIDTH - 32, boxHeight, COLORS.MENU_BG, 0.95)
       .setStrokeStyle(1, COLORS.MENU_BORDER)
       .setData('isMenu', true);
 
     if (consumables.length === 0) {
-      this.add.text(GAME_WIDTH / 2, boxY + 40, t('menu.noItems'), {
+      this.add.text(GAME_WIDTH / 2, boxY + boxHeight / 2, t('menu.noItems'), {
         fontSize: '12px', color: COLORS.TEXT_GRAY, fontFamily: FONT_FAMILY,
       }).setOrigin(0.5).setData('isMenu', true);
       return;
     }
 
-    consumables.forEach((slot, i) => {
+    consumables.slice(0, maxVisible).forEach((slot, i) => {
       const item = allItems[slot.itemId];
       const txt = this.add.text(32, boxY + 12 + i * 24, `${t(item.nameKey)} x${slot.quantity}`, {
         fontSize: '16px',

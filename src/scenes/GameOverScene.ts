@@ -113,6 +113,10 @@ export class GameOverScene extends Phaser.Scene {
     });
   }
 
+  shutdown(): void {
+    this.input.keyboard?.removeAllListeners();
+  }
+
   private updateMenuHighlight(): void {
     this.menuTexts.forEach((text, i) => {
       if (text.getData('disabled')) {
