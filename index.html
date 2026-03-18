@@ -14,11 +14,17 @@
       min-height: 100vh;
       overflow: hidden;
     }
-    /* Sprites use WebGL NEAREST filtering (pixelArt:true) — no CSS override needed.
-       Removing image-rendering:pixelated lets the browser smoothly scale the canvas,
-       keeping text readable while sprites stay sharp at the framebuffer level. */
+    @font-face {
+      font-family: 'PixelMplus12';
+      src: url('/edu-rpg/fonts/PixelMplus12-Regular.ttf') format('truetype');
+      font-display: block;
+    }
+    canvas {
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+    }
   </style>
-  <script type="module" crossorigin src="/edu-rpg/assets/index-D3o9KKHG.js"></script>
+  <script type="module" crossorigin src="/edu-rpg/assets/index-Bzn8_k85.js"></script>
 </head>
 <body>
 </body>
