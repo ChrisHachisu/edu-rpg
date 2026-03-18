@@ -52,6 +52,8 @@ export class SaveManager {
         data.player.masterVolume = data.player.masterVolume ?? 0.7;
         data.version = 3;
       }
+      // Backfill kanjiMode for saves created before it existed
+      data.player.kanjiMode = data.player.kanjiMode ?? false;
       if (data.version !== SAVE_VERSION) return null;
       return data;
     } catch {

@@ -895,8 +895,8 @@ export function generateTownMap(width: number, height: number, seed: number): nu
   ];
   for (const h of houses) placeHouse(h.x, h.y);
 
-  // Place clinic (left of shop, bottom row)
-  const clinicX = width - 9;
+  // Place clinic (5 blocks west of shop, bottom row)
+  const clinicX = width - 14;
   const clinicY = 11;
   placeClinic(clinicX, clinicY);
 

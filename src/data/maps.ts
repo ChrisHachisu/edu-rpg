@@ -104,7 +104,7 @@ export const mapDefs: Record<string, MapDef> = {
     ],
     npcs: [
       { id: 'elder', dialogueKey: 'npc.elder.greeting', x: 8, y: 3 },
-      { id: 'healer', dialogueKey: 'npc.healer', x: 8, y: 13 },
+      { id: 'healer', dialogueKey: 'npc.healer', x: 3, y: 13 },
       { id: 'villager1', dialogueKey: 'npc.villager1', x: 3, y: 5 },
       { id: 'villager2', dialogueKey: 'npc.villager2', x: 12, y: 5 },
       { id: 'fisherman', dialogueKey: 'npc.fisherman', x: 13, y: 10 },
@@ -122,7 +122,7 @@ export const mapDefs: Record<string, MapDef> = {
       { targetMap: 'overworld', fromX: 8, fromY: 15, toX: 45, toY: 146 },
     ],
     npcs: [
-      { id: 'healer', dialogueKey: 'npc.healer', x: 8, y: 13 },
+      { id: 'healer', dialogueKey: 'npc.healer', x: 3, y: 13 },
       { id: 'miller', dialogueKey: 'npc.miller', x: 3, y: 5 },
       { id: 'herbalist', dialogueKey: 'npc.herbalist', x: 12, y: 5 },
     ],
@@ -139,7 +139,7 @@ export const mapDefs: Record<string, MapDef> = {
       { targetMap: 'overworld', fromX: 8, fromY: 15, toX: 66, toY: 139 },
     ],
     npcs: [
-      { id: 'healer', dialogueKey: 'npc.healer', x: 8, y: 13 },
+      { id: 'healer', dialogueKey: 'npc.healer', x: 3, y: 13 },
       { id: 'sailor', dialogueKey: 'npc.sailor', x: 3, y: 5 },
       { id: 'wisewoman', dialogueKey: 'npc.wisewoman', x: 12, y: 5 },
     ],
@@ -158,7 +158,7 @@ export const mapDefs: Record<string, MapDef> = {
       { targetMap: 'overworld', fromX: 8, fromY: 15, toX: 70, toY: 119 },
     ],
     npcs: [
-      { id: 'healer', dialogueKey: 'npc.healer', x: 8, y: 13 },
+      { id: 'healer', dialogueKey: 'npc.healer', x: 3, y: 13 },
       { id: 'soldier', dialogueKey: 'npc.soldier', x: 7, y: 10 },
       { id: 'blacksmith', dialogueKey: 'npc.blacksmith', x: 3, y: 5 },
     ],
@@ -176,7 +176,7 @@ export const mapDefs: Record<string, MapDef> = {
       { targetMap: 'overworld', fromX: 8, fromY: 15, toX: 45, toY: 93 },
     ],
     npcs: [
-      { id: 'healer', dialogueKey: 'npc.healer', x: 8, y: 13 },
+      { id: 'healer', dialogueKey: 'npc.healer', x: 3, y: 13 },
       { id: 'oasisElder', dialogueKey: 'npc.oasisElder', x: 3, y: 5 },
       { id: 'refugee', dialogueKey: 'npc.refugee', x: 12, y: 5 },
     ],
@@ -193,7 +193,7 @@ export const mapDefs: Record<string, MapDef> = {
       { targetMap: 'overworld', fromX: 8, fromY: 15, toX: 80, toY: 86 },
     ],
     npcs: [
-      { id: 'healer', dialogueKey: 'npc.healer', x: 8, y: 13 },
+      { id: 'healer', dialogueKey: 'npc.healer', x: 3, y: 13 },
       { id: 'archaeologist', dialogueKey: 'npc.archaeologist', x: 3, y: 5 },
       { id: 'explorer', dialogueKey: 'npc.explorer', x: 12, y: 5 },
     ],
@@ -212,7 +212,7 @@ export const mapDefs: Record<string, MapDef> = {
       { targetMap: 'overworld', fromX: 8, fromY: 15, toX: 30, toY: 79 },
     ],
     npcs: [
-      { id: 'healer', dialogueKey: 'npc.healer', x: 8, y: 13 },
+      { id: 'healer', dialogueKey: 'npc.healer', x: 3, y: 13 },
       { id: 'forgemaster', dialogueKey: 'npc.forgemaster', x: 3, y: 5 },
       { id: 'lavaMiner', dialogueKey: 'npc.lavaMiner', x: 12, y: 5 },
     ],
@@ -231,7 +231,7 @@ export const mapDefs: Record<string, MapDef> = {
       { targetMap: 'overworld', fromX: 8, fromY: 15, toX: 85, toY: 59 },
     ],
     npcs: [
-      { id: 'healer', dialogueKey: 'npc.healer', x: 8, y: 13 },
+      { id: 'healer', dialogueKey: 'npc.healer', x: 3, y: 13 },
       { id: 'veteran', dialogueKey: 'npc.veteran', x: 3, y: 5 },
       { id: 'priestess', dialogueKey: 'npc.priestess', x: 12, y: 5 },
     ],
@@ -248,7 +248,7 @@ export const mapDefs: Record<string, MapDef> = {
       { targetMap: 'overworld', fromX: 8, fromY: 15, toX: 65, toY: 41 },
     ],
     npcs: [
-      { id: 'healer', dialogueKey: 'npc.healer', x: 8, y: 13 },
+      { id: 'healer', dialogueKey: 'npc.healer', x: 3, y: 13 },
       { id: 'grizzledKnight', dialogueKey: 'npc.grizzledKnight', x: 3, y: 5 },
       { id: 'prophetess', dialogueKey: 'npc.prophetess', x: 12, y: 5 },
     ],
@@ -478,7 +478,7 @@ export const mapDefs: Record<string, MapDef> = {
       { targetMap: 'stormreachIsles', fromX: 8, fromY: 15, toX: 10, toY: 20 },
     ],
     npcs: [
-      { id: 'healer', dialogueKey: 'npc.healer', x: 8, y: 13 },
+      { id: 'healer', dialogueKey: 'npc.healer', x: 3, y: 13 },
       { id: 'skyKeeper', dialogueKey: 'npc.skyKeeper', x: 12, y: 5 },
     ],
     shopId: 'stormreachVillage',
@@ -523,7 +523,7 @@ export const mapDefs: Record<string, MapDef> = {
       { targetMap: 'frostfallPeaks', fromX: 8, fromY: 15, toX: 10, toY: 20 },
     ],
     npcs: [
-      { id: 'healer', dialogueKey: 'npc.healer', x: 8, y: 13 },
+      { id: 'healer', dialogueKey: 'npc.healer', x: 3, y: 13 },
       { id: 'frostSage', dialogueKey: 'npc.frostSage', x: 12, y: 5 },
     ],
     shopId: 'frostfallVillage',
@@ -568,7 +568,7 @@ export const mapDefs: Record<string, MapDef> = {
       { targetMap: 'sunkenTempleIsle', fromX: 8, fromY: 15, toX: 10, toY: 20 },
     ],
     npcs: [
-      { id: 'healer', dialogueKey: 'npc.healer', x: 8, y: 13 },
+      { id: 'healer', dialogueKey: 'npc.healer', x: 3, y: 13 },
       { id: 'templeScholar', dialogueKey: 'npc.templeScholar', x: 12, y: 5 },
     ],
     shopId: 'sunkenTempleVillage',
@@ -613,7 +613,7 @@ export const mapDefs: Record<string, MapDef> = {
       { targetMap: 'twilightRealm', fromX: 8, fromY: 15, toX: 10, toY: 20 },
     ],
     npcs: [
-      { id: 'healer', dialogueKey: 'npc.healer', x: 8, y: 13 },
+      { id: 'healer', dialogueKey: 'npc.healer', x: 3, y: 13 },
       { id: 'shadowWatcher', dialogueKey: 'npc.shadowWatcher', x: 12, y: 5 },
     ],
     shopId: 'twilightVillage',

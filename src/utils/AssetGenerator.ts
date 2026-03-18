@@ -1987,30 +1987,32 @@ function generateUIAssets(scene: Phaser.Scene): void {
   gs.generateTexture('save-point', 16, 16);
   gs.destroy();
 
-  // Healer NPC sprite — blue-themed with white cross on chest
+  // Healer NPC sprite — feminine, blue-themed with white cross
   const gh = scene.add.graphics().setVisible(false);
   gh.fillStyle(0xddbb88); // skin
   gh.fillRect(6, 2, 4, 4);
-  gh.fillStyle(0x4488cc); // blue hair/cap
+  gh.fillStyle(0x3377bb); // blue hair (longer, feminine)
   gh.fillRect(5, 1, 6, 2);
-  gh.fillStyle(0x2266bb); // blue robe
-  gh.fillRect(5, 6, 6, 6);
+  gh.fillRect(5, 3, 1, 3); // hair sides (longer like npc-f)
+  gh.fillRect(10, 3, 1, 3);
+  gh.fillStyle(0x2266bb); // blue robe top
+  gh.fillRect(5, 6, 6, 4);
   gh.fillStyle(0x1155aa); // darker blue sleeves
   gh.fillRect(4, 7, 1, 3);
   gh.fillRect(11, 7, 1, 3);
   gh.fillStyle(0xffffff); // white cross on chest
-  gh.fillRect(7, 7, 2, 4); // vertical bar
-  gh.fillRect(6, 8, 4, 2); // horizontal bar
+  gh.fillRect(7, 7, 2, 3); // vertical bar
+  gh.fillRect(6, 8, 4, 1); // horizontal bar
+  gh.fillStyle(0x1a55aa); // blue skirt (A-line, wider)
+  gh.fillRect(4, 10, 8, 2);
   gh.fillStyle(0x000000); // eyes
   gh.fillRect(7, 4, 1, 1);
   gh.fillRect(9, 4, 1, 1);
-  gh.fillStyle(0x2255aa); // blue boots
-  gh.fillRect(6, 12, 2, 3);
-  gh.fillRect(8, 12, 2, 3);
+  // No legs — healer is behind counter
   gh.generateTexture('npc-healer', 16, 16);
   gh.destroy();
 
-  // Shop icon
+  // Shopkeeper sprite — no legs (behind counter)
   const gsh = scene.add.graphics().setVisible(false);
   gsh.fillStyle(0xddbb88);
   gsh.fillRect(6, 2, 4, 4);
@@ -2021,9 +2023,6 @@ function generateUIAssets(scene: Phaser.Scene): void {
   gsh.fillStyle(0x000000);
   gsh.fillRect(7, 4, 1, 1);
   gsh.fillRect(9, 4, 1, 1);
-  gsh.fillStyle(0x553311);
-  gsh.fillRect(6, 12, 2, 3);
-  gsh.fillRect(8, 12, 2, 3);
   gsh.generateTexture('shopkeeper', 16, 16);
   gsh.destroy();
 }

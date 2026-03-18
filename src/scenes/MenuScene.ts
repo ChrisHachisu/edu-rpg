@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { GAME_WIDTH, GAME_HEIGHT, COLORS } from '../utils/constants';
-import { t, setLocale, getLocale } from '../i18n/i18n';
+import { t, setLocale, getLocale, setKanjiMode, getKanjiMode } from '../i18n/i18n';
 import { gameState } from '../GameState';
 import { items } from '../data/items';
 import { EquipSlot } from '../utils/types';
@@ -256,43 +256,44 @@ export class MenuScene extends Phaser.Scene {
     }
   }
 
+  /** Returns ordered list of setting IDs visible in the current locale */
+  private get settingsList(): string[] {
+    const list = ['language'];
+    if (getLocale() === 'ja') list.push('kanji');
+    list.push('timer', 'sound', 'volume');
+    return list;
+  }
+
   private drawSettings(): void {
-    const y = 60;
+    let y = 60;
     const ff = 'monospace';
+    const settings = this.settingsList;
 
-    // Language
-    this.add.text(32, y, t('settings.language'), {
-      fontSize: '12px', color: this.listIndex === 0 ? COLORS.TEXT_YELLOW : COLORS.TEXT_WHITE, fontFamily: ff,
-    });
-    this.add.text(32, y + 28, `< ${getLocale() === 'ja' ? '日本語' : 'English'} >`, {
-      fontSize: '12px', color: COLORS.TEXT_YELLOW, fontFamily: ff,
-    });
+    settings.forEach((id, i) => {
+      const selected = this.listIndex === i;
+      const labelColor = selected ? COLORS.TEXT_YELLOW : COLORS.TEXT_WHITE;
 
-    // Timer toggle
-    const timerEnabled = gameState.player.state.timerEnabled;
-    this.add.text(32, y + 72, t('settings.timer'), {
-      fontSize: '12px', color: this.listIndex === 1 ? COLORS.TEXT_YELLOW : COLORS.TEXT_WHITE, fontFamily: ff,
-    });
-    this.add.text(32, y + 100, `< ${timerEnabled ? t('settings.timerOn') : t('settings.timerOff')} >`, {
-      fontSize: '12px', color: COLORS.TEXT_YELLOW, fontFamily: ff,
-    });
-
-    // Sound toggle
-    const soundEnabled = gameState.player.state.soundEnabled;
-    this.add.text(32, y + 144, t('settings.sound'), {
-      fontSize: '12px', color: this.listIndex === 2 ? COLORS.TEXT_YELLOW : COLORS.TEXT_WHITE, fontFamily: ff,
-    });
-    this.add.text(32, y + 172, `< ${soundEnabled ? t('settings.soundOn') : t('settings.soundOff')} >`, {
-      fontSize: '12px', color: COLORS.TEXT_YELLOW, fontFamily: ff,
-    });
-
-    // Volume
-    const vol = Math.round(gameState.player.state.masterVolume * 100);
-    this.add.text(32, y + 216, t('settings.volume'), {
-      fontSize: '12px', color: this.listIndex === 3 ? COLORS.TEXT_YELLOW : COLORS.TEXT_WHITE, fontFamily: ff,
-    });
-    this.add.text(32, y + 244, `< ${vol}% >`, {
-      fontSize: '12px', color: COLORS.TEXT_YELLOW, fontFamily: ff,
+      if (id === 'language') {
+        this.add.text(32, y, t('settings.language'), { fontSize: '12px', color: labelColor, fontFamily: ff });
+        this.add.text(32, y + 28, `< ${getLocale() === 'ja' ? '日本語' : 'English'} >`, { fontSize: '12px', color: COLORS.TEXT_YELLOW, fontFamily: ff });
+      } else if (id === 'kanji') {
+        this.add.text(32, y, 'もじ', { fontSize: '12px', color: labelColor, fontFamily: ff });
+        const kanjiLabel = getKanjiMode() ? 'むずかしい' : 'かんたん';
+        this.add.text(32, y + 28, `< ${kanjiLabel} >`, { fontSize: '12px', color: COLORS.TEXT_YELLOW, fontFamily: ff });
+      } else if (id === 'timer') {
+        const timerEnabled = gameState.player.state.timerEnabled;
+        this.add.text(32, y, t('settings.timer'), { fontSize: '12px', color: labelColor, fontFamily: ff });
+        this.add.text(32, y + 28, `< ${timerEnabled ? t('settings.timerOn') : t('settings.timerOff')} >`, { fontSize: '12px', color: COLORS.TEXT_YELLOW, fontFamily: ff });
+      } else if (id === 'sound') {
+        const soundEnabled = gameState.player.state.soundEnabled;
+        this.add.text(32, y, t('settings.sound'), { fontSize: '12px', color: labelColor, fontFamily: ff });
+        this.add.text(32, y + 28, `< ${soundEnabled ? t('settings.soundOn') : t('settings.soundOff')} >`, { fontSize: '12px', color: COLORS.TEXT_YELLOW, fontFamily: ff });
+      } else if (id === 'volume') {
+        const vol = Math.round(gameState.player.state.masterVolume * 100);
+        this.add.text(32, y, t('settings.volume'), { fontSize: '12px', color: labelColor, fontFamily: ff });
+        this.add.text(32, y + 28, `< ${vol}% >`, { fontSize: '12px', color: COLORS.TEXT_YELLOW, fontFamily: ff });
+      }
+      y += 62;
     });
   }
 
@@ -343,7 +344,7 @@ export class MenuScene extends Phaser.Scene {
       if (this.currentTab === 'equip') {
         this.handleEquipDown();
       } else {
-        const maxIndex = this.currentTab === 'settings' ? 3
+        const maxIndex = this.currentTab === 'settings' ? this.settingsList.length - 1
           : this.currentTab === 'items' ? Math.max(0, gameState.player.state.inventory.length - 1)
           : 99;
         this.listIndex = Math.min(maxIndex, this.listIndex + 1);
@@ -437,40 +438,41 @@ export class MenuScene extends Phaser.Scene {
 
   // ── Settings handlers ──────────────────────────
 
-  private handleSettingsLeft(): void {
-    if (this.listIndex === 0) {
+  private handleSettingToggle(dir: -1 | 1): void {
+    const id = this.settingsList[this.listIndex];
+    if (id === 'language') {
       const newLocale = getLocale() === 'ja' ? 'en' : 'ja';
       setLocale(newLocale);
       gameState.player.state.locale = newLocale;
-    } else if (this.listIndex === 1) {
+      // Clamp listIndex if kanji row appeared/disappeared
+      if (this.listIndex >= this.settingsList.length) {
+        this.listIndex = this.settingsList.length - 1;
+      }
+    } else if (id === 'kanji') {
+      const newMode = !getKanjiMode();
+      setKanjiMode(newMode);
+      gameState.player.state.kanjiMode = newMode;
+    } else if (id === 'timer') {
       gameState.player.state.timerEnabled = !gameState.player.state.timerEnabled;
-    } else if (this.listIndex === 2) {
+    } else if (id === 'sound') {
       gameState.player.state.soundEnabled = !gameState.player.state.soundEnabled;
       audioManager.setMuted(!gameState.player.state.soundEnabled);
-    } else if (this.listIndex === 3) {
-      const vol = Math.max(0, gameState.player.state.masterVolume - 0.1);
+    } else if (id === 'volume') {
+      const vol = dir === -1
+        ? Math.max(0, gameState.player.state.masterVolume - 0.1)
+        : Math.min(1, gameState.player.state.masterVolume + 0.1);
       gameState.player.state.masterVolume = Math.round(vol * 10) / 10;
       audioManager.setVolume(gameState.player.state.masterVolume);
     }
     this.drawMenu();
   }
 
+  private handleSettingsLeft(): void {
+    this.handleSettingToggle(-1);
+  }
+
   private handleSettingsRight(): void {
-    if (this.listIndex === 0) {
-      const newLocale = getLocale() === 'ja' ? 'en' : 'ja';
-      setLocale(newLocale);
-      gameState.player.state.locale = newLocale;
-    } else if (this.listIndex === 1) {
-      gameState.player.state.timerEnabled = !gameState.player.state.timerEnabled;
-    } else if (this.listIndex === 2) {
-      gameState.player.state.soundEnabled = !gameState.player.state.soundEnabled;
-      audioManager.setMuted(!gameState.player.state.soundEnabled);
-    } else if (this.listIndex === 3) {
-      const vol = Math.min(1, gameState.player.state.masterVolume + 0.1);
-      gameState.player.state.masterVolume = Math.round(vol * 10) / 10;
-      audioManager.setVolume(gameState.player.state.masterVolume);
-    }
-    this.drawMenu();
+    this.handleSettingToggle(1);
   }
 
   private useItem(): void {

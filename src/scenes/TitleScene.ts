@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { GAME_WIDTH, GAME_HEIGHT, COLORS } from '../utils/constants';
-import { t, setLocale, getLocale } from '../i18n/i18n';
+import { t, setLocale, getLocale, setKanjiMode, getKanjiMode } from '../i18n/i18n';
 import { SaveManager } from '../systems/progression/SaveManager';
 import { GradeLevel, HeroColorScheme } from '../utils/types';
 import { gameState } from '../GameState';
@@ -10,7 +10,7 @@ import { regenerateHeroSprites } from '../utils/AssetGenerator';
 type ScreenMode = 'title' | 'create';
 
 /** Which row the cursor is on in the create screen */
-type CreateRow = 'name' | 'color' | 'difficulty' | 'language' | 'start';
+type CreateRow = 'name' | 'color' | 'difficulty' | 'language' | 'kanji' | 'start';
 
 export class TitleScene extends Phaser.Scene {
   private menuItems: Phaser.GameObjects.Text[] = [];
@@ -24,7 +24,12 @@ export class TitleScene extends Phaser.Scene {
   private difficultyOptions: GradeLevel[] = ['k', '1', '2', '3', '4', '5', '6'];
   private difficultyIndex = 1; // default: grade 1
   private createRow: CreateRow = 'name';
-  private createRows: CreateRow[] = ['name', 'color', 'difficulty', 'language', 'start'];
+  private get createRows(): CreateRow[] {
+    const rows: CreateRow[] = ['name', 'color', 'difficulty', 'language'];
+    if (getLocale() === 'ja') rows.push('kanji');
+    rows.push('start');
+    return rows;
+  }
   private nameInputEl: HTMLInputElement | null = null;
   private errorText: Phaser.GameObjects.Text | null = null;
   private heroPreview: Phaser.GameObjects.Image | null = null;
@@ -283,6 +288,27 @@ export class TitleScene extends Phaser.Scene {
     }).setOrigin(0.5);
     y += 32;
 
+    // ── Kanji toggle (Japanese only) ──
+    if (getLocale() === 'ja') {
+      const kanjiSelected = this.createRow === 'kanji';
+      this.add.text(cx, y, 'もじ', {
+        fontSize: '12px',
+        color: kanjiSelected ? COLORS.TEXT_YELLOW : COLORS.TEXT_WHITE,
+        fontFamily: 'monospace',
+      }).setOrigin(0.5);
+      y += 22;
+
+      const kanjiLabel = getKanjiMode()
+        ? '\u25C0 むずかしい \u25B6'
+        : '\u25C0 かんたん \u25B6';
+      this.add.text(cx, y, kanjiLabel, {
+        fontSize: '12px',
+        color: kanjiSelected ? COLORS.TEXT_YELLOW : COLORS.TEXT_WHITE,
+        fontFamily: 'monospace',
+      }).setOrigin(0.5);
+      y += 32;
+    }
+
     // ── Start Game button ──
     const startSelected = this.createRow === 'start';
     this.add.text(cx, y, `\u2605 ${t('create.startGame')} \u2605`, {
@@ -388,6 +414,8 @@ export class TitleScene extends Phaser.Scene {
         this.draw();
       } else if (this.createRow === 'language') {
         this.toggleLanguage();
+      } else if (this.createRow === 'kanji') {
+        this.toggleKanji();
       }
     });
 
@@ -402,6 +430,8 @@ export class TitleScene extends Phaser.Scene {
         this.draw();
       } else if (this.createRow === 'language') {
         this.toggleLanguage();
+      } else if (this.createRow === 'kanji') {
+        this.toggleKanji();
       }
     });
 
@@ -436,6 +466,16 @@ export class TitleScene extends Phaser.Scene {
 
   private toggleLanguage(): void {
     setLocale(getLocale() === 'ja' ? 'en' : 'ja');
+    // If switching away from Japanese and cursor was on kanji row, move to start
+    if (getLocale() !== 'ja' && this.createRow === 'kanji') {
+      this.createRow = 'start';
+    }
+    this.draw();
+  }
+
+  private toggleKanji(): void {
+    setKanjiMode(!getKanjiMode());
+    audioManager.playSfx('menu_select');
     this.draw();
   }
 
@@ -522,6 +562,10 @@ export class TitleScene extends Phaser.Scene {
       this.toggleLanguage();
       return;
     }
+    if (this.createRow === 'kanji') {
+      this.toggleKanji();
+      return;
+    }
     if (this.createRow === 'start') {
       // Validate name
       if (!this.heroName.trim()) {
@@ -539,6 +583,8 @@ export class TitleScene extends Phaser.Scene {
       } else {
         gameState.newGame(difficulty, this.heroName.trim(), scheme);
       }
+      // Save kanji mode to player state
+      gameState.player.state.kanjiMode = getKanjiMode();
       // Ensure hero sprites match selected color
       regenerateHeroSprites(this, scheme);
       this.removeNameInput();

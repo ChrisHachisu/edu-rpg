@@ -234,7 +234,7 @@ export class WorldMapScene extends Phaser.Scene {
 
     // Healer (inside clinic behind counter, same pattern as shopkeeper)
     if (def.type === 'town') {
-      const hx = def.width - 8; // center tile of 3-wide clinic starting at width-9
+      const hx = def.width - 13; // center tile of 3-wide clinic starting at width-14
       const hy = 12; // wall row
       const sprite = this.add.sprite(
         hx * TILE_SIZE + TILE_SIZE / 2,

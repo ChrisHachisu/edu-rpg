@@ -67,6 +67,7 @@ export interface PlayerState {
   locale: Locale;
   soundEnabled: boolean;
   masterVolume: number; // 0.0 - 1.0
+  kanjiMode: boolean; // true = むずかしい (kanji), false = かんたん (hiragana only)
 }
 
 export interface MonsterTemplate {

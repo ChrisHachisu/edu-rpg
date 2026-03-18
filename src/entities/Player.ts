@@ -24,6 +24,7 @@ const DEFAULT_STATE: PlayerState = {
   locale: 'ja',
   soundEnabled: true,
   masterVolume: 0.7,
+  kanjiMode: false,
 };
 
 export class Player {
