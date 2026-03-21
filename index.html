@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quest of Knowledge</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      background: #0a0a14;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: 'PixelMplus12', monospace;
+    }
+    @font-face {
+      font-family: 'PixelMplus12';
+      src: url('./fonts/PixelMplus12-Regular.ttf') format('truetype');
+      font-display: block;
+    }
+
+    /* Full-page flex centering */
+    .frame-wrapper {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      /* Subtle parchment-like radial background */
+      background:
+        radial-gradient(ellipse at center, #141428 0%, #0a0a14 70%);
+    }
+
+    /* Ornate RPG frame */
+    .rpg-frame {
+      position: relative;
+      padding: 12px;
+      /* Double-border effect: outer gold, inner dark */
+      border: 3px solid #8b7340;
+      outline: 2px solid #3a2f1e;
+      outline-offset: 2px;
+      background: #111;
+      /* Inner glow */
+      box-shadow:
+        inset 0 0 20px rgba(0, 0, 0, 0.8),
+        0 0 30px rgba(80, 60, 20, 0.3),
+        0 0 60px rgba(0, 0, 0, 0.5);
+    }
+
+    /* Corner ornaments via pseudo-elements */
+    .rpg-frame::before,
+    .rpg-frame::after {
+      content: '';
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      border: 2px solid #c9a84c;
+      z-index: 10;
+    }
+    .rpg-frame::before {
+      top: 3px;
+      left: 3px;
+      border-right: none;
+      border-bottom: none;
+    }
+    .rpg-frame::after {
+      top: 3px;
+      right: 3px;
+      border-left: none;
+      border-bottom: none;
+    }
+
+    /* Bottom corners */
+    .corner-bl, .corner-br {
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      border: 2px solid #c9a84c;
+      z-index: 10;
+      pointer-events: none;
+    }
+    .corner-bl {
+      bottom: 3px;
+      left: 3px;
+      border-right: none;
+      border-top: none;
+    }
+    .corner-br {
+      bottom: 3px;
+      right: 3px;
+      border-left: none;
+      border-top: none;
+    }
+
+    /* Title plaque above the frame */
+    .frame-title {
+      position: absolute;
+      top: -18px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(180deg, #2a2440 0%, #1a1a2e 100%);
+      border: 2px solid #8b7340;
+      border-radius: 4px;
+      padding: 2px 16px;
+      color: #c9a84c;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      white-space: nowrap;
+      z-index: 20;
+      text-shadow: 0 0 6px rgba(201, 168, 76, 0.4);
+    }
+
+    /* Game container — Phaser mounts canvas here */
+    #game-container {
+      line-height: 0;  /* prevent inline-block gap under canvas */
+    }
+
+    /* Pixel-perfect canvas: no browser interpolation */
+    canvas {
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+      display: block;
+    }
+  </style>
+  <script type="module" crossorigin src="/edu-rpg/assets/index-C8_rplDJ.js"></script>
+</head>
+<body>
+  <div class="frame-wrapper">
+    <div class="rpg-frame">
+      <span class="frame-title">Quest of Knowledge</span>
+      <div class="corner-bl"></div>
+      <div class="corner-br"></div>
+      <div id="game-container"></div>
+    </div>
+  </div>
+</body>
+</html>
