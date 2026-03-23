@@ -57,6 +57,8 @@ export const jaStrings: Record<string, string> = {
   'battle.enemyPartialHit': '{damage}の ダメージ（はんげん）！',
   'battle.enemyAttack': '{monster}の こうげき！',
   'battle.enemyMiss': '{monster}の こうげきは はずれた！',
+  'battle.enemyDamageReduced': 'すばやいこたえで ダメージを ふせいだ！',
+  'battle.enemyDamageSoftened': 'こたえで ダメージを やわらげた！',
   'battle.victory': 'たたかいに かった！',
   'battle.expGain': '{exp}の けいけんちを てにいれた！',
   'battle.goldGain': '{gold}Gを てにいれた！',
@@ -66,6 +68,15 @@ export const jaStrings: Record<string, string> = {
   'battle.fleeFail': 'にげられなかった！',
   'battle.itemUsed': '{item}を つかった！',
   'battle.healed': 'HPが {value} かいふくした！',
+
+  // Boss abilities
+  'ability.regen': '{monster}は {value}HP かいふくした！',
+  'ability.poison': '{name}は どくで {damage} ダメージ！',
+  'ability.poisonStart': '{monster}は どくの きりを はなった！',
+  'ability.shieldStart': '{monster}は バリアを はった！',
+  'ability.shieldFade': '{monster}の バリアが きえた！',
+  'ability.chargeWarning': '{monster}は ちからを ためている！',
+  'ability.rageActivate': '{monster}は はげしく おこった！ こうげきりょくが あがった！',
 
   // Quiz
   'quiz.correct': 'せいかい！',
@@ -103,6 +114,8 @@ export const jaStrings: Record<string, string> = {
   'guide.talk': 'はなす',
   'guide.menu': 'メニュー',
   'guide.item': 'どうぐ',
+  'guide.yes': 'はい',
+  'guide.no': 'いいえ',
 
   // Field items
   'field.itemTitle': 'どうぐ',
@@ -183,7 +196,11 @@ export const jaStrings: Record<string, string> = {
   'npc.healer.fullHp': 'げんきそうですね！かいふくの ひつようは ありません。',
   'npc.healer.healFree': 'はい、ぜんかいふく！きを つけてね。',
   'npc.healer.noGold': 'かいふくには {price}G ひつようですが、おかねが たりません…',
+  'npc.healer.offer': '{price}G で ぜんかいふく しますか？',
   'npc.healer.healed': 'ぜんかいふく しました！{price}G いただきます。おだいじに！',
+  'npc.healer.popupTitle': 'かいふく しますか？',
+  'npc.healer.healOption': 'かいふくする',
+  'npc.healer.leaveOption': 'やめる',
   'npc.savePoint': 'ぼうけんの きろくを セーブしました！',
 
   // Treasure
@@ -252,7 +269,7 @@ export const jaStrings: Record<string, string> = {
   'dungeon.desertTomb.boss.dialog2': 'いしと すなの きょだいな すがたが いせきから くみたてられた！',
   'dungeon.desertTomb.boss.dialog3': 'すなのゴーレムが ものすごい ほうこうとともに こぶしを あげた！たたかいの じゅんびを！',
   'dungeon.desertTomb.boss.defeat': 'すなのゴーレムが すなに くずれた…いにしえの はかが しずかになった。',
-  'dungeon.desertTomb.victory': 'かざんへの みちの ふういんが くだけた！みなみへの みちが ひらけた。',
+  'dungeon.desertTomb.victory': 'クリスタルのかけらが がれきから あらわれた！かざんへの ふういんが くだけた — みなみへの みちが ひらけた。',
 
   // Bandit Hideout
   'dungeon.banditHideout.enter': 'ぬすまれた ものの においが どうくつに ただよう…まえに たいまつの ひが ゆれている。',

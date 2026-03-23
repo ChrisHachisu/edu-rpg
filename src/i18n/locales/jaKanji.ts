@@ -58,6 +58,8 @@ export const jaKanjiStrings: Record<string, string> = {
   'battle.enemyPartialHit': '{damage}の ダメージ（半減）！',
   'battle.enemyAttack': '{monster}の 攻撃！',
   'battle.enemyMiss': '{monster}の 攻撃は 外れた！',
+  'battle.enemyDamageReduced': '素早い答えでダメージを防いだ！',
+  'battle.enemyDamageSoftened': '答えでダメージを和らげた！',
   'battle.victory': '戦いに 勝った！',
   'battle.expGain': '{exp}の 経験値を 手に入れた！',
   'battle.goldGain': '{gold}Gを 手に入れた！',
@@ -67,6 +69,15 @@ export const jaKanjiStrings: Record<string, string> = {
   'battle.fleeFail': '逃げられなかった！',
   'battle.itemUsed': '{item}を 使った！',
   'battle.healed': 'HPが {value} 回復した！',
+
+  // Boss abilities
+  'ability.regen': '{monster}は{value}HP回復した！',
+  'ability.poison': '{name}は毒で{damage}ダメージ！',
+  'ability.poisonStart': '{monster}は毒の霧を放った！',
+  'ability.shieldStart': '{monster}はバリアを張った！',
+  'ability.shieldFade': '{monster}のバリアが消えた！',
+  'ability.chargeWarning': '{monster}は力を溜めている！',
+  'ability.rageActivate': '{monster}は激怒した！攻撃力が上がった！',
 
   // Quiz
   'quiz.correct': '正解！',
@@ -247,7 +258,7 @@ export const jaKanjiStrings: Record<string, string> = {
   'dungeon.desertTomb.boss.dialog2': '石と 砂の 巨大な 姿が 遺跡から 組み立てられた！',
   'dungeon.desertTomb.boss.dialog3': '砂のゴーレムが ものすごい 咆哮とともに 拳を 上げた！戦いの 準備を！',
   'dungeon.desertTomb.boss.defeat': '砂のゴーレムが 砂に 崩れた…古の 墓が 静かになった。',
-  'dungeon.desertTomb.victory': '火山への 道の 封印が 砕けた！南への 道が 開けた。',
+  'dungeon.desertTomb.victory': 'クリスタルの欠片が 瓦礫から 現れた！火山への 封印が 砕けた — 南への 道が 開けた。',
 
   // Bandit Hideout
   'dungeon.banditHideout.enter': '盗まれた 物の 匂いが 洞窟に 漂う…前に 松明の 火が 揺れている。',

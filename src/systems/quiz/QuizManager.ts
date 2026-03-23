@@ -2,28 +2,36 @@ import { QuizQuestion, GradeLevel, DifficultyTier } from '../../utils/types';
 import { generateMathQuestion } from './generators/MathQuizGenerator';
 
 // Base timer in seconds per grade level
-// Generous timers — educational game, kids should not feel rushed
+// Designed so that speed bonus (50% of time) is achievable but challenging:
+// K: 30s base → 15s for speed bonus (counting problems)
+// G1: 25s → 12.5s (single-digit add/sub)
+// G2: 22s → 11s (double-digit add, simple mult)
+// G3: 18s → 9s (multi-digit, mult facts)
+// G4: 16s → 8s (long mult, division, fractions intro)
+// G5: 16s → 8s (fractions, decimals, percentages)
+// G6: 14s → 7s (algebra, complex fractions, order of operations)
 const BASE_TIMER: Record<GradeLevel, number> = {
   'k': 30,
-  '1': 20,
-  '2': 18,
-  '3': 15,
-  '4': 13,
-  '5': 12,
-  '6': 10,
+  '1': 25,
+  '2': 22,
+  '3': 18,
+  '4': 16,
+  '5': 16,
+  '6': 14,
 };
 
 // Enemy strength multiplier for timer
 // Higher = more time, lower = less time (pressure)
+// Boss timers are generous — challenge comes from math, not time pressure
 export type EnemyTier = 'weak' | 'normal' | 'strong' | 'boss' | 'midBoss' | 'lateBoss' | 'finalBoss';
 const ENEMY_TIMER_MULT: Record<EnemyTier, number> = {
   weak: 1.5,
   normal: 1.0,
   strong: 0.85,
-  midBoss: 0.85,
-  boss: 0.75,
-  lateBoss: 0.6,
-  finalBoss: 0.6,
+  midBoss: 0.9,
+  boss: 0.85,
+  lateBoss: 0.8,
+  finalBoss: 0.75,
 };
 
 // Grade levels in order for mercy system
@@ -102,11 +110,10 @@ export class QuizManager {
   getTimerSeconds(enemyTier: EnemyTier): number {
     const base = BASE_TIMER[this.difficulty];
     const enemyMult = ENEMY_TIMER_MULT[enemyTier];
-    // Grade multiplier: younger = more time, older = less time
-    const gradeMult = ['k', '1', '2'].includes(this.difficulty) ? 1.2 : ['5', '6'].includes(this.difficulty) ? 0.8 : 1.0;
     // Streak bonus: +1s per 3 correct in a row, max +3s
     const streakBonus = Math.min(3, Math.floor(this.consecutiveCorrect / 3));
-    return Math.max(3, Math.round(base * enemyMult * gradeMult + streakBonus));
+    // Minimum 5s for any quiz (safety floor for boss fights)
+    return Math.max(5, Math.round(base * enemyMult + streakBonus));
   }
 
   recordAnswer(category: string, correct: boolean): void {

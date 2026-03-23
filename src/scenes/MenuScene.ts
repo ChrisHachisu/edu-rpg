@@ -1,10 +1,12 @@
 import Phaser from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, ZOOM, COLORS, FONT_FAMILY } from '../utils/constants';
+import { GAME_WIDTH, GAME_HEIGHT, ZOOM, COLORS, FONT_FAMILY, UI_SCALE } from '../utils/constants';
 import { t, setLocale, getLocale, setKanjiMode, getKanjiMode } from '../i18n/i18n';
 import { gameState } from '../GameState';
 import { items } from '../data/items';
 import { EquipSlot } from '../utils/types';
 import { audioManager } from '../systems/audio/AudioManager';
+
+const S = UI_SCALE;
 
 type MenuTab = 'status' | 'items' | 'equip' | 'settings';
 
@@ -45,14 +47,14 @@ export class MenuScene extends Phaser.Scene {
     // Tab bar
     this.tabs.forEach((tab, i) => {
       const key = tab === 'status' ? 'menu.status' : tab === 'items' ? 'menu.items' : tab === 'equip' ? 'menu.equip' : 'menu.settings';
-      this.add.text(16 + i * 120, 12, t(key), {
-        fontSize: '12px',
+      this.add.text(Math.round(16 * S) + i * Math.round(120 * S), Math.round(12 * S), t(key), {
+        fontSize: `${Math.round(12 * S)}px`,
         color: i === this.tabIndex ? COLORS.TEXT_YELLOW : COLORS.TEXT_WHITE,
         fontFamily: FONT_FAMILY,
       });
     });
 
-    this.add.line(0, 32, 0, 0, GAME_WIDTH, 0, COLORS.MENU_BORDER).setOrigin(0);
+    this.add.line(0, Math.round(32 * S), 0, 0, GAME_WIDTH, 0, COLORS.MENU_BORDER).setOrigin(0);
 
     switch (this.currentTab) {
       case 'status': this.drawStatus(); break;
@@ -65,69 +67,80 @@ export class MenuScene extends Phaser.Scene {
     const hints = this.currentTab === 'settings'
       ? 'Z: ' + t('settings.change') + '    ESC: ' + t('menu.close')
       : 'ESC: ' + t('menu.close');
-    this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 16, hints, {
-      fontSize: '9px', color: COLORS.TEXT_GRAY, fontFamily: FONT_FAMILY,
+    this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - Math.round(16 * S), hints, {
+      fontSize: `${Math.round(9 * S)}px`, color: COLORS.TEXT_GRAY, fontFamily: FONT_FAMILY,
     }).setOrigin(0.5);
   }
 
   private drawStatus(): void {
     const p = gameState.player;
-    const y = 52;
+    const y = Math.round(52 * S);
     const col = COLORS.TEXT_WHITE;
-    const fs = '12px';
-    const ff = 'monospace';
+    const fs = `${Math.round(12 * S)}px`;
 
-    this.add.text(32, y, p.state.name, { fontSize: '15px', color: COLORS.TEXT_YELLOW, fontFamily: ff });
-    this.add.text(32, y + 32, `${t('menu.level')} ${p.state.level}`, { fontSize: fs, color: col, fontFamily: ff });
-    this.add.text(32, y + 60, `${t('menu.hp')} ${p.state.hp}/${p.totalMaxHp}`, { fontSize: fs, color: col, fontFamily: ff });
-    this.add.text(32, y + 88, `${t('menu.atk')} ${p.totalAtk}`, { fontSize: fs, color: col, fontFamily: ff });
-    this.add.text(32, y + 112, `${t('menu.def')} ${p.totalDef}`, { fontSize: fs, color: col, fontFamily: ff });
-    this.add.text(32, y + 136, `${t('menu.spd')} ${p.state.spd}`, { fontSize: fs, color: col, fontFamily: ff });
-    this.add.text(32, y + 164, `${t('menu.exp')} ${p.state.exp}/${p.state.expToNext}`, { fontSize: fs, color: col, fontFamily: ff });
-    this.add.text(32, y + 192, `${t('menu.gold')} ${p.state.gold}`, { fontSize: fs, color: COLORS.TEXT_YELLOW, fontFamily: ff });
+
+    this.add.text(Math.round(32 * S), y, p.state.name, { fontSize: `${Math.round(15 * S)}px`, color: COLORS.TEXT_YELLOW, fontFamily: FONT_FAMILY });
+    this.add.text(Math.round(32 * S), y + Math.round(32 * S), `${t('menu.level')} ${p.state.level}`, { fontSize: fs, color: col, fontFamily: FONT_FAMILY });
+    this.add.text(Math.round(32 * S), y + Math.round(60 * S), `${t('menu.hp')} ${p.state.hp}/${p.totalMaxHp}`, { fontSize: fs, color: col, fontFamily: FONT_FAMILY });
+    this.add.text(Math.round(32 * S), y + Math.round(88 * S), `${t('menu.atk')} ${p.totalAtk}`, { fontSize: fs, color: col, fontFamily: FONT_FAMILY });
+    this.add.text(Math.round(32 * S), y + Math.round(112 * S), `${t('menu.def')} ${p.totalDef}`, { fontSize: fs, color: col, fontFamily: FONT_FAMILY });
+    this.add.text(Math.round(32 * S), y + Math.round(136 * S), `${t('menu.spd')} ${p.state.spd}`, { fontSize: fs, color: col, fontFamily: FONT_FAMILY });
+    this.add.text(Math.round(32 * S), y + Math.round(164 * S), `${t('menu.exp')} ${p.state.exp}/${p.state.expToNext}`, { fontSize: fs, color: col, fontFamily: FONT_FAMILY });
+    this.add.text(Math.round(32 * S), y + Math.round(192 * S), `${t('menu.gold')} ${p.state.gold}`, { fontSize: fs, color: COLORS.TEXT_YELLOW, fontFamily: FONT_FAMILY });
 
     // Equipment display
-    const ex = 280;
-    this.add.text(ex, y, t('menu.equip'), { fontSize: '14px', color: COLORS.TEXT_YELLOW, fontFamily: ff });
+    const ex = Math.round(280 * S);
+    this.add.text(ex, y, t('menu.equip'), { fontSize: `${Math.round(14 * S)}px`, color: COLORS.TEXT_YELLOW, fontFamily: FONT_FAMILY });
     const slots = ['weapon', 'armor', 'shield', 'helmet'] as const;
     slots.forEach((slot, i) => {
       const itemId = p.state.equipment[slot];
       const name = itemId ? t(items[itemId].nameKey) : '---';
-      this.add.text(ex, y + 28 + i * 24, name, { fontSize: '10px', color: col, fontFamily: ff });
+      this.add.text(ex, y + Math.round(28 * S) + i * Math.round(24 * S), name, { fontSize: `${Math.round(10 * S)}px`, color: col, fontFamily: FONT_FAMILY });
     });
 
     // Quiz stats
     const stats = gameState.quizManager.getStats();
     const pct = stats.totalAsked > 0 ? Math.round(stats.totalCorrect / stats.totalAsked * 100) : 0;
-    this.add.text(ex, y + 160, `${t('menu.accuracy')}: ${stats.totalCorrect}/${stats.totalAsked} (${pct}%)`, {
-      fontSize: '10px', color: col, fontFamily: ff,
+    this.add.text(ex, y + Math.round(160 * S), `${t('menu.accuracy')}: ${stats.totalCorrect}/${stats.totalAsked} (${pct}%)`, {
+      fontSize: `${Math.round(10 * S)}px`, color: col, fontFamily: FONT_FAMILY,
     });
   }
 
   private drawItems(): void {
-    const inv = gameState.player.state.inventory;
-    const y = 52;
+    const equipTypes = ['weapon', 'armor', 'shield', 'helmet'];
+    const inv = gameState.player.state.inventory.filter(s => {
+      const item = items[s.itemId];
+      return item && !equipTypes.includes(item.type);
+    });
+    const y = Math.round(52 * S);
 
     if (inv.length === 0) {
-      this.add.text(GAME_WIDTH / 2, y + 80, t('menu.noItems'), { fontSize: '12px', color: COLORS.TEXT_GRAY, fontFamily: FONT_FAMILY }).setOrigin(0.5);
+      this.add.text(GAME_WIDTH / 2, y + Math.round(80 * S), t('menu.noItems'), { fontSize: `${Math.round(12 * S)}px`, color: COLORS.TEXT_GRAY, fontFamily: FONT_FAMILY }).setOrigin(0.5);
       return;
     }
 
     inv.forEach((slot, i) => {
       const item = items[slot.itemId];
       if (!item) return;
-      this.add.text(32, y + i * 24, `${t(item.nameKey)} x${slot.quantity}`, {
-        fontSize: '10px',
+      this.add.text(Math.round(32 * S), y + i * Math.round(24 * S), `${t(item.nameKey)} x${slot.quantity}`, {
+        fontSize: `${Math.round(10 * S)}px`,
         color: i === this.listIndex ? COLORS.TEXT_YELLOW : COLORS.TEXT_WHITE,
         fontFamily: FONT_FAMILY,
       });
+      // Show description to the right of the selected item
+      if (i === this.listIndex) {
+        this.add.text(Math.round(220 * S), y + i * Math.round(24 * S), t(item.descriptionKey), {
+          fontSize: `${Math.round(9 * S)}px`, color: COLORS.TEXT_GRAY, fontFamily: FONT_FAMILY,
+          wordWrap: { width: GAME_WIDTH - Math.round(240 * S) },
+        });
+      }
     });
   }
 
   private drawEquip(): void {
     const p = gameState.player;
-    const y = 52;
-    const ff = 'monospace';
+    const y = Math.round(52 * S);
+
     const slotKeys: EquipSlot[] = ['weapon', 'armor', 'shield', 'helmet'];
     const slotNameKeys: Record<string, string> = {
       weapon: 'equip.slot.weapon',
@@ -137,16 +150,16 @@ export class MenuScene extends Phaser.Scene {
     };
 
     // Section header: current equipment
-    this.add.text(32, y, t('menu.equip'), {
-      fontSize: '14px',
+    this.add.text(Math.round(32 * S), y, t('menu.equip'), {
+      fontSize: `${Math.round(14 * S)}px`,
       color: COLORS.TEXT_YELLOW,
-      fontFamily: ff,
+      fontFamily: FONT_FAMILY,
     });
 
     // Hint text
     const hintText = this.equipMode === 'equipped' ? t('equip.hintUnequip') : t('equip.hintEquip');
-    this.add.text(GAME_WIDTH - 32, y, hintText, {
-      fontSize: '9px', color: COLORS.TEXT_GRAY, fontFamily: ff,
+    this.add.text(GAME_WIDTH - Math.round(32 * S), y, hintText, {
+      fontSize: `${Math.round(9 * S)}px`, color: COLORS.TEXT_GRAY, fontFamily: FONT_FAMILY,
     }).setOrigin(1, 0);
 
     // Equipped items with cursor
@@ -163,32 +176,32 @@ export class MenuScene extends Phaser.Scene {
 
       // Cursor
       const cursor = isSelected ? '>' : ' ';
-      this.add.text(20, y + 28 + i * 28, cursor, {
-        fontSize: '10px', color: COLORS.TEXT_YELLOW, fontFamily: ff,
+      this.add.text(Math.round(20 * S), y + Math.round(28 * S) + i * Math.round(28 * S), cursor, {
+        fontSize: `${Math.round(10 * S)}px`, color: COLORS.TEXT_YELLOW, fontFamily: FONT_FAMILY,
       });
 
-      this.add.text(32, y + 28 + i * 28, `${slotLabel}:`, {
-        fontSize: '10px',
+      this.add.text(Math.round(32 * S), y + Math.round(28 * S) + i * Math.round(28 * S), `${slotLabel}:`, {
+        fontSize: `${Math.round(10 * S)}px`,
         color: isSelected ? COLORS.TEXT_YELLOW : COLORS.TEXT_GRAY,
-        fontFamily: ff,
+        fontFamily: FONT_FAMILY,
       });
       // Show lock icon for legendary (unsellable) equipment
       const isLegendary = itemId && items[itemId]?.unsellable;
       const displayName = isLegendary ? `${itemName} ${t('equip.locked')}` : itemName;
-      this.add.text(120, y + 28 + i * 28, displayName, {
-        fontSize: '10px',
+      this.add.text(Math.round(120 * S), y + Math.round(28 * S) + i * Math.round(28 * S), displayName, {
+        fontSize: `${Math.round(10 * S)}px`,
         color: isSelected ? COLORS.TEXT_YELLOW : (itemId ? COLORS.TEXT_WHITE : COLORS.TEXT_GRAY),
-        fontFamily: ff,
+        fontFamily: FONT_FAMILY,
       });
       if (statStr) {
-        this.add.text(300, y + 28 + i * 28, statStr, {
-          fontSize: '9px', color: isSelected ? COLORS.TEXT_YELLOW : '#88aa88', fontFamily: ff,
+        this.add.text(Math.round(300 * S), y + Math.round(28 * S) + i * Math.round(28 * S), statStr, {
+          fontSize: `${Math.round(9 * S)}px`, color: isSelected ? COLORS.TEXT_YELLOW : '#88aa88', fontFamily: FONT_FAMILY,
         });
       }
     });
 
     // Divider
-    this.add.line(0, y + 148, 32, 0, GAME_WIDTH - 32, 0, COLORS.MENU_BORDER, 0.3).setOrigin(0);
+    this.add.line(0, y + Math.round(148 * S), Math.round(32 * S), 0, GAME_WIDTH - Math.round(32 * S), 0, COLORS.MENU_BORDER, 0.3).setOrigin(0);
 
     // Equippable items from inventory
     const equipSlotTypes = ['weapon', 'armor', 'shield', 'helmet'];
@@ -197,10 +210,10 @@ export class MenuScene extends Phaser.Scene {
       return item && equipSlotTypes.includes(item.type);
     });
 
-    this.add.text(32, y + 160, t('equip.owned'), { fontSize: '12px', color: COLORS.TEXT_YELLOW, fontFamily: ff });
+    this.add.text(Math.round(32 * S), y + Math.round(160 * S), t('equip.owned'), { fontSize: `${Math.round(12 * S)}px`, color: COLORS.TEXT_YELLOW, fontFamily: FONT_FAMILY });
 
     if (equipItems.length === 0) {
-      this.add.text(32, y + 188, '---', { fontSize: '10px', color: COLORS.TEXT_GRAY, fontFamily: ff });
+      this.add.text(Math.round(32 * S), y + Math.round(188 * S), '---', { fontSize: `${Math.round(10 * S)}px`, color: COLORS.TEXT_GRAY, fontFamily: FONT_FAMILY });
     } else {
       equipItems.forEach((slot, i) => {
         const item = items[slot.itemId];
@@ -210,15 +223,15 @@ export class MenuScene extends Phaser.Scene {
 
         // Cursor
         const cursor = isSelected ? '>' : ' ';
-        this.add.text(20, y + 188 + i * 24, cursor, {
-          fontSize: '10px', color: COLORS.TEXT_YELLOW, fontFamily: ff,
+        this.add.text(Math.round(20 * S), y + Math.round(188 * S) + i * Math.round(24 * S), cursor, {
+          fontSize: `${Math.round(10 * S)}px`, color: COLORS.TEXT_YELLOW, fontFamily: FONT_FAMILY,
         });
 
-        this.add.text(32, y + 188 + i * 24, `${t(item.nameKey)}`, {
-          fontSize: '10px', color: isSelected ? COLORS.TEXT_YELLOW : COLORS.TEXT_WHITE, fontFamily: ff,
+        this.add.text(Math.round(32 * S), y + Math.round(188 * S) + i * Math.round(24 * S), `${t(item.nameKey)}`, {
+          fontSize: `${Math.round(10 * S)}px`, color: isSelected ? COLORS.TEXT_YELLOW : COLORS.TEXT_WHITE, fontFamily: FONT_FAMILY,
         });
-        this.add.text(220, y + 188 + i * 24, statStr, {
-          fontSize: '9px', color: isSelected ? COLORS.TEXT_YELLOW : COLORS.TEXT_GRAY, fontFamily: ff,
+        this.add.text(Math.round(220 * S), y + Math.round(188 * S) + i * Math.round(24 * S), statStr, {
+          fontSize: `${Math.round(9 * S)}px`, color: isSelected ? COLORS.TEXT_YELLOW : COLORS.TEXT_GRAY, fontFamily: FONT_FAMILY,
         });
       });
 
@@ -230,8 +243,8 @@ export class MenuScene extends Phaser.Scene {
         const currentItemId = p.state.equipment[targetSlot];
         const currentItem = currentItemId ? items[currentItemId] : null;
 
-        const compY = y + 188 + equipItems.length * 24 + 8;
-        this.add.line(0, compY - 4, 32, 0, GAME_WIDTH - 32, 0, COLORS.MENU_BORDER, 0.2).setOrigin(0);
+        const compY = y + Math.round(188 * S) + equipItems.length * Math.round(24 * S) + Math.round(8 * S);
+        this.add.line(0, compY - Math.round(4 * S), Math.round(32 * S), 0, GAME_WIDTH - Math.round(32 * S), 0, COLORS.MENU_BORDER, 0.2).setOrigin(0);
 
         // ATK comparison
         if (hoveredItem.stats?.atk !== undefined) {
@@ -240,8 +253,8 @@ export class MenuScene extends Phaser.Scene {
           const diff = newAtk - oldAtk;
           const diffColor = diff > 0 ? '#44cc44' : diff < 0 ? '#cc4444' : COLORS.TEXT_WHITE;
           const diffStr = diff > 0 ? `(+${diff})` : diff < 0 ? `(${diff})` : '';
-          this.add.text(32, compY, `${t('menu.atk')}: +${oldAtk} -> +${newAtk} ${diffStr}`, {
-            fontSize: '9px', color: diffColor, fontFamily: ff,
+          this.add.text(Math.round(32 * S), compY, `${t('menu.atk')}: +${oldAtk} -> +${newAtk} ${diffStr}`, {
+            fontSize: `${Math.round(9 * S)}px`, color: diffColor, fontFamily: FONT_FAMILY,
           });
         }
 
@@ -252,9 +265,9 @@ export class MenuScene extends Phaser.Scene {
           const diff = newDef - oldDef;
           const diffColor = diff > 0 ? '#44cc44' : diff < 0 ? '#cc4444' : COLORS.TEXT_WHITE;
           const diffStr = diff > 0 ? `(+${diff})` : diff < 0 ? `(${diff})` : '';
-          const offsetY = hoveredItem.stats?.atk !== undefined ? 16 : 0;
-          this.add.text(32, compY + offsetY, `${t('menu.def')}: +${oldDef} -> +${newDef} ${diffStr}`, {
-            fontSize: '9px', color: diffColor, fontFamily: ff,
+          const offsetY = hoveredItem.stats?.atk !== undefined ? Math.round(16 * S) : 0;
+          this.add.text(Math.round(32 * S), compY + offsetY, `${t('menu.def')}: +${oldDef} -> +${newDef} ${diffStr}`, {
+            fontSize: `${Math.round(9 * S)}px`, color: diffColor, fontFamily: FONT_FAMILY,
           });
         }
       }
@@ -270,41 +283,42 @@ export class MenuScene extends Phaser.Scene {
   }
 
   private drawSettings(): void {
-    let y = 60;
-    const ff = 'monospace';
+    let y = Math.round(60 * S);
+    const settingFs = `${Math.round(12 * S)}px`;
+
     const settings = this.settingsList;
 
     settings.forEach((id, i) => {
       const selected = this.listIndex === i;
       const labelColor = selected ? COLORS.TEXT_YELLOW : COLORS.TEXT_WHITE;
       const cursor = selected ? '>' : ' ';
-      this.add.text(20, y, cursor, { fontSize: '12px', color: COLORS.TEXT_YELLOW, fontFamily: ff });
+      this.add.text(Math.round(20 * S), y, cursor, { fontSize: settingFs, color: COLORS.TEXT_YELLOW, fontFamily: FONT_FAMILY });
 
       if (id === 'difficulty') {
         const grade = gameState.player.state.quizDifficulty;
-        this.add.text(32, y, t('settings.difficulty'), { fontSize: '12px', color: labelColor, fontFamily: ff });
-        this.add.text(200, y, t(`grade.${grade}`), { fontSize: '12px', color: COLORS.TEXT_GRAY, fontFamily: ff });
+        this.add.text(Math.round(32 * S), y, t('settings.difficulty'), { fontSize: settingFs, color: labelColor, fontFamily: FONT_FAMILY });
+        this.add.text(Math.round(200 * S), y, t(`grade.${grade}`), { fontSize: settingFs, color: COLORS.TEXT_GRAY, fontFamily: FONT_FAMILY });
       } else if (id === 'language') {
-        this.add.text(32, y, t('settings.language'), { fontSize: '12px', color: labelColor, fontFamily: ff });
-        this.add.text(200, y, getLocale() === 'ja' ? '日本語' : 'English', { fontSize: '12px', color: COLORS.TEXT_YELLOW, fontFamily: ff });
+        this.add.text(Math.round(32 * S), y, t('settings.language'), { fontSize: settingFs, color: labelColor, fontFamily: FONT_FAMILY });
+        this.add.text(Math.round(200 * S), y, getLocale() === 'ja' ? '日本語' : 'English', { fontSize: settingFs, color: COLORS.TEXT_YELLOW, fontFamily: FONT_FAMILY });
       } else if (id === 'kanji') {
-        this.add.text(32, y, 'もじ', { fontSize: '12px', color: labelColor, fontFamily: ff });
+        this.add.text(Math.round(32 * S), y, 'もじ', { fontSize: settingFs, color: labelColor, fontFamily: FONT_FAMILY });
         const kanjiLabel = getKanjiMode() ? 'むずかしい' : 'かんたん';
-        this.add.text(200, y, kanjiLabel, { fontSize: '12px', color: COLORS.TEXT_YELLOW, fontFamily: ff });
+        this.add.text(Math.round(200 * S), y, kanjiLabel, { fontSize: settingFs, color: COLORS.TEXT_YELLOW, fontFamily: FONT_FAMILY });
       } else if (id === 'timer') {
         const timerEnabled = gameState.player.state.timerEnabled;
-        this.add.text(32, y, t('settings.timer'), { fontSize: '12px', color: labelColor, fontFamily: ff });
-        this.add.text(200, y, timerEnabled ? t('settings.timerOn') : t('settings.timerOff'), { fontSize: '12px', color: COLORS.TEXT_YELLOW, fontFamily: ff });
+        this.add.text(Math.round(32 * S), y, t('settings.timer'), { fontSize: settingFs, color: labelColor, fontFamily: FONT_FAMILY });
+        this.add.text(Math.round(200 * S), y, timerEnabled ? t('settings.timerOn') : t('settings.timerOff'), { fontSize: settingFs, color: COLORS.TEXT_YELLOW, fontFamily: FONT_FAMILY });
       } else if (id === 'sound') {
         const soundEnabled = gameState.player.state.soundEnabled;
-        this.add.text(32, y, t('settings.sound'), { fontSize: '12px', color: labelColor, fontFamily: ff });
-        this.add.text(200, y, soundEnabled ? t('settings.soundOn') : t('settings.soundOff'), { fontSize: '12px', color: COLORS.TEXT_YELLOW, fontFamily: ff });
+        this.add.text(Math.round(32 * S), y, t('settings.sound'), { fontSize: settingFs, color: labelColor, fontFamily: FONT_FAMILY });
+        this.add.text(Math.round(200 * S), y, soundEnabled ? t('settings.soundOn') : t('settings.soundOff'), { fontSize: settingFs, color: COLORS.TEXT_YELLOW, fontFamily: FONT_FAMILY });
       } else if (id === 'volume') {
         const vol = Math.round(gameState.player.state.masterVolume * 100);
-        this.add.text(32, y, t('settings.volume'), { fontSize: '12px', color: labelColor, fontFamily: ff });
-        this.add.text(200, y, `${vol}%`, { fontSize: '12px', color: COLORS.TEXT_YELLOW, fontFamily: ff });
+        this.add.text(Math.round(32 * S), y, t('settings.volume'), { fontSize: settingFs, color: labelColor, fontFamily: FONT_FAMILY });
+        this.add.text(Math.round(200 * S), y, `${vol}%`, { fontSize: settingFs, color: COLORS.TEXT_YELLOW, fontFamily: FONT_FAMILY });
       }
-      y += 28;
+      y += Math.round(28 * S);
     });
   }
 
@@ -348,7 +362,7 @@ export class MenuScene extends Phaser.Scene {
         this.handleEquipDown();
       } else {
         const maxIndex = this.currentTab === 'settings' ? this.settingsList.length - 1
-          : this.currentTab === 'items' ? Math.max(0, gameState.player.state.inventory.length - 1)
+          : this.currentTab === 'items' ? Math.max(0, this.getConsumableItems().length - 1)
           : 99;
         this.listIndex = Math.min(maxIndex, this.listIndex + 1);
         this.drawMenu();
@@ -478,8 +492,17 @@ export class MenuScene extends Phaser.Scene {
     this.drawMenu();
   }
 
+  /** Returns inventory items excluding equipment (weapons/armor/shields/helmets) */
+  private getConsumableItems() {
+    const equipTypes = ['weapon', 'armor', 'shield', 'helmet'];
+    return gameState.player.state.inventory.filter(s => {
+      const item = items[s.itemId];
+      return item && !equipTypes.includes(item.type);
+    });
+  }
+
   private useItem(): void {
-    const inv = gameState.player.state.inventory;
+    const inv = this.getConsumableItems();
     if (this.listIndex >= inv.length) return;
     const slot = inv[this.listIndex];
     const item = items[slot.itemId];
@@ -498,8 +521,9 @@ export class MenuScene extends Phaser.Scene {
       audioManager.playSfx('heal');
       this.showItemMessage(`${t('item.used', { name: t(item.nameKey) })} ${t('item.healed', { value: healed })}`);
       // Adjust cursor if the last item was consumed
-      if (this.listIndex >= gameState.player.state.inventory.length) {
-        this.listIndex = Math.max(0, gameState.player.state.inventory.length - 1);
+      const newInv = this.getConsumableItems();
+      if (this.listIndex >= newInv.length) {
+        this.listIndex = Math.max(0, newInv.length - 1);
       }
     } else if (item.effect.type === 'escape') {
       // Smoke bombs can only be used in battle — not from the menu
@@ -512,11 +536,11 @@ export class MenuScene extends Phaser.Scene {
 
   private showItemMessage(msg: string): void {
     // Show a temporary message overlay on the items tab
-    const y = GAME_HEIGHT - 52;
-    const box = this.add.rectangle(GAME_WIDTH / 2, y, GAME_WIDTH - 16, 28, COLORS.MENU_BG, 0.95)
+    const y = GAME_HEIGHT - Math.round(52 * S);
+    const box = this.add.rectangle(GAME_WIDTH / 2, y, GAME_WIDTH - Math.round(16 * S), Math.round(28 * S), COLORS.MENU_BG, 0.95)
       .setStrokeStyle(1, COLORS.MENU_BORDER).setDepth(100);
     const text = this.add.text(GAME_WIDTH / 2, y, msg, {
-      fontSize: '11px', color: COLORS.TEXT_YELLOW, fontFamily: FONT_FAMILY,
+      fontSize: `${Math.round(11 * S)}px`, color: COLORS.TEXT_YELLOW, fontFamily: FONT_FAMILY,
     }).setOrigin(0.5).setDepth(101);
     // Auto-dismiss after 1.5 seconds
     this.time.delayedCall(1500, () => {

@@ -16,7 +16,7 @@ const DEFAULT_STATE: PlayerState = {
   spd: 6,
   equipment: { weapon: null, armor: null, shield: null, helmet: null, accessory: null },
   inventory: [{ itemId: 'herb', quantity: 3 }],
-  gold: 30,
+  gold: 50,
   position: { mapId: 'greenhollow', x: 8, y: 4 },
   storyFlags: {},
   timerEnabled: true,
@@ -104,7 +104,8 @@ export class Player {
       this.state.atk += gains[1];
       this.state.def += gains[2];
       this.state.spd += gains[3];
-      this.state.hp = this.totalMaxHp; // Full heal on level up
+      // Gain the HP from the level up but don't full-heal
+      this.state.hp = Math.min(this.state.hp + gains[0], this.totalMaxHp);
       this.state.expToNext = this.state.level < MAX_LEVEL ? expTable[this.state.level + 1] : 99999;
     }
     return { leveled, newLevel: this.state.level };

@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, TILE_SIZE, ZOOM, COLORS, FONT_FAMILY, UI_OFFSET_X, UI_OFFSET_Y } from '../utils/constants';
+import { GAME_WIDTH, GAME_HEIGHT, TILE_SIZE, ZOOM, COLORS, FONT_FAMILY, UI_OFFSET_X, UI_OFFSET_Y, UI_SCALE } from '../utils/constants';
 import { t } from '../i18n/i18n';
 import { gameState } from '../GameState';
 import { generateOverworldMap, generateTownMap, generateDungeonMap, generatePortalLandMap } from '../utils/MapGenerator';
@@ -7,6 +7,43 @@ import { mapDefs } from '../data/maps';
 import { monsters } from '../data/monsters';
 import { items } from '../data/items';
 import { audioManager, BgmTrack } from '../systems/audio/AudioManager';
+
+const S = UI_SCALE;
+
+// ── Compass waypoint chain for K/G1 players ──
+// Each entry: { mapId, overworldX, overworldY, type, doneFlag }
+// doneFlag: story flag that marks this waypoint as completed
+// For towns: compass.visited.<mapId>  (set on entry)
+// For dungeons: boss.<bossId>.defeated (set on boss defeat)
+const COMPASS_CHAIN: { mapId: string; ox: number; oy: number; type: 'town' | 'dungeon'; doneFlag: string }[] = [
+  // Act 1
+  { mapId: 'sunkenCellar',  ox: 25,  oy: 148, type: 'dungeon', doneFlag: 'boss.giantCrab.defeated' },
+  { mapId: 'millbrook',     ox: 45,  oy: 145, type: 'town',    doneFlag: 'compass.visited.millbrook' },
+  { mapId: 'portSapphire',  ox: 66,  oy: 138, type: 'town',    doneFlag: 'compass.visited.portSapphire' },
+  { mapId: 'mistyGrotto',   ox: 85,  oy: 144, type: 'dungeon', doneFlag: 'boss.giantToad.defeated' },
+  { mapId: 'crystalCave',   ox: 66,  oy: 130, type: 'dungeon', doneFlag: 'boss.serpent.defeated' },
+  // Act 2
+  { mapId: 'ironkeep',      ox: 70,  oy: 118, type: 'town',    doneFlag: 'compass.visited.ironkeep' },
+  { mapId: 'frozenLake',    ox: 100, oy: 112, type: 'dungeon', doneFlag: 'boss.iceWyrm.defeated' },
+  { mapId: 'stormNest',     ox: 25,  oy: 108, type: 'dungeon', doneFlag: 'boss.stormHarpy.defeated' },
+  { mapId: 'shadowCave',    ox: 90,  oy: 102, type: 'dungeon', doneFlag: 'boss.dragon.defeated' },
+  // Act 3/4
+  { mapId: 'ruinsCamp',     ox: 80,  oy: 85,  type: 'town',    doneFlag: 'compass.visited.ruinsCamp' },
+  { mapId: 'embersRest',    ox: 30,  oy: 78,  type: 'town',    doneFlag: 'compass.visited.embersRest' },
+  { mapId: 'oasisHaven',    ox: 45,  oy: 92,  type: 'town',    doneFlag: 'compass.visited.oasisHaven' },
+  { mapId: 'banditHideout', ox: 10,  oy: 103, type: 'dungeon', doneFlag: 'boss.banditLord.defeated' },
+  { mapId: 'desertTomb',    ox: 60,  oy: 95,  type: 'dungeon', doneFlag: 'boss.sandGolem.defeated' },
+  { mapId: 'magmaTunnels',  ox: 26,  oy: 90,  type: 'dungeon', doneFlag: 'boss.lavaWyrm.defeated' },
+  { mapId: 'volcanicForge', ox: 12,  oy: 70,  type: 'dungeon', doneFlag: 'boss.flameTitan.defeated' },
+  // Act 5
+  { mapId: 'lastBastion',   ox: 85,  oy: 58,  type: 'town',    doneFlag: 'compass.visited.lastBastion' },
+  { mapId: 'havensEdge',    ox: 65,  oy: 40,  type: 'town',    doneFlag: 'compass.visited.havensEdge' },
+  { mapId: 'stormreachIsles',   ox: 15,  oy: 25,  type: 'dungeon', doneFlag: 'boss.stormSentinel.defeated' },
+  { mapId: 'frostfallPeaks',    ox: 100, oy: 25,  type: 'dungeon', doneFlag: 'boss.frostMonarch.defeated' },
+  { mapId: 'sunkenTempleIsle',  ox: 35,  oy: 45,  type: 'dungeon', doneFlag: 'boss.swordWraith.defeated' },
+  { mapId: 'twilightRealm',     ox: 80,  oy: 45,  type: 'dungeon', doneFlag: 'boss.celestialGuardian.defeated' },
+  { mapId: 'demonCastle',       ox: 55,  oy: 15,  type: 'dungeon', doneFlag: 'boss.demonKing.defeated' },
+];
 
 interface FieldItemEntry {
   itemId: string;
@@ -42,6 +79,11 @@ export class WorldMapScene extends Phaser.Scene {
   private effectiveWidth = 0;
   private effectiveHeight = 0;
 
+  // Compass (K/G1 only)
+  private compassContainer?: Phaser.GameObjects.Container;
+  private compassArrow?: Phaser.GameObjects.Graphics;
+  private compassEnabled = false;
+
   // Field item overlay
   private itemOverlayOpen = false;
   private itemOverlayItems: FieldItemEntry[] = [];
@@ -50,6 +92,14 @@ export class WorldMapScene extends Phaser.Scene {
   private itemOverlayTitle?: Phaser.GameObjects.Text;
   private itemOverlayTexts: Phaser.GameObjects.Text[] = [];
   private itemOverlayCursor?: Phaser.GameObjects.Text;
+
+  // Healer confirmation overlay
+  private healerOverlayOpen = false;
+  private healerOverlayBox?: Phaser.GameObjects.Rectangle;
+  private healerOverlayTexts: Phaser.GameObjects.Text[] = [];
+  private healerOverlayIndex = 0;
+  private healerOverlayCursor?: Phaser.GameObjects.Text;
+  private healerOverlayPrice = 0;
 
   constructor() {
     super('WorldMapScene');
@@ -70,6 +120,21 @@ export class WorldMapScene extends Phaser.Scene {
 
     this.loadMap(this.currentMapId);
     this.setupInput();
+
+    // Refresh HUD when returning from battle/menu — reset held keys to prevent queued movement
+    this.events.on('resume', () => {
+      this.updateHUD();
+      // Reset cursor key states so held keys don't cause immediate movement
+      this.cursors.left.reset();
+      this.cursors.right.reset();
+      this.cursors.up.reset();
+      this.cursors.down.reset();
+      // Also block movement briefly in case reset doesn't catch edge cases
+      this.isMoving = true;
+      this.time.delayedCall(300, () => {
+        this.isMoving = false;
+      });
+    });
     this.createHUD();
 
     // Intro dialog — plays once when starting in greenhollow for the first time
@@ -89,6 +154,11 @@ export class WorldMapScene extends Phaser.Scene {
   }
 
   private loadMap(mapId: string): void {
+    // Clear any lingering messages from previous map
+    this.hideMessage();
+    this.showingMessage = false;
+    this.dialogQueue = [];
+
     this.currentMapId = mapId;
     const def = mapDefs[mapId];
 
@@ -101,7 +171,7 @@ export class WorldMapScene extends Phaser.Scene {
     } else if (def.type === 'town') {
       this.mapData = generateTownMap(def.width, def.height, mapId.charCodeAt(0) * 137);
     } else if (def.type === 'dungeon') {
-      const totalFloors = WorldMapScene.gradeCappedFloors(def.floors ?? 1);
+      const totalFloors = def.floors ?? 1;
       const isSingleFloorGate = def.connections.length > 1 && totalFloors === 1;
       const isMultiFloorGate = def.connections.length > 1 && totalFloors > 1;
       const isGateFinalFloor = isMultiFloorGate && this.currentFloor === totalFloors;
@@ -127,8 +197,8 @@ export class WorldMapScene extends Phaser.Scene {
           }
           if (this.mapData[y][x] === 7 && def.bossId && isFinalFloor) {
             if (gameState.player.state.storyFlags[`boss.${def.bossId}.defeated`]) {
-              const isGateDungeon = def.connections.length > 1;
-              this.mapData[y][x] = isGateDungeon ? 0 : 10; // gate → floor (walk to stairs), normal → exit portal
+              const isGate = def.connections.length > 1;
+              this.mapData[y][x] = isGate ? 12 : 10; // gate=stairs(12), non-gate=portal(10)
             }
           }
         }
@@ -208,19 +278,13 @@ export class WorldMapScene extends Phaser.Scene {
   ]);
 
   private static readonly HEALER_PRICES: Record<string, number> = {
-    greenhollow: 0, millbrook: 15, portSapphire: 25,
-    ironkeep: 50, oasisHaven: 80, ruinsCamp: 80,
-    embersRest: 120, lastBastion: 150, havensEdge: 150,
-    stormreachVillage: 150, frostfallVillage: 150,
-    sunkenTempleVillage: 150, twilightVillage: 150,
+    greenhollow: 0, millbrook: 5, portSapphire: 8,
+    ironkeep: 12, oasisHaven: 18, ruinsCamp: 18,
+    embersRest: 25, lastBastion: 35, havensEdge: 35,
+    stormreachVillage: 40, frostfallVillage: 40,
+    sunkenTempleVillage: 40, twilightVillage: 40,
   };
 
-  /** Clamp dungeon floors by grade: G1-2 max 3, G3-4 max 5, G5-6 all */
-  private static gradeCappedFloors(floors: number): number {
-    const grade = gameState.player.state.quizDifficulty;
-    const max = ['k', '1', '2'].includes(grade) ? 3 : ['3', '4'].includes(grade) ? 5 : Infinity;
-    return Math.min(floors, max);
-  }
 
   /** Scale dungeon floor dimensions by grade: K/1/2 = 60%, 3/4 = 80%, 5/6 = 100% */
   private static gradeScaledSize(size: number): number {
@@ -257,13 +321,14 @@ export class WorldMapScene extends Phaser.Scene {
     // Healer (inside clinic behind counter, same pattern as shopkeeper)
     if (def.type === 'town') {
       const hx = def.width - 13; // center tile of 3-wide clinic starting at width-14
-      const hy = 12; // wall row
+      const hy = 12; // inside clinic behind counter
       const sprite = this.add.sprite(
         hx * TILE_SIZE + TILE_SIZE / 2,
-        hy * TILE_SIZE + TILE_SIZE / 2 - 4,
+        hy * TILE_SIZE + TILE_SIZE / 2,
         'npc-healer'
       ).setOrigin(0.5).setScale(1).setDepth(5);
       this.npcSprites.push(sprite);
+      // Counter is now built into the npc-healer sprite — no separate overlay needed
     }
 
     // Save point
@@ -290,11 +355,15 @@ export class WorldMapScene extends Phaser.Scene {
 
     // Menu key
     this.input.keyboard?.on('keydown-ESC', () => {
+      if (this.healerOverlayOpen) {
+        this.hideHealerOverlay();
+        return;
+      }
       if (this.itemOverlayOpen) {
         this.hideFieldItemMenu();
         return;
       }
-      if (!this.showingMessage) {
+      if (!this.showingMessage && !this.isMoving) {
         this.scene.launch('MenuScene');
         this.scene.pause();
       }
@@ -302,6 +371,10 @@ export class WorldMapScene extends Phaser.Scene {
 
     // Interact key
     this.input.keyboard?.on('keydown-Z', () => {
+      if (this.healerOverlayOpen) {
+        this.confirmHealerOption();
+        return;
+      }
       if (this.itemOverlayOpen) {
         this.useFieldItem();
         return;
@@ -313,6 +386,10 @@ export class WorldMapScene extends Phaser.Scene {
       this.interact();
     });
     this.input.keyboard?.on('keydown-ENTER', () => {
+      if (this.healerOverlayOpen) {
+        this.confirmHealerOption();
+        return;
+      }
       if (this.itemOverlayOpen) {
         this.useFieldItem();
         return;
@@ -326,6 +403,10 @@ export class WorldMapScene extends Phaser.Scene {
 
     // Close overlay
     this.input.keyboard?.on('keydown-X', () => {
+      if (this.healerOverlayOpen) {
+        this.hideHealerOverlay();
+        return;
+      }
       if (this.itemOverlayOpen) {
         this.hideFieldItemMenu();
       }
@@ -333,12 +414,22 @@ export class WorldMapScene extends Phaser.Scene {
 
     // Navigate overlay
     this.input.keyboard?.on('keydown-UP', () => {
+      if (this.healerOverlayOpen) {
+        this.healerOverlayIndex = Math.max(0, this.healerOverlayIndex - 1);
+        this.updateHealerSelection();
+        return;
+      }
       if (this.itemOverlayOpen && this.itemOverlayItems.length > 0) {
         this.itemOverlayIndex = Math.max(0, this.itemOverlayIndex - 1);
         this.updateFieldItemSelection();
       }
     });
     this.input.keyboard?.on('keydown-DOWN', () => {
+      if (this.healerOverlayOpen) {
+        this.healerOverlayIndex = Math.min(1, this.healerOverlayIndex + 1);
+        this.updateHealerSelection();
+        return;
+      }
       if (this.itemOverlayOpen && this.itemOverlayItems.length > 0) {
         this.itemOverlayIndex = Math.min(this.itemOverlayItems.length - 1, this.itemOverlayIndex + 1);
         this.updateFieldItemSelection();
@@ -347,14 +438,15 @@ export class WorldMapScene extends Phaser.Scene {
 
     // Field item shortcut
     this.input.keyboard?.on('keydown-I', () => {
-      if (!this.showingMessage && !this.isMoving && !this.itemOverlayOpen) {
+      if (!this.showingMessage && !this.isMoving && !this.itemOverlayOpen && !this.healerOverlayOpen) {
         this.showFieldItemMenu();
       }
     });
   }
 
   update(): void {
-    if (this.isMoving || this.showingMessage || this.itemOverlayOpen) return;
+    this.updateCompass();
+    if (this.isMoving || this.showingMessage || this.itemOverlayOpen || this.healerOverlayOpen) return;
 
     let dx = 0, dy = 0;
     let dir = 0;
@@ -498,20 +590,7 @@ export class WorldMapScene extends Phaser.Scene {
         // Tile 6 = stairs up
         if (tile === 6) {
           if (this.currentFloor > 1) {
-            // Check if bottom stairs on final floor of gate dungeon → exit to next act
-            const isGate = def.connections.length > 1;
-            const isFinal = this.currentFloor === WorldMapScene.gradeCappedFloors(def.floors ?? 1);
-            if (isGate && isFinal && y > this.effectiveHeight / 2) {
-              // Exit to overworld via closest connection (matches connection[1])
-              let best = def.connections[0];
-              let bestDist = Infinity;
-              for (const conn of def.connections) {
-                const d = Math.abs(conn.fromX - x) + Math.abs(conn.fromY - y);
-                if (d < bestDist) { bestDist = d; best = conn; }
-              }
-              return { targetMap: best.targetMap, toX: best.toX, toY: best.toY };
-            }
-            // Go up one floor
+            // Go up one floor (toward entrance)
             return { targetMap: '__floor_up__', toX: 0, toY: 0 };
           } else {
             // Floor 1: exit to overworld — match closest connection by position
@@ -530,8 +609,8 @@ export class WorldMapScene extends Phaser.Scene {
         if (tile === 9) {
           return { targetMap: '__floor_down__', toX: 0, toY: 0 };
         }
-        // Tile 10 = boss-exit portal — gate dungeons use last connection, others use first
-        if (tile === 10) {
+        // Tile 10 = boss-exit portal, Tile 12 = boss-exit stairs — gate dungeons use last connection, others use first
+        if (tile === 10 || tile === 12) {
           const isGate = def.connections.length > 1;
           const conn = isGate ? def.connections[def.connections.length - 1] : def.connections[0];
           if (conn) {
@@ -540,7 +619,7 @@ export class WorldMapScene extends Phaser.Scene {
         }
         // Tile 11 = boss warp portal — teleport to boss floor
         if (tile === 11) {
-          const totalFloors = WorldMapScene.gradeCappedFloors(def.floors ?? 1);
+          const totalFloors = def.floors ?? 1;
           return { targetMap: '__boss_warp__', toX: 0, toY: 0, toFloor: totalFloors };
         }
       }
@@ -621,7 +700,7 @@ export class WorldMapScene extends Phaser.Scene {
 
       if (target.targetMap === '__boss_warp__') {
         // Boss warp portal — teleport directly to boss floor
-        this.currentFloor = target.toFloor ?? WorldMapScene.gradeCappedFloors(def.floors ?? 1);
+        this.currentFloor = target.toFloor ?? (def.floors ?? 1);
         gameState.encounterManager.reset();
         this.loadMap(this.currentMapId);
         // Scan for boss tile (7) and spawn nearby
@@ -646,8 +725,8 @@ export class WorldMapScene extends Phaser.Scene {
         this.updateCamera();
       } else if (target.targetMap === '__floor_down__') {
         // Go to next floor (deeper into dungeon)
-        const maxFloor = WorldMapScene.gradeCappedFloors(def.floors ?? 1);
-        if (this.currentFloor >= maxFloor) return; // Safety: don't exceed grade-capped floor count
+        const maxFloor = def.floors ?? 1;
+        if (this.currentFloor >= maxFloor) return;
         this.currentFloor++;
         gameState.encounterManager.reset();
         this.loadMap(this.currentMapId);
@@ -713,7 +792,13 @@ export class WorldMapScene extends Phaser.Scene {
       } else {
         // Normal map transition — clamp target floor to grade cap (for gate re-entry)
         const targetDef = mapDefs[target.targetMap];
-        const maxFloor = targetDef ? WorldMapScene.gradeCappedFloors(targetDef.floors ?? 1) : 999;
+
+        // Mark town as visited for compass system
+        if (targetDef?.type === 'town') {
+          this.markTownVisited(target.targetMap);
+        }
+
+        const maxFloor = targetDef ? (targetDef.floors ?? 1) : 999;
         this.currentFloor = Math.min(target.toFloor ?? 1, maxFloor);
         this.heroTileX = target.toX;
         this.heroTileY = target.toY;
@@ -740,19 +825,20 @@ export class WorldMapScene extends Phaser.Scene {
     });
   }
 
-  /** Scan dungeon map for the entrance tile (6=stairs-up) closest to the
-   *  requested entry side (top or bottom) and return the adjacent walkable tile. */
+  /** Scan dungeon map for the entrance tile closest to the requested entry side.
+   *  Looks for stairs-up (6), boss-exit portal (10), or boss-exit stairs (12). */
   private findDungeonEntrance(requestedY: number): { x: number; y: number } | null {
     const h = this.mapData.length;
     const w = this.mapData[0]?.length ?? 0;
     // Determine if entering from top or bottom based on requested Y
     const enterFromBottom = requestedY > h / 2;
 
-    // Collect all stairs-up tiles (tile 6)
+    // Collect all entrance/exit tiles: 6=stairs-up, 10=boss-exit-portal, 12=boss-exit-stairs
     const stairs: { x: number; y: number }[] = [];
     for (let y = 0; y < h; y++) {
       for (let x = 0; x < w; x++) {
-        if (this.mapData[y][x] === 6) stairs.push({ x, y });
+        const t = this.mapData[y][x];
+        if (t === 6 || t === 10 || t === 12) stairs.push({ x, y });
       }
     }
     if (stairs.length === 0) return null;
@@ -796,12 +882,70 @@ export class WorldMapScene extends Phaser.Scene {
     }
   }
 
-  private startBattle(monster: typeof monsters[string]): void {
-    this.scene.launch('BattleScene', { monster, zone: this.currentEncounterZone });
-    this.scene.pause();
+  private startBattle(monster: typeof monsters[string], isBoss = false): void {
+    this.isMoving = true; // Block input during transition
+    // Clear any lingering messages before battle transition
+    this.hideMessage();
+    this.showingMessage = false;
+    this.dialogQueue = [];
+    this.dialogCallback = undefined;
+
+    if (isBoss) {
+      // Dramatic boss transition: screen shake + red flashes + fade to black
+      this.cameras.main.shake(300, 0.02);
+      const flash1 = this.add.rectangle(
+        UI_OFFSET_X + GAME_WIDTH / 2, UI_OFFSET_Y + GAME_HEIGHT / 2,
+        GAME_WIDTH * 2, GAME_HEIGHT * 2, 0xffaa00
+      ).setDepth(200).setScrollFactor(0).setAlpha(0);
+
+      // Three red flashes
+      this.tweens.add({
+        targets: flash1, alpha: 0.7, duration: 80, yoyo: true,
+        onComplete: () => {
+          this.tweens.add({
+            targets: flash1, alpha: 0.8, duration: 80, yoyo: true,
+            onComplete: () => {
+              this.tweens.add({
+                targets: flash1, alpha: 1, duration: 80, yoyo: true,
+                onComplete: () => {
+                  // Fade to black
+                  this.cameras.main.fadeOut(400, 0, 0, 0);
+                  this.cameras.main.once('camerafadeoutcomplete', () => {
+                    flash1.destroy();
+                    this.scene.launch('BattleScene', { monster, zone: this.currentEncounterZone });
+                    this.scene.pause();
+                    this.isMoving = false;
+                  });
+                },
+              });
+            },
+          });
+        },
+      });
+    } else {
+      // Regular encounter: white flash + quick fade
+      const flash = this.add.rectangle(
+        UI_OFFSET_X + GAME_WIDTH / 2, UI_OFFSET_Y + GAME_HEIGHT / 2,
+        GAME_WIDTH * 2, GAME_HEIGHT * 2, 0xffffff
+      ).setDepth(200).setScrollFactor(0).setAlpha(0);
+
+      this.tweens.add({
+        targets: flash, alpha: 1, duration: 100, yoyo: true,
+        onComplete: () => {
+          this.cameras.main.fadeOut(200, 0, 0, 0);
+          this.cameras.main.once('camerafadeoutcomplete', () => {
+            flash.destroy();
+            this.scene.launch('BattleScene', { monster, zone: this.currentEncounterZone });
+            this.scene.pause();
+            this.isMoving = false;
+          });
+        },
+      });
+    }
   }
 
   private interact(): void {
+    if (this.isMoving || this.showingMessage) return;
     const def = mapDefs[this.currentMapId];
 
     // Calculate the tile the player is facing
@@ -908,12 +1052,94 @@ export class WorldMapScene extends Phaser.Scene {
       return;
     }
 
-    // Heal
-    p.state.gold -= price;
-    p.fullHeal();
-    audioManager.playSfx('save');
-    this.showMessage(t('npc.healer.healed', { price }));
-    this.updateHUD();
+    // Show healer confirmation overlay (shop-style popup)
+    this.showHealerOverlay(price);
+  }
+
+  private showHealerOverlay(price: number): void {
+    this.healerOverlayOpen = true;
+    this.healerOverlayIndex = 0;
+    this.healerOverlayPrice = price;
+    this.healerOverlayTexts = [];
+
+    const p = gameState.player;
+    const hpMissing = p.totalMaxHp - p.state.hp;
+
+    const boxW = Math.round(220 * S);
+    const boxH = Math.round(110 * S);
+    const boxX = UI_OFFSET_X + GAME_WIDTH / 2;
+    const boxY = UI_OFFSET_Y + GAME_HEIGHT / 2;
+
+    this.healerOverlayBox = this.add.rectangle(boxX, boxY, boxW, boxH, COLORS.MENU_BG, 0.95)
+      .setStrokeStyle(2, COLORS.MENU_BORDER)
+      .setDepth(200)
+      .setScrollFactor(0);
+
+    // Greeting/question
+    const greeting = this.add.text(boxX, boxY - boxH / 2 + Math.round(16 * S), t('npc.healer.popupTitle'), {
+      fontSize: `${Math.round(12 * S)}px`, color: COLORS.TEXT_YELLOW, fontFamily: FONT_FAMILY,
+    }).setOrigin(0.5).setDepth(201).setScrollFactor(0);
+    this.healerOverlayTexts.push(greeting);
+
+    // HP info
+    const hpInfo = this.add.text(boxX, boxY - boxH / 2 + Math.round(36 * S), `HP ${p.state.hp}/${p.totalMaxHp}  (+${hpMissing})`, {
+      fontSize: `${Math.round(10 * S)}px`, color: '#88cc88', fontFamily: FONT_FAMILY,
+    }).setOrigin(0.5).setDepth(201).setScrollFactor(0);
+    this.healerOverlayTexts.push(hpInfo);
+
+    // Option 1: Heal (cost)
+    const healLabel = `${t('npc.healer.healOption')}  (${price} G)`;
+    const opt1 = this.add.text(boxX - boxW / 2 + Math.round(36 * S), boxY + Math.round(4 * S), healLabel, {
+      fontSize: `${Math.round(11 * S)}px`, color: COLORS.TEXT_YELLOW, fontFamily: FONT_FAMILY,
+    }).setDepth(201).setScrollFactor(0);
+    this.healerOverlayTexts.push(opt1);
+
+    // Option 2: Leave
+    const opt2 = this.add.text(boxX - boxW / 2 + Math.round(36 * S), boxY + Math.round(28 * S), t('npc.healer.leaveOption'), {
+      fontSize: `${Math.round(11 * S)}px`, color: COLORS.TEXT_WHITE, fontFamily: FONT_FAMILY,
+    }).setDepth(201).setScrollFactor(0);
+    this.healerOverlayTexts.push(opt2);
+
+    // Cursor
+    this.healerOverlayCursor = this.add.text(boxX - boxW / 2 + Math.round(22 * S), boxY + Math.round(4 * S), '>', {
+      fontSize: `${Math.round(11 * S)}px`, color: COLORS.TEXT_YELLOW, fontFamily: FONT_FAMILY,
+    }).setDepth(201).setScrollFactor(0);
+  }
+
+  private hideHealerOverlay(): void {
+    this.healerOverlayOpen = false;
+    this.healerOverlayBox?.destroy();
+    this.healerOverlayTexts.forEach(t => t.destroy());
+    this.healerOverlayTexts = [];
+    this.healerOverlayCursor?.destroy();
+  }
+
+  private updateHealerSelection(): void {
+    // Option texts are at indices 2 and 3 in healerOverlayTexts
+    const opt1 = this.healerOverlayTexts[2];
+    const opt2 = this.healerOverlayTexts[3];
+    if (opt1) opt1.setColor(this.healerOverlayIndex === 0 ? COLORS.TEXT_YELLOW : COLORS.TEXT_WHITE);
+    if (opt2) opt2.setColor(this.healerOverlayIndex === 1 ? COLORS.TEXT_YELLOW : COLORS.TEXT_WHITE);
+    if (this.healerOverlayCursor) {
+      const target = this.healerOverlayIndex === 0 ? opt1 : opt2;
+      if (target) this.healerOverlayCursor.y = target.y;
+    }
+  }
+
+  private confirmHealerOption(): void {
+    if (this.healerOverlayIndex === 0) {
+      // Heal
+      const p = gameState.player;
+      p.state.gold -= this.healerOverlayPrice;
+      p.fullHeal();
+      audioManager.playSfx('save');
+      this.hideHealerOverlay();
+      this.showMessage(t('npc.healer.healed', { price: this.healerOverlayPrice }));
+      this.updateHUD();
+    } else {
+      // Leave
+      this.hideHealerOverlay();
+    }
   }
 
   private tryBossInteract(x: number, y: number): boolean {
@@ -946,7 +1172,7 @@ export class WorldMapScene extends Phaser.Scene {
     ];
 
     this.showDialogSequence(dialogMessages, () => {
-      this.startBattle(boss);
+      this.startBattle(boss, true);
     });
 
     return true;
@@ -955,6 +1181,9 @@ export class WorldMapScene extends Phaser.Scene {
   private tryOpenTreasure(x: number, y: number): boolean {
     if (y < 0 || y >= this.mapData.length || x < 0 || x >= this.mapData[0].length) return false;
     if (this.mapData[y][x] !== 4) return false;
+    // Tile 4 is treasure in dungeons, but mountain on overworld — only allow in dungeons
+    const mapType = mapDefs[this.currentMapId].type;
+    if (mapType === 'overworld' || mapType === 'portal-overworld') return false;
 
     const def = mapDefs[this.currentMapId];
     const chestKey = def.type === 'dungeon'
@@ -1059,15 +1288,15 @@ export class WorldMapScene extends Phaser.Scene {
     this.showingMessage = true;
 
     this.messageBox = this.add.rectangle(
-      UI_OFFSET_X + GAME_WIDTH / 2, UI_OFFSET_Y + GAME_HEIGHT - 60,
-      GAME_WIDTH - 32, 80,
+      UI_OFFSET_X + GAME_WIDTH / 2, UI_OFFSET_Y + GAME_HEIGHT - Math.round(60 * S),
+      GAME_WIDTH - Math.round(32 * S), Math.round(80 * S),
       COLORS.MENU_BG, 0.9
     ).setDepth(100).setStrokeStyle(1, COLORS.MENU_BORDER).setScrollFactor(0);
 
     this.messageText = this.add.text(
-      UI_OFFSET_X + 32, UI_OFFSET_Y + GAME_HEIGHT - 88,
+      UI_OFFSET_X + Math.round(32 * S), UI_OFFSET_Y + GAME_HEIGHT - Math.round(88 * S),
       text,
-      { fontSize: '12px', color: COLORS.TEXT_WHITE, fontFamily: FONT_FAMILY, wordWrap: { width: GAME_WIDTH - 64 } }
+      { fontSize: `${Math.round(12 * S)}px`, color: COLORS.TEXT_WHITE, fontFamily: FONT_FAMILY, wordWrap: { width: GAME_WIDTH - Math.round(64 * S) } }
     ).setDepth(101).setScrollFactor(0);
   }
 
@@ -1103,18 +1332,21 @@ export class WorldMapScene extends Phaser.Scene {
     this.hpText?.destroy();
     this.guideText?.destroy();
     this.floorText?.destroy();
+    this.compassContainer?.destroy();
+    this.compassContainer = undefined;
+    this.compassArrow = undefined;
 
     const p = gameState.player;
     this.hpText = this.add.text(
-      UI_OFFSET_X + 8, UI_OFFSET_Y + 8,
+      UI_OFFSET_X + Math.round(8 * S), UI_OFFSET_Y + Math.round(8 * S),
       `${t('menu.level')}${p.state.level}  ${t('menu.hp')} ${p.state.hp}/${p.totalMaxHp}`,
-      { fontSize: '10px', color: COLORS.TEXT_WHITE, fontFamily: FONT_FAMILY, backgroundColor: '#1a1a3ecc', padding: { x: 4, y: 2 } }
+      { fontSize: `${Math.round(10 * S)}px`, color: COLORS.TEXT_WHITE, fontFamily: FONT_FAMILY, backgroundColor: '#1a1a3ecc', padding: { x: Math.round(4 * S), y: Math.round(2 * S) } }
     ).setDepth(100).setScrollFactor(0);
 
     // Dungeon/town name indicator
     const def = mapDefs[this.currentMapId];
     if (def.type === 'dungeon' || def.type === 'town') {
-      const totalFloors = WorldMapScene.gradeCappedFloors(def.floors ?? 1);
+      const totalFloors = def.floors ?? 1;
       let label = t(def.nameKey);
       if (totalFloors > 1) {
         const isGate = def.connections.length > 1;
@@ -1126,19 +1358,22 @@ export class WorldMapScene extends Phaser.Scene {
         label += def.castle ? ` — ${displayFloor}F` : ` — B${displayFloor}F`;
       }
       this.floorText = this.add.text(
-        UI_OFFSET_X + 8, UI_OFFSET_Y + 24,
+        UI_OFFSET_X + Math.round(8 * S), UI_OFFSET_Y + Math.round(24 * S),
         label,
-        { fontSize: '10px', color: COLORS.TEXT_YELLOW, fontFamily: FONT_FAMILY, backgroundColor: '#1a1a3ecc', padding: { x: 4, y: 2 } }
+        { fontSize: `${Math.round(10 * S)}px`, color: COLORS.TEXT_YELLOW, fontFamily: FONT_FAMILY, backgroundColor: '#1a1a3ecc', padding: { x: Math.round(4 * S), y: Math.round(2 * S) } }
       ).setDepth(100).setScrollFactor(0);
     }
 
     // Floating key guide (bottom-right corner)
     const guide = `↑↓←→: ${t('guide.move')}  Z: ${t('guide.talk')}  I: ${t('guide.item')}  ESC: ${t('guide.menu')}`;
     this.guideText = this.add.text(
-      UI_OFFSET_X + GAME_WIDTH - 8, UI_OFFSET_Y + GAME_HEIGHT - 8,
+      UI_OFFSET_X + GAME_WIDTH - Math.round(8 * S), UI_OFFSET_Y + GAME_HEIGHT - Math.round(8 * S),
       guide,
-      { fontSize: '8px', color: '#aaaaaa', fontFamily: FONT_FAMILY, backgroundColor: '#1a1a3e99', padding: { x: 4, y: 2 } }
+      { fontSize: `${Math.round(8 * S)}px`, color: '#aaaaaa', fontFamily: FONT_FAMILY, backgroundColor: '#1a1a3e99', padding: { x: Math.round(4 * S), y: Math.round(2 * S) } }
     ).setOrigin(1, 1).setDepth(100).setScrollFactor(0).setAlpha(0.7);
+
+    // Compass (K/G1 overworld only)
+    this.createCompass();
   }
 
   private updateCamera(): void {
@@ -1164,6 +1399,31 @@ export class WorldMapScene extends Phaser.Scene {
   wake(): void {
     // Block movement immediately — prevents auto-step from held keys after battle
     this.isMoving = true;
+    // Reset cursor keys to cancel any held direction from before battle
+    if (this.cursors) {
+      this.cursors.left.reset();
+      this.cursors.right.reset();
+      this.cursors.up.reset();
+      this.cursors.down.reset();
+    }
+    // Clear any lingering messages from before the battle
+    this.hideMessage();
+    this.showingMessage = false;
+    this.dialogQueue = [];
+    this.dialogCallback = undefined;
+
+    // Check boss defeat BEFORE fade-in so we know whether to block movement
+    const bossJustDefeated = this.pendingBossId &&
+      gameState.player.state.storyFlags[`boss.${this.pendingBossId}.defeated`];
+
+    // Fade back in from battle transition
+    this.cameras.main.fadeIn(300, 0, 0, 0);
+    this.cameras.main.once('camerafadeincomplete', () => {
+      // Only unblock movement if NOT a boss defeat (boss defeat dialog controls isMoving)
+      if (gameState.player.isAlive && !bossJustDefeated) {
+        this.isMoving = false;
+      }
+    });
     this.updateHUD();
     if (!gameState.player.isAlive) {
       this.scene.start('GameOverScene');
@@ -1178,8 +1438,8 @@ export class WorldMapScene extends Phaser.Scene {
     audioManager.playBgm(bgm);
 
     // Boss defeat handling
-    if (this.pendingBossId && gameState.player.state.storyFlags[`boss.${this.pendingBossId}.defeated`]) {
-      const bossId = this.pendingBossId;
+    if (bossJustDefeated) {
+      const bossId = this.pendingBossId!;
       this.pendingBossId = undefined;
 
       // Demon King goes to VictoryScene (handled by BattleScene), so no effect needed here
@@ -1229,10 +1489,10 @@ export class WorldMapScene extends Phaser.Scene {
           });
         }
 
-        // Remove boss tile — gate dungeons open a walkable path, others get exit portal
+        // Remove boss tile — gate dungeons get stairs (12), others get portal (10)
         const isGateDungeon = def.connections.length > 1;
         this.time.delayedCall(800, () => {
-          const newTile = isGateDungeon ? 6 : 10;
+          const newTile = isGateDungeon ? 12 : 10;
           this.mapData[bossTileY][bossTileX] = newTile;
           // Update single tile in-place (same pattern as treasure chest) — avoids camera snap
           const mapWidth = this.mapData[0].length;
@@ -1301,7 +1561,7 @@ export class WorldMapScene extends Phaser.Scene {
         this.time.delayedCall(200, () => {
           const defeatMsg = t(`dungeon.${this.currentMapId}.boss.defeat`);
           const victoryMsg = t(`dungeon.${this.currentMapId}.victory`);
-          const onDone = () => { this.isMoving = false; };
+          const onDone = () => { this.isMoving = false; this.updateHUD(); };
 
           // Legendary item obtainment dialog
           if (bossId === 'swordWraith') {
@@ -1313,7 +1573,7 @@ export class WorldMapScene extends Phaser.Scene {
           } else if (bossId === 'frostMonarch') {
             this.showDialogSequence([defeatMsg, t('legendary.crownOfWisdom.obtained'), victoryMsg], onDone);
           } else if (bossId === 'stormHarpy' || bossId === 'serpent' || bossId === 'dragon' || bossId === 'sandGolem' || bossId === 'flameTitan') {
-            this.showDialogSequence([defeatMsg, victoryMsg, t('item.crystalShard.obtained')], onDone);
+            this.showDialogSequence([defeatMsg, victoryMsg], onDone);
           } else {
             this.showDialogSequence([defeatMsg, victoryMsg], onDone);
           }
@@ -1348,9 +1608,9 @@ export class WorldMapScene extends Phaser.Scene {
     }
 
     // Draw overlay box
-    const boxW = 200;
+    const boxW = Math.round(200 * S);
     const itemCount = Math.max(this.itemOverlayItems.length, 1);
-    const boxH = 36 + itemCount * 24;
+    const boxH = Math.round(36 * S) + itemCount * Math.round(24 * S);
     const boxX = UI_OFFSET_X + GAME_WIDTH / 2;
     const boxY = UI_OFFSET_Y + GAME_HEIGHT / 2;
 
@@ -1360,25 +1620,25 @@ export class WorldMapScene extends Phaser.Scene {
       .setScrollFactor(0);
 
     // Title
-    this.itemOverlayTitle = this.add.text(boxX, boxY - boxH / 2 + 14, t('field.itemTitle'), {
-      fontSize: '12px', color: COLORS.TEXT_YELLOW, fontFamily: FONT_FAMILY,
+    this.itemOverlayTitle = this.add.text(boxX, boxY - boxH / 2 + Math.round(14 * S), t('field.itemTitle'), {
+      fontSize: `${Math.round(12 * S)}px`, color: COLORS.TEXT_YELLOW, fontFamily: FONT_FAMILY,
     }).setOrigin(0.5).setDepth(201).setScrollFactor(0);
 
     if (this.itemOverlayItems.length === 0) {
       const noItems = this.add.text(boxX, boxY, t('field.noItems'), {
-        fontSize: '10px', color: COLORS.TEXT_GRAY, fontFamily: FONT_FAMILY,
+        fontSize: `${Math.round(10 * S)}px`, color: COLORS.TEXT_GRAY, fontFamily: FONT_FAMILY,
       }).setOrigin(0.5).setDepth(201).setScrollFactor(0);
       this.itemOverlayTexts.push(noItems);
       return;
     }
 
     // Draw items
-    const startY = boxY - boxH / 2 + 36;
+    const startY = boxY - boxH / 2 + Math.round(36 * S);
     for (let i = 0; i < this.itemOverlayItems.length; i++) {
       const entry = this.itemOverlayItems[i];
       const label = `${t(entry.nameKey)} x${entry.quantity}  +${entry.healValue}HP`;
-      const txt = this.add.text(boxX - boxW / 2 + 24, startY + i * 24, label, {
-        fontSize: '10px',
+      const txt = this.add.text(boxX - boxW / 2 + Math.round(24 * S), startY + i * Math.round(24 * S), label, {
+        fontSize: `${Math.round(10 * S)}px`,
         color: i === 0 ? COLORS.TEXT_YELLOW : COLORS.TEXT_WHITE,
         fontFamily: FONT_FAMILY,
       }).setDepth(201).setScrollFactor(0);
@@ -1387,8 +1647,8 @@ export class WorldMapScene extends Phaser.Scene {
 
     // Cursor
     this.itemOverlayCursor = this.add.text(
-      boxX - boxW / 2 + 12, startY, '>', {
-        fontSize: '10px', color: COLORS.TEXT_YELLOW, fontFamily: FONT_FAMILY,
+      boxX - boxW / 2 + Math.round(12 * S), startY, '>', {
+        fontSize: `${Math.round(10 * S)}px`, color: COLORS.TEXT_YELLOW, fontFamily: FONT_FAMILY,
       }
     ).setDepth(201).setScrollFactor(0);
   }
@@ -1446,9 +1706,182 @@ export class WorldMapScene extends Phaser.Scene {
       }
     }
 
+    // Close menu and show message immediately (same pattern as HP-full which works)
     this.hideFieldItemMenu();
-    this.updateHUD();
     this.showMessage(t('field.itemUsed', { item: t(entry.nameKey), value: healed }));
+
+    // Green heal flash
+    const flash = this.add.rectangle(
+      UI_OFFSET_X + GAME_WIDTH / 2, UI_OFFSET_Y + GAME_HEIGHT / 2,
+      GAME_WIDTH * 2, GAME_HEIGHT * 2, 0x22cc44
+    ).setDepth(99).setScrollFactor(0).setAlpha(0);
+    this.tweens.add({
+      targets: flash, alpha: 0.3, duration: 120, yoyo: true,
+      onComplete: () => flash.destroy(),
+    });
+
+    // Update HUD after message is shown (delayed to avoid interference)
+    this.time.delayedCall(50, () => this.updateHUD());
+  }
+
+  // ── Compass system ──
+  // K/G1: compass with directional arrow pointing to next waypoint
+  // G2+: compass with N/S/E/W labels only (no arrow)
+
+  private isCompassArrowEligible(): boolean {
+    const grade = gameState.player.state.quizDifficulty;
+    return grade === 'k' || grade === '1';
+  }
+
+  private getCompassTarget(): { ox: number; oy: number } | null {
+    const flags = gameState.player.state.storyFlags;
+    // Find the index of the LATEST completed waypoint in the chain.
+    // This ensures that if a player skips a town but beats a later boss,
+    // the compass advances past the skipped waypoint.
+    let latestDoneIdx = -1;
+    for (let i = 0; i < COMPASS_CHAIN.length; i++) {
+      if (flags[COMPASS_CHAIN[i].doneFlag]) {
+        latestDoneIdx = i;
+      }
+    }
+    // Return the first incomplete waypoint AFTER the latest completed one
+    for (let i = latestDoneIdx + 1; i < COMPASS_CHAIN.length; i++) {
+      if (!flags[COMPASS_CHAIN[i].doneFlag]) {
+        return { ox: COMPASS_CHAIN[i].ox, oy: COMPASS_CHAIN[i].oy };
+      }
+    }
+    return null; // All waypoints completed
+  }
+
+  private createCompass(): void {
+    // Only show on overworld
+    const def = mapDefs[this.currentMapId];
+    if (def.type !== 'overworld') {
+      this.compassEnabled = false;
+      return;
+    }
+    this.compassEnabled = true;
+
+    // Destroy previous
+    this.compassContainer?.destroy();
+
+    const cx = UI_OFFSET_X + GAME_WIDTH - Math.round(40 * S);
+    const cy = UI_OFFSET_Y + Math.round(40 * S);
+
+    this.compassContainer = this.add.container(cx, cy).setDepth(101).setScrollFactor(0);
+
+    // Background circle
+    const bg = this.add.graphics();
+    bg.fillStyle(0x1a1a3e, 0.8);
+    bg.fillCircle(0, 0, Math.round(22 * S));
+    bg.lineStyle(2, 0xddaa33, 1);
+    bg.strokeCircle(0, 0, Math.round(22 * S));
+    this.compassContainer.add(bg);
+
+    // Cardinal letters
+    const cardStyle = { fontSize: `${Math.round(6 * S)}px`, color: '#aaaaaa', fontFamily: FONT_FAMILY };
+    const n = this.add.text(0, Math.round(-15 * S), 'N', { fontSize: `${Math.round(7 * S)}px`, color: '#ffcc33', fontFamily: FONT_FAMILY }).setOrigin(0.5);
+    const s = this.add.text(0, Math.round(17 * S), 'S', cardStyle).setOrigin(0.5);
+    const e = this.add.text(Math.round(17 * S), 0, 'E', cardStyle).setOrigin(0.5);
+    const w = this.add.text(Math.round(-17 * S), 0, 'W', cardStyle).setOrigin(0.5);
+    this.compassContainer.add([n, s, e, w]);
+
+    // Small north triangle indicator above N
+    const northTriangle = this.add.graphics();
+    northTriangle.fillStyle(0xffcc33, 1);
+    northTriangle.fillTriangle(0, Math.round(-22 * S), Math.round(-4 * S), Math.round(-18 * S), Math.round(4 * S), Math.round(-18 * S));
+    this.compassContainer.add(northTriangle);
+
+    // Arrow (drawn as triangle, rotated toward target) — K/G1 only
+    if (this.isCompassArrowEligible()) {
+      this.compassArrow = this.add.graphics();
+      this.compassContainer.add(this.compassArrow);
+    }
+
+    this.updateCompass();
+  }
+
+  private updateCompass(): void {
+    if (!this.compassEnabled || !this.compassContainer) return;
+
+    const def = mapDefs[this.currentMapId];
+    if (def.type !== 'overworld') {
+      this.compassContainer.setVisible(false);
+      return;
+    }
+    this.compassContainer.setVisible(true);
+
+    // Mark town as visited when player is inside (for next update cycle)
+    // This is checked on overworld, so we set it when transitioning TO a town
+
+    // G2+ always shows compass (N/S/E/W only), no arrow needed
+    if (!this.compassArrow) return;
+
+    const target = this.getCompassTarget();
+    if (!target) {
+      // All done — hide arrow but keep compass visible
+      this.compassArrow.clear();
+      return;
+    }
+
+    // Calculate angle from hero to target
+    const dx = target.ox - this.heroTileX;
+    const dy = target.oy - this.heroTileY;
+    const angle = Math.atan2(dy, dx);
+
+    // Draw arrow triangle pointing in that direction
+    this.compassArrow.clear();
+
+    // Arrow: large triangle pointing right (angle=0), then rotated
+    const arrowLen = 14;
+    const arrowWidth = 7;
+
+    // Tip of arrow
+    const tipX = Math.cos(angle) * arrowLen;
+    const tipY = Math.sin(angle) * arrowLen;
+    // Two base points (perpendicular to direction)
+    const perpX = Math.cos(angle + Math.PI / 2) * arrowWidth;
+    const perpY = Math.sin(angle + Math.PI / 2) * arrowWidth;
+    const baseX = Math.cos(angle) * -4;
+    const baseY = Math.sin(angle) * -4;
+
+    // Main arrow (gold/yellow)
+    this.compassArrow.fillStyle(0xffcc33, 1);
+    this.compassArrow.beginPath();
+    this.compassArrow.moveTo(tipX, tipY);
+    this.compassArrow.lineTo(baseX + perpX, baseY + perpY);
+    this.compassArrow.lineTo(baseX - perpX, baseY - perpY);
+    this.compassArrow.closePath();
+    this.compassArrow.fillPath();
+
+    // Arrow border
+    this.compassArrow.lineStyle(1, 0xaa8822, 1);
+    this.compassArrow.beginPath();
+    this.compassArrow.moveTo(tipX, tipY);
+    this.compassArrow.lineTo(baseX + perpX, baseY + perpY);
+    this.compassArrow.lineTo(baseX - perpX, baseY - perpY);
+    this.compassArrow.closePath();
+    this.compassArrow.strokePath();
+
+    // Small red dot at center
+    this.compassArrow.fillStyle(0xcc3333, 1);
+    this.compassArrow.fillCircle(0, 0, 2);
+
+    // Proximity pulse: if close to target (within 10 tiles), pulse alpha
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    if (dist < 10) {
+      const pulse = 0.6 + 0.4 * Math.sin(this.time.now / 100);
+      this.compassContainer.setAlpha(pulse);
+    } else {
+      this.compassContainer.setAlpha(1);
+    }
+  }
+
+  private markTownVisited(mapId: string): void {
+    const flag = `compass.visited.${mapId}`;
+    if (!gameState.player.state.storyFlags[flag]) {
+      gameState.player.state.storyFlags[flag] = true;
+    }
   }
 
   shutdown(): void {

@@ -10,6 +10,24 @@ export type EquipSlot = 'weapon' | 'armor' | 'shield' | 'helmet' | 'accessory';
 
 export type AIPattern = 'basic' | 'aggressive' | 'defensive' | 'boss';
 
+export type BossAbilityType = 'rage' | 'regen' | 'poison' | 'charge';
+
+export interface BossAbility {
+  type: BossAbilityType;
+  /** rage: ATK multiplier when HP < threshold. Default 1.5 */
+  atkMultiplier?: number;
+  /** rage/regen: HP threshold ratio (0-1). Default 0.5 for rage */
+  hpThreshold?: number;
+  /** regen: fraction of maxHP healed per turn. Default 0.08 */
+  healFraction?: number;
+  /** poison: fraction of player maxHP dealt per turn. Default 0.05 */
+  poisonFraction?: number;
+  /** charge: every N turns, deal multiplied damage. Default every 3 */
+  chargeInterval?: number;
+  /** charge: ATK multiplier on charge turn. Default 2.0 */
+  chargeMultiplier?: number;
+}
+
 export type CombatActionType = 'attack' | 'defend' | 'item' | 'flee';
 
 export interface LocalizedText {
@@ -83,6 +101,7 @@ export interface MonsterTemplate {
   drops: { itemId: string; chance: number }[];
   aiPattern: AIPattern;
   color: number; // Tint color for procedural sprite
+  bossAbilities?: BossAbility[];
 }
 
 export interface ItemDefinition {

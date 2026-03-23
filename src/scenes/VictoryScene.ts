@@ -1,8 +1,10 @@
 import Phaser from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, ZOOM, COLORS, FONT_FAMILY } from '../utils/constants';
+import { GAME_WIDTH, GAME_HEIGHT, ZOOM, COLORS, FONT_FAMILY, UI_SCALE } from '../utils/constants';
 import { t } from '../i18n/i18n';
 import { gameState } from '../GameState';
 import { audioManager } from '../systems/audio/AudioManager';
+
+const S = UI_SCALE;
 
 export class VictoryScene extends Phaser.Scene {
   private menuIndex = 0;
@@ -38,19 +40,19 @@ export class VictoryScene extends Phaser.Scene {
       });
     }
 
-    this.add.text(GAME_WIDTH / 2, 60, t('victory.title'), {
-      fontSize: '22px', color: COLORS.TEXT_YELLOW, fontFamily: FONT_FAMILY, fontStyle: 'bold',
+    this.add.text(GAME_WIDTH / 2, Math.round(60 * S), t('victory.title'), {
+      fontSize: `${Math.round(22 * S)}px`, color: COLORS.TEXT_YELLOW, fontFamily: FONT_FAMILY, fontStyle: 'bold',
     }).setOrigin(0.5);
 
-    this.add.text(GAME_WIDTH / 2, 100, t('victory.message'), {
-      fontSize: '12px', color: COLORS.TEXT_WHITE, fontFamily: FONT_FAMILY,
-      wordWrap: { width: GAME_WIDTH - 64 },
+    this.add.text(GAME_WIDTH / 2, Math.round(100 * S), t('victory.message'), {
+      fontSize: `${Math.round(12 * S)}px`, color: COLORS.TEXT_WHITE, fontFamily: FONT_FAMILY,
+      wordWrap: { width: GAME_WIDTH - Math.round(64 * S) },
       align: 'center',
     }).setOrigin(0.5);
 
-    this.add.text(GAME_WIDTH / 2, 130, t('victory.subtitle'), {
-      fontSize: '11px', color: '#88ccff', fontFamily: FONT_FAMILY,
-      wordWrap: { width: GAME_WIDTH - 64 },
+    this.add.text(GAME_WIDTH / 2, Math.round(130 * S), t('victory.subtitle'), {
+      fontSize: `${Math.round(11 * S)}px`, color: '#88ccff', fontFamily: FONT_FAMILY,
+      wordWrap: { width: GAME_WIDTH - Math.round(64 * S) },
       align: 'center',
     }).setOrigin(0.5);
 
@@ -62,45 +64,45 @@ export class VictoryScene extends Phaser.Scene {
     const timeStr = hours > 0
       ? `${hours}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`
       : `${mins}:${String(secs).padStart(2, '0')}`;
-    this.add.text(GAME_WIDTH / 2, 165, t('victory.time', { time: timeStr }), {
-      fontSize: '12px', color: COLORS.TEXT_YELLOW, fontFamily: FONT_FAMILY,
+    this.add.text(GAME_WIDTH / 2, Math.round(165 * S), t('victory.time', { time: timeStr }), {
+      fontSize: `${Math.round(12 * S)}px`, color: COLORS.TEXT_YELLOW, fontFamily: FONT_FAMILY,
     }).setOrigin(0.5);
 
     // Difficulty display
     const grade = gameState.player.state.quizDifficulty;
-    this.add.text(GAME_WIDTH / 2, 190, t('victory.difficulty', { grade: t(`grade.${grade}`) }), {
-      fontSize: '12px', color: COLORS.TEXT_WHITE, fontFamily: FONT_FAMILY,
+    this.add.text(GAME_WIDTH / 2, Math.round(190 * S), t('victory.difficulty', { grade: t(`grade.${grade}`) }), {
+      fontSize: `${Math.round(12 * S)}px`, color: COLORS.TEXT_WHITE, fontFamily: FONT_FAMILY,
     }).setOrigin(0.5);
 
     // Quiz stats
     const stats = gameState.quizManager.getStats();
     const pct = stats.totalAsked > 0 ? Math.round(stats.totalCorrect / stats.totalAsked * 100) : 0;
-    this.add.text(GAME_WIDTH / 2, 215, t('victory.stats', {
+    this.add.text(GAME_WIDTH / 2, Math.round(215 * S), t('victory.stats', {
       correct: stats.totalCorrect,
       total: stats.totalAsked,
       pct,
     }), {
-      fontSize: '12px', color: COLORS.TEXT_WHITE, fontFamily: FONT_FAMILY,
+      fontSize: `${Math.round(12 * S)}px`, color: COLORS.TEXT_WHITE, fontFamily: FONT_FAMILY,
     }).setOrigin(0.5);
 
     // Hero
     if (this.textures.exists('hero-walk')) {
-      this.add.image(GAME_WIDTH / 2, 290, 'hero-walk', 0).setScale(3);
+      this.add.image(GAME_WIDTH / 2, Math.round(290 * S), 'hero-walk', 0).setScale(3);
     }
 
-    this.add.text(GAME_WIDTH / 2, 355, t('victory.thanks'), {
-      fontSize: '14px', color: COLORS.TEXT_YELLOW, fontFamily: FONT_FAMILY,
+    this.add.text(GAME_WIDTH / 2, Math.round(355 * S), t('victory.thanks'), {
+      fontSize: `${Math.round(14 * S)}px`, color: COLORS.TEXT_YELLOW, fontFamily: FONT_FAMILY,
     }).setOrigin(0.5);
 
     // NG+ / Title Screen menu
-    const menuY = 395;
+    const menuY = Math.round(395 * S);
     const ngPlusText = this.add.text(GAME_WIDTH / 2, menuY, t('victory.ngplus'), {
-      fontSize: '12px', color: COLORS.TEXT_YELLOW, fontFamily: FONT_FAMILY,
+      fontSize: `${Math.round(12 * S)}px`, color: COLORS.TEXT_YELLOW, fontFamily: FONT_FAMILY,
     }).setOrigin(0.5);
     this.menuItems.push(ngPlusText);
 
-    const titleText = this.add.text(GAME_WIDTH / 2, menuY + 28, t('victory.titleScreen'), {
-      fontSize: '12px', color: COLORS.TEXT_WHITE, fontFamily: FONT_FAMILY,
+    const titleText = this.add.text(GAME_WIDTH / 2, menuY + Math.round(28 * S), t('victory.titleScreen'), {
+      fontSize: `${Math.round(12 * S)}px`, color: COLORS.TEXT_WHITE, fontFamily: FONT_FAMILY,
     }).setOrigin(0.5);
     this.menuItems.push(titleText);
 

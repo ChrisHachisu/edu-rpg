@@ -1,4 +1,4 @@
-import { MonsterTemplate, CombatActionType } from '../../utils/types';
+import { MonsterTemplate, CombatActionType, BossAbility } from '../../utils/types';
 import { Player } from '../../entities/Player';
 import { items } from '../../data/items';
 import {
@@ -31,6 +31,7 @@ export interface CombatResult {
   goldGain?: number;
   levelUp?: { newLevel: number };
   drops?: string[];
+  abilityMessages?: string[];
 }
 
 export class CombatEngine {
@@ -42,18 +43,50 @@ export class CombatEngine {
   private pendingAction: CombatActionType = 'attack';
   private pendingItemId: string | null = null;
 
+  // Boss ability state
+  private turnCount = 0;
+  private rageActive = false;
+  private isCharging = false; // true = next attack is a charge attack
+  private poisonActive = false;
+
   constructor(player: Player, monster: MonsterTemplate) {
     this.player = player;
     this.monster = monster;
     this.monsterHp = monster.baseHp;
+
+    // Initialize poison
+    if (this.getAbility('poison')) {
+      this.poisonActive = true;
+    }
+  }
+
+  private getAbility(type: BossAbility['type']): BossAbility | undefined {
+    return this.monster.bossAbilities?.find(a => a.type === type);
   }
 
   start(): CombatResult {
     this.state = 'playerTurn';
+    const abilityMessages = this.getStartMessages();
     return {
       state: 'start',
       message: t('battle.appeared', { monster: t(this.monster.nameKey) }),
+      abilityMessages,
     };
+  }
+
+  /** Generate intro messages about boss abilities */
+  private getStartMessages(): string[] {
+    const msgs: string[] = [];
+    if (!this.monster.bossAbilities?.length) return msgs;
+
+    for (const ability of this.monster.bossAbilities) {
+      switch (ability.type) {
+        case 'poison':
+          msgs.push(t('ability.poisonStart', { monster: t(this.monster.nameKey) }));
+          break;
+      }
+    }
+    return msgs;
   }
 
   selectAction(action: CombatActionType, itemId?: string): CombatResult | 'quiz' {
@@ -128,8 +161,8 @@ export class CombatEngine {
         speedBonus,
       };
     } else {
-      // Wrong answer: partial damage (50%)
-      const damage = Math.max(1, Math.floor(this.calculateDamage(this.player.totalAtk, this.monster.baseDef) * 0.5));
+      // Wrong answer: weak damage (25%)
+      let damage = Math.max(1, Math.floor(this.calculateDamage(this.player.totalAtk, this.monster.baseDef) * 0.25));
       this.monsterHp -= damage;
       if (this.monsterHp <= 0) {
         this.monsterHp = 0;
@@ -150,42 +183,128 @@ export class CombatEngine {
     return 'quiz';
   }
 
-  resolveEnemyAttack(quizCorrect: boolean): CombatResult {
-    if (quizCorrect) {
-      // Player answered correctly — enemy misses
-      this.isDefending = false;
-      this.state = 'playerTurn';
-      return {
-        state: 'enemyResolve',
-        message: t('battle.enemyMiss', { monster: t(this.monster.nameKey) }),
-      };
-    } else {
-      // Player answered incorrectly — enemy hits at 50% damage
-      const effectiveAtk = this.monster.baseAtk;
-      let damage = Math.max(1, Math.floor(this.calculateDamage(effectiveAtk, this.player.totalDef) * 0.5));
-      if (this.isDefending) damage = Math.max(1, Math.floor(damage * DEFEND_DAMAGE_MULTIPLIER));
-      this.isDefending = false;
-      this.player.takeDamage(damage);
+  resolveEnemyAttack(quizCorrect: boolean, timeRatio?: number): CombatResult {
+    // Enemy ALWAYS attacks — correct answers reduce damage
+    let effectiveAtk = this.monster.baseAtk;
 
-      if (!this.player.isAlive) {
-        this.state = 'defeat';
-        return {
-          state: 'defeat',
-          message: t('battle.hit', { damage }) + ' ' + t('battle.defeated', { name: this.player.state.name }),
-          damage,
-          partial: true,
-        };
+    // Rage: boost ATK when HP is low
+    const rageAbility = this.getAbility('rage');
+    let rageJustActivated = false;
+    if (rageAbility) {
+      const threshold = rageAbility.hpThreshold ?? 0.5;
+      if (this.monsterHp / this.monster.baseHp <= threshold) {
+        effectiveAtk = Math.floor(effectiveAtk * (rageAbility.atkMultiplier ?? 1.5));
+        if (!this.rageActive) {
+          this.rageActive = true;
+          rageJustActivated = true;
+        }
       }
+    }
 
-      this.state = 'playerTurn';
+    // Charge: if charging, multiply ATK
+    if (this.isCharging) {
+      const chargeAbility = this.getAbility('charge');
+      effectiveAtk = Math.floor(effectiveAtk * (chargeAbility?.chargeMultiplier ?? 2.0));
+      this.isCharging = false;
+    }
+
+    let damage = this.calculateDamage(effectiveAtk, this.player.totalDef);
+
+    // Damage reduction based on quiz answer
+    // Correct + fast: 40% reduction; Correct + slow: 20% reduction
+    // Same across all grades — younger grades already have easier quizzes + longer timers
+    let reductionMsg = '';
+
+    if (quizCorrect) {
+      const fastAnswer = timeRatio !== undefined && timeRatio >= 0.5;
+      if (fastAnswer) {
+        damage = Math.max(1, Math.floor(damage * 0.6));
+        reductionMsg = t('battle.enemyDamageReduced');
+      } else {
+        damage = Math.max(1, Math.floor(damage * 0.8));
+        reductionMsg = t('battle.enemyDamageSoftened');
+      }
+    }
+
+    if (this.isDefending) damage = Math.max(1, Math.floor(damage * DEFEND_DAMAGE_MULTIPLIER));
+    this.isDefending = false;
+    this.player.takeDamage(damage);
+
+    const rageMsgs = rageJustActivated
+      ? [t('ability.rageActivate', { monster: t(this.monster.nameKey) })]
+      : [];
+
+    const attackMsg = t('battle.enemyAttack', { monster: t(this.monster.nameKey) });
+    const damageMsg = t('battle.hit', { damage });
+    const fullMsg = reductionMsg
+      ? `${attackMsg} ${reductionMsg} ${damageMsg}`
+      : `${attackMsg} ${damageMsg}`;
+
+    if (!this.player.isAlive) {
+      this.state = 'defeat';
       return {
-        state: 'enemyResolve',
-        message: t('battle.enemyAttack', { monster: t(this.monster.nameKey) }) + ' ' + t('battle.partialHit', { damage }),
+        state: 'defeat',
+        message: fullMsg + ' ' + t('battle.defeated', { name: this.player.state.name }),
         damage,
-        partial: true,
+        abilityMessages: rageMsgs,
       };
     }
+
+    this.state = 'playerTurn';
+    return {
+      state: 'enemyResolve',
+      message: fullMsg,
+      damage,
+      partial: quizCorrect,
+      abilityMessages: rageMsgs,
+    };
   }
+
+  /** Process end-of-turn abilities (regen, poison, charge warning, shield countdown).
+   *  Call after enemy attack resolves. Returns messages to display. */
+  processTurnAbilities(): string[] {
+    this.turnCount++;
+    const messages: string[] = [];
+
+    // Regen: heal monster each turn
+    const regenAbility = this.getAbility('regen');
+    if (regenAbility && this.monsterHp > 0 && this.monsterHp < this.monster.baseHp) {
+      const healAmt = Math.max(1, Math.floor(this.monster.baseHp * (regenAbility.healFraction ?? 0.08)));
+      this.monsterHp = Math.min(this.monster.baseHp, this.monsterHp + healAmt);
+      messages.push(t('ability.regen', { monster: t(this.monster.nameKey), value: healAmt }));
+    }
+
+    // Poison: damage player each turn
+    if (this.poisonActive) {
+      const poisonAbility = this.getAbility('poison');
+      const poisonDmg = Math.max(1, Math.floor(this.player.totalMaxHp * (poisonAbility?.poisonFraction ?? 0.05)));
+      this.player.takeDamage(poisonDmg);
+      messages.push(t('ability.poison', { name: this.player.state.name, damage: poisonDmg }));
+    }
+
+    // Charge: prepare for next turn
+    const chargeAbility = this.getAbility('charge');
+    if (chargeAbility) {
+      const interval = chargeAbility.chargeInterval ?? 3;
+      if (this.turnCount > 0 && this.turnCount % interval === interval - 1) {
+        this.isCharging = true;
+        messages.push(t('ability.chargeWarning', { monster: t(this.monster.nameKey) }));
+      }
+    }
+
+    return messages;
+  }
+
+  /** Check if the player has been defeated by poison (call after processTurnAbilities) */
+  isPlayerDefeatedByPoison(): boolean {
+    return !this.player.isAlive;
+  }
+
+  /** Whether rage just activated this turn (for UI flash) */
+  isRageActive(): boolean {
+    return this.rageActive;
+  }
+
 
   private victory(): CombatResult {
     this.state = 'victory';

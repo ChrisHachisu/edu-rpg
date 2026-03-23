@@ -1,9 +1,11 @@
 import Phaser from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, ZOOM, COLORS, FONT_FAMILY } from '../utils/constants';
+import { GAME_WIDTH, GAME_HEIGHT, ZOOM, COLORS, FONT_FAMILY, UI_SCALE } from '../utils/constants';
 import { t } from '../i18n/i18n';
 import { gameState } from '../GameState';
 import { audioManager } from '../systems/audio/AudioManager';
 import { SaveManager } from '../systems/progression/SaveManager';
+
+const S = UI_SCALE;
 
 export class GameOverScene extends Phaser.Scene {
   private menuIndex = 0;
@@ -28,8 +30,8 @@ export class GameOverScene extends Phaser.Scene {
     this.menuTexts = [];
     audioManager.playBgm('gameOver');
 
-    this.add.text(GAME_WIDTH / 2, 120, t('gameover.title'), {
-      fontSize: '22px', color: '#cc2222', fontFamily: FONT_FAMILY, fontStyle: 'bold',
+    this.add.text(GAME_WIDTH / 2, Math.round(120 * S), t('gameover.title'), {
+      fontSize: `${Math.round(22 * S)}px`, color: '#cc2222', fontFamily: FONT_FAMILY, fontStyle: 'bold',
     }).setOrigin(0.5);
 
     // Options: Retry (auto-save), Restart from save point (manual save + portal flags), Title
@@ -44,8 +46,8 @@ export class GameOverScene extends Phaser.Scene {
 
     this.menuTexts = options.map((opt, i) => {
       const isDisabled = opt.action === 'restart_save' && !hasSave;
-      return this.add.text(GAME_WIDTH / 2, 220 + i * 36, t(opt.key), {
-        fontSize: '14px',
+      return this.add.text(GAME_WIDTH / 2, Math.round(220 * S) + i * Math.round(36 * S), t(opt.key), {
+        fontSize: `${Math.round(14 * S)}px`,
         color: isDisabled ? COLORS.TEXT_GRAY
           : i === this.menuIndex ? COLORS.TEXT_YELLOW : COLORS.TEXT_WHITE,
         fontFamily: FONT_FAMILY,
@@ -55,8 +57,8 @@ export class GameOverScene extends Phaser.Scene {
     this.maxIndex = options.length - 1;
 
     // Cursor indicator
-    this.add.text(GAME_WIDTH / 2 - 80, 220 + this.menuIndex * 36, '▶', {
-      fontSize: '14px', color: COLORS.TEXT_YELLOW, fontFamily: FONT_FAMILY,
+    this.add.text(GAME_WIDTH / 2 - Math.round(80 * S), Math.round(220 * S) + this.menuIndex * Math.round(36 * S), '▶', {
+      fontSize: `${Math.round(14 * S)}px`, color: COLORS.TEXT_YELLOW, fontFamily: FONT_FAMILY,
     }).setOrigin(0.5).setName('cursor');
 
     // Register input handlers (safe — we cleared all listeners above)
@@ -128,7 +130,7 @@ export class GameOverScene extends Phaser.Scene {
     // Move cursor indicator
     const cursor = this.children.getByName('cursor') as Phaser.GameObjects.Text;
     if (cursor) {
-      cursor.setY(220 + this.menuIndex * 36);
+      cursor.setY(Math.round(220 * S) + this.menuIndex * Math.round(36 * S));
     }
     audioManager.playSfx('menu_select');
   }

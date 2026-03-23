@@ -152,7 +152,7 @@ export const monsters: Record<string, MonsterTemplate> = {
     id: 'giantToad',
     nameKey: 'monster.giantToad',
     spriteKey: 'monster-giantToad',
-    baseHp: 68,
+    baseHp: 54,
     baseAtk: 19,
     baseDef: 10,
     baseSpd: 8,
@@ -161,6 +161,7 @@ export const monsters: Record<string, MonsterTemplate> = {
     drops: [{ itemId: 'potion', chance: 0.2 }],
     aiPattern: 'boss',
     color: 0x337722,
+    bossAbilities: [{ type: 'regen', healFraction: 0.06 }],
   },
 
   // ── Boss 2 — Crystal Cave (1.5x HP from original 55) ──────────────
@@ -168,7 +169,7 @@ export const monsters: Record<string, MonsterTemplate> = {
     id: 'serpent',
     nameKey: 'monster.serpent',
     spriteKey: 'monster-serpent',
-    baseHp: 83,
+    baseHp: 64,
     baseAtk: 22,
     baseDef: 12,
     baseSpd: 11,
@@ -177,6 +178,7 @@ export const monsters: Record<string, MonsterTemplate> = {
     drops: [{ itemId: 'potion', chance: 0.15 }],
     aiPattern: 'boss',
     color: 0x2266aa,
+    bossAbilities: [{ type: 'poison', poisonFraction: 0.04 }],
   },
 
   // ── Tier 3 — coral-tunnels (Lv 6-8) ──────────────────────────────
@@ -259,7 +261,7 @@ export const monsters: Record<string, MonsterTemplate> = {
     nameKey: 'monster.kraken',
     spriteKey: 'monster-kraken',
     baseHp: 105,
-    baseAtk: 26,
+    baseAtk: 30,
     baseDef: 16,
     baseSpd: 9,
     expReward: 80,
@@ -267,6 +269,7 @@ export const monsters: Record<string, MonsterTemplate> = {
     drops: [{ itemId: 'hiPotion', chance: 0.2 }],
     aiPattern: 'boss',
     color: 0x552288,
+    bossAbilities: [{ type: 'poison', poisonFraction: 0.05 }, { type: 'regen', healFraction: 0.04 }],
   },
 
   // ── Boss 4 — Shadow Cave (1.5x HP from original 90) ──────────────
@@ -275,7 +278,7 @@ export const monsters: Record<string, MonsterTemplate> = {
     nameKey: 'monster.dragon',
     spriteKey: 'monster-dragon',
     baseHp: 135,
-    baseAtk: 31,
+    baseAtk: 38,
     baseDef: 18,
     baseSpd: 15,
     expReward: 110,
@@ -283,6 +286,7 @@ export const monsters: Record<string, MonsterTemplate> = {
     drops: [],
     aiPattern: 'boss',
     color: 0xcc2222,
+    bossAbilities: [{ type: 'rage', atkMultiplier: 1.5, hpThreshold: 0.5 }],
   },
 
   // ── Boss 3.5 — Storm Nest (prerequisite for Shadow Cave) ──────────
@@ -291,7 +295,7 @@ export const monsters: Record<string, MonsterTemplate> = {
     nameKey: 'monster.stormHarpy',
     spriteKey: 'monster-stormHarpy',
     baseHp: 120,
-    baseAtk: 28,
+    baseAtk: 34,
     baseDef: 16,
     baseSpd: 20,
     expReward: 95,
@@ -299,6 +303,7 @@ export const monsters: Record<string, MonsterTemplate> = {
     drops: [],
     aiPattern: 'boss',
     color: 0x6644aa,
+    bossAbilities: [{ type: 'charge', chargeInterval: 3, chargeMultiplier: 2.0 }],
   },
 
   // ── Tier 4 — frostpeak-cavern (Lv 12-15) ─────────────────────────
@@ -351,7 +356,7 @@ export const monsters: Record<string, MonsterTemplate> = {
     nameKey: 'monster.iceWyrm',
     spriteKey: 'monster-iceWyrm',
     baseHp: 120,
-    baseAtk: 29,
+    baseAtk: 38,
     baseDef: 20,
     baseSpd: 14,
     expReward: 130,
@@ -359,6 +364,7 @@ export const monsters: Record<string, MonsterTemplate> = {
     drops: [],
     aiPattern: 'boss',
     color: 0x66aadd,
+    bossAbilities: [{ type: 'regen', healFraction: 0.05 }],
   },
 
   // ── Tier 5 — scorched-wastes + sunken-ruins (Lv 15-20) ───────────
@@ -439,7 +445,7 @@ export const monsters: Record<string, MonsterTemplate> = {
     nameKey: 'monster.lich',
     spriteKey: 'monster-lich',
     baseHp: 150,
-    baseAtk: 36,
+    baseAtk: 50,
     baseDef: 22,
     baseSpd: 16,
     expReward: 160,
@@ -447,6 +453,7 @@ export const monsters: Record<string, MonsterTemplate> = {
     drops: [],
     aiPattern: 'boss',
     color: 0x225533,
+    bossAbilities: [{ type: 'regen', healFraction: 0.08 }, { type: 'poison', poisonFraction: 0.06 }],
   },
 
   // ── Tier 6 — volcanic-forge + demons-threshold (Lv 20-25) ────────
@@ -512,8 +519,8 @@ export const monsters: Record<string, MonsterTemplate> = {
     id: 'flameTitan',
     nameKey: 'monster.flameTitan',
     spriteKey: 'monster-flameTitan',
-    baseHp: 230,
-    baseAtk: 40,
+    baseHp: 180,
+    baseAtk: 56,
     baseDef: 24,
     baseSpd: 12,
     expReward: 190,
@@ -521,6 +528,7 @@ export const monsters: Record<string, MonsterTemplate> = {
     drops: [],
     aiPattern: 'boss',
     color: 0xee4400,
+    bossAbilities: [{ type: 'rage', atkMultiplier: 1.5, hpThreshold: 0.4 }, { type: 'charge', chargeInterval: 4, chargeMultiplier: 1.8 }],
   },
 
   // ── Final Boss — Demon Castle ─────────────────────────────────────
@@ -529,7 +537,7 @@ export const monsters: Record<string, MonsterTemplate> = {
     nameKey: 'monster.demonKing',
     spriteKey: 'monster-demonKing',
     baseHp: 750,
-    baseAtk: 65,
+    baseAtk: 80,
     baseDef: 35,
     baseSpd: 18,
     expReward: 0,
@@ -537,6 +545,7 @@ export const monsters: Record<string, MonsterTemplate> = {
     drops: [],
     aiPattern: 'boss',
     color: 0x660066,
+    bossAbilities: [{ type: 'rage', atkMultiplier: 1.6, hpThreshold: 0.3 }, { type: 'poison', poisonFraction: 0.05 }, { type: 'charge', chargeInterval: 4, chargeMultiplier: 2.0 }],
   },
 
   // ── Legendary Bosses — Hidden Dungeons in Act 5 ─────────────────
@@ -545,7 +554,7 @@ export const monsters: Record<string, MonsterTemplate> = {
     nameKey: 'monster.swordWraith',
     spriteKey: 'monster-swordWraith',
     baseHp: 400,
-    baseAtk: 55,
+    baseAtk: 62,
     baseDef: 28,
     baseSpd: 16,
     expReward: 300,
@@ -553,13 +562,14 @@ export const monsters: Record<string, MonsterTemplate> = {
     drops: [],
     aiPattern: 'boss',
     color: 0x4466aa,
+    bossAbilities: [{ type: 'rage', atkMultiplier: 1.5, hpThreshold: 0.5 }, { type: 'charge', chargeInterval: 3, chargeMultiplier: 2.0 }],
   },
   celestialGuardian: {
     id: 'celestialGuardian',
     nameKey: 'monster.celestialGuardian',
     spriteKey: 'monster-celestialGuardian',
     baseHp: 450,
-    baseAtk: 58,
+    baseAtk: 65,
     baseDef: 32,
     baseSpd: 15,
     expReward: 350,
@@ -567,6 +577,7 @@ export const monsters: Record<string, MonsterTemplate> = {
     drops: [],
     aiPattern: 'boss',
     color: 0xddcc88,
+    bossAbilities: [{ type: 'regen', healFraction: 0.06 }],
   },
 
   // ── V2 NEW Bosses ────────────────────────────────────────────────
@@ -575,8 +586,8 @@ export const monsters: Record<string, MonsterTemplate> = {
   giantCrab: {
     id: 'giantCrab',
     nameKey: 'monster.giantCrab',
-    spriteKey: 'monster-crab',  // reuse crab sprite (bigger version)
-    baseHp: 55,
+    spriteKey: 'monster-giantCrab',
+    baseHp: 43,
     baseAtk: 16,
     baseDef: 18,
     baseSpd: 5,
@@ -585,15 +596,16 @@ export const monsters: Record<string, MonsterTemplate> = {
     drops: [{ itemId: 'potion', chance: 0.25 }],
     aiPattern: 'boss',
     color: 0xcc5533,
+    bossAbilities: [{ type: 'rage', atkMultiplier: 1.4, hpThreshold: 0.4 }],
   },
 
   // Sand Golem — Desert Tomb boss (Act 3 gate)
   sandGolem: {
     id: 'sandGolem',
     nameKey: 'monster.sandGolem',
-    spriteKey: 'monster-golem',  // reuse golem sprite (sand color)
-    baseHp: 180,
-    baseAtk: 32,
+    spriteKey: 'monster-sandGolem',
+    baseHp: 145,
+    baseAtk: 42,
     baseDef: 24,
     baseSpd: 6,
     expReward: 140,
@@ -601,15 +613,16 @@ export const monsters: Record<string, MonsterTemplate> = {
     drops: [{ itemId: 'hiPotion', chance: 0.2 }],
     aiPattern: 'boss',
     color: 0xccaa55,
+    bossAbilities: [{ type: 'rage', atkMultiplier: 1.4, hpThreshold: 0.3 }],
   },
 
   // Bandit Lord — Bandit Hideout boss (Act 3 optional)
   banditLord: {
     id: 'banditLord',
     nameKey: 'monster.banditLord',
-    spriteKey: 'monster-bandit',  // reuse bandit sprite (larger)
+    spriteKey: 'monster-banditLord',
     baseHp: 150,
-    baseAtk: 30,
+    baseAtk: 40,
     baseDef: 18,
     baseSpd: 16,
     expReward: 120,
@@ -617,6 +630,7 @@ export const monsters: Record<string, MonsterTemplate> = {
     drops: [{ itemId: 'smokeBomb', chance: 0.3 }],
     aiPattern: 'boss',
     color: 0x884422,
+    bossAbilities: [{ type: 'charge', chargeInterval: 3, chargeMultiplier: 2.0 }, { type: 'poison', poisonFraction: 0.04 }],
   },
 
   // Lava Wyrm — Magma Tunnels boss (Act 4 required)
@@ -625,7 +639,7 @@ export const monsters: Record<string, MonsterTemplate> = {
     nameKey: 'monster.lavaWyrm',
     spriteKey: 'monster-lavaWyrm',
     baseHp: 200,
-    baseAtk: 35,
+    baseAtk: 48,
     baseDef: 22,
     baseSpd: 14,
     expReward: 170,
@@ -633,6 +647,7 @@ export const monsters: Record<string, MonsterTemplate> = {
     drops: [{ itemId: 'elixir', chance: 0.15 }],
     aiPattern: 'boss',
     color: 0xff5511,
+    bossAbilities: [{ type: 'rage', atkMultiplier: 1.5, hpThreshold: 0.5 }],
   },
 
   // ── V2 NEW Regular Monsters ──────────────────────────────────────
@@ -641,7 +656,7 @@ export const monsters: Record<string, MonsterTemplate> = {
   seaStar: {
     id: 'seaStar',
     nameKey: 'monster.seaStar',
-    spriteKey: 'monster-spider',  // reuse spider shape
+    spriteKey: 'monster-seaStar',
     baseHp: 15,
     baseAtk: 11,
     baseDef: 8,
@@ -657,7 +672,7 @@ export const monsters: Record<string, MonsterTemplate> = {
   frostWolf: {
     id: 'frostWolf',
     nameKey: 'monster.frostWolf',
-    spriteKey: 'monster-wolf',  // reuse wolf sprite (frost color)
+    spriteKey: 'monster-frostWolf',
     baseHp: 30,
     baseAtk: 22,
     baseDef: 14,
@@ -671,7 +686,7 @@ export const monsters: Record<string, MonsterTemplate> = {
   frozenSkeleton: {
     id: 'frozenSkeleton',
     nameKey: 'monster.frozenSkeleton',
-    spriteKey: 'monster-skeleton',  // reuse skeleton (ice color)
+    spriteKey: 'monster-frozenSkeleton',
     baseHp: 25,
     baseAtk: 18,
     baseDef: 16,
@@ -687,7 +702,7 @@ export const monsters: Record<string, MonsterTemplate> = {
   sandWraith: {
     id: 'sandWraith',
     nameKey: 'monster.sandWraith',
-    spriteKey: 'monster-wraith',
+    spriteKey: 'monster-sandWraith',
     baseHp: 35,
     baseAtk: 26,
     baseDef: 14,
@@ -701,7 +716,7 @@ export const monsters: Record<string, MonsterTemplate> = {
   mummy: {
     id: 'mummy',
     nameKey: 'monster.mummy',
-    spriteKey: 'monster-golem',  // reuse golem shape (wrapped)
+    spriteKey: 'monster-mummy',
     baseHp: 42,
     baseAtk: 24,
     baseDef: 20,
@@ -717,7 +732,7 @@ export const monsters: Record<string, MonsterTemplate> = {
   banditArcher: {
     id: 'banditArcher',
     nameKey: 'monster.banditArcher',
-    spriteKey: 'monster-bandit',
+    spriteKey: 'monster-banditArcher',
     baseHp: 28,
     baseAtk: 24,
     baseDef: 10,
@@ -733,7 +748,7 @@ export const monsters: Record<string, MonsterTemplate> = {
   magmaSlime: {
     id: 'magmaSlime',
     nameKey: 'monster.magmaSlime',
-    spriteKey: 'monster-slime',
+    spriteKey: 'monster-magmaSlime',
     baseHp: 45,
     baseAtk: 26,
     baseDef: 20,
@@ -747,7 +762,7 @@ export const monsters: Record<string, MonsterTemplate> = {
   flameBat: {
     id: 'flameBat',
     nameKey: 'monster.flameBat',
-    spriteKey: 'monster-bat',
+    spriteKey: 'monster-flameBat',
     baseHp: 35,
     baseAtk: 30,
     baseDef: 12,
@@ -763,7 +778,7 @@ export const monsters: Record<string, MonsterTemplate> = {
   stormRaptor: {
     id: 'stormRaptor',
     nameKey: 'monster.stormRaptor',
-    spriteKey: 'monster',
+    spriteKey: 'monster-stormRaptor',
     baseHp: 110,
     baseAtk: 48,
     baseDef: 16,
@@ -777,7 +792,7 @@ export const monsters: Record<string, MonsterTemplate> = {
   cloudWraith: {
     id: 'cloudWraith',
     nameKey: 'monster.cloudWraith',
-    spriteKey: 'monster',
+    spriteKey: 'monster-cloudWraith',
     baseHp: 120,
     baseAtk: 50,
     baseDef: 18,
@@ -793,7 +808,7 @@ export const monsters: Record<string, MonsterTemplate> = {
   frostStalker: {
     id: 'frostStalker',
     nameKey: 'monster.frostStalker',
-    spriteKey: 'monster',
+    spriteKey: 'monster-frostStalker',
     baseHp: 115,
     baseAtk: 52,
     baseDef: 18,
@@ -807,7 +822,7 @@ export const monsters: Record<string, MonsterTemplate> = {
   glacialGolem: {
     id: 'glacialGolem',
     nameKey: 'monster.glacialGolem',
-    spriteKey: 'monster',
+    spriteKey: 'monster-glacialGolem',
     baseHp: 140,
     baseAtk: 45,
     baseDef: 22,
@@ -823,7 +838,7 @@ export const monsters: Record<string, MonsterTemplate> = {
   templeGuard: {
     id: 'templeGuard',
     nameKey: 'monster.templeGuard',
-    spriteKey: 'monster',
+    spriteKey: 'monster-templeGuard',
     baseHp: 125,
     baseAtk: 50,
     baseDef: 20,
@@ -837,7 +852,7 @@ export const monsters: Record<string, MonsterTemplate> = {
   ancientSphinx: {
     id: 'ancientSphinx',
     nameKey: 'monster.ancientSphinx',
-    spriteKey: 'monster',
+    spriteKey: 'monster-ancientSphinx',
     baseHp: 105,
     baseAtk: 55,
     baseDef: 16,
@@ -853,7 +868,7 @@ export const monsters: Record<string, MonsterTemplate> = {
   voidShade: {
     id: 'voidShade',
     nameKey: 'monster.voidShade',
-    spriteKey: 'monster',
+    spriteKey: 'monster-voidShade',
     baseHp: 100,
     baseAtk: 54,
     baseDef: 14,
@@ -867,7 +882,7 @@ export const monsters: Record<string, MonsterTemplate> = {
   darkKnight: {
     id: 'darkKnight',
     nameKey: 'monster.darkKnight',
-    spriteKey: 'monster',
+    spriteKey: 'monster-darkKnight',
     baseHp: 130,
     baseAtk: 48,
     baseDef: 20,
@@ -885,7 +900,7 @@ export const monsters: Record<string, MonsterTemplate> = {
     nameKey: 'monster.stormSentinel',
     spriteKey: 'monster-stormSentinel',
     baseHp: 420,
-    baseAtk: 56,
+    baseAtk: 64,
     baseDef: 24,
     baseSpd: 18,
     expReward: 500,
@@ -893,13 +908,14 @@ export const monsters: Record<string, MonsterTemplate> = {
     drops: [],
     aiPattern: 'boss',
     color: 0x4488cc,
+    bossAbilities: [{ type: 'charge', chargeInterval: 3, chargeMultiplier: 2.0 }, { type: 'rage', atkMultiplier: 1.4, hpThreshold: 0.4 }],
   },
   frostMonarch: {
     id: 'frostMonarch',
     nameKey: 'monster.frostMonarch',
     spriteKey: 'monster-frostMonarch',
     baseHp: 400,
-    baseAtk: 54,
+    baseAtk: 62,
     baseDef: 22,
     baseSpd: 16,
     expReward: 480,
@@ -907,5 +923,6 @@ export const monsters: Record<string, MonsterTemplate> = {
     drops: [],
     aiPattern: 'boss',
     color: 0x66bbee,
+    bossAbilities: [{ type: 'regen', healFraction: 0.06 }],
   },
 };

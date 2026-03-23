@@ -1,10 +1,12 @@
 import Phaser from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, ZOOM, COLORS, FONT_FAMILY } from '../utils/constants';
+import { GAME_WIDTH, GAME_HEIGHT, ZOOM, COLORS, FONT_FAMILY, UI_SCALE } from '../utils/constants';
 import { t } from '../i18n/i18n';
 import { gameState } from '../GameState';
 import { items } from '../data/items';
 import { shops } from '../data/shops';
 import { audioManager } from '../systems/audio/AudioManager';
+
+const S = UI_SCALE;
 
 export class ShopScene extends Phaser.Scene {
   private shopId = '';
@@ -39,14 +41,14 @@ export class ShopScene extends Phaser.Scene {
     this.add.rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, GAME_WIDTH, GAME_HEIGHT, COLORS.MENU_BG, 0.95);
 
     // Title
-    this.add.text(GAME_WIDTH / 2, 20, t('shop.welcome'), {
-      fontSize: '12px', color: COLORS.TEXT_WHITE, fontFamily: FONT_FAMILY,
-      wordWrap: { width: GAME_WIDTH - 40 },
+    this.add.text(GAME_WIDTH / 2, Math.round(20 * S), t('shop.welcome'), {
+      fontSize: `${Math.round(12 * S)}px`, color: COLORS.TEXT_WHITE, fontFamily: FONT_FAMILY,
+      wordWrap: { width: GAME_WIDTH - Math.round(40 * S) },
     }).setOrigin(0.5);
 
     // Gold display
-    this.add.text(GAME_WIDTH - 16, 20, `${gameState.player.state.gold}G`, {
-      fontSize: '12px', color: COLORS.TEXT_YELLOW, fontFamily: FONT_FAMILY,
+    this.add.text(GAME_WIDTH - Math.round(16 * S), Math.round(20 * S), `${gameState.player.state.gold}G`, {
+      fontSize: `${Math.round(12 * S)}px`, color: COLORS.TEXT_YELLOW, fontFamily: FONT_FAMILY,
     }).setOrigin(1, 0.5);
 
     if (this.mode === 'menu') {
@@ -59,8 +61,8 @@ export class ShopScene extends Phaser.Scene {
 
     // Message
     if (this.message) {
-      this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 32, this.message, {
-        fontSize: '12px', color: COLORS.TEXT_YELLOW, fontFamily: FONT_FAMILY,
+      this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - Math.round(32 * S), this.message, {
+        fontSize: `${Math.round(12 * S)}px`, color: COLORS.TEXT_YELLOW, fontFamily: FONT_FAMILY,
       }).setOrigin(0.5);
     }
   }
@@ -73,8 +75,8 @@ export class ShopScene extends Phaser.Scene {
     ];
 
     options.forEach((opt, i) => {
-      this.add.text(GAME_WIDTH / 2, 100 + i * 36, t(opt.key), {
-        fontSize: '14px',
+      this.add.text(GAME_WIDTH / 2, Math.round(100 * S) + i * Math.round(36 * S), t(opt.key), {
+        fontSize: `${Math.round(14 * S)}px`,
         color: i === this.menuIndex ? COLORS.TEXT_YELLOW : COLORS.TEXT_WHITE,
         fontFamily: FONT_FAMILY,
       }).setOrigin(0.5);
@@ -89,8 +91,8 @@ export class ShopScene extends Phaser.Scene {
       const item = items[itemId];
       if (!item) return;
       const canAfford = gameState.player.state.gold >= item.buyPrice;
-      this.add.text(32, 64 + i * 28, `${t(item.nameKey)}  ${item.buyPrice}G`, {
-        fontSize: '10px',
+      this.add.text(Math.round(32 * S), Math.round(64 * S) + i * Math.round(28 * S), `${t(item.nameKey)}  ${item.buyPrice}G`, {
+        fontSize: `${Math.round(10 * S)}px`,
         color: i === this.listIndex ? COLORS.TEXT_YELLOW : (canAfford ? COLORS.TEXT_WHITE : COLORS.TEXT_GRAY),
         fontFamily: FONT_FAMILY,
       });
@@ -98,33 +100,44 @@ export class ShopScene extends Phaser.Scene {
       // Show stats
       if (item.stats) {
         const statText = Object.entries(item.stats).map(([k, v]) => `+${v}${k.toUpperCase()}`).join(' ');
-        this.add.text(GAME_WIDTH - 16, 64 + i * 28, statText, {
-          fontSize: '9px', color: COLORS.TEXT_GRAY, fontFamily: FONT_FAMILY,
+        this.add.text(GAME_WIDTH - Math.round(16 * S), Math.round(64 * S) + i * Math.round(28 * S), statText, {
+          fontSize: `${Math.round(9 * S)}px`, color: COLORS.TEXT_GRAY, fontFamily: FONT_FAMILY,
         }).setOrigin(1, 0);
       }
     });
 
     // "Done" option at the bottom
-    const doneY = 64 + shop.items.length * 28;
-    this.add.text(32, doneY, `▸ ${t('shop.done')}`, {
-      fontSize: '10px',
+    const doneY = Math.round(64 * S) + shop.items.length * Math.round(28 * S);
+    this.add.text(Math.round(32 * S), doneY, `▸ ${t('shop.done')}`, {
+      fontSize: `${Math.round(10 * S)}px`,
       color: this.listIndex === shop.items.length ? COLORS.TEXT_YELLOW : COLORS.TEXT_GRAY,
       fontFamily: FONT_FAMILY,
     });
+
+    // Show description for selected item
+    if (this.listIndex < shop.items.length) {
+      const selectedItem = items[shop.items[this.listIndex]];
+      if (selectedItem) {
+        this.add.text(Math.round(32 * S), doneY + Math.round(32 * S), t(selectedItem.descriptionKey), {
+          fontSize: `${Math.round(9 * S)}px`, color: COLORS.TEXT_GRAY, fontFamily: FONT_FAMILY,
+          wordWrap: { width: GAME_WIDTH - Math.round(64 * S) },
+        });
+      }
+    }
   }
 
   private drawSellList(): void {
     const inv = gameState.player.state.inventory.filter(s => !items[s.itemId]?.unsellable);
     if (inv.length === 0) {
-      this.add.text(GAME_WIDTH / 2, 120, t('shop.noItemsToSell'), {
-        fontSize: '12px', color: COLORS.TEXT_GRAY, fontFamily: FONT_FAMILY,
+      this.add.text(GAME_WIDTH / 2, Math.round(120 * S), t('shop.noItemsToSell'), {
+        fontSize: `${Math.round(12 * S)}px`, color: COLORS.TEXT_GRAY, fontFamily: FONT_FAMILY,
       }).setOrigin(0.5);
     } else {
       inv.forEach((slot, i) => {
         const item = items[slot.itemId];
         if (!item) return;
-        this.add.text(32, 64 + i * 28, `${t(item.nameKey)} x${slot.quantity}  ${item.sellPrice}G`, {
-          fontSize: '10px',
+        this.add.text(Math.round(32 * S), Math.round(64 * S) + i * Math.round(28 * S), `${t(item.nameKey)} x${slot.quantity}  ${item.sellPrice}G`, {
+          fontSize: `${Math.round(10 * S)}px`,
           color: i === this.listIndex ? COLORS.TEXT_YELLOW : COLORS.TEXT_WHITE,
           fontFamily: FONT_FAMILY,
         });
@@ -132,9 +145,9 @@ export class ShopScene extends Phaser.Scene {
     }
 
     // "Done" option at the bottom
-    const doneY = 64 + inv.length * 28;
-    this.add.text(32, doneY, `▸ ${t('shop.done')}`, {
-      fontSize: '10px',
+    const doneY = Math.round(64 * S) + inv.length * Math.round(28 * S);
+    this.add.text(Math.round(32 * S), doneY, `▸ ${t('shop.done')}`, {
+      fontSize: `${Math.round(10 * S)}px`,
       color: this.listIndex === inv.length ? COLORS.TEXT_YELLOW : COLORS.TEXT_GRAY,
       fontFamily: FONT_FAMILY,
     });

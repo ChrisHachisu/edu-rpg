@@ -1,19 +1,46 @@
 import Phaser from 'phaser';
 import { generateAssets } from '../utils/AssetGenerator';
 import { GAME_WIDTH, GAME_HEIGHT, ZOOM, COLORS, FONT_FAMILY } from '../utils/constants';
-// enableSmoothText removed — DPR-aware canvas + NEAREST filtering keeps pixel font crisp
+
+// Monster sprite image keys to preload from public/assets/monsters/
+const MONSTER_SPRITE_IMAGES = [
+  // 43 unique sprites
+  'monster-slime', 'monster-bug', 'monster-rabbit', 'monster-wolf',
+  'monster-mushroom', 'monster-bandit', 'monster-bat', 'monster-spider',
+  'monster-crab', 'monster-golem', 'monster-giantToad', 'monster-serpent',
+  'monster-jellyfish', 'monster-piranha', 'monster-merfolk', 'monster-harpy',
+  'monster-wyvern', 'monster-kraken', 'monster-dragon', 'monster-blizzardBear',
+  'monster-iceSprite', 'monster-darkSorcerer', 'monster-lizard', 'monster-knight',
+  'monster-skeleton', 'monster-wraith', 'monster-fireElemental', 'monster-chimera',
+  'monster-demon', 'monster-shadow', 'monster-lich', 'monster-flameTitan',
+  'monster-banditLord', 'monster-seaStar', 'monster-mummy', 'monster-stormRaptor',
+  'monster-templeGuard', 'monster-ancientSphinx', 'monster-stormSentinel',
+  'monster-frostMonarch', 'monster-swordWraith', 'monster-celestialGuardian',
+  'monster-demonKing',
+  // 17 color variants
+  'monster-magmaSlime', 'monster-frostWolf', 'monster-frostStalker',
+  'monster-flameBat', 'monster-sandGolem', 'monster-lavaGolem',
+  'monster-glacialGolem', 'monster-frozenSkeleton', 'monster-sandWraith',
+  'monster-cloudWraith', 'monster-voidShade', 'monster-iceWyrm',
+  'monster-lavaWyrm', 'monster-darkKnight', 'monster-stormHarpy',
+  'monster-giantCrab', 'monster-banditArcher',
+];
 
 export class BootScene extends Phaser.Scene {
   constructor() {
     super('BootScene');
   }
 
+  preload(): void {
+    // Preload monster sprite images (hand-drawn pixel art)
+    for (const key of MONSTER_SPRITE_IMAGES) {
+      this.load.image(key, `assets/monsters/${key}.png`);
+    }
+  }
+
   create(): void {
     this.cameras.main.setZoom(ZOOM);
     this.cameras.main.setScroll(-GAME_WIDTH * (ZOOM - 1) / 2, -GAME_HEIGHT * (ZOOM - 1) / 2);
-    // With DPR-aware canvas resolution (4× on Retina), the browser downscales
-    // rather than upscales. pixelArt:true NEAREST filtering keeps the pixel font
-    // crisp — LINEAR would blur it. No smoothText patch needed.
 
     // Font is pre-loaded in main.ts before Phaser starts
 
@@ -24,7 +51,7 @@ export class BootScene extends Phaser.Scene {
       fontFamily: FONT_FAMILY,
     }).setOrigin(0.5);
 
-    // Generate all procedural assets
+    // Generate procedural assets (skips monsters that were preloaded as images)
     generateAssets(this);
 
     text.setText('Ready!');

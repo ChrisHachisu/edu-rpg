@@ -154,17 +154,9 @@ class GameStateManager {
     return zoneMap[mapId] ?? null;
   }
 
-  /** Encounter rate multiplier based on quiz difficulty — younger kids get fewer fights */
-  private getEncounterMultiplier(grade: GradeLevel): number {
-    switch (grade) {
-      case 'k': return 0.4;   // Preschool: 40% encounter rate, ~2.5× more steps between
-      case '1': return 0.55;  // Grade 1: 55% encounter rate
-      case '2': return 0.7;   // Grade 2: 70% encounter rate
-      case '3': return 0.85;  // Grade 3: 85% encounter rate
-      case '5': return 1.1;   // Grade 5: 110% encounter rate
-      case '6': return 1.2;   // Grade 6: 120% encounter rate
-      default:  return 1.0;   // Grade 4: normal encounter rate
-    }
+  /** Encounter rate multiplier — uniform for all grades (smaller dungeons for younger ages limit total encounters naturally) */
+  private getEncounterMultiplier(_grade: GradeLevel): number {
+    return 1.0;
   }
 
   getOverworldZone(x: number, y: number): string {

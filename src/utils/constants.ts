@@ -1,7 +1,9 @@
-// Game dimensions (SNES-style internal resolution)
-export const GAME_WIDTH = 512;
-export const GAME_HEIGHT = 448;
-export const TILE_SIZE = 32;
+// Game dimensions — 48px tiles at 24×24 logical with SPRITE_SCALE=2
+export const GAME_WIDTH = 768;
+export const GAME_HEIGHT = 672;
+export const TILE_SIZE = 48;
+// UI scale factor — all hardcoded pixel values from the 512×448 era multiply by this
+export const UI_SCALE = GAME_WIDTH / 512; // 1.5
 // Pixel-perfect zoom: pick the largest integer multiplier whose canvas fits
 // inside the viewport at native physical pixels (no fractional CSS scaling).
 const dpr = typeof window !== 'undefined' ? (window.devicePixelRatio || 1) : 1;

@@ -57,6 +57,8 @@ export const enStrings: Record<string, string> = {
   'battle.enemyPartialHit': '{damage} damage (partial)!',
   'battle.enemyAttack': '{monster} attacks!',
   'battle.enemyMiss': '{monster} missed!',
+  'battle.enemyDamageReduced': 'Your quick answer blocked the blow!',
+  'battle.enemyDamageSoftened': 'Your answer softened the blow!',
   'battle.victory': 'Victory!',
   'battle.expGain': 'Gained {exp} EXP!',
   'battle.goldGain': 'Gained {gold} G!',
@@ -66,6 +68,15 @@ export const enStrings: Record<string, string> = {
   'battle.fleeFail': "Couldn't escape!",
   'battle.itemUsed': 'Used {item}!',
   'battle.healed': 'Recovered {value} HP!',
+
+  // Boss abilities
+  'ability.regen': '{monster} regenerates {value} HP!',
+  'ability.poison': '{name} takes {damage} poison damage!',
+  'ability.poisonStart': '{monster} releases a toxic cloud!',
+  'ability.shieldStart': '{monster} raises a protective barrier!',
+  'ability.shieldFade': '{monster}\'s barrier fades away!',
+  'ability.chargeWarning': '{monster} is gathering power for a devastating attack!',
+  'ability.rageActivate': '{monster} is enraged! Its attacks grow stronger!',
 
   // Quiz
   'quiz.correct': 'Correct!',
@@ -103,6 +114,8 @@ export const enStrings: Record<string, string> = {
   'guide.talk': 'Talk',
   'guide.menu': 'Menu',
   'guide.item': 'Items',
+  'guide.yes': 'Yes',
+  'guide.no': 'No',
 
   // Field items
   'field.itemTitle': 'Items',
@@ -183,7 +196,11 @@ export const enStrings: Record<string, string> = {
   'npc.healer.fullHp': 'You look perfectly healthy! No healing needed.',
   'npc.healer.healFree': 'There you go, all healed up! Stay safe out there.',
   'npc.healer.noGold': 'Healing costs {price} G, but you don\'t have enough gold...',
+  'npc.healer.offer': 'Heal all your wounds for {price} G?',
   'npc.healer.healed': 'All healed up! That will be {price} G. Take care!',
+  'npc.healer.popupTitle': 'Shall I heal you?',
+  'npc.healer.healOption': 'Heal',
+  'npc.healer.leaveOption': 'Leave',
   'npc.savePoint': 'Your adventure has been saved!',
 
   // Treasure
@@ -252,7 +269,7 @@ export const enStrings: Record<string, string> = {
   'dungeon.desertTomb.boss.dialog2': 'A colossal figure of stone and sand assembles itself from the ruins!',
   'dungeon.desertTomb.boss.dialog3': 'The Sand Golem raises its fists with a thunderous roar! Prepare for battle!',
   'dungeon.desertTomb.boss.defeat': 'The Sand Golem crumbles into dust... The ancient tomb grows still.',
-  'dungeon.desertTomb.victory': 'The seal on the volcanic passage shatters! The way to the south is now open.',
+  'dungeon.desertTomb.victory': 'A Crystal Shard emerges from the rubble! The seal on the volcanic passage shatters — the way south is now open.',
 
   // Bandit Hideout
   'dungeon.banditHideout.enter': 'The stench of stolen goods fills the cave... Torch light flickers ahead.',

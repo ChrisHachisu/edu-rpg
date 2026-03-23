@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, ZOOM, CANVAS_CSS_WIDTH, CANVAS_CSS_HEIGHT } from './utils/constants';
+import { GAME_WIDTH, GAME_HEIGHT, ZOOM, CANVAS_CSS_WIDTH, CANVAS_CSS_HEIGHT, FONT_FAMILY } from './utils/constants';
 import { BootScene } from './scenes/BootScene';
 import { TitleScene } from './scenes/TitleScene';
 import { WorldMapScene } from './scenes/WorldMapScene';
@@ -10,19 +10,12 @@ import { GameOverScene } from './scenes/GameOverScene';
 import { VictoryScene } from './scenes/VictoryScene';
 import { ExportScene } from './scenes/ExportScene';
 
-// Load pixel font BEFORE Phaser starts — Phaser doesn't await async create(),
-// so fonts loaded there arrive too late for canvas text rendering.
+// Wait for CSS @font-face to finish loading BEFORE Phaser starts — Phaser
+// doesn't await async create(), so fonts loaded there arrive too late for
+// canvas text rendering. Using document.fonts.ready ensures the CSS-declared
+// font is available (consistent rendering between dev and production).
 (async () => {
-  try {
-    const font = new FontFace(
-      'PixelMplus12',
-      'url(./fonts/PixelMplus12-Regular.ttf)'
-    );
-    await font.load();
-    (document.fonts as any).add(font);
-  } catch {
-    console.warn('PixelMplus12 font failed to load, falling back to monospace');
-  }
+  await document.fonts.ready;
 
   // Patch text factory so ALL text renders at native resolution (eliminates haze on Retina).
   // Text is normally rasterized at 1× then zoomed by the camera, which magnifies anti-aliased edges.
@@ -32,7 +25,9 @@ import { ExportScene } from './scenes/ExportScene';
     this: Phaser.GameObjects.GameObjectFactory,
     x: number, y: number, text: string | string[], style?: Phaser.Types.GameObjects.Text.TextStyle,
   ) {
-    const obj = origText.call(this, x, y, text, style);
+    // Ensure every text object uses the pixel font by default
+    const merged = { fontFamily: FONT_FAMILY, ...style };
+    const obj = origText.call(this, x, y, text, merged);
     obj.setResolution(ZOOM);
     return obj;
   };
@@ -69,4 +64,3 @@ import { ExportScene } from './scenes/ExportScene';
   canvas.style.width = `${CANVAS_CSS_WIDTH}px`;
   canvas.style.height = `${CANVAS_CSS_HEIGHT}px`;
 })();
-

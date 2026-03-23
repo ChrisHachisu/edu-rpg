@@ -5,7 +5,7 @@
 // Town tiles: 0=floor, 1=wall, 2=house-roof, 3=grass, 4=water, 5=path, 6=save, 7=exit
 //   8=shop-awning, 9=house-wall-window, 10=house-wall-door, 11=shop-wall-display, 12=shop-wall-door
 // Dungeon tiles: 0=floor, 1=wall, 2=cracked, 3=door, 4=treasure, 5=lava, 6=stairs-up, 7=boss
-//   8=opened-chest, 9=stairs-down, 10=boss-exit-portal
+//   8=opened-chest, 9=stairs-down, 10=boss-exit-portal, 11=boss-warp-portal, 12=boss-exit-stairs
 
 function seededRandom(seed: number): () => number {
   let s = seed;
@@ -323,7 +323,7 @@ export function generateOverworldMap(width: number, height: number): number[][] 
     // Act 3
     [60, 95], [10, 103],              // Desert Tomb, Bandit Hideout (far west, south)
     // Act 4
-    [25, 89],                          // Magma Tunnels
+    [22, 84],                          // Magma Tunnels (optional, off main path)
     [12, 70], [12, 67],               // Volcanic Forge S/N
   ];
   for (const [dx, dy] of caveDungeons) {
@@ -613,13 +613,15 @@ export function generateOverworldMap(width: number, height: number): number[][] 
   map[104][10] = 4;  // mountain south of cave entrance
   map[102][10] = 1;  // walkable north of cave (player exits here)
 
-  // Magma Tunnels (25,89): mountains E/S/W — embedded in terrain, approach from north
-  map[89][24] = 4;   // west
-  map[89][26] = 4;   // east
-  map[90][25] = 4;   // south
-  map[90][24] = 4;   // SW
-  map[90][26] = 4;   // SE
-  map[88][25] = 1;   // north approach (walkable path)
+  // Magma Tunnels (22,84): optional dungeon off the main path, surrounded by mountains
+  map[83][21] = 4;   // NW
+  map[83][22] = 4;   // N
+  map[83][23] = 4;   // NE
+  map[84][21] = 4;   // W
+  map[85][21] = 4;   // SW
+  map[85][22] = 4;   // S
+  map[85][23] = 4;   // SE
+  map[84][23] = 4;   // E
 
   // ── Phase 9b: Act 3/4 paths (drawn AFTER terrain/stream to avoid breakage) ──
   const act34Paths: [number, number][] = [
@@ -635,10 +637,14 @@ export function generateOverworldMap(width: number, height: number): number[][] 
     ...pathBetween(30, 90, 45, 92),     // east to oasisHaven
     // oasisHaven (45,92) → desertTomb (60,95)
     ...pathBetween(45, 92, 60, 95),
-    // embersRest (30,78) → magmaTunnels (25,89)
-    ...pathBetween(30, 78, 25, 89),
-    // magmaTunnels (25,89) → volcanicForge S (12,70)
-    ...pathBetween(25, 89, 12, 70),
+    // embersRest (30,78) → volcanicForge S (12,70) — main path
+    ...pathBetween(30, 78, 22, 78),
+    ...pathBetween(22, 78, 12, 70),
+    // Side path to magmaTunnels (22,84) — optional dungeon
+    ...pathBetween(22, 78, 22, 84),
+    // oasisHaven (45,92) → banditHideout (10,103): west then south
+    ...pathBetween(45, 92, 10, 92),
+    ...pathBetween(10, 92, 10, 103),
   ];
   for (const [px, py] of act34Paths) {
     if (px >= 0 && px < width && py >= 0 && py < height) {
@@ -653,7 +659,7 @@ export function generateOverworldMap(width: number, height: number): number[][] 
   map[92][45] = 6;   // oasisHaven
   map[95][60] = 7;   // desertTomb
   map[78][30] = 6;   // embersRest
-  map[89][25] = 7;   // magmaTunnels
+  map[84][22] = 7;   // magmaTunnels (optional, off main path)
   map[103][10] = 7;  // banditHideout
 
   // Clean stray road tiles inside water barrier zone (east of Desert Tomb)
@@ -686,6 +692,9 @@ export function generateOverworldMap(width: number, height: number): number[][] 
   map[102][90] = 7;  // Shadow Cave S (Act 2 side)
   map[99][90] = 1;   // north approach to SC N
   map[103][90] = 1;  // south approach to SC S
+  // Path gap for Bandit Hideout access (x=10 through mountain barrier)
+  map[101][10] = 1;  // path through barrier
+  map[102][10] = 1;  // approach south of barrier
 
   return map;
 }
@@ -795,7 +804,7 @@ export function generateTownMap(width: number, height: number, seed: number): nu
   // Border walls
   for (let x = 0; x < width; x++) {
     map[0][x] = 1;
-    map[height - 1][x] = (x >= cx - 1 && x <= cx + 1) ? 7 : 1;
+    map[height - 1][x] = (x >= cx - 1 && x <= cx) ? 7 : 1;
   }
   for (let y = 0; y < height; y++) {
     map[y][0] = 1;
@@ -1267,22 +1276,32 @@ export function generateDungeonMap(
     const goalY = goalRoom ? goalRoom.cy : height - 3;
 
     if (gateFinalFloor && isFinalFloor) {
-      // Gate final floor: boss ON the exit stairs at bottom — blocks passage to next act
-      map[height - 1][entranceX] = 7;
-      // Clear boss arena above the boss for approach
-      for (let bdy = -3; bdy <= -1; bdy++) {
+      // Gate final floor: boss at NORTH (row 0) protecting exit to next act
+      // Entrance (stairs-up from previous floor) at SOUTH (bottom)
+      map[0][entranceX] = 7;
+      // Clear boss arena below the boss for approach
+      for (let bdy = 1; bdy <= 4; bdy++) {
         for (let bdx = -3; bdx <= 3; bdx++) {
           const bx2 = entranceX + bdx;
-          const by2 = (height - 1) + bdy;
-          if (bx2 > 0 && bx2 < width - 1 && by2 > 0 && by2 < height - 1) {
-            map[by2][bx2] = 0;
+          if (bx2 > 0 && bx2 < width - 1 && bdy < height - 1) {
+            map[bdy][bx2] = 0;
           }
         }
       }
-      // Connect rooms to boss arena
+      // Entrance at south (stairs from previous floor)
+      map[height - 1][entranceX] = 6;
+      for (let dx = -1; dx <= 1; dx++) {
+        const ex = entranceX + dx;
+        if (ex > 0 && ex < width - 1) {
+          map[height - 2][ex] = 0;
+          map[height - 3][ex] = 0;
+        }
+      }
+      // Connect rooms to boss arena at north and entrance at south
       if (rooms.length > 0) {
+        carveLCorridor(map, rooms[0].cx, rooms[0].cy, entranceX, 4, rand);
         const lastRoom = rooms[rooms.length - 1];
-        carveLCorridor(map, lastRoom.cx, lastRoom.cy, entranceX, height - 4, rand);
+        carveLCorridor(map, lastRoom.cx, lastRoom.cy, entranceX, height - 3, rand);
       }
     } else if (isFinalFloor) {
       // Boss on final floor at bottom room center

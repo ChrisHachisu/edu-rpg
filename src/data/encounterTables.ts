@@ -5,8 +5,8 @@ export const encounterZones: Record<string, EncounterZone> = {
 
   'greenhollow-plains': {
     zoneId: 'greenhollow-plains',
-    encounterRate: 0.05,
-    minStepsBetween: 10,
+    encounterRate: 0.07,
+    minStepsBetween: 7,
     monsters: [
       { monsterId: 'slime', weight: 5 },
       { monsterId: 'bug', weight: 3 },
@@ -15,8 +15,8 @@ export const encounterZones: Record<string, EncounterZone> = {
   },
   'whispering-woods': {
     zoneId: 'whispering-woods',
-    encounterRate: 0.06,
-    minStepsBetween: 8,
+    encounterRate: 0.07,
+    minStepsBetween: 7,
     monsters: [
       { monsterId: 'mushroom', weight: 4 },
       { monsterId: 'wolf', weight: 4 },
@@ -26,8 +26,8 @@ export const encounterZones: Record<string, EncounterZone> = {
   },
   'crystal-coast': {
     zoneId: 'crystal-coast',
-    encounterRate: 0.06,
-    minStepsBetween: 8,
+    encounterRate: 0.07,
+    minStepsBetween: 7,
     monsters: [
       { monsterId: 'spider', weight: 5 },
       { monsterId: 'crab', weight: 5 },
@@ -54,8 +54,8 @@ export const encounterZones: Record<string, EncounterZone> = {
   },
   'crystal-cave': {
     zoneId: 'crystal-cave',
-    encounterRate: 0.08,
-    minStepsBetween: 6,
+    encounterRate: 0.07,
+    minStepsBetween: 7,
     monsters: [
       { monsterId: 'spider', weight: 5 },
       { monsterId: 'crab', weight: 5 },
@@ -76,8 +76,8 @@ export const encounterZones: Record<string, EncounterZone> = {
   },
   'iron-mountains': {
     zoneId: 'iron-mountains',
-    encounterRate: 0.06,
-    minStepsBetween: 8,
+    encounterRate: 0.07,
+    minStepsBetween: 7,
     monsters: [
       { monsterId: 'harpy', weight: 5 },
       { monsterId: 'wyvern', weight: 5 },
@@ -85,8 +85,8 @@ export const encounterZones: Record<string, EncounterZone> = {
   },
   'shadow-cave': {
     zoneId: 'shadow-cave',
-    encounterRate: 0.08,
-    minStepsBetween: 6,
+    encounterRate: 0.07,
+    minStepsBetween: 7,
     monsters: [
       { monsterId: 'harpy', weight: 5 },
       { monsterId: 'wyvern', weight: 5 },
@@ -94,8 +94,8 @@ export const encounterZones: Record<string, EncounterZone> = {
   },
   'storm-nest': {
     zoneId: 'storm-nest',
-    encounterRate: 0.08,
-    minStepsBetween: 6,
+    encounterRate: 0.07,
+    minStepsBetween: 7,
     monsters: [
       { monsterId: 'harpy', weight: 5 },
       { monsterId: 'wyvern', weight: 5 },
@@ -158,8 +158,8 @@ export const encounterZones: Record<string, EncounterZone> = {
 
   'magma-tunnels': {
     zoneId: 'magma-tunnels',
-    encounterRate: 0.08,
-    minStepsBetween: 6,
+    encounterRate: 0.07,
+    minStepsBetween: 7,
     monsters: [
       { monsterId: 'magmaSlime', weight: 3 },
       { monsterId: 'flameBat', weight: 3 },
@@ -169,7 +169,7 @@ export const encounterZones: Record<string, EncounterZone> = {
   'sunken-ruins': {
     zoneId: 'sunken-ruins',
     encounterRate: 0.07,
-    minStepsBetween: 6,
+    minStepsBetween: 7,
     monsters: [
       { monsterId: 'skeleton', weight: 4 },
       { monsterId: 'wraith', weight: 3 },
@@ -178,8 +178,8 @@ export const encounterZones: Record<string, EncounterZone> = {
   },
   'volcanic-forge': {
     zoneId: 'volcanic-forge',
-    encounterRate: 0.08,
-    minStepsBetween: 6,
+    encounterRate: 0.07,
+    minStepsBetween: 7,
     monsters: [
       { monsterId: 'fireElemental', weight: 4 },
       { monsterId: 'lavaGolem', weight: 3 },
@@ -191,8 +191,8 @@ export const encounterZones: Record<string, EncounterZone> = {
 
   'demons-threshold': {
     zoneId: 'demons-threshold',
-    encounterRate: 0.08,
-    minStepsBetween: 6,
+    encounterRate: 0.07,
+    minStepsBetween: 7,
     monsters: [
       { monsterId: 'chimera', weight: 3 },
       { monsterId: 'demon', weight: 4 },
@@ -201,8 +201,8 @@ export const encounterZones: Record<string, EncounterZone> = {
   },
   'demon-castle': {
     zoneId: 'demon-castle',
-    encounterRate: 0.09,
-    minStepsBetween: 5,
+    encounterRate: 0.07,
+    minStepsBetween: 7,
     monsters: [
       { monsterId: 'chimera', weight: 3 },
       { monsterId: 'demon', weight: 3 },
@@ -214,8 +214,8 @@ export const encounterZones: Record<string, EncounterZone> = {
 
   'stormreach-isles': {
     zoneId: 'stormreach-isles',
-    encounterRate: 0.08,
-    minStepsBetween: 6,
+    encounterRate: 0.07,
+    minStepsBetween: 7,
     monsters: [
       { monsterId: 'stormRaptor', weight: 5 },
       { monsterId: 'cloudWraith', weight: 5 },
@@ -223,8 +223,8 @@ export const encounterZones: Record<string, EncounterZone> = {
   },
   'frostfall-peaks': {
     zoneId: 'frostfall-peaks',
-    encounterRate: 0.08,
-    minStepsBetween: 6,
+    encounterRate: 0.07,
+    minStepsBetween: 7,
     monsters: [
       { monsterId: 'frostStalker', weight: 5 },
       { monsterId: 'glacialGolem', weight: 5 },
@@ -232,8 +232,8 @@ export const encounterZones: Record<string, EncounterZone> = {
   },
   'sunken-temple': {
     zoneId: 'sunken-temple',
-    encounterRate: 0.08,
-    minStepsBetween: 6,
+    encounterRate: 0.07,
+    minStepsBetween: 7,
     monsters: [
       { monsterId: 'templeGuard', weight: 5 },
       { monsterId: 'ancientSphinx', weight: 5 },
@@ -241,8 +241,8 @@ export const encounterZones: Record<string, EncounterZone> = {
   },
   'twilight-realm': {
     zoneId: 'twilight-realm',
-    encounterRate: 0.08,
-    minStepsBetween: 6,
+    encounterRate: 0.07,
+    minStepsBetween: 7,
     monsters: [
       { monsterId: 'voidShade', weight: 5 },
       { monsterId: 'darkKnight', weight: 5 },

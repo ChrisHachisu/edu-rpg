@@ -57,25 +57,25 @@ export const mapDefs: Record<string, MapDef> = {
       { targetMap: 'sunkenCellar', fromX: 25, fromY: 148, toX: 11, toY: 1 },
       { targetMap: 'mistyGrotto', fromX: 85, fromY: 144, toX: 11, toY: 1 },
       // Crystal Cave: gate dungeon (S entrance Act 1 side, N exit Act 2 side)
-      { targetMap: 'crystalCave', fromX: 66, fromY: 130, toX: 10, toY: 61 },
-      { targetMap: 'crystalCave', fromX: 66, fromY: 127, toX: 10, toY: 1 },
+      { targetMap: 'crystalCave', fromX: 66, fromY: 130, toX: 10, toY: 61 },  // Act 1 → south end
+      { targetMap: 'crystalCave', fromX: 66, fromY: 127, toX: 10, toY: 1 },   // Act 2 → north end (boss exit)
 
       // ── Act 2 Dungeons ──
       { targetMap: 'stormNest', fromX: 25, fromY: 108, toX: 15, toY: 1 },
       { targetMap: 'frozenLake', fromX: 100, fromY: 112, toX: 13, toY: 2 },
       // Shadow Cave: gate dungeon (S entrance Act 2 side, N exit Act 3 side)
-      { targetMap: 'shadowCave', fromX: 90, fromY: 102, toX: 17, toY: 1 },
-      { targetMap: 'shadowCave', fromX: 90, fromY: 100, toX: 17, toY: 32, toFloor: 5 },
+      { targetMap: 'shadowCave', fromX: 90, fromY: 102, toX: 17, toY: 1 },              // Act 2 → floor 1 top
+      { targetMap: 'shadowCave', fromX: 90, fromY: 100, toX: 17, toY: 33, toFloor: 5 }, // Act 3 → floor 5 north (boss exit)
 
       // ── Act 3 Dungeons ──
       { targetMap: 'desertTomb', fromX: 60, fromY: 95, toX: 17, toY: 1 },
       { targetMap: 'banditHideout', fromX: 10, fromY: 103, toX: 12, toY: 1 },
 
       // ── Act 4 Dungeons ──
-      { targetMap: 'magmaTunnels', fromX: 25, fromY: 89, toX: 17, toY: 1 },
+      { targetMap: 'magmaTunnels', fromX: 22, fromY: 84, toX: 17, toY: 1 },
       // Volcanic Forge: gate dungeon (S entrance, N exit into Act 5)
-      { targetMap: 'volcanicForge', fromX: 12, fromY: 70, toX: 20, toY: 1 },
-      { targetMap: 'volcanicForge', fromX: 12, fromY: 67, toX: 20, toY: 38, toFloor: 5 },
+      { targetMap: 'volcanicForge', fromX: 12, fromY: 70, toX: 20, toY: 1 },              // Act 4 → floor 1 top
+      { targetMap: 'volcanicForge', fromX: 12, fromY: 67, toX: 20, toY: 39, toFloor: 5 }, // Act 5 → floor 5 north (boss exit)
 
       // ── Act 5 Dungeons ──
       { targetMap: 'demonCastle', fromX: 55, fromY: 15, toX: 25, toY: 48 },
@@ -407,7 +407,7 @@ export const mapDefs: Record<string, MapDef> = {
     width: 34,
     height: 34,
     connections: [
-      { targetMap: 'overworld', fromX: 17, fromY: 0, toX: 25, toY: 88 },
+      { targetMap: 'overworld', fromX: 17, fromY: 0, toX: 22, toY: 85 },
     ],
     npcs: [],
     bossId: 'lavaWyrm',
