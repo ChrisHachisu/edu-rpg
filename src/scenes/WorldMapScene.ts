@@ -3,6 +3,7 @@ import { GAME_WIDTH, GAME_HEIGHT, TILE_SIZE, ZOOM, COLORS, FONT_FAMILY, UI_OFFSE
 import { t } from '../i18n/i18n';
 import { gameState } from '../GameState';
 import { generateOverworldMap, generateTownMap, generateDungeonMap, generatePortalLandMap } from '../utils/MapGenerator';
+import type { DungeonMapResult } from '../utils/MapGenerator';
 import { mapDefs } from '../data/maps';
 import { monsters } from '../data/monsters';
 import { items } from '../data/items';
@@ -17,32 +18,32 @@ const S = UI_SCALE;
 // For dungeons: boss.<bossId>.defeated (set on boss defeat)
 const COMPASS_CHAIN: { mapId: string; ox: number; oy: number; type: 'town' | 'dungeon'; doneFlag: string }[] = [
   // Act 1
-  { mapId: 'sunkenCellar',  ox: 25,  oy: 148, type: 'dungeon', doneFlag: 'boss.giantCrab.defeated' },
-  { mapId: 'millbrook',     ox: 45,  oy: 145, type: 'town',    doneFlag: 'compass.visited.millbrook' },
-  { mapId: 'portSapphire',  ox: 66,  oy: 138, type: 'town',    doneFlag: 'compass.visited.portSapphire' },
-  { mapId: 'mistyGrotto',   ox: 85,  oy: 144, type: 'dungeon', doneFlag: 'boss.giantToad.defeated' },
-  { mapId: 'crystalCave',   ox: 66,  oy: 130, type: 'dungeon', doneFlag: 'boss.serpent.defeated' },
+  { mapId: 'sunkenCellar',      ox: 45,  oy: 350, type: 'dungeon', doneFlag: 'boss.giantCrab.defeated' },
+  { mapId: 'millbrook',         ox: 100, oy: 320, type: 'town',    doneFlag: 'compass.visited.millbrook' },
+  { mapId: 'portSapphire',      ox: 130, oy: 290, type: 'town',    doneFlag: 'compass.visited.portSapphire' },
+  { mapId: 'mistyGrotto',       ox: 120, oy: 260, type: 'dungeon', doneFlag: 'boss.giantToad.defeated' },
+  { mapId: 'crystalCave',       ox: 148, oy: 295, type: 'dungeon', doneFlag: 'boss.serpent.defeated' },
   // Act 2
-  { mapId: 'ironkeep',      ox: 70,  oy: 118, type: 'town',    doneFlag: 'compass.visited.ironkeep' },
-  { mapId: 'frozenLake',    ox: 100, oy: 112, type: 'dungeon', doneFlag: 'boss.iceWyrm.defeated' },
-  { mapId: 'stormNest',     ox: 25,  oy: 108, type: 'dungeon', doneFlag: 'boss.stormHarpy.defeated' },
-  { mapId: 'shadowCave',    ox: 90,  oy: 102, type: 'dungeon', doneFlag: 'boss.dragon.defeated' },
+  { mapId: 'ironkeep',          ox: 200, oy: 320, type: 'town',    doneFlag: 'compass.visited.ironkeep' },
+  { mapId: 'frozenLake',        ox: 200, oy: 265, type: 'dungeon', doneFlag: 'boss.iceWyrm.defeated' },
+  { mapId: 'stormNest',         ox: 280, oy: 295, type: 'dungeon', doneFlag: 'boss.stormHarpy.defeated' },
+  { mapId: 'shadowCave',        ox: 260, oy: 234, type: 'dungeon', doneFlag: 'boss.dragon.defeated' },
   // Act 3/4
-  { mapId: 'ruinsCamp',     ox: 80,  oy: 85,  type: 'town',    doneFlag: 'compass.visited.ruinsCamp' },
-  { mapId: 'embersRest',    ox: 30,  oy: 78,  type: 'town',    doneFlag: 'compass.visited.embersRest' },
-  { mapId: 'oasisHaven',    ox: 45,  oy: 92,  type: 'town',    doneFlag: 'compass.visited.oasisHaven' },
-  { mapId: 'banditHideout', ox: 10,  oy: 103, type: 'dungeon', doneFlag: 'boss.banditLord.defeated' },
-  { mapId: 'desertTomb',    ox: 60,  oy: 95,  type: 'dungeon', doneFlag: 'boss.sandGolem.defeated' },
-  { mapId: 'magmaTunnels',  ox: 26,  oy: 90,  type: 'dungeon', doneFlag: 'boss.lavaWyrm.defeated' },
-  { mapId: 'volcanicForge', ox: 12,  oy: 70,  type: 'dungeon', doneFlag: 'boss.flameTitan.defeated' },
+  { mapId: 'ruinsCamp',         ox: 270, oy: 120, type: 'town',    doneFlag: 'compass.visited.ruinsCamp' },
+  { mapId: 'embersRest',        ox: 195, oy: 80,  type: 'town',    doneFlag: 'compass.visited.embersRest' },
+  { mapId: 'oasisHaven',        ox: 220, oy: 150, type: 'town',    doneFlag: 'compass.visited.oasisHaven' },
+  { mapId: 'banditHideout',     ox: 298, oy: 133, type: 'dungeon', doneFlag: 'boss.banditLord.defeated' },
+  { mapId: 'desertTomb',        ox: 250, oy: 140, type: 'dungeon', doneFlag: 'boss.sandGolem.defeated' },
+  { mapId: 'magmaTunnels',      ox: 242, oy: 93,  type: 'dungeon', doneFlag: 'boss.lavaWyrm.defeated' },
+  { mapId: 'volcanicForge',     ox: 172, oy: 110, type: 'dungeon', doneFlag: 'boss.flameTitan.defeated' },
   // Act 5
-  { mapId: 'lastBastion',   ox: 85,  oy: 58,  type: 'town',    doneFlag: 'compass.visited.lastBastion' },
-  { mapId: 'havensEdge',    ox: 65,  oy: 40,  type: 'town',    doneFlag: 'compass.visited.havensEdge' },
-  { mapId: 'stormreachIsles',   ox: 15,  oy: 25,  type: 'dungeon', doneFlag: 'boss.stormSentinel.defeated' },
-  { mapId: 'frostfallPeaks',    ox: 100, oy: 25,  type: 'dungeon', doneFlag: 'boss.frostMonarch.defeated' },
-  { mapId: 'sunkenTempleIsle',  ox: 35,  oy: 45,  type: 'dungeon', doneFlag: 'boss.swordWraith.defeated' },
-  { mapId: 'twilightRealm',     ox: 80,  oy: 45,  type: 'dungeon', doneFlag: 'boss.celestialGuardian.defeated' },
-  { mapId: 'demonCastle',       ox: 55,  oy: 15,  type: 'dungeon', doneFlag: 'boss.demonKing.defeated' },
+  { mapId: 'lastBastion',       ox: 100, oy: 150, type: 'town',    doneFlag: 'compass.visited.lastBastion' },
+  { mapId: 'havensEdge',        ox: 70,  oy: 100, type: 'town',    doneFlag: 'compass.visited.havensEdge' },
+  { mapId: 'stormreachIsles',   ox: 40,  oy: 50,  type: 'dungeon', doneFlag: 'boss.stormSentinel.defeated' },
+  { mapId: 'frostfallPeaks',    ox: 130, oy: 40,  type: 'dungeon', doneFlag: 'boss.frostMonarch.defeated' },
+  { mapId: 'sunkenTempleIsle',  ox: 50,  oy: 130, type: 'dungeon', doneFlag: 'boss.swordWraith.defeated' },
+  { mapId: 'twilightRealm',     ox: 120, oy: 140, type: 'dungeon', doneFlag: 'boss.celestialGuardian.defeated' },
+  { mapId: 'demonCastle',       ox: 85,  oy: 30,  type: 'dungeon', doneFlag: 'boss.demonKing.defeated' },
 ];
 
 interface FieldItemEntry {
@@ -103,6 +104,36 @@ export class WorldMapScene extends Phaser.Scene {
 
   // Bandit Lord map sprite (shown on boss tile in banditHideout final floor)
   private banditLordMapSprite?: Phaser.GameObjects.Image;
+
+  // ── Wind Tower mechanic ──
+  private windTowerEnabled = false;
+  private windTowerPhase: 'calm' | 'gust' = 'calm';
+  private windTowerTimer = 0;
+  private windTowerDir: { dx: number; dy: number } = { dx: 0, dy: -1 };
+  private windTowerPushing = false;
+  private static readonly WIND_CALM_MS = 4000;
+  private static readonly WIND_GUST_MS = 2000;
+
+  // ── Maze Hunter mechanic ──
+  private mazeHunterEnabled = false;
+  private mazeHunterBossTileX = 0;
+  private mazeHunterBossTileY = 0;
+  private mazeHunterChaseMode = false;
+  private mazeHunterMoveTimer = 0;
+  private mazeHunterStepCount = 0;
+  private mazeHunterActive = false;
+  private mazeHunterDefeated = false;
+  private mazeHunterEntranceX = 0;
+  private mazeHunterEntranceY = 0;
+  private mazeHunterIsMoving = false;
+  private _pendingMazeHunterBattle = false;
+  private mazeHunterBossSprite?: Phaser.GameObjects.Container;
+  private goldenChestPos?: { x: number; y: number };
+
+  // ── Shadow Portal mechanic ──
+  private shadowPortalEnabled = false;
+  private portalPairs: Array<{ a: { x: number; y: number }; b: { x: number; y: number } }> = [];
+  private portalCooldown = false;
 
   constructor() {
     super('WorldMapScene');
@@ -180,14 +211,55 @@ export class WorldMapScene extends Phaser.Scene {
       const isGateFinalFloor = isMultiFloorGate && this.currentFloor === totalFloors;
       const scaledW = WorldMapScene.gradeScaledSize(def.width);
       const scaledH = WorldMapScene.gradeScaledSize(def.height);
-      this.mapData = generateDungeonMap(
+      const dungeonResult: DungeonMapResult = generateDungeonMap(
         scaledW, scaledH,
         mapId.charCodeAt(0) * 251,
         this.currentFloor, totalFloors,
         isSingleFloorGate,
         isGateFinalFloor,
         def.castle ?? false,
+        def.mechanic,
       );
+      this.mapData = dungeonResult.map;
+
+      // Apply mechanic state from generation result
+      if (def.mechanic === 'wind-tower' && dungeonResult.windCorridorDir) {
+        this.windTowerDir = dungeonResult.windCorridorDir;
+        this.windTowerEnabled = true;
+        this.windTowerPhase = 'calm';
+        this.windTowerTimer = this.time.now;
+        this.windTowerPushing = false;
+      } else {
+        this.windTowerEnabled = false;
+      }
+      if (def.mechanic === 'maze-hunter') {
+        this.goldenChestPos = dungeonResult.goldenChestPos;
+        this.mazeHunterEnabled = true;
+        this.mazeHunterActive = false;
+        this.mazeHunterStepCount = 0;
+        this.mazeHunterChaseMode = false;
+        this.mazeHunterMoveTimer = this.time.now;
+        this.mazeHunterDefeated = gameState.player.state.storyFlags['boss.swordWraith.defeated'] ?? false;
+        // Find boss tile (7) position
+        for (let r = 0; r < this.mapData.length; r++) {
+          for (let c = 0; c < this.mapData[r].length; c++) {
+            if (this.mapData[r][c] === 7) { this.mazeHunterBossTileX = c; this.mazeHunterBossTileY = r; }
+            if (this.mapData[r][c] === 6) { this.mazeHunterEntranceX = c; this.mazeHunterEntranceY = r; }
+          }
+        }
+      } else {
+        this.mazeHunterEnabled = false;
+        this.goldenChestPos = undefined;
+      }
+      if (def.mechanic === 'shadow-portal' && dungeonResult.portalPairs) {
+        this.shadowPortalEnabled = true;
+        this.portalPairs = dungeonResult.portalPairs;
+        this.portalCooldown = false;
+      } else {
+        this.shadowPortalEnabled = false;
+        this.portalPairs = [];
+      }
+
       // Mark already-opened chests and remove defeated boss tiles
       const isFinalFloor = this.currentFloor === totalFloors;
       for (let y = 0; y < this.mapData.length; y++) {
@@ -284,7 +356,7 @@ export class WorldMapScene extends Phaser.Scene {
       : def.castle ? 'castle' : 'dng';
 
     // Bandit hideout overworld coordinates — render as plain grass (hidden/incognito)
-    const BANDIT_HIDEOUT_OX = 10, BANDIT_HIDEOUT_OY = 103;
+    const BANDIT_HIDEOUT_OX = 298, BANDIT_HIDEOUT_OY = 133;
 
     for (let y = 0; y < this.mapData.length; y++) {
       for (let x = 0; x < this.mapData[y].length; x++) {
@@ -312,7 +384,8 @@ export class WorldMapScene extends Phaser.Scene {
 
   private static readonly HEALER_PRICES: Record<string, number> = {
     greenhollow: 0, millbrook: 5, portSapphire: 8,
-    ironkeep: 12, oasisHaven: 18, ruinsCamp: 18,
+    ironkeep: 12, frostwatch: 14, hauntedVillage: 16,
+    oasisHaven: 18, ruinsCamp: 18,
     embersRest: 25, lastBastion: 35, havensEdge: 35,
     stormreachVillage: 40, frostfallVillage: 40,
     sunkenTempleVillage: 40, twilightVillage: 40,
@@ -479,6 +552,8 @@ export class WorldMapScene extends Phaser.Scene {
 
   update(): void {
     this.updateCompass();
+    this.updateWindTower();
+    this.updateMazeHunter();
     if (this.isMoving || this.showingMessage || this.itemOverlayOpen || this.healerOverlayOpen) return;
 
     let dx = 0, dy = 0;
@@ -933,6 +1008,35 @@ export class WorldMapScene extends Phaser.Scene {
       }
       return;
     }
+
+    // Tile 29: Shadow portal — teleport to paired portal
+    if (currentTile === 29 && this.shadowPortalEnabled && !this.portalCooldown) {
+      const key = `${this.heroTileX},${this.heroTileY}`;
+      for (const pair of this.portalPairs) {
+        const aKey = `${pair.a.x},${pair.a.y}`, bKey = `${pair.b.x},${pair.b.y}`;
+        let dest: { x: number; y: number } | null = null;
+        if (key === aKey) dest = pair.b;
+        else if (key === bKey) dest = pair.a;
+        if (dest) {
+          this.portalCooldown = true;
+          this.isMoving = true;
+          this.cameras.main.fadeOut(300, 0, 0, 0);
+          this.cameras.main.once('camerafadeoutcomplete', () => {
+            this.heroTileX = dest!.x;
+            this.heroTileY = dest!.y;
+            this.hero.x = this.heroTileX * TILE_SIZE + TILE_SIZE / 2;
+            this.hero.y = this.heroTileY * TILE_SIZE + TILE_SIZE / 2;
+            this.updateCamera();
+            this.cameras.main.fadeIn(300, 0, 0, 0);
+            this.showMessage(t('dungeon.twilightDungeon.portal'));
+            this.isMoving = false;
+            this.time.delayedCall(500, () => { this.portalCooldown = false; });
+          });
+          break;
+        }
+      }
+    }
+    if (currentTile !== 29) this.portalCooldown = false;
 
     // Tile 31: Tripwire — white flash, poison damage, remove tile(s) across row
     if (currentTile === 31 && this.currentMapId === 'banditHideout') {
@@ -1995,6 +2099,132 @@ export class WorldMapScene extends Phaser.Scene {
     if (!gameState.player.state.storyFlags[flag]) {
       gameState.player.state.storyFlags[flag] = true;
     }
+  }
+
+  private updateWindTower(): void {
+    if (!this.windTowerEnabled) return;
+    const now = this.time.now;
+    if (this.windTowerPhase === 'calm') {
+      if (now - this.windTowerTimer > WorldMapScene.WIND_CALM_MS) {
+        this.windTowerPhase = 'gust';
+        this.windTowerTimer = now;
+        this.windTowerPushing = true;
+      }
+    } else {
+      if (now - this.windTowerTimer > WorldMapScene.WIND_GUST_MS) {
+        this.windTowerPhase = 'calm';
+        this.windTowerTimer = now;
+        this.windTowerPushing = false;
+      } else if (this.windTowerPushing && !this.isMoving) {
+        this.handleWindPush();
+      }
+    }
+  }
+
+  private handleWindPush(): void {
+    if (!this.windTowerEnabled || this.windTowerPhase !== 'gust') return;
+    const tile = this.mapData[this.heroTileY]?.[this.heroTileX];
+    if (tile !== 25) return; // only on wind corridor tiles
+    const { dx, dy } = this.windTowerDir;
+    const newX = this.heroTileX + dx;
+    const newY = this.heroTileY + dy;
+    if (this.canMove(newX, newY)) {
+      const transition = this.checkTransition(newX, newY);
+      if (transition) { this.performTransition(transition); return; }
+      this.isMoving = true;
+      this.heroTileX = newX;
+      this.heroTileY = newY;
+      const targetX = this.heroTileX * TILE_SIZE + TILE_SIZE / 2;
+      const targetY = this.heroTileY * TILE_SIZE + TILE_SIZE / 2;
+      this.tweens.add({
+        targets: this.hero,
+        x: targetX, y: targetY,
+        duration: 200,
+        onComplete: () => {
+          this.isMoving = false;
+          this.updatePosition();
+          this.updateCamera();
+          this.onStep();
+        },
+      });
+    }
+  }
+
+  private updateMazeHunter(): void {
+    if (!this.mazeHunterEnabled || this.mazeHunterDefeated || this.isMoving) return;
+    const now = this.time.now;
+    if (now - this.mazeHunterMoveTimer < 600) return;
+    this.mazeHunterMoveTimer = now;
+    this.mazeHunterStepCount++;
+
+    // Activate after 3 steps
+    if (!this.mazeHunterActive && this.mazeHunterStepCount >= 3) {
+      this.mazeHunterActive = true;
+    }
+    if (!this.mazeHunterActive) return;
+
+    // Check LOS to player (within 5 tiles straight)
+    const dx = Math.abs(this.heroTileX - this.mazeHunterBossTileX);
+    const dy = Math.abs(this.heroTileY - this.mazeHunterBossTileY);
+    if ((dx <= 5 && dy === 0) || (dy <= 5 && dx === 0)) {
+      this.mazeHunterChaseMode = true;
+    }
+
+    // Move boss one step toward player via BFS
+    this.bfsMazeHunterStep();
+
+    // Check collision with player
+    if (this.mazeHunterBossTileX === this.heroTileX && this.mazeHunterBossTileY === this.heroTileY) {
+      if (!this._pendingMazeHunterBattle) {
+        this._pendingMazeHunterBattle = true;
+        this.triggerMazeHunterBattle();
+      }
+    }
+  }
+
+  private bfsMazeHunterStep(): void {
+    const mapW = this.mapData[0]?.length ?? 1;
+    const mapH = this.mapData.length;
+    const targetX = this.mazeHunterChaseMode ? this.heroTileX : this.mazeHunterEntranceX;
+    const targetY = this.mazeHunterChaseMode ? this.heroTileY : this.mazeHunterEntranceY;
+    const start = `${this.mazeHunterBossTileX},${this.mazeHunterBossTileY}`;
+    const goal = `${targetX},${targetY}`;
+    if (start === goal) return;
+
+    const parent = new Map<string, string>();
+    const q: [number, number][] = [[this.mazeHunterBossTileX, this.mazeHunterBossTileY]];
+    parent.set(start, '');
+    let found = false;
+    while (q.length > 0 && !found) {
+      const [cx2, cy2] = q.shift()!;
+      for (const [ddx, ddy] of [[0, -1], [0, 1], [-1, 0], [1, 0]] as [number, number][]) {
+        const nx2 = cx2 + ddx, ny2 = cy2 + ddy;
+        const k = `${nx2},${ny2}`;
+        if (nx2 < 0 || nx2 >= mapW || ny2 < 0 || ny2 >= mapH) continue;
+        if (parent.has(k)) continue;
+        const t2 = this.mapData[ny2]?.[nx2];
+        if (t2 === 1 || t2 === 24) continue; // wall
+        parent.set(k, `${cx2},${cy2}`);
+        if (nx2 === targetX && ny2 === targetY) { found = true; break; }
+        q.push([nx2, ny2]);
+      }
+    }
+    if (!found) return;
+    // Trace back to find first step
+    let cur = goal;
+    let prev = parent.get(cur) ?? '';
+    while (prev !== start && prev !== '') { cur = prev; prev = parent.get(cur) ?? ''; }
+    const [nx2, ny2] = cur.split(',').map(Number);
+    this.mazeHunterBossTileX = nx2;
+    this.mazeHunterBossTileY = ny2;
+  }
+
+  private triggerMazeHunterBattle(): void {
+    const def = mapDefs[this.currentMapId];
+    if (!def.bossId) return;
+    const boss = monsters[def.bossId];
+    if (!boss) return;
+    this.startBattle(boss, true);
   }
 
   shutdown(): void {

@@ -15,75 +15,88 @@ export interface MapDef {
   exitConnection?: { toX: number; toY: number }; // gate dungeon: boss-exit overworld coordinates
   castle?: boolean; // castle dungeon: upward progression, entrance at bottom
   theme?: 'sky' | 'ice' | 'ancient' | 'shadow'; // portal land theme
+  mechanic?: 'forest-maze' | 'ice' | 'wind-tower' | 'shadow-portal' | 'maze-hunter'; // special dungeon mechanic
+  tileTheme?: 'tower'; // visual tile theme override for dungeon
 }
 
 export const mapDefs: Record<string, MapDef> = {
   // ═══════════════════════════════════════════════════════════════════
-  //   OVERWORLD — 120×160  (expanded from 80×120 for V2)
+  //   OVERWORLD — 320×400  (expanded for V3)
   //
-  //   y=0-1       WATER (north edge)
-  //   y=2-70      ACT 5 (69 tiles — mountain maze, Demon Castle island)
-  //   y≈71        LAVA BARRIER (organic)
-  //   y=72-100    ACT 3/4 (29 tiles — desert east, volcanic west)
-  //   y≈101       MOUNTAIN BARRIER (organic)
-  //   y=102-130   ACT 2 (29 tiles — mountain forests, frozen peaks)
-  //   y≈131       RIVER BARRIER (winding, with bridge at Crystal Cave)
-  //   y=132-157   ACT 1 (26 tiles — plains, coast, forests)
-  //   y=158-159   WATER (south edge)
+  //   y=0-29      ACT 5 top (demon realm, Demon Castle island)
+  //   y=30-79     ACT 5 main (mountain maze, portal lands)
+  //   y=80-149    ACT 3/4 (desert east, volcanic west)
+  //   y=150-219   ACT 2 (mountain forests, frozen peaks)
+  //   y=220-399   ACT 1 (plains, coast, forests)
   // ═══════════════════════════════════════════════════════════════════
   overworld: {
     id: 'overworld',
     nameKey: 'map.overworld',
     type: 'overworld',
-    width: 120,
-    height: 160,
+    width: 320,
+    height: 400,
     connections: [
       // ── Act 1 Towns ──
-      { targetMap: 'greenhollow', fromX: 15, fromY: 150, toX: 8, toY: 14 },
-      { targetMap: 'millbrook', fromX: 45, fromY: 145, toX: 8, toY: 14 },
-      { targetMap: 'portSapphire', fromX: 66, fromY: 138, toX: 8, toY: 14 },
+      { targetMap: 'greenhollow', fromX: 60, fromY: 340, toX: 8, toY: 14 },
+      { targetMap: 'millbrook', fromX: 100, fromY: 320, toX: 8, toY: 14 },
+      { targetMap: 'portSapphire', fromX: 130, fromY: 290, toX: 8, toY: 14 },
       // ── Act 2 Towns ──
-      { targetMap: 'ironkeep', fromX: 70, fromY: 118, toX: 8, toY: 14 },
+      { targetMap: 'ironkeep', fromX: 200, fromY: 320, toX: 8, toY: 14 },
+      { targetMap: 'frostwatch', fromX: 222, fromY: 262, toX: 5, toY: 9 },
+      { targetMap: 'hauntedVillage', fromX: 252, fromY: 242, toX: 8, toY: 14 },
       // ── Act 3 Towns ──
-      { targetMap: 'oasisHaven', fromX: 45, fromY: 92, toX: 8, toY: 14 },
-      { targetMap: 'ruinsCamp', fromX: 80, fromY: 85, toX: 8, toY: 14 },
+      { targetMap: 'oasisHaven', fromX: 220, fromY: 150, toX: 8, toY: 14 },
+      { targetMap: 'ruinsCamp', fromX: 270, fromY: 120, toX: 8, toY: 14 },
       // ── Act 4 Towns ──
-      { targetMap: 'embersRest', fromX: 30, fromY: 78, toX: 8, toY: 14 },
+      { targetMap: 'embersRest', fromX: 195, fromY: 80, toX: 8, toY: 14 },
       // ── Act 5 Towns ──
-      { targetMap: 'lastBastion', fromX: 85, fromY: 58, toX: 8, toY: 14 },
-      { targetMap: 'havensEdge', fromX: 65, fromY: 40, toX: 8, toY: 14 },
+      { targetMap: 'lastBastion', fromX: 100, fromY: 150, toX: 8, toY: 14 },
+      { targetMap: 'havensEdge', fromX: 70, fromY: 100, toX: 8, toY: 14 },
 
       // ── Act 1 Dungeons ──
-      { targetMap: 'sunkenCellar', fromX: 25, fromY: 148, toX: 11, toY: 1 },
-      { targetMap: 'mistyGrotto', fromX: 85, fromY: 144, toX: 11, toY: 1 },
-      // Crystal Cave: gate dungeon (S entrance Act 1 side, N exit Act 2 side)
-      { targetMap: 'crystalCave', fromX: 66, fromY: 130, toX: 10, toY: 61 },  // Act 1 → south end
-      { targetMap: 'crystalCave', fromX: 66, fromY: 127, toX: 10, toY: 1 },   // Act 2 → north end (boss exit)
+      { targetMap: 'sunkenCellar', fromX: 45, fromY: 350, toX: 50, toY: 1 },
+      { targetMap: 'mistyGrotto', fromX: 120, fromY: 260, toX: 50, toY: 1 },
+      { targetMap: 'whisperingWoodsCave', fromX: 80, fromY: 310, toX: 50, toY: 1 },
+      { targetMap: 'coastalReef', fromX: 140, fromY: 350, toX: 50, toY: 1 },
+      // Crystal Cave: gate dungeon
+      { targetMap: 'crystalCave', fromX: 148, fromY: 295, toX: 50, toY: 99 },
+      { targetMap: 'crystalCave', fromX: 172, fromY: 305, toX: 50, toY: 99, toFloor: 5 },
 
       // ── Act 2 Dungeons ──
-      { targetMap: 'stormNest', fromX: 25, fromY: 108, toX: 15, toY: 1 },
-      { targetMap: 'frozenLake', fromX: 100, fromY: 112, toX: 13, toY: 2 },
-      // Shadow Cave: gate dungeon (S entrance Act 2 side, N exit Act 3 side)
-      { targetMap: 'shadowCave', fromX: 90, fromY: 102, toX: 17, toY: 1 },              // Act 2 → floor 1 top
-      { targetMap: 'shadowCave', fromX: 90, fromY: 100, toX: 17, toY: 33, toFloor: 5 }, // Act 3 → floor 5 north (boss exit)
+      { targetMap: 'stormNest', fromX: 280, fromY: 295, toX: 50, toY: 99 },
+      { targetMap: 'frozenLake', fromX: 200, fromY: 265, toX: 50, toY: 1 },
+      { targetMap: 'ironMine', fromX: 185, fromY: 335, toX: 50, toY: 1 },
+      // Shadow Cave: gate dungeon
+      { targetMap: 'shadowCave', fromX: 260, fromY: 234, toX: 50, toY: 1 },
+      { targetMap: 'shadowCave', fromX: 260, fromY: 198, toX: 50, toY: 66, toFloor: 5 },
+      // Haunted Forest: gate dungeon
+      { targetMap: 'hauntedForest', fromX: 238, fromY: 248, toX: 12, toY: 24 },
+      { targetMap: 'hauntedForest', fromX: 242, fromY: 248, toX: 12, toY: 24, toFloor: 5 },
 
       // ── Act 3 Dungeons ──
-      { targetMap: 'desertTomb', fromX: 60, fromY: 95, toX: 17, toY: 1 },
-      { targetMap: 'banditHideout', fromX: 10, fromY: 103, toX: 12, toY: 1 },
+      { targetMap: 'desertTomb', fromX: 250, fromY: 140, toX: 50, toY: 1 },
+      { targetMap: 'banditHideout', fromX: 298, fromY: 133, toX: 50, toY: 1 },
+      { targetMap: 'scorchedRuins', fromX: 278, fromY: 82, toX: 50, toY: 1 },
 
       // ── Act 4 Dungeons ──
-      { targetMap: 'magmaTunnels', fromX: 22, fromY: 84, toX: 17, toY: 1 },
-      // Volcanic Forge: gate dungeon (S entrance, N exit into Act 5)
-      { targetMap: 'volcanicForge', fromX: 12, fromY: 70, toX: 20, toY: 1 },              // Act 4 → floor 1 top
-      { targetMap: 'volcanicForge', fromX: 12, fromY: 67, toX: 20, toY: 39, toFloor: 5 }, // Act 5 → floor 5 north (boss exit)
+      { targetMap: 'magmaTunnels', fromX: 242, fromY: 93, toX: 50, toY: 1 },
+      { targetMap: 'magmaTunnels', fromX: 242, fromY: 81, toX: 50, toY: 1, toFloor: 5 },
+      { targetMap: 'emberMines', fromX: 202, fromY: 48, toX: 50, toY: 1 },
+      { targetMap: 'obsidianCavern', fromX: 185, fromY: 48, toX: 50, toY: 1 },
+      // Volcanic Forge: gate dungeon
+      { targetMap: 'volcanicForge', fromX: 172, fromY: 110, toX: 50, toY: 1 },
+      { targetMap: 'volcanicForge', fromX: 148, fromY: 110, toX: 50, toY: 78, toFloor: 7 },
 
       // ── Act 5 Dungeons ──
-      { targetMap: 'demonCastle', fromX: 55, fromY: 15, toX: 25, toY: 48 },
+      { targetMap: 'demonBarracks', fromX: 80, fromY: 60, toX: 50, toY: 1 },
+      { targetMap: 'voidRift', fromX: 120, fromY: 70, toX: 50, toY: 1 },
+      { targetMap: 'demonCastle', fromX: 85, fromY: 30, toX: 50, toY: 99 },
+
       // Portal lands (4 legendary relic locations)
-      { targetMap: 'stormreachIsles', fromX: 15, fromY: 25, toX: 20, toY: 38 },
-      { targetMap: 'frostfallPeaks', fromX: 100, fromY: 25, toX: 20, toY: 38 },
-      { targetMap: 'sunkenTempleIsle', fromX: 35, fromY: 45, toX: 20, toY: 38 },
-      { targetMap: 'twilightRealm', fromX: 80, fromY: 45, toX: 20, toY: 38 },
+      { targetMap: 'stormreachIsles', fromX: 40, fromY: 50, toX: 20, toY: 38 },
+      { targetMap: 'frostfallPeaks', fromX: 130, fromY: 40, toX: 20, toY: 38 },
+      { targetMap: 'sunkenTempleIsle', fromX: 50, fromY: 130, toX: 20, toY: 38 },
+      { targetMap: 'twilightRealm', fromX: 120, fromY: 140, toX: 20, toY: 38 },
     ],
     npcs: [],
   },
@@ -100,7 +113,7 @@ export const mapDefs: Record<string, MapDef> = {
     width: 16,
     height: 16,
     connections: [
-      { targetMap: 'overworld', fromX: 8, fromY: 15, toX: 15, toY: 151 },
+      { targetMap: 'overworld', fromX: 8, fromY: 15, toX: 60, toY: 341 },
     ],
     npcs: [
       { id: 'elder', dialogueKey: 'npc.elder.greeting', x: 8, y: 3 },
@@ -119,7 +132,7 @@ export const mapDefs: Record<string, MapDef> = {
     width: 16,
     height: 16,
     connections: [
-      { targetMap: 'overworld', fromX: 8, fromY: 15, toX: 45, toY: 146 },
+      { targetMap: 'overworld', fromX: 8, fromY: 15, toX: 100, toY: 321 },
     ],
     npcs: [
       { id: 'healer', dialogueKey: 'npc.healer', x: 3, y: 12 },
@@ -136,7 +149,7 @@ export const mapDefs: Record<string, MapDef> = {
     width: 16,
     height: 16,
     connections: [
-      { targetMap: 'overworld', fromX: 8, fromY: 15, toX: 66, toY: 139 },
+      { targetMap: 'overworld', fromX: 8, fromY: 15, toX: 130, toY: 291 },
     ],
     npcs: [
       { id: 'healer', dialogueKey: 'npc.healer', x: 3, y: 12 },
@@ -155,7 +168,7 @@ export const mapDefs: Record<string, MapDef> = {
     width: 16,
     height: 16,
     connections: [
-      { targetMap: 'overworld', fromX: 8, fromY: 15, toX: 70, toY: 119 },
+      { targetMap: 'overworld', fromX: 8, fromY: 15, toX: 200, toY: 321 },
     ],
     npcs: [
       { id: 'healer', dialogueKey: 'npc.healer', x: 3, y: 12 },
@@ -163,6 +176,43 @@ export const mapDefs: Record<string, MapDef> = {
       { id: 'blacksmith', dialogueKey: 'npc.blacksmith', x: 3, y: 5 },
     ],
     shopId: 'ironkeep',
+    savePoint: { x: 8, y: 10 },
+  },
+  frostwatch: {
+    id: 'frostwatch',
+    nameKey: 'map.frostwatch',
+    type: 'town',
+    width: 16,
+    height: 16,
+    connections: [
+      { targetMap: 'overworld', fromX: 8, fromY: 15, toX: 222, toY: 263 },
+    ],
+    npcs: [
+      { id: 'healer', dialogueKey: 'npc.healer', x: 3, y: 12 },
+      { id: 'frostElder', dialogueKey: 'npc.frostElder', x: 3, y: 5 },
+      { id: 'frostGuard', dialogueKey: 'npc.frostGuard', x: 10, y: 13 },
+      { id: 'mountaineer', dialogueKey: 'npc.mountaineer', x: 8, y: 8 },
+      { id: 'frostVillager', dialogueKey: 'npc.frostVillager', x: 6, y: 12 },
+    ],
+    shopId: 'frostwatch',
+    savePoint: { x: 8, y: 10 },
+  },
+  hauntedVillage: {
+    id: 'hauntedVillage',
+    nameKey: 'map.hauntedVillage',
+    type: 'town',
+    width: 16,
+    height: 16,
+    connections: [
+      { targetMap: 'overworld', fromX: 8, fromY: 15, toX: 252, toY: 243 },
+    ],
+    npcs: [
+      { id: 'healer', dialogueKey: 'npc.healer', x: 3, y: 12 },
+      { id: 'hauntedElder', dialogueKey: 'npc.hauntedElder', x: 3, y: 5 },
+      { id: 'hauntedGuard', dialogueKey: 'npc.hauntedGuard', x: 10, y: 13 },
+      { id: 'hauntedVillager', dialogueKey: 'npc.hauntedVillager', x: 8, y: 8 },
+    ],
+    shopId: 'hauntedVillage',
     savePoint: { x: 8, y: 10 },
   },
   // ── Act 3 ──
@@ -173,7 +223,7 @@ export const mapDefs: Record<string, MapDef> = {
     width: 16,
     height: 16,
     connections: [
-      { targetMap: 'overworld', fromX: 8, fromY: 15, toX: 45, toY: 93 },
+      { targetMap: 'overworld', fromX: 8, fromY: 15, toX: 220, toY: 151 },
     ],
     npcs: [
       { id: 'healer', dialogueKey: 'npc.healer', x: 3, y: 12 },
@@ -190,7 +240,7 @@ export const mapDefs: Record<string, MapDef> = {
     width: 16,
     height: 16,
     connections: [
-      { targetMap: 'overworld', fromX: 8, fromY: 15, toX: 80, toY: 86 },
+      { targetMap: 'overworld', fromX: 8, fromY: 15, toX: 270, toY: 121 },
     ],
     npcs: [
       { id: 'healer', dialogueKey: 'npc.healer', x: 3, y: 12 },
@@ -210,7 +260,7 @@ export const mapDefs: Record<string, MapDef> = {
     width: 16,
     height: 16,
     connections: [
-      { targetMap: 'overworld', fromX: 8, fromY: 15, toX: 30, toY: 79 },
+      { targetMap: 'overworld', fromX: 8, fromY: 15, toX: 195, toY: 81 },
     ],
     npcs: [
       { id: 'healer', dialogueKey: 'npc.healer', x: 3, y: 12 },
@@ -229,7 +279,7 @@ export const mapDefs: Record<string, MapDef> = {
     width: 16,
     height: 16,
     connections: [
-      { targetMap: 'overworld', fromX: 8, fromY: 15, toX: 85, toY: 59 },
+      { targetMap: 'overworld', fromX: 8, fromY: 15, toX: 100, toY: 151 },
     ],
     npcs: [
       { id: 'healer', dialogueKey: 'npc.healer', x: 3, y: 12 },
@@ -246,7 +296,7 @@ export const mapDefs: Record<string, MapDef> = {
     width: 16,
     height: 16,
     connections: [
-      { targetMap: 'overworld', fromX: 8, fromY: 15, toX: 65, toY: 41 },
+      { targetMap: 'overworld', fromX: 8, fromY: 15, toX: 70, toY: 101 },
     ],
     npcs: [
       { id: 'healer', dialogueKey: 'npc.healer', x: 3, y: 12 },
@@ -258,12 +308,12 @@ export const mapDefs: Record<string, MapDef> = {
   },
 
   // ═══════════════════════════════════════════════════════════════════
-  //   DUNGEONS — 12 total (7 existing + 5 new)
+  //   DUNGEONS
   // ═══════════════════════════════════════════════════════════════════
 
   // ── Act 1 ──
 
-  // Misty Grotto — tutorial dungeon, expanded to 3 floors
+  // Misty Grotto — tutorial dungeon
   mistyGrotto: {
     id: 'mistyGrotto',
     nameKey: 'map.mistyGrotto',
@@ -272,7 +322,7 @@ export const mapDefs: Record<string, MapDef> = {
     width: 22,
     height: 22,
     connections: [
-      { targetMap: 'overworld', fromX: 11, fromY: 0, toX: 85, toY: 145 },
+      { targetMap: 'overworld', fromX: 11, fromY: 0, toX: 120, toY: 261 },
     ],
     npcs: [],
     bossId: 'giantToad',
@@ -288,33 +338,63 @@ export const mapDefs: Record<string, MapDef> = {
     width: 22,
     height: 22,
     connections: [
-      { targetMap: 'overworld', fromX: 11, fromY: 0, toX: 25, toY: 149 },
+      { targetMap: 'overworld', fromX: 11, fromY: 0, toX: 45, toY: 351 },
     ],
     npcs: [],
     bossId: 'giantCrab',
     floors: 2,
   },
 
-  // Crystal Cave — GATE dungeon (tunnels under river barrier)
+  // Whispering Woods Cave — new Act 1 dungeon
+  whisperingWoodsCave: {
+    id: 'whisperingWoodsCave',
+    nameKey: 'map.whisperingWoodsCave',
+    type: 'dungeon',
+    encounterZone: 'forest-lowlands',
+    width: 30,
+    height: 30,
+    connections: [
+      { targetMap: 'overworld', fromX: 15, fromY: 0, toX: 80, toY: 311 },
+    ],
+    npcs: [],
+    floors: 3,
+  },
+
+  // Coastal Reef — new Act 1 dungeon
+  coastalReef: {
+    id: 'coastalReef',
+    nameKey: 'map.coastalReef',
+    type: 'dungeon',
+    encounterZone: 'coastal',
+    width: 30,
+    height: 30,
+    connections: [
+      { targetMap: 'overworld', fromX: 15, fromY: 0, toX: 140, toY: 351 },
+    ],
+    npcs: [],
+    floors: 3,
+  },
+
+  // Crystal Cave — GATE dungeon
   crystalCave: {
     id: 'crystalCave',
     nameKey: 'map.crystalCave',
     type: 'dungeon',
     encounterZone: 'crystal-cave',
-    width: 21,
-    height: 63,
+    width: 101,
+    height: 101,
     connections: [
-      { targetMap: 'overworld', fromX: 10, fromY: 62, toX: 66, toY: 131 },  // south exit → Act 1
-      { targetMap: 'overworld', fromX: 10, fromY: 0, toX: 66, toY: 126 },   // north exit → Act 2
+      { targetMap: 'overworld', fromX: 50, fromY: 100, toX: 148, toY: 296 },  // Act 1 side
+      { targetMap: 'overworld', fromX: 50, fromY: 0, toX: 172, toY: 306 },    // Act 2 side (floor 5)
     ],
     npcs: [],
     bossId: 'serpent',
-    floors: 1,
+    floors: 5,
   },
 
   // ── Act 2 ──
 
-  // Storm Nest — prerequisite for Shadow Cave (Shadow Crystal)
+  // Storm Nest — prerequisite for Shadow Cave
   stormNest: {
     id: 'stormNest',
     nameKey: 'map.stormNest',
@@ -323,14 +403,14 @@ export const mapDefs: Record<string, MapDef> = {
     width: 30,
     height: 30,
     connections: [
-      { targetMap: 'overworld', fromX: 15, fromY: 0, toX: 25, toY: 109 },
+      { targetMap: 'overworld', fromX: 15, fromY: 0, toX: 280, toY: 296 },
     ],
     npcs: [],
     bossId: 'stormHarpy',
     floors: 5,
   },
 
-  // Frozen Lake — optional, ancient warrior's frozen blade → Frostbrand
+  // Frozen Lake — optional
   frozenLake: {
     id: 'frozenLake',
     nameKey: 'map.frozenLake',
@@ -339,33 +419,66 @@ export const mapDefs: Record<string, MapDef> = {
     width: 26,
     height: 26,
     connections: [
-      { targetMap: 'overworld', fromX: 13, fromY: 0, toX: 100, toY: 113 },
+      { targetMap: 'overworld', fromX: 13, fromY: 0, toX: 200, toY: 266 },
     ],
     npcs: [],
     bossId: 'iceWyrm',
     floors: 4,
   },
 
-  // Shadow Cave — GATE dungeon (through mountain barrier)
+  // Iron Mine — new Act 2 dungeon
+  ironMine: {
+    id: 'ironMine',
+    nameKey: 'map.ironMine',
+    type: 'dungeon',
+    encounterZone: 'midlands',
+    width: 30,
+    height: 30,
+    connections: [
+      { targetMap: 'overworld', fromX: 15, fromY: 0, toX: 185, toY: 336 },
+    ],
+    npcs: [],
+    floors: 4,
+  },
+
+  // Shadow Cave — GATE dungeon
   shadowCave: {
     id: 'shadowCave',
     nameKey: 'map.shadowCave',
     type: 'dungeon',
     encounterZone: 'shadow-cave',
     width: 34,
-    height: 34,
+    height: 68,
     connections: [
-      { targetMap: 'overworld', fromX: 17, fromY: 0, toX: 90, toY: 103 },   // south exit (floor 1)
-      { targetMap: 'overworld', fromX: 17, fromY: 33, toX: 90, toY: 99 },   // north exit (floor 5)
+      { targetMap: 'overworld', fromX: 17, fromY: 0, toX: 260, toY: 235 },   // Act 2 floor 1
+      { targetMap: 'overworld', fromX: 17, fromY: 67, toX: 260, toY: 199 },  // Act 3 floor 5
     ],
     npcs: [],
     bossId: 'dragon',
     floors: 5,
   },
 
+  // Haunted Forest — GATE dungeon, maze-hunter mechanic
+  hauntedForest: {
+    id: 'hauntedForest',
+    nameKey: 'map.hauntedForest',
+    type: 'dungeon',
+    encounterZone: 'haunted-forest',
+    width: 30,
+    height: 30,
+    connections: [
+      { targetMap: 'overworld', fromX: 12, fromY: 24, toX: 238, toY: 249 },
+      { targetMap: 'overworld', fromX: 12, fromY: 49, toX: 242, toY: 249, toFloor: 5 },
+    ],
+    npcs: [],
+    bossId: 'darkKnight',
+    floors: 6,
+    mechanic: 'maze-hunter',
+  },
+
   // ── Act 3 ──
 
-  // Desert Tomb — NEW GATE dungeon, seal protecting Volcanic Forge
+  // Desert Tomb — dungeon
   desertTomb: {
     id: 'desertTomb',
     nameKey: 'map.desertTomb',
@@ -374,14 +487,14 @@ export const mapDefs: Record<string, MapDef> = {
     width: 34,
     height: 34,
     connections: [
-      { targetMap: 'overworld', fromX: 17, fromY: 0, toX: 60, toY: 96 },
+      { targetMap: 'overworld', fromX: 17, fromY: 0, toX: 250, toY: 141 },
     ],
     npcs: [],
     bossId: 'sandGolem',
     floors: 5,
   },
 
-  // Bandit Hideout — optional, stolen sacred relic quest → Bandit's Dagger
+  // Bandit Hideout — optional
   banditHideout: {
     id: 'banditHideout',
     nameKey: 'map.banditHideout',
@@ -390,16 +503,32 @@ export const mapDefs: Record<string, MapDef> = {
     width: 24,
     height: 24,
     connections: [
-      { targetMap: 'overworld', fromX: 12, fromY: 0, toX: 10, toY: 102 },
+      { targetMap: 'overworld', fromX: 12, fromY: 0, toX: 298, toY: 134 },
     ],
     npcs: [],
     bossId: 'banditLord',
     floors: 3,
   },
 
+  // Scorched Ruins — new Act 3 dungeon
+  scorchedRuins: {
+    id: 'scorchedRuins',
+    nameKey: 'map.scorchedRuins',
+    type: 'dungeon',
+    encounterZone: 'desert-ruins',
+    width: 30,
+    height: 30,
+    connections: [
+      { targetMap: 'overworld', fromX: 15, fromY: 0, toX: 278, toY: 83 },
+    ],
+    npcs: [],
+    bossId: 'sandWraith',
+    floors: 4,
+  },
+
   // ── Act 4 ──
 
-  // Magma Tunnels — NEW required dungeon, only path to Volcanic Forge
+  // Magma Tunnels — gate dungeon
   magmaTunnels: {
     id: 'magmaTunnels',
     nameKey: 'map.magmaTunnels',
@@ -408,31 +537,92 @@ export const mapDefs: Record<string, MapDef> = {
     width: 34,
     height: 34,
     connections: [
-      { targetMap: 'overworld', fromX: 17, fromY: 0, toX: 22, toY: 85 },
+      { targetMap: 'overworld', fromX: 17, fromY: 0, toX: 242, toY: 94 },
+      { targetMap: 'overworld', fromX: 17, fromY: 33, toX: 242, toY: 82, toFloor: 5 },
     ],
     npcs: [],
     bossId: 'lavaWyrm',
-    floors: 4,
+    floors: 5,
   },
 
-  // Volcanic Forge — GATE dungeon (through lava barrier), expanded 7→9 floors
+  // Ember Mines — new Act 4 dungeon
+  emberMines: {
+    id: 'emberMines',
+    nameKey: 'map.emberMines',
+    type: 'dungeon',
+    encounterZone: 'volcanic',
+    width: 30,
+    height: 30,
+    connections: [
+      { targetMap: 'overworld', fromX: 15, fromY: 0, toX: 202, toY: 49 },
+    ],
+    npcs: [],
+    floors: 5,
+  },
+
+  // Obsidian Cavern — new Act 4 dungeon
+  obsidianCavern: {
+    id: 'obsidianCavern',
+    nameKey: 'map.obsidianCavern',
+    type: 'dungeon',
+    encounterZone: 'volcanic',
+    width: 30,
+    height: 30,
+    connections: [
+      { targetMap: 'overworld', fromX: 15, fromY: 0, toX: 185, toY: 49 },
+    ],
+    npcs: [],
+    floors: 5,
+  },
+
+  // Volcanic Forge — GATE dungeon
   volcanicForge: {
     id: 'volcanicForge',
     nameKey: 'map.volcanicForge',
     type: 'dungeon',
     encounterZone: 'volcanic-forge',
     width: 40,
-    height: 40,
+    height: 80,
     connections: [
-      { targetMap: 'overworld', fromX: 20, fromY: 0, toX: 12, toY: 71 },   // south exit (floor 1)
-      { targetMap: 'overworld', fromX: 20, fromY: 39, toX: 13, toY: 67 },  // north exit (floor 9)
+      { targetMap: 'overworld', fromX: 20, fromY: 0, toX: 172, toY: 111 },    // Act 4 floor 1
+      { targetMap: 'overworld', fromX: 20, fromY: 79, toX: 148, toY: 111 },   // Act 5 floor 7
     ],
     npcs: [],
     bossId: 'flameTitan',
-    floors: 5,
+    floors: 7,
   },
 
   // ── Act 5 ──
+
+  // Demon Barracks — new Act 5 dungeon
+  demonBarracks: {
+    id: 'demonBarracks',
+    nameKey: 'map.demonBarracks',
+    type: 'dungeon',
+    encounterZone: 'demon-realm',
+    width: 30,
+    height: 30,
+    connections: [
+      { targetMap: 'overworld', fromX: 15, fromY: 0, toX: 80, toY: 61 },
+    ],
+    npcs: [],
+    floors: 5,
+  },
+
+  // Void Rift — new Act 5 dungeon
+  voidRift: {
+    id: 'voidRift',
+    nameKey: 'map.voidRift',
+    type: 'dungeon',
+    encounterZone: 'demon-realm',
+    width: 30,
+    height: 30,
+    connections: [
+      { targetMap: 'overworld', fromX: 15, fromY: 0, toX: 120, toY: 71 },
+    ],
+    npcs: [],
+    floors: 5,
+  },
 
   // Demon Castle — final dungeon, castle with upward progression
   demonCastle: {
@@ -440,10 +630,10 @@ export const mapDefs: Record<string, MapDef> = {
     nameKey: 'map.demonCastle',
     type: 'dungeon',
     encounterZone: 'demon-castle',
-    width: 50,
-    height: 50,
+    width: 100,
+    height: 100,
     connections: [
-      { targetMap: 'overworld', fromX: 25, fromY: 49, toX: 55, toY: 16 },
+      { targetMap: 'overworld', fromX: 50, fromY: 99, toX: 85, toY: 31 },
     ],
     npcs: [],
     bossId: 'demonKing',
@@ -465,7 +655,7 @@ export const mapDefs: Record<string, MapDef> = {
     width: 40,
     height: 40,
     connections: [
-      { targetMap: 'overworld', fromX: 20, fromY: 39, toX: 15, toY: 25 },
+      { targetMap: 'overworld', fromX: 20, fromY: 39, toX: 40, toY: 50 },
     ],
     npcs: [],
   },
@@ -490,14 +680,16 @@ export const mapDefs: Record<string, MapDef> = {
     nameKey: 'map.stormreachSpire',
     type: 'dungeon',
     encounterZone: 'stormreach-isles',
-    width: 30,
-    height: 30,
+    width: 100,
+    height: 100,
     connections: [
-      { targetMap: 'stormreachIsles', fromX: 15, fromY: 0, toX: 25, toY: 10 },
+      { targetMap: 'stormreachIsles', fromX: 50, fromY: 0, toX: 25, toY: 10 },
     ],
     npcs: [],
     bossId: 'stormSentinel',
-    floors: 5,
+    floors: 6,
+    mechanic: 'wind-tower',
+    tileTheme: 'tower',
   },
 
   // ── Frostfall Peaks (ice) — Crown of Wisdom ──
@@ -510,7 +702,7 @@ export const mapDefs: Record<string, MapDef> = {
     width: 40,
     height: 40,
     connections: [
-      { targetMap: 'overworld', fromX: 20, fromY: 39, toX: 100, toY: 25 },
+      { targetMap: 'overworld', fromX: 20, fromY: 39, toX: 130, toY: 40 },
     ],
     npcs: [],
   },
@@ -535,14 +727,15 @@ export const mapDefs: Record<string, MapDef> = {
     nameKey: 'map.frostfallCavern',
     type: 'dungeon',
     encounterZone: 'frostfall-peaks',
-    width: 30,
-    height: 30,
+    width: 100,
+    height: 100,
     connections: [
-      { targetMap: 'frostfallPeaks', fromX: 15, fromY: 0, toX: 25, toY: 10 },
+      { targetMap: 'frostfallPeaks', fromX: 50, fromY: 0, toX: 25, toY: 10 },
     ],
     npcs: [],
     bossId: 'frostMonarch',
-    floors: 5,
+    floors: 6,
+    mechanic: 'ice',
   },
 
   // ── Sunken Temple Isle (ancient/holy) — Excalibur ──
@@ -555,7 +748,7 @@ export const mapDefs: Record<string, MapDef> = {
     width: 40,
     height: 40,
     connections: [
-      { targetMap: 'overworld', fromX: 20, fromY: 39, toX: 35, toY: 45 },
+      { targetMap: 'overworld', fromX: 20, fromY: 39, toX: 50, toY: 130 },
     ],
     npcs: [],
   },
@@ -580,14 +773,16 @@ export const mapDefs: Record<string, MapDef> = {
     nameKey: 'map.sunkenTempleDungeon',
     type: 'dungeon',
     encounterZone: 'sunken-temple',
-    width: 30,
-    height: 30,
+    width: 100,
+    height: 100,
     connections: [
-      { targetMap: 'sunkenTempleIsle', fromX: 15, fromY: 0, toX: 25, toY: 10 },
+      { targetMap: 'sunkenTempleIsle', fromX: 50, fromY: 0, toX: 25, toY: 10 },
     ],
     npcs: [],
     bossId: 'swordWraith',
-    floors: 5,
+    floors: 6,
+    mechanic: 'maze-hunter',
+    tileTheme: 'tower',
   },
 
   // ── Twilight Realm (shadow/void) — Aegis of Dawn ──
@@ -600,7 +795,7 @@ export const mapDefs: Record<string, MapDef> = {
     width: 40,
     height: 40,
     connections: [
-      { targetMap: 'overworld', fromX: 20, fromY: 39, toX: 80, toY: 45 },
+      { targetMap: 'overworld', fromX: 20, fromY: 39, toX: 120, toY: 140 },
     ],
     npcs: [],
   },
@@ -625,13 +820,14 @@ export const mapDefs: Record<string, MapDef> = {
     nameKey: 'map.twilightDungeon',
     type: 'dungeon',
     encounterZone: 'twilight-realm',
-    width: 30,
-    height: 30,
+    width: 100,
+    height: 100,
     connections: [
-      { targetMap: 'twilightRealm', fromX: 15, fromY: 0, toX: 25, toY: 10 },
+      { targetMap: 'twilightRealm', fromX: 50, fromY: 0, toX: 25, toY: 10 },
     ],
     npcs: [],
     bossId: 'celestialGuardian',
-    floors: 5,
+    floors: 6,
+    mechanic: 'shadow-portal',
   },
 };

@@ -9001,6 +9001,67 @@ function generateTilesets(scene: Phaser.Scene): void {
     g.fillRect(21, 22, 1, 1);
     g.fillRect(7, 13, 1, 1);
   });
+
+  // dng-25: Wind corridor — stone floor with arrow showing wind direction
+  generateTile(scene, 'dng-25', 0x3a5555, 0x2e4444, undefined, g => {
+    // Stone floor base (slightly teal-tinted)
+    g.fillStyle(0x3a5555);
+    g.fillRect(0, 0, 24, 24);
+    // Floor tile lines
+    g.fillStyle(0x2e4444);
+    g.fillRect(0, 11, 24, 1);
+    g.fillRect(8, 0, 1, 11);
+    g.fillRect(17, 0, 1, 11);
+    g.fillRect(5, 12, 1, 12);
+    g.fillRect(12, 12, 1, 12);
+    g.fillRect(20, 12, 1, 12);
+    // Wind arrow (pointing right — rendered as chevrons)
+    g.fillStyle(0x99ddee, 0.9);
+    // Arrow shaft
+    g.fillRect(4, 11, 13, 2);
+    // Arrow head (right-pointing triangle)
+    g.fillRect(14, 9, 2, 6);
+    g.fillRect(16, 10, 2, 4);
+    g.fillRect(18, 11, 2, 2);
+    // Faint secondary chevron
+    g.fillStyle(0x66bbcc, 0.5);
+    g.fillRect(8, 10, 1, 4);
+    g.fillRect(11, 10, 1, 4);
+  });
+
+  // dng-29: Shadow portal — dark swirling void pool
+  generateTile(scene, 'dng-29', 0x111122, 0x0a0a1a, undefined, g => {
+    // Dark floor background
+    g.fillStyle(0x111122);
+    g.fillRect(0, 0, 24, 24);
+    // Outer glow ring (deep purple)
+    g.fillStyle(0x330066, 0.8);
+    for (let dy = -9; dy <= 9; dy++) {
+      const hw = Math.round(Math.sqrt(Math.max(0, 81 - dy * dy)));
+      const cx2 = 12, cy2 = 12;
+      const d = Math.sqrt(dy * dy);
+      if (d > 7) { g.fillRect(cx2 - hw, cy2 + dy, hw * 2, 1); }
+    }
+    // Inner void (near-black)
+    g.fillStyle(0x050510);
+    for (let dy = -5; dy <= 5; dy++) {
+      const hw = Math.round(Math.sqrt(Math.max(0, 25 - dy * dy)));
+      g.fillRect(12 - hw, 12 + dy, hw * 2, 1);
+    }
+    // Swirl lines (bright purple)
+    g.fillStyle(0xaa44ff, 0.8);
+    g.fillRect(12, 5, 1, 3);
+    g.fillRect(12, 16, 1, 3);
+    g.fillRect(5, 12, 3, 1);
+    g.fillRect(16, 12, 3, 1);
+    g.fillRect(8, 7, 2, 2);
+    g.fillRect(14, 7, 2, 2);
+    g.fillRect(8, 15, 2, 2);
+    g.fillRect(14, 15, 2, 2);
+    // Center spark
+    g.fillStyle(0xdd99ff, 1.0);
+    g.fillRect(11, 11, 2, 2);
+  });
 }
 
 function generateUIAssets(scene: Phaser.Scene): void {

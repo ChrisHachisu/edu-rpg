@@ -1,11 +1,14 @@
 // Procedural tilemap generator — creates maps at runtime
 // Returns 2D arrays of tile indices matching our generated tilesets
 
-// Overworld tiles: 0=grass, 1=path, 2=water, 3=tree, 4=mountain, 5=bridge, 6=town, 7=cave, 8=castle
+// Overworld tiles: 0=grass, 1=path, 2=water, 3=tree, 4=mountain, 5=bridge, 6=town, 7=cave/dungeon, 8=castle
+//   9=portal-land, 10=gate, 12=stormNest(special cave), 13=storm-blocked, 14=crossroads-barrier
+//   15=crystalCave(special), 16=frozenLake(special), 17=fog/mist, 18=snowfield, 19=desert-tomb
 // Town tiles: 0=floor, 1=wall, 2=house-roof, 3=grass, 4=water, 5=path, 6=save, 7=exit
 //   8=shop-awning, 9=house-wall-window, 10=house-wall-door, 11=shop-wall-display, 12=shop-wall-door
 // Dungeon tiles: 0=floor, 1=wall, 2=cracked, 3=door, 4=treasure, 5=lava, 6=stairs-up, 7=boss
 //   8=opened-chest, 9=stairs-down, 10=boss-exit-portal, 11=boss-warp-portal, 12=boss-exit-stairs
+//   17=hidden-wall, 24=maze-wall, 25=wind-corridor, 29=shadow-portal, 30=spike-trap, 31=tripwire
 
 function seededRandom(seed: number): () => number {
   let s = seed;
@@ -28,673 +31,317 @@ export function generateOverworldMap(width: number, height: number): number[][] 
   const rand = seededRandom(42);
   const map: number[][] = [];
 
-  // ── Phase 1: Base terrain ──
+  // ── Phase 1: Base terrain using four elliptical region definitions ──
+  // Each region: cx, cy = center; hw, hh = half-widths; seed = noise seed
+  const regionU = { cx: 85, cy: 305, hw: 65, hh: 75, seed: 1 };  // Act 1 (SW)
+  const regionM = { cx: 235, cy: 305, hw: 65, hh: 75, seed: 2 }; // Act 2 (SE)
+  const regionC = { cx: 235, cy: 110, hw: 65, hh: 90, seed: 3 }; // Act 3/4 (NE)
+  const regionT = { cx: 85, cy: 110, hw: 65, hh: 90, seed: 4 };  // Act 5 (NW)
+
+  const inRegion = (x: number, y: number, cx: number, cy: number, hw: number, hh: number, seed: number): boolean => {
+    const qx = (x - cx) / hw, qy = (y - cy) / hh;
+    const distSq = qx * qx + qy * qy;
+    const noise = noiseAt(x, y, 0.04, seed) * 0.25 + noiseAt(x, y, 0.08, seed + 100) * 0.15;
+    return distSq + noise < 1;
+  };
+
   for (let y = 0; y < height; y++) {
     const row: number[] = [];
     for (let x = 0; x < width; x++) {
-      // Water borders (2 tiles wide)
-      if (x <= 1 || x >= width - 2 || y <= 1 || y >= height - 2) {
-        row.push(2);
-        continue;
+      if (x <= 1 || x >= width - 2 || y <= 1 || y >= height - 2) { row.push(2); continue; }
+
+      const inU = inRegion(x, y, regionU.cx, regionU.cy, regionU.hw, regionU.hh, regionU.seed);
+      const inMr = inRegion(x, y, regionM.cx, regionM.cy, regionM.hw, regionM.hh, regionM.seed);
+      const inC = inRegion(x, y, regionC.cx, regionC.cy, regionC.hw, regionC.hh, regionC.seed);
+      const inT = inRegion(x, y, regionT.cx, regionT.cy, regionT.hw, regionT.hh, regionT.seed);
+
+      if (!inU && !inMr && !inC && !inT) { row.push(2); continue; }
+
+      if (inU) {
+        // Act 1: mixed plains/forest/coast
+        if (x > 60 && x < 90 && y > 310 && y < 340 && rand() > 0.35) { row.push(3); continue; }
+        if (x > 100 && x < 135 && y > 290 && y < 320 && rand() > 0.7) { row.push(3); continue; }
+        if (x > 135 && y > 260 && y < 360 && noiseAt(x, y, 0.12, 10) > 0.8 && rand() > 0.5) { row.push(4); continue; }
+        if (Math.sqrt((x - 95) ** 2 + (y - 330) ** 2) < 5 + noiseAt(x, y, 0.4, 4) * 2) { row.push(2); continue; }
+        if (rand() > 0.9) { row.push(3); continue; }
+        row.push(0); continue;
       }
 
-      // Act 5 (y=2-70): fill with mountains — maze carved later
-      if (y <= 70) {
-        row.push(4);
-        continue;
+      if (inMr) {
+        // Act 2: mixed with rivers and ice regions
+        if (y >= 275 && y <= 298 && x >= 170 && x <= 300 && !(x >= 221 && x <= 222)) {
+          const riverCy = 286 + noiseAt(x, 0, 0.08, 5.5) * 3;
+          const riverR = 3.5 + noiseAt(x, 0, 0.12, 6.5) * 2.5;
+          const dist = Math.abs(y - riverCy);
+          if (dist < riverR) { row.push(4); continue; }
+          if (dist < riverR + 2 && noiseAt(x, y, 0.2, 3.3) > 0.3 && rand() > 0.4) { row.push(4); continue; }
+        }
+        if (y > 294) {
+          if (x > 210 && x < 270 && y > 330 && y < 365 && rand() > 0.5) { row.push(3); continue; }
+          if (rand() > 0.88) { row.push(3); continue; }
+          row.push(0); continue;
+        }
+        if (x >= 238 && x <= 242 && y >= 230 && y <= 280) {
+          const atGate = (x <= 239 && Math.abs(y - 248) <= 1) || (x >= 241 && Math.abs(y - 248) <= 1);
+          if (!atGate) { row.push(14); continue; }
+        }
+        if ((x >= 234 && x <= 237 || x >= 243 && x <= 246) && y >= 230 && y <= 280 && rand() > 0.4) { row.push(3); continue; }
+        const frozenDist = Math.sqrt((x - 200) ** 2 + (y - 265) ** 2);
+        if (frozenDist < 8 + noiseAt(x, y, 0.25, 6) * 2.5 && frozenDist > 1.5) { row.push(2); continue; }
+        if (x > 185 && x < 215 && y > 258 && y < 275 && noiseAt(x, y, 0.12, 7) > 0.45 && rand() > 0.4) { row.push(4); continue; }
+        if (y < 275 && y > 230 && rand() > 0.88) { row.push(3); continue; }
+        if (rand() > 0.85) { row.push(3); continue; }
+        row.push(0); continue;
       }
 
-      // ── Act 3/4 terrain (y=72-100): desert east + volcanic west ──
-      if (y >= 72 && y <= 100) {
-        // Scattered mountains (volcanic terrain west, rocky desert east)
-        const volcNoise = noiseAt(x, y, 0.15, 3.0);
-        if (x < 40 && volcNoise > 0.6 && rand() > 0.3) {
-          row.push(4); // volcanic mountains
-          continue;
+      if (inC) {
+        // Act 3/4: desert/volcanic
+        if (x < 210) {
+          if (noiseAt(x, y, 0.1, 3) > 0.5 && rand() > 0.3) { row.push(4); continue; }
+          if (x < 200 && y < 75 && noiseAt(x, y, 0.2, 5) > 0.9 && rand() > 0.4) { row.push(2); continue; }
         }
-        // Desert sand patches (represented as grass for now, trees are sparse)
-        if (x > 50 && rand() > 0.95) {
-          row.push(3); // sparse scrub
-          continue;
+        const oasisDist = Math.sqrt((x - 220) ** 2 + (y - 150) ** 2);
+        if (oasisDist < 12) {
+          if (oasisDist > 8 && rand() > 0.6) { row.push(3); continue; }
+          if (oasisDist > 5 && oasisDist < 8 && rand() > 0.5) { row.push(2); continue; }
+          row.push(0); continue;
         }
-        // Lava pools in volcanic area
-        if (x < 35 && y > 74 && y < 98) {
-          const lavaNoise = noiseAt(x, y, 0.25, 5.0);
-          if (lavaNoise > 1.0 && rand() > 0.4) {
-            row.push(2); // lava/water pool
-            continue;
-          }
+        if (y >= 75 && y <= 130 && x >= 165 && x <= 290) {
+          const baseCy = 87 + (x < 230 ? (230 - x) * 0.35 : 0) + noiseAt(x, 0, 0.09, 17) * 3;
+          const baseR = 5 + noiseAt(x, 0, 0.11, 18) * 2;
+          const bd = Math.abs(y - baseCy);
+          if (bd < baseR) { row.push(4); continue; }
+          if (bd < baseR + 2 && noiseAt(x, y, 0.22, 19) > 0.2 && rand() > 0.35) { row.push(4); continue; }
         }
-        row.push(0);
-        continue;
+        if (y >= 112 && y <= 194 && x >= 248 && x <= 292) {
+          const cCx = 268 + noiseAt(0, y, 0.09, 20) * 5;
+          const cR = 11 + noiseAt(0, y, 0.11, 21) * 4;
+          const cd = Math.abs(x - cCx);
+          if (cd < cR) { row.push(4); continue; }
+          if (cd < cR + 3 && noiseAt(x, y, 0.22, 22) > 0.2 && rand() > 0.35) { row.push(4); continue; }
+        }
+        if (y >= 85 && y <= 117 && x >= 165 && x <= 245) {
+          const vn = noiseAt(x, y, 0.13, 36);
+          if (vn > 0.25 && rand() > 0.15) { row.push(4); continue; }
+          if (vn > 0.08 && rand() > 0.65) { row.push(4); continue; }
+        }
+        if (y >= 107 && y <= 128 && x >= 165 && x <= 290) {
+          const rCy = 117 + noiseAt(x, 0, 0.09, 33) * 3;
+          const rR = 6 + noiseAt(x, 0, 0.11, 34) * 2;
+          const rd = Math.abs(y - rCy);
+          if (rd < rR) { row.push(4); continue; }
+          if (rd < rR + 2 && noiseAt(x, y, 0.2, 35) > 0.2 && rand() > 0.35) { row.push(4); continue; }
+        }
+        if (y >= 124 && y <= 152 && x >= 193 && x <= 268) {
+          const sCy = 137 + noiseAt(x, 0, 0.1, 23) * 4;
+          const sR = 6 + noiseAt(x, 0, 0.12, 24) * 3;
+          const sd = Math.abs(y - sCy);
+          const rt = x < 225 ? Math.max(0, (x - 193) / 32) : 1;
+          if (rt > 0.1 && sd < sR * rt) { row.push(4); continue; }
+          const sThresh = 0.25 + (1 - rt) * 0.45;
+          if (sd < sR + 3 && noiseAt(x, y, 0.18, 37) > sThresh && rand() > 0.35) { row.push(4); continue; }
+        }
+        if (y > 90 && y < 200) {
+          if (noiseAt(x, y, 0.15, 9) > 0.7 && rand() > 0.5) { row.push(4); continue; }
+          row.push(18); continue;
+        }
+        row.push(0); continue;
       }
 
-      // ── Act 2 terrain (y=102-130): mountain forests ──
-      if (y >= 102 && y <= 130) {
-        // Dense forests
-        if (x > 40 && x < 80 && y > 110 && y < 125) {
-          if (rand() > 0.4) { row.push(3); continue; }
-        }
-        // Mountain clusters (west side has frozen peaks)
-        if (x < 30 && y > 105 && y < 120) {
-          const mtNoise = noiseAt(x, y, 0.2, 2.0);
-          if (mtNoise > 0.4 && rand() > 0.35) {
-            row.push(4);
-            continue;
-          }
-        }
-        // Staggered lake in Act 2 (creates natural barrier shape)
-        const lakeCx = 50, lakeCy = 120;
-        const lakeDist = Math.sqrt((x - lakeCx) ** 2 + (y - lakeCy) ** 2);
-        const lakeNoise = noiseAt(x, y, 0.3, 7.0);
-        if (lakeDist < 8 + lakeNoise * 3 && lakeDist > 2) {
-          row.push(2);
-          continue;
-        }
-        // Scattered trees
+      if (inT) {
+        // Act 5: demon realm mountains
+        if (y < 80) { row.push(4); continue; }
+        if (x > 40 && x < 130 && y > 90 && y < 170 && rand() > 0.7) { row.push(3); continue; }
+        if (noiseAt(x, y, 0.08, 6) > 0.7 && rand() > 0.4) { row.push(4); continue; }
         if (rand() > 0.88) { row.push(3); continue; }
-        row.push(0);
-        continue;
+        row.push(0); continue;
       }
 
-      // ── Act 1 terrain (y=132-157): plains and coast ──
-
-      // Coastal water (east/southeast — staggered coastline)
-      const coastNoise = noiseAt(x, y, 0.1, 1.5);
-      if (x > 95 + coastNoise * 8 && y > 138) {
-        row.push(2);
-        continue;
-      }
-
-      // Small pond/lake in Act 1 (natural feature)
-      const pondCx = 60, pondCy = 148;
-      const pondDist = Math.sqrt((x - pondCx) ** 2 + (y - pondCy) ** 2);
-      if (pondDist < 4 + noiseAt(x, y, 0.4, 4.0) * 2) {
-        row.push(2);
-        continue;
-      }
-
-      // Dense forests (between Greenhollow and Millbrook)
-      if (x > 22 && x < 42 && y > 146 && y < 154) {
-        if (rand() > 0.35) { row.push(3); continue; }
-      }
-
-      // Light forests (between Millbrook and Port Sapphire)
-      if (x > 50 && x < 75 && y > 140 && y < 150) {
-        if (rand() > 0.75) { row.push(3); continue; }
-      }
-
-      // Scattered trees
-      if (rand() > 0.9) { row.push(3); continue; }
-
-      row.push(0); // grass default
+      row.push(0);
     }
     map.push(row);
   }
 
   // ── Phase 2: Carve paths between key locations ──
-  const paths: [number, number][] = [
-    // ── Act 1 — south of river (y=132-157) ──
-    ...pathBetween(15, 150, 25, 148),   // greenhollow → sunkenCellar (optional, SW)
-    ...pathBetween(15, 150, 45, 145),   // greenhollow → millbrook
-    ...pathBetween(45, 145, 66, 138),   // millbrook → portSapphire (3-way junction)
-    ...pathBetween(66, 138, 85, 144),   // portSapphire → mistyGrotto (E)
-    ...pathBetween(66, 138, 66, 130),   // portSapphire → crystalCave S (N)
-
-    // ── Act 2 — between river and mountains (y=102-130) ──
-    ...pathBetween(66, 127, 70, 118),   // crystalCave N → ironkeep
-    // ironkeep → stormNest (west, windy path)
-    ...pathBetween(70, 118, 55, 114),
-    ...pathBetween(55, 114, 40, 110),
-    ...pathBetween(40, 110, 25, 108),
-    // ironkeep → frozenLake (east)
-    ...pathBetween(70, 118, 85, 114),
-    ...pathBetween(85, 114, 100, 112),
-    ...pathBetween(70, 118, 90, 102),   // ironkeep → shadowCave S
-
-    // ── Act 3/4 paths drawn LATER in Phase 9b (after terrain/stream) ──
-
-    // ── Act 5 — north of lava (y=2-70) ──
-    ...pathBetween(13, 67, 85, 58),     // volcanicForge N exit → lastBastion
-    ...pathBetween(85, 58, 65, 40),     // lastBastion → havensEdge
-    ...pathBetween(65, 40, 55, 25),     // havensEdge → south of Demon Castle approach
-  ];
-
-  for (const [px, py] of paths) {
-    if (px >= 0 && px < width && py >= 0 && py < height) {
-      map[py][px] = map[py][px] === 2 ? 5 : 1; // bridge over water, path elsewhere
-    }
-  }
-
-  // ── Phase 3: Act 5 mountain maze ──
-  const act5Top = 3;
-  const act5Bot = 69;
-
-  // Collect path/grass seeds in Act 5
-  const act5Seeds: [number, number][] = [];
-  for (let y = act5Top; y <= act5Bot; y++) {
-    for (let x = 3; x < width - 3; x++) {
-      if (map[y][x] === 1 || map[y][x] === 0) {
-        act5Seeds.push([x, y]);
+  const drawPath = (coords: [number, number][]) => {
+    for (const [px, py] of coords) {
+      if (px >= 0 && px < width && py >= 0 && py < height) {
+        const t = map[py][px];
+        if (t === 6 || t === 7 || t === 8 || t === 9 || t === 10 || t === 12) continue;
+        map[py][px] = 1;
       }
     }
+  };
+
+  drawPath([
+    ...pathBetween(60, 340, 45, 350), ...pathBetween(60, 340, 80, 310),
+    ...pathBetween(60, 340, 100, 320), ...pathBetween(100, 320, 130, 290),
+    ...pathBetween(130, 290, 140, 350), ...pathBetween(130, 290, 120, 260),
+    ...pathBetween(130, 290, 148, 295),
+  ]);
+  drawPath([
+    ...pathBetween(172, 305, 200, 320), ...pathBetween(200, 320, 185, 335),
+    ...pathBetween(200, 320, 280, 295), ...pathBetween(200, 320, 222, 295),
+  ]);
+  drawPath([...pathBetween(222, 295, 222, 275)]);
+  drawPath([
+    ...pathBetween(222, 275, 222, 262), ...pathBetween(222, 262, 200, 265),
+    ...pathBetween(222, 262, 238, 248), ...pathBetween(242, 248, 252, 242),
+    ...pathBetween(252, 242, 260, 234),
+  ]);
+  drawPath([
+    ...pathBetween(260, 198, 270, 120), ...pathBetween(270, 120, 220, 150),
+    ...pathBetween(220, 150, 225, 160), ...pathBetween(220, 150, 250, 140),
+    ...pathBetween(270, 120, 278, 93), ...pathBetween(278, 93, 242, 93),
+    ...pathBetween(278, 93, 278, 82), ...pathBetween(242, 81, 195, 80),
+    ...pathBetween(195, 80, 202, 48), ...pathBetween(195, 80, 185, 48),
+    ...pathBetween(195, 80, 195, 110), ...pathBetween(195, 110, 172, 110),
+  ]);
+  drawPath([
+    ...pathBetween(148, 110, 100, 150), ...pathBetween(100, 150, 70, 100),
+    ...pathBetween(70, 100, 80, 60), ...pathBetween(70, 100, 120, 70),
+    ...pathBetween(70, 100, 85, 30),
+  ]);
+
+  // ── Phase 3: Act 5 maze carving (y=22..79, x=22..147) ──
+  const mazeTop = 22, mazeBot = 79, mazeLeft = 22, mazeRight = 148;
+  const mazeSeeds: [number, number][] = [];
+  for (let my = mazeTop; my <= mazeBot; my++) {
+    for (let mx = mazeLeft; mx < mazeRight; mx++) {
+      if (map[my][mx] === 1 || map[my][mx] === 0) mazeSeeds.push([mx, my]);
+    }
   }
-
-  // Random-walk corridors branching from the main road
-  for (let branch = 0; branch < 120; branch++) {
-    if (act5Seeds.length === 0) break;
-    const startIdx = Math.floor(rand() * act5Seeds.length);
-    let [x, y] = act5Seeds[startIdx];
-
+  for (let branch = 0; branch < 200 && mazeSeeds.length !== 0; branch++) {
+    const si = Math.floor(rand() * mazeSeeds.length);
+    let [sx, sy] = mazeSeeds[si];
     const primaryDir = Math.floor(rand() * 4);
-    const walkLen = 10 + Math.floor(rand() * 35);
-
+    const walkLen = 10 + Math.floor(rand() * 40);
     for (let step = 0; step < walkLen; step++) {
       const dir = rand() > 0.45 ? primaryDir : Math.floor(rand() * 4);
-      const dx = [0, 0, -1, 1][dir];
-      const dy = [-1, 1, 0, 0][dir];
-      const nx = x + dx;
-      const ny = y + dy;
-
-      if (nx >= 3 && nx < width - 3 && ny >= act5Top && ny <= act5Bot) {
-        x = nx;
-        y = ny;
-        if (map[y][x] === 4) {
-          map[y][x] = 0;
-          act5Seeds.push([x, y]);
-        }
+      const dx = [0, 0, -1, 1][dir], dy = [-1, 1, 0, 0][dir];
+      const nx = sx + dx, ny = sy + dy;
+      if (nx >= mazeLeft && nx < mazeRight && ny >= mazeTop && ny <= mazeBot) {
+        sx = nx; sy = ny;
+        if (map[sy][sx] === 4) { map[sy][sx] = 0; mazeSeeds.push([sx, sy]); }
       }
     }
   }
 
-  // ── Phase 3b: Winding maze paths to legendary dungeons ──
-  const carve = (cx: number, cy: number) => {
-    if (cx >= 2 && cx < width - 2 && cy >= 3 && cy <= act5Bot) {
-      if (map[cy][cx] === 4) map[cy][cx] = 0;
+  // ── Phase 3b: Portal access paths in maze ──
+  const carveCell = (cx2: number, cy2: number) => {
+    if (cx2 >= mazeLeft && cx2 < mazeRight && cy2 >= mazeTop && cy2 <= mazeBot && map[cy2][cx2] === 4) {
+      map[cy2][cx2] = 0;
     }
   };
-
   const carveMazePath = (sx: number, sy: number, ex: number, ey: number) => {
-    let x = sx, y = sy;
-    const visited: Set<string> = new Set();
-
+    let cx2 = sx, cy2 = sy;
     let safety = 0;
-    while ((x !== ex || y !== ey) && safety++ < 600) {
-      carve(x, y);
-      visited.add(`${x},${y}`);
-
+    while ((cx2 !== ex || cy2 !== ey) && safety++ < 800) {
+      carveCell(cx2, cy2);
       if (rand() < 0.6) {
-        if (Math.abs(x - ex) >= Math.abs(y - ey)) {
-          x += x < ex ? 1 : -1;
-        } else {
-          y += y < ey ? 1 : -1;
-        }
+        if (Math.abs(cx2 - ex) >= Math.abs(cy2 - ey)) cx2 += cx2 < ex ? 1 : -1;
+        else cy2 += cy2 < ey ? 1 : -1;
       } else {
-        if (Math.abs(x - ex) >= Math.abs(y - ey)) {
-          y += rand() > 0.5 ? 1 : -1;
-        } else {
-          x += rand() > 0.5 ? 1 : -1;
-        }
+        if (Math.abs(cx2 - ex) >= Math.abs(cy2 - ey)) cy2 += rand() > 0.5 ? 1 : -1;
+        else cx2 += rand() > 0.5 ? 1 : -1;
       }
-
-      x = Math.max(3, Math.min(width - 4, x));
-      y = Math.max(3, Math.min(act5Bot, y));
+      cx2 = Math.max(mazeLeft, Math.min(mazeRight - 1, cx2));
+      cy2 = Math.max(mazeTop, Math.min(mazeBot, cy2));
     }
-    carve(ex, ey);
-
-    // Dead-end branches
-    const pathTiles = Array.from(visited);
-    const numBranches = 8 + Math.floor(rand() * 6);
-    for (let b = 0; b < numBranches; b++) {
-      const startTile = pathTiles[Math.floor(rand() * pathTiles.length)];
-      const [bx, by] = startTile.split(',').map(Number);
-
-      const dirs = [[0, -1], [0, 1], [-1, 0], [1, 0]];
-      const dir = dirs[Math.floor(rand() * dirs.length)];
-      const branchLen = 3 + Math.floor(rand() * 8);
-
-      let dx = bx, dy = by;
-      for (let s = 0; s < branchLen; s++) {
-        dx += dir[0];
-        dy += dir[1];
-        if (rand() < 0.25) {
-          const turnDir = dirs[Math.floor(rand() * dirs.length)];
-          dx += turnDir[0];
-          dy += turnDir[1];
-        }
-        dx = Math.max(3, Math.min(width - 4, dx));
-        dy = Math.max(3, Math.min(act5Bot, dy));
-        carve(dx, dy);
-      }
-    }
+    carveCell(ex, ey);
   };
-
-  // 4 Portal positions scattered in Act 5 maze
-  carveMazePath(20, 58, 15, 25);   // Stormreach portal (NW)
-  carveMazePath(88, 56, 100, 25);  // Frostfall portal (NE)
-  carveMazePath(30, 55, 35, 45);   // Sunken Temple portal (SW)
-  carveMazePath(70, 55, 80, 45);   // Twilight portal (SE)
+  carveMazePath(70, 70, 40, 50);   // Stormreach portal
+  carveMazePath(100, 70, 130, 40); // Frostfall portal
+  carveMazePath(70, 100, 50, 130); // Sunken Temple portal
+  carveMazePath(100, 100, 120, 140); // Twilight portal
 
   // ── Phase 4: Demon Castle island ──
-  const castleX = 55, castleY = 15;
-  for (let dy = -7; dy <= 7; dy++) {
-    for (let dx = -7; dx <= 7; dx++) {
-      const ix = castleX + dx;
-      const iy = castleY + dy;
+  const castleX = 85, castleY = 30;
+  for (let dy = -8; dy <= 8; dy++) {
+    for (let dx = -8; dx <= 8; dx++) {
+      const ix = castleX + dx, iy = castleY + dy;
       if (ix >= 2 && ix < width - 2 && iy >= 2 && iy < height - 2) {
         const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist >= 4 && dist <= 6.5) {
-          map[iy][ix] = 2; // water moat
-        } else if (dist < 4) {
-          map[iy][ix] = 0; // island ground
-        }
+        if (dist >= 5 && dist <= 7.5) map[iy][ix] = 2; // water moat
+        else if (dist < 5) map[iy][ix] = 0; // island ground
       }
     }
   }
-
-  // Land bridge south of island (y=19 to y=27)
-  for (let y = 19; y <= 27; y++) {
-    if (y >= 2 && y < height - 2) {
-      map[y][castleX] = 1;
-      map[y][castleX + 1] = 1;
+  // Land bridge south of castle island
+  for (let ly = 35; ly <= 50; ly++) {
+    if (ly >= 2 && ly < height - 2) {
+      if (map[ly][castleX] === 4 || map[ly][castleX] === 2) map[ly][castleX] = 1;
+      if (map[ly][castleX + 1] === 4 || map[ly][castleX + 1] === 2) map[ly][castleX + 1] = 1;
     }
   }
 
   // ── Phase 5: Town markers ──
   const towns: [number, number][] = [
-    [15, 150], [45, 145], [66, 138],  // Act 1
-    [70, 118],                          // Act 2
-    [45, 92], [80, 85],                // Act 3
-    [30, 78],                           // Act 4
-    [85, 58], [65, 40],                // Act 5
+    [60, 340], [100, 320], [130, 290],  // Act 1
+    [200, 320], [222, 262], [252, 242], // Act 2
+    [220, 150], [270, 120],             // Act 3
+    [195, 80],                          // Act 4
+    [100, 150], [70, 100],              // Act 5
   ];
-  for (const [tx, ty] of towns) {
-    map[ty][tx] = 6;
-  }
+  for (const [tx, ty] of towns) map[ty][tx] = 6;
 
   // ── Phase 6: Dungeon entrance markers ──
   const caveDungeons: [number, number][] = [
-    // Act 1
-    [25, 148], [85, 144],             // Sunken Cellar (SW), Misty Grotto (E)
-    [66, 130], [66, 127],             // Crystal Cave S/N
-    // Act 2
-    [25, 108], [100, 112],            // Storm Nest (west), Frozen Lake (east)
-    [90, 102], [90, 100],             // Shadow Cave S/N
-    // Act 3
-    [60, 95], [10, 103],              // Desert Tomb, Bandit Hideout (far west, south)
-    // Act 4
-    [22, 84],                          // Magma Tunnels (optional, off main path)
-    [12, 70], [12, 67],               // Volcanic Forge S/N
+    [45, 350], [80, 310], [140, 350], [120, 260], // Act 1
+    [185, 335], [260, 234],                         // Act 2
+    [250, 140], [298, 133], [278, 82],              // Act 3
+    [242, 93], [242, 81], [202, 48], [185, 48], [172, 110], [148, 110], // Act 4
+    [80, 60], [120, 70],                            // Act 5
   ];
-  for (const [dx, dy] of caveDungeons) {
-    map[dy][dx] = 7;
-  }
-  // Demon Castle uses castle tile (8)
-  map[castleY][castleX] = 8;
+  for (const [dx, dy] of caveDungeons) map[dy][dx] = 7;
 
-  // Portal tiles (tile 9) for 4 portal lands
+  // Special dungeon tiles
+  map[castleY][castleX] = 8;           // Demon Castle (castle tile)
+  map[295][148] = 15;                  // Crystal Cave S entrance (special tile)
+  map[305][172] = 15;                  // Crystal Cave N entrance
+  map[265][200] = 16;                  // Frozen Lake
+  map[295][280] = 12;                  // Storm Nest (special cave)
+  map[140][250] = 19;                  // Desert Tomb (desert-tomb special)
+
+  // Portal tiles (tile 9)
   const portals: [number, number][] = [
-    [15, 25],   // Stormreach Isles
-    [100, 25],  // Frostfall Peaks
-    [35, 45],   // Sunken Temple Isle
-    [80, 45],   // Twilight Realm
+    [40, 50],   // Stormreach Isles
+    [130, 40],  // Frostfall Peaks
+    [50, 130],  // Sunken Temple Isle
+    [120, 140], // Twilight Realm
   ];
-  for (const [px, py] of portals) {
-    map[py][px] = 9;
-  }
+  for (const [px, py] of portals) map[py][px] = 9;
 
-  // ── Phase 7: Physical terrain barriers (organic, not straight lines) ──
+  // Gate tiles (tile 10) for haunted forest
+  map[248][238] = 10;
+  map[248][242] = 10;
 
-  // --- River barrier between Act 1 and Act 2 (y≈131) ---
-  const riverBaseY = 131;
-  for (let x = 2; x <= width - 3; x++) {
-    const meander = Math.round(
-      Math.sin(x * 0.08) * 3 + Math.cos(x * 0.05 + 1.5) * 2
-      + Math.sin(x * 0.15 + 2.5) * 1.5
-    );
-    const centerY = riverBaseY + meander;
-    const extraWidth = Math.sin(x * 0.18 + 0.7) > 0.2 ? 1 : 0;
-    const riverTop = centerY;
-    const riverBot = centerY + 1 + extraWidth;
-
-    for (let ry = riverTop; ry <= riverBot; ry++) {
-      if (ry >= 2 && ry < height - 2) {
-        map[ry][x] = 2;
-      }
-    }
-
-    // Riverbank trees
-    const above = riverTop - 1;
-    const below = riverBot + 1;
-    if (above >= 2 && above < height - 2
-        && (map[above][x] === 0 || map[above][x] === 1)
-        && Math.sin(x * 0.5) > 0.5) {
-      map[above][x] = 3;
-    }
-    if (below >= 2 && below < height - 2
-        && (map[below][x] === 0 || map[below][x] === 1)
-        && Math.cos(x * 0.4) > 0.5) {
-      map[below][x] = 3;
-    }
-  }
-
-  // --- Mountain barrier between Act 2 and Act 3 (y≈101) ---
-  const mtBaseY = 101;
-  for (let x = 2; x <= width - 3; x++) {
-    const meander = Math.round(
-      Math.sin(x * 0.07 + 2) * 2 + Math.cos(x * 0.04) * 1.5
-      + Math.sin(x * 0.12 + 1) * 1
-    );
-    const centerY = mtBaseY + meander;
-    const extraWidth = Math.cos(x * 0.15 + 1) > 0.1 ? 1 : 0;
-    const mtTop = centerY;
-    const mtBot = centerY + 1 + extraWidth;
-
-    for (let my = mtTop; my <= mtBot; my++) {
-      if (my >= 2 && my < height - 2) {
-        map[my][x] = 4;
-      }
-    }
-
-    const below = mtBot + 1;
-    if (below >= 2 && below < height - 2
-        && (map[below][x] === 0 || map[below][x] === 1)
-        && Math.sin(x * 0.6 + 1) > 0.4) {
-      map[below][x] = 3;
-    }
-  }
-
-  // --- Lava barrier between Act 3/4 and Act 5 (y≈71) ---
-  const lavaBaseY = 71;
-  for (let x = 2; x <= width - 3; x++) {
-    const meander = Math.round(
-      Math.sin(x * 0.09 + 3) * 2 + Math.cos(x * 0.06 + 2) * 1.5
-    );
-    const centerY = lavaBaseY + meander;
-    const extraWidth = Math.sin(x * 0.2 + 1.5) > 0.3 ? 1 : 0;
-    const lavaTop = centerY;
-    const lavaBot = centerY + extraWidth;
-
-    for (let ly = lavaTop; ly <= lavaBot; ly++) {
-      if (ly >= 2 && ly < height - 2) {
-        map[ly][x] = 4;
-      }
-    }
-  }
-
-  // ── Phase 7b: Staggered water bodies for organic feel ──
-
-  // Coastal inlet in Act 1 (SE corner — makes coastline feel natural)
-  for (let y = 150; y <= 156; y++) {
-    for (let x = 90; x < width - 2; x++) {
-      const coastShape = noiseAt(x, y, 0.15, 6.0);
-      if (x > 95 + coastShape * 6 - (y - 150) * 1.5) {
-        if (y >= 2 && y < height - 2 && x >= 2 && x < width - 2) {
-          map[y][x] = 2;
-        }
-      }
-    }
-  }
-
-  // Winding stream in Act 3 (separates desert and volcanic regions)
-  for (let y = 74; y <= 98; y++) {
-    const streamX = Math.round(42 + Math.sin(y * 0.15) * 5 + Math.cos(y * 0.08 + 1) * 3);
-    if (streamX >= 2 && streamX < width - 2 && y >= 2 && y < height - 2) {
-      map[y][streamX] = 2;
-      if (streamX + 1 < width - 2 && Math.sin(y * 0.3) > 0.3) {
-        map[y][streamX + 1] = 2;
-      }
-    }
-  }
-
-  // ── Phase 8: Re-stamp markers AFTER barriers ──
+  // ── Phase 7: Re-stamp all markers (to survive any overwrites) ──
   for (const [tx, ty] of towns) map[ty][tx] = 6;
   for (const [dx, dy] of caveDungeons) map[dy][dx] = 7;
   map[castleY][castleX] = 8;
 
-  // Ensure adjacent tiles around all markers are walkable
+  // Ensure adjacent tiles around markers are walkable
   const allMarkers: [number, number][] = [...towns, ...caveDungeons, [castleX, castleY]];
   for (const [mx, my] of allMarkers) {
     for (const [adjDx, adjDy] of [[0, -1], [0, 1], [-1, 0], [1, 0]]) {
       const ax = mx + adjDx, ay = my + adjDy;
       if (ax >= 2 && ax < width - 2 && ay >= 2 && ay < height - 2) {
-        if (map[ay][ax] === 4 || map[ay][ax] === 2) {
-          map[ay][ax] = 1;
-        }
+        if (map[ay][ax] === 4 || map[ay][ax] === 2) map[ay][ax] = 1;
       }
     }
   }
 
-  // ── Phase 9: Post-adjacency terrain overrides ──
-
-  // Crystal Cave: water at y=128-129 blocks passage between S(66,130) and N(66,127)
-  // Phase 8 clears adjacent tiles around cave markers, so we re-add water here
-  for (let wx = 63; wx <= 69; wx++) {
-    if (wx >= 2 && wx < width - 2) {
-      map[128][wx] = 2;
-      map[129][wx] = 2;
-    }
-  }
-  // Ensure cave tiles are preserved (Phase 8 stamps them, Phase 9 must not overwrite)
-  map[127][66] = 7;  // north exit
-  map[130][66] = 7;  // south entrance
-
-  // Storm Nest approach: scatter tree/mountain obstacles along the windy west path
-  // ironkeep(70,118) → (55,114) → (40,110) → stormNest(25,108)
-  const stormObstacles: [number, number, number][] = [
-    // Tree/mountain clusters flanking the westward path
-    [65, 116, 3], [62, 112, 4], [58, 116, 3], [55, 112, 4],
-    [52, 108, 3], [48, 112, 3], [45, 108, 4], [42, 112, 3],
-    [38, 108, 4], [35, 112, 3], [32, 106, 4], [30, 110, 3],
-    [28, 106, 4], [27, 110, 3],
-    // Mountain blocks near Storm Nest entrance
-    [23, 106, 4], [23, 110, 4], [27, 106, 4],
-  ];
-  for (const [ox, oy, tile] of stormObstacles) {
-    if (ox >= 2 && ox < width - 2 && oy >= 2 && oy < height - 2) {
-      // Don't overwrite path, town, cave, or castle tiles
-      if (map[oy][ox] === 0 || map[oy][ox] === 3) {
-        map[oy][ox] = tile;
-      }
-    }
-  }
-
-  // Shadow Cave: mountain wall between S(90,102) and N(90,100)
-  // Phase 8 clears adjacent tiles around cave markers, creating gaps at x=89-91.
-  // Fill mountains across y=101 to block Act 2→3 bypass.
-  for (let bx = 86; bx <= 93; bx++) {
-    if (bx !== 90) map[101][bx] = 4;  // skip cave column
-  }
-  map[101][90] = 4;  // between cave entrances (cave column itself)
-  // Re-stamp cave markers
-  map[102][90] = 7;  // SC S (Act 2 side)
-  map[100][90] = 7;  // SC N (Act 3 side)
-  // Ensure approach tiles are walkable
-  map[103][90] = 1;  // south approach to SC S
-  map[99][90] = 1;   // north approach to SC N
-
-  // Volcanic Forge: mountains fill between S(12,70) and N(12,67)
-  map[68][12] = 4;
-  map[69][12] = 4;
-
-  // Volcanic Forge N: mountains surround N/S/W — player exits east
-  map[66][12] = 4;  // north of VF N
-  map[68][12] = 4;  // south of VF N
-  map[67][11] = 4;  // west of VF N
-  map[67][13] = 1;  // east exit walkable
-  map[67][14] = 1;
-
-  // ── [6] Oasis Haven + Desert Tomb: comprehensive water barriers ──
-  // Block ALL east access: water extends from north of Oasis Haven eastward
-  // to connect with the winding stream, and south of Desert Tomb to prevent sneaking below.
-
-  // 1. Water strip NORTH of Oasis Haven extending east to connect with winding stream (~x=42)
-  //    Oasis Haven is at (45,92), stream runs around x=42. Extend water east from x=46 to x=80+
-  for (let rx = 46; rx <= 85; rx++) {
-    for (let ry = 88; ry <= 90; ry++) {
-      if (rx >= 2 && rx < width - 2 && ry >= 2 && ry < height - 2) {
-        if (map[ry][rx] !== 6 && map[ry][rx] !== 7 && map[ry][rx] !== 8) {
-          map[ry][rx] = 2;
-        }
-      }
-    }
-  }
-
-  // 2. Water barrier EAST of Desert Tomb (original + extended south)
-  //    Desert Tomb at (60,95). Block east approach from Ruins Camp (80,85).
-  for (let ry = 88; ry <= 100; ry++) {
-    for (let rx = 64; rx <= 67; rx++) {
-      if (rx >= 2 && rx < width - 2 && ry >= 2 && ry < height - 2) {
-        if (map[ry][rx] !== 6 && map[ry][rx] !== 7 && map[ry][rx] !== 8) {
-          map[ry][rx] = 2;
-        }
-      }
-    }
-  }
-
-  // 3. Water SOUTH of Desert Tomb extending east — blocks sneaking below
-  //    From (60,98) extending east to (80,100)
-  for (let rx = 58; rx <= 85; rx++) {
-    for (let ry = 98; ry <= 100; ry++) {
-      if (rx >= 2 && rx < width - 2 && ry >= 2 && ry < height - 2) {
-        if (map[ry][rx] !== 6 && map[ry][rx] !== 7 && map[ry][rx] !== 8) {
-          map[ry][rx] = 2;
-        }
-      }
-    }
-  }
-
-  // Re-stamp Desert Tomb cave marker
-  map[95][60] = 7;
-  // Walkable corridor between Oasis Haven (45,92) and Desert Tomb (60,95)
-  for (let px = 44; px <= 63; px++) {
-    for (let py = 91; py <= 97; py++) {
-      if (map[py][px] === 2 && py >= 91 && py <= 97 && px >= 44 && px <= 63) {
-        map[py][px] = 1;
-      }
-    }
-  }
-  // Re-stamp path tiles along the Oasis Haven → Desert Tomb route
-  for (let px = 45; px <= 60; px++) {
-    if (map[92][px] === 2) map[92][px] = 0;
-    if (map[93][px] === 2) map[93][px] = 0;
-    if (map[94][px] === 2) map[94][px] = 0;
-    if (map[95][px] === 2) map[95][px] = 0;
-  }
-
-  // Extra walkable clearance around Oasis Haven (8-directional)
-  const ohX = 45, ohY = 92;
-  for (let dy = -3; dy <= 3; dy++) {
-    for (let dx = -3; dx <= 3; dx++) {
-      const ax = ohX + dx, ay = ohY + dy;
-      if (ax >= 2 && ax < width - 2 && ay >= 2 && ay < height - 2) {
-        if (map[ay][ax] === 4 || map[ay][ax] === 2) {
-          map[ay][ax] = 0;
-        }
-      }
-    }
-  }
-  // Re-stamp Oasis Haven town marker
-  map[ohY][ohX] = 6;
-
-  // ── River barrier: block direct ruinsCamp→oasisHaven shortcut ──
-  // Water band connecting winding stream (~x=42) to east water barrier zone
-  for (let rx = 38; rx <= 63; rx++) {
-    for (let ry = 87; ry <= 89; ry++) {
-      if (rx >= 2 && rx < width - 2 && ry >= 2 && ry < height - 2) {
-        if (map[ry][rx] !== 6 && map[ry][rx] !== 7 && map[ry][rx] !== 8) {
-          map[ry][rx] = 2;
-        }
-      }
-    }
-  }
-
-  // Bandit Hideout: mountain south, walkable north (exit point)
-  map[104][10] = 4;  // mountain south of cave entrance
-  map[102][10] = 1;  // walkable north of cave (player exits here)
-
-  // Magma Tunnels (22,84): optional dungeon off the main path, surrounded by mountains
-  map[83][21] = 4;   // NW
-  map[83][22] = 4;   // N
-  map[83][23] = 4;   // NE
-  map[84][21] = 4;   // W
-  map[85][21] = 4;   // SW
-  map[85][22] = 4;   // S
-  map[85][23] = 4;   // SE
-  map[84][23] = 4;   // E
-
-  // ── Phase 9b: Act 3/4 paths (drawn AFTER terrain/stream to avoid breakage) ──
-  const act34Paths: [number, number][] = [
-    // shadowCave N exit (90,100) → north to y=98, then west to ruinsCamp (80,85)
-    // Route via y=98 so 3-wide path (py+1) stays at y=99, not y=101 (barrier)
-    ...pathBetween(90, 100, 90, 98),
-    ...pathBetween(90, 98, 80, 85),
-    // ruinsCamp (80,85) → north to y=78 → west to embersRest (30,78)
-    ...pathBetween(80, 85, 80, 78),     // north from ruinsCamp
-    ...pathBetween(80, 78, 30, 78),     // west to embersRest
-    // embersRest (30,78) → oasisHaven (45,92): south then east (bridges over water)
-    ...pathBetween(30, 78, 30, 90),     // south from embersRest
-    ...pathBetween(30, 90, 45, 92),     // east to oasisHaven
-    // oasisHaven (45,92) → desertTomb (60,95)
-    ...pathBetween(45, 92, 60, 95),
-    // embersRest (30,78) → volcanicForge S (12,70) — main path
-    ...pathBetween(30, 78, 22, 78),
-    ...pathBetween(22, 78, 12, 70),
-    // Side path to magmaTunnels (22,84) — optional dungeon
-    ...pathBetween(22, 78, 22, 84),
-    // oasisHaven (45,92) → banditHideout (10,103): west then south
-    ...pathBetween(45, 92, 10, 92),
-    ...pathBetween(10, 92, 10, 103),
-  ];
-  for (const [px, py] of act34Paths) {
-    if (px >= 0 && px < width && py >= 0 && py < height) {
-      // Bridge over water, path elsewhere. Don't overwrite markers.
-      if (map[py][px] === 6 || map[py][px] === 7 || map[py][px] === 8) continue;
-      map[py][px] = map[py][px] === 2 ? 5 : 1;
-    }
-  }
-
-  // Re-stamp Act 3/4 markers after path drawing
-  map[85][80] = 6;   // ruinsCamp
-  map[92][45] = 6;   // oasisHaven
-  map[95][60] = 7;   // desertTomb
-  map[78][30] = 6;   // embersRest
-  map[84][22] = 7;   // magmaTunnels (optional, off main path)
-  map[103][10] = 7;  // banditHideout
-
-  // Clean stray road tiles inside water barrier zone (east of Desert Tomb)
-  for (let ry = 88; ry <= 100; ry++) {
-    for (let rx = 64; rx <= 85; rx++) {
-      if (map[ry][rx] === 1) { // clean up isolated road tiles in water zone
-        // Check if this road tile is isolated (not connecting anything useful)
-        const adj = [[0,-1],[0,1],[-1,0],[1,0]].filter(([dx,dy]) => {
-          const nx = rx+dx, ny = ry+dy;
-          return nx >= 0 && nx < width && ny >= 0 && ny < height
-            && (map[ny][nx] === 1 || map[ny][nx] === 5 || map[ny][nx] === 6 || map[ny][nx] === 7);
-        });
-        if (adj.length <= 1) map[ry][rx] = 0; // isolated road → grass
-      }
-    }
-  }
-
-  // ── FINAL: Seal mountain barrier at y=101 across ENTIRE map width ──
-  // The Phase 7 barrier meanders ±4.5 tiles, leaving gaps at some x values.
-  // This pass guarantees a continuous wall at y=101 so Act 2 and Act 3 are
-  // fully separated. Only the Shadow Cave dungeon allows passage.
-  for (let x = 2; x < width - 2; x++) {
-    const tile = map[101][x];
-    if (tile !== 6 && tile !== 7 && tile !== 8 && tile !== 5) {
-      map[101][x] = 4;
-    }
-  }
-  // Re-stamp markers and approach tiles near y=101
-  map[100][90] = 7;  // Shadow Cave N (Act 3 side)
-  map[102][90] = 7;  // Shadow Cave S (Act 2 side)
-  map[99][90] = 1;   // north approach to SC N
-  map[103][90] = 1;  // south approach to SC S
-  // Path gap for Bandit Hideout access (x=10 through mountain barrier)
-  map[101][10] = 1;  // path through barrier
-  map[102][10] = 1;  // approach south of barrier
+  // ── Phase 8: Re-stamp special tiles ──
+  map[castleY][castleX] = 8;
+  map[295][148] = 15;
+  map[305][172] = 15;
+  map[265][200] = 16;
+  map[295][280] = 12;
+  map[140][250] = 19;
+  for (const [px, py] of portals) map[py][px] = 9;
+  map[248][238] = 10;
+  map[248][242] = 10;
 
   return map;
 }
@@ -946,6 +593,14 @@ interface Room {
   cx: number; cy: number;
 }
 
+export interface DungeonMapResult {
+  map: number[][];
+  keyChests: [number, number][];
+  windCorridorDir?: { dx: number; dy: number };
+  portalPairs?: Array<{ a: { x: number; y: number }; b: { x: number; y: number } }>;
+  goldenChestPos?: { x: number; y: number };
+}
+
 /**
  * Generate a dungeon floor map.
  */
@@ -955,7 +610,8 @@ export function generateDungeonMap(
   gate: boolean = false,
   gateFinalFloor: boolean = false,
   castle: boolean = false,
-): number[][] {
+  mechanic?: string,
+): DungeonMapResult {
   const floorSeed = seed + (floor - 1) * 997;
   const rand = seededRandom(floorSeed);
 
@@ -1604,7 +1260,313 @@ export function generateDungeonMap(
     }
   }
 
-  return map;
+  // ── Mechanic: maze-hunter ──
+  // Full floor replacement with perfect maze + hunter boss
+  if (mechanic === 'maze-hunter') {
+    return generateMazeHunterFloor(width, height, seed, floor, totalFloors, rand, isFirstFloor, isFinalFloor);
+  }
+
+  // ── Build main path (entrance to goal) for mechanics that need it ──
+  const mainPath: [number, number][] = [];
+  const pathDirs: ('h' | 'v')[] = [];
+  if (mechanic === 'wind-tower' || mechanic === 'shadow-portal') {
+    const startX = entranceX, startY = 1;
+    let gX = goalTileX, gY = goalTileY;
+    // BFS to find path from entrance to goal
+    const bfsParent = new Map<string, string>();
+    const bfsQueue: [number, number][] = [[startX, startY]];
+    bfsParent.set(`${startX},${startY}`, '');
+    let found = false;
+    while (bfsQueue.length > 0 && !found) {
+      const [cx2, cy2] = bfsQueue.shift()!;
+      if (cx2 === gX && cy2 === gY) { found = true; break; }
+      for (const [ddx, ddy] of [[0, -1], [0, 1], [-1, 0], [1, 0]] as [number, number][]) {
+        const nx2 = cx2 + ddx, ny2 = cy2 + ddy;
+        const k = `${nx2},${ny2}`;
+        if (nx2 < 0 || nx2 >= width || ny2 < 0 || ny2 >= height) continue;
+        if (bfsParent.has(k)) continue;
+        const t2 = map[ny2][nx2];
+        if (t2 === 1 || t2 === 5) continue;
+        bfsParent.set(k, `${cx2},${cy2}`);
+        bfsQueue.push([nx2, ny2]);
+      }
+    }
+    if (found) {
+      let cur = `${gX},${gY}`;
+      const revPath: [number, number][] = [];
+      while (cur !== '') {
+        const [px2, py2] = cur.split(',').map(Number);
+        revPath.push([px2, py2]);
+        cur = bfsParent.get(cur) ?? '';
+      }
+      revPath.reverse();
+      for (let pi = 0; pi < revPath.length; pi++) {
+        mainPath.push(revPath[pi]);
+        if (pi > 0) {
+          const [px2] = revPath[pi], [ppx2] = revPath[pi - 1];
+          pathDirs.push(px2 !== ppx2 ? 'h' : 'v');
+        } else {
+          pathDirs.push('h');
+        }
+      }
+    }
+  }
+
+  // ── Mechanic: wind-tower ──
+  let windCorridorDir: { dx: number; dy: number } | undefined;
+  if (mechanic === 'wind-tower' && mainPath.length > 0) {
+    const enterX = mainPath[0][0], enterY = mainPath[0][1];
+    const exitX = goalTileX, exitY = goalTileY;
+    const dxW = exitX - enterX, dyW = exitY - enterY;
+    if (Math.abs(dxW) >= Math.abs(dyW)) {
+      windCorridorDir = { dx: dxW > 0 ? 1 : -1, dy: 0 };
+    } else {
+      windCorridorDir = { dx: 0, dy: dyW > 0 ? 1 : -1 };
+    }
+    const windFrac = 0.4 + rand() * 0.2;
+    const windTarget = Math.floor(mainPath.length * windFrac);
+    let windCount = 0, segLen = 3 + Math.floor(rand() * 3), gapLen = 1 + Math.floor(rand() * 2);
+    let inSeg = true, segProg = 0;
+    for (let pi = 0; pi < mainPath.length && windCount < windTarget; pi++) {
+      const [px2, py2] = mainPath[pi];
+      if (inSeg) {
+        if (map[py2]?.[px2] === 0) {
+          map[py2][px2] = 25; windCount++;
+          const d = pathDirs[pi];
+          if (d === 'h' && py2 + 1 < height - 1 && map[py2 + 1]?.[px2] === 0) map[py2 + 1][px2] = 25;
+          else if (d === 'v' && px2 + 1 < width - 1 && map[py2]?.[px2 + 1] === 0) map[py2][px2 + 1] = 25;
+        }
+        segProg++;
+        if (segProg >= segLen) { inSeg = false; segProg = 0; gapLen = 1 + Math.floor(rand() * 2); }
+      } else {
+        segProg++;
+        if (segProg >= gapLen) { inSeg = true; segProg = 0; segLen = 3 + Math.floor(rand() * 3); }
+      }
+    }
+  }
+
+  // ── Mechanic: shadow-portal ──
+  let portalPairs: Array<{ a: { x: number; y: number }; b: { x: number; y: number } }> | undefined;
+  if (mechanic === 'shadow-portal' && mainPath.length > 0) {
+    const PORTAL_TILE = 29;
+    const numPairs = floor <= 2 ? 2 : floor <= 4 ? 3 : 4;
+    const pairIndices: number[] = [];
+    for (let pi = 1; pi < numPairs; pi++) {
+      const frac = pi / numPairs;
+      const idx = Math.min(mainPath.length - 2, Math.max(2, Math.floor(mainPath.length * (frac * 0.6 + 0.2))));
+      pairIndices.push(idx);
+    }
+    const pairPositions: { x: number; y: number }[] = [];
+    for (const idx of pairIndices) {
+      const [px2, py2] = mainPath[idx];
+      pairPositions.push({ x: px2, y: py2 });
+      // Widen corridor around portal
+      const prevIdx = Math.max(0, idx - 1), nextIdx = Math.min(mainPath.length - 1, idx + 1);
+      const [ppx, ppy] = mainPath[prevIdx], [pnx, pny] = mainPath[nextIdx];
+      if (Math.abs(pnx - ppx) > Math.abs(pny - ppy)) {
+        for (let di = -1; di <= 1; di++) {
+          const ny3 = py2 + di;
+          if (ny3 > 0 && ny3 < height - 1 && map[ny3]?.[px2] === 0) map[ny3][px2] = 1;
+        }
+      } else {
+        for (let di = -1; di <= 1; di++) {
+          const nx3 = px2 + di;
+          if (nx3 > 0 && nx3 < width - 1 && map[py2]?.[nx3] === 0) map[py2][nx3] = 1;
+        }
+      }
+    }
+    portalPairs = [];
+    for (let pi = 0; pi < pairPositions.length; pi++) {
+      const idx = pairIndices[pi];
+      const findBackward = (start: number, dir: number) => {
+        for (let step = 1; step <= 6; step++) {
+          const si = start + dir * step;
+          if (si < 0 || si >= mainPath.length) continue;
+          const [sx2, sy2] = mainPath[si];
+          if (sx2 > 1 && sx2 < width - 2 && sy2 > 1 && sy2 < height - 2 && map[sy2][sx2] === 0) {
+            return { x: sx2, y: sy2 };
+          }
+        }
+        return null;
+      };
+      const posA = findBackward(idx, -1);
+      const posB = findBackward(idx, 1);
+      if (posA && posB) {
+        map[posA.y][posA.x] = PORTAL_TILE;
+        map[posB.y][posB.x] = PORTAL_TILE;
+        portalPairs.push({ a: posA, b: posB });
+      }
+    }
+  }
+
+  const result: DungeonMapResult = { map, keyChests: [] };
+  if (windCorridorDir) result.windCorridorDir = windCorridorDir;
+  if (portalPairs && portalPairs.length > 0) result.portalPairs = portalPairs;
+  return result;
+}
+
+/** Generate a perfect-maze floor for the maze-hunter mechanic */
+function generateMazeHunterFloor(
+  width: number, height: number, seed: number,
+  floor: number, totalFloors: number,
+  rand: () => number,
+  isFirstFloor: boolean, isFinalFloor: boolean,
+): DungeonMapResult {
+  const mazeW = [19, 21, 23, 25, 27, 29][Math.min(floor - 1, 5)];
+  const mazeH = mazeW;
+  const maze = Array.from({ length: mazeH }, () => new Array(mazeW).fill(1));
+  const midX = Math.floor(mazeW / 2);
+  const bottomY = mazeH - 2;
+
+  // Perfect maze generation via recursive backtracking
+  const cellsX = Math.floor((mazeW - 1) / 2);
+  const cellsY = Math.floor((mazeH - 1) / 2);
+  const cellToTile = (cx2: number, cy2: number): [number, number] => [1 + cx2 * 2, 1 + cy2 * 2];
+  const visited = new Set<number>();
+  const stack: [number, number][] = [];
+  const startCX = Math.floor(cellsX / 2), startCY = cellsY - 1;
+  visited.add(startCY * cellsX + startCX);
+  stack.push([startCX, startCY]);
+  const [stx, sty] = cellToTile(startCX, startCY);
+  maze[sty][stx] = 0;
+  const dirs4: [number, number][] = [[0, -1], [0, 1], [-1, 0], [1, 0]];
+  while (stack.length > 0) {
+    const [cx2, cy2] = stack[stack.length - 1];
+    const neighbors: [number, number, number, number][] = [];
+    for (const [dx2, dy2] of dirs4) {
+      const nx2 = cx2 + dx2, ny2 = cy2 + dy2;
+      if (nx2 < 0 || nx2 >= cellsX || ny2 < 0 || ny2 >= cellsY) continue;
+      if (visited.has(ny2 * cellsX + nx2)) continue;
+      const [vx, vy] = cellToTile(cx2, cy2);
+      neighbors.push([nx2, ny2, vx + dx2, vy + dy2]);
+    }
+    if (neighbors.length === 0) { stack.pop(); continue; }
+    const [nx2, ny2, wx2, wy2] = neighbors[Math.floor(rand() * neighbors.length)];
+    visited.add(ny2 * cellsX + nx2);
+    stack.push([nx2, ny2]);
+    if (wy2 >= 0 && wy2 < mazeH && wx2 >= 0 && wx2 < mazeW) maze[wy2][wx2] = 0;
+    const [tx2, ty2] = cellToTile(nx2, ny2);
+    if (ty2 >= 0 && ty2 < mazeH && tx2 >= 0 && tx2 < mazeW) maze[ty2][tx2] = 0;
+  }
+
+  // Entrance at bottom
+  maze[mazeH - 1][midX] = 6;
+  for (let by2 = mazeH - 2; by2 > 0 && maze[by2][midX] !== 0; by2--) maze[by2][midX] = 0;
+
+  // BFS to find distances from entrance
+  const dist = Array.from({ length: mazeH }, () => new Array(mazeW).fill(-1));
+  const bfsQ: [number, number][] = [[midX, bottomY]];
+  dist[bottomY][midX] = 0;
+  let maxDist = 0;
+  while (bfsQ.length > 0) {
+    const [cx2, cy2] = bfsQ.shift()!;
+    for (const [dx2, dy2] of dirs4) {
+      const nx2 = cx2 + dx2, ny2 = cy2 + dy2;
+      if (nx2 < 0 || nx2 >= mazeW || ny2 < 0 || ny2 >= mazeH) continue;
+      if (dist[ny2][nx2] >= 0) continue;
+      if (maze[ny2][nx2] !== 0) continue;
+      dist[ny2][nx2] = dist[cy2][cx2] + 1;
+      if (dist[ny2][nx2] > maxDist) maxDist = dist[ny2][nx2];
+      bfsQ.push([nx2, ny2]);
+    }
+  }
+
+  // Place goal (golden chest if final floor, else stairs-down)
+  let goldenChestPos: { x: number; y: number } | undefined;
+  if (isFinalFloor) {
+    const minD = Math.floor(maxDist * 0.6);
+    const candidates: [number, number][] = [];
+    for (let fy = 1; fy < mazeH - 1; fy++) {
+      for (let fx = 1; fx < mazeW - 1; fx++) {
+        if (maze[fy][fx] === 0 && dist[fy][fx] >= minD) candidates.push([fx, fy]);
+      }
+    }
+    if (candidates.length > 0) {
+      const [gcx, gcy] = candidates[Math.floor(rand() * candidates.length)];
+      maze[gcy][gcx] = 4;
+      goldenChestPos = { x: gcx, y: gcy };
+    }
+    // Boss entrance at top
+    const topW = Math.floor(mazeW / 2);
+    let bosY = 2;
+    for (let by2 = 1; by2 < Math.floor(mazeH / 3); by2++) {
+      if (maze[by2][topW] === 0) { bosY = by2; break; }
+    }
+    maze[bosY][topW] = 7;
+    for (let di = -1; di <= 1; di++) {
+      for (let dj = -1; dj <= 1; dj++) {
+        const bx2 = topW + dj, by3 = bosY + di;
+        if (bx2 > 0 && bx2 < mazeW - 1 && by3 > 0 && by3 < mazeH - 1 && maze[by3][bx2] === 1) {
+          maze[by3][bx2] = 0;
+        }
+      }
+    }
+    for (let sby = bosY + 2; sby < mazeH - 1 && maze[sby][topW] !== 0; sby++) maze[sby][topW] = 0;
+    // Lock tile
+    const lockY = Math.max(1, bosY - 2);
+    maze[lockY][topW] = 10;
+    if (bosY - 1 > 0 && bosY - 1 < mazeH - 1) maze[bosY - 1][topW] = 1;
+  } else {
+    // Stairs-down at farthest point
+    const minD = Math.floor(maxDist * 0.7);
+    const candidates: [number, number][] = [];
+    for (let fy = 1; fy < mazeH - 1; fy++) {
+      for (let fx = 1; fx < mazeW - 1; fx++) {
+        if (maze[fy][fx] === 0 && dist[fy][fx] >= minD) candidates.push([fx, fy]);
+      }
+    }
+    if (candidates.length > 0) {
+      const [scx, scy] = candidates[Math.floor(rand() * candidates.length)];
+      maze[scy][scx] = 9;
+    } else {
+      maze[1][midX] = 9;
+    }
+  }
+
+  // Side exit on first floor
+  if (isFirstFloor) {
+    for (const di of [1, -1]) {
+      const ex = midX + di;
+      if (ex > 0 && ex < mazeW - 1 && maze[mazeH - 1][ex] === 1) {
+        maze[mazeH - 1][ex] = 18;
+        break;
+      }
+    }
+  }
+
+  // Extra dead-end chests
+  const extraChests = 2 + (rand() > 0.5 ? 1 : 0);
+  let chestsPlaced = 0;
+  for (let attempt = 0; attempt < 300 && chestsPlaced < extraChests; attempt++) {
+    const ex = 1 + Math.floor(rand() * (mazeW - 2));
+    const ey = 1 + Math.floor(rand() * (mazeH - 2));
+    if (maze[ey][ex] !== 0) continue;
+    let openNeighbors = 0;
+    for (const [dx2, dy2] of dirs4) {
+      const t2 = maze[ey + dy2]?.[ex + dx2];
+      if (t2 === 0 || t2 === 24 || t2 === 4 || t2 === 6 || t2 === 9) openNeighbors++;
+    }
+    if (openNeighbors === 1) { maze[ey][ex] = 4; chestsPlaced++; }
+  }
+
+  // Add maze-wall tiles (24) to some dead-end walls for visual variety
+  let wallCount = 0;
+  for (let fy = 1; fy < mazeH - 1; fy++) {
+    for (let fx = 1; fx < mazeW - 1; fx++) {
+      if (maze[fy][fx] === 0 && (wallCount++ % 8 === 0)) {
+        for (const [dx2, dy2] of dirs4) {
+          const nx2 = fx + dx2, ny2 = fy + dy2;
+          if (nx2 > 0 && nx2 < mazeW - 1 && ny2 > 0 && ny2 < mazeH - 1 && maze[ny2][nx2] === 1) {
+            maze[ny2][nx2] = 24; break;
+          }
+        }
+      }
+    }
+  }
+
+  const result: DungeonMapResult = { map: maze, keyChests: [] };
+  if (goldenChestPos) result.goldenChestPos = goldenChestPos;
+  return result;
 }
 
 function carveLCorridor(
