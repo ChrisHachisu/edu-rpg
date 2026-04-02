@@ -2,6 +2,7 @@ import { Player } from './entities/Player';
 import { QuizManager } from './systems/quiz/QuizManager';
 import { EncounterManager } from './systems/combat/EncounterManager';
 import { SaveManager } from './systems/progression/SaveManager';
+import { QuestManager } from './systems/progression/QuestManager';
 import { GradeLevel, HeroColorScheme } from './utils/types';
 import { setLocale, getLocale, setKanjiMode } from './i18n/i18n';
 import { audioManager } from './systems/audio/AudioManager';
@@ -18,6 +19,7 @@ class GameStateManager {
   player!: Player;
   quizManager!: QuizManager;
   encounterManager!: EncounterManager;
+  questManager!: QuestManager;
   playtime = 0;
   startTime = 0;
   /** Dev mode: no encounters + 999 ATK. Activate via ?dev=1 in URL. */
@@ -39,6 +41,7 @@ class GameStateManager {
     this.player.state.quizDifficulty = difficulty;
     this.encounterManager = new EncounterManager();
     this.encounterManager.encounterRateMultiplier = this.getEncounterMultiplier(difficulty);
+    this.questManager = new QuestManager();
     this.playtime = 0;
     this.startTime = Date.now();
     setLocale(currentLocale);
@@ -54,6 +57,7 @@ class GameStateManager {
     this.quizManager.loadStats(data.quizStats);
     this.encounterManager = new EncounterManager();
     this.encounterManager.encounterRateMultiplier = this.getEncounterMultiplier(data.player.quizDifficulty);
+    this.questManager = new QuestManager();
     this.playtime = data.playtime;
     this.startTime = Date.now();
     setLocale(data.player.locale);
@@ -87,6 +91,7 @@ class GameStateManager {
     this.quizManager.loadStats(data.quizStats);
     this.encounterManager = new EncounterManager();
     this.encounterManager.encounterRateMultiplier = this.getEncounterMultiplier(data.player.quizDifficulty);
+    this.questManager = new QuestManager();
     this.playtime = data.playtime;
     this.startTime = Date.now();
     setLocale(data.player.locale);

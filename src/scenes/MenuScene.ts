@@ -8,13 +8,13 @@ import { audioManager } from '../systems/audio/AudioManager';
 
 const S = UI_SCALE;
 
-type MenuTab = 'status' | 'items' | 'equip' | 'settings';
+type MenuTab = 'status' | 'items' | 'equip' | 'quests' | 'settings';
 
 export class MenuScene extends Phaser.Scene {
   private currentTab: MenuTab = 'status';
   private tabIndex = 0;
   private listIndex = 0;
-  private tabs: MenuTab[] = ['status', 'items', 'equip', 'settings'];
+  private tabs: MenuTab[] = ['status', 'items', 'equip', 'quests', 'settings'];
 
   // Equipment tab state
   private equipMode: 'equipped' | 'inventory' = 'equipped';
@@ -46,8 +46,8 @@ export class MenuScene extends Phaser.Scene {
 
     // Tab bar
     this.tabs.forEach((tab, i) => {
-      const key = tab === 'status' ? 'menu.status' : tab === 'items' ? 'menu.items' : tab === 'equip' ? 'menu.equip' : 'menu.settings';
-      this.add.text(Math.round(16 * S) + i * Math.round(120 * S), Math.round(12 * S), t(key), {
+      const key = tab === 'status' ? 'menu.status' : tab === 'items' ? 'menu.items' : tab === 'equip' ? 'menu.equip' : tab === 'quests' ? 'menu.quests' : 'menu.settings';
+      this.add.text(Math.round(16 * S) + i * Math.round(96 * S), Math.round(12 * S), t(key), {
         fontSize: `${Math.round(12 * S)}px`,
         color: i === this.tabIndex ? COLORS.TEXT_YELLOW : COLORS.TEXT_WHITE,
         fontFamily: FONT_FAMILY,
@@ -60,6 +60,7 @@ export class MenuScene extends Phaser.Scene {
       case 'status': this.drawStatus(); break;
       case 'items': this.drawItems(); break;
       case 'equip': this.drawEquip(); break;
+      case 'quests': this.drawQuests(); break;
       case 'settings': this.drawSettings(); break;
     }
 
@@ -274,6 +275,97 @@ export class MenuScene extends Phaser.Scene {
     }
   }
 
+  private drawQuests(): void {
+    const playerState = gameState.player.state;
+    const qm = gameState.questManager;
+    const activeQuests = qm.getActiveQuests(playerState);
+    const y = Math.round(52 * S);
+    const fs = `${Math.round(10 * S)}px`;
+
+    // Header
+    this.add.text(Math.round(32 * S), y, t('menu.activeQuests'), {
+      fontSize: `${Math.round(14 * S)}px`, color: COLORS.TEXT_YELLOW, fontFamily: FONT_FAMILY,
+    });
+
+    if (activeQuests.length === 0) {
+      this.add.text(GAME_WIDTH / 2, y + Math.round(60 * S), t('menu.noQuests'), {
+        fontSize: `${Math.round(12 * S)}px`, color: COLORS.TEXT_GRAY, fontFamily: FONT_FAMILY,
+      }).setOrigin(0.5);
+    } else {
+      // Show up to 6 quests with scrolling
+      const maxVisible = 6;
+      const scrollOffset = Math.max(0, this.listIndex - (maxVisible - 1));
+
+      for (let i = 0; i < maxVisible; i++) {
+        const questIdx = i + scrollOffset;
+        if (questIdx >= activeQuests.length) break;
+        const quest = activeQuests[questIdx];
+        const isSelected = questIdx === this.listIndex;
+        const isReady = qm.isQuestReady(quest.id, playerState);
+        const readyPrefix = isReady ? '\u2605 ' : '';
+
+        this.add.text(Math.round(32 * S), y + Math.round(28 * S) + i * Math.round(22 * S),
+          `${isSelected ? '>' : ' '} ${readyPrefix}${t(quest.titleKey)}`, {
+            fontSize: fs,
+            color: isSelected ? COLORS.TEXT_YELLOW : isReady ? '#88cc88' : COLORS.TEXT_WHITE,
+            fontFamily: FONT_FAMILY,
+          });
+      }
+
+      // Detail panel for selected quest
+      if (this.listIndex < activeQuests.length) {
+        const quest = activeQuests[this.listIndex];
+        const detailX = Math.round(240 * S);
+        let detailY = y + Math.round(28 * S);
+
+        // Description
+        this.add.text(detailX, detailY, t(quest.descriptionKey), {
+          fontSize: `${Math.round(9 * S)}px`, color: COLORS.TEXT_GRAY, fontFamily: FONT_FAMILY,
+          wordWrap: { width: GAME_WIDTH - detailX - Math.round(16 * S) },
+        });
+        detailY += Math.round(40 * S);
+
+        // Objective progress
+        const progress = qm.getObjectiveProgress(quest.id, playerState);
+        for (const p of progress) {
+          const done = p.current >= p.target;
+          const check = done ? '\u2713' : '\u25CB';
+          const countStr = p.target > 1 ? ` (${Math.min(p.current, p.target)}/${p.target})` : '';
+          this.add.text(detailX, detailY, `${check} ${t(p.objective.descriptionKey)}${countStr}`, {
+            fontSize: `${Math.round(9 * S)}px`,
+            color: done ? '#88cc88' : COLORS.TEXT_WHITE,
+            fontFamily: FONT_FAMILY,
+          });
+          detailY += Math.round(16 * S);
+        }
+
+        // Rewards
+        detailY += Math.round(8 * S);
+        const rewards = quest.rewards;
+        let rewardStr = '';
+        if (rewards.exp) rewardStr += `${rewards.exp} EXP  `;
+        if (rewards.gold) rewardStr += `${rewards.gold} G  `;
+        if (rewards.items) {
+          for (const ri of rewards.items) {
+            const item = items[ri.itemId];
+            if (item) rewardStr += `${t(item.nameKey)} x${ri.quantity}  `;
+          }
+        }
+        if (rewardStr) {
+          this.add.text(detailX, detailY, rewardStr.trim(), {
+            fontSize: `${Math.round(9 * S)}px`, color: COLORS.TEXT_YELLOW, fontFamily: FONT_FAMILY,
+          });
+        }
+      }
+    }
+
+    // Completed quests count
+    const completedCount = playerState.completedQuests.length;
+    this.add.text(Math.round(32 * S), GAME_HEIGHT - Math.round(52 * S), `${t('menu.completedQuests')}: ${completedCount}`, {
+      fontSize: fs, color: COLORS.TEXT_GRAY, fontFamily: FONT_FAMILY,
+    });
+  }
+
   /** Returns ordered list of setting IDs visible in the current locale */
   private get settingsList(): string[] {
     const list = ['difficulty', 'language'];
@@ -363,6 +455,7 @@ export class MenuScene extends Phaser.Scene {
       } else {
         const maxIndex = this.currentTab === 'settings' ? this.settingsList.length - 1
           : this.currentTab === 'items' ? Math.max(0, this.getConsumableItems().length - 1)
+          : this.currentTab === 'quests' ? Math.max(0, gameState.questManager.getActiveQuests(gameState.player.state).length - 1)
           : 99;
         this.listIndex = Math.min(maxIndex, this.listIndex + 1);
         this.drawMenu();

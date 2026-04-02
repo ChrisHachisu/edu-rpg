@@ -2,7 +2,7 @@ import { SaveData, PlayerState } from '../../utils/types';
 
 const SAVE_KEY = 'edu-rpg-save';
 const AUTO_SAVE_KEY = 'edu-rpg-autosave';
-const SAVE_VERSION = 3;
+const SAVE_VERSION = 4;
 
 export class SaveManager {
   static save(playerState: PlayerState, playtime: number, quizStats: SaveData['quizStats']): void {
@@ -51,6 +51,13 @@ export class SaveManager {
         data.player.soundEnabled = data.player.soundEnabled ?? true;
         data.player.masterVolume = data.player.masterVolume ?? 0.7;
         data.version = 3;
+      }
+      // v3 → v4 migration: add quest fields
+      if (data.version === 3) {
+        (data.player as any).activeQuests = (data.player as any).activeQuests ?? [];
+        (data.player as any).completedQuests = (data.player as any).completedQuests ?? [];
+        (data.player as any).questProgress = (data.player as any).questProgress ?? {};
+        data.version = 4;
       }
       // Backfill kanjiMode for saves created before it existed
       data.player.kanjiMode = data.player.kanjiMode ?? false;

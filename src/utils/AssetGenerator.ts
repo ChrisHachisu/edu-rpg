@@ -6696,6 +6696,144 @@ function generateTilesets(scene: Phaser.Scene): void {
     g.fillStyle(0x5533aa, 0.2);
     g.fillRect(8, 20, 8, 1);
   });
+  // ow-10: Dark cave entrance with stone pillars
+  generateTile(scene, 'ow-10', 0x44aa44, 0x55bb55, undefined, g => {
+    g.fillStyle(0x1a4a1a); g.fillRect(0, 0, 8, 22); g.fillRect(0, 0, 10, 10); g.fillRect(16, 0, 8, 22); g.fillRect(14, 0, 10, 10);
+    g.fillStyle(0x3d1e1a); g.fillRect(2, 6, 4, 18); g.fillRect(18, 6, 4, 18);
+    g.fillStyle(0x4a2ea0); g.fillRect(3, 8, 2, 3); g.fillRect(19, 10, 2, 3); g.fillRect(2, 14, 3, 2); g.fillRect(19, 16, 3, 2);
+    g.fillStyle(0x080808); g.fillRect(7, 4, 10, 20); g.fillRect(8, 3, 8, 1); g.fillRect(9, 2, 6, 1);
+    g.fillStyle(0x030303); g.fillRect(9, 8, 6, 14); g.fillRect(10, 6, 4, 2);
+    g.fillStyle(0x1a4a1a); g.fillRect(8, 0, 3, 3); g.fillRect(13, 0, 3, 3); g.fillRect(10, 0, 4, 1);
+    g.fillStyle(0x226622); g.fillRect(8, 1, 2, 1); g.fillRect(14, 1, 2, 1); g.fillRect(6, 3, 2, 2); g.fillRect(16, 3, 2, 2);
+    g.fillStyle(0x3d9e3d); g.fillRect(0, 21, 7, 3); g.fillRect(17, 21, 7, 3);
+    g.fillStyle(0x2e8a2e); g.fillRect(0, 22, 3, 2); g.fillRect(21, 22, 3, 2);
+    g.fillStyle(0x334433, 0.3); g.fillRect(9, 12, 6, 1); g.fillRect(8, 16, 8, 1);
+    g.fillStyle(0x66ff66, 0.4); g.fillRect(10, 10, 1, 1); g.fillRect(13, 10, 1, 1);
+  });
+  // ow-11: Signpost on grass
+  generateTile(scene, 'ow-11', 0x44aa44, 0x55bb55, undefined, g => {
+    g.fillStyle(0x3d9e3d); g.fillRect(0, 20, 24, 4);
+    g.fillStyle(0x2e8a2e); g.fillRect(2, 21, 3, 2); g.fillRect(18, 22, 4, 2);
+    g.fillStyle(0x5c3c1e); g.fillRect(11, 8, 3, 16);
+    g.fillStyle(0x4a2e16); g.fillRect(11, 8, 1, 16);
+    g.fillStyle(0x6b4a27); g.fillRect(13, 8, 1, 16);
+    g.fillStyle(0x8b8b14); g.fillRect(3, 5, 19, 7);
+    g.fillStyle(0x6b5410); g.fillRect(3, 5, 19, 1); g.fillRect(3, 11, 19, 1); g.fillRect(3, 5, 1, 7); g.fillRect(21, 5, 1, 7);
+    g.fillStyle(0x9e7e1c); g.fillRect(5, 7, 14, 1); g.fillRect(6, 9, 12, 1);
+    g.fillStyle(0x3d1e1a); g.fillRect(7, 8, 8, 1); g.fillRect(13, 7, 2, 1); g.fillRect(13, 9, 2, 1);
+    g.fillStyle(0x6b4a27); g.fillRect(10, 3, 5, 3);
+    g.fillStyle(0x5c3c1e); g.fillRect(11, 4, 3, 1);
+  });
+  // ow-12: Church/shrine on grass
+  generateTile(scene, 'ow-12', 0x44aa44, 0x55bb55, undefined, g => {
+    g.fillStyle(0x3d9e3d); g.fillRect(0, 20, 24, 4);
+    g.fillStyle(0x2e8a2e); g.fillRect(2, 21, 3, 2); g.fillRect(18, 22, 4, 2);
+    g.fillStyle(0x6a5a00); g.fillRect(7, 6, 10, 14);
+    g.fillStyle(0x5a5010); g.fillRect(7, 6, 10, 1); g.fillRect(7, 10, 10, 1); g.fillRect(7, 14, 10, 1); g.fillRect(7, 18, 10, 1);
+    g.fillStyle(0x555558); g.fillRect(12, 6, 1, 14);
+    g.fillStyle(0x7a6a10); g.fillRect(8, 7, 3, 2); g.fillRect(14, 11, 2, 2); g.fillRect(9, 15, 2, 2);
+    g.fillStyle(0x3a3a55); g.fillTriangle(12, 0, 5, 7, 19, 7);
+    g.fillStyle(0x4a4a65); g.fillTriangle(12, 1, 7, 6, 12, 6);
+    g.fillStyle(0x222233); g.fillRect(9, 8, 2, 2); g.fillRect(14, 12, 2, 2); g.fillRect(9, 16, 2, 2);
+    g.fillStyle(0xaaaacc, 0.3); g.fillRect(9, 8, 1, 1); g.fillRect(14, 12, 1, 1);
+    // Torch flame
+    g.fillStyle(0xffee44, 0.8); g.fillRect(19, 1, 2, 1); g.fillRect(18, 2, 2, 1); g.fillRect(19, 3, 3, 1); g.fillRect(20, 4, 2, 1); g.fillRect(19, 5, 2, 1);
+    g.fillStyle(0xffff5a, 0.3); g.fillRect(18, 0, 4, 2); g.fillRect(17, 3, 3, 2);
+    g.fillStyle(0x5a5010); g.fillRect(6, 19, 12, 2);
+    g.fillStyle(0x3a2a2a); g.fillRect(10, 17, 4, 3);
+    g.fillStyle(0x4a3a2a); g.fillRect(11, 17, 2, 2);
+  });
+  // ow-13: Snow/ice ground
+  generateTile(scene, 'ow-13', 0x3d9e3d, 0x2e8a2e, undefined, g => {
+    g.fillStyle(0x88aacc); g.fillRect(0, 0, 24, 24);
+    g.fillStyle(0x778ebb); g.fillRect(0, 6, 24, 3); g.fillRect(0, 16, 24, 3);
+    g.fillStyle(0xffffff, 0.9); g.fillRect(0, 3, 20, 2); g.fillRect(4, 10, 20, 2); g.fillRect(0, 19, 18, 2);
+    g.fillStyle(0xccddff, 0.8); g.fillRect(2, 7, 16, 2); g.fillRect(6, 14, 18, 2);
+    g.fillStyle(0xffffff, 0.8); g.fillRect(3, 2, 2, 2); g.fillRect(14, 5, 2, 2); g.fillRect(8, 12, 2, 2); g.fillRect(18, 17, 2, 2); g.fillRect(5, 21, 2, 2); g.fillRect(20, 2, 1, 1);
+  });
+  // ow-14: Deep forest/swamp
+  generateTile(scene, 'ow-14', 0x1a5c1a, 0x164e16, undefined, g => {
+    g.fillStyle(0x1a5c1a); g.fillRect(0, 0, 24, 24);
+    g.fillStyle(0x144914); g.fillRect(2, 2, 6, 5); g.fillRect(14, 8, 7, 6); g.fillRect(5, 16, 8, 5);
+    g.fillStyle(0x185a18); g.fillRect(10, 1, 5, 4); g.fillRect(1, 10, 6, 4); g.fillRect(16, 18, 6, 4);
+    g.fillStyle(0x2a1a0a, 0.6); g.fillRect(6, 8, 2, 8); g.fillRect(16, 4, 2, 7); g.fillRect(11, 14, 2, 6);
+  });
+  // ow-15: Mountain/hill
+  generateTile(scene, 'ow-15', 0x44aa44, 0x55bb55, undefined, g => {
+    g.fillStyle(0x44aa44); g.fillRect(0, 0, 24, 24);
+    g.fillStyle(0x55bb55); g.fillRect(1, 22, 3, 2); g.fillRect(19, 21, 3, 2);
+    g.fillStyle(0x66882c); g.fillRect(2, 14, 20, 10);
+    g.fillStyle(0x77992d); g.fillRect(4, 10, 16, 8);
+    g.fillStyle(0x88aa2e); g.fillRect(6, 6, 12, 8);
+    g.fillStyle(0x99bb2f); g.fillRect(8, 3, 8, 6); g.fillRect(10, 1, 4, 4);
+    g.fillStyle(0xbbddff); g.fillRect(7, 5, 2, 1); g.fillRect(15, 7, 2, 1); g.fillRect(5, 11, 1, 2); g.fillRect(18, 12, 1, 2);
+    g.fillStyle(0xddddff); g.fillRect(10, 2, 1, 1); g.fillRect(13, 3, 1, 1);
+    // Cave entrance
+    g.fillStyle(0x111133); g.fillRect(8, 15, 8, 9);
+    g.fillStyle(0x0a0a22); g.fillRect(9, 16, 6, 8);
+    g.fillStyle(0xaabb22); g.fillRect(8, 14, 1, 2); g.fillRect(15, 14, 1, 2);
+    g.fillStyle(0x55883b, 0.5); g.fillRect(10, 18, 1, 1); g.fillRect(13, 20, 1, 1);
+  });
+  // ow-16: Haunted building
+  generateTile(scene, 'ow-16', 0x44aa44, 0x55bb55, undefined, g => {
+    g.fillStyle(0xd8d8ee); g.fillRect(0, 0, 24, 24);
+    g.fillStyle(0xcccc6a); g.fillRect(2, 20, 5, 4); g.fillRect(17, 22, 4, 2);
+    g.fillStyle(0x778820); g.fillRect(1, 4, 22, 18);
+    g.fillStyle(0x778820); g.fillRect(2, 3, 20, 1); g.fillRect(3, 2, 18, 1); g.fillRect(5, 1, 14, 1);
+    g.fillStyle(0xe8e8f6); g.fillRect(3, 1, 18, 2); g.fillRect(5, 0, 14, 2);
+    g.fillStyle(0xf0f0f8); g.fillRect(6, 0, 12, 1);
+    g.fillStyle(0xd8d8ee); g.fillRect(2, 3, 3, 2); g.fillRect(19, 3, 3, 2); g.fillRect(1, 5, 2, 1); g.fillRect(21, 5, 2, 1);
+    g.fillStyle(0x99882c, 0.4); g.fillRect(4, 7, 3, 2); g.fillRect(17, 10, 3, 2);
+    // Door
+    g.fillStyle(0x112233); g.fillRect(7, 12, 10, 12);
+    g.fillStyle(0x0a1620); g.fillRect(8, 13, 8, 11);
+    g.fillStyle(0xaabbdd); g.fillRect(8, 12, 1, 3); g.fillRect(10, 12, 1, 2); g.fillRect(13, 12, 1, 2); g.fillRect(15, 12, 1, 3);
+    g.fillStyle(0x55883b, 0.4); g.fillRect(10, 17, 1, 1); g.fillRect(13, 19, 1, 1);
+  });
+  // ow-17: Sand/desert tile
+  generateTile(scene, 'ow-17', 0xd8d8ee, 0xceceda, undefined, g => {
+    g.fillStyle(0xd8d8ee); g.fillRect(0, 0, 12, 12);
+    g.fillStyle(0xceceda); g.fillRect(12, 0, 12, 12);
+    g.fillStyle(0xd2d2d8); g.fillRect(0, 12, 12, 12);
+    g.fillStyle(0xdcdce0); g.fillRect(12, 12, 12, 12);
+    g.fillStyle(0xe8e8f6, 0.6); g.fillRect(4, 3, 2, 1); g.fillRect(16, 8, 2, 1); g.fillRect(7, 17, 2, 1); g.fillRect(19, 21, 1, 1);
+    g.fillStyle(0xc0c0c0, 0.3); g.fillRect(2, 10, 4, 1); g.fillRect(14, 15, 3, 1);
+  });
+  // ow-18: Sand plains
+  generateTile(scene, 'ow-18', 0xe8daf0, 0xd8cab0, undefined, g => {
+    g.fillStyle(0xe8daf0); g.fillRect(0, 0, 12, 12);
+    g.fillStyle(0xddcce8); g.fillRect(12, 0, 12, 12);
+    g.fillStyle(0xe4d4ec); g.fillRect(0, 12, 12, 12);
+    g.fillStyle(0xeadaf4); g.fillRect(12, 12, 12, 12);
+    g.fillStyle(0xd4c4d8, 0.5); g.fillRect(2, 4, 6, 1); g.fillRect(5, 7, 8, 1); g.fillRect(1, 10, 5, 1); g.fillRect(14, 3, 7, 1); g.fillRect(16, 6, 5, 1); g.fillRect(13, 9, 8, 1); g.fillRect(3, 15, 6, 1); g.fillRect(15, 17, 5, 1); g.fillRect(7, 19, 7, 1);
+    g.fillStyle(0xb89aa0, 0.4); g.fillRect(8, 2, 1, 1); g.fillRect(18, 5, 1, 1); g.fillRect(3, 14, 1, 1); g.fillRect(20, 14, 1, 1); g.fillRect(10, 20, 1, 1);
+  });
+  // ow-19: Sand pyramid/dune
+  generateTile(scene, 'ow-19', 0xe8daf0, 0xd8cab0, undefined, g => {
+    g.fillStyle(0xe8daf0); g.fillRect(0, 0, 24, 24);
+    g.fillStyle(0xddbef0); g.fillRect(0, 18, 24, 6);
+    g.fillStyle(0xd4aec0); g.fillRect(2, 16, 20, 4); g.fillRect(4, 12, 16, 4); g.fillRect(6, 8, 12, 4); g.fillRect(8, 4, 8, 4); g.fillRect(10, 1, 4, 3);
+    g.fillStyle(0xb88ab0, 0.5); g.fillRect(12, 1, 2, 3); g.fillRect(14, 4, 4, 4); g.fillRect(18, 8, 2, 4); g.fillRect(16, 12, 4, 4); g.fillRect(18, 16, 4, 4);
+    g.fillStyle(0x220000); g.fillRect(10, 15, 4, 5);
+    g.fillStyle(0x8a5420); g.fillRect(9, 14, 6, 1);
+    g.fillStyle(0xecc8f0, 0.4); g.fillRect(2, 16, 2, 4); g.fillRect(4, 12, 2, 4); g.fillRect(6, 8, 2, 4); g.fillRect(8, 4, 2, 4); g.fillRect(10, 1, 2, 3);
+  });
+  // ow-20: Sand signpost/tree
+  generateTile(scene, 'ow-20', 0xe8daf0, 0xd8cab0, undefined, g => {
+    g.fillStyle(0xe0d0dc); g.fillRect(0, 0, 24, 24);
+    g.fillStyle(0xd4b0c0); g.fillRect(1, 5, 6, 1); g.fillRect(14, 10, 8, 1); g.fillRect(3, 17, 10, 1);
+    g.fillStyle(0xb88aa0); g.fillRect(11, 8, 3, 16);
+    g.fillStyle(0x9a6a48); g.fillRect(11, 8, 1, 16);
+    g.fillStyle(0xc8a8b0); g.fillRect(13, 8, 1, 16);
+    g.fillStyle(0xa0a050); g.fillRect(11, 11, 3, 1); g.fillRect(11, 16, 3, 1);
+    g.fillStyle(0x8b8b14); g.fillRect(3, 5, 19, 7);
+    g.fillStyle(0x6b5410); g.fillRect(3, 5, 19, 1); g.fillRect(3, 11, 19, 1); g.fillRect(3, 5, 1, 7); g.fillRect(21, 5, 1, 7);
+    g.fillStyle(0x9e7e1c); g.fillRect(5, 7, 14, 1); g.fillRect(6, 9, 12, 1);
+    g.fillStyle(0x3d1e1a); g.fillRect(7, 8, 8, 1); g.fillRect(13, 7, 2, 1); g.fillRect(13, 9, 2, 1);
+    g.fillStyle(0x9a6a48); g.fillRect(10, 3, 5, 3);
+    g.fillStyle(0xb88aa0); g.fillRect(11, 4, 3, 1);
+    g.fillStyle(0xc0b4d8); g.fillRect(9, 22, 2, 1); g.fillRect(14, 21, 1, 1);
+  });
 
   // Castle interior tiles — ornate stone with royal detailing (native 24×24)
   // castle-0: Polished stone floor with red carpet runner, torch glow warmth
@@ -8907,6 +9045,705 @@ function generateTilesets(scene: Phaser.Scene): void {
     g.fillStyle(0xffcc00);
     g.fillTriangle(12, 0, 8, 4, 16, 4);
   });
+  // dng-14: Water/ice cavern with crystal pillar
+  generateTile(scene, 'dng-14', 0x444444, 0x3a3a3a, undefined, g => {
+    g.fillStyle(0x3e3e5e); g.fillRect(0, 8, 24, 16); g.fillRect(2, 6, 20, 2);
+    g.fillStyle(0x333355); g.fillRect(8, 16, 8, 4);
+    g.fillStyle(0x445eec); g.fillRect(10, 6, 4, 10);
+    g.fillStyle(0x557eee); g.fillRect(9, 8, 6, 8);
+    g.fillStyle(0x669eff); g.fillRect(10, 7, 4, 6);
+    g.fillStyle(0x77beff); g.fillTriangle(12, 2, 9, 8, 15, 8);
+    g.fillStyle(0xaaaaff, 0.6); g.fillRect(11, 8, 1, 4); g.fillRect(10, 10, 1, 2);
+    g.fillStyle(0x667fff, 0.15); g.fillRect(4, 4, 16, 16);
+    g.fillStyle(0x889fff, 0.1); g.fillRect(2, 2, 20, 20);
+    g.fillStyle(0xccddff, 0.7); g.fillRect(6, 5, 1, 1); g.fillRect(17, 7, 1, 1); g.fillRect(5, 14, 1, 1); g.fillRect(18, 12, 1, 1);
+  });
+  // dng-15: Dungeon hallway with sconce
+  generateTile(scene, 'dng-15', 0x444444, 0x3a3a3a, undefined, g => {
+    g.fillStyle(0x333333); g.fillRect(2, 0, 20, 24);
+    g.fillStyle(0x4a2a20); g.fillRect(4, 2, 16, 20);
+    g.fillStyle(0x3d1818); g.fillRect(4, 8, 16, 1); g.fillRect(4, 14, 16, 1);
+    g.fillStyle(0x555555); g.fillRect(3, 4, 18, 2); g.fillRect(3, 18, 18, 2);
+    g.fillStyle(0x666666); g.fillRect(14, 10, 4, 5);
+    g.fillStyle(0x777777); g.fillRect(15, 11, 2, 3);
+    g.fillStyle(0x111111); g.fillCircle(16, 12, 1); g.fillRect(16, 12, 1, 2);
+    g.fillStyle(0xddaa33, 0.5); g.fillRect(14, 10, 1, 1); g.fillRect(18, 10, 1, 1);
+  });
+  // dng-16: Water cavern pool
+  generateTile(scene, 'dng-16', 0x444444, 0x3a3a3a, undefined, g => {
+    g.fillStyle(0x3e3e5e); g.fillRect(0, 0, 24, 24);
+    g.fillStyle(0x3a3a3a); g.fillRect(2, 4, 6, 3); g.fillRect(14, 12, 5, 3);
+    g.fillStyle(0xddaa33); g.fillRect(7, 10, 10, 3);
+    g.fillStyle(0xeec444); g.fillRect(5, 9, 4, 5);
+    g.fillStyle(0x444444); g.fillRect(6, 10, 2, 3);
+    g.fillStyle(0xddaa33); g.fillRect(15, 13, 1, 2); g.fillRect(17, 13, 1, 2);
+    g.fillStyle(0xffcc88, 0.5); g.fillRect(8, 10, 4, 1); g.fillRect(5, 9, 2, 1);
+    g.fillStyle(0xddaa33, 0.08); g.fillRect(3, 7, 18, 10);
+  });
+  // dng-17: Dark brick wall pattern
+  generateTile(scene, 'dng-17', 0x222222, 0x1a1a1a, undefined, g => {
+    g.fillStyle(0x2a2a2a); g.fillRect(0, 0, 11, 5); g.fillRect(13, 0, 11, 5); g.fillRect(0, 7, 8, 5); g.fillRect(10, 7, 14, 5); g.fillRect(0, 14, 12, 5); g.fillRect(14, 14, 10, 5); g.fillRect(3, 20, 10, 4); g.fillRect(15, 20, 9, 4);
+    g.fillStyle(0x1e1e1e); g.fillRect(0, 5, 24, 2); g.fillRect(0, 12, 24, 2); g.fillRect(0, 19, 24, 1); g.fillRect(12, 0, 1, 5); g.fillRect(9, 7, 1, 5); g.fillRect(13, 14, 1, 5); g.fillRect(14, 20, 1, 4);
+    g.fillStyle(0x333333, 0.4); g.fillRect(0, 20, 4, 4); g.fillRect(20, 22, 4, 2);
+    g.fillStyle(0x2e2e2e, 0.6); g.fillRect(11, 6, 2, 1); g.fillRect(12, 4, 1, 3);
+  });
+  // dng-18: Book/library shelf
+  generateTile(scene, 'dng-18', 0x444444, 0x3a3a3a, undefined, g => {
+    g.fillStyle(0x333333); g.fillRect(0, 0, 24, 24);
+    g.fillStyle(0x2a2a2a); g.fillRect(0, 0, 24, 1); g.fillRect(0, 23, 24, 1); g.fillRect(0, 0, 1, 24); g.fillRect(23, 0, 1, 24);
+    g.fillStyle(0x8a6a4b); g.fillRect(2, 2, 20, 20);
+    g.fillStyle(0x9e8a00); g.fillRect(2, 2, 20, 2); g.fillRect(2, 2, 2, 20);
+    g.fillStyle(0x6b5a50); g.fillRect(2, 20, 20, 2); g.fillRect(20, 2, 2, 20);
+    g.fillStyle(0x7a6a5c); g.fillRect(4, 4, 16, 16);
+    g.fillStyle(0x5e5448); g.fillRect(4, 4, 16, 1); g.fillRect(4, 19, 16, 1); g.fillRect(4, 4, 1, 16); g.fillRect(19, 4, 1, 16);
+    // Book rows
+    g.fillStyle(0x554400); g.fillRect(6, 7, 12, 1); g.fillRect(6, 9, 12, 1); g.fillRect(6, 11, 10, 1); g.fillRect(6, 13, 12, 1); g.fillRect(6, 15, 8, 1); g.fillRect(6, 17, 11, 1);
+    // Corner decorations
+    g.fillStyle(0xa09a00); g.fillRect(4, 4, 3, 3); g.fillRect(17, 4, 3, 3); g.fillRect(4, 17, 3, 3); g.fillRect(17, 17, 3, 3);
+    g.fillStyle(0x6b5a50); g.fillRect(5, 5, 1, 1); g.fillRect(18, 5, 1, 1); g.fillRect(5, 18, 1, 1); g.fillRect(18, 18, 1, 1);
+  });
+  // dng-19: Mossy dungeon floor
+  generateTile(scene, 'dng-19', 0x444444, 0x3a3a3a, undefined, g => {
+    g.fillStyle(0x3a3a3a); g.fillRect(0, 0, 24, 24);
+    g.fillStyle(0x5a5030); g.fillRect(2, 4, 20, 16); g.fillRect(4, 2, 16, 20); g.fillRect(3, 3, 18, 18);
+    g.fillStyle(0x6a6038); g.fillRect(5, 5, 8, 3); g.fillRect(13, 10, 6, 4); g.fillRect(4, 15, 5, 3);
+    g.fillStyle(0x757548); g.fillRect(6, 3, 10, 1); g.fillRect(5, 4, 12, 1);
+    g.fillStyle(0x484820, 0.8); g.fillRect(8, 7, 1, 4); g.fillRect(9, 10, 3, 1); g.fillRect(15, 5, 1, 3); g.fillRect(6, 14, 4, 1); g.fillRect(14, 15, 1, 3);
+    g.fillStyle(0x3a3a30); g.fillRect(3, 19, 18, 2); g.fillRect(4, 20, 16, 1);
+    g.fillStyle(0x778a3a, 0.2); g.fillRect(1, 6, 2, 1); g.fillRect(21, 9, 2, 1); g.fillRect(1, 14, 2, 1); g.fillRect(21, 17, 2, 1);
+    g.fillStyle(0x88aa3a, 0.15); g.fillRect(0, 8, 1, 2); g.fillRect(23, 12, 1, 2);
+  });
+  // dng-20: Green crystal stalagmite columns
+  generateTile(scene, 'dng-20', 0x444444, 0x3a3a3a, undefined, g => {
+    g.fillStyle(0x333333); g.fillRect(0, 0, 24, 24);
+    g.fillStyle(0x2a2a2a); g.fillRect(0, 16, 24, 8);
+    g.fillStyle(0x449c4c); g.fillRect(4, 4, 4, 14); g.fillRect(10, 2, 5, 16); g.fillRect(17, 6, 4, 12);
+    g.fillStyle(0x66ae6e); g.fillRect(5, 5, 2, 10); g.fillRect(11, 3, 3, 12); g.fillRect(18, 7, 2, 8);
+    g.fillStyle(0xaaffbf); g.fillRect(6, 4, 1, 3); g.fillRect(12, 2, 1, 4); g.fillRect(19, 6, 1, 3);
+    g.fillStyle(0x66ae6e, 0.15); g.fillRect(2, 2, 20, 20);
+    g.fillStyle(0xccffdf, 0.8); g.fillRect(7, 6, 1, 1); g.fillRect(14, 4, 1, 1); g.fillRect(20, 9, 1, 1);
+  });
+  // dng-21: Blue crystal stalagmite columns
+  generateTile(scene, 'dng-21', 0x444444, 0x3a3a3a, undefined, g => {
+    g.fillStyle(0x333333); g.fillRect(0, 0, 24, 24);
+    g.fillStyle(0x2a2a2a); g.fillRect(0, 16, 24, 8);
+    g.fillStyle(0x224cbc); g.fillRect(4, 4, 4, 14); g.fillRect(10, 2, 5, 16); g.fillRect(17, 6, 4, 12);
+    g.fillStyle(0x446eff); g.fillRect(5, 5, 2, 10); g.fillRect(11, 3, 3, 12); g.fillRect(18, 7, 2, 8);
+    g.fillStyle(0x6699ff); g.fillRect(6, 4, 1, 3); g.fillRect(12, 2, 1, 4); g.fillRect(19, 6, 1, 3);
+    g.fillStyle(0x2245ff, 0.15); g.fillRect(2, 2, 20, 20);
+    g.fillStyle(0xaabbff, 0.8); g.fillRect(7, 6, 1, 1); g.fillRect(14, 4, 1, 1); g.fillRect(20, 9, 1, 1);
+  });
+  // dng-22: Purple crystal stalagmite columns
+  generateTile(scene, 'dng-22', 0x444444, 0x3a3a3a, undefined, g => {
+    g.fillStyle(0x333333); g.fillRect(0, 0, 24, 24);
+    g.fillStyle(0x2a2a2a); g.fillRect(0, 16, 24, 8);
+    g.fillStyle(0x22a844); g.fillRect(4, 4, 4, 14); g.fillRect(10, 2, 5, 16); g.fillRect(17, 6, 4, 12);
+    g.fillStyle(0x44d666); g.fillRect(5, 5, 2, 10); g.fillRect(11, 3, 3, 12); g.fillRect(18, 7, 2, 8);
+    g.fillStyle(0x66ee88); g.fillRect(6, 4, 1, 3); g.fillRect(12, 2, 1, 4); g.fillRect(19, 6, 1, 3);
+    g.fillStyle(0x230044, 0.15); g.fillRect(2, 2, 20, 20);
+    g.fillStyle(0xaaccbc, 0.8); g.fillRect(7, 6, 1, 1); g.fillRect(14, 4, 1, 1); g.fillRect(20, 9, 1, 1);
+  });
+  // dng-24: Campfire/bonfire tile
+  generateTile(scene, 'dng-24', 0x444444, 0x3a3a3a, undefined, g => {
+    g.fillStyle(0x3e3e5e); g.fillRect(0, 8, 24, 8);
+    g.fillStyle(0x484848); g.fillRect(4, 4, 16, 16);
+    g.fillStyle(0x5a3a1a); g.fillRect(11, 10, 2, 10);
+    g.fillStyle(0x4a2a14); g.fillRect(10, 20, 4, 2);
+    g.fillStyle(0xff6600, 0.15); g.fillCircle(12, 8, 14);
+    g.fillStyle(0xffa000, 0.25); g.fillCircle(12, 8, 11);
+    g.fillStyle(0xffcc00, 0.45); g.fillCircle(12, 8, 8);
+    g.fillStyle(0xffdd33, 0.5); g.fillCircle(12, 8, 5);
+    g.fillStyle(0xff4400); g.fillEllipse(12, 6, 6, 9);
+    g.fillStyle(0xffa000); g.fillEllipse(12, 6, 4, 7);
+    g.fillStyle(0xffcc00); g.fillEllipse(12, 7, 3, 5);
+    g.fillStyle(0xffdd66); g.fillEllipse(12, 8, 2, 3);
+    g.fillStyle(0xffff6c, 0.8); g.fillRect(11, 8, 2, 2);
+  });
+  // dng-25: Ice/frost floor
+  generateTile(scene, 'dng-25', 0x88bbdd, 0x99ccee, undefined, g => {
+    g.fillStyle(0x7a9acf); g.fillRect(0, 0, 12, 12);
+    g.fillStyle(0x99ccee); g.fillRect(12, 12, 12, 12);
+    g.fillStyle(0xaabbff, 0.5); g.fillRect(2, 3, 6, 1); g.fillRect(14, 7, 5, 1); g.fillRect(6, 15, 7, 1); g.fillRect(16, 19, 4, 1);
+    g.fillStyle(0xccddff, 0.6); g.fillRect(3, 4, 3, 1); g.fillRect(15, 8, 2, 1); g.fillRect(8, 16, 3, 1);
+    g.fillStyle(0xddeeff, 0.7); g.fillRect(5, 2, 1, 1); g.fillRect(17, 6, 1, 1); g.fillRect(10, 14, 1, 1); g.fillRect(20, 20, 1, 1);
+    g.fillStyle(0x66881b, 0.4); g.fillRect(4, 6, 1, 4); g.fillRect(5, 9, 3, 1); g.fillRect(14, 2, 1, 3); g.fillRect(18, 14, 1, 5); g.fillRect(8, 20, 4, 1);
+    g.fillStyle(0xffffff, 0.8); g.fillRect(6, 1, 1, 1); g.fillRect(19, 5, 1, 1); g.fillRect(2, 13, 1, 1); g.fillRect(21, 18, 1, 1); g.fillRect(11, 22, 1, 1);
+  });
+  // dng-26: Dark ritual circle
+  generateTile(scene, 'dng-26', 0x222210, 0x1a1a0e, undefined, g => {
+    g.fillStyle(0x111108); g.fillCircle(12, 12, 9);
+    g.fillStyle(0x2a2a18, 0.7); g.fillCircle(12, 12, 11);
+    g.fillStyle(0x111108); g.fillCircle(12, 12, 8);
+    g.fillStyle(0x998866); g.fillRect(0, 0, 24, 2); g.fillRect(0, 22, 24, 2); g.fillRect(0, 0, 2, 24); g.fillRect(22, 0, 2, 24);
+    g.fillStyle(0x887755); g.fillRect(2, 2, 3, 1); g.fillRect(19, 2, 3, 1); g.fillRect(2, 21, 3, 1); g.fillRect(19, 21, 3, 1);
+    g.fillStyle(0x1a1a10, 0.5); g.fillCircle(12, 12, 6);
+    g.fillStyle(0x080804); g.fillCircle(12, 12, 3);
+  });
+  // dng-27: Earth/dirt floor with stones
+  generateTile(scene, 'dng-27', 0xaa8855, 0x997744, undefined, g => {
+    g.fillStyle(0x9e8a48); g.fillRect(0, 0, 12, 24);
+    g.fillStyle(0xb0a055); g.fillRect(12, 0, 12, 24);
+    g.fillStyle(0x888833, 0.5); g.fillCircle(8, 8, 4); g.fillCircle(16, 16, 4);
+    g.fillStyle(0x9a9a44, 0.5); g.fillCircle(8, 8, 2); g.fillCircle(16, 16, 2);
+    g.fillStyle(0x7a6a30, 0.4); g.fillRect(1, 5, 8, 1); g.fillRect(10, 12, 10, 1); g.fillRect(3, 19, 7, 1); g.fillRect(15, 3, 6, 1);
+    g.fillStyle(0xbb9a46, 0.4); g.fillRect(4, 7, 5, 1); g.fillRect(13, 14, 5, 1); g.fillRect(6, 21, 4, 1);
+    g.fillStyle(0x664422, 0.6); g.fillCircle(6, 10, 1); g.fillCircle(18, 6, 1); g.fillCircle(10, 18, 1); g.fillCircle(20, 21, 1);
+  });
+  // dng-29: Poison/acid pool
+  generateTile(scene, 'dng-29', 0x1a0a2e, 0x120820, undefined, g => {
+    g.fillStyle(0x0d0518); g.fillRect(0, 0, 24, 24);
+    g.fillStyle(0x3a1a66, 0.7); g.fillCircle(12, 12, 10);
+    g.fillStyle(0x2a0e4e, 0.8); g.fillCircle(12, 12, 7);
+    g.fillStyle(0x0a0216, 0.9); g.fillCircle(12, 12, 4);
+    g.fillStyle(0x773c4c, 0.5); g.fillRect(5, 11, 5, 1); g.fillRect(14, 12, 5, 1); g.fillRect(11, 5, 1, 4); g.fillRect(12, 15, 1, 5);
+    g.fillStyle(0xaa5fff, 0.6); g.fillRect(7, 8, 2, 1); g.fillRect(15, 14, 2, 1); g.fillRect(10, 16, 1, 2); g.fillRect(13, 6, 1, 2);
+    g.fillStyle(0xcc88ff, 0.4); g.fillCircle(12, 12, 2);
+  });
+  // dng-30: Dungeon floor with surveillance eyes
+  generateTile(scene, 'dng-30', 0x444444, 0x3a3a3a, undefined, g => {
+    g.fillStyle(0x3a3a3a); g.fillRect(0, 11, 24, 1); g.fillRect(8, 0, 1, 11); g.fillRect(17, 0, 1, 11); g.fillRect(5, 12, 1, 12); g.fillRect(12, 12, 1, 12); g.fillRect(20, 12, 1, 12);
+    g.fillStyle(0x363636, 0.5); g.fillRect(1, 2, 5, 3); g.fillRect(14, 14, 4, 3); g.fillRect(9, 18, 3, 2);
+    g.fillStyle(0x4e4e4e); g.fillRect(10, 1, 3, 3); g.fillRect(19, 13, 3, 2); g.fillRect(1, 14, 3, 2);
+    g.fillStyle(0x333333); g.fillRect(3, 6, 2, 2); g.fillRect(13, 3, 2, 1); g.fillRect(7, 20, 2, 1);
+    g.fillStyle(0x4a4a5a, 0.2); g.fillRect(2, 8, 3, 1); g.fillRect(15, 18, 4, 1);
+    g.fillStyle(0x2e2e2e); g.fillRect(6, 4, 1, 2); g.fillRect(18, 7, 1, 2); g.fillRect(10, 15, 1, 2);
+    g.fillStyle(0x333333, 0.4); g.fillRect(1, 10, 1, 1); g.fillRect(21, 22, 1, 1); g.fillRect(7, 13, 1, 1);
+    // Surveillance eyes at corners
+    const eyePositions: [number, number][] = [[6, 6], [18, 6], [6, 18], [18, 18]];
+    for (const [ex, ey] of eyePositions) { g.fillStyle(0x0e0e06, 0.85); g.fillRect(ex, ey, 2, 2); }
+  });
+  // dng-31: Dungeon floor with horizontal bar overlay
+  generateTile(scene, 'dng-31', 0x444444, 0x3a3a3a, undefined, g => {
+    g.fillStyle(0x3a3a3a); g.fillRect(0, 11, 24, 1); g.fillRect(8, 0, 1, 11); g.fillRect(17, 0, 1, 11); g.fillRect(5, 12, 1, 12); g.fillRect(12, 12, 1, 12); g.fillRect(20, 12, 1, 12);
+    g.fillStyle(0x363636, 0.5); g.fillRect(1, 2, 5, 3); g.fillRect(14, 14, 4, 3); g.fillRect(9, 18, 3, 2);
+    g.fillStyle(0x4e4e4e); g.fillRect(10, 1, 3, 3); g.fillRect(1, 14, 3, 2);
+    g.fillStyle(0x333333); g.fillRect(3, 6, 2, 2); g.fillRect(13, 3, 2, 1);
+    g.fillStyle(0x2e2e2e); g.fillRect(6, 4, 1, 2); g.fillRect(18, 7, 1, 2); g.fillRect(10, 15, 1, 2);
+    g.fillStyle(0x333333, 0.4); g.fillRect(1, 10, 1, 1); g.fillRect(7, 13, 1, 1);
+    // Horizontal bar overlay
+    g.fillStyle(0x7a6a30, 0.3); g.fillRect(0, 12, 24, 1);
+    g.fillStyle(0x5a4a20, 0.45); g.fillRect(0, 11, 2, 3); g.fillRect(22, 11, 2, 3);
+  });
+  // dng-32: Dungeon floor with arrow markers
+  generateTile(scene, 'dng-32', 0x444444, 0x3a3a3a, undefined, g => {
+    g.fillStyle(0x3a3a3a); g.fillRect(0, 11, 24, 1); g.fillRect(8, 0, 1, 11); g.fillRect(17, 0, 1, 11); g.fillRect(5, 12, 1, 12); g.fillRect(12, 12, 1, 12); g.fillRect(20, 12, 1, 12);
+    g.fillStyle(0x363636, 0.5); g.fillRect(1, 2, 5, 3); g.fillRect(14, 14, 4, 3);
+    g.fillStyle(0x333333); g.fillRect(3, 6, 2, 2);
+    // Glowing circles at corners
+    g.fillStyle(0x3a1a18, 0.55); g.fillCircle(6, 10, 3); g.fillCircle(18, 10, 3); g.fillCircle(6, 22, 3); g.fillCircle(18, 22, 3);
+    // Arrow markers
+    const arrowPositions: [number, number][] = [[6, 6], [18, 6], [6, 18], [18, 18]];
+    for (const [ax, ay] of arrowPositions) {
+      g.fillStyle(0x888877); g.fillTriangle(ax, ay - 4, ax - 4, ay + 4, ax + 4, ay + 4);
+      g.fillStyle(0xbbcc4a, 0.75); g.fillTriangle(ax, ay - 3, ax - 2, ay + 3, ax + 1, ay + 3);
+    }
+  });
+
+  // ── Castle texture cloning from dungeon tiles ──
+  for (const idx of [3, 5, 6, 7, 9, 10, 11, 12, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24]) {
+    const dngKey = `dng-${idx}`;
+    const castleKey = `castle-${idx}`;
+    if (scene.textures.exists(dngKey)) {
+      const src = scene.textures.get(dngKey).getSourceImage();
+      scene.textures.addImage(castleKey, src as HTMLImageElement);
+    }
+  }
+
+  // ── Forest theme tiles ──
+  // forest-0: Mossy forest floor
+  generateTile(scene, 'forest-0', 0x6b5c3e, 0x5e5033, undefined, g => {
+    g.fillStyle(0x5e5033); g.fillRect(0, 0, 24, 24);
+    g.fillStyle(0x7a5c4c); g.fillRect(3, 2, 5, 3); g.fillRect(14, 8, 4, 3); g.fillRect(8, 16, 6, 3); g.fillRect(1, 12, 3, 2);
+    g.fillStyle(0x4a3a28); g.fillRect(8, 4, 3, 2); g.fillRect(18, 14, 3, 2); g.fillRect(2, 20, 2, 2);
+    g.fillStyle(0x3d701d); g.fillRect(0, 0, 2, 3); g.fillRect(22, 0, 2, 3); g.fillRect(0, 21, 2, 3); g.fillRect(22, 21, 2, 3); g.fillRect(0, 10, 1, 3); g.fillRect(23, 14, 1, 3);
+    g.fillStyle(0x2e6a0e); g.fillRect(0, 1, 1, 2); g.fillRect(23, 1, 1, 2); g.fillRect(0, 22, 1, 2); g.fillRect(23, 22, 1, 2);
+    g.fillStyle(0x8a6e22, 0.5); g.fillRect(5, 7, 2, 1); g.fillRect(16, 3, 1, 1); g.fillRect(11, 19, 2, 1); g.fillRect(20, 10, 1, 1);
+    g.fillStyle(0x4a3a22, 0.4); g.fillRect(6, 13, 4, 1); g.fillRect(15, 20, 3, 1);
+  });
+  // forest-1: Dense tree line
+  generateTile(scene, 'forest-1', 0x0e1e0e, 0x0a160a, undefined, g => {
+    g.fillStyle(0x132f13); g.fillRect(0, 0, 24, 14);
+    g.fillStyle(0x0e220e); g.fillRect(0, 14, 24, 10);
+    g.fillStyle(0x2a2210); g.fillRect(3, 8, 3, 16); g.fillRect(11, 6, 3, 18); g.fillRect(19, 9, 3, 15);
+    g.fillStyle(0x352a18); g.fillRect(4, 10, 1, 4); g.fillRect(12, 8, 1, 4); g.fillRect(20, 12, 1, 4); g.fillRect(3, 16, 2, 2); g.fillRect(11, 18, 2, 2); g.fillRect(19, 17, 2, 2);
+    g.fillStyle(0x0a180a); g.fillRect(0, 0, 8, 8); g.fillRect(8, 0, 8, 6); g.fillRect(16, 0, 8, 9);
+    g.fillStyle(0x1a3a0a); g.fillRect(1, 2, 3, 2); g.fillRect(9, 1, 3, 2); g.fillRect(17, 3, 3, 2); g.fillRect(5, 5, 4, 2); g.fillRect(14, 2, 3, 2);
+    g.fillStyle(0x060e06); g.fillRect(6, 10, 5, 4); g.fillRect(14, 12, 5, 3); g.fillRect(0, 16, 3, 4); g.fillRect(22, 14, 2, 6);
+    g.fillStyle(0x1a330a); g.fillRect(0, 20, 24, 4);
+    g.fillStyle(0x0e1e0e); g.fillRect(5, 21, 4, 3); g.fillRect(15, 20, 4, 4);
+    g.fillStyle(0x333333, 0.15); g.fillRect(0, 15, 24, 2);
+  });
+  // forest-2: Forest path/clearing
+  generateTile(scene, 'forest-2', 0x4a7a3a, 0x3e6e2e, undefined, g => {
+    g.fillStyle(0x3e6e2e); g.fillRect(0, 0, 24, 24);
+    g.fillStyle(0x528a52); g.fillRect(3, 4, 6, 4); g.fillRect(14, 12, 5, 4); g.fillRect(8, 18, 4, 3);
+    g.fillStyle(0x5ea85e, 0.4); g.fillRect(6, 2, 3, 2); g.fillRect(16, 6, 3, 2); g.fillRect(2, 14, 3, 2); g.fillRect(18, 18, 3, 2);
+    g.fillStyle(0x2e6a0e); g.fillRect(10, 8, 4, 2); g.fillRect(1, 20, 3, 2); g.fillRect(19, 2, 3, 2);
+    g.fillStyle(0xddcc33); g.fillRect(5, 10, 1, 1); g.fillRect(15, 4, 1, 1);
+    g.fillStyle(0xcc5544); g.fillRect(10, 14, 1, 1); g.fillRect(20, 20, 1, 1);
+    g.fillStyle(0x88886e); g.fillRect(3, 18, 1, 1); g.fillRect(18, 9, 1, 1);
+    g.fillStyle(0x888877); g.fillRect(8, 6, 2, 1); g.fillRect(14, 16, 2, 1);
+  });
+  // forest-4: Shared treasure chest (same as dng-4)
+  generateTile(scene, 'forest-4', 0x6b5c3e, 0x5e5033, undefined, g => {
+    // Shadow beneath chest
+    g.fillStyle(0x222222, 0.5);
+    g.fillRect(4, 20, 16, 3);
+    // Chest body
+    g.fillStyle(0x996622); g.fillRect(4, 11, 16, 10);
+    g.fillStyle(0xaa7722); g.fillRect(5, 12, 14, 8);
+    // Chest lid
+    g.fillStyle(0xbb8833); g.fillRect(4, 7, 16, 5);
+    g.fillStyle(0xcc9933); g.fillRect(5, 7, 14, 3);
+    g.fillStyle(0xddaa44); g.fillRect(6, 7, 12, 1);
+    // Iron bands
+    g.fillStyle(0x666666); g.fillRect(4, 12, 16, 1); g.fillRect(4, 16, 16, 1); g.fillRect(4, 20, 16, 1);
+    g.fillStyle(0x888888); g.fillRect(5, 12, 1, 1); g.fillRect(18, 12, 1, 1); g.fillRect(5, 16, 1, 1); g.fillRect(18, 16, 1, 1);
+    g.fillStyle(0xddaa33); g.fillRect(9, 13, 6, 3);
+    g.fillStyle(0xffcc44); g.fillRect(10, 14, 4, 1);
+    g.fillStyle(0x886611); g.fillRect(11, 14, 2, 2);
+    g.fillStyle(0x888811); g.fillRect(4, 11, 1, 1); g.fillRect(19, 11, 1, 1); g.fillRect(4, 20, 1, 1); g.fillRect(19, 20, 1, 1);
+    g.fillStyle(0x886611); g.fillRect(7, 13, 1, 6); g.fillRect(16, 13, 1, 6);
+    g.fillStyle(0x775511); g.fillRect(10, 17, 1, 3); g.fillRect(13, 17, 1, 3);
+    g.fillStyle(0xaa7722); g.fillRect(7, 8, 1, 3); g.fillRect(16, 8, 1, 3);
+    g.fillStyle(0x3a3a3a); g.fillRect(0, 22, 4, 2); g.fillRect(20, 22, 4, 2);
+  });
+  // forest-8: Shared banner/flag (same as dng-8)
+  generateTile(scene, 'forest-8', 0x6b5c3e, 0x5e5033, undefined, g => {
+    g.fillStyle(0x222222, 0.4); g.fillRect(4, 20, 16, 3);
+    g.fillStyle(0x664433); g.fillRect(4, 14, 16, 8);
+    g.fillStyle(0x776644); g.fillRect(4, 14, 16, 1);
+    g.fillStyle(0x888888); g.fillRect(4, 17, 16, 1); g.fillRect(4, 21, 16, 1);
+    g.fillStyle(0x776644); g.fillRect(4, 6, 16, 8);
+    g.fillStyle(0x887755); g.fillRect(5, 6, 14, 1);
+    g.fillStyle(0x998866); g.fillRect(6, 6, 12, 1);
+    g.fillStyle(0x886633); g.fillRect(4, 13, 16, 1);
+    g.fillStyle(0x888888); g.fillRect(4, 9, 16, 1);
+    g.fillStyle(0x554422); g.fillRect(5, 10, 14, 3);
+    g.fillStyle(0x222211); g.fillRect(5, 15, 14, 5);
+    g.fillStyle(0xddaa33); g.fillRect(2, 20, 1, 1); g.fillRect(3, 21, 1, 1); g.fillRect(7, 22, 1, 1); g.fillRect(18, 20, 1, 1); g.fillRect(20, 21, 1, 1); g.fillRect(21, 22, 1, 1);
+    g.fillStyle(0xffcc44); g.fillRect(1, 21, 1, 1); g.fillRect(5, 22, 1, 1); g.fillRect(10, 22, 1, 1); g.fillRect(19, 22, 1, 1); g.fillRect(22, 21, 1, 1);
+    g.fillStyle(0xddaa33); g.fillRect(7, 18, 2, 1); g.fillRect(13, 17, 2, 1);
+    g.fillStyle(0xffcc44); g.fillRect(9, 17, 1, 1); g.fillRect(15, 18, 1, 1);
+  });
+  // forest-17: Dense tree line variant (same as forest-1 but different context)
+  generateTile(scene, 'forest-17', 0x0e1e0e, 0x0a160a, undefined, g => {
+    g.fillStyle(0x132f13); g.fillRect(0, 0, 24, 14);
+    g.fillStyle(0x0e220e); g.fillRect(0, 14, 24, 10);
+    g.fillStyle(0x2a2210); g.fillRect(3, 8, 3, 16); g.fillRect(11, 6, 3, 18); g.fillRect(19, 9, 3, 15);
+    g.fillStyle(0x352a18); g.fillRect(4, 10, 1, 4); g.fillRect(12, 8, 1, 4); g.fillRect(20, 12, 1, 4);
+    g.fillStyle(0x0a180a); g.fillRect(0, 0, 8, 8); g.fillRect(8, 0, 8, 6); g.fillRect(16, 0, 8, 9);
+    g.fillStyle(0x1a3a0a); g.fillRect(1, 2, 3, 2); g.fillRect(9, 1, 3, 2); g.fillRect(17, 3, 3, 2); g.fillRect(5, 5, 4, 2); g.fillRect(14, 2, 3, 2);
+    g.fillStyle(0x060e06); g.fillRect(6, 10, 5, 4); g.fillRect(14, 12, 5, 3); g.fillRect(0, 16, 3, 4); g.fillRect(22, 14, 2, 6);
+    g.fillStyle(0x1a330a); g.fillRect(0, 20, 24, 4);
+    g.fillStyle(0x0e1e0e); g.fillRect(5, 21, 4, 3); g.fillRect(15, 20, 4, 4);
+    g.fillStyle(0x333333, 0.15); g.fillRect(0, 15, 24, 2);
+  });
+  // forest-18: Forest cabin/structure
+  generateTile(scene, 'forest-18', 0x6b5c3e, 0x5e5033, undefined, g => {
+    g.fillStyle(0x5e5033); g.fillRect(0, 0, 24, 24);
+    g.fillStyle(0x3d1e1a); g.fillRect(6, 0, 12, 24);
+    g.fillStyle(0x4a2ea0); g.fillRect(8, 2, 3, 3); g.fillRect(13, 6, 3, 3); g.fillRect(8, 14, 3, 3); g.fillRect(13, 18, 3, 3);
+    g.fillStyle(0x7a5c4c); g.fillRect(4, 6, 16, 10);
+    g.fillStyle(0x8a7065); g.fillRect(5, 7, 14, 8);
+    g.fillStyle(0x5a4a33); g.fillRect(4, 6, 16, 1); g.fillRect(4, 15, 16, 1); g.fillRect(4, 6, 1, 10); g.fillRect(19, 6, 1, 10);
+    g.fillStyle(0x553333); g.fillRect(6, 9, 12, 1); g.fillRect(6, 12, 10, 1);
+    g.fillStyle(0x888888); g.fillRect(5, 8, 1, 1); g.fillRect(18, 8, 1, 1); g.fillRect(5, 14, 1, 1); g.fillRect(18, 14, 1, 1);
+    g.fillStyle(0x3d5a1d, 0.5); g.fillRect(4, 14, 3, 2); g.fillRect(16, 14, 4, 2);
+  });
+  // forest-24: Forest campfire/torch
+  generateTile(scene, 'forest-24', 0x6b5c3e, 0x5e5033, undefined, g => {
+    g.fillStyle(0xff6600, 0.12); g.fillCircle(12, 10, 14);
+    g.fillStyle(0xffa020, 0.2); g.fillCircle(12, 10, 10);
+    g.fillStyle(0x5e5033); g.fillRect(0, 0, 24, 24);
+    g.fillStyle(0xffa122, 0.35); g.fillRect(4, 2, 16, 18);
+    g.fillStyle(0xffcc44, 0.25); g.fillRect(6, 4, 12, 14);
+    g.fillStyle(0x3d1e1a); g.fillRect(4, 2, 16, 2); g.fillRect(10, 0, 4, 2);
+    g.fillStyle(0x666655); g.fillRect(10, 6, 4, 8);
+    g.fillStyle(0x777766); g.fillRect(11, 7, 2, 6);
+    g.fillStyle(0x555544); g.fillRect(11, 4, 2, 2);
+    g.fillStyle(0xff6600); g.fillRect(10, 7, 4, 5);
+    g.fillStyle(0xffa022); g.fillRect(11, 8, 2, 3);
+    g.fillStyle(0xffcc44); g.fillRect(11, 9, 2, 2);
+    g.fillStyle(0xffdd88, 0.9); g.fillRect(11, 9, 2, 1);
+    g.fillStyle(0xffdd33, 0.4); g.fillCircle(12, 10, 6);
+    g.fillStyle(0xffcc00, 0.3); g.fillCircle(12, 10, 8);
+    g.fillStyle(0x3d701d); g.fillRect(0, 21, 3, 3); g.fillRect(21, 21, 3, 3);
+  });
+  // Clone remaining forest tiles from dungeon tiles
+  for (const idx of [3, 5, 6, 7, 9, 10, 11, 12, 14, 15, 16, 25, 26, 27]) {
+    const dngKey = `dng-${idx}`;
+    const forestKey = `forest-${idx}`;
+    if (scene.textures.exists(dngKey)) {
+      const src = scene.textures.get(dngKey).getSourceImage();
+      scene.textures.addImage(forestKey, src as HTMLImageElement);
+    }
+  }
+
+  // ── Tower theme tiles ──
+  // tower-0: Tower stone floor
+  generateTile(scene, 'tower-0', 0x7a7a78, 0x6e6e6a, undefined, g => {
+    g.fillStyle(0x6e6e6a); g.fillRect(0, 11, 24, 1); g.fillRect(8, 0, 1, 11); g.fillRect(17, 0, 1, 11); g.fillRect(5, 12, 1, 12); g.fillRect(12, 12, 1, 12); g.fillRect(20, 12, 1, 12);
+    g.fillStyle(0x8a8a88); g.fillRect(2, 2, 4, 3); g.fillRect(10, 13, 3, 2); g.fillRect(15, 4, 3, 2);
+    g.fillStyle(0x6a6a68); g.fillRect(4, 7, 2, 2); g.fillRect(14, 18, 3, 1); g.fillRect(1, 15, 2, 1);
+    g.fillStyle(0x888880, 0.3); g.fillRect(0, 5, 24, 1); g.fillRect(0, 17, 24, 1);
+  });
+  // tower-1: Tower dark wall
+  generateTile(scene, 'tower-1', 0x4a4a5a, 0x3e3e4e, undefined, g => {
+    g.fillStyle(0x555558); g.fillRect(0, 7, 24, 1); g.fillRect(0, 15, 24, 1); g.fillRect(0, 23, 24, 1); g.fillRect(12, 0, 1, 7); g.fillRect(6, 8, 1, 7); g.fillRect(18, 8, 1, 7); g.fillRect(12, 16, 1, 7);
+    g.fillStyle(0x3a3a4a); g.fillRect(1, 1, 5, 3); g.fillRect(14, 9, 3, 3); g.fillRect(2, 17, 4, 3);
+    g.fillStyle(0x222233); g.fillRect(11, 2, 2, 4);
+    g.fillStyle(0x1a1a2a); g.fillRect(11, 3, 2, 2);
+    g.fillStyle(0x667a5a, 0.3); g.fillRect(11, 3, 1, 1);
+    g.fillStyle(0x555560); g.fillRect(8, 10, 2, 1); g.fillRect(15, 18, 3, 1); g.fillRect(3, 4, 2, 1);
+  });
+  // tower-2: Tower stair path
+  generateTile(scene, 'tower-2', 0x7a7a78, 0x6e6e6a, undefined, g => {
+    g.fillStyle(0x6e6e6a); g.fillRect(0, 11, 24, 1); g.fillRect(8, 0, 1, 11); g.fillRect(17, 0, 1, 11); g.fillRect(5, 12, 1, 12); g.fillRect(12, 12, 1, 12); g.fillRect(20, 12, 1, 12);
+    g.fillStyle(0x444455); g.fillRect(3, 3, 1, 4); g.fillRect(4, 6, 1, 3); g.fillRect(5, 8, 1, 2); g.fillRect(14, 14, 1, 5); g.fillRect(15, 18, 1, 3); g.fillRect(16, 20, 1, 2); g.fillRect(9, 5, 1, 3); g.fillRect(10, 7, 1, 2);
+    g.fillStyle(0x666678); g.fillRect(6, 9, 1, 1); g.fillRect(16, 19, 1, 1); g.fillRect(2, 14, 1, 1);
+    g.fillStyle(0x6a6a68, 0.6); g.fillRect(10, 13, 4, 3); g.fillRect(1, 2, 3, 2);
+  });
+  // tower-4: Shared treasure chest
+  generateTile(scene, 'tower-4', 0x7a7a78, 0x6e6e6a, undefined, g => {
+    g.fillStyle(0x222222, 0.5); g.fillRect(4, 20, 16, 3);
+    g.fillStyle(0x996622); g.fillRect(4, 11, 16, 10); g.fillStyle(0xaa7722); g.fillRect(5, 12, 14, 8);
+    g.fillStyle(0xbb8833); g.fillRect(4, 7, 16, 5); g.fillStyle(0xcc9933); g.fillRect(5, 7, 14, 3); g.fillStyle(0xddaa44); g.fillRect(6, 7, 12, 1);
+    g.fillStyle(0x666666); g.fillRect(4, 12, 16, 1); g.fillRect(4, 16, 16, 1); g.fillRect(4, 20, 16, 1);
+    g.fillStyle(0x888888); g.fillRect(5, 12, 1, 1); g.fillRect(18, 12, 1, 1); g.fillRect(5, 16, 1, 1); g.fillRect(18, 16, 1, 1);
+    g.fillStyle(0xddaa33); g.fillRect(9, 13, 6, 3); g.fillStyle(0xffcc44); g.fillRect(10, 14, 4, 1);
+    g.fillStyle(0x886611); g.fillRect(11, 14, 2, 2);
+    g.fillStyle(0x888811); g.fillRect(4, 11, 1, 1); g.fillRect(19, 11, 1, 1); g.fillRect(4, 20, 1, 1); g.fillRect(19, 20, 1, 1);
+    g.fillStyle(0x886611); g.fillRect(7, 13, 1, 6); g.fillRect(16, 13, 1, 6);
+    g.fillStyle(0x775511); g.fillRect(10, 17, 1, 3); g.fillRect(13, 17, 1, 3);
+    g.fillStyle(0xaa7722); g.fillRect(7, 8, 1, 3); g.fillRect(16, 8, 1, 3);
+    g.fillStyle(0x3a3a3a); g.fillRect(0, 22, 4, 2); g.fillRect(20, 22, 4, 2);
+  });
+  // tower-8: Shared banner/flag
+  generateTile(scene, 'tower-8', 0x7a7a78, 0x6e6e6a, undefined, g => {
+    g.fillStyle(0x222222, 0.4); g.fillRect(4, 20, 16, 3);
+    g.fillStyle(0x664433); g.fillRect(4, 14, 16, 8); g.fillStyle(0x776644); g.fillRect(4, 14, 16, 1);
+    g.fillStyle(0x888888); g.fillRect(4, 17, 16, 1); g.fillRect(4, 21, 16, 1);
+    g.fillStyle(0x776644); g.fillRect(4, 6, 16, 8); g.fillStyle(0x887755); g.fillRect(5, 6, 14, 1); g.fillStyle(0x998866); g.fillRect(6, 6, 12, 1);
+    g.fillStyle(0x886633); g.fillRect(4, 13, 16, 1); g.fillStyle(0x888888); g.fillRect(4, 9, 16, 1);
+    g.fillStyle(0x554422); g.fillRect(5, 10, 14, 3); g.fillStyle(0x222211); g.fillRect(5, 15, 14, 5);
+    g.fillStyle(0xddaa33); g.fillRect(2, 20, 1, 1); g.fillRect(3, 21, 1, 1); g.fillRect(7, 22, 1, 1); g.fillRect(18, 20, 1, 1); g.fillRect(20, 21, 1, 1); g.fillRect(21, 22, 1, 1);
+    g.fillStyle(0xffcc44); g.fillRect(1, 21, 1, 1); g.fillRect(5, 22, 1, 1); g.fillRect(10, 22, 1, 1); g.fillRect(19, 22, 1, 1); g.fillRect(22, 21, 1, 1);
+    g.fillStyle(0xddaa33); g.fillRect(7, 18, 2, 1); g.fillRect(13, 17, 2, 1);
+    g.fillStyle(0xffcc44); g.fillRect(9, 17, 1, 1); g.fillRect(15, 18, 1, 1);
+  });
+  // tower-19: Tower mossy floor variant
+  generateTile(scene, 'tower-19', 0x7a7a78, 0x6e6e6a, undefined, g => {
+    g.fillStyle(0x6e6e6a); g.fillRect(0, 0, 24, 24);
+    g.fillStyle(0x5e5e5a); g.fillRect(2, 4, 20, 16); g.fillRect(4, 2, 16, 20); g.fillRect(3, 3, 18, 18);
+    g.fillStyle(0x6e6e68); g.fillRect(5, 5, 8, 3); g.fillRect(13, 10, 6, 4); g.fillRect(4, 15, 5, 3);
+    g.fillStyle(0x7a7a74); g.fillRect(6, 3, 10, 1); g.fillRect(5, 4, 12, 1);
+    g.fillStyle(0x4e4e48, 0.8); g.fillRect(8, 7, 1, 4); g.fillRect(9, 10, 3, 1); g.fillRect(15, 5, 1, 3); g.fillRect(6, 14, 4, 1); g.fillRect(14, 15, 1, 3);
+    g.fillStyle(0x444440); g.fillRect(3, 19, 18, 2); g.fillRect(4, 20, 16, 1);
+    g.fillStyle(0x778a3a, 0.2); g.fillRect(1, 6, 2, 1); g.fillRect(21, 9, 2, 1); g.fillRect(1, 14, 2, 1); g.fillRect(21, 17, 2, 1);
+    g.fillStyle(0x7a7a78, 0.3); g.fillRect(0, 22, 24, 2); g.fillRect(0, 0, 24, 1);
+  });
+  // tower-25: Tower decorative floor
+  generateTile(scene, 'tower-25', 0x7a7a78, 0x6e6e6a, undefined, g => {
+    g.fillStyle(0x6e6e6a); g.fillRect(0, 11, 24, 1); g.fillRect(8, 0, 1, 11); g.fillRect(17, 0, 1, 11); g.fillRect(5, 12, 1, 12); g.fillRect(13, 12, 1, 12);
+    g.fillStyle(0x998866, 0.6); g.fillRect(11, 3, 2, 2); g.fillRect(9, 5, 2, 2); g.fillRect(13, 5, 2, 2); g.fillRect(7, 7, 2, 1); g.fillRect(15, 7, 2, 1); g.fillRect(11, 14, 2, 2); g.fillRect(9, 16, 2, 2); g.fillRect(13, 16, 2, 2); g.fillRect(7, 18, 2, 1); g.fillRect(15, 18, 2, 1);
+    g.fillStyle(0xaabb4c, 0.3); g.fillRect(3, 9, 5, 1); g.fillRect(16, 10, 5, 1); g.fillRect(5, 20, 4, 1); g.fillRect(15, 21, 4, 1);
+  });
+  // Clone remaining tower tiles from dungeon tiles
+  for (const idx of [3, 5, 6, 7, 9, 10, 12, 14, 15, 16, 17, 18, 24]) {
+    const dngKey = `dng-${idx}`;
+    const towerKey = `tower-${idx}`;
+    if (scene.textures.exists(dngKey)) {
+      const src = scene.textures.get(dngKey).getSourceImage();
+      scene.textures.addImage(towerKey, src as HTMLImageElement);
+    }
+  }
+
+  // ── Crystal theme tiles ──
+  // crystal-0: Crystal cavern floor
+  generateTile(scene, 'crystal-0', 0x334466, 0x2e3e5a, undefined, g => {
+    g.fillStyle(0x334466); g.fillRect(0, 0, 24, 24);
+    g.fillStyle(0x2e3e5a); g.fillRect(2, 3, 4, 3); g.fillRect(14, 8, 5, 3); g.fillRect(8, 16, 4, 3); g.fillRect(18, 2, 3, 2); g.fillRect(1, 12, 3, 2);
+    g.fillStyle(0x88bbdd, 0.6); g.fillRect(5, 5, 1, 1); g.fillRect(15, 3, 1, 1); g.fillRect(10, 11, 1, 1); g.fillRect(20, 15, 1, 1); g.fillRect(3, 19, 1, 1); g.fillRect(17, 20, 1, 1);
+    g.fillStyle(0xaaddee, 0.4); g.fillRect(8, 2, 1, 1); g.fillRect(22, 8, 1, 1); g.fillRect(12, 18, 1, 1);
+  });
+  // crystal-1: Crystal dark wall
+  generateTile(scene, 'crystal-1', 0x222e45, 0x1c2a3a, undefined, g => {
+    g.fillStyle(0x222e45); g.fillRect(0, 0, 24, 24);
+    g.fillStyle(0x1c2a3a); g.fillRect(0, 11, 24, 1); g.fillRect(12, 0, 1, 24);
+    g.fillStyle(0x1a2840); g.fillRect(2, 2, 6, 5); g.fillRect(14, 14, 7, 5);
+    g.fillStyle(0x556cbc); g.fillRect(3, 3, 2, 4); g.fillRect(15, 6, 3, 2); g.fillRect(8, 15, 2, 4); g.fillRect(19, 1, 2, 3);
+    g.fillStyle(0x77449a); g.fillRect(6, 8, 2, 3); g.fillRect(17, 15, 2, 3); g.fillRect(1, 18, 2, 3);
+    g.fillStyle(0x99ccee, 0.5); g.fillRect(3, 3, 1, 1); g.fillRect(15, 6, 1, 1); g.fillRect(8, 15, 1, 1);
+  });
+  // crystal-2: Crystal stair path
+  generateTile(scene, 'crystal-2', 0x334466, 0x2e3e5a, undefined, g => {
+    g.fillStyle(0x334466); g.fillRect(0, 0, 24, 24);
+    g.fillStyle(0x2e3e5a); g.fillRect(2, 3, 4, 3); g.fillRect(14, 8, 5, 3);
+    g.fillStyle(0x558888); g.fillRect(4, 4, 1, 8); g.fillRect(5, 11, 6, 1); g.fillRect(11, 8, 1, 4); g.fillRect(12, 8, 5, 1); g.fillRect(17, 5, 1, 4); g.fillRect(14, 16, 1, 5); g.fillRect(15, 20, 4, 1);
+    g.fillStyle(0x88bbdd, 0.4); g.fillRect(8, 2, 1, 1); g.fillRect(20, 14, 1, 1);
+  });
+  // crystal-4: Shared treasure chest
+  generateTile(scene, 'crystal-4', 0x334466, 0x2e3e5a, undefined, g => {
+    g.fillStyle(0x222222, 0.5); g.fillRect(4, 20, 16, 3);
+    g.fillStyle(0x996622); g.fillRect(4, 11, 16, 10); g.fillStyle(0xaa7722); g.fillRect(5, 12, 14, 8);
+    g.fillStyle(0xbb8833); g.fillRect(4, 7, 16, 5); g.fillStyle(0xcc9933); g.fillRect(5, 7, 14, 3); g.fillStyle(0xddaa44); g.fillRect(6, 7, 12, 1);
+    g.fillStyle(0x666666); g.fillRect(4, 12, 16, 1); g.fillRect(4, 16, 16, 1); g.fillRect(4, 20, 16, 1);
+    g.fillStyle(0x888888); g.fillRect(5, 12, 1, 1); g.fillRect(18, 12, 1, 1); g.fillRect(5, 16, 1, 1); g.fillRect(18, 16, 1, 1);
+    g.fillStyle(0xddaa33); g.fillRect(9, 13, 6, 3); g.fillStyle(0xffcc44); g.fillRect(10, 14, 4, 1);
+    g.fillStyle(0x886611); g.fillRect(11, 14, 2, 2);
+    g.fillStyle(0x888811); g.fillRect(4, 11, 1, 1); g.fillRect(19, 11, 1, 1); g.fillRect(4, 20, 1, 1); g.fillRect(19, 20, 1, 1);
+    g.fillStyle(0x886611); g.fillRect(7, 13, 1, 6); g.fillRect(16, 13, 1, 6);
+    g.fillStyle(0x775511); g.fillRect(10, 17, 1, 3); g.fillRect(13, 17, 1, 3);
+    g.fillStyle(0xaa7722); g.fillRect(7, 8, 1, 3); g.fillRect(16, 8, 1, 3);
+    g.fillStyle(0x3a3a3a); g.fillRect(0, 22, 4, 2); g.fillRect(20, 22, 4, 2);
+  });
+  // crystal-8: Shared banner/flag
+  generateTile(scene, 'crystal-8', 0x334466, 0x2e3e5a, undefined, g => {
+    g.fillStyle(0x222222, 0.4); g.fillRect(4, 20, 16, 3);
+    g.fillStyle(0x664433); g.fillRect(4, 14, 16, 8); g.fillStyle(0x776644); g.fillRect(4, 14, 16, 1);
+    g.fillStyle(0x888888); g.fillRect(4, 17, 16, 1); g.fillRect(4, 21, 16, 1);
+    g.fillStyle(0x776644); g.fillRect(4, 6, 16, 8); g.fillStyle(0x887755); g.fillRect(5, 6, 14, 1); g.fillStyle(0x998866); g.fillRect(6, 6, 12, 1);
+    g.fillStyle(0x886633); g.fillRect(4, 13, 16, 1); g.fillStyle(0x888888); g.fillRect(4, 9, 16, 1);
+    g.fillStyle(0x554422); g.fillRect(5, 10, 14, 3); g.fillStyle(0x222211); g.fillRect(5, 15, 14, 5);
+    g.fillStyle(0xddaa33); g.fillRect(2, 20, 1, 1); g.fillRect(3, 21, 1, 1); g.fillRect(7, 22, 1, 1); g.fillRect(18, 20, 1, 1); g.fillRect(20, 21, 1, 1); g.fillRect(21, 22, 1, 1);
+    g.fillStyle(0xffcc44); g.fillRect(1, 21, 1, 1); g.fillRect(5, 22, 1, 1); g.fillRect(10, 22, 1, 1); g.fillRect(19, 22, 1, 1); g.fillRect(22, 21, 1, 1);
+    g.fillStyle(0xddaa33); g.fillRect(7, 18, 2, 1); g.fillRect(13, 17, 2, 1);
+    g.fillStyle(0xffcc44); g.fillRect(9, 17, 1, 1); g.fillRect(15, 18, 1, 1);
+  });
+  // crystal-20: Crystal pillar columns
+  generateTile(scene, 'crystal-20', 0x2a4466, 0x223860, undefined, g => {
+    g.fillStyle(0x2a4466); g.fillRect(0, 0, 24, 24);
+    g.fillStyle(0x447cbc); g.fillRect(2, 0, 4, 24); g.fillRect(10, 0, 5, 24); g.fillRect(18, 0, 4, 24);
+    g.fillStyle(0x558edd); g.fillRect(3, 0, 2, 24); g.fillRect(11, 0, 3, 24); g.fillRect(19, 0, 2, 24);
+    g.fillStyle(0x88ccee, 0.6); g.fillRect(3, 4, 1, 3); g.fillRect(12, 8, 1, 3); g.fillRect(19, 14, 1, 3);
+    g.fillStyle(0xccddff, 0.7); g.fillRect(4, 5, 1, 1); g.fillRect(12, 9, 1, 1); g.fillRect(20, 15, 1, 1);
+    g.fillStyle(0x1a2840); g.fillRect(6, 0, 1, 24); g.fillRect(15, 0, 1, 24); g.fillRect(8, 3, 2, 4); g.fillRect(16, 10, 2, 4);
+  });
+  // crystal-23: Crystal formation/giant crystal
+  generateTile(scene, 'crystal-23', 0x334466, 0x2e3e5a, undefined, g => {
+    g.fillStyle(0x334466); g.fillRect(0, 0, 24, 24);
+    g.fillStyle(0x2e3e5a); g.fillRect(2, 3, 4, 3); g.fillRect(14, 8, 5, 3); g.fillRect(8, 16, 4, 3);
+    g.fillStyle(0x88bbdd, 0.6); g.fillRect(1, 19, 1, 1); g.fillRect(20, 20, 1, 1); g.fillRect(3, 22, 1, 1);
+    g.fillStyle(0xaaddee, 0.4); g.fillRect(22, 17, 1, 1); g.fillRect(0, 15, 1, 1);
+    // Crystal glow
+    g.fillStyle(0xccddff, 0.15); g.fillCircle(12, 10, 12);
+    g.fillStyle(0xccddff, 0.25); g.fillCircle(12, 10, 8);
+    // Crystal base
+    g.fillStyle(0x886bab); g.fillRect(7, 18, 10, 4);
+    // Crystal body
+    g.fillStyle(0xddccff); g.fillRect(9, 4, 6, 16);
+    g.fillStyle(0xeeddff); g.fillRect(10, 3, 4, 16);
+    g.fillStyle(0xffddff); g.fillRect(11, 1, 2, 4);
+    g.fillStyle(0xffffff, 0.9); g.fillRect(11, 1, 2, 1);
+    g.fillStyle(0xffffff, 0.6); g.fillRect(11, 2, 1, 1);
+    g.fillStyle(0xffd8ff, 0.4); g.fillRect(10, 5, 4, 10);
+    g.fillStyle(0xffffff, 0.7); g.fillRect(11, 4, 1, 1); g.fillRect(13, 8, 1, 1);
+    g.fillStyle(0xffe8ff, 0.6); g.fillRect(10, 7, 1, 1); g.fillRect(12, 12, 1, 1);
+  });
+  // Clone remaining crystal tiles from dungeon tiles
+  for (const idx of [3, 5, 6, 7, 9, 10, 12, 14, 15, 16, 17, 18, 24]) {
+    const dngKey = `dng-${idx}`;
+    const crystalKey = `crystal-${idx}`;
+    if (scene.textures.exists(dngKey)) {
+      const src = scene.textures.get(dngKey).getSourceImage();
+      scene.textures.addImage(crystalKey, src as HTMLImageElement);
+    }
+  }
+
+  // ── Ice theme tiles ──
+  // ice-0: Ice floor
+  generateTile(scene, 'ice-0', 0x556677, 0x4d5e6e, undefined, g => {
+    g.fillStyle(0x556677); g.fillRect(0, 0, 12, 12);
+    g.fillStyle(0x4d5e6e); g.fillRect(12, 0, 12, 12);
+    g.fillStyle(0x506470); g.fillRect(0, 12, 12, 12);
+    g.fillStyle(0x587078); g.fillRect(12, 12, 12, 12);
+    g.fillStyle(0x88aa4a, 0.3); g.fillRect(3, 2, 1, 1); g.fillRect(18, 7, 1, 1); g.fillRect(7, 17, 1, 1); g.fillRect(20, 20, 1, 1);
+    g.fillStyle(0x445566, 0.4); g.fillRect(0, 11, 24, 1); g.fillRect(11, 0, 1, 24);
+  });
+  // ice-1: Snow/ice wall with snowdrifts
+  generateTile(scene, 'ice-1', 0xc8c8e8, 0xb8b8d8, undefined, g => {
+    g.fillStyle(0x88aa4a); g.fillRect(0, 0, 24, 24);
+    g.fillStyle(0x778820); g.fillRect(0, 12, 24, 12);
+    g.fillStyle(0xd8d8ee); g.fillRect(0, 0, 24, 6);
+    g.fillStyle(0xe8e8f6); g.fillRect(2, 0, 20, 4);
+    g.fillStyle(0xf0f0f8); g.fillRect(4, 0, 16, 2);
+    g.fillStyle(0xd0d0e6); g.fillRect(6, 6, 2, 2); g.fillRect(14, 5, 3, 2);
+    g.fillStyle(0x99882c, 0.6); g.fillRect(3, 10, 4, 3); g.fillRect(16, 14, 5, 3);
+    g.fillStyle(0x667788, 0.5); g.fillRect(10, 8, 1, 6); g.fillRect(5, 16, 6, 1); g.fillRect(18, 10, 1, 4);
+  });
+  // ice-4: Shared treasure chest
+  generateTile(scene, 'ice-4', 0x556677, 0x4d5e6e, undefined, g => {
+    g.fillStyle(0x222222, 0.5); g.fillRect(4, 20, 16, 3);
+    g.fillStyle(0x996622); g.fillRect(4, 11, 16, 10); g.fillStyle(0xaa7722); g.fillRect(5, 12, 14, 8);
+    g.fillStyle(0xbb8833); g.fillRect(4, 7, 16, 5); g.fillStyle(0xcc9933); g.fillRect(5, 7, 14, 3); g.fillStyle(0xddaa44); g.fillRect(6, 7, 12, 1);
+    g.fillStyle(0x666666); g.fillRect(4, 12, 16, 1); g.fillRect(4, 16, 16, 1); g.fillRect(4, 20, 16, 1);
+    g.fillStyle(0x888888); g.fillRect(5, 12, 1, 1); g.fillRect(18, 12, 1, 1); g.fillRect(5, 16, 1, 1); g.fillRect(18, 16, 1, 1);
+    g.fillStyle(0xddaa33); g.fillRect(9, 13, 6, 3); g.fillStyle(0xffcc44); g.fillRect(10, 14, 4, 1);
+    g.fillStyle(0x886611); g.fillRect(11, 14, 2, 2);
+    g.fillStyle(0x888811); g.fillRect(4, 11, 1, 1); g.fillRect(19, 11, 1, 1); g.fillRect(4, 20, 1, 1); g.fillRect(19, 20, 1, 1);
+    g.fillStyle(0x886611); g.fillRect(7, 13, 1, 6); g.fillRect(16, 13, 1, 6);
+    g.fillStyle(0x775511); g.fillRect(10, 17, 1, 3); g.fillRect(13, 17, 1, 3);
+    g.fillStyle(0xaa7722); g.fillRect(7, 8, 1, 3); g.fillRect(16, 8, 1, 3);
+    g.fillStyle(0x3a3a3a); g.fillRect(0, 22, 4, 2); g.fillRect(20, 22, 4, 2);
+  });
+  // ice-8: Shared banner/flag
+  generateTile(scene, 'ice-8', 0x556677, 0x4d5e6e, undefined, g => {
+    g.fillStyle(0x222222, 0.4); g.fillRect(4, 20, 16, 3);
+    g.fillStyle(0x664433); g.fillRect(4, 14, 16, 8); g.fillStyle(0x776644); g.fillRect(4, 14, 16, 1);
+    g.fillStyle(0x888888); g.fillRect(4, 17, 16, 1); g.fillRect(4, 21, 16, 1);
+    g.fillStyle(0x776644); g.fillRect(4, 6, 16, 8); g.fillStyle(0x887755); g.fillRect(5, 6, 14, 1); g.fillStyle(0x998866); g.fillRect(6, 6, 12, 1);
+    g.fillStyle(0x886633); g.fillRect(4, 13, 16, 1); g.fillStyle(0x888888); g.fillRect(4, 9, 16, 1);
+    g.fillStyle(0x554422); g.fillRect(5, 10, 14, 3); g.fillStyle(0x222211); g.fillRect(5, 15, 14, 5);
+    g.fillStyle(0xddaa33); g.fillRect(2, 20, 1, 1); g.fillRect(3, 21, 1, 1); g.fillRect(7, 22, 1, 1); g.fillRect(18, 20, 1, 1); g.fillRect(20, 21, 1, 1); g.fillRect(21, 22, 1, 1);
+    g.fillStyle(0xffcc44); g.fillRect(1, 21, 1, 1); g.fillRect(5, 22, 1, 1); g.fillRect(10, 22, 1, 1); g.fillRect(19, 22, 1, 1); g.fillRect(22, 21, 1, 1);
+    g.fillStyle(0xddaa33); g.fillRect(7, 18, 2, 1); g.fillRect(13, 17, 2, 1);
+    g.fillStyle(0xffcc44); g.fillRect(9, 17, 1, 1); g.fillRect(15, 18, 1, 1);
+  });
+  // ice-25: Frost crystal floor
+  generateTile(scene, 'ice-25', 0x88bbdd, 0x99ccee, undefined, g => {
+    g.fillStyle(0x7a9acf); g.fillRect(0, 0, 12, 12);
+    g.fillStyle(0x88bbdd); g.fillRect(12, 0, 12, 12);
+    g.fillStyle(0x80aad5); g.fillRect(0, 12, 12, 12);
+    g.fillStyle(0x99ccee); g.fillRect(12, 12, 12, 12);
+    g.fillStyle(0xaabbff, 0.4); g.fillRect(2, 3, 6, 1); g.fillRect(14, 7, 5, 1); g.fillRect(6, 15, 7, 1); g.fillRect(16, 19, 4, 1);
+    g.fillStyle(0xccddff, 0.5); g.fillRect(3, 4, 3, 1); g.fillRect(15, 8, 2, 1); g.fillRect(8, 16, 3, 1);
+    g.fillStyle(0xddeeff, 0.6); g.fillRect(5, 2, 1, 1); g.fillRect(17, 6, 1, 1); g.fillRect(10, 14, 1, 1); g.fillRect(20, 20, 1, 1);
+    g.fillStyle(0x66881b, 0.3); g.fillRect(8, 5, 1, 6); g.fillRect(16, 12, 1, 5);
+  });
+  // ice-28: Frozen lake/pool
+  generateTile(scene, 'ice-28', 0x88aacc, 0x779abb, undefined, g => {
+    g.fillStyle(0x7a9acf); g.fillRect(0, 0, 24, 24);
+    g.fillStyle(0x779abb); g.fillRect(3, 4, 18, 16); g.fillRect(4, 3, 16, 18);
+    g.fillStyle(0x88aacc); g.fillRect(5, 4, 14, 10);
+    g.fillStyle(0x99bbdd); g.fillRect(6, 4, 12, 2);
+    g.fillStyle(0xaaccdd, 0.5); g.fillRect(6, 6, 4, 3); g.fillRect(13, 8, 5, 3);
+    g.fillStyle(0x556a8a); g.fillRect(4, 18, 16, 2); g.fillRect(5, 19, 14, 1);
+    g.fillStyle(0x668a9a, 0.4); g.fillRect(10, 6, 1, 8); g.fillRect(7, 12, 6, 1);
+  });
+  // Clone remaining ice tiles from dungeon tiles
+  for (const idx of [2, 3, 6, 7, 9, 10, 12, 14, 15, 16, 17, 18, 24]) {
+    const dngKey = `dng-${idx}`;
+    const iceKey = `ice-${idx}`;
+    if (scene.textures.exists(dngKey)) {
+      const src = scene.textures.get(dngKey).getSourceImage();
+      scene.textures.addImage(iceKey, src as HTMLImageElement);
+    }
+  }
+
+  // ── Shadow theme tiles ──
+  // shadow-0: Shadow realm floor
+  generateTile(scene, 'shadow-0', 0x706860, 0x685e55, undefined, g => {
+    g.fillStyle(0x5e5545); g.fillRect(0, 11, 24, 1); g.fillRect(8, 0, 1, 11); g.fillRect(17, 0, 1, 11); g.fillRect(4, 12, 1, 12); g.fillRect(13, 12, 1, 12);
+    g.fillStyle(0x807818); g.fillRect(3, 3, 2, 2); g.fillRect(12, 6, 2, 2); g.fillRect(6, 16, 2, 2); g.fillRect(18, 19, 2, 2);
+  });
+  // shadow-1: Shadow wall
+  generateTile(scene, 'shadow-1', 0x1a1a28, 0x121220, undefined, g => {
+    g.fillStyle(0x202030); g.fillRect(0, 7, 24, 1); g.fillRect(0, 15, 24, 1); g.fillRect(0, 23, 24, 1); g.fillRect(12, 0, 1, 7); g.fillRect(6, 8, 1, 7); g.fillRect(18, 8, 1, 7); g.fillRect(12, 16, 1, 7);
+    g.fillStyle(0x28282a); g.fillRect(2, 3, 3, 2); g.fillRect(16, 10, 2, 3); g.fillRect(8, 18, 3, 2);
+  });
+  // shadow-4: Shared treasure chest
+  generateTile(scene, 'shadow-4', 0x706860, 0x685e55, undefined, g => {
+    g.fillStyle(0x222222, 0.5); g.fillRect(4, 20, 16, 3);
+    g.fillStyle(0x996622); g.fillRect(4, 11, 16, 10); g.fillStyle(0xaa7722); g.fillRect(5, 12, 14, 8);
+    g.fillStyle(0xbb8833); g.fillRect(4, 7, 16, 5); g.fillStyle(0xcc9933); g.fillRect(5, 7, 14, 3); g.fillStyle(0xddaa44); g.fillRect(6, 7, 12, 1);
+    g.fillStyle(0x666666); g.fillRect(4, 12, 16, 1); g.fillRect(4, 16, 16, 1); g.fillRect(4, 20, 16, 1);
+    g.fillStyle(0x888888); g.fillRect(5, 12, 1, 1); g.fillRect(18, 12, 1, 1); g.fillRect(5, 16, 1, 1); g.fillRect(18, 16, 1, 1);
+    g.fillStyle(0xddaa33); g.fillRect(9, 13, 6, 3); g.fillStyle(0xffcc44); g.fillRect(10, 14, 4, 1);
+    g.fillStyle(0x886611); g.fillRect(11, 14, 2, 2);
+    g.fillStyle(0x888811); g.fillRect(4, 11, 1, 1); g.fillRect(19, 11, 1, 1); g.fillRect(4, 20, 1, 1); g.fillRect(19, 20, 1, 1);
+    g.fillStyle(0x886611); g.fillRect(7, 13, 1, 6); g.fillRect(16, 13, 1, 6);
+    g.fillStyle(0x775511); g.fillRect(10, 17, 1, 3); g.fillRect(13, 17, 1, 3);
+    g.fillStyle(0xaa7722); g.fillRect(7, 8, 1, 3); g.fillRect(16, 8, 1, 3);
+    g.fillStyle(0x3a3a3a); g.fillRect(0, 22, 4, 2); g.fillRect(20, 22, 4, 2);
+  });
+  // shadow-8: Shared banner/flag
+  generateTile(scene, 'shadow-8', 0x706860, 0x685e55, undefined, g => {
+    g.fillStyle(0x222222, 0.4); g.fillRect(4, 20, 16, 3);
+    g.fillStyle(0x664433); g.fillRect(4, 14, 16, 8); g.fillStyle(0x776644); g.fillRect(4, 14, 16, 1);
+    g.fillStyle(0x888888); g.fillRect(4, 17, 16, 1); g.fillRect(4, 21, 16, 1);
+    g.fillStyle(0x776644); g.fillRect(4, 6, 16, 8); g.fillStyle(0x887755); g.fillRect(5, 6, 14, 1); g.fillStyle(0x998866); g.fillRect(6, 6, 12, 1);
+    g.fillStyle(0x886633); g.fillRect(4, 13, 16, 1); g.fillStyle(0x888888); g.fillRect(4, 9, 16, 1);
+    g.fillStyle(0x554422); g.fillRect(5, 10, 14, 3); g.fillStyle(0x222211); g.fillRect(5, 15, 14, 5);
+    g.fillStyle(0xddaa33); g.fillRect(2, 20, 1, 1); g.fillRect(3, 21, 1, 1); g.fillRect(7, 22, 1, 1); g.fillRect(18, 20, 1, 1); g.fillRect(20, 21, 1, 1); g.fillRect(21, 22, 1, 1);
+    g.fillStyle(0xffcc44); g.fillRect(1, 21, 1, 1); g.fillRect(5, 22, 1, 1); g.fillRect(10, 22, 1, 1); g.fillRect(19, 22, 1, 1); g.fillRect(22, 21, 1, 1);
+    g.fillStyle(0xddaa33); g.fillRect(7, 18, 2, 1); g.fillRect(13, 17, 2, 1);
+    g.fillStyle(0xffcc44); g.fillRect(9, 17, 1, 1); g.fillRect(15, 18, 1, 1);
+  });
+  // shadow-24: Shadow altar/pillar
+  generateTile(scene, 'shadow-24', 0x706860, 0x685e55, undefined, g => {
+    g.fillStyle(0x554422); g.fillRect(11, 10, 2, 12);
+    g.fillStyle(0x664a3a); g.fillRect(10, 4, 4, 6); g.fillRect(11, 2, 2, 3);
+    g.fillStyle(0x886c4c); g.fillRect(11, 5, 2, 3);
+  });
+  // Clone remaining shadow tiles from dungeon tiles
+  for (const idx of [2, 3, 5, 6, 7, 9, 10, 11, 12, 14, 15, 16, 17, 18, 19, 20, 23, 25, 26, 27, 28]) {
+    const dngKey = `dng-${idx}`;
+    const shadowKey = `shadow-${idx}`;
+    if (scene.textures.exists(dngKey)) {
+      const src = scene.textures.get(dngKey).getSourceImage();
+      scene.textures.addImage(shadowKey, src as HTMLImageElement);
+    }
+  }
+
+  // ── Tomb theme tiles ──
+  // tomb-0: Sandstone floor
+  generateTile(scene, 'tomb-0', 0xc8b860, 0xb8a850, undefined, g => {
+    g.fillStyle(0xc8b860); g.fillRect(0, 0, 24, 24);
+    g.fillStyle(0xd4c86e); g.fillRect(1, 1, 10, 10); g.fillRect(13, 1, 10, 10); g.fillRect(1, 13, 10, 10); g.fillRect(13, 13, 10, 10);
+    g.fillStyle(0x9a8a40); g.fillRect(0, 11, 24, 2); g.fillRect(11, 0, 2, 24);
+    g.fillStyle(0x8a7a30, 0.6); g.fillRect(4, 4, 2, 1); g.fillRect(4, 6, 1, 2); g.fillRect(16, 16, 2, 1); g.fillRect(17, 18, 1, 2);
+  });
+  // tomb-1: Tomb wall with hieroglyphs
+  generateTile(scene, 'tomb-1', 0x7a5a28, 0x6a4a18, undefined, g => {
+    g.fillStyle(0x7a5a28); g.fillRect(0, 0, 24, 24);
+    g.fillStyle(0x5a4218); g.fillRect(0, 7, 24, 1); g.fillRect(0, 15, 24, 1); g.fillRect(0, 23, 24, 1); g.fillRect(11, 0, 1, 7); g.fillRect(5, 8, 1, 7); g.fillRect(17, 8, 1, 7); g.fillRect(9, 16, 1, 7); g.fillRect(19, 16, 1, 7);
+    g.fillStyle(0x8a6a38, 0.4); g.fillRect(1, 1, 9, 5); g.fillRect(13, 9, 10, 5); g.fillRect(1, 17, 7, 5);
+    g.fillStyle(0x4a3a18); g.fillRect(3, 3, 1, 2); g.fillRect(4, 3, 2, 1); g.fillRect(14, 11, 2, 1); g.fillRect(14, 12, 1, 2);
+  });
+  // tomb-4: Shared treasure chest
+  generateTile(scene, 'tomb-4', 0xc8b860, 0xb8a850, undefined, g => {
+    g.fillStyle(0x222222, 0.5); g.fillRect(4, 20, 16, 3);
+    g.fillStyle(0x996622); g.fillRect(4, 11, 16, 10); g.fillStyle(0xaa7722); g.fillRect(5, 12, 14, 8);
+    g.fillStyle(0xbb8833); g.fillRect(4, 7, 16, 5); g.fillStyle(0xcc9933); g.fillRect(5, 7, 14, 3); g.fillStyle(0xddaa44); g.fillRect(6, 7, 12, 1);
+    g.fillStyle(0x666666); g.fillRect(4, 12, 16, 1); g.fillRect(4, 16, 16, 1); g.fillRect(4, 20, 16, 1);
+    g.fillStyle(0x888888); g.fillRect(5, 12, 1, 1); g.fillRect(18, 12, 1, 1); g.fillRect(5, 16, 1, 1); g.fillRect(18, 16, 1, 1);
+    g.fillStyle(0xddaa33); g.fillRect(9, 13, 6, 3); g.fillStyle(0xffcc44); g.fillRect(10, 14, 4, 1);
+    g.fillStyle(0x886611); g.fillRect(11, 14, 2, 2);
+    g.fillStyle(0x888811); g.fillRect(4, 11, 1, 1); g.fillRect(19, 11, 1, 1); g.fillRect(4, 20, 1, 1); g.fillRect(19, 20, 1, 1);
+    g.fillStyle(0x886611); g.fillRect(7, 13, 1, 6); g.fillRect(16, 13, 1, 6);
+    g.fillStyle(0x775511); g.fillRect(10, 17, 1, 3); g.fillRect(13, 17, 1, 3);
+    g.fillStyle(0xaa7722); g.fillRect(7, 8, 1, 3); g.fillRect(16, 8, 1, 3);
+    g.fillStyle(0x3a3a3a); g.fillRect(0, 22, 4, 2); g.fillRect(20, 22, 4, 2);
+  });
+  // tomb-8: Shared banner/flag
+  generateTile(scene, 'tomb-8', 0xc8b860, 0xb8a850, undefined, g => {
+    g.fillStyle(0x222222, 0.4); g.fillRect(4, 20, 16, 3);
+    g.fillStyle(0x664433); g.fillRect(4, 14, 16, 8); g.fillStyle(0x776644); g.fillRect(4, 14, 16, 1);
+    g.fillStyle(0x888888); g.fillRect(4, 17, 16, 1); g.fillRect(4, 21, 16, 1);
+    g.fillStyle(0x776644); g.fillRect(4, 6, 16, 8); g.fillStyle(0x887755); g.fillRect(5, 6, 14, 1); g.fillStyle(0x998866); g.fillRect(6, 6, 12, 1);
+    g.fillStyle(0x886633); g.fillRect(4, 13, 16, 1); g.fillStyle(0x888888); g.fillRect(4, 9, 16, 1);
+    g.fillStyle(0x554422); g.fillRect(5, 10, 14, 3); g.fillStyle(0x222211); g.fillRect(5, 15, 14, 5);
+    g.fillStyle(0xddaa33); g.fillRect(2, 20, 1, 1); g.fillRect(3, 21, 1, 1); g.fillRect(7, 22, 1, 1); g.fillRect(18, 20, 1, 1); g.fillRect(20, 21, 1, 1); g.fillRect(21, 22, 1, 1);
+    g.fillStyle(0xffcc44); g.fillRect(1, 21, 1, 1); g.fillRect(5, 22, 1, 1); g.fillRect(10, 22, 1, 1); g.fillRect(19, 22, 1, 1); g.fillRect(22, 21, 1, 1);
+    g.fillStyle(0xddaa33); g.fillRect(7, 18, 2, 1); g.fillRect(13, 17, 2, 1);
+    g.fillStyle(0xffcc44); g.fillRect(9, 17, 1, 1); g.fillRect(15, 18, 1, 1);
+  });
+  // tomb-24: Tomb altar/sarcophagus
+  generateTile(scene, 'tomb-24', 0xc8b860, 0xb8a850, undefined, g => {
+    g.fillStyle(0x7a5a28); g.fillRect(11, 10, 2, 12);
+    g.fillStyle(0xddaa22); g.fillRect(10, 4, 4, 6); g.fillRect(11, 2, 2, 3);
+    g.fillStyle(0xffcc44); g.fillRect(11, 5, 2, 3);
+  });
+  // Clone remaining tomb tiles from dungeon tiles
+  for (const idx of [2, 3, 5, 6, 7, 9, 10, 11, 12, 14, 15, 16, 17, 18, 19, 20, 23, 25, 26, 27, 28]) {
+    const dngKey = `dng-${idx}`;
+    const tombKey = `tomb-${idx}`;
+    if (scene.textures.exists(dngKey)) {
+      const src = scene.textures.get(dngKey).getSourceImage();
+      scene.textures.addImage(tombKey, src as HTMLImageElement);
+    }
+  }
 }
 
 function generateUIAssets(scene: Phaser.Scene): void {

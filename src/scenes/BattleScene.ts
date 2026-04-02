@@ -726,6 +726,9 @@ export class BattleScene extends Phaser.Scene {
       gameState.player.state.storyFlags[`boss.${this.monster.id}.defeated`] = true;
     }
 
+    // Quest progress: monster defeated
+    const readyQuests = gameState.questManager.updateProgress(gameState.player.state, 'defeat', this.monster.id, 1);
+
     audioManager.playSfx('victory_fanfare');
 
     // Monster death animation
@@ -744,6 +747,21 @@ export class BattleScene extends Phaser.Scene {
       msg += '\n' + t('battle.levelUp', { name: gameState.player.state.name, level: result.levelUp.newLevel });
       // Delayed level up SFX after victory fanfare
       this.time.delayedCall(600, () => { if (this.sceneActive) audioManager.playSfx('level_up'); });
+    }
+
+    // Quest progress: item drops collected
+    if (result.drops) {
+      for (const itemId of result.drops) {
+        const dropReady = gameState.questManager.updateProgress(gameState.player.state, 'collect', itemId, 1);
+        for (const qId of dropReady) {
+          if (!readyQuests.includes(qId)) readyQuests.push(qId);
+        }
+      }
+    }
+
+    // Notify player if quest objectives became ready
+    if (readyQuests.length > 0) {
+      msg += '\n' + t('quest.objectivesComplete');
     }
 
     // Check if this was the demon king

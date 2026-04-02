@@ -22,58 +22,69 @@ export const shops: Record<string, ShopData> = {
   ironkeep: {
     id: 'ironkeep',
     nameKey: 'npc.shopkeeper',
-    items: ['potion', 'hiPotion', 'smokeBomb', 'steelSword', 'mithrilSword', 'chainMail', 'mithrilArmor', 'steelShield', 'steelHelm'],
+    items: ['herb', 'potion', 'hiPotion', 'smokeBomb', 'escapeCrystal', 'steelSword', 'mithrilSword', 'chainMail', 'mithrilArmor'],
   },
+  frostwatch: {
+    id: 'frostwatch',
+    nameKey: 'npc.shopkeeper',
+    items: ['herb', 'potion', 'hiPotion', 'smokeBomb', 'escapeCrystal', 'steelShield', 'mithrilShield', 'steelHelm'],
+  },
+  hauntedVillage: {
+    id: 'hauntedVillage',
+    nameKey: 'npc.shopkeeper',
+    items: ['herb', 'potion', 'hiPotion', 'smokeBomb', 'escapeCrystal', 'mithrilSword', 'steelShield', 'steelHelm'],
+  },
+
   // ── Act 3 — mid game ──
   oasisHaven: {
     id: 'oasisHaven',
     nameKey: 'npc.shopkeeper',
-    items: ['hiPotion', 'smokeBomb', 'mithrilSword', 'flameSword', 'mithrilArmor', 'plateArmor', 'mithrilShield', 'mithrilHelm'],
+    items: ['herb', 'potion', 'hiPotion', 'smokeBomb', 'escapeCrystal', 'flameSword', 'mithrilArmor', 'plateArmor'],
   },
   ruinsCamp: {
     id: 'ruinsCamp',
     nameKey: 'npc.shopkeeper',
-    items: ['hiPotion', 'elixir', 'smokeBomb', 'flameSword', 'crystalBlade', 'plateArmor', 'dragonscaleArmor', 'mithrilShield', 'mithrilHelm'],
+    items: ['herb', 'potion', 'hiPotion', 'elixir', 'smokeBomb', 'escapeCrystal', 'plateArmor', 'dragonscaleArmor', 'mithrilShield', 'mithrilHelm'],
   },
 
   // ── Act 4 — mid-late game ──
   embersRest: {
     id: 'embersRest',
     nameKey: 'npc.shopkeeper',
-    items: ['hiPotion', 'elixir', 'smokeBomb', 'crystalBlade', 'holyBlade', 'dragonscaleArmor', 'holyArmor', 'mithrilShield', 'mithrilHelm'],
+    items: ['herb', 'potion', 'hiPotion', 'elixir', 'smokeBomb', 'escapeCrystal', 'crystalBlade', 'holyBlade', 'dragonscaleArmor', 'holyArmor'],
   },
 
   // ── Act 5 — endgame ──
   lastBastion: {
     id: 'lastBastion',
     nameKey: 'npc.shopkeeper',
-    items: ['elixir', 'smokeBomb', 'holyBlade', 'holyArmor', 'mithrilShield', 'mithrilHelm'],
+    items: ['herb', 'potion', 'hiPotion', 'elixir', 'smokeBomb', 'escapeCrystal', 'holyBlade', 'mithrilShield'],
   },
   havensEdge: {
     id: 'havensEdge',
     nameKey: 'npc.shopkeeper',
-    items: ['elixir', 'smokeBomb', 'holyBlade', 'holyArmor', 'mithrilShield', 'mithrilHelm'],
+    items: ['herb', 'potion', 'hiPotion', 'elixir', 'smokeBomb', 'escapeCrystal', 'holyArmor', 'mithrilHelm'],
   },
 
   // ── Portal Land Villages ──
   stormreachVillage: {
     id: 'stormreachVillage',
     nameKey: 'npc.shopkeeper',
-    items: ['elixir', 'smokeBomb', 'holyBlade', 'holyArmor', 'mithrilShield', 'mithrilHelm'],
+    items: ['herb', 'potion', 'hiPotion', 'elixir', 'smokeBomb', 'holyBlade', 'holyArmor', 'mithrilShield', 'mithrilHelm'],
   },
   frostfallVillage: {
     id: 'frostfallVillage',
     nameKey: 'npc.shopkeeper',
-    items: ['elixir', 'smokeBomb', 'holyBlade', 'holyArmor', 'mithrilShield', 'mithrilHelm'],
+    items: ['herb', 'potion', 'hiPotion', 'elixir', 'smokeBomb', 'holyBlade', 'holyArmor', 'mithrilShield', 'mithrilHelm'],
   },
   sunkenTempleVillage: {
     id: 'sunkenTempleVillage',
     nameKey: 'npc.shopkeeper',
-    items: ['elixir', 'smokeBomb', 'holyBlade', 'holyArmor', 'mithrilShield', 'mithrilHelm'],
+    items: ['herb', 'potion', 'hiPotion', 'elixir', 'smokeBomb', 'holyBlade', 'holyArmor', 'mithrilShield', 'mithrilHelm'],
   },
   twilightVillage: {
     id: 'twilightVillage',
     nameKey: 'npc.shopkeeper',
-    items: ['elixir', 'smokeBomb', 'holyBlade', 'holyArmor', 'mithrilShield', 'mithrilHelm'],
+    items: ['herb', 'potion', 'hiPotion', 'elixir', 'smokeBomb', 'holyBlade', 'holyArmor', 'mithrilShield', 'mithrilHelm'],
   },
 };

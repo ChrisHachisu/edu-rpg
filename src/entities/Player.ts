@@ -19,6 +19,9 @@ const DEFAULT_STATE: PlayerState = {
   gold: 50,
   position: { mapId: 'greenhollow', x: 8, y: 4 },
   storyFlags: {},
+  activeQuests: [],
+  completedQuests: [],
+  questProgress: {},
   timerEnabled: true,
   quizDifficulty: '1',
   locale: 'ja',
@@ -39,6 +42,9 @@ export class Player {
       inventory: DEFAULT_STATE.inventory.map(s => ({ ...s })),
       position: { ...DEFAULT_STATE.position },
       storyFlags: { ...DEFAULT_STATE.storyFlags },
+      activeQuests: [...DEFAULT_STATE.activeQuests],
+      completedQuests: [...DEFAULT_STATE.completedQuests],
+      questProgress: { ...DEFAULT_STATE.questProgress },
       ...state,
     };
   }

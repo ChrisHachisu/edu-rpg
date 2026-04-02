@@ -80,6 +80,9 @@ export interface PlayerState {
   gold: number;
   position: Position;
   storyFlags: Record<string, boolean>;
+  activeQuests: string[];
+  completedQuests: string[];
+  questProgress: Record<string, Record<string, number>>;
   timerEnabled: boolean;
   quizDifficulty: GradeLevel;
   locale: Locale;
@@ -111,7 +114,7 @@ export interface ItemDefinition {
   type: ItemType;
   stats?: Partial<Stats>;
   effect?: {
-    type: 'heal' | 'buff' | 'escape';
+    type: 'heal' | 'buff' | 'escape' | 'dungeonEscape';
     value: number;
   };
   buyPrice: number;

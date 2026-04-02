@@ -61,6 +61,26 @@ export const encounterZones: Record<string, EncounterZone> = {
       { monsterId: 'crab', weight: 5 },
     ],
   },
+  'whispering-woods-cave': {
+    zoneId: 'whispering-woods-cave',
+    encounterRate: 0.07,
+    minStepsBetween: 7,
+    monsters: [
+      { monsterId: 'mushroom', weight: 4 },
+      { monsterId: 'wolf', weight: 3 },
+      { monsterId: 'bat', weight: 3 },
+    ],
+  },
+  'coastal-reef': {
+    zoneId: 'coastal-reef',
+    encounterRate: 0.07,
+    minStepsBetween: 7,
+    monsters: [
+      { monsterId: 'crab', weight: 4 },
+      { monsterId: 'spider', weight: 3 },
+      { monsterId: 'jellyfish', weight: 3 },
+    ],
+  },
 
   // ── Act 2 — Unlocked after defeating Serpent ───────────────────────
 
@@ -111,6 +131,26 @@ export const encounterZones: Record<string, EncounterZone> = {
       { monsterId: 'iceSprite', weight: 3 },
     ],
   },
+  'iron-mine': {
+    zoneId: 'iron-mine',
+    encounterRate: 0.07,
+    minStepsBetween: 7,
+    monsters: [
+      { monsterId: 'golem', weight: 4 },
+      { monsterId: 'spider', weight: 3 },
+      { monsterId: 'harpy', weight: 3 },
+    ],
+  },
+  'haunted-forest': {
+    zoneId: 'haunted-forest',
+    encounterRate: 0.07,
+    minStepsBetween: 7,
+    monsters: [
+      { monsterId: 'wraith', weight: 4 },
+      { monsterId: 'bat', weight: 3 },
+      { monsterId: 'wolf', weight: 3 },
+    ],
+  },
 
   // ── Act 3 — Unlocked after defeating Dragon ───────────────────────
 
@@ -153,6 +193,26 @@ export const encounterZones: Record<string, EncounterZone> = {
       { monsterId: 'wolf', weight: 2 },
     ],
   },
+  'oasis-depths': {
+    zoneId: 'oasis-depths',
+    encounterRate: 0.07,
+    minStepsBetween: 7,
+    monsters: [
+      { monsterId: 'merfolk', weight: 4 },
+      { monsterId: 'piranha', weight: 3 },
+      { monsterId: 'jellyfish', weight: 3 },
+    ],
+  },
+  'scorched-ruins': {
+    zoneId: 'scorched-ruins',
+    encounterRate: 0.07,
+    minStepsBetween: 7,
+    monsters: [
+      { monsterId: 'skeleton', weight: 4 },
+      { monsterId: 'mummy', weight: 3 },
+      { monsterId: 'lizard', weight: 3 },
+    ],
+  },
 
   // ── Act 4 — Volcanic area ──────────────────────────────────────────
 
@@ -186,6 +246,26 @@ export const encounterZones: Record<string, EncounterZone> = {
       { monsterId: 'wraith', weight: 3 },
     ],
   },
+  'ember-mines': {
+    zoneId: 'ember-mines',
+    encounterRate: 0.07,
+    minStepsBetween: 7,
+    monsters: [
+      { monsterId: 'fireElemental', weight: 4 },
+      { monsterId: 'lizard', weight: 3 },
+      { monsterId: 'magmaSlime', weight: 3 },
+    ],
+  },
+  'obsidian-cavern': {
+    zoneId: 'obsidian-cavern',
+    encounterRate: 0.07,
+    minStepsBetween: 7,
+    monsters: [
+      { monsterId: 'demon', weight: 4 },
+      { monsterId: 'shadow', weight: 3 },
+      { monsterId: 'chimera', weight: 3 },
+    ],
+  },
 
   // ── Act 5 — Unlocked after defeating Flame Titan ──────────────────
 
@@ -207,6 +287,26 @@ export const encounterZones: Record<string, EncounterZone> = {
       { monsterId: 'chimera', weight: 3 },
       { monsterId: 'demon', weight: 3 },
       { monsterId: 'shadow', weight: 4 },
+    ],
+  },
+  'demon-barracks': {
+    zoneId: 'demon-barracks',
+    encounterRate: 0.07,
+    minStepsBetween: 7,
+    monsters: [
+      { monsterId: 'demon', weight: 4 },
+      { monsterId: 'darkKnight', weight: 3 },
+      { monsterId: 'shadow', weight: 3 },
+    ],
+  },
+  'void-rift': {
+    zoneId: 'void-rift',
+    encounterRate: 0.07,
+    minStepsBetween: 7,
+    monsters: [
+      { monsterId: 'voidShade', weight: 4 },
+      { monsterId: 'darkKnight', weight: 3 },
+      { monsterId: 'chimera', weight: 3 },
     ],
   },
 
