@@ -101,6 +101,9 @@ export class WorldMapScene extends Phaser.Scene {
   private healerOverlayCursor?: Phaser.GameObjects.Text;
   private healerOverlayPrice = 0;
 
+  // Bandit Lord map sprite (shown on boss tile in banditHideout final floor)
+  private banditLordMapSprite?: Phaser.GameObjects.Image;
+
   constructor() {
     super('WorldMapScene');
   }
@@ -239,6 +242,28 @@ export class WorldMapScene extends Phaser.Scene {
     this.createHero();
     this.updateCamera();
 
+    // Bandit Lord map sprite — visible on boss tile in final floor before boss defeated
+    this.banditLordMapSprite?.destroy();
+    this.banditLordMapSprite = undefined;
+    if (this.currentMapId === 'banditHideout' && def.bossId === 'banditLord') {
+      const isFinalFloor = this.currentFloor === (def.floors ?? 1);
+      const bossDefeated = gameState.player.state.storyFlags['boss.banditLord.defeated'];
+      if (isFinalFloor && !bossDefeated) {
+        // Find boss tile (7) in the map
+        for (let by = 0; by < this.mapData.length; by++) {
+          for (let bx = 0; bx < (this.mapData[by]?.length ?? 0); bx++) {
+            if (this.mapData[by][bx] === 7) {
+              this.banditLordMapSprite = this.add.image(
+                bx * TILE_SIZE + TILE_SIZE / 2,
+                by * TILE_SIZE + TILE_SIZE / 2,
+                'monster-banditLord'
+              ).setOrigin(0.5).setDepth(45).setScale(TILE_SIZE / 128 * 1.4);
+            }
+          }
+        }
+      }
+    }
+
     // Play appropriate BGM based on map type
     const bgm: BgmTrack = def.type === 'town' ? 'town'
       : def.type === 'dungeon' ? 'dungeon'
@@ -258,9 +283,17 @@ export class WorldMapScene extends Phaser.Scene {
       : def.type === 'town' ? 'town'
       : def.castle ? 'castle' : 'dng';
 
+    // Bandit hideout overworld coordinates — render as plain grass (hidden/incognito)
+    const BANDIT_HIDEOUT_OX = 10, BANDIT_HIDEOUT_OY = 103;
+
     for (let y = 0; y < this.mapData.length; y++) {
       for (let x = 0; x < this.mapData[y].length; x++) {
-        const tileIndex = this.mapData[y][x];
+        let tileIndex = this.mapData[y][x];
+        // Bandit hideout dungeon marker is hidden on the overworld — render as grass
+        if (this.currentMapId === 'overworld' && tileIndex === 7
+            && x === BANDIT_HIDEOUT_OX && y === BANDIT_HIDEOUT_OY) {
+          tileIndex = 0;
+        }
         const px = x * TILE_SIZE;
         const py = y * TILE_SIZE;
         const tileKey = `${prefix}-${tileIndex}`;
@@ -515,6 +548,7 @@ export class WorldMapScene extends Phaser.Scene {
         && tile !== 13 && tile !== 14 && tile !== 15;
     } else {
       // Dungeon: walls, lava, treasure chests, and boss tiles are impassable (opened chests ARE walkable)
+      // Tile 17 (fake wall) is passable — reveals the hidden room behind it
       passable = tile !== 1 && tile !== 5 && tile !== 4 && tile !== 7;
     }
     if (!passable) return false;
@@ -856,12 +890,70 @@ export class WorldMapScene extends Phaser.Scene {
     }
   }
 
+  private showWhiteFlash(alpha: number, duration: number): void {
+    const flash = this.add.rectangle(
+      UI_OFFSET_X + GAME_WIDTH / 2, UI_OFFSET_Y + GAME_HEIGHT / 2,
+      GAME_WIDTH * 2, GAME_HEIGHT * 2, 0xffffff
+    ).setDepth(200).setScrollFactor(0).setAlpha(alpha);
+    this.tweens.add({
+      targets: flash, alpha: 0, duration,
+      onComplete: () => flash.destroy(),
+    });
+  }
+
   private onStep(): void {
     this.stepCount++;
     const def = mapDefs[this.currentMapId];
 
     // No encounters in towns or dev mode
     if (def.type === 'town' || gameState.devMode) return;
+
+    // ── Trap tiles ──
+    const currentTile = this.mapData[this.heroTileY]?.[this.heroTileX];
+
+    // Tile 17: Fake wall (hidden room entrance) — reveal floor when stepped on
+    if (currentTile === 17) {
+      this.mapData[this.heroTileY][this.heroTileX] = 0;
+      const mapWidth = this.mapData[0]?.length ?? 1;
+      const tileIdx = this.heroTileY * mapWidth + this.heroTileX;
+      const tileObj = this.tileLayer.getAt(tileIdx) as Phaser.GameObjects.Image | null;
+      if (tileObj) tileObj.setTexture('dng-0');
+    }
+
+    // Tile 30: Spike trap — 20% max HP damage
+    if (currentTile === 30) {
+      const damage = Math.max(30, Math.floor(gameState.player.totalMaxHp * 0.20));
+      gameState.player.state.hp = Math.max(1, gameState.player.state.hp - damage);
+      this.mapData[this.heroTileY][this.heroTileX] = 0; // remove after triggering
+      this.renderMap();
+      this.updateHUD();
+      this.showMessage(t('trap.spike', { damage }));
+      if (!gameState.player.isAlive) {
+        this.scene.start('GameOverScene');
+      }
+      return;
+    }
+
+    // Tile 31: Tripwire — white flash, poison damage, remove tile(s) across row
+    if (currentTile === 31 && this.currentMapId === 'banditHideout') {
+      const damage = Math.max(20, Math.floor(gameState.player.totalMaxHp * 0.15));
+      gameState.player.state.hp = Math.max(1, gameState.player.state.hp - damage);
+      // Remove all tile 31 tiles on this row (wall-to-wall)
+      const row = this.mapData[this.heroTileY];
+      if (row) {
+        for (let x = 0; x < row.length; x++) {
+          if (row[x] === 31) row[x] = 0;
+        }
+      }
+      this.renderMap();
+      this.updateHUD();
+      this.showWhiteFlash(0.7, 600);
+      this.showMessage(t('dungeon.banditHideout.tripwire'));
+      if (!gameState.player.isAlive) {
+        this.scene.start('GameOverScene');
+      }
+      return;
+    }
 
     // Determine zone
     let zone: string | null;
@@ -955,6 +1047,24 @@ export class WorldMapScene extends Phaser.Scene {
     else if (this.heroDir === 1) facedX -= 1;  // left
     else if (this.heroDir === 2) facedX += 1;  // right
     else if (this.heroDir === 3) facedY -= 1;  // up
+
+    // Check if facing/adjacent to a tripwire tile (tile 31) — Z to disarm
+    if (this.currentMapId === 'banditHideout') {
+      const facedTile = this.mapData[facedY]?.[facedX];
+      if (facedTile === 31) {
+        // Disarm: remove all tile 31 in that row, brief white flash, no damage
+        const row = this.mapData[facedY];
+        if (row) {
+          for (let x = 0; x < row.length; x++) {
+            if (row[x] === 31) row[x] = 0;
+          }
+        }
+        this.renderMap();
+        this.showWhiteFlash(0.3, 300);
+        this.showMessage(t('dungeon.banditHideout.tripwireCut'));
+        return;
+      }
+    }
 
     // Check if facing the save point
     if (def.savePoint && def.savePoint.x === facedX && def.savePoint.y === facedY) {
@@ -1500,6 +1610,9 @@ export class WorldMapScene extends Phaser.Scene {
           const tileObj = this.tileLayer.getAt(tileIdx) as Phaser.GameObjects.Image;
           const prefix = def.castle ? 'castle' : 'dng';
           tileObj.setTexture(`${prefix}-${newTile}`);
+          // Remove bandit lord map sprite if present
+          this.banditLordMapSprite?.destroy();
+          this.banditLordMapSprite = undefined;
         });
 
         // Auto-equip items on boss defeat + crystal obtain SFX

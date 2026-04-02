@@ -196,6 +196,7 @@ export const mapDefs: Record<string, MapDef> = {
       { id: 'healer', dialogueKey: 'npc.healer', x: 3, y: 12 },
       { id: 'archaeologist', dialogueKey: 'npc.archaeologist', x: 3, y: 5 },
       { id: 'explorer', dialogueKey: 'npc.explorer', x: 12, y: 5 },
+      { id: 'mercenary', dialogueKey: 'npc.mercenary', x: 8, y: 7 },
     ],
     shopId: 'ruinsCamp',
     savePoint: { x: 8, y: 10 },

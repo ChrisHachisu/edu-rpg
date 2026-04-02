@@ -1378,6 +1378,127 @@ export function generateDungeonMap(
     }
   }
 
+  // ── Place traps for banditHideout ──
+  // Detect bandit hideout by seed pattern (seed is mapId.charCodeAt(0)*251, 'b'=98, 98*251=24598)
+  const isBanditHideout = (seed % 1000) === (98 * 251 % 1000);
+  if (isBanditHideout && !gate && !castle) {
+    // Spike traps (tile 30): place on floor tiles in corridors, not in rooms, not on goal
+    let spikeCount = 0;
+    const maxSpikes = Math.floor(width * height / 80);
+    for (let sy = 2; sy < height - 2 && spikeCount < maxSpikes; sy++) {
+      for (let sx = 2; sx < width - 2 && spikeCount < maxSpikes; sx++) {
+        if (map[sy][sx] !== 0) continue;
+        if (sx === goalTileX && sy === goalTileY) continue;
+        // Only place in corridors (exactly 2 open neighbors — straight passage)
+        const openN = sy > 0 && map[sy-1][sx] !== 1;
+        const openS = sy < height-1 && map[sy+1][sx] !== 1;
+        const openW = sx > 0 && map[sy][sx-1] !== 1;
+        const openE = sx < width-1 && map[sy][sx+1] !== 1;
+        const openCount = [openN, openS, openW, openE].filter(Boolean).length;
+        if (openCount === 2 && rand() < 0.08) {
+          map[sy][sx] = 30;
+          spikeCount++;
+        }
+      }
+    }
+
+    // Tripwires (tile 31): place spanning full-width narrow corridor sections
+    // Find rows where corridor width ≤ 3 and place tripwire across them
+    if (!isFinalFloor) {
+      for (let ty = 3; ty < height - 3; ty++) {
+        // Count floor tiles in this row (corridor width)
+        let runStart = -1;
+        for (let tx = 1; tx < width - 1; tx++) {
+          const isFloor = map[ty][tx] !== 1 && map[ty][tx] !== 5;
+          if (isFloor && runStart === -1) runStart = tx;
+          if (!isFloor && runStart !== -1) {
+            const runLen = tx - runStart;
+            // Narrow corridor: width ≤ 3
+            if (runLen <= 3 && runLen >= 1 && rand() < 0.15) {
+              // Check above and below are walls (true corridor, not open room)
+              const aboveWall = map[ty-1][runStart] === 1 && map[ty-1][tx-1] === 1;
+              const belowWall = map[ty+1][runStart] === 1 && map[ty+1][tx-1] === 1;
+              if (aboveWall && belowWall) {
+                for (let wx = runStart; wx < tx; wx++) {
+                  if (map[ty][wx] === 0) map[ty][wx] = 31;
+                }
+              }
+            }
+            runStart = -1;
+          }
+        }
+      }
+    }
+
+    // Hidden rooms (tile 17 = fake wall entrance, tile 4 = chest inside)
+    // Find dead-end corridor tiles and carve hidden rooms behind them
+    if (!isFinalFloor) {
+      for (let hy = 3; hy < height - 4; hy++) {
+        for (let hx = 3; hx < width - 4; hx++) {
+          if (map[hy][hx] !== 0) continue;
+          // Dead-end: exactly 1 open neighbor
+          const neighbors = [[0,-1],[0,1],[-1,0],[1,0]];
+          const openNeighbors = neighbors.filter(([dx,dy]) => {
+            const nx = hx+dx, ny = hy+dy;
+            return nx >= 0 && nx < width && ny >= 0 && ny < height && map[ny][nx] !== 1;
+          });
+          if (openNeighbors.length !== 1) continue;
+          if (rand() > 0.2) continue; // 20% chance
+
+          // Direction away from open neighbor = direction to carve hidden room
+          const [odx, ody] = openNeighbors[0];
+          const rdx = -odx, rdy = -ody;
+
+          // Room starts 1 tile behind dead-end in that direction
+          const roomCenterX = hx + rdx * 2;
+          const roomCenterY = hy + rdy * 2;
+
+          // Check if 3×3 room fits
+          let fits = true;
+          for (let ry = roomCenterY - 1; ry <= roomCenterY + 1; ry++) {
+            for (let rx = roomCenterX - 1; rx <= roomCenterX + 1; rx++) {
+              if (rx <= 0 || rx >= width - 1 || ry <= 0 || ry >= height - 1) { fits = false; break; }
+              if (map[ry][rx] !== 1) { fits = false; break; } // must be solid wall
+            }
+            if (!fits) break;
+          }
+          if (!fits) continue;
+
+          // Carve the 3×3 room
+          for (let ry = roomCenterY - 1; ry <= roomCenterY + 1; ry++) {
+            for (let rx = roomCenterX - 1; rx <= roomCenterX + 1; rx++) {
+              map[ry][rx] = 0;
+            }
+          }
+          // Place hidden wall (tile 17) at the dead-end entrance
+          map[hy][hx] = 17;
+          // Carve corridor tile connecting dead-end to room
+          if (map[hy + rdy][hx + rdx] === 1) map[hy + rdy][hx + rdx] = 0;
+          // Place treasure chest in center of hidden room
+          map[roomCenterY][roomCenterX] = 4;
+        }
+      }
+    }
+
+    // Final floor: hidden room before boss tile
+    if (isFinalFloor) {
+      for (let hy = 0; hy < height; hy++) {
+        for (let hx = 0; hx < width; hx++) {
+          if (map[hy][hx] !== 7) continue;
+          // Place hidden wall tile just before the boss in the approach corridor
+          // Check tiles in each direction from boss for open floor
+          for (const [dx, dy] of [[0,1],[0,-1],[1,0],[-1,0]]) {
+            const nx = hx+dx, ny = hy+dy;
+            if (nx >= 0 && nx < width && ny >= 0 && ny < height && map[ny][nx] === 0) {
+              map[ny][nx] = 17;
+              break;
+            }
+          }
+        }
+      }
+    }
+  }
+
   // ── Place treasure tiles ──
   const isWallTile = (x: number, y: number) =>
     y < 0 || y >= height || x < 0 || x >= width || map[y][x] === 1 || map[y][x] === 5;

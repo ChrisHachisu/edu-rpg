@@ -33,8 +33,10 @@ export class BootScene extends Phaser.Scene {
 
   preload(): void {
     // Preload monster sprite images (hand-drawn pixel art)
+    const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const monsterBase = isDev ? '/assets/monsters/' : 'assets/monsters/';
     for (const key of MONSTER_SPRITE_IMAGES) {
-      this.load.image(key, `assets/monsters/${key}.png`);
+      this.load.image(key, `${monsterBase}${key}.png`);
     }
   }
 

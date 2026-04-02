@@ -8907,6 +8907,100 @@ function generateTilesets(scene: Phaser.Scene): void {
     g.fillStyle(0xffcc00);
     g.fillTriangle(12, 0, 8, 4, 16, 4);
   });
+
+  // dng-17: Hidden wall (fake wall) — looks almost identical to dng-1 wall
+  generateTile(scene, 'dng-17', 0x222222, 0x1a1a1a, undefined, g => {
+    // Same brick pattern as dng-1
+    g.fillStyle(0x333333);
+    g.fillRect(0, 7, 24, 1);
+    g.fillRect(0, 15, 24, 1);
+    g.fillRect(0, 23, 24, 1);
+    g.fillRect(12, 0, 1, 7);
+    g.fillRect(6, 8, 1, 7);
+    g.fillRect(18, 8, 1, 7);
+    g.fillRect(3, 16, 1, 7);
+    g.fillRect(15, 16, 1, 7);
+    // Subtle worn look — slightly lighter in one spot suggesting a hidden seam
+    g.fillStyle(0x2a2a2a);
+    g.fillRect(0, 0, 12, 7);
+    g.fillStyle(0x252525);
+    g.fillRect(0, 8, 6, 7);
+    g.fillStyle(0x2e2e2e);
+    g.fillRect(12, 8, 6, 7);
+    // Very faint lighter outline on one side (almost invisible)
+    g.fillStyle(0x2c2c2c);
+    g.fillRect(0, 14, 24, 1);
+    // Same moss and dampness as normal wall
+    g.fillStyle(0x223322, 0.2);
+    g.fillRect(2, 2, 3, 2);
+    g.fillRect(14, 10, 2, 2);
+    g.fillRect(8, 18, 2, 2);
+  });
+
+  // dng-30: Spike trap floor tile — floor with visible iron spikes
+  generateTile(scene, 'dng-30', 0x444444, 0x3a3a3a, undefined, g => {
+    // Same stone floor base as dng-0
+    g.fillStyle(0x3a3a3a);
+    g.fillRect(0, 11, 24, 1);
+    g.fillRect(8, 0, 1, 11);
+    g.fillRect(17, 0, 1, 11);
+    g.fillRect(5, 12, 1, 12);
+    g.fillRect(12, 12, 1, 12);
+    g.fillRect(20, 12, 1, 12);
+    // Iron spike base plate
+    g.fillStyle(0x555555);
+    g.fillRect(4, 14, 16, 4);
+    // Spikes (dark grey pointed upward)
+    g.fillStyle(0x888888);
+    g.fillTriangle(7, 14, 5, 8, 9, 8);
+    g.fillTriangle(12, 14, 10, 8, 14, 8);
+    g.fillTriangle(17, 14, 15, 8, 19, 8);
+    // Spike highlights
+    g.fillStyle(0xaaaaaa);
+    g.fillRect(5, 9, 1, 4);
+    g.fillRect(10, 9, 1, 4);
+    g.fillRect(15, 9, 1, 4);
+    // Blood-red tinge at tips
+    g.fillStyle(0xaa2222);
+    g.fillRect(5, 8, 1, 1);
+    g.fillRect(10, 8, 1, 1);
+    g.fillRect(15, 8, 1, 1);
+  });
+
+  // dng-31: Tripwire floor tile — identical to plain floor (invisible trap)
+  generateTile(scene, 'dng-31', 0x444444, 0x3a3a3a, undefined, g => {
+    // Exact copy of dng-0 — no visible wire
+    g.fillStyle(0x3a3a3a);
+    g.fillRect(0, 11, 24, 1);
+    g.fillRect(8, 0, 1, 11);
+    g.fillRect(17, 0, 1, 11);
+    g.fillRect(5, 12, 1, 12);
+    g.fillRect(12, 12, 1, 12);
+    g.fillRect(20, 12, 1, 12);
+    g.fillStyle(0x363636, 0.5);
+    g.fillRect(1, 2, 5, 3);
+    g.fillRect(14, 14, 4, 3);
+    g.fillRect(9, 18, 3, 2);
+    g.fillStyle(0x4e4e4e);
+    g.fillRect(10, 1, 3, 3);
+    g.fillRect(19, 13, 3, 2);
+    g.fillRect(1, 14, 3, 2);
+    g.fillStyle(0x333333);
+    g.fillRect(3, 6, 2, 2);
+    g.fillRect(13, 3, 2, 1);
+    g.fillRect(7, 20, 2, 1);
+    g.fillStyle(0x4a4a5a, 0.2);
+    g.fillRect(2, 8, 3, 1);
+    g.fillRect(15, 18, 4, 1);
+    g.fillStyle(0x2e2e2e);
+    g.fillRect(6, 4, 1, 2);
+    g.fillRect(18, 7, 1, 2);
+    g.fillRect(10, 15, 1, 2);
+    g.fillStyle(0x334433, 0.4);
+    g.fillRect(1, 10, 1, 1);
+    g.fillRect(21, 22, 1, 1);
+    g.fillRect(7, 13, 1, 1);
+  });
 }
 
 function generateUIAssets(scene: Phaser.Scene): void {
