@@ -10,9 +10,13 @@ import { GameOverScene } from './scenes/GameOverScene';
 import { VictoryScene } from './scenes/VictoryScene';
 import { ExportScene } from './scenes/ExportScene';
 
-// Initialise Phaser immediately — system fonts (Helvetica Neue etc.) are
-// always available without waiting for a @font-face load.
+// Wait for CSS @font-face to finish loading BEFORE Phaser starts — Phaser
+// doesn't await async create(), so fonts loaded there arrive too late for
+// canvas text rendering. Using document.fonts.ready ensures the CSS-declared
+// font is available (consistent rendering between dev and production).
 (async () => {
+  await document.fonts.ready;
+
   // Patch text factory so ALL text renders at native resolution (eliminates haze on Retina).
   // Text is normally rasterized at 1× then zoomed by the camera, which magnifies anti-aliased edges.
   // Setting resolution = ZOOM makes the internal canvas match the final display size → 1:1 crisp.

@@ -2,7 +2,7 @@ import { SaveData, PlayerState } from '../../utils/types';
 
 const SAVE_KEY = 'edu-rpg-save';
 const AUTO_SAVE_KEY = 'edu-rpg-autosave';
-const SAVE_VERSION = 4;
+const SAVE_VERSION = 3;
 
 export class SaveManager {
   static save(playerState: PlayerState, playtime: number, quizStats: SaveData['quizStats']): void {

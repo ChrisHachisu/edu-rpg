@@ -123,7 +123,6 @@ export const enStrings: Record<string, string> = {
   'field.use': 'Use',
   'field.itemUsed': 'Used {item}! HP restored by {value}.',
   'field.hpFull': 'HP is already full!',
-  'trap.spike': 'Ouch! Spike trap! You took {damage} damage!',
 
   // Shop
   'shop.welcome': 'Welcome! What would you like?',
@@ -173,7 +172,6 @@ export const enStrings: Record<string, string> = {
   // Ruins Camp (Act 3/4)
   'npc.archaeologist': 'The lava fields are dangerous. Be very careful!',
   'npc.explorer': 'The Volcanic Forge is west. The Flame Titan guards the way to the demon realm!',
-  'npc.mercenary': "There's a Bandit Lord somewhere far to the east — deep in the desert, no road leads there. People searched everywhere in that cave but couldn't find him. Must be a hidden room. The place is riddled with traps too... watch every step.",
 
   // Ember\'s Rest (Act 4)
   'npc.forgemaster': 'The magma tunnels beneath us lead to the Volcanic Forge. But first, you must defeat the guardian of the Desert Tomb!',
@@ -280,8 +278,6 @@ export const enStrings: Record<string, string> = {
   'dungeon.banditHideout.boss.dialog3': 'The Bandit Lord snarls, "You dare challenge me in MY hideout?!" Prepare for battle!',
   'dungeon.banditHideout.boss.defeat': 'The Bandit Lord drops his weapon... "I yield... Take whatever you want..."',
   'dungeon.banditHideout.victory': 'The Bandit Lord dropped the Bandit\'s Dagger!',
-  'dungeon.banditHideout.tripwire': 'SNAP — a tripwire! Poison gas floods the corridor!',
-  'dungeon.banditHideout.tripwireCut': 'You carefully cut the tripwire. The trap is disarmed.',
 
   // Magma Tunnels
   'dungeon.magmaTunnels.enter': 'The heat is unbearable... Rivers of lava flow through narrow channels.',

@@ -46,7 +46,7 @@ export const MAX_INVENTORY_SIZE = 20;
 export const GOLD_SELL_RATIO = 0.5;
 
 // Font
-export const FONT_FAMILY = "'Helvetica Neue', 'Hiragino Kaku Gothic ProN', 'Meiryo', sans-serif";
+export const FONT_FAMILY = 'PixelMplus12, monospace';
 
 // Colors
 export const COLORS = {

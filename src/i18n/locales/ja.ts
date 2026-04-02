@@ -123,7 +123,6 @@ export const jaStrings: Record<string, string> = {
   'field.use': 'つかう',
   'field.itemUsed': '{item}を つかった！HPが {value} かいふくした！',
   'field.hpFull': 'HPは まんたんだ！',
-  'trap.spike': 'イタッ！スパイクトラップ！{damage}の ダメージを うけた！',
 
   // Shop
   'shop.welcome': 'いらっしゃい！なにを おもとめですか？',
@@ -173,7 +172,6 @@ export const jaStrings: Record<string, string> = {
   // Ruins Camp (Act 3/4)
   'npc.archaeologist': 'ようがんちたいは きけんよ。じゅうぶん きをつけてね！',
   'npc.explorer': 'にしに かざんのかじばがある。えんのきょじんが まおうのりょうどへの みちを まもっている！',
-  'npc.mercenary': 'ひがしの さばくの おくに さんぞくの おやぶんが かくれているらしいぞ。あのどうくつを くまなく さがしても みつからなかったって。かくしべやが あるにちがいない。わなも たくさん しかけてあるから ふみこむなら きをつけろ。',
 
   // Ember's Rest (Act 4)
   'npc.forgemaster': 'このしたの マグマトンネルは かざんのかじばに つながっておる。だが まずは さばくのはかの ばんにんを たおさなければ！',
@@ -280,8 +278,6 @@ export const jaStrings: Record<string, string> = {
   'dungeon.banditHideout.boss.dialog3': 'さんぞくの おやぶんが うなった。「おれの アジトに いどむとは！」たたかいの じゅんびを！',
   'dungeon.banditHideout.boss.defeat': 'さんぞくの おやぶんが ぶきを おとした…「まいった…すきなものを もっていけ…」',
   'dungeon.banditHideout.victory': 'さんぞくの おやぶんが さんぞくのダガーを おとした！',
-  'dungeon.banditHideout.tripwire': 'バシッ！トリップワイヤを きった！どくガスが ろうかに みちあふれた！',
-  'dungeon.banditHideout.tripwireCut': 'トリップワイヤを そっと きった。わなを かいじょした。',
 
   // Magma Tunnels
   'dungeon.magmaTunnels.enter': 'あつさが たえられない…ほそい みぞを ようがんが ながれている。',

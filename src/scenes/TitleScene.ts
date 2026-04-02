@@ -159,7 +159,8 @@ export class TitleScene extends Phaser.Scene {
 
     options.forEach((opt, i) => {
       const selected = i === this.selectedIndex;
-      const text = this.add.text(cx, menuY + i * Math.round(32 * S), t(opt.key), {
+      const prefix = selected ? '\u25B8 ' : '  ';
+      const text = this.add.text(cx, menuY + i * Math.round(32 * S), prefix + t(opt.key), {
         fontSize: `${Math.round(14 * S)}px`,
         color: selected ? COLORS.TEXT_YELLOW : COLORS.TEXT_WHITE,
         fontFamily: FONT_FAMILY,
