@@ -55413,7 +55413,7 @@ function ko(n) {
     _blg2.destroy();
 }
 
-const Ko = ["monster-slime", "monster-bug", "monster-rabbit", "monster-wolf", "monster-mushroom", "monster-bandit", "monster-bat", "monster-spider", "monster-crab", "monster-golem", "monster-giantToad", "monster-serpent", "monster-jellyfish", "monster-piranha", "monster-merfolk", "monster-harpy", "monster-wyvern", "monster-kraken", "monster-dragon", "monster-blizzardBear", "monster-iceSprite", "monster-darkSorcerer", "monster-lizard", "monster-knight", "monster-skeleton", "monster-wraith", "monster-fireElemental", "monster-chimera", "monster-demon", "monster-shadow", "monster-lich", "monster-flameTitan", "monster-banditLord", "monster-seaStar", "monster-mummy", "monster-stormRaptor", "monster-templeGuard", "monster-ancientSphinx", "monster-stormSentinel", "monster-frostMonarch", "monster-swordWraith", "monster-celestialGuardian", "monster-demonKing", "monster-magmaSlime", "monster-frostWolf", "monster-frostStalker", "monster-flameBat", "monster-sandGolem", "monster-lavaGolem", "monster-glacialGolem", "monster-frozenSkeleton", "monster-sandWraith", "monster-cloudWraith", "monster-voidShade", "monster-iceWyrm", "monster-lavaWyrm", "monster-darkKnight", "monster-stormHarpy", "monster-giantCrab", "monster-banditArcher", "monster-mimic"];
+const Ko = ["monster-slime", "monster-bug", "monster-rabbit", "monster-wolf", "monster-mushroom", "monster-bandit", "monster-bat", "monster-spider", "monster-crab", "monster-golem", "monster-giantToad", "monster-serpent", "monster-jellyfish", "monster-piranha", "monster-merfolk", "monster-harpy", "monster-wyvern", "monster-kraken", "monster-dragon", "monster-blizzardBear", "monster-iceSprite", "monster-darkSorcerer", "monster-lizard", "monster-knight", "monster-skeleton", "monster-wraith", "monster-fireElemental", "monster-chimera", "monster-demon", "monster-shadow", "monster-lich", "monster-flameTitan", "monster-banditLord", "monster-seaStar", "monster-mummy", "monster-stormRaptor", "monster-templeGuard", "monster-ancientSphinx", "monster-stormSentinel", "monster-frostMonarch", "monster-swordWraith", "monster-celestialGuardian", "monster-demonKing", "monster-magmaSlime", "monster-frostWolf", "monster-frostStalker", "monster-flameBat", "monster-sandGolem", "monster-lavaGolem", "monster-glacialGolem", "monster-frozenSkeleton", "monster-sandWraith", "monster-cloudWraith", "monster-voidShade", "monster-iceWyrm", "monster-lavaWyrm", "monster-darkKnight", "monster-stormHarpy", "monster-giantCrab", "monster-banditArcher", "monster-mimic", "monster-mosswarden", "monster-coralTitan", "monster-oreColossus", "monster-phantomStag", "monster-sandSerpentQueen", "monster-ashenGuardian", "monster-magmaBeetleKing", "monster-crystalHydra", "monster-warGeneralMalachar", "monster-nullDevourer", "monster-shadowWisp"];
 class $o extends ti.Scene {
     constructor() {
         super("BootScene")
@@ -72968,7 +72968,7 @@ class Cp extends ti.Scene {
         d && this.drawRowCursor(T, t), this.drawSelectorRow(T, t, Z("settings.difficulty"), Z(`grade.${this.difficultyOptions[this.difficultyIndex]}`), d), t += Math.round(30 * x);
         const v = this.createRow === "language";
         v && this.drawRowCursor(T, t);
-        const y = vi() === "ja" ? "日本語" : "English";
+        const y = vi() === "ja" ? (Yr ? "日本語" : "にほんご") : "English";
         if (this.drawSelectorRow(T, t, Z("settings.language"), y, v), t += Math.round(30 * x), vi() === "ja") {
             const g = this.createRow === "kanji";
             g && this.drawRowCursor(T, t);
@@ -82378,7 +82378,7 @@ class Fp extends ti.Scene {
                 fontSize: T,
                 color: C,
                 fontFamily: yt
-            }), this.add.text(Math.round(200 * St), x, vi() === "ja" ? "日本語" : "English", {
+            }), this.add.text(Math.round(200 * St), x, vi() === "ja" ? (Yr ? "日本語" : "にほんご") : "English", {
                 fontSize: T,
                 color: ht.TEXT_YELLOW,
                 fontFamily: yt
