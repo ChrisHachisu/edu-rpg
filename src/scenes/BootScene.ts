@@ -4,7 +4,7 @@ import { GAME_WIDTH, GAME_HEIGHT, ZOOM, COLORS, FONT_FAMILY } from '../utils/con
 
 // Monster sprite image keys to preload from public/assets/monsters/
 const MONSTER_SPRITE_IMAGES = [
-  // 43 unique sprites
+  // Base and boss sprites
   'monster-slime', 'monster-bug', 'monster-rabbit', 'monster-wolf',
   'monster-mushroom', 'monster-bandit', 'monster-bat', 'monster-spider',
   'monster-crab', 'monster-golem', 'monster-giantToad', 'monster-serpent',
@@ -12,18 +12,22 @@ const MONSTER_SPRITE_IMAGES = [
   'monster-wyvern', 'monster-kraken', 'monster-dragon', 'monster-blizzardBear',
   'monster-iceSprite', 'monster-darkSorcerer', 'monster-lizard', 'monster-knight',
   'monster-skeleton', 'monster-wraith', 'monster-fireElemental', 'monster-chimera',
-  'monster-demon', 'monster-shadow', 'monster-lich', 'monster-flameTitan',
+  'monster-demon', 'monster-shadow', 'monster-shadowWisp', 'monster-lich', 'monster-flameTitan',
   'monster-banditLord', 'monster-seaStar', 'monster-mummy', 'monster-stormRaptor',
   'monster-templeGuard', 'monster-ancientSphinx', 'monster-stormSentinel',
   'monster-frostMonarch', 'monster-swordWraith', 'monster-celestialGuardian',
   'monster-demonKing',
-  // 17 color variants
+  // Color variants and expansion sprites
   'monster-magmaSlime', 'monster-frostWolf', 'monster-frostStalker',
   'monster-flameBat', 'monster-sandGolem', 'monster-lavaGolem',
   'monster-glacialGolem', 'monster-frozenSkeleton', 'monster-sandWraith',
   'monster-cloudWraith', 'monster-voidShade', 'monster-iceWyrm',
   'monster-lavaWyrm', 'monster-darkKnight', 'monster-stormHarpy',
   'monster-giantCrab', 'monster-banditArcher', 'monster-mimic',
+  'monster-mosswarden', 'monster-coralTitan', 'monster-oreColossus',
+  'monster-phantomStag', 'monster-sandSerpentQueen', 'monster-ashenGuardian',
+  'monster-magmaBeetleKing', 'monster-crystalHydra', 'monster-warGeneralMalachar',
+  'monster-nullDevourer',
 ];
 
 export class BootScene extends Phaser.Scene {

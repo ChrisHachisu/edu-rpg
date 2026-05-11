@@ -2248,6 +2248,36 @@ export class WorldMapScene extends Phaser.Scene {
         if (bossTileX >= 0) break;
       }
 
+      if (bossTileX < 0 && bossId === 'swordWraith') {
+        // Sword Wraith is the moving Maze Hunter boss, so there may be no static boss tile to dissolve.
+        audioManager.playSfx('crystal_obtain');
+        gameState.player.addItem('excalibur', 1);
+        gameState.player.equip('excalibur');
+        if (this.mazeHunterEnabled) {
+          this.mazeHunterDefeated = true;
+          this.mazeHunterActive = false;
+          if (this.mazeHunterBossSprite) {
+            this.tweens.add({
+              targets: this.mazeHunterBossSprite,
+              alpha: 0,
+              duration: 500,
+              onComplete: () => {
+                this.mazeHunterBossSprite?.destroy();
+                this.mazeHunterBossSprite = undefined;
+              },
+            });
+          }
+          this.unsealMazeHunterExit();
+        }
+        this.time.delayedCall(200, () => {
+          const defeatMsg = t(`dungeon.${this.currentMapId}.boss.defeat`);
+          const victoryMsg = t(`dungeon.${this.currentMapId}.victory`);
+          const onDone = () => { this.isMoving = false; this.updateHUD(); };
+          this.showDialogSequence([defeatMsg, t('legendary.excalibur.obtained'), victoryMsg], onDone);
+        });
+        return;
+      }
+
       if (bossTileX >= 0) {
         // Sparkle dissolve effect
         const cx = bossTileX * TILE_SIZE + TILE_SIZE / 2;
@@ -3775,6 +3805,8 @@ export class WorldMapScene extends Phaser.Scene {
     const gx = this.heroTileX, gy = this.heroTileY;
     if (sx === gx && sy === gy) return null;
     const h = this.mapData.length, w = this.mapData[0]?.length ?? 0;
+    const inBounds = (x: number, y: number) => y >= 0 && y < h && x >= 0 && x < w;
+    if (!inBounds(sx, sy) || !inBounds(gx, gy)) return null;
     const dist: number[][] = Array.from({ length: h }, () => new Array(w).fill(-1));
     const queue: [number, number][] = [[sx, sy]];
     dist[sy][sx] = 0;
@@ -3792,15 +3824,16 @@ export class WorldMapScene extends Phaser.Scene {
     if (dist[gy][gx] < 0) return null;
     let cx = gx, cy = gy;
     for (;;) {
+      let advanced = false;
       for (const [dx, dy] of dirs) {
         const nx = cx + dx, ny = cy + dy;
         if (nx < 0 || nx >= w || ny < 0 || ny >= h) continue;
         if (dist[ny][nx] === dist[cy][cx] - 1) {
           if (dist[ny][nx] === 0) return { x: cx, y: cy };
-          cx = nx; cy = ny; break;
+          cx = nx; cy = ny; advanced = true; break;
         }
       }
-      if (dist[cy][cx] <= 0) break;
+      if (!advanced || dist[cy][cx] <= 0) break;
     }
     return null;
   }
