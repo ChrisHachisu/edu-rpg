@@ -905,11 +905,12 @@ export class WorldMapScene extends Phaser.Scene {
 
     // Save point
     if (def.savePoint) {
-      this.add.sprite(
+      const sprite = this.add.sprite(
         def.savePoint.x * TILE_SIZE + TILE_SIZE / 2,
         def.savePoint.y * TILE_SIZE + TILE_SIZE / 2,
         'save-point'
       ).setOrigin(0.5).setScale(1);
+      this.npcSprites.push(sprite);
     }
   }
 
@@ -1433,12 +1434,20 @@ export class WorldMapScene extends Phaser.Scene {
     }
 
     // Block movement during transition to prevent re-entry
+    const previousPosition = {
+      mapId: this.currentMapId,
+      x: this.heroTileX,
+      y: this.heroTileY,
+      floor: this.currentFloor,
+    };
     this.isMoving = true;
+    this.cameras.main.resetFX();
     this.cameras.main.fadeOut(200, 0, 0, 0);
     this.cameras.main.once('camerafadeoutcomplete', () => {
-      const def = mapDefs[this.currentMapId];
+      try {
+        const def = mapDefs[this.currentMapId];
 
-      if (target.targetMap === '__boss_warp__') {
+        if (target.targetMap === '__boss_warp__') {
         // Boss warp portal — teleport directly to boss floor
         this.currentFloor = target.toFloor ?? (def.floors ?? 1);
         gameState.encounterManager.reset();
@@ -1560,8 +1569,23 @@ export class WorldMapScene extends Phaser.Scene {
           }
         }
       }
-      this.isMoving = false;
-      this.cameras.main.fadeIn(200, 0, 0, 0);
+      } catch (error) {
+        console.error('Map transition failed', error);
+        this.currentMapId = previousPosition.mapId;
+        this.currentFloor = previousPosition.floor;
+        this.heroTileX = previousPosition.x;
+        this.heroTileY = previousPosition.y;
+        try {
+          this.loadMap(previousPosition.mapId);
+          this.updatePosition();
+          this.updateCamera();
+        } catch (fallbackError) {
+          console.error('Map transition recovery failed', fallbackError);
+        }
+      } finally {
+        this.isMoving = false;
+        this.cameras.main.fadeIn(200, 0, 0, 0);
+      }
     });
   }
 

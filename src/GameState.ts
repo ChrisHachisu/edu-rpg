@@ -165,14 +165,15 @@ class GameStateManager {
   }
 
   getOverworldZone(x: number, y: number): string {
-    // V2 map: 120×160. River ≈ y=131, Mountains ≈ y=101, Lava ≈ y=71
-    if (y <= 70) return 'demons-threshold';       // Act 5 — above lava barrier
-    if (y <= 100) return 'scorched-wastes';        // Act 3/4 — between mountains and lava
-    if (y <= 130) return 'iron-mountains';         // Act 2 — between river and mountains
-    // Act 1 — south of river
-    if (x < 35 && y > 145) return 'greenhollow-plains'; // Western plains near starting village
-    if (x >= 70) return 'crystal-coast';                  // Eastern coast near Port Sapphire
-    return 'whispering-woods';                            // Forest area between towns
+    // 320x400 overworld. Keep the first-town exit in the starter zone.
+    if (x < 160 && y > 200) {
+      if (x < 70 && y > 330) return 'greenhollow-plains';
+      if (x >= 120) return 'crystal-coast';
+      return 'whispering-woods';
+    }
+    if (x >= 160 && y > 200) return 'iron-mountains';
+    if (x >= 160 && y <= 200) return 'scorched-wastes';
+    return 'demons-threshold';
   }
 }
 

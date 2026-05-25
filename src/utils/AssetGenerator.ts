@@ -5937,6 +5937,7 @@ function drawMonster(g: ScaledGraphics, shape: string, color: number, size: numb
 }
 
 function generateTile(scene: Phaser.Scene, key: string, color: number, alt: number, decorator?: (g: ScaledGraphics) => void, nativeDecorator?: (g: ScaledGraphics) => void): void {
+  if (scene.textures.exists(key)) return;
   const s = TILE_LOGICAL; // 24
   const g = scene.add.graphics().setVisible(false);
   const sg = new ScaledGraphics(g, SPRITE_SCALE);
@@ -9245,7 +9246,7 @@ function generateTilesets(scene: Phaser.Scene): void {
   for (const idx of [3, 5, 6, 7, 9, 10, 11, 12, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24]) {
     const dngKey = `dng-${idx}`;
     const castleKey = `castle-${idx}`;
-    if (scene.textures.exists(dngKey)) {
+    if (scene.textures.exists(dngKey) && !scene.textures.exists(castleKey)) {
       const src = scene.textures.get(dngKey).getSourceImage();
       scene.textures.addImage(castleKey, src as HTMLImageElement);
     }
@@ -9376,7 +9377,7 @@ function generateTilesets(scene: Phaser.Scene): void {
   for (const idx of [3, 5, 6, 7, 9, 10, 11, 12, 14, 15, 16, 25, 26, 27]) {
     const dngKey = `dng-${idx}`;
     const forestKey = `forest-${idx}`;
-    if (scene.textures.exists(dngKey)) {
+    if (scene.textures.exists(dngKey) && !scene.textures.exists(forestKey)) {
       const src = scene.textures.get(dngKey).getSourceImage();
       scene.textures.addImage(forestKey, src as HTMLImageElement);
     }
@@ -9455,7 +9456,7 @@ function generateTilesets(scene: Phaser.Scene): void {
   for (const idx of [3, 5, 6, 7, 9, 10, 12, 14, 15, 16, 17, 18, 24]) {
     const dngKey = `dng-${idx}`;
     const towerKey = `tower-${idx}`;
-    if (scene.textures.exists(dngKey)) {
+    if (scene.textures.exists(dngKey) && !scene.textures.exists(towerKey)) {
       const src = scene.textures.get(dngKey).getSourceImage();
       scene.textures.addImage(towerKey, src as HTMLImageElement);
     }
@@ -9547,7 +9548,7 @@ function generateTilesets(scene: Phaser.Scene): void {
   for (const idx of [3, 5, 6, 7, 9, 10, 12, 14, 15, 16, 17, 18, 24]) {
     const dngKey = `dng-${idx}`;
     const crystalKey = `crystal-${idx}`;
-    if (scene.textures.exists(dngKey)) {
+    if (scene.textures.exists(dngKey) && !scene.textures.exists(crystalKey)) {
       const src = scene.textures.get(dngKey).getSourceImage();
       scene.textures.addImage(crystalKey, src as HTMLImageElement);
     }
@@ -9627,7 +9628,7 @@ function generateTilesets(scene: Phaser.Scene): void {
   for (const idx of [2, 3, 6, 7, 9, 10, 12, 14, 15, 16, 17, 18, 24]) {
     const dngKey = `dng-${idx}`;
     const iceKey = `ice-${idx}`;
-    if (scene.textures.exists(dngKey)) {
+    if (scene.textures.exists(dngKey) && !scene.textures.exists(iceKey)) {
       const src = scene.textures.get(dngKey).getSourceImage();
       scene.textures.addImage(iceKey, src as HTMLImageElement);
     }
@@ -9682,7 +9683,7 @@ function generateTilesets(scene: Phaser.Scene): void {
   for (const idx of [2, 3, 5, 6, 7, 9, 10, 11, 12, 14, 15, 16, 17, 18, 19, 20, 23, 25, 26, 27, 28]) {
     const dngKey = `dng-${idx}`;
     const shadowKey = `shadow-${idx}`;
-    if (scene.textures.exists(dngKey)) {
+    if (scene.textures.exists(dngKey) && !scene.textures.exists(shadowKey)) {
       const src = scene.textures.get(dngKey).getSourceImage();
       scene.textures.addImage(shadowKey, src as HTMLImageElement);
     }
@@ -9741,7 +9742,7 @@ function generateTilesets(scene: Phaser.Scene): void {
   for (const idx of [2, 3, 5, 6, 7, 9, 10, 11, 12, 14, 15, 16, 17, 18, 19, 20, 23, 25, 26, 27, 28]) {
     const dngKey = `dng-${idx}`;
     const tombKey = `tomb-${idx}`;
-    if (scene.textures.exists(dngKey)) {
+    if (scene.textures.exists(dngKey) && !scene.textures.exists(tombKey)) {
       const src = scene.textures.get(dngKey).getSourceImage();
       scene.textures.addImage(tombKey, src as HTMLImageElement);
     }

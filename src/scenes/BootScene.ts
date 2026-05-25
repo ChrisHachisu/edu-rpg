@@ -41,8 +41,7 @@ export class BootScene extends Phaser.Scene {
   }
 
   preload(): void {
-    const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    const assetBase = isDev ? '/assets/' : 'assets/';
+    const assetBase = `${import.meta.env.BASE_URL}assets/`;
     const monsterBase = `${assetBase}monsters/`;
     const npcBase = `${assetBase}npcs/`;
 
