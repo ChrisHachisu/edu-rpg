@@ -30,17 +30,29 @@ const MONSTER_SPRITE_IMAGES = [
   'monster-nullDevourer',
 ];
 
+const NPC_SPRITE_IMAGES = [
+  'npc-sage', 'npc-elder', 'npc-kiki', 'npc-drake', 'npc-gordo',
+  'npc-luna', 'npc-knight', 'npc-guard-f', 'npc-archaeologist',
+];
+
 export class BootScene extends Phaser.Scene {
   constructor() {
     super('BootScene');
   }
 
   preload(): void {
-    // Preload monster sprite images (hand-drawn pixel art)
     const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    const monsterBase = isDev ? '/assets/monsters/' : 'assets/monsters/';
+    const assetBase = isDev ? '/assets/' : 'assets/';
+    const monsterBase = `${assetBase}monsters/`;
+    const npcBase = `${assetBase}npcs/`;
+
+    // Preload monster sprite images (hand-drawn pixel art)
     for (const key of MONSTER_SPRITE_IMAGES) {
       this.load.image(key, `${monsterBase}${key}.png`);
+    }
+
+    for (const key of NPC_SPRITE_IMAGES) {
+      this.load.image(key, `${npcBase}${key}.png`);
     }
   }
 

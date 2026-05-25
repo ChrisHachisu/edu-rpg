@@ -11,7 +11,7 @@
 //   8=opened-chest, 9=stairs-down, 10=boss-exit-portal, 11=boss-warp-portal, 12=boss-exit-stairs
 //   14=save, 15=locked-door, 17=hidden-door, 18=sign, 19=unlockedDoor, 20=coloredPillar
 //   23=crystalPillar, 24=crumble, 25=windTile/iceTile, 26=sandTrapCenter, 27=sandTrapRing, 28=iceWall
-//   29=shadowPortal, 30=banditTrap, 31=banditBear
+//   29=shadowPortal, 30=banditTrap, 31=tripwire
 
 // ─── Global signpost data (populated by overworld generator) ───
 export interface SignpostData {
@@ -506,7 +506,7 @@ export function generateOverworldMap(width: number, height: number): number[][] 
   const dungeons: [number, number][] = [
     [45, 350], [80, 310], [140, 350], [120, 260],
     [185, 335], [260, 234],
-    [225, 160], [298, 120], [278, 82],
+    [225, 160], [278, 82],
     [202, 48], [242, 93], [242, 81], [185, 48],
     [172, 110], [148, 110],
     [80, 60], [120, 70],
@@ -1586,6 +1586,7 @@ export function generateDungeonMap(
   const keyChests: { x: number; y: number }[] = [];
   const hiddenRoomChests: string[] = [];
   const isStormNest = mapId === 'stormNest';
+  const isBanditHideout = mapId === 'banditHideout';
 
   // Room carving helper
   const carveRoom = (rx: number, ry: number, rw: number, rh: number, tile: number = 0) => {
@@ -1605,6 +1606,92 @@ export function generateDungeonMap(
     } else {
       const nx = cx + 1;
       if (nx > 0 && nx < width - 1 && cy > 0 && cy < height - 1 && map[cy][nx] === 1) map[cy][nx] = 0;
+    }
+  };
+
+  const isNearImportantTile = (x: number, y: number, radius: number): boolean => {
+    const important = new Set([4, 6, 7, 9, 10, 11, 12, 14, 15, 17, 18, 19, 20, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32]);
+    for (let dy = -radius; dy <= radius; dy++) {
+      for (let dx = -radius; dx <= radius; dx++) {
+        const px = x + dx, py = y + dy;
+        if (px < 0 || px >= width || py < 0 || py >= height) continue;
+        if (important.has(map[py][px])) return true;
+      }
+    }
+    return false;
+  };
+
+  const shufflePoints = <T>(items: T[]): T[] => {
+    for (let i = items.length - 1; i > 0; i--) {
+      const j = Math.floor(rand() * (i + 1));
+      [items[i], items[j]] = [items[j], items[i]];
+    }
+    return items;
+  };
+
+  const placeBanditTraps = () => {
+    if (!isBanditHideout) return;
+
+    const wallAdjacent = (x: number, y: number): boolean =>
+      map[y - 1]?.[x] === 1 || map[y + 1]?.[x] === 1 || map[y]?.[x - 1] === 1 || map[y]?.[x + 1] === 1;
+    const openNeighbors = (x: number, y: number): number =>
+      [[0, -1], [0, 1], [-1, 0], [1, 0]].reduce((sum, [dx, dy]) => {
+        const tile = map[y + dy]?.[x + dx];
+        return sum + (tile !== undefined && tile !== 1 && tile !== 5 ? 1 : 0);
+      }, 0);
+    const farFrom = (x: number, y: number, points: { x: number; y: number }[], minDist: number): boolean =>
+      points.every(p => Math.abs(p.x - x) + Math.abs(p.y - y) >= minDist);
+
+    const spikeCandidates: { x: number; y: number }[] = [];
+    for (let y = 2; y < height - 2; y++) {
+      for (let x = 2; x < width - 2; x++) {
+        if (map[y][x] !== 0) continue;
+        if (!wallAdjacent(x, y) || openNeighbors(x, y) < 2) continue;
+        if (isNearImportantTile(x, y, 3)) continue;
+        spikeCandidates.push({ x, y });
+      }
+    }
+
+    const placedSpikes: { x: number; y: number }[] = [];
+    const spikeTarget = Math.min(8, 4 + floor);
+    for (const pos of shufflePoints(spikeCandidates)) {
+      if (placedSpikes.length >= spikeTarget) break;
+      if (!farFrom(pos.x, pos.y, placedSpikes, 4)) continue;
+      map[pos.y][pos.x] = 30;
+      placedSpikes.push(pos);
+    }
+
+    if (floor < 3) return;
+
+    const tripwireCandidates: { x: number; y: number }[] = [];
+    for (let y = 2; y < height - 2; y++) {
+      for (let x = 2; x < width - 2; x++) {
+        if (map[y][x] !== 0) continue;
+        if (isNearImportantTile(x, y, 4)) continue;
+        const horizontalPassage = map[y - 1]?.[x] === 1 && map[y + 1]?.[x] === 1
+          && map[y]?.[x - 1] !== 1 && map[y]?.[x + 1] !== 1;
+        const verticalPassage = map[y]?.[x - 1] === 1 && map[y]?.[x + 1] === 1
+          && map[y - 1]?.[x] !== 1 && map[y + 1]?.[x] !== 1;
+        if (horizontalPassage || verticalPassage) tripwireCandidates.push({ x, y });
+      }
+    }
+
+    const placedTripwires: { x: number; y: number }[] = [];
+    for (const pos of shufflePoints(tripwireCandidates)) {
+      if (placedTripwires.length >= 3) break;
+      if (!farFrom(pos.x, pos.y, placedTripwires, 8)) continue;
+      map[pos.y][pos.x] = 31;
+      placedTripwires.push(pos);
+    }
+
+    if (placedTripwires.length >= 3) return;
+
+    const fallback = spikeCandidates.filter(pos => map[pos.y][pos.x] === 0 && !isNearImportantTile(pos.x, pos.y, 4));
+    for (const pos of shufflePoints(fallback)) {
+      if (placedTripwires.length >= 3) break;
+      if (!farFrom(pos.x, pos.y, placedTripwires, 8)) continue;
+      map[pos.y][pos.x] = 31;
+      placedTripwires.push(pos);
     }
   };
 
@@ -1647,7 +1734,7 @@ export function generateDungeonMap(
   carveRoom(exitX - 1, exitY - 1, 3, 3);
 
   // Carve main corridor between entrance and exit
-  const bendiness = 0.3;
+  const bendiness = isBanditHideout && floor === 4 ? 0.6 : 0.3;
   const mainPath: [number, number][] = [];
   const mainDirs: ('h' | 'v')[] = [];
   {
@@ -1764,8 +1851,8 @@ export function generateDungeonMap(
         if (ex > 0 && ex < width - 1 && ey > 0 && ey < height - 1) map[ey][ex] = 0;
       }
     }
-    if (isFinalFloor || gateFinalFloor) map[exitY][exitX] = 7;
-    else map[exitY][exitX] = 9;
+    if (gateFinalFloor || (isFinalFloor && !isBanditHideout)) map[exitY][exitX] = 7;
+    else if (!isFinalFloor) map[exitY][exitX] = 9;
   }
 
   // ── Branch corridors from main path ──
@@ -1780,8 +1867,9 @@ export function generateDungeonMap(
 
   // Assign treasure to some branches
   const noKeyMechanics = new Set(['ice', 'forest-maze', 'darkness-pulse', 'wind-tower', 'shadow-portal', 'maze-hunter']);
+  const keyRoll = numBranches >= 4 ? rand() : 1;
   const shouldHaveKey = !noKeyMechanics.has(mechanic ?? '') &&
-    (mechanic === 'colored-keys' && numBranches >= 2 || isFinalFloor && numBranches >= 3 || numBranches >= 4 && !isFirstFloor && rand() < 0.85);
+    (isBanditHideout && numBranches >= 2 || mechanic === 'colored-keys' && numBranches >= 2 || isFinalFloor && numBranches >= 3 || numBranches >= 4 && !isFirstFloor && keyRoll < 0.85);
   let hasKey = shouldHaveKey && numBranches >= 2;
   const numTreasure = Math.max(2, 3 - (hasKey ? 1 : 0));
   let treasureCount = 0;
@@ -1798,17 +1886,33 @@ export function generateDungeonMap(
     if (treasureCount >= numTreasure) break;
     if (branchTypes[idx] === 'empty') { branchTypes[idx] = 'treasure'; treasureCount++; }
   }
+  if (hasKey) {
+    const keyIdx = branchTypes.findIndex((type, i) => type === 'empty' && i < numBranches - 1);
+    if (keyIdx >= 0) branchTypes[keyIdx] = 'key';
+    else hasKey = false;
+  }
 
   // Check if dungeon has hidden rooms
   const hasHiddenRooms = mapId ? new Set([
-    'ironMine', 'hauntedForest', 'shadowCave', 'oasisDepths', 'scorchedRuins',
+    'ironMine', 'hauntedForest', 'shadowCave', 'oasisDepths', 'banditHideout', 'scorchedRuins',
     'emberMines', 'obsidianCavern', 'volcanicForge', 'demonBarracks', 'voidRift',
     'magmaTunnels', 'demonCastle', 'portalStormreach', 'portalFrostfall',
     'portalSunkenTemple', 'portalTwilight',
   ]).has(mapId) : false;
 
   let hiddenCount = 0;
-  if (hasHiddenRooms && !noKeyMechanics.has(mechanic ?? '')) {
+  if (isBanditHideout) {
+    if ([1, 3, 4, 5].includes(floor)) {
+      const emptyBranches = branchTypes
+        .map((type, i) => ({ type, i }))
+        .filter(entry => entry.type === 'empty');
+      const forced = isFinalFloor ? emptyBranches[emptyBranches.length - 1] : emptyBranches[0];
+      if (forced) {
+        branchTypes[forced.i] = 'hidden';
+        hiddenCount = 1;
+      }
+    }
+  } else if (hasHiddenRooms && !noKeyMechanics.has(mechanic ?? '')) {
     for (let i = 0; i < numBranches; i++) {
       if (branchTypes[i] === 'empty' && hiddenCount < 1 && rand() < 0.4) {
         branchTypes[i] = 'hidden';
@@ -1912,6 +2016,21 @@ export function generateDungeonMap(
     }
   }
 
+  if (hasKey) {
+    const keyBranch = branches.find(branch => branch.type === 'key');
+    const startIdx = Math.min(mainPath.length - 2, Math.max(3, (keyBranch?.originIdx ?? branchSpacing) + Math.max(2, Math.floor(branchSpacing / 2))));
+    for (let i = startIdx; i < mainPath.length - 1; i++) {
+      const [doorX, doorY] = mainPath[i];
+      if (doorX <= 0 || doorX >= width - 1 || doorY <= 0 || doorY >= height - 1) continue;
+      if (map[doorY][doorX] === 0 || map[doorY][doorX] === 2) {
+        map[doorY][doorX] = 15;
+        break;
+      }
+    }
+  }
+
+  let banditHiddenBossPos: { x: number; y: number } | undefined;
+
   // Place branch endpoint tiles
   for (const branch of branches) {
     const { endX: bex, endY: bey } = branch;
@@ -1953,8 +2072,13 @@ export function generateDungeonMap(
           const midX = wallX + hdx, midY = wallY + hdy;
           if (midX >= 1 && midX < width - 1 && midY >= 1 && midY < height - 1) map[midY][midX] = 0;
           map[wallY][wallX] = 17; // hidden door
-          map[roomY][roomX] = 4;
-          hiddenRoomChests.push(`${roomX},${roomY}`);
+          if (isBanditHideout && isFinalFloor) {
+            map[roomY][roomX] = 7;
+            banditHiddenBossPos = { x: roomX, y: roomY };
+          } else {
+            map[roomY][roomX] = 4;
+            hiddenRoomChests.push(`${roomX},${roomY}`);
+          }
           break;
         }
         break;
@@ -1962,6 +2086,32 @@ export function generateDungeonMap(
       case 'empty':
         if (map[bey][bex] === 0 && rand() > 0.5) map[bey][bex] = 2;
         break;
+    }
+  }
+
+  if (isBanditHideout && isFinalFloor && !banditHiddenBossPos) {
+    const anchor = branches[branches.length - 1] ?? { endX: exitX, endY: exitY };
+    const dirs = [[0, -1], [0, 1], [-1, 0], [1, 0]] as [number, number][];
+    for (const [hdx, hdy] of dirs) {
+      const wallX = anchor.endX + hdx, wallY = anchor.endY + hdy;
+      const roomX = wallX + hdx * 2, roomY = wallY + hdy * 2;
+      if (wallX <= 0 || wallX >= width - 1 || wallY <= 0 || wallY >= height - 1) continue;
+      if (roomX - 1 <= 0 || roomX + 1 >= width - 1 || roomY - 1 <= 0 || roomY + 1 >= height - 1) continue;
+      if (map[wallY][wallX] !== 1) continue;
+      let allWalls = true;
+      for (let ry = roomY - 1; ry <= roomY + 1 && allWalls; ry++) {
+        for (let rx = roomX - 1; rx <= roomX + 1; rx++) {
+          if (map[ry][rx] !== 1) { allWalls = false; break; }
+        }
+      }
+      if (!allWalls) continue;
+      for (let ry = roomY - 1; ry <= roomY + 1; ry++) {
+        for (let rx = roomX - 1; rx <= roomX + 1; rx++) map[ry][rx] = 0;
+      }
+      map[wallY][wallX] = 17;
+      map[roomY][roomX] = 7;
+      banditHiddenBossPos = { x: roomX, y: roomY };
+      break;
     }
   }
 
@@ -1998,6 +2148,8 @@ export function generateDungeonMap(
       }
     }
   }
+
+  placeBanditTraps();
 
   // ── BFS reachability: ensure exit is reachable ──
   let goalX = exitX, goalY = exitY;

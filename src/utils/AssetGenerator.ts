@@ -9080,12 +9080,13 @@ function generateTilesets(scene: Phaser.Scene): void {
     g.fillStyle(0xffcc88, 0.5); g.fillRect(8, 10, 4, 1); g.fillRect(5, 9, 2, 1);
     g.fillStyle(0xddaa33, 0.08); g.fillRect(3, 7, 18, 10);
   });
-  // dng-17: Dark brick wall pattern
-  generateTile(scene, 'dng-17', 0x222222, 0x1a1a1a, undefined, g => {
-    g.fillStyle(0x2a2a2a); g.fillRect(0, 0, 11, 5); g.fillRect(13, 0, 11, 5); g.fillRect(0, 7, 8, 5); g.fillRect(10, 7, 14, 5); g.fillRect(0, 14, 12, 5); g.fillRect(14, 14, 10, 5); g.fillRect(3, 20, 10, 4); g.fillRect(15, 20, 9, 4);
-    g.fillStyle(0x1e1e1e); g.fillRect(0, 5, 24, 2); g.fillRect(0, 12, 24, 2); g.fillRect(0, 19, 24, 1); g.fillRect(12, 0, 1, 5); g.fillRect(9, 7, 1, 5); g.fillRect(13, 14, 1, 5); g.fillRect(14, 20, 1, 4);
-    g.fillStyle(0x333333, 0.4); g.fillRect(0, 20, 4, 4); g.fillRect(20, 22, 4, 2);
-    g.fillStyle(0x2e2e2e, 0.6); g.fillRect(11, 6, 2, 1); g.fillRect(12, 4, 1, 3);
+  // dng-17: Hidden wall - slightly lighter bricks with a vertical crack
+  generateTile(scene, 'dng-17', 0x303030, 0x262626, undefined, g => {
+    g.fillStyle(0x383838); g.fillRect(0, 0, 11, 5); g.fillRect(13, 0, 11, 5); g.fillRect(0, 7, 8, 5); g.fillRect(10, 7, 14, 5); g.fillRect(0, 14, 12, 5); g.fillRect(14, 14, 10, 5); g.fillRect(3, 20, 10, 4); g.fillRect(15, 20, 9, 4);
+    g.fillStyle(0x242424); g.fillRect(0, 5, 24, 2); g.fillRect(0, 12, 24, 2); g.fillRect(0, 19, 24, 1); g.fillRect(12, 0, 1, 5); g.fillRect(9, 7, 1, 5); g.fillRect(13, 14, 1, 5); g.fillRect(14, 20, 1, 4);
+    g.fillStyle(0x444444, 0.65); g.fillRect(2, 1, 6, 2); g.fillRect(15, 8, 6, 2); g.fillRect(3, 15, 5, 2);
+    g.fillStyle(0x0f0f0f); g.fillRect(11, 2, 1, 4); g.fillRect(12, 6, 1, 5); g.fillRect(11, 11, 1, 5); g.fillRect(10, 16, 1, 4); g.fillRect(11, 20, 1, 3);
+    g.fillStyle(0x565656, 0.45); g.fillRect(13, 3, 1, 3); g.fillRect(13, 12, 1, 3); g.fillRect(12, 21, 1, 2);
   });
   // dng-18: Book/library shelf
   generateTile(scene, 'dng-18', 0x444444, 0x3a3a3a, undefined, g => {
@@ -9199,7 +9200,7 @@ function generateTilesets(scene: Phaser.Scene): void {
     g.fillStyle(0xaa5fff, 0.6); g.fillRect(7, 8, 2, 1); g.fillRect(15, 14, 2, 1); g.fillRect(10, 16, 1, 2); g.fillRect(13, 6, 1, 2);
     g.fillStyle(0xcc88ff, 0.4); g.fillCircle(12, 12, 2);
   });
-  // dng-30: Dungeon floor with surveillance eyes
+  // dng-30: Armed pressure plate for spike traps
   generateTile(scene, 'dng-30', 0x444444, 0x3a3a3a, undefined, g => {
     g.fillStyle(0x3a3a3a); g.fillRect(0, 11, 24, 1); g.fillRect(8, 0, 1, 11); g.fillRect(17, 0, 1, 11); g.fillRect(5, 12, 1, 12); g.fillRect(12, 12, 1, 12); g.fillRect(20, 12, 1, 12);
     g.fillStyle(0x363636, 0.5); g.fillRect(1, 2, 5, 3); g.fillRect(14, 14, 4, 3); g.fillRect(9, 18, 3, 2);
@@ -9208,9 +9209,10 @@ function generateTilesets(scene: Phaser.Scene): void {
     g.fillStyle(0x4a4a5a, 0.2); g.fillRect(2, 8, 3, 1); g.fillRect(15, 18, 4, 1);
     g.fillStyle(0x2e2e2e); g.fillRect(6, 4, 1, 2); g.fillRect(18, 7, 1, 2); g.fillRect(10, 15, 1, 2);
     g.fillStyle(0x333333, 0.4); g.fillRect(1, 10, 1, 1); g.fillRect(21, 22, 1, 1); g.fillRect(7, 13, 1, 1);
-    // Surveillance eyes at corners
-    const eyePositions: [number, number][] = [[6, 6], [18, 6], [6, 18], [18, 18]];
-    for (const [ex, ey] of eyePositions) { g.fillStyle(0x0e0e06, 0.85); g.fillRect(ex, ey, 2, 2); }
+    g.fillStyle(0x2a2520, 0.85); g.fillRect(5, 5, 14, 14);
+    g.fillStyle(0x5a5144, 0.9); g.fillRect(6, 6, 12, 12);
+    g.fillStyle(0x2f2a24, 0.9); g.fillRect(8, 8, 8, 8);
+    g.fillStyle(0xbb8844, 0.7); g.fillRect(6, 6, 2, 2); g.fillRect(16, 6, 2, 2); g.fillRect(6, 16, 2, 2); g.fillRect(16, 16, 2, 2);
   });
   // dng-31: Dungeon floor with horizontal bar overlay
   generateTile(scene, 'dng-31', 0x444444, 0x3a3a3a, undefined, g => {

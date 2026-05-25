@@ -63,7 +63,7 @@ export const mapDefs: Record<string, MapDef> = {
       // ── Act 3 Dungeons ──
       { targetMap: 'oasisDepths', fromX: 225, fromY: 160, toX: 50, toY: 1 },
       { targetMap: 'desertTomb', fromX: 250, fromY: 140, toX: 50, toY: 1 },
-      { targetMap: 'banditHideout', fromX: 298, fromY: 120, toX: 50, toY: 1 },
+      { targetMap: 'banditHideout', fromX: 298, fromY: 130, toX: 50, toY: 1 },
       { targetMap: 'scorchedRuins', fromX: 278, fromY: 82, toX: 50, toY: 1 },
       // ── Act 4 Dungeons ──
       { targetMap: 'emberMines', fromX: 202, fromY: 48, toX: 50, toY: 1 },
@@ -491,11 +491,11 @@ export const mapDefs: Record<string, MapDef> = {
     width: 100,
     height: 100,
     connections: [
-      { targetMap: 'overworld', fromX: 50, fromY: 0, toX: 298, toY: 121 },
+      { targetMap: 'overworld', fromX: 50, fromY: 0, toX: 298, toY: 131 },
     ],
     npcs: [],
     bossId: 'banditLord',
-    floors: 3,
+    floors: 5,
   },
   scorchedRuins: {
     id: 'scorchedRuins',

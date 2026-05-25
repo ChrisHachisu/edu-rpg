@@ -38,6 +38,31 @@ export class MenuScene extends Phaser.Scene {
     this.setupInput();
   }
 
+  update(): void {
+    const state = gameState.player.state as any;
+    if (!state.poisonedUntil) return;
+
+    const now = Date.now();
+    if (now > state.poisonedUntil) {
+      state.poisonedUntil = undefined;
+      state.poisonLastTickWallTime = 0;
+      return;
+    }
+
+    if (!state.poisonLastTickWallTime) {
+      state.poisonLastTickWallTime = now;
+      return;
+    }
+
+    const ticks = Math.floor((now - state.poisonLastTickWallTime) / 1000);
+    if (ticks <= 0) return;
+
+    state.poisonLastTickWallTime += ticks * 1000;
+    const dmg = Math.max(1, Math.floor(gameState.player.totalMaxHp * 0.02)) * ticks;
+    gameState.player.state.hp = Math.max(1, gameState.player.state.hp - dmg);
+    if (this.currentTab === 'status') this.drawMenu();
+  }
+
   private drawMenu(): void {
     this.children.removeAll();
 
@@ -65,8 +90,9 @@ export class MenuScene extends Phaser.Scene {
     }
 
     // Close hint + settings hint
+    const settingsAction = this.settingsList[this.listIndex] === 'title' ? t('menu.saveAndTitle') : t('settings.change');
     const hints = this.currentTab === 'settings'
-      ? 'Z: ' + t('settings.change') + '    ESC: ' + t('menu.close')
+      ? 'Z: ' + settingsAction + '    ESC: ' + t('menu.close')
       : 'ESC: ' + t('menu.close');
     this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - Math.round(16 * S), hints, {
       fontSize: `${Math.round(9 * S)}px`, color: COLORS.TEXT_GRAY, fontFamily: FONT_FAMILY,
@@ -370,7 +396,7 @@ export class MenuScene extends Phaser.Scene {
   private get settingsList(): string[] {
     const list = ['difficulty', 'language'];
     if (getLocale() === 'ja') list.push('kanji');
-    list.push('timer', 'sound', 'volume');
+    list.push('timer', 'sound', 'volume', 'title');
     return list;
   }
 
@@ -409,6 +435,8 @@ export class MenuScene extends Phaser.Scene {
         const vol = Math.round(gameState.player.state.masterVolume * 100);
         this.add.text(Math.round(32 * S), y, t('settings.volume'), { fontSize: settingFs, color: labelColor, fontFamily: FONT_FAMILY });
         this.add.text(Math.round(200 * S), y, `${vol}%`, { fontSize: settingFs, color: COLORS.TEXT_YELLOW, fontFamily: FONT_FAMILY });
+      } else if (id === 'title') {
+        this.add.text(Math.round(32 * S), y, t('menu.saveAndTitle'), { fontSize: settingFs, color: labelColor, fontFamily: FONT_FAMILY });
       }
       y += Math.round(28 * S);
     });
@@ -581,8 +609,18 @@ export class MenuScene extends Phaser.Scene {
       const next = (cur + 1) % 11;
       gameState.player.state.masterVolume = Math.round(next) / 10;
       audioManager.setVolume(gameState.player.state.masterVolume);
+    } else if (id === 'title') {
+      this.returnToTitle();
+      return;
     }
     this.drawMenu();
+  }
+
+  private returnToTitle(): void {
+    gameState.saveGame();
+    audioManager.playSfx('save');
+    this.scene.stop('WorldMapScene');
+    this.scene.start('TitleScene', { skipDevStart: true });
   }
 
   /** Returns inventory items excluding equipment (weapons/armor/shields/helmets) */

@@ -7,7 +7,7 @@ import { mapDefs } from '../data/maps';
 import { monsters } from '../data/monsters';
 import { items } from '../data/items';
 import { encounterZones } from '../data/encounterTables';
-import { questDefinitions } from '../systems/progression/QuestManager';
+import { questDefinitions, type QuestDefinition, type QuestObjective } from '../systems/progression/QuestManager';
 import { audioManager, BgmTrack } from '../systems/audio/AudioManager';
 
 const S = UI_SCALE;
@@ -17,34 +17,50 @@ const S = UI_SCALE;
 // doneFlag: story flag that marks this waypoint as completed
 // For towns: compass.visited.<mapId>  (set on entry)
 // For dungeons: boss.<bossId>.defeated (set on boss defeat)
-const COMPASS_CHAIN: { mapId: string; ox: number; oy: number; type: 'town' | 'dungeon'; doneFlag: string }[] = [
+type CompassWaypoint = {
+  mapId: string;
+  ox: number;
+  oy: number;
+  type: 'town' | 'dungeon';
+  doneFlag: string;
+  questGate?: string;
+};
+
+const COMPASS_CHAIN: CompassWaypoint[] = [
   // Act 1
-  { mapId: 'sunkenCellar',  ox: 25,  oy: 148, type: 'dungeon', doneFlag: 'boss.giantCrab.defeated' },
-  { mapId: 'millbrook',     ox: 45,  oy: 145, type: 'town',    doneFlag: 'compass.visited.millbrook' },
-  { mapId: 'portSapphire',  ox: 66,  oy: 138, type: 'town',    doneFlag: 'compass.visited.portSapphire' },
-  { mapId: 'mistyGrotto',   ox: 85,  oy: 144, type: 'dungeon', doneFlag: 'boss.giantToad.defeated' },
-  { mapId: 'crystalCave',   ox: 66,  oy: 130, type: 'dungeon', doneFlag: 'boss.serpent.defeated' },
+  { mapId: 'millbrook',     ox: 100, oy: 320, type: 'town',    doneFlag: 'compass.visited.millbrook' },
+  { mapId: 'portSapphire',  ox: 130, oy: 290, type: 'town',    doneFlag: 'compass.visited.portSapphire' },
+  { mapId: 'mistyGrotto',   ox: 120, oy: 260, type: 'dungeon', doneFlag: 'boss.giantToad.defeated' },
+  { mapId: 'crystalCave',   ox: 148, oy: 295, type: 'dungeon', doneFlag: 'boss.serpent.defeated' },
   // Act 2
-  { mapId: 'ironkeep',      ox: 70,  oy: 118, type: 'town',    doneFlag: 'compass.visited.ironkeep' },
-  { mapId: 'frozenLake',    ox: 100, oy: 112, type: 'dungeon', doneFlag: 'boss.iceWyrm.defeated' },
-  { mapId: 'stormNest',     ox: 25,  oy: 108, type: 'dungeon', doneFlag: 'boss.stormHarpy.defeated' },
-  { mapId: 'shadowCave',    ox: 90,  oy: 102, type: 'dungeon', doneFlag: 'boss.dragon.defeated' },
+  { mapId: 'ironkeep',      ox: 200, oy: 320, type: 'town',    doneFlag: 'compass.visited.ironkeep' },
+  { mapId: 'ironMine',      ox: 185, oy: 335, type: 'dungeon', doneFlag: 'boss.oreColossus.defeated', questGate: 'gordosOre' },
+  { mapId: 'stormNest',     ox: 280, oy: 295, type: 'dungeon', doneFlag: 'boss.stormHarpy.defeated' },
+  { mapId: 'frostwatch',    ox: 222, oy: 262, type: 'town',    doneFlag: 'compass.visited.frostwatch' },
+  { mapId: 'frozenLake',    ox: 200, oy: 265, type: 'dungeon', doneFlag: 'boss.iceWyrm.defeated', questGate: 'frozenSupplies' },
+  { mapId: 'hauntedForest', ox: 238, oy: 248, type: 'dungeon', doneFlag: 'boss.phantomStag.defeated' },
+  { mapId: 'hauntedVillage', ox: 252, oy: 242, type: 'town',   doneFlag: 'compass.visited.hauntedVillage' },
+  { mapId: 'shadowCave',    ox: 260, oy: 234, type: 'dungeon', doneFlag: 'boss.dragon.defeated' },
   // Act 3/4
-  { mapId: 'ruinsCamp',     ox: 80,  oy: 85,  type: 'town',    doneFlag: 'compass.visited.ruinsCamp' },
-  { mapId: 'embersRest',    ox: 30,  oy: 78,  type: 'town',    doneFlag: 'compass.visited.embersRest' },
-  { mapId: 'oasisHaven',    ox: 45,  oy: 92,  type: 'town',    doneFlag: 'compass.visited.oasisHaven' },
-  { mapId: 'banditHideout', ox: 10,  oy: 103, type: 'dungeon', doneFlag: 'boss.banditLord.defeated' },
-  { mapId: 'desertTomb',    ox: 60,  oy: 95,  type: 'dungeon', doneFlag: 'boss.sandGolem.defeated' },
-  { mapId: 'magmaTunnels',  ox: 26,  oy: 90,  type: 'dungeon', doneFlag: 'boss.lavaWyrm.defeated' },
-  { mapId: 'volcanicForge', ox: 12,  oy: 70,  type: 'dungeon', doneFlag: 'boss.flameTitan.defeated' },
+  { mapId: 'oasisHaven',    ox: 220, oy: 150, type: 'town',    doneFlag: 'compass.visited.oasisHaven' },
+  { mapId: 'ruinsCamp',     ox: 270, oy: 120, type: 'town',    doneFlag: 'compass.visited.ruinsCamp' },
+  { mapId: 'oasisDepths',   ox: 225, oy: 160, type: 'dungeon', doneFlag: 'boss.sandSerpentQueen.defeated', questGate: 'lunasMap' },
+  { mapId: 'desertTomb',    ox: 250, oy: 140, type: 'dungeon', doneFlag: 'boss.sandGolem.defeated' },
+  { mapId: 'scorchedRuins', ox: 278, oy: 95,  type: 'dungeon', doneFlag: 'boss.ashenGuardian.defeated', questGate: 'ancientRelic' },
+  { mapId: 'embersRest',    ox: 195, oy: 80,  type: 'town',    doneFlag: 'compass.visited.embersRest' },
+  { mapId: 'emberMines',    ox: 202, oy: 48,  type: 'dungeon', doneFlag: 'boss.magmaBeetleKing.defeated', questGate: 'flameCloak' },
+  { mapId: 'obsidianCavern', ox: 185, oy: 48, type: 'dungeon', doneFlag: 'boss.crystalHydra.defeated', questGate: 'lunasProphecy' },
+  { mapId: 'volcanicForge', ox: 172, oy: 110, type: 'dungeon', doneFlag: 'boss.flameTitan.defeated' },
   // Act 5
-  { mapId: 'lastBastion',   ox: 85,  oy: 58,  type: 'town',    doneFlag: 'compass.visited.lastBastion' },
-  { mapId: 'havensEdge',    ox: 65,  oy: 40,  type: 'town',    doneFlag: 'compass.visited.havensEdge' },
-  { mapId: 'stormreachIsles',   ox: 15,  oy: 25,  type: 'dungeon', doneFlag: 'boss.stormSentinel.defeated' },
-  { mapId: 'frostfallPeaks',    ox: 100, oy: 25,  type: 'dungeon', doneFlag: 'boss.frostMonarch.defeated' },
-  { mapId: 'sunkenTempleIsle',  ox: 35,  oy: 45,  type: 'dungeon', doneFlag: 'boss.swordWraith.defeated' },
-  { mapId: 'twilightRealm',     ox: 80,  oy: 45,  type: 'dungeon', doneFlag: 'boss.celestialGuardian.defeated' },
-  { mapId: 'demonCastle',       ox: 55,  oy: 15,  type: 'dungeon', doneFlag: 'boss.demonKing.defeated' },
+  { mapId: 'lastBastion',   ox: 100, oy: 150, type: 'town',    doneFlag: 'compass.visited.lastBastion' },
+  { mapId: 'havensEdge',    ox: 70,  oy: 100, type: 'town',    doneFlag: 'compass.visited.havensEdge' },
+  { mapId: 'demonBarracks', ox: 80,  oy: 60,  type: 'dungeon', doneFlag: 'boss.warGeneralMalachar.defeated', questGate: 'demonBarracksQuest' },
+  { mapId: 'voidRift',      ox: 120, oy: 70,  type: 'dungeon', doneFlag: 'boss.nullDevourer.defeated', questGate: 'kikisResolve' },
+  { mapId: 'stormreachIsles',   ox: 40,  oy: 50,  type: 'dungeon', doneFlag: 'boss.stormSentinel.defeated', questGate: 'portalRelics' },
+  { mapId: 'frostfallPeaks',    ox: 130, oy: 40,  type: 'dungeon', doneFlag: 'boss.frostMonarch.defeated', questGate: 'portalRelics' },
+  { mapId: 'sunkenTempleIsle',  ox: 50,  oy: 130, type: 'dungeon', doneFlag: 'boss.swordWraith.defeated', questGate: 'portalRelics' },
+  { mapId: 'twilightRealm',     ox: 120, oy: 140, type: 'dungeon', doneFlag: 'boss.celestialGuardian.defeated', questGate: 'portalRelics' },
+  { mapId: 'demonCastle',       ox: 85,  oy: 30,  type: 'dungeon', doneFlag: 'boss.demonKing.defeated' },
 ];
 
 interface FieldItemEntry {
@@ -235,6 +251,7 @@ export class WorldMapScene extends Phaser.Scene {
   private poisonTickTimer = 0;
   private tripwireGlowTimer = 0;
   private lastPoisonTickWallTime = 0;
+  private banditLordMapSprite?: Phaser.GameObjects.Image;
 
   // Tile constants
   private static readonly TILE_CRYSTAL_SAVE = 14;
@@ -268,13 +285,31 @@ export class WorldMapScene extends Phaser.Scene {
     luna: 'npc-luna', elder: 'npc-elder', frostElder: 'npc-elder',
     hauntedElder: 'npc-elder', oasisElder: 'npc-elder',
     archaeologist: 'npc-archaeologist',
+    mercenary: 'npc-knight', forgemaster: 'npc-gordo', veteran: 'npc-knight',
+    grizzledKnight: 'npc-knight', frostGuard: 'npc-guard-f',
+    hauntedGuard: 'npc-guard-f',
   };
 
   private static readonly NPC_NAME_KEYS: Record<string, string> = {
     sage: 'npc.sage.name', kiki: 'npc.kiki.name', drake: 'npc.drake.name',
     gordo: 'npc.gordo.name', luna: 'npc.luna.name', elder: 'npc.elder.name',
-    frostElder: 'npc.elder.name', hauntedElder: 'npc.elder.name', oasisElder: 'npc.elder.name',
+    villager1: 'npc.villager.name', villager2: 'npc.villager.name',
+    miller: 'npc.miller.name', herbalist: 'npc.herbalist.name',
+    sailor: 'npc.sailor.name', fisherman: 'npc.fisherman.name',
+    wisewoman: 'npc.wisewoman.name', soldier: 'npc.soldier.name',
+    blacksmith: 'npc.blacksmith.name',
+    frostElder: 'npc.frostElder.name', frostGuard: 'npc.frostGuard.name',
+    mountaineer: 'npc.mountaineer.name', frostVillager: 'npc.frostVillager.name',
+    hauntedElder: 'npc.hauntedElder.name', hauntedGuard: 'npc.hauntedGuard.name',
+    hauntedVillager: 'npc.hauntedVillager.name', oasisElder: 'npc.elder.name',
+    refugee: 'npc.refugee.name',
     archaeologist: 'npc.archaeologist.name',
+    explorer: 'npc.explorer.name', mercenary: 'npc.mercenary.name',
+    forgemaster: 'npc.forgemaster.name', lavaMiner: 'npc.lavaMiner.name',
+    veteran: 'npc.veteran.name', priestess: 'npc.priestess.name',
+    grizzledKnight: 'npc.grizzledKnight.name', prophetess: 'npc.prophetess.name',
+    skyKeeper: 'npc.skyKeeper.name', frostSage: 'npc.frostSage.name',
+    templeScholar: 'npc.templeScholar.name', shadowWatcher: 'npc.shadowWatcher.name',
   };
 
   constructor() {
@@ -594,6 +629,8 @@ export class WorldMapScene extends Phaser.Scene {
     this.tileLayer = this.add.container(0, 0);
     this.npcSprites.forEach(s => s.destroy());
     this.npcSprites = [];
+    this.banditLordMapSprite?.destroy();
+    this.banditLordMapSprite = undefined;
     this.forestMazeFireflies.forEach(s => (s as any).destroy?.());
     this.forestMazeFireflies = [];
     this.tileGrid = [];
@@ -631,6 +668,7 @@ export class WorldMapScene extends Phaser.Scene {
     if (mapDefs[this.currentMapId].type === 'dungeon') {
       this.applyHiddenWallVisibility();
     }
+    this.renderBanditLordMapSprite();
   }
 
   private getTileThemePrefix(): string {
@@ -667,47 +705,69 @@ export class WorldMapScene extends Phaser.Scene {
   private findHiddenRoomTiles(hx: number, hy: number): { rx: number; ry: number }[] {
     const h = this.mapData.length;
     const w = this.mapData[0]?.length ?? 0;
-    const result: { rx: number; ry: number }[] = [];
-    let dirX = 0, dirY = 0;
+    const dirs = [[0, -1], [0, 1], [-1, 0], [1, 0]] as [number, number][];
+    const rewardTiles = new Set([4, 7, 8, 9]);
 
-    // Find direction to room (look for chest/opened/stairs adjacent)
-    for (const [dx, dy] of [[0, -1], [0, 1], [-1, 0], [1, 0]]) {
-      const nx = hx + dx, ny = hy + dy;
-      if (nx < 0 || nx >= w || ny < 0 || ny >= h) continue;
-      const tile = this.mapData[ny][nx];
-      if (tile === 4 || tile === 8 || tile === 9) { dirX = dx; dirY = dy; break; }
-    }
-    if (dirX === 0 && dirY === 0) {
-      for (const [dx, dy] of [[0, -1], [0, 1], [-1, 0], [1, 0]]) {
-        const nx = hx + dx, ny = hy + dy;
-        if (nx < 0 || nx >= w || ny < 0 || ny >= h) continue;
-        if (this.mapData[ny][nx] === 0) {
-          const nx2 = nx + dx, ny2 = ny + dy;
-          if (nx2 >= 0 && nx2 < w && ny2 >= 0 && ny2 < h && this.mapData[ny2][nx2] !== 1) {
-            dirX = dx; dirY = dy; break;
-          }
-        }
+    for (const [dx, dy] of dirs) {
+      const centerX = hx + dx * 2;
+      const centerY = hy + dy * 2;
+      if (centerX - 1 < 0 || centerX + 1 >= w || centerY - 1 < 0 || centerY + 1 >= h) continue;
+
+      const localTiles: { rx: number; ry: number }[] = [];
+      let hasReward = false;
+      const addLocal = (rx: number, ry: number) => {
+        const tile = this.mapData[ry]?.[rx];
+        if (tile === undefined || tile === 1 || tile === 5 || tile === WorldMapScene.TILE_HIDDEN_WALL) return;
+        if (!localTiles.some(existing => existing.rx === rx && existing.ry === ry)) localTiles.push({ rx, ry });
+        if (rewardTiles.has(tile)) hasReward = true;
+      };
+
+      addLocal(hx + dx, hy + dy);
+      for (let ry = centerY - 1; ry <= centerY + 1; ry++) {
+        for (let rx = centerX - 1; rx <= centerX + 1; rx++) addLocal(rx, ry);
       }
+      if (hasReward && localTiles.length > 0) return localTiles;
     }
-    if (dirX === 0 && dirY === 0) return result;
 
-    const startX = hx + dirX, startY = hy + dirY;
-    const visited = new Set<string>();
-    const queue: [number, number][] = [[startX, startY]];
-    visited.add(`${startX},${startY}`);
-    while (queue.length > 0) {
-      const [cx, cy] = queue.shift()!;
-      if (this.mapData[cy][cx] !== 1 && !(cx === hx && cy === hy)) {
-        result.push({ rx: cx, ry: cy });
-        for (const [dx, dy] of [[0, -1], [0, 1], [-1, 0], [1, 0]]) {
-          const nx = cx + dx, ny = cy + dy;
+    const candidates: { tiles: { rx: number; ry: number }[]; hasReward: boolean }[] = [];
+
+    for (const [dx, dy] of dirs) {
+      const startX = hx + dx, startY = hy + dy;
+      if (startX < 0 || startX >= w || startY < 0 || startY >= h) continue;
+      if (this.mapData[startY][startX] === 1 || this.mapData[startY][startX] === 5 || this.mapData[startY][startX] === WorldMapScene.TILE_HIDDEN_WALL) continue;
+
+      const tiles: { rx: number; ry: number }[] = [];
+      const visited = new Set<string>([`${hx},${hy}`, `${startX},${startY}`]);
+      const queue: [number, number][] = [[startX, startY]];
+      let hasReward = false;
+
+      while (queue.length > 0) {
+        const [cx, cy] = queue.shift()!;
+        const tile = this.mapData[cy]?.[cx];
+        if (tile === undefined || tile === 1 || tile === 5 || tile === WorldMapScene.TILE_HIDDEN_WALL) continue;
+        tiles.push({ rx: cx, ry: cy });
+        if (tile === 4 || tile === 7 || tile === 8 || tile === 9) hasReward = true;
+
+        for (const [qx, qy] of [[0, -1], [0, 1], [-1, 0], [1, 0]] as [number, number][]) {
+          const nx = cx + qx, ny = cy + qy;
           if (nx < 0 || nx >= w || ny < 0 || ny >= h) continue;
           const key = `${nx},${ny}`;
-          if (!visited.has(key)) { visited.add(key); queue.push([nx, ny]); }
+          if (visited.has(key)) continue;
+          visited.add(key);
+          const nextTile = this.mapData[ny][nx];
+          if (nextTile === 1 || nextTile === 5 || nextTile === WorldMapScene.TILE_HIDDEN_WALL) continue;
+          queue.push([nx, ny]);
         }
       }
+
+      if (tiles.length > 0) candidates.push({ tiles, hasReward });
     }
-    return result;
+
+    if (candidates.length === 0) return [];
+    const rewardRooms = candidates.filter(c => c.hasReward);
+    const pool = rewardRooms.length > 0 ? rewardRooms : candidates;
+    pool.sort((a, b) => a.tiles.length - b.tiles.length);
+    return pool[0].tiles;
   }
 
   private revealHiddenWallTiles(hx: number, hy: number): void {
@@ -718,6 +778,42 @@ export class WorldMapScene extends Phaser.Scene {
         const tile = this.mapData[ry][rx];
         this.tileGrid[ry][rx].setTexture(`${prefix}-${tile}`);
         this.tileGrid[ry][rx].setAlpha(1);
+      }
+    }
+    this.renderBanditLordMapSprite();
+  }
+
+  private isTileInsideUnrevealedHiddenRoom(x: number, y: number): boolean {
+    for (let hy = 0; hy < this.mapData.length; hy++) {
+      for (let hx = 0; hx < (this.mapData[hy]?.length ?? 0); hx++) {
+        if (this.mapData[hy][hx] !== WorldMapScene.TILE_HIDDEN_WALL) continue;
+        const hiddenFlag = `hidden.${this.currentMapId}.f${this.currentFloor}.${hx}.${hy}`;
+        if (gameState.player.state.storyFlags[hiddenFlag]) continue;
+        if (this.findHiddenRoomTiles(hx, hy).some(tile => tile.rx === x && tile.ry === y)) return true;
+      }
+    }
+    return false;
+  }
+
+  private renderBanditLordMapSprite(): void {
+    this.banditLordMapSprite?.destroy();
+    this.banditLordMapSprite = undefined;
+    if (this.currentMapId !== 'banditHideout') return;
+    const def = mapDefs[this.currentMapId];
+    if (this.currentFloor !== (def.floors ?? 1)) return;
+    if (gameState.player.state.storyFlags['boss.banditLord.defeated']) return;
+    if (!this.textures.exists('monster-banditLord')) return;
+
+    for (let y = 0; y < this.mapData.length; y++) {
+      for (let x = 0; x < (this.mapData[y]?.length ?? 0); x++) {
+        if (this.mapData[y][x] !== 7) continue;
+        if (this.isTileInsideUnrevealedHiddenRoom(x, y)) return;
+        this.banditLordMapSprite = this.add.image(
+          x * TILE_SIZE + TILE_SIZE / 2,
+          y * TILE_SIZE + TILE_SIZE / 2,
+          'monster-banditLord'
+        ).setDepth(45).setScale(TILE_SIZE / 96);
+        return;
       }
     }
   }
@@ -745,9 +841,11 @@ export class WorldMapScene extends Phaser.Scene {
 
   private static readonly FEMALE_NPCS = new Set([
     'villager1', 'wisewoman', 'blacksmith',
-    'archaeologist', 'veteran', 'priestess',
+    'archaeologist', 'priestess',
     'herbalist', 'refugee', 'prophetess',
-    'healer',
+    'healer', 'frostGuard', 'frostVillager', 'hauntedGuard',
+    'lavaMiner', 'frostSage', 'templeScholar', 'shadowWatcher',
+    'skyKeeper',
   ]);
 
   private static readonly HEALER_PRICES: Record<string, number> = {
@@ -770,7 +868,8 @@ export class WorldMapScene extends Phaser.Scene {
   private renderNPCs(def: typeof mapDefs[string]): void {
     for (const npc of def.npcs) {
       if (npc.id === 'healer') continue; // healer rendered separately inside clinic
-      const spriteKey = WorldMapScene.FEMALE_NPCS.has(npc.id) ? 'npc-f' : 'npc';
+      const spriteKey = WorldMapScene.NPC_SPRITE_MAP[npc.id]
+        ?? (WorldMapScene.FEMALE_NPCS.has(npc.id) ? 'npc-f' : 'npc');
       const sprite = this.add.sprite(
         npc.x * TILE_SIZE + TILE_SIZE / 2,
         npc.y * TILE_SIZE + TILE_SIZE / 2,
@@ -1553,7 +1652,7 @@ export class WorldMapScene extends Phaser.Scene {
 
       // Spike trap (tile 30 = armed, tile 32 = sprung)
       if (tile === WorldMapScene.TILE_SPIKE_TRAP || tile === WorldMapScene.TILE_SPIKE_SPRUNG) {
-        const dmg = Math.max(1, Math.floor(gameState.player.totalMaxHp * 0.05));
+        const dmg = Math.max(1, Math.floor(gameState.player.totalMaxHp * 0.2));
         gameState.player.state.hp = Math.max(1, gameState.player.state.hp - dmg);
         this.updateHUD();
         this.cameras.main.shake(150, 0.01);
@@ -1572,12 +1671,10 @@ export class WorldMapScene extends Phaser.Scene {
 
       // Tripwire (tile 31)
       if (tile === WorldMapScene.TILE_TRIPWIRE) {
-        this.mapData[this.heroTileY][this.heroTileX] = 0;
-        const prefix = this.getTileThemePrefix();
-        if (this.tileGrid[this.heroTileY]?.[this.heroTileX])
-          this.tileGrid[this.heroTileY][this.heroTileX].setTexture(`${prefix}-0`).clearTint();
+        this.clearTripwireCluster(this.heroTileX, this.heroTileY);
         (gameState.player.state as any).poisonedUntil = Date.now() + 20000;
         this.lastPoisonTickWallTime = Date.now();
+        (gameState.player.state as any).poisonLastTickWallTime = this.lastPoisonTickWallTime;
         this.cameras.main.shake(200, 0.015);
         const poisonColors = [0x44aa02, 0x66bb44, 0x22a544];
         for (let i = 0; i < 3; i++) {
@@ -1701,6 +1798,16 @@ export class WorldMapScene extends Phaser.Scene {
     else if (this.heroDir === 1) facedX -= 1;
     else if (this.heroDir === 2) facedX += 1;
     else if (this.heroDir === 3) facedY -= 1;
+
+    if (def.type === 'dungeon' && this.mapData[facedY]?.[facedX] === WorldMapScene.TILE_TRIPWIRE) {
+      this.clearTripwireCluster(facedX, facedY);
+      audioManager.playSfx('menu_select');
+      const flash = this.add.rectangle(UI_OFFSET_X + GAME_WIDTH / 2, UI_OFFSET_Y + GAME_HEIGHT / 2,
+        GAME_WIDTH * 2, GAME_HEIGHT * 2, 0xffe244).setDepth(200).setScrollFactor(0).setAlpha(0.22);
+      this.tweens.add({ targets: flash, alpha: 0, duration: 350, onComplete: () => flash.destroy() });
+      this.showMessage(t('dungeon.banditHideout.tripwireCut'));
+      return;
+    }
 
     // Check if facing the save point
     if (def.savePoint && def.savePoint.x === facedX && def.savePoint.y === facedY) {
@@ -1974,6 +2081,14 @@ export class WorldMapScene extends Phaser.Scene {
     this.hero.setFrame(this.heroDir * 3);
 
     // Determine reward based on dungeon difficulty
+    const posKey = `${x},${y}`;
+    if (this.keyChestPositions.has(posKey)) {
+      gameState.player.addItem(`dungeonKey_${this.currentMapId}`, 1);
+      this.showMessage(t('dungeon.keyFound'));
+      this.updateHUD();
+      return true;
+    }
+
     const goldReward = this.getTreasureReward();
     gameState.player.state.gold += goldReward.gold;
 
@@ -2367,6 +2482,8 @@ export class WorldMapScene extends Phaser.Scene {
         }
         if (bossId === 'banditLord') {
           gameState.player.addItem('banditDagger', 1);
+          this.banditLordMapSprite?.destroy();
+          this.banditLordMapSprite = undefined;
         }
         if (bossId === 'lavaWyrm') {
           gameState.player.addItem('magmaBlade', 1);
@@ -2553,24 +2670,120 @@ export class WorldMapScene extends Phaser.Scene {
     return grade === 'k' || grade === '1';
   }
 
+  private getOverworldCoordsForTarget(
+    type: QuestObjective['type'],
+    targetId: string,
+    quest?: QuestDefinition,
+  ): { ox: number; oy: number } | null {
+    const overworld = mapDefs.overworld;
+    if (!overworld) return null;
+
+    const coordsForMap = (mapId: string): { ox: number; oy: number } | null => {
+      const conn = overworld.connections.find(c => c.targetMap === mapId);
+      return conn ? { ox: conn.fromX, oy: conn.fromY } : null;
+    };
+
+    const townForNpc = (npcId: string): string | null => {
+      for (const def of Object.values(mapDefs)) {
+        if (def.type === 'town' && def.npcs.some(npc => npc.id === npcId)) return def.id;
+      }
+      return null;
+    };
+
+    if (type === 'visit') return coordsForMap(targetId);
+    if (type === 'talk') {
+      const mapId = townForNpc(targetId);
+      return mapId ? coordsForMap(mapId) : null;
+    }
+    if (type === 'defeat') {
+      for (const def of Object.values(mapDefs)) {
+        if (def.type === 'dungeon' && def.bossId === targetId) return coordsForMap(def.id);
+      }
+      for (const def of Object.values(mapDefs)) {
+        if (def.type !== 'dungeon' || !def.encounterZone) continue;
+        if (encounterZones[def.encounterZone]?.monsters?.some(m => m.monsterId === targetId)) {
+          const coords = coordsForMap(def.id);
+          if (coords) return coords;
+        }
+      }
+      if (quest) {
+        for (const objective of quest.objectives) {
+          if (objective.type === 'visit') {
+            const coords = coordsForMap(objective.targetId);
+            if (coords) return coords;
+          }
+        }
+        if (quest.turnInMapId) return coordsForMap(quest.turnInMapId);
+      }
+      return null;
+    }
+    if (type === 'collect') {
+      if (quest) {
+        for (const objective of quest.objectives) {
+          if (objective.type === 'visit') {
+            const coords = coordsForMap(objective.targetId);
+            if (coords) return coords;
+          }
+        }
+        for (const objective of quest.objectives) {
+          if (objective.type === 'defeat') {
+            const coords = this.getOverworldCoordsForTarget('defeat', objective.targetId, quest);
+            if (coords) return coords;
+          }
+        }
+        if (quest.turnInMapId) return coordsForMap(quest.turnInMapId);
+      }
+      return null;
+    }
+
+    return null;
+  }
+
   private getCompassTarget(): { ox: number; oy: number } | null {
-    const flags = gameState.player.state.storyFlags;
-    // Find the index of the LATEST completed waypoint in the chain.
-    // This ensures that if a player skips a town but beats a later boss,
-    // the compass advances past the skipped waypoint.
+    const state = gameState.player.state;
+    const questManager = gameState.questManager;
+
+    for (const questId of state.activeQuests) {
+      const quest = questDefinitions[questId];
+      if (!quest) continue;
+      if (questManager.isQuestReady(questId, state)) {
+        if (quest.turnInMapId) {
+          const coords = this.getOverworldCoordsForTarget('visit', quest.turnInMapId);
+          if (coords) return coords;
+        }
+        continue;
+      }
+      const progress = state.questProgress[questId] ?? {};
+      for (const objective of quest.objectives) {
+        const needed = objective.count ?? 1;
+        if ((progress[objective.targetId] ?? 0) < needed) {
+          const coords = this.getOverworldCoordsForTarget(objective.type, objective.targetId, quest);
+          if (coords) return coords;
+          if (objective.type === 'defeat' && quest.turnInMapId) {
+            const fallback = this.getOverworldCoordsForTarget('visit', quest.turnInMapId);
+            if (fallback) return fallback;
+          }
+          break;
+        }
+      }
+    }
+
+    const flags = state.storyFlags;
+    // Find the index of the latest completed waypoint in the chain.
     let latestDoneIdx = -1;
     for (let i = 0; i < COMPASS_CHAIN.length; i++) {
-      if (flags[COMPASS_CHAIN[i].doneFlag]) {
-        latestDoneIdx = i;
-      }
+      if (flags[COMPASS_CHAIN[i].doneFlag]) latestDoneIdx = i;
     }
-    // Return the first incomplete waypoint AFTER the latest completed one
+    // Return the first incomplete waypoint after the latest completed one.
     for (let i = latestDoneIdx + 1; i < COMPASS_CHAIN.length; i++) {
-      if (!flags[COMPASS_CHAIN[i].doneFlag]) {
-        return { ox: COMPASS_CHAIN[i].ox, oy: COMPASS_CHAIN[i].oy };
+      const waypoint = COMPASS_CHAIN[i];
+      if (!flags[waypoint.doneFlag]) {
+        const questGate = waypoint.questGate;
+        if (questGate && !state.activeQuests.includes(questGate) && !state.completedQuests.includes(questGate)) continue;
+        return { ox: waypoint.ox, oy: waypoint.oy };
       }
     }
-    return null; // All waypoints completed
+    return null;
   }
 
   private createCompass(): void {
@@ -3597,29 +3810,59 @@ export class WorldMapScene extends Phaser.Scene {
   private applyPoisonCatchUp(): void {
     const state = gameState.player.state as any;
     if (!state.poisonedUntil || this.lastPoisonTickWallTime === 0) return;
+    if (state.poisonLastTickWallTime && state.poisonLastTickWallTime > this.lastPoisonTickWallTime) {
+      this.lastPoisonTickWallTime = state.poisonLastTickWallTime;
+      return;
+    }
     const now = Date.now();
     const expired = now > state.poisonedUntil;
     const end = expired ? state.poisonedUntil : now;
     const ticks = Math.floor((end - this.lastPoisonTickWallTime) / 1000);
     if (ticks <= 0) return;
     this.lastPoisonTickWallTime += ticks * 1000;
+    state.poisonLastTickWallTime = this.lastPoisonTickWallTime;
     const dmg = Math.max(1, Math.floor(gameState.player.totalMaxHp * 0.02)) * ticks;
     gameState.player.state.hp = Math.max(1, gameState.player.state.hp - dmg);
     this.updateHUD();
-    if (expired) state.poisonedUntil = undefined;
+    if (expired) { state.poisonedUntil = undefined; state.poisonLastTickWallTime = 0; }
     const flash = this.add.rectangle(UI_OFFSET_X + GAME_WIDTH / 2, UI_OFFSET_Y + GAME_HEIGHT / 2,
       GAME_WIDTH * 2, GAME_HEIGHT * 2, 0x884488).setDepth(200).setScrollFactor(0).setAlpha(0.3);
     this.tweens.add({ targets: flash, alpha: 0, duration: 600, onComplete: () => flash.destroy() });
   }
 
+  private clearTripwireCluster(startX: number, startY: number): void {
+    if (this.mapData[startY]?.[startX] !== WorldMapScene.TILE_TRIPWIRE) return;
+    const prefix = this.getTileThemePrefix();
+    const queue: [number, number][] = [[startX, startY]];
+    const visited = new Set<string>([`${startX},${startY}`]);
+    while (queue.length > 0) {
+      const [x, y] = queue.shift()!;
+      if (this.mapData[y]?.[x] !== WorldMapScene.TILE_TRIPWIRE) continue;
+      this.mapData[y][x] = 0;
+      if (this.tileGrid[y]?.[x]) this.tileGrid[y][x].setTexture(`${prefix}-0`).clearTint();
+      for (const [dx, dy] of [[0, -1], [0, 1], [-1, 0], [1, 0]] as [number, number][]) {
+        const nx = x + dx, ny = y + dy;
+        const key = `${nx},${ny}`;
+        if (visited.has(key)) continue;
+        if (this.mapData[ny]?.[nx] !== WorldMapScene.TILE_TRIPWIRE) continue;
+        visited.add(key);
+        queue.push([nx, ny]);
+      }
+    }
+  }
+
   private updatePoisonDot(): void {
     const state = gameState.player.state as any;
     if (!state.poisonedUntil) return;
+    if (state.poisonLastTickWallTime && state.poisonLastTickWallTime > this.lastPoisonTickWallTime) {
+      this.lastPoisonTickWallTime = state.poisonLastTickWallTime;
+    }
     const now = Date.now();
-    if (now > state.poisonedUntil) { state.poisonedUntil = undefined; this.lastPoisonTickWallTime = 0; return; }
-    if (this.lastPoisonTickWallTime === 0) { this.lastPoisonTickWallTime = now; return; }
+    if (now > state.poisonedUntil) { state.poisonedUntil = undefined; state.poisonLastTickWallTime = 0; this.lastPoisonTickWallTime = 0; return; }
+    if (this.lastPoisonTickWallTime === 0) { this.lastPoisonTickWallTime = now; state.poisonLastTickWallTime = now; return; }
     if (now - this.lastPoisonTickWallTime < 1000) return;
     this.lastPoisonTickWallTime += 1000;
+    state.poisonLastTickWallTime = this.lastPoisonTickWallTime;
     const dmg = Math.max(1, Math.floor(gameState.player.totalMaxHp * 0.02));
     gameState.player.state.hp = Math.max(1, gameState.player.state.hp - dmg);
     this.updateHUD();

@@ -2,9 +2,57 @@ import { SaveData, PlayerState } from '../../utils/types';
 
 const SAVE_KEY = 'edu-rpg-save';
 const AUTO_SAVE_KEY = 'edu-rpg-autosave';
+const ACTIVE_PROFILE_KEY = 'edu-rpg-active-profile';
 const SAVE_VERSION = 4;
+const PROFILE_COUNT = 5;
+const PROFILE_IDS = Array.from({ length: PROFILE_COUNT }, (_, i) => `slot${i + 1}`);
+const DEFAULT_PROFILE_ID = PROFILE_IDS[0];
+
+export interface SaveProfileSummary {
+  id: string;
+  slotNumber: number;
+  hasSave: boolean;
+  heroName: string;
+  level: number;
+  playtime: number;
+  timestamp: number;
+}
 
 export class SaveManager {
+  static getActiveProfileId(): string {
+    const fromUrl = this.profileIdFromUrl();
+    if (fromUrl) {
+      localStorage.setItem(ACTIVE_PROFILE_KEY, fromUrl);
+      return fromUrl;
+    }
+
+    return this.normalizeProfileId(localStorage.getItem(ACTIVE_PROFILE_KEY));
+  }
+
+  static setActiveProfileId(profileId: string): void {
+    localStorage.setItem(ACTIVE_PROFILE_KEY, this.normalizeProfileId(profileId));
+  }
+
+  static getProfileSummaries(): SaveProfileSummary[] {
+    return PROFILE_IDS.map((id, index) => {
+      const data = this.loadSlot(this.storageKey(SAVE_KEY, id));
+      return {
+        id,
+        slotNumber: index + 1,
+        hasSave: data !== null,
+        heroName: data?.player.name ?? '',
+        level: data?.player.level ?? 1,
+        playtime: data?.playtime ?? 0,
+        timestamp: data?.timestamp ?? 0,
+      };
+    });
+  }
+
+  static getActiveProfileSummary(): SaveProfileSummary {
+    const activeId = this.getActiveProfileId();
+    return this.getProfileSummaries().find(profile => profile.id === activeId) ?? this.getProfileSummaries()[0];
+  }
+
   static save(playerState: PlayerState, playtime: number, quizStats: SaveData['quizStats']): void {
     const data: SaveData = {
       version: SAVE_VERSION,
@@ -13,7 +61,7 @@ export class SaveManager {
       playtime,
       quizStats,
     };
-    localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+    localStorage.setItem(this.storageKey(SAVE_KEY), JSON.stringify(data));
   }
 
   /** Auto-save to a separate slot (used before boss fights for quick retry) */
@@ -25,15 +73,15 @@ export class SaveManager {
       playtime,
       quizStats,
     };
-    localStorage.setItem(AUTO_SAVE_KEY, JSON.stringify(data));
+    localStorage.setItem(this.storageKey(AUTO_SAVE_KEY), JSON.stringify(data));
   }
 
   static load(): SaveData | null {
-    return this.loadSlot(SAVE_KEY);
+    return this.loadSlot(this.storageKey(SAVE_KEY));
   }
 
   static loadAutoSave(): SaveData | null {
-    return this.loadSlot(AUTO_SAVE_KEY);
+    return this.loadSlot(this.storageKey(AUTO_SAVE_KEY));
   }
 
   private static loadSlot(key: string): SaveData | null {
@@ -68,19 +116,44 @@ export class SaveManager {
     }
   }
 
-  static hasSave(): boolean {
-    return localStorage.getItem(SAVE_KEY) !== null;
+  static hasSave(profileId?: string): boolean {
+    return this.loadSlot(this.storageKey(SAVE_KEY, profileId)) !== null;
   }
 
-  static hasAutoSave(): boolean {
-    return localStorage.getItem(AUTO_SAVE_KEY) !== null;
+  static hasAutoSave(profileId?: string): boolean {
+    return this.loadSlot(this.storageKey(AUTO_SAVE_KEY, profileId)) !== null;
   }
 
-  static deleteSave(): void {
-    localStorage.removeItem(SAVE_KEY);
+  static deleteSave(profileId?: string): void {
+    localStorage.removeItem(this.storageKey(SAVE_KEY, profileId));
   }
 
-  static deleteAutoSave(): void {
-    localStorage.removeItem(AUTO_SAVE_KEY);
+  static deleteAutoSave(profileId?: string): void {
+    localStorage.removeItem(this.storageKey(AUTO_SAVE_KEY, profileId));
+  }
+
+  private static storageKey(baseKey: string, profileId?: string): string {
+    const id = this.normalizeProfileId(profileId ?? this.getActiveProfileId());
+    return id === DEFAULT_PROFILE_ID ? baseKey : `${baseKey}:${id}`;
+  }
+
+  private static normalizeProfileId(profileId: string | null | undefined): string {
+    if (!profileId) return DEFAULT_PROFILE_ID;
+    const lowered = profileId.trim().toLowerCase();
+    if (PROFILE_IDS.includes(lowered)) return lowered;
+
+    const slotMatch = lowered.match(/^(?:slot|save|account|profile)?\s*([1-5])$/);
+    if (slotMatch) return `slot${slotMatch[1]}`;
+
+    return DEFAULT_PROFILE_ID;
+  }
+
+  private static profileIdFromUrl(): string | null {
+    const params = new URLSearchParams(window.location.search);
+    const raw = params.get('slot') ?? params.get('save') ?? params.get('account') ?? params.get('profile');
+    if (!raw) return null;
+
+    const normalized = this.normalizeProfileId(raw);
+    return normalized;
   }
 }

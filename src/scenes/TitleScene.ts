@@ -1,13 +1,15 @@
 import Phaser from 'phaser';
 import { GAME_WIDTH, GAME_HEIGHT, ZOOM, COLORS, FONT_FAMILY, UI_SCALE } from '../utils/constants';
 import { t, setLocale, getLocale, setKanjiMode, getKanjiMode } from '../i18n/i18n';
-import { SaveManager } from '../systems/progression/SaveManager';
+import { SaveManager, SaveProfileSummary } from '../systems/progression/SaveManager';
 import { GradeLevel, HeroColorScheme } from '../utils/types';
 import { gameState } from '../GameState';
 import { audioManager } from '../systems/audio/AudioManager';
 import { regenerateHeroSprites } from '../utils/AssetGenerator';
+import { mapDefs } from '../data/maps';
 
-type ScreenMode = 'title' | 'create';
+type ScreenMode = 'title' | 'create' | 'profiles' | 'overwrite';
+type OverwriteReturnMode = 'title' | 'profiles';
 
 /** Which row the cursor is on in the create screen */
 type CreateRow = 'name' | 'color' | 'difficulty' | 'language' | 'kanji' | 'start';
@@ -36,6 +38,8 @@ export class TitleScene extends Phaser.Scene {
   private heroPreview: Phaser.GameObjects.Image | null = null;
   private blinkTimer: Phaser.Time.TimerEvent | null = null;
   private ngPlus = false;
+  private overwriteProfileId: string | null = null;
+  private overwriteReturnMode: OverwriteReturnMode = 'title';
 
   constructor() {
     super('TitleScene');
@@ -43,7 +47,7 @@ export class TitleScene extends Phaser.Scene {
 
   private audioInitialized = false;
 
-  create(data?: { ngPlus?: boolean }): void {
+  create(data?: { ngPlus?: boolean; skipDevStart?: boolean }): void {
     this.cameras.main.setZoom(ZOOM);
     this.cameras.main.setScroll(-GAME_WIDTH * (ZOOM - 1) / 2, -GAME_HEIGHT * (ZOOM - 1) / 2);
     this.cameras.main.setBackgroundColor(COLORS.DARK_BLUE);
@@ -68,9 +72,36 @@ export class TitleScene extends Phaser.Scene {
       this.ngPlus = false;
     }
 
+    if (!data?.skipDevStart && this.tryDevStartFromUrl()) return;
+
     this.draw();
     this.setupInput();
     this.initAudioOnGesture();
+  }
+
+  private tryDevStartFromUrl(): boolean {
+    if (!gameState.devMode) return false;
+    const params = new URLSearchParams(window.location.search);
+    const mapId = params.get('map');
+    if (!mapId || !mapDefs[mapId]) return false;
+
+    const def = mapDefs[mapId];
+    const gradeParam = params.get('grade');
+    const difficulty = (this.difficultyOptions.includes(gradeParam as GradeLevel) ? gradeParam : '3') as GradeLevel;
+    const colorParam = params.get('color') as HeroColorScheme | null;
+    const scheme = colorParam && this.colorOptions.includes(colorParam) ? colorParam : 'gray';
+    const floor = Math.max(1, Math.min(def.floors ?? 1, Number(params.get('floor') ?? '1') || 1));
+    const x = Math.max(0, Math.min(def.width - 1, Number(params.get('x') ?? '50') || 50));
+    const y = Math.max(0, Math.min(def.height - 1, Number(params.get('y') ?? '1') || 1));
+
+    gameState.newGame(difficulty, params.get('name') || 'Dev Tester', scheme);
+    gameState.player.state.kanjiMode = getKanjiMode();
+    gameState.player.state.storyFlags['intro.done'] = true;
+    gameState.player.state.position = { mapId, x, y, floor };
+    regenerateHeroSprites(this, scheme);
+    this.removeNameInput();
+    this.scene.start('WorldMapScene');
+    return true;
   }
 
   shutdown(): void {
@@ -103,6 +134,12 @@ export class TitleScene extends Phaser.Scene {
 
     if (this.mode === 'create') {
       this.drawCreate();
+    } else if (this.mode === 'profiles') {
+      this.removeNameInput();
+      this.drawProfiles();
+    } else if (this.mode === 'overwrite') {
+      this.removeNameInput();
+      this.drawOverwriteConfirm();
     } else {
       this.removeNameInput();
       this.drawTitleScreen();
@@ -145,6 +182,13 @@ export class TitleScene extends Phaser.Scene {
       fontFamily: FONT_FAMILY,
     }).setOrigin(0.5);
 
+    const activeProfile = SaveManager.getActiveProfileSummary();
+    this.add.text(cx, Math.round(136 * S), `${t('saveData.active')}: ${this.formatProfileTitle(activeProfile)}`, {
+      fontSize: `${Math.round(10 * S)}px`,
+      color: COLORS.TEXT_GRAY,
+      fontFamily: FONT_FAMILY,
+    }).setOrigin(0.5);
+
     // Decorative hero sprite
     if (this.textures.exists('hero-walk')) {
       this.add.image(cx, Math.round(190 * S), 'hero-walk', 0).setScale(3);
@@ -155,6 +199,7 @@ export class TitleScene extends Phaser.Scene {
     const options = [
       { key: 'title.newGame', action: 'new' },
       ...(SaveManager.hasSave() ? [{ key: 'title.continue', action: 'continue' }] : []),
+      { key: 'title.saveData', action: 'profiles' },
     ];
 
     options.forEach((opt, i) => {
@@ -180,6 +225,141 @@ export class TitleScene extends Phaser.Scene {
     });
 
     this.updateSelection();
+  }
+
+  private drawProfiles(): void {
+    const S = this.S;
+    const cx = GAME_WIDTH / 2;
+    const panelX = Math.round(54 * S);
+    const panelY = Math.round(46 * S);
+    const panelW = GAME_WIDTH - Math.round(108 * S);
+    const panelH = GAME_HEIGHT - Math.round(92 * S);
+    const profiles = SaveManager.getProfileSummaries();
+    const activeId = SaveManager.getActiveProfileId();
+
+    if (this.selectedIndex >= profiles.length) this.selectedIndex = profiles.length - 1;
+    if (this.selectedIndex < 0) this.selectedIndex = 0;
+
+    const g = this.add.graphics();
+    g.lineStyle(2, 0xe0e0ff, 1);
+    g.strokeRect(panelX, panelY, panelW, panelH);
+    g.fillStyle(0x111133, 0.94);
+    g.fillRect(panelX + 2, panelY + 2, panelW - 4, panelH - 4);
+    g.lineStyle(1, 0x4444aa, 0.65);
+    g.strokeRect(panelX + 4, panelY + 4, panelW - 8, panelH - 8);
+
+    this.add.text(cx, panelY + Math.round(30 * S), `\u2726  ${t('saveData.title')}  \u2726`, {
+      fontSize: `${Math.round(16 * S)}px`,
+      color: COLORS.TEXT_YELLOW,
+      fontFamily: FONT_FAMILY,
+      fontStyle: 'bold',
+    }).setOrigin(0.5);
+
+    const rowStartY = panelY + Math.round(82 * S);
+    const rowH = Math.round(42 * S);
+    profiles.forEach((profile, i) => {
+      const selected = i === this.selectedIndex;
+      const active = profile.id === activeId;
+      const y = rowStartY + i * rowH;
+      const prefix = selected ? '\u25B8 ' : '  ';
+      const activeMark = active ? '* ' : '  ';
+      const line = `${prefix}${activeMark}${this.formatProfileLine(profile)}`;
+      const text = this.add.text(panelX + Math.round(34 * S), y, line, {
+        fontSize: `${Math.round(12 * S)}px`,
+        color: selected ? COLORS.TEXT_YELLOW : COLORS.TEXT_WHITE,
+        fontFamily: FONT_FAMILY,
+      }).setOrigin(0, 0.5);
+      text.setData('profileId', profile.id);
+      this.menuItems.push(text);
+    });
+
+    this.add.text(cx, panelY + panelH - Math.round(28 * S), t('saveData.hint'), {
+      fontSize: `${Math.round(9 * S)}px`,
+      color: '#666688',
+      fontFamily: FONT_FAMILY,
+    }).setOrigin(0.5);
+
+    this.updateSelection();
+  }
+
+  private drawOverwriteConfirm(): void {
+    const S = this.S;
+    const cx = GAME_WIDTH / 2;
+    const profile = SaveManager.getProfileSummaries().find(p => p.id === this.overwriteProfileId);
+    if (!profile) {
+      this.mode = this.overwriteReturnMode;
+      this.draw();
+      return;
+    }
+
+    const panelX = Math.round(72 * S);
+    const panelY = Math.round(120 * S);
+    const panelW = GAME_WIDTH - Math.round(144 * S);
+    const panelH = Math.round(190 * S);
+    const g = this.add.graphics();
+    g.lineStyle(2, 0xe0e0ff, 1);
+    g.strokeRect(panelX, panelY, panelW, panelH);
+    g.fillStyle(0x111133, 0.96);
+    g.fillRect(panelX + 2, panelY + 2, panelW - 4, panelH - 4);
+    g.lineStyle(1, 0xaa4444, 0.8);
+    g.strokeRect(panelX + 6, panelY + 6, panelW - 12, panelH - 12);
+
+    this.add.text(cx, panelY + Math.round(34 * S), t('saveData.overwriteTitle'), {
+      fontSize: `${Math.round(16 * S)}px`,
+      color: COLORS.TEXT_YELLOW,
+      fontFamily: FONT_FAMILY,
+      fontStyle: 'bold',
+    }).setOrigin(0.5);
+
+    this.add.text(cx, panelY + Math.round(74 * S), t('saveData.overwriteBody', { slot: profile.slotNumber }), {
+      fontSize: `${Math.round(11 * S)}px`,
+      color: COLORS.TEXT_WHITE,
+      fontFamily: FONT_FAMILY,
+    }).setOrigin(0.5);
+
+    this.add.text(cx, panelY + Math.round(98 * S), this.formatProfileLine(profile), {
+      fontSize: `${Math.round(10 * S)}px`,
+      color: COLORS.TEXT_GRAY,
+      fontFamily: FONT_FAMILY,
+    }).setOrigin(0.5);
+
+    const options = [
+      { key: 'saveData.overwriteConfirm', action: 'overwrite' },
+      { key: 'saveData.cancel', action: 'cancel' },
+    ];
+    const optionY = panelY + Math.round(134 * S);
+    options.forEach((opt, i) => {
+      const selected = i === this.selectedIndex;
+      const text = this.add.text(cx, optionY + i * Math.round(28 * S), `${selected ? '\u25B8 ' : '  '}${t(opt.key)}`, {
+        fontSize: `${Math.round(12 * S)}px`,
+        color: selected ? COLORS.TEXT_YELLOW : COLORS.TEXT_WHITE,
+        fontFamily: FONT_FAMILY,
+      }).setOrigin(0.5);
+      text.setData('action', opt.action);
+      this.menuItems.push(text);
+    });
+
+    this.updateSelection();
+  }
+
+  private formatProfileTitle(profile: SaveProfileSummary): string {
+    const slot = t('saveData.slot', { slot: profile.slotNumber });
+    if (!profile.hasSave) return `${slot} - ${t('saveData.empty')}`;
+    return `${slot} - ${profile.heroName || 'Hero'} ${t('saveData.level', { level: profile.level })}`;
+  }
+
+  private formatProfileLine(profile: SaveProfileSummary): string {
+    const slot = t('saveData.slot', { slot: profile.slotNumber });
+    if (!profile.hasSave) return `${slot} - ${t('saveData.empty')}`;
+    return `${slot} - ${profile.heroName || 'Hero'}  ${t('saveData.level', { level: profile.level })}  ${this.formatPlaytime(profile.playtime)}`;
+  }
+
+  private formatPlaytime(seconds: number): string {
+    const safeSeconds = Math.max(0, Math.floor(seconds));
+    const hours = Math.floor(safeSeconds / 3600);
+    const minutes = Math.floor((safeSeconds % 3600) / 60);
+    if (hours > 0) return `${hours}h ${minutes.toString().padStart(2, '0')}m`;
+    return `${minutes}m`;
   }
 
   /** Draw a single ◀ value ▶ selector row */
@@ -483,6 +663,13 @@ export class TitleScene extends Phaser.Scene {
       if (this.mode === 'create' && this.createRow === 'name') return;
       this.confirm();
     });
+    this.input.keyboard?.on('keydown-X', () => {
+      if (this.mode === 'profiles') {
+        this.startNewForSelectedProfile();
+      } else if (this.mode === 'overwrite') {
+        this.cancelOverwrite();
+      }
+    });
 
     // ESC to go back from create screen
     this.input.keyboard?.on('keydown-ESC', () => {
@@ -497,6 +684,12 @@ export class TitleScene extends Phaser.Scene {
           this.selectedIndex = 0;
           this.draw();
         }
+      } else if (this.mode === 'profiles') {
+        this.mode = 'title';
+        this.selectedIndex = 0;
+        this.draw();
+      } else if (this.mode === 'overwrite') {
+        this.cancelOverwrite();
       }
     });
   }
@@ -520,7 +713,11 @@ export class TitleScene extends Phaser.Scene {
     const prev = this.selectedIndex;
     this.selectedIndex = Math.max(0, Math.min(this.menuItems.length - 1, this.selectedIndex + dir));
     if (this.selectedIndex !== prev) audioManager.playSfx('menu_select');
-    this.updateSelection();
+    if (this.mode === 'profiles' || this.mode === 'overwrite') {
+      this.draw();
+    } else {
+      this.updateSelection();
+    }
   }
 
   private updateSelection(): void {
@@ -562,6 +759,10 @@ export class TitleScene extends Phaser.Scene {
   private confirm(): void {
     if (this.mode === 'title') {
       this.confirmTitle();
+    } else if (this.mode === 'profiles') {
+      this.confirmProfile();
+    } else if (this.mode === 'overwrite') {
+      this.confirmOverwrite();
     } else {
       this.confirmCreate();
     }
@@ -571,11 +772,12 @@ export class TitleScene extends Phaser.Scene {
     const action = this.menuItems[this.selectedIndex]?.getData('action');
     audioManager.playSfx('menu_select');
     if (action === 'new') {
-      this.mode = 'create';
-      this.createRow = 'name';
-      this.draw();
-      // Auto-focus name input
-      this.time.delayedCall(50, () => this.focusNameInput());
+      const activeProfileId = SaveManager.getActiveProfileId();
+      if (SaveManager.hasSave(activeProfileId)) {
+        this.showOverwriteConfirm(activeProfileId, 'title');
+      } else {
+        this.startCreateForProfile(activeProfileId, false);
+      }
     } else if (action === 'continue') {
       if (gameState.loadGame()) {
         // Restore hero color from save
@@ -583,7 +785,86 @@ export class TitleScene extends Phaser.Scene {
         this.removeNameInput();
         this.scene.start('WorldMapScene');
       }
+    } else if (action === 'profiles') {
+      this.mode = 'profiles';
+      this.selectedIndex = 0;
+      this.draw();
     }
+  }
+
+  private confirmProfile(): void {
+    const profileId = this.menuItems[this.selectedIndex]?.getData('profileId') as string | undefined;
+    if (!profileId) return;
+
+    SaveManager.setActiveProfileId(profileId);
+    audioManager.playSfx('menu_select');
+    if (SaveManager.hasSave(profileId) && gameState.loadGame()) {
+      regenerateHeroSprites(this, gameState.player.state.heroColor);
+      this.removeNameInput();
+      this.scene.start('WorldMapScene');
+      return;
+    }
+
+    this.startCreateForProfile(profileId, false);
+  }
+
+  private startNewForSelectedProfile(): void {
+    const profileId = this.menuItems[this.selectedIndex]?.getData('profileId') as string | undefined;
+    if (!profileId) return;
+
+    audioManager.playSfx('menu_select');
+    if (SaveManager.hasSave(profileId)) {
+      this.showOverwriteConfirm(profileId, 'profiles');
+    } else {
+      this.startCreateForProfile(profileId, false);
+    }
+  }
+
+  private showOverwriteConfirm(profileId: string, returnMode: OverwriteReturnMode): void {
+    SaveManager.setActiveProfileId(profileId);
+    this.overwriteProfileId = profileId;
+    this.overwriteReturnMode = returnMode;
+    this.mode = 'overwrite';
+    this.selectedIndex = 0;
+    this.draw();
+  }
+
+  private confirmOverwrite(): void {
+    const action = this.menuItems[this.selectedIndex]?.getData('action');
+    if (action === 'overwrite' && this.overwriteProfileId) {
+      audioManager.playSfx('menu_select');
+      this.startCreateForProfile(this.overwriteProfileId, true);
+    } else {
+      this.cancelOverwrite();
+    }
+  }
+
+  private cancelOverwrite(): void {
+    const profileId = this.overwriteProfileId;
+    this.overwriteProfileId = null;
+    if (this.overwriteReturnMode === 'profiles') {
+      this.mode = 'profiles';
+      const profiles = SaveManager.getProfileSummaries();
+      this.selectedIndex = Math.max(0, profiles.findIndex(p => p.id === profileId));
+    } else {
+      this.mode = 'title';
+      this.selectedIndex = 0;
+    }
+    this.draw();
+  }
+
+  private startCreateForProfile(profileId: string, overwrite: boolean): void {
+    SaveManager.setActiveProfileId(profileId);
+    if (overwrite) {
+      SaveManager.deleteSave(profileId);
+      SaveManager.deleteAutoSave(profileId);
+    }
+    this.overwriteProfileId = null;
+    this.heroName = '';
+    this.mode = 'create';
+    this.createRow = 'name';
+    this.draw();
+    this.time.delayedCall(50, () => this.focusNameInput());
   }
 
   private confirmCreate(): void {
@@ -624,6 +905,8 @@ export class TitleScene extends Phaser.Scene {
       gameState.player.state.kanjiMode = getKanjiMode();
       // Ensure hero sprites match selected color
       regenerateHeroSprites(this, scheme);
+      // Bind the freshly-created hero to the currently-open save slot right away.
+      gameState.saveGame();
       this.removeNameInput();
       this.scene.start('WorldMapScene');
     }
