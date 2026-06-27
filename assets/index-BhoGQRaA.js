@@ -56165,6 +56165,11 @@ const ui = {
         "dungeon.shadowCave.plaque": "Beware the breathing dark... move when the light allows.",
         "dungeon.shadowCave.patrolCaught": "A shadow creature lunges from the darkness!",
         "dungeon.desertTomb.plaque": "The sand swallows the unwary... seek the stone islands.",
+        "dungeon.desertTomb.glyphs.rule.k2": "Step the plates from smallest to largest!",
+        "dungeon.desertTomb.glyphs.rule.34": "Step only the EVEN numbers, smallest to largest!",
+        "dungeon.desertTomb.glyphs.rule.56": "Step only the PRIME numbers, smallest to largest!",
+        "dungeon.desertTomb.glyphs.success": "The glyph seal shatters! The way forward is open.",
+        "dungeon.desertTomb.glyphs.wrong": "Wrong order! The sandstorm resets the trial...",
         "dungeon.banditHideout.plaque": "Honor among thieves is rare... watch your back.",
         "dungeon.magmaTunnels.plaque": "The lava flows in rhythm... patience reveals the path.",
         "dungeon.volcanicForge.plaque": "Fire tempers the worthy... turn back if your resolve wavers.",
@@ -57083,6 +57088,11 @@ const ui = {
         "dungeon.shadowCave.plaque": "いきをする くらやみに きをつけろ… ひかりの あいだに すすめ。",
         "dungeon.shadowCave.patrolCaught": "かげの まものが やみから おそいかかった！",
         "dungeon.desertTomb.plaque": "すなは ゆだんした ものを のみこむ…いしの しまを さがせ。",
+        "dungeon.desertTomb.glyphs.rule.k2": "いちばん ちいさい ばんごうから おおきい じゅんに ふんで！",
+        "dungeon.desertTomb.glyphs.rule.34": "ぐうすうだけ、ちいさい じゅんに ふんで！",
+        "dungeon.desertTomb.glyphs.rule.56": "そすうだけ、ちいさい じゅんに ふんで！",
+        "dungeon.desertTomb.glyphs.success": "グリフの ふういんが くだけた！さきへの みちが ひらけた。",
+        "dungeon.desertTomb.glyphs.wrong": "ちがう！すなあらしが しれんを リセットした…",
         "dungeon.banditHideout.plaque": "ぬすっとの なかまいしきは まれ…うしろに きをつけろ。",
         "dungeon.magmaTunnels.plaque": "ようがんは リズムで ながれる…まてば みちが ひらける。",
         "dungeon.volcanicForge.plaque": "ほのおが つよきものを きたえる…かくごが なければ もどれ。",
@@ -57997,6 +58007,11 @@ const ui = {
         "dungeon.shadowCave.plaque": "息をする 暗闇に 気をつけろ… 光の 間に 進め。",
         "dungeon.shadowCave.patrolCaught": "影の 魔物が 闇から 襲いかかった！",
         "dungeon.desertTomb.plaque": "砂は 油断した 者を 飲み込む…石の 島を 探せ。",
+        "dungeon.desertTomb.glyphs.rule.k2": "一番 小さい 番号から 大きい 順に 踏め！",
+        "dungeon.desertTomb.glyphs.rule.34": "偶数だけ、小さい 順に 踏め！",
+        "dungeon.desertTomb.glyphs.rule.56": "素数だけ、小さい 順に 踏め！",
+        "dungeon.desertTomb.glyphs.success": "グリフの 封印が 砕けた！先への 道が 開けた。",
+        "dungeon.desertTomb.glyphs.wrong": "違う！砂嵐が 試練を リセットした…",
         "dungeon.banditHideout.plaque": "盗賊の 仲間意識は 稀…後ろに 気をつけろ。",
         "dungeon.magmaTunnels.plaque": "溶岩は リズムで 流れる…待てば 道が 開ける。",
         "dungeon.volcanicForge.plaque": "炎が 強き者を 鍛える…覚悟が なければ 戻れ。",
@@ -78133,7 +78148,7 @@ const Xt = {
             }, this.compassEnabled = !1, this.itemOverlayOpen = !1, this.itemOverlayItems = [], this.itemOverlayIndex = 0, this.itemOverlayTexts = [], this.warpOverlayOpen = !1, this.warpOverlayTexts = [], this.warpOverlayIndex = 0, this.warpFloors = [], this.fogEnabled = !1, this.fogRadius = 3, this.fogTorchBonus = 0, this.fogTorchCount = 0, this.lavaPhase = !1, this.lavaTimer = 0, this.mirrorRoomBounds = [], this.mirrorActive = !1, this.crystalPillars = [], this.crystalSequence = [], this.crystalActivated = [], this.crystalSequenceColors = [], this.crystalColors = [16720418, 2263295, 2293572, 16768256, 16729343], this.crystalColorNames = ["red", "blue", "green", "gold", "purple"], this.darknessPulseEnabled = !1, this.darknessPulsePhase = "light", this.darknessPulseTimer = 0, this.darknessPulsePatrols = [], this.windTowerEnabled = !1, this.windTowerPhase = "calm", this.windTowerTimer = 0, this.windTowerDir = {
                 dx: 0,
                 dy: -1
-            }, this.windTowerPushing = !1, this.mazeHunterEnabled = !1, this.mazeHunterBossTileX = 0, this.mazeHunterBossTileY = 0, this.mazeHunterChaseMode = !1, this.mazeHunterMoveTimer = 0, this.mazeHunterStepCount = 0, this.mazeHunterActive = !1, this.mazeHunterDefeated = !1, this.mazeHunterEntranceX = 0, this.mazeHunterEntranceY = 0, this.mazeHunterIsMoving = !1, this._pendingMazeHunterBattle = !1, this.shadowPortalEnabled = !1, this.portalPairs = [], this.portalCooldown = !1, this.mimicChestPositions = new Set, this.hiddenRoomChestPositions = new Set, this.pendingMimicReward = !1, this.poisonTickTimer = 0, this.tripwireGlowTimer = 0, this.lastPoisonTickWallTime = 0, this.midCrystalOverlayOpen = !1, this.midCrystalOverlayTexts = [], this.midCrystalOverlayIndex = 0, this.healerOverlayOpen = !1, this.healerOverlayTexts = [], this.healerOverlayIndex = 0, this.healerOverlayPrice = 0, this.questOverlayOpen = !1, this.questOverlayTexts = [], this.questOverlayIndex = 0
+            }, this.windTowerPushing = !1, this.mazeHunterEnabled = !1, this.mazeHunterBossTileX = 0, this.mazeHunterBossTileY = 0, this.mazeHunterChaseMode = !1, this.mazeHunterMoveTimer = 0, this.mazeHunterStepCount = 0, this.mazeHunterActive = !1, this.mazeHunterDefeated = !1, this.mazeHunterEntranceX = 0, this.mazeHunterEntranceY = 0, this.mazeHunterIsMoving = !1, this._pendingMazeHunterBattle = !1, this.shadowPortalEnabled = !1, this.portalPairs = [], this.portalCooldown = !1, this.mimicChestPositions = new Set, this.hiddenRoomChestPositions = new Set, this.pendingMimicReward = !1, this.poisonTickTimer = 0, this.tripwireGlowTimer = 0, this.lastPoisonTickWallTime = 0, this.midCrystalOverlayOpen = !1, this.midCrystalOverlayTexts = [], this.midCrystalOverlayIndex = 0, this.healerOverlayOpen = !1, this.healerOverlayTexts = [], this.healerOverlayIndex = 0, this.healerOverlayPrice = 0, this.questOverlayOpen = !1, this.questOverlayTexts = [], this.questOverlayIndex = 0, this.glyphPlates = [], this.glyphStepOrder = [], this.glyphTrialActive = !1, this.glyphDoorPos = null, this.glyphPlaqueObj = null
         }
         create() {
             this.cameras.main.setZoom(pe), this.cameras.main.setScroll(-Tt * (pe - 1) / 2, -kt * (pe - 1) / 2), this.isMoving = !1, this.showingMessage = !1, this.npcSprites = [];
@@ -78187,7 +78202,18 @@ const Xt = {
                 })
             }
         }
+        cleanupGlyphTrial() {
+            // P1-1: Destroy all live glyph Phaser objects (rects, texts, plaque, tweens) before resetting refs
+            if (this.glyphPlates) {
+                for (const _gp of this.glyphPlates) {
+                    if (_gp.obj) { this.tweens.killTweensOf(_gp.obj); _gp.obj.destroy(); _gp.obj = null; }
+                    if (_gp.txt) { _gp.txt.destroy(); _gp.txt = null; }
+                }
+            }
+            if (this.glyphPlaqueObj) { this.glyphPlaqueObj.destroy(); this.glyphPlaqueObj = null; }
+        }
         loadMap(x) {
+            this.cleanupGlyphTrial();
             this.hideMessage(), this.showingMessage = !1, this.dialogQueue = [], this.currentMapId = x;
             const T = Xt[x];
             if (tt.questManager.updateProgress(tt.player.state, "visit", x, 1), T.type === "town" && this.markTownVisited(x), x === "overworld") {
@@ -78232,6 +78258,122 @@ const Xt = {
                     }
                 } else this.mimicChestPositions = new Set;
                 this.hiddenRoomChestPositions = new Set(S.hiddenRoomChests ?? []);
+                // Glyph Trial: inject AFTER generator, floor 3 of desertTomb, NO h() usage
+                this.glyphPlates = [], this.glyphStepOrder = [], this.glyphTrialActive = !1, this.glyphDoorPos = null, this.glyphPlaqueObj = null;
+                if (x === "desertTomb" && this.currentFloor === 3) {
+                    const _gMH = this.mapData.length, _gMW = this.mapData[0]?.length ?? 100;
+                    const _gEntX = Math.floor(_gMW / 2), _gEntY = 1;
+                    // P1-2: BFS from entrance to stairs/exit to find critical-path corridor tiles.
+                    // Determine door deterministically: scan entrance column downward for first
+                    // passable corridor tile that has walkable neighbours on both sides (N+S or E+W).
+                    // This is repeatable across loads since mapData is seeded deterministically.
+                    const _gBfsReach = (startX, startY, blockedX, blockedY) => {
+                        const _vis = new Uint8Array(_gMH * _gMW);
+                        const _q = [[startX, startY]];
+                        _vis[startY * _gMW + startX] = 1;
+                        while (_q.length > 0) {
+                            const [_cx, _cy] = _q.shift();
+                            for (const [_dx, _dy] of [[0,-1],[0,1],[-1,0],[1,0]]) {
+                                const _nx = _cx + _dx, _ny = _cy + _dy;
+                                if (_nx < 0 || _nx >= _gMW || _ny < 0 || _ny >= _gMH) continue;
+                                if (_vis[_ny * _gMW + _nx]) continue;
+                                if (blockedX !== undefined && _nx === blockedX && _ny === blockedY) continue;
+                                if (this.mapData[_ny][_nx] !== 0) continue;
+                                _vis[_ny * _gMW + _nx] = 1;
+                                _q.push([_nx, _ny]);
+                            }
+                        }
+                        return _vis;
+                    };
+                    // Find the stairs-down tile (9) position — that's the exit target
+                    let _gStairsX = -1, _gStairsY = -1;
+                    for (let _gy = 0; _gy < _gMH && _gStairsX < 0; _gy++) for (let _gx = 0; _gx < _gMW && _gStairsX < 0; _gx++) if (this.mapData[_gy][_gx] === 9) { _gStairsX = _gx; _gStairsY = _gy; }
+                    // P1-2: Pick door deterministically — scan corridor tiles the player MUST cross
+                    // (reachable from entrance, NOT reachable from exit without going through them).
+                    // Strategy: BFS from entrance; collect corridor tiles that are also the bottleneck
+                    // between entrance half and exit half. Simpler stable approach: scan from entrance
+                    // downward along the first corridor; pick the Nth passable tile at y ~ 1/3 of map.
+                    // Deterministic: no Math.random needed — just read mapData.
+                    let _gDoorX = -1, _gDoorY = -1;
+                    // Walk from spawn downward, find a passable tile that has floor neighbours on exactly the
+                    // north and south sides (a corridor). That tile becomes the gate.
+                    const _gTargetY = Math.floor(_gMH / 3);
+                    for (let _gsy = Math.max(2, _gTargetY - 10); _gsy <= Math.min(_gMH - 3, _gTargetY + 10) && _gDoorX < 0; _gsy++) {
+                        for (let _gsx = Math.max(1, _gEntX - 12); _gsx <= Math.min(_gMW - 2, _gEntX + 12) && _gDoorX < 0; _gsx++) {
+                            if (this.mapData[_gsy][_gsx] !== 0) continue;
+                            // Reachable from entrance without any blocker
+                            if (!_gBfsReach(_gEntX, _gEntY, -1, -1)[_gsy * _gMW + _gsx]) continue;
+                            // Has floor on both N+S or both E+W (proper corridor, not just a pocket)
+                            const _gN = _gsy > 0 && this.mapData[_gsy-1][_gsx] === 0;
+                            const _gS = _gsy < _gMH-1 && this.mapData[_gsy+1][_gsx] === 0;
+                            const _gW = _gsx > 0 && this.mapData[_gsy][_gsx-1] === 0;
+                            const _gE = _gsx < _gMW-1 && this.mapData[_gsy][_gsx+1] === 0;
+                            if ((_gN && _gS) || (_gW && _gE)) { _gDoorX = _gsx; _gDoorY = _gsy; }
+                        }
+                    }
+                    // Fallback: scan wider if narrow band found nothing
+                    if (_gDoorX < 0) {
+                        for (let _gsy = 2; _gsy < _gMH - 3 && _gDoorX < 0; _gsy++) {
+                            for (let _gsx = 1; _gsx < _gMW - 1 && _gDoorX < 0; _gsx++) {
+                                if (this.mapData[_gsy][_gsx] !== 0) continue;
+                                if (!_gBfsReach(_gEntX, _gEntY, -1, -1)[_gsy * _gMW + _gsx]) continue;
+                                const _gN = _gsy > 0 && this.mapData[_gsy-1][_gsx] === 0;
+                                const _gS = _gsy < _gMH-1 && this.mapData[_gsy+1][_gsx] === 0;
+                                const _gW = _gsx > 0 && this.mapData[_gsy][_gsx-1] === 0;
+                                const _gE = _gsx < _gMW-1 && this.mapData[_gsy][_gsx+1] === 0;
+                                if ((_gN && _gS) || (_gW && _gE)) { _gDoorX = _gsx; _gDoorY = _gsy; }
+                            }
+                        }
+                    }
+                    // If already solved: open the door tile and skip trial
+                    if (tt.player.state.storyFlags["desertTomb.3.glyphs.solved"]) {
+                        if (_gDoorX >= 0) this.mapData[_gDoorY][_gDoorX] = 0;
+                        // glyphTrialActive stays false — trial is done
+                    } else {
+                        // Seal the door tile (wall=1) so we can BFS reachable tiles with door sealed
+                        if (_gDoorX >= 0) { this.mapData[_gDoorY][_gDoorX] = 1; this.glyphDoorPos = { x: _gDoorX, y: _gDoorY }; }
+                        // P1-3: BFS from entrance with door SEALED — only reachable tiles are valid plate spots
+                        const _gReachVis = _gBfsReach(_gEntX, _gEntY, _gDoorX, _gDoorY);
+                        const _gCands = [];
+                        for (let _gy = 4; _gy < _gMH - 4; _gy++) for (let _gx = 4; _gx < _gMW - 4; _gx++) {
+                            if (this.mapData[_gy][_gx] !== 0) continue;
+                            if (_gDoorX >= 0 && _gx === _gDoorX && _gy === _gDoorY) continue; // exclude door tile
+                            if (!_gReachVis[_gy * _gMW + _gx]) continue; // must be reachable from spawn
+                            _gCands.push([_gx, _gy]);
+                        }
+                        // Shuffle pool with Math.random only (NO h())
+                        for (let _gi = _gCands.length - 1; _gi > 0; _gi--) { const _gj = Math.floor(Math.random() * (_gi + 1)); [_gCands[_gi], _gCands[_gj]] = [_gCands[_gj], _gCands[_gi]]; }
+                        // Place 5 plates spaced >=5 tiles apart, all reachable
+                        const _gPos = [];
+                        for (const [_gpx, _gpy] of _gCands) {
+                            if (_gPos.some(([_ox, _oy]) => Math.abs(_gpx - _ox) + Math.abs(_gpy - _oy) < 5)) continue;
+                            _gPos.push([_gpx, _gpy]);
+                            if (_gPos.length >= 5) break;
+                        }
+                        // Generate grade-scaled numbers
+                        const _gGrade = tt.player.state.quizDifficulty;
+                        const _gNums = [];
+                        if (_gGrade === "k" || _gGrade === "1" || _gGrade === "2") {
+                            const _gBase = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15];
+                            for (let _gi = _gBase.length - 1; _gi > 0; _gi--) { const _gj = Math.floor(Math.random() * (_gi + 1)); [_gBase[_gi], _gBase[_gj]] = [_gBase[_gj], _gBase[_gi]]; }
+                            for (let _gi = 0; _gi < _gPos.length; _gi++) _gNums.push(_gBase[_gi]);
+                        } else if (_gGrade === "3" || _gGrade === "4") {
+                            const _gBase = [2,4,6,8,10,12,14,16,18,20];
+                            for (let _gi = _gBase.length - 1; _gi > 0; _gi--) { const _gj = Math.floor(Math.random() * (_gi + 1)); [_gBase[_gi], _gBase[_gj]] = [_gBase[_gj], _gBase[_gi]]; }
+                            for (let _gi = 0; _gi < _gPos.length; _gi++) _gNums.push(_gBase[_gi]);
+                        } else {
+                            const _gBase = [2,3,5,7,11,13,17,19,23,29];
+                            for (let _gi = _gBase.length - 1; _gi > 0; _gi--) { const _gj = Math.floor(Math.random() * (_gi + 1)); [_gBase[_gi], _gBase[_gj]] = [_gBase[_gj], _gBase[_gi]]; }
+                            for (let _gi = 0; _gi < _gPos.length; _gi++) _gNums.push(_gBase[_gi]);
+                        }
+                        for (let _gi = 0; _gi < _gPos.length; _gi++) this.glyphPlates.push({ x: _gPos[_gi][0], y: _gPos[_gi][1], value: _gNums[_gi], obj: null, txt: null });
+                        this.glyphTrialActive = _gPos.length >= 3;
+                        // Store reachability vis for reshuffleGlyphPlates to use
+                        this._glyphReachVis = _gReachVis;
+                        this._glyphReachW = _gMW;
+                        this._glyphReachH = _gMH;
+                    }
+                }
                 const h = this.currentFloor === o;
                 for (let l = 0; l < this.mapData.length; l++)
                     for (let a = 0; a < this.mapData[l].length; a++) {
@@ -78299,6 +78441,7 @@ const Xt = {
                 }
             }
             this.renderNPCs(T), this.createHero(), this.updateCamera(), this.initMechanics(T);
+            if (this.glyphTrialActive) this.renderGlyphPlates();
             const i = T.type === "town" ? "town" : T.type === "dungeon" ? "dungeon" : "overworld";
             Jt.playBgm(i)
         }
@@ -79074,6 +79217,160 @@ const Xt = {
                 }
             })
         }
+        renderGlyphPlates() {
+            // Destroy any existing plate objects
+            for (const _gp of this.glyphPlates) { _gp.obj && _gp.obj.destroy(); _gp.txt && _gp.txt.destroy(); }
+            const _gGrade = tt.player.state.quizDifficulty;
+            const _ruleKey = (_gGrade === "k" || _gGrade === "1" || _gGrade === "2") ? "dungeon.desertTomb.glyphs.rule.k2" : (_gGrade === "3" || _gGrade === "4") ? "dungeon.desertTomb.glyphs.rule.34" : "dungeon.desertTomb.glyphs.rule.56";
+            for (const _gp of this.glyphPlates) {
+                const _wx = _gp.x * xt + xt / 2, _wy = _gp.y * xt + xt / 2;
+                _gp.obj = this.add.rectangle(_wx, _wy, xt - 4, xt - 4, 0xC8A030, 0.85).setDepth(30);
+                _gp.txt = this.add.text(_wx, _wy, String(_gp.value), { fontSize: "18px", fontFamily: "'Helvetica Neue', sans-serif", color: "#fff", fontStyle: "bold", stroke: "#000", strokeThickness: 3 }).setOrigin(.5).setDepth(31);
+                this.tweens.add({ targets: _gp.obj, scaleX: 1.08, scaleY: 1.08, duration: 700 + Math.random() * 300, yoyo: !0, repeat: -1, ease: "Sine.easeInOut" });
+            }
+            // Show the plaque rule sign near the entrance
+            const _pMH = this.mapData.length, _pMW = this.mapData[0]?.length ?? 100;
+            const _pSign = this.add.text(Math.floor(_pMW / 2) * xt + xt / 2, 5 * xt, Z(_ruleKey), { fontSize: "14px", fontFamily: "'Helvetica Neue', sans-serif", color: "#ffe88a", backgroundColor: "#00000099", padding: { x: 8, y: 5 }, wordWrap: { width: 280 }, align: "center" }).setOrigin(.5, 0).setDepth(50);
+            this.glyphPlaqueObj = _pSign;
+            // Also tint the sealed door tile amber
+            if (this.glyphDoorPos && this.tileGrid[this.glyphDoorPos.y]?.[this.glyphDoorPos.x]) {
+                this.tileGrid[this.glyphDoorPos.y][this.glyphDoorPos.x].setTint(0xC8A030);
+            }
+        }
+        handleGlyphStep() {
+            if (!this.glyphTrialActive || this.glyphPlates.length === 0) return false;
+            const _hx = this.heroTileX, _hy = this.heroTileY;
+            const _idx = this.glyphPlates.findIndex(_gp => _gp.x === _hx && _gp.y === _hy);
+            if (_idx < 0) return false;
+            const _gp = this.glyphPlates[_idx];
+            const _gGrade = tt.player.state.quizDifficulty;
+            // Compute correct sequence based on grade
+            let _correct = [];
+            if (_gGrade === "k" || _gGrade === "1" || _gGrade === "2") {
+                _correct = [...this.glyphPlates].sort((a, b) => a.value - b.value).map(p => p.value);
+            } else if (_gGrade === "3" || _gGrade === "4") {
+                _correct = [...this.glyphPlates].filter(p => p.value % 2 === 0).sort((a, b) => a.value - b.value).map(p => p.value);
+            } else {
+                const _isPrime = n => { if (n < 2) return !1; for (let i = 2; i * i <= n; i++) if (n % i === 0) return !1; return !0; };
+                _correct = [...this.glyphPlates].filter(p => _isPrime(p.value)).sort((a, b) => a.value - b.value).map(p => p.value);
+            }
+            // Is this plate even in the correct sequence?
+            const _isRequired = _correct.includes(_gp.value);
+            if (!_isRequired) {
+                // Wrong plate stepped (non-qualifying) -> sandstorm reshuffle
+                this.sandstormGust(() => { this.reshuffleGlyphPlates(); });
+                return true;
+            }
+            const _expectedIdx = this.glyphStepOrder.length;
+            if (_correct[_expectedIdx] !== _gp.value) {
+                // Correct plate but wrong order -> sandstorm reshuffle
+                this.sandstormGust(() => { this.reshuffleGlyphPlates(); });
+                return true;
+            }
+            // Correct step
+            this.glyphStepOrder.push(_gp.value);
+            Jt.playSfx("crystal_obtain");
+            // Highlight stepped plate
+            _gp.obj && _gp.obj.setFillStyle(0x50FF80, 1);
+            if (this.glyphStepOrder.length >= _correct.length) {
+                // All required plates stepped correctly -> unseal
+                this.glyphTrialActive = !1;
+                tt.player.state.storyFlags["desertTomb.3.glyphs.solved"] = !0;
+                this.cameras.main.flash(600, 255, 220, 80);
+                if (this.glyphDoorPos) {
+                    this.mapData[this.glyphDoorPos.y][this.glyphDoorPos.x] = 0;
+                    const _dTheme = "tomb";
+                    this.tileGrid[this.glyphDoorPos.y]?.[this.glyphDoorPos.x]?.setTexture(`${_dTheme}-0`).clearTint();
+                }
+                this.time.delayedCall(300, () => { this.showMessage(Z("dungeon.desertTomb.glyphs.success")); });
+            }
+            return true;
+        }
+        reshuffleGlyphPlates() {
+            // Re-randomize positions and numbers for the current plates, Math.random() only
+            // P1-3: only pick from reachable tiles (BFS vis stored at injection time)
+            const _gMH = this.mapData.length, _gMW = this.mapData[0]?.length ?? 100;
+            const _gReachVis = this._glyphReachVis;
+            const _gDX = this.glyphDoorPos?.x ?? -1, _gDY = this.glyphDoorPos?.y ?? -1;
+            const _gCands = [];
+            for (let _gy = 4; _gy < _gMH - 4; _gy++) for (let _gx = 4; _gx < _gMW - 4; _gx++) {
+                if (this.mapData[_gy][_gx] !== 0) continue;
+                if (_gx === _gDX && _gy === _gDY) continue;
+                if (_gReachVis && !_gReachVis[_gy * _gMW + _gx]) continue;
+                _gCands.push([_gx, _gy]);
+            }
+            for (let _gi = _gCands.length - 1; _gi > 0; _gi--) { const _gj = Math.floor(Math.random() * (_gi + 1)); [_gCands[_gi], _gCands[_gj]] = [_gCands[_gj], _gCands[_gi]]; }
+            const _gPos = [];
+            for (const [_gpx, _gpy] of _gCands) {
+                if (_gPos.some(([_ox, _oy]) => Math.abs(_gpx - _ox) + Math.abs(_gpy - _oy) < 5)) continue;
+                _gPos.push([_gpx, _gpy]);
+                if (_gPos.length >= this.glyphPlates.length) break;
+            }
+            const _gGrade = tt.player.state.quizDifficulty;
+            const _newNums = [];
+            if (_gGrade === "k" || _gGrade === "1" || _gGrade === "2") {
+                const _b = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15];
+                for (let _gi = _b.length-1; _gi > 0; _gi--) { const _gj=Math.floor(Math.random()*(_gi+1));[_b[_gi],_b[_gj]]=[_b[_gj],_b[_gi]]; }
+                for (let _gi = 0; _gi < this.glyphPlates.length; _gi++) _newNums.push(_b[_gi]);
+            } else if (_gGrade === "3" || _gGrade === "4") {
+                const _b = [2,4,6,8,10,12,14,16,18,20];
+                for (let _gi = _b.length-1; _gi > 0; _gi--) { const _gj=Math.floor(Math.random()*(_gi+1));[_b[_gi],_b[_gj]]=[_b[_gj],_b[_gi]]; }
+                for (let _gi = 0; _gi < this.glyphPlates.length; _gi++) _newNums.push(_b[_gi]);
+            } else {
+                const _b = [2,3,5,7,11,13,17,19,23,29];
+                for (let _gi = _b.length-1; _gi > 0; _gi--) { const _gj=Math.floor(Math.random()*(_gi+1));[_b[_gi],_b[_gj]]=[_b[_gj],_b[_gi]]; }
+                for (let _gi = 0; _gi < this.glyphPlates.length; _gi++) _newNums.push(_b[_gi]);
+            }
+            // Destroy old objects and update
+            for (let _gi = 0; _gi < this.glyphPlates.length; _gi++) {
+                this.glyphPlates[_gi].obj && this.glyphPlates[_gi].obj.destroy();
+                this.glyphPlates[_gi].txt && this.glyphPlates[_gi].txt.destroy();
+                const _np = _gPos[_gi] ?? _gPos[0];
+                this.glyphPlates[_gi].x = _np[0];
+                this.glyphPlates[_gi].y = _np[1];
+                this.glyphPlates[_gi].value = _newNums[_gi];
+                this.glyphPlates[_gi].obj = null;
+                this.glyphPlates[_gi].txt = null;
+            }
+            this.glyphStepOrder = [];
+            // Re-render
+            for (const _gp of this.glyphPlates) {
+                const _wx = _gp.x * xt + xt / 2, _wy = _gp.y * xt + xt / 2;
+                _gp.obj = this.add.rectangle(_wx, _wy, xt - 4, xt - 4, 0xC8A030, 0.85).setDepth(30);
+                _gp.txt = this.add.text(_wx, _wy, String(_gp.value), { fontSize: "18px", fontFamily: "'Helvetica Neue', sans-serif", color: "#fff", fontStyle: "bold", stroke: "#000", strokeThickness: 3 }).setOrigin(.5).setDepth(31);
+                this.tweens.add({ targets: _gp.obj, scaleX: 1.08, scaleY: 1.08, duration: 700 + Math.random() * 300, yoyo: !0, repeat: -1, ease: "Sine.easeInOut" });
+            }
+            // Push player back a step (towards entrance)
+            const _bMH = this.mapData.length;
+            if (this.heroTileY > 1) { this.heroTileY = Math.max(1, this.heroTileY - 2); } else { this.heroTileX = Math.max(1, this.heroTileX - 1); }
+            this.hero.x = this.heroTileX * xt + xt / 2;
+            this.hero.y = this.heroTileY * xt + xt / 2;
+            this.updatePosition();
+            this.updateCamera();
+            this.fogEnabled && this.updateFogVisibility();
+            this.time.delayedCall(200, () => { this.showMessage(Z("dungeon.desertTomb.glyphs.wrong")); });
+        }
+        sandstormGust(cb) {
+            const _so = this.cameras.main;
+            this.isMoving = !0;
+            _so.shake(500, .018);
+            const _rect = this.add.rectangle(_so.width / 2, _so.height / 2, _so.width + 400, _so.height + 400, 0xC8A030, 1).setDepth(998).setScrollFactor(0, 0).setOrigin(.5, .5).setAlpha(0);
+            // Sand particle overlay
+            const _rect2 = this.add.rectangle(_so.width / 2, _so.height / 2, _so.width + 400, _so.height + 400, 0x9B6A00, 1).setDepth(999).setScrollFactor(0, 0).setOrigin(.5, .5).setAlpha(0);
+            this.tweens.add({
+                targets: _rect,
+                alpha: 0.75,
+                duration: 350,
+                ease: "Sine.easeIn",
+                onComplete: () => {
+                    this.tweens.add({ targets: _rect2, alpha: 0.55, duration: 150, onComplete: () => {
+                        try { cb(); } catch (_e) { console.error("[sandstormGust]", _e); }
+                        this.tweens.add({ targets: [_rect2], alpha: 0, duration: 200, onComplete: () => { _rect2?.scene && _rect2.destroy(); } });
+                        this.tweens.add({ targets: _rect, alpha: 0, duration: 500, delay: 150, ease: "Sine.easeOut", onComplete: () => { _rect?.scene && _rect.destroy(); this.isMoving = !1; } });
+                    } });
+                }
+            });
+        }
         checkTransition(x, T) {
             if (this.transitionCooldown > 0) return this.transitionCooldown--, null;
             const i = Xt[this.currentMapId],
@@ -79431,6 +79728,7 @@ const Xt = {
                     this.showMessage(Z("dungeon.banditHideout.tripwire"))
                 }
             }
+            if (this.glyphTrialActive && this.handleGlyphStep()) return;
             if (this.mazeHunterEnabled && !this.mazeHunterDefeated && (this.mazeHunterStepCount++, this.mazeHunterActive && this.mazeHunterBossTileX === this.heroTileX && this.mazeHunterBossTileY === this.heroTileY)) {
                 this.triggerMazeHunterBattle();
                 return
@@ -80952,6 +81250,9 @@ ${i.trim()}` : o;
         }
         initMechanics(x) {
             this.fogEnabled = !1, this.fogTorchBonus = 0, this.fogTorchCount = 0, this.lavaPhase = !1, this.lavaTimer = 0, this.mirrorRoomBounds = [], this.mirrorActive = !1, this.mirrorIcon?.destroy(), this.mirrorIcon = void 0, this.darknessPulseEnabled = !1, this.darknessPulsePhase = "light", this.darknessPulseTimer = 0;
+            // Glyph cleanup: only destroy old visual objects; keep data (loadMap sets glyphPlates/glyphTrialActive before initMechanics runs)
+            for (const _gp of (this.glyphPlates || [])) { _gp.obj && _gp.obj.destroy(); _gp.obj = null; _gp.txt && _gp.txt.destroy(); _gp.txt = null; }
+            this.glyphPlaqueObj && this.glyphPlaqueObj.destroy(); this.glyphPlaqueObj = null;
             for (const i of this.darknessPulsePatrols) i.sprite.destroy();
             this.darknessPulsePatrols = [], this.darknessPulseOverlay?.destroy(), this.darknessPulseOverlay = void 0, this.windTowerEnabled = !1, this.windTowerPhase = "calm", this.windTowerTimer = 0, this.windTowerPushing = !1, this.mazeHunterEnabled = !1, this.mazeHunterActive = !1, this.mazeHunterChaseMode = !1, this.mazeHunterStepCount = 0, this.mazeHunterDefeated = !1, this.mazeHunterIsMoving = !1, this.mazeHunterBossSprite?.destroy(), this.mazeHunterBossSprite = void 0, this.tripwireGlowTimer = 0;
             if (this._windTileOverlays) { for (const _wto of this._windTileOverlays) _wto.destroy(); this._windTileOverlays = []; } else this._windTileOverlays = [];
