@@ -78832,7 +78832,7 @@ const Xt = {
         }
         forestFade(cb) {
             const o = this.cameras.main,
-                u = this.add.rectangle(o.width / 2, o.height / 2, o.width + 400, o.height + 400, 0, 0).setDepth(999).setScrollFactor(0, 0).setOrigin(.5, .5);
+                u = this.add.rectangle(o.width / 2, o.height / 2, o.width + 400, o.height + 400, 0, 1).setDepth(999).setScrollFactor(0, 0).setOrigin(.5, .5).setAlpha(0);
             this.isMoving = !0;
             this.tweens.add({
                 targets: u,
