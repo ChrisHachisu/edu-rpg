@@ -74133,7 +74133,13 @@ function Ap(n, x, T, i = 1, o = 1, u = !1, m = !1, C = !1, t, f) {
             if (q[Ht][Nt] !== 0) continue;
             let Yt = 0;
             for (const [Ut, Vt] of Dt)(q[Ht + Vt]?.[Nt + Ut] === 0 || q[Ht + Vt]?.[Nt + Ut] === 24) && Yt++;
-            Yt === 1 && (q[Ht][Nt] = 4, Pt++)
+            let Mc = !0;
+            for (let Ec = -1; Ec <= 1 && Mc; Ec++)
+                for (let Fc = -1; Fc <= 1; Fc++)
+                    if (q[Ht + Ec]?.[Nt + Fc] === 4) {
+                        Mc = !1;
+                        break
+                    } Yt === 1 && Mc && (q[Ht][Nt] = 4, Pt++)
         }
         if (l)
             for (const bt of [1, -1]) {
@@ -74430,7 +74436,7 @@ function Ap(n, x, T, i = 1, o = 1, u = !1, m = !1, C = !1, t, f) {
         if (W >= z) break;
         B[et] === "empty" && (B[et] = "treasure", W++)
     }
-    const N = f ? new Set(["ironMine", "hauntedForest", "shadowCave", "oasisDepths", "scorchedRuins", "emberMines", "obsidianCavern", "volcanicForge", "demonBarracks", "voidRift", "magmaTunnels", "demonCastle", "portalStormreach", "portalFrostfall", "portalSunkenTemple", "portalTwilight"]).has(f) : !1;
+    const N = f ? new Set(["scorchedRuins", "emberMines", "obsidianCavern", "volcanicForge", "demonBarracks", "voidRift", "magmaTunnels", "demonCastle", "portalStormreach", "portalFrostfall", "portalSunkenTemple", "portalTwilight"]).has(f) : !1;
     let V = 0;
     if (N && !X.has(t ?? ""))
         for (let et = 0; et < F; et++) B[et] === "empty" && V < 1 && h() < .4 && (B[et] = "hidden", V++);
@@ -74778,7 +74784,7 @@ function Ap(n, x, T, i = 1, o = 1, u = !1, m = !1, C = !1, t, f) {
                         for (let Dt = nt - 1; Dt <= nt + 1; Dt++) e[Gt][Dt] = 0;
                     const pt = ot + q,
                         Et = ft + lt;
-                    pt >= 1 && pt < n - 1 && Et >= 1 && Et < x - 1 && (e[Et][pt] = 0), e[ft][ot] = 17, f && new Set(["shadowCave", "oasisDepths", "scorchedRuins", "emberMines", "obsidianCavern", "volcanicForge", "demonBarracks", "voidRift", "magmaTunnels", "demonCastle", "portalStormreach", "portalFrostfall", "portalSunkenTemple", "portalTwilight"]).has(f) && i < o && h() < .5 ? e[st][nt] = 9 : ((f==="banditHideout"&&a)?(e[st][nt]=7,0):(e[st][nt]=4,c.push(`${nt},${st}`)));
+                    pt >= 1 && pt < n - 1 && Et >= 1 && Et < x - 1 && (e[Et][pt] = 0), e[ft][ot] = 17, f && new Set(["scorchedRuins", "emberMines", "obsidianCavern", "volcanicForge", "demonBarracks", "voidRift", "magmaTunnels", "demonCastle", "portalStormreach", "portalFrostfall", "portalSunkenTemple", "portalTwilight"]).has(f) && i < o && h() < .5 ? e[st][nt] = 9 : ((f==="banditHideout"&&a)?(e[st][nt]=7,0):(e[st][nt]=4,c.push(`${nt},${st}`)));
                     break
                 }
                 break
@@ -75037,7 +75043,7 @@ function Ap(n, x, T, i = 1, o = 1, u = !1, m = !1, C = !1, t, f) {
                     for (let Pt = ut - Et; Pt <= ut + Et; Pt++) e[wt][Pt] = 0;
                 const At = nt + ot,
                     Gt = st + ft;
-                if (At >= 1 && At < n - 1 && Gt >= 1 && Gt < x - 1 && (e[Gt][At] = 0), e[st][nt] = 17, e[pt][ut] = 4, c.push(`${ut},${pt}`), (f ? new Set(["shadowCave", "oasisDepths", "scorchedRuins", "emberMines", "obsidianCavern", "volcanicForge", "demonBarracks", "voidRift", "magmaTunnels", "demonCastle", "portalStormreach", "portalFrostfall", "portalSunkenTemple", "portalTwilight"]).has(f) : !1) && !a) {
+                if (At >= 1 && At < n - 1 && Gt >= 1 && Gt < x - 1 && (e[Gt][At] = 0), e[st][nt] = 17, e[pt][ut] = 4, c.push(`${ut},${pt}`), (f ? new Set(["scorchedRuins", "emberMines", "obsidianCavern", "volcanicForge", "demonBarracks", "voidRift", "magmaTunnels", "demonCastle", "portalStormreach", "portalFrostfall", "portalSunkenTemple", "portalTwilight"]).has(f) : !1) && !a) {
                     const wt = ut + (ot === 0 ? 1 : 0),
                         Pt = pt + (ft === 0 ? 1 : 0);
                     wt >= 1 && wt < n - 1 && Pt >= 1 && Pt < x - 1 && (e[Pt][wt] = 9)
@@ -76491,8 +76497,8 @@ const Xt = {
                 targetMap: "frostwatch",
                 fromX: 222,
                 fromY: 262,
-                toX: 5,
-                toY: 9
+                toX: 8,
+                toY: 14
             }, {
                 targetMap: "hauntedVillage",
                 fromX: 252,
@@ -76962,7 +76968,7 @@ const Xt = {
                 id: "archaeologist",
                 dialogueKey: "npc.archaeologist.greeting",
                 x: 12,
-                y: 3
+                y: 4
             }, {
                 id: "luna",
                 dialogueKey: "npc.luna.greeting",
@@ -78530,30 +78536,40 @@ const Xt = {
                 if (o >= S && x > 0) {
                     if (this.heroTileY === this.forestMazeCorrectExitY) {
                         if (this.currentFloor < (C.floors ?? 1)) {
-                            this.currentFloor++, tt.encounterManager.reset(), this.loadMap(this.currentMapId);
-                            const l = this.mapData.length;
-                            this.heroTileX = 1, this.heroTileY = Math.floor(l / 2), this.hero.x = this.heroTileX * xt + xt / 2, this.hero.y = this.heroTileY * xt + xt / 2, this.updatePosition(), this.updateCamera(), this.fogEnabled && this.updateFogVisibility(), this.showMessage(Z("dungeon.hauntedForest.floorTransition"))
+                            this.forestFade(() => {
+                                this.currentFloor++, tt.encounterManager.reset(), this.loadMap(this.currentMapId);
+                                const l = this.mapData.length;
+                                this.heroTileX = 1, this.heroTileY = Math.floor(l / 2), this.hero.x = this.heroTileX * xt + xt / 2, this.hero.y = this.heroTileY * xt + xt / 2, this.updatePosition(), this.updateCamera(), this.fogEnabled && this.updateFogVisibility(), this.showMessage(Z("dungeon.hauntedForest.floorTransition"))
+                            })
                         }
                     } else {
                         const l = this.currentFloor === 1;
-                        this.heroTileX = l ? Math.floor(S / 2) : 1, this.heroTileY = l ? h - 2 : Math.floor(h / 2), this.hero.x = this.heroTileX * xt + xt / 2, this.hero.y = this.heroTileY * xt + xt / 2, this.updatePosition(), this.updateCamera(), this.fogEnabled && this.updateFogVisibility(), Jt.playSfx("menu_cancel"), this.showMessage(Z("dungeon.hauntedForest.lost"))
+                        Jt.playSfx("menu_cancel"), this.forestFade(() => {
+                            this.heroTileX = l ? Math.floor(S / 2) : 1, this.heroTileY = l ? h - 2 : Math.floor(h / 2), this.hero.x = this.heroTileX * xt + xt / 2, this.hero.y = this.heroTileY * xt + xt / 2, this.updatePosition(), this.updateCamera(), this.fogEnabled && this.updateFogVisibility(), this.showMessage(Z("dungeon.hauntedForest.lost"))
+                        })
                     }
                     return
                 }
                 if (o < 0 && this.currentFloor > 1) {
-                    this.currentFloor--, tt.encounterManager.reset(), this.loadMap(this.currentMapId), this.showMessage(Z("dungeon.hauntedForest.floorBack"));
+                    this.forestFade(() => {
+                        this.currentFloor--, tt.encounterManager.reset(), this.loadMap(this.currentMapId), this.showMessage(Z("dungeon.hauntedForest.floorBack"))
+                    });
                     return
                 }
                 if (u >= h && this.currentFloor === 1) {
                     const l = C.connections[0];
-                    l && (this.currentMapId = l.targetMap, this.currentFloor = 1, this.loadMap(l.targetMap), this.heroTileX = l.toX, this.heroTileY = l.toY, this.hero.x = this.heroTileX * xt + xt / 2, this.hero.y = this.heroTileY * xt + xt / 2, this.updatePosition(), this.updateCamera());
+                    l && this.forestFade(() => {
+                        this.currentMapId = l.targetMap, this.currentFloor = 1, this.loadMap(l.targetMap), this.heroTileX = l.toX, this.heroTileY = l.toY, this.hero.x = this.heroTileX * xt + xt / 2, this.hero.y = this.heroTileY * xt + xt / 2, this.updatePosition(), this.updateCamera()
+                    });
                     return
                 }
                 if (u >= h && this.currentFloor === (C.floors ?? 1)) {
                     const l = `boss.${C.bossId}.defeated`;
                     if (tt.player.state.storyFlags[l]) {
                         const a = C.connections.length > 1 ? C.connections[1] : C.connections[0];
-                        a && (this.currentMapId = a.targetMap, this.currentFloor = 1, this.loadMap(a.targetMap), this.heroTileX = a.toX, this.heroTileY = a.toY, this.hero.x = this.heroTileX * xt + xt / 2, this.hero.y = this.heroTileY * xt + xt / 2, this.updatePosition(), this.updateCamera());
+                        a && this.forestFade(() => {
+                            this.currentMapId = a.targetMap, this.currentFloor = 1, this.loadMap(a.targetMap), this.heroTileX = a.toX, this.heroTileY = a.toY, this.hero.x = this.heroTileX * xt + xt / 2, this.hero.y = this.heroTileY * xt + xt / 2, this.updatePosition(), this.updateCamera()
+                        });
                         return
                     }
                 }
@@ -78640,6 +78656,9 @@ const Xt = {
                 if (h === vr) {
                     const l = `windbreakerStone_${this.currentMapId}`;
                     if (!tt.player.state.inventory.some(e => e.itemId === l && e.quantity > 0)) {
+                        const wpKey = `dungeon.${this.currentMapId}.windPush.seen`,
+                            wpFirst = !tt.player.state.storyFlags[wpKey];
+                        wpFirst && (tt.player.state.storyFlags[wpKey] = !0);
                         const e = this.heroTileX - x,
                             r = this.heroTileY - T;
                         e >= 0 && e < this.mapData[0].length && r >= 0 && r < this.mapData.length && this.mapData[r][e] !== 1 && this.mapData[r][e] !== 5 ? (this.isMoving = !0, this.heroTileX = e, this.heroTileY = r, this.tweens.add({
@@ -78649,9 +78668,9 @@ const Xt = {
                             duration: 200,
                             ease: "Back.easeOut",
                             onComplete: () => {
-                                this.hero.x = Math.round(this.hero.x), this.hero.y = Math.round(this.hero.y), this.isMoving = !1, this.updatePosition(), this.showMessage(Z("dungeon.windPushBack"))
+                                this.hero.x = Math.round(this.hero.x), this.hero.y = Math.round(this.hero.y), this.isMoving = !1, this.updatePosition(), wpFirst && this.showMessage(Z("dungeon.windPushBack"))
                             }
-                        })) : this.showMessage(Z("dungeon.windPushBack"));
+                        })) : wpFirst && this.showMessage(Z("dungeon.windPushBack"));
                         return
                     }
                     return
@@ -78810,6 +78829,32 @@ const Xt = {
             for (const m of o.npcs)
                 if (m.x === x && m.y === T) return !1;
             return !0
+        }
+        forestFade(cb) {
+            const o = this.cameras.main,
+                u = this.add.rectangle(o.width / 2, o.height / 2, o.width + 400, o.height + 400, 0, 0).setDepth(999).setScrollFactor(0, 0).setOrigin(.5, .5);
+            this.isMoving = !0;
+            this.tweens.add({
+                targets: u,
+                alpha: 1,
+                duration: 200,
+                onComplete: () => {
+                    try {
+                        cb()
+                    } catch (m) {
+                        console.error("[forestFade]", m)
+                    }
+                    this.tweens.add({
+                        targets: u,
+                        alpha: 0,
+                        duration: 250,
+                        delay: 60,
+                        onComplete: () => {
+                            u && u.scene && u.destroy(), this.isMoving = !1
+                        }
+                    })
+                }
+            })
         }
         checkTransition(x, T) {
             if (this.transitionCooldown > 0) return this.transitionCooldown--, null;
