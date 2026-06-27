@@ -55518,6 +55518,7 @@ const ui = {
         "menu.close": "Close",
         "menu.level": "Lv",
         "menu.hp": "HP",
+        "menu.poison": "POISON",
         "menu.atk": "ATK",
         "menu.def": "DEF",
         "menu.spd": "SPD",
@@ -55526,6 +55527,7 @@ const ui = {
         "menu.gold": "Gold",
         "menu.accuracy": "Accuracy",
         "menu.quests": "Quests",
+        "quest.tracker.title": "Quests",
         "menu.activeQuests": "Active Quests",
         "menu.completedQuests": "Completed",
         "menu.noQuests": "No active quests",
@@ -55540,6 +55542,7 @@ const ui = {
         "equip.slot.armor": "Armor",
         "equip.slot.shield": "Shield",
         "equip.slot.helmet": "Helmet",
+        "equip.slot.accessory": "Accessory",
         "equip.empty": "None",
         "equip.owned": "Owned",
         "equip.hintEquip": "Z: Equip",
@@ -56424,6 +56427,7 @@ const ui = {
         "menu.close": "とじる",
         "menu.level": "Lv",
         "menu.hp": "HP",
+        "menu.poison": "どく",
         "menu.atk": "こうげき",
         "menu.def": "ぼうぎょ",
         "menu.spd": "はやさ",
@@ -56432,6 +56436,7 @@ const ui = {
         "menu.gold": "ゴールド",
         "menu.accuracy": "せいかいりつ",
         "menu.quests": "クエスト",
+        "quest.tracker.title": "クエスト",
         "menu.activeQuests": "すすめているクエスト",
         "menu.completedQuests": "かんりょう",
         "menu.noQuests": "クエストがありません",
@@ -56446,6 +56451,7 @@ const ui = {
         "equip.slot.armor": "よろい",
         "equip.slot.shield": "たて",
         "equip.slot.helmet": "かぶと",
+        "equip.slot.accessory": "アクセサリ",
         "equip.empty": "なし",
         "equip.owned": "もちもの",
         "equip.hintEquip": "Z: そうび",
@@ -57333,6 +57339,7 @@ const ui = {
         "menu.close": "閉じる",
         "menu.level": "Lv",
         "menu.hp": "HP",
+        "menu.poison": "毒",
         "menu.atk": "攻撃",
         "menu.def": "防御",
         "menu.spd": "速さ",
@@ -57341,6 +57348,7 @@ const ui = {
         "menu.gold": "ゴールド",
         "menu.accuracy": "正解率",
         "menu.quests": "クエスト",
+        "quest.tracker.title": "クエスト",
         "menu.activeQuests": "進行中のクエスト",
         "menu.completedQuests": "完了",
         "menu.noQuests": "クエストがありません",
@@ -57355,6 +57363,7 @@ const ui = {
         "equip.slot.armor": "鎧",
         "equip.slot.shield": "盾",
         "equip.slot.helmet": "兜",
+        "equip.slot.accessory": "アクセサリ",
         "equip.empty": "なし",
         "equip.owned": "持ち物",
         "guide.move": "移動",
@@ -78512,6 +78521,10 @@ const Xt = {
                 this.itemOverlayOpen && this.itemOverlayItems.length > 0 && (this.itemOverlayIndex = Math.min(this.itemOverlayItems.length - 1, this.itemOverlayIndex + 1), this.updateFieldItemSelection())
             }), this.input.keyboard?.on("keydown-I", () => {
                 !this.showingMessage && !this.isMoving && !this.itemOverlayOpen && !this.healerOverlayOpen && !this.questOverlayOpen && this.showFieldItemMenu()
+            }), this.input.keyboard?.on("keydown-T", () => {
+                this.questTrackerCollapsed = !this.questTrackerCollapsed;
+                this.questDotActive = false;
+                this.updateHUD();
             })
         }
         update() {
@@ -79906,7 +79919,7 @@ const Xt = {
             this.updateHUD()
         }
         updateHUD() {
-            this.hpText?.destroy(), this.guideText?.destroy(), this.floorText?.destroy(), this.compassContainer?.destroy(), this.compassContainer = void 0, this.compassArrow = void 0, this.minimapGfx?.destroy(), this.minimapGfx = void 0, this.minimapPlayerDot?.destroy(), this.minimapPlayerDot = void 0;
+            this.hpText?.destroy(), this.hpBarBg?.destroy(), this.hpBarFg?.destroy(), this.guideText?.destroy(), this.floorText?.destroy(), this.compassContainer?.destroy(), this.compassContainer = void 0, this.compassArrow = void 0, this.minimapGfx?.destroy(), this.minimapGfx = void 0, this.minimapPlayerDot?.destroy(), this.minimapPlayerDot = void 0; if (this._questTrackerObjs) { for (const _qto of this._questTrackerObjs) _qto?.destroy(); this._questTrackerObjs = null; } this._questDotTween?.remove(); this._questDotTween = null;
             const x = tt.player;
             this.hpText = this.add.text(Ne + Math.round(8 * gt), Ye + Math.round(8 * gt), `${Z("menu.level")}${x.state.level}  ${Z("menu.hp")} ${x.state.hp}/${x.totalMaxHp}`, {
                 fontSize: `${Math.round(10*gt)}px`,
@@ -79918,6 +79931,7 @@ const Xt = {
                     y: Math.round(2 * gt)
                 }
             }).setDepth(100).setScrollFactor(0);
+            const _hudHp = x.state.hp, _hudMaxHp = x.totalMaxHp, _hudRatio = Math.max(0, Math.min(1, _hudMaxHp > 0 ? _hudHp / _hudMaxHp : 1)), _hudBarW = Math.round(80 * gt), _hudBarH = Math.round(5 * gt), _hudBarX = Ne + Math.round(8 * gt), _hudBarY = Ye + Math.round(22 * gt), _hudColor = _hudRatio <= 0.2 ? 0xCC2222 : _hudRatio <= 0.5 ? 0xDDAA22 : 0x22CC44; this.hpBarBg = this.add.rectangle(_hudBarX, _hudBarY, _hudBarW, _hudBarH, 0x1A1A2E).setOrigin(0, 0).setDepth(100).setScrollFactor(0); this.hpBarFg = this.add.rectangle(_hudBarX, _hudBarY, Math.max(0, Math.round(_hudBarW * _hudRatio)), _hudBarH, _hudColor).setOrigin(0, 0).setDepth(101).setScrollFactor(0);
             const T = Xt[this.currentMapId];
             if (T.type === "dungeon" || T.type === "town") {
                 const o = T.floors ?? 1;
@@ -79949,7 +79963,65 @@ const Xt = {
                     x: Math.round(4 * gt),
                     y: Math.round(2 * gt)
                 }
-            }).setOrigin(1, 1).setDepth(100).setScrollFactor(0).setAlpha(.7), this.createCompass(), this.renderMinimap()
+            }).setOrigin(1, 1).setDepth(100).setScrollFactor(0).setAlpha(.7); this._renderQuestTracker(); this.createCompass(), this.renderMinimap()
+        }
+        _renderQuestTracker() {
+            this._questTrackerObjs = this._questTrackerObjs || null;
+            const _mapCfg = Xt[this.currentMapId];
+            if (_mapCfg && _mapCfg.type === "dungeon") return;
+            if (!tt.questManager) return;
+            const _qs = tt.questManager.getActiveQuests(tt.player.state);
+            const _boxX = Ne + Tt - Math.round(8 * gt);
+            const _boxY = Ye + Math.round(140 * gt);
+            const _collapsed = !!this.questTrackerCollapsed;
+            const _dotActive = !!this.questDotActive;
+            const _objs = [];
+            const _headerLabel = Z("quest.tracker.title") + (_qs.length > 0 ? ` (${_qs.length})` : "");
+            const _hdrH = Math.round(18 * gt);
+            const _hdrW = Math.round(90 * gt);
+            const _hdrBg = this.add.rectangle(_boxX, _boxY, _hdrW, _hdrH, 0x1a1a3e, 0.88).setOrigin(1, 0).setDepth(100).setScrollFactor(0);
+            _objs.push(_hdrBg);
+            const _hdrTxt = this.add.text(_boxX - Math.round(6 * gt) - (_dotActive ? Math.round(10 * gt) : 0), _boxY + Math.round(4 * gt), _headerLabel, {
+                fontSize: `${Math.round(9 * gt)}px`,
+                color: ht.TEXT_YELLOW,
+                fontFamily: yt
+            }).setOrigin(1, 0).setDepth(101).setScrollFactor(0);
+            _objs.push(_hdrTxt);
+            if (_dotActive) {
+                const _dot = this.add.circle(_boxX - Math.round(3 * gt), _boxY + Math.round(7 * gt), Math.round(3.5 * gt), 0xFF3333, 1).setDepth(102).setScrollFactor(0);
+                _objs.push(_dot);
+                this._questDotTween = this.tweens.add({ targets: _dot, alpha: 0.25, duration: 500, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+            }
+            if (!_collapsed && _qs.length > 0) {
+                const _maxShow = Math.min(_qs.length, 3);
+                const _lineH = Math.round(26 * gt);
+                const _entryW = Math.round(110 * gt);
+                const _totalH = _maxShow * _lineH + Math.round(4 * gt);
+                const _bodyBg = this.add.rectangle(_boxX, _boxY + _hdrH, _entryW, _totalH, 0x0d0d2a, 0.82).setOrigin(1, 0).setDepth(100).setScrollFactor(0);
+                _objs.push(_bodyBg);
+                for (let _qi = 0; _qi < _maxShow; _qi++) {
+                    const _q = _qs[_qi];
+                    const _qY = _boxY + _hdrH + Math.round(4 * gt) + _qi * _lineH;
+                    const _qName = this.add.text(_boxX - Math.round(6 * gt), _qY, Z(_q.titleKey), {
+                        fontSize: `${Math.round(8 * gt)}px`,
+                        color: ht.TEXT_WHITE,
+                        fontFamily: yt
+                    }).setOrigin(1, 0).setDepth(101).setScrollFactor(0);
+                    _objs.push(_qName);
+                    const _objProg = tt.questManager.getObjectiveProgress(_q.id, tt.player.state);
+                    const _nextObj = _objProg.find(_o => _o.current < _o.target);
+                    if (_nextObj) {
+                        const _progStr = _nextObj.target > 1 ? ` (${Math.min(_nextObj.current, _nextObj.target)}/${_nextObj.target})` : "";
+                        const _objTxt = this.add.text(_boxX - Math.round(6 * gt), _qY + Math.round(10 * gt), Z(_nextObj.objective.descriptionKey) + _progStr, {
+                            fontSize: `${Math.round(7 * gt)}px`,
+                            color: "#88cc88",
+                            fontFamily: yt
+                        }).setOrigin(1, 0).setDepth(101).setScrollFactor(0);
+                        _objs.push(_objTxt);
+                    }
+                }
+            }
+            this._questTrackerObjs = _objs;
         }
         renderMinimap() {
             const x = Xt[this.currentMapId];
@@ -80568,6 +80640,8 @@ const Xt = {
                 for (const T of x.items) tt.player.addItem(T.itemId, T.quantity)
         }
         showQuestNotification(x) {
+            this.questDotActive = true;
+            this.updateHUD();
             this.questNotifText?.destroy(), this.questNotifBg?.destroy(), this.questNotifTimer?.destroy();
             const T = Math.round(300 * gt),
                 i = Math.round(28 * gt),
@@ -82174,14 +82248,14 @@ class Pp extends ti.Scene {
 const St = ms;
 class Fp extends ti.Scene {
     constructor() {
-        super("MenuScene"), this.currentTab = "status", this.tabIndex = 0, this.listIndex = 0, this.tabs = ["status", "items", "equip", "quests", "settings"], this.equipMode = "equipped", this.equipSlotIndex = 0, this.equipInventoryIndex = 0
+        super("MenuScene"), this.currentTab = "status", this.tabIndex = 0, this.listIndex = 0, this.tabs = ["status", "items", "equip", "settings"], this.equipMode = "equipped", this.equipSlotIndex = 0, this.equipInventoryIndex = 0, this.equipTypeFilter = "weapon", this.equipScrollOffset = 0
     }
     create() {
-        this.cameras.main.setZoom(pe), this.cameras.main.setScroll(-Tt * (pe - 1) / 2, -kt * (pe - 1) / 2), this.tabIndex = 0, this.listIndex = 0, this.currentTab = "status", this.equipMode = "equipped", this.equipSlotIndex = 0, this.equipInventoryIndex = 0, this.drawMenu(), this.setupInput()
+        this.cameras.main.setZoom(pe), this.cameras.main.setScroll(-Tt * (pe - 1) / 2, -kt * (pe - 1) / 2), this.tabIndex = 0, this.listIndex = 0, this.currentTab = "status", this.equipMode = "equipped", this.equipSlotIndex = 0, this.equipInventoryIndex = 0, this.equipTypeFilter = "weapon", this.equipScrollOffset = 0, this.lastPoisonShakeTime = 0, this.drawMenu(), this.setupInput()
     }
     drawMenu() {
         switch (this.children.removeAll(), this.add.rectangle(Tt / 2, kt / 2, Tt, kt, ht.MENU_BG, .95), this.tabs.forEach((T, i) => {
-                const o = T === "status" ? "menu.status" : T === "items" ? "menu.items" : T === "equip" ? "menu.equip" : T === "quests" ? "menu.quests" : "menu.settings";
+                const o = T === "status" ? "menu.status" : T === "items" ? "menu.items" : T === "equip" ? "menu.equip" : "menu.settings";
                 this.add.text(Math.round(16 * St) + i * Math.round(96 * St), Math.round(12 * St), Z(o), {
                     fontSize: `${Math.round(12*St)}px`,
                     color: i === this.tabIndex ? ht.TEXT_YELLOW : ht.TEXT_WHITE,
@@ -82196,9 +82270,6 @@ class Fp extends ti.Scene {
                 break;
             case "equip":
                 this.drawEquip();
-                break;
-            case "quests":
-                this.drawQuests();
                 break;
             case "settings":
                 this.drawSettings();
@@ -82224,11 +82295,7 @@ class Fp extends ti.Scene {
             fontSize: o,
             color: i,
             fontFamily: yt
-        }), this.add.text(Math.round(32 * St), T + Math.round(60 * St), `${Z("menu.hp")} ${x.state.hp}/${x.totalMaxHp}`, {
-            fontSize: o,
-            color: i,
-            fontFamily: yt
-        }), this.add.text(Math.round(32 * St), T + Math.round(88 * St), `${Z("menu.atk")} ${x.totalAtk}`, {
+        }), (function() { const _poisoned = x.state.poisonedUntil && x.state.poisonedUntil > Date.now(); const _hpLabel = `${Z("menu.hp")} ${x.state.hp}/${x.totalMaxHp}` + (_poisoned ? ` [${Z("menu.poison")}]` : ""); this.add.text(Math.round(32 * St), T + Math.round(60 * St), _hpLabel, { fontSize: o, color: _poisoned ? "#cc55dd" : i, fontFamily: yt }); const _sRatio = Math.max(0, Math.min(1, x.totalMaxHp > 0 ? x.state.hp / x.totalMaxHp : 1)), _sBarW = Math.round(100 * St), _sBarH = Math.round(5 * St), _sBarX = Math.round(32 * St), _sBarY = T + Math.round(76 * St), _sColor = _sRatio <= 0.2 ? 0xCC2222 : _sRatio <= 0.5 ? 0xDDAA22 : 0x22CC44; this.add.rectangle(_sBarX, _sBarY, _sBarW, _sBarH, 0x1A1A2E).setOrigin(0, 0); this.add.rectangle(_sBarX, _sBarY, Math.max(0, Math.round(_sBarW * _sRatio)), _sBarH, _sColor).setOrigin(0, 0); }).call(this), this.add.text(Math.round(32 * St), T + Math.round(88 * St), `${Z("menu.atk")} ${x.totalAtk}`, {
             fontSize: o,
             color: i,
             fontFamily: yt
@@ -82254,7 +82321,7 @@ class Fp extends ti.Scene {
             fontSize: `${Math.round(14*St)}px`,
             color: ht.TEXT_YELLOW,
             fontFamily: yt
-        }), ["weapon", "armor", "shield", "helmet"].forEach((f, S) => {
+        }), ["weapon", "armor", "shield", "helmet", "accessory"].forEach((f, S) => {
             const h = x.state.equipment[f],
                 l = h ? Z(ye[h].nameKey) : "---";
             this.add.text(u, T + Math.round(28 * St) + S * Math.round(24 * St), l, {
@@ -82283,7 +82350,7 @@ class Fp extends ti.Scene {
         return Z(x.nameKey)
     }
     drawItems() {
-        const x = ["weapon", "armor", "shield", "helmet"],
+        const x = ["weapon", "armor", "shield", "helmet", "accessory"],
             T = tt.player.state.inventory.filter(o => {
                 const u = Bi(o.itemId);
                 return u && !x.includes(u.type)
@@ -82318,114 +82385,179 @@ class Fp extends ti.Scene {
     drawEquip() {
         const x = tt.player,
             T = Math.round(52 * St),
-            i = ["weapon", "armor", "shield", "helmet"],
-            o = {
+            _SLOTS = ["weapon", "armor", "shield", "helmet", "accessory"],
+            _SLOT_KEYS = {
                 weapon: "equip.slot.weapon",
                 armor: "equip.slot.armor",
                 shield: "equip.slot.shield",
-                helmet: "equip.slot.helmet"
+                helmet: "equip.slot.helmet",
+                accessory: "equip.slot.accessory"
             };
+        // Title + hint
         this.add.text(Math.round(32 * St), T, Z("menu.equip"), {
             fontSize: `${Math.round(14*St)}px`,
             color: ht.TEXT_YELLOW,
             fontFamily: yt
         });
-        const u = this.equipMode === "equipped" ? Z("equip.hintUnequip") : Z("equip.hintEquip");
-        this.add.text(Tt - Math.round(32 * St), T, u, {
+        const _hint = this.equipMode === "equipped" ? Z("equip.hintUnequip") : Z("equip.hintEquip");
+        this.add.text(Tt - Math.round(32 * St), T, _hint, {
             fontSize: `${Math.round(9*St)}px`,
             color: ht.TEXT_GRAY,
             fontFamily: yt
-        }).setOrigin(1, 0), i.forEach((t, f) => {
-            const S = this.equipMode === "equipped" && f === this.equipSlotIndex,
-                h = x.state.equipment[t],
-                l = Z(o[t]),
-                a = Z(h ? ye[h].nameKey : "equip.empty"),
-                e = h ? ye[h] : null,
-                r = e?.stats ? (e.stats.atk ? ` +${e.stats.atk} ${Z("menu.atk")}` : "") + (e.stats.def ? ` +${e.stats.def} ${Z("menu.def")}` : "") : "",
-                c = S ? ">" : " ";
-            this.add.text(Math.round(20 * St), T + Math.round(28 * St) + f * Math.round(28 * St), c, {
-                fontSize: `${Math.round(10*St)}px`,
-                color: ht.TEXT_YELLOW,
-                fontFamily: yt
-            }), this.add.text(Math.round(32 * St), T + Math.round(28 * St) + f * Math.round(28 * St), `${l}:`, {
-                fontSize: `${Math.round(10*St)}px`,
-                color: S ? ht.TEXT_YELLOW : ht.TEXT_GRAY,
-                fontFamily: yt
-            });
-            const d = h && ye[h]?.unsellable ? `${a} ${Z("equip.locked")}` : a;
-            this.add.text(Math.round(120 * St), T + Math.round(28 * St) + f * Math.round(28 * St), d, {
-                fontSize: `${Math.round(10*St)}px`,
-                color: S ? ht.TEXT_YELLOW : h ? ht.TEXT_WHITE : ht.TEXT_GRAY,
-                fontFamily: yt
-            }), r && this.add.text(Math.round(300 * St), T + Math.round(28 * St) + f * Math.round(28 * St), r, {
-                fontSize: `${Math.round(9*St)}px`,
-                color: S ? ht.TEXT_YELLOW : "#88aa88",
-                fontFamily: yt
-            })
-        }), this.add.line(0, T + Math.round(148 * St), Math.round(32 * St), 0, Tt - Math.round(32 * St), 0, ht.MENU_BORDER, .3).setOrigin(0);
-        const m = ["weapon", "armor", "shield", "helmet"],
-            C = x.state.inventory.filter(t => {
-                const f = ye[t.itemId];
-                return f && m.includes(f.type)
-            });
-        if (this.add.text(Math.round(32 * St), T + Math.round(160 * St), Z("equip.owned"), {
-                fontSize: `${Math.round(12*St)}px`,
-                color: ht.TEXT_YELLOW,
-                fontFamily: yt
-            }), C.length === 0) this.add.text(Math.round(32 * St), T + Math.round(188 * St), "---", {
-            fontSize: `${Math.round(10*St)}px`,
+        }).setOrigin(1, 0);
+        // Type-tab hint (Q/E to cycle)
+        const _tabHint = "Q/E: tab";
+        this.add.text(Tt - Math.round(32 * St), T + Math.round(13 * St), _tabHint, {
+            fontSize: `${Math.round(8*St)}px`,
             color: ht.TEXT_GRAY,
             fontFamily: yt
+        }).setOrigin(1, 0);
+        // Equipped slots (5 slots including accessory)
+        _SLOTS.forEach((t, f) => {
+            const _sel = this.equipMode === "equipped" && f === this.equipSlotIndex,
+                _eq = x.state.equipment[t],
+                _lbl = Z(_SLOT_KEYS[t]),
+                _nameRaw = Z(_eq ? ye[_eq].nameKey : "equip.empty"),
+                _name = _eq && ye[_eq]?.unsellable ? `${_nameRaw} ${Z("equip.locked")}` : _nameRaw,
+                _eData = _eq ? ye[_eq] : null,
+                _stat = _eData?.stats ? ((_eData.stats.atk ? ` +${_eData.stats.atk}${Z("menu.atk")}` : "") + (_eData.stats.def ? ` +${_eData.stats.def}${Z("menu.def")}` : "")) : "",
+                _cur = _sel ? ">" : " ";
+            const _row = T + Math.round(26 * St) + f * Math.round(26 * St);
+            this.add.text(Math.round(20 * St), _row, _cur, {
+                fontSize: `${Math.round(10*St)}px`,
+                color: ht.TEXT_YELLOW,
+                fontFamily: yt
+            });
+            this.add.text(Math.round(32 * St), _row, `${_lbl}:`, {
+                fontSize: `${Math.round(9*St)}px`,
+                color: _sel ? ht.TEXT_YELLOW : ht.TEXT_GRAY,
+                fontFamily: yt
+            });
+            this.add.text(Math.round(112 * St), _row, _name, {
+                fontSize: `${Math.round(9*St)}px`,
+                color: _sel ? ht.TEXT_YELLOW : _eq ? ht.TEXT_WHITE : ht.TEXT_GRAY,
+                fontFamily: yt,
+                wordWrap: { width: Math.round(130 * St), useAdvancedWrap: false },
+                maxLines: 1
+            });
+            if (_stat) this.add.text(Math.round(260 * St), _row, _stat, {
+                fontSize: `${Math.round(8*St)}px`,
+                color: _sel ? ht.TEXT_YELLOW : "#88aa88",
+                fontFamily: yt
+            });
         });
-        else if (C.forEach((t, f) => {
-                const S = ye[t.itemId],
-                    h = this.equipMode === "inventory" && f === this.equipInventoryIndex,
-                    l = (S.stats?.atk ? `+${S.stats.atk} ${Z("menu.atk")}` : "") + (S.stats?.def ? ` +${S.stats.def} ${Z("menu.def")}` : ""),
-                    a = h ? ">" : " ";
-                this.add.text(Math.round(20 * St), T + Math.round(188 * St) + f * Math.round(24 * St), a, {
+        // Separator
+        const _sepY = T + Math.round(163 * St);
+        this.add.line(0, _sepY, Math.round(32 * St), 0, Tt - Math.round(32 * St), 0, ht.MENU_BORDER, .3).setOrigin(0);
+        // Type tabs (Q/E)
+        const _ALL_TYPES = ["weapon", "armor", "shield", "helmet", "accessory"];
+        const _tabY = _sepY + Math.round(6 * St);
+        const _tabW = Math.round((Tt - Math.round(64 * St)) / _ALL_TYPES.length);
+        _ALL_TYPES.forEach((tp, ti) => {
+            const _isActive = tp === (this.equipTypeFilter || "weapon");
+            const _tx = Math.round(32 * St) + ti * _tabW;
+            this.add.text(_tx, _tabY, Z(_SLOT_KEYS[tp]), {
+                fontSize: `${Math.round(9*St)}px`,
+                color: _isActive ? ht.TEXT_YELLOW : ht.TEXT_GRAY,
+                fontFamily: yt
+            });
+            if (_isActive) this.add.line(0, _tabY + Math.round(12 * St), _tx, 0, _tx + _tabW - Math.round(4 * St), 0, 0xffff00, .5).setOrigin(0);
+        });
+        // Owned header
+        const _ownedY = _tabY + Math.round(18 * St);
+        this.add.text(Math.round(32 * St), _ownedY, Z("equip.owned"), {
+            fontSize: `${Math.round(11*St)}px`,
+            color: ht.TEXT_YELLOW,
+            fontFamily: yt
+        });
+        // Filtered + sorted inventory list with scroll
+        const _PAGE = 8;
+        const C = this.getEquipInventoryItems();
+        this.equipScrollOffset = Math.max(0, Math.min(this.equipScrollOffset || 0, Math.max(0, C.length - _PAGE)));
+        const _offset = this.equipScrollOffset;
+        const _visible = C.slice(_offset, _offset + _PAGE);
+        const _listY = _ownedY + Math.round(18 * St);
+        if (C.length === 0) {
+            this.add.text(Math.round(32 * St), _listY, "---", {
+                fontSize: `${Math.round(10*St)}px`,
+                color: ht.TEXT_GRAY,
+                fontFamily: yt
+            });
+        } else {
+            // Scroll up indicator
+            if (_offset > 0) this.add.text(Math.round(32 * St), _listY - Math.round(12 * St), "▲", {
+                fontSize: `${Math.round(9*St)}px`,
+                color: ht.TEXT_GRAY,
+                fontFamily: yt
+            });
+            _visible.forEach((t, fv) => {
+                const _absIdx = fv + _offset;
+                const _itemData = ye[t.itemId],
+                    _sel = this.equipMode === "inventory" && _absIdx === this.equipInventoryIndex,
+                    _atkVal = _itemData.stats?.atk,
+                    _defVal = _itemData.stats?.def,
+                    _statStr = ((_atkVal !== undefined ? `+${_atkVal}${Z("menu.atk")}` : "") + (_defVal !== undefined ? ` +${_defVal}${Z("menu.def")}` : "")).trim(),
+                    _cur = _sel ? ">" : " ";
+                const _ry = _listY + fv * Math.round(22 * St);
+                this.add.text(Math.round(20 * St), _ry, _cur, {
                     fontSize: `${Math.round(10*St)}px`,
                     color: ht.TEXT_YELLOW,
                     fontFamily: yt
-                }), this.add.text(Math.round(32 * St), T + Math.round(188 * St) + f * Math.round(24 * St), `${Z(S.nameKey)}`, {
+                });
+                this.add.text(Math.round(32 * St), _ry, Z(_itemData.nameKey), {
                     fontSize: `${Math.round(10*St)}px`,
-                    color: h ? ht.TEXT_YELLOW : ht.TEXT_WHITE,
-                    fontFamily: yt
-                }), this.add.text(Math.round(220 * St), T + Math.round(188 * St) + f * Math.round(24 * St), l, {
+                    color: _sel ? ht.TEXT_YELLOW : ht.TEXT_WHITE,
+                    fontFamily: yt,
+                    wordWrap: { width: Math.round(170 * St), useAdvancedWrap: false },
+                    maxLines: 1
+                });
+                this.add.text(Math.round(220 * St), _ry, _statStr, {
                     fontSize: `${Math.round(9*St)}px`,
-                    color: h ? ht.TEXT_YELLOW : ht.TEXT_GRAY,
+                    color: _sel ? ht.TEXT_YELLOW : ht.TEXT_GRAY,
                     fontFamily: yt
-                })
-            }), this.equipMode === "inventory" && this.equipInventoryIndex < C.length) {
-            const t = C[this.equipInventoryIndex],
-                f = ye[t.itemId],
-                S = f.type,
-                h = x.state.equipment[S],
-                l = h ? ye[h] : null,
-                a = T + Math.round(188 * St) + C.length * Math.round(24 * St) + Math.round(8 * St);
-            if (this.add.line(0, a - Math.round(4 * St), Math.round(32 * St), 0, Tt - Math.round(32 * St), 0, ht.MENU_BORDER, .2).setOrigin(0), f.stats?.atk !== void 0) {
-                const e = l?.stats?.atk ?? 0,
-                    r = f.stats.atk,
-                    c = r - e,
-                    s = c > 0 ? "#44cc44" : c < 0 ? "#cc4444" : ht.TEXT_WHITE,
-                    d = c > 0 ? `(+${c})` : c < 0 ? `(${c})` : "";
-                this.add.text(Math.round(32 * St), a, `${Z("menu.atk")}: +${e} -> +${r} ${d}`, {
-                    fontSize: `${Math.round(9*St)}px`,
-                    color: s,
+                });
+            });
+            // Scroll down indicator
+            if (_offset + _PAGE < C.length) this.add.text(Math.round(32 * St), _listY + _PAGE * Math.round(22 * St), "▼", {
+                fontSize: `${Math.round(9*St)}px`,
+                color: ht.TEXT_GRAY,
+                fontFamily: yt
+            });
+        }
+        // Simplified stat delta for selected inventory item
+        if (this.equipMode === "inventory" && this.equipInventoryIndex < C.length) {
+            const _selItem = C[this.equipInventoryIndex],
+                _selData = ye[_selItem.itemId],
+                _slotType = _selData.type,
+                _curEqId = x.state.equipment[_slotType],
+                _curEqData = _curEqId ? ye[_curEqId] : null,
+                _deltaY = _listY + Math.min(_visible.length, _PAGE) * Math.round(22 * St) + Math.round(6 * St);
+            this.add.line(0, _deltaY - Math.round(4 * St), Math.round(32 * St), 0, Tt - Math.round(32 * St), 0, ht.MENU_BORDER, .2).setOrigin(0);
+            let _dxOff = 0;
+            if (_selData.stats?.atk !== undefined) {
+                const _old = _curEqData?.stats?.atk ?? 0,
+                    _new = _selData.stats.atk,
+                    _d = _new - _old,
+                    _col = _d > 0 ? "#44cc44" : _d < 0 ? "#cc4444" : ht.TEXT_GRAY,
+                    _sign = _d >= 0 ? "+" : "";
+                this.add.text(Math.round(32 * St) + _dxOff, _deltaY, `${Z("menu.atk")} ${_sign}${_d}`, {
+                    fontSize: `${Math.round(10*St)}px`,
+                    color: _col,
                     fontFamily: yt
-                })
+                });
+                _dxOff += Math.round(90 * St);
             }
-            if (f.stats?.def !== void 0) {
-                const e = l?.stats?.def ?? 0,
-                    r = f.stats.def,
-                    c = r - e,
-                    s = c > 0 ? "#44cc44" : c < 0 ? "#cc4444" : ht.TEXT_WHITE,
-                    d = c > 0 ? `(+${c})` : c < 0 ? `(${c})` : "",
-                    v = f.stats?.atk !== void 0 ? Math.round(16 * St) : 0;
-                this.add.text(Math.round(32 * St), a + v, `${Z("menu.def")}: +${e} -> +${r} ${d}`, {
-                    fontSize: `${Math.round(9*St)}px`,
-                    color: s,
+            if (_selData.stats?.def !== undefined) {
+                const _old = _curEqData?.stats?.def ?? 0,
+                    _new = _selData.stats.def,
+                    _d = _new - _old,
+                    _col = _d > 0 ? "#44cc44" : _d < 0 ? "#cc4444" : ht.TEXT_GRAY,
+                    _sign = _d >= 0 ? "+" : "";
+                this.add.text(Math.round(32 * St) + _dxOff, _deltaY, `${Z("menu.def")} ${_sign}${_d}`, {
+                    fontSize: `${Math.round(10*St)}px`,
+                    color: _col,
                     fontFamily: yt
-                })
+                });
             }
         }
     }
@@ -82589,56 +82721,94 @@ class Fp extends ti.Scene {
             x += Math.round(28 * St)
         })
     }
-        update() { var ws = this.scene.get("WorldMapScene"); if (ws && ws.updatePoisonDot) ws.updatePoisonDot(); }
+        update() { var _ps = tt.player.state; const _isPoison = !!(_ps.poisonedUntil && _ps.poisonedUntil > Date.now()); if (_isPoison) { if (!this.lastPoisonShakeTime) this.lastPoisonShakeTime = 0; if (Date.now() - this.lastPoisonShakeTime > 1000) { this.cameras.main.shake(160, .006); this.lastPoisonShakeTime = Date.now(); } } if (this._prevPoisonState !== undefined && this._prevPoisonState !== _isPoison) { this.drawMenu(); } this._prevPoisonState = _isPoison; }
 
     setupInput() {
         this.input.keyboard?.on("keydown-ESC", () => {
             this.scene.stop(), this.scene.resume("WorldMapScene")
         }), this.input.keyboard?.on("keydown-LEFT", () => {
-            this.tabIndex = Math.max(0, this.tabIndex - 1), this.currentTab = this.tabs[this.tabIndex], this.listIndex = 0, this.equipMode = "equipped", this.equipSlotIndex = 0, this.equipInventoryIndex = 0, this.drawMenu()
+            this.tabIndex = Math.max(0, this.tabIndex - 1), this.currentTab = this.tabs[this.tabIndex], this.listIndex = 0, this.equipMode = "equipped", this.equipSlotIndex = 0, this.equipInventoryIndex = 0, this.equipTypeFilter = "weapon", this.equipScrollOffset = 0, this.drawMenu()
         }), this.input.keyboard?.on("keydown-RIGHT", () => {
-            this.tabIndex = Math.min(this.tabs.length - 1, this.tabIndex + 1), this.currentTab = this.tabs[this.tabIndex], this.listIndex = 0, this.equipMode = "equipped", this.equipSlotIndex = 0, this.equipInventoryIndex = 0, this.drawMenu()
+            this.tabIndex = Math.min(this.tabs.length - 1, this.tabIndex + 1), this.currentTab = this.tabs[this.tabIndex], this.listIndex = 0, this.equipMode = "equipped", this.equipSlotIndex = 0, this.equipInventoryIndex = 0, this.equipTypeFilter = "weapon", this.equipScrollOffset = 0, this.drawMenu()
         }), this.input.keyboard?.on("keydown-UP", () => {
             this.currentTab === "equip" ? this.handleEquipUp() : (this.listIndex = Math.max(0, this.listIndex - 1), this.drawMenu())
         }), this.input.keyboard?.on("keydown-DOWN", () => {
             if (this.currentTab === "equip") this.handleEquipDown();
             else {
-                const x = this.currentTab === "settings" ? this.settingsList.length - 1 : this.currentTab === "items" ? Math.max(0, this.getConsumableItems().length - 1) : this.currentTab === "quests" ? Math.max(0, tt.questManager.getActiveQuests(tt.player.state).length - 1) : 99;
+                const x = this.currentTab === "settings" ? this.settingsList.length - 1 : this.currentTab === "items" ? Math.max(0, this.getConsumableItems().length - 1) : 99;
                 this.listIndex = Math.min(x, this.listIndex + 1), this.drawMenu()
             }
         }), this.input.keyboard?.on("keydown-Z", () => {
             this.currentTab === "items" ? this.useItem() : this.currentTab === "equip" ? this.handleEquipAction() : this.currentTab === "settings" && this.handleSettingToggle(1)
         }), this.input.keyboard?.on("keydown-ENTER", () => {
             this.currentTab === "items" ? this.useItem() : this.currentTab === "equip" ? this.handleEquipAction() : this.currentTab === "settings" && this.handleSettingToggle(1)
+        }), this.input.keyboard?.on("keydown-Q", () => {
+            if (this.currentTab === "equip") { const _TYPES = ["weapon","armor","shield","helmet","accessory"]; const _idx = _TYPES.indexOf(this.equipTypeFilter); this.equipTypeFilter = _TYPES[(_idx - 1 + _TYPES.length) % _TYPES.length]; this.equipInventoryIndex = 0; this.equipScrollOffset = 0; this.equipMode = "equipped"; this.drawMenu(); }
+        }), this.input.keyboard?.on("keydown-E", () => {
+            if (this.currentTab === "equip") { const _TYPES = ["weapon","armor","shield","helmet","accessory"]; const _idx = _TYPES.indexOf(this.equipTypeFilter); this.equipTypeFilter = _TYPES[(_idx + 1) % _TYPES.length]; this.equipInventoryIndex = 0; this.equipScrollOffset = 0; this.equipMode = "equipped"; this.drawMenu(); }
         })
     }
     handleEquipUp() {
-        this.equipMode === "equipped" ? this.equipSlotIndex = Math.max(0, this.equipSlotIndex - 1) : this.equipInventoryIndex === 0 ? (this.equipMode = "equipped", this.equipSlotIndex = 3) : this.equipInventoryIndex--, this.drawMenu()
+        const _SLOTS = ["weapon", "armor", "shield", "helmet", "accessory"];
+        const _maxSlot = _SLOTS.length - 1;
+        if (this.equipMode === "equipped") {
+            this.equipSlotIndex = Math.max(0, this.equipSlotIndex - 1);
+        } else if (this.equipInventoryIndex === 0) {
+            this.equipMode = "equipped";
+            this.equipSlotIndex = _maxSlot;
+        } else {
+            this.equipInventoryIndex--;
+            if (this.equipScrollOffset > 0 && this.equipInventoryIndex < this.equipScrollOffset) this.equipScrollOffset--;
+        }
+        this.drawMenu();
     }
     handleEquipDown() {
+        const _SLOTS = ["weapon", "armor", "shield", "helmet", "accessory"];
+        const _maxSlot = _SLOTS.length - 1;
         const x = this.getEquipInventoryItems();
-        this.equipMode === "equipped" ? this.equipSlotIndex === 3 ? x.length > 0 && (this.equipMode = "inventory", this.equipInventoryIndex = 0) : this.equipSlotIndex++ : this.equipInventoryIndex = Math.min(x.length - 1, this.equipInventoryIndex + 1), this.drawMenu()
+        const _PAGE = 8;
+        if (this.equipMode === "equipped") {
+            if (this.equipSlotIndex === _maxSlot) {
+                if (x.length > 0) { this.equipMode = "inventory"; this.equipInventoryIndex = 0; this.equipScrollOffset = 0; }
+            } else {
+                this.equipSlotIndex++;
+            }
+        } else {
+            const _next = Math.min(x.length - 1, this.equipInventoryIndex + 1);
+            this.equipInventoryIndex = _next;
+            if (this.equipInventoryIndex >= this.equipScrollOffset + _PAGE) this.equipScrollOffset++;
+        }
+        this.drawMenu();
     }
     handleEquipAction() {
+        const _SLOTS = ["weapon", "armor", "shield", "helmet", "accessory"];
         if (this.equipMode === "equipped") {
-            const T = ["weapon", "armor", "shield", "helmet"][this.equipSlotIndex];
-            tt.player.unequip(T) && Jt.playSfx("equip")
+            const T = _SLOTS[this.equipSlotIndex];
+            tt.player.unequip(T) && Jt.playSfx("equip");
         } else {
             const x = this.getEquipInventoryItems();
             if (this.equipInventoryIndex >= x.length) return;
             const T = x[this.equipInventoryIndex];
             tt.player.equip(T.itemId), Jt.playSfx("equip");
             const i = this.getEquipInventoryItems();
-            this.equipInventoryIndex >= i.length && (i.length === 0 ? (this.equipMode = "equipped", this.equipSlotIndex = 0) : this.equipInventoryIndex = i.length - 1)
+            this.equipInventoryIndex >= i.length && (i.length === 0 ? (this.equipMode = "equipped", this.equipSlotIndex = 0) : this.equipInventoryIndex = i.length - 1);
+            const _PAGE_EA = 8;
+            this.equipScrollOffset = Math.max(0, Math.min(this.equipScrollOffset, Math.max(0, i.length - _PAGE_EA)));
         }
-        this.drawMenu()
+        this.drawMenu();
     }
     getEquipInventoryItems() {
-        const x = ["weapon", "armor", "shield", "helmet"];
+        const _ALL_EQUIP = ["weapon", "armor", "shield", "helmet", "accessory"];
+        const _filter = this.equipTypeFilter || "weapon";
         return tt.player.state.inventory.filter(T => {
             const i = Bi(T.itemId);
-            return i && x.includes(i.type)
-        })
+            return i && i.type === _filter;
+        }).sort((a, b) => {
+            const _ia = Bi(a.itemId), _ib = Bi(b.itemId);
+            const _sa = (_ia?.stats?.atk || 0) + (_ia?.stats?.def || 0);
+            const _sb = (_ib?.stats?.atk || 0) + (_ib?.stats?.def || 0);
+            return _sb - _sa;
+        });
     }
     handleSettingToggle(x) {
         const T = this.settingsList[this.listIndex];
@@ -82659,7 +82829,7 @@ class Fp extends ti.Scene {
         }
     }
     getConsumableItems() {
-        const x = ["weapon", "armor", "shield", "helmet"];
+        const x = ["weapon", "armor", "shield", "helmet", "accessory"];
         return tt.player.state.inventory.filter(T => {
             const i = Bi(T.itemId);
             return i && !x.includes(i.type)
@@ -82865,18 +83035,33 @@ class Ip extends ti.Scene {
     drawBuyList() {
         const x = Fn[this.shopId];
         if (!x) return;
+        const _EQUIP_TYPES = ["weapon", "armor", "shield", "helmet", "accessory"];
         x.items.forEach((i, o) => {
             const u = ye[i];
             if (!u) return;
             const m = tt.player.state.gold >= u.buyPrice;
+            const _invOwned = tt.player.getItemCount(i);
+            const _isEquip = _EQUIP_TYPES.includes(u.type);
+            const _equippedOwned = (_isEquip && tt.player.state.equipment[u.type] === i) ? 1 : 0;
+            const _owned = _invOwned + _equippedOwned;
+            const _ownershipBlocked = _isEquip && _owned > 0;
+            const _rowColor = o === this.listIndex ? ht.TEXT_YELLOW : (!_ownershipBlocked && m) ? ht.TEXT_WHITE : ht.TEXT_GRAY;
             if (this.add.text(Math.round(32 * he), Math.round(64 * he) + o * Math.round(28 * he), `${Z(u.nameKey)}  ${u.buyPrice}G`, {
                     fontSize: `${Math.round(10*he)}px`,
-                    color: o === this.listIndex ? ht.TEXT_YELLOW : m ? ht.TEXT_WHITE : ht.TEXT_GRAY,
+                    color: _rowColor,
                     fontFamily: yt
                 }), u.stats) {
                 const C = Object.entries(u.stats).map(([t, f]) => `+${f}${t.toUpperCase()}`).join(" ");
                 this.add.text(Tt - Math.round(16 * he), Math.round(64 * he) + o * Math.round(28 * he), C, {
                     fontSize: `${Math.round(9*he)}px`,
+                    color: ht.TEXT_GRAY,
+                    fontFamily: yt
+                }).setOrigin(1, 0)
+            }
+            if (_owned > 0) {
+                const _ownedLabel = _isEquip ? Z("equip.owned") : `x${_owned}`;
+                this.add.text(Tt - Math.round(16 * he), Math.round(64 * he) + o * Math.round(28 * he) + Math.round(14 * he), _ownedLabel, {
+                    fontSize: `${Math.round(8*he)}px`,
                     color: ht.TEXT_GRAY,
                     fontFamily: yt
                 }).setOrigin(1, 0)
@@ -82952,7 +83137,7 @@ class Ip extends ti.Scene {
         if (!T) return;
         const i = ye[T];
         if (!i) return;
-        if (["weapon", "armor", "shield", "accessory"].includes(i.type) && tt.player.state.inventory.some(m => m.itemId === T && m.quantity > 0)) {
+        if (["weapon", "armor", "shield", "helmet", "accessory"].includes(i.type) && (tt.player.state.inventory.some(m => m.itemId === T && m.quantity > 0) || tt.player.state.equipment[i.type] === T)) {
             this.message = Z("shop.alreadyOwned"), this.drawShop();
             return
         }
