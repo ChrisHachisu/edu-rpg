@@ -55483,6 +55483,7 @@ const ui = {
         "battle.miss": "Miss!",
         "battle.partialHit": "{damage} damage (partial)!",
         "battle.speedBonus": "Quick answer!",
+        "battle.critical": "Critical!",
         "battle.enemyPartialHit": "{damage} damage (partial)!",
         "battle.enemyAttack": "{monster} attacks!",
         "battle.enemyMiss": "{monster} missed!",
@@ -56388,6 +56389,7 @@ const ui = {
         "battle.miss": "ミス！",
         "battle.partialHit": "{damage}の ダメージ（はんげん）！",
         "battle.speedBonus": "すばやい こたえだ！",
+        "battle.critical": "クリティカル！",
         "battle.enemyPartialHit": "{damage}の ダメージ（はんげん）！",
         "battle.enemyAttack": "{monster}の こうげき！",
         "battle.enemyMiss": "{monster}の こうげきは はずれた！",
@@ -57296,6 +57298,7 @@ const ui = {
         "battle.miss": "ミス！",
         "battle.partialHit": "{damage}の ダメージ（半減）！",
         "battle.speedBonus": "素早い 答えだ！",
+        "battle.critical": "クリティカル！",
         "battle.enemyPartialHit": "{damage}の ダメージ（半減）！",
         "battle.enemyAttack": "{monster}の 攻撃！",
         "battle.enemyMiss": "{monster}の 攻撃は 外れた！",
@@ -58711,10 +58714,10 @@ const ye = {
             descriptionKey: "equip.galeBow.desc",
             type: "weapon",
             stats: {
-                atk: 15
+                atk: 24
             },
             buyPrice: 0,
-            sellPrice: 80
+            sellPrice: 180
         },
         frostbrand: {
             id: "frostbrand",
@@ -58722,10 +58725,10 @@ const ye = {
             descriptionKey: "equip.frostbrand.desc",
             type: "weapon",
             stats: {
-                atk: 16
+                atk: 26
             },
             buyPrice: 0,
-            sellPrice: 120
+            sellPrice: 200
         },
         dragonheartAmulet: {
             id: "dragonheartAmulet",
@@ -58755,10 +58758,10 @@ const ye = {
             descriptionKey: "equip.banditDagger.desc",
             type: "weapon",
             stats: {
-                atk: 20
+                atk: 30
             },
             buyPrice: 0,
-            sellPrice: 130
+            sellPrice: 250
         },
         magmaBlade: {
             id: "magmaBlade",
@@ -58766,10 +58769,10 @@ const ye = {
             descriptionKey: "equip.magmaBlade.desc",
             type: "weapon",
             stats: {
-                atk: 24
+                atk: 43
             },
             buyPrice: 0,
-            sellPrice: 180
+            sellPrice: 400
         },
         moltenGreaves: {
             id: "moltenGreaves",
@@ -59107,15 +59110,26 @@ function Zo(n) {
 function jo(n, x) {
     const T = new Set;
     T.add(n);
-    const i = x === "k" ? 5 : 10;
-    let o = 0;
-    for (; T.size < 4 && o < 50;) {
-        const m = Ot(1, i) * (Math.random() > .5 ? 1 : -1),
-            C = n + m;
-        (C >= 0 || x === "6") && T.add(C), o++
+    const allowNeg = x === "6",
+        ok = v => v !== n && (allowNeg || v >= 0),
+        a = n < 0 ? -n : n,
+        near = [n + 1, n - 1, n + 2, n - 2],
+        place = a >= 100 ? [n + 10, n - 10, n + 100, n - 100, n + 20, n - 20] : a >= 10 ? [n + 10, n - 10, n + 11, n - 9, n + 20, n - 20] : [n + 3, n - 3, n + 4, n - 4],
+        confuse = [n * 2, a >= 4 ? Math.round(n / 2) : n + 5, n + 5, n - 5];
+    for (const C of Zo(near.filter(ok))) {
+        if (T.size >= 3) break;
+        T.add(C)
+    }
+    for (const C of Zo([...place, ...confuse].filter(ok))) {
+        if (T.size >= 4) break;
+        T.add(C)
     }
     let u = 1;
-    for (; T.size < 4;) T.add(n + u * 10), u++;
+    for (; T.size < 4 && u < 60;) {
+        const C = n + (Math.random() > .5 ? u : -u);
+        ok(C) && T.add(C), u++
+    }
+    for (; T.size < 4;) T.add(n + u++);
     return Zo([...T].map(m => ({
         text: {
             en: String(m),
@@ -60219,9 +60233,9 @@ const On = {
             id: "crab",
             nameKey: "monster.crab",
             spriteKey: "monster-crab",
-            baseHp: 34,
+            baseHp: 22,
             baseAtk: 13,
-            baseDef: 14,
+            baseDef: 10,
             baseSpd: 5,
             expReward: 9,
             goldReward: 6,
@@ -72587,7 +72601,8 @@ class gp {
             crystal_obtain: () => this.crystalObtain(),
             damage_taken: () => this.damageTaken(),
             shop_buy: () => this.shopBuy(),
-            shop_sell: () => this.shopSell()
+            shop_sell: () => this.shopSell(),
+            critical: () => this.criticalHit()
         }
     }
     osc(x, T, i, o = .3, u = 0) {
@@ -72667,6 +72682,9 @@ class gp {
     }
     shopSell() {
         this.osc("sine", 1800, .07, .12), this.osc("sine", 1200, .07, .12, .07)
+    }
+    criticalHit() {
+        this.noise(.14, .4), this.osc("square", 80, .12, .4), this.sweep("sawtooth", 1200, 90, .14, .35), [784, 1047, 1568].forEach((x, T) => this.osc("square", x, .12, .2, .04 + T * .05)), this.osc("sine", 2093, .25, .12, .12)
     }
 }
 class Tp {
@@ -81497,8 +81515,9 @@ class bp {
         const i = this.monster.id === "swordWraith" && !this.player.hasItem("holyAmulet");
         if (x) {
             let o = this.calculateDamage(this.player.totalAtk, this.monster.baseDef);
-            const u = T !== void 0 && T >= .5;
-            if (u && (o = Math.floor(o * 1.2)), i) {
+            const M = T !== void 0 && T >= .8,
+                u = !M && T !== void 0 && T >= .5;
+            if (M ? o = Math.floor(o * 1.5) : u && (o = Math.floor(o * 1.2)), i) {
                 const m = Math.floor(o * .9),
                     C = Math.max(1, o - m);
                 return this.monsterHp -= C, this.player.state.hp = Math.max(0, this.player.state.hp - m), this.player.state.hp <= 0 ? {
@@ -81507,7 +81526,7 @@ class bp {
                         name: this.player.state.name
                     }),
                     damage: m
-                } : this.monsterHp <= 0 ? (this.monsterHp = 0, this.victory()) : (this.state = "enemyTurn", {
+                } : this.monsterHp <= 0 ? (this.monsterHp = 0, this.victory(M)) : (this.state = "enemyTurn", {
                     state: "playerResolve",
                     message: Z("dungeon.sunkenTempleDungeon.damageReflect") + " " + Z("battle.hit", {
                         damage: C
@@ -81515,15 +81534,14 @@ class bp {
                     damage: C
                 })
             }
-            return this.monsterHp -= o, this.monsterHp <= 0 ? (this.monsterHp = 0, this.victory()) : (this.state = "enemyTurn", {
+            return this.monsterHp -= o, this.monsterHp <= 0 ? (this.monsterHp = 0, this.victory(M)) : (this.state = "enemyTurn", {
                 state: "playerResolve",
-                message: u ? Z("battle.speedBonus") + " " + Z("battle.hit", {
-                    damage: o
-                }) : Z("battle.hit", {
+                message: (M ? Z("battle.critical") + " " : u ? Z("battle.speedBonus") + " " : "") + Z("battle.hit", {
                     damage: o
                 }),
                 damage: o,
-                speedBonus: u
+                speedBonus: u,
+                critical: M
             })
         } else {
             let o = Math.max(1, Math.floor(this.calculateDamage(this.player.totalAtk, this.monster.baseDef) * .25));
@@ -81632,7 +81650,7 @@ class bp {
     isRageActive() {
         return this.rageActive
     }
-    victory() {
+    victory(crit) {
         this.state = "victory";
         const x = this.monster.expReward,
             T = this.monster.goldReward;
@@ -81645,6 +81663,7 @@ class bp {
             message: Z("battle.victory"),
             expGain: x,
             goldGain: T,
+            critical: crit === !0,
             levelUp: i.leveled ? {
                 newLevel: i.newLevel
             } : void 0,
@@ -81980,8 +81999,51 @@ class Pp extends ti.Scene {
             this.quizForPlayer ? u = this.engine.resolvePlayerAttack(i, x) : u = this.engine.resolveEnemyAttack(i, x), this.handleCombatResult(u)
         })
     }
+    critEffect() {
+        Jt.playSfx("critical"), this.cameras.main.shake(260, .016), this.cameras.main.flash(120, 255, 240, 160);
+        const x = this.monsterSprite;
+        x && (x.setTint(16777028), this.tweens.add({
+            targets: x,
+            scaleX: x.scaleX * 1.25,
+            scaleY: x.scaleY * 1.25,
+            duration: 90,
+            yoyo: !0,
+            repeat: 1,
+            onComplete: () => x && x.clearTint()
+        }), this.tweens.add({
+            targets: x,
+            alpha: .25,
+            duration: 70,
+            yoyo: !0,
+            repeat: 3
+        }));
+        const T = x ? x.x : Tt / 2,
+            i = x ? x.y - Math.round(70 * Ct) : kt * .3,
+            o = this.add.text(T, i, Z("battle.critical"), {
+                fontSize: `${Math.round(34*Ct)}px`,
+                color: "#ffdd33",
+                stroke: "#aa3300",
+                strokeThickness: Math.round(5 * Ct),
+                fontFamily: yt,
+                fontStyle: "bold"
+            }).setOrigin(.5).setDepth(60).setScale(.4);
+        this.tweens.add({
+            targets: o,
+            scale: 1.2,
+            duration: 180,
+            ease: "Back.easeOut"
+        }), this.tweens.add({
+            targets: o,
+            y: i - Math.round(28 * Ct),
+            alpha: 0,
+            duration: 620,
+            delay: 360,
+            ease: "Cubic.easeIn",
+            onComplete: () => o.destroy()
+        })
+    }
     handleCombatResult(x) {
-        if (this.updateHpBars(), x.damage && x.damage > 0 && this.quizForPlayer && (Jt.playSfx("attack_hit"), this.tweens.add({
+        if (x.critical && this.quizForPlayer && this.critEffect(), this.updateHpBars(), x.damage && x.damage > 0 && this.quizForPlayer && !x.critical && (Jt.playSfx("attack_hit"), this.tweens.add({
                 targets: this.monsterSprite,
                 alpha: .3,
                 duration: 100,
@@ -82695,17 +82757,17 @@ const Fn = {
         ironkeep: {
             id: "ironkeep",
             nameKey: "npc.shopkeeper",
-            items: ["herb", "potion", "hiPotion", "smokeBomb", "escapeCrystal", "steelSword", "mithrilSword", "chainMail", "mithrilArmor"]
+            items: ["herb", "potion", "smokeBomb", "escapeCrystal", "steelSword", "chainMail", "ironShield", "steelHelm"]
         },
         frostwatch: {
             id: "frostwatch",
             nameKey: "npc.shopkeeper",
-            items: ["herb", "potion", "hiPotion", "smokeBomb", "escapeCrystal", "steelShield", "mithrilShield", "steelHelm"]
+            items: ["herb", "potion", "smokeBomb", "escapeCrystal", "steelSword", "mithrilSword", "steelShield", "mithrilShield", "mithrilArmor"]
         },
         hauntedVillage: {
             id: "hauntedVillage",
             nameKey: "npc.shopkeeper",
-            items: ["herb", "potion", "hiPotion", "smokeBomb", "escapeCrystal", "mithrilSword", "steelShield", "steelHelm"]
+            items: ["herb", "potion", "smokeBomb", "escapeCrystal", "mithrilSword", "mithrilArmor", "mithrilShield", "steelHelm"]
         },
         oasisHaven: {
             id: "oasisHaven",
