@@ -56102,6 +56102,13 @@ const ui = {
         "item.crystalOfKnowledge.desc": "The legendary crystal, restored from 5 shards. Its power illuminates the mind.",
         "item.holyAmulet": "Holy Amulet",
         "item.holyAmulet.desc": "An ancient relic that pierces the veil of shadows.",
+        "item.map": "Village Map",
+        "item.map.desc": "A hand-drawn map of the region given by the Elder of Greenhollow.",
+        "item.compass": "Compass",
+        "item.compass.desc": "A brass compass from the Elder. Points true north.",
+        "npc.elder.gaveMap": "Take these, young hero. A map of our lands and a compass to guide your way. May they serve you well on your journey!",
+        "npc.survivor": "I barely escaped the Bandit Hideout alive. Listen carefully — the place is full of tripwires and pressure plates. When you see them glint, press Z to cut them before they trigger. One wrong step and the whole corridor comes down on you.",
+        "npc.survivor.name": "Survivor",
         "crystal.combined": "The 5 Crystal Shards combine into the Crystal of Math Knowledge!",
         "legendary.excalibur.obtained": "You obtained Excalibur! The legendary blade gleams with ancient power. It has been equipped automatically!",
         "legendary.aegis.obtained": "You obtained the Aegis of Dawn! Divine light wraps around you like an impenetrable shield. It has been equipped automatically!",
@@ -56131,6 +56138,8 @@ const ui = {
         "item.windbreakerStone.desc": "A heavy stone that calms fierce winds.",
         "dungeon.windCalmed": "The winds calm... The path is clear.",
         "dungeon.windPushBack": "Strong winds block the path! You need a Windbreaker Stone to calm the storm.",
+        "overworld.canyonBlocked": "Howling winds seal the canyon. The Storm Nest may hold the answer.",
+        "overworld.canyonOpened": "The winds fall silent. The canyon path is open!",
         "dungeon.nestLevel": "Nest Level {level}",
         "dungeon.windStoneFound": "Found a Windbreaker Stone!",
         "dungeon.stormNest.floorTransition": "You climb higher up the cliff... The wind howls louder.",
@@ -57011,6 +57020,13 @@ const ui = {
         "item.crystalOfKnowledge.desc": "5つのかけらから ふっかつした でんせつのクリスタル。こころを てらす ちからを もつ。",
         "item.holyAmulet": "せいなるアミュレット",
         "item.holyAmulet.desc": "やみの ベールを つらぬく いにしえの せいぶつ。",
+        "item.map": "むらの ちず",
+        "item.map.desc": "グリーンホロウの ちょうろうが かいた ちいきの ちず。",
+        "item.compass": "コンパス",
+        "item.compass.desc": "ちょうろうから もらった しんちゅうの コンパス。きたを さす。",
+        "npc.elder.gaveMap": "これを もっていくのじゃ ゆうしゃよ。この ちいきの ちずと みちを しめす コンパスじゃ。たびの たすけに なるとよいのう！",
+        "npc.survivor": "かろうじて さんぞくの あじとから にげのびた。よく きくのじゃ。なかは トリップワイヤーと あつりょくプレートで いっぱいじゃ。きらめいたら Zを おして きる まえに ふんじゃ だめじゃぞ。",
+        "npc.survivor.name": "せいかんしゃ",
         "crystal.combined": "5つのクリスタルのかけらが さんすうのクリスタルに なった！",
         "legendary.excalibur.obtained": "エクスカリバーを てにいれた！でんせつのけんが いにしえの ちからで かがやく。じどうで そうびされた！",
         "legendary.aegis.obtained": "あけぼののイージスを てにいれた！しんせいな ひかりが てっぺきの たてとなって つつみこむ。じどうで そうびされた！",
@@ -57040,6 +57056,8 @@ const ui = {
         "item.windbreakerStone.desc": "つよい かぜを しずめる おもい いし。",
         "dungeon.windCalmed": "かぜが しずまった…みちが ひらけた。",
         "dungeon.windPushBack": "つよい かぜに さえぎられた！かぜよけのいしが ひつようだ。",
+        "overworld.canyonBlocked": "うなり かぜが たにみちを ふさいでいる。ストームネストに こたえが あるかも。",
+        "overworld.canyonOpened": "かぜが しずまった。たにみちが ひらけた！",
         "dungeon.nestLevel": "すレベル {level}",
         "dungeon.windStoneFound": "かぜよけのいしを みつけた！",
         "dungeon.crystalPlaqueHint": "すいしょうを ふれる じゅんばん：{sequence}",
@@ -57916,6 +57934,13 @@ const ui = {
         "item.crystalOfKnowledge.desc": "5つの欠片から 復活した 伝説のクリスタル。心を 照らす 力を 持つ。",
         "item.holyAmulet": "聖なるアミュレット",
         "item.holyAmulet.desc": "闇の ベールを 貫く 古の 聖物。",
+        "item.map": "村の 地図",
+        "item.map.desc": "グリーンホロウの 長老が 描いた 地域の 地図。",
+        "item.compass": "コンパス",
+        "item.compass.desc": "長老から もらった 真鍮の コンパス。北を 指す。",
+        "npc.elder.gaveMap": "これを 持っていくのじゃ 勇者よ。この地域の 地図と 道を 示す コンパスじゃ。旅の 助けになるとよいのう！",
+        "npc.survivor": "かろうじて 山賊の 隠れ家から 逃げのびた。よく 聞くのじゃ。中は トリップワイヤーと 圧力プレートで いっぱいじゃ。きらめいたら Zを 押して 切れ。一歩 間違えば 通路が 崩れるぞ。",
+        "npc.survivor.name": "生還者",
         "crystal.combined": "5つのクリスタルの欠片が 算数のクリスタルに なった！",
         "legendary.excalibur.obtained": "エクスカリバーを 手に入れた！伝説の剣が 古の 力で 輝く。自動で 装備された！",
         "legendary.aegis.obtained": "暁のイージスを 手に入れた！神聖な 光が 鉄壁の 盾となって 包み込む。自動で 装備された！",
@@ -57945,6 +57970,8 @@ const ui = {
         "item.windbreakerStone.desc": "強い 風を 鎮める 重い 石。",
         "dungeon.windCalmed": "風が 静まった…道が 開けた。",
         "dungeon.windPushBack": "強い 風に 阻まれた！風除けの石が 必要だ。",
+        "overworld.canyonBlocked": "唸る 風が 谷道を 塞いでいる。嵐の巣に 答えが あるかも。",
+        "overworld.canyonOpened": "風が 静まった。谷道が 開けた！",
         "dungeon.nestLevel": "巣レベル {level}",
         "dungeon.windStoneFound": "風除けの石を 見つけた！",
         "dungeon.crystalPlaqueHint": "水晶を 触れる 順番：{sequence}",
@@ -58913,6 +58940,24 @@ const ye = {
             id: "holyAmulet",
             nameKey: "item.holyAmulet",
             descriptionKey: "item.holyAmulet.desc",
+            type: "key",
+            buyPrice: 0,
+            sellPrice: 0,
+            unsellable: !0
+        },
+        map: {
+            id: "map",
+            nameKey: "item.map",
+            descriptionKey: "item.map.desc",
+            type: "key",
+            buyPrice: 0,
+            sellPrice: 0,
+            unsellable: !0
+        },
+        compass: {
+            id: "compass",
+            nameKey: "item.compass",
+            descriptionKey: "item.compass.desc",
             type: "key",
             buyPrice: 0,
             sellPrice: 0,
@@ -61692,8 +61737,8 @@ const wi = {
             targetId: "luna",
             descriptionKey: "quest.lunasMap.obj1"
         }, {
-            type: "visit",
-            targetId: "oasisDepths",
+            type: "defeat",
+            targetId: "sandSerpentQueen",
             descriptionKey: "quest.lunasMap.obj2"
         }, {
             type: "talk",
@@ -61702,10 +61747,7 @@ const wi = {
         }],
         rewards: {
             exp: 200,
-            items: [{
-                itemId: "starMapFragment",
-                quantity: 1
-            }]
+            gold: 100
         },
         turnInNpcId: "luna",
         turnInMapId: "oasisHaven"
@@ -61838,8 +61880,8 @@ const wi = {
             targetId: "luna",
             descriptionKey: "quest.lunasProphecy.obj1"
         }, {
-            type: "visit",
-            targetId: "obsidianCavern",
+            type: "defeat",
+            targetId: "crystalHydra",
             descriptionKey: "quest.lunasProphecy.obj2"
         }, {
             type: "talk",
@@ -61848,10 +61890,7 @@ const wi = {
         }],
         rewards: {
             exp: 250,
-            items: [{
-                itemId: "lightCrystal",
-                quantity: 1
-            }]
+            gold: 150
         },
         turnInNpcId: "luna",
         turnInMapId: "oasisHaven"
@@ -75863,6 +75902,32 @@ function Ap(n, x, T, i = 1, o = 1, u = !1, m = !1, C = !1, t, f) {
                     y: _
                 })
             }
+        const _critPathSet = new Set();
+        {
+            const _bfsQ = [[M, E]];
+            const _bfsSeen = new Set();
+            _bfsSeen.add(`${M},${E}`);
+            const _bfsPrev = new Map();
+            let _bfsFound = false;
+            while (_bfsQ.length > 0 && !_bfsFound) {
+                const [cx, cy] = _bfsQ.shift();
+                if (cx === w && cy === A) { _bfsFound = true; break; }
+                for (const [dx, dy] of [[0,-1],[0,1],[-1,0],[1,0]]) {
+                    const nx = cx + dx, ny = cy + dy;
+                    if (nx < 0 || nx >= n || ny < 0 || ny >= x) continue;
+                    const ntile = e[ny]?.[nx];
+                    if (ntile === void 0 || ntile === 1) continue;
+                    const nk = `${nx},${ny}`;
+                    if (_bfsSeen.has(nk)) continue;
+                    _bfsSeen.add(nk); _bfsPrev.set(nk, `${cx},${cy}`); _bfsQ.push([nx, ny]);
+                }
+            }
+            if (_bfsFound) {
+                let _cur = `${w},${A}`;
+                while (_cur && _cur !== `${M},${E}`) { _critPathSet.add(_cur); _cur = _bfsPrev.get(_cur); }
+                _critPathSet.add(`${M},${E}`);
+            }
+        }
         for (let _ = et.length - 1; _ > 0; _--) {
             const q = Math.floor(h() * (_ + 1));
             [et[_], et[q]] = [et[q], et[_]]
@@ -75941,6 +76006,18 @@ function Ap(n, x, T, i = 1, o = 1, u = !1, m = !1, C = !1, t, f) {
                 }
                 te.push(ot)
             }
+        }
+        if (_critPathSet.size > 0 && te.length > 1) {
+            const _critScore = wp => {
+                let best = Infinity;
+                for (const pk of _critPathSet) {
+                    const [px, py] = pk.split(',').map(Number);
+                    const d = Math.abs(wp[0].x - px) + Math.abs(wp[0].y - py);
+                    if (d < best) best = d;
+                }
+                return best;
+            };
+            te.sort((a, b) => _critScore(a) - _critScore(b) + (Math.random() - 0.5) * 4);
         }
     }
     let ie;
@@ -77036,6 +77113,11 @@ const Xt = {
                 dialogueKey: "npc.mercenary",
                 x: 9,
                 y: 3
+            }, {
+                id: "survivor",
+                dialogueKey: "npc.survivor",
+                x: 5,
+                y: 7
             }],
             shopId: "ruinsCamp",
             savePoint: {
@@ -78367,6 +78449,7 @@ const Xt = {
             return x
         }
         renderNPCs(x) {
+            this._savePointSprite = null; this._savePointX = null; this._savePointY = null;
             for (const T of x.npcs) {
                 if (T.id === "healer") continue;
                 const i = Te.NPC_SPRITE_MAP[T.id] ?? (Te.FEMALE_NPCS.has(T.id) ? "npc-f" : "npc"),
@@ -78384,8 +78467,36 @@ const Xt = {
                 this.npcSprites.push(o)
             }
             if (x.savePoint) {
-                const T = this.add.sprite(x.savePoint.x * xt + xt / 2, x.savePoint.y * xt + xt / 2, "save-point").setOrigin(.5).setScale(1);
-                this.npcSprites.push(T)
+                const spX = x.savePoint.x * xt + xt / 2, spY = x.savePoint.y * xt + xt / 2;
+                const _spGlow = this.add.circle(spX, spY, Math.round(xt * 0.75), 0x66ccff, 0.4).setDepth(3);
+                this.tweens.add({ targets: _spGlow, alpha: { from: 0.15, to: 0.45 }, scaleX: { from: 0.9, to: 1.15 }, scaleY: { from: 0.9, to: 1.15 }, duration: 900, yoyo: true, repeat: -1, ease: "Sine.easeInOut" });
+                this.npcSprites.push(_spGlow);
+                const T = this.add.sprite(spX, spY, "save-point").setOrigin(.5).setScale(1);
+                this.npcSprites.push(T);
+                this._savePointSprite = T;
+                this._savePointX = spX; this._savePointY = spY;
+            }
+        }
+        _saveVfx(hx, hy) {
+            const _pal = [0x44FFFF, 0xAAEEFF, 0x88DDFF, 0xFFFFFF];
+            for (let _i = 0; _i < 12; _i++) {
+                const _ang = Math.random() * Math.PI * 2, _rad = 6 + Math.random() * 12,
+                    _c = this.add.circle(hx + Math.cos(_ang) * _rad, hy + Math.sin(_ang) * _rad, 2 + Math.random() * 3, _pal[_i % _pal.length]).setDepth(50).setAlpha(1);
+                this.tweens.add({ targets: _c, y: _c.y - 18 - Math.random() * 18, x: _c.x + (Math.random() - .5) * 14, alpha: 0, scaleX: .2, scaleY: .2, duration: 1200 + Math.random() * 600, delay: _i * 55, ease: "Sine.easeOut", onComplete: () => _c.destroy() });
+            }
+            if (this._savePointSprite && this._savePointSprite.scene) {
+                const _sp = this._savePointSprite;
+                this.tweens.add({ targets: _sp, scaleX: 1.3, scaleY: 1.3, duration: 120, yoyo: true, ease: "Sine.easeOut" });
+                const _fl = this.add.circle(this._savePointX, this._savePointY, Math.round(xt * 0.65), 0xffffff, 0.55).setDepth(20);
+                this.tweens.add({ targets: _fl, alpha: 0, duration: 350, ease: "Sine.easeOut", onComplete: () => _fl.destroy() });
+            }
+        }
+        _healVfx(hx, hy) {
+            const _pal = [0x44FF88, 0x88FFAA, 0xFFFFFF, 0x22EE66];
+            for (let _i = 0; _i < 12; _i++) {
+                const _ang = Math.random() * Math.PI * 2, _rad = 6 + Math.random() * 12,
+                    _c = this.add.circle(hx + Math.cos(_ang) * _rad, hy + Math.sin(_ang) * _rad, 2 + Math.random() * 3, _pal[_i % _pal.length]).setDepth(50).setAlpha(1);
+                this.tweens.add({ targets: _c, y: _c.y - 18 - Math.random() * 18, x: _c.x + (Math.random() - .5) * 14, alpha: 0, scaleX: .2, scaleY: .2, duration: 1200 + Math.random() * 600, delay: _i * 55, ease: "Sine.easeOut", onComplete: () => _c.destroy() });
             }
         }
         createHero() {
@@ -78667,20 +78778,32 @@ const Xt = {
                     return
                 }
                 if (h === 13 && (S.type === "overworld" || S.type === "portal-overworld")) {
-                    const l = this.heroTileX - x,
-                        a = this.heroTileY - T;
-                    if (l >= 0 && l < this.mapData[0].length && a >= 0 && a < this.mapData.length) {
-                        const e = this.mapData[a][l];
-                        e !== 2 && e !== 4 && (this.isMoving = !0, this.heroTileX = l, this.heroTileY = a, this.tweens.add({
-                            targets: this.hero,
-                            x: l * xt + xt / 2,
-                            y: a * xt + xt / 2,
-                            duration: 200,
-                            ease: "Back.easeOut",
-                            onComplete: () => {
-                                this.isMoving = !1
+                    const _defeated = !!tt.player.state.storyFlags["boss.stormHarpy.defeated"];
+                    if (!_defeated) {
+                        const _cbl = this.heroTileX - x,
+                            _cba = this.heroTileY - T;
+                        if (_cbl >= 0 && _cbl < this.mapData[0].length && _cba >= 0 && _cba < this.mapData.length) {
+                            const _cbe = this.mapData[_cba][_cbl];
+                            if (_cbe !== 2 && _cbe !== 4) {
+                                this.isMoving = !0;
+                                this.heroTileX = _cbl;
+                                this.heroTileY = _cba;
+                                const _cbFirst = !tt.player.state.storyFlags["canyon.blocked.seen"];
+                                _cbFirst && (tt.player.state.storyFlags["canyon.blocked.seen"] = !0);
+                                this.tweens.add({
+                                    targets: this.hero,
+                                    x: _cbl * xt + xt / 2,
+                                    y: _cba * xt + xt / 2,
+                                    duration: 200,
+                                    ease: "Back.easeOut",
+                                    onComplete: () => {
+                                        this.isMoving = !1;
+                                        _cbFirst && this.showMessage(Z("overworld.canyonBlocked"))
+                                    }
+                                })
                             }
-                        }))
+                        }
+                        return
                     }
                     return
                 }
@@ -78784,7 +78907,22 @@ const Xt = {
                 duration: 150,
                 ease: "Sine.easeInOut",
                 onComplete: () => {
-                    this.hero.setFrame(i * 3), this.hero.x = Math.round(this.hero.x), this.hero.y = Math.round(this.hero.y), this.isMoving = !1, this.onStep(), this.updatePosition(), this.fogEnabled && this.updateFogVisibility(), this.handleTorchPickup(), this.handleIceSlide(x, T), this.handleQuicksandPull(), this.handleLavaDamage(), this.updateMirrorState()
+                    this.hero.setFrame(i * 3), this.hero.x = Math.round(this.hero.x), this.hero.y = Math.round(this.hero.y), this.isMoving = !1, this.onStep(), this.updatePosition(), this.fogEnabled && this.updateFogVisibility(), this.handleTorchPickup(), this.handleIceSlide(x, T), this.handleQuicksandPull(), this.handleLavaDamage(), this.updateMirrorState();
+                    const _cm = Xt[this.currentMapId];
+                    if (_cm.type === "overworld" && this.heroTileX >= 221 && this.heroTileX <= 222 && this.heroTileY >= 275 && this.heroTileY <= 298 && tt.player.state.storyFlags["boss.stormHarpy.defeated"] && !tt.player.state.storyFlags["canyon.shattered"]) {
+                        tt.player.state.storyFlags["canyon.shattered"] = !0;
+                        const _csx = this.heroTileX * xt + xt / 2, _csy = this.heroTileY * xt + xt / 2;
+                        for (let _ci = 0; _ci < 10; _ci++) {
+                            const _ang = Math.random() * Math.PI * 2, _spd = 20 + Math.random() * 28, _sz = 3 + Math.random() * 7;
+                            const _px = _csx + (Math.random() - .5) * xt * .8, _py = _csy + (Math.random() - .5) * xt * .8;
+                            const _col = [0xaaaaaa, 0x888888, 0xcccccc, 0xbbbbdd][Math.floor(Math.random() * 4)];
+                            const _pr = this.add.rectangle(_px, _py, _sz, _sz, _col, 1).setDepth(96);
+                            this.tweens.add({ targets: _pr, x: _px + Math.cos(_ang) * _spd, y: _py + Math.sin(_ang) * _spd, alpha: 0, scaleX: .2, scaleY: .2, duration: 250 + Math.random() * 100, ease: "Power2", onComplete: () => _pr.destroy() })
+                        }
+                        const _flash = this.add.rectangle(_csx, _csy, xt * 2.5, xt * 2.5, 0xddddff, .55).setDepth(95);
+                        this.tweens.add({ targets: _flash, alpha: 0, scaleX: 1.8, scaleY: 1.8, duration: 380, ease: "Power2", onComplete: () => _flash.destroy() });
+                        this.time.delayedCall(180, () => { this.showMessage(Z("overworld.canyonOpened")) })
+                    }
                 }
             })
         }
@@ -78851,7 +78989,27 @@ const Xt = {
                             duration: 500,
                             ease: "Power2",
                             onComplete: () => a.destroy()
-                        }), this.showMessage(Z("dungeon.windCalmed")), u = !0
+                        });
+                        for (let _si = 0; _si < 7; _si++) {
+                            const _ang = Math.random() * Math.PI * 2;
+                            const _spd = 18 + Math.random() * 22;
+                            const _sz = 4 + Math.random() * 6;
+                            const _px = h + (Math.random() - .5) * xt * .6;
+                            const _py = l + (Math.random() - .5) * xt * .6;
+                            const _pr = this.add.rectangle(_px, _py, _sz, _sz, 0x888880, 1).setDepth(96);
+                            this.tweens.add({
+                                targets: _pr,
+                                x: _px + Math.cos(_ang) * _spd,
+                                y: _py + Math.sin(_ang) * _spd,
+                                alpha: 0,
+                                scaleX: .3,
+                                scaleY: .3,
+                                duration: 220 + Math.random() * 80,
+                                ease: "Power2",
+                                onComplete: () => _pr.destroy()
+                            });
+                        }
+                        this.showMessage(Z("dungeon.windCalmed")), u = !0
                     } else u = !1
                 }
                 i === Sn && (u = !1)
@@ -79279,7 +79437,7 @@ const Xt = {
             }
             if (this.checkDarknessPatrolCollision()) {
                 this.isMoving = !0, this.showMessage(Z("dungeon.shadowCave.patrolCaught")), this.time.delayedCall(500, () => {
-                    this.startBattle(Ni.shadowWisp)
+                    this.startBattle(Ni.shadow)
                 });
                 return
             }
@@ -79368,7 +79526,7 @@ const Xt = {
                 return;
             }
             if (x.savePoint && x.savePoint.x === T && x.savePoint.y === i) {
-                tt.saveGame(), Jt.playSfx("save"), this.showMessage(Z("npc.savePoint")), tt.player.fullHeal(), this.updateHUD();
+                tt.saveGame(), Jt.playSfx("save"), this.showMessage(Z("npc.savePoint")), tt.player.fullHeal(), this.updateHUD(); this._saveVfx(this.hero.x, this.hero.y);
                 return
             }
             for (const u of x.npcs)
@@ -79385,16 +79543,16 @@ const Xt = {
                     const u = x.floors ?? 1,
                         m = [];
                     for (let C = 2; C <= u; C++) tt.player.state.storyFlags[`warp.${this.currentMapId}.f${C}`] && m.push(C);
-                    x.bossId && tt.player.state.storyFlags[`warp.${this.currentMapId}.boss`] && m.push(-1), m.length > 0 ? this.showWarpMenu(m, u) : (tt.saveGame(), Jt.playSfx("save"), tt.player.fullHeal(), this.updateHUD(), this.showMessage(Z("dungeon.crystalSaveEntrance")))
+                    x.bossId && tt.player.state.storyFlags[`warp.${this.currentMapId}.boss`] && m.push(-1), m.length > 0 ? this.showWarpMenu(m, u) : (tt.saveGame(), Jt.playSfx("save"), tt.player.fullHeal(), this.updateHUD(), this._saveVfx(this.hero.x, this.hero.y), this.showMessage(Z("dungeon.crystalSaveEntrance")))
                 } else {
                     const u = `warp.${this.currentMapId}.f${this.currentFloor}`;
-                    tt.player.state.storyFlags[u] || (tt.player.state.storyFlags[u] = !0), tt.player.state.storyFlags[`entrance.crystal.${this.currentMapId}.visible`] = !0, tt.saveGame(), Jt.playSfx("save"), tt.player.fullHeal(), this.updateHUD(), this.showMidFloorCrystalMenu()
+                    tt.player.state.storyFlags[u] || (tt.player.state.storyFlags[u] = !0), tt.player.state.storyFlags[`entrance.crystal.${this.currentMapId}.visible`] = !0, tt.saveGame(), Jt.playSfx("save"), tt.player.fullHeal(), this.updateHUD(), this._saveVfx(this.hero.x, this.hero.y), this.showMidFloorCrystalMenu()
                 }
                 return
             }
             if (this.tryBossInteract(T, i) || this.tryOpenTreasure(T, i)) return;
             if (x.savePoint && Math.abs(x.savePoint.x - this.heroTileX) <= 1 && Math.abs(x.savePoint.y - this.heroTileY) <= 1) {
-                tt.saveGame(), Jt.playSfx("save"), this.showMessage(Z("npc.savePoint")), tt.player.fullHeal(), this.updateHUD();
+                tt.saveGame(), Jt.playSfx("save"), this.showMessage(Z("npc.savePoint")), tt.player.fullHeal(), this.updateHUD(); this._saveVfx(this.hero.x, this.hero.y);
                 return
             }
             const o = [
@@ -79425,7 +79583,7 @@ const Xt = {
             }
             const o = Te.HEALER_PRICES[this.currentMapId] ?? 100;
             if (o === 0) {
-                x.fullHeal(), Jt.playSfx("save"), this.showMessage(Z("npc.healer.healFree"), i), this.updateHUD();
+                x.fullHeal(), Jt.playSfx("save"), this.showMessage(Z("npc.healer.healFree"), i), this.updateHUD(); this._healVfx(this.hero.x, this.hero.y);
                 return
             }
             if (x.state.gold < o) {
@@ -79492,7 +79650,7 @@ const Xt = {
         confirmHealerOption() {
             if (this.healerOverlayIndex === 0) {
                 const x = tt.player;
-                x.state.gold -= this.healerOverlayPrice, x.fullHeal(), Jt.playSfx("save"), this.hideHealerOverlay();
+                x.state.gold -= this.healerOverlayPrice, x.fullHeal(), Jt.playSfx("save"), this.hideHealerOverlay(); this._healVfx(this.hero.x, this.hero.y);
                 const T = Z("npc.healer.name");
                 this.showMessage(Z("npc.healer.healed", {
                     price: this.healerOverlayPrice
@@ -80605,6 +80763,13 @@ const Xt = {
                 o = this.getNpcDisplayName(x.id),
                 u = `${x.dialogueKey}`.replace(".greeting", "");
             console.log("[NPC]", x.id, "active:", [...i.activeQuests], "completed:", [...i.completedQuests]);
+            if (x.id === "elder" && !i.storyFlags["elder.gaveMap"]) {
+                i.storyFlags["elder.gaveMap"] = !0;
+                tt.player.addItem("map", 1);
+                tt.player.addItem("compass", 1);
+                this.showMessage(Z("npc.elder.gaveMap"), o);
+                return;
+            }
             const m = T.getActiveQuests(i),
                 C = m.filter(l => l.turnInNpcId === x.id && T.isQuestReady(l.id, i));
             if (C.length > 0) {
@@ -80624,7 +80789,26 @@ const Xt = {
                     const a = i.questProgress[l.id] ?? {};
                     return l.objectives.some(e => e.type === "talk" && e.targetId === x.id && (a[e.targetId] ?? 0) < (e.count ?? 1))
                 }).length > 0) {
-                T.updateProgress(i, "talk", x.id, 1).length > 0 ? this.showMessage(Z("quest.objectivesComplete"), o) : this.showMessage(this.getProgressiveDialogue(x), o);
+                const _nowReady = m.filter(l => {
+                    const a = i.questProgress[l.id] ?? {};
+                    return l.objectives.some(e => e.type === "talk" && e.targetId === x.id && (a[e.targetId] ?? 0) < (e.count ?? 1))
+                });
+                T.updateProgress(i, "talk", x.id, 1);
+                const _readyAfter = _nowReady.filter(l => l.turnInNpcId === x.id && T.isQuestReady(l.id, i));
+                if (_readyAfter.length > 0) {
+                    const l = _readyAfter[0],
+                        a = `${u}.questComplete`,
+                        e = Z(a),
+                        c = e !== `[${a}]` ? [e] : [Z("quest.complete", {
+                            title: Z(l.titleKey)
+                        })];
+                    this.showDialogSequence(c, () => {
+                        const s = T.completeQuest(l.id, i);
+                        this.applyQuestRewards(s), this.updateHUD(), this.showQuestCompleteNotification(Z(l.titleKey), s)
+                    }, o);
+                } else {
+                    this.showMessage(Z("quest.objectivesComplete"), o)
+                }
                 return
             }
             const f = m.filter(l => (l.giverNpcId ?? l.turnInNpcId) === x.id);
@@ -80770,6 +80954,7 @@ ${i.trim()}` : o;
             this.fogEnabled = !1, this.fogTorchBonus = 0, this.fogTorchCount = 0, this.lavaPhase = !1, this.lavaTimer = 0, this.mirrorRoomBounds = [], this.mirrorActive = !1, this.mirrorIcon?.destroy(), this.mirrorIcon = void 0, this.darknessPulseEnabled = !1, this.darknessPulsePhase = "light", this.darknessPulseTimer = 0;
             for (const i of this.darknessPulsePatrols) i.sprite.destroy();
             this.darknessPulsePatrols = [], this.darknessPulseOverlay?.destroy(), this.darknessPulseOverlay = void 0, this.windTowerEnabled = !1, this.windTowerPhase = "calm", this.windTowerTimer = 0, this.windTowerPushing = !1, this.mazeHunterEnabled = !1, this.mazeHunterActive = !1, this.mazeHunterChaseMode = !1, this.mazeHunterStepCount = 0, this.mazeHunterDefeated = !1, this.mazeHunterIsMoving = !1, this.mazeHunterBossSprite?.destroy(), this.mazeHunterBossSprite = void 0, this.tripwireGlowTimer = 0;
+            if (this._windTileOverlays) { for (const _wto of this._windTileOverlays) _wto.destroy(); this._windTileOverlays = []; } else this._windTileOverlays = [];
             const T = x.mechanic;
             if (T) {
                 if (T === "fog") {
@@ -80811,6 +80996,21 @@ ${i.trim()}` : o;
                                 yoyo: !0,
                                 repeat: -1,
                                 ease: "Sine.easeInOut"
+                            }), this.tweens.add({
+                                targets: S,
+                                alpha: { from: .15, to: .45 },
+                                duration: 350,
+                                yoyo: !0,
+                                repeat: -1,
+                                ease: "Sine.easeInOut"
+                            }), this.tweens.add({
+                                targets: h,
+                                alpha: { from: .6, to: 1.0 },
+                                duration: 280,
+                                delay: 70,
+                                yoyo: !0,
+                                repeat: -1,
+                                ease: "Sine.easeInOut"
                             });
                             const e = f;
                             this.darknessPulsePatrols.push({
@@ -80828,7 +81028,28 @@ ${i.trim()}` : o;
                         this._pendingPatrolWaypoints = void 0
                     }
                 }
-                T === "wind-tower" && (this.windTowerEnabled = !0, this.windTowerPhase = "calm", this.windTowerTimer = this.time.now, this.windTowerPushing = !1), T === "maze-hunter" && (this.mazeHunterEnabled = !0, this.mazeHunterActive = !1, this.mazeHunterStepCount = 0, this.mazeHunterChaseMode = !1, this.mazeHunterMoveTimer = this.time.now, tt.player.state.storyFlags["boss.swordWraith.defeated"] ? this.mazeHunterDefeated = !0 : this.mazeHunterDefeated = !1), this.currentMapId === "banditHideout" && (this.tripwireGlowTimer = this.time.now)
+                T === "wind-tower" && (this.windTowerEnabled = !0, this.windTowerPhase = "calm", this.windTowerTimer = this.time.now, this.windTowerPushing = !1), T === "maze-hunter" && (this.mazeHunterEnabled = !0, this.mazeHunterActive = !1, this.mazeHunterStepCount = 0, this.mazeHunterChaseMode = !1, this.mazeHunterMoveTimer = this.time.now, tt.player.state.storyFlags["boss.swordWraith.defeated"] ? this.mazeHunterDefeated = !0 : this.mazeHunterDefeated = !1), this.currentMapId === "banditHideout" && (this.tripwireGlowTimer = this.time.now);
+                if (T === "wind") {
+                    for (let _wy = 0; _wy < this.mapData.length; _wy++) {
+                        for (let _wx = 0; _wx < (this.mapData[_wy]?.length ?? 0); _wx++) {
+                            if (this.mapData[_wy][_wx] !== 19) continue;
+                            const _wpx = _wx * xt + xt / 2, _wpy = _wy * xt + xt / 2;
+                            const _wov = this.add.rectangle(_wpx, _wpy, xt, xt, 0x22AA44, 0.3).setDepth(6).setScrollFactor(1);
+                            this._windTileOverlays.push(_wov);
+                            this.tweens.add({
+                                targets: _wov,
+                                alpha: 0.75,
+                                scaleX: 1.1,
+                                scaleY: 1.1,
+                                duration: 600,
+                                yoyo: true,
+                                repeat: -1,
+                                ease: "Sine.easeInOut",
+                                delay: Math.random() * 300
+                            });
+                        }
+                    }
+                }
             }
         }
         updateFogVisibility() {
@@ -81002,7 +81223,7 @@ ${i.trim()}` : o;
                         t.defeated = !0, this._pendingPatrolSprite = t.sprite;
                         const r = `patrol.${this.currentMapId}.f${this.currentFloor}.${t.waypoints[0].x}.${t.waypoints[0].y}`;
                         tt.player.state.storyFlags[r] = !0, this.isMoving = !0, this.showMessage(Z("dungeon.shadowCave.patrolCaught")), this.time.delayedCall(500, () => {
-                            this.startBattle(Ni.shadowWisp)
+                            this.startBattle(Ni.shadow)
                         })
                     }
                     this.tweens.add({
@@ -81474,7 +81695,7 @@ ${i.trim()}` : o;
             this.input.keyboard?.removeAllListeners(), this.mirrorIcon?.destroy(), this.mirrorIcon = void 0
         }
     };
-Te.CULL_BUFFER = 3, Te.LAVA_TOGGLE_MS = 4e3, Te.DARKNESS_LIGHT_MS = 2e3, Te.DARKNESS_DARK_MS = 12e3, Te.DARKNESS_FADE_IN_MS = 500, Te.DARKNESS_FADE_OUT_MS = 500, Te.WIND_CALM_MS = 4e3, Te.WIND_GUST_MS = 2e3, Te.FEMALE_NPCS = new Set(["villager1", "wisewoman", "blacksmith", "archaeologist", "priestess", "herbalist", "refugee", "prophetess", "healer", "frostGuard", "frostVillager", "hauntedGuard", "lavaMiner", "frostSage", "templeScholar", "shadowWatcher", "skyKeeper"]), Te.NPC_SPRITE_MAP = {
+Te.CULL_BUFFER = 3, Te.LAVA_TOGGLE_MS = 4e3, Te.DARKNESS_LIGHT_MS = 2e3, Te.DARKNESS_DARK_MS = 6e3, Te.DARKNESS_FADE_IN_MS = 500, Te.DARKNESS_FADE_OUT_MS = 500, Te.WIND_CALM_MS = 4e3, Te.WIND_GUST_MS = 2e3, Te.FEMALE_NPCS = new Set(["villager1", "wisewoman", "blacksmith", "archaeologist", "priestess", "herbalist", "refugee", "prophetess", "healer", "frostGuard", "frostVillager", "hauntedGuard", "lavaMiner", "frostSage", "templeScholar", "shadowWatcher", "skyKeeper"]), Te.NPC_SPRITE_MAP = {
     sage: "npc-sage",
     kiki: "npc-kiki",
     drake: "npc-drake",
@@ -81527,7 +81748,8 @@ Te.CULL_BUFFER = 3, Te.LAVA_TOGGLE_MS = 4e3, Te.DARKNESS_LIGHT_MS = 2e3, Te.DARK
     frostVillager: "npc.frostVillager.name",
     hauntedElder: "npc.hauntedElder.name",
     hauntedGuard: "npc.hauntedGuard.name",
-    hauntedVillager: "npc.hauntedVillager.name"
+    hauntedVillager: "npc.hauntedVillager.name",
+    survivor: "npc.survivor.name"
 }, Te.HEALER_PRICES = {
     greenhollow: 0,
     millbrook: 5,
