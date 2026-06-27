@@ -55341,6 +55341,9 @@ function Ho(n) {
         i.fillStyle(15255664), i.fillRect(0, 0, 24, 24), i.fillStyle(14530640), i.fillRect(0, 18, 24, 6), i.fillStyle(13934656), i.fillRect(2, 16, 20, 4), i.fillRect(4, 12, 16, 4), i.fillRect(6, 8, 12, 4), i.fillRect(8, 4, 8, 4), i.fillRect(10, 1, 4, 3), i.fillStyle(12091440, .5), i.fillRect(12, 1, 2, 3), i.fillRect(14, 4, 4, 4), i.fillRect(18, 8, 2, 4), i.fillRect(16, 12, 4, 4), i.fillRect(18, 16, 4, 4), i.fillStyle(2232576), i.fillRect(10, 15, 4, 5), i.fillStyle(9068576), i.fillRect(9, 14, 6, 1), i.fillStyle(15519856, .4), i.fillRect(2, 16, 2, 4), i.fillRect(4, 12, 2, 4), i.fillRect(6, 8, 2, 4), i.fillRect(8, 4, 2, 4), i.fillRect(10, 1, 2, 3)
     }), Mt(n, "ow-20", 15255664, 14202976, void 0, i => {
         i.fillStyle(14728028), i.fillRect(0, 0, 24, 24), i.fillStyle(13936704), i.fillRect(1, 5, 6, 1), i.fillRect(14, 10, 8, 1), i.fillRect(3, 17, 10, 1), i.fillStyle(12095584), i.fillRect(11, 8, 3, 16), i.fillStyle(10121800), i.fillRect(11, 8, 1, 16), i.fillStyle(13148272), i.fillRect(13, 8, 1, 16), i.fillStyle(10516560), i.fillRect(11, 11, 3, 1), i.fillRect(11, 16, 3, 1), i.fillStyle(9136404), i.fillRect(3, 5, 19, 7), i.fillStyle(7032848), i.fillRect(3, 5, 19, 1), i.fillRect(3, 11, 19, 1), i.fillRect(3, 5, 1, 7), i.fillRect(21, 5, 1, 7), i.fillStyle(10385948), i.fillRect(5, 7, 14, 1), i.fillRect(6, 9, 12, 1), i.fillStyle(4008474), i.fillRect(7, 8, 8, 1), i.fillRect(13, 7, 2, 1), i.fillRect(13, 9, 2, 1), i.fillStyle(10121800), i.fillRect(10, 3, 5, 3), i.fillStyle(12095584), i.fillRect(11, 4, 3, 1), i.fillStyle(12621912), i.fillRect(9, 22, 2, 1), i.fillRect(14, 21, 1, 1)
+    }), Mt(n, "ow-21", 15761408, 13369344, void 0, i => {
+        // Magma seal tile: impassable lava flow blocking Act-4 approaches
+        i.fillStyle(15761408), i.fillRect(0, 0, 24, 24), i.fillStyle(13369344), i.fillRect(0, 14, 24, 10), i.fillStyle(14549760), i.fillRect(0, 10, 24, 6), i.fillStyle(15761408), i.fillRect(2, 8, 5, 4), i.fillRect(10, 6, 6, 5), i.fillRect(18, 9, 5, 4), i.fillStyle(16750848), i.fillRect(3, 9, 3, 2), i.fillRect(11, 7, 4, 3), i.fillRect(19, 10, 3, 2), i.fillStyle(16777215, 0.7), i.fillRect(4, 9, 1, 1), i.fillRect(12, 8, 2, 1), i.fillRect(20, 10, 1, 1), i.fillStyle(13369344, 0.6), i.fillRect(1, 17, 4, 2), i.fillRect(8, 19, 5, 2), i.fillRect(16, 16, 6, 3), i.fillStyle(11534336, 0.5), i.fillRect(0, 20, 6, 4), i.fillRect(10, 21, 8, 3), i.fillRect(19, 18, 5, 6), i.fillStyle(16750848, 0.4), i.fillRect(6, 15, 2, 1), i.fillRect(14, 13, 3, 1), i.fillRect(22, 17, 1, 1)
     })
 }
 
@@ -55996,8 +55999,9 @@ const ui = {
         "item.stolenBook.desc": "A book of ancient knowledge stolen by cave creatures.",
         "item.starMapFragment": "Star Map Fragment",
         "item.starMapFragment.desc": "A piece of an ancient celestial map.",
-        "item.flameCloak": "Flame Cloak",
-        "item.flameCloak.desc": "A cloak forged from volcanic fire. Protects against extreme heat.",
+        "item.flameCloak": "Magma Cloak",
+        "item.flameCloak.desc": "A cloak forged from volcanic fire. Grants protection against extreme heat and molten rock.",
+        "overworld.magmaBlocked": "Molten rock blocks the path. You need protection from the heat. Defeat the Sand Golem in the Desert Tomb to claim the Magma Cloak.",
         "item.lightCrystal": "Light Crystal",
         "item.lightCrystal.desc": "A crystal that shines with pure light from the depths.",
         "equip.ancientAmulet": "Ancient Amulet",
@@ -56919,8 +56923,9 @@ const ui = {
         "item.stolenBook.desc": "どうくつの モンスターに ぬすまれた いにしえの ほん。",
         "item.starMapFragment": "ほしの ちずの かけら",
         "item.starMapFragment.desc": "いにしえの てんたいちずの いちぶ。",
-        "item.flameCloak": "ほのおのマント",
-        "item.flameCloak.desc": "かざんの ほのおで つくったマント。ごくねつから まもる。",
+        "item.flameCloak": "マグマのマント",
+        "item.flameCloak.desc": "かざんの ほのおで つくったマント。ごくねつと ようがんから まもる。",
+        "overworld.magmaBlocked": "ようがんが みちを ふさいでいる。ねつから まもる そうびが ひつよう。さばくのはかで すなのゴーレムを たおして マグマのマントを てにいれよう。",
         "item.lightCrystal": "ひかりのクリスタル",
         "item.lightCrystal.desc": "ふかみから ひかる じゅんすいな クリスタル。",
         "equip.ancientAmulet": "いにしえのアミュレット",
@@ -57838,8 +57843,9 @@ const ui = {
         "item.stolenBook.desc": "洞窟の モンスターに 盗まれた 古の 本。",
         "item.starMapFragment": "星の 地図の 欠片",
         "item.starMapFragment.desc": "古の 天体地図の 一部。",
-        "item.flameCloak": "炎のマント",
-        "item.flameCloak.desc": "火山の 炎で 作ったマント。極熱から 守る。",
+        "item.flameCloak": "マグマのマント",
+        "item.flameCloak.desc": "火山の 炎で 作ったマント。極熱と 溶岩から 守る。",
+        "overworld.magmaBlocked": "溶岩が 道を 塞いでいる。熱から 守る 装備が 必要。砂漠の墓で 砂のゴーレムを 倒し マグマのマントを 手に入れよう。",
         "item.lightCrystal": "光のクリスタル",
         "item.lightCrystal.desc": "深みから 光る 純粋な クリスタル。",
         "equip.ancientAmulet": "古のアミュレット",
@@ -73675,6 +73681,11 @@ function Ep(n, x) {
     for (const [O, G] of E) G >= 0 && G < x && O >= 0 && O < n && (i[G][O] = 15);
     for (const [O, G] of w) G >= 0 && G < x && O >= 0 && O < n && (i[G][O] = 16);
     for (const [O, G] of p) G >= 0 && G < x && O >= 0 && O < n && (i[G][O] = 19);
+    // M4 #33: Magma seal tiles (tile 21) — block Act-4 approaches until Magma Cloak obtained
+    // scorchedRuins corridor seal: x=278-279, y=86-88 (stamped after dungeon markers so they can overwrite path tiles)
+    for (let _sy = 86; _sy <= 88; _sy++) for (let _sx = 278; _sx <= 279; _sx++) { if (i[_sy]?.[_sx] !== void 0 && i[_sy][_sx] !== 7 && i[_sy][_sx] !== 6 && i[_sy][_sx] !== 8) i[_sy][_sx] = 21; }
+    // magmaTunnels corridor seal: x=245-247, y=93-94
+    for (let _my = 93; _my <= 94; _my++) for (let _mx = 245; _mx <= 247; _mx++) { if (i[_my]?.[_mx] !== void 0 && i[_my][_mx] !== 7 && i[_my][_mx] !== 6 && i[_my][_mx] !== 8) i[_my][_mx] = 21; }
     const b = 200,
         P = 265,
         L = 8,
@@ -78916,6 +78927,15 @@ const Xt = {
                     this.tryOpenTreasure(o, u);
                     return
                 }
+                if (h === 21 && (S.type === "overworld" || S.type === "portal-overworld")) {
+                    const _hasCloak = tt.player.state.inventory.some(s => s.itemId === "flameCloak" && s.quantity > 0);
+                    if (!_hasCloak) {
+                        const _mbKey = "overworld.magmaBlocked.seen";
+                        const _mbFirst = !tt.player.state.storyFlags[_mbKey];
+                        _mbFirst && (tt.player.state.storyFlags[_mbKey] = !0, this.showMessage(Z("overworld.magmaBlocked")));
+                        return
+                    }
+                }
                 if (h === 11 || h === 20) {
                     this.interact();
                     return
@@ -79074,7 +79094,7 @@ const Xt = {
             const i = this.mapData[T][x],
                 o = Xt[this.currentMapId];
             let u = !1;
-            if (o.type === "overworld" || o.type === "portal-overworld") u = i !== 2 && i !== 4 && i !== 6 && i !== 7 && i !== 8 && i !== 9 && i !== 10 && i !== 11 && i !== 12 && i !== 14 && i !== 15 && i !== 16 && i !== 19 && i !== 20, i === 13 && (u = !!tt.player.state.storyFlags["boss.stormHarpy.defeated"]);
+            if (o.type === "overworld" || o.type === "portal-overworld") u = i !== 2 && i !== 4 && i !== 6 && i !== 7 && i !== 8 && i !== 9 && i !== 10 && i !== 11 && i !== 12 && i !== 14 && i !== 15 && i !== 16 && i !== 19 && i !== 20 && i !== 21, i === 13 && (u = !!tt.player.state.storyFlags["boss.stormHarpy.defeated"]), i === 21 && (u = tt.player.state.inventory.some(s => s.itemId === "flameCloak" && s.quantity > 0));
             else if (o.type === "town") u = i !== 1 && i !== 2 && i !== 4 && i !== 6 && i !== 8 && i !== 9 && i !== 10 && i !== 11 && i !== 12 && i !== 13 && i !== 14 && i !== 15;
             else {
                 // Tripwire is passable — triggers trap when walked on, Z to disarm
@@ -79484,8 +79504,8 @@ const Xt = {
                 this.isMoving = !1, this.showMessage(Z("dungeon.volcanicForge.locked"));
                 return
             }
-            if (x.targetMap === "magmaTunnels" && !tt.player.state.storyFlags["boss.sandGolem.defeated"] && !tt.player.state.storyFlags["boss.lavaWyrm.defeated"]) {
-                this.isMoving = !1, this.showMessage(Z("dungeon.magmaTunnels.locked"));
+            if ((x.targetMap === "magmaTunnels" || x.targetMap === "scorchedRuins") && !tt.player.state.inventory.some(s => s.itemId === "flameCloak" && s.quantity > 0) && !tt.player.state.storyFlags["boss.lavaWyrm.defeated"] && !tt.player.state.storyFlags["boss.ashenGuardian.defeated"]) {
+                this.isMoving = !1, this.showMessage(Z("overworld.magmaBlocked"));
                 return
             }
             if (x.targetMap === "demonCastle") {
@@ -80704,7 +80724,7 @@ const Xt = {
                         onComplete: () => {
                             this.mazeHunterBossSprite?.destroy(), this.mazeHunterBossSprite = void 0
                         }
-                    }), this.unsealMazeHunterExit())), o === "celestialGuardian" && (tt.player.addItem("aegisOfDawn", 1), tt.player.equip("aegisOfDawn")), o === "stormSentinel" && (tt.player.addItem("galeShield", 1), tt.player.equip("galeShield")), o === "frostMonarch" && (tt.player.addItem("crownOfWisdom", 1), tt.player.equip("crownOfWisdom")), o === "stormHarpy" && (tt.player.addItem("shadowCrystal", 1), this.showCrystalShardAnimation(u, m, 16720418)), o === "giantToad" && tt.player.addItem("toadShield", 1), o === "giantCrab" && tt.player.addItem("coralBlade", 1), o === "serpent" && (tt.player.addItem("crystalPendant", 1), tt.player.addItem("shadowCrystal", 1), this.showCrystalShardAnimation(u, m, 2263295)), o === "iceWyrm" && tt.player.addItem("frostbrand", 1), o === "dragon" && (tt.player.addItem("dragonheartAmulet", 1), tt.player.addItem("shadowCrystal", 1), this.showCrystalShardAnimation(u, m, 2293572)), o === "sandGolem" && (tt.player.addItem("sandstormCloak", 1), tt.player.addItem("shadowCrystal", 1), this.showCrystalShardAnimation(u, m, 16720418)), o === "banditLord" && tt.player.addItem("banditDagger", 1), o === "lavaWyrm" && tt.player.addItem("magmaBlade", 1), o === "flameTitan" && (tt.player.addItem("moltenGreaves", 1), tt.player.addItem("shadowCrystal", 1), this.showCrystalShardAnimation(u, m, 2263295)), this.time.delayedCall(200, () => {
+                    }), this.unsealMazeHunterExit())), o === "celestialGuardian" && (tt.player.addItem("aegisOfDawn", 1), tt.player.equip("aegisOfDawn")), o === "stormSentinel" && (tt.player.addItem("galeShield", 1), tt.player.equip("galeShield")), o === "frostMonarch" && (tt.player.addItem("crownOfWisdom", 1), tt.player.equip("crownOfWisdom")), o === "stormHarpy" && (tt.player.addItem("shadowCrystal", 1), this.showCrystalShardAnimation(u, m, 16720418)), o === "giantToad" && tt.player.addItem("toadShield", 1), o === "giantCrab" && tt.player.addItem("coralBlade", 1), o === "serpent" && (tt.player.addItem("crystalPendant", 1), tt.player.addItem("shadowCrystal", 1), this.showCrystalShardAnimation(u, m, 2263295)), o === "iceWyrm" && tt.player.addItem("frostbrand", 1), o === "dragon" && (tt.player.addItem("dragonheartAmulet", 1), tt.player.addItem("shadowCrystal", 1), this.showCrystalShardAnimation(u, m, 2293572)), o === "sandGolem" && (tt.player.addItem("sandstormCloak", 1), tt.player.addItem("flameCloak", 1), tt.player.addItem("shadowCrystal", 1), this.showCrystalShardAnimation(u, m, 16720418)), o === "banditLord" && tt.player.addItem("banditDagger", 1), o === "lavaWyrm" && tt.player.addItem("magmaBlade", 1), o === "flameTitan" && (tt.player.addItem("moltenGreaves", 1), tt.player.addItem("shadowCrystal", 1), this.showCrystalShardAnimation(u, m, 2263295)), this.time.delayedCall(200, () => {
                         const h = Z(`dungeon.${this.currentMapId}.boss.defeat`),
                             l = Z(`dungeon.${this.currentMapId}.victory`),
                             a = () => {
