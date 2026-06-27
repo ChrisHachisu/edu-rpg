@@ -79942,7 +79942,7 @@ const Xt = {
                         t = m && this.currentFloor > C ? o - this.currentFloor + 1 : this.currentFloor;
                     T.mechanic === "wind" ? u += ` — ${t}F` : u += T.castle ? ` — ${t}F` : ` — B${t}F`
                 }
-                this.floorText = this.add.text(Ne + Math.round(8 * gt), Ye + Math.round(24 * gt), u, {
+                this.floorText = this.add.text(Ne + Math.round(8 * gt), Ye + Math.round(36 * gt), u, {
                     fontSize: `${Math.round(10*gt)}px`,
                     color: ht.TEXT_YELLOW,
                     fontFamily: yt,
@@ -79971,54 +79971,95 @@ const Xt = {
             if (_mapCfg && _mapCfg.type === "dungeon") return;
             if (!tt.questManager) return;
             const _qs = tt.questManager.getActiveQuests(tt.player.state);
-            const _boxX = Ne + Tt - Math.round(8 * gt);
+            // Box right edge anchored near compass; box width and center
+            const _boxRight = Ne + Tt - Math.round(8 * gt);
+            const _boxW = Math.round(110 * gt);
+            const _boxCX = _boxRight - Math.round(_boxW / 2);
             const _boxY = Ye + Math.round(140 * gt);
             const _collapsed = !!this.questTrackerCollapsed;
             const _dotActive = !!this.questDotActive;
             const _objs = [];
+            const _pad = Math.round(6 * gt);
+            const _innerW = _boxW - _pad * 2;
             const _headerLabel = Z("quest.tracker.title") + (_qs.length > 0 ? ` (${_qs.length})` : "");
-            const _hdrH = Math.round(18 * gt);
-            const _hdrW = Math.round(90 * gt);
-            const _hdrBg = this.add.rectangle(_boxX, _boxY, _hdrW, _hdrH, 0x1a1a3e, 0.88).setOrigin(1, 0).setDepth(100).setScrollFactor(0);
+            const _hdrH = Math.round(20 * gt);
+            // Header background
+            const _hdrBg = this.add.rectangle(_boxCX, _boxY, _boxW, _hdrH, 0x1a1a3e, 0.92).setOrigin(0.5, 0).setDepth(100).setScrollFactor(0);
             _objs.push(_hdrBg);
-            const _hdrTxt = this.add.text(_boxX - Math.round(6 * gt) - (_dotActive ? Math.round(10 * gt) : 0), _boxY + Math.round(4 * gt), _headerLabel, {
+            // Centered header title
+            const _hdrTxt = this.add.text(_boxCX, _boxY + Math.round(4 * gt), _headerLabel, {
                 fontSize: `${Math.round(9 * gt)}px`,
                 color: ht.TEXT_YELLOW,
-                fontFamily: yt
-            }).setOrigin(1, 0).setDepth(101).setScrollFactor(0);
+                fontFamily: yt,
+                wordWrap: { width: _innerW - Math.round(14 * gt) }
+            }).setOrigin(0.5, 0).setDepth(101).setScrollFactor(0);
             _objs.push(_hdrTxt);
+            // Flicker dot on LEFT side of header
             if (_dotActive) {
-                const _dot = this.add.circle(_boxX - Math.round(3 * gt), _boxY + Math.round(7 * gt), Math.round(3.5 * gt), 0xFF3333, 1).setDepth(102).setScrollFactor(0);
+                const _dotX = _boxCX - Math.round(_boxW / 2) + Math.round(7 * gt);
+                const _dotY = _boxY + Math.round(_hdrH / 2);
+                const _dot = this.add.circle(_dotX, _dotY, Math.round(3.5 * gt), 0xFF3333, 1).setDepth(102).setScrollFactor(0);
                 _objs.push(_dot);
                 this._questDotTween = this.tweens.add({ targets: _dot, alpha: 0.25, duration: 500, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
             }
             if (!_collapsed && _qs.length > 0) {
                 const _maxShow = Math.min(_qs.length, 3);
-                const _lineH = Math.round(26 * gt);
-                const _entryW = Math.round(110 * gt);
-                const _totalH = _maxShow * _lineH + Math.round(4 * gt);
-                const _bodyBg = this.add.rectangle(_boxX, _boxY + _hdrH, _entryW, _totalH, 0x0d0d2a, 0.82).setOrigin(1, 0).setDepth(100).setScrollFactor(0);
-                _objs.push(_bodyBg);
+                const _nameFontSz = Math.round(8 * gt);
+                const _objFontSz = Math.round(7 * gt);
+                // Measure all text objects first to compute total body height
+                const _nameObjs = [];
+                const _objObjs = [];
                 for (let _qi = 0; _qi < _maxShow; _qi++) {
                     const _q = _qs[_qi];
-                    const _qY = _boxY + _hdrH + Math.round(4 * gt) + _qi * _lineH;
-                    const _qName = this.add.text(_boxX - Math.round(6 * gt), _qY, Z(_q.titleKey), {
-                        fontSize: `${Math.round(8 * gt)}px`,
+                    const _qName = this.add.text(0, -9999, Z(_q.titleKey), {
+                        fontSize: `${_nameFontSz}px`,
                         color: ht.TEXT_WHITE,
-                        fontFamily: yt
-                    }).setOrigin(1, 0).setDepth(101).setScrollFactor(0);
-                    _objs.push(_qName);
+                        fontFamily: yt,
+                        wordWrap: { width: _innerW }
+                    }).setOrigin(0.5, 0).setDepth(101).setScrollFactor(0);
+                    _nameObjs.push(_qName);
                     const _objProg = tt.questManager.getObjectiveProgress(_q.id, tt.player.state);
                     const _nextObj = _objProg.find(_o => _o.current < _o.target);
                     if (_nextObj) {
                         const _progStr = _nextObj.target > 1 ? ` (${Math.min(_nextObj.current, _nextObj.target)}/${_nextObj.target})` : "";
-                        const _objTxt = this.add.text(_boxX - Math.round(6 * gt), _qY + Math.round(10 * gt), Z(_nextObj.objective.descriptionKey) + _progStr, {
-                            fontSize: `${Math.round(7 * gt)}px`,
+                        const _oTxt = this.add.text(0, -9999, Z(_nextObj.objective.descriptionKey) + _progStr, {
+                            fontSize: `${_objFontSz}px`,
                             color: "#88cc88",
-                            fontFamily: yt
-                        }).setOrigin(1, 0).setDepth(101).setScrollFactor(0);
-                        _objs.push(_objTxt);
+                            fontFamily: yt,
+                            wordWrap: { width: _innerW }
+                        }).setOrigin(0.5, 0).setDepth(101).setScrollFactor(0);
+                        _objObjs.push(_oTxt);
+                    } else {
+                        _objObjs.push(null);
                     }
+                }
+                // Compute total body height
+                const _entryGap = Math.round(4 * gt);
+                const _betweenEntries = Math.round(6 * gt);
+                let _bodyH = _pad;
+                const _entryHeights = [];
+                for (let _qi = 0; _qi < _maxShow; _qi++) {
+                    const _nh = _nameObjs[_qi].height;
+                    const _oh = _objObjs[_qi] ? _objObjs[_qi].height : 0;
+                    const _entryH = _nh + (_oh > 0 ? _entryGap + _oh : 0);
+                    _entryHeights.push(_entryH);
+                    _bodyH += _entryH + (_qi < _maxShow - 1 ? _betweenEntries : 0);
+                }
+                _bodyH += _pad;
+                const _bodyBg = this.add.rectangle(_boxCX, _boxY + _hdrH, _boxW, _bodyH, 0x0d0d2a, 0.85).setOrigin(0.5, 0).setDepth(100).setScrollFactor(0);
+                _objs.push(_bodyBg);
+                let _curY = _boxY + _hdrH + _pad;
+                for (let _qi = 0; _qi < _maxShow; _qi++) {
+                    const _qNameObj = _nameObjs[_qi];
+                    _qNameObj.setPosition(_boxCX, _curY);
+                    _objs.push(_qNameObj);
+                    _curY += _qNameObj.height + (_objObjs[_qi] ? _entryGap : 0);
+                    if (_objObjs[_qi]) {
+                        _objObjs[_qi].setPosition(_boxCX, _curY);
+                        _objs.push(_objObjs[_qi]);
+                        _curY += _objObjs[_qi].height;
+                    }
+                    _curY += _betweenEntries;
                 }
             }
             this._questTrackerObjs = _objs;
@@ -82295,7 +82336,7 @@ class Fp extends ti.Scene {
             fontSize: o,
             color: i,
             fontFamily: yt
-        }), (function() { const _poisoned = x.state.poisonedUntil && x.state.poisonedUntil > Date.now(); const _hpLabel = `${Z("menu.hp")} ${x.state.hp}/${x.totalMaxHp}` + (_poisoned ? ` [${Z("menu.poison")}]` : ""); this.add.text(Math.round(32 * St), T + Math.round(60 * St), _hpLabel, { fontSize: o, color: _poisoned ? "#cc55dd" : i, fontFamily: yt }); const _sRatio = Math.max(0, Math.min(1, x.totalMaxHp > 0 ? x.state.hp / x.totalMaxHp : 1)), _sBarW = Math.round(100 * St), _sBarH = Math.round(5 * St), _sBarX = Math.round(32 * St), _sBarY = T + Math.round(76 * St), _sColor = _sRatio <= 0.2 ? 0xCC2222 : _sRatio <= 0.5 ? 0xDDAA22 : 0x22CC44; this.add.rectangle(_sBarX, _sBarY, _sBarW, _sBarH, 0x1A1A2E).setOrigin(0, 0); this.add.rectangle(_sBarX, _sBarY, Math.max(0, Math.round(_sBarW * _sRatio)), _sBarH, _sColor).setOrigin(0, 0); }).call(this), this.add.text(Math.round(32 * St), T + Math.round(88 * St), `${Z("menu.atk")} ${x.totalAtk}`, {
+        }), (function() { const _poisoned = x.state.poisonedUntil && x.state.poisonedUntil > Date.now(); const _hpLabel = `${Z("menu.hp")} ${x.state.hp}/${x.totalMaxHp}`; this.add.text(Math.round(32 * St), T + Math.round(60 * St), _hpLabel, { fontSize: o, color: _poisoned ? "#cc55dd" : i, fontFamily: yt }); const _sRatio = Math.max(0, Math.min(1, x.totalMaxHp > 0 ? x.state.hp / x.totalMaxHp : 1)), _sBarW = Math.round(100 * St), _sBarH = Math.round(5 * St), _sBarX = Math.round(32 * St), _sBarY = T + Math.round(76 * St), _sColor = _sRatio <= 0.2 ? 0xCC2222 : _sRatio <= 0.5 ? 0xDDAA22 : 0x22CC44; this.add.rectangle(_sBarX, _sBarY, _sBarW, _sBarH, 0x1A1A2E).setOrigin(0, 0); this.add.rectangle(_sBarX, _sBarY, Math.max(0, Math.round(_sBarW * _sRatio)), _sBarH, _sColor).setOrigin(0, 0); }).call(this), this.add.text(Math.round(32 * St), T + Math.round(88 * St), `${Z("menu.atk")} ${x.totalAtk}`, {
             fontSize: o,
             color: i,
             fontFamily: yt
@@ -82449,9 +82490,16 @@ class Fp extends ti.Scene {
         // Separator
         const _sepY = T + Math.round(163 * St);
         this.add.line(0, _sepY, Math.round(32 * St), 0, Tt - Math.round(32 * St), 0, ht.MENU_BORDER, .3).setOrigin(0);
-        // Type tabs (Q/E)
+        // Fix #2: "Owned" header is the SECTION heading -- placed ABOVE the type tabs
+        const _ownedY = _sepY + Math.round(12 * St);
+        this.add.text(Math.round(32 * St), _ownedY, Z("equip.owned"), {
+            fontSize: `${Math.round(11*St)}px`,
+            color: ht.TEXT_YELLOW,
+            fontFamily: yt
+        });
+        // Type tabs (Q/E) -- sub-filter UNDER the Owned section heading
         const _ALL_TYPES = ["weapon", "armor", "shield", "helmet", "accessory"];
-        const _tabY = _sepY + Math.round(6 * St);
+        const _tabY = _ownedY + Math.round(20 * St);
         const _tabW = Math.round((Tt - Math.round(64 * St)) / _ALL_TYPES.length);
         _ALL_TYPES.forEach((tp, ti) => {
             const _isActive = tp === (this.equipTypeFilter || "weapon");
@@ -82463,20 +82511,15 @@ class Fp extends ti.Scene {
             });
             if (_isActive) this.add.line(0, _tabY + Math.round(12 * St), _tx, 0, _tx + _tabW - Math.round(4 * St), 0, 0xffff00, .5).setOrigin(0);
         });
-        // Owned header
-        const _ownedY = _tabY + Math.round(18 * St);
-        this.add.text(Math.round(32 * St), _ownedY, Z("equip.owned"), {
-            fontSize: `${Math.round(11*St)}px`,
-            color: ht.TEXT_YELLOW,
-            fontFamily: yt
-        });
-        // Filtered + sorted inventory list with scroll
-        const _PAGE = 8;
+        // Fix #4: list starts with enough gap below tabs for the ▲ arrow to sit cleanly
+        const _PAGE = 7;
         const C = this.getEquipInventoryItems();
         this.equipScrollOffset = Math.max(0, Math.min(this.equipScrollOffset || 0, Math.max(0, C.length - _PAGE)));
         const _offset = this.equipScrollOffset;
         const _visible = C.slice(_offset, _offset + _PAGE);
-        const _listY = _ownedY + Math.round(18 * St);
+        const _rowH = Math.round(20 * St);
+        // listY sits 28 units below _tabY -- the ▲ occupies the gap between [tab underline] and [first row]
+        const _listY = _tabY + Math.round(28 * St);
         if (C.length === 0) {
             this.add.text(Math.round(32 * St), _listY, "---", {
                 fontSize: `${Math.round(10*St)}px`,
@@ -82484,8 +82527,8 @@ class Fp extends ti.Scene {
                 fontFamily: yt
             });
         } else {
-            // Scroll up indicator
-            if (_offset > 0) this.add.text(Math.round(32 * St), _listY - Math.round(12 * St), "▲", {
+            // Fix #4: ▲ sits in the gap BELOW tab underline and ABOVE first row (no overlap)
+            if (_offset > 0) this.add.text(Math.round(32 * St), _listY - Math.round(14 * St), "▲", {
                 fontSize: `${Math.round(9*St)}px`,
                 color: ht.TEXT_GRAY,
                 fontFamily: yt
@@ -82494,71 +82537,53 @@ class Fp extends ti.Scene {
                 const _absIdx = fv + _offset;
                 const _itemData = ye[t.itemId],
                     _sel = this.equipMode === "inventory" && _absIdx === this.equipInventoryIndex,
+                    // Fix #3: inline delta per row -- compute vs currently equipped item of this slot type
+                    _slotType = _itemData.type,
+                    _curEqId = x.state.equipment[_slotType],
+                    _curEqData = _curEqId ? ye[_curEqId] : null,
                     _atkVal = _itemData.stats?.atk,
                     _defVal = _itemData.stats?.def,
-                    _statStr = ((_atkVal !== undefined ? `+${_atkVal}${Z("menu.atk")}` : "") + (_defVal !== undefined ? ` +${_defVal}${Z("menu.def")}` : "")).trim(),
+                    _statVal = _atkVal !== undefined ? _atkVal : (_defVal !== undefined ? _defVal : 0),
+                    _oldVal = _atkVal !== undefined ? (_curEqData?.stats?.atk ?? 0) : (_defVal !== undefined ? (_curEqData?.stats?.def ?? 0) : 0),
+                    _d = _statVal - _oldVal,
+                    _dCol = _d > 0 ? "#44cc44" : _d < 0 ? "#cc4444" : ht.TEXT_GRAY,
+                    _dStr = _d > 0 ? `+${_d}` : _d < 0 ? `${_d}` : "",
+                    _statStr = (_atkVal !== undefined ? `+${_atkVal}${Z("menu.atk")}` : "") + (_defVal !== undefined ? ` +${_defVal}${Z("menu.def")}` : ""),
                     _cur = _sel ? ">" : " ";
-                const _ry = _listY + fv * Math.round(22 * St);
+                const _ry = _listY + fv * _rowH;
+                // Cursor
                 this.add.text(Math.round(20 * St), _ry, _cur, {
                     fontSize: `${Math.round(10*St)}px`,
                     color: ht.TEXT_YELLOW,
                     fontFamily: yt
                 });
+                // Name column (left) -- truncated to leave room for delta and stat
                 this.add.text(Math.round(32 * St), _ry, Z(_itemData.nameKey), {
                     fontSize: `${Math.round(10*St)}px`,
                     color: _sel ? ht.TEXT_YELLOW : ht.TEXT_WHITE,
                     fontFamily: yt,
-                    wordWrap: { width: Math.round(170 * St), useAdvancedWrap: false },
+                    wordWrap: { width: Math.round(140 * St), useAdvancedWrap: false },
                     maxLines: 1
                 });
-                this.add.text(Math.round(220 * St), _ry, _statStr, {
+                // Delta column (middle) -- colored +/- token between name and stat (keeps its color even when row selected)
+                if (_dStr) this.add.text(Math.round(188 * St), _ry, _dStr, {
+                    fontSize: `${Math.round(9*St)}px`,
+                    color: _dCol,
+                    fontFamily: yt
+                });
+                // Stat column (right) -- right-aligned
+                this.add.text(Math.round(250 * St), _ry, _statStr.trim(), {
                     fontSize: `${Math.round(9*St)}px`,
                     color: _sel ? ht.TEXT_YELLOW : ht.TEXT_GRAY,
                     fontFamily: yt
                 });
             });
-            // Scroll down indicator
-            if (_offset + _PAGE < C.length) this.add.text(Math.round(32 * St), _listY + _PAGE * Math.round(22 * St), "▼", {
+            // Fix #4: ▼ sits in its own gap BELOW last row and ABOVE the ESC footer (no overlap)
+            if (_offset + _PAGE < C.length) this.add.text(Math.round(32 * St), _listY + _PAGE * _rowH + Math.round(4 * St), "▼", {
                 fontSize: `${Math.round(9*St)}px`,
                 color: ht.TEXT_GRAY,
                 fontFamily: yt
             });
-        }
-        // Simplified stat delta for selected inventory item
-        if (this.equipMode === "inventory" && this.equipInventoryIndex < C.length) {
-            const _selItem = C[this.equipInventoryIndex],
-                _selData = ye[_selItem.itemId],
-                _slotType = _selData.type,
-                _curEqId = x.state.equipment[_slotType],
-                _curEqData = _curEqId ? ye[_curEqId] : null,
-                _deltaY = _listY + Math.min(_visible.length, _PAGE) * Math.round(22 * St) + Math.round(6 * St);
-            this.add.line(0, _deltaY - Math.round(4 * St), Math.round(32 * St), 0, Tt - Math.round(32 * St), 0, ht.MENU_BORDER, .2).setOrigin(0);
-            let _dxOff = 0;
-            if (_selData.stats?.atk !== undefined) {
-                const _old = _curEqData?.stats?.atk ?? 0,
-                    _new = _selData.stats.atk,
-                    _d = _new - _old,
-                    _col = _d > 0 ? "#44cc44" : _d < 0 ? "#cc4444" : ht.TEXT_GRAY,
-                    _sign = _d >= 0 ? "+" : "";
-                this.add.text(Math.round(32 * St) + _dxOff, _deltaY, `${Z("menu.atk")} ${_sign}${_d}`, {
-                    fontSize: `${Math.round(10*St)}px`,
-                    color: _col,
-                    fontFamily: yt
-                });
-                _dxOff += Math.round(90 * St);
-            }
-            if (_selData.stats?.def !== undefined) {
-                const _old = _curEqData?.stats?.def ?? 0,
-                    _new = _selData.stats.def,
-                    _d = _new - _old,
-                    _col = _d > 0 ? "#44cc44" : _d < 0 ? "#cc4444" : ht.TEXT_GRAY,
-                    _sign = _d >= 0 ? "+" : "";
-                this.add.text(Math.round(32 * St) + _dxOff, _deltaY, `${Z("menu.def")} ${_sign}${_d}`, {
-                    fontSize: `${Math.round(10*St)}px`,
-                    color: _col,
-                    fontFamily: yt
-                });
-            }
         }
     }
     drawQuests() {
@@ -82766,7 +82791,7 @@ class Fp extends ti.Scene {
         const _SLOTS = ["weapon", "armor", "shield", "helmet", "accessory"];
         const _maxSlot = _SLOTS.length - 1;
         const x = this.getEquipInventoryItems();
-        const _PAGE = 8;
+        const _PAGE = 7;
         if (this.equipMode === "equipped") {
             if (this.equipSlotIndex === _maxSlot) {
                 if (x.length > 0) { this.equipMode = "inventory"; this.equipInventoryIndex = 0; this.equipScrollOffset = 0; }
@@ -82792,7 +82817,7 @@ class Fp extends ti.Scene {
             tt.player.equip(T.itemId), Jt.playSfx("equip");
             const i = this.getEquipInventoryItems();
             this.equipInventoryIndex >= i.length && (i.length === 0 ? (this.equipMode = "equipped", this.equipSlotIndex = 0) : this.equipInventoryIndex = i.length - 1);
-            const _PAGE_EA = 8;
+            const _PAGE_EA = 7;
             this.equipScrollOffset = Math.max(0, Math.min(this.equipScrollOffset, Math.max(0, i.length - _PAGE_EA)));
         }
         this.drawMenu();
@@ -83052,14 +83077,21 @@ class Ip extends ti.Scene {
                     fontFamily: yt
                 }), u.stats) {
                 const C = Object.entries(u.stats).map(([t, f]) => `+${f}${t.toUpperCase()}`).join(" ");
-                this.add.text(Tt - Math.round(16 * he), Math.round(64 * he) + o * Math.round(28 * he), C, {
-                    fontSize: `${Math.round(9*he)}px`,
-                    color: ht.TEXT_GRAY,
-                    fontFamily: yt
-                }).setOrigin(1, 0)
+                const _statX = Tt - Math.round(16 * he);
+                const _statY = Math.round(64 * he) + o * Math.round(28 * he);
+                if (_isEquip && _owned > 0) {
+                    const _ownedLabel = Z("equip.owned");
+                    const _statText = this.add.text(_statX, _statY, C, { fontSize: `${Math.round(9*he)}px`, color: ht.TEXT_GRAY, fontFamily: yt }).setOrigin(1, 0);
+                    this.add.text(_statX - _statText.width - Math.round(6 * he), _statY, _ownedLabel, { fontSize: `${Math.round(8*he)}px`, color: ht.TEXT_GRAY, fontFamily: yt }).setOrigin(1, 0);
+                } else {
+                    this.add.text(_statX, _statY, C, { fontSize: `${Math.round(9*he)}px`, color: ht.TEXT_GRAY, fontFamily: yt }).setOrigin(1, 0);
+                }
+            } else if (_isEquip && _owned > 0 && !u.stats) {
+                const _ownedLabel = Z("equip.owned");
+                this.add.text(Tt - Math.round(16 * he), Math.round(64 * he) + o * Math.round(28 * he), _ownedLabel, { fontSize: `${Math.round(8*he)}px`, color: ht.TEXT_GRAY, fontFamily: yt }).setOrigin(1, 0);
             }
-            if (_owned > 0) {
-                const _ownedLabel = _isEquip ? Z("equip.owned") : `x${_owned}`;
+            if (_owned > 0 && !_isEquip) {
+                const _ownedLabel = `x${_owned}`;
                 this.add.text(Tt - Math.round(16 * he), Math.round(64 * he) + o * Math.round(28 * he) + Math.round(14 * he), _ownedLabel, {
                     fontSize: `${Math.round(8*he)}px`,
                     color: ht.TEXT_GRAY,
