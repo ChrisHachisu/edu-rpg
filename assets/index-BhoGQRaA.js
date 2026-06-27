@@ -78544,7 +78544,7 @@ const Xt = {
                         }
                     } else {
                         const l = this.currentFloor === 1;
-                        Jt.playSfx("menu_cancel"), this.forestFade(() => {
+                        Jt.playSfx("menu_cancel"), this.forestLostTransition(() => {
                             this.heroTileX = l ? Math.floor(S / 2) : 1, this.heroTileY = l ? h - 2 : Math.floor(h / 2), this.hero.x = this.heroTileX * xt + xt / 2, this.hero.y = this.heroTileY * xt + xt / 2, this.updatePosition(), this.updateCamera(), this.fogEnabled && this.updateFogVisibility(), this.showMessage(Z("dungeon.hauntedForest.lost"))
                         })
                     }
@@ -78849,6 +78849,35 @@ const Xt = {
                         alpha: 0,
                         duration: 250,
                         delay: 60,
+                        onComplete: () => {
+                            u && u.scene && u.destroy(), this.isMoving = !1
+                        }
+                    })
+                }
+            })
+        }
+        forestLostTransition(cb) {
+            const o = this.cameras.main;
+            this.isMoving = !0;
+            o.shake(900, .012);
+            const u = this.add.rectangle(o.width / 2, o.height / 2, o.width + 400, o.height + 400, 989711, 1).setDepth(999).setScrollFactor(0, 0).setOrigin(.5, .5).setAlpha(0);
+            this.tweens.add({
+                targets: u,
+                alpha: 1,
+                duration: 750,
+                ease: "Sine.easeIn",
+                onComplete: () => {
+                    try {
+                        cb()
+                    } catch (m) {
+                        console.error("[forestLost]", m)
+                    }
+                    this.tweens.add({
+                        targets: u,
+                        alpha: 0,
+                        duration: 750,
+                        delay: 200,
+                        ease: "Sine.easeOut",
                         onComplete: () => {
                             u && u.scene && u.destroy(), this.isMoving = !1
                         }
