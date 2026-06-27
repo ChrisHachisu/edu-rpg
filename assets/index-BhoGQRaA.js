@@ -78505,7 +78505,7 @@ const Xt = {
                     }
                 }).setDepth(200).setScrollFactor(0)
             }
-            if (this.isMoving || this.showingMessage || this.itemOverlayOpen || this.healerOverlayOpen || this.warpOverlayOpen || this.midCrystalOverlayOpen || this.questOverlayOpen) return;
+            if (this.isMoving || this.tweens.isTweening(this.hero) || this.showingMessage || this.itemOverlayOpen || this.healerOverlayOpen || this.warpOverlayOpen || this.midCrystalOverlayOpen || this.questOverlayOpen) return;
             let x = 0,
                 T = 0,
                 i = 0;
@@ -79767,7 +79767,7 @@ const Xt = {
             }
         }
         showMessage(x, T) {
-            this.showingMessage = !0;
+            this.showingMessage = !0, this.msgShownAt = Date.now();
             const i = Tt - Math.round(16 * gt),
                 o = Math.round(12 * gt),
                 u = Math.round(10 * gt),
@@ -79801,6 +79801,7 @@ const Xt = {
             this.dialogQueue = x.slice(1), this.dialogCallback = T, this.dialogSpeaker = i, this.showMessage(x[0], i)
         }
         advanceDialog() {
+            if (Date.now() - (this.msgShownAt || 0) < 300) return;
             if (this.hideMessage(), this.dialogQueue.length > 0) {
                 const x = this.dialogQueue.shift();
                 this.showMessage(x, this.dialogSpeaker)
