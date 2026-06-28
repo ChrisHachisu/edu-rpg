@@ -55165,8 +55165,8 @@ function Ho(n) {
         i.fillStyle(6710886, .3), i.fillRect(13, 1, 1, 5), i.fillRect(10, 9, 1, 5), i.fillRect(13, 17, 1, 5)
     }), Mt(n, "dng-18", 4473924, 3815994, void 0, i => {
         i.fillStyle(3355443), i.fillRect(0, 0, 24, 24), i.fillStyle(2763306), i.fillRect(0, 0, 24, 1), i.fillRect(0, 23, 24, 1), i.fillRect(0, 0, 1, 24), i.fillRect(23, 0, 1, 24), i.fillStyle(9076075), i.fillRect(2, 2, 20, 20), i.fillStyle(10391680), i.fillRect(2, 2, 20, 2), i.fillRect(2, 2, 2, 20), i.fillStyle(7037008), i.fillRect(2, 20, 20, 2), i.fillRect(20, 2, 2, 20), i.fillStyle(8023644), i.fillRect(4, 4, 16, 16), i.fillStyle(6181960), i.fillRect(4, 4, 16, 1), i.fillRect(4, 19, 16, 1), i.fillRect(4, 4, 1, 16), i.fillRect(19, 4, 1, 16), i.fillStyle(5590336), i.fillRect(6, 7, 12, 1), i.fillRect(6, 9, 12, 1), i.fillRect(6, 11, 10, 1), i.fillRect(6, 13, 12, 1), i.fillRect(6, 15, 8, 1), i.fillRect(6, 17, 11, 1), i.fillStyle(10522752), i.fillRect(4, 4, 3, 3), i.fillRect(17, 4, 3, 3), i.fillRect(4, 17, 3, 3), i.fillRect(17, 17, 3, 3), i.fillStyle(7037008), i.fillRect(5, 5, 1, 1), i.fillRect(18, 5, 1, 1), i.fillRect(5, 18, 1, 1), i.fillRect(18, 18, 1, 1)
-    }), Mt(n, "dng-19", 4473924, 3815994, void 0, i => {
-        i.fillStyle(3815994), i.fillRect(0, 0, 24, 24), i.fillStyle(5920080), i.fillRect(2, 4, 20, 16), i.fillRect(4, 2, 16, 20), i.fillRect(3, 3, 18, 18), i.fillStyle(6972768), i.fillRect(5, 5, 8, 3), i.fillRect(13, 10, 6, 4), i.fillRect(4, 15, 5, 3), i.fillStyle(7696488), i.fillRect(6, 3, 10, 1), i.fillRect(5, 4, 12, 1), i.fillStyle(4736064, .8), i.fillRect(8, 7, 1, 4), i.fillRect(9, 10, 3, 1), i.fillRect(15, 5, 1, 3), i.fillRect(6, 14, 4, 1), i.fillRect(14, 15, 1, 3), i.fillStyle(3814704), i.fillRect(3, 19, 18, 2), i.fillRect(4, 20, 16, 1), i.fillStyle(7838122, .2), i.fillRect(1, 6, 2, 1), i.fillRect(21, 9, 2, 1), i.fillRect(1, 14, 2, 1), i.fillRect(21, 17, 2, 1), i.fillStyle(8952234, .15), i.fillRect(0, 8, 1, 2), i.fillRect(23, 12, 1, 2)
+    }), Mt(n, "dng-19", 2772053, 2178375, void 0, i => {
+        i.fillStyle(2772053), i.fillRect(0, 0, 24, 24), i.fillStyle(2178375, .55), i.fillRect(0, 3, 24, 3), i.fillRect(0, 11, 24, 3), i.fillRect(0, 19, 24, 3), i.fillStyle(3633239, .45), i.fillRect(0, 7, 24, 2), i.fillRect(0, 15, 24, 2), i.fillStyle(0xCDF6FF, .85), i.fillRect(4, 4, 11, 1), i.fillRect(9, 12, 12, 1), i.fillRect(2, 20, 10, 1), i.fillStyle(0x9FE8FF, .8), i.fillRect(2, 5, 16, 1), i.fillRect(6, 8, 13, 1), i.fillRect(3, 13, 15, 1), i.fillRect(8, 16, 13, 1), i.fillRect(13, 21, 9, 1), i.fillStyle(0x9FE8FF, .55), i.fillRect(15, 4, 6, 1), i.fillRect(1, 9, 8, 1), i.fillRect(19, 13, 4, 1), i.fillRect(1, 17, 6, 1), i.fillStyle(0xE6FBFF, .9), i.fillRect(17, 5, 2, 1), i.fillRect(4, 8, 2, 1), i.fillRect(16, 8, 1, 1), i.fillRect(11, 13, 2, 1), i.fillRect(20, 16, 2, 1), i.fillStyle(0xCDF6FF, .8), i.fillRect(19, 6, 1, 1), i.fillRect(20, 7, 1, 1), i.fillRect(20, 8, 2, 1), i.fillRect(21, 9, 1, 1), i.fillRect(7, 14, 1, 1), i.fillRect(8, 15, 1, 1), i.fillRect(8, 16, 2, 1), i.fillRect(9, 17, 1, 1), i.fillStyle(0x9FE8FF, .4), i.fillRect(0, 0, 24, 1), i.fillRect(0, 23, 24, 1), i.fillStyle(0xE6FBFF, .5), i.fillRect(0, 1, 1, 22), i.fillRect(23, 1, 1, 22)
     }), Mt(n, "dng-20", 4473924, 3815994, void 0, i => {
         i.fillStyle(3355443), i.fillRect(0, 0, 24, 24), i.fillStyle(2763306), i.fillRect(0, 16, 24, 8), i.fillStyle(4495820), i.fillRect(4, 4, 4, 14), i.fillRect(10, 2, 5, 16), i.fillRect(17, 6, 4, 12), i.fillStyle(6732782), i.fillRect(5, 5, 2, 10), i.fillRect(11, 3, 3, 12), i.fillRect(18, 7, 2, 8), i.fillStyle(11197951), i.fillRect(6, 4, 1, 3), i.fillRect(12, 2, 1, 4), i.fillRect(19, 6, 1, 3), i.fillStyle(6732782, .15), i.fillRect(2, 2, 20, 20), i.fillStyle(13430527, .8), i.fillRect(7, 6, 1, 1), i.fillRect(14, 4, 1, 1), i.fillRect(20, 9, 1, 1)
     }), Mt(n, "dng-21", 4473924, 3815994, void 0, i => {
@@ -55326,6 +55326,44 @@ function Ho(n) {
         T(i)
     }), Mt(n, "tomb-24", 13148256, 12095568, void 0, i => {
         i.fillStyle(8017960), i.fillRect(11, 10, 2, 12), i.fillStyle(14518306), i.fillRect(10, 4, 4, 6), i.fillRect(11, 2, 2, 3), i.fillStyle(16763972), i.fillRect(11, 5, 2, 3)
+    }), Mt(n, "tomb-33", 13674396, 12490137, void 0, i => {
+        // Glyph floor tile: ANKH (sandstone slab, carved groove border, gold ankh)
+        i.fillStyle(13674396), i.fillRect(0, 0, 24, 24);
+        i.fillStyle(11894640), i.fillRect(0, 0, 24, 1), i.fillRect(0, 0, 1, 24);
+        i.fillStyle(14926149, .5), i.fillRect(23, 1, 1, 23), i.fillRect(1, 23, 22, 1);
+        i.fillStyle(11707959), i.fillRect(3, 3, 18, 18);
+        i.fillStyle(13674396), i.fillRect(4, 4, 16, 16);
+        // ankh: loop + cross, gold
+        i.fillStyle(0xC9921E), i.fillRect(11, 9, 2, 9), i.fillRect(8, 12, 8, 2), i.fillRect(10, 6, 4, 1), i.fillRect(9, 7, 1, 2), i.fillRect(14, 7, 1, 2), i.fillRect(10, 9, 4, 1);
+        i.fillStyle(0xE8B43C), i.fillRect(11, 10, 1, 7), i.fillRect(9, 12, 6, 1);
+        i.fillStyle(0x8A5E12, .5), i.fillRect(12, 10, 1, 7)
+    }), Mt(n, "tomb-34", 13674396, 12490137, void 0, i => {
+        // Glyph floor tile: EYE OF HORUS (teal)
+        i.fillStyle(13674396), i.fillRect(0, 0, 24, 24), i.fillStyle(11894640), i.fillRect(0, 0, 24, 1), i.fillRect(0, 0, 1, 24);
+        i.fillStyle(14926149, .5), i.fillRect(23, 1, 1, 23), i.fillRect(1, 23, 22, 1);
+        i.fillStyle(11707959), i.fillRect(3, 3, 18, 18), i.fillStyle(13674396), i.fillRect(4, 4, 16, 16);
+        i.fillStyle(0x167F86), i.fillRect(6, 11, 12, 2), i.fillRect(8, 9, 8, 1), i.fillRect(8, 13, 8, 1), i.fillRect(15, 7, 2, 2);
+        i.fillStyle(0x22A6AE), i.fillRect(10, 10, 4, 3);
+        i.fillStyle(0xEFE6C8), i.fillRect(11, 11, 2, 1);
+        i.fillStyle(0x167F86), i.fillRect(7, 14, 2, 3), i.fillRect(9, 15, 3, 2);
+        i.fillStyle(0x0E5E63, .5), i.fillRect(6, 13, 12, 1)
+    }), Mt(n, "tomb-35", 13674396, 12490137, void 0, i => {
+        // Glyph floor tile: FALCON / BIRD (rust)
+        i.fillStyle(13674396), i.fillRect(0, 0, 24, 24), i.fillStyle(11894640), i.fillRect(0, 0, 24, 1), i.fillRect(0, 0, 1, 24);
+        i.fillStyle(14926149, .5), i.fillRect(23, 1, 1, 23), i.fillRect(1, 23, 22, 1);
+        i.fillStyle(11707959), i.fillRect(3, 3, 18, 18), i.fillStyle(13674396), i.fillRect(4, 4, 16, 16);
+        i.fillStyle(0xA0481E), i.fillRect(8, 7, 5, 3), i.fillRect(12, 8, 4, 2), i.fillRect(7, 9, 9, 2), i.fillRect(9, 11, 6, 4), i.fillRect(10, 15, 4, 2);
+        i.fillStyle(0xC25A28), i.fillRect(9, 8, 3, 2), i.fillRect(10, 11, 3, 3);
+        i.fillStyle(0x000000), i.fillRect(9, 8, 1, 1);
+        i.fillStyle(0x7A3414, .5), i.fillRect(8, 14, 8, 1)
+    }), Mt(n, "tomb-36", 13674396, 12490137, void 0, i => {
+        // Glyph floor tile: WATER / WAVE (blue zigzag)
+        i.fillStyle(13674396), i.fillRect(0, 0, 24, 24), i.fillStyle(11894640), i.fillRect(0, 0, 24, 1), i.fillRect(0, 0, 1, 24);
+        i.fillStyle(14926149, .5), i.fillRect(23, 1, 1, 23), i.fillRect(1, 23, 22, 1);
+        i.fillStyle(11707959), i.fillRect(3, 3, 18, 18), i.fillStyle(13674396), i.fillRect(4, 4, 16, 16);
+        i.fillStyle(0x1E5AA0), i.fillRect(5, 8, 3, 2), i.fillRect(8, 6, 3, 2), i.fillRect(11, 8, 3, 2), i.fillRect(14, 6, 3, 2), i.fillRect(5, 13, 3, 2), i.fillRect(8, 11, 3, 2), i.fillRect(11, 13, 3, 2), i.fillRect(14, 11, 3, 2);
+        i.fillStyle(0x3578C8), i.fillRect(6, 9, 2, 1), i.fillRect(9, 7, 2, 1), i.fillRect(12, 9, 2, 1), i.fillRect(15, 7, 2, 1);
+        i.fillStyle(0x123E70, .5), i.fillRect(5, 16, 12, 1)
     });
     for (const i of [2, 3, 5, 6, 7, 9, 10, 11, 12, 14, 15, 16, 17, 18, 19, 20, 23, 25, 26, 27, 28]) {
         const o = `dng-${i}`,
@@ -55416,7 +55454,7 @@ function ko(n) {
     _blg2.destroy();
 }
 
-const Ko = ["monster-slime", "monster-bug", "monster-rabbit", "monster-wolf", "monster-mushroom", "monster-bandit", "monster-bat", "monster-spider", "monster-crab", "monster-golem", "monster-giantToad", "monster-serpent", "monster-jellyfish", "monster-piranha", "monster-merfolk", "monster-harpy", "monster-wyvern", "monster-kraken", "monster-dragon", "monster-blizzardBear", "monster-iceSprite", "monster-darkSorcerer", "monster-lizard", "monster-knight", "monster-skeleton", "monster-wraith", "monster-fireElemental", "monster-chimera", "monster-demon", "monster-shadow", "monster-shadowWisp", "monster-lich", "monster-flameTitan", "monster-banditLord", "monster-seaStar", "monster-mummy", "monster-stormRaptor", "monster-templeGuard", "monster-ancientSphinx", "monster-stormSentinel", "monster-frostMonarch", "monster-swordWraith", "monster-celestialGuardian", "monster-demonKing", "monster-magmaSlime", "monster-frostWolf", "monster-frostStalker", "monster-flameBat", "monster-sandGolem", "monster-lavaGolem", "monster-glacialGolem", "monster-frozenSkeleton", "monster-sandWraith", "monster-cloudWraith", "monster-voidShade", "monster-iceWyrm", "monster-lavaWyrm", "monster-darkKnight", "monster-stormHarpy", "monster-giantCrab", "monster-banditArcher", "monster-mimic", "monster-mosswarden", "monster-coralTitan", "monster-oreColossus", "monster-phantomStag", "monster-sandSerpentQueen", "monster-ashenGuardian", "monster-magmaBeetleKing", "monster-crystalHydra", "monster-warGeneralMalachar", "monster-nullDevourer"];
+const Ko = ["monster-slime", "monster-bug", "monster-rabbit", "monster-wolf", "monster-mushroom", "monster-bandit", "monster-bat", "monster-spider", "monster-crab", "monster-golem", "monster-giantToad", "monster-serpent", "monster-jellyfish", "monster-piranha", "monster-merfolk", "monster-harpy", "monster-wyvern", "monster-kraken", "monster-dragon", "monster-blizzardBear", "monster-iceSprite", "monster-darkSorcerer", "monster-lizard", "monster-knight", "monster-skeleton", "monster-wraith", "monster-fireElemental", "monster-chimera", "monster-demon", "monster-shadow", "monster-shadowWisp", "monster-lich", "monster-flameTitan", "monster-banditLord", "monster-seaStar", "monster-mummy", "monster-stormRaptor", "monster-templeGuard", "monster-ancientSphinx", "monster-stormSentinel", "monster-frostMonarch", "monster-swordWraith", "monster-celestialGuardian", "monster-demonKing", "monster-magmaSlime", "monster-frostWolf", "monster-frostStalker", "monster-flameBat", "monster-sandGolem", "monster-lavaGolem", "monster-glacialGolem", "monster-frozenSkeleton", "monster-sandWraith", "monster-cloudWraith", "monster-voidShade", "monster-iceWyrm", "monster-lavaWyrm", "monster-darkKnight", "monster-stormHarpy", "monster-giantCrab", "monster-banditArcher", "monster-mimic", "monster-mosswarden", "monster-coralTitan", "monster-oreColossus", "monster-phantomStag", "monster-sandSerpentQueen", "monster-ashenGuardian", "monster-magmaBeetleKing", "monster-crystalHydra", "monster-warGeneralMalachar", "monster-nullDevourer", "monster-bruiser", "monster-knifeSneak", "monster-thornvineLurker"];
 class $o extends ti.Scene {
     constructor() {
         super("BootScene")
@@ -55609,7 +55647,7 @@ const ui = {
         "npc.hauntedVillager.name": "Villager",
         "npc.oasisElder": "The Desert Tomb to the east holds an ancient guardian. Defeat it, and the way to the volcanic region will open!",
         "npc.refugee": "The Bandit Lord's hideout is rumored to be hidden far to the east, beyond the canyon walls. No roads lead there...",
-        "npc.archaeologist.greeting": "These ruins are full of secrets... I've been excavating here for months. The Scorched Ruins to the north seem promising.",
+        "npc.archaeologist.greeting": "These ruins are full of secrets... I've been excavating here for months. The Scorched Ruins to the west seem promising.",
         "npc.archaeologist.questOffer": "I need someone brave enough to explore the Scorched Ruins with me. Strange energy readings are coming from deep inside, it could be an ancient relic! Will you investigate?",
         "npc.archaeologist.questReminder": "The ancient relic awaits in the Scorched Ruins... please hurry back!",
         "npc.archaeologist.questComplete": "Incredible! This is beyond anything I've ever found. Take this as thanks. You've made history today.",
@@ -55759,6 +55797,9 @@ const ui = {
         "monster.wolf": "Shadow Wolf",
         "monster.mushroom": "Poison Shroom",
         "monster.bandit": "Bandit",
+        "monster.bruiser": "Bandit Bruiser",
+        "monster.knifeSneak": "Knife Sneak",
+        "monster.thornvineLurker": "Thornvine Lurker",
         "monster.bat": "Cave Bat",
         "monster.spider": "Cave Spider",
         "monster.crab": "Iron Crab",
@@ -56139,8 +56180,8 @@ const ui = {
         "item.windbreakerStone.desc": "A heavy stone that calms fierce winds.",
         "dungeon.windCalmed": "The winds calm... The path is clear.",
         "dungeon.windPushBack": "Strong winds block the path! You need a Windbreaker Stone to calm the storm.",
-        "overworld.canyonBlocked": "Howling winds seal the canyon. The Storm Nest may hold the answer.",
-        "overworld.canyonOpened": "The winds fall silent. The canyon path is open!",
+        "overworld.canyonBlocked": "Fierce winds block the path through the canyon. Only a Windbreaker Stone from the Storm Nest can calm them.",
+        "overworld.canyonOpened": "The Windbreaker Stone calms the gale. The winds die down and the canyon path opens!",
         "dungeon.nestLevel": "Nest Level {level}",
         "dungeon.windStoneFound": "Found a Windbreaker Stone!",
         "dungeon.stormNest.floorTransition": "You climb higher up the cliff... The wind howls louder.",
@@ -56166,11 +56207,14 @@ const ui = {
         "dungeon.shadowCave.plaque": "Beware the breathing dark... move when the light allows.",
         "dungeon.shadowCave.patrolCaught": "A shadow creature lunges from the darkness!",
         "dungeon.desertTomb.plaque": "The sand swallows the unwary... seek the stone islands.",
-        "dungeon.desertTomb.glyphs.rule.k2": "Step the plates from smallest to largest!",
-        "dungeon.desertTomb.glyphs.rule.34": "Step only the EVEN numbers, smallest to largest!",
-        "dungeon.desertTomb.glyphs.rule.56": "Step only the PRIME numbers, smallest to largest!",
-        "dungeon.desertTomb.glyphs.success": "The glyph seal shatters! The way forward is open.",
-        "dungeon.desertTomb.glyphs.wrong": "Wrong order! The sandstorm resets the trial...",
+        "dungeon.desertTomb.glyphs.sym.ankh": "Ankh",
+        "dungeon.desertTomb.glyphs.sym.eye": "Eye of Horus",
+        "dungeon.desertTomb.glyphs.sym.falcon": "Falcon",
+        "dungeon.desertTomb.glyphs.sym.water": "Water",
+        "dungeon.desertTomb.glyphs.signRule": "Trial of the Glyphs. Step only on the {glyph} glyph. Any other glyph wakes the sandstorm.",
+        "dungeon.desertTomb.glyphs.intro": "Hieroglyphs cover the floor ahead. The sign warns: tread only the {glyph} glyph.",
+        "dungeon.desertTomb.glyphs.success": "The glyph path holds! The way forward is open.",
+        "dungeon.desertTomb.glyphs.wrong": "A false glyph! The sandstorm sweeps you back...",
         "dungeon.banditHideout.plaque": "Honor among thieves is rare... watch your back.",
         "dungeon.magmaTunnels.plaque": "The lava flows in rhythm... patience reveals the path.",
         "dungeon.volcanicForge.plaque": "Fire tempers the worthy... turn back if your resolve wavers.",
@@ -56530,7 +56574,7 @@ const ui = {
         "npc.hauntedVillager.name": "むらびと",
         "npc.oasisElder": "ひがしの さばくのはかには いにしえの ばんにんが いる。たおせば かざんちたいへの みちが ひらけるぞ！",
         "npc.refugee": "さんぞくの おやぶんの アジトは はるか ひがしの がけのむこうに あるって うわさだよ。みちは ないけど…",
-        "npc.archaeologist.greeting": "このいせきには ひみつが いっぱい…もう なんかげつも ほっかいちゅうよ。きたの やけたいせきが きになるの。",
+        "npc.archaeologist.greeting": "このいせきには ひみつが いっぱい…もう なんかげつも ほっかいちゅうよ。にしの やけたいせきが きになるの。",
         "npc.archaeologist.questOffer": "やけたいせきを いっしょに たんけんして くれる ゆうかんな ひとが ほしいの。ふかいところから ふしぎな エネルギーが かんじられて…いにしえの いぶつかも。しらべてきてくれる？",
         "npc.archaeologist.questReminder": "いにしえの いぶつが やけたいせきで まっているわ…はやく もどってきてね！",
         "npc.archaeologist.questComplete": "すごい！こんなもの みたことないわ。これを うけとって。きみは れきしに のこることを したのよ。",
@@ -56680,6 +56724,9 @@ const ui = {
         "monster.wolf": "やみおおかみ",
         "monster.mushroom": "どくきのこ",
         "monster.bandit": "さんぞく",
+        "monster.bruiser": "ようじんぼう",
+        "monster.knifeSneak": "たんけんづかい",
+        "monster.thornvineLurker": "いばらのぬし",
         "monster.bat": "どうくつコウモリ",
         "monster.spider": "どうくつぐも",
         "monster.crab": "てつガニ",
@@ -57060,8 +57107,8 @@ const ui = {
         "item.windbreakerStone.desc": "つよい かぜを しずめる おもい いし。",
         "dungeon.windCalmed": "かぜが しずまった…みちが ひらけた。",
         "dungeon.windPushBack": "つよい かぜに さえぎられた！かぜよけのいしが ひつようだ。",
-        "overworld.canyonBlocked": "うなり かぜが たにみちを ふさいでいる。ストームネストに こたえが あるかも。",
-        "overworld.canyonOpened": "かぜが しずまった。たにみちが ひらけた！",
+        "overworld.canyonBlocked": "はげしい かぜが たにみちを ふさいでいる。ストームネストの かぜよけのいしが あれば しずめられそうだ。",
+        "overworld.canyonOpened": "かぜよけのいしが かぜを しずめた。かぜが やみ たにみちが ひらけた！",
         "dungeon.nestLevel": "すレベル {level}",
         "dungeon.windStoneFound": "かぜよけのいしを みつけた！",
         "dungeon.crystalPlaqueHint": "すいしょうを ふれる じゅんばん：{sequence}",
@@ -57087,11 +57134,14 @@ const ui = {
         "dungeon.shadowCave.plaque": "いきをする くらやみに きをつけろ… ひかりの あいだに すすめ。",
         "dungeon.shadowCave.patrolCaught": "かげの まものが やみから おそいかかった！",
         "dungeon.desertTomb.plaque": "すなは ゆだんした ものを のみこむ…いしの しまを さがせ。",
-        "dungeon.desertTomb.glyphs.rule.k2": "いちばん ちいさい ばんごうから おおきい じゅんに ふんで！",
-        "dungeon.desertTomb.glyphs.rule.34": "ぐうすうだけ、ちいさい じゅんに ふんで！",
-        "dungeon.desertTomb.glyphs.rule.56": "そすうだけ、ちいさい じゅんに ふんで！",
-        "dungeon.desertTomb.glyphs.success": "グリフの ふういんが くだけた！さきへの みちが ひらけた。",
-        "dungeon.desertTomb.glyphs.wrong": "ちがう！すなあらしが しれんを リセットした…",
+        "dungeon.desertTomb.glyphs.sym.ankh": "アンク",
+        "dungeon.desertTomb.glyphs.sym.eye": "ホルスのめ",
+        "dungeon.desertTomb.glyphs.sym.falcon": "ハヤブサ",
+        "dungeon.desertTomb.glyphs.sym.water": "みず",
+        "dungeon.desertTomb.glyphs.signRule": "グリフの しれん。{glyph}の グリフだけを ふめ。ほかの グリフを ふむと すなあらしが おこる。",
+        "dungeon.desertTomb.glyphs.intro": "ゆかいちめんに ヒエログリフ。かんばんに かいてある、{glyph}の グリフだけを ふめ。",
+        "dungeon.desertTomb.glyphs.success": "グリフの みちが つながった！さきへの みちが ひらけた。",
+        "dungeon.desertTomb.glyphs.wrong": "にせの グリフだ！すなあらしに おしもどされた…",
         "dungeon.banditHideout.plaque": "ぬすっとの なかまいしきは まれ…うしろに きをつけろ。",
         "dungeon.magmaTunnels.plaque": "ようがんは リズムで ながれる…まてば みちが ひらける。",
         "dungeon.volcanicForge.plaque": "ほのおが つよきものを きたえる…かくごが なければ もどれ。",
@@ -57451,7 +57501,7 @@ const ui = {
         "npc.hauntedVillager.name": "村人",
         "npc.oasisElder": "東の 砂漠の墓には 古の 番人が いる。倒せば 火山地帯への 道が 開けるぞ！",
         "npc.refugee": "山賊の 親分の アジトは はるか 東の 崖の向こうに あるって 噂だよ。道は ないけど…",
-        "npc.archaeologist.greeting": "この遺跡には 秘密が いっぱい…もう 何ヶ月も 発掘中よ。北の 焼けた遺跡が 気になるの。",
+        "npc.archaeologist.greeting": "この遺跡には 秘密が いっぱい…もう 何ヶ月も 発掘中よ。西の 焼けた遺跡が 気になるの。",
         "npc.archaeologist.questOffer": "焼けた遺跡を 一緒に 探検してくれる 勇敢な 人が 欲しいの。深いところから 不思議な エネルギーが 感じられて…古の 遺物かも。調べてきてくれる？",
         "npc.archaeologist.questReminder": "古の 遺物が 焼けた遺跡で 待っているわ…早く 戻ってきてね！",
         "npc.archaeologist.questComplete": "すごい！こんなもの 見たことないわ。これを 受け取って。君は 歴史に 残ることを したのよ。",
@@ -57601,6 +57651,9 @@ const ui = {
         "monster.wolf": "闇狼",
         "monster.mushroom": "毒キノコ",
         "monster.bandit": "山賊",
+        "monster.bruiser": "用心棒",
+        "monster.knifeSneak": "短剣使い",
+        "monster.thornvineLurker": "茨の主",
         "monster.bat": "洞窟コウモリ",
         "monster.spider": "洞窟蜘蛛",
         "monster.crab": "鉄ガニ",
@@ -57977,8 +58030,8 @@ const ui = {
         "item.windbreakerStone.desc": "強い 風を 鎮める 重い 石。",
         "dungeon.windCalmed": "風が 静まった…道が 開けた。",
         "dungeon.windPushBack": "強い 風に 阻まれた！風除けの石が 必要だ。",
-        "overworld.canyonBlocked": "唸る 風が 谷道を 塞いでいる。嵐の巣に 答えが あるかも。",
-        "overworld.canyonOpened": "風が 静まった。谷道が 開けた！",
+        "overworld.canyonBlocked": "激しい 風が 谷道を 塞いでいる。嵐の巣の 風除けの石が あれば 鎮められそうだ。",
+        "overworld.canyonOpened": "風除けの石が 風を 鎮めた。風が やみ 谷道が 開けた！",
         "dungeon.nestLevel": "巣レベル {level}",
         "dungeon.windStoneFound": "風除けの石を 見つけた！",
         "dungeon.crystalPlaqueHint": "水晶を 触れる 順番：{sequence}",
@@ -58004,11 +58057,14 @@ const ui = {
         "dungeon.shadowCave.plaque": "息をする 暗闇に 気をつけろ… 光の 間に 進め。",
         "dungeon.shadowCave.patrolCaught": "影の 魔物が 闇から 襲いかかった！",
         "dungeon.desertTomb.plaque": "砂は 油断した 者を 飲み込む…石の 島を 探せ。",
-        "dungeon.desertTomb.glyphs.rule.k2": "一番 小さい 番号から 大きい 順に 踏め！",
-        "dungeon.desertTomb.glyphs.rule.34": "偶数だけ、小さい 順に 踏め！",
-        "dungeon.desertTomb.glyphs.rule.56": "素数だけ、小さい 順に 踏め！",
-        "dungeon.desertTomb.glyphs.success": "グリフの 封印が 砕けた！先への 道が 開けた。",
-        "dungeon.desertTomb.glyphs.wrong": "違う！砂嵐が 試練を リセットした…",
+        "dungeon.desertTomb.glyphs.sym.ankh": "アンク",
+        "dungeon.desertTomb.glyphs.sym.eye": "ホルスの目",
+        "dungeon.desertTomb.glyphs.sym.falcon": "ハヤブサ",
+        "dungeon.desertTomb.glyphs.sym.water": "水",
+        "dungeon.desertTomb.glyphs.signRule": "グリフの 試練。{glyph}の グリフだけを 踏め。他の グリフを 踏むと 砂嵐が 起こる。",
+        "dungeon.desertTomb.glyphs.intro": "床一面に ヒエログリフ。看板に 書いてある、{glyph}の グリフだけを 踏め。",
+        "dungeon.desertTomb.glyphs.success": "グリフの 道が 繋がった！先への 道が 開けた。",
+        "dungeon.desertTomb.glyphs.wrong": "偽の グリフだ！砂嵐に 押し戻された…",
         "dungeon.banditHideout.plaque": "盗賊の 仲間意識は 稀…後ろに 気をつけろ。",
         "dungeon.magmaTunnels.plaque": "溶岩は リズムで 流れる…待てば 道が 開ける。",
         "dungeon.volcanicForge.plaque": "炎が 強き者を 鍛える…覚悟が なければ 戻れ。",
@@ -59876,6 +59932,12 @@ const On = {
             }, {
                 monsterId: "wolf",
                 weight: 2
+            }, {
+                monsterId: "bruiser",
+                weight: 2
+            }, {
+                monsterId: "knifeSneak",
+                weight: 2
             }]
         },
         "magma-tunnels": {
@@ -60010,6 +60072,9 @@ const On = {
                 weight: 3
             }, {
                 monsterId: "wolf",
+                weight: 3
+            }, {
+                monsterId: "thornvineLurker",
                 weight: 3
             }]
         },
@@ -60248,6 +60313,37 @@ const On = {
             }],
             aiPattern: "aggressive",
             color: 7816226
+        },
+        bruiser: {
+            id: "bruiser",
+            nameKey: "monster.bruiser",
+            spriteKey: "monster-bruiser",
+            baseHp: 52,
+            baseAtk: 26,
+            baseDef: 14,
+            baseSpd: 7,
+            expReward: 30,
+            goldReward: 15,
+            drops: [],
+            aiPattern: "defensive",
+            color: 9132075
+        },
+        knifeSneak: {
+            id: "knifeSneak",
+            nameKey: "monster.knifeSneak",
+            spriteKey: "monster-knifeSneak",
+            baseHp: 32,
+            baseAtk: 27,
+            baseDef: 7,
+            baseSpd: 19,
+            expReward: 28,
+            goldReward: 14,
+            drops: [{
+                itemId: "smokeBomb",
+                chance: .2
+            }],
+            aiPattern: "aggressive",
+            color: 4926046
         },
         bat: {
             id: "bat",
@@ -60624,6 +60720,23 @@ const On = {
             drops: [],
             aiPattern: "aggressive",
             color: 7820697
+        },
+        thornvineLurker: {
+            id: "thornvineLurker",
+            nameKey: "monster.thornvineLurker",
+            spriteKey: "monster-thornvineLurker",
+            baseHp: 46,
+            baseAtk: 26,
+            baseDef: 13,
+            baseSpd: 8,
+            expReward: 32,
+            goldReward: 15,
+            drops: [{
+                itemId: "herb",
+                chance: .15
+            }],
+            aiPattern: "defensive",
+            color: 4881466
         },
         fireElemental: {
             id: "fireElemental",
@@ -73428,7 +73541,7 @@ function Ep(n, x) {
                 i[N][G] = 1
             }
     };
-    f([...ue(60, 340, 45, 350), ...ue(60, 340, 80, 310), ...ue(60, 340, 100, 320), ...ue(100, 320, 130, 290), ...ue(130, 290, 140, 350), ...ue(130, 290, 120, 260), ...ue(130, 290, 148, 295)]), f([...ue(172, 305, 200, 320), ...ue(200, 320, 185, 335), ...ue(200, 320, 280, 295), ...ue(200, 320, 222, 295)]), f([...ue(222, 295, 222, 275)]), f([...ue(222, 275, 222, 262), ...ue(222, 262, 200, 265), ...ue(222, 262, 238, 248), ...ue(242, 248, 252, 242), ...ue(252, 242, 260, 234)]), f([...ue(260, 198, 270, 120), ...ue(270, 120, 220, 150), ...ue(220, 150, 225, 160), ...ue(220, 150, 250, 140), ...ue(270, 120, 278, 93), ...ue(278, 93, 242, 93), ...ue(278, 93, 278, 82), ...ue(242, 81, 195, 80), ...ue(195, 80, 202, 48), ...ue(195, 80, 185, 48), ...ue(195, 80, 195, 110), ...ue(195, 110, 172, 110)]), f([...ue(148, 110, 100, 150), ...ue(100, 150, 70, 100), ...ue(70, 100, 80, 60), ...ue(70, 100, 120, 70), ...ue(70, 100, 85, 30)]);
+    f([...ue(60, 340, 45, 350), ...ue(60, 340, 80, 310), ...ue(60, 340, 100, 320), ...ue(100, 320, 130, 290), ...ue(130, 290, 140, 350), ...ue(130, 290, 120, 260), ...ue(130, 290, 148, 295)]), f([...ue(172, 305, 200, 320), ...ue(200, 320, 185, 335), ...ue(200, 320, 280, 295), ...ue(200, 320, 222, 295)]), f([...ue(222, 295, 222, 275)]), f([...ue(222, 275, 222, 262), ...ue(222, 262, 200, 265), ...ue(222, 262, 238, 248), ...ue(242, 248, 252, 242), ...ue(252, 242, 260, 234)]), f([...ue(260, 198, 270, 120), ...ue(270, 120, 220, 150), ...ue(220, 150, 225, 160), ...ue(220, 150, 250, 140), ...ue(270, 120, 278, 93), ...ue(278, 93, 242, 93), ...ue(242, 81, 195, 80), ...ue(195, 80, 202, 48), ...ue(195, 80, 185, 48), ...ue(195, 80, 195, 110), ...ue(195, 110, 172, 110)]), f([...ue(148, 110, 100, 150), ...ue(100, 150, 70, 100), ...ue(70, 100, 80, 60), ...ue(70, 100, 120, 70), ...ue(70, 100, 85, 30)]);
     const S = 22,
         h = 79,
         l = 22,
@@ -73537,7 +73650,7 @@ function Ep(n, x) {
         [260, 234],
         [225, 160],
         [298, 130],
-        [278, 82],
+        [208, 120],
         [202, 48],
         [242, 93],
         [242, 81],
@@ -73633,7 +73746,7 @@ function Ep(n, x) {
     i[198][260] = 7;
     for (let O = 105; O <= 115; O++)
         for (let G = 150; G <= 170; G++) O >= 2 && O < x - 2 && G >= 2 && G < n - 2 && i[O][G] !== 7 && i[O][G] !== 6 && i[O][G] !== 8 && (i[O][G] = 2);
-    i[110][172] = 7, i[110][148] = 7, i[111][172] = 1, i[109][172] = 1, i[111][148] = 1, i[109][148] = 1, i[82]?.[278] !== void 0 && (i[82][278] = 7, i[83]?.[278] !== void 0 && i[83][278] !== 7 && i[83][278] !== 6 && (i[83][278] = 1));
+    i[110][172] = 7, i[110][148] = 7, i[111][172] = 1, i[109][172] = 1, i[111][148] = 1, i[109][148] = 1, i[120]?.[208] !== void 0 && (i[120][208] = 7, i[121]?.[208] !== void 0 && i[121][208] !== 7 && i[121][208] !== 6 && (i[121][208] = 1));
     for (let k = 275; k <= 325; k++)
         for (let K = 84; K <= 100; K++) {
             if (k < 2 || k >= x - 2 || K < 2 || K >= n - 2) continue;
@@ -73655,8 +73768,13 @@ function Ep(n, x) {
     for (const [O, G] of w) G >= 0 && G < x && O >= 0 && O < n && (i[G][O] = 16);
     for (const [O, G] of p) G >= 0 && G < x && O >= 0 && O < n && (i[G][O] = 19);
     // M4 #33: Magma seal tiles (tile 21) — block Act-4 approaches until Magma Cloak obtained
-    // scorchedRuins corridor seal: x=278-279, y=86-88 (stamped after dungeon markers so they can overwrite path tiles)
-    for (let _sy = 86; _sy <= 88; _sy++) for (let _sx = 278; _sx <= 279; _sx++) { if (i[_sy]?.[_sx] !== void 0 && i[_sy][_sx] !== 7 && i[_sy][_sx] !== 6 && i[_sy][_sx] !== 8) i[_sy][_sx] = 21; }
+    // CORRECTION #6: Scorched Ruins relocated to the NW secluded pocket west of the camp's
+    // bank-south corner (marker now at 208,120). Its old tile-21 magma seal at x=278-279,y=86-88
+    // is REMOVED; that corridor is re-sealed with mountain (tile 4) to keep the lava band intact
+    // (no act-4 bypass), and a short westward foot-spur (tile 1) is carved off the camp road at
+    // y=120-121, x=209-219 so the new entrance is reachable BY FOOT with no flameCloak.
+    for (let _sy = 86; _sy <= 88; _sy++) for (let _sx = 278; _sx <= 279; _sx++) { if (i[_sy]?.[_sx] !== void 0 && i[_sy][_sx] !== 7 && i[_sy][_sx] !== 6 && i[_sy][_sx] !== 8) i[_sy][_sx] = 4; }
+    for (let _fy = 120; _fy <= 121; _fy++) for (let _fx = 209; _fx <= 219; _fx++) { if (i[_fy]?.[_fx] !== void 0 && i[_fy][_fx] !== 7 && i[_fy][_fx] !== 6 && i[_fy][_fx] !== 8) i[_fy][_fx] = 1; }
     // magmaTunnels corridor seal: x=245-247, y=93-94
     for (let _my = 93; _my <= 94; _my++) for (let _mx = 245; _mx <= 247; _mx++) { if (i[_my]?.[_mx] !== void 0 && i[_my][_mx] !== 7 && i[_my][_mx] !== 6 && i[_my][_mx] !== 8) i[_my][_mx] = 21; }
     const b = 200,
@@ -73745,14 +73863,11 @@ function Ep(n, x) {
                 dest: [220, 150]
             }, {
                 mapId: "scorchedRuins",
-                dest: [278, 82]
+                dest: [208, 120]
             }]
         }, {
             origin: [278, 93],
             paths: [{
-                mapId: "scorchedRuins",
-                dest: [278, 82]
-            }, {
                 mapId: "magmaTunnels",
                 dest: [242, 93]
             }]
@@ -73813,8 +73928,8 @@ function Ep(n, x) {
                 arrow: "↓"
             }],
             scorchedRuins: [{
-                nearHub: "270,120",
-                arrow: "↑"
+                nearHub: "220,120",
+                arrow: "←"
             }],
             volcanicForge: [{
                 nearHub: "195,80",
@@ -73936,7 +74051,7 @@ function Ep(n, x) {
         x: 272,
         y: 118,
         textKey: "sign.ruinsCamp",
-        branches: [{arrow: "\u2190", mapIds: ["oasisHaven"]}, {arrow: "\u2192", mapIds: ["scorchedRuins", "magmaTunnels"]}]
+        branches: [{arrow: "\u2190", mapIds: ["oasisHaven", "scorchedRuins"]}, {arrow: "\u2192", mapIds: ["magmaTunnels"]}]
     });
     for (let O = 0; O < x; O++)
         for (let G = 0; G < n; G++) i[O][G] === 5 && (i[O][G] = 1);
@@ -76690,8 +76805,8 @@ const Xt = {
                 toY: 1
             }, {
                 targetMap: "scorchedRuins",
-                fromX: 278,
-                fromY: 82,
+                fromX: 208,
+                fromY: 120,
                 toX: 50,
                 toY: 1
             }, {
@@ -77510,8 +77625,8 @@ const Xt = {
                 targetMap: "overworld",
                 fromX: 50,
                 fromY: 0,
-                toX: 278,
-                toY: 83
+                toX: 208,
+                toY: 121
             }],
             npcs: [],
             bossId: "ashenGuardian",
@@ -78132,7 +78247,7 @@ const Xt = {
             }, this.compassEnabled = !1, this.itemOverlayOpen = !1, this.itemOverlayItems = [], this.itemOverlayIndex = 0, this.itemOverlayTexts = [], this.warpOverlayOpen = !1, this.warpOverlayTexts = [], this.warpOverlayIndex = 0, this.warpFloors = [], this.fogEnabled = !1, this.fogRadius = 3, this.fogTorchBonus = 0, this.fogTorchCount = 0, this.lavaPhase = !1, this.lavaTimer = 0, this.mirrorRoomBounds = [], this.mirrorActive = !1, this.crystalPillars = [], this.crystalSequence = [], this.crystalActivated = [], this.crystalSequenceColors = [], this.crystalColors = [16720418, 2263295, 2293572, 16768256, 16729343], this.crystalColorNames = ["red", "blue", "green", "gold", "purple"], this.darknessPulseEnabled = !1, this.darknessPulsePhase = "light", this.darknessPulseTimer = 0, this.darknessPulsePatrols = [], this.windTowerEnabled = !1, this.windTowerPhase = "calm", this.windTowerTimer = 0, this.windTowerDir = {
                 dx: 0,
                 dy: -1
-            }, this.windTowerPushing = !1, this.mazeHunterEnabled = !1, this.mazeHunterBossTileX = 0, this.mazeHunterBossTileY = 0, this.mazeHunterChaseMode = !1, this.mazeHunterMoveTimer = 0, this.mazeHunterStepCount = 0, this.mazeHunterActive = !1, this.mazeHunterDefeated = !1, this.mazeHunterEntranceX = 0, this.mazeHunterEntranceY = 0, this.mazeHunterIsMoving = !1, this._pendingMazeHunterBattle = !1, this.shadowPortalEnabled = !1, this.portalPairs = [], this.portalCooldown = !1, this.mimicChestPositions = new Set, this.hiddenRoomChestPositions = new Set, this.pendingMimicReward = !1, this.poisonTickTimer = 0, this.tripwireGlowTimer = 0, this.lastPoisonTickWallTime = 0, this.midCrystalOverlayOpen = !1, this.midCrystalOverlayTexts = [], this.midCrystalOverlayIndex = 0, this.healerOverlayOpen = !1, this.healerOverlayTexts = [], this.healerOverlayIndex = 0, this.healerOverlayPrice = 0, this.questOverlayOpen = !1, this.questOverlayTexts = [], this.questOverlayIndex = 0, this.glyphPlates = [], this.glyphStepOrder = [], this.glyphTrialActive = !1, this.glyphDoorPos = null, this.glyphPlaqueObj = null
+            }, this.windTowerPushing = !1, this.mazeHunterEnabled = !1, this.mazeHunterBossTileX = 0, this.mazeHunterBossTileY = 0, this.mazeHunterChaseMode = !1, this.mazeHunterMoveTimer = 0, this.mazeHunterStepCount = 0, this.mazeHunterActive = !1, this.mazeHunterDefeated = !1, this.mazeHunterEntranceX = 0, this.mazeHunterEntranceY = 0, this.mazeHunterIsMoving = !1, this._pendingMazeHunterBattle = !1, this.shadowPortalEnabled = !1, this.portalPairs = [], this.portalCooldown = !1, this.mimicChestPositions = new Set, this.hiddenRoomChestPositions = new Set, this.pendingMimicReward = !1, this.poisonTickTimer = 0, this.tripwireGlowTimer = 0, this.lastPoisonTickWallTime = 0, this.midCrystalOverlayOpen = !1, this.midCrystalOverlayTexts = [], this.midCrystalOverlayIndex = 0, this.healerOverlayOpen = !1, this.healerOverlayTexts = [], this.healerOverlayIndex = 0, this.healerOverlayPrice = 0, this.questOverlayOpen = !1, this.questOverlayTexts = [], this.questOverlayIndex = 0, this.glyphPlates = [], this.glyphStepOrder = [], this.glyphTrialActive = !1, this.glyphDoorPos = null, this.glyphPlaqueObj = null, this.glyphCorridor = null, this.glyphSafeSym = -1, this._glyphEntered = !1, this._glyphSignSprite = null
         }
         create() {
             this.cameras.main.setZoom(pe), this.cameras.main.setScroll(-Tt * (pe - 1) / 2, -kt * (pe - 1) / 2), this.isMoving = !1, this.showingMessage = !1, this.npcSprites = [];
@@ -78195,13 +78310,15 @@ const Xt = {
                 }
             }
             if (this.glyphPlaqueObj) { this.glyphPlaqueObj.destroy(); this.glyphPlaqueObj = null; }
+            if (this._glyphSignSprite) { this._glyphSignSprite.destroy(); this._glyphSignSprite = null; }
+            this.glyphCorridor = null; this._glyphEntered = false;
         }
         loadMap(x) {
             this.cleanupGlyphTrial();
             this.hideMessage(), this.showingMessage = !1, this.dialogQueue = [], this.currentMapId = x;
             const T = Xt[x];
             if (tt.questManager.updateProgress(tt.player.state, "visit", x, 1), T.type === "town" && this.markTownVisited(x), x === "overworld") {
-                if (this.mapData = Ep(T.width, T.height), tt.player.state.storyFlags["boss.stormHarpy.defeated"])
+                if (this.mapData = Ep(T.width, T.height), tt.player.state.inventory.some(s => s.itemId === "windbreakerStone" && s.quantity > 0))
                     for (let o = 0; o < this.mapData.length; o++)
                         for (let u = 0; u < this.mapData[o].length; u++) this.mapData[o][u] === 13 && (this.mapData[o][u] = 1)
             } else if (T.type === "portal-overworld") {
@@ -78242,118 +78359,126 @@ const Xt = {
                     }
                 } else this.mimicChestPositions = new Set;
                 this.hiddenRoomChestPositions = new Set(S.hiddenRoomChests ?? []);
-                // Glyph Trial: inject AFTER generator, floor 3 of desertTomb, NO h() usage
+                // ===== Correction #44: Trial of the Glyphs — hieroglyph FLOOR-TILE corridor =====
+                // FULL REDO: a 5-wide corridor of hieroglyph floor tiles ON THE MAIN PATH, length
+                // expands per floor. Sign at the entrance states the safe glyph. Wrong glyph -> sandstorm
+                // + reshuffle. ALL changes post-generation (seed-safe; NO h() calls; Math.random only).
                 this.glyphPlates = [], this.glyphStepOrder = [], this.glyphTrialActive = !1, this.glyphDoorPos = null, this.glyphPlaqueObj = null;
-                if (x === "desertTomb" && this.currentFloor === 3) {
+                this.glyphCorridor = null; this.glyphSafeSym = -1;
+                if (x === "desertTomb") {
                     const _gMH = this.mapData.length, _gMW = this.mapData[0]?.length ?? 100;
-                    const _gEntX = Math.floor(_gMW / 2), _gEntY = 1;
-                    // P1-2: BFS from entrance to stairs/exit to find critical-path corridor tiles.
-                    // Determine door deterministically: scan entrance column downward for first
-                    // passable corridor tile that has walkable neighbours on both sides (N+S or E+W).
-                    // This is repeatable across loads since mapData is seeded deterministically.
-                    const _gBfsReach = (startX, startY, blockedX, blockedY) => {
-                        const _vis = new Uint8Array(_gMH * _gMW);
-                        const _q = [[startX, startY]];
-                        _vis[startY * _gMW + startX] = 1;
-                        while (_q.length > 0) {
-                            const [_cx, _cy] = _q.shift();
-                            for (const [_dx, _dy] of [[0,-1],[0,1],[-1,0],[1,0]]) {
-                                const _nx = _cx + _dx, _ny = _cy + _dy;
-                                if (_nx < 0 || _nx >= _gMW || _ny < 0 || _ny >= _gMH) continue;
-                                if (_vis[_ny * _gMW + _nx]) continue;
-                                if (blockedX !== undefined && _nx === blockedX && _ny === blockedY) continue;
-                                if (this.mapData[_ny][_nx] !== 0) continue;
-                                _vis[_ny * _gMW + _nx] = 1;
-                                _q.push([_nx, _ny]);
-                            }
-                        }
-                        return _vis;
-                    };
-                    // Find the stairs-down tile (9) position — that's the exit target
-                    let _gStairsX = -1, _gStairsY = -1;
-                    for (let _gy = 0; _gy < _gMH && _gStairsX < 0; _gy++) for (let _gx = 0; _gx < _gMW && _gStairsX < 0; _gx++) if (this.mapData[_gy][_gx] === 9) { _gStairsX = _gx; _gStairsY = _gy; }
-                    // P1-2: Pick door deterministically — scan corridor tiles the player MUST cross
-                    // (reachable from entrance, NOT reachable from exit without going through them).
-                    // Strategy: BFS from entrance; collect corridor tiles that are also the bottleneck
-                    // between entrance half and exit half. Simpler stable approach: scan from entrance
-                    // downward along the first corridor; pick the Nth passable tile at y ~ 1/3 of map.
-                    // Deterministic: no Math.random needed — just read mapData.
-                    let _gDoorX = -1, _gDoorY = -1;
-                    // Walk from spawn downward, find a passable tile that has floor neighbours on exactly the
-                    // north and south sides (a corridor). That tile becomes the gate.
-                    const _gTargetY = Math.floor(_gMH / 3);
-                    for (let _gsy = Math.max(2, _gTargetY - 10); _gsy <= Math.min(_gMH - 3, _gTargetY + 10) && _gDoorX < 0; _gsy++) {
-                        for (let _gsx = Math.max(1, _gEntX - 12); _gsx <= Math.min(_gMW - 2, _gEntX + 12) && _gDoorX < 0; _gsx++) {
-                            if (this.mapData[_gsy][_gsx] !== 0) continue;
-                            // Reachable from entrance without any blocker
-                            if (!_gBfsReach(_gEntX, _gEntY, -1, -1)[_gsy * _gMW + _gsx]) continue;
-                            // Has floor on both N+S or both E+W (proper corridor, not just a pocket)
-                            const _gN = _gsy > 0 && this.mapData[_gsy-1][_gsx] === 0;
-                            const _gS = _gsy < _gMH-1 && this.mapData[_gsy+1][_gsx] === 0;
-                            const _gW = _gsx > 0 && this.mapData[_gsy][_gsx-1] === 0;
-                            const _gE = _gsx < _gMW-1 && this.mapData[_gsy][_gsx+1] === 0;
-                            if ((_gN && _gS) || (_gW && _gE)) { _gDoorX = _gsx; _gDoorY = _gsy; }
+                    const _gEntX = Math.floor(_gMW / 2);
+                    const _GSAFE = 33; // base tile index of the 4 hieroglyph floor tiles (33..36)
+                    const _GLYPH_KINDS = 4;
+                    // Safe glyph SYMBOL rotates per floor so each floor's sign differs (deterministic, no rng)
+                    const _safeSym = (this.currentFloor - 1) % _GLYPH_KINDS; // 0=ankh,1=eye,2=falcon,3=water
+                    this.glyphSafeSym = _safeSym;
+                    // Corridor geometry: 5 wide (entrance column +/-2), length grows with floor.
+                    const _half = 2;                       // -> width = 5
+                    const _cy0 = 3;                        // first glyph row (spawn is at y=1, y=2 is approach)
+                    let _len = 6 + this.currentFloor * 3;  // F1=9 ... F5=21 rows
+                    _len = Math.min(_len, _gMH - _cy0 - 4); // leave room for the bottom stub
+                    _len = Math.max(_len, 4);
+                    const _cx0 = Math.max(1 + _half, Math.min(_gMW - 2 - _half, _gEntX)); // center col, clamped
+                    const _solvedFlag = `desertTomb.${this.currentFloor}.glyphs.solved`;
+                    const _alreadySolved = !!tt.player.state.storyFlags[_solvedFlag];
+                    // 1) Carve the corridor band to floor, channel it with side walls, connect top + bottom.
+                    const _gSpecial = new Set([4, 6, 7, 8, 9, 10, 11, 12]); // chests/stairs/boss/portals — never overwrite
+                    //    FORCED-PATH barrier: seal the rows ABOVE the band full-width (except the band-gap
+                    //    columns) so the ONLY way from the spawn area to the rest of the floor is THROUGH the
+                    //    corridor. Keeps the spawn tile + entrance + the band gap open.
+                    for (let _by = 1; _by < _cy0; _by++) {
+                        if (!this.mapData[_by]) continue;
+                        for (let _bx = 0; _bx < _gMW; _bx++) {
+                            if (_bx >= _cx0 - _half && _bx <= _cx0 + _half) { if (!_gSpecial.has(this.mapData[_by][_bx])) this.mapData[_by][_bx] = 0; continue; } // band gap stays open
+                            if (!_gSpecial.has(this.mapData[_by][_bx])) this.mapData[_by][_bx] = 1; // wall everything else
                         }
                     }
-                    // Fallback: scan wider if narrow band found nothing
-                    if (_gDoorX < 0) {
-                        for (let _gsy = 2; _gsy < _gMH - 3 && _gDoorX < 0; _gsy++) {
-                            for (let _gsx = 1; _gsx < _gMW - 1 && _gDoorX < 0; _gsx++) {
-                                if (this.mapData[_gsy][_gsx] !== 0) continue;
-                                if (!_gBfsReach(_gEntX, _gEntY, -1, -1)[_gsy * _gMW + _gsx]) continue;
-                                const _gN = _gsy > 0 && this.mapData[_gsy-1][_gsx] === 0;
-                                const _gS = _gsy < _gMH-1 && this.mapData[_gsy+1][_gsx] === 0;
-                                const _gW = _gsx > 0 && this.mapData[_gsy][_gsx-1] === 0;
-                                const _gE = _gsx < _gMW-1 && this.mapData[_gsy][_gsx+1] === 0;
-                                if ((_gN && _gS) || (_gW && _gE)) { _gDoorX = _gsx; _gDoorY = _gsy; }
+                    //    Top: clear the approach (band-width) from spawn row down to the band so the player walks in.
+                    for (let _ay = 1; _ay < _cy0; _ay++) for (let _ax = _cx0 - _half; _ax <= _cx0 + _half; _ax++) { if (this.mapData[_ay] && this.mapData[_ay][_ax] !== void 0 && !_gSpecial.has(this.mapData[_ay][_ax])) this.mapData[_ay][_ax] = 0; }
+                    //    Band: floor everything inside (preserve special tiles); wall the columns just outside.
+                    for (let _ry = _cy0; _ry < _cy0 + _len; _ry++) {
+                        if (!this.mapData[_ry]) continue;
+                        for (let _cx = _cx0 - _half; _cx <= _cx0 + _half; _cx++) if (_cx >= 0 && _cx < _gMW && !_gSpecial.has(this.mapData[_ry][_cx])) this.mapData[_ry][_cx] = 0;
+                        const _wl = _cx0 - _half - 1, _wr = _cx0 + _half + 1;
+                        if (_wl >= 0 && this.mapData[_ry][_wl] !== void 0 && !_gSpecial.has(this.mapData[_ry][_wl])) this.mapData[_ry][_wl] = 1;
+                        if (_wr < _gMW && this.mapData[_ry][_wr] !== void 0 && !_gSpecial.has(this.mapData[_ry][_wr])) this.mapData[_ry][_wr] = 1;
+                    }
+                    //    Bottom stub: from the band's bottom-center, carve down/around to the nearest existing
+                    //    floor tile so the stairs/boss stay reachable. BFS-free: drill straight down until we
+                    //    hit existing floor, carving as we go (bounded), then ensure a junction.
+                    const _stubY0 = _cy0 + _len;
+                    //    Exit row: carve the full band width at the row just below the band so the player can
+                    //    leave the corridor from ANY bottom column onto the stub (plain floor, NOT a glyph).
+                    if (this.mapData[_stubY0]) for (let _ex = _cx0 - _half; _ex <= _cx0 + _half; _ex++) { if (_ex >= 0 && _ex < _gMW && !_gSpecial.has(this.mapData[_stubY0][_ex])) this.mapData[_stubY0][_ex] = 0; }
+                    let _hitFloor = false;
+                    for (let _sy = _stubY0 + 1; _sy < _gMH - 1 && !_hitFloor; _sy++) {
+                        if (this.mapData[_sy] && this.mapData[_sy][_cx0] === 0) { _hitFloor = true; break; }
+                        if (this.mapData[_sy]) this.mapData[_sy][_cx0] = 0;
+                    }
+                    // Navigability guarantee: BFS from spawn over walkable tiles (glyph tiles 33..36 passable).
+                    // If the stairs/boss target is unreachable, carve a straight L-corridor band-bottom -> target.
+                    {
+                        const _isWalk = (v) => v !== void 0 && v !== 1 && v !== 5 && v !== 4 && v !== 18 && v !== 23 && v !== 28 && v !== 14;
+                        // find target tile: stairs-down (9), boss (7), or boss-portal (10/12)
+                        let _tgX = -1, _tgY = -1;
+                        for (let _yy = _gMH - 1; _yy >= 0 && _tgX < 0; _yy--) for (let _xx = 0; _xx < _gMW; _xx++) { const _v = this.mapData[_yy][_xx]; if (_v === 9 || _v === 7 || _v === 10 || _v === 12) { _tgX = _xx; _tgY = _yy; break; } }
+                        if (_tgX >= 0) {
+                            const _bfsW = (sx, sy) => {
+                                const _seen = new Uint8Array(_gMH * _gMW); const _qq = [[sx, sy]]; _seen[sy * _gMW + sx] = 1;
+                                while (_qq.length) { const [_cx, _cy] = _qq.shift(); for (const [_dx, _dy] of [[0,-1],[0,1],[-1,0],[1,0]]) { const _nx = _cx + _dx, _ny = _cy + _dy; if (_nx < 0 || _nx >= _gMW || _ny < 0 || _ny >= _gMH) continue; if (_seen[_ny * _gMW + _nx]) continue; if (!_isWalk(this.mapData[_ny][_nx])) continue; _seen[_ny * _gMW + _nx] = 1; _qq.push([_nx, _ny]); } }
+                                return _seen;
+                            };
+                            let _reach = _bfsW(_gEntX, 1);
+                            if (!_reach[_tgY * _gMW + _tgX]) {
+                                // carve L from band bottom-center to target (vertical then horizontal)
+                                const _bx = _cx0, _by = Math.min(_gMH - 2, _cy0 + _len);
+                                for (let _yy = Math.min(_by, _tgY); _yy <= Math.max(_by, _tgY); _yy++) if (this.mapData[_yy] && !_gSpecial.has(this.mapData[_yy][_bx])) this.mapData[_yy][_bx] = 0;
+                                for (let _xx = Math.min(_bx, _tgX); _xx <= Math.max(_bx, _tgX); _xx++) if (this.mapData[_tgY] && !_gSpecial.has(this.mapData[_tgY][_xx])) this.mapData[_tgY][_xx] = 0;
                             }
                         }
                     }
-                    // If already solved: open the door tile and skip trial
-                    if (tt.player.state.storyFlags["desertTomb.3.glyphs.solved"]) {
-                        if (_gDoorX >= 0) this.mapData[_gDoorY][_gDoorX] = 0;
-                        // glyphTrialActive stays false — trial is done
+                    // 2) Already solved -> render corridor as plain glyph floor (decor only), no trial.
+                    if (_alreadySolved) {
+                        for (let _ry = _cy0; _ry < _cy0 + _len; _ry++) for (let _cx = _cx0 - _half; _cx <= _cx0 + _half; _cx++) {
+                            // calm decor: all show the (now-safe) symbol; paint the floor tile.
+                            if (this.mapData[_ry] && this.mapData[_ry][_cx] === 0) this.mapData[_ry][_cx] = _GSAFE + _safeSym;
+                            this.glyphPlates.push({ x: _cx, y: _ry, sym: _safeSym, safe: true, solvedDecor: true, obj: null });
+                        }
+                        this.glyphTrialActive = false;
+                        this.glyphCorridor = { cx0: _cx0, cy0: _cy0, half: _half, len: _len };
                     } else {
-                        // Seal the door tile (wall=1) so we can BFS reachable tiles with door sealed
-                        if (_gDoorX >= 0) { this.mapData[_gDoorY][_gDoorX] = 1; this.glyphDoorPos = { x: _gDoorX, y: _gDoorY }; }
-                        // P1-3: BFS from entrance with door SEALED — only reachable tiles are valid plate spots
-                        const _gReachVis = _gBfsReach(_gEntX, _gEntY, _gDoorX, _gDoorY);
-                        const _gCands = [];
-                        for (let _gy = 4; _gy < _gMH - 4; _gy++) for (let _gx = 4; _gx < _gMW - 4; _gx++) {
-                            if (this.mapData[_gy][_gx] !== 0) continue;
-                            if (_gDoorX >= 0 && _gx === _gDoorX && _gy === _gDoorY) continue; // exclude door tile
-                            if (!_gReachVis[_gy * _gMW + _gx]) continue; // must be reachable from spawn
-                            _gCands.push([_gx, _gy]);
+                        // 3) Build a guaranteed 4-connected SAFE path top->bottom (self-avoiding walk).
+                        //    Columns are offsets 0.._span-1 within the band.
+                        const _span = _half * 2 + 1; // 5
+                        let _col = Math.floor(Math.random() * _span); // start col (offset)
+                        const _safeSet = new Set();   // keys "ox,row" (ox=offset 0.._span-1, row=0.._len-1)
+                        const _markSafe = (ox, row) => _safeSet.add(ox + "," + row);
+                        _markSafe(_col, 0);
+                        for (let _row = 1; _row < _len; _row++) {
+                            // choose next col within +/-1, clamped; mark the horizontal transition cells safe too
+                            let _step = Math.floor(Math.random() * 3) - 1; // -1,0,1
+                            let _next = Math.max(0, Math.min(_span - 1, _col + _step));
+                            // mark transition: same-row cells between _col and _next are safe (so 4-dir walk works)
+                            const _lo = Math.min(_col, _next), _hi = Math.max(_col, _next);
+                            for (let _o = _lo; _o <= _hi; _o++) _markSafe(_o, _row - 1); // widen prev row across the shift
+                            _markSafe(_next, _row);
+                            _col = _next;
                         }
-                        // Shuffle pool with Math.random only (NO h())
-                        for (let _gi = _gCands.length - 1; _gi > 0; _gi--) { const _gj = Math.floor(Math.random() * (_gi + 1)); [_gCands[_gi], _gCands[_gj]] = [_gCands[_gj], _gCands[_gi]]; }
-                        // Place 5 plates spaced >=5 tiles apart, all reachable
-                        const _gPos = [];
-                        for (const [_gpx, _gpy] of _gCands) {
-                            if (_gPos.some(([_ox, _oy]) => Math.abs(_gpx - _ox) + Math.abs(_gpy - _oy) < 5)) continue;
-                            _gPos.push([_gpx, _gpy]);
-                            if (_gPos.length >= 5) break;
+                        // 4) Assign each band cell a glyph: safe cells -> safe symbol; others -> a random NON-safe symbol.
+                        this.glyphCorridor = { cx0: _cx0, cy0: _cy0, half: _half, len: _len };
+                        for (let _row = 0; _row < _len; _row++) {
+                            for (let _o = 0; _o < _span; _o++) {
+                                const _gx = _cx0 - _half + _o, _gy = _cy0 + _row;
+                                const _isSafe = _safeSet.has(_o + "," + _row);
+                                let _sym;
+                                if (_isSafe) _sym = _safeSym;
+                                else { _sym = Math.floor(Math.random() * (_GLYPH_KINDS - 1)); if (_sym >= _safeSym) _sym++; } // any but safe
+                                if (this.mapData[_gy] && this.mapData[_gy][_gx] !== void 0) this.mapData[_gy][_gx] = _GSAFE + _sym;
+                                this.glyphPlates.push({ x: _gx, y: _gy, sym: _sym, safe: _isSafe, ox: _o, row: _row, obj: null });
+                            }
                         }
-                        // Generate grade-scaled numbers
-                        const _gGrade = tt.player.state.quizDifficulty;
-                        const _gNums = [];
-                        if (_gGrade === "k" || _gGrade === "1" || _gGrade === "2") {
-                            const _gBase = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15];
-                            for (let _gi = _gBase.length - 1; _gi > 0; _gi--) { const _gj = Math.floor(Math.random() * (_gi + 1)); [_gBase[_gi], _gBase[_gj]] = [_gBase[_gj], _gBase[_gi]]; }
-                            for (let _gi = 0; _gi < _gPos.length; _gi++) _gNums.push(_gBase[_gi]);
-                        } else if (_gGrade === "3" || _gGrade === "4") {
-                            const _gBase = [2,4,6,8,10,12,14,16,18,20];
-                            for (let _gi = _gBase.length - 1; _gi > 0; _gi--) { const _gj = Math.floor(Math.random() * (_gi + 1)); [_gBase[_gi], _gBase[_gj]] = [_gBase[_gj], _gBase[_gi]]; }
-                            for (let _gi = 0; _gi < _gPos.length; _gi++) _gNums.push(_gBase[_gi]);
-                        } else {
-                            const _gBase = [2,3,5,7,11,13,17,19,23,29];
-                            for (let _gi = _gBase.length - 1; _gi > 0; _gi--) { const _gj = Math.floor(Math.random() * (_gi + 1)); [_gBase[_gi], _gBase[_gj]] = [_gBase[_gj], _gBase[_gi]]; }
-                            for (let _gi = 0; _gi < _gPos.length; _gi++) _gNums.push(_gBase[_gi]);
-                        }
-                        for (let _gi = 0; _gi < _gPos.length; _gi++) this.glyphPlates.push({ x: _gPos[_gi][0], y: _gPos[_gi][1], value: _gNums[_gi], obj: null, txt: null });
-                        this.glyphTrialActive = _gPos.length >= 3;
-                        // Store reachability vis for reshuffleGlyphPlates to use
-                        this._glyphReachVis = _gReachVis;
+                        this.glyphTrialActive = true;
                         this._glyphReachW = _gMW;
                         this._glyphReachH = _gMH;
                     }
@@ -78922,8 +79047,8 @@ const Xt = {
                     return
                 }
                 if (h === 13 && (S.type === "overworld" || S.type === "portal-overworld")) {
-                    const _defeated = !!tt.player.state.storyFlags["boss.stormHarpy.defeated"];
-                    if (!_defeated) {
+                    const _hasStone = tt.player.state.inventory.some(s => s.itemId === "windbreakerStone" && s.quantity > 0);
+                    if (!_hasStone) {
                         const _cbl = this.heroTileX - x,
                             _cba = this.heroTileY - T;
                         if (_cbl >= 0 && _cbl < this.mapData[0].length && _cba >= 0 && _cba < this.mapData.length) {
@@ -79053,18 +79178,18 @@ const Xt = {
                 onComplete: () => {
                     this.hero.setFrame(i * 3), this.hero.x = Math.round(this.hero.x), this.hero.y = Math.round(this.hero.y), this.isMoving = !1, this.onStep(), this.updatePosition(), this.fogEnabled && this.updateFogVisibility(), this.handleTorchPickup(), this.handleIceSlide(x, T), this.handleQuicksandPull(), this.handleLavaDamage(), this.updateMirrorState();
                     const _cm = Xt[this.currentMapId];
-                    if (_cm.type === "overworld" && this.heroTileX >= 221 && this.heroTileX <= 222 && this.heroTileY >= 275 && this.heroTileY <= 298 && tt.player.state.storyFlags["boss.stormHarpy.defeated"] && !tt.player.state.storyFlags["canyon.shattered"]) {
-                        tt.player.state.storyFlags["canyon.shattered"] = !0;
+                    if (_cm.type === "overworld" && this.heroTileX >= 221 && this.heroTileX <= 222 && this.heroTileY >= 275 && this.heroTileY <= 298 && tt.player.state.inventory.some(s => s.itemId === "windbreakerStone" && s.quantity > 0) && !tt.player.state.storyFlags["canyon.windCleared"]) {
+                        tt.player.state.storyFlags["canyon.windCleared"] = !0;
                         const _csx = this.heroTileX * xt + xt / 2, _csy = this.heroTileY * xt + xt / 2;
-                        for (let _ci = 0; _ci < 10; _ci++) {
-                            const _ang = Math.random() * Math.PI * 2, _spd = 20 + Math.random() * 28, _sz = 3 + Math.random() * 7;
-                            const _px = _csx + (Math.random() - .5) * xt * .8, _py = _csy + (Math.random() - .5) * xt * .8;
-                            const _col = [0xaaaaaa, 0x888888, 0xcccccc, 0xbbbbdd][Math.floor(Math.random() * 4)];
-                            const _pr = this.add.rectangle(_px, _py, _sz, _sz, _col, 1).setDepth(96);
-                            this.tweens.add({ targets: _pr, x: _px + Math.cos(_ang) * _spd, y: _py + Math.sin(_ang) * _spd, alpha: 0, scaleX: .2, scaleY: .2, duration: 250 + Math.random() * 100, ease: "Power2", onComplete: () => _pr.destroy() })
+                        for (let _ci = 0; _ci < 14; _ci++) {
+                            const _spd = 34 + Math.random() * 40, _wlen = 6 + Math.random() * 10, _wth = 2 + Math.random() * 2;
+                            const _px = _csx + (Math.random() - .5) * xt * 2.2, _py = _csy + (Math.random() - .5) * xt * 2.2;
+                            const _col = [0x9FE8FF, 0xCDF6FF, 0xE6FBFF][Math.floor(Math.random() * 3)];
+                            const _pr = this.add.rectangle(_px, _py, _wlen, _wth, _col, 0.9).setOrigin(0, .5).setDepth(96);
+                            this.tweens.add({ targets: _pr, x: _px + _spd, alpha: 0, scaleX: 0.3, duration: 320 + Math.random() * 160, ease: "Sine.easeOut", onComplete: () => _pr.destroy() })
                         }
-                        const _flash = this.add.rectangle(_csx, _csy, xt * 2.5, xt * 2.5, 0xddddff, .55).setDepth(95);
-                        this.tweens.add({ targets: _flash, alpha: 0, scaleX: 1.8, scaleY: 1.8, duration: 380, ease: "Power2", onComplete: () => _flash.destroy() });
+                        const _flash = this.add.rectangle(_csx, _csy, xt * 2.5, xt * 2.5, 0x9FE8FF, .42).setDepth(95);
+                        this.tweens.add({ targets: _flash, alpha: 0, scaleX: 1.8, scaleY: 1.8, duration: 420, ease: "Power2", onComplete: () => _flash.destroy() });
                         this.time.delayedCall(180, () => { this.showMessage(Z("overworld.canyonOpened")) })
                     }
                 }
@@ -79075,7 +79200,7 @@ const Xt = {
             const i = this.mapData[T][x],
                 o = Xt[this.currentMapId];
             let u = !1;
-            if (o.type === "overworld" || o.type === "portal-overworld") u = i !== 2 && i !== 4 && i !== 6 && i !== 7 && i !== 8 && i !== 9 && i !== 10 && i !== 11 && i !== 12 && i !== 14 && i !== 15 && i !== 16 && i !== 19 && i !== 20 && i !== 21, i === 13 && (u = !!tt.player.state.storyFlags["boss.stormHarpy.defeated"]), i === 21 && (u = tt.player.state.inventory.some(s => s.itemId === "flameCloak" && s.quantity > 0));
+            if (o.type === "overworld" || o.type === "portal-overworld") u = i !== 2 && i !== 4 && i !== 6 && i !== 7 && i !== 8 && i !== 9 && i !== 10 && i !== 11 && i !== 12 && i !== 14 && i !== 15 && i !== 16 && i !== 19 && i !== 20 && i !== 21, i === 13 && (u = tt.player.state.inventory.some(s => s.itemId === "windbreakerStone" && s.quantity > 0)), i === 21 && (u = tt.player.state.inventory.some(s => s.itemId === "flameCloak" && s.quantity > 0));
             else if (o.type === "town") u = i !== 1 && i !== 2 && i !== 4 && i !== 6 && i !== 8 && i !== 9 && i !== 10 && i !== 11 && i !== 12 && i !== 13 && i !== 14 && i !== 15;
             else {
                 // Tripwire is passable — triggers trap when walked on, Z to disarm
@@ -79218,132 +79343,104 @@ const Xt = {
                 }
             })
         }
+        glyphSymName(sym) {
+            const _keys = ["dungeon.desertTomb.glyphs.sym.ankh", "dungeon.desertTomb.glyphs.sym.eye", "dungeon.desertTomb.glyphs.sym.falcon", "dungeon.desertTomb.glyphs.sym.water"];
+            return Z(_keys[((sym % 4) + 4) % 4]);
+        }
         renderGlyphPlates() {
-            // Destroy any existing plate objects
-            for (const _gp of this.glyphPlates) { _gp.obj && _gp.obj.destroy(); _gp.txt && _gp.txt.destroy(); }
-            const _gGrade = tt.player.state.quizDifficulty;
-            const _ruleKey = (_gGrade === "k" || _gGrade === "1" || _gGrade === "2") ? "dungeon.desertTomb.glyphs.rule.k2" : (_gGrade === "3" || _gGrade === "4") ? "dungeon.desertTomb.glyphs.rule.34" : "dungeon.desertTomb.glyphs.rule.56";
-            for (const _gp of this.glyphPlates) {
-                const _wx = _gp.x * xt + xt / 2, _wy = _gp.y * xt + xt / 2;
-                _gp.obj = this.add.rectangle(_wx, _wy, xt - 4, xt - 4, 0xC8A030, 0.85).setDepth(30);
-                _gp.txt = this.add.text(_wx, _wy, String(_gp.value), { fontSize: "18px", fontFamily: "'Helvetica Neue', sans-serif", color: "#fff", fontStyle: "bold", stroke: "#000", strokeThickness: 3 }).setOrigin(.5).setDepth(31);
-                this.tweens.add({ targets: _gp.obj, scaleX: 1.08, scaleY: 1.08, duration: 700 + Math.random() * 300, yoyo: !0, repeat: -1, ease: "Sine.easeInOut" });
-            }
-            // Show the plaque rule sign near the entrance
-            const _pMH = this.mapData.length, _pMW = this.mapData[0]?.length ?? 100;
-            const _pSign = this.add.text(Math.floor(_pMW / 2) * xt + xt / 2, 5 * xt, Z(_ruleKey), { fontSize: "14px", fontFamily: "'Helvetica Neue', sans-serif", color: "#ffe88a", backgroundColor: "#00000099", padding: { x: 8, y: 5 }, wordWrap: { width: 280 }, align: "center" }).setOrigin(.5, 0).setDepth(50);
-            this.glyphPlaqueObj = _pSign;
-            // Also tint the sealed door tile amber
-            if (this.glyphDoorPos && this.tileGrid[this.glyphDoorPos.y]?.[this.glyphDoorPos.x]) {
-                this.tileGrid[this.glyphDoorPos.y][this.glyphDoorPos.x].setTint(0xC8A030);
+            // #44: glyph FLOOR TILES are painted directly into mapData (tomb-33..36) and drawn by renderMap.
+            // Here we (a) add a subtle shimmer over each safe tile is intentionally OMITTED (player must READ
+            // the floor art), (b) place the rule SIGN at the corridor entrance, (c) show a one-time message.
+            if (this.glyphPlaqueObj) { this.glyphPlaqueObj.destroy(); this.glyphPlaqueObj = null; }
+            if (this._glyphSignSprite) { this._glyphSignSprite.destroy(); this._glyphSignSprite = null; }
+            if (!this.glyphCorridor) return;
+            const { cx0: _cx0, cy0: _cy0, half: _half } = this.glyphCorridor;
+            // Sign sits just above the band, at the entrance, on the side wall.
+            const _signX = (_cx0 - _half - 1) * xt + xt / 2;
+            const _signY = (_cy0 - 1) * xt + xt / 2;
+            const _symName = this.glyphSymName(this.glyphSafeSym);
+            const _ruleTxt = Z("dungeon.desertTomb.glyphs.signRule").replace("{glyph}", _symName);
+            // stone sign plaque
+            const _plaque = this.add.rectangle((_cx0) * xt + xt / 2, (_cy0 - 1) * xt + xt / 2, xt * 4.4, xt * 0.92, 0x2A2014, 0.92).setDepth(49).setStrokeStyle(2, 0xC9921E, 0.9);
+            const _sign = this.add.text((_cx0) * xt + xt / 2, (_cy0 - 1) * xt + xt / 2, _ruleTxt, { fontSize: "13px", fontFamily: "'Helvetica Neue', 'Hiragino Kaku Gothic ProN', sans-serif", color: "#F0D89A", align: "center", wordWrap: { width: xt * 4.2 } }).setOrigin(.5).setDepth(50);
+            this.glyphPlaqueObj = _sign; this._glyphSignSprite = _plaque;
+            // One-time intro message per floor.
+            const _seenKey = `desertTomb.${this.currentFloor}.glyphs.intro.seen`;
+            if (!tt.player.state.storyFlags[_seenKey]) {
+                tt.player.state.storyFlags[_seenKey] = true;
+                this.time.delayedCall(250, () => { this.showMessage(Z("dungeon.desertTomb.glyphs.intro").replace("{glyph}", _symName)); });
             }
         }
         handleGlyphStep() {
-            if (!this.glyphTrialActive || this.glyphPlates.length === 0) return false;
+            if (!this.glyphTrialActive || !this.glyphCorridor) return false;
             const _hx = this.heroTileX, _hy = this.heroTileY;
-            const _idx = this.glyphPlates.findIndex(_gp => _gp.x === _hx && _gp.y === _hy);
-            if (_idx < 0) return false;
-            const _gp = this.glyphPlates[_idx];
-            const _gGrade = tt.player.state.quizDifficulty;
-            // Compute correct sequence based on grade
-            let _correct = [];
-            if (_gGrade === "k" || _gGrade === "1" || _gGrade === "2") {
-                _correct = [...this.glyphPlates].sort((a, b) => a.value - b.value).map(p => p.value);
-            } else if (_gGrade === "3" || _gGrade === "4") {
-                _correct = [...this.glyphPlates].filter(p => p.value % 2 === 0).sort((a, b) => a.value - b.value).map(p => p.value);
-            } else {
-                const _isPrime = n => { if (n < 2) return !1; for (let i = 2; i * i <= n; i++) if (n % i === 0) return !1; return !0; };
-                _correct = [...this.glyphPlates].filter(p => _isPrime(p.value)).sort((a, b) => a.value - b.value).map(p => p.value);
+            const { cx0: _cx0, cy0: _cy0, half: _half, len: _len } = this.glyphCorridor;
+            // Are we inside the corridor band?
+            const _inBandX = _hx >= _cx0 - _half && _hx <= _cx0 + _half;
+            const _inBandY = _hy >= _cy0 && _hy < _cy0 + _len;
+            // Reached the far side (stepped onto/below the last row safely) -> solved.
+            if (_hy >= _cy0 + _len && this._glyphEntered) {
+                this.glyphTrialActive = false;
+                tt.player.state.storyFlags[`desertTomb.${this.currentFloor}.glyphs.solved`] = true;
+                this.cameras.main.flash(500, 255, 220, 80);
+                Jt.playSfx("crystal_obtain");
+                this.time.delayedCall(250, () => { this.showMessage(Z("dungeon.desertTomb.glyphs.success")); });
+                return false; // movement already happened; nothing to block
             }
-            // Is this plate even in the correct sequence?
-            const _isRequired = _correct.includes(_gp.value);
-            if (!_isRequired) {
-                // Wrong plate stepped (non-qualifying) -> sandstorm reshuffle
-                this.sandstormGust(() => { this.reshuffleGlyphPlates(); });
-                return true;
-            }
-            const _expectedIdx = this.glyphStepOrder.length;
-            if (_correct[_expectedIdx] !== _gp.value) {
-                // Correct plate but wrong order -> sandstorm reshuffle
-                this.sandstormGust(() => { this.reshuffleGlyphPlates(); });
-                return true;
-            }
-            // Correct step
-            this.glyphStepOrder.push(_gp.value);
-            Jt.playSfx("crystal_obtain");
-            // Highlight stepped plate
-            _gp.obj && _gp.obj.setFillStyle(0x50FF80, 1);
-            if (this.glyphStepOrder.length >= _correct.length) {
-                // All required plates stepped correctly -> unseal
-                this.glyphTrialActive = !1;
-                tt.player.state.storyFlags["desertTomb.3.glyphs.solved"] = !0;
-                this.cameras.main.flash(600, 255, 220, 80);
-                if (this.glyphDoorPos) {
-                    this.mapData[this.glyphDoorPos.y][this.glyphDoorPos.x] = 0;
-                    const _dTheme = "tomb";
-                    this.tileGrid[this.glyphDoorPos.y]?.[this.glyphDoorPos.x]?.setTexture(`${_dTheme}-0`).clearTint();
+            if (!_inBandX || !_inBandY) return false;
+            this._glyphEntered = true;
+            const _gp = this.glyphPlates.find(p => p.x === _hx && p.y === _hy);
+            if (!_gp) return false;
+            if (_gp.safe) {
+                // Safe glyph: subtle sparkle, allow.
+                const _wx = _hx * xt + xt / 2, _wy = _hy * xt + xt / 2;
+                for (let _s = 0; _s < 4; _s++) {
+                    const _p = this.add.circle(_wx + (Math.random() - .5) * xt * .5, _wy + (Math.random() - .5) * xt * .5, 2, 0xE8B43C).setDepth(40).setAlpha(.9);
+                    this.tweens.add({ targets: _p, y: _p.y - 10, alpha: 0, duration: 400, onComplete: () => _p.destroy() });
                 }
-                this.time.delayedCall(300, () => { this.showMessage(Z("dungeon.desertTomb.glyphs.success")); });
+                return false;
             }
+            // Danger glyph -> sandstorm + reshuffle + pushback.
+            this.sandstormGust(() => { this.reshuffleGlyphPlates(); });
             return true;
         }
         reshuffleGlyphPlates() {
-            // Re-randomize positions and numbers for the current plates, Math.random() only
-            // P1-3: only pick from reachable tiles (BFS vis stored at injection time)
-            const _gMH = this.mapData.length, _gMW = this.mapData[0]?.length ?? 100;
-            const _gReachVis = this._glyphReachVis;
-            const _gDX = this.glyphDoorPos?.x ?? -1, _gDY = this.glyphDoorPos?.y ?? -1;
-            const _gCands = [];
-            for (let _gy = 4; _gy < _gMH - 4; _gy++) for (let _gx = 4; _gx < _gMW - 4; _gx++) {
-                if (this.mapData[_gy][_gx] !== 0) continue;
-                if (_gx === _gDX && _gy === _gDY) continue;
-                if (_gReachVis && !_gReachVis[_gy * _gMW + _gx]) continue;
-                _gCands.push([_gx, _gy]);
+            // #44: re-randomize the SAFE path within the SAME band; repaint tiles; push player to band top.
+            if (!this.glyphCorridor) return;
+            const { cx0: _cx0, cy0: _cy0, half: _half, len: _len } = this.glyphCorridor;
+            const _gMW = this.mapData[0]?.length ?? 100;
+            const _GSAFE = 33, _KINDS = 4, _safeSym = this.glyphSafeSym;
+            const _span = _half * 2 + 1;
+            // new self-avoiding safe path
+            let _col = Math.floor(Math.random() * _span);
+            const _safeSet = new Set();
+            _safeSet.add(_col + ",0");
+            for (let _row = 1; _row < _len; _row++) {
+                let _step = Math.floor(Math.random() * 3) - 1;
+                let _next = Math.max(0, Math.min(_span - 1, _col + _step));
+                const _lo = Math.min(_col, _next), _hi = Math.max(_col, _next);
+                for (let _o = _lo; _o <= _hi; _o++) _safeSet.add(_o + "," + (_row - 1));
+                _safeSet.add(_next + "," + _row);
+                _col = _next;
             }
-            for (let _gi = _gCands.length - 1; _gi > 0; _gi--) { const _gj = Math.floor(Math.random() * (_gi + 1)); [_gCands[_gi], _gCands[_gj]] = [_gCands[_gj], _gCands[_gi]]; }
-            const _gPos = [];
-            for (const [_gpx, _gpy] of _gCands) {
-                if (_gPos.some(([_ox, _oy]) => Math.abs(_gpx - _ox) + Math.abs(_gpy - _oy) < 5)) continue;
-                _gPos.push([_gpx, _gpy]);
-                if (_gPos.length >= this.glyphPlates.length) break;
+            // rebuild plates + repaint tiles + tile textures
+            this.glyphPlates = [];
+            for (let _row = 0; _row < _len; _row++) {
+                for (let _o = 0; _o < _span; _o++) {
+                    const _gx = _cx0 - _half + _o, _gy = _cy0 + _row;
+                    const _isSafe = _safeSet.has(_o + "," + _row);
+                    let _sym;
+                    if (_isSafe) _sym = _safeSym;
+                    else { _sym = Math.floor(Math.random() * (_KINDS - 1)); if (_sym >= _safeSym) _sym++; }
+                    this.mapData[_gy][_gx] = _GSAFE + _sym;
+                    this.tileGrid[_gy]?.[_gx]?.setTexture(`tomb-${_GSAFE + _sym}`).clearTint();
+                    this.glyphPlates.push({ x: _gx, y: _gy, sym: _sym, safe: _isSafe, ox: _o, row: _row, obj: null });
+                }
             }
-            const _gGrade = tt.player.state.quizDifficulty;
-            const _newNums = [];
-            if (_gGrade === "k" || _gGrade === "1" || _gGrade === "2") {
-                const _b = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15];
-                for (let _gi = _b.length-1; _gi > 0; _gi--) { const _gj=Math.floor(Math.random()*(_gi+1));[_b[_gi],_b[_gj]]=[_b[_gj],_b[_gi]]; }
-                for (let _gi = 0; _gi < this.glyphPlates.length; _gi++) _newNums.push(_b[_gi]);
-            } else if (_gGrade === "3" || _gGrade === "4") {
-                const _b = [2,4,6,8,10,12,14,16,18,20];
-                for (let _gi = _b.length-1; _gi > 0; _gi--) { const _gj=Math.floor(Math.random()*(_gi+1));[_b[_gi],_b[_gj]]=[_b[_gj],_b[_gi]]; }
-                for (let _gi = 0; _gi < this.glyphPlates.length; _gi++) _newNums.push(_b[_gi]);
-            } else {
-                const _b = [2,3,5,7,11,13,17,19,23,29];
-                for (let _gi = _b.length-1; _gi > 0; _gi--) { const _gj=Math.floor(Math.random()*(_gi+1));[_b[_gi],_b[_gj]]=[_b[_gj],_b[_gi]]; }
-                for (let _gi = 0; _gi < this.glyphPlates.length; _gi++) _newNums.push(_b[_gi]);
-            }
-            // Destroy old objects and update
-            for (let _gi = 0; _gi < this.glyphPlates.length; _gi++) {
-                this.glyphPlates[_gi].obj && this.glyphPlates[_gi].obj.destroy();
-                this.glyphPlates[_gi].txt && this.glyphPlates[_gi].txt.destroy();
-                const _np = _gPos[_gi] ?? _gPos[0];
-                this.glyphPlates[_gi].x = _np[0];
-                this.glyphPlates[_gi].y = _np[1];
-                this.glyphPlates[_gi].value = _newNums[_gi];
-                this.glyphPlates[_gi].obj = null;
-                this.glyphPlates[_gi].txt = null;
-            }
-            this.glyphStepOrder = [];
-            // Re-render
-            for (const _gp of this.glyphPlates) {
-                const _wx = _gp.x * xt + xt / 2, _wy = _gp.y * xt + xt / 2;
-                _gp.obj = this.add.rectangle(_wx, _wy, xt - 4, xt - 4, 0xC8A030, 0.85).setDepth(30);
-                _gp.txt = this.add.text(_wx, _wy, String(_gp.value), { fontSize: "18px", fontFamily: "'Helvetica Neue', sans-serif", color: "#fff", fontStyle: "bold", stroke: "#000", strokeThickness: 3 }).setOrigin(.5).setDepth(31);
-                this.tweens.add({ targets: _gp.obj, scaleX: 1.08, scaleY: 1.08, duration: 700 + Math.random() * 300, yoyo: !0, repeat: -1, ease: "Sine.easeInOut" });
-            }
-            // Push player back a step (towards entrance)
-            const _bMH = this.mapData.length;
-            if (this.heroTileY > 1) { this.heroTileY = Math.max(1, this.heroTileY - 2); } else { this.heroTileX = Math.max(1, this.heroTileX - 1); }
+            this._glyphEntered = false;
+            // push player back above the band (to the approach tile)
+            this.heroTileY = Math.max(1, _cy0 - 1);
+            this.heroTileX = _cx0;
             this.hero.x = this.heroTileX * xt + xt / 2;
             this.hero.y = this.heroTileY * xt + xt / 2;
             this.updatePosition();
@@ -79485,7 +79582,7 @@ const Xt = {
                 this.isMoving = !1, this.showMessage(Z("dungeon.volcanicForge.locked"));
                 return
             }
-            if ((x.targetMap === "magmaTunnels" || x.targetMap === "scorchedRuins") && !tt.player.state.inventory.some(s => s.itemId === "flameCloak" && s.quantity > 0) && !tt.player.state.storyFlags["boss.lavaWyrm.defeated"] && !tt.player.state.storyFlags["boss.ashenGuardian.defeated"]) {
+            if (x.targetMap === "magmaTunnels" && !tt.player.state.inventory.some(s => s.itemId === "flameCloak" && s.quantity > 0) && !tt.player.state.storyFlags["boss.lavaWyrm.defeated"]) {
                 this.isMoving = !1, this.showMessage(Z("overworld.magmaBlocked"));
                 return
             }
@@ -80712,13 +80809,13 @@ const Xt = {
                         onComplete: () => {
                             this.mazeHunterBossSprite?.destroy(), this.mazeHunterBossSprite = void 0
                         }
-                    }), this.unsealMazeHunterExit())), o === "celestialGuardian" && (tt.player.addItem("aegisOfDawn", 1), tt.player.equip("aegisOfDawn")), o === "stormSentinel" && (tt.player.addItem("galeShield", 1), tt.player.equip("galeShield")), o === "frostMonarch" && (tt.player.addItem("crownOfWisdom", 1), tt.player.equip("crownOfWisdom")), o === "stormHarpy" && (tt.player.addItem("shadowCrystal", 1), this.showCrystalShardAnimation(u, m, 16720418)), o === "giantToad" && tt.player.addItem("toadShield", 1), o === "giantCrab" && tt.player.addItem("coralBlade", 1), o === "serpent" && (tt.player.addItem("crystalPendant", 1), tt.player.addItem("shadowCrystal", 1), this.showCrystalShardAnimation(u, m, 2263295)), o === "iceWyrm" && tt.player.addItem("frostbrand", 1), o === "dragon" && (tt.player.addItem("dragonheartAmulet", 1), tt.player.addItem("shadowCrystal", 1), this.showCrystalShardAnimation(u, m, 2293572)), o === "sandGolem" && (tt.player.addItem("sandstormCloak", 1), tt.player.addItem("flameCloak", 1), tt.player.addItem("shadowCrystal", 1), this.showCrystalShardAnimation(u, m, 16720418)), o === "banditLord" && tt.player.addItem("banditDagger", 1), o === "lavaWyrm" && tt.player.addItem("magmaBlade", 1), o === "flameTitan" && (tt.player.addItem("moltenGreaves", 1), tt.player.addItem("shadowCrystal", 1), this.showCrystalShardAnimation(u, m, 2263295)), this.time.delayedCall(200, () => {
+                    }), this.unsealMazeHunterExit())), o === "celestialGuardian" && (tt.player.addItem("aegisOfDawn", 1), tt.player.equip("aegisOfDawn")), o === "stormSentinel" && (tt.player.addItem("galeShield", 1), tt.player.equip("galeShield")), o === "frostMonarch" && (tt.player.addItem("crownOfWisdom", 1), tt.player.equip("crownOfWisdom")), o === "stormHarpy" && (tt.player.addItem("shadowCrystal", 1), tt.player.addItem("windbreakerStone", 1), this.showCrystalShardAnimation(u, m, 16720418)), o === "giantToad" && tt.player.addItem("toadShield", 1), o === "giantCrab" && tt.player.addItem("coralBlade", 1), o === "serpent" && (tt.player.addItem("crystalPendant", 1), tt.player.addItem("shadowCrystal", 1), this.showCrystalShardAnimation(u, m, 2263295)), o === "iceWyrm" && tt.player.addItem("frostbrand", 1), o === "dragon" && (tt.player.addItem("dragonheartAmulet", 1), tt.player.addItem("shadowCrystal", 1), this.showCrystalShardAnimation(u, m, 2293572)), o === "sandGolem" && (tt.player.addItem("sandstormCloak", 1), tt.player.addItem("flameCloak", 1), tt.player.addItem("shadowCrystal", 1), this.showCrystalShardAnimation(u, m, 16720418)), o === "banditLord" && tt.player.addItem("banditDagger", 1), o === "lavaWyrm" && tt.player.addItem("magmaBlade", 1), o === "flameTitan" && (tt.player.addItem("moltenGreaves", 1), tt.player.addItem("shadowCrystal", 1), this.showCrystalShardAnimation(u, m, 2263295)), this.time.delayedCall(200, () => {
                         const h = Z(`dungeon.${this.currentMapId}.boss.defeat`),
                             l = Z(`dungeon.${this.currentMapId}.victory`),
                             a = () => {
                                 this.isMoving = !1, this.updateHUD()
                             };
-                        o === "swordWraith" ? this.showDialogSequence([h, Z("legendary.excalibur.obtained"), l], a) : o === "celestialGuardian" ? this.showDialogSequence([h, Z("legendary.aegis.obtained"), l], a) : o === "stormSentinel" ? this.showDialogSequence([h, Z("legendary.galeShield.obtained"), l], a) : o === "frostMonarch" ? this.showDialogSequence([h, Z("legendary.crownOfWisdom.obtained"), l], a) : o === "stormHarpy" || o === "serpent" || o === "dragon" || o === "sandGolem" || o === "flameTitan" ? this.showDialogSequence([h, l], a) : this.showDialogSequence([h, l], a)
+                        o === "swordWraith" ? this.showDialogSequence([h, Z("legendary.excalibur.obtained"), l], a) : o === "celestialGuardian" ? this.showDialogSequence([h, Z("legendary.aegis.obtained"), l], a) : o === "stormSentinel" ? this.showDialogSequence([h, Z("legendary.galeShield.obtained"), l], a) : o === "frostMonarch" ? this.showDialogSequence([h, Z("legendary.crownOfWisdom.obtained"), l], a) : o === "stormHarpy" ? this.showDialogSequence([h, Z("dungeon.windStoneFound"), l], a) : o === "serpent" || o === "dragon" || o === "sandGolem" || o === "flameTitan" ? this.showDialogSequence([h, l], a) : this.showDialogSequence([h, l], a)
                     })
                 }
                 return
@@ -81261,7 +81358,47 @@ ${i.trim()}` : o;
             this.glyphPlaqueObj && this.glyphPlaqueObj.destroy(); this.glyphPlaqueObj = null;
             for (const i of this.darknessPulsePatrols) i.sprite.destroy();
             this.darknessPulsePatrols = [], this.darknessPulseOverlay?.destroy(), this.darknessPulseOverlay = void 0, this.windTowerEnabled = !1, this.windTowerPhase = "calm", this.windTowerTimer = 0, this.windTowerPushing = !1, this.mazeHunterEnabled = !1, this.mazeHunterActive = !1, this.mazeHunterChaseMode = !1, this.mazeHunterStepCount = 0, this.mazeHunterDefeated = !1, this.mazeHunterIsMoving = !1, this.mazeHunterBossSprite?.destroy(), this.mazeHunterBossSprite = void 0, this.tripwireGlowTimer = 0;
-            if (this._windTileOverlays) { for (const _wto of this._windTileOverlays) _wto.destroy(); this._windTileOverlays = []; } else this._windTileOverlays = [];
+            if (this._windTileOverlays) { for (const _wto of this._windTileOverlays) { _wto._wMaskG && _wto._wMaskG.destroy(); _wto.destroy(); } this._windTileOverlays = []; } else this._windTileOverlays = [];
+            // Overworld canyon wind: while the player lacks the Windbreaker Stone, tile-13 canyon cells show flowing teal wind streaks (reads as wind-blocked). Same look as the in-dungeon wind tiles.
+            if ((x.type === "overworld" || x.type === "portal-overworld") && !tt.player.state.inventory.some(s => s.itemId === "windbreakerStone" && s.quantity > 0)) {
+                for (let _wy = 0; _wy < this.mapData.length; _wy++) {
+                    for (let _wx = 0; _wx < (this.mapData[_wy]?.length ?? 0); _wx++) {
+                        if (this.mapData[_wy][_wx] !== 13) continue;
+                        const _wpx = _wx * xt + xt / 2,
+                            _wpy = _wy * xt + xt / 2,
+                            _wc = this.add.container(_wpx, _wpy).setDepth(7).setScrollFactor(1);
+                        const _wtint = this.add.rectangle(0, 0, xt, xt, 5687500, 0.14);
+                        _wc.add(_wtint);
+                        const _wrows = [-xt * 0.32, -xt * 0.1, xt * 0.12, xt * 0.34],
+                            _wlen = [xt * 0.42, xt * 0.6, xt * 0.5, xt * 0.36],
+                            _wth = [3, 2, 3, 2],
+                            _wcol = [0x9FE8FF, 0xCDF6FF, 0x9FE8FF, 0xE6FBFF],
+                            _wdur = [1300, 1500, 1150, 1650],
+                            _wdelay = [0, 380, 720, 1050];
+                        for (let _k = 0; _k < _wrows.length; _k++) {
+                            const _ws = this.add.rectangle(-xt / 2 - _wlen[_k], _wrows[_k], _wlen[_k], _wth[_k], _wcol[_k], 0.9).setOrigin(0, 0.5);
+                            _wc.add(_ws);
+                            this.tweens.add({
+                                targets: _ws,
+                                x: xt / 2,
+                                alpha: { from: 0.15, to: 0.95 },
+                                duration: _wdur[_k],
+                                delay: _wdelay[_k],
+                                repeat: -1,
+                                repeatDelay: 120 + Math.floor(Math.random() * 260),
+                                ease: "Sine.easeIn",
+                                onRepeat: t => { t.targets[0].x = -xt / 2 - _wlen[_k]; }
+                            });
+                        }
+                        const _wmaskG = this.make.graphics({ x: 0, y: 0, add: false });
+                        _wmaskG.fillStyle(0xffffff).fillRect(_wpx - xt / 2, _wpy - xt / 2, xt, xt);
+                        const _wmask = _wmaskG.createGeometryMask();
+                        _wc.setMask(_wmask);
+                        _wc._wMaskG = _wmaskG;
+                        this._windTileOverlays.push(_wc);
+                    }
+                }
+            }
             const T = x.mechanic;
             if (T) {
                 if (T === "fog") {
@@ -81340,20 +81477,43 @@ ${i.trim()}` : o;
                     for (let _wy = 0; _wy < this.mapData.length; _wy++) {
                         for (let _wx = 0; _wx < (this.mapData[_wy]?.length ?? 0); _wx++) {
                             if (this.mapData[_wy][_wx] !== 19) continue;
-                            const _wpx = _wx * xt + xt / 2, _wpy = _wy * xt + xt / 2;
-                            const _wov = this.add.rectangle(_wpx, _wpy, xt, xt, 0x22AA44, 0.3).setDepth(6).setScrollFactor(1);
-                            this._windTileOverlays.push(_wov);
-                            this.tweens.add({
-                                targets: _wov,
-                                alpha: 0.75,
-                                scaleX: 1.1,
-                                scaleY: 1.1,
-                                duration: 600,
-                                yoyo: true,
-                                repeat: -1,
-                                ease: "Sine.easeInOut",
-                                delay: Math.random() * 300
-                            });
+                            const _wpx = _wx * xt + xt / 2,
+                                _wpy = _wy * xt + xt / 2,
+                                _wc = this.add.container(_wpx, _wpy).setDepth(7).setScrollFactor(1);
+                            // faint static air tint under the streaks (NOT a full-tile pulse)
+                            const _wtint = this.add.rectangle(0, 0, xt, xt, 5687500, 0.16);
+                            _wc.add(_wtint);
+                            // 3-4 thin pale-cyan streaks at staggered rows that FLOW left->right across the tile
+                            const _wrows = [-xt * 0.32, -xt * 0.1, xt * 0.12, xt * 0.34],
+                                _wlen = [xt * 0.42, xt * 0.6, xt * 0.5, xt * 0.36],
+                                _wth = [3, 2, 3, 2],
+                                _wcol = [0x9FE8FF, 0xCDF6FF, 0x9FE8FF, 0xE6FBFF],
+                                _wdur = [1300, 1500, 1150, 1650],
+                                _wdelay = [0, 380, 720, 1050];
+                            const _wstreaks = [];
+                            for (let _k = 0; _k < _wrows.length; _k++) {
+                                const _ws = this.add.rectangle(-xt / 2 - _wlen[_k], _wrows[_k], _wlen[_k], _wth[_k], _wcol[_k], 0.9).setOrigin(0, 0.5);
+                                _wc.add(_ws);
+                                _wstreaks.push(_ws);
+                                this.tweens.add({
+                                    targets: _ws,
+                                    x: xt / 2,
+                                    alpha: { from: 0.15, to: 0.95 },
+                                    duration: _wdur[_k],
+                                    delay: _wdelay[_k],
+                                    repeat: -1,
+                                    repeatDelay: 120 + Math.floor(Math.random() * 260),
+                                    ease: "Sine.easeIn",
+                                    onRepeat: t => { t.targets[0].x = -xt / 2 - _wlen[_k]; }
+                                });
+                            }
+                            // clip the streaks to the tile so they don't bleed onto neighbours
+                            const _wmaskG = this.make.graphics({ x: 0, y: 0, add: false });
+                            _wmaskG.fillStyle(0xffffff).fillRect(_wpx - xt / 2, _wpy - xt / 2, xt, xt);
+                            const _wmask = _wmaskG.createGeometryMask();
+                            _wc.setMask(_wmask);
+                            _wc._wMaskG = _wmaskG;
+                            this._windTileOverlays.push(_wc);
                         }
                     }
                 }
