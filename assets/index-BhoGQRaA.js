@@ -55548,6 +55548,7 @@ const ui = {
         "equip.slot.accessory": "Accessory",
         "equip.empty": "None",
         "equip.owned": "Owned",
+        "shop.ownedEquip": "Owned",
         "equip.hintEquip": "Z: Equip",
         "equip.hintUnequip": "Z: Unequip",
         "equip.locked": "[LOCK]",
@@ -56472,6 +56473,7 @@ const ui = {
         "equip.slot.accessory": "アクセサリ",
         "equip.empty": "なし",
         "equip.owned": "もちもの",
+        "shop.ownedEquip": "もってる",
         "equip.hintEquip": "Z: そうび",
         "equip.hintUnequip": "Z: はずす",
         "equip.locked": "[こてい]",
@@ -57399,6 +57401,7 @@ const ui = {
         "equip.slot.accessory": "アクセサリ",
         "equip.empty": "なし",
         "equip.owned": "持ち物",
+        "shop.ownedEquip": "持ってる",
         "guide.move": "移動",
         "guide.talk": "話す",
         "guide.menu": "メニュー",
@@ -78639,8 +78642,6 @@ const Xt = {
                 this.tweens.add({ targets: _c, y: _c.y - 18 - Math.random() * 18, x: _c.x + (Math.random() - .5) * 14, alpha: 0, scaleX: .2, scaleY: .2, duration: 1200 + Math.random() * 600, delay: _i * 55, ease: "Sine.easeOut", onComplete: () => _c.destroy() });
             }
             if (this._savePointSprite && this._savePointSprite.scene) {
-                const _sp = this._savePointSprite;
-                this.tweens.add({ targets: _sp, scaleX: 1.3, scaleY: 1.3, duration: 120, yoyo: true, ease: "Sine.easeOut" });
                 const _fl = this.add.circle(this._savePointX, this._savePointY, Math.round(xt * 0.65), 0xffffff, 0.55).setDepth(20);
                 this.tweens.add({ targets: _fl, alpha: 0, duration: 350, ease: "Sine.easeOut", onComplete: () => _fl.destroy() });
             }
@@ -80447,11 +80448,18 @@ const Xt = {
             if (_mapCfg && _mapCfg.type === "dungeon") return;
             if (!tt.questManager) return;
             const _qs = tt.questManager.getActiveQuests(tt.player.state);
+            // Hide when empty: no active quests = no tracker rendered
+            if (_qs.length === 0) return;
             // Box right edge anchored near compass; box width and center
             const _boxRight = Ne + Tt - Math.round(8 * gt);
             const _boxW = Math.round(110 * gt);
             const _boxCX = _boxRight - Math.round(_boxW / 2);
-            const _boxY = Ye + Math.round(140 * gt);
+            // Position: overworld/portal-overworld = just below compass bottom (compassY+22*gt+8*gt = Ye+70*gt)
+            // Town/dungeon-overworld (no compass) = at compass overworld-top (Ye+18*gt)
+            const _mapType = _mapCfg ? _mapCfg.type : "overworld";
+            const _boxY = (_mapType === "overworld" || _mapType === "portal-overworld")
+                ? Ye + Math.round(70 * gt)
+                : Ye + Math.round(18 * gt);
             const _collapsed = !!this.questTrackerCollapsed;
             const _dotActive = !!this.questDotActive;
             const _objs = [];
@@ -82169,11 +82177,11 @@ class bp {
             }
         }
     }
-    resolvePlayerAttack(x, T) {
+    resolvePlayerAttack(x, T, elapsed3s) {
         const i = this.monster.id === "swordWraith" && !this.player.hasItem("holyAmulet");
         if (x) {
             let o = this.calculateDamage(this.player.totalAtk, this.monster.baseDef);
-            const M = T !== void 0 && T >= .8,
+            const M = elapsed3s !== void 0 && elapsed3s <= 3,
                 u = !M && T !== void 0 && T >= .5;
             if (M ? o = Math.floor(o * 1.5) : u && (o = Math.floor(o * 1.2)), i) {
                 const m = Math.floor(o * .9),
@@ -82654,7 +82662,8 @@ class Pp extends ti.Scene {
             if (!this.sceneActive) return;
             o.destroy(), this.quizContainer?.destroy(), this.quizContainer = void 0;
             let u;
-            this.quizForPlayer ? u = this.engine.resolvePlayerAttack(i, x) : u = this.engine.resolveEnemyAttack(i, x), this.handleCombatResult(u)
+            const elapsed3s = this.quizTimerSeconds * (1 - x);
+            this.quizForPlayer ? u = this.engine.resolvePlayerAttack(i, x, elapsed3s) : u = this.engine.resolveEnemyAttack(i, x), this.handleCombatResult(u)
         })
     }
     critEffect() {
@@ -83622,24 +83631,26 @@ class Ip extends ti.Scene {
                 const C = Object.entries(u.stats).map(([t, f]) => `+${f}${t.toUpperCase()}`).join(" ");
                 const _statX = Tt - Math.round(16 * he);
                 const _statY = Math.round(64 * he) + o * Math.round(28 * he);
+                // Align labels to the item-name's vertical center (name fontSize 10*he, top-origin -> center at +5*he)
+                const _rowMidY = _statY + Math.round(5 * he);
                 if (_isEquip && _owned > 0) {
-                    const _ownedLabel = Z("equip.owned");
-                    const _statText = this.add.text(_statX, _statY, C, { fontSize: `${Math.round(9*he)}px`, color: ht.TEXT_GRAY, fontFamily: yt }).setOrigin(1, 0);
-                    this.add.text(_statX - _statText.width - Math.round(6 * he), _statY, _ownedLabel, { fontSize: `${Math.round(8*he)}px`, color: ht.TEXT_GRAY, fontFamily: yt }).setOrigin(1, 0);
+                    const _ownedLabel = Z("shop.ownedEquip");
+                    const _statText = this.add.text(_statX, _rowMidY, C, { fontSize: `${Math.round(9*he)}px`, color: ht.TEXT_GRAY, fontFamily: yt }).setOrigin(1, 0.5);
+                    this.add.text(_statX - _statText.width - Math.round(6 * he), _rowMidY, _ownedLabel, { fontSize: `${Math.round(8*he)}px`, color: ht.TEXT_GRAY, fontFamily: yt }).setOrigin(1, 0.5);
                 } else {
-                    this.add.text(_statX, _statY, C, { fontSize: `${Math.round(9*he)}px`, color: ht.TEXT_GRAY, fontFamily: yt }).setOrigin(1, 0);
+                    this.add.text(_statX, _rowMidY, C, { fontSize: `${Math.round(9*he)}px`, color: ht.TEXT_GRAY, fontFamily: yt }).setOrigin(1, 0.5);
                 }
             } else if (_isEquip && _owned > 0 && !u.stats) {
-                const _ownedLabel = Z("equip.owned");
-                this.add.text(Tt - Math.round(16 * he), Math.round(64 * he) + o * Math.round(28 * he), _ownedLabel, { fontSize: `${Math.round(8*he)}px`, color: ht.TEXT_GRAY, fontFamily: yt }).setOrigin(1, 0);
+                const _ownedLabel = Z("shop.ownedEquip");
+                this.add.text(Tt - Math.round(16 * he), Math.round(64 * he) + o * Math.round(28 * he) + Math.round(5 * he), _ownedLabel, { fontSize: `${Math.round(8*he)}px`, color: ht.TEXT_GRAY, fontFamily: yt }).setOrigin(1, 0.5);
             }
             if (_owned > 0 && !_isEquip) {
                 const _ownedLabel = `x${_owned}`;
-                this.add.text(Tt - Math.round(16 * he), Math.round(64 * he) + o * Math.round(28 * he) + Math.round(14 * he), _ownedLabel, {
+                this.add.text(Tt - Math.round(16 * he), Math.round(64 * he) + o * Math.round(28 * he) + Math.round(5 * he), _ownedLabel, {
                     fontSize: `${Math.round(8*he)}px`,
                     color: ht.TEXT_GRAY,
                     fontFamily: yt
-                }).setOrigin(1, 0)
+                }).setOrigin(1, 0.5)
             }
         });
         const T = Math.round(64 * he) + x.items.length * Math.round(28 * he);
