@@ -56107,11 +56107,7 @@ const ui = {
         "item.crystalOfKnowledge.desc": "The legendary crystal, restored from 5 shards. Its power illuminates the mind.",
         "item.holyAmulet": "Holy Amulet",
         "item.holyAmulet.desc": "An ancient relic that pierces the veil of shadows.",
-        "item.map": "Village Map",
-        "item.map.desc": "A hand-drawn map of the region given by the Elder of Greenhollow.",
-        "item.compass": "Compass",
-        "item.compass.desc": "A brass compass from the Elder. Points true north.",
-        "npc.elder.gaveMap": "Take these, young hero. A map of our lands and a compass to guide your way. May they serve you well on your journey!",
+        "npc.elder.gaveMap": "See that glowing bar at the top? That is your map and compass. The map shows where you are in this world, and the compass keeps you pointed north. They will guide you on your journey, young hero.",
         "npc.survivor": "I barely escaped the Bandit Hideout alive. Listen carefully: the place is full of tripwires and pressure plates. When you see them glint, press Z to cut them before they trigger. One wrong step and the whole corridor comes down on you.",
         "npc.survivor.name": "Survivor",
         "crystal.combined": "The 5 Crystal Shards combine into the Crystal of Math Knowledge!",
@@ -57032,11 +57028,7 @@ const ui = {
         "item.crystalOfKnowledge.desc": "5つのかけらから ふっかつした でんせつのクリスタル。こころを てらす ちからを もつ。",
         "item.holyAmulet": "せいなるアミュレット",
         "item.holyAmulet.desc": "やみの ベールを つらぬく いにしえの せいぶつ。",
-        "item.map": "むらの ちず",
-        "item.map.desc": "グリーンホロウの ちょうろうが かいた ちいきの ちず。",
-        "item.compass": "コンパス",
-        "item.compass.desc": "ちょうろうから もらった しんちゅうの コンパス。きたを さす。",
-        "npc.elder.gaveMap": "これを もっていくのじゃ ゆうしゃよ。この ちいきの ちずと みちを しめす コンパスじゃ。たびの たすけに なるとよいのう！",
+        "npc.elder.gaveMap": "うえの ひかる バーが みえるかの？あれが おぬしの ちずと コンパスじゃ。ちずは この せかいで おぬしが どこに いるかを しめし、コンパスは つねに きたを さす。たびの みちしるべに なるとよいのう、ゆうしゃよ。",
         "npc.survivor": "かろうじて さんぞくの あじとから にげのびたよ。よく きいてくれ。なかは トリップワイヤーと あつりょくプレートだらけだ。きらめいたら ふむ まえに Zで きるんだ。いっぽ まちがえたら つうろが くずれるぞ。",
         "npc.survivor.name": "せいかんしゃ",
         "crystal.combined": "5つのクリスタルのかけらが さんすうのクリスタルに なった！",
@@ -57953,11 +57945,7 @@ const ui = {
         "item.crystalOfKnowledge.desc": "5つの欠片から 復活した 伝説のクリスタル。心を 照らす 力を 持つ。",
         "item.holyAmulet": "聖なるアミュレット",
         "item.holyAmulet.desc": "闇の ベールを 貫く 古の 聖物。",
-        "item.map": "村の 地図",
-        "item.map.desc": "グリーンホロウの 長老が 描いた 地域の 地図。",
-        "item.compass": "コンパス",
-        "item.compass.desc": "長老から もらった 真鍮の コンパス。北を 指す。",
-        "npc.elder.gaveMap": "これを 持っていくのじゃ 勇者よ。この地域の 地図と 道を 示す コンパスじゃ。旅の 助けになるとよいのう！",
+        "npc.elder.gaveMap": "上の 光る バーが 見えるかの？あれが おぬしの 地図と コンパスじゃ。地図は この世界で おぬしが どこに いるかを 示し、コンパスは 常に 北を 指す。旅の 道しるべに なるとよいのう、勇者よ。",
         "npc.survivor": "かろうじて 山賊の 隠れ家から 逃げのびたよ。よく 聞いてくれ。中は トリップワイヤーと 圧力プレートだらけだ。きらめいたら 踏む 前に Zで 切るんだ。一歩 間違えば 通路が 崩れるぞ。",
         "npc.survivor.name": "生還者",
         "crystal.combined": "5つのクリスタルの欠片が 算数のクリスタルに なった！",
@@ -58969,24 +58957,6 @@ const ye = {
             sellPrice: 0,
             unsellable: !0
         },
-        map: {
-            id: "map",
-            nameKey: "item.map",
-            descriptionKey: "item.map.desc",
-            type: "key",
-            buyPrice: 0,
-            sellPrice: 0,
-            unsellable: !0
-        },
-        compass: {
-            id: "compass",
-            nameKey: "item.compass",
-            descriptionKey: "item.compass.desc",
-            type: "key",
-            buyPrice: 0,
-            sellPrice: 0,
-            unsellable: !0
-        }
     },
     Wr = [0, 0, 17, 50, 100, 170, 270, 410, 580, 800, 1060, 1400, 1840, 2400, 3060, 3880, 4850, 5980, 7400, 8900, 10700, 12700, 15e3, 17900, 21500, 25e3, 29e3, 34e3, 39500, 45e3, 52e3],
     al = [
@@ -78454,6 +78424,19 @@ const Xt = {
                     }
                 }
             }
+            if (T.type === "dungeon") {
+                const _dh = this.mapData.length, _dw = this.mapData[0]?.length ?? 0;
+                for (let _dy = 0; _dy < _dh; _dy++) {
+                    for (let _dx = 0; _dx < _dw; _dx++) {
+                        if (this.mapData[_dy][_dx] === Ts) {
+                            const _gx = _dx * xt + xt / 2, _gy = _dy * xt + xt / 2;
+                            const _spGlow = this.add.circle(_gx, _gy, Math.round(xt * 0.75), 0x66ccff, 0.4).setDepth(3);
+                            this.tweens.add({ targets: _spGlow, alpha: { from: 0.15, to: 0.45 }, scaleX: { from: 0.9, to: 1.15 }, scaleY: { from: 0.9, to: 1.15 }, duration: 900, yoyo: true, repeat: -1, ease: "Sine.easeInOut" });
+                            this.npcSprites.push(_spGlow);
+                        }
+                    }
+                }
+            }
             this.renderNPCs(T), this.createHero(), this.updateCamera(), this.initMechanics(T);
             if (this.glyphTrialActive) this.renderGlyphPlates();
             const i = T.type === "town" ? "town" : T.type === "dungeon" ? "dungeon" : "overworld";
@@ -78625,9 +78608,6 @@ const Xt = {
             }
             if (x.savePoint) {
                 const spX = x.savePoint.x * xt + xt / 2, spY = x.savePoint.y * xt + xt / 2;
-                const _spGlow = this.add.circle(spX, spY, Math.round(xt * 0.75), 0x66ccff, 0.4).setDepth(3);
-                this.tweens.add({ targets: _spGlow, alpha: { from: 0.15, to: 0.45 }, scaleX: { from: 0.9, to: 1.15 }, scaleY: { from: 0.9, to: 1.15 }, duration: 900, yoyo: true, repeat: -1, ease: "Sine.easeInOut" });
-                this.npcSprites.push(_spGlow);
                 const T = this.add.sprite(spX, spY, "save-point").setOrigin(.5).setScale(1);
                 this.npcSprites.push(T);
                 this._savePointSprite = T;
@@ -79845,7 +79825,7 @@ const Xt = {
                 return;
             }
             if (x.savePoint && x.savePoint.x === T && x.savePoint.y === i) {
-                tt.saveGame(), Jt.playSfx("save"), this.showMessage(Z("npc.savePoint")), tt.player.fullHeal(), this.updateHUD(); this._saveVfx(this.hero.x, this.hero.y);
+                tt.saveGame(), Jt.playSfx("save"), this.showMessage(Z("npc.savePoint")), tt.player.fullHeal(), this.updateHUD();
                 return
             }
             for (const u of x.npcs)
@@ -79871,7 +79851,7 @@ const Xt = {
             }
             if (this.tryBossInteract(T, i) || this.tryOpenTreasure(T, i)) return;
             if (x.savePoint && Math.abs(x.savePoint.x - this.heroTileX) <= 1 && Math.abs(x.savePoint.y - this.heroTileY) <= 1) {
-                tt.saveGame(), Jt.playSfx("save"), this.showMessage(Z("npc.savePoint")), tt.player.fullHeal(), this.updateHUD(); this._saveVfx(this.hero.x, this.hero.y);
+                tt.saveGame(), Jt.playSfx("save"), this.showMessage(Z("npc.savePoint")), tt.player.fullHeal(), this.updateHUD();
                 return
             }
             const o = [
@@ -81091,8 +81071,6 @@ const Xt = {
             console.log("[NPC]", x.id, "active:", [...i.activeQuests], "completed:", [...i.completedQuests]);
             if (x.id === "elder" && !i.storyFlags["elder.gaveMap"]) {
                 i.storyFlags["elder.gaveMap"] = !0;
-                tt.player.addItem("map", 1);
-                tt.player.addItem("compass", 1);
                 this.showMessage(Z("npc.elder.gaveMap"), o);
                 return;
             }
