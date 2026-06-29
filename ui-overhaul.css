@@ -1,0 +1,179 @@
+/* ============================================================
+   Quest of Knowledge — "Storybook Quest" DOM UI overlay
+   Lifted from design/ui-overhaul/mockup-v2-full.html, scoped
+   under #qok-ui, adapted to true full-screen (phone/tablet/PC).
+   Additive: only visible while #qok-ui.active.
+   ============================================================ */
+@import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700;800;900&display=swap');
+
+/* Offline fallback (Capacitor / iOS): local woff2 dropped into dist/fonts/.
+   Harmless if the files are absent — Google Fonts @import covers online. */
+/* @font-face { font-family:'M PLUS Rounded 1c'; font-weight:400 900; font-display:swap; src:url('fonts/mplus-rounded.woff2') format('woff2'); } */
+
+#qok-ui{
+  --bg3:#0e1022; --parch:#f3e7c6; --parch2:#ecdcb1; --ink:#4a3a21; --ink-soft:#7a6541;
+  --gold:#e0b757; --gold2:#c79a3f; --gold-line:#9a7a36; --gold-glow:rgba(224,183,87,.55);
+  --emerald:#4cc07a; --emerald2:#2f9c5b; --ruby:#e3594f; --ruby2:#bb3a32; --sky:#5aa9e6; --violet:#8c6bd8;
+  --hp-hi:#5fcc63; --shadow:0 12px 26px rgba(0,0,0,.42); --font:'M PLUS Rounded 1c',system-ui,sans-serif;
+
+  display:none;
+  position:fixed; inset:0; z-index:200;
+  font-family:var(--font);
+  color:#ece3cf;
+  -webkit-user-select:none; user-select:none; -webkit-tap-highlight-color:transparent;
+  overflow:hidden;
+}
+#qok-ui.active{ display:flex; }
+
+#qok-ui *{ margin:0; padding:0; box-sizing:border-box; font-family:var(--font); }
+#qok-ui svg.spr{ image-rendering:pixelated; }
+#qok-ui img.heroimg{ image-rendering:pixelated; object-fit:contain; }
+#qok-ui img.npcimg{ image-rendering:pixelated; width:100%; height:100%; object-fit:contain; object-position:center top; padding:2px; }
+
+/* full-screen "screen" — replaces the mockup .phone/.screen chrome */
+#qok-ui .screen{
+  width:100%; height:100%;
+  position:relative; display:flex; flex-direction:column;
+  background:
+    radial-gradient(60vw 40vh at 22% -4%,#25284f,transparent 60%),
+    radial-gradient(52vw 40vh at 110% 6%,#2c2049,transparent 55%),
+    linear-gradient(180deg,#161834,#101126);
+  /* widen content + center on tablet/PC so it never stretches edge-to-edge */
+}
+#qok-ui .screen::after{
+  content:""; position:absolute; inset:0; pointer-events:none; opacity:.5;
+  background-image:
+    radial-gradient(1.3px 1.3px at 8% 12%,#fff7,transparent),
+    radial-gradient(1.2px 1.2px at 68% 20%,#fff5,transparent),
+    radial-gradient(1.3px 1.3px at 34% 52%,#ffe9b35e,transparent),
+    radial-gradient(1.1px 1.1px at 82% 70%,#fff4,transparent);
+}
+
+/* content column constrained for big screens, full bleed on phone */
+#qok-ui .col{
+  position:relative; z-index:2;
+  display:flex; flex-direction:column;
+  width:100%; max-width:560px; margin:0 auto; flex:1; min-height:0;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-left:env(safe-area-inset-left,0px);
+  padding-right:env(safe-area-inset-right,0px);
+}
+
+/* ---- components (verbatim from mockup, gold .sel = shared tap+keyboard state) ---- */
+#qok-ui .panel{background:linear-gradient(180deg,var(--parch),var(--parch2));border-radius:16px;position:relative;color:var(--ink);border:2px solid var(--gold-line);box-shadow:var(--shadow),inset 0 0 0 2px #f7eecf;}
+#qok-ui .topbar{display:flex;align-items:center;gap:10px;padding:14px 16px 10px;position:relative;z-index:5;flex:none;}
+#qok-ui .av{width:48px;height:48px;border-radius:13px;flex:none;display:grid;place-items:center;background:linear-gradient(160deg,#2a2e58,#1b1d3a);box-shadow:inset 0 0 0 2px var(--gold2),0 4px 10px #0006;}
+#qok-ui .who{flex:1;min-width:0;} #qok-ui .who .nm{font-weight:800;font-size:17px;color:#fdf3da;line-height:1.05;} #qok-ui .who .lv{font-size:12px;color:#c7bfe0;}
+#qok-ui .coins{display:flex;align-items:center;gap:5px;background:#0e1026cc;border:1.5px solid var(--gold-line);border-radius:99px;padding:7px 13px;font-weight:800;color:var(--gold);font-size:14px;}
+#qok-ui .xbtn{flex:none;width:40px;height:40px;border-radius:50%;border:1.5px solid var(--gold-line);background:#0e1026cc;color:var(--gold);font-size:17px;font-weight:800;cursor:pointer;display:grid;place-items:center;line-height:1;}
+#qok-ui .eyebrow{font-size:11px;letter-spacing:.26em;text-transform:uppercase;color:var(--gold);font-weight:800;padding-left:4px;}
+#qok-ui .pad{padding:0 14px;} #qok-ui .stack{display:flex;flex-direction:column;} #qok-ui .g8{gap:8px;}#qok-ui .g10{gap:10px;}#qok-ui .g12{gap:12px;} #qok-ui .mt6{margin-top:6px;}#qok-ui .mt10{margin-top:10px;}
+#qok-ui .body{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:10px;}
+
+#qok-ui .hp{height:11px;border-radius:99px;background:#e7d3a8;overflow:hidden;flex:1;box-shadow:inset 0 1px 2px #0003;} #qok-ui .hp.dark{background:#2a1c1c;} #qok-ui .hp i{display:block;height:100%;border-radius:99px;background:linear-gradient(180deg,#7ee07e,var(--hp-hi));}
+#qok-ui .row{display:flex;align-items:center;gap:9px;}
+
+#qok-ui .btn{appearance:none;border:none;font-weight:800;cursor:pointer;border-radius:15px;color:#fff;font-size:15px;padding:14px;position:relative;
+  box-shadow:0 5px 0 var(--shade,#0006),0 8px 15px rgba(0,0,0,.32);display:flex;align-items:center;justify-content:center;gap:8px;text-shadow:0 1px 1px #0004;min-height:52px;}
+#qok-ui .btn .ic{width:21px;height:21px;flex:none;}
+#qok-ui .btn-gold{background:linear-gradient(180deg,#f0c969,var(--gold2));--shade:#8a6a26;color:#43340f;text-shadow:0 1px 0 #ffffff66;}
+#qok-ui .btn-em{background:linear-gradient(180deg,#5fd089,var(--emerald2));--shade:#1f6e3e;}
+#qok-ui .btn-ruby{background:linear-gradient(180deg,#ef6a60,var(--ruby2));--shade:#8c2a23;}
+#qok-ui .btn-sky{background:linear-gradient(180deg,#6fb6ea,#3f86c4);--shade:#235a8c;}
+#qok-ui .btn-slate{background:linear-gradient(180deg,#454a78,#2c2f52);--shade:#16182e;}
+#qok-ui .sel{outline:3px solid var(--gold);outline-offset:2px;box-shadow:0 0 0 3px var(--gold-glow),0 5px 0 var(--shade,#b39a5e)!important;}
+
+#qok-ui .tabbar{margin-top:auto;display:flex;gap:5px;padding:9px 11px calc(14px + env(safe-area-inset-bottom,0px));background:linear-gradient(180deg,#1a1c3a00,#0c0d1f 42%);position:relative;z-index:6;flex:none;}
+#qok-ui .tab{flex:1;border:none;background:transparent;color:#9a93bb;font-weight:700;font-size:11px;display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 3px;border-radius:13px;cursor:pointer;min-height:52px;justify-content:center;}
+#qok-ui .tab .ic{width:23px;height:23px;} #qok-ui .tab.on{color:#43340f;background:linear-gradient(180deg,#f0c969,var(--gold2));box-shadow:0 4px 0 #8a6a26;} #qok-ui .tab.on .ic *{stroke:#43340f!important;}
+
+/* lists / cards */
+#qok-ui .card{display:flex;align-items:center;gap:11px;padding:12px;border-radius:14px;background:linear-gradient(180deg,#fbf2d6,#efe0b6);border:2px solid var(--gold-line);color:var(--ink);box-shadow:0 4px 0 #cdb578;cursor:pointer;}
+#qok-ui .card .ic{width:32px;height:32px;border-radius:9px;flex:none;display:grid;place-items:center;background:#fff7e0;box-shadow:inset 0 0 0 1.5px #d8c18a;}
+#qok-ui .card .t{flex:1;min-width:0;} #qok-ui .card .t .n{font-weight:800;font-size:15px;} #qok-ui .card .t .d{font-size:11.5px;color:var(--ink-soft);font-weight:600;} #qok-ui .card .t .cnt{font-size:12px;font-weight:800;color:#8a6a26;margin:1px 0;}
+#qok-ui .qty{font-weight:900;font-size:16px;color:#43340f;background:linear-gradient(180deg,#f0c969,var(--gold2));border-radius:10px;padding:5px 11px;box-shadow:0 3px 0 #8a6a26;min-width:42px;text-align:center;flex:none;}
+#qok-ui .pill{font-weight:800;font-size:12px;border-radius:99px;padding:5px 11px;flex:none;}
+#qok-ui .delta-up{color:#1f8a44;font-weight:900;flex:none;} #qok-ui .delta-dn{color:#bb3a32;font-weight:900;flex:none;}
+
+#qok-ui .swatchrow{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+#qok-ui .swatch{width:42px;height:42px;border-radius:50%;cursor:pointer;box-shadow:inset 0 0 0 2px #00000022,0 3px 6px #0004;}
+#qok-ui .swatch.sel{outline:3px solid var(--gold);outline-offset:3px;box-shadow:0 0 0 3px var(--gold-glow);}
+#qok-ui .chiprow{display:flex;gap:7px;flex-wrap:wrap;justify-content:center;}
+#qok-ui .gchip{min-width:42px;text-align:center;padding:11px 8px;border-radius:12px;font-weight:800;font-size:15px;background:#0000000f;color:var(--ink-soft);cursor:pointer;}
+#qok-ui .gchip.sel{background:linear-gradient(180deg,#f0c969,var(--gold2));color:#43340f;box-shadow:0 4px 0 #8a6a26;}
+#qok-ui .toggle{display:inline-flex;background:#0000001a;border-radius:99px;padding:3px;font-weight:800;font-size:13px;cursor:pointer;}
+#qok-ui .toggle span{padding:9px 17px;border-radius:99px;color:var(--ink-soft);} #qok-ui .toggle span.on{background:linear-gradient(180deg,#f0c969,var(--gold2));color:#43340f;box-shadow:0 3px 0 #8a6a26;}
+#qok-ui .seg{display:flex;background:#0000001a;border-radius:13px;padding:3px;gap:3px;}
+#qok-ui .seg b{flex:1;text-align:center;padding:11px 6px;border-radius:10px;font-size:13px;color:var(--ink-soft);font-weight:800;cursor:pointer;} #qok-ui .seg b.on{background:linear-gradient(180deg,#f0c969,var(--gold2));color:#43340f;box-shadow:0 3px 0 #8a6a26;}
+/* category filter seg: icon stacked above a small label */
+#qok-ui .segcat b{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 3px;font-size:10px;}
+#qok-ui .segcat b svg{flex:none;}
+#qok-ui .switch{width:50px;height:28px;border-radius:99px;background:#cdb578;position:relative;flex:none;cursor:pointer;} #qok-ui .switch.on{background:linear-gradient(90deg,#5fd089,var(--emerald2));} #qok-ui .switch::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 2px 4px #0004;transition:left .12s;} #qok-ui .switch.on::after{left:25px;}
+#qok-ui .slider{height:10px;border-radius:99px;background:#cdb578;position:relative;flex:1;cursor:pointer;} #qok-ui .slider i{position:absolute;left:0;top:0;height:100%;width:50%;border-radius:99px;background:linear-gradient(90deg,#f0c969,var(--gold2));} #qok-ui .slider b{position:absolute;top:50%;transform:translate(-50%,-50%);width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 2px 5px #0005;}
+#qok-ui .setrow{display:flex;align-items:center;gap:10px;padding:14px;border-radius:14px;background:#ffffff14;cursor:pointer;min-height:52px;}
+#qok-ui .setrow.sel{outline:2.5px solid var(--gold);outline-offset:1px;background:#f3e7c61a;} #qok-ui .setrow .lab{flex:1;font-weight:800;font-size:14.5px;color:#f3ead2;} #qok-ui .setrow .val{font-weight:800;color:var(--gold);font-size:14px;}
+
+#qok-ui .enemy-stage{flex:1;display:flex;align-items:center;justify-content:center;position:relative;min-height:0;}
+#qok-ui .enemy-card{position:absolute;top:6px;left:14px;right:14px;display:flex;align-items:center;gap:9px;background:#0d0f22cc;border:2px solid var(--gold-line);border-radius:13px;padding:9px 11px;z-index:4;}
+#qok-ui .msg{background:#0d0f22e0;border:2px solid var(--gold-line);border-radius:14px;padding:12px 14px;color:#f2ead2;font-size:14px;line-height:1.4;}
+#qok-ui .scene-h{text-align:center;font-weight:900;color:#fdf3da;font-size:19px;} #qok-ui .scene-s{text-align:center;color:#c7bfe0;font-size:12.5px;margin-top:2px;}
+
+/* Battle is a fully-opaque DOM screen (the Phaser BattleScene is a centered/
+   letterboxed fixed scene, so a transparent overlay would expose its UI in the
+   middle band). We render the monster ourselves from its PNG sprite. */
+#qok-ui.battle .col{ max-width:600px; }
+#qok-ui .bstage{ flex:1; position:relative; min-height:0; display:flex; align-items:center; justify-content:center; }
+/* monster sprite (black bg chroma-keyed to transparent at runtime, see ui-overhaul.js) */
+#qok-ui .bmon{ image-rendering:pixelated; width:46%; max-width:230px; max-height:60%; object-fit:contain; filter:drop-shadow(0 10px 12px #0008); }
+#qok-ui .bstage::before{ content:""; position:absolute; width:240px; height:80px; bottom:16%; border-radius:50%; background:radial-gradient(closest-side,#00000055,transparent); }
+#qok-ui .hudwrap{ flex:none; padding:14px 14px calc(16px + env(safe-area-inset-bottom,0px)); }
+#qok-ui .actiongrid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+#qok-ui .pbar{ display:flex; align-items:center; gap:9px; background:#0d0f22e0; border:2px solid var(--gold-line); border-radius:13px; padding:9px 11px; margin-top:10px; }
+#qok-ui .itemrow{ display:flex; flex-direction:column; gap:8px; }
+/* quiz — a parchment card in the bottom HUD so the enemy + monster stay visible above it */
+#qok-ui .qcard{ padding:13px 14px; display:flex; flex-direction:column; gap:9px; }
+#qok-ui .qprompt{ text-align:center; font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--ink-soft); font-weight:800; }
+#qok-ui .qtimer{ height:9px; border-radius:99px; background:#cdb578; overflow:hidden; } #qok-ui .qtimer i{ display:block; height:100%; border-radius:99px; background:linear-gradient(90deg,#5fd089,var(--emerald2)); transition:width .1s linear; }
+#qok-ui .qq{ text-align:center; font-weight:900; font-size:22px; color:var(--ink); padding:2px 0 4px; }
+#qok-ui .qans{ display:grid; grid-template-columns:1fr 1fr; gap:9px; }
+#qok-ui .qbtn{ appearance:none; border:2px solid var(--gold-line); border-radius:13px; background:linear-gradient(180deg,#fbf2d6,#efe0b6); color:var(--ink); font-weight:800; font-size:17px; padding:13px; cursor:pointer; box-shadow:0 4px 0 #cdb578; min-height:52px; }
+
+/* ============================================================
+   Responsive scaling (--z = zoom factor; 1 on phone).
+   - Tablet PORTRAIT  → phone-style SINGLE column, expanded to fill.
+   - Tablet LANDSCAPE + web → 2-pane, expanded to fill.
+   Only the scrollable content (.zc) + the bars are zoomed, NOT the
+   full-height column — so the tab bar stays pinned to the bottom.
+   width:calc(100%/var(--z)) cancels zoom's horizontal growth.
+   ============================================================ */
+#qok-ui{ --z:1; }
+#qok-ui .zc{ zoom:var(--z); width:calc(100% / var(--z)); margin-left:auto; margin-right:auto; }
+#qok-ui .topbar{ zoom:var(--z); width:calc(100% / var(--z)); margin-left:auto; margin-right:auto; }
+#qok-ui .tabbar{ zoom:var(--z); width:calc(100% / var(--z)); margin-left:auto; margin-right:auto; }
+
+/* TABLET PORTRAIT — same single-column layout as phone, widened to fill the screen.
+   Gentle zoom keeps a WIDE design width (true tablet layout), not a magnified phone. */
+@media (min-width:700px) and (orientation:portrait){
+  #qok-ui{ --z:1.4; }
+  #qok-ui .col{ max-width:900px; }
+  #qok-ui .body{ display:flex; flex-direction:column; justify-content:safe center; }
+  /* battle */
+  #qok-ui.battle .col{ max-width:760px; }
+  #qok-ui .bmon{ max-width:58%; max-height:46%; }
+  #qok-ui .hudwrap, #qok-ui .heal-wrap{ zoom:1.4; width:calc(100% / 1.4); margin:0 auto; }
+  #qok-ui .enemy-card{ zoom:1.32; }
+}
+/* TABLET LANDSCAPE + WEB — 2-pane, widened to fill the width */
+@media (min-width:700px) and (orientation:landscape) and (min-height:560px){
+  #qok-ui{ --z:1.32; }
+  #qok-ui .col{ max-width:1160px; }
+  #qok-ui .body{ display:flex; flex-direction:column; justify-content:safe center; }
+  #qok-ui .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:12px 20px; align-content:safe center; }
+  #qok-ui .grid2 > .eyebrow, #qok-ui .grid2 > .span2{ grid-column:1 / -1; }
+  /* paired items in a row share the tallest height (grid default stretch) so the 2-list layout looks even */
+  #qok-ui .grid2 > .card{ box-shadow:0 4px 0 #cdb578; }
+  #qok-ui.battle .col{ max-width:900px; }
+  #qok-ui .bmon{ max-width:340px; max-height:58%; }
+  #qok-ui .hudwrap, #qok-ui .heal-wrap{ zoom:1.3; width:calc(100% / 1.3); margin:0 auto; }
+  #qok-ui .enemy-card{ zoom:1.25; }
+}

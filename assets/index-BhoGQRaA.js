@@ -84478,6 +84478,15 @@ ${x.join(`
         },
         T = new ti.Game(x);
     window.__PHASER_GAME__ = T;
+    window.__QOK = {
+        Z: typeof Z !== "undefined" ? Z : function(k) { return k },
+        db: typeof ye !== "undefined" ? ye : null,
+        find: typeof Bi !== "undefined" ? Bi : function() { return null },
+        tile: typeof xt !== "undefined" ? xt : 48,
+        state: function() { return typeof tt !== "undefined" ? tt : null },
+        shops: typeof Fn !== "undefined" ? Fn : null,
+        loc: function() { return typeof vi !== "undefined" ? vi() : "en" }
+    };
     const i = T.canvas;
     i.style.width = "100%", i.style.height = "100%";
     (function() {
