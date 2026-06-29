@@ -73046,6 +73046,7 @@ class Cp extends ti.Scene {
                 }).setOrigin(.5);
             S.setData("action", C.action), this.menuItems.push(S)
         });
+        window.__tapItems && window.__tapItems(this.menuItems, i => { this.selectedIndex = i; this.updateSelection(); this.confirm() });
         const m = vi() === "ja" ? "EN / JA ←" : "→ EN / JA";
         this.add.text(Tt - Math.round(16 * x), kt - Math.round(20 * x), m, {
             fontSize: `${Math.round(10*x)}px`,
@@ -73115,6 +73116,7 @@ class Cp extends ti.Scene {
             color: this.ngPlus ? ht.TEXT_GRAY : this.heroName ? ht.TEXT_WHITE : ht.TEXT_GRAY,
             fontFamily: yt
         }).setOrigin(.5, .5);
+        this.ngPlus || this.add.rectangle(T, t, o, Math.round(28 * x), 0, 0).setInteractive({ useHandCursor: true }).on("pointerdown", () => { this.createRow = "name", this.draw(), this.time.delayedCall(60, () => this.focusNameInput()) });
         if (e.setData("row", "name"), this.menuItems.push(e), S && !this.ngPlus) {
             const g = e.width,
                 R = T + Math.round(60 * x) + g / 2 + Math.round(4 * x),
@@ -73136,17 +73138,17 @@ class Cp extends ti.Scene {
         r && this.drawRowCursor(T, t);
         const c = this.colorOptions[this.colorIndex],
             s = Z(`color.${c}`);
-        this.drawSelectorRow(T, t, Z("create.color"), s, r), t += Math.round(30 * x);
+        this.drawSelectorRow(T, t, Z("create.color"), s, r), this.add.rectangle(T, t, o, Math.round(28 * x), 0, 0).setInteractive({ useHandCursor: true }).on("pointerdown", () => { this.createRow = "color", this.colorIndex = (this.colorIndex + 1) % this.colorOptions.length, this.updateHeroPreview(), this.draw() }), t += Math.round(30 * x);
         const d = this.createRow === "difficulty";
-        d && this.drawRowCursor(T, t), this.drawSelectorRow(T, t, Z("settings.difficulty"), Z(`grade.${this.difficultyOptions[this.difficultyIndex]}`), d), t += Math.round(30 * x);
+        d && this.drawRowCursor(T, t), this.drawSelectorRow(T, t, Z("settings.difficulty"), Z(`grade.${this.difficultyOptions[this.difficultyIndex]}`), d), this.add.rectangle(T, t, o, Math.round(28 * x), 0, 0).setInteractive({ useHandCursor: true }).on("pointerdown", () => { this.createRow = "difficulty", this.difficultyIndex = (this.difficultyIndex + 1) % this.difficultyOptions.length, this.draw() }), t += Math.round(30 * x);
         const v = this.createRow === "language";
         v && this.drawRowCursor(T, t);
         const y = vi() === "ja" ? (Yr ? "日本語" : "にほんご") : "English";
-        if (this.drawSelectorRow(T, t, Z("settings.language"), y, v), t += Math.round(30 * x), vi() === "ja") {
+        if (this.drawSelectorRow(T, t, Z("settings.language"), y, v), this.add.rectangle(T, t, o, Math.round(28 * x), 0, 0).setInteractive({ useHandCursor: true }).on("pointerdown", () => { this.createRow = "language", this.toggleLanguage() }), t += Math.round(30 * x), vi() === "ja") {
             const g = this.createRow === "kanji";
             g && this.drawRowCursor(T, t);
             const R = Ks() ? "むずかしい" : "かんたん";
-            this.drawSelectorRow(T, t, "もじ", R, g), t += Math.round(30 * x)
+            this.drawSelectorRow(T, t, "もじ", R, g), this.add.rectangle(T, t, o, Math.round(28 * x), 0, 0).setInteractive({ useHandCursor: true }).on("pointerdown", () => { this.createRow = "kanji", this.toggleKanji() }), t += Math.round(30 * x)
         }
         t += Math.round(4 * x), this.add.text(T, t, f, {
             fontSize: `${Math.round(10*x)}px`,
@@ -73159,7 +73161,7 @@ class Cp extends ti.Scene {
             color: p ? ht.TEXT_YELLOW : ht.TEXT_WHITE,
             fontFamily: yt,
             fontStyle: "bold"
-        }).setOrigin(.5), this.errorText = this.add.text(T, t + Math.round(24 * x), "", {
+        }).setOrigin(.5).setInteractive({ useHandCursor: true }).on("pointerdown", () => { this.createRow = "start", this.confirmCreate() }), this.errorText = this.add.text(T, t + Math.round(24 * x), "", {
             fontSize: `${Math.round(10*x)}px`,
             color: "#ff4444",
             fontFamily: yt
@@ -78719,6 +78721,7 @@ const Xt = {
                 if (T.id === "healer") continue;
                 const i = Te.NPC_SPRITE_MAP[T.id] ?? (Te.FEMALE_NPCS.has(T.id) ? "npc-f" : "npc"),
                     o = this.add.sprite(T.x * xt + xt / 2, T.y * xt + xt / 2, i).setOrigin(.5).setScale(1);
+                (npc => { o.setInteractive({ useHandCursor: true }); o.on("pointerdown", (p, lx, ly, ev) => { ev && ev.stopPropagation && ev.stopPropagation(); !this.showingMessage && !this.isMoving && Math.abs(this.heroTileX - npc.x) + Math.abs(this.heroTileY - npc.y) === 1 && (npc.id === "healer" ? this.handleHealer() : this.handleNpcInteraction(npc)) }); })(T);
                 this.npcSprites.push(o)
             }
             if (x.shopId) {
@@ -80528,7 +80531,7 @@ const Xt = {
             // Hide when empty: no active quests = no tracker rendered
             if (_qs.length === 0) return;
             // Box right edge anchored near compass; box width and center
-            const _boxRight = Ne + Tt - Math.round(8 * gt);
+            const _boxRight = this.scale.width - Math.round(8 * gt);
             const _boxW = Math.round(110 * gt);
             const _boxCX = _boxRight - Math.round(_boxW / 2);
             // Position: overworld/portal-overworld = just below compass bottom (compassY+22*gt+8*gt = Ye+70*gt)
@@ -80629,8 +80632,16 @@ const Xt = {
             const x = Xt[this.currentMapId];
             if (!(x.type === "overworld" || x.type === "portal-overworld")) {
                 this.minimapGfx?.destroy(), this.minimapGfx = void 0, this.minimapPlayerDot?.destroy(), this.minimapPlayerDot = void 0;
+                this._minimapHit?.destroy(), this._minimapHit = void 0, this._minimapBtn?.destroy(), this._minimapBtn = void 0, this._minimapBtnLabel?.destroy(), this._minimapBtnLabel = void 0;
                 return
             }
+            if (this.minimapCollapsed) {
+                this.minimapGfx?.destroy(), this.minimapGfx = void 0, this.minimapPlayerDot?.destroy(), this.minimapPlayerDot = void 0, this._minimapHit?.destroy(), this._minimapHit = void 0;
+                const _bx = Ne + Math.round(8 * gt), _by = Ye + Math.round(40 * gt), _bs = Math.round(26 * gt);
+                this._minimapBtn || (this._minimapBtn = this.add.rectangle(_bx + _bs / 2, _by + _bs / 2, _bs, _bs, 1118498, .9).setStrokeStyle(Math.round(1 * gt), 8939059).setDepth(100).setScrollFactor(0).setInteractive({ useHandCursor: true }), this._minimapBtn.on("pointerdown", (p, lx, ly, ev) => { ev && ev.stopPropagation && ev.stopPropagation(); this.minimapCollapsed = !1, this.lastMinimapUpdate = 0, this.renderMinimap() }), this._minimapBtnLabel = (() => { const _g = this.add.graphics().setDepth(101).setScrollFactor(0); const cx = _bx + _bs / 2, cy = _by + _bs / 2, u = gt, _lw = Math.max(1, Math.round(u)); _g.fillStyle(15192228, 1).fillRect(cx - 8 * u, cy - 7 * u, 16 * u, 14 * u); _g.lineStyle(_lw, 13481847, 1).lineBetween(cx - 8 * u, cy - 4 * u, cx + 8 * u, cy - 4 * u).lineBetween(cx - 8 * u, cy + 4 * u, cx + 8 * u, cy + 4 * u); _g.lineStyle(_lw, 10246698, 1).lineBetween(cx - 6 * u, cy + 3 * u, cx - 1 * u, cy - 2 * u).lineBetween(cx - 1 * u, cy - 2 * u, cx + 3 * u, cy + 1 * u); _g.lineStyle(Math.max(1, Math.round(1.4 * u)), 13776699, 1).lineBetween(cx + 3 * u, cy - 4 * u, cx + 6 * u, cy - 1 * u).lineBetween(cx + 6 * u, cy - 4 * u, cx + 3 * u, cy - 1 * u); _g.fillStyle(13020268, 1).fillRoundedRect(cx - 11 * u, cy - 8 * u, 3.5 * u, 16 * u, 1.6 * u).fillRoundedRect(cx + 7.5 * u, cy - 8 * u, 3.5 * u, 16 * u, 1.6 * u); _g.lineStyle(_lw, 9072686, 1).strokeRoundedRect(cx - 11 * u, cy - 8 * u, 3.5 * u, 16 * u, 1.6 * u).strokeRoundedRect(cx + 7.5 * u, cy - 8 * u, 3.5 * u, 16 * u, 1.6 * u); return _g; })());
+                return
+            }
+            this._minimapBtn?.destroy(), this._minimapBtn = void 0, this._minimapBtnLabel?.destroy(), this._minimapBtnLabel = void 0;
             const i = this.time.now;
             if (this.minimapGfx && i - this.lastMinimapUpdate < 300) return;
             this.lastMinimapUpdate = i, this.minimapGfx || (this.minimapGfx = this.add.graphics().setDepth(100).setScrollFactor(0)), this.minimapPlayerDot || (this.minimapPlayerDot = this.add.graphics().setDepth(101).setScrollFactor(0));
@@ -80655,6 +80666,7 @@ const Xt = {
                 startTY: e,
                 size: t
             }, o.fillStyle(1118498, .9), o.fillRect(S - 2, h - 2, t + 4, t + 4);
+            this._minimapHit || (this._minimapHit = this.add.rectangle(S + t / 2, h + t / 2, t + 4, t + 4, 0, 0).setDepth(102).setScrollFactor(0).setInteractive({ useHandCursor: true }), this._minimapHit.on("pointerdown", (p, lx, ly, ev) => { ev && ev.stopPropagation && ev.stopPropagation(); this.minimapCollapsed = !0, this.renderMinimap() }));
             const r = Math.min(m, a + C),
                 c = Math.min(u, e + C),
                 s = {
@@ -81038,7 +81050,7 @@ const Xt = {
                 return
             }
             this.compassEnabled = !0, this.compassContainer?.destroy();
-            const T = Ne + Tt - Math.round(40 * gt),
+            const T = this.scale.width - Math.round(40 * gt),
                 i = Ye + Math.round(40 * gt);
             this.compassContainer = this.add.container(T, i).setDepth(101).setScrollFactor(0);
             const o = this.add.graphics();
@@ -82591,7 +82603,7 @@ class Pp extends ti.Scene {
                     fontFamily: yt
                 }).setData("action", i.action).setData("isMenu", !0);
             this.menuItems.push(C)
-        }), this.updateMenuSelection()
+        }), window.__tapItems && window.__tapItems(this.menuItems, i => { this.menuIndex = i; this.updateMenuSelection(); this.confirmMenuAction() }), this.updateMenuSelection()
     }
     clearMenu() {
         this.menuItems.forEach(x => x.destroy()), this.menuItems = [], this.children.list.filter(x => x.getData("isMenu")).forEach(x => x.destroy())
@@ -82649,6 +82661,7 @@ class Pp extends ti.Scene {
                 fontFamily: yt
             }).setData("itemId", "__cancel__").setData("isMenu", !0);
             this.itemMenuItems.push(f);
+            window.__tapItems && window.__tapItems(this.itemMenuItems, i => { this.itemMenuIndex = i; this.updateItemSelection(); this.confirmItemSelection() });
             return
         }
         T.slice(0, i).forEach((f, S) => {
@@ -82666,7 +82679,8 @@ class Pp extends ti.Scene {
                 color: T.length === 0 ? ht.TEXT_YELLOW : ht.TEXT_WHITE,
                 fontFamily: yt
             }).setData("itemId", "__cancel__").setData("isMenu", !0);
-        this.itemMenuItems.push(t)
+        this.itemMenuItems.push(t);
+        window.__tapItems && window.__tapItems(this.itemMenuItems, i => { this.itemMenuIndex = i; this.updateItemSelection(); this.confirmItemSelection() })
     }
     clearItemMenu() {
         this.itemMenuItems.forEach(x => x.destroy()), this.itemMenuItems = [], this.children.list.filter(x => x.getData("isMenu")).forEach(x => x.destroy())
@@ -82749,7 +82763,8 @@ class Pp extends ti.Scene {
                     fontFamily: yt
                 }).setOrigin(.5);
             v.add([y, p]), v.setData("bg", y), v.setData("text", p), this.quizContainer.add(v), this.quizButtons.push(v)
-        })
+        });
+        window.__tapItems && window.__tapItems(this.quizButtons.map(b => b.getData("bg")), i => { this.quizSelectedIndex = i; this.updateQuizSelection(); this.confirmQuizAnswer() })
     }
     updateQuizSelection() {
         this.quizButtons.forEach((x, T) => {
@@ -82991,7 +83006,7 @@ class Fp extends ti.Scene {
                     fontSize: `${Math.round(12*St)}px`,
                     color: i === this.tabIndex ? ht.TEXT_YELLOW : ht.TEXT_WHITE,
                     fontFamily: yt
-                })
+                }).setInteractive({ useHandCursor: true }).on("pointerdown", () => { this.tabIndex = i, this.currentTab = this.tabs[i], this.listIndex = 0, this.equipMode = "equipped", this.equipSlotIndex = 0, this.equipInventoryIndex = 0, this.equipTypeFilter = "weapon", this.equipScrollOffset = 0, this.drawMenu() })
             }), this.add.line(0, Math.round(32 * St), 0, 0, Tt, 0, ht.MENU_BORDER).setOrigin(0), this.currentTab) {
             case "status":
                 this.drawStatus();
@@ -83098,6 +83113,7 @@ class Fp extends ti.Scene {
         T.forEach((o, u) => {
             const m = Bi(o.itemId);
             if (!m) return;
+            this.add.rectangle(Tt / 2, i + u * Math.round(24 * St) + Math.round(6 * St), Tt, Math.round(22 * St), 0, 0).setInteractive({ useHandCursor: true }).on("pointerdown", () => { this.listIndex = u, this.useItem() });
             const C = this.getItemDisplayName(m);
             this.add.text(Math.round(32 * St), i + u * Math.round(24 * St), `${C} x${o.quantity}`, {
                 fontSize: `${Math.round(10*St)}px`,
@@ -83154,6 +83170,7 @@ class Fp extends ti.Scene {
                 _stat = _eData?.stats ? ((_eData.stats.atk ? ` +${_eData.stats.atk}${Z("menu.atk")}` : "") + (_eData.stats.def ? ` +${_eData.stats.def}${Z("menu.def")}` : "")) : "",
                 _cur = _sel ? ">" : " ";
             const _row = T + Math.round(26 * St) + f * Math.round(26 * St);
+            this.add.rectangle(Tt / 2, _row + Math.round(6 * St), Tt, Math.round(24 * St), 0, 0).setInteractive({ useHandCursor: true }).on("pointerdown", () => { this.equipMode = "equipped", this.equipSlotIndex = f, this.handleEquipAction() });
             this.add.text(Math.round(20 * St), _row, _cur, {
                 fontSize: `${Math.round(10*St)}px`,
                 color: ht.TEXT_YELLOW,
@@ -83194,6 +83211,7 @@ class Fp extends ti.Scene {
         _ALL_TYPES.forEach((tp, ti) => {
             const _isActive = tp === (this.equipTypeFilter || "weapon");
             const _tx = Math.round(32 * St) + ti * _tabW;
+            this.add.rectangle(_tx + _tabW / 2, _tabY + Math.round(6 * St), _tabW, Math.round(20 * St), 0, 0).setInteractive({ useHandCursor: true }).on("pointerdown", () => { this.equipTypeFilter = tp, this.equipInventoryIndex = 0, this.equipScrollOffset = 0, this.equipMode = "equipped", this.drawMenu() });
             this.add.text(_tx, _tabY, Z(_SLOT_KEYS[tp]), {
                 fontSize: `${Math.round(9*St)}px`,
                 color: _isActive ? ht.TEXT_YELLOW : ht.TEXT_GRAY,
@@ -83241,6 +83259,7 @@ class Fp extends ti.Scene {
                     _statStr = (_atkVal !== undefined ? `+${_atkVal}${Z("menu.atk")}` : "") + (_defVal !== undefined ? ` +${_defVal}${Z("menu.def")}` : ""),
                     _cur = _sel ? ">" : " ";
                 const _ry = _listY + fv * _rowH;
+                this.add.rectangle(Tt / 2, _ry + Math.round(6 * St), Tt, _rowH, 0, 0).setInteractive({ useHandCursor: true }).on("pointerdown", () => { this.equipMode = "inventory", this.equipInventoryIndex = _absIdx, this.handleEquipAction() });
                 // Cursor
                 this.add.text(Math.round(20 * St), _ry, _cur, {
                     fontSize: `${Math.round(10*St)}px`,
@@ -83354,12 +83373,13 @@ class Fp extends ti.Scene {
     }
     get settingsList() {
         const x = ["difficulty", "language"];
-        return vi() === "ja" && x.push("kanji"), x.push("timer", "sound", "volume"), x
+        return vi() === "ja" && x.push("kanji"), x.push("timer", "sound", "volume"), (typeof window !== "undefined" && window.matchMedia && window.matchMedia("(pointer: coarse)").matches) && x.push("controlOrientation"), x
     }
     drawSettings() {
         let x = Math.round(60 * St);
         const T = `${Math.round(12*St)}px`;
         this.settingsList.forEach((o, u) => {
+            this.add.rectangle(Tt / 2, x + Math.round(6 * St), Tt, Math.round(26 * St), 0, 0).setInteractive({ useHandCursor: true }).on("pointerdown", () => { this.listIndex = u, this.handleSettingToggle(1) });
             const m = this.listIndex === u,
                 C = m ? ht.TEXT_YELLOW : ht.TEXT_WHITE,
                 t = m ? ">" : " ";
@@ -83432,6 +83452,11 @@ class Fp extends ti.Scene {
                     color: ht.TEXT_YELLOW,
                     fontFamily: yt
                 })
+            } else if (o === "controlOrientation") {
+                const _ori = (typeof localStorage !== "undefined" && localStorage.getItem("eduControlOrientation")) || "left";
+                const _oLabel = vi() === "ja" ? "そうさボタン" : "Controls";
+                const _oVal = _ori === "center" ? (vi() === "ja" ? "ちゅうおう" : "Center") : _ori === "right" ? (vi() === "ja" ? "みぎ" : "Right") : (vi() === "ja" ? "ひだり" : "Left");
+                this.add.text(Math.round(32 * St), x, _oLabel, { fontSize: T, color: C, fontFamily: yt }), this.add.text(Math.round(200 * St), x, _oVal, { fontSize: T, color: ht.TEXT_YELLOW, fontFamily: yt })
             }
             x += Math.round(28 * St)
         })
@@ -83539,6 +83564,10 @@ class Fp extends ti.Scene {
             else if (T === "volume") {
                 const o = (Math.round(tt.player.state.masterVolume * 10) + 1) % 11;
                 tt.player.state.masterVolume = Math.round(o) / 10, Jt.setVolume(tt.player.state.masterVolume)
+            } else if (T === "controlOrientation") {
+                const _cur = (typeof localStorage !== "undefined" && localStorage.getItem("eduControlOrientation")) || "left";
+                const _next = _cur === "left" ? "center" : _cur === "center" ? "right" : "left";
+                typeof localStorage !== "undefined" && localStorage.setItem("eduControlOrientation", _next), window.__setControlOrientation && window.__setControlOrientation(_next)
             }
             this.drawMenu()
         }
@@ -83744,7 +83773,8 @@ class Ip extends ti.Scene {
                 fontSize: `${Math.round(14*he)}px`,
                 color: i === this.menuIndex ? ht.TEXT_YELLOW : ht.TEXT_WHITE,
                 fontFamily: yt
-            }).setOrigin(.5)
+            }).setOrigin(.5);
+            this.add.rectangle(Tt / 2, Math.round(100 * he) + i * Math.round(36 * he), Tt, Math.round(32 * he), 0, 0).setInteractive({ useHandCursor: true }).on("pointerdown", () => { this.menuIndex = i, this.confirm() })
         })
     }
     drawBuyList() {
@@ -83754,6 +83784,7 @@ class Ip extends ti.Scene {
         x.items.forEach((i, o) => {
             const u = ye[i];
             if (!u) return;
+            this.add.rectangle(Tt / 2, Math.round(64 * he) + o * Math.round(28 * he) + Math.round(5 * he), Tt, Math.round(26 * he), 0, 0).setInteractive({ useHandCursor: true }).on("pointerdown", () => { this.listIndex = o, this.confirm() });
             const m = tt.player.state.gold >= u.buyPrice;
             const _invOwned = tt.player.getItemCount(i);
             const _isEquip = _EQUIP_TYPES.includes(u.type);
@@ -83792,6 +83823,7 @@ class Ip extends ti.Scene {
             }
         });
         const T = Math.round(64 * he) + x.items.length * Math.round(28 * he);
+        this.add.rectangle(Tt / 2, T + Math.round(5 * he), Tt, Math.round(24 * he), 0, 0).setInteractive({ useHandCursor: true }).on("pointerdown", () => { this.listIndex = x.items.length, this.confirm() });
         if (this.add.text(Math.round(32 * he), T, `▸ ${Z("shop.done")}`, {
                 fontSize: `${Math.round(10*he)}px`,
                 color: this.listIndex === x.items.length ? ht.TEXT_YELLOW : ht.TEXT_GRAY,
@@ -83819,6 +83851,7 @@ class Ip extends ti.Scene {
             fontFamily: yt
         }).setOrigin(.5) : x.forEach((i, o) => {
             const u = Bi(i.itemId);
+            this.add.rectangle(Tt / 2, Math.round(64 * he) + o * Math.round(28 * he) + Math.round(5 * he), Tt, Math.round(26 * he), 0, 0).setInteractive({ useHandCursor: true }).on("pointerdown", () => { this.listIndex = o, this.confirm() });
             u && this.add.text(Math.round(32 * he), Math.round(64 * he) + o * Math.round(28 * he), `${Z(u.nameKey)} x${i.quantity}  ${u.sellPrice}G`, {
                 fontSize: `${Math.round(10*he)}px`,
                 color: o === this.listIndex ? ht.TEXT_YELLOW : ht.TEXT_WHITE,
@@ -83826,6 +83859,7 @@ class Ip extends ti.Scene {
             })
         });
         const T = Math.round(64 * he) + x.length * Math.round(28 * he);
+        this.add.rectangle(Tt / 2, T + Math.round(5 * he), Tt, Math.round(24 * he), 0, 0).setInteractive({ useHandCursor: true }).on("pointerdown", () => { this.listIndex = x.length, this.confirm() });
         this.add.text(Math.round(32 * he), T, `▸ ${Z("shop.done")}`, {
             fontSize: `${Math.round(10*he)}px`,
             color: this.listIndex === x.length ? ht.TEXT_YELLOW : ht.TEXT_GRAY,
@@ -84437,7 +84471,7 @@ ${x.join(`
             roundPixels: !0,
             backgroundColor: "#111111",
             scale: {
-                mode: ti.Scale.NONE
+                mode: ti.Scale.RESIZE
             },
             parent: "game-container",
             scene: [$o, Cp, zr, Pp, Fp, Ip, Lp, Op, Dp]
@@ -84445,5 +84479,80 @@ ${x.join(`
         T = new ti.Game(x);
     window.__PHASER_GAME__ = T;
     const i = T.canvas;
-    i.style.width = `${Io}px`, i.style.height = `${Lo}px`
+    i.style.width = "100%", i.style.height = "100%";
+    (function() {
+        var DW = Tt, DH = kt;
+        function fitScene(s) {
+            var cam = s && s.cameras && s.cameras.main;
+            if (!cam) return;
+            var sw = T.scale.width, sh = T.scale.height, z = Math.min(sw / DW, sh / DH);
+            cam.setZoom(z), cam.centerOn(DW / 2, DH / 2)
+        }
+        function fixed(s) { return s && s.scene && "WorldMapScene" !== s.scene.key }
+        // Reusable: make an array of GameObjects tap-reactive -> onPick(index, obj).
+        window.__tapItems = function(items, onPick) {
+            if (!items || !items.forEach) return;
+            items.forEach(function(it, i) {
+                if (!it || it.__tw || !it.setInteractive) return;
+                it.__tw = true;
+                try { it.setInteractive({ useHandCursor: true }); } catch (e) { return; }
+                it.on("pointerdown", function(p, lx, ly, ev) { ev && ev.stopPropagation && ev.stopPropagation(); onPick(i, it); });
+            });
+        };
+        // Scene-level taps: advance dialogue / confirm overlays by tapping the field.
+        // (On-screen d-pad/Z/menu buttons are DOM elements above the canvas, so taps on
+        //  them never reach Phaser; only game-area taps trigger these.)
+        function wireSceneTaps(s) {
+            var key = s.scene.key;
+            if (key === "WorldMapScene") {
+                s.input.on("pointerdown", function() {
+                    if (s.questOverlayOpen) return s.confirmQuestOption && s.confirmQuestOption();
+                    if (s.midCrystalOverlayOpen) return s.confirmMidFloorCrystalOption && s.confirmMidFloorCrystalOption();
+                    if (s.warpOverlayOpen) return s.confirmWarpOption && s.confirmWarpOption();
+                    if (s.healerOverlayOpen) return s.confirmHealerOption && s.confirmHealerOption();
+                    if (s.itemOverlayOpen) return s.useFieldItem && s.useFieldItem();
+                    if (s.showingMessage) return s.advanceDialog && s.advanceDialog();
+                    // No overlay/message: act on the tile in front of the hero (= Z: save point, sign, stairs, facing NPC).
+                    // NPC sprites have their own tap handler with stopPropagation, so this won't double-fire for them.
+                    s.interact && s.interact();
+                });
+            } else if (key === "BattleScene") {
+                s.input.on("pointerdown", function() {
+                    if (s.phase === "message") return s.advanceMessage && s.advanceMessage();
+                });
+            }
+        }
+        function updateControlVis() {
+            try { document.body.classList.toggle("show-controls", T.scene.isActive("WorldMapScene")); } catch (e) {}
+        }
+        function setup() {
+            var visEvents = ["create", "wake", "sleep", "pause", "resume", "shutdown", "start"];
+            T.scene.scenes.forEach(function(s) {
+                if (fixed(s)) {
+                    var f = function() { fitScene(s) };
+                    s.events.on("create", f), s.events.on("wake", f), s.events.on("resume", f);
+                    (s.scene.settings.active || s.scene.settings.visible) && fitScene(s)
+                }
+                // Re-wire scene taps on every create (input resets on scene shutdown).
+                s.events.on("create", function() { wireSceneTaps(s) });
+                (s.scene.settings.active || s.scene.settings.visible) && wireSceneTaps(s);
+                // Controls show only on the overworld -> recompute on every scene transition.
+                visEvents.forEach(function(ev) { s.events.on(ev, updateControlVis) });
+            });
+            updateControlVis();
+            T.scale.on("resize", function() {
+                T.scene.scenes.forEach(function(s) {
+                    fixed(s) && (s.scene.settings.active || s.scene.settings.visible) && fitScene(s)
+                });
+                var wm = T.scene.getScene("WorldMapScene");
+                wm && wm.scene.isActive() && wm.updateHUD && wm.updateHUD()
+            })
+        }
+        var tries = 0;
+        (function wait() {
+            if (T.scene && T.scene.scenes && T.scene.scenes.length) return setup();
+            if (++tries > 240) return;
+            requestAnimationFrame(wait)
+        })()
+    })()
 })();

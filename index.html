@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>Quest of Knowledge</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -12,115 +12,128 @@
       height: 100%;
       overflow: hidden;
       font-family: 'Helvetica Neue', 'Hiragino Kaku Gothic ProN', 'Meiryo', sans-serif;
+      -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
+      -webkit-tap-highlight-color: transparent;
     }
 
-    /* Full-page flex centering */
+    /* Full-page flex centering (desktop framed layout) */
     .frame-wrapper {
       width: 100vw;
       height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
-      /* Subtle parchment-like radial background */
-      background:
-        radial-gradient(ellipse at center, #141428 0%, #0a0a14 70%);
+      background: radial-gradient(ellipse at center, #141428 0%, #0a0a14 70%);
     }
 
-    /* Ornate RPG frame */
+    /* Ornate RPG frame (desktop) */
     .rpg-frame {
       position: relative;
       padding: 12px;
-      /* Double-border effect: outer gold, inner dark */
       border: 3px solid #8b7340;
       outline: 2px solid #3a2f1e;
       outline-offset: 2px;
       background: #111;
-      /* Inner glow */
-      box-shadow:
-        inset 0 0 20px rgba(0, 0, 0, 0.8),
-        0 0 30px rgba(80, 60, 20, 0.3),
-        0 0 60px rgba(0, 0, 0, 0.5);
+      box-shadow: inset 0 0 20px rgba(0,0,0,.8), 0 0 30px rgba(80,60,20,.3), 0 0 60px rgba(0,0,0,.5);
     }
-
-    /* Corner ornaments via pseudo-elements */
-    .rpg-frame::before,
-    .rpg-frame::after {
-      content: '';
-      position: absolute;
-      width: 16px;
-      height: 16px;
-      border: 2px solid #c9a84c;
-      z-index: 10;
+    .rpg-frame::before, .rpg-frame::after {
+      content: ''; position: absolute; width: 16px; height: 16px; border: 2px solid #c9a84c; z-index: 10;
     }
-    .rpg-frame::before {
-      top: 3px;
-      left: 3px;
-      border-right: none;
-      border-bottom: none;
-    }
-    .rpg-frame::after {
-      top: 3px;
-      right: 3px;
-      border-left: none;
-      border-bottom: none;
-    }
-
-    /* Bottom corners */
-    .corner-bl, .corner-br {
-      position: absolute;
-      width: 16px;
-      height: 16px;
-      border: 2px solid #c9a84c;
-      z-index: 10;
-      pointer-events: none;
-    }
-    .corner-bl {
-      bottom: 3px;
-      left: 3px;
-      border-right: none;
-      border-top: none;
-    }
-    .corner-br {
-      bottom: 3px;
-      right: 3px;
-      border-left: none;
-      border-top: none;
-    }
-
-    /* Title plaque above the frame */
+    .rpg-frame::before { top: 3px; left: 3px; border-right: none; border-bottom: none; }
+    .rpg-frame::after { top: 3px; right: 3px; border-left: none; border-bottom: none; }
+    .corner-bl, .corner-br { position: absolute; width: 16px; height: 16px; border: 2px solid #c9a84c; z-index: 10; pointer-events: none; }
+    .corner-bl { bottom: 3px; left: 3px; border-right: none; border-top: none; }
+    .corner-br { bottom: 3px; right: 3px; border-left: none; border-top: none; }
     .frame-title {
-      position: absolute;
-      top: -18px;
-      left: 50%;
-      transform: translateX(-50%);
+      position: absolute; top: -18px; left: 50%; transform: translateX(-50%);
       background: linear-gradient(180deg, #2a2440 0%, #1a1a2e 100%);
-      border: 2px solid #8b7340;
-      border-radius: 4px;
-      padding: 2px 16px;
-      color: #c9a84c;
-      font-size: 11px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      white-space: nowrap;
-      z-index: 20;
-      text-shadow: 0 0 6px rgba(201, 168, 76, 0.4);
+      border: 2px solid #8b7340; border-radius: 4px; padding: 2px 16px;
+      color: #c9a84c; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+      white-space: nowrap; z-index: 20; text-shadow: 0 0 6px rgba(201,168,76,.4);
     }
 
-    /* Game container — Phaser mounts canvas here */
-    #game-container {
-      line-height: 0;  /* prevent inline-block gap under canvas */
-    }
+    /* Desktop: fixed framed game at the design size (768x672). */
+    #game-container { line-height: 0; width: 768px; height: 672px; }
+    canvas { image-rendering: pixelated; image-rendering: crisp-edges; display: block; }
 
-    /* Pixel-perfect canvas: no browser interpolation */
-    canvas {
-      image-rendering: pixelated;
-      image-rendering: crisp-edges;
-      display: block;
+    /* ---- Touch controls: hidden by default, shown only on touch + overworld ---- */
+    #touch-controls { display: none; }
+
+    @media (pointer: coarse), (hover: none) {
+      /* Full-viewport render layer */
+      .frame-wrapper { display: block; width: 100vw; height: 100vh; background: #0a0a14; }
+      .rpg-frame { padding: 0; border: none; outline: none; box-shadow: none; background: transparent; }
+      .rpg-frame::before, .rpg-frame::after, .corner-bl, .corner-br, .frame-title { display: none; }
+      #game-container { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 1; }
+      #game-container canvas { width: 100% !important; height: 100% !important; display: block; }
+
+      /* The control overlay shows only while the game says we're on the overworld. */
+      body.show-controls #touch-controls {
+        display: block; position: fixed; inset: 0; z-index: 100; pointer-events: none;
+      }
+
+      /* --- Connected slide d-pad (one touch surface; finger position picks the direction) --- */
+      .dpad {
+        position: absolute; width: 172px; height: 172px; pointer-events: auto;
+        touch-action: none; border-radius: 26px;
+        background: rgba(26,26,46,.5); border: 2px solid #8b7340;
+        box-shadow: 0 0 10px rgba(0,0,0,.5), inset 0 0 14px rgba(0,0,0,.4);
+      }
+      .dpad-arrow {
+        position: absolute; color: #c9a84c; font-size: 27px; font-weight: 700;
+        pointer-events: none; -webkit-user-select: none; user-select: none;
+        transition: color .05s, text-shadow .05s, transform .05s;
+      }
+      .dpad-arrow.up    { top: 9px;    left: 50%; transform: translateX(-50%); }
+      .dpad-arrow.down  { bottom: 9px; left: 50%; transform: translateX(-50%); }
+      .dpad-arrow.left  { left: 12px;  top: 50%;  transform: translateY(-50%); }
+      .dpad-arrow.right { right: 12px; top: 50%;  transform: translateY(-50%); }
+      .dpad.dir-up    .dpad-arrow.up,
+      .dpad.dir-down  .dpad-arrow.down,
+      .dpad.dir-left  .dpad-arrow.left,
+      .dpad.dir-right .dpad-arrow.right { color: #1a1a2e; text-shadow: 0 0 12px #ffd54a; }
+      .dpad.dir-up::after, .dpad.dir-down::after, .dpad.dir-left::after, .dpad.dir-right::after {
+        content: ''; position: absolute; width: 60px; height: 60px; border-radius: 14px;
+        background: rgba(201,168,76,.85); pointer-events: none; z-index: 0;
+        transition: top .05s, bottom .05s, left .05s, right .05s;
+      }
+      .dpad.dir-up::after    { top: 6px;    left: 50%; transform: translateX(-50%); }
+      .dpad.dir-down::after  { bottom: 6px; left: 50%; transform: translateX(-50%); }
+      .dpad.dir-left::after  { left: 6px;   top: 50%;  transform: translateY(-50%); }
+      .dpad.dir-right::after { right: 6px;  top: 50%;  transform: translateY(-50%); }
+      .dpad-arrow { z-index: 1; }
+
+      /* --- Menu button (lives where Z used to be) --- */
+      .menu-btn {
+        position: absolute; width: 76px; height: 76px; border-radius: 50%;
+        pointer-events: auto; touch-action: none;
+        background: rgba(26,26,46,.62); border: 2px solid #8b7340; color: #c9a84c;
+        font-size: 28px; font-weight: 700;
+        display: flex; align-items: center; justify-content: center;
+        box-shadow: 0 0 8px rgba(0,0,0,.5), inset 0 0 8px rgba(0,0,0,.4);
+        transition: background .05s, transform .05s;
+      }
+      .menu-btn.pressed { background: rgba(201,168,76,.85); color: #1a1a2e; transform: scale(.94); }
+
+      /* --- Orientation: d-pad moves, menu goes to the opposite side --- */
+      /* shared vertical anchoring (lifted off the home indicator) */
+      .dpad     { bottom: calc(26px + env(safe-area-inset-bottom, 0px)); }
+      .menu-btn { bottom: calc(34px + env(safe-area-inset-bottom, 0px)); }
+
+      /* LEFT (default): d-pad bottom-left, menu bottom-right */
+      body.ctrl-left  .dpad     { left:  calc(20px + env(safe-area-inset-left, 0px)); right: auto; }
+      body.ctrl-left  .menu-btn { right: calc(24px + env(safe-area-inset-right, 0px)); left: auto; }
+      /* RIGHT: d-pad bottom-right, menu bottom-left */
+      body.ctrl-right .dpad     { right: calc(20px + env(safe-area-inset-right, 0px)); left: auto; }
+      body.ctrl-right .menu-btn { left:  calc(24px + env(safe-area-inset-left, 0px)); right: auto; }
+      /* CENTER: d-pad centered, menu bottom-right */
+      body.ctrl-center .dpad     { left: 50%; right: auto; transform: translateX(-50%); }
+      body.ctrl-center .menu-btn { right: calc(24px + env(safe-area-inset-right, 0px)); left: auto; }
     }
   </style>
-  <script type="module" crossorigin src="/edu-rpg/assets/index-BhoGQRaA.js"></script>
+  <script type="module" crossorigin src="assets/index-BhoGQRaA.js"></script>
 </head>
-<body>
+<body class="ctrl-left">
   <div class="frame-wrapper">
     <div class="rpg-frame">
       <span class="frame-title">Quest of Knowledge</span>
@@ -129,5 +142,126 @@
       <div id="game-container"></div>
     </div>
   </div>
+
+  <!-- Overworld-only controls. The d-pad is one connected slide surface; the menu button opens the in-game menu. -->
+  <div id="touch-controls" aria-hidden="true">
+    <div class="dpad" id="dpad">
+      <span class="dpad-arrow up">▲</span>
+      <span class="dpad-arrow left">◀</span>
+      <span class="dpad-arrow right">▶</span>
+      <span class="dpad-arrow down">▼</span>
+    </div>
+    <button class="menu-btn" id="menuBtn" aria-label="Menu">☰</button>
+  </div>
+
+  <script>
+    (function () {
+      var KEYCODE = { ArrowUp: 38, ArrowDown: 40, ArrowLeft: 37, ArrowRight: 39, Escape: 27 };
+      var CODE    = { ArrowUp: 'ArrowUp', ArrowDown: 'ArrowDown', ArrowLeft: 'ArrowLeft', ArrowRight: 'ArrowRight', Escape: 'Escape' };
+      function fire(type, key) {
+        var kc = KEYCODE[key];
+        var ev = new KeyboardEvent(type, { key: key, code: CODE[key], bubbles: true, cancelable: true });
+        try {
+          Object.defineProperty(ev, 'keyCode', { get: function () { return kc; } });
+          Object.defineProperty(ev, 'which',   { get: function () { return kc; } });
+        } catch (e) {}
+        window.dispatchEvent(ev);
+      }
+      var held = {};
+      function press(key)   { if (held[key]) return; held[key] = true; fire('keydown', key); }
+      function release(key) { if (!held[key]) return; held[key] = false; fire('keyup', key); }
+
+      /* ---- Connected slide d-pad ---- */
+      var dpad = document.getElementById('dpad');
+      var DIRS = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
+      var activeDir = null;
+      function dirFromPoint(clientX, clientY) {
+        var r = dpad.getBoundingClientRect();
+        var dx = clientX - (r.left + r.width / 2);
+        var dy = clientY - (r.top + r.height / 2);
+        var dead = r.width * 0.16;
+        if (Math.abs(dx) < dead && Math.abs(dy) < dead) return null;
+        if (Math.abs(dx) > Math.abs(dy)) return dx > 0 ? 'ArrowRight' : 'ArrowLeft';
+        return dy > 0 ? 'ArrowDown' : 'ArrowUp';
+      }
+      function dpadClass(dir) {
+        dpad.classList.remove('dir-up', 'dir-down', 'dir-left', 'dir-right');
+        if (dir === 'ArrowUp') dpad.classList.add('dir-up');
+        else if (dir === 'ArrowDown') dpad.classList.add('dir-down');
+        else if (dir === 'ArrowLeft') dpad.classList.add('dir-left');
+        else if (dir === 'ArrowRight') dpad.classList.add('dir-right');
+      }
+      function setDir(dir) {
+        if (dir === activeDir) return;
+        if (activeDir) release(activeDir);
+        activeDir = dir;
+        if (dir) press(dir);
+        dpadClass(dir);
+      }
+      var dpadTouchId = null;
+      dpad.addEventListener('touchstart', function (e) {
+        if (e.cancelable) e.preventDefault();
+        var t = e.changedTouches[0];
+        dpadTouchId = t.identifier;
+        setDir(dirFromPoint(t.clientX, t.clientY));
+      }, { passive: false });
+      dpad.addEventListener('touchmove', function (e) {
+        if (e.cancelable) e.preventDefault();
+        for (var i = 0; i < e.changedTouches.length; i++) {
+          var t = e.changedTouches[i];
+          if (t.identifier === dpadTouchId) setDir(dirFromPoint(t.clientX, t.clientY));
+        }
+      }, { passive: false });
+      function dpadEnd(e) {
+        for (var i = 0; i < e.changedTouches.length; i++) {
+          if (e.changedTouches[i].identifier === dpadTouchId) { dpadTouchId = null; setDir(null); }
+        }
+      }
+      dpad.addEventListener('touchend', dpadEnd);
+      dpad.addEventListener('touchcancel', dpadEnd);
+      // Mouse fallback (desktop / simulator clicks)
+      var dpadMouse = false;
+      dpad.addEventListener('mousedown', function (e) { e.preventDefault(); dpadMouse = true; setDir(dirFromPoint(e.clientX, e.clientY)); });
+      window.addEventListener('mousemove', function (e) { if (dpadMouse) setDir(dirFromPoint(e.clientX, e.clientY)); });
+      window.addEventListener('mouseup', function () { if (dpadMouse) { dpadMouse = false; setDir(null); } });
+
+      /* ---- Menu button (= Escape) ---- */
+      var menuBtn = document.getElementById('menuBtn');
+      function menuDown(e) { if (e && e.cancelable) e.preventDefault(); menuBtn.classList.add('pressed'); fire('keydown', 'Escape'); }
+      function menuUp(e)   { if (e && e.cancelable) e.preventDefault(); menuBtn.classList.remove('pressed'); fire('keyup', 'Escape'); }
+      menuBtn.addEventListener('touchstart', menuDown, { passive: false });
+      menuBtn.addEventListener('touchend', menuUp, { passive: false });
+      menuBtn.addEventListener('touchcancel', menuUp, { passive: false });
+      menuBtn.addEventListener('mousedown', menuDown);
+      menuBtn.addEventListener('mouseup', menuUp);
+      menuBtn.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+
+      // Safety: release movement if the page loses focus / visibility.
+      window.addEventListener('blur', function () { for (var k in held) if (held[k]) release(k); setDir(null); });
+      document.addEventListener('visibilitychange', function () { if (document.hidden) { for (var k in held) if (held[k]) release(k); setDir(null); } });
+
+      /* ---- Control orientation (left / center / right), persisted by the in-game setting ---- */
+      function applyOrientation(v) {
+        v = (v === 'right' || v === 'center') ? v : 'left';
+        document.body.classList.remove('ctrl-left', 'ctrl-right', 'ctrl-center');
+        document.body.classList.add('ctrl-' + v);
+      }
+      window.__setControlOrientation = function (v) {
+        try { localStorage.setItem('eduControlOrientation', v); } catch (e) {}
+        applyOrientation(v);
+      };
+      var savedOri = null;
+      try { savedOri = localStorage.getItem('eduControlOrientation'); } catch (e) {}
+      applyOrientation(savedOri || 'left');
+
+      /* ---- Orientation/rotation: force Phaser to re-read the full-viewport size. ---- */
+      function refreshScale() {
+        var g = window.__PHASER_GAME__;
+        if (g && g.scale && g.scale.refresh) { try { g.scale.refresh(); } catch (e) {} }
+      }
+      function onOrient() { setTimeout(refreshScale, 60); setTimeout(refreshScale, 400); }
+      window.addEventListener('orientationchange', onOrient);
+    })();
+  </script>
 </body>
 </html>
