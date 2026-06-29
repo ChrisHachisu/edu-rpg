@@ -117,6 +117,9 @@
 #qok-ui .enemy-card{position:absolute;top:6px;left:14px;right:14px;display:flex;align-items:center;gap:9px;background:#0d0f22cc;border:2px solid var(--gold-line);border-radius:13px;padding:9px 11px;z-index:4;}
 #qok-ui .msg{background:#0d0f22e0;border:2px solid var(--gold-line);border-radius:14px;padding:12px 14px;color:#f2ead2;font-size:14px;line-height:1.4;}
 #qok-ui .scene-h{text-align:center;font-weight:900;color:#fdf3da;font-size:19px;} #qok-ui .scene-s{text-align:center;color:#c7bfe0;font-size:12.5px;margin-top:2px;}
+/* title / landing screen */
+#qok-ui .title-kicker{font-size:12px;letter-spacing:.34em;text-transform:uppercase;color:var(--gold);font-weight:800;}
+#qok-ui .title-name{font-weight:900;font-size:30px;line-height:1.08;color:#fdf6e6;margin:7px 0 4px;text-shadow:0 2px 0 #0007,0 0 18px var(--gold-glow);}
 
 /* Battle is a fully-opaque DOM screen (the Phaser BattleScene is a centered/
    letterboxed fixed scene, so a transparent overlay would expose its UI in the

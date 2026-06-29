@@ -657,6 +657,34 @@
   }
 
   // ============================================================
+  //  TITLE / LANDING SCREEN (TitleScene mode==='title')
+  // ============================================================
+  function renderTitle() {
+    var ts = getScene('TitleScene');
+    if (!ts) return;
+    var hasSave = false; try { hasSave = !!(window.localStorage && localStorage.getItem('edu-rpg-save')); } catch (e) {}
+    var ja = isJa();
+    var heroColor = (ts.colorOptions && ts.colorOptions[ts.colorIndex || 0]) || 'gray';
+    var h = '<div class="body" style="display:flex;flex-direction:column;justify-content:center;align-items:center;">' +
+      '<div class="zc stack" style="align-items:center;text-align:center;gap:18px;padding:24px 22px;">' +
+        '<div>' +
+          '<div class="title-kicker">✦ &nbsp;Quest of Knowledge&nbsp; ✦</div>' +
+          '<div class="title-name">' + esc(Z('title.gameName')) + '</div>' +
+          '<div class="scene-s">' + esc(Z('title.subtitle')) + '</div>' +
+        '</div>' +
+        '<div style="width:118px;height:118px;border-radius:28px;display:grid;place-items:center;background:radial-gradient(closest-side,#fff8e6,#eadbb0);box-shadow:inset 0 0 0 2px #d8c18a,0 8px 18px #0005;">' + heroImg(74, heroColor) + '</div>' +
+        '<div class="stack g10" style="width:100%;max-width:300px;">' +
+          '<button class="btn btn-gold" data-act="titleNew" style="font-size:17px;">' + use('arrow', 'ic') + esc(Z('title.newGame')) + '</button>' +
+          (hasSave ? '<button class="btn btn-slate" data-act="titleContinue" style="font-size:16px;">' + use('arrow', 'ic') + esc(Z('title.continue')) + '</button>' : '') +
+        '</div>' +
+        '<div class="toggle" data-act="titleLang" style="margin-top:2px;"><span class="' + (!ja ? 'on' : '') + '">EN</span><span class="' + (ja ? 'on' : '') + '">日本語</span></div>' +
+      '</div></div>';
+    var sig = 'title|' + ja + '|' + hasSave + '|' + heroColor + '|' + (ts.ngPlus ? 1 : 0);
+    activate('title', false);
+    paint(h, sig);
+  }
+
+  // ============================================================
   //  TAP ROUTER
   // ============================================================
   function onTap(e) {
@@ -676,6 +704,16 @@
     if (curScreen === 'healer') return routeHealer(act, i, el);
     if (curScreen === 'intro') return routeIntro(act, i, el);
     if (curScreen === 'battle') return routeBattle(act, i, el);
+    if (curScreen === 'title') return routeTitle(act, i, el);
+  }
+
+  function routeTitle(act, i, el) {
+    var ts = getScene('TitleScene'); if (!ts) return;
+    if (act === 'titleLang') { ts.toggleLanguage(); return; }
+    var action = act === 'titleNew' ? 'new' : act === 'titleContinue' ? 'continue' : null;
+    if (!action) return;
+    var idx = (ts.menuItems || []).findIndex(function (m) { return m.getData && m.getData('action') === action; });
+    if (idx >= 0) { ts.selectedIndex = idx; if (ts.updateSelection) ts.updateSelection(); ts.confirm(); }
   }
 
   function routeBattle(act, i, el) {
@@ -765,7 +803,10 @@
     if (sceneActive('ShopScene')) { renderShop(); return; }
     if (sceneActive('BattleScene')) { renderBattle(); return; }
     var ts = getScene('TitleScene');
-    if (ts && sceneActive('TitleScene') && ts.mode === 'create') { renderIntro(); return; }
+    if (ts && sceneActive('TitleScene')) {
+      if (ts.mode === 'create') { renderIntro(); return; }
+      if (ts.mode === 'title') { renderTitle(); return; }
+    }
     deactivate();
   }
   // Poll on a timer, NOT requestAnimationFrame: rAF is throttled/paused when the
