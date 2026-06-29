@@ -357,7 +357,7 @@
       if (key === 'difficulty') { lab = Z('settings.difficulty'); ctrl = '<span class="val">' + esc(Z('grade.' + st.quizDifficulty)) + ' ›</span>'; }
       else if (key === 'language') {
         lab = Z('settings.language');
-        ctrl = '<div class="toggle" style="pointer-events:none;"><span class="' + (!isJa() ? 'on' : '') + '">EN</span><span class="' + (isJa() ? 'on' : '') + '">日本語</span></div>';
+        ctrl = '<div class="toggle" style="pointer-events:none;"><span class="' + (!isJa() ? 'on' : '') + '">English</span><span class="' + (isJa() ? 'on' : '') + '">日本語</span></div>';
       } else if (key === 'kanji') {
         lab = 'もじ'; ctrl = '<span class="val">' + (st.kanjiMode ? 'むずかしい' : 'かんたん') + '</span>';
       } else if (key === 'timer') {
@@ -527,7 +527,7 @@
     for (var g = 0; g < grades.length; g++) {
       chips += '<b class="gchip' + (g === di ? ' sel' : '') + '" data-act="introGrade" data-i="' + g + '">' + esc(grades[g].toUpperCase()) + '</b>';
     }
-    var langCtrl = '<div class="toggle" data-act="introLang"><span class="' + (!ja ? 'on' : '') + '">EN</span><span class="' + (ja ? 'on' : '') + '">日本語</span></div>';
+    var langCtrl = '<div class="toggle" data-act="introLang"><span class="' + (!ja ? 'on' : '') + '">English</span><span class="' + (ja ? 'on' : '') + '">日本語</span></div>';
     var kanjiRow = ja ? ('<div class="row" style="justify-content:space-between;padding:0 4px;"><span style="font-weight:800;color:#f3ead2;font-size:14px;">もじ</span><div class="toggle" data-act="introKanji"><span class="' + (!pstate() || !pstate().kanjiMode ? 'on' : '') + '">かんたん</span><span class="' + (pstate() && pstate().kanjiMode ? 'on' : '') + '">むずかしい</span></div></div>') : '';
 
     var h = '<div class="body"><div class="zc stack pad g10 grid2" style="padding-top:14px;padding-bottom:18px;">' +
@@ -677,7 +677,7 @@
           '<button class="btn btn-gold" data-act="titleNew" style="font-size:17px;">' + use('arrow', 'ic') + esc(Z('title.newGame')) + '</button>' +
           (hasSave ? '<button class="btn btn-slate" data-act="titleContinue" style="font-size:16px;">' + use('arrow', 'ic') + esc(Z('title.continue')) + '</button>' : '') +
         '</div>' +
-        '<div class="toggle" data-act="titleLang" style="margin-top:2px;"><span class="' + (!ja ? 'on' : '') + '">EN</span><span class="' + (ja ? 'on' : '') + '">日本語</span></div>' +
+        '<div class="toggle" data-act="titleLang" style="margin-top:2px;"><span class="' + (!ja ? 'on' : '') + '">English</span><span class="' + (ja ? 'on' : '') + '">日本語</span></div>' +
       '</div></div>';
     var sig = 'title|' + ja + '|' + hasSave + '|' + heroColor + '|' + (ts.ngPlus ? 1 : 0);
     activate('title', false);
