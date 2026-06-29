@@ -528,12 +528,12 @@
       chips += '<b class="gchip' + (g === di ? ' sel' : '') + '" data-act="introGrade" data-i="' + g + '">' + esc(grades[g].toUpperCase()) + '</b>';
     }
     var langCtrl = '<div class="toggle" data-act="introLang"><span class="' + (!ja ? 'on' : '') + '">English</span><span class="' + (ja ? 'on' : '') + '">日本語</span></div>';
-    var kanjiRow = ja ? ('<div class="row" style="justify-content:space-between;padding:0 4px;"><span style="font-weight:800;color:#f3ead2;font-size:14px;">もじ</span><div class="toggle" data-act="introKanji"><span class="' + (!pstate() || !pstate().kanjiMode ? 'on' : '') + '">かんたん</span><span class="' + (pstate() && pstate().kanjiMode ? 'on' : '') + '">むずかしい</span></div></div>') : '';
+    var kanjiRow = ja ? ('<div class="panel" style="padding:12px 15px;display:flex;justify-content:space-between;align-items:center;gap:10px;"><span style="font-weight:800;color:var(--ink-soft);font-size:13px;">もじ</span><div class="toggle" data-act="introKanji"><span class="' + (!pstate() || !pstate().kanjiMode ? 'on' : '') + '">かんたん</span><span class="' + (pstate() && pstate().kanjiMode ? 'on' : '') + '">むずかしい</span></div></div>') : '';
 
     var h = '<div class="body"><div class="zc stack pad g10 grid2" style="padding-top:14px;padding-bottom:18px;">' +
       '<div class="span2"><div class="scene-h">✦ ' + esc(Z('create.title')) + ' ✦</div></div>' +
-      '<div class="span2" style="display:grid;place-items:center;margin:2px 0;">' +
-        '<div style="width:92px;height:92px;border-radius:24px;display:grid;place-items:center;background:radial-gradient(closest-side,#fff8e6,#eadbb0);box-shadow:inset 0 0 0 2px #d8c18a,0 6px 14px #0004;">' + heroImg(56, heroColor, function(){ if(ts.updateHeroPreview) ts.updateHeroPreview(); }) + '</div>' +
+      '<div class="span2" style="display:grid;place-items:center;margin:4px 0 2px;">' +
+        '<div class="intro-hero">' + heroImg(120, heroColor, function(){ if(ts.updateHeroPreview) ts.updateHeroPreview(); }) + '</div>' +
       '</div>' +
       '<div class="panel span2" style="padding:12px 15px;display:flex;align-items:center;gap:10px;">' +
         '<div style="font-weight:800;color:var(--ink-soft);font-size:13px;">' + esc(Z('create.name')) + '</div>' +
@@ -541,8 +541,9 @@
         '<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M14 4l6 6-9 9-4 1 1-4 9-9-3-3z" stroke="#9a7a36" stroke-width="2"/></svg>' +
       '</div>' +
       '<div class="panel" style="padding:12px 15px;"><div style="font-weight:800;color:var(--ink-soft);font-size:12px;margin-bottom:9px;">' + esc(Z('create.color')) + '</div><div class="swatchrow">' + swatches + '</div></div>' +
-      '<div class="panel" style="padding:12px 15px;"><div style="font-weight:800;color:var(--ink-soft);font-size:12px;margin-bottom:9px;">' + esc(Z('settings.difficulty')) + '</div><div class="chiprow">' + chips + '</div></div>' +
-      '<div class="row" style="justify-content:space-between;padding:0 4px;"><span style="font-weight:800;color:#f3ead2;font-size:14px;">' + esc(Z('settings.language')) + '</span>' + langCtrl + '</div>' +
+      '<div class="panel" style="padding:12px 15px;"><div style="font-weight:800;color:var(--ink-soft);font-size:12px;margin-bottom:9px;">' + esc(Z('settings.difficulty')) + '</div><div class="chiprow">' + chips + '</div>' +
+        '<div style="text-align:center;font-weight:800;color:#8a6a26;font-size:13px;margin-top:9px;">' + esc(Z('grade.' + grades[di])) + '</div></div>' +
+      '<div class="panel" style="padding:12px 15px;display:flex;justify-content:space-between;align-items:center;gap:10px;"><span style="font-weight:800;color:var(--ink-soft);font-size:13px;">' + esc(Z('settings.language')) + '</span>' + langCtrl + '</div>' +
       kanjiRow +
       '<button class="btn btn-gold span2" data-act="introStart" style="margin-top:8px;font-size:17px;">' + use('arrow', 'ic') + esc(Z('create.startGame')) + '</button>' +
       '<div id="qok-name-err" class="span2" style="text-align:center;color:#ff6b6b;font-size:12px;font-weight:700;min-height:14px;"></div>' +
@@ -665,20 +666,20 @@
     var hasSave = false; try { hasSave = !!(window.localStorage && localStorage.getItem('edu-rpg-save')); } catch (e) {}
     var ja = isJa();
     var heroColor = (ts.colorOptions && ts.colorOptions[ts.colorIndex || 0]) || 'gray';
-    var h = '<div class="body" style="display:flex;flex-direction:column;justify-content:center;align-items:center;">' +
-      '<div class="zc stack" style="align-items:center;text-align:center;gap:18px;padding:24px 22px;">' +
-        '<div>' +
+    // spread vertically: title group at top, big hero in the middle, action buttons in the bottom thumb zone
+    var h = '<div class="t-screen">' +
+        '<div class="t-head">' +
           '<div class="title-kicker">✦ &nbsp;Quest of Knowledge&nbsp; ✦</div>' +
           '<div class="title-name">' + esc(Z('title.gameName')) + '</div>' +
           '<div class="scene-s">' + esc(Z('title.subtitle')) + '</div>' +
         '</div>' +
-        '<div style="width:118px;height:118px;border-radius:28px;display:grid;place-items:center;background:radial-gradient(closest-side,#fff8e6,#eadbb0);box-shadow:inset 0 0 0 2px #d8c18a,0 8px 18px #0005;">' + heroImg(74, heroColor) + '</div>' +
-        '<div class="stack g10" style="width:100%;max-width:300px;">' +
-          '<button class="btn btn-gold" data-act="titleNew" style="font-size:17px;">' + use('arrow', 'ic') + esc(Z('title.newGame')) + '</button>' +
-          (hasSave ? '<button class="btn btn-slate" data-act="titleContinue" style="font-size:16px;">' + use('arrow', 'ic') + esc(Z('title.continue')) + '</button>' : '') +
+        '<div class="t-hero">' + heroImg(160, heroColor) + '</div>' +
+        '<div class="t-actions">' +
+          '<button class="btn btn-gold" data-act="titleNew" style="width:100%;font-size:18px;">' + use('arrow', 'ic') + esc(Z('title.newGame')) + '</button>' +
+          (hasSave ? '<button class="btn btn-slate" data-act="titleContinue" style="width:100%;font-size:17px;">' + use('arrow', 'ic') + esc(Z('title.continue')) + '</button>' : '') +
+          '<div class="toggle" data-act="titleLang" style="margin-top:4px;"><span class="' + (!ja ? 'on' : '') + '">English</span><span class="' + (ja ? 'on' : '') + '">日本語</span></div>' +
         '</div>' +
-        '<div class="toggle" data-act="titleLang" style="margin-top:2px;"><span class="' + (!ja ? 'on' : '') + '">English</span><span class="' + (ja ? 'on' : '') + '">日本語</span></div>' +
-      '</div></div>';
+      '</div>';
     var sig = 'title|' + ja + '|' + hasSave + '|' + heroColor + '|' + (ts.ngPlus ? 1 : 0);
     activate('title', false);
     paint(h, sig);
