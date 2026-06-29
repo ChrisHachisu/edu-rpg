@@ -54345,8 +54345,8 @@ const ti = wo(Po),
     yr = 31,
     ht = {
         DARK_BLUE: 1710638,
-        MENU_BG: 1710654,
-        MENU_BORDER: 14737663,
+        MENU_BG: 855842,
+        MENU_BORDER: 10123830,
         GOLD: 16763904,
         CORRECT_GREEN: 2280516,
         INCORRECT_RED: 13378116,
@@ -55522,10 +55522,10 @@ const ui = {
         "battle.playerDefend": "{name} defends!",
         "battle.hit": "{damage} damage!",
         "battle.miss": "Miss!",
-        "battle.partialHit": "{damage} damage (partial)!",
+        "battle.partialHit": "{damage} damage!",
         "battle.speedBonus": "Quick answer!",
         "battle.critical": "Critical!",
-        "battle.enemyPartialHit": "{damage} damage (partial)!",
+        "battle.enemyPartialHit": "{damage} damage!",
         "battle.enemyAttack": "{monster} attacks!",
         "battle.enemyMiss": "{monster} missed!",
         "battle.enemyDamageReduced": "Your quick answer blocked the blow!",
@@ -56449,10 +56449,10 @@ const ui = {
         "battle.playerDefend": "{name}は みをまもっている！",
         "battle.hit": "{damage}の ダメージ！",
         "battle.miss": "ミス！",
-        "battle.partialHit": "{damage}の ダメージ（はんげん）！",
+        "battle.partialHit": "{damage}の ダメージ！",
         "battle.speedBonus": "すばやい こたえだ！",
         "battle.critical": "クリティカル！",
-        "battle.enemyPartialHit": "{damage}の ダメージ（はんげん）！",
+        "battle.enemyPartialHit": "{damage}の ダメージ！",
         "battle.enemyAttack": "{monster}の こうげき！",
         "battle.enemyMiss": "{monster}の こうげきは はずれた！",
         "battle.enemyDamageReduced": "すばやい こたえで ダメージを ふせいだ！",
@@ -57379,10 +57379,10 @@ const ui = {
         "battle.playerDefend": "{name}は 身を守っている！",
         "battle.hit": "{damage}の ダメージ！",
         "battle.miss": "ミス！",
-        "battle.partialHit": "{damage}の ダメージ（半減）！",
+        "battle.partialHit": "{damage}の ダメージ！",
         "battle.speedBonus": "素早い 答えだ！",
         "battle.critical": "クリティカル！",
-        "battle.enemyPartialHit": "{damage}の ダメージ（半減）！",
+        "battle.enemyPartialHit": "{damage}の ダメージ！",
         "battle.enemyAttack": "{monster}の 攻撃！",
         "battle.enemyMiss": "{monster}の 攻撃は 外れた！",
         "battle.enemyDamageReduced": "素早い 答えで ダメージを 防いだ！",
@@ -59704,7 +59704,7 @@ class gr {
         return Math.max(5, Math.round(T * i + o))
     }
     recordAnswer(x, T) {
-        this.stats.totalAsked++, T ? (this.stats.totalCorrect++, this.consecutiveCorrect++, this.consecutiveWrong = 0) : (this.consecutiveWrong++, this.consecutiveCorrect = 0), this.stats.byCategory[x] || (this.stats.byCategory[x] = {
+        this.stats.totalAsked++, T ? (this.stats.totalCorrect++, this.consecutiveCorrect++, this.consecutiveWrong = 0) : (this.consecutiveWrong++, this.consecutiveCorrect = 0), this.stats.byCategory || (this.stats.byCategory = {}), this.stats.byCategory[x] || (this.stats.byCategory[x] = {
             asked: 0,
             correct: 0
         }), this.stats.byCategory[x].asked++, T && this.stats.byCategory[x].correct++
@@ -59715,9 +59715,8 @@ class gr {
         }
     }
     loadStats(x) {
-        this.stats = {
-            ...x
-        }
+        this.stats = Object.assign({ totalAsked: 0, totalCorrect: 0, byCategory: {} }, x || {});
+        if (!this.stats.byCategory) this.stats.byCategory = {}
     }
     getEffectiveGrade() {
         if (this.consecutiveWrong < 2) return this.difficulty;
@@ -79999,9 +79998,9 @@ const Xt = {
                 i = T.totalMaxHp - T.state.hp,
                 o = Math.round(260 * gt),
                 u = Math.round(110 * gt),
-                m = Ne + Tt / 2,
-                C = Ye + kt / 2;
-            this.healerOverlayBox = this.add.rectangle(m, C, o, u, ht.MENU_BG, .95).setStrokeStyle(2, ht.MENU_BORDER).setDepth(200).setScrollFactor(0);
+                m = this.cameras.main.width / 2,
+                C = this.cameras.main.height / 2;
+            this.healerOverlayBox = (()=>{const _r=Math.round(10*gt),_x=m-o/2,_y=C-u/2,_g=this.add.graphics().setDepth(200).setScrollFactor(0);_g.fillStyle(ht.MENU_BG,.95).fillRoundedRect(_x,_y,o,u,_r);_g.lineStyle(Math.max(2,Math.round(2*gt)),ht.MENU_BORDER,1).strokeRoundedRect(_x,_y,o,u,_r);return _g;})();
             const t = this.add.text(m, C - u / 2 + Math.round(16 * gt), Z("npc.healer.popupTitle"), {
                 fontSize: `${Math.round(11*gt)}px`,
                 color: ht.TEXT_YELLOW,
@@ -80061,9 +80060,9 @@ const Xt = {
             const i = x.length + 1,
                 o = Math.round(260 * gt),
                 u = Math.round((40 + i * 24) * gt),
-                m = Ne + Tt / 2,
-                C = Ye + kt / 2;
-            this.warpOverlayBox = this.add.rectangle(m, C, o, u, ht.MENU_BG, .95).setStrokeStyle(2, ht.MENU_BORDER).setDepth(200).setScrollFactor(0);
+                m = this.cameras.main.width / 2,
+                C = this.cameras.main.height / 2;
+            this.warpOverlayBox = (()=>{const _r=Math.round(10*gt),_x=m-o/2,_y=C-u/2,_g=this.add.graphics().setDepth(200).setScrollFactor(0);_g.fillStyle(ht.MENU_BG,.95).fillRoundedRect(_x,_y,o,u,_r);_g.lineStyle(Math.max(2,Math.round(2*gt)),ht.MENU_BORDER,1).strokeRoundedRect(_x,_y,o,u,_r);return _g;})();
             const t = this.add.text(m, C - u / 2 + Math.round(16 * gt), Z("dungeon.warpTitle"), {
                 fontSize: `${Math.round(11*gt)}px`,
                 color: ht.TEXT_YELLOW,
@@ -80130,9 +80129,9 @@ const Xt = {
             this.midCrystalOverlayOpen = !0, this.midCrystalOverlayIndex = 0, this.midCrystalOverlayTexts = [];
             const x = Math.round(260 * gt),
                 T = Math.round(100 * gt),
-                i = Ne + Tt / 2,
-                o = Ye + kt / 2;
-            this.midCrystalOverlayBox = this.add.rectangle(i, o, x, T, ht.MENU_BG, .95).setStrokeStyle(2, ht.MENU_BORDER).setDepth(200).setScrollFactor(0);
+                i = this.cameras.main.width / 2,
+                o = this.cameras.main.height / 2;
+            this.midCrystalOverlayBox = (()=>{const _r=Math.round(10*gt),_x=i-x/2,_y=o-T/2,_g=this.add.graphics().setDepth(200).setScrollFactor(0);_g.fillStyle(ht.MENU_BG,.95).fillRoundedRect(_x,_y,x,T,_r);_g.lineStyle(Math.max(2,Math.round(2*gt)),ht.MENU_BORDER,1).strokeRoundedRect(_x,_y,x,T,_r);return _g;})();
             const u = this.add.text(i, o - T / 2 + Math.round(16 * gt), Z("dungeon.crystalSave"), {
                 fontSize: `${Math.round(11*gt)}px`,
                 color: ht.TEXT_YELLOW,
@@ -80430,7 +80429,7 @@ const Xt = {
         }
         showMessage(x, T) {
             this.showingMessage = !0, this.msgShownAt = Date.now();
-            const i = Tt - Math.round(16 * gt),
+            const i = Math.min(Tt, this.cameras.main.width) - Math.round(16 * gt),
                 o = Math.round(12 * gt),
                 u = Math.round(10 * gt),
                 m = i - o * 2,
@@ -80447,8 +80446,10 @@ const Xt = {
             const f = this.messageText.height,
                 S = Math.max(Math.round(48 * gt), f + u * 2 + t),
                 h = Ye + kt - Math.round(8 * gt) - S / 2;
-            this.messageBox = this.add.rectangle(Ne + Tt / 2, h, i, S, ht.MENU_BG, .9).setDepth(100).setStrokeStyle(1, ht.MENU_BORDER).setScrollFactor(0);
-            const l = Ne + Tt / 2 - i / 2 + o,
+            this.messageBox = this.add.graphics().setDepth(100).setScrollFactor(0);
+            this.messageBox.fillStyle(ht.MENU_BG, .92).fillRoundedRect(this.cameras.main.width / 2 - i / 2, h - S / 2, i, S, Math.round(10 * gt));
+            this.messageBox.lineStyle(Math.max(2, Math.round(2 * gt)), ht.MENU_BORDER, 1).strokeRoundedRect(this.cameras.main.width / 2 - i / 2, h - S / 2, i, S, Math.round(10 * gt));
+            const l = this.cameras.main.width / 2 - i / 2 + o,
                 a = h - S / 2 + u + t;
             this.messageText.setPosition(l, a), T && (this.messageSpeaker = this.add.text(l, h - S / 2 + Math.round(4 * gt), T, {
                 fontSize: `${Math.round(10*gt)}px`,
@@ -80476,17 +80477,15 @@ const Xt = {
             this.updateHUD()
         }
         updateHUD() {
-            this.hpText?.destroy(), this.hpBarBg?.destroy(), this.hpBarFg?.destroy(), this.guideText?.destroy(), this.floorText?.destroy(), this.compassContainer?.destroy(), this.compassContainer = void 0, this.compassArrow = void 0, this.minimapGfx?.destroy(), this.minimapGfx = void 0, this.minimapPlayerDot?.destroy(), this.minimapPlayerDot = void 0; if (this._questTrackerObjs) { for (const _qto of this._questTrackerObjs) _qto?.destroy(); this._questTrackerObjs = null; } this._questDotTween?.remove(); this._questDotTween = null;
+            this.hpText?.destroy(), this.hpBarBg?.destroy(), this.hpBarFg?.destroy(), this.guideText?.destroy(), this.floorText?.destroy(), this.compassContainer?.destroy(), this.compassContainer = void 0, this.compassArrow = void 0, this.minimapGfx?.destroy(), this.minimapGfx = void 0, this.minimapPlayerDot?.destroy(), this.minimapPlayerDot = void 0; this.hudHpPanel?.destroy(); this.hudHpPanel = void 0; this.hudFloorPanel?.destroy(); this.hudFloorPanel = void 0; if (this._questTrackerObjs) { for (const _qto of this._questTrackerObjs) _qto?.destroy(); this._questTrackerObjs = null; } this._questDotTween?.remove(); this._questDotTween = null;
             const x = tt.player;
-            this.hpText = this.add.text(Ne + Math.round(8 * gt), Ye + Math.round(8 * gt), `${Z("menu.level")}${x.state.level}  ${Z("menu.hp")} ${x.state.hp}/${x.totalMaxHp}`, {
+            this.hudHpPanel = this.add.graphics().setDepth(99).setScrollFactor(0);
+            this.hudHpPanel.fillStyle(0x0d0f22, 0.88).fillRoundedRect(Ne + Math.round(4 * gt), Ye + Math.round(4 * gt), Math.round(104 * gt), Math.round(27 * gt), Math.round(7 * gt));
+            this.hudHpPanel.lineStyle(Math.max(1, Math.round(2 * gt)), 0x9a7a36, 1).strokeRoundedRect(Ne + Math.round(4 * gt), Ye + Math.round(4 * gt), Math.round(104 * gt), Math.round(27 * gt), Math.round(7 * gt));
+            this.hpText = this.add.text(Ne + Math.round(8 * gt), Ye + Math.round(7 * gt), `${Z("menu.level")}${x.state.level}  ${Z("menu.hp")} ${x.state.hp}/${x.totalMaxHp}`, {
                 fontSize: `${Math.round(10*gt)}px`,
                 color: ht.TEXT_WHITE,
-                fontFamily: yt,
-                backgroundColor: "#1a1a3ecc",
-                padding: {
-                    x: Math.round(4 * gt),
-                    y: Math.round(2 * gt)
-                }
+                fontFamily: yt
             }).setDepth(100).setScrollFactor(0);
             const _hudHp = x.state.hp, _hudMaxHp = x.totalMaxHp, _hudRatio = Math.max(0, Math.min(1, _hudMaxHp > 0 ? _hudHp / _hudMaxHp : 1)), _hudBarW = Math.round(80 * gt), _hudBarH = Math.round(5 * gt), _hudBarX = Ne + Math.round(8 * gt), _hudBarY = Ye + Math.round(22 * gt), _hudColor = _hudRatio <= 0.2 ? 0xCC2222 : _hudRatio <= 0.5 ? 0xDDAA22 : 0x22CC44; this.hpBarBg = this.add.rectangle(_hudBarX, _hudBarY, _hudBarW, _hudBarH, 0x1A1A2E).setOrigin(0, 0).setDepth(100).setScrollFactor(0); this.hpBarFg = this.add.rectangle(_hudBarX, _hudBarY, Math.max(0, Math.round(_hudBarW * _hudRatio)), _hudBarH, _hudColor).setOrigin(0, 0).setDepth(101).setScrollFactor(0);
             const T = Xt[this.currentMapId];
@@ -80499,16 +80498,15 @@ const Xt = {
                         t = m && this.currentFloor > C ? o - this.currentFloor + 1 : this.currentFloor;
                     T.mechanic === "wind" ? u += ` ${t}F` : u += T.castle ? ` ${t}F` : ` B${t}F`
                 }
-                this.floorText = this.add.text(Ne + Math.round(8 * gt), Ye + Math.round(36 * gt), u, {
+                this.floorText = this.add.text(Ne + Math.round(13 * gt), Ye + Math.round(38 * gt), u, {
                     fontSize: `${Math.round(10*gt)}px`,
-                    color: ht.TEXT_YELLOW,
-                    fontFamily: yt,
-                    backgroundColor: "#1a1a3ecc",
-                    padding: {
-                        x: Math.round(4 * gt),
-                        y: Math.round(2 * gt)
-                    }
-                }).setDepth(100).setScrollFactor(0)
+                    color: "#4a3a21",
+                    fontFamily: yt
+                }).setDepth(101).setScrollFactor(0);
+                const _fbw = this.floorText.width + Math.round(16 * gt), _fbh = this.floorText.height + Math.round(8 * gt);
+                this.hudFloorPanel = this.add.graphics().setDepth(100).setScrollFactor(0);
+                this.hudFloorPanel.fillStyle(0xecdcb1, 1).fillRoundedRect(Ne + Math.round(5 * gt), Ye + Math.round(34 * gt), _fbw, _fbh, Math.round(6 * gt));
+                this.hudFloorPanel.lineStyle(Math.max(1, Math.round(2 * gt)), 0x9a7a36, 1).strokeRoundedRect(Ne + Math.round(5 * gt), Ye + Math.round(34 * gt), _fbw, _fbh, Math.round(6 * gt))
             }
             const i = `↑↓←→: ${Z("guide.move")}  Z: ${Z("guide.talk")}  I: ${Z("guide.item")}  ESC: ${Z("guide.menu")}`;
             this.guideText = this.add.text(Ne + Tt - Math.round(8 * gt), Ye + kt - Math.round(8 * gt), i, {
@@ -80665,7 +80663,7 @@ const Xt = {
                 startTX: a,
                 startTY: e,
                 size: t
-            }, o.fillStyle(1118498, .9), o.fillRect(S - 2, h - 2, t + 4, t + 4);
+            }, o.fillStyle(1118498, .9), o.fillRect(S - 2, h - 2, t + 4, t + 4), o.lineStyle(Math.max(1, Math.round(2 * gt)), 0x9a7a36, 1), o.strokeRect(S - 3, h - 3, t + 6, t + 6);
             this._minimapHit || (this._minimapHit = this.add.rectangle(S + t / 2, h + t / 2, t + 4, t + 4, 0, 0).setDepth(102).setScrollFactor(0).setInteractive({ useHandCursor: true }), this._minimapHit.on("pointerdown", (p, lx, ly, ev) => { ev && ev.stopPropagation && ev.stopPropagation(); this.minimapCollapsed = !0, this.renderMinimap() }));
             const r = Math.min(m, a + C),
                 c = Math.min(u, e + C),
@@ -80876,9 +80874,9 @@ const Xt = {
             const x = Math.round(200 * gt),
                 T = Math.max(this.itemOverlayItems.length, 1),
                 i = Math.round(36 * gt) + T * Math.round(24 * gt),
-                o = Ne + Tt / 2,
-                u = Ye + kt / 2;
-            if (this.itemOverlayBox = this.add.rectangle(o, u, x, i, ht.MENU_BG, .95).setStrokeStyle(2, ht.MENU_BORDER).setDepth(200).setScrollFactor(0), this.itemOverlayTitle = this.add.text(o, u - i / 2 + Math.round(14 * gt), Z("field.itemTitle"), {
+                o = this.cameras.main.width / 2,
+                u = this.cameras.main.height / 2;
+            if (this.itemOverlayBox = (()=>{const _r=Math.round(10*gt),_x=o-x/2,_y=u-i/2,_g=this.add.graphics().setDepth(200).setScrollFactor(0);_g.fillStyle(ht.MENU_BG,.95).fillRoundedRect(_x,_y,x,i,_r);_g.lineStyle(Math.max(2,Math.round(2*gt)),ht.MENU_BORDER,1).strokeRoundedRect(_x,_y,x,i,_r);return _g;})(), this.itemOverlayTitle = this.add.text(o, u - i / 2 + Math.round(14 * gt), Z("field.itemTitle"), {
                     fontSize: `${Math.round(12*gt)}px`,
                     color: ht.TEXT_YELLOW,
                     fontFamily: yt
@@ -81054,7 +81052,7 @@ const Xt = {
                 i = Ye + Math.round(40 * gt);
             this.compassContainer = this.add.container(T, i).setDepth(101).setScrollFactor(0);
             const o = this.add.graphics();
-            o.fillStyle(1710654, .8), o.fillCircle(0, 0, Math.round(22 * gt)), o.lineStyle(2, 14527027, 1), o.strokeCircle(0, 0, Math.round(22 * gt)), this.compassContainer.add(o);
+            o.fillStyle(0x0d0f22, .86), o.fillCircle(0, 0, Math.round(22 * gt)), o.lineStyle(Math.max(2, Math.round(2.5 * gt)), 0x9a7a36, 1), o.strokeCircle(0, 0, Math.round(22 * gt)), this.compassContainer.add(o);
             const u = {
                     fontSize: `${Math.round(6*gt)}px`,
                     color: "#aaaaaa",
@@ -81283,9 +81281,9 @@ const Xt = {
             this.questNotifText?.destroy(), this.questNotifBg?.destroy(), this.questNotifTimer?.destroy();
             const T = Math.round(300 * gt),
                 i = Math.round(28 * gt),
-                o = Ne + Tt / 2,
+                o = this.cameras.main.width / 2,
                 u = Ye + Math.round(40 * gt);
-            this.questNotifBg = this.add.rectangle(o, u, T, i, 1710654, .9).setStrokeStyle(1, ht.MENU_BORDER).setDepth(100).setScrollFactor(0), this.questNotifText = this.add.text(o, u, x, {
+            this.questNotifBg = (()=>{const _r=Math.round(8*gt),_x=o-T/2,_y=u-i/2,_g=this.add.graphics().setDepth(100).setScrollFactor(0);_g.fillStyle(855842,.9).fillRoundedRect(_x,_y,T,i,_r);_g.lineStyle(Math.max(1,Math.round(1*gt)),ht.MENU_BORDER,1).strokeRoundedRect(_x,_y,T,i,_r);return _g;})(), this.questNotifText = this.add.text(o, u, x, {
                 fontSize: `${Math.round(10*gt)}px`,
                 color: ht.TEXT_YELLOW,
                 fontFamily: yt
@@ -81313,9 +81311,9 @@ ${i.trim()}` : o;
             this.questOverlayOpen = !0, this.questOverlayIndex = 0, this.questOverlayQuestId = x, this.questOverlayTexts = [];
             const T = Math.round(220 * gt),
                 i = Math.round(80 * gt),
-                o = Ne + Tt / 2,
-                u = Ye + kt / 2;
-            this.questOverlayBox = this.add.rectangle(o, u, T, i, ht.MENU_BG, .95).setStrokeStyle(2, ht.MENU_BORDER).setDepth(200).setScrollFactor(0);
+                o = this.cameras.main.width / 2,
+                u = this.cameras.main.height / 2;
+            this.questOverlayBox = (()=>{const _r=Math.round(10*gt),_x=o-T/2,_y=u-i/2,_g=this.add.graphics().setDepth(200).setScrollFactor(0);_g.fillStyle(ht.MENU_BG,.95).fillRoundedRect(_x,_y,T,i,_r);_g.lineStyle(Math.max(2,Math.round(2*gt)),ht.MENU_BORDER,1).strokeRoundedRect(_x,_y,T,i,_r);return _g;})();
             const m = this.add.text(o, u - i / 2 + Math.round(16 * gt), Z("quest.offerTitle"), {
                 fontSize: `${Math.round(12*gt)}px`,
                 color: ht.TEXT_YELLOW,

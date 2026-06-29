@@ -64,8 +64,13 @@
       .frame-wrapper { display: block; width: 100vw; height: 100vh; background: #0a0a14; }
       .rpg-frame { padding: 0; border: none; outline: none; box-shadow: none; background: transparent; }
       .rpg-frame::before, .rpg-frame::after, .corner-bl, .corner-br, .frame-title { display: none; }
-      #game-container { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 1; }
+      #game-container { position: fixed; top: env(safe-area-inset-top, 0px); left: env(safe-area-inset-left, 0px); width: calc(100vw - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)); height: calc(100vh - env(safe-area-inset-top, 0px)); z-index: 1; }
       #game-container canvas { width: 100% !important; height: 100% !important; display: block; }
+      /* Hide the Phaser canvas while the DOM overlay is up, so the old Phaser scene UI never
+         flashes under it. ui-overhaul.js toggles .qok-overlay in activate/deactivate and ticks
+         on Phaser scene events so this flips in sync with the scene change (no 50ms poll gap).
+         Scenes WITHOUT a DOM overlay (e.g. boot) keep the canvas visible. */
+      body.qok-overlay #game-container { visibility: hidden; }
 
       /* The control overlay shows only while the game says we're on the overworld. */
       body.show-controls #touch-controls {
@@ -75,7 +80,7 @@
       /* --- Connected slide d-pad (one touch surface; finger position picks the direction) --- */
       .dpad {
         position: absolute; width: 172px; height: 172px; pointer-events: auto;
-        touch-action: none; border-radius: 26px;
+        touch-action: none; border-radius: 50%;
         background: rgba(26,26,46,.5); border: 2px solid #8b7340;
         box-shadow: 0 0 10px rgba(0,0,0,.5), inset 0 0 14px rgba(0,0,0,.4);
       }
@@ -103,38 +108,37 @@
       .dpad.dir-right::after { right: 6px;  top: 50%;  transform: translateY(-50%); }
       .dpad-arrow { z-index: 1; }
 
-      /* --- Menu button (lives where Z used to be) --- */
-      .menu-btn {
-        position: absolute; width: 76px; height: 76px; border-radius: 50%;
-        pointer-events: auto; touch-action: none;
-        background: rgba(26,26,46,.62); border: 2px solid #8b7340; color: #c9a84c;
-        font-size: 28px; font-weight: 700;
-        display: flex; align-items: center; justify-content: center;
-        box-shadow: 0 0 8px rgba(0,0,0,.5), inset 0 0 8px rgba(0,0,0,.4);
-        transition: background .05s, transform .05s;
+      /* --- Field/dungeon bottom menu tabs (replace the floating menu button). Populated + handled by ui-overhaul.js. --- */
+      .field-tabs {
+        position: fixed; left: 0; right: 0; bottom: 0; z-index: 90;
+        display: flex; gap: 4px; pointer-events: auto;
+        padding: 7px 8px calc(7px + env(safe-area-inset-bottom, 0px));
+        background: linear-gradient(180deg, rgba(26,28,58,.86), #0c0d1f 64%);
+        border-top: 1.5px solid #9a7a36;
       }
-      .menu-btn.pressed { background: rgba(201,168,76,.85); color: #1a1a2e; transform: scale(.94); }
+      .field-tabs .ft {
+        flex: 1; min-height: 48px; border: none; background: transparent; cursor: pointer;
+        display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+        color: #c7bfe0; font-size: 11px; font-weight: 700; border-radius: 12px;
+        -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+      }
+      .field-tabs .ft svg { width: 22px; height: 22px; color: #e0b757; }
+      .field-tabs .ft.pressed { background: rgba(201,168,76,.22); }
 
-      /* --- Orientation: d-pad moves, menu goes to the opposite side --- */
-      /* shared vertical anchoring (lifted off the home indicator) */
-      .dpad     { bottom: calc(26px + env(safe-area-inset-bottom, 0px)); }
-      .menu-btn { bottom: calc(34px + env(safe-area-inset-bottom, 0px)); }
-
-      /* LEFT (default): d-pad bottom-left, menu bottom-right */
-      body.ctrl-left  .dpad     { left:  calc(20px + env(safe-area-inset-left, 0px)); right: auto; }
-      body.ctrl-left  .menu-btn { right: calc(24px + env(safe-area-inset-right, 0px)); left: auto; }
-      /* RIGHT: d-pad bottom-right, menu bottom-left */
-      body.ctrl-right .dpad     { right: calc(20px + env(safe-area-inset-right, 0px)); left: auto; }
-      body.ctrl-right .menu-btn { left:  calc(24px + env(safe-area-inset-left, 0px)); right: auto; }
-      /* CENTER: d-pad centered, menu bottom-right */
-      body.ctrl-center .dpad     { left: 50%; right: auto; transform: translateX(-50%); }
-      body.ctrl-center .menu-btn { right: calc(24px + env(safe-area-inset-right, 0px)); left: auto; }
+      /* --- Orientation: d-pad position (raised to sit above the bottom tab bar) --- */
+      .dpad { bottom: calc(76px + env(safe-area-inset-bottom, 0px)); }
+      /* LEFT (default): d-pad bottom-left */
+      body.ctrl-left  .dpad { left:  calc(20px + env(safe-area-inset-left, 0px)); right: auto; }
+      /* RIGHT: d-pad bottom-right */
+      body.ctrl-right .dpad { right: calc(20px + env(safe-area-inset-right, 0px)); left: auto; }
+      /* CENTER: d-pad centered */
+      body.ctrl-center .dpad { left: 50%; right: auto; transform: translateX(-50%); }
     }
   </style>
   <link rel="stylesheet" href="ui-overhaul.css" />
   <script type="module" crossorigin src="assets/index-BhoGQRaA.js"></script>
 </head>
-<body class="ctrl-left">
+<body class="ctrl-right">
   <div class="frame-wrapper">
     <div class="rpg-frame">
       <span class="frame-title">Quest of Knowledge</span>
@@ -152,7 +156,7 @@
       <span class="dpad-arrow right">▶</span>
       <span class="dpad-arrow down">▼</span>
     </div>
-    <button class="menu-btn" id="menuBtn" aria-label="Menu">☰</button>
+    <div class="field-tabs" id="fieldTabs"></div>
   </div>
 
   <!-- Storybook Quest DOM UI overlay (additive; only shows on recognized scenes) -->
@@ -230,16 +234,7 @@
       window.addEventListener('mousemove', function (e) { if (dpadMouse) setDir(dirFromPoint(e.clientX, e.clientY)); });
       window.addEventListener('mouseup', function () { if (dpadMouse) { dpadMouse = false; setDir(null); } });
 
-      /* ---- Menu button (= Escape) ---- */
-      var menuBtn = document.getElementById('menuBtn');
-      function menuDown(e) { if (e && e.cancelable) e.preventDefault(); menuBtn.classList.add('pressed'); fire('keydown', 'Escape'); }
-      function menuUp(e)   { if (e && e.cancelable) e.preventDefault(); menuBtn.classList.remove('pressed'); fire('keyup', 'Escape'); }
-      menuBtn.addEventListener('touchstart', menuDown, { passive: false });
-      menuBtn.addEventListener('touchend', menuUp, { passive: false });
-      menuBtn.addEventListener('touchcancel', menuUp, { passive: false });
-      menuBtn.addEventListener('mousedown', menuDown);
-      menuBtn.addEventListener('mouseup', menuUp);
-      menuBtn.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+      /* ---- The bottom field tabs (open the menu to a tab) are populated + handled by ui-overhaul.js (it has i18n + icons). No floating menu button anymore. ---- */
 
       // Safety: release movement if the page loses focus / visibility.
       window.addEventListener('blur', function () { for (var k in held) if (held[k]) release(k); setDir(null); });
@@ -257,7 +252,7 @@
       };
       var savedOri = null;
       try { savedOri = localStorage.getItem('eduControlOrientation'); } catch (e) {}
-      applyOrientation(savedOri || 'left');
+      applyOrientation(savedOri || 'right'); /* default RIGHT (most users are right-handed) */
 
       /* ---- Orientation/rotation: force Phaser to re-read the full-viewport size. ---- */
       function refreshScale() {

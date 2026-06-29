@@ -17,7 +17,11 @@
   --hp-hi:#5fcc63; --shadow:0 12px 26px rgba(0,0,0,.42); --font:'M PLUS Rounded 1c',system-ui,sans-serif;
 
   display:none;
+  /* full-screen; the safe-area top/left/right inset is applied as an EXPLICIT px padding
+     by ui-overhaul.js measureSafeArea() — CSS env() resolves unreliably on this toggled
+     overlay in WKWebView, so we measure it with a fixed probe and set padding in px. */
   position:fixed; inset:0; z-index:200;
+  background:#0e1022;
   font-family:var(--font);
   color:#ece3cf;
   -webkit-user-select:none; user-select:none; -webkit-tap-highlight-color:transparent;
@@ -54,9 +58,7 @@
   position:relative; z-index:2;
   display:flex; flex-direction:column;
   width:100%; max-width:560px; margin:0 auto; flex:1; min-height:0;
-  padding-top:env(safe-area-inset-top,0px);
-  padding-left:env(safe-area-inset-left,0px);
-  padding-right:env(safe-area-inset-right,0px);
+  /* safe-area top/left/right now handled by the #qok-ui root inset above */
 }
 
 /* ---- components (verbatim from mockup, gold .sel = shared tap+keyboard state) ---- */
@@ -113,33 +115,42 @@
 #qok-ui .switch{width:50px;height:28px;border-radius:99px;background:#cdb578;position:relative;flex:none;cursor:pointer;} #qok-ui .switch.on{background:linear-gradient(90deg,#5fd089,var(--emerald2));} #qok-ui .switch::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 2px 4px #0004;transition:left .12s;} #qok-ui .switch.on::after{left:25px;}
 #qok-ui .slider{height:10px;border-radius:99px;background:#cdb578;position:relative;flex:1;cursor:pointer;} #qok-ui .slider i{position:absolute;left:0;top:0;height:100%;width:50%;border-radius:99px;background:linear-gradient(90deg,#f0c969,var(--gold2));} #qok-ui .slider b{position:absolute;top:50%;transform:translate(-50%,-50%);width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 2px 5px #0005;}
 #qok-ui .setrow{display:flex;align-items:center;gap:10px;padding:14px;border-radius:14px;background:#ffffff14;cursor:pointer;min-height:52px;}
-#qok-ui .setrow.sel{outline:2.5px solid var(--gold);outline-offset:1px;background:#f3e7c61a;} #qok-ui .setrow .lab{flex:1;font-weight:800;font-size:14.5px;color:#f3ead2;} #qok-ui .setrow .val{font-weight:800;color:var(--gold);font-size:14px;}
+#qok-ui .setrow.sel{outline:2.5px solid var(--gold);outline-offset:1px;background:#f3e7c61a;} #qok-ui .setrow .lab{flex:1;font-weight:800;font-size:14.5px;color:#f3ead2;display:flex;align-items:center;gap:10px;} #qok-ui .setrow .lab svg{width:21px;height:21px;flex:none;color:var(--gold);} #qok-ui .setrow .val{font-weight:800;color:var(--gold);font-size:14px;}
 
 #qok-ui .enemy-stage{flex:1;display:flex;align-items:center;justify-content:center;position:relative;min-height:0;}
 #qok-ui .enemy-card{position:absolute;top:6px;left:14px;right:14px;display:flex;align-items:center;gap:9px;background:#0d0f22cc;border:2px solid var(--gold-line);border-radius:13px;padding:9px 11px;z-index:4;}
-#qok-ui .msg{background:#0d0f22e0;border:2px solid var(--gold-line);border-radius:14px;padding:12px 14px;color:#f2ead2;font-size:14px;line-height:1.4;}
+#qok-ui .msg{background:#0d0f22e0;border:2px solid var(--gold-line);border-radius:16px;padding:20px 22px;color:#f2ead2;font-size:22px;font-weight:700;line-height:1.4;min-height:84px;display:flex;align-items:center;justify-content:center;text-align:center;}
 #qok-ui .scene-h{text-align:center;font-weight:900;color:#fdf3da;font-size:19px;} #qok-ui .scene-s{text-align:center;color:#c7bfe0;font-size:12.5px;margin-top:2px;}
 /* title / landing screen */
 #qok-ui .title-kicker{font-size:12px;letter-spacing:.34em;text-transform:uppercase;color:var(--gold);font-weight:800;}
 #qok-ui .title-name{font-weight:900;font-size:clamp(30px,8vw,46px);line-height:1.08;color:#fdf6e6;margin:8px 0 4px;text-shadow:0 2px 0 #0007,0 0 18px var(--gold-glow);}
 /* title screen: spread head / hero / actions across the full height (buttons in the thumb zone) */
 #qok-ui .t-screen{ flex:1; width:100%; max-width:560px; margin:0 auto; display:flex; flex-direction:column; justify-content:space-between; align-items:center; text-align:center;
-  padding:calc(40px + env(safe-area-inset-top,0px)) 24px calc(40px + env(safe-area-inset-bottom,0px)); }
+  padding:40px 24px calc(40px + env(safe-area-inset-bottom,0px)); }
 #qok-ui .t-head{ flex:0 0 auto; }
 #qok-ui .t-hero{ flex:0 0 auto; width:min(56vw,236px); aspect-ratio:1; border-radius:34px; display:grid; place-items:center; background:radial-gradient(closest-side,#fff8e6,#eadbb0); box-shadow:inset 0 0 0 3px #d8c18a,0 14px 30px #0007; }
 #qok-ui .t-hero img, #qok-ui .t-hero svg{ width:78%; height:78%; image-rendering:pixelated; }
 #qok-ui .t-actions{ flex:0 0 auto; width:100%; max-width:380px; display:flex; flex-direction:column; gap:13px; align-items:center; }
 #qok-ui .t-actions .toggle{ font-size:14px; }
+/* game over (Storybook) */
+#qok-ui .go-screen{ flex:1; width:100%; max-width:560px; margin:0 auto; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:44px; padding:40px 24px; text-align:center; }
+#qok-ui .go-head{ display:flex; flex-direction:column; align-items:center; gap:12px; }
+#qok-ui .go-skull{ font-size:56px; line-height:1; filter:drop-shadow(0 0 14px rgba(227,89,79,.55)); }
+#qok-ui .go-title{ font-weight:900; font-size:clamp(34px,9vw,52px); color:#ef6a60; letter-spacing:.02em; text-shadow:0 2px 0 #0007,0 0 24px rgba(227,89,79,.45); }
+#qok-ui .go-actions{ width:100%; max-width:360px; display:flex; flex-direction:column; gap:13px; }
+#qok-ui .go-dis{ opacity:.5; filter:grayscale(.6); cursor:default; }
 
 /* Battle is a fully-opaque DOM screen (the Phaser BattleScene is a centered/
    letterboxed fixed scene, so a transparent overlay would expose its UI in the
    middle band). We render the monster ourselves from its PNG sprite. */
 #qok-ui.battle .col{ max-width:600px; }
-#qok-ui .bstage{ flex:1; position:relative; min-height:0; display:flex; align-items:center; justify-content:center; }
-/* monster sprite (black bg chroma-keyed to transparent at runtime, see ui-overhaul.js) */
-#qok-ui .bmon{ image-rendering:pixelated; width:46%; max-width:230px; max-height:60%; object-fit:contain; filter:drop-shadow(0 10px 12px #0008); }
-#qok-ui .bstage::before{ content:""; position:absolute; width:240px; height:80px; bottom:16%; border-radius:50%; background:radial-gradient(closest-side,#00000055,transparent); }
-#qok-ui .hudwrap{ flex:none; padding:14px 14px calc(16px + env(safe-area-inset-bottom,0px)); }
+/* fixed-height enemy stage so the monster stays put when the quiz card appears below */
+#qok-ui .bstage{ flex:none; height:54%; position:relative; min-height:0; display:flex; align-items:flex-end; justify-content:center; padding-bottom:6%; }
+/* monster sprite — the shadow is a drop-shadow of the sprite's ALPHA shape, so it hugs the
+   VISIBLE bottom of every enemy (grounded OR floating); a ground ellipse detaches on sprites
+   with transparent bottom padding. object-position:bottom keeps the sprite anchored low. */
+#qok-ui .bmon{ image-rendering:pixelated; position:relative; z-index:1; width:68%; max-width:300px; max-height:84%; object-fit:contain; object-position:center bottom; filter:drop-shadow(0 3px 1px rgba(0,0,0,.75)) drop-shadow(0 7px 7px rgba(0,0,0,.45)); }
+#qok-ui .hudwrap{ flex:none; margin-top:auto; padding:14px 14px calc(16px + env(safe-area-inset-bottom,0px)); }
 #qok-ui .actiongrid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
 #qok-ui .pbar{ display:flex; align-items:center; gap:9px; background:#0d0f22e0; border:2px solid var(--gold-line); border-radius:13px; padding:9px 11px; margin-top:10px; }
 #qok-ui .itemrow{ display:flex; flex-direction:column; gap:8px; }
@@ -172,7 +183,7 @@
   #qok-ui .body{ display:flex; flex-direction:column; justify-content:safe center; }
   /* battle */
   #qok-ui.battle .col{ max-width:760px; }
-  #qok-ui .bmon{ max-width:58%; max-height:46%; }
+  #qok-ui .bmon{ max-width:74%; max-height:74%; }
   #qok-ui .hudwrap, #qok-ui .heal-wrap{ zoom:1.4; width:calc(100% / 1.4); margin:0 auto; }
   #qok-ui .enemy-card{ zoom:1.32; }
 }
@@ -186,7 +197,41 @@
   /* paired items in a row share the tallest height (grid default stretch) so the 2-list layout looks even */
   #qok-ui .grid2 > .card{ box-shadow:0 4px 0 #cdb578; }
   #qok-ui.battle .col{ max-width:900px; }
-  #qok-ui .bmon{ max-width:340px; max-height:58%; }
+  #qok-ui .bmon{ max-width:360px; max-height:74%; }
   #qok-ui .hudwrap, #qok-ui .heal-wrap{ zoom:1.3; width:calc(100% / 1.3); margin:0 auto; }
   #qok-ui .enemy-card{ zoom:1.25; }
 }
+
+/* ============================================================
+   Battle damage FX — re-bridged to the DOM (the Phaser canvas is
+   hidden under the overlay during battle, so its hit-flash / crit /
+   shake never show). #qok-fx is a sibling of #qok-stage so paint()'s
+   re-render can't wipe an in-flight animation. Audio SFX still play
+   from Phaser; only the visuals are restored here.
+   ============================================================ */
+#qok-fx{ position:fixed; inset:0; pointer-events:none; z-index:60; overflow:hidden; }
+#qok-ui .dmgnum{ position:absolute; transform:translate(-50%,-50%); font-family:var(--font); font-weight:900; font-size:32px; line-height:1; color:#fff; text-shadow:0 2px 0 #00000099, 0 0 8px #00000066; white-space:nowrap; animation:qok-dmgfloat .9s cubic-bezier(.2,.7,.3,1) forwards; }
+#qok-ui .dmgnum.enemyhit{ color:#ffe08a; }
+#qok-ui .dmgnum.playerhit{ color:#ff8a7a; }
+#qok-ui .dmgnum.crit{ color:#ffdd33; font-size:46px; text-shadow:0 2px 0 #aa3300, 0 0 16px #ff9a3c; }
+#qok-ui .dmgnum.miss{ color:#cfc6b0; font-size:24px; font-style:italic; }
+@keyframes qok-dmgfloat{ 0%{opacity:0; transform:translate(-50%,-25%) scale(.5);} 18%{opacity:1; transform:translate(-50%,-58%) scale(1.18);} 40%{transform:translate(-50%,-74%) scale(1);} 100%{opacity:0; transform:translate(-50%,-150%) scale(1);} }
+#qok-ui .critlabel{ position:absolute; transform:translate(-50%,-50%); font-family:var(--font); font-weight:900; font-size:24px; letter-spacing:1px; color:#ffdd33; text-shadow:0 2px 0 #aa3300, 0 0 12px #ff9a3c; white-space:nowrap; animation:qok-critlabel 1.05s ease-out forwards; }
+@keyframes qok-critlabel{ 0%{opacity:0; transform:translate(-50%,-40%) scale(.4);} 20%{opacity:1; transform:translate(-50%,-62%) scale(1.2);} 75%{opacity:1; transform:translate(-50%,-88%) scale(1);} 100%{opacity:0; transform:translate(-50%,-120%) scale(1);} }
+.qok-critflash{ position:fixed; inset:0; pointer-events:none; z-index:55; background:radial-gradient(circle at 50% 42%, rgba(255,226,150,.55), rgba(255,200,120,0) 62%); animation:qok-flashfade .42s ease-out forwards; }
+.qok-hurtflash{ position:fixed; inset:0; pointer-events:none; z-index:55; box-shadow:inset 0 0 90px 28px rgba(214,42,42,.6); animation:qok-flashfade .46s ease-out forwards; }
+@keyframes qok-flashfade{ 0%{opacity:.9;} 100%{opacity:0;} }
+#qok-ui .bmon.qok-hit{ animation:qok-enemyhit .42s ease-out; }
+@keyframes qok-enemyhit{ 0%,100%{transform:translateX(0); opacity:1;} 15%{transform:translateX(-7px); opacity:.4;} 30%{transform:translateX(6px); opacity:1;} 45%{transform:translateX(-4px); opacity:.4;} 60%{transform:translateX(3px); opacity:1;} }
+#qok-ui .bmon.qok-crithit{ transform-origin:center bottom; animation:qok-enemycrit .52s ease-out; }
+@keyframes qok-enemycrit{ 0%{transform:scale(1); filter:brightness(1);} 18%{transform:scale(1.22); filter:brightness(1.9) saturate(2.4) sepia(.5) hue-rotate(-12deg);} 40%{transform:scale(1.04); filter:brightness(1.1);} 62%{transform:scale(1.14); filter:brightness(1.6) saturate(1.8) sepia(.4);} 100%{transform:scale(1); filter:brightness(1);} }
+#qok-stage.qok-shake{ animation:qok-shakeanim .42s ease; }
+@keyframes qok-shakeanim{ 0%,100%{transform:translate(0,0);} 18%{transform:translate(-6px,3px);} 38%{transform:translate(5px,-3px);} 58%{transform:translate(-4px,2px);} 78%{transform:translate(3px,-1px);} }
+@media (prefers-reduced-motion: reduce){ #qok-ui .dmgnum, #qok-ui .critlabel{ animation-duration:.6s; } #qok-stage.qok-shake, #qok-ui .bmon.qok-hit, #qok-ui .bmon.qok-crithit{ animation:none; } }
+
+/* item-use toast (surfaces the hidden showItemMessage feedback) */
+#qok-ui .qok-toast{ position:fixed; left:50%; bottom:17%; transform:translateX(-50%); z-index:70; pointer-events:none;
+  background:#0d0f22f2; border:2px solid var(--gold-line); border-radius:14px; padding:12px 20px; max-width:80%;
+  color:#f3ead2; font-family:var(--font); font-weight:800; font-size:15px; line-height:1.35; text-align:center;
+  box-shadow:0 8px 22px rgba(0,0,0,.5); animation:qok-toast 1.9s ease forwards; }
+@keyframes qok-toast{ 0%{opacity:0; transform:translate(-50%,12px);} 9%{opacity:1; transform:translate(-50%,0);} 82%{opacity:1; transform:translate(-50%,0);} 100%{opacity:0; transform:translate(-50%,-8px);} }

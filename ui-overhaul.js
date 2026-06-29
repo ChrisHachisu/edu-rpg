@@ -38,17 +38,19 @@
       '<circle cx="17" cy="4.5" r="2.3" fill="currentColor"/><g fill="currentColor"><rect x="1.2" y="4.4" width="4.8" height="1.8" rx="0.9" opacity="0.9"/><rect x="0.6" y="8.1" width="5.8" height="1.8" rx="0.9" opacity="0.72"/><rect x="2" y="11.8" width="4.4" height="1.8" rx="0.9" opacity="0.55"/></g></symbol>' +
     '<symbol id="qok-potion" viewBox="0 0 24 24"><path fill="currentColor" d="M9 2h6v2l-1 1v3.2l3.6 6.3A3 3 0 0114 19H10a3 3 0 01-3.6-4.5L10 8.2V5L9 4z"/><rect x="8" y="14" width="8" height="4" fill="#ffffff55"/></symbol>' +
     '<symbol id="qok-shield" viewBox="0 0 24 24"><path d="M12 2.4l8.2 2.7v6.3c0 5.7-3.5 9-8.2 10.9C7.3 20.4 3.8 17.1 3.8 11.4V5.1z" fill="#bf8a4a"/><path d="M12 2.4l8.2 2.7v6.3c0 5.7-3.5 9-8.2 10.9z" fill="#a8763c"/><path d="M12 4.6l6.1 2v5.1c0 4.4-2.7 6.9-6.1 8.4-3.4-1.5-6.1-4-6.1-8.4V6.6z" fill="#6fb6ea"/><path d="M12 4.6l6.1 2v5.1c0 4.4-2.7 6.9-6.1 8.4z" fill="#4f97d0"/><circle cx="12" cy="11" r="2.5" fill="#e0b757"/><circle cx="12" cy="11" r="2.5" fill="none" stroke="#9a7a36" stroke-width=".7"/><path d="M12 2.4l8.2 2.7v6.3c0 5.7-3.5 9-8.2 10.9C7.3 20.4 3.8 17.1 3.8 11.4V5.1z" fill="none" stroke="#6e4f23" stroke-width="1.1"/></symbol>' +
+    '<symbol id="qok-shieldw" viewBox="0 0 24 24"><path d="M12 2.4l8.2 2.7v6.3c0 5.7-3.5 9-8.2 10.9C7.3 20.4 3.8 17.1 3.8 11.4V5.1z" fill="#fff"/></symbol>' +
     '<symbol id="qok-armorf" viewBox="0 0 24 24"><ellipse cx="5.4" cy="8.4" rx="3.2" ry="2.7" fill="#8d9bad"/><ellipse cx="18.6" cy="8.4" rx="3.2" ry="2.7" fill="#8d9bad"/><ellipse cx="5.4" cy="7.7" rx="3.1" ry="2" fill="#c2cedd"/><ellipse cx="18.6" cy="7.7" rx="3.1" ry="2" fill="#c2cedd"/><path d="M8 6c1.3 1.6 2.5 2.2 4 2.2s2.7-.6 4-2.2l.6 6.4c0 1.4-.5 2.6-1.1 3.2H8.5c-.6-.6-1.1-1.8-1.1-3.2z" fill="#aab8c9"/><path d="M12 8.2v7.6" stroke="#73828f" stroke-width="1"/><path d="M8.4 9.6c2.4 1.4 4.8 1.4 7.2 0" stroke="#828f9f" stroke-width=".8" fill="none"/><path d="M9.1 9.2c-.45 1.5-.45 3.1 0 4.7" stroke="#cdd8e6" stroke-width="1" fill="none" opacity=".5"/><path d="M14.9 9.2c.45 1.5.45 3.1 0 4.7" stroke="#cdd8e6" stroke-width="1" fill="none" opacity=".5"/><rect x="8" y="16" width="8" height="1.5" rx=".6" fill="#9aaabd"/><rect x="8.5" y="17.9" width="7" height="1.5" rx=".6" fill="#9aaabd"/><rect x="9" y="19.8" width="6" height="1.5" rx=".6" fill="#9aaabd"/><path d="M8 6c1.3 1.6 2.5 2.2 4 2.2s2.7-.6 4-2.2" fill="none" stroke="#e0b757" stroke-width="1.3"/></symbol>' +
     '<symbol id="qok-swordf" viewBox="0 0 24 24"><g transform="translate(12 12) rotate(42) scale(1.12) translate(-12 -12)"><path d="M12 1.4l1.7 3.8v8.6h-3.4V5.2z" fill="#cfd8e3"/><path d="M12 1.4l1.7 3.8v8.6H12z" fill="#a9b6c5"/><rect x="11.6" y="5.4" width="0.8" height="8.2" fill="#eef4fa"/><path d="M12 1.4l.9 2.6h-1.8z" fill="#f2f7fc"/><path d="M6.8 13.6h10.4l-1.1 2.4H7.9z" fill="#e0b757"/><path d="M6.8 13.6h10.4l-.5 1.1H7.3z" fill="#f2d684"/><circle cx="7.1" cy="14.3" r="1.05" fill="#c79a3f"/><circle cx="16.9" cy="14.3" r="1.05" fill="#c79a3f"/><rect x="10.7" y="16" width="2.6" height="4.6" rx=".6" fill="#7a4a28"/><rect x="10.7" y="16.9" width="2.6" height=".7" fill="#5a3620"/><rect x="10.7" y="18.3" width="2.6" height=".7" fill="#5a3620"/><rect x="10.7" y="19.7" width="2.6" height=".7" fill="#5a3620"/><circle cx="12" cy="21.4" r="1.7" fill="#e0b757"/><circle cx="12" cy="21.4" r="1.7" fill="none" stroke="#c79a3f" stroke-width=".5"/><circle cx="11.4" cy="20.9" r=".55" fill="#f2d684"/></g></symbol>' +
     '<symbol id="qok-helmf" viewBox="0 0 24 24"><path d="M5 11.2a7 7 0 0114 0v4.6a2.1 2.1 0 01-2.1 2.1H7.1A2.1 2.1 0 015 15.8z" fill="#aab8c9"/><path d="M12 4.2a7 7 0 017 7v4.6a2.1 2.1 0 01-2.1 2.1H12z" fill="#9aaabd"/><ellipse cx="9" cy="10" rx="2" ry="2.6" fill="#cdd8e6" opacity=".5"/><rect x="5.4" y="12" width="13.2" height="1.8" fill="#6b7888"/><rect x="11.1" y="11.6" width="1.8" height="6.4" rx=".4" fill="#39414f"/><rect x="7.6" y="14.6" width="2.2" height="1.1" rx=".4" fill="#39414f"/><rect x="14.2" y="14.6" width="2.2" height="1.1" rx=".4" fill="#39414f"/><path d="M12 2.2l1.8 3.4h-3.6z" fill="#e3594f"/><path d="M5 11.2a7 7 0 0114 0" fill="none" stroke="#e0b757" stroke-width="1.1"/></symbol>' +
     '<symbol id="qok-ringf" viewBox="0 0 24 24"><circle cx="12" cy="15.2" r="5.6" fill="none" stroke="#e0b757" stroke-width="2.6"/><circle cx="12" cy="15.2" r="5.6" fill="none" stroke="#b8902f" stroke-width="1" opacity=".55"/><path d="M8.4 8.6L12 2.8l3.6 5.8-3.6 2.1z" fill="#5aa9e6" stroke="#2f6ea0" stroke-width=".6"/><path d="M12 2.8l3.6 5.8-3.6 2.1z" fill="#3f86c4"/><path d="M10.4 4.8l1.4 2-1 1z" fill="#cfeaff" opacity=".85"/></symbol>' +
     '<symbol id="qok-person" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M5 20c0-4 3-6 7-6s7 2 7 6" fill="none" stroke="currentColor" stroke-width="2"/></symbol>' +
     '<symbol id="qok-bag" viewBox="0 0 24 24"><path d="M5 8h14l-1 11H6L5 8z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M9 8V6a3 3 0 016 0v2" fill="none" stroke="currentColor" stroke-width="2"/></symbol>' +
-    '<symbol id="qok-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2" fill="none" stroke="currentColor" stroke-width="2"/></symbol>' +
+    '<symbol id="qok-gear" viewBox="0 0 24 24"><path d="M19.4 13a7.5 7.5 0 000-2l2.1-1.6-2-3.5-2.5 1a7.5 7.5 0 00-1.7-1l-.4-2.6h-4l-.4 2.6a7.5 7.5 0 00-1.7 1l-2.5-1-2 3.5L6.6 11a7.5 7.5 0 000 2l-2.1 1.6 2 3.5 2.5-1a7.5 7.5 0 001.7 1l.4 2.6h4l.4-2.6a7.5 7.5 0 001.7-1l2.5 1 2-3.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="2"/></symbol>' +
     '<symbol id="qok-heart" viewBox="0 0 24 24"><path d="M12 21s-7-4.5-7-10a4 4 0 018-1 4 4 0 018 1c0 5.5-7 10-7 10z" fill="#5fcc63" stroke="#2f9c5b" stroke-width="1.5"/></symbol>' +
     '<symbol id="qok-bomb" viewBox="0 0 24 24"><circle cx="11" cy="14" r="6" fill="#5a626f" stroke="#2e333c" stroke-width="1.5"/><path d="M15 8c1-2 3-2 4-1" fill="none" stroke="#7a6541" stroke-width="1.6"/><circle cx="19.5" cy="6" r="1.6" fill="#ffb13a"/></symbol>' +
     '<symbol id="qok-leaf" viewBox="0 0 24 24"><path d="M12 21c0-6 3-10 8-12-1 7-4 11-8 12z" fill="#5fcc63" stroke="#2f9c5b" stroke-width="1.2"/><path d="M12 21c0-5-2-8-6-10 1 6 3 9 6 10z" fill="#7ad07e" stroke="#2f9c5b" stroke-width="1.1"/></symbol>' +
     '<symbol id="qok-flask" viewBox="0 0 24 24"><path d="M10 3h4v4.2l3.3 6.2A3.2 3.2 0 0114.5 18h-5A3.2 3.2 0 016.7 13.4L10 7.2z" fill="currentColor" stroke="#00000040" stroke-width="1"/><rect x="9" y="2" width="6" height="2.4" rx="1" fill="#caa45a"/><ellipse cx="12" cy="15" rx="3.4" ry="2.4" fill="#ffffff44"/></symbol>' +
+    '<symbol id="qok-flasko" viewBox="0 0 24 24"><path d="M9 3h6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M10.5 3.5v4.8l-4.6 8.1A2.2 2.2 0 007.8 19.7h8.4a2.2 2.2 0 001.9-3.3l-4.6-8.1V3.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><path d="M8.4 13.5h7.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></symbol>' +
     '<symbol id="qok-crystal" viewBox="0 0 24 24"><path d="M12 2l5.5 6L12 22 6.5 8z" fill="currentColor" stroke="#ffffff66" stroke-width="1"/><path d="M6.5 8h11M12 2v20" stroke="#ffffff55" stroke-width="0.9"/></symbol>' +
     '<symbol id="qok-armor" viewBox="0 0 24 24"><path d="M5 6l3.5-2L12 6l3.5-2L19 6v4c0 5.5-3.2 9.2-7 11-3.8-1.8-7-5.5-7-11z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 6v15" stroke="currentColor" stroke-width="1.5"/></symbol>' +
     '<symbol id="qok-helm" viewBox="0 0 24 24"><path d="M5 11a7 7 0 0114 0v5a2 2 0 01-2 2H7a2 2 0 01-2-2z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M5 13.5h14M11 11.5v6.5" stroke="currentColor" stroke-width="1.6"/></symbol>' +
@@ -61,6 +63,13 @@
     '<symbol id="qok-spd" viewBox="0 0 24 24"><path fill="#e0b757" d="M13.4 2L4.8 13.2H10l-1.8 8.8L19 10.4h-5.2z"/></symbol>' +
     '<symbol id="qok-check" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" fill="none" stroke="currentColor" stroke-width="2.4"/></symbol>' +
     '<symbol id="qok-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4"/></symbol>' +
+    // settings-row category icons
+    '<symbol id="qok-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 7v5l3.5 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>' +
+    '<symbol id="qok-speaker" viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 5v14l-4.5-4.5H4z" fill="currentColor"/><path d="M15.5 9a4 4 0 010 6M18 6.5a8 8 0 010 11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>' +
+    '<symbol id="qok-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3.5 12h17M12 3c3.2 2.5 3.2 15.5 0 18M12 3c-3.2 2.5-3.2 15.5 0 18" fill="none" stroke="currentColor" stroke-width="1.5"/></symbol>' +
+    '<symbol id="qok-gauge" viewBox="0 0 24 24"><path d="M3.5 17a8.5 8.5 0 0117 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 17l5-4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="17" r="1.8" fill="currentColor"/></symbol>' +
+    '<symbol id="qok-dpad" viewBox="0 0 24 24"><path d="M9.5 3.5h5V9H20v5h-5.5v5.5h-5V14H4V9h5.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>' +
+    '<symbol id="qok-text" viewBox="0 0 24 24"><path d="M5 6.5h14M12 6.5V19M8.5 19h7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>' +
     '</svg>';
   function use(id, cls, col) { return '<svg class="' + (cls || 'ic') + '"' + (col ? ' style="color:' + col + '"' : '') + '><use href="#qok-' + id + '"/></svg>'; }
 
@@ -190,7 +199,7 @@
   function esc(s) { return ('' + (s == null ? '' : s)).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
 
   // ---- dom plumbing ----
-  var root = null, stage = null, attached = false, lastSig = null, curScreen = null;
+  var root = null, stage = null, fx = null, attached = false, lastSig = null, curScreen = null;
   function ensure() {
     if (stage) return true;
     root = document.getElementById('qok-ui');
@@ -200,16 +209,21 @@
     stage.id = 'qok-stage';
     stage.style.cssText = 'display:flex;flex:1;min-height:0;width:100%;';
     root.appendChild(stage);
+    fx = document.createElement('div'); // transient battle-FX layer; sibling of stage so paint() never wipes an in-flight animation
+    fx.id = 'qok-fx';
+    root.appendChild(fx);
     if (!attached) { root.addEventListener('click', onTap, true); root.addEventListener('input', onInput, true); attached = true; }
     return true;
   }
   function activate(name, isBattle) {
     if (!root.classList.contains('active')) root.classList.add('active');
     root.classList.toggle('battle', !!isBattle);
+    try { document.body.classList.add('qok-overlay'); } catch (e) {} // hide the Phaser canvas under us (no old-UI flash)
     if (curScreen !== name) { curScreen = name; lastSig = null; }
   }
   function deactivate() {
     if (root && root.classList.contains('active')) { root.classList.remove('active', 'battle'); stage.innerHTML = ''; }
+    try { document.body.classList.remove('qok-overlay'); } catch (e) {} // show the canvas again (field/dungeon, or a non-overlaid Phaser scene)
     curScreen = null; lastSig = null;
   }
   function paint(html, sig) {
@@ -221,7 +235,8 @@
   // ============================================================
   //  MENU
   // ============================================================
-  var TAB_ICON = { status: 'person', items: 'bag', equip: 'sword', settings: 'gear' };
+  // tab bar: items = outline flask (flasko) to match the other line-style tab icons; settings = cog gear
+  var TAB_ICON = { status: 'person', items: 'flasko', equip: 'sword', settings: 'gear' };
   var TAB_KEY  = { status: 'menu.status', items: 'menu.items', equip: 'menu.equip', settings: 'menu.settings' };
   var SLOTS = ['weapon', 'armor', 'shield', 'helmet', 'accessory'];
   var SLOT_KEY = { weapon: 'equip.slot.weapon', armor: 'equip.slot.armor', shield: 'equip.slot.shield', helmet: 'equip.slot.helmet', accessory: 'equip.slot.accessory' };
@@ -349,6 +364,7 @@
     return h + '</div></div>';
   }
 
+  var SETTING_ICON = { difficulty: 'gauge', language: 'globe', kanji: 'text', timer: 'clock', sound: 'speaker', volume: 'speaker', controlOrientation: 'dpad' };
   function settingsBody(ms, st) {
     var listArr = ms.settingsList;
     var h = '<div class="body"><div class="zc pad stack g8 grid2"><div class="eyebrow">' + esc(Z('menu.settings')) + '</div>';
@@ -369,18 +385,44 @@
         ctrl = '<div class="slider" style="pointer-events:none;max-width:140px;"><i style="width:' + v + '%;"></i><b style="left:' + v + '%;"></b></div><span class="val" style="min-width:42px;text-align:right;">' + v + '%</span>';
       } else if (key === 'controlOrientation') {
         lab = isJa() ? 'そうさボタン' : 'Controls';
-        var ori = (window.localStorage && localStorage.getItem('eduControlOrientation')) || 'left';
+        var ori = (window.localStorage && localStorage.getItem('eduControlOrientation')) || 'right';
         ctrl = '<div class="seg" style="pointer-events:none;flex:1;max-width:230px;"><b class="' + (ori === 'left' ? 'on' : '') + '">◀</b><b class="' + (ori === 'center' ? 'on' : '') + '">●</b><b class="' + (ori === 'right' ? 'on' : '') + '">▶</b></div>';
       }
       var sp = (key === 'volume' || key === 'controlOrientation') ? ' span2' : '';
-      h += '<div class="setrow' + (sel ? ' sel' : '') + sp + '" data-act="setting" data-i="' + i + '"><span class="lab">' + esc(lab) + '</span>' + ctrl + '</div>';
+      h += '<div class="setrow' + (sel ? ' sel' : '') + sp + '" data-act="setting" data-i="' + i + '"><span class="lab">' + use(SETTING_ICON[key] || 'gear') + esc(lab) + '</span>' + ctrl + '</div>';
     }
     return h + '</div></div>';
   }
 
+  // ---- item-use toast ----
+  // MenuScene.useItem() DOES work (applies the effect + decrements), but its feedback
+  // (showItemMessage: "X used / healed Y", "already full", "can't use here") is a Phaser
+  // popup hidden under the overlay -> at full HP nothing seems to happen. Surface it as a
+  // DOM toast so the user sees the result.
+  var _itemSeq = 0, _itemShown = 0, _itemMsg = '';
+  function patchItemMsg(ms) {
+    if (!ms || ms.__qokItemPatched || typeof ms.showItemMessage !== 'function') return;
+    ms.__qokItemPatched = true;
+    var orig = ms.showItemMessage.bind(ms);
+    ms.showItemMessage = function (txt) { try { _itemMsg = String(txt == null ? '' : txt); _itemSeq++; } catch (e) {} return orig(txt); };
+  }
+  function showToast(text) {
+    if (!fx || !text) return;
+    var t = document.createElement('div'); t.className = 'qok-toast'; t.textContent = text;
+    fx.appendChild(t);
+    setTimeout(function () { try { t.remove(); } catch (e) {} }, 1900);
+  }
+  function runItemToast(ms) {
+    patchItemMsg(ms);
+    if (_itemSeq === _itemShown) return;
+    _itemShown = _itemSeq;
+    if (_itemMsg) showToast(_itemMsg);
+  }
   function renderMenu() {
     var ms = getScene('MenuScene'), p = player(), st = pstate();
     if (!ms || !p || !st) return;
+    // a field tab was tapped → open the menu directly on that tab
+    if (pendingTab != null && ms.tabs && ms.tabs[pendingTab]) { ms.tabIndex = pendingTab; ms.currentTab = ms.tabs[pendingTab]; ms.listIndex = 0; pendingTab = null; }
     var tab = ms.currentTab || 'status';
     var body;
     if (tab === 'items') body = itemsBody(ms, st);
@@ -395,11 +437,12 @@
     var sig = 'menu|' + tab + '|' + ms.listIndex + '|' + ms.equipMode + '|' + ms.equipSlotIndex + '|' + ms.equipInventoryIndex + '|' + (ms.equipTypeFilter || '') +
       '|' + st.hp + '/' + p.totalMaxHp + '|atk' + p.totalAtk + '|def' + p.totalDef + '|spd' + st.spd + '|g' + st.gold + '|lv' + st.level + '|xp' + st.exp +
       '|' + invSig + '|' + eqSig + '|' + locale() + '|t' + st.timerEnabled + '|s' + st.soundEnabled + '|v' + st.masterVolume + '|k' + st.kanjiMode + '|d' + st.quizDifficulty +
-      '|q' + qs.totalCorrect + '/' + qs.totalAsked + '|o' + ((window.localStorage && localStorage.getItem('eduControlOrientation')) || 'left') +
+      '|q' + qs.totalCorrect + '/' + qs.totalAsked + '|o' + ((window.localStorage && localStorage.getItem('eduControlOrientation')) || 'right') +
       '|psn' + (st.poisonedUntil && st.poisonedUntil > Date.now() ? 1 : 0);
 
     activate('menu', false);
     paint(topbar(p, st) + body + tabbar(tab), sig);
+    runItemToast(ms); // surface item-use feedback (hidden Phaser popup) as a DOM toast
   }
 
   // ============================================================
@@ -531,6 +574,7 @@
     var kanjiRow = ja ? ('<div class="panel" style="padding:12px 15px;display:flex;justify-content:space-between;align-items:center;gap:10px;"><span style="font-weight:800;color:var(--ink-soft);font-size:13px;">もじ</span><div class="toggle" data-act="introKanji"><span class="' + (!pstate() || !pstate().kanjiMode ? 'on' : '') + '">かんたん</span><span class="' + (pstate() && pstate().kanjiMode ? 'on' : '') + '">むずかしい</span></div></div>') : '';
 
     var h = '<div class="body"><div class="zc stack pad g10 grid2" style="padding-top:14px;padding-bottom:18px;">' +
+      '<div class="span2" style="display:flex;justify-content:flex-start;"><button data-act="introBack" style="background:#2a2c4d;border:1.5px solid #9a7a36;color:#f3ead2;font-weight:800;font-size:14px;cursor:pointer;padding:6px 14px;border-radius:10px;display:inline-flex;align-items:center;gap:5px;">‹ ' + esc(Z('settings.back')) + '</button></div>' +
       '<div class="span2"><div class="scene-h">✦ ' + esc(Z('create.title')) + ' ✦</div></div>' +
       '<div class="span2" style="display:grid;place-items:center;margin:4px 0 2px;">' +
         '<div class="intro-hero">' + heroImg(120, heroColor, function(){ if(ts.updateHeroPreview) ts.updateHeroPreview(); }) + '</div>' +
@@ -563,7 +607,7 @@
   // ============================================================
   var BATTLE_ACT = [
     { key: 'battle.attack', cls: 'btn-ruby', ic: 'sword', col: '#fff' },
-    { key: 'battle.defend', cls: 'btn-sky', ic: 'shield', col: '#fff' },
+    { key: 'battle.defend', cls: 'btn-sky', ic: 'shieldw', col: '#fff' },
     { key: 'battle.item', cls: 'btn-em', ic: 'potion', col: '#fff' },
     { key: 'battle.flee', cls: 'btn-slate', ic: 'run', col: '#fff' }
   ];
@@ -573,6 +617,70 @@
       '<div style="flex:1;min-width:0;"><div style="font-weight:800;color:#fdf3da;font-size:12px;margin-bottom:5px;">' + esc(st.name) + ' · ' + esc(Z('menu.level')) + ' ' + st.level + '</div>' +
       '<div class="hp dark"><i style="width:' + (r * 100) + '%;"></i></div></div>' +
       '<div style="font-size:11px;font-weight:800;color:#ffeac0;">' + st.hp + '/' + max + '</div></div>';
+  }
+  // ---- battle damage FX ----
+  // The Phaser BattleScene plays hit-flash / crit / camera-shake on the CANVAS (and on
+  // the Phaser monster sprite), but the opaque overlay hides the canvas during battle and
+  // the enemy is a DOM <img>, so none of it shows. We monkeypatch handleCombatResult to
+  // capture each resolved hit, then re-bridge the visuals in the DOM. (Audio SFX still
+  // fire from Phaser unaffected.)
+  var _hitSeq = 0, _hitShown = 0, _lastHit = null;
+  var _resolveBaseline = null; // messageText captured at answer-time; resolve feedback shows only until it changes
+  function patchBattle(bs) {
+    if (!bs || bs.__qokHitPatched) return;
+    var orig = bs.handleCombatResult;
+    if (typeof orig !== 'function') return;
+    bs.__qokHitPatched = true;
+    bs.handleCombatResult = function (x) {
+      try {
+        // record real damage hits only; victory/defeat/fled get their own screens
+        if (x && typeof x.damage === 'number' && x.state !== 'victory' && x.state !== 'defeat' && x.state !== 'fled') {
+          _lastHit = { who: this.quizForPlayer ? 'enemy' : 'player', dmg: x.damage | 0, crit: !!x.critical, seq: ++_hitSeq };
+        }
+      } catch (e) {}
+      return orig.apply(this, arguments);
+    };
+  }
+  function spawnFx(hit) {
+    if (!fx || !root) return;
+    var crit = hit.crit, dmg = hit.dmg, toEnemy = (hit.who === 'enemy'), miss = !(dmg > 0);
+    var el = root.querySelector(toEnemy ? '.bmon' : '.pbar'), rect = el ? el.getBoundingClientRect() : null;
+    if (toEnemy && el) {
+      var hc = crit ? 'qok-crithit' : 'qok-hit';
+      el.classList.remove('qok-hit', 'qok-crithit'); void el.offsetWidth; el.classList.add(hc);
+      setTimeout(function () { try { el.classList.remove(hc); } catch (e) {} }, 600);
+    } else if (!toEnemy) {
+      stage.classList.remove('qok-shake'); void stage.offsetWidth; stage.classList.add('qok-shake');
+      setTimeout(function () { try { stage.classList.remove('qok-shake'); } catch (e) {} }, 460);
+      var hf = document.createElement('div'); hf.className = 'qok-hurtflash'; fx.appendChild(hf);
+      setTimeout(function () { try { hf.remove(); } catch (e) {} }, 480);
+    }
+    if (crit) {
+      var cflash = document.createElement('div'); cflash.className = 'qok-critflash'; fx.appendChild(cflash);
+      setTimeout(function () { try { cflash.remove(); } catch (e) {} }, 440);
+    }
+    var cx = rect ? rect.left + rect.width / 2 : (window.innerWidth / 2);
+    var cy = rect ? rect.top + rect.height * (toEnemy ? 0.42 : 0.3) : (window.innerHeight * (toEnemy ? 0.36 : 0.7));
+    var d = document.createElement('div');
+    d.className = 'dmgnum ' + (miss ? 'miss' : (crit ? 'crit' : (toEnemy ? 'enemyhit' : 'playerhit')));
+    var missTxt = Z('battle.miss'); if (missTxt === 'battle.miss') missTxt = 'Miss';
+    d.textContent = miss ? missTxt : ('-' + dmg);
+    d.style.left = cx + 'px'; d.style.top = cy + 'px';
+    fx.appendChild(d);
+    setTimeout(function () { try { d.remove(); } catch (e) {} }, 950);
+    if (crit) {
+      var critTxt = Z('battle.critical'); if (critTxt === 'battle.critical') critTxt = 'Critical!';
+      var cl = document.createElement('div'); cl.className = 'critlabel'; cl.textContent = critTxt;
+      cl.style.left = cx + 'px'; cl.style.top = (cy - 40) + 'px';
+      fx.appendChild(cl);
+      setTimeout(function () { try { cl.remove(); } catch (e) {} }, 1100);
+    }
+  }
+  function runBattleFx(bs) {
+    patchBattle(bs);
+    if (!_lastHit || _lastHit.seq === _hitShown) return;
+    _hitShown = _lastHit.seq;
+    try { spawnFx(_lastHit); } catch (e) {}
   }
   function renderBattle() {
     var bs = getScene('BattleScene'), p = player(), st = pstate();
@@ -631,20 +739,38 @@
       content = ag + '</div>';
       dyn = 'menu' + bs.menuIndex;
     } else if (phase === 'message') {
+      // After answering, confirmQuizAnswer sets phase=message for the ~1s "Correct/Incorrect"
+      // resolve window BEFORE the result applies; the Phaser messageText is still the PREVIOUS
+      // (stale) message and the real feedback is hidden behind our overlay. Show the answer
+      // feedback ONLY while messageText is still the stale baseline; the moment it changes to the
+      // real result (damage / "Victory! +EXP! Level up!" / etc.) show THAT — otherwise the resolve
+      // feedback would mask the victory/level-up message on a winning blow (quizContainer lingers).
       var mt = (bs.messageText && bs.messageText.text) || '';
-      content = '<div class="msg" data-act="battleAdvance" style="cursor:pointer;text-align:center;">' + esc(mt) + '</div>';
-      dyn = 'msg' + mt;
+      if (bs.quizContainer && bs.quizQuestion && bs.quizQuestion.answers && mt === _resolveBaseline) {
+        var _a = bs.quizQuestion.answers[bs.quizSelectedIndex];
+        var _ok = !!(_a && _a.isCorrect);
+        content = '<div class="msg" style="text-align:center;font-weight:900;color:' + (_ok ? '#5fd089' : '#ef6a60') + ';">' + esc(Z(_ok ? 'quiz.correct' : 'quiz.incorrect')) + '</div>';
+        dyn = 'resolve' + _ok;
+      } else {
+        content = '<div class="msg" data-act="battleAdvance" style="cursor:pointer;text-align:center;white-space:pre-line;">' + esc(mt) + '</div>';
+        dyn = 'msg' + mt;
+      }
     } else {
       // intro / transitional — show only bars
       content = '';
       dyn = 'x' + phase;
     }
 
-    var hud = '<div class="bstage">' + enemyCard + monImg + '</div><div class="hudwrap">' + content + (showPlayerBar ? battlePlayerBar(p, st) : '') + '</div>';
+    // The Phaser BattleScene advances messages on a "tap anywhere" (s.input pointerdown),
+    // but the opaque DOM overlay swallows those taps — so in the message phase we lay a
+    // full-area tap target over everything so any tap advances (restores tap-to-continue).
+    var tapAdvance = (phase === 'message') ? '<div data-act="battleAdvance" aria-label="Continue" style="position:absolute;inset:0;z-index:40;cursor:pointer;"></div>' : '';
+    var hud = tapAdvance + '<div class="bstage">' + enemyCard + monImg + '</div><div class="hudwrap">' + content + (showPlayerBar ? battlePlayerBar(p, st) : '') + '</div>';
     var sig = 'battle|' + phase + '|' + sprite + '|e' + ehp + '/' + emax + '|h' + st.hp + '/' + p.totalMaxHp + '|' + loc + '|' + dyn;
     activate('battle', true);
     paint(hud, sig);
     if (isQuiz) updateQuizTimer(bs);
+    runBattleFx(bs); // spawn damage number / hit-flash / crit / shake (after paint, into the FX layer)
   }
   function updateQuizTimer(bs) {
     try {
@@ -696,7 +822,8 @@
     var iAttr = el.getAttribute('data-i');
     var i = (iAttr == null) ? null : parseInt(iAttr, 10);
     try { route(act, i, el); } catch (err) { /* never break the game */ }
-    lastSig = null; // force immediate re-render reflecting new state
+    lastSig = null; // reflect new state...
+    try { tick(); } catch (e) {} // ...and re-render NOW (don't wait up to 50ms for the next poll) so taps feel instant
   }
 
   function route(act, i, el) {
@@ -706,6 +833,20 @@
     if (curScreen === 'intro') return routeIntro(act, i, el);
     if (curScreen === 'battle') return routeBattle(act, i, el);
     if (curScreen === 'title') return routeTitle(act, i, el);
+    if (curScreen === 'gameover') return routeGameOver(act, i, el);
+  }
+
+  function routeGameOver(act, i) {
+    var go = getScene('GameOverScene'); if (!go) return;
+    if (act !== 'gameOverOpt') return;
+    go.menuIndex = i;
+    if (go.updateMenuHighlight) { try { go.updateMenuHighlight(); } catch (e) {} }
+    // the scene confirms on a keydown-ENTER (inline handler reads menuTexts[menuIndex].action)
+    ['keydown', 'keyup'].forEach(function (type) {
+      var ev = new KeyboardEvent(type, { key: 'Enter', code: 'Enter', bubbles: true, cancelable: true });
+      try { Object.defineProperty(ev, 'keyCode', { get: function () { return 13; } }); Object.defineProperty(ev, 'which', { get: function () { return 13; } }); } catch (e) {}
+      window.dispatchEvent(ev);
+    });
   }
 
   function routeTitle(act, i, el) {
@@ -724,6 +865,9 @@
     } else if (act === 'battleItem') {
       bs.itemMenuIndex = i; if (bs.updateItemSelection) bs.updateItemSelection(); bs.confirmItemSelection();
     } else if (act === 'quizAns') {
+      // capture the stale message NOW; the resolve feedback shows only until messageText changes
+      // to the result (damage / "Victory! +EXP! Level up!" / etc.), which then displays instead.
+      _resolveBaseline = (bs.messageText && bs.messageText.text) || '';
       bs.quizSelectedIndex = i; if (bs.updateQuizSelection) bs.updateQuizSelection(); bs.confirmQuizAnswer();
     } else if (act === 'battleAdvance') {
       bs.advanceMessage();
@@ -756,6 +900,12 @@
     else if (act === 'introGrade') { ts.difficultyIndex = i; }
     else if (act === 'introLang') { ts.createRow = 'language'; ts.toggleLanguage(); }
     else if (act === 'introKanji') { ts.createRow = 'kanji'; ts.toggleKanji(); }
+    else if (act === 'introBack') {
+      // return to the title screen (overlay auto-switches to renderTitle when mode==='title')
+      ts.mode = 'title';
+      try { if (ts.removeNameInput) ts.removeNameInput(); } catch (e) {}
+      try { if (ts.drawTitle) ts.drawTitle(); } catch (e) {}
+    }
     else if (act === 'introStart') {
       ts.createRow = 'start'; ts.confirmCreate();
       var err = document.getElementById('qok-name-err');
@@ -794,15 +944,125 @@
   // ============================================================
   //  MAIN LOOP
   // ============================================================
+  // ---- field/dungeon bottom tabs (replace the floating menu button): open the menu to the tapped tab ----
+  var pendingTab = null, _fieldNavEl = null, _fieldNavSig = '';
+  function fireEsc() {
+    ['keydown', 'keyup'].forEach(function (type) {
+      var ev = new KeyboardEvent(type, { key: 'Escape', code: 'Escape', bubbles: true, cancelable: true });
+      try { Object.defineProperty(ev, 'keyCode', { get: function () { return 27; } }); Object.defineProperty(ev, 'which', { get: function () { return 27; } }); } catch (e) {}
+      window.dispatchEvent(ev);
+    });
+  }
+  function syncFieldNav() {
+    var el = _fieldNavEl || (_fieldNavEl = document.getElementById('fieldTabs'));
+    if (!el) return;
+    var sig = 'fn|' + locale();
+    if (sig !== _fieldNavSig) {
+      _fieldNavSig = sig;
+      var tabs = ['status', 'items', 'equip', 'settings'], h = '';
+      for (var i = 0; i < 4; i++) { var t = tabs[i]; h += '<button class="ft" data-fi="' + i + '">' + use(TAB_ICON[t]) + '<span>' + esc(Z(TAB_KEY[t])) + '</span></button>'; }
+      el.innerHTML = h;
+    }
+    if (!el.__bound) {
+      el.__bound = true;
+      el.addEventListener('click', function (e) {
+        var b = e.target && e.target.closest ? e.target.closest('[data-fi]') : null;
+        if (!b) return;
+        pendingTab = parseInt(b.getAttribute('data-fi'), 10);
+        fireEsc();
+      });
+    }
+  }
+
+  // Measure the REAL safe-area insets with fixed probes (env() reads correctly on a
+  // position:fixed probe but resolves unreliably on the toggled #qok-ui overlay in
+  // WKWebView) and apply them to #qok-ui as explicit px padding so every overlay
+  // (battle/menu/shop/title) clears the Dynamic Island / status bar.
+  var _saSig = '', _saProbeL = null, _saProbeR = null, _saDirty = false;
+  function measureSafeArea() {
+    if (!root) return;
+    // Reading offsetHeight forces a synchronous reflow; doing it every 50ms made the whole
+    // overlay janky. Measure during the first ~1s (to let env() settle) and thereafter only
+    // when a resize/rotation marks it dirty.
+    if (__ticks > 20 && !_saDirty) return;
+    if (!_saProbeL) {
+      // TOP probe: definite 1px width so offsetHeight reliably reports env(top)
+      _saProbeL = document.createElement('div');
+      _saProbeL.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:env(safe-area-inset-top,0px);visibility:hidden;pointer-events:none;';
+      // LEFT probe: definite 1px height, width=env(left); RIGHT probe likewise
+      _saProbeR = document.createElement('div');
+      _saProbeR.style.cssText = 'position:fixed;top:0;left:0;height:1px;width:env(safe-area-inset-left,0px);visibility:hidden;pointer-events:none;';
+      _saProbeL._rr = document.createElement('div');
+      _saProbeL._rr.style.cssText = 'position:fixed;top:0;right:0;height:1px;width:env(safe-area-inset-right,0px);visibility:hidden;pointer-events:none;';
+      document.body.appendChild(_saProbeL); document.body.appendChild(_saProbeR); document.body.appendChild(_saProbeL._rr);
+    }
+    var t = _saProbeL.offsetHeight, l = _saProbeR.offsetWidth, r = _saProbeL._rr.offsetWidth;
+    var sig = t + '|' + l + '|' + r;
+    if (sig !== _saSig) {
+      _saSig = sig;
+      root.style.paddingTop = t + 'px';
+      root.style.paddingLeft = l + 'px';
+      root.style.paddingRight = r + 'px';
+    }
+    if (__ticks > 20) _saDirty = false;
+  }
+  if (typeof window !== 'undefined') {
+    window.addEventListener('resize', function () { _saDirty = true; });
+    window.addEventListener('orientationchange', function () { _saDirty = true; });
+  }
+
+  // ============================================================
+  //  GAME OVER (GameOverScene) — Storybook overlay
+  // ============================================================
+  function renderGameOver() {
+    var go = getScene('GameOverScene'); if (!go) return;
+    var OPTS = [
+      { a: 'retry', k: 'gameover.retry', cls: 'btn-gold' },
+      { a: 'restart_save', k: 'gameover.restart_save', cls: 'btn-slate' },
+      { a: 'title', k: 'gameover.title_screen', cls: 'btn-slate' }
+    ];
+    // the scene disables "restart from save point" when there's no save
+    var saveDisabled = !!(go.menuTexts && go.menuTexts[1] && go.menuTexts[1].getData && go.menuTexts[1].getData('disabled'));
+    var h = '<div class="go-screen"><div class="go-head"><div class="go-skull">☠</div>' +
+      '<div class="go-title">' + esc(Z('gameover.title')) + '</div></div><div class="go-actions">';
+    for (var i = 0; i < OPTS.length; i++) {
+      var dis = (OPTS[i].a === 'restart_save' && saveDisabled);
+      h += '<button class="btn ' + OPTS[i].cls + (dis ? ' go-dis' : '') + '"' +
+        (dis ? '' : ' data-act="gameOverOpt" data-i="' + i + '"') +
+        ' style="width:100%;font-size:18px;">' + esc(Z(OPTS[i].k)) + '</button>';
+    }
+    h += '</div></div>';
+    var sig = 'gameover|' + saveDisabled + '|' + locale();
+    activate('gameover', false);
+    paint(h, sig);
+  }
+
+  // Re-render the overlay the instant a Phaser scene transitions (create/wake/sleep/etc.) so
+  // it activates/deactivates in sync with the scene — the canvas-hide flips before the old
+  // Phaser UI can paint, killing the flash. (Without this we'd wait up to one 50ms poll.)
+  function hookScenes() {
+    var g = (typeof window !== 'undefined') && window.__PHASER_GAME__;
+    if (!g || !g.scene || !g.scene.scenes) return;
+    g.scene.scenes.forEach(function (s) {
+      if (!s || s.__qokHook) return; s.__qokHook = true;
+      ['create', 'wake', 'sleep', 'shutdown', 'start', 'resume', 'pause'].forEach(function (ev) {
+        try { s.events.on(ev, function () { try { tick(); } catch (e) {} }); } catch (e) {}
+      });
+    });
+  }
   function update() {
     if (!ensure()) return;
+    measureSafeArea();
     if (!QOK() || !GS()) { deactivate(); return; }
+    hookScenes();
+    syncFieldNav();
     // healer is a field overlay inside WorldMapScene — check before generic world
     var wm = getScene('WorldMapScene');
     if (wm && sceneActive('WorldMapScene') && wm.healerOverlayOpen) { renderHealer(); return; }
     if (sceneActive('MenuScene')) { renderMenu(); return; }
     if (sceneActive('ShopScene')) { renderShop(); return; }
     if (sceneActive('BattleScene')) { renderBattle(); return; }
+    if (sceneActive('GameOverScene')) { renderGameOver(); return; }
     var ts = getScene('TitleScene');
     if (ts && sceneActive('TitleScene')) {
       if (ts.mode === 'create') { renderIntro(); return; }
