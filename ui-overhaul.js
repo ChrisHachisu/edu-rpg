@@ -106,6 +106,13 @@
         for (var y = 0; y < h; y++) { push(0, y); push(w - 1, y); }
         while (stack.length) { var p = stack.pop(); var px0 = p % w, py0 = (p - px0) / w; push(px0 + 1, py0); push(px0 - 1, py0); push(px0, py0 + 1); push(px0, py0 - 1); }
         ctx.putImageData(d, 0, 0);
+        // Trim the transparent BOTTOM padding so the sprite's feet sit on the scene's ground line.
+        // object-position:bottom anchors the IMAGE edge, not the monster's feet — without this the
+        // monster floats by however much empty space the sprite has below it (~24% for the slime),
+        // and the ground shadow detaches. Bottom-only keeps width/size unchanged. Per-sprite.
+        var vb = h;
+        for (var yy = h - 1; yy >= 0; yy--) { var hit = false; for (var xx = 0; xx < w; xx++) { if (px[(yy * w + xx) * 4 + 3] > 16) { hit = true; break; } } if (hit) { vb = yy + 1; break; } }
+        if (vb > 0 && vb < h) { var cv2 = document.createElement('canvas'); cv2.width = w; cv2.height = vb; cv2.getContext('2d').drawImage(cv, 0, 0); cv = cv2; }
         monCache[sprite] = cv.toDataURL('image/png');
       } catch (e) { monCache[sprite] = 'assets/monsters/' + sprite + '.png'; }
       lastSig = null; // force re-render with the transparent sprite
@@ -218,11 +225,13 @@
   function activate(name, isBattle) {
     if (!root.classList.contains('active')) root.classList.add('active');
     root.classList.toggle('battle', !!isBattle);
+    if (!isBattle) clearBattleBg();
     try { document.body.classList.add('qok-overlay'); } catch (e) {} // hide the Phaser canvas under us (no old-UI flash)
     if (curScreen !== name) { curScreen = name; lastSig = null; }
   }
   function deactivate() {
     if (root && root.classList.contains('active')) { root.classList.remove('active', 'battle'); stage.innerHTML = ''; }
+    clearBattleBg();
     try { document.body.classList.remove('qok-overlay'); } catch (e) {} // show the canvas again (field/dungeon, or a non-overlaid Phaser scene)
     curScreen = null; lastSig = null;
   }
@@ -682,6 +691,49 @@
     _hitShown = _lastHit.seq;
     try { spawnFx(_lastHit); } catch (e) {}
   }
+  // ---- battle background (generated biome/boss art behind the battle) ----
+  var MAP_BG = {
+    sunkenCellar: 'coast', whisperingWoodsCave: 'forest', coastalReef: 'coast', mistyGrotto: 'cave_misty', crystalCave: 'cave_misty',
+    ironMine: 'mountains', stormNest: 'storm_peak', hauntedForest: 'haunted_wood', frozenLake: 'frozen', shadowCave: 'cave_misty',
+    oasisDepths: 'desert', desertTomb: 'tomb_ruins', banditHideout: 'canyon', scorchedRuins: 'desert',
+    emberMines: 'magma', magmaTunnels: 'magma', obsidianCavern: 'obsidian', volcanicForge: 'magma',
+    demonBarracks: 'demon_castle', voidRift: 'void', demonCastle: 'demon_castle',
+    stormreachIsles: 'storm_peak', frostfallPeaks: 'frozen', sunkenTempleIsle: 'tomb_ruins', twilightRealm: 'void'
+  };
+  var BOSS_BG = { stormSentinel: 'boss_storm_sentinel', frostMonarch: 'boss_frost_monarch', swordWraith: 'boss_sword_wraith', celestialGuardian: 'boss_celestial_guardian', demonKing: 'boss_demon_king' };
+  // Per-bg enemy-feet Y (% of the scene height). Most platforms sit at the default 64%, but a few
+  // boss daises are drawn higher in the frame, so the enemy must rise to land ON them. Tuned visually.
+  var FEET_Y = { boss_storm_sentinel: 58, boss_demon_king: 60 };
+  // Every boss (not just the 5 arena bosses) renders larger than a regular monster. A monster is a
+  // boss if aiPattern==='boss' OR its id is in the engine's mid/late/final-boss tier lists (getEnemyTier).
+  var BOSS_IDS = { demonKing:1, flameTitan:1, swordWraith:1, celestialGuardian:1, stormSentinel:1, frostMonarch:1,
+    giantToad:1, serpent:1, giantCrab:1, kraken:1, dragon:1, sandGolem:1, iceWyrm:1, lavaWyrm:1, stormHarpy:1, banditLord:1, lich:1 };
+  function isBossMonster(m) { return !!(m && (m.aiPattern === 'boss' || BOSS_IDS[m.id])); }
+  function overworldBg(y) { y = y || 0; if (y < 100) return 'demon_castle'; if (y < 170) return 'magma'; if (y < 260) return 'mountains'; if (y < 320) return 'forest'; return 'grass_plains'; }
+  function battleBgKey(bs) {
+    try {
+      var m = bs && bs.monster;
+      if (m && m.id && BOSS_BG[m.id]) return BOSS_BG[m.id]; // 5 legendary/final bosses get their own arena
+      var pos = (pstate() && pstate().position) || {};
+      if (pos.mapId && pos.mapId !== 'overworld') return MAP_BG[pos.mapId] || 'grass_plains';
+      return overworldBg(pos.y); // overworld: biome by latitude band
+    } catch (e) { return 'grass_plains'; }
+  }
+  var _curBg = null;
+  function setBattleBg(bs) {
+    if (!root) return;
+    var key = battleBgKey(bs);
+    if (key === _curBg) return;
+    _curBg = key;
+    // Full-bleed bg on #qok-ui (border-box → covers the safe-area padding too, so the scene
+    // continues behind the HUD — no black panel). position:center bottom keeps the FOREGROUND
+    // anchored low; the monster is pinned to the HUD-top (.bstage flex:1, bottom-aligned), which
+    // lands on that foreground. Scrim darkens the bottom for HUD legibility, lifts in the middle
+    // so the monster reads clearly. Set here so it survives paint().
+    root.style.backgroundImage = "linear-gradient(180deg, rgba(8,9,20,.30) 0%, rgba(8,9,20,.08) 34%, rgba(8,9,20,.10) 58%, rgba(8,9,20,.38) 100%), url('assets/backgrounds/bg-" + key + ".webp')";
+    root.style.setProperty('--qok-feety', (FEET_Y[key] || 64) + '%'); // raise the enemy onto bgs whose platform sits higher
+  }
+  function clearBattleBg() { if (root && _curBg !== null) { root.style.backgroundImage = ''; _curBg = null; } }
   function renderBattle() {
     var bs = getScene('BattleScene'), p = player(), st = pstate();
     if (!bs || !p || !st) return;
@@ -693,10 +745,11 @@
     var eR = Math.max(0, Math.min(1, emax ? ehp / emax : 0));
     var ename = bs.monster ? Z(bs.monster.nameKey) : '';
     var sprite = (bs.monster && bs.monster.spriteKey) ? bs.monster.spriteKey : '';
+    var bossCls = isBossMonster(bs.monster) ? ' boss' : ''; // bosses render larger than regular monsters
     var enemyCard = '<div class="enemy-card"><div style="flex:1;"><div style="font-weight:800;color:#ffd9a6;font-size:14px;">' + esc(ename) + '</div>' +
       '<div class="hp dark mt6"><i style="width:' + (eR * 100) + '%;background:linear-gradient(180deg,#ef6a60,#bb3a32);"></i></div></div></div>';
     var msrc = getMonsterSrc(sprite);
-    var monImg = msrc ? '<img class="bmon" src="' + msrc + '" alt="" />' : (sprite ? '<div class="bmon" style="display:flex;"></div>' : '');
+    var monImg = msrc ? '<img class="bmon' + bossCls + '" src="' + msrc + '" alt="" />' : (sprite ? '<div class="bmon' + bossCls + '" style="display:flex;"></div>' : '');
 
     var content = '', dyn = '', showPlayerBar = true;
     if (isQuiz) {
@@ -768,6 +821,7 @@
     var hud = tapAdvance + '<div class="bstage">' + enemyCard + monImg + '</div><div class="hudwrap">' + content + (showPlayerBar ? battlePlayerBar(p, st) : '') + '</div>';
     var sig = 'battle|' + phase + '|' + sprite + '|e' + ehp + '/' + emax + '|h' + st.hp + '/' + p.totalMaxHp + '|' + loc + '|' + dyn;
     activate('battle', true);
+    setBattleBg(bs); // biome/boss background behind the battle (cover-fit, full-bleed)
     paint(hud, sig);
     if (isQuiz) updateQuizTimer(bs);
     runBattleFx(bs); // spawn damage number / hit-flash / crit / shake (after paint, into the FX layer)

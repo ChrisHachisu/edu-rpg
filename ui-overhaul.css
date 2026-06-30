@@ -144,12 +144,19 @@
    letterboxed fixed scene, so a transparent overlay would expose its UI in the
    middle band). We render the monster ourselves from its PNG sprite. */
 #qok-ui.battle .col{ max-width:600px; }
-/* fixed-height enemy stage so the monster stays put when the quiz card appears below */
-#qok-ui .bstage{ flex:none; height:54%; position:relative; min-height:0; display:flex; align-items:flex-end; justify-content:center; padding-bottom:6%; }
+/* The battle "scene" area: FIXED height (= the quiz-phase height) so the monster is LOCKED in one
+   spot and does NOT jump when the tall quiz card replaces the short command bar. The HUD below is
+   bottom-anchored (margin-top:auto), so the gap between the scene and the HUD absorbs the per-phase
+   height difference while the monster stays put. Bottom-aligned + sprite-trimmed → feet on the bg
+   foreground, just above where the quiz card sits. Transparent; the full-bleed bg lives on #qok-ui. */
+#qok-ui .bstage{ flex:none; height:var(--qok-feety,64%); position:relative; min-height:0; display:flex; align-items:flex-end; justify-content:center; padding-bottom:0; }
 /* monster sprite — the shadow is a drop-shadow of the sprite's ALPHA shape, so it hugs the
    VISIBLE bottom of every enemy (grounded OR floating); a ground ellipse detaches on sprites
    with transparent bottom padding. object-position:bottom keeps the sprite anchored low. */
 #qok-ui .bmon{ image-rendering:pixelated; position:relative; z-index:1; width:68%; max-width:300px; max-height:84%; object-fit:contain; object-position:center bottom; filter:drop-shadow(0 3px 1px rgba(0,0,0,.75)) drop-shadow(0 7px 7px rgba(0,0,0,.45)); }
+/* Bosses render larger than regular monsters (every boss, not just the 5 arena bosses). More
+   specific than the responsive .bmon overrides below, so it applies on phone + tablet + landscape. */
+#qok-ui .bmon.boss{ width:86%; max-width:380px; max-height:95%; }
 #qok-ui .hudwrap{ flex:none; margin-top:auto; padding:14px 14px calc(16px + env(safe-area-inset-bottom,0px)); }
 #qok-ui .actiongrid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
 #qok-ui .pbar{ display:flex; align-items:center; gap:9px; background:#0d0f22e0; border:2px solid var(--gold-line); border-radius:13px; padding:9px 11px; margin-top:10px; }
@@ -185,6 +192,7 @@
   #qok-ui.battle .col{ max-width:760px; }
   #qok-ui .bmon{ max-width:74%; max-height:74%; }
   #qok-ui .hudwrap, #qok-ui .heal-wrap{ zoom:1.4; width:calc(100% / 1.4); margin:0 auto; }
+  #qok-ui.battle .hudwrap{ margin-top:auto; } /* keep the battle HUD pinned to the bottom */
   #qok-ui .enemy-card{ zoom:1.32; }
 }
 /* TABLET LANDSCAPE + WEB — 2-pane, widened to fill the width */
@@ -199,6 +207,11 @@
   #qok-ui.battle .col{ max-width:900px; }
   #qok-ui .bmon{ max-width:360px; max-height:74%; }
   #qok-ui .hudwrap, #qok-ui .heal-wrap{ zoom:1.3; width:calc(100% / 1.3); margin:0 auto; }
+  /* LANDSCAPE battle: the short height can't fit a bottom-pinned quiz card. Raise the enemy onto the
+     (cover-cropped, ~centered) platform and move the quiz card UP right below it (top-anchored, not
+     pinned to the bottom) so the whole card fits. */
+  #qok-ui.battle .bstage{ height:52%; }
+  #qok-ui.battle .hudwrap{ margin-top:0; zoom:1; width:100%; } /* compact (un-zoomed) card so it fits the short landscape height */
   #qok-ui .enemy-card{ zoom:1.25; }
 }
 
@@ -235,3 +248,11 @@
   color:#f3ead2; font-family:var(--font); font-weight:800; font-size:15px; line-height:1.35; text-align:center;
   box-shadow:0 8px 22px rgba(0,0,0,.5); animation:qok-toast 1.9s ease forwards; }
 @keyframes qok-toast{ 0%{opacity:0; transform:translate(-50%,12px);} 9%{opacity:1; transform:translate(-50%,0);} 82%{opacity:1; transform:translate(-50%,0);} 100%{opacity:0; transform:translate(-50%,-8px);} }
+
+/* battle background — full-bleed on #qok-ui itself (border-box covers the safe-area padding too,
+   so the scene continues behind the HUD with NO black panel). cover + position:center bottom keeps
+   the foreground anchored low; the monster is pinned to the HUD-top and lands on it. Image+scrim
+   set in setBattleBg(); same layer as the transparent content (no cross-layer compositing issue). */
+#qok-ui.battle{ background-size:cover; background-position:center bottom; background-repeat:no-repeat; background-origin:border-box; background-clip:border-box; }
+/* In battle, drop .screen's decorative radial backdrop so the bg shows through. */
+#qok-ui.battle .screen{ background:none; }
