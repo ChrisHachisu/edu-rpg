@@ -1695,9 +1695,10 @@
     catch(e){ return false; }
   }
   var lastReskinMapId=null;
-  // SHIP SCOPE: owner 2026-07-09 — ship OVERWORLD polish only ("skip dungeons and towns; just wanted to polish the overworld").
-  // Town + dungeon reskin code below is left INTACT but gated OFF for the shipped build. Flip to true after town/dungeon sign-off.
-  var SHIP_TOWN_DNG_RESKIN=false;
+  // SHIP SCOPE: owner 2026-07-09 confirmed towns + dungeons were LOCKED IN -> reflect them in the game.
+  // (Initial same-day ship was overworld-only; owner reversed.) Overworld + town + dungeon reskin all ON.
+  // NOTE: the dungeon reskin loads Codex prop PNGs from props/dqprop-<name>-128.png -> that dir MUST ship too.
+  var SHIP_TOWN_DNG_RESKIN=true;
   function tick(){
     var g=window.__PHASER_GAME__; if(!g) return;
     var scene; try{ scene=g.scene.getScene('WorldMapScene'); }catch(e){ return; }
