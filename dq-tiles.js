@@ -817,7 +817,7 @@
       var es=tg[ty]&&tg[ty][tx]; if(es&&es.alpha!==0)es.setAlpha(0);                 // hide engine landmark (alpha, not visible -> survives per-frame culling)
       var tk=ensureOwPropTex(scene,name); if(!tk)continue;                            // PNG still loading -> next tick
       if(window.__OW_DBG__)window.__OW_DBG__.tex++;
-      var key=tx+'_'+ty, img=owImgs[key]; if(!img){ img=scene.add.image(0,0,tk).setDepth(6); owImgs[key]=img; }
+      var key=tx+'_'+ty, img=owImgs[key]; if(!img){ img=scene.add.image(0,0,tk).setDepth(6); try{img.texture.setFilter(NEAREST);}catch(e){} owImgs[key]=img; } // NEAREST: props are downscaled to logical px (16*scale) + chunk-upscaled to match the N=16x3 terrain
       if(img.texture.key!==tk) img.setTexture(tk);
       var sc=OW_PROP_SCALE[name]||1.5; img.setOrigin(0.5,1).setPosition(tx*TILE+TILE/2, ty*TILE+TILE).setDisplaySize(TILE*sc,TILE*sc); // bigger + sit on the tile & rise up
       if(!img.visible)img.setVisible(true); seen[key]=1; } }
@@ -1379,7 +1379,7 @@
       var key=tx+'_'+ty; seen[key]=1;
       var pn=propNameFor(t,map,tx,ty); var tk = pn ? ensurePropTex(scene,pn) : ensureSpecialTex(scene,t); // Codex PNG prop, else code-drawn (lava/spike)
       if(!tk) continue;                                                                                    // PNG still loading → place next tick
-      var img=specImgs[key]; if(!img){ img=scene.add.image(0,0,tk).setDepth(3); specImgs[key]=img; }
+      var img=specImgs[key]; if(!img){ img=scene.add.image(0,0,tk).setDepth(3); try{img.texture.setFilter(NEAREST);}catch(e){} specImgs[key]=img; } // NEAREST: props downscaled to logical px + chunk-upscaled to match terrain
       if(img.texture.key!==tk) img.setTexture(tk);
       if(!pn || pn.indexOf('door')>=0){ img.setOrigin(0,0).setPosition(tx*TILE,ty*TILE).setDisplaySize(TILE,TILE); }  // code-drawn (lava/spike) + doors: fill the tile
       else { var sc=PROP_SCALE[pn]||1.4; img.setOrigin(0.5,1).setPosition(tx*TILE+TILE/2,ty*TILE+TILE).setDisplaySize(TILE*sc,TILE*sc); } // objects: bigger, sit on the floor tile & rise up
