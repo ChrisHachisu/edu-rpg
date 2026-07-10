@@ -84,7 +84,8 @@
       '<rect x="4" y="7" width="8" height="5" fill="' + c + '"/><rect x="6" y="12" width="4" height="3" fill="#5a3a22"/></svg>';
   }
 
-  // ---- monster sprite: chroma-key the solid-black PNG bg to transparent (cached) ----
+  // ---- monster sprite: legacy PNGs (no real alpha) get their solid-black bg chroma-keyed
+  // to transparent; PNGs with real alpha are trusted as-is (cached) ----
   var monCache = {}; // sprite -> dataURL | 'pending' | '' (failed)
   function getMonsterSrc(sprite) {
     if (!sprite) return null;
@@ -99,13 +100,17 @@
         var cv = document.createElement('canvas'); cv.width = w; cv.height = h;
         var ctx = cv.getContext('2d'); ctx.drawImage(img, 0, 0);
         var d = ctx.getImageData(0, 0, w, h), px = d.data;
-        var isBg = function (i) { return px[i] < 30 && px[i + 1] < 30 && px[i + 2] < 30; };
-        var seen = new Uint8Array(w * h), stack = [];
-        var push = function (x, y) { if (x < 0 || y < 0 || x >= w || y >= h) return; var p = y * w + x; if (seen[p]) return; seen[p] = 1; var i = p * 4; if (isBg(i)) { px[i + 3] = 0; stack.push(p); } };
-        for (var x = 0; x < w; x++) { push(x, 0); push(x, h - 1); }
-        for (var y = 0; y < h; y++) { push(0, y); push(w - 1, y); }
-        while (stack.length) { var p = stack.pop(); var px0 = p % w, py0 = (p - px0) / w; push(px0 + 1, py0); push(px0 - 1, py0); push(px0, py0 + 1); push(px0, py0 - 1); }
-        ctx.putImageData(d, 0, 0);
+        var hasRealAlpha = false;
+        for (var ai = 3; ai < px.length; ai += 4) { if (px[ai] !== 255) { hasRealAlpha = true; break; } }
+        if (!hasRealAlpha) {
+          var isBg = function (i) { return px[i] < 30 && px[i + 1] < 30 && px[i + 2] < 30; };
+          var seen = new Uint8Array(w * h), stack = [];
+          var push = function (x, y) { if (x < 0 || y < 0 || x >= w || y >= h) return; var p = y * w + x; if (seen[p]) return; seen[p] = 1; var i = p * 4; if (isBg(i)) { px[i + 3] = 0; stack.push(p); } };
+          for (var x = 0; x < w; x++) { push(x, 0); push(x, h - 1); }
+          for (var y = 0; y < h; y++) { push(0, y); push(w - 1, y); }
+          while (stack.length) { var p = stack.pop(); var px0 = p % w, py0 = (p - px0) / w; push(px0 + 1, py0); push(px0 - 1, py0); push(px0, py0 + 1); push(px0, py0 - 1); }
+          ctx.putImageData(d, 0, 0);
+        }
         // Trim the transparent BOTTOM padding so the sprite's feet sit on the scene's ground line.
         // object-position:bottom anchors the IMAGE edge, not the monster's feet — without this the
         // monster floats by however much empty space the sprite has below it (~24% for the slime),
