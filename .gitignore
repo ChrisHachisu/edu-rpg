@@ -1,3 +1,12 @@
 node_modules/
 dist/
 .vite/
+
+# Headless verification toolkit (Playwright harness + node_modules). Durable home,
+# never committed and never part of a gh-pages deploy. See ~/.claude/skills/edu-rpg/SKILL.md.
+.eduharness/
+
+# Local OS/editor and worktree coordination state.
+.DS_Store
+.codex/
+.claude/worktrees/

@@ -1,0 +1,136 @@
+require 'json'
+
+default_platform(:ios)
+
+# --- edu-rpg (Quest of Knowledge) local TestFlight pipeline (Capacitor, no EAS, $0/build) ---
+# Adapted from chalkmap-v2's Fastfile. Same 合同会社 Apple account (M969PWP3PU), so it reuses the
+# shared ASC API key + distribution cert in the dedicated cmbuild keychain. This is a plain
+# Capacitor web-wrapped game (dist/ -> ios/App/App/public); NO RN/Hermes/Expo/backend, so the
+# chalkmap prod-DB guard, Hermes-flavor swap, and EAS env-pull steps are intentionally absent.
+
+WORKSPACE     = "App.xcworkspace"
+SCHEME        = "App"
+APP_ID        = "app.chalkmap.questofknowledge"
+TEAM_ID       = "M969PWP3PU"
+ROOT          = File.expand_path("../../..", __dir__)
+ASC_KEY_ID    = "52937L4S9H"
+ASC_ISSUER_ID = "006a572e-afa8-464e-8f46-ce19bd161a9f"
+ASC_KEY_PATH  = "/Users/christopherhachisu/Documents/claudecode/chalkmap-v2/.eas-credentials/AuthKey_52937L4S9H.p8"
+OUTPUT_DIR    = File.join(ROOT, "ios", "build")
+SIGNING_DIR   = "/tmp/edu-signing"
+KEYCHAIN_NAME = "cmbuild.keychain"
+KEYCHAIN_PATH = File.expand_path("~/Library/Keychains/#{KEYCHAIN_NAME}-db")
+KEYCHAIN_PW   = "cmbuild-local-throwaway"   # protects a LOCAL build keychain only; not a real secret
+APP_VERSION   = "1.0"
+BUILD_FLOOR   = 5                            # known VALID floor; ASC latest still determines the next build
+
+platform :ios do
+  desc "Build locally + upload to TestFlight via the ASC API key (no EAS, $0/build)"
+  lane :beta do
+    requested_root = ENV["SHIP_APP_DIR"]
+    UI.user_error!("Run through scripts/ship-ios.sh so the authorized checkout is explicit") if requested_root.to_s.empty?
+    UI.user_error!("Checkout mismatch: requested #{requested_root}, Fastfile owns #{ROOT}") unless File.realpath(requested_root) == File.realpath(ROOT)
+    sh("bash '#{File.join(ROOT, "scripts", "ship-gate.sh")}' '#{ROOT}'")
+
+    api_key = app_store_connect_api_key(
+      key_id: ASC_KEY_ID,
+      issuer_id: ASC_ISSUER_ID,
+      key_filepath: ASC_KEY_PATH,
+      in_house: false
+    )
+
+    # 1. Dedicated build keychain (reused from chalkmap; same account/cert). Persisted across runs.
+    if File.exist?(KEYCHAIN_PATH)
+      unlock_keychain(path: KEYCHAIN_NAME, password: KEYCHAIN_PW, add_to_search_list: true, set_default: false)
+    else
+      create_keychain(
+        name: KEYCHAIN_NAME,
+        password: KEYCHAIN_PW,
+        default_keychain: false,
+        unlock: true,
+        timeout: 3600,
+        lock_when_sleeps: false,
+        add_to_search_list: true
+      )
+    end
+
+    # 2. Distribution cert into the dedicated keychain (reused if already present).
+    cert(
+      api_key: api_key,
+      keychain_path: KEYCHAIN_PATH,
+      keychain_password: KEYCHAIN_PW,
+      output_path: SIGNING_DIR
+    )
+    cert_sha1 = sh("security find-identity -v -p codesigning #{KEYCHAIN_PATH} | grep 'Apple Distribution' | head -1 | awk '{print $2}'").strip
+    UI.important("Signing identity (dedicated keychain): #{cert_sha1}")
+
+    # Make codesign use OUR keychain's authorized copy (promptless).
+    login_kc = File.expand_path("~/Library/Keychains/login.keychain-db")
+    sh("security list-keychains -d user -s '#{KEYCHAIN_PATH}' '#{login_kc}'")
+    sh("security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k '#{KEYCHAIN_PW}' '#{KEYCHAIN_PATH}' >/dev/null 2>&1; true")
+
+    # 3. Fresh App Store provisioning profile for this app id (via the API key).
+    sigh(
+      api_key: api_key,
+      app_identifier: APP_ID,
+      output_path: SIGNING_DIR,
+      force: true
+    )
+    profile_name = lane_context[SharedValues::SIGH_NAME]
+    UI.important("Using provisioning profile: #{profile_name}")
+
+    # 4. Manual signing onto the APP TARGET ONLY (Release).
+    update_code_signing_settings(
+      use_automatic_signing: false,
+      path: "App.xcodeproj",
+      team_id: TEAM_ID,
+      targets: ["App"],
+      build_configurations: ["Release"],
+      code_sign_identity: cert_sha1,
+      profile_name: profile_name
+    )
+
+    # 5. Next build number = one above the highest already on TestFlight (floor 5).
+    latest = latest_testflight_build_number(
+      app_identifier: APP_ID,
+      api_key: api_key,
+      version: APP_VERSION,
+      initial_build_number: BUILD_FLOOR
+    )
+    build_num = [latest, BUILD_FLOOR].max + 1
+    UI.important("Version #{APP_VERSION}: TestFlight latest = #{latest} -> building #{build_num}")
+
+    # 6. Archive + export (manual signing already set on the app target).
+    build_app(
+      workspace: WORKSPACE,
+      scheme: SCHEME,
+      configuration: "Release",
+      export_method: "app-store",
+      output_directory: OUTPUT_DIR,
+      output_name: "questofknowledge.ipa",
+      clean: false,
+      xcargs: "MARKETING_VERSION=#{APP_VERSION} CURRENT_PROJECT_VERSION=#{build_num}",
+      export_options: {
+        signingStyle: "manual",
+        teamID: TEAM_ID,
+        provisioningProfiles: { APP_ID => profile_name }
+      }
+    )
+
+    FileUtils.mkdir_p(OUTPUT_DIR)
+    pending_build_file = File.join(OUTPUT_DIR, "pending-testflight-build.txt")
+    File.write(pending_build_file, build_num.to_s)
+
+    upload_to_testflight(
+      api_key: api_key,
+      app_identifier: APP_ID,
+      skip_submission: true,
+      skip_waiting_for_build_processing: true
+    )
+
+    File.write(File.join(OUTPUT_DIR, "last-testflight-build.txt"), build_num.to_s)
+    File.delete(pending_build_file) if File.exist?(pending_build_file)
+
+    UI.success("Uploaded #{APP_VERSION} (#{build_num}) to TestFlight - processing ~5-15 min on Apple's side.")
+  end
+end

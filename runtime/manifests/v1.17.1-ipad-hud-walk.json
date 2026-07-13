@@ -1,0 +1,1566 @@
+{
+  "schema": 1,
+  "profile": "v1.17.1-ipad-hud-walk",
+  "provenance": {
+    "source": "preserved local shipped runtime",
+    "baseBundle": "v1.17.0-first-fixes.js",
+    "profileRelease": "v1.17.1-ipad-hud-walk",
+    "deployment": "local baseline only; gh-pages and TestFlight unchanged"
+  },
+  "saveCompatibility": {
+    "manualKey": "edu-rpg-save",
+    "autosaveKey": "edu-rpg-autosave",
+    "schemaVersion": 4,
+    "migrationChain": [
+      "v1-to-v2 floor",
+      "v2-to-v3 sound",
+      "v3-to-v4 quests"
+    ]
+  },
+  "fileCount": 257,
+  "totalBytes": 42683025,
+  "files": [
+    {
+      "path": "assets/backgrounds/bg-boss_celestial_guardian.webp",
+      "category": "battle-background",
+      "bytes": 1543428,
+      "sha256": "3b7f836a5c6949db0fcf74b034de5a6a2df68b9a866b89ec5c7ce9a5537e3ac1"
+    },
+    {
+      "path": "assets/backgrounds/bg-boss_demon_king.webp",
+      "category": "battle-background",
+      "bytes": 1513408,
+      "sha256": "6086de2cab0ef591fae8db09a20d3f5abeb41d4cdcf1f5e530f897a1a3350c37"
+    },
+    {
+      "path": "assets/backgrounds/bg-boss_frost_monarch.webp",
+      "category": "battle-background",
+      "bytes": 1514050,
+      "sha256": "53fd57b21bcd460e548967385674fa4df5e2c1358685da04f3e03784b5b3cef3"
+    },
+    {
+      "path": "assets/backgrounds/bg-boss_storm_sentinel.webp",
+      "category": "battle-background",
+      "bytes": 1162598,
+      "sha256": "6ccfaf5a9ba95e4b296feedd03f0b928e874595b1aac5efc93ac1b1e35d82a28"
+    },
+    {
+      "path": "assets/backgrounds/bg-boss_sword_wraith.webp",
+      "category": "battle-background",
+      "bytes": 1339974,
+      "sha256": "1ba53a3d7493765e80c7ced6c02aa45c4637ca83383d89d844a55ea295cd311a"
+    },
+    {
+      "path": "assets/backgrounds/bg-canyon.webp",
+      "category": "battle-background",
+      "bytes": 1261834,
+      "sha256": "eaaf8c190803e7c2b4d5a4a5175b3060cd4ddb701195a1afffa7792e53e6a4a0"
+    },
+    {
+      "path": "assets/backgrounds/bg-cave_misty.webp",
+      "category": "battle-background",
+      "bytes": 832764,
+      "sha256": "d5bb7a3a771efeb6c9d7c5f0dde7dbc0ab541a165d9c2f9bd0d5d5dd168f1ddf"
+    },
+    {
+      "path": "assets/backgrounds/bg-coast.webp",
+      "category": "battle-background",
+      "bytes": 739234,
+      "sha256": "8b23518fc1ff3714f4c51e50c4169b3404f035b705a1d469de7e3f127cbc54cd"
+    },
+    {
+      "path": "assets/backgrounds/bg-demon_castle.webp",
+      "category": "battle-background",
+      "bytes": 1009710,
+      "sha256": "6f98d44f071542bc79145f9fa7d8dcc4ceb232d28b36398b9113619bdfe33051"
+    },
+    {
+      "path": "assets/backgrounds/bg-desert.webp",
+      "category": "battle-background",
+      "bytes": 754600,
+      "sha256": "26e5490d602b5d2f174f40749c66ba75e22931f98b25bb44dc271c40ba1af8f3"
+    },
+    {
+      "path": "assets/backgrounds/bg-forest.webp",
+      "category": "battle-background",
+      "bytes": 941260,
+      "sha256": "5cc39b971ce5859a3c449bf14c75ee812ed679a679fb7e9ead0d7055b96c9ce1"
+    },
+    {
+      "path": "assets/backgrounds/bg-frozen.webp",
+      "category": "battle-background",
+      "bytes": 1297214,
+      "sha256": "bb8d564ef13b86647aa8ac4e5f8ade323331d70b4df53a14600e2ee8c26b97bb"
+    },
+    {
+      "path": "assets/backgrounds/bg-grass_plains.webp",
+      "category": "battle-background",
+      "bytes": 740394,
+      "sha256": "3c7edb668cec02f7a09f571e676f9626b7fe985cfcb53bd560bb728ae709b77f"
+    },
+    {
+      "path": "assets/backgrounds/bg-haunted_wood.webp",
+      "category": "battle-background",
+      "bytes": 890266,
+      "sha256": "e5f771cc7b1f8b85aa0b42766a20e2b68b09ddfa46fa13ef8743a17e711d7b4b"
+    },
+    {
+      "path": "assets/backgrounds/bg-magma.webp",
+      "category": "battle-background",
+      "bytes": 1189546,
+      "sha256": "494698c57f0df1ee0f8339301ae0a33e97973afda21a66173afe18e4a87c0b0f"
+    },
+    {
+      "path": "assets/backgrounds/bg-mountains.webp",
+      "category": "battle-background",
+      "bytes": 1078110,
+      "sha256": "892481b290fc14915edccfa0ed8f8bc23d25e44ede89865651083766b8750675"
+    },
+    {
+      "path": "assets/backgrounds/bg-obsidian.webp",
+      "category": "battle-background",
+      "bytes": 899140,
+      "sha256": "af4803092aa1327b46169f59893dbe64edd9c145e0afa534db18cc0a3c5e63da"
+    },
+    {
+      "path": "assets/backgrounds/bg-storm_peak.webp",
+      "category": "battle-background",
+      "bytes": 906666,
+      "sha256": "34286002d8b77b97d59993afa9e2f9821e37e8acaf13c3d839d09d424d2e1f74"
+    },
+    {
+      "path": "assets/backgrounds/bg-tomb_ruins.webp",
+      "category": "battle-background",
+      "bytes": 917692,
+      "sha256": "4296b655cc9f34a5e2e5fa90c01be51ec3964943ed64b13d6a2c4d2652d75745"
+    },
+    {
+      "path": "assets/backgrounds/bg-void.webp",
+      "category": "battle-background",
+      "bytes": 1055940,
+      "sha256": "dbd1ddd0187b874ff3efbcbaf5e8e56e51d50f275db61461030bc792b1154fa6"
+    },
+    {
+      "path": "assets/hero/hero-feminine-walk.png",
+      "category": "hero-walk-sheet",
+      "bytes": 5452,
+      "sha256": "f87bd43b0c5d4bbea362edc4dec3b18b0b89ea716523447f685a50eb70c1a35f"
+    },
+    {
+      "path": "assets/hero/hero-openface-walk.png",
+      "category": "hero-walk-sheet",
+      "bytes": 5868,
+      "sha256": "2f887d63cc09d1963482bf4d64705bba7e697ec16b577e77ac6f0b7c3cc3d061"
+    },
+    {
+      "path": "assets/index-BhoGQRaA.js",
+      "category": "opaque-bundle",
+      "bytes": 4987581,
+      "sha256": "a56026574b42168985b353e4cee824562716af83f92d03f408df04eac9127381"
+    },
+    {
+      "path": "assets/item-icons/aegisOfDawn.webp",
+      "category": "item-icon",
+      "bytes": 59752,
+      "sha256": "7cad63d4735df041126d882fd97710c159ed5c2411ab7aa2448302457f5836ef"
+    },
+    {
+      "path": "assets/item-icons/ancientAmulet.webp",
+      "category": "item-icon",
+      "bytes": 50370,
+      "sha256": "5f5b887f190d842846764d0419aa229aae606db5269e45fa424e749b9d979065"
+    },
+    {
+      "path": "assets/item-icons/banditDagger.webp",
+      "category": "item-icon",
+      "bytes": 24078,
+      "sha256": "955008a37656b399f518d012595d3ef7cea377730c84f1834ce743efcce99dd5"
+    },
+    {
+      "path": "assets/item-icons/blueCrystalShard.webp",
+      "category": "item-icon",
+      "bytes": 21080,
+      "sha256": "bdb8f0ff18c6a56ae4e23f411318c0561b77dd035a12b1ed7174802ce4e0785c"
+    },
+    {
+      "path": "assets/item-icons/bronzeArmor.webp",
+      "category": "item-icon",
+      "bytes": 43880,
+      "sha256": "34b73413ab1b066103a467a7c6cbab47becb52de6ac4fa82115b3bb4fd3647ba"
+    },
+    {
+      "path": "assets/item-icons/bronzeSword.webp",
+      "category": "item-icon",
+      "bytes": 20652,
+      "sha256": "1d1a31d937993ed6e1d7a93152b1601973b85f1e1f19558c037b0a6452ff1c91"
+    },
+    {
+      "path": "assets/item-icons/chainMail.webp",
+      "category": "item-icon",
+      "bytes": 46044,
+      "sha256": "443a460a8062e30e9faf298da9cc33b8c0cf863967acbb290791594ff2fad0ab"
+    },
+    {
+      "path": "assets/item-icons/clothArmor.webp",
+      "category": "item-icon",
+      "bytes": 34094,
+      "sha256": "e9659b1af198ae326f82b60be6af6d39665fbdc990029d23654ef004d93f773e"
+    },
+    {
+      "path": "assets/item-icons/coralBlade.webp",
+      "category": "item-icon",
+      "bytes": 27202,
+      "sha256": "f8573f97839b4ea2d76e9452ec15048635e19873758d1cd1ea5a0cabd438f1cf"
+    },
+    {
+      "path": "assets/item-icons/crownOfWisdom.webp",
+      "category": "item-icon",
+      "bytes": 39682,
+      "sha256": "7dd385b4e23c6cc0fbd9abf186b4d64e7ec9a2609bcaba5099c81b74f07f1961"
+    },
+    {
+      "path": "assets/item-icons/crystalBlade.webp",
+      "category": "item-icon",
+      "bytes": 20530,
+      "sha256": "b4fbb29605eee40cce0f680622ae1200063f8a64b883d5c73ac80febc15f7259"
+    },
+    {
+      "path": "assets/item-icons/crystalOfKnowledge.webp",
+      "category": "item-icon",
+      "bytes": 41232,
+      "sha256": "d8118aae5b72f00aee09e88c032df8837f9db136f5ee249c8a0afa2a0c61d8aa"
+    },
+    {
+      "path": "assets/item-icons/crystalPendant.webp",
+      "category": "item-icon",
+      "bytes": 21894,
+      "sha256": "3f3bc2e660ee2019a5e4591be5e8a476bdc2f62df9505af47d1c40bd988eab2e"
+    },
+    {
+      "path": "assets/item-icons/dragonheartAmulet.webp",
+      "category": "item-icon",
+      "bytes": 47840,
+      "sha256": "ca453fdb10504733e189523c164b30cbebae6cb0708b370da8a1573bc0bf08ab"
+    },
+    {
+      "path": "assets/item-icons/dragonscaleArmor.webp",
+      "category": "item-icon",
+      "bytes": 60596,
+      "sha256": "8e5662c2176bf05d2ce021b77431e2eb5cd164b2185fb764e545d4bca89289b1"
+    },
+    {
+      "path": "assets/item-icons/dungeonKey.webp",
+      "category": "item-icon",
+      "bytes": 28422,
+      "sha256": "045108fe57b1751cea351748acc632e046e2609e27fd08c56f258f358b5f86c2"
+    },
+    {
+      "path": "assets/item-icons/elixir.webp",
+      "category": "item-icon",
+      "bytes": 30850,
+      "sha256": "57fcbc4672e92db89e1baa383f28006d1997db1e41e77da8bf2c330f4e877489"
+    },
+    {
+      "path": "assets/item-icons/escapeCrystal.webp",
+      "category": "item-icon",
+      "bytes": 25298,
+      "sha256": "e3cea6cab8e34c7d9287cbf11af01d9d06d0f9567d025b2482ab6cded6aaa3e2"
+    },
+    {
+      "path": "assets/item-icons/excalibur.webp",
+      "category": "item-icon",
+      "bytes": 23298,
+      "sha256": "6ff1e34c0dbc93ef625e176227dd1877a11bf19e8231339f205d8060ca495830"
+    },
+    {
+      "path": "assets/item-icons/flameCloak.webp",
+      "category": "item-icon",
+      "bytes": 41508,
+      "sha256": "c3f0af10008ce024f02e0922d2394bc4590491154b760b03152fbe4a50acd707"
+    },
+    {
+      "path": "assets/item-icons/flameSword.webp",
+      "category": "item-icon",
+      "bytes": 25098,
+      "sha256": "99f87c16b6d675f24e0c2ad022e3a6af7b4aa87d433e90546ba9e7f8d81e0090"
+    },
+    {
+      "path": "assets/item-icons/frostbrand.webp",
+      "category": "item-icon",
+      "bytes": 31610,
+      "sha256": "3c741f9b8f9a868171eab951853c694a98ee0d9191cb7537b6e9f0dec9f42987"
+    },
+    {
+      "path": "assets/item-icons/galeBow.webp",
+      "category": "item-icon",
+      "bytes": 31074,
+      "sha256": "14562a7a70736d44123eae046379af7ec6401516380246edf3be0e5cc7a13a5b"
+    },
+    {
+      "path": "assets/item-icons/galeShield.webp",
+      "category": "item-icon",
+      "bytes": 37006,
+      "sha256": "ca145f63b431912189dde33ed97bdf71a5bbdbb9d4d451212fc3e4f33ade411f"
+    },
+    {
+      "path": "assets/item-icons/greenCrystalShard.webp",
+      "category": "item-icon",
+      "bytes": 25726,
+      "sha256": "c5111c8d912aa77c19546efcf1affb56aba714550149d479921ac469c5836cb4"
+    },
+    {
+      "path": "assets/item-icons/herb.webp",
+      "category": "item-icon",
+      "bytes": 38410,
+      "sha256": "288550a34ab122cfc473acdd7280a1116812d16412d4abdb503dce51825e9505"
+    },
+    {
+      "path": "assets/item-icons/hiPotion.webp",
+      "category": "item-icon",
+      "bytes": 24966,
+      "sha256": "83d6c966821d04779a011257385516559e6a41b367f57822c29345631e0222b2"
+    },
+    {
+      "path": "assets/item-icons/holyAmulet.webp",
+      "category": "item-icon",
+      "bytes": 34368,
+      "sha256": "815a12aec64c021d19aec3312fe16567d49efe0887bcd7526d9cb0970a7466c6"
+    },
+    {
+      "path": "assets/item-icons/holyArmor.webp",
+      "category": "item-icon",
+      "bytes": 57012,
+      "sha256": "6146460d0ef62b72164d5bc00ec93960d227b9dbbc52f23e934e824adfa9d261"
+    },
+    {
+      "path": "assets/item-icons/holyBlade.webp",
+      "category": "item-icon",
+      "bytes": 23194,
+      "sha256": "13129d1eec840dcfaebaf94285b223abea6970cd9910d7fe10bea5938124c6d1"
+    },
+    {
+      "path": "assets/item-icons/ironHelm.webp",
+      "category": "item-icon",
+      "bytes": 26278,
+      "sha256": "b7849f10b93d0a8cb81a11192e833ee1fb35e21063a96285179b5b7522b4dca2"
+    },
+    {
+      "path": "assets/item-icons/ironOre.webp",
+      "category": "item-icon",
+      "bytes": 30266,
+      "sha256": "ee1b1c9858b5e73a7a9d9aa77b3c1ad2cb3c9dafdffa530458c7c83a73a2b4cb"
+    },
+    {
+      "path": "assets/item-icons/ironShield.webp",
+      "category": "item-icon",
+      "bytes": 24884,
+      "sha256": "eceacdf57caf08e96ea4f7a754f79f3a65590541f41b67e3025d860bcf8fa1eb"
+    },
+    {
+      "path": "assets/item-icons/ironSword.webp",
+      "category": "item-icon",
+      "bytes": 16140,
+      "sha256": "fcee3320a9a819f1208e0a6c9e4ee953c5ad2a90ce7ac03554be5e3fd9bf0434"
+    },
+    {
+      "path": "assets/item-icons/leatherArmor.webp",
+      "category": "item-icon",
+      "bytes": 52484,
+      "sha256": "6c2aed046d918027f6ae5d5ee26af6f682e41f2e8ec104e5d00aa31e09e2c2f3"
+    },
+    {
+      "path": "assets/item-icons/leatherCap.webp",
+      "category": "item-icon",
+      "bytes": 28114,
+      "sha256": "e108ae6c3eb7b12e616abd6547d5ffb75ab9d71b8e82e9dfd52e2725d918647d"
+    },
+    {
+      "path": "assets/item-icons/lightCrystal.webp",
+      "category": "item-icon",
+      "bytes": 21900,
+      "sha256": "0f68c2aa12a91f80a091514faf92378d5b1abdd4c799e900518487b17d29a69c"
+    },
+    {
+      "path": "assets/item-icons/magmaBlade.webp",
+      "category": "item-icon",
+      "bytes": 31124,
+      "sha256": "f57fa75d7864032b0d1136f1c4e7c9dfa83a2d4a77a6a6cff0ba37b5ce7615a0"
+    },
+    {
+      "path": "assets/item-icons/mithrilArmor.webp",
+      "category": "item-icon",
+      "bytes": 45698,
+      "sha256": "95eb883458070a0eddf929fff8dc762d4d5f3e09de8306828e2d6446aaaa9c6f"
+    },
+    {
+      "path": "assets/item-icons/mithrilHelm.webp",
+      "category": "item-icon",
+      "bytes": 45436,
+      "sha256": "fb407dbaa6ac042d6c74b031b2b6516f3a90cef9143ec967645d342365b6e6b0"
+    },
+    {
+      "path": "assets/item-icons/mithrilShield.webp",
+      "category": "item-icon",
+      "bytes": 38442,
+      "sha256": "b6097fe94e3a9e858ccd439944ee40184cfd7da40d34756069995ce51a10910f"
+    },
+    {
+      "path": "assets/item-icons/mithrilSword.webp",
+      "category": "item-icon",
+      "bytes": 17762,
+      "sha256": "8c36230b956c96045c8cb9772d80abad29af7342b45d9f2fc6829e5d529714db"
+    },
+    {
+      "path": "assets/item-icons/moltenGreaves.webp",
+      "category": "item-icon",
+      "bytes": 48934,
+      "sha256": "af3271462d69b983b9bfe310cd766d3ecbb062ee322ed0db0be4c429b339e5c1"
+    },
+    {
+      "path": "assets/item-icons/plateArmor.webp",
+      "category": "item-icon",
+      "bytes": 45358,
+      "sha256": "8866d991962578332721a63bd396a24e954106e89fdb04764e89e023c8603c73"
+    },
+    {
+      "path": "assets/item-icons/potion.webp",
+      "category": "item-icon",
+      "bytes": 24644,
+      "sha256": "906c9362a00a39c83c3e26741f6318ee8c24d109b48c28b9650f4f4780800611"
+    },
+    {
+      "path": "assets/item-icons/redCrystalShard.webp",
+      "category": "item-icon",
+      "bytes": 23624,
+      "sha256": "9c82149765841c7f8fdf1fbde2cc88de3584a107d6059565e4b4ceebddb1d751"
+    },
+    {
+      "path": "assets/item-icons/sandstormCloak.webp",
+      "category": "item-icon",
+      "bytes": 41504,
+      "sha256": "4038271c4b525a66406268eb0dfbea439807d69e3fdccd40723069988c5ca7fe"
+    },
+    {
+      "path": "assets/item-icons/shadowCrystal.webp",
+      "category": "item-icon",
+      "bytes": 22002,
+      "sha256": "df923a8f9e6f90b9f58647bf938267ebd01bb56fb0cf68f5909a9929f31f4906"
+    },
+    {
+      "path": "assets/item-icons/smokeBomb.webp",
+      "category": "item-icon",
+      "bytes": 30846,
+      "sha256": "2d3a04fc7097a7aa25ed8f6bcbb7522ebd526d3399d62a57d602181e2ae2bdcd"
+    },
+    {
+      "path": "assets/item-icons/starMapFragment.webp",
+      "category": "item-icon",
+      "bytes": 31552,
+      "sha256": "b1dc2bbc4121f14c4e8f93e96e63cc2c3d415f614715e8c0a4661bea4dc164b6"
+    },
+    {
+      "path": "assets/item-icons/steelHelm.webp",
+      "category": "item-icon",
+      "bytes": 34156,
+      "sha256": "ec992282b0926147521275d75d60ddd28406a77d6f2862ed76a8305a027722d4"
+    },
+    {
+      "path": "assets/item-icons/steelShield.webp",
+      "category": "item-icon",
+      "bytes": 34990,
+      "sha256": "2c75295467d1c347bf2a468c23385ae85e3a004c5f44850592f74caee439fba8"
+    },
+    {
+      "path": "assets/item-icons/steelSword.webp",
+      "category": "item-icon",
+      "bytes": 17582,
+      "sha256": "fc2d4906f1da00d556fd071931c559325735761dc0e95f0774f9ce72fe903e8a"
+    },
+    {
+      "path": "assets/item-icons/stolenBook.webp",
+      "category": "item-icon",
+      "bytes": 48538,
+      "sha256": "aa58acb984360616ca9d0a31aaf020310ddb2ef2a1479f6c44582d12bd84b516"
+    },
+    {
+      "path": "assets/item-icons/toadShield.webp",
+      "category": "item-icon",
+      "bytes": 52274,
+      "sha256": "b4bee9066224e2cace60ce6e8fa32c7f7d8a65c48c6aa7131243d76e4f335f7f"
+    },
+    {
+      "path": "assets/item-icons/windbreakerStone.webp",
+      "category": "item-icon",
+      "bytes": 33232,
+      "sha256": "79ba76f37a7dbab3bc5583d5ac007eabb954872e53f6358e95d3f70f586cc3c3"
+    },
+    {
+      "path": "assets/item-icons/woodenShield.webp",
+      "category": "item-icon",
+      "bytes": 43822,
+      "sha256": "2fc37d51033d43ee8f7d116803e0e8a90003408d47232c1923553e4878d6561e"
+    },
+    {
+      "path": "assets/item-icons/woodenSword.webp",
+      "category": "item-icon",
+      "bytes": 20860,
+      "sha256": "5cb7c064c17988d5fcdd243e58851aa14fe5196a411a43109a84ed69b8809481"
+    },
+    {
+      "path": "assets/monsters/monster-ancientSphinx.png",
+      "category": "shipped-regular-monster",
+      "bytes": 26731,
+      "sha256": "7838f72a0fdd505bcf94ee180428b7a41f17985e400abd91d915a734bc9f45a8"
+    },
+    {
+      "path": "assets/monsters/monster-ashenGuardian.png",
+      "category": "shipped-regular-monster",
+      "bytes": 6748,
+      "sha256": "7625a10cba697db0167d1e24e0da6a1ea617c152112e17c4cc8d27c3765dbfb6"
+    },
+    {
+      "path": "assets/monsters/monster-bandit.png",
+      "category": "shipped-regular-monster",
+      "bytes": 17615,
+      "sha256": "49431537489bdc00a0a836eb82aebe9cd9a1d20e8f6d3d2afa171bd544a2c229"
+    },
+    {
+      "path": "assets/monsters/monster-banditArcher.png",
+      "category": "shipped-regular-monster",
+      "bytes": 18824,
+      "sha256": "16c41c6257b1e81bb62a06e0003d722bb7db6b685a2f4c713ca9c3107aee2d33"
+    },
+    {
+      "path": "assets/monsters/monster-banditLord.png",
+      "category": "shipped-regular-monster",
+      "bytes": 25065,
+      "sha256": "4aa7324713cb0466c1cf872b6ebeb5fd44b671a914411cba7c467277b363c8ed"
+    },
+    {
+      "path": "assets/monsters/monster-bat.png",
+      "category": "shipped-regular-monster",
+      "bytes": 6863,
+      "sha256": "ac48f4dea195a35e933e15e9ee897364453faea537cef4f33de5f2e6808ec033"
+    },
+    {
+      "path": "assets/monsters/monster-blizzardBear.png",
+      "category": "shipped-regular-monster",
+      "bytes": 16418,
+      "sha256": "3e87dd36235a1e167c508df4ad333b94540eecc0bd0c1c18675f09e93988ce79"
+    },
+    {
+      "path": "assets/monsters/monster-bruiser.png",
+      "category": "shipped-regular-monster",
+      "bytes": 20988,
+      "sha256": "0addb220f6b22bebf188c07dca8bf4c35acd626940b8cdd0f7e7fe70b3038f78"
+    },
+    {
+      "path": "assets/monsters/monster-bug.png",
+      "category": "shipped-regular-monster",
+      "bytes": 11312,
+      "sha256": "c966add3051a1b90ba67b6bda9c2799a8fec0ccb563e5ebaf561cd54b5be6390"
+    },
+    {
+      "path": "assets/monsters/monster-celestialGuardian.png",
+      "category": "shipped-regular-monster",
+      "bytes": 30502,
+      "sha256": "3d1adc7838bf47e9c179d8e18c0305f5980afc4765440115a7956245ee2149e0"
+    },
+    {
+      "path": "assets/monsters/monster-chimera.png",
+      "category": "shipped-regular-monster",
+      "bytes": 21465,
+      "sha256": "6383f38238f78da5d65b4da9ffa73bafd10a4cafc42755707c5d56646fae321b"
+    },
+    {
+      "path": "assets/monsters/monster-cloudWraith.png",
+      "category": "shipped-regular-monster",
+      "bytes": 22663,
+      "sha256": "9fa125c1bcdd0411c056665a18410d246e6bc8e9f5035e40dcb0f554f14a14b5"
+    },
+    {
+      "path": "assets/monsters/monster-coralTitan.png",
+      "category": "shipped-regular-monster",
+      "bytes": 6487,
+      "sha256": "c02dc2cb351899c7bf5efff6686905f3674eec452c66d0e2c4ae2775f36645f0"
+    },
+    {
+      "path": "assets/monsters/monster-crab.png",
+      "category": "shipped-regular-monster",
+      "bytes": 13012,
+      "sha256": "d7392feaea030bc6e3f38b01da6e4bd81c4f8df9cfa4c54d3d77fdd14c54c771"
+    },
+    {
+      "path": "assets/monsters/monster-crystalHydra.png",
+      "category": "shipped-regular-monster",
+      "bytes": 7190,
+      "sha256": "d6a0063eaf4600bc0b074b81c004680bee9fe3c1b911f6edeaf22012f8776d12"
+    },
+    {
+      "path": "assets/monsters/monster-darkKnight.png",
+      "category": "shipped-regular-monster",
+      "bytes": 17654,
+      "sha256": "81ff2284d5ed38ffd51749ae56e493ec4e54145eaa5468c3d0af10773313f61a"
+    },
+    {
+      "path": "assets/monsters/monster-darkSorcerer.png",
+      "category": "shipped-regular-monster",
+      "bytes": 13203,
+      "sha256": "7c591fcb0ca83015085ac3b047a86b92924dffe29b2d02fcaed49e7365c933bd"
+    },
+    {
+      "path": "assets/monsters/monster-demon.png",
+      "category": "shipped-regular-monster",
+      "bytes": 19611,
+      "sha256": "0abf2b69fea8e9de1fc717fc865d158c58aa2bf414599b235305526d165f2adb"
+    },
+    {
+      "path": "assets/monsters/monster-demonKing.png",
+      "category": "shipped-regular-monster",
+      "bytes": 25803,
+      "sha256": "7e296fff3eb88fadc84878afdd3e3d348bdf13b0b08ce81c84da936d88b57102"
+    },
+    {
+      "path": "assets/monsters/monster-dragon.png",
+      "category": "shipped-regular-monster",
+      "bytes": 12721,
+      "sha256": "91aa9bbca6b8cdf84be07b9d905706df78bcc4ec308b9537320fa53d5ad6ebe6"
+    },
+    {
+      "path": "assets/monsters/monster-fireElemental.png",
+      "category": "shipped-regular-monster",
+      "bytes": 21355,
+      "sha256": "b7797de117ff76ce255cd43302c98b1ab005b4b594d0ef39d6a2ce5b51ae8e69"
+    },
+    {
+      "path": "assets/monsters/monster-flameBat.png",
+      "category": "shipped-regular-monster",
+      "bytes": 14581,
+      "sha256": "d5604033ef9e86bb9df64b809a8a978946454f88db387c6171a68c4d81738c4f"
+    },
+    {
+      "path": "assets/monsters/monster-flameTitan.png",
+      "category": "shipped-regular-monster",
+      "bytes": 25145,
+      "sha256": "f2a3eb027b848a6eba29b0951d2cbb746ab2bd04c1b4bc4add009a72ee6e1fef"
+    },
+    {
+      "path": "assets/monsters/monster-frostMonarch.png",
+      "category": "shipped-regular-monster",
+      "bytes": 23029,
+      "sha256": "ddd9f90f94fd4c375e6e834cf871fc2b4db466a6284df5535eb68d122d95f32c"
+    },
+    {
+      "path": "assets/monsters/monster-frostStalker.png",
+      "category": "shipped-regular-monster",
+      "bytes": 22894,
+      "sha256": "78c3d3ecffb55d11a52d31b0c03330f197d9e0a64353654177304e6f90a1f0f5"
+    },
+    {
+      "path": "assets/monsters/monster-frostWolf.png",
+      "category": "shipped-regular-monster",
+      "bytes": 27250,
+      "sha256": "5cd72c0bb61a8d1f2bc3f4b0b57323d4d6eae1bc0978e8357da0d8096fd89065"
+    },
+    {
+      "path": "assets/monsters/monster-frozenSkeleton.png",
+      "category": "shipped-regular-monster",
+      "bytes": 21603,
+      "sha256": "1e5bcc9d9aa7589b50774289399e548dcf7b28f7895458d0fedf59dc40571261"
+    },
+    {
+      "path": "assets/monsters/monster-giantCrab.png",
+      "category": "shipped-regular-monster",
+      "bytes": 24689,
+      "sha256": "be09e82a3b8dbcc9f78bdc81c9a0e38e239d5a80f0b65a8248949bd7a3cefa9b"
+    },
+    {
+      "path": "assets/monsters/monster-giantToad.png",
+      "category": "shipped-regular-monster",
+      "bytes": 11628,
+      "sha256": "838f1d75e62f4931e116cac096080c6895742134701ec43a4312ad051025f3ac"
+    },
+    {
+      "path": "assets/monsters/monster-glacialGolem.png",
+      "category": "shipped-regular-monster",
+      "bytes": 29235,
+      "sha256": "d9dfd9c98582032c6260215f5bc9912607be05e8014988fc0e7e361c5a8603e1"
+    },
+    {
+      "path": "assets/monsters/monster-golem.png",
+      "category": "shipped-regular-monster",
+      "bytes": 14424,
+      "sha256": "326ef2a28a9edf7c757e9a8942a4570339e554d51892d69810bae5028aa9e240"
+    },
+    {
+      "path": "assets/monsters/monster-harpy.png",
+      "category": "shipped-regular-monster",
+      "bytes": 25449,
+      "sha256": "a9d7b0fc29549ba077314e953a1f62fff0040ace602ea34cbfca01782b5f7381"
+    },
+    {
+      "path": "assets/monsters/monster-iceSprite.png",
+      "category": "shipped-regular-monster",
+      "bytes": 10634,
+      "sha256": "433e92b28b7eb1fc76c7622993eaf16528fa1e0dbac01d10bf3431dbf34bf30c"
+    },
+    {
+      "path": "assets/monsters/monster-iceWyrm.png",
+      "category": "shipped-regular-monster",
+      "bytes": 15875,
+      "sha256": "04c244b320b77b1d6af8c6bd8c4f78e12fe1369603c7ea3f93ac0f6535072a35"
+    },
+    {
+      "path": "assets/monsters/monster-jellyfish.png",
+      "category": "shipped-regular-monster",
+      "bytes": 12691,
+      "sha256": "75ac55705be60e307c8b43e06b431bfec18ba4edb94e6fec4093e74cdbbad437"
+    },
+    {
+      "path": "assets/monsters/monster-knifeSneak.png",
+      "category": "shipped-regular-monster",
+      "bytes": 18947,
+      "sha256": "6c41435f8bd10f0c148e7ac8962f390c231cc2acda66ef4ac5d0bd4f904b86d7"
+    },
+    {
+      "path": "assets/monsters/monster-knight.png",
+      "category": "shipped-regular-monster",
+      "bytes": 19979,
+      "sha256": "6780a7ec385cd43a30f659b9de3930db80c9fd5f1956fa7260ba4774c979553d"
+    },
+    {
+      "path": "assets/monsters/monster-kraken.png",
+      "category": "shipped-regular-monster",
+      "bytes": 15373,
+      "sha256": "f145c51d1c47e7bf16171ad924829ac864eb11706f257fa908a33bc07a7fa072"
+    },
+    {
+      "path": "assets/monsters/monster-lavaGolem.png",
+      "category": "shipped-regular-monster",
+      "bytes": 23037,
+      "sha256": "b387cce1c063fbc9aa58b4a10f5205bfa3352eda8914c475f8b9608f6491d5dd"
+    },
+    {
+      "path": "assets/monsters/monster-lavaWyrm.png",
+      "category": "shipped-regular-monster",
+      "bytes": 24481,
+      "sha256": "6b8ae22010c419f2f4d1c016338ee39f065238c9f2d12738e2cd118757822721"
+    },
+    {
+      "path": "assets/monsters/monster-lich.png",
+      "category": "shipped-regular-monster",
+      "bytes": 24455,
+      "sha256": "091d19f5965138f623784a9e327481044cab37859bb02e5dc8b1773aca3daabe"
+    },
+    {
+      "path": "assets/monsters/monster-lizard.png",
+      "category": "shipped-regular-monster",
+      "bytes": 24367,
+      "sha256": "ca7c1d95f52eb2be960693f834e3c59d10369cdf984c4fbd9d8218f2459830c8"
+    },
+    {
+      "path": "assets/monsters/monster-magmaBeetleKing.png",
+      "category": "shipped-regular-monster",
+      "bytes": 5520,
+      "sha256": "0c8cad0010fe4a2bbe89ce903d3750cdf20305c7a00f65fd43f8a936be1edab4"
+    },
+    {
+      "path": "assets/monsters/monster-magmaSlime.png",
+      "category": "shipped-regular-monster",
+      "bytes": 14168,
+      "sha256": "1243b2794aba7396db8829d6d5ad6a4a788bf2bffcbeed99bff12eec59bccc05"
+    },
+    {
+      "path": "assets/monsters/monster-merfolk.png",
+      "category": "shipped-regular-monster",
+      "bytes": 12960,
+      "sha256": "715ba0438033169bba608fe48ad11ff6f4daf63e6cf738dcf4b535851a6889c6"
+    },
+    {
+      "path": "assets/monsters/monster-mimic.png",
+      "category": "shipped-regular-monster",
+      "bytes": 6941,
+      "sha256": "50b8f809cd9ab2bde268812026b7c997be585ea8647bbd29308940cf38a40b75"
+    },
+    {
+      "path": "assets/monsters/monster-mosswarden.png",
+      "category": "shipped-regular-monster",
+      "bytes": 6758,
+      "sha256": "08f4dccb10018871437384f58fa45ede17fef1c6b7da61b2669ff9010e1da0b1"
+    },
+    {
+      "path": "assets/monsters/monster-mummy.png",
+      "category": "shipped-regular-monster",
+      "bytes": 23022,
+      "sha256": "aef084828276f958b73a1a68863e8085b6dbabef12118ccfe1a461bc7ff067b6"
+    },
+    {
+      "path": "assets/monsters/monster-mushroom.png",
+      "category": "shipped-regular-monster",
+      "bytes": 13521,
+      "sha256": "2cefb421425579251058b70649e8e0302ca6eb3cd461d1d468a391a346eb0c82"
+    },
+    {
+      "path": "assets/monsters/monster-nullDevourer.png",
+      "category": "shipped-regular-monster",
+      "bytes": 6419,
+      "sha256": "70899c67d9a80756d0ec37a126ba29c4c5c1c29e34c6e157f438bf53e0c3113e"
+    },
+    {
+      "path": "assets/monsters/monster-oreColossus.png",
+      "category": "shipped-regular-monster",
+      "bytes": 6308,
+      "sha256": "ef273f588b5c195f94d5a8ee4286145d8aaf0a188a5e34bef26971f99f567c27"
+    },
+    {
+      "path": "assets/monsters/monster-phantomStag.png",
+      "category": "shipped-regular-monster",
+      "bytes": 6471,
+      "sha256": "37249e91d27cbf01272985ff9e81700fa5ad8672ab6be33a91a9e4b11135cd98"
+    },
+    {
+      "path": "assets/monsters/monster-piranha.png",
+      "category": "shipped-regular-monster",
+      "bytes": 12465,
+      "sha256": "2b57e850b114a7dba3125ffedd35cea1e484348cb34c77e333a291904e698681"
+    },
+    {
+      "path": "assets/monsters/monster-rabbit.png",
+      "category": "shipped-regular-monster",
+      "bytes": 10810,
+      "sha256": "3c60403ead93d0eb537cf4702777d3e6e09ceba24c799ea0fcf1dd4e34c014e6"
+    },
+    {
+      "path": "assets/monsters/monster-sandGolem.png",
+      "category": "shipped-regular-monster",
+      "bytes": 26851,
+      "sha256": "68633136a0903d187430f79a6f5a660ead606faa5a43a6e195a487c0c3844f3a"
+    },
+    {
+      "path": "assets/monsters/monster-sandSerpentQueen.png",
+      "category": "shipped-regular-monster",
+      "bytes": 5719,
+      "sha256": "663beb121e594dea853d3236737464f1b8b3ee4b77c560610f62d9de4e494192"
+    },
+    {
+      "path": "assets/monsters/monster-sandWraith.png",
+      "category": "shipped-regular-monster",
+      "bytes": 25853,
+      "sha256": "6da25457ef81a106c97e753d1960c9d17cdd937f0d6fb74a9595fcd700525b54"
+    },
+    {
+      "path": "assets/monsters/monster-seaStar.png",
+      "category": "shipped-regular-monster",
+      "bytes": 20382,
+      "sha256": "95ec60371dc352886b83e7e1ca3a66c82c2d910dd3b1e5dc158c7921ebc00738"
+    },
+    {
+      "path": "assets/monsters/monster-serpent.png",
+      "category": "shipped-regular-monster",
+      "bytes": 13016,
+      "sha256": "4740c1f9071093c4f14948ef4993d5153b3008f6b7c123480879b559200ca51d"
+    },
+    {
+      "path": "assets/monsters/monster-shadow.png",
+      "category": "shipped-regular-monster",
+      "bytes": 18423,
+      "sha256": "40c24562b6b10ee472072943d87cf5bc24fb2432b5335b4a81e9180a2db41307"
+    },
+    {
+      "path": "assets/monsters/monster-shadowWisp.png",
+      "category": "shipped-regular-monster",
+      "bytes": 4037,
+      "sha256": "f161dfd7714db1f85fe0b968d8d29e0f829b18b36aabdef75b64821327193ed7"
+    },
+    {
+      "path": "assets/monsters/monster-skeleton.png",
+      "category": "shipped-regular-monster",
+      "bytes": 20132,
+      "sha256": "085aee0bf7db244cd92dbaaea23706351545ab447afbdfaa072883e3248bdf09"
+    },
+    {
+      "path": "assets/monsters/monster-slime.png",
+      "category": "shipped-regular-monster",
+      "bytes": 10180,
+      "sha256": "9d9d3787ee8a1c37a1a9af0de630866aa309a24b9d02f0de805599fdb60c2397"
+    },
+    {
+      "path": "assets/monsters/monster-spider.png",
+      "category": "shipped-regular-monster",
+      "bytes": 12279,
+      "sha256": "8b3039e6d72fb999054226bd7118fb52b42ceef2aeca13d8810929cf4cbd4fd8"
+    },
+    {
+      "path": "assets/monsters/monster-stormHarpy.png",
+      "category": "shipped-regular-monster",
+      "bytes": 29657,
+      "sha256": "44c5994306a066540f24d0f21276733f7777724e383b990674d92918e7d75c13"
+    },
+    {
+      "path": "assets/monsters/monster-stormRaptor.png",
+      "category": "shipped-regular-monster",
+      "bytes": 22972,
+      "sha256": "479f4b7cfa94c779d952280151c6a74930e5726b11c5de69baa19b4df123b3f3"
+    },
+    {
+      "path": "assets/monsters/monster-stormSentinel.png",
+      "category": "shipped-regular-monster",
+      "bytes": 28263,
+      "sha256": "a174caea42699b640c21095d95d8d2e28ffbd9e32cc62161bc22d8c2060cf8b2"
+    },
+    {
+      "path": "assets/monsters/monster-swordWraith.png",
+      "category": "shipped-regular-monster",
+      "bytes": 24771,
+      "sha256": "cf80f6491306735391f4c9c8f7eebbf035a49b2431c65b440d5372cbe8900f90"
+    },
+    {
+      "path": "assets/monsters/monster-templeGuard.png",
+      "category": "shipped-regular-monster",
+      "bytes": 25467,
+      "sha256": "3ee052e06cf300365618f7d1741d177a19d367fc99244ae0ebbfb50123dfde39"
+    },
+    {
+      "path": "assets/monsters/monster-thornvineLurker.png",
+      "category": "shipped-regular-monster",
+      "bytes": 6617,
+      "sha256": "1216b51d04295ee12283b02c985dab8b62e9a29dcb7b5d30cc7de662a3401e32"
+    },
+    {
+      "path": "assets/monsters/monster-voidShade.png",
+      "category": "shipped-regular-monster",
+      "bytes": 20050,
+      "sha256": "b42b075a599f25e307f1367b3393531ae73483055b0ecdc5d8d6ce598714efd7"
+    },
+    {
+      "path": "assets/monsters/monster-warGeneralMalachar.png",
+      "category": "shipped-regular-monster",
+      "bytes": 6475,
+      "sha256": "2672673834fe1bee34fb0a8124cbf6951b32887bfd6f2d534bf64f3c249e12bc"
+    },
+    {
+      "path": "assets/monsters/monster-wolf.png",
+      "category": "shipped-regular-monster",
+      "bytes": 13177,
+      "sha256": "629f8db8d925184673977f87310b2ea83164f994d38a487e617a3cc7635b6dba"
+    },
+    {
+      "path": "assets/monsters/monster-wraith.png",
+      "category": "shipped-regular-monster",
+      "bytes": 20626,
+      "sha256": "b516af25f770cde7ffa98d7164310c522cdd780509ea69ded0dc29fac5e28bf8"
+    },
+    {
+      "path": "assets/monsters/monster-wyvern.png",
+      "category": "shipped-regular-monster",
+      "bytes": 13588,
+      "sha256": "c728af1e9dfc55c89e754aa7a47959708e2a46eba3768ee31a14f2e2cc07ea6b"
+    },
+    {
+      "path": "assets/monsters-hd/monster-ancientSphinx.webp",
+      "category": "hd-monster",
+      "bytes": 190918,
+      "sha256": "792e73590528c77b5161b7624b9caa3c1e92a91d0aeaf690dfee651ea0c0162f"
+    },
+    {
+      "path": "assets/monsters-hd/monster-ashenGuardian.webp",
+      "category": "hd-monster",
+      "bytes": 247384,
+      "sha256": "4d6dd6daa1458b576d2419e4140a2a497d7c09a30f137168724d7d3803ddf66e"
+    },
+    {
+      "path": "assets/monsters-hd/monster-bandit.webp",
+      "category": "hd-monster",
+      "bytes": 126488,
+      "sha256": "c116875c0061c3008d04abf0d0658096f67dd1ed7983e49bf123d080bd57a2ff"
+    },
+    {
+      "path": "assets/monsters-hd/monster-banditArcher.webp",
+      "category": "hd-monster",
+      "bytes": 143602,
+      "sha256": "ef6d2a9867968d0b7a059f6ee2d6fb0b5dff868a5e3134c132d255167e7b8b80"
+    },
+    {
+      "path": "assets/monsters-hd/monster-banditLord.webp",
+      "category": "hd-monster",
+      "bytes": 245604,
+      "sha256": "ec08caad714deba63db6547814d918645ceb3e566e14beb1a3a97f4b3e7c9cc3"
+    },
+    {
+      "path": "assets/monsters-hd/monster-bat.webp",
+      "category": "hd-monster",
+      "bytes": 57794,
+      "sha256": "c82421bd960a4f7caa7340d8b2d650b7923710a51eb4a6101c944ad64a1e0d17"
+    },
+    {
+      "path": "assets/monsters-hd/monster-blizzardBear.webp",
+      "category": "hd-monster",
+      "bytes": 159704,
+      "sha256": "a2db218163f4e895b03f89acac844aec28ad84b1e9694a9bb86d75c25df0e846"
+    },
+    {
+      "path": "assets/monsters-hd/monster-bruiser.webp",
+      "category": "hd-monster",
+      "bytes": 147310,
+      "sha256": "74bb49ff1c62b3c3f6d28a2f7806d227b511853669c981b161c352bf8d07c1c4"
+    },
+    {
+      "path": "assets/monsters-hd/monster-bug.webp",
+      "category": "hd-monster",
+      "bytes": 66282,
+      "sha256": "35cb51770660995f12d86e71c68bfd20908538cefca74c2946c1bd64f344bffe"
+    },
+    {
+      "path": "assets/monsters-hd/monster-celestialGuardian.webp",
+      "category": "hd-monster",
+      "bytes": 250554,
+      "sha256": "2bd5eaabbf3d7372a97930b818509cdc1eb8a7e7f7700239af7c6781a438cb3a"
+    },
+    {
+      "path": "assets/monsters-hd/monster-chimera.webp",
+      "category": "hd-monster",
+      "bytes": 190862,
+      "sha256": "b11bc252ffb59be56dd9f7164142f5909027659a395780c90103ac6470eac0d4"
+    },
+    {
+      "path": "assets/monsters-hd/monster-cloudWraith.webp",
+      "category": "hd-monster",
+      "bytes": 123976,
+      "sha256": "69aa39d25a977b5c9c8165b267ddf71b0a756a1ba8928759d5f648fc9fd5d10a"
+    },
+    {
+      "path": "assets/monsters-hd/monster-coralTitan.webp",
+      "category": "hd-monster",
+      "bytes": 252174,
+      "sha256": "7e029359f46d6cbfaf34c924a3e51a942ccbb3f0375f8d7cf7a084d5367af675"
+    },
+    {
+      "path": "assets/monsters-hd/monster-crab.webp",
+      "category": "hd-monster",
+      "bytes": 106534,
+      "sha256": "161deecb9ab68fca3fefa5f77afd8efbde008863a8e5a248b7f1036d86945fc2"
+    },
+    {
+      "path": "assets/monsters-hd/monster-crystalHydra.webp",
+      "category": "hd-monster",
+      "bytes": 151086,
+      "sha256": "4a2a30be48170768a482c9e91a60c6132ab80638ce8a2703c202a6837bfe51a6"
+    },
+    {
+      "path": "assets/monsters-hd/monster-darkKnight.webp",
+      "category": "hd-monster",
+      "bytes": 71794,
+      "sha256": "9357bc0dcfc6ebc7864131288677fec7127bbaa357cb2016d619dfdb988a0fca"
+    },
+    {
+      "path": "assets/monsters-hd/monster-darkSorcerer.webp",
+      "category": "hd-monster",
+      "bytes": 103280,
+      "sha256": "0be80f6a7ec2990fc7b072f40b569fad2ebe3e1796a1622844f808182bce327d"
+    },
+    {
+      "path": "assets/monsters-hd/monster-demon.webp",
+      "category": "hd-monster",
+      "bytes": 125080,
+      "sha256": "7a081c26dd2ed814805fa9ea2d64bb7a4dc27651d16ac74b52243cd6fea0ee9a"
+    },
+    {
+      "path": "assets/monsters-hd/monster-demonKing.webp",
+      "category": "hd-monster",
+      "bytes": 255990,
+      "sha256": "7e54fd5d814e7bb4e40727245868f5382d0486378427ebc29c976dc1692abca5"
+    },
+    {
+      "path": "assets/monsters-hd/monster-dragon.webp",
+      "category": "hd-monster",
+      "bytes": 162044,
+      "sha256": "d31dbaf64468ab6ce0d76f67f080416de1d3cf7b262e270aa8a9a7282f4d9cec"
+    },
+    {
+      "path": "assets/monsters-hd/monster-fireElemental.webp",
+      "category": "hd-monster",
+      "bytes": 171702,
+      "sha256": "f308333bd186e19fdd0ffec5d441f6e6f5d37d9007440cb9358a584ccbd2a6a1"
+    },
+    {
+      "path": "assets/monsters-hd/monster-flameBat.webp",
+      "category": "hd-monster",
+      "bytes": 125274,
+      "sha256": "cc681188bf70b162d37af34f34f48a29785c1dc0a55313218d275160da07d44a"
+    },
+    {
+      "path": "assets/monsters-hd/monster-flameTitan.webp",
+      "category": "hd-monster",
+      "bytes": 249832,
+      "sha256": "ed079d6a0c1bd4ea472f5d56266fa720013676e01d0ce6fb0563e45bb106ad5a"
+    },
+    {
+      "path": "assets/monsters-hd/monster-frostMonarch.webp",
+      "category": "hd-monster",
+      "bytes": 203098,
+      "sha256": "9f63b9f53c1a489932d34ca979ac77bb5eb28e4650578f2088e236fb880c4cc9"
+    },
+    {
+      "path": "assets/monsters-hd/monster-frostStalker.webp",
+      "category": "hd-monster",
+      "bytes": 182306,
+      "sha256": "a345829dffcdfdd8bad2eb30a15c46619c5c67377121f3449112dc4827a39f7f"
+    },
+    {
+      "path": "assets/monsters-hd/monster-frostWolf.webp",
+      "category": "hd-monster",
+      "bytes": 212424,
+      "sha256": "7a0f34c60f96eb243b322d9988131841c57edfd131b15b5f14dd1f94eef47274"
+    },
+    {
+      "path": "assets/monsters-hd/monster-frozenSkeleton.webp",
+      "category": "hd-monster",
+      "bytes": 171836,
+      "sha256": "c8a02dfcb0c2032f693b014ef3f52fb817e3ccfcb36c75d5686933417657205b"
+    },
+    {
+      "path": "assets/monsters-hd/monster-giantCrab.webp",
+      "category": "hd-monster",
+      "bytes": 240658,
+      "sha256": "8b4ef909f9a44f260cda5c3a50524aa9494fafad064709a6bc46bc99ae575281"
+    },
+    {
+      "path": "assets/monsters-hd/monster-giantToad.webp",
+      "category": "hd-monster",
+      "bytes": 96168,
+      "sha256": "67d597506fb6e64854b02f0fb90440b82be33ccc4405c133bfc795e4067de8af"
+    },
+    {
+      "path": "assets/monsters-hd/monster-glacialGolem.webp",
+      "category": "hd-monster",
+      "bytes": 250570,
+      "sha256": "6c4286054540ff989f53700a1e2cb981c8c7c10e2562444d7b9c078005009dde"
+    },
+    {
+      "path": "assets/monsters-hd/monster-golem.webp",
+      "category": "hd-monster",
+      "bytes": 143904,
+      "sha256": "516832965a6d1989d61030ffbead33c49bbddcada9d8df5f0c5a264d1d1c18c0"
+    },
+    {
+      "path": "assets/monsters-hd/monster-harpy.webp",
+      "category": "hd-monster",
+      "bytes": 139616,
+      "sha256": "0b435dc0cade87ea39e0f81788ea0bcbb0b9c0053d7f0ddaed03ec5acba786f5"
+    },
+    {
+      "path": "assets/monsters-hd/monster-iceSprite.webp",
+      "category": "hd-monster",
+      "bytes": 124934,
+      "sha256": "925ad30332ec13cb780106f659a9506862b9e5d2af9291027dd6c9d3abdf0b5f"
+    },
+    {
+      "path": "assets/monsters-hd/monster-iceWyrm.webp",
+      "category": "hd-monster",
+      "bytes": 155234,
+      "sha256": "619bc149a253cf9ce23415c58aea7df386e07760ff211332b7bf9312a68c2d85"
+    },
+    {
+      "path": "assets/monsters-hd/monster-jellyfish.webp",
+      "category": "hd-monster",
+      "bytes": 94658,
+      "sha256": "f9ce2badc6d312a382090ee06173ac94b44041dac50d8cadee79528cc45c7078"
+    },
+    {
+      "path": "assets/monsters-hd/monster-knifeSneak.webp",
+      "category": "hd-monster",
+      "bytes": 124416,
+      "sha256": "66967e9b31444384918fcb152173f57ec5adcefd678def96d23a6c7a02430c46"
+    },
+    {
+      "path": "assets/monsters-hd/monster-knight.webp",
+      "category": "hd-monster",
+      "bytes": 144426,
+      "sha256": "5ad25e8ed4f26857e03bdafb5d0df3e83c73a5cd32dbb47524df967abf344ec3"
+    },
+    {
+      "path": "assets/monsters-hd/monster-kraken.webp",
+      "category": "hd-monster",
+      "bytes": 155428,
+      "sha256": "8e6f4e0c9cdfa2c645f4aff0a6e60dd12f030f747a469a6653177d4f34a7c1e2"
+    },
+    {
+      "path": "assets/monsters-hd/monster-lavaGolem.webp",
+      "category": "hd-monster",
+      "bytes": 221464,
+      "sha256": "799bf429805b6730004f19949a723224a88c8baf2d443f87c3b898e6c59a428e"
+    },
+    {
+      "path": "assets/monsters-hd/monster-lavaWyrm.webp",
+      "category": "hd-monster",
+      "bytes": 181822,
+      "sha256": "ed561805a6189ae9bf15aa91d0d47817ab191a9d48cb6f1a98eae2172aed9af5"
+    },
+    {
+      "path": "assets/monsters-hd/monster-lich.webp",
+      "category": "hd-monster",
+      "bytes": 196376,
+      "sha256": "07d543d6810249ba2322a2c34c6486de1d55a6f611516f28a30c2b3ae866ec4a"
+    },
+    {
+      "path": "assets/monsters-hd/monster-lizard.webp",
+      "category": "hd-monster",
+      "bytes": 158840,
+      "sha256": "253105d76a5a7754622a7d0fb0b2a4386533aa949947bbf11427ff4ae240c61c"
+    },
+    {
+      "path": "assets/monsters-hd/monster-magmaBeetleKing.webp",
+      "category": "hd-monster",
+      "bytes": 167192,
+      "sha256": "3e856fb2a46a79f93c3f57a452c690df2bf7502c44bd7d4e5217c13c4942d01c"
+    },
+    {
+      "path": "assets/monsters-hd/monster-magmaSlime.webp",
+      "category": "hd-monster",
+      "bytes": 103000,
+      "sha256": "1130a2e31dba229f2929fdcb36fea87d92ecf1d90411647e97bfe05fb7410082"
+    },
+    {
+      "path": "assets/monsters-hd/monster-merfolk.webp",
+      "category": "hd-monster",
+      "bytes": 112770,
+      "sha256": "04881695cb4a2bb522b2a1acea8071032a4ea21e24903c04ff474e369366bc09"
+    },
+    {
+      "path": "assets/monsters-hd/monster-mimic.webp",
+      "category": "hd-monster",
+      "bytes": 142636,
+      "sha256": "13ad3b0b5d0bb177be9d2d54bef476c0c6edec97bc1c6efd9f1fa60f59a686d0"
+    },
+    {
+      "path": "assets/monsters-hd/monster-mosswarden.webp",
+      "category": "hd-monster",
+      "bytes": 221878,
+      "sha256": "e16c80d449a535c95e79d6a80c052001c2c5c312bb768408718f527e5859a8f9"
+    },
+    {
+      "path": "assets/monsters-hd/monster-mummy.webp",
+      "category": "hd-monster",
+      "bytes": 159698,
+      "sha256": "fab8204878d3a5a163778f9a895607ea665fb5bbebb196c3362af08890c000c4"
+    },
+    {
+      "path": "assets/monsters-hd/monster-mushroom.webp",
+      "category": "hd-monster",
+      "bytes": 84660,
+      "sha256": "59d7ed7821e3ebb73e310df3fd8000889b61530802406f519867b1adae688332"
+    },
+    {
+      "path": "assets/monsters-hd/monster-nullDevourer.webp",
+      "category": "hd-monster",
+      "bytes": 151380,
+      "sha256": "0a76a5a2e1f44e60c5076097bceacddb711f9d507fc6a1471902d6643ca00278"
+    },
+    {
+      "path": "assets/monsters-hd/monster-oreColossus.webp",
+      "category": "hd-monster",
+      "bytes": 207094,
+      "sha256": "3df93f3633e511b53da9cc7906d9a87ccf6a9d0d0608563f649dadc6ff482d72"
+    },
+    {
+      "path": "assets/monsters-hd/monster-phantomStag.webp",
+      "category": "hd-monster",
+      "bytes": 215842,
+      "sha256": "811e8d6ce86c80194a8eb721c032d5f81331dde3f2da0f2ca3b00f07af799af4"
+    },
+    {
+      "path": "assets/monsters-hd/monster-piranha.webp",
+      "category": "hd-monster",
+      "bytes": 79564,
+      "sha256": "f278e02e4c07a9619779a65a92c9110fb173dff23df2f93cf3d56e41cc0abcb2"
+    },
+    {
+      "path": "assets/monsters-hd/monster-rabbit.webp",
+      "category": "hd-monster",
+      "bytes": 83294,
+      "sha256": "dfa287e3f4462740cf85b156bcced3b4787da49981bcc0e5273d28fcd05b25ea"
+    },
+    {
+      "path": "assets/monsters-hd/monster-sandGolem.webp",
+      "category": "hd-monster",
+      "bytes": 300390,
+      "sha256": "53c7a5fb5f72db750a1a3d0c283dc1e827231a26bf0c6b89b59b24a6a8eca3a7"
+    },
+    {
+      "path": "assets/monsters-hd/monster-sandSerpentQueen.webp",
+      "category": "hd-monster",
+      "bytes": 182220,
+      "sha256": "bc0b098c3ad5f68ab37b4f033fd74b770dd37d74ea541ee511046a40fbcec019"
+    },
+    {
+      "path": "assets/monsters-hd/monster-sandWraith.webp",
+      "category": "hd-monster",
+      "bytes": 227802,
+      "sha256": "1d9c56e51bdc16e11006cd4dfa5311040d82d9944e402fb1ffc98dcd1df55214"
+    },
+    {
+      "path": "assets/monsters-hd/monster-seaStar.webp",
+      "category": "hd-monster",
+      "bytes": 167896,
+      "sha256": "7ffc70720481d2f3b21b0daa7b13633f89bc451d600068fbff9b8327c58e2725"
+    },
+    {
+      "path": "assets/monsters-hd/monster-serpent.webp",
+      "category": "hd-monster",
+      "bytes": 116274,
+      "sha256": "b26a650d60fd83e62d02fab438ba5d36137ac16fe5d422d252f79f74fc312f6c"
+    },
+    {
+      "path": "assets/monsters-hd/monster-shadow.webp",
+      "category": "hd-monster",
+      "bytes": 119884,
+      "sha256": "d3df793a3dfcc579ef4400f645abefdff5ccbdfc11051c9436d40d36bff938d2"
+    },
+    {
+      "path": "assets/monsters-hd/monster-shadowWisp.webp",
+      "category": "hd-monster",
+      "bytes": 73610,
+      "sha256": "5a6a1d5f4c2ff8ce6875cc459ec6ccae2136d4e18bb741c49da99d765cb8d8e4"
+    },
+    {
+      "path": "assets/monsters-hd/monster-skeleton.webp",
+      "category": "hd-monster",
+      "bytes": 130936,
+      "sha256": "e4ec6c89f75ea9cd9923908884dcf387bbb7e6e01e2b8ea38b7f3820e1944be8"
+    },
+    {
+      "path": "assets/monsters-hd/monster-slime.webp",
+      "category": "hd-monster",
+      "bytes": 58520,
+      "sha256": "86769a3e988ab99272f797cdc253c4d73d07b00deeb7741e2819430b7e097c25"
+    },
+    {
+      "path": "assets/monsters-hd/monster-spider.webp",
+      "category": "hd-monster",
+      "bytes": 72054,
+      "sha256": "7023a92642d9968c4f6bb0aa2732b1bd7c49c5c9d2146a48e7140766d7dea015"
+    },
+    {
+      "path": "assets/monsters-hd/monster-stormHarpy.webp",
+      "category": "hd-monster",
+      "bytes": 238046,
+      "sha256": "8e5a828877b60fb3e9a4505b9f60c4441c499650a8767d902f6853a48cec6860"
+    },
+    {
+      "path": "assets/monsters-hd/monster-stormRaptor.webp",
+      "category": "hd-monster",
+      "bytes": 168800,
+      "sha256": "49b943fb9a45e0ed156b02fb94ca42d108fbc0caf1604d6467fa66cd07af6a82"
+    },
+    {
+      "path": "assets/monsters-hd/monster-stormSentinel.webp",
+      "category": "hd-monster",
+      "bytes": 289472,
+      "sha256": "cfe5d934c89a4a9e7e6d44b0feee8005cf281cd6104c2c1ffcac5fcf9d302972"
+    },
+    {
+      "path": "assets/monsters-hd/monster-swordWraith.webp",
+      "category": "hd-monster",
+      "bytes": 181602,
+      "sha256": "062817295f31bd5cad97eafabb3f9ee575a6523cc022f8ea06b0650625483fc4"
+    },
+    {
+      "path": "assets/monsters-hd/monster-templeGuard.webp",
+      "category": "hd-monster",
+      "bytes": 315166,
+      "sha256": "b29498b6701319cadbf6af431e009def63e0c0f662c3422174a7e9beab91ea08"
+    },
+    {
+      "path": "assets/monsters-hd/monster-thornvineLurker.webp",
+      "category": "hd-monster",
+      "bytes": 204180,
+      "sha256": "e7ef59cb627b474c05f0fe00e8d8febcd17a45fc944a99f2a94bfeabb3a4abbd"
+    },
+    {
+      "path": "assets/monsters-hd/monster-voidShade.webp",
+      "category": "hd-monster",
+      "bytes": 125712,
+      "sha256": "043ee54f019fe060c86b25ca425c3d0cfe531f79e9c93bba6d513c54aaf44bcb"
+    },
+    {
+      "path": "assets/monsters-hd/monster-warGeneralMalachar.webp",
+      "category": "hd-monster",
+      "bytes": 218866,
+      "sha256": "135c4f2f9b35f8acb7968ce8a4ba74008dfd3eda48a009703809abf7dd3836ec"
+    },
+    {
+      "path": "assets/monsters-hd/monster-wolf.webp",
+      "category": "hd-monster",
+      "bytes": 72128,
+      "sha256": "d0f8d7732aeda8913be62e80efd6ea1477c65171c99084d8494ff4f74221fe3d"
+    },
+    {
+      "path": "assets/monsters-hd/monster-wraith.webp",
+      "category": "hd-monster",
+      "bytes": 130684,
+      "sha256": "adb7991e054cffa94b864c1762c86bd9a3af2c0958d56e5e81d60ece425d0013"
+    },
+    {
+      "path": "assets/monsters-hd/monster-wyvern.webp",
+      "category": "hd-monster",
+      "bytes": 149530,
+      "sha256": "4a098df2d2663876f398a6c52d5039a2d629ea9cbe951f27ea67a1e4418a774c"
+    },
+    {
+      "path": "dq-tiles.js",
+      "category": "shell-or-override",
+      "bytes": 145637,
+      "sha256": "4786803f7bd1d47bc6bc82aa5dc7bacc813bb0cbfa2cd1a1324098b515ce1697"
+    },
+    {
+      "path": "hero-override.js",
+      "category": "shell-or-override",
+      "bytes": 6187,
+      "sha256": "e8a763e0d683ade37284d3b7bd030c35d6a8fa9e957280e3f4c28af7bc7b7f13"
+    },
+    {
+      "path": "index.html",
+      "category": "shell-or-override",
+      "bytes": 14414,
+      "sha256": "a1d371efb9ec6a4fe43079d909c5f590ec69af7fa493a702f53a39fdbf80bfee"
+    },
+    {
+      "path": "owprops/owprop-castle-48.png",
+      "category": "overworld-prop",
+      "bytes": 442,
+      "sha256": "a625320f14a3f847945c36c1f65f61ad2e562064208804b35725601f992ce6dd"
+    },
+    {
+      "path": "owprops/owprop-cave-48.png",
+      "category": "overworld-prop",
+      "bytes": 495,
+      "sha256": "b5ef50730258a9c2a8b03d37ed1f906cde95f7c1c7a9b5bda4eb4c3b29d0dc21"
+    },
+    {
+      "path": "owprops/owprop-crystal-cave-128.png",
+      "category": "overworld-prop",
+      "bytes": 30179,
+      "sha256": "19e4615ee357ff37566cab49300ea84a7eb65c23dada794072f665cb947372f1"
+    },
+    {
+      "path": "owprops/owprop-desert-signpost-48.png",
+      "category": "overworld-prop",
+      "bytes": 347,
+      "sha256": "cb4c19625e24aa654579533702aafe43337e010a4d0ad5fa7ecbb1825f068fac"
+    },
+    {
+      "path": "owprops/owprop-desert-tomb-128.png",
+      "category": "overworld-prop",
+      "bytes": 25556,
+      "sha256": "0eb9c10427013301ebc81fe00f3a2643155ee1b96d5a100f9a312389751d60b6"
+    },
+    {
+      "path": "owprops/owprop-ice-cave-128.png",
+      "category": "overworld-prop",
+      "bytes": 30975,
+      "sha256": "72614949ffdf850d2ce072b53269d2e4a1232c976fe3a4f7f34fe8238aad980c"
+    },
+    {
+      "path": "owprops/owprop-portal-48.png",
+      "category": "overworld-prop",
+      "bytes": 512,
+      "sha256": "1a8fd49e5a7abe1c7a9fd0cb8e45715d8e5f3115432ce3a633ec9231df1f1604"
+    },
+    {
+      "path": "owprops/owprop-shadow-cave-128.png",
+      "category": "overworld-prop",
+      "bytes": 27294,
+      "sha256": "fe9202c2ceb0d0575036a1bdab4701d324c61520aae3535c55de67d21c71a365"
+    },
+    {
+      "path": "owprops/owprop-signpost-48.png",
+      "category": "overworld-prop",
+      "bytes": 330,
+      "sha256": "b14333de2fa230ebdf278e760d08172dd2c60d93c6b1a30c96ce10bc41d87d7b"
+    },
+    {
+      "path": "owprops/owprop-storm-nest-48.png",
+      "category": "overworld-prop",
+      "bytes": 538,
+      "sha256": "874277063ba22fcb5db6b86ebc59cd84a4f62999a86c50d3eceb13db991605a5"
+    },
+    {
+      "path": "owprops/owprop-village-48.png",
+      "category": "overworld-prop",
+      "bytes": 455,
+      "sha256": "59767f5773658b4e32d8a86f98a19531df8f537f386260c20e38afa149e65a5a"
+    },
+    {
+      "path": "props/dqprop-boss-marker-128.png",
+      "category": "dungeon-prop",
+      "bytes": 26650,
+      "sha256": "2c9d802ec8da89ce71dc2cc6a4132daad0395819da24e6c59c2ae14a0833f7bb"
+    },
+    {
+      "path": "props/dqprop-chest-closed-128.png",
+      "category": "dungeon-prop",
+      "bytes": 17515,
+      "sha256": "e4527d95e0890a7d6d2f64a7ace19e9a9ae20c8a8141aaba2d8d52e35268a4d6"
+    },
+    {
+      "path": "props/dqprop-chest-open-128.png",
+      "category": "dungeon-prop",
+      "bytes": 19158,
+      "sha256": "f8f2de1edb1777c06b0c70b501ce12d3021a46884c3a5ce22c78d23bf88d596e"
+    },
+    {
+      "path": "props/dqprop-locked-door-left-128.png",
+      "category": "dungeon-prop",
+      "bytes": 31704,
+      "sha256": "26d29a45c0aaeaa32c316e12a52f4b5796810a1995b30f4e46edcb5f9a37b8b4"
+    },
+    {
+      "path": "props/dqprop-locked-door-right-128.png",
+      "category": "dungeon-prop",
+      "bytes": 31592,
+      "sha256": "fb367f0bb843dda276ca57a9a0c214f7f0baba33cfb4f50952c05683a6be5020"
+    },
+    {
+      "path": "props/dqprop-portal-128.png",
+      "category": "dungeon-prop",
+      "bytes": 28828,
+      "sha256": "e909b6667aabe991cda11d9ae4978cba74e3f993e215632724f344262e2137f4"
+    },
+    {
+      "path": "props/dqprop-save-point-128.png",
+      "category": "dungeon-prop",
+      "bytes": 14427,
+      "sha256": "f8b1e23e1e4363633f2946b00a1c97fa8f43cf51e59b9f8b594ec7ba95c1b873"
+    },
+    {
+      "path": "props/dqprop-stairs-down-128.png",
+      "category": "dungeon-prop",
+      "bytes": 18292,
+      "sha256": "77e7a06cf569f5562556606c4486367f3b567bb0920dc6dfe910b1342cc20947"
+    },
+    {
+      "path": "props/dqprop-stairs-up-128.png",
+      "category": "dungeon-prop",
+      "bytes": 17086,
+      "sha256": "53a5c1c44ba7ce198ae202a2d55c720db78dbb6aaa3480ba95b31d1d2dd62229"
+    },
+    {
+      "path": "props/dqprop-wind-barrier-128.png",
+      "category": "dungeon-prop",
+      "bytes": 24077,
+      "sha256": "7a855c4f3936168b62453914d1dae931e34caac3621b392e6ee36bc50a3b4235"
+    },
+    {
+      "path": "ui-overhaul.css",
+      "category": "shell-or-override",
+      "bytes": 30640,
+      "sha256": "02f181c6029528b899b754e860510dc3d7872a9f1a233eaab6f9ebf9e3fb3b33"
+    },
+    {
+      "path": "ui-overhaul.js",
+      "category": "shell-or-override",
+      "bytes": 101634,
+      "sha256": "20d220d9502aa325785192fad9146d7637ee25557539a8126086bcf13226ca69"
+    }
+  ]
+}

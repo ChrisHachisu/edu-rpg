@@ -1,0 +1,534 @@
+{
+  "schema": 1,
+  "family": "regular-monsters",
+  "runtimeBaseline": false,
+  "disposition": "preserved candidates; never hydrate without individual owner approval",
+  "fileCount": 75,
+  "files": [
+    {
+      "path": "public/assets/monsters/monster-ancientSphinx.png",
+      "bytes": 15880,
+      "sha256": "cd40c5de819933bbbe5d6097cc6447139b8010fc48d2e61f7427a78651a8680d",
+      "shippedSha256": "7838f72a0fdd505bcf94ee180428b7a41f17985e400abd91d915a734bc9f45a8",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-ashenGuardian.png",
+      "bytes": 26747,
+      "sha256": "3bc417daf85b92772ab4c07ddfbf2da3d580b1fb4f99cae3436b7634d7d65a7e",
+      "shippedSha256": "7625a10cba697db0167d1e24e0da6a1ea617c152112e17c4cc8d27c3765dbfb6",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-bandit.png",
+      "bytes": 8366,
+      "sha256": "aac69c30684b691565e4c3a01d46209f87c321413fa09d78a778dffc2ea04171",
+      "shippedSha256": "49431537489bdc00a0a836eb82aebe9cd9a1d20e8f6d3d2afa171bd544a2c229",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-banditArcher.png",
+      "bytes": 10101,
+      "sha256": "e35564120cb4c8c272d9d1ecc22b814906eecb531502ddd50043c018c29dd3e9",
+      "shippedSha256": "16c41c6257b1e81bb62a06e0003d722bb7db6b685a2f4c713ca9c3107aee2d33",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-banditLord.png",
+      "bytes": 9351,
+      "sha256": "f368b7ef1d7b31c4ef6cb6af3a051f5318fad894f7faa236c6f6a69b817262db",
+      "shippedSha256": "4aa7324713cb0466c1cf872b6ebeb5fd44b671a914411cba7c467277b363c8ed",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-bat.png",
+      "bytes": 26795,
+      "sha256": "22c6e6e15531e01c3de73178df6b2df0e6484ae8fbb9c187aef675c8ae211f97",
+      "shippedSha256": "ac48f4dea195a35e933e15e9ee897364453faea537cef4f33de5f2e6808ec033",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-blizzardBear.png",
+      "bytes": 23317,
+      "sha256": "9867f81a553c73815e7a375bf4b50079da3bc9debbcd2b10e92961820b6f51c8",
+      "shippedSha256": "3e87dd36235a1e167c508df4ad333b94540eecc0bd0c1c18675f09e93988ce79",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-bruiser.png",
+      "bytes": 12481,
+      "sha256": "d253a4c6c1cf5a62561de9e7c5d2b0f9bb095a48ae80aa8b0d739d7ca18bc5cf",
+      "shippedSha256": "0addb220f6b22bebf188c07dca8bf4c35acd626940b8cdd0f7e7fe70b3038f78",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-bug.png",
+      "bytes": 12036,
+      "sha256": "d8dbc962e7872800fd761ba92cae7576c2e1eb62dbd7d8cd640b53a06a226c52",
+      "shippedSha256": "c966add3051a1b90ba67b6bda9c2799a8fec0ccb563e5ebaf561cd54b5be6390",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-celestialGuardian.png",
+      "bytes": 29301,
+      "sha256": "8aaacbdcf4bce823791882b0bcbd58d513fe529b72828b310e92d891648e73a1",
+      "shippedSha256": "3d1adc7838bf47e9c179d8e18c0305f5980afc4765440115a7956245ee2149e0",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-chimera.png",
+      "bytes": 13898,
+      "sha256": "7d1f0fba9d163554cbe6823841bd505dfefc46a36fdfddfcb9128331461a1524",
+      "shippedSha256": "6383f38238f78da5d65b4da9ffa73bafd10a4cafc42755707c5d56646fae321b",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-cloudWraith.png",
+      "bytes": 13795,
+      "sha256": "bfc22867d670db725f2aa1d2bd59f1bb82fd941fbb7fb4518da5dfab5a28014c",
+      "shippedSha256": "9fa125c1bcdd0411c056665a18410d246e6bc8e9f5035e40dcb0f554f14a14b5",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-coralTitan.png",
+      "bytes": 22089,
+      "sha256": "6497df14f341e48f77d3292efe9d50d151dadce642f97678533ea56524383cf0",
+      "shippedSha256": "c02dc2cb351899c7bf5efff6686905f3674eec452c66d0e2c4ae2775f36645f0",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-crab.png",
+      "bytes": 10856,
+      "sha256": "27f56c8b6a973195e318a1dd42c2564abfc3cc122cfd3efdac453ae8d8391580",
+      "shippedSha256": "d7392feaea030bc6e3f38b01da6e4bd81c4f8df9cfa4c54d3d77fdd14c54c771",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-crystalHydra.png",
+      "bytes": 19682,
+      "sha256": "bbbfb52559d30b1932aef6ec54c7509164e5c9f5bb705f5d31376c862c9e0a48",
+      "shippedSha256": "d6a0063eaf4600bc0b074b81c004680bee9fe3c1b911f6edeaf22012f8776d12",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-darkKnight.png",
+      "bytes": 30363,
+      "sha256": "36722824f80e7216ce06fbb40552f88ffcfa1f672325f91d28ff5517d7f7fd27",
+      "shippedSha256": "81ff2284d5ed38ffd51749ae56e493ec4e54145eaa5468c3d0af10773313f61a",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-darkSorcerer.png",
+      "bytes": 12858,
+      "sha256": "c29634e21c88f85942fd1a1b21a0e6e1f2eef270f8d217a31236f7bbe711171f",
+      "shippedSha256": "7c591fcb0ca83015085ac3b047a86b92924dffe29b2d02fcaed49e7365c933bd",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-demon.png",
+      "bytes": 13443,
+      "sha256": "fee6095128d8a4a725cb0fc165b8668a2189df302bdb7d83b92450b909d70e00",
+      "shippedSha256": "0abf2b69fea8e9de1fc717fc865d158c58aa2bf414599b235305526d165f2adb",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-demonKing.png",
+      "bytes": 28648,
+      "sha256": "ec232456fc8e92dc91731730b77ec637f20550177a7f2d2d38b3426ca4a8b59f",
+      "shippedSha256": "7e296fff3eb88fadc84878afdd3e3d348bdf13b0b08ce81c84da936d88b57102",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-dragon.png",
+      "bytes": 25218,
+      "sha256": "a88f4552b9ffd55fe3e3a7696580211b4e833db58a4b70604dc823912870374a",
+      "shippedSha256": "91aa9bbca6b8cdf84be07b9d905706df78bcc4ec308b9537320fa53d5ad6ebe6",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-fireElemental.png",
+      "bytes": 13389,
+      "sha256": "6e564dd0aad5f25d9b4eb0332ec44a11bafd4626a5aba0c1c8af35a64e41c2f5",
+      "shippedSha256": "b7797de117ff76ce255cd43302c98b1ab005b4b594d0ef39d6a2ce5b51ae8e69",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-flameBat.png",
+      "bytes": 28749,
+      "sha256": "586211e351f0fcf4fadf9ca31d9b44e8d47622199131ec65dc6b46f4e856c3a7",
+      "shippedSha256": "d5604033ef9e86bb9df64b809a8a978946454f88db387c6171a68c4d81738c4f",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-flameTitan.png",
+      "bytes": 17137,
+      "sha256": "e188c2b0018ffd75f34f279ea28aef8e016d5166b2ce849938d40196a249d2ef",
+      "shippedSha256": "f2a3eb027b848a6eba29b0951d2cbb746ab2bd04c1b4bc4add009a72ee6e1fef",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-frostMonarch.png",
+      "bytes": 19464,
+      "sha256": "9c67febeefa5f9808d992a9bcf5a5c27858972d06d4ed06c3a4ab3aeaa2b3988",
+      "shippedSha256": "ddd9f90f94fd4c375e6e834cf871fc2b4db466a6284df5535eb68d122d95f32c",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-frostStalker.png",
+      "bytes": 30716,
+      "sha256": "60b6178fd9f6ac94559808e2897c9ec82622ad0220757a6701b1ab306cfc8bb3",
+      "shippedSha256": "78c3d3ecffb55d11a52d31b0c03330f197d9e0a64353654177304e6f90a1f0f5",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-frostWolf.png",
+      "bytes": 30644,
+      "sha256": "7928641ab4c39dcd47f24678b425f23b63ee44ad9b1029d6a16ce3dc7cb620eb",
+      "shippedSha256": "5cd72c0bb61a8d1f2bc3f4b0b57323d4d6eae1bc0978e8357da0d8096fd89065",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-frozenSkeleton.png",
+      "bytes": 9030,
+      "sha256": "1d4bae291b704872233f082317bee60f6072d0f1d71ddc1ffe3c5adbb6a1d127",
+      "shippedSha256": "1e5bcc9d9aa7589b50774289399e548dcf7b28f7895458d0fedf59dc40571261",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-giantCrab.png",
+      "bytes": 24161,
+      "sha256": "d3f53aeddedccdc34e5c7e5810d0a56efdae4ab529cb1a3b4458fde288453829",
+      "shippedSha256": "be09e82a3b8dbcc9f78bdc81c9a0e38e239d5a80f0b65a8248949bd7a3cefa9b",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-giantToad.png",
+      "bytes": 13643,
+      "sha256": "e70315eda6bc4f1820c0a471a69a6ce68eb2505c98b0cf84549b2bdc3daf0e83",
+      "shippedSha256": "838f1d75e62f4931e116cac096080c6895742134701ec43a4312ad051025f3ac",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-glacialGolem.png",
+      "bytes": 11684,
+      "sha256": "4ca5ab3180597603cf0cdf12e6a7f6adf6572b5f2c0c93ec414b7dba41b10eef",
+      "shippedSha256": "d9dfd9c98582032c6260215f5bc9912607be05e8014988fc0e7e361c5a8603e1",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-golem.png",
+      "bytes": 10535,
+      "sha256": "bf7c5fadf08744022a93f53c63bf62895836b361a330ac480bb255b32239e824",
+      "shippedSha256": "326ef2a28a9edf7c757e9a8942a4570339e554d51892d69810bae5028aa9e240",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-harpy.png",
+      "bytes": 17947,
+      "sha256": "e343a1ef6bae6e3757cb8ba9b11769509f21b5bb57dedcc0a6911cf4ff89d711",
+      "shippedSha256": "a9d7b0fc29549ba077314e953a1f62fff0040ace602ea34cbfca01782b5f7381",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-iceSprite.png",
+      "bytes": 16705,
+      "sha256": "5eab659b858d17b707e24b87bf1a7a84b53054f2de150c0963aba3c25bf8d9a5",
+      "shippedSha256": "433e92b28b7eb1fc76c7622993eaf16528fa1e0dbac01d10bf3431dbf34bf30c",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-iceWyrm.png",
+      "bytes": 26809,
+      "sha256": "224ef80ebde131e93276fbc17a8ae0dbd71282bc9c6c13aa335ddd2944f7b371",
+      "shippedSha256": "04c244b320b77b1d6af8c6bd8c4f78e12fe1369603c7ea3f93ac0f6535072a35",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-jellyfish.png",
+      "bytes": 13270,
+      "sha256": "cb3e4c2bcd7a5d1befbf2d93560ed6ae570bbe935f7e75f4d9d77a4d11ea3d66",
+      "shippedSha256": "75ac55705be60e307c8b43e06b431bfec18ba4edb94e6fec4093e74cdbbad437",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-knifeSneak.png",
+      "bytes": 5408,
+      "sha256": "7386fd890375ec912266a5ead509243831bb1d724d25fb9f5304e7f2106c6586",
+      "shippedSha256": "6c41435f8bd10f0c148e7ac8962f390c231cc2acda66ef4ac5d0bd4f904b86d7",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-knight.png",
+      "bytes": 28574,
+      "sha256": "7fd756dc69dae50576a0f5670d7f83c41e6d0a8269f0bfc9b3daa42d7b53edc8",
+      "shippedSha256": "6780a7ec385cd43a30f659b9de3930db80c9fd5f1956fa7260ba4774c979553d",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-kraken.png",
+      "bytes": 17198,
+      "sha256": "9507a6b5a9df0a14a4c39a1368d470effb1fd81c24ec450e1f67b3a5b028b841",
+      "shippedSha256": "f145c51d1c47e7bf16171ad924829ac864eb11706f257fa908a33bc07a7fa072",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-lavaGolem.png",
+      "bytes": 11227,
+      "sha256": "243ce5b288b6648f91a424ecff7573b0b0e781054252379934a9b72837f03f26",
+      "shippedSha256": "b387cce1c063fbc9aa58b4a10f5205bfa3352eda8914c475f8b9608f6491d5dd",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-lavaWyrm.png",
+      "bytes": 27816,
+      "sha256": "e41f5e90742e1edaac520a2e5cec1fafaff88c9a72a1e037ae623c6e0efe8a27",
+      "shippedSha256": "6b8ae22010c419f2f4d1c016338ee39f065238c9f2d12738e2cd118757822721",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-lich.png",
+      "bytes": 18982,
+      "sha256": "b4dc778a38a3d52ac3a768a089677126245d39a734f516fc57380bed10653ccf",
+      "shippedSha256": "091d19f5965138f623784a9e327481044cab37859bb02e5dc8b1773aca3daabe",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-lizard.png",
+      "bytes": 14969,
+      "sha256": "ca4e21d01da7f4fd7a6afdce351561a6cb7c504068a009bc65f4725ac501f17d",
+      "shippedSha256": "ca7c1d95f52eb2be960693f834e3c59d10369cdf984c4fbd9d8218f2459830c8",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-magmaBeetleKing.png",
+      "bytes": 25485,
+      "sha256": "e0557ddf0b9643432e90eb4eb5174cb9ee1e99aee9fa83931dbde6c16867a365",
+      "shippedSha256": "0c8cad0010fe4a2bbe89ce903d3750cdf20305c7a00f65fd43f8a936be1edab4",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-magmaSlime.png",
+      "bytes": 13284,
+      "sha256": "1ee7caa0944a9297163b5806fb157ba63e399549ca4694e4b1d8b4ddef677bf8",
+      "shippedSha256": "1243b2794aba7396db8829d6d5ad6a4a788bf2bffcbeed99bff12eec59bccc05",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-merfolk.png",
+      "bytes": 13021,
+      "sha256": "4ced3221cd4bd8efae791f5cc773cffe02174f920979bfa0e26329690826d124",
+      "shippedSha256": "715ba0438033169bba608fe48ad11ff6f4daf63e6cf738dcf4b535851a6889c6",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-mimic.png",
+      "bytes": 11651,
+      "sha256": "b4659d5f4d4d04ac8631072b36dcfb11b080c2c9866c6476d593c38e94d660f2",
+      "shippedSha256": "50b8f809cd9ab2bde268812026b7c997be585ea8647bbd29308940cf38a40b75",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-mosswarden.png",
+      "bytes": 13041,
+      "sha256": "39c7501bee462fdfabdb58e0e29bc14df90ece9bfbd4e2f5093e4ce946c6111a",
+      "shippedSha256": "08f4dccb10018871437384f58fa45ede17fef1c6b7da61b2669ff9010e1da0b1",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-mummy.png",
+      "bytes": 15588,
+      "sha256": "48886e8f2357667baa5d662d387bf01ce34b16560a9da36cdac00f4aed028826",
+      "shippedSha256": "aef084828276f958b73a1a68863e8085b6dbabef12118ccfe1a461bc7ff067b6",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-mushroom.png",
+      "bytes": 8406,
+      "sha256": "10ba3218a38bb51ae25fca033563a17604d73a63f4e163cd56e26a9ef71d5513",
+      "shippedSha256": "2cefb421425579251058b70649e8e0302ca6eb3cd461d1d468a391a346eb0c82",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-nullDevourer.png",
+      "bytes": 26290,
+      "sha256": "5612a438e917485863475336c679b0ad1a09bef563b1be3605a16414fe081536",
+      "shippedSha256": "70899c67d9a80756d0ec37a126ba29c4c5c1c29e34c6e157f438bf53e0c3113e",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-oreColossus.png",
+      "bytes": 19669,
+      "sha256": "4e641f2ac926d9154682d30786c12431f8545d78d4ff649ba8032aa8d904e84a",
+      "shippedSha256": "ef273f588b5c195f94d5a8ee4286145d8aaf0a188a5e34bef26971f99f567c27",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-phantomStag.png",
+      "bytes": 10197,
+      "sha256": "d4f2894ea6612dd605f47a0dd4e3012966c581cf20d5d9941f6e090765a053dd",
+      "shippedSha256": "37249e91d27cbf01272985ff9e81700fa5ad8672ab6be33a91a9e4b11135cd98",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-piranha.png",
+      "bytes": 11422,
+      "sha256": "3ba6c0e8fc4db2db0ae7af89b851aa47526078b08b1b9503bc33bb4aae703e98",
+      "shippedSha256": "2b57e850b114a7dba3125ffedd35cea1e484348cb34c77e333a291904e698681",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-rabbit.png",
+      "bytes": 25068,
+      "sha256": "4b1a3f5563f09ea93138a508a1796d7a03e8ed7a110ad063c2c825a4871009d0",
+      "shippedSha256": "3c60403ead93d0eb537cf4702777d3e6e09ceba24c799ea0fcf1dd4e34c014e6",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-sandGolem.png",
+      "bytes": 11602,
+      "sha256": "176163c21d7687006201261b02a31b5e622a7e40a9d424da3590700a7149acc2",
+      "shippedSha256": "68633136a0903d187430f79a6f5a660ead606faa5a43a6e195a487c0c3844f3a",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-sandSerpentQueen.png",
+      "bytes": 17868,
+      "sha256": "12826919e7885f39bc4cb5d30d95bf695a6c0899fe2b95b82da542e45368856d",
+      "shippedSha256": "663beb121e594dea853d3236737464f1b8b3ee4b77c560610f62d9de4e494192",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-sandWraith.png",
+      "bytes": 14905,
+      "sha256": "9f4b63f0637cc7c43ced3cdee659f4551f72845b8bba3a568140471b1ffee99e",
+      "shippedSha256": "6da25457ef81a106c97e753d1960c9d17cdd937f0d6fb74a9595fcd700525b54",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-seaStar.png",
+      "bytes": 14938,
+      "sha256": "3d88a6035df48fe0414a334408953a14b122c2bcf372c26bb730112804eec6df",
+      "shippedSha256": "95ec60371dc352886b83e7e1ca3a66c82c2d910dd3b1e5dc158c7921ebc00738",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-serpent.png",
+      "bytes": 18433,
+      "sha256": "8d3fd2a69e7226d04e1b387f2ef99abe728d3505435f2b80824653380c7d0cf0",
+      "shippedSha256": "4740c1f9071093c4f14948ef4993d5153b3008f6b7c123480879b559200ca51d",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-shadow.png",
+      "bytes": 16344,
+      "sha256": "61285660cd38fff1a5a2dc3c1f11052852ddfdfd6eed82bacc0dd0da13cb3e9d",
+      "shippedSha256": "40c24562b6b10ee472072943d87cf5bc24fb2432b5335b4a81e9180a2db41307",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-shadowWisp.png",
+      "bytes": 11712,
+      "sha256": "ddb967af3496fc6a62216e3f7cf5f607b5e72b1a91e2c2cb70778a18d379f5fc",
+      "shippedSha256": "f161dfd7714db1f85fe0b968d8d29e0f829b18b36aabdef75b64821327193ed7",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-skeleton.png",
+      "bytes": 9410,
+      "sha256": "6bb0ca183126d6db241ca29c367f4c6dba925d228840e1a546c3f089241ce6ee",
+      "shippedSha256": "085aee0bf7db244cd92dbaaea23706351545ab447afbdfaa072883e3248bdf09",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-slime.png",
+      "bytes": 11536,
+      "sha256": "9a852527efaf4a7362c7fcc519829d71dee453a89b8537aaefdd326d38d4cd59",
+      "shippedSha256": "9d9d3787ee8a1c37a1a9af0de630866aa309a24b9d02f0de805599fdb60c2397",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-spider.png",
+      "bytes": 10439,
+      "sha256": "07e0da662fcd098b5b07079848761ab29ff71cfb1a0138da337b5c6f45a6c67c",
+      "shippedSha256": "8b3039e6d72fb999054226bd7118fb52b42ceef2aeca13d8810929cf4cbd4fd8",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-stormHarpy.png",
+      "bytes": 19382,
+      "sha256": "bbc47493fba0543f5686085928f749275c993691387212b89526d50b6cd55090",
+      "shippedSha256": "44c5994306a066540f24d0f21276733f7777724e383b990674d92918e7d75c13",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-stormRaptor.png",
+      "bytes": 18660,
+      "sha256": "fad2b544455be38676386fddac04ea77a9022200107200e9b81605dbe1508320",
+      "shippedSha256": "479f4b7cfa94c779d952280151c6a74930e5726b11c5de69baa19b4df123b3f3",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-stormSentinel.png",
+      "bytes": 22579,
+      "sha256": "e453191fb82823bd86bad20d25439a5af251fae8aca26be1bfd48c3ad023d141",
+      "shippedSha256": "a174caea42699b640c21095d95d8d2e28ffbd9e32cc62161bc22d8c2060cf8b2",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-swordWraith.png",
+      "bytes": 23241,
+      "sha256": "ba7e5fdce07ddc19a584c4506422a58f70eb875c154f7259f2bbf14372e82c86",
+      "shippedSha256": "cf80f6491306735391f4c9c8f7eebbf035a49b2431c65b440d5372cbe8900f90",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-templeGuard.png",
+      "bytes": 10273,
+      "sha256": "1da0220f8420e3aed46dce985372e6e6821313a8f44f5cddddf31ac7f77a0179",
+      "shippedSha256": "3ee052e06cf300365618f7d1741d177a19d367fc99244ae0ebbfb50123dfde39",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-thornvineLurker.png",
+      "bytes": 13231,
+      "sha256": "5bc6a8372933816c4f15ed773c4ae35ef466ea296f4ac0df4dcaec0e5e3e20cf",
+      "shippedSha256": "1216b51d04295ee12283b02c985dab8b62e9a29dcb7b5d30cc7de662a3401e32",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-voidShade.png",
+      "bytes": 12287,
+      "sha256": "d0ececcae81154c4b1116cfe32ff934c15b0923bfbee0eaafe334d1a63570aab",
+      "shippedSha256": "b42b075a599f25e307f1367b3393531ae73483055b0ecdc5d8d6ce598714efd7",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-warGeneralMalachar.png",
+      "bytes": 22853,
+      "sha256": "a1ed8b449bb917e64e0517810775ac8fbb4f2919eeb05f647ed2a00d20d3c6f2",
+      "shippedSha256": "2672673834fe1bee34fb0a8124cbf6951b32887bfd6f2d534bf64f3c249e12bc",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-wolf.png",
+      "bytes": 27111,
+      "sha256": "c9c96c126086cda2f344a94cbbb607c9cacee1458cf1dfc94d22c19aad5a982e",
+      "shippedSha256": "629f8db8d925184673977f87310b2ea83164f994d38a487e617a3cc7635b6dba",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-wraith.png",
+      "bytes": 12561,
+      "sha256": "17584f992419b98e7025e7cb541307f950f13633964afcb254741d236c48a3ff",
+      "shippedSha256": "b516af25f770cde7ffa98d7164310c522cdd780509ea69ded0dc29fac5e28bf8",
+      "status": "unapproved-candidate"
+    },
+    {
+      "path": "public/assets/monsters/monster-wyvern.png",
+      "bytes": 14094,
+      "sha256": "a979acaa918543acf2f5a1f0491efddce3cd6bbf7f6f417fe762791581420354",
+      "shippedSha256": "c728af1e9dfc55c89e754aa7a47959708e2a46eba3768ee31a14f2e2cc07ea6b",
+      "status": "unapproved-candidate"
+    }
+  ]
+}

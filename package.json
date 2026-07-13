@@ -5,15 +5,24 @@
   "description": "Educational RPG game for kids - learn while you quest!",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview"
+    "dev": "python3 scripts/runtime_baseline.py blocked-build",
+    "build": "python3 scripts/runtime_baseline.py blocked-build",
+    "hydrate": "python3 scripts/runtime_baseline.py hydrate --output dist",
+    "verify:runtime": "python3 scripts/runtime_baseline.py verify --input dist",
+    "verify:baseline": "python3 scripts/runtime_baseline.py verify",
+    "verify:candidates": "python3 scripts/runtime_baseline.py verify-candidates",
+    "test:runtime-tools": "python3 scripts/test_runtime_baseline.py",
+    "smoke:runtime": "python3 scripts/smoke_static_runtime.py --input dist",
+    "preview": "python3 -m http.server 5174 --directory dist"
   },
   "dependencies": {
+    "@capacitor/core": "^7.6.7",
+    "@capacitor/ios": "^7.6.7",
     "phaser": "^3.90.0",
     "tone": "^15.1.22"
   },
   "devDependencies": {
+    "@capacitor/cli": "^7.6.7",
     "typescript": "^5.7.0",
     "vite": "^6.0.0"
   }
