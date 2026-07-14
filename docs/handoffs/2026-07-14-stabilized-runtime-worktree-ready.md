@@ -4,7 +4,7 @@ type: handoff
 status: worktree-ready
 project: edu-rpg
 branch: codex/stabilize-runtime-baseline
-head: 8775c0e
+runtime_head: 8775c0e
 ---
 
 # Stabilized runtime — selective map rebuild ready
@@ -12,9 +12,10 @@ head: 8775c0e
 ## Outcome
 
 Quest of Knowledge now has a committed, reproducible local runtime baseline.
-Use `codex/stabilize-runtime-baseline` at `8775c0e` as the base for new task
-worktrees. Do not base map-engine work on `main` until this branch is deliberately
-integrated.
+Use the tip of `codex/stabilize-runtime-baseline` as the base for new task
+worktrees. Runtime implementation is pinned by `8775c0e`; the branch tip also
+contains this handoff. Do not base map-engine work on `main` until this branch is
+deliberately integrated.
 
 Nothing was pushed, deployed, uploaded, or changed on `gh-pages` or App Store
 Connect. The original dirty workspace and its ignored 4.99 MB `dist/` remain
