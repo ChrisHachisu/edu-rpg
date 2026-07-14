@@ -1,12 +1,37 @@
 ---
 date: 2026-07-14
 type: architecture
-status: locked-prerequisite
+status: completed-local
 project: edu-rpg
 milestone: canonical-runtime-and-worktree-readiness
 ---
 
 # Code, data, and worktree stabilization plan
+
+## Completion record — 2026-07-14
+
+The local stabilization gate is complete on branch
+`codex/stabilize-runtime-baseline` at commit `8775c0e` (baseline commit
+`c7aaaeb`). Nothing was pushed or deployed.
+
+- The exact 257-file shipped closure is tracked under
+  `runtime/baselines/v1.17.1-ipad-hud-walk/` with per-file hashes.
+- The protected bundle remains 4,987,581 bytes with SHA-256
+  `a56026574b42168985b353e4cee824562716af83f92d03f408df04eac9127381`.
+- All 75 divergent public regular monsters are preserved and separately frozen
+  as unapproved candidates; hydration never copies them.
+- Vite was removed from the dependency tree, the legacy build scripts fail
+  closed, and a clean install reports zero npm audit vulnerabilities.
+- A detached external worktree independently hydrated, verified, served, loaded
+  save schema v4, moved the hero, transitioned town→overworld, and entered a
+  battle with zero runtime errors.
+- That worktree synchronized Capacitor, installed Pods, built an isolated iPhone
+  simulator app, verified the app-embedded runtime manifest and bundle hash,
+  launched successfully, and rendered the title screen without a crash.
+
+The branch is now a safe base for bounded task worktrees. The long-lived main
+workspace remains intentionally dirty and its old ignored `dist/` was not
+deleted or overwritten.
 
 ## Decision
 
@@ -220,7 +245,7 @@ Do not start parallel map-engine implementation while any of these remain:
 
 ## Authorization boundary
 
-This plan authorizes preparation and verification of the stabilization work. It
-does not authorize committing, pushing, deploying, altering `gh-pages`, deleting
-the existing linked worktree, or choosing between divergent asset candidates
-without owner review.
+The owner authorized finishing stabilization, including local commits. That
+authorization did not include pushing, deploying, altering `gh-pages`, deleting
+the existing linked worktree, or choosing between divergent asset candidates.
+Those actions remain out of scope without a new explicit instruction.
