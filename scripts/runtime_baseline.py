@@ -26,6 +26,78 @@ BUNDLE_SIZE = 4_987_581
 BUNDLE_SHA256 = "a56026574b42168985b353e4cee824562716af83f92d03f408df04eac9127381"
 EXPECTED_FILE_COUNT = 257
 EXPECTED_TOTAL_BYTES = 42_683_025
+ACT1_OVERLAY_FILES = {
+    "index.html": (14_519, "58128b83daf4f9efc6c7dfabc2c9543c5f8325e72f5de017603a1fb428f592da"),
+    # 2026-08-01, owner-authorised: dq-tiles.js now splats AI-generated terrain MATERIALS through
+    # its existing continuous-world-pixel drawTerrain, plus a ridged mountain height field,
+    # varied shore character and landmark sites derived from mapData. Fallback-safe -- until the
+    # textures decode, and permanently if they 404, it renders the original palette ramps.
+    # Method: docs/MATERIAL-RENDERER-METHOD.md
+    # 2026-08-03, owner-authorised: dq-tiles.js additionally overrides scene.mapData for the three
+    # Act-1 dungeons whose generated floor count matches the bundle (coastalReef, sunkenCellar,
+    # whisperingWoodsCave) and blits the matching pre-rendered floor art in place of the procedural
+    # dungeon draw. mapData is the engine's collision seam -- canMove() indexes it directly -- so
+    # layout and collision move together. Fallback-safe: no JSON, no override; no floor art, the
+    # procedural draw still runs. mistyGrotto and crystalCave are deliberately out of scope.
+    # Same day, follow-up: the override now also replays persisted progress (looted chest 4->8,
+    # defeated boss 7->10/12) onto the swapped map. The engine does that replay inside loadMap and
+    # our swap lands after it, so without this a looted chest returned closed on every re-entry.
+    "dq-tiles.js": (171_118, "d3eafb86b6b76c16b15cce54f3bd02c92817a5ee2bd5e58c7fd9e4cf155a56ea"),
+    # 2026-08-03, owner direction ("please redo the collision setting based on what i created (my
+    # paint)"): the Act-1 collision plate is now generated from the OWNER'S PAINTED TERRAIN
+    # (owner-terrain.json acts.1 + continent-macro-g3/land-mask.npy) instead of the generated
+    # semantic map the owner rejected on 29 Jul, so collision matches the art it had drifted 46.9%
+    # away from. The eight destination doors moved to the owner's placement, and the override now
+    # also patches checkTransition + getCompassTarget so the bundle's frozen connection and compass
+    # tables follow them. Source: scripts/act1_owner_paint_plate.mjs.
+    # It also reinstates itself: leaving a town hands the overworld a NEW mapData array under the
+    # same reskin key, so the plate was never re-applied and every door reverted (found in-game).
+    "act1-world-map.js": (47_925, "1e4d0580b11749231d772ead4e71a3c4cc7018c651ac225e50b1fdd62c56320f"),
+}
+# The four tiling terrain materials the renderer above samples. New runtime paths as of
+# 2026-08-01; pinned by hash rather than merely tolerated, because they are shipped art and a
+# silent swap would change every frame of the overworld.
+ACT1_MATERIAL_FILES = {
+    "materials/mat-forest.png": (
+        603_397, "e2bd92984bf2b0f927b039bbf3047419ddafb764f2ea822ae9c039c5ca38a71a"),
+    "materials/mat-grass.png": (
+        660_235, "9fa43b08867a4344ebc36dd581e806bf2d833ee4ca924f1ce7f517a57ca3fb76"),
+    "materials/mat-rock.png": (
+        674_501, "e2573d08fb2eac036b0888795f1e6a1787e35d9acd7f44cbff80fb5e6e7518ae"),
+    "materials/mat-water.png": (
+        451_430, "78b08a4cfda57d9a7d763e95c461ad5d2c0bbe442b4135e9df95cdaf8339dcc7"),
+}
+# The semantic floor data the dungeon override reads, plus the baked floor renders it blits. Pinned
+# by hash for the same reason as the terrain materials above: these ARE the shipped dungeon layouts
+# and art, and a silent swap would change both what the player sees AND where the walls are. Only
+# floors that have a render appear here; every other floor falls back to the procedural draw until
+# it is rendered and pinned. New runtime paths as of 2026-08-03.
+ACT1_DUNGEON_FILES = {
+    "act1-dungeon-floors.json": (
+        42_110, "c0743856ac2e294289a2574d8e3f05e14ed4693633869e457b842072735e731f"),
+    "act1-dungeon-art/sunkenCellar-f3-props.png": (
+        4_260_080, "761df1141d40fb08a36a77ed046d92860cb8ea4ba0f13d1019158bd6fefd218b"),
+}
+ACT1_HIFI_RUNTIME = (
+    ROOT / "design" / "review" / "overworld-art-blueprint" / "act-by-act" / "act1" / "runtime-v2"
+)
+ACT1_R26_RUNTIME = ACT1_HIFI_RUNTIME / "act1-final-art-geometry-r26" / "runtime"
+# 2026-08-03, owner-authorised ("bank the art now"): the r26 chunk art was re-baked at 48 px/tile
+# from the MATERIAL renderer -- i.e. from the owner's painted terrain -- replacing the 16 px/tile
+# chunks derived from candidate-art.png, the painterly plate the owner rejected on 29 Jul. Three
+# consequences are pinned here:
+#   * base is WebP, not PNG;
+#   * the `occlusion` layer is gone, replaced by `canopy`, an ALPHA-ONLY mask (23 kB for all 30
+#     chunks against 7.9 MB) that the runtime cuts out of the base it already holds;
+#   * `source` names scripts/render_material_map.py instead of candidate-art.png.
+# Total payload 18.0 MB against 19 MB, at three times the linear resolution.
+# NOTE: scripts/promote_act1_r26_runtime.py is SUPERSEDED by this and must not be run -- it
+# regenerates the 16 px chunks from candidate-art.png and would overwrite the bake.
+ACT1_HIFI_MANIFEST_SHA256 = "0c773b18de2956450d7bb7b4716dc66d39fd196bb0c133b15d977da7db2e5988"
+# The chunk layers the shipped tree must carry, read out of the locked manifest above. `occlusion`
+# was retired with the 48 px bake; a stale entry here would make the gate demand a file that no
+# longer exists and reject the one that replaced it.
+ACT1_HIFI_CHUNK_LAYERS = ("base", "water", "canopy")
 
 BACKGROUND_KEYS = {
     "boss_celestial_guardian",
@@ -252,6 +324,98 @@ def verify(root: Path, allowed_extra: frozenset[str] = frozenset()) -> None:
     semantic_checks(root, found)
 
 
+def verify_act1_overlay(root: Path, allowed_extra: frozenset[str] = frozenset()) -> None:
+    """Verify the immutable runtime plus the three reviewed Act 1 additive changes."""
+    manifest = load_manifest()
+    expected_entries = {entry["path"]: entry for entry in manifest["files"]}
+    all_found = files_under(root)
+    hifi_manifest_path = ACT1_R26_RUNTIME / "manifest.json"
+    if sha256(hifi_manifest_path) != ACT1_HIFI_MANIFEST_SHA256:
+        raise BaselineError("locked Act 1 high-fidelity manifest identity changed")
+    hifi_manifest = json.loads(hifi_manifest_path.read_text(encoding="utf-8"))
+    if hifi_manifest.get("revision") != 11:
+        raise BaselineError("locked Act 1 high-fidelity manifest revision changed")
+    hifi_files = {
+        "index.html": "runtime.html",
+        "manifest.json": "manifest.json",
+        "walkable-regions-r26.json": "walkable-regions-v1.json",
+        "walkable-polygons.js": "walkable-polygons.js",
+        "walkable-route-state.js": "walkable-route-state.js",
+        "path-corridor.js": "path-corridor.js",
+        "hero-g3/hero-act1-female-walk-8x3-64-g3.png":
+            "hero-g3/hero-act1-female-walk-8x3-64-g3.png",
+    }
+    for chunk in hifi_manifest["chunks"]:
+        for key in ACT1_HIFI_CHUNK_LAYERS:
+            hifi_files[chunk[key]] = chunk[key]
+    expected_hifi_paths = {f"act1-hifi/{target}" for target in hifi_files.values()}
+    expected_hifi_paths.add("act1-hifi/adapter.js")
+    expected_paths = (set(expected_entries) | {"act1-world-map.js"} | expected_hifi_paths
+                      | set(ACT1_MATERIAL_FILES) | set(ACT1_DUNGEON_FILES))
+    extra_paths = set(all_found) - expected_paths
+    if expected_paths - set(all_found) or not extra_paths.issubset(allowed_extra):
+        missing = sorted(expected_paths - set(all_found))
+        extra = sorted(set(all_found) - expected_paths)
+        raise BaselineError(f"Act 1 runtime path set mismatch; missing={missing}, extra={extra}")
+
+    for relative_path, expected in expected_entries.items():
+        if relative_path in ACT1_OVERLAY_FILES:
+            expected_size, expected_hash = ACT1_OVERLAY_FILES[relative_path]
+        else:
+            expected_size, expected_hash = expected["bytes"], expected["sha256"]
+        path = all_found[relative_path]
+        if path.stat().st_size != expected_size or sha256(path) != expected_hash:
+            raise BaselineError(f"Act 1 runtime identity mismatch: {relative_path}")
+
+    for relative_path, (mat_size, mat_hash) in ACT1_MATERIAL_FILES.items():
+        mat = all_found[relative_path]
+        if mat.stat().st_size != mat_size or sha256(mat) != mat_hash:
+            raise BaselineError(f"Act 1 terrain material identity mismatch: {relative_path}")
+        public_mat = ROOT / "public" / relative_path
+        if not public_mat.is_file() or public_mat.read_bytes() != mat.read_bytes():
+            raise BaselineError(f"public/dist material twins differ: {relative_path}")
+
+    for relative_path, (dng_size, dng_hash) in ACT1_DUNGEON_FILES.items():
+        dng = all_found[relative_path]
+        if dng.stat().st_size != dng_size or sha256(dng) != dng_hash:
+            raise BaselineError(f"Act 1 dungeon identity mismatch: {relative_path}")
+        public_dng = ROOT / "public" / relative_path
+        if not public_dng.is_file() or public_dng.read_bytes() != dng.read_bytes():
+            raise BaselineError(f"public/dist dungeon twins differ: {relative_path}")
+
+    overlay_path = all_found["act1-world-map.js"]
+    overlay_size, overlay_hash = ACT1_OVERLAY_FILES["act1-world-map.js"]
+    if overlay_path.stat().st_size != overlay_size or sha256(overlay_path) != overlay_hash:
+        raise BaselineError("Act 1 runtime identity mismatch: act1-world-map.js")
+
+    for source_relative, target_relative in hifi_files.items():
+        source_root = ACT1_R26_RUNTIME if (
+            source_relative in {"manifest.json", "walkable-regions-r26.json"}
+            or source_relative.startswith("chunks/")
+        ) else ACT1_HIFI_RUNTIME
+        source = source_root / source_relative
+        target = all_found[f"act1-hifi/{target_relative}"]
+        if source.read_bytes() != target.read_bytes():
+            raise BaselineError(f"Act 1 high-fidelity runtime identity mismatch: {target_relative}")
+    public_adapter = ROOT / "public" / "act1-hifi" / "adapter.js"
+    dist_adapter = all_found["act1-hifi/adapter.js"]
+    if not public_adapter.is_file() or public_adapter.read_bytes() != dist_adapter.read_bytes():
+        raise BaselineError("public/dist Act 1 high-fidelity adapter twins differ")
+
+    semantic_checks(root, all_found)
+    html = all_found["index.html"].read_text(encoding="utf-8")
+    if "act1-world-map.js" not in html or html.index("act1-world-map.js") > html.index("dq-tiles.js"):
+        raise BaselineError("Act 1 override must load before dq-tiles.js")
+    if "act1-hifi/adapter.js" not in html or html.index("act1-hifi/adapter.js") < html.index("hero-override.js"):
+        raise BaselineError("Act 1 high-fidelity adapter must load after preserved overrides")
+    public_overlay = ROOT / "public" / "act1-world-map.js"
+    public_dq = ROOT / "public" / "dq-tiles.js"
+    if not public_overlay.is_file() or public_overlay.read_bytes() != overlay_path.read_bytes():
+        raise BaselineError("public/dist Act 1 override twins differ")
+    if not public_dq.is_file() or public_dq.read_bytes() != all_found["dq-tiles.js"].read_bytes():
+        raise BaselineError("public/dist dq-tiles twins differ")
+
+
 def hydrate(output: Path) -> None:
     verify(BASELINE)
     if output.exists() or output.is_symlink():
@@ -346,6 +510,15 @@ def main() -> int:
         action="store_true",
         help="allow only Capacitor's generated cordova.js and cordova_plugins.js extras",
     )
+    verify_act1_parser = subparsers.add_parser(
+        "verify-act1", help="verify the preserved runtime plus the locked Act 1 additive overlay"
+    )
+    verify_act1_parser.add_argument("--input", type=Path, default=ROOT / "dist")
+    verify_act1_parser.add_argument(
+        "--allow-capacitor-glue",
+        action="store_true",
+        help="allow only Capacitor's generated cordova.js and cordova_plugins.js extras",
+    )
     manifest_parser = subparsers.add_parser("write-manifest", help="lead-only explicit baseline promotion")
     manifest_parser.add_argument("--confirm-profile", required=True)
     subparsers.add_parser("verify-candidates", help="verify the preserved unapproved monster candidates")
@@ -367,6 +540,10 @@ def main() -> int:
             )
             verify(args.input.resolve(), allowed_extra)
             print(f"VERIFY PASS: {args.input.resolve()}")
+        elif args.command == "verify-act1":
+            allowed_extra = frozenset({"cordova.js", "cordova_plugins.js"}) if args.allow_capacitor_glue else frozenset()
+            verify_act1_overlay(args.input.resolve(), allowed_extra)
+            print(f"ACT 1 OVERLAY VERIFY PASS: {args.input.resolve()}")
         elif args.command == "write-manifest":
             write_manifest(args.confirm_profile)
         elif args.command == "verify-candidates":

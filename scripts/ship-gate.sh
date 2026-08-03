@@ -5,8 +5,8 @@ ROOT=${1:?repo root required}
 ROOT=$(CDPATH= cd -- "$ROOT" && pwd -P)
 cd "$ROOT"
 
-python3 scripts/runtime_baseline.py verify --input dist
-python3 scripts/runtime_baseline.py verify --input ios/App/App/public --allow-capacitor-glue
+python3 scripts/runtime_baseline.py verify-act1 --input dist
+python3 scripts/runtime_baseline.py verify-act1 --input ios/App/App/public --allow-capacitor-glue
 
 for FILE in dq-tiles.js hero-override.js ui-overhaul.js ui-overhaul.css; do
   cmp "public/$FILE" "dist/$FILE"

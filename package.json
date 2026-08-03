@@ -8,11 +8,14 @@
     "dev": "python3 scripts/runtime_baseline.py blocked-build",
     "build": "python3 scripts/runtime_baseline.py blocked-build",
     "hydrate": "python3 scripts/runtime_baseline.py hydrate --output dist",
-    "verify:runtime": "python3 scripts/runtime_baseline.py verify --input dist",
+    "promote:act1-r26": "python3 scripts/promote_act1_r26_runtime.py && node scripts/export_act1_preserved_cutover.mjs",
+    "verify:runtime": "python3 scripts/runtime_baseline.py verify-act1 --input dist",
     "verify:baseline": "python3 scripts/runtime_baseline.py verify",
     "verify:candidates": "python3 scripts/runtime_baseline.py verify-candidates",
     "test:runtime-tools": "python3 scripts/test_runtime_baseline.py",
-    "smoke:runtime": "python3 scripts/smoke_static_runtime.py --input dist",
+    "test:act1-r26": "python3 scripts/test_act1_r26_runtime_pack.py && node design/review/overworld-art-blueprint/act-by-act/act1/runtime-v2/act1-final-art-geometry-r26/test-final.mjs",
+    "test:map-engine": "tsc -p tsconfig.map-engine.json && node .map-engine-build/semanticMap.test.js && node .map-engine-build/act1Overworld.test.js && node .map-engine-build/mapEngineShell.test.js && node .map-engine-build/retainedLaterGateBehavior.test.js && node src/map-engine/shippedOverworldBaselineDqReplay.mjs --check && node scripts/extract_act1_runtime_snapshot.mjs --check && node scripts/export_act1_runtime_override.mjs --check && node scripts/test_act1_runtime_override.mjs",
+    "smoke:runtime": "python3 scripts/smoke_static_runtime.py --input dist --act1-overlay",
     "preview": "python3 -m http.server 5174 --directory dist"
   },
   "dependencies": {

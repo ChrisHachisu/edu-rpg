@@ -27,9 +27,14 @@ PROBES = {
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--input", type=Path, required=True)
+    parser.add_argument("--act1-overlay", action="store_true")
     args = parser.parse_args()
     root = args.input.resolve()
-    runtime_baseline.verify(root)
+    if args.act1_overlay:
+        runtime_baseline.verify_act1_overlay(root)
+        PROBES["act1-world-map.js"] = b"__ACT1_WORLD_MAP__"
+    else:
+        runtime_baseline.verify(root)
 
     handler = functools.partial(http.server.SimpleHTTPRequestHandler, directory=str(root))
     server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), handler)

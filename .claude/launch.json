@@ -3,9 +3,26 @@
   "configurations": [
     {
       "name": "edu-rpg",
-      "runtimeExecutable": "npx",
-      "runtimeArgs": ["serve", "-s", "dist", "--no-clipboard"],
+      "runtimeExecutable": "python3",
+      "runtimeArgs": [
+        "scripts/serve_dist.py",
+        "--port",
+        "5174",
+        "--dir",
+        "dist"
+      ],
       "port": 5174,
+      "autoPort": true
+    },
+    {
+      "name": "planner",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "5180"
+      ],
+      "port": 5180,
       "autoPort": true
     }
   ]

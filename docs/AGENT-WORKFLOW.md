@@ -97,7 +97,7 @@ At the boundary, write a handoff of at most 2 KB with:
 - exact next batch and nothing else.
 
 Start a fresh task using only that handoff, the anchors, `AGENTS.md`, and the
-specific manifest slice. A roster such as `design/npc-sprites-v2/prompt-manifest.json`
+specific manifest slice. A roster such as `edu-rpg/design/npc-sprites-v2/prompt-manifest.json`
 must be sharded; never paste or regenerate the entire manifest in every brief.
 
 ## 5. Integrate and verify

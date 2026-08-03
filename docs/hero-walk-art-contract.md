@@ -1,4 +1,10 @@
-# Hero Walk Sheet — Art Contract
+# Hero Walk Sheet — Legacy Installed 48×48 Art Contract
+
+> **SUPERSEDED FOR NEW PRODUCTION ART (owner, 2026-07-14).** The installed v17
+> hero remains useful as behavioral and identity evidence, but future field hero
+> and NPC assets use the approved 64×64 native-frame scale and Terrain F-matched
+> detail density in `design/ART-DIRECTION.md`. The 24→48 logical-pixel rules below
+> must not be used to generate the replacement character set.
 
 Spec for authoring a hero walk animation that is faithful to the **locked-v14 hero art**.
 Every number here was measured from the locked files, not estimated.
@@ -145,11 +151,11 @@ foot lift and bob more than feels natural at 48px. Subtlety disappears on this g
 
 ## 7. Acceptance — run the verifier, paste the output
 
-`docs/verify_hero_walk.py` mechanically checks every claim above. A sheet is **not** done until it
+`edu-rpg/docs/verify_hero_walk.py` mechanically checks every claim above. A sheet is **not** done until it
 prints `ALL CHECKS PASSED`.
 
 ```bash
-/usr/bin/python3 edu-rpg/docs/verify_hero_walk.py \
+/usr/bin/python3 edu-rpg/edu-rpg/docs/verify_hero_walk.py \
   --variant openface \
   --logical  path/to/openface-walk-12x24.png \
   --game     path/to/openface-walk-12x48.png
