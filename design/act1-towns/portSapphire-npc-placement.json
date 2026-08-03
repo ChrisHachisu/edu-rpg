@@ -1,0 +1,75 @@
+{
+  "_comment": "Where the four preserved Port Sapphire NPCs stand on the town screen. Cells are in the 65x65 town grid; the coordinate is the character's FEET (bottom-centre), matching scripts/render_town_hero_proof.py. Identities, ids and dialogueKeys are preserved verbatim from the shipped bundle (runtime/baselines/v1.17.1-ipad-hud-walk) and must not be invented. The shipped tile-map runtime's own x/y are 16x16 town coordinates for a different renderer and do not transfer. OWNER 2026-08-01: NPCs are STATIONARY, so only the front-facing (down) frame is ever drawn -- the left/right/up rows in these sheets are unused, and future NPC batches should not commission them. OWNER 2026-08-01: every NPC must be APPROACHABLE FROM THE SOUTH -- the player walks up from below and talks facing north -- so at least two cells directly south of each must be open walkable ground.",
+  "screen": "design/act1-towns/portSapphire-screen-v5-graded.png",
+  "cells": 65,
+  "artPxPerCell": 29,
+  "npcs": [
+    {
+      "id": "healer",
+      "dialogueKey": "npc.healer",
+      "nameKey": "npc.healer.name",
+      "sheet": "design/act1-towns/npc/portSapphire-healer-4x3-64.png",
+      "cell": [
+        38.6,
+        29.9
+      ],
+      "facing": "down",
+      "why": "On the open paving just in front of the herbalist's porch, which fronts the square from the east side. The brief kept this ground clear precisely so she could stand here and be talked to from the lane. Nudged off (40.2, 28.6) on the marker pass: that put her feet in the porch's basin and pots rather than on the clear approach.",
+      "note": "stationary; only the down row of the sheet is used"
+    },
+    {
+      "id": "wisewoman",
+      "dialogueKey": "npc.wisewoman",
+      "nameKey": "npc.wisewoman.name",
+      "sheet": "design/act1-towns/npc/portSapphire-wisewoman-4x3-64.png",
+      "cell": [
+        30.2,
+        27.8
+      ],
+      "facing": "down",
+      "why": "Beside the well in the main square. She is the Act 1 quest-giver (Darkfang -> Crystal Cave), so she sits on the path any player crosses, not tucked away.",
+      "note": "stationary; only the down row of the sheet is used"
+    },
+    {
+      "id": "sailor",
+      "dialogueKey": "npc.sailor",
+      "nameKey": "npc.sailor.name",
+      "sheet": "design/act1-towns/npc/portSapphire-sailor-4x3-64.png",
+      "cell": [
+        19.5,
+        43.5
+      ],
+      "facing": "down",
+      "why": "On the west quay by the jetties, moved 1.7 cells north off the jetty clutter. The old cell (19.8, 45.2) had only 28% open ground one cell south and 3% two cells south -- the player could not stand below him to talk. Here the quay runs 96%/91% open for the two cells south.",
+      "note": "stationary; only the down row of the sheet is used"
+    },
+    {
+      "id": "drake",
+      "dialogueKey": "npc.drake.greeting",
+      "nameKey": "npc.drake.name",
+      "sheet": "design/act1-towns/npc/portSapphire-drake-4x3-64.png",
+      "cell": [
+        31.9,
+        41.5
+      ],
+      "facing": "down",
+      "why": "On the quay at the head of his moored trader, moved 2.9 cells north off the gangplank. The old cell (31.5, 44.4) put the mast and rigging directly south of him. Note the seemingly closer candidates at y~46.5 are the SHIP'S DECK, not the quay -- the paving classifier reads its pale planks as walkable, and standing the captain on his own deck puts water between him and the player.",
+      "note": "stationary; only the down row of the sheet is used"
+    }
+  ],
+  "savePoint": {
+    "cell": [
+      31.4,
+      29
+    ],
+    "why": "Open paving immediately south of the well in the square. The well itself is a HOLE in the derived walkable geometry, so the earlier cell (32.8, 27.6) was inside an obstacle -- caught by testing every anchor with isInsideWalkable() rather than by eye."
+  },
+  "shopCounter": {
+    "cell": [
+      24.5,
+      29.2
+    ],
+    "why": "Open paving directly in front of the shop's full-width counter, under the striped awning, on the square's north-west side. The earlier cell (24.5, 26.5) was inside the shop building. Approachable from the south like every other interaction point."
+  },
+  "walkableGeometry": "public/act1-hifi/portSapphire-walkable-v1.json"
+}

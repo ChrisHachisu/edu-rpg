@@ -1,0 +1,28 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Seed verification save</title>
+<style>body{font:14px system-ui;background:#0b1420;color:#cfe2ef;padding:24px}</style>
+<h1>Seeding verification save</h1>
+<p id="s">…</p>
+<script>
+/*
+  Verification helper, NOT part of the game.
+
+  The desktop browser pane is `visibilityState: hidden`, which kills requestAnimationFrame, so
+  `adapter.js`'s tick() never runs there and the town overlay can never engage. The only place the
+  adapter genuinely runs is a real foregrounded browser -- the iOS simulator -- and there we
+  cannot inject JS. So the save is seeded by a page the simulator can simply visit.
+
+  It writes ONE key, the game's own `edu-rpg-save`, positioning the player on the overworld one
+  step south of Port Sapphire's entrance so the town transition can be walked for real.
+*/
+const SAVE = {"version":4,"timestamp":1785654759442,"player":{"name":"Hero","heroColor":"gray","level":1,"exp":0,"expToNext":17,"hp":40,"maxHp":40,"atk":15,"def":5,"spd":6,"equipment":{"weapon":null,"armor":null,"shield":null,"helmet":null,"accessory":null},"inventory":[{"itemId":"herb","quantity":3}],"gold":50,"position":{"mapId":"overworld","x":130,"y":292,"floor":1},"storyFlags":{},"activeQuests":[],"completedQuests":[],"questProgress":{},"timerEnabled":true,"quizDifficulty":"Hero","locale":"en","soundEnabled":true,"masterVolume":0.7,"kanjiMode":false},"playtime":0,"quizStats":{"totalAsked":0,"totalCorrect":0,"byCategory":{}}};
+try {
+  localStorage.setItem('edu-rpg-save', JSON.stringify(SAVE));
+  document.querySelector('#s').textContent =
+    'Saved at overworld (130, 292). Redirecting to the game…';
+  setTimeout(() => { location.href = '/index.html'; }, 900);
+} catch (e) {
+  document.querySelector('#s').textContent = 'FAILED: ' + e.message;
+}
+</script>

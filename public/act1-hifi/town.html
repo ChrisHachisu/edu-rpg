@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Port Sapphire</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: #02060a; overflow: hidden;
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  /* On iOS a long press -- which is just holding the movement pad -- selects the prompt text and
+     raises the Copy / Look Up callout over the game. Caught on the iPhone 17 simulator; it does
+     not reproduce on desktop, where a long press does nothing. */
+  #stage, #stage * { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+  #dialogue p, #dialogue b { -webkit-user-select: text; user-select: text; }
+  #stage { position: absolute; inset: 0; }
+  canvas { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
+  #boot { position: absolute; inset: 0; z-index: 20; display: grid; place-items: center;
+    background: linear-gradient(145deg, #101c27, #071018 58%, #040911); color: #9fb6c6;
+    font-size: 13px; letter-spacing: .04em; transition: opacity .25s ease; }
+  body[data-ready="true"] #boot { opacity: 0; visibility: hidden; }
+  /* Prompt and dialogue sit in CSS pixels, not world pixels: they must stay legible at any zoom. */
+  /* The prompt is also the ACTION BUTTON. There is no hardware keyboard on a phone, so if the
+     only route into interact() stayed `keydown` the shop, healer, save point and every NPC would
+     be unreachable in the app -- caught on the iPhone 17 simulator. Reusing the prompt rather than
+     adding a second control keeps one affordance that already appears exactly when there is
+     something to interact with and already names it ("Shop" / "Save" / "Talk to ..."). */
+  #prompt { position: absolute; left: 50%; bottom: 22%; transform: translateX(-50%);
+    padding: 10px 20px; border-radius: 999px; background: rgba(8,14,20,.82);
+    border: 1px solid rgba(150,200,230,.34); color: #dcecf7; font-size: 15px;
+    white-space: nowrap; opacity: 0; transition: opacity .12s ease; pointer-events: none;
+    touch-action: manipulation; z-index: 12; }
+  /* Hit-target only while visible: an invisible pill must never swallow a tap meant for the map. */
+  #prompt[data-show="true"] { opacity: 1; pointer-events: auto; }
+  #prompt:active { background: rgba(24,42,58,.92); }
+  #dialogue { position: absolute; left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); z-index: 12;
+    padding: 14px 16px; border-radius: 12px; background: rgba(6,12,18,.94);
+    border: 1px solid rgba(150,200,230,.42); color: #eaf3fa; display: none; }
+  #dialogue[data-open="true"] { display: block; }
+  #dialogue b { display: block; margin-bottom: 6px; color: #ffd98a; font-size: 13px; letter-spacing: .05em; }
+  #dialogue p { margin: 0; font-size: 15px; line-height: 1.45; }
+  #dialogue small { display: block; margin-top: 10px; color: #8fa8b8; font-size: 11px; }
+  /* viewport-fit=cover puts the home indicator over the bottom of the page, and the pad's lower
+     band landed inside it: a drag started there is eaten by the system home / app-switcher
+     gesture instead of moving the hero. Lift the pad clear of the inset. */
+  #pad { position: absolute; left: 18px; bottom: calc(18px + env(safe-area-inset-bottom));
+    width: 128px; height: 128px;
+    border-radius: 50%; background: rgba(10,18,26,.5); border: 1px solid rgba(150,200,230,.22);
+    touch-action: none; }
+  #knob { position: absolute; left: 50%; top: 50%; width: 52px; height: 52px; margin: -26px 0 0 -26px;
+    border-radius: 50%; background: rgba(190,220,240,.42); }
+  #debug { position: absolute; top: 8px; left: 10px; color: #7f98a8; font-size: 11px;
+    font-variant-numeric: tabular-nums; white-space: pre; }
+</style>
+</head>
+<body data-ready="false">
+<div id="stage">
+  <canvas id="world" aria-label="Port Sapphire town"></canvas>
+  <div id="prompt"></div>
+  <div id="dialogue" role="dialog" aria-live="polite"><b></b><p></p><small>Tap to close</small></div>
+  <div id="pad"><div id="knob"></div></div>
+  <div id="debug"></div>
+</div>
+<div id="boot">Loading Port Sapphire…</div>
+<script type="module">
+/*
+  Port Sapphire town runtime.
+
+  This is a SEPARATE runtime from runtime.html and deliberately so. The overworld one streams
+  512px chunks, resolves path corridors and drives route affinity; a town is one painting, one
+  walkable polygon and a handful of stationary NPCs, so none of that machinery applies. What IS
+  shared is everything that must not drift: the collision authority
+  (`walkable-polygons.js`, `designLocks.collisionOwner = "r26-polygon-authority"`), the hero
+  sheet, and the camera/scale numbers, all read from `manifest.json -> designLocks` rather than
+  copied.
+*/
+import { constrainWalkableMovement, isInsideWalkable, validateWalkableGeometry }
+  from './walkable-polygons.js';
+
+const canvas = document.querySelector('#world');
+const ctx = canvas.getContext('2d', { alpha: false });
+const stage = document.querySelector('#stage');
+const promptEl = document.querySelector('#prompt');
+const dialogueEl = document.querySelector('#dialogue');
+const debugEl = document.querySelector('#debug');
+const pad = document.querySelector('#pad');
+const knob = document.querySelector('#knob');
+const search = new URLSearchParams(location.search);
+const townId = search.get('town') || 'portSapphire';
+
+const [locks, town] = await Promise.all([
+  fetch('./manifest.json').then(r => r.json()).then(m => m.designLocks),
+  fetch(`./town/${townId}-town.json`).then(r => {
+    if (!r.ok) throw new Error(`town config ${r.status}`);
+    return r.json();
+  }),
+]);
+const walkable = await fetch(`./${town.walkable}`).then(r => r.json());
+validateWalkableGeometry(walkable);
+
+const loadImage = src => new Promise((resolve, reject) => {
+  const image = new Image();
+  image.onload = () => resolve(image);
+  image.onerror = () => reject(new Error(`asset ${src}`));
+  image.src = src;
+});
+const [screenArt, heroSheet, ...npcSheets] = await Promise.all([
+  loadImage(`./${town.screen}`),
+  loadImage('./hero-g3/hero-act1-female-walk-8x3-64-g3.png'),
+  ...town.npcs.map(n => loadImage(`./${n.sheet}`)),
+]);
+if (heroSheet.naturalWidth !== 192 || heroSheet.naturalHeight !== 512) {
+  throw new Error(`hero sheet is ${heroSheet.naturalWidth}x${heroSheet.naturalHeight}; `
+    + 'expected 192x512. See docs/CANONICAL-ASSETS.md');
+}
+
+// ---- scale, all of it derived from the locks and the town config, none hardcoded -------------
+const CELL_W = town.worldPxPerCell;                    // 16 world px per cell
+const WORLD = town.cells * CELL_W;                     // 1040 world px square
+const HERO_H = locks.heroWorldHeight;                  // 36
+const VIEW_W = locks.cameraWorldWidth;                 // 208
+const SPEED = walkable.movement?.movementSpeed ?? 52;  // world px / second
+const cellToWorld = c => ({ x: c[0] * CELL_W, y: c[1] * CELL_W });
+
+// NPC sheets are 3 cols x 4 rows of 64. The owner made these stationary, so only column 0 /
+// row 0 -- the front-facing idle -- is ever drawn; the other rows exist but are unused.
+const NPC_FRAME = 64;
+const npcs = town.npcs.map((n, i) => ({ ...n, sheet: npcSheets[i], point: cellToWorld(n.cell) }));
+
+const camera = { x: 0, y: 0, zoom: 1 };
+function resize() {
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  const { width, height } = stage.getBoundingClientRect();
+  canvas.width = Math.round(width * dpr);
+  canvas.height = Math.round(height * dpr);
+  camera.zoom = width / VIEW_W;
+}
+addEventListener('resize', () => { resize(); Object.assign(camera, cameraTarget()); });
+resize();
+
+// ---- input ------------------------------------------------------------------------------------
+const held = new Set();
+const KEY = { ArrowLeft:'left', a:'left', A:'left', ArrowRight:'right', d:'right', D:'right',
+              ArrowUp:'up', w:'up', W:'up', ArrowDown:'down', s:'down', S:'down' };
+let touchVec = { x: 0, y: 0 };
+addEventListener('keydown', e => {
+  if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); interact(); return; }
+  const dir = KEY[e.key];
+  if (dir) { held.add(dir); e.preventDefault(); }
+});
+addEventListener('keyup', e => { const d = KEY[e.key]; if (d) held.delete(d); });
+// Touch route into interact(). `pointerdown` rather than `click` so it answers on contact like
+// the pad does, and preventDefault stops the tap becoming a synthetic click / text selection.
+promptEl.addEventListener('pointerdown', e => { e.preventDefault(); interact(); });
+dialogueEl.addEventListener('pointerdown', e => { e.preventDefault(); interact(); });
+let padId = null;
+pad.addEventListener('pointerdown', e => {
+  padId = e.pointerId; pad.setPointerCapture(e.pointerId); movePad(e);
+});
+pad.addEventListener('pointermove', e => { if (e.pointerId === padId) movePad(e); });
+const endPad = e => {
+  if (e.pointerId !== padId) return;
+  padId = null; touchVec = { x: 0, y: 0 }; knob.style.transform = '';
+};
+pad.addEventListener('pointerup', endPad);
+pad.addEventListener('pointercancel', endPad);
+function movePad(e) {
+  const r = pad.getBoundingClientRect();
+  const dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2);
+  const len = Math.hypot(dx, dy), max = r.width / 2 - 12;
+  const k = len > max ? max / len : 1;
+  knob.style.transform = `translate(${dx * k}px, ${dy * k}px)`;
+  touchVec = len < 8 ? { x: 0, y: 0 } : { x: dx / Math.max(len, 1), y: dy / Math.max(len, 1) };
+}
+function inputVector() {
+  if (touchVec.x || touchVec.y) return touchVec;
+  const v = { x: (held.has('right') ? 1 : 0) - (held.has('left') ? 1 : 0),
+              y: (held.has('down') ? 1 : 0) - (held.has('up') ? 1 : 0) };
+  const len = Math.hypot(v.x, v.y);
+  return len ? { x: v.x / len, y: v.y / len } : v;   // normalized, per designLocks.movementInput
+}
+
+// ---- state --------------------------------------------------------------------------------------
+// ?at=cx,cy spawns at an arbitrary cell. This exists for verification -- a backgrounded tab
+// pauses requestAnimationFrame, so the only way to check an interaction is to start beside it --
+// and it doubles as the way to inspect any corner of a town without walking there.
+const atParam = (search.get('at') || '').split(',').map(Number);
+const startCell = atParam.length === 2 && atParam.every(Number.isFinite)
+  ? atParam : town.startCell;
+let position = cellToWorld(startCell);
+if (!isInsideWalkable(position, walkable)) {
+  // Never start outside the collision authority: constrainWalkableMovement throws if you do,
+  // and a town that boots into an exception is worse than one that boots a few cells north.
+  const probe = [...Array(80)].map((_, i) => ({ x: position.x, y: position.y - i * 4 }));
+  const found = probe.find(p => isInsideWalkable(p, walkable));
+  if (!found) throw new Error('start cell is outside the walkable geometry and no fallback found');
+  position = found;
+}
+const state = { facing: 'down', moving: false };
+let talking = null;
+let exitArmed = false;
+let exiting = false;
+
+// Service spots are places, not people: the shop counter under the awning and the save point by
+// the well. The healer is BOTH -- she is an NPC you talk to, and talking to her is the heal
+// flow -- so she is resolved here rather than in nearestNpc().
+const services = [
+  { kind: 'shop', cell: town.shopCounter, label: 'Shop' },
+  { kind: 'save', cell: town.savePoint, label: 'Save' },
+].filter(s => Array.isArray(s.cell));
+function nearestService() {
+  let best = null;
+  for (const svc of services) {
+    const dx = position.x / CELL_W - svc.cell[0], dy = position.y / CELL_W - svc.cell[1];
+    if (Math.abs(dx) > 1.2 || Math.abs(dy) > 1.2) continue;
+    const d = Math.hypot(dx, dy);
+    if (!best || d < best.d) best = { ...svc, d };
+  }
+  return best;
+}
+
+function nearestNpc() {
+  let best = null;
+  for (const npc of npcs) {
+    // Approach is from the SOUTH by owner rule, so the band that counts is below the NPC.
+    const dx = position.x - npc.point.x, dy = position.y - npc.point.y;
+    if (Math.abs(dx) > CELL_W * 1.1 || dy < -CELL_W * 0.35 || dy > CELL_W * 2.1) continue;
+    const d = Math.hypot(dx, dy);
+    if (!best || d < best.d) best = { npc, d };
+  }
+  return best?.npc ?? null;
+}
+function showDialogue(name, text) {
+  dialogueEl.querySelector('b').textContent = name;
+  dialogueEl.querySelector('p').textContent = text;
+  dialogueEl.dataset.open = 'true';
+}
+addEventListener('message', event => {
+  const data = event.data;
+  if (!data || data.type !== 'act1-town-text' || !talking || data.npc !== talking.id) return;
+  showDialogue(data.name || talking.name, data.text || talking.text);
+});
+
+function interact() {
+  if (talking) { talking = null; dialogueEl.dataset.open = 'false'; return; }
+  const npc = nearestNpc();
+  // The healer's heal flow lives in the shipped scene (`handleHealer` owns the full-HP check,
+  // the gold check, the price and the confirm overlay), so she is handed off rather than given
+  // a dialogue box here. Duplicating any of that would fork the economy.
+  const service = npc?.id === 'healer' ? { kind: 'healer' } : nearestService();
+  if (service) {
+    parent.postMessage({ type: 'act1-town-service', town: town.id, kind: service.kind,
+                         shopId: town.shopId }, '*');
+    return;
+  }
+  if (!npc) return;
+  talking = npc;
+  // Paint the bundled English immediately so there is never an empty box, then ask the parent
+  // for the real localised strings. The shipped bundle owns i18n (`window.__QOK.Z`); this frame
+  // must not carry a second, drifting copy of the translations.
+  showDialogue(npc.name || npc.id, npc.text || `(${npc.dialogueKey})`);
+  parent.postMessage({ type: 'act1-town-interact', town: town.id, npc: npc.id,
+                       dialogueKey: npc.dialogueKey, nameKey: npc.nameKey }, '*');
+}
+
+// ---- draw ---------------------------------------------------------------------------------------
+const artScale = WORLD / screenArt.naturalWidth;   // 1885 art px -> 1040 world px
+function drawActor(sheet, point, col, row, cells, time, moving) {
+  const bob = moving ? Math.sin(time / 125 * Math.PI) * 0.55 : Math.sin(time / 400) * 0.18;
+  ctx.save();
+  ctx.translate(point.x, point.y);
+  ctx.fillStyle = 'rgba(0,0,0,.42)';
+  ctx.beginPath(); ctx.ellipse(0, 0, 9, 3.5, 0, 0, Math.PI * 2); ctx.fill();
+  // Same anchor as the overworld: the sheet's foot baseline sits at row 58 of a 64px cell, so
+  // the sprite is lifted by that fraction of its drawn height and the cell coordinate is FEET.
+  ctx.drawImage(sheet, col * cells, row * cells, cells, cells,
+    -HERO_H / 2, -HERO_H * 58 / 64 + bob, HERO_H, HERO_H);
+  ctx.restore();
+}
+function draw(time) {
+  const dpr = Math.min(2, devicePixelRatio || 1);
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.fillStyle = '#02060a';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.setTransform(dpr * camera.zoom, 0, 0, dpr * camera.zoom,
+    -camera.x * dpr * camera.zoom, -camera.y * dpr * camera.zoom);
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(screenArt, 0, 0, screenArt.naturalWidth, screenArt.naturalHeight,
+    0, 0, WORLD, WORLD);
+  // Painter's order by foot Y, so a character in front of a building overlaps correctly.
+  const actors = [...npcs.map(n => ({ y: n.point.y, draw: () =>
+      drawActor(n.sheet, n.point, 0, 0, NPC_FRAME, time, false) })),
+    { y: position.y, draw: () => drawActor(heroSheet, position,
+        state.moving ? [0, 1, 0, 2][Math.floor(time / locks.walkPoseMs) % 4] : 0,
+        { down: 0, left: 2, up: 3, right: 6 }[state.facing], 64, time, state.moving) }];
+  actors.sort((a, b) => a.y - b.y).forEach(a => a.draw());
+}
+
+// The camera target is a function so entry and every later frame agree. Easing in from (0,0)
+// on the first frame is wrong twice: the player would see the town pan in from its corner, and
+// a paused rAF (a backgrounded tab, which is exactly how the verification harness loads this)
+// leaves the view stuck wherever the ease got to.
+function cameraTarget() {
+  const width = canvas.clientWidth, height = canvas.clientHeight;
+  return {
+    x: Math.max(0, Math.min(WORLD - width / camera.zoom, position.x - width / (2 * camera.zoom))),
+    y: Math.max(0, Math.min(WORLD - height / camera.zoom, position.y - height / (2 * camera.zoom))),
+  };
+}
+Object.assign(camera, cameraTarget());
+
+let last = 0;
+function frame(now) {
+  const delta = last === 0 ? 0 : Math.min(0.05, (now - last) / 1000);
+  last = now;
+  const input = talking ? { x: 0, y: 0 } : inputVector();
+  state.moving = Boolean(input.x || input.y);
+  if (state.moving) {
+    state.facing = Math.abs(input.x) > Math.abs(input.y)
+      ? (input.x > 0 ? 'right' : 'left')
+      : (input.y > 0 ? 'down' : 'up');
+    const result = constrainWalkableMovement(position,
+      { x: input.x * SPEED * delta, y: input.y * SPEED * delta }, walkable);
+    position = result.position ?? result;
+  }
+  // ---- leaving the town ---------------------------------------------------------------------
+  // The exit is the north trail mouth the player entered by. It ARMS only once they have walked
+  // clear of it, so spawning on the trail does not immediately bounce them back to the overworld.
+  const exitCell = town.exit?.cell ?? town.startCell;
+  const dyExit = Math.abs(position.y / CELL_W - exitCell[1]);
+  const dxExit = Math.abs(position.x / CELL_W - exitCell[0]);
+  if (!exitArmed && (dyExit > 2.5 || dxExit > 2.5)) exitArmed = true;
+  if (exitArmed && !exiting && dyExit < 1.0 && dxExit < 1.6) {
+    exiting = true;
+    parent.postMessage({ type: 'act1-town-exit', town: town.id,
+                         targetMapId: town.exit?.targetMapId ?? 'overworld',
+                         toX: town.exit?.toX, toY: town.exit?.toY }, '*');
+  }
+
+  const target = cameraTarget();
+  const ease = delta > 0 ? 1 - Math.exp(-delta * 8) : 1;
+  camera.x += (target.x - camera.x) * ease;
+  camera.y += (target.y - camera.y) * ease;
+  draw(now);
+  const nearNpc = talking ? null : nearestNpc();
+  const nearSvc = talking ? null : (nearNpc?.id === 'healer' ? null : nearestService());
+  const label = nearSvc ? nearSvc.label
+    : nearNpc ? (nearNpc.id === 'healer' ? `Talk to ${nearNpc.name || nearNpc.id}`
+                                         : `Talk to ${nearNpc.name || nearNpc.id}`)
+    : null;
+  promptEl.dataset.show = label ? 'true' : 'false';
+  if (label) promptEl.textContent = label;
+  if (debugEl && search.has('debug')) {
+    debugEl.textContent = `cell ${(position.x / CELL_W).toFixed(1)}, ${(position.y / CELL_W).toFixed(1)}`
+      + `\nview ${VIEW_W} world px  hero ${HERO_H}`;
+  }
+  requestAnimationFrame(frame);
+}
+document.body.dataset.ready = 'true';
+document.body.dataset.town = town.id;
+document.body.dataset.heroSheet = `${heroSheet.naturalWidth}x${heroSheet.naturalHeight}`;
+window.__ACT1_TOWN__ = { town, walkable, npcs, state, interact, nearestNpc, nearestService,
+  exitState: () => ({ armed: exitArmed, exiting }),
+  position: () => position, camera, locks };
+parent.postMessage({ type: 'act1-town-ready', town: town.id }, '*');
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

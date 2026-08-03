@@ -1,0 +1,897 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+  <title>Act 1 phone-scale cardinal animation and analog traversal gate</title>
+  <link rel="icon" href="data:,">
+  <style>
+    * { box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: #02060a; }
+    body { display: grid; place-items: center; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; color: #efe8cf; background: radial-gradient(circle, #111a24 0, #02060a 72%); }
+    #phone { container-type: inline-size; position: relative; width: min(100vw, calc(100vh * 852 / 1846)); height: min(100vh, calc(100vw * 1846 / 852)); overflow: hidden; background: #030712; box-shadow: 0 0 0 1px #253142, 0 1.5cqw 5cqw #000; }
+    #system-bar { position: absolute; inset: 0 0 auto; height: 7.04%; z-index: 8; display: flex; align-items: center; justify-content: space-between; padding: 0 9.5cqw 0 10cqw; background: #060a14; color: #fff; font: 700 3.9cqw/1 -apple-system, BlinkMacSystemFont, sans-serif; }
+    #island { position: absolute; left: 50%; top: 1.35cqw; width: 31cqw; height: 5.3cqw; transform: translateX(-50%); border-radius: 4cqw; background: #000; }
+    #system-icons { display: flex; align-items: center; gap: 1.5cqw; font-size: 3cqw; }
+    #battery { padding: .2cqw 1cqw; border: .35cqw solid #cbd3dc; border-radius: 1.1cqw; color: #5edc6f; font-size: 2.5cqw; }
+    #stage { position: absolute; inset: 7.04% 0 10.72%; overflow: hidden; background: #02060a; }
+    canvas { position: absolute; inset: 0; display: block; width: 100%; height: 100%; image-rendering: auto; }
+    #status { position: absolute; left: 1.5cqw; top: 1.2cqw; z-index: 4; width: 38.8cqw; height: 10.4cqw; padding: 1.2cqw 1.5cqw; border: .65cqw solid #c7a44e; border-radius: 2.2cqw; background: rgba(7,15,38,.94); color: #f7f4ed; font: 500 3.25cqw/1.15 -apple-system, BlinkMacSystemFont, sans-serif; box-shadow: inset 0 0 0 .35cqw #3d321d, 0 .4cqw 1cqw #0009; pointer-events: none; text-shadow: 0 .2cqw .35cqw #000; }
+    #hp { display: block; width: 31cqw; height: 1.8cqw; margin-top: 1.2cqw; background: #12d14c; box-shadow: inset 0 0 0 .25cqw #063; }
+    #location { position: absolute; left: 1.5cqw; top: 12.2cqw; z-index: 4; min-width: 40cqw; padding: 1.2cqw 3cqw; border: .45cqw solid #b99a53; border-radius: 1.6cqw; background: rgba(255,246,216,.96); color: #41341e; font: 500 3.15cqw/1.1 -apple-system, BlinkMacSystemFont, sans-serif; box-shadow: 0 .35cqw .9cqw #0008; pointer-events: none; }
+    #pad { position: absolute; right: 4.7cqw; bottom: 2.4cqw; z-index: 5; width: 36cqw; height: 36cqw; border: .5cqw solid rgba(213,181,95,.62); border-radius: 50%; background: rgba(5,10,18,.58); touch-action: none; user-select: none; }
+    #pad::before { content: ''; position: absolute; inset: 14%; border: .25cqw solid rgba(225,199,116,.28); border-radius: 50%; }
+    #pad-knob { position: absolute; left: 50%; top: 50%; width: 11cqw; height: 11cqw; transform: translate(-50%,-50%); border: .45cqw solid #e1c774; border-radius: 50%; background: radial-gradient(circle at 35% 30%, rgba(255,244,194,.28), rgba(216,188,101,.12) 52%, rgba(6,12,20,.5)); box-shadow: 0 .6cqw 1.8cqw #000a, inset 0 0 1.5cqw rgba(255,233,149,.16); pointer-events: none; will-change: transform; }
+    #debug { position: absolute; z-index: 6; right: 1.5cqw; top: 1.5cqw; padding: .8cqw 1cqw; border: .2cqw solid #66f2a0; border-radius: .8cqw; background: #020b0bd9; color: #8ff6b8; font-size: 1.6cqw; }
+    #bottom-hud { position: absolute; inset: auto 0 0; height: 10.72%; z-index: 8; display: grid; grid-template-columns: repeat(4,1fr); border-top: .45cqw solid #ab8e42; background: linear-gradient(#12162d,#080b1b); box-shadow: 0 -1cqw 2cqw #0007; }
+    .nav-item { display: grid; place-content: center; gap: .8cqw; color: #e4def7; text-align: center; font: 600 2.6cqw/1 -apple-system, BlinkMacSystemFont, sans-serif; }
+    .nav-icon { color: #e5c255; font-size: 4.2cqw; font-weight: 400; }
+    #boot-cover { position: absolute; inset: 0; z-index: 20; background: radial-gradient(circle at 22% 68%, #17455a 0, #0d2534 24%, transparent 52%), radial-gradient(circle at 72% 28%, #314226 0, #172719 28%, transparent 58%), linear-gradient(145deg, #101c27, #071018 58%, #040911); opacity: 1; visibility: visible; }
+    #boot-cover::after { content: ''; position: absolute; left: 50%; top: 50%; width: 10cqw; height: 10cqw; transform: translate(-50%,-50%) rotate(45deg); border: .55cqw solid rgba(222,194,104,.78); box-shadow: 0 0 3cqw rgba(222,194,104,.18), inset 0 0 2cqw rgba(5,11,20,.7); }
+    body[data-ready="true"] #boot-cover { opacity: 0; visibility: hidden; transition: opacity 120ms ease-out, visibility 0s linear 120ms; }
+    @media (max-aspect-ratio: 852/1846) { #phone { box-shadow: none; } }
+  </style>
+</head>
+<body>
+  <div id="phone">
+    <header id="system-bar"><span>9:41</span><span id="island"></span><span id="system-icons"><span>▮▮▮</span><span>◉</span><span id="battery">ϟ</span></span></header>
+    <main id="stage">
+      <canvas id="world" aria-label="Playable Act 1 analog traversal phone motion mockup"></canvas>
+      <div id="status">Lv1&nbsp; HP 40/40<span id="hp"></span></div>
+      <div id="location">Port Sapphire</div>
+      <div id="pad" role="group" aria-label="Analog movement pad">
+        <span id="pad-knob"></span>
+      </div>
+      <div id="debug" hidden>PATH DEBUG · H</div>
+    </main>
+    <nav id="bottom-hud" aria-label="Game menu">
+      <span class="nav-item"><span class="nav-icon">♙</span>Status</span>
+      <span class="nav-item"><span class="nav-icon">⚗</span>Items</span>
+      <span class="nav-item"><span class="nav-icon">⚔</span>Equip</span>
+      <span class="nav-item"><span class="nav-icon">⚙</span>Settings</span>
+    </nav>
+    <div id="boot-cover" aria-hidden="true"></div>
+  </div>
+  <script type="module">
+    import {
+      facingForVector,
+      projectPolylineProgress,
+    } from './path-corridor.js';
+    import {
+      constrainWalkableMovement,
+      validateWalkableGeometry,
+    } from './walkable-polygons.js';
+    import {
+      projectRoute,
+      selectActiveRoute,
+      updateForcedAffinity,
+    } from './walkable-route-state.js';
+
+    const canvas = document.querySelector('#world');
+    const ctx = canvas.getContext('2d', { alpha: false });
+    const preservedFxCanvas = document.createElement('canvas');
+    const preservedFxCtx = preservedFxCanvas.getContext('2d');
+    const featheredDetailRegionIds = new Set([
+      'millbrook-west-912-v1',
+      'port-sapphire-pixel-source-912-v1',
+      'greenhollow-hub-912-v1',
+      'sunken-deep-912-v1',
+      'millbrook-outer-west-912-v1',
+      'coastal-reef-912-v2',
+    ]);
+    const status = document.querySelector('#status');
+    const stage = document.querySelector('#stage');
+    const pad = document.querySelector('#pad');
+    const padKnob = document.querySelector('#pad-knob');
+    const debug = document.querySelector('#debug');
+    const [manifest, walkableGeometry] = await Promise.all([
+      fetch('./manifest.json').then(response => {
+        if (!response.ok) throw new Error(`manifest ${response.status}`);
+        return response.json();
+      }),
+      fetch('./walkable-regions-v1.json').then(response => {
+        if (!response.ok) throw new Error(`walkable geometry ${response.status}`);
+        return response.json();
+      }),
+    ]);
+    validateWalkableGeometry(walkableGeometry);
+    const assets = new Map();
+    const detailAssets = new Map();
+    const chunkRecords = new Map();
+    const detailRecords = new Map();
+    let wantedChunkIds = new Set();
+    let wantedDetailIds = new Set();
+    const streamConfig = {
+      preloadMargin: 128,
+      detailPreloadMargin: 64,
+      maxLoadedChunks: 6,
+      maxLoadedDetailRegions: 4,
+      ...manifest.streaming,
+    };
+    const streamStats = {
+      chunkImageRequests: 0,
+      detailImageRequests: 0,
+      chunkLoads: 0,
+      detailLoads: 0,
+      evictions: 0,
+      detailEvictions: 0,
+      peakLoadedChunks: 0,
+      peakLoadedDetailRegions: 0,
+      peakRequiredDetailRegions: 0,
+      loadedChunks: 0,
+      loadedChunkImages: 0,
+      loadedDetailRegions: 0,
+      requiredChunks: 0,
+      requiredDetailRegions: 0,
+      lastRequiredDetailRegionIds: [],
+      peakRequiredDetailRegionIds: [],
+      peakRequiredDetailPosition: null,
+      peakRequiredDetailRouteId: null,
+      peakRequiredDetailProgress: null,
+      visibleAssetMisses: 0,
+      visibleDetailMisses: 0,
+      visibleDetailMissRegionIds: {},
+      residentPixels: 0,
+      peakResidentPixels: 0,
+      peakResidentBytes: 0,
+      frameSamples: 0,
+      maxFrameMs: 0,
+      overBudgetFrames: 0,
+      maxFrameWorkMs: 0,
+      overBudgetFrameWork: 0,
+    };
+    function loadImage(path) {
+      return new Promise((resolve, reject) => {
+        const image = new Image();
+        image.onload = () => resolve(image);
+        image.onerror = () => reject(new Error(`image failed: ${path}`));
+        image.src = path;
+      });
+    }
+    const heroSheet = await loadImage('./hero-g3/hero-act1-female-walk-8x3-64-g3.png');
+
+    function expandedView(view, margin = streamConfig.preloadMargin) {
+      return {
+        left: view.left - margin,
+        top: view.top - margin,
+        right: view.right + margin,
+        bottom: view.bottom + margin,
+      };
+    }
+    function visible(chunk, view) {
+      return chunk.x < view.right && chunk.x + chunk.width > view.left && chunk.y < view.bottom && chunk.y + chunk.height > view.top;
+    }
+    function updateStreamStats() {
+      const loadedChunks = [...chunkRecords.values()].filter(record => record.loaded).length;
+      streamStats.loadedChunks = loadedChunks;
+      streamStats.loadedChunkImages = loadedChunks * 3;
+      streamStats.loadedDetailRegions = [...detailRecords.values()].filter(record => record.loaded).length;
+      streamStats.peakLoadedChunks = Math.max(streamStats.peakLoadedChunks, loadedChunks);
+      streamStats.peakLoadedDetailRegions = Math.max(
+        streamStats.peakLoadedDetailRegions,
+        streamStats.loadedDetailRegions,
+      );
+      const chunkPixels = [...chunkRecords.values()]
+        .filter(record => record.loaded)
+        .reduce((sum, record) => sum + record.chunk.width * record.chunk.height * 3, 0);
+      const detailPixels = [...detailRecords.values()]
+        .filter(record => record.loaded)
+        .reduce((sum, record) => sum + record.paths.reduce((pathSum, path) => {
+          const image = detailAssets.get(path);
+          return pathSum + (image ? image.naturalWidth * image.naturalHeight : 0);
+        }, 0), 0);
+      streamStats.residentPixels = chunkPixels + detailPixels;
+      streamStats.peakResidentPixels = Math.max(streamStats.peakResidentPixels, streamStats.residentPixels);
+      streamStats.peakResidentBytes = streamStats.peakResidentPixels * 4;
+    }
+    function requestChunk(chunk) {
+      const existing = chunkRecords.get(chunk.id);
+      if (existing) return existing;
+      const paths = [chunk.base, chunk.water, chunk.canopy];
+      const record = { chunk, loaded: false, lastNeeded: performance.now() };
+      streamStats.chunkImageRequests += paths.length;
+      record.promise = Promise.all(paths.map(loadImage)).then(images => {
+        paths.forEach((path, index) => assets.set(path, images[index]));
+        record.loaded = true;
+        streamStats.chunkLoads += 1;
+        evictOutsideBudget(
+          chunkRecords,
+          wantedChunkIds,
+          streamConfig.maxLoadedChunks,
+          candidate => {
+            [candidate.chunk.base, candidate.chunk.water, candidate.chunk.canopy].forEach(path => assets.delete(path));
+            canopyCache.delete(candidate.chunk.id);
+            chunkRecords.delete(candidate.chunk.id);
+          },
+        );
+      });
+      record.handled = record.promise.catch(error => console.error(error));
+      chunkRecords.set(chunk.id, record);
+      return record;
+    }
+    function requestDetailRegion(region) {
+      const existing = detailRecords.get(region.id);
+      if (existing) return existing;
+      const paths = [region.base, region.water, region.occlusion].filter(Boolean);
+      const record = { region, paths, loaded: false, lastNeeded: performance.now() };
+      streamStats.detailImageRequests += paths.length;
+      record.promise = Promise.all(paths.map(loadImage)).then(images => {
+        paths.forEach((path, index) => detailAssets.set(path, images[index]));
+        record.loaded = true;
+        streamStats.detailLoads += 1;
+        evictOutsideBudget(
+          detailRecords,
+          wantedDetailIds,
+          Math.min(streamConfig.maxLoadedDetailRegions, wantedDetailIds.size),
+          candidate => {
+            candidate.paths.forEach(path => detailAssets.delete(path));
+            detailRecords.delete(candidate.region.id);
+          },
+          true,
+        );
+      });
+      record.handled = record.promise.catch(error => console.error(error));
+      detailRecords.set(region.id, record);
+      return record;
+    }
+    function evictOutsideBudget(records, wanted, budget, remove, detail = false) {
+      const loaded = [...records.values()].filter(record => record.loaded);
+      const candidates = loaded
+        .filter(record => !wanted.has((record.chunk || record.region).id))
+        .sort((a, b) => a.lastNeeded - b.lastNeeded);
+      while (loaded.length > budget && candidates.length) {
+        const record = candidates.shift();
+        remove(record);
+        loaded.splice(loaded.indexOf(record), 1);
+        if (detail) streamStats.detailEvictions += 1;
+        else streamStats.evictions += 1;
+      }
+      updateStreamStats();
+    }
+    async function ensureVisibleAssets(view, wait = false) {
+      const preloadView = expandedView(view);
+      const neededChunks = manifest.chunks.filter(chunk => visible(chunk, preloadView));
+      wantedChunkIds = new Set(neededChunks.map(chunk => chunk.id));
+      const chunkPromises = neededChunks.map(chunk => {
+        const record = requestChunk(chunk);
+        record.lastNeeded = performance.now();
+        return record.promise;
+      });
+      streamStats.requiredChunks = neededChunks.length;
+
+      const detailView = expandedView(view, streamConfig.detailPreloadMargin);
+      const detailRegions = detailRegionsFor(detailView, 'preload');
+      const detailRegionIds = detailRegions.map(region => region.id);
+      streamStats.lastRequiredDetailRegionIds = detailRegionIds;
+      if (detailRegions.length > streamStats.peakRequiredDetailRegions) {
+        streamStats.peakRequiredDetailRegionIds = detailRegionIds;
+        streamStats.peakRequiredDetailPosition = { ...state.position };
+        streamStats.peakRequiredDetailRouteId = activeCorridor.id;
+        streamStats.peakRequiredDetailProgress = projectPolylineProgress(
+          state.position,
+          activeCorridor.points,
+        );
+      }
+      streamStats.requiredDetailRegions = detailRegions.length;
+      streamStats.peakRequiredDetailRegions = Math.max(
+        streamStats.peakRequiredDetailRegions,
+        detailRegions.length,
+      );
+      if (detailRegions.length > streamConfig.maxLoadedDetailRegions) {
+        throw new Error(
+          `detail-region budget cannot cover ${detailRegions.length} simultaneously visible regions: `
+          + detailRegionIds.join(','),
+        );
+      }
+      wantedDetailIds = new Set(detailRegions.map(region => region.id));
+      const detailPromises = detailRegions.map(region => {
+        const record = requestDetailRegion(region);
+        record.lastNeeded = performance.now();
+        return record.promise;
+      });
+      if (wait) await Promise.all([...chunkPromises, ...detailPromises]);
+
+      evictOutsideBudget(
+        chunkRecords,
+        wantedChunkIds,
+        streamConfig.maxLoadedChunks,
+        record => {
+          [record.chunk.base, record.chunk.water, record.chunk.canopy].forEach(path => assets.delete(path));
+          canopyCache.delete(record.chunk.id);
+          chunkRecords.delete(record.chunk.id);
+        },
+      );
+      evictOutsideBudget(
+        detailRecords,
+        wantedDetailIds,
+        Math.min(streamConfig.maxLoadedDetailRegions, wantedDetailIds.size),
+        record => {
+          record.paths.forEach(path => detailAssets.delete(path));
+          detailRecords.delete(record.region.id);
+        },
+        true,
+      );
+    }
+
+    const controls = manifest.artWarpControls;
+    const pathConstraints = manifest.pathConstraints;
+    const search = new URLSearchParams(location.search);
+    const selectedRouteId = search.get('route') || 'port-sapphire-to-coastal-reef';
+    const selectedRoutes = pathConstraints.corridors.filter(corridor => corridor.id === selectedRouteId);
+    if (selectedRoutes.length !== 1) throw new Error(`unknown or duplicate Act 1 route: ${selectedRouteId}`);
+    let activeCorridor = selectedRoutes[0];
+    const navigationByRoute = new Map(
+      walkableGeometry.semanticRoutes.map(route => [route.id, route]),
+    );
+    const corridorsByRoute = new Map(
+      pathConstraints.corridors.map(corridor => [corridor.id, corridor]),
+    );
+    const paintedRouteSelection = walkableGeometry.semanticRoutes.map(route => ({
+      id: route.id,
+      points: route.waypoints,
+    }));
+    let activeNavigationRoute = navigationByRoute.get(activeCorridor.id);
+    if (!activeNavigationRoute) throw new Error(`missing painted-ground route: ${activeCorridor.id}`);
+    const demoMode = search.get('demo') || (search.has('heroDemo') ? 'traverse' : null);
+    const edgeDemo = search.get('edgeDemo');
+    const probeId = search.get('probe') || 'route-edge';
+    const blockerProbe = activeCorridor.blockerProbes.find(probe => probe.id === probeId)
+      || activeCorridor.blockerProbes.find(probe => probe.id === 'route-edge');
+    const crystalGateOpen = search.get('crystalGate') === 'open';
+    const openGateIds = crystalGateOpen ? ['crystal-cave-seal'] : [];
+    const activeBlockers = walkableGeometry.dynamicBlockers
+      .filter(blocker => !openGateIds.includes(blocker.id));
+    const pathDebug = search.has('pathDebug');
+    debug.hidden = !pathDebug;
+    let demoTargetIndex = 1, demoDirection = 1, demoPauseFrames = 0, demoComplete = false;
+    const held = { up: false, down: false, left: false, right: false };
+    const touch = { x: 0, y: 0, firstInputAt: null };
+    const facingProbe = walkableGeometry.probes.walkable
+      .find(probe => probe.id === 'greenhollow-open-north')?.point || [677, 1957];
+    const requestedStartProbeId = search.get('startProbe');
+    const requestedStartProbe = requestedStartProbeId
+      ? walkableGeometry.probes.walkable.find(probe => probe.id === requestedStartProbeId)
+      : null;
+    if (requestedStartProbeId && !requestedStartProbe) {
+      throw new Error(`unknown walkable start probe: ${requestedStartProbeId}`);
+    }
+    const initialPosition = requestedStartProbe
+      ? { x: requestedStartProbe.point[0], y: requestedStartProbe.point[1] }
+      : demoMode === 'blocker'
+      ? blockerProbe.start
+      : demoMode === 'facings'
+        ? { x: facingProbe[0], y: facingProbe[1] }
+        : activeNavigationRoute.waypoints[0];
+    const state = {
+      position: { x: initialPosition.x, y: initialPosition.y },
+      cell: { ...activeCorridor.semanticCells[0] }, semanticIndex: 0,
+      facing: 'down', commits: 0, moving: false, edgeContacts: 0, endpointVisits: 0,
+      routeSwitches: 0,
+      minSemanticIndex: 0, maxSemanticIndex: 0,
+      firstInputResponseMs: null,
+      facingFrameCounts: { down: 0, left: 0, up: 0, right: 0 },
+    };
+    document.title = `Act 1 traversal — ${activeCorridor.id}`;
+    document.querySelector('#location').textContent = activeCorridor.id
+      .split('-').map(word => word[0].toUpperCase() + word.slice(1)).join(' ');
+    const camera = { x: 0, y: 0, zoom: 1 };
+    const heroWorldSize = 36;
+    // Phone G2 review control. The owner can compare fixed world-space widths
+    // without changing movement speed, hero scale, or HUD geometry.
+    const requestedWorldViewWidth = Number(search.get('worldView'));
+    const reviewWorldViewWidths = [256, 240, 224, 208];
+    const lockedWorldViewWidth = 208;
+    const worldViewWidth = reviewWorldViewWidths.includes(requestedWorldViewWidth)
+      ? requestedWorldViewWidth
+      : lockedWorldViewWidth;
+
+    function viewportSize() {
+      return { width: canvas.clientWidth, height: canvas.clientHeight };
+    }
+
+    function resize() {
+      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      const { width, height } = stage.getBoundingClientRect();
+      canvas.width = Math.round(width * dpr);
+      canvas.height = Math.round(height * dpr);
+      camera.zoom = width / worldViewWidth;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    addEventListener('resize', resize); resize();
+
+    const keyDirection = key => ({ ArrowLeft:'left',a:'left',A:'left',ArrowRight:'right',d:'right',D:'right',ArrowUp:'up',w:'up',W:'up',ArrowDown:'down',s:'down',S:'down' })[key];
+    addEventListener('keydown', event => {
+      if ((event.key === 'h' || event.key === 'H') && !event.repeat) debug.hidden = !debug.hidden;
+      const direction = keyDirection(event.key); if (!direction) return;
+      event.preventDefault();
+      if (!held[direction] && touch.firstInputAt === null) touch.firstInputAt = performance.now();
+      held[direction] = true;
+    });
+    addEventListener('keyup', event => {
+      const direction = keyDirection(event.key); if (!direction) return;
+      held[direction] = false;
+    });
+    function updateTouch(event) {
+      const rect = pad.getBoundingClientRect();
+      const radius = rect.width * .38;
+      const dx = event.clientX - rect.left - rect.width / 2;
+      const dy = event.clientY - rect.top - rect.height / 2;
+      const distance = Math.hypot(dx, dy);
+      const scale = distance > radius ? radius / distance : 1;
+      touch.x = dx * scale / radius; touch.y = dy * scale / radius;
+      padKnob.style.transform = `translate(calc(-50% + ${touch.x * rect.width * .12}px),calc(-50% + ${touch.y * rect.width * .12}px))`;
+    }
+    function releaseTouch(event) {
+      if (event) event.preventDefault();
+      touch.x = 0; touch.y = 0; padKnob.style.transform = 'translate(-50%,-50%)';
+    }
+    pad.addEventListener('pointerdown', event => {
+      event.preventDefault();
+      if (touch.firstInputAt === null) touch.firstInputAt = performance.now();
+      pad.setPointerCapture(event.pointerId); updateTouch(event);
+    });
+    pad.addEventListener('pointermove', event => { if (pad.hasPointerCapture(event.pointerId)) updateTouch(event); });
+    pad.addEventListener('pointerup', releaseTouch); pad.addEventListener('pointercancel', releaseTouch);
+
+    function artPoint(point) {
+      const baseX = (point.x - manifest.semanticBounds[0] + .5) * 16;
+      const baseY = (point.y - manifest.semanticBounds[1] + .5) * 16;
+      let sum = 0, dx = 0, dy = 0;
+      for (const control of controls) {
+        const cx = control.cell[0], cy = control.cell[1];
+        const distance2 = (point.x - cx) ** 2 + (point.y - cy) ** 2;
+        if (distance2 < 1e-8) return { x: control.art[0], y: control.art[1] };
+        const weight = 1 / distance2;
+        const controlBaseX = (cx - manifest.semanticBounds[0] + .5) * 16;
+        const controlBaseY = (cy - manifest.semanticBounds[1] + .5) * 16;
+        dx += (control.art[0] - controlBaseX) * weight;
+        dy += (control.art[1] - controlBaseY) * weight;
+        sum += weight;
+      }
+      return { x: baseX + dx / sum, y: baseY + dy / sum };
+    }
+    function movementPoint() {
+      return { ...state.position };
+    }
+    const unlockedForcedAffinity = new Set();
+    function detailRegionsFor(view, phase) {
+      const progress = projectPolylineProgress(state.position, activeCorridor.points);
+      return (manifest.detailRegions || []).filter(region => {
+        const manifestAffinity = region.routeAffinity?.find(
+          candidate => candidate.routeId === activeCorridor.id,
+        );
+        const geometryAffinity = walkableGeometry.streamingAffinity?.find(candidate => (
+          candidate.regionId === region.id && candidate.routeId === activeCorridor.id
+        ));
+        const affinityKey = `${activeCorridor.id}\u0000${region.id}`;
+        const nearRetainArea = geometryAffinity?.forcePreload
+          ? visible(region, expandedView(view, geometryAffinity.retainMargin))
+          : false;
+        const forcedPreload = phase === 'preload' && geometryAffinity?.forcePreload
+          ? updateForcedAffinity(
+            unlockedForcedAffinity,
+            affinityKey,
+            progress,
+            geometryAffinity,
+            nearRetainArea,
+          )
+          : false;
+        if (!visible(region, view) && !forcedPreload) return false;
+        if (region.routeAffinity?.length && !manifestAffinity && !geometryAffinity) return false;
+        if (!manifestAffinity && !geometryAffinity) return true;
+        const affinity = { ...manifestAffinity, ...geometryAffinity };
+        const minProgress = phase === 'preload'
+          ? affinity.preloadMinProgress
+          : affinity.drawMinProgress ?? affinity.preloadMinProgress;
+        const maxProgress = phase === 'preload'
+          ? affinity.preloadMaxProgress
+          : affinity.drawMaxProgress ?? affinity.preloadMaxProgress;
+        return (forcedPreload || minProgress === undefined || progress >= minProgress)
+          && (maxProgress === undefined || progress <= maxProgress);
+      });
+    }
+    let semanticArtPoints = activeNavigationRoute.waypoints;
+
+    function semanticCellProjection(position) {
+      const projection = projectRoute(position, {
+        id: activeCorridor.id,
+        points: semanticArtPoints,
+      });
+      const routeLength = semanticArtPoints.slice(1).reduce((total, waypoint, index) => (
+        total + Math.hypot(
+          waypoint.x - semanticArtPoints[index].x,
+          waypoint.y - semanticArtPoints[index].y,
+        )
+      ), 0);
+      return {
+        ...projection,
+        progress: projection.distanceAlong / routeLength * (activeCorridor.semanticCells.length - 1),
+      };
+    }
+
+    function demoInput() {
+      if (demoComplete) return { x: 0, y: 0 };
+      if (demoPauseFrames > 0) { demoPauseFrames -= 1; return { x: 0, y: 0 }; }
+      const target = activeNavigationRoute.waypoints[demoTargetIndex];
+      const dx = target.x - state.position.x, dy = target.y - state.position.y;
+      const distance = Math.hypot(dx, dy);
+      if (distance < 4) {
+        state.position = { x: target.x, y: target.y };
+        if (demoTargetIndex === activeNavigationRoute.waypoints.length - 1) {
+          if (demoMode === 'traverse-once') {
+            state.endpointVisits += 1;
+            demoComplete = true;
+            return { x: 0, y: 0 };
+          }
+          demoDirection = -1; state.endpointVisits += 1; demoPauseFrames = 6;
+        } else if (demoTargetIndex === 0) {
+          demoDirection = 1; state.endpointVisits += 1; demoPauseFrames = 6;
+        }
+        demoTargetIndex += demoDirection;
+        return demoInput();
+      }
+      return { x: dx / distance, y: dy / distance };
+    }
+
+    function movementInput() {
+      if (edgeDemo !== null) return edgeDemo === 'west' ? { x: -1, y: 0 } : { x: 1, y: 0 };
+      if (demoMode === 'traverse' || demoMode === 'traverse-once') return demoInput();
+      if (demoMode === 'blocker') return blockerProbe.direction;
+      if (demoMode === 'facings') {
+        const sequence = [
+          { x: 1, y: 0 }, { x: -1, y: 0 },
+          { x: 0, y: 1 }, { x: 0, y: -1 },
+        ];
+        return sequence[Math.floor(performance.now() / 180) % sequence.length];
+      }
+      const x = Number(held.right) - Number(held.left) + touch.x;
+      const y = Number(held.down) - Number(held.up) + touch.y;
+      const length = Math.hypot(x, y);
+      return length ? { x: x / length, y: y / length } : { x: 0, y: 0 };
+    }
+
+    function advance(deltaSeconds) {
+      const input = movementInput();
+      if (touch.firstInputAt !== null && state.firstInputResponseMs === null && Math.hypot(input.x, input.y) > 0) {
+        state.firstInputResponseMs = performance.now() - touch.firstInputAt;
+      }
+      state.facing = facingForVector(input, state.facing);
+      const distance = pathConstraints.movementSpeed * Math.min(.1, deltaSeconds);
+      const requested = { x: input.x * distance, y: input.y * distance };
+      const next = constrainWalkableMovement(
+        state.position,
+        requested,
+        walkableGeometry,
+        { openGateIds },
+      );
+      const moved = Math.hypot(next.x - state.position.x, next.y - state.position.y);
+      state.moving = moved > .01;
+      if (Math.hypot(requested.x, requested.y) - moved > .2) state.edgeContacts += 1;
+      state.position = next;
+
+      if (!demoMode && edgeDemo === null) {
+        const selected = selectActiveRoute(
+          state.position,
+          input,
+          paintedRouteSelection,
+          activeCorridor.id,
+        );
+        if (selected.routeId !== activeCorridor.id) {
+          activeCorridor = corridorsByRoute.get(selected.routeId);
+          activeNavigationRoute = navigationByRoute.get(selected.routeId);
+          if (!activeCorridor || !activeNavigationRoute) {
+            throw new Error(`missing route state for ${selected.routeId}`);
+          }
+          semanticArtPoints = activeNavigationRoute.waypoints;
+          const routeProgress = semanticCellProjection(state.position).progress;
+          state.semanticIndex = Math.max(0, Math.min(
+            activeCorridor.semanticCells.length - 1,
+            Math.round(routeProgress),
+          ));
+          state.cell = { ...activeCorridor.semanticCells[state.semanticIndex] };
+          state.routeSwitches += 1;
+          document.querySelector('#location').textContent = activeCorridor.id
+            .split('-').map(word => word[0].toUpperCase() + word.slice(1)).join(' ');
+          document.body.dataset.activeRouteId = activeCorridor.id;
+          if (window.__ACT1_HIFI_G1__) {
+            window.__ACT1_HIFI_G1__.activeCorridor = activeCorridor;
+            window.__ACT1_HIFI_G1__.activeNavigationRoute = activeNavigationRoute;
+            window.__ACT1_HIFI_G1__.semanticArtPoints = semanticArtPoints;
+          }
+        }
+      }
+
+      const semanticProjection = semanticCellProjection(state.position);
+      if (semanticProjection.distance2 <= 12 ** 2) {
+        const progress = semanticProjection.progress;
+        while (progress >= state.semanticIndex + 1 && state.semanticIndex < activeCorridor.semanticCells.length - 1) {
+          state.semanticIndex += 1; state.cell = { ...activeCorridor.semanticCells[state.semanticIndex] }; state.commits += 1;
+          state.maxSemanticIndex = Math.max(state.maxSemanticIndex, state.semanticIndex);
+        }
+        while (progress <= state.semanticIndex - 1 && state.semanticIndex > 0) {
+          state.semanticIndex -= 1; state.cell = { ...activeCorridor.semanticCells[state.semanticIndex] }; state.commits += 1;
+          state.minSemanticIndex = Math.min(state.minSemanticIndex, state.semanticIndex);
+        }
+      }
+    }
+
+
+    const canopyCache = new Map();
+    function canopyFor(chunk) {
+      const hit = canopyCache.get(chunk.id);
+      if (hit !== undefined) return hit;
+      const base = assets.get(chunk.base), mask = assets.get(chunk.canopy);
+      if (!base || !mask) return null;          // not cached: retry once both have streamed in
+      const cv = document.createElement('canvas');
+      cv.width = base.naturalWidth; cv.height = base.naturalHeight;
+      const cx = cv.getContext('2d');
+      cx.imageSmoothingEnabled = false;
+      cx.drawImage(base, 0, 0);
+      cx.globalCompositeOperation = 'destination-in';
+      cx.drawImage(mask, 0, 0, mask.naturalWidth, mask.naturalHeight, 0, 0, cv.width, cv.height);
+      canopyCache.set(chunk.id, cv);
+      return cv;
+    }
+    function drawLayer(key, view, offsetX = 0, alpha = 1, targetCtx = ctx) {
+      targetCtx.globalAlpha = alpha;
+      for (const chunk of manifest.chunks) if (visible(chunk, view)) {
+        const image = key === 'occlusion' ? canopyFor(chunk) : assets.get(chunk[key]);
+        if (!image) {
+          streamStats.visibleAssetMisses += 1;
+          continue;
+        }
+        const iw = image.naturalWidth ?? image.width;
+        const ih = image.naturalHeight ?? image.height;
+        targetCtx.drawImage(image, 0, 0, iw, ih,
+          chunk.x + offsetX - .35, chunk.y - .35, chunk.width + .7, chunk.height + .7);
+      }
+      targetCtx.globalAlpha = 1;
+    }
+    function drawDetailRegions(key, view, offsetX = 0, alpha = 1) {
+      ctx.globalAlpha = alpha;
+      for (const region of detailRegionsFor(view, 'draw')) {
+        const path = region[key];
+        if (!path) continue;
+        const image = detailAssets.get(path);
+        if (!image) {
+          streamStats.visibleDetailMisses += 1;
+          streamStats.visibleDetailMissRegionIds[region.id]
+            = (streamStats.visibleDetailMissRegionIds[region.id] || 0) + 1;
+          continue;
+        }
+        ctx.drawImage(image, 0, 0, image.naturalWidth, image.naturalHeight,
+          region.x + offsetX - .35, region.y - .35, region.width + .7, region.height + .7);
+      }
+      ctx.globalAlpha = 1;
+    }
+    function drawLayerOutsideDetails(key, view, offsetX = 0, alpha = 1) {
+      const covered = detailRegionsFor(view, 'draw').filter(region =>
+        region[key] && detailAssets.has(region[key]));
+      if (!covered.length) return drawLayer(key, view, offsetX, alpha);
+      const feathered = covered.filter(region => featheredDetailRegionIds.has(region.id));
+      if (!feathered.length) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(0, 0, manifest.source.width, manifest.source.height);
+        for (const region of covered) {
+          const inset = region.featherWorld || 0;
+          ctx.rect(region.x + inset, region.y + inset,
+            region.width - inset * 2, region.height - inset * 2);
+        }
+        ctx.clip('evenodd');
+        drawLayer(key, view, offsetX, alpha);
+        ctx.restore();
+
+        const exclusions = new Map();
+        for (const region of covered) for (const exclusion of region.visualExclusions || []) {
+          if (exclusion.shape !== 'circle') throw new Error(`unsupported visual exclusion: ${exclusion.shape}`);
+          const radius = exclusion.innerRadius + exclusion.featherWorld;
+          exclusions.set(`${exclusion.cx}:${exclusion.cy}:${radius}`, { ...exclusion, radius });
+        }
+        if (!exclusions.size) return;
+        ctx.save();
+        ctx.beginPath();
+        for (const exclusion of exclusions.values()) {
+          ctx.moveTo(exclusion.cx + exclusion.radius, exclusion.cy);
+          ctx.arc(exclusion.cx, exclusion.cy, exclusion.radius, 0, Math.PI * 2);
+        }
+        ctx.clip();
+        drawLayer(key, view, offsetX, alpha);
+        ctx.restore();
+        return;
+      }
+
+      const padding = 5;
+      const fxLeft = Math.floor(view.left) - padding;
+      const fxTop = Math.floor(view.top) - padding;
+      const fxWidth = Math.ceil(view.right - view.left) + padding * 2 + 2;
+      const fxHeight = Math.ceil(view.bottom - view.top) + padding * 2 + 2;
+      if (preservedFxCanvas.width !== fxWidth) preservedFxCanvas.width = fxWidth;
+      if (preservedFxCanvas.height !== fxHeight) preservedFxCanvas.height = fxHeight;
+      preservedFxCtx.setTransform(1, 0, 0, 1, 0, 0);
+      preservedFxCtx.clearRect(0, 0, fxWidth, fxHeight);
+      preservedFxCtx.setTransform(1, 0, 0, 1, -fxLeft, -fxTop);
+      preservedFxCtx.imageSmoothingEnabled = false;
+      drawLayer(key, view, offsetX, alpha, preservedFxCtx);
+
+      preservedFxCtx.globalCompositeOperation = 'destination-out';
+      for (const region of feathered) {
+        const coverage = detailAssets.get(region.base);
+        if (!coverage) continue;
+        preservedFxCtx.drawImage(coverage, 0, 0, coverage.naturalWidth, coverage.naturalHeight,
+          region.x - .35, region.y - .35, region.width + .7, region.height + .7);
+      }
+      preservedFxCtx.fillStyle = '#000';
+      for (const region of covered) if (!feathered.includes(region)) {
+        const inset = region.featherWorld || 0;
+        preservedFxCtx.fillRect(region.x + inset, region.y + inset,
+          region.width - inset * 2, region.height - inset * 2);
+      }
+      preservedFxCtx.globalCompositeOperation = 'source-over';
+
+      const exclusions = new Map();
+      for (const region of covered) for (const exclusion of region.visualExclusions || []) {
+        if (exclusion.shape !== 'circle') throw new Error(`unsupported visual exclusion: ${exclusion.shape}`);
+        const radius = exclusion.innerRadius + exclusion.featherWorld;
+        exclusions.set(`${exclusion.cx}:${exclusion.cy}:${radius}`, { ...exclusion, radius });
+      }
+      if (exclusions.size) {
+        preservedFxCtx.save();
+        preservedFxCtx.beginPath();
+        for (const exclusion of exclusions.values()) {
+          preservedFxCtx.moveTo(exclusion.cx + exclusion.radius, exclusion.cy);
+          preservedFxCtx.arc(exclusion.cx, exclusion.cy, exclusion.radius, 0, Math.PI * 2);
+        }
+        preservedFxCtx.clip();
+        drawLayer(key, view, offsetX, alpha, preservedFxCtx);
+        preservedFxCtx.restore();
+      }
+
+      ctx.save();
+      ctx.globalAlpha = 1;
+      ctx.drawImage(preservedFxCanvas, 0, 0, fxWidth, fxHeight,
+        fxLeft, fxTop, fxWidth, fxHeight);
+      ctx.restore();
+    }
+    function drawPathConstraints() {
+      if (!pathDebug) return;
+      ctx.save(); ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.lineWidth = 2;
+      for (const region of walkableGeometry.regions) {
+        ctx.fillStyle = 'rgba(74,255,155,.12)';
+        ctx.strokeStyle = region.role === 'bridge'
+          ? 'rgba(255,110,226,.9)'
+          : 'rgba(74,255,155,.75)';
+        ctx.beginPath();
+        region.outer.forEach((point, index) => (
+          index ? ctx.lineTo(point.x, point.y) : ctx.moveTo(point.x, point.y)
+        ));
+        ctx.closePath(); ctx.fill(); ctx.stroke();
+        for (const hole of region.holes || []) {
+          ctx.strokeStyle = 'rgba(255,72,72,.9)'; ctx.beginPath();
+          hole.forEach((point, index) => (
+            index ? ctx.lineTo(point.x, point.y) : ctx.moveTo(point.x, point.y)
+          ));
+          ctx.closePath(); ctx.stroke();
+        }
+      }
+      for (const blocker of activeBlockers) {
+        ctx.strokeStyle = 'rgba(255,126,38,.95)'; ctx.lineWidth = 5;
+        ctx.beginPath(); ctx.moveTo(blocker.from.x, blocker.from.y);
+        ctx.lineTo(blocker.to.x, blocker.to.y); ctx.stroke();
+      }
+      ctx.restore();
+    }
+    function drawHero(point, time) {
+      const frame = state.moving ? [0, 1, 0, 2][Math.floor(time / 125) % 4] : 0;
+      // The authored north row (4) clips the top of the hero at its 64px cell
+      // boundary. The complete northwest source row is the nearest intact
+      // upward-facing pose and keeps the full silhouette visible.
+      const row = { down: 0, left: 2, up: 3, right: 6 }[state.facing];
+      if (row === undefined) throw new Error(`non-cardinal runtime facing selected: ${state.facing}`);
+      state.facingFrameCounts[state.facing] += 1;
+      const bob = state.moving ? Math.sin(time / 125 * Math.PI) * .55 : Math.sin(time / 400) * .18;
+      ctx.save(); ctx.translate(point.x, point.y);
+      ctx.fillStyle = 'rgba(0,0,0,.42)'; ctx.beginPath(); ctx.ellipse(0, 18, 9, 3.5, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.drawImage(heroSheet, frame * 64, row * 64, 64, 64,
+        -heroWorldSize / 2, 18 - heroWorldSize * 58 / 64 + bob, heroWorldSize, heroWorldSize);
+      ctx.restore();
+    }
+
+    let last = 0;
+    function frame(now) {
+      const workStartedAt = performance.now();
+      const frameMs = last === 0 ? 0 : now - last;
+      const delta = frameMs / 1000; last = now;
+      if (frameMs > 0 && document.body.dataset.ready === 'true') {
+        streamStats.frameSamples += 1;
+        streamStats.maxFrameMs = Math.max(streamStats.maxFrameMs, frameMs);
+        if (frameMs > 34) streamStats.overBudgetFrames += 1;
+      }
+      advance(delta);
+      const hero = movementPoint();
+      const { width, height } = viewportSize();
+      const targetX = hero.x - width / (2 * camera.zoom), targetY = hero.y - height / (2 * camera.zoom) + 40;
+      const ease = 1 - Math.exp(-delta * 8);
+      camera.x += (targetX - camera.x) * ease; camera.y += (targetY - camera.y) * ease;
+      const view = { left: camera.x, top: camera.y, right: camera.x + width / camera.zoom, bottom: camera.y + height / camera.zoom };
+      ensureVisibleAssets(view);
+      ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = '#02060a'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+      const dpr = Math.min(2, devicePixelRatio || 1);
+      ctx.setTransform(dpr * camera.zoom, 0, 0, dpr * camera.zoom, -camera.x * dpr * camera.zoom, -camera.y * dpr * camera.zoom);
+      ctx.imageSmoothingEnabled = false;
+      drawLayer('base', view);
+      drawDetailRegions('base', view);
+      const ambientOffset = Math.sin(now / 420) * .25;
+      drawLayerOutsideDetails('occlusion', view, ambientOffset, .055);
+      drawDetailRegions('occlusion', view, ambientOffset, .055);
+      ctx.globalCompositeOperation = 'screen';
+      const waterOffset = Math.sin(now / 420) * 2.4;
+      const waterAlpha = .28 + Math.sin(now / 400) * .10;
+      drawLayerOutsideDetails('water', view, waterOffset, waterAlpha);
+      drawDetailRegions('water', view, waterOffset, waterAlpha);
+      ctx.globalCompositeOperation = 'source-over';
+      drawPathConstraints();
+      drawLayerOutsideDetails('occlusion', view, 0, 1);
+      drawDetailRegions('occlusion', view, 0, 1);
+      drawHero(hero, now);
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      status.dataset.commits = String(state.commits);
+      status.dataset.edgeContacts = String(state.edgeContacts);
+      status.dataset.endpointVisits = String(state.endpointVisits);
+      status.dataset.semanticIndex = String(state.semanticIndex);
+      status.dataset.minSemanticIndex = String(state.minSemanticIndex);
+      status.dataset.maxSemanticIndex = String(state.maxSemanticIndex);
+      status.dataset.x = state.position.x.toFixed(2);
+      status.dataset.y = state.position.y.toFixed(2);
+      status.dataset.facing = state.facing;
+      status.dataset.facingFrameCounts = JSON.stringify(state.facingFrameCounts);
+      status.dataset.firstInputResponseMs = state.firstInputResponseMs === null
+        ? ''
+        : state.firstInputResponseMs.toFixed(2);
+      status.dataset.routeId = activeCorridor.id;
+      status.dataset.routeSwitches = String(state.routeSwitches);
+      status.dataset.cameraZoom = camera.zoom.toFixed(4);
+      status.dataset.cameraX = camera.x.toFixed(2);
+      status.dataset.cameraY = camera.y.toFixed(2);
+      status.dataset.viewportWidth = width.toFixed(0);
+      status.dataset.viewportHeight = height.toFixed(0);
+      status.dataset.loadedChunks = String(streamStats.loadedChunks);
+      status.dataset.requiredChunks = String(streamStats.requiredChunks);
+      status.dataset.chunkEvictions = String(streamStats.evictions);
+      status.dataset.loadedDetailRegions = String(streamStats.loadedDetailRegions);
+      if (document.body.dataset.ready === 'true') {
+        const workMs = performance.now() - workStartedAt;
+        streamStats.maxFrameWorkMs = Math.max(streamStats.maxFrameWorkMs, workMs);
+        if (workMs > 34) streamStats.overBudgetFrameWork += 1;
+      }
+      requestAnimationFrame(frame);
+    }
+    const start = movementPoint(), initialViewport = viewportSize();
+    camera.x = start.x - initialViewport.width / (2 * camera.zoom);
+    camera.y = start.y - initialViewport.height / (2 * camera.zoom) + 40;
+    const initialView = {
+      left: camera.x,
+      top: camera.y,
+      right: camera.x + initialViewport.width / camera.zoom,
+      bottom: camera.y + initialViewport.height / camera.zoom,
+    };
+    await ensureVisibleAssets(initialView, true);
+    document.body.dataset.ready = 'true';
+    document.body.dataset.phoneFrame = '852x1846';
+    document.body.dataset.worldViewWidth = String(worldViewWidth);
+    document.body.dataset.heroSheet = `${heroSheet.naturalWidth}x${heroSheet.naturalHeight}`;
+    document.body.dataset.heroRuntimeDirections = '4';
+    document.body.dataset.walkPoseMs = '125';
+    document.body.dataset.activeRouteId = activeCorridor.id;
+    window.__ACT1_HIFI_G1__ = {
+      manifest, state, artPoint, movementPoint, camera, heroSheet, heroWorldSize,
+      pathConstraints, walkableGeometry, activeCorridor, activeNavigationRoute,
+      activeBlockers, openGateIds, semanticArtPoints, touch,
+      streamConfig, streamStats, ensureVisibleAssets,
+      assetsReady: true,
+    };
+    last = performance.now();
+    requestAnimationFrame(frame);
+  </script>
+</body>
+</html>

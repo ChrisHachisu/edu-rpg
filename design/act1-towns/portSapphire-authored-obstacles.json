@@ -1,0 +1,13 @@
+{
+  "_comment": "Obstacles AUTHORED against the painting, merged into the derived geometry by scripts/derive_town_walkable.py. This exists because a handful of large props cannot be derived: the well's rim is real cobble -- the same stone, the same colour, with open cobble all around it -- so no colour, texture or local-density test separates it from the square, and tightening the derivation to catch it only buys well coverage by eroding open ground. That is the same reason walkable-regions-v1.json says the overworld's own curves were 'fitted once to visible walkable ground' with the mask as evidence only. Coordinates are ART pixels on portSapphire-screen-v5-graded.png (1885x1885, 29 art px/cell); the script converts to world pixels.",
+  "obstacles": [
+    {
+      "id": "well",
+      "kind": "town-prop",
+      "shape": "circle",
+      "centerArt": [945, 803],
+      "radiusArt": 36,
+      "why": "Measured radially from the well's centre: paving coverage runs 0% at r=0, 33% at r=9, 17% at r=18, 36% at r=27, 49% at r=33 and only reaches 72% at r=39. The structure therefore ends at about r=36. Owner flagged it twice; the derivation reached 74% coverage and stalled on the lit rim."
+    }
+  ]
+}

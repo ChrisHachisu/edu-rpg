@@ -1,0 +1,493 @@
+{
+ "id": "portSapphire",
+ "nameKey": "map.portSapphire",
+ "kind": "town",
+ "pattern": "harbour",
+ "seed": 20260731,
+ "width": 28,
+ "height": 20,
+ "coast": [
+  16,
+  16,
+  16,
+  17,
+  17,
+  17,
+  17,
+  18,
+  18,
+  18,
+  18,
+  18,
+  18,
+  18,
+  17,
+  17,
+  17,
+  17,
+  17,
+  17,
+  17,
+  17,
+  17,
+  16,
+  16,
+  16,
+  16,
+  16
+ ],
+ "quayDepth": 3,
+ "lanes": {
+  "west": {
+   "14": 4,
+   "13": 4,
+   "12": 4,
+   "11": 3,
+   "10": 3,
+   "9": 3,
+   "8": 3,
+   "7": 3,
+   "6": 2,
+   "5": 3,
+   "4": 2
+  },
+  "north": {
+   "15": 12,
+   "14": 12,
+   "13": 13,
+   "12": 14,
+   "11": 13,
+   "10": 14,
+   "9": 14,
+   "8": 14,
+   "7": 14,
+   "6": 14,
+   "5": 14,
+   "4": 14,
+   "3": 13,
+   "2": 13,
+   "1": 13
+  },
+  "east": {
+   "14": 21,
+   "13": 21,
+   "12": 21,
+   "11": 21,
+   "10": 21,
+   "9": 21,
+   "8": 21,
+   "7": 21,
+   "6": 21,
+   "5": 21,
+   "4": 21
+  }
+ },
+ "squares": {
+  "west": [
+   4,
+   3
+  ],
+  "east": [
+   22,
+   3
+  ]
+ },
+ "jettyX": [
+  23,
+  24
+ ],
+ "gates": [
+  {
+   "id": "north",
+   "x": 13,
+   "y": 0
+  },
+  {
+   "id": "north",
+   "x": 14,
+   "y": 0
+  },
+  {
+   "id": "west",
+   "x": 0,
+   "y": 14
+  },
+  {
+   "id": "east",
+   "x": 27,
+   "y": 14
+  }
+ ],
+ "connections": [
+  {
+   "gate": "north",
+   "targetMap": "overworld",
+   "fromX": 13,
+   "fromY": 0
+  },
+  {
+   "gate": "north",
+   "targetMap": "overworld",
+   "fromX": 14,
+   "fromY": 0
+  },
+  {
+   "gate": "west",
+   "targetMap": "overworld",
+   "fromX": 0,
+   "fromY": 14
+  },
+  {
+   "gate": "east",
+   "targetMap": "overworld",
+   "fromX": 27,
+   "fromY": 14
+  }
+ ],
+ "shopId": "portSapphire",
+ "shopItems": [
+  "herb",
+  "potion",
+  "smokeBomb",
+  "bronzeSword",
+  "ironSword",
+  "bronzeArmor",
+  "leatherArmor",
+  "ironShield",
+  "leatherCap",
+  "ironHelm"
+ ],
+ "shopCounter": {
+  "x": 24,
+  "y": 12,
+  "standX": 24,
+  "standY": 13,
+  "dir": "up"
+ },
+ "healerPrice": 8,
+ "savePoint": {
+  "x": 12,
+  "y": 15
+ },
+ "npcs": [
+  {
+   "id": "healer",
+   "dialogueKey": "npc.healer",
+   "affinity": "well square",
+   "x": 4,
+   "y": 2
+  },
+  {
+   "id": "sailor",
+   "dialogueKey": "npc.sailor",
+   "affinity": "jetty foot",
+   "x": 23,
+   "y": 16
+  },
+  {
+   "id": "wisewoman",
+   "dialogueKey": "npc.wisewoman",
+   "affinity": "inland lane",
+   "x": 21,
+   "y": 9
+  },
+  {
+   "id": "drake",
+   "dialogueKey": "npc.drake.greeting",
+   "affinity": "cargo stack",
+   "x": 20,
+   "y": 14
+  }
+ ],
+ "props": [
+  {
+   "kind": "well",
+   "x": 4,
+   "y": 3
+  },
+  {
+   "kind": "crate",
+   "x": 24,
+   "y": 19
+  },
+  {
+   "kind": "mooringPost",
+   "x": 22,
+   "y": 17
+  },
+  {
+   "kind": "mooringPost",
+   "x": 25,
+   "y": 16
+  },
+  {
+   "kind": "boat",
+   "x": 17,
+   "y": 19
+  },
+  {
+   "kind": "boat",
+   "x": 20,
+   "y": 19
+  },
+  {
+   "kind": "boat",
+   "x": 26,
+   "y": 18
+  },
+  {
+   "kind": "cargoCrate",
+   "x": 19,
+   "y": 15
+  },
+  {
+   "kind": "cargoCrate",
+   "x": 20,
+   "y": 15
+  },
+  {
+   "kind": "dryingNet",
+   "x": 9,
+   "y": 16
+  },
+  {
+   "kind": "dryingNet",
+   "x": 12,
+   "y": 16
+  }
+ ],
+ "plots": [
+  {
+   "x": 6,
+   "w": 4,
+   "wallY": 12,
+   "doorX": 8,
+   "depth": 5,
+   "setback": 1,
+   "face": "south",
+   "yard": [
+    [
+     6,
+     13
+    ],
+    [
+     7,
+     13
+    ],
+    [
+     7,
+     14
+    ],
+    [
+     8,
+     13
+    ],
+    [
+     8,
+     14
+    ],
+    [
+     9,
+     13
+    ],
+    [
+     9,
+     14
+    ]
+   ]
+  },
+  {
+   "x": 23,
+   "w": 3,
+   "wallY": 12,
+   "doorX": 23,
+   "depth": 5,
+   "setback": 0,
+   "face": "south",
+   "yard": []
+  },
+  {
+   "y": 5,
+   "h": 3,
+   "wallX": 5,
+   "doorY": 5,
+   "depth": 5,
+   "setback": 0,
+   "face": "east",
+   "yard": []
+  },
+  {
+   "y": 1,
+   "h": 3,
+   "wallX": 11,
+   "doorY": 3,
+   "depth": 4,
+   "setback": 1,
+   "face": "west",
+   "yard": [
+    [
+     12,
+     1
+    ],
+    [
+     12,
+     2
+    ],
+    [
+     12,
+     3
+    ]
+   ]
+  },
+  {
+   "y": 5,
+   "h": 4,
+   "wallX": 12,
+   "doorY": 7,
+   "depth": 3,
+   "setback": 1,
+   "face": "west",
+   "yard": [
+    [
+     13,
+     5
+    ],
+    [
+     13,
+     6
+    ],
+    [
+     13,
+     7
+    ],
+    [
+     13,
+     8
+    ]
+   ]
+  },
+  {
+   "y": 10,
+   "h": 3,
+   "wallX": 12,
+   "doorY": 12,
+   "depth": 2,
+   "setback": 0,
+   "face": "west",
+   "yard": []
+  },
+  {
+   "y": 1,
+   "h": 3,
+   "wallX": 17,
+   "doorY": 1,
+   "depth": 2,
+   "setback": 1,
+   "face": "east",
+   "yard": [
+    [
+     15,
+     1
+    ],
+    [
+     16,
+     1
+    ],
+    [
+     15,
+     2
+    ],
+    [
+     16,
+     2
+    ],
+    [
+     16,
+     3
+    ]
+   ]
+  },
+  {
+   "y": 5,
+   "h": 3,
+   "wallX": 17,
+   "doorY": 6,
+   "depth": 3,
+   "setback": 1,
+   "face": "east",
+   "yard": [
+    [
+     16,
+     5
+    ],
+    [
+     16,
+     6
+    ],
+    [
+     16,
+     7
+    ]
+   ]
+  },
+  {
+   "y": 9,
+   "h": 4,
+   "wallX": 16,
+   "doorY": 12,
+   "depth": 4,
+   "setback": 0,
+   "face": "east",
+   "yard": []
+  },
+  {
+   "y": 5,
+   "h": 3,
+   "wallX": 24,
+   "doorY": 6,
+   "depth": 3,
+   "setback": 1,
+   "face": "east",
+   "yard": [
+    [
+     23,
+     5
+    ],
+    [
+     23,
+     6
+    ],
+    [
+     23,
+     7
+    ]
+   ]
+  }
+ ],
+ "hedgedCells": 31,
+ "rows": [
+  "#############EE#############",
+  "#,,,,,,#^^^H,==,,D^,,,,,,###",
+  "#......,^^^H,==,,H^......,##",
+  "#......,^^^D,===,H^......,##",
+  "#......,#####,==,#,......,##",
+  "#,===D^^^^^^H,==,H^^,==,H^^#",
+  "#,===H^^^^^^H,==,D^^,==,D^^#",
+  "##,==H^^^^^^D,==,H^^,==,H^^#",
+  "##,==,^^^^^^H,==,###,==^^^##",
+  "##,==,^^^^###,==H^^^,==^^^##",
+  "##,==,^^^^#^H===H^^^,==^^^##",
+  "##,===^^^^#^H===H^^^,==AAA##",
+  "#,,,==HHDH#^D===D^^^,==DCW,#",
+  "#==,==,,,,#,===,,,,,,======#",
+  "E======,,,,,===============E",
+  "#===========S==============#",
+  "~~~====================..~~~",
+  "~~~~~~~=======~~~~~~~~~..~~~",
+  "~~~~~~~~~~~~~~~~~~~~~~~..~~~",
+  "~~~~~~~~~~~~~~~~~~~~~~~..~~~"
+ ],
+ "validation": [
+  "ok"
+ ]
+}
