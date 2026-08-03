@@ -33,3 +33,6 @@ design/review/overworld-art-blueprint/act-by-act/act1/runtime-v2/*
 !design/review/overworld-art-blueprint/act-by-act/act1/runtime-v2/act1-final-art-geometry-r26/
 design/continent-terrain-class-method/owner-terrain/
 scripts/__pycache__/
+
+# xcodebuild derived data from scripts/run-ios.sh
+.ios-build/

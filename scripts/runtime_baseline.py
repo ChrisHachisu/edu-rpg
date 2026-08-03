@@ -78,6 +78,36 @@ ACT1_DUNGEON_FILES = {
     "act1-dungeon-art/sunkenCellar-f3-props.png": (
         4_260_080, "761df1141d40fb08a36a77ed046d92860cb8ea4ba0f13d1019158bd6fefd218b"),
 }
+# 2026-08-03, owner-authorised: the Port Sapphire town screen. `adapter.js` is gated to TOWNS
+# ONLY, so this surface is what the overlay actually raises; the overworld stays on the shipped
+# tile runtime. Pinned by hash for the same reason as the dungeon floors above -- the walkable
+# JSON IS the collision, so a silent swap moves the walls, and the screen PNG is the ground the
+# collision was derived from. town.html carries the touch interact route and the safe-area
+# insets without which none of shop / healer / save is reachable on a phone.
+# `verify/seed.html` is a verification helper, not game content: it writes localStorage
+# ['edu-rpg-save'] so a tester can reach a map without walking. It ships because the web build
+# has no other way to seed; on iOS use scripts/seed_ios_save.py instead (the in-app WebView has
+# no URL bar). Pinned so it cannot quietly grow into something that mutates real save data.
+ACT1_TOWN_FILES = {
+    "act1-hifi/town.html": (
+        19_205, "1ba9fe933f71d1139c65eb182ff875d7441b03db996a7a9c4d0043fb3f6d14da"),
+    "act1-hifi/town/portSapphire-town.json": (
+        2_748, "51b45860151b23a983220b79409a9f04ab9f962988ea9725971bfa316b3a0b19"),
+    "act1-hifi/town/portSapphire-walkable.json": (
+        31_756, "92d50a4e7bfa25b9185a82ba103097926897fd1cb006f999ab247f182194a913"),
+    "act1-hifi/town/portSapphire-screen.png": (
+        6_973_000, "87a04490428c6ae26ed238a50949646b64c0cf11770dd06336a0075e07b4dc4c"),
+    "act1-hifi/town/npc/portSapphire-drake-4x3-64.png": (
+        51_557, "9a5ec1a3fc1f7e7077f9d30f89f6e044878211cf45b370a41e0c224500af4af3"),
+    "act1-hifi/town/npc/portSapphire-healer-4x3-64.png": (
+        50_519, "93e7edb092c0aab3cc9a922bd2397af4232caeced15270074a356377bbf3b3f4"),
+    "act1-hifi/town/npc/portSapphire-sailor-4x3-64.png": (
+        44_604, "585a14be6724a84dac872b82325bfaf70237974134693ceb549bb34873b6a90b"),
+    "act1-hifi/town/npc/portSapphire-wisewoman-4x3-64.png": (
+        46_937, "390c12022a813f8cd0c6894988b18e7bebab8d7facee63c9c5d67575b8615c0b"),
+    "act1-hifi/verify/seed.html": (
+        1_807, "2981408c66159992d66cee9f02a1963a0eb3c79ba4718c4b58497dcd5f4ac5c6"),
+}
 ACT1_HIFI_RUNTIME = (
     ROOT / "design" / "review" / "overworld-art-blueprint" / "act-by-act" / "act1" / "runtime-v2"
 )
@@ -351,7 +381,8 @@ def verify_act1_overlay(root: Path, allowed_extra: frozenset[str] = frozenset())
     expected_hifi_paths = {f"act1-hifi/{target}" for target in hifi_files.values()}
     expected_hifi_paths.add("act1-hifi/adapter.js")
     expected_paths = (set(expected_entries) | {"act1-world-map.js"} | expected_hifi_paths
-                      | set(ACT1_MATERIAL_FILES) | set(ACT1_DUNGEON_FILES))
+                      | set(ACT1_MATERIAL_FILES) | set(ACT1_DUNGEON_FILES)
+                      | set(ACT1_TOWN_FILES))
     extra_paths = set(all_found) - expected_paths
     if expected_paths - set(all_found) or not extra_paths.issubset(allowed_extra):
         missing = sorted(expected_paths - set(all_found))
@@ -382,6 +413,14 @@ def verify_act1_overlay(root: Path, allowed_extra: frozenset[str] = frozenset())
         public_dng = ROOT / "public" / relative_path
         if not public_dng.is_file() or public_dng.read_bytes() != dng.read_bytes():
             raise BaselineError(f"public/dist dungeon twins differ: {relative_path}")
+
+    for relative_path, (town_size, town_hash) in ACT1_TOWN_FILES.items():
+        town = all_found[relative_path]
+        if town.stat().st_size != town_size or sha256(town) != town_hash:
+            raise BaselineError(f"Act 1 town identity mismatch: {relative_path}")
+        public_town = ROOT / "public" / relative_path
+        if not public_town.is_file() or public_town.read_bytes() != town.read_bytes():
+            raise BaselineError(f"public/dist town twins differ: {relative_path}")
 
     overlay_path = all_found["act1-world-map.js"]
     overlay_size, overlay_hash = ACT1_OVERLAY_FILES["act1-world-map.js"]
