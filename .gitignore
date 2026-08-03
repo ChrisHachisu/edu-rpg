@@ -1,6 +1,7 @@
 node_modules/
 dist/
 .vite/
+.map-engine-build/
 
 # Headless verification toolkit (Playwright harness + node_modules). Durable home,
 # never committed and never part of a gh-pages deploy. See ~/.claude/skills/edu-rpg/SKILL.md.
@@ -10,3 +11,13 @@ dist/
 .DS_Store
 .codex/
 .claude/worktrees/
+
+# --- Bulk intermediate art renders (added 2026-08-03) -------------------------------------------
+# Two directories held 9.9 GB of generated contact sheets / mosaics between them, which had kept
+# three concurrent Act 1 sessions' work uncommitted. Both are REGENERABLE from scripts/ and
+# nothing at runtime loads either. Everything else under design/ IS committed -- including the
+# locked anchors in design/art-refs/, the town and dungeon source art, the specs, and the
+# owner-review contact sheets.
+design/review/overworld-art-blueprint/
+design/continent-terrain-class-method/owner-terrain/
+scripts/__pycache__/
