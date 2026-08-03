@@ -18,6 +18,18 @@ dist/
 # nothing at runtime loads either. Everything else under design/ IS committed -- including the
 # locked anchors in design/art-refs/, the town and dungeon source art, the specs, and the
 # owner-review contact sheets.
-design/review/overworld-art-blueprint/
+# Ignore the 8.3 GB of blueprint renders, but NOT act1-final-art-geometry-r26 (52 MB):
+# scripts/runtime_baseline.py pins that runtime/manifest.json by SHA and package.json's
+# test:act1-r26 runs test-final.mjs from it. Ignoring it would break the gate on a fresh clone.
+# Git cannot re-include a path under an excluded DIRECTORY, so each level is excluded by
+# contents (/*) and the next level re-included.
+design/review/overworld-art-blueprint/*
+!design/review/overworld-art-blueprint/act-by-act/
+design/review/overworld-art-blueprint/act-by-act/*
+!design/review/overworld-art-blueprint/act-by-act/act1/
+design/review/overworld-art-blueprint/act-by-act/act1/*
+!design/review/overworld-art-blueprint/act-by-act/act1/runtime-v2/
+design/review/overworld-art-blueprint/act-by-act/act1/runtime-v2/*
+!design/review/overworld-art-blueprint/act-by-act/act1/runtime-v2/act1-final-art-geometry-r26/
 design/continent-terrain-class-method/owner-terrain/
 scripts/__pycache__/

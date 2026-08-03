@@ -1,0 +1,155 @@
+{
+  "coastal": {
+    "artCorrection": "restored short painted approach from the bridge-side trail to the visible cave mouth",
+    "changedPixelBoundsExclusive": [
+      1610,
+      2335,
+      1944,
+      2670
+    ],
+    "changedPixelsAgainstG6": 48305,
+    "finalNativeMouth": [
+      1877,
+      2596
+    ],
+    "oldNativeAnchor": [
+      1690,
+      2410
+    ],
+    "questGuard": "drakeCargo active-or-completed",
+    "routeId": "port-sapphire-to-coastal-reef",
+    "runtimeId": "coastalReef"
+  },
+  "decision": "one owner-authorized art/geometry reconciliation; smooth polygon curves follow the finished painting",
+  "inputs": [
+    {
+      "path": "design/review/overworld-art-blueprint/act-by-act/act1/runtime-v2/polygon-first-authority-r25b/polygon-authority.json",
+      "sha256": "91ae6be942a3fdf613373bc10b0c46d23080bd847831e4876985e3c9bc9e3607"
+    },
+    {
+      "path": "design/review/overworld-art-blueprint/act-by-act/act1/runtime-v2/polygon-conformance-authored-patches-g6/candidate-art.png",
+      "sha256": "1c716db35e3be1f9004a20799318a025811a36eb8feb524d155895c9d720202c"
+    },
+    {
+      "path": "design/review/overworld-art-blueprint/act-by-act/act1/runtime-v2/polygon-conformance-authored-patches-g6/generated/coastal-generated-v1.png",
+      "sha256": "50ef41ed270cdcc918c2fdaafd2fe88056c899940c3e8163296ea6d66e3cab4d"
+    }
+  ],
+  "nonPromotion": "No runtime, manifest, collision adapter, route source, save, public/dist, build, git, deployment, or release file changed.",
+  "outputs": [
+    {
+      "decodedPixelSha256": "65dde7e78904d051aebd32c78f2405423953003f2ef28ba8f43950a88e0281f8",
+      "height": 2912,
+      "meaning": "final native Act 1 art candidate",
+      "mode": "RGB",
+      "path": "design/review/overworld-art-blueprint/act-by-act/act1/runtime-v2/act1-final-art-geometry-r26/candidate-art.png",
+      "sha256": "d5998e758b8e1090a0f2bb18cde0197b4cf756161b2c8db84ebe2a6d7aca23cd",
+      "width": 2368
+    },
+    {
+      "meaning": "final vector geometry authority",
+      "path": "design/review/overworld-art-blueprint/act-by-act/act1/runtime-v2/act1-final-art-geometry-r26/polygon-authority.json",
+      "sha256": "4010715a99926260a9d4e842cc97e0e6e04df93bffbc69b4ccf4ef4baf086834"
+    },
+    {
+      "decodedPixelSha256": "d729f044e6c5e94a523e1536cc17c2c2062671d78e2756781aff4997e559f980",
+      "height": 2912,
+      "meaning": "derived binary mask; evidence only",
+      "mode": "L",
+      "path": "design/review/overworld-art-blueprint/act-by-act/act1/runtime-v2/act1-final-art-geometry-r26/review/polygon-mask.png",
+      "sha256": "c914aab7f76ad22894a9d233068d895f567773e284d7eb5d659d139b371d9577",
+      "width": 2368
+    },
+    {
+      "decodedPixelSha256": "b1e83da927fc72986cc239ab424a68333e18662f4d4685596879ae22ee29242c",
+      "height": 2912,
+      "meaning": "native art/geometry conformance overlay",
+      "mode": "RGBA",
+      "path": "design/review/overworld-art-blueprint/act-by-act/act1/runtime-v2/act1-final-art-geometry-r26/review/polygon-overlay.png",
+      "sha256": "88ee10ed67a4129c7ed3513718effa9eed2e52aa26fdd61a2e02c55e359dea79",
+      "width": 2368
+    },
+    {
+      "decodedPixelSha256": "602902ee51e9d4dec55763cc3cbf1cd6905383d08df7e21c9a5489b920a7dbb9",
+      "height": 960,
+      "meaning": "owner overview",
+      "mode": "RGB",
+      "path": "design/review/overworld-art-blueprint/act-by-act/act1/runtime-v2/act1-final-art-geometry-r26/review/owner-overview.png",
+      "sha256": "c58e9e275a3ddad28a4fc3e9b953ed3b4ba9cc99a206ef6eadb3c81e2d978c86",
+      "width": 1520
+    },
+    {
+      "decodedPixelSha256": "52b13af11f5b41078c8ae72454864149e4cdd18b2c8688b8ad1d20ffb3815c15",
+      "height": 500,
+      "meaning": "native Coastal Reef art crop",
+      "mode": "RGB",
+      "path": "design/review/overworld-art-blueprint/act-by-act/act1/runtime-v2/act1-final-art-geometry-r26/review/coastal-native.png",
+      "sha256": "7e977cf2430da08c8cd32f04fc66556f3a87a8dd4fc4eaea0b47e036aa25fbab",
+      "width": 520
+    },
+    {
+      "decodedPixelSha256": "f1d26b841c5c372d9dd2738dd32953c5f549a6b4aa2365a6d123012f08d393c3",
+      "height": 500,
+      "meaning": "native Coastal Reef conformance crop",
+      "mode": "RGB",
+      "path": "design/review/overworld-art-blueprint/act-by-act/act1/runtime-v2/act1-final-art-geometry-r26/review/coastal-overlay-native.png",
+      "sha256": "31b5173d1a0162b630de1f80c638714b27ce0282b577ad1c5f30d3602fcbe597",
+      "width": 520
+    },
+    {
+      "decodedPixelSha256": "b73dbbea1add09e0ff6aefd710b2d1666c8814b3023374ddcaecf35fe039593c",
+      "height": 460,
+      "meaning": "native Port separation crop",
+      "mode": "RGB",
+      "path": "design/review/overworld-art-blueprint/act-by-act/act1/runtime-v2/act1-final-art-geometry-r26/review/port-overlay-native.png",
+      "sha256": "57cf90fbf19cc63e7dfe054786996bdbdadb570f81f7bcd13d33377998b6e98f",
+      "width": 580
+    },
+    {
+      "decodedPixelSha256": "d645aef67de44102120503cebc8ae951fb43135f8d7e2c896621388162163a45",
+      "height": 370,
+      "meaning": "native Sunken throat crop",
+      "mode": "RGB",
+      "path": "design/review/overworld-art-blueprint/act-by-act/act1/runtime-v2/act1-final-art-geometry-r26/review/sunken-overlay-native.png",
+      "sha256": "235ad3a59bb5505b600a2212648f2140f6d11a5d8029788ef29810ebaf768e21",
+      "width": 340
+    }
+  ],
+  "preserved": {
+    "actorFootRadius": 4,
+    "maxSubstep": 2,
+    "portComponents": [
+      "west",
+      "north",
+      "southeast"
+    ],
+    "portTerminals": [
+      [
+        1840,
+        1665
+      ],
+      [
+        1835,
+        1635
+      ],
+      [
+        2114,
+        1840
+      ]
+    ],
+    "routeCount": 7,
+    "sunkenCenterline": [
+      [
+        411,
+        2548
+      ],
+      [
+        370,
+        2495
+      ]
+    ],
+    "sunkenWidth": 11
+  },
+  "schema": "act1-final-art-geometry-r26-inventory-v1",
+  "status": "owner-review-not-promoted"
+}
