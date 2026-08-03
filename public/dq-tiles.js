@@ -2127,7 +2127,15 @@
       // response that lands after the player is already on the floor.
       try{ a1dFetch(); a1dInstall(scene);
            var a1w=A1D_MAPS[scene.currentMapId]?scene.currentMapId+'-f'+(scene.currentFloor||1):null;
-           if(!a1w) a1dKey=null; else if(a1dFloors&&a1dKey!==a1w) a1dApply(scene);
+           // Guard on the ACTUAL map shape, not just a key. The overworld override was silently
+           // lost because returning from a town handed the engine a new mapData array under an
+           // unchanged reskin key, so its key-only guard skipped the re-apply and nothing looked
+           // wrong. Every `this.mapData =` in the bundle is inside loadMap, so the wrapper already
+           // covers every path here -- this makes the tick self-healing if that ever stops holding.
+           if(!a1w) a1dKey=null;
+           else if(a1dFloors){ var fl0=a1dFloors[a1w], md=scene.mapData;
+             if(fl0 && (a1dKey!==a1w || !md || md.length!==fl0.height || (md[0]||[]).length!==fl0.width))
+               a1dApply(scene); }
            a1dRescueHero(scene);
       }catch(e){ if(window.__DQ_DEBUG__) console.log('dq a1dng err '+e+(e&&e.stack||'')); }
       try{ var tk=dngThemeKey(scene), changed=(tk!==curThemeKey)||a1dChanged; curThemeKey=tk; a1dChanged=false; setTheme(tk);

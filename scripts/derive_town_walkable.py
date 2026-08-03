@@ -530,9 +530,40 @@ def main() -> None:
             authored.append({"id": o["id"], "kind": o["kind"], "polygon": ring})
         print(f"authored obstacles merged: {len(authored)} from "
               f"{os.path.basename(args.authored)}")
-    data["staticObstacles"] = authored + data["staticObstacles"]
+    # ---- authored OVERHEAD exemptions, applied after the merge --------------------------------
+    # The inverse of the block above. The derivation reads a top-down painting, in which height is
+    # not encoded, so anything that is not paving becomes solid at ground level -- including things
+    # the player walks UNDERNEATH. Owner, 2026-08-03: "the mast of the ship should not block the
+    # player's path", and the same for the demijohn hanging from the cargo davit. No local test on
+    # the image can recover the missing dimension, so which props are overhead is authored, exactly
+    # as the well's extent is authored.
+    # Dropped by CENTROID inside an authored circle rather than by id: prop ids are positional and
+    # renumber whenever the derivation shifts, so an id list would silently rot against the art.
+    exemptions = []
+    if os.path.exists(args.authored):
+        for e in json.load(open(args.authored)).get("exemptions", []):
+            cx, cy = e["centerArt"]
+            exemptions.append((cx * art_to_world, cy * art_to_world,
+                               e["radiusArt"] * art_to_world, e["id"]))
+    kept, dropped = [], []
+    for o in authored + data["staticObstacles"]:
+        xs = [p["x"] for p in o["polygon"]]
+        ys = [p["y"] for p in o["polygon"]]
+        ox, oy = (min(xs) + max(xs)) / 2, (min(ys) + max(ys)) / 2
+        hit = next((name for ex, ey, er, name in exemptions
+                    if (ox - ex) ** 2 + (oy - ey) ** 2 <= er * er), None)
+        (dropped if hit else kept).append((o, hit))
+    for o, name in dropped:
+        print(f"overhead exemption: dropped {o['id']} ({name}) -- player walks beneath it")
+    if exemptions and not dropped:
+        raise SystemExit("authored exemptions matched NOTHING -- the art or the derivation moved; "
+                         "re-locate them rather than shipping a silently empty exemption list")
+    data["staticObstacles"] = [o for o, _ in kept]
     data["designDecisions"]["authoredObstacles"] = (
         "the well is authored, not derived -- its rim is cobble and no local test can separate it")
+    data["designDecisions"]["overheadExemptions"] = (
+        f"{len(dropped)} derived obstacle(s) dropped as OVERHEAD (mast, hanging demijohn): a "
+        "top-down painting cannot encode height, so props the player walks beneath read as solid")
 
     with open(args.out, "w") as fh:
         json.dump(data, fh, indent=1)

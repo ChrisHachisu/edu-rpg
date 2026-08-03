@@ -25,7 +25,8 @@
   "grassRule": "cottage gardens are fenced and excluded; make them regions if the owner wants them enterable",
   "shipDeckRule": "the moored trader's planks classify as paving and are excluded by CONNECTIVITY, not colour -- they are a separate component",
   "curveRule": "Ramer-Douglas-Peucker at 2.5 mask samples",
-  "authoredObstacles": "the well is authored, not derived -- its rim is cobble and no local test can separate it"
+  "authoredObstacles": "the well is authored, not derived -- its rim is cobble and no local test can separate it",
+  "overheadExemptions": "3 derived obstacle(s) dropped as OVERHEAD (mast, hanging demijohn): a top-down painting cannot encode height, so props the player walks beneath read as solid"
  },
  "regions": [
   {
@@ -2031,24 +2032,6 @@
    ]
   },
   {
-   "id": "prop-041",
-   "kind": "town-prop",
-   "polygon": [
-    {
-     "x": 494.3,
-     "y": 684.1
-    },
-    {
-     "x": 501.0,
-     "y": 701.8
-    },
-    {
-     "x": 492.1,
-     "y": 686.3
-    }
-   ]
-  },
-  {
    "id": "prop-042",
    "kind": "town-prop",
    "polygon": [
@@ -2155,46 +2138,6 @@
     {
      "x": 273.7,
      "y": 710.6
-    }
-   ]
-  },
-  {
-   "id": "prop-047",
-   "kind": "town-prop",
-   "polygon": [
-    {
-     "x": 911.4,
-     "y": 697.4
-    },
-    {
-     "x": 913.7,
-     "y": 697.4
-    },
-    {
-     "x": 915.9,
-     "y": 701.8
-    }
-   ]
-  },
-  {
-   "id": "prop-048",
-   "kind": "town-prop",
-   "polygon": [
-    {
-     "x": 915.9,
-     "y": 721.7
-    },
-    {
-     "x": 918.1,
-     "y": 721.7
-    },
-    {
-     "x": 915.9,
-     "y": 723.9
-    },
-    {
-     "x": 911.4,
-     "y": 723.9
     }
    ]
   },

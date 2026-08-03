@@ -42,7 +42,7 @@ ACT1_OVERLAY_FILES = {
     # Same day, follow-up: the override now also replays persisted progress (looted chest 4->8,
     # defeated boss 7->10/12) onto the swapped map. The engine does that replay inside loadMap and
     # our swap lands after it, so without this a looted chest returned closed on every re-entry.
-    "dq-tiles.js": (171_118, "d3eafb86b6b76c16b15cce54f3bd02c92817a5ee2bd5e58c7fd9e4cf155a56ea"),
+    "dq-tiles.js": (171_773, "8785d7fa360c01a97da9aaeae239c5be2438640a78f48e1f8d3e88856adfac3a"),
     # 2026-08-03, owner direction ("please redo the collision setting based on what i created (my
     # paint)"): the Act-1 collision plate is now generated from the OWNER'S PAINTED TERRAIN
     # (owner-terrain.json acts.1 + continent-macro-g3/land-mask.npy) instead of the generated
@@ -52,7 +52,8 @@ ACT1_OVERLAY_FILES = {
     # tables follow them. Source: scripts/act1_owner_paint_plate.mjs.
     # It also reinstates itself: leaving a town hands the overworld a NEW mapData array under the
     # same reskin key, so the plate was never re-applied and every door reverted (found in-game).
-    "act1-world-map.js": (47_925, "1e4d0580b11749231d772ead4e71a3c4cc7018c651ac225e50b1fdd62c56320f"),
+    "act1-world-map.js": (
+        47_908, "e5713be14ece51788798893c09a057d601d486671f97254dfb1825077ffe26b4"),
 }
 # The four tiling terrain materials the renderer above samples. New runtime paths as of
 # 2026-08-01; pinned by hash rather than merely tolerated, because they are shipped art and a
@@ -94,7 +95,7 @@ ACT1_TOWN_FILES = {
     "act1-hifi/town/portSapphire-town.json": (
         2_748, "51b45860151b23a983220b79409a9f04ab9f962988ea9725971bfa316b3a0b19"),
     "act1-hifi/town/portSapphire-walkable.json": (
-        31_756, "92d50a4e7bfa25b9185a82ba103097926897fd1cb006f999ab247f182194a913"),
+        31259, "07a743f4328c744d17b4b7292cfda13e28bf18e1cebdf83507c255311b5ebdf0"),
     "act1-hifi/town/portSapphire-screen.png": (
         6_973_000, "87a04490428c6ae26ed238a50949646b64c0cf11770dd06336a0075e07b4dc4c"),
     "act1-hifi/town/npc/portSapphire-drake-4x3-64.png": (

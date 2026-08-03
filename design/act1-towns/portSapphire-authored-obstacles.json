@@ -5,9 +5,35 @@
       "id": "well",
       "kind": "town-prop",
       "shape": "circle",
-      "centerArt": [945, 803],
+      "centerArt": [
+        945,
+        803
+      ],
       "radiusArt": 36,
       "why": "Measured radially from the well's centre: paving coverage runs 0% at r=0, 33% at r=9, 17% at r=18, 36% at r=27, 49% at r=33 and only reaches 72% at r=39. The structure therefore ends at about r=36. Owner flagged it twice; the derivation reached 74% coverage and stalled on the lit rim."
     }
-  ]
+  ],
+  "exemptions": [
+    {
+      "id": "ship-mast",
+      "shape": "circle",
+      "centerArt": [
+        900,
+        1256
+      ],
+      "radiusArt": 30,
+      "why": "OWNER 2026-08-03: 'the mast of the ship should not block the player's path.' The moored trader's mast rises from the deck BELOW the quay and its upper section and yard-arm cross over the walkable paving. The derivation is structural -- it reads a top-down painting, where height is not encoded -- so the overlap read as a solid object at ground level. The player walks under it."
+    },
+    {
+      "id": "demijohn",
+      "shape": "circle",
+      "centerArt": [
+        1657,
+        1289
+      ],
+      "radiusArt": 34,
+      "why": "OWNER 2026-08-03: the rope-wrapped glass demijohn dangling from the cargo davit east of the warehouse, on its chain. Same reason as the mast: it hangs in the air over open quay. Covers both derived fragments -- the chain link above and the vessel below."
+    }
+  ],
+  "_exemptionComment": "Regions where a DERIVED obstacle must be dropped because the object is OVERHEAD, not on the ground. The derivation reads a top-down painting and cannot infer height, so anything that is not paving becomes solid -- including masts, hanging signs and suspended props the player walks beneath. These are authored for the same reason the well is authored: no local test on the image can recover the missing dimension. Coordinates are ART pixels on portSapphire-screen-v5-graded.png (1885x1885, 29 art px/cell)."
 }
