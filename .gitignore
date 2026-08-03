@@ -31,7 +31,39 @@ design/review/overworld-art-blueprint/act-by-act/act1/*
 !design/review/overworld-art-blueprint/act-by-act/act1/runtime-v2/
 design/review/overworld-art-blueprint/act-by-act/act1/runtime-v2/*
 !design/review/overworld-art-blueprint/act-by-act/act1/runtime-v2/act1-final-art-geometry-r26/
-design/continent-terrain-class-method/owner-terrain/
+# ...and NOT the five files runtime_baseline.py reads via ACT1_HIFI_RUNTIME (as opposed to the r26
+# pack above). verify_act1_overlay byte-compares each of these against its dist twin, so a fresh
+# clone hits FileNotFoundError before it can even fail the comparison. Same defect the r26
+# re-inclusion fixed, one directory up. hero-g3/ is laddered rather than re-included whole: the
+# gate wants one 128 kB sprite sheet out of a 19 MB folder of evidence and reference renders.
+!design/review/overworld-art-blueprint/act-by-act/act1/runtime-v2/index.html
+!design/review/overworld-art-blueprint/act-by-act/act1/runtime-v2/walkable-polygons.js
+!design/review/overworld-art-blueprint/act-by-act/act1/runtime-v2/walkable-route-state.js
+!design/review/overworld-art-blueprint/act-by-act/act1/runtime-v2/path-corridor.js
+!design/review/overworld-art-blueprint/act-by-act/act1/runtime-v2/hero-g3/
+design/review/overworld-art-blueprint/act-by-act/act1/runtime-v2/hero-g3/*
+!design/review/overworld-art-blueprint/act-by-act/act1/runtime-v2/hero-g3/hero-act1-female-walk-8x3-64-g3.png
+# The COASTLINE. Act 1's painted terrain carries no water at all -- the sea is applied from this
+# 128 kB boolean mask -- so scripts/act1_owner_paint_plate.mjs cannot build the collision plate
+# without it and npm run test:map-engine fails at export_act1_runtime_override.mjs --check.
+!design/review/overworld-art-blueprint/continent/
+design/review/overworld-art-blueprint/continent/*
+!design/review/overworld-art-blueprint/continent/continent-macro-g3/
+design/review/overworld-art-blueprint/continent/continent-macro-g3/*
+!design/review/overworld-art-blueprint/continent/continent-macro-g3/land-mask.npy
+# The OWNER'S PAINTED TERRAIN -- the authority for Act 1's collision AND its art (owner, 2026-08-02:
+# "please redo the collision setting based on what i created (my paint)"). The directory is 1.6 GB
+# of art-tiles intermediates, so ignore the bulk and keep the three inputs: owner-terrain.json is
+# what the collision plate is generated from, raw-export.json is its pristine pre-edit twin, and
+# act1-smoothed-semantic.png is the mask render_material_map.py paints the terrain through.
+# ~320 kB in total. Do not blanket-ignore this directory again; the repo cannot rebuild Act 1
+# without these, and they are the one artefact here that is genuinely unregenerable.
+design/continent-terrain-class-method/owner-terrain/*
+!design/continent-terrain-class-method/owner-terrain/owner-terrain.json
+!design/continent-terrain-class-method/owner-terrain/owner-terrain.raw-export.json
+!design/continent-terrain-class-method/owner-terrain/art-tiles/
+design/continent-terrain-class-method/owner-terrain/art-tiles/*
+!design/continent-terrain-class-method/owner-terrain/art-tiles/act1-smoothed-semantic.png
 scripts/__pycache__/
 
 # xcodebuild derived data from scripts/run-ios.sh
