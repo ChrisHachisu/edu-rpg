@@ -63,7 +63,14 @@ const LANDMARKS = [
   { mapId: 'sunkenCellar', ownerKey: 'Sunken Cellar', tile: 7, enter: { toX: 50, toY: 1 } },
   { mapId: 'whisperingWoodsCave', ownerKey: 'Whispering Woods', tile: 7, enter: { toX: 50, toY: 1 } },
   { mapId: 'coastalReef', ownerKey: 'Coastal Reef', tile: 7, enter: { toX: 50, toY: 1 } },
-  { mapId: 'mistyGrotto', ownerKey: 'Misty Grotto', tile: 7, enter: { toX: 50, toY: 1 } },
+  // OWNER 2026-08-03: bound to the paint's 'Darkfang' (96,359), not its 'Misty Grotto' (91,378).
+  // The roster carries both, but the shipped game has ONE cave here: `map.mistyGrotto` DISPLAYS as
+  // "Darkfang Grotto", and it is the spine of Act 1 -- the elder sends you to "the Darkfang Grotto"
+  // to "defeat its guardian", the wise woman names the Giant Toad, and `boss.giantToad.defeated`
+  // is the flag that unseals Crystal Cave at (149,278). So Darkfang is not missing content needing
+  // a new map; its door was simply 19 cells south of where the owner painted it. Asked and
+  // answered: "give it a door at the position you are showing me".
+  { mapId: 'mistyGrotto', ownerKey: 'Darkfang', tile: 7, enter: { toX: 50, toY: 1 } },
   { mapId: 'crystalCave', ownerKey: 'Crystal Cave', tile: 15, enter: { toX: 50, toY: 99 } },
 ];
 

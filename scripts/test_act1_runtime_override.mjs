@@ -27,7 +27,10 @@ const OWNER_DOORS = {
   sunkenCellar: { x: 30, y: 274, tile: 7 },
   whisperingWoodsCave: { x: 101, y: 231, tile: 7 },
   coastalReef: { x: 144, y: 372, tile: 7 },
-  mistyGrotto: { x: 91, y: 378, tile: 7 },
+  // OWNER 2026-08-03: moved from the paint's 'Misty Grotto' (91,378) to its 'Darkfang' (96,359).
+  // One cave, two roster entries: map.mistyGrotto DISPLAYS as "Darkfang Grotto" and is the Act 1
+  // boss dungeon (Giant Toad -> boss.giantToad.defeated -> unseals Crystal Cave).
+  mistyGrotto: { x: 96, y: 359, tile: 7 },
   crystalCave: { x: 149, y: 278, tile: 15 },
 };
 // The generated layout the bundle is still frozen at, and which the override has to supersede.
