@@ -1,0 +1,11 @@
+{
+ "adopted": true,
+ "artefact": "mat-accent.png",
+ "command": "adopted as a source on freshness.py",
+ "generator": null,
+ "generatorSha256": null,
+ "inputs": {},
+ "params": {},
+ "sha256": "a9ed41f1f93c5e978252b32a575acd557c048fe2568399e8db7c85f4968925bb",
+ "writtenAt": "2026-08-01T12:06:03+09:00"
+}

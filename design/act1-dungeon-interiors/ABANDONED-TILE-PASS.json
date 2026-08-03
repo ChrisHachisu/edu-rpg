@@ -1,0 +1,44 @@
+{
+ "_what": "Per-tile AI art pass, ABANDONED 2026-07-31 in favour of the material renderer.",
+ "_why": "docs/MATERIAL-RENDERER-METHOD.md \u2014 the image tool exposes no seed, no style lock and no spatial conditioning, so drift/seams/mask-ignoring are not fixable by prompting.",
+ "_measured": "Bases verified at 9.0-9.7 sigma separation, 0-1 cell mismatches. The 9 returns below scored 4.0-13.6% cell mismatch at 1.9-5.1 sigma, against a single pilot that scored 0% at 8.59 sigma. One passing sample was not evidence of a reliable pipeline.",
+ "_replacedBy": "scripts/render_dungeon_material_map.py + scripts/make_dungeon_materials.py",
+ "deletedTiles": [
+  {
+   "tile": "sunkenCellar-f1-tile-0-0",
+   "bytes": 2771903
+  },
+  {
+   "tile": "sunkenCellar-f2-tile-0-0",
+   "bytes": 2625349
+  },
+  {
+   "tile": "sunkenCellar-f2-tile-0-2",
+   "bytes": 2877303
+  },
+  {
+   "tile": "sunkenCellar-f2-tile-6-0",
+   "bytes": 3055893
+  },
+  {
+   "tile": "sunkenCellar-f2-tile-6-2",
+   "bytes": 2761199
+  },
+  {
+   "tile": "sunkenCellar-f3-tile-0-0",
+   "bytes": 2681840
+  },
+  {
+   "tile": "sunkenCellar-f3-tile-0-2",
+   "bytes": 2377299
+  },
+  {
+   "tile": "sunkenCellar-f3-tile-8-0",
+   "bytes": 2801546
+  },
+  {
+   "tile": "sunkenCellar-f3-tile-8-2",
+   "bytes": 2826375
+  }
+ ]
+}

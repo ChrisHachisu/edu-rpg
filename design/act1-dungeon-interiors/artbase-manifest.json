@@ -1,0 +1,283 @@
+{
+ "_source": "scripts/smooth_dungeon_semantic.py",
+ "invariant": "class at every cell centre preserved exactly at 48 px/cell",
+ "smoothing": {
+  "fieldPxPerCell": 12,
+  "sigmaCells": 0.85,
+  "noiseAmp": 0.11,
+  "noiseSigmaCells": 1.6,
+  "seed": 42
+ },
+ "floors": [
+  {
+   "floor": "coastalReef-f1",
+   "file": "coastalReef-f1-artbase.png",
+   "cells": [
+    48,
+    31
+   ],
+   "size": [
+    2304,
+    1488
+   ],
+   "pxPerCell": 48,
+   "theme": "tidal coral reef",
+   "centreMisses": 0
+  },
+  {
+   "floor": "coastalReef-f2",
+   "file": "coastalReef-f2-artbase.png",
+   "cells": [
+    34,
+    42
+   ],
+   "size": [
+    1632,
+    2016
+   ],
+   "pxPerCell": 48,
+   "theme": "tidal coral reef",
+   "centreMisses": 0
+  },
+  {
+   "floor": "coastalReef-f3",
+   "file": "coastalReef-f3-artbase.png",
+   "cells": [
+    46,
+    46
+   ],
+   "size": [
+    2208,
+    2208
+   ],
+   "pxPerCell": 48,
+   "theme": "tidal coral reef",
+   "centreMisses": 0
+  },
+  {
+   "floor": "crystalCave-f1",
+   "file": "crystalCave-f1-artbase.png",
+   "cells": [
+    42,
+    48
+   ],
+   "size": [
+    2016,
+    2304
+   ],
+   "pxPerCell": 48,
+   "theme": "faceted crystal cavern",
+   "centreMisses": 0
+  },
+  {
+   "floor": "crystalCave-f2",
+   "file": "crystalCave-f2-artbase.png",
+   "cells": [
+    54,
+    47
+   ],
+   "size": [
+    2592,
+    2256
+   ],
+   "pxPerCell": 48,
+   "theme": "faceted crystal cavern",
+   "centreMisses": 0
+  },
+  {
+   "floor": "crystalCave-f3",
+   "file": "crystalCave-f3-artbase.png",
+   "cells": [
+    59,
+    52
+   ],
+   "size": [
+    2832,
+    2496
+   ],
+   "pxPerCell": 48,
+   "theme": "faceted crystal cavern",
+   "centreMisses": 0
+  },
+  {
+   "floor": "crystalCave-f4",
+   "file": "crystalCave-f4-artbase.png",
+   "cells": [
+    62,
+    51
+   ],
+   "size": [
+    2976,
+    2448
+   ],
+   "pxPerCell": 48,
+   "theme": "faceted crystal cavern",
+   "centreMisses": 0
+  },
+  {
+   "floor": "crystalCave-f5",
+   "file": "crystalCave-f5-artbase.png",
+   "cells": [
+    53,
+    52
+   ],
+   "size": [
+    2544,
+    2496
+   ],
+   "pxPerCell": 48,
+   "theme": "faceted crystal cavern",
+   "centreMisses": 0
+  },
+  {
+   "floor": "crystalCave-f6",
+   "file": "crystalCave-f6-artbase.png",
+   "cells": [
+    65,
+    58
+   ],
+   "size": [
+    3120,
+    2784
+   ],
+   "pxPerCell": 48,
+   "theme": "faceted crystal cavern",
+   "centreMisses": 0
+  },
+  {
+   "floor": "mistyGrotto-f1",
+   "file": "mistyGrotto-f1-artbase.png",
+   "cells": [
+    40,
+    32
+   ],
+   "size": [
+    1920,
+    1536
+   ],
+   "pxPerCell": 48,
+   "theme": "jagged black fang rock",
+   "centreMisses": 0
+  },
+  {
+   "floor": "mistyGrotto-f2",
+   "file": "mistyGrotto-f2-artbase.png",
+   "cells": [
+    43,
+    36
+   ],
+   "size": [
+    2064,
+    1728
+   ],
+   "pxPerCell": 48,
+   "theme": "jagged black fang rock",
+   "centreMisses": 0
+  },
+  {
+   "floor": "mistyGrotto-f3",
+   "file": "mistyGrotto-f3-artbase.png",
+   "cells": [
+    46,
+    40
+   ],
+   "size": [
+    2208,
+    1920
+   ],
+   "pxPerCell": 48,
+   "theme": "jagged black fang rock",
+   "centreMisses": 0
+  },
+  {
+   "floor": "sunkenCellar-f1",
+   "file": "sunkenCellar-f1-artbase.png",
+   "cells": [
+    26,
+    26
+   ],
+   "size": [
+    1248,
+    1248
+   ],
+   "pxPerCell": 48,
+   "theme": "flooded stone cellar",
+   "centreMisses": 0
+  },
+  {
+   "floor": "sunkenCellar-f2",
+   "file": "sunkenCellar-f2-artbase.png",
+   "cells": [
+    32,
+    28
+   ],
+   "size": [
+    1536,
+    1344
+   ],
+   "pxPerCell": 48,
+   "theme": "flooded stone cellar",
+   "centreMisses": 0
+  },
+  {
+   "floor": "sunkenCellar-f3",
+   "file": "sunkenCellar-f3-artbase.png",
+   "cells": [
+    34,
+    28
+   ],
+   "size": [
+    1632,
+    1344
+   ],
+   "pxPerCell": 48,
+   "theme": "flooded stone cellar",
+   "centreMisses": 0
+  },
+  {
+   "floor": "whisperingWoodsCave-f1",
+   "file": "whisperingWoodsCave-f1-artbase.png",
+   "cells": [
+    33,
+    33
+   ],
+   "size": [
+    1584,
+    1584
+   ],
+   "pxPerCell": 48,
+   "theme": "root-riddled earth cave",
+   "centreMisses": 0
+  },
+  {
+   "floor": "whisperingWoodsCave-f2",
+   "file": "whisperingWoodsCave-f2-artbase.png",
+   "cells": [
+    35,
+    35
+   ],
+   "size": [
+    1680,
+    1680
+   ],
+   "pxPerCell": 48,
+   "theme": "root-riddled earth cave",
+   "centreMisses": 0
+  },
+  {
+   "floor": "whisperingWoodsCave-f3",
+   "file": "whisperingWoodsCave-f3-artbase.png",
+   "cells": [
+    40,
+    38
+   ],
+   "size": [
+    1920,
+    1824
+   ],
+   "pxPerCell": 48,
+   "theme": "root-riddled earth cave",
+   "centreMisses": 0
+  }
+ ]
+}

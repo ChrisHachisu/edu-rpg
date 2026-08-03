@@ -1,0 +1,11 @@
+{
+ "adopted": true,
+ "artefact": "mat-wall.png",
+ "command": "adopted as a source on freshness.py",
+ "generator": null,
+ "generatorSha256": null,
+ "inputs": {},
+ "params": {},
+ "sha256": "d033a8169d75f77a4502669cd444895f556f8fd8d2568a9d1bb4e9fc1b5f24c7",
+ "writtenAt": "2026-08-01T12:06:03+09:00"
+}

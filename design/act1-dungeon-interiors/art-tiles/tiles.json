@@ -1,0 +1,837 @@
+{
+ "_source": "scripts/tile_dungeon_art.py",
+ "cellsPerTile": 26,
+ "pxPerCell": 48,
+ "overlapCells": 3,
+ "artOut": "<tile>-ART.png",
+ "tiles": [
+  {
+   "tile": "CONTROL-pilot-rerun",
+   "floor": "whisperingWoodsCave-f3",
+   "origin": [
+    14,
+    0
+   ],
+   "floorFraction": 0.2441
+  },
+  {
+   "tile": "coastalReef-f1-tile-0-0",
+   "floor": "coastalReef-f1",
+   "origin": [
+    0,
+    0
+   ],
+   "floorFraction": 0.2426
+  },
+  {
+   "tile": "coastalReef-f1-tile-22-0",
+   "floor": "coastalReef-f1",
+   "origin": [
+    22,
+    0
+   ],
+   "floorFraction": 0.3062
+  },
+  {
+   "tile": "coastalReef-f1-tile-0-5",
+   "floor": "coastalReef-f1",
+   "origin": [
+    0,
+    5
+   ],
+   "floorFraction": 0.3003
+  },
+  {
+   "tile": "coastalReef-f1-tile-22-5",
+   "floor": "coastalReef-f1",
+   "origin": [
+    22,
+    5
+   ],
+   "floorFraction": 0.2914
+  },
+  {
+   "tile": "coastalReef-f2-tile-0-0",
+   "floor": "coastalReef-f2",
+   "origin": [
+    0,
+    0
+   ],
+   "floorFraction": 0.3639
+  },
+  {
+   "tile": "coastalReef-f2-tile-8-0",
+   "floor": "coastalReef-f2",
+   "origin": [
+    8,
+    0
+   ],
+   "floorFraction": 0.3669
+  },
+  {
+   "tile": "coastalReef-f2-tile-0-16",
+   "floor": "coastalReef-f2",
+   "origin": [
+    0,
+    16
+   ],
+   "floorFraction": 0.1775
+  },
+  {
+   "tile": "coastalReef-f2-tile-8-16",
+   "floor": "coastalReef-f2",
+   "origin": [
+    8,
+    16
+   ],
+   "floorFraction": 0.2411
+  },
+  {
+   "tile": "coastalReef-f3-tile-0-0",
+   "floor": "coastalReef-f3",
+   "origin": [
+    0,
+    0
+   ],
+   "floorFraction": 0.3728
+  },
+  {
+   "tile": "coastalReef-f3-tile-20-0",
+   "floor": "coastalReef-f3",
+   "origin": [
+    20,
+    0
+   ],
+   "floorFraction": 0.2337
+  },
+  {
+   "tile": "coastalReef-f3-tile-0-20",
+   "floor": "coastalReef-f3",
+   "origin": [
+    0,
+    20
+   ],
+   "floorFraction": 0.2574
+  },
+  {
+   "tile": "coastalReef-f3-tile-20-20",
+   "floor": "coastalReef-f3",
+   "origin": [
+    20,
+    20
+   ],
+   "floorFraction": 0.0814
+  },
+  {
+   "tile": "crystalCave-f1-tile-0-0",
+   "floor": "crystalCave-f1",
+   "origin": [
+    0,
+    0
+   ],
+   "floorFraction": 0.0311
+  },
+  {
+   "tile": "crystalCave-f1-tile-16-0",
+   "floor": "crystalCave-f1",
+   "origin": [
+    16,
+    0
+   ],
+   "floorFraction": 0.2663
+  },
+  {
+   "tile": "crystalCave-f1-tile-0-22",
+   "floor": "crystalCave-f1",
+   "origin": [
+    0,
+    22
+   ],
+   "floorFraction": 0.2811
+  },
+  {
+   "tile": "crystalCave-f1-tile-16-22",
+   "floor": "crystalCave-f1",
+   "origin": [
+    16,
+    22
+   ],
+   "floorFraction": 0.2604
+  },
+  {
+   "tile": "crystalCave-f2-tile-0-0",
+   "floor": "crystalCave-f2",
+   "origin": [
+    0,
+    0
+   ],
+   "floorFraction": 0.321
+  },
+  {
+   "tile": "crystalCave-f2-tile-23-0",
+   "floor": "crystalCave-f2",
+   "origin": [
+    23,
+    0
+   ],
+   "floorFraction": 0.2012
+  },
+  {
+   "tile": "crystalCave-f2-tile-28-0",
+   "floor": "crystalCave-f2",
+   "origin": [
+    28,
+    0
+   ],
+   "floorFraction": 0.1006
+  },
+  {
+   "tile": "crystalCave-f2-tile-0-21",
+   "floor": "crystalCave-f2",
+   "origin": [
+    0,
+    21
+   ],
+   "floorFraction": 0.1065
+  },
+  {
+   "tile": "crystalCave-f2-tile-23-21",
+   "floor": "crystalCave-f2",
+   "origin": [
+    23,
+    21
+   ],
+   "floorFraction": 0.2485
+  },
+  {
+   "tile": "crystalCave-f2-tile-28-21",
+   "floor": "crystalCave-f2",
+   "origin": [
+    28,
+    21
+   ],
+   "floorFraction": 0.2189
+  },
+  {
+   "tile": "crystalCave-f3-tile-0-0",
+   "floor": "crystalCave-f3",
+   "origin": [
+    0,
+    0
+   ],
+   "floorFraction": 0.2219
+  },
+  {
+   "tile": "crystalCave-f3-tile-23-0",
+   "floor": "crystalCave-f3",
+   "origin": [
+    23,
+    0
+   ],
+   "floorFraction": 0.2737
+  },
+  {
+   "tile": "crystalCave-f3-tile-33-0",
+   "floor": "crystalCave-f3",
+   "origin": [
+    33,
+    0
+   ],
+   "floorFraction": 0.2929
+  },
+  {
+   "tile": "crystalCave-f3-tile-0-23",
+   "floor": "crystalCave-f3",
+   "origin": [
+    0,
+    23
+   ],
+   "floorFraction": 0.2249
+  },
+  {
+   "tile": "crystalCave-f3-tile-23-23",
+   "floor": "crystalCave-f3",
+   "origin": [
+    23,
+    23
+   ],
+   "floorFraction": 0.253
+  },
+  {
+   "tile": "crystalCave-f3-tile-33-23",
+   "floor": "crystalCave-f3",
+   "origin": [
+    33,
+    23
+   ],
+   "floorFraction": 0.2249
+  },
+  {
+   "tile": "crystalCave-f3-tile-0-26",
+   "floor": "crystalCave-f3",
+   "origin": [
+    0,
+    26
+   ],
+   "floorFraction": 0.1908
+  },
+  {
+   "tile": "crystalCave-f3-tile-23-26",
+   "floor": "crystalCave-f3",
+   "origin": [
+    23,
+    26
+   ],
+   "floorFraction": 0.2426
+  },
+  {
+   "tile": "crystalCave-f3-tile-33-26",
+   "floor": "crystalCave-f3",
+   "origin": [
+    33,
+    26
+   ],
+   "floorFraction": 0.213
+  },
+  {
+   "tile": "crystalCave-f4-tile-0-0",
+   "floor": "crystalCave-f4",
+   "origin": [
+    0,
+    0
+   ],
+   "floorFraction": 0.2278
+  },
+  {
+   "tile": "crystalCave-f4-tile-23-0",
+   "floor": "crystalCave-f4",
+   "origin": [
+    23,
+    0
+   ],
+   "floorFraction": 0.3225
+  },
+  {
+   "tile": "crystalCave-f4-tile-36-0",
+   "floor": "crystalCave-f4",
+   "origin": [
+    36,
+    0
+   ],
+   "floorFraction": 0.2959
+  },
+  {
+   "tile": "crystalCave-f4-tile-0-23",
+   "floor": "crystalCave-f4",
+   "origin": [
+    0,
+    23
+   ],
+   "floorFraction": 0.2648
+  },
+  {
+   "tile": "crystalCave-f4-tile-23-23",
+   "floor": "crystalCave-f4",
+   "origin": [
+    23,
+    23
+   ],
+   "floorFraction": 0.3491
+  },
+  {
+   "tile": "crystalCave-f4-tile-36-23",
+   "floor": "crystalCave-f4",
+   "origin": [
+    36,
+    23
+   ],
+   "floorFraction": 0.3003
+  },
+  {
+   "tile": "crystalCave-f4-tile-0-25",
+   "floor": "crystalCave-f4",
+   "origin": [
+    0,
+    25
+   ],
+   "floorFraction": 0.2456
+  },
+  {
+   "tile": "crystalCave-f4-tile-23-25",
+   "floor": "crystalCave-f4",
+   "origin": [
+    23,
+    25
+   ],
+   "floorFraction": 0.3151
+  },
+  {
+   "tile": "crystalCave-f4-tile-36-25",
+   "floor": "crystalCave-f4",
+   "origin": [
+    36,
+    25
+   ],
+   "floorFraction": 0.2707
+  },
+  {
+   "tile": "crystalCave-f5-tile-0-0",
+   "floor": "crystalCave-f5",
+   "origin": [
+    0,
+    0
+   ],
+   "floorFraction": 0.1775
+  },
+  {
+   "tile": "crystalCave-f5-tile-23-0",
+   "floor": "crystalCave-f5",
+   "origin": [
+    23,
+    0
+   ],
+   "floorFraction": 0.2914
+  },
+  {
+   "tile": "crystalCave-f5-tile-27-0",
+   "floor": "crystalCave-f5",
+   "origin": [
+    27,
+    0
+   ],
+   "floorFraction": 0.2426
+  },
+  {
+   "tile": "crystalCave-f5-tile-0-23",
+   "floor": "crystalCave-f5",
+   "origin": [
+    0,
+    23
+   ],
+   "floorFraction": 0.1923
+  },
+  {
+   "tile": "crystalCave-f5-tile-23-23",
+   "floor": "crystalCave-f5",
+   "origin": [
+    23,
+    23
+   ],
+   "floorFraction": 0.4778
+  },
+  {
+   "tile": "crystalCave-f5-tile-27-23",
+   "floor": "crystalCave-f5",
+   "origin": [
+    27,
+    23
+   ],
+   "floorFraction": 0.4068
+  },
+  {
+   "tile": "crystalCave-f5-tile-0-26",
+   "floor": "crystalCave-f5",
+   "origin": [
+    0,
+    26
+   ],
+   "floorFraction": 0.1642
+  },
+  {
+   "tile": "crystalCave-f5-tile-23-26",
+   "floor": "crystalCave-f5",
+   "origin": [
+    23,
+    26
+   ],
+   "floorFraction": 0.4275
+  },
+  {
+   "tile": "crystalCave-f5-tile-27-26",
+   "floor": "crystalCave-f5",
+   "origin": [
+    27,
+    26
+   ],
+   "floorFraction": 0.3728
+  },
+  {
+   "tile": "crystalCave-f6-tile-0-0",
+   "floor": "crystalCave-f6",
+   "origin": [
+    0,
+    0
+   ],
+   "floorFraction": 0.1657
+  },
+  {
+   "tile": "crystalCave-f6-tile-23-0",
+   "floor": "crystalCave-f6",
+   "origin": [
+    23,
+    0
+   ],
+   "floorFraction": 0.1376
+  },
+  {
+   "tile": "crystalCave-f6-tile-39-0",
+   "floor": "crystalCave-f6",
+   "origin": [
+    39,
+    0
+   ],
+   "floorFraction": 0.1672
+  },
+  {
+   "tile": "crystalCave-f6-tile-0-23",
+   "floor": "crystalCave-f6",
+   "origin": [
+    0,
+    23
+   ],
+   "floorFraction": 0.1272
+  },
+  {
+   "tile": "crystalCave-f6-tile-23-23",
+   "floor": "crystalCave-f6",
+   "origin": [
+    23,
+    23
+   ],
+   "floorFraction": 0.1464
+  },
+  {
+   "tile": "crystalCave-f6-tile-39-23",
+   "floor": "crystalCave-f6",
+   "origin": [
+    39,
+    23
+   ],
+   "floorFraction": 0.1317
+  },
+  {
+   "tile": "crystalCave-f6-tile-0-32",
+   "floor": "crystalCave-f6",
+   "origin": [
+    0,
+    32
+   ],
+   "floorFraction": 0.1213
+  },
+  {
+   "tile": "crystalCave-f6-tile-23-32",
+   "floor": "crystalCave-f6",
+   "origin": [
+    23,
+    32
+   ],
+   "floorFraction": 0.182
+  },
+  {
+   "tile": "crystalCave-f6-tile-39-32",
+   "floor": "crystalCave-f6",
+   "origin": [
+    39,
+    32
+   ],
+   "floorFraction": 0.1361
+  },
+  {
+   "tile": "mistyGrotto-f1-tile-0-0",
+   "floor": "mistyGrotto-f1",
+   "origin": [
+    0,
+    0
+   ],
+   "floorFraction": 0.2722
+  },
+  {
+   "tile": "mistyGrotto-f1-tile-14-0",
+   "floor": "mistyGrotto-f1",
+   "origin": [
+    14,
+    0
+   ],
+   "floorFraction": 0.2737
+  },
+  {
+   "tile": "mistyGrotto-f1-tile-0-6",
+   "floor": "mistyGrotto-f1",
+   "origin": [
+    0,
+    6
+   ],
+   "floorFraction": 0.2973
+  },
+  {
+   "tile": "mistyGrotto-f1-tile-14-6",
+   "floor": "mistyGrotto-f1",
+   "origin": [
+    14,
+    6
+   ],
+   "floorFraction": 0.3107
+  },
+  {
+   "tile": "mistyGrotto-f2-tile-0-0",
+   "floor": "mistyGrotto-f2",
+   "origin": [
+    0,
+    0
+   ],
+   "floorFraction": 0.3033
+  },
+  {
+   "tile": "mistyGrotto-f2-tile-17-0",
+   "floor": "mistyGrotto-f2",
+   "origin": [
+    17,
+    0
+   ],
+   "floorFraction": 0.3151
+  },
+  {
+   "tile": "mistyGrotto-f2-tile-0-10",
+   "floor": "mistyGrotto-f2",
+   "origin": [
+    0,
+    10
+   ],
+   "floorFraction": 0.3151
+  },
+  {
+   "tile": "mistyGrotto-f2-tile-17-10",
+   "floor": "mistyGrotto-f2",
+   "origin": [
+    17,
+    10
+   ],
+   "floorFraction": 0.2737
+  },
+  {
+   "tile": "mistyGrotto-f3-tile-0-0",
+   "floor": "mistyGrotto-f3",
+   "origin": [
+    0,
+    0
+   ],
+   "floorFraction": 0.284
+  },
+  {
+   "tile": "mistyGrotto-f3-tile-20-0",
+   "floor": "mistyGrotto-f3",
+   "origin": [
+    20,
+    0
+   ],
+   "floorFraction": 0.2263
+  },
+  {
+   "tile": "mistyGrotto-f3-tile-0-14",
+   "floor": "mistyGrotto-f3",
+   "origin": [
+    0,
+    14
+   ],
+   "floorFraction": 0.2633
+  },
+  {
+   "tile": "mistyGrotto-f3-tile-20-14",
+   "floor": "mistyGrotto-f3",
+   "origin": [
+    20,
+    14
+   ],
+   "floorFraction": 0.3003
+  },
+  {
+   "tile": "sunkenCellar-f1-tile-0-0",
+   "floor": "sunkenCellar-f1",
+   "origin": [
+    0,
+    0
+   ],
+   "floorFraction": 0.2914
+  },
+  {
+   "tile": "sunkenCellar-f2-tile-0-0",
+   "floor": "sunkenCellar-f2",
+   "origin": [
+    0,
+    0
+   ],
+   "floorFraction": 0.1908
+  },
+  {
+   "tile": "sunkenCellar-f2-tile-6-0",
+   "floor": "sunkenCellar-f2",
+   "origin": [
+    6,
+    0
+   ],
+   "floorFraction": 0.2086
+  },
+  {
+   "tile": "sunkenCellar-f2-tile-0-2",
+   "floor": "sunkenCellar-f2",
+   "origin": [
+    0,
+    2
+   ],
+   "floorFraction": 0.1908
+  },
+  {
+   "tile": "sunkenCellar-f2-tile-6-2",
+   "floor": "sunkenCellar-f2",
+   "origin": [
+    6,
+    2
+   ],
+   "floorFraction": 0.2086
+  },
+  {
+   "tile": "sunkenCellar-f3-tile-0-0",
+   "floor": "sunkenCellar-f3",
+   "origin": [
+    0,
+    0
+   ],
+   "floorFraction": 0.2367
+  },
+  {
+   "tile": "sunkenCellar-f3-tile-8-0",
+   "floor": "sunkenCellar-f3",
+   "origin": [
+    8,
+    0
+   ],
+   "floorFraction": 0.2796
+  },
+  {
+   "tile": "sunkenCellar-f3-tile-0-2",
+   "floor": "sunkenCellar-f3",
+   "origin": [
+    0,
+    2
+   ],
+   "floorFraction": 0.2367
+  },
+  {
+   "tile": "sunkenCellar-f3-tile-8-2",
+   "floor": "sunkenCellar-f3",
+   "origin": [
+    8,
+    2
+   ],
+   "floorFraction": 0.2796
+  },
+  {
+   "tile": "whisperingWoodsCave-f1-tile-0-0",
+   "floor": "whisperingWoodsCave-f1",
+   "origin": [
+    0,
+    0
+   ],
+   "floorFraction": 0.3018
+  },
+  {
+   "tile": "whisperingWoodsCave-f1-tile-7-0",
+   "floor": "whisperingWoodsCave-f1",
+   "origin": [
+    7,
+    0
+   ],
+   "floorFraction": 0.3136
+  },
+  {
+   "tile": "whisperingWoodsCave-f1-tile-0-7",
+   "floor": "whisperingWoodsCave-f1",
+   "origin": [
+    0,
+    7
+   ],
+   "floorFraction": 0.2722
+  },
+  {
+   "tile": "whisperingWoodsCave-f1-tile-7-7",
+   "floor": "whisperingWoodsCave-f1",
+   "origin": [
+    7,
+    7
+   ],
+   "floorFraction": 0.2811
+  },
+  {
+   "tile": "whisperingWoodsCave-f2-tile-0-0",
+   "floor": "whisperingWoodsCave-f2",
+   "origin": [
+    0,
+    0
+   ],
+   "floorFraction": 0.3728
+  },
+  {
+   "tile": "whisperingWoodsCave-f2-tile-9-0",
+   "floor": "whisperingWoodsCave-f2",
+   "origin": [
+    9,
+    0
+   ],
+   "floorFraction": 0.4142
+  },
+  {
+   "tile": "whisperingWoodsCave-f2-tile-0-9",
+   "floor": "whisperingWoodsCave-f2",
+   "origin": [
+    0,
+    9
+   ],
+   "floorFraction": 0.3846
+  },
+  {
+   "tile": "whisperingWoodsCave-f2-tile-9-9",
+   "floor": "whisperingWoodsCave-f2",
+   "origin": [
+    9,
+    9
+   ],
+   "floorFraction": 0.4068
+  },
+  {
+   "tile": "whisperingWoodsCave-f3-tile-0-0",
+   "floor": "whisperingWoodsCave-f3",
+   "origin": [
+    0,
+    0
+   ],
+   "floorFraction": 0.2751
+  },
+  {
+   "tile": "whisperingWoodsCave-f3-tile-14-0",
+   "floor": "whisperingWoodsCave-f3",
+   "origin": [
+    14,
+    0
+   ],
+   "floorFraction": 0.2441
+  },
+  {
+   "tile": "whisperingWoodsCave-f3-tile-0-12",
+   "floor": "whisperingWoodsCave-f3",
+   "origin": [
+    0,
+    12
+   ],
+   "floorFraction": 0.3373
+  },
+  {
+   "tile": "whisperingWoodsCave-f3-tile-14-12",
+   "floor": "whisperingWoodsCave-f3",
+   "origin": [
+    14,
+    12
+   ],
+   "floorFraction": 0.2914
+  }
+ ]
+}

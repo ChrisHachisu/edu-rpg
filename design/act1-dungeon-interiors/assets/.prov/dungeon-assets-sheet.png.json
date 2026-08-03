@@ -1,0 +1,17 @@
+{
+ "artefact": "dungeon-assets-sheet.png",
+ "command": "-c",
+ "generatedBy": "codex image_gen",
+ "generator": null,
+ "generatorSha256": null,
+ "inputs": {
+  "design/act1-dungeon-interiors/assets/regen-boss.png": "ebb2244d2a290930e25c0ca53a215f59b9a62c90e13d4a3e2413fb69946d9b83"
+ },
+ "params": {
+  "model": "gpt-5.6-sol",
+  "regeneratedCell": "boss"
+ },
+ "prompt": "Call the built-in image_gen tool ONCE, immediately. Read no files, no skills, no docs.\n\nPrompt: A single GAME PROP SPRITE centred on a flat pure magenta background (#FF00FF), 1024x1024, no grid, no border, no frame, no label. The magenta must be completely flat and unshaded everywhere it shows, so it can be keyed out cleanly \u2014 no soft magenta glow, no magenta reflected onto the prop.\n\na formless mass of dense black smoke, billowing and opaque, with two glowing red eyes burning deep inside it, no body and no face, fraying into wisps at its edges.\n\nDetailed painterly game art, softly lit from the upper left, readable silhouette, no anti-aliasing halos. Stone and rock use a cool desaturated blue-grey palette of #15151a, #25252b, #3d3e42, #525351 and #75746d, so they match wet cave rock. Colour is saturated ONLY on the brass of the chests, the cyan crystal, the torch flame and the wraith's red eyes. No ground, no floor, no shadow pooled under the prop, no scenery, no text.\n\nThen copy the generated file to /Users/christopherhachisu/Documents/claudecode/edu-rpg-map-engine-semantic-data/design/act1-dungeon-interiors/assets/regen-boss.png. Print the final path. Do not commit, do not build, modify no existing file.",
+ "sha256": "30b13b2ef1f439d07750171efc939e675887a7c2027969846a2a2721c792d0ab",
+ "writtenAt": "2026-08-01T13:34:21+09:00"
+}

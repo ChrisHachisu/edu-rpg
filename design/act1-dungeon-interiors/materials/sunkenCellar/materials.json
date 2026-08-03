@@ -1,0 +1,58 @@
+{
+ "floor": {
+  "size": [
+   531,
+   531
+  ],
+  "meanRGB": [
+   138.8,
+   122.0,
+   92.5
+  ],
+  "wrapStepBefore": 25.92,
+  "wrapStepAfter": 18.24,
+  "interiorStep": 15.08
+ },
+ "wall": {
+  "size": [
+   531,
+   531
+  ],
+  "meanRGB": [
+   68.2,
+   69.4,
+   68.8
+  ],
+  "wrapStepBefore": 27.68,
+  "wrapStepAfter": 17.97,
+  "interiorStep": 12.0
+ },
+ "rubble": {
+  "size": [
+   531,
+   531
+  ],
+  "meanRGB": [
+   85.4,
+   82.9,
+   79.1
+  ],
+  "wrapStepBefore": 32.76,
+  "wrapStepAfter": 21.98,
+  "interiorStep": 17.35
+ },
+ "accent": {
+  "size": [
+   531,
+   531
+  ],
+  "meanRGB": [
+   121.5,
+   123.9,
+   105.5
+  ],
+  "wrapStepBefore": 19.17,
+  "wrapStepAfter": 15.85,
+  "interiorStep": 12.56
+ }
+}

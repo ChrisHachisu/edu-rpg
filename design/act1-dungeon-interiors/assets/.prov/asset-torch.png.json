@@ -1,0 +1,15 @@
+{
+ "artefact": "asset-torch.png",
+ "command": "make_dungeon_assets.py --split-only",
+ "generator": "scripts/make_dungeon_assets.py",
+ "generatorSha256": "f66ad65e4cc9ba69f908a9f92de99d702b71f7060ae9837ee70a7fd4bde0b207",
+ "inputs": {
+  "design/act1-dungeon-interiors/assets/dungeon-assets-sheet.png": "30b13b2ef1f439d07750171efc939e675887a7c2027969846a2a2721c792d0ab"
+ },
+ "params": {
+  "cell": "torch",
+  "px": 48
+ },
+ "sha256": "cfb3d43173fb2581de88e4203bc346b462008aa0829e00dc29b068dfd310687c",
+ "writtenAt": "2026-08-01T18:02:14+09:00"
+}

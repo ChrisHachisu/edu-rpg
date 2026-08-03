@@ -1,0 +1,11 @@
+{
+ "adopted": true,
+ "artefact": "mat-rubble.png",
+ "command": "adopted as a source on freshness.py",
+ "generator": null,
+ "generatorSha256": null,
+ "inputs": {},
+ "params": {},
+ "sha256": "71dd3db2c56d4c12b70e15448f78abf024b301e45d794a2c0392d5f790d7a7b1",
+ "writtenAt": "2026-08-01T12:06:03+09:00"
+}
