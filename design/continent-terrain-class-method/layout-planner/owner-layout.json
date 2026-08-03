@@ -1,0 +1,73 @@
+{
+ "_source": "Owner placement via layout-planner.html, 2026-07-29. Coordinates are WORLD CELLS, the same space as g2.LANDMARKS / landmark-roster.json / WorldMapScene.ts ox,oy. `blockers` and `path` are freehand stroke samples (duplicates and jitter are expected); the blocker strokes are a PERIMETER GUIDE to be filled and naturalised by the generator, not a finished mask.",
+ "1": {
+  "landmarks": {
+   "Greenhollow": [69, 255],
+   "Sunken Cellar": [30, 274],
+   "Whispering Woods": [101, 231],
+   "Millbrook": [39, 344],
+   "Darkfang / Misty Grotto": [91, 378],
+   "Port Sapphire": [133, 347],
+   "Coastal Reef": [144, 371],
+   "Crystal Cave": [149, 278]
+  },
+  "path": [],
+  "blockers": "see owner-layout-strokes.json"
+ },
+ "2": {
+  "landmarks": {
+   "Crystal Cave (Act 2 side)": [170, 283],
+   "Ironkeep": [209, 320],
+   "Iron Mine": [172, 330],
+   "Storm Nest": [199, 383],
+   "Frostwatch": [253, 339],
+   "Frozen Lake": [275, 363],
+   "Haunted Forest": [284, 293],
+   "Ravenhollow": [249, 246],
+   "Shadow Cave": [193, 236]
+  },
+  "path": "Haunted Forest SECOND ENTRANCE marker, around (283-285, 257-260)",
+  "blockers": "see owner-layout-strokes.json"
+ },
+ "3": {
+  "landmarks": {
+   "Shadow Cave (Act 3 side)": [198, 213],
+   "Ruins Camp": [196, 189],
+   "Bandit Hideout": [286, 201],
+   "Oasis Haven": [262, 154],
+   "Oasis Depths": [287, 154],
+   "Desert Tomb": [270, 112],
+   "Scorched Ruins": [171, 133],
+   "Magma Tunnels": [192, 93]
+  },
+  "path": [],
+  "blockers": "see owner-layout-strokes.json"
+ },
+ "4": {
+  "landmarks": {
+   "Magma Tunnels (Act 4 side)": [183, 117],
+   "Ember's Rest": [200, 98],
+   "Obsidian Cavern": [273, 117],
+   "Ember Mines": [284, 33],
+   "Volcanic Forge": [178, 33]
+  },
+  "path": "NEW TOWN location, scribble around (256-259, 41-44)",
+  "blockers": "see owner-layout-strokes.json"
+ },
+ "5": {
+  "landmarks": {
+   "Volcanic Forge (Act 5 side)": [150, 37],
+   "Last Bastion": [118, 36],
+   "Haven's Edge": [76, 86],
+   "Demon Barracks": [140, 134],
+   "Void Rift": [79, 200],
+   "Portal - Stormreach Isles": [23, 90],
+   "Portal - Frostfall Peaks": [140, 191],
+   "Portal - Sunken Temple": [25, 167],
+   "Portal - Twilight Realm": [137, 89],
+   "Demon Castle": [85, 31]
+  },
+  "path": [[85, 132]],
+  "blockers": "see owner-layout-strokes.json"
+ }
+}

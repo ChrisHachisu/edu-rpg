@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "noEmit": false,
+    "outDir": ".map-engine-build",
+    "rootDir": "src/map-engine"
+  },
+  "include": ["src/map-engine/**/*.ts"]
+}

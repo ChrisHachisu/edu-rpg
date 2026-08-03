@@ -55,11 +55,11 @@ const COMPASS_CHAIN: CompassWaypoint[] = [
   { mapId: 'lastBastion',   ox: 100, oy: 150, type: 'town',    doneFlag: 'compass.visited.lastBastion' },
   { mapId: 'havensEdge',    ox: 70,  oy: 100, type: 'town',    doneFlag: 'compass.visited.havensEdge' },
   { mapId: 'demonBarracks', ox: 80,  oy: 60,  type: 'dungeon', doneFlag: 'boss.warGeneralMalachar.defeated', questGate: 'demonBarracksQuest' },
-  { mapId: 'voidRift',      ox: 120, oy: 70,  type: 'dungeon', doneFlag: 'boss.nullDevourer.defeated', questGate: 'kikisResolve' },
-  { mapId: 'stormreachIsles',   ox: 40,  oy: 50,  type: 'dungeon', doneFlag: 'boss.stormSentinel.defeated', questGate: 'portalRelics' },
-  { mapId: 'frostfallPeaks',    ox: 130, oy: 40,  type: 'dungeon', doneFlag: 'boss.frostMonarch.defeated', questGate: 'portalRelics' },
-  { mapId: 'sunkenTempleIsle',  ox: 50,  oy: 130, type: 'dungeon', doneFlag: 'boss.swordWraith.defeated', questGate: 'portalRelics' },
-  { mapId: 'twilightRealm',     ox: 120, oy: 140, type: 'dungeon', doneFlag: 'boss.celestialGuardian.defeated', questGate: 'portalRelics' },
+  { mapId: 'voidRift',      ox: 39,  oy: 162,  type: 'dungeon', doneFlag: 'boss.nullDevourer.defeated', questGate: 'kikisResolve' },
+  { mapId: 'stormreachIsles',   ox: 44,  oy: 74,  type: 'dungeon', doneFlag: 'boss.stormSentinel.defeated', questGate: 'portalRelics' },
+  { mapId: 'frostfallPeaks',    ox: 111, oy: 41,  type: 'dungeon', doneFlag: 'boss.frostMonarch.defeated', questGate: 'portalRelics' },
+  { mapId: 'sunkenTempleIsle',  ox: 62,  oy: 36, type: 'dungeon', doneFlag: 'boss.swordWraith.defeated', questGate: 'portalRelics' },
+  { mapId: 'twilightRealm',     ox: 22,  oy: 124, type: 'dungeon', doneFlag: 'boss.celestialGuardian.defeated', questGate: 'portalRelics' },
   { mapId: 'demonCastle',       ox: 85,  oy: 30,  type: 'dungeon', doneFlag: 'boss.demonKing.defeated' },
 ];
 

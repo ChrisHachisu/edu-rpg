@@ -1,0 +1,347 @@
+{
+  "note": "Authority: the owner's placement in design/continent-terrain-class-method/layout-planner/owner-layout.json, carried by LANDMARKS in scripts/build_continent_terrain_class_macro_g2_organic.py. World-tile coords [x,y]. Regenerated from that table 2026-07-29 -- every cell here must equal its g2.LANDMARKS cell, and WorldMapScene.ts ox/oy plus maps.ts fromX/fromY must move with it. The class map (continent-macro-g3) is missing most of these; the semantic-map builder stamps markers from THIS file, not from structure/landmarkSolid cells, so towns+dungeons+portals appear on every act. type drives marker colour: town / dungeon / portal / connector.",
+  "acts": {
+    "1": [
+      {
+        "name": "Greenhollow",
+        "type": "town",
+        "cell": [
+          69,
+          255
+        ],
+        "note": "start town"
+      },
+      {
+        "name": "Millbrook",
+        "type": "town",
+        "cell": [
+          39,
+          344
+        ]
+      },
+      {
+        "name": "Port Sapphire",
+        "type": "town",
+        "cell": [
+          133,
+          347
+        ]
+      },
+      {
+        "name": "Coastal Reef",
+        "type": "dungeon",
+        "cell": [
+          142,
+          352
+        ]
+      },
+      {
+        "name": "Darkfang",
+        "type": "dungeon",
+        "cell": [
+          91,
+          378
+        ]
+      },
+      {
+        "name": "Sunken Cellar",
+        "type": "dungeon",
+        "cell": [
+          30,
+          274
+        ]
+      },
+      {
+        "name": "Whispering Woods",
+        "type": "dungeon",
+        "cell": [
+          101,
+          233
+        ]
+      },
+      {
+        "name": "Crystal Cave — to Act 2",
+        "type": "connector",
+        "cell": [
+          140,
+          278
+        ]
+      }
+    ],
+    "2": [
+      {
+        "name": "Frostwatch",
+        "type": "town",
+        "cell": [
+          253,
+          339
+        ]
+      },
+      {
+        "name": "Ironkeep",
+        "type": "town",
+        "cell": [
+          209,
+          320
+        ]
+      },
+      {
+        "name": "Ravenhollow",
+        "type": "town",
+        "cell": [
+          249,
+          246
+        ]
+      },
+      {
+        "name": "Frozen Lake",
+        "type": "dungeon",
+        "cell": [
+          275,
+          363
+        ]
+      },
+      {
+        "name": "Haunted Forest",
+        "type": "dungeon",
+        "cell": [
+          284,
+          293
+        ]
+      },
+      {
+        "name": "Iron Mine",
+        "type": "dungeon",
+        "cell": [
+          172,
+          330
+        ]
+      },
+      {
+        "name": "Storm Nest",
+        "type": "dungeon",
+        "cell": [
+          199,
+          383
+        ]
+      },
+      {
+        "name": "Crystal Cave — to Act 1",
+        "type": "connector",
+        "cell": [
+          170,
+          283
+        ]
+      },
+      {
+        "name": "Shadow Cave — to Act 3",
+        "type": "connector",
+        "cell": [
+          193,
+          236
+        ]
+      }
+    ],
+    "3": [
+      {
+        "name": "Oasis Haven",
+        "type": "town",
+        "cell": [
+          262,
+          154
+        ]
+      },
+      {
+        "name": "Ruins Camp",
+        "type": "town",
+        "cell": [
+          196,
+          189
+        ]
+      },
+      {
+        "name": "Bandit Hideout",
+        "type": "dungeon",
+        "cell": [
+          286,
+          201
+        ]
+      },
+      {
+        "name": "Desert Tomb",
+        "type": "dungeon",
+        "cell": [
+          270,
+          112
+        ]
+      },
+      {
+        "name": "Oasis Depths",
+        "type": "dungeon",
+        "cell": [
+          287,
+          154
+        ]
+      },
+      {
+        "name": "Scorched Ruins",
+        "type": "dungeon",
+        "cell": [
+          171,
+          133
+        ],
+        "note": "owner placement; maps.ts 278,82 is stale"
+      },
+      {
+        "name": "Magma Tunnels — to Act 4",
+        "type": "connector",
+        "cell": [
+          192,
+          93
+        ]
+      },
+      {
+        "name": "Shadow Cave — to Act 2",
+        "type": "connector",
+        "cell": [
+          198,
+          213
+        ]
+      }
+    ],
+    "4": [
+      {
+        "name": "Cinderwatch",
+        "type": "town",
+        "cell": [
+          257,
+          42
+        ],
+        "note": "placeholder name; owner has not chosen one"
+      },
+      {
+        "name": "Ember's Rest",
+        "type": "town",
+        "cell": [
+          200,
+          98
+        ]
+      },
+      {
+        "name": "Ember Mines",
+        "type": "dungeon",
+        "cell": [
+          284,
+          33
+        ]
+      },
+      {
+        "name": "Obsidian Cavern",
+        "type": "dungeon",
+        "cell": [
+          273,
+          117
+        ]
+      },
+      {
+        "name": "Magma Tunnels — to Act 3",
+        "type": "connector",
+        "cell": [
+          183,
+          117
+        ]
+      },
+      {
+        "name": "Volcanic Forge — to Act 5",
+        "type": "connector",
+        "cell": [
+          178,
+          33
+        ]
+      }
+    ],
+    "5": [
+      {
+        "name": "Haven's Edge",
+        "type": "town",
+        "cell": [
+          76,
+          86
+        ]
+      },
+      {
+        "name": "Last Bastion",
+        "type": "town",
+        "cell": [
+          118,
+          36
+        ]
+      },
+      {
+        "name": "Demon Barracks",
+        "type": "dungeon",
+        "cell": [
+          140,
+          134
+        ]
+      },
+      {
+        "name": "Demon Castle",
+        "type": "dungeon",
+        "cell": [
+          85,
+          31
+        ],
+        "note": "final"
+      },
+      {
+        "name": "Void Rift",
+        "type": "dungeon",
+        "cell": [
+          79,
+          200
+        ]
+      },
+      {
+        "name": "Portal Frostfall",
+        "type": "portal",
+        "cell": [
+          140,
+          191
+        ]
+      },
+      {
+        "name": "Portal Stormreach",
+        "type": "portal",
+        "cell": [
+          23,
+          90
+        ]
+      },
+      {
+        "name": "Portal Sunken Temple",
+        "type": "portal",
+        "cell": [
+          25,
+          167
+        ]
+      },
+      {
+        "name": "Portal Twilight",
+        "type": "portal",
+        "cell": [
+          137,
+          89
+        ]
+      },
+      {
+        "name": "Volcanic Forge — to Act 4",
+        "type": "connector",
+        "cell": [
+          150,
+          37
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,174 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#071712"/>
+      <stop offset="1" stop-color="#0d241b"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="9" flood-color="#000" flood-opacity=".35"/>
+    </filter>
+    <pattern id="grid" width="24" height="24" patternUnits="userSpaceOnUse">
+      <path d="M24 0H0V24" fill="none" stroke="#d9efd9" stroke-opacity=".045"/>
+    </pattern>
+    <style>
+      .title{font-family:Arial,sans-serif;font-size:44px;font-weight:800;letter-spacing:2px;fill:#f7edcf}
+      .sub{font-family:Arial,sans-serif;font-size:19px;font-weight:500;fill:#b8c8b7}
+      .region{font-family:Arial,sans-serif;font-size:27px;font-weight:800;fill:#fff2c8;text-anchor:middle}
+      .small{font-family:Arial,sans-serif;font-size:16px;font-weight:600;fill:#d9e5d4}
+      .tiny{font-family:Arial,sans-serif;font-size:13px;font-weight:600;fill:#aebfab}
+      .label{font-family:Arial,sans-serif;font-size:15px;font-weight:700;fill:#fff6dc}
+      .panelTitle{font-family:Arial,sans-serif;font-size:20px;font-weight:800;fill:#f4df9d;letter-spacing:.5px}
+      .panelText{font-family:Arial,sans-serif;font-size:15px;font-weight:500;fill:#d4dfd1}
+      .chip{font-family:Arial,sans-serif;font-size:12px;font-weight:800;fill:#092017;letter-spacing:.7px}
+    </style>
+  </defs>
+
+  <rect width="1600" height="1000" fill="url(#bg)"/>
+  <rect width="1600" height="1000" fill="url(#grid)"/>
+  <text x="55" y="68" class="title">CONNECTED MAINLAND · WORLD SHAPE DIRECTION</text>
+  <text x="58" y="102" class="sub">Acts are organic progression regions on one continent · only four portal lands remain separate · conceptual macro layout</text>
+
+  <g transform="translate(44 132)" filter="url(#shadow)">
+    <rect width="1090" height="816" rx="28" fill="#0a1f17" stroke="#355b46" stroke-width="2"/>
+    <text x="30" y="42" class="panelTitle">ONE MAIN OVERWORLD · GLOBAL COORDINATES</text>
+
+    <!-- contiguous mainland silhouette -->
+    <path d="M167 650
+      C105 608 84 533 117 468
+      C145 414 126 357 173 315
+      C211 281 265 294 304 257
+      C345 219 345 148 407 111
+      C464 77 535 111 583 98
+      C649 79 703 41 774 73
+      C832 99 844 153 902 177
+      C964 203 1031 207 1048 271
+      C1064 331 1016 370 1021 424
+      C1028 489 1074 543 1030 603
+      C991 655 918 649 866 684
+      C814 720 785 781 716 776
+      C651 771 619 724 561 719
+      C501 713 456 758 397 741
+      C337 724 306 676 256 682
+      C222 686 194 676 167 650Z"
+      fill="#385f39" stroke="#9bb96f" stroke-width="5"/>
+
+    <!-- organic region washes -->
+    <path d="M304 257 C345 219 345 148 407 111 C464 77 535 111 583 98 C649 79 703 41 774 73 C832 99 844 153 902 177 C964 203 1031 207 1048 271 C1064 331 1016 370 1021 424 C885 375 806 401 746 468 C672 453 600 470 545 515 C528 464 511 420 490 399 C443 353 385 327 331 337Z" fill="#47536e" opacity=".85"/>
+    <path d="M167 650 C105 608 84 533 117 468 C145 414 126 357 173 315 C220 288 279 306 331 337 C385 327 443 353 490 399 C523 370 542 327 583 350 C617 390 596 468 545 515 C491 477 424 463 372 482 C357 552 302 628 256 682 C222 686 194 676 167 650Z" fill="#487b43" opacity=".9"/>
+    <path d="M256 682 C302 628 357 552 372 482 C424 463 491 477 545 515 C581 558 602 646 561 719 C501 713 456 758 397 741 C337 724 306 676 256 682Z" fill="#687b3d" opacity=".9"/>
+    <path d="M545 515 C600 470 672 453 746 468 C806 503 850 586 866 684 C814 720 785 781 716 776 C651 771 619 724 561 719 C602 646 581 558 545 515Z" fill="#9a7740" opacity=".9"/>
+    <path d="M746 468 C806 401 885 375 1021 424 C1028 489 1074 543 1030 603 C991 655 918 649 866 684 C850 586 806 503 746 468Z" fill="#944c32" opacity=".9"/>
+
+    <!-- trimmed Act 1 northwest notch -->
+    <path d="M112 464 C151 419 130 360 174 318 C211 292 253 300 280 319 C234 336 210 372 205 409 C196 443 161 470 112 464Z" fill="#0a1f17" stroke="#77a16a" stroke-width="3" stroke-dasharray="8 7"/>
+    <text x="145" y="372" class="tiny" text-anchor="middle">trim empty NW</text>
+    <text x="145" y="390" class="tiny" text-anchor="middle">shoulder inward</text>
+
+    <!-- Act 2 foothold reaches the far mouth of the Crystal passage -->
+    <path d="M555 300 C626 302 708 338 752 405 C762 440 755 462 746 468 C675 462 612 479 545 515 C581 514 613 522 643 542 C700 470 700 364 653 312Z" fill="#687b3d" opacity=".97"/>
+
+    <!-- act labels -->
+    <text x="310" y="420" class="region">ACT 1</text>
+    <text x="456" y="642" class="region">ACT 2</text>
+    <text x="706" y="650" class="region">ACT 3</text>
+    <text x="930" y="535" class="region">ACT 4</text>
+    <text x="720" y="205" class="region">ACT 5</text>
+
+    <!-- act 1 braided trail -->
+    <path d="M174 618 C211 591 239 561 273 527 S344 483 386 484 S446 444 490 399 S520 342 555 310" fill="none" stroke="#e6bc6c" stroke-width="10" stroke-linecap="round"/>
+    <path d="M174 618 C211 591 239 561 273 527 S344 483 386 484 S446 444 490 399 S520 342 555 310" fill="none" stroke="#ffe0a2" stroke-width="2" stroke-dasharray="4 12" stroke-linecap="round"/>
+    <path d="M555 310 C584 351 596 404 575 463 C564 486 555 502 545 515" fill="none" stroke="#d8be75" stroke-width="7" stroke-dasharray="7 9" stroke-linecap="round" opacity=".75"/>
+    <path d="M174 618 C150 632 139 648 129 665 M273 527 C235 490 218 454 220 428 M386 484 C412 535 435 564 469 588" fill="none" stroke="#c99b60" stroke-width="6" stroke-dasharray="9 10" stroke-linecap="round"/>
+
+    <!-- landmarks -->
+    <g fill="#f2c763" stroke="#fff0b9" stroke-width="3">
+      <circle cx="174" cy="618" r="12"/><circle cx="273" cy="527" r="12"/><circle cx="386" cy="484" r="12"/>
+    </g>
+    <path d="M490 381l17 31h-34z" fill="#929dad" stroke="#ffffff" stroke-width="3"/>
+    <rect x="544" y="299" width="22" height="22" transform="rotate(45 555 310)" fill="#f4e1a6" stroke="#ffffff" stroke-width="3"/>
+    <g fill="#89aa76" stroke="#d4e5be" stroke-width="3">
+      <path d="M129 649l15 27h-30z"/><path d="M220 412l15 27h-30z"/><path d="M469 572l15 27h-30z"/>
+    </g>
+    <text x="190" y="640" class="label">Greenhollow</text>
+    <text x="285" y="550" class="label">Millbrook</text>
+    <text x="401" y="505" class="label">Port Sapphire</text>
+    <text x="443" y="375" class="label">Darkfang</text>
+    <text x="665" y="310" class="label">Crystal Cave</text>
+    <text x="54" y="689" class="tiny">Sunken</text>
+    <text x="237" y="410" class="tiny">Whispering</text>
+    <text x="482" y="610" class="tiny">Coastal Reef · current main prerequisite</text>
+
+    <!-- mountain act boundaries and gate dungeons -->
+    <path d="M500 286 L525 247 L550 281 L575 239 L600 281 L625 247 L651 287" fill="none" stroke="#d8d1b3" stroke-width="9" stroke-linejoin="round" opacity=".9"/>
+    <text x="575" y="221" class="tiny" text-anchor="middle">CRYSTAL RANGE</text>
+    <text x="660" y="348" class="small" text-anchor="middle">ACT 1→2 DUNGEON PASSAGE</text>
+    <path d="M718 474 L740 443 L762 474 L785 438 L809 474 L833 444 L857 481" fill="none" stroke="#d8d1b3" stroke-width="8" stroke-linejoin="round" opacity=".75"/>
+    <text x="790" y="421" class="tiny" text-anchor="middle">later gate range</text>
+
+    <!-- portal lands -->
+    <g stroke="#9f77d7" stroke-width="3" fill="#283650">
+      <ellipse cx="101" cy="140" rx="48" ry="31"/><ellipse cx="236" cy="86" rx="48" ry="31"/>
+      <ellipse cx="935" cy="86" rx="48" ry="31"/><ellipse cx="1018" cy="735" rx="48" ry="31"/>
+    </g>
+    <g fill="none" stroke="#bd95f0" stroke-width="3" stroke-dasharray="5 8">
+      <path d="M137 161L413 231"/><path d="M274 103L494 181"/><path d="M897 109L815 188"/><path d="M988 710L930 621"/>
+    </g>
+    <text x="101" y="145" class="tiny" text-anchor="middle">Portal Land 1</text>
+    <text x="236" y="91" class="tiny" text-anchor="middle">Portal Land 2</text>
+    <text x="935" y="91" class="tiny" text-anchor="middle">Portal Land 3</text>
+    <text x="1018" y="740" class="tiny" text-anchor="middle">Portal Land 4</text>
+
+    <g transform="translate(32 753)">
+      <rect width="1026" height="42" rx="15" fill="#102c20" stroke="#416a50"/>
+      <circle cx="22" cy="21" r="8" fill="#e6bc6c"/><text x="39" y="27" class="small">required route</text>
+      <path d="M170 21h38" stroke="#c99b60" stroke-width="5" stroke-dasharray="8 7"/><text x="218" y="27" class="small">branch route</text>
+      <path d="M350 28l13-22 13 22z" fill="#929dad"/><text x="389" y="27" class="small">required dungeon</text>
+      <rect x="591" y="12" width="18" height="18" transform="rotate(45 600 21)" fill="#f4e1a6"/><text x="623" y="27" class="small">act connector</text>
+      <ellipse cx="790" cy="21" rx="18" ry="10" fill="#283650" stroke="#9f77d7"/><text x="818" y="27" class="small">portal land</text>
+      <text x="930" y="27" class="tiny">NO FINAL COORDS</text>
+    </g>
+  </g>
+
+  <g transform="translate(1160 132)" filter="url(#shadow)">
+    <rect width="396" height="816" rx="28" fill="#10261d" stroke="#355b46" stroke-width="2"/>
+    <g transform="translate(24 25)">
+      <rect width="210" height="28" rx="14" fill="#e6bc6c"/>
+      <text x="105" y="19" text-anchor="middle" class="chip">OWNER DIRECTION APPLIED</text>
+      <text x="0" y="85" class="panelTitle">SHAPE RULES</text>
+      <text x="0" y="116" class="panelText">• one continuous mainland</text>
+      <text x="0" y="143" class="panelText">• Acts are regions, not maps</text>
+      <text x="0" y="170" class="panelText">• no visible square boundaries</text>
+      <text x="0" y="197" class="panelText">• four portal-only exceptions</text>
+      <text x="0" y="224" class="panelText">• mountain dungeons explain gates</text>
+      <text x="0" y="251" class="panelText">• coast trims empty perimeter</text>
+
+      <line x1="0" y1="280" x2="348" y2="280" stroke="#466955"/>
+      <text x="0" y="318" class="panelTitle">WORKING PACING · ~20H GAME</text>
+      <text x="0" y="350" class="panelText">Safe hub → safe hub</text>
+      <text x="348" y="350" class="panelText" text-anchor="end">2–4 min</text>
+      <rect x="0" y="364" width="348" height="12" rx="6" fill="#1d3b2c"/>
+      <rect x="0" y="364" width="232" height="12" rx="6" fill="#e6bc6c"/>
+      <text x="0" y="410" class="panelText">Town → required dungeon</text>
+      <text x="348" y="410" class="panelText" text-anchor="end">4–6 min</text>
+      <rect x="0" y="424" width="348" height="12" rx="6" fill="#1d3b2c"/>
+      <rect x="0" y="424" width="348" height="12" rx="6" fill="#c99b60"/>
+      <text x="0" y="470" class="panelText">Optional spur</text>
+      <text x="348" y="470" class="panelText" text-anchor="end">1–4 min</text>
+      <rect x="0" y="484" width="348" height="12" rx="6" fill="#1d3b2c"/>
+      <rect x="0" y="484" width="232" height="12" rx="6" fill="#89aa76"/>
+
+      <text x="0" y="535" class="tiny">Working target: ~20h typical completion.</text>
+      <text x="0" y="555" class="tiny">No &gt;2 min dead traversal without a</text>
+      <text x="0" y="575" class="tiny">vista, sign, branch, encounter, resource,</text>
+      <text x="0" y="595" class="tiny">landmark, or story beat.</text>
+
+      <line x1="0" y1="620" x2="348" y2="620" stroke="#466955"/>
+      <text x="0" y="657" class="panelTitle">ACT 1 CHANGE</text>
+      <text x="0" y="689" class="panelText">Keep Braided Pilgrim Trail graph.</text>
+      <text x="0" y="716" class="panelText">Re-embed it in an organic southwest</text>
+      <text x="0" y="743" class="panelText">lobe and cut the empty northwest notch.</text>
+      <text x="0" y="780" class="tiny">Storage may remain rectangular.</text>
+      <text x="0" y="800" class="tiny">The player should never perceive it.</text>
+    </g>
+  </g>
+</svg>

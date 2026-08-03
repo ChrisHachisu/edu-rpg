@@ -1,0 +1,442 @@
+{
+ "act1": {
+  "bounds": [
+   16,
+   218,
+   163,
+   399
+  ],
+  "pxPerCell": 16,
+  "size": [
+   2368,
+   2912
+  ],
+  "theme": "verdant coastal frontier",
+  "source": "generateOverworldMap",
+  "path": "design/continent-terrain-class-method/semantic-maps/act1-semantic-runtime.png",
+  "legend": [
+   {
+    "key": "ground",
+    "rgb": [
+     150,
+     205,
+     80
+    ],
+    "means": "open grass and moss, walkable. NO trees in this colour",
+    "cells": 12982
+   },
+   {
+    "key": "vegetation",
+    "rgb": [
+     26,
+     82,
+     46
+    ],
+    "means": "dense impassable old-growth evergreen forest",
+    "cells": 2023
+   },
+   {
+    "key": "rock",
+    "rgb": [
+     128,
+     126,
+     122
+    ],
+    "means": "mossy faceted rock: irregular boulders and slabs, moss in the crevices",
+    "cells": 3
+   },
+   {
+    "key": "water",
+    "rgb": [
+     30,
+     82,
+     170
+    ],
+    "means": "clear coastal sea and lakes",
+    "cells": 14008
+   },
+   {
+    "key": "town",
+    "rgb": [
+     235,
+     120,
+     90
+    ],
+    "means": "a TOWN/VILLAGE -- design a unique settlement fitting this act's theme",
+    "count": 3
+   },
+   {
+    "key": "dungeon",
+    "rgb": [
+     170,
+     90,
+     190
+    ],
+    "means": "a DUNGEON ENTRANCE -- design a unique portal/cave/ruin fitting this act's theme",
+    "count": 4
+   },
+   {
+    "key": "connector",
+    "rgb": [
+     232,
+     72,
+     168
+    ],
+    "means": "an ACT-CONNECTING DUNGEON -- the ONLY way through the range into the neighbouring land. Make it read as a major, unmistakable gateway",
+    "count": 1
+   }
+  ]
+ },
+ "act2": {
+  "bounds": [
+   161,
+   222,
+   312,
+   399
+  ],
+  "pxPerCell": 16,
+  "size": [
+   2432,
+   2848
+  ],
+  "theme": "fully snowy frozen highlands",
+  "source": "generateOverworldMap",
+  "path": "design/continent-terrain-class-method/semantic-maps/act2-semantic-runtime.png",
+  "legend": [
+   {
+    "key": "ground",
+    "rgb": [
+     238,
+     244,
+     250
+    ],
+    "means": "wind-packed snow and frozen tundra, walkable",
+    "cells": 11085
+   },
+   {
+    "key": "vegetation",
+    "rgb": [
+     26,
+     82,
+     46
+    ],
+    "means": "dense SNOW-LADEN evergreen forest, impassable (same forest, under snow)",
+    "cells": 3158
+   },
+   {
+    "key": "rock",
+    "rgb": [
+     128,
+     126,
+     122
+    ],
+    "means": "ice-cracked rock, snow caught in the crevices (same rock, frozen)",
+    "cells": 1323
+   },
+   {
+    "key": "water",
+    "rgb": [
+     30,
+     82,
+     170
+    ],
+    "means": "frozen lakes and rivers, cracked ice over dark water",
+    "cells": 13554
+   },
+   {
+    "key": "town",
+    "rgb": [
+     235,
+     120,
+     90
+    ],
+    "means": "a TOWN/VILLAGE -- design a unique settlement fitting this act's theme",
+    "count": 3
+   },
+   {
+    "key": "dungeon",
+    "rgb": [
+     170,
+     90,
+     190
+    ],
+    "means": "a DUNGEON ENTRANCE -- design a unique portal/cave/ruin fitting this act's theme",
+    "count": 4
+   },
+   {
+    "key": "connector",
+    "rgb": [
+     232,
+     72,
+     168
+    ],
+    "means": "an ACT-CONNECTING DUNGEON -- the ONLY way through the range into the neighbouring land. Make it read as a major, unmistakable gateway",
+    "count": 2
+   }
+  ]
+ },
+ "act3": {
+  "bounds": [
+   163,
+   88,
+   314,
+   221
+  ],
+  "pxPerCell": 16,
+  "size": [
+   2432,
+   2144
+  ],
+  "theme": "desert, oasis and wind canyon",
+  "source": "generateOverworldMap",
+  "path": "design/continent-terrain-class-method/semantic-maps/act3-semantic-runtime.png",
+  "legend": [
+   {
+    "key": "ground",
+    "rgb": [
+     226,
+     210,
+     156
+    ],
+    "means": "sun-baked desert sand and dry scrub, walkable",
+    "cells": 6378
+   },
+   {
+    "key": "vegetation",
+    "rgb": [
+     26,
+     82,
+     46
+    ],
+    "means": "dense palm and scrub thicket, impassable (the act's forest, desert-adapted)",
+    "cells": 105
+   },
+   {
+    "key": "rock",
+    "rgb": [
+     128,
+     126,
+     122
+    ],
+    "means": "wind-carved sandstone rock, layered strata and mesa walls",
+    "cells": 5311
+   },
+   {
+    "key": "water",
+    "rgb": [
+     30,
+     82,
+     170
+    ],
+    "means": "precious oasis water, startlingly blue against the sand",
+    "cells": 10926
+   },
+   {
+    "key": "town",
+    "rgb": [
+     235,
+     120,
+     90
+    ],
+    "means": "a TOWN/VILLAGE -- design a unique settlement fitting this act's theme",
+    "count": 2
+   },
+   {
+    "key": "dungeon",
+    "rgb": [
+     170,
+     90,
+     190
+    ],
+    "means": "a DUNGEON ENTRANCE -- design a unique portal/cave/ruin fitting this act's theme",
+    "count": 4
+   },
+   {
+    "key": "connector",
+    "rgb": [
+     232,
+     72,
+     168
+    ],
+    "means": "an ACT-CONNECTING DUNGEON -- the ONLY way through the range into the neighbouring land. Make it read as a major, unmistakable gateway",
+    "count": 2
+   }
+  ]
+ },
+ "act4": {
+  "bounds": [
+   163,
+   3,
+   314,
+   128
+  ],
+  "pxPerCell": 16,
+  "size": [
+   2432,
+   2016
+  ],
+  "theme": "volcanic ashlands and calderas",
+  "source": "generateOverworldMap",
+  "path": "design/continent-terrain-class-method/semantic-maps/act4-semantic-runtime.png",
+  "legend": [
+   {
+    "key": "ground",
+    "rgb": [
+     186,
+     178,
+     168
+    ],
+    "means": "pale volcanic ash and scorched earth, walkable",
+    "cells": 8568
+   },
+   {
+    "key": "rock",
+    "rgb": [
+     128,
+     126,
+     122
+    ],
+    "means": "black obsidian and basalt rock, glassy volcanic stone",
+    "cells": 3634
+   },
+   {
+    "key": "water",
+    "rgb": [
+     30,
+     82,
+     170
+    ],
+    "means": "dark still water",
+    "cells": 9078
+   },
+   {
+    "key": "town",
+    "rgb": [
+     235,
+     120,
+     90
+    ],
+    "means": "a TOWN/VILLAGE -- design a unique settlement fitting this act's theme",
+    "count": 1
+   },
+   {
+    "key": "dungeon",
+    "rgb": [
+     170,
+     90,
+     190
+    ],
+    "means": "a DUNGEON ENTRANCE -- design a unique portal/cave/ruin fitting this act's theme",
+    "count": 2
+   },
+   {
+    "key": "connector",
+    "rgb": [
+     232,
+     72,
+     168
+    ],
+    "means": "an ACT-CONNECTING DUNGEON -- the ONLY way through the range into the neighbouring land. Make it read as a major, unmistakable gateway",
+    "count": 2
+   }
+  ]
+ },
+ "act5": {
+  "bounds": [
+   9,
+   7,
+   162,
+   217
+  ],
+  "pxPerCell": 16,
+  "size": [
+   2464,
+   3376
+  ],
+  "theme": "dark barren endgame",
+  "source": "generateOverworldMap",
+  "path": "design/continent-terrain-class-method/semantic-maps/act5-semantic-runtime.png",
+  "legend": [
+   {
+    "key": "ground",
+    "rgb": [
+     104,
+     94,
+     84
+    ],
+    "means": "dead charcoal earth, nothing grows, walkable",
+    "cells": 11135
+   },
+   {
+    "key": "vegetation",
+    "rgb": [
+     26,
+     82,
+     46
+    ],
+    "means": "dead leafless forest, bare grey trunks, impassable",
+    "cells": 3145
+   },
+   {
+    "key": "rock",
+    "rgb": [
+     128,
+     126,
+     122
+    ],
+    "means": "cold dark stone, the mountain maze (same rock, lightless)",
+    "cells": 3613
+   },
+   {
+    "key": "water",
+    "rgb": [
+     30,
+     82,
+     170
+    ],
+    "means": "black, still, dead water",
+    "cells": 17585
+   },
+   {
+    "key": "town",
+    "rgb": [
+     235,
+     120,
+     90
+    ],
+    "means": "a TOWN/VILLAGE -- design a unique settlement fitting this act's theme",
+    "count": 2
+   },
+   {
+    "key": "dungeon",
+    "rgb": [
+     170,
+     90,
+     190
+    ],
+    "means": "a DUNGEON ENTRANCE -- design a unique portal/cave/ruin fitting this act's theme",
+    "count": 3
+   },
+   {
+    "key": "portal",
+    "rgb": [
+     150,
+     128,
+     84
+    ],
+    "means": "a small, half-hidden magical PORTAL between lands -- understated, not a landmark",
+    "count": 4
+   },
+   {
+    "key": "connector",
+    "rgb": [
+     232,
+     72,
+     168
+    ],
+    "means": "an ACT-CONNECTING DUNGEON -- the ONLY way through the range into the neighbouring land. Make it read as a major, unmistakable gateway",
+    "count": 1
+   }
+  ]
+ }
+}

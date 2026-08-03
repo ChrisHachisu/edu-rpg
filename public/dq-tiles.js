@@ -66,6 +66,164 @@
     var a=_h(ix,iy,seed), b=_h(ix+1,iy,seed), c=_h(ix,iy+1,seed), d=_h(ix+1,iy+1,seed);
     return (a*(1-sm(tx))+b*sm(tx))*(1-sm(ty)) + (c*(1-sm(tx))+d*sm(tx))*sm(ty);
   }
+  // ============================================================
+  //  MATERIALS — AI-generated tiling textures, splatted in world coordinates
+  //
+  //  Replaces the flat palette ramps below for grass / water / rock. Same architecture this
+  //  file already uses (one windowed canvas, continuous world-pixel coordinates); only the
+  //  FILL changes. Nothing here is per-tile, so nothing here can seam.
+  //
+  //  Generated once as a single 2x2 sheet -- one call, so the four cannot disagree with each
+  //  other -- then made wrap-tileable offline (scripts/make_materials.py) and graded to the
+  //  owner's target palette. The full method and why per-tile AI generation was abandoned:
+  //  docs/MATERIAL-RENDERER-METHOD.md
+  //
+  //  Loading is async and FAILURE IS SAFE: until every material has decoded, and forever if
+  //  they 404, MAT.ready stays false and every call site falls back to the original palette
+  //  ramp. The reskin never depends on the fetch succeeding.
+  // ============================================================
+  var MAT={ready:false,m:{}};
+  (function loadMaterials(){
+    var names=['grass','forest','rock','water'], left=names.length, got={};
+    names.forEach(function(nm){
+      var im=new Image();
+      im.onload=function(){
+        try{
+          var c=document.createElement('canvas'); c.width=im.width; c.height=im.height;
+          var g=c.getContext('2d',{willReadFrequently:true}); g.drawImage(im,0,0);
+          got[nm]={d:g.getImageData(0,0,im.width,im.height).data,T:im.width};
+        }catch(e){ if(window.__DQ_DEBUG__) console.log('dq mat decode '+nm+' '+e); }
+        if(--left===0) finish();
+      };
+      im.onerror=function(){ if(--left===0) finish(); };
+      im.src='/materials/mat-'+nm+'.png';
+    });
+    function finish(){
+      if(Object.keys(got).length!==names.length) {
+        if(window.__DQ_DEBUG__) console.log('dq materials incomplete -> palette fallback');
+        return;                                   // partial set is never used: all or nothing
+      }
+      MAT.m=got; MAT.ready=true;
+      // materials arrived after the first paint -> repaint what is already on screen
+      try{ if(window.__DQ_TILES__&&window.__DQ_TILES__.redraw) window.__DQ_TILES__.redraw(); }catch(e){}
+    }
+  })();
+  // sample a material at a world pixel, wrapped. Two taps mixed by low-frequency noise: the
+  // texture repeats every T px, and a single tap makes that repeat legible as a grid. The mix
+  // field is continuous noise, so it breaks the repeat without introducing a grid of its own.
+  var _mc=[0,0,0];
+  function matPx(nm,wx,wy){
+    var M=MAT.m[nm], T=M.T, d=M.d;
+    var ax=((wx%T)+T)%T, ay=((wy%T)+T)%T;
+    var bx=((wx+((T/3)|0))%T+T)%T, by=((wy+((2*T/5)|0))%T+T)%T;
+    var i=(ay*T+ax)*4, j=(by*T+bx)*4;
+    var k=vnoise(wx,wy,T*0.85,91); k=k<0.42?0:(k>0.58?1:(k-0.42)/0.16);
+    _mc[0]=d[i]+(d[j]-d[i])*k; _mc[1]=d[i+1]+(d[j+1]-d[i+1])*k; _mc[2]=d[i+2]+(d[j+2]-d[i+2])*k;
+    return _mc;
+  }
+  // reused, never freshly allocated: this runs once per pixel of the window and a new array
+  // per pixel would churn the GC hard on a full-screen repaint. setData copies immediately.
+  var _ms=[0,0,0];
+  function matShade(nm,wx,wy,mul){          // sample + clamp, with a brightness multiplier
+    var c=matPx(nm,wx,wy);
+    var r=c[0]*mul, g=c[1]*mul, b=c[2]*mul;
+    _ms[0]=r<0?0:(r>255?255:r)|0; _ms[1]=g<0?0:(g>255?255:g)|0; _ms[2]=b<0?0:(b>255?255:b)|0;
+    return _ms;
+  }
+  // The SHORE BAND, in the same continuous water field the rest of the terrain uses.
+  // Drawn as its own opaque band over whatever is behind it, and carried a little way past the
+  // waterline into the shallows -- a treeline or cliff must stop AT a bank, not dissolve into
+  // the water, and nothing may poke out from under it. Matches the offline renderer.
+  var SAND_RGB=[156,138,95];
+  // SHORE CHARACTER varies along the coast. Owner: strict class edges are not required, some
+  // bleed between walkable terrain and water is fine as long as it looks natural -- and a
+  // uniform sand rim drawn around every body of water is itself the unnatural thing. Real coast
+  // alternates: open beach here, grass and trees coming right down to the waterline there.
+  function beachyAt(wx,wy){
+    var n=vnoise(wx,wy,780,211)*0.72 + vnoise(wx,wy,260,217)*0.28;
+    var t=(n-0.42)/0.18; if(t<0)t=0; if(t>1)t=1; return t*t*(3-2*t);
+  }
+  function bankOver(c,wx,wy,W,lo,beachy){
+    var hi=0.585, u=(W-lo)/(hi-lo);
+    if (u<=0||u>=1) return c;
+    var bk=u/0.32; var fade=(1-u)/0.20; if(fade<bk)bk=fade; if(bk>1)bk=1; if(bk<0)return c;
+    bk*=0.62+0.38*vnoise(wx,wy,70,23);                       // ragged, never a contour band
+    bk*=0.05+0.95*beachy;                                    // only beachy stretches get sand
+    var wet=(0.50-W)/0.14; wet=wet<0?1:(wet>1?0:1-wet);      // damp and darker near the water
+    var k=1-0.34*wet;
+    c[0]+=(SAND_RGB[0]*k-c[0])*bk; c[1]+=(SAND_RGB[1]*k-c[1])*bk; c[2]+=(SAND_RGB[2]*k-c[2])*bk;
+    // damp, darker margin where vegetation meets water on the non-beach stretches
+    var dm=(1-beachy)*bk*0.55;
+    if(dm>0){ var g=1-dm*0.30; c[0]*=g; c[1]*=g; c[2]*=g; }
+    c[0]|=0; c[1]|=0; c[2]|=0;
+    return c;
+  }
+  // ---------- LANDMARK SITES: the terrain owns the ground a landmark stands on ----------
+  // LANDMARK-SPRITE-CONTRACT.md splits the two halves: the prop owns the STRUCTURE, the terrain
+  // owns the SITE -- "packed-earth plaza, worn approach paths, trodden grass, the clearing ...
+  // it IS terrain, so it blends by definition". Without it a prop reads as a sticker dropped on
+  // grass, because its ground contact has nothing to sit in.
+  //
+  // Sites are derived from mapData itself (OW_LANDMARK tiles), so this needs no extra asset and
+  // can never disagree with where the engine actually puts a landmark. The host material is
+  // sampled from the neighbouring tiles, so a cave in a range gets scree and one in the woods
+  // gets leaf litter rather than every site being the same dirt plaza.
+  var EARTH_RGB=[128,104,66], SITE_ROCK=[104,99,86], SITE_FOREST=[78,62,41];
+  var _siteMap=null, _sites=[], _winSites=[];
+  function sitesFor(map){
+    if(_siteMap===map) return _sites;
+    _siteMap=map; _sites=[];
+    for(var y=0;y<map.length;y++){ var row=map[y]; if(!row) continue;
+      for(var x=0;x<row.length;x++){ var v=row[x];
+        if(!OW_LANDMARK[v]) continue;
+        var nm=OW_PROP[v]||'', big=(nm==='village'||nm==='castle');
+        var rock=0, forest=0;                       // what is this landmark cut into?
+        for(var dy=-3;dy<=3;dy++) for(var dx=-3;dx<=3;dx++){
+          var nv=et(map,x+dx,y+dy); if(nv===4)rock++; else if(nv===3)forest++; }
+        var tone=EARTH_RGB, tot=49;
+        if(rock>forest && rock>tot*0.12) tone=SITE_ROCK;
+        else if(forest>tot*0.12) tone=SITE_FOREST;
+        _sites.push({x:x*N+N/2, y:y*N+N/2, r:(big?130:90), t:tone,
+                     op:(tone===EARTH_RGB?0.94:0.72)});
+      }
+    }
+    return _sites;
+  }
+  function siteOver(c,wx,wy,W){
+    if (W>=0.50) return c;                          // a site is LAND, never painted over water
+    for (var i=0;i<_winSites.length;i++){
+      var s=_winSites[i], dx=wx-s.x, dy=wy-s.y;
+      var r=Math.sqrt(dx*dx+dy*dy)+1e-6; if(r>s.r*2.0) continue;
+      // ragged, wandering edge so the clearing never reads as a drawn circle
+      var edge=s.r*(0.80+0.34*vnoise(s.x+dx*0.35,s.y+dy*0.35,s.r*0.42,137));
+      var u=(r-edge*0.68)/(edge-edge*0.68+1e-6); if(u<0)u=0; if(u>1)u=1;
+      var pad=1-u*u*(3-2*u);
+      // worn approaches: four trodden spurs reaching out of the clearing
+      var ang=Math.atan2(dy,dx), sp=Math.abs(Math.cos(2*ang)); sp=sp*sp*sp*sp*sp*sp;
+      var o=(r-edge)/(edge*0.85+1e-6); if(o<0)o=0; if(o>1)o=1;
+      pad+=sp*(1-o*o*(3-2*o))*0.75; if(pad>1)pad=1; if(pad<=0.004) continue;
+      pad*=(0.55+0.45*vnoise(wx,wy,34,139))*s.op;
+      var e=0.86+0.30*vnoise(wx,wy,19,141);
+      c[0]+=(s.t[0]*e-c[0])*pad; c[1]+=(s.t[1]*e-c[1])*pad; c[2]+=(s.t[2]*e-c[2])*pad;
+    }
+    c[0]|=0; c[1]|=0; c[2]|=0;
+    return c;
+  }
+
+  // ---------- RIDGED heightfield for mountains ----------
+  // Plain value noise is isotropic, so shading it gives round blobs -- a range rendered that way
+  // reads as an even carpet of boulders however far the amplitude is pushed. Folding each octave
+  // as 1-|2n-1| turns what was a mid-value into a CREST, which is what produces real ridgelines
+  // and rounded valleys. Squaring sharpens the crests further.
+  function ridgedAt(wx,wy){
+    var t=0, amp=1, sc=620, S=[71,73,75,77];
+    for (var i=0;i<4;i++){
+      var n=1-Math.abs(2*vnoise(wx,wy,sc,S[i])-1);
+      t+=n*n*amp; amp*=0.48; sc*=0.45;
+    }
+    return t/1.86;
+  }
+
   // grass shade — LIMITED 4-tone palette with BAYER DITHER between bands over a low-freq field:
   // a gradual PIXEL-ART gradient (discrete palette, no airbrush), no hard contour lines.
   // 5-tone grass ramp -> bigger steps + 4x4 dither = chunkier (clunkier) gradual gradient
@@ -435,6 +593,7 @@
     owClearedMap=map; var H=map.length, W=map[0].length; owClearedW=W;
     var clear=new Set(), R=2, MIN=6, DX=[0,0,-1,1], DY=[-1,1,0,0];
     for(var y=0;y<H;y++){ var row=map[y]; for(var x=0;x<W;x++){ if(DUNG_LANDMARK[row[x]]){   // (1) dungeon clearing
+      if(x===140&&y===350&&window.__ACT1_WORLD_MAP__) continue; // locked V3: keep the Port-to-Reef trail visible to its threshold
       for(var dy=-R;dy<=R;dy++){ var yy=y+dy; if(yy<0||yy>=H)continue; var r2=map[yy];
         for(var dx=-R;dx<=R;dx++){ var xx=x+dx; if(xx<0||xx>=W)continue; if(r2[xx]===1) clear.add(yy*W+xx); } }
     }}}
@@ -456,7 +615,7 @@
   }
   function isOwRoad(map,tx,ty){
     var v=et(map,tx,ty);
-    if(DUNG_LANDMARK[v]) return false;                    // dungeon tile itself -> natural terrain, no road
+    if(DUNG_LANDMARK[v]) return !!(tx===140&&ty===350&&window.__ACT1_WORLD_MAP__); // locked V3 Reef trail reaches its threshold
     if(v===5) return true;                                // bridge always spans as a deck
     if(v===1){ ensureCleared(map); return !owCleared.has(ty*owClearedW+tx); } // path, unless cleared or strayed away
     if(SETTLE_LANDMARK[v]) return (et(map,tx-1,ty)===1||et(map,tx+1,ty)===1||et(map,tx,ty-1)===1||et(map,tx,ty+1)===1
@@ -479,9 +638,14 @@
   function drawRoadTile(ctx,map,tx,ty,bx,by){
     var m={N:isOwRoad(map,tx,ty-1),E:isOwRoad(map,tx+1,ty),S:isOwRoad(map,tx,ty+1),W:isOwRoad(map,tx-1,ty),
            NE:isOwRoad(map,tx+1,ty-1),NW:isOwRoad(map,tx-1,ty-1),SE:isOwRoad(map,tx+1,ty+1),SW:isOwRoad(map,tx-1,ty+1)};
+    var a=window.__ACT1_WORLD_MAP__,b=a&&a.bounds,natural=!!(b&&tx>=b[0]&&tx<=b[2]&&ty>=b[1]&&ty<=b[3]&&et(map,tx,ty)!==5);
     for(var yy=0;yy<N;yy++) for(var xx=0;xx<N;xx++){
-      if(roadOn(m,xx,yy,6.5)){                                                    // outer = rim shape
-        if(roadOn(m,xx,yy,5.0)) px(ctx,bx+xx,by+yy,brickColor(tx*N+xx,ty*N+yy));  // brick interior; WORLD coords keep mortar stationary when the camera window moves
+      var wx=tx*N+xx,wy=ty*N+yy,edgeW=natural?6.0+(vnoise(wx,wy,17,419)-0.5)*1.6:6.5;
+      if(roadOn(m,xx,yy,edgeW)){                                                   // outer = rim shape
+        if(roadOn(m,xx,yy,natural?5.1:5.0)){
+          var dn=natural?(vnoise(wx,wy,14,421)*0.72+vnoise(wx,wy,5,423)*0.28):0;
+          px(ctx,bx+xx,by+yy,natural?(dn<0.25?P.dirt_dk:(dn>0.82?P.dirt_lt:P.dirt)):brickColor(wx,wy));
+        }
         else px(ctx,bx+xx,by+yy, ((xx+yy)&1)?P.dirt_dk:P.dirt);                   // ~1.5px dirt RIM -> contained edge
       }
     }
@@ -494,28 +658,65 @@
     for (var sy=0;sy<winH;sy++){ for (var sx=0;sx<winW;sx++){ var sv=et(map,X0+sx,Y0+sy); if(sv===4)hasMtn=true; else if(sv===1)hasPath=true; } if(hasMtn&&hasPath)break; }
     var elev=null;
     if (hasMtn){ elev=new Float32Array(cw*ch); for(var ey=0;ey<ch;ey++) for(var ex=0;ex<cw;ex++) elev[ey*cw+ex]=elevAt(wox+ex,woy+ey); }
+    // shortlist the landmark sites that can touch this window, so the per-pixel loop
+    // walks a handful rather than every landmark on the map
+    _winSites=[];
+    if (MAT.ready){ var _all=sitesFor(map);
+      for (var _s=0;_s<_all.length;_s++){ var _q=_all[_s], _m=_q.r*2.2;
+        if (_q.x>wox-_m && _q.x<wox+cw+_m && _q.y>woy-_m && _q.y<woy+ch+_m) _winSites.push(_q); } }
     var img=ctx.createImageData(cw,ch), data=img.data; // alpha 0 everywhere by default
     for (var py=0;py<ch;py++){ var wy=woy+py, ty=Math.floor(wy/N);
       for (var pxk=0;pxk<cw;pxk++){ var wx=wox+pxk, tx=Math.floor(wx/N), tB=et(map,tx,ty);
-        if (isSpecial(tB)){ if(OW_LANDMARK[tB]) setData(data,cw,pxk,py,gshade(wx,wy)); continue; } // landmark tiles -> grass under our prop; other specials (incl. tiles pruned to sand=18) stay transparent (engine draws biome ground)
+        if (isSpecial(tB)){                              // landmark tiles -> ground under our prop
+          if(OW_LANDMARK[tB]) setData(data,cw,pxk,py, MAT.ready
+            ? matShade('grass',wx,wy,0.90+(vnoise(wx,wy,620,7)*0.6+vnoise(wx,wy,190,9)*0.4)*0.22)
+            : gshade(wx,wy));
+          continue;                                      // other specials stay transparent
+        }
         var col;
         var W=waterField(map,wx,wy);                     // water field covers bridge(5) too -> water under the deck
-        if (W>=0.50){
-          if (W<FOAMHI) col=P.foam; else col=waterColor(wx,wy,W);       // natural multi-tone water
+        var Mf0 = (W<0.50 && hasMtn) ? mountainField(map,wx,wy) : -1;
+        if (MAT.ready){
+          // ---- MATERIAL PATH: same fields, textured fill instead of a palette ramp --------
+          if (W>=0.50){
+            var dep=(W-0.50)/0.45; if(dep>1)dep=1;       // shallow at the shore -> deep offshore
+            col=matShade('water',wx,wy,1.0-dep*0.40);
+          } else if (Mf0>=0.50){
+            // RIDGED height field, hillshaded: the range is read from its spine and the valleys
+            // either side, not from its stone texture. Mf0 doubles as the massif profile so the
+            // range rises from its foot to its crest instead of sitting on a flat plate.
+            var mass=0.32+0.68*Mf0;
+            var H0=ridgedAt(wx,wy)*mass, H1=ridgedAt(wx+14,wy+14)*mass;
+            var mm=1.0+(H0-H1)*11.0+(H0-0.45)*0.55;
+            var vo=(0.42-H0)/0.36; if(vo<0)vo=0; if(vo>1)vo=1;
+            mm*=1-vo*vo*(3-2*vo)*0.34;                   // valleys occlude and go dark
+            if(mm<0.34)mm=0.34; if(mm>1.85)mm=1.85;
+            col=matShade('rock',wx,wy,mm);
+            var cr=(H0-0.62)/0.24; if(cr>0){ if(cr>1)cr=1;  // paler stone along the summit line
+              cr*=cr*(3-2*cr)*(0.35+0.65*vnoise(wx,wy,60,83))*0.22;
+              col[0]+=(186-col[0])*cr; col[1]+=(188-col[1])*cr; col[2]+=(180-col[2])*cr; }
+          } else {
+            var gn=vnoise(wx,wy,620,7)*0.6+vnoise(wx,wy,190,9)*0.4;   // broad meadow sweeps
+            col=matShade('grass',wx,wy,0.90+gn*0.22);
+          }
+          col=bankOver(col,wx,wy,W,SANDLO-0.02,beachyAt(wx,wy));  // varied shore over the fill
+          col=siteOver(col,wx,wy,W);                     // landmark clearing, if any is near
         } else {
-          var Mf = hasMtn ? mountainField(map,wx,wy) : -1;
-          if (Mf>=0.50){   // mass follows raw tile-4, which is now the CONSOLIDATED cluster shape post-mutation
+          // ---- PALETTE FALLBACK: unchanged, and what renders if the textures never load ----
+          if (W>=0.50){
+            if (W<FOAMHI) col=P.foam; else col=waterColor(wx,wy,W);     // natural multi-tone water
+          } else if (Mf0>=0.50){   // mass follows raw tile-4, the CONSOLIDATED cluster shape
             // NATURAL MOUNTAIN MASS (heightfield + 3D slope shading + snow caps) — unchanged
             var i=py*cw+pxk, e=elev[i];
             var eL=pxk>0?elev[i-1]:e, eR=pxk<cw-1?elev[i+1]:e, eU=py>0?elev[i-cw]:e, eD=py<ch-1?elev[i+cw]:e;
             var bri=-((eR-eL)+(eD-eU)), tex=(vnoise(wx,wy,6,201)-0.5)*0.05;
             var L=0.5 + bri*4 + (e-0.5)*0.14 + tex;
             var Lc = L>0.80?0.80:L;
-            col = (Mf<0.52) ? lerp(ROCK0,P.rock_dk,0.4) : rockRamp(Lc);
+            col = (Mf0<0.52) ? lerp(ROCK0,P.rock_dk,0.4) : rockRamp(Lc);
           } else if (W>=SANDLO){
-            col=lerp(P.sand,P.sand_dk,(W-SANDLO)/(0.50-SANDLO));         // beach band near water
+            col=lerp(P.sand,P.sand_dk,(W-SANDLO)/(0.50-SANDLO));        // beach band near water
           } else {
-            col=gshade(wx,wy);                                          // grass (paths are now a SEPARATE overlaid road layer)
+            col=gshade(wx,wy);                                          // grass (paths are a SEPARATE overlaid road layer)
           }
         }
         setData(data,cw,pxk,py,col);
@@ -1331,7 +1532,174 @@
       px(ctx,bx+4,by+14,FRL); px(ctx,bx+56,by+14,FRL); px(ctx,bx+4,by+42,FRL); px(ctx,bx+56,by+42,FRL); // corner rivets
     }
   }
+  /* ================================================================================
+     ACT-1 DUNGEON FLOORS — semantic map-data override + baked-art blit
+     2026-08-03. Owner chose option (a): bring the GENERATED floors into the runtime,
+     then blit the matching pre-rendered art. Scope is owner-set to the three dungeons
+     whose generated floor count matches the bundle's declared `floors` exactly:
+     coastalReef 3/3, sunkenCellar 3/3, whisperingWoodsCave 3/3. mistyGrotto (bundle 5
+     vs generated 3) and crystalCave (bundle 5 vs generated 6, colored-keys puzzle,
+     "never modify Crystal Cave") stay on the engine's procedural maps.
+
+     WHY THIS WORKS — scene.mapData is the single collision AND layout seam. The engine's
+     canMove() indexes this.mapData[y][x] directly and takes its bounds from mapData, and
+     loadMap() derives effectiveWidth/effectiveHeight FROM mapData before calling the
+     (idempotent) renderMap(). So swapping mapData inside a loadMap wrapper carries
+     collision, tile sprites, camera and minimap together. Dungeon transitions are
+     TILE-VALUE driven (6=up/exit, 9=down, 11=boss warp), never coordinate driven, so a
+     34x29 map is a supported shape even though the config still declares 100x100.
+
+     FALLBACK-SAFE, like the terrain material renderer: if the JSON 404s nothing is
+     overridden, and if a floor's art PNG is missing the procedural draw still runs.
+     ================================================================================ */
+  var A1D_MAPS={coastalReef:1,sunkenCellar:1,whisperingWoodsCave:1};        // owner-scoped 2026-08-03
+  // generated asset kind -> engine tile id. Blocking-by-design in the engine's dungeon
+  // branch: 4 chest, 7 boss, 14 save, 18 sign/plaque. Walkable: 0 floor, 6 up/exit, 9 down.
+  var A1D_TILE={mouth:6,stairsUp:6,stairsDown:9,chest:4,boss:7,save:14,sign:18,torch:0};
+  var A1D_BLOCK={1:1,4:1,5:1,7:1,14:1,18:1,23:1,28:1};                      // mirrors canMove()'s dungeon branch
+  var a1dFloors=null, a1dAsked=false, a1dPatched=false, a1dKey=null, a1dChanged=false;
+  function a1dFetch(){                                                      // one lazy request; silence is a valid outcome
+    if (a1dAsked) return; a1dAsked=true;
+    try{ var r=new XMLHttpRequest(); r.open('GET','act1-dungeon-floors.json',true);
+      r.onload=function(){ try{ if(r.status>=200&&r.status<300) a1dFloors=(JSON.parse(r.responseText)||{}).floors||null; }catch(e){} };
+      r.send();
+    }catch(e){}
+  }
+  function a1dFloorFor(scene){                                              // the generated floor for this scene, or null
+    if(!a1dFloors||!scene||!A1D_MAPS[scene.currentMapId]) return null;
+    return a1dFloors[scene.currentMapId+'-f'+(scene.currentFloor||1)]||null;
+  }
+  function a1dTiles(fl){                                                    // rows ('#'=rock) + assets -> engine tile ints
+    var t=[],y,x,row,src=fl.rows;
+    for(y=0;y<fl.height;y++){ row=[]; for(x=0;x<fl.width;x++) row.push(src[y].charAt(x)==='#'?1:0); t.push(row); }
+    var a=fl.assets||[];                                                    // assets are authoritative: 'S' is sign on f1 but save on the boss floor
+    for(var i=0;i<a.length;i++){ var v=A1D_TILE[a[i].kind]; if(v===undefined) continue;
+      if(t[a[i].y]&&t[a[i].y][a[i].x]!==undefined) t[a[i].y][a[i].x]=v; }
+    return t;
+  }
+  // The engine replays persisted progress onto mapData INSIDE loadMap (looted chest 4->8, defeated
+  // boss 7->10/12). Our swap lands after that, so without this a looted chest returns closed and a
+  // dead boss's marker comes back on every re-entry. Chests are replayed from the flags directly
+  // (our chest coordinates differ from the engine's); the boss outcome is read back off the map the
+  // engine just built, so we mirror its decision instead of re-deriving bossId and connection count.
+  function a1dReplayProgress(scene,fl,tiles,prev){
+    var gs=window.__GAME_STATE__, flags=gs&&gs.player&&gs.player.state&&gs.player.state.storyFlags;
+    var id=scene.currentMapId, f=scene.currentFloor||1, y,x;
+    if(flags) for(y=0;y<tiles.length;y++) for(x=0;x<tiles[y].length;x++)
+      if(tiles[y][x]===4 && flags['chest.'+id+'.f'+f+'.'+x+'.'+y]) tiles[y][x]=8;
+    if(f!==fl.totalFloors || !prev || !prev.length) return;                 // boss lives on the last floor only
+    var has7=false, warp=0, r,c,row;
+    for(r=0;r<prev.length;r++){ row=prev[r]; if(!row) continue;
+      for(c=0;c<row.length;c++){ if(row[c]===7) has7=true; else if(row[c]===10||row[c]===12) warp=row[c]; } }
+    if(has7) return;                                                        // boss still alive -> keep our marker
+    warp=warp||10;
+    for(y=0;y<tiles.length;y++) for(x=0;x<tiles[y].length;x++) if(tiles[y][x]===7) tiles[y][x]=warp;
+  }
+  function a1dApply(scene){                                                 // swap mapData; the engine re-derives everything else
+    var fl=a1dFloorFor(scene); if(!fl) return false;
+    var tiles=a1dTiles(fl);
+    a1dReplayProgress(scene,fl,tiles,scene.mapData);                        // read progress off the engine's map BEFORE we drop it
+    scene.mapData=tiles;
+    scene.effectiveWidth=fl.width; scene.effectiveHeight=fl.height;         // loadMap already ran; re-derive from OUR map
+    scene.renderMap();                                                      // idempotent: destroys tileLayer, rebuilds tileGrid
+    a1dKey=scene.currentMapId+'-f'+(scene.currentFloor||1);
+    a1dChanged=true;                                                        // force updateDng past its window-key cache
+    return true;
+  }
+  function a1dInstall(scene){                                               // wrap loadMap once, on the prototype
+    if(a1dPatched) return; var proto=Object.getPrototypeOf(scene);
+    if(!proto||typeof proto.loadMap!=='function') return; a1dPatched=true;
+    var orig=proto.loadMap;
+    proto.loadMap=function(id){
+      var r=orig.apply(this,arguments);
+      // AFTER the original: every caller sets heroTileX/Y *after* loadMap returns and
+      // reads this.mapData to do it (findDungeonEntrance, the tile-9 scan in __floor_up__,
+      // the tile-7 scan in __boss_warp__), so they land on OUR map for free.
+      try{ a1dApply(this); }catch(e){ if(window.__DQ_DEBUG__) console.log('a1 dng apply '+e+(e&&e.stack||'')); }
+      return r;
+    };
+  }
+  // Hero rescue. One guard covers every entry path instead of wrapping four of them. The
+  // case that actually needs it: entering from the overworld uses the connection's fixed
+  // toX/toY (50,0 at the declared 100x100), which is off the edge of a 26x26 floor.
+  function a1dRescueHero(scene){
+    var fl=a1dFloorFor(scene); if(!fl||!scene.mapData||!scene.mapData.length) return;
+    var W=fl.width,H=fl.height,x=scene.heroTileX,y=scene.heroTileY;
+    if(y>=0&&y<H&&x>=0&&x<W&&!A1D_BLOCK[scene.mapData[y][x]]) return;       // already somewhere legal
+    var want=(scene.currentFloor||1)>1?['stairsUp','stairsDown','mouth']:['mouth','stairsUp','stairsDown'];
+    var a=fl.assets||[],tx=-1,ty=-1,i,j;
+    for(j=0;j<want.length&&tx<0;j++) for(i=0;i<a.length;i++) if(a[i].kind===want[j]){ tx=a[i].x; ty=a[i].y; break; }
+    if(tx<0){ for(ty=0;ty<H&&tx<0;ty++) for(i=0;i<W;i++) if(!A1D_BLOCK[scene.mapData[ty][i]]){ tx=i; break; } }
+    if(tx<0) return;                                                        // nothing walkable at all -> leave the engine alone
+    if(A1D_BLOCK[scene.mapData[ty][tx]]){                                   // stairs are walkable, but a chest/sign anchor is not
+      var n=[[0,1],[0,-1],[1,0],[-1,0]],k;
+      for(k=0;k<4;k++){ var nx=tx+n[k][0],ny=ty+n[k][1];
+        if(ny>=0&&ny<H&&nx>=0&&nx<W&&!A1D_BLOCK[scene.mapData[ny][nx]]){ tx=nx; ty=ny; break; } }
+    }
+    scene.heroTileX=tx; scene.heroTileY=ty;
+    try{ if(scene.hero){ scene.hero.x=tx*TILE+TILE/2; scene.hero.y=ty*TILE+TILE/2; }
+         if(typeof scene.updatePosition==='function') scene.updatePosition();
+         if(typeof scene.updateCamera==='function') scene.updateCamera();
+         if(scene.fogEnabled&&typeof scene.updateFogVisibility==='function') scene.updateFogVisibility();
+    }catch(e){ if(window.__DQ_DEBUG__) console.log('a1 dng hero '+e); }
+  }
+  // ---- baked art. N === the render scale (48 px per cell) exactly, so the source rect is
+  // (X0*48, Y0*48, winW*48, winH*48) with no rescaling. props art has the assets baked in.
+  // Layer ladder. DEFAULT IS '-props.png': the baked render the owner reviewed, with the assets
+  // composited at their authored scale (the boss is 2.2 cells; the raw asset PNG is 33x41, i.e.
+  // UNDER one cell) and with the lighting, occlusion and contact shadows that composition produced.
+  // Its cost is that a looted chest keeps its baked closed art -- cosmetic only, since a1dReplayProgress
+  // still sets tile 8 so the engine reports the chest empty.
+  // '-material.png' is terrain only and lets live asset sprites sit on top, so state changes show;
+  // it is NOT the default because reproducing per-asset scale, the wall-mounted sign (tile 18 is
+  // drawn on the adjacent wall, not on its own cell) and the baked contact shadows is unvalidated
+  // work that would regress approved art. Opt in with window.__A1_DNG_LAYER__='material' to evaluate.
+  // Neither present: the procedural draw runs, exactly as it does today.
+  var a1dArt={}, a1dArtReq={}, a1dLayer={};
+  function a1dArtFor(key){
+    if(a1dArt[key]!==undefined) return a1dArt[key];
+    if(!a1dArtReq[key]){ a1dArtReq[key]=true;
+      var tryLayer=function(names){
+        if(!names.length){ a1dArt[key]=null; return; }                      // no render at all -> procedural, permanently
+        var im=new Image();
+        im.onload=function(){ a1dArt[key]=im; a1dLayer[key]=names[0]; a1dChanged=true; };
+        im.onerror=function(){ tryLayer(names.slice(1)); };
+        im.src='act1-dungeon-art/'+key+'-'+names[0]+'.png';
+      };
+      tryLayer(window.__A1_DNG_LAYER__==='material'?['material','props']:['props','material']);
+    }
+    return undefined;                                                       // still loading
+  }
+  function a1dLayerFor(scene){                                              // 'material' | 'props' | null
+    var fl=a1dFloorFor(scene); if(!fl) return null;
+    var key=scene.currentMapId+'-f'+(scene.currentFloor||1);
+    return a1dArtFor(key) ? (a1dLayer[key]||null) : null;
+  }
+  // Act-1 dungeon asset library (the art the floors were composed from), drawn live over the
+  // material layer. Torches carry no engine tile, but no in-scope dungeon uses them.
+  var A1D_ASSET={6:'stairsUp',9:'stairsDown',4:'chest',8:'chestOpen',7:'boss',14:'save',18:'sign'};
+  function a1dAssetName(t,scene){
+    if(t===6 && (scene.currentFloor||1)===1) return 'mouth';               // tile 6 is the cave mouth on floor 1
+    return A1D_ASSET[t]||null;
+  }
+  function a1dAssetTex(scene,name){
+    var key='a1dasset_'+name; if(scene.textures.exists(key)) return key;
+    if(!propLoading[key]){ propLoading[key]=true; var im=new Image();
+      im.onload=function(){ if(!scene.textures.exists(key)){ try{scene.textures.addImage(key,im);}catch(e){} } };
+      im.src='act1-dungeon-art/assets/asset-'+name+'.png'; }
+    return null;
+  }
+  function a1dBlit(ctx,X0,Y0,winW,winH){                                    // true if the window was served from baked art
+    if(!a1dKey||!dngState||!a1dFloorFor(dngState.scene)) return false;
+    var im=a1dArtFor(a1dKey); if(!im) return false;
+    var sx=X0*N, sy=Y0*N, sw=Math.min(winW*N,im.width-sx), sh=Math.min(winH*N,im.height-sy);
+    if(sw<=0||sh<=0) return false;
+    ctx.clearRect(0,0,winW*N,winH*N);                                       // map smaller than the window -> the rest stays clear
+    ctx.drawImage(im,sx,sy,sw,sh,0,0,sw,sh);
+    return true;
+  }
   function drawDungeon(ctx,map,X0,Y0,winW,winH){
+    if (a1dBlit(ctx,X0,Y0,winW,winH)) return;                               // Act-1 baked render replaces the procedural pass
     var cw=winW*N, ch=winH*N; ctx.clearRect(0,0,cw,ch);
     var img=ctx.createImageData(cw,ch), data=img.data;                       // 1. floor base
     for (var ty=0;ty<winH;ty++){ var TY=Y0+ty; for (var tx=0;tx<winW;tx++){ var TX=X0+tx; var _t=nb(map,TX,TY); if(_t===5) floorLava(data,cw,tx*N,ty*N,TX,TY,map); else if(dngRole(_t)!==2) floorStoneInto(data,cw,tx*N,ty*N,TX,TY); } }
@@ -1378,6 +1746,11 @@
   var specImgs={}, specMap=null;
   function dngSpecialObjects(scene){
     var map=scene.mapData, tg=scene.tileGrid; if(!map) return;
+    // Act-1 floors on the BAKED layer: *-props.png already has chest/stairs/save/sign/boss painted
+    // in, so drawing sprites on top would double every object. Cost of that fallback: a looted
+    // chest keeps its baked closed art. The material layer above is the reason this is a fallback.
+    var a1layer=a1dLayerFor(scene);
+    if (a1layer==='props'){ for(var hk in specImgs){ if(specImgs[hk]&&specImgs[hk].visible) specImgs[hk].setVisible(false); } return; }
     if (specMap!==scene.currentMapId){ for(var kk in specImgs){ if(specImgs[kk])specImgs[kk].destroy(); } specImgs={}; specMap=scene.currentMapId; } // reset on map change
     var cam=scene.cameras.main, W=map[0].length, H=map.length;
     var X0=Math.max(0,Math.floor(cam.scrollX/TILE)-2), X1=Math.min(W-1,Math.ceil((cam.scrollX+cam.width)/TILE)+2);
@@ -1386,11 +1759,15 @@
     for (var ty=Y0;ty<=Y1;ty++){ var mrow=map[ty]; if(!mrow)continue; for (var tx=X0;tx<=X1;tx++){ var t=mrow[tx]; if(!RESKIN_SPECIAL[t])continue;
       var es=tg&&tg[ty]&&tg[ty][tx]; if(es&&es.visible)es.setVisible(false);                    // hide engine sprite (under our base)
       var key=tx+'_'+ty; seen[key]=1;
-      var pn=propNameFor(t,map,tx,ty); var tk = pn ? ensurePropTex(scene,pn) : ensureSpecialTex(scene,t); // Codex PNG prop, else code-drawn (lava/spike)
+      var an=(a1layer==='material')?a1dAssetName(t,scene):null;             // material layer: the floor's own asset art, live
+      var pn=an?null:propNameFor(t,map,tx,ty);
+      var tk = an ? a1dAssetTex(scene,an) : (pn ? ensurePropTex(scene,pn) : ensureSpecialTex(scene,t)); // Codex PNG prop, else code-drawn (lava/spike)
       if(!tk) continue;                                                                                    // PNG still loading → place next tick
       var img=specImgs[key]; if(!img){ img=scene.add.image(0,0,tk).setDepth(3); specImgs[key]=img; }
       if(img.texture.key!==tk) img.setTexture(tk);
-      if(!pn || pn.indexOf('door')>=0){ img.setOrigin(0,0).setPosition(tx*TILE,ty*TILE).setDisplaySize(TILE,TILE); }  // code-drawn (lava/spike) + doors: fill the tile
+      if(an){ var asc=(an==='boss')?2.2:1.0;                                // boss is 2.2 cells (locked); the rest sit at authored size
+        img.setOrigin(0.5,1).setPosition(tx*TILE+TILE/2,ty*TILE+TILE).setDisplaySize(img.width*asc,img.height*asc); }
+      else if(!pn || pn.indexOf('door')>=0){ img.setOrigin(0,0).setPosition(tx*TILE,ty*TILE).setDisplaySize(TILE,TILE); }  // code-drawn (lava/spike) + doors: fill the tile
       else { var sc=PROP_SCALE[pn]||1.4; img.setOrigin(0.5,1).setPosition(tx*TILE+TILE/2,ty*TILE+TILE).setDisplaySize(TILE*sc,TILE*sc); } // objects: bigger, sit on the floor tile & rise up
       if(!img.visible)img.setVisible(true); } }
     for (var k2 in specImgs){ if(!seen[k2] && specImgs[k2] && specImgs[k2].visible) specImgs[k2].setVisible(false); } // cull off-screen
@@ -1714,6 +2091,7 @@
     if (!scene || !g.scene.isActive('WorldMapScene')) return;
     if (!scene.mapData || !scene.tileGrid || !scene.tileGrid.length) return;
     var kind=sceneKind(scene);
+    if(kind!=='ow') lastReskinMapId=null;               // a later overworld load receives a new mapData identity
     if (kind!=='town' && townState) destroyTown();      // left a town -> drop its canvas so it can't linger over ow/dng
     if ((kind==='town'||kind==='dng') && owMap) destroyOwProps(); // entered a town/dungeon -> drop landmark prop images (NOT on a transient null kind)
     if (kind!=='ow' && !SHIP_TOWN_DNG_RESKIN){
@@ -1732,6 +2110,9 @@
         // immediate minimap redraw so it reflects the mutation without the 300ms throttle lag.
         if (scene.currentMapId==='overworld'){
           try{ consolidateMapData(scene);
+               // Owner-locked Act 1 V3 plate: apply only after legacy mountain consolidation so
+               // semantic forest, harbor water, and both bridge decks remain authoritative.
+               if(window.__ACT1_WORLD_MAP__&&typeof window.__ACT1_WORLD_MAP__.apply==='function') window.__ACT1_WORLD_MAP__.apply(scene);
                if (typeof scene.renderMinimap==='function'){ scene.lastMinimapUpdate=0; scene.renderMinimap(); }
           }catch(e){ if(window.__DQ_DEBUG__) console.log('dq consolidate err '+e+(e&&e.stack||'')); }
         }
@@ -1740,7 +2121,16 @@
              try{ rebuildOverlay(scene,false); }catch(e){ if(window.__DQ_DEBUG__) console.log('dq ovl err '+e); } }
       try{ owSpecialObjects(scene); }catch(e){ if(window.__DQ_DEBUG__) console.log('dq owprop err '+e+(e&&e.stack||'')); } // ALWAYS run props (even during boot map-churn)
     } else if (kind==='dng'){
-      try{ var tk=dngThemeKey(scene), changed=(tk!==curThemeKey); curThemeKey=tk; setTheme(tk);
+      // Act-1 semantic floors. The loadMap wrapper is the normal path; the key check below is the
+      // safety net for the two cases it cannot reach — the very first loadMap (fired in create()
+      // before this file ever sees the scene, e.g. a save resumed inside a dungeon) and a JSON
+      // response that lands after the player is already on the floor.
+      try{ a1dFetch(); a1dInstall(scene);
+           var a1w=A1D_MAPS[scene.currentMapId]?scene.currentMapId+'-f'+(scene.currentFloor||1):null;
+           if(!a1w) a1dKey=null; else if(a1dFloors&&a1dKey!==a1w) a1dApply(scene);
+           a1dRescueHero(scene);
+      }catch(e){ if(window.__DQ_DEBUG__) console.log('dq a1dng err '+e+(e&&e.stack||'')); }
+      try{ var tk=dngThemeKey(scene), changed=(tk!==curThemeKey)||a1dChanged; curThemeKey=tk; a1dChanged=false; setTheme(tk);
            ensureDng(scene); updateDng(scene,changed); dngSpecialTiles(scene); updateFog(scene); window.__HD2D_STYLE__='dq-dng:'+tk; }catch(e){ if(window.__DQ_DEBUG__) console.log('dq dng err '+e+(e&&e.stack||'')); }
     } else if (kind==='town'){
       var tmid=scene.currentMapId+':'+scene.mapData.length+'x'+(scene.mapData[0]?scene.mapData[0].length:0);

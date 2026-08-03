@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Act 1 overworld structural preview</title>
+  <style>
+    :root { color-scheme: dark; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; background: #07100c; color: #e9e1c8; }
+    body { padding: 10px; }
+    main { width: 100%; max-width: 520px; margin: auto; display: grid; gap: 8px; }
+    .warning {
+      padding: 9px 10px; border: 2px solid #d2a94e; border-radius: 8px;
+      background: #2c210c; color: #ffe39a; font-size: 13px; font-weight: 900;
+      line-height: 1.25; text-align: center; letter-spacing: .02em;
+    }
+    .meta, .card { border: 1px solid #48614b; border-radius: 8px; background: #0d1913; }
+    .meta { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 10px; padding: 8px 10px; font-size: 10px; }
+    .meta b { color: #d6bd77; font-weight: 700; }
+    .span { grid-column: 1 / -1; }
+    .card { padding: 7px; overflow: hidden; }
+    h1 { margin: 0 0 5px; font-size: 12px; line-height: 1.2; color: #d7c58f; }
+    canvas { display: block; width: 100%; border-radius: 5px; background: #08110d; }
+    #world { height: 340px; border: 1px solid #64765a; }
+    .lower { display: grid; grid-template-columns: 154px 1fr; gap: 8px; align-items: start; }
+    #minimap { width: 154px; height: 123px; border: 1px solid #64765a; }
+    .proof { font-size: 9px; line-height: 1.45; color: #bfc8b7; }
+    .proof strong { color: #f0d480; }
+    .key { display: grid; grid-template-columns: 8px 1fr; gap: 3px 5px; margin-top: 6px; align-items: center; }
+    .swatch { width: 8px; height: 8px; border-radius: 2px; }
+    footer { color: #87988a; font-size: 8px; line-height: 1.35; text-align: center; }
+    #error { display: none; white-space: pre-wrap; color: #ffb2a5; font-size: 11px; }
+    body[data-ready="error"] #error { display: block; }
+  </style>
+</head>
+<body data-ready="loading">
+  <main>
+    <div class="warning">STRUCTURAL PREVIEW — TERRAIN F ART UNVERIFIED</div>
+    <section class="meta" aria-label="Deterministic preview metadata">
+      <div>map <b id="map-id">loading</b></div>
+      <div>seed / revision <b id="seed-revision">—</b></div>
+      <div class="span">camera <b id="camera-bounds">—</b></div>
+      <div class="span">visible chunks <b id="visible-chunks">—</b></div>
+      <div class="span">hero render position <b id="hero-position">—</b></div>
+    </section>
+    <section class="card">
+      <h1>Camera-clipped world · semantic chunks + fractional movement</h1>
+      <canvas id="world" role="img" aria-label="Camera-clipped structural overworld with visible chunk boundaries"></canvas>
+    </section>
+    <section class="card lower">
+      <div>
+        <h1>Independent minimap</h1>
+        <canvas id="minimap" role="img" aria-label="Minimap derived from the same semantic map"></canvas>
+      </div>
+      <div class="proof">
+        <strong>SAME INPUT</strong><br>
+        Seed-42 terrain, routes, landmarks, and camera bounds feed both canvases.
+        <div class="key">
+          <span class="swatch" style="background:#173923"></span><span>blocked forest</span>
+          <span class="swatch" style="background:#8b6336"></span><span>semantic dirt route</span>
+          <span class="swatch" style="background:#e7cb69"></span><span>landmark</span>
+          <span class="swatch" style="border:1px solid #f5efda"></span><span>camera window</span>
+        </div>
+      </div>
+    </section>
+    <div id="error" role="alert"></div>
+    <footer>Placeholder colors prove structure only. No production atlas, route-edge set, occlusion art, or runtime wiring is present.</footer>
+  </main>
+
+  <script type="module">
+    const $ = id => document.getElementById(id);
+    const palette = {
+      ground: '#30422a', forest: '#173923', water: '#183849', mountain: '#4a4b43',
+      clearing: '#465733', route: '#8b6336', routeEdge: '#b78a51', chunk: '#d9c273',
+    };
+
+    function setupCanvas(canvas) {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = Math.round(rect.width * dpr);
+      canvas.height = Math.round(rect.height * dpr);
+      const context = canvas.getContext('2d');
+      context.setTransform(dpr, 0, 0, dpr, 0, 0);
+      return { context, width: rect.width, height: rect.height };
+    }
+
+    function cellKey(point) { return `${point.x},${point.y}`; }
+
+    function drawWorld(canvas, map, chunks, camera, hero) {
+      const { context: ctx, width, height } = setupCanvas(canvas);
+      const scale = Math.min(width / camera.width, height / camera.height);
+      const offsetX = (width - camera.width * scale) / 2;
+      const offsetY = (height - camera.height * scale) / 2;
+      const toScreen = point => ({
+        x: offsetX + (point.x - camera.x) * scale,
+        y: offsetY + (point.y - camera.y) * scale,
+      });
+      const visibleCells = chunks.flatMap(chunk => chunk.cells).filter(cell => (
+        cell.at.x + 1 > camera.x && cell.at.x < camera.x + camera.width
+        && cell.at.y + 1 > camera.y && cell.at.y < camera.y + camera.height
+      ));
+      const routeKeys = new Set(map.routes.flatMap(route => route.cells.map(cellKey)));
+
+      ctx.fillStyle = '#07100c';
+      ctx.fillRect(0, 0, width, height);
+      for (const cell of visibleCells) {
+        const point = toScreen(cell.at);
+        ctx.fillStyle = cell.clearing ? palette.clearing : palette[cell.terrain];
+        ctx.fillRect(Math.floor(point.x), Math.floor(point.y), Math.ceil(scale + 1), Math.ceil(scale + 1));
+        if (cell.terrain === 'forest') {
+          const variation = ((cell.at.x * 17 + cell.at.y * 31) % 7) / 14;
+          ctx.fillStyle = `rgba(92,125,70,${0.08 + variation * 0.12})`;
+          ctx.beginPath();
+          ctx.arc(point.x + scale * .5, point.y + scale * .46, scale * .24, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      ctx.fillStyle = palette.route;
+      ctx.strokeStyle = palette.routeEdge;
+      ctx.lineWidth = Math.max(1, scale * .05);
+      for (const cell of visibleCells.filter(candidate => candidate.route)) {
+        const center = toScreen({ x: cell.at.x + .5, y: cell.at.y + .5 });
+        const radius = scale * .32;
+        ctx.beginPath();
+        ctx.arc(center.x, center.y, radius, 0, Math.PI * 2);
+        ctx.fill();
+        for (const [dx, dy] of [[0, -1], [1, 0], [0, 1], [-1, 0]]) {
+          if (!routeKeys.has(`${cell.at.x + dx},${cell.at.y + dy}`)) continue;
+          ctx.fillRect(
+            center.x + Math.min(0, dx * scale * .5) - (dy ? radius : 0),
+            center.y + Math.min(0, dy * scale * .5) - (dx ? radius : 0),
+            dx ? scale * .5 : radius * 2,
+            dy ? scale * .5 : radius * 2,
+          );
+        }
+        ctx.stroke();
+      }
+
+      for (const cell of visibleCells.filter(candidate => candidate.landmarkIds.length)) {
+        const center = toScreen({ x: cell.at.x + .5, y: cell.at.y + .5 });
+        ctx.fillStyle = '#e7cb69';
+        ctx.strokeStyle = '#392d12';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(center.x, center.y, scale * .22, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = '#fff2b8';
+        ctx.font = `700 ${Math.max(8, scale * .22)}px ui-monospace, monospace`;
+        ctx.fillText(cell.landmarkIds[0], center.x + scale * .28, center.y + 3);
+      }
+
+      ctx.save();
+      ctx.setLineDash([5, 4]);
+      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = palette.chunk;
+      ctx.fillStyle = '#f6df90';
+      ctx.font = '700 9px ui-monospace, monospace';
+      for (const chunk of chunks) {
+        const topLeft = toScreen({ x: chunk.bounds.x, y: chunk.bounds.y });
+        ctx.strokeRect(topLeft.x, topLeft.y, chunk.bounds.width * scale, chunk.bounds.height * scale);
+        const labelX = Math.max(3, topLeft.x + 3);
+        const labelY = Math.max(11, topLeft.y + 11);
+        ctx.fillText(`C${chunk.id}`, labelX, labelY);
+      }
+      ctx.restore();
+
+      const heroPoint = toScreen({ x: hero.x + .5, y: hero.y + .5 });
+      ctx.fillStyle = '#76c9ff';
+      ctx.strokeStyle = '#f7f2da';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(heroPoint.x, heroPoint.y, Math.max(6, scale * .22), 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = '#f7f2da';
+      ctx.font = '700 9px ui-monospace, monospace';
+      ctx.fillText('hero', heroPoint.x + 10, heroPoint.y - 9);
+    }
+
+    function drawMinimap(canvas, minimap, camera, hero) {
+      const { context: ctx, width, height } = setupCanvas(canvas);
+      const scale = Math.min(width / minimap.width, height / minimap.height);
+      const offsetX = (width - minimap.width * scale) / 2;
+      const offsetY = (height - minimap.height * scale) / 2;
+      ctx.fillStyle = '#07100c';
+      ctx.fillRect(0, 0, width, height);
+      for (let y = 0; y < minimap.height; y += 1) {
+        for (let x = 0; x < minimap.width; x += 1) {
+          const cell = minimap.cells[y][x];
+          ctx.fillStyle = palette[cell.terrain];
+          ctx.fillRect(offsetX + x * scale, offsetY + y * scale, Math.ceil(scale), Math.ceil(scale));
+          if (cell.route) {
+            ctx.fillStyle = '#d39a52';
+            ctx.fillRect(offsetX + (x + .2) * scale, offsetY + (y + .2) * scale, scale * .6, scale * .6);
+          }
+        }
+      }
+      ctx.fillStyle = '#f0cf63';
+      for (const marker of minimap.markers) {
+        ctx.beginPath();
+        ctx.arc(offsetX + (marker.at.x + .5) * scale, offsetY + (marker.at.y + .5) * scale, Math.max(1.5, scale * .36), 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.strokeStyle = '#fff8db';
+      ctx.lineWidth = 1.2;
+      ctx.strokeRect(offsetX + camera.x * scale, offsetY + camera.y * scale, camera.width * scale, camera.height * scale);
+      ctx.fillStyle = '#76c9ff';
+      ctx.beginPath();
+      ctx.arc(offsetX + (hero.x + .5) * scale, offsetY + (hero.y + .5) * scale, 2.5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    try {
+      const [{ buildStarterOverworld }, semantic, movement, vertical] = await Promise.all([
+        import('/.map-engine-build/starterOverworld.js'),
+        import('/.map-engine-build/semanticMap.js'),
+        import('/.map-engine-build/movementController.js'),
+        import('/.map-engine-build/overworldVerticalSlice.js'),
+      ]);
+      const map = buildStarterOverworld(42);
+      const walkability = semantic.deriveWalkability(map);
+      const canEnter = (_from, to) => semantic.isInside(map, to) && walkability[to.y][to.x];
+      const moved = movement.advanceMovement(
+        movement.bufferDirection(movement.createMovementState({ x: 12, y: 16 }), 'right'),
+        0.35,
+        canEnter,
+      );
+      const hero = movement.movementPosition(moved.state);
+      const heroRenderCenter = { x: hero.x + .5, y: hero.y + .5 };
+      const allChunks = vertical.deriveChunkRenderModels(map, 8);
+      const camera = vertical.deriveCameraWindow(map, heroRenderCenter, { width: 11, height: 10.25 });
+      const cameraCenter = { x: camera.x + camera.width / 2, y: camera.y + camera.height / 2 };
+      if (Math.abs(cameraCenter.x - heroRenderCenter.x) > 1e-9
+        || Math.abs(cameraCenter.y - heroRenderCenter.y) > 1e-9) {
+        throw new Error('camera center must match the hero render center for the non-edge preview fixture');
+      }
+      const visibleChunks = vertical.cullChunkRenderModels(allChunks, camera);
+      const minimap = semantic.deriveMinimapModel(map);
+
+      drawWorld($('world'), map, visibleChunks, camera, hero);
+      drawMinimap($('minimap'), minimap, camera, hero);
+      $('map-id').textContent = map.id;
+      $('seed-revision').textContent = `${map.seed} / ${map.revision}`;
+      $('camera-bounds').textContent = `x ${camera.x.toFixed(3)}, y ${camera.y.toFixed(3)}, w ${camera.width}, h ${camera.height}`;
+      $('visible-chunks').textContent = visibleChunks.map(chunk => chunk.id).join(' · ');
+      $('hero-position').textContent = `${heroRenderCenter.x.toFixed(3)}, ${heroRenderCenter.y.toFixed(3)} · movement ${hero.x.toFixed(3)}, ${hero.y.toFixed(3)} (cell ${moved.state.cell.x},${moved.state.cell.y})`;
+      document.body.dataset.ready = 'true';
+    } catch (error) {
+      document.body.dataset.ready = 'error';
+      $('error').textContent = `PREVIEW ERROR\n${error instanceof Error ? error.stack : String(error)}`;
+      throw error;
+    }
+  </script>
+</body>
+</html>
