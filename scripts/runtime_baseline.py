@@ -42,7 +42,8 @@ ACT1_OVERLAY_FILES = {
     # Same day, follow-up: the override now also replays persisted progress (looted chest 4->8,
     # defeated boss 7->10/12) onto the swapped map. The engine does that replay inside loadMap and
     # our swap lands after it, so without this a looted chest returned closed on every re-entry.
-    "dq-tiles.js": (171_773, "8785d7fa360c01a97da9aaeae239c5be2438640a78f48e1f8d3e88856adfac3a"),
+    "dq-tiles.js": (
+        174021, "67690142125fb625883cdb2e8417cd6cc7c5f3e220f3f19afd09f34d15e2b696"),
     # 2026-08-03, owner direction ("please redo the collision setting based on what i created (my
     # paint)"): the Act-1 collision plate is now generated from the OWNER'S PAINTED TERRAIN
     # (owner-terrain.json acts.1 + continent-macro-g3/land-mask.npy) instead of the generated

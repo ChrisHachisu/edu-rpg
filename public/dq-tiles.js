@@ -1622,10 +1622,42 @@
   // Hero rescue. One guard covers every entry path instead of wrapping four of them. The
   // case that actually needs it: entering from the overworld uses the connection's fixed
   // toX/toY (50,0 at the declared 100x100), which is off the edge of a 26x26 floor.
+  // 2026-08-03: this used to `return` when a1dFloorFor() found nothing, i.e. for every dungeon
+  // OUTSIDE the three generated ones. That left mistyGrotto ("Darkfang Grotto" -- the Act 1 BOSS
+  // dungeon, whose Giant Toad sets the flag that unseals Crystal Cave) and crystalCave with no
+  // guard at all, and their connections carry the same fixed toX/toY the comment above describes.
+  // Walking in from the overworld therefore dropped the hero off the edge and the screen went
+  // BLACK -- verified on device: the map itself renders fine when entered at an interior cell, so
+  // it was never the map. Act 1 was uncompletable. The bounds now come from scene.mapData, which
+  // the engine has already built for ANY dungeon, so the guard no longer needs generated data.
+  // Still called only from the kind==='dng' branch, so the overworld and towns are untouched.
   function a1dRescueHero(scene){
-    var fl=a1dFloorFor(scene); if(!fl||!scene.mapData||!scene.mapData.length) return;
-    var W=fl.width,H=fl.height,x=scene.heroTileX,y=scene.heroTileY;
-    if(y>=0&&y<H&&x>=0&&x<W&&!A1D_BLOCK[scene.mapData[y][x]]) return;       // already somewhere legal
+    if(!scene.mapData||!scene.mapData.length) return;
+    var fl=a1dFloorFor(scene);                                              // null outside the 3 in-scope dungeons
+    var md=scene.mapData, H=md.length, W=(md[0]||[]).length;
+    if(!W) return;
+    var x=scene.heroTileX,y=scene.heroTileY;
+    if(y>=0&&y<H&&x>=0&&x<W&&!A1D_BLOCK[md[y][x]]) return;                  // already somewhere legal
+    if(!fl){
+      // No authored anchors to aim for. Clamp the engine's intended landing back inside the map
+      // and take the NEAREST walkable cell to it -- landing beside the intended mouth beats
+      // teleporting to whatever the first walkable cell in scan order happens to be.
+      var qx=Math.max(0,Math.min(W-1,x)), qy=Math.max(0,Math.min(H-1,y)), best=-1,bx=-1,by=-1;
+      for(var sy=0;sy<H;sy++) for(var sx=0;sx<W;sx++){
+        if(A1D_BLOCK[md[sy][sx]]) continue;
+        var dd=(sx-qx)*(sx-qx)+(sy-qy)*(sy-qy);
+        if(best<0||dd<best){ best=dd; bx=sx; by=sy; }
+      }
+      if(bx<0) return;                                                      // nothing walkable -> leave the engine alone
+      scene.heroTileX=bx; scene.heroTileY=by;
+      try{ if(scene.hero){ scene.hero.x=bx*TILE+TILE/2; scene.hero.y=by*TILE+TILE/2; }
+           if(typeof scene.updatePosition==='function') scene.updatePosition();
+           if(typeof scene.updateCamera==='function') scene.updateCamera();
+           if(scene.fogEnabled&&typeof scene.updateFogVisibility==='function') scene.updateFogVisibility();
+      }catch(e){ if(window.__DQ_DEBUG__) console.log('a1 dng hero '+e); }
+      return;
+    }
+    W=fl.width; H=fl.height;
     var want=(scene.currentFloor||1)>1?['stairsUp','stairsDown','mouth']:['mouth','stairsUp','stairsDown'];
     var a=fl.assets||[],tx=-1,ty=-1,i,j;
     for(j=0;j<want.length&&tx<0;j++) for(i=0;i<a.length;i++) if(a[i].kind===want[j]){ tx=a[i].x; ty=a[i].y; break; }
