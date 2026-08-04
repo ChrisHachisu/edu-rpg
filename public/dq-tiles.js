@@ -1818,11 +1818,20 @@
     a1dChanged=true;                                                        // force updateDng past its window-key cache
     return true;
   }
-  function a1dInstall(scene){                                               // wrap loadMap once, on the prototype
-    if(a1dPatched) return; var proto=Object.getPrototypeOf(scene);
-    if(!proto||typeof proto.loadMap!=='function') return; a1dPatched=true;
-    var orig=proto.loadMap;
-    proto.loadMap=function(id){
+  // Wrap loadMap once, on the SCENE INSTANCE -- not on the prototype.
+  // act1-hifi/adapter.js patchScene() installs its own `scene.loadMap` OWN property
+  // (preservedAct1LoadMap) that captures the prototype method at patch time. It runs long before
+  // this file ever sees a dungeon, so a prototype wrapper is SHADOWED and never called: the Act-1
+  // floor was therefore never swapped in during loadMap, the engine's own 100x100 sunkenCellar map
+  // survived the whole entry, and findDungeonEntrance dropped the hero at (50,1) -- 1176 px east of
+  // the real 26-cell floor. The dungeon canvas drew fine; the depth-8 fog, centred on the off-map
+  // hero, was fully opaque, so the entry frame was BLACK until a step re-derived hero.x/y.
+  // Wrapping the instance composes with the adapter whichever patch lands first.
+  function a1dInstall(scene){
+    if(a1dPatched || !scene || scene.__a1dPatched) return;
+    if(typeof scene.loadMap!=='function') return; a1dPatched=true; scene.__a1dPatched=true;
+    var orig=scene.loadMap;
+    scene.loadMap=function(id){
       var r=orig.apply(this,arguments);
       // AFTER the original: every caller sets heroTileX/Y *after* loadMap returns and
       // reads this.mapData to do it (findDungeonEntrance, the tile-9 scan in __floor_up__,
@@ -2340,6 +2349,12 @@
     var scene; try{ scene=g.scene.getScene('WorldMapScene'); }catch(e){ return; }
     if (!scene || !g.scene.isActive('WorldMapScene')) return;
     if (!scene.mapData || !scene.tileGrid || !scene.tileGrid.length) return;
+    // BEFORE the kind branch. Both of these used to live in the kind==='dng' branch, i.e. they only
+    // ran once the player was ALREADY inside a dungeon -- too late for the loadMap that put them
+    // there. The floor JSON and the loadMap wrapper have to be in hand while the player is still
+    // walking around the overworld, or the first entry into every dungeon renders the engine's
+    // placeholder map with the hero off it.
+    try{ a1dFetch(); a1dInstall(scene); }catch(e){ if(window.__DQ_DEBUG__) console.log('dq a1d install '+e); }
     var kind=sceneKind(scene);
     // Leaving the overworld: the depth-11 canopy must not linger over a town/dungeon, AND the
     // Act 1 chunk cache must be released. A dungeon allocates its own base + fog canvases on top
