@@ -1854,6 +1854,43 @@
   // Still called only from the kind==='dng' branch, so the overworld and towns are untouched.
   function a1dRescueHero(scene){
     if(!scene.mapData||!scene.mapData.length) return;
+    // WHERE THE MASK IS THE AUTHORITY, THIS GUARD IS NOT. Its legality test is
+    // `!A1D_BLOCK[mapData[y][x]]`, and A1D_BLOCK contains 1 = rock -- but the whole point of the
+    // continuous mover is that 35 cells a floor are `#` on the lattice and open in the picture.
+    // Left alone this tick (80 ms) would teleport the player back to the cave mouth the instant
+    // she stepped into one of them.
+    try{ var mm=a1mFor(scene);
+         if(mm && scene.hero){
+           if(a1mFree(scene,mm,scene.hero.x,scene.hero.y)) return;
+           // She is not standing legally -- but the engine places by CELL, and a cell CENTRE is a
+           // lattice coordinate the art never promised was open. Reloading a save made in cell
+           // (7,24) put her on its centre, which is inside the rock lip, and the anchor rescue
+           // below then threw her across the map to the stairs (seen on device 2026-08-05).
+           // A local nudge onto the nearest floor the mask knows about is the right answer; the
+           // anchor teleport is for an entry coordinate off the map, so bound this to 2 cells and
+           // let anything further fall through to it.
+           var uu=a1mUnstick(scene,mm,scene.hero.x,scene.hero.y);
+           if(uu && Math.abs(uu.x-scene.hero.x)<=TILE*2 && Math.abs(uu.y-scene.hero.y)<=TILE*2){
+             scene.hero.x=uu.x; scene.hero.y=uu.y;
+             scene.heroTileX=(uu.x/TILE)|0; scene.heroTileY=(uu.y/TILE)|0;
+             try{ if(typeof scene.updatePosition==='function') scene.updatePosition();
+                  if(typeof scene.updateCamera==='function') scene.updateCamera();
+                  if(scene.fogEnabled&&typeof scene.updateFogVisibility==='function')
+                    scene.updateFogVisibility(); }catch(e){}
+             return;
+           }
+         } }catch(e){}
+    // AND IT IS NOT THE AUTHORITY UNTIL IT ARRIVES. The mask is fetched asynchronously, so for
+    // the first frames of a floor the test below is the only one running -- and it teleported a
+    // save made in cell (7,24) to the stairs on reload, verified on device 2026-08-05, because
+    // (7,24) is `#` to the lattice. Defer while the request is still outstanding, but ONLY for a
+    // hero already inside the map: the case this guard exists for is an entry coordinate off the
+    // edge of it (the overworld connection's fixed toX/toY), and that one cannot wait.
+    try{ if(a1mPending(scene)){
+      var pm=scene.mapData, ph=pm.length, pw=(pm[0]||[]).length;
+      if(scene.heroTileX>=0 && scene.heroTileX<pw && scene.heroTileY>=0 && scene.heroTileY<ph)
+        return;
+    } }catch(e){}
     var fl=a1dFloorFor(scene);                                              // null outside the 3 in-scope dungeons
     var md=scene.mapData, H=md.length, W=(md[0]||[]).length;
     if(!W) return;
@@ -1896,6 +1933,265 @@
          if(scene.fogEnabled&&typeof scene.updateFogVisibility==='function') scene.updateFogVisibility();
     }catch(e){ if(window.__DQ_DEBUG__) console.log('a1 dng hero '+e); }
   }
+  /* ================================================================================
+     ACT-1 DUNGEON — CONTINUOUS MOVEMENT AGAINST THE ART'S OWN COLLISION SHAPE
+     2026-08-05. Owner, having played Sunken Cellar B3F: "the player does not walk
+     smoothly and the user blockers are not synced with the visual design and there is
+     underlying block structures ... if the dungeon is fundamentally build on square
+     design and engine, this is a major problem." He chose, of three options, to replace
+     tile-stepping with continuous movement against a shape derived FROM THE ART.
+
+     THE TWO COMPLAINTS SHARE ONE ROOT. The floors are a square lattice of `#`/`.`, but
+     the picture is not: `render_dungeon_material_map.py` blurs that lattice
+     (`f = blur(up, px*0.34)`) and then WARPS the boundary off it entirely
+     (`fw = clip(f + warp*0.42*gate)`) — which is what makes the cave organic, and the
+     owner has locked that look (docs/DUNGEON-EDGE-STYLE-LOCK.md). Nothing reconciled the
+     two, so the player saw open ground and was stopped by an invisible square, and moved
+     in 48 px hops besides.
+
+     WHAT MAKES THE BLOCKER AND THE EDGE AGREE BY CONSTRUCTION. `<floor>-walk.png` is that
+     same `fw` field, thresholded at the same 0.5 that decides every pixel of the render,
+     emitted at the shipped art's own 48 px/cell by `--emit-mask` through the SHARED
+     `floor_field()`. There is one boundary and two consumers of it, so they cannot drift.
+     Measured on the three Sunken Cellar floors: the mask separates the picture's floor
+     and rock populations at 2.7-3.0 sigma, and it hands the player back 15-18 cells a
+     floor that the tile grid blocked and the picture leaves open.
+
+     THE SHAPES THAT ARE STILL SQUARE, DELIBERATELY. A chest, a boss marker, a plaque and
+     a save crystal are OBJECTS standing on a cell, not terrain, and walking into one is
+     how the engine opens it. Those keep their tile blocker (A1M_PROP) and the bump is
+     routed to the engine's own handler. Rock (tile 1) is NOT in that set — rock is the
+     thing the mask now owns.
+
+     EVERYTHING DOWNSTREAM STILL READS TILES. heroTileX/heroTileY are re-derived from the
+     continuous position every frame, so encounters, checkTransition, the compass, the
+     minimap and the save format (player.position.x/y, SAVE_VERSION 4) are untouched.
+
+     FALLBACK-SAFE, like every other layer here: no mask PNG, no continuous movement, and
+     the engine's step tween runs exactly as it does today. Only the three Sunken Cellar
+     floors ship one.
+     ================================================================================ */
+  // Movement constants, taken from the town's own collision authority rather than invented:
+  // portSapphire-walkable.json carries actorFootRadius 4 and maxSubstep 2 at 16 world px per
+  // cell, i.e. 0.25 and 0.125 of a cell. At the dungeon's 48 px/cell that is 12 and 6.
+  var A1M_FOOT=12;            // world px the hero's centre keeps clear of rock
+  var A1M_STEP=6;             // max world px per collision substep (so thin rock cannot be tunnelled)
+  var A1M_CH=3;               // chamfer unit: the distance field counts in THIRDS of a pixel
+  // Speed is the one number the town could not settle, because its camera and its cell are a
+  // different size. The engine's step was 48 px per 150 ms tween = 320 px/s average with a
+  // Sine.easeInOut peak half again as high. 260 px/s (5.4 cells/s) reads as the same pace once
+  // the stop-start between cells is gone. Tunable live for review: window.__A1_DNG_SPEED__.
+  var A1M_SPEED=260;
+  // The engine's dungeon blockers MINUS rock. Rock is what the mask now owns; these are objects
+  // standing on a cell, and bumping one is how the engine interacts with it.
+  var A1M_PROP={4:1,5:1,7:1,14:1,18:1,23:1,28:1};
+  var a1mMasks={}, a1mReq={}, a1mState=null;
+
+  // Chamfer-3-4 distance from every open pixel to the nearest rock, in thirds of a pixel.
+  // Two sequential sweeps over ~2.3 M pixels; measured under 40 ms on the sim, once per floor.
+  // A distance FIELD rather than a pre-eroded mask because it also gives the unstick below a
+  // direction to walk in, and it lets A1M_FOOT be retuned without re-baking anything.
+  function a1mBuild(im){
+    var W=im.width, H=im.height, n=W*H;
+    var cv=document.createElement('canvas'); cv.width=W; cv.height=H;
+    var g=cv.getContext('2d',{willReadFrequently:true}); if(!g) return null;
+    g.drawImage(im,0,0);
+    var d=g.getImageData(0,0,W,H).data, dist=new Uint16Array(n), INF=60000, i,x,y,v;
+    for(i=0;i<n;i++) dist[i]=(d[i*4]>127)?INF:0;                            // white = walkable floor
+    d=null;
+    for(y=0;y<H;y++){ var r=y*W;
+      for(x=0;x<W;x++){ i=r+x; v=dist[i]; if(!v) continue;
+        if(y>0){ if(dist[i-W]+3<v)v=dist[i-W]+3;
+                 if(x>0    && dist[i-W-1]+4<v)v=dist[i-W-1]+4;
+                 if(x<W-1  && dist[i-W+1]+4<v)v=dist[i-W+1]+4; }
+        if(x>0 && dist[i-1]+3<v)v=dist[i-1]+3;
+        dist[i]=v; } }
+    for(y=H-1;y>=0;y--){ var r2=y*W;
+      for(x=W-1;x>=0;x--){ i=r2+x; v=dist[i]; if(!v) continue;
+        if(y<H-1){ if(dist[i+W]+3<v)v=dist[i+W]+3;
+                   if(x<W-1 && dist[i+W+1]+4<v)v=dist[i+W+1]+4;
+                   if(x>0   && dist[i+W-1]+4<v)v=dist[i+W-1]+4; }
+        if(x<W-1 && dist[i+1]+3<v)v=dist[i+1]+3;
+        dist[i]=v; } }
+    return { W:W, H:H, dist:dist };
+  }
+  function a1mMaskFor(key){
+    if(a1mMasks[key]!==undefined) return a1mMasks[key];
+    if(!a1mReq[key]){ a1mReq[key]=true;
+      var im=new Image();
+      im.onload=function(){ try{ a1mMasks[key]=a1mBuild(im)||null; }catch(e){ a1mMasks[key]=null;
+        if(window.__DQ_DEBUG__) console.log('a1 mask build '+e); } };
+      im.onerror=function(){ a1mMasks[key]=null; };                          // no mask -> engine steps
+      im.src='act1-dungeon-art/'+key+'-walk.png';
+    }
+    return undefined;                                                        // still loading
+  }
+  function a1mKeyFor(scene){
+    return a1dFloorFor(scene) ? scene.currentMapId+'-f'+(scene.currentFloor||1) : null;
+  }
+  // The mask must describe THIS floor at THIS scale or it is not an authority over it.
+  function a1mFor(scene){
+    if(window.__A1_DNG_CONTINUOUS__===false) return null;                    // review escape hatch
+    var k=a1mKeyFor(scene); if(!k) return null;
+    var m=a1mMaskFor(k); if(!m) return null;
+    var md=scene.mapData; if(!md||!md.length) return null;
+    if(m.W!==(md[0]||[]).length*TILE || m.H!==md.length*TILE) return null;
+    return m;
+  }
+  // True while this floor's mask has been ASKED FOR and has not resolved either way. Distinct
+  // from "no mask" (resolved to null -> the engine's tile rules are correct and final).
+  function a1mPending(scene){
+    var k=a1mKeyFor(scene);
+    return !!k && a1mMaskFor(k)===undefined;
+  }
+  function a1mTileAt(scene,x,y){
+    var row=scene.mapData[(y/TILE)|0]; return row?row[(x/TILE)|0]:undefined;
+  }
+  function a1mFree(scene,m,x,y){
+    if(x<1||y<1||x>=m.W-1||y>=m.H-1) return false;
+    if(m.dist[((y|0)*m.W)+(x|0)] < A1M_FOOT*A1M_CH) return false;            // too close to rock
+    var t=a1mTileAt(scene,x,y);
+    return t!==undefined && !A1M_PROP[t];
+  }
+  // Nearest legal standing point. Needed because the hero is PLACED by tile: a1dRescueHero and
+  // every engine entry path drop her on a cell CENTRE, and a cell centre is a lattice coordinate
+  // the art never promised was open -- a cave mouth in particular is an arch IN the rock and is
+  // deliberately exempt from the renderer's prop pockets. Without this she would spawn embedded
+  // and never move again.
+  function a1mUnstick(scene,m,x,y){
+    for(var r=4;r<=288;r+=4){                                                // bounded at 6 cells
+      var best=null, bd=-1, k, n=Math.max(8,Math.round(r*0.9));
+      for(k=0;k<n;k++){
+        var a=k*2*Math.PI/n, px2=x+Math.cos(a)*r, py2=y+Math.sin(a)*r;
+        if(!a1mFree(scene,m,px2,py2)) continue;
+        var dd=m.dist[((py2|0)*m.W)+(px2|0)];
+        if(dd>bd){ bd=dd; best={x:px2,y:py2}; }
+      }
+      if(best) return best;
+    }
+    return null;
+  }
+  // The analog stick's ACTUAL vector, not the arrow keys it synthesises for the frozen bundle.
+  // index.html publishes __DQ_STICK__ alongside the key events, so the overworld and the town
+  // are untouched and only this file reads the extra channel. Keyboard stays the web path.
+  function a1mInput(scene){
+    var v={x:0,y:0}, mag=1, s=window.__DQ_STICK__;
+    if(s && (s.x||s.y)){ v.x=s.x; v.y=s.y; mag=(typeof s.m==='number')?s.m:1; }
+    else { var c=scene.cursors; if(!c) return null;
+      v.x=(c.right.isDown?1:0)-(c.left.isDown?1:0);
+      v.y=(c.down.isDown?1:0)-(c.up.isDown?1:0); }
+    var l=Math.sqrt(v.x*v.x+v.y*v.y);
+    if(l<1e-4) return null;
+    v.x/=l; v.y/=l;
+    if(scene.mirrorActive){ v.x=-v.x; v.y=-v.y; }
+    v.m=Math.max(0,Math.min(1,mag));
+    return v;
+  }
+  // Walking into an OBJECT is the engine's interaction verb; mirror its own bump branch exactly
+  // (tile 4 -> tryOpenTreasure, 7 and 18 -> interact) rather than inventing behaviour for it.
+  function a1mBump(scene,m,x,y,dx,dy){
+    var l=Math.sqrt(dx*dx+dy*dy); if(!l) return;
+    var tx=(((x+dx/l*(A1M_FOOT+2))/TILE)|0), ty=(((y+dy/l*(A1M_FOOT+2))/TILE)|0);
+    var row=scene.mapData[ty], t=row?row[tx]:undefined;
+    if(t===undefined || !A1M_PROP[t]) return;
+    var now=Date.now(); if(now-a1mState.bump<700) return; a1mState.bump=now;
+    var ddx=tx-scene.heroTileX, ddy=ty-scene.heroTileY;                      // face it, like a step would
+    if(Math.abs(ddx)+Math.abs(ddy)===1) scene.heroDir=ddx?(ddx>0?2:1):(ddy>0?0:3);
+    try{ if(t===4) scene.tryOpenTreasure(tx,ty);
+         else if(t===7||t===18) scene.interact(); }catch(e){}
+  }
+  // Everything the engine's own update() refuses to move under. Kept as one list so a new
+  // overlay cannot be added to the bundle and silently leave the hero drivable behind it.
+  function a1mHalted(scene){
+    return !!(scene.isMoving || scene.showingMessage || scene.itemOverlayOpen
+      || scene.healerOverlayOpen || scene.warpOverlayOpen || scene.midCrystalOverlayOpen
+      || scene.questOverlayOpen
+      || (scene.tweens && scene.hero && scene.tweens.isTweening(scene.hero)));
+  }
+  function a1mStep(scene,dtms){
+    var m=a1mFor(scene); if(!m) return;
+    var hero=scene.hero; if(!hero||!hero.scene) return;
+    var key=a1mKeyFor(scene);
+    if(!a1mState || a1mState.scene!==scene || a1mState.key!==key)
+      a1mState={ scene:scene, key:key, phase:0, bump:0 };
+    if(a1mHalted(scene)) return;
+
+    // The hero SPRITE is the position of record. performTransition destroys and recreates it,
+    // every entry path re-anchors it, and updateCamera follows it -- so a cached position would
+    // silently diverge from the one the game itself believes in.
+    var x=hero.x, y=hero.y;
+    if(!a1mFree(scene,m,x,y)){ var u=a1mUnstick(scene,m,x,y); if(!u) return; x=u.x; y=u.y; }
+
+    var inp=a1mInput(scene), moved=0;
+    if(inp){
+      scene.heroDir = Math.abs(inp.x)>Math.abs(inp.y) ? (inp.x>0?2:1) : (inp.y>0?0:3);
+      var speed=(typeof window.__A1_DNG_SPEED__==='number')?window.__A1_DNG_SPEED__:A1M_SPEED;
+      // The frame-delta cap has to be bigger than one frame of a SLOW device, not of a fast one.
+      // At 0.05 s it silently became a speed limit: measured on the iPhone 17 Pro sim, a straight
+      // run covered 111 px/s against the 246 px/s asked for, because the dungeon frame is well
+      // over 50 ms there and every frame's travel was being clipped to 0.05 s of it. 0.12 s is
+      // safe to give back precisely because the substep loop below exists -- the worst frame it
+      // admits is 30 px, walked in 6 px steps against the mask, so nothing can be tunnelled.
+      var total=speed*(0.45+0.55*inp.m)*Math.min(0.12,dtms/1000);
+      var n=Math.max(1,Math.ceil(total/A1M_STEP)), sx=inp.x*total/n, sy=inp.y*total/n, k;
+      for(k=0;k<n;k++){
+        var nx=x+sx, ny=y+sy;
+        if(a1mFree(scene,m,nx,ny)){ x=nx; y=ny; moved+=Math.abs(sx)+Math.abs(sy); continue; }
+        // Slide rather than stick: give up only the axis the rock actually took away. This is
+        // what makes an organic wall feel like a wall instead of a trap at every concavity.
+        var slid=false;
+        if(sx && a1mFree(scene,m,nx,y)){ x=nx; moved+=Math.abs(sx); slid=true; }
+        if(sy && a1mFree(scene,m,x,ny)){ y=ny; moved+=Math.abs(sy); slid=true; }
+        if(!slid){ a1mBump(scene,m,x,y,sx,sy); break; }
+      }
+    }
+    a1mState.phase += moved;
+    // 12 frames = dir*3 + pose (hero-override.js); pose 0 idle, 1 and 2 the two walk poses.
+    var pose = moved>0 ? (1 + (Math.floor(a1mState.phase/13) % 2)) : 0;
+    try{ hero.setFrame(scene.heroDir*3+pose); }catch(e){}
+    hero.x=x; hero.y=y;
+
+    // ---- re-derive the tile the rest of the game runs on, and fire the per-step work exactly
+    //      once per cell, exactly as the step tween's onComplete did.
+    var tx=(x/TILE)|0, ty=(y/TILE)|0;
+    if(tx===scene.heroTileX && ty===scene.heroTileY) return;
+    scene.heroTileX=tx; scene.heroTileY=ty;
+    // checkTransition CONSUMES transitionCooldown on every call, so it must be asked once per
+    // cell entered and never per frame.
+    var tr=null; try{ tr=scene.checkTransition(tx,ty); }catch(e){}
+    if(tr){ try{ scene.performTransition(tr); }catch(e){ if(window.__DQ_DEBUG__) console.log('a1 move tr '+e); } return; }
+    try{ scene.onStep(); }catch(e){ if(window.__DQ_DEBUG__) console.log('a1 move step '+e); }
+    try{ scene.updatePosition(); }catch(e){}
+    try{ if(scene.fogEnabled && scene.updateFogVisibility) scene.updateFogVisibility(); }catch(e){}
+    try{ if(scene.handleTorchPickup) scene.handleTorchPickup(); }catch(e){}
+    try{ if(scene.handleLavaDamage) scene.handleLavaDamage(); }catch(e){}
+    try{ if(scene.updateMirrorState) scene.updateMirrorState(); }catch(e){}
+  }
+  // WRAP sys.sceneUpdate, NOT scene.update. Phaser captures the scene's update method ONCE, in
+  // bootScene/create (`y.sceneUpdate = v.update`), and calls `this.sceneUpdate.call(this.scene)`
+  // from Systems.step forever after -- so a wrapper installed on `scene.update` after create()
+  // is never called. It is also reset to the no-op on shutdown/restart, which is why this is
+  // re-checked from tick() rather than latched with a one-shot flag.
+  //
+  // The engine's update() is two halves: per-frame housekeeping (compass, visible tiles, minimap,
+  // the mechanic timers), then an early return, then the cursor read that starts the 150 ms step
+  // tween. `isMoving` is the FIRST term of that early return -- i.e. the engine's own switch for
+  // "housekeeping yes, stepping no" -- so forcing it around the inner call neutralises the tween
+  // without patching, re-implementing or racing it.
+  function a1mInstall(scene){
+    var sys=scene&&scene.sys;
+    if(!sys||typeof sys.sceneUpdate!=='function'||sys.sceneUpdate.__a1m) return;
+    var orig=sys.sceneUpdate;
+    var patched=function(time,delta){
+      var on=false; try{ on=!!a1mFor(this); }catch(e){}
+      if(!on) return orig.call(this,time,delta);
+      var was=this.isMoving; this.isMoving=true;
+      try{ orig.call(this,time,delta); } finally { this.isMoving=was; }
+      try{ a1mStep(this,delta); }catch(e){ if(window.__DQ_DEBUG__) console.log('a1 move '+e+(e&&e.stack||'')); }
+    };
+    patched.__a1m=true; sys.sceneUpdate=patched;
+  }
+
   // ---- baked art. N === the render scale (48 px per cell) exactly, so the source rect is
   // (X0*48, Y0*48, winW*48, winH*48) with no rescaling. props art has the assets baked in.
   // Layer ladder. DEFAULT IS '-props.png': the baked render the owner reviewed, with the assets
@@ -2356,6 +2652,9 @@
     // Here the wrapper lands on the instance while the scene is still INIT, so even that first
     // loadMap swaps the real floor in.
     try{ a1dFetch(); a1dInstall(scene); }catch(e){ if(window.__DQ_DEBUG__) console.log('dq a1d install '+e); }
+    // Re-checked, not latched: Phaser resets sys.sceneUpdate to its no-op on shutdown/restart and
+    // re-captures scene.update on the next create(), which would quietly drop the wrapper.
+    try{ a1mInstall(scene); }catch(e){ if(window.__DQ_DEBUG__) console.log('dq a1m install '+e); }
     if (!g.scene.isActive('WorldMapScene')) return;
     if (!scene.mapData || !scene.tileGrid || !scene.tileGrid.length) return;
     var kind=sceneKind(scene);
@@ -2432,6 +2731,13 @@
   // screen is still up: the art key comes from the save the player is about to resume.
   a1dFetch();
   try{ var _sv=JSON.parse(localStorage.getItem('edu-rpg-save')||'null'), _p=_sv&&_sv.player&&_sv.player.position;
-       if(_p&&A1D_MAPS[_p.mapId]) a1dArtFor(_p.mapId+'-f'+(_p.floor||1)); }catch(e){}
+       if(_p&&A1D_MAPS[_p.mapId]){ var _k=_p.mapId+'-f'+(_p.floor||1); a1dArtFor(_k); a1mMaskFor(_k); } }catch(e){}
+  // Verification handle for the dungeon's continuous movement. There is no other way to ask the
+  // running game where the hero actually IS: the save format and every HUD read are tile-integer,
+  // so a 48 px hop and a smooth walk look identical from outside. Exposed rather than inferred so
+  // both the offline harness and an on-device check read the same numbers the mover uses.
+  window.__A1_DNG_MOVE__={ maskFor:a1mMaskFor, forScene:a1mFor, free:a1mFree, step:a1mStep,
+    unstick:a1mUnstick, input:a1mInput, state:function(){ return a1mState; },
+    K:{ FOOT:A1M_FOOT, STEP:A1M_STEP, SPEED:A1M_SPEED, CH:A1M_CH } };
   window.__DQ_TILES__={ reskin:reskin, redraw:function(){ if(terrainState){ terrainState.lastWin=''; updateTerrain(terrainState.scene,true);} if(overlayState){ overlayState.lastKey=''; rebuildOverlay(overlayState.scene,true);} } };
 })();

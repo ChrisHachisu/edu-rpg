@@ -385,9 +385,29 @@ def paste_hero(dst: Image.Image, cell: tuple, px: float) -> None:
 
 # ── render ───────────────────────────────────────────────────────────────────────────────────
 
-def render(rows: list[str], mats: dict, theme: str, scale: int = 1,
-           assets: list | None = None, props: bool = False,
-           hero: tuple | None = None) -> Image.Image:
+class Field:
+    """The floor-weight field every pixel of a floor is decided by.
+
+    Pulled out of `render()` verbatim in 2026-08-05 so that COLLISION can be derived from the
+    same `fw` that draws the art instead of from the `#`/`.` lattice. Measured on sunkenCellar-f3
+    before this existed: 105 of 986 cells (10.6%) were rock to the tile grid and open floor in the
+    picture, because `blur()` softens the lattice and `warp` then pushes the boundary off it
+    entirely. The player saw open ground and was stopped by an invisible square. Sharing this
+    function is what makes that disagreement impossible rather than merely small — there is only
+    one boundary, and both consumers threshold it at the same 0.5.
+
+    Nothing here is new code. `render()` calls it and its output is byte-identical (verified
+    against all three shipped sunkenCellar renders).
+    """
+
+    __slots__ = ("fw", "prot", "xx", "yy", "px", "W", "H", "Ww", "Hw", "cw", "ch")
+
+    def __init__(self, **kw):
+        for k, v in kw.items():
+            setattr(self, k, v)
+
+
+def floor_field(rows: list[str], scale: int = 1, assets: list | None = None) -> Field:
     px_world = max(1, PX // scale)
     ch, cw = len(rows), len(rows[0])
     Ww, Hw = cw * px_world, ch * px_world
@@ -455,6 +475,37 @@ def render(rows: list[str], mats: dict, theme: str, scale: int = 1,
             t = np.clip(1.0 - d / r, 0.0, 1.0)
             prot = np.maximum(prot, t * t * (3.0 - 2.0 * t))       # smoothstep, not a hard disc
         fw = np.maximum(fw, prot)
+
+    return Field(fw=fw, prot=prot, xx=xx, yy=yy, px=px, W=W, H=H, Ww=Ww, Hw=Hw, cw=cw, ch=ch)
+
+
+def walkable_mask(rows: list[str], assets: list | None = None) -> Image.Image:
+    """The floor mask, at the shipped art's OWN resolution (48 px per cell, one sample per world
+    pixel), thresholded at the same 0.5 the renderer draws the boundary with.
+
+    WHY THIS RESOLUTION AND NOT A COARSER ONE. The blocker exists so it cannot disagree with the
+    visible edge; any sub-cell grid coarser than the picture reintroduces exactly the quantisation
+    this replaces, just with a smaller square. 48/cell costs ~30 kB a floor as a 1-bit PNG.
+
+    WHY THE FIELD IS REDUCED BEFORE IT IS THRESHOLDED. `render()` reduces its master to world
+    resolution with an area-weighted filter, so a world pixel's colour is the AVERAGE of the
+    master pixels under it. Area-averaging `fw` and then testing 0.5 asks the same question the
+    picture answers: does this world pixel come out mostly floor or mostly rock. Thresholding
+    first and reducing after would decide the edge at master resolution and then blur the
+    decision, which is a different (and slightly wider) boundary.
+    """
+    fld = floor_field(rows, 1, assets)
+    small = Image.fromarray(fld.fw, "F").resize((fld.Ww, fld.Hw), Image.Resampling.BOX)
+    return Image.fromarray(
+        ((np.asarray(small) >= 0.5) * 255).astype(np.uint8)).convert("1")
+
+
+def render(rows: list[str], mats: dict, theme: str, scale: int = 1,
+           assets: list | None = None, props: bool = False,
+           hero: tuple | None = None) -> Image.Image:
+    fld = floor_field(rows, scale, assets)
+    fw, prot, xx, yy = fld.fw, fld.prot, fld.xx, fld.yy
+    px, W, H, Ww, Hw = fld.px, fld.W, fld.H, fld.Ww, fld.Hw
 
     # Crisp transfer: a cave wall meets the floor over a few pixels, not a soft airbrush.
     a = np.clip((fw - 0.5) * 34.0 + 0.5, 0.0, 1.0)
@@ -685,6 +736,9 @@ def main() -> None:
     ap.add_argument("--hero", help="X,Y cell to stand the heroine on, for scale review")
     ap.add_argument("--allow-stale", action="store_true",
                     help="render onto materials that are not verifiably current (says so loudly)")
+    ap.add_argument("--emit-mask", action="store_true",
+                    help="write the WALKABLE MASK instead of the picture: the same floor field, "
+                         "the same 0.5 threshold, at 48 px/cell. Reads no materials.")
     ap.add_argument("--out")
     args = ap.parse_args()
 
@@ -693,6 +747,19 @@ def main() -> None:
         raise SystemExit(f"no such floor: {path}")
     fl = json.load(open(path))
     theme = fl["theme"]
+
+    if args.emit_mask:
+        # No materials are read, so there is nothing to be stale against: the mask is a function
+        # of the floor JSON and this file alone. prov records exactly that.
+        img = walkable_mask(fl["rows"], fl.get("assets"))
+        out = args.out or os.path.join(DIR, f"{args.floor}-walk.png")
+        img.save(out, optimize=True)
+        prov.stamp(out, inputs=[path], generator=__file__, params={"kind": "walkable-mask"})
+        open_px = int(np.asarray(img).sum())
+        print(f"{fl['id']}  {fl['width']}x{fl['height']} cells  ->  {img.size[0]}x{img.size[1]} "
+              f"mask px, {100.0 * open_px / (img.size[0] * img.size[1]):.1f}% walkable")
+        print(f"wrote {os.path.relpath(out, ROOT)}")
+        return
 
     if args.placeholder:
         mats = placeholder_materials(theme)

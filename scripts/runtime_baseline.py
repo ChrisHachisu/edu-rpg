@@ -33,7 +33,12 @@ ACT1_OVERLAY_FILES = {
     # never be probed -- which is what the owner needs in order to test the three layers.
     # Replaced with the town overlay's analog stick: the knob follows the finger and the vector
     # engages each axis past 0.38 deflection, so it can hold two arrows at once.
-    "index.html": (14308, "dd5fe4c5a441226f1f618fcb81e5413cb85ff245399b0f67a6755828d4c5d324"),
+    # 2026-08-05: the stick now also PUBLISHES its raw vector on window.__DQ_STICK__ beside the
+    # arrow keys it already synthesises. The Act 1 dungeon floors move continuously against a
+    # collision shape derived from the art, and four arrow keys can only express eight headings.
+    # The key events are unchanged, so the overworld and the towns -- which read Phaser cursors --
+    # are untouched; only dq-tiles.js, and only where it holds a mask, reads the extra channel.
+    "index.html": (15094, "0f3dd23c7bce7b2f9d9ec41f09d280be3d3c623f0e747e49d9cbd8301f1df46f"),
     # 2026-08-01, owner-authorised: dq-tiles.js now splats AI-generated terrain MATERIALS through
     # its existing continuous-world-pixel drawTerrain, plus a ridged mountain height field,
     # varied shore character and landmark sites derived from mapData. Fallback-safe -- until the
@@ -55,8 +60,18 @@ ACT1_OVERLAY_FILES = {
     # MEASURED ground anchors from act1-hifi/landmarks/landmarks.json instead of the old flat
     # OW_PROP houses. Chunk bases were verified pixel-equivalent to act1-material-map.png before
     # the cutover. Every asset it reads was already registered; only this file's identity moves.
+    # 2026-08-05, owner direction (having played Sunken Cellar B3F: "the player does not walk
+    # smoothly and the user blockers are not synced with the visual design ... if the dungeon is
+    # fundamentally build on square design and engine, this is a major problem"): inside the three
+    # Act 1 dungeon floors that ship a mask, dq-tiles.js replaces the engine's 48 px step tween
+    # with CONTINUOUS movement against `<floor>-walk.png` -- the renderer's own floor field at its
+    # own 0.5 threshold, so the blocker and the visible edge cannot disagree. It wraps
+    # sys.sceneUpdate (Phaser captures scene.update at create(), so a scene.update wrapper is never
+    # called) and neutralises the engine's step by forcing its own `isMoving` around the inner
+    # call. heroTileX/heroTileY are re-derived every frame, so encounters, checkTransition, the
+    # compass, the minimap and the save format are untouched. Fallback-safe: no mask, no change.
     "dq-tiles.js": (
-        191255, "8a2f01681c92bbccc5d7402e432c5fe08efeda178c649988d895e9f9082dc003"),
+        210279, "e76028439efc0257fb3aa2be841f48c144657faae61a91d96e660491a7267935"),
     # 2026-08-03, owner direction ("please redo the collision setting based on what i created (my
     # paint)"): the Act-1 collision plate is now generated from the OWNER'S PAINTED TERRAIN
     # (owner-terrain.json acts.1 + continent-macro-g3/land-mask.npy) instead of the generated
@@ -107,6 +122,20 @@ ACT1_DUNGEON_FILES = {
         3774270, "946679e7520ca901935cc5a4451896aa461f0d8a7335de1621a8fdb64c8317c9"),
     "act1-dungeon-art/sunkenCellar-f3-props.png": (
         4267389, "7bb2bbb50d0b5b63e8cbe197765acf288467acaa0bf12758823ea0c05b8ad52a"),
+    # 2026-08-05: THE COLLISION SHAPE, and therefore as much a shipped authority as the picture it
+    # comes from. Each is `fw` -- the renderer's own floor field -- thresholded at the same 0.5
+    # that decides every pixel of the matching *-props.png, emitted at that render's own
+    # 48 px/cell by `render_dungeon_material_map.py --emit-mask` through the SHARED floor_field().
+    # A 1-bit PNG, 5.5-8.8 kB a floor. Pinned by hash for the reason the floors above are: a
+    # silent swap would move the walls. The three renders were re-baked at the same time and came
+    # back byte-identical, so extracting floor_field() provably did not touch a rendered pixel
+    # (docs/DUNGEON-EDGE-STYLE-LOCK.md).
+    "act1-dungeon-art/sunkenCellar-f1-walk.png": (
+        5567, "146753ba5c1b5038bb348084ec29c3ca9d3c5274d347490b0b9a6050996a37fb"),
+    "act1-dungeon-art/sunkenCellar-f2-walk.png": (
+        7435, "530c0fecf4576638d575ba1009b7ec78cd302c72b83d8c1c80ba1bd7b920e2e9"),
+    "act1-dungeon-art/sunkenCellar-f3-walk.png": (
+        8835, "b9879c5619b6cf7b76cb21ac6b5db1c3aafd23f2392ddab618e20c8f0142d79e"),
 }
 # 2026-08-03, owner-authorised: the Port Sapphire town screen. `adapter.js` is gated to TOWNS
 # ONLY, so this surface is what the overlay actually raises; the overworld stays on the shipped
