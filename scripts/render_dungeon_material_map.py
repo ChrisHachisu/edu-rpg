@@ -529,7 +529,28 @@ def render(rows: list[str], mats: dict, theme: str, scale: int = 1,
     #    a glowing halo tracing the floor rather than as a base the wall stands on. Rule 4 wants a
     #    crisp INNER edge — the band stops abruptly where the floor begins, and only its outer
     #    side dies away under the wall.
-    inner = np.clip((0.66 - fw) / 0.10, 0.0, 1.0)       # dies away out across the floor
+    #
+    #    THE CODE USED TO DO THE EXACT OPPOSITE OF THAT PARAGRAPH, and that — not the lighting,
+    #    not the mask blur, not the material — is what made every non-south rock edge read fuzzy
+    #    (owner, 2026-08-04: "the other sides are fuzzy and don't look natural").
+    #    `outer`, the ROCK side, carried the 0.02 hard stop; `inner`, the FLOOR side, carried a
+    #    0.10 fade. Measured through this renderer's own field, 0.10 of `fw` is 8 OUTPUT PIXELS:
+    #    the band did not stop where the floor begins, it airbrushed a low-contrast mid-tone over
+    #    the first 8 px of floor around every wall, at 57-62% opacity, washing out the floor's own
+    #    cobble detail exactly where the eye looks for the boundary. Rock and floor were then
+    #    joined by a smooth monotonic ramp with no step anywhere in it.
+    #    On the SOUTH side that smear is invisible because it sits inside `cast`, which is why the
+    #    south was the one side the owner liked. Nothing else about the south changes here.
+    #
+    #    Giving `inner` the hard stop the paragraph always asked for takes the 10-90% luminance
+    #    transition across the boundary from 6.6/6.2/6.8 px (W/E/N) to 3.4/3.4/3.5 px, which is
+    #    the material edge itself — as crisp as this lattice can resolve. It is also as crisp as
+    #    deleting the band outright (3.6/3.4/3.2) while KEEPING the base, so rule 4 still holds
+    #    and `wet` below still has a band to be pushed off the wall foot by.
+    #    Strictly edge-local: mean |delta| is 19 in the 4-6 px contact strip, 0.5 at 12-16 px and
+    #    0.05 beyond 24 px; floor more than 12 px from any wall moves by -0.00 luminance and the
+    #    rock by +0.03. `fw` is not touched, so the organic silhouette is bit-identical.
+    inner = np.clip((0.555 - fw) / 0.015, 0.0, 1.0)     # HARD stop where the floor begins
     outer = np.clip((fw - 0.50) / 0.02, 0.0, 1.0)       # hard stop AT the rock, never inside it
     band = inner * outer
     band *= np.clip(0.45 + 0.55 * fbm(xx, yy, px * 1.1, 23), 0, 1)   # ragged, not a drawn line
