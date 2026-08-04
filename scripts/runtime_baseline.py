@@ -75,8 +75,8 @@ ACT1_OVERLAY_FILES = {
     # old sheet. The 48px sheet is a RE-CUT of the canonical 64px g3 asset, not new art --
     # scripts/build_hero_g3_walk.py, soles aligned to the shipped sheet's measured baseline so the
     # hero does not float. The two retired sheets stay on disk: they are baseline runtime files.
-    "hero-override.js": (8186, "67e15564ccfef6cdaf7bb8ad15d8b2870df80bf5c30b717ce0488e1e6375c18c"),
-    "assets/hero/hero-g3-walk.png": (35567, "a254b447cc73be8215a16bc1fa462e61eedd7cb9fad95b85ebe234f7d00edc1a"),
+    "hero-override.js": (8336, "c8454a9e168289469bf9403011faa35e66ee75a703895ca320cd4086d435ce75"),
+    "assets/hero/hero-g3-walk.png": (61435, "cc1f535544add27d035f91b8f4683d29a7b97c7bf8e9722d0e0b2aa7e47e0bf3"),
     "act1-world-map.js": (
         47_908, "e5713be14ece51788798893c09a057d601d486671f97254dfb1825077ffe26b4"),
 }
@@ -101,6 +101,10 @@ ACT1_MATERIAL_FILES = {
 ACT1_DUNGEON_FILES = {
     "act1-dungeon-floors.json": (
         42_110, "c0743856ac2e294289a2574d8e3f05e14ed4693633869e457b842072735e731f"),
+    "act1-dungeon-art/sunkenCellar-f1-props.png": (
+        2970341, "48d6b0d4a78c11fdd0fd9db86c4f0611b576a7dd23c73aa00893c2d7df9dfb79"),
+    "act1-dungeon-art/sunkenCellar-f2-props.png": (
+        3774270, "946679e7520ca901935cc5a4451896aa461f0d8a7335de1621a8fdb64c8317c9"),
     "act1-dungeon-art/sunkenCellar-f3-props.png": (
         4267389, "7bb2bbb50d0b5b63e8cbe197765acf288467acaa0bf12758823ea0c05b8ad52a"),
 }

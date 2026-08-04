@@ -41,7 +41,14 @@ ROOT = Path(__file__).resolve().parents[1]
 G3 = ROOT / "public/act1-hifi/hero-g3/hero-act1-female-walk-8x3-64-g3.png"
 REF = ROOT / "public/assets/hero/hero-openface-walk.png"   # baseline reference only, never written
 OUT = ROOT / "public/assets/hero/hero-g3-walk.png"
-FW = FH = 48
+# 64, the canonical g3 NATIVE frame -- deliberately NOT downscaled to 48.
+# Owner, 2026-08-04: "the hero resolution is a bit too rough though. the size is good but it
+# needs to match the dungeon pixel count." The sheet used to be resampled 64->48 here and then
+# scaled back UP ~1.35x at runtime to sit correctly against the 48 px/cell dungeon art -- two
+# resamples, so the heroine carried ~35x39 real pixels while occupying ~65 screen px. Shipping
+# the native 64 px frame makes that ~1:1 with the art she stands on. hero-override.js reads the
+# same 64 and drops its scale to 1.0125 so her on-screen SIZE is unchanged.
+FW = FH = 64
 FRAMES = 12
 # hero-override.js dir order -> g3 sheet row.
 # The g3 source is an 8-way wheel in 45 deg steps starting at SOUTH:
@@ -65,13 +72,13 @@ def main() -> int:
     ref_bb = ref.crop((0, 0, FW, FH)).getbbox()
     if not ref_bb:
         raise SystemExit("reference frame 0 is empty -- cannot measure the sole row")
-    sole = ref_bb[3]
+    sole = round(ref_bb[3] * FH / 48)      # the reference sheet is 48 px; carry its baseline up
 
     out = Image.new("RGBA", (FW * FRAMES, FH), (0, 0, 0, 0))
     for d in range(4):
         for pose in range(3):
             cell = g3.crop((pose * 64, DIR_ROW[d] * 64, pose * 64 + 64, DIR_ROW[d] * 64 + 64))
-            small = cell.resize((FW, FH), Image.NEAREST)      # pixel art: never resample smoothly
+            small = cell if (FW, FH) == cell.size else cell.resize((FW, FH), Image.NEAREST)
             bb = small.getbbox()
             if not bb:
                 raise SystemExit(f"g3 cell dir={d} pose={pose} is empty")

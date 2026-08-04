@@ -14,7 +14,7 @@
 // Sheet contract (verified 2026-07-11): 576x48 RGBA, 12 frames = dir*3 + pose,
 //   dir 0=down 1=left 2=right 3=up, frame 0 = down-idle (the title/create/victory standing pose).
 (function () {
-  var FW = 48, FH = 48, FRAMES = 12;
+  var FW = 64, FH = 64, FRAMES = 12;   // canonical g3 native frame; see scripts/build_hero_g3_walk.py
   // 2026-08-03, owner: "use the canonical g3 as the default and stop using anything else."
   // openface and feminine are REMOVED from the table, not merely demoted. They were three
   // different characters shipping at once -- the tile runtime (overworld + every dungeon) drew
@@ -128,7 +128,7 @@
   // SHORTER than one 48px tile and is dwarfed by the 144-192px landmark sprites beside her.
   // Render-only: collision, encounters and transitions all key off heroTileX/heroTileY, which
   // this does not touch. Tunable live via window.__HERO_SCALE__ for a quick judgement call.
-  var HERO_SCALE = 1.35;
+  var HERO_SCALE = 1.0125;   // 64 * 1.0125 == the 48 * 1.35 the owner approved: same size, 1.78x the pixels
   function scaleHero() {
     var g = window.__PHASER_GAME__;
     if (!g || !g.scene) return;
