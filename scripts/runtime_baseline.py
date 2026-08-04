@@ -27,7 +27,13 @@ BUNDLE_SHA256 = "a56026574b42168985b353e4cee824562716af83f92d03f408df04eac912738
 EXPECTED_FILE_COUNT = 257
 EXPECTED_TOTAL_BYTES = 42_683_025
 ACT1_OVERLAY_FILES = {
-    "index.html": (14_519, "58128b83daf4f9efc6c7dfabc2c9543c5f8325e72f5de017603a1fb428f592da"),
+    # 2026-08-03, owner: "make the game controllable with the keypad ... use the joy stick type
+    # keypad on the port sapphire screen". The 4-way d-pad held exactly ONE arrow key at a time
+    # (setDir released the previous), so a diagonal was impossible and a corner boundary could
+    # never be probed -- which is what the owner needs in order to test the three layers.
+    # Replaced with the town overlay's analog stick: the knob follows the finger and the vector
+    # engages each axis past 0.38 deflection, so it can hold two arrows at once.
+    "index.html": (14308, "dd5fe4c5a441226f1f618fcb81e5413cb85ff245399b0f67a6755828d4c5d324"),
     # 2026-08-01, owner-authorised: dq-tiles.js now splats AI-generated terrain MATERIALS through
     # its existing continuous-world-pixel drawTerrain, plus a ridged mountain height field,
     # varied shore character and landmark sites derived from mapData. Fallback-safe -- until the
