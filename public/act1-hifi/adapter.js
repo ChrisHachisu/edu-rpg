@@ -34,7 +34,17 @@ style.textContent = `
   #act1-hifi-preserved-root[hidden] { display: none; }
   #act1-hifi-preserved-root iframe { width: 100%; height: 100%; border: 0; display: block; background: #02060a; opacity: 0; }
   #act1-hifi-preserved-root[data-ready="true"] iframe { opacity: 1; }
-  body.act1-hifi-active #touch-controls, body.act1-hifi-active #qok-field-hud { display: none !important; }
+  body.act1-hifi-active #qok-field-hud { display: none !important; }
+  /* Owner 2026-08-04: the town overlay is FULL-BLEED at the top -- the art runs under the status
+     bar and the field HUD stays hidden -- but the BOTTOM TAB BAR has to stay reachable over it.
+     The bar is #fieldTabs, a child of #touch-controls, so hiding that container (which this rule
+     used to do wholesale) took the bar with it. Keep the container displayed and hide only the
+     analog stick: the town runtime draws its own. The container is pointer-events:none and the
+     bar is pointer-events:auto, so only the bar itself takes taps; the rest reaches the town. */
+  body.act1-hifi-active #touch-controls {
+    display: block !important; position: fixed; inset: 0; z-index: 100; pointer-events: none; }
+  body.act1-hifi-active #dpad { display: none !important; }
+  body.act1-hifi-active.qok-dialogue #touch-controls { display: none !important; }
   body.act1-hifi-active.qok-dialogue #qok-field-hud { display: block !important; }
   body.act1-hifi-active.qok-dialogue #qfh-hp,
   body.act1-hifi-active.qok-dialogue #qfh-map,
