@@ -1,19 +1,31 @@
 // hero-override.js — SHIPPED additive override (same pattern as ui-overhaul.js / dq-tiles.js).
 // Replaces the procedural `hero-walk` texture with the locked v17 walk sheet.
-// A = openface (default), B = feminine. covered is dropped. [[ADR-0057]] / [[ADR-0060]].
+// 2026-08-03: the ONLY variant is g3, the canonical Act 1 heroine. openface and feminine are
+// retired -- see VARIANTS below. [[ADR-0057]] / [[ADR-0060]].
 //
 // The 4-colour recolor (gray/blue/pink/black) is retired: v17 ships as a single locked palette,
 // selected by VARIANT, not colour. Variant source (priority):
-//   ?hero=openface|feminine|procedural   (URL, for A/B look-tests; 'procedural' keeps the built-in hero)
-//   -> window.__GAME_STATE__.player.heroVariant   (the A/B picker, when wired)
-//   -> 'openface' (default = A)
-// Old saves carry heroColor; it is ignored — everyone renders openface until they pick a variant.
+//   ?hero=procedural   (URL, debug only: keeps the built-in procedural hero)
+//   -> window.__GAME_STATE__.player.heroVariant   (must be in VARIANTS, so only 'g3' passes)
+//   -> 'g3'
+// Old saves carry heroColor and may carry heroVariant:'openface'; both are ignored — every
+// player renders g3, because nothing else is in VARIANTS to select.
 //
 // Sheet contract (verified 2026-07-11): 576x48 RGBA, 12 frames = dir*3 + pose,
 //   dir 0=down 1=left 2=right 3=up, frame 0 = down-idle (the title/create/victory standing pose).
 (function () {
   var FW = 48, FH = 48, FRAMES = 12;
-  var VARIANTS = { openface: 1, feminine: 1 };
+  // 2026-08-03, owner: "use the canonical g3 as the default and stop using anything else."
+  // openface and feminine are REMOVED from the table, not merely demoted. They were three
+  // different characters shipping at once -- the tile runtime (overworld + every dungeon) drew
+  // the closed-helm knight while the act1-hifi town overlay drew the g3 heroine, so leaving Port
+  // Sapphire silently swapped your protagonist. Dropping them from VARIANTS is what makes the
+  // swap total: every lookup below is guarded by `VARIANTS[...]`, so a stale
+  // localStorage['edu-rpg-hero-variant'], an old save's heroVariant, or ?hero=openface all fail
+  // that check and fall through to g3 rather than resurrecting the old sheet.
+  // hero-g3-walk.png is a re-cut of the canonical 64px g3 sheet, not new art
+  // (scripts/build_hero_g3_walk.py). ?hero=procedural still opts out to the built-in hero.
+  var VARIANTS = { g3: 1 };
   var params = new URLSearchParams(location.search);
   var forced = params.get('hero');            // 'openface' | 'feminine' | 'procedural' | null
   var imgs = {};                              // variant -> { img, ready }
@@ -36,7 +48,7 @@
       var st = window.__GAME_STATE__ && window.__GAME_STATE__.player;
       if (st && VARIANTS[st.heroVariant]) return st.heroVariant;   // future A/B picker
     } catch (e) {}
-    return 'openface';                                     // default = A
+    return 'g3';                                           // the only shipped hero
   }
 
   function apply() {

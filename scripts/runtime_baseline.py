@@ -53,6 +53,18 @@ ACT1_OVERLAY_FILES = {
     # tables follow them. Source: scripts/act1_owner_paint_plate.mjs.
     # It also reinstates itself: leaving a town hands the overworld a NEW mapData array under the
     # same reskin key, so the plate was never re-applied and every door reverted (found in-game).
+    # 2026-08-03, owner: "use the canonical g3 as the default and stop using anything else."
+    # Three different characters were shipping at once -- the tile runtime (overworld + every
+    # dungeon) drew the closed-helm knight while the act1-hifi town overlay drew the g3 heroine,
+    # so leaving Port Sapphire swapped your protagonist. hero-override.js now carries a single
+    # VARIANTS entry, which is what makes the swap total: a stale localStorage hero-variant or an
+    # old save's heroVariant fails the guard and falls through to g3 instead of resurrecting the
+    # old sheet. The 48px sheet is a RE-CUT of the canonical 64px g3 asset, not new art --
+    # scripts/build_hero_g3_walk.py, soles aligned to the shipped sheet's measured baseline so the
+    # hero does not float. The two retired sheets stay on disk: they are baseline runtime files.
+    "hero-override.js": (7169, "527b08b0e6c701f70c1173bdeeaf9c316ec94ab14512fd85d5f29289665d0476"),
+    "assets/hero/hero-g3-walk.png": (
+        34938, "fa3f8aa5f0125a949b606abf856858840f83cd4284e7be68be4c21fe5224a57f"),
     "act1-world-map.js": (
         47_908, "e5713be14ece51788798893c09a057d601d486671f97254dfb1825077ffe26b4"),
 }
@@ -419,7 +431,12 @@ def verify_act1_overlay(root: Path, allowed_extra: frozenset[str] = frozenset())
     expected_hifi_paths.add("act1-hifi/adapter.js")
     expected_paths = (set(expected_entries) | {"act1-world-map.js"} | expected_hifi_paths
                       | set(ACT1_MATERIAL_FILES) | set(ACT1_DUNGEON_FILES)
-                      | set(ACT1_TOWN_FILES) | set(ACT1_LANDMARK_FILES))
+                      | set(ACT1_TOWN_FILES) | set(ACT1_LANDMARK_FILES)
+                      # ACT1_OVERLAY_FILES began as pure OVERRIDES of paths the baseline
+                      # manifest already carried, so it was never part of this union. It can
+                      # now also ADD a runtime file (hero-g3-walk.png), which the manifest by
+                      # definition does not know about, so it has to be unioned in too.
+                      | set(ACT1_OVERLAY_FILES))
     extra_paths = set(all_found) - expected_paths
     if expected_paths - set(all_found) or not extra_paths.issubset(allowed_extra):
         missing = sorted(expected_paths - set(all_found))
@@ -458,6 +475,18 @@ def verify_act1_overlay(root: Path, allowed_extra: frozenset[str] = frozenset())
         public_town = ROOT / "public" / relative_path
         if not public_town.is_file() or public_town.read_bytes() != town.read_bytes():
             raise BaselineError(f"public/dist town twins differ: {relative_path}")
+
+    # Overlay files the baseline manifest does NOT carry are additions, so the manifest loop
+    # above never checked them. Verify their identity here or they would ship unpinned.
+    for relative_path, (ov_size, ov_hash) in ACT1_OVERLAY_FILES.items():
+        if relative_path in expected_entries:
+            continue                                    # already covered by the manifest loop
+        ov = all_found[relative_path]
+        if ov.stat().st_size != ov_size or sha256(ov) != ov_hash:
+            raise BaselineError(f"Act 1 overlay addition identity mismatch: {relative_path}")
+        public_ov = ROOT / "public" / relative_path
+        if not public_ov.is_file() or public_ov.read_bytes() != ov.read_bytes():
+            raise BaselineError(f"public/dist overlay twins differ: {relative_path}")
 
     for relative_path, (lm_size, lm_hash) in ACT1_LANDMARK_FILES.items():
         lm = all_found[relative_path]
