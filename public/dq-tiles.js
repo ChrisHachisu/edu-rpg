@@ -952,7 +952,17 @@
   // 41,245). The cap must never sit below that or the trim evicts a chunk the current window still
   // needs, which re-requests and re-evicts it forever: the window never reports full coverage, so
   // the per-pixel splat runs every update and tick() force-rebuilds the overlay at 12.5 Hz.
-  var A1A_MAX_CHUNKS=12;
+  // It must not sit far ABOVE it either -- a decoded chunk is ~9 MB of base plus ~9 MB of canopy,
+  // so every slot is ~19 MB of resident image. 10 is the smallest value with headroom over 9.
+  var A1A_MAX_CHUNKS=10;
+  // Leaving the overworld drops the whole cache. A dungeon or a town needs none of it, and holding
+  // ~190 MB of decoded chunk art resident while the dungeon allocates its own canvases is how the
+  // renderer runs the device out of graphics memory.
+  function a1aReleaseChunks(){
+    if(!A1A.lru.length) return;
+    A1A.chunks={}; A1A.lru=[]; A1A.drew=false;
+    if(a1aScratch){ try{ a1aScratch.width=1; a1aScratch.height=1; }catch(e){} a1aScratch=null; }
+  }
   function a1aFetch(){
     if(A1A.req) return; A1A.req=true;
     var r=new XMLHttpRequest(); r.open('GET','act1-hifi/manifest.json',true);
@@ -1955,6 +1965,12 @@
     if (!dngState || dngState.scene!==scene) return; var map=scene.mapData; if(!map||!map.length) return;
     var cam=scene.cameras.main, wv=cam.worldView, W=map[0].length, H=map.length, winW=dngState.winW, winH=dngState.winH;
     var X0=windowStart(wv.x,winW,W), Y0=windowStart(wv.y,winH,H);
+    // A NEW mapData array must force a redraw. `a1dApply` swaps the floor in AFTER the first draw
+    // of an entry, and the window key alone does not change when it does -- so the stale frame
+    // survived the guard below and the player saw a black floor until their first step moved the
+    // window. Same failure the overworld plate already hit: "a NEW mapData array under an
+    // unchanged reskin key". Guard on the array IDENTITY, not just its shape.
+    if (dngState.mapRef!==map){ dngState.mapRef=map; force=true; }
     var k=X0+'_'+Y0; if(!force && k===dngState.lastWin) return; dngState.lastWin=k;
     drawDungeon(dngState.ct.context, map, X0, Y0, winW, winH);
     dngState.ct.refresh(); dngState.image.setPosition(X0*TILE,Y0*TILE);
@@ -2325,8 +2341,11 @@
     if (!scene || !g.scene.isActive('WorldMapScene')) return;
     if (!scene.mapData || !scene.tileGrid || !scene.tileGrid.length) return;
     var kind=sceneKind(scene);
-    if(kind!=='ow'){ lastReskinMapId=null; a1aHideCanopy(); }  // a later overworld load receives a new mapData identity;
-                                                              // the depth-11 canopy must not linger over a town/dungeon
+    // Leaving the overworld: the depth-11 canopy must not linger over a town/dungeon, AND the
+    // Act 1 chunk cache must be released. A dungeon allocates its own base + fog canvases on top
+    // of whatever the overworld still holds, so keeping ~190 MB of decoded chunk art resident
+    // there is what starves the renderer.
+    if(kind!=='ow'){ lastReskinMapId=null; a1aHideCanopy(); a1aReleaseChunks(); }
     if (kind!=='town' && townState) destroyTown();      // left a town -> drop its canvas so it can't linger over ow/dng
     if ((kind==='town'||kind==='dng') && owMap) destroyOwProps(); // entered a town/dungeon -> drop landmark prop images (NOT on a transient null kind)
     if (kind!=='ow' && !SHIP_TOWN_DNG_RESKIN){
