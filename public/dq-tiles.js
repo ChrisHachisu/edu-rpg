@@ -651,6 +651,7 @@
     }
   }
   function drawTerrain(ctx, map, X0, Y0, winW, winH){
+    if (a1aBlit(ctx,X0,Y0,winW,winH,true)) return;   // wholly inside the Act 1 plate -> the baked art IS the terrain
     var cw=winW*N, ch=winH*N, wox=X0*N, woy=Y0*N;
     var SANDLO=(typeof window.__DQ_BEACH__==='number')?window.__DQ_BEACH__:0.27, FOAMHI=0.555; // wider, more gradual beach
     // presence scan — skip the expensive fields in windows with none of that type
@@ -736,6 +737,7 @@
         if (t1===0 && et(map,TX1-1,TY1)===0&&et(map,TX1+1,TY1)===0&&et(map,TX1,TY1-1)===0&&et(map,TX1,TY1+1)===0) grassSpeckle(ctx,bx1,by1,seed);
       }
     }
+    a1aBlit(ctx,X0,Y0,winW,winH,false);   // window straddles the plate edge: the baked art overdraws its own half
   }
   // bridge side rails (along the run) so a path crossing water reads as a bridge
   function bridgeRails(ctx,map,TX,TY,bx,by){
@@ -928,18 +930,134 @@
     return Math.max(0,Math.min(Math.max(0,totalTiles-winTiles),snapped));
   }
 
+  // ============================================================
+  //  ACT 1 HI-FI OVERWORLD ART — the baked chunks, blitted 1:1
+  // ============================================================
+  //  Inside the Act 1 plate the terrain is NOT drawn: it is the owner-locked art, blitted.
+  //  `act1-hifi/chunks/base` is act1-material-map.png cut into 30 tiles (verified pixel-equivalent
+  //  to it, WebP loss aside), so this is the same relationship drawDungeon/a1dBlit already has with
+  //  the baked dungeon floors — copy the pixels, draw nothing.
+  //
+  //  GEOMETRY. A chunk's manifest x/y/width/height are its footprint in a 16-px-per-cell space;
+  //  the shipped base/canopy images are 3x denser (48 px/cell = TILE), which is why the blit needs
+  //  no rescaling. That 3 is DERIVED from the manifest below, not hardcoded, so a re-bake at a
+  //  different density keeps working. Chunk (0,0) is the plate origin, cell (bounds[0],bounds[1]).
+  //
+  //  CANOPY is not a second painting. It is an alpha-only mask (0 or 242) over pixels that are
+  //  identical to base — forest crowns, cut out of the base and redrawn ABOVE the hero (depth 10)
+  //  so the player walks under the treeline. Reproduced here with one destination-in composite,
+  //  the same way runtime.html's canopyFor() does it.
+  var A1A={ manifest:null, req:false, S:0, chunks:{}, lru:[], landmarks:null, dirty:false };
+  var A1A_MAX_CHUNKS=8;                                          // a window spans <=6; the slack is the LRU's
+  function a1aFetch(){
+    if(A1A.req) return; A1A.req=true;
+    var r=new XMLHttpRequest(); r.open('GET','act1-hifi/manifest.json',true);
+    r.onload=function(){ try{
+      var m=JSON.parse(r.responseText), B=m&&m.semanticBounds, cs=m&&m.chunks;
+      if(!B||!cs||!cs.length) return;
+      var mw=0; for(var i=0;i<cs.length;i++) mw=Math.max(mw,cs[i].x+cs[i].width);
+      var S=TILE*(B[2]-B[0]+1)/mw;                               // world px per manifest px
+      if(!(S>=1)||S!==Math.round(S)) return;                     // an unexpected density: leave the art off
+      A1A.S=S; A1A.manifest=m; A1A.dirty=true;
+    }catch(e){} };
+    try{ r.send(); }catch(e){}
+    var l=new XMLHttpRequest(); l.open('GET','act1-hifi/landmarks/landmarks.json',true);
+    l.onload=function(){ try{ var d=JSON.parse(l.responseText); if(d&&d.landmarks&&d.landmarks.length) A1A.landmarks=d.landmarks; }catch(e){} };
+    try{ l.send(); }catch(e){}
+  }
+  function a1aChunkRec(c){
+    var rec=A1A.chunks[c.id];
+    if(!rec){ rec=A1A.chunks[c.id]={};
+      ['base','canopy','water'].forEach(function(k){ if(!c[k]) return;
+        var im=new Image();
+        im.onload=function(){ rec[k]=im; A1A.dirty=true; };
+        im.onerror=function(){};                                 // a missing layer degrades, never wedges
+        im.src='act1-hifi/'+c[k]; });
+    }
+    var i=A1A.lru.indexOf(c.id); if(i>=0) A1A.lru.splice(i,1); A1A.lru.push(c.id);
+    return rec;
+  }
+  function a1aChunkAt(tx,ty){
+    var m=A1A.manifest; if(!m) return null; var B=m.semanticBounds;
+    if(tx<B[0]||tx>B[2]||ty<B[1]||ty>B[3]) return null;
+    var px=(tx-B[0])*TILE/A1A.S, py=(ty-B[1])*TILE/A1A.S;
+    for(var i=0;i<m.chunks.length;i++){ var c=m.chunks[i];
+      if(px>=c.x&&px<c.x+c.width&&py>=c.y&&py<c.y+c.height) return c; }
+    return null;
+  }
+  function a1aInBounds(tx,ty){ var m=A1A.manifest; if(!m) return false; var B=m.semanticBounds;
+    return tx>=B[0]&&tx<=B[2]&&ty>=B[1]&&ty<=B[3]; }
+  function a1aArtAt(tx,ty){                                      // baked art actually covers this cell RIGHT NOW
+    var c=a1aChunkAt(tx,ty); if(!c) return false;
+    var rec=A1A.chunks[c.id]; return !!(rec&&rec.base);
+  }
+  // the visible chunks and their src/dst rects, in WORLD pixels; .full = the window is wholly covered
+  function a1aRects(X0,Y0,winW,winH){
+    var m=A1A.manifest; if(!m) return null;
+    var B=m.semanticBounds, S=A1A.S, ox=B[0]*TILE, oy=B[1]*TILE;
+    var wx0=X0*TILE, wy0=Y0*TILE, wx1=wx0+winW*TILE, wy1=wy0+winH*TILE, out=[], cov=0;
+    for(var i=0;i<m.chunks.length;i++){ var c=m.chunks[i];
+      var cx0=ox+c.x*S, cy0=oy+c.y*S, cx1=cx0+c.width*S, cy1=cy0+c.height*S;
+      var ix0=Math.max(wx0,cx0), iy0=Math.max(wy0,cy0), ix1=Math.min(wx1,cx1), iy1=Math.min(wy1,cy1);
+      if(ix1<=ix0||iy1<=iy0) continue;
+      var rec=a1aChunkRec(c); if(!rec.base) continue;             // still loading -> this window is partial
+      out.push({c:c,rec:rec,sx:ix0-cx0,sy:iy0-cy0,w:ix1-ix0,h:iy1-iy0,dx:ix0-wx0,dy:iy0-wy0});
+      cov+=(ix1-ix0)*(iy1-iy0);
+    }
+    while(A1A.lru.length>Math.max(A1A_MAX_CHUNKS,out.length)) delete A1A.chunks[A1A.lru.shift()];
+    out.full=(cov===winW*TILE*winH*TILE);
+    return out;
+  }
+  // one layer of one chunk. k folds in the layer's own density: base/canopy ship at 48 px/cell so
+  // k===1 and the copy is 1:1; water is still the 16 px/cell glint sheet, so k===1/S and it scales.
+  function a1aDrawLayer(ctx,im,r){
+    var k=im.width/(r.c.width*A1A.S);
+    ctx.drawImage(im, r.sx*k, r.sy*k, r.w*k, r.h*k, r.dx, r.dy, r.w, r.h);
+  }
+  function a1aBlit(ctx,X0,Y0,winW,winH,needFull){
+    var rs=a1aRects(X0,Y0,winW,winH); if(!rs||!rs.length) return false;
+    if(needFull&&!rs.full) return false;
+    ctx.save(); ctx.imageSmoothingEnabled=false;
+    if(needFull) ctx.clearRect(0,0,winW*TILE,winH*TILE);
+    for(var i=0;i<rs.length;i++) a1aDrawLayer(ctx,rs[i].rec.base,rs[i]);
+    ctx.globalCompositeOperation='screen'; ctx.globalAlpha=0.28;  // water: the sparse glint sheet, as runtime.html blends it
+    for(var w=0;w<rs.length;w++){ if(rs[w].rec.water) a1aDrawLayer(ctx,rs[w].rec.water,rs[w]); }
+    ctx.restore();
+    return rs.full;
+  }
+  // The canopy window: base drawn, then masked down to the crowns in ONE destination-in pass. It is
+  // exact because the mask's dst rects are the base's dst rects — a chunk whose mask has not loaded
+  // simply loses its canopy rather than showing an unmasked copy of the terrain.
+  function a1aCanopy(ctx,X0,Y0,winW,winH){
+    ctx.clearRect(0,0,winW*TILE,winH*TILE);
+    var rs=a1aRects(X0,Y0,winW,winH); if(!rs||!rs.length) return;
+    ctx.save(); ctx.imageSmoothingEnabled=false;
+    for(var i=0;i<rs.length;i++){ if(rs[i].rec.canopy) a1aDrawLayer(ctx,rs[i].rec.base,rs[i]); }
+    ctx.globalCompositeOperation='destination-in';
+    for(var j=0;j<rs.length;j++){ if(rs[j].rec.canopy) a1aDrawLayer(ctx,rs[j].rec.canopy,rs[j]); }
+    ctx.restore();
+  }
+
   function ensureTerrain(scene){
     var cam=scene.cameras.main;
     var winW=Math.ceil(cam.worldView.width/TILE)+2*MARGIN, winH=Math.ceil(cam.worldView.height/TILE)+2*MARGIN;
     if (terrainState && terrainState.scene===scene && terrainState.winW===winW && terrainState.winH===winH && terrainState.image && terrainState.image.scene) return;
     if (terrainState && terrainState.image){ try{ terrainState.image.destroy(); }catch(e){} }
+    if (terrainState && terrainState.cimg){ try{ terrainState.cimg.destroy(); }catch(e){} }
     var key='dqterrain';
     if (scene.textures.exists(key)) scene.textures.remove(key);
     var ct=scene.textures.createCanvas(key, winW*N, winH*N);
     try{ ct.setFilter(NEAREST); }catch(e){}
     var img=scene.add.image(0,0,key).setOrigin(0,0).setDepth(1).setScale(SC);
     try{ img.texture.setFilter(NEAREST); }catch(e){}
-    terrainState={ scene:scene, winW:winW, winH:winH, ct:ct, image:img, lastWin:'' };
+    // canopy: same window, depth 11 -> ABOVE the hero (10), so the treeline overdraws the player
+    var ckey='dqcanopy';
+    if (scene.textures.exists(ckey)) scene.textures.remove(ckey);
+    var cct=scene.textures.createCanvas(ckey, winW*N, winH*N);
+    try{ cct.setFilter(NEAREST); }catch(e){}
+    var cimg=scene.add.image(0,0,ckey).setOrigin(0,0).setDepth(11).setScale(SC);
+    try{ cimg.texture.setFilter(NEAREST); }catch(e){}
+    terrainState={ scene:scene, winW:winW, winH:winH, ct:ct, image:img, cct:cct, cimg:cimg, lastWin:'' };
   }
   function updateTerrain(scene,force){
     if (!terrainState || terrainState.scene!==scene) return;
@@ -950,7 +1068,13 @@
     drawTerrain(terrainState.ct.context, map, X0, Y0, winW, winH);
     terrainState.ct.refresh();
     terrainState.image.setPosition(X0*TILE, Y0*TILE);
+    if (terrainState.cimg){
+      a1aCanopy(terrainState.cct.context, X0, Y0, winW, winH);
+      terrainState.cct.refresh();
+      terrainState.cimg.setPosition(X0*TILE, Y0*TILE).setVisible(true);
+    }
   }
+  function a1aHideCanopy(){ if(terrainState&&terrainState.cimg){ try{ terrainState.cimg.setVisible(false); }catch(e){} } }
 
   function ensureOverlay(scene){
     if (overlayState && overlayState.scene===scene && overlayState.container && overlayState.container.scene) return;
@@ -968,8 +1092,12 @@
     var key=x0+'_'+x1+'_'+y0+'_'+y1; if(!force && key===overlayState.lastKey) return; overlayState.lastKey=key;
     var c=overlayState.container; c.removeAll(true);
     var objs=[];
-    for (var ty=y0;ty<=y1;ty++) for (var tx=x0;tx<=x1;tx++){ var co=cellObjects(map,tx,ty); for(var i=0;i<co.length;i++) objs.push(co[i]); }
-    var fl=buildFlowers(map,x0,x1,y0,y1); for(var f=0;f<fl.length;f++) objs.push(fl[f]);
+    // Inside the Act 1 plate the baked art already contains every conifer, ridge and meadow detail.
+    // Emitting the procedural sprites there would double the treeline and the mountains.
+    for (var ty=y0;ty<=y1;ty++) for (var tx=x0;tx<=x1;tx++){ if(a1aArtAt(tx,ty)) continue;
+      var co=cellObjects(map,tx,ty); for(var i=0;i<co.length;i++) objs.push(co[i]); }
+    var fl=buildFlowers(map,x0,x1,y0,y1);
+    for(var f=0;f<fl.length;f++){ if(a1aArtAt(Math.floor(fl[f].x/TILE),Math.floor(fl[f].y/TILE))) continue; objs.push(fl[f]); }
     objs.sort(function(a,b){ return a.y-b.y; });
     for (var k=0;k<objs.length;k++){ var o=objs[k];
       if (o.kind==='pine'){
@@ -1012,6 +1140,37 @@
     if(q){ scene.load.once('loaderror',function(f){ if(f&&owPropLoading[f.key]) owPropLoading[f.key]=0; }); try{ scene.load.start(); }catch(e){} }
   }
   function ensureOwPropTex(scene,name){ var key=owPropKey(name); return scene.textures.exists(key)?key:null; }
+  // ---- Act 1 hi-fi landmarks -------------------------------------------------------------
+  // CODEX-ART-BRIEF-V7: "Landmarks are composited at runtime as sprites." The terrain bake is
+  // deliberately structure-free and carries only a packed-earth pad, so these sprites are the
+  // other half of the design, not decoration. landmarks.json ships each one's MEASURED ground
+  // anchor (scripts/key_landmark_sprite.footprint -- the widest band of the silhouette, i.e.
+  // where the diorama meets the ground). Drawing anchor-on-cell-centre is what puts the building
+  // in its own clearing; the sprite's centre or its bottom edge both float it off the pad.
+  var a1aLmLoading={};
+  function a1aLandmarkTex(scene,slug){
+    var key='a1alm_'+slug; if(scene.textures.exists(key)) return key;
+    if(!a1aLmLoading[key]){ a1aLmLoading[key]=1; var im=new Image();
+      im.onload=function(){ if(!scene.textures.exists(key)){ try{scene.textures.addImage(key,im);}catch(e){} } };
+      im.onerror=function(){ a1aLmLoading[key]=0; };
+      im.src='act1-hifi/landmarks/'+slug+'.png'; }
+    return null;
+  }
+  function a1aLandmarks(scene,X0,X1,Y0,Y1,seen){
+    var L=A1A.landmarks; if(!L) return;
+    for(var i=0;i<L.length;i++){ var lm=L[i], cx=lm.cell[0], cy=lm.cell[1], sz=lm.size;
+      var pad=Math.ceil(sz/TILE)+1;                                     // a 192px sprite overhangs its cell by ~2 cells
+      if(cx<X0-pad||cx>X1+pad||cy<Y0-pad||cy>Y1+pad) continue;
+      var tk=a1aLandmarkTex(scene,lm.slug); if(!tk) continue;           // PNG still loading -> next tick
+      var key='a1alm_'+lm.slug, img=owImgs[key];
+      if(!img){ img=scene.add.image(0,0,tk).setDepth(6); owImgs[key]=img; }
+      if(img.texture.key!==tk) img.setTexture(tk);
+      img.setOrigin(lm.anchor[0]/sz, lm.anchor[1]/sz)
+         .setPosition(cx*TILE+TILE/2, cy*TILE+TILE/2)                   // anchor pixel lands on the CELL CENTRE
+         .setDisplaySize(sz,sz);
+      if(!img.visible) img.setVisible(true); seen[key]=1;
+    }
+  }
   var owImgs={}, owMap=null;
   function destroyOwProps(){ for(var k in owImgs){ if(owImgs[k])try{owImgs[k].destroy();}catch(e){} } owImgs={}; owMap=null; }
   function owSpecialObjects(scene){
@@ -1025,12 +1184,14 @@
     for (var ty=Y0;ty<=Y1;ty++){ var mrow=map[ty]; if(!mrow)continue; for (var tx=X0;tx<=X1;tx++){ var t=mrow[tx], name=OW_PROP[t]; if(!name)continue;
       if(window.__OW_DBG__)window.__OW_DBG__.land++;
       var es=tg[ty]&&tg[ty][tx]; if(es&&es.alpha!==0)es.setAlpha(0);                 // hide engine landmark (alpha, not visible -> survives per-frame culling)
+      if(a1aInBounds(tx,ty)) continue;                                                // Act 1 plate: the hi-fi sprite below owns this cell, not the old flat prop
       var tk=ensureOwPropTex(scene,name); if(!tk)continue;                            // PNG still loading -> next tick
       if(window.__OW_DBG__)window.__OW_DBG__.tex++;
       var key=tx+'_'+ty, img=owImgs[key]; if(!img){ img=scene.add.image(0,0,tk).setDepth(6); owImgs[key]=img; }
       if(img.texture.key!==tk) img.setTexture(tk);
       var sc=OW_PROP_SCALE[name]||1.5; img.setOrigin(0.5,1).setPosition(tx*TILE+TILE/2, ty*TILE+TILE).setDisplaySize(TILE*sc,TILE*sc); // bigger + sit on the tile & rise up
       if(!img.visible)img.setVisible(true); seen[key]=1; } }
+    a1aLandmarks(scene,X0,X1,Y0,Y1,seen);
     for (var k2 in owImgs){ if(!seen[k2] && owImgs[k2] && owImgs[k2].visible) owImgs[k2].setVisible(false); } // cull off-screen
     var vis=0; for(var vk in owImgs){ if(owImgs[vk]&&owImgs[vk].visible) vis++; } window.__OW_PROP_COUNT__=vis; // readiness signal for capture harness
   }
@@ -2123,7 +2284,8 @@
     if (!scene || !g.scene.isActive('WorldMapScene')) return;
     if (!scene.mapData || !scene.tileGrid || !scene.tileGrid.length) return;
     var kind=sceneKind(scene);
-    if(kind!=='ow') lastReskinMapId=null;               // a later overworld load receives a new mapData identity
+    if(kind!=='ow'){ lastReskinMapId=null; a1aHideCanopy(); }  // a later overworld load receives a new mapData identity;
+                                                              // the depth-11 canopy must not linger over a town/dungeon
     if (kind!=='town' && townState) destroyTown();      // left a town -> drop its canvas so it can't linger over ow/dng
     if ((kind==='town'||kind==='dng') && owMap) destroyOwProps(); // entered a town/dungeon -> drop landmark prop images (NOT on a transient null kind)
     if (kind!=='ow' && !SHIP_TOWN_DNG_RESKIN){
@@ -2134,6 +2296,7 @@
       return;
     }
     if (kind==='ow'){
+      a1aFetch();                                      // one-shot; the Act 1 art manifest + landmark table
       var mapId=scene.currentMapId+':'+scene.mapData.length+'x'+(scene.mapData[0]?scene.mapData[0].length:0);
       if (mapId!==lastReskinMapId){ lastReskinMapId=mapId;
         // DATA MUTATION (owner-approved sandbox exception): consolidate sprinkled mountains in mapData IN PLACE,
@@ -2149,8 +2312,9 @@
           }catch(e){ if(window.__DQ_DEBUG__) console.log('dq consolidate err '+e+(e&&e.stack||'')); }
         }
         try{ reskin(scene); }catch(e){ if(window.__DQ_DEBUG__) console.log('dq reskin err '+e+(e&&e.stack?e.stack:'')); } }
-      else { try{ ensureTerrain(scene); updateTerrain(scene,false); }catch(e){ if(window.__DQ_DEBUG__) console.log('dq terr err '+e); }
-             try{ rebuildOverlay(scene,false); }catch(e){ if(window.__DQ_DEBUG__) console.log('dq ovl err '+e); } }
+      else { var a1fresh=A1A.dirty; A1A.dirty=false;   // a chunk (or the manifest) just landed -> the cached window is stale
+             try{ ensureTerrain(scene); updateTerrain(scene,a1fresh); }catch(e){ if(window.__DQ_DEBUG__) console.log('dq terr err '+e); }
+             try{ rebuildOverlay(scene,a1fresh); }catch(e){ if(window.__DQ_DEBUG__) console.log('dq ovl err '+e); } }
       try{ owSpecialObjects(scene); }catch(e){ if(window.__DQ_DEBUG__) console.log('dq owprop err '+e+(e&&e.stack||'')); } // ALWAYS run props (even during boot map-churn)
     } else if (kind==='dng'){
       // Act-1 semantic floors. The loadMap wrapper is the normal path; the key check below is the

@@ -48,8 +48,15 @@ ACT1_OVERLAY_FILES = {
     # Same day, follow-up: the override now also replays persisted progress (looted chest 4->8,
     # defeated boss 7->10/12) onto the swapped map. The engine does that replay inside loadMap and
     # our swap lands after it, so without this a looted chest returned closed on every re-entry.
+    # 2026-08-04, owner direction ("this needs to be baked in the game now"): inside the Act 1
+    # plate dq-tiles.js no longer SPLATS terrain at all -- it blits the owner-locked baked chunks
+    # 1:1 (48 px/cell == TILE, the same relationship a1dBlit has with the dungeon floors), lifts
+    # their canopy mask above the hero, and draws the nine shipped landmark sprites on their
+    # MEASURED ground anchors from act1-hifi/landmarks/landmarks.json instead of the old flat
+    # OW_PROP houses. Chunk bases were verified pixel-equivalent to act1-material-map.png before
+    # the cutover. Every asset it reads was already registered; only this file's identity moves.
     "dq-tiles.js": (
-        174021, "67690142125fb625883cdb2e8417cd6cc7c5f3e220f3f19afd09f34d15e2b696"),
+        184448, "ad7dec7bdc81dd1dee080304af24f3df8cf725315215f90d581e1200314644fe"),
     # 2026-08-03, owner direction ("please redo the collision setting based on what i created (my
     # paint)"): the Act-1 collision plate is now generated from the OWNER'S PAINTED TERRAIN
     # (owner-terrain.json acts.1 + continent-macro-g3/land-mask.npy) instead of the generated
