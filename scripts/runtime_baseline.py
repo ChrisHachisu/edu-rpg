@@ -102,7 +102,7 @@ ACT1_DUNGEON_FILES = {
     "act1-dungeon-floors.json": (
         42_110, "c0743856ac2e294289a2574d8e3f05e14ed4693633869e457b842072735e731f"),
     "act1-dungeon-art/sunkenCellar-f3-props.png": (
-        4248576, "964606c1e53ca39783c32f634b1e740e075f173f7b712302b7f02ce07e9a12ac"),
+        4_260_080, "761df1141d40fb08a36a77ed046d92860cb8ea4ba0f13d1019158bd6fefd218b"),
 }
 # 2026-08-03, owner-authorised: the Port Sapphire town screen. `adapter.js` is gated to TOWNS
 # ONLY, so this surface is what the overlay actually raises; the overworld stays on the shipped

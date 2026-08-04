@@ -522,20 +522,6 @@ def render(rows: list[str], mats: dict, theme: str, scale: int = 1,
     img *= (1.0 - 0.60 * face)[..., None]     # its near face falls away
     img *= (1.0 - 0.58 * cast)[..., None]     # and drops a shadow onto the floor
 
-    # ── CONTACT RIM on the sides that have NO face (method rule 4 applied all the way round).
-    #    `face` above is gated on `shift(a, face_h)` -- floor SOUTH of rock -- so only the south
-    #    side gets a near face and a cast shadow. That is the side that reads as solid, and the
-    #    owner is happy with it. North, east and west got nothing but the mask fading out plus an
-    #    ambient term blurred at px*1.5, which is why they dissolve into the gravel and look
-    #    unnatural. This is the missing occlusion where rock meets ground: a NARROW band just
-    #    inside the rock, following `fw`, so the silhouette stays exactly as organic as it is now.
-    #    Suppressed where `face` already does the job so the south side is untouched.
-    #    Strength 0.55 chosen by the owner, 2026-08-04, off a three-way render comparison.
-    rim = np.clip((0.50 - fw) / 0.13, 0.0, 1.0) * np.clip((fw - 0.24) / 0.13, 0.0, 1.0)
-    rim *= np.clip(0.55 + 0.45 * fbm(xx, yy, px * 0.9, 41), 0, 1)   # ragged, never a drawn line
-    rim = np.clip(rim * (1.0 - face), 0.0, 1.0)
-    img *= (1.0 - 0.55 * rim)[..., None]
-
     # ── The wall base: its OWN opaque band (method rule 4). Not a blend — a band of rubble drawn
     #    over whatever is behind it, sitting just inside the floor and extending back under the
     #    wall so nothing pokes out from under it.
