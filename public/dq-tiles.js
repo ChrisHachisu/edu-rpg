@@ -2347,14 +2347,17 @@
   function tick(){
     var g=window.__PHASER_GAME__; if(!g) return;
     var scene; try{ scene=g.scene.getScene('WorldMapScene'); }catch(e){ return; }
-    if (!scene || !g.scene.isActive('WorldMapScene')) return;
-    if (!scene.mapData || !scene.tileGrid || !scene.tileGrid.length) return;
-    // BEFORE the kind branch. Both of these used to live in the kind==='dng' branch, i.e. they only
-    // ran once the player was ALREADY inside a dungeon -- too late for the loadMap that put them
-    // there. The floor JSON and the loadMap wrapper have to be in hand while the player is still
-    // walking around the overworld, or the first entry into every dungeon renders the engine's
-    // placeholder map with the hero off it.
+    if (!scene) return;
+    // BEFORE the isActive/tileGrid guards, not just before the kind branch. These two used to live
+    // in the kind==='dng' branch, i.e. they only ran once the player was ALREADY inside a dungeon --
+    // too late for the loadMap that put them there. Behind the guards they were still too late for a
+    // save RESUMED inside a dungeon: WorldMapScene runs its first loadMap in create(), before it is
+    // active and before it has a tileGrid, so tick() bailed and the wrapper was never installed.
+    // Here the wrapper lands on the instance while the scene is still INIT, so even that first
+    // loadMap swaps the real floor in.
     try{ a1dFetch(); a1dInstall(scene); }catch(e){ if(window.__DQ_DEBUG__) console.log('dq a1d install '+e); }
+    if (!g.scene.isActive('WorldMapScene')) return;
+    if (!scene.mapData || !scene.tileGrid || !scene.tileGrid.length) return;
     var kind=sceneKind(scene);
     // Leaving the overworld: the depth-11 canopy must not linger over a town/dungeon, AND the
     // Act 1 chunk cache must be released. A dungeon allocates its own base + fog canvases on top
@@ -2418,5 +2421,17 @@
     }
   }
   setInterval(tick,80);
+  // PARSE-TIME PREFETCH. Both Act-1 dungeon loads used to be issued from tick(), which cannot run
+  // until WorldMapScene exists -- so on a save RESUMED inside a dungeon the 42 KB floor JSON was
+  // only requested AFTER the player was already standing on the floor. By then the engine's own
+  // DECLARED 100x100 placeholder map is live and dungeons have culling off, so ~10,000 tile sprites
+  // are submitted every frame; that starves timers and XHR callbacks. Measured on device (iPhone 17
+  // Pro sim, sunkenCellar f3): 8.7 s for that local 42 KB file, then 5.3 s more to decode the
+  // 4.26 MB baked PNG -- ~14 s of raw engine brick and the procedural knight before the reskin and
+  // the g3 hero appeared. Both requests are cheap and idempotent, so issue them while the title
+  // screen is still up: the art key comes from the save the player is about to resume.
+  a1dFetch();
+  try{ var _sv=JSON.parse(localStorage.getItem('edu-rpg-save')||'null'), _p=_sv&&_sv.player&&_sv.player.position;
+       if(_p&&A1D_MAPS[_p.mapId]) a1dArtFor(_p.mapId+'-f'+(_p.floor||1)); }catch(e){}
   window.__DQ_TILES__={ reskin:reskin, redraw:function(){ if(terrainState){ terrainState.lastWin=''; updateTerrain(terrainState.scene,true);} if(overlayState){ overlayState.lastKey=''; rebuildOverlay(overlayState.scene,true);} } };
 })();

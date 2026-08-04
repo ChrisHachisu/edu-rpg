@@ -56,7 +56,7 @@ ACT1_OVERLAY_FILES = {
     # OW_PROP houses. Chunk bases were verified pixel-equivalent to act1-material-map.png before
     # the cutover. Every asset it reads was already registered; only this file's identity moves.
     "dq-tiles.js": (
-        189950, "526d74e4e322e578330b658250384fcb9b52da4a24d2275f12b55849211f49db"),
+        191255, "8a2f01681c92bbccc5d7402e432c5fe08efeda178c649988d895e9f9082dc003"),
     # 2026-08-03, owner direction ("please redo the collision setting based on what i created (my
     # paint)"): the Act-1 collision plate is now generated from the OWNER'S PAINTED TERRAIN
     # (owner-terrain.json acts.1 + continent-macro-g3/land-mask.npy) instead of the generated
