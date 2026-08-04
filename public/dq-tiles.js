@@ -1859,6 +1859,11 @@
     // continuous mover is that 35 cells a floor are `#` on the lattice and open in the picture.
     // Left alone this tick (80 ms) would teleport the player back to the cave mouth the instant
     // she stepped into one of them.
+    // a1mFree/a1mUnstick take the SPRITE position and test her SOLES under it, so this guard needs
+    // no adjustment for the foot-contact fix -- but it does fire more often, because a cell centre
+    // whose southern neighbour is rock is no longer a legal place to stand. Measured across the
+    // three floors: 742 of 754 reportable cells are legal as placed, the rest recover with a nudge
+    // of at most 28 px, inside the 2-cell bound, so none of them reach the anchor teleport below.
     try{ var mm=a1mFor(scene);
          if(mm && scene.hero){
            if(a1mFree(scene,mm,scene.hero.x,scene.hero.y)) return;
@@ -1974,7 +1979,7 @@
   // Movement constants, taken from the town's own collision authority rather than invented:
   // portSapphire-walkable.json carries actorFootRadius 4 and maxSubstep 2 at 16 world px per
   // cell, i.e. 0.25 and 0.125 of a cell. At the dungeon's 48 px/cell that is 12 and 6.
-  var A1M_FOOT=12;            // world px the hero's centre keeps clear of rock
+  var A1M_FOOT=12;            // world px the hero's GROUND CONTACT POINT keeps clear of rock
   var A1M_STEP=6;             // max world px per collision substep (so thin rock cannot be tunnelled)
   var A1M_CH=3;               // chamfer unit: the distance field counts in THIRDS of a pixel
   // Speed is the one number the town could not settle, because its camera and its cell are a
@@ -2047,7 +2052,62 @@
   function a1mTileAt(scene,x,y){
     var row=scene.mapData[(y/TILE)|0]; return row?row[(x/TILE)|0]:undefined;
   }
+  /* ---- WHERE SHE ACTUALLY TOUCHES THE FLOOR --------------------------------------------------
+     The hero sprite is drawn with origin (0.5,0.5) -- the frozen bundle's createHero does
+     `.setOrigin(.5)` -- so hero.x/hero.y is the CENTRE of the frame, which lands about at her
+     waist. Colliding there meant her SOLES were ~31 px south of the point being tested: with rock
+     to the south she stopped when her waist was 12 px clear and her feet were ~19 px INSIDE the
+     rock (owner, on device: "the player seems like they are walking above the red rim"), and with
+     rock to the north she stopped a visible gap short of it. The mask is a picture of the FLOOR,
+     so the point that must stay on it is the point that stands on it: (hero.x, hero.y + footDy).
+
+     MEASURED FROM THE SHEET AT RUNTIME, never hardcoded. The walk sheet has already been re-cut
+     once -- 48 px with the soles at row 47 (offset ~23 px), then the canonical native 64 px with
+     the soles at row 62 -- and a constant would have gone silently stale at that cut while the
+     collision quietly drifted back off her feet. So: bottom-most opaque row of the hero's own
+     frame, taken relative to the frame centre and scaled by the sprite's runtime scale
+     (hero-override.js's HERO_SCALE, itself live-tunable). 64 px frame, sole row 62, scale 1.0125
+     => 30.9 px. Frame 0 specifically, so an animation pose can never make the contact point bob.
+     window.__A1_DNG_FOOTDY__ overrides it for review; 0 restores the old centre collision. */
+  var a1mSole={};                                                            // frame identity -> sole row offset, FRAME px
+  function a1mSoleOffset(hero){
+    var tex=hero.texture, fr=null;
+    try{ fr=(tex&&tex.get)?tex.get(0):null; }catch(e){}
+    if(!fr) fr=hero.frame;
+    if(!fr) return null;
+    var fw=fr.cutWidth||fr.width, fh=fr.cutHeight||fr.height;
+    if(!fw||!fh) return null;
+    var src=null;
+    try{ src=(fr.source&&fr.source.image)?fr.source.image:(tex&&tex.getSourceImage?tex.getSourceImage():null); }catch(e){}
+    if(!src||!src.width) return null;
+    var key=(tex&&tex.key)+'|'+src.width+'x'+src.height+'|'+fr.cutX+','+fr.cutY+','+fw+'x'+fh;
+    if(a1mSole[key]!==undefined) return a1mSole[key];
+    var off=null;
+    try{
+      var cv=document.createElement('canvas'); cv.width=fw; cv.height=fh;
+      var g=cv.getContext('2d',{willReadFrequently:true});
+      if(g){
+        g.drawImage(src, fr.cutX||0, fr.cutY||0, fw, fh, 0, 0, fw, fh);
+        var d=g.getImageData(0,0,fw,fh).data, y,x;
+        for(y=fh-1;y>=0&&off===null;y--) for(x=0;x<fw;x++)
+          if(d[((y*fw)+x)*4+3]>8){ off=(y+0.5)-(fh/2); break; }              // centre of the sole row
+      }
+    }catch(e){ if(window.__DQ_DEBUG__) console.log('a1 sole '+e); }
+    if(off===null) off=(fh-0.5)-(fh/2);                                      // unreadable: assume she fills the frame
+    a1mSole[key]=off;
+    return off;
+  }
+  function a1mFootDy(scene){
+    if(typeof window.__A1_DNG_FOOTDY__==='number') return window.__A1_DNG_FOOTDY__;
+    var hero=scene&&scene.hero; if(!hero||!hero.texture) return 0;
+    var off=a1mSoleOffset(hero); if(off===null) return 0;
+    var s=(typeof hero.scaleY==='number'&&hero.scaleY>0)?hero.scaleY:1;
+    return off*s;
+  }
+  // (x,y) is the SPRITE position everywhere -- that is what the engine sets, what the rescue guard
+  // holds and what the camera follows -- and the mask is sampled at the soles below it.
   function a1mFree(scene,m,x,y){
+    y+=a1mFootDy(scene);
     if(x<1||y<1||x>=m.W-1||y>=m.H-1) return false;
     if(m.dist[((y|0)*m.W)+(x|0)] < A1M_FOOT*A1M_CH) return false;            // too close to rock
     var t=a1mTileAt(scene,x,y);
@@ -2059,12 +2119,13 @@
   // deliberately exempt from the renderer's prop pockets. Without this she would spawn embedded
   // and never move again.
   function a1mUnstick(scene,m,x,y){
+    var fd=a1mFootDy(scene);                                                 // score the SOLES, like a1mFree tests them
     for(var r=4;r<=288;r+=4){                                                // bounded at 6 cells
       var best=null, bd=-1, k, n=Math.max(8,Math.round(r*0.9));
       for(k=0;k<n;k++){
         var a=k*2*Math.PI/n, px2=x+Math.cos(a)*r, py2=y+Math.sin(a)*r;
         if(!a1mFree(scene,m,px2,py2)) continue;
-        var dd=m.dist[((py2|0)*m.W)+(px2|0)];
+        var dd=m.dist[(((py2+fd)|0)*m.W)+(px2|0)];
         if(dd>bd){ bd=dd; best={x:px2,y:py2}; }
       }
       if(best) return best;
@@ -2091,7 +2152,10 @@
   // (tile 4 -> tryOpenTreasure, 7 and 18 -> interact) rather than inventing behaviour for it.
   function a1mBump(scene,m,x,y,dx,dy){
     var l=Math.sqrt(dx*dx+dy*dy); if(!l) return;
-    var tx=(((x+dx/l*(A1M_FOOT+2))/TILE)|0), ty=(((y+dy/l*(A1M_FOOT+2))/TILE)|0);
+    // Probe from the SOLES: a1mFree stopped her there, so that is where the object she walked into
+    // is. Probing from the sprite centre would have looked a cell north of the thing that blocked.
+    var gy=y+a1mFootDy(scene);
+    var tx=(((x+dx/l*(A1M_FOOT+2))/TILE)|0), ty=(((gy+dy/l*(A1M_FOOT+2))/TILE)|0);
     var row=scene.mapData[ty], t=row?row[tx]:undefined;
     if(t===undefined || !A1M_PROP[t]) return;
     var now=Date.now(); if(now-a1mState.bump<700) return; a1mState.bump=now;
@@ -2153,6 +2217,29 @@
 
     // ---- re-derive the tile the rest of the game runs on, and fire the per-step work exactly
     //      once per cell, exactly as the step tween's onComplete did.
+    // FROM THE SPRITE CENTRE, NOT THE SOLES -- decided, not defaulted. Colliding at the soles
+    // (above) and reporting the tile from the soles are separable, and only the first is the bug.
+    // Reporting from the soles is tempting -- it is the cell she visibly stands on, and it would
+    // reproduce the shipped tile mapping exactly, since the legal position set is the SAME shape
+    // merely shifted 31 px north (measured: 99452 / 71597 / 96037 reachable positions on f1/f2/f3,
+    // identical before and after). It breaks on the round trip. The save format is a CELL and
+    // createHero places the sprite CENTRE on that cell's centre, so a sole-derived save would
+    // reload with the soles 31 px lower, i.e. in the NEXT cell south, which would then be saved --
+    // one cell of southward drift per reload, for ever, unless the sprite were also re-anchored on
+    // every engine placement (a 31 px visual shift in dungeons only, which is a different change
+    // than this one and not one the owner asked for). Centre-derivation is a fixed point instead:
+    // 742 of the 754 reportable cells across the three floors reload to themselves, the other 12
+    // settle one cell north on the first reload and are fixed points after it, the largest rescue
+    // nudge is 28 px (the guard's bound is 96), and no cell falls through to the anchor teleport.
+    // WHAT THIS COSTS, stated rather than hidden: (a) a transition still fires when her CENTRE
+    // crosses into the cell, exactly as it did before this fix -- i.e. about half a body early
+    // walking north, half a body late walking south. That timing is unchanged from the shipped
+    // build, so it is not a regression, but it is also not corrected here. All three floors'
+    // mouth/stairsUp/stairsDown cells stay reportable and reachable (verified by flood fill).
+    // (b) heroTile can now name a cell her body overlaps but her feet are not on -- including a
+    // chest or boss cell one row south of her soles. Inert here: the engine's tile-under-the-hero
+    // consumers key off 24 (torch), 5 (lava), 27 (quicksand) and 17 (hidden wall), none of which
+    // the generated Act 1 floors contain, and props are opened by BUMPING, not by standing.
     var tx=(x/TILE)|0, ty=(y/TILE)|0;
     if(tx===scene.heroTileX && ty===scene.heroTileY) return;
     scene.heroTileX=tx; scene.heroTileY=ty;
@@ -2348,6 +2435,11 @@
     return 'dng';
   }
   var curThemeKey=null;
+  // The torch hole stays centred on the SPRITE, not on the feet the mover now collides at. It is a
+  // light carried by the character, not a footprint: pulling it 31 px down would push the lit
+  // region behind her whenever she walks north, and it would visibly drift off the thing the
+  // player is looking at. The engine's own tile-level explored fog (updateFogVisibility) keys off
+  // heroTileX/Y and is likewise untouched. [checked against the foot-contact fix, 2026-08-05]
   function updateFog(scene){
     if (!dngState || dngState.scene!==scene) return; var cam=scene.cameras.main, hero=dngHero(scene); if(!hero) return;
     var F=dngState.FOGF, fw=dngState.fw, fh=dngState.fh, z=cam.zoom||1;
@@ -2738,6 +2830,7 @@
   // both the offline harness and an on-device check read the same numbers the mover uses.
   window.__A1_DNG_MOVE__={ maskFor:a1mMaskFor, forScene:a1mFor, free:a1mFree, step:a1mStep,
     unstick:a1mUnstick, input:a1mInput, state:function(){ return a1mState; },
+    footDy:a1mFootDy,
     K:{ FOOT:A1M_FOOT, STEP:A1M_STEP, SPEED:A1M_SPEED, CH:A1M_CH } };
   window.__DQ_TILES__={ reskin:reskin, redraw:function(){ if(terrainState){ terrainState.lastWin=''; updateTerrain(terrainState.scene,true);} if(overlayState){ overlayState.lastKey=''; rebuildOverlay(overlayState.scene,true);} } };
 })();

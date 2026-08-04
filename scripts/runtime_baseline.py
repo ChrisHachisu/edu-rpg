@@ -70,8 +70,19 @@ ACT1_OVERLAY_FILES = {
     # called) and neutralises the engine's step by forcing its own `isMoving` around the inner
     # call. heroTileX/heroTileY are re-derived every frame, so encounters, checkTransition, the
     # compass, the minimap and the save format are untouched. Fallback-safe: no mask, no change.
+    # 2026-08-05 (same day, owner on device: "the player seems like they are walking above the red
+    # rim. is there some overlap?"): that mover collided at hero.x/hero.y, which is the CENTRE of a
+    # setOrigin(.5) sprite -- about her waist -- so with rock to the south she stopped with her feet
+    # ~19 px inside it and with rock to the north she stopped a visible gap short. It now collides
+    # at her GROUND CONTACT POINT, (hero.x, hero.y + footDy), where footDy is MEASURED off the walk
+    # sheet at runtime (bottom-most opaque row of frame 0 relative to the frame centre, times the
+    # sprite's runtime scale: 64 px frame, sole row 62, scale 1.0125 -> 30.88 px) rather than
+    # hardcoded, because that sheet has already been re-cut once. Foot radius, substep, sliding and
+    # speed are unchanged, and heroTileX/heroTileY still come from the sprite centre so the CELL
+    # save format round-trips to itself (measured: 742 of 754 reportable cells reload unchanged, the
+    # other 12 settle one cell north once; largest rescue nudge 28 px against a 96 px bound).
     "dq-tiles.js": (
-        210279, "e76028439efc0257fb3aa2be841f48c144657faae61a91d96e660491a7267935"),
+        217390, "a4ecf27974402e857478a85c1f2396777ba3b92cbcb5a8b19555cd99af4c0055"),
     # 2026-08-03, owner direction ("please redo the collision setting based on what i created (my
     # paint)"): the Act-1 collision plate is now generated from the OWNER'S PAINTED TERRAIN
     # (owner-terrain.json acts.1 + continent-macro-g3/land-mask.npy) instead of the generated
