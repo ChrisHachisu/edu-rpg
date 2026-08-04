@@ -947,8 +947,12 @@
   //  identical to base — forest crowns, cut out of the base and redrawn ABOVE the hero (depth 10)
   //  so the player walks under the treeline. Reproduced here with one destination-in composite,
   //  the same way runtime.html's canopyFor() does it.
-  var A1A={ manifest:null, req:false, S:0, chunks:{}, lru:[], landmarks:null, dirty:false };
-  var A1A_MAX_CHUNKS=8;                                          // a window spans <=6; the slack is the LRU's
+  var A1A={ manifest:null, req:false, S:0, chunks:{}, lru:[], landmarks:null, dirty:false, drew:false };
+  // A 40x38 window can INTERSECT 9 chunks (measured over every plate position, worst case at cell
+  // 41,245). The cap must never sit below that or the trim evicts a chunk the current window still
+  // needs, which re-requests and re-evicts it forever: the window never reports full coverage, so
+  // the per-pixel splat runs every update and tick() force-rebuilds the overlay at 12.5 Hz.
+  var A1A_MAX_CHUNKS=12;
   function a1aFetch(){
     if(A1A.req) return; A1A.req=true;
     var r=new XMLHttpRequest(); r.open('GET','act1-hifi/manifest.json',true);
@@ -995,24 +999,27 @@
   function a1aRects(X0,Y0,winW,winH){
     var m=A1A.manifest; if(!m) return null;
     var B=m.semanticBounds, S=A1A.S, ox=B[0]*TILE, oy=B[1]*TILE;
-    var wx0=X0*TILE, wy0=Y0*TILE, wx1=wx0+winW*TILE, wy1=wy0+winH*TILE, out=[], cov=0;
+    var wx0=X0*TILE, wy0=Y0*TILE, wx1=wx0+winW*TILE, wy1=wy0+winH*TILE, out=[], cov=0, inter=0;
     for(var i=0;i<m.chunks.length;i++){ var c=m.chunks[i];
       var cx0=ox+c.x*S, cy0=oy+c.y*S, cx1=cx0+c.width*S, cy1=cy0+c.height*S;
       var ix0=Math.max(wx0,cx0), iy0=Math.max(wy0,cy0), ix1=Math.min(wx1,cx1), iy1=Math.min(wy1,cy1);
       if(ix1<=ix0||iy1<=iy0) continue;
+      inter++;                                                    // TOUCHED by a1aChunkRec -> must survive the trim
       var rec=a1aChunkRec(c); if(!rec.base) continue;             // still loading -> this window is partial
       out.push({c:c,rec:rec,sx:ix0-cx0,sy:iy0-cy0,w:ix1-ix0,h:iy1-iy0,dx:ix0-wx0,dy:iy0-wy0});
       cov+=(ix1-ix0)*(iy1-iy0);
     }
-    while(A1A.lru.length>Math.max(A1A_MAX_CHUNKS,out.length)) delete A1A.chunks[A1A.lru.shift()];
+    // trim against what this window TOUCHED, not what it managed to load -- a chunk mid-load counts
+    while(A1A.lru.length>Math.max(A1A_MAX_CHUNKS,inter)) delete A1A.chunks[A1A.lru.shift()];
     out.full=(cov===winW*TILE*winH*TILE);
     return out;
   }
   // one layer of one chunk. k folds in the layer's own density: base/canopy ship at 48 px/cell so
   // k===1 and the copy is 1:1; water is still the 16 px/cell glint sheet, so k===1/S and it scales.
-  function a1aDrawLayer(ctx,im,r){
+  function a1aDrawLayer(ctx,im,r,dx,dy){
     var k=im.width/(r.c.width*A1A.S);
-    ctx.drawImage(im, r.sx*k, r.sy*k, r.w*k, r.h*k, r.dx, r.dy, r.w, r.h);
+    ctx.drawImage(im, r.sx*k, r.sy*k, r.w*k, r.h*k,
+                  dx===undefined?r.dx:dx, dy===undefined?r.dy:dy, r.w, r.h);
   }
   function a1aBlit(ctx,X0,Y0,winW,winH,needFull){
     var rs=a1aRects(X0,Y0,winW,winH); if(!rs||!rs.length) return false;
@@ -1025,17 +1032,40 @@
     ctx.restore();
     return rs.full;
   }
-  // The canopy window: base drawn, then masked down to the crowns in ONE destination-in pass. It is
-  // exact because the mask's dst rects are the base's dst rects — a chunk whose mask has not loaded
-  // simply loses its canopy rather than showing an unmasked copy of the terrain.
+  // The canopy window: each chunk's crowns cut out of the base it already holds.
+  //
+  // `destination-in` is a WHOLE-CANVAS operator, not a rect operator -- it clears everything the
+  // newly drawn image does not cover, however far away. So masking all the chunks on one surface
+  // does NOT work: each mask erases the previous chunk's canopy and only the last one survives (and
+  // if that last chunk's mask happens to be empty -- six of the thirty are -- the entire layer goes
+  // blank). Identical dst rects are necessary but nowhere near sufficient. Composite ONE chunk at a
+  // time on a scratch surface and blit the result, which is what runtime.html's canopyFor() does.
+  var a1aScratch=null;
+  function a1aScratchCtx(w,h){
+    if(!a1aScratch) a1aScratch=document.createElement('canvas');
+    if(a1aScratch.width<w) a1aScratch.width=w;
+    if(a1aScratch.height<h) a1aScratch.height=h;
+    return a1aScratch.getContext ? a1aScratch.getContext('2d') : null;
+  }
   function a1aCanopy(ctx,X0,Y0,winW,winH){
+    var rs=a1aRects(X0,Y0,winW,winH), drew=false;
+    if(!rs||!rs.length) return false;
     ctx.clearRect(0,0,winW*TILE,winH*TILE);
-    var rs=a1aRects(X0,Y0,winW,winH); if(!rs||!rs.length) return;
     ctx.save(); ctx.imageSmoothingEnabled=false;
-    for(var i=0;i<rs.length;i++){ if(rs[i].rec.canopy) a1aDrawLayer(ctx,rs[i].rec.base,rs[i]); }
-    ctx.globalCompositeOperation='destination-in';
-    for(var j=0;j<rs.length;j++){ if(rs[j].rec.canopy) a1aDrawLayer(ctx,rs[j].rec.canopy,rs[j]); }
+    for(var i=0;i<rs.length;i++){ var r=rs[i]; if(!r.rec.canopy) continue;
+      var sc=a1aScratchCtx(r.w,r.h); if(!sc) continue;
+      sc.save(); sc.imageSmoothingEnabled=false;
+      sc.globalCompositeOperation='source-over';
+      sc.clearRect(0,0,r.w,r.h);
+      a1aDrawLayer(sc,r.rec.base,r,0,0);
+      sc.globalCompositeOperation='destination-in';   // scoped to THIS chunk's surface
+      a1aDrawLayer(sc,r.rec.canopy,r,0,0);
+      sc.restore();
+      ctx.drawImage(a1aScratch, 0,0,r.w,r.h, r.dx,r.dy,r.w,r.h);
+      drew=true;
+    }
     ctx.restore();
+    return drew;
   }
 
   function ensureTerrain(scene){
@@ -1064,14 +1094,19 @@
     var map=scene.mapData; if(!map||!map.length) return;
     var cam=scene.cameras.main, wv=cam.worldView, W=map[0].length, H=map.length, winW=terrainState.winW, winH=terrainState.winH;
     var X0=windowStart(wv.x,winW,W), Y0=windowStart(wv.y,winH,H);
+    // re-show BEFORE the window-cache early-return: a single transient non-'ow' tick hides the
+    // canopy, and if the hero is standing still the window key never changes, so a re-show placed
+    // after this line would not run again until the window snapped to a new 12-cell boundary.
+    if (terrainState.cimg && !terrainState.cimg.visible && A1A.drew) terrainState.cimg.setVisible(true);
     var key=X0+'_'+Y0; if(!force && key===terrainState.lastWin) return; terrainState.lastWin=key;
     drawTerrain(terrainState.ct.context, map, X0, Y0, winW, winH);
     terrainState.ct.refresh();
     terrainState.image.setPosition(X0*TILE, Y0*TILE);
     if (terrainState.cimg){
-      a1aCanopy(terrainState.cct.context, X0, Y0, winW, winH);
-      terrainState.cct.refresh();
-      terrainState.cimg.setPosition(X0*TILE, Y0*TILE).setVisible(true);
+      var drew=a1aCanopy(terrainState.cct.context, X0, Y0, winW, winH);
+      if (drew || A1A.drew) terrainState.cct.refresh();   // outside Act 1 there is nothing to upload
+      A1A.drew=drew;
+      terrainState.cimg.setPosition(X0*TILE, Y0*TILE).setVisible(drew);
     }
   }
   function a1aHideCanopy(){ if(terrainState&&terrainState.cimg){ try{ terrainState.cimg.setVisible(false); }catch(e){} } }
@@ -1152,15 +1187,21 @@
     var key='a1alm_'+slug; if(scene.textures.exists(key)) return key;
     if(!a1aLmLoading[key]){ a1aLmLoading[key]=1; var im=new Image();
       im.onload=function(){ if(!scene.textures.exists(key)){ try{scene.textures.addImage(key,im);}catch(e){} } };
-      im.onerror=function(){ a1aLmLoading[key]=0; };
+      im.onerror=function(){ a1aLmLoading[key]=2; };                    // permanent: owSpecialObjects runs at 12.5 Hz
       im.src='act1-hifi/landmarks/'+slug+'.png'; }
     return null;
   }
-  function a1aLandmarks(scene,X0,X1,Y0,Y1,seen){
+  function a1aLandmarks(scene,map,X0,X1,Y0,Y1,seen){
     var L=A1A.landmarks; if(!L) return;
     for(var i=0;i<L.length;i++){ var lm=L[i], cx=lm.cell[0], cy=lm.cell[1], sz=lm.size;
       var pad=Math.ceil(sz/TILE)+1;                                     // a 192px sprite overhangs its cell by ~2 cells
       if(cx<X0-pad||cx>X1+pad||cy<Y0-pad||cy>Y1+pad) continue;
+      // Only where the map actually has an entrance. landmarks.json still carries `misty-grotto`
+      // at (91,378), which is plain walkable grass (tile 0) -- Darkfang at (96,359) is the real
+      // mistyGrotto door. Drawing it would paint a 144px cave mouth the player walks straight
+      // through. The terrain bake's packed-earth pad stays either way; this only withholds the
+      // fake door, and self-heals if that cell ever gets a real tile.
+      var mrow=map&&map[cy]; if(!mrow||!OW_PROP[mrow[cx]]) continue;
       var tk=a1aLandmarkTex(scene,lm.slug); if(!tk) continue;           // PNG still loading -> next tick
       var key='a1alm_'+lm.slug, img=owImgs[key];
       if(!img){ img=scene.add.image(0,0,tk).setDepth(6); owImgs[key]=img; }
@@ -1191,7 +1232,7 @@
       if(img.texture.key!==tk) img.setTexture(tk);
       var sc=OW_PROP_SCALE[name]||1.5; img.setOrigin(0.5,1).setPosition(tx*TILE+TILE/2, ty*TILE+TILE).setDisplaySize(TILE*sc,TILE*sc); // bigger + sit on the tile & rise up
       if(!img.visible)img.setVisible(true); seen[key]=1; } }
-    a1aLandmarks(scene,X0,X1,Y0,Y1,seen);
+    a1aLandmarks(scene,map,X0,X1,Y0,Y1,seen);
     for (var k2 in owImgs){ if(!seen[k2] && owImgs[k2] && owImgs[k2].visible) owImgs[k2].setVisible(false); } // cull off-screen
     var vis=0; for(var vk in owImgs){ if(owImgs[vk]&&owImgs[vk].visible) vis++; } window.__OW_PROP_COUNT__=vis; // readiness signal for capture harness
   }
@@ -2241,7 +2282,7 @@
     var W=map[0].length, H=map.length;
     MUTED=null;                                                                    // raw tile reads for fieldAt (no stale overworld water-muting)
     townRoad=buildRoadMask(map);                                                   // connected cross-road mask
-    if (terrainState&&terrainState.image){ try{terrainState.image.destroy();}catch(e){} terrainState=null; lastReskinMapId=null; } // tear down stale overworld
+    if (terrainState&&terrainState.image){ try{terrainState.image.destroy();}catch(e){} try{if(terrainState.cimg)terrainState.cimg.destroy();}catch(e){} terrainState=null; lastReskinMapId=null; } // tear down stale overworld
     if (overlayState&&overlayState.container){ try{overlayState.container.destroy();}catch(e){} overlayState=null; }
     if (dngState){ try{dngState.image&&dngState.image.destroy();}catch(e){} try{dngState.fog&&dngState.fog.destroy();}catch(e){} dngState=null; }
     if (townState&&townState.image){ try{townState.image.destroy();}catch(e){} }
@@ -2291,7 +2332,7 @@
     if (kind!=='ow' && !SHIP_TOWN_DNG_RESKIN){
       // Overworld-only ship: tear down any stale overworld terrain/overlay so it can't linger over the engine's
       // native town/dungeon art, then bail — towns + dungeons render exactly as the base game does (unchanged).
-      if (terrainState&&terrainState.image){ try{terrainState.image.destroy();}catch(e){} terrainState=null; lastReskinMapId=null; }
+      if (terrainState&&terrainState.image){ try{terrainState.image.destroy();}catch(e){} try{if(terrainState.cimg)terrainState.cimg.destroy();}catch(e){} terrainState=null; lastReskinMapId=null; }
       if (overlayState&&overlayState.container){ try{overlayState.container.destroy();}catch(e){} overlayState=null; }
       return;
     }
