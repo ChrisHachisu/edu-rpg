@@ -75,9 +75,8 @@ ACT1_OVERLAY_FILES = {
     # old sheet. The 48px sheet is a RE-CUT of the canonical 64px g3 asset, not new art --
     # scripts/build_hero_g3_walk.py, soles aligned to the shipped sheet's measured baseline so the
     # hero does not float. The two retired sheets stay on disk: they are baseline runtime files.
-    "hero-override.js": (7169, "527b08b0e6c701f70c1173bdeeaf9c316ec94ab14512fd85d5f29289665d0476"),
-    "assets/hero/hero-g3-walk.png": (
-        34938, "fa3f8aa5f0125a949b606abf856858840f83cd4284e7be68be4c21fe5224a57f"),
+    "hero-override.js": (8186, "67e15564ccfef6cdaf7bb8ad15d8b2870df80bf5c30b717ce0488e1e6375c18c"),
+    "assets/hero/hero-g3-walk.png": (35567, "a254b447cc73be8215a16bc1fa462e61eedd7cb9fad95b85ebe234f7d00edc1a"),
     "act1-world-map.js": (
         47_908, "e5713be14ece51788798893c09a057d601d486671f97254dfb1825077ffe26b4"),
 }

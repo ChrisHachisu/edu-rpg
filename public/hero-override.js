@@ -123,6 +123,25 @@
     localeFixed = true;                                   // one-shot; never fight a manual toggle
   }
 
-  setInterval(function () { apply(); hideGuideOnTouch(); fixDefaultLocale(); }, 200);
+  // Hero scale on the tile maps. Owner 2026-08-04: "the hero size on the map is too small."
+  // The sheet is a 48px cell holding ~35x39px of character, so at scale 1 the heroine reads
+  // SHORTER than one 48px tile and is dwarfed by the 144-192px landmark sprites beside her.
+  // Render-only: collision, encounters and transitions all key off heroTileX/heroTileY, which
+  // this does not touch. Tunable live via window.__HERO_SCALE__ for a quick judgement call.
+  var HERO_SCALE = 1.35;
+  function scaleHero() {
+    var g = window.__PHASER_GAME__;
+    if (!g || !g.scene) return;
+    var s = (typeof window.__HERO_SCALE__ === 'number' && window.__HERO_SCALE__ > 0)
+      ? window.__HERO_SCALE__ : HERO_SCALE;
+    g.scene.scenes.forEach(function (sc) {
+      var h = sc && sc.hero;
+      if (!h || h.scaleX == null || !h.setScale) return;
+      if (Math.abs(h.scaleX - s) < 0.001) return;                 // idempotent: the tick re-runs at 5 Hz
+      try { h.setScale(s); } catch (e) {}
+    });
+  }
+
+  setInterval(function () { apply(); hideGuideOnTouch(); fixDefaultLocale(); scaleHero(); }, 200);
   window.__heroOverrideApply = apply;
 })();

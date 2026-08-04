@@ -43,8 +43,16 @@ REF = ROOT / "public/assets/hero/hero-openface-walk.png"   # baseline reference 
 OUT = ROOT / "public/assets/hero/hero-g3-walk.png"
 FW = FH = 48
 FRAMES = 12
-# hero-override.js dir order -> g3 sheet row (the same map town.html already uses)
-DIR_ROW = {0: 0, 1: 2, 2: 6, 3: 3}
+# hero-override.js dir order -> g3 sheet row.
+# The g3 source is an 8-way wheel in 45 deg steps starting at SOUTH:
+#   0=S  1=SW  2=W  3=NW  4=N  5=NE  6=E  7=SE
+# which the three known rows confirm (down=0, left=2, right=6 are 0/90/270 deg).
+# UP therefore has to be row 4 -- the full back view, cape square to camera. This read
+# row 3 (NW: the back at three-quarters, one ponytail and part of the shield showing),
+# so walking north drew the diagonal. Owner, 2026-08-04: "the hero's north facing
+# artwork is swapped with north west facing diagonal artwork." Verified by eye against
+# every row of the source sheet before changing it.
+DIR_ROW = {0: 0, 1: 2, 2: 6, 3: 4}
 
 
 def main() -> int:
