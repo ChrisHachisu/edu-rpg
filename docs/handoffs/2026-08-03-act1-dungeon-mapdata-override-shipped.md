@@ -2,6 +2,8 @@
 date: 2026-08-03
 type: handoff
 tags: [edu-rpg, act1, dungeons, dq-tiles, runtime-integration]
+status: superseded
+superseded_by: "[[2026-08-03-act1-design-lock-and-playability]]"
 ---
 
 # Act-1 dungeon runtime integration — SHIPPED and verified

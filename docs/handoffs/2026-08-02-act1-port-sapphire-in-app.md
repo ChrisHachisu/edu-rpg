@@ -3,7 +3,8 @@ date: 2026-08-02
 type: handoff
 project: edu-rpg
 milestone: act1-town-screens
-status: active
+status: superseded
+superseded_by: "[[2026-08-03-act1-design-lock-and-playability]]"
 supersedes: "[[2026-08-01-act1-port-sapphire-town-screen]]"
 tags: [handoff, edu-rpg, act1, towns, port-sapphire, ios, capacitor]
 ---

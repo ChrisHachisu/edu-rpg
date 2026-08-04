@@ -3,7 +3,8 @@ date: 2026-08-02
 type: handoff
 project: edu-rpg
 milestone: act1-collision-from-owner-paint
-status: active
+status: superseded
+superseded_by: "[[2026-08-03-act1-design-lock-and-playability]]"
 supersedes: "[[2026-08-01-act1-overworld-shipped-renderer]]"
 tags: [handoff, edu-rpg, overworld, act1, owner-terrain, collision, material-renderer]
 ---
