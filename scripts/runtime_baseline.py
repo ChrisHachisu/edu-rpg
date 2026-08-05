@@ -102,20 +102,7 @@ ACT1_OVERLAY_FILES = {
     # scripts/build_hero_g3_walk.py, soles aligned to the shipped sheet's measured baseline so the
     # hero does not float. The two retired sheets stay on disk: they are baseline runtime files.
     "hero-override.js": (8336, "c8454a9e168289469bf9403011faa35e66ee75a703895ca320cd4086d435ce75"),
-    # 2026-08-05, owner: "the hero's north facing animation cuts off its head." The canonical
-    # source sheet's row 4 (N) shipped with the top of her head CROPPED -- a flat, fully opaque,
-    # un-antialiased 24 px run where every other row has a soft rounded crown. Nothing read that
-    # row until DIR_ROW[3] moved 3 -> 4 on 2026-08-04 (which fixed "north draws the north-west
-    # diagonal" and is correct); that is what exposed it.
-    # THE SOURCE ART IS NOW REPAIRED, so the derived sheet is a plain re-cut again. Two stopgaps
-    # inside build_hero_g3_walk.py -- a procedural dome, then a graft of the NE head ("you just
-    # pasted on a different facing asset and i can tell") -- are superseded; its repair_north_crown
-    # guard no longer matches and goes quiet on its own, verified. The crown is drawn by
-    # scripts/repair_hero_g3_north_crown.py from the cell's OWN hair, writing only rows above the
-    # cut, introducing no colour the sheet did not already contain. Frames 0-8 of this sheet are
-    # BIT-IDENTICAL to the previous pin and every frame's sole row is untouched, so the runtime
-    # sole measurement that drives dungeon sole-contact collision does not move.
-    "assets/hero/hero-g3-walk.png": (62518, "7da680c188925ebb57668109946046c393baeb6261746356553700d5c0d97ac0"),
+    "assets/hero/hero-g3-walk.png": (61435, "cc1f535544add27d035f91b8f4683d29a7b97c7bf8e9722d0e0b2aa7e47e0bf3"),
     "act1-world-map.js": (
         47_908, "e5713be14ece51788798893c09a057d601d486671f97254dfb1825077ffe26b4"),
 }
