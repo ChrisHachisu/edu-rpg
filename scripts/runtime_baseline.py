@@ -103,13 +103,19 @@ ACT1_OVERLAY_FILES = {
     # hero does not float. The two retired sheets stay on disk: they are baseline runtime files.
     "hero-override.js": (8336, "c8454a9e168289469bf9403011faa35e66ee75a703895ca320cd4086d435ce75"),
     # 2026-08-05, owner: "the hero's north facing animation cuts off its head." The canonical
-    # source sheet's row 4 (N) ships with the top of her head CROPPED -- a flat, fully opaque,
+    # source sheet's row 4 (N) shipped with the top of her head CROPPED -- a flat, fully opaque,
     # un-antialiased 24 px run where every other row has a soft rounded crown. Nothing read that
     # row until DIR_ROW[3] moved 3 -> 4 on 2026-08-04 (which fixed "north draws the north-west
-    # diagonal" and is correct); that is what exposed it. build_hero_g3_walk.py now rebuilds the
-    # crown when it cuts the N frames. Frames 0-8 are BIT-IDENTICAL and every frame's sole row is
-    # untouched, so the runtime sole measurement that drives dungeon collision does not move.
-    "assets/hero/hero-g3-walk.png": (62857, "d8fb63cf848c1ae3928fa466c69a538bb7074a151483f56e631dc458338c5620"),
+    # diagonal" and is correct); that is what exposed it.
+    # THE SOURCE ART IS NOW REPAIRED, so the derived sheet is a plain re-cut again. Two stopgaps
+    # inside build_hero_g3_walk.py -- a procedural dome, then a graft of the NE head ("you just
+    # pasted on a different facing asset and i can tell") -- are superseded; its repair_north_crown
+    # guard no longer matches and goes quiet on its own, verified. The crown is drawn by
+    # scripts/repair_hero_g3_north_crown.py from the cell's OWN hair, writing only rows above the
+    # cut, introducing no colour the sheet did not already contain. Frames 0-8 of this sheet are
+    # BIT-IDENTICAL to the previous pin and every frame's sole row is untouched, so the runtime
+    # sole measurement that drives dungeon sole-contact collision does not move.
+    "assets/hero/hero-g3-walk.png": (62518, "7da680c188925ebb57668109946046c393baeb6261746356553700d5c0d97ac0"),
     "act1-world-map.js": (
         47_908, "e5713be14ece51788798893c09a057d601d486671f97254dfb1825077ffe26b4"),
 }

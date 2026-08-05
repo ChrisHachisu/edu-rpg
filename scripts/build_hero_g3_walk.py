@@ -107,6 +107,15 @@ DIR_ROW = {0: 0, 1: 2, 2: 6, 3: 4}
 # THIS IS A STOPGAP, NOT A RESTORATION. It is a good graft, but it is still one direction's head on
 # another direction's shoulders. The durable fix is to regenerate row 4 of the canonical sheet with
 # the head intact; when that lands, the guard below stops firing and this code goes quiet on its own.
+#
+# SUPERSEDED 2026-08-05, same day. That durable fix landed: scripts/repair_hero_g3_north_crown.py
+# draws the crown into the canonical sheet itself, from the N cell's own hair, writing only rows
+# above the cut. The damaged asset as delivered is preserved at
+# design/art-refs/hero-act1-female-walk-8x3-64-g3-cut-original.png, which is what that script reads.
+# The guard below no longer matches -- the N cells' topmost row is now a 5 px crown tip, not a 24 px
+# flat run -- so repair_north_crown returns each cell untouched. VERIFIED, not assumed: all three
+# poses round-trip byte-identical through it. The code stays in place as the regression tripwire it
+# was written to be; if a future re-delivery of the sheet is cropped again, it fires again.
 NORTH_DONOR_ROW = 5      # NE, the complete neighbour on the 8-way wheel; same pose column
 
 
