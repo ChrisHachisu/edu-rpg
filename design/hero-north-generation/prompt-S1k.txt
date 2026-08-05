@@ -1,0 +1,41 @@
+Use ONLY your built-in image-generation tool to answer this. Do NOT read any repository, AGENTS.md, skill or workflow file. Do NOT write into any git repository. Do not write a session log, plan or summary file.
+
+HARD PROCESS RULE: the file you deliver must be the RAW, UNMODIFIED output of your image-generation tool. You may `cp` it to the destination path, nothing more. You must NOT edit, redraw, retouch, recolour, composite, resize, crop, upscale or "fix" it with ImageMagick, `magick`, `convert`, `sips`, `ffmpeg`, Python, PIL or ANY drawing command. Zero `-draw` operations. If the generated image is imperfect, deliver it imperfect and say so.
+
+THE CHARACTER. The attachments are the existing walking sprite sheet of one character from a 16-bit SNES-era JRPG. She is a chibi knight heroine: a big rounded head with deep chestnut/auburn hair worn in a ponytail tied with a bright blue band, silver plate pauldrons, bracers and greaves, brown leather boots, a long blue cape down her back, a gold-rimmed blue kite shield on one arm and a straight sword in the other hand.
+
+THE ATTACHMENTS.
+1. Her sprite sheet: SEVEN of her eight facing directions, three walk poses each, on flat magenta #ff00ff at 8x nearest-neighbour zoom. Top to bottom the rows are: south (towards camera), south-west, west, north-west, north-east, east, south-east.
+2. Her north-west row and her north-east row, three poses each, at 12x.
+3. Her north-west and north-east heads at 24x.
+4. HER BODY, SEEN FROM DIRECTLY BEHIND, from the shoulders down, three poses, at 12x. This is her existing art for the direction you are drawing, and it is exactly the right shape, width and colour.
+
+WHAT IS MISSING. Her eighth facing direction, NORTH: walking directly AWAY from the camera, square-on from behind. Only her head is missing -- attachment 4 is the rest of her, already drawn. Draw the whole sprite.
+
+DELIVER ONE SQUARE IMAGE on flat magenta #ff00ff containing THREE poses of that missing north-facing walk, side by side in a single row, evenly spaced, all three the same size and standing on the same ground line: a standing pose, and the two walking poses. Same character, same armour, same colours, same proportions, same head-to-body ratio and the same pixel-block size as the attached sprites — she is the same sprite, just turned to face away from us.
+
+Because we are directly behind her: no face, no eyes, no nose. We see the back of her head, the ponytail, both pauldrons symmetrically, the cape hanging straight down the centre of her back, the shield edge-on at one side and the sword at the other. Only her legs and boots change between the three poses.
+
+PROPORTIONS. Look at how big her head is in the attached sprites. This is a CHIBI sprite: her head is enormous -- roughly one third of her whole height, as wide as her shoulders, sitting almost straight on them with no visible neck, and the mass of hair makes it wider still. Her cape ends around the top of her boots, not at the ground. Her legs are short and stubby. Match those proportions exactly -- do not slim her down, do not lengthen her body, do not shrink her head.
+
+HER MEASUREMENTS, IN SPRITE PIXELS. Each sprite is 64x64 sprite pixels and she stands 56 of them tall, crown to boot sole. Draw her to these numbers:
+- her head, counting ALL of the hair, is about 24 sprite pixels wide;
+- the cranium alone -- the back of the skull, not counting the tail lying on it -- is about 17 sprite pixels wide;
+- her CAPE at its widest is about 47 sprite pixels across. That is nearly TWICE the width of her head. The cape is the widest thing in the sprite: it flares out hard from the shoulders like a bell and its bottom hem is wider than her shoulders are;
+- the kite shield juts out past her left arm and the sword blade sticks out past her right hand, so counting shield to sword tip she spans about 58 of the 64 pixels across.
+Copy the cape width, the flare and the hem straight off attachment 4. If your cape comes out no wider than her head, you have drawn her far too narrow.
+
+SHE IS ALMOST AS WIDE AS SHE IS TALL. She is 56 pixels tall and about 58 pixels across -- her overall silhouette is ROUGHLY SQUARE, not a tall narrow figure. If your finished sprite is clearly taller than it is wide, you have drawn her too narrow: widen the cape and push the shield and the sword further out.
+
+WIDENING HER DOES NOT MEAN NARROWING HER HEAD. The head stays exactly the rounded dome described above, at exactly the size described above: a full, round, 24-pixel-wide cranium. Never a narrow spike, never a cone, never a tall pointed wedge. ALL of the extra width comes from the cape, the shield and the sword -- NONE of it comes out of the head. If you find yourself thinning or pointing the head to make her look wider, stop and widen the cape instead.
+
+HER PONYTAIL FROM BEHIND. The blue band is tied on the BACK of her skull, about a third of the way down from the crown, dead centre left-to-right. Because we are directly behind her the single tail is seen end-on: it hangs straight down the centre line of the back of her head and ends just below the neck, on the top of the cape. Keep it NARROW -- no wider than about a third of the head -- and keep it a clearly SEPARATE shape lying ON TOP of the skull, so the banded strands of the skull hair stay plainly visible to the left and to the right of it. The head must read as a compact skull with a tail on it, not as one solid rounded blob of hair. Exactly one tail, perfectly centred, no pigtails, nothing swinging out to one side.
+
+HAIR COLOUR. Deep chestnut / auburn: noticeably DARKER and LESS ORANGE than a bright copper. Use exactly the ramp of the attached references -- near-black red-brown in the deepest strand shadows, dark chestnut, mid chestnut, and only a few warm light-brown strand highlights on the upper-left of the skull where the light falls. Do not brighten it, do not make it ginger, do not add pale yellow or cream highlights.
+
+STYLE. Draw it the way the attached sprites are drawn: hand-pixelled 16-bit JRPG sprite art at nearest-neighbour zoom, hard square blocks, hard edges, no antialiasing, no smooth gradients, no blur, no drop shadow, no glow, no new colours. Match the reference hair exactly: it is drawn as distinct vertical strands with hard-edged bands of light, mid and deep shadow, not as a smooth airbrushed volume.
+
+Flat magenta #ff00ff everywhere the character is not. No text, no labels, no border, no frame, no grid lines, no ground shadow, no extra characters.
+
+DELIVER: copy the raw generated file to this exact path and stop:
+DESTPATH

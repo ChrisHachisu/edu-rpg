@@ -102,7 +102,11 @@ ACT1_OVERLAY_FILES = {
     # scripts/build_hero_g3_walk.py, soles aligned to the shipped sheet's measured baseline so the
     # hero does not float. The two retired sheets stay on disk: they are baseline runtime files.
     "hero-override.js": (8336, "c8454a9e168289469bf9403011faa35e66ee75a703895ca320cd4086d435ce75"),
-    "assets/hero/hero-g3-walk.png": (61435, "cc1f535544add27d035f91b8f4683d29a7b97c7bf8e9722d0e0b2aa7e47e0bf3"),
+    # Re-pinned 2026-08-06: the g3 source sheet's NORTH row (row 4) was damaged art -- drawn
+    # ~15% oversize, so the crown was sheared flat off the top of the cell -- and walking north
+    # is the one direction the tile runtime draws from it. Replaced with generated pixels;
+    # scripts/bake_hero_north_row.py carries the provenance and the eight reverted attempts.
+    "assets/hero/hero-g3-walk.png": (59447, "070a8a452c3dda775bd6c8593a66d57a5a13d97b9fb33378ea5b2bb0e1fded3c"),
     "act1-world-map.js": (
         47_908, "e5713be14ece51788798893c09a057d601d486671f97254dfb1825077ffe26b4"),
 }
