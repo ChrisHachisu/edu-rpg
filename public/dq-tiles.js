@@ -1987,6 +1987,19 @@
   // Sine.easeInOut peak half again as high. 260 px/s (5.4 cells/s) reads as the same pace once
   // the stop-start between cells is gone. Tunable live for review: window.__A1_DNG_SPEED__.
   var A1M_SPEED=260;
+  function a1mSpeed(){ return (typeof window.__A1_DNG_SPEED__==='number')?window.__A1_DNG_SPEED__:A1M_SPEED; }
+  /* WALK CADENCE IS A DESIGN LOCK, NOT A FREE PARAMETER. public/act1-hifi/manifest.json carries
+     designLocks.walkPoseMs = 125 and the town renderer (act1-hifi/town.html) runs the four-pose
+     cycle [0,1,0,2] at exactly that rate. The first continuous-movement build flipped between
+     poses 1 and 2 every 13 px of MANHATTAN travel, which measured 50 ms/pose walking cardinally
+     and 36 ms diagonally -- 2.5x the lock, 3x the tile-step build it replaced, and 41% faster on
+     the diagonal purely because |sx|+|sy| overstates a diagonal step by sqrt(2). Tiny frantic legs
+     under a gliding body, and the two surfaces of the same act disagreeing about her walk.
+     So: distance is EUCLIDEAN, the cycle is the town's, and the flip distance is DERIVED from the
+     speed in force (260 px/s * 0.125 s = 32.5 px) rather than written down, so retuning speed --
+     including live, through __A1_DNG_SPEED__ -- keeps the cadence at the locked 125 ms. */
+  var A1M_POSE=[0,1,0,2];     // hero-override.js frame within the direction: 0 idle, 1 and 2 the walk poses
+  var A1M_POSE_MS=125;        // designLocks.walkPoseMs
   // The engine's dungeon blockers MINUS rock. Rock is what the mask now owns; these are objects
   // standing on a cell, and bumping one is how the engine interacts with it.
   var A1M_PROP={4:1,5:1,7:1,14:1,18:1,23:1,28:1};
@@ -2113,6 +2126,52 @@
     var t=a1mTileAt(scene,x,y);
     return t!==undefined && !A1M_PROP[t];
   }
+  /* ---- SLIDE ALONG THE WALL, NOT ALONG THE AXES ----------------------------------------------
+     Retrying X alone and then Y alone is only sliding on an AXIS-ALIGNED wall, and this cave is
+     organic -- almost none of its walls run straight. Measured over the three floors' real contact
+     points (every near-wall standing position x 24 headings, counting only the cases where a glide
+     is genuinely available, i.e. the tangent keeps >=35% of the step): with axis separation alone,
+     5% of pushes into an axis-aligned wall produced ZERO movement, 26% against oblique wall and
+     39-43% against diagonal wall -- about one push in six across the cave's actual wall population
+     froze the hero solid while the stick was still held. On device a 1.58 s full-deflection push
+     into a 45-degree wall gave 0 px and a pixel-identical frozen screen for the whole hold.
+     The distance field already knows where the rock is, so nothing new is needed to fix it: its
+     GRADIENT is the outward wall normal, and the glide is the step with its into-the-wall
+     component removed, s - (s.n)n. That is the true tangent for any wall angle, not just the two
+     the axes happen to name. The axis retries below stay as the fallback for the cases the tangent
+     cannot serve (a concave corner, a prop cell, the map edge), so nothing that used to move stops
+     moving. Returns the tangent STEP, deliberately un-renormalised: a glide along a wall should
+     lose the speed it was spending pushing into it, which is what makes a wall feel like a wall.
+     `len` is that tangential travel, reported separately from the clearance lift below so the walk
+     cadence is paced by the distance she actually walked. */
+  var A1M_LIFT=3;             // max world px of outward correction per substep (see below)
+  function a1mSlide(scene,m,x,y,sx,sy){
+    var fd=a1mFootDy(scene), gx=x|0, gy=(y+fd)|0;
+    if(gx<1||gy<1||gx>=m.W-1||gy>=m.H-1) return null;
+    var i=gy*m.W+gx;
+    var nx=m.dist[i+1]-m.dist[i-1], ny=m.dist[i+m.W]-m.dist[i-m.W];           // grows AWAY from rock
+    var l=Math.sqrt(nx*nx+ny*ny); if(l<1e-6) return null;                     // flat field: no wall to read
+    nx/=l; ny/=l;
+    var d=sx*nx+sy*ny; if(d>=0) return null;                                  // not pushing into THIS wall
+    var tx=sx-d*nx, ty=sy-d*ny;
+    var len=Math.sqrt(tx*tx+ty*ty);
+    if(len<0.01) return null;                                                 // dead head-on: nothing to glide along
+    /* The tangent is only tangent to FIRST ORDER, and an organic cave has no straight walls: a step
+       along it lands slightly INSIDE the concavity it is curving around, which the 12 px clearance
+       test then rejects -- and the glide dies after four or five frames, hard against the exact
+       clearance floor, with the stick still held. Measured before this correction: 84.7% of held
+       pushes into slanted wall still ended frozen, median travel 15 px in 1.58 s. So ask the field
+       how much clearance the step actually lost and give exactly that back along the normal, plus
+       half a pixel to clear the integer field's own quantisation. Self-limiting (a step that keeps
+       its clearance is corrected by zero) and capped, so it can lift her off a wall she is rubbing
+       but never throw her across one. */
+    var ex=(x+tx)|0, ey=(y+ty+fd)|0;
+    if(ex>=1&&ey>=1&&ex<m.W-1&&ey<m.H-1){
+      var need=(A1M_FOOT*A1M_CH)-m.dist[ey*m.W+ex];
+      if(need>0){ var lift=Math.min(A1M_LIFT,(need/A1M_CH)+0.5); tx+=nx*lift; ty+=ny*lift; }
+    }
+    return { x:tx, y:ty, len:len };
+  }
   // Nearest legal standing point. Needed because the hero is PLACED by tile: a1dRescueHero and
   // every engine entry path drop her on a cell CENTRE, and a cell centre is a lattice coordinate
   // the art never promised was open -- a cave mouth in particular is an arch IN the rock and is
@@ -2189,7 +2248,7 @@
     var inp=a1mInput(scene), moved=0;
     if(inp){
       scene.heroDir = Math.abs(inp.x)>Math.abs(inp.y) ? (inp.x>0?2:1) : (inp.y>0?0:3);
-      var speed=(typeof window.__A1_DNG_SPEED__==='number')?window.__A1_DNG_SPEED__:A1M_SPEED;
+      var speed=a1mSpeed();
       // The frame-delta cap has to be bigger than one frame of a SLOW device, not of a fast one.
       // At 0.05 s it silently became a speed limit: measured on the iPhone 17 Pro sim, a straight
       // run covered 111 px/s against the 246 px/s asked for, because the dungeon frame is well
@@ -2200,18 +2259,25 @@
       var n=Math.max(1,Math.ceil(total/A1M_STEP)), sx=inp.x*total/n, sy=inp.y*total/n, k;
       for(k=0;k<n;k++){
         var nx=x+sx, ny=y+sy;
-        if(a1mFree(scene,m,nx,ny)){ x=nx; y=ny; moved+=Math.abs(sx)+Math.abs(sy); continue; }
-        // Slide rather than stick: give up only the axis the rock actually took away. This is
-        // what makes an organic wall feel like a wall instead of a trap at every concavity.
-        var slid=false;
-        if(sx && a1mFree(scene,m,nx,y)){ x=nx; moved+=Math.abs(sx); slid=true; }
-        if(sy && a1mFree(scene,m,x,ny)){ y=ny; moved+=Math.abs(sy); slid=true; }
+        if(a1mFree(scene,m,nx,ny)){ x=nx; y=ny; moved+=Math.sqrt(sx*sx+sy*sy); continue; }
+        // Slide rather than stick: give up only what the rock actually took away -- which is the
+        // component INTO the wall, not a whole axis. See a1mSlide. The axis retries stay as the
+        // fallback for what the tangent cannot serve; they are what used to run alone.
+        var slid=false, tg=a1mSlide(scene,m,x,y,sx,sy);
+        if(tg && a1mFree(scene,m,x+tg.x,y+tg.y)){
+          x+=tg.x; y+=tg.y; moved+=tg.len; slid=true;
+        } else {
+          if(sx && a1mFree(scene,m,nx,y)){ x=nx; moved+=Math.abs(sx); slid=true; }
+          if(sy && a1mFree(scene,m,x,ny)){ y=ny; moved+=Math.abs(sy); slid=true; }
+        }
         if(!slid){ a1mBump(scene,m,x,y,sx,sy); break; }
       }
     }
-    a1mState.phase += moved;
-    // 12 frames = dir*3 + pose (hero-override.js); pose 0 idle, 1 and 2 the two walk poses.
-    var pose = moved>0 ? (1 + (Math.floor(a1mState.phase/13) % 2)) : 0;
+    a1mState.phase += moved;                                                 // EUCLIDEAN px travelled
+    // 12 frames = dir*3 + pose (hero-override.js). The cycle and its rate are the town's, held at
+    // the locked 125 ms/pose by deriving the flip distance from the speed in force. See A1M_POSE.
+    var posePx = a1mSpeed()*(A1M_POSE_MS/1000);
+    var pose = moved>0 ? A1M_POSE[Math.floor(a1mState.phase/posePx) % A1M_POSE.length] : 0;
     try{ hero.setFrame(scene.heroDir*3+pose); }catch(e){}
     hero.x=x; hero.y=y;
 
@@ -2254,6 +2320,49 @@
     try{ if(scene.handleLavaDamage) scene.handleLavaDamage(); }catch(e){}
     try{ if(scene.updateMirrorState) scene.updateMirrorState(); }catch(e){}
   }
+  /* ---- CAMERA: LERP FASTER, AND STOP FEEDING THE ROUNDED SCROLL BACK IN ----------------------
+     The engine asks for `startFollow(hero, true, .09, .09)`, and the `true` is roundPixels. Phaser's
+     preRender then does, in this order: lerp the scroll 9% of the way to the hero, FLOOR it, and
+     store the floored number as `this.scrollX` -- which is the state the next frame's lerp starts
+     from. Two separate problems, both measured on device at a healthy 60 fps, so neither is a
+     performance artefact:
+       (a) 9% per frame is a 51 px steady-state lag walking east/south and 40 px west/north -- more
+           than a whole cell behind the hero the whole time she is walking, and still drifting ~350 ms
+           after she stops dead;
+       (b) the floor is a one-way rounding INSIDE the feedback loop, so the lag is direction
+           asymmetric, and after stopping while heading east or south the camera settles 11 px off
+           centre and stays there.
+     Fixed here rather than by re-tuning the bundle, which is frozen. The camera is driven from the
+     override: an exponential approach at 25% per 60 Hz frame (delta-scaled, so a slow frame catches
+     up instead of falling further behind) is run on a FLOAT scroll that is only rounded on its way
+     to the camera, never read back. The engine's own follow is switched off while this drives --
+     re-asserted every frame rather than latched, because updateCamera() re-arms startFollow on
+     every entry, transition and rescue. Same target the engine's follow converges to
+     (hero - halfViewport, bounds-clamped), so nothing about the framing changes; only the delay.
+     If anything else moves the camera -- centerOn from updateCamera, a rescue, a scene restart --
+     the scroll no longer matches what was last written, and the float resynchronises to it rather
+     than fighting it. Dungeons only: a1mCam is called from the mask branch of the update wrapper,
+     so the overworld and the town keep the engine's camera exactly as it is. */
+  var A1M_CAM_LERP=0.25;      // fraction of the remaining distance closed per 60 Hz frame
+  var a1mCamS=null;
+  function a1mCam(scene,dtms){
+    if(window.__A1_DNG_CAM__===false) return;                                // review escape hatch
+    var cam=scene&&scene.cameras&&scene.cameras.main, hero=scene&&scene.hero;
+    if(!cam||!hero||!hero.scene||typeof cam.width!=='number') return;
+    if(cam._follow){ try{ cam.stopFollow(); }catch(e){} }
+    var tx=hero.x-cam.width*0.5, ty=hero.y-cam.height*0.5;                   // Phaser's own follow target
+    if(cam.useBounds && cam.clampX){ tx=cam.clampX(tx); ty=cam.clampY(ty); }
+    var s=a1mCamS;
+    if(!s || s.cam!==cam || Math.abs(cam.scrollX-s.wx)>1.5 || Math.abs(cam.scrollY-s.wy)>1.5)
+      s=a1mCamS={ cam:cam, x:cam.scrollX, y:cam.scrollY, wx:cam.scrollX, wy:cam.scrollY };
+    var L=(typeof window.__A1_DNG_CAMLERP__==='number')?window.__A1_DNG_CAMLERP__:A1M_CAM_LERP;
+    var dt=Math.max(1,Math.min(120,dtms||1000/60));
+    var k=(L>=1)?1:1-Math.pow(1-L,dt/(1000/60));
+    s.x+=(tx-s.x)*k; s.y+=(ty-s.y)*k;
+    if(Math.abs(tx-s.x)<0.05) s.x=tx;                                        // settle exactly, not asymptotically
+    if(Math.abs(ty-s.y)<0.05) s.y=ty;
+    cam.scrollX=s.wx=Math.round(s.x); cam.scrollY=s.wy=Math.round(s.y);      // whole pixels to the screen
+  }
   // WRAP sys.sceneUpdate, NOT scene.update. Phaser captures the scene's update method ONCE, in
   // bootScene/create (`y.sceneUpdate = v.update`), and calls `this.sceneUpdate.call(this.scene)`
   // from Systems.step forever after -- so a wrapper installed on `scene.update` after create()
@@ -2275,6 +2384,8 @@
       var was=this.isMoving; this.isMoving=true;
       try{ orig.call(this,time,delta); } finally { this.isMoving=was; }
       try{ a1mStep(this,delta); }catch(e){ if(window.__DQ_DEBUG__) console.log('a1 move '+e+(e&&e.stack||'')); }
+      // after the hero has moved, and before Phaser's preRender reads the scroll for this frame
+      try{ a1mCam(this,delta); }catch(e){ if(window.__DQ_DEBUG__) console.log('a1 cam '+e); }
     };
     patched.__a1m=true; sys.sceneUpdate=patched;
   }
@@ -2829,6 +2940,7 @@
   // so a 48 px hop and a smooth walk look identical from outside. Exposed rather than inferred so
   // both the offline harness and an on-device check read the same numbers the mover uses.
   window.__A1_DNG_MOVE__={ maskFor:a1mMaskFor, forScene:a1mFor, free:a1mFree, step:a1mStep,
+    slide:a1mSlide, cam:a1mCam,
     unstick:a1mUnstick, input:a1mInput, state:function(){ return a1mState; },
     footDy:a1mFootDy,
     K:{ FOOT:A1M_FOOT, STEP:A1M_STEP, SPEED:A1M_SPEED, CH:A1M_CH } };
