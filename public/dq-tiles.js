@@ -2497,6 +2497,51 @@
     }
     return undefined;                                                       // still loading
   }
+  /* ---- ADJACENT-FLOOR PREFETCH ------------------------------------------------------------
+     THE FLOOR-CHANGE BLACK SCREEN. Measured on device (iPhone 17 Pro sim, sunkenCellar B3F ->
+     B2F by the f3 stairs at (33,12)), t=0 at performTransition, one line per instrumented
+     event:
+        0.00 transition fires, the engine's opaque black rect goes up
+        0.05 loadMap enters · 0.13 engine loadMap DONE (its declared 100x100 placeholder map,
+             10,000 tile sprites) · 0.14 our real 32x28 floor swapped in and re-rendered
+        0.14 the f2 walk MASK is requested · 0.17 the f2 baked ART is requested
+        7.74 first dungeon redraw DONE  <-- 7.57 s
+        8.08 mask decoded · 8.15 distance field built · 8.15 art decoded · 8.20 first baked blit
+        8.33 the black rect is finally clear.  Longest rAF gap in the run: 8027 ms -- ONE frozen
+             frame, which is exactly what the player sees.
+     The engine's own transition work is 0.14 s of that. The 7.57 s is the PROCEDURAL
+     drawDungeon pass below, and it runs for one reason: the next floor's baked art was not
+     asked for until the player was already standing on the floor, so a1dBlit had nothing to
+     blit and fell through to a per-pixel draw of the whole camera window -- art that is thrown
+     away half a second later when the PNG lands. Worse, drawing it is what stops the PNG from
+     landing: mask and art both resolve within 0.45 s of that block ENDING, having been queued
+     behind it the entire time. Same starvation as the resume path fixed in 3477918, in a
+     different place, and it is NOT the 4 MB decode -- that costs ~0.5 s on a free main thread.
+     So: ask EARLIER, which is cheaper than making anything faster. A dungeon has three floors
+     and the stairs the player is walking towards names the destination, so the neighbours of
+     the floor she is standing on are the whole candidate set. Both caches are permanent and
+     every floor of a dungeon gets visited anyway, so this moves ~15 MB of decode forward in
+     time rather than adding a new peak (and the overworld's ~190 MB chunk cache is already
+     released on entry -- see the kind!=='ow' branch in tick). Never before the floor she is
+     actually on has resolved, and one neighbour in flight at a time, so the prefetch can never
+     delay the thing in front of her. Measured after: first baked blit 0.23 s, black clear
+     ~0.7 s, of which 0.4 s is the engine's own 400 ms fade tween.
+     The pending-guard in a1dBlit is the other half: it covers the entry the prefetch cannot
+     reach (walking in from the overworld, where no floor of this dungeon has ever been asked
+     for). Measured on that path: first redraw 0 ms instead of 7.5 s, art up at 0.59 s. */
+  function a1dPrefetchAdjacent(scene){
+    if(!a1dFloors||!scene) return;
+    var id=scene.currentMapId; if(!A1D_MAPS[id]) return;
+    var f=scene.currentFloor||1, k=id+'-f'+f;
+    if(a1dArtFor(k)===undefined || a1mMaskFor(k)===undefined) return;      // the floor she is ON comes first, always
+    var order=[id+'-f'+(f+1), id+'-f'+(f-1)], i, nk, pending;
+    for(i=0;i<order.length;i++){ nk=order[i]; if(!a1dFloors[nk]) continue;
+      pending=false;
+      if(a1dArtFor(nk)===undefined) pending=true;                          // the call itself issues the request
+      if(a1mMaskFor(nk)===undefined) pending=true;
+      if(pending) return;                                                  // one neighbour in flight at a time
+    }
+  }
   function a1dLayerFor(scene){                                              // 'material' | 'props' | null
     var fl=a1dFloorFor(scene); if(!fl) return null;
     var key=scene.currentMapId+'-f'+(scene.currentFloor||1);
@@ -2518,7 +2563,17 @@
   }
   function a1dBlit(ctx,X0,Y0,winW,winH){                                    // true if the window was served from baked art
     if(!a1dKey||!dngState||!a1dFloorFor(dngState.scene)) return false;
-    var im=a1dArtFor(a1dKey); if(!im) return false;
+    var im=a1dArtFor(a1dKey);
+    // PENDING IS NOT ABSENT. undefined = this floor's render exists and is in flight; null = there
+    // is no render for it and the procedural pass below is the final answer. Only the second is
+    // worth 7.5 s of per-pixel work (see a1dPrefetchAdjacent for the measurement): in the first,
+    // every pixel drawn is overwritten the moment the PNG lands, and drawing them is what stops the
+    // PNG from landing. Clear and wait instead -- the onload sets a1dChanged, which forces the
+    // redraw that blits for real. Inside a transition this is hidden under the engine's own black
+    // rect; outside one, the engine's tile sprites (depth 0, under our depth-1 canvas) show
+    // through, which is the same art the unreskinned game draws.
+    if(im===undefined){ ctx.clearRect(0,0,winW*N,winH*N); return true; }
+    if(!im) return false;
     var sx=X0*N, sy=Y0*N, sw=Math.min(winW*N,im.width-sx), sh=Math.min(winH*N,im.height-sy);
     if(sw<=0||sh<=0) return false;
     ctx.clearRect(0,0,winW*N,winH*N);                                       // map smaller than the window -> the rest stays clear
@@ -2993,6 +3048,9 @@
              if(fl0 && (a1dKey!==a1w || !md || md.length!==fl0.height || (md[0]||[]).length!==fl0.width))
                a1dApply(scene); }
            a1dRescueHero(scene);
+           // Ask for the floors on either side of this one while she is WALKING, not when she is
+           // already standing on the stairs. See a1dPrefetchAdjacent for what that cost before.
+           a1dPrefetchAdjacent(scene);
       }catch(e){ if(window.__DQ_DEBUG__) console.log('dq a1dng err '+e+(e&&e.stack||'')); }
       try{ var tk=dngThemeKey(scene), changed=(tk!==curThemeKey)||a1dChanged; curThemeKey=tk; a1dChanged=false; setTheme(tk);
            ensureDng(scene); updateDng(scene,changed); dngSpecialTiles(scene); updateFog(scene); window.__HD2D_STYLE__='dq-dng:'+tk; }catch(e){ if(window.__DQ_DEBUG__) console.log('dq dng err '+e+(e&&e.stack||'')); }

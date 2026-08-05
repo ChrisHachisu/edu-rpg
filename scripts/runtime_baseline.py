@@ -82,7 +82,7 @@ ACT1_OVERLAY_FILES = {
     # save format round-trips to itself (measured: 742 of 754 reportable cells reload unchanged, the
     # other 12 settle one cell north once; largest rescue nudge 28 px against a 96 px bound).
     "dq-tiles.js": (
-        232533, "6044a4f21bf97e560e0ef890868e5f703118cb2fe8c44cf310a1e49bf406efbe"),
+        237104, "52aceba35193a7d5e34d91df5405aa19680ec4ba82f0f80cd31076b5a8029ad9"),
     # 2026-08-03, owner direction ("please redo the collision setting based on what i created (my
     # paint)"): the Act-1 collision plate is now generated from the OWNER'S PAINTED TERRAIN
     # (owner-terrain.json acts.1 + continent-macro-g3/land-mask.npy) instead of the generated

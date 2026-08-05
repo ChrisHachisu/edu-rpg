@@ -5,7 +5,7 @@ import { readFileSync } from 'node:fs';
 
 const ROOT = process.cwd();
 const BUNDLE_SHA = 'a56026574b42168985b353e4cee824562716af83f92d03f408df04eac9127381';
-const DQ_SHA = '6044a4f21bf97e560e0ef890868e5f703118cb2fe8c44cf310a1e49bf406efbe';
+const DQ_SHA = '52aceba35193a7d5e34d91df5405aa19680ec4ba82f0f80cd31076b5a8029ad9';
 const RAW_SHA = '97f0b936946695b5ce2eb073df4b9905e680942b299a5f87f1bf5c0544b96723';
 const WINDOWS = {
   crystal: { bounds: [144, 288, 176, 312], sha: '25b0434154cb357118ed75a46f2404622e24f1ff4ac333eea326999fb246fb08' },
