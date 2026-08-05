@@ -561,7 +561,14 @@ def render(rows: list[str], mats: dict, theme: str, scale: int = 1,
     #    three things, and it needs all three: a TOP that catches light, a near FACE turned away
     #    from it, and a SHADOW the mass throws onto the floor. The step from lit top to dark face
     #    to shadowed floor IS the depth cue — no amount of texture detail substitutes for it.
-    face_h = max(2, int(px * 0.46))     # apparent height of the wall's visible face, in pixels
+    # 0.70, owner 2026-08-06, chosen off a three-way in-game comparison with the heroine
+    # composited in at true scale. At the previous 0.46 the shaded face measured ~22 px while she
+    # is 52 px tall above her soles, so her body could not fit inside it and always spilled onto
+    # the LIT top -- which is what he saw as "bleeding into the shaded area of the walls seem too
+    # much". He named the two levers himself: deepen the shading, or cut the bleed. Deepening wins
+    # because more foot clearance narrows the cave (18 px orphans three assets) while a taller
+    # face costs no corridor width at all. ~34 px now sits most of her body inside the shade.
+    face_h = max(2, int(px * 0.70))     # apparent height of the wall's visible face, in pixels
     drop = max(2, int(px * 0.34))       # how far its shadow reaches out across the floor
 
     wall = 1.0 - a

@@ -20,6 +20,25 @@ Measured 10-90% luminance transition across the boundary, whole floor, ~2000 sam
 
 3.4 px is the material edge itself — as crisp as a 48 px/cell lattice can resolve.
 
+## Wall face height — LOCKED at 0.70 (owner, 2026-08-06)
+
+`face_h = max(2, int(px * 0.70))` in `scripts/render_dungeon_material_map.py`. Was 0.46.
+
+Owner, having played the cellar: *"the bleeding into the shaded area of the walls seem too much.
+either the shading needs to be increased (to make the walls look taller) or the bleeding needs to
+be reduced."* He named both levers; deepening the shading is the one that was taken.
+
+The measurement that decided it: at 0.46 the drawn shaded face was **~22 px** while the heroine is
+**52 px tall above her soles**. She physically cannot fit inside the shade, so her body always
+spilled onto the LIT top. At 0.70 the face is ~34 px and most of her sits inside it.
+
+Deepening beats the alternative because **more foot clearance narrows the cave**: `A1M_FOOT` 18
+orphans three authored assets and strands 40 cells, so clearance is capped at 16 and cannot solve
+this. A taller face costs no corridor width at all.
+
+Do NOT reduce this back toward 0.46 to "recover floor brightness" without the owner — the trade was
+made deliberately and with the character composited in at true scale.
+
 ## What must NOT change to "improve" this
 
 Each of these was tried, rendered and rejected. Do not re-litigate without the owner:

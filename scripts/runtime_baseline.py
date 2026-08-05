@@ -128,11 +128,11 @@ ACT1_DUNGEON_FILES = {
     "act1-dungeon-floors.json": (
         42_110, "c0743856ac2e294289a2574d8e3f05e14ed4693633869e457b842072735e731f"),
     "act1-dungeon-art/sunkenCellar-f1-props.png": (
-        2970341, "48d6b0d4a78c11fdd0fd9db86c4f0611b576a7dd23c73aa00893c2d7df9dfb79"),
+        2957280, "74292afb71314f83f2a0a66b1aab3106383d9e4da1c43e868beffb1cbe8cfbc1"),
     "act1-dungeon-art/sunkenCellar-f2-props.png": (
-        3774270, "946679e7520ca901935cc5a4451896aa461f0d8a7335de1621a8fdb64c8317c9"),
+        3758488, "3d4b824a229b2bfb8b77af106dc9b25a5e05e8a795e12d2d14c8a4f2dbc30ab6"),
     "act1-dungeon-art/sunkenCellar-f3-props.png": (
-        4267389, "7bb2bbb50d0b5b63e8cbe197765acf288467acaa0bf12758823ea0c05b8ad52a"),
+        4246666, "5767cdaf2fbf5858d1f9e9774952d40a8c9902c98b65871c177dc4c7e8aa25d4"),
     # 2026-08-05: THE COLLISION SHAPE, and therefore as much a shipped authority as the picture it
     # comes from. Each is `fw` -- the renderer's own floor field -- thresholded at the same 0.5
     # that decides every pixel of the matching *-props.png, emitted at that render's own
