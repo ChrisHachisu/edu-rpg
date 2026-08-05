@@ -2117,12 +2117,81 @@
     var s=(typeof hero.scaleY==='number'&&hero.scaleY>0)?hero.scaleY:1;
     return off*s;
   }
+  /* ---- CLEARANCE LEANS, BECAUSE THE SPRITE STANDS ON ITS FEET --------------------------------
+     The mover collides at a POINT (her soles, per the sole-contact rule above) but the game draws
+     a BILLBOARD standing on that point: 52 px of her is ABOVE it and up to 24 px either side. So
+     one scalar clearance cannot mean one thing on screen. Rock a given distance SOUTH of her feet
+     is rock her sprite can never be drawn over -- her body is north of her feet, away from it.
+     Rock the same distance NORTH of her feet is rock her whole body is drawn over. The collider
+     was treating those two as the same situation, and only one of them is a picture problem.
+
+     WHAT THE OWNER ASKED FOR (2026-08-05): "bleeding into the shaded part of the walls is intended
+     and i am fine with it. the problem i have is bleeding into the sides and to[p] of the walls".
+     That is a split by WHICH PART OF THE ROCK she covers, and the renderer draws exactly those
+     parts (render_dungeon_material_map.py, the HEIGHT block): a SHADED near FACE on the rock's
+     south side, 0.46 of a cell = 21.9 world px tall, and the LIT TOP plane above and around it.
+     Pixels of her over the shaded face read as standing in front of a wall and are wanted; pixels
+     over the lit top read as clipping through it.
+
+     MEASURED THAT WAY -- against what is DRAWN, not against the walkable mask -- the shipped mover
+     put a mean 738 sprite px on the shaded face and 473 on the lit top when she stops against a
+     wall to her north, 84 (E) / 60 (W) on the lit top beside her, and 13 north of her. The earlier
+     "1.9 px/stop lateral, 0.0 top" reading was not measuring this: it classified rock from the
+     walkable MASK and then split her pixels by HEIGHT ABOVE HER SOLES, which files everything from
+     her hips up -- i.e. all of the lateral bleed -- under "reads as depth, correct". The mask is
+     not the error; it agrees with the drawn rock boundary on 100.00% of pixels on all three floors.
+
+     THE FIELD ALREADY KNOWS WHERE THE ROCK IS. Its gradient is the outward wall normal, the same
+     one a1mSlide reads for the tangent -- no new field, no second authority that could drift.
+     `ny > 0` is rock to the north (her body is over it: charge the most), `ny ~ 0` is rock beside
+     her (her shoulders are over it: charge half), `ny < 0` is rock to the south (nothing of her can
+     reach it: charge nothing). (1 + ny/|n|) / 2 is that lean, in one term.
+
+     WHY A POSITION FUNCTION AND NOT A HEADING FUNCTION. Keying clearance on the direction she is
+     WALKING would let a position be legal to arrive at and illegal to stand in, which is exactly
+     how an anisotropic collider wedges someone in a corner. Keyed on the local normal it is a
+     single number per pixel, so the legal region always contains the erosion by A1M_FOOT+A1M_LEAN
+     and is always contained in the erosion by A1M_FOOT -- a well-formed region that a1mFree, the
+     slide's lift and a1mUnstick all see identically. No new dead stops: measured below.
+
+     WHY 4 AND NOT MORE. Removing the lit-top bleed OUTRIGHT is not a clearance problem at all: her
+     head is 52 px above her soles and the shaded face is only 21.9 px tall, so her head clears the
+     face onto the lit top for ANY clearance under 30 px, and 30 px is two and a half times today's
+     and reads as a heroine who cannot touch a wall. The cave cannot pay for it either -- a UNIFORM
+     18 orphans three authored assets. 4 is the point measured to halve the two numbers the owner
+     named while leaving the one he wants alone: lit top 473->371 (N), 84->42 (E), 60->35 (W), and
+     the shaded-face overlap he asked to keep at 709 of 738, i.e. 96% of it, her soles 16 px off a
+     north wall instead of 12. Every standable cell centre, every authored asset and every engine
+     spawn stays reachable on all three floors at this value. Tunable live for review, like the
+     speed above: window.__A1_DNG_LEAN__.
+
+     WHY NOT SIMPLY A1M_FOOT=16, WHICH IS THE OBVIOUS ONE-CHARACTER VERSION OF THIS. Measured, it
+     is very slightly BETTER on overlap (lit top 35/29 E/W against this term's 42/35) and identical
+     on cell reachability -- but it DOUBLES the number of held-push positions where she never moves
+     at all, 23 against this term's 12 and the shipped collider's 11. That is the exact number the
+     tangent-slide work was done to protect, and 7 px of mean overlap is not worth twice the places
+     that feel stuck. The difference is the 4 px uniform also charges against rock SOUTH of her,
+     which narrows passages while removing nothing from the picture -- the whole point of leaning
+     the term rather than raising the scalar. */
+  var A1M_LEAN=4;             // extra world px of clearance, scaled by how far NORTH the rock lies
+  // Required clearance at a SOLE pixel, in the field's own thirds-of-a-pixel units.
+  function a1mNeed(m,gx,gy){
+    var base=A1M_FOOT*A1M_CH;
+    var k=(typeof window.__A1_DNG_LEAN__==='number')?window.__A1_DNG_LEAN__:A1M_LEAN;
+    if(!(k>0) || gx<1 || gy<1 || gx>=m.W-1 || gy>=m.H-1) return base;
+    var i=gy*m.W+gx;
+    var nx=m.dist[i+1]-m.dist[i-1], ny=m.dist[i+m.W]-m.dist[i-m.W];          // grows AWAY from rock
+    var l=Math.sqrt(nx*nx+ny*ny);
+    if(l<1e-6) return base;                                                  // flat field: no wall to read
+    return base + k*A1M_CH*(1+ny/l)*0.5;         // 1 rock due north, 0.5 due east/west, 0 due south
+  }
   // (x,y) is the SPRITE position everywhere -- that is what the engine sets, what the rescue guard
   // holds and what the camera follows -- and the mask is sampled at the soles below it.
   function a1mFree(scene,m,x,y){
     y+=a1mFootDy(scene);
     if(x<1||y<1||x>=m.W-1||y>=m.H-1) return false;
-    if(m.dist[((y|0)*m.W)+(x|0)] < A1M_FOOT*A1M_CH) return false;            // too close to rock
+    var gx=x|0, gy=y|0;
+    if(m.dist[(gy*m.W)+gx] < a1mNeed(m,gx,gy)) return false;                 // too close to rock
     var t=a1mTileAt(scene,x,y);
     return t!==undefined && !A1M_PROP[t];
   }
@@ -2165,10 +2234,21 @@
        half a pixel to clear the integer field's own quantisation. Self-limiting (a step that keeps
        its clearance is corrected by zero) and capped, so it can lift her off a wall she is rubbing
        but never throw her across one. */
-    var ex=(x+tx)|0, ey=(y+ty+fd)|0;
-    if(ex>=1&&ey>=1&&ex<m.W-1&&ey<m.H-1){
-      var need=(A1M_FOOT*A1M_CH)-m.dist[ey*m.W+ex];
-      if(need>0){ var lift=Math.min(A1M_LIFT,(need/A1M_CH)+0.5); tx+=nx*lift; ty+=ny*lift; }
+    /* TWICE, because the requirement is now a function of WHERE SHE LANDS (see a1mNeed). Sampling
+       it once at the un-lifted destination asks about a pixel she is no longer going to occupy:
+       the lift slides her along the normal into a neighbourhood whose wall normal has rotated, and
+       therefore whose requirement is different. One pass measured 1.1-1.5% dead stops against the
+       uniform collider's 0.2-0.6%; re-sampling at the corrected point puts it back. Still capped
+       in TOTAL by A1M_LIFT, so this buys accuracy, not reach. */
+    var lift=0;
+    for(var p=0;p<2;p++){
+      var ex=(x+tx)|0, ey=(y+ty+fd)|0;
+      if(ex<1||ey<1||ex>=m.W-1||ey>=m.H-1) break;
+      var need=a1mNeed(m,ex,ey)-m.dist[ey*m.W+ex];   // the SAME requirement a1mFree will apply
+      if(need<=0) break;
+      var add=Math.min(A1M_LIFT-lift,(need/A1M_CH)+0.5);
+      if(add<=0) break;
+      tx+=nx*add; ty+=ny*add; lift+=add;
     }
     return { x:tx, y:ty, len:len };
   }
@@ -2943,6 +3023,6 @@
     slide:a1mSlide, cam:a1mCam,
     unstick:a1mUnstick, input:a1mInput, state:function(){ return a1mState; },
     footDy:a1mFootDy,
-    K:{ FOOT:A1M_FOOT, STEP:A1M_STEP, SPEED:A1M_SPEED, CH:A1M_CH } };
+    K:{ FOOT:A1M_FOOT, LEAN:A1M_LEAN, STEP:A1M_STEP, SPEED:A1M_SPEED, CH:A1M_CH } };
   window.__DQ_TILES__={ reskin:reskin, redraw:function(){ if(terrainState){ terrainState.lastWin=''; updateTerrain(terrainState.scene,true);} if(overlayState){ overlayState.lastKey=''; rebuildOverlay(overlayState.scene,true);} } };
 })();
