@@ -109,7 +109,7 @@ ACT1_OVERLAY_FILES = {
     # diagonal" and is correct); that is what exposed it. build_hero_g3_walk.py now rebuilds the
     # crown when it cuts the N frames. Frames 0-8 are BIT-IDENTICAL and every frame's sole row is
     # untouched, so the runtime sole measurement that drives dungeon collision does not move.
-    "assets/hero/hero-g3-walk.png": (62204, "2c4bfea15247f892ed58fd3a7a1aaf00f5ec97c501b116fe3e1dd30f8cfae8f4"),
+    "assets/hero/hero-g3-walk.png": (62857, "d8fb63cf848c1ae3928fa466c69a538bb7074a151483f56e631dc458338c5620"),
     "act1-world-map.js": (
         47_908, "e5713be14ece51788798893c09a057d601d486671f97254dfb1825077ffe26b4"),
 }

@@ -76,21 +76,41 @@ DIR_ROW = {0: 0, 1: 2, 2: 6, 3: 4}
 # the damage. The act1-hifi surfaces (town.html, runtime.html) still map up -> row 3, so towns are
 # unaffected and always were; only the tile runtime (overworld + every dungeon) shows it.
 #
-# WHAT THIS DOES, AND WHAT IT DELIBERATELY DOES NOT. It rebuilds the missing crown as a superellipse
-# cap over the cut, coloured from the surviving top row of the SAME COLUMN. Column-constant colour
-# is not laziness: this sheet draws hair as vertical strands, and it is also the only donor that
-# cannot contaminate the crown -- an earlier attempt that mirrored the band below the cut dragged
-# the gold pauldron trim up into her hair. The canonical source PNG is NOT rewritten: it is the
-# owner's locked asset (docs/CANONICAL-ASSETS.md) and the repair belongs to the derived sheet,
-# where it is reviewable, reversible and re-runnable. Nothing below the cut is touched, so the
-# soles -- which dq-tiles.js measures at runtime for collision -- are bit-identical.
-NORTH_CROWN_TOP = 4      # the row the rebuilt crown reaches; NW/NE crown at y=5, ponytail tip at 3
-NORTH_CROWN_EXP = 2.0    # superellipse exponent: 2.0 is a true ellipse, higher is boxier
-NORTH_CROWN_LIFT = 0.10  # the crown catches the light: +10% luminance at the very top
-_SS = 4                  # supersamples per axis for the cap's antialiased edge
+# WHAT IS ACTUALLY MISSING, MEASURED. Not "a crown" -- the top EIGHT rows of a ~26 px head. Its
+# complete neighbour NE (row 5) reaches y=3 and by y=11 -- the row where N's cut begins -- it has
+# already drawn the whole skull cap, the hairline, the blue hair tie and the base of the ponytail.
+# All of that is absent from row 4. The ponytail is this character's most identifying silhouette,
+# and from BEHIND it is the most prominent thing she has; a back view without it does not read as
+# a head at all.
+#
+# WHY THE FIRST REPAIR DID NOT HOLD (2026-08-05, second report: "the north facing animation still
+# has the head cutoff"). It capped the cut with a synthetic superellipse coloured from the cut row
+# of the same column. That restored the silhouette HEIGHT -- verified on device, the sprite draws
+# the full frame unclipped -- but a 24 px-wide dome of column-constant colour is a smooth featureless
+# bowl: no hairline, no rim, no tie, no ponytail. It measured fixed and still looked decapitated,
+# because the deficit was CONTENT, not height. Do not reach for a procedural cap again.
+#
+# WHAT THIS DOES. It grafts the missing rows from the character's OWN adjacent direction: NE
+# (row 5), same pose column, so the walk phase matches. That donor is legitimate because it is the
+# same head at the same scale in the same lighting -- at y=11 the two silhouettes measure 24 px and
+# 27 px wide -- and because the top of a skull is very nearly invariant under 45 deg of yaw. The
+# donor is shifted so the two head centres line up at the cut row (dx = -2 on all three poses) and
+# is composited ONLY into pixels the N cell leaves transparent, so nothing surviving is overwritten
+# and the seam falls between two rows of the same strand pattern. The ponytail lands on her left,
+# which is where a back view puts the ponytail that the S row draws on her right.
+#
+# The canonical source PNG is NOT rewritten: it is the owner's locked asset
+# (docs/CANONICAL-ASSETS.md) and the repair belongs to the derived sheet, where it is reviewable,
+# reversible and re-runnable. Nothing at or below the cut row is touched, so the soles -- which
+# dq-tiles.js measures at runtime for collision -- are bit-identical.
+#
+# THIS IS A STOPGAP, NOT A RESTORATION. It is a good graft, but it is still one direction's head on
+# another direction's shoulders. The durable fix is to regenerate row 4 of the canonical sheet with
+# the head intact; when that lands, the guard below stops firing and this code goes quiet on its own.
+NORTH_DONOR_ROW = 5      # NE, the complete neighbour on the 8-way wheel; same pose column
 
 
-def repair_north_crown(cell: Image.Image) -> Image.Image:
+def repair_north_crown(cell: Image.Image, donor: Image.Image) -> Image.Image:
     """Rebuild the clipped top of the head on one N-facing 64x64 cell. See the note above."""
     px = cell.load()
     W, H = cell.size
@@ -101,39 +121,26 @@ def repair_north_crown(cell: Image.Image) -> Image.Image:
     else:
         raise SystemExit("north cell is empty")
     x0, x1 = min(xs), max(xs)
-    if y_top <= NORTH_CROWN_TOP:
-        return cell                                    # already whole: nothing to rebuild
     # A silhouette's topmost row is a couple of soft pixels; a CROP is a long solid run. Only the
-    # run's two end pixels are allowed to be soft, and it has to be at least 12 px wide.
+    # run's two end pixels are allowed to be soft, and it has to be at least 12 px wide. If the
+    # source is ever regenerated with the head intact this stops matching and the graft is skipped.
     if (len(xs) != x1 - x0 + 1 or len(xs) < 12
             or any(px[x, y_top][3] < 250 for x in xs[1:-1])):
-        raise SystemExit(
-            f"north cell's top row (y={y_top}) is not the flat opaque cut this repairs -- "
-            "the source art changed; re-inspect before trusting this"
-        )
-    cx = (x0 + x1) / 2.0
-    rx = (x1 - x0) / 2.0 + 0.5
-    ry = float(y_top - NORTH_CROWN_TOP)
-    for y in range(NORTH_CROWN_TOP - 1, y_top):
-        for x in range(max(0, x0 - 2), min(W, x1 + 3)):
-            cov = 0
-            for sy in range(_SS):
-                for sx in range(_SS):
-                    u = abs(x + (sx + 0.5) / _SS - cx) / rx
-                    v = abs(y + (sy + 0.5) / _SS - y_top) / ry
-                    if u ** NORTH_CROWN_EXP + v ** NORTH_CROWN_EXP <= 1.0:
-                        cov += 1
-            if not cov:
-                continue
-            alpha = int(round(255 * cov / (_SS * _SS)))
-            if px[x, y][3] >= alpha:
-                continue
-            r, g, b, _ = px[min(max(x, x0), x1), y_top]
-            gain = 1.0 + NORTH_CROWN_LIFT * ((y_top - y) / ry)
-            px[x, y] = (
-                min(255, round(r * gain)), min(255, round(g * gain)), min(255, round(b * gain)),
-                alpha,
-            )
+        return cell                                    # already whole: nothing to rebuild
+    dpx = donor.load()
+    d_xs = [x for x in range(W) if dpx[x, y_top][3] > 8]
+    if not d_xs:
+        raise SystemExit(f"donor row has nothing at the cut row y={y_top} -- cannot align the graft")
+    dx = round((x0 + x1) / 2.0 - (min(d_xs) + max(d_xs)) / 2.0)
+    filled = 0
+    for y in range(y_top):                             # strictly ABOVE the cut: soles untouched
+        for x in range(W):
+            sx = x - dx
+            if 0 <= sx < W and dpx[sx, y][3] > 8 and px[x, y][3] <= 8:
+                px[x, y] = dpx[sx, y]
+                filled += 1
+    if not filled:
+        raise SystemExit(f"north graft filled nothing above y={y_top} -- the donor row moved")
     return cell
 
 
@@ -154,7 +161,9 @@ def main() -> int:
         for pose in range(3):
             cell = g3.crop((pose * 64, DIR_ROW[d] * 64, pose * 64 + 64, DIR_ROW[d] * 64 + 64))
             if d == 3:
-                cell = repair_north_crown(cell)
+                donor = g3.crop((pose * 64, NORTH_DONOR_ROW * 64,
+                                 pose * 64 + 64, NORTH_DONOR_ROW * 64 + 64))
+                cell = repair_north_crown(cell, donor)
             small = cell if (FW, FH) == cell.size else cell.resize((FW, FH), Image.NEAREST)
             bb = small.getbbox()
             if not bb:
