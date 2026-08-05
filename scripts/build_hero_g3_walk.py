@@ -61,6 +61,81 @@ FRAMES = 12
 # every row of the source sheet before changing it.
 DIR_ROW = {0: 0, 1: 2, 2: 6, 3: 4}
 
+# ---- THE NORTH ROW ARRIVES WITH ITS CROWN CUT OFF -------------------------------------------
+# Owner, 2026-08-05, playing the Act 1 dungeon: "the hero's north facing animation cuts off its
+# head." It is not a render bug and nothing clips it at runtime -- the defect is IN THE CANONICAL
+# SOURCE. Row 4 (N, the square-on back view) of hero-act1-female-walk-8x3-64-g3.png begins at
+# y=11/9/9 with a 24-25 px FULLY OPAQUE, PERFECTLY FLAT, un-antialiased horizontal run. Every
+# other row of that sheet -- including its two neighbours on the 8-way wheel, NW (row 3) and NE
+# (row 5) -- begins at y=3 with a soft, rounded, antialiased crown. A flat opaque edge 7 px inside
+# the cell is a crop, not a silhouette: the top of her head is simply absent from the asset.
+#
+# WHY IT ONLY SURFACED NOW. Nothing read row 4 until 2026-08-04, when DIR_ROW[3] was moved 3 -> 4
+# to fix the owner's previous report ("the hero's north facing artwork is swapped with north west
+# facing diagonal artwork"). That change is correct -- row 4 IS north -- and it is what exposed
+# the damage. The act1-hifi surfaces (town.html, runtime.html) still map up -> row 3, so towns are
+# unaffected and always were; only the tile runtime (overworld + every dungeon) shows it.
+#
+# WHAT THIS DOES, AND WHAT IT DELIBERATELY DOES NOT. It rebuilds the missing crown as a superellipse
+# cap over the cut, coloured from the surviving top row of the SAME COLUMN. Column-constant colour
+# is not laziness: this sheet draws hair as vertical strands, and it is also the only donor that
+# cannot contaminate the crown -- an earlier attempt that mirrored the band below the cut dragged
+# the gold pauldron trim up into her hair. The canonical source PNG is NOT rewritten: it is the
+# owner's locked asset (docs/CANONICAL-ASSETS.md) and the repair belongs to the derived sheet,
+# where it is reviewable, reversible and re-runnable. Nothing below the cut is touched, so the
+# soles -- which dq-tiles.js measures at runtime for collision -- are bit-identical.
+NORTH_CROWN_TOP = 4      # the row the rebuilt crown reaches; NW/NE crown at y=5, ponytail tip at 3
+NORTH_CROWN_EXP = 2.0    # superellipse exponent: 2.0 is a true ellipse, higher is boxier
+NORTH_CROWN_LIFT = 0.10  # the crown catches the light: +10% luminance at the very top
+_SS = 4                  # supersamples per axis for the cap's antialiased edge
+
+
+def repair_north_crown(cell: Image.Image) -> Image.Image:
+    """Rebuild the clipped top of the head on one N-facing 64x64 cell. See the note above."""
+    px = cell.load()
+    W, H = cell.size
+    for y_top in range(H):
+        xs = [x for x in range(W) if px[x, y_top][3] > 8]
+        if xs:
+            break
+    else:
+        raise SystemExit("north cell is empty")
+    x0, x1 = min(xs), max(xs)
+    if y_top <= NORTH_CROWN_TOP:
+        return cell                                    # already whole: nothing to rebuild
+    # A silhouette's topmost row is a couple of soft pixels; a CROP is a long solid run. Only the
+    # run's two end pixels are allowed to be soft, and it has to be at least 12 px wide.
+    if (len(xs) != x1 - x0 + 1 or len(xs) < 12
+            or any(px[x, y_top][3] < 250 for x in xs[1:-1])):
+        raise SystemExit(
+            f"north cell's top row (y={y_top}) is not the flat opaque cut this repairs -- "
+            "the source art changed; re-inspect before trusting this"
+        )
+    cx = (x0 + x1) / 2.0
+    rx = (x1 - x0) / 2.0 + 0.5
+    ry = float(y_top - NORTH_CROWN_TOP)
+    for y in range(NORTH_CROWN_TOP - 1, y_top):
+        for x in range(max(0, x0 - 2), min(W, x1 + 3)):
+            cov = 0
+            for sy in range(_SS):
+                for sx in range(_SS):
+                    u = abs(x + (sx + 0.5) / _SS - cx) / rx
+                    v = abs(y + (sy + 0.5) / _SS - y_top) / ry
+                    if u ** NORTH_CROWN_EXP + v ** NORTH_CROWN_EXP <= 1.0:
+                        cov += 1
+            if not cov:
+                continue
+            alpha = int(round(255 * cov / (_SS * _SS)))
+            if px[x, y][3] >= alpha:
+                continue
+            r, g, b, _ = px[min(max(x, x0), x1), y_top]
+            gain = 1.0 + NORTH_CROWN_LIFT * ((y_top - y) / ry)
+            px[x, y] = (
+                min(255, round(r * gain)), min(255, round(g * gain)), min(255, round(b * gain)),
+                alpha,
+            )
+    return cell
+
 
 def main() -> int:
     g3 = Image.open(G3).convert("RGBA")
@@ -78,6 +153,8 @@ def main() -> int:
     for d in range(4):
         for pose in range(3):
             cell = g3.crop((pose * 64, DIR_ROW[d] * 64, pose * 64 + 64, DIR_ROW[d] * 64 + 64))
+            if d == 3:
+                cell = repair_north_crown(cell)
             small = cell if (FW, FH) == cell.size else cell.resize((FW, FH), Image.NEAREST)
             bb = small.getbbox()
             if not bb:
