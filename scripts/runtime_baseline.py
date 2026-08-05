@@ -102,14 +102,7 @@ ACT1_OVERLAY_FILES = {
     # scripts/build_hero_g3_walk.py, soles aligned to the shipped sheet's measured baseline so the
     # hero does not float. The two retired sheets stay on disk: they are baseline runtime files.
     "hero-override.js": (8336, "c8454a9e168289469bf9403011faa35e66ee75a703895ca320cd4086d435ce75"),
-    # 2026-08-05 re-pin: the canonical g3 source sheet's NORTH row (row 4) had shipped with the
-    # top ~8 rows of the head cropped away in the source art itself -- a flat, fully opaque
-    # 24 px run where the skull cap and hair tie should be. The crown was regenerated (image
-    # generation, then reduced to the sprite grid and quantised to the sheet's own palette) and
-    # written back into the canonical source above the cut only; every pixel at or below the cut,
-    # and all seven other direction rows, are byte-identical. Frames 0-8 of this derived sheet are
-    # therefore unchanged and only 9/10/11 (the up-facing triple) move.
-    "assets/hero/hero-g3-walk.png": (62112, "1b7e428195a0e81a34537e94cbc79ed69a531dc4f1517f95950cc4177dfe8b5c"),
+    "assets/hero/hero-g3-walk.png": (61435, "cc1f535544add27d035f91b8f4683d29a7b97c7bf8e9722d0e0b2aa7e47e0bf3"),
     "act1-world-map.js": (
         47_908, "e5713be14ece51788798893c09a057d601d486671f97254dfb1825077ffe26b4"),
 }
