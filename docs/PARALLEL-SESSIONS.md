@@ -66,9 +66,33 @@ edit one file, they will, on the same afternoon.
 | **D — Character art** | `public/act1-hifi/hero-*`, `design/hero-*`, `scripts/build_hero_*`, `scripts/bake_hero_*` | everything else | rarely | low (network-bound) |
 | **E — Content/data** | `design/act1-dungeon-interiors/*.json`, `scripts/build_dungeon_semantic.py`, quests/layouts | rendered art, runtime `.js` | no | low |
 
-**A and B are the contended pair.** The HUD is split across both files today — `dq-tiles.js` has 11
-minimap/compass references, `ui-overhaul.js` has 17. Before running A and B concurrently, decide
-where the HUD lives and move it, or run them serially.
+### A and B are NOT contended — decided 2026-08-06
+
+The raw grep looked bad (`dq-tiles.js` 11 minimap/compass references, `ui-overhaul.js` 17) but read
+in context the boundary is already clean, and **nothing needs to move**:
+
+| concern | lives in | track |
+|---|---|---|
+| minimap / compass / HP **presentation** — DOM, CSS, `#qfh-compass` | `ui-overhaul.js` + `.css` | **B** |
+| the movement stick's DOM and placement | `index.html` | **B** |
+| minimap / compass **data** — `scene.mapData`, tile state | `dq-tiles.js` | **A** |
+| consuming the stick vector for movement + collision | `dq-tiles.js` | **A** |
+
+`dq-tiles.js` has **exactly one** HUD call in 238 KB — `scene.renderMinimap()`, a forced redraw
+after it mutates `mapData`. Ten of its eleven "references" are comments explaining that overlay,
+minimap and collision must read the same mutated tiles. It implements no HUD.
+
+**Two named seams, and they are the whole contract between A and B:**
+
+1. `scene.renderMinimap()` / `scene.updateCompass()` — the engine calls them, the HUD wraps them.
+2. `window.__DQ_STICK__` — `index.html` publishes the raw vector, `dq-tiles.js` consumes it.
+
+Neither track may change a seam without telling the other. Everything either side of them is
+private. **A and B can therefore run concurrently today** — their real contention is the simulator,
+not the code.
+
+One consequence worth stating: **the Port Sapphire stick defect is a HUD bug, not an engine bug.**
+The stick is positioned in `index.html`; `dq-tiles.js` only reads its vector.
 
 **C and E chain.** E authors layouts, C bakes them. They can run concurrently only if E works one
 dungeon ahead of C.
