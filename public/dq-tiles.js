@@ -1764,7 +1764,24 @@
      FALLBACK-SAFE, like the terrain material renderer: if the JSON 404s nothing is
      overridden, and if a floor's art PNG is missing the procedural draw still runs.
      ================================================================================ */
-  var A1D_MAPS={coastalReef:1,sunkenCellar:1,whisperingWoodsCave:1};        // owner-scoped 2026-08-03
+  /* 2026-08-06, owner: mistyGrotto ("Darkfang Grotto") JOINS the scope, and it is the first entry
+     whose generated floor count does NOT match the bundle's declared one -- 3 authored against
+     `floors: 5`. That mismatch is exactly why it was held back on 2026-08-03, and the reason it
+     can be admitted now is that the miss is already handled rather than newly risked:
+
+       * a1dFloorFor() returns null for any floor the JSON does not carry, so B4F and B5F simply
+         keep the engine's procedural map, as every mistyGrotto floor does today. Nothing regresses
+         on them; B1F-B3F gain the baked floor and art.
+       * a1dArtFor() is gated on the same lookup, so no art is blitted onto a procedural floor.
+       * the shape change at the B3F -> B4F stairs (a 46x40 baked floor handing over to a
+         procedural 100x100) is carried by a1dRescueHero, which reads bounds from scene.mapData
+         and no longer needs generated data -- the same guard added on 2026-08-03 precisely so
+         mistyGrotto and crystalCave could be entered at all.
+
+     It is the Act 1 BOSS dungeon (the Giant Toad unseals Crystal Cave) and shipped NO baked art,
+     so it paid the full procedural cost on every entry. crystalCave stays out: 6 generated against
+     a declared 5, plus the coloured-keys puzzle and a standing "never modify Crystal Cave". */
+  var A1D_MAPS={coastalReef:1,sunkenCellar:1,whisperingWoodsCave:1,mistyGrotto:1};
   // generated asset kind -> engine tile id. Blocking-by-design in the engine's dungeon
   // branch: 4 chest, 7 boss, 14 save, 18 sign/plaque. Walkable: 0 floor, 6 up/exit, 9 down.
   var A1D_TILE={mouth:6,stairsUp:6,stairsDown:9,chest:4,boss:7,save:14,sign:18,torch:0};

@@ -1,0 +1,16 @@
+{
+ "artefact": "mat-wall.png",
+ "command": "make_dungeon_materials.py --theme mistyGrotto",
+ "generator": "scripts/make_dungeon_materials.py",
+ "generatorSha256": "6cde0e94da5209445f6c8a582b58c0bb7a47727448ac8fd57414677690e22d31",
+ "inputs": {
+  "design/act1-dungeon-interiors/materials/mistyGrotto/mistyGrotto-materials-sheet.png": "6ac88ea254462a33ba4da9317d5952c8ae13069fdc18b5c7644df1dafd5d4f19"
+ },
+ "params": {
+  "overlap": 96,
+  "quadrant": "wall",
+  "theme": "mistyGrotto"
+ },
+ "sha256": "faf6e8ae7ecb2f0e611f15e095a8a1122b9573023feea75c775c48459edf9978",
+ "writtenAt": "2026-08-06T08:28:57+09:00"
+}

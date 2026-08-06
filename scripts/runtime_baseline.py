@@ -50,6 +50,12 @@ ACT1_OVERLAY_FILES = {
     # dungeon draw. mapData is the engine's collision seam -- canMove() indexes it directly -- so
     # layout and collision move together. Fallback-safe: no JSON, no override; no floor art, the
     # procedural draw still runs. mistyGrotto and crystalCave are deliberately out of scope.
+    # 2026-08-06, owner: mistyGrotto ("Darkfang Grotto", the Act 1 boss dungeon) JOINS that scope
+    # with its first three floors. It is the first entry whose generated count does NOT match the
+    # bundle -- 3 authored against `floors: 5` -- which is what had held it back; B4F and B5F keep
+    # the procedural map they already have, because a1dFloorFor() and a1dArtFor() are both gated on
+    # the per-floor lookup. crystalCave stays out (6 against a declared 5, plus "never modify
+    # Crystal Cave"). Rationale in full on A1D_MAPS in public/dq-tiles.js.
     # Same day, follow-up: the override now also replays persisted progress (looted chest 4->8,
     # defeated boss 7->10/12) onto the swapped map. The engine does that replay inside loadMap and
     # our swap lands after it, so without this a looted chest returned closed on every re-entry.
@@ -82,7 +88,7 @@ ACT1_OVERLAY_FILES = {
     # save format round-trips to itself (measured: 742 of 754 reportable cells reload unchanged, the
     # other 12 settle one cell north once; largest rescue nudge 28 px against a 96 px bound).
     "dq-tiles.js": (
-        237104, "52aceba35193a7d5e34d91df5405aa19680ec4ba82f0f80cd31076b5a8029ad9"),
+        238451, "8ae92d4698361c204db0dd203b120a6e4f499ee82566eb85577197f0b3893e7f"),
     # 2026-08-03, owner direction ("please redo the collision setting based on what i created (my
     # paint)"): the Act-1 collision plate is now generated from the OWNER'S PAINTED TERRAIN
     # (owner-terrain.json acts.1 + continent-macro-g3/land-mask.npy) instead of the generated
@@ -132,11 +138,11 @@ ACT1_DUNGEON_FILES = {
     "act1-dungeon-floors.json": (
         42_110, "c0743856ac2e294289a2574d8e3f05e14ed4693633869e457b842072735e731f"),
     "act1-dungeon-art/sunkenCellar-f1-props.png": (
-        2957280, "74292afb71314f83f2a0a66b1aab3106383d9e4da1c43e868beffb1cbe8cfbc1"),
+        2944362, "cf5e80e6217b7c59fff466256cbe8662748d1072c9acecc7c0bc3c0b31056034"),
     "act1-dungeon-art/sunkenCellar-f2-props.png": (
-        3758488, "3d4b824a229b2bfb8b77af106dc9b25a5e05e8a795e12d2d14c8a4f2dbc30ab6"),
+        3742477, "cdb25e9cb54b7497cf2c94b836e30baa554a18498ed3db0ec1ed0dff55cd06bb"),
     "act1-dungeon-art/sunkenCellar-f3-props.png": (
-        4246666, "5767cdaf2fbf5858d1f9e9774952d40a8c9902c98b65871c177dc4c7e8aa25d4"),
+        4227449, "3f18d455a6ebc69632167a83084af763d78e625c5d80c6f3ae30c4c3b9863b79"),
     # 2026-08-05: THE COLLISION SHAPE, and therefore as much a shipped authority as the picture it
     # comes from. Each is `fw` -- the renderer's own floor field -- thresholded at the same 0.5
     # that decides every pixel of the matching *-props.png, emitted at that render's own
@@ -146,11 +152,29 @@ ACT1_DUNGEON_FILES = {
     # back byte-identical, so extracting floor_field() provably did not touch a rendered pixel
     # (docs/DUNGEON-EDGE-STYLE-LOCK.md).
     "act1-dungeon-art/sunkenCellar-f1-walk.png": (
-        5567, "146753ba5c1b5038bb348084ec29c3ca9d3c5274d347490b0b9a6050996a37fb"),
+        5450, "07dba9c02672f5195cc0640472dcf13ba12dc6f94231d3fdc2cea9e2c6eab5df"),
     "act1-dungeon-art/sunkenCellar-f2-walk.png": (
-        7435, "530c0fecf4576638d575ba1009b7ec78cd302c72b83d8c1c80ba1bd7b920e2e9"),
+        7360, "98127f9adc82f378e0db39aadf2e854bf0bd3de5e22abe66cd0869f03ebbaed7"),
     "act1-dungeon-art/sunkenCellar-f3-walk.png": (
-        8835, "b9879c5619b6cf7b76cb21ac6b5db1c3aafd23f2392ddab618e20c8f0142d79e"),
+        8698, "e6b74af469ebb30297ef7d6a60c1b6fc0362274f562a3756b8cd639ee8c16f6b"),
+    # 2026-08-06, owner: DARKFANG GROTTO (mistyGrotto), the Act 1 boss dungeon, shipped no baked
+    # art at all and paid the full procedural cost on every entry. Its first three floors are now
+    # baked at the locked 0.95 wall face; B4F and B5F have no authored layout (the bundle declares
+    # `floors: 5`) and keep the procedural map, which a1dFloorFor()/a1dArtFor() handle per floor.
+    # These are the largest floors in Act 1 -- 46x40 cells on f3 -- so they are also the heaviest
+    # art the runtime carries.
+    "act1-dungeon-art/mistyGrotto-f1-props.png": (
+        6309529, "ae36f3bef43e21a0f1c34d54bd5f24b2073252c459238c556dc0ee2bc9eff37c"),
+    "act1-dungeon-art/mistyGrotto-f2-props.png": (
+        7752724, "9bc57442672d0c1b2f46f091591d5bb6ac2e4e8269337138bcd774cf2f4ccc2c"),
+    "act1-dungeon-art/mistyGrotto-f3-props.png": (
+        9117515, "d642e01ade85c5fa4f5c53653cad7d79ef3e40fb013c464a1ed77f0abb882289"),
+    "act1-dungeon-art/mistyGrotto-f1-walk.png": (
+        13794, "8f93d382ed3929ee01cdd8d7a7b1ca23e3089f00749f31999b3483aaf89752fb"),
+    "act1-dungeon-art/mistyGrotto-f2-walk.png": (
+        16343, "ecfc78881494b53bc88db3bd7f8cf2b6e9f27143fb5c00b9e507c293df6b0b19"),
+    "act1-dungeon-art/mistyGrotto-f3-walk.png": (
+        19051, "4ad7894bcb1b694d8a7d1d3baf312ee321f29a8a433c29af8d82db4490f3d752"),
 }
 # 2026-08-03, owner-authorised: the Port Sapphire town screen. `adapter.js` is gated to TOWNS
 # ONLY, so this surface is what the overlay actually raises; the overworld stays on the shipped

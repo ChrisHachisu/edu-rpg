@@ -68,6 +68,14 @@ MATROOT = os.path.join(DIR, "materials")
 # but it is not the map that was settled on. Do not calibrate against it.
 PX = 48
 
+# ── The wall's visible face, in CELLS. Hoisted out of render() so that
+# `scripts/check_hero_fits_wall_face.py` can assert against the real number instead of restating
+# it -- a checker that carries its own copy of a constant passes happily while the thing it checks
+# rots. The derivation, and why it is a derivation and not a preference, is on `face_h` in
+# render() and in docs/DUNGEON-EDGE-STYLE-LOCK.md.
+FACE_H_CELLS = 0.95
+FACE_BLUR_CELLS = 0.07              # softening on the band's own top edge
+
 # ── The Act-1 production density lock (design/ART-DIRECTION.md, OWNER-LOCKED 2026-07-16).
 # Authored world art is rendered as a high-resolution MASTER at 57/32 = 1.78125 source pixels per
 # world pixel, then reduced deterministically. That number is not arbitrary: the heroine is a
@@ -407,7 +415,75 @@ class Field:
             setattr(self, k, v)
 
 
+# A wall mass has to be DEEP enough, north-to-south, to wear the face band and still show a lit
+# top. The band eats `face_h` px northward from the wall's southern boundary, so what decides this
+# is a component's longest vertical RUN, not its area: a 10-cell wall that is 3 cells deep is fine,
+# a 1-cell-deep streak of the same length is not. At face_h = 0.85 of a 48 px cell the band is
+# 40 px, so a 1-cell-deep mass (48 px) would be 40 px shadow and 8 px top -- all shadow, no solid.
+# Two cells (96 px) leaves 56 px of lit top, which reads correctly.
+#
+# Owner, 2026-08-06, naming this himself as the cost of the deeper band: "this also causes a minor
+# problem with small patches of walls since some do not have enough mass to support the massive
+# shadow part, so the easy fix is to just remove these and make a rule to only have larger wall
+# masses that can have a large shadow patch."
+#
+# Measured across all six authored floors of sunkenCellar and mistyGrotto, this removes NINE cells
+# in total, every one of them an isolated single-cell speck. No authored mass is touched: the next
+# smallest component is 2 cells deep. Pruning only ever OPENS floor, so nothing can be stranded.
+MIN_WALL_DEPTH_CELLS = 2
+
+
+def prune_thin_walls(rows: list[str]) -> tuple[list[str], list[tuple[int, int]]]:
+    """Drop wall masses too shallow to carry the wall face. Returns (rows, removed cells).
+
+    Applied inside `floor_field`, which is the ONE path both the picture and the collision mask
+    go through, so the two cannot disagree about where the rock is.
+    """
+    ch, cw = len(rows), len(rows[0])
+    solid = {(y, x) for y in range(ch) for x in range(cw) if rows[y][x] == "#"}
+    seen: set[tuple[int, int]] = set()
+    removed: list[tuple[int, int]] = []
+
+    for cell in sorted(solid):
+        if cell in seen:
+            continue
+        comp, stack = [], [cell]
+        seen.add(cell)
+        while stack:                                        # 8-connected flood fill
+            cy, cx = stack.pop()
+            comp.append((cy, cx))
+            for dy in (-1, 0, 1):
+                for dx in (-1, 0, 1):
+                    n = (cy + dy, cx + dx)
+                    if n in solid and n not in seen:
+                        seen.add(n)
+                        stack.append(n)
+        members = set(comp)
+        deepest = 0
+        for cy, cx in comp:
+            if (cy - 1, cx) in members:
+                continue                                    # not the top of a run
+            run = 0
+            while (cy + run, cx) in members:
+                run += 1
+            deepest = max(deepest, run)
+        if deepest < MIN_WALL_DEPTH_CELLS:
+            removed.extend(comp)
+
+    if removed:
+        grid = [list(r) for r in rows]
+        for y, x in removed:
+            grid[y][x] = "."
+        rows = ["".join(r) for r in grid]
+    return rows, removed
+
+
 def floor_field(rows: list[str], scale: int = 1, assets: list | None = None) -> Field:
+    rows, pruned = prune_thin_walls(rows)
+    if pruned:
+        print(f"  pruned {len(pruned)} wall cell(s) too shallow for the face band: "
+              + ", ".join(f"({x},{y})" for y, x in sorted(pruned)[:12])
+              + (" ..." if len(pruned) > 12 else ""))
     px_world = max(1, PX // scale)
     ch, cw = len(rows), len(rows[0])
     Ww, Hw = cw * px_world, ch * px_world
@@ -568,11 +644,33 @@ def render(rows: list[str], mats: dict, theme: str, scale: int = 1,
     # much". He named the two levers himself: deepen the shading, or cut the bleed. Deepening wins
     # because more foot clearance narrows the cave (18 px orphans three assets) while a taller
     # face costs no corridor width at all. ~34 px now sits most of her body inside the shade.
-    face_h = max(2, int(px * 0.70))     # apparent height of the wall's visible face, in pixels
+    #
+    # 0.95, owner 2026-08-06, SECOND pass: "the character's top part still sticks out of the
+    # shadow part a bit, which makes it look unnatural so the character needs to fit within the
+    # shadow area." MOST of her was not enough -- ALL of her is the requirement, so this is now
+    # DERIVED rather than judged, from three measurements:
+    #
+    #   * her crown stands 55 px above her soles. NOT the 52 px quoted above and in dq-tiles.js:
+    #     that figure is from a different row, and the row that matters here is the one you are
+    #     actually looking at when she is against a north wall -- NORTH, her back, whose piled
+    #     hair makes it the TALLEST of the eight (crown at sprite row 3, soles at 58). Measuring
+    #     the wrong row is what left 0.70 three pixels short and would have left 0.85 one short.
+    #   * her soles stop A1M_FOOT + A1M_LEAN = 12 + 4 = 16 px short of the junction (dq-tiles.js).
+    #   * so her highest pixel over the wall sits 55 - 16 = 39 px above the junction.
+    #
+    # The band must also clear its OWN top edge, which is blurred over ~3.4 px (px * 0.07 below),
+    # or her crown sits in the soft margin rather than the shade. 39 + 3.4 = 43 px minimum.
+    #   0.70 -> 33 px   3 px short, the sliver he could see
+    #   0.85 -> 40 px   1 px of margin, inside the blur -- not enough
+    #   0.95 -> 45 px   6 px clear of her crown and past the blur
+    # Raising this again means re-deriving it from those three numbers, not taste. The cost is
+    # paid by the lit top, which is why MIN_WALL_DEPTH_CELLS exists: at 45 px a 2-cell mass still
+    # keeps 51 px of lit top, and a 1-cell mass has none, so 1-cell masses are pruned.
+    face_h = max(2, int(px * FACE_H_CELLS))   # apparent height of the wall's visible face, px
     drop = max(2, int(px * 0.34))       # how far its shadow reaches out across the floor
 
     wall = 1.0 - a
-    face = blur(np.clip(wall * shift(a, face_h), 0.0, 1.0), px * 0.07)   # floor lies south of it
+    face = blur(np.clip(wall * shift(a, face_h), 0.0, 1.0), px * FACE_BLUR_CELLS)  # floor is south
     cast = blur(np.clip(a * shift(wall, -drop), 0.0, 1.0), px * 0.20)    # wall lies north of it
     top = np.clip(wall - face, 0.0, 1.0)
 

@@ -1,0 +1,14 @@
+{
+ "artefact": "mistyGrotto-f2-walk.png",
+ "command": "render_dungeon_material_map.py --floor mistyGrotto-f2 --emit-mask --out public/act1-dungeon-art/mistyGrotto-f2-walk.png",
+ "generator": "scripts/render_dungeon_material_map.py",
+ "generatorSha256": "794c33ef0429df2cb51a94ce0e00e308b972c945344b41eaf6fbb4080be1daee",
+ "inputs": {
+  "design/act1-dungeon-interiors/mistyGrotto-f2.json": "aad8f513223164c9490e9eba7781afee63c623a423bbce17079d798d6308cfbe"
+ },
+ "params": {
+  "kind": "walkable-mask"
+ },
+ "sha256": "ecfc78881494b53bc88db3bd7f8cf2b6e9f27143fb5c00b9e507c293df6b0b19",
+ "writtenAt": "2026-08-06T09:29:08+09:00"
+}

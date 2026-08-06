@@ -20,9 +20,57 @@ Measured 10-90% luminance transition across the boundary, whole floor, ~2000 sam
 
 3.4 px is the material edge itself — as crisp as a 48 px/cell lattice can resolve.
 
-## Wall face height — LOCKED at 0.70 (owner, 2026-08-06)
+## Wall face height — LOCKED at 0.95 (owner, 2026-08-06, second pass)
 
-`face_h = max(2, int(px * 0.70))` in `scripts/render_dungeon_material_map.py`. Was 0.46.
+`face_h = max(2, int(px * 0.95))` in `scripts/render_dungeon_material_map.py`. Was 0.70, and 0.46
+before that.
+
+Owner, having played the cellar at 0.70: *"the bleeding in the wall looks much better now but the
+character's top part still sticks out of the shadow part a bit, which makes it look unnatural so
+the character needs to fit within the shadow area."*
+
+**0.70 aimed at MOST of her inside the shade. The requirement is ALL of her, so this number is now
+DERIVED, not judged.** Three measurements fix it:
+
+| | value | source |
+|---|---|---|
+| her crown above her soles | **55 px** | the g3 sheet, **NORTH row** — see the warning below |
+| her soles' stand-off from a north wall | 16 px | `A1M_FOOT` 12 + `A1M_LEAN` 4, `dq-tiles.js` |
+| **so her highest pixel over the wall sits** | **39 px** above the junction | 55 − 16 |
+| blur on the band's own top edge | ~3.4 px | `blur(..., px * 0.07)` |
+| **minimum band** | **43 px** | 39 + 3.4 |
+
+| face | band | verdict |
+|---|---|---|
+| 0.70 | 33 px | 3 px short — the sliver he could see |
+| 0.85 | 40 px | 1 px margin, her crown lands inside the **blur** — not enough |
+| **0.95** | **45 px** | 6 px clear of her crown and past the blur |
+
+> [!warning] Measure the NORTH row, not "the hero"
+> The renderer's old comment and `dq-tiles.js` both quote **52 px**, taken from a different
+> direction. The row that matters against a north wall is the one you are actually looking at —
+> **NORTH, her back** — and its piled hair makes it the **tallest of the eight** (crown at sprite
+> row 3, soles at 58). Measuring the wrong row is what left 0.70 three pixels short, and would
+> have left 0.85 one pixel short had it shipped.
+
+## Minimum wall mass — a wall must be ≥2 cells deep (owner, 2026-08-06)
+
+A deeper band has a cost the owner named in the same breath: *"this also causes a minor problem
+with small patches of walls since some do not have enough mass to support the massive shadow part,
+so the easy fix is to just remove these and make a rule to only have larger wall masses that can
+have a large shadow patch."*
+
+`prune_thin_walls()` in the renderer drops any wall component whose longest **vertical run** is
+under `MIN_WALL_DEPTH_CELLS = 2`. Vertical run, not area, is the right measure: the band eats
+`face_h` px *northward* from a mass's southern boundary, so a 10-cell wall that is 3 cells deep is
+fine while a 1-cell-deep streak of the same length is all shadow and no solid. At 40 px of band, a
+1-cell mass (48 px) keeps 8 px of lit top; two cells (96 px) keeps 56 px, which reads correctly.
+
+It runs inside `floor_field()` — the one path both the picture and the collision mask go through —
+so the art and the collision cannot disagree about where the rock is.
+
+**Measured cost across all 18 authored floors: 1–8 cells a floor, every one an isolated speck, and
+no asset sits on any of them.** Pruning only ever opens floor, so nothing can be stranded.
 
 Owner, having played the cellar: *"the bleeding into the shaded area of the walls seem too much.
 either the shading needs to be increased (to make the walls look taller) or the bleeding needs to
