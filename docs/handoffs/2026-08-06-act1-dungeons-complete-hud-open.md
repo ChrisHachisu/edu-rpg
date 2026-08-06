@@ -10,7 +10,7 @@ tags: [handoff, edu-rpg, act1, dungeons, hero, hud, ios]
 
 # Handoff — Act 1 dungeon art is complete; the HUD is next — 2026-08-06
 
-HEAD `1845235` on `codex/map-engine-semantic-data`, tree clean, ship gate PASS, bundle
+HEAD `0807492` on `codex/map-engine-semantic-data`, tree clean, ship gate PASS, bundle
 byte-identical throughout, `freshness.py` **FRESH=54 STALE=0**.
 
 ## What shipped
@@ -22,6 +22,7 @@ byte-identical throughout, `freshness.py` **FRESH=54 STALE=0**.
 | `77dba4b` | coastalReef + whisperingWoodsCave baked |
 | `cfe8239` | coastalReef expanded 1276 → **2099** walkable cells |
 | `1845235` | two dead design artefacts removed |
+| `0807492` | small wall masses actually removed — **27 → 0** |
 
 **Every Act 1 dungeon now ships baked art except crystalCave**, which stays deliberately
 untouched. Owner verdicts: *"north facing animation is not bad. I'll take"*, *"the shadow space is
@@ -34,9 +35,13 @@ probably good like this"*.
   `A1M_LEAN` 4) = 39 px reach, + 3.4 px band blur = 43 px minimum. 0.95 gives 45.
   **`scripts/check_hero_fits_wall_face.py` gates it** — it reads the sheet and `dq-tiles.js`, so
   redrawing the hero or retuning clearance fails the build. Run it after ANY hero or clearance change.
-- **Minimum wall mass = 2 cells of VERTICAL run** (`prune_thin_walls`, inside `floor_field` so art
-  and collision cannot disagree). Vertical run, not area: the band eats northward from a mass's
-  south edge.
+- **Minimum wall mass = area ≥6 cells AND vertical run ≥2 cells**, enforced in TWO passes inside
+  `floor_field` (so art and collision cannot disagree): `prune_thin_walls` on the lattice, then
+  `drop_rock_islands` on the warped field `fw`. **Both are needed** — the lattice pass alone left
+  8 of 27 small masses, every survivor an island the boundary warp itself broke off, with no
+  lattice component behind it. A failing mass is merged across a ≤1-cell hairline gap if that
+  leaves the floor fully connected, and removed otherwise. Measured on the rendered masks: masses
+  under 6 cells **27 → 0**.
 - **Darkfang Grotto is a 3-floor dungeon.** The bundle declares `floors: 5` but only 3 were ever
   authored and f3 carries the boss + save. B4F/B5F are **orphaned, not procedural** — there is no
   down-stairs from B3F. Owner accepted this on measured area grounds.
@@ -86,7 +91,7 @@ probably good like this"*.
 edu-rpg, Act 1 — the HUD.
 
 Work in /Users/christopherhachisu/Documents/claudecode/edu-rpg-map-engine-semantic-data
-(branch codex/map-engine-semantic-data, HEAD 1845235, tree clean).
+(branch codex/map-engine-semantic-data, HEAD 0807492, tree clean).
 
 Pre-flight reads, in this order, and nothing else:
   1. docs/handoffs/2026-08-06-act1-dungeons-complete-hud-open.md   (this handoff)
