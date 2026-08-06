@@ -11,7 +11,7 @@ Owner, 2026-08-01, after three art redos in one session:
 > *"you miss the mark on the artwork a lot so please make sure you are fully aware of the design
 > of everything before you have codex generate any art because a redo just burns tokens."*
 
-A Codex Terra call is **~10 minutes**. The preflight below is ~5 minutes. **Every miss so far was
+A Codex image-generation call is **~10 minutes**. The preflight below is ~5 minutes. **Every miss so far was
 preventable by it**, so it is not optional and it is not a formality.
 
 ## The one root cause
