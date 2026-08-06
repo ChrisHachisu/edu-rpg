@@ -34,7 +34,11 @@ style.textContent = `
   #act1-hifi-preserved-root[hidden] { display: none; }
   #act1-hifi-preserved-root iframe { width: 100%; height: 100%; border: 0; display: block; background: #02060a; opacity: 0; }
   #act1-hifi-preserved-root[data-ready="true"] iframe { opacity: 1; }
-  body.act1-hifi-active #qok-field-hud { display: none !important; }
+  /* The field HUD STAYS UP over the town. It used to be hidden here, which is why Port Sapphire
+     had no HP bar, minimap or compass while the overworld and the dungeons had all three. It
+     draws town-correct content from __ACT1_TOWN_VIEW__ -- see publishTownView() below. The floor
+     tag is the one piece with nothing to say in a town. */
+  body.act1-hifi-active #qfh-floor { display: none !important; }
   /* Owner 2026-08-04: the town overlay is FULL-BLEED at the top -- the art runs under the status
      bar and the field HUD stays hidden -- but the BOTTOM TAB BAR has to stay reachable over it.
      The bar is #fieldTabs, a child of #touch-controls, so hiding that container (which this rule
@@ -47,12 +51,12 @@ style.textContent = `
      agree on WHERE it sits. postTownChrome() forwards the orientation setting and the measured
      safe-area insets into the frame; see town.html's #pad rules. */
   body.act1-hifi-active #dpad { display: none !important; }
+  /* Dialogue still takes the controls away -- the tab bar and the pad would sit on top of the
+     message -- but the HUD now behaves exactly as it does on the overworld and in a dungeon,
+     where it stays up while an NPC talks. The rules that used to blank it piece by piece are
+     gone; one of them (#qfh-hp) never matched anything anyway, because the HP block is a
+     class, .qfhp -- this whole block is a template literal, so it cannot quote them. */
   body.act1-hifi-active.qok-dialogue #touch-controls { display: none !important; }
-  body.act1-hifi-active.qok-dialogue #qok-field-hud { display: block !important; }
-  body.act1-hifi-active.qok-dialogue #qfh-hp,
-  body.act1-hifi-active.qok-dialogue #qfh-map,
-  body.act1-hifi-active.qok-dialogue #qfh-compass,
-  body.act1-hifi-active.qok-dialogue #qfh-floor { display: none !important; }
 `;
 document.head.append(style);
 
@@ -124,6 +128,7 @@ function releaseRoot() {
   entryPromise = null;
   townEntry = null;
   townSuspended = false;
+  window.__ACT1_TOWN_VIEW__ = null;
   root.hidden = true;
   root.dataset.ready = 'false';
   document.body.classList.remove('act1-hifi-active');
@@ -416,10 +421,47 @@ function postTownChrome(force) {
   win.postMessage(chrome, '*');
 }
 
+/* ---- town -> field HUD seam -------------------------------------------------------------------
+   The parent's field HUD used to be hidden outright while a town was up, so Port Sapphire showed
+   no HP bar, no minimap and no compass where the overworld and every dungeon show all three
+   (owner, on device 2026-08-06).
+
+   It could not simply be un-hidden. ui-overhaul.js draws its minimap from `wm.mapData` and
+   `wm.heroTileX/Y`, and during town play BOTH are wrong: the Phaser map for portSapphire is a
+   16x16 stub, and the hero tile is only written back on exit, so the dot would sit wherever the
+   player entered -- frequently outside the 16 rows entirely. The hi-fi town is a different world
+   (65 cells at 16 world px, collision from a polygon authority, no tile grid at all).
+
+   So the town publishes its own view instead. `walkable` is passed BY REFERENCE -- it is ~490 kB
+   and the consumer only rasterises it once per town id. */
 let townSuspended = false;
+
+function publishTownView() {
+  const runtime = townEntry?.runtime;
+  if (!runtime || townSuspended) { window.__ACT1_TOWN_VIEW__ = null; return; }
+  const town = runtime.town;
+  const cellPx = town.worldPxPerCell;
+  const pos = runtime.position();
+  window.__ACT1_TOWN_VIEW__ = {
+    id: town.id,
+    nameKey: town.nameKey,
+    cells: town.cells,
+    world: town.cells * cellPx,
+    walkable: runtime.walkable,
+    hero: { x: pos.x, y: pos.y },
+    facing: runtime.state?.facing || 'down',
+    // Cells, in the same space as `hero` once multiplied by cellPx.
+    exit: town.exit?.cell || null,
+    shop: town.shopCounter || null,
+    save: town.savePoint || null,
+    npcs: (town.npcs || []).map(n => n.cell),
+    cellPx,
+  };
+}
 
 function suspendTownOverlay() {
   townSuspended = true;
+  window.__ACT1_TOWN_VIEW__ = null;
   root.hidden = true;
   document.body.classList.remove('act1-hifi-active');
   suppressedScene?.sys?.setVisible?.(true);
@@ -596,7 +638,7 @@ async function tick() {
       requestAnimationFrame(tick);
       return;
     }
-    if (townEntry) postTownChrome(false);
+    if (townEntry) { postTownChrome(false); publishTownView(); }
     if (!townEntry && !entryPromise) {
       entryPromise = enterTown(scene, mapId).catch(error => {
         lastError = error.stack || error.message;

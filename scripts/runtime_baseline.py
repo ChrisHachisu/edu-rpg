@@ -125,7 +125,7 @@ ACT1_OVERLAY_FILES = {
     # the control-orientation setting, into the frame. First override of this file since the
     # v1.17.1 baseline was frozen, which is why it had no entry before.
     "ui-overhaul.js": (
-        102_413, "161b46f0f86181c0e446a5caf35d39438fb50f15e4518975699e4d1316593d63"),
+        106558, "46eac1af9dd437e41b39541535b99802f98d4479c9e693340d76debbff267061"),
 }
 # The four tiling terrain materials the renderer above samples. New runtime paths as of
 # 2026-08-01; pinned by hash rather than merely tolerated, because they are shipped art and a
@@ -227,7 +227,7 @@ ACT1_DUNGEON_FILES = {
 # no URL bar). Pinned so it cannot quietly grow into something that mutates real save data.
 ACT1_TOWN_FILES = {
     "act1-hifi/town.html": (
-        21349, "9ada346ec2f87fb0904b94894e21cda636b02a472ee45b41a5993a11ac33a64c"),
+        21649, "d95d943de08fcf36bf53c2133808e03f5fd8adf7e8e8438908e67dc42608bdba"),
     "act1-hifi/town/portSapphire-town.json": (
         2_748, "51b45860151b23a983220b79409a9f04ab9f962988ea9725971bfa316b3a0b19"),
     "act1-hifi/town/portSapphire-walkable.json": (

@@ -59,14 +59,18 @@
     bottom: calc(76px + var(--sa-bottom, env(safe-area-inset-bottom, 0px)));
     right: calc(20px + var(--sa-right, env(safe-area-inset-right, 0px))); left: auto;
     width: 172px; height: 172px;
-    border-radius: 50%; background: rgba(10,18,26,.5); border: 1px solid rgba(150,200,230,.22);
+    /* Same skin as the parent stick, not just the same box: over the town's bright cobbles the
+       old cool-grey-on-nothing was hard to find at a glance. */
+    border-radius: 50%; background: rgba(26,26,46,.5); border: 2px solid #8b7340;
+    box-shadow: 0 0 10px rgba(0,0,0,.5), inset 0 0 14px rgba(0,0,0,.4);
     touch-action: none; }
   /* Orientation, forwarded from the parent's ctrl-* body class so one setting drives both sticks. */
   body[data-ctrl="left"] #pad {
     left: calc(20px + var(--sa-left, env(safe-area-inset-left, 0px))); right: auto; }
   body[data-ctrl="center"] #pad { left: 50%; right: auto; transform: translateX(-50%); }
   #knob { position: absolute; left: 50%; top: 50%; width: 70px; height: 70px; margin: -35px 0 0 -35px;
-    border-radius: 50%; background: rgba(190,220,240,.42); }
+    border-radius: 50%; background: rgba(201,168,76,.42); border: 2px solid rgba(201,168,76,.75);
+    box-shadow: 0 0 10px rgba(0,0,0,.35); }
   #debug { position: absolute; top: 8px; left: 10px; color: #7f98a8; font-size: 11px;
     font-variant-numeric: tabular-nums; white-space: pre; }
 </style>

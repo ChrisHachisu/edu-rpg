@@ -1185,6 +1185,72 @@
     });
     return d;
   }
+  // ---- town minimap -----------------------------------------------------------------------
+  // A town rendered by the Act 1 hi-fi overlay has no tile map to draw: it is one painting, one
+  // walkable polygon and a 65-cell grid at 16 world px. drawFieldMap() below would read the
+  // Phaser scene's 16x16 stub and a hero tile that is only written back on exit, i.e. a minimap
+  // that is wrong in both the shape and the dot. act1-hifi/adapter.js publishes the real thing on
+  // window.__ACT1_TOWN_VIEW__ instead; the walkable outline is rasterised once per town and then
+  // only the hero and the markers move.
+  var townMaskCanvas = null, townMaskId = '';
+  function townView() {
+    var v = window.__ACT1_TOWN_VIEW__;
+    return v && v.walkable && v.world ? v : null;
+  }
+  function townMask(v) {
+    if (townMaskCanvas && townMaskId === v.id) return townMaskCanvas;
+    var N = 260;                                   // raster resolution of the 1040px town square
+    var c = document.createElement('canvas'); c.width = N; c.height = N;
+    var g = c.getContext('2d'), k = N / v.world;
+    var poly = function (pts) {
+      if (!pts || !pts.length) return;
+      g.moveTo(pts[0].x * k, pts[0].y * k);
+      for (var i = 1; i < pts.length; i++) g.lineTo(pts[i].x * k, pts[i].y * k);
+      g.closePath();
+    };
+    g.clearRect(0, 0, N, N);
+    // Ground first, with the region's holes punched out by the even-odd rule in the same path.
+    g.fillStyle = '#3f5f78'; g.beginPath();
+    (v.walkable.regions || []).forEach(function (r) {
+      poly(r.outer);
+      (r.holes || []).forEach(poly);
+    });
+    g.fill('evenodd');
+    // Props (well, crates, stalls) read as blocked, same as a dungeon wall does.
+    g.fillStyle = '#1d2b3a'; g.beginPath();
+    (v.walkable.staticObstacles || []).forEach(function (o) { poly(o.polygon); });
+    g.fill();
+    townMaskCanvas = c; townMaskId = v.id;
+    return c;
+  }
+  function drawTownMap(v) {
+    if (!fieldMapCanvas) return;
+    var now = Date.now(); if (now - fieldMapDrawAt < 160) return; fieldMapDrawAt = now;
+    var css = Math.max(1, Math.round(fieldMapCanvas.getBoundingClientRect().width || 150));
+    var dpr = Math.max(1, Math.min(4, window.devicePixelRatio || 1)), pxw = Math.round(css * dpr);
+    if (fieldMapCanvas.width !== pxw || fieldMapCanvas.height !== pxw) { fieldMapCanvas.width = pxw; fieldMapCanvas.height = pxw; }
+    var ctx = fieldMapCanvas.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.imageSmoothingEnabled = true;
+    ctx.clearRect(0, 0, css, css);
+    ctx.fillStyle = '#0c1420'; ctx.fillRect(0, 0, css, css);
+    // The whole town fits: 1040px across is roughly a screen and a half, so panning it would
+    // hide the very thing a town map is for -- where the shop, the healer and the way out are.
+    ctx.drawImage(townMask(v), 0, 0, css, css);
+    var s = css / v.world, cp = v.cellPx;
+    var dot = function (cell, fill, r) {
+      if (!cell) return;
+      ctx.fillStyle = fill; ctx.beginPath();
+      ctx.arc(cell[0] * cp * s, cell[1] * cp * s, r, 0, 6.2832); ctx.fill();
+    };
+    (v.npcs || []).forEach(function (c) { dot(c, '#9fd8ff', 2); });
+    dot(v.shop, '#e0b757', 2.6);
+    dot(v.save, '#5fcc63', 2.6);
+    dot(v.exit, '#ff9b5a', 3);
+    ctx.strokeStyle = '#aa8d42'; ctx.lineWidth = 2; ctx.strokeRect(1, 1, css - 2, css - 2);
+    var hx = v.hero.x * s, hy = v.hero.y * s;
+    ctx.fillStyle = '#ffff00';
+    ctx.fillRect(Math.round(hx - 2.5), Math.round(hy - 2.5), 5, 5);
+  }
   function drawFieldMap(wm) {
     if (!fieldMapCanvas || !wm || !wm.mapData || !wm.mapData.length) return;
     var now = Date.now(); if (now - fieldMapDrawAt < 220) return; fieldMapDrawAt = now;
@@ -1222,16 +1288,25 @@
       fieldHpText.textContent = Z('menu.level') + st.level + '  ' + Z('menu.hp') + ' ' + st.hp + '/' + max;
       fieldHpFill.style.width = Math.round(ratio * 100) + '%'; fieldHpFill.className = ratio <= .2 ? 'danger' : (ratio <= .5 ? 'warn' : '');
     }
-    var hasMap = !!(wm.minimapGfx || wm.minimapPlayerDot || wm._minimapBtn || wm.currentMapId === 'overworld');
+    var tv = townView();
+    var hasMap = !!(tv || wm.minimapGfx || wm.minimapPlayerDot || wm._minimapBtn || wm.currentMapId === 'overworld');
     var floorText = !hasMap && wm.floorText && wm.floorText.active !== false && wm.floorText.text ? String(wm.floorText.text) : '';
     fieldFloor.textContent = floorText; fieldFloor.style.display = floorText ? 'block' : 'none';
     fieldMap.style.display = hasMap ? 'block' : 'none';
     if (hasMap) {
       fieldMapCollapsed = !!wm.minimapCollapsed; fieldMap.classList.toggle('collapsed', fieldMapCollapsed); fieldMapIcon.style.display = fieldMapCollapsed ? 'block' : 'none';
-      if (!fieldMapCollapsed) drawFieldMap(wm);
+      if (!fieldMapCollapsed) { if (tv) drawTownMap(tv); else drawFieldMap(wm); }
     }
-    var compassOn = !!wm.compassEnabled; fieldCompass.style.display = compassOn ? 'block' : 'none';
-    if (compassOn) {
+    // In a town the compass points at the way OUT. wm.compassEnabled is false there and its
+    // quest target is in overworld tiles, neither of which means anything inside the town's own
+    // 65-cell space -- so the town view supplies both the origin and the target.
+    var compassOn = !!(tv ? tv.exit : wm.compassEnabled);
+    fieldCompass.style.display = compassOn ? 'block' : 'none';
+    if (compassOn && tv) {
+      var edeg = Math.atan2(tv.exit[1] * tv.cellPx - tv.hero.y, tv.exit[0] * tv.cellPx - tv.hero.x) * 180 / Math.PI + 90;
+      fieldCompassArrow.style.display = 'block';
+      fieldCompassArrow.style.transform = 'translate(-50%,-50%) rotate(' + edeg + 'deg)';
+    } else if (compassOn) {
       var target = null; try { target = wm.getCompassTarget && wm.getCompassTarget(); } catch (e2) {}
       if (target) { var deg = Math.atan2(target.oy - wm.heroTileY, target.ox - wm.heroTileX) * 180 / Math.PI + 90; fieldCompassArrow.style.display = 'block'; fieldCompassArrow.style.transform = 'translate(-50%,-50%) rotate(' + deg + 'deg)'; }
       else fieldCompassArrow.style.display = 'none';
