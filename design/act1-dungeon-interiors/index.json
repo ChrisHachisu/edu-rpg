@@ -29,8 +29,8 @@
    "id": "coastalReef",
    "floors": 3,
    "patterns": "anastomotic",
-   "cells": 5032,
-   "walkable": 1276,
+   "cells": 8762,
+   "walkable": 2099,
    "errors": []
   },
   {

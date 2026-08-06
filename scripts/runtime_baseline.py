@@ -136,7 +136,7 @@ ACT1_MATERIAL_FILES = {
 # it is rendered and pinned. New runtime paths as of 2026-08-03.
 ACT1_DUNGEON_FILES = {
     "act1-dungeon-floors.json": (
-        42_110, "c0743856ac2e294289a2574d8e3f05e14ed4693633869e457b842072735e731f"),
+        54654, "705b72dbf2de2c5f5529933a54b8edbba2cd79c422d5e55d35e9285c757ea3d8"),
     "act1-dungeon-art/sunkenCellar-f1-props.png": (
         2944362, "cf5e80e6217b7c59fff466256cbe8662748d1072c9acecc7c0bc3c0b31056034"),
     "act1-dungeon-art/sunkenCellar-f2-props.png": (
@@ -180,17 +180,17 @@ ACT1_DUNGEON_FILES = {
     # same baked look as the cellar. That completes every Act 1 dungeon except crystalCave, which
     # is deliberately untouched.
     "act1-dungeon-art/coastalReef-f1-props.png": (
-        6348993, "4626670be5329daffe29a849fb89a2c8a11e982e2f7c83376376192016643b12"),
+        13133182, "5b52e974ec2e44dd06865e0f62771c386f5336a35d7ca6c7dd203e05f5e9b4a8"),
     "act1-dungeon-art/coastalReef-f2-props.png": (
-        6158525, "291dd6f1a25d74604d78b94112e46ba55487dce4f8cd64812373cf34801252d7"),
+        9976260, "98736e1ecd81a04e37514074d9ad5e4fb7914220be3a9d102b8c39a30061ec85"),
     "act1-dungeon-art/coastalReef-f3-props.png": (
-        8865048, "54323c50e7b1427b004c7b12144470b970545d91d60f87957b4c20b0e370d86a"),
+        13792566, "3ed25e4a382a2dd207efc507739daaeff9c8e5b0cb3aa9ceedfec9fb8fc71b3d"),
     "act1-dungeon-art/coastalReef-f1-walk.png": (
-        12696, "cd30f30485ec6ca70801ea2068919bba7af042640226b8742284d02fb082c334"),
+        17681, "1695caf6ffa53874df045d4e8581831fe5b44dfb19f1d77f6df735c2560dba5f"),
     "act1-dungeon-art/coastalReef-f2-walk.png": (
-        13337, "c4561c5a9a72485b53d60b28b01a568a56c102914667a0a722218e1d4c1e869c"),
+        17827, "4f8ab9ea4228f1cbf3b9e37ee31324fd2168af5038ee69d5fc8c9c684faac46e"),
     "act1-dungeon-art/coastalReef-f3-walk.png": (
-        15312, "e609078e2cb20c04114cd6abd264c1b5c61dcc1fb75e434e0c7037bf8ffb3990"),
+        23500, "958d3cdf89eaab6235604159783d83597eb94f6771a33455a60d29b85294a5bb"),
     "act1-dungeon-art/whisperingWoodsCave-f1-props.png": (
         4987626, "c6ba805b310a109b26665be67eab2768f4dd4d4244ae1ed47c37ea0511b90482"),
     "act1-dungeon-art/whisperingWoodsCave-f2-props.png": (

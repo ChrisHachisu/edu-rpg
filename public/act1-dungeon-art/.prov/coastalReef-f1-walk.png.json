@@ -4,11 +4,11 @@
  "generator": "scripts/render_dungeon_material_map.py",
  "generatorSha256": "794c33ef0429df2cb51a94ce0e00e308b972c945344b41eaf6fbb4080be1daee",
  "inputs": {
-  "design/act1-dungeon-interiors/coastalReef-f1.json": "65f83a74b4e9295f61c222884e5abddec9584154ff243bda7657f92e868c7047"
+  "design/act1-dungeon-interiors/coastalReef-f1.json": "5f14e00ff825dccbd8307a6a621388faa7967efa6aaa7391de2dafa4f3195a70"
  },
  "params": {
   "kind": "walkable-mask"
  },
- "sha256": "cd30f30485ec6ca70801ea2068919bba7af042640226b8742284d02fb082c334",
- "writtenAt": "2026-08-06T09:28:59+09:00"
+ "sha256": "1695caf6ffa53874df045d4e8581831fe5b44dfb19f1d77f6df735c2560dba5f",
+ "writtenAt": "2026-08-06T11:42:18+09:00"
 }

@@ -141,8 +141,17 @@ DUNGEONS = [
     {"id": "mistyGrotto", "name": "Darkfang Grotto", "floors": 3, "base": (44, 38),
      "joints": (52, 128), "pattern": "network", "fog": True,
      "theme": "jagged black fang rock", "boss": "giantToad"},
-    {"id": "coastalReef", "name": "Coastal Reef", "floors": 3, "base": (48, 42),
-     "joints": (12, 84, 152), "pattern": "anastomotic",
+    # 2026-08-06, owner, on the Act-1 area curve: "coastal reef is a bit small comparatively. it
+    # should have at least 2000 walkable cells since the jump is too steep." Measured, the curve
+    # ran sunkenCellar 593, whisperingWoodsCave 1083, Darkfang 1205, coastalReef 1276, and then
+    # crystalCave 3830 -- a 3x step onto the act's last dungeon.
+    # base 48x42 -> 62x54 AND braid 1.0 -> 2.6, because neither alone gets there: growing the
+    # canvas is +78% area for +20% floor (the conduit network does not grow with it), and the
+    # trunk must stay 2 wide or the braid merges into one pale mass. 2099 cells, every floor
+    # validating, walkable fraction 0.22-0.28 against the original 0.257 -- the cave reads the
+    # same, there is just more of it.
+    {"id": "coastalReef", "name": "Coastal Reef", "floors": 3, "base": (62, 54),
+     "joints": (12, 84, 152), "pattern": "anastomotic", "braid": 2.6,
      "theme": "tidal coral reef", "boss": "tidalSerpent"},
     {"id": "crystalCave", "name": "Crystal Cave", "floors": 6, "base": (56, 48),
      "joints": (26, 106), "pattern": "branchwork",
@@ -697,14 +706,27 @@ def skel_network(w, h, vecs, joints, rng) -> dict:
             "conduits": conduits, "chambers": chambers, "deadEnds": dead}
 
 
-def skel_anastomotic(w, h, vecs, rng) -> dict:
+def skel_anastomotic(w, h, vecs, rng, braid: float = 1.0) -> dict:
     """A braided trunk: loops leave the main passage and rejoin it further on.
 
     Flowing, with shortcuts — the pattern floodwater leaves along low-angle partings.
+
+    `braid` scales the two counts that decide how much cave this pattern carves: the number of
+    trunk nodes and the number of bypass loops. It exists because Coastal Reef measured 1276
+    walkable cells against Darkfang's 1205 and Crystal Cave's 3830, and the owner called that
+    step too steep (2026-08-06: "coastal reef is a bit small comparatively. it should have at
+    least 2000 walkable cells since the jump is too steep").
+
+    Growing the CANVAS alone does not fix it -- measured, 48x42 -> 64x56 is +78% area for only
+    +20% floor, because the conduit network does not grow with the canvas. Widening the trunk
+    does fix it and is FORBIDDEN here: an anastomotic floor lays several conduits over the same
+    ground, so a wider trunk merges the braid into one pale mass (see trunk_w in generate_floor).
+    More nodes and more bypasses is the one lever that adds cave while keeping the pattern --
+    a braided cave is supposed to be braided.
     """
     entry = edge_anchor(w, h, rng)
     payoff = far_inside(w, h, entry, rng)
-    trunk = [entry] + waypoints(entry, payoff, int(rng.integers(4, 7)),
+    trunk = [entry] + waypoints(entry, payoff, int(rng.integers(4, 7) * braid),
                                 min(w, h) * 0.18, w, h, rng) + [payoff]
 
     conduits, chambers, dead = [], [], []
@@ -722,7 +744,7 @@ def skel_anastomotic(w, h, vecs, rng) -> dict:
     # Bypasses: depart one trunk node, bow outward, rejoin a later one. Never the last node,
     # so the payoff keeps its single mouth.
     inner = trunk[:-1]
-    for _ in range(int(rng.integers(3, 6))):
+    for _ in range(int(rng.integers(3, 6) * braid)):
         if len(inner) < 4:
             break
         i = int(rng.integers(0, len(inner) - 2))
@@ -865,7 +887,7 @@ def generate_floor(spec: dict, floor: int, seed: int) -> dict:
     elif pattern == "network":
         skel = skel_network(w, h, vecs, spec["joints"], rng)
     elif pattern == "anastomotic":
-        skel = skel_anastomotic(w, h, vecs, rng)
+        skel = skel_anastomotic(w, h, vecs, rng, spec.get("braid", 1.0))
     elif pattern == "loop":
         skel = skel_loop(w, h, vecs, rng)
     else:
