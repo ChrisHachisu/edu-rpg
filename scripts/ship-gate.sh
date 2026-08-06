@@ -5,6 +5,11 @@ ROOT=${1:?repo root required}
 ROOT=$(CDPATH= cd -- "$ROOT" && pwd -P)
 cd "$ROOT"
 
+# The pins in runtime_baseline.py are GENERATED (scripts/regenerate_pins.py). Checking them
+# here is what stops a branch shipping a hand-edited or merge-mangled hash: the gate below
+# verifies dist against the pins, this verifies the pins against public/.
+python3 scripts/regenerate_pins.py --check
+
 python3 scripts/runtime_baseline.py verify-act1 --input dist
 python3 scripts/runtime_baseline.py verify-act1 --input ios/App/App/public --allow-capacitor-glue
 
