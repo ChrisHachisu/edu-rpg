@@ -2,7 +2,7 @@
  "artefact": "mistyGrotto-f3-props.png",
  "command": "render_dungeon_material_map.py --floor mistyGrotto-f3 --props --out public/act1-dungeon-art/mistyGrotto-f3-props.png",
  "generator": "scripts/render_dungeon_material_map.py",
- "generatorSha256": "794c33ef0429df2cb51a94ce0e00e308b972c945344b41eaf6fbb4080be1daee",
+ "generatorSha256": "edb87670960a084a99a9a9f7517259f7a9568af68815e0916769cc2046f89d88",
  "inputs": {
   "design/act1-dungeon-interiors/materials/mistyGrotto/mat-accent.png": "287eb20bd27e55e95273b7bd8fb166bdd43f377383f13e25902e224cb250f119",
   "design/act1-dungeon-interiors/materials/mistyGrotto/mat-floor.png": "46bedbc77ecc0205fb3e2696fd7770683f3366ca34e17a8d2cc007165375715b",
@@ -17,6 +17,6 @@
   "scale": 1,
   "theme": "jagged black fang rock"
  },
- "sha256": "d642e01ade85c5fa4f5c53653cad7d79ef3e40fb013c464a1ed77f0abb882289",
- "writtenAt": "2026-08-06T09:29:50+09:00"
+ "sha256": "ca962cdc86ff48600f7e5331630606727a74dfa7c615d726263ade87eba64ed5",
+ "writtenAt": "2026-08-06T12:36:19+09:00"
 }

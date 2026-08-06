@@ -53,24 +53,58 @@ DERIVED, not judged.** Three measurements fix it:
 > row 3, soles at 58). Measuring the wrong row is what left 0.70 three pixels short, and would
 > have left 0.85 one pixel short had it shipped.
 
-## Minimum wall mass — a wall must be ≥2 cells deep (owner, 2026-08-06)
+## Minimum wall mass — ≥6 cells of area AND ≥2 cells deep (owner, 2026-08-06)
 
 A deeper band has a cost the owner named in the same breath: *"this also causes a minor problem
 with small patches of walls since some do not have enough mass to support the massive shadow part,
 so the easy fix is to just remove these and make a rule to only have larger wall masses that can
-have a large shadow patch."*
+have a large shadow patch."* Then, having seen the first bake: *"i told you the issue with the
+smaller walls so i need you to remove them or merge them into bigger walls."*
 
-`prune_thin_walls()` in the renderer drops any wall component whose longest **vertical run** is
-under `MIN_WALL_DEPTH_CELLS = 2`. Vertical run, not area, is the right measure: the band eats
-`face_h` px *northward* from a mass's southern boundary, so a 10-cell wall that is 3 cells deep is
-fine while a 1-cell-deep streak of the same length is all shadow and no solid. At 40 px of band, a
-1-cell mass (48 px) keeps 8 px of lit top; two cells (96 px) keeps 56 px, which reads correctly.
+**The first version of this rule was too weak.** It failed a mass only on DEPTH — longest vertical
+run under 2 cells — which is the band-fit test, so it caught single-cell slivers and nothing else,
+1–8 specks a floor. Measured on the shipped bake, **27 wall masses under 6 cells survived it**, 19
+of them in coastalReef, whose braided loops leave small rock cores between the bypasses. A 3-cell
+island passes a depth test and still reads as a speck of grit rather than rock you walk beside.
 
-It runs inside `floor_field()` — the one path both the picture and the collision mask go through —
-so the art and the collision cannot disagree about where the rock is.
+A mass must now meet **both** conditions:
 
-**Measured cost across all 18 authored floors: 1–8 cells a floor, every one an isolated speck, and
-no asset sits on any of them.** Pruning only ever opens floor, so nothing can be stranded.
+| | rule | why |
+|---|---|---|
+| **depth** | longest vertical run ≥ `MIN_WALL_DEPTH_CELLS` = 2 | the band eats `face_h` **northward** from the mass's southern boundary, so vertical run — not area — decides whether any lit top survives. At 45 px of band, one cell (48 px) leaves 3 px of top; two cells (96 px) leave 51. |
+| **mass** | area ≥ `MIN_WALL_AREA_CELLS` = 6 | the owner's "larger wall masses". This one is about legibility, not lighting. |
+
+**A failing mass is MERGED if it can be, and REMOVED if it cannot** — both remedies the owner
+named. Merging is preferred because it keeps the rock the layout intended, but it is only safe
+across a hairline: filling a wide gap would wall off a corridor. So a merge is allowed only into an
+orthogonally adjacent gap of at most `MERGE_GAP` = 1 cell, **and only when the fill leaves every
+floor cell still reachable — checked, not assumed**. Everything else is removed, which is always
+safe because it can only ever open floor.
+
+### It takes TWO passes, because the warp makes its own islands
+
+`prune_thin_walls()` works on the **lattice**, before the boundary warp exists. That is the right
+place for masses the layout authored — but it cannot see rock the warp itself breaks off the edge
+of a bigger mass. Measured after the lattice rule alone shipped: masses under 6 cells fell 27 → 8,
+and **every survivor (0.3–5.3 cells) had no lattice component behind it.**
+
+So there is a second pass, `drop_rock_islands()`, applied to `fw` — the warped floor field — which
+fills any rock island still under `MIN_WALL_AREA_CELLS`. The owner's rule is about what is on
+screen, so it has to be enforced where the screen is decided.
+
+Both passes run inside `floor_field()` — the one path both the picture and the collision mask go
+through — so the art and the collision cannot disagree about where the rock is. `drop_rock_islands`
+deliberately edits **`fw` itself** rather than cleaning the mask afterwards: cleaning them
+separately would be two opinions about where rock is, and they would drift.
+
+> [!note] The one scipy call in the repo
+> Labelling islands in `fw` means connected components over ~13M pixels, which a Python flood fill
+> cannot do inside a bake. Everything else in the renderer stays numpy + PIL.
+
+**Measured cost across all 12 shipped floors: 63 cells in total, no asset on any of them, and the
+smallest surviving mass on every floor is now ≥6 cells.** Walkable area moves by at most 4 cells a
+dungeon (sunkenCellar −4, mistyGrotto −4, coastalReef **+3**, whisperingWoodsCave 0), so the
+owner-approved Act-1 area curve is unaffected.
 
 Owner, having played the cellar: *"the bleeding into the shaded area of the walls seem too much.
 either the shading needs to be increased (to make the walls look taller) or the bleeding needs to

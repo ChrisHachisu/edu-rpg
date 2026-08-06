@@ -2,13 +2,13 @@
  "artefact": "sunkenCellar-f2-walk.png",
  "command": "render_dungeon_material_map.py --floor sunkenCellar-f2 --emit-mask --out public/act1-dungeon-art/sunkenCellar-f2-walk.png",
  "generator": "scripts/render_dungeon_material_map.py",
- "generatorSha256": "794c33ef0429df2cb51a94ce0e00e308b972c945344b41eaf6fbb4080be1daee",
+ "generatorSha256": "edb87670960a084a99a9a9f7517259f7a9568af68815e0916769cc2046f89d88",
  "inputs": {
   "design/act1-dungeon-interiors/sunkenCellar-f2.json": "f5a8fd9ca554e1e0b3e5eb7e357464289096f6ac251d0cc3bd4ddfe04a9b0ba2"
  },
  "params": {
   "kind": "walkable-mask"
  },
- "sha256": "98127f9adc82f378e0db39aadf2e854bf0bd3de5e22abe66cd0869f03ebbaed7",
- "writtenAt": "2026-08-06T09:19:57+09:00"
+ "sha256": "aac585dbea7af54f07052f3690ba05da0a69e8c9c1fcd35507d1047b87017c41",
+ "writtenAt": "2026-08-06T12:27:56+09:00"
 }

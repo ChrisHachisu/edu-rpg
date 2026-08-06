@@ -46,6 +46,10 @@ import sys
 
 import numpy as np
 from PIL import Image, ImageDraw, ImageFilter
+# The ONLY scipy use in this repo, and it earns it: labelling rock islands in the warped field
+# means connected components over ~13M pixels, which a Python flood fill cannot do in the time
+# a bake allows. Everything else here stays numpy + PIL.
+from scipy import ndimage
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import prov  # noqa: E402  (needs the path insert above)
@@ -415,41 +419,50 @@ class Field:
             setattr(self, k, v)
 
 
-# A wall mass has to be DEEP enough, north-to-south, to wear the face band and still show a lit
-# top. The band eats `face_h` px northward from the wall's southern boundary, so what decides this
-# is a component's longest vertical RUN, not its area: a 10-cell wall that is 3 cells deep is fine,
-# a 1-cell-deep streak of the same length is not. At face_h = 0.85 of a 48 px cell the band is
-# 40 px, so a 1-cell-deep mass (48 px) would be 40 px shadow and 8 px top -- all shadow, no solid.
-# Two cells (96 px) leaves 56 px of lit top, which reads correctly.
+# A wall mass has to be big enough to READ as rock, and deep enough to wear the face band.
 #
-# Owner, 2026-08-06, naming this himself as the cost of the deeper band: "this also causes a minor
-# problem with small patches of walls since some do not have enough mass to support the massive
-# shadow part, so the easy fix is to just remove these and make a rule to only have larger wall
-# masses that can have a large shadow patch."
+# Owner, 2026-08-06, first pass: "this also causes a minor problem with small patches of walls
+# since some do not have enough mass to support the massive shadow part, so the easy fix is to
+# just remove these and make a rule to only have larger wall masses that can have a large shadow
+# patch." Second pass, after seeing the bake: "i told you the issue with the smaller walls so i
+# need you to remove them or merge them into bigger walls."
 #
-# Measured across all six authored floors of sunkenCellar and mistyGrotto, this removes NINE cells
-# in total, every one of them an isolated single-cell speck. No authored mass is touched: the next
-# smallest component is 2 cells deep. Pruning only ever OPENS floor, so nothing can be stranded.
+# THE FIRST RULE WAS TOO WEAK and this is why. It failed a component only when its longest
+# VERTICAL RUN was under 2 cells, which is the band-fit test -- so it caught single-cell slivers
+# and nothing else, 1-8 specks a floor. Measured across the shipped bake, 27 wall masses under
+# 6 cells survived it, 19 of them in coastalReef, whose braided loops leave small rock cores
+# between the bypasses. A 3-cell island passes a depth test and still reads as a speck of grit,
+# not as rock you walk beside.
+#
+# So there are two conditions now, and a mass must meet BOTH:
+#   * DEPTH   -- longest vertical run >= MIN_WALL_DEPTH_CELLS. The band eats `face_h` px NORTHWARD
+#                from a mass's southern boundary, so vertical run, not area, is what decides
+#                whether any lit top survives. At 0.95 the band is 45 px: one cell (48 px) leaves
+#                3 px of top, two cells (96 px) leave 51.
+#   * MASS    -- area >= MIN_WALL_AREA_CELLS, which is the owner's "larger wall masses" and is
+#                about legibility rather than lighting.
+#
+# A failing mass is MERGED if it can be, and REMOVED if it cannot -- both of which the owner
+# named. Merging is preferred because it keeps the rock the layout intended, but it is only safe
+# across a hairline: filling a wide gap would wall off a corridor. So a merge is allowed only into
+# an ORTHOGONALLY ADJACENT gap of at most MERGE_GAP cells, and only when the fill leaves every
+# floor cell still reachable -- checked, not assumed. Everything else is removed, which is always
+# safe because it can only ever OPEN floor.
 MIN_WALL_DEPTH_CELLS = 2
+MIN_WALL_AREA_CELLS = 6
+MERGE_GAP = 1
 
 
-def prune_thin_walls(rows: list[str]) -> tuple[list[str], list[tuple[int, int]]]:
-    """Drop wall masses too shallow to carry the wall face. Returns (rows, removed cells).
-
-    Applied inside `floor_field`, which is the ONE path both the picture and the collision mask
-    go through, so the two cannot disagree about where the rock is.
-    """
-    ch, cw = len(rows), len(rows[0])
-    solid = {(y, x) for y in range(ch) for x in range(cw) if rows[y][x] == "#"}
+def _components(solid: set[tuple[int, int]]) -> list[list[tuple[int, int]]]:
+    """8-connected wall masses."""
     seen: set[tuple[int, int]] = set()
-    removed: list[tuple[int, int]] = []
-
+    out = []
     for cell in sorted(solid):
         if cell in seen:
             continue
         comp, stack = [], [cell]
         seen.add(cell)
-        while stack:                                        # 8-connected flood fill
+        while stack:
             cy, cx = stack.pop()
             comp.append((cy, cx))
             for dy in (-1, 0, 1):
@@ -458,24 +471,123 @@ def prune_thin_walls(rows: list[str]) -> tuple[list[str], list[tuple[int, int]]]
                     if n in solid and n not in seen:
                         seen.add(n)
                         stack.append(n)
-        members = set(comp)
-        deepest = 0
-        for cy, cx in comp:
-            if (cy - 1, cx) in members:
-                continue                                    # not the top of a run
-            run = 0
-            while (cy + run, cx) in members:
-                run += 1
-            deepest = max(deepest, run)
-        if deepest < MIN_WALL_DEPTH_CELLS:
-            removed.extend(comp)
+        out.append(comp)
+    return out
 
-    if removed:
+
+def _deepest_run(comp: list[tuple[int, int]]) -> int:
+    members = set(comp)
+    best = 0
+    for cy, cx in comp:
+        if (cy - 1, cx) in members:
+            continue                                    # not the top of a run
+        run = 0
+        while (cy + run, cx) in members:
+            run += 1
+        best = max(best, run)
+    return best
+
+
+def _floor_connected(solid: set[tuple[int, int]], ch: int, cw: int) -> bool:
+    """Every open cell still reachable from every other. A merge that fails this walls off play."""
+    open_cells = {(y, x) for y in range(ch) for x in range(cw) if (y, x) not in solid}
+    if not open_cells:
+        return False
+    start = next(iter(open_cells))
+    seen, stack = {start}, [start]
+    while stack:
+        cy, cx = stack.pop()
+        for dy, dx in ((-1, 0), (1, 0), (0, -1), (0, 1)):
+            n = (cy + dy, cx + dx)
+            if n in open_cells and n not in seen:
+                seen.add(n)
+                stack.append(n)
+    return len(seen) == len(open_cells)
+
+
+def prune_thin_walls(rows: list[str]) -> tuple[list[str], list[tuple[int, int]]]:
+    """Merge or remove wall masses too small or too shallow. Returns (rows, cells removed).
+
+    Applied inside `floor_field`, which is the ONE path both the picture and the collision mask
+    go through, so the two cannot disagree about where the rock is.
+    """
+    ch, cw = len(rows), len(rows[0])
+    solid = {(y, x) for y in range(ch) for x in range(cw) if rows[y][x] == "#"}
+    removed: list[tuple[int, int]] = []
+    filled: list[tuple[int, int]] = []
+
+    def passes(comp):
+        return len(comp) >= MIN_WALL_AREA_CELLS and _deepest_run(comp) >= MIN_WALL_DEPTH_CELLS
+
+    for _ in range(4):                                  # a merge can promote a mass; re-settle
+        comps = _components(solid)
+        failing = [c for c in comps if not passes(c)]
+        if not failing:
+            break
+        keep = {cell for c in comps if passes(c) for cell in c}
+        changed = False
+        for comp in failing:
+            bridge = None
+            for cy, cx in comp:                         # a hairline gap to a mass that passes
+                for dy, dx in ((-1, 0), (1, 0), (0, -1), (0, 1)):
+                    for step in range(1, MERGE_GAP + 1):
+                        gap = [(cy + dy * k, cx + dx * k) for k in range(1, step + 1)]
+                        beyond = (cy + dy * (step + 1), cx + dx * (step + 1))
+                        if beyond in keep and all(
+                                g not in solid and 0 <= g[0] < ch and 0 <= g[1] < cw
+                                for g in gap):
+                            bridge = gap
+                            break
+                    if bridge:
+                        break
+                if bridge:
+                    break
+            if bridge and _floor_connected(solid | set(bridge), ch, cw):
+                solid |= set(bridge)
+                filled.extend(bridge)
+            else:
+                solid -= set(comp)
+                removed.extend(comp)
+            changed = True
+        if not changed:
+            break
+
+    if removed or filled:
         grid = [list(r) for r in rows]
         for y, x in removed:
             grid[y][x] = "."
+        for y, x in filled:
+            grid[y][x] = "#"
         rows = ["".join(r) for r in grid]
-    return rows, removed
+    return rows, removed + filled
+
+
+def drop_rock_islands(fw: np.ndarray, px: float) -> np.ndarray:
+    """Fill rock islands below MIN_WALL_AREA_CELLS that the BOUNDARY WARP created.
+
+    `prune_thin_walls` runs on the lattice, before `warp` exists, so it cannot see rock the warp
+    itself breaks off the edge of a mass. Measured after the lattice rule shipped: 27 masses under
+    6 cells fell to 8, and every survivor -- 0.3 to 5.3 cells -- had no lattice component behind
+    it. The owner's rule is about what is on SCREEN, so it has to be enforced where the screen is
+    decided, which is here.
+
+    Applied to `fw` itself rather than to the mask afterwards, because `fw` is the single field the
+    picture and the collision mask are both derived from. Cleaning it once is what keeps them
+    identical by construction; cleaning them separately would be two opinions about where rock is.
+    """
+    rock = fw < 0.5
+    lab, n = ndimage.label(rock)
+    if n == 0:
+        return fw
+    sizes = np.bincount(lab.ravel())
+    sizes[0] = 0                                        # label 0 is the floor, never a candidate
+    doomed = np.flatnonzero((sizes > 0) & (sizes < MIN_WALL_AREA_CELLS * px * px))
+    if not len(doomed):
+        return fw
+    kill = np.isin(lab, doomed)
+    # 0.75 rather than 1.0: comfortably floor, without punching a hole in `depth` -- the blurred
+    # floor mask that drives light pooling -- where a speck of rock used to be.
+    return np.where(kill, np.maximum(fw, 0.75), fw).astype(fw.dtype)
 
 
 def floor_field(rows: list[str], scale: int = 1, assets: list | None = None) -> Field:
@@ -514,6 +626,7 @@ def floor_field(rows: list[str], scale: int = 1, assets: list | None = None) -> 
     warp = (fbm(xx, yy, px * 2.6, 11) - 0.5) * 2.0
     gate = np.clip(4.0 * f * (1.0 - f), 0.0, 1.0)
     fw = np.clip(f + warp * 0.42 * gate, 0.0, 1.0)
+    fw = drop_rock_islands(fw, px)
 
     # ── Props stand in TRUE terminal cells — one way in, rock on the other three sides. Both the
     #    mask blur and the boundary warp pull the floor weight at such a cell below the 0.5

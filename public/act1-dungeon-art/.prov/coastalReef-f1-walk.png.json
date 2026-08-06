@@ -2,13 +2,13 @@
  "artefact": "coastalReef-f1-walk.png",
  "command": "render_dungeon_material_map.py --floor coastalReef-f1 --emit-mask --out public/act1-dungeon-art/coastalReef-f1-walk.png",
  "generator": "scripts/render_dungeon_material_map.py",
- "generatorSha256": "794c33ef0429df2cb51a94ce0e00e308b972c945344b41eaf6fbb4080be1daee",
+ "generatorSha256": "edb87670960a084a99a9a9f7517259f7a9568af68815e0916769cc2046f89d88",
  "inputs": {
   "design/act1-dungeon-interiors/coastalReef-f1.json": "5f14e00ff825dccbd8307a6a621388faa7967efa6aaa7391de2dafa4f3195a70"
  },
  "params": {
   "kind": "walkable-mask"
  },
- "sha256": "1695caf6ffa53874df045d4e8581831fe5b44dfb19f1d77f6df735c2560dba5f",
- "writtenAt": "2026-08-06T11:42:18+09:00"
+ "sha256": "12065cd25f9117234cd2f5f5b34d7336f315b7ffd8cf3be784117e459e284479",
+ "writtenAt": "2026-08-06T12:39:05+09:00"
 }
