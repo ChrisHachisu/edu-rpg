@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Quest of Knowledge — Storybook Quest · full set</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg3:#0e1022; --parch:#f3e7c6; --parch2:#ecdcb1; --ink:#4a3a21; --ink-soft:#7a6541;
+    --gold:#e0b757; --gold2:#c79a3f; --gold-line:#9a7a36; --gold-glow:rgba(224,183,87,.55);
+    --emerald:#4cc07a; --emerald2:#2f9c5b; --ruby:#e3594f; --ruby2:#bb3a32; --sky:#5aa9e6; --violet:#8c6bd8;
+    --hp-hi:#5fcc63; --shadow:0 12px 26px rgba(0,0,0,.42); --font:'M PLUS Rounded 1c',system-ui,sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:var(--font);background:radial-gradient(1100px 650px at 50% -8%,#23264d,transparent 58%),var(--bg3);color:#ece3cf;padding:34px 20px 70px;}
+  .head{max-width:1300px;margin:0 auto 4px;text-align:center;}
+  .head .k{font-size:13px;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);font-weight:800;}
+  .head h1{font-size:30px;font-weight:900;color:#fdf6e6;margin:6px 0 6px;}
+  .head p{color:#a9a2c0;font-size:14.5px;max-width:740px;margin:0 auto;line-height:1.5;}
+  .sec{max-width:1300px;margin:34px auto 4px;font-weight:800;color:var(--gold);font-size:14px;letter-spacing:.06em;border-bottom:1px solid #ffffff14;padding-bottom:8px;}
+  .gallery{display:flex;gap:34px 26px;justify-content:center;align-items:flex-start;flex-wrap:wrap;max-width:1300px;margin:22px auto 0;}
+  .fw{display:flex;flex-direction:column;align-items:center;gap:12px;}
+  .cap{font-size:13px;color:#cfc8e4;text-align:center;} .cap b{color:var(--gold);font-weight:800;}
+
+  .phone{width:320px;height:680px;border-radius:40px;background:#05060d;padding:11px;position:relative;box-shadow:0 26px 50px rgba(0,0,0,.55),inset 0 0 0 2px #2a2c3e,0 0 0 6px #15161f;}
+  /* Dynamic Island */
+  .island{position:absolute;top:15px;left:50%;transform:translateX(-50%);width:96px;height:27px;background:#000;border-radius:99px;z-index:30;box-shadow:0 0 0 1px #1c1d27;}
+  .screen{width:100%;height:100%;border-radius:30px;overflow:hidden;position:relative;display:flex;flex-direction:column;
+    background:radial-gradient(440px 300px at 22% -4%,#25284f,transparent 60%),radial-gradient(380px 300px at 118% 8%,#2c2049,transparent 55%),linear-gradient(180deg,#161834,#101126);}
+  .screen::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.5;background-image:radial-gradient(1.3px 1.3px at 30px 70px,#fff7,transparent),radial-gradient(1.2px 1.2px at 220px 130px,#fff5,transparent),radial-gradient(1.3px 1.3px at 110px 300px,#ffe9b35e,transparent),radial-gradient(1.1px 1.1px at 270px 430px,#fff4,transparent);}
+  /* SAFE AREA: status-bar / Dynamic Island clearance (env(safe-area-inset-top) in the build) */
+  .sbar{height:42px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 22px;position:relative;z-index:8;}
+  .sbar .clock{font-weight:800;font-size:12.5px;color:#fff;opacity:.92;}
+  .sbar .meta{display:flex;gap:5px;align-items:center;opacity:.92;}
+  .sbar .meta i{display:block;width:5px;background:#fff;border-radius:1px;} .sbar .meta i:nth-child(1){height:6px;}.sbar .meta i:nth-child(2){height:9px;}.sbar .meta i:nth-child(3){height:12px;}
+  .sbar .bat{width:20px;height:11px;border:1.5px solid #fff;border-radius:3px;position:relative;margin-left:3px;} .sbar .bat::before{content:"";position:absolute;inset:1.5px;width:70%;background:#fff;border-radius:1px;} .sbar .bat::after{content:"";position:absolute;right:-3px;top:3px;width:2px;height:5px;background:#fff;border-radius:1px;}
+
+  /* components */
+  .panel{background:linear-gradient(180deg,var(--parch),var(--parch2));border-radius:16px;position:relative;color:var(--ink);border:2px solid var(--gold-line);box-shadow:var(--shadow),inset 0 0 0 2px #f7eecf;}
+  .topbar{display:flex;align-items:center;gap:10px;padding:6px 15px 10px;position:relative;z-index:5;}
+  .av{width:44px;height:44px;border-radius:13px;flex:none;display:grid;place-items:center;background:linear-gradient(160deg,#2a2e58,#1b1d3a);box-shadow:inset 0 0 0 2px var(--gold2),0 4px 10px #0006;}
+  .who{flex:1;min-width:0;} .who .nm{font-weight:800;font-size:16px;color:#fdf3da;line-height:1.05;} .who .lv{font-size:11.5px;color:#c7bfe0;}
+  .coins{display:flex;align-items:center;gap:5px;background:#0e1026cc;border:1.5px solid var(--gold-line);border-radius:99px;padding:5px 11px;font-weight:800;color:var(--gold);font-size:13px;}
+  .eyebrow{font-size:11px;letter-spacing:.26em;text-transform:uppercase;color:var(--gold);font-weight:800;padding-left:4px;}
+  .pad{padding:0 14px;} .stack{display:flex;flex-direction:column;} .g8{gap:8px;}.g10{gap:10px;}.g12{gap:12px;} .mt6{margin-top:6px;}.mt10{margin-top:10px;}
+
+  .hp{height:11px;border-radius:99px;background:#e7d3a8;overflow:hidden;flex:1;box-shadow:inset 0 1px 2px #0003;} .hp.dark{background:#2a1c1c;} .hp i{display:block;height:100%;border-radius:99px;background:linear-gradient(180deg,#7ee07e,var(--hp-hi));}
+  .row{display:flex;align-items:center;gap:9px;}
+
+  .btn{appearance:none;border:none;font-family:var(--font);font-weight:800;cursor:pointer;border-radius:15px;color:#fff;font-size:15px;padding:14px;position:relative;
+    box-shadow:0 5px 0 var(--shade,#0006),0 8px 15px rgba(0,0,0,.32);display:flex;align-items:center;justify-content:center;gap:8px;text-shadow:0 1px 1px #0004;min-height:52px;}
+  .btn .ic{width:21px;height:21px;flex:none;}
+  .btn-gold{background:linear-gradient(180deg,#f0c969,var(--gold2));--shade:#8a6a26;color:#43340f;text-shadow:0 1px 0 #ffffff66;}
+  .btn-em{background:linear-gradient(180deg,#5fd089,var(--emerald2));--shade:#1f6e3e;}
+  .btn-ruby{background:linear-gradient(180deg,#ef6a60,var(--ruby2));--shade:#8c2a23;}
+  .btn-sky{background:linear-gradient(180deg,#6fb6ea,#3f86c4);--shade:#235a8c;}
+  .btn-slate{background:linear-gradient(180deg,#454a78,#2c2f52);--shade:#16182e;}
+  .sel{outline:3px solid var(--gold);outline-offset:2px;box-shadow:0 0 0 3px var(--gold-glow),0 5px 0 var(--shade,#b39a5e)!important;}
+
+  .tabbar{margin-top:auto;display:flex;gap:5px;padding:9px 11px 18px;background:linear-gradient(180deg,#1a1c3a00,#0c0d1f 42%);position:relative;z-index:6;}
+  .tab{flex:1;border:none;background:transparent;font-family:var(--font);color:#9a93bb;font-weight:700;font-size:11px;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 3px;border-radius:13px;cursor:pointer;}
+  .tab .ic{width:23px;height:23px;} .tab.on{color:#43340f;background:linear-gradient(180deg,#f0c969,var(--gold2));box-shadow:0 4px 0 #8a6a26;} .tab.on .ic *{stroke:#43340f!important;}
+
+  /* lists / cards */
+  .card{display:flex;align-items:center;gap:11px;padding:12px;border-radius:14px;background:linear-gradient(180deg,#fbf2d6,#efe0b6);border:2px solid var(--gold-line);color:var(--ink);box-shadow:0 4px 0 #cdb578;}
+  .card .ic{width:32px;height:32px;border-radius:9px;flex:none;display:grid;place-items:center;background:#fff7e0;box-shadow:inset 0 0 0 1.5px #d8c18a;}
+  .card .t{flex:1;} .card .t .n{font-weight:800;font-size:15px;} .card .t .d{font-size:11.5px;color:var(--ink-soft);font-weight:600;} .card .t .cnt{font-size:12px;font-weight:800;color:#8a6a26;margin:1px 0;}
+  /* QUANTITY badge — count of this item you hold */
+  .qty{font-weight:900;font-size:16px;color:#43340f;background:linear-gradient(180deg,#f0c969,var(--gold2));border-radius:10px;padding:5px 11px;box-shadow:0 3px 0 #8a6a26;min-width:42px;text-align:center;}
+  .pill{font-weight:800;font-size:12px;border-radius:99px;padding:5px 11px;}
+  .delta-up{color:#1f8a44;font-weight:900;} .delta-dn{color:#bb3a32;font-weight:900;}
+
+  .swatchrow{display:flex;gap:10px;justify-content:center;}
+  .swatch{width:38px;height:38px;border-radius:50%;cursor:pointer;box-shadow:inset 0 0 0 2px #00000022,0 3px 6px #0004;}
+  .swatch.sel{outline:3px solid var(--gold);outline-offset:3px;box-shadow:0 0 0 3px var(--gold-glow);}
+  .chiprow{display:flex;gap:7px;flex-wrap:wrap;justify-content:center;}
+  .gchip{min-width:38px;text-align:center;padding:9px 6px;border-radius:12px;font-weight:800;font-size:14px;background:#0000000f;color:var(--ink-soft);cursor:pointer;}
+  .gchip.sel{background:linear-gradient(180deg,#f0c969,var(--gold2));color:#43340f;box-shadow:0 4px 0 #8a6a26;}
+  .toggle{display:inline-flex;background:#0000001a;border-radius:99px;padding:3px;font-weight:800;font-size:13px;}
+  .toggle span{padding:8px 16px;border-radius:99px;color:var(--ink-soft);} .toggle span.on{background:linear-gradient(180deg,#f0c969,var(--gold2));color:#43340f;box-shadow:0 3px 0 #8a6a26;}
+  .seg{display:flex;background:#0000001a;border-radius:13px;padding:3px;gap:3px;}
+  .seg b{flex:1;text-align:center;padding:9px 4px;border-radius:10px;font-size:13px;color:var(--ink-soft);font-weight:800;} .seg b.on{background:linear-gradient(180deg,#f0c969,var(--gold2));color:#43340f;box-shadow:0 3px 0 #8a6a26;}
+  .switch{width:50px;height:28px;border-radius:99px;background:#cdb578;position:relative;flex:none;} .switch.on{background:linear-gradient(90deg,#5fd089,var(--emerald2));} .switch::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 2px 4px #0004;} .switch.on::after{left:25px;}
+  .slider{height:10px;border-radius:99px;background:#cdb578;position:relative;flex:1;} .slider i{position:absolute;left:0;top:0;height:100%;width:50%;border-radius:99px;background:linear-gradient(90deg,#f0c969,var(--gold2));} .slider b{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 2px 5px #0005;}
+  .setrow{display:flex;align-items:center;gap:10px;padding:13px 14px;border-radius:14px;background:#ffffff14;}
+  .setrow.sel{outline:2.5px solid var(--gold);outline-offset:1px;background:#f3e7c61a;} .setrow .lab{flex:1;font-weight:800;font-size:14.5px;color:#f3ead2;} .setrow .val{font-weight:800;color:var(--gold);font-size:14px;}
+  .enemy-stage{flex:1;display:flex;align-items:center;justify-content:center;position:relative;}
+  .enemy-card{position:absolute;top:6px;left:14px;right:14px;display:flex;align-items:center;gap:9px;background:#0d0f22cc;border:2px solid var(--gold-line);border-radius:13px;padding:9px 11px;z-index:4;}
+  .msg{background:#0d0f22e0;border:2px solid var(--gold-line);border-radius:14px;padding:12px 14px;color:#f2ead2;font-size:14px;line-height:1.4;}
+  .scene-h{text-align:center;font-weight:900;color:#fdf3da;font-size:18px;} .scene-s{text-align:center;color:#c7bfe0;font-size:12.5px;margin-top:2px;}
+  .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);}
+  svg.spr{image-rendering:pixelated;}
+</style>
+</head>
+<body>
+<h2 class="sr-only">Quest of Knowledge full UI mockup set in the Storybook Quest direction, with clear sword and running icons, item counts, and status-bar safe area.</h2>
+
+<!-- reusable icons -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="sword" viewBox="0 0 24 24"><g fill="currentColor" transform="rotate(42 12 12)">
+    <path d="M12 0.6 13.5 4.6 13.5 13.4 10.5 13.4 10.5 4.6Z"/>
+    <rect x="6.9" y="13.1" width="10.2" height="2.7" rx="1.2"/>
+    <rect x="10.85" y="15.8" width="2.3" height="5" rx="0.7"/>
+    <circle cx="12" cy="21.7" r="2"/>
+  </g></symbol>
+  <symbol id="run" viewBox="0 0 24 24">
+    <g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M15.4 8.4 11.7 12.7"/>
+      <path d="M15.6 9 19.7 10.7"/>
+      <path d="M13.7 9.1 10 7.5"/>
+      <path d="M11.7 12.7 15.7 14.5 14.2 19"/>
+      <path d="M11.7 12.7 8 13.9 5.3 17.8"/>
+    </g>
+    <circle cx="17" cy="4.5" r="2.3" fill="currentColor"/>
+    <g fill="currentColor"><rect x="1.2" y="4.4" width="4.8" height="1.8" rx="0.9" opacity="0.9"/><rect x="0.6" y="8.1" width="5.8" height="1.8" rx="0.9" opacity="0.72"/><rect x="2" y="11.8" width="4.4" height="1.8" rx="0.9" opacity="0.55"/></g>
+  </symbol>
+  <symbol id="potion" viewBox="0 0 24 24"><path fill="currentColor" d="M9 2h6v2l-1 1v3.2l3.6 6.3A3 3 0 0114 19H10a3 3 0 01-3.6-4.5L10 8.2V5L9 4z"/><rect x="8" y="14" width="8" height="4" fill="#ffffff55"/></symbol>
+</svg>
+
+<div class="head">
+  <div class="k">Quest of Knowledge · UI overhaul</div>
+  <h1>“Storybook Quest” — full screen set <span style="font-size:15px;color:#8ad29b;">· v2 (icons + safe area)</span></h1>
+  <p>Updated: ⚔ clear sword icon, 🏃 running figure for Run, item <b style="color:#e0b757">counts</b> on every card, and a top safe-area so nothing hides under the Dynamic Island / clock.</p>
+</div>
+
+<div class="sec">① Intro / hero setup &nbsp;·&nbsp; ② In-game menu (4 tabs)</div>
+<div class="gallery">
+
+  <!-- INTRO / SETUP -->
+  <div class="fw"><div class="phone"><div class="island"></div><div class="screen">
+    <div class="sbar"><span class="clock">9:41</span><span class="meta"><i></i><i></i><i></i><span class="bat"></span></span></div>
+    <div class="stack pad g10" style="height:100%;">
+      <div><div class="scene-h">✦ Create Your Hero ✦</div><div class="scene-s">あたらしい ぼうけん</div></div>
+      <div style="display:grid;place-items:center;margin:2px 0;">
+        <div style="width:90px;height:90px;border-radius:24px;display:grid;place-items:center;background:radial-gradient(closest-side,#fff8e6,#eadbb0);box-shadow:inset 0 0 0 2px #d8c18a,0 6px 14px #0004;">
+          <svg class="spr" width="56" height="56" viewBox="0 0 16 16"><rect x="5" y="1" width="6" height="2" fill="#e0584f"/><rect x="4" y="3" width="8" height="4" fill="#9fb3c8"/><rect x="5" y="4" width="2" height="2" fill="#fff"/><rect x="9" y="4" width="2" height="2" fill="#fff"/><rect x="4" y="7" width="8" height="5" fill="#3b63c4"/><rect x="6" y="12" width="4" height="3" fill="#5a3a22"/><rect x="11" y="6" width="2" height="6" fill="#dcdce4"/></svg>
+        </div>
+      </div>
+      <div class="panel sel" style="padding:12px 15px;display:flex;align-items:center;gap:10px;">
+        <div style="font-weight:800;color:var(--ink-soft);font-size:13px;">NAME</div>
+        <div style="flex:1;font-weight:900;font-size:18px;color:var(--ink);">Aria<span style="color:#b39a5e;font-weight:400;">▏</span></div>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M14 4l6 6-9 9-4 1 1-4 9-9-3-3z" stroke="#9a7a36" stroke-width="2"/></svg>
+      </div>
+      <div class="panel" style="padding:12px 15px;"><div style="font-weight:800;color:var(--ink-soft);font-size:12px;margin-bottom:9px;">COLOR</div>
+        <div class="swatchrow"><i class="swatch" style="background:#8a8f9c"></i><i class="swatch sel" style="background:#3b63c4"></i><i class="swatch" style="background:#cf4b4b"></i><i class="swatch" style="background:#3fae5a"></i><i class="swatch" style="background:#d8a93a"></i><i class="swatch" style="background:#8c5cc0"></i></div>
+      </div>
+      <div class="panel" style="padding:12px 15px;"><div style="font-weight:800;color:var(--ink-soft);font-size:12px;margin-bottom:9px;">DIFFICULTY (GRADE)</div>
+        <div class="chiprow"><b class="gchip">K</b><b class="gchip">1</b><b class="gchip">2</b><b class="gchip sel">3</b><b class="gchip">4</b><b class="gchip">5</b><b class="gchip">6</b></div>
+      </div>
+      <div class="row" style="justify-content:space-between;padding:0 4px;"><span style="font-weight:800;color:#f3ead2;font-size:14px;">Language</span><div class="toggle"><span class="on">EN</span><span>日本語</span></div></div>
+      <button class="btn btn-gold" style="margin-top:auto;font-size:17px;"><svg class="ic" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="#43340f" stroke-width="2.4"/></svg>Start Adventure</button>
+    </div>
+  </div></div><div class="cap"><b>Intro / Setup</b> — name, color, grade, language</div></div>
+
+  <!-- MENU: ITEMS -->
+  <div class="fw"><div class="phone"><div class="island"></div><div class="screen">
+    <div class="sbar"><span class="clock">9:41</span><span class="meta"><i></i><i></i><i></i><span class="bat"></span></span></div>
+    <div class="topbar"><div class="av"><svg class="spr" width="28" height="28" viewBox="0 0 16 16"><rect x="5" y="1" width="6" height="2" fill="#e0584f"/><rect x="4" y="3" width="8" height="4" fill="#9fb3c8"/><rect x="4" y="7" width="8" height="5" fill="#3b63c4"/></svg></div><div class="who"><div class="nm">Aria</div><div class="lv">Lv 5</div></div><div class="coins">◎ 50</div></div>
+    <div class="pad stack g10"><div class="eyebrow">Items</div>
+      <div class="card sel"><div class="ic"><svg width="20" height="20" viewBox="0 0 24 24"><path d="M12 21s-7-4.5-7-10a4 4 0 018-1 4 4 0 018 1c0 5.5-7 10-7 10z" fill="#5fcc63" stroke="#2f9c5b" stroke-width="1.5"/></svg></div><div class="t"><div class="n">Healing Herb</div><div class="d">Restores 30 HP</div></div><div class="qty">×3</div></div>
+      <div class="card"><div class="ic"><svg width="20" height="20" viewBox="0 0 24 24"><use href="#potion" style="color:#8c6bd8"/></svg></div><div class="t"><div class="n">Antidote</div><div class="d">Cures poison</div></div><div class="qty">×1</div></div>
+      <div class="card"><div class="ic"><svg width="20" height="20" viewBox="0 0 24 24"><circle cx="12" cy="13" r="6" fill="#7a8190" stroke="#4a505c" stroke-width="1.5"/><path d="M12 7V4M10 5l4-2" stroke="#4a505c" stroke-width="1.5"/></svg></div><div class="t"><div class="n">Smoke Bomb</div><div class="d">Escape any battle</div></div><div class="qty">×2</div></div>
+    </div>
+    <div class="tabbar">
+      <button class="tab"><svg class="ic" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="2"/><path d="M5 20c0-4 3-6 7-6s7 2 7 6" stroke="currentColor" stroke-width="2"/></svg>Status</button>
+      <button class="tab on"><svg class="ic" viewBox="0 0 24 24" fill="none"><path d="M5 8h14l-1 11H6L5 8z" stroke="#43340f" stroke-width="2"/><path d="M9 8V6a3 3 0 016 0v2" stroke="#43340f" stroke-width="2"/></svg>Items</button>
+      <button class="tab"><svg class="ic" viewBox="0 0 24 24"><use href="#sword"/></svg>Equip</button>
+      <button class="tab"><svg class="ic" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2" stroke="currentColor" stroke-width="2"/></svg>Settings</button>
+    </div>
+  </div></div><div class="cap"><b>Menu · Items</b> — count badge ×N on every card</div></div>
+
+  <!-- MENU: EQUIP -->
+  <div class="fw"><div class="phone"><div class="island"></div><div class="screen">
+    <div class="sbar"><span class="clock">9:41</span><span class="meta"><i></i><i></i><i></i><span class="bat"></span></span></div>
+    <div class="topbar"><div class="av"><svg class="spr" width="28" height="28" viewBox="0 0 16 16"><rect x="5" y="1" width="6" height="2" fill="#e0584f"/><rect x="4" y="3" width="8" height="4" fill="#9fb3c8"/><rect x="4" y="7" width="8" height="5" fill="#3b63c4"/></svg></div><div class="who"><div class="nm">Aria</div><div class="lv">Lv 5</div></div><div class="coins">◎ 50</div></div>
+    <div class="pad stack g10"><div class="eyebrow">Equip</div>
+      <div class="panel" style="padding:11px 13px;"><div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:800;margin-bottom:4px;"><span class="row" style="gap:6px;"><svg width="16" height="16" viewBox="0 0 24 24" style="color:#8893a6"><use href="#sword"/></svg>Weapon</span><span style="color:#1f8a44;">Iron Sword +8</span></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:800;color:var(--ink-soft);"><span class="row" style="gap:6px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="color:var(--ink-soft)"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6l7-3z" stroke="currentColor" stroke-width="2"/></svg>Armor</span><span>—</span></div></div>
+      <div class="row" style="gap:6px;"><b style="font-size:11px;letter-spacing:.1em;color:var(--gold);font-weight:800;flex:1;">OWNED · WEAPONS</b>
+        <div class="seg" style="background:#0000001a;"><b class="on" style="padding:5px 9px;">⚔</b><b style="padding:5px 9px;">🛡</b><b style="padding:5px 9px;">⛑</b></div></div>
+      <div class="card sel"><div class="ic"><svg width="19" height="19" viewBox="0 0 24 24" style="color:#8893a6"><use href="#sword"/></svg></div><div class="t"><div class="n">Steel Sword</div><div class="d">+12 ATK</div></div><div class="delta-up">▲ +4</div></div>
+      <div class="card"><div class="ic"><svg width="19" height="19" viewBox="0 0 24 24" style="color:#b07a36"><use href="#sword"/></svg></div><div class="t"><div class="n">Bronze Sword</div><div class="d">+5 ATK</div></div><div class="delta-dn">▼ −3</div></div>
+    </div>
+    <div class="tabbar">
+      <button class="tab"><svg class="ic" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="2"/><path d="M5 20c0-4 3-6 7-6s7 2 7 6" stroke="currentColor" stroke-width="2"/></svg>Status</button>
+      <button class="tab"><svg class="ic" viewBox="0 0 24 24" fill="none"><path d="M5 8h14l-1 11H6L5 8z" stroke="currentColor" stroke-width="2"/><path d="M9 8V6a3 3 0 016 0v2" stroke="currentColor" stroke-width="2"/></svg>Items</button>
+      <button class="tab on"><svg class="ic" viewBox="0 0 24 24"><use href="#sword"/></svg>Equip</button>
+      <button class="tab"><svg class="ic" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3" stroke="currentColor" stroke-width="2"/></svg>Settings</button>
+    </div>
+  </div></div><div class="cap"><b>Menu · Equip</b> — slots + ▲▼ stat preview</div></div>
+
+  <!-- MENU: SETTINGS -->
+  <div class="fw"><div class="phone"><div class="island"></div><div class="screen">
+    <div class="sbar"><span class="clock">9:41</span><span class="meta"><i></i><i></i><i></i><span class="bat"></span></span></div>
+    <div class="topbar"><div class="av"><svg class="spr" width="28" height="28" viewBox="0 0 16 16"><rect x="5" y="1" width="6" height="2" fill="#e0584f"/><rect x="4" y="3" width="8" height="4" fill="#9fb3c8"/><rect x="4" y="7" width="8" height="5" fill="#3b63c4"/></svg></div><div class="who"><div class="nm">Aria</div><div class="lv">Lv 5</div></div><div class="coins">◎ 50</div></div>
+    <div class="pad stack g8"><div class="eyebrow">Settings</div>
+      <div class="setrow"><span class="lab">Difficulty</span><span class="val">Grade 3 ›</span></div>
+      <div class="setrow"><span class="lab">Language</span><div class="toggle" style="background:#0000002a;"><span class="on">EN</span><span style="color:#d8cba8;">日本語</span></div></div>
+      <div class="setrow"><span class="lab">Sound</span><div class="switch on"></div></div>
+      <div class="setrow"><span class="lab">Quiz Timer</span><div class="switch"></div></div>
+      <div class="setrow"><span class="lab" style="flex:none;width:78px;">Volume</span><div class="slider"><i></i><b></b></div></div>
+      <div class="setrow sel" style="flex-direction:column;align-items:stretch;gap:9px;"><span class="lab">Controls (phone / tablet)</span><div class="seg"><b>◀ Left</b><b class="on">Center</b><b>Right ▶</b></div></div>
+    </div>
+    <div class="tabbar">
+      <button class="tab"><svg class="ic" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="2"/><path d="M5 20c0-4 3-6 7-6s7 2 7 6" stroke="currentColor" stroke-width="2"/></svg>Status</button>
+      <button class="tab"><svg class="ic" viewBox="0 0 24 24" fill="none"><path d="M5 8h14l-1 11H6L5 8z" stroke="currentColor" stroke-width="2"/><path d="M9 8V6a3 3 0 016 0v2" stroke="currentColor" stroke-width="2"/></svg>Items</button>
+      <button class="tab"><svg class="ic" viewBox="0 0 24 24"><use href="#sword"/></svg>Equip</button>
+      <button class="tab on"><svg class="ic" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke="#43340f" stroke-width="2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2" stroke="#43340f" stroke-width="2"/></svg>Settings</button>
+    </div>
+  </div></div><div class="cap"><b>Menu · Settings</b> — toggles, slider, control side</div></div>
+
+</div>
+
+<div class="sec">③ Battle &nbsp;·&nbsp; ④ Shop &nbsp;·&nbsp; ⑤ Healer</div>
+<div class="gallery">
+
+  <!-- BATTLE: ACTION MENU -->
+  <div class="fw"><div class="phone"><div class="island"></div><div class="screen">
+    <div class="sbar"><span class="clock">9:41</span><span class="meta"><i></i><i></i><i></i><span class="bat"></span></span></div>
+    <div class="enemy-stage">
+      <div class="enemy-card"><div style="flex:1;"><div style="font-weight:800;color:#ffd9a6;font-size:14px;">Shadow Wolf</div><div class="hp dark mt6"><i style="width:74%;background:linear-gradient(180deg,#ef6a60,#bb3a32);"></i></div></div><div style="font-size:12px;font-weight:800;color:#ffd9a6;">Lv 6</div></div>
+      <svg class="spr" width="120" height="120" viewBox="0 0 16 16" style="margin-top:24px;filter:drop-shadow(0 7px 8px #000a);"><rect x="3" y="4" width="10" height="7" fill="#5b4a78"/><rect x="2" y="6" width="2" height="3" fill="#5b4a78"/><rect x="12" y="6" width="2" height="3" fill="#5b4a78"/><rect x="4" y="2" width="2" height="2" fill="#5b4a78"/><rect x="10" y="2" width="2" height="2" fill="#5b4a78"/><rect x="5" y="6" width="2" height="2" fill="#ffd23a"/><rect x="9" y="6" width="2" height="2" fill="#ffd23a"/><rect x="4" y="11" width="2" height="3" fill="#3d3152"/><rect x="10" y="11" width="2" height="3" fill="#3d3152"/></svg>
+    </div>
+    <div class="pad stack g10" style="padding-bottom:18px;">
+      <div class="msg" style="text-align:center;">What will <b style="color:var(--gold);">Aria</b> do?</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <button class="btn btn-ruby sel"><svg class="ic" viewBox="0 0 24 24" style="color:#fff"><use href="#sword"/></svg>Attack</button>
+        <button class="btn btn-sky"><svg class="ic" viewBox="0 0 24 24" fill="none"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6l7-3z" stroke="#fff" stroke-width="2"/></svg>Defend</button>
+        <button class="btn btn-em"><svg class="ic" viewBox="0 0 24 24" style="color:#fff"><use href="#potion"/></svg>Item</button>
+        <button class="btn btn-slate"><svg class="ic" viewBox="0 0 24 24" style="color:#fff"><use href="#run"/></svg>Run</button>
+      </div>
+      <div class="row" style="background:#0d0f22cc;border:2px solid var(--gold-line);border-radius:13px;padding:9px 11px;"><div class="av" style="width:36px;height:36px;"><svg class="spr" width="22" height="22" viewBox="0 0 16 16"><rect x="5" y="1" width="6" height="2" fill="#e0584f"/><rect x="4" y="3" width="8" height="4" fill="#9fb3c8"/><rect x="4" y="7" width="8" height="5" fill="#3b63c4"/></svg></div><div style="flex:1;"><div style="font-weight:800;color:#fdf3da;font-size:12px;margin-bottom:5px;">Aria · Lv 5</div><div class="hp dark"><i style="width:80%;"></i></div></div><div style="font-size:11px;font-weight:800;color:#ffeac0;">48/60</div></div>
+    </div>
+  </div></div><div class="cap"><b>Battle · Actions</b> — sword + runner icons</div></div>
+
+  <!-- SHOP -->
+  <div class="fw"><div class="phone"><div class="island"></div><div class="screen">
+    <div class="sbar"><span class="clock">9:41</span><span class="meta"><i></i><i></i><i></i><span class="bat"></span></span></div>
+    <div class="topbar"><div class="av" style="background:linear-gradient(160deg,#5a3f2a,#3a2818);"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="9" r="4" stroke="#e0b757" stroke-width="2"/><path d="M5 21c0-4 3-6 7-6s7 2 7 6" stroke="#e0b757" stroke-width="2"/></svg></div><div class="who"><div class="nm">General Store</div><div class="lv">“Welcome, traveler!”</div></div><div class="coins">◎ 50</div></div>
+    <div class="pad stack g8"><div class="seg" style="background:#0000002a;"><b class="on">Buy</b><b style="color:#d8cba8;">Sell</b><b style="color:#d8cba8;">Leave</b></div>
+      <div class="card sel" style="margin-top:2px;"><div class="ic"><svg width="20" height="20" viewBox="0 0 24 24"><path d="M12 21s-7-4.5-7-10a4 4 0 018-1 4 4 0 018 1c0 5.5-7 10-7 10z" fill="#5fcc63" stroke="#2f9c5b" stroke-width="1.5"/></svg></div><div class="t"><div class="n">Healing Herb</div><div class="cnt">In your bag: ×3</div><div class="d">Restores 30 HP</div></div><div class="pill" style="background:#e0b75726;color:#8a6a26;">8 G</div></div>
+      <div class="card"><div class="ic"><svg width="19" height="19" viewBox="0 0 24 24" style="color:#8893a6"><use href="#sword"/></svg></div><div class="t"><div class="n">Iron Sword</div><div class="d">+8 ATK</div></div><div class="pill" style="background:#e0b75726;color:#8a6a26;">60 G</div></div>
+      <div class="card" style="opacity:.72;"><div class="ic"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" style="color:#3f86c4"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6l7-3z" stroke="currentColor" stroke-width="2"/></svg></div><div class="t"><div class="n">Leather Armor</div><div class="d">+5 DEF</div></div><div class="pill" style="background:#00000014;color:var(--ink-soft);">Owned</div></div>
+      <button class="btn btn-gold mt6"><svg class="ic" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#43340f" stroke-width="2.4"/></svg>Done</button>
+    </div>
+  </div></div><div class="cap"><b>Shop</b> — “have ×N” + price tags</div></div>
+
+  <!-- HEALER -->
+  <div class="fw"><div class="phone"><div class="island"></div><div class="screen">
+    <div class="sbar"><span class="clock">9:41</span><span class="meta"><i></i><i></i><i></i><span class="bat"></span></span></div>
+    <div class="stack" style="flex:1;justify-content:center;padding:0 18px;gap:16px;">
+      <div style="display:grid;place-items:center;gap:12px;">
+        <div style="width:100px;height:100px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(closest-side,#dff6e6,#bfe6cf);box-shadow:0 0 0 3px #5fcc6355,0 0 34px #5fcc6340,inset 0 0 0 2px #fff;">
+          <svg width="56" height="56" viewBox="0 0 24 24" fill="none"><path d="M12 21s-7-4.5-7-10a4 4 0 018-1 4 4 0 018 1c0 5.5-7 10-7 10z" fill="#5fcc63" stroke="#2f9c5b" stroke-width="1.4"/><path d="M8.3 4.7v5.4M5.6 7.4h5.4" stroke="#15532d" stroke-width="3.8" stroke-linecap="round"/><path d="M8.3 4.7v5.4M5.6 7.4h5.4" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+        </div>
+        <div class="scene-h">Rest &amp; Recover</div>
+        <div class="scene-s">The healer can restore all your HP.</div>
+      </div>
+      <div class="panel" style="padding:15px 16px;">
+        <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:800;color:var(--ink-soft);margin-bottom:8px;"><span>HP</span><span>28 → <b style="color:#1f8a44;">60</b></span></div>
+        <div class="hp" style="height:14px;background:#e7d3a8;"><i style="width:100%;background:linear-gradient(90deg,#7ee07e,#5fcc63);"></i></div>
+        <div style="text-align:center;margin-top:14px;font-size:15px;font-weight:800;color:var(--ink);">Cost: <span style="color:#8a6a26;">25 G</span></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:10px;">
+        <button class="btn btn-em sel"><svg class="ic" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#fff" stroke-width="2.4"/></svg>Heal</button>
+        <button class="btn btn-slate">Not now</button>
+      </div>
+    </div>
+  </div></div><div class="cap"><b>Healer</b> — confirm heal for gold</div></div>
+
+</div>
+</body>
+</html>

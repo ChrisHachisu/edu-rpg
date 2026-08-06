@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Quest of Knowledge — Style Directions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;700;800;900&family=Baloo+2:wght@500;700;800&family=Quicksand:wght@500;600;700&family=Varela+Round&family=DotGothic16&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'M PLUS Rounded 1c',system-ui,sans-serif;background:radial-gradient(1000px 600px at 50% -10%,#23264d,transparent 60%),#0c0d1c;color:#ece3cf;padding:34px 20px 60px;}
+  .head{max-width:1320px;margin:0 auto 8px;text-align:center;}
+  .head .k{font-size:13px;letter-spacing:.3em;text-transform:uppercase;color:#e0b757;font-weight:800;}
+  .head h1{font-size:30px;font-weight:900;color:#fdf6e6;margin:6px 0 6px;}
+  .head p{color:#a9a2c0;font-size:14.5px;max-width:680px;margin:0 auto;line-height:1.5;}
+  .gallery{display:flex;gap:30px 26px;justify-content:center;align-items:flex-start;flex-wrap:wrap;max-width:1320px;margin:28px auto 0;}
+  .fw{display:flex;flex-direction:column;align-items:center;gap:11px;width:300px;}
+  .cap{text-align:center;}
+  .cap .nm{font-weight:900;font-size:17px;color:#fdf3da;}
+  .cap .ds{font-size:12.5px;color:#a9a2c0;margin-top:2px;line-height:1.4;}
+  .sw{display:flex;gap:5px;justify-content:center;margin-top:7px;}
+  .sw i{width:18px;height:18px;border-radius:6px;display:block;box-shadow:inset 0 0 0 1px #ffffff20;}
+
+  /* device */
+  .phone{width:300px;height:638px;border-radius:38px;background:#05060d;padding:10px;position:relative;box-shadow:0 24px 48px rgba(0,0,0,.55),inset 0 0 0 2px #2a2c3e,0 0 0 5px #15161f;}
+  .notch{position:absolute;top:10px;left:50%;transform:translateX(-50%);width:96px;height:23px;background:#05060d;border-radius:0 0 14px 14px;z-index:30;}
+  .screen{width:100%;height:100%;border-radius:28px;overflow:hidden;position:relative;display:flex;flex-direction:column;}
+
+  /* ===== shared battle layout (themed below) ===== */
+  .bz{display:flex;flex-direction:column;height:100%;}
+  .estage{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;padding-top:10px;}
+  .ebar{position:absolute;top:12px;left:12px;right:12px;display:flex;align-items:center;gap:9px;padding:8px 10px;z-index:4;}
+  .ebar .nm{font-weight:800;font-size:13px;}
+  .spr{image-rendering:pixelated;margin-top:24px;filter:drop-shadow(0 7px 8px #000a);}
+  .pad{padding:0 13px 14px;}
+  .msg{padding:10px 12px;font-size:13px;line-height:1.4;}
+  .qcard{margin-top:10px;padding:13px 13px 15px;}
+  .timer{height:7px;border-radius:99px;overflow:hidden;margin-bottom:9px;}
+  .timer i{display:block;height:100%;width:66%;}
+  .q{text-align:center;font-size:27px;font-weight:900;margin:3px 0 13px;}
+  .agrid{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+  .ans{font-family:inherit;cursor:pointer;font-size:20px;font-weight:900;padding:14px 8px;position:relative;text-align:center;}
+  .ans .k{position:absolute;top:5px;left:7px;font-size:10px;font-weight:800;opacity:.7;}
+  .pbar{display:flex;align-items:center;gap:9px;margin-top:11px;padding:8px 11px;}
+  .pbar .nm{font-weight:800;font-size:12px;}
+  .hp{height:10px;border-radius:99px;overflow:hidden;flex:1;}
+  .hp i{display:block;height:100%;}
+  .hpnum{font-size:11px;font-weight:800;white-space:nowrap;}
+  .av{width:34px;height:34px;border-radius:10px;flex:none;display:grid;place-items:center;}
+
+  /* ============ THEME 1 — STORYBOOK QUEST (warm parchment / gold) ============ */
+  .t-story{font-family:'M PLUS Rounded 1c';}
+  .t-story .screen{background:radial-gradient(400px 280px at 22% -4%,#25284f,transparent 60%),linear-gradient(180deg,#161834,#101126);}
+  .t-story .ebar{background:#0d0f22cc;border:2px solid #9a7a36;border-radius:12px;}
+  .t-story .ebar .nm{color:#ffd9a6;}
+  .t-story .msg{background:#0d0f22e0;border:2px solid #9a7a36;border-radius:13px;color:#f2ead2;}
+  .t-story .msg b{color:#e0b757;}
+  .t-story .qcard{background:linear-gradient(180deg,#f3e7c6,#ecdcb1);border:2px solid #9a7a36;border-radius:16px;box-shadow:0 10px 22px #0006,inset 0 0 0 2px #f7eecf;}
+  .t-story .q{color:#4a3a21;}
+  .t-story .timer{background:#0000002a;} .t-story .timer i{background:linear-gradient(90deg,#5fcc63,#e3b84a);}
+  .t-story .ans{background:linear-gradient(180deg,#fbf2d6,#efe0b6);color:#4a3a21;border:2px solid #9a7a36;border-radius:13px;box-shadow:0 4px 0 #b39a5e;}
+  .t-story .ans.sel{outline:3px solid #e0b757;outline-offset:2px;box-shadow:0 0 0 3px #e0b75788,0 4px 0 #b39a5e;}
+  .t-story .pbar{background:#0d0f22cc;border:2px solid #9a7a36;border-radius:12px;}
+  .t-story .pbar .nm{color:#fdf3da;} .t-story .hp{background:#2a1c1c;} .t-story .hp i{background:linear-gradient(180deg,#7ee07e,#5fcc63);} .t-story .hpnum{color:#ffeac0;}
+  .t-story .av{background:linear-gradient(160deg,#2a2e58,#1b1d3a);box-shadow:inset 0 0 0 2px #c79a3f;}
+
+  /* ============ THEME 2 — ARCADE POP (bright candy, light) ============ */
+  .t-arcade{font-family:'Baloo 2';}
+  .t-arcade .screen{background:radial-gradient(360px 260px at 18% 0,#bdf3ec,transparent 60%),radial-gradient(360px 300px at 110% 10%,#ffd9d2,transparent 55%),linear-gradient(180deg,#fdfbf2,#eef3fb);color:#1f2b4d;}
+  .t-arcade .ebar{background:#fff;border:3px solid #16b5a6;border-radius:15px;box-shadow:0 5px 0 #0e8b80;}
+  .t-arcade .ebar .nm{color:#0e8b80;}
+  .t-arcade .msg{background:#fff;border:3px solid #ffc23c;border-radius:15px;color:#5a4a2a;box-shadow:0 4px 0 #e0a324;font-weight:700;}
+  .t-arcade .msg b{color:#ff6b6b;}
+  .t-arcade .qcard{background:#fff;border:3px solid #8b5cf6;border-radius:20px;box-shadow:0 7px 0 #6d3fd6,0 12px 22px #0002;}
+  .t-arcade .q{color:#2a1d54;}
+  .t-arcade .timer{background:#e7ecf5;} .t-arcade .timer i{background:linear-gradient(90deg,#16b5a6,#ffc23c);}
+  .t-arcade .ans{background:#fff;color:#1f2b4d;border:3px solid #16b5a6;border-radius:16px;box-shadow:0 5px 0 #0e8b80;}
+  .t-arcade .ans.sel{background:linear-gradient(180deg,#ff8a8a,#ff6b6b);color:#fff;border-color:#d8453d;box-shadow:0 5px 0 #c0382f;}
+  .t-arcade .pbar{background:#fff;border:3px solid #ffc23c;border-radius:15px;box-shadow:0 4px 0 #e0a324;}
+  .t-arcade .pbar .nm{color:#5a4a2a;} .t-arcade .hp{background:#e7ecf5;} .t-arcade .hp i{background:linear-gradient(180deg,#7fe0b8,#16b5a6);} .t-arcade .hpnum{color:#0e8b80;}
+  .t-arcade .av{background:linear-gradient(160deg,#dff7f4,#bdeee7);box-shadow:inset 0 0 0 2px #16b5a6;}
+
+  /* ============ THEME 3 — MIDNIGHT CRYSTAL (dark jewel glass) ============ */
+  .t-crystal{font-family:'Quicksand';}
+  .t-crystal .screen{background:radial-gradient(380px 300px at 25% -5%,#2a1f55,transparent 60%),radial-gradient(360px 320px at 115% 12%,#13324d,transparent 55%),#070911;}
+  .t-crystal .screen::after{content:"";position:absolute;inset:0;pointer-events:none;background-image:radial-gradient(1.3px 1.3px at 40px 90px,#9fe9ff88,transparent),radial-gradient(1.2px 1.2px at 220px 160px,#f5c45166,transparent),radial-gradient(1.3px 1.3px at 110px 330px,#e85cc055,transparent),radial-gradient(1.1px 1.1px at 250px 470px,#fff5,transparent);}
+  .t-crystal .ebar{background:#0e1430aa;border:1px solid #38e1d066;border-radius:13px;backdrop-filter:blur(6px);box-shadow:0 0 18px #38e1d022,inset 0 0 0 1px #ffffff10;}
+  .t-crystal .ebar .nm{color:#9ff0e6;}
+  .t-crystal .msg{background:#0e1430aa;border:1px solid #f5c45155;border-radius:13px;color:#dfe7ff;backdrop-filter:blur(6px);font-weight:600;}
+  .t-crystal .msg b{color:#38e1d0;}
+  .t-crystal .qcard{background:#10173aaa;border:1px solid #6fd8ff55;border-radius:18px;backdrop-filter:blur(8px);box-shadow:0 0 26px #38e1d01f,inset 0 0 0 1px #ffffff12;}
+  .t-crystal .q{color:#eaf2ff;text-shadow:0 0 14px #6fd8ff55;font-weight:700;}
+  .t-crystal .timer{background:#ffffff14;} .t-crystal .timer i{background:linear-gradient(90deg,#38e1d0,#f5c451);box-shadow:0 0 8px #38e1d0aa;}
+  .t-crystal .ans{background:#131c44cc;color:#eaf2ff;border:1px solid #6fd8ff44;border-radius:15px;box-shadow:inset 0 0 0 1px #ffffff0d;font-weight:700;}
+  .t-crystal .ans.sel{border-color:#38e1d0;color:#eafffb;box-shadow:0 0 18px #38e1d077,inset 0 0 12px #38e1d022;}
+  .t-crystal .pbar{background:#0e1430aa;border:1px solid #38e1d055;border-radius:13px;backdrop-filter:blur(6px);}
+  .t-crystal .pbar .nm{color:#dfe7ff;} .t-crystal .hp{background:#ffffff14;} .t-crystal .hp i{background:linear-gradient(180deg,#7ff0a0,#38d07a);box-shadow:0 0 8px #38d07a99;} .t-crystal .hpnum{color:#9ff0e6;}
+  .t-crystal .av{background:linear-gradient(160deg,#1a2350,#0c1130);box-shadow:inset 0 0 0 1px #38e1d066;}
+
+  /* ============ THEME 4 — SKY KINGDOM (pastel clay, light airy) ============ */
+  .t-sky{font-family:'Varela Round';}
+  .t-sky .screen{background:linear-gradient(180deg,#bfe3ff 0%,#d8d2ff 48%,#ffe0d6 100%);color:#43506b;}
+  .t-sky .screen::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(60px 30px at 60px 120px,#ffffffcc,transparent),radial-gradient(80px 36px at 230px 90px,#ffffffaa,transparent),radial-gradient(70px 32px at 150px 300px,#ffffff99,transparent);}
+  .t-sky .ebar{background:#fffdf8;border:none;border-radius:18px;box-shadow:0 6px 14px #8aa0c840,inset 0 -3px 6px #c9d6ee55,inset 0 2px 3px #fff;}
+  .t-sky .ebar .nm{color:#5a6a98;}
+  .t-sky .msg{background:#fffdf8;border-radius:18px;color:#5a6a8e;box-shadow:0 6px 14px #8aa0c840,inset 0 -3px 6px #c9d6ee55;}
+  .t-sky .msg b{color:#ff9b7d;}
+  .t-sky .qcard{background:#fffdf8;border-radius:24px;box-shadow:0 10px 22px #8aa0c84d,inset 0 -4px 8px #c9d6ee66,inset 0 3px 4px #fff;}
+  .t-sky .q{color:#41507a;}
+  .t-sky .timer{background:#e3e8f5;} .t-sky .timer i{background:linear-gradient(90deg,#7fe0b8,#7cc4f0);}
+  .t-sky .ans{background:#fffdf8;color:#41507a;border-radius:18px;box-shadow:0 6px 0 #cdd8ee,0 9px 16px #8aa0c83a,inset 0 2px 2px #fff;}
+  .t-sky .ans.sel{background:linear-gradient(180deg,#9be3c4,#7fe0b8);color:#1f5a44;box-shadow:0 6px 0 #58c79b,inset 0 2px 3px #ffffff80;}
+  .t-sky .pbar{background:#fffdf8;border-radius:18px;box-shadow:0 6px 14px #8aa0c840,inset 0 -3px 6px #c9d6ee55;}
+  .t-sky .pbar .nm{color:#5a6a98;} .t-sky .hp{background:#e3e8f5;} .t-sky .hp i{background:linear-gradient(180deg,#9be3c4,#7fe0b8);} .t-sky .hpnum{color:#5a8a72;}
+  .t-sky .av{background:linear-gradient(160deg,#e6f1ff,#cfe0fb);box-shadow:inset 0 0 0 2px #9bbef0;}
+
+  /* ============ THEME 5 — PIXEL FORGE (retro pixel, dark blue) ============ */
+  .t-pixel{font-family:'DotGothic16';}
+  .t-pixel .screen{background:linear-gradient(180deg,#0b1030,#070a1e);}
+  .t-pixel .screen::before{content:"";position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(#ffffff08 1px,transparent 1px),linear-gradient(90deg,#ffffff08 1px,transparent 1px);background-size:14px 14px;}
+  .t-pixel .ebar{background:#14266e;border-radius:0;box-shadow:0 0 0 2px #fff,0 0 0 4px #0a1340;}
+  .t-pixel .ebar .nm{color:#ffd23a;}
+  .t-pixel .msg{background:#0a1340;border-radius:0;color:#fff;box-shadow:0 0 0 2px #fff,0 0 0 4px #0a1340;font-size:12px;}
+  .t-pixel .msg b{color:#ffd23a;}
+  .t-pixel .qcard{background:#14266e;border-radius:0;box-shadow:0 0 0 3px #fff,0 0 0 6px #0a1340;}
+  .t-pixel .q{color:#fff;}
+  .t-pixel .timer{background:#0a1340;border-radius:0;box-shadow:inset 0 0 0 1px #ffffff40;} .t-pixel .timer i{background:#5fcc63;border-radius:0;}
+  .t-pixel .ans{background:#0a1340;color:#fff;border-radius:0;box-shadow:0 0 0 2px #6f86d8;font-size:18px;}
+  .t-pixel .ans.sel{box-shadow:0 0 0 3px #ffd23a;color:#ffd23a;}
+  .t-pixel .pbar{background:#14266e;border-radius:0;box-shadow:0 0 0 2px #fff,0 0 0 4px #0a1340;}
+  .t-pixel .pbar .nm{color:#fff;} .t-pixel .hp{background:#0a1340;border-radius:0;box-shadow:inset 0 0 0 1px #ffffff40;} .t-pixel .hp i{background:#5fcc63;border-radius:0;} .t-pixel .hpnum{color:#ffd23a;}
+  .t-pixel .av{background:#0a1340;border-radius:0;box-shadow:0 0 0 2px #6f86d8;}
+  .t-pixel .q,.t-pixel .ans,.t-pixel .nm,.t-pixel .msg,.t-pixel .hpnum{text-shadow:1px 1px 0 #00000080;}
+</style>
+</head>
+<body>
+  <div class="head">
+    <div class="k">Quest of Knowledge · pick a direction</div>
+    <h1>5 UI styles · same screen (Battle)</h1>
+    <p>Each is a full color theme + font + “feel”. All are touch-first, work with keyboard (A–D keys + the highlighted “selected” state), and keep the pixel sprites. Pick one (or mix — e.g. “3’s colors, 1’s panels”).</p>
+  </div>
+  <div class="gallery" id="g"></div>
+
+  <template id="tpl">
+    <div class="bz">
+      <div class="estage">
+        <div class="ebar"><div style="flex:1;"><div class="nm">Shadow Wolf</div><div class="hp" style="margin-top:6px;"><i style="width:74%;background:linear-gradient(180deg,#ef6a60,#bb3a32);"></i></div></div><div class="hpnum">Lv 6</div></div>
+        <svg class="spr" width="118" height="118" viewBox="0 0 16 16"><rect x="3" y="4" width="10" height="7" fill="#5b4a78"/><rect x="2" y="6" width="2" height="3" fill="#5b4a78"/><rect x="12" y="6" width="2" height="3" fill="#5b4a78"/><rect x="4" y="2" width="2" height="2" fill="#5b4a78"/><rect x="10" y="2" width="2" height="2" fill="#5b4a78"/><rect x="5" y="6" width="2" height="2" fill="#ffd23a"/><rect x="9" y="6" width="2" height="2" fill="#ffd23a"/><rect x="4" y="11" width="2" height="3" fill="#3d3152"/><rect x="10" y="11" width="2" height="3" fill="#3d3152"/></svg>
+      </div>
+      <div class="pad">
+        <div class="msg"><b>A riddle of knowledge!</b> Answer to strike.</div>
+        <div class="qcard">
+          <div class="timer"><i></i></div>
+          <div class="q">16 + 20 = ?</div>
+          <div class="agrid">
+            <button class="ans sel"><span class="k">A</span>36</button>
+            <button class="ans"><span class="k">B</span>37</button>
+            <button class="ans"><span class="k">C</span>26</button>
+            <button class="ans"><span class="k">D</span>46</button>
+          </div>
+        </div>
+        <div class="pbar"><div class="av"><svg width="22" height="22" viewBox="0 0 16 16"><rect x="5" y="1" width="6" height="2" fill="#e0584f"/><rect x="4" y="3" width="8" height="4" fill="#9fb3c8"/><rect x="4" y="7" width="8" height="5" fill="#3b63c4"/></svg></div><div style="flex:1;"><div class="nm">Aria · Lv 5</div><div class="hp" style="margin-top:5px;"><i style="width:80%;background:#5fcc63;"></i></div></div><div class="hpnum">48/60</div></div>
+      </div>
+    </div>
+  </template>
+
+  <script>
+    const styles=[
+      {t:'t-story',  nm:'1 · Storybook Quest', ds:'Warm parchment + gold on slate. Cozy fantasy. (M PLUS Rounded)', sw:['#f3e7c6','#e0b757','#161834','#5fcc63']},
+      {t:'t-arcade', nm:'2 · Arcade Pop',       ds:'Bright candy, white cards, chunky 3D buttons. (Baloo 2)',        sw:['#ffffff','#16b5a6','#ff6b6b','#ffc23c']},
+      {t:'t-crystal',nm:'3 · Midnight Crystal', ds:'Dark glassy panels, neon-jewel glow. Premium. (Quicksand)',      sw:['#070911','#38e1d0','#e85cc0','#f5c451']},
+      {t:'t-sky',    nm:'4 · Sky Kingdom',      ds:'Soft pastel clay, airy + gentle. Younger-kid. (Varela Round)',   sw:['#bfe3ff','#7fe0b8','#ff9b7d','#c4a8f0']},
+      {t:'t-pixel',  nm:'5 · Pixel Forge',      ds:'Retro JRPG pixel boxes, enlarged for touch. (DotGothic16)',      sw:['#14266e','#ffd23a','#fff','#5fcc63']},
+    ];
+    const g=document.getElementById('g'), tpl=document.getElementById('tpl');
+    for(const s of styles){
+      const fw=document.createElement('div');fw.className='fw';
+      const ph=document.createElement('div');ph.className='phone '+s.t;
+      ph.innerHTML='<div class="notch"></div>';
+      const sc=document.createElement('div');sc.className='screen';
+      sc.appendChild(tpl.content.cloneNode(true));
+      ph.appendChild(sc);fw.appendChild(ph);
+      const cap=document.createElement('div');cap.className='cap';
+      cap.innerHTML='<div class="nm">'+s.nm+'</div><div class="ds">'+s.ds+'</div><div class="sw">'+s.sw.map(c=>'<i style="background:'+c+'"></i>').join('')+'</div>';
+      fw.appendChild(cap);g.appendChild(fw);
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,96 @@
+# Quest of Knowledge (edu-rpg) -> TestFlight, fully local.
+#
+# Capacitor 7 iOS app (web bundle in ios/App/App/public; offline localStorage saves,
+# no Supabase/server). Unlike biotower (standalone Godot xcodeproj), this archives the
+# CAPACITOR WORKSPACE (App.xcworkspace, scheme "App") and must scope manual signing to
+# the "App" target only -- the Pods targets must stay untouched.
+#
+# Reuses the ChalkMap G.K. ASC API key + the dedicated cmbuild keychain (push-to-testflight
+# skill / biotower Fastfile). Run with UTF-8 locale from the project root:
+#   export LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 && fastlane register   # one-time: create ASC app record
+#   export LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 && fastlane beta       # build + upload
+#
+# The bundle id is registered in the dev portal already (id YDNTX49R89), so produce runs
+# with skip_devcenter: true (ASC app record only).
+
+require 'json'
+default_platform(:ios)
+
+ROOT          = "/Users/christopherhachisu/Documents/claudecode/edu-rpg"
+APP_ID        = "app.chalkmap.questofknowledge"
+APP_NAME      = "Quest of Knowledge"
+SKU           = "questofknowledge2026"
+TEAM_ID       = "M969PWP3PU"
+ASC_KEY_ID    = "52937L4S9H"
+ASC_ISSUER_ID = "006a572e-afa8-464e-8f46-ce19bd161a9f"
+ASC_KEY_PATH  = "/Users/christopherhachisu/Documents/claudecode/chalkmap-v2/.eas-credentials/AuthKey_52937L4S9H.p8"
+WORKSPACE     = "#{ROOT}/ios/App/App.xcworkspace"
+PROJECT       = "#{ROOT}/ios/App/App.xcodeproj"
+SCHEME        = "App"
+OUTPUT_DIR    = "#{ROOT}/ios/App/output"
+SIGNING_DIR   = "/tmp/edurpg-signing"
+KEYCHAIN_NAME = "cmbuild.keychain"
+KEYCHAIN_PATH = File.expand_path("~/Library/Keychains/#{KEYCHAIN_NAME}-db")
+KEYCHAIN_PW   = "cmbuild-local-throwaway"
+APP_VERSION   = "1.0"
+
+def asc_key
+  app_store_connect_api_key(key_id: ASC_KEY_ID, issuer_id: ASC_ISSUER_ID, key_filepath: ASC_KEY_PATH, in_house: false)
+end
+
+platform :ios do
+  desc "One-time: create the App Store Connect app record for #{APP_ID}"
+  lane :register do
+    produce(
+      api_key: asc_key,
+      app_identifier: APP_ID,
+      app_name: APP_NAME,
+      language: "English",
+      sku: SKU,
+      team_id: TEAM_ID,
+      skip_devcenter: true,            # bundle id already registered (YDNTX49R89)
+      platforms: ["ios"]
+    )
+    UI.success("ASC app record ensured for #{APP_NAME} (#{APP_ID}).")
+  end
+
+  desc "Build the Capacitor iOS app locally + upload to TestFlight via the ASC API key"
+  lane :beta do
+    api_key = asc_key
+
+    # Dedicated build keychain (known throwaway pw) so codesign never prompts.
+    if File.exist?(KEYCHAIN_PATH)
+      unlock_keychain(path: KEYCHAIN_NAME, password: KEYCHAIN_PW, add_to_search_list: true, set_default: false)
+    else
+      create_keychain(name: KEYCHAIN_NAME, password: KEYCHAIN_PW, default_keychain: false, unlock: true, timeout: 3600, lock_when_sleeps: false, add_to_search_list: true)
+    end
+
+    # Distribution cert into the dedicated keychain (reused across ChalkMap GK apps).
+    cert(api_key: api_key, keychain_path: KEYCHAIN_PATH, keychain_password: KEYCHAIN_PW, output_path: SIGNING_DIR)
+    cert_sha1 = sh("security find-identity -v -p codesigning '#{KEYCHAIN_PATH}' | grep 'Apple Distribution' | head -1 | awk '{print $2}'").strip
+
+    login_kc = File.expand_path("~/Library/Keychains/login.keychain-db")
+    sh("security list-keychains -d user -s '#{KEYCHAIN_PATH}' '#{login_kc}'")
+    sh("security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k '#{KEYCHAIN_PW}' '#{KEYCHAIN_PATH}' >/dev/null 2>&1; true")
+
+    # Fresh App Store provisioning profile for the bundle id via the API key.
+    sigh(api_key: api_key, app_identifier: APP_ID, output_path: SIGNING_DIR, force: true)
+    profile_name = lane_context[SharedValues::SIGH_NAME]
+
+    # Manual distribution signing scoped to the App target ONLY (leave Pods alone).
+    update_code_signing_settings(use_automatic_signing: false, path: PROJECT, team_id: TEAM_ID,
+      code_sign_identity: "Apple Distribution", profile_name: profile_name, targets: ["App"])
+
+    latest = latest_testflight_build_number(app_identifier: APP_ID, api_key: api_key, version: APP_VERSION, initial_build_number: 0)
+    build_num = [latest, 0].max + 1
+    UI.important("Quest of Knowledge #{APP_VERSION}: TestFlight latest = #{latest} -> building #{build_num}")
+
+    build_app(workspace: WORKSPACE, scheme: SCHEME, configuration: "Release", export_method: "app-store",
+      output_directory: OUTPUT_DIR, output_name: "questofknowledge.ipa", clean: true,
+      xcargs: "MARKETING_VERSION=#{APP_VERSION} CURRENT_PROJECT_VERSION=#{build_num} -allowProvisioningUpdates",
+      export_options: { signingStyle: "manual", teamID: TEAM_ID, provisioningProfiles: { APP_ID => profile_name } })
+
+    upload_to_testflight(api_key: api_key, app_identifier: APP_ID, skip_submission: true, skip_waiting_for_build_processing: true)
+    UI.success("Uploaded Quest of Knowledge #{APP_VERSION} (#{build_num}) to TestFlight - processing ~5-15 min.")
+  end
+end

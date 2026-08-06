@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="fastlane.lanes">
+    
+    
+    
+      
+      <testcase classname="fastlane.lanes" name="00: default_platform" time="0.000489">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="01: app_store_connect_api_key" time="0.004117">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="02: unlock_keychain" time="0.049507">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="03: cert" time="1.28696">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="04: security find-identity -v -p codesigning &apos;/Users/christopherhachisu/Library/Keychains/cmbuild.keychain-db&apos; | grep &apos;Apple Distribution&apos; | head -1 | awk &apos;{print $2}&apos;" time="0.042889">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="05: security list-keychains -d user -s &apos;/Users/christopherhachisu/Library/Keychains/cmbuild.keychain-db&apos; &apos;/Users/christopherhachisu/Library/Keychains/login.keychain-db&apos;" time="0.017662">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="06: security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k &apos;cmbuild-local-throwaway&apos; &apos;/Users/christopherhachisu/Library/Keychains/cmbuild.keychain-db&apos; &gt;/dev/null 2&gt;&amp;1; true" time="0.034791">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="07: sigh" time="4.924087">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="08: update_code_signing_settings" time="0.043959">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="09: latest_testflight_build_number" time="1.254296">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="10: build_app" time="37.829922">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="11: upload_to_testflight" time="73.580395">
+        
+      </testcase>
+    
+  </testsuite>
+</testsuites>
