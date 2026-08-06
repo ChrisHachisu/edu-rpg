@@ -130,7 +130,7 @@ def build_save(args: argparse.Namespace) -> dict:
             "gold": args.gold,
             "position": {"mapId": args.map, "x": args.x, "y": args.y, "floor": args.floor},
             "storyFlags": {}, "activeQuests": [], "completedQuests": [], "questProgress": {},
-            "timerEnabled": True, "quizDifficulty": "Hero", "locale": args.locale,
+            "timerEnabled": True, "quizDifficulty": args.difficulty, "locale": args.locale,
             "soundEnabled": True, "masterVolume": 0.7, "kanjiMode": False,
         },
         "playtime": 0,
@@ -151,6 +151,14 @@ def main() -> int:
     ap.add_argument("--level", type=int, default=1)
     ap.add_argument("--hp", type=int, default=40)
     ap.add_argument("--name", default="Hero")
+    # quizDifficulty is a GradeLevel ('k' | '1'..'6', src/utils/types.ts), NOT a free string:
+    # the Settings row looks up `grade.<value>` and the bundle's Z() renders a missing key as
+    # the literal `[grade.<value>]`. This used to be hardcoded to "Hero" -- a copy-paste of
+    # --name's default -- which is why a seeded save showed "[grade.Hero]". `choices` is the
+    # guard that keeps an unrenderable value from being seeded again.
+    ap.add_argument("--difficulty", default="3",
+                    choices=["k", "1", "2", "3", "4", "5", "6"],
+                    help="GradeLevel written to player.quizDifficulty")
     ap.add_argument("--locale", default="en", choices=["en", "ja"])
     ap.add_argument("--timestamp", type=int, default=1785654759442,
                     help="fixed by default so repeated seeds are byte-identical")
