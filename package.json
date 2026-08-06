@@ -8,7 +8,7 @@
     "dev": "python3 scripts/runtime_baseline.py blocked-build",
     "build": "python3 scripts/runtime_baseline.py blocked-build",
     "hydrate": "python3 scripts/runtime_baseline.py hydrate --output dist",
-    "promote:act1-r26": "python3 scripts/promote_act1_r26_runtime.py && node scripts/export_act1_preserved_cutover.mjs",
+    "promote:act1-r26": "echo 'SUPERSEDED 2026-08-03 - DO NOT RUN. This overwrote the owner-approved bake, the pinned r26 manifest, and walkable-regions-r26.json (the collision authority). Chunk art is baked by scripts/bake_act1_chunks.py. See scripts/promote_act1_r26_runtime.py line 4.' && exit 1",
     "verify:runtime": "python3 scripts/runtime_baseline.py verify-act1 --input dist",
     "verify:baseline": "python3 scripts/runtime_baseline.py verify",
     "verify:candidates": "python3 scripts/runtime_baseline.py verify-candidates",

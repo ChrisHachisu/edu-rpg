@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import shutil
 from pathlib import Path
 
@@ -62,7 +63,25 @@ def fx_layers(crop: Image.Image, offset_x: int, offset_y: int) -> tuple[Image.Im
     return water, occlusion
 
 
+OVERRIDE_ENV = "ALLOW_SUPERSEDED_PROMOTE"
+OVERRIDE_VALUE = "i-understand-this-overwrites-owner-approved-art"
+
+
 def main() -> None:
+    # The DO-NOT-RUN in the docstring above was advisory for three days and was very nearly run
+    # twice on 2026-08-06 -- once against a worktree missing its input, which is the only reason
+    # nothing was lost. Making it enforceable rather than advisory.
+    if os.environ.get(OVERRIDE_ENV) != OVERRIDE_VALUE:
+        raise SystemExit(
+            "REFUSED: promote_act1_r26_runtime.py is SUPERSEDED (2026-08-03). Running it would:\n"
+            "  - overwrite the owner-approved 48 px bake with 16 px art rejected on 29 Jul\n"
+            "  - resurrect the retired `occlusion` layer (replaced by an alpha-only `canopy`)\n"
+            "  - overwrite the tracked, hash-pinned r26 manifest.json\n"
+            "  - overwrite walkable-regions-r26.json, the COLLISION AUTHORITY\n"
+            "Chunk art is baked by scripts/bake_act1_chunks.py from the material renderer.\n"
+            f"If you truly need the geometry path, set {OVERRIDE_ENV}={OVERRIDE_VALUE}"
+        )
+
     if sha256(ART) != EXPECTED_ART_SHA256:
         raise RuntimeError("owner-approved R26 art identity changed")
     if sha256(AUTHORITY) != EXPECTED_AUTHORITY_SHA256:
