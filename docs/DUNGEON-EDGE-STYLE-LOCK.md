@@ -97,9 +97,44 @@ through — so the art and the collision cannot disagree about where the rock is
 deliberately edits **`fw` itself** rather than cleaning the mask afterwards: cleaning them
 separately would be two opinions about where rock is, and they would drift.
 
-> [!note] The one scipy call in the repo
+> [!note] The one scipy dependency in the repo
 > Labelling islands in `fw` means connected components over ~13M pixels, which a Python flood fill
 > cannot do inside a bake. Everything else in the renderer stays numpy + PIL.
+
+## Every shaded part must have lit wall above it (owner, 2026-08-06)
+
+*"we still have an issue where some edges cannot visually withstand the shadow part so they need to
+be thicker in some locations (some parts only have shadows, so we need at least the same area of
+walls above the shaded parts in every location)"*
+
+**Taken literally — every wall column ≥ 2 × `face_h` — this is unsatisfiable**, and measuring says
+so rather than intuition:
+
+- 11,600 column-runs across the 12 floors are shallower than 90 px, overwhelmingly the one- and
+  two-pixel tapers at the sides of masses.
+- A naive northward thicken **sealed corridors**, splitting coastalReef-f2 and whisperingWoodsCave-f2
+  into **six disconnected floor regions each**. All 12 floors are one region today.
+- Squaring off every taper would break the organic silhouette that rule 1 below protects.
+
+**What is actually visible is much smaller:** connected patches whose *whole depth* is band, big
+enough to read as a dark smear rather than as the edge of a rock. Measured: **91 patches of ≥1 cell**
+across the 12 floors, the largest 5.6 cells. Those, and only those, are the defect.
+
+`thicken_shadow_walls()` therefore **thickens each visible patch northward** until it carries a lit
+top at least as deep as its band, and **removes** the patch where there is no room. Both remedies
+are the owner's. Two invariants are *enforced, not hoped for*:
+
+| invariant | how |
+|---|---|
+| a corridor never drops below `MIN_CORRIDOR_CELLS` = 1 | the northward reach is capped by the measured gap |
+| the floor stays **one** connected region | re-checked after every change; the change is reverted if not |
+
+The edit is **feathered** into `fw`, not stamped on it: `a` is `(fw − 0.5) × 34`, so a hard write
+would give the new wall edge a mechanical boundary in a picture whose whole point is that its
+boundaries are not.
+
+**Cost:** ≤13 cells added and ≤13 removed per floor; walkable area moves by at most 9 cells; every
+floor ends with **zero** visible all-shadow patches and still one floor region.
 
 **Measured cost across all 12 shipped floors: 63 cells in total, no asset on any of them, and the
 smallest surviving mass on every floor is now ≥6 cells.** Walkable area moves by at most 4 cells a

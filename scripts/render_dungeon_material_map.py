@@ -590,6 +590,166 @@ def drop_rock_islands(fw: np.ndarray, px: float) -> np.ndarray:
     return np.where(kill, np.maximum(fw, 0.75), fw).astype(fw.dtype)
 
 
+# ── Every shaded part must have at least as much LIT wall above it.
+#
+# Owner, 2026-08-06, third pass: "we still have an issue where some edges cannot visually withstand
+# the shadow part so they need to be thicker in some locations (some parts only have shadows, so we
+# need at least the same area of walls above the shaded parts in every location)".
+#
+# Read literally -- every wall column at least 2 x face_h deep -- the constraint is UNSATISFIABLE
+# without destroying the caves, and measuring says so: 11,600 column-runs are shallower than that,
+# they are overwhelmingly the one- and two-pixel tapers at the sides of masses, and a naive
+# northward thickening sealed corridors and split coastalReef-f2 and whisperingWoodsCave-f2 into
+# SIX disconnected floor regions each. Squaring off every taper would also break the organic
+# silhouette this file's own rule 1 protects ("you misunderstood crispness with angularness").
+#
+# What he can actually SEE is different and much smaller: connected patches of wall whose whole
+# depth is band, big enough to read as a dark smear rather than as the edge of a rock. Measured:
+# 91 such patches of >= 1 cell across the 12 floors, the largest 5.6 cells. Those are the defect.
+#
+# So each visible patch is THICKENED where there is room -- extending it north until it carries a
+# lit top at least as deep as its band -- and REMOVED where there is not. Both remedies are the
+# owner's. Two invariants are enforced rather than hoped for:
+#   * a corridor never drops below MIN_CORRIDOR_CELLS, and
+#   * the floor stays ONE connected region -- checked after every change, and the change is
+#     reverted if it is not. All 12 floors are one region today; that is what a naive thicken broke.
+#
+# The edit is FEATHERED into `fw` rather than stamped on it. `a` is `(fw - 0.5) * 34`, so a hard
+# write would give the new wall edge a mechanical boundary in a picture whose whole point is that
+# its boundaries are not.
+MIN_SHADOW_PATCH_CELLS = 1.0
+# 1.5 cells, not 1.0. At 1.0 a corridor survives as 48 world px, which the raw mask calls connected
+# and the HEROINE cannot use: she is not a point, and a1mFree demands A1M_FOOT + A1M_LEAN = 16 px
+# of clearance at her soles, so a 48 px corridor leaves her a 16 px ribbon that the boundary warp
+# then pinches shut. Shipped once, briefly: sunkenCellar-f3 came back with 17 disconnected
+# passable regions and its BOSS and SAVE unreachable, on a mask that passed a zero-radius
+# connectivity test. Owner had called it: "if this causes occlusions we will need to redraw the
+# dungeons so they make sense visually and are playable."
+MIN_CORRIDOR_CELLS = 1.5
+# Clearance the collider demands at her ground-contact point, in WORLD px, mirroring
+# A1M_FOOT + A1M_LEAN in dq-tiles.js. scripts/check_dungeon_playable.py reads the real values out
+# of that file and gates on them; this is the render-time guard that stops us shipping a floor it
+# would reject.
+HERO_CLEARANCE_PX = 16
+
+
+def _runs(rock: np.ndarray, x: int):
+    """(start, length) of every maximal vertical rock run in column x."""
+    col = rock[:, x]
+    idx = np.flatnonzero(col)
+    if not len(idx):
+        return []
+    cuts = np.flatnonzero(np.diff(idx) > 1)
+    starts = np.concatenate([[idx[0]], idx[cuts + 1]])
+    ends = np.concatenate([idx[cuts], [idx[-1]]])
+    return list(zip(starts, ends - starts + 1))
+
+
+def _shadow_only(rock: np.ndarray, need: int) -> np.ndarray:
+    out = np.zeros_like(rock)
+    for x in range(rock.shape[1]):
+        for y0, L in _runs(rock, x):
+            if L < need:
+                out[y0:y0 + L, x] = True
+    return out
+
+
+def _passable(rock: np.ndarray, px: float) -> tuple[int, int]:
+    """(region count, largest region) of the floor a body of the heroine's radius can reach.
+
+    NOT `label(~rock)`. That asks whether a zero-radius POINT could get through, which is the
+    question that let a 48 px corridor pass and stranded the Sunken Cellar boss under 17
+    disconnected regions. Erode by her real clearance first, then ask.
+    """
+    clear = HERO_CLEARANCE_PX * px / PX                 # world px -> this field's resolution
+    lab, n = ndimage.label(ndimage.distance_transform_edt(~rock) >= clear)
+    if n == 0:
+        return 0, 0
+    sizes = np.bincount(lab.ravel())
+    sizes[0] = 0
+    return n, int(sizes.max())
+
+
+def _no_worse(before: tuple[int, int], after: tuple[int, int], px: float) -> bool:
+    """Did this edit avoid making the floor less playable than it already was?
+
+    NOT "is the floor perfect". Asking for perfection as a PRECONDITION is what silently disabled
+    this whole pass on coastalReef-f1 -- the field at this stage has not had its prop pockets
+    carved yet, so it legitimately carries a few isolated specks, and demanding one region meant
+    the function returned untouched and the floor shipped 12 all-shadow patches. The invariant that
+    actually protects the player is RELATIVE: never add a disconnection, never eat the main region.
+    """
+    slack = 2.0 * px * px                               # two cells of give: thickening costs floor
+    return after[0] <= before[0] and after[1] >= before[1] - slack
+
+
+def thicken_shadow_walls(fw: np.ndarray, px: float) -> np.ndarray:
+    """Give every VISIBLE all-shadow wall patch a lit top, by thickening it or removing it."""
+    need = 2 * max(2, int(px * FACE_H_CELLS))
+    keep = max(1, int(px * MIN_CORRIDOR_CELLS))
+    min_patch = MIN_SHADOW_PATCH_CELLS * px * px
+    rock = fw < 0.5
+    base = _passable(rock, px)
+    start = rock.copy()
+
+    for _ in range(3):
+        lab, n = ndimage.label(_shadow_only(rock, need), np.ones((3, 3)))
+        if n == 0:
+            break
+        sizes = np.bincount(lab.ravel())
+        sizes[0] = 0
+        targets = np.flatnonzero(sizes >= min_patch)
+        if not len(targets):
+            break
+        # ONE PATCH AT A TIME. Batching them and reverting the lot on failure lets a single
+        # awkward patch veto a whole floor -- coastalReef-f1 came back 12 patches in, 12 out,
+        # because one of its twelve could not be thickened without pinching a corridor.
+        grew = False
+        for tgt in targets:
+            ys, xs = np.where(lab == tgt)
+            cand = rock.copy()
+            touched = False
+            for x in np.unique(xs):
+                col = ys[xs == x]
+                y0, length = col.min(), col.max() + 1 - col.min()
+                if length >= need:
+                    continue
+                gap, k = 0, y0 - 1
+                while k >= 0 and not rock[k, x]:
+                    gap += 1
+                    k -= 1
+                take = max(0, min(need - length, gap - keep))
+                if take:
+                    cand[y0 - take:y0, x] = True
+                    touched = True
+            if touched and _no_worse(base, _passable(cand, px), px):
+                rock = cand
+                grew = True
+        if not grew:
+            break
+
+    # Anything still reading as pure shadow could not be supported, so it goes.
+    lab, n = ndimage.label(_shadow_only(rock, need), np.ones((3, 3)))
+    if n:
+        sizes = np.bincount(lab.ravel())
+        sizes[0] = 0
+        for tgt in np.flatnonzero(sizes >= min_patch):
+            cand = rock.copy()
+            cand[lab == tgt] = False
+            if _no_worse(base, _passable(cand, px), px):
+                rock = cand                             # per patch, for the same reason
+
+    added = rock & ~start
+    dropped = start & ~rock
+    if not added.any() and not dropped.any():
+        return fw
+    # Feathered, so the new boundary carries the same soft transition every other one does.
+    soft = px * 0.08
+    fw = fw - blur(added.astype(np.float32), soft) * 0.60
+    fw = fw + blur(dropped.astype(np.float32), soft) * 0.60
+    return np.clip(fw, 0.0, 1.0).astype(np.float32)
+
+
 def floor_field(rows: list[str], scale: int = 1, assets: list | None = None) -> Field:
     rows, pruned = prune_thin_walls(rows)
     if pruned:
@@ -627,6 +787,7 @@ def floor_field(rows: list[str], scale: int = 1, assets: list | None = None) -> 
     gate = np.clip(4.0 * f * (1.0 - f), 0.0, 1.0)
     fw = np.clip(f + warp * 0.42 * gate, 0.0, 1.0)
     fw = drop_rock_islands(fw, px)
+    fw = thicken_shadow_walls(fw, px)
 
     # ── Props stand in TRUE terminal cells — one way in, rock on the other three sides. Both the
     #    mask blur and the boundary warp pull the floor weight at such a cell below the 0.5
