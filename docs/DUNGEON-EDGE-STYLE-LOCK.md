@@ -120,6 +120,32 @@ so rather than intuition:
 enough to read as a dark smear rather than as the edge of a rock. Measured: **91 patches of ≥1 cell**
 across the 12 floors, the largest 5.6 cells. Those, and only those, are the defect.
 
+> [!danger] "Those, and only those" was wrong, and it is the sentence that cost the most
+> Sizing a patch by AREA and stopping at 1 cell is what let the owner find this on a shipped floor.
+> The defect he actually saw is the END of a wall mass, where the warp rounds the rock off, the
+> vertical run drops under `need`, and a blunt dark lobe hangs off the rock with no lit top. Those
+> lobes are **tall and thin** — the worst on sunkenCellar-f1 is **0.85 cells of area and 40 × 87
+> world px on screen** — so an area test rated every one of them as beneath notice.
+>
+> Measured on the shipped bake: **87 all-shadow patches on sunkenCellar alone, every single one
+> under the 1-cell threshold**, so `thicken_shadow_walls()` skipped all 87 and then truthfully
+> reported zero. The count in the paragraph above is not a count of the defect; it is a count of
+> what that detector could see.
+>
+> Visibility is now **area OR extent** (`MIN_SHADOW_PATCH_W_CELLS` 0.25 × `MIN_SHADOW_PATCH_H_CELLS`
+> 0.75, i.e. a 12 × 36 px block of unbroken band), OR'd so it can only ever select more than before.
+> sunkenCellar went 87 → 0. Two floors keep one patch each — `mistyGrotto-f3` and
+> `whisperingWoodsCave-f3` — where no edit could be made without splitting the floor, and the pass
+> correctly prefers the patch to the split.
+>
+> **The general lesson, because it recurred five times in one sitting:** this pass reasons about a
+> boolean `rock` and then WRITES a feathered delta, and the two do not agree for anything thin. It
+> validated a proxy of its output instead of its output — in patch detection, in removal, in the
+> convergence test, in the prop-pocket ordering, and in the connectivity guard, which was also
+> asking at the wrong resolution with the wrong reduce. `_passable_field()` now asks exactly what
+> `walkable_mask()` asks. **If you change this pass, verify the FIELD it returns, never the boolean
+> it checked.**
+
 `thicken_shadow_walls()` therefore **thickens each visible patch northward** until it carries a lit
 top at least as deep as its band, and **removes** the patch where there is no room. Both remedies
 are the owner's. Two invariants are *enforced, not hoped for*:
@@ -140,6 +166,37 @@ floor ends with **zero** visible all-shadow patches and still one floor region.
 smallest surviving mass on every floor is now ≥6 cells.** Walkable area moves by at most 4 cells a
 dungeon (sunkenCellar −4, mistyGrotto −4, coastalReef **+3**, whisperingWoodsCave 0), so the
 owner-approved Act-1 area curve is unaffected.
+
+> [!warning] These figures are SUPERSEDED — re-measured 2026-08-06
+> They described a pass that could not see the defect it existed to remove. The owner, playing the
+> cellar: *"i see several places on the sunken cellar map where the walls are all shadow and has no
+> top part. please check the ends of each wall."* He was right, and the numbers above were computed
+> by the same broken detector that shipped **87 untreated patches on sunkenCellar alone** while
+> reporting zero. A cost measured with a blind instrument is not a cost.
+>
+> Re-measured on the 2026-08-06 bake, against the shipped masks:
+>
+> | dungeon | walkable change | was documented |
+> |---|---|---|
+> | sunkenCellar | **+9.8 opened, −1.5 closed** | −4 |
+> | whisperingWoodsCave | **+22.7 opened, −4.4 closed** | 0 |
+> | mistyGrotto | **+33.0 opened, −1.8 closed** | −4 |
+> | coastalReef | **+44.7 opened, −1.5 closed** | +3 |
+>
+> **The shape of the change matters more than its size, and it is visible on a per-floor diff:**
+> almost every opened cell is a sub-cell sliver on the SOUTH face of a wall end — the lobe itself,
+> removed. No corridor widens, no route opens, no room changes shape. coastalReef's +44.7 is
+> roughly forty-five separate slivers across three floors.
+>
+> One change is not a sliver and is recorded because it is the exception: a **3.08-cell dead-end
+> nub at the southern edge of whisperingWoodsCave-f2** (cells x 10–12, y 34–36) is filled. Nothing
+> stood in it and the nearest chest, at (11, 32), remains reachable.
+>
+> All 12 floors still pass `check_dungeon_playable.py` as ONE region at the heroine's real 16 px
+> clearance with every asset reachable, so the curve moved but nothing became unplayable. The area
+> budget above is therefore **no longer the invariant** — playability is. Do not re-tighten
+> `MIN_SHADOW_PATCH_W/H_CELLS` to recover the old numbers without the owner: that dial trades
+> directly against the defect he asked to have fixed.
 
 Owner, having played the cellar: *"the bleeding into the shaded area of the walls seem too much.
 either the shading needs to be increased (to make the walls look taller) or the bleeding needs to
