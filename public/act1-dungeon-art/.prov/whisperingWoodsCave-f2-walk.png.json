@@ -2,13 +2,13 @@
  "artefact": "whisperingWoodsCave-f2-walk.png",
  "command": "render_dungeon_material_map.py --floor whisperingWoodsCave-f2 --emit-mask --out public/act1-dungeon-art/whisperingWoodsCave-f2-walk.png",
  "generator": "scripts/render_dungeon_material_map.py",
- "generatorSha256": "311acf52c0cd7f8c69e09887f58e4cde4d41be7273e7344f1cc071c819223e7a",
+ "generatorSha256": "28a3dbae1bee8013ee2446cb5a35c83129db03ba52528dcec163d815051fce1c",
  "inputs": {
   "design/act1-dungeon-interiors/whisperingWoodsCave-f2.json": "fa44aff73f845995e517b55e3c3bc57fcfd5a08cbbd153a4a36e66b272d1af97"
  },
  "params": {
   "kind": "walkable-mask"
  },
- "sha256": "8f59053a39dc46785f1842324ac8811d31f37104f3c56524232e9818468c7afd",
- "writtenAt": "2026-08-06T19:00:25+09:00"
+ "sha256": "f938b309734e4458629b96fa8140ae85413d84204db447be29c19e97c767b186",
+ "writtenAt": "2026-08-06T21:28:02+09:00"
 }

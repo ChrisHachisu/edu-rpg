@@ -2,7 +2,7 @@
  "artefact": "coastalReef-f1-props.png",
  "command": "render_dungeon_material_map.py --floor coastalReef-f1 --props --out public/act1-dungeon-art/coastalReef-f1-props.png",
  "generator": "scripts/render_dungeon_material_map.py",
- "generatorSha256": "311acf52c0cd7f8c69e09887f58e4cde4d41be7273e7344f1cc071c819223e7a",
+ "generatorSha256": "28a3dbae1bee8013ee2446cb5a35c83129db03ba52528dcec163d815051fce1c",
  "inputs": {
   "design/act1-dungeon-interiors/coastalReef-f1.json": "5f14e00ff825dccbd8307a6a621388faa7967efa6aaa7391de2dafa4f3195a70",
   "design/act1-dungeon-interiors/materials/coastalReef/mat-accent.png": "a7788b4046fd34b7f7ef3b77e231dd410381b90e5e4d88c88a309ef50f5b1b39",
@@ -17,6 +17,6 @@
   "scale": 1,
   "theme": "tidal coral reef"
  },
- "sha256": "1d6bdc28dc8831eee26137be858f44684565701c9b6edd53637613a12c3d566a",
- "writtenAt": "2026-08-06T18:50:45+09:00"
+ "sha256": "1ceea311b5106244ef53b7ed8d34a525372dcccfbe7afea3289018d189d9f5bc",
+ "writtenAt": "2026-08-06T20:52:33+09:00"
 }

@@ -652,6 +652,17 @@ PATCH_PASSES = 8
 # loudly. One cell is the smallest thing the heroine could stand in at all, so a pocket under it
 # is a rounding artefact of the reduce-and-threshold boundary rather than a place in the dungeon.
 SEAL_SPECK_CELLS = 1.0
+# How far an edit to `fw` is blurred before it lands, in cells. This is the MASK's own scale
+# (`f = blur(up, px * 0.34)`), not a token feather: the raw edit is column-quantised, and anything
+# smaller leaves the staircase visible as the angular wall the owner rejected on 2026-08-06.
+EDIT_SOFT_CELLS = 0.30
+# How far an edit is grown before it is rounded off. Smoothing shrinks, so an edit must be made
+# bolder to survive being made round -- and bolder is what the owner asked for in both directions.
+EDIT_GROW_CELLS = 0.16
+# Rock thinner than this reads as a sliver rather than as rock, and goes. Owner's pick, 2026-08-06,
+# chosen off a render showing 0.6 / 0.8 / 1.0 side by side. It is the radius of the opening disc,
+# matching the image he chose from. See `trim_wall_necks` for why raising it is not a free tidy-up.
+MIN_WALL_NECK_CELLS = 0.6
 # 1.5 cells, not 1.0. At 1.0 a corridor survives as 48 world px, which the raw mask calls connected
 # and the HEROINE cannot use: she is not a point, and a1mFree demands A1M_FOOT + A1M_LEAN = 16 px
 # of clearance at her soles, so a 48 px corridor leaves her a 16 px ribbon that the boundary warp
@@ -713,28 +724,88 @@ def _passable_field(fw: np.ndarray, px: float) -> tuple[int, int]:
 
 
 def _grow_patch(cand: np.ndarray, rock: np.ndarray, lab: np.ndarray, tgt: int,
-                need: int, keep: int) -> bool:
+                need: int, keep: int, px: float) -> bool:
     """Extend one all-shadow patch NORTHWARD in `cand` until it can carry a lit top.
 
     Gaps are measured against `rock`, never against `cand`, so a patch's room to grow is the same
     whether it is attempted alone or inside a batch. Returns whether anything was written.
     """
     ys, xs = np.where(lab == tgt)
-    touched = False
-    for x in np.unique(xs):
+    cols = np.unique(xs)
+    y0s = np.empty(len(cols), np.int64)
+    want = np.zeros(len(cols), np.float64)
+    room = np.zeros(len(cols), np.float64)
+    for i, x in enumerate(cols):
         col = ys[xs == x]
         y0, length = col.min(), col.max() + 1 - col.min()
-        if length >= need:
-            continue
+        y0s[i] = y0
         gap, k = 0, y0 - 1
         while k >= 0 and not rock[k, x]:
             gap += 1
             k -= 1
-        take = max(0, min(need - length, gap - keep))
-        if take:
-            cand[y0 - take:y0, x] = True
+        room[i] = max(0, gap - keep)
+        want[i] = 0 if length >= need else min(need - length, room[i])
+
+    # SMOOTH THE TOP PROFILE, NOT THE MASK. Each column takes a different amount, so writing
+    # `want` straight out draws a staircase -- and at 48 px a cell that staircase IS the "sharp
+    # angled wall" the owner rejected. Smoothing it as a 1-D profile rounds the new top into a
+    # curve while leaving the mass's own southern boundary and its width untouched, which 2-D
+    # morphology could not do: dilating the mask also moved the southern edge and manufactured
+    # fresh short runs (measured: 5 patches back on sunkenCellar-f1, walkable -2.7 cells).
+    if len(cols) > 2 and want.any():
+        sig = max(1.0, px * EDIT_SOFT_CELLS)
+        w = ndimage.gaussian_filter1d(want, sig, mode="nearest")
+        want = np.minimum(np.maximum(want, w), room)      # never exceed the measured gap
+
+    touched = False
+    for i, x in enumerate(cols):
+        take = int(round(want[i]))
+        if take > 0:
+            cand[y0s[i] - take:y0s[i], x] = True
             touched = True
     return touched
+
+
+def trim_wall_necks(fw: np.ndarray, px: float, warp: np.ndarray | None) -> np.ndarray:
+    """Remove rock that is too THIN to read as rock, however much area it has.
+
+    Owner, 2026-08-06: *"there are slivers of walls in opened spaces that i prefer being larger or
+    removed completely if it occludes a path."*
+
+    `MIN_WALL_AREA_CELLS` = 6 cannot see these and never could. It measures a MASS, and a sliver is
+    not a mass — it is a finger hanging off one, so it inherits its parent's area and passes. The
+    quantity that decides whether rock reads as rock is its NECK, and nothing measured that.
+
+    A morphological opening is exactly this question: erode by `r` and dilate back, and anything
+    that did not survive the erosion was thinner than the disc. Measured on sunkenCellar-f1 at the
+    owner's chosen 0.6 cells, that is 4.2 of 465 rock cells — the finger beside the down-stairs,
+    the beak-shaped blob below it, and two stubs jutting into open floor.
+
+    > [!warning] Do not raise this without the owner looking at a render
+    > At 1.0 cells the opening stops being about fingers and starts trimming the whole cave rim,
+    > which is the organic silhouette rule 1 of the style lock protects. The threshold is a
+    > judgement about what reads as rock, not a number to tune upward for tidiness.
+
+    Removal only ever opens floor, so it cannot wall anything off — but it CAN expose a pocket the
+    heroine could not previously enter, which `_no_worse` counts as a new region, so the edit is
+    still checked and reverted whole if it makes the floor worse.
+    """
+    r = max(1, int(round(px * MIN_WALL_NECK_CELLS)))
+    gy, gx = np.mgrid[-r:r + 1, -r:r + 1]
+    disk = gx * gx + gy * gy <= r * r
+    rock = fw < 0.5
+    thin = rock & ~ndimage.binary_dilation(ndimage.binary_erosion(rock, disk), disk)
+    if not thin.any():
+        return fw
+    before = _passable_field(fw, px)
+    # Same organic write as every other edit: smoothed at the mask's own scale and given the
+    # boundary warp back, so the trimmed rock does not leave a machined edge behind it.
+    e = blur(thin.astype(np.float32), px * EDIT_SOFT_CELLS * 0.5) * 0.60
+    eg = np.clip(4.0 * e * (1.0 - e), 0.0, 1.0)
+    if warp is not None:
+        e = e + warp * 0.42 * eg
+    out = np.clip(fw + e, 0.0, 1.0).astype(np.float32)
+    return out if _no_worse(before, _passable_field(out, px), px) else fw
 
 
 def seal_floor_specks(fw: np.ndarray, px: float,
@@ -858,8 +929,8 @@ def _no_worse(before: tuple[int, int], after: tuple[int, int], px: float) -> boo
     return after[0] <= before[0] and after[1] >= before[1] - slack
 
 
-def thicken_shadow_walls(fw: np.ndarray, px: float,
-                         protected: np.ndarray | None = None) -> np.ndarray:
+def thicken_shadow_walls(fw: np.ndarray, px: float, protected: np.ndarray | None = None,
+                         warp: np.ndarray | None = None) -> np.ndarray:
     """Give every VISIBLE all-shadow wall patch a lit top, by thickening it or removing it.
 
     CONVERGE IN `fw`, NOT IN THE BOOLEAN PROXY. `_treat_shadow_patches` reasons about `rock`, a
@@ -883,7 +954,7 @@ def thicken_shadow_walls(fw: np.ndarray, px: float,
     prev = None
     for _ in range(PATCH_PASSES):
         before = fw
-        fw, remaining = _treat_shadow_patches(fw, px, base, protected)
+        fw, remaining = _treat_shadow_patches(fw, px, base, protected, warp)
         # RE-CHECK CONNECTIVITY ON THE FIELD THE ROUND ACTUALLY PRODUCED, not on the boolean it
         # validated. `_no_worse` inside the round is applied to `cand`, a hard `fw < 0.5`; what
         # the round then WRITES is a blurred +-0.60 delta whose own 0.5 crossing is wider than
@@ -903,7 +974,8 @@ def thicken_shadow_walls(fw: np.ndarray, px: float,
 
 
 def _treat_shadow_patches(fw: np.ndarray, px: float, base: tuple[int, int],
-                          protected: np.ndarray | None = None) -> tuple[np.ndarray, int]:
+                          protected: np.ndarray | None = None,
+                          warp: np.ndarray | None = None) -> tuple[np.ndarray, int]:
     """One round. Returns the new field and how many visible patches are left IN it.
 
     `protected` is rock this pass may THICKEN but must not REMOVE. `seal_floor_specks` needs it:
@@ -967,14 +1039,14 @@ def _treat_shadow_patches(fw: np.ndarray, px: float, base: tuple[int, int],
         cand = rock.copy()
         # NOT `any(... for ...)`: a generator short-circuits on the first True and the remaining
         # patches never get grown at all. The list is materialised so every patch is attempted.
-        if any([_grow_patch(cand, rock, lab, t, need, keep) for t in targets]) \
+        if any([_grow_patch(cand, rock, lab, t, need, keep, px) for t in targets]) \
                 and _no_worse(base, _passable(cand, px), px):
             rock = cand
             changed = True
         else:
             for tgt in targets:
                 cand = rock.copy()
-                if _grow_patch(cand, rock, lab, tgt, need, keep) \
+                if _grow_patch(cand, rock, lab, tgt, need, keep, px) \
                         and _no_worse(base, _passable(cand, px), px):
                     rock = cand
                     changed = True
@@ -1020,11 +1092,63 @@ def _treat_shadow_patches(fw: np.ndarray, px: float, base: tuple[int, int],
     added = rock & ~start
     dropped = start & ~rock
     if added.any() or dropped.any():
-        # Feathered, so the new boundary carries the same soft transition every other one does.
-        soft = px * 0.08
-        fw = fw - blur(added.astype(np.float32), soft) * 0.60
-        fw = fw + blur(dropped.astype(np.float32), soft) * 0.60
-        fw = np.clip(fw, 0.0, 1.0).astype(np.float32)
+        # THE EDIT MUST BE AS ORGANIC AS THE BOUNDARY IT JOINS, and at `px * 0.08` it was not.
+        #
+        # Owner, on the first bake of this fix: "the wall touching the stairs going down and the
+        # wall that was fixed to a wavy shape looks unnatural ... for the wavy wall on the bottom,
+        # the previous one was better. a sharp angled wall does not look natural."
+        #
+        # He is describing the WRITE, not the decision. `_grow_patch` works column by column and
+        # each column takes a different amount, so the raw edit is a staircase; the removal set is
+        # column-defined for the same reason. The old feather was 0.08 cells -- ~7 lattice px
+        # against an 85 px cell -- which is nowhere near enough to turn a staircase into rock, so
+        # what shipped was a CAD wedge beside the stairs and a wall sliced off square.
+        #
+        # Two things fix it, and they are the two things that make every OTHER boundary in this
+        # picture organic:
+        #   * blur at the mask's own scale, so the column quantisation disappears entirely;
+        #   * put the same fbm warp back on the new boundary. `eg` peaks where the edit crosses
+        #     0.5 -- exactly where `gate` peaks for the original boundary -- so the new edge wanders
+        #     on the same noise, at the same amplitude, as the rock it is joining.
+        #
+        # Rule 1 of the style lock is safe: this SOFTENS an edit, it never sharpens the mask.
+        # SHAPE AND STRENGTH ARE SEPARATE PROBLEMS, and blurring alone conflates them: smoothing
+        # the staircase by blurring the edit ALSO spreads it thin enough that it stops crossing
+        # 0.5, which measured 2 patches back on sunkenCellar-f1. So the mask is smoothed as a
+        # SHAPE first -- blur, then re-threshold, which rounds a column staircase into a curve at
+        # constant extent -- and only then applied, at the same full strength as before.
+        # SMOOTHING AN EDIT MUST GROW IT, NEVER SHRINK IT. Blur-and-rethreshold alone erodes a
+        # one-column thickening to nothing and the patch comes back (measured: 2 then 3 patches
+        # returned on sunkenCellar-f1). And a thickening thin enough to be erased would have drawn
+        # a spike anyway -- the second thing the owner rejected: "there are slivers of walls in
+        # opened spaces that i prefer being larger or removed completely".
+        #
+        # So both remedies are made BOLDER as they are made round: close the staircase notches,
+        # dilate, and only then round off. More rock where we thicken, more floor where we remove,
+        # and no slivers either way. The round-level `_passable_field` check is what makes growing
+        # the edit safe -- if the bolder version pinches anything, the whole round is reverted.
+        # `added` needs no shape work: its top profile was already smoothed in `_grow_patch`, and
+        # touching it here would move the southern boundary it must not touch.
+        #
+        # `dropped` does. A removal set is bounded east and west by wherever the run happens to
+        # reach `need`, which cuts the wall off square -- the owner, on exactly this: "for the
+        # wavy wall on the bottom, the previous one was better. a sharp angled wall does not look
+        # natural." Rounding it is safe in a way rounding `added` is not, because growing a
+        # removal only opens more floor, and the round-level check reverts the lot if that pinches
+        # anything.
+        r = max(1, int(round(px * EDIT_GROW_CELLS)))
+        gy, gx = np.mgrid[-r:r + 1, -r:r + 1]
+        disk = gx * gx + gy * gy <= r * r
+        soft = px * EDIT_SOFT_CELLS
+        if dropped.any():
+            dropped = blur(ndimage.binary_dilation(
+                ndimage.binary_closing(dropped, disk), disk).astype(np.float32), soft) >= 0.5
+        e = (blur(dropped.astype(np.float32), px * 0.10)
+             - blur(added.astype(np.float32), px * 0.10)) * 0.60
+        eg = np.clip(4.0 * np.abs(e) * (1.0 - np.abs(e)), 0.0, 1.0)
+        if warp is not None:
+            e = e + warp * 0.42 * eg
+        fw = np.clip(fw + e, 0.0, 1.0).astype(np.float32)
     return fw, _count_visible(fw, px, need, min_patch, min_w, min_h)
 
 
@@ -1131,8 +1255,9 @@ def floor_field(rows: list[str], scale: int = 1, assets: list | None = None) -> 
     # one defect for the other. Running it first means `thicken_shadow_walls` treats whatever the
     # seal creates, and its `_no_worse` guard then holds the region count at the sealed value,
     # so neither pass can undo the other.
+    fw = trim_wall_necks(fw, px, warp)
     fw, sealed = seal_floor_specks(fw, px, prot if assets else None)
-    fw = thicken_shadow_walls(fw, px, sealed)
+    fw = thicken_shadow_walls(fw, px, sealed, warp)
     if assets:
         fw = np.maximum(fw, prot)
 

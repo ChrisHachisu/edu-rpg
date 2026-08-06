@@ -2,7 +2,7 @@
  "artefact": "sunkenCellar-f3-props.png",
  "command": "render_dungeon_material_map.py --floor sunkenCellar-f3 --props --out public/act1-dungeon-art/sunkenCellar-f3-props.png",
  "generator": "scripts/render_dungeon_material_map.py",
- "generatorSha256": "311acf52c0cd7f8c69e09887f58e4cde4d41be7273e7344f1cc071c819223e7a",
+ "generatorSha256": "28a3dbae1bee8013ee2446cb5a35c83129db03ba52528dcec163d815051fce1c",
  "inputs": {
   "design/act1-dungeon-interiors/materials/sunkenCellar/mat-accent.png": "a9ed41f1f93c5e978252b32a575acd557c048fe2568399e8db7c85f4968925bb",
   "design/act1-dungeon-interiors/materials/sunkenCellar/mat-floor.png": "084e8ea02a62c7b89e0748bccfae790e2670fef90abec9d7b89d2907265872fa",
@@ -17,6 +17,6 @@
   "scale": 1,
   "theme": "flooded stone cellar"
  },
- "sha256": "53ac575a2d0a19d5e6f5e8fcd704806609b31a2e0549e50acb90a6dabab48583",
- "writtenAt": "2026-08-06T18:46:56+09:00"
+ "sha256": "8d22c671991c9527b25304ff80ce555882f52399383cd88dc532dd1dacd331c8",
+ "writtenAt": "2026-08-06T20:45:04+09:00"
 }
