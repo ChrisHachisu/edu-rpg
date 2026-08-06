@@ -2048,7 +2048,10 @@
                    if(x>0   && dist[i+W-1]+4<v)v=dist[i+W-1]+4; }
         if(x<W-1 && dist[i+1]+3<v)v=dist[i+1]+3;
         dist[i]=v; } }
-    return { W:W, H:H, dist:dist };
+    // ox/oy: the field's origin in WORLD px. A dungeon mask spans its whole floor and is therefore
+    // world-aligned; the overworld field below is a moving window and is not. Every sampler
+    // subtracts it, so at 0 the dungeon path is arithmetically unchanged.
+    return { W:W, H:H, ox:0, oy:0, dist:dist };
   }
   function a1mMaskFor(key){
     if(a1mMasks[key]!==undefined) return a1mMasks[key];
@@ -2205,12 +2208,13 @@
   // (x,y) is the SPRITE position everywhere -- that is what the engine sets, what the rescue guard
   // holds and what the camera follows -- and the mask is sampled at the soles below it.
   function a1mFree(scene,m,x,y){
-    y+=a1mFootDy(scene);
-    if(x<1||y<1||x>=m.W-1||y>=m.H-1) return false;
-    var gx=x|0, gy=y|0;
+    var wx=x, wy=y+a1mFootDy(scene);                                         // WORLD px: the tile test reads the map
+    var fx=wx-m.ox, fy=wy-m.oy;                                              // FIELD px: 0 offset for a dungeon mask
+    if(fx<1||fy<1||fx>=m.W-1||fy>=m.H-1) return false;
+    var gx=fx|0, gy=fy|0;
     if(m.dist[(gy*m.W)+gx] < a1mNeed(m,gx,gy)) return false;                 // too close to rock
-    var t=a1mTileAt(scene,x,y);
-    return t!==undefined && !A1M_PROP[t];
+    var t=a1mTileAt(scene,wx,wy);
+    return t!==undefined && !(m.prop||A1M_PROP)[t];
   }
   /* ---- SLIDE ALONG THE WALL, NOT ALONG THE AXES ----------------------------------------------
      Retrying X alone and then Y alone is only sliding on an AXIS-ALIGNED wall, and this cave is
@@ -2232,7 +2236,7 @@
      cadence is paced by the distance she actually walked. */
   var A1M_LIFT=3;             // max world px of outward correction per substep (see below)
   function a1mSlide(scene,m,x,y,sx,sy){
-    var fd=a1mFootDy(scene), gx=x|0, gy=(y+fd)|0;
+    var fd=a1mFootDy(scene), gx=(x-m.ox)|0, gy=(y+fd-m.oy)|0;
     if(gx<1||gy<1||gx>=m.W-1||gy>=m.H-1) return null;
     var i=gy*m.W+gx;
     var nx=m.dist[i+1]-m.dist[i-1], ny=m.dist[i+m.W]-m.dist[i-m.W];           // grows AWAY from rock
@@ -2259,7 +2263,7 @@
        in TOTAL by A1M_LIFT, so this buys accuracy, not reach. */
     var lift=0;
     for(var p=0;p<2;p++){
-      var ex=(x+tx)|0, ey=(y+ty+fd)|0;
+      var ex=(x+tx-m.ox)|0, ey=(y+ty+fd-m.oy)|0;
       if(ex<1||ey<1||ex>=m.W-1||ey>=m.H-1) break;
       var need=a1mNeed(m,ex,ey)-m.dist[ey*m.W+ex];   // the SAME requirement a1mFree will apply
       if(need<=0) break;
@@ -2281,12 +2285,128 @@
       for(k=0;k<n;k++){
         var a=k*2*Math.PI/n, px2=x+Math.cos(a)*r, py2=y+Math.sin(a)*r;
         if(!a1mFree(scene,m,px2,py2)) continue;
-        var dd=m.dist[(((py2+fd)|0)*m.W)+(px2|0)];
+        var dd=m.dist[(((py2+fd-m.oy)|0)*m.W)+((px2-m.ox)|0)];
         if(dd>bd){ bd=dd; best={x:px2,y:py2}; }
       }
       if(best) return best;
     }
     return null;
+  }
+  /* ---- THE OVERWORLD'S WALKABLE FIELD, DERIVED FROM WHAT IS PAINTED --------------------------
+     The dungeons stopped disagreeing with their own art the moment collision was read FROM the
+     art: `<floor>-walk.png` is the renderer's own floor field thresholded at the same 0.5 that
+     decides every rendered pixel, so the blocker and the visible edge cannot drift apart. The
+     overworld had the opposite arrangement -- terrain painted from CONTINUOUS fields (fieldAt's
+     0.5 iso-line, which exists to "remove ALL tile-grid 90-degree steps") while collision stayed
+     on the raw tile lattice through OW_BLOCK. This file already said so out loud, at the road
+     layer: the reskin dissolves the generator's path blobs "in the RE-SKIN ONLY -- the deployed
+     map data is never mutated, so walkability/barriers are unchanged". Square blockers under an
+     organic coastline. Owner, on the dungeon version of the same bug: "the player does not walk
+     smoothly and the user blockers are not synced with the visual design".
+
+     THE SAME TREATMENT, AND IT NEEDS NO NEW ASSET. The overworld does not need a `-walk.png`
+     because its two continuous masses are ANALYTIC. drawTerrain decides every one of its pixels
+     with exactly these two numbers:
+         W   = waterField(map,wx,wy)        -> W  >= 0.50 is water
+         Mf0 = mountainField(map,wx,wy)     -> Mf0>= 0.50 is rock
+     so evaluating those same two functions at that same 0.50 IS reading the painting. One
+     authority, no second sampler that could drift, and it re-tunes itself with __DQ_WIGGLE__ and
+     the rest of the field knobs because it calls the field rather than copying it.
+
+     WHAT DELIBERATELY STAYS ON TILES. Only water and mountain are painted continuously. Every
+     other OW_BLOCK value is a discrete landmark DRAWN as a prop standing on its cell -- a cave
+     mouth, a tomb, a signpost, a village -- so a cell-shaped blocker is what its picture actually
+     is, and bumping one is how the engine interacts with it. Those keep the tile test, exactly as
+     the dungeon keeps A1M_PROP beside its mask. Removing 2 and 4 from that table is the whole
+     point: the field owns them now, at the painted edge instead of the lattice edge.
+
+     BRIDGES ARE CARVED BACK OUT, OR THE MAP DISCONNECTS. waterField's membership counts tile 5 as
+     water on purpose, so the deck is painted over real water instead of a hole (see its comment).
+     Blocking on the raw field would therefore wall off every bridge on the map and strand the
+     player on whichever side she was standing. Bridge cells are forced walkable after sampling.
+
+     WINDOWED, BECAUSE A WORLD IS NOT A FLOOR. A dungeon floor is bounded and its mask is built
+     once; the overworld is not, and a full-map field at 48 px/cell would be tens of millions of
+     pixels. So the field is built over the RENDERER'S OWN window -- same origin, same size, same
+     key -- which at 320x400 works out to 31x33 cells = 1488x1584 px. That is within a whisker of
+     the 2.3 M pixels a dungeon floor already builds in under 40 ms, and it is rebuilt only when
+     that window moves, i.e. every MARGIN=12 cells of travel rather than every frame. MARGIN is
+     also what makes the window safe: it keeps the hero ~576 px from any edge, which is 19 times
+     the largest single frame's travel and twice a1mUnstick's 288 px search. If she is somehow
+     outside it anyway, owmFor returns null and the engine's own stepping takes over untouched --
+     fallback-safe, exactly like every other layer in this file. */
+  var OWM_TILE_BLOCK=null;
+  function owmTileBlock(){                                       // OW_BLOCK minus the two painted masses
+    if(OWM_TILE_BLOCK) return OWM_TILE_BLOCK;
+    OWM_TILE_BLOCK={};
+    for(var k in OW_BLOCK){ if(k!=='2' && k!=='4') OWM_TILE_BLOCK[k]=1; }
+    return OWM_TILE_BLOCK;
+  }
+  var owmState=null;
+  function owmBuild(map,X0,Y0,winW,winH){
+    var cw=winW*N, ch=winH*N, wox=X0*N, woy=Y0*N, n=cw*ch;
+    if(!(n>0)) return null;
+    // Presence scan, as drawTerrain does it, WITH one cell of margin -- fieldAt interpolates across
+    // tile CENTRES, so a mass one cell outside the window still reaches into it.
+    var hasW=false, hasM=false, sx, sy, sv;
+    for(sy=-1;sy<=winH && !(hasW&&hasM);sy++) for(sx=-1;sx<=winW;sx++){
+      sv=et(map,X0+sx,Y0+sy);
+      if(sv===2||sv===5) hasW=true; else if(sv===4) hasM=true; }
+    var dist=new Uint16Array(n), INF=60000, i,x,y,v;
+    if(!hasW && !hasM){ for(i=0;i<n;i++) dist[i]=INF; }          // open ground: nothing to collide with
+    else for(y=0;y<ch;y++){ var wy=woy+y, row=y*cw, ty=(wy/N)|0;
+      for(x=0;x<cw;x++){ var wx=wox+x, b=0;
+        if(hasW && waterField(map,wx,wy)>=0.50) b=1;             // the SAME 0.50 drawTerrain paints with
+        if(!b && hasM && mountainField(map,wx,wy)>=0.50) b=1;
+        if(b && et(map,(wx/N)|0,ty)===5) b=0;                    // a bridge deck is walkable water
+        dist[row+x]=b?0:INF; } }
+    // chamfer 3-4, two sweeps -- identical to a1mBuild, over a field built rather than loaded
+    for(y=0;y<ch;y++){ var r=y*cw;
+      for(x=0;x<cw;x++){ i=r+x; v=dist[i]; if(!v) continue;
+        if(y>0){ if(dist[i-cw]+3<v)v=dist[i-cw]+3;
+                 if(x>0     && dist[i-cw-1]+4<v)v=dist[i-cw-1]+4;
+                 if(x<cw-1  && dist[i-cw+1]+4<v)v=dist[i-cw+1]+4; }
+        if(x>0 && dist[i-1]+3<v)v=dist[i-1]+3;
+        dist[i]=v; } }
+    for(y=ch-1;y>=0;y--){ var r2=y*cw;
+      for(x=cw-1;x>=0;x--){ i=r2+x; v=dist[i]; if(!v) continue;
+        if(y<ch-1){ if(dist[i+cw]+3<v)v=dist[i+cw]+3;
+                    if(x<cw-1 && dist[i+cw+1]+4<v)v=dist[i+cw+1]+4;
+                    if(x>0    && dist[i+cw-1]+4<v)v=dist[i+cw-1]+4; }
+        if(x<cw-1 && dist[i+1]+3<v)v=dist[i+1]+3;
+        dist[i]=v; } }
+    return { W:cw, H:ch, ox:wox, oy:woy, dist:dist, prop:owmTileBlock() };
+  }
+  function owmFor(scene){
+    if(window.__DQ_OW_CONTINUOUS__===false) return null;         // review escape hatch, like __A1_DNG_CONTINUOUS__
+    if(!scene || scene.currentMapId!=='overworld') return null;  // only the BFS-validated real overworld
+    var map=scene.mapData; if(!map||!map.length||!map[0]) return null;
+    var hero=scene.hero; if(!hero||!hero.scene) return null;
+    var cam=scene.cameras&&scene.cameras.main; if(!cam||!cam.worldView) return null;
+    var winW=Math.ceil(cam.worldView.width/TILE)+2*MARGIN, winH=Math.ceil(cam.worldView.height/TILE)+2*MARGIN;
+    var X0=windowStart(cam.worldView.x,winW,map[0].length), Y0=windowStart(cam.worldView.y,winH,map.length);
+    var key=X0+'_'+Y0+'_'+winW+'_'+winH;
+    // Identity on the ARRAY as well as the window: a town exit swaps mapData wholesale, and a field
+    // built from the old array describes terrain that is no longer there.
+    if(!owmState || owmState.map!==map || owmState.key!==key)
+      owmState={ map:map, key:key, m:owmBuild(map,X0,Y0,winW,winH) };
+    var m=owmState.m; if(!m) return null;
+    var fx=hero.x-m.ox, fy=hero.y-m.oy;                          // she must be inside it, with room to work
+    if(fx<8||fy<8||fx>=m.W-8||fy>=m.H-8) return null;            // outside -> the engine's own stepping
+    return m;
+  }
+  // The field in force for this scene: the dungeon's baked mask, else the overworld's derived one.
+  function a1mAnyFor(scene){
+    var m=null;
+    try{ m=a1mFor(scene); }catch(e){}
+    if(m) return m;
+    try{ return owmFor(scene); }catch(e){ if(window.__DQ_DEBUG__) console.log('dq owm '+e+(e&&e.stack||'')); }
+    return null;
+  }
+  // State identity for the mover. Keyed on the MAP, never on the window -- the walk cadence and the
+  // bump debounce must survive the field being rebuilt under her every 12 cells of travel.
+  function a1mStateKey(scene){
+    return a1mKeyFor(scene) || (scene&&scene.currentMapId ? 'ow:'+scene.currentMapId : null);
   }
   // The analog stick's ACTUAL vector, not the arrow keys it synthesises for the frozen bundle.
   // index.html publishes __DQ_STICK__ alongside the key events, so the overworld and the town
@@ -2313,7 +2433,7 @@
     var gy=y+a1mFootDy(scene);
     var tx=(((x+dx/l*(A1M_FOOT+2))/TILE)|0), ty=(((gy+dy/l*(A1M_FOOT+2))/TILE)|0);
     var row=scene.mapData[ty], t=row?row[tx]:undefined;
-    if(t===undefined || !A1M_PROP[t]) return;
+    if(t===undefined || !(m.prop||A1M_PROP)[t]) return;
     var now=Date.now(); if(now-a1mState.bump<700) return; a1mState.bump=now;
     var ddx=tx-scene.heroTileX, ddy=ty-scene.heroTileY;                      // face it, like a step would
     if(Math.abs(ddx)+Math.abs(ddy)===1) scene.heroDir=ddx?(ddx>0?2:1):(ddy>0?0:3);
@@ -2329,9 +2449,9 @@
       || (scene.tweens && scene.hero && scene.tweens.isTweening(scene.hero)));
   }
   function a1mStep(scene,dtms){
-    var m=a1mFor(scene); if(!m) return;
+    var m=a1mAnyFor(scene); if(!m) return;
     var hero=scene.hero; if(!hero||!hero.scene) return;
-    var key=a1mKeyFor(scene);
+    var key=a1mStateKey(scene);
     if(!a1mState || a1mState.scene!==scene || a1mState.key!==key)
       a1mState={ scene:scene, key:key, phase:0, bump:0 };
     if(a1mHalted(scene)) return;
@@ -2476,7 +2596,7 @@
     if(!sys||typeof sys.sceneUpdate!=='function'||sys.sceneUpdate.__a1m) return;
     var orig=sys.sceneUpdate;
     var patched=function(time,delta){
-      var on=false; try{ on=!!a1mFor(this); }catch(e){}
+      var on=false; try{ on=!!a1mAnyFor(this); }catch(e){}
       if(!on) return orig.call(this,time,delta);
       var was=this.isMoving; this.isMoving=true;
       try{ orig.call(this,time,delta); } finally { this.isMoving=was; }
@@ -2991,6 +3111,9 @@
     catch(e){ return false; }
   }
   var lastReskinMapId=null;
+  // The overworld mapData array the consolidation + Act-1 plate were last applied to. See the
+  // identity guard in the 'ow' branch of tick() for why a key is not enough.
+  var owMapRef=null;
   // SHIP SCOPE: owner 2026-07-09 confirmed towns + dungeons were LOCKED IN -> reflect them in the game.
   // (Initial same-day ship was overworld-only; owner reversed.) Overworld + town + dungeon reskin all ON.
   // NOTE: the dungeon reskin loads Codex prop PNGs from props/dqprop-<name>-128.png -> that dir MUST ship too.
@@ -3030,21 +3153,32 @@
     if (kind==='ow'){
       a1aFetch();                                      // one-shot; the Act 1 art manifest + landmark table
       var mapId=scene.currentMapId+':'+scene.mapData.length+'x'+(scene.mapData[0]?scene.mapData[0].length:0);
+      // DATA MUTATION (owner-approved sandbox exception): consolidate sprinkled mountains in mapData IN PLACE,
+      // ONCE per map ARRAY, BEFORE reskin — so overlay + minimap + collision all read the same tiles. Scoped to
+      // the real 'overworld' map only (the map whose walkability/landmarks were BFS-validated). Then force an
+      // immediate minimap redraw so it reflects the mutation without the 300ms throttle lag.
+      //
+      // GUARDED ON THE ARRAY IDENTITY, NOT ON `mapId`. Walking out of a town hands the engine a
+      // brand-new overworld array with the SAME id and the SAME dimensions, so `mapId` is unchanged,
+      // the key gate below skips its whole body, and the consolidation is silently lost -- the
+      // sprinkled mountains come back and the minimap, the mass overlay and the collision field all
+      // read tiles the reskin no longer agrees with. This is the third time this exact shape of bug
+      // has landed in this file (the Act-1 plate, then updateDng's stale floor); both were fixed the
+      // same way. consolidateMapData is itself identity-cached, so this stays exactly-once per array.
+      var owFresh=false;
+      if (scene.currentMapId==='overworld' && owMapRef!==scene.mapData){
+        owMapRef=scene.mapData;
+        try{ consolidateMapData(scene);
+             // Owner-locked Act 1 V3 plate: apply only after legacy mountain consolidation so
+             // semantic forest, harbor water, and both bridge decks remain authoritative.
+             if(window.__ACT1_WORLD_MAP__&&typeof window.__ACT1_WORLD_MAP__.apply==='function') window.__ACT1_WORLD_MAP__.apply(scene);
+             if (typeof scene.renderMinimap==='function'){ scene.lastMinimapUpdate=0; scene.renderMinimap(); }
+             owFresh=true;                              // the tiles changed under any cached window
+        }catch(e){ if(window.__DQ_DEBUG__) console.log('dq consolidate err '+e+(e&&e.stack||'')); }
+      }
       if (mapId!==lastReskinMapId){ lastReskinMapId=mapId;
-        // DATA MUTATION (owner-approved sandbox exception): consolidate sprinkled mountains in mapData IN PLACE,
-        // ONCE per map load, BEFORE reskin — so overlay + minimap + collision all read the same tiles. Scoped to
-        // the real 'overworld' map only (the map whose walkability/landmarks were BFS-validated). Then force an
-        // immediate minimap redraw so it reflects the mutation without the 300ms throttle lag.
-        if (scene.currentMapId==='overworld'){
-          try{ consolidateMapData(scene);
-               // Owner-locked Act 1 V3 plate: apply only after legacy mountain consolidation so
-               // semantic forest, harbor water, and both bridge decks remain authoritative.
-               if(window.__ACT1_WORLD_MAP__&&typeof window.__ACT1_WORLD_MAP__.apply==='function') window.__ACT1_WORLD_MAP__.apply(scene);
-               if (typeof scene.renderMinimap==='function'){ scene.lastMinimapUpdate=0; scene.renderMinimap(); }
-          }catch(e){ if(window.__DQ_DEBUG__) console.log('dq consolidate err '+e+(e&&e.stack||'')); }
-        }
         try{ reskin(scene); }catch(e){ if(window.__DQ_DEBUG__) console.log('dq reskin err '+e+(e&&e.stack?e.stack:'')); } }
-      else { var a1fresh=A1A.dirty; A1A.dirty=false;   // a chunk (or the manifest) just landed -> the cached window is stale
+      else { var a1fresh=A1A.dirty||owFresh; A1A.dirty=false;   // a chunk (or the manifest) just landed -> the cached window is stale
              try{ ensureTerrain(scene); updateTerrain(scene,a1fresh); }catch(e){ if(window.__DQ_DEBUG__) console.log('dq terr err '+e); }
              try{ rebuildOverlay(scene,a1fresh); }catch(e){ if(window.__DQ_DEBUG__) console.log('dq ovl err '+e); } }
       try{ owSpecialObjects(scene); }catch(e){ if(window.__DQ_DEBUG__) console.log('dq owprop err '+e+(e&&e.stack||'')); } // ALWAYS run props (even during boot map-churn)
