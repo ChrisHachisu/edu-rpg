@@ -28,6 +28,28 @@ design/review/overworld-art-blueprint/*
 design/review/overworld-art-blueprint/act-by-act/*
 !design/review/overworld-art-blueprint/act-by-act/act1/
 design/review/overworld-art-blueprint/act-by-act/act1/*
+# ...and NOT the r26 SOURCE PLATE, the one artifact in the Act 1 chain that cannot be recomputed.
+#
+# `build_act1_hifi_chunks.py` derives `runtime-v2/manifest.json` and its 90 chunks (15 MB) from
+# this 8.7 MB plate, and four authoring tools read those. All of it was untracked, so all of it
+# existed in ONE worktree, on ONE machine, with no remote and no history — gitignored means it is
+# not on the second Mac either, so the copy count was one and no procedure could raise it.
+#
+# The PLATE is tracked rather than its derivatives, because it is the only link in the chain that
+# is not reproducible, and because its identity is verifiable without trusting the copy:
+# `build_act1_hifi_chunks.py:160` pins its sha256 and `:557` asserts it BEFORE `:582` deletes
+# anything. Tracking the 15 MB of chunks instead would have been bigger, and would have tracked
+# the things a script can regenerate while still losing the thing it regenerates them from.
+#
+# Proven necessary on 2026-08-06: the superseded promote script deleted 60 tracked `.webp` chunks
+# before crashing, and they came back with `git checkout`. Nothing in this directory would have.
+# Tracking is what turns that class of accident from data loss into a restore.
+#
+# NOTE this makes the derivatives REPRODUCIBLE, not PRESENT: a fresh clone still has to run
+# `build_act1_hifi_chunks.py` before those four tools work. A better failure, not no failure.
+!design/review/overworld-art-blueprint/act-by-act/act1/generated/
+design/review/overworld-art-blueprint/act-by-act/act1/generated/*
+!design/review/overworld-art-blueprint/act-by-act/act1/generated/act1-v4-routing-corrections-v3-2368x2912.png
 !design/review/overworld-art-blueprint/act-by-act/act1/runtime-v2/
 design/review/overworld-art-blueprint/act-by-act/act1/runtime-v2/*
 !design/review/overworld-art-blueprint/act-by-act/act1/runtime-v2/act1-final-art-geometry-r26/
