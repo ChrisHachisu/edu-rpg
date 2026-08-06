@@ -38,7 +38,7 @@ ACT1_OVERLAY_FILES = {
     # collision shape derived from the art, and four arrow keys can only express eight headings.
     # The key events are unchanged, so the overworld and the towns -- which read Phaser cursors --
     # are untouched; only dq-tiles.js, and only where it holds a mask, reads the extra channel.
-    "index.html": (15407, "5181acee9135236851d1ea90d6ca4185ecafe85c40de97b8518a77edcebab1eb"),
+    "index.html": (15479, "29b0c6982fe2a6f3ebb7db6d2e4c23bc3bf3acba729844954838dbc735258965"),
     # 2026-08-01, owner-authorised: dq-tiles.js now splats AI-generated terrain MATERIALS through
     # its existing continuous-world-pixel drawTerrain, plus a ridged mountain height field,
     # varied shore character and landmark sites derived from mapData. Fallback-safe -- until the
@@ -125,20 +125,21 @@ ACT1_OVERLAY_FILES = {
     # the control-orientation setting, into the frame. First override of this file since the
     # v1.17.1 baseline was frozen, which is why it had no entry before.
     "ui-overhaul.js": (
-        106705, "ed4e7ef01e97461ac2fdc383a2b0c6144782f9a787f612768e292f8d92b0b463"),
+        108934, "a4e70beec24a01fa21ef5aae905b13f6e88cf5345e79a2e44049a24e93d60937"),
     # 2026-08-06, owner pick: "Charcoal & Gold Leaf" (direction 4 of
     # design/ui-overhaul/chic-style-board.html). The same gold as before -- the pixel art, the
     # dungeon plates and the town screens were all approved against it -- spent differently:
     # charcoal panels, 1px hairlines instead of 2px frames, no 5px hard drop-shadow under every
     # button, and gold FILLED on exactly one element per screen, whichever is selected.
-    # This entry also carries the @font-face pair. See UI_FONT_FILES below for why the typeface is
+    # This entry also carries the @font-face pair. See UI_ASSET_FILES below for why the typeface is
     # bundled rather than fetched; the short version is that it never reached the phone at all.
     # Like ui-overhaul.js above, first override of this file since the baseline was frozen.
     "ui-overhaul.css": (
-        32196, "e08a2ce8451db05c7d33500594777ba28e06011415427732202b5375fcf0eba4"),
+        34019, "15bee192e3c32f552bebdde2d17b90832ad9d0d8c823d60b723b157a34a5d764"),
 }
 # 2026-08-06, owner-picked ("Charcoal & Gold Leaf", direction 4 of
-# design/ui-overhaul/chic-style-board.html): the UI typeface, bundled rather than fetched.
+# design/ui-overhaul/chic-style-board.html): the chrome the theme needs on disk rather than
+# over the network -- the UI typeface, and the generated tab-bar glyph sheet below it.
 #
 # The font the game asked for had never reached the phone. ui-overhaul.css @imported M PLUS
 # Rounded 1c from fonts.googleapis.com, dist/fonts/ did not exist, and the Capacitor app has no
@@ -154,13 +155,26 @@ ACT1_OVERLAY_FILES = {
 #
 # OFL.txt ships because OFL-1.1 requires the licence to travel with the fonts. It is not loaded
 # at runtime; it is registered so it cannot be dropped by a sync that only knows about .woff2.
-UI_FONT_FILES = {
+UI_ASSET_FILES = {
     "fonts/zen-maru-gothic-500.woff2": (
         1_536_444, "24ff5c102895e312ab53cd5d012b9f45dfc712963c544b02247005414aa6cbb5"),
     "fonts/zen-maru-gothic-700.woff2": (
         1_566_980, "10112760e5a48c0e8d22659ad0676b7dd7cbba3f36e68b18bda2692d63e98b37"),
     "fonts/OFL.txt": (
         4_402, "2a20cf7ce1909d8ee1e949095d340f7d7656705f7c810a2d6faf56800ad0cb3d"),
+    # 2026-08-06, owner: "have codex generate better bottom tab icons ... the current ones look a
+    # bit wonky". The worst was equip -- a FILLED sword rotated 42 degrees, which at 22px reads as
+    # a lopsided X rather than a blade. Replaced by a generated four-glyph family (person, pouch,
+    # upright sword, gear) drawn to one stroke weight.
+    #
+    # It is one sheet and it is an ALPHA MASK, not a picture: four 128px cells stamped out of
+    # currentColor, so both tab bars keep their own active/inactive tinting and a palette change
+    # needs no re-export. Recovered from the generator's output by scripts/build_tab_icons.py --
+    # the model was asked for a transparent canvas and returned an OPAQUE one with the
+    # transparency chequerboard painted into it as pixels, which is silent unless you check
+    # hasAlpha, and would have shipped a grey chequer behind every icon.
+    "ui-icons/tab-icons.png": (
+        16813, "3fa2ce1db739431c32daa4c3e02afa7ff8df3f1ec7e2e0846891df07555b8332"),
 }
 # The four tiling terrain materials the renderer above samples. New runtime paths as of
 # 2026-08-01; pinned by hash rather than merely tolerated, because they are shipped art and a
@@ -589,7 +603,7 @@ def verify_act1_overlay(root: Path, allowed_extra: frozenset[str] = frozenset())
     expected_hifi_paths.add("act1-hifi/adapter.js")
     expected_paths = (set(expected_entries) | {"act1-world-map.js"} | expected_hifi_paths
                       | set(ACT1_MATERIAL_FILES) | set(ACT1_DUNGEON_FILES)
-                      | set(ACT1_TOWN_FILES) | set(ACT1_LANDMARK_FILES) | set(UI_FONT_FILES)
+                      | set(ACT1_TOWN_FILES) | set(ACT1_LANDMARK_FILES) | set(UI_ASSET_FILES)
                       # ACT1_OVERLAY_FILES began as pure OVERRIDES of paths the baseline
                       # manifest already carried, so it was never part of this union. It can
                       # now also ADD a runtime file (hero-g3-walk.png), which the manifest by
@@ -618,13 +632,13 @@ def verify_act1_overlay(root: Path, allowed_extra: frozenset[str] = frozenset())
         if not public_mat.is_file() or public_mat.read_bytes() != mat.read_bytes():
             raise BaselineError(f"public/dist material twins differ: {relative_path}")
 
-    for relative_path, (font_size, font_hash) in UI_FONT_FILES.items():
+    for relative_path, (font_size, font_hash) in UI_ASSET_FILES.items():
         fnt = all_found[relative_path]
         if fnt.stat().st_size != font_size or sha256(fnt) != font_hash:
-            raise BaselineError(f"UI font identity mismatch: {relative_path}")
+            raise BaselineError(f"UI asset identity mismatch: {relative_path}")
         public_font = ROOT / "public" / relative_path
         if not public_font.is_file() or public_font.read_bytes() != fnt.read_bytes():
-            raise BaselineError(f"public/dist font twins differ: {relative_path}")
+            raise BaselineError(f"public/dist UI asset twins differ: {relative_path}")
 
     for relative_path, (dng_size, dng_hash) in ACT1_DUNGEON_FILES.items():
         dng = all_found[relative_path]

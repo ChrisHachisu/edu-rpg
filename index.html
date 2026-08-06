@@ -114,9 +114,10 @@
         color: rgba(232,226,212,.55); font-size: 11px; font-weight: 500; border-radius: 10px;
         -webkit-tap-highlight-color: transparent; touch-action: manipulation;
       }
-      .field-tabs .ft svg { width: 22px; height: 22px; color: rgba(201,169,97,.60); }
+      /* .tabic itself is defined in ui-overhaul.css -- one definition for both tab bars. */
+      .field-tabs .ft .tabic { color: rgba(201,169,97,.60); }
       .field-tabs .ft.pressed { background: rgba(201,169,97,.14); color: #e8e2d4; }
-      .field-tabs .ft.pressed svg { color: #c9a961; }
+      .field-tabs .ft.pressed .tabic { color: #c9a961; }
 
       /* --- Orientation: d-pad position (raised to sit above the bottom tab bar) --- */
       .stick { bottom: calc(76px + env(safe-area-inset-bottom, 0px)); }

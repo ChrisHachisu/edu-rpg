@@ -72,6 +72,11 @@
     '<symbol id="qok-text" viewBox="0 0 24 24"><path d="M5 6.5h14M12 6.5V19M8.5 19h7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>' +
     '</svg>';
   function use(id, cls, col) { return '<svg class="' + (cls || 'ic') + '"' + (col ? ' style="color:' + col + '"' : '') + '><use href="#qok-' + id + '"/></svg>'; }
+  // Tab glyphs come from ui-icons/tab-icons.png -- one 512x128 sheet, four cells, in the order
+  // status / items / equip / settings. It is an ALPHA MASK, not a picture: the cell is stamped
+  // out of currentColor, so the active tab is gold and the rest muted with no second asset and
+  // no per-theme re-export. data-ti carries the cell index; the CSS does the positioning.
+  function tabIcon(i) { return '<i class="ic tabic" data-ti="' + i + '"></i>'; }
 
   // ---- hero sprite ----
   // real in-game hero armor colors (only 4 exist: gray/blue/pink/black)
@@ -314,6 +319,8 @@
   //  MENU
   // ============================================================
   // tab bar: items = outline flask (flasko) to match the other line-style tab icons; settings = cog gear
+  // Retained as documentation of what each tab MEANS. The bars draw from the generated mask
+  // sheet via tabIcon(index) now; these SVG symbol names are no longer looked up for them.
   var TAB_ICON = { status: 'person', items: 'flasko', equip: 'sword', settings: 'gear' };
   var TAB_KEY  = { status: 'menu.status', items: 'menu.items', equip: 'menu.equip', settings: 'menu.settings' };
   var SLOTS = ['weapon', 'armor', 'shield', 'helmet', 'accessory'];
@@ -335,7 +342,7 @@
     var h = '<div class="tabbar">';
     for (var i = 0; i < 4; i++) {
       var t = ['status', 'items', 'equip', 'settings'][i];
-      h += '<button class="tab' + (cur === t ? ' on' : '') + '" data-act="tab" data-i="' + i + '">' + use(TAB_ICON[t]) + esc(Z(TAB_KEY[t])) + '</button>';
+      h += '<button class="tab' + (cur === t ? ' on' : '') + '" data-act="tab" data-i="' + i + '">' + tabIcon(i) + esc(Z(TAB_KEY[t])) + '</button>';
     }
     return h + '</div>';
   }
@@ -1170,7 +1177,33 @@
     d.innerHTML = '<div class="qfhp"><div id="qfhp-text"></div><div class="qfhp-bar"><i id="qfhp-fill"></i></div></div>' +
       '<div id="qfh-floor"></div>' +
       '<button id="qfh-map" aria-label="Map"><canvas id="qfh-map-canvas"></canvas><span id="qfh-map-icon">▧</span></button>' +
-      '<div id="qfh-compass"><b class="n">N</b><b class="e">E</b><b class="s">S</b><b class="w">W</b><i id="qfh-compass-arrow"></i></div>' +
+      // COMPASS. Was a CSS border-triangle inside a bordered div: a solid gold wedge whose
+      // rotation centre was the 0x0 border box rather than the needle's own middle, so it swung
+      // off-axis and sat high in the dial. It is one SVG now -- ring, ticks, cardinals and needle
+      // in a single coordinate system, rotating about an exact centre -- and drawn in the same
+      // hairline language as the rest of the HUD instead of one heavy filled shape.
+      // North half filled, south half hollow: the classic reading, and the only way a needle this
+      // small says which end is the pointer.
+      '<div id="qfh-compass">' +
+        '<svg viewBox="0 0 68 68" aria-hidden="true">' +
+          '<circle class="qfc-ring" cx="34" cy="34" r="31.5"/>' +
+          '<g class="qfc-tick">' +
+            '<path d="M34 3v3.5M34 65v-3.5M3 34h3.5M65 34h-3.5"/>' +
+          '</g>' +
+          '<g class="qfc-tick qfc-tick-min">' +
+            '<path d="M12.1 12.1l1.4 1.4M55.9 12.1l-1.4 1.4M55.9 55.9l-1.4-1.4M12.1 55.9l1.4-1.4"/>' +
+          '</g>' +
+          '<text class="qfc-c qfc-n" x="34" y="17.6">N</text>' +
+          '<text class="qfc-c" x="34" y="57.4">S</text>' +
+          '<text class="qfc-c" x="54" y="37.5">E</text>' +
+          '<text class="qfc-c" x="14" y="37.5">W</text>' +
+          '<g id="qfh-compass-arrow">' +
+            '<path class="qfc-nd" d="M34 17L37.4 34h-6.8z"/>' +
+            '<path class="qfc-sd" d="M34 51L30.6 34h6.8z"/>' +
+          '</g>' +
+          '<circle class="qfc-pivot" cx="34" cy="34" r="2.2"/>' +
+        '</svg>' +
+      '</div>' +
       '<div id="qfh-dialog"><b id="qfh-dialog-speaker"></b><span id="qfh-dialog-text"></span></div>';
     (document.body || document.documentElement).appendChild(d);
     fieldRoot = d; fieldHpText = d.querySelector('#qfhp-text'); fieldHpFill = d.querySelector('#qfhp-fill');
@@ -1252,6 +1285,13 @@
     ctx.fillStyle = '#e8e2d4';
     ctx.fillRect(Math.round(hx - 2.5), Math.round(hy - 2.5), 5, 5);
   }
+  // 34,34 is the centre of the compass SVG's 68-unit viewBox. Setting the attribute rather
+  // than a CSS transform keeps the rotation origin explicit and identical in every engine.
+  function setCompassBearing(deg) {
+    if (!fieldCompassArrow) return;
+    fieldCompassArrow.style.display = '';
+    fieldCompassArrow.setAttribute('transform', 'rotate(' + deg.toFixed(1) + ' 34 34)');
+  }
   function drawFieldMap(wm) {
     if (!fieldMapCanvas || !wm || !wm.mapData || !wm.mapData.length) return;
     var now = Date.now(); if (now - fieldMapDrawAt < 220) return; fieldMapDrawAt = now;
@@ -1304,12 +1344,10 @@
     var compassOn = !!(tv ? tv.exit : wm.compassEnabled);
     fieldCompass.style.display = compassOn ? 'block' : 'none';
     if (compassOn && tv) {
-      var edeg = Math.atan2(tv.exit[1] * tv.cellPx - tv.hero.y, tv.exit[0] * tv.cellPx - tv.hero.x) * 180 / Math.PI + 90;
-      fieldCompassArrow.style.display = 'block';
-      fieldCompassArrow.style.transform = 'translate(-50%,-50%) rotate(' + edeg + 'deg)';
+      setCompassBearing(Math.atan2(tv.exit[1] * tv.cellPx - tv.hero.y, tv.exit[0] * tv.cellPx - tv.hero.x) * 180 / Math.PI + 90);
     } else if (compassOn) {
       var target = null; try { target = wm.getCompassTarget && wm.getCompassTarget(); } catch (e2) {}
-      if (target) { var deg = Math.atan2(target.oy - wm.heroTileY, target.ox - wm.heroTileX) * 180 / Math.PI + 90; fieldCompassArrow.style.display = 'block'; fieldCompassArrow.style.transform = 'translate(-50%,-50%) rotate(' + deg + 'deg)'; }
+      if (target) { setCompassBearing(Math.atan2(target.oy - wm.heroTileY, target.ox - wm.heroTileX) * 180 / Math.PI + 90); }
       else fieldCompassArrow.style.display = 'none';
     }
     var showing = !!wm.showingMessage; fieldDialog.style.display = showing ? 'flex' : 'none';
@@ -1340,7 +1378,7 @@
     if (sig !== _fieldNavSig) {
       _fieldNavSig = sig;
       var tabs = ['status', 'items', 'equip', 'settings'], h = '';
-      for (var i = 0; i < 4; i++) { var t = tabs[i]; h += '<button class="ft" data-fi="' + i + '">' + use(TAB_ICON[t]) + '<span>' + esc(Z(TAB_KEY[t])) + '</span></button>'; }
+      for (var i = 0; i < 4; i++) { var t = tabs[i]; h += '<button class="ft" data-fi="' + i + '">' + tabIcon(i) + '<span>' + esc(Z(TAB_KEY[t])) + '</span></button>'; }
       el.innerHTML = h;
     }
     if (!el.__bound) {
