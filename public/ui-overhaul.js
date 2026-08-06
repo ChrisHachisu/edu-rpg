@@ -363,7 +363,7 @@
       '<div class="eyebrow">' + esc(Z('menu.status')) + '</div>' +
       '<div class="panel" style="padding:16px;display:flex;flex-direction:column;gap:12px;">' +
         '<div class="row" style="gap:14px;">' +
-          '<div style="width:74px;height:74px;border-radius:18px;flex:none;display:grid;place-items:center;background:radial-gradient(closest-side,#fff8e6,#eadbb0);box-shadow:inset 0 0 0 2px #d8c18a;">' + heroImg(48, st.heroColor) + '</div>' +
+          '<div style="width:74px;height:74px;border-radius:16px;flex:none;display:grid;place-items:center;background:radial-gradient(closest-side,#262832,#1a1b22);box-shadow:inset 0 0 0 1px rgba(201,169,97,.40);">' + heroImg(48, st.heroColor) + '</div>' +
           '<div style="flex:1;"><div style="font-weight:900;font-size:20px;color:var(--ink);">' + esc(st.name) + '</div>' +
           '<div class="row" style="gap:6px;margin:2px 0 7px;"><span style="font-weight:800;color:var(--ink-soft);font-size:13px;">' + esc(Z('menu.level')) + ' ' + st.level + '</span>' + (poisoned ? '<span style="font-weight:800;font-size:10px;color:#fff;background:#a23bbf;border-radius:99px;padding:2px 8px;">☠ ' + esc(Z('status.poisoned') !== '[status.poisoned]' ? Z('status.poisoned') : (isJa() ? 'どく' : 'Poisoned')) + '</span>' : '') + '</div>' +
           '<div class="row"><div class="hp"><i style="width:' + (hpR * 100) + '%;' + hpFill + '"></i></div></div>' +
@@ -612,7 +612,7 @@
     var max = p.totalMaxHp, heal = max - st.hp, hpR = Math.max(0, Math.min(1, max ? st.hp / max : 1));
     var h = '<div class="stack heal-wrap" style="flex:1;justify-content:center;padding:0 20px;gap:18px;">' +
       '<div style="display:grid;place-items:center;gap:12px;">' +
-        '<div style="width:104px;height:104px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(closest-side,#dff6e6,#bfe6cf);box-shadow:0 0 0 3px #5fcc6355,0 0 34px #5fcc6340,inset 0 0 0 2px #fff;">' +
+        '<div style="width:104px;height:104px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(closest-side,#222a26,#1a1b22);box-shadow:0 0 0 1px rgba(111,158,126,.55),0 0 34px rgba(111,158,126,.22);">' +
           '<svg width="58" height="58" viewBox="0 0 24 24" fill="none"><path d="M12 21s-7-4.5-7-10a4 4 0 018-1 4 4 0 018 1c0 5.5-7 10-7 10z" fill="#5fcc63" stroke="#2f9c5b" stroke-width="1.4"/><path d="M8.3 4.7v5.4M5.6 7.4h5.4" stroke="#15532d" stroke-width="3.8" stroke-linecap="round"/><path d="M8.3 4.7v5.4M5.6 7.4h5.4" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>' +
         '</div>' +
         '<div class="scene-h">' + esc(Z('npc.healer.popupTitle')) + '</div>' +
@@ -1210,14 +1210,14 @@
     };
     g.clearRect(0, 0, N, N);
     // Ground first, with the region's holes punched out by the even-odd rule in the same path.
-    g.fillStyle = '#3f5f78'; g.beginPath();
+    g.fillStyle = '#2a2c35'; g.beginPath();
     (v.walkable.regions || []).forEach(function (r) {
       poly(r.outer);
       (r.holes || []).forEach(poly);
     });
     g.fill('evenodd');
     // Props (well, crates, stalls) read as blocked, same as a dungeon wall does.
-    g.fillStyle = '#1d2b3a'; g.beginPath();
+    g.fillStyle = '#0a0b0f'; g.beginPath();
     (v.walkable.staticObstacles || []).forEach(function (o) { poly(o.polygon); });
     g.fill();
     townMaskCanvas = c; townMaskId = v.id;
@@ -1232,7 +1232,7 @@
     var ctx = fieldMapCanvas.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.imageSmoothingEnabled = true;
     ctx.clearRect(0, 0, css, css);
-    ctx.fillStyle = '#0c1420'; ctx.fillRect(0, 0, css, css);
+    ctx.fillStyle = '#101116'; ctx.fillRect(0, 0, css, css);
     // The whole town fits: 1040px across is roughly a screen and a half, so panning it would
     // hide the very thing a town map is for -- where the shop, the healer and the way out are.
     ctx.drawImage(townMask(v), 0, 0, css, css);
@@ -1242,13 +1242,14 @@
       ctx.fillStyle = fill; ctx.beginPath();
       ctx.arc(cell[0] * cp * s, cell[1] * cp * s, r, 0, 6.2832); ctx.fill();
     };
-    (v.npcs || []).forEach(function (c) { dot(c, '#9fd8ff', 2); });
-    dot(v.shop, '#e0b757', 2.6);
-    dot(v.save, '#5fcc63', 2.6);
-    dot(v.exit, '#ff9b5a', 3);
-    ctx.strokeStyle = '#aa8d42'; ctx.lineWidth = 2; ctx.strokeRect(1, 1, css - 2, css - 2);
+    (v.npcs || []).forEach(function (c) { dot(c, 'rgba(232,226,212,.42)', 2); });
+    dot(v.shop, '#c9a961', 2.6);
+    dot(v.save, '#6f9e7e', 2.6);
+    dot(v.exit, '#c9a961', 3);
+    ctx.strokeStyle = 'rgba(201,169,97,.28)'; ctx.lineWidth = 1; ctx.strokeRect(.5, .5, css - 1, css - 1);
     var hx = v.hero.x * s, hy = v.hero.y * s;
-    ctx.fillStyle = '#ffff00';
+    // The hero is the one thing on this map that must never be mistaken for a marker.
+    ctx.fillStyle = '#e8e2d4';
     ctx.fillRect(Math.round(hx - 2.5), Math.round(hy - 2.5), 5, 5);
   }
   function drawFieldMap(wm) {
@@ -1258,7 +1259,7 @@
     var dpr = Math.max(1, Math.min(4, window.devicePixelRatio || 1)), pxw = Math.round(css * dpr);
     if (fieldMapCanvas.width !== pxw || fieldMapCanvas.height !== pxw) { fieldMapCanvas.width = pxw; fieldMapCanvas.height = pxw; }
     var ctx = fieldMapCanvas.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.imageSmoothingEnabled = false;
-    ctx.clearRect(0, 0, css, css); ctx.fillStyle = '#111122'; ctx.fillRect(0, 0, css, css);
+    ctx.clearRect(0, 0, css, css); ctx.fillStyle = '#101116'; ctx.fillRect(0, 0, css, css);
     var map = wm.mapData, H = map.length, W = (map[0] || []).length, span = 80, half = span >> 1;
     var sx = Math.max(0, Math.min(Math.max(0, W - span), wm.heroTileX - half));
     var sy = Math.max(0, Math.min(Math.max(0, H - span), wm.heroTileY - half));
@@ -1270,9 +1271,9 @@
       var castle = tile === 8, n = castle ? 3 : (special ? 2 : 1), off = castle ? 1 : (special ? .5 : 0);
       ctx.fillRect((x - sx - off) * sc, (y - sy - off) * sc, Math.ceil(sc * n), Math.ceil(sc * n));
     }
-    ctx.strokeStyle = '#aa8d42'; ctx.lineWidth = 2; ctx.strokeRect(1, 1, css - 2, css - 2);
+    ctx.strokeStyle = 'rgba(201,169,97,.28)'; ctx.lineWidth = 1; ctx.strokeRect(.5, .5, css - 1, css - 1);
     var hx = (wm.heroTileX - sx) * sc, hy = (wm.heroTileY - sy) * sc;
-    ctx.fillStyle = '#ffff00'; ctx.fillRect(Math.round(hx - 2), Math.round(hy - 2), 5, 5);
+    ctx.fillStyle = '#e8e2d4'; ctx.fillRect(Math.round(hx - 2), Math.round(hy - 2), 5, 5);
   }
   function updateFieldHud() {
     var d = ensureFieldHud(), wm = getScene('WorldMapScene');

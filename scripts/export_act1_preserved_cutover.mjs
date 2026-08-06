@@ -22,7 +22,7 @@ const EXPECTED_MANIFEST_SHA = 'cb3865ba5f51d27dc025594df6a487dc97728f76dbecb98be
 // next time a worktree seeded its dist by copying someone else's. Root index.html has been
 // brought back into line -- it now differs from dist/index.html by exactly the seven rewrites
 // below and nothing else -- so the shell is reproducible again.
-const EXPECTED_STATIC_INDEX_SHA = '0f3dd23c7bce7b2f9d9ec41f09d280be3d3c623f0e747e49d9cbd8301f1df46f';
+const EXPECTED_STATIC_INDEX_SHA = '5181acee9135236851d1ea90d6ca4185ecafe85c40de97b8518a77edcebab1eb';
 const EXPECTED_DQ_SHA = 'fcd746d1be14cc1958b4ae710a75e36c0ee2a5ae141a82e63272ba7169cd688b';
 const EXPECTED_ACT1_MAP_SHA = '7a1037634692a88c4b6cdf09642f25e4375098de452cb7b4a15808cd4c96fef7';
 

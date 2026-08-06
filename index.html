@@ -11,7 +11,10 @@
       width: 100%;
       height: 100%;
       overflow: hidden;
-      font-family: 'Helvetica Neue', 'Hiragino Kaku Gothic ProN', 'Meiryo', sans-serif;
+      /* Same bundled face as #qok-ui and the field HUD. ui-overhaul.css declares the
+         @font-face and is linked BELOW this block; @font-face is document-scoped, so the
+         order does not matter. */
+      font-family: 'Zen Maru Gothic', 'Helvetica Neue', 'Hiragino Kaku Gothic ProN', 'Meiryo', sans-serif;
       -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
       -webkit-tap-highlight-color: transparent;
     }
@@ -30,26 +33,26 @@
     .rpg-frame {
       position: relative;
       padding: 12px;
-      border: 3px solid #8b7340;
+      border: 1px solid rgba(201,169,97,.45);
       outline: 2px solid #3a2f1e;
       outline-offset: 2px;
       background: #111;
       box-shadow: inset 0 0 20px rgba(0,0,0,.8), 0 0 30px rgba(80,60,20,.3), 0 0 60px rgba(0,0,0,.5);
     }
     .rpg-frame::before, .rpg-frame::after {
-      content: ''; position: absolute; width: 16px; height: 16px; border: 2px solid #c9a84c; z-index: 10;
+      content: ''; position: absolute; width: 16px; height: 16px; border: 1px solid #c9a961; z-index: 10;
     }
     .rpg-frame::before { top: 3px; left: 3px; border-right: none; border-bottom: none; }
     .rpg-frame::after { top: 3px; right: 3px; border-left: none; border-bottom: none; }
-    .corner-bl, .corner-br { position: absolute; width: 16px; height: 16px; border: 2px solid #c9a84c; z-index: 10; pointer-events: none; }
+    .corner-bl, .corner-br { position: absolute; width: 16px; height: 16px; border: 1px solid #c9a961; z-index: 10; pointer-events: none; }
     .corner-bl { bottom: 3px; left: 3px; border-right: none; border-top: none; }
     .corner-br { bottom: 3px; right: 3px; border-left: none; border-top: none; }
     .frame-title {
       position: absolute; top: -18px; left: 50%; transform: translateX(-50%);
-      background: linear-gradient(180deg, #2a2440 0%, #1a1a2e 100%);
-      border: 2px solid #8b7340; border-radius: 4px; padding: 2px 16px;
-      color: #c9a84c; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
-      white-space: nowrap; z-index: 20; text-shadow: 0 0 6px rgba(201,168,76,.4);
+      background: #15161c;
+      border: 1px solid rgba(201,169,97,.45); border-radius: 4px; padding: 2px 16px;
+      color: #c9a961; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+      white-space: nowrap; z-index: 20; text-shadow: 0 0 8px rgba(201,169,97,.35);
     }
 
     /* Desktop: fixed framed game at the design size (768x672). */
@@ -85,34 +88,35 @@
       .stick {
         position: absolute; width: 172px; height: 172px; pointer-events: auto;
         touch-action: none; border-radius: 50%;
-        background: rgba(26,26,46,.5); border: 2px solid #8b7340;
-        box-shadow: 0 0 10px rgba(0,0,0,.5), inset 0 0 14px rgba(0,0,0,.4);
+        background: rgba(21,22,28,.42); border: 1px solid rgba(201,169,97,.45);
+        box-shadow: 0 0 12px rgba(0,0,0,.45), inset 0 0 16px rgba(0,0,0,.35);
       }
       .stick-knob {
         position: absolute; left: 50%; top: 50%; width: 70px; height: 70px;
         margin: -35px 0 0 -35px; border-radius: 50%;
-        background: rgba(201,168,76,.42); border: 2px solid rgba(201,168,76,.75);
+        background: rgba(201,169,97,.30); border: 1px solid rgba(201,169,97,.70);
         box-shadow: 0 0 10px rgba(0,0,0,.35);
         transition: transform .04s linear;
       }
-      .stick.active .stick-knob { background: rgba(255,213,74,.55); }
+      .stick.active .stick-knob { background: rgba(201,169,97,.62); border-color: #c9a961; }
 
       /* --- Field/dungeon bottom menu tabs (replace the floating menu button). Populated + handled by ui-overhaul.js. --- */
       .field-tabs {
         position: fixed; left: 0; right: 0; bottom: 0; z-index: 90;
         display: flex; gap: 4px; pointer-events: auto;
         padding: 7px 8px calc(7px + env(safe-area-inset-bottom, 0px));
-        background: linear-gradient(180deg, rgba(26,28,58,.86), #0c0d1f 64%);
-        border-top: 1.5px solid #9a7a36;
+        background: #101116;
+        border-top: 1px solid rgba(201,169,97,.20);
       }
       .field-tabs .ft {
         flex: 1; min-height: 48px; border: none; background: transparent; cursor: pointer;
         display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
-        color: #c7bfe0; font-size: 11px; font-weight: 700; border-radius: 12px;
+        color: rgba(232,226,212,.55); font-size: 11px; font-weight: 500; border-radius: 10px;
         -webkit-tap-highlight-color: transparent; touch-action: manipulation;
       }
-      .field-tabs .ft svg { width: 22px; height: 22px; color: #e0b757; }
-      .field-tabs .ft.pressed { background: rgba(201,168,76,.22); }
+      .field-tabs .ft svg { width: 22px; height: 22px; color: rgba(201,169,97,.60); }
+      .field-tabs .ft.pressed { background: rgba(201,169,97,.14); color: #e8e2d4; }
+      .field-tabs .ft.pressed svg { color: #c9a961; }
 
       /* --- Orientation: d-pad position (raised to sit above the bottom tab bar) --- */
       .stick { bottom: calc(76px + env(safe-area-inset-bottom, 0px)); }
