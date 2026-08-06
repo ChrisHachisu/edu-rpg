@@ -2,8 +2,15 @@
 
 This is the planning and delegation contract for Quest of Knowledge. It applies
 to Claude Code orchestration and Codex-native orchestration, with one transport
-difference: Claude can select Luna/Terra/Sol through `codex exec`; Codex native
-collaboration chooses the available model and cannot promise those names.
+difference: Claude dispatches through the Claude Agent tool with an explicit
+tier model (ADR-0066; `codex exec` remains only for image/video generation);
+Codex native collaboration chooses the available model and cannot promise tier
+names.
+
+For splitting a milestone across *several concurrent sessions* — track
+ownership, the merge gate, and the machine limits — see
+`docs/PARALLEL-SESSIONS.md`. This document governs one session and the workers
+it dispatches; that one governs how sessions coexist.
 
 ## 1. Lead plans before execution
 
@@ -16,8 +23,10 @@ the first dispatch, it publishes one table covering every requested item:
 
 The plan must identify disjoint ownership or make workers read-only. It must
 include the render/simulator gate for visual work and account for each named
-user item. If the work cannot be described in bounded tracks, the lead plans
-further before dispatching.
+user item. The simulator is a single shared machine resource: if another
+session holds it, the plan schedules that gate rather than booting a second one.
+If the work cannot be described in bounded tracks, the lead plans further before
+dispatching.
 
 The lead does not perform bulk reading, asset generation, mechanical editing,
 or exploratory forensics inline. It may keep final assembly, whole-task
@@ -30,20 +39,25 @@ Claude Code resolves tier names through `~/.claude/hooks/model-tiers.json`:
 
 | Tier | Current role | Use for |
 |---|---|---|
-| `light` / Luna | mechanical worker | exact single-file edits, rename/copy/resize/convert, manifests, inventories, deterministic checks |
-| `standard` / Terra | default worker | bounded implementation, multi-file fixes, one asset-generation batch, research/census, rendered QA |
-| `escalation` / Sol | surgical consultant | a focused `NEEDS-CONSULT`, unresolved root cause, or exceptional high-risk review |
+| `light` | mechanical worker | exact single-file edits, rename/copy/resize/convert, manifests, inventories, deterministic checks |
+| `standard` | default worker | bounded implementation, multi-file fixes, one asset-generation batch, research/census, rendered QA |
+| `escalation` | surgical consultant | a focused `NEEDS-CONSULT`, unresolved root cause, or exceptional high-risk review |
 | session model | lead | planning, product choices, integration, authorization, final acceptance |
 
-Default to Luna only when the pattern and pass condition are explicit. Default
-all other bounded execution to Terra. Do not give Sol bulk execution merely
-because a brief is vague; improve the brief or ask Sol one small question.
+Default to the light tier only when the pattern and pass condition are explicit.
+Default all other bounded execution to standard. Do not give escalation bulk
+execution merely because a brief is vague; improve the brief or ask the
+escalation consult one small question.
 
-The Claude dispatch hook rejects missing or unregistered model ids in the
-prescribed direct `codex exec` command form, including fresh review dispatches.
-Do not wrap dispatches in nested shells or alternate command launchers. Codex
-native agents use the same task split and return contract but cannot guarantee a
-named model, so do not claim Terra/Luna routing there.
+Use tier names in briefs and skills. Model ids live only in
+`~/.claude/hooks/model-tiers.json`; do not copy them into project docs or
+dispatch prose.
+
+The Claude dispatch hook rejects missing or unregistered model ids on Agent
+dispatches (and on the `codex exec` image-generation form), including fresh
+review dispatches. Codex native agents use the same task split and return
+contract but cannot guarantee a named model, so do not claim tier routing
+there.
 
 ## 3. Every worker gets a small brief
 
@@ -57,7 +71,7 @@ Pass paths, not pasted file contents. A brief contains only:
 6. Return contract: stage status, files changed, exact check results, evidence
    paths, risks, and `NEEDS-CONSULT` questions.
 
-Substantive Luna/Terra workers read the compact Fable block. Do not give a
+Substantive light/standard workers read the compact Fable block. Do not give a
 worker the full project runbook, whole handoff corpus, source dumps, or raw
 simulator/accessibility trees. Large results go to a file; the return contains
 only a short summary and pointer.
@@ -75,8 +89,10 @@ not through an endlessly resumed conversation.
 - Use only the locked style anchors and the current target as visual inputs.
   Reference local paths directly; do not attach the full roster, rejected
   history, or prior batch outputs.
-- Luna handles deterministic post-processing and inventory work. Terra handles
-  generation, comparison, and a fresh rendered QA pass.
+- Generation itself runs on Codex (`codex exec` with an explicit `-m`) — the one
+  remaining Codex path. Deterministic post-processing and inventory work go to a
+  light-tier Claude agent; a fresh standard-tier Claude agent runs the comparison
+  and the rendered QA pass.
 - Never use `codex exec resume` or continue the same Codex task after a batch
   boundary.
 
@@ -105,8 +121,16 @@ must be sharded; never paste or regenerate the entire manifest in every brief.
 Worker summaries are claims. The lead inspects the changed files and combined
 diff, resolves overlap, runs integration checks, and reads rendered evidence.
 The author of a visual change does not provide the only verdict; use a fresh
-Terra reviewer by default. `PASS` requires reaching and proving the exact state;
-otherwise return `FAIL`, `DEFERRED`, or `UNVERIFIED` with the blocker.
+standard-tier reviewer by default. `PASS` requires reaching and proving the
+exact state; otherwise return `FAIL`, `DEFERRED`, or `UNVERIFIED` with the
+blocker.
+
+The lead runs the final gate itself, on the committed tree; a worker's own
+numbers are never the verdict. Only one agent mutates a given worktree at a
+time — give concurrent workers separate worktrees or run them serially. When
+this session is one of several concurrent tracks, merging is additionally gated
+on `docs/PARALLEL-SESSIONS.md` (rebase onto current `main`, re-run the gate
+after the rebase, hold the integration token).
 
 Finish a wave with one compact user summary. If another asset family or major
 milestone remains, create a handoff and recommend a fresh task instead of
