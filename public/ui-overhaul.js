@@ -1298,15 +1298,24 @@
       _saProbeR.style.cssText = 'position:fixed;top:0;left:0;height:1px;width:env(safe-area-inset-left,0px);visibility:hidden;pointer-events:none;';
       _saProbeL._rr = document.createElement('div');
       _saProbeL._rr.style.cssText = 'position:fixed;top:0;right:0;height:1px;width:env(safe-area-inset-right,0px);visibility:hidden;pointer-events:none;';
-      document.body.appendChild(_saProbeL); document.body.appendChild(_saProbeR); document.body.appendChild(_saProbeL._rr);
+      // BOTTOM probe: the town overlay runs in a same-origin IFRAME, where env(safe-area-inset-*)
+      // is not the root scroller's and reads 0. The town pad has to clear the home indicator AND
+      // the field tab bar, so the measured value is published below and the adapter forwards it in.
+      _saProbeL._bb = document.createElement('div');
+      _saProbeL._bb.style.cssText = 'position:fixed;bottom:0;left:0;width:1px;height:env(safe-area-inset-bottom,0px);visibility:hidden;pointer-events:none;';
+      document.body.appendChild(_saProbeL); document.body.appendChild(_saProbeR);
+      document.body.appendChild(_saProbeL._rr); document.body.appendChild(_saProbeL._bb);
     }
     var t = _saProbeL.offsetHeight, l = _saProbeR.offsetWidth, r = _saProbeL._rr.offsetWidth;
-    var sig = t + '|' + l + '|' + r;
+    var bt = _saProbeL._bb.offsetHeight;
+    var sig = t + '|' + l + '|' + r + '|' + bt;
     if (sig !== _saSig) {
       _saSig = sig;
       root.style.paddingTop = t + 'px';
       root.style.paddingLeft = l + 'px';
       root.style.paddingRight = r + 'px';
+      // Seam: read by act1-hifi/adapter.js, which cannot measure this for the town iframe itself.
+      window.__QOK_SAFE__ = { top: t, left: l, right: r, bottom: bt };
     }
     if (__ticks > 20) _saDirty = false;
   }

@@ -43,6 +43,9 @@ style.textContent = `
      bar is pointer-events:auto, so only the bar itself takes taps; the rest reaches the town. */
   body.act1-hifi-active #touch-controls {
     display: block !important; position: fixed; inset: 0; z-index: 100; pointer-events: none; }
+  /* The town runtime draws its own analog pad, so the parent's stays hidden -- but the two must
+     agree on WHERE it sits. postTownChrome() forwards the orientation setting and the measured
+     safe-area insets into the frame; see town.html's #pad rules. */
   body.act1-hifi-active #dpad { display: none !important; }
   body.act1-hifi-active.qok-dialogue #touch-controls { display: none !important; }
   body.act1-hifi-active.qok-dialogue #qok-field-hud { display: block !important; }
@@ -372,6 +375,47 @@ addEventListener('message', event => {
   }
 });
 
+/* ---- parent chrome -> town frame -------------------------------------------------------------
+   Two things the town frame cannot work out for itself:
+
+   1. The control-orientation setting (left / center / right) lives on the parent's <body> as a
+      ctrl-* class, written by index.html from localStorage.
+   2. The real safe-area insets. `env(safe-area-inset-*)` inside a same-origin iframe is not the
+      root scroller's and reads 0, so the town pad's own `calc(18px + env(...))` was measuring
+      nothing. ui-overhaul.js already probes the true values and publishes __QOK_SAFE__.
+
+   Without both, the pad sat bottom-left 18px up while the overworld and dungeon stick sat
+   bottom-right above the tab bar -- and the parent's #fieldTabs bar (z-index 90) covers this
+   iframe (z-index 70), so the pad's lower half was not reachable at all. Observed on device
+   2026-08-06. */
+const CTRL_CLASSES = ['ctrl-left', 'ctrl-center', 'ctrl-right'];
+let lastChromeSig = '';
+
+function currentChrome() {
+  const cls = CTRL_CLASSES.find(c => document.body.classList.contains(c)) || 'ctrl-right';
+  const safe = window.__QOK_SAFE__ || {};
+  return {
+    type: 'act1-town-chrome',
+    ctrl: cls.slice(5),
+    safeBottom: Number(safe.bottom) || 0,
+    safeLeft: Number(safe.left) || 0,
+    safeRight: Number(safe.right) || 0,
+  };
+}
+
+/* Called every frame while the town is up. It compares a signature and only posts on a real
+   change, which also covers the ordering problem: ui-overhaul.js measures the insets over the
+   first ~1s, so they are usually still 0 at the moment the frame reports ready. */
+function postTownChrome(force) {
+  const win = frame.contentWindow;
+  if (!win || root.hidden) return;
+  const chrome = currentChrome();
+  const sig = JSON.stringify(chrome);
+  if (!force && sig === lastChromeSig) return;
+  lastChromeSig = sig;
+  win.postMessage(chrome, '*');
+}
+
 let townSuspended = false;
 
 function suspendTownOverlay() {
@@ -388,6 +432,7 @@ function restoreTownOverlay() {
   prepareRoot();
   suppressLegacyWorldRender(townEntry.scene);
   root.dataset.ready = 'true';
+  postTownChrome(true);
   frame.contentWindow?.focus?.();
 }
 
@@ -421,6 +466,8 @@ async function enterTown(scene, mapId) {
   townEntry = { scene, mapId, runtime: win.__ACT1_TOWN__, ready: true };
   lastError = null;
   root.dataset.ready = 'true';
+  lastChromeSig = '';
+  postTownChrome(true);
   frame.contentWindow.focus();
 }
 
@@ -549,6 +596,7 @@ async function tick() {
       requestAnimationFrame(tick);
       return;
     }
+    if (townEntry) postTownChrome(false);
     if (!townEntry && !entryPromise) {
       entryPromise = enterTown(scene, mapId).catch(error => {
         lastError = error.stack || error.message;

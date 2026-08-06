@@ -43,12 +43,29 @@
   #dialogue small { display: block; margin-top: 10px; color: #8fa8b8; font-size: 11px; }
   /* viewport-fit=cover puts the home indicator over the bottom of the page, and the pad's lower
      band landed inside it: a drag started there is eaten by the system home / app-switcher
-     gesture instead of moving the hero. Lift the pad clear of the inset. */
-  #pad { position: absolute; left: 18px; bottom: calc(18px + env(safe-area-inset-bottom));
-    width: 128px; height: 128px;
+     gesture instead of moving the hero. Lift the pad clear of the inset.
+
+     2026-08-06, from device: that was not enough, and the pad was also on the wrong side. The
+     parent page pins a field-tab bar (#fieldTabs, z-index 90) across the bottom, and this whole
+     runtime is an iframe at z-index 70 -- so a pad 18px off the bottom had its lower half behind
+     a bar it cannot even see, while the overworld and the dungeons put their stick bottom-RIGHT
+     and fully visible. Two consequences for the numbers below:
+       - the geometry now mirrors the parent stick exactly: 172px, 76px + inset up, 20px in;
+       - `env(safe-area-inset-*)` is NOT usable here. Inside a same-origin iframe it is not the
+         root scroller's inset and resolves to 0, so the original calc() was adding nothing. The
+         parent measures the real values with fixed probes and adapter.js posts them in as
+         --sa-*; env() stays only as the standalone-preview fallback. */
+  #pad { position: absolute;
+    bottom: calc(76px + var(--sa-bottom, env(safe-area-inset-bottom, 0px)));
+    right: calc(20px + var(--sa-right, env(safe-area-inset-right, 0px))); left: auto;
+    width: 172px; height: 172px;
     border-radius: 50%; background: rgba(10,18,26,.5); border: 1px solid rgba(150,200,230,.22);
     touch-action: none; }
-  #knob { position: absolute; left: 50%; top: 50%; width: 52px; height: 52px; margin: -26px 0 0 -26px;
+  /* Orientation, forwarded from the parent's ctrl-* body class so one setting drives both sticks. */
+  body[data-ctrl="left"] #pad {
+    left: calc(20px + var(--sa-left, env(safe-area-inset-left, 0px))); right: auto; }
+  body[data-ctrl="center"] #pad { left: 50%; right: auto; transform: translateX(-50%); }
+  #knob { position: absolute; left: 50%; top: 50%; width: 70px; height: 70px; margin: -35px 0 0 -35px;
     border-radius: 50%; background: rgba(190,220,240,.42); }
   #debug { position: absolute; top: 8px; left: 10px; color: #7f98a8; font-size: 11px;
     font-variant-numeric: tabular-nums; white-space: pre; }
@@ -88,6 +105,19 @@ const pad = document.querySelector('#pad');
 const knob = document.querySelector('#knob');
 const search = new URLSearchParams(location.search);
 const townId = search.get('town') || 'portSapphire';
+
+// Parent chrome (control orientation + the REAL safe-area insets). See adapter.js
+// postTownChrome(): env() cannot be trusted inside this iframe, so the parent measures and
+// posts. Registered before the awaits below so nothing is missed while the town loads.
+addEventListener('message', event => {
+  const d = event.data;
+  if (!d || d.type !== 'act1-town-chrome' || event.source !== parent) return;
+  document.body.dataset.ctrl = d.ctrl === 'left' || d.ctrl === 'center' ? d.ctrl : 'right';
+  const s = document.documentElement.style;
+  s.setProperty('--sa-bottom', (Number(d.safeBottom) || 0) + 'px');
+  s.setProperty('--sa-left', (Number(d.safeLeft) || 0) + 'px');
+  s.setProperty('--sa-right', (Number(d.safeRight) || 0) + 'px');
+});
 
 const [locks, town] = await Promise.all([
   fetch('./manifest.json').then(r => r.json()).then(m => m.designLocks),
@@ -168,7 +198,8 @@ pad.addEventListener('pointercancel', endPad);
 function movePad(e) {
   const r = pad.getBoundingClientRect();
   const dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2);
-  const len = Math.hypot(dx, dy), max = r.width / 2 - 12;
+  // -22 rather than -12: same knob travel as the parent stick, which is now the same size.
+  const len = Math.hypot(dx, dy), max = r.width / 2 - 22;
   const k = len > max ? max / len : 1;
   knob.style.transform = `translate(${dx * k}px, ${dy * k}px)`;
   touchVec = len < 8 ? { x: 0, y: 0 } : { x: dx / Math.max(len, 1), y: dy / Math.max(len, 1) };

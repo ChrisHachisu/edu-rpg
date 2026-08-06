@@ -115,6 +115,17 @@ ACT1_OVERLAY_FILES = {
     "assets/hero/hero-g3-walk.png": (59447, "070a8a452c3dda775bd6c8593a66d57a5a13d97b9fb33378ea5b2bb0e1fded3c"),
     "act1-world-map.js": (
         47_908, "e5713be14ece51788798893c09a057d601d486671f97254dfb1825077ffe26b4"),
+    # 2026-08-06, from device: the Port Sapphire movement stick was anchored bottom-LEFT and its
+    # lower half sat behind the field tab bar, where the overworld and every dungeon put the same
+    # control bottom-right and fully visible. The town runs in a same-origin IFRAME
+    # (act1-hifi/town.html), and `env(safe-area-inset-*)` inside one is not the root scroller's
+    # inset -- it reads 0 -- so the town pad's own clearance calc had been adding nothing. The
+    # parent already probes the true insets here in measureSafeArea(); this entry is that
+    # measurement being published as window.__QOK_SAFE__ so act1-hifi/adapter.js can post it, and
+    # the control-orientation setting, into the frame. First override of this file since the
+    # v1.17.1 baseline was frozen, which is why it had no entry before.
+    "ui-overhaul.js": (
+        102_413, "161b46f0f86181c0e446a5caf35d39438fb50f15e4518975699e4d1316593d63"),
 }
 # The four tiling terrain materials the renderer above samples. New runtime paths as of
 # 2026-08-01; pinned by hash rather than merely tolerated, because they are shipped art and a
@@ -216,7 +227,7 @@ ACT1_DUNGEON_FILES = {
 # no URL bar). Pinned so it cannot quietly grow into something that mutates real save data.
 ACT1_TOWN_FILES = {
     "act1-hifi/town.html": (
-        19_205, "1ba9fe933f71d1139c65eb182ff875d7441b03db996a7a9c4d0043fb3f6d14da"),
+        21349, "9ada346ec2f87fb0904b94894e21cda636b02a472ee45b41a5993a11ac33a64c"),
     "act1-hifi/town/portSapphire-town.json": (
         2_748, "51b45860151b23a983220b79409a9f04ab9f962988ea9725971bfa316b3a0b19"),
     "act1-hifi/town/portSapphire-walkable.json": (
