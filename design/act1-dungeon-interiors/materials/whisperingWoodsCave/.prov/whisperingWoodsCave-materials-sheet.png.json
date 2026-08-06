@@ -1,15 +1,16 @@
 {
  "artefact": "whisperingWoodsCave-materials-sheet.png",
- "command": "make_dungeon_materials.py --theme whisperingWoodsCave",
+ "command": "make_dungeon_materials.py --theme whisperingWoodsCave --restamp-sheet",
  "generatedBy": "codex image_gen",
  "generator": "scripts/make_dungeon_materials.py",
- "generatorSha256": "6cde0e94da5209445f6c8a582b58c0bb7a47727448ac8fd57414677690e22d31",
+ "generatorSha256": "ac122dd1a2c88c1c9042ebb3f0b7974d002328b89f210ea2302411ed1222745e",
  "inputs": {},
  "params": {
   "model": "gpt-5.6-sol",
   "theme": "whisperingWoodsCave"
  },
- "prompt": "Call the built-in image_gen tool ONCE, immediately. Read no files, no skills, no docs.\n\nPrompt: A 2x2 grid of four seamless TEXTURE SWATCHES for a root-riddled earth cave, 1024x1024, four equal quadrants, no gap or border.\n\nTOP-LEFT: pale packed earth and fine gravel with scattered grit.\nTOP-RIGHT: dark earth and stone threaded through with fine tree roots.\nBOTTOM-LEFT: dark fallen earth clods, small stones and broken root ends.\nBOTTOM-RIGHT: damp dark earth with moss and fine rootlets.\n\nFlat even lighting, no cast shadows. Dense fine detail across every quadrant, strong contrast between grains, rich tinted colour. Detailed 16-bit SNES JRPG pixel texture. Nothing larger than a thumbnail. No objects, no layout, no text.\n\nThen copy the generated file to /Users/christopherhachisu/Documents/claudecode/edu-rpg-map-engine-semantic-data/design/act1-dungeon-interiors/materials/whisperingWoodsCave/whisperingWoodsCave-materials-sheet.png. Print the final path. Do not commit, do not build, modify no existing file.",
+ "prompt": "Call the built-in image_gen tool ONCE, immediately. Read no files, no skills, no docs.\n\nPrompt: A 2x2 grid of four seamless TEXTURE SWATCHES for a root-riddled earth cave, 1024x1024, four equal quadrants, no gap or border.\n\nTOP-LEFT: pale packed earth and fine gravel with scattered grit.\nTOP-RIGHT: dark earth and stone threaded through with fine tree roots.\nBOTTOM-LEFT: dark fallen earth clods, small stones and broken root ends.\nBOTTOM-RIGHT: damp dark earth with moss and fine rootlets.\n\nFlat even lighting, no cast shadows. Dense fine detail across every quadrant, strong contrast between grains, rich tinted colour. Detailed 16-bit SNES JRPG pixel texture. Nothing larger than a thumbnail. No objects, no layout, no text.\n\nThen copy the generated file to design/act1-dungeon-interiors/materials/whisperingWoodsCave/whisperingWoodsCave-materials-sheet.png. Print the final path. Do not commit, do not build, modify no existing file.",
+ "restampedFrom": "2026-08-06T17:50:35+09:00",
  "sha256": "0eac8917a67fcd47b8a23fb96c8698acbfa937cf87d86fffe2481a5a25b67aba",
- "writtenAt": "2026-08-06T08:28:36+09:00"
+ "writtenAt": "2026-08-06T17:51:41+09:00"
 }

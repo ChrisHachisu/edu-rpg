@@ -618,6 +618,40 @@ def drop_rock_islands(fw: np.ndarray, px: float) -> np.ndarray:
 # write would give the new wall edge a mechanical boundary in a picture whose whole point is that
 # its boundaries are not.
 MIN_SHADOW_PATCH_CELLS = 1.0
+# AREA WAS THE WRONG PROXY FOR VISIBILITY, and the owner found it (2026-08-06): "i see several
+# places on the sunken cellar map where the walls are all shadow and has no top part. please check
+# the ends of each wall."
+#
+# He is describing the END of a wall mass. The band eats `face_h` northward from a mass's southern
+# boundary, so wherever the warp rounds a mass off — which is exactly at its east and west ends —
+# the vertical run drops under `need` for the last fraction of a cell and no lit top survives. The
+# result is a blunt dark lobe hanging off the end of the rock.
+#
+# Those lobes are TALL AND THIN, and that is why an area test could not see them. Measured on the
+# three shipped sunkenCellar floors: 87 all-shadow patches, EVERY ONE of them under the 1.0-cell
+# area threshold, so `thicken_shadow_walls()` skipped all 87 and then truthfully reported zero.
+# The worst is 0.85 cell of AREA and 40 x 87 world px on screen — a full cell wide, nearly two
+# tall, solid black. Their shape is consistently 0.2-1.0 cells wide by 1.4-2.2 tall, which is the
+# signature of a wedge at a mass's end rather than of a smear in its middle.
+#
+# So visibility is now decided by EXTENT as well as area, and the two are OR'd: the area rule
+# still catches the broad smears it was written for, and the extent rule catches the end lobes it
+# could not. This can only ever select MORE patches, never fewer, so no patch that was being
+# treated stops being treated.
+#
+# The thresholds are what the screen shows, not what is convenient: at 48 world px per cell,
+# 0.25 x 0.75 cells is a 12 x 36 px block of unbroken band. Sampled at 1:1 against the shipped
+# render, 15 px wide still reads as a lobe and 9 px reads as the edge of the rock.
+MIN_SHADOW_PATCH_W_CELLS = 0.25
+MIN_SHADOW_PATCH_H_CELLS = 0.75
+# Rounds of thicken-or-remove. Convergence, not a budget: the loop exits the moment a round
+# changes nothing, and on the shipped floors it settles well inside this. It exists only so an
+# unluckily-shaped mass cannot cycle forever.
+PATCH_PASSES = 8
+# An unreachable pocket smaller than this is sealed; anything bigger is left to fail the gate
+# loudly. One cell is the smallest thing the heroine could stand in at all, so a pocket under it
+# is a rounding artefact of the reduce-and-threshold boundary rather than a place in the dungeon.
+SEAL_SPECK_CELLS = 1.0
 # 1.5 cells, not 1.0. At 1.0 a corridor survives as 48 world px, which the raw mask calls connected
 # and the HEROINE cannot use: she is not a point, and a1mFree demands A1M_FOOT + A1M_LEAN = 16 px
 # of clearance at her soles, so a 48 px corridor leaves her a 16 px ribbon that the boundary warp
@@ -654,6 +688,131 @@ def _shadow_only(rock: np.ndarray, need: int) -> np.ndarray:
     return out
 
 
+def _passable_field(fw: np.ndarray, px: float) -> tuple[int, int]:
+    """`_passable`, but asked of the FLOAT FIELD exactly as `walkable_mask` asks it.
+
+    `_passable` reduces a BOOLEAN and thresholds the average -- "were most sub-pixels rock". The
+    gate reduces `fw` ITSELF and thresholds that -- "does this pixel come out mostly floor". Near
+    a boundary those are different questions, which is why aligning only the RESOLUTION was not
+    enough: mistyGrotto-f3 kept splitting, the round-level guard kept approving it, and the two
+    were simply measuring different masks.
+
+    Used for the round-level verdict, where the field exists. The in-round candidate checks still
+    use `_passable`, because a candidate is a boolean with no field behind it yet -- they are a
+    cheap filter, and this is the decision.
+    """
+    Ww = max(1, int(round(fw.shape[1] * PX / px)))
+    Hw = max(1, int(round(fw.shape[0] * PX / px)))
+    small = np.asarray(Image.fromarray(fw, "F").resize((Ww, Hw), Image.Resampling.BOX)) >= 0.5
+    lab, n = ndimage.label(ndimage.distance_transform_edt(small) >= HERO_CLEARANCE_PX)
+    if n == 0:
+        return 0, 0
+    sizes = np.bincount(lab.ravel())
+    sizes[0] = 0
+    return n, int(sizes.max()) * (px / PX) ** 2
+
+
+def _grow_patch(cand: np.ndarray, rock: np.ndarray, lab: np.ndarray, tgt: int,
+                need: int, keep: int) -> bool:
+    """Extend one all-shadow patch NORTHWARD in `cand` until it can carry a lit top.
+
+    Gaps are measured against `rock`, never against `cand`, so a patch's room to grow is the same
+    whether it is attempted alone or inside a batch. Returns whether anything was written.
+    """
+    ys, xs = np.where(lab == tgt)
+    touched = False
+    for x in np.unique(xs):
+        col = ys[xs == x]
+        y0, length = col.min(), col.max() + 1 - col.min()
+        if length >= need:
+            continue
+        gap, k = 0, y0 - 1
+        while k >= 0 and not rock[k, x]:
+            gap += 1
+            k -= 1
+        take = max(0, min(need - length, gap - keep))
+        if take:
+            cand[y0 - take:y0, x] = True
+            touched = True
+    return touched
+
+
+def seal_floor_specks(fw: np.ndarray, px: float,
+                      prot: np.ndarray | None) -> tuple[np.ndarray, np.ndarray | None]:
+    """Close isolated sub-cell pockets of standable floor that nothing can reach.
+
+    `check_dungeon_playable.py` requires the passable area to be ONE region and does not care how
+    small an extra one is. Nothing in this file ever guaranteed that. The untreated field
+    legitimately carries a few specks -- `_no_worse` says so in as many words, and tolerates them
+    because it is a RELATIVE test -- and the old shadow pass happened to thicken rock over
+    mistyGrotto-f3's, so the floor shipped as one region by luck rather than by rule. Change what
+    that pass does and the luck runs out: the speck at cell (8.2, 12.3) survived, 0.00 cells in
+    size, and failed the gate.
+
+    Only SUB-THRESHOLD specks are sealed. A genuinely large region cut off from the rest is a
+    playability bug that the gate must keep shouting about, so it is deliberately left alone -- a
+    function that quietly filled it would hide exactly the failure it was written to prevent.
+
+    A pocket holding a prop is never sealed: the layout is authoritative about where props stand.
+    """
+    Ww = max(1, int(round(fw.shape[1] * PX / px)))
+    Hw = max(1, int(round(fw.shape[0] * PX / px)))
+    small = np.asarray(Image.fromarray(fw, "F").resize((Ww, Hw), Image.Resampling.BOX)) >= 0.5
+    lab, n = ndimage.label(ndimage.distance_transform_edt(small) >= HERO_CLEARANCE_PX)
+    if n <= 1:
+        return fw, None
+    sizes = np.bincount(lab.ravel())
+    sizes[0] = 0
+    main = int(sizes.argmax())
+    doomed = np.zeros_like(small)
+    for i in np.flatnonzero(sizes):
+        if i == main or sizes[i] >= SEAL_SPECK_CELLS * PX * PX:
+            continue
+        doomed |= (lab == i)
+    if not doomed.any():
+        return fw, None
+    up = np.asarray(Image.fromarray(doomed.astype(np.float32), "F")
+                    .resize((fw.shape[1], fw.shape[0]), Image.Resampling.NEAREST)) > 0.5
+    # `doomed` is the ERODED core -- where her CENTRE could stand. The pocket she would occupy is
+    # that dilated by her clearance, and sealing only the core would leave the pocket open.
+    r = int(round(HERO_CLEARANCE_PX * px / PX))
+    yy, xx = np.mgrid[-r:r + 1, -r:r + 1]
+    up = ndimage.binary_dilation(up, xx * xx + yy * yy <= r * r)
+    if prot is not None:
+        up &= prot < 0.5
+    if not up.any():
+        return fw, None
+    # WRITTEN HARD, and this is the one edit in this file that should be. Every other boundary is
+    # feathered so it does not look mechanical; feathering THIS one is what left the speck behind
+    # on the first attempt, because blurring a sub-cell region spreads the -0.60 so thin that the
+    # field never crosses 0.5 and the pocket stays open. The same trap as the shadow pass.
+    #
+    # A hard write is safe here precisely because the region is smaller than one cell and no one
+    # can reach it: there is no silhouette to make mechanical. It is closing a pinhole in the
+    # collision mask, not drawing a wall.
+    fw = np.where(up, np.minimum(fw, 0.42), fw)
+    return np.clip(fw, 0.0, 1.0).astype(np.float32), up
+
+
+def _visible_patches(lab: np.ndarray, sizes: np.ndarray,
+                     min_patch: float, min_w: float, min_h: float) -> np.ndarray:
+    """Labels of the all-shadow patches a player can actually SEE.
+
+    Area OR extent, never area alone — see the MIN_SHADOW_PATCH_* block above. A wall-end lobe is
+    a tall thin wedge, so it carries very little area while covering a lot of screen; an area-only
+    test measured 87 of them on sunkenCellar and skipped every one.
+    """
+    keep = []
+    for i in np.flatnonzero(sizes > 0):
+        if sizes[i] >= min_patch:
+            keep.append(i)
+            continue
+        ys, xs = np.where(lab == i)
+        if (xs.max() - xs.min() + 1) >= min_w and (ys.max() - ys.min() + 1) >= min_h:
+            keep.append(i)
+    return np.array(keep, dtype=np.int64)
+
+
 def _passable(rock: np.ndarray, px: float) -> tuple[int, int]:
     """(region count, largest region) of the floor a body of the heroine's radius can reach.
 
@@ -661,13 +820,29 @@ def _passable(rock: np.ndarray, px: float) -> tuple[int, int]:
     question that let a 48 px corridor pass and stranded the Sunken Cellar boss under 17
     disconnected regions. Erode by her real clearance first, then ask.
     """
-    clear = HERO_CLEARANCE_PX * px / PX                 # world px -> this field's resolution
-    lab, n = ndimage.label(ndimage.distance_transform_edt(~rock) >= clear)
+    # ASK AT THE RESOLUTION THE GATE ASKS AT. This used to erode the LATTICE (~85.5 px/cell) and
+    # scale her clearance up to match, which sounds equivalent and is not: `walkable_mask` reduces
+    # the field to 48 px/cell by AREA AVERAGE and only then thresholds, and that boundary is
+    # slightly wider than the lattice's. A spot this guard called sealed could come back open once
+    # the picture was reduced.
+    #
+    # It cost a real regression. mistyGrotto-f3 shipped as ONE region, the guard approved every
+    # edit on it, and the reduced mask came out as TWO -- the second a 0.00-cell speck at cell
+    # (8.2, 12.3), far too small to matter visually and an instant failure of
+    # `check_dungeon_playable.py`, which requires regions == 1 and does not care how small the
+    # extra one is. A guard that answers a different question from the gate is not a guard.
+    #
+    # Reducing first is also ~4x less work than eroding the lattice, so the bake got faster.
+    Ww = max(1, int(round(rock.shape[1] * PX / px)))
+    Hw = max(1, int(round(rock.shape[0] * PX / px)))
+    small = np.asarray(Image.fromarray((~rock).astype(np.float32), "F")
+                       .resize((Ww, Hw), Image.Resampling.BOX)) >= 0.5
+    lab, n = ndimage.label(ndimage.distance_transform_edt(small) >= HERO_CLEARANCE_PX)
     if n == 0:
         return 0, 0
     sizes = np.bincount(lab.ravel())
     sizes[0] = 0
-    return n, int(sizes.max())
+    return n, int(sizes.max()) * (px / PX) ** 2         # report in LATTICE px, as callers expect
 
 
 def _no_worse(before: tuple[int, int], after: tuple[int, int], px: float) -> bool:
@@ -683,71 +858,185 @@ def _no_worse(before: tuple[int, int], after: tuple[int, int], px: float) -> boo
     return after[0] <= before[0] and after[1] >= before[1] - slack
 
 
-def thicken_shadow_walls(fw: np.ndarray, px: float) -> np.ndarray:
-    """Give every VISIBLE all-shadow wall patch a lit top, by thickening it or removing it."""
+def thicken_shadow_walls(fw: np.ndarray, px: float,
+                         protected: np.ndarray | None = None) -> np.ndarray:
+    """Give every VISIBLE all-shadow wall patch a lit top, by thickening it or removing it.
+
+    CONVERGE IN `fw`, NOT IN THE BOOLEAN PROXY. `_treat_shadow_patches` reasons about `rock`, a
+    hard `fw < 0.5`, but it may not WRITE a hard edge -- the result is feathered back into `fw` as
+    a blurred +-0.60 delta, because a stamped boundary would be mechanical in a picture whose
+    whole point is that its boundaries are not. For a thin sliver those two do not agree: the
+    blur spreads the delta over the sliver's own width, so the field it hands back can still be
+    under 0.5 where the boolean pass was certain it had opened floor.
+
+    That is exactly how the last patches survived. Measured on sunkenCellar-f1: the inner pass
+    finished believing zero patches remained, `_no_worse` said both of the survivors were safe to
+    remove, and they were still there in the returned field at their original size -- never
+    re-examined, because nothing looked again after the feathering.
+
+    So the inner pass runs until the field it PRODUCES is clean, or until it stops improving.
+    `base` is measured once, here, so every edit in every round is judged against the floor we
+    started with rather than against the previous round's output.
+    """
+    base = _passable(fw < 0.5, px)
+    gate = _passable_field(fw, px)              # the verdict, measured as the gate measures it
+    prev = None
+    for _ in range(PATCH_PASSES):
+        before = fw
+        fw, remaining = _treat_shadow_patches(fw, px, base, protected)
+        # RE-CHECK CONNECTIVITY ON THE FIELD THE ROUND ACTUALLY PRODUCED, not on the boolean it
+        # validated. `_no_worse` inside the round is applied to `cand`, a hard `fw < 0.5`; what
+        # the round then WRITES is a blurred +-0.60 delta whose own 0.5 crossing is wider than
+        # that boolean. So a round can pass every check it makes and still hand back a field that
+        # is pinched somewhere the boolean was clear.
+        #
+        # That is not hypothetical: mistyGrotto-f3 arrived here as ONE region, every edit in the
+        # round was approved, and the field that came out had TWO -- the second a 0.00-cell speck.
+        # It was diagnosed twice as a pre-existing artefact and it was neither; the pass made it.
+        # A guard that inspects a proxy of the output guards nothing.
+        if not _no_worse(gate, _passable_field(fw, px), px):
+            return before
+        if remaining == 0 or (prev is not None and remaining >= prev):
+            break
+        prev = remaining
+    return fw
+
+
+def _treat_shadow_patches(fw: np.ndarray, px: float, base: tuple[int, int],
+                          protected: np.ndarray | None = None) -> tuple[np.ndarray, int]:
+    """One round. Returns the new field and how many visible patches are left IN it.
+
+    `protected` is rock this pass may THICKEN but must not REMOVE. `seal_floor_specks` needs it:
+    the rock it writes to close an unreachable pocket is, by construction, a sub-cell blob that
+    cannot carry a lit top, so this pass identified it as an unsupportable lobe and deleted it --
+    which re-opened the pocket and put the floor back to two regions. The two passes simply undid
+    each other, once each, every round.
+
+    Thickening is deliberately still allowed, and is usually what happens: the seal sits against
+    existing rock, so there is something to grow it into, and the result carries a lit top like
+    any other wall instead of surviving as a dark speck.
+    """
     need = 2 * max(2, int(px * FACE_H_CELLS))
     keep = max(1, int(px * MIN_CORRIDOR_CELLS))
     min_patch = MIN_SHADOW_PATCH_CELLS * px * px
+    min_w = MIN_SHADOW_PATCH_W_CELLS * px
+    min_h = MIN_SHADOW_PATCH_H_CELLS * px
     rock = fw < 0.5
-    base = _passable(rock, px)
     start = rock.copy()
 
-    for _ in range(3):
+    # THICKEN WHAT CAN BE THICKENED, REMOVE WHAT CANNOT, AND REPEAT UNTIL NOTHING VISIBLE IS LEFT.
+    #
+    # Removal used to be a single pass after the thicken loop, and a single pass is not enough:
+    # taking the lobe off the end of a mass shortens the column that was standing behind it, so an
+    # equivalent lobe reappears one step along. Measured on the three shipped sunkenCellar floors,
+    # one pass left 4 of 87 patches alive AT THEIR ORIGINAL SIZE AND POSITION -- treated, and no
+    # better for it.
+    #
+    # THICKENING RUNS TO CONVERGENCE BEFORE ANY REMOVAL, and the order is not cosmetic. Measured
+    # on sunkenCellar: interleaving the two -- removing a patch the moment one thicken attempt
+    # failed -- ended at 5 visible patches and 10.9 cells of shadow, against 4 and 8.8 for
+    # thicken-first. Removal is the destructive remedy AND the self-propagating one, so a patch
+    # that merely needs another round of thickening must never be handed to it. This is also the
+    # owner's own order: "remove them or merge them into bigger walls" -- merging is preferred,
+    # removal is the fallback.
+    #
+    # Bounded, and every edit still has to clear `_no_worse`. The worst case is that it stops with
+    # a patch it could not afford to fix -- never that it eats a floor.
+    for _ in range(PATCH_PASSES):
         lab, n = ndimage.label(_shadow_only(rock, need), np.ones((3, 3)))
         if n == 0:
             break
         sizes = np.bincount(lab.ravel())
         sizes[0] = 0
-        targets = np.flatnonzero(sizes >= min_patch)
+        targets = _visible_patches(lab, sizes, min_patch, min_w, min_h)
         if not len(targets):
             break
-        # ONE PATCH AT A TIME. Batching them and reverting the lot on failure lets a single
-        # awkward patch veto a whole floor -- coastalReef-f1 came back 12 patches in, 12 out,
-        # because one of its twelve could not be thickened without pinching a corridor.
-        grew = False
-        for tgt in targets:
-            ys, xs = np.where(lab == tgt)
-            cand = rock.copy()
-            touched = False
-            for x in np.unique(xs):
-                col = ys[xs == x]
-                y0, length = col.min(), col.max() + 1 - col.min()
-                if length >= need:
-                    continue
-                gap, k = 0, y0 - 1
-                while k >= 0 and not rock[k, x]:
-                    gap += 1
-                    k -= 1
-                take = max(0, min(need - length, gap - keep))
-                if take:
-                    cand[y0 - take:y0, x] = True
-                    touched = True
-            if touched and _no_worse(base, _passable(cand, px), px):
-                rock = cand
-                grew = True
-        if not grew:
+        # BATCH FIRST, ONE PATCH AT A TIME ONLY IF THE BATCH FAILS.
+        #
+        # `_passable` runs a distance transform over the whole lattice (~7M px), and paying it
+        # once per patch per round is what made this pass the dominant cost of a bake: a floor
+        # carrying twenty patches over several rounds pays it hundreds of times, and a 12-floor
+        # bake stopped finishing in a sitting.
+        #
+        # The batch attempt costs ONE check and succeeds on nearly every round. The per-patch path
+        # below is kept verbatim for the rounds where it does not, which preserves the property it
+        # was written for: a single awkward patch must not veto a whole floor -- coastalReef-f1
+        # came back 12 patches in, 12 out, because one of its twelve could not be thickened
+        # without pinching a corridor.
+        changed = False
+        cand = rock.copy()
+        # NOT `any(... for ...)`: a generator short-circuits on the first True and the remaining
+        # patches never get grown at all. The list is materialised so every patch is attempted.
+        if any([_grow_patch(cand, rock, lab, t, need, keep) for t in targets]) \
+                and _no_worse(base, _passable(cand, px), px):
+            rock = cand
+            changed = True
+        else:
+            for tgt in targets:
+                cand = rock.copy()
+                if _grow_patch(cand, rock, lab, tgt, need, keep) \
+                        and _no_worse(base, _passable(cand, px), px):
+                    rock = cand
+                    changed = True
+        if not changed:
             break
 
-    # Anything still reading as pure shadow could not be supported, so it goes.
-    lab, n = ndimage.label(_shadow_only(rock, need), np.ones((3, 3)))
-    if n:
+    # Only now, what thickening could not support. This loop converges too, for the reason in the
+    # block comment above: taking a lobe off the end of a mass shortens the column behind it, so a
+    # single pass leaves an equivalent lobe one step along -- 4 of the 87 sunkenCellar patches
+    # survived the old single pass at their ORIGINAL size and position.
+    for _ in range(PATCH_PASSES):
+        lab, n = ndimage.label(_shadow_only(rock, need), np.ones((3, 3)))
+        if n == 0:
+            break
         sizes = np.bincount(lab.ravel())
         sizes[0] = 0
-        for tgt in np.flatnonzero(sizes >= min_patch):
-            cand = rock.copy()
+        targets = _visible_patches(lab, sizes, min_patch, min_w, min_h)
+        if protected is not None and len(targets):
+            targets = np.array([t for t in targets if not (protected & (lab == t)).any()],
+                               dtype=np.int64)
+        if not len(targets):
+            break
+        # Removal opens floor, which sounds unconditionally safe and is not: opening a pocket the
+        # heroine's clearance could not previously enter can ADD a passable region that connects
+        # to nothing, and `_no_worse` counts regions. So it is checked -- batched, then per patch.
+        changed = False
+        cand = rock.copy()
+        for tgt in targets:
             cand[lab == tgt] = False
-            if _no_worse(base, _passable(cand, px), px):
-                rock = cand                             # per patch, for the same reason
+        if _no_worse(base, _passable(cand, px), px):
+            rock = cand
+            changed = True
+        else:
+            for tgt in targets:
+                cand = rock.copy()
+                cand[lab == tgt] = False
+                if _no_worse(base, _passable(cand, px), px):
+                    rock = cand
+                    changed = True
+        if not changed:
+            break
 
     added = rock & ~start
     dropped = start & ~rock
-    if not added.any() and not dropped.any():
-        return fw
-    # Feathered, so the new boundary carries the same soft transition every other one does.
-    soft = px * 0.08
-    fw = fw - blur(added.astype(np.float32), soft) * 0.60
-    fw = fw + blur(dropped.astype(np.float32), soft) * 0.60
-    return np.clip(fw, 0.0, 1.0).astype(np.float32)
+    if added.any() or dropped.any():
+        # Feathered, so the new boundary carries the same soft transition every other one does.
+        soft = px * 0.08
+        fw = fw - blur(added.astype(np.float32), soft) * 0.60
+        fw = fw + blur(dropped.astype(np.float32), soft) * 0.60
+        fw = np.clip(fw, 0.0, 1.0).astype(np.float32)
+    return fw, _count_visible(fw, px, need, min_patch, min_w, min_h)
+
+
+def _count_visible(fw: np.ndarray, px: float, need: int,
+                   min_patch: float, min_w: float, min_h: float) -> int:
+    """Visible all-shadow patches in the FIELD -- the thing the picture is drawn from."""
+    lab, n = ndimage.label(_shadow_only(fw < 0.5, need), np.ones((3, 3)))
+    if n == 0:
+        return 0
+    sizes = np.bincount(lab.ravel())
+    sizes[0] = 0
+    return len(_visible_patches(lab, sizes, min_patch, min_w, min_h))
 
 
 def floor_field(rows: list[str], scale: int = 1, assets: list | None = None) -> Field:
@@ -787,7 +1076,6 @@ def floor_field(rows: list[str], scale: int = 1, assets: list | None = None) -> 
     gate = np.clip(4.0 * f * (1.0 - f), 0.0, 1.0)
     fw = np.clip(f + warp * 0.42 * gate, 0.0, 1.0)
     fw = drop_rock_islands(fw, px)
-    fw = thicken_shadow_walls(fw, px)
 
     # ── Props stand in TRUE terminal cells — one way in, rock on the other three sides. Both the
     #    mask blur and the boundary warp pull the floor weight at such a cell below the 0.5
@@ -824,6 +1112,28 @@ def floor_field(rows: list[str], scale: int = 1, assets: list | None = None) -> 
                         + ((yy - (it["y"] + 0.38) * px) / 1.18) ** 2)
             t = np.clip(1.0 - d / r, 0.0, 1.0)
             prot = np.maximum(prot, t * t * (3.0 - 2.0 * t))       # smoothstep, not a hard disc
+        fw = np.maximum(fw, prot)
+
+    # THE POCKETS ARE CARVED BEFORE THE SHADOW PASS LOOKS, AND RE-ASSERTED AFTER IT.
+    #
+    # They used to be carved after it, and carving floor into the side of a mass shortens the rock
+    # columns beside the pocket -- which manufactures exactly the all-shadow wall end this pass
+    # exists to remove, at a point where the pass has already finished. That is where the last
+    # survivor on sunkenCellar-f3 came from: a 21 x 89 px lobe at cell (11.7, 19.7), sitting
+    # inside the pocket of the `save` prop at (11, 21).
+    #
+    # Ordering it this way means the pass sees the geometry the player will actually stand in. The
+    # second `maximum` is what keeps the pockets non-negotiable: thickening may not close one, so
+    # whatever the pass decided, the prop still gets the cell the layout gave it.
+    # SEALING RUNS BEFORE THE SHADOW PASS, NOT AFTER IT. Sealing writes ROCK, and rock written
+    # after the shadow pass has finished is rock nothing will ever check -- mistyGrotto-f3 came
+    # back with its region count fixed and a fresh all-shadow lobe standing on the seal, trading
+    # one defect for the other. Running it first means `thicken_shadow_walls` treats whatever the
+    # seal creates, and its `_no_worse` guard then holds the region count at the sealed value,
+    # so neither pass can undo the other.
+    fw, sealed = seal_floor_specks(fw, px, prot if assets else None)
+    fw = thicken_shadow_walls(fw, px, sealed)
+    if assets:
         fw = np.maximum(fw, prot)
 
     return Field(fw=fw, prot=prot, xx=xx, yy=yy, px=px, W=W, H=H, Ww=Ww, Hw=Hw, cw=cw, ch=ch)

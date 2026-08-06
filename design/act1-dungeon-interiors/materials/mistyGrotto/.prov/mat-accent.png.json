@@ -1,8 +1,8 @@
 {
  "artefact": "mat-accent.png",
- "command": "make_dungeon_materials.py --theme mistyGrotto",
+ "command": "make_dungeon_materials.py --theme mistyGrotto --quilt-only",
  "generator": "scripts/make_dungeon_materials.py",
- "generatorSha256": "6cde0e94da5209445f6c8a582b58c0bb7a47727448ac8fd57414677690e22d31",
+ "generatorSha256": "ac122dd1a2c88c1c9042ebb3f0b7974d002328b89f210ea2302411ed1222745e",
  "inputs": {
   "design/act1-dungeon-interiors/materials/mistyGrotto/mistyGrotto-materials-sheet.png": "6ac88ea254462a33ba4da9317d5952c8ae13069fdc18b5c7644df1dafd5d4f19"
  },
@@ -12,5 +12,5 @@
   "theme": "mistyGrotto"
  },
  "sha256": "287eb20bd27e55e95273b7bd8fb166bdd43f377383f13e25902e224cb250f119",
- "writtenAt": "2026-08-06T08:28:59+09:00"
+ "writtenAt": "2026-08-06T17:51:41+09:00"
 }

@@ -2,7 +2,7 @@
  "artefact": "whisperingWoodsCave-f3-props.png",
  "command": "render_dungeon_material_map.py --floor whisperingWoodsCave-f3 --props --out public/act1-dungeon-art/whisperingWoodsCave-f3-props.png",
  "generator": "scripts/render_dungeon_material_map.py",
- "generatorSha256": "870891b5ad31532700f651cf120f1c951655b42c7fdea6a2a3c3f146f48679c7",
+ "generatorSha256": "311acf52c0cd7f8c69e09887f58e4cde4d41be7273e7344f1cc071c819223e7a",
  "inputs": {
   "design/act1-dungeon-interiors/materials/whisperingWoodsCave/mat-accent.png": "38107f760533e0378366bf1e57408be1bc22c1e191b9bd70ba99f6a1fc267879",
   "design/act1-dungeon-interiors/materials/whisperingWoodsCave/mat-floor.png": "2c7fcf635208aa05d8339e8d83cbfad3cbd2f740282c3c46ac329a9413c4f68c",
@@ -17,6 +17,6 @@
   "scale": 1,
   "theme": "root-riddled earth cave"
  },
- "sha256": "e4d3f234a0ee3cdae500112c0037bca9846910f8e7d3cf164b3cc4cad5d3f0fb",
- "writtenAt": "2026-08-06T14:35:00+09:00"
+ "sha256": "fb98a4e2ac629777470b48516bdae6ea11b93d051ed2303e858d08fac9839166",
+ "writtenAt": "2026-08-06T19:02:17+09:00"
 }

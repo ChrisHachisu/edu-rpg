@@ -1,11 +1,16 @@
 {
- "adopted": true,
  "artefact": "mat-wall.png",
- "command": "adopted as a source on freshness.py",
- "generator": null,
- "generatorSha256": null,
- "inputs": {},
- "params": {},
+ "command": "make_dungeon_materials.py --theme sunkenCellar --quilt-only",
+ "generator": "scripts/make_dungeon_materials.py",
+ "generatorSha256": "ac122dd1a2c88c1c9042ebb3f0b7974d002328b89f210ea2302411ed1222745e",
+ "inputs": {
+  "design/act1-dungeon-interiors/materials/sunkenCellar/sunkenCellar-materials-sheet.png": "8a03e056d467b4db120dbc2999da0ff67bfc367b6171daf3c9b708cfafb48eed"
+ },
+ "params": {
+  "overlap": 96,
+  "quadrant": "wall",
+  "theme": "sunkenCellar"
+ },
  "sha256": "d033a8169d75f77a4502669cd444895f556f8fd8d2568a9d1bb4e9fc1b5f24c7",
- "writtenAt": "2026-08-01T12:06:03+09:00"
+ "writtenAt": "2026-08-06T17:51:40+09:00"
 }

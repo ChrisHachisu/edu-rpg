@@ -2,13 +2,13 @@
  "artefact": "coastalReef-f1-props.png",
  "command": "render_dungeon_material_map.py --floor coastalReef-f1 --props --out public/act1-dungeon-art/coastalReef-f1-props.png",
  "generator": "scripts/render_dungeon_material_map.py",
- "generatorSha256": "870891b5ad31532700f651cf120f1c951655b42c7fdea6a2a3c3f146f48679c7",
+ "generatorSha256": "311acf52c0cd7f8c69e09887f58e4cde4d41be7273e7344f1cc071c819223e7a",
  "inputs": {
   "design/act1-dungeon-interiors/coastalReef-f1.json": "5f14e00ff825dccbd8307a6a621388faa7967efa6aaa7391de2dafa4f3195a70",
-  "design/act1-dungeon-interiors/materials/coastalReef/mat-accent.png": "1e6ff86c670f34769555cff8a59e123fe9de5f961e56219d9de179786f9b34bb",
-  "design/act1-dungeon-interiors/materials/coastalReef/mat-floor.png": "3efecaf3ecbe2d9287641d41c564ae7db601306184380c2a3e25eb63ae9a1a74",
-  "design/act1-dungeon-interiors/materials/coastalReef/mat-rubble.png": "e699b918d5a5888562e0415da537ac89881fae12936a1512e75d3aa21240aadd",
-  "design/act1-dungeon-interiors/materials/coastalReef/mat-wall.png": "f235e64a3df5a7e5f69301803c502f22ae927468e496e11c118f0aec956f4310"
+  "design/act1-dungeon-interiors/materials/coastalReef/mat-accent.png": "a7788b4046fd34b7f7ef3b77e231dd410381b90e5e4d88c88a309ef50f5b1b39",
+  "design/act1-dungeon-interiors/materials/coastalReef/mat-floor.png": "d3ae9b99f2a3e16a886a399db8de95e947653753570cd80b5e6d513975e79ff5",
+  "design/act1-dungeon-interiors/materials/coastalReef/mat-rubble.png": "ab2b6ba7d61d8e9eb287e9d72ffde0af332d4423b015175602ec4b46fe3d0c7f",
+  "design/act1-dungeon-interiors/materials/coastalReef/mat-wall.png": "5c5c7bfcfebbfd1a58b1ee927134938978f74a32b9eb03a631fdb13d76f22110"
  },
  "params": {
   "hero": null,
@@ -17,6 +17,6 @@
   "scale": 1,
   "theme": "tidal coral reef"
  },
- "sha256": "ff1bf9efcca3d2dd43de095792643a5ad0d4cad325f847a0152e22d5ada3b15b",
- "writtenAt": "2026-08-06T14:27:45+09:00"
+ "sha256": "1d6bdc28dc8831eee26137be858f44684565701c9b6edd53637613a12c3d566a",
+ "writtenAt": "2026-08-06T18:50:45+09:00"
 }

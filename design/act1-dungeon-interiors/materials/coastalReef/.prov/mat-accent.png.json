@@ -1,16 +1,16 @@
 {
  "artefact": "mat-accent.png",
- "command": "make_dungeon_materials.py --theme coastalReef",
+ "command": "make_dungeon_materials.py --theme coastalReef --quilt-only",
  "generator": "scripts/make_dungeon_materials.py",
- "generatorSha256": "6cde0e94da5209445f6c8a582b58c0bb7a47727448ac8fd57414677690e22d31",
+ "generatorSha256": "ac122dd1a2c88c1c9042ebb3f0b7974d002328b89f210ea2302411ed1222745e",
  "inputs": {
-  "design/act1-dungeon-interiors/materials/coastalReef/coastalReef-materials-sheet.png": "9ed8262b00a2464e8b6570610a7590fd55a1ed89f756d0b77edf2e04f27379bb"
+  "design/act1-dungeon-interiors/materials/coastalReef/coastalReef-materials-sheet.png": "fc4602442be8d95e83e8fd5745bc7040d39abb7a10e446725ed8e7ef4a18ee2f"
  },
  "params": {
   "overlap": 96,
   "quadrant": "accent",
   "theme": "coastalReef"
  },
- "sha256": "1e6ff86c670f34769555cff8a59e123fe9de5f961e56219d9de179786f9b34bb",
- "writtenAt": "2026-08-06T08:29:13+09:00"
+ "sha256": "a7788b4046fd34b7f7ef3b77e231dd410381b90e5e4d88c88a309ef50f5b1b39",
+ "writtenAt": "2026-08-06T17:51:40+09:00"
 }

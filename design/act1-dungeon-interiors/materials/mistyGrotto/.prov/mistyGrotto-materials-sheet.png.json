@@ -1,15 +1,16 @@
 {
  "artefact": "mistyGrotto-materials-sheet.png",
- "command": "make_dungeon_materials.py --theme mistyGrotto",
+ "command": "make_dungeon_materials.py --theme mistyGrotto --restamp-sheet",
  "generatedBy": "codex image_gen",
  "generator": "scripts/make_dungeon_materials.py",
- "generatorSha256": "6cde0e94da5209445f6c8a582b58c0bb7a47727448ac8fd57414677690e22d31",
+ "generatorSha256": "ac122dd1a2c88c1c9042ebb3f0b7974d002328b89f210ea2302411ed1222745e",
  "inputs": {},
  "params": {
   "model": "gpt-5.6-sol",
   "theme": "mistyGrotto"
  },
- "prompt": "Call the built-in image_gen tool ONCE, immediately. Read no files, no skills, no docs.\n\nPrompt: A 2x2 grid of four seamless TEXTURE SWATCHES for a jagged black fang rock, 1024x1024, four equal quadrants, no gap or border.\n\nTOP-LEFT: pale grey grit and shattered scree.\nTOP-RIGHT: near-black fractured rock in sharp angular facets, pale mineral veins.\nBOTTOM-LEFT: dark angular rock shards and splintered fragments.\nBOTTOM-RIGHT: wet near-black rock with a faint sheen and pale vein traces.\n\nFlat even lighting, no cast shadows. Dense fine detail across every quadrant, strong contrast between grains, rich tinted colour. Detailed 16-bit SNES JRPG pixel texture. Nothing larger than a thumbnail. No objects, no layout, no text.\n\nThen copy the generated file to /Users/christopherhachisu/Documents/claudecode/edu-rpg-map-engine-semantic-data/design/act1-dungeon-interiors/materials/mistyGrotto/mistyGrotto-materials-sheet.png. Print the final path. Do not commit, do not build, modify no existing file.",
+ "prompt": "Call the built-in image_gen tool ONCE, immediately. Read no files, no skills, no docs.\n\nPrompt: A 2x2 grid of four seamless TEXTURE SWATCHES for a jagged black fang rock, 1024x1024, four equal quadrants, no gap or border.\n\nTOP-LEFT: pale grey grit and shattered scree.\nTOP-RIGHT: near-black fractured rock in sharp angular facets, pale mineral veins.\nBOTTOM-LEFT: dark angular rock shards and splintered fragments.\nBOTTOM-RIGHT: wet near-black rock with a faint sheen and pale vein traces.\n\nFlat even lighting, no cast shadows. Dense fine detail across every quadrant, strong contrast between grains, rich tinted colour. Detailed 16-bit SNES JRPG pixel texture. Nothing larger than a thumbnail. No objects, no layout, no text.\n\nThen copy the generated file to design/act1-dungeon-interiors/materials/mistyGrotto/mistyGrotto-materials-sheet.png. Print the final path. Do not commit, do not build, modify no existing file.",
+ "restampedFrom": "2026-08-06T17:50:35+09:00",
  "sha256": "6ac88ea254462a33ba4da9317d5952c8ae13069fdc18b5c7644df1dafd5d4f19",
- "writtenAt": "2026-08-06T08:28:53+09:00"
+ "writtenAt": "2026-08-06T17:51:41+09:00"
 }
