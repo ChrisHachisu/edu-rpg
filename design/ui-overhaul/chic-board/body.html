@@ -1,0 +1,128 @@
+<div class="head">
+  <div class="k">Quest of Knowledge · HUD track · pick a direction</div>
+  <h1>4 “chic” directions · font + palette</h1>
+  <p>Each card is one font and one palette, shown on the two surfaces that carry almost all of the
+  game’s text: the <b>field HUD</b> over a real Port Sapphire frame, and the <b>battle screen</b>.
+  Every direction is legible in Japanese and English — the sample glyphs are embedded, so this file
+  renders the same with no network. Direction&nbsp;0 is what ships today, for comparison.</p>
+  <p class="warn"><b>Worth knowing before you pick:</b> the font that ships today does not actually
+  reach the phone. <code>ui-overhaul.css</code> pulls M PLUS Rounded 1c from Google Fonts over the
+  network, and nothing is bundled into <code>dist/fonts/</code>, so in the offline Capacitor app
+  every menu falls back to the system face. The in-game HUD never asked for it at all — it is
+  hard-coded to the system stack. Whichever direction you pick, the font gets bundled locally and
+  the three surfaces stop disagreeing.</p>
+</div>
+
+<div class="gallery" id="g"></div>
+
+<template id="tpl">
+  <div class="phone">
+    <div class="screen">
+
+      <!-- ---------- FIELD HUD over real town art ---------- -->
+      <div class="field">
+        <div class="hp">
+          <div class="hpt">Lv 5&nbsp;&nbsp;HP 40/40</div>
+          <div class="hpbar"><i></i></div>
+        </div>
+        <div class="mini">
+          <!--MINIMAP-->
+        </div>
+        <div class="comp">
+          <b class="n">N</b><b class="e">E</b><b class="s">S</b><b class="w">W</b><i></i>
+        </div>
+        <div class="stick"><div class="knob"></div></div>
+      </div>
+
+      <!-- ---------- BATTLE ---------- -->
+      <div class="battle">
+        <div class="ebar">
+          <div class="grow">
+            <div class="nm">Shadow Wolf</div>
+            <div class="ehp"><i></i></div>
+          </div>
+          <div class="num">Lv 6</div>
+        </div>
+        <div class="stage">
+          <svg class="spr" width="104" height="104" viewBox="0 0 16 16">
+            <rect x="3" y="4" width="10" height="7" fill="#5b4a78"/><rect x="2" y="6" width="2" height="3" fill="#5b4a78"/>
+            <rect x="12" y="6" width="2" height="3" fill="#5b4a78"/><rect x="4" y="2" width="2" height="2" fill="#5b4a78"/>
+            <rect x="10" y="2" width="2" height="2" fill="#5b4a78"/><rect x="5" y="6" width="2" height="2" fill="#ffd23a"/>
+            <rect x="9" y="6" width="2" height="2" fill="#ffd23a"/><rect x="4" y="11" width="2" height="3" fill="#3d3152"/>
+            <rect x="10" y="11" width="2" height="3" fill="#3d3152"/>
+          </svg>
+        </div>
+        <div class="hud">
+          <div class="msg">ちしきのなぞなぞ！こたえてこうげき</div>
+          <div class="qcard">
+            <div class="timer"><i></i></div>
+            <div class="q">16 + 20 = ?</div>
+            <div class="agrid">
+              <button class="ans sel"><span class="ak">A</span>36</button>
+              <button class="ans"><span class="ak">B</span>37</button>
+              <button class="ans"><span class="ak">C</span>26</button>
+              <button class="ans"><span class="ak">D</span>46</button>
+            </div>
+          </div>
+          <div class="pbar">
+            <div class="av"></div>
+            <div class="grow"><div class="nm">Aria · Lv 5</div><div class="phpb"><i></i></div></div>
+            <div class="num">48/60</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ---------- BOTTOM TABS ---------- -->
+      <div class="tabs">
+        <div class="tab on"><span class="ti">◉</span>Status</div>
+        <div class="tab"><span class="ti">⌾</span>Items</div>
+        <div class="tab"><span class="ti">⚔</span>Equip</div>
+        <div class="tab"><span class="ti">⚙</span>Settings</div>
+      </div>
+
+    </div>
+  </div>
+</template>
+
+<script>
+  const DIRECTIONS = [
+    { cls: 't-now', n: '0 · Storybook Quest',
+      f: 'M PLUS Rounded 1c',
+      d: 'What ships today. Warm parchment and gold on slate, thick borders, chunky 3D buttons.',
+      sw: ['#f3e7c6', '#e0b757', '#161834', '#5fcc63'] },
+    { cls: 't-brass', n: '1 · Ink &amp; Brass',
+      f: 'Shippori Mincho',
+      d: 'Near-black ink, bone paper, one antique-brass accent. A mincho face — literary, adult, quiet. The most decisive break from today.',
+      sw: ['#12100d', '#efe7d8', '#b08d57', '#8a2b26'] },
+    { cls: 't-slate', n: '2 · Slate &amp; Sea Glass',
+      f: 'Zen Kaku Gothic New',
+      d: 'Desaturated slate, bone text, one muted sea-glass accent. Hairline borders, no drop shadows. Modern and calm.',
+      sw: ['#1b2028', '#e6e3dc', '#7fb0a8', '#c9a227'] },
+    { cls: 't-porcelain', n: '3 · Porcelain &amp; Indigo',
+      f: 'Klee One',
+      d: 'A LIGHT theme: warm porcelain, indigo ink, one vermilion accent. Japanese stationery. Softest on the eyes in daylight.',
+      sw: ['#f6f2ea', '#26355c', '#c8442f', '#7c8fa8'] },
+    { cls: 't-leaf', n: '4 · Charcoal &amp; Gold Leaf',
+      f: 'Zen Maru Gothic',
+      d: 'Today’s gold, pulled right back. Charcoal panels, gold hairlines instead of thick borders, rounded face kept. The conservative option.',
+      sw: ['#15161c', '#c9a961', '#e8e2d4', '#6f9e7e'] },
+  ];
+
+  const g = document.getElementById('g'), tpl = document.getElementById('tpl');
+  for (const d of DIRECTIONS) {
+    const wrap = document.createElement('div');
+    wrap.className = 'fw';
+    const ph = document.createElement('div');
+    ph.className = 'ph ' + d.cls;
+    ph.appendChild(tpl.content.cloneNode(true));
+    const cap = document.createElement('div');
+    cap.className = 'cap';
+    cap.innerHTML = '<div class="nm">' + d.n + '</div>'
+      + '<div class="fn">' + d.f + '</div>'
+      + '<div class="ds">' + d.d + '</div>'
+      + '<div class="sw">' + d.sw.map(c => '<i style="background:' + c + '"></i>').join('') + '</div>';
+    wrap.appendChild(ph);
+    wrap.appendChild(cap);
+    g.appendChild(wrap);
+  }
+</script>
