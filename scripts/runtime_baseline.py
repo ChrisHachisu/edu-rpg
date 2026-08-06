@@ -232,7 +232,7 @@ ACT1_TOWN_FILES = {
     "act1-hifi/town/npc/portSapphire-wisewoman-4x3-64.png": (
         46_937, "390c12022a813f8cd0c6894988b18e7bebab8d7facee63c9c5d67575b8615c0b"),
     "act1-hifi/verify/seed.html": (
-        1_807, "2981408c66159992d66cee9f02a1963a0eb3c79ba4718c4b58497dcd5f4ac5c6"),
+        2089, "6f34401b6845582f223abdc80dd191c3a1392bc7808aee81d11eb89313b80c14"),
 }
 # 2026-08-03, owner-authorised ("hi-fi needs to be finished and used as the final act 1
 # overworld design"): the Act 1 landmark sprites, for RUNTIME compositing.

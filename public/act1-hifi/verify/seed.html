@@ -15,8 +15,12 @@
 
   It writes ONE key, the game's own `edu-rpg-save`, positioning the player on the overworld one
   step south of Port Sapphire's entrance so the town transition can be walked for real.
+
+  `quizDifficulty` is a GradeLevel ('k' | '1'..'6', src/utils/types.ts), NOT a free string. It
+  read "Hero" here -- a copy-paste of the adjacent player name -- and Settings renders the row
+  through `Z('grade.' + quizDifficulty)`, whose miss path returns the literal `[grade.Hero]`.
 */
-const SAVE = {"version":4,"timestamp":1785654759442,"player":{"name":"Hero","heroColor":"gray","level":1,"exp":0,"expToNext":17,"hp":40,"maxHp":40,"atk":15,"def":5,"spd":6,"equipment":{"weapon":null,"armor":null,"shield":null,"helmet":null,"accessory":null},"inventory":[{"itemId":"herb","quantity":3}],"gold":50,"position":{"mapId":"overworld","x":130,"y":292,"floor":1},"storyFlags":{},"activeQuests":[],"completedQuests":[],"questProgress":{},"timerEnabled":true,"quizDifficulty":"Hero","locale":"en","soundEnabled":true,"masterVolume":0.7,"kanjiMode":false},"playtime":0,"quizStats":{"totalAsked":0,"totalCorrect":0,"byCategory":{}}};
+const SAVE = {"version":4,"timestamp":1785654759442,"player":{"name":"Hero","heroColor":"gray","level":1,"exp":0,"expToNext":17,"hp":40,"maxHp":40,"atk":15,"def":5,"spd":6,"equipment":{"weapon":null,"armor":null,"shield":null,"helmet":null,"accessory":null},"inventory":[{"itemId":"herb","quantity":3}],"gold":50,"position":{"mapId":"overworld","x":130,"y":292,"floor":1},"storyFlags":{},"activeQuests":[],"completedQuests":[],"questProgress":{},"timerEnabled":true,"quizDifficulty":"3","locale":"en","soundEnabled":true,"masterVolume":0.7,"kanjiMode":false},"playtime":0,"quizStats":{"totalAsked":0,"totalCorrect":0,"byCategory":{}}};
 try {
   localStorage.setItem('edu-rpg-save', JSON.stringify(SAVE));
   document.querySelector('#s').textContent =
