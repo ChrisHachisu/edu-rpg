@@ -1,0 +1,22 @@
+{
+ "artefact": "coastalReef-f1-props.png",
+ "command": "render_dungeon_material_map.py --floor coastalReef-f1 --props --out public/act1-dungeon-art/coastalReef-f1-props.png",
+ "generator": "scripts/render_dungeon_material_map.py",
+ "generatorSha256": "794c33ef0429df2cb51a94ce0e00e308b972c945344b41eaf6fbb4080be1daee",
+ "inputs": {
+  "design/act1-dungeon-interiors/coastalReef-f1.json": "65f83a74b4e9295f61c222884e5abddec9584154ff243bda7657f92e868c7047",
+  "design/act1-dungeon-interiors/materials/coastalReef/mat-accent.png": "1e6ff86c670f34769555cff8a59e123fe9de5f961e56219d9de179786f9b34bb",
+  "design/act1-dungeon-interiors/materials/coastalReef/mat-floor.png": "3efecaf3ecbe2d9287641d41c564ae7db601306184380c2a3e25eb63ae9a1a74",
+  "design/act1-dungeon-interiors/materials/coastalReef/mat-rubble.png": "e699b918d5a5888562e0415da537ac89881fae12936a1512e75d3aa21240aadd",
+  "design/act1-dungeon-interiors/materials/coastalReef/mat-wall.png": "f235e64a3df5a7e5f69301803c502f22ae927468e496e11c118f0aec956f4310"
+ },
+ "params": {
+  "hero": null,
+  "placeholder": false,
+  "props": true,
+  "scale": 1,
+  "theme": "tidal coral reef"
+ },
+ "sha256": "4626670be5329daffe29a849fb89a2c8a11e982e2f7c83376376192016643b12",
+ "writtenAt": "2026-08-06T09:28:42+09:00"
+}

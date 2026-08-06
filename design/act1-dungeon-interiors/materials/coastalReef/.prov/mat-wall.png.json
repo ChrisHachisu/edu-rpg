@@ -1,0 +1,16 @@
+{
+ "artefact": "mat-wall.png",
+ "command": "make_dungeon_materials.py --theme coastalReef",
+ "generator": "scripts/make_dungeon_materials.py",
+ "generatorSha256": "6cde0e94da5209445f6c8a582b58c0bb7a47727448ac8fd57414677690e22d31",
+ "inputs": {
+  "design/act1-dungeon-interiors/materials/coastalReef/coastalReef-materials-sheet.png": "9ed8262b00a2464e8b6570610a7590fd55a1ed89f756d0b77edf2e04f27379bb"
+ },
+ "params": {
+  "overlap": 96,
+  "quadrant": "wall",
+  "theme": "coastalReef"
+ },
+ "sha256": "f235e64a3df5a7e5f69301803c502f22ae927468e496e11c118f0aec956f4310",
+ "writtenAt": "2026-08-06T08:29:12+09:00"
+}

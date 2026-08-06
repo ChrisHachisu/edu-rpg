@@ -1,0 +1,16 @@
+{
+ "artefact": "mat-floor.png",
+ "command": "make_dungeon_materials.py --theme whisperingWoodsCave",
+ "generator": "scripts/make_dungeon_materials.py",
+ "generatorSha256": "6cde0e94da5209445f6c8a582b58c0bb7a47727448ac8fd57414677690e22d31",
+ "inputs": {
+  "design/act1-dungeon-interiors/materials/whisperingWoodsCave/whisperingWoodsCave-materials-sheet.png": "0eac8917a67fcd47b8a23fb96c8698acbfa937cf87d86fffe2481a5a25b67aba"
+ },
+ "params": {
+  "overlap": 96,
+  "quadrant": "floor",
+  "theme": "whisperingWoodsCave"
+ },
+ "sha256": "2c7fcf635208aa05d8339e8d83cbfad3cbd2f740282c3c46ac329a9413c4f68c",
+ "writtenAt": "2026-08-06T08:28:37+09:00"
+}

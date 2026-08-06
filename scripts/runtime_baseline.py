@@ -175,6 +175,34 @@ ACT1_DUNGEON_FILES = {
         16343, "ecfc78881494b53bc88db3bd7f8cf2b6e9f27143fb5c00b9e507c293df6b0b19"),
     "act1-dungeon-art/mistyGrotto-f3-walk.png": (
         19051, "4ad7894bcb1b694d8a7d1d3baf312ee321f29a8a433c29af8d82db4490f3d752"),
+    # 2026-08-06: coastalReef and whisperingWoodsCave were already in A1D_MAPS scope but had NO
+    # art -- they took the generated floor layout and then drew it procedurally. Both now ship the
+    # same baked look as the cellar. That completes every Act 1 dungeon except crystalCave, which
+    # is deliberately untouched.
+    "act1-dungeon-art/coastalReef-f1-props.png": (
+        6348993, "4626670be5329daffe29a849fb89a2c8a11e982e2f7c83376376192016643b12"),
+    "act1-dungeon-art/coastalReef-f2-props.png": (
+        6158525, "291dd6f1a25d74604d78b94112e46ba55487dce4f8cd64812373cf34801252d7"),
+    "act1-dungeon-art/coastalReef-f3-props.png": (
+        8865048, "54323c50e7b1427b004c7b12144470b970545d91d60f87957b4c20b0e370d86a"),
+    "act1-dungeon-art/coastalReef-f1-walk.png": (
+        12696, "cd30f30485ec6ca70801ea2068919bba7af042640226b8742284d02fb082c334"),
+    "act1-dungeon-art/coastalReef-f2-walk.png": (
+        13337, "c4561c5a9a72485b53d60b28b01a568a56c102914667a0a722218e1d4c1e869c"),
+    "act1-dungeon-art/coastalReef-f3-walk.png": (
+        15312, "e609078e2cb20c04114cd6abd264c1b5c61dcc1fb75e434e0c7037bf8ffb3990"),
+    "act1-dungeon-art/whisperingWoodsCave-f1-props.png": (
+        4987626, "c6ba805b310a109b26665be67eab2768f4dd4d4244ae1ed47c37ea0511b90482"),
+    "act1-dungeon-art/whisperingWoodsCave-f2-props.png": (
+        5858709, "eb7493cf5f37ab4d4e2349c525e6ccf62d56401e8a2390ceb9edd29956f966ae"),
+    "act1-dungeon-art/whisperingWoodsCave-f3-props.png": (
+        6878858, "e8f187347a47470b86159e8a3060d2f0d5ede8cc0109da3b8594836b550871fd"),
+    "act1-dungeon-art/whisperingWoodsCave-f1-walk.png": (
+        10633, "12b88bf5250284e9c35f699c4be235e060eb876789500edaed165e5915e372ff"),
+    "act1-dungeon-art/whisperingWoodsCave-f2-walk.png": (
+        12968, "1f9971d5af51800c46c0a0a19bfab4e71d73142edd42c7dac8c18cd03af97a79"),
+    "act1-dungeon-art/whisperingWoodsCave-f3-walk.png": (
+        13820, "9735088b09a8c846924ba3c7b3328db758b884bf225ca5b91b82d36eba78fb84"),
 }
 # 2026-08-03, owner-authorised: the Port Sapphire town screen. `adapter.js` is gated to TOWNS
 # ONLY, so this surface is what the overlay actually raises; the overworld stays on the shipped

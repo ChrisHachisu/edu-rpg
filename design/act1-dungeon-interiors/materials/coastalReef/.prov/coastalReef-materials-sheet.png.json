@@ -1,0 +1,15 @@
+{
+ "artefact": "coastalReef-materials-sheet.png",
+ "command": "make_dungeon_materials.py --theme coastalReef",
+ "generatedBy": "codex image_gen",
+ "generator": "scripts/make_dungeon_materials.py",
+ "generatorSha256": "6cde0e94da5209445f6c8a582b58c0bb7a47727448ac8fd57414677690e22d31",
+ "inputs": {},
+ "params": {
+  "model": "gpt-5.6-sol",
+  "theme": "coastalReef"
+ },
+ "prompt": "Call the built-in image_gen tool ONCE, immediately. Read no files, no skills, no docs.\n\nPrompt: A 2x2 grid of four seamless TEXTURE SWATCHES for a tidal coral reef, 1024x1024, four equal quadrants, no gap or border.\n\nTOP-LEFT: pale dry sand and shell grit.\nTOP-RIGHT: dark coral rock and encrusted stone, fine weed in the seams.\nBOTTOM-LEFT: dark broken coral fragments, shell and pebble debris.\nBOTTOM-RIGHT: wet sand with shallow water, weed and small shells.\n\nFlat even lighting, no cast shadows. Dense fine detail across every quadrant, strong contrast between grains, rich tinted colour. Detailed 16-bit SNES JRPG pixel texture. Nothing larger than a thumbnail. No objects, no layout, no text.\n\nThen copy the generated file to /Users/christopherhachisu/Documents/claudecode/edu-rpg-map-engine-semantic-data/design/act1-dungeon-interiors/materials/coastalReef/coastalReef-materials-sheet.png. Print the final path. Do not commit, do not build, modify no existing file.",
+ "sha256": "9ed8262b00a2464e8b6570610a7590fd55a1ed89f756d0b77edf2e04f27379bb",
+ "writtenAt": "2026-08-06T08:29:11+09:00"
+}
