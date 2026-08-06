@@ -14,7 +14,15 @@ const RUNTIME = path.join(
 const R26_RUNTIME = path.join(RUNTIME, 'act1-final-art-geometry-r26/runtime');
 const TARGETS = [path.join(ROOT, 'public/act1-hifi'), path.join(ROOT, 'dist/act1-hifi')];
 const EXPECTED_MANIFEST_SHA = 'cb3865ba5f51d27dc025594df6a487dc97728f76dbecb98bebf172e75dd4def8';
-const EXPECTED_STATIC_INDEX_SHA = '58128b83daf4f9efc6c7dfabc2c9543c5f8325e72f5de017603a1fb428f592da';
+// Re-pinned 2026-08-06. This had drifted to a sha the repo could no longer produce: the shipped
+// shell moved from the 4-way d-pad to the analog stick, but only dist/index.html was edited --
+// and dist/ is gitignored, so the shipped shell had no tracked source at all. The root
+// index.html here still carried the d-pad, `npm run promote:act1-r26` would have thrown on this
+// assert, and any HUD edit to dist/index.html was invisible to git and would have been lost the
+// next time a worktree seeded its dist by copying someone else's. Root index.html has been
+// brought back into line -- it now differs from dist/index.html by exactly the seven rewrites
+// below and nothing else -- so the shell is reproducible again.
+const EXPECTED_STATIC_INDEX_SHA = '0f3dd23c7bce7b2f9d9ec41f09d280be3d3c623f0e747e49d9cbd8301f1df46f';
 const EXPECTED_DQ_SHA = 'fcd746d1be14cc1958b4ae710a75e36c0ee2a5ae141a82e63272ba7169cd688b';
 const EXPECTED_ACT1_MAP_SHA = '7a1037634692a88c4b6cdf09642f25e4375098de452cb7b4a15808cd4c96fef7';
 

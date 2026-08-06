@@ -81,36 +81,21 @@
       }
       body.qok-dialogue #touch-controls { display: none; }
 
-      /* --- Connected slide d-pad (one touch surface; finger position picks the direction) --- */
-      .dpad {
+      /* --- Analog stick (same shape and feel as the town overlay's pad) --- */
+      .stick {
         position: absolute; width: 172px; height: 172px; pointer-events: auto;
         touch-action: none; border-radius: 50%;
         background: rgba(26,26,46,.5); border: 2px solid #8b7340;
         box-shadow: 0 0 10px rgba(0,0,0,.5), inset 0 0 14px rgba(0,0,0,.4);
       }
-      .dpad-arrow {
-        position: absolute; color: #c9a84c; font-size: 27px; font-weight: 700;
-        pointer-events: none; -webkit-user-select: none; user-select: none;
-        transition: color .05s, text-shadow .05s, transform .05s;
+      .stick-knob {
+        position: absolute; left: 50%; top: 50%; width: 70px; height: 70px;
+        margin: -35px 0 0 -35px; border-radius: 50%;
+        background: rgba(201,168,76,.42); border: 2px solid rgba(201,168,76,.75);
+        box-shadow: 0 0 10px rgba(0,0,0,.35);
+        transition: transform .04s linear;
       }
-      .dpad-arrow.up    { top: 9px;    left: 50%; transform: translateX(-50%); }
-      .dpad-arrow.down  { bottom: 9px; left: 50%; transform: translateX(-50%); }
-      .dpad-arrow.left  { left: 12px;  top: 50%;  transform: translateY(-50%); }
-      .dpad-arrow.right { right: 12px; top: 50%;  transform: translateY(-50%); }
-      .dpad.dir-up    .dpad-arrow.up,
-      .dpad.dir-down  .dpad-arrow.down,
-      .dpad.dir-left  .dpad-arrow.left,
-      .dpad.dir-right .dpad-arrow.right { color: #1a1a2e; text-shadow: 0 0 12px #ffd54a; }
-      .dpad.dir-up::after, .dpad.dir-down::after, .dpad.dir-left::after, .dpad.dir-right::after {
-        content: ''; position: absolute; width: 60px; height: 60px; border-radius: 14px;
-        background: rgba(201,168,76,.85); pointer-events: none; z-index: 0;
-        transition: top .05s, bottom .05s, left .05s, right .05s;
-      }
-      .dpad.dir-up::after    { top: 6px;    left: 50%; transform: translateX(-50%); }
-      .dpad.dir-down::after  { bottom: 6px; left: 50%; transform: translateX(-50%); }
-      .dpad.dir-left::after  { left: 6px;   top: 50%;  transform: translateY(-50%); }
-      .dpad.dir-right::after { right: 6px;  top: 50%;  transform: translateY(-50%); }
-      .dpad-arrow { z-index: 1; }
+      .stick.active .stick-knob { background: rgba(255,213,74,.55); }
 
       /* --- Field/dungeon bottom menu tabs (replace the floating menu button). Populated + handled by ui-overhaul.js. --- */
       .field-tabs {
@@ -130,13 +115,13 @@
       .field-tabs .ft.pressed { background: rgba(201,168,76,.22); }
 
       /* --- Orientation: d-pad position (raised to sit above the bottom tab bar) --- */
-      .dpad { bottom: calc(76px + env(safe-area-inset-bottom, 0px)); }
+      .stick { bottom: calc(76px + env(safe-area-inset-bottom, 0px)); }
       /* LEFT (default): d-pad bottom-left */
-      body.ctrl-left  .dpad { left:  calc(20px + env(safe-area-inset-left, 0px)); right: auto; }
+      body.ctrl-left  .stick { left:  calc(20px + env(safe-area-inset-left, 0px)); right: auto; }
       /* RIGHT: d-pad bottom-right */
-      body.ctrl-right .dpad { right: calc(20px + env(safe-area-inset-right, 0px)); left: auto; }
+      body.ctrl-right .stick { right: calc(20px + env(safe-area-inset-right, 0px)); left: auto; }
       /* CENTER: d-pad centered */
-      body.ctrl-center .dpad { left: 50%; right: auto; transform: translateX(-50%); }
+      body.ctrl-center .stick { left: 50%; right: auto; transform: translateX(-50%); }
     }
   </style>
   <link rel="stylesheet" href="/ui-overhaul.css" />
@@ -152,14 +137,11 @@
     </div>
   </div>
 
-  <!-- Overworld-only controls. The d-pad is one connected slide surface; the menu button opens the in-game menu. -->
+  <!-- Overworld-only controls. Analog stick, matching the Act 1 town overlay: the knob follows the
+       finger and the vector is mapped to arrow keys, so DIAGONALS are possible. The old 4-way
+       d-pad held exactly one arrow at a time, which made corner boundaries untestable. -->
   <div id="touch-controls" aria-hidden="true">
-    <div class="dpad" id="dpad">
-      <span class="dpad-arrow up">▲</span>
-      <span class="dpad-arrow left">◀</span>
-      <span class="dpad-arrow right">▶</span>
-      <span class="dpad-arrow down">▼</span>
-    </div>
+    <div class="stick" id="dpad"><div class="stick-knob" id="dpadKnob"></div></div>
     <div class="field-tabs" id="fieldTabs"></div>
   </div>
 
@@ -188,45 +170,69 @@
       function press(key)   { if (held[key]) return; held[key] = true; fire('keydown', key); }
       function release(key) { if (!held[key]) return; held[key] = false; fire('keyup', key); }
 
-      /* ---- Connected slide d-pad ---- */
+      /* ---- Analog stick ----
+         The engine reads Phaser cursor keys, so the stick still speaks arrow keys -- but it can
+         hold TWO at once. The old d-pad picked whichever axis dominated and released the other,
+         so a diagonal was impossible and a corner boundary could never be probed. */
       var dpad = document.getElementById('dpad');
+      var knob = document.getElementById('dpadKnob');
       var DIRS = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
-      var activeDir = null;
-      function dirFromPoint(clientX, clientY) {
+      var activeDir = null;                        // kept: other code reads it
+      // 0.38 of full deflection before an axis engages. Low enough that a deliberate diagonal
+      // registers on both axes, high enough that a straight push does not wobble into one.
+      var AXIS_ON = 0.38;
+      /* The stick's RAW vector, published alongside the synthesised keys.
+         2026-08-05: the Act 1 dungeon floors moved to continuous movement against a collision
+         shape derived from the art, and a direction quantised to four arrow keys cannot drive
+         that -- it can only ever produce the eight headings the old d-pad had. The key events
+         stay exactly as they were, so the overworld and the towns (which read Phaser cursors)
+         are untouched; dq-tiles.js reads this extra channel only where it has a mask. */
+      function publishStick(nx, ny, mag) {
+        window.__DQ_STICK__ = { x: nx, y: ny, m: mag };
+      }
+      function setVector(nx, ny, mag) {
+        var want = {};
+        if (nx >  AXIS_ON) want.ArrowRight = 1; else if (nx < -AXIS_ON) want.ArrowLeft = 1;
+        if (ny >  AXIS_ON) want.ArrowDown  = 1; else if (ny < -AXIS_ON) want.ArrowUp   = 1;
+        for (var i = 0; i < DIRS.length; i++) {
+          var k = DIRS[i];
+          if (want[k]) press(k); else release(k);
+        }
+        activeDir = want.ArrowUp ? 'ArrowUp' : want.ArrowDown ? 'ArrowDown'
+                  : want.ArrowLeft ? 'ArrowLeft' : want.ArrowRight ? 'ArrowRight' : null;
+        dpad.classList.toggle('active', !!activeDir);
+        publishStick(nx, ny, mag || 0);
+      }
+      function moveKnob(clientX, clientY) {
         var r = dpad.getBoundingClientRect();
         var dx = clientX - (r.left + r.width / 2);
         var dy = clientY - (r.top + r.height / 2);
-        var dead = r.width * 0.16;
-        if (Math.abs(dx) < dead && Math.abs(dy) < dead) return null;
-        if (Math.abs(dx) > Math.abs(dy)) return dx > 0 ? 'ArrowRight' : 'ArrowLeft';
-        return dy > 0 ? 'ArrowDown' : 'ArrowUp';
+        var len = Math.hypot(dx, dy), max = r.width / 2 - 22;
+        var k = len > max ? max / len : 1;
+        knob.style.transform = 'translate(' + (dx * k) + 'px,' + (dy * k) + 'px)';
+        if (len < 8) { setVector(0, 0, 0); return; }
+        setVector(dx / len, dy / len, Math.min(1, len / max));
       }
-      function dpadClass(dir) {
-        dpad.classList.remove('dir-up', 'dir-down', 'dir-left', 'dir-right');
-        if (dir === 'ArrowUp') dpad.classList.add('dir-up');
-        else if (dir === 'ArrowDown') dpad.classList.add('dir-down');
-        else if (dir === 'ArrowLeft') dpad.classList.add('dir-left');
-        else if (dir === 'ArrowRight') dpad.classList.add('dir-right');
+      function setDir(dir) {                       // kept for blur/visibility teardown
+        if (dir === null) {
+          for (var i = 0; i < DIRS.length; i++) release(DIRS[i]);
+          activeDir = null; knob.style.transform = ''; dpad.classList.remove('active');
+          publishStick(0, 0, 0);
+        }
       }
-      function setDir(dir) {
-        if (dir === activeDir) return;
-        if (activeDir) release(activeDir);
-        activeDir = dir;
-        if (dir) press(dir);
-        dpadClass(dir);
-      }
+      publishStick(0, 0, 0);
       var dpadTouchId = null;
       dpad.addEventListener('touchstart', function (e) {
         if (e.cancelable) e.preventDefault();
         var t = e.changedTouches[0];
         dpadTouchId = t.identifier;
-        setDir(dirFromPoint(t.clientX, t.clientY));
+        moveKnob(t.clientX, t.clientY);
       }, { passive: false });
       dpad.addEventListener('touchmove', function (e) {
         if (e.cancelable) e.preventDefault();
         for (var i = 0; i < e.changedTouches.length; i++) {
           var t = e.changedTouches[i];
-          if (t.identifier === dpadTouchId) setDir(dirFromPoint(t.clientX, t.clientY));
+          if (t.identifier === dpadTouchId) moveKnob(t.clientX, t.clientY);
         }
       }, { passive: false });
       function dpadEnd(e) {
@@ -238,8 +244,8 @@
       dpad.addEventListener('touchcancel', dpadEnd);
       // Mouse fallback (desktop / simulator clicks)
       var dpadMouse = false;
-      dpad.addEventListener('mousedown', function (e) { e.preventDefault(); dpadMouse = true; setDir(dirFromPoint(e.clientX, e.clientY)); });
-      window.addEventListener('mousemove', function (e) { if (dpadMouse) setDir(dirFromPoint(e.clientX, e.clientY)); });
+      dpad.addEventListener('mousedown', function (e) { e.preventDefault(); dpadMouse = true; moveKnob(e.clientX, e.clientY); });
+      window.addEventListener('mousemove', function (e) { if (dpadMouse) moveKnob(e.clientX, e.clientY); });
       window.addEventListener('mouseup', function () { if (dpadMouse) { dpadMouse = false; setDir(null); } });
 
       /* ---- The bottom field tabs (open the menu to a tab) are populated + handled by ui-overhaul.js (it has i18n + icons). No floating menu button anymore. ---- */
