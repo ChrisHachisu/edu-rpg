@@ -1,5 +1,39 @@
 # SMOOTH round 3 — the map swap stops synthesising terrain it has already baked
 
+> [!warning] VERIFIED with one claim REFUTED. Independent refutation, 12 runs per side.
+> Full report: `docs/SMOOTH-ROUND-3-REFUTATION.md`. Verdict **MERGE WITH FOLLOW-UP**.
+>
+> - **SMOOTH-5 CONFIRMED: 1148 -> 147 ms, GREEN.** No overlap, p < 0.001, and the arithmetic
+>   closes against the removed work. First target in this loop to reach green.
+> - **SMOOTH-4 PARTIAL.** The 1239 -> 983 ms move reproduces, but **zero of it comes from the
+>   work this round removed.** The removed blocks were 2nd and 3rd largest; SMOOTH-4 measures
+>   the 1st, so by construction they contributed 0 ms. **This also dissolves this document's
+>   "unexplained ~240 ms" doubt: SMOOTH-4's -256 ms IS that unexplained figure, not a separate
+>   thing.** Mechanism still not found after five falsified candidates, including this
+>   document's own. **Round 4 must not treat 988 ms as a floor this change set.**
+> - **"Worse than slow, it is WRONG" is REFUTED.** The analytically built field is
+>   byte-identical to the settled one: **0 of 3,852,288 pixels differ**, 0 blocked/free flips,
+>   0 of 58,240 sampled `a1mFree` decisions differ, at Greenhollow and Millbrook alike. Base
+>   really does miss the bake (hash `2239228427` vs `3096430556`, `consolidated: 0`) and really
+>   does pay ~486 ms — but the window lies wholly inside the Act 1 plate rect, the plate is
+>   written last, and it had **already been applied** when the analytic build ran. A 480 ms
+>   bake miss, nothing more. The corresponding claim in `public/dq-tiles.js` has been corrected
+>   in place. **Keep the fix, it is worth 480 ms per swap; do not justify it as a correctness
+>   repair.**
+> - **The collision-hash tension resolves twice over.** `canMove` is a different authority —
+>   `OWM_FIELD_OWNED={2,4,5}` splits them and `canMove` is never derived from `owmBuild` — so it
+>   could never have exposed the defect, and there was no defect to expose.
+> - **The re-ordering is BIGGER than this document says, and lands right anyway.** It changes
+>   which map `consolidateMapData` sees (raw vs plated) and its BFS seed cell: 349/884 ops vs
+>   base's 346/937, plate repairs 0 vs 1-and-2. But this file's own comment requires the plate
+>   *after* consolidation, and base's return path had it **backwards**; the fix restores the
+>   documented order and makes the return path match cold boot exactly. Final `mapData 45756f2a`,
+>   `canMove 317b8b0a` / 78,711, all textures and the minimap (51,280 draw commands) identical
+>   at every door driven.
+> - SMOOTH-1 doubt 2 settles as noise **with the sign flipped** (high mode drawn 5/12 on base,
+>   4/12 on fix). S2 mean fps is **not** NO-OVERLAP at 12 runs.
+> - Still undriven on **both** builds, third round running: a dungeon exit and Port Sapphire.
+
 One atomic change: **the overworld's collision field is no longer derived from scratch on a map
 swap.** Both procedural evaluations that ran on the town-to-overworld return leg are removed —
 one because nobody was ever going to read its answer, the other because the map it was reading

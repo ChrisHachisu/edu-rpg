@@ -3651,10 +3651,16 @@
          and does not merely miss the bake, it silently falls through to owmBuild's per-pixel
          waterField/mountainField evaluation over the whole window. Measured: the same window
          36_228_44_38 costs 2.1 ms assembled from the bake and 488.4 ms built analytically.
-       * Worse than slow, it is WRONG. The analytic field it builds describes an unconsolidated
-         coastline, and owmState caches it against the array identity -- which the plate then
-         mutates in place -- so the hero walks on a collision field the painting disagrees with
-         until the window next moves, about 12 cells later.
+       * NOT wrong, only slow -- an earlier draft of this comment claimed otherwise and an
+         independent verification refuted it (docs/SMOOTH-ROUND-3-REFUTATION.md, 2026-08-08).
+         The analytically built field is byte-identical to the settled one: 0 of 3,852,288
+         pixels differ, 0 blocked/free flips, 0 of 58,240 sampled a1mFree decisions differ, at
+         Greenhollow and Millbrook alike. The reason is that this window lies wholly inside the
+         Act 1 plate rect and the plate is written last, so it had ALREADY been applied when the
+         analytic build ran. Nor could canMove have exposed a difference: OWM_FIELD_OWNED={2,4,5}
+         splits the authorities and canMove is never derived from owmBuild. So this is a 480 ms
+         bake miss and nothing more. Keep the fix -- it is worth 480 ms per swap -- but do not
+         justify it as a correctness repair.
 
      Doing the setup here, from the first caller that needs a settled map, is not a reordering of
      the work: it is the same one-shot block, still identity-guarded, still exactly once per array.
