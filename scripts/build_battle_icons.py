@@ -22,7 +22,18 @@ WHAT IT EMITS
     colour lives entirely in the tint and no second asset is needed per colour. Order matches
     BATTLE_ACT in ui-overhaul.js: attack, defend, item, flee.
 
-    python3 scripts/build_battle_icons.py --src <sheet.png>
+    python3 scripts/build_battle_icons.py --src <sheet.png> [--replace attack=<glyph.png>]
+
+REPLACING ONE CELL
+    The owner accepted three of the four glyphs and rejected one, so --replace swaps a single
+    cell's ARTWORK for a separately generated single-glyph image while leaving the other three
+    to come out of --src through the identical code path, byte for byte. Regenerating all four
+    would have re-rolled three glyphs that were already approved.
+
+    A separately generated glyph carries neither of the guarantees a shared sheet gives -- one
+    pen weight and one relative scale -- so it cannot use the family scale. It is scaled to match
+    the family's OUTPUT STROKE instead, which is the invariant the family scale exists to
+    preserve in the first place. See replace_scale().
 """
 from __future__ import annotations
 
@@ -177,6 +188,28 @@ def contact_sheet(sheet: Image.Image, out: pathlib.Path) -> None:
     print(f"WROTE {out}  (contact sheet: {big}px over {21}px, gold on charcoal)")
 
 
+def replace_scale(crop: np.ndarray, family_stroke: float) -> float:
+    """Scale a separately generated glyph to the family's OUTPUT stroke, not to its optical size.
+
+    The family scale cannot be used here. It is one factor derived from the median optical size
+    of the four crops on one sheet, and it works only because the generator drew those four with
+    one pen at sensible relative sizes -- a guarantee that exists per SHEET and does not extend
+    to a glyph generated on its own canvas at its own scale.
+
+    Matching the stroke instead preserves the property the family scale was protecting all along:
+    every glyph in the sheet is drawn with the same weight of line. Size then follows from that,
+    which is the right dependency -- a diagonal blade needs a larger bounding box than a compact
+    shield to look the same size, and this lands it there on its own.
+
+    Judgement, recorded because a future run will face it again: the replacement's own source
+    ratio came in under the anchor band after four attempts (4.62 / 5.04 / 5.56 / 4.72 percent,
+    against 6.09-6.24 for the accepted three), and the generator plateaued rather than converging.
+    Scaling to the family stroke makes the SHIPPED cell match regardless -- what a light source
+    ratio costs is glyph size, not weight, and the ceiling below catches that if it goes too far.
+    """
+    return min(family_stroke / stroke_width(crop), GLYPH / max(crop.shape))
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--src", required=True, type=pathlib.Path,
@@ -185,9 +218,22 @@ def main() -> int:
                     help="where to write the sheet (default: public/ui-icons/battle-icons.png)")
     ap.add_argument("--contact", type=pathlib.Path, default=CONTACT,
                     help="where to write the owner review contact sheet")
+    ap.add_argument("--replace", action="append", default=[], metavar="NAME=PNG",
+                    help=f"swap one cell for a separately generated single glyph; "
+                         f"NAME is one of {'/'.join(NAMES)}. Repeatable.")
     args = ap.parse_args()
     if not args.src.is_file():
         sys.exit(f"missing source sheet: {args.src}")
+
+    swaps: dict[int, pathlib.Path] = {}
+    for spec in args.replace:
+        name, _, path = spec.partition("=")
+        if name not in NAMES:
+            sys.exit(f"--replace name must be one of {NAMES}, got {name!r}")
+        p = pathlib.Path(path)
+        if not p.is_file():
+            sys.exit(f"missing replacement glyph: {p}")
+        swaps[NAMES.index(name)] = p
 
     a = alpha_from(args.src)
     spans = columns(a, len(NAMES))
@@ -195,16 +241,44 @@ def main() -> int:
 
     # Optical size, not the bounding box: sqrt(w*h) is much closer to how big a glyph LOOKS than
     # its longest side, and this set contains both a wide flat boot and a tall potion.
+    #
+    # Deliberately computed over ALL FOUR crops even when a cell is being replaced. The median is
+    # what fixes the family scale, so recomputing it over the survivors would shift every
+    # untouched cell by a pixel or two and quietly re-roll glyphs the owner has already approved.
     optical = [float(np.sqrt(c.shape[0] * c.shape[1])) for c in crops]
     base = OPTICAL / float(np.median(optical))
 
-    sheet = Image.new("RGBA", (CELL * len(NAMES), CELL), (255, 255, 255, 0))
+    masks: dict[int, Image.Image] = {}
     for i in range(len(NAMES)):
+        if i in swaps:
+            continue
         scale = min(base, GLYPH / max(crops[i].shape))
         if scale < base:
             print(f"  {NAMES[i]:7s} clamped to the {GLYPH}px ceiling "
                   f"({scale / base:.0%} of the family scale)")
-        mask = normalise(crops[i], scale)
+        masks[i] = normalise(crops[i], scale)
+
+    # The family's output stroke, measured on the cells that came off the sheet, is what a
+    # replacement is matched to. Median, so one odd cell cannot drag the target.
+    family_stroke = float(np.median(
+        [stroke_width(np.asarray(m, dtype=np.float32) / 255) for m in masks.values()]))
+    if swaps:
+        print(f"  family output stroke from {len(masks)} sheet cells: {family_stroke:.2f}px")
+
+    replaced_crops: dict[int, np.ndarray] = {}
+    for i, path in swaps.items():
+        print(f"  {NAMES[i]:7s} REPLACED from {path.name}")
+        crop = trim(alpha_from(path))
+        replaced_crops[i] = crop
+        scale = replace_scale(crop, family_stroke)
+        if scale * max(crop.shape) >= GLYPH:
+            print(f"  {NAMES[i]:7s} clamped to the {GLYPH}px ceiling -- its stroke will land "
+                  f"UNDER the family's; regenerate it heavier rather than shipping this")
+        masks[i] = normalise(crop, scale)
+
+    sheet = Image.new("RGBA", (CELL * len(NAMES), CELL), (255, 255, 255, 0))
+    for i in range(len(NAMES)):
+        mask = masks[i]
         white = Image.new("RGBA", (CELL, CELL), (255, 255, 255, 255))
         white.putalpha(mask)
         sheet.paste(white, (i * CELL, 0))
@@ -212,8 +286,9 @@ def main() -> int:
         rows = np.where(out.sum(1) > 0)[0]
         cols = np.where(out.sum(0) > 0)[0]
         box = max(rows[-1] - rows[0], cols[-1] - cols[0]) + 1
-        src_sw = stroke_width(crops[i])
-        src_opt = optical[i]
+        crop = replaced_crops.get(i, crops[i])
+        src_sw = stroke_width(crop)
+        src_opt = float(np.sqrt(crop.shape[0] * crop.shape[1]))
         print(f"  {NAMES[i]:7s} cell {i}  src stroke {src_sw:5.1f}px "
               f"({100 * src_sw / src_opt:4.2f}% of optical)"
               f"  -> stroke {stroke_width(out):4.2f}  box {box:3d}/{CELL}"

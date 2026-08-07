@@ -183,7 +183,7 @@ UI_ASSET_FILES = {
     # one of which (qok-shieldw) hardcoded fill="#fff" and could not be tinted at all.
     # Recovered from the generator's output by scripts/build_battle_icons.py.
     "ui-icons/battle-icons.png": (
-        15690, "2dcc75ee617f919468bad32f0720fd8c797e60249709cb1af06a606203fb2dbf"),
+        14526, "324763f2c31a29e859a535dbcf3cc10d6acb3d6716001b732c41b281e8eead1b"),
 }
 # The four tiling terrain materials the renderer above samples. New runtime paths as of
 # 2026-08-01; pinned by hash rather than merely tolerated, because they are shipped art and a

@@ -61,6 +61,53 @@ calibration ("attempt 1 was 4.4%, attempt 2 was 8.1%, aim for 6.3%"), which is w
 first try. Nothing was hand-drawn, retouched or redrawn at any point; the rejected runs were
 regenerated, not fixed.
 
+## Attack was replaced after owner review — runs 4 to 7
+
+Owner, on the true-size proof: *"icons look better but the motion on the sword looks unnatural
+so it can just be a sword."* The set was accepted; only the Attack glyph's slash arc was
+rejected.
+
+**One cell was regenerated, not all four.** The three approved glyphs come out of run 3's sheet
+through the identical code path and are **byte-identical** to what was reviewed — verified cell
+by cell. Re-running all four would have re-rolled three glyphs the owner had already signed off.
+`build_battle_icons.py --replace attack=<png>` is how that is expressed; it is a scripted
+transformation like every other, not a hand edit.
+
+| run | codex session | md5 | stroke / optical | verdict |
+|---|---|---|---|---|
+| 4 | `019fd9f9-3085-7633-8213-4f3ef46b02a2` | `aef43348796592d07c242c7fb5a5e55f` | 4.62% | REJECTED — composition right, stroke a quarter too light. Normalised, it hits the 116px ceiling, so its stroke lands *under* the family's. |
+| 5 | `019fd9fa-87d8-7bb1-8cf9-6a519f86d523` | `a18433366b642f865e57e5b885167824` | 5.04% | REJECTED — asked for a third thicker, moved a tenth. |
+| **6** | **`019fd9fc-d89d-7833-ad51-6af866c8d1e1`** | **`5c2ada8ff54c3aa5eadd3cdfb574c3c0`** | **5.56%** | **CHOSEN** — the only one of the four that reaches the family's output stroke without hitting the ceiling, and at a cell box of 102/128 against the survivors' 104–107. |
+| 7 | `019fd9fe-49cc-73d3-8fd9-4ef6cc3e6794` | `122ae012161b566412196253384c393b` | 4.72% | REJECTED — asked for 62px, went *backwards*. This is where the loop was stopped. |
+
+**The calibration loop that worked for runs 1–3 did not converge here: 4.62 → 5.04 → 5.56 →
+4.72.** Numeric feedback moved the generator about half as far as asked each time and then
+oscillated, even when the target was restated in absolute canvas pixels. Run 6's 5.56% is under
+the anchor band (5.9–6.7%) and under the three survivors (6.09–6.24%), and four attempts is
+where chasing it stopped being worth another re-roll of a composition that was already right.
+
+That miss is absorbed by the build rather than by hand. A separately generated glyph cannot use
+the family scale anyway — that factor only means anything within one sheet — so a replacement is
+scaled to match the family's **output stroke** instead, which is the property the family scale
+existed to protect. The shipped Attack cell therefore measures **5.57px against the survivors'
+5.53–5.61px**, an exact match, and what the light source ratio actually cost was glyph size, not
+weight. The script warns and tells you to regenerate heavier if a replacement ever clamps against
+the 116px ceiling, which is the case where the stroke genuinely cannot be matched — runs 4 and 7
+both do.
+
+### Keeping it distinct from the tab bar's Equip sword
+
+With the arc gone the diagonal angle alone would have been carrying the whole distinction, so the
+blade was respecified instead. The anchor's Equip sword is vertical, point-up, a narrow
+parallel-sided blade with a centre fuller line, a straight bar crossguard and a small round
+pommel. This one differs on five counts at once, all specified in the brief: **diagonal** rather
+than vertical, a **broader leaf-shaped blade**, **no fuller line**, a **swept crescent
+crossguard** rather than a straight bar, and an **open ring pommel**. Panel 4 of `proof.html`
+stacks the two bars directly for that comparison; at 22px they read as different icons with the
+labels covered.
+
+No motion of any kind remains in the glyph — no arc, no speed lines, no impact marks.
+
 Distinctness was a hard requirement, because the anchor family already contains a sword and a
 pouch and both can be on screen in the same session. The brief forbade a vertical upright sword
 and a pouch/sack silhouette by name. Delivered: the attack sword is diagonal and carries a slash
@@ -72,7 +119,8 @@ against the anchor's soft gathered sack).
 
 | file | what it is |
 |---|---|
-| `source-generated.png` | the raw generator output, byte-identical, `cmp` clean |
+| `source-generated.png` | run 3's raw four-up sheet, byte-identical, `cmp` clean — still the source of defend, item and flee |
+| `source-generated-attack.png` | run 6's raw single-glyph sword, byte-identical, `cmp` clean — the source of attack |
 | `contact-sheet.png` | the four glyphs for one-glance approval, emitted by the build script |
 | `proof.html` | the true-size proof page; loads the SHIPPED css and png, not copies |
 | `proof-truesize-dpr3.png` | that page captured at 390 CSS px, deviceScaleFactor 3 |
@@ -107,3 +155,16 @@ is a genuine empty column, so that splitter finds five and aborts on art that is
 battle build ranks gutters by width and cuts on the widest three instead — on this sheet the
 cell gutters are 96–121px and the widest in-glyph gap is 0px, so the two are never close, and
 the script refuses to guess if that margin ever narrows.
+
+The single-glyph runs 4–7 came back the same way: opaque, flat near-black, no chequer. The brief
+naming the chequer as the thing not to do has now held across five generations.
+
+## Rebuilding
+
+```
+python3 scripts/build_battle_icons.py \
+    --src     design/ui-overhaul/battle-icons/source-generated.png \
+    --replace attack=design/ui-overhaul/battle-icons/source-generated-attack.png
+python3 scripts/regenerate_pins.py
+./scripts/build-dist.sh && ./scripts/ship-gate.sh .
+```
