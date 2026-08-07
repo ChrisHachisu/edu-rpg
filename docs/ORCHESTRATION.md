@@ -1,9 +1,21 @@
 # Orchestration — one session per repo, subagents inside it
 
-Decided 2026-08-06 by the owner, after three parallel top-level sessions each finished
-their work and none could merge it. **Supersedes the multi-session model in
-`PARALLEL-SESSIONS.md`**, whose ownership tables remain useful as a description of who
-owns which files — but tracks are now subagents, not sessions.
+Decided 2026-08-06 by the owner as a preference for how they want to work: one thread of
+accountability that reports to them, rather than several they have to poll. **Supersedes
+the multi-session model in `PARALLEL-SESSIONS.md`** for edu-rpg — but that file's ownership
+tables and its integration-token convention are still the operating detail, and the token
+still governs merges.
+
+> **Correction, same day.** The first version of this file justified the change with
+> "three parallel sessions each finished work and none could merge it." That was false and
+> the art track caught it. Verified: `main == origin/main == 42b17a8` (0/0, fully pushed);
+> art's commits were ancestors of `6b04deb` *before* they were called parked; HUD landed as
+> `42b17a8`. Two of the three tracks merged fine. The one that did not was the engine track,
+> for its own reasons — no device proof and an exhausted session — not a systemic failure.
+> The error came from comparing `git log -1` hashes and inferring "unmerged" instead of
+> running `git merge-base --is-ancestor`, and from not reading `PARALLEL-SESSIONS.md`, which
+> documents the integration token that was working the whole time. **The model change stands
+> as an owner preference; the failure story does not.**
 
 ## The rule
 
@@ -16,15 +28,23 @@ separate tracks of one project.
 
 ### Why not parallel sessions
 
-They work fine right up until they have to finish. Measured on 2026-08-06: three tracks
-produced zero source conflicts — the ownership boundaries held — and still landed nothing,
-because each session could complete work but none owned integration. There is also no
-control channel between sessions: `send_message` is a context handoff and says outright it
-is "not to orchestrate background work", and it cannot reach unattended sessions. An
-orchestrator built on it would be guessing at the other sessions' state.
+Not because they fail to merge — on 2026-08-06 three tracks produced **zero source
+conflicts** and two of the three merged and pushed without incident. The ownership tables
+and the integration token did their job. Anyone proposing to replace this model should
+start from that, not from a decline narrative.
 
-A subagent, by contrast, is briefed by the orchestrator, gated by the orchestrator, and
-returns a structured result to the orchestrator. One thread of accountability.
+The actual reasons, both about the owner's side of the wire:
+
+1. **No control channel between sessions.** `send_message` is a context handoff and says
+   outright it is "not to orchestrate background work"; it cannot reach unattended sessions
+   at all. So no session can brief another, hold it to a gate, or collect a structured
+   result. Coordination degrades to the owner relaying between sessions by hand.
+2. **N sessions means N reports and N things to poll.** A subagent is briefed by the
+   orchestrator, gated by the orchestrator, and returns to the orchestrator — one thread of
+   accountability, one report.
+
+What parallel sessions were genuinely good at — isolation, and tracks that never collide —
+is preserved, because subagents still get one worktree each.
 
 ## The flow
 
@@ -79,22 +99,29 @@ These are why integration is expensive today. Fix them and the batch flow gets c
    copy (15094 B, sha `0f3dd23c…`) lives in other worktrees, and `regenerate_pins.py` will
    silently re-pin it to the stale hydrated vintage (14414 B) if you let it.
    → Wanted: `scripts/build-dist.sh`, and either track `dist/index.html` or generate it.
-2. **Generated files are committed.** Touching `public/dq-tiles.js` moves 53 pins plus
-   `act1RuntimeSnapshot.ts` plus two hand-edited shas. Two tracks touching that file
-   conflict in generated space 100% of the time even when their source edits do not
-   overlap. → Wanted: regenerate-and-compare at gate time instead of diffing committed pins.
+2. **Committed generated pins are serialised, not conflict-prone.** Touching
+   `public/dq-tiles.js` moves 53 pins plus `act1RuntimeSnapshot.ts` plus two hand-edited
+   shas. Two branches regenerating those against a moving `main` produce "two different
+   correct answers and one broken tree" — which is exactly why the integration token
+   exists, and the token has been holding. Regenerate-and-compare at gate time would remove
+   the need to serialise, but that is an improvement to argue on its merits, **not** a
+   defect currently costing anyone. An earlier version of this file sold it as one.
 3. **The web path does not boot past `BootScene`.** Loader reaches `progress: 1`,
    `isLoading() === false`, zero pending, no console errors, all requests 200 — and it
    never hands off to `TitleScene`. This blocks every headless verification and is what
    forces the simulator to be the only lane. → Fixing it gives every batch a cheap tier-2.
 4. **`.eduharness/` is gitignored**, so a fresh worktree has no Playwright harness.
 
-## Current queue (as of 2026-08-06)
+## Current queue (verified 2026-08-06, after the correction above)
 
-| Branch | Commits ahead of main | Mechanical gate | Device |
-|---|---|---|---|
-| `hud/theme-and-chrome` | 6 | not run by an integrator | no |
-| `art/materials-and-crystalcave` | live session | — | no |
-| `engine/overworld-blockers` | 2 | **both PASS on committed tree** | no |
+`main == origin/main == 42b17a8`, 0/0. Fully pushed.
 
-`main` is also 62 commits ahead of `origin/main` and has never been pushed.
+| Branch | State |
+|---|---|
+| `art/materials-and-crystalcave` | **merged** (`9aeeeaf`, `60f786c`, `0293dce`, `c2879a9` all on origin) |
+| `hud/theme-and-chrome` | **merged**, landed rebased as `42b17a8` — the branch ref still points at the pre-rebase `12f5118`, so an is-ancestor check on it lies |
+| `engine/overworld-blockers` | **unmerged**, 3 commits. Gates passed against `6b04deb`; `main` has since moved, so they must be re-run after a rebase onto `42b17a8`. No device proof. |
+
+**Check merges with `git merge-base --is-ancestor`, never by eyeballing two `git log -1`
+hashes.** A rebased branch keeps its old ref and reads as unmerged; that mistake is what
+produced the false premise this file originally carried.
