@@ -44,6 +44,16 @@
      silently painting a cream card into the middle of a dark screen. */
   --parch:var(--panel); --parch2:var(--panel2);
 
+  /* ---- motion, from design/GAME-FEEL.md. Rules below reference these; a raw ms in a feature
+     rule is the bug this block exists to prevent. ---- */
+  --press:70ms;             /* input.feedback   — first visible response, must stay under 80ms */
+  --select-travel:120ms;    /* selection.travel — a menu cursor moving between adjacent items */
+  --micro:200ms;            /* micro.transition — panel swap, popups, dialogs */
+  --ease-out:cubic-bezier(.22,.80,.36,1);
+  --ease-in:cubic-bezier(.50,0,.75,0);
+  --ease-back:cubic-bezier(.34,1.56,.64,1);   /* overshoot + settle. ONE per screen; the battle
+                                                 screen spends it on the command plate. */
+
   display:none;
   /* full-screen; the safe-area top/left/right inset is applied as an EXPLICIT px padding
      by ui-overhaul.js measureSafeArea() — CSS env() resolves unreliably on this toggled
@@ -112,8 +122,9 @@
 #qok-ui .btn .ic{width:21px;height:21px;flex:none;}
 #qok-ui .btn-gold{background:var(--gold);border-color:var(--gold);color:var(--bg3);font-weight:700;}
 #qok-ui .btn-em{background:var(--emerald2);border-color:var(--emerald);color:#f2f6f3;}
-#qok-ui .btn-ruby{background:var(--ruby2);border-color:var(--ruby);color:#f8f0ef;}
-#qok-ui .btn-sky{background:#3c5566;border-color:var(--sky);color:#eef3f6;}
+/* .btn-ruby / .btn-sky were the Attack and Defend blocks in the old 2x2 command grid and had no
+   other consumer. Gilded Rail deleted the saturated blocks, so they are gone with them; .btn-em
+   and .btn-slate stay because the healer confirm and the item-menu cancel still use them. */
 #qok-ui .btn-slate{background:#ffffff0a;border-color:var(--gold-line);color:var(--ink);}
 #qok-ui .sel{outline:2px solid var(--gold);outline-offset:1px;box-shadow:0 0 0 3px var(--gold-glow)!important;}
 
@@ -235,7 +246,69 @@
    specific than the responsive .bmon overrides below, so it applies on phone + tablet + landscape. */
 #qok-ui .bmon.boss{ width:86%; max-width:380px; max-height:95%; }
 #qok-ui .hudwrap{ flex:none; margin-top:auto; padding:14px 14px calc(16px + env(safe-area-inset-bottom,0px)); }
-#qok-ui .actiongrid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+/* ---- battle command selector: "Gilded Rail" (owner-locked 2026-08-07) -------------------------
+   Replaces the 2x2 grid of four saturated blocks (.btn-ruby / .btn-sky / .btn-em / .btn-slate).
+   The four commands now share ONE framed strip and a SINGLE gold plate slides between them and
+   settles. Colour survives only as the glyph tint: --tint is set per cell from BATTLE_ACT in
+   ui-overhaul.js, so Attack still reads red and Defend still reads blue with no colour block on
+   the screen. The plate is the only thing on this screen allowed a playful easing.
+   Spec: design/mockups/battle-command-selector.html, variant A.
+
+   The bar is OPAQUE --bg3, not the mockup's #ffffff0a wash (owner decision 2026-08-07). The wash
+   let the battle art through, so an unselected label was really sitting on whatever the biome
+   happened to be: measured 1.78-2.30:1 on the shipped forest, against 4.5:1 for a label that is
+   the game's primary control and read by eight-year-olds. The old 2x2 grid had accidentally
+   guaranteed contrast by giving every label a saturated block to sit on, so shipping the wash
+   would have made the menu HARDER to read than what is live -- a regression, not a trade-off.
+   --bg3 because the other chrome on this screen is already exactly that colour (.enemy-card
+   #15161ce0, .msg and .pbar #15161ce6); opaque because that is what makes the numbers identical
+   on every background instead of needing per-biome tuning. Cost, accepted: the strip no longer
+   floats over the art. The screen-wide scrim in setBattleBg() is untouched -- with an opaque bar
+   it no longer participates in label contrast at all, and it still serves the enemy card and the
+   monster's separation from the background. */
+#qok-ui .rail{ position:relative; display:grid; grid-template-columns:repeat(4,1fr);
+  background:var(--bg3); border:1px solid var(--gold-line); border-radius:15px; padding:5px; }
+#qok-ui .rail::after{ content:""; position:absolute; left:14px; right:14px; bottom:3px; height:1px;
+  background:rgba(201,169,97,.16); pointer-events:none; }   /* the rail line the plate runs on */
+#qok-ui .railplate{ position:absolute; top:5px; bottom:5px; left:5px; width:calc((100% - 10px) / 4);
+  background:var(--gold); border-radius:11px; box-shadow:0 0 0 3px var(--gold-glow);
+  transform:translateX(0%); will-change:transform;
+  transition:transform var(--select-travel) var(--ease-back), background var(--press) var(--ease-out); }
+#qok-ui .railcmd{ position:relative; z-index:1; appearance:none; border:none; background:transparent;
+  cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:5px; min-height:60px; padding:8px 2px 9px; min-width:0; color:var(--ink-soft);
+  transition:color var(--micro) var(--ease-out), transform var(--press) var(--ease-out); }
+#qok-ui .railcmd .ic{ width:22px; height:22px; color:var(--tint,var(--ink-soft));
+  transition:transform var(--micro) var(--ease-out), color var(--micro) var(--ease-out); }
+#qok-ui .railcmd .lab{ font-size:12.5px; font-weight:700; letter-spacing:.02em; white-space:nowrap;
+  max-width:100%; transition:letter-spacing var(--micro) var(--ease-out); }
+#qok-ui .railcmd.on{ color:var(--bg3); }
+#qok-ui .railcmd.on .ic{ color:var(--bg3); transform:translateY(-2px); }
+#qok-ui .railcmd.on .lab{ letter-spacing:.06em; }
+/* The four cells are narrow, so a long label SHRINKS, never wraps. fitRailLabels() in
+   ui-overhaul.js measures once per build with .fitting applied, which makes every label carry the
+   SELECTED letter-spacing during the measurement — otherwise moving the cursor onto a
+   just-barely-fitting label would push it back out of its cell. */
+#qok-ui .rail.fitting .railcmd .lab{ letter-spacing:.06em; }
+/* Press feedback is a CLASS, not :active -- the mockup toggles a class on pointerdown and says why:
+   it mirrors the real pointerGuard, which routes taps itself. :active is the shakier bet here
+   because pointerGuard stops the event at the DOCUMENT CAPTURE phase, and WKWebView is already
+   unreliable about :active on non-anchor elements. (Not a measured failure of :active: the only
+   readings that disagreed came from getComputedStyle, which is stale for these composited
+   properties -- it reported an identity transform for the CLASS version too, while the rendered
+   pixels showed the press plainly.) */
+#qok-ui .railcmd.press{ transform:scale(.955); }           /* input.feedback, 70ms */
+#qok-ui .rail.press .railplate{ background:#f2e2b6; }      /* the plate acknowledges the press */
+
+/* Panel swap: only when the battle PHASE changes, never on an HP tick (the whole screen is
+   repainted for those too, and an entry animation on every tick would strobe). */
+#qok-ui .hudwrap.swapin > :first-child{ animation:qok-hudswap var(--micro) var(--ease-out) both; }
+@keyframes qok-hudswap{ from{ opacity:0; transform:translateY(7px); } to{ opacity:1; transform:none; } }
+
+@media (prefers-reduced-motion: reduce){
+  #qok-ui .railplate, #qok-ui .railcmd, #qok-ui .railcmd .ic, #qok-ui .railcmd .lab{ transition-duration:.01ms !important; }
+  #qok-ui .hudwrap.swapin > :first-child{ animation-duration:.01ms !important; }
+}
 #qok-ui .pbar{ display:flex; align-items:center; gap:9px; background:#15161ce6; border:1px solid var(--gold-line); border-radius:10px; padding:9px 11px; margin-top:10px; }
 #qok-ui .itemrow{ display:flex; flex-direction:column; gap:8px; }
 /* quiz — a parchment card in the bottom HUD so the enemy + monster stay visible above it */
