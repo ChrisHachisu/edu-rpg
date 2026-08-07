@@ -22,6 +22,15 @@
 
   var N = 48, TILE = 48, SC = 1, MARGIN = 12;
 
+  /* THE DIAGNOSTICS IN THIS FILE WERE UNREACHABLE ON THE ONLY SURFACE THAT MATTERS. Roughly
+     twenty branches here log under window.__DQ_DEBUG__, and inside the real app there is no URL
+     bar and no console to set it from -- the same wall scripts/seed_ios_save.py exists to get
+     over. So it also reads a SEEDED key: `seed_ios_save.py --debug` writes localStorage
+     `dq-debug`, and every one of those branches lights up on device. Off by default, wrapped
+     because localStorage throws outright in some privacy modes. */
+  try{ if(!window.__DQ_DEBUG__ && window.localStorage
+       && window.localStorage.getItem('dq-debug')==='1') window.__DQ_DEBUG__=1; }catch(e){}
+
   // ---------- palette (verbatim from dq_overlay2.py P{}) ----------
   var P = {
     grass:[56,112,46], grass_lt:[82,144,56], grass_dk:[36,78,32], grass_dk2:[28,62,28],
@@ -2504,9 +2513,11 @@
       owmState={ map:map, key:key, m:mm };
       // Published because this rebuild is the one thing in the overworld that can drop a frame,
       // and the last time it regressed it was found by measuring it on device, not by reading it.
-      var pres=owmPresence(map,X0,Y0,winW,winH);
+      var pres=owmPresence(map,X0,Y0,winW,winH), terrain=((pres&1)?'W':'-')+((pres&2)?'M':'-');
       window.__DQ_OWM__={ ms:ms, src:src, key:key, w:winW, h:winH,
-                          px:winW*N*winH*N, terrain:((pres&1)?'W':'-')+((pres&2)?'M':'-') };
+                          px:winW*N*winH*N, terrain:terrain };
+      if(window.__DQ_DEBUG__) console.log('dq owm '+src+' '+(ms>=0?ms.toFixed(1):'?')+'ms '
+        +winW+'x'+winH+' ['+terrain+'] '+key+(owmBake?'':' (bake not loaded)'));
     }
     var m=owmState.m; if(!m) return null;
     var fx=hero.x-m.ox, fy=hero.y-m.oy;                          // she must be inside it, with room to work
