@@ -675,7 +675,13 @@
     var hasMtn=false, hasPath=false;
     for (var sy=0;sy<winH;sy++){ for (var sx=0;sx<winW;sx++){ var sv=et(map,X0+sx,Y0+sy); if(sv===4)hasMtn=true; else if(sv===1)hasPath=true; } if(hasMtn&&hasPath)break; }
     var elev=null;
-    if (hasMtn){ elev=new Float32Array(cw*ch); for(var ey=0;ey<ch;ey++) for(var ex=0;ex<cw;ex++) elev[ey*cw+ex]=elevAt(wox+ex,woy+ey); }
+    // ONLY the palette fallback reads `elev` (the hillshade below, in the `else` of `if(MAT.ready)`).
+    // The material path shades rock from ridgedAt() and never touches it. Built unconditionally this
+    // was 11.9 MB of Float32Array plus one elevAt() per pixel -- 2.97 M calls over a 1584x1872 window
+    // -- thrown away untouched on every window the textures had already decoded for, i.e. on the
+    // normal path. Gated on !MAT.ready it costs exactly what it did before in the fallback and
+    // nothing at all otherwise.
+    if (hasMtn && !MAT.ready){ elev=new Float32Array(cw*ch); for(var ey=0;ey<ch;ey++) for(var ex=0;ex<cw;ex++) elev[ey*cw+ex]=elevAt(wox+ex,woy+ey); }
     // shortlist the landmark sites that can touch this window, so the per-pixel loop
     // walks a handful rather than every landmark on the map
     _winSites=[];
@@ -990,18 +996,62 @@
       var S=TILE*(B[2]-B[0]+1)/mw;                               // world px per manifest px
       if(!(S>=1)||S!==Math.round(S)) return;                     // an unexpected density: leave the art off
       A1A.S=S; A1A.manifest=m; A1A.dirty=true;
+      a1aPrefetchStart();                                        // chunks for the first window, now
     }catch(e){} };
     try{ r.send(); }catch(e){}
     var l=new XMLHttpRequest(); l.open('GET','act1-hifi/landmarks/landmarks.json',true);
     l.onload=function(){ try{ var d=JSON.parse(l.responseText); if(d&&d.landmarks&&d.landmarks.length) A1A.landmarks=d.landmarks; }catch(e){} };
     try{ l.send(); }catch(e){}
   }
+  // Where the hero will be standing the first time an overworld window is built, in overworld cells.
+  // Resumed on the overworld: that is the saved position. Resumed anywhere else (which includes a
+  // NEW game, since the default save position is inside Greenhollow): the cell she lands on walking
+  // out, which is the landmark table's `exit` -- act1-world-map.js loads BEFORE this file and
+  // rewrites the bundle's own connections, so its table is the authority and the bundle's toX/toY
+  // is not. Manifest `startCell` is the last resort.
+  function a1aStartCell(){
+    var p=null;
+    try{ var sv=JSON.parse(localStorage.getItem('edu-rpg-save')||'null'); p=sv&&sv.player&&sv.player.position; }catch(e){}
+    if(p&&p.mapId==='overworld'&&typeof p.x==='number'&&typeof p.y==='number') return {x:p.x,y:p.y};
+    var WM=window.__ACT1_WORLD_MAP__, L=WM&&WM.landmarks, id=(p&&p.mapId)||'greenhollow';
+    if(L) for(var i=0;i<L.length;i++) if(L[i].mapId===id) return L[i].exit||L[i].at;
+    var m=A1A.manifest; return (m&&m.startCell)||null;
+  }
+  // PREFETCH THE FIRST WINDOW'S CHUNKS, the moment the manifest lands.
+  //
+  // Same rationale as the a1dFetch/a1dArtFor prefetch at the bottom of this file: a chunk asked for
+  // on the frame it is first needed cannot possibly answer that frame, and a window without full
+  // chunk coverage does not blit -- it falls through a1aBlit into drawTerrain's per-pixel loop over
+  // 1584x1872 = 2.97 M pixels. Asking here, while the title screen is still up, is what lets the
+  // first real window be a blit instead.
+  //
+  // BEST-EFFORT BY CONSTRUCTION. The render window's size comes from the camera, which does not
+  // exist yet, so this uses the 40x38 window this file already documents as the worst case (see
+  // A1A_MAX_CHUNKS above), and windowStart's map-size clamp is skipped -- the plate sits well
+  // inside the 320x400 overworld, so the only effect is at most one extra chunk requested for a
+  // save parked on the very last row. Whatever this misses, a1aRects requests on the first real
+  // window exactly as it does today; nothing downstream depends on this having been right.
+  var A1A_PRE_W=40, A1A_PRE_H=38;
+  function a1aPrefetchStart(){
+    var c=a1aStartCell(); if(!c) return;
+    var X0=Math.max(0,Math.floor((c.x-MARGIN)/MARGIN)*MARGIN), Y0=Math.max(0,Math.floor((c.y-MARGIN)/MARGIN)*MARGIN);
+    try{ a1aRects(X0,Y0,A1A_PRE_W,A1A_PRE_H); }catch(e){}
+  }
   function a1aChunkRec(c){
     var rec=A1A.chunks[c.id];
     if(!rec){ rec=A1A.chunks[c.id]={};
       ['base','canopy','water'].forEach(function(k){ if(!c[k]) return;
         var im=new Image();
-        im.onload=function(){ rec[k]=im; A1A.dirty=true; };
+        // Flip the redraw flag only when THIS layer can actually change what the window shows.
+        // A canopy or water image that lands before its own base is dead weight: a1aRects skips
+        // the whole chunk while `rec.base` is missing, so the flip cannot alter a single pixel --
+        // all it does is force the next tick's updateTerrain/rebuildOverlay to rebuild a window
+        // that is still short of full coverage, and a window short of coverage falls through
+        // a1aBlit into drawTerrain's per-pixel splat. Thirty chunks x three layers meant one
+        // 2.97 M-px splat per tick for the whole of the load. Once base IS present the window
+        // may already have been painted without this layer, so the flip is real and the rebuild
+        // it forces is a blit rather than a splat.
+        im.onload=function(){ rec[k]=im; if(rec.base) A1A.dirty=true; };
         im.onerror=function(){};                                 // a missing layer degrades, never wedges
         im.src='act1-hifi/'+c[k]; });
     }
@@ -3547,6 +3597,13 @@
       if (tmid!==lastTownMapId || !alive){ lastTownMapId=tmid; try{ reskinTown(scene); }catch(e){ if(window.__DQ_DEBUG__) console.log('dq town err '+e+(e&&e.stack||'')); } }
     }
   }
+  // Run it once NOW rather than waiting out the first interval. Every stage tick() gates -- the
+  // a1d install, the overworld bake load, the movement wrapper, the reskin -- used to start up to
+  // 80 ms later than it had to, on a boot where the whole point is to be early. Same shape as
+  // ui-overhaul.js's `startLoop()` (`tick(); setInterval(tick, 50);`). tick() is written to be
+  // called before anything exists: it returns on a missing game, a missing scene, or an inactive
+  // one, which is exactly what it finds here.
+  tick();
   setInterval(tick,80);
   // PARSE-TIME PREFETCH. Both Act-1 dungeon loads used to be issued from tick(), which cannot run
   // until WorldMapScene exists -- so on a save RESUMED inside a dungeon the 42 KB floor JSON was
@@ -3560,6 +3617,14 @@
   a1dFetch();
   try{ var _sv=JSON.parse(localStorage.getItem('edu-rpg-save')||'null'), _p=_sv&&_sv.player&&_sv.player.position;
        if(_p&&A1D_MAPS[_p.mapId]){ var _k=_p.mapId+'-f'+(_p.floor||1); a1dArtFor(_k); a1mMaskFor(_k); } }catch(e){}
+  // The OVERWORLD half of the same argument, and it had been left out. a1aFetch() was reachable
+  // from exactly one place -- the kind==='ow' branch of tick() -- so the manifest was not even
+  // REQUESTED until WorldMapScene was already active on the overworld, and the first chunk was
+  // requested a round trip after that. Every window built in the meantime misses a1aBlit and pays
+  // drawTerrain's 2.97 M-px procedural splat instead. Issued here the manifest is resident, and
+  // a1aPrefetchStart has the start window's chunks in flight, before the player taps Continue.
+  // a1aFetch latches on A1A.req, so tick()'s call is a no-op from here on.
+  a1aFetch();
   // Verification handle for the dungeon's continuous movement. There is no other way to ask the
   // running game where the hero actually IS: the save format and every HUD read are tile-integer,
   // so a 48 px hop and a smooth walk look identical from outside. Exposed rather than inferred so
