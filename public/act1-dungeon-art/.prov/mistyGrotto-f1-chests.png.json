@@ -1,0 +1,17 @@
+{
+ "artefact": "mistyGrotto-f1-chests.png",
+ "command": "make_dungeon_chest_patches.py",
+ "generator": "scripts/make_dungeon_chest_patches.py",
+ "generatorSha256": "5f4b89b73f4f8069a4295765d4707332567ad0186499d6bd2f2c76c827dad08b",
+ "inputs": {
+  "public/act1-dungeon-art/mistyGrotto-f1-props.png": "e8d426db42349e334eed41f6de9f45cabfa678a0bf240589bfef81b0043b4ad9",
+  "public/act1-dungeon-floors.json": "9c284e35069895166735a409c6186da4e6e8d82e4b76816089ff271e34340a46"
+ },
+ "params": {
+  "cellPx": 48,
+  "chests": 2,
+  "margin": 1
+ },
+ "sha256": "2ce54b94119f3c067f1b28be110ee6db03f772d09b243e8d37f8b8e059c658b9",
+ "writtenAt": "2026-08-07T19:24:10+09:00"
+}

@@ -88,7 +88,7 @@ ACT1_OVERLAY_FILES = {
     # save format round-trips to itself (measured: 742 of 754 reportable cells reload unchanged, the
     # other 12 settle one cell north once; largest rescue nudge 28 px against a 96 px bound).
     "dq-tiles.js": (
-        271756, "16cff0cb25e37c61c9e2428a1d1e1ea17fa84a1b101884d6cef2885e753a5333"),
+        277008, "1b3e4f55385d1fe356755c9c39de48b50fc68dacbf1317514bd6613dc7c88b05"),
     # 2026-08-07: THE OVERWORLD'S COLLISION SHAPE, baked -- the overworld's answer to the dungeons'
     # `<floor>-walk.png` above, and as much a shipped authority as they are. Deriving it at runtime
     # was correct and unaffordable: owmBuild() evaluated waterField/mountainField per pixel over a
@@ -319,6 +319,44 @@ ACT1_DUNGEON_FILES = {
         11928, "e573eb74b554ba4fdb79a4c7cde420ca124b6a8e091ce5b34e19a723bcea8559"),
     "act1-dungeon-art/whisperingWoodsCave-f3-walk.png": (
         12791, "6e32e58e3250185ed9ac3b23c85531ad104a9dba5b80b0f2cdc7128557c6117d"),
+    # 2026-08-07: THE OPEN-CHEST STATE. Owner, playing: "the treasure chest open state is not
+    # baked in the game". It could not be -- *-props.png has the chest composited in CLOSED, so
+    # looting one changed the tile (4->8, persisted, replayed on re-entry) and nothing else.
+    #
+    # A sprite on top cannot hide the baked chest: the silhouettes do not nest, and at the
+    # authored 1.0 cell 19.1% of the closed chest still shows. So each floor ships a STRIP of
+    # opaque 3x3-cell patches -- the chest's own neighbourhood, cut from the SAME render with the
+    # chest swapped -- which the runtime blits back onto the rect it came from. Exact by
+    # construction, and it leaves the approved *-props.png untouched.
+    #
+    # Pinned by hash like the floors they are cut from, and for the same reason: the patch IS the
+    # floor there, so a silent swap paints something else into the picture. One strip per baked
+    # floor; the frames are in that floor's own chest order, which is the runtime's only index.
+    # Built by scripts/make_dungeon_chest_patches.py.
+    "act1-dungeon-art/coastalReef-f1-chests.png": (
+        266513, "5557873df37b75c464d332ec93e830c328ee03285053abbdf6f6c4dc0e8b93f2"),
+    "act1-dungeon-art/coastalReef-f2-chests.png": (
+        259557, "0c6915939b44c69b0c60af7b4ff5c5c2bd7bbaecd014a5dda74ac475b81860c0"),
+    "act1-dungeon-art/coastalReef-f3-chests.png": (
+        258552, "d58333878eca31e576e8eca5a9917c81bc2da896821ff275837ec31921a52e9c"),
+    "act1-dungeon-art/mistyGrotto-f1-chests.png": (
+        121043, "2ce54b94119f3c067f1b28be110ee6db03f772d09b243e8d37f8b8e059c658b9"),
+    "act1-dungeon-art/mistyGrotto-f2-chests.png": (
+        188346, "3778065199fa68449b2f841efc7871e9ee5f88430ba932bb1131d09ac78b7659"),
+    "act1-dungeon-art/mistyGrotto-f3-chests.png": (
+        187811, "59ef669b41251cf71a165ca7ed95f427be541de5f60d8c57c2614876aad8f58d"),
+    "act1-dungeon-art/sunkenCellar-f1-chests.png": (
+        97523, "f678fb69c74b3c9265a3e373684b53e293ac97dfa2948bc36a6d83e87ccf687d"),
+    "act1-dungeon-art/sunkenCellar-f2-chests.png": (
+        57256, "ef942f715845533f576ba0445c83ca29123749fefae61beaf81cdb7e5165066a"),
+    "act1-dungeon-art/sunkenCellar-f3-chests.png": (
+        105251, "03099b17aa8d14b4c00765b36f1ce1c007b9941c8e9220a5e45754879025479f"),
+    "act1-dungeon-art/whisperingWoodsCave-f1-chests.png": (
+        108468, "c38ac76c02968bd2d08d3858468fc04d3f7e88dc17cb880d81ac874e0a0049a7"),
+    "act1-dungeon-art/whisperingWoodsCave-f2-chests.png": (
+        167434, "8b667b49ebe5899fc2a06b8dd17c65837be564309e75936dc63fb0158ee6fcd0"),
+    "act1-dungeon-art/whisperingWoodsCave-f3-chests.png": (
+        169334, "34e7cde8843d61942f360b514ea4c8537701f0855c6a6a6b9bd270eb2e59dc41"),
 }
 # 2026-08-03, owner-authorised: the Port Sapphire town screen. `adapter.js` is gated to TOWNS
 # ONLY, so this surface is what the overlay actually raises; the overworld stays on the shipped

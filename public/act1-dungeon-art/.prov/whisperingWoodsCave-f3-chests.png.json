@@ -1,0 +1,17 @@
+{
+ "artefact": "whisperingWoodsCave-f3-chests.png",
+ "command": "make_dungeon_chest_patches.py",
+ "generator": "scripts/make_dungeon_chest_patches.py",
+ "generatorSha256": "5f4b89b73f4f8069a4295765d4707332567ad0186499d6bd2f2c76c827dad08b",
+ "inputs": {
+  "public/act1-dungeon-art/whisperingWoodsCave-f3-props.png": "542adfa29a81e58b34ae350eeebe7703ee501372bf1f68bb9fff57edaf6932d0",
+  "public/act1-dungeon-floors.json": "9c284e35069895166735a409c6186da4e6e8d82e4b76816089ff271e34340a46"
+ },
+ "params": {
+  "cellPx": 48,
+  "chests": 3,
+  "margin": 1
+ },
+ "sha256": "34e7cde8843d61942f360b514ea4c8537701f0855c6a6a6b9bd270eb2e59dc41",
+ "writtenAt": "2026-08-07T19:24:44+09:00"
+}
