@@ -306,6 +306,9 @@
       ['pointerdown', 'touchstart', 'mousedown', 'pointerup', 'touchend', 'mouseup', 'click'].forEach(function (tp) {
         root.addEventListener(tp, inputShield);
       });
+      // pointercancel is NOT routed through pointerGuard (it must not swallow anything); it only
+      // releases the rail press, so a gesture the browser takes away cannot leave a cell pressed.
+      document.addEventListener('pointercancel', function () { railPress(null, false); }, true);
       root.addEventListener('input', onInput, true);
       root.addEventListener('change', onInput, true);
       attached = true;
@@ -1030,6 +1033,22 @@
     return !!(n && (t === n || (t.closest && t.closest('#qok-name'))));
   }
   function isNativeTarget(t) { return isNameTarget(t) || !!(t && t.closest && t.closest('[data-native]')); }
+  // Press feedback for the battle command rail, as a class on the same pointerdown that arms the
+  // tap, cleared on the up/cancel that ends it. This is what the mockup specifies, and it mirrors
+  // pointerGuard rather than depending on :active surviving a capture-phase stopPropagation in
+  // WKWebView. Verified in rendered pixels: while held, the plate reads #f2e2b6 instead of #c9a961
+  // and the cell's label shrinks.
+  function railPress(el, on) {
+    if (!root) return;
+    var prev = root.querySelectorAll('.railcmd.press, .rail.press');
+    for (var i = 0; i < prev.length; i++) prev[i].classList.remove('press');
+    if (!on || !el) return;
+    var cell = el.classList && el.classList.contains('railcmd') ? el : null;
+    if (!cell) return;
+    cell.classList.add('press');
+    var rail = cell.parentNode;
+    if (rail && rail.classList) rail.classList.add('press');
+  }
   // Capture-phase on document: swallow every overlay tap so the underlying Phaser scene input never
   // sees it, and route DOM buttons on pointer/touch UP (reliable on iOS — a click often never fires).
   // stopPropagation (not preventDefault) blocks Phaser without killing scroll of the overlay body.
@@ -1046,8 +1065,16 @@
     var ty = e.type;
     if (ty === 'pointerdown' || ty === 'touchstart') {
       downEl = actEl; downAct = actEl ? actEl.getAttribute('data-act') : null; gestureRouted = false;
-    } else if (ty === 'pointerup' || ty === 'touchend') {
-      if (!gestureRouted && actEl && actEl === downEl && downAct) { gestureRouted = true; fireTap(actEl, downAct); }
+      railPress(actEl, true);
+    } else if (ty === 'mousedown') {
+      // The COMPANION of pointerdown, not the end of the press. Chrome fires pointerdown then
+      // mousedown for one finger/click, so clearing here cancelled the press feedback instantly --
+      // measured as a cell that stayed 87.5px wide for the whole hold.
+    } else {
+      // every other event ends the press, so mouseup, click and a half-finished gesture cannot
+      // leave a cell stuck at scale(.955)
+      railPress(null, false);
+      if ((ty === 'pointerup' || ty === 'touchend') && !gestureRouted && actEl && actEl === downEl && downAct) { gestureRouted = true; fireTap(actEl, downAct); }
     }
     // mousedown/mouseup/click are swallowed above (no route) — routing already happened on UP.
   }

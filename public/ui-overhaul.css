@@ -277,8 +277,15 @@
    SELECTED letter-spacing during the measurement — otherwise moving the cursor onto a
    just-barely-fitting label would push it back out of its cell. */
 #qok-ui .rail.fitting .railcmd .lab{ letter-spacing:.06em; }
-#qok-ui .railcmd:active{ transform:scale(.955); }          /* input.feedback, 70ms */
-#qok-ui .rail:active .railplate{ background:#f2e2b6; }     /* the plate acknowledges the press */
+/* Press feedback is a CLASS, not :active -- the mockup toggles a class on pointerdown and says why:
+   it mirrors the real pointerGuard, which routes taps itself. :active is the shakier bet here
+   because pointerGuard stops the event at the DOCUMENT CAPTURE phase, and WKWebView is already
+   unreliable about :active on non-anchor elements. (Not a measured failure of :active: the only
+   readings that disagreed came from getComputedStyle, which is stale for these composited
+   properties -- it reported an identity transform for the CLASS version too, while the rendered
+   pixels showed the press plainly.) */
+#qok-ui .railcmd.press{ transform:scale(.955); }           /* input.feedback, 70ms */
+#qok-ui .rail.press .railplate{ background:#f2e2b6; }      /* the plate acknowledges the press */
 
 /* Panel swap: only when the battle PHASE changes, never on an HP tick (the whole screen is
    repainted for those too, and an entry animation on every tick would strobe). */
