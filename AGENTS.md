@@ -26,6 +26,10 @@ repository. Load detailed history only when the task needs it.
    before any copy or release.
 4. Prefer additive overrides in `public/` and keep their `dist/` twins exactly
    synchronized. Preserve external hero, monster, terrain, prop, and UI assets.
+   Build `dist/` (and the iOS payload) with `scripts/build-dist.sh`, which
+   assembles both from tracked sources without invoking Vite. Never seed `dist/`
+   by copying it from another worktree: `dist/` is gitignored, so a copied tree
+   carries whatever vintage that worktree happened to hold.
 5. For a rare bundle edit: read once, write a new temporary file, assert a
    4.5–5.5 MB result, inspect the diff, then copy. Never read and write the same
    bundle path or run the patch script twice.
