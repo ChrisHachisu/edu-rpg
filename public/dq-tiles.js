@@ -2957,6 +2957,57 @@
       im.src='act1-dungeon-art/assets/asset-'+name+'.png'; }
     return null;
   }
+  /* ---- OPEN CHESTS ON THE BAKED LAYER -------------------------------------------------------
+     The engine does its half already: tryOpenTreasure sets mapData 4->8 and persists
+     `chest.<map>.f<floor>.<x>.<y>`, and a1dReplayProgress replays that flag on re-entry. What was
+     missing is the PICTURE -- *-props.png has the chest composited in CLOSED, so a looted chest
+     kept its lid shut (the cost the comment on a1dArtFor names, reported by the owner).
+
+     An asset-chestOpen sprite laid on top does NOT hide it. The two silhouettes do not nest,
+     because sprite_at() normalises each to its own LONG side: closed is a wide dome (86x78 master
+     px at 1.0 cell), open is a narrow tall box (71x86). Measured against the bake's own anchor,
+     an overlay at the authored 1.0 cell leaves 19.1% of the closed chest showing, and it still
+     leaves a rim at 1.45 cells -- by which point the chest has grown ~45% on being opened.
+
+     So the open state ships as a small OPAQUE PATCH of the floor: the chest's 3x3 cell
+     neighbourhood, cut from the SAME render with the chest swapped, one strip per floor from
+     scripts/make_dungeon_chest_patches.py. Blitted back onto the rect it was cut from it is
+     registered exactly, and being opaque there is nothing of the old lid left to peek out. The
+     approved art is untouched -- these are new files beside *-props.png, not a re-bake.
+
+     Drawn as a scene image at depth 3, the same depth the material layer's props use: above the
+     base canvas (1), under the fog (8) and the hero (10), so it lights and occludes like the art
+     it replaces. Depth 3 also means dngSpecialTiles runs it every tick, so the swap shows the
+     moment the chest is opened without needing updateDng's window cache to miss. */
+  var a1dChestReq={}, chestImgs={}, chestKey=null;
+  var CHEST_CELLS=3;                                                        // patch side, in cells
+  function a1dChestStrip(scene,key){                                        // texture key, or null while loading
+    var tk='a1dchest_'+key;
+    if(scene.textures.exists(tk)) return tk;
+    if(!a1dChestReq[key]){ a1dChestReq[key]=true; var im=new Image();
+      im.onload=function(){ if(scene.textures.exists(tk)) return;
+        try{ var t=scene.textures.addImage(tk,im), s=CHEST_CELLS*TILE, n=Math.round(im.width/s), i;
+             for(i=0;i<n;i++) t.add('c'+i,0,i*s,0,s,s);
+             a1dChanged=true; }catch(e){} };
+      im.src='act1-dungeon-art/'+key+'-chests.png'; }
+    return null;
+  }
+  // The strip's order IS the floor's own chest order, so the runtime needs no side-car index.
+  function a1dOpenChests(scene){
+    var fl=a1dFloorFor(scene), map=scene.mapData; if(!fl||!map) return;
+    var key=scene.currentMapId+'-f'+(scene.currentFloor||1), k;
+    if(chestKey!==key){ for(k in chestImgs){ if(chestImgs[k])chestImgs[k].destroy(); } chestImgs={}; chestKey=key; }
+    var a=fl.assets||[], seen={}, tk=null, n=0, i, ch, row, ik, img;
+    for(i=0;i<a.length;i++){ ch=a[i]; if(ch.kind!=='chest') continue;
+      var idx=n++; row=map[ch.y];
+      if(!row || row[ch.x]!==8) continue;                                   // still shut -> the baked art is right
+      if(tk===null){ tk=a1dChestStrip(scene,key); if(!tk) return; }         // strip in flight -> place next tick
+      ik=ch.x+'_'+ch.y; seen[ik]=1; img=chestImgs[ik];
+      if(!img){ img=scene.add.image((ch.x-1)*TILE,(ch.y-1)*TILE,tk,'c'+idx).setOrigin(0,0).setDepth(3);
+                img.setDisplaySize(CHEST_CELLS*TILE,CHEST_CELLS*TILE); chestImgs[ik]=img; }
+      if(!img.visible) img.setVisible(true); }
+    for(k in chestImgs){ if(!seen[k]&&chestImgs[k]&&chestImgs[k].visible) chestImgs[k].setVisible(false); }
+  }
   function a1dBlit(ctx,X0,Y0,winW,winH){                                    // true if the window was served from baked art
     if(!a1dKey||!dngState||!a1dFloorFor(dngState.scene)) return false;
     var im=a1dArtFor(a1dKey);
@@ -3031,10 +3082,13 @@
   function dngSpecialObjects(scene){
     var map=scene.mapData, tg=scene.tileGrid; if(!map) return;
     // Act-1 floors on the BAKED layer: *-props.png already has chest/stairs/save/sign/boss painted
-    // in, so drawing sprites on top would double every object. Cost of that fallback: a looted
-    // chest keeps its baked closed art. The material layer above is the reason this is a fallback.
+    // in, so drawing sprites on top would double every object -- every prop sprite stays hidden
+    // here. The ONE state the baked picture cannot express is a looted chest, and that ships as an
+    // opaque floor patch rather than a sprite (see a1dOpenChests); it replaces the baked pixels
+    // instead of sitting on them, so it doubles nothing.
     var a1layer=a1dLayerFor(scene);
-    if (a1layer==='props'){ for(var hk in specImgs){ if(specImgs[hk]&&specImgs[hk].visible) specImgs[hk].setVisible(false); } return; }
+    if (a1layer==='props'){ for(var hk in specImgs){ if(specImgs[hk]&&specImgs[hk].visible) specImgs[hk].setVisible(false); }
+                            a1dOpenChests(scene); return; }
     if (specMap!==scene.currentMapId){ for(var kk in specImgs){ if(specImgs[kk])specImgs[kk].destroy(); } specImgs={}; specMap=scene.currentMapId; } // reset on map change
     var cam=scene.cameras.main, W=map[0].length, H=map.length;
     var X0=Math.max(0,Math.floor(cam.scrollX/TILE)-2), X1=Math.min(W-1,Math.ceil((cam.scrollX+cam.width)/TILE)+2);

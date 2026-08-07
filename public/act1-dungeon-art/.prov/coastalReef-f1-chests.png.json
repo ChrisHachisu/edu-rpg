@@ -1,0 +1,17 @@
+{
+ "artefact": "coastalReef-f1-chests.png",
+ "command": "make_dungeon_chest_patches.py",
+ "generator": "scripts/make_dungeon_chest_patches.py",
+ "generatorSha256": "5f4b89b73f4f8069a4295765d4707332567ad0186499d6bd2f2c76c827dad08b",
+ "inputs": {
+  "public/act1-dungeon-art/coastalReef-f1-props.png": "ce5762e8d54d7a6d9469524d9a0967969279344948356fece4ca5bdb4d8fd0e0",
+  "public/act1-dungeon-floors.json": "9c284e35069895166735a409c6186da4e6e8d82e4b76816089ff271e34340a46"
+ },
+ "params": {
+  "cellPx": 48,
+  "chests": 5,
+  "margin": 1
+ },
+ "sha256": "5557873df37b75c464d332ec93e830c328ee03285053abbdf6f6c4dc0e8b93f2",
+ "writtenAt": "2026-08-07T19:23:44+09:00"
+}
