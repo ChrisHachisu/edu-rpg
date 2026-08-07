@@ -1,5 +1,56 @@
 # SMOOTH round 2 — the overworld stops building 128,000 invisible tile images
 
+> [!note] VERIFIED, with two corrections. Independent refutation attempt, 16 runs per side.
+> Verdict **CONFIRMED** on the SMOOTH-4 win, the SMOOTH-5 win, correctness/no-blanking and
+> no-visual-degradation. Verifier's numbers: SMOOTH-4 2062.3 -> 1249.1 ms, SMOOTH-5
+> 2108.1 -> 1143.8 ms, no spread overlap, p < 0.001, LoAF corroborating, sustained across
+> 6 consecutive town cycles with no decay. Slightly smaller deltas than this document
+> claims, same conclusion.
+>
+> **Correction 1 — the `wake()` safety argument below is right in conclusion, wrong in
+> reason.** It states `pendingBossId` is only set by `tryBossInteract`, which needs
+> `type==='dungeon'`. In fact: `triggerMazeHunterBattle` (bundle:82049) is a **second
+> setter**; `pendingBossId` is cleared only inside `wake()`'s `if (x)` branch (:80755), so
+> after a **fled or lost** boss battle it survives the walk back onto the overworld; and the
+> overworld `mapData` really does contain **18 cells of tile value 7**, so `wake()`'s
+> `u >= 0` search would succeed there — `tileLayer.getAt(idx)` returns an Image on base and
+> **`undefined` on this build**, which would throw inside a `delayedCall(800)`. The actual
+> binding guard is `storyFlags['boss.<id>.defeated']`, which cannot be true for a boss you
+> fled. No reachable path was constructed, so this is **not a defect — but the margin is one
+> flag, not two independent conditions.**
+>
+> **Correction 2 — the worst walk frame grows.** 1141.7 -> 1260.0 ms, p = 0.010 over 16+16
+> (this document's own 6+6 moved the same way: 1107.5 -> 1192.3). Spreads overlap, so it is
+> not established, but "did not grow beyond overlap" does not survive 32 runs. No target
+> regresses: frames over 100 ms stays at 2, SMOOTH-2 and SMOOTH-3 are unmoved. Most likely
+> mechanism is that the fix reaches the overworld ~1 s sooner, so the walk now begins before
+> the chunk pipeline has settled.
+>
+> **Two doubts in this document are resolved, both in the change's favour.**
+> *Flat mean fps:* the metric is arithmetically incapable of showing the win — `meanFps ==
+> walk frame count / 10` in 32 of 32 runs, the window is fixed at 10 s, and every non-stall
+> frame is pinned at the vsync interval. Work removed from a frame that already finished
+> inside its budget cannot appear in any fps number. The work *was* removed and it was large:
+> CPU profile over an identical 10 s walk shows main-thread busy **4406.4 -> 1854.8 ms**, a
+> 58% cut, with the Phaser list walk (753.6 ms), `render` (738.6 ms) and `updateVisibleTiles`
+> (82.8 ms) all going to **absent**.
+> *The SMOOTH-3 outlier:* not fix-introduced. 16 consecutive fix runs show zero outliers; an
+> identically-shaped outlier landed on **base** in the verifier's second batch. Pooled, 1
+> event in 22 runs on each side. Machine noise.
+>
+> **Residual attributed, for round 3:** the remaining ~1.25 s block is `waterField` +
+> `et` + `fieldAt` + `vnoise` + `mountainField` (~850-900 ms) plus `owmBuild` (~130-180 ms),
+> all in `public/dq-tiles.js`. **Not** `Ep()`, which measures ~10 ms — the verifier's own
+> hypothesis, tested and discarded. The ~915 ms this round removed was
+> `Phaser.Utils.Array.Add`, which does an `indexOf` on every insert: **the 128,000-image
+> build was quadratic in the container.**
+>
+> **SMOOTH-4 and SMOOTH-5 are the same event.** In all 32 runs the SMOOTH-4 watchdog value
+> tracks the town-to-overworld swap within ~50-100 ms. The longest post-playable block *is*
+> the return swap. Not two independent wins; one win counted twice.
+>
+> Full report: `docs/SMOOTH-ROUND-2-REFUTATION.md`.
+
 One atomic change: **the 320x400 overworld no longer builds one Phaser Image per cell.**
 128,000 display objects in the tile container become **0**.
 
