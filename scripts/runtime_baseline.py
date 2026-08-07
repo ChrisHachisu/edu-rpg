@@ -88,7 +88,7 @@ ACT1_OVERLAY_FILES = {
     # save format round-trips to itself (measured: 742 of 754 reportable cells reload unchanged, the
     # other 12 settle one cell north once; largest rescue nudge 28 px against a 96 px bound).
     "dq-tiles.js": (
-        257684, "aa08f6b7906b89ce2b21e11a7f21060b8fb8bca7bd668de28d7031d882a4ddb4"),
+        266848, "c789b497a5f955cd686f421312c6b4748e04796bd75cf13fc079412c9792e428"),
     # 2026-08-07: THE OVERWORLD'S COLLISION SHAPE, baked -- the overworld's answer to the dungeons'
     # `<floor>-walk.png` above, and as much a shipped authority as they are. Deriving it at runtime
     # was correct and unaffordable: owmBuild() evaluated waterField/mountainField per pixel over a
@@ -143,7 +143,7 @@ ACT1_OVERLAY_FILES = {
     # the control-orientation setting, into the frame. First override of this file since the
     # v1.17.1 baseline was frozen, which is why it had no entry before.
     "ui-overhaul.js": (
-        121848, "c00799a076c02a06c00935525345f15e9f0741eb7605d6ce54f62f9af979f4c7"),
+        121813, "5c7dd7d154ad7009509e17c1b43737261d377e9bb63d414d0fff2041b1cd323f"),
     # 2026-08-06, owner pick: "Charcoal & Gold Leaf" (direction 4 of
     # design/ui-overhaul/chic-style-board.html). The same gold as before -- the pixel art, the
     # dungeon plates and the town screens were all approved against it -- spent differently:
@@ -220,7 +220,7 @@ UI_ASSET_FILES = {
     # refuses to write unless all 128,000 cell centres carry the grid's own class, so this file
     # cannot ship disagreeing with collision.
     "ui-map/overworld-relief.png": (
-        151_602, "f04ec67cc8c4de20178df612fc4fcbd938c1eeb8d9412b07383e502ce5efabba"),
+        130031, "3dfc6903cf0dc4b357aba8a71a1e79cea6ec30c030f2435066a1237cd468d9d0"),
 }
 # The four tiling terrain materials the renderer above samples. New runtime paths as of
 # 2026-08-01; pinned by hash rather than merely tolerated, because they are shipped art and a

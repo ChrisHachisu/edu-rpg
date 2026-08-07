@@ -5,13 +5,20 @@ import { readFileSync } from 'node:fs';
 
 const ROOT = process.cwd();
 const BUNDLE_SHA = 'a56026574b42168985b353e4cee824562716af83f92d03f408df04eac9127381';
-const DQ_SHA = 'aa08f6b7906b89ce2b21e11a7f21060b8fb8bca7bd668de28d7031d882a4ddb4';
+const DQ_SHA = 'c789b497a5f955cd686f421312c6b4748e04796bd75cf13fc079412c9792e428';
 const RAW_SHA = '97f0b936946695b5ce2eb073df4b9905e680942b299a5f87f1bf5c0544b96723';
 const WINDOWS = {
   crystal: { bounds: [144, 288, 176, 312], sha: '25b0434154cb357118ed75a46f2404622e24f1ff4ac333eea326999fb246fb08' },
   shadow: { bounds: [252, 192, 268, 240], sha: 'a30e4704a9c6c3fd7b34db090fec88f572fd4390292f243ac7b376c614aced9b' },
   volcanic: { bounds: [144, 103, 176, 117], sha: '5587934e6882ce4ffc5ca99229e61527f57f5ad3343c6c6e412bb74ad7ee6f08' },
 };
+/* THESE FOUR HASHES ARE UNCHANGED BY THE 2026-08-07 MOVER FIX, and that is the point of running
+   this file after it. Restoring forest blocking by adding tile 3 to OW_BLOCK was tried first and
+   reverted: OW_BLOCK is also what owReach floods with, so it shrank the "reachable before" set
+   the orphan gate compares against, 40 fewer fill reverts survived from the act5 start, and this
+   act5 hash moved by 52 cells. Consulting scene.canMove from a1mFree instead leaves the map
+   generator completely untouched -- collision is not consolidation -- so every hash below still
+   holds and the .bin built on them is still valid. */
 const STARTS = [
   { at: [60, 341], component: 'act1', sha: '2d82e050b51095280b74395db8656aed52ae919206385827502265f6e0a65202' },
   { at: [200, 321], component: 'act2', sha: '2d82e050b51095280b74395db8656aed52ae919206385827502265f6e0a65202' },

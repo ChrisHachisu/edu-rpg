@@ -63,6 +63,16 @@
  *   bake_act1_overworld_walk.mjs             rebake public/act1-overworld-walk.bin
  *   bake_act1_overworld_walk.mjs --check     verify the .bin's provenance, write nothing
  *   bake_act1_overworld_walk.mjs --verify    rebuild the field and diff it against owmBuild()
+ *   bake_act1_overworld_walk.mjs --emit-map <path>
+ *                                            write the plated map as JSON, for the OTHER bakes
+ *
+ * WHY --emit-map EXISTS. scripts/bake_overworld_minimap.py needs the same three-step map, and it
+ * had been assembling its own from a cached grid plus the pre-plate runtime snapshot -- so the
+ * minimap drew a world 13,204 cells away from the one the player walks on, and the owner saw it
+ * ("it does not match what i see on the actual overworld"). buildFinalMap() below is now the ONE
+ * definition of that map in this repo; anything that needs it asks for it here rather than
+ * re-deriving it, because two bakes disagreeing about which map is real is exactly how that bug
+ * happened. The emitted record carries the plate SOURCE hash so a consumer can refuse a stale one.
  */
 
 import { createHash } from 'node:crypto';
@@ -398,14 +408,34 @@ function verify(dq, baked) {
 
 const args = process.argv.slice(2);
 const mode = args[0] || '--bake';
-assert(args.length <= 1 && ['--bake', '--check', '--verify'].includes(mode),
-  'usage: bake_act1_overworld_walk.mjs [--bake|--check|--verify]');
+assert(['--bake', '--check', '--verify', '--emit-map'].includes(mode),
+  'usage: bake_act1_overworld_walk.mjs [--bake|--check|--verify|--emit-map <path>]');
+assert(mode === '--emit-map' ? args.length === 2 : args.length <= 1,
+  '--emit-map takes exactly one path; the other modes take no argument');
 
 const bundle = readFileSync(BUNDLE_PATH);
 const dq = readFileSync(DQ_PATH, 'utf8');
 const plateSource = readFileSync(PLATE_PATH, 'utf8');
 
-if (mode === '--check') {
+if (mode === '--emit-map') {
+  // buildFinalMap asserts the bundle, the consolidated map AND the plated map against their
+  // pinned hashes, so anything written here is provenance-checked by construction.
+  const { map, plateSha256 } = buildFinalMap(bundle, dq, plateSource);
+  const platedSha256 = sha256(Buffer.from(map.flat()));
+  const record = {
+    schema: 1,
+    width: MAP_WIDTH, height: MAP_HEIGHT,
+    bundleSha256: BUNDLE_SHA256,
+    consolidatedSha256: FINAL_MAP_SHA256,
+    platedSha256,
+    plateSourceSha256: sha256(Buffer.from(plateSource, 'utf8')),
+    plateRectSha256: plateSha256,
+    rows: map,
+  };
+  writeFileSync(resolve(args[1]), JSON.stringify(record));
+  console.log(`ACT 1 SHIPPED MAP EMITTED: ${MAP_WIDTH}x${MAP_HEIGHT} plated ${platedSha256.slice(0, 16)} `
+    + `from plate source ${record.plateSourceSha256.slice(0, 16)}`);
+} else if (mode === '--check') {
   // Cheap: rebuild the INPUTS' digest, not the 108 M px field.
   const { map } = buildFinalMap(bundle, dq, plateSource);
   const want = provenance(dq, map);
