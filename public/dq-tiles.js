@@ -970,7 +970,10 @@
   //  identical to base — forest crowns, cut out of the base and redrawn ABOVE the hero (depth 10)
   //  so the player walks under the treeline. Reproduced here with one destination-in composite,
   //  the same way runtime.html's canopyFor() does it.
-  var A1A={ manifest:null, req:false, S:0, chunks:{}, lru:[], landmarks:null, dirty:false, drew:false };
+  // `win` is the chunk-id list the LAST BUILT overworld window intersected, maintained by a1aRects.
+  // It is what a1aReleaseChunks keeps when the player walks off the overworld -- see there for why.
+  // `released` latches the trim so it runs once per departure rather than on every 80 ms tick.
+  var A1A={ manifest:null, req:false, S:0, chunks:{}, lru:[], win:[], released:false, landmarks:null, dirty:false, drew:false };
   // A 40x38 window can INTERSECT 9 chunks (measured over every plate position, worst case at cell
   // 41,245). The cap must never sit below that or the trim evicts a chunk the current window still
   // needs, which re-requests and re-evicts it forever: the window never reports full coverage, so
@@ -978,12 +981,47 @@
   // It must not sit far ABOVE it either -- a decoded chunk is ~9 MB of base plus ~9 MB of canopy,
   // so every slot is ~19 MB of resident image. 10 is the smallest value with headroom over 9.
   var A1A_MAX_CHUNKS=10;
-  // Leaving the overworld drops the whole cache. A dungeon or a town needs none of it, and holding
-  // ~190 MB of decoded chunk art resident while the dungeon allocates its own canvases is how the
-  // renderer runs the device out of graphics memory.
+  // Leaving the overworld TRIMS the chunk cache down to the one window the hero is standing in, and
+  // drops everything else. It used to drop ALL of it, and that was the whole of SMOOTH-5.
+  //
+  // WHAT DROPPING EVERYTHING COST. The baked chunks are the overworld's terrain; without them
+  // a1aBlit cannot report full coverage and drawTerrain falls through to its analytic per-pixel loop
+  // over the whole 1584x1872 window. So walking back out of Greenhollow re-requested every layer of
+  // every visible chunk AND synthesised 3.85 M pixels of terrain to cover the wait. Measured on this
+  // tree at 960x720 (scratch profile, 2026-08-07): town -> overworld took 4581.9 ms, of which the
+  // chunk round trip was 2302 ms and the splat's own vnoise/waterField/matShade evaluation another
+  // ~2.6 s of CPU. Entering the town through the same door cost 80.1 ms. Nothing about walking
+  // through a door invalidates baked terrain art, so none of that work needed doing.
+  //
+  // WHY KEEPING THEM CANNOT GO STALE -- the question this file has got wrong before (see the
+  // owmBakeFor memo below, which keyed on mapData array identity while the contents were mutated
+  // underneath it and poisoned itself for the session). This cache is not like that one:
+  //   * The key is the MANIFEST chunk id. Its value is the decoded content of a static URL,
+  //     act1-hifi/chunks/<layer>/<id>.webp, which is a pure function of the id and cannot change
+  //     within a session -- the manifest itself is fetched exactly once (A1A.req latches).
+  //   * It holds NO map data. mapData is mutated in place by consolidateMapData and by
+  //     __ACT1_WORLD_MAP__.apply(), and a chunk image is unaffected by both: a1aChunkAt maps a cell
+  //     to a chunk purely through manifest.semanticBounds, never through a tile value.
+  //   * Nothing downstream is cached. The COMPOSITION of these images into the window is redone
+  //     from scratch on the reskin that every map swap forces (updateTerrain(scene,true)), so a
+  //     retained image can only ever be re-blitted, never re-shown stale.
+  // The invalidation is therefore "never, within a session", and the page load is what clears it.
+  //
+  // WHAT IT COSTS. Off-overworld residency goes from 0 to the departure window's chunks -- measured
+  // 4 of them (~19 MB each: 9.4 base + 9.4 canopy + 1.0 water), i.e. ~79 MB held while the player is
+  // in a town or a dungeon. That is strictly less than the A1A_MAX_CHUNKS=10 (~198 MB) the overworld
+  // already holds while being played, so this raises the OFF-overworld floor without moving the
+  // peak. The original concern -- a dungeon allocating its own base + fog canvases on top of a full
+  // 10-slot cache -- is still addressed, because the other six slots are still dropped here.
   function a1aReleaseChunks(){
-    if(!A1A.lru.length) return;
-    A1A.chunks={}; A1A.lru=[]; A1A.drew=false;
+    if(A1A.released) return;                       // idempotent: tick() calls this on EVERY non-'ow' tick
+    A1A.released=true;
+    var keep=Object.create(null), i;
+    for(i=0;i<A1A.win.length;i++) keep[A1A.win[i]]=1;
+    var next={}, lru=[];
+    for(i=0;i<A1A.lru.length;i++){ var id=A1A.lru[i];
+      if(keep[id]&&A1A.chunks[id]){ next[id]=A1A.chunks[id]; lru.push(id); } }
+    A1A.chunks=next; A1A.lru=lru; A1A.drew=false;
     if(a1aScratch){ try{ a1aScratch.width=1; a1aScratch.height=1; }catch(e){} a1aScratch=null; }
   }
   function a1aFetch(){
@@ -1076,18 +1114,23 @@
   function a1aRects(X0,Y0,winW,winH){
     var m=A1A.manifest; if(!m) return null;
     var B=m.semanticBounds, S=A1A.S, ox=B[0]*TILE, oy=B[1]*TILE;
-    var wx0=X0*TILE, wy0=Y0*TILE, wx1=wx0+winW*TILE, wy1=wy0+winH*TILE, out=[], cov=0, inter=0;
+    var wx0=X0*TILE, wy0=Y0*TILE, wx1=wx0+winW*TILE, wy1=wy0+winH*TILE, out=[], cov=0, touched=[];
     for(var i=0;i<m.chunks.length;i++){ var c=m.chunks[i];
       var cx0=ox+c.x*S, cy0=oy+c.y*S, cx1=cx0+c.width*S, cy1=cy0+c.height*S;
       var ix0=Math.max(wx0,cx0), iy0=Math.max(wy0,cy0), ix1=Math.min(wx1,cx1), iy1=Math.min(wy1,cy1);
       if(ix1<=ix0||iy1<=iy0) continue;
-      inter++;                                                    // TOUCHED by a1aChunkRec -> must survive the trim
+      touched.push(c.id);                                         // TOUCHED by a1aChunkRec -> must survive the trim
       var rec=a1aChunkRec(c); if(!rec.base) continue;             // still loading -> this window is partial
       out.push({c:c,rec:rec,sx:ix0-cx0,sy:iy0-cy0,w:ix1-ix0,h:iy1-iy0,dx:ix0-wx0,dy:iy0-wy0});
       cov+=(ix1-ix0)*(iy1-iy0);
     }
+    // The window this call describes, for a1aReleaseChunks to keep when the player leaves. Recorded
+    // for every window build, so it always names the window she is standing in when she walks into a
+    // door -- and a door round trip returns her to the adjacent cell, which windowStart snaps to the
+    // same 12-cell window and which is in any case far inside these 32-cell-wide chunks.
+    A1A.win=touched;
     // trim against what this window TOUCHED, not what it managed to load -- a chunk mid-load counts
-    while(A1A.lru.length>Math.max(A1A_MAX_CHUNKS,inter)) delete A1A.chunks[A1A.lru.shift()];
+    while(A1A.lru.length>Math.max(A1A_MAX_CHUNKS,touched.length)) delete A1A.chunks[A1A.lru.shift()];
     out.full=(cov===winW*TILE*winH*TILE);
     return out;
   }
@@ -3523,9 +3566,10 @@
     if (!scene.mapData || !scene.tileGrid || !scene.tileGrid.length) return;
     var kind=sceneKind(scene);
     // Leaving the overworld: the depth-11 canopy must not linger over a town/dungeon, AND the
-    // Act 1 chunk cache must be released. A dungeon allocates its own base + fog canvases on top
-    // of whatever the overworld still holds, so keeping ~190 MB of decoded chunk art resident
-    // there is what starves the renderer.
+    // Act 1 chunk cache is trimmed to the window she walked out of. A dungeon allocates its own
+    // base + fog canvases on top of whatever the overworld still holds, so keeping the full
+    // ~198 MB 10-slot cache resident there is what starves the renderer -- but dropping it
+    // WHOLESALE is what made walking back out cost 4.6 s. See a1aReleaseChunks.
     if(kind!=='ow'){ lastReskinMapId=null; a1aHideCanopy(); a1aReleaseChunks(); }
     if (kind!=='town' && townState) destroyTown();      // left a town -> drop its canvas so it can't linger over ow/dng
     if ((kind==='town'||kind==='dng') && owMap) destroyOwProps(); // entered a town/dungeon -> drop landmark prop images (NOT on a transient null kind)
@@ -3537,6 +3581,7 @@
       return;
     }
     if (kind==='ow'){
+      A1A.released=false;                              // back on the overworld: arm the next departure's trim
       a1aFetch();                                      // one-shot; the Act 1 art manifest + landmark table
       var mapId=scene.currentMapId+':'+scene.mapData.length+'x'+(scene.mapData[0]?scene.mapData[0].length:0);
       // DATA MUTATION (owner-approved sandbox exception): consolidate sprinkled mountains in mapData IN PLACE,
