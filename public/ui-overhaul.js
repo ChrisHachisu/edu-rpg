@@ -1279,7 +1279,7 @@
   function drawTownMap(v) {
     if (!fieldMapCanvas) return;
     var now = Date.now(); if (now - fieldMapDrawAt < 160) return; fieldMapDrawAt = now;
-    var css = Math.max(1, Math.round(fieldMapCanvas.getBoundingClientRect().width || 150));
+    var css = Math.max(1, fieldMapCss());
     var dpr = Math.max(1, Math.min(4, window.devicePixelRatio || 1)), pxw = Math.round(css * dpr);
     if (fieldMapCanvas.width !== pxw || fieldMapCanvas.height !== pxw) { fieldMapCanvas.width = pxw; fieldMapCanvas.height = pxw; }
     var ctx = fieldMapCanvas.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -1300,10 +1300,11 @@
     dot(v.save, '#6f9e7e', 2.6);
     dot(v.exit, '#c9a961', 3);
     ctx.strokeStyle = 'rgba(201,169,97,.28)'; ctx.lineWidth = 1; ctx.strokeRect(.5, .5, css - 1, css - 1);
-    var hx = v.hero.x * s, hy = v.hero.y * s;
-    // The hero is the one thing on this map that must never be mistaken for a marker.
-    ctx.fillStyle = '#e8e2d4';
-    ctx.fillRect(Math.round(hx - 2.5), Math.round(hy - 2.5), 5, 5);
+    // The hero is the one thing on this map that must never be mistaken for a marker, and the
+    // flat square it used to be was exactly that -- a fifth dot among the shop, save, exit and
+    // NPC dots. Same reticle as the field map: this is one canvas to the player, so it must not
+    // carry two different ideas of "you are here".
+    mmHero(ctx, v.hero.x * s, v.hero.y * s);
   }
   // 34,34 is the centre of the compass SVG's 68-unit viewBox. Setting the attribute rather
   // than a CSS transform keeps the rotation origin explicit and identical in every engine.
@@ -1312,28 +1313,138 @@
     fieldCompassArrow.style.display = '';
     fieldCompassArrow.setAttribute('transform', 'rotate(' + deg.toFixed(1) + ' 34 34)');
   }
+  // ---- overworld minimap: one baked image, pins on top -------------------------------------
+  // The 320x400 overworld terrain is PRE-BAKED by scripts/bake_overworld_minimap.py into
+  // ui-map/overworld-relief.png at 6 px/cell, so a draw is one window blit plus a pin per
+  // visible landmark instead of the 6,402 fillRect calls the lattice below issues.
+  //
+  // Owner pick, 2026-08-07, variant B "Relief" of design/mockups/overworld-minimap-semantic.html:
+  // flat land, NO road network, nothing competing with the coastline, the blocking masses and
+  // the pins. "Tells you where you are, not where to go."
+  //
+  // The bake preserves the class at every cell CENTRE exactly, so the map cannot disagree with
+  // collision; that is asserted in the bake and the build fails if a single centre is wrong.
+  // Brightness encodes walkability -- every walkable class is lighter than every blocker and
+  // water is darkest -- so "can I get there" is answered before colour is read.
+  var MM_SPAN = 80, MM_BAKE = 6, MM_W = 320, MM_H = 400;
+  var mmImg = null, mmImgState = 0;                 // 0 idle, 1 loading, 2 ready, 3 failed
+  function mmImage() {
+    if (mmImgState === 2) return mmImg;
+    if (mmImgState === 0) {
+      mmImgState = 1;
+      var i = new Image();
+      i.onload = function () { mmImg = i; mmImgState = 2; fieldMapDrawAt = 0; };
+      i.onerror = function () { mmImgState = 3; };   // fall back to the lattice, never blank
+      i.src = 'ui-map/overworld-relief.png';
+    }
+    return null;
+  }
+  // Landmark positions come from the GRID'S OWN landmark tiles, not from
+  // semantic-maps/landmark-roster.json -- that roster puts every Act 1 landmark on plain grass
+  // (Greenhollow is 85.7 cells out, Whispering Woods 80.1, Millbrook 65.4, Port Sapphire 56.8).
+  // The table below is GENERATED: scripts/bake_overworld_minimap.py rewrites it in place from
+  // the same grid it bakes, so the pins cannot drift away from the terrain under them.
+  var MM_KINDS = ['town', 'castle', 'dungeon', 'portal', 'hauntedPortal', 'signpost', 'stormNest', 'gateCave', 'specialCave'];
+  /* BEGIN GENERATED overworld-minimap-marks */
+  var MM_MARKS = [[1,85,30], [3,130,40], [2,185,48], [2,202,48], [3,40,50], [2,80,60], [2,120,70], [0,195,80], [2,242,81], [5,194,82], [2,278,82], [2,242,93], [5,277,95], [0,70,100], [5,81,102], [5,101,102], [2,148,110], [2,172,110], [0,270,120], [3,50,130], [3,120,140], [8,250,140], [0,100,150], [0,220,150], [2,225,160], [2,260,198], [2,260,234], [0,252,242], [4,238,248], [4,242,248], [2,120,260], [0,222,262], [0,130,290], [5,129,292], [5,139,292], [7,148,295], [6,280,295], [7,172,305], [2,80,310], [0,100,320], [0,200,320], [5,99,322], [5,201,322], [5,223,322], [2,185,335], [0,60,340], [5,61,342], [5,81,342], [2,45,350], [2,140,350]];
+  /* END GENERATED overworld-minimap-marks */
+  // Every landmark is a FIXED-SIZE pin on its own dark seat, never a terrain colour. Fixed size
+  // is what stops the signpost, special-cave and desert-signpost tiles from being two-pixel
+  // specks, and the seat is what stops a pin's legibility depending on what is underneath it.
+  var MM_PIN = {
+    town:          { fill: '#c9a961', shape: 'diamond', r: 3.6 },
+    castle:        { fill: '#c9a961', shape: 'diamond', r: 5.2 },
+    dungeon:       { fill: '#a8564e', shape: 'dot',     r: 3.0 },
+    specialCave:   { fill: '#a8564e', shape: 'dot',     r: 3.2, ring: '#c9a961' },
+    stormNest:     { fill: '#a8564e', shape: 'diamond', r: 3.4 },
+    gateCave:      { fill: '#8377a8', shape: 'dot',     r: 3.4, ring: '#c9a961' },
+    portal:        { fill: '#8377a8', shape: 'ring',    r: 3.2 },
+    hauntedPortal: { fill: '#4a3f63', shape: 'dot',     r: 3.2, ring: '#a8564e' },
+    signpost:      { fill: '#a49e91', shape: 'tick',    r: 1.8 }
+  };
+  // Drawn smallest-first so a town never disappears under a signpost sharing its cell.
+  var MM_ORDER = ['signpost', 'portal', 'hauntedPortal', 'dungeon', 'specialCave', 'stormNest', 'gateCave', 'town', 'castle'];
+  function mmPin(ctx, p, x, y) {
+    ctx.fillStyle = 'rgba(10,11,15,.72)';
+    ctx.beginPath(); ctx.arc(x, y, p.r + 1.7, 0, 6.2832); ctx.fill();
+    ctx.fillStyle = p.fill; ctx.strokeStyle = p.ring || 'rgba(10,11,15,.9)'; ctx.lineWidth = 1.2;
+    if (p.shape === 'diamond') {
+      ctx.beginPath(); ctx.moveTo(x, y - p.r); ctx.lineTo(x + p.r, y); ctx.lineTo(x, y + p.r);
+      ctx.lineTo(x - p.r, y); ctx.closePath(); ctx.fill(); if (p.ring) ctx.stroke();
+    } else if (p.shape === 'ring') {
+      ctx.lineWidth = 1.9; ctx.strokeStyle = p.fill;
+      ctx.beginPath(); ctx.arc(x, y, p.r - .6, 0, 6.2832); ctx.stroke();
+    } else if (p.shape === 'tick') {
+      ctx.fillRect(x - p.r, y - p.r, p.r * 2, p.r * 2);
+    } else {
+      ctx.beginPath(); ctx.arc(x, y, p.r, 0, 6.2832); ctx.fill(); if (p.ring) ctx.stroke();
+    }
+  }
+  // The hero is a RETICLE, a bright core inside its own ring, because it is the one mark that
+  // must never be mistaken for a landmark. The flat #e8e2d4 square this replaces vanished
+  // completely when the camera sat between the two haunted portals at (240,248).
+  function mmHero(ctx, x, y) {
+    ctx.strokeStyle = 'rgba(10,11,15,.85)'; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(x, y, 5.4, 0, 6.2832); ctx.stroke();
+    ctx.strokeStyle = '#e8e2d4'; ctx.lineWidth = 1.3;
+    ctx.beginPath(); ctx.arc(x, y, 5.4, 0, 6.2832); ctx.stroke();
+    ctx.fillStyle = 'rgba(10,11,15,.85)';
+    ctx.beginPath(); ctx.arc(x, y, 3.0, 0, 6.2832); ctx.fill();
+    ctx.fillStyle = '#e8e2d4';
+    ctx.beginPath(); ctx.arc(x, y, 2.0, 0, 6.2832); ctx.fill();
+  }
+  // The canvas is a fixed 146 CSS px (ui-overhaul.css:364), so measuring it on every draw was a
+  // forced layout for a constant. Cached, and invalidated only by the events that can change it.
+  var fieldMapCssPx = 0;
+  function fieldMapCss() {
+    if (!fieldMapCssPx) {
+      var w = Math.round(fieldMapCanvas.getBoundingClientRect().width);
+      if (w > 0) fieldMapCssPx = w; else return 150;   // collapsed/detached: do not cache a 0
+    }
+    return fieldMapCssPx;
+  }
+  try {
+    window.addEventListener('resize', function () { fieldMapCssPx = 0; });
+    window.addEventListener('orientationchange', function () { fieldMapCssPx = 0; });
+  } catch (e) {}
   function drawFieldMap(wm) {
     if (!fieldMapCanvas || !wm || !wm.mapData || !wm.mapData.length) return;
     var now = Date.now(); if (now - fieldMapDrawAt < 220) return; fieldMapDrawAt = now;
-    var css = Math.max(1, Math.round(fieldMapCanvas.getBoundingClientRect().width || 150));
+    var css = Math.max(1, fieldMapCss());
     var dpr = Math.max(1, Math.min(4, window.devicePixelRatio || 1)), pxw = Math.round(css * dpr);
     if (fieldMapCanvas.width !== pxw || fieldMapCanvas.height !== pxw) { fieldMapCanvas.width = pxw; fieldMapCanvas.height = pxw; }
-    var ctx = fieldMapCanvas.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.imageSmoothingEnabled = false;
-    ctx.clearRect(0, 0, css, css); ctx.fillStyle = '#101116'; ctx.fillRect(0, 0, css, css);
-    var map = wm.mapData, H = map.length, W = (map[0] || []).length, span = 80, half = span >> 1;
+    var ctx = fieldMapCanvas.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    var map = wm.mapData, H = map.length, W = (map[0] || []).length, span = MM_SPAN, half = span >> 1;
     var sx = Math.max(0, Math.min(Math.max(0, W - span), wm.heroTileX - half));
     var sy = Math.max(0, Math.min(Math.max(0, H - span), wm.heroTileY - half));
     var sc = css / span;
-    var col = { 0:'#338033',1:'#aa9966',2:'#1a3366',3:'#225522',4:'#666666',5:'#887744',6:'#ffcc00',7:'#cc3333',8:'#9933cc',9:'#33cc66',10:'#226622',11:'#887744',12:'#cc3333',13:'#99bbdd',14:'#1a4d1a',15:'#4488cc',16:'#88aacc',17:'#d8e8f8',18:'#dfc86c',19:'#d4a840',20:'#887744' };
-    for (var y = sy; y < Math.min(H, sy + span); y++) for (var x = sx; x < Math.min(W, sx + span); x++) {
-      var tile = map[y] && map[y][x] != null ? map[y][x] : 2; ctx.fillStyle = col[tile] || '#111111';
-      var special = tile === 6 || tile === 7 || tile === 9 || tile === 10 || tile === 12 || tile === 15 || tile === 16;
-      var castle = tile === 8, n = castle ? 3 : (special ? 2 : 1), off = castle ? 1 : (special ? .5 : 0);
-      ctx.fillRect((x - sx - off) * sc, (y - sy - off) * sc, Math.ceil(sc * n), Math.ceil(sc * n));
+    // The bake IS the overworld. The four portal lands are 40x40 maps generated per portal and
+    // have no baked image, so they keep the lattice -- 1,600 rects that also fit the window whole.
+    var baked = (wm.currentMapId === 'overworld' && W === MM_W && H === MM_H) ? mmImage() : null;
+    ctx.imageSmoothingEnabled = !!baked;
+    ctx.clearRect(0, 0, css, css); ctx.fillStyle = '#101116'; ctx.fillRect(0, 0, css, css);
+    if (baked) {
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(baked, sx * MM_BAKE, sy * MM_BAKE, span * MM_BAKE, span * MM_BAKE, 0, 0, css, css);
+      for (var k = 0; k < MM_ORDER.length; k++) {
+        var kind = MM_ORDER[k], p = MM_PIN[kind], ki = MM_KINDS.indexOf(kind);
+        for (var m = 0; m < MM_MARKS.length; m++) {
+          var mk = MM_MARKS[m]; if (mk[0] !== ki) continue;
+          if (mk[1] < sx - 1 || mk[1] > sx + span + 1 || mk[2] < sy - 1 || mk[2] > sy + span + 1) continue;
+          mmPin(ctx, p, (mk[1] - sx + .5) * sc, (mk[2] - sy + .5) * sc);
+        }
+      }
+    } else {
+      var col = { 0:'#338033',1:'#aa9966',2:'#1a3366',3:'#225522',4:'#666666',5:'#887744',6:'#ffcc00',7:'#cc3333',8:'#9933cc',9:'#33cc66',10:'#226622',11:'#887744',12:'#cc3333',13:'#99bbdd',14:'#1a4d1a',15:'#4488cc',16:'#88aacc',17:'#d8e8f8',18:'#dfc86c',19:'#d4a840',20:'#887744' };
+      for (var y = sy; y < Math.min(H, sy + span); y++) for (var x = sx; x < Math.min(W, sx + span); x++) {
+        var tile = map[y] && map[y][x] != null ? map[y][x] : 2; ctx.fillStyle = col[tile] || '#111111';
+        var special = tile === 6 || tile === 7 || tile === 9 || tile === 10 || tile === 12 || tile === 15 || tile === 16;
+        var castle = tile === 8, n = castle ? 3 : (special ? 2 : 1), off = castle ? 1 : (special ? .5 : 0);
+        ctx.fillRect((x - sx - off) * sc, (y - sy - off) * sc, Math.ceil(sc * n), Math.ceil(sc * n));
+      }
     }
     ctx.strokeStyle = 'rgba(201,169,97,.28)'; ctx.lineWidth = 1; ctx.strokeRect(.5, .5, css - 1, css - 1);
-    var hx = (wm.heroTileX - sx) * sc, hy = (wm.heroTileY - sy) * sc;
-    ctx.fillStyle = '#e8e2d4'; ctx.fillRect(Math.round(hx - 2), Math.round(hy - 2), 5, 5);
+    mmHero(ctx, (wm.heroTileX - sx) * sc, (wm.heroTileY - sy) * sc);
   }
   function updateFieldHud() {
     var d = ensureFieldHud(), wm = getScene('WorldMapScene');
