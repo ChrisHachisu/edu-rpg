@@ -81,6 +81,20 @@
   // out of currentColor, so the active tab is gold and the rest muted with no second asset and
   // no per-theme re-export. data-ti carries the cell index; the CSS does the positioning.
   function tabIcon(i) { return '<i class="ic tabic" data-ti="' + i + '"></i>'; }
+  // The sheets are referenced ONLY from CSS `mask-image`, so nothing fetches them until the first
+  // .tabic element is laid out -- and until that fetch decodes, the tab renders as a bare label
+  // with no glyph. Owner 2026-08-07 photographed exactly that: "Status / Items / Equip / Settings"
+  // as text, on a world that had not drawn yet. Warming them here starts the fetch at script parse
+  // instead, and iconsReady() lets the shell's loading cover wait for them rather than uncovering
+  // onto a half-drawn tab bar. A failed load resolves ready too: the cover must never outlive the
+  // asset it is waiting for.
+  var iconSheets = 0, ICON_SHEETS = ['ui-icons/tab-icons.png', 'ui-icons/battle-icons.png'];
+  ICON_SHEETS.forEach(function (src) {
+    var im = new Image();
+    im.onload = im.onerror = function () { iconSheets++; };
+    im.src = src;
+  });
+  function iconsReady() { return iconSheets >= ICON_SHEETS.length; }
   // Battle command glyphs, same mechanism and same generated family: ui-icons/battle-icons.png,
   // one 512x128 sheet, four cells, in the order attack / defend / item / flee.
   //
@@ -187,6 +201,14 @@
     if (src) return '<img class="heroimg" width="' + size + '" height="' + size + '" src="' + src + '" alt="" />';
     return heroSvg(size, color); // graceful fallback until the texture is readable
   }
+  // The snapshot above is taken ONCE per colour key and never invalidated, but `hero-walk` is not
+  // stable: the bundle rebuilds the procedural knight into that key on every Continue / New Game,
+  // and hero-override.js then swaps the locked g3 sheet back in. Whoever snapshots first wins for
+  // the whole session, so a snapshot taken during that window pins the OLD hero into every menu,
+  // intro and battle avatar. hero-override.js calls this after each successful swap; clearing
+  // lastSig too is what makes the already-rendered screen repaint rather than wait for its next
+  // state change. (This retires the stage-2 TODO at hero-override.js:70.)
+  window.__qokHeroArtChanged = function () { heroCache = {}; lastSig = null; };
 
   // ---- A/B variant preview: read frame 0 of the STATIC variant sheet (no Phaser texture) ----
   var variantCache = {}; // variant -> dataURL | 'pending' | ''
@@ -1316,74 +1338,17 @@
     });
     return d;
   }
-  // ---- town minimap -----------------------------------------------------------------------
-  // A town rendered by the Act 1 hi-fi overlay has no tile map to draw: it is one painting, one
-  // walkable polygon and a 65-cell grid at 16 world px. drawFieldMap() below would read the
-  // Phaser scene's 16x16 stub and a hero tile that is only written back on exit, i.e. a minimap
-  // that is wrong in both the shape and the dot. act1-hifi/adapter.js publishes the real thing on
-  // window.__ACT1_TOWN_VIEW__ instead; the walkable outline is rasterised once per town and then
-  // only the hero and the markers move.
-  var townMaskCanvas = null, townMaskId = '';
-  function townView() {
-    var v = window.__ACT1_TOWN_VIEW__;
-    return v && v.walkable && v.world ? v : null;
-  }
-  function townMask(v) {
-    if (townMaskCanvas && townMaskId === v.id) return townMaskCanvas;
-    var N = 260;                                   // raster resolution of the 1040px town square
-    var c = document.createElement('canvas'); c.width = N; c.height = N;
-    var g = c.getContext('2d'), k = N / v.world;
-    var poly = function (pts) {
-      if (!pts || !pts.length) return;
-      g.moveTo(pts[0].x * k, pts[0].y * k);
-      for (var i = 1; i < pts.length; i++) g.lineTo(pts[i].x * k, pts[i].y * k);
-      g.closePath();
-    };
-    g.clearRect(0, 0, N, N);
-    // Ground first, with the region's holes punched out by the even-odd rule in the same path.
-    g.fillStyle = '#2a2c35'; g.beginPath();
-    (v.walkable.regions || []).forEach(function (r) {
-      poly(r.outer);
-      (r.holes || []).forEach(poly);
-    });
-    g.fill('evenodd');
-    // Props (well, crates, stalls) read as blocked, same as a dungeon wall does.
-    g.fillStyle = '#0a0b0f'; g.beginPath();
-    (v.walkable.staticObstacles || []).forEach(function (o) { poly(o.polygon); });
-    g.fill();
-    townMaskCanvas = c; townMaskId = v.id;
-    return c;
-  }
-  function drawTownMap(v) {
-    if (!fieldMapCanvas) return;
-    var now = Date.now(); if (now - fieldMapDrawAt < 160) return; fieldMapDrawAt = now;
-    var css = Math.max(1, fieldMapCss());
-    var dpr = Math.max(1, Math.min(4, window.devicePixelRatio || 1)), pxw = Math.round(css * dpr);
-    if (fieldMapCanvas.width !== pxw || fieldMapCanvas.height !== pxw) { fieldMapCanvas.width = pxw; fieldMapCanvas.height = pxw; }
-    var ctx = fieldMapCanvas.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.imageSmoothingEnabled = true;
-    ctx.clearRect(0, 0, css, css);
-    ctx.fillStyle = '#101116'; ctx.fillRect(0, 0, css, css);
-    // The whole town fits: 1040px across is roughly a screen and a half, so panning it would
-    // hide the very thing a town map is for -- where the shop, the healer and the way out are.
-    ctx.drawImage(townMask(v), 0, 0, css, css);
-    var s = css / v.world, cp = v.cellPx;
-    var dot = function (cell, fill, r) {
-      if (!cell) return;
-      ctx.fillStyle = fill; ctx.beginPath();
-      ctx.arc(cell[0] * cp * s, cell[1] * cp * s, r, 0, 6.2832); ctx.fill();
-    };
-    (v.npcs || []).forEach(function (c) { dot(c, 'rgba(232,226,212,.42)', 2); });
-    dot(v.shop, '#c9a961', 2.6);
-    dot(v.save, '#6f9e7e', 2.6);
-    dot(v.exit, '#c9a961', 3);
-    ctx.strokeStyle = 'rgba(201,169,97,.28)'; ctx.lineWidth = 1; ctx.strokeRect(.5, .5, css - 1, css - 1);
-    // The hero is the one thing on this map that must never be mistaken for a marker, and the
-    // flat square it used to be was exactly that -- a fifth dot among the shop, save, exit and
-    // NPC dots. Same reticle as the field map: this is one canvas to the player, so it must not
-    // carry two different ideas of "you are here".
-    mmHero(ctx, v.hero.x * s, v.hero.y * s);
-  }
+  // ---- town minimap: REMOVED 2026-08-07 ---------------------------------------------
+  // A town used to draw its own minimap here, rasterised from the walkable polygon the
+  // act1-hifi adapter publishes on window.__ACT1_TOWN_VIEW__, and the compass was repurposed
+  // in a town to point at the way out. Owner 2026-08-07: "there should be no compass or
+  // minimap in dungeons or towns", so updateFieldHud() now gates both on the map type and
+  // townView()/townMask()/drawTownMap() became reachable from nothing. Deleted rather than
+  // left in place: code that looks live but never runs is the same class of confusion as the
+  // residual widgets this change exists to remove. A separate audit also found the town map
+  // was very low contrast, so nothing of value went with it.
+  // __ACT1_TOWN_VIEW__ is still PUBLISHED by act1-hifi/adapter.js; it simply has no reader
+  // here any more.
   // 34,34 is the centre of the compass SVG's 68-unit viewBox. Setting the attribute rather
   // than a CSS transform keeps the rotation origin explicit and identical in every engine.
   function setCompassBearing(deg) {
@@ -1417,6 +1382,12 @@
     }
     return null;
   }
+  // Start the decode at PARSE time. The load used to begin on the first drawFieldMap() call, i.e.
+  // at the exact moment the map was first needed -- so the first draw ALWAYS missed it and fell
+  // through to the lattice below, and the player saw the old minimap swap to the baked one. The
+  // relief is 130 KB and this script runs long before the overworld exists, so by the time the HUD
+  // is first shown the image is already decoded and the fallback is never reached.
+  try { mmImage(); } catch (e) {}
   // Landmark positions come from the GRID'S OWN landmark tiles, not from
   // semantic-maps/landmark-roster.json -- that roster puts every Act 1 landmark on plain grass
   // (Greenhollow is 85.7 cells out, Whispering Woods 80.1, Millbrook 65.4, Port Sapphire 56.8).
@@ -1498,9 +1469,20 @@
     var sc = css / span;
     // The bake IS the overworld. The four portal lands are 40x40 maps generated per portal and
     // have no baked image, so they keep the lattice -- 1,600 rects that also fit the window whole.
-    var baked = (wm.currentMapId === 'overworld' && W === MM_W && H === MM_H) ? mmImage() : null;
+    var wantsBake = wm.currentMapId === 'overworld' && W === MM_W && H === MM_H;
+    var baked = wantsBake ? mmImage() : null;
     ctx.imageSmoothingEnabled = !!baked;
     ctx.clearRect(0, 0, css, css); ctx.fillStyle = '#101116'; ctx.fillRect(0, 0, css, css);
+    // Relief still decoding. The lattice is not a lower-fidelity version of the bake, it is a
+    // DIFFERENT MAP -- flat saturated tile colours against the bake's relief -- so falling through
+    // to it here is what the owner saw as "the old minimap briefly shows up before swapping to the
+    // new one". An empty seat for a frame reads as a panel that has not drawn yet; the wrong map
+    // reads as a bug. Only while genuinely loading: mmImgState 3 is a failed load, and there the
+    // lattice is the right answer because nothing else is ever coming.
+    if (wantsBake && !baked && mmImgState !== 3) {
+      ctx.strokeStyle = 'rgba(201,169,97,.28)'; ctx.lineWidth = 1; ctx.strokeRect(.5, .5, css - 1, css - 1);
+      return;
+    }
     if (baked) {
       ctx.imageSmoothingQuality = 'high';
       ctx.drawImage(baked, sx * MM_BAKE, sy * MM_BAKE, span * MM_BAKE, span * MM_BAKE, 0, 0, css, css);
@@ -1538,23 +1520,40 @@
       fieldHpText.textContent = Z('menu.level') + st.level + '  ' + Z('menu.hp') + ' ' + st.hp + '/' + max;
       fieldHpFill.style.width = Math.round(ratio * 100) + '%'; fieldHpFill.className = ratio <= .2 ? 'danger' : (ratio <= .5 ? 'warn' : '');
     }
-    var tv = townView();
-    var hasMap = !!(tv || wm.minimapGfx || wm.minimapPlayerDot || wm._minimapBtn || wm.currentMapId === 'overworld');
+    // MINIMAP AND COMPASS ARE OVERWORLD-ONLY. Owner 2026-08-07: "there should be no compass or
+    // minimap in dungeons or towns".
+    //
+    // `cullingEnabled` is the SCENE'S OWN already-computed `type === "overworld" || type ===
+    // "portal-overworld"` (it decides whether tiles are culled to the camera), set in loadMap and
+    // initialised false in the constructor. Reading it keeps one definition of "open-air map"
+    // instead of a second list here that could drift from the bundle's. The four portal lands
+    // count AS overworld: they are 40x40 open realms you traverse and enter dungeons from, and the
+    // engine already groups them with the overworld for passability, culling, tile interaction and
+    // chest rules. The compass is separately off there because the bundle only sets compassEnabled
+    // for `type === "overworld"` -- its quest target is in true-overworld tiles and means nothing
+    // in a portal land -- and that stays exactly as it was.
+    //
+    // WHAT THIS REPLACES, AND WHY IT WAS A RESIDUE BUG. The old test also accepted `wm.minimapGfx
+    // || wm.minimapPlayerDot || wm._minimapBtn`. The bundle's renderMinimap() destroys all three
+    // when the map is not open-air -- but patchFieldScene() above wraps renderMinimap to return
+    // early whenever this DOM HUD is active, so that cleanup NEVER RUNS. The objects survive from
+    // the overworld into the next dungeon and kept the map switched on there. The map type cannot
+    // go stale that way.
+    var hasMap = !!wm.cullingEnabled;
+    // floorText exists only for `type === "dungeon" || type === "town"` (the bundle builds it in
+    // updateHUD as the map name plus `B2F` where there are floors), so this is the label that
+    // takes the map's place rather than an empty gap: #qfh-floor and #qfh-map are both absolutely
+    // positioned into the same slot under the HP panel (ui-overhaul.css:435-436).
     var floorText = !hasMap && wm.floorText && wm.floorText.active !== false && wm.floorText.text ? String(wm.floorText.text) : '';
     fieldFloor.textContent = floorText; fieldFloor.style.display = floorText ? 'block' : 'none';
     fieldMap.style.display = hasMap ? 'block' : 'none';
     if (hasMap) {
       fieldMapCollapsed = !!wm.minimapCollapsed; fieldMap.classList.toggle('collapsed', fieldMapCollapsed); fieldMapIcon.style.display = fieldMapCollapsed ? 'block' : 'none';
-      if (!fieldMapCollapsed) { if (tv) drawTownMap(tv); else drawFieldMap(wm); }
+      if (!fieldMapCollapsed) drawFieldMap(wm);
     }
-    // In a town the compass points at the way OUT. wm.compassEnabled is false there and its
-    // quest target is in overworld tiles, neither of which means anything inside the town's own
-    // 65-cell space -- so the town view supplies both the origin and the target.
-    var compassOn = !!(tv ? tv.exit : wm.compassEnabled);
+    var compassOn = !!wm.compassEnabled;
     fieldCompass.style.display = compassOn ? 'block' : 'none';
-    if (compassOn && tv) {
-      setCompassBearing(Math.atan2(tv.exit[1] * tv.cellPx - tv.hero.y, tv.exit[0] * tv.cellPx - tv.hero.x) * 180 / Math.PI + 90);
-    } else if (compassOn) {
+    if (compassOn) {
       var target = null; try { target = wm.getCompassTarget && wm.getCompassTarget(); } catch (e2) {}
       if (target) { setCompassBearing(Math.atan2(target.oy - wm.heroTileY, target.ox - wm.heroTileX) * 180 / Math.PI + 90); }
       else fieldCompassArrow.style.display = 'none';
@@ -1747,7 +1746,12 @@
     __ticks++;
     try { update(); } catch (e) { __lastErr = String(e && e.stack || e); }
   }
-  window.__QOKUI = { ticks: function () { return __ticks; }, err: function () { return __lastErr; }, sig: function () { return lastSig; }, screen: function () { return curScreen; } };
+  // `mapArtReady` / `iconsReady` are read by the shell's loading cover (index.html #boot-cover) so
+  // it can wait for the BAKED relief and the icon masks rather than uncovering onto the lattice
+  // and a glyphless tab bar. mmImgState 3 is a failed load and counts as ready: the cover must not
+  // outlive an asset that is never coming.
+  window.__QOKUI = { ticks: function () { return __ticks; }, err: function () { return __lastErr; }, sig: function () { return lastSig; }, screen: function () { return curScreen; },
+    mapArtReady: function () { return mmImgState === 2 || mmImgState === 3; }, iconsReady: iconsReady };
   function startLoop() { tick(); setInterval(tick, 50); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', startLoop);
   else startLoop();

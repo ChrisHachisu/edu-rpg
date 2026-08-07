@@ -128,11 +128,54 @@
       /* CENTER: d-pad centered */
       body.ctrl-center .stick { left: 50%; right: auto; transform: translateX(-50%); }
     }
+
+    /* ---- Boot cover -------------------------------------------------------------------------
+       WHY THIS EXISTS. BootScene.preload() queues 75 monster PNGs with no progress indicator, and
+       its "Loading..." text is only created in create() -- i.e. after every one of them has
+       already loaded, and it is overwritten with "Ready!" on the very next statement, so it is
+       never actually seen. create() then sits on a hardcoded 400 ms setTimeout before starting
+       TitleScene. All of that is inside the frozen 4.99 MB bundle and cannot be removed from
+       here. What the player got for the whole of it was an unexplained black screen -- owner
+       2026-08-07: "i also saw a blank screen ... before the current overworld loaded".
+
+       So the SHELL paints the wait instead of leaving a void: the game's own charcoal and gold,
+       its title, and a moving bar that says the wait is intentional. This is the one part of the
+       startup the shell still owns, because it is in the HTML itself and therefore on screen from
+       the first paint -- before the bundle has even been fetched, let alone parsed.
+       Dismissed by the script at the bottom of <body>; see the readiness test there. ---------- */
+    #boot-cover {
+      position: fixed; inset: 0; z-index: 9999;
+      display: flex; align-items: center; justify-content: center;
+      background: radial-gradient(ellipse at center, #141428 0%, #0a0a14 70%);
+      opacity: 1; transition: opacity .24s ease-out;
+    }
+    #boot-cover.gone { opacity: 0; pointer-events: none; }
+    .bc-plate {
+      display: flex; flex-direction: column; align-items: center; gap: 18px;
+      padding: 22px 34px;
+      border: 1px solid rgba(201,169,97,.45);
+      border-radius: 6px;
+      background: #15161c;
+      box-shadow: 0 0 30px rgba(80,60,20,.30), 0 6px 22px rgba(0,0,0,.55);
+    }
+    .bc-title {
+      color: #c9a961; font-size: 13px; letter-spacing: 3px; text-transform: uppercase;
+      white-space: nowrap; text-shadow: 0 0 8px rgba(201,169,97,.35);
+    }
+    /* Indeterminate on purpose: the bundle exposes no progress to report, and a fake percentage
+       that is not measuring anything is worse than an honest "still working". */
+    .bc-bar { width: 168px; height: 2px; background: rgba(201,169,97,.16); overflow: hidden; }
+    .bc-bar i { display: block; width: 38%; height: 100%; background: #c9a961; animation: bc-sweep 1.15s ease-in-out infinite; }
+    @keyframes bc-sweep { 0% { transform: translateX(-100%); } 100% { transform: translateX(363%); } }
+    @media (prefers-reduced-motion: reduce) { .bc-bar i { animation: none; width: 100%; opacity: .5; } }
   </style>
   <link rel="stylesheet" href="/ui-overhaul.css" />
   <script type="module" src="/src/main.ts"></script>
 </head>
 <body class="ctrl-right">
+  <!-- Painted before anything else so the shell is never a black void. See #boot-cover above. -->
+  <div id="boot-cover"><div class="bc-plate"><span class="bc-title">Quest of Knowledge</span><div class="bc-bar"><i></i></div></div></div>
+
   <div class="frame-wrapper">
     <div class="rpg-frame">
       <span class="frame-title">Quest of Knowledge</span>
@@ -159,6 +202,98 @@
   <script type="module" src="/act1-hifi/adapter.js"></script>
 
   <script>
+    /* ---- The loading cover ---------------------------------------------------------------------
+       TWO gates, not one, because the startup has two black holes and the second one is the one
+       the owner photographed.
+
+       GATE 1, boot -> title. Not `__PHASER_GAME__` existing: that is true the moment the bundle
+       constructs the Game, long before BootScene has loaded anything, so lifting there would only
+       move the black screen. Not TitleScene merely being ACTIVE either -- scene.start() queues a
+       scene, it does not run it, and on touch the DOM overlay HIDES the canvas outright
+       (`body.qok-overlay #game-container { visibility: hidden }` above), so a canvas-only test
+       would uncover a deliberately invisible canvas. So: TitleScene active AND whichever surface
+       will actually show it has content, held for three consecutive frames.
+
+       GATE 2, title -> world. Owner 2026-08-07, on a device capture taken during this window:
+       "the hero is right but the overworld and minimap is wrong. I'd rather have a loading screen
+       than to show this stuck old state." The HUD chrome -- HP panel, minimap, compass, tab bar --
+       is DOM and arrives immediately and complete, while the terrain, the baked minimap relief and
+       the icon mask sheet are all still loading. The result is a confident, finished-looking
+       interface framing nothing. So the cover comes back when the world scene starts and does not
+       lift until the world is genuinely presentable:
+
+         1. terrain painted        __DQ_TILES__.ready()  -- a terrain window has actually been
+                                   drawn, the material art has decoded (not the flat palette
+                                   fallback), and inside the Act 1 footprint the baked chunks have
+                                   been blitted. Only dq-tiles.js knows this, so it answers it.
+         2. minimap is the bake    __QOKUI.mapArtReady()  -- overworld only. The four portal lands
+                                   have no baked image by design and legitimately draw the lattice,
+                                   so requiring it there would hang the cover forever.
+         3. icon sheet decoded     __QOKUI.iconsReady()   -- the tab glyphs are CSS masks, and an
+                                   undecoded mask is the bare-text tab bar in the capture.
+         4. hero is g3             __HERO_VARIANT__, set by hero-override.js only after the swap
+                                   actually succeeded.
+
+       DELIBERATELY NOT GATED ON: the Act 1 hi-fi TOWN overlay (a ~19 MB iframe with its own 30 s
+       timeout -- covering that would mean a half-minute cover on every town entry), audio, and
+       monster art that is not on screen. And the gate is armed ONCE: after the first world entry
+       it is latched off and the node is removed, so this can never reappear over a battle, a menu
+       or a dungeon transition. That is a deliberate scope limit, not an oversight -- a cover on
+       every map change is a different product decision than the one that was asked for.
+
+       Both caps are safety valves, not tuning: a boot that fails for any reason must end up
+       showing the game's own failure, never a cover that hides it forever. */
+    (function () {
+      var cover = document.getElementById('boot-cover');
+      if (!cover) return;
+      var TITLE_CAP = 10000, WORLD_CAP = 20000;
+      var phase = 'boot', frames = 0, t0 = Date.now(), worldT0 = 0;
+
+      function titlePainted() {
+        var g = window.__PHASER_GAME__;
+        if (!g || !g.scene || !g.scene.isActive || !g.scene.isActive('TitleScene')) return false;
+        if (document.body.classList.contains('qok-overlay')) {
+          var stage = document.getElementById('qok-stage');
+          return !!(stage && stage.firstChild);
+        }
+        return true;
+      }
+      function worldReady() {
+        var g = window.__PHASER_GAME__, wm = g.scene.getScene('WorldMapScene');
+        if (!wm || !wm.mapData || !wm.mapData.length) return false;
+        var dq = window.__DQ_TILES__, ui = window.__QOKUI;
+        if (!dq || !dq.ready || !dq.ready()) return false;
+        if (!ui || !ui.iconsReady || !ui.iconsReady()) return false;
+        if (wm.currentMapId === 'overworld' && !(ui.mapArtReady && ui.mapArtReady())) return false;
+        if (!window.__HERO_VARIANT__) return false;
+        return true;
+      }
+      function worldActive() {
+        var g = window.__PHASER_GAME__;
+        return !!(g && g.scene && g.scene.isActive && g.scene.isActive('WorldMapScene'));
+      }
+      function show() { cover.classList.remove('gone'); }
+      function hide() { cover.classList.add('gone'); }
+      function finish() {
+        hide();
+        setTimeout(function () { if (cover.parentNode) cover.parentNode.removeChild(cover); }, 400);
+      }
+      function tick() {
+        if (phase === 'boot') {
+          frames = titlePainted() ? frames + 1 : 0;
+          if (frames >= 3 || Date.now() - t0 > TITLE_CAP) { hide(); phase = 'waiting'; }
+        } else if (phase === 'waiting') {
+          // Title is up and the player is choosing. Arm gate 2 the moment the world scene starts.
+          if (worldActive()) { show(); worldT0 = Date.now(); phase = 'world'; }
+        } else if (phase === 'world') {
+          if (worldReady() || Date.now() - worldT0 > WORLD_CAP) { finish(); return; }
+        }
+        requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+      window.__QOK_COVER__ = { phase: function () { return phase; } };
+    })();
+
     (function () {
       var KEYCODE = { ArrowUp: 38, ArrowDown: 40, ArrowLeft: 37, ArrowRight: 39, Escape: 27 };
       var CODE    = { ArrowUp: 'ArrowUp', ArrowDown: 'ArrowDown', ArrowLeft: 'ArrowLeft', ArrowRight: 'ArrowRight', Escape: 'Escape' };

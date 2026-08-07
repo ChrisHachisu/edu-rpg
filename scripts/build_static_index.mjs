@@ -63,8 +63,14 @@ export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '
  * shell to the wrong vintage. Keeping the authority in a tracked file the generator does not
  * rewrite is the point.
  */
+// 2026-08-07: 29b0c698... -> 22d99202..., 15479 B -> 23956 B. The shell gained #boot-cover -- its
+// markup, its styles and the two-gate controller that lifts it. Gate 1 replaces the black screen
+// while BootScene loads 75 images and waits out its hardcoded 400 ms; gate 2 covers the world load,
+// where the DOM HUD used to arrive complete over unpainted terrain, a lattice minimap and an
+// undecoded tab-icon sheet (owner device capture, same day). Reviewed as a diff to index.html;
+// this line is the sign-off.
 export const EXPECTED_STATIC_INDEX_SHA =
-  '29b0c6982fe2a6f3ebb7db6d2e4c23bc3bf3acba729844954838dbc735258965';
+  '22d992023a24854d3a0da1351be18b3127d4a4d7c7be25f33d9fcdcab0ca4de4';
 
 /**
  * The authored shell loads its scripts by ABSOLUTE path so the Vite dev server resolves them;

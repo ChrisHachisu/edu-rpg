@@ -33,7 +33,10 @@
   function load(v) {
     if (imgs[v]) return imgs[v];
     var o = { ready: false, img: new Image() };
-    o.img.onload = function () { o.ready = true; };
+    // apply() bails while the PNG is undecoded (`if (!o.ready) return`), so the decode finishing
+    // is itself a reason to re-run the swap. Without this the correction waited for the next
+    // interval tick instead of landing the moment the art became usable.
+    o.img.onload = function () { o.ready = true; applySoon(); };
     o.img.onerror = function () { console.error('[hero-override] failed to load ' + v); };
     o.img.src = 'assets/hero/hero-' + v + '-walk.png';
     imgs[v] = o;
@@ -55,7 +58,10 @@
     var g = window.__PHASER_GAME__;
     if (!g) return;
     var v = wantVariant();
-    if (!v) return;                                        // procedural: don't swap
+    // `?hero=procedural` is an explicit debug opt-out. Publish the variant anyway: index.html's
+    // loading cover waits on __HERO_VARIANT__, and a flag that is only ever set on the happy path
+    // would hold the cover up for its full timeout on the one URL that asked for the old hero.
+    if (!v) { window.__HERO_VARIANT__ = 'procedural'; return; }
     var o = load(v);
     if (!o.ready) return;
     var tm = g.textures;
@@ -68,8 +74,13 @@
     window.__HERO_VARIANT__ = v;
 
     // The procedural texture is rebuilt on title/colour changes (regenerateHeroSprites) and the
-    // ui-overhaul avatar cache snapshots hero-walk frame 0 per colour. TODO(stage-2): bust the
-    // ui-overhaul getHeroSrc cache so the menu/intro/battle avatars repaint to v17 (verify in-engine).
+    // ui-overhaul avatar cache snapshots hero-walk frame 0 per colour ONCE and never invalidates
+    // it, so whichever hero existed at the first snapshot is what the menu, intro and battle
+    // avatars show for the rest of the session. The swap below now normally beats that snapshot,
+    // but "normally" is not a guarantee -- if the PNG is still decoding when a DOM screen first
+    // paints, the knight gets cached permanently. Busting on every successful swap closes that
+    // window for good and retires the stage-2 TODO this comment used to carry.
+    try { if (window.__qokHeroArtChanged) window.__qokHeroArtChanged(); } catch (eb) {}
 
     // Re-point any live sprite still holding the old texture instance.
     g.scene.scenes.forEach(function (sc) {
@@ -81,6 +92,41 @@
         }
       });
     });
+  }
+
+  // ---- land the swap in the SAME frame the procedural knight is rebuilt --------------------
+  // 2026-08-07, owner: "i also saw ... the old hero asset before the current overworld loaded".
+  //
+  // The bundle destroys the g3 texture and redraws the closed-helm knight IMMEDIATELY before it
+  // starts the overworld, on BOTH paths -- `xr(this, heroColor); this.scene.start("WorldMapScene")`
+  // for Continue and the same pair after character creation for New Game. That cannot be
+  // prevented from here; the bundle is frozen. What CAN be fixed is how long the wrong hero
+  // survives: the only thing driving apply() used to be `setInterval(..., 200)` with no immediate
+  // call, so the knight was on screen for up to a full interval -- and WorldMapScene.createHero()
+  // runs well inside that window, so the overworld hero was BUILT from the knight texture.
+  //
+  // Phaser's TextureManager emits `addtexture-<key>` the instant the knight is added, so that
+  // event is the exact moment to correct it. The re-apply is deferred to a MICROTASK rather than
+  // run inline for two reasons: the bundle's generator adds its 12 frames AFTER generateTexture()
+  // returns, so replacing the texture mid-call would fight it; and `scene.start()` only QUEUES the
+  // scene -- Phaser processes that queue at the top of the next step, which is a later task. A
+  // microtask therefore lands after the generator finishes and still before WorldMapScene exists.
+  var applying = false, listening = false;
+  function applySoon() {
+    if (applying) return;                                  // our own addSpriteSheet re-emits ADD
+    applying = true;
+    Promise.resolve().then(function () {
+      applying = false;
+      try { apply(); } catch (e) {}
+    });
+  }
+  function listen() {
+    if (listening) return;
+    var g = window.__PHASER_GAME__;
+    if (!g || !g.textures || !g.textures.on) return;       // bundle has not constructed the game yet
+    listening = true;
+    g.textures.on('addtexture-hero-walk', applySoon);
+    apply();                                               // do not wait a whole interval for the first one
   }
 
   // Hide the desktop keyboard control hint (`↑↓←→: Move  Z: Talk  I: Items  ESC: Menu`, a Phaser
@@ -142,6 +188,20 @@
     });
   }
 
-  setInterval(function () { apply(); hideGuideOnTouch(); fixDefaultLocale(); scaleHero(); }, 200);
+  // Start the DECODE at parse time. apply() cannot swap anything until the PNG is decoded, and it
+  // used to only ever be asked for one from inside apply() itself -- so the first swap could not
+  // possibly succeed, and the knight was guaranteed to be visible for at least one round trip.
+  // This script is a classic tag in <body>; the 4.99 MB bundle is a deferred module, so this runs
+  // BEFORE the game is even constructed and the decode overlaps the whole boot.
+  try { var pv = wantVariant(); if (pv) load(pv); } catch (e) {}
+
+  // DOMContentLoaded fires after deferred modules execute, so the game exists by then -- and
+  // BootScene.create() (which builds the knight) is strictly later still, because Phaser boots
+  // its scenes on DOM ready and BootScene first preloads 75 monster PNGs. The interval keeps
+  // listen() as a backstop in case the game is ever constructed later than that.
+  document.addEventListener('DOMContentLoaded', listen);
+  listen();
+
+  setInterval(function () { listen(); apply(); hideGuideOnTouch(); fixDefaultLocale(); scaleHero(); }, 200);
   window.__heroOverrideApply = apply;
 })();
