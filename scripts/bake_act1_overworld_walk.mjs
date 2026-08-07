@@ -27,8 +27,8 @@
  *
  *   SPARSE BY CELL, because half the plate is open sea and a third is inland. Each 48x48 map cell
  *   is one block, tagged FAR (every pixel at the clamp), BLOCKED (every pixel 0) or explicit.
- *   3,864 of 45,288 cells need explicit bytes; the other 41,424 are two sentinels in an index.
- *   That is 8.9 MB instead of the 104 MB a dense plate would be, and it is what makes the runtime
+ *   4,578 of 45,288 cells need explicit bytes; the other 40,710 are two sentinels in an index.
+ *   That is 10.8 MB instead of the 104 MB a dense plate would be, and it is what makes the runtime
  *   assembly a fill/copy per cell rather than per pixel.
  *
  *   NOT A PNG, deliberately. Every other baked mask here is one, but they are all thresholded at
@@ -47,12 +47,18 @@
  *   guessing -- fallback-safe, like every other layer in dq-tiles.js.
  *
  * PROVENANCE
- *   The bake is a function of (the frozen bundle's terrain generator, dq-tiles.js's consolidator,
- *   dq-tiles.js's field functions). All three are read here from the shipped files and hashed into
- *   the header, so `--check` catches a .bin left behind by a change to any of them without paying
- *   the 13 s recompute. dq-tiles.js's own sha is deliberately NOT pinned here: this script edits
- *   nothing and must keep working across every future edit to that file that does not touch a
- *   field.
+ *   The bake is a function of the frozen bundle's terrain generator, dq-tiles.js's consolidator,
+ *   act1-world-map.js's owner-painted plate, and dq-tiles.js's field functions. All four are read
+ *   here from the shipped files and hashed into the header, so `--check` catches a .bin left
+ *   behind by a change to any of them without paying the recompute. dq-tiles.js's own sha is
+ *   deliberately NOT pinned here: this script edits nothing and must keep working across every
+ *   future edit to that file that does not touch a field.
+ *
+ *   THE PLATE IS THE STEP THAT WAS MISSED FIRST TIME, and it is the expensive kind of miss: the
+ *   bake looked right, verified against owmBuild, and was rejected outright on device by the
+ *   runtime's map-identity check -- because act1-world-map.js writes the owner's paint over the
+ *   Act 1 rect AFTER consolidation, moving 5,817 cells in or out of the painted masses. Both
+ *   intermediate map states are pinned below so that cannot happen quietly again.
  *
  *   bake_act1_overworld_walk.mjs             rebake public/act1-overworld-walk.bin
  *   bake_act1_overworld_walk.mjs --check     verify the .bin's provenance, write nothing
@@ -63,14 +69,17 @@ import { createHash } from 'node:crypto';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import vm from 'node:vm';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const OUTPUT = resolve(ROOT, 'public/act1-overworld-walk.bin');
 const BUNDLE_PATH = resolve(ROOT, 'dist/assets/index-BhoGQRaA.js');
 const DQ_PATH = resolve(ROOT, 'public/dq-tiles.js');
+const PLATE_PATH = resolve(ROOT, 'public/act1-world-map.js');
 
 const BUNDLE_SHA256 = 'a56026574b42168985b353e4cee824562716af83f92d03f408df04eac9127381';
 const FINAL_MAP_SHA256 = '2d82e050b51095280b74395db8656aed52ae919206385827502265f6e0a65202';
+const PLATED_MAP_SHA256 = '01337b61c117ecbfd6fa7704fdcf7cbf0c90b4eba56d726fea93dd21c959e453';
 const MAP_WIDTH = 320, MAP_HEIGHT = 400;
 const ACT1_START = [60, 341];
 const ACT1_BOUNDS = [16, 218, 163, 399];
@@ -123,11 +132,14 @@ function extractConsolidator(dq) {
   return Function('window', `${dq.slice(start, end)}; return consolidateMapData;`)({});
 }
 
-/* The map the runtime actually holds: the frozen bundle's generator, then dq-tiles.js's
-   consolidateMapData, which MUTATES tile 4 into the cluster shape mountainField reads. Pinned to
-   FINAL_MAP_SHA256 for the same reason the snapshot extractor pins it -- a bake against a
-   different map is a picture of terrain that is not there. */
-function buildFinalMap(bundle, dq) {
+/* THE MAP THE RUNTIME ACTUALLY HOLDS IS THREE STEPS, AND THE THIRD IS EASY TO MISS. The frozen
+   bundle's generator, then dq-tiles.js's consolidateMapData (which MUTATES tile 4 into the cluster
+   shape mountainField reads), and then act1-world-map.js writing the OWNER'S PAINTED PLATE over
+   the Act 1 rect -- dq-tiles.js line ~3174, between the consolidation and reskin(). Skipping that
+   third step produces a plausible, wrong coastline; on device the runtime's identity check
+   rejected it outright and fell back to owmBuild, which is what that check is for. Both earlier
+   states are pinned so a change to either is a deliberate re-bake rather than a silent one. */
+function buildFinalMap(bundle, dq, plateSource) {
   assert(sha256(bundle) === BUNDLE_SHA256, 'bundle hash mismatch');
   const raw = extractRawTerrain(bundle.toString('utf8'));
   const map = raw.map(row => row.slice());
@@ -136,25 +148,45 @@ function buildFinalMap(bundle, dq) {
   });
   assert(stats.safe, 'Act 1 dq safety gate failed');
   assert(map.length === MAP_HEIGHT && map.every(r => r.length === MAP_WIDTH), 'map dimensions');
-  const bytes = Buffer.from(map.flat());
-  assert(sha256(bytes) === FINAL_MAP_SHA256, 'final map hash mismatch');
-  return { map, bytes };
+  assert(sha256(Buffer.from(map.flat())) === FINAL_MAP_SHA256, 'consolidated map hash mismatch');
+
+  const window = { __GAME_STATE__: { player: { state: { storyFlags: {} } } } };
+  vm.runInNewContext(plateSource, { window, Error, Math, parseInt, Object, JSON });
+  const plate = window.__ACT1_WORLD_MAP__;
+  assert(plate && typeof plate.ensurePlate === 'function', 'act1-world-map.js exposed no plate');
+  const scene = { currentMapId: 'overworld', mapData: map,
+                  heroTileX: ACT1_START[0], heroTileY: ACT1_START[1] };
+  assert(plate.ensurePlate(scene, true) === true, 'the Act 1 plate refused to apply');
+  assert(map.length === MAP_HEIGHT && map.every(r => r.length === MAP_WIDTH), 'plated dimensions');
+  assert(sha256(Buffer.from(map.flat())) === PLATED_MAP_SHA256, 'plated map hash mismatch');
+  return { map, plateSha256: plate.plateSha256 };
 }
 
-// The runtime's identity check on the map it is handed. FNV-1a/32 rather than sha256 because the
-// runtime has no synchronous crypto and this has to be cheap enough to run on every map swap.
-function fnv1a32(bytes) {
+/* THE RUNTIME'S IDENTITY CHECK, and deliberately not a hash of the whole map. Gameplay writes into
+   mapData -- a chest opens, a boss falls -- and a whole-map hash would send the overworld back to
+   the 470 ms path forever the first time one did. What the bake depends on is only the membership
+   the two fields read, so that is what is hashed: water, bridge, mountain, everything else. Any
+   edit that could move the painted coastline changes it; nothing else can.
+   FNV-1a/32 rather than sha256 because the runtime has no synchronous crypto. */
+function terrainClass(v) { return v === 2 ? 1 : v === 5 ? 2 : v === 4 ? 3 : 0; }
+function fnv1a32Map(map) {
   let h = 0x811c9dc5;
-  for (let i = 0; i < bytes.length; i += 1) { h ^= bytes[i]; h = Math.imul(h, 0x01000193) >>> 0; }
+  for (let y = 0; y < map.length; y += 1) {
+    const row = map[y];
+    for (let x = 0; x < row.length; x += 1) {
+      h = (h ^ terrainClass(row[x])) >>> 0; h = Math.imul(h, 0x01000193) >>> 0;
+    }
+  }
   return h >>> 0;
 }
 
 function fieldSource(dq) {
   return FIELD_FUNCTIONS.map(name => sliceFunction(dq, name)).join('\n');
 }
-function provenance(dq, mapBytes) {
+function provenance(dq, map) {
   return sha256(Buffer.concat([
-    Buffer.from(BUNDLE_SHA256, 'hex'), mapBytes, Buffer.from(fieldSource(dq), 'utf8'),
+    Buffer.from(BUNDLE_SHA256, 'hex'), Buffer.from(map.flat()),
+    Buffer.from(fieldSource(dq), 'utf8'),
     Buffer.from(`${TILE}|${FAR}|${PLATE_PAD}|${GUARD}|${VERSION}`, 'utf8'),
   ]));
 }
@@ -231,8 +263,8 @@ function buildPlateDistance(fields, map) {
   return { dist, W, H, gx0, gy0, plate: p };
 }
 
-function bake(bundle, dq) {
-  const { map, bytes } = buildFinalMap(bundle, dq);
+function bake(bundle, dq, plateSource) {
+  const { map } = buildFinalMap(bundle, dq, plateSource);
   const fields = fieldsFor(dq, map);
   const { dist, W, gx0, gy0, plate } = buildPlateDistance(fields, map);
 
@@ -269,8 +301,8 @@ function bake(bundle, dq) {
   out.writeUInt16LE(FAR, 12);
   out.writeUInt16LE(0, 14);
   out.writeUInt32LE(blocks.length, 16);
-  out.writeUInt32LE(fnv1a32(bytes), 20);
-  Buffer.from(provenance(dq, bytes), 'hex').copy(out, 32);
+  out.writeUInt32LE(fnv1a32Map(map), 20);
+  Buffer.from(provenance(dq, map), 'hex').copy(out, 32);
   // Written explicitly little-endian. The runtime maps the index straight through as a
   // Uint16Array view, which is host-endian -- true on every platform this ships to (arm64/x64),
   // and stated here rather than assumed silently.
@@ -371,18 +403,19 @@ assert(args.length <= 1 && ['--bake', '--check', '--verify'].includes(mode),
 
 const bundle = readFileSync(BUNDLE_PATH);
 const dq = readFileSync(DQ_PATH, 'utf8');
+const plateSource = readFileSync(PLATE_PATH, 'utf8');
 
 if (mode === '--check') {
   // Cheap: rebuild the INPUTS' digest, not the 108 M px field.
-  const { bytes } = buildFinalMap(bundle, dq);
-  const want = provenance(dq, bytes);
+  const { map } = buildFinalMap(bundle, dq, plateSource);
+  const want = provenance(dq, map);
   const have = parse(readFileSync(OUTPUT));
   assert(have.provenance === want, 'act1-overworld-walk.bin is stale -- rerun bake_act1_overworld_walk.mjs');
-  assert(have.mapHash === fnv1a32(bytes), 'baked map hash mismatch');
+  assert(have.mapHash === fnv1a32Map(map), 'baked map hash mismatch');
   console.log(`ACT 1 OVERWORLD WALK CHECK PASS: ${have.nBlocks} blocks, far=${have.far}, `
     + `provenance ${have.provenance.slice(0, 16)}`);
 } else {
-  const baked = bake(bundle, dq);
+  const baked = bake(bundle, dq, plateSource);
   if (mode === '--verify') { verify(dq, baked); }
   else {
     writeFileSync(OUTPUT, baked.buffer);
