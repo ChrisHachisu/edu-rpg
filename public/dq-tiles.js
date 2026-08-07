@@ -2503,16 +2503,31 @@
      IT HASHES MEMBERSHIP, NOT TILES. Gameplay writes into mapData too (a chest opens, a boss
      falls), and a whole-map hash would send the overworld back to the 470 ms path forever the
      first time one did. Only water, bridge and mountain can move the field, so only those are
-     hashed. FNV-1a/32, cached on the array, because there is no synchronous crypto here. */
-  var owmHash=null;
+     hashed. FNV-1a/32, because there is no synchronous crypto here.
+
+     NOT MEMOISED ON THE ARRAY, and that is the fix for the owner's "loading is still extremely
+     slow, even after battles" (2026-08-07). It used to cache `{map, h}` and return the cached `h`
+     whenever the same ARRAY came back. But act1-world-map.js writes the owner's plate INTO the
+     rows of that array (`target[...]=...`), so the contents change while the identity does not:
+     any call that landed before the plate cached the pre-plate hash, nothing ever invalidated it,
+     and owmBakeFor then compared a stale hash against the bake's and returned null FOR THE LIFE
+     OF THAT ARRAY. Measured on device: Coastal Reef never baked at all (analytic 2008-2615 ms),
+     and after ANY town round trip the same window went from `baked 1.0 ms` to `analytic 634 ms`
+     and never recovered that session.
+
+     A generation counter bumped by the plate would fix this writer and leave the next one to
+     rediscover the bug, because memoising a value derived from IN-PLACE MUTATED contents has no
+     sound key that is not the contents themselves. So it is simply recomputed. The single caller
+     is owmBakeFor, reached only when owmFor rebuilds its window -- about once every 12 cells of
+     travel, not per frame -- and the loop measures 0.22 ms over the 320x400 map against the 1-2 ms
+     that rebuild costs when it hits the bake and the 634-2615 ms it costs when it misses. The memo
+     was saving 0.22 ms and risking all of it. */
   function owmMapHash(map){
-    if(owmHash && owmHash.map===map) return owmHash.h;
     var h=0x811c9dc5, H=map.length, W=map[0].length, y, x, row, v;
     for(y=0;y<H;y++){ row=map[y];
       for(x=0;x<W;x++){ v=row[x];
         h=(h^(v===2?1:v===5?2:v===4?3:0))>>>0; h=Math.imul(h,0x01000193)>>>0; } }
-    owmHash={ map:map, h:h>>>0 };
-    return owmHash.h;
+    return h>>>0;
   }
   function owmBakeFor(map){
     var b=owmBake; if(!b) return null;
