@@ -303,8 +303,30 @@
   //       reverts all surviving fills; a gained landmark reverts all prunes; re-validated after revert.
   //   Measured results are NOT hardcoded here (they go stale the moment constants tune) — see the change log.
   var MIN_KEEP=6, FILL_MIN=4, DENS_MAX=12, DENS_MAX_GRASS=25, STUCK_TREE_MTN=5; // OPTION 1 biome-aware fill cap (2026-07-08): DENS_MAX=12 = SAND cap (desert stays open); DENS_MAX_GRASS=25 = full 5x5 window => grass effectively UNCAPPED so grassland solidifies. STUCK_TREE_MTN=5 (owner 2026-07-09): a tree(3) with >= 5 of its 8 neighbours = mountain is "stuck" INSIDE a mountain cluster -> becomes mountain (blends into the massif); the tree de-scatter idea was reverted — this is the real fix
-  // walkability (mirrors bundle canMove overworld branch) — for the reachability safety gate ONLY (never mutates)
-  var OW_BLOCK={2:1,4:1,6:1,7:1,8:1,9:1,10:1,11:1,12:1,13:1,14:1,15:1,16:1,19:1,20:1,21:1};
+  // Overworld walkability. TWO consumers, and the second one is easy to miss: the reachability
+  // safety gate below (owReach, which never mutates), AND owmTileBlock() ~line 2350, which copies
+  // this table minus water and mountain to build the PIXEL collider's discrete blocker set. So
+  // this is not a bookkeeping list -- it is what the hero actually walks into.
+  //
+  // TILE 3 (tree) BLOCKS, owner decision 2026-08-07: "the hero also walks straight into forrests,
+  // so something is fundamentally wrong." It was absent here and had been since the file was
+  // written, so forest was walkable at runtime while THREE other authorities said it blocks:
+  // SHIPPED-BLOCKING-RULES.md ("tile 3 is tree, which also blocks"), semanticMap.ts's
+  // BLOCKED_TERRAIN, and act1-world-map.js's own blocked()/wrapCanMove.
+  //
+  // WHY THE PLATE'S OWN FOREST BLOCK NEVER FIRED, which is the actual root cause. act1-world-map.js
+  // wraps scene.canMove and returns false on tile 3 inside the Act 1 rect -- correct, and dead.
+  // a1mInstall forces the engine's update through with isMoving=true and drives the hero from
+  // a1mStep instead, which collides through a1mFree alone and never consults canMove. The wrapper
+  // still matters for relocateIfNeeded and the map-edge fallback; it just never governed a step.
+  // Adding 3 here is what reaches a1mFree, via owmTileBlock -> m.prop.
+  //
+  // Verified before landing: the consolidated and plated maps are byte-identical with and without
+  // this entry (the orphan/landmark gates revert nothing new), so no pinned map hash moves. Act 1
+  // stays ONE walkable region of 9,376 cells with all 8 owner doors reachable -- which is exactly
+  // what test_act1_runtime_override.mjs already asserted, because the plate's blocked() has always
+  // counted tile 3. The runtime was the only component that disagreed.
+  var OW_BLOCK={2:1,3:1,4:1,6:1,7:1,8:1,9:1,10:1,11:1,12:1,13:1,14:1,15:1,16:1,19:1,20:1,21:1};
   var OW_LANDMARKS=[6,7,8,9,10,11,12,15,16,19,20];
   function owWalkable(v){ return !OW_BLOCK[v]; }
   // BFS reachable-walkable set from (sx,sy); returns { seen:Uint8Array, lm:Set of "<val>@x,y" reachable landmarks }
@@ -2328,6 +2350,14 @@
      is, and bumping one is how the engine interacts with it. Those keep the tile test, exactly as
      the dungeon keeps A1M_PROP beside its mask. Removing 2 and 4 from that table is the whole
      point: the field owns them now, at the painted edge instead of the lattice edge.
+
+     TILE 3 (tree) JOINS THAT SET rather than getting a third continuous field. It is the one
+     member that is scenery instead of a landmark, so it is worth saying why a cell blocker is
+     still the honest shape for it: the game's woods are SCATTERED SINGLE TREES at roughly half
+     density, one trunk per cell drawn as a prop on that cell -- not a continuous canopy mass with
+     an iso-line to trace. A per-cell blocker is what that picture is. Inventing a forestField
+     would be a third sampler with no painted edge to agree with, which is the drift this whole
+     section exists to remove.
 
      BRIDGES ARE CARVED BACK OUT, OR THE MAP DISCONNECTS. waterField's membership counts tile 5 as
      water on purpose, so the deck is painted over real water instead of a hole (see its comment).

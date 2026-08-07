@@ -5,18 +5,33 @@ import { readFileSync } from 'node:fs';
 
 const ROOT = process.cwd();
 const BUNDLE_SHA = 'a56026574b42168985b353e4cee824562716af83f92d03f408df04eac9127381';
-const DQ_SHA = 'aa08f6b7906b89ce2b21e11a7f21060b8fb8bca7bd668de28d7031d882a4ddb4';
+const DQ_SHA = 'f0414cf7a12fcd08a045ac79dc0b99d74dca5c2195d79ec0e57eaf53573040a1';
 const RAW_SHA = '97f0b936946695b5ce2eb073df4b9905e680942b299a5f87f1bf5c0544b96723';
 const WINDOWS = {
   crystal: { bounds: [144, 288, 176, 312], sha: '25b0434154cb357118ed75a46f2404622e24f1ff4ac333eea326999fb246fb08' },
   shadow: { bounds: [252, 192, 268, 240], sha: 'a30e4704a9c6c3fd7b34db090fec88f572fd4390292f243ac7b376c614aced9b' },
   volcanic: { bounds: [144, 103, 176, 117], sha: '5587934e6882ce4ffc5ca99229e61527f57f5ad3343c6c6e412bb74ad7ee6f08' },
 };
+/* THE ACT 5 HASH MOVED ON 2026-08-07, and only that one. Tile 3 (tree) joined OW_BLOCK so the
+   hero would stop walking through forests, and OW_BLOCK is also what owReach floods with -- so
+   the "reachable before" set that the orphan gate compares against got smaller everywhere. From
+   the act1, act2 and act3-4 starts that changed nothing at all (0 cells; only the reported
+   reachable counts move, which is the definitional change). From the act5 start it shrank the
+   before-set from 14,131 to 10,511 cells, and a fill can only be reverted for cutting a corridor
+   that was reachable BEFORE -- so 40 fewer reverts survive (157 -> 117) and 52 cells settle
+   differently: 50 more grass/tree cells consolidate into the massifs they were embedded in
+   (0->4 x21, 3->4 x29) and 2 go the other way.
+
+   Why this is a re-pin and not a regression: both safety gates still pass, all 53 reachable
+   landmarks are preserved with none lost and none gained, and none of the three invariant
+   corridor windows below is touched (every changed cell lies in x18-106, y80-120). The shipped
+   Act 1 map -- the one the owner plate, the baked collision field and the minimap are all built
+   on -- is the act1/act2 hash, and it is byte-identical to what it was. */
 const STARTS = [
   { at: [60, 341], component: 'act1', sha: '2d82e050b51095280b74395db8656aed52ae919206385827502265f6e0a65202' },
   { at: [200, 321], component: 'act2', sha: '2d82e050b51095280b74395db8656aed52ae919206385827502265f6e0a65202' },
   { at: [260, 197], component: 'act3-4', sha: '678650a6bb3851523debb130edd25064c2777a07b03d7058800f1a4ac4e35d57' },
-  { at: [100, 151], component: 'act5', sha: 'c4999a8173b3c2bf701f957fb0a11da45eddc61368687ce9420e5886bd2066d9' },
+  { at: [100, 151], component: 'act5', sha: '59d03760f2080ac538eb801eb5351be18f12f9d681673fc832af51190262e85a' },
 ];
 
 const sha = value => createHash('sha256').update(value).digest('hex');

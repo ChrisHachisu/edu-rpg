@@ -21,6 +21,38 @@ ONE IMAGE FOR THE WHOLE WORLD
     window is then uniform everywhere and `drawFieldMap`'s existing sx/sy clamp already
     guarantees it never leaves the image.
 
+THE MAP THIS BAKES, AND THE STEP THAT WAS MISSED
+    Owner, 2026-08-07: "there is definitely a problem with the minimap. it does not match what
+    i see on the actual overworld."
+
+    It did not, and for TWO independent reasons. This script used to assemble its own grid from
+    `semantic-maps/runtime-overworld-grid.json` plus the Act 1 runtime SNAPSHOT. Both are wrong
+    for this purpose:
+
+      1. The snapshot is extracted by scripts/extract_act1_runtime_snapshot.mjs from the map
+         AFTER consolidateMapData and BEFORE act1-world-map.js writes the OWNER'S PAINTED PLATE
+         over the Act 1 rect (dq-tiles.js ~line 3316). That plate moves 11,578 cells inside the
+         rect -- it is where the owner's coastline, his woods and his eight doors actually are.
+         (The snapshot's constant is even NAMED `FINAL_MAP_SHA256`, which is what makes this so
+         easy to miss: it is final only up to the plate.)
+      2. The cached grid predates the current consolidator constants and disagrees with it by a
+         further 1,626 cells OUTSIDE the rect.
+
+    Total: 13,204 of 128,000 cells drawn from a map the game does not use. Coastlines are the
+    tell, and the pins were worse than the terrain -- Greenhollow was drawn at the generator's
+    (60,340) while the game puts it at the owner's (69,255).
+
+    So the grid is no longer assembled here at all. It is REQUESTED from
+    scripts/bake_act1_overworld_walk.mjs --emit-map, which is the collision bake -- the one that
+    already hit this exact trap and whose header says so outright ("THE PLATE IS THE STEP THAT
+    WAS MISSED FIRST TIME"). That script's buildFinalMap() is now the single definition of the
+    shipped map, and it asserts the bundle, the consolidated map and the plated map against
+    pinned hashes before handing any of it over. The minimap and the collider therefore cannot
+    disagree about which world is real, which is the whole point.
+
+    The plate SOURCE hash rides along in the emitted record and is asserted here, so a plate
+    that moves without a re-bake is caught rather than quietly drawn.
+
 THE INVARIANT, inherited from scripts/smooth_owner_semantic.py
     "The class at every cell CENTRE is preserved exactly. Collision is unchanged. Only the
     appearance of the boundary between cell centres moves."
@@ -53,7 +85,7 @@ DETERMINISM
 
 Usage:
     scripts/bake_overworld_minimap.py             # bake + assert + write
-    scripts/bake_overworld_minimap.py --check     # assert only, write nothing
+    scripts/bake_overworld_minimap.py --check     # assert, and refuse a stale PNG on disk
 """
 from __future__ import annotations
 
@@ -61,8 +93,9 @@ import argparse
 import hashlib
 import json
 import os
-import re
+import subprocess
 import sys
+import tempfile
 
 import numpy as np
 from PIL import Image
@@ -71,9 +104,8 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import smooth_owner_semantic as SM  # noqa: E402  -- the blur, the constants and the method
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-GRID_CACHE = os.path.join(
-    ROOT, "design/continent-terrain-class-method/semantic-maps/runtime-overworld-grid.json")
-SNAPSHOT = os.path.join(ROOT, "src/map-engine/generated/act1RuntimeSnapshot.ts")
+SHIPPED_MAP_BAKE = os.path.join(ROOT, "scripts/bake_act1_overworld_walk.mjs")
+PLATE_SOURCE = os.path.join(ROOT, "public/act1-world-map.js")
 OUT_PNG = os.path.join(ROOT, "public/ui-map/overworld-relief.png")
 OUT_MARKS = os.path.join(ROOT, "design/ui-overhaul/overworld-minimap-marks.json")
 RENDERER = os.path.join(ROOT, "public/ui-overhaul.js")
@@ -115,6 +147,14 @@ CLASS_OF_TILE = {
     6: "ground", 7: "ground", 8: "ground", 9: "ground", 10: "ground", 11: "ground",
     12: "ground", 13: "ground", 14: "rock", 15: "ground", 16: "ice", 17: "ice",
     18: "desert", 19: "ground", 20: "desert",
+    # 21 is undocumented in MapGenerator.ts's header and appears nowhere in the TS source -- it
+    # comes out of the frozen bundle's generator as a 3x2 structure at (245-247, 93-94), a gate
+    # straddling the road through a mountain pass, with a cave mouth beside it. The old cached
+    # grid predated it entirely and carried plain road there, which is why this table never had
+    # to name it before. It BLOCKS in OW_BLOCK and in the bundle's own canMove -- exactly as
+    # town, castle and cave mouth do -- so it takes the same treatment they do: drawn as the
+    # ground it is approached from, per the convention stated above. Six cells, outside Act 1.
+    21: "ground",
 }
 BLOCKS = {"water", "forest", "rock"}          # walkable: ground, desert, ice
 BLOCKING_TILES = {2, 3, 4, 14}                # the authority, SHIPPED-BLOCKING-RULES.md
@@ -166,34 +206,46 @@ def luma(rgb) -> float:
 # ---------------------------------------------------------------------------------------------
 # 1. The grid the game actually collides with
 # ---------------------------------------------------------------------------------------------
-def load_grid() -> np.ndarray:
-    """generateOverworldMap(320,400), then the Act 1 runtime overrides on top.
+def load_grid() -> tuple[np.ndarray, dict]:
+    """THE map the runtime holds: generator -> consolidateMapData -> the owner's painted plate.
 
-    The cache is the same one build_semantic_map_from_runtime.py writes, and it predates the
-    Act 1 blocker overrides -- so the snapshot is applied over it and the bake is the FINAL
-    shipped map, not the pre-override one.
+    Not assembled here. Requested from the collision bake, which owns that three-step chain and
+    asserts every step against a pinned hash (see the header). Re-deriving it in this file would
+    be a second authority that can drift from the collider, which is the bug this fixes.
     """
-    grid = np.asarray(json.load(open(GRID_CACHE)), dtype=np.int16)
+    with tempfile.TemporaryDirectory() as tmp:
+        out = os.path.join(tmp, "shipped-map.json")
+        proc = subprocess.run(["node", SHIPPED_MAP_BAKE, "--emit-map", out],
+                              capture_output=True, text=True)
+        if proc.returncode != 0:
+            raise SystemExit("the collision bake refused to emit the shipped map -- the world "
+                             f"this minimap would draw is unverified:\n{proc.stderr.strip()}")
+        record = json.load(open(out))
+
+    if record.get("schema") != 1:
+        raise SystemExit(f"shipped-map record schema {record.get('schema')}, expected 1")
+    grid = np.asarray(record["rows"], dtype=np.int16)
     if grid.shape != (WORLD_H, WORLD_W):
-        raise SystemExit(f"runtime grid is {grid.shape}, expected {(WORLD_H, WORLD_W)}")
+        raise SystemExit(f"shipped map is {grid.shape}, expected {(WORLD_H, WORLD_W)}")
 
-    source = open(SNAPSHOT, encoding="utf-8").read()
-    bounds = [int(v) for v in re.search(
-        r"ACT1_RUNTIME_SNAPSHOT_BOUNDS = \[([0-9, ]+)\]", source).group(1).split(",")]
-    x0, y0, x1, y1 = bounds
-    rows = re.findall(r"'([0-9a-z]+)',?\n", source[source.index("ACT1_RUNTIME_SNAPSHOT_ROWS"):])
-    if len(rows) != y1 - y0 + 1 or len(rows[0]) != x1 - x0 + 1:
-        raise SystemExit(f"snapshot is {len(rows)}x{len(rows[0])}, bounds want "
-                         f"{y1 - y0 + 1}x{x1 - x0 + 1}")
+    # The emitter hashes the map it hands over; re-hash it here rather than trusting the label,
+    # so a truncated or edited record cannot pass as the shipped world.
+    got = hashlib.sha256(grid.astype(np.uint8).tobytes()).hexdigest()
+    if got != record["platedSha256"]:
+        raise SystemExit(f"emitted map hashes {got}, record claims {record['platedSha256']}")
 
-    # The bridge is a pure translation, act1cell = (worldX - 16, worldY - 218): no scale, no flip.
-    snap = np.array([[int(ch, 36) for ch in row] for row in rows], dtype=np.int16)
-    before = grid[y0:y1 + 1, x0:x1 + 1].copy()
-    grid[y0:y1 + 1, x0:x1 + 1] = snap
-    changed = int((before != snap).sum())
-    print(f"grid: {WORLD_W}x{WORLD_H}; Act 1 snapshot applied over "
-          f"[{x0},{y0}]-[{x1},{y1}], {changed} cell(s) differed from the cache")
-    return grid
+    # THE PLATE IS THE STEP THAT WAS MISSED FIRST TIME. Pin its source here too, so a plate that
+    # is repainted without re-running this bake is caught instead of quietly drawn.
+    plate_sha = hashlib.sha256(open(PLATE_SOURCE, "rb").read()).hexdigest()
+    if plate_sha != record["plateSourceSha256"]:
+        raise SystemExit(f"{os.path.relpath(PLATE_SOURCE, ROOT)} hashes {plate_sha[:16]} but the "
+                         f"emitted map was built from {record['plateSourceSha256'][:16]}")
+
+    print(f"grid: {WORLD_W}x{WORLD_H}, THE SHIPPED MAP")
+    print(f"  consolidated {record['consolidatedSha256'][:16]} -> plated {record['platedSha256'][:16]}")
+    print(f"  owner plate source {plate_sha[:16]}, plate rect {record['plateRectSha256'][:16]}")
+    return grid, {"plated": record["platedSha256"], "plateSource": plate_sha,
+                  "consolidated": record["consolidatedSha256"], "bundle": record["bundleSha256"]}
 
 
 # ---------------------------------------------------------------------------------------------
@@ -395,7 +447,19 @@ def main() -> None:
     args = ap.parse_args()
 
     S = BAKE_PX
-    grid = load_grid()
+    grid, prov = load_grid()
+
+    # Name every tile the shipped map actually contains, or refuse. The generator emitted a tile
+    # this table had never seen (21) and the bake died on a bare KeyError three steps later; an
+    # unnamed tile is a terrain class nobody chose, and guessing one is how a minimap starts
+    # lying. Fail here, with the census, so the decision is made deliberately.
+    unknown = sorted({int(t) for t in np.unique(grid)} - set(CLASS_OF_TILE))
+    if unknown:
+        counts = ", ".join(f"tile {t} x{int((grid == t).sum())}" for t in unknown)
+        raise SystemExit(f"REFUSING: the shipped map contains tile id(s) CLASS_OF_TILE does not "
+                         f"name: {counts}. Classify them (and check OW_BLOCK in public/dq-tiles.js "
+                         f"for whether they block) before baking.")
+
     truth_idx = np.vectorize(lambda t: CLASSES.index(CLASS_OF_TILE[int(t)]))(grid).astype(np.int64)
 
     fields, lab, iters = build_fields(truth_idx, S)
@@ -414,8 +478,34 @@ def main() -> None:
     payload = Image.fromarray(idx, mode="P")
     flat = [v for c in palette for v in c]
     payload.putpalette(flat + [0] * (768 - len(flat)))
+
     if args.check:
-        print("--check: nothing written")
+        # A STALE ARTEFACT IS THE FAILURE THIS WHOLE CHANGE IS ABOUT, so --check compares the
+        # actual bytes on disk against a fresh bake rather than merely re-proving, in memory,
+        # invariants that a stale PNG would also satisfy. The bake is deterministic (see
+        # DETERMINISM above), so any difference is a real staleness.
+        with tempfile.TemporaryDirectory() as tmp:
+            probe = os.path.join(tmp, "probe.png")
+            payload.save(probe, optimize=True, bits=8)
+            fresh = open(probe, "rb").read()
+        if not os.path.exists(OUT_PNG):
+            raise SystemExit(f"REFUSING: {os.path.relpath(OUT_PNG, ROOT)} does not exist")
+        have = open(OUT_PNG, "rb").read()
+        if have != fresh:
+            raise SystemExit(
+                f"REFUSING: {os.path.relpath(OUT_PNG, ROOT)} is stale -- on disk "
+                f"{hashlib.sha256(have).hexdigest()[:16]}, freshly baked "
+                f"{hashlib.sha256(fresh).hexdigest()[:16]}. Rerun scripts/bake_overworld_minimap.py")
+        want_marks = json.dumps(marks, indent=1)
+        if not os.path.exists(OUT_MARKS) or open(OUT_MARKS, encoding="utf-8").read() != want_marks:
+            raise SystemExit(f"REFUSING: {os.path.relpath(OUT_MARKS, ROOT)} is stale -- "
+                             "rerun scripts/bake_overworld_minimap.py")
+        rows = ", ".join(f"[{MM_KINDS.index(m['t'])},{m['x']},{m['y']}]" for m in marks)
+        if ("  var MM_MARKS = [" + rows + "];\n") not in open(RENDERER, encoding="utf-8").read():
+            raise SystemExit(f"REFUSING: MM_MARKS in {os.path.relpath(RENDERER, ROOT)} does not "
+                             "match the terrain under it -- rerun scripts/bake_overworld_minimap.py")
+        print(f"MINIMAP RELIEF CHECK PASS: relief, marks and MM_MARKS all match the shipped map "
+              f"(plated {prov['plated'][:16]}, plate source {prov['plateSource'][:16]})")
         return
 
     os.makedirs(os.path.dirname(OUT_PNG), exist_ok=True)
