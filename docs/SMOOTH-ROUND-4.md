@@ -1,5 +1,55 @@
 # SMOOTH round 4 — the terrain art is asked for one window-step before it is needed
 
+> [!warning] VERIFIED with one safety claim REFUTED and two scope corrections. 12 runs per side.
+> Full report: `docs/SMOOTH-ROUND-4-REFUTATION.md`. Verdict **MERGE WITH FOLLOW-UP**.
+>
+> **The instrument question is settled: the WATCHDOG is right, LoAF is wrong.** Adjudicated
+> across five methods on one run — LoAF blocking **65.8** (green), watchdog **116.4**, LoAF
+> `duration` **130.8**, rAF worst frame **119.6**, CDP contiguous busy span **117.3**. Four of
+> five read RED. The LoAF-to-watchdog gap is a near-**constant 42-43 ms** across a tenfold
+> change in block size — the fingerprint of a fixed per-task subtraction, because
+> `blockingDuration` is TBT-style and subtracts 50 ms per long task. It also reported
+> `blockingDuration = 0` for a real 130.8 ms frame carrying no script attribution. The two
+> instruments never agreed at round 0 either: 4040 vs 4135 ms is 95 ms apart, invisible only
+> because it was divided by four seconds. **This document's author chose the unflattering number
+> and was right. Round 5's target is ~130-143 ms, not 88.** `scripts/perf_probe.cjs` has been
+> corrected accordingly: its header no longer calls `blockingMs` "primary", scoring now takes
+> `max(watchdog, LoAF duration)` with `blockingMs` excluded, and the disagreement guard is
+> absolute as well as proportional so a constant offset can trip it.
+>
+> **"The ring costs zero peak residency" is REFUTED by direct measurement.** Live peak goes
+> **4-6 → 9-10 chunks**, sitting at the cap on four of six viewports. The error was comparing
+> worst case to worst case (9 vs 9), which hid a **doubling of the typical case**: base sits at 4
+> and only touches 9 occasionally, while the fix holds the full ring everywhere. **Analytically
+> the ring reaches 12 chunks on iPad and 16 on iPad Pro landscape, against
+> `A1A_MAX_CHUNKS = 10` — and iPad ships (`TARGETED_DEVICE_FAMILY = "1,2"`, both orientations).**
+> Not observed above 10 live; flagged as analytic. **This is a follow-up that must be resolved
+> before release, not a documentation nit.**
+>
+> **The splat result is PARTIAL, not a removal.** At the probe's entry cell it is genuinely gone —
+> `splatsTotal` 0 in 12 of 12 whole sessions, with the hook proven live, plus 6 clean door cycles.
+> But **8 cold entries elsewhere still splat 930-1089 ms** (at (30,275) east and (120,240) south).
+> **Base splats identically at those cells, so this is pre-existing and not a regression** — but
+> the claim must read "at the probe's entry cell", and the probe samples one entry cell while
+> others still show 385-1089 ms.
+>
+> **Numbers confirmed and slightly better than claimed:** SMOOTH-1 **2681.5 → 399.6 ms**, no
+> overlap. The fix is bimodal (7 runs ~380, 5 runs ~615), so this document's 614.1 median is the
+> same distribution sampled 8 times — the spreads match exactly. SMOOTH-3 worst **992.9 → 143.5**,
+> frames over 100 ms **2 → 1**; SMOOTH-4 **985.2 → 127.7**. Both still RED. SMOOTH-5 and -6
+> overlap, i.e. not regressed.
+>
+> **The round-1 interaction is CONFIRMED:** the six `c2` URLs re-requested at walk@7854 ms,
+> 1008.8 ms `src→onload` against 7.1 ms of network. The fix's maximum is **30.8 ms**.
+>
+> **Three evidence corrections:** the gate-frame textures are **not** identical between builds at
+> 3 of 4 cells (both are 100% opaque, so the conclusion holds but the stated evidence does not);
+> `water/c0-r0.png` decode costs **62.5 ms**, not free; and the "+9 MB" memory figure is below the
+> noise floor of whole-Chrome RSS, so it establishes nothing either way.
+>
+> **Also noted for the loop, not this round:** the probe's 10 s walk is substantially a **battle**
+> (encounter at 3.1 s), so SMOOTH-2/-3 partly measure combat rather than traversal.
+
 One atomic change: **the Act 1 chunk cache is filled for the ring one window-step out, not for the
 window the camera is standing on.** The procedural splat that covered the wait is gone — from the
 walk and from the load — because there is no longer a wait to cover.

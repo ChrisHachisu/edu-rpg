@@ -39,10 +39,24 @@
  *       11-entry list topping out at 4,040 ms. A probe built on longtask would have printed a
  *       confident "0 ms — GREEN" over a four-second freeze. Two independent methods are therefore
  *       recorded every run and cross-checked:
- *           blockingMs  — LoAF blockingDuration (primary)
+ *           blockingMs  — LoAF blockingDuration. NOT primary, and NOT comparable to the others:
+ *                         it is a TBT-style measure that subtracts 50 ms per long task. Adjudicated
+ *                         2026-08-08 (docs/SMOOTH-ROUND-4-REFUTATION.md) across five methods: its
+ *                         gap to the watchdog is a near-CONSTANT 42-43 ms across a tenfold change
+ *                         in block size, which is the fingerprint of a fixed per-task subtraction,
+ *                         not of the two measuring different things. It also reported
+ *                         blockingDuration = 0 for a real 130.8 ms animation frame that carried no
+ *                         script attribution. It reads GREEN where four other methods read RED.
+ *                         Kept only as a diagnostic. Never score on it.
+ *           durationMs  — LoAF duration, the unsubtracted frame cost. This is the LoAF number that
+ *                         is comparable to the watchdog, and the two agree closely.
  *           driftMs     — an 8 ms setInterval watchdog measuring its own scheduling delay
- *       They agreed to within 2.5% on first measurement (4040 vs 4135 ms). If they ever disagree
- *       materially the run says so rather than quietly preferring one.
+ *       The header previously called blockingMs "primary". It never was — the code has always
+ *       scored on the max — but the wrong word in this comment is what let round 1's refutation
+ *       lean on LoAF as a tie-breaker. Corrected 2026-08-08.
+ *       They did NOT agree to within 2.5% at round 0: 4040 vs 4135 ms is 95 ms apart, and that gap
+ *       was simply invisible when divided by a four-second block. A ratio test cannot see a
+ *       constant offset, which is why the cross-check below is absolute as well as proportional.
  *       Blocks are also reported for the pre-playable window, because that is what SMOOTH-1 is
  *       made of, but SMOOTH-4 itself is scored only on blocks after the first playable frame.
  *
@@ -751,10 +765,19 @@ async function measureOnce(browser, url, viewport, runIndex) {
   });
   // Cross-check: if the observer and the watchdog disagree badly, the run says so instead of
   // quietly trusting whichever is smaller. Only meaningful once either is above the noise floor.
-  const b4 = blocks.blockingMs, d4 = blocks.driftMs;
-  const disagree = Math.max(b4, d4) > 100 && Math.min(b4, d4) < Math.max(b4, d4) * 0.5;
+  const b4 = blocks.blockingMs, d4 = blocks.driftMs, u4 = blocks.durationMs;
+  // Cross-check the watchdog against LoAF's UNSUBTRACTED duration, not against blockingDuration.
+  // blockingDuration subtracts 50 ms per long task, so comparing it here tests a known constant
+  // offset and can only produce false alarms or (as it did until 2026-08-08) silence: at 65.8 vs
+  // 116.4 the ratio is 0.565, just above the 0.5 threshold, so the guard never fired while the two
+  // sat on opposite sides of the 100 ms target line.
+  const cmpLo = Math.min(d4, u4), cmpHi = Math.max(d4, u4);
+  const disagree = cmpHi > 100 && (cmpLo < cmpHi * 0.5 || cmpHi - cmpLo > 60);
   out.smooth4 = {
-    longestBlockMs: r1(Math.max(b4, d4)),      // the honest number is the larger lower bound
+    // Score on the watchdog and LoAF's unsubtracted duration. blockingMs is deliberately EXCLUDED
+    // from the max: it is systematically low by 50 ms per task and would flatter the result.
+    // This is a tightening, adopted 2026-08-08 after adjudication; it can only raise the number.
+    longestBlockMs: r1(Math.max(d4, u4)),      // the honest number is the larger lower bound
     loafBlockingMs: r1(b4), watchdogDriftMs: r1(d4), loafDurationMs: r1(blocks.durationMs),
     longestFrameMs: out.smooth3.maxFrameMs,
     prePlayableBlockingMs: r1(blocks.prePlayableBlockingMs),
@@ -872,7 +895,7 @@ async function measureOnce(browser, url, viewport, runIndex) {
   }
   if (out.smooth5.incomplete) out.voidReason.push(`map swap did not complete: ${out.smooth5.incomplete}`);
   if (out.smooth4.methodsDisagree) {
-    out.voidReason.push(`SMOOTH-4 methods disagree: LoAF ${out.smooth4.loafBlockingMs} ms vs watchdog ${out.smooth4.watchdogDriftMs} ms`);
+    out.voidReason.push(`SMOOTH-4 methods disagree: LoAF duration ${out.smooth4.loafDurationMs} ms vs watchdog ${out.smooth4.watchdogDriftMs} ms`);
   }
 
   if (!process.argv.includes('--keep-open')) await page.close();
