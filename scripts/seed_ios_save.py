@@ -163,6 +163,14 @@ def main() -> int:
     ap.add_argument("--timestamp", type=int, default=1785654759442,
                     help="fixed by default so repeated seeds are byte-identical")
     ap.add_argument("--udid", help="defaults to the only booted simulator")
+    # public/dq-tiles.js carries ~20 diagnostic branches behind window.__DQ_DEBUG__ and, inside
+    # the real app, no way to set it: no URL bar, no console -- the same wall this whole script
+    # exists to get over. dq-tiles.js reads localStorage `dq-debug` at boot, so seeding it here
+    # turns those on for a device run (Capacitor forwards console.log to the unified log, so
+    # `xcrun simctl spawn <udid> log stream --predicate 'process == "App"'` reads them).
+    ap.add_argument("--debug", action="store_true",
+                    help="also seed localStorage['dq-debug']=1, turning on dq-tiles.js's "
+                         "__DQ_DEBUG__ diagnostics on device")
     ap.add_argument("--list-maps", action="store_true")
     args = ap.parse_args()
 
@@ -194,6 +202,10 @@ def main() -> int:
     con = sqlite3.connect(db)
     con.execute("INSERT OR REPLACE INTO ItemTable (key, value) VALUES (?, ?)",
                 (SAVE_KEY, sqlite3.Binary(payload)))
+    # Same UTF-16LE rule as the save: "1" is two bytes, and a Python str here reads as garbage.
+    con.execute("INSERT OR REPLACE INTO ItemTable (key, value) VALUES (?, ?)",
+                ("dq-debug", sqlite3.Binary("1".encode("utf-16-le") if args.debug
+                                            else "0".encode("utf-16-le"))))
     con.commit()
     # WebKit reads through the WAL; without a checkpoint the app can still see the old value.
     con.execute("PRAGMA wal_checkpoint(TRUNCATE)")
