@@ -27,10 +27,22 @@ number.
 
 | Element | Class | Duration | Easing | Ref capture | Locked |
 |---|---|---|---|---|---|
-| Battle command selector "Gilded Rail" — plate travel | `selection.travel` | 120ms (measured 120ms, overshoot peaks 8.6px / 9.7% at 69ms, settles by ~117ms) | `cubic-bezier(.34,1.56,.64,1)` | `design/feel-refs/battle-command-rail-locked.mp4` (+ `.gif`) | 2026-08-07, owner approved (Variant A of `design/mockups/battle-command-selector.html`); the one playful easing on the battle screen |
+| Battle command selector "Gilded Rail" — plate travel | `selection.travel` | 120ms (measured 120ms, overshoot peaks 8.6px / 9.7% at 69ms, settles by ~117ms) | `cubic-bezier(.34,1.56,.64,1)` | `design/feel-refs/battle-command-rail-locked.mp4` (+ `.gif`, `-ja.mp4`) | 2026-08-07, owner approved (Variant A of `design/mockups/battle-command-selector.html`); the one playful easing on the battle screen |
 | Act 1 high-fidelity world traversal G1 | continuous movement + ambient | continuous / 2–3s ambience | fractional camera smoothing / sine | `design/review/overworld-art-blueprint/act-by-act/act1/runtime-v2/g1-port-to-reef.mp4` | 2026-07-15, owner approved direction with hero-scale calibration noted |
 | Act 1 heroine field walk G1 | four-direction walk cycle | 95ms per pose (`0 → A → 0 → B`) | linear frame cadence + subpixel world motion | `design/review/overworld-art-blueprint/act-by-act/act1/runtime-v2/hero-g1/evidence/hero-four-direction-in-world.mp4` | 2026-07-15, owner approved identity and 36px display scale |
 | Act 1 heroine field walk G3 | cardinal-only runtime walk over the retained eight-row G3 sheet + restrained crystal equipment accents | 125ms per pose (`0 → A → 0 → B`) | stable dominant-axis facing with hysteresis + fractional 360-degree world motion and boundary sliding | `design/review/overworld-art-blueprint/act-by-act/act1/runtime-v2/full-world-traversal-r3/evidence/cardinal-facing-125ms-852x1846.webm` | 2026-07-16, owner locked down/left/up/right runtime rows, 125ms candidate, 64px native / 36-world-pixel display, and analog steering |
+
+The Gilded Rail bar is OPAQUE `--bg3`, and the mockup's `#ffffff0a` wash is superseded — do not
+"restore" it. The wash let the battle art through, so an unselected label sat on the biome:
+measured 1.78–2.30:1 on the shipped forest, where the coloured blocks it replaced had accidentally
+guaranteed contrast by giving every label a solid backing. Owner chose the solid bar on 2026-08-07
+over brightening the text (a bright biome can swallow bright text too) and over a per-label pad
+(busier). With the bar opaque the labels measure **6.67–6.69:1 unselected and 8.02:1 selected,
+identical on all seven backgrounds tested** — desert, frozen, canyon, coast, grass_plains,
+boss_celestial_guardian and forest — background-independent by construction, which is the whole
+point of the choice. `--bg3` because the rest of the chrome on that screen is already that exact
+colour (`.enemy-card` `#15161ce0`, `.msg` and `.pbar` `#15161ce6`). The motion is unaffected and
+was re-measured after the change.
 
 The overworld runtime accepts continuous normalized joystick vectors and slides
 naturally along art-authored walkable-region boundaries. Broad ground such as

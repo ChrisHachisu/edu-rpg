@@ -252,9 +252,22 @@
    settles. Colour survives only as the glyph tint: --tint is set per cell from BATTLE_ACT in
    ui-overhaul.js, so Attack still reads red and Defend still reads blue with no colour block on
    the screen. The plate is the only thing on this screen allowed a playful easing.
-   Spec: design/mockups/battle-command-selector.html, variant A. */
+   Spec: design/mockups/battle-command-selector.html, variant A.
+
+   The bar is OPAQUE --bg3, not the mockup's #ffffff0a wash (owner decision 2026-08-07). The wash
+   let the battle art through, so an unselected label was really sitting on whatever the biome
+   happened to be: measured 1.78-2.30:1 on the shipped forest, against 4.5:1 for a label that is
+   the game's primary control and read by eight-year-olds. The old 2x2 grid had accidentally
+   guaranteed contrast by giving every label a saturated block to sit on, so shipping the wash
+   would have made the menu HARDER to read than what is live -- a regression, not a trade-off.
+   --bg3 because the other chrome on this screen is already exactly that colour (.enemy-card
+   #15161ce0, .msg and .pbar #15161ce6); opaque because that is what makes the numbers identical
+   on every background instead of needing per-biome tuning. Cost, accepted: the strip no longer
+   floats over the art. The screen-wide scrim in setBattleBg() is untouched -- with an opaque bar
+   it no longer participates in label contrast at all, and it still serves the enemy card and the
+   monster's separation from the background. */
 #qok-ui .rail{ position:relative; display:grid; grid-template-columns:repeat(4,1fr);
-  background:#ffffff0a; border:1px solid var(--gold-line); border-radius:15px; padding:5px; }
+  background:var(--bg3); border:1px solid var(--gold-line); border-radius:15px; padding:5px; }
 #qok-ui .rail::after{ content:""; position:absolute; left:14px; right:14px; bottom:3px; height:1px;
   background:rgba(201,169,97,.16); pointer-events:none; }   /* the rail line the plate runs on */
 #qok-ui .railplate{ position:absolute; top:5px; bottom:5px; left:5px; width:calc((100% - 10px) / 4);

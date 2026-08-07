@@ -135,7 +135,7 @@ ACT1_OVERLAY_FILES = {
     # bundled rather than fetched; the short version is that it never reached the phone at all.
     # Like ui-overhaul.js above, first override of this file since the baseline was frozen.
     "ui-overhaul.css": (
-        40137, "be1c6d1b7be594b4f6222e6b7dad96043b146b950c219ddc4316f561532f4c9d"),
+        41239, "60fac9df1da27d28635b6c18e7bdf297ed1733d9aa93f7abc39cae0847824576"),
 }
 # 2026-08-06, owner-picked ("Charcoal & Gold Leaf", direction 4 of
 # design/ui-overhaul/chic-style-board.html): the chrome the theme needs on disk rather than
