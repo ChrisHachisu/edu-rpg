@@ -125,7 +125,7 @@ ACT1_OVERLAY_FILES = {
     # the control-orientation setting, into the frame. First override of this file since the
     # v1.17.1 baseline was frozen, which is why it had no entry before.
     "ui-overhaul.js": (
-        108934, "a4e70beec24a01fa21ef5aae905b13f6e88cf5345e79a2e44049a24e93d60937"),
+        110374, "13e613b095ba2a198e936800646be32526e1c370f675a7a1112fbf9544168791"),
     # 2026-08-06, owner pick: "Charcoal & Gold Leaf" (direction 4 of
     # design/ui-overhaul/chic-style-board.html). The same gold as before -- the pixel art, the
     # dungeon plates and the town screens were all approved against it -- spent differently:
@@ -135,7 +135,7 @@ ACT1_OVERLAY_FILES = {
     # bundled rather than fetched; the short version is that it never reached the phone at all.
     # Like ui-overhaul.js above, first override of this file since the baseline was frozen.
     "ui-overhaul.css": (
-        34019, "15bee192e3c32f552bebdde2d17b90832ad9d0d8c823d60b723b157a34a5d764"),
+        35302, "99a4c8c400e6b00e4d69838c5aa2707a27338f9a0691d7e33fd30737bd297a3d"),
 }
 # 2026-08-06, owner-picked ("Charcoal & Gold Leaf", direction 4 of
 # design/ui-overhaul/chic-style-board.html): the chrome the theme needs on disk rather than
@@ -175,6 +175,15 @@ UI_ASSET_FILES = {
     # hasAlpha, and would have shipped a grey chequer behind every icon.
     "ui-icons/tab-icons.png": (
         16813, "3fa2ce1db739431c32daa4c3e02afa7ff8df3f1ec7e2e0846891df07555b8332"),
+    # 2026-08-07, owner, on the battle command mockups: "A looks the best ... have codex generate
+    # new and better icons for that screen". Variant A drops the coloured button blocks, so a
+    # command's colour survives ONLY in its glyph tint -- which is why this is the same kind of
+    # asset as the tab sheet above and not a picture: four 128px cells stamped out of
+    # currentColor. Order: attack, defend, item, flee. It replaces four hand-written <symbol>s,
+    # one of which (qok-shieldw) hardcoded fill="#fff" and could not be tinted at all.
+    # Recovered from the generator's output by scripts/build_battle_icons.py.
+    "ui-icons/battle-icons.png": (
+        15690, "2dcc75ee617f919468bad32f0720fd8c797e60249709cb1af06a606203fb2dbf"),
 }
 # The four tiling terrain materials the renderer above samples. New runtime paths as of
 # 2026-08-01; pinned by hash rather than merely tolerated, because they are shipped art and a

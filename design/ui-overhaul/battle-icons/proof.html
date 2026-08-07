@@ -1,0 +1,117 @@
+<!doctype html>
+<!--
+  Battle command icon proof sheet.
+
+  It loads the REAL public/ui-overhaul.css and the REAL public/ui-icons/*.png rather than
+  copies, so it cannot pass while the shipped files are broken. Serve it from public/:
+
+      cp design/ui-overhaul/battle-icons/proof.html public/__proof.html
+      python3 -m http.server 5199 --directory public
+      open http://127.0.0.1:5199/__proof.html      # then delete public/__proof.html
+
+  The capture in proof-truesize-dpr3.png is this page at 390 CSS px and deviceScaleFactor 3 --
+  a real phone's viewport and pixel density, so the glyphs in it are the size a thumb sees.
+-->
+<html><head><meta charset="utf-8">
+<link rel="stylesheet" href="/ui-overhaul.css">
+<style>
+:root{
+  --bg3:#15161c; --panel:#1d1f27; --panel2:#22242e;
+  --ink:#e8e2d4; --ink-soft:#a49e91;
+  --gold:#c9a961; --gold2:#a98a45; --gold-line:rgba(201,169,97,.40); --gold-glow:rgba(201,169,97,.35);
+  --emerald:#6f9e7e; --emerald2:#557e63; --ruby:#a8564e; --ruby2:#8c4139; --sky:#6f8fa8;
+  --font:system-ui,-apple-system,sans-serif;
+}
+html,body{margin:0;background:#0e0f13;color:var(--ink);font-family:var(--font);}
+.wrap{width:390px;margin:0 auto;padding:14px 16px 22px;box-sizing:border-box;}
+h3{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);
+   font-weight:700;margin:20px 0 8px;}
+h3:first-child{margin-top:0;}
+.note{font-size:10.5px;color:var(--ink-soft);margin:-4px 0 9px;line-height:1.45;}
+
+/* ---- Gilded Rail, verbatim from design/mockups/battle-command-selector.html ---- */
+.rail{position:relative;display:grid;grid-template-columns:repeat(4,1fr);
+  background:#ffffff0a;border:1px solid var(--gold-line);border-radius:15px;padding:5px;}
+.rail::after{content:"";position:absolute;left:14px;right:14px;bottom:3px;height:1px;
+  background:rgba(201,169,97,.16);}
+.railplate{position:absolute;top:5px;bottom:5px;left:5px;width:calc((100% - 10px) / 4);
+  background:var(--gold);border-radius:11px;box-shadow:0 0 0 3px var(--gold-glow);}
+.railcmd{position:relative;z-index:1;appearance:none;border:none;background:transparent;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
+  min-height:60px;padding:8px 2px 9px;color:var(--ink-soft);}
+.railcmd .ic{width:22px;height:22px;}
+.railcmd .lab{font-size:12.5px;font-weight:700;letter-spacing:.02em;white-space:nowrap;}
+.railcmd[data-c="attack"] .ic{color:var(--ruby);}
+.railcmd[data-c="defend"] .ic{color:var(--sky);}
+.railcmd[data-c="item"]   .ic{color:var(--emerald);}
+.railcmd[data-c="flee"]   .ic{color:var(--ink-soft);}
+.railcmd.on{color:var(--bg3);} .railcmd.on .ic{color:var(--bg3);transform:translateY(-2px);}
+.railcmd.on .lab{letter-spacing:.06em;}
+
+/* the shipped bar, so the true-size check covers what actually ships today.
+   #qok-ui is display:none / position:fixed in the real stylesheet because it is an overlay;
+   unpinned here so the whole proof sheet flows down the page. Nothing else is overridden. */
+#qok-ui{display:block!important;position:static!important;inset:auto!important;
+  overflow:visible!important;background:transparent!important;}
+#qok-ui .btn{display:flex;align-items:center;justify-content:center;gap:7px;
+  border:1px solid;border-radius:12px;min-height:46px;font-weight:700;font-size:14px;}
+
+.tabstrip{display:flex;gap:4px;padding:7px 8px;background:#101116;
+  border-top:1px solid rgba(201,169,97,.20);border-radius:0 0 12px 12px;}
+.tabstrip .tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
+  min-height:48px;justify-content:center;font-size:11px;color:var(--ink-soft);}
+.tabstrip .tab .ic{width:22px;height:22px;color:rgba(201,169,97,.60);}
+.tabstrip .tab.on{color:var(--ink);background:rgba(201,169,97,.12);border-radius:12px;}
+.tabstrip .tab.on .ic{color:var(--gold);}
+</style></head>
+<body><div class="wrap" id="qok-ui">
+
+<h3>1 &middot; Gilded Rail, the variant the owner picked</h3>
+<p class="note">No coloured blocks. Every command's colour comes from the glyph tint alone.
+Attack is on the gold plate, so it inverts to the plate's ink.</p>
+<div class="rail">
+  <div class="railplate"></div>
+  <button class="railcmd on" data-c="attack"><i class="ic battleic" data-bi="0"></i><span class="lab">Attack</span></button>
+  <button class="railcmd" data-c="defend"><i class="ic battleic" data-bi="1"></i><span class="lab">Defend</span></button>
+  <button class="railcmd" data-c="item"><i class="ic battleic" data-bi="2"></i><span class="lab">Item</span></button>
+  <button class="railcmd" data-c="flee"><i class="ic battleic" data-bi="3"></i><span class="lab">Flee</span></button>
+</div>
+
+<h3>2 &middot; Gilded Rail with the plate on Defend</h3>
+<p class="note">Same four glyphs, different selection. Proves the tint is per-state, not baked.</p>
+<div class="rail">
+  <div class="railplate" style="transform:translateX(100%)"></div>
+  <button class="railcmd" data-c="attack"><i class="ic battleic" data-bi="0"></i><span class="lab">Attack</span></button>
+  <button class="railcmd on" data-c="defend"><i class="ic battleic" data-bi="1"></i><span class="lab">Defend</span></button>
+  <button class="railcmd" data-c="item"><i class="ic battleic" data-bi="2"></i><span class="lab">Item</span></button>
+  <button class="railcmd" data-c="flee"><i class="ic battleic" data-bi="3"></i><span class="lab">Flee</span></button>
+</div>
+
+<h3>3 &middot; The bar as it ships today &mdash; icons swapped, layout untouched</h3>
+<p class="note">Scope was the icons only. The coloured blocks stay for now; the glyphs are
+white on them exactly as before, but they are masks now, so the colour can move into them
+the day the blocks go.</p>
+<div class="actiongrid">
+  <button class="btn btn-ruby sel"><i class="ic battleic" data-bi="0" style="color:#fff"></i>Attack</button>
+  <button class="btn btn-sky"><i class="ic battleic" data-bi="1" style="color:#fff"></i>Defend</button>
+  <button class="btn btn-em"><i class="ic battleic" data-bi="2" style="color:#fff"></i>Item</button>
+  <button class="btn btn-slate"><i class="ic battleic" data-bi="3" style="color:#fff"></i>Flee</button>
+</div>
+
+<h3>4 &middot; Beside the anchor family they had to join</h3>
+<p class="note">The shipped tab bar, same 22px, same gold. The battle four must read as the
+same pen &mdash; and the sword and bottle must not be mistaken for the tab bar's sword and pouch.</p>
+<div class="tabstrip">
+  <div class="tab on"><i class="ic tabic" data-ti="0"></i>Status</div>
+  <div class="tab"><i class="ic tabic" data-ti="1"></i>Items</div>
+  <div class="tab"><i class="ic tabic" data-ti="2"></i>Equip</div>
+  <div class="tab"><i class="ic tabic" data-ti="3"></i>Settings</div>
+</div>
+<div class="tabstrip" style="border-top:none;">
+  <div class="tab"><i class="ic battleic" data-bi="0"></i>Attack</div>
+  <div class="tab"><i class="ic battleic" data-bi="1"></i>Defend</div>
+  <div class="tab"><i class="ic battleic" data-bi="2"></i>Item</div>
+  <div class="tab"><i class="ic battleic" data-bi="3"></i>Flee</div>
+</div>
+
+</div></body></html>

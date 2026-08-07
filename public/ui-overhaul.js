@@ -38,7 +38,11 @@
       '<circle cx="17" cy="4.5" r="2.3" fill="currentColor"/><g fill="currentColor"><rect x="1.2" y="4.4" width="4.8" height="1.8" rx="0.9" opacity="0.9"/><rect x="0.6" y="8.1" width="5.8" height="1.8" rx="0.9" opacity="0.72"/><rect x="2" y="11.8" width="4.4" height="1.8" rx="0.9" opacity="0.55"/></g></symbol>' +
     '<symbol id="qok-potion" viewBox="0 0 24 24"><path fill="currentColor" d="M9 2h6v2l-1 1v3.2l3.6 6.3A3 3 0 0114 19H10a3 3 0 01-3.6-4.5L10 8.2V5L9 4z"/><rect x="8" y="14" width="8" height="4" fill="#ffffff55"/></symbol>' +
     '<symbol id="qok-shield" viewBox="0 0 24 24"><path d="M12 2.4l8.2 2.7v6.3c0 5.7-3.5 9-8.2 10.9C7.3 20.4 3.8 17.1 3.8 11.4V5.1z" fill="#bf8a4a"/><path d="M12 2.4l8.2 2.7v6.3c0 5.7-3.5 9-8.2 10.9z" fill="#a8763c"/><path d="M12 4.6l6.1 2v5.1c0 4.4-2.7 6.9-6.1 8.4-3.4-1.5-6.1-4-6.1-8.4V6.6z" fill="#6fb6ea"/><path d="M12 4.6l6.1 2v5.1c0 4.4-2.7 6.9-6.1 8.4z" fill="#4f97d0"/><circle cx="12" cy="11" r="2.5" fill="#e0b757"/><circle cx="12" cy="11" r="2.5" fill="none" stroke="#9a7a36" stroke-width=".7"/><path d="M12 2.4l8.2 2.7v6.3c0 5.7-3.5 9-8.2 10.9C7.3 20.4 3.8 17.1 3.8 11.4V5.1z" fill="none" stroke="#6e4f23" stroke-width="1.1"/></symbol>' +
-    '<symbol id="qok-shieldw" viewBox="0 0 24 24"><path d="M12 2.4l8.2 2.7v6.3c0 5.7-3.5 9-8.2 10.9C7.3 20.4 3.8 17.1 3.8 11.4V5.1z" fill="#fff"/></symbol>' +
+    // qok-shieldw is GONE. It hardcoded fill="#fff", so it was the one glyph in here that could
+    // not be tinted at all -- it only ever looked right because it sat on a saturated blue block
+    // that made white the only sane colour. Its sole consumer was BATTLE_ACT's Defend, which now
+    // takes its glyph from the battle-icons mask, and a symbol that cannot follow currentColor is
+    // a trap to leave lying around for the next screen that has no coloured block behind it.
     '<symbol id="qok-armorf" viewBox="0 0 24 24"><ellipse cx="5.4" cy="8.4" rx="3.2" ry="2.7" fill="#8d9bad"/><ellipse cx="18.6" cy="8.4" rx="3.2" ry="2.7" fill="#8d9bad"/><ellipse cx="5.4" cy="7.7" rx="3.1" ry="2" fill="#c2cedd"/><ellipse cx="18.6" cy="7.7" rx="3.1" ry="2" fill="#c2cedd"/><path d="M8 6c1.3 1.6 2.5 2.2 4 2.2s2.7-.6 4-2.2l.6 6.4c0 1.4-.5 2.6-1.1 3.2H8.5c-.6-.6-1.1-1.8-1.1-3.2z" fill="#aab8c9"/><path d="M12 8.2v7.6" stroke="#73828f" stroke-width="1"/><path d="M8.4 9.6c2.4 1.4 4.8 1.4 7.2 0" stroke="#828f9f" stroke-width=".8" fill="none"/><path d="M9.1 9.2c-.45 1.5-.45 3.1 0 4.7" stroke="#cdd8e6" stroke-width="1" fill="none" opacity=".5"/><path d="M14.9 9.2c.45 1.5.45 3.1 0 4.7" stroke="#cdd8e6" stroke-width="1" fill="none" opacity=".5"/><rect x="8" y="16" width="8" height="1.5" rx=".6" fill="#9aaabd"/><rect x="8.5" y="17.9" width="7" height="1.5" rx=".6" fill="#9aaabd"/><rect x="9" y="19.8" width="6" height="1.5" rx=".6" fill="#9aaabd"/><path d="M8 6c1.3 1.6 2.5 2.2 4 2.2s2.7-.6 4-2.2" fill="none" stroke="#e0b757" stroke-width="1.3"/></symbol>' +
     '<symbol id="qok-swordf" viewBox="0 0 24 24"><g transform="translate(12 12) rotate(42) scale(1.12) translate(-12 -12)"><path d="M12 1.4l1.7 3.8v8.6h-3.4V5.2z" fill="#cfd8e3"/><path d="M12 1.4l1.7 3.8v8.6H12z" fill="#a9b6c5"/><rect x="11.6" y="5.4" width="0.8" height="8.2" fill="#eef4fa"/><path d="M12 1.4l.9 2.6h-1.8z" fill="#f2f7fc"/><path d="M6.8 13.6h10.4l-1.1 2.4H7.9z" fill="#e0b757"/><path d="M6.8 13.6h10.4l-.5 1.1H7.3z" fill="#f2d684"/><circle cx="7.1" cy="14.3" r="1.05" fill="#c79a3f"/><circle cx="16.9" cy="14.3" r="1.05" fill="#c79a3f"/><rect x="10.7" y="16" width="2.6" height="4.6" rx=".6" fill="#7a4a28"/><rect x="10.7" y="16.9" width="2.6" height=".7" fill="#5a3620"/><rect x="10.7" y="18.3" width="2.6" height=".7" fill="#5a3620"/><rect x="10.7" y="19.7" width="2.6" height=".7" fill="#5a3620"/><circle cx="12" cy="21.4" r="1.7" fill="#e0b757"/><circle cx="12" cy="21.4" r="1.7" fill="none" stroke="#c79a3f" stroke-width=".5"/><circle cx="11.4" cy="20.9" r=".55" fill="#f2d684"/></g></symbol>' +
     '<symbol id="qok-helmf" viewBox="0 0 24 24"><path d="M5 11.2a7 7 0 0114 0v4.6a2.1 2.1 0 01-2.1 2.1H7.1A2.1 2.1 0 015 15.8z" fill="#aab8c9"/><path d="M12 4.2a7 7 0 017 7v4.6a2.1 2.1 0 01-2.1 2.1H12z" fill="#9aaabd"/><ellipse cx="9" cy="10" rx="2" ry="2.6" fill="#cdd8e6" opacity=".5"/><rect x="5.4" y="12" width="13.2" height="1.8" fill="#6b7888"/><rect x="11.1" y="11.6" width="1.8" height="6.4" rx=".4" fill="#39414f"/><rect x="7.6" y="14.6" width="2.2" height="1.1" rx=".4" fill="#39414f"/><rect x="14.2" y="14.6" width="2.2" height="1.1" rx=".4" fill="#39414f"/><path d="M12 2.2l1.8 3.4h-3.6z" fill="#e3594f"/><path d="M5 11.2a7 7 0 0114 0" fill="none" stroke="#e0b757" stroke-width="1.1"/></symbol>' +
@@ -77,6 +81,18 @@
   // out of currentColor, so the active tab is gold and the rest muted with no second asset and
   // no per-theme re-export. data-ti carries the cell index; the CSS does the positioning.
   function tabIcon(i) { return '<i class="ic tabic" data-ti="' + i + '"></i>'; }
+  // Battle command glyphs, same mechanism and same generated family: ui-icons/battle-icons.png,
+  // one 512x128 sheet, four cells, in the order attack / defend / item / flee.
+  //
+  // They are masks rather than <symbol>s on purpose. The Gilded Rail selector the owner picked
+  // drops the coloured button blocks, so a command's colour has to live ENTIRELY in its glyph --
+  // Attack reads red and Defend reads blue off the tint alone. Baked-colour art cannot do that,
+  // and neither could qok-shieldw, which is why it is gone. `col` is optional: with no argument
+  // the glyph inherits whatever colour its button already sets.
+  function battleIcon(i, col) {
+    return '<i class="ic battleic" data-bi="' + i + '"' +
+      (col ? ' style="color:' + col + '"' : '') + '></i>';
+  }
 
   // ---- hero sprite ----
   // real in-game hero armor colors (only 4 exist: gray/blue/pink/black)
@@ -696,11 +712,15 @@
   //  BATTLE HUD (hybrid: Phaser keeps the monster sprite/effects;
   //  DOM overlays the enemy card, bottom HUD, message, quiz)
   // ============================================================
+  // `bi` is the cell index into ui-icons/battle-icons.png, not a symbol id -- see battleIcon().
+  // `col` stays white here because these four still sit on saturated blocks; the point of the
+  // swap is that the glyph is now TINTABLE, so when the blocks go the colour moves into the
+  // glyph by changing this one value per row and nothing else.
   var BATTLE_ACT = [
-    { key: 'battle.attack', cls: 'btn-ruby', ic: 'sword', col: '#fff' },
-    { key: 'battle.defend', cls: 'btn-sky', ic: 'shieldw', col: '#fff' },
-    { key: 'battle.item', cls: 'btn-em', ic: 'potion', col: '#fff' },
-    { key: 'battle.flee', cls: 'btn-slate', ic: 'run', col: '#fff' }
+    { key: 'battle.attack', cls: 'btn-ruby', bi: 0, col: '#fff' },
+    { key: 'battle.defend', cls: 'btn-sky', bi: 1, col: '#fff' },
+    { key: 'battle.item', cls: 'btn-em', bi: 2, col: '#fff' },
+    { key: 'battle.flee', cls: 'btn-slate', bi: 3, col: '#fff' }
   ];
   function battlePlayerBar(p, st) {
     var max = p.totalMaxHp, r = Math.max(0, Math.min(1, max ? st.hp / max : 0));
@@ -870,7 +890,7 @@
       var ag = '<div class="actiongrid">';
       for (var m = 0; m < BATTLE_ACT.length; m++) {
         var act = BATTLE_ACT[m];
-        ag += '<button class="btn ' + act.cls + (m === bs.menuIndex ? ' sel' : '') + '" data-act="battleMenu" data-i="' + m + '">' + use(act.ic, 'ic', act.col) + esc(Z(act.key)) + '</button>';
+        ag += '<button class="btn ' + act.cls + (m === bs.menuIndex ? ' sel' : '') + '" data-act="battleMenu" data-i="' + m + '">' + battleIcon(act.bi, act.col) + esc(Z(act.key)) + '</button>';
       }
       content = ag + '</div>';
       dyn = 'menu' + bs.menuIndex;
