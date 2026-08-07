@@ -8,7 +8,7 @@
   "design/act1-dungeon-interiors/materials/sunkenCellar/mat-floor.png": "084e8ea02a62c7b89e0748bccfae790e2670fef90abec9d7b89d2907265872fa",
   "design/act1-dungeon-interiors/materials/sunkenCellar/mat-rubble.png": "71dd3db2c56d4c12b70e15448f78abf024b301e45d794a2c0392d5f790d7a7b1",
   "design/act1-dungeon-interiors/materials/sunkenCellar/mat-wall.png": "d033a8169d75f77a4502669cd444895f556f8fd8d2568a9d1bb4e9fc1b5f24c7",
-  "design/act1-dungeon-interiors/sunkenCellar-f2.json": "f5a8fd9ca554e1e0b3e5eb7e357464289096f6ac251d0cc3bd4ddfe04a9b0ba2"
+  "design/act1-dungeon-interiors/sunkenCellar-f2.json": "1b0ec5d45581c3e80bbf94e40c43cf9e3ac540749c87bf8739fc7881c4f7418c"
  },
  "params": {
   "hero": null,
@@ -17,6 +17,6 @@
   "scale": 1,
   "theme": "flooded stone cellar"
  },
- "sha256": "0dbb363c76eb648fbdd54d8d57ae9b447fccd231c8c727761b435ccdaec9301b",
- "writtenAt": "2026-08-06T20:42:54+09:00"
+ "sha256": "d554a6f6dc9a1cdaa6f906f3628ed49f913e07514379a4435e36e7bd600975e6",
+ "writtenAt": "2026-08-07T15:49:29+09:00"
 }

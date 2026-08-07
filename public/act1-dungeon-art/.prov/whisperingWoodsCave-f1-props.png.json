@@ -8,7 +8,7 @@
   "design/act1-dungeon-interiors/materials/whisperingWoodsCave/mat-floor.png": "2c7fcf635208aa05d8339e8d83cbfad3cbd2f740282c3c46ac329a9413c4f68c",
   "design/act1-dungeon-interiors/materials/whisperingWoodsCave/mat-rubble.png": "2b428ae2d66567d0fe0729b504b51c589c898c07897a3ddeddbd33dc62c07bca",
   "design/act1-dungeon-interiors/materials/whisperingWoodsCave/mat-wall.png": "2a51a771cd7dc1d59b646a3b014eb1b6fba7112cedd3242fbd8add821f8b07c0",
-  "design/act1-dungeon-interiors/whisperingWoodsCave-f1.json": "b881f6d945dcdbfd9d1ce60e4740e877164d3a0ae90f3da90a528f4aa50985bf"
+  "design/act1-dungeon-interiors/whisperingWoodsCave-f1.json": "027270a76be2894e6b35dd2ed381177d48c99e8d9432684efebb11be3aab32e2"
  },
  "params": {
   "hero": null,
@@ -17,6 +17,6 @@
   "scale": 1,
   "theme": "root-riddled earth cave"
  },
- "sha256": "815cc6bfd3857a178ceeba9f0bb01e69dc4f3ebb3d72f74c7725ff229644e799",
- "writtenAt": "2026-08-06T21:26:27+09:00"
+ "sha256": "00fb45c180dc4789491229295b660206e572783f067aaf04cab3f9c8665f1ea6",
+ "writtenAt": "2026-08-07T17:17:04+09:00"
 }

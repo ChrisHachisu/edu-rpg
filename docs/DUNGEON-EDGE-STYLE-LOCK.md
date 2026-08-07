@@ -3,6 +3,66 @@
 Owner: *"much better. i love the clear rims. lock this style in the design and finish this
 dungeon."*
 
+## The CANVAS edge — every floor is framed in 3 cells of rock (owner, 2026-08-07)
+
+Everything below is about where rock meets floor *inside* the map. This section is about the
+map's own boundary, and it is the same requirement one step out: **a floor may not have a
+walkable cell within `CROP_MARGIN` = 3 cells of the canvas edge.**
+
+Owner, having played Sunken Cellar B2F: *"the screen shot area in the sunken cellar is cutoff,
+which is a huge issue ... i thought this was an image display issue but apparently the map was
+just created prematurally."* He was standing beside the stairs up, which sat in the **last
+column of the canvas**. There is no cell beyond it to draw rock into, so the room ended in
+black void and read as half-drawn.
+
+It was not one bad floor. `build_dungeon_semantic.py` runs the entry stub out to the authored
+canvas boundary on **every** floor by design ("so the way in surfaces rather than starting
+mid-rock"), and `crop_to_content` then clamped its own frame to that boundary — so all **18**
+floors shipped with a 0-cell rim on one side and the mouth or the stairs standing in the last
+row or column. Nine also carried a 1-cell rim on a second side, from a chamber reaching
+`carve`'s interior clip.
+
+The frame is now applied by PADDING as well as trimming: the crop window may run past the
+authored canvas, and anything outside it reads as rock. `validate()` re-derives the invariant
+from the finished grid, so a floor that loses its frame fails the build rather than shipping.
+
+### Why 3, measured — 2 is not enough, and the north edge is why
+
+> [!danger] A 2-cell rim is a coin flip, and the layout cannot tell which way it lands
+> The obvious number is 2: `face_h` is locked at 0.95 cells below, so a 1-cell rim is entirely
+> band with no lit top — the *"walls are all shadow"* defect, rebuilt at the map edge. 2 was
+> tried, shipped through a full bake, and **measured to still fail on the north edge.**
+>
+> `_treat_shadow_patches` flags any vertical rock run shorter than `need = 2 * face_h` — 1.9
+> cells — as an unsupportable all-shadow lobe. Its preferred remedy is to thicken the run
+> **northward**; at the top of the canvas there is nowhere to grow, so it falls back to the other
+> remedy the owner named and **removes the rock**, re-opening the exact edge the margin exists to
+> close. A 2-cell rim is 2.0 cells on the lattice and ~1.6 after the boundary warp, i.e. under
+> `need`, so whether it survives depends on local warp noise:
+>
+> | floor | 2-cell north rim | drawn rim |
+> |---|---|---|
+> | sunkenCellar-f1 | 2 cells | 98 px — survived |
+> | sunkenCellar-f2 | 2 cells | 94 px — survived |
+> | sunkenCellar-f3 | 2 cells | **0 px — eaten** |
+> | whisperingWoodsCave-f1 | 2 cells | **0 px — eaten** |
+>
+> whisperingWoodsCave-f2, re-baked with the margin-2 fix in place, still put **85 px of floor on
+> row 0**. Same floor at 3: **N = 111 px (2.31 cells)**, and enclosed on all four sides.
+>
+> Three cells is ~2.6 after the warp — 222 lattice px against `need`'s 162 — so the run can never
+> be flagged and the frame cannot be eroded. **Do not reduce this to 2 to recover art surface.**
+
+Only the **north** edge is exposed. East and west rims are never at risk, because `_shadow_only`
+measures *vertical* runs and a side rim is full-height. A south rim can always be thickened into
+the floor above it, so it is repaired rather than removed. North alone has nowhere to grow.
+
+**This does NOT touch the owner-locked size curve.** That curve is authored on the generation
+canvas and is recorded per floor as `authoredWidth`/`authoredHeight`; it still steps +2 per
+dimension per floor, unchanged, and every dungeon's walkable-cell total is unchanged to the
+cell — sunkenCellar 593, whisperingWoodsCave 1083, mistyGrotto 1205, coastalReef 2099,
+crystalCave 3830. Only the derived crop rectangle grew.
+
 ## The lock
 
 **Rock meets floor at a HARD-TERMINATED base band.** In

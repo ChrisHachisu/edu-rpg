@@ -4,11 +4,11 @@
  "generator": "scripts/render_dungeon_material_map.py",
  "generatorSha256": "28a3dbae1bee8013ee2446cb5a35c83129db03ba52528dcec163d815051fce1c",
  "inputs": {
-  "design/act1-dungeon-interiors/sunkenCellar-f3.json": "b1258fdec087057500559d9b449d744b66a1d52028659d09f680892123def0f4"
+  "design/act1-dungeon-interiors/sunkenCellar-f3.json": "cc978bb999660645ad622f85ad6fe80f03c4cb3ed5422048dc18a3e278a392c9"
  },
  "params": {
   "kind": "walkable-mask"
  },
- "sha256": "1eceede7b6526394edbe84cfb4cbccac5b8d49a22858407faa7626bc381ab51a",
- "writtenAt": "2026-08-06T20:44:24+09:00"
+ "sha256": "e4816933998c3855d41c3286a225f0ff083366c7059b623100245ee5cc92f6ea",
+ "writtenAt": "2026-08-07T16:07:14+09:00"
 }

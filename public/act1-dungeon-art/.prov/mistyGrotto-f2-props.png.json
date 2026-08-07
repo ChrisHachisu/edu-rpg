@@ -8,7 +8,7 @@
   "design/act1-dungeon-interiors/materials/mistyGrotto/mat-floor.png": "46bedbc77ecc0205fb3e2696fd7770683f3366ca34e17a8d2cc007165375715b",
   "design/act1-dungeon-interiors/materials/mistyGrotto/mat-rubble.png": "63554da60ff8b50004a82a4503988f61d823033c92b84272aa216e55a08def79",
   "design/act1-dungeon-interiors/materials/mistyGrotto/mat-wall.png": "faf6e8ae7ecb2f0e611f15e095a8a1122b9573023feea75c775c48459edf9978",
-  "design/act1-dungeon-interiors/mistyGrotto-f2.json": "aad8f513223164c9490e9eba7781afee63c623a423bbce17079d798d6308cfbe"
+  "design/act1-dungeon-interiors/mistyGrotto-f2.json": "1a8f56c5b33ccca8cb49e8295134cd65f2fc328b123101a9c3674b38ac704dec"
  },
  "params": {
   "hero": null,
@@ -17,6 +17,6 @@
   "scale": 1,
   "theme": "jagged black fang rock"
  },
- "sha256": "1cfc17ea260106bcd48ae993e19bd894738dfa2cb13a9b29852b984b83564100",
- "writtenAt": "2026-08-06T21:21:09+09:00"
+ "sha256": "ca773c0d752d074890ded0cde6794d5fd1d243aef473840bdf03c85449e5e578",
+ "writtenAt": "2026-08-07T15:40:36+09:00"
 }
