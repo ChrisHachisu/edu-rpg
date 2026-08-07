@@ -1,0 +1,281 @@
+<!doctype html>
+<!--
+  GENERATED FILE. Do not edit design/mockups/battle-icons-solid.html by hand.
+  Source template: design/ui-overhaul/battle-icons/solid/mockup-template.html
+  Builder:         design/ui-overhaul/battle-icons/solid/make_mockup.py
+  Rebuild:         python3 design/ui-overhaul/battle-icons/solid/make_mockup.py
+
+  Every icon sheet is inlined as a data URI, so this file has no network dependency at all and
+  can be opened straight from disk. The four sheets are the SHIPPED public/ui-icons/*.png and the
+  three candidate masks built by solid/build.py from archived, md5-proved codex output.
+-->
+<html><head><meta charset="utf-8">
+<title>Battle command icons: solid candidates</title>
+<style>
+:root{
+  --bg:#0e0f13; --bg3:#15161c; --panel:#1d1f27;
+  --ink:#e8e2d4; --ink-soft:#a49e91; --ink-dim:#6f6a60;
+  --gold:#c9a961; --gold-line:rgba(201,169,97,.40); --gold-glow:rgba(201,169,97,.35);
+  --emerald:#6f9e7e; --ruby:#a8564e; --sky:#6f8fa8;
+  --font:system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);
+  -webkit-font-smoothing:antialiased;}
+.page{max-width:980px;margin:0 auto;padding:26px 20px 70px;}
+
+h1{font-size:19px;letter-spacing:.02em;margin:0 0 6px;font-weight:700;}
+.sub{font-size:12.5px;color:var(--ink-soft);line-height:1.6;margin:0 0 4px;max-width:70ch;}
+.sub b{color:var(--ink);font-weight:600;}
+h2{font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);
+  font-weight:700;margin:32px 0 5px;}
+.note{font-size:11.5px;color:var(--ink-soft);margin:0 0 12px;line-height:1.55;max-width:70ch;}
+.warn{border-left:2px solid var(--gold);padding:9px 0 9px 13px;margin:14px 0 0;
+  font-size:12px;line-height:1.6;color:var(--ink-soft);max-width:70ch;}
+.warn b{color:var(--gold);}
+
+/* ---------------- switcher ---------------- */
+.switch{display:flex;gap:7px;flex-wrap:wrap;margin:16px 0 0;
+  position:sticky;top:0;z-index:20;background:var(--bg);padding:12px 0 12px;}
+.switch button{appearance:none;cursor:pointer;font:inherit;font-size:12px;font-weight:600;
+  color:var(--ink-soft);background:#ffffff08;border:1px solid var(--gold-line);
+  border-radius:10px;padding:8px 13px;line-height:1.25;text-align:left;}
+.switch button .k{display:block;font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--ink-dim);font-weight:700;margin-bottom:2px;}
+.switch button[aria-pressed="true"]{background:var(--gold);color:#15161c;border-color:var(--gold);
+  box-shadow:0 0 0 3px var(--gold-glow);}
+.switch button[aria-pressed="true"] .k{color:#15161c;opacity:.72;}
+
+/* ---------------- the icon mechanism ----------------
+   Identical to the shipped .battleic in public/ui-overhaul.css: a four-cell sheet used as an
+   ALPHA MASK stamped out of currentColor, mask-size 400% with mask-position picking the cell.
+   The only change is that the sheet comes from a CSS variable, so the switcher can swap the
+   whole family without touching any other rule. That is also the proof that every candidate is
+   still a tintable mask: if one had baked colour, it could not be driven this way at all. */
+.bic{display:block;width:22px;height:22px;flex:none;background-color:currentColor;
+  -webkit-mask-image:var(--sheet); mask-image:var(--sheet);
+  -webkit-mask-repeat:no-repeat;   mask-repeat:no-repeat;
+  -webkit-mask-size:400% 100%;     mask-size:400% 100%;}
+.bic[data-i="0"]{-webkit-mask-position:0 0;        mask-position:0 0;}
+.bic[data-i="1"]{-webkit-mask-position:33.3333% 0; mask-position:33.3333% 0;}
+.bic[data-i="2"]{-webkit-mask-position:66.6667% 0; mask-position:66.6667% 0;}
+.bic[data-i="3"]{-webkit-mask-position:100% 0;     mask-position:100% 0;}
+.tic{display:block;width:22px;height:22px;flex:none;background-color:currentColor;
+  -webkit-mask-image:var(--tabsheet); mask-image:var(--tabsheet);
+  -webkit-mask-repeat:no-repeat;      mask-repeat:no-repeat;
+  -webkit-mask-size:400% 100%;        mask-size:400% 100%;}
+.tic[data-i="0"]{-webkit-mask-position:0 0;        mask-position:0 0;}
+.tic[data-i="1"]{-webkit-mask-position:33.3333% 0; mask-position:33.3333% 0;}
+.tic[data-i="2"]{-webkit-mask-position:66.6667% 0; mask-position:66.6667% 0;}
+.tic[data-i="3"]{-webkit-mask-position:100% 0;     mask-position:100% 0;}
+
+/* ---------------- Gilded Rail, verbatim from design/mockups/battle-command-selector.html --- */
+.phone{width:390px;padding:14px 16px 18px;background:var(--bg3);border-radius:14px;
+  border:1px solid #ffffff0d;}
+.rail{position:relative;display:grid;grid-template-columns:repeat(4,1fr);
+  background:#ffffff0a;border:1px solid var(--gold-line);border-radius:15px;padding:5px;}
+.rail::after{content:"";position:absolute;left:14px;right:14px;bottom:3px;height:1px;
+  background:rgba(201,169,97,.16);}
+.railplate{position:absolute;top:5px;bottom:5px;left:5px;width:calc((100% - 10px) / 4);
+  background:var(--gold);border-radius:11px;box-shadow:0 0 0 3px var(--gold-glow);}
+.railcmd{position:relative;z-index:1;appearance:none;border:none;background:transparent;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
+  min-height:60px;padding:8px 2px 9px;color:var(--ink-soft);font-family:inherit;}
+.railcmd .lab{font-size:12.5px;font-weight:700;letter-spacing:.02em;white-space:nowrap;}
+.railcmd[data-c="attack"] .bic{color:var(--ruby);}
+.railcmd[data-c="defend"] .bic{color:var(--sky);}
+.railcmd[data-c="item"]   .bic{color:var(--emerald);}
+.railcmd[data-c="flee"]   .bic{color:var(--ink-soft);}
+.railcmd.on{color:var(--bg3);}
+.railcmd.on .bic{color:var(--bg3);transform:translateY(-2px);}
+.railcmd.on .lab{letter-spacing:.06em;}
+
+/* ---------------- shipped tab strip ---------------- */
+.tabstrip{display:flex;gap:4px;padding:7px 8px;background:#101116;
+  border-top:1px solid rgba(201,169,97,.20);}
+.tabstrip .tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
+  min-height:48px;justify-content:center;font-size:11px;color:var(--ink-soft);}
+.tabstrip .tab .tic,.tabstrip .tab .bic{color:rgba(201,169,97,.60);}
+.tabstrip .tab.on{color:var(--ink);background:rgba(201,169,97,.12);border-radius:12px;}
+.tabstrip .tab.on .tic{color:var(--gold);}
+.stack{width:390px;border-radius:12px;overflow:hidden;border:1px solid #ffffff0d;}
+.rowlab{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-dim);
+  font-weight:700;padding:7px 10px 0;background:#101116;}
+
+/* ---------------- side by side decider ---------------- */
+.cols{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start;}
+.dec{border:1px solid #ffffff12;border-radius:12px;background:var(--bg3);padding:0 0 13px;
+  width:462px;max-width:100%;}
+.dechd{font-size:10px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;
+  padding:10px 14px 9px;color:var(--gold);border-bottom:1px solid #ffffff10;}
+.dec.ctl .dechd{color:var(--ink-dim);}
+/* space-evenly, not space-around, and a min-width-0 flex child per glyph: the boot is the widest
+   glyph in the set and it escaped the card when the row was too narrow for four magnified cells. */
+.decrow{display:flex;justify-content:space-evenly;align-items:center;padding:18px 10px 8px;
+  overflow:hidden;}
+.decrow.small{padding:6px 10px 12px;border-top:1px solid #ffffff0a;margin-top:6px;}
+.decfoot{font-size:11px;color:var(--ink-soft);padding:2px 14px 0;line-height:1.55;}
+
+/* ---------------- table ---------------- */
+table{border-collapse:collapse;font-size:11.5px;margin-top:6px;width:100%;max-width:760px;}
+th,td{text-align:left;padding:7px 10px;border-bottom:1px solid #ffffff0f;}
+th{color:var(--gold);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;
+  font-weight:700;}
+td.n{font-variant-numeric:tabular-nums;color:var(--ink);}
+tr.ctlrow td{color:var(--ink-dim);}
+.band{color:var(--ink-dim);font-size:11px;margin-top:8px;}
+.tag{display:inline-block;font-size:9.5px;font-weight:700;letter-spacing:.1em;
+  text-transform:uppercase;padding:2px 6px;border-radius:5px;margin-left:6px;}
+.tag.out{background:rgba(168,86,78,.22);color:#d68d85;}
+.tag.in{background:rgba(111,158,126,.20);color:#8fc7a2;}
+.zoomwarn{font-size:11px;color:var(--ink-dim);margin:10px 0 0;}
+</style></head>
+<body><div class="page">
+
+<h1>Battle command icons: three routes to solid</h1>
+<p class="sub">The shipped glyphs were calibrated to the bottom tab bar, so they are hairline
+outlines at 22 px. That is why they read flimsy. Every candidate below is heavier than the tab
+family on purpose, which means <b>adopting any of them breaks the match with the tab bar</b>.
+Panel 3 shows exactly what that costs, on every candidate. Whether the tabs should follow, or
+whether the battle bar should deliberately read heavier because it is the primary combat control,
+is your call.</p>
+<p class="zoomwarn">View at 100% browser zoom. Every icon on this page is at true device size,
+22 px, except the one row that is explicitly labelled as magnified.</p>
+
+<div class="switch" id="sw"></div>
+
+<h2>1 &middot; Gilded Rail, Attack selected</h2>
+<p class="note">The shipped HUD has no coloured button blocks, so each command's colour lives
+entirely in the glyph tint. Attack sits on the gold plate and inverts to the plate's ink.</p>
+<div class="phone">
+  <div class="rail">
+    <div class="railplate"></div>
+    <button class="railcmd on" data-c="attack"><i class="bic" data-i="0"></i><span class="lab">Attack</span></button>
+    <button class="railcmd" data-c="defend"><i class="bic" data-i="1"></i><span class="lab">Defend</span></button>
+    <button class="railcmd" data-c="item"><i class="bic" data-i="2"></i><span class="lab">Item</span></button>
+    <button class="railcmd" data-c="flee"><i class="bic" data-i="3"></i><span class="lab">Flee</span></button>
+  </div>
+</div>
+
+<h2>2 &middot; Same rail, Defend selected</h2>
+<p class="note">Attack is now red and Defend has inverted to the plate ink. The tint moves with
+the selection, which is only possible because the sheet is still an alpha mask. A candidate with
+baked colour would fail here rather than look wrong.</p>
+<div class="phone">
+  <div class="rail">
+    <div class="railplate" style="transform:translateX(100%)"></div>
+    <button class="railcmd" data-c="attack"><i class="bic" data-i="0"></i><span class="lab">Attack</span></button>
+    <button class="railcmd on" data-c="defend"><i class="bic" data-i="1"></i><span class="lab">Defend</span></button>
+    <button class="railcmd" data-c="item"><i class="bic" data-i="2"></i><span class="lab">Item</span></button>
+    <button class="railcmd" data-c="flee"><i class="bic" data-i="3"></i><span class="lab">Flee</span></button>
+  </div>
+</div>
+
+<h2>3 &middot; What it costs beside the tab bar</h2>
+<p class="note">The shipped tab strip on top, the selected candidate directly under it, same
+22 px and same gold. The two rows are meant to look like one family today. Flip the switcher and
+watch the bottom row pull away from the top one.</p>
+<div class="stack">
+  <div class="rowlab">Shipped tab bar, unchanged</div>
+  <div class="tabstrip">
+    <div class="tab on"><i class="tic" data-i="0"></i>Status</div>
+    <div class="tab"><i class="tic" data-i="1"></i>Items</div>
+    <div class="tab"><i class="tic" data-i="2"></i>Equip</div>
+    <div class="tab"><i class="tic" data-i="3"></i>Settings</div>
+  </div>
+  <div class="rowlab">Selected candidate, same size and colour</div>
+  <div class="tabstrip" style="border-top:none;">
+    <div class="tab"><i class="bic" data-i="0"></i>Attack</div>
+    <div class="tab"><i class="bic" data-i="1"></i>Defend</div>
+    <div class="tab"><i class="bic" data-i="2"></i>Item</div>
+    <div class="tab"><i class="bic" data-i="3"></i>Flee</div>
+  </div>
+</div>
+<p class="warn"><b>The Equip tab is a sword and the Items tab is a pouch.</b> Both can be on
+screen in the same session as the battle bar, so Attack has to stay clearly not-that-sword. It
+keeps the diagonal angle, the broad leaf blade and the swept crescent guard on all three
+candidates; only the pommel changes, and only on candidate A, where a pure silhouette cannot
+hold an open ring.</p>
+
+<h2>4 &middot; All four at once, no switching</h2>
+<p class="note">This is the panel that decides it. The bottom row of each card is 22 px, the size
+a thumb actually sees. The magnified row above it is only there to judge the drawing, and art
+that reads at 96 px and mushes at 22 px has passed a review it should have failed.</p>
+<div class="cols" id="deciders"></div>
+
+<h2>5 &middot; Measured</h2>
+<p class="note">Stroke to optical size, measured on each candidate's own source pixels by the
+shipped measurement in scripts/build_battle_icons.py. It is the number the shipped set was ranked
+on. For the two filled candidates it stops meaning pen weight and starts meaning body mass, so
+ink share of the icon's own box is given beside it as the honest comparison.</p>
+<table id="mtab"></table>
+<p class="band">Tab anchor band, measured on the tab family's own pixels: 5.91% to 6.67%. The
+shipped battle set was calibrated into it and landed at 5.92% to 6.24%, except Attack at 5.56%,
+which is the one glyph that is thinner than the rest and part of why the set reads uneven.</p>
+
+</div>
+<script>
+const SETS = __SETS__;
+const MEAS = __MEAS__;
+const order = ["a","b","c","ctl"];
+let cur = "a";
+
+document.documentElement.style.setProperty("--tabsheet", "url(" + __TABSHEET__ + ")");
+
+const sw = document.getElementById("sw");
+order.forEach(k => {
+  const b = document.createElement("button");
+  b.innerHTML = '<span class="k">' + SETS[k].kicker + '</span>' + SETS[k].name;
+  b.onclick = () => pick(k);
+  b.dataset.k = k;
+  sw.appendChild(b);
+});
+
+function pick(k){
+  cur = k;
+  document.documentElement.style.setProperty("--sheet", "url(" + SETS[k].png + ")");
+  [...sw.children].forEach(b => b.setAttribute("aria-pressed", b.dataset.k === k));
+  // Mirror the selection into the hash so a particular comparison can be linked or reopened,
+  // and so the state is reachable without a click when the page is captured headless.
+  if (location.hash !== "#" + k) history.replaceState(null, "", "#" + k);
+}
+
+// Panel 4 is deliberately NOT driven by the switcher: the whole point of it is seeing all four
+// families next to each other without a click in between, so each card pins its own sheet.
+const dec = document.getElementById("deciders");
+order.forEach(k => {
+  const s = SETS[k];
+  const d = document.createElement("div");
+  d.className = "dec" + (k === "ctl" ? " ctl" : "");
+  let rows = "";
+  for (const [cls, size] of [["decrow", 96], ["decrow small", 22]]) {
+    rows += '<div class="' + cls + '">';
+    for (let i = 0; i < 4; i++) {
+      rows += '<i class="bic" data-i="' + i + '" style="--sheet:url(' + s.png +
+              ');width:' + size + 'px;height:' + size + 'px;color:var(--gold)"></i>';
+    }
+    rows += '</div>';
+  }
+  d.innerHTML = '<div class="dechd">' + s.name + '</div>' + rows +
+                '<div class="decfoot">' + s.blurb + '</div>';
+  dec.appendChild(d);
+});
+
+const t = document.getElementById("mtab");
+t.innerHTML = '<tr><th>Set</th><th>Attack</th><th>Defend</th><th>Item</th><th>Flee</th>' +
+              '<th>Ink share</th><th>vs tab band</th></tr>' +
+  order.map(k => {
+    const m = MEAS[k];
+    return '<tr class="' + (k === "ctl" ? "ctlrow" : "") + '"><td>' + SETS[k].name + '</td>' +
+      m.stroke.map(v => '<td class="n">' + v.toFixed(2) + '%</td>').join("") +
+      '<td class="n">' + m.ink + '</td><td>' + m.verdict + '</td></tr>';
+  }).join("");
+
+// Endpoint first: the boldest candidate is what opens, per the owner's standing rule.
+pick(order.includes(location.hash.slice(1)) ? location.hash.slice(1) : "a");
+addEventListener("hashchange", () => {
+  const k = location.hash.slice(1);
+  if (order.includes(k) && k !== cur) pick(k);
+});
+</script>
+</body></html>

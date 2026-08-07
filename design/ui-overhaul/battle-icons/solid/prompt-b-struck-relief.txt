@@ -1,0 +1,38 @@
+Generate ONE image: a single horizontal sheet of four game UI command icons, side by side in one
+row, evenly spaced, on one canvas.
+
+Background: transparent if you can produce real transparency. If you cannot, use a FLAT SOLID
+near-black background, one uniform dark colour across the whole canvas. Do not paint a
+transparency chequerboard pattern. Draw the icons in pure white.
+
+The attached reference image is the CURRENT version of these same four icons. Match its SUBJECTS,
+its COMPOSITION and its left-to-right ORDER exactly. Change only the CONSTRUCTION, described at the
+bottom.
+
+Order, left to right:
+
+1. ATTACK - a sword held diagonally, blade pointing up and to the right, hilt down and to the
+   left. A broad leaf-shaped blade. A swept crescent crossguard curving toward the point. A ring
+   pommel. The sword is still, with no motion lines, no slash arc, no impact marks and no sparks.
+2. DEFEND - a heater shield, point down, with a round central boss.
+3. ITEM - a potion bottle with a round belly, a short straight neck and a squared stopper on top.
+4. FLEE - a running boot in profile facing right, with three straight speed lines trailing behind
+   it.
+
+Each icon fills about the same optical area and sits centred in its own cell. Round caps and round
+joins throughout. Pure flat white only: no grey, no gradients, no shading, no texture.
+
+CONSTRUCTION: solid filled shapes with a little interior detail knocked out as negative space. Each
+icon is a bold white solid mass, and a small amount of detail is cut OUT of that mass so the dark
+background shows through as thin dark lines and holes inside the white.
+
+Cut out of the white, and nothing else:
+  - a narrow fuller groove running down the centre of the sword blade, and the centre of the ring
+    pommel so the pommel reads as a ring
+  - a ring around the shield's central boss, and one thin chevron seam across the shield face
+  - the seam under the bottle's stopper, and a liquid level line across the bottle's belly
+  - the seam above the boot's sole, and the boot's heel line
+
+Everything else stays fully filled. Roughly 85 percent of each icon's area is solid white and the
+knocked-out detail is thin, so each icon still reads as one solid mass at a glance. Flee's three
+speed lines stay solid tapered white bars sitting outside the boot.

@@ -1,0 +1,18 @@
+{
+ "candidate": "a-cast-iron",
+ "model": "gpt-5.6-terra",
+ "codexSession": "019fdb7b-03e8-7772-ba21-c5f05b0c0bc2",
+ "codexImage": "exec-bf637521-b205-44c3-8902-9fcb985ad9cd.png",
+ "generatedFile": "/Users/christopherhachisu/.codex/generated_images/019fdb7b-03e8-7772-ba21-c5f05b0c0bc2/exec-bf637521-b205-44c3-8902-9fcb985ad9cd.png",
+ "md5": "770d8ba0df74e01d5a7d13cdad1e6214",
+ "images_in_session": [
+  "exec-be7bce78-f784-4cdd-a576-603ebd9be164.png",
+  "exec-bf637521-b205-44c3-8902-9fcb985ad9cd.png",
+  "exec-e08ac0c0-dceb-451f-87c5-8b1f8a0f81d2.png"
+ ],
+ "reference": "design/ui-overhaul/battle-icons/source-generated.png",
+ "rc": 0,
+ "supersededImage": "exec-e08ac0c0-dceb-451f-87c5-8b1f8a0f81d2.png",
+ "supersededMd5": "a01c78eea4f39cdee139e678d4335a5a",
+ "adoptedBy": "--adopt (see PROVENANCE.md for why this frame)"
+}

@@ -1,0 +1,35 @@
+Generate ONE image: a single horizontal sheet of four game UI command icons, side by side in one
+row, evenly spaced, on one canvas.
+
+Background: transparent if you can produce real transparency. If you cannot, use a FLAT SOLID
+near-black background, one uniform dark colour across the whole canvas. Do not paint a
+transparency chequerboard pattern. Draw the icons in pure white.
+
+The attached reference image is the CURRENT version of these same four icons. Match its SUBJECTS,
+its COMPOSITION and its left-to-right ORDER exactly. Change only the CONSTRUCTION, described at the
+bottom.
+
+Order, left to right:
+
+1. ATTACK - a sword held diagonally, blade pointing up and to the right, hilt down and to the
+   left. A broad leaf-shaped blade. A swept crescent crossguard curving toward the point. An open
+   ring pommel. The sword is still, with no motion lines, no slash arc, no impact marks and no
+   sparks.
+2. DEFEND - a heater shield, point down, with a round central boss drawn as a ring.
+3. ITEM - a potion bottle with a round belly, a short straight neck, a squared stopper on top and
+   a liquid level line across the belly.
+4. FLEE - a running boot in profile facing right, with a sole line and three straight speed lines
+   trailing behind it.
+
+Each icon fills about the same optical area and sits centred in its own cell. Round caps and round
+joins throughout. Pure flat white only: no grey, no gradients, no shading, no texture.
+
+CONSTRUCTION: a monoline outline drawing, the same construction as the reference, drawn with a far
+heavier pen. Keep the interiors open so every icon is still a hollow line drawing, and keep every
+interior feature listed above.
+
+Stroke weight is the one thing that must change, and it must change a lot. Draw every line at
+TWELVE PERCENT of the icon's optical size: on an icon that measures 1000 px across, every stroke is
+about 120 px thick. That is roughly twice the reference's stroke weight, and it should look
+unmistakably heavier than the reference when the two are placed side by side. Keep the weight
+uniform within each icon and identical across all four.

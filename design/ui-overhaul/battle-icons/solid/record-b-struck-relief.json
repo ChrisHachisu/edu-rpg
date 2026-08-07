@@ -1,0 +1,14 @@
+{
+ "candidate": "b-struck-relief",
+ "model": "gpt-5.6-terra",
+ "codexSession": "019fdb7e-b927-74a3-a6ad-dbbf8eba1718",
+ "codexImage": "exec-f788e7f4-81f7-4e4c-abdb-28bccb44e55b.png",
+ "generatedFile": "/Users/christopherhachisu/.codex/generated_images/019fdb7e-b927-74a3-a6ad-dbbf8eba1718/exec-f788e7f4-81f7-4e4c-abdb-28bccb44e55b.png",
+ "md5": "0647844c979a471a6177e2918490f923",
+ "images_in_session": [
+  "exec-7202c7ca-34a0-485a-8711-6f62d2a5a420.png",
+  "exec-f788e7f4-81f7-4e4c-abdb-28bccb44e55b.png"
+ ],
+ "reference": "design/ui-overhaul/battle-icons/source-generated.png",
+ "rc": 0
+}

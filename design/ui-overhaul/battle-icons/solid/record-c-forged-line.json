@@ -1,0 +1,15 @@
+{
+ "candidate": "c-forged-line",
+ "model": "gpt-5.6-terra",
+ "codexSession": "019fdb80-f6ff-7383-ae2a-80fc4c95cf66",
+ "codexImage": "exec-c5726317-85d1-418b-a0da-22c9b8fee12f.png",
+ "generatedFile": "/Users/christopherhachisu/.codex/generated_images/019fdb80-f6ff-7383-ae2a-80fc4c95cf66/exec-c5726317-85d1-418b-a0da-22c9b8fee12f.png",
+ "md5": "0dda64f3f2f46a0176f97d21a4779556",
+ "images_in_session": [
+  "exec-588f98f4-e9d8-42ad-a7f6-99304e432eeb.png",
+  "exec-5a5badec-5af8-4d6c-b279-a5842b592255.png",
+  "exec-c5726317-85d1-418b-a0da-22c9b8fee12f.png"
+ ],
+ "reference": "design/ui-overhaul/battle-icons/source-generated.png",
+ "rc": 0
+}
