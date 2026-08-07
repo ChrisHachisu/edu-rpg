@@ -88,7 +88,25 @@ ACT1_OVERLAY_FILES = {
     # save format round-trips to itself (measured: 742 of 754 reportable cells reload unchanged, the
     # other 12 settle one cell north once; largest rescue nudge 28 px against a 96 px bound).
     "dq-tiles.js": (
-        247945, "509556b94da5b2d87e8d7438fd3b5b557ebcfc835d63f9bb8259ed35f101013d"),
+        255673, "fe1679ed92b05bee0a1c48ea8299b29068ecb9571a393fc77b2ce2b1174ab0ac"),
+    # 2026-08-07: THE OVERWORLD'S COLLISION SHAPE, baked -- the overworld's answer to the dungeons'
+    # `<floor>-walk.png` above, and as much a shipped authority as they are. Deriving it at runtime
+    # was correct and unaffordable: owmBuild() evaluated waterField/mountainField per pixel over a
+    # 1584x1872 window and chamfered the result, measured on device at 434-492 ms (mean ~470 ms,
+    # six samples over two launches) against a 40 ms budget, once every 2.2 s of walking. This is
+    # the same field, evaluated once at build time over the whole Act 1 plate and stored as a
+    # clamped chamfer distance, sparse by map cell -- 3,864 cells carry pixels, the other 41,424
+    # are one of two sentinels. The runtime assembles a window out of it with a fill or a copy per
+    # cell instead of 2.965 M field evaluations plus two sweeps.
+    # A RAW BUFFER, not a PNG, deliberately: the dungeon masks are thresholded at >127 and so are
+    # immune to what a canvas does to their pixels, while this carries EXACT distances and
+    # drawImage/getImageData is not a documented byte-preserving path on iOS. Pinned by hash for
+    # the reason the dungeon masks are -- a silent swap would move the coastline the hero stops at.
+    # Reproducible: scripts/bake_act1_overworld_walk.mjs, whose --check verifies the digest of its
+    # three inputs (the frozen bundle's generator, dq-tiles.js's consolidator, dq-tiles.js's own
+    # field functions, which the bake SLICES rather than re-implements so the two cannot drift).
+    "act1-overworld-walk.bin": (
+        9158720, "064417164c34386b5e420aaa2f16a45d6ccd7372b43f80dc3cb6e5fe4b160d38"),
     # 2026-08-03, owner direction ("please redo the collision setting based on what i created (my
     # paint)"): the Act-1 collision plate is now generated from the OWNER'S PAINTED TERRAIN
     # (owner-terrain.json acts.1 + continent-macro-g3/land-mask.npy) instead of the generated

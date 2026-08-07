@@ -2343,15 +2343,20 @@
     return OWM_TILE_BLOCK;
   }
   var owmState=null;
+  // Presence scan, as drawTerrain does it, WITH one cell of margin -- fieldAt interpolates across
+  // tile CENTRES, so a mass one cell outside the window still reaches into it. Bit 1 water (and
+  // bridge, which waterField counts), bit 2 mountain.
+  function owmPresence(map,X0,Y0,winW,winH){
+    var p=0, sx, sy, sv;
+    for(sy=-1;sy<=winH && p!==3;sy++) for(sx=-1;sx<=winW;sx++){
+      sv=et(map,X0+sx,Y0+sy);
+      if(sv===2||sv===5) p|=1; else if(sv===4) p|=2; }
+    return p;
+  }
   function owmBuild(map,X0,Y0,winW,winH){
     var cw=winW*N, ch=winH*N, wox=X0*N, woy=Y0*N, n=cw*ch;
     if(!(n>0)) return null;
-    // Presence scan, as drawTerrain does it, WITH one cell of margin -- fieldAt interpolates across
-    // tile CENTRES, so a mass one cell outside the window still reaches into it.
-    var hasW=false, hasM=false, sx, sy, sv;
-    for(sy=-1;sy<=winH && !(hasW&&hasM);sy++) for(sx=-1;sx<=winW;sx++){
-      sv=et(map,X0+sx,Y0+sy);
-      if(sv===2||sv===5) hasW=true; else if(sv===4) hasM=true; }
+    var pres=owmPresence(map,X0,Y0,winW,winH), hasW=!!(pres&1), hasM=!!(pres&2);
     var dist=new Uint16Array(n), INF=60000, i,x,y,v;
     if(!hasW && !hasM){ for(i=0;i<n;i++) dist[i]=INF; }          // open ground: nothing to collide with
     else for(y=0;y<ch;y++){ var wy=woy+y, row=y*cw, ty=(wy/N)|0;
@@ -2377,19 +2382,132 @@
         dist[i]=v; } }
     return { W:cw, H:ch, ox:wox, oy:woy, dist:dist, prop:owmTileBlock() };
   }
+  /* ---- THE SAME FIELD, BAKED -----------------------------------------------------------------
+     owmBuild above is CORRECT and unaffordable. Measured on device (iPhone 17 Pro sim, six samples
+     over two launches): 434-492 ms, mean ~470 ms, for the 1584x1872 window a 402x702 viewport asks
+     for -- twelve times the 40 ms budget, once every 2.2 s of walking, i.e. about a fifth of
+     walking time spent on a frozen main thread in half-second blocks. Split by phase, the per-pixel
+     waterField/mountainField evaluation is ~87% of it and the two chamfer sweeps the rest, so
+     making the mask cheaper could not have reached budget on its own either.
+
+     THE DUNGEONS ALREADY SOLVED THIS AND THE ANSWER WAS NEVER "OPTIMISE THE LOOP": they read a
+     baked artefact (a1mMaskFor's `<floor>-walk.png`) instead of deriving one. So does this, one
+     step further -- what is baked is the CHAMFER DISTANCE, not the mask, which removes the sweeps
+     as well as the field. scripts/bake_act1_overworld_walk.mjs evaluates the very functions this
+     file paints with, over the whole Act 1 plate, and writes act1-overworld-walk.bin.
+
+     WHY IT IS THE SAME FIELD AND NOT A LOOKALIKE. The bake script does not re-implement
+     waterField: it slices the function out of THIS file and runs it, so the two cannot drift, and
+     the .bin's header carries a digest of that source (plus the frozen bundle and the consolidated
+     map) which `--check` verifies. Compared pixel for pixel against owmBuild over seven real
+     windows, 20.8 M px, the two agree EXACTLY on every value the collider can act on. They differ
+     only in a <=20 px band along the window rim, where owmBuild -- chamfering its window in
+     isolation -- cannot see water just outside the frame and reports it as far. The hero is never
+     nearer than 232 px to a rim (window geometry: 232/370/777/927 px for right/bottom/left/top at
+     the worst of the twelve alignments) and a1mUnstick reaches 288 px, so that band is unreachable
+     -- and inside it the bake is the more correct of the two anyway.
+
+     WHY IT CLAMPS AT 255 THIRDS (85 px). a1mNeed's largest requirement is A1M_FOOT*A1M_CH +
+     A1M_LEAN*A1M_CH = 48 thirds, so 49 and 4900 are already the same answer to a1mFree, a1mNeed
+     and a1mSlide. Only a1mUnstick reads the raw magnitude, to rank rescue candidates by how clear
+     they are, and 85 px is set high enough that its 288 px search still sees an ordering anywhere
+     within reach of a coast. Deep inland every candidate ties -- which is exactly what today's
+     window chamfer already does whenever the window holds no water at all.
+
+     FALLBACK-SAFE, three ways: no .bin (404, malformed, still loading) -> owmBuild; a window that
+     reaches outside the baked plate -> owmBuild; and __DQ_WIGGLE__ or __DQ_WATER_THRESH__ moved
+     off the values the bake was taken at -> owmBuild, so the field knobs still re-tune the
+     coastline live for review exactly as they did before. */
+  var OWM_UNBAKED=0xFFFD, OWM_BLOCKED=0xFFFE, OWM_FARCELL=0xFFFF;
+  var owmBake=null, owmBakeReq=false;
+  function owmBakeLoad(){                                        // once, like a1dFetch's manifest
+    if(owmBakeReq) return; owmBakeReq=true;
+    try{
+      var r=new XMLHttpRequest(); r.open('GET','act1-overworld-walk.bin',true);
+      r.responseType='arraybuffer';
+      r.onload=function(){ try{ owmBake=owmBakeParse(r.response)||null; }catch(e){ owmBake=null;
+        if(window.__DQ_DEBUG__) console.log('dq owm bake '+e); } };
+      r.onerror=function(){ owmBake=null; };                     // no bake -> owmBuild, as before
+      r.send();
+    }catch(e){ owmBake=null; }
+  }
+  function owmBakeParse(ab){
+    if(!ab || ab.byteLength<64) return null;
+    var h=new DataView(ab);
+    if(h.getUint32(0,true)!==0x574F3141) return null;             // 'A1OW'
+    if(h.getUint16(4,true)!==1) return null;                      // format version
+    if(h.getUint16(6,true)!==N) return null;                      // baked at this file's px/cell
+    var mw=h.getUint16(8,true), mh=h.getUint16(10,true), far=h.getUint16(12,true);
+    var nb=h.getUint32(16,true), hash=h.getUint32(20,true), cells=mw*mh;
+    if(!(mw>0&&mh>0&&far>0&&far<256)) return null;
+    if(ab.byteLength!==64+cells*2+nb*N*N) return null;            // truncated or padded -> refuse
+    return { mapW:mw, mapH:mh, far:far, hash:hash,
+             idx:new Uint16Array(ab,64,cells), blk:new Uint8Array(ab,64+cells*2,nb*N*N) };
+  }
+  /* The bake describes ONE map. mapData is regenerated by the bundle and then mutated by
+     consolidateMapData, and a plate laid over a different array is a picture of terrain that is
+     not there -- the same failure a1mFor guards with its W/H check. FNV-1a/32 over the tiles,
+     cached on the array, because the runtime has no synchronous crypto and this has to be free. */
+  var owmHash=null;
+  function owmMapHash(map){
+    if(owmHash && owmHash.map===map) return owmHash.h;
+    var h=0x811c9dc5, H=map.length, W=map[0].length, y, x, row;
+    for(y=0;y<H;y++){ row=map[y];
+      for(x=0;x<W;x++){ h=(h^(row[x]&255))>>>0; h=Math.imul(h,0x01000193)>>>0; } }
+    owmHash={ map:map, h:h>>>0 };
+    return owmHash.h;
+  }
+  function owmBakeFor(map){
+    var b=owmBake; if(!b) return null;
+    if(typeof window.__DQ_WIGGLE__==='number' && window.__DQ_WIGGLE__!==0.26) return null;
+    if(typeof window.__DQ_WATER_THRESH__==='number' && window.__DQ_WATER_THRESH__!==12) return null;
+    if(map.length!==b.mapH || map[0].length!==b.mapW) return null;
+    if(owmMapHash(map)!==b.hash) return null;
+    return b;
+  }
+  // Assemble owmBuild's window out of the plate: one fill or one 48-row copy per CELL, against
+  // owmBuild's 2.965 M evaluations plus two sweeps over the same. Uint8 rather than Uint16 because
+  // every value is clamped; every sampler reads it as a number either way.
+  function owmAssemble(b,X0,Y0,winW,winH){
+    var cw=winW*N, ch=winH*N; if(!(cw>0&&ch>0)) return null;
+    var idx=b.idx, blk=b.blk, far=b.far, mw=b.mapW, mh=b.mapH;
+    var dist=new Uint8Array(cw*ch), cx, cy, mx, my, id, base, y, x, o, s, d;
+    for(cy=0;cy<winH;cy++){ my=Y0+cy; if(my<0||my>=mh) return null;
+      for(cx=0;cx<winW;cx++){ mx=X0+cx; if(mx<0||mx>=mw) return null;
+        id=idx[my*mw+mx];
+        if(id===OWM_UNBAKED) return null;                        // outside the plate -> owmBuild
+        if(id===OWM_BLOCKED) continue;                           // solid: the array is already 0
+        base=cy*N*cw+cx*N;
+        if(id===OWM_FARCELL){ for(y=0;y<N;y++){ d=base+y*cw; dist.fill(far,d,d+N); } }
+        else { o=id*N*N;
+          for(y=0;y<N;y++){ d=base+y*cw; s=o+y*N;
+            for(x=0;x<N;x++) dist[d+x]=blk[s+x]; } } } }
+    return { W:cw, H:ch, ox:X0*N, oy:Y0*N, dist:dist, prop:owmTileBlock() };
+  }
   function owmFor(scene){
     if(window.__DQ_OW_CONTINUOUS__===false) return null;         // review escape hatch, like __A1_DNG_CONTINUOUS__
     if(!scene || scene.currentMapId!=='overworld') return null;  // only the BFS-validated real overworld
     var map=scene.mapData; if(!map||!map.length||!map[0]) return null;
     var hero=scene.hero; if(!hero||!hero.scene) return null;
     var cam=scene.cameras&&scene.cameras.main; if(!cam||!cam.worldView) return null;
+    owmBakeLoad();
     var winW=Math.ceil(cam.worldView.width/TILE)+2*MARGIN, winH=Math.ceil(cam.worldView.height/TILE)+2*MARGIN;
     var X0=windowStart(cam.worldView.x,winW,map[0].length), Y0=windowStart(cam.worldView.y,winH,map.length);
     var key=X0+'_'+Y0+'_'+winW+'_'+winH;
     // Identity on the ARRAY as well as the window: a town exit swaps mapData wholesale, and a field
     // built from the old array describes terrain that is no longer there.
-    if(!owmState || owmState.map!==map || owmState.key!==key)
-      owmState={ map:map, key:key, m:owmBuild(map,X0,Y0,winW,winH) };
+    if(!owmState || owmState.map!==map || owmState.key!==key){
+      var pf=(window.performance&&performance.now)?performance:null, t0=pf?pf.now():0;
+      var b=owmBakeFor(map), mm=b?owmAssemble(b,X0,Y0,winW,winH):null, src=mm?'baked':'analytic';
+      if(!mm) mm=owmBuild(map,X0,Y0,winW,winH);
+      var ms=pf?(pf.now()-t0):-1;                                // measured BEFORE the debug scan
+      owmState={ map:map, key:key, m:mm };
+      // Published because this rebuild is the one thing in the overworld that can drop a frame,
+      // and the last time it regressed it was found by measuring it on device, not by reading it.
+      var pres=owmPresence(map,X0,Y0,winW,winH);
+      window.__DQ_OWM__={ ms:ms, src:src, key:key, w:winW, h:winH,
+                          px:winW*N*winH*N, terrain:((pres&1)?'W':'-')+((pres&2)?'M':'-') };
+    }
     var m=owmState.m; if(!m) return null;
     var fx=hero.x-m.ox, fy=hero.y-m.oy;                          // she must be inside it, with room to work
     if(fx<8||fy<8||fx>=m.W-8||fy>=m.H-8) return null;            // outside -> the engine's own stepping
