@@ -4,11 +4,11 @@
  "generator": "scripts/render_dungeon_material_map.py",
  "generatorSha256": "28a3dbae1bee8013ee2446cb5a35c83129db03ba52528dcec163d815051fce1c",
  "inputs": {
-  "design/act1-dungeon-interiors/mistyGrotto-f1.json": "a327d6c01bc1129260d7203509816bf09e23283e05cb9c3104a2ab33d1a43908"
+  "design/act1-dungeon-interiors/mistyGrotto-f1.json": "0aa50270d0a5ec8280d0ec890657000dae5b96ec487c11a46ffee98164231f88"
  },
  "params": {
   "kind": "walkable-mask"
  },
- "sha256": "2b9d578d0df028484db0226032a41be7e9d1b56e3f8ca28d22f89e030d3a29cd",
- "writtenAt": "2026-08-06T21:19:00+09:00"
+ "sha256": "0931256df33448128a8fb5279b074c8e45a1c836343d30d3c20b3d77ead9e043",
+ "writtenAt": "2026-08-07T16:00:29+09:00"
 }

@@ -242,13 +242,13 @@ ACT1_MATERIAL_FILES = {
 # it is rendered and pinned. New runtime paths as of 2026-08-03.
 ACT1_DUNGEON_FILES = {
     "act1-dungeon-floors.json": (
-        54654, "705b72dbf2de2c5f5529933a54b8edbba2cd79c422d5e55d35e9285c757ea3d8"),
+        60297, "d91e95cb2a5d7924cc5d89149bffca1a9db500ce0afb2d813fc87447ab7a2b05"),
     "act1-dungeon-art/sunkenCellar-f1-props.png": (
-        2965798, "a5e7595d4cb4379de40bcb9a29db4e001120ff4cb03b4c076bb0e949c538c17a"),
+        3522971, "c8401c196dd7b58f6aedf7fbd8bd69ddec316d918ea4cc3704ef4bedf57f0ba1"),
     "act1-dungeon-art/sunkenCellar-f2-props.png": (
-        3785898, "0dbb363c76eb648fbdd54d8d57ae9b447fccd231c8c727761b435ccdaec9301b"),
+        4450607, "d554a6f6dc9a1cdaa6f906f3628ed49f913e07514379a4435e36e7bd600975e6"),
     "act1-dungeon-art/sunkenCellar-f3-props.png": (
-        4259334, "8d22c671991c9527b25304ff80ce555882f52399383cd88dc532dd1dacd331c8"),
+        4917915, "66bae83ac6587db77f42e2c8dc1a63f7a0bdda412985483db33a6e438e24cdec"),
     # 2026-08-05: THE COLLISION SHAPE, and therefore as much a shipped authority as the picture it
     # comes from. Each is `fw` -- the renderer's own floor field -- thresholded at the same 0.5
     # that decides every pixel of the matching *-props.png, emitted at that render's own
@@ -258,11 +258,11 @@ ACT1_DUNGEON_FILES = {
     # back byte-identical, so extracting floor_field() provably did not touch a rendered pixel
     # (docs/DUNGEON-EDGE-STYLE-LOCK.md).
     "act1-dungeon-art/sunkenCellar-f1-walk.png": (
-        5162, "ea7f94c7eda1bc1488f94bb980c958eb4cc077e8594247cf04eeb558e4860589"),
+        5605, "f42c9532c9e232bb6aa1151d07d391ff1f6ea1d5a59ae149890ca1bb7b7bd309"),
     "act1-dungeon-art/sunkenCellar-f2-walk.png": (
-        6973, "f7de2e82ea953f2a824fb92f486ddab7580734ac94b3633ee524d649d1102bf1"),
+        6975, "b22ccd7a8e74917db5bd5f745f87fab6f77cbab438c4a76b9153518cd11f300f"),
     "act1-dungeon-art/sunkenCellar-f3-walk.png": (
-        8448, "1eceede7b6526394edbe84cfb4cbccac5b8d49a22858407faa7626bc381ab51a"),
+        8406, "e4816933998c3855d41c3286a225f0ff083366c7059b623100245ee5cc92f6ea"),
     # 2026-08-06, owner: DARKFANG GROTTO (mistyGrotto), the Act 1 boss dungeon, shipped no baked
     # art at all and paid the full procedural cost on every entry. Its first three floors are now
     # baked at the locked 0.95 wall face; B4F and B5F have no authored layout (the bundle declares
@@ -270,45 +270,45 @@ ACT1_DUNGEON_FILES = {
     # These are the largest floors in Act 1 -- 46x40 cells on f3 -- so they are also the heaviest
     # art the runtime carries.
     "act1-dungeon-art/mistyGrotto-f1-props.png": (
-        6362229, "9b9d600939e74c0d82fb487c372198ba5051802ce7b562827d50332f8190822e"),
+        7195792, "e8d426db42349e334eed41f6de9f45cabfa678a0bf240589bfef81b0043b4ad9"),
     "act1-dungeon-art/mistyGrotto-f2-props.png": (
-        7811981, "1cfc17ea260106bcd48ae993e19bd894738dfa2cb13a9b29852b984b83564100"),
+        8729746, "ca773c0d752d074890ded0cde6794d5fd1d243aef473840bdf03c85449e5e578"),
     "act1-dungeon-art/mistyGrotto-f3-props.png": (
-        9152945, "dd67185a5d350d5a4fb8ef85966d0d92d80d85fbcde794b946a9844a5624dfc2"),
+        10362066, "1f621190741b4a7e0b55455b11dccbf3ae178a2cfdf7c4d5e00dc5bbbc476262"),
     "act1-dungeon-art/mistyGrotto-f1-walk.png": (
-        13082, "2b9d578d0df028484db0226032a41be7e9d1b56e3f8ca28d22f89e030d3a29cd"),
+        13583, "0931256df33448128a8fb5279b074c8e45a1c836343d30d3c20b3d77ead9e043"),
     "act1-dungeon-art/mistyGrotto-f2-walk.png": (
-        15375, "b479bbc714acb1e53929bd55adf9bf1325f9173c93341a2acdfe90f01b58590c"),
+        15692, "e9e708e18ef7a1d3113b4f2672dd74e8bd2014bfa5d012b5fff06f3f18b8f9b4"),
     "act1-dungeon-art/mistyGrotto-f3-walk.png": (
-        18942, "ff0a09f4d47ca1a9047b4137e806724b0200b4a97bf9090b2eebedcf76ac1f94"),
+        18383, "a8601e0b048fdac07b82557c01a39e92c277cfa8f879bba4a9059e92d30d3507"),
     # 2026-08-06: coastalReef and whisperingWoodsCave were already in A1D_MAPS scope but had NO
     # art -- they took the generated floor layout and then drew it procedurally. Both now ship the
     # same baked look as the cellar. That completes every Act 1 dungeon except crystalCave, which
     # is deliberately untouched.
     "act1-dungeon-art/coastalReef-f1-props.png": (
-        14466180, "1ceea311b5106244ef53b7ed8d34a525372dcccfbe7afea3289018d189d9f5bc"),
+        15879377, "ce5762e8d54d7a6d9469524d9a0967969279344948356fece4ca5bdb4d8fd0e0"),
     "act1-dungeon-art/coastalReef-f2-props.png": (
-        10966420, "aa09ee454e9dc5c15239269517e486afb9a490bb60ae28c747236a9cc9154fb1"),
+        12186036, "5e1d342eed3cc211640385542dfc29fcfdb66d79c027c0cea2cfc064df1a0d36"),
     "act1-dungeon-art/coastalReef-f3-props.png": (
-        15197073, "a8516754f8c9e6d16c1c6a40cbe9090667aa3dc1d2fc054c1fe7fe937f4133eb"),
+        16640569, "e123310bb2393826303e38d101165f291710421c2a12852b792a885177757464"),
     "act1-dungeon-art/coastalReef-f1-walk.png": (
-        15862, "a8509356cd1238fbdbe431b82414d806dce6b322938cd4fd605c6df871369e67"),
+        16457, "ff6ab4a22a8347a7178b5194f3aa1d1be134133f6a6e181a7cd445104dc82a77"),
     "act1-dungeon-art/coastalReef-f2-walk.png": (
-        15615, "17a8836d13d298c224fa7ffc7b0458a5bca29ebbd3e6ef87a3469249534fad72"),
+        15886, "d87ab060c071c2147bcd0e0d09c0f059719cda0b3247bdf890c3297c96da4cb2"),
     "act1-dungeon-art/coastalReef-f3-walk.png": (
-        21096, "d15f88712b16f323f3c56553f4b718483aea4d9d7b7147edceafcad886d48fd3"),
+        21392, "fae098891c34f6740c9dc5fad0261f344f088e039c59543d5eeea0d51c72a4c5"),
     "act1-dungeon-art/whisperingWoodsCave-f1-props.png": (
-        5040201, "815cc6bfd3857a178ceeba9f0bb01e69dc4f3ebb3d72f74c7725ff229644e799"),
+        5776425, "3ebc7cd901166b12bb20f119f34fecd0be81a733b7f927217b9ca03908b62c01"),
     "act1-dungeon-art/whisperingWoodsCave-f2-props.png": (
-        5926871, "bd7b2e3ae8923f92be92f31f89ff64ad6b536be8022866c1788c142c6fb2da1f"),
+        6704619, "27c77958f625a222eebd4406989a762790abcbddcd7bb65e8c09f63929ab14d0"),
     "act1-dungeon-art/whisperingWoodsCave-f3-props.png": (
-        6923913, "52866f7765ada9e18ce1fd18dc638cfda80991bf2da75c1aa342bc8c031d5acf"),
+        7817478, "542adfa29a81e58b34ae350eeebe7703ee501372bf1f68bb9fff57edaf6932d0"),
     "act1-dungeon-art/whisperingWoodsCave-f1-walk.png": (
-        9816, "edf0b63af54a8ad770b19273ed4a89b3b73b5955abe377a7bf107d89e0c8e2d1"),
+        9982, "f7a6b73dea4e0a8f0587e70484ce98876e0c2c29a112aa82244db6b83d2949d2"),
     "act1-dungeon-art/whisperingWoodsCave-f2-walk.png": (
-        11624, "f938b309734e4458629b96fa8140ae85413d84204db447be29c19e97c767b186"),
+        11928, "e573eb74b554ba4fdb79a4c7cde420ca124b6a8e091ce5b34e19a723bcea8559"),
     "act1-dungeon-art/whisperingWoodsCave-f3-walk.png": (
-        12578, "cfd4357c3fd4e7a8b13303a96bbd741730caf9cac115bb08680296501f6b7ca5"),
+        12791, "6e32e58e3250185ed9ac3b23c85531ad104a9dba5b80b0f2cdc7128557c6117d"),
 }
 # 2026-08-03, owner-authorised: the Port Sapphire town screen. `adapter.js` is gated to TOWNS
 # ONLY, so this surface is what the overlay actually raises; the overworld stays on the shipped

@@ -4,7 +4,7 @@
  "generator": "scripts/render_dungeon_material_map.py",
  "generatorSha256": "28a3dbae1bee8013ee2446cb5a35c83129db03ba52528dcec163d815051fce1c",
  "inputs": {
-  "design/act1-dungeon-interiors/coastalReef-f2.json": "a18087ee4fe91eb1fdd27dd467a5482b45c837671bc595c5161b142f6e6e9bcd",
+  "design/act1-dungeon-interiors/coastalReef-f2.json": "139507ffd98d762c18ad71c162f5866acb853e824a0db77e69a8da18ba5fbe34",
   "design/act1-dungeon-interiors/materials/coastalReef/mat-accent.png": "a7788b4046fd34b7f7ef3b77e231dd410381b90e5e4d88c88a309ef50f5b1b39",
   "design/act1-dungeon-interiors/materials/coastalReef/mat-floor.png": "d3ae9b99f2a3e16a886a399db8de95e947653753570cd80b5e6d513975e79ff5",
   "design/act1-dungeon-interiors/materials/coastalReef/mat-rubble.png": "ab2b6ba7d61d8e9eb287e9d72ffde0af332d4423b015175602ec4b46fe3d0c7f",
@@ -17,6 +17,6 @@
   "scale": 1,
   "theme": "tidal coral reef"
  },
- "sha256": "aa09ee454e9dc5c15239269517e486afb9a490bb60ae28c747236a9cc9154fb1",
- "writtenAt": "2026-08-06T20:57:17+09:00"
+ "sha256": "5e1d342eed3cc211640385542dfc29fcfdb66d79c027c0cea2cfc064df1a0d36",
+ "writtenAt": "2026-08-07T15:38:47+09:00"
 }

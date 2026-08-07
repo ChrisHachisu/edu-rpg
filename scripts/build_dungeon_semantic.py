@@ -100,6 +100,27 @@ OUT = os.path.join(ROOT, "design/act1-dungeon-interiors")
 
 ROCK, FLOOR = 0, 1
 
+# Cells of solid rock framing every floor after `crop_to_content`. See that function and the
+# enclosure check in `validate()` — this is the one number both of them read.
+#
+# THREE, AND IT IS DERIVED FROM THE RENDERER, NOT CHOSEN (2026-08-07). Two was tried first and
+# MEASURED to fail on the north edge. `_treat_shadow_patches` in render_dungeon_material_map.py
+# flags any vertical rock run shorter than `need = 2 * face_h` as an unsupportable all-shadow
+# lobe; at 0.95 cells of face that is 1.9 cells. It then thickens such a run NORTHWARD — and at
+# the top of the canvas there is nowhere to grow, so it takes the other remedy and REMOVES the
+# rock, re-opening the very edge this margin exists to close.
+#
+# A two-cell rim is 2.0 cells before the boundary warp and ~1.6 after, i.e. under `need`, so it
+# is a coin flip: measured on the shipped bake, a 2-cell north rim survived on sunkenCellar-f1
+# and f2 and was eaten to ZERO on sunkenCellar-f3 and whisperingWoodsCave-f1. Re-measured with
+# the margin-2 fix in place, whisperingWoodsCave-f2 still put 85 px of floor on row 0.
+#
+# Three cells is ~2.6 after the warp — 222 lattice px against `need`'s 162 — so the run can
+# never be flagged and the frame cannot be eroded. East and west rims are never at risk (the
+# runs there are full-height) and a south rim can always be thickened into the floor above it;
+# only the north edge has no room, and this is the number that gives it some.
+CROP_MARGIN = 3
+
 # Owner, 2026-07-31: "hidden rooms should not appear until act 3". The generator keeps the
 # capability — the shipped `hidden` branch case is real and Acts 3-5 want it — but Act 1 must
 # not spend it. A player who meets a false wall in the first dungeon has no way to learn that
@@ -1574,14 +1595,31 @@ def place_assets(spec: dict, floor: int, is_final: bool, pattern: str, grid: np.
 
 
 
-def crop_to_content(fl: dict, margin: int = 2) -> dict:
-    """Trim the authored canvas down to the cave plus a rock margin.
+def crop_to_content(fl: dict, margin: int = CROP_MARGIN) -> dict:
+    """Frame the cave in exactly `margin` cells of rock — trimming, or PADDING where it must.
 
     A cave does not fill a rectangle, so a floor naturally occupies a band across its canvas
     and leaves the corners solid. Shipping the untrimmed canvas would repeat the shipped
     generator's own waste — 96% of its 100x100 is rock the player never sees, and every one of
     those cells still costs art surface. The authored size stays the BUDGET; this is what the
     floor actually turned out to be.
+
+    THIS IS A FRAME, NOT ONLY A TRIM (owner, 2026-08-07: "the screen shot area in the sunken
+    cellar is cutoff ... apparently the map was just created prematurally").
+
+    It used to clamp the window to the authored canvas — `max(0, min(xs) - margin)` and
+    `min(w - 1, max(xs) + margin)`. Where the layout reached the canvas boundary the clamp ate
+    the margin silently and the floor shipped flush against the edge, with no cell left to draw
+    rock into. That is not a rare case: `build_floor` runs the entry stub out to the boundary on
+    EVERY floor by design, so all 18 shipped with a 0-cell rim on one side and the mouth or the
+    stairs standing in the last row or column. Nine also had a 1-cell rim on a second side, from
+    a chamber reaching the interior clip in `carve`.
+
+    The window is therefore allowed to run PAST the authored canvas, and the cells outside it
+    read as rock. Trimming and padding are the same operation on a grid that is solid everywhere
+    it is not defined; treating them differently was the whole bug. The authored w/h — the
+    owner-locked +2-per-floor curve — is untouched either way: it is recorded as
+    `authoredWidth`/`authoredHeight` and is the budget, not the output.
     """
     rows = fl["rows"]
     h, w = len(rows), len(rows[0])
@@ -1590,13 +1628,15 @@ def crop_to_content(fl: dict, margin: int = 2) -> dict:
     ys = [y for y in range(h) for x in range(w) if rows[y][x] != solid]
     if not xs:
         return fl
-    x0 = max(0, min(xs) - margin)
-    x1 = min(w - 1, max(xs) + margin)
-    y0 = max(0, min(ys) - margin)
-    y1 = min(h - 1, max(ys) + margin)
+    x0, x1 = min(xs) - margin, max(xs) + margin
+    y0, y1 = min(ys) - margin, max(ys) + margin
+
+    def cell(x: int, y: int) -> str:
+        """Outside the authored canvas is rock. A cave is a hole in an infinite solid."""
+        return rows[y][x] if 0 <= x < w and 0 <= y < h else solid
 
     fl["authoredWidth"], fl["authoredHeight"] = fl["width"], fl["height"]
-    fl["rows"] = [row[x0:x1 + 1] for row in rows[y0:y1 + 1]]
+    fl["rows"] = ["".join(cell(x, y) for x in range(x0, x1 + 1)) for y in range(y0, y1 + 1)]
     fl["width"], fl["height"] = x1 - x0 + 1, y1 - y0 + 1
     for a in fl["assets"]:
         a["x"] -= x0
@@ -1698,6 +1738,27 @@ def validate(fl: dict) -> list[str]:
             errs.append(f"one chest per {per:.0f} floor cells — outside the {lo:.0f}-{hi:.0f} "
                         f"band, so this floor is {'littered' if per < lo else 'unrewarding'} "
                         f"relative to the rest of the act")
+
+    # ── The floor must be ENCLOSED — owner, 2026-08-07, having played Sunken Cellar B2F:
+    #    "the screen shot area in the sunken cellar is cutoff ... i thought this was an image
+    #    display issue but apparently the map was just created prematurally."
+    #
+    #    He was looking at the stairs up, which sat in the LAST column of the canvas. There is no
+    #    cell beyond it to draw rock into, so the lit room simply stopped and the art read as
+    #    half-drawn. `crop_to_content` is supposed to frame every floor in CROP_MARGIN cells of
+    #    rock; this re-derives that from the finished grid rather than trusting it, because the
+    #    bug was precisely that the framing silently gave up whenever the layout reached the
+    #    authored canvas.
+    #
+    #    This is asked of the LAYOUT. It is necessary and not sufficient: the renderer can still
+    #    erode a rim that is too shallow for its face band, which is why CROP_MARGIN is 3 rather
+    #    than the 2 this check would otherwise be happy with. See the constant's own note.
+    edge = sorted(c for c in walk if min(c[0], c[1], w - 1 - c[0], h - 1 - c[1]) < CROP_MARGIN)
+    if edge:
+        shown = ", ".join(f"{x},{y}" for x, y in edge[:8])
+        errs.append(f"{len(edge)} walkable cell(s) within {CROP_MARGIN} of the canvas edge "
+                    f"({shown}{' ...' if len(edge) > 8 else ''}) — the floor is not enclosed, "
+                    f"so the art ends in void rather than in rock")
 
     # ── Placement rules. Each one is a claim about the player's journey, re-derived here from
     #    the finished grid rather than trusted from the placer.

@@ -5,7 +5,7 @@
    "id": "sunkenCellar",
    "floors": 3,
    "patterns": "branchwork",
-   "cells": 2558,
+   "cells": 3098,
    "walkable": 593,
    "errors": []
   },
@@ -13,7 +13,7 @@
    "id": "whisperingWoodsCave",
    "floors": 3,
    "patterns": "ramiform",
-   "cells": 3869,
+   "cells": 4539,
    "walkable": 1083,
    "errors": []
   },
@@ -21,7 +21,7 @@
    "id": "mistyGrotto",
    "floors": 3,
    "patterns": "network",
-   "cells": 4668,
+   "cells": 5438,
    "walkable": 1205,
    "errors": []
   },
@@ -29,7 +29,7 @@
    "id": "coastalReef",
    "floors": 3,
    "patterns": "anastomotic",
-   "cells": 8762,
+   "cells": 9738,
    "walkable": 2099,
    "errors": []
   },
@@ -37,7 +37,7 @@
    "id": "crystalCave",
    "floors": 6,
    "patterns": "anastomotic/branchwork/loop/network/ramiform/spongework",
-   "cells": 17372,
+   "cells": 19574,
    "walkable": 3830,
    "errors": []
   }
