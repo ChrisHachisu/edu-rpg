@@ -1126,6 +1126,7 @@
     // after this line would not run again until the window snapped to a new 12-cell boundary.
     if (terrainState.cimg && !terrainState.cimg.visible && A1A.drew) terrainState.cimg.setVisible(true);
     var key=X0+'_'+Y0; if(!force && key===terrainState.lastWin) return; terrainState.lastWin=key;
+    if(!terrainState.firstDrawAt) terrainState.firstDrawAt=Date.now();   // starts the loading gate's art grace
     drawTerrain(terrainState.ct.context, map, X0, Y0, winW, winH);
     terrainState.ct.refresh();
     terrainState.image.setPosition(X0*TILE, Y0*TILE);
@@ -3499,5 +3500,73 @@
     unstick:a1mUnstick, input:a1mInput, state:function(){ return a1mState; },
     footDy:a1mFootDy,
     K:{ FOOT:A1M_FOOT, LEAN:A1M_LEAN, STEP:A1M_STEP, SPEED:A1M_SPEED, CH:A1M_CH } };
-  window.__DQ_TILES__={ reskin:reskin, redraw:function(){ if(terrainState){ terrainState.lastWin=''; updateTerrain(terrainState.scene,true);} if(overlayState){ overlayState.lastKey=''; rebuildOverlay(overlayState.scene,true);} } };
+  // TERRAIN READINESS, for the shell's loading cover (index.html #boot-cover).
+  //
+  // Owner 2026-08-07, on a device capture of the world mid-load: "the hero is right but the
+  // overworld and minimap is wrong. I'd rather have a loading screen than to show this stuck old
+  // state." The HUD chrome arrives early and complete while the terrain is still black, so the
+  // shell needs to know when the ground under it is genuinely painted. Only this file knows that.
+  //
+  // Three conditions, in the order they can fail:
+  //   lastWin  -- updateTerrain has actually drawn a window at least once. Before that the layer
+  //               is empty and the player sees the page background, which is the black in the
+  //               capture.
+  //   MAT.ready-- the material images have decoded. Until they do drawTerrain falls back to the
+  //               flat palette (see MAT at the top of this file), which is the "procedural
+  //               fallback" look rather than the painted ground.
+  //   A1A      -- inside the Act 1 art footprint, the baked chunks must have been blitted.
+  //               a1aInBounds() is false when there is no manifest, so this never blocks outside
+  //               Act 1 -- but a manifest still IN FLIGHT does block, otherwise the gate would
+  //               pass in the window before we can even tell whether we are in Act 1.
+  // SCOPED TO THE OVERWORLD ON PURPOSE. ensureTerrain/updateTerrain are only ever called from the
+  // kind==='ow' branch of the reskin tick, so in a town or a dungeon terrainState is either null
+  // (fresh boot straight into one, which is exactly what a Continue from the starting save does --
+  // it resumes in Greenhollow) or a leftover from a previous overworld visit. Requiring it there
+  // would hold the cover up for its full timeout on the most common Continue there is. Towns and
+  // dungeons render through the engine's own tile grid, which is up immediately.
+  //
+  // NOTHING HERE MAY WAIT ON AN ASSET THAT MIGHT NEVER ARRIVE. a1aFetch() sets A1A.req once and
+  // never clears it, and it has no onerror -- a 404, a parse failure or the density guard at
+  // "leave the art off" all leave req true and manifest null forever. An earlier version of this
+  // gate waited on `req && !manifest` and would therefore have held the loading cover up until its
+  // timeout on every such boot. So the chunk condition applies ONLY once the manifest has actually
+  // arrived AND the hero is inside the art footprint, which matches the failure-is-safe policy MAT
+  // already documents at the top of this file. lastWin and MAT.ready are what remove the black
+  // screen and the flat palette fallback; they cannot hang, because both have completion handlers.
+  // The two ART conditions are GRACED, not required. Both MAT and the Act 1 chunks are documented
+  // as failure-is-safe: if they 404 the renderer runs forever on the palette ramp and that is a
+  // supported shipped state, so a gate that waits on them unconditionally would hold the loading
+  // cover until its timeout on every such boot -- measured, when `/materials/` was not resolvable.
+  // So: once a terrain window exists the cover waits a bounded extra moment for the real art, and
+  // then lifts regardless. The unbounded part is only `lastWin`, which is what actually removes
+  // the black screen and cannot hang -- updateTerrain sets it on the reskin tick.
+  var READY_GRACE=1800;
+  function terrainState_ready(sc){
+    if(!terrainState || !terrainState.lastWin) return false;
+    var waited=terrainState.firstDrawAt?(Date.now()-terrainState.firstDrawAt):READY_GRACE;
+    if(waited>=READY_GRACE) return true;
+    if(!MAT.ready) return false;
+    if(A1A.manifest && a1aInBounds(sc.heroTileX, sc.heroTileY) && !A1A.drew) return false;
+    return true;
+  }
+  function worldScene(){
+    var g=window.__PHASER_GAME__;
+    return (g&&g.scene&&g.scene.getScene)?g.scene.getScene('WorldMapScene'):null;
+  }
+  function terrainReady(){
+    var sc=worldScene();
+    if(!sc||!sc.mapData||!sc.mapData.length||!sc.tileGrid||!sc.tileGrid.length) return false;
+    if(sceneKind(sc)!=='ow') return true;
+    return terrainState_ready(sc);
+  }
+  // Diagnostic for the loading gate: which condition is still outstanding.
+  function terrainReadyWhy(){
+    var sc=worldScene();
+    if(!sc) return {scene:false};
+    return { kind:sceneKind(sc), mapData:!!(sc.mapData&&sc.mapData.length), tileGrid:!!(sc.tileGrid&&sc.tileGrid.length),
+      terrainState:!!terrainState, lastWin:terrainState?terrainState.lastWin:null, mat:MAT.ready,
+      a1aReq:A1A.req, a1aManifest:!!A1A.manifest, inBounds:a1aInBounds(sc.heroTileX,sc.heroTileY),
+      drew:A1A.drew, hero:[sc.heroTileX,sc.heroTileY], ready:terrainReady() };
+  }
+  window.__DQ_TILES__={ reskin:reskin, ready:terrainReady, readyWhy:terrainReadyWhy, redraw:function(){ if(terrainState){ terrainState.lastWin=''; updateTerrain(terrainState.scene,true);} if(overlayState){ overlayState.lastKey=''; rebuildOverlay(overlayState.scene,true);} } };
 })();

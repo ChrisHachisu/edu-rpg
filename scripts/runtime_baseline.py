@@ -38,7 +38,7 @@ ACT1_OVERLAY_FILES = {
     # collision shape derived from the art, and four arrow keys can only express eight headings.
     # The key events are unchanged, so the overworld and the towns -- which read Phaser cursors --
     # are untouched; only dq-tiles.js, and only where it holds a mask, reads the extra channel.
-    "index.html": (15479, "29b0c6982fe2a6f3ebb7db6d2e4c23bc3bf3acba729844954838dbc735258965"),
+    "index.html": (23956, "22d992023a24854d3a0da1351be18b3127d4a4d7c7be25f33d9fcdcab0ca4de4"),
     # 2026-08-01, owner-authorised: dq-tiles.js now splats AI-generated terrain MATERIALS through
     # its existing continuous-world-pixel drawTerrain, plus a ridged mountain height field,
     # varied shore character and landmark sites derived from mapData. Fallback-safe -- until the
@@ -88,7 +88,7 @@ ACT1_OVERLAY_FILES = {
     # save format round-trips to itself (measured: 742 of 754 reportable cells reload unchanged, the
     # other 12 settle one cell north once; largest rescue nudge 28 px against a 96 px bound).
     "dq-tiles.js": (
-        266848, "c789b497a5f955cd686f421312c6b4748e04796bd75cf13fc079412c9792e428"),
+        271756, "16cff0cb25e37c61c9e2428a1d1e1ea17fa84a1b101884d6cef2885e753a5333"),
     # 2026-08-07: THE OVERWORLD'S COLLISION SHAPE, baked -- the overworld's answer to the dungeons'
     # `<floor>-walk.png` above, and as much a shipped authority as they are. Deriving it at runtime
     # was correct and unaffordable: owmBuild() evaluated waterField/mountainField per pixel over a
@@ -125,7 +125,7 @@ ACT1_OVERLAY_FILES = {
     # old sheet. The 48px sheet is a RE-CUT of the canonical 64px g3 asset, not new art --
     # scripts/build_hero_g3_walk.py, soles aligned to the shipped sheet's measured baseline so the
     # hero does not float. The two retired sheets stay on disk: they are baseline runtime files.
-    "hero-override.js": (8336, "c8454a9e168289469bf9403011faa35e66ee75a703895ca320cd4086d435ce75"),
+    "hero-override.js": (12460, "5890d7092d4abbded7276a3803078172263031aa892f6935fb8dce19feee1272"),
     # Re-pinned 2026-08-06: the g3 source sheet's NORTH row (row 4) was damaged art -- drawn
     # ~15% oversize, so the crown was sheared flat off the top of the cell -- and walking north
     # is the one direction the tile runtime draws from it. Replaced with generated pixels;
@@ -143,7 +143,7 @@ ACT1_OVERLAY_FILES = {
     # the control-orientation setting, into the frame. First override of this file since the
     # v1.17.1 baseline was frozen, which is why it had no entry before.
     "ui-overhaul.js": (
-        121813, "5c7dd7d154ad7009509e17c1b43737261d377e9bb63d414d0fff2041b1cd323f"),
+        123702, "2bf75b4931c28ab9ec3174229e48de1e4354a4a0134b73ad94c5e3288ba69e96"),
     # 2026-08-06, owner pick: "Charcoal & Gold Leaf" (direction 4 of
     # design/ui-overhaul/chic-style-board.html). The same gold as before -- the pixel art, the
     # dungeon plates and the town screens were all approved against it -- spent differently:
