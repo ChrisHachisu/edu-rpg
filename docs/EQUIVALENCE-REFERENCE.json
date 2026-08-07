@@ -1,0 +1,15 @@
+{
+  "canMove": "317b8b0a",
+  "blocked": 78711,
+  "mapData": "45756f2a",
+  "dqterrain": "f4082729@1920x1824",
+  "dqcanopy": "b3479dc5@1920x1824",
+  "tileLayerObjects": 0,
+  "has__QOK": true,
+  "has__tapItems": true,
+  "has__setControlOrientation": true,
+  "domUI": true,
+  "mapId": "overworld",
+  "pageErrors": 0,
+  "bundleMd5": "60d90b63607b6e6980eb170aeeed445e"
+}
