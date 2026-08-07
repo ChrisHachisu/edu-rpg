@@ -242,9 +242,9 @@ ACT1_MATERIAL_FILES = {
 # it is rendered and pinned. New runtime paths as of 2026-08-03.
 ACT1_DUNGEON_FILES = {
     "act1-dungeon-floors.json": (
-        60297, "d91e95cb2a5d7924cc5d89149bffca1a9db500ce0afb2d813fc87447ab7a2b05"),
+        60297, "9c284e35069895166735a409c6186da4e6e8d82e4b76816089ff271e34340a46"),
     "act1-dungeon-art/sunkenCellar-f1-props.png": (
-        3522971, "c8401c196dd7b58f6aedf7fbd8bd69ddec316d918ea4cc3704ef4bedf57f0ba1"),
+        3523624, "5d49e92a14975a7ea1d2414bbf41d9a8d854289f26e10f2707ff789b5adde2fa"),
     "act1-dungeon-art/sunkenCellar-f2-props.png": (
         4450607, "d554a6f6dc9a1cdaa6f906f3628ed49f913e07514379a4435e36e7bd600975e6"),
     "act1-dungeon-art/sunkenCellar-f3-props.png": (
@@ -298,7 +298,7 @@ ACT1_DUNGEON_FILES = {
     "act1-dungeon-art/coastalReef-f3-walk.png": (
         21392, "fae098891c34f6740c9dc5fad0261f344f088e039c59543d5eeea0d51c72a4c5"),
     "act1-dungeon-art/whisperingWoodsCave-f1-props.png": (
-        5776425, "3ebc7cd901166b12bb20f119f34fecd0be81a733b7f927217b9ca03908b62c01"),
+        5778362, "00fb45c180dc4789491229295b660206e572783f067aaf04cab3f9c8665f1ea6"),
     "act1-dungeon-art/whisperingWoodsCave-f2-props.png": (
         6704619, "27c77958f625a222eebd4406989a762790abcbddcd7bb65e8c09f63929ab14d0"),
     "act1-dungeon-art/whisperingWoodsCave-f3-props.png": (

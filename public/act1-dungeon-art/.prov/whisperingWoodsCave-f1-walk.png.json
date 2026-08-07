@@ -4,11 +4,11 @@
  "generator": "scripts/render_dungeon_material_map.py",
  "generatorSha256": "28a3dbae1bee8013ee2446cb5a35c83129db03ba52528dcec163d815051fce1c",
  "inputs": {
-  "design/act1-dungeon-interiors/whisperingWoodsCave-f1.json": "b6c78fc1af91f197e3dc9ae85359b9d07db8d6b37a834477d6129abeda73be98"
+  "design/act1-dungeon-interiors/whisperingWoodsCave-f1.json": "027270a76be2894e6b35dd2ed381177d48c99e8d9432684efebb11be3aab32e2"
  },
  "params": {
   "kind": "walkable-mask"
  },
  "sha256": "f7a6b73dea4e0a8f0587e70484ce98876e0c2c29a112aa82244db6b83d2949d2",
- "writtenAt": "2026-08-07T16:07:04+09:00"
+ "writtenAt": "2026-08-07T17:14:16+09:00"
 }

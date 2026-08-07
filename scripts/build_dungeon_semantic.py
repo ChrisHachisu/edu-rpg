@@ -121,6 +121,14 @@ ROCK, FLOOR = 0, 1
 # only the north edge has no room, and this is the number that gives it some.
 CROP_MARGIN = 3
 
+# Mirrors MIN_WALL_DEPTH_CELLS in scripts/render_dungeon_material_map.py:451. The layout layer
+# has to know it because the wall PLAQUE is placed here and drawn there: a mass shallower than
+# this cannot carry the 0.95-cell face band, so `_treat_shadow_patches` classifies it as an
+# unsupportable all-shadow lobe and deletes it — taking the wall the plaque hangs on with it.
+# Kept as a literal rather than imported: the renderer pulls in scipy and PIL, and the generator
+# must stay runnable without them. If the renderer's value moves, this one has to move with it.
+WALL_FACE_MIN_DEPTH_CELLS = 2
+
 # Owner, 2026-07-31: "hidden rooms should not appear until act 3". The generator keeps the
 # capability — the shipped `hidden` branch case is real and Acts 3-5 want it — but Act 1 must
 # not spend it. A player who meets a false wall in the first dungeon has no way to learn that
@@ -1509,25 +1517,110 @@ def place_assets(spec: dict, floor: int, is_final: bool, pattern: str, grid: np.
     #    impassable, which is why a plaque standing in a one-wide entry corridor bricked up
     #    three dungeons at the door. It keeps its rock cell in `rows`, because a wall plaque IS
     #    wall; only the asset list carries it.
+    #    WHICH wall cell, and WHICH FACE of it (owner, 2026-08-07): "i need the sign in the
+    #    dungeons to be on the shadow part of the wall, on a relatively horizontally flat
+    #    surface, and near the entrance. current location for sunken cellar does not really
+    #    make sense logically."
+    #
+    #    The old rule scanned every rock cell touching floor on ANY side and took the one with
+    #    the smallest entrance distance. It never asked which face it had landed on, so a cell
+    #    touching floor only to its west presented a side EDGE and a 1-cell nub presented a
+    #    CORNER — a plaque hung on nothing. Nearness was the only thing it optimised, and that
+    #    inversion is the whole defect: on sunkenCellar-f1 it put the sign diagonally off the
+    #    mouth, on a cell with no drawn face at all.
+    #
+    #    All three of the owner's conditions are mechanical, because the renderer's face lives
+    #    in exactly one place. DUNGEON-EDGE-STYLE-LOCK.md: the band "eats face_h northward from
+    #    the mass's SOUTHERN boundary". So:
+    #
+    #      shadow part   the cell's SOUTHERN neighbour must be reachable floor. Not east, not
+    #                    west, not north, not diagonal — those draw no face.
+    #      flat          its east and west neighbours must be faces too, so the southern
+    #                    boundary is a straight horizontal run. >=3 centred is the floor, >=5 is
+    #                    preferred and tried first.
+    #      near the way in   still the distance term, but as a tie-break INSIDE a tier rather
+    #                    than as the thing being optimised.
+    #
+    #    And the mass must actually be able to carry a face: WALL_FACE_MIN_DEPTH_CELLS = 2, or
+    #    face_h (0.95 cells) eats the whole rock and `_treat_shadow_patches` deletes the lobe
+    #    the sign is standing on. run>=3 AND depth>=2 also puts the mass at >=6 cells, which is
+    #    MIN_WALL_AREA_CELLS, so `prune_thin_walls` cannot take it either.
     if floor == 1:
         live = open_set()
-        best = None
-        for y in range(1, h - 1):
-            for x in range(1, w - 1):
-                if grid[y, x] != ROCK:
+
+        def draws_face(x: int, y: int) -> bool:
+            """Rock that renders a wall face: reachable floor directly SOUTH, on a mass deep
+            enough that the band leaves a lit top above it."""
+            if not (0 <= x < w and 0 <= y < h) or grid[y, x] != ROCK:
+                return False
+            if y + 1 >= h or grid[y + 1, x] != FLOOR or (x, y + 1) not in live:
+                return False
+            depth, yy = 0, y
+            while yy >= 0 and grid[yy, x] == ROCK and depth < WALL_FACE_MIN_DEPTH_CELLS:
+                depth += 1
+                yy -= 1
+            return depth >= WALL_FACE_MIN_DEPTH_CELLS
+
+        faces = {(x, y) for y in range(1, h - 1) for x in range(1, w - 1) if draws_face(x, y)}
+
+        def wings(cell: tuple[int, int]) -> tuple[int, int]:
+            """How far the flat southern boundary runs either side of `cell`."""
+            x, y = cell
+            left = 0
+            while (x - left - 1, y) in faces:
+                left += 1
+            right = 0
+            while (x + right + 1, y) in faces:
+                right += 1
+            return left, right
+
+        def picks(min_run: int, min_wing: int, max_d: int) -> list:
+            out = []
+            for cell in faces:
+                left, right = wings(cell)
+                if left + 1 + right < min_run or min(left, right) < min_wing:
                     continue
-                touching = [nb for nb in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1))
-                            if grid[nb[1], nb[0]] == FLOOR and nb in live]
-                if not touching:
+                d = int(dist[cell[1] + 1, cell[0]])       # from the cell the player reads it in
+                if not (1 <= d <= max_d) or not spaced(cell, used, 2):
                     continue
-                d = min(int(dist[nb[1], nb[0]]) for nb in touching)
-                if not (1 <= d <= 8) or not spaced((x, y), used, 2):
-                    continue
-                if best is None or d < best[0]:
-                    best = (d, (x, y))
-        if best:
-            used[best[1]] = "sign"
-            assets.append({"kind": "sign", "x": best[1][0], "y": best[1][1], "onWall": True})
+                out.append((left + 1 + right, d, cell))
+            return out
+
+        # Relax in a STATED order and say which rung fired. A quiet fallback to "any rock cell
+        # touching any floor" is how this became wrong in the first place.
+        #
+        # THE LADDER ALTERNATES flatness and distance rather than exhausting flatness first,
+        # because measuring the alternative showed exhausting-flatness-first is the wrong trade.
+        # Insisting on a 3-wide run before widening the distance window puts Darkfang's plaque
+        # 49 cells from its mouth (against 4) and Coastal Reef's 25 (against 3) — a whole dungeon
+        # away, to buy one extra cell of flat wall. `min_run` 2 still means a 96 px flat face
+        # under a 53 px sprite (PROP_CELLS["sign"] = 1.1), so the plaque is still squarely on
+        # flat shaded wall; it is only a shorter stretch of it. Run 1 is never allowed at any
+        # rung — an isolated face cell is the "plaque floating on nothing" the owner rejected.
+        LADDER = [(5, 2, 8, "flat run >=5 centred, within 8 of the way in"),
+                  (3, 1, 8, "flat run >=3 centred, within 8"),
+                  (2, 0, 8, "flat run >=2, within 8"),
+                  (5, 2, 16, "flat run >=5 centred, distance 16"),
+                  (3, 1, 16, "flat run >=3 centred, distance 16"),
+                  (2, 0, 16, "flat run >=2, distance 16"),
+                  (3, 1, 32, "flat run >=3 centred, distance 32"),
+                  (2, 0, 32, "flat run >=2, distance 32"),
+                  (2, 0, 10 ** 9, "flat run >=2, distance unbounded")]
+        for rung, (min_run, min_wing, max_d, label) in enumerate(LADDER):
+            found = picks(min_run, min_wing, max_d)
+            if not found:
+                continue
+            # Flattest first, THEN nearest: the face is the owner's "makes sense logically",
+            # and the rung has already bounded how far the plaque may be from the door.
+            run, d, cell = max(found, key=lambda t: (t[0], -t[1], -t[2][1], -t[2][0]))
+            used[cell] = "sign"
+            assets.append({"kind": "sign", "x": cell[0], "y": cell[1], "onWall": True})
+            print(f"    {spec['id']}-f{floor} sign at {cell[0]},{cell[1]}: rung {rung} "
+                  f"({label}) — run {run}, d {d}")
+            break
+        else:
+            print(f"    {spec['id']}-f{floor} sign: NO CELL satisfies even the last rung — "
+                  f"no plaque placed")
 
 
     # The ordered objective list, and how far the dust may have to reach.
@@ -1663,13 +1756,38 @@ def validate(fl: dict) -> list[str]:
         cell = (a["x"], a["y"])
         kinds.setdefault(a["kind"], []).append(cell)
         # The plaque is mounted ON the wall, so for it rock is correct and floor is the defect.
+        # Re-derived from the finished grid, not trusted from the placer: the owner rejected the
+        # old placement because nothing checked WHICH face the cell presented.
         if a["kind"] == "sign":
+            cx, cy = cell
+
+            def plaque_face(x: int, y: int) -> bool:
+                """Rock drawing a south-facing wall face, on a mass >= WALL_FACE_MIN_DEPTH_CELLS deep."""
+                if not (0 <= x < w and 0 <= y < h) or (x, y) in walk:
+                    return False
+                if (x, y + 1) not in walk:
+                    return False
+                depth, yy = 0, y
+                while yy >= 0 and (x, yy) not in walk and depth < WALL_FACE_MIN_DEPTH_CELLS:
+                    depth += 1
+                    yy -= 1
+                return depth >= WALL_FACE_MIN_DEPTH_CELLS
+
             if cell in walk:
-                errs.append(f"plaque at {cell[0]},{cell[1]} stands on the floor — tile 18 is "
+                errs.append(f"plaque at {cx},{cy} stands on the floor — tile 18 is "
                             f"impassable, so it would block the passage it stands in")
-            elif not any(nb in walk for nb in ((cell[0] + 1, cell[1]), (cell[0] - 1, cell[1]),
-                                               (cell[0], cell[1] + 1), (cell[0], cell[1] - 1))):
-                errs.append(f"plaque at {cell[0]},{cell[1]} has no floor beside it to read from")
+            elif (cx, cy + 1) not in walk:
+                errs.append(f"plaque at {cx},{cy} has no floor to its SOUTH — the wall face and "
+                            f"its shadow are drawn on a mass's southern boundary, so this cell "
+                            f"presents an edge or a corner and the plaque hangs on nothing")
+            elif not plaque_face(cx, cy):
+                errs.append(f"plaque at {cx},{cy} sits on rock less than {WALL_FACE_MIN_DEPTH_CELLS} "
+                            f"cells deep — the face band would eat the whole mass and the "
+                            f"shadow pass would then delete the lobe it stands on")
+            elif not (plaque_face(cx - 1, cy) or plaque_face(cx + 1, cy)):
+                errs.append(f"plaque at {cx},{cy} is on a ONE-CELL face — neither horizontal "
+                            f"neighbour draws a face, so it sits on a corner or a step and the "
+                            f"1.1-cell sprite overhangs into rock on both sides")
         elif cell not in walk:
             errs.append(f"{a['kind']} at {a['x']},{a['y']} is in rock")
 
