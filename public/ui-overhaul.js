@@ -713,21 +713,25 @@
   //  DOM overlays the enemy card, bottom HUD, message, quiz)
   // ============================================================
   // `bi` is the cell index into ui-icons/battle-icons.png, not a symbol id -- see battleIcon().
-  // `col` stays white here because these four still sit on saturated blocks; the point of the
-  // swap is that the glyph is now TINTABLE, so when the blocks go the colour moves into the
-  // glyph by changing this one value per row and nothing else.
+  // `cls` is gone with the saturated blocks: "Gilded Rail" fills nothing, so each command's colour
+  // survives ONLY as its glyph tint, which is what `col` now carries.
+  //
+  // `col` is emitted as the --tint custom property on the CELL, not as an inline colour on the
+  // <i>. That indirection is load-bearing: the selected cell sits on the gold plate and has to
+  // invert its glyph to charcoal, and an inline style on the glyph would outrank the .on rule that
+  // does it. Same one value per row either way; only its delivery moved.
   var BATTLE_ACT = [
-    { key: 'battle.attack', cls: 'btn-ruby', bi: 0, col: '#fff' },
-    { key: 'battle.defend', cls: 'btn-sky', bi: 1, col: '#fff' },
-    { key: 'battle.item', cls: 'btn-em', bi: 2, col: '#fff' },
-    { key: 'battle.flee', cls: 'btn-slate', bi: 3, col: '#fff' }
+    { key: 'battle.attack', bi: 0, col: 'var(--ruby)' },
+    { key: 'battle.defend', bi: 1, col: 'var(--sky)' },
+    { key: 'battle.item', bi: 2, col: 'var(--emerald)' },
+    { key: 'battle.flee', bi: 3, col: 'var(--ink-soft)' }
   ];
   function battlePlayerBar(p, st) {
     var max = p.totalMaxHp, r = Math.max(0, Math.min(1, max ? st.hp / max : 0));
     return '<div class="pbar"><div class="av" style="width:36px;height:36px;">' + heroImg(22, st.heroColor) + '</div>' +
-      '<div style="flex:1;min-width:0;"><div style="font-weight:800;color:#fdf3da;font-size:12px;margin-bottom:5px;">' + esc(st.name) + ' · ' + esc(Z('menu.level')) + ' ' + st.level + '</div>' +
+      '<div style="flex:1;min-width:0;"><div style="font-weight:800;color:var(--ink);font-size:12px;margin-bottom:5px;">' + esc(st.name) + ' · ' + esc(Z('menu.level')) + ' ' + st.level + '</div>' +
       '<div class="hp dark"><i style="width:' + (r * 100) + '%;"></i></div></div>' +
-      '<div style="font-size:11px;font-weight:800;color:#ffeac0;">' + st.hp + '/' + max + '</div></div>';
+      '<div style="font-size:11px;font-weight:800;color:var(--gold);">' + st.hp + '/' + max + '</div></div>';
   }
   // ---- battle damage FX ----
   // The Phaser BattleScene plays hit-flash / crit / camera-shake on the CANVAS (and on
@@ -836,6 +840,43 @@
     root.style.setProperty('--qok-feety', (FEET_Y[key] || 64) + '%'); // raise the enemy onto bgs whose platform sits higher
   }
   function clearBattleBg() { if (root && _curBg !== null) { root.style.backgroundImage = ''; _curBg = null; } }
+  // ---- Gilded Rail command selector ----
+  var _lastBattlePhase = null;
+  // The four rail cells are narrow, so a long label has to SHRINK, never wrap. Measured once per
+  // built strip (paint() replaces the element, which clears the flag). `.fitting` gives every label
+  // the SELECTED letter-spacing for the measurement, so moving the cursor onto a label that only
+  // just fits cannot push it back out of its cell.
+  function fitRailLabels(rail) {
+    if (rail.__qokFitted) return;
+    rail.__qokFitted = true;
+    var labs = rail.querySelectorAll('.railcmd .lab');
+    rail.classList.add('fitting');
+    for (var i = 0; i < labs.length; i++) {
+      var el = labs[i], size = 12.5;
+      el.style.fontSize = '';
+      for (var g = 0; g < 10 && el.scrollWidth > el.clientWidth; g++) {
+        size -= 0.5;
+        el.style.fontSize = size + 'px';
+      }
+    }
+    rail.classList.remove('fitting');
+  }
+  // Move the plate WITHOUT rebuilding the strip, so the transition interpolates instead of
+  // restarting. Writing the same transform back would also restart it, hence the compare.
+  function paintRailSelection(i) {
+    if (!stage) return;
+    var rail = stage.querySelector('.rail');
+    if (!rail) return;
+    var plate = rail.querySelector('.railplate');
+    if (plate) {
+      var want = 'translateX(' + (i * 100) + '%)';
+      if (plate.style.transform !== want) plate.style.transform = want;
+    }
+    var cells = rail.querySelectorAll('.railcmd');
+    for (var k = 0; k < cells.length; k++) cells[k].classList.toggle('on', k === i);
+    fitRailLabels(rail);
+  }
+
   function renderBattle() {
     var bs = getScene('BattleScene'), p = player(), st = pstate();
     if (!bs || !p || !st) return;
@@ -848,8 +889,8 @@
     var ename = bs.monster ? Z(bs.monster.nameKey) : '';
     var sprite = (bs.monster && bs.monster.spriteKey) ? bs.monster.spriteKey : '';
     var bossCls = isBossMonster(bs.monster) ? ' boss' : ''; // bosses render larger than regular monsters
-    var enemyCard = '<div class="enemy-card"><div style="flex:1;"><div style="font-weight:800;color:#ffd9a6;font-size:14px;">' + esc(ename) + '</div>' +
-      '<div class="hp dark mt6"><i style="width:' + (eR * 100) + '%;background:linear-gradient(180deg,#ef6a60,#bb3a32);"></i></div></div></div>';
+    var enemyCard = '<div class="enemy-card"><div style="flex:1;"><div style="font-weight:800;color:var(--ink);font-size:14px;">' + esc(ename) + '</div>' +
+      '<div class="hp dark mt6"><i style="width:' + (eR * 100) + '%;background:var(--ruby);"></i></div></div></div>';
     var msrc = getMonsterSrc(sprite);
     var hdCls = isMonsterHd(sprite) ? ' hd' : '';
     var monImg = msrc ? '<img class="bmon' + bossCls + hdCls + '" src="' + msrc + '" alt="" />' : (sprite ? '<div class="bmon' + bossCls + '" style="display:flex;"></div>' : '');
@@ -887,13 +928,18 @@
       content = ir + '</div>';
       dyn = (bs.itemMenuItems || []).map(function (m) { return (m.getData && m.getData('itemId')) || ''; }).join(',') + '|' + bs.itemMenuIndex;
     } else if (phase === 'playerMenu') {
-      var ag = '<div class="actiongrid">';
+      var ag = '<div class="rail"><div class="railplate" style="transform:translateX(' + (bs.menuIndex * 100) + '%);"></div>';
       for (var m = 0; m < BATTLE_ACT.length; m++) {
-        var act = BATTLE_ACT[m];
-        ag += '<button class="btn ' + act.cls + (m === bs.menuIndex ? ' sel' : '') + '" data-act="battleMenu" data-i="' + m + '">' + battleIcon(act.bi, act.col) + esc(Z(act.key)) + '</button>';
+        var act = BATTLE_ACT[m], lab = esc(Z(act.key));
+        ag += '<button class="railcmd' + (m === bs.menuIndex ? ' on' : '') + '" style="--tint:' + act.col + ';"' +
+          ' data-act="battleMenu" data-i="' + m + '" aria-label="' + lab + '">' +
+          battleIcon(act.bi) + '<span class="lab">' + lab + '</span></button>';
       }
       content = ag + '</div>';
-      dyn = 'menu' + bs.menuIndex;
+      // menuIndex is DELIBERATELY absent from the signature. Repainting on every cursor move would
+      // rebuild the plate already at its destination instead of interpolating to it -- which is
+      // precisely what makes a menu feel dead. paintRailSelection() moves it in place instead.
+      dyn = 'menu';
     } else if (phase === 'message') {
       // After answering, confirmQuizAnswer sets phase=message for the ~1s "Correct/Incorrect"
       // resolve window BEFORE the result applies; the Phaser messageText is still the PREVIOUS
@@ -921,11 +967,16 @@
     // but the opaque DOM overlay swallows those taps — so in the message phase we lay a
     // full-area tap target over everything so any tap advances (restores tap-to-continue).
     var tapAdvance = (phase === 'message') ? '<div data-act="battleAdvance" aria-label="Continue" style="position:absolute;inset:0;z-index:40;cursor:pointer;"></div>' : '';
-    var hud = tapAdvance + '<div class="bstage">' + enemyCard + monImg + '</div><div class="hudwrap">' + content + (showPlayerBar ? battlePlayerBar(p, st) : '') + '</div>';
+    // The entry animation rides on the hudwrap, but only when the PHASE changed: the screen is also
+    // repainted on every HP tick, and animating those would strobe the panel.
+    var swap = (phase !== _lastBattlePhase) ? ' swapin' : '';
+    _lastBattlePhase = phase;
+    var hud = tapAdvance + '<div class="bstage">' + enemyCard + monImg + '</div><div class="hudwrap' + swap + '">' + content + (showPlayerBar ? battlePlayerBar(p, st) : '') + '</div>';
     var sig = 'battle|' + phase + '|' + sprite + '|e' + ehp + '/' + emax + '|h' + st.hp + '/' + p.totalMaxHp + '|' + loc + '|' + dyn;
     activate('battle', true);
     setBattleBg(bs); // biome/boss background behind the battle (cover-fit, full-bleed)
     paint(hud, sig);
+    if (phase === 'playerMenu') paintRailSelection(bs.menuIndex);
     if (isQuiz) updateQuizTimer(bs);
     runBattleFx(bs); // spawn damage number / hit-flash / crit / shake (after paint, into the FX layer)
   }
