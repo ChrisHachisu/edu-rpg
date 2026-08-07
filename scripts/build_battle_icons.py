@@ -16,6 +16,21 @@ WHY A SCRIPT AND NOT "SAVE THE PNG"
     The keying is still done here rather than by hand, and the speckle opening is still applied,
     so that the shipped sheet is reproducible from the archived raw output by one command.
 
+TWO BACKGROUNDS, DETECTED -- NOT ASSUMED
+    The 2026-08-07 solid-icon round asked for the same flat dark background and Codex answered it
+    TWO different ways in the same hour: candidate C came back on flat near-black as asked, and
+    candidates A and B came back on a GREEN SCREEN. Neither is the chequerboard, so both look
+    fine to a human opening the file -- and that is the trap, because a luminance ramp CANNOT key
+    green. Pure green sits at luminance ~150, squarely inside the 40..190 ramp below, so keying it
+    on luminance renders the whole background at about 73% opacity: a solid slab with faint icons
+    floating in it. That does not look like a keying bug, it looks like the art is bad, and the
+    art would get blamed and re-rolled.
+
+    The shipped icons are candidate B, so the shipped sheet is one of the green ones. The
+    background is therefore DETECTED from the four corners and keyed accordingly. This code was
+    proven in the candidate round's builder and moved here on promotion, so there is one keyer and
+    not two; design/ui-overhaul/battle-icons/solid/build.py now calls this function.
+
 WHAT IT EMITS
     public/ui-icons/battle-icons.png -- a 512x128 sheet, four 128x128 cells, white RGB with the
     recovered alpha. It is a MASK: the button paints it with `currentColor`, so a command's
@@ -53,6 +68,9 @@ GLYPH = 116         # hard ceiling: nothing may exceed this in either dimension
 OPTICAL = 92        # what the TYPICAL glyph's optical size is scaled to -- same as the tab
                     # family, which is what makes the two sets sit at one size on screen
 LO, HI = 40.0, 190.0    # alpha ramp; below LO is background, above HI is stroke
+GREEN = 60.0        # corner greenness above which the canvas is a green screen, not a dark one.
+                    # Measured: the green-screen sources sit at ~200, every dark source at <2, so
+                    # any threshold in between separates them; 60 is nowhere near either.
 OPEN = 5            # opening kernel: wider than any speck, far under the ~20px strokes
 NAMES = ("attack", "defend", "item", "flee")
 
@@ -69,13 +87,34 @@ def stroke_width(mask: np.ndarray) -> float:
     return 2.0 * ink.sum() / max(1, edge.sum())
 
 
+def background_greenness(img: Image.Image) -> float:
+    """How green the canvas corners are: median of `G - max(R, B)` over the four of them.
+
+    Four corners rather than one, so a stray mark in a corner cannot decide it, and a median
+    rather than a mean so a single outlier corner cannot either. `G - max(R, B)` is positive only
+    where green genuinely dominates BOTH other channels: it is ~200 on a green screen, ~0 on
+    near-black, and 0 on white -- including every antialiased white pixel, which is what lets the
+    same expression key the glyph edge softly instead of cutting it 1-bit.
+    """
+    rgb = np.asarray(img.convert("RGB"), dtype=np.float32)
+    h, w, _ = rgb.shape
+    corners = np.stack([rgb[0, 0], rgb[0, w - 1], rgb[h - 1, 0], rgb[h - 1, w - 1]])
+    return float(np.median(corners[:, 1] - corners[:, [0, 2]].max(axis=1)))
+
+
 def alpha_from(sheet: pathlib.Path) -> np.ndarray:
-    """Recover alpha from the flat dark background, then open the result.
+    """Recover alpha from whichever background the generator actually used, then open the result.
 
     A real alpha channel is used as-is if the generator ever provides one. Otherwise the
-    luminance ramp does the keying: the background sits under 32 and the strokes over 224, so
-    40..190 clears both by a wide margin while keeping the antialiased edge as a soft ramp
-    rather than a jagged 1-bit cut.
+    background is DETECTED (see the module docstring -- this generator has shipped both a
+    near-black canvas and a green screen for the same instruction) and keyed on the matching
+    axis:
+
+      green screen   alpha = 1 - greenness / corner greenness. Exact at pure green (0) and at
+                     pure white (1), linear across the antialiased edge in between.
+      anything else  the luminance ramp: the background sits under 32 and the strokes over 224,
+                     so 40..190 clears both by a wide margin while keeping the antialiased edge
+                     as a soft ramp rather than a jagged 1-bit cut.
 
     The opening is inherited from the tab-icon build and kept even though this source is far
     cleaner than the chequer was. It costs nothing and it guards the step that actually broke
@@ -88,10 +127,17 @@ def alpha_from(sheet: pathlib.Path) -> np.ndarray:
     if img.mode in ("RGBA", "LA") and np.asarray(img.convert("RGBA"))[:, :, 3].min() < 255:
         a = np.asarray(img.convert("RGBA"), dtype=np.float32)[:, :, 3] / 255.0
         print("  source carries a real alpha channel; using it")
+    elif (g_dom := background_greenness(img)) > GREEN:
+        rgb = np.asarray(img.convert("RGB"), dtype=np.float32)
+        greenness = rgb[:, :, 1] - rgb[:, :, [0, 2]].max(axis=2)
+        a = np.clip(1.0 - greenness / g_dom, 0.0, 1.0)
+        print(f"  source is opaque; GREEN SCREEN detected (corner greenness {g_dom:.0f}); "
+              f"keyed on chroma")
     else:
         lum = np.asarray(img.convert("L"), dtype=np.float32)
         a = np.clip((lum - LO) / (HI - LO), 0.0, 1.0)
-        print(f"  source is opaque; keyed on luminance ramp {LO:.0f}..{HI:.0f}")
+        print(f"  source is opaque; dark background (corner greenness {g_dom:.0f}); "
+              f"keyed on luminance ramp {LO:.0f}..{HI:.0f}")
     a[a < 0.02] = 0.0
 
     solid = Image.fromarray((a > 0.5).astype(np.uint8) * 255)

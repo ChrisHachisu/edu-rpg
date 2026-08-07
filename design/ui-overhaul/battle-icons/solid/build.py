@@ -7,8 +7,8 @@ candidates go through the identical splitting, family-scale normalisation and st
 that produced the shipped sheet. A candidate that beat the control because it was measured
 differently would prove nothing.
 
-THE ONE THING THAT HAD TO BE ADDED: A SECOND KEY
-    The shipped builder keys on a luminance ramp because its source was white on near-black. This
+THE ONE THING THAT HAD TO BE ADDED: A SECOND KEY -- NOW IN THE SHIPPED BUILDER
+    The shipped builder keyed on a luminance ramp because its source was white on near-black. This
     round's brief said the same thing, and Codex answered it two different ways: candidate C came
     back on flat near-black as asked, and candidates A and B came back on a GREEN SCREEN.
 
@@ -18,10 +18,12 @@ THE ONE THING THAT HAD TO BE ADDED: A SECOND KEY
     opacity: a solid slab with faint icons in it. It would not have looked like a keying bug, it
     would have looked like the art was bad.
 
-    So the background is DETECTED and keyed accordingly. Green screens key on greenness
-    (G - max(R,B)), which is exact for both pure green and pure white and gives a linear ramp
-    across the antialiased edge; dark backgrounds fall through to the shipped luminance path,
-    unchanged and imported.
+    Background DETECTION was written here first, when only this round needed it. The owner then
+    picked candidate B -- one of the GREEN ones -- so the detection stopped being a mockup-round
+    convenience and became a requirement of the shipping pipeline. It was moved verbatim into
+    `bbi.alpha_from` on promotion, and this file now calls that rather than keeping a second copy:
+    two keyers that must agree are a defect waiting to happen, and the candidate masks emitted
+    here have to be the same pixels the shipped sheet is built from.
 
 WHAT IT EMITS, per candidate
     <candidate>-mask.png     512x128, four cells, white RGB + recovered alpha. Same geometry and
@@ -37,58 +39,19 @@ import pathlib
 import sys
 
 import numpy as np
-from PIL import Image, ImageFilter
+from PIL import Image
 
 HERE = pathlib.Path(__file__).resolve().parent
 ROOT = HERE.parents[3]
 sys.path.insert(0, str(ROOT / "scripts"))
 import build_battle_icons as bbi   # noqa: E402  the shipped pipeline, imported not duplicated
 
-OPEN = bbi.OPEN
 NAMES = bbi.NAMES
-
-
-def key_alpha(path: pathlib.Path) -> np.ndarray:
-    """Recover alpha, choosing the keyer from what the background actually is.
-
-    Detection samples the four corners rather than one, so a stray mark in a corner cannot decide
-    it. `greenness` is positive only where green genuinely dominates both other channels, which is
-    true of the background and false of every white pixel including the antialiased ones, so the
-    same expression keys the edge softly instead of cutting it 1-bit.
-    """
-    img = Image.open(path).convert("RGB")
-    rgb = np.asarray(img, dtype=np.float32)
-    h, w, _ = rgb.shape
-    corners = np.stack([rgb[0, 0], rgb[0, w - 1], rgb[h - 1, 0], rgb[h - 1, w - 1]])
-    g_dom = float(np.median(corners[:, 1] - corners[:, [0, 2]].max(axis=1)))
-
-    if g_dom > 60:
-        greenness = rgb[:, :, 1] - rgb[:, :, [0, 2]].max(axis=2)
-        a = np.clip(1.0 - greenness / g_dom, 0.0, 1.0)
-        print(f"  green screen detected (corner greenness {g_dom:.0f}); keyed on chroma")
-    else:
-        lum = np.asarray(img.convert("L"), dtype=np.float32)
-        a = np.clip((lum - bbi.LO) / (bbi.HI - bbi.LO), 0.0, 1.0)
-        print(f"  dark background; keyed on the shipped luminance ramp "
-              f"{bbi.LO:.0f}..{bbi.HI:.0f}")
-    a[a < 0.02] = 0.0
-
-    # Speckle opening, identical in intent to the shipped build: it removes by SIZE, and it is
-    # used only as a SUPPORT mask so the soft edge survives. It guards the step that has actually
-    # broken before -- stray lit pixels stretch every measured bounding box and silently wreck the
-    # size normalisation, which is invisible until the icons are the wrong size on a phone.
-    solid = Image.fromarray((a > 0.5).astype(np.uint8) * 255)
-    opened = solid.filter(ImageFilter.MinFilter(OPEN)).filter(ImageFilter.MaxFilter(OPEN))
-    support = np.asarray(opened.filter(ImageFilter.MaxFilter(3)), dtype=np.float32) / 255
-    cleaned = a * support
-    kept = (cleaned > 0.02).sum() / max(1, (a > 0.02).sum())
-    print(f"  speckle removed: kept {kept:.1%} of the ramped pixels")
-    return cleaned
 
 
 def build(src: pathlib.Path, out: pathlib.Path, label: str) -> list[float]:
     print(f"\n== {label}  <- {src.name}")
-    a = key_alpha(src)
+    a = bbi.alpha_from(src)
     spans = bbi.columns(a, len(NAMES))
     crops = [bbi.trim(a[:, x0:x1]) for x0, x1 in spans]
 

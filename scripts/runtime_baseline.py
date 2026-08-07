@@ -199,9 +199,19 @@ UI_ASSET_FILES = {
     # asset as the tab sheet above and not a picture: four 128px cells stamped out of
     # currentColor. Order: attack, defend, item, flee. It replaces four hand-written <symbol>s,
     # one of which (qok-shieldw) hardcoded fill="#fff" and could not be tinted at all.
+    #
+    # ART SWAPPED 2026-08-07, same day, same mechanism: owner on the solid-icon round, "for the
+    # icons i like the Struck Relief" -- candidate B, filled bodies with the interior detail
+    # knocked out. Geometry is unchanged (512x128, four cells, white on transparent), so this is a
+    # drop-in and nothing in ui-overhaul.{js,css} moved. The pin changed because the ART changed.
+    #
+    # Its raw source came back on a GREEN SCREEN rather than the near-black the brief asked for,
+    # and a luminance key cannot see that: pure green sits mid-ramp, so the shipped keyer would
+    # have rendered the whole background at 75% opacity -- a slab that reads as bad art, not as a
+    # keying bug. build_battle_icons.py detects the background from the corners instead.
     # Recovered from the generator's output by scripts/build_battle_icons.py.
     "ui-icons/battle-icons.png": (
-        14526, "324763f2c31a29e859a535dbcf3cc10d6acb3d6716001b732c41b281e8eead1b"),
+        13974, "02e54ad33746deee6f7f8ba4f417b33a74c08dc05e16fab91e0d1e9fd529bcdc"),
     # 2026-08-07, owner pick on design/mockups/overworld-minimap-semantic.html: variant B,
     # "Relief" -- flat land, no road network, "tells you where you are, not where to go".
     #
