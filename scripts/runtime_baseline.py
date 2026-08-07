@@ -716,7 +716,12 @@ def verify_act1_overlay(root: Path, allowed_extra: frozenset[str] = frozenset())
             expected_size, expected_hash = expected["bytes"], expected["sha256"]
         path = all_found[relative_path]
         if path.stat().st_size != expected_size or sha256(path) != expected_hash:
-            raise BaselineError(f"Act 1 runtime identity mismatch: {relative_path}")
+            raise BaselineError(
+                f"Act 1 runtime identity mismatch: {relative_path}\n"
+                f"  This file's bytes no longer match its pinned SHA. If you EDITED it on purpose,\n"
+                f"  that is expected and the fix is one command:  ./scripts/repin.sh\n"
+                f"  If you did NOT edit it, stop: something changed a protected runtime file."
+            )
 
     for relative_path, (mat_size, mat_hash) in ACT1_MATERIAL_FILES.items():
         mat = all_found[relative_path]

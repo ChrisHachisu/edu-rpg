@@ -65,7 +65,14 @@ const bundleBytes = readFileSync(`${ROOT}/dist/assets/index-BhoGQRaA.js`);
 const publicDq = readFileSync(`${ROOT}/public/dq-tiles.js`);
 const distDq = readFileSync(`${ROOT}/dist/dq-tiles.js`);
 assert(sha(bundleBytes) === BUNDLE_SHA, 'bundle hash mismatch');
-assert(publicDq.equals(distDq), 'public/dist dq-tiles twins differ');
+// dist/ is gitignored but pinned, so it is PER-WORKTREE. A merge carries public/dq-tiles.js
+// without carrying dist/dq-tiles.js, which means a worker's green gate in its own worktree says
+// nothing about the integration tree. That is not worker error, it is structural -- and it is how
+// gate 1 failed on main on 2026-08-08 after a merge that had passed cleanly in the branch.
+assert(publicDq.equals(distDq),
+  'public/dist dq-tiles twins differ\n' +
+  '  dist/ is gitignored and per-worktree, so this is the EXPECTED state right after a merge.\n' +
+  '  Fix:  ./scripts/build-dist.sh     (or ./scripts/repin.sh if you also edited public/dq-tiles.js)');
 assert(sha(publicDq) === DQ_SHA, 'dq-tiles hash mismatch');
 
 const raw = extractRawTerrain(bundleBytes.toString('utf8'));
