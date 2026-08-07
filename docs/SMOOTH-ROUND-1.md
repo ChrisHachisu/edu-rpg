@@ -1,5 +1,33 @@
 # SMOOTH round 1 — the overworld stops rebuilding terrain it already had
 
+> [!warning] CORRECTED after independent refutation — read this before using any number below.
+> An independent verifier re-measured at **6 runs per side** (this document's numbers are
+> 3 runs) and **REFUTED the SMOOTH-4 result**. See `docs/SMOOTH-ROUND-1-REFUTATION.md`.
+>
+> - **SMOOTH-4 did NOT improve: 2108.9 → 2115.1 ms (+6.2 ms).** The −620 ms / −28.3%
+>   claimed below is a 3-sample artefact. The watchdog is bimodal (~2060 / ~2175) on
+>   *both* sides; this round drew the low ~1561 value in 2 of 3 runs, which set its median.
+>   At 6 runs the fix drew it 1 of 6 and base 0 of 6. LoAF, the probe's documented primary
+>   instrument, is flat: 1520.6 → 1519.3 ms.
+> - **SMOOTH-5 is CONFIRMED: 3626.1 → 2155.7 ms (−40.6%)**, spreads 3501.5–3900.4 vs
+>   2091.6–2226.5, zero overlap. The win is real and it is this row.
+> - Safety CONFIRMED, correctness CONFIRMED, memory PARTIAL (see below).
+>
+> **Round 2 must baseline SMOOTH-4 at ~2115 ms, not 1568 ms.** Taking 1568 forward would
+> make round 2 measure ~2100 and conclude it caused a regression it did not cause.
+>
+> Why this was mechanically predictable: SMOOTH-4 reports the *longest single* main-thread
+> block, which is the ~2.1 s `renderMap()` build this change never touched. Removing a
+> *second* block shortens the swap (SMOOTH-5) without shortening the longest one.
+>
+> Also corrected: the "~79 MB retained" figure is **Greenhollow-specific**. Millbrook,
+> Port Sapphire and Misty Grotto retain 6 chunks ≈ **120 MB**; the brute-forced structural
+> ceiling is 9 chunks ≈ **179 MB**. Still bounded, still below the 198 MB the overworld
+> already holds while played, and it cannot grow — but the per-door claim was wrong.
+> And "12 → 0 re-requests" is not stable: base is 12 *or* 0 depending on Chrome's memory
+> cache. The honest version is the splat count, 1 → 0, every time.
+
+
 One atomic change: **returning to the overworld reuses the baked chunk art it already
 loaded, instead of throwing it away and re-deriving the terrain.**
 
