@@ -6,6 +6,8 @@ import { copyFile, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promi
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { EXPECTED_STATIC_INDEX_SHA, staticIndexFrom } from './build_static_index.mjs';
+
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const RUNTIME = path.join(
   ROOT,
@@ -21,8 +23,15 @@ const EXPECTED_MANIFEST_SHA = 'cb3865ba5f51d27dc025594df6a487dc97728f76dbecb98be
 // assert, and any HUD edit to dist/index.html was invisible to git and would have been lost the
 // next time a worktree seeded its dist by copying someone else's. Root index.html has been
 // brought back into line -- it now differs from dist/index.html by exactly the seven rewrites
-// below and nothing else -- so the shell is reproducible again.
-const EXPECTED_STATIC_INDEX_SHA = '29b0c6982fe2a6f3ebb7db6d2e4c23bc3bf3acba729844954838dbc735258965';
+// and nothing else -- so the shell is reproducible again.
+//
+// 2026-08-07: the seven rewrites and EXPECTED_STATIC_INDEX_SHA moved to
+// scripts/build_static_index.mjs and are imported above. This script was the only thing that knew
+// how to derive the shell, but nothing ran it -- `npm run promote:act1-r26` is SUPERSEDED and
+// exits 1 -- so a fresh worktree still had no way to produce dist/index.html and seeded it by
+// copying a sibling. That is how three vintages ended up in circulation. Extracting the transform
+// lets scripts/build-dist.sh and the ship gate use it without running this cutover, and keeps ONE
+// definition of the shell rather than a second copy that would drift from this one.
 const EXPECTED_DQ_SHA = 'fcd746d1be14cc1958b4ae710a75e36c0ee2a5ae141a82e63272ba7169cd688b';
 const EXPECTED_ACT1_MAP_SHA = '7a1037634692a88c4b6cdf09642f25e4375098de452cb7b4a15808cd4c96fef7';
 
@@ -87,15 +96,7 @@ await copyFile(adapterSource, adapterTarget);
 assert.equal(sha256(await readFile(adapterTarget)), sha256(await readFile(adapterSource)));
 
 const authoredIndex = (await readFile(path.join(ROOT, 'index.html'), 'utf8'));
-const staticIndex = authoredIndex
-  .replace('href="/ui-overhaul.css"', 'href="ui-overhaul.css"')
-  .replace('<script type="module" src="/src/main.ts"></script>',
-    '<script type="module" crossorigin src="assets/index-BhoGQRaA.js"></script>')
-  .replace('src="/ui-overhaul.js"', 'src="ui-overhaul.js"')
-  .replace('src="/act1-world-map.js"', 'src="act1-world-map.js"')
-  .replace('src="/dq-tiles.js"', 'src="dq-tiles.js"')
-  .replace('src="/hero-override.js"', 'src="hero-override.js"')
-  .replace('src="/act1-hifi/adapter.js"', 'src="act1-hifi/adapter.js"');
+const staticIndex = staticIndexFrom(authoredIndex);
 assert.equal(sha256(staticIndex), EXPECTED_STATIC_INDEX_SHA, 'static shell identity changed');
 await writeFile(path.join(ROOT, 'dist/index.html'), staticIndex);
 for (const [relative, expectedSha] of [
