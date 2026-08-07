@@ -1585,6 +1585,17 @@
     for (var sy=0;sy<18;sy++){ ctx.fillStyle='rgba(0,0,0,'+(0.5-sy*0.0275).toFixed(3)+')'; ctx.fillRect(bx,by+N+FH+sy,N,1); } // strong drop shadow, fading
   }
   var dngState=null;
+  // Drop BOTH of the dungeon's display objects. The fog is the one that matters off the floor: it is
+  // setScrollFactor(0), so it is glued to the SCREEN, and updateFog() only runs from tick()'s 'dng'
+  // branch -- off the floor it is neither redrawn nor moved, it just stays there at whatever the last
+  // dungeon frame painted. Called from reskinTown (as it always was, inline) and, since 2026-08-08,
+  // on the way out to the overworld too.
+  function destroyDng(){
+    if(!dngState) return;
+    try{dngState.image&&dngState.image.destroy();}catch(e){}
+    try{dngState.fog&&dngState.fog.destroy();}catch(e){}
+    dngState=null;
+  }
   function ensureDng(scene){
     var cam=scene.cameras.main, winW=Math.ceil(cam.worldView.width/TILE)+2*MARGIN, winH=Math.ceil(cam.worldView.height/TILE)+2*MARGIN;
     if (dngState && dngState.scene===scene && dngState.winW===winW && dngState.winH===winH && dngState.image && dngState.image.scene) return;
@@ -3646,7 +3657,7 @@
     townRoad=buildRoadMask(map);                                                   // connected cross-road mask
     if (terrainState&&terrainState.image){ try{terrainState.image.destroy();}catch(e){} try{if(terrainState.cimg)terrainState.cimg.destroy();}catch(e){} terrainState=null; lastReskinMapId=null; } // tear down stale overworld
     if (overlayState&&overlayState.container){ try{overlayState.container.destroy();}catch(e){} overlayState=null; }
-    if (dngState){ try{dngState.image&&dngState.image.destroy();}catch(e){} try{dngState.fog&&dngState.fog.destroy();}catch(e){} dngState=null; }
+    destroyDng();
     if (townState&&townState.image){ try{townState.image.destroy();}catch(e){} }
     var key='dqtownskin'; if(scene.textures.exists(key)) scene.textures.remove(key);
     var ct=scene.textures.createCanvas(key, W*N, H*N); try{ct.setFilter(NEAREST);}catch(e){}
@@ -3765,6 +3776,19 @@
     // WHOLESALE is what made walking back out cost 4.6 s. See a1aReleaseChunks.
     if(kind!=='ow'){ lastReskinMapId=null; a1aHideCanopy(); a1aReleaseChunks(); }
     if (kind!=='town' && townState) destroyTown();      // left a town -> drop its canvas so it can't linger over ow/dng
+    // The same rule for the dungeon, which never had one. reskinTown has torn dngState down since
+    // towns shipped -- so walking a dungeon -> town was always clean -- but NOTHING did on the way
+    // out to the OVERWORLD, and that is the far commoner exit. What survived was `dqdngfog`: a
+    // depth-8, setScrollFactor(0) image holding the last frame updateFog() painted, i.e. a
+    // screen-locked sheet of darkness over the whole overworld that no amount of walking or waiting
+    // could clear, because updateFog() is only reachable from the 'dng' branch below.
+    // Measured on device (Sunken Cellar exit, 2026-08-08): 21.0% of the play area was the exact
+    // (5,5,9) fill updateFog writes, against 0.03% on a fresh load of the same cell, and the dark
+    // region kept its bounding box while the hero walked (IoU 0.88) -- screen-pinned, not world-
+    // anchored as first reported.
+    // Guarded on kind==='ow', NOT kind!=='dng': sceneKind() returns null during map churn, and a
+    // teardown on a transient null would make ensureDng rebuild the base canvas mid-dungeon.
+    if (kind==='ow') destroyDng();                      // left a dungeon -> drop its base canvas + its fog
     if ((kind==='town'||kind==='dng') && owMap) destroyOwProps(); // entered a town/dungeon -> drop landmark prop images (NOT on a transient null kind)
     if (kind!=='ow' && !SHIP_TOWN_DNG_RESKIN){
       // Overworld-only ship: tear down any stale overworld terrain/overlay so it can't linger over the engine's
