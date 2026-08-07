@@ -2736,9 +2736,27 @@
     var hero=scene.hero; if(!hero||!hero.scene) return null;
     var cam=scene.cameras&&scene.cameras.main; if(!cam||!cam.worldView) return null;
     owmBakeLoad();
+    // The map must be FINISHED before its collision field is derived from it -- consolidated and
+    // plated, i.e. the shape act1-overworld-walk.bin was baked over. See owEnsureMapSetup for what
+    // deriving from a half-set-up map cost and for why this call is not a reordering of the work.
+    if(owEnsureMapSetup(scene)) owSetupPending=true;
     var winW=Math.ceil(cam.worldView.width/TILE)+2*MARGIN, winH=Math.ceil(cam.worldView.height/TILE)+2*MARGIN;
     var X0=windowStart(cam.worldView.x,winW,map[0].length), Y0=windowStart(cam.worldView.y,winH,map.length);
     var key=X0+'_'+Y0+'_'+winW+'_'+winH;
+    /* SHE MUST BE INSIDE THE WINDOW, AND THAT IS DECIDED BEFORE IT IS BUILT, NOT AFTER.
+       The identical test lives four lines below, against the built field's own ox/oy/W/H -- but
+       those are just X0*N, Y0*N, winW*N and winH*N, every one of them known here. Asking first
+       is therefore the SAME question with the SAME answer; all that changes is that a window she
+       is not standing in no longer costs a field to reject.
+       This is not a corner case, it is every map swap. Phaser recomputes cam.worldView in its own
+       preRender, so on the frames right after loadMap() the scroll has already jumped to the hero
+       while worldView still holds the map she LEFT: measured 2026-08-08, walking out of
+       Greenhollow asked for window 0_0_44_38 -- the map's origin corner, ~250 cells from the hero,
+       outside the Act 1 plate so it cannot come from the bake -- and owmBuild synthesised
+       3.85 M px of waterField/mountainField for it, 411.8 ms, one frame before the real window
+       replaced it. Rejecting it up front is a straight deletion of that block. */
+    var fx0=hero.x-X0*N, fy0=hero.y-Y0*N;
+    if(fx0<8||fy0<8||fx0>=winW*N-8||fy0>=winH*N-8) return null;  // outside -> the engine's own stepping
     // Identity on the ARRAY as well as the window: a town exit swaps mapData wholesale, and a field
     // built from the old array describes terrain that is no longer there.
     if(!owmState || owmState.map!==map || owmState.key!==key){
@@ -2756,6 +2774,9 @@
         +winW+'x'+winH+' ['+terrain+'] '+key+(owmBake?'':' (bake not loaded)'));
     }
     var m=owmState.m; if(!m) return null;
+    // Kept, though the pre-build test above now answers the same question off the same numbers:
+    // this one reads the field's OWN geometry, so it still holds if a builder ever returns
+    // something other than the window it was asked for. It costs four comparisons.
     var fx=hero.x-m.ox, fy=hero.y-m.oy;                          // she must be inside it, with room to work
     if(fx<8||fy<8||fx>=m.W-8||fy>=m.H-8) return null;            // outside -> the engine's own stepping
     return m;
@@ -3615,6 +3636,42 @@
   // The overworld mapData array the consolidation + Act-1 plate were last applied to. See the
   // identity guard in the 'ow' branch of tick() for why a key is not enough.
   var owMapRef=null;
+  // Set when owmFor -- not tick() -- was the call that performed the setup, so tick() still learns
+  // that the tiles moved under any window it had already cached. tick() consumes and clears it.
+  var owSetupPending=false;
+  /* THE OVERWORLD'S MAP IS SET UP EXACTLY ONCE PER mapData ARRAY, AND WHOEVER GETS THERE FIRST
+     DOES IT. This used to live inline in tick()'s 'ow' branch, i.e. it could only ever run on the
+     80 ms interval -- while owmFor() runs from the mover's per-frame sceneUpdate wrapper and
+     therefore reaches a NEW array several frames earlier. That ordering was the whole of the map
+     swap's residual cost (measured 2026-08-08, browser, town -> overworld):
+
+       * act1-overworld-walk.bin's header hash is taken over the FULLY set-up map: generator
+         output + consolidateMapData's mountain clustering + the owner's Act 1 plate. owmBakeFor
+         compares owmMapHash(map) against it, so a map that is only PARTLY set up cannot match --
+         and does not merely miss the bake, it silently falls through to owmBuild's per-pixel
+         waterField/mountainField evaluation over the whole window. Measured: the same window
+         36_228_44_38 costs 2.1 ms assembled from the bake and 488.4 ms built analytically.
+       * Worse than slow, it is WRONG. The analytic field it builds describes an unconsolidated
+         coastline, and owmState caches it against the array identity -- which the plate then
+         mutates in place -- so the hero walks on a collision field the painting disagrees with
+         until the window next moves, about 12 cells later.
+
+     Doing the setup here, from the first caller that needs a settled map, is not a reordering of
+     the work: it is the same one-shot block, still identity-guarded, still exactly once per array.
+     It simply stops being reachable only from the slower of the two clocks. */
+  function owEnsureMapSetup(scene){
+    if(!scene || scene.currentMapId!=='overworld' || owMapRef===scene.mapData) return false;
+    var md=scene.mapData; if(!md||!md.length||!md[0]) return false;
+    owMapRef=md;                                        // BEFORE the body: one attempt per array, even on throw
+    try{ consolidateMapData(scene);
+         // Owner-locked Act 1 V3 plate: apply only after legacy mountain consolidation so
+         // semantic forest, harbor water, and both bridge decks remain authoritative.
+         if(window.__ACT1_WORLD_MAP__&&typeof window.__ACT1_WORLD_MAP__.apply==='function') window.__ACT1_WORLD_MAP__.apply(scene);
+         if (typeof scene.renderMinimap==='function'){ scene.lastMinimapUpdate=0; scene.renderMinimap(); }
+         return true;                                   // the tiles changed under any cached window
+    }catch(e){ if(window.__DQ_DEBUG__) console.log('dq consolidate err '+e+(e&&e.stack||'')); }
+    return false;
+  }
   // SHIP SCOPE: owner 2026-07-09 confirmed towns + dungeons were LOCKED IN -> reflect them in the game.
   // (Initial same-day ship was overworld-only; owner reversed.) Overworld + town + dungeon reskin all ON.
   // NOTE: the dungeon reskin loads Codex prop PNGs from props/dqprop-<name>-128.png -> that dir MUST ship too.
@@ -3671,28 +3728,14 @@
       a1aFetch();                                      // one-shot; the Act 1 art manifest + landmark table
       var mapId=scene.currentMapId+':'+scene.mapData.length+'x'+(scene.mapData[0]?scene.mapData[0].length:0);
       // DATA MUTATION (owner-approved sandbox exception): consolidate sprinkled mountains in mapData IN PLACE,
-      // ONCE per map ARRAY, BEFORE reskin — so overlay + minimap + collision all read the same tiles. Scoped to
-      // the real 'overworld' map only (the map whose walkability/landmarks were BFS-validated). Then force an
-      // immediate minimap redraw so it reflects the mutation without the 300ms throttle lag.
-      //
-      // GUARDED ON THE ARRAY IDENTITY, NOT ON `mapId`. Walking out of a town hands the engine a
-      // brand-new overworld array with the SAME id and the SAME dimensions, so `mapId` is unchanged,
-      // the key gate below skips its whole body, and the consolidation is silently lost -- the
-      // sprinkled mountains come back and the minimap, the mass overlay and the collision field all
-      // read tiles the reskin no longer agrees with. This is the third time this exact shape of bug
-      // has landed in this file (the Act-1 plate, then updateDng's stale floor); both were fixed the
-      // same way. consolidateMapData is itself identity-cached, so this stays exactly-once per array.
-      var owFresh=false;
-      if (scene.currentMapId==='overworld' && owMapRef!==scene.mapData){
-        owMapRef=scene.mapData;
-        try{ consolidateMapData(scene);
-             // Owner-locked Act 1 V3 plate: apply only after legacy mountain consolidation so
-             // semantic forest, harbor water, and both bridge decks remain authoritative.
-             if(window.__ACT1_WORLD_MAP__&&typeof window.__ACT1_WORLD_MAP__.apply==='function') window.__ACT1_WORLD_MAP__.apply(scene);
-             if (typeof scene.renderMinimap==='function'){ scene.lastMinimapUpdate=0; scene.renderMinimap(); }
-             owFresh=true;                              // the tiles changed under any cached window
-        }catch(e){ if(window.__DQ_DEBUG__) console.log('dq consolidate err '+e+(e&&e.stack||'')); }
-      }
+      // ONCE per map ARRAY, BEFORE reskin — so overlay + minimap + collision all read the same tiles. The body
+      // moved to owEnsureMapSetup so owmFor can reach it on the per-frame clock; see there for why. It is
+      // still guarded on the ARRAY IDENTITY, not on `mapId`: walking out of a town hands the engine a brand-new
+      // overworld array with the SAME id and the SAME dimensions, so a key-only gate skips it entirely and the
+      // consolidation is silently lost. This is the third time that exact shape of bug has landed in this file
+      // (the Act-1 plate, then updateDng's stale floor).
+      var owFresh=owEnsureMapSetup(scene)||owSetupPending;
+      owSetupPending=false;                             // consume whatever an earlier owmFor did
       if (mapId!==lastReskinMapId){ lastReskinMapId=mapId;
         try{ reskin(scene); }catch(e){ if(window.__DQ_DEBUG__) console.log('dq reskin err '+e+(e&&e.stack?e.stack:'')); } }
       else { var a1fresh=A1A.dirty||owFresh; A1A.dirty=false;   // a chunk (or the manifest) just landed -> the cached window is stale
