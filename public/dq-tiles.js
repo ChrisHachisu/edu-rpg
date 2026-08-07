@@ -1110,10 +1110,52 @@
     var c=a1aChunkAt(tx,ty); if(!c) return false;
     var rec=A1A.chunks[c.id]; return !!(rec&&rec.base);
   }
+  // ASK ONE WINDOW-STEP EARLY. The render window moves in MARGIN-cell steps, so the moment it
+  // steps it needs chunks it has never asked for -- and a chunk asked for on the frame it is first
+  // needed cannot answer that frame. a1aBlit then reports partial coverage and drawTerrain paints
+  // the whole 3.85 M-px window by hand. Measured on this tree (2026-08-08, 960x720): that splat is
+  // 934 ms, and it is SMOOTH-3's worst frame and SMOOTH-4's longest block.
+  //
+  // IT IS NOT A FETCH PROBLEM AND NOT A DECODE PROBLEM. Measured, same run, per chunk layer:
+  // ResourceTiming responseEnd-startTime is 4-12 ms, and the first drawImage that forces the webp
+  // decode is 0.0-0.1 ms. The recorded 988 ms src->onload is almost entirely the load event queued
+  // BEHIND the splat's own per-pixel loop -- the splat is what makes the wait it exists to cover.
+  // So the whole cost is scheduling: ask before the step and there is nothing to cover.
+  //
+  // A RING OF ONE MARGIN IS FREE. The window already straddles up to 9 chunks; padding it by
+  // MARGIN on all four sides (a 68x62-cell rect against the window's 44x38) still straddles at
+  // most 9, over EVERY snapped window origin on this plate and for every window size the camera
+  // produces. So this raises peak residency by exactly zero and A1A_MAX_CHUNKS=10 still has its
+  // headroom. Padding by 2*MARGIN would reach 16, which is why the ring is one step and not two:
+  // one step is all that is needed anyway -- the hero crosses a window boundary about every 3.2 s
+  // of walking, against a ~16 ms load.
+  //
+  // WHY IT ALSO SURVIVES A DOOR. A1A.win is what a1aReleaseChunks keeps when the player leaves the
+  // overworld, and it is now the ring rather than the bare window. Before this, the trim on walking
+  // into a town dropped exactly the chunks the walk back out stepped into a second later, so the
+  // retention round 1 added was itself feeding the splat: the c2 column was requested at parse
+  // time, evicted at the door, and re-requested 12 cells into the walk. Measured re-request, gone.
+  function a1aRingChunks(X0,Y0,winW,winH){
+    var m=A1A.manifest; if(!m) return [];
+    var B=m.semanticBounds, S=A1A.S, ox=B[0]*TILE, oy=B[1]*TILE, hit=[];
+    var wx0=Math.max(0,X0-MARGIN)*TILE, wy0=Math.max(0,Y0-MARGIN)*TILE;
+    var wx1=(X0+winW+MARGIN)*TILE, wy1=(Y0+winH+MARGIN)*TILE;
+    for(var i=0;i<m.chunks.length;i++){ var c=m.chunks[i];
+      var cx0=ox+c.x*S, cy0=oy+c.y*S, cx1=cx0+c.width*S, cy1=cy0+c.height*S;
+      if(Math.min(wx1,cx1)<=Math.max(wx0,cx0)||Math.min(wy1,cy1)<=Math.max(wy0,cy0)) continue;
+      hit.push(c);
+    }
+    return hit;
+  }
   // the visible chunks and their src/dst rects, in WORLD pixels; .full = the window is wholly covered
   function a1aRects(X0,Y0,winW,winH){
     var m=A1A.manifest; if(!m) return null;
     var B=m.semanticBounds, S=A1A.S, ox=B[0]*TILE, oy=B[1]*TILE;
+    // The ring FIRST, so the chunks the window actually shows are touched last and therefore sit
+    // at the young end of the LRU. If the cap is ever exceeded the trim drops a speculative
+    // neighbour, never a chunk being drawn this frame.
+    var ring=a1aRingChunks(X0,Y0,winW,winH), ringIds=[], ri;
+    for(ri=0;ri<ring.length;ri++){ a1aChunkRec(ring[ri]); ringIds.push(ring[ri].id); }
     var wx0=X0*TILE, wy0=Y0*TILE, wx1=wx0+winW*TILE, wy1=wy0+winH*TILE, out=[], cov=0, touched=[];
     for(var i=0;i<m.chunks.length;i++){ var c=m.chunks[i];
       var cx0=ox+c.x*S, cy0=oy+c.y*S, cx1=cx0+c.width*S, cy1=cy0+c.height*S;
@@ -1128,9 +1170,11 @@
     // for every window build, so it always names the window she is standing in when she walks into a
     // door -- and a door round trip returns her to the adjacent cell, which windowStart snaps to the
     // same 12-cell window and which is in any case far inside these 32-cell-wide chunks.
-    A1A.win=touched;
+    // The RING, not the bare window: the step she takes on the way back out is already paid for.
+    var keep=ringIds.length?ringIds:touched;
+    A1A.win=keep;
     // trim against what this window TOUCHED, not what it managed to load -- a chunk mid-load counts
-    while(A1A.lru.length>Math.max(A1A_MAX_CHUNKS,touched.length)) delete A1A.chunks[A1A.lru.shift()];
+    while(A1A.lru.length>Math.max(A1A_MAX_CHUNKS,keep.length)) delete A1A.chunks[A1A.lru.shift()];
     out.full=(cov===winW*TILE*winH*TILE);
     return out;
   }
