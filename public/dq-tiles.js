@@ -1968,6 +1968,85 @@
       return r;
     };
   }
+  // ==============================================================================================
+  //  THE OVERWORLD DOES NOT NEED 128,000 TILE IMAGES
+  // ==============================================================================================
+  // The engine's renderMap() (dist/assets/index-BhoGQRaA.js:78571, the tile loop at :78583) builds
+  // one Phaser Image per cell. On the 320x400 overworld that is 128,000 display objects in a single
+  // Container, and the renderer walks that Container every frame. It is the block SMOOTH-4 reports,
+  // and it is paid again on every return to the overworld.
+  //
+  // NOT ONE OF THOSE 128,000 IMAGES IS EVER SEEN. This is measured, not argued. The container sits
+  // at depth 0; `dqterrain` -- the baked Act 1 chunk art this file blits -- sits at depth 1 and
+  // covers the whole camera window, and `dqcanopy` sits at depth 11 above that. Hiding the whole
+  // tileLayer at runtime and screenshotting the canvas produces a BYTE-IDENTICAL frame: measured
+  // on the UNMODIFIED build, canvas sha e70693625e500515 both with tileLayer shown and with it
+  // hidden, and e70693625e500515 again when restored, with the hero's animation and all tweens
+  // paused so that neither could mask nor manufacture a difference.
+  // Of the 128,000, only 588 are even flagged visible at a time -- the culling window -- and all
+  // 588 are painted over.
+  //
+  // SCOPE: `currentMapId === 'overworld'` AND the map is the 320x400 Act 1 plate. Nothing else.
+  //   - NOT via this file's own isOverworld(), which regex-matches /Isles|Peaks|Realm|Temple/ and
+  //     therefore also claims sunkenTempleDungeon, sunkenTempleVillage, sunkenTempleIsle,
+  //     stormreachIsles, frostfallPeaks and twilightRealm. Those are real dungeons and a real
+  //     town. Skipping their tiles would render them BLANK, because nothing draws a dqterrain
+  //     over them -- the exact failure this narrow predicate exists to prevent. (That regex is a
+  //     pre-existing misclassification, documented in docs/SMOOTH-ROUND-1-REFUTATION.md section 2;
+  //     it is not this change's to fix and this change does not depend on it.)
+  //   - NOT via scene.cullingEnabled, which the engine assigns INSIDE renderMap and which
+  //     therefore still holds the PREVIOUS map's value when this wrapper is consulted.
+  //   - The 400x320 shape assertion is the same identity test act1-world-map.js's usable() uses.
+  //     Towns are 16x16, the Act 1 dungeons 26-30 cells, crystalCave 100x100: none can match.
+  //
+  // WHAT THE ORIGINAL DOES THAT THIS MUST STILL DO: destroy the previous tileLayer, install a
+  // fresh empty Container, destroy npcSprites and forestMazeFireflies and reset both arrays, reset
+  // tileGrid, set cullingEnabled, and reset the cull latches. The two tails it omits are
+  // unreachable here by construction -- applyHiddenWallVisibility() is gated on type==='dungeon'
+  // and the tripwire branch on currentMapId==='banditHideout'.
+  //
+  // tileGrid stays an ARRAY OF EMPTY ROWS rather than []. Three things read it structurally:
+  // tick()'s own `!scene.tileGrid.length` guard and __DQ_TILES__.ready() would both bail on a
+  // zero-length grid and no terrain would ever be drawn; and the engine's updateVisibleTiles()
+  // early-returns on it. Empty rows keep every one of those alive while making the loops no-ops --
+  // every unguarded tileGrid read in the bundle is bounded by a ROW's length (`C < tileGrid[m].length`,
+  // `u < (tileGrid[0]?.length ?? 0)`), never by mapData's, so an empty row is read zero times. The
+  // guarded reads (`tileGrid[y]?.[x] &&`, `if(!tileGrid[m.y]?.[m.x]) continue`) short-circuit.
+  // act1-world-map.js:291 reads tileGrid[0][0].displayWidth for the tile size and falls back to
+  // 48, which is exactly TILE -- so its fallback is not a degraded path, it is the same number.
+  //
+  // The three `tileLayer.getAt(index)` call sites in the bundle would throw on an empty container.
+  // None is reachable from the overworld: tryOpenTreasure returns false for
+  // type==='overworld'|'portal-overworld' before it indexes; the wake() boss-warp site needs
+  // pendingBossId, which only tryBossInteract sets and which returns false unless
+  // type==='dungeon'; the third is sunkenTempleDungeon's exit unseal.
+  var owrPatched=false;
+  function owrPlateOverworld(scene){
+    try{
+      if(scene.currentMapId!=='overworld') return false;
+      var m=scene.mapData;
+      return !!(m && m.length===400 && m[0] && m[0].length===320);
+    }catch(e){ return false; }
+  }
+  function owrInstall(scene){
+    if(owrPatched || !scene || scene.__owrPatched) return;
+    if(typeof scene.renderMap!=='function') return; owrPatched=true; scene.__owrPatched=true;
+    var orig=scene.renderMap;
+    scene.renderMap=function(){
+      if(!owrPlateOverworld(this)) return orig.apply(this,arguments);   // towns, dungeons, Act 2+: untouched
+      var i;
+      if(this.tileLayer){ try{ this.tileLayer.destroy(); }catch(e){} }
+      this.tileLayer=this.add.container(0,0);
+      for(i=0;i<this.npcSprites.length;i++){ try{ this.npcSprites[i].destroy(); }catch(e){} }
+      this.npcSprites=[];
+      for(i=0;i<this.forestMazeFireflies.length;i++){ try{ this.forestMazeFireflies[i].destroy(); }catch(e){} }
+      this.forestMazeFireflies=[];
+      this.tileGrid=[];
+      for(i=0;i<this.mapData.length;i++) this.tileGrid[i]=[];
+      this.cullingEnabled=true;            // the engine sets this for type 'overworld'; isOverworld() reads it
+      this.lastCullCamX=-Infinity; this.lastCullCamY=-Infinity;
+    };
+  }
   // Hero rescue. One guard covers every entry path instead of wrapping four of them. The
   // case that actually needs it: entering from the overworld uses the connection's fixed
   // toX/toY (50,0 at the declared 100x100), which is off the edge of a 26x26 floor.
@@ -3552,6 +3631,13 @@
     // Here the wrapper lands on the instance while the scene is still INIT, so even that first
     // loadMap swaps the real floor in.
     try{ a1dFetch(); a1dInstall(scene); }catch(e){ if(window.__DQ_DEBUG__) console.log('dq a1d install '+e); }
+    // Beside a1dInstall and for exactly its reason: WorldMapScene runs its first loadMap inside
+    // create(), before the scene is active and before it has a tileGrid, so anything installed
+    // behind the guards below is too late for it. Too late here is not cosmetic -- that first
+    // loadMap IS the overworld build SMOOTH-1 and SMOOTH-4 measure, so a wrapper that misses it
+    // saves nothing on the load and only helps on later swaps. This interval starts at script
+    // parse, ~80 ms apart, and the player is on the title screen for seconds before Continue.
+    try{ owrInstall(scene); }catch(e){ if(window.__DQ_DEBUG__) console.log('dq owr install '+e); }
     // Beside a1dFetch and for the same reason: as early as WorldMapScene exists, which is during
     // create() and therefore while the title screen is still up. Asked for lazily from owmFor
     // instead, the request is issued on the same frame as the first window build and cannot
