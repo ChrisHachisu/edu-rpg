@@ -305,28 +305,14 @@
   var MIN_KEEP=6, FILL_MIN=4, DENS_MAX=12, DENS_MAX_GRASS=25, STUCK_TREE_MTN=5; // OPTION 1 biome-aware fill cap (2026-07-08): DENS_MAX=12 = SAND cap (desert stays open); DENS_MAX_GRASS=25 = full 5x5 window => grass effectively UNCAPPED so grassland solidifies. STUCK_TREE_MTN=5 (owner 2026-07-09): a tree(3) with >= 5 of its 8 neighbours = mountain is "stuck" INSIDE a mountain cluster -> becomes mountain (blends into the massif); the tree de-scatter idea was reverted — this is the real fix
   // Overworld walkability. TWO consumers, and the second one is easy to miss: the reachability
   // safety gate below (owReach, which never mutates), AND owmTileBlock() ~line 2350, which copies
-  // this table minus water and mountain to build the PIXEL collider's discrete blocker set. So
-  // this is not a bookkeeping list -- it is what the hero actually walks into.
+  // this table minus water and mountain to build the PIXEL collider's discrete blocker set.
   //
-  // TILE 3 (tree) BLOCKS, owner decision 2026-08-07: "the hero also walks straight into forrests,
-  // so something is fundamentally wrong." It was absent here and had been since the file was
-  // written, so forest was walkable at runtime while THREE other authorities said it blocks:
-  // SHIPPED-BLOCKING-RULES.md ("tile 3 is tree, which also blocks"), semanticMap.ts's
-  // BLOCKED_TERRAIN, and act1-world-map.js's own blocked()/wrapCanMove.
-  //
-  // WHY THE PLATE'S OWN FOREST BLOCK NEVER FIRED, which is the actual root cause. act1-world-map.js
-  // wraps scene.canMove and returns false on tile 3 inside the Act 1 rect -- correct, and dead.
-  // a1mInstall forces the engine's update through with isMoving=true and drives the hero from
-  // a1mStep instead, which collides through a1mFree alone and never consults canMove. The wrapper
-  // still matters for relocateIfNeeded and the map-edge fallback; it just never governed a step.
-  // Adding 3 here is what reaches a1mFree, via owmTileBlock -> m.prop.
-  //
-  // Verified before landing: the consolidated and plated maps are byte-identical with and without
-  // this entry (the orphan/landmark gates revert nothing new), so no pinned map hash moves. Act 1
-  // stays ONE walkable region of 9,376 cells with all 8 owner doors reachable -- which is exactly
-  // what test_act1_runtime_override.mjs already asserted, because the plate's blocked() has always
-  // counted tile 3. The runtime was the only component that disagreed.
-  var OW_BLOCK={2:1,3:1,4:1,6:1,7:1,8:1,9:1,10:1,11:1,12:1,13:1,14:1,15:1,16:1,19:1,20:1,21:1};
+  // TILE 3 (tree) IS DELIBERATELY ABSENT HERE. Forest blocking is real, but it is not this table's
+  // rule to state: it lives in act1-world-map.js's canMove wrapper, together with the story gate,
+  // where the owner's plate owns it. Adding 3 here was tried on 2026-08-07 and reverted -- it
+  // silences one symptom of a1mStep bypassing that wrapper while leaving the gate and the town
+  // entries broken, and it moves a rule permanently out of the file that owns it. See a1mFree.
+  var OW_BLOCK={2:1,4:1,6:1,7:1,8:1,9:1,10:1,11:1,12:1,13:1,14:1,15:1,16:1,19:1,20:1,21:1};
   var OW_LANDMARKS=[6,7,8,9,10,11,12,15,16,19,20];
   function owWalkable(v){ return !OW_BLOCK[v]; }
   // BFS reachable-walkable set from (sx,sy); returns { seen:Uint8Array, lm:Set of "<val>@x,y" reachable landmarks }
@@ -2236,6 +2222,31 @@
     if(l<1e-6) return base;                                                  // flat field: no wall to read
     return base + k*A1M_CH*(1+ny/l)*0.5;         // 1 rock due north, 0.5 due east/west, 0 due south
   }
+  /* ---- THE OVERWORLD'S SECOND AUTHORITY, AND WHY IT IS canMove ---------------------------------
+     This mover replaced the engine's own tile stepping on the overworld (a1mStep now takes the
+     field from a1mAnyFor, which falls through to owmFor). The engine's stepping consulted
+     scene.canMove; this one did not, and canMove is not a formality -- act1-world-map.js WRAPS it,
+     and that wrapper is where the owner's forest rule and the story gate live:
+
+         if(... inside(x,y) && (tileAt(x,y)===3 || gateRestricted(x,y))) return false;
+
+     So the moment movement stopped asking canMove, forest stopped blocking and the gate stopped
+     gating, together, silently. The fix is to ask it again rather than to restate its rules here;
+     a copy of a rule in a second file is the drift this whole section exists to remove.
+
+     WHAT canMove MUST NOT BE ALLOWED TO ANSWER is water and mountain. Its overworld branch tests
+     those on the raw LATTICE, and the entire point of the field above is that they are painted
+     CONTINUOUSLY -- delegating them would put the square blockers straight back under the organic
+     coastline. So the two authorities are split along the boundary the file already draws
+     (see WHAT DELIBERATELY STAYS ON TILES): the field answers for the painted masses and the
+     bridge decks carved out of them, canMove answers for every other cell. Dungeons are untouched
+     -- they keep the prop table beside their baked mask, exactly as before. */
+  var OWM_FIELD_OWNED={2:1,4:1,5:1};       // water, mountain, bridge: the field's cells, not canMove's
+  function a1mCanMove(scene,tx,ty){
+    var f=scene&&scene.canMove;
+    if(typeof f!=='function') return null;                                   // unknown -> caller falls back
+    try{ return !!f.call(scene,tx,ty); }catch(e){ return null; }
+  }
   // (x,y) is the SPRITE position everywhere -- that is what the engine sets, what the rescue guard
   // holds and what the camera follows -- and the mask is sampled at the soles below it.
   function a1mFree(scene,m,x,y){
@@ -2245,7 +2256,12 @@
     var gx=fx|0, gy=fy|0;
     if(m.dist[(gy*m.W)+gx] < a1mNeed(m,gx,gy)) return false;                 // too close to rock
     var t=a1mTileAt(scene,wx,wy);
-    return t!==undefined && !(m.prop||A1M_PROP)[t];
+    if(t===undefined) return false;
+    if(m.ow && !OWM_FIELD_OWNED[t]){
+      var ok=a1mCanMove(scene,(wx/TILE)|0,(wy/TILE)|0);
+      if(ok!==null) return ok;
+    }
+    return !(m.prop||A1M_PROP)[t];
   }
   /* ---- SLIDE ALONG THE WALL, NOT ALONG THE AXES ----------------------------------------------
      Retrying X alone and then Y alone is only sliding on an AXIS-ALIGNED wall, and this cave is
@@ -2351,13 +2367,9 @@
      the dungeon keeps A1M_PROP beside its mask. Removing 2 and 4 from that table is the whole
      point: the field owns them now, at the painted edge instead of the lattice edge.
 
-     TILE 3 (tree) JOINS THAT SET rather than getting a third continuous field. It is the one
-     member that is scenery instead of a landmark, so it is worth saying why a cell blocker is
-     still the honest shape for it: the game's woods are SCATTERED SINGLE TREES at roughly half
-     density, one trunk per cell drawn as a prop on that cell -- not a continuous canopy mass with
-     an iso-line to trace. A per-cell blocker is what that picture is. Inventing a forestField
-     would be a third sampler with no painted edge to agree with, which is the drift this whole
-     section exists to remove.
+     THIS SPLIT IS ALSO THE OWNERSHIP BOUNDARY a1mFree uses to decide who answers for a cell: the
+     FIELD answers for 2, 4 and 5 (the painted masses, and the decks carved back out of them) and
+     scene.canMove answers for every other cell. See a1mFree.
 
      BRIDGES ARE CARVED BACK OUT, OR THE MAP DISCONNECTS. waterField's membership counts tile 5 as
      water on purpose, so the deck is painted over real water instead of a hole (see its comment).
@@ -2419,7 +2431,7 @@
                     if(x>0    && dist[i+cw-1]+4<v)v=dist[i+cw-1]+4; }
         if(x<cw-1 && dist[i+1]+3<v)v=dist[i+1]+3;
         dist[i]=v; } }
-    return { W:cw, H:ch, ox:wox, oy:woy, dist:dist, prop:owmTileBlock() };
+    return { W:cw, H:ch, ox:wox, oy:woy, dist:dist, prop:owmTileBlock(), ow:1 };
   }
   /* ---- THE SAME FIELD, BAKED -----------------------------------------------------------------
      owmBuild above is CORRECT and unaffordable. Measured on device (iPhone 17 Pro sim, six samples
@@ -2527,7 +2539,7 @@
         else { o=id*N*N;
           for(y=0;y<N;y++){ d=base+y*cw; s=o+y*N;
             for(x=0;x<N;x++) dist[d+x]=blk[s+x]; } } } }
-    return { W:cw, H:ch, ox:X0*N, oy:Y0*N, dist:dist, prop:owmTileBlock() };
+    return { W:cw, H:ch, ox:X0*N, oy:Y0*N, dist:dist, prop:owmTileBlock(), ow:1 };
   }
   function owmFor(scene){
     if(window.__DQ_OW_CONTINUOUS__===false) return null;         // review escape hatch, like __A1_DNG_CONTINUOUS__
@@ -2589,8 +2601,28 @@
     v.m=Math.max(0,Math.min(1,mag));
     return v;
   }
-  // Walking into an OBJECT is the engine's interaction verb; mirror its own bump branch exactly
-  // (tile 4 -> tryOpenTreasure, 7 and 18 -> interact) rather than inventing behaviour for it.
+  /* Walking into an OBJECT is the engine's interaction verb; mirror its own bump branch exactly
+     (tile 4 -> tryOpenTreasure, 7 and 18 -> interact) rather than inventing behaviour for it.
+
+     AND A DOOR IS AN OBJECT YOU WALK INTO. Every Act 1 town entrance is a BLOCKER cell -- tile 6
+     for a village, 15 for the Crystal gate -- and the engine enters one by asking checkTransition
+     BEFORE it tests walkability (WorldMapScene.ts: checkTransition at line 1042, canMove at 1111),
+     so the cell never has to be walkable. a1mStep inverts that: it tests a1mFree first and only
+     reaches its own checkTransition after the hero's CELL has changed. Against a blocker the move
+     never succeeds, the cell never changes, and the transition is never requested -- which is why
+     no town in Act 1 could be entered. Caves survived by accident, on the `t===7` interact branch
+     below, which is there for dungeon doors and happens to match the overworld cave-mouth tile.
+
+     ASKED HERE, ON THE BUMP, rather than ahead of the walkability test in the substep loop. Both
+     restore the engine's order; the bump is the one that can afford it. checkTransition CONSUMES
+     transitionCooldown on EVERY call (see a1mStep's own note), so asking it from the substep loop
+     would drain the cooldown many times a frame while merely walking. The bump is already
+     debounced to once per 700 ms, already computes the exact cell she walked into, and is already
+     the file's stated model for landmark tiles: "a cell-shaped blocker is what its picture
+     actually is, and bumping one is how the engine interacts with it."
+
+     No tile list: whatever checkTransition answers for is what opens, so the owner's eight doors,
+     the base game's connections and anything added later all work without naming a single id. */
   function a1mBump(scene,m,x,y,dx,dy){
     var l=Math.sqrt(dx*dx+dy*dy); if(!l) return;
     // Probe from the SOLES: a1mFree stopped her there, so that is where the object she walked into
@@ -2604,6 +2636,65 @@
     if(Math.abs(ddx)+Math.abs(ddy)===1) scene.heroDir=ddx?(ddx>0?2:1):(ddy>0?0:3);
     try{ if(t===4) scene.tryOpenTreasure(tx,ty);
          else if(t===7||t===18) scene.interact(); }catch(e){}
+  }
+  /* ---- A DOOR IS ASKED FOR, NOT WALKED INTO ---------------------------------------------------
+     Every Act 1 town entrance is a BLOCKER cell -- tile 6 for a village, 15 for the Crystal gate --
+     and the engine enters one by asking checkTransition BEFORE it tests walkability
+     (WorldMapScene.ts: checkTransition line 1042, canMove line 1111), so the cell never has to be
+     walkable. a1mStep inverts that: it tests a1mFree first and only reaches its own
+     checkTransition once the hero's CELL has changed. Against a blocker the move never succeeds,
+     the cell never changes, and the transition is never requested -- which is why no town in Act 1
+     could be entered. Caves survived by accident, on a1mBump's `t===7` branch, which exists for
+     dungeon doors and happens to match the overworld cave-mouth tile.
+
+     ASKED HERE, THE MOMENT A STEP IS REFUSED, and deliberately NOT from a1mBump, which was tried
+     first and is measurably the wrong hook for three separate reasons:
+       - a1mSlide runs before the bump, and beside a town with any painted mass near it the field
+         gradient is non-zero, so she glides along the wall and `slid` is true -- the bump never
+         fires. Greenhollow, Millbrook and Coastal Reef all failed this way, intermittently.
+       - the bump probes a fixed A1M_FOOT+2 px past her soles, so whether it lands in the door cell
+         depends on how many pixels short of it the collider happened to stop her: measured 14 px
+         short at Coastal Reef and 7 px at Whispering Woods, either side of the probe's reach.
+       - a1mFree tests her SOLES while heroTile is derived from her CENTRE, one cell north, so she
+         can park her centre inside the door cell without her feet ever entering it. Then the cell
+         changes exactly once, transitionCooldown eats that single query, and nothing asks again.
+     So the target is derived the way the ENGINE derives it -- the sole cell plus one cardinal
+     step, its own `heroTileX + dx` -- and it is retried while she keeps pushing rather than asked
+     once. The 300 ms debounce is what keeps checkTransition (which CONSUMES transitionCooldown on
+     every call) off the per-substep path; the engine itself asks once per step, so this is the
+     more conservative of the two. No tile list: whatever checkTransition answers for is what
+     opens, so the owner's eight doors, the base game's connections and anything added later all
+     work without naming a single id. */
+  var a1mDoorAt=0;
+  function a1mAsk(scene,cx,cy){
+    var row=scene.mapData[cy]; if(!row||row[cx]===undefined) return null;
+    var tr=null; try{ tr=scene.checkTransition(cx,cy); }catch(e){}
+    if(!tr) return null;
+    var ddx=cx-scene.heroTileX, ddy=cy-scene.heroTileY;                      // face it, like a step would
+    if(Math.abs(ddx)+Math.abs(ddy)===1) scene.heroDir=ddx?(ddx>0?2:1):(ddy>0?0:3);
+    return tr;
+  }
+  function a1mDoor(scene,m,x,y,dx,dy){
+    if(!m.ow || (!dx && !dy)) return false;
+    var now=Date.now(); if(now-a1mDoorAt<300) return false;
+    a1mDoorAt=now;
+    // FROM heroTileX/heroTileY, which is the engine's own notion of where she is and the thing
+    // `heroTileX + dx` is built on -- NOT from her soles. The two are a cell apart: collision is
+    // tested at the soles while heroTile comes from her CENTRE (see a1mStep's note), so a
+    // sole-derived target asks about the cell BEYOND the door and the door never answers.
+    var cx=scene.heroTileX, cy=scene.heroTileY;
+    if(Math.abs(dx)>=Math.abs(dy)) cx+=(dx>0?1:-1); else cy+=(dy>0?1:-1);
+    var tr=a1mAsk(scene,cx,cy);
+    // AND HER OWN CELL, second. Because collision is at the soles, her centre can come to rest
+    // INSIDE a door cell without her feet entering it; a1mStep then asks about that cell exactly
+    // once, on the frame the tile changed, and transitionCooldown is free to eat that single
+    // query -- after which nothing ever asks again and she is parked in the doorway. Measured at
+    // the Crystal gate and Whispering Woods, both of which stalled on heroTile == the door cell.
+    if(!tr) tr=a1mAsk(scene,scene.heroTileX,scene.heroTileY);
+    if(!tr) return false;
+    try{ scene.performTransition(tr); }
+    catch(e){ if(window.__DQ_DEBUG__) console.log('a1 door '+e); return false; }
+    return true;
   }
   // Everything the engine's own update() refuses to move under. Kept as one list so a new
   // overlay cannot be added to the bundle and silently leave the hero drivable behind it.
@@ -2642,6 +2733,9 @@
       for(k=0;k<n;k++){
         var nx=x+sx, ny=y+sy;
         if(a1mFree(scene,m,nx,ny)){ x=nx; y=ny; moved+=Math.sqrt(sx*sx+sy*sy); continue; }
+        // The step was refused: give the engine its ASK-FIRST chance before anything glides past
+        // the thing she walked into. See a1mDoor -- this is where the town entrances live.
+        if(a1mDoor(scene,m,x,y,sx,sy)){ hero.x=x; hero.y=y; return; }
         // Slide rather than stick: give up only what the rock actually took away -- which is the
         // component INTO the wall, not a whole axis. See a1mSlide. The axis retries stay as the
         // fallback for what the tangent cannot serve; they are what used to run alone.
