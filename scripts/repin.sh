@@ -36,8 +36,14 @@ cd "$(dirname "$0")/.."
 
 FROZEN=60d90b63607b6e6980eb170aeeed445e
 
-echo "==> [1/6] assembling dist/ and the iOS payload"
-./scripts/build-dist.sh >/dev/null
+# ORDER MATTERS, and not in the obvious way. build-dist.sh verifies pinned identity as part of
+# assembling dist/, so running it FIRST on an edited public/ file fails before anything can be
+# re-stamped -- the first draft of this script did exactly that and tripped its own error message.
+# The overrides must reach dist/ and the pins must be regenerated BEFORE the first full assemble.
+echo "==> [1/6] staging the edited overrides into dist/ and repinning"
+for f in dq-tiles.js hero-override.js ui-overhaul.js ui-overhaul.css; do
+  [ -f "dist/$f" ] && cp "public/$f" "dist/$f"
+done
 
 NEW_SHA=$(shasum -a 256 public/dq-tiles.js | awk '{print $1}')
 OLD_SHA=$(grep -o "DQ_TILES_SHA256 = '[0-9a-f]*'" scripts/extract_act1_runtime_snapshot.mjs | grep -o "[0-9a-f]\{64\}")
@@ -51,13 +57,15 @@ else
   echo "==> [2/6] dq-tiles.js unchanged; SHAs already current"
 fi
 
-echo "==> [3/6] regenerating the Act 1 runtime snapshot"
-node scripts/extract_act1_runtime_snapshot.mjs
-
-echo "==> [4/6] regenerating pins"
+echo "==> [3/6] regenerating pins against the edited files"
 python3 scripts/regenerate_pins.py
 
-echo "==> [5/6] re-assembling dist/ with the repinned files"
+echo "==> [4/6] assembling dist/ and the iOS payload"
+./scripts/build-dist.sh >/dev/null
+
+echo "==> [5/6] regenerating the Act 1 runtime snapshot, then repinning it"
+node scripts/extract_act1_runtime_snapshot.mjs
+python3 scripts/regenerate_pins.py
 ./scripts/build-dist.sh >/dev/null
 
 echo "==> [6/6] gates"

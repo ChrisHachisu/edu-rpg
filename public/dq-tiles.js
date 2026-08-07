@@ -1124,9 +1124,22 @@
   //
   // A RING OF ONE MARGIN IS FREE. The window already straddles up to 9 chunks; padding it by
   // MARGIN on all four sides (a 68x62-cell rect against the window's 44x38) still straddles at
-  // most 9, over EVERY snapped window origin on this plate and for every window size the camera
-  // produces. So this raises peak residency by exactly zero and A1A_MAX_CHUNKS=10 still has its
-  // headroom. Padding by 2*MARGIN would reach 16, which is why the ring is one step and not two:
+  // most 9 at THIS window size. "Raises peak residency by exactly zero" -- what this comment said
+  // until 2026-08-08 -- is FALSE and was refuted twice. Live measurement put peak residency at
+  // 4-6 chunks before and 9-10 after: the worst case is unchanged at 9, but the TYPICAL case
+  // roughly doubles, because base only occasionally touched 9 while the ring holds it always.
+  // (docs/SMOOTH-ROUND-4-REFUTATION.md.) The device A/B then measured NEW at about HALF OLD's
+  // WebContent residency overall, so the ring is a net win -- but it is a win despite this cost,
+  // not because the cost is zero. Say the true thing.
+  // Ring size is also device-dependent, since winW/winH derive from cam.worldView and the shipped
+  // bundle uses Scale.RESIZE (src/main.ts says NONE -- it is fiction here). At real devicePixelRatio
+  // every iPhone and iPad lands at 9, because ZOOM multiplies by dpr and cancels the larger screen.
+  // The one real exception found is iPad mini 8.3 in PORTRAIT: 744*2 = 1488 falls just under the
+  // 768*2 threshold, ZOOM stays 1, and the ring reaches 12 -- over A1A_MAX_CHUNKS. That is not
+  // thrash: the trim floor is Math.max(A1A_MAX_CHUNKS, keep.length), so the cap simply rises and
+  // memory goes to roughly 228 MB instead of 190 MB. Earlier "12 on iPad, 16 on iPad Pro" figures
+  // came from harnesses that left deviceScaleFactor at 1 and are wrong for real hardware.
+  // Padding by 2*MARGIN would reach 16, which is why the ring is one step and not two:
   // one step is all that is needed anyway -- the hero crosses a window boundary about every 3.2 s
   // of walking, against a ~16 ms load.
   //
