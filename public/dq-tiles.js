@@ -1383,7 +1383,12 @@
     if(!rec.base||!rec.canopy) return null;
     var w=rec.base.width, h=rec.base.height;
     var cv=(typeof OffscreenCanvas!=='undefined')?new OffscreenCanvas(w,h):document.createElement('canvas');
-    if(!(cv instanceof (typeof OffscreenCanvas!=='undefined'?OffscreenCanvas:Object))){ cv.width=w; cv.height=h; }
+    // Was: `cv instanceof (OffscreenCanvas ?? Object)`. When OffscreenCanvas is absent that reduces
+    // to `canvas instanceof Object`, which is ALWAYS true, so the sizing below never ran and the
+    // canopy surface stayed at the DOM default 300x150 instead of 1536x1536 -- 1.9% of a chunk,
+    // i.e. wrong pixels rather than a slow path. Unreachable since the iOS floor moved to 16.4
+    // (OffscreenCanvas ships from Safari 16.2), but fixed so it cannot return if that floor drops.
+    if(!(typeof OffscreenCanvas!=='undefined' && cv instanceof OffscreenCanvas)){ cv.width=w; cv.height=h; }
     var sc=cv.getContext('2d'); if(!sc) return null;
     sc.imageSmoothingEnabled=false;
     sc.globalCompositeOperation='source-over'; sc.drawImage(rec.base,0,0);

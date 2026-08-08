@@ -35,6 +35,12 @@
  *   viewport, or the texture rows will false-fail while the game is perfectly correct.
  *   canMove, blocked, and mapData are viewport-INDEPENDENT and are the stronger fields.
  *
+ * WHAT IT DOES NOT VERIFY -- SAY THIS OUT LOUD WHEN QUOTING A PASS
+ *   RENDERING. `renderedSignature` is informational only; see the long note at the comparison site
+ *   for the three designs that were tried and why each failed. A PASS here means the world data,
+ *   the collision shape, the display-object counts, the DOM UI and the bundle-only globals match.
+ *   It does NOT mean the game looks the same. Prove that separately, per change.
+ *
  * WHAT IT CANNOT SEE (be honest about the gaps when quoting it)
  *   Battle balance, quiz content, audio, save migration, and anything reachable only deeper than
  *   the Act 1 overworld and its first doors. A PASS here means "the world and the interface are
@@ -122,7 +128,7 @@ const sha = (s) => createHash('sha256').update(s).digest('hex').slice(0, 16);
     { timeout: 180000 },
   );
 
-  const fp = await page.evaluate(() => {
+  const fp = await page.evaluate(async () => {
     const fnv = (bytes) => { let h = 0x811c9dc5; for (let i = 0; i < bytes.length; i++) { h ^= bytes[i]; h = Math.imul(h, 0x01000193) >>> 0; } return h.toString(16).padStart(8, '0'); };
     const texHash = (key) => {
       const g = window.__PHASER_GAME__;
@@ -144,21 +150,56 @@ const sha = (s) => createHash('sha256').update(s).digest('hex').slice(0, 16);
     // the hero hidden first, because a sprite's animation phase and the HUD clock are legitimately
     // free to differ between two runs of the same game.
     let renderedFrame = null;
-    try {
-      g.scene.getScenes(true).forEach((s) => { try { s.tweens?.pauseAll(); s.anims?.pauseAll?.(); } catch (_) {} });
-      const hero = sc && (sc.hero || sc.player || sc.heroSprite);
-      const heroWasVisible = hero ? hero.visible : null;
-      if (hero) hero.visible = false;
-      g.renderer.snapshot(() => {});           // force a fresh composite with the above applied
-      const cv = g.canvas;
-      const off = document.createElement('canvas');
-      off.width = cv.width; off.height = cv.height;
-      off.getContext('2d').drawImage(cv, 0, 0);
-      const px = off.getContext('2d').getImageData(0, 0, off.width, off.height).data;
-      let nonZero = 0; for (let i = 3; i < px.length; i += 4000) if (px[i]) nonZero++;
-      renderedFrame = nonZero ? `${fnv(px)}@${off.width}x${off.height}` : 'UNREADABLE';
-      if (hero && heroWasVisible !== null) hero.visible = heroWasVisible;
-    } catch (e) { renderedFrame = 'ERROR:' + String(e).slice(0, 60); }
+    // NOTE ON HOW THIS IS READ, because the first version of it was VACUOUS and shipped that way.
+    // It called g.renderer.snapshot() and then read g.canvas directly. With preserveDrawingBuffer
+    // off -- Phaser's default -- the WebGL back buffer is already cleared by the time you read it,
+    // so that produced a FULLY BLACK 768x672 image every time, mean luminance 0.00. The sanity
+    // check sampled only the ALPHA channel, which is opaque even when the colour is black, so it
+    // never fired. It was proven vacuous by running it against a build with a deliberately broken
+    // canopy: identical hash. It therefore "verified" nothing, on any build.
+    // The fix is to use snapshot's CALLBACK, which is the supported way to get pixels out, and to
+    // check LUMINANCE rather than alpha so an all-black read fails loudly instead of silently.
+    renderedFrame = await new Promise((resolve) => {
+      const done = (v) => resolve(v);
+      const timer = setTimeout(() => done('TIMEOUT'), 15000);
+      try {
+        g.scene.getScenes(true).forEach((s) => { try { s.tweens?.pauseAll(); s.anims?.pauseAll?.(); } catch (_) {} });
+        const hero = sc && (sc.hero || sc.player || sc.heroSprite);
+        if (hero) hero.visible = false;
+        g.renderer.snapshot((image) => {
+          clearTimeout(timer);
+          try {
+            const off = document.createElement('canvas');
+            off.width = image.width; off.height = image.height;
+            const c2 = off.getContext('2d');
+            c2.drawImage(image, 0, 0);
+            const px = c2.getImageData(0, 0, off.width, off.height).data;
+            let lum = 0, n = 0;
+            for (let i = 0; i < px.length; i += 4000) { lum += (px[i] + px[i + 1] + px[i + 2]) / 3; n++; }
+            const mean = n ? lum / n : 0;
+            if (hero) hero.visible = true;
+            // An all-black or near-black read means the capture failed, NOT that the game is dark.
+            // A full-frame HASH is sensitive but NOT stable here: water shimmer and the HUD clock
+            // keep moving even with tweens and animations paused, so two runs of the identical build
+            // disagree. Measured, not assumed. So emit a COARSE STRUCTURAL SIGNATURE instead: mean
+            // luminance over a 16x14 grid, which is invariant to a few pixels of animation phase but
+            // collapses immediately if terrain stops drawing (hiding 15 terrain objects moved mean
+            // luminance 83.2 -> 21.3). Compared with a per-cell tolerance, not for equality.
+            const GX = 16, GY = 14, cw = off.width / GX, ch = off.height / GY, sig = [];
+            for (let gy = 0; gy < GY; gy++) for (let gx = 0; gx < GX; gx++) {
+              const x0 = Math.floor(gx * cw), y0 = Math.floor(gy * ch);
+              let acc = 0, cnt = 0;
+              for (let y = y0; y < y0 + ch; y += 4) for (let x = x0; x < x0 + cw; x += 4) {
+                const i = (y * off.width + x) * 4;
+                acc += (px[i] + px[i + 1] + px[i + 2]) / 3; cnt++;
+              }
+              sig.push(Math.round(cnt ? acc / cnt : 0));
+            }
+            done(mean < 2 ? `UNREADABLE(mean=${mean.toFixed(2)})` : sig.join(','));
+          } catch (e) { done('ERROR:' + String(e).slice(0, 50)); }
+        });
+      } catch (e) { clearTimeout(timer); done('ERROR:' + String(e).slice(0, 50)); }
+    });
 
     // Collision shape: the authority for where the player may walk. This is the single most
     // valuable field here -- world generation moving by even one cell changes it.
@@ -172,7 +213,7 @@ const sha = (s) => createHash('sha256').update(s).digest('hex').slice(0, 16);
     const mapHash = sc ? fnv(Uint8Array.from(sc.mapData.flat())) : null;
 
     return {
-      canMove, blocked, mapData: mapHash, renderedFrame,
+      canMove, blocked, mapData: mapHash, renderedSignature: renderedFrame,
       dqterrain: texHash('dqterrain'), dqcanopy: texHash('dqcanopy'),
       tileLayerObjects: sc && sc.tileLayer ? sc.tileLayer.length : null,
       // The three bundle-only globals. Their ABSENCE is precisely what broke the last rebuild:
@@ -208,7 +249,38 @@ const sha = (s) => createHash('sha256').update(s).digest('hex').slice(0, 16);
     // implementation may legitimately stop using one (round 5 did exactly that). renderedFrame
     // is the field that actually answers "is this the same game to a player".
     const INFORMATIONAL = new Set(['bundleMd5', 'dqterrain', 'dqcanopy']);
-    const diffs = Object.keys(ref).filter((k) => !INFORMATIONAL.has(k) && String(ref[k]) !== String(fp[k]));
+    // renderedSignature compares with a per-cell tolerance rather than for equality, for the
+    // reason documented at its capture site. TOL is deliberately tight: a genuine rendering
+    // failure moves cells by tens, animation phase by a couple.
+    // INFORMATIONAL, not a gate. Three designs were tried and none was both stable and sensitive:
+    //   1. hash of g.canvas after snapshot()   -> VACUOUS. preserveDrawingBuffer is off, so it read
+    //      a fully black frame every time and returned the same hash for a build with a visibly
+    //      broken canopy. It "verified" nothing on any build, and shipped that way for one commit.
+    //   2. hash of the snapshot() callback image -> sensitive (hiding 15 terrain objects moved mean
+    //      luminance 83.2 -> 21.3) but UNSTABLE: two runs of the identical build disagreed.
+    //   3. this coarse 16x14 luminance grid    -> mostly stable, but the same build still disagreed
+    //      by 41 at one cell against a tolerance of 8, because chunks settle at slightly different
+    //      times between runs.
+    // So rendering equivalence is NOT covered by this gate, and pretending otherwise would give a
+    // flaky failure that people learn to ignore -- worse than an admitted gap. The delta is printed
+    // so a human can look, and a real visual-regression check needs a settled-state protocol
+    // (wait until no chunk has arrived for N ms) which is its own piece of work.
+    const TOL = 8;
+    const diffs = Object.keys(ref).filter((k) => {
+      if (INFORMATIONAL.has(k) || k === 'renderedSignature') return false;
+      return String(ref[k]) !== String(fp[k]);
+    });
+    if (ref.renderedSignature && fp.renderedSignature) {
+      const a = String(ref.renderedSignature).split(','), b = String(fp.renderedSignature).split(',');
+      if (a.length !== b.length || String(fp.renderedSignature).startsWith('UNREADABLE')) {
+        console.warn('  note: renderedSignature unreadable or reshaped (informational)');
+      } else {
+        let worst = 0, at = -1;
+        for (let i = 0; i < a.length; i++) { const d = Math.abs(+a[i] - +b[i]); if (d > worst) { worst = d; at = i; } }
+        console.log(`  renderedSignature: worst cell delta ${worst} (tolerance ${TOL}) at cell ${at}`);
+        if (worst > TOL) console.warn(`  note: renderedSignature moved by ${worst} (informational, not a failure - see the header)`);
+      }
+    }
     for (const k of INFORMATIONAL) {
       if (k !== 'bundleMd5' && ref[k] !== undefined && String(ref[k]) !== String(fp[k])) {
         console.warn(`  note: ${k} changed (informational, not a failure): ${ref[k]} -> ${fp[k]}`);
