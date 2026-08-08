@@ -30,7 +30,7 @@ in the source, not just in a doc. Do it at the source or it will be read again.
 | Canvas scale mode | the bundle: `Scale.RESIZE` | `src/main.ts:37-38` says `Scale.NONE`. Two agents reasoned from the wrong one; it changes whether window size is device-dependent. |
 | Monster roster | the bundle: **75** ids | `src/data/monsters.ts`: **72**. `bruiser`, `knifeSneak`, `thornvineLurker` are live in encounter tables and missing from source. `docs/SOURCE-BUNDLE-DRIFT.md` lists monsters.ts under "Faithful" — it is not. Maps (45) and items (58) genuinely are. |
 | What any screen LOOKS like | a dated capture of the shipped build. For the **battle command bar**, `design/feel-refs/battle-commands-locked.gif` (2026-08-08) — it is tracked, unlike the scratchpad capture below, and it supersedes it: the bar no longer carries a resting selection and the Attack sword is red. | **Not the CSS, and this is proven.** `public/ui-overhaul.css:218` is `grid-template-columns:1fr 1fr` and `BATTLE_ACT` assigns `btn-ruby`/`btn-sky`/`btn-em`/`btn-slate` with a running-man Flee icon. **None of that is on the device.** The shipped bar is ONE horizontal strip, four columns, no per-command background, one solid gold fill on the selected item. Labels are weight **500 at 12px**, not the 700 the CSS implies. A mockup built faithfully from the stylesheet was rejected by the owner on sight. |
-| Where the battle command bar lives | DOM: `public/ui-overhaul.js:871-876`, `public/ui-overhaul.css:118` (`#qok-ui .sel`) | NOT `__tapItems` / `selectedIndex` / `updateSelection` — that is the **TitleScene** path. The Phaser BattleScene's own menu sits under an opaque overlay and is never seen. |
+| Where the battle command bar lives | DOM: `public/ui-overhaul.js`, selectors **`.rail` / `.railplate` / `.railcmd`** ("Gilded Rail", locked 2026-08-07) | NOT `__tapItems` / `selectedIndex` / `updateSelection` — that is the **TitleScene** path. And NOT `#qok-ui .sel` at `ui-overhaul.css:118`, which the battle bar **does not use at all**. This orchestrator's own brief asserted `.sel` and `dyn = 'menu' + menuIndex` on 2026-08-08 and both were already superseded. |
 | Overworld collision | `canMove` (hash `317b8b0a`, 78,711 blocked) | NOT `owmBuild`'s field — `OWM_FIELD_OWNED={2,4,5}` splits the authorities and `canMove` is never derived from it. |
 | Dungeon walkability | the collision shape derived from the art | `act1-dungeon-floors.json`'s tile lattice is **no longer** the authority; dungeons moved to continuous movement. |
 | Whether a build reached Apple | App Store Connect, queried | **NOT `ship_ios.py`'s "uploaded build N" message** — it prints that from a file it writes itself, so it says the same thing whether or not Apple received anything. |
@@ -40,6 +40,11 @@ in the source, not just in a doc. Do it at the source or it will be read again.
 
 Recorded so they cannot come back. Each was believed and acted on.
 
+- ~~"The battle bar uses `#qok-ui .sel`, so changing it risks restyling six other screens"~~. It
+  does not use `.sel` at all; the scoping worry that shaped two briefs was moot. Verified by
+  rendering every shared `.sel` surface under the old and new stylesheet: **byte-identical**.
+  **The stale claim was in a brief written that same day by the orchestrator** — staleness is not
+  confined to old files, it reaches anything written from a stale read.
 - ~~"The bundle filename changes on a rebuild, which is arguably the useful tripwire"~~ (`SOURCE-BUNDLE-DRIFT.md` L9). **False today**: `gh-pages` ships `index-BhoGQRaA.js` at 4,987,498 B while the local baseline is 4,987,581 B. Same name, different game, right now.
 - ~~"The build toolchain is no longer declared anywhere"~~. It is recoverable: `node_modules/` was tracked at the initial commit — `git show 1a20e5c:node_modules/vite/package.json` → **6.4.1**, and phaser 3.90.0 / tone 15.1.22 match the bundle's own version strings.
 - ~~"The analytic collision field describes an unconsolidated coastline, so it is WRONG not merely slow"~~. **0 of 3,852,288 pixels differ.** Retracted in `public/dq-tiles.js`.
