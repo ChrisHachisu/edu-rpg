@@ -3993,6 +3993,106 @@
   // (Initial same-day ship was overworld-only; owner reversed.) Overworld + town + dungeon reskin all ON.
   // NOTE: the dungeon reskin loads Codex prop PNGs from props/dqprop-<name>-128.png -> that dir MUST ship too.
   var SHIP_TOWN_DNG_RESKIN=true;
+  /* ==============================================================================================
+     THE OVERWORLD IS NOT DRAWN WHILE A BATTLE IS ON SCREEN.
+
+     `scene.pause()` stops a scene's UPDATE. It does not stop its RENDER. Phaser's SceneManager
+     renders on `settings.visible && status >= LOADING(3) && status < SLEEPING(7)`, and pause()
+     sets status = PAUSED(6) while leaving `visible` true -- so the whole overworld display list
+     was still walked and batched, every frame, for the entire fight.
+
+     Measured on the running build (draw calls counted by wrapping gl.drawElements/drawArrays and
+     attributing each to whichever scene's sys.render was on the stack). A/B interleaved A-B-A-B on
+     ONE running page, because this fix's entire effect is that one boolean, so flipping it back
+     reconstructs the shipped build exactly with no reload and no machine drift between arms.
+     Apple M1 via ANGLE/Metal, 402x874 @ dpr 3, 300 frames per arm:
+
+         in battle, shipped      WorldMapScene rendered 300/300 frames, 98 draw calls per frame,
+                                 1.75-2.46 ms of main-thread CPU inside sys.render per frame
+                                 BattleScene   rendered 300/300 frames,  0 draw calls per frame
+                                 99 draw calls per frame total -- 99% of them the overworld
+         same battle, hidden     1 draw call per frame total, WorldMapScene not rendered at all
+
+     BE HONEST ABOUT WHAT THIS DID NOT DO, because the first draft of this comment was not.
+       * Frame rate did not move: 16.7 ms median / 59.9 fps in BOTH arms. This Mac was vsync-bound
+         with headroom to spare, so deleting the work bought no measurable fps here. An earlier
+         measurement quoting "189.1 ms -> 16.8 ms" was taken under --use-angle=swiftshader, a CPU
+         rasterizer; that number describes a software renderer, NOT a phone, and must not be quoted
+         as a win.
+       * Memory did not move AT ALL: 346 textures / 19 Act 1 chunks resident in both arms. This
+         change does not free one byte. Freeing residency is the other fix's job (a1aReleaseChunks,
+         just below); this one only stops DRAWING what is already resident.
+     What it does buy is real but bounded: ~1.8-2.5 ms of main thread and 98 draw calls per frame,
+     every frame, for the whole fight, on a device with far less headroom than this Mac.
+
+     Every one of those 98 draw calls was INVISIBLE. #qok-ui is `position:fixed; inset:0;
+     z-index:200` with an opaque background, and in battle it carries a full-bleed `cover` biome
+     WEBP; the monster is a DOM <img> and the command rail is DOM. The canvas contributes nothing.
+     This file is not the first to notice: ui-overhaul.css:403 and ui-overhaul.js:773 both already
+     say "the Phaser canvas is hidden under the overlay during battle", which is why the battle
+     hit-flash / crit / shake had to be re-bridged into the DOM in the first place. The shipped
+     code already assumed what this makes true.
+
+     WHY VISIBILITY AND NOT SLEEP. `scene.sleep()` would also stop the render, but it emits SLEEP,
+     tears input down and is not what endBattle() undoes -- endBattle() calls scene.resume(), which
+     pairs with pause(). Flipping `visible` leaves the pause/resume contract exactly as the bundle
+     wrote it and touches nothing else.
+
+     RESTORE IS EVENT-DRIVEN, NOT POLLED, AND THAT IS THE WHOLE POINT. tick() runs on an 80 ms
+     interval; restoring from there would leave up to 80 ms of an undrawn canvas after the battle
+     tears its overlay down -- a black flash on every single return.
+
+     The ordering is not what it looks like, so do not "simplify" it. endBattle() calls
+     ScenePlugin.resume, and ScenePlugin.resume does NOT resume anything: it is
+     `this.manager.queueOp("resume", ...)` (bundle), deferred to the queue drain at the top of the
+     NEXT game step. Systems.resume is the one that runs synchronously
+     (`y.status=RUNNING, y.active=!0, v.emit(l.RESUME, ...)`), and it runs inside that drain --
+     which happens before that step's render. The net effect is what matters and it was measured,
+     not reasoned: over 40 frames across an endBattle(), settings.visible flipped on frame 1, the
+     flip's stack was `a1vShow <- emit <- Systems.resume` (i.e. the listener, NOT the 80 ms tick),
+     and the count of frames in which WorldMapScene was RUNNING-but-not-drawn was ZERO. The
+     BattleScene shutdown that removes the DOM overlay is drained from the same queue on the same
+     step, so the overlay and the overworld change over together.
+
+     Hiding, by contrast, is safe to poll: the encounter has already run cameras.main.fadeOut(400)
+     to solid black before it launches BattleScene, so the worst case is one extra 80 ms of drawing
+     a black screen.
+
+     Three independent restores, because a missed one is a black screen the player cannot escape:
+       1. RESUME  -- the normal exit (win, flee, and every non-battle pauser).
+       2. START   -- Systems.start() sets `visible = true` itself; the listener only clears our
+                     flag. This is the GameOverScene "retry" path, which does scene.start(
+                     'WorldMapScene') without ever resuming.
+       3. tick()  -- if WorldMapScene is somehow RUNNING while we still believe we hid it, undo it.
+     A defeat deliberately keeps the overworld hidden: BattleScene stops straight into
+     GameOverScene, which renders its own opaque camera background on the canvas, and WorldMapScene
+     stays PAUSED underneath it until retry restarts it.
+     ============================================================================================== */
+  var A1V={hidden:false};
+  function a1vInstall(scene){
+    // Re-checked from tick() rather than latched in a variable, for a1mInstall's reason: the flag
+    // lives on the Systems object, so a scene that is destroyed and re-created re-arms itself.
+    if(!scene||!scene.sys||!scene.sys.events||scene.sys.__a1vWired) return;
+    scene.sys.events.on('resume',a1vShow);
+    scene.sys.events.on('start',a1vShow);
+    scene.sys.__a1vWired=true;
+  }
+  function a1vHide(g){
+    if(A1V.hidden) return;
+    var wm; try{ wm=g.scene.getScene('WorldMapScene'); }catch(e){ return; }
+    if(!wm||!wm.sys||!wm.sys.settings) return;
+    // PAUSED specifically, not merely "not RUNNING": a scene that is still INIT/CREATING, or one
+    // already SHUTDOWN, must not have its visibility rewritten out from under Systems.start().
+    if(!wm.sys.isPaused||!wm.sys.isPaused()||!wm.sys.settings.visible) return;
+    wm.sys.settings.visible=false; A1V.hidden=true;
+  }
+  function a1vShow(){
+    if(!A1V.hidden) return;
+    A1V.hidden=false;
+    var g=window.__PHASER_GAME__; if(!g) return;
+    var wm; try{ wm=g.scene.getScene('WorldMapScene'); }catch(e){ return; }
+    if(wm&&wm.sys&&wm.sys.settings) wm.sys.settings.visible=true;
+  }
   function tick(){
     var g=window.__PHASER_GAME__; if(!g) return;
     var scene; try{ scene=g.scene.getScene('WorldMapScene'); }catch(e){ return; }
@@ -4022,6 +4122,10 @@
     // Re-checked, not latched: Phaser resets sys.sceneUpdate to its no-op on shutdown/restart and
     // re-captures scene.update on the next create(), which would quietly drop the wrapper.
     try{ a1mInstall(scene); }catch(e){ if(window.__DQ_DEBUG__) console.log('dq a1m install '+e); }
+    // Beside a1mInstall and re-checked for its reason. It must be wired BEFORE the isActive guard:
+    // the listener that restores the overworld has to already exist when the battle ends, and the
+    // guard below is exactly where a battle stops tick() from reaching anything.
+    try{ a1vInstall(scene); }catch(e){ if(window.__DQ_DEBUG__) console.log('dq a1v install '+e); }
     // A BATTLE is the one departure from the overworld that this guard hides. Towns and dungeons
     // are map swaps -- WorldMapScene stays ACTIVE, so the kind!=='ow' branch below reaches
     // a1aReleaseChunks and trims the Act 1 chunk cache from the full A1A_MAX_CHUNKS=10 (~198 MB)
@@ -4044,8 +4148,18 @@
     // what made walking back out cost 4.6 s (see a1aReleaseChunks).
     if (!g.scene.isActive('WorldMapScene')){
       try{ a1aHideCanopy(); a1aReleaseChunks(); }catch(e){ if(window.__DQ_DEBUG__) console.log('dq battle release '+e); }
+      // The cache trim above attacks the FLOOR the encounter peak sits on. This attacks the peak
+      // itself: while BattleScene is up the overworld is drawn and never seen. Scoped to
+      // BattleScene rather than to "inactive" so a menu or a shop -- which this file has not
+      // measured -- keeps behaving exactly as it ships today.
+      try{ if(g.scene.isActive('BattleScene')) a1vHide(g); }catch(e){ if(window.__DQ_DEBUG__) console.log('dq a1v hide '+e); }
       return;
     }
+    // Safety net only, and it should never fire. RESUME and START restore visibility on the same
+    // step that makes the scene RUNNING, i.e. before that step renders (measured: zero
+    // RUNNING-but-not-drawn frames; see A1V above). This catches a path that reached RUNNING
+    // without emitting either, and pays up to 80 ms of black to do it.
+    if (A1V.hidden) a1vShow();
     if (!scene.mapData || !scene.tileGrid || !scene.tileGrid.length) return;
     var kind=sceneKind(scene);
     // Leaving the overworld: the depth-11 canopy must not linger over a town/dungeon, AND the
