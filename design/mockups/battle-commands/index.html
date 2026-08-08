@@ -1,0 +1,490 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Battle commands — tap response · G1 motion mockup</title>
+<style>
+/* ============================================================
+   Quest of Knowledge — battle command buttons, G1 motion mockup.
+   Palette, hairlines, radii, icons and layout are lifted verbatim
+   from public/ui-overhaul.css + public/ui-overhaul.js so this reads
+   as the game, not as a generic web page.
+
+   Font: the shipped UI is Zen Maru Gothic (bundled woff2). A
+   standalone file:// mockup cannot load it without a network or a
+   CORS-blocked font fetch, so this page uses the SAME fallback stack
+   the shipped CSS declares. Weight/size/spacing are unchanged.
+   ============================================================ */
+:root{
+  --bg3:#15161c; --panel:#1d1f27; --panel2:#22242e;
+  --ink:#e8e2d4; --ink-soft:#a49e91;
+  --gold:#c9a961; --gold2:#a98a45; --gold-line:rgba(201,169,97,.40); --gold-glow:rgba(201,169,97,.35);
+  --emerald:#6f9e7e; --emerald2:#557e63; --ruby:#a8564e; --ruby2:#8c4139; --sky:#6f8fa8; --violet:#8377a8;
+  --font:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;font-family:var(--font);}
+body{
+  background:
+    radial-gradient(70vw 46vh at 20% -8%,#22242e,transparent 62%),
+    linear-gradient(180deg,#191a21,#131419) fixed;
+  background-color:var(--bg3);
+  color:var(--ink);
+  min-height:100vh;
+  padding:20px 14px 64px;
+  -webkit-text-size-adjust:100%;
+  -webkit-tap-highlight-color:transparent;
+}
+.wrap{max-width:1120px;margin:0 auto;}
+
+/* ---- page chrome ---- */
+.eyebrow{font-size:11px;letter-spacing:.26em;text-transform:uppercase;color:var(--gold);font-weight:700;}
+h1{font-size:clamp(21px,4.4vw,29px);font-weight:700;letter-spacing:.01em;margin:7px 0 9px;}
+.lede{color:var(--ink-soft);font-size:14px;line-height:1.6;max-width:66ch;}
+.lede b{color:var(--ink);font-weight:700;}
+.hr{height:1px;background:linear-gradient(90deg,var(--gold-line),transparent);margin:22px 0;}
+
+/* ---- keyboard simulator bar ---- */
+.kbbar{
+  display:flex;flex-wrap:wrap;align-items:center;gap:10px;
+  background:#ffffff08;border:1px solid var(--gold-line);border-radius:14px;
+  padding:12px 14px;margin:18px 0 6px;
+}
+.kbbar .lab{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);font-weight:700;}
+.kbkey{
+  appearance:none;background:#ffffff0a;border:1px solid var(--gold-line);color:var(--ink);
+  border-radius:10px;min-width:46px;min-height:42px;padding:0 12px;font-size:15px;font-weight:700;
+  cursor:pointer;touch-action:manipulation;transition:background 90ms ease-out,border-color 90ms ease-out;
+}
+.kbkey:hover{background:#ffffff14;}
+.kbkey.hit{background:var(--gold-glow);border-color:var(--gold);transition-duration:50ms;}
+.kbstate{margin-left:auto;font-size:12.5px;color:var(--ink-soft);}
+.kbstate b{color:var(--gold);font-weight:700;}
+.kbhint{font-size:12px;color:var(--ink-soft);margin:0 2px 0;line-height:1.55;}
+
+/* ---- variant grid ---- */
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;margin-top:16px;align-items:start;}
+.card{
+  background:var(--panel);border:1px solid var(--gold-line);border-radius:16px;
+  box-shadow:0 10px 24px rgba(0,0,0,.55);overflow:hidden;display:flex;flex-direction:column;
+}
+.card.current{border-color:rgba(168,86,78,.5);}
+.chead{padding:13px 14px 11px;border-bottom:1px solid rgba(201,169,97,.16);}
+.ctitle{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap;}
+.ctitle h2{font-size:16px;font-weight:700;letter-spacing:.01em;}
+.tag{
+  font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;
+  border-radius:99px;padding:3px 9px;border:1px solid;
+}
+.tag.max{color:var(--gold);border-color:var(--gold-line);background:rgba(201,169,97,.13);}
+.tag.deb{color:var(--ink-soft);border-color:rgba(232,226,212,.22);background:#ffffff08;}
+.tag.now{color:#e0918a;border-color:rgba(168,86,78,.45);background:rgba(168,86,78,.14);}
+.cspec{font-size:12px;line-height:1.6;color:var(--ink-soft);margin-top:7px;}
+.cspec code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px;color:var(--ink);background:#ffffff0d;border-radius:5px;padding:1px 5px;}
+
+/* ---- the battle HUD block (real components) ---- */
+.hud{padding:12px 13px 13px;background:linear-gradient(180deg,#14151b,#101116);}
+.enemy-card{display:flex;gap:9px;background:#15161ce6;border:1px solid var(--gold-line);border-radius:10px;padding:9px 11px;}
+.enemy-card .nm{font-weight:800;color:#ffd9a6;font-size:13px;}
+.hp{height:9px;border-radius:99px;background:#00000040;overflow:hidden;margin-top:6px;}
+.hp i{display:block;height:100%;border-radius:99px;background:linear-gradient(180deg,#ef6a60,#bb3a32);}
+.actiongrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;}
+.pbar{display:flex;align-items:center;gap:9px;background:#15161ce6;border:1px solid var(--gold-line);border-radius:10px;padding:9px 11px;margin-top:10px;}
+.pbar .av{width:34px;height:34px;border-radius:11px;flex:none;display:grid;place-items:center;background:#ffffff0f;box-shadow:inset 0 0 0 1px var(--gold-line);}
+.pbar .who{flex:1;min-width:0;}
+.pbar .nm{font-weight:800;color:#fdf3da;font-size:12px;margin-bottom:5px;}
+.pbar .hp i{background:#6f9e7e;}
+.pbar .num{font-size:11px;font-weight:800;color:#ffeac0;}
+
+/* ---- the button under test ---- */
+.btn{
+  appearance:none;border:1px solid var(--gold-line);font-weight:700;cursor:pointer;
+  border-radius:13px;color:var(--ink);font-size:15px;padding:14px;position:relative;
+  background:#ffffff0a;display:flex;align-items:center;justify-content:center;gap:8px;min-height:52px;
+  touch-action:manipulation;-webkit-user-select:none;user-select:none;
+  transform-origin:50% 50%;
+  /* the keyboard cursor ring; only .sel turns it on */
+  outline:2px solid transparent;outline-offset:1px;
+}
+.btn .ic{width:21px;height:21px;flex:none;}
+.btn-em{background:var(--emerald2);border-color:var(--emerald);color:#f2f6f3;}
+.btn-ruby{background:var(--ruby2);border-color:var(--ruby);color:#f8f0ef;}
+.btn-sky{background:#3c5566;border-color:var(--sky);color:#eef3f6;}
+.btn-slate{background:#ffffff0a;border-color:var(--gold-line);color:var(--ink);}
+
+/* keyboard cursor — the SAME gold treatment shipping today, but it is now a
+   keyboard-only readout instead of a permanent resting selection. */
+.btn.sel{outline-color:var(--gold);box-shadow:0 0 0 3px var(--gold-glow);}
+
+/* ============================================================
+   VARIANT A — MAXED. One effect: scale punch (transform only).
+   press  70ms  cubic-bezier(.2,.8,.2,1)     ease-out   -> scale .94
+   release 100ms cubic-bezier(.34,1.56,.64,1) back-out  -> 1 (one overshoot)
+   The single playful easing permitted on this screen is spent here.
+   ============================================================ */
+.v-a .btn{transition:transform 100ms cubic-bezier(.2,.8,.2,1);}
+.v-a .btn.press{transform:scale(.94);transition:transform 70ms cubic-bezier(.2,.8,.2,1);}
+/* the release is a keyframe, not a back-eased transition: from .94 a back curve overshoots by
+   half a percent, which is invisible. This states the overshoot explicitly. */
+@keyframes qok-cmd-punch{ 0%{transform:scale(.94);} 52%{transform:scale(1.035);} 100%{transform:scale(1);} }
+.v-a .btn.punch{animation:qok-cmd-punch 100ms cubic-bezier(.2,.8,.2,1);}
+
+/* ============================================================
+   VARIANT B — DEBUFFED. Same effect family, less of it, no overshoot.
+   press  60ms cubic-bezier(.2,.8,.2,1) -> scale .97
+   release 90ms cubic-bezier(.2,.8,.2,1) -> 1
+   ============================================================ */
+.v-b .btn{transition:transform 90ms cubic-bezier(.2,.8,.2,1);}
+.v-b .btn.press{transform:scale(.97);transition:transform 60ms cubic-bezier(.2,.8,.2,1);}
+
+/* ============================================================
+   VARIANT C — DEBUFFED, different flavour: flash, no movement.
+   The surface brightens to its own accent's hot tint; nothing moves.
+   press  60ms cubic-bezier(.2,.8,.2,1)
+   release 100ms cubic-bezier(.2,.8,.2,1)
+   This is also the prefers-reduced-motion fallback for A and B.
+   ============================================================ */
+.v-c .btn{transition:background-color 100ms cubic-bezier(.2,.8,.2,1),border-color 100ms cubic-bezier(.2,.8,.2,1);}
+.v-c .btn.press{transition:background-color 60ms cubic-bezier(.2,.8,.2,1),border-color 60ms cubic-bezier(.2,.8,.2,1);}
+.v-c .btn-ruby.press{background:#c2635a;border-color:#d78a80;}
+.v-c .btn-sky.press{background:#648aa4;border-color:#93b3c8;}
+.v-c .btn-em.press{background:#7fae90;border-color:#a6cfb3;}
+.v-c .btn-slate.press{background:#ffffff2e;border-color:var(--gold);}
+
+/* CURRENT — no press response at all; the gold cursor simply teleports. */
+.v-now .btn{transition:none;}
+
+@media (prefers-reduced-motion: reduce){
+  .v-a .btn,.v-b .btn{transition:background-color 100ms ease-out;}
+  .v-a .btn.press,.v-b .btn.press{transform:none;background:#ffffff26;transition:background-color 60ms ease-out;}
+  .v-a .btn.punch{animation:none;}
+}
+
+/* ---- per-card readout ---- */
+.readout{
+  border-top:1px solid rgba(201,169,97,.16);padding:10px 14px 12px;
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--ink-soft);min-height:44px;
+}
+.readout .fired{color:var(--ink);font-weight:700;}
+.readout .lat{margin-left:auto;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--gold);}
+.readout .cur{font-size:11.5px;}
+
+/* ---- the honest "today" comparison: same components, deliberately secondary ---- */
+.nowhead{margin:26px 0 10px;display:flex;flex-direction:column;gap:5px;font-size:12.5px;line-height:1.6;color:var(--ink-soft);max-width:60ch;}
+.nowrow{max-width:340px;}
+
+/* ---- footer notes ---- */
+.notes{margin-top:26px;background:#ffffff06;border:1px solid rgba(201,169,97,.18);border-radius:14px;padding:16px 18px;}
+.notes h3{font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);font-weight:700;margin-bottom:10px;}
+.notes ul{list-style:none;display:flex;flex-direction:column;gap:9px;}
+.notes li{font-size:13px;line-height:1.62;color:var(--ink-soft);padding-left:15px;position:relative;}
+.notes li::before{content:"";position:absolute;left:0;top:8px;width:5px;height:5px;border-radius:50%;background:var(--gold-line);}
+.notes li b{color:var(--ink);font-weight:700;}
+.notes code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px;color:var(--ink);background:#ffffff0d;border-radius:5px;padding:1px 5px;}
+
+@media (max-width:520px){
+  body{padding:16px 11px 48px;}
+  .kbstate{margin-left:0;width:100%;}
+}
+</style>
+</head>
+<body>
+
+<!-- icon symbols: copied verbatim from public/ui-overhaul.js DEFS -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<symbol id="qok-sword" viewBox="0 0 24 24"><g fill="currentColor" transform="rotate(42 12 12)"><path d="M12 0.6 13.5 4.6 13.5 13.4 10.5 13.4 10.5 4.6Z"/><rect x="6.9" y="13.1" width="10.2" height="2.7" rx="1.2"/><rect x="10.85" y="15.8" width="2.3" height="5" rx="0.7"/><circle cx="12" cy="21.7" r="2"/></g></symbol>
+<symbol id="qok-shieldw" viewBox="0 0 24 24"><path d="M12 2.4l8.2 2.7v6.3c0 5.7-3.5 9-8.2 10.9C7.3 20.4 3.8 17.1 3.8 11.4V5.1z" fill="#fff"/></symbol>
+<symbol id="qok-potion" viewBox="0 0 24 24"><path fill="currentColor" d="M9 2h6v2l-1 1v3.2l3.6 6.3A3 3 0 0114 19H10a3 3 0 01-3.6-4.5L10 8.2V5L9 4z"/><rect x="8" y="14" width="8" height="4" fill="#ffffff55"/></symbol>
+<symbol id="qok-run" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15.4 8.4 11.7 12.7"/><path d="M15.6 9 19.7 10.7"/><path d="M13.7 9.1 10 7.5"/><path d="M11.7 12.7 15.7 14.5 14.2 19"/><path d="M11.7 12.7 8 13.9 5.3 17.8"/></g><circle cx="17" cy="4.5" r="2.3" fill="currentColor"/><g fill="currentColor"><rect x="1.2" y="4.4" width="4.8" height="1.8" rx="0.9" opacity="0.9"/><rect x="0.6" y="8.1" width="5.8" height="1.8" rx="0.9" opacity="0.72"/><rect x="2" y="11.8" width="4.4" height="1.8" rx="0.9" opacity="0.55"/></g></symbol>
+</svg>
+
+<div class="wrap">
+
+  <div class="eyebrow">Quest of Knowledge · G1 motion mockup</div>
+  <h1>Battle commands — individual buttons with their own tap response</h1>
+  <p class="lede">
+    Today one command is <b>always</b> highlighted in gold. That highlight is a keyboard cursor,
+    drawn on a touch screen where it means nothing — so the screen looks like it has already
+    chosen for you. These three variants remove the resting selection, give every button its own
+    press response, and keep the gold cursor alive for arrow keys only.
+    <b>Tap the buttons.</b> Every cell is live.
+  </p>
+
+  <div class="kbbar">
+    <span class="lab">Simulate keyboard</span>
+    <button class="kbkey" data-key="ArrowLeft" aria-label="Left">&#9664;</button>
+    <button class="kbkey" data-key="ArrowUp" aria-label="Up">&#9650;</button>
+    <button class="kbkey" data-key="ArrowDown" aria-label="Down">&#9660;</button>
+    <button class="kbkey" data-key="ArrowRight" aria-label="Right">&#9654;</button>
+    <button class="kbkey" data-key="Enter" style="min-width:78px;">Enter</button>
+    <span class="kbstate">cursor: <b id="kbstate">hidden (touch)</b></span>
+  </div>
+  <p class="kbhint">
+    Real arrow keys and Enter work too. Arrows reveal and move the gold cursor across all three
+    new variants at once; the next touch anywhere hides it again. The bottom-right cell ignores
+    this — it is today's build.
+  </p>
+
+  <div class="hr"></div>
+
+  <div class="grid" id="grid"></div>
+
+  <div class="nowhead">
+    <span class="eyebrow">For comparison</span>
+    <span>What ships today. Same buttons, honest reproduction &mdash; a resting gold selection that
+      never goes away, and no press response at all.</span>
+  </div>
+  <div class="nowrow" id="nowrow"></div>
+
+  <div class="notes">
+    <h3>Notes</h3>
+    <ul>
+      <li><b>Where the numbers come from.</b> <code>design/GAME-FEEL.md</code> token
+        <code>input.feedback</code> = "under 80ms first response". Every press here starts at
+        <b>0ms</b> and completes its inward move in 60&ndash;70ms, inside that token. Release
+        durations (90&ndash;100ms) come from the <code>game-design</code> skill's input-feedback
+        band, 50&ndash;100ms ease-out. Nothing was invented for this feature.</li>
+      <li><b>One effect, not three.</b> A tap is the most common event in the game, so the juice
+        budget is tier&#8209;1: one effect. A and B spend it on a scale punch, C spends it on a
+        flash. None of them stack both, and none of them add shake, particles or hit-stop &mdash;
+        that treatment is reserved for level-ups and boss kills, and spending it here would flatten
+        those.</li>
+      <li><b>The keyboard is not sacrificed.</b> The gold cursor is now gated on the last input
+        device: arrows and Enter show it, the next touch hides it. Keyboard and gamepad play is
+        unchanged; touch simply stops being shown a cursor it never asked for.</li>
+      <li><b>Response fires on press, confirm fires on release.</b> That matches how the shipped
+        overlay already routes battle taps (it commits on <code>pointerup</code>), and it is why
+        the "first response" figure in each cell is measured from finger-down rather than from the
+        action resolving.</li>
+      <li><b>Read the press-in, not the release &mdash; the release is a mockup luxury.</b> In the
+        real battle, confirming a command immediately swaps the command bar for the quiz card or
+        the message line, so the buttons are gone before any release animation could play. What you
+        will actually see in-game is the inward press, held for as long as your finger is down.
+        Here the buttons stay put so you can tap them repeatedly, which means you also see the
+        release. In-game, A's overshoot only shows when a tap is <i>cancelled</i> &mdash; finger
+        down, then slid off. That is a fair argument for B or C: they spend nothing on a beat the
+        player rarely sees.</li>
+      <li><b>Reduced motion.</b> With the OS "reduce motion" setting on, A and B fall back to C's
+        flash automatically. Nothing loses its feedback.</li>
+      <li><b>Font.</b> The shipped UI uses bundled Zen Maru Gothic; a standalone offline file
+        cannot load it, so this page falls back to the system face. Sizes, weights and spacing are
+        the shipped values.</li>
+    </ul>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  'use strict';
+
+  var ACTS = [
+    { key:'Attack', cls:'btn-ruby',  ic:'sword'   },
+    { key:'Defend', cls:'btn-sky',   ic:'shieldw' },
+    { key:'Item',   cls:'btn-em',    ic:'potion'  },
+    { key:'Flee',   cls:'btn-slate', ic:'run'     }
+  ];
+
+  var VARIANTS = [
+    {
+      id:'a', cls:'v-a', title:'A — Press-in punch', tag:'max', tagText:'Maxed',
+      spec:'Scale punch, one effect. Press <code>scale .94</code> over <code>70ms</code> ease-out; release <code>.94 &rarr; 1.035 &rarr; 1</code> over <code>100ms</code> &mdash; the one overshoot this screen is allowed. Gold cursor: keyboard only.'
+    },
+    {
+      id:'b', cls:'v-b', title:'B — Restrained press', tag:'deb', tagText:'Debuffed',
+      spec:'Same effect family, dialled down. Press <code>scale .97</code> over <code>60ms</code> ease-out; release over <code>90ms</code> ease-out, no overshoot. Gold cursor: keyboard only.'
+    },
+    {
+      id:'c', cls:'v-c', title:'C — Flash, no movement', tag:'deb', tagText:'Debuffed',
+      spec:'Colour flash instead of motion. Surface brightens to its own accent&rsquo;s hot tint over <code>60ms</code> ease-out, decays over <code>100ms</code> ease-out; nothing moves. Doubles as the reduced-motion fallback. Gold cursor: keyboard only.'
+    },
+    {
+      id:'now', cls:'v-now', title:'Current behaviour', tag:'now', tagText:'Shipping today',
+      spec:'No press response of any kind. One command is permanently gold, and a tap teleports that gold ring onto whatever you touched and confirms in the same gesture. Gold cursor: <b>always visible</b>, on touch as well as keyboard.'
+    }
+  ];
+
+  // ---- shared state -------------------------------------------------------
+  // lastInput drives whether the gold keyboard cursor is drawn at all.
+  var lastInput = 'touch';   // 'touch' | 'key'
+  var cursor    = 0;         // keyboard cursor index, shared by A/B/C
+  var nowIndex  = 0;         // the CURRENT cell's own always-on highlight
+
+  function icon(id){
+    return '<svg class="ic" style="color:#fff" aria-hidden="true"><use href="#qok-'+id+'"/></svg>';
+  }
+
+  function cardHtml(v){
+    var btns = '';
+    for (var i=0;i<ACTS.length;i++){
+      var a = ACTS[i];
+      btns += '<button class="btn '+a.cls+'" data-i="'+i+'" type="button">'+icon(a.ic)+a.key+'</button>';
+    }
+    return '<div class="card'+(v.id==='now'?' current':'')+'" data-v="'+v.id+'">'+
+      '<div class="chead">'+
+        '<div class="ctitle"><h2>'+v.title+'</h2><span class="tag '+v.tag+'">'+v.tagText+'</span></div>'+
+        '<div class="cspec">'+v.spec+'</div>'+
+      '</div>'+
+      '<div class="hud '+v.cls+'">'+
+        '<div class="enemy-card"><div style="flex:1;"><div class="nm">Slime</div><div class="hp"><i style="width:62%"></i></div></div></div>'+
+        '<div class="actiongrid">'+btns+'</div>'+
+        '<div class="pbar">'+
+          '<div class="av"><svg width="22" height="22" viewBox="0 0 16 16" style="image-rendering:pixelated">'+
+            '<rect x="5" y="1" width="6" height="2" fill="#e0584f"/><rect x="4" y="3" width="8" height="4" fill="#9fb3c8"/>'+
+            '<rect x="5" y="4" width="2" height="2" fill="#fff"/><rect x="9" y="4" width="2" height="2" fill="#fff"/>'+
+            '<rect x="4" y="7" width="8" height="5" fill="#4477dd"/><rect x="6" y="12" width="4" height="3" fill="#5a3a22"/></svg></div>'+
+          '<div class="who"><div class="nm">Hero &middot; Lv 6</div><div class="hp"><i style="width:78%"></i></div></div>'+
+          '<div class="num">31/40</div>'+
+        '</div>'+
+      '</div>'+
+      '<div class="readout">'+
+        '<span class="cur" data-cur>cursor: hidden</span>'+
+        '<span class="fired" data-fired></span>'+
+        '<span class="lat" data-lat></span>'+
+      '</div>'+
+    '</div>';
+  }
+
+  var grid = document.getElementById('grid');
+  grid.innerHTML = VARIANTS.filter(function(v){ return v.id !== 'now'; }).map(cardHtml).join('');
+  document.getElementById('nowrow').innerHTML =
+    VARIANTS.filter(function(v){ return v.id === 'now'; }).map(cardHtml).join('');
+
+  var cards = {};
+  VARIANTS.forEach(function(v){
+    var el = document.querySelector('[data-v="'+v.id+'"]');
+    cards[v.id] = {
+      el: el,
+      btns: [].slice.call(el.querySelectorAll('.btn')),
+      cur: el.querySelector('[data-cur]'),
+      fired: el.querySelector('[data-fired]'),
+      lat: el.querySelector('[data-lat]')
+    };
+  });
+
+  // ---- cursor rendering ---------------------------------------------------
+  function renderCursor(){
+    var show = (lastInput === 'key');
+    VARIANTS.forEach(function(v){
+      var c = cards[v.id];
+      if (v.id === 'now'){
+        // today: the highlight is unconditional and follows taps as well as arrows
+        c.btns.forEach(function(b,i){ b.classList.toggle('sel', i === nowIndex); });
+        c.cur.textContent = 'cursor: always on → ' + ACTS[nowIndex].key;
+        return;
+      }
+      c.btns.forEach(function(b,i){ b.classList.toggle('sel', show && i === cursor); });
+      c.cur.textContent = show ? ('cursor: ' + ACTS[cursor].key) : 'cursor: hidden';
+    });
+    document.getElementById('kbstate').textContent =
+      show ? (ACTS[cursor].key + ' (keyboard)') : 'hidden (touch)';
+  }
+
+  // ---- press feedback -----------------------------------------------------
+  // Applied on pointerdown so the first visible response never waits on the
+  // action resolving. Confirm happens on pointerup, matching the shipped
+  // overlay's pointer routing.
+  // keyed by pointerId so two fingers on two cells never strand a pressed state
+  var down = new Map();
+
+  function press(btn, ev){
+    btn.classList.add('press');
+    var t0 = (ev && typeof ev.timeStamp === 'number' && ev.timeStamp > 0) ? ev.timeStamp : performance.now();
+    requestAnimationFrame(function(){
+      var card = cards[btn.closest('.card').getAttribute('data-v')];
+      var ms = Math.max(0, Math.round(performance.now() - t0));
+      if (ms < 400) card.lat.textContent = 'first response ' + ms + 'ms';
+    });
+  }
+  function release(btn){
+    if (!btn) return;
+    btn.classList.remove('press');
+    if (btn.closest('.hud').classList.contains('v-a')){
+      btn.classList.remove('punch'); void btn.offsetWidth; btn.classList.add('punch');
+      setTimeout(function(){ btn.classList.remove('punch'); }, 120);
+    }
+  }
+
+  function confirmAction(vid, i){
+    var c = cards[vid];
+    if (vid === 'now') nowIndex = i;          // today's tap teleports the highlight
+    c.fired.textContent = '→ ' + ACTS[i].key;
+    renderCursor();
+  }
+
+  var live = document.querySelector('.wrap');   // covers the variant grid AND the comparison cell
+  live.addEventListener('pointerdown', function(e){
+    var btn = e.target.closest ? e.target.closest('.btn') : null;
+    if (!btn) return;
+    e.preventDefault();
+    if (lastInput !== 'touch'){ lastInput = 'touch'; renderCursor(); }  // touch hides the cursor
+    down.set(e.pointerId, btn);
+    press(btn, e);
+  });
+
+  function endGesture(e){
+    var btn = down.get(e.pointerId);
+    if (!btn) return;
+    down.delete(e.pointerId);
+    release(btn);
+    var up = e.target.closest ? e.target.closest('.btn') : null;
+    if (up === btn){
+      confirmAction(btn.closest('.card').getAttribute('data-v'), parseInt(btn.getAttribute('data-i'),10));
+    }
+  }
+  live.addEventListener('pointerup', endGesture);
+  function abort(e){ var b = down.get(e.pointerId); if (b){ release(b); down.delete(e.pointerId); } }
+  live.addEventListener('pointercancel', abort);
+  window.addEventListener('pointercancel', abort);
+  window.addEventListener('pointerup', abort);   // finger released outside the button: cancel, no confirm
+
+  // ---- keyboard -----------------------------------------------------------
+  // 2x2 grid: 0 Attack  1 Defend
+  //           2 Item    3 Flee
+  // Verbatim arithmetic from src/scenes/BattleScene.ts setupInput(): clamped, never wrapping,
+  // and left/right step by one across the row break. Reproduced exactly so the arrows here
+  // behave the way the shipped game's arrows behave.
+  function move(dir){
+    if (dir === 'ArrowUp')    cursor = Math.max(0, cursor - 2);
+    if (dir === 'ArrowDown')  cursor = Math.min(3, cursor + 2);
+    if (dir === 'ArrowLeft')  cursor = Math.max(0, cursor - 1);
+    if (dir === 'ArrowRight') cursor = Math.min(3, cursor + 1);
+  }
+
+  function keyInput(key){
+    if (key === 'Enter'){
+      if (lastInput !== 'key'){ lastInput = 'key'; renderCursor(); return; }  // first Enter just reveals
+      ['a','b','c'].forEach(function(v){ confirmAction(v, cursor); });
+      // the shipped build confirms wherever ITS own highlight sits
+      confirmAction('now', nowIndex);
+      // keyboard confirm still gets a press response on the cursored button
+      ['a','b','c','now'].forEach(function(v){
+        var b = cards[v].btns[v === 'now' ? nowIndex : cursor];
+        b.classList.add('press');
+        setTimeout(function(){ release(b); }, 110);
+      });
+      return;
+    }
+    lastInput = 'key';
+    move(key);
+    nowIndex = cursor;   // today's build moves its highlight on arrows too
+    renderCursor();
+  }
+
+  window.addEventListener('keydown', function(e){
+    if (['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Enter'].indexOf(e.key) === -1) return;
+    e.preventDefault();
+    keyInput(e.key);
+    var vk = document.querySelector('.kbkey[data-key="'+e.key+'"]');
+    if (vk){ vk.classList.add('hit'); setTimeout(function(){ vk.classList.remove('hit'); }, 130); }
+  });
+
+  [].slice.call(document.querySelectorAll('.kbkey')).forEach(function(k){
+    k.addEventListener('click', function(){ keyInput(k.getAttribute('data-key')); });
+  });
+
+  renderCursor();
+})();
+</script>
+</body>
+</html>
