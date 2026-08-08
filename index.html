@@ -361,6 +361,17 @@
        whenever a battle, menu or shop is launched over it), the map loaded, HP above zero. The
        player therefore comes back standing on the map, moments before the encounter, with
        pre-battle HP -- he loses the fight and nothing else. He does not resume it.
+       WHAT A RECOVERY COSTS THE PLAYER, MEASURED -- AND WHY THAT MATTERS
+       2026-08-09, verdict simulator, WebContent killed for real while the hero was walking the
+       overworld: the screen is DARK for 5.115 s (ffmpeg blackdetect over the screen recording),
+       then the map returns with the hero on the tile he was crossing, and the "Recovered from an
+       interruption." toast is already up. No white flash -- the Capacitor backgroundColor lands.
+       That 5 s is the whole player-visible cost, and it is worth stating plainly because it is
+       almost certainly what a player would call a momentary freeze. Before this module the same
+       event ended at the TITLE screen, which is unmistakable; now it ends back on the map, which
+       is not. So a rise in "freezes" after this shipped is not evidence of a new performance bug,
+       it is the OLD defect becoming survivable and therefore quieter. `edu-rpg-recovery`.total is
+       what tells the two apart -- read it before believing either story.
        A structural bonus, not a coincidence: the shipped loader builds a fresh EncounterManager,
        whose `stepsSinceLastEncounter` starts at 0, so there is a guaranteed grace of
        `minStepsBetween` steps before another encounter is even possible.
@@ -443,6 +454,36 @@
         wr(HB, { t: Date.now(), live: wroteOnce ? 1 : 0, vis: visible });
       });
 
+      /* THE COST OF THIS TIMER IS MEASURED. DO NOT RE-TUNE IT ON A HUNCH.
+         When the owner reported "momentary freezes after a few steps" on the first build carrying
+         this module, these writes were the prime suspect -- localStorage is synchronous and on iOS
+         is backed by SQLite, and the module's own author had written that he believed the cost
+         negligible but had not measured it. It was measured on 2026-08-09, on the verdict
+         simulator (iPhone 17 Pro, iOS 26.4), in WKWebView, during real overworld walks:
+
+           setItem, amortised over 300 calls     36 B  <= 0.0033 ms   (the beacon)
+                                                640 B     0.0033 ms   (the snapshot, 626 B live)
+                                                  4 KB    0.0067 ms
+                                                 64 KB    0.03   ms
+           89 real beacon/snapshot writes        every one 0-1 ms, at the clock's own floor
+           this whole callback, in situ          at or below that same 1 ms floor
+
+         performance.now() is clamped to 1 ms in this WKWebView, which is why the per-write number
+         has to be amortised to be seen at all. Two writes every 2 s is about SEVEN MICROSECONDS,
+         roughly 0.0004 of one frame at 60 fps.
+
+         The A/B agrees. Same .app, same assets, same probe, the static shell swapped between the
+         pre-recovery-net build and this one; 5 runs a side, interleaved, load under 6 throughout,
+         a 30 s overworld walk each with battle windows excluded:
+
+                                pre-recovery-net        with this module
+             worst frame        med 46 ms (33-58)       med 43 ms (29-46)
+             frames > 100 ms    0 in every run          0 in every run
+             frames >  33 ms    med 3 (0-5)             med 1 (0-3)
+
+         Walking is not measurably worse with this timer in it, so the freezes are not this. What a
+         kill DOES cost the player is recorded in the header above. Slowing TICK_MS would buy
+         microseconds and pay for them in a staler restore point. */
       setInterval(function () {
         if (!G()) return;
         if (safeState()) writeSnapshot();

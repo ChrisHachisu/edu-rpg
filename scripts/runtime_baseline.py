@@ -38,7 +38,7 @@ ACT1_OVERLAY_FILES = {
     # collision shape derived from the art, and four arrow keys can only express eight headings.
     # The key events are unchanged, so the overworld and the towns -- which read Phaser cursors --
     # are untouched; only dq-tiles.js, and only where it holds a mask, reads the extra channel.
-    "index.html": (46401, "b4d8cc5ac12bd81fa26099d64cfe1753053fd83bdca0ef46524b7709709fbf7e"),
+    "index.html": (49529, "5c2492d5a5cf0c48394a63eda9369a41e6ebd24920f2a3bb5b4d60be7211b069"),
     # 2026-08-01, owner-authorised: dq-tiles.js now splats AI-generated terrain MATERIALS through
     # its existing continuous-world-pixel drawTerrain, plus a ridged mountain height field,
     # varied shore character and landmark sites derived from mapData. Fallback-safe -- until the

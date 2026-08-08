@@ -77,8 +77,16 @@ export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '
 // owner's iPhone 13 back to the title on an encounter; it fixes nothing about the memory spike
 // itself, and the count it keeps in `edu-rpg-recovery` is deliberately there so the defect cannot
 // hide behind it. Reviewed as a diff to index.html; this line is the sign-off.
+//
+// 2026-08-09: b4d8cc5a... -> 5c2492d5..., 46401 B -> 49529 B. COMMENTS ONLY -- no executable byte
+// of the recovery module changed, and the diff is two comment blocks. They record the measurement
+// that refuted the freeze diagnosis (the 2 s localStorage pair costs ~7 microseconds; the A/B puts
+// worst frame at 46 ms median without the module and 43 ms with it) and the measured 5.1 s dark
+// gap a real WebContent kill costs the player. Written into the source per docs/GROUND-TRUTH.md's
+// rule that a refuted claim is struck where it lives, not in a new document -- the next reader of
+// this timer would otherwise "fix" it again. Reviewed as a diff to index.html; this is the sign-off.
 export const EXPECTED_STATIC_INDEX_SHA =
-  'b4d8cc5ac12bd81fa26099d64cfe1753053fd83bdca0ef46524b7709709fbf7e';
+  '5c2492d5a5cf0c48394a63eda9369a41e6ebd24920f2a3bb5b4d60be7211b069';
 
 /**
  * The authored shell loads its scripts by ABSOLUTE path so the Vite dev server resolves them;
