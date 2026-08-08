@@ -90,3 +90,6 @@ scripts/__pycache__/
 
 # xcodebuild derived data from scripts/run-ios.sh
 .ios-build/
+
+# Agent evidence: device recordings, screenshots, probe output. Large and regenerable.
+scratchpad/
