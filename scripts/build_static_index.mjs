@@ -69,8 +69,16 @@ export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '
 // where the DOM HUD used to arrive complete over unpainted terrain, a lattice minimap and an
 // undecoded tab-icon sheet (owner device capture, same day). Reviewed as a diff to index.html;
 // this line is the sign-off.
+//
+// 2026-08-09: 22d99202... -> b4d8cc5a..., 23956 B -> 46401 B. The shell gained the memory-kill
+// RECOVERY module (heartbeat + safe-state resume snapshot + loop guard + recovery counter), and
+// two small edits to the boot cover so a recovery is covered end to end instead of flashing the
+// title on the way past. This is a SAFETY NET for the WebContent-process kill that sends the
+// owner's iPhone 13 back to the title on an encounter; it fixes nothing about the memory spike
+// itself, and the count it keeps in `edu-rpg-recovery` is deliberately there so the defect cannot
+// hide behind it. Reviewed as a diff to index.html; this line is the sign-off.
 export const EXPECTED_STATIC_INDEX_SHA =
-  '22d992023a24854d3a0da1351be18b3127d4a4d7c7be25f33d9fcdcab0ca4de4';
+  'b4d8cc5ac12bd81fa26099d64cfe1753053fd83bdca0ef46524b7709709fbf7e';
 
 /**
  * The authored shell loads its scripts by ABSOLUTE path so the Vite dev server resolves them;

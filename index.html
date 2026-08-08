@@ -250,6 +250,12 @@
       var phase = 'boot', frames = 0, t0 = Date.now(), worldT0 = 0;
 
       function titlePainted() {
+        // The recovery module below is about to press Continue for the player, so the title is a
+        // waypoint we pass through, not a screen anyone is meant to see. Lifting the cover here
+        // would flash the title for a few frames and then cover it again -- exactly the stutter
+        // gate 2 exists to prevent. The flag is cleared the moment recovery lands or gives up,
+        // and TITLE_CAP still lifts the cover if it does neither.
+        if (window.__QOK_RECOVERING__) return false;
         var g = window.__PHASER_GAME__;
         if (!g || !g.scene || !g.scene.isActive || !g.scene.isActive('TitleScene')) return false;
         if (document.body.classList.contains('qok-overlay')) {
@@ -280,8 +286,15 @@
       }
       function tick() {
         if (phase === 'boot') {
-          frames = titlePainted() ? frames + 1 : 0;
-          if (frames >= 3 || Date.now() - t0 > TITLE_CAP) { hide(); phase = 'waiting'; }
+          // A recovery starts the world scene without the title ever being lifted to. Hand
+          // straight to gate 2 rather than lifting and immediately re-covering. This cannot fire
+          // on a normal boot: reaching the world needs a tap on Continue, and the cover swallows
+          // taps until it has already lifted (phase 'waiting').
+          if (worldActive()) { worldT0 = Date.now(); phase = 'world'; }
+          else {
+            frames = titlePainted() ? frames + 1 : 0;
+            if (frames >= 3 || Date.now() - t0 > TITLE_CAP) { hide(); phase = 'waiting'; }
+          }
         } else if (phase === 'waiting') {
           // Title is up and the player is choosing. Arm gate 2 the moment the world scene starts.
           if (worldActive()) { show(); worldT0 = Date.now(); phase = 'world'; }
@@ -292,6 +305,358 @@
       }
       requestAnimationFrame(tick);
       window.__QOK_COVER__ = { phase: function () { return phase; } };
+    })();
+
+    /* ---- Recovery after an unannounced page restart --------------------------------------------
+       READ THIS BEFORE CHANGING ANYTHING BELOW.
+
+       THIS IS A SAFETY NET. IT IS NOT A FIX, AND IT MUST NOT BE ALLOWED TO BECOME ONE.
+       On the owner's iPhone 13 (iOS 26.6) an enemy encounter can dump him back on the TITLE
+       SCREEN. The app is NOT crashing -- Apple's crash submissions for this app are empty, total
+       zero. What happens is that iOS kills the WKWebView *WebContent* process under memory
+       pressure: the native app survives, its PID is unchanged, the page is thrown away and
+       reloaded from nothing, and a fresh page boots to the title. Reproduced deliberately by
+       killing the WebContent process mid-battle -- app alive, WebContent PID changed, title
+       screen. Two memory fixes shipped in build 10 (releasing the chunk cache on the battle path,
+       and not drawing the overworld behind the battle overlay) did NOT stop it, and the ~1 GB at
+       an encounter is still being measured separately. NOTHING HERE REDUCES MEMORY BY ONE BYTE.
+
+       So this code changes only the CONSEQUENCE: instead of losing his place, the player is put
+       back where he was standing before the fight. Because a silent safety net would delete the
+       evidence that the defect is still live, every recovery is counted, logged and shown on
+       screen -- see `edu-rpg-recovery` and the toast below. If those numbers ever go to zero it is
+       news; if they keep climbing, the memory work is not done.
+
+       WHY A HEARTBEAT AND NOT THE NATIVE SIGNAL
+       WKWebView offers `webViewWebContentProcessDidTerminate`, and it was the obvious candidate.
+       It is not needed, and NOTHING under ios/App/ is touched here, because Capacitor ALREADY
+       implements it: `WebViewDelegationHandler.swift:160` does `bridge?.reset(); webView.reload()`.
+       The reload the owner sees IS that handler. The only thing missing is that the reloaded page
+       boots to the title instead of resuming, which is a web-side problem with a web-side answer.
+       Adding a second native hook would also have been the wrong instrument:
+         * It reports a narrower event. It fires when the WEB CONTENT process dies; it does NOT
+           fire if iOS jetsams the whole app. The page is reloaded from nothing either way, which
+           is what the player actually experiences. The heartbeat covers both, because it measures
+           the thing we care about: "a page was alive moments ago and this is not it."
+         * Delivering the fact from Swift into the page before the game boots needs a
+           documentStart WKUserScript swapped in after the fact -- a second, order-sensitive
+           mechanism whose failure mode is silence.
+         * It buys nothing on Android, where the equivalent is
+           `WebViewClient.onRenderProcessGone(...)` and would have to be written and tested again.
+           This file is shared, so the heartbeat ships to Android for free.
+
+       AND BE CLEAR ABOUT WHAT WE DO NOT KNOW
+       The ~1,020 MB "encounter peak" that justified the two build-10 fixes was a BOGUS number: two
+       processes summed, sampled at page load rather than at an encounter. Re-measured, WebContent
+       goes 245 -> 296 MB across an encounter and the physical footprint 348 -> 425 MB, with the
+       high-water mark set during the LOAD, not the fight. Neither should kill a 4 GB phone. So as
+       of 2026-08-09 THE CAUSE IS UNIDENTIFIED. That makes this net more useful, not less -- and it
+       makes it more important, not less, that it stays visibly a net. Do not read this file and
+       conclude the restart bug was solved.
+
+       WHAT IT RESTORES TO, AND THE TRADE
+       Restoring INTO the battle that just killed the process would re-spend exactly the memory
+       that killed it -- the boot loop, in its most likely form. So the snapshot is only ever
+       written from a state that is safe to return to: WorldMapScene running (Phaser pauses it
+       whenever a battle, menu or shop is launched over it), the map loaded, HP above zero. The
+       player therefore comes back standing on the map, moments before the encounter, with
+       pre-battle HP -- he loses the fight and nothing else. He does not resume it.
+       A structural bonus, not a coincidence: the shipped loader builds a fresh EncounterManager,
+       whose `stepsSinceLastEncounter` starts at 0, so there is a guaranteed grace of
+       `minStepsBetween` steps before another encounter is even possible.
+
+       HOW IT RESTORES: BY PRESSING CONTINUE
+       No bespoke loader. The module finds TitleScene's own "continue" item and calls the scene's
+       own `confirm()` -- the identical path `routeTitle()` in ui-overhaul.js runs when the owner
+       taps Continue, so towns and dungeon floors are entered by the same code that already
+       enters them. The one addition is that `GameState.loadGame` is wrapped for exactly one call,
+       so the fresher resume snapshot is laid over the loaded save INSIDE loadGame and therefore
+       before `scene.start('WorldMapScene')` is reached; WorldMapScene.create() reads
+       `player.state.position` when it runs, so the ordering has to be guaranteed rather than
+       hoped for. If anything in the overlay throws, the save-point load stands -- degraded, but
+       still a recovery.
+    -------------------------------------------------------------------------------------------- */
+    (function () {
+      var HB   = 'edu-rpg-hb';         // liveness beacon:  {t, live, vis}
+      var SNAP = 'edu-rpg-resume';     // last SAFE state. OUR key -- never the game's save slots.
+      var LOG  = 'edu-rpg-recovery';   // the evidence:     {total, blocked, events[], last}
+
+      var TICK_MS  = 2000;   // beacon cadence. At a kill the beacon is at most this stale.
+      var FRESH_MS = 20000;  // older than this and we treat the launch as ORDINARY, not a kill.
+      // TWO trip wires, because one number cannot cover both shapes of loop. A tight cycle
+      // (restore, walk two steps, killed again) shows up as 2 inside 30 s; a slower one that a
+      // 30 s window would keep resetting shows up as 3 inside 3 minutes. Either trips.
+      var GUARD_FAST_N = 2, GUARD_FAST_MS = 30000;
+      var GUARD_SLOW_N = 3, GUARD_SLOW_MS = 180000;
+      var GRACE_STEPS = 20;  // encounter-free steps granted after a restore. See below.
+      var GIVE_UP_MS = 8000; // recovery must resolve before the cover's own TITLE_CAP (10 s).
+
+      function rd(k) { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } }
+      function wr(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+      function G()  { return window.__PHASER_GAME__; }
+      function S()  { return window.__GAME_STATE__; }
+      function act(k) { var g = G(); return !!(g && g.scene && g.scene.isActive && g.scene.isActive(k)); }
+
+      /* ---- the beacon + the snapshot ------------------------------------------------------- */
+      var wroteOnce = false, lastJson = '';
+
+      function safeState() {
+        var g = G(), s = S();
+        if (!g || !s || !s.player || !s.player.state || !s.quizManager) return false;
+        // Phaser reports a PAUSED scene as inactive, and WorldMapScene is paused under battle,
+        // menu and shop alike -- so this single test is what keeps a battle out of the snapshot.
+        if (!act('WorldMapScene')) return false;
+        if (act('BattleScene') || act('GameOverScene') || act('TitleScene')) return false;
+        var wm = g.scene.getScene('WorldMapScene');
+        if (!wm || !wm.mapData || !wm.mapData.length) return false;   // mid map load
+        if (!(s.player.state.hp > 0)) return false;
+        return true;
+      }
+
+      function writeSnapshot() {
+        var s = S();
+        // Same shape and same version the game's own SaveManager writes, so the shipped loader
+        // reads it without a migration. playtime is computed, never committed back into the
+        // GameState -- saveGame()/autoSave() own that bookkeeping and must stay the only writers.
+        var json = JSON.stringify({
+          version: 4,
+          timestamp: Date.now(),
+          player: s.player.state,
+          playtime: s.playtime + (Date.now() - s.startTime) / 1000,
+          quizStats: s.quizManager.getStats()
+        });
+        // Standing still rewrites an identical blob every 2 s; skip it. (timestamp/playtime move,
+        // so compare with those stripped.)
+        var sig = json.replace(/"timestamp":\d+/, '').replace(/"playtime":[\d.e+-]+/, '');
+        if (sig === lastJson) return;
+        lastJson = sig;
+        try { localStorage.setItem(SNAP, json); wroteOnce = true; } catch (e) {}
+      }
+
+      var visible = 1;
+      document.addEventListener('visibilitychange', function () {
+        visible = document.visibilityState === 'visible' ? 1 : 0;
+        // Stamp the beacon on the way out. A backgrounded page's timers are throttled or stopped,
+        // so without this the last beacon would look stale-but-recent and the arming test would
+        // be guessing. `vis:0` makes a later reload provably NOT the foreground kill we recover
+        // from -- which is also what keeps a deliberate force-quit from the app switcher out.
+        wr(HB, { t: Date.now(), live: wroteOnce ? 1 : 0, vis: visible });
+      });
+
+      setInterval(function () {
+        if (!G()) return;
+        if (safeState()) writeSnapshot();
+        // `live` says a playthrough was in progress. Not on the title (nothing to restore) and
+        // not on game over (he died; undoing that is not recovery, it is cheating).
+        var live = wroteOnce && !act('TitleScene') && !act('GameOverScene') ? 1 : 0;
+        wr(HB, { t: Date.now(), live: live, vis: visible });
+      }, TICK_MS);
+
+      /* ---- the evidence -------------------------------------------------------------------- */
+      function log() {
+        var l = rd(LOG);
+        if (!l || typeof l.total !== 'number') l = { total: 0, blocked: 0, events: [], last: null };
+        if (!l.events) l.events = [];
+        return l;
+      }
+      window.__QOK_RECOVERY__ = {
+        report:    function () { return log(); },
+        heartbeat: function () { return rd(HB); },
+        snapshot:  function () { return rd(SNAP); },
+        // Deliberately NOT called by anything: clearing the count is a decision, not a step.
+        reset:     function () { wr(LOG, { total: 0, blocked: 0, events: [], last: null }); }
+      };
+
+      function toast(msg) {
+        try {
+          var d = document.createElement('div');
+          d.setAttribute('data-qok-recovery-toast', '1');
+          d.textContent = msg;
+          // 108px clears BOTH surfaces it could land on: the field tab bar (~92pt tall) and the
+          // title screen's EN/JA toggle. Measured on the simulator at 18px, where it sat on top
+          // of "Items" / "Equip" in the field and over the language toggle on the title.
+          d.style.cssText = 'position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 108px);' +
+            'transform:translateX(-50%);z-index:10000;pointer-events:none;max-width:86vw;text-align:center;' +
+            'padding:9px 15px;border:1px solid rgba(201,169,97,.5);border-radius:5px;background:rgba(21,22,28,.94);' +
+            'color:#c9a961;font-size:12px;line-height:1.45;letter-spacing:.4px;box-shadow:0 4px 18px rgba(0,0,0,.55);' +
+            'opacity:0;transition:opacity .3s ease-out;';
+          document.body.appendChild(d);
+          requestAnimationFrame(function () { d.style.opacity = '1'; });
+          setTimeout(function () {
+            d.style.opacity = '0';
+            setTimeout(function () { if (d.parentNode) d.parentNode.removeChild(d); }, 400);
+          }, 4200);
+        } catch (e) {}
+      }
+      /* Three strings per message, exactly as the bundle carries them: English, Japanese, and the
+         kanji variant. The toast lives outside the bundle's i18n table (it must be able to speak
+         before the game has loaded anything), so it reads the locale from the game's own
+         `edu-rpg-locale` key and the kanji flag off the resume snapshot. */
+      function say(m) {
+        var loc = 'ja';
+        try { if (localStorage.getItem('edu-rpg-locale') === 'en') loc = 'en'; } catch (e) {}
+        if (loc === 'en') return m.en;
+        var kanji = false;
+        try { kanji = !!(snap && snap.player && snap.player.kanjiMode); } catch (e) {}
+        return kanji ? m.jaKanji : m.ja;
+      }
+      var MSG_RECOVERED = {
+        en: 'Recovered from an interruption.',
+        ja: 'ちゅうだんした ところから 再開しました。',
+        jaKanji: '中断した ところから 再開しました。'
+      };
+      var MSG_BLOCKED = {
+        en: 'Repeated restarts. Auto-resume paused, tap Continue.',
+        ja: 'さいきどうが つづいたため 自動復帰を 止めました。「つづきから」を えらんでください。',
+        jaKanji: '再起動が 続いたため 自動復帰を 止めました。「続きから」を えらんでください。'
+      };
+
+      /* ---- the decision, taken once, synchronously, at page start -------------------------- */
+      var now  = Date.now();
+      var hb   = rd(HB);
+      var snap = rd(SNAP);
+
+      // A restart, not a launch: something was alive, in a playthrough, in the foreground, within
+      // the last FRESH_MS -- and this is a brand new page. Anything older is an ordinary cold
+      // start and is left completely alone.
+      var restarted = !!(hb && hb.live === 1 && hb.vis === 1 &&
+                         (now - hb.t) >= 0 && (now - hb.t) < FRESH_MS);
+
+      var p = snap && snap.player;
+      var usable = !!(p && p.position && typeof p.position.mapId === 'string' && p.position.mapId &&
+                      typeof p.position.x === 'number' && typeof p.position.y === 'number' &&
+                      typeof p.hp === 'number' && p.hp > 0 && typeof p.level === 'number');
+
+      if (restarted && usable) {
+        var l = log();
+        l.events = l.events.filter(function (t) { return now - t < GUARD_SLOW_MS; });
+        var fast = l.events.filter(function (t) { return now - t < GUARD_FAST_MS; }).length;
+        var slow = l.events.length;
+        var looping = fast >= GUARD_FAST_N || slow >= GUARD_SLOW_N;
+
+        if (looping) {
+          /* THE LOOP GUARD. Kill -> restore -> kill again is strictly worse than the bug it is
+             covering: today he at least reaches the title and can play on, whereas a cycle offers
+             him no screen that stays up long enough to act on. The restore point is an OVERWORLD
+             POSITION, so if whatever kills the process re-fires where he is standing, the cycle is
+             the LIKELY outcome, not a corner case. So recovery stands down and hands him the title
+             deliberately, with a message. It re-arms by itself as the events age out of the
+             windows -- nobody has to reset anything. Tripping early is cheap: the fallback IS
+             today's behaviour, plus an explanation. Failing to trip is not cheap at all. */
+          l.blocked = (l.blocked || 0) + 1;
+          wr(LOG, l);
+          console.warn('[QOK-RECOVERY] STOOD DOWN: ' + fast + ' recoveries in ' + (GUARD_FAST_MS / 1000) +
+            's / ' + slow + ' in ' + (GUARD_SLOW_MS / 1000) + 's looks like a restart loop. ' +
+            'Falling back to the title screen. blocked=' + l.blocked + ' total=' + l.total);
+          setTimeout(function () { toast(say(MSG_BLOCKED)); }, 1200);
+        } else {
+          // Counted BEFORE the attempt, on purpose: a recovery that itself dies must still count
+          // towards the guard, or a crash inside recovery becomes an uncounted infinite loop.
+          l.total = (l.total || 0) + 1;
+          l.events.push(now);
+          if (l.events.length > 50) l.events = l.events.slice(-50);
+          l.last = { t: now, mapId: p.position.mapId, floor: p.position.floor || 1,
+                     x: p.position.x, y: p.position.y, hp: p.hp, beaconAgeMs: now - hb.t };
+          wr(LOG, l);
+          console.warn('[QOK-RECOVERY] restart detected (beacon ' + (now - hb.t) + 'ms old). ' +
+            'Restoring #' + l.total + ' to ' + p.position.mapId + ' floor ' + (p.position.floor || 1) +
+            ' at ' + p.position.x + ',' + p.position.y + ' hp=' + p.hp + '. ' +
+            'THIS IS A SAFETY NET, NOT A FIX -- the memory defect that caused the restart is unchanged.');
+
+          window.__QOK_RECOVERING__ = 1;
+          var deadline = now + GIVE_UP_MS;
+
+          var attempt = function () {
+            var g = G(), s = S();
+            if (!g || !s || !g.scene || !g.scene.getScene) return false;
+            var ts = g.scene.getScene('TitleScene');
+            if (!ts || !act('TitleScene') || ts.mode !== 'title' || !ts.menuItems) return false;
+
+            // No manual save at all: this run never reached a save point, so the resume snapshot
+            // is the ONLY copy of it and the empty slot has nothing to lose. Seeding it is the
+            // only way to reach the shipped loader, and it destroys nothing. Where a manual save
+            // DOES exist it is never written -- clobbering a save-point save (full HP, by
+            // definition) with a mid-field state could hand him a 3 HP death loop.
+            var seeded = false;
+            try {
+              if (!localStorage.getItem('edu-rpg-save')) {
+                localStorage.setItem('edu-rpg-save', JSON.stringify(snap));
+                seeded = true;
+                ts.draw();   // rebuilds menuItems so the Continue entry exists
+              }
+            } catch (e) {}
+
+            var idx = -1, i;
+            for (i = 0; i < ts.menuItems.length; i++) {
+              if (ts.menuItems[i] && ts.menuItems[i].getData && ts.menuItems[i].getData('action') === 'continue') { idx = i; break; }
+            }
+            if (idx < 0) return false;
+
+            var orig = s.loadGame, loaded = false;
+            s.loadGame = function () {
+              s.loadGame = orig;                       // one shot, released before anything can throw
+              var ok = orig.call(s);
+              loaded = !!ok;
+              /* The restore point is the spot he was standing on when the process died, and a
+                 random encounter there is what most plausibly kills it again. loadGame builds a
+                 fresh EncounterManager, so `stepsSinceLastEncounter` is already 0 and the zone's
+                 own `minStepsBetween` applies -- but that is the ordinary post-battle grace, not
+                 a margin. Starting it NEGATIVE buys GRACE_STEPS more steps on top, enough to walk
+                 away from the spot. It costs a handful of encounter-free steps once per kill; the
+                 loop guard is the backstop, this is the thing that stops us needing it. */
+              if (ok && s.encounterManager && typeof s.encounterManager.stepsSinceLastEncounter === 'number') {
+                s.encounterManager.stepsSinceLastEncounter = -GRACE_STEPS;
+              }
+              if (ok && !seeded) {
+                try {
+                  // Exactly what loadGame itself does with a save's player blob, but with the
+                  // fresher one. Everything else loadGame set up -- locale, kanji mode, audio
+                  // settings, quiz/encounter/quest managers -- is already correct and untouched.
+                  s.player = new (s.player.constructor)(snap.player);
+                  if (snap.quizStats && s.quizManager && s.quizManager.loadStats) s.quizManager.loadStats(snap.quizStats);
+                  if (typeof snap.playtime === 'number') { s.playtime = snap.playtime; s.startTime = Date.now(); }
+                } catch (e) {
+                  console.warn('[QOK-RECOVERY] snapshot overlay failed, falling back to the save point:', e);
+                }
+              }
+              return ok;
+            };
+            try {
+              ts.selectedIndex = idx;
+              if (ts.updateSelection) ts.updateSelection();
+              ts.confirm();
+            } finally {
+              s.loadGame = orig;
+            }
+            // confirmTitle() calls scene.start('WorldMapScene') in the same expression as
+            // loadGame(), so a true return IS the proof the world was started. Testing
+            // isActive('WorldMapScene') here would be wrong: Phaser may queue the start.
+            return loaded;
+          };
+
+          var poll = function () {
+            var done = false;
+            try { done = attempt(); } catch (e) {
+              console.warn('[QOK-RECOVERY] attempt threw; leaving the player on the title:', e);
+              done = true;
+            }
+            if (done) {
+              window.__QOK_RECOVERING__ = 0;
+              toast(say(MSG_RECOVERED));
+              return;
+            }
+            if (Date.now() > deadline) {
+              // Safety valve. A recovery that cannot land must never hold the cover down; the
+              // player gets the ordinary title screen, which is exactly today's behaviour.
+              window.__QOK_RECOVERING__ = 0;
+              console.warn('[QOK-RECOVERY] gave up after ' + GIVE_UP_MS + 'ms; showing the title.');
+              return;
+            }
+            requestAnimationFrame(poll);
+          };
+          requestAnimationFrame(poll);
+        }
+      }
     })();
 
     (function () {
