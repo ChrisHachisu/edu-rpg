@@ -54,6 +54,16 @@ Recorded so they cannot come back. Each was believed and acted on.
 - ~~The relay's "editing dq-tiles.js needs 4 generated pins"~~. One moved. Use `npm run repin` and stop counting.
 - ~~The shell sha `29b0c698…`~~. Stale everywhere it appears in older notes; the value is in `scripts/build_static_index.mjs`.
 - ~~`28-portsapphire-exited.png`~~ (tier-2 device gate) is **still inside the town**. Evidence filenames are claims too.
+- ~~"The recovery net's 2 s `localStorage` writes are the momentary freezes"~~. The suspicion was
+  reasonable — synchronous API, SQLite underneath, a fixed timer during movement — and it was
+  acted on in a brief before anyone timed it. Timed on the verdict simulator in WKWebView:
+  **0.0033 ms** per 640-byte write, amortised over 300 calls; **7 microseconds** for the pair the
+  timer issues every 2 s; every one of 89 in-situ writes at or under the clock's 1 ms floor. The
+  interleaved A/B (same `.app`, only the static shell swapped, 5 runs a side, 30 s walks, battles
+  excluded) puts worst frame at **46 ms median pre-net vs 43 ms with it**, and **zero** frames over
+  100 ms on either side. Retracted at the source, above the timer in `index.html`. The measured
+  player-visible cost of a real kill is **5.1 s of dark screen**, and that — not the writes — is
+  what a player would call a freeze.
 - ~~"`public/ui-overhaul.css` describes the battle command bar"~~. Its `.actiongrid` / `btn-ruby`
   block describes a 2x2 grid of four coloured buttons that has not shipped. The stylesheet is
   fiction for that element in the same way `src/` is fiction for the runtime — and unlike `src/`,
