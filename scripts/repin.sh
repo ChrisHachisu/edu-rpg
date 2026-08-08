@@ -44,6 +44,12 @@ echo "==> [1/6] staging the edited overrides into dist/ and repinning"
 for f in dq-tiles.js hero-override.js ui-overhaul.js ui-overhaul.css; do
   [ -f "dist/$f" ] && cp "public/$f" "dist/$f"
 done
+# The static shell is DERIVED from the tracked index.html, not copied, so editing index.html leaves
+# dist/index.html stale here and regenerate_pins would pin the old bytes. build-dist then fails its
+# identity check and `set -e` kills this script before step 5 could repin -- so the whole chain
+# failed on the first run and passed on the second. That is exactly the kind of folklore this file
+# exists to delete. Re-derive the shell before pinning. Harmless when index.html has not changed.
+[ -d dist ] && node scripts/build_static_index.mjs >/dev/null 2>&1 || true
 
 NEW_SHA=$(shasum -a 256 public/dq-tiles.js | awk '{print $1}')
 OLD_SHA=$(grep -o "DQ_TILES_SHA256 = '[0-9a-f]*'" scripts/extract_act1_runtime_snapshot.mjs | grep -o "[0-9a-f]\{64\}")
