@@ -973,7 +973,9 @@
   // `win` is the chunk-id list the LAST BUILT overworld window intersected, maintained by a1aRects.
   // It is what a1aReleaseChunks keeps when the player walks off the overworld -- see there for why.
   // `released` latches the trim so it runs once per departure rather than on every 80 ms tick.
-  var A1A={ manifest:null, req:false, S:0, chunks:{}, lru:[], win:[], released:false, landmarks:null, dirty:false, drew:false };
+  var A1A={ manifest:null, req:false, S:0, chunks:{}, lru:[], win:[], released:false, landmarks:null, dirty:false, drew:false,
+                imgs:{}, tex:{}, spriteScene:null, lastRects:null, lastFull:false,
+                texQ:[], texQd:{}, bmPend:{} };
   // A 40x38 window can INTERSECT 9 chunks (measured over every plate position, worst case at cell
   // 41,245). The cap must never sit below that or the trim evicts a chunk the current window still
   // needs, which re-requests and re-evicts it forever: the window never reports full coverage, so
@@ -1020,7 +1022,7 @@
     for(i=0;i<A1A.win.length;i++) keep[A1A.win[i]]=1;
     var next={}, lru=[];
     for(i=0;i<A1A.lru.length;i++){ var id=A1A.lru[i];
-      if(keep[id]&&A1A.chunks[id]){ next[id]=A1A.chunks[id]; lru.push(id); } }
+      if(keep[id]&&A1A.chunks[id]){ next[id]=A1A.chunks[id]; lru.push(id); } else a1aDropChunkGpu(id); }
     A1A.chunks=next; A1A.lru=lru; A1A.drew=false;
     if(a1aScratch){ try{ a1aScratch.width=1; a1aScratch.height=1; }catch(e){} a1aScratch=null; }
   }
@@ -1075,23 +1077,46 @@
     var X0=Math.max(0,Math.floor((c.x-MARGIN)/MARGIN)*MARGIN), Y0=Math.max(0,Math.floor((c.y-MARGIN)/MARGIN)*MARGIN);
     try{ a1aRects(X0,Y0,A1A_PRE_W,A1A_PRE_H); }catch(e){}
   }
+  // ONE LAYER OF ONE CHUNK, DECODED OFF THE MAIN THREAD.
+  //
+  // The obvious `new Image(); im.src=...` gives a decoded bitmap that lives on the main thread, and
+  // everything that then hands it to the GPU has to copy 9.4 MB there: measured 2026-08-08 in the
+  // live scene, `addImage(HTMLImageElement)` costs 35-68 ms and `createImageBitmap(thatImage)`
+  // costs 43-72 ms -- the same copy, billed at whichever door you use. Decoding from the BLOB
+  // instead produces the bitmap off-thread, and `addImage(ImageBitmap)` then costs 1.5-2.6 ms.
+  //
+  // premultiplyAlpha:'none' is not a detail. It keeps the source exactly what the Image path gave
+  // Phaser -- straight alpha, premultiplied by the GL upload (UNPACK_PREMULTIPLY_ALPHA_WEBGL) --
+  // so the pixels that reach the screen are the same ones. Anything else double-premultiplies the
+  // canopy (alpha 242) and the water glint.
+  //
+  // Both paths flip A1A.dirty only when THIS layer can change what the window shows. A canopy or
+  // water layer that lands before its own base is dead weight: a1aRects skips the whole chunk
+  // while `rec.base` is missing, so the flip cannot alter a single pixel -- all it does is force
+  // the next tick to rebuild a window still short of full coverage, and a window short of coverage
+  // falls through a1aBlit into drawTerrain's per-pixel splat. Thirty chunks x three layers meant
+  // one 2.97 M-px splat per tick for the whole of the load.
+  function a1aLayerLanded(c,rec,k,src){ rec[k]=src; if(rec.base) A1A.dirty=true; a1aEnqueueTex(c,rec); }
+  function a1aLoadLayerImg(c,rec,k){
+    var im=new Image();
+    im.onload=function(){ a1aLayerLanded(c,rec,k,im); };
+    im.onerror=function(){};                                   // a missing layer degrades, never wedges
+    im.src='act1-hifi/'+c[k];
+  }
+  function a1aLoadLayer(c,rec,k){
+    if(!(A1A_SPRITES&&window.createImageBitmap&&window.fetch)){ a1aLoadLayerImg(c,rec,k); return; }
+    var done=false;
+    try{
+      fetch('act1-hifi/'+c[k]).then(function(r){ if(!r.ok) throw new Error('http'); return r.blob(); })
+        .then(function(b){ return createImageBitmap(b,{premultiplyAlpha:'none',colorSpaceConversion:'none'}); })
+        .then(function(bm){ done=true; a1aLayerLanded(c,rec,k,bm); })
+        .catch(function(){ if(!done&&!rec[k]) a1aLoadLayerImg(c,rec,k); });
+    }catch(e){ a1aLoadLayerImg(c,rec,k); }
+  }
   function a1aChunkRec(c){
     var rec=A1A.chunks[c.id];
-    if(!rec){ rec=A1A.chunks[c.id]={};
-      ['base','canopy','water'].forEach(function(k){ if(!c[k]) return;
-        var im=new Image();
-        // Flip the redraw flag only when THIS layer can actually change what the window shows.
-        // A canopy or water image that lands before its own base is dead weight: a1aRects skips
-        // the whole chunk while `rec.base` is missing, so the flip cannot alter a single pixel --
-        // all it does is force the next tick's updateTerrain/rebuildOverlay to rebuild a window
-        // that is still short of full coverage, and a window short of coverage falls through
-        // a1aBlit into drawTerrain's per-pixel splat. Thirty chunks x three layers meant one
-        // 2.97 M-px splat per tick for the whole of the load. Once base IS present the window
-        // may already have been painted without this layer, so the flip is real and the rebuild
-        // it forces is a blit rather than a splat.
-        im.onload=function(){ rec[k]=im; if(rec.base) A1A.dirty=true; };
-        im.onerror=function(){};                                 // a missing layer degrades, never wedges
-        im.src='act1-hifi/'+c[k]; });
+    if(!rec){ rec=A1A.chunks[c.id]={bm:{}};
+      ['base','canopy','water'].forEach(function(k){ if(!c[k]) return; a1aLoadLayer(c,rec,k); });
     }
     var i=A1A.lru.indexOf(c.id); if(i>=0) A1A.lru.splice(i,1); A1A.lru.push(c.id);
     return rec;
@@ -1187,7 +1212,7 @@
     var keep=ringIds.length?ringIds:touched;
     A1A.win=keep;
     // trim against what this window TOUCHED, not what it managed to load -- a chunk mid-load counts
-    while(A1A.lru.length>Math.max(A1A_MAX_CHUNKS,keep.length)) delete A1A.chunks[A1A.lru.shift()];
+    while(A1A.lru.length>Math.max(A1A_MAX_CHUNKS,keep.length)){ var _ev=A1A.lru.shift(); delete A1A.chunks[_ev]; a1aDropChunkGpu(_ev); }
     out.full=(cov===winW*TILE*winH*TILE);
     return out;
   }
@@ -1199,7 +1224,13 @@
                   dx===undefined?r.dx:dx, dy===undefined?r.dy:dy, r.w, r.h);
   }
   function a1aBlit(ctx,X0,Y0,winW,winH,needFull){
-    var rs=a1aRects(X0,Y0,winW,winH); if(!rs||!rs.length) return false;
+    var rs=a1aRects(X0,Y0,winW,winH);
+    A1A.lastRects=rs||[]; A1A.lastFull=!!(rs&&rs.full);
+    if(!rs||!rs.length) return false;
+    // SPRITE MODE: the chunks are their own textures, so there is nothing to composite here. The
+    // call is still made, and a1aRects still runs, because that is what maintains the ring
+    // prefetch and the LRU -- see a1aPlaceSprites, which consumes exactly this rect set.
+    if(a1aSpriteMode()) return rs.full;
     if(needFull&&!rs.full) return false;
     ctx.save(); ctx.imageSmoothingEnabled=false;
     if(needFull) ctx.clearRect(0,0,winW*TILE,winH*TILE);
@@ -1245,6 +1276,197 @@
     return drew;
   }
 
+  // ============================================================
+  //  ACT 1 PLATE AS SPRITES — the baked chunks stop going through a canvas
+  // ============================================================
+  //  WHY. Measured 2026-08-08 (docs/SMOOTH-ROUND-5-DIAGNOSIS.md): touching the live
+  //  2112x1824 window canvas costs a FIXED 65-100 ms once per window step, and that cost does not
+  //  scale with how much is drawn -- a single 48x48 drawImage costs the same as repainting the
+  //  whole window, while drawing nothing at all costs 18 ms. It is not the pixels, not the water
+  //  blend, not the canopy, and not the upload (disabling both refreshes leaves the frame at
+  //  118 ms). It is the penalty for dirtying a large accelerated canvas that the renderer is
+  //  sampling every frame. So every strategy that repaints LESS of that canvas -- ring buffer,
+  //  blit-shift, strip repaint, partial texSubImage2D -- was refuted before it was written.
+  //
+  //  The plate is 30 baked chunks on a 5x6 grid. Handing each one to the GPU as its own texture
+  //  and letting the CAMERA move instead of the pixels removes the per-step work entirely rather
+  //  than making it smaller or moving it earlier: a chunk uploads once when it decodes, and
+  //  scrolling over an uploaded chunk costs 0.0 ms (measured in the live scene).
+  //
+  //  WHAT IS PIXEL-FOR-PIXEL THE SAME, AND WHY.
+  //   - base: a1aDrawLayer copies it 1:1 (k===1) into a canvas positioned at (X0*TILE, Y0*TILE),
+  //     so the chunk's pixel (0,0) already lands at world (ox + c.x*S, oy + c.y*S). An Image with
+  //     origin (0,0) at that same world point, scale 1, NEAREST, is the same texels unresampled.
+  //   - water: the 16 px/cell glint sheet, upscaled 3x nearest and composited `screen` at
+  //     globalAlpha 0.28. Canvas 2D `screen` over an opaque backdrop is Cb + A*as*Cs*(1-Cb);
+  //     Phaser's BlendModes.SCREEN is gl.blendFunc(ONE, ONE_MINUS_SRC_COLOR) over a premultiplied
+  //     texture tinted by the Image's alpha, i.e. A*as*Cs + (1 - A*as*Cs)*Cb -- the same
+  //     expression, not an approximation of it. (blendModes[3].func verified in the shipped
+  //     bundle.) So the sheet becomes an Image at scale S, alpha 0.28, blend SCREEN.
+  //   - canopy: an alpha-only mask, values {0,242}, whose RGB is NOT the base's -- checked on
+  //     three chunks -- so `destination-in` is genuinely required and the canopy cannot simply be
+  //     drawn. It is composited ONCE per chunk on the scratch surface, exactly as a1aCanopy does
+  //     it per window, and the result becomes that chunk's canopy texture.
+  //
+  //  WHAT STAYS. dqterrain/dqcanopy are NOT retired: the Act 1 plate is 148x182 cells inside a
+  //  320x400 world, and everything outside it is still painted analytically into dqterrain. The
+  //  canvas is simply hidden while the window is wholly inside the plate, which is the only case
+  //  where it carried nothing but baked art anyway.
+  var A1A_SPRITES=true;
+  function a1aSpriteMode(){ return A1A_SPRITES && !!A1A.manifest; }
+  // one texture per chunk layer, built once and thereafter only positioned
+  function a1aTexFor(scene,c,rec,layer){
+    var key='a1a_'+layer+'_'+c.id, T=A1A.tex[key];
+    if(T===1) return key;                              // already built
+    if(T===0) return null;                             // known-unbuildable (source missing)
+    if(layer==='canopy'){
+      if(!rec.base||!rec.canopy){ return null; }
+      // base coloured by the canopy's alpha, on the scratch surface a1aCanopy already uses.
+      // destination-in is a WHOLE-CANVAS operator, which is why this is one chunk per surface.
+      if(rec.bm&&rec.bm.canopyComposite){
+        if(scene.textures.exists(key)) scene.textures.remove(key);
+        scene.textures.addImage(key,rec.bm.canopyComposite);
+        try{ scene.textures.get(key).setFilter(NEAREST); }catch(e){}
+        A1A.tex[key]=1; return key;
+      }
+      var cv=a1aCanopyCanvas(rec); if(!cv){ A1A.tex[key]=0; return null; }
+      if(scene.textures.exists(key)) scene.textures.remove(key);
+      var ct=scene.textures.addCanvas(key,cv); if(ct&&ct.refresh) ct.refresh();
+      try{ ct.setFilter(NEAREST); }catch(e){}
+      A1A.tex[key]=1; return key;
+    }
+    var im=rec[layer]; if(!im) return null;
+    if(scene.textures.exists(key)) scene.textures.remove(key);
+    scene.textures.addImage(key,im);
+    try{ scene.textures.get(key).setFilter(NEAREST); }catch(e){}
+    A1A.tex[key]=1; return key;
+  }
+  // Everything this chunk owns on the GPU, dropped together. Called from the same two places that
+  // drop the decoded images, so a texture can never outlive the chunk record that named it.
+  function a1aDropChunkGpu(id){
+    var sc=A1A.spriteScene;
+    ['base','water','canopy'].forEach(function(layer){
+      var key='a1a_'+layer+'_'+id, im=A1A.imgs[key];
+      if(im){ try{ im.destroy(); }catch(e){} delete A1A.imgs[key]; }
+      if(A1A.tex[key]!==undefined){
+        if(sc&&sc.textures&&sc.textures.exists(key)){ try{ sc.textures.remove(key); }catch(e){} }
+        delete A1A.tex[key];
+      }
+    });
+  }
+  function a1aDropAllGpu(){ var ids={}; Object.keys(A1A.tex).concat(Object.keys(A1A.imgs)).forEach(function(k){
+      var p=k.split('_'); ids[k.slice(p[0].length+p[1].length+2)]=1; });
+    Object.keys(ids).forEach(a1aDropChunkGpu); }
+  // WHY THE TEXTURES ARE BUILT AHEAD OF THE STEP, NOT AT IT.
+  //
+  // Phaser's TextureSource uploads to the GPU inside addImage/addCanvas, not lazily at first
+  // render. Building a chunk's texture the first time it becomes VISIBLE therefore puts the whole
+  // upload on the window step that revealed it -- measured 2026-08-08, six uploads landing
+  // together on one step frame cost 165-174 ms, i.e. worse than the canvas repaint this design
+  // replaces. That is the "moved, not removed" failure the goal contract bans, and it is the
+  // reason this queue exists rather than being an optimisation on top.
+  //
+  // Layers are queued as they decode -- which is already one window-step early, because round 4's
+  // ring asks for the chunks one step out -- and drained at most ONE per reskin tick (12.5 Hz).
+  // A ring step needs about six textures, so the ring warms in roughly half a second against the
+  // ~3 s the hero takes to cross a 12-cell window. a1aPlaceSprites still builds on demand if the
+  // queue has not reached a chunk in time: a late frame is recoverable, a hole in the terrain is
+  // not.
+  // base coloured by the canopy's alpha. destination-in is a WHOLE-CANVAS operator, which is why
+  // this is one chunk per surface -- exactly the reason a1aCanopy composites chunk by chunk.
+  // OffscreenCanvas, not a DOM canvas, and transferToImageBitmap rather than createImageBitmap.
+  // transferToImageBitmap hands the backing store straight over; createImageBitmap has to flush
+  // and COPY a 1536x1536 surface, which measured 60-137 ms on the main thread -- the whole of the
+  // residual hitch this design was meant to remove. Sources are the already-decoded ImageBitmaps
+  // where available, for the same reason.
+  function a1aCanopyCanvas(rec){
+    if(!rec.base||!rec.canopy) return null;
+    var w=rec.base.width, h=rec.base.height;
+    var cv=(typeof OffscreenCanvas!=='undefined')?new OffscreenCanvas(w,h):document.createElement('canvas');
+    if(!(cv instanceof (typeof OffscreenCanvas!=='undefined'?OffscreenCanvas:Object))){ cv.width=w; cv.height=h; }
+    var sc=cv.getContext('2d'); if(!sc) return null;
+    sc.imageSmoothingEnabled=false;
+    sc.globalCompositeOperation='source-over'; sc.drawImage(rec.base,0,0);
+    sc.globalCompositeOperation='destination-in'; sc.drawImage(rec.canopy,0,0,w,h);
+    return cv;
+  }
+  // Composite the canopy ahead of need and hand the result to the GPU as an ImageBitmap, for the
+  // same reason the base layers are: addCanvas of a 1536x1536 surface costs tens of milliseconds
+  // on the main thread, addImage of a bitmap costs ~2 ms.
+  function a1aCanopyPrepare(c,rec){
+    var key='a1a_canopy_'+c.id;
+    if(A1A.tex[key]||A1A.bmPend[key]) return;
+    if(!rec.base||!rec.canopy||!window.createImageBitmap) return;
+    if(rec.bm&&rec.bm.canopyComposite) return;
+    var cv=a1aCanopyCanvas(rec); if(!cv) return;
+    if(cv.transferToImageBitmap){ try{ rec.bm.canopyComposite=cv.transferToImageBitmap(); return; }catch(e){} }
+    A1A.bmPend[key]=1;
+    try{
+      createImageBitmap(cv,{premultiplyAlpha:'none',colorSpaceConversion:'none'})
+        .then(function(bm){ rec.bm.canopyComposite=bm; delete A1A.bmPend[key]; })
+        .catch(function(){ delete A1A.bmPend[key]; });
+    }catch(e){ delete A1A.bmPend[key]; }
+  }
+  function a1aEnqueueTex(c,rec){
+    if(!A1A_SPRITES) return;
+    ['base','water','canopy'].forEach(function(layer){
+      if(!rec[layer]) return;
+      if(layer==='canopy'&&!rec.base) return;                     // the composite needs both
+      var key='a1a_'+layer+'_'+c.id;
+      if(A1A.tex[key]||A1A.texQd[key]) return;
+      A1A.texQd[key]=1; A1A.texQ.push({c:c,layer:layer});
+    });
+  }
+  function a1aDrainTex(scene,n){
+    if(!a1aSpriteMode()) return;
+    A1A.spriteScene=scene;
+    var did=0, guard=0;
+    while(A1A.texQ.length && did<n && guard++<12){
+      var j=A1A.texQ.shift(), key='a1a_'+j.layer+'_'+j.c.id;
+      delete A1A.texQd[key];
+      var rec=A1A.chunks[j.c.id];
+      if(!rec||A1A.tex[key]) continue;                            // evicted, or already built on demand
+      if(j.layer==='canopy'&&!(rec.bm&&rec.bm.canopyComposite)){
+        a1aCanopyPrepare(j.c,rec);                                // async; re-queue so the drain picks it up once ready
+        A1A.texQd[key]=1; A1A.texQ.push(j); did++; continue;
+      }
+      if(a1aTexFor(scene,j.c,rec,j.layer)) did++;
+    }
+  }
+  function a1aHideSprites(){ Object.keys(A1A.imgs).forEach(function(k){
+      var im=A1A.imgs[k]; if(im){ try{ im.setVisible(false); }catch(e){} } }); }
+  // Place (or hide) one Image per visible chunk layer. `rs` is a1aRects' output, so the chunk set,
+  // the LRU touch and the ring prefetch are all exactly what the canvas path used.
+  function a1aPlaceSprites(scene,rs){
+    A1A.spriteScene=scene;
+    var m=A1A.manifest, B=m.semanticBounds, S=A1A.S, ox=B[0]*TILE, oy=B[1]*TILE;
+    var live={}, anyCanopy=false, i;
+    for(i=0;i<rs.length;i++){
+      var r=rs[i], c=r.c, rec=r.rec;
+      var wx=ox+c.x*S, wy=oy+c.y*S;
+      var layers=[['base',1.1,1,1],['water',1.2,S,0.28],['canopy',11,1,1]];
+      for(var L=0;L<layers.length;L++){
+        var layer=layers[L][0];
+        if(layer==='water'&&!rec.water) continue;
+        if(layer==='canopy'&&!rec.canopy) continue;
+        var key=a1aTexFor(scene,c,rec,layer); if(!key) continue;
+        if(layer==='canopy') anyCanopy=true;
+        live[key]=1;
+        var im=A1A.imgs[key];
+        if(!im||!im.scene){
+          im=scene.add.image(wx,wy,key).setOrigin(0,0).setDepth(layers[L][1])
+               .setScale(layers[L][2]).setAlpha(layers[L][3]);
+          if(layer==='water'){ try{ im.setBlendMode((window.Phaser&&Phaser.BlendModes&&Phaser.BlendModes.SCREEN!==undefined)?Phaser.BlendModes.SCREEN:3); }catch(e){} }
+          try{ im.texture.setFilter(NEAREST); }catch(e){}
+          A1A.imgs[key]=im;
+        } else { im.setPosition(wx,wy); }
+        if(!im.visible) im.setVisible(true);
+      }
+    }
+    Object.keys(A1A.imgs).forEach(function(k){ if(!live[k]){ var im=A1A.imgs[k]; if(im&&im.visible) im.setVisible(false); } });
+    return anyCanopy;
+  }
+
   function ensureTerrain(scene){
     var cam=scene.cameras.main;
     var winW=Math.ceil(cam.worldView.width/TILE)+2*MARGIN, winH=Math.ceil(cam.worldView.height/TILE)+2*MARGIN;
@@ -1274,10 +1496,25 @@
     // re-show BEFORE the window-cache early-return: a single transient non-'ow' tick hides the
     // canopy, and if the hero is standing still the window key never changes, so a re-show placed
     // after this line would not run again until the window snapped to a new 12-cell boundary.
-    if (terrainState.cimg && !terrainState.cimg.visible && A1A.drew) terrainState.cimg.setVisible(true);
+    if (terrainState.cimg && !terrainState.cimg.visible && A1A.drew && !a1aSpriteMode()) terrainState.cimg.setVisible(true);
+    // SPRITE MODE re-show. The plate sprites are hidden wholesale on any non-'ow' tick, and a
+    // single transient one is enough to hide them while the hero stands still -- at which point
+    // the window key never changes and the early return below would never let them back.
+    if (a1aSpriteMode() && A1A.lastRects && A1A.lastRects.length) a1aPlaceSprites(scene, A1A.lastRects);
     var key=X0+'_'+Y0; if(!force && key===terrainState.lastWin) return; terrainState.lastWin=key;
     if(!terrainState.firstDrawAt) terrainState.firstDrawAt=Date.now();   // starts the loading gate's art grace
     drawTerrain(terrainState.ct.context, map, X0, Y0, winW, winH);
+    if (a1aSpriteMode()){
+      // The plate is drawn by its own textures. The window canvas is still the terrain for
+      // everything OUTSIDE the plate, so it is hidden only while the window is wholly inside it --
+      // which is precisely the case where it used to carry nothing but the baked art.
+      var full=A1A.lastFull;
+      if(!full) terrainState.ct.refresh();
+      terrainState.image.setPosition(X0*TILE, Y0*TILE).setVisible(!full);
+      A1A.drew=a1aPlaceSprites(scene, A1A.lastRects||[]);
+      if (terrainState.cimg && terrainState.cimg.visible) terrainState.cimg.setVisible(false);
+      return;
+    }
     terrainState.ct.refresh();
     terrainState.image.setPosition(X0*TILE, Y0*TILE);
     if (terrainState.cimg){
@@ -1287,7 +1524,8 @@
       terrainState.cimg.setPosition(X0*TILE, Y0*TILE).setVisible(drew);
     }
   }
-  function a1aHideCanopy(){ if(terrainState&&terrainState.cimg){ try{ terrainState.cimg.setVisible(false); }catch(e){} } }
+  function a1aHideCanopy(){ if(terrainState&&terrainState.cimg){ try{ terrainState.cimg.setVisible(false); }catch(e){} }
+                            a1aHideSprites(); }
 
   function ensureOverlay(scene){
     if (overlayState && overlayState.scene===scene && overlayState.container && overlayState.container.scene) return;
@@ -3668,7 +3906,7 @@
     var W=map[0].length, H=map.length;
     MUTED=null;                                                                    // raw tile reads for fieldAt (no stale overworld water-muting)
     townRoad=buildRoadMask(map);                                                   // connected cross-road mask
-    if (terrainState&&terrainState.image){ try{terrainState.image.destroy();}catch(e){} try{if(terrainState.cimg)terrainState.cimg.destroy();}catch(e){} terrainState=null; lastReskinMapId=null; } // tear down stale overworld
+    if (terrainState&&terrainState.image){ try{terrainState.image.destroy();}catch(e){} try{if(terrainState.cimg)terrainState.cimg.destroy();}catch(e){} a1aDropAllGpu(); terrainState=null; lastReskinMapId=null; } // tear down stale overworld
     if (overlayState&&overlayState.container){ try{overlayState.container.destroy();}catch(e){} overlayState=null; }
     destroyDng();
     if (townState&&townState.image){ try{townState.image.destroy();}catch(e){} }
@@ -3806,13 +4044,14 @@
     if (kind!=='ow' && !SHIP_TOWN_DNG_RESKIN){
       // Overworld-only ship: tear down any stale overworld terrain/overlay so it can't linger over the engine's
       // native town/dungeon art, then bail — towns + dungeons render exactly as the base game does (unchanged).
-      if (terrainState&&terrainState.image){ try{terrainState.image.destroy();}catch(e){} try{if(terrainState.cimg)terrainState.cimg.destroy();}catch(e){} terrainState=null; lastReskinMapId=null; }
+      if (terrainState&&terrainState.image){ try{terrainState.image.destroy();}catch(e){} try{if(terrainState.cimg)terrainState.cimg.destroy();}catch(e){} a1aDropAllGpu(); terrainState=null; lastReskinMapId=null; }
       if (overlayState&&overlayState.container){ try{overlayState.container.destroy();}catch(e){} overlayState=null; }
       return;
     }
     if (kind==='ow'){
       A1A.released=false;                              // back on the overworld: arm the next departure's trim
       a1aFetch();                                      // one-shot; the Act 1 art manifest + landmark table
+      try{ a1aDrainTex(scene,1); }catch(e){ if(window.__DQ_DEBUG__) console.log('dq tex q '+e); } // one chunk texture per tick, ahead of the step that needs it
       var mapId=scene.currentMapId+':'+scene.mapData.length+'x'+(scene.mapData[0]?scene.mapData[0].length:0);
       // DATA MUTATION (owner-approved sandbox exception): consolidate sprinkled mountains in mapData IN PLACE,
       // ONCE per map ARRAY, BEFORE reskin — so overlay + minimap + collision all read the same tiles. The body
