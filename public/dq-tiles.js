@@ -4022,7 +4022,30 @@
     // Re-checked, not latched: Phaser resets sys.sceneUpdate to its no-op on shutdown/restart and
     // re-captures scene.update on the next create(), which would quietly drop the wrapper.
     try{ a1mInstall(scene); }catch(e){ if(window.__DQ_DEBUG__) console.log('dq a1m install '+e); }
-    if (!g.scene.isActive('WorldMapScene')) return;
+    // A BATTLE is the one departure from the overworld that this guard hides. Towns and dungeons
+    // are map swaps -- WorldMapScene stays ACTIVE, so the kind!=='ow' branch below reaches
+    // a1aReleaseChunks and trims the Act 1 chunk cache from the full A1A_MAX_CHUNKS=10 (~198 MB)
+    // to the departure window (~4 chunks, ~79 MB). An encounter instead SLEEPS WorldMapScene and
+    // runs BattleScene, so tick() returned HERE and every trim below was unreachable: the whole
+    // 10-slot cache stayed resident on the GPU underneath a full-screen battle background and a
+    // monster sprite, for the entire battle. That is the same "a scene allocates on top of whatever
+    // the overworld still holds" failure the dungeon comment at the kind!=='ow' branch describes --
+    // battles were simply never on that path.
+    //
+    // Measured on the simulator, encounter -> in-battle steady state: 684 MB mean with the cache
+    // retained against 455 MB pre-round-5, i.e. round 5 raised the in-battle floor by ~230 MB while
+    // the transition itself peaks near 1 GB. The simulator has host RAM and survives it; a phone's
+    // WebContent jetsam limit does not, and a terminated WebContent reloads the page -- which is
+    // exactly the owner's "it goes to the beginning screen when encountering an enemy".
+    //
+    // Idempotent via A1A.released, and re-armed by `A1A.released=false` on the next kind==='ow'
+    // tick, so returning from the battle behaves precisely like walking back out of a town. The
+    // departure window is deliberately KEPT rather than dropped wholesale -- dropping everything is
+    // what made walking back out cost 4.6 s (see a1aReleaseChunks).
+    if (!g.scene.isActive('WorldMapScene')){
+      try{ a1aHideCanopy(); a1aReleaseChunks(); }catch(e){ if(window.__DQ_DEBUG__) console.log('dq battle release '+e); }
+      return;
+    }
     if (!scene.mapData || !scene.tileGrid || !scene.tileGrid.length) return;
     var kind=sceneKind(scene);
     // Leaving the overworld: the depth-11 canopy must not linger over a town/dungeon, AND the
