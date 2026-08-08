@@ -27,7 +27,8 @@ number.
 
 | Element | Class | Duration | Easing | Ref capture | Locked |
 |---|---|---|---|---|---|
-| Battle command selector "Gilded Rail" — plate travel | `selection.travel` | 120ms (measured 120ms, overshoot peaks 8.6px / 9.7% at 69ms, settles by ~117ms) | `cubic-bezier(.34,1.56,.64,1)` | `design/feel-refs/battle-command-rail-locked.mp4` (+ `.gif`, `-ja.mp4`) | 2026-08-07, owner approved (Variant A of `design/mockups/battle-command-selector.html`); the one playful easing on the battle screen |
+| Battle command selector "Gilded Rail" — plate travel | `selection.travel` | 120ms (measured 120ms, overshoot peaks 8.6px / 9.7% at 69ms, settles by ~117ms) | `cubic-bezier(.34,1.56,.64,1)` | `design/feel-refs/battle-command-rail-locked.mp4` (+ `.gif`, `-ja.mp4`) | 2026-08-07, owner approved (Variant A of `design/mockups/battle-command-selector.html`); the one playful easing on the battle screen. **Amended 2026-08-08:** the plate is now a KEYBOARD/GAMEPAD cursor and is hidden on touch — the travel itself is unchanged and still plays between arrow presses |
+| Battle command tap response — press wash | `input.feedback` | press-in **not animated** (class on `pointerdown`, painted on the next frame; measured on device as a single-frame change with no intermediate value); release **70ms** | none in; `cubic-bezier(.22,.80,.36,1)` out (`--ease-out`) | `design/feel-refs/battle-commands-locked.gif` | 2026-08-08, owner approved (Variant A of `design/mockups/battle-commands/index.html`) plus one change: the Attack sword renders `--ruby` **red**. Background only: `rgba(201,169,97,.26)` on an unselected cell, `--gold2` on the plate when the selected cell is the one pressed |
 | Act 1 high-fidelity world traversal G1 | continuous movement + ambient | continuous / 2–3s ambience | fractional camera smoothing / sine | `design/review/overworld-art-blueprint/act-by-act/act1/runtime-v2/g1-port-to-reef.mp4` | 2026-07-15, owner approved direction with hero-scale calibration noted |
 | Act 1 heroine field walk G1 | four-direction walk cycle | 95ms per pose (`0 → A → 0 → B`) | linear frame cadence + subpixel world motion | `design/review/overworld-art-blueprint/act-by-act/act1/runtime-v2/hero-g1/evidence/hero-four-direction-in-world.mp4` | 2026-07-15, owner approved identity and 36px display scale |
 | Act 1 heroine field walk G3 | cardinal-only runtime walk over the retained eight-row G3 sheet + restrained crystal equipment accents | 125ms per pose (`0 → A → 0 → B`) | stable dominant-axis facing with hysteresis + fractional 360-degree world motion and boundary sliding | `design/review/overworld-art-blueprint/act-by-act/act1/runtime-v2/full-world-traversal-r3/evidence/cardinal-facing-125ms-852x1846.webm` | 2026-07-16, owner locked down/left/up/right runtime rows, 125ms candidate, 64px native / 36-world-pixel display, and analog steering |
@@ -43,6 +44,37 @@ and canopy modulations. Landmarks are fixed-size pins taken from the grid's own 
 tiles, never from `semantic-maps/landmark-roster.json`, which places them on plain grass.
 The hero is a reticle rather than a pin because the flat square it replaced vanished
 entirely against a pair of haunted portals.
+
+## The battle command bar has NO resting selection (2026-08-08)
+
+Until 2026-08-08 the gold plate sat on Attack from the moment the menu opened, so every turn
+looked half-taken before the player had done anything, and a tap only teleported the plate: the
+button the finger actually landed on said nothing back. The owner approved variant A of
+`design/mockups/battle-commands/index.html`, which changes three things and is now live:
+
+1. **Nothing carries the plate at rest.** The plate is a keyboard/gamepad cursor, shown on arrow
+   or confirm keys and hidden again by the next touch — last input device wins. Keyboard
+   navigation is untouched; `paintRailSelection()` applies the flag without rebuilding the strip,
+   because rebuilding it would land the plate already at its destination and kill the 120ms travel.
+2. **Each command answers its own tap**, on `pointerdown`, with a background-only gold wash.
+3. **There is no release animation, and there cannot be one.** `fireTap()` sets `lastSig = null`
+   and calls `tick()` synchronously on `pointerup`, which rewrites `stage.innerHTML`, and all four
+   commands change the battle phase — the pressed node is always gone before a release could play.
+   The 70ms ease-out in the stylesheet is real and correct, but it is reachable only on a gesture
+   that ends without committing. It was therefore measured off the shipped `public/ui-overhaul.css`
+   in rendered pixels (alpha .26 → .09 at 15ms → .027 at 31ms → .004 at 47ms → 0 by 66ms, matching
+   `cubic-bezier(.22,.80,.36,1)`), while the device recording proves the press-in and the absence
+   of any second effect.
+
+The **Attack glyph is red**, `--ruby #a8564e`, paired with Defend's `--sky #6f8fa8`. It was already
+that value in `BATTLE_ACT`, but nobody had ever seen it: Attack wore the plate in every capture the
+repo holds, and a plated glyph inverts to charcoal. Removing the resting selection is what put the
+red on screen. Contrast, all measured: red on the opaque bar **3.53:1** (the dimmest of the four
+tints — sky 5.30, emerald 5.90, ink-soft 6.77 — but clear of the 3:1 floor for a graphical object);
+charcoal on the gold plate **8.02:1**. Red on the gold plate would be **2.27:1**, so the plated
+sword stays charcoal — do not "finish the job" by tinting it red. While the wash is held the whole
+cell loses contrast (glyphs 2.13 / 3.19 / 3.56 / 4.08:1, labels 4.08:1); that is inherent to a
+translucent background wash and was accepted with the variant, not discovered afterwards.
 
 The Gilded Rail bar is OPAQUE `--bg3`, and the mockup's `#ffffff0a` wash is superseded — do not
 "restore" it. The wash let the battle art through, so an unselected label sat on the biome:

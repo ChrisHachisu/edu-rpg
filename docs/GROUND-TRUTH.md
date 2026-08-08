@@ -29,7 +29,7 @@ in the source, not just in a doc. Do it at the source or it will be read again.
 | Overworld door / landmark coordinates | `public/act1-world-map.js:198` `LANDMARKS` | The bundle's own `Xt.overworld.connections` are **stale**. Cost one agent half an hour. `scripts/seed_ios_save.py`'s docstring follows the stale table too. |
 | Canvas scale mode | the bundle: `Scale.RESIZE` | `src/main.ts:37-38` says `Scale.NONE`. Two agents reasoned from the wrong one; it changes whether window size is device-dependent. |
 | Monster roster | the bundle: **75** ids | `src/data/monsters.ts`: **72**. `bruiser`, `knifeSneak`, `thornvineLurker` are live in encounter tables and missing from source. `docs/SOURCE-BUNDLE-DRIFT.md` lists monsters.ts under "Faithful" — it is not. Maps (45) and items (58) genuinely are. |
-| What any screen LOOKS like | a dated capture of the shipped build (today: `scratchpad/device-gate-tier2-20260808/06-battle-mid.png`) | **Not the CSS, and this is proven.** `public/ui-overhaul.css:218` is `grid-template-columns:1fr 1fr` and `BATTLE_ACT` assigns `btn-ruby`/`btn-sky`/`btn-em`/`btn-slate` with a running-man Flee icon. **None of that is on the device.** The shipped bar is ONE horizontal strip, four columns, no per-command background, one solid gold fill on the selected item. Labels are weight **500 at 12px**, not the 700 the CSS implies. A mockup built faithfully from the stylesheet was rejected by the owner on sight. |
+| What any screen LOOKS like | a dated capture of the shipped build. For the **battle command bar**, `design/feel-refs/battle-commands-locked.gif` (2026-08-08) — it is tracked, unlike the scratchpad capture below, and it supersedes it: the bar no longer carries a resting selection and the Attack sword is red. | **Not the CSS, and this is proven.** `public/ui-overhaul.css:218` is `grid-template-columns:1fr 1fr` and `BATTLE_ACT` assigns `btn-ruby`/`btn-sky`/`btn-em`/`btn-slate` with a running-man Flee icon. **None of that is on the device.** The shipped bar is ONE horizontal strip, four columns, no per-command background, one solid gold fill on the selected item. Labels are weight **500 at 12px**, not the 700 the CSS implies. A mockup built faithfully from the stylesheet was rejected by the owner on sight. |
 | Where the battle command bar lives | DOM: `public/ui-overhaul.js:871-876`, `public/ui-overhaul.css:118` (`#qok-ui .sel`) | NOT `__tapItems` / `selectedIndex` / `updateSelection` — that is the **TitleScene** path. The Phaser BattleScene's own menu sits under an opaque overlay and is never seen. |
 | Overworld collision | `canMove` (hash `317b8b0a`, 78,711 blocked) | NOT `owmBuild`'s field — `OWM_FIELD_OWNED={2,4,5}` splits the authorities and `canMove` is never derived from it. |
 | Dungeon walkability | the collision shape derived from the art | `act1-dungeon-floors.json`'s tile lattice is **no longer** the authority; dungeons moved to continuous movement. |
@@ -49,10 +49,13 @@ Recorded so they cannot come back. Each was believed and acted on.
 - ~~The relay's "editing dq-tiles.js needs 4 generated pins"~~. One moved. Use `npm run repin` and stop counting.
 - ~~The shell sha `29b0c698…`~~. Stale everywhere it appears in older notes; the value is in `scripts/build_static_index.mjs`.
 - ~~`28-portsapphire-exited.png`~~ (tier-2 device gate) is **still inside the town**. Evidence filenames are claims too.
-- ~~"`public/ui-overhaul.css` describes the battle command bar"~~. It describes a 2x2 grid of four
-  coloured buttons that has not shipped. The stylesheet is fiction for this element in the same way
-  `src/` is fiction for the runtime — and unlike `src/`, nobody had flagged it. Assume the same of
-  any other CSS until a capture confirms it.
+- ~~"`public/ui-overhaul.css` describes the battle command bar"~~. Its `.actiongrid` / `btn-ruby`
+  block describes a 2x2 grid of four coloured buttons that has not shipped. The stylesheet is
+  fiction for that element in the same way `src/` is fiction for the runtime — and unlike `src/`,
+  nobody had flagged it. Assume the same of any other CSS until a capture confirms it.
+  **Narrowed 2026-08-08:** the `#qok-ui .rail` / `.railplate` / `.railcmd` block in the same file
+  IS the shipped bar, confirmed against `design/feel-refs/battle-commands-locked.gif`. Two
+  descriptions of the same element live in one stylesheet; only the rail one is real.
 
 ## Why the code has this problem, not just the docs
 
