@@ -88,7 +88,7 @@ ACT1_OVERLAY_FILES = {
     # save format round-trips to itself (measured: 742 of 754 reportable cells reload unchanged, the
     # other 12 settle one cell north once; largest rescue nudge 28 px against a 96 px bound).
     "dq-tiles.js": (
-        302599, "84df1b2af4d0c36ed6e3ec6ce690077ac7157ce504146f6a51e1f142ff88c6f4"),
+        317240, "be496c20f3867bed73fa6df7ecfe43ab0bf74ea729bda8ffbb2ab3ad40a7c0a8"),
     # 2026-08-07: THE OVERWORLD'S COLLISION SHAPE, baked -- the overworld's answer to the dungeons'
     # `<floor>-walk.png` above, and as much a shipped authority as they are. Deriving it at runtime
     # was correct and unaffordable: owmBuild() evaluated waterField/mountainField per pixel over a
