@@ -331,6 +331,7 @@
       // pointercancel is NOT routed through pointerGuard (it must not swallow anything); it only
       // releases the rail press, so a gesture the browser takes away cannot leave a cell pressed.
       document.addEventListener('pointercancel', function () { railPress(null, false); }, true);
+      document.addEventListener('keydown', railKbWatch, true);  // last-input-device: keys raise the rail cursor
       root.addEventListener('input', onInput, true);
       root.addEventListener('change', onInput, true);
       attached = true;
@@ -745,6 +746,16 @@
   // <i>. That indirection is load-bearing: the selected cell sits on the gold plate and has to
   // invert its glyph to charcoal, and an inline style on the glyph would outrank the .on rule that
   // does it. Same one value per row either way; only its delivery moved.
+  // The sword is RED and stays red: --ruby #a8564e, the palette's own red, paired with Defend's
+  // --sky #6f8fa8 so the two read as one set rather than two inventions. Owner, 2026-08-08:
+  // "make sure the sword icon is red". It was already this value in code, but nobody had ever SEEN
+  // it -- Attack carried the plate in every capture we hold, and a plated glyph inverts to
+  // charcoal. Removing the resting selection is what put the red on screen for the first time.
+  // Measured against the opaque --bg3 bar: 3.53:1, which clears the 3:1 floor for a graphical
+  // object, and is the dimmest of the four tints (sky 5.30, emerald 5.90, ink-soft 6.77).
+  // Do NOT "fix" that by tinting the PLATED sword red: #a8564e on #c9a961 measures 2.27:1,
+  // against 8.02:1 for the charcoal that ships. The plate is now a keyboard cursor, so a touch
+  // player never sees the sword as anything but red.
   var BATTLE_ACT = [
     { key: 'battle.attack', bi: 0, col: 'var(--ruby)' },
     { key: 'battle.defend', bi: 1, col: 'var(--sky)' },
@@ -886,6 +897,26 @@
     }
     rail.classList.remove('fitting');
   }
+  // LAST INPUT DEVICE WINS. The gold plate is a KEYBOARD/GAMEPAD cursor, not a resting choice:
+  // owner-approved 2026-08-08 (variant A of design/mockups/battle-commands/index.html). Before
+  // this the plate sat on Attack from the moment the menu opened, so every turn looked half-taken
+  // before the player had touched anything, and a tap only teleported the plate — the button the
+  // finger actually landed on said nothing back. Arrow/confirm keys raise the flag, the next
+  // pointerdown anywhere in the overlay drops it.
+  //
+  // The flag is applied HERE rather than folded into renderBattle's `dyn` signature on purpose.
+  // Putting it in `dyn` would rebuild the whole strip on every cursor change, which is exactly
+  // what the comment at the `dyn = 'menu'` assignment forbids: a rebuilt plate is already at its
+  // destination and cannot interpolate to it, killing the locked 120ms travel.
+  var railKb = false;
+  function setRailKb(on) {
+    on = !!on;
+    if (railKb === on) return;
+    railKb = on;
+    if (curScreen !== 'battle') return;
+    var bs = getScene('BattleScene');
+    if (bs && bs.phase === 'playerMenu') paintRailSelection(bs.menuIndex); // repaint NOW, not on the next 50ms poll
+  }
   // Move the plate WITHOUT rebuilding the strip, so the transition interpolates instead of
   // restarting. Writing the same transform back would also restart it, hence the compare.
   function paintRailSelection(i) {
@@ -894,11 +925,14 @@
     if (!rail) return;
     var plate = rail.querySelector('.railplate');
     if (plate) {
+      // Kept in position even while hidden, so the cursor reappears where the scene's menuIndex
+      // actually is instead of sliding in from wherever it was last seen.
       var want = 'translateX(' + (i * 100) + '%)';
       if (plate.style.transform !== want) plate.style.transform = want;
     }
+    rail.classList.toggle('kb', railKb);   // .kb is what reveals the plate; see ui-overhaul.css
     var cells = rail.querySelectorAll('.railcmd');
-    for (var k = 0; k < cells.length; k++) cells[k].classList.toggle('on', k === i);
+    for (var k = 0; k < cells.length; k++) cells[k].classList.toggle('on', railKb && k === i);
     fitRailLabels(rail);
   }
 
@@ -953,10 +987,13 @@
       content = ir + '</div>';
       dyn = (bs.itemMenuItems || []).map(function (m) { return (m.getData && m.getData('itemId')) || ''; }).join(',') + '|' + bs.itemMenuIndex;
     } else if (phase === 'playerMenu') {
+      // Built with NO cursor: `.kb` and `.on` are added by paintRailSelection() below, which runs
+      // in this same synchronous frame. Emitting `on` here and stripping it a moment later would
+      // put a resting selection on screen for one paint, which is the thing being removed.
       var ag = '<div class="rail"><div class="railplate" style="transform:translateX(' + (bs.menuIndex * 100) + '%);"></div>';
       for (var m = 0; m < BATTLE_ACT.length; m++) {
         var act = BATTLE_ACT[m], lab = esc(Z(act.key));
-        ag += '<button class="railcmd' + (m === bs.menuIndex ? ' on' : '') + '" style="--tint:' + act.col + ';"' +
+        ag += '<button class="railcmd" style="--tint:' + act.col + ';"' +
           ' data-act="battleMenu" data-i="' + m + '" aria-label="' + lab + '">' +
           battleIcon(act.bi) + '<span class="lab">' + lab + '</span></button>';
       }
@@ -1058,19 +1095,32 @@
   // Press feedback for the battle command rail, as a class on the same pointerdown that arms the
   // tap, cleared on the up/cancel that ends it. This is what the mockup specifies, and it mirrors
   // pointerGuard rather than depending on :active surviving a capture-phase stopPropagation in
-  // WKWebView. Verified in rendered pixels: while held, the plate reads #f2e2b6 instead of #c9a961
-  // and the cell's label shrinks.
+  // WKWebView.
+  //
+  // There is deliberately NO release animation. fireTap() sets lastSig=null and calls tick()
+  // synchronously on pointerup, which rewrites stage.innerHTML — and every one of the four
+  // commands changes the battle phase, so the node that was pressed is always gone by the time a
+  // release could play. The press-in, held for as long as the finger is down, IS the response.
+  //
+  // Only the CELL is marked. The rail used to be marked too, so the plate could acknowledge a
+  // press of the selected command; that state is now unreachable, because pointerGuard drops the
+  // keyboard cursor before this runs and the plate is already hidden. Variant A is a one-effect
+  // design anyway: pressing Flee must never also recolour a plate parked on Attack.
   function railPress(el, on) {
     if (!root) return;
-    var prev = root.querySelectorAll('.railcmd.press, .rail.press');
+    var prev = root.querySelectorAll('.railcmd.press');
     for (var i = 0; i < prev.length; i++) prev[i].classList.remove('press');
     if (!on || !el) return;
     var cell = el.classList && el.classList.contains('railcmd') ? el : null;
     if (!cell) return;
     cell.classList.add('press');
-    var rail = cell.parentNode;
-    if (rail && rail.classList) rail.classList.add('press');
   }
+  // Any menu key the shipped BattleScene binds (LEFT/RIGHT/UP/DOWN move menuIndex; ENTER/SPACE/Z
+  // confirm) means the player is on a keyboard or gamepad, so the cursor belongs on screen. Purely
+  // an observer: capture-phase, no stopPropagation, no preventDefault — Phaser's own window-level
+  // handlers still receive every one of these.
+  var RAIL_KB_KEYS = { ArrowLeft: 1, ArrowRight: 1, ArrowUp: 1, ArrowDown: 1, Enter: 1, ' ': 1, z: 1, Z: 1 };
+  function railKbWatch(e) { if (e && RAIL_KB_KEYS[e.key]) setRailKb(true); }
   // Capture-phase on document: swallow every overlay tap so the underlying Phaser scene input never
   // sees it, and route DOM buttons on pointer/touch UP (reliable on iOS — a click often never fires).
   // stopPropagation (not preventDefault) blocks Phaser without killing scroll of the overlay body.
@@ -1087,7 +1137,8 @@
     var ty = e.type;
     if (ty === 'pointerdown' || ty === 'touchstart') {
       downEl = actEl; downAct = actEl ? actEl.getAttribute('data-act') : null; gestureRouted = false;
-      railPress(actEl, true);
+      setRailKb(false);      // touch wins: drop the keyboard cursor BEFORE the press paints...
+      railPress(actEl, true); // ...so the only thing that lights up is the button under the finger
     } else if (ty === 'mousedown') {
       // The COMPANION of pointerdown, not the end of the press. Chrome fires pointerdown then
       // mousedown for one finger/click, so clearing here cancelled the press feedback instantly --

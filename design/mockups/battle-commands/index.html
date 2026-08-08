@@ -47,7 +47,7 @@
   --g-soft:#a49e91;      /* idle labels + Flee glyph            (164,158,145)*/
   --g-blue:#6f8fa8;      /* Defend glyph                        (111,143,168)*/
   --g-green:#6f9e7e;     /* Item glyph + hero hp                (111,158,126)*/
-  --g-red:#a8564e;       /* enemy hp                            (168,86,78) */
+  --g-red:#a8564e;       /* Attack glyph + enemy hp             (168,86,78) */
   --g-track:#101114;     /* hp track                                         */
   --font-game:'Zen Maru Gothic',system-ui,-apple-system,sans-serif;
   --font-doc:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
@@ -177,6 +177,12 @@ h2{font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--g-gol
 /* measured: cap height 27 device px (9 CSS) and a light stroke, i.e. weight 500
    at ~11.5px with a touch of tracking, not the 700 the tracked CSS implies */
 .cmd .lb{font-size:12px;font-weight:500;letter-spacing:.45px;line-height:1;}
+/* LOCKED 2026-08-08, owner: "make sure the sword icon is red". The first draft of this page
+   inferred a warm tan for the unselected sword because Attack carries the plate in every device
+   capture we hold and a plated glyph inverts to charcoal, so no capture had ever shown it. The
+   codebase had the answer: public/ui-overhaul.js BATTLE_ACT tints Attack with --ruby #a8564e,
+   which is the same value as --g-red here, and pairs with Defend's --sky #6f8fa8. */
+.cmd[data-tone=red]{color:var(--g-red);}
 .cmd[data-tone=gold]{color:var(--g-gold);}
 .cmd[data-tone=blue]{color:var(--g-blue);}
 .cmd[data-tone=green]{color:var(--g-green);}
@@ -259,7 +265,7 @@ h2{font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--g-gol
     <ul>
       <li><b>Layout</b> one horizontal bar, four columns, not a 2x2 grid</li>
       <li><b>Order</b> Attack, Defend, Item, Flee, left to right</li>
-      <li><b>Glyphs</b> tan sword, blue shield, green flask, grey boot</li>
+      <li><b>Glyphs</b> red sword <code>#a8564e</code>, blue shield, green flask, grey boot</li>
       <li><b>Labels</b> grey <code>#a49e91</code>, no per-command background</li>
       <li><b>Selected</b> solid <code>#c9a961</code> fill, dark ink label, 3px <code>#544934</code> ring</li>
       <li><b>Around it</b> enemy card with red HP above, hero strip with green HP below</li>
@@ -323,9 +329,19 @@ h2{font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--g-gol
         <li>Sword, shield, flask and boot are <b>redrawn</b> from the capture, not the shipped
           asset; every glyph box lands within <b>2 device px</b> of the real one, sub-pixel
           detail will not.</li>
-        <li>Attack is selected in every capture available, so the <b>unselected sword tint is
-          inferred</b> (warm tan, matching the other three per-glyph tints). Worth one look on
-          device before this is built.</li>
+        <li><b>Resolved 2026-08-08.</b> This page first shipped a warm tan sword, inferred because
+          Attack carries the plate in every capture we hold and a plated glyph inverts to charcoal,
+          so no capture had ever shown the unselected one. The owner corrected it and the codebase
+          agreed: <code>BATTLE_ACT</code> already tints Attack <code>--ruby #a8564e</code>. It is
+          <b>red</b> here now, and it is only visible at all because the resting selection is gone.</li>
+        <li><b>Selected sword stays charcoal.</b> Red on the gold plate measures <b>2.27:1</b>,
+          under the 3:1 floor for a graphical object; charcoal on gold is 8.02:1. Unselected red on
+          the opaque bar is 3.53:1. The plate now appears only for keyboard and gamepad players, so
+          touch never sees anything but the red.</li>
+        <li><b>The wash costs contrast while it is held.</b> Over <code>rgba(201,169,97,.26)</code>
+          the glyphs drop to 2.13 / 3.19 / 3.56 / 4.08:1 and the labels to 4.08:1, for as long as
+          the finger is down. Inherent to a background wash, not to this build; stated rather than
+          quietly traded away.</li>
       </ul>
     </div>
   </div>
@@ -398,7 +414,7 @@ h2{font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--g-gol
   "use strict";
 
   var CMDS = [
-    {id:"attack", label:"Attack", icon:"i-sword",  tone:"gold"},
+    {id:"attack", label:"Attack", icon:"i-sword",  tone:"red"},
     {id:"defend", label:"Defend", icon:"i-shield", tone:"blue"},
     {id:"item",   label:"Item",   icon:"i-potion", tone:"green"},
     {id:"flee",   label:"Flee",   icon:"i-boot",   tone:"soft"}
@@ -424,9 +440,9 @@ h2{font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--g-gol
       spec:"effect  <b>inset box-shadow only</b><br>press-in <b>~16ms</b> (one frame, no transition)<br>release <b>70ms ease-out</b><br>keyboard cursor <b>solid gold fill, arrows only</b>"
     },
     {
-      key:"current", cls:"v-current", badge:"Current behaviour", live:false,
-      name:"What ships today",
-      desc:"Attack wears the solid gold fill from the moment the menu opens, so the turn looks half-taken before the player has done anything. Tapping only teleports the fill; the button you actually touched says nothing back.",
+      key:"current", cls:"v-current", badge:"Superseded 2026-08-08", live:false,
+      name:"What used to ship",
+      desc:"Attack wore the solid gold fill from the moment the menu opened, so the turn looked half-taken before the player had done anything. Tapping only teleported the fill; the button you actually touched said nothing back. Variant A replaced this on 2026-08-08; kept here as the before, not as the current build.",
       spec:"effect  <b>none</b><br>press-in <b>n/a</b><br>release <b>n/a</b><br>resting state <b>Attack always filled</b>"
     }
   ];

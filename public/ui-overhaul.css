@@ -270,14 +270,21 @@
   background:var(--bg3); border:1px solid var(--gold-line); border-radius:15px; padding:5px; }
 #qok-ui .rail::after{ content:""; position:absolute; left:14px; right:14px; bottom:3px; height:1px;
   background:rgba(201,169,97,.16); pointer-events:none; }   /* the rail line the plate runs on */
+/* The plate is a KEYBOARD/GAMEPAD CURSOR, so it is invisible until an arrow or confirm key says
+   otherwise: `.kb` on the rail, driven by paintRailSelection() in ui-overhaul.js. Owner-approved
+   2026-08-08. It is hidden with opacity, not display/visibility, because it must keep its
+   translateX in sync with the scene's menuIndex while it is off screen — otherwise the cursor
+   would slide in from wherever it was last seen instead of appearing where the cursor now is. */
 #qok-ui .railplate{ position:absolute; top:5px; bottom:5px; left:5px; width:calc((100% - 10px) / 4);
   background:var(--gold); border-radius:11px; box-shadow:0 0 0 3px var(--gold-glow);
-  transform:translateX(0%); will-change:transform;
-  transition:transform var(--select-travel) var(--ease-back), background var(--press) var(--ease-out); }
+  transform:translateX(0%); will-change:transform; opacity:0;
+  transition:transform var(--select-travel) var(--ease-back), opacity var(--press) var(--ease-out); }
+#qok-ui .rail.kb .railplate{ opacity:1; }
 #qok-ui .railcmd{ position:relative; z-index:1; appearance:none; border:none; background:transparent;
   cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center;
   gap:5px; min-height:60px; padding:8px 2px 9px; min-width:0; color:var(--ink-soft);
-  transition:color var(--micro) var(--ease-out), transform var(--press) var(--ease-out); }
+  border-radius:11px;
+  transition:color var(--micro) var(--ease-out), background var(--press) var(--ease-out); }
 #qok-ui .railcmd .ic{ width:22px; height:22px; color:var(--tint,var(--ink-soft));
   transition:transform var(--micro) var(--ease-out), color var(--micro) var(--ease-out); }
 #qok-ui .railcmd .lab{ font-size:12.5px; font-weight:700; letter-spacing:.02em; white-space:nowrap;
@@ -296,9 +303,25 @@
    unreliable about :active on non-anchor elements. (Not a measured failure of :active: the only
    readings that disagreed came from getComputedStyle, which is stale for these composited
    properties -- it reported an identity transform for the CLASS version too, while the rendered
-   pixels showed the press plainly.) */
-#qok-ui .railcmd.press{ transform:scale(.955); }           /* input.feedback, 70ms */
-#qok-ui .rail.press .railplate{ background:#f2e2b6; }      /* the plate acknowledges the press */
+   pixels showed the press plainly.)
+
+   VARIANT A, owner-approved 2026-08-08 (design/mockups/battle-commands/index.html): a gold wash on
+   the BACKGROUND and nothing else. It borrows the selected colour without borrowing the selected
+   weight, so a press never reads as a parked choice. The scale(.955) that was here is variant B,
+   which the same review debuffed -- and running both would have been two effects on one tap.
+
+   Press-in is NOT animated: transition-duration:0s means the class lands on pointerdown and paints
+   on the very next frame (~16ms at 60Hz), well inside `input.feedback`. The 70ms ease-out is the
+   RELEASE leg, which only plays when the finger lifts without committing (a drag off the cell, or
+   a cancelled gesture) -- confirming rebuilds the strip, so the pressed node is gone.
+
+   There is NO paired rule for the selected cell, and that is not an omission. The mockup has one
+   (`.cmd.sel.press` -> --gold2) because its keyboard Enter can press the cell the cursor is on.
+   Here the cursor cannot survive a press: pointerGuard calls setRailKb(false) BEFORE railPress(),
+   so the plate is already gone by the time the wash paints, and keyboard confirm changes the
+   battle phase and destroys the strip. A rule for that state would be a rule for a state the
+   build cannot enter -- which is the kind of claim docs/GROUND-TRUTH.md exists to stop. */
+#qok-ui .railcmd.press{ background:rgba(201,169,97,.26); transition-duration:0s; }
 
 /* Panel swap: only when the battle PHASE changes, never on an HP tick (the whole screen is
    repainted for those too, and an entry animation on every tick would strobe). */
