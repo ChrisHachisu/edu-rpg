@@ -1,0 +1,600 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Battle commands: tap response, motion mockup</title>
+<style>
+/* ==================================================================
+   Quest of Knowledge: battle command bar, tap-response mockup.
+
+   EVERY number below was measured off the shipped-build device
+   capture scratchpad/device-gate-tier2-20260808/06-battle-mid.png
+   (1206x2622 @3x -> 402x874 CSS), NOT read off public/ui-overhaul.css.
+   The tracked source still describes a 2x2 .actiongrid with four
+   coloured buttons; the shipped build is one horizontal bar. Where
+   they disagreed the capture won. See docs/SOURCE-BUNDLE-DRIFT.md.
+
+   Measured, in CSS px at 402pt width:
+     side inset 14 . panel border 1px #5d5138 . panel radius ~14
+     enemy card h57, name 15px, hp bar h9
+     command bar h75, pad 5, button h63, radius ~10
+       icon box 22, glyph 52x55 / 42x52 / 40x55 / 52x38 device px
+       label 12px weight 500, cap height 27 device px, tracking .45
+       selected = solid #c9a961 fill + 3px #544934 ring, ink #15161c
+     hero strip h56, portrait 36, name 12px, hp 29/40 in #c9a961
+   Every glyph box above was re-checked against the capture after drawing;
+   all land within 2 device px of the shipped build.
+   ================================================================== */
+
+@font-face{font-family:'Zen Maru Gothic';font-style:normal;font-weight:500;font-display:block;
+  src:url(data:font/woff2;base64,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) format('woff2');}
+@font-face{font-family:'Zen Maru Gothic';font-style:normal;font-weight:700;font-display:block;
+  src:url(data:font/woff2;base64,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) format('woff2');}
+
+:root{
+  /* page chrome */
+  --pg:#141519; --pg2:#1b1d23; --pg-line:rgba(201,169,97,.22);
+  --tx:#e8e2d4; --tx-soft:#a49e91; --tx-dim:#7d7a72;
+  /* MEASURED game palette */
+  --g-bg:#15161c;        /* command bar / panel fill            (21,22,28)  */
+  --g-line:#5d5138;      /* panel hairline                      (93,81,56)  */
+  --g-gold:#c9a961;      /* selected fill, hp numerals          (201,169,97)*/
+  --g-gold2:#a98a45;     /* pressed gold                                     */
+  --g-goldring:#544934;  /* 3px ring around the selected chip   (84,73,52)  */
+  --g-ink:#15161c;       /* text on the gold fill                            */
+  --g-name:#e8e2d4;      /* panel titles                        (232,226,212)*/
+  --g-soft:#a49e91;      /* idle labels + Flee glyph            (164,158,145)*/
+  --g-blue:#6f8fa8;      /* Defend glyph                        (111,143,168)*/
+  --g-green:#6f9e7e;     /* Item glyph + hero hp                (111,158,126)*/
+  --g-red:#a8564e;       /* enemy hp                            (168,86,78) */
+  --g-track:#101114;     /* hp track                                         */
+  --font-game:'Zen Maru Gothic',system-ui,-apple-system,sans-serif;
+  --font-doc:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{-webkit-text-size-adjust:100%;}
+body{
+  font-family:var(--font-doc);
+  background:radial-gradient(74vw 44vh at 22% -10%,#212430,transparent 62%),linear-gradient(180deg,#17181e,#111216) fixed;
+  background-color:var(--pg);color:var(--tx);min-height:100vh;
+  padding:22px 14px 70px;-webkit-tap-highlight-color:transparent;
+}
+.wrap{max-width:1160px;margin:0 auto;}
+
+/* ---------------- page chrome ---------------- */
+.eyebrow{font-size:10.5px;letter-spacing:.26em;text-transform:uppercase;color:var(--g-gold);font-weight:700;}
+h1{font-family:var(--font-game);font-size:clamp(21px,4.2vw,30px);font-weight:700;margin:8px 0 10px;line-height:1.2;}
+.lede{color:var(--tx-soft);font-size:14px;line-height:1.65;max-width:70ch;}
+.lede b{color:var(--tx);font-weight:600;}
+.lede code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;color:var(--g-gold);}
+.rule{height:1px;background:linear-gradient(90deg,var(--pg-line),transparent);margin:20px 0;}
+h2{font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--g-gold);font-weight:700;margin:26px 0 12px;}
+
+/* fidelity note */
+.fid{background:#ffffff07;border:1px solid var(--pg-line);border-radius:14px;padding:13px 15px;margin-top:16px;}
+.fid ul{list-style:none;display:grid;grid-template-columns:repeat(auto-fit,minmax(228px,1fr));gap:5px 20px;}
+.fid li{font-size:12.5px;color:var(--tx-soft);line-height:1.5;padding-left:15px;position:relative;}
+.fid li::before{content:"";position:absolute;left:2px;top:8px;width:5px;height:5px;border-radius:50%;background:var(--g-gold);opacity:.8;}
+.fid li b{color:var(--tx);font-weight:600;}
+
+/* ---------------- keyboard simulator ---------------- */
+.kb{display:flex;flex-wrap:wrap;align-items:center;gap:9px;
+  background:#ffffff09;border:1px solid var(--pg-line);border-radius:14px;padding:11px 13px;margin:16px 0 6px;}
+.kb .lab{font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--g-gold);font-weight:700;margin-right:3px;}
+.kbkey{appearance:none;background:#ffffff0c;border:1px solid var(--pg-line);color:var(--tx);border-radius:10px;
+  min-width:46px;min-height:40px;padding:0 13px;font-size:15px;font-weight:700;font-family:var(--font-doc);
+  cursor:pointer;touch-action:manipulation;transition:background 90ms ease-out,border-color 90ms ease-out;}
+.kbkey:hover{background:#ffffff16;}
+.kbkey.hit{background:rgba(201,169,97,.3);border-color:var(--g-gold);transition-duration:0s;}
+.kbstate{margin-left:auto;font-size:12.5px;color:var(--tx-soft);}
+.kbstate b{color:var(--g-gold);font-weight:700;}
+.kbhint{font-size:12px;color:var(--tx-dim);line-height:1.55;margin:2px 2px 0;}
+
+/* ---------------- variant grid ---------------- */
+/* 430px keeps the phone at its true 402px width whenever the viewport allows */
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(430px,1fr));gap:16px;margin-top:14px;align-items:start;}
+.cell{background:var(--pg2);border:1px solid var(--pg-line);border-radius:18px;overflow:hidden;min-width:0;
+  box-shadow:0 12px 28px rgba(0,0,0,.5);display:flex;flex-direction:column;}
+.cell.is-current{border-color:rgba(168,86,78,.42);}
+.chead{padding:14px 15px 12px;border-bottom:1px solid #ffffff0f;}
+.badge{display:inline-block;font-size:10px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;
+  padding:3px 8px;border-radius:999px;background:rgba(201,169,97,.14);color:var(--g-gold);border:1px solid var(--pg-line);}
+.cell.is-current .badge{background:rgba(168,86,78,.16);color:#d98d84;border-color:rgba(168,86,78,.4);}
+.cname{font-family:var(--font-game);font-size:16px;font-weight:700;margin:9px 0 5px;}
+.cdesc{font-size:12.5px;color:var(--tx-soft);line-height:1.55;}
+.cspec{margin-top:9px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--tx-dim);line-height:1.6;}
+.cspec b{color:var(--g-gold);font-weight:400;}
+.stage{padding:14px 12px 12px;display:flex;justify-content:center;}
+/* a percentage minimum inside repeat(auto-fit,...) is unreliable, so the
+   single-column fallback is a plain query */
+@media (max-width:474px){.grid{grid-template-columns:1fr;}.stage{padding:12px 6px 10px;}}
+.cfoot{padding:10px 15px 13px;border-top:1px solid #ffffff0f;font-size:12px;color:var(--tx-dim);
+  display:flex;align-items:center;gap:8px;min-height:40px;}
+.cfoot .rd{color:var(--tx);font-weight:600;}
+.cfoot .rd.on{color:var(--g-gold);}
+
+/* ================================================================
+   THE GAME SCREEN: reproduction of 06-battle-mid.png
+   ================================================================ */
+.phone{
+  width:402px;max-width:100%;height:470px;position:relative;overflow:hidden;
+  border-radius:28px;font-family:var(--font-game);
+  display:flex;flex-direction:column;padding:0 14px 50px;
+  /* Flat stand-in for the pixel-art battle background. The stops are the
+     ROW-AVERAGE colours of 06-battle-mid.png, so the value structure is the
+     real one; no artwork was copied. */
+  background:
+    radial-gradient(58% 30% at 50% 26%,rgba(196,214,132,.10),transparent 70%),
+    linear-gradient(180deg,
+      #17341b 0%, #1c3a22 8%, #2b5030 17%, #2d512b 29%, #264520 41%,
+      #3b4f21 53%, #5f6238 66%, #5b5934 78%, #55581f 89%, #22331a 100%);
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.5),inset 0 -50px 60px -30px rgba(0,0,0,.55);
+  user-select:none;-webkit-user-select:none;
+}
+/* faux device chrome so the composition reads as the real screen */
+.statusbar{height:68px;flex:none;position:relative;display:flex;align-items:flex-start;padding-top:14px;}
+.sb-time{font-size:15px;font-weight:700;color:#fff;letter-spacing:.01em;}
+.sb-island{position:absolute;left:50%;top:8px;transform:translateX(-50%);width:120px;height:31px;border-radius:999px;background:#000;}
+.sb-right{margin-left:auto;display:flex;align-items:center;gap:5px;padding-top:3px;}
+.sb-bar{width:22px;height:11px;border:1.4px solid rgba(255,255,255,.85);border-radius:3px;position:relative;}
+.sb-bar::after{content:"";position:absolute;inset:1.6px;background:#fff;border-radius:1px;}
+.sb-wifi{width:15px;height:11px;display:block;fill:rgba(255,255,255,.92);}
+.homebar{position:absolute;left:50%;bottom:9px;transform:translateX(-50%);width:140px;height:5px;border-radius:3px;background:rgba(255,255,255,.5);}
+
+/* shared panel look: measured hairline + fill */
+.panel{border:1px solid var(--g-line);border-radius:14px;background:rgba(21,22,28,.94);}
+
+/* enemy card */
+.enemy{height:57px;flex:none;padding:11px 12px;display:flex;flex-direction:column;justify-content:space-between;}
+.enemy .nm{font-size:15px;font-weight:700;color:var(--g-name);line-height:1;}
+.hpwrap{height:9px;border-radius:5px;background:var(--g-track);overflow:hidden;}
+.hpwrap i{display:block;height:100%;border-radius:5px;}
+.enemy .hpwrap i{background:var(--g-red);}
+
+/* arena: flat stand-in for the pixel-art battle background */
+.arena{flex:1;position:relative;min-height:120px;}
+.arena .blob{position:absolute;left:50%;bottom:34px;transform:translateX(-50%);
+  width:118px;height:84px;border-radius:52% 52% 46% 46%/58% 58% 42% 42%;
+  background:linear-gradient(180deg,rgba(14,20,12,.42),rgba(12,18,10,.24));}
+.arena .shadow{position:absolute;left:50%;bottom:26px;transform:translateX(-50%);
+  width:136px;height:20px;border-radius:50%;background:rgba(10,15,8,.34);filter:blur(5px);}
+.arena .tag{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);
+  font-size:8.5px;letter-spacing:.15em;text-transform:uppercase;color:rgba(232,226,212,.22);font-weight:700;white-space:nowrap;}
+
+/* ---------------- COMMAND BAR (the element under review) ---------------- */
+.cmdbar{height:75px;flex:none;padding:5px;display:flex;align-items:stretch;position:relative;z-index:2;}
+.cmd{
+  flex:1 1 0;min-width:0;appearance:none;border:0;background:transparent;
+  border-radius:10px;padding:8px 2px 0;cursor:pointer;touch-action:manipulation;
+  display:flex;flex-direction:column;align-items:center;gap:8.5px;
+  font-family:var(--font-game);color:var(--g-soft);
+  -webkit-user-select:none;user-select:none;outline:none;
+}
+/* fill is an inherited SVG property, so it reaches the <use> shadow content.
+   A `.cmd .ic path` selector would NOT: it cannot cross the shadow boundary. */
+.cmd .ic{width:22px;height:22px;flex:none;display:block;fill:currentColor;overflow:visible;}
+/* measured: cap height 27 device px (9 CSS) and a light stroke, i.e. weight 500
+   at ~11.5px with a touch of tracking, not the 700 the tracked CSS implies */
+.cmd .lb{font-size:12px;font-weight:500;letter-spacing:.45px;line-height:1;}
+.cmd[data-tone=gold]{color:var(--g-gold);}
+.cmd[data-tone=blue]{color:var(--g-blue);}
+.cmd[data-tone=green]{color:var(--g-green);}
+.cmd[data-tone=soft]{color:var(--g-soft);}
+.cmd .lb{color:var(--g-soft);}          /* labels are grey whatever the glyph tint */
+
+/* keyboard cursor = the shipped selected treatment, measured */
+.cmd.sel{background:var(--g-gold);box-shadow:0 0 0 3px var(--g-goldring);color:var(--g-ink);}
+.cmd.sel .lb{color:var(--g-ink);}
+
+/* hero strip */
+.hero{height:56px;flex:none;margin-top:10px;padding:9px 11px;display:flex;align-items:center;gap:10px;}
+.hero .pf{width:36px;height:36px;flex:none;border-radius:10px;border:1px solid var(--g-line);
+  background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.hero .pf svg{width:26px;height:26px;display:block;}
+.hero .col{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px;}
+.hero .nm{font-size:12px;font-weight:700;color:var(--g-name);line-height:1;}
+.hero .hpwrap i{background:var(--g-green);}
+.hero .num{flex:none;font-size:12px;font-weight:700;color:var(--g-gold);font-variant-numeric:tabular-nums;}
+
+/* ================================================================
+   VARIANT MOTION: one effect per tap, ease-out, 50-100ms.
+   Token: design/GAME-FEEL.md `input.feedback` = under 80ms first response.
+   Press-in is instantaneous (transition-duration:0s -> next frame,
+   ~16ms); the RELEASE is the eased leg.
+   ================================================================ */
+/* A. gold press wash: background only */
+.v-wash .cmd{transition:background 70ms ease-out;}
+.v-wash .cmd.press{background:rgba(201,169,97,.26);transition-duration:0s;}
+.v-wash .cmd.sel.press{background:var(--g-gold2);transition-duration:0s;}
+
+/* B. press scale: transform only */
+.v-scale .cmd{transition:transform 90ms ease-out;}
+.v-scale .cmd.press{transform:scale(.94);transition-duration:0s;}
+
+/* C. gold hairline: inset ring only */
+.v-line .cmd{transition:box-shadow 70ms ease-out;}
+.v-line .cmd.press{box-shadow:inset 0 0 0 1.5px var(--g-gold);transition-duration:0s;}
+.v-line .cmd.sel{transition:box-shadow 70ms ease-out;}
+.v-line .cmd.sel.press{background:var(--g-gold2);box-shadow:0 0 0 3px var(--g-goldring);transition-duration:0s;}
+
+/* D. current shipped behaviour: the fill is always parked on one command
+   and nothing responds to the touch itself. No transition by design. */
+.v-current .cmd{transition:none;}
+
+@media (prefers-reduced-motion:reduce){
+  .v-scale .cmd{transition:background 90ms ease-out;}
+  .v-scale .cmd.press{transform:none;background:rgba(201,169,97,.26);}
+}
+@media (max-width:430px){
+  .phone{height:452px;}
+}
+
+/* notes */
+.notes{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-top:12px;}
+.note{background:#ffffff07;border:1px solid var(--pg-line);border-radius:14px;padding:13px 15px;}
+.note h3{font-size:12.5px;font-weight:700;color:var(--tx);margin-bottom:7px;}
+.note p,.note li{font-size:12.5px;color:var(--tx-soft);line-height:1.6;}
+.note ul{list-style:none;}
+.note li{padding-left:14px;position:relative;}
+.note li::before{content:"";position:absolute;left:2px;top:8px;width:4px;height:4px;border-radius:50%;background:var(--g-gold);opacity:.75;}
+.note b{color:var(--tx);font-weight:600;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="eyebrow">Quest of Knowledge · battle screen</div>
+  <h1>Battle commands, per-button tap response</h1>
+  <p class="lede">
+    Rebuilt against the shipped build, not against the tracked source. Every colour, size and
+    radius here was measured off the device capture <code>06-battle-mid.png</code>: one dark
+    rounded bar, Attack&nbsp;/&nbsp;Defend&nbsp;/&nbsp;Item&nbsp;/&nbsp;Flee side by side, tinted glyph over a grey
+    label, and the selected command carrying a solid gold fill with a 3px ring.
+    <b>The change:</b> nothing is filled at rest, each button answers its own tap, and the gold
+    fill comes back the moment you use the arrow keys.
+  </p>
+
+  <div class="fid">
+    <ul>
+      <li><b>Layout</b> one horizontal bar, four columns, not a 2x2 grid</li>
+      <li><b>Order</b> Attack, Defend, Item, Flee, left to right</li>
+      <li><b>Glyphs</b> tan sword, blue shield, green flask, grey boot</li>
+      <li><b>Labels</b> grey <code>#a49e91</code>, no per-command background</li>
+      <li><b>Selected</b> solid <code>#c9a961</code> fill, dark ink label, 3px <code>#544934</code> ring</li>
+      <li><b>Around it</b> enemy card with red HP above, hero strip with green HP below</li>
+      <li><b>Type</b> the game's own Zen Maru Gothic, subset and embedded</li>
+      <li><b>Not matched</b> the pixel-art background, flat gradient stand-in</li>
+    </ul>
+  </div>
+
+  <div class="rule"></div>
+
+  <h2>Keyboard / gamepad simulator</h2>
+  <div class="kb">
+    <span class="lab">Keys</span>
+    <button class="kbkey" id="kL" type="button" aria-label="Left">&#8592;</button>
+    <button class="kbkey" id="kR" type="button" aria-label="Right">&#8594;</button>
+    <button class="kbkey" id="kE" type="button">Enter</button>
+    <span class="kbstate">Input mode <b id="mode">touch</b> &nbsp;·&nbsp; cursor <b id="cur">Attack</b></span>
+  </div>
+  <p class="kbhint">
+    Real arrow keys work too. Arrows put the gold cursor back on screen; the next tap or click
+    hides it again. That is the whole rule: last input device wins, so keyboard and gamepad
+    navigation is untouched and touch never shows a command as pre-chosen.
+  </p>
+
+  <h2>Variants, endpoint first</h2>
+  <div class="grid" id="grid"></div>
+
+  <h2>Where the numbers come from</h2>
+  <div class="notes">
+    <div class="note">
+      <h3>Timing</h3>
+      <ul>
+        <li><b>input.feedback</b>, under 80ms first response, from <code>design/GAME-FEEL.md</code>.</li>
+        <li>Press-in is not animated: the class lands on <code>pointerdown</code> and paints on the
+          next frame, roughly <b>16ms</b>. Well inside the token and inside the 100ms rubric.</li>
+        <li>The eased leg is the <b>release</b>: 70ms (A, C) or 90ms (B), ease-out. Both sit in the
+          50–100ms band.</li>
+      </ul>
+    </div>
+    <div class="note">
+      <h3>Juice budget</h3>
+      <ul>
+        <li>Tier&nbsp;1: <b>one effect per tap</b>. A changes background only, B changes transform only,
+          C changes box-shadow only. Never two.</li>
+        <li>No particles, no shake, no hit-stop on a menu press.</li>
+        <li>No linear easing anywhere. <b>Zero</b> playful easings spent, so the one-per-screen
+          allowance is left for the damage numbers.</li>
+        <li>Labels never drop below their idle contrast: the pressed gold is
+          <code>#a98a45</code>, dark enough to keep the ink label legible for the whole 70ms.</li>
+      </ul>
+    </div>
+    <div class="note">
+      <h3>Honest gaps</h3>
+      <ul>
+        <li>The battle background is a <b>flat gradient</b>, sampled from the capture. No art was
+          copied into this page.</li>
+        <li>The arena is <b>vertically compressed</b> so four screens fit on one page; the card,
+          bar and strip keep their real heights and insets.</li>
+        <li>Exact at <b>402px</b> wide (iPhone 16 Pro). Narrower viewports shrink the bar
+          proportionally, type stays fixed.</li>
+        <li>Sword, shield, flask and boot are <b>redrawn</b> from the capture, not the shipped
+          asset; every glyph box lands within <b>2 device px</b> of the real one, sub-pixel
+          detail will not.</li>
+        <li>Attack is selected in every capture available, so the <b>unselected sword tint is
+          inferred</b> (warm tan, matching the other three per-glyph tints). Worth one look on
+          device before this is built.</li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+
+<!-- icon library: one path per shape, fill-rule=evenodd cuts the holes so every
+     glyph works unchanged on the dark bar and on the gold fill -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <!-- Glyph bounding boxes below are the ones measured off 06-battle-mid.png,
+       converted from device px to viewBox units (66 device px = 24 units):
+         sword 52x55 dev -> 18.9 x 20.0    shield 42x52 dev -> 15.3 x 18.9
+         flask 40x55 dev -> 14.5 x 20.0    boot   52x38 dev -> 18.9 x 13.8 -->
+  <symbol id="i-sword" viewBox="0 0 24 24">
+    <!-- a thin cross rotated 42deg has a much smaller ink box than its own
+           bounds imply, so it is scaled 1.3x and nudged up to land on the
+           measured 52x55 device-px glyph -->
+      <g transform="translate(12,10.4) rotate(42) scale(1.3) translate(-12,-12)">
+      <!-- blade, with the centre groove cut out so it works on gold and on dark -->
+      <path fill-rule="evenodd" d="M12 1.4 13.9 5.3 13.9 13.1 10.1 13.1 10.1 5.3Z M11.75 5.9 12.25 5.9 12.25 12.6 11.75 12.6Z"/>
+      <!-- crossguard + grip -->
+      <path d="M8.82 13.1 H15.18 A1.35 1.35 0 0 1 15.18 15.9 H8.82 A1.35 1.35 0 0 1 8.82 13.1 Z M10.85 15.9 H13.15 V18.35 H10.85 Z"/>
+      <!-- pommel ring -->
+      <path fill-rule="evenodd" d="M12 18.35 a2.12 2.12 0 1 0 0 4.24 a2.12 2.12 0 1 0 0-4.24 Z M12 19.62 a0.85 0.85 0 1 0 0 1.7 a0.85 0.85 0 1 0 0-1.7 Z"/>
+    </g>
+  </symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24">
+    <!-- flat top, straight sides to mid height, then curved in to a point;
+         a ring hole at 42% height and a thin chevron groove below it -->
+    <path fill-rule="evenodd"
+      d="M4.35 3.15 A0.6 0.6 0 0 1 4.95 2.55 H19.05 A0.6 0.6 0 0 1 19.65 3.15 V11.9
+         C19.65 16.25 16.3 19.65 12 21.45 C7.7 19.65 4.35 16.25 4.35 11.9 Z
+         M12 6.97 a3.5 3.5 0 1 0 0 7.0 a3.5 3.5 0 1 0 0-7.0 Z
+         M12 7.95 a2.52 2.52 0 1 0 0 5.04 a2.52 2.52 0 1 0 0-5.04 Z
+         M4.75 12.25 12 18.15 19.25 12.25 19.25 13.3 12 19.2 4.75 13.3 Z"/>
+  </symbol>
+  <symbol id="i-potion" viewBox="0 0 24 24">
+    <!-- cap 7.3 wide, neck 5.1, round body r7.15 with the liquid line cut out -->
+    <path d="M9.75 2.0 H14.25 A1.45 1.45 0 0 1 14.25 6.4 H9.75 A1.45 1.45 0 0 1 9.75 2.0 Z M9.45 6.4 H14.55 V10.2 H9.45 Z"/>
+    <path fill-rule="evenodd" d="M12 7.75 a7.15 7.15 0 1 0 0 14.3 a7.15 7.15 0 1 0 0-14.3 Z M5.3 14.5 H18.7 V15.4 H5.3 Z"/>
+  </symbol>
+  <symbol id="i-boot" viewBox="0 0 24 24">
+    <!-- three short speed bars on the left, boot pointing right, sole split off.
+         the group squash lands the glyph on the measured 18.9 x 13.8 unit box -->
+    <g transform="translate(0,0.62) scale(1,0.879)">
+    <path d="M2.55 8.0 H7.25 A0.6 0.6 0 0 1 7.25 9.2 H2.55 A0.6 0.6 0 0 1 2.55 8.0 Z"/>
+    <path d="M3.3 11.3 H6.2 A0.6 0.6 0 0 1 6.2 12.5 H3.3 A0.6 0.6 0 0 1 3.3 11.3 Z"/>
+    <path d="M2.55 14.6 H5.45 A0.6 0.6 0 0 1 5.45 15.8 H2.55 A0.6 0.6 0 0 1 2.55 14.6 Z"/>
+    <path d="M9.8 5.1 12.75 5.1 15.7 5.85 C16.35 6.0 16.6 6.4 16.5 7.0 L15.95 11.4
+             C15.8 12.6 16.2 13.4 17.15 14.0 L20.4 16.0 C21.1 16.45 21.45 17.0 21.45 17.7
+             V18.55 H10.9 L10.4 17.4 9.5 18.55 H7.3 L7.3 16.4 C7.3 15.5 7.6 14.8 8.2 14.1
+             L9.15 13.0 C9.65 12.4 9.85 11.75 9.75 11.0 L9.1 6.1 C9.0 5.4 9.25 5.1 9.8 5.1 Z"/>
+    <path d="M10.6 19.3 H21.45 V19.6 C21.45 20.35 20.95 20.8 20.05 20.8 H12.6 C11.4 20.8 10.7 20.25 10.6 19.3 Z"/>
+    </g>
+  </symbol>
+  <symbol id="i-hero" viewBox="0 0 24 24">
+    <circle cx="12" cy="5.6" r="3.1" fill="#c9905a"/>
+    <path d="M8.4 4.6 a3.6 3.6 0 0 1 7.2 0 l.5 2.6 -1.6-1.1 -1.2 1.1 -1.9-1.3 -1.7 1.4 -.8-1.2 -.7 1.2Z" fill="#7a4a24"/>
+    <path d="M8.6 9.2 h6.8 l1.1 6.4 -1.7 .6 -.5 5.4 h-5.3 l-.5-5.4 -1.7-.6Z" fill="#5c6f9a"/>
+    <path d="M11.1 9.2 h1.8 v12.4 h-1.8Z" fill="#8e9fc4" opacity=".45"/>
+    <path d="M15.6 10.4 h3.6 v6.2 c0 1.6-1.2 2.6-1.8 2.9-.6-.3-1.8-1.3-1.8-2.9Z" fill="#3f6ea8"/>
+    <path d="M16.1 11.3 h2.6 v1.1 h-2.6Z M17.0 11.3 h.8 v4.6 h-.8Z" fill="#e0d08a"/>
+    <path d="M4.9 10.2 l1.5-.5 2.2 6.6 -1.5 .5Z" fill="#cfd8e3"/>
+    <path d="M4.2 16.0 h3.4 v1.2 h-3.4Z" fill="#c79a3f"/>
+  </symbol>
+</defs></svg>
+
+<script>
+(function(){
+  "use strict";
+
+  var CMDS = [
+    {id:"attack", label:"Attack", icon:"i-sword",  tone:"gold"},
+    {id:"defend", label:"Defend", icon:"i-shield", tone:"blue"},
+    {id:"item",   label:"Item",   icon:"i-potion", tone:"green"},
+    {id:"flee",   label:"Flee",   icon:"i-boot",   tone:"soft"}
+  ];
+
+  var VARIANTS = [
+    {
+      key:"wash", cls:"v-wash", badge:"A · maxed", live:true,
+      name:"Gold press wash",
+      desc:"The touched command fills with a translucent gold for as long as the finger is down, then releases. It borrows the selected colour without borrowing the selected weight, so a press never reads as a parked choice.",
+      spec:"effect  <b>background only</b><br>press-in <b>~16ms</b> (one frame, no transition)<br>release <b>70ms ease-out</b><br>keyboard cursor <b>solid gold fill, arrows only</b>"
+    },
+    {
+      key:"scale", cls:"v-scale", badge:"B · debuffed", live:true,
+      name:"Press scale",
+      desc:"No colour change at all. The button dips 6% under the finger and springs back. Quieter than A and it survives a colour-blind check, but on a flush bar the movement is easy to miss in daylight.",
+      spec:"effect  <b>transform only</b><br>press-in <b>~16ms</b> (one frame, no transition)<br>release <b>90ms ease-out</b><br>keyboard cursor <b>solid gold fill, arrows only</b>"
+    },
+    {
+      key:"line", cls:"v-line", badge:"C · debuffed", live:true,
+      name:"Gold hairline",
+      desc:"The lightest touch available: a 1.5px gold rule appears inside the pressed button and fades. Cheapest to read at a glance, but on a dark bar under sunlight it is close to invisible.",
+      spec:"effect  <b>inset box-shadow only</b><br>press-in <b>~16ms</b> (one frame, no transition)<br>release <b>70ms ease-out</b><br>keyboard cursor <b>solid gold fill, arrows only</b>"
+    },
+    {
+      key:"current", cls:"v-current", badge:"Current behaviour", live:false,
+      name:"What ships today",
+      desc:"Attack wears the solid gold fill from the moment the menu opens, so the turn looks half-taken before the player has done anything. Tapping only teleports the fill; the button you actually touched says nothing back.",
+      spec:"effect  <b>none</b><br>press-in <b>n/a</b><br>release <b>n/a</b><br>resting state <b>Attack always filled</b>"
+    }
+  ];
+
+  // ---- shared state: one cursor drives every cell so the simulator is honest
+  var cursor = 0;
+  var kbMode = false;         // last input device was a key
+  var cells  = [];
+
+  function el(tag, cls, html){
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (html != null) n.innerHTML = html;
+    return n;
+  }
+
+  function buildBar(cell){
+    var bar = el("div", "cmdbar panel");
+    cell.btns = [];
+    CMDS.forEach(function(c, i){
+      var b = el("button", "cmd");
+      b.type = "button";
+      b.setAttribute("data-tone", c.tone);
+      b.setAttribute("aria-label", c.label);
+      b.innerHTML =
+        '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#' + c.icon + '"/></svg>' +
+        '<span class="lb">' + c.label + '</span>';
+
+      // pointerdown is the first response. click would cost a frame or more
+      b.addEventListener("pointerdown", function(ev){
+        if (ev.button != null && ev.button !== 0) return;
+        if (kbMode){ kbMode = false; paintAll(); }
+        if (cell.live) b.classList.add("press");
+      });
+      ["pointerup","pointercancel","pointerleave"].forEach(function(t){
+        b.addEventListener(t, function(){ b.classList.remove("press"); });
+      });
+      b.addEventListener("click", function(){
+        cursor = i;
+        commit(cell, i);
+        paintAll();
+      });
+      bar.appendChild(b);
+      cell.btns.push(b);
+    });
+    return bar;
+  }
+
+  function buildPhone(cell){
+    var p = el("div", "phone " + cell.def.cls);
+
+    var sb = el("div", "statusbar");
+    sb.innerHTML =
+      '<span class="sb-time">4:07</span><span class="sb-island"></span>' +
+      '<span class="sb-right">' +
+        '<svg class="sb-wifi" viewBox="0 0 16 12" aria-hidden="true">' +
+          '<path d="M8 11.1 1.2 4.2A9.6 9.6 0 0 1 14.8 4.2Z"/></svg>' +
+        '<span class="sb-bar"></span></span>';
+    p.appendChild(sb);
+
+    var en = el("div", "enemy panel");
+    en.innerHTML =
+      '<span class="nm">Cave Spider</span>' +
+      '<span class="hpwrap"><i style="width:94%"></i></span>';
+    p.appendChild(en);
+
+    var ar = el("div", "arena");
+    ar.innerHTML =
+      '<span class="tag">battle background stand-in</span>' +
+      '<span class="blob"></span><span class="shadow"></span>';
+    p.appendChild(ar);
+
+    p.appendChild(buildBar(cell));
+
+    var hs = el("div", "hero panel");
+    hs.innerHTML =
+      '<span class="pf"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-hero"/></svg></span>' +
+      '<span class="col"><span class="nm">Hero &middot; Lv 1</span>' +
+      '<span class="hpwrap"><i style="width:72.5%"></i></span></span>' +
+      '<span class="num">29/40</span>';
+    p.appendChild(hs);
+
+    p.appendChild(el("span", "homebar"));
+    return p;
+  }
+
+  function buildCell(def){
+    var cell = { def:def, live:def.live, btns:[], last:null };
+    var root = el("div", "cell" + (def.live ? "" : " is-current"));
+
+    var head = el("div", "chead");
+    head.innerHTML =
+      '<span class="badge">' + def.badge + '</span>' +
+      '<div class="cname">' + def.name + '</div>' +
+      '<div class="cdesc">' + def.desc + '</div>' +
+      '<div class="cspec">' + def.spec + '</div>';
+    root.appendChild(head);
+
+    var stage = el("div", "stage");
+    stage.appendChild(buildPhone(cell));
+    root.appendChild(stage);
+
+    cell.foot = el("div", "cfoot", 'Last command <span class="rd">none yet</span>');
+    root.appendChild(cell.foot);
+
+    cell.root = root;
+    cells.push(cell);
+    return root;
+  }
+
+  function commit(cell, i){
+    cell.last = CMDS[i].label;
+    cell.foot.innerHTML = 'Last command <span class="rd on">' + cell.last + '</span>';
+  }
+
+  // paint the keyboard cursor. The "current behaviour" cell always shows the
+  // fill, which is exactly the thing being complained about.
+  function paintAll(){
+    cells.forEach(function(cell){
+      cell.btns.forEach(function(b, i){
+        var on = (i === cursor) && (kbMode || !cell.live);
+        b.classList.toggle("sel", on);
+      });
+    });
+    document.getElementById("mode").textContent = kbMode ? "keyboard" : "touch";
+    document.getElementById("cur").textContent = CMDS[cursor].label;
+  }
+
+  function move(d){
+    kbMode = true;
+    cursor = (cursor + d + CMDS.length) % CMDS.length;
+    paintAll();
+  }
+
+  function confirmCursor(){
+    kbMode = true;
+    paintAll();
+    cells.forEach(function(cell){
+      commit(cell, cursor);
+      if (!cell.live) return;
+      var b = cell.btns[cursor];
+      b.classList.add("press");
+      setTimeout(function(){ b.classList.remove("press"); }, 90);
+    });
+  }
+
+  function flashKey(id){
+    var k = document.getElementById(id);
+    if (!k) return;
+    k.classList.add("hit");
+    setTimeout(function(){ k.classList.remove("hit"); }, 110);
+  }
+
+  // ---- boot
+  var grid = document.getElementById("grid");
+  VARIANTS.forEach(function(def){ grid.appendChild(buildCell(def)); });
+  paintAll();
+
+  document.getElementById("kL").addEventListener("click", function(){ move(-1); flashKey("kL"); });
+  document.getElementById("kR").addEventListener("click", function(){ move(1);  flashKey("kR"); });
+  document.getElementById("kE").addEventListener("click", function(){ confirmCursor(); flashKey("kE"); });
+
+  document.addEventListener("keydown", function(ev){
+    if (ev.key === "ArrowLeft" || ev.key === "ArrowUp"){ move(-1); flashKey("kL"); ev.preventDefault(); }
+    else if (ev.key === "ArrowRight" || ev.key === "ArrowDown"){ move(1); flashKey("kR"); ev.preventDefault(); }
+    else if (ev.key === "Enter" || ev.key === " "){ confirmCursor(); flashKey("kE"); ev.preventDefault(); }
+  });
+})();
+</script>
+</body>
+</html>
