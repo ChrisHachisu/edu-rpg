@@ -85,8 +85,38 @@ export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '
 // gap a real WebContent kill costs the player. Written into the source per docs/GROUND-TRUTH.md's
 // rule that a refuted claim is struck where it lives, not in a new document -- the next reader of
 // this timer would otherwise "fix" it again. Reviewed as a diff to index.html; this is the sign-off.
+// 2026-08-09: 5c2492d5... -> fab17fb9..., 49529 B -> 63508 B. ONE behavioural variable: the
+// recovery net's 2 s setInterval no longer runs while the hero is walking. The snapshot moved to
+// scene edges (battle/menu pause, resume, wake, map or floor create) plus the moment the thumb
+// comes off the stick, and the timer that remains is cleared for the duration of every walk and
+// restarted when it ends. The beacon therefore carries a new `mv` flag and gets a widened
+// staleness window (FRESH_WALK_MS) when it was stamped at the start of a walk; the `vis` test
+// that separates a kill from a force-quit is untouched, as are the loop guard, the counter, the
+// toast and the restore path. This is deliberately an EXPERIMENT: the simulator says these writes
+// cost ~7 microseconds, that measurement stands, and it is a simulator number -- the owner's
+// iPhone 13 is the instrument that settles whether they are his freezes. The rest of the diff is
+// comment: the claim that the freezes were really recoveries is struck where it lived, because he
+// confirmed there is no toast on screen when they happen. Reviewed as a diff to index.html; this
+// line is the sign-off. The scene hooks are armed by a bounded rAF loop at boot rather than by the
+// first idle tick, and the FIRST walk still takes a snapshot: without either, a player who walks
+// the instant the world appears had no restore point at all. Both were found by the harness, not
+// by reading, which is why the harness counts setItem at the prototype and not in the module.
+// The WorldMapScene pause/sleep edge also stands the hero down, so an encounter that fires while
+// the thumb is still on the stick cannot carry the stopped timer and the widened window through
+// the whole battle -- the kill-during-a-battle case keeps its 2 s beacon and 20 s window exactly.
+//
+// 2026-08-09: fab17fb9... -> 533f125a..., 63508 B -> 81844 B. THE BLACK BOX, on the owner's own
+// suggestion: "why don't you build in an error message that displays depending on the error type
+// on my phone? i can tell you the exact error message so you can pinpoint the issue." The page now
+// records webglcontextlost, window.onerror, unhandledrejection, page lifecycle and a 20-entry
+// breadcrumb ring, persists them across its own death, and on the next recovery boot shows a
+// dismissable PANEL naming the class in plain words plus a short code (QOK-<CLASS>-<NNNN>) he can
+// read down a phone line. No periodic work is added: breadcrumbs live in memory and reach storage
+// only on the scene edges the resume snapshot already uses, errors write immediately because they
+// are rare, and there is no timer in the module. The "no error recorded" class is a real finding,
+// not a fallback. Reviewed as a diff to index.html; this line is the sign-off.
 export const EXPECTED_STATIC_INDEX_SHA =
-  '5c2492d5a5cf0c48394a63eda9369a41e6ebd24920f2a3bb5b4d60be7211b069';
+  '533f125af433a4211b96ff1357f67330386d485bded25836635164f617f5201a';
 
 /**
  * The authored shell loads its scripts by ABSOLUTE path so the Vite dev server resolves them;
