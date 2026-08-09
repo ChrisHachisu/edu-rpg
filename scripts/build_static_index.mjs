@@ -85,8 +85,27 @@ export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '
 // gap a real WebContent kill costs the player. Written into the source per docs/GROUND-TRUTH.md's
 // rule that a refuted claim is struck where it lives, not in a new document -- the next reader of
 // this timer would otherwise "fix" it again. Reviewed as a diff to index.html; this is the sign-off.
+// 2026-08-09: 5c2492d5... -> fab17fb9..., 49529 B -> 63508 B. ONE behavioural variable: the
+// recovery net's 2 s setInterval no longer runs while the hero is walking. The snapshot moved to
+// scene edges (battle/menu pause, resume, wake, map or floor create) plus the moment the thumb
+// comes off the stick, and the timer that remains is cleared for the duration of every walk and
+// restarted when it ends. The beacon therefore carries a new `mv` flag and gets a widened
+// staleness window (FRESH_WALK_MS) when it was stamped at the start of a walk; the `vis` test
+// that separates a kill from a force-quit is untouched, as are the loop guard, the counter, the
+// toast and the restore path. This is deliberately an EXPERIMENT: the simulator says these writes
+// cost ~7 microseconds, that measurement stands, and it is a simulator number -- the owner's
+// iPhone 13 is the instrument that settles whether they are his freezes. The rest of the diff is
+// comment: the claim that the freezes were really recoveries is struck where it lived, because he
+// confirmed there is no toast on screen when they happen. Reviewed as a diff to index.html; this
+// line is the sign-off. The scene hooks are armed by a bounded rAF loop at boot rather than by the
+// first idle tick, and the FIRST walk still takes a snapshot: without either, a player who walks
+// the instant the world appears had no restore point at all. Both were found by the harness, not
+// by reading, which is why the harness counts setItem at the prototype and not in the module.
+// The WorldMapScene pause/sleep edge also stands the hero down, so an encounter that fires while
+// the thumb is still on the stick cannot carry the stopped timer and the widened window through
+// the whole battle -- the kill-during-a-battle case keeps its 2 s beacon and 20 s window exactly.
 export const EXPECTED_STATIC_INDEX_SHA =
-  '5c2492d5a5cf0c48394a63eda9369a41e6ebd24920f2a3bb5b4d60be7211b069';
+  'fab17fb9dc312536467516c1d51a7e79b0882f1e8443c6fdb8bef4783ce91064';
 
 /**
  * The authored shell loads its scripts by ABSOLUTE path so the Vite dev server resolves them;

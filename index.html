@@ -361,17 +361,21 @@
        whenever a battle, menu or shop is launched over it), the map loaded, HP above zero. The
        player therefore comes back standing on the map, moments before the encounter, with
        pre-battle HP -- he loses the fight and nothing else. He does not resume it.
-       WHAT A RECOVERY COSTS THE PLAYER, MEASURED -- AND WHY THAT MATTERS
+       WHAT A RECOVERY COSTS THE PLAYER, MEASURED
        2026-08-09, verdict simulator, WebContent killed for real while the hero was walking the
        overworld: the screen is DARK for 5.115 s (ffmpeg blackdetect over the screen recording),
        then the map returns with the hero on the tile he was crossing, and the "Recovered from an
        interruption." toast is already up. No white flash -- the Capacitor backgroundColor lands.
-       That 5 s is the whole player-visible cost, and it is worth stating plainly because it is
-       almost certainly what a player would call a momentary freeze. Before this module the same
-       event ended at the TITLE screen, which is unmistakable; now it ends back on the map, which
-       is not. So a rise in "freezes" after this shipped is not evidence of a new performance bug,
-       it is the OLD defect becoming survivable and therefore quieter. `edu-rpg-recovery`.total is
-       what tells the two apart -- read it before believing either story.
+       That 5 s is the whole player-visible cost of a kill.
+
+       ~~AND SO A RISE IN "FREEZES" IS THE OLD DEFECT BECOMING QUIETER~~ -- RETIRED 2026-08-09,
+       same day it was written. The argument was that a recovery ends on the map rather than the
+       title, so the owner would read one as a momentary freeze. It has a falsifiable consequence:
+       every recovery raises a toast. Asked directly whether a message appears during the freezes,
+       the owner said "no message on screen during the freezes". No toast means no recovery fired,
+       so the freezes are NOT recoveries and this module does not explain them. His build-10 report
+       was "momentary pauses here and there but it was minor"; build 11 made them freezes. Do not
+       reach for this explanation again without the toast to back it.
        A structural bonus, not a coincidence: the shipped loader builds a fresh EncounterManager,
        whose `stepsSinceLastEncounter` starts at 0, so there is a guaranteed grace of
        `minStepsBetween` steps before another encounter is even possible.
@@ -392,8 +396,22 @@
       var SNAP = 'edu-rpg-resume';     // last SAFE state. OUR key -- never the game's save slots.
       var LOG  = 'edu-rpg-recovery';   // the evidence:     {total, blocked, events[], last}
 
-      var TICK_MS  = 2000;   // beacon cadence. At a kill the beacon is at most this stale.
+      var IDLE_MS  = 2000;   // beacon cadence WHILE THE HERO IS STANDING STILL. Never while walking.
+      var IDLE_SNAP_EVERY = 5;  // ... and a snapshot on every 5th of those (10 s). See the timer.
+      var STOP_MS  = 250;    // walk-over debounce; see setWalking(). Never fires during a walk.
       var FRESH_MS = 20000;  // older than this and we treat the launch as ORDINARY, not a kill.
+      /* The same test, for a beacon that was stamped `mv:1` -- i.e. the last thing the page did
+         was START WALKING, and the beacon then went deliberately stale because the timer is
+         stopped for the duration of the walk. Five minutes is a cap on how long we will believe a
+         walking page was still alive, not a measurement: a continuous walk longer than that gets
+         no auto-recovery and lands on the title, which is exactly the pre-net behaviour.
+         WHAT THIS DOES NOT WEAKEN: the reported kill happens at an ENCOUNTER, and an encounter
+         pauses WorldMapScene, which stamps the beacon `mv:0` and restarts the idle timer for the
+         whole battle. So the case this module was built for keeps its 2 s beacon exactly as
+         before; the widened window covers only a kill during an uninterrupted walk.
+         WHAT STILL BLOCKS A FALSE RECOVERY: `vis`. A deliberate force-quit backgrounds the page
+         first and stamps vis:0, and that test is untouched. */
+      var FRESH_WALK_MS = 300000;
       // TWO trip wires, because one number cannot cover both shapes of loop. A tight cycle
       // (restore, walk two steps, killed again) shows up as 2 inside 30 s; a slower one that a
       // 30 s window would keep resetting shows up as 3 inside 3 minutes. Either trips.
@@ -410,21 +428,40 @@
 
       /* ---- the beacon + the snapshot ------------------------------------------------------- */
       var wroteOnce = false, lastJson = '';
+      // In-memory only, and the instrument for the claim "no periodic write while walking".
+      // Read it with __QOK_RECOVERY__.writes() before and after a walk; the delta must be 0.
+      var writes = { beacon: 0, snapshot: 0, deduped: 0, reasons: {} };
+      function tally(kind, why) {
+        writes[kind]++;
+        writes.reasons[why] = (writes.reasons[why] || 0) + 1;
+      }
 
-      function safeState() {
+      /* The shape a restore point must have. Position and HP live here and are only ever the
+         OVERWORLD's: a battle changes HP over seconds, so a snapshot taken ON the transition edge
+         into a battle still carries the pre-battle values, which is precisely the restore point
+         this net wants. */
+      function restorable() {
         var g = G(), s = S();
         if (!g || !s || !s.player || !s.player.state || !s.quizManager) return false;
-        // Phaser reports a PAUSED scene as inactive, and WorldMapScene is paused under battle,
-        // menu and shop alike -- so this single test is what keeps a battle out of the snapshot.
-        if (!act('WorldMapScene')) return false;
-        if (act('BattleScene') || act('GameOverScene') || act('TitleScene')) return false;
+        if (act('GameOverScene') || act('TitleScene')) return false;
         var wm = g.scene.getScene('WorldMapScene');
         if (!wm || !wm.mapData || !wm.mapData.length) return false;   // mid map load
         if (!(s.player.state.hp > 0)) return false;
+        var p = s.player.state.position;
+        if (!p || typeof p.mapId !== 'string' || !p.mapId) return false;
         return true;
       }
 
-      function writeSnapshot() {
+      /* The IDLE path's guard, which is the strict one it always was. Phaser reports a PAUSED
+         scene as inactive, and WorldMapScene is paused under battle, menu and shop alike -- so
+         this single test is what keeps a battle out of a periodically-taken snapshot. The EDGE
+         path above deliberately does not use it: at the pause edge the scene is already inactive
+         by definition, and refusing there is what would lose the pre-encounter restore point. */
+      function safeState() {
+        return restorable() && act('WorldMapScene') && !act('BattleScene');
+      }
+
+      function writeSnapshot(why) {
         var s = S();
         // Same shape and same version the game's own SaveManager writes, so the shipped loader
         // reads it without a migration. playtime is computed, never committed back into the
@@ -436,62 +473,213 @@
           playtime: s.playtime + (Date.now() - s.startTime) / 1000,
           quizStats: s.quizManager.getStats()
         });
-        // Standing still rewrites an identical blob every 2 s; skip it. (timestamp/playtime move,
-        // so compare with those stripped.)
+        // Re-snapshotting an unchanged state rewrites an identical blob; skip it. (timestamp and
+        // playtime move on their own, so compare with those stripped.)
         var sig = json.replace(/"timestamp":\d+/, '').replace(/"playtime":[\d.e+-]+/, '');
-        if (sig === lastJson) return;
+        if (sig === lastJson) { writes.deduped++; writes.reasons['dedup:' + why] = (writes.reasons['dedup:' + why] || 0) + 1; return; }
         lastJson = sig;
-        try { localStorage.setItem(SNAP, json); wroteOnce = true; } catch (e) {}
+        try { localStorage.setItem(SNAP, json); wroteOnce = true; tally('snapshot', why); } catch (e) {}
       }
+      function trySnap(why) { if (restorable()) writeSnapshot(why); }
 
-      var visible = 1;
+      var visible = 1, walking = false;
+      function beacon(why) {
+        // `live` says a playthrough was in progress. Not on the title (nothing to restore) and
+        // not on game over (he died; undoing that is not recovery, it is cheating).
+        var live = wroteOnce && !act('TitleScene') && !act('GameOverScene') ? 1 : 0;
+        wr(HB, { t: Date.now(), live: live, vis: visible, mv: walking ? 1 : 0 });
+        tally('beacon', why);
+      }
       document.addEventListener('visibilitychange', function () {
         visible = document.visibilityState === 'visible' ? 1 : 0;
         // Stamp the beacon on the way out. A backgrounded page's timers are throttled or stopped,
         // so without this the last beacon would look stale-but-recent and the arming test would
         // be guessing. `vis:0` makes a later reload provably NOT the foreground kill we recover
         // from -- which is also what keeps a deliberate force-quit from the app switcher out.
-        wr(HB, { t: Date.now(), live: wroteOnce ? 1 : 0, vis: visible });
+        beacon('visibility');
       });
 
-      /* THE COST OF THIS TIMER IS MEASURED. DO NOT RE-TUNE IT ON A HUNCH.
-         When the owner reported "momentary freezes after a few steps" on the first build carrying
-         this module, these writes were the prime suspect -- localStorage is synchronous and on iOS
-         is backed by SQLite, and the module's own author had written that he believed the cost
-         negligible but had not measured it. It was measured on 2026-08-09, on the verdict
-         simulator (iPhone 17 Pro, iOS 26.4), in WKWebView, during real overworld walks:
+      /* ---- NOTHING PERIODIC RUNS WHILE THE HERO IS WALKING ----------------------------------
+         WHAT IS MEASURED, AND WHAT IS NOT. What stood here was a plain 2 s setInterval that wrote
+         the beacon and the snapshot whether or not the player was moving. Its cost WAS measured,
+         on 2026-08-09, on the verdict simulator (iPhone 17 Pro, iOS 26.4), in WKWebView, during
+         real overworld walks:
 
            setItem, amortised over 300 calls     36 B  <= 0.0033 ms   (the beacon)
                                                 640 B     0.0033 ms   (the snapshot, 626 B live)
-                                                  4 KB    0.0067 ms
                                                  64 KB    0.03   ms
            89 real beacon/snapshot writes        every one 0-1 ms, at the clock's own floor
-           this whole callback, in situ          at or below that same 1 ms floor
 
-         performance.now() is clamped to 1 ms in this WKWebView, which is why the per-write number
-         has to be amortised to be seen at all. Two writes every 2 s is about SEVEN MICROSECONDS,
-         roughly 0.0004 of one frame at 60 fps.
+         and an interleaved A/B (same .app, only the shell swapped, 5 runs a side, battle windows
+         excluded) put worst frame at 46 ms median without the module and 43 ms with it, with zero
+         frames over 100 ms on either side. THAT MEASUREMENT STANDS AND IS NOT BEING RETRACTED.
+         What it does not cover is the only device that matters: it is a SIMULATOR number, written
+         to a Mac's SSD with none of iOS's storage sandbox, journalling or QoS in the path, and the
+         cost of the same write on the owner's iPhone 13 has never been measured, cannot be
+         measured from here, and was flagged as the measurement's own open doubt when it was taken.
 
-         The A/B agrees. Same .app, same assets, same probe, the static shell swapped between the
-         pre-recovery-net build and this one; 5 runs a side, interleaved, load under 6 throughout,
-         a 30 s overworld walk each with battle windows excluded:
+         Against it: the owner reports as FREEZES on build 11 what he called "momentary pauses
+         here and there but it was minor" on build 10, and the cadence matches -- a fixed 2 s timer
+         against "after a few steps". The competing explanation, that the freezes were really this
+         module's recoveries, is dead (see the header: no toast, so no recovery fired). So this
+         timer is the last candidate standing with the right cadence, and the only honest way to
+         settle it from here is to take it out of the walk and let his phone answer.
 
-                                pre-recovery-net        with this module
-             worst frame        med 46 ms (33-58)       med 43 ms (29-46)
-             frames > 100 ms    0 in every run          0 in every run
-             frames >  33 ms    med 3 (0-5)             med 1 (0-3)
+         Hence: the snapshot is taken on MEANINGFUL EVENTS, and the timer that remains is stopped
+         outright for the duration of every walk. Walking performs zero writes, zero
+         JSON.stringify and zero timer callbacks. If his freezes stop, the write was the cause
+         despite the simulator; if they do not, the only candidate with a matching cadence is
+         eliminated and the search moves elsewhere. Either outcome is a result worth having.
+         Prove the zero with __QOK_RECOVERY__.writes() across a walk; do not take it on trust.
 
-         Walking is not measurably worse with this timer in it, so the freezes are not this. What a
-         kill DOES cost the player is recorded in the header above. Slowing TICK_MS would buy
-         microseconds and pay for them in a staler restore point. */
-      setInterval(function () {
-        if (!G()) return;
-        if (safeState()) writeSnapshot();
-        // `live` says a playthrough was in progress. Not on the title (nothing to restore) and
-        // not on game over (he died; undoing that is not recovery, it is cheating).
-        var live = wroteOnce && !act('TitleScene') && !act('GameOverScene') ? 1 : 0;
-        wr(HB, { t: Date.now(), live: live, vis: visible });
-      }, TICK_MS);
+         WHERE THE RESTORE POINT COMES FROM NOW, AND WHY IT IS NOT WORSE:
+           pause    a battle / menu / shop opening over the world. THE important one -- the
+                    reported kill happens at an encounter, and this edge is the exact pre-encounter
+                    tile, which is FRESHER than the old timer's up-to-2 s-stale copy. It also
+                    stands the hero down (see forceStand) so the battle runs on the ordinary tick.
+           sleep    the same, for a scene put to sleep rather than paused.
+           resume   back on the map afterwards: post-battle HP, and the save a menu just wrote.
+           wake     the same, for a sleep/wake transition rather than a pause/resume one.
+           create   a map or dungeon-floor change (WorldMapScene.create runs on every map entry).
+           stop     the thumb comes off the stick.
+           idle     every IDLE_SNAP_EVERY idle ticks, as a belt for anything the five above miss.
+         The one real regression: a kill during an uninterrupted walk now restores to where that
+         walk began rather than to the tile he was crossing. That is a loss of precision, not of
+         kind, and it does not touch the encounter case above, which is the case this net was
+         built for. */
+
+      var timer = null, idleN = 0;
+      function startTimer() {
+        if (timer !== null) return;
+        idleN = 0;
+        timer = setInterval(function () {
+          if (!G()) return;
+          hookScene();
+          if (++idleN % IDLE_SNAP_EVERY === 0 && safeState()) writeSnapshot('idle');
+          beacon('idle');
+        }, IDLE_MS);
+      }
+      function stopTimer() { if (timer !== null) { clearInterval(timer); timer = null; } }
+
+      /* Is the hero walking? Answered for free, with no polling of any kind. The field controls
+         at the bottom of this file synthesise arrow-key events on `window` (the frozen bundle
+         reads Phaser cursor keys), and a hardware keyboard on the simulator or a desktop
+         dispatches the same events -- so ONE pair of window listeners sees both channels. The
+         stick is watched directly as well, because a push below its 0.38 axis threshold drives
+         the dungeons' continuous-movement channel without ever pressing a key, and that is still
+         walking. Capture phase, so nothing can pre-empt it with stopPropagation.
+         SELF-HEALING: if a keyup is ever lost, the controls' own blur/visibilitychange teardown
+         releases every held key through the same dispatch, so `down` cannot latch true forever --
+         which matters, because a stuck `walking` would stop the beacon indefinitely. */
+      var ARROW = { ArrowUp: 1, ArrowDown: 1, ArrowLeft: 1, ArrowRight: 1 };
+      var down = {}, stickHeld = false, stopT = null;
+      function anyHeld() { for (var k in down) if (down[k]) return true; return false; }
+      function setWalking(v) {
+        if (v === walking) return;
+        walking = v;
+        hookScene();
+        if (walking) {
+          // ONE exception to "no snapshot at walk-start": the very first one. Otherwise a player
+          // who takes his thumb to the stick the instant the world appears and never lifts it has
+          // no restore point at all, because the idle path is stopped for the whole walk -- and a
+          // net that is not armed until the player stands still is not the net that was praised.
+          // After that first write this is skipped: the position at walk-start is the position at
+          // the last walk-stop, which was already snapshotted, so it could only build a JSON blob
+          // for the dedup to throw away, on the very frame the walk begins.
+          if (!wroteOnce) trySnap('first-walk');
+          // Beacon SECOND, so it carries mv:1 and the widened staleness window applies to it --
+          // and so `live` sees the snapshot that trySnap above may just have written.
+          beacon('walk-start');
+          stopTimer();
+        } else {
+          beacon('walk-stop');
+          trySnap('walk-stop');
+          startTimer();
+        }
+      }
+      /* The walk is declared over only after STOP_MS of stillness. This one-shot never fires
+         during a walk, and it is load-bearing rather than cosmetic: changing direction releases
+         the old arrow key and presses the new one, and depending on iteration order there can be
+         a sub-millisecond window with nothing held. Undebounced, every turn would read as
+         stop-then-start and put writes straight back into the walk -- the exact thing this block
+         exists to remove. perf_probe's own __perfSetDir has precisely that ordering, so an
+         undebounced version would have measured its own artefact and called it real. */
+      function refresh() {
+        var v = stickHeld || anyHeld();
+        if (v) { if (stopT !== null) { clearTimeout(stopT); stopT = null; } setWalking(true); return; }
+        if (!walking || stopT !== null) return;
+        stopT = setTimeout(function () { stopT = null; setWalking(false); }, STOP_MS);
+      }
+      /* A PAUSED world scene means the hero is not walking, whatever the thumb is still doing:
+         Phaser has stopped the overworld and there is no walk frame left to protect. Without this
+         a player whose encounter fires while he is holding the stick would carry `walking` -- and
+         therefore the stopped timer and the widened staleness window -- through the whole battle,
+         which is the exact case this net was built for and the one that must stay freshest. So
+         the battle/menu edge stands the hero down explicitly and puts the beacon back on its
+         ordinary 2 s cadence and its tight 20 s window. The keys are NOT touched; resume/wake
+         call refresh(), which re-derives the walk from whatever is actually still held. */
+      function forceStand(why) {
+        trySnap(why);
+        if (!walking) return;
+        walking = false;
+        if (stopT !== null) { clearTimeout(stopT); stopT = null; }
+        beacon(why);
+        startTimer();
+      }
+      window.addEventListener('keydown', function (e) { if (ARROW[e.key]) { down[e.key] = 1; refresh(); } }, true);
+      window.addEventListener('keyup',   function (e) { if (ARROW[e.key]) { down[e.key] = 0; refresh(); } }, true);
+      (function () {
+        var pad = document.getElementById('dpad');
+        if (!pad) return;
+        var on  = function () { stickHeld = true;  refresh(); };
+        var off = function () { stickHeld = false; refresh(); };
+        pad.addEventListener('touchstart', on, { passive: true });
+        pad.addEventListener('touchend', off, { passive: true });
+        pad.addEventListener('touchcancel', off, { passive: true });
+        pad.addEventListener('mousedown', on);
+        window.addEventListener('mouseup', off);
+        window.addEventListener('blur', off);
+      })();
+
+      /* The scene edges. Attached from the idle tick and from every walk transition, so a player
+         who starts walking the instant the world appears still gets them. Phaser calls
+         events.removeAllListeners() only in Systems.destroy(), never in shutdown(), so these
+         survive every map change -- the emitter identity is compared anyway rather than assumed. */
+      var hookedTo = null;
+      function hookScene() {
+        var g = G();
+        if (!g || !g.scene || !g.scene.getScene) return false;
+        var wm = g.scene.getScene('WorldMapScene');
+        if (!wm || !wm.events) return false;
+        if (hookedTo === wm.events) return true;
+        hookedTo = wm.events;
+        wm.events.on('pause',  function () { forceStand('pause'); });
+        wm.events.on('sleep',  function () { forceStand('sleep'); });
+        wm.events.on('resume', function () { trySnap('resume'); beacon('resume'); refresh(); });
+        wm.events.on('wake',   function () { trySnap('wake'); refresh(); });
+        // The destination map is not loaded yet when CREATE fires, so restorable() would refuse.
+        // Three one-shots rather than a poll; the dedup makes the later ones free once one landed.
+        wm.events.on('create', function () {
+          setTimeout(function () { trySnap('map'); }, 0);
+          setTimeout(function () { trySnap('map'); }, 400);
+          setTimeout(function () { trySnap('map'); }, 1200);
+        });
+        return true;
+      }
+
+      /* Arm the hooks eagerly instead of waiting for the first idle tick. This matters and it was
+         found the hard way: a hidden tab throttles setInterval to once a minute, the hooks were
+         therefore still unattached when WorldMapScene was created, and the map-change snapshot
+         silently never happened. A device is not a hidden tab, but "the hooks attach before the
+         world exists" must be guaranteed rather than inferred from a timer's cadence. Boot-time
+         work only: the loop stops the moment it lands, and gives up rather than spinning forever. */
+      (function arm(deadline) {
+        if (!deadline) deadline = Date.now() + 60000;
+        if (hookScene() || Date.now() > deadline) return;
+        requestAnimationFrame(function () { arm(deadline); });
+      })();
+
+      startTimer();
 
       /* ---- the evidence -------------------------------------------------------------------- */
       function log() {
@@ -504,6 +692,10 @@
         report:    function () { return log(); },
         heartbeat: function () { return rd(HB); },
         snapshot:  function () { return rd(SNAP); },
+        // The instrument for "no periodic write while walking". In memory, never stored: sample it
+        // before and after a walk and the delta must be zero. `reasons` says which edge fired.
+        writes:    function () { return JSON.parse(JSON.stringify(writes)); },
+        walking:   function () { return { walking: walking, timerRunning: timer !== null, hooked: hookedTo !== null }; },
         // Deliberately NOT called by anything: clearing the count is a decision, not a step.
         reset:     function () { wr(LOG, { total: 0, blocked: 0, events: [], last: null }); }
       };
@@ -558,10 +750,20 @@
       var snap = rd(SNAP);
 
       // A restart, not a launch: something was alive, in a playthrough, in the foreground, within
-      // the last FRESH_MS -- and this is a brand new page. Anything older is an ordinary cold
+      // the freshness window -- and this is a brand new page. Anything older is an ordinary cold
       // start and is left completely alone.
+      //
+      // TWO windows, because the beacon has two cadences by design. A beacon stamped while the
+      // hero was STANDING is at most IDLE_MS (2 s) old, so FRESH_MS (20 s) has 18 s of slack and
+      // is unchanged. A beacon stamped `mv:1` was the last thing written before the timer was
+      // stopped for a walk, so its age is the length of the walk and there is no upper bound on
+      // that from inside the page. FRESH_WALK_MS caps how long we will believe it; past that he
+      // gets the title, i.e. the pre-net behaviour. The `vis` test -- the thing that actually
+      // separates a kill from a force-quit -- is identical in both cases.
+      var beaconAge = hb ? now - hb.t : Infinity;
+      var freshWindow = hb && hb.mv === 1 ? FRESH_WALK_MS : FRESH_MS;
       var restarted = !!(hb && hb.live === 1 && hb.vis === 1 &&
-                         (now - hb.t) >= 0 && (now - hb.t) < FRESH_MS);
+                         beaconAge >= 0 && beaconAge < freshWindow);
 
       var p = snap && snap.player;
       var usable = !!(p && p.position && typeof p.position.mapId === 'string' && p.position.mapId &&
@@ -596,10 +798,14 @@
           l.total = (l.total || 0) + 1;
           l.events.push(now);
           if (l.events.length > 50) l.events = l.events.slice(-50);
+          // `mv` and `windowMs` are here so a stale-looking restore point can be explained rather
+          // than guessed at: mv:1 means the beacon aged for the length of an uninterrupted walk.
           l.last = { t: now, mapId: p.position.mapId, floor: p.position.floor || 1,
-                     x: p.position.x, y: p.position.y, hp: p.hp, beaconAgeMs: now - hb.t };
+                     x: p.position.x, y: p.position.y, hp: p.hp, beaconAgeMs: beaconAge,
+                     mv: hb.mv === 1 ? 1 : 0, windowMs: freshWindow };
           wr(LOG, l);
-          console.warn('[QOK-RECOVERY] restart detected (beacon ' + (now - hb.t) + 'ms old). ' +
+          console.warn('[QOK-RECOVERY] restart detected (beacon ' + beaconAge + 'ms old, mv=' +
+            (hb.mv === 1 ? 1 : 0) + ', window ' + freshWindow + 'ms). ' +
             'Restoring #' + l.total + ' to ' + p.position.mapId + ' floor ' + (p.position.floor || 1) +
             ' at ' + p.position.x + ',' + p.position.y + ' hp=' + p.hp + '. ' +
             'THIS IS A SAFETY NET, NOT A FIX -- the memory defect that caused the restart is unchanged.');
