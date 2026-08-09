@@ -40,6 +40,19 @@ in the source, not just in a doc. Do it at the source or it will be read again.
 
 Recorded so they cannot come back. Each was believed and acted on.
 
+- ~~"Every iPhone lands at a 9-chunk ring because ZOOM multiplies by dpr and cancels the larger
+  screen"~~ (a comment I wrote in `public/dq-tiles.js`). Right answer, wrong reason. Measured on
+  real simulators 2026-08-09: WorldMapScene's camera zoom is **1** — the bundle's `fitScene`
+  explicitly excludes it — so `worldView` equals the canvas CSS size and **dpr never enters**.
+  The `ceil()` in `winW`/`winH` is what absorbs device differences. iPhone 13 (390x701pt) and
+  iPhone 17 Pro (402x716pt) both give **33x39 and a 9-chunk ring**.
+- **Agent worktrees are sometimes cut at a STALE base commit.** Two agents this session received
+  worktrees at `42b17a8`, **79 commits behind `main`**, predating the whole recovery net. Both
+  caught it and fast-forwarded; a third might not. **Every agent must run `git log -1` and confirm
+  its base before trusting a build or an A/B.** A stale base silently measures the wrong code.
+- **A load average above 10 voids a timing number, and `simctl shutdown all` kills OTHER agents'
+  devices.** Both happened this session: load hit 40 (5-min) and 55 (15-min), and one agent's
+  blanket shutdown killed a second agent's simulator mid-run. Shut down only your own UDID.
 - ~~"The battle bar uses `#qok-ui .sel`, so changing it risks restyling six other screens"~~. It
   does not use `.sel` at all; the scoping worry that shaped two briefs was moot. Verified by
   rendering every shared `.sel` surface under the old and new stylesheet: **byte-identical**.

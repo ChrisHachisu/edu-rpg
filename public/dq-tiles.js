@@ -1158,7 +1158,13 @@
   // not because the cost is zero. Say the true thing.
   // Ring size is also device-dependent, since winW/winH derive from cam.worldView and the shipped
   // bundle uses Scale.RESIZE (src/main.ts says NONE -- it is fiction here). At real devicePixelRatio
-  // every iPhone and iPad lands at 9, because ZOOM multiplies by dpr and cancels the larger screen.
+  // every iPhone and iPad lands at 9 -- but NOT by the mechanism this comment used to give.
+  // It said "ZOOM multiplies by dpr and cancels the larger screen". Measured on real simulators
+  // 2026-08-09: WorldMapScene's camera zoom is simply **1** (the bundle's fitScene explicitly
+  // excludes WorldMapScene), so worldView equals the canvas CSS size and dpr never enters at all.
+  // What absorbs device differences is the ceil() in winW/winH. iPhone 13 canvas 390x701pt and
+  // iPhone 17 Pro 402x716pt both yield winW x winH = 33x39 and a 9-chunk ring. Right answer,
+  // wrong reason -- and the reason was load-bearing enough that two rounds reasoned from it.
   // The one real exception found is iPad mini 8.3 in PORTRAIT: 744*2 = 1488 falls just under the
   // 768*2 threshold, ZOOM stays 1, and the ring reaches 12 -- over A1A_MAX_CHUNKS. That is not
   // thrash: the trim floor is Math.max(A1A_MAX_CHUNKS, keep.length), so the cap simply rises and
