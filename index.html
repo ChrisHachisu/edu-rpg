@@ -307,6 +307,222 @@
       window.__QOK_COVER__ = { phase: function () { return phase; } };
     })();
 
+    /* ---- The black box -------------------------------------------------------------------------
+       WHY THIS EXISTS. Owner, 2026-08-09: "why don't you build in an error message that displays
+       depending on the error type on my phone? i can tell you the exact error message so you can
+       pinpoint the issue." He is right, and it is the best idea anyone has had about this bug. His
+       iPhone 13 is thrown back to the title by something that Apple's crash reports do not see
+       (submissions: zero), that the simulator will not reproduce, and that every memory theory has
+       failed to explain -- the re-measured encounter peak is 245 -> 296 MB of WebContent, which
+       should not kill a 4 GB phone. We cannot read his logs. So the page records what happened to
+       it, survives its own death in localStorage, and reads the record back on the next boot.
+
+       WHAT IT IS NOT. It is not a fix and it does not reduce memory by one byte, exactly like the
+       recovery net it rides on. It is an instrument, and its most valuable output may well be the
+       BORING one: "no error recorded". That answer is not a failure of the instrument, it is a
+       finding -- it means the page was executing normally and then simply ceased to exist, which
+       rules out every fault that JavaScript can observe and leaves the process being killed from
+       outside.
+
+       WHY `webglcontextlost` IS LISTED FIRST. Nobody has checked it. A lost GPU context is not a
+       memory jetsam: it fires a real, catchable event, and it would explain a fault that recurs on
+       EVERY encounter rather than varying with how long he has been playing -- which is what
+       memory pressure would look like. The listener is passive: it does not preventDefault, so
+       whatever Phaser does about the loss is unchanged.
+
+       THE COST DISCIPLINE, WHICH IS NOT NEGOTIABLE. The commit before this one took a 2 s
+       setInterval out of the walk because it is the last candidate with the right cadence for the
+       owner's freezes. Nothing here may put one back. So: breadcrumbs are appended to an in-memory
+       ring and are written to storage ONLY on the same scene edges the resume snapshot already
+       uses -- and battle start, the moment that matters, is one of them. Errors and context loss
+       write immediately because they are rare by definition. There is no timer in this module.
+    -------------------------------------------------------------------------------------------- */
+    (function () {
+      var BB = 'edu-rpg-blackbox';
+      var RING = 20;
+
+      /* Breadcrumb codes. Two digits each, because the last two of them become the digits of the
+         spoken code below and the owner should be able to read it down a phone line. THIS TABLE IS
+         THE ONLY DECODER -- do not copy it into a doc, because a second copy is how a reported
+         code ends up being read against the wrong table. Adding a code is fine; RENUMBERING an
+         existing one silently invalidates every code already reported, so never do that. */
+      var C = {
+        BOOT: 1, TITLE: 2, WORLD: 3, MAP: 4, BATTLE: 5, BATTLE_END: 6, MENU: 7,
+        SCENE_START: 8, SCENE_STOP: 9, WALK_START: 10, WALK_STOP: 11,
+        HIDDEN: 12, VISIBLE: 13, PAGEHIDE: 14, FREEZE: 15, RESUME: 16,
+        RECOVERY: 17, GL_LOST: 18, GL_RESTORED: 19, ERROR: 20, REJECT: 21
+      };
+
+      var t0 = Date.now();
+      var rec = {
+        v: 1, t: t0, why: 'boot', gl: null, err: null, rej: null,
+        life: [], crumbs: [], ctx: null
+      };
+      var battleAt = 0;
+      // Read the PREVIOUS page's record before anything can overwrite it. This is the whole point:
+      // by the time the panel wants it, this page has already started writing its own.
+      var prior = null;
+      try { prior = JSON.parse(localStorage.getItem(BB) || 'null'); } catch (e) {}
+
+      function G() { return window.__PHASER_GAME__; }
+      function crumb(code, detail) {
+        rec.crumbs.push([Date.now() - t0, code, detail === undefined ? null : detail]);
+        if (rec.crumbs.length > RING) rec.crumbs = rec.crumbs.slice(-RING);
+      }
+      function context() {
+        var out = {};
+        try {
+          var g = G();
+          if (g && g.scene && g.scene.scenes) {
+            var live = [];
+            for (var i = 0; i < g.scene.scenes.length; i++) {
+              var st = g.scene.scenes[i].sys && g.scene.scenes[i].sys.settings;
+              if (st && st.active) live.push(st.key);
+            }
+            out.active = live.join(',');
+          }
+          // Texture count is the one memory-shaped number WebKit will actually give us.
+          // performance.memory is NOT exposed in WebKit and is deliberately not faked here.
+          if (g && g.textures && g.textures.list) out.tex = Object.keys(g.textures.list).length;
+          var wm = g && g.scene && g.scene.getScene && g.scene.getScene('WorldMapScene');
+          if (wm) out.map = wm.currentMapId;
+          if (battleAt) out.inBattleMs = Date.now() - battleAt;
+          var dq = window.__DQ_TILES__;
+          if (dq && dq.readyWhy) out.dq = JSON.stringify(dq.readyWhy()).slice(0, 120);
+          var ui = window.__QOKUI;
+          if (ui && ui.screen) out.screen = ui.screen();
+          if (ui && ui.err) { var e = ui.err(); if (e) out.uiErr = String(e).slice(0, 120); }
+          var r = window.__QOK_RECOVERY__;
+          if (r && r.report) out.recoveries = r.report().total;
+        } catch (e) { out.ctxError = String(e && e.message || e).slice(0, 80); }
+        return out;
+      }
+      function flush(why) {
+        try {
+          rec.why = why || rec.why;
+          rec.t = Date.now();
+          rec.ctx = context();
+          localStorage.setItem(BB, JSON.stringify(rec));
+        } catch (e) {}
+      }
+
+      /* ---- the three things that can actually be caught -------------------------------------- */
+
+      // 1. GPU context loss. Passive on purpose: no preventDefault, so Phaser's own handling of a
+      //    lost context is exactly what it was. Armed as soon as a canvas exists; the loop is
+      //    bounded and stops the moment it lands, so it is boot-time work and nothing else.
+      (function armCanvas(deadline) {
+        if (!deadline) deadline = Date.now() + 60000;
+        var c = document.querySelector('canvas');
+        if (c) {
+          c.addEventListener('webglcontextlost', function () {
+            rec.gl = { t: Date.now() - t0, restored: 0 };
+            crumb(C.GL_LOST);
+            flush('webglcontextlost');
+          }, false);
+          c.addEventListener('webglcontextrestored', function () {
+            if (rec.gl) rec.gl.restored = 1;
+            crumb(C.GL_RESTORED);
+            flush('webglcontextrestored');
+          }, false);
+          return;
+        }
+        if (Date.now() > deadline) return;
+        requestAnimationFrame(function () { armCanvas(deadline); });
+      })();
+
+      // 2. Script errors. Both channels, because window.onerror and the capture-phase 'error'
+      //    listener do not see the same set: the listener also receives resource load failures,
+      //    which arrive with no `message` and are recorded as such rather than being dropped.
+      function onErr(msg, src, line, col, err) {
+        if (rec.err) return;                       // the FIRST error is the interesting one
+        var st = [];
+        try {
+          if (err && err.stack) st = String(err.stack).split('\n').slice(0, 4).map(function (s) { return s.trim().slice(0, 120); });
+        } catch (e) {}
+        rec.err = {
+          t: Date.now() - t0, m: String(msg == null ? 'unknown' : msg).slice(0, 200),
+          s: (src ? String(src).split('/').pop() : '') + (line ? ':' + line + ':' + (col || 0) : ''),
+          st: st
+        };
+        crumb(C.ERROR);
+        flush('error');
+      }
+      window.addEventListener('error', function (e) {
+        if (e && e.target && e.target !== window && e.target.tagName) {
+          onErr('resource failed to load: ' + e.target.tagName, e.target.src || e.target.href, 0, 0, null);
+        } else {
+          onErr(e && e.message, e && e.filename, e && e.lineno, e && e.colno, e && e.error);
+        }
+      }, true);
+      var prevOnError = window.onerror;
+      window.onerror = function (m, s, l, c2, e) {
+        onErr(m, s, l, c2, e);
+        if (typeof prevOnError === 'function') return prevOnError.apply(this, arguments);
+        return false;
+      };
+      window.addEventListener('unhandledrejection', function (e) {
+        if (rec.rej) return;
+        var r = e && e.reason;
+        rec.rej = { t: Date.now() - t0, m: String((r && (r.message || r)) || 'unknown').slice(0, 200) };
+        crumb(C.REJECT);
+        flush('unhandledrejection');
+      });
+
+      // 3. Lifecycle. This is what separates "iOS put us in the background" from "we were killed
+      //    outright in the foreground" -- and the second is the case the owner is reporting.
+      function life(e, code) {
+        rec.life.push({ t: Date.now() - t0, e: e });
+        if (rec.life.length > 8) rec.life = rec.life.slice(-8);
+        crumb(code);
+        flush(e);
+      }
+      document.addEventListener('visibilitychange', function () {
+        life(document.visibilityState === 'visible' ? 'visible' : 'hidden',
+             document.visibilityState === 'visible' ? C.VISIBLE : C.HIDDEN);
+      });
+      window.addEventListener('pagehide', function () { life('pagehide', C.PAGEHIDE); });
+      window.addEventListener('freeze', function () { life('freeze', C.FREEZE); });
+      window.addEventListener('resume', function () { life('resume', C.RESUME); });
+
+      crumb(C.BOOT);
+
+      /* ---- classification, for the panel ------------------------------------------------------
+         Ordered by how much each answer would narrow the search, most informative first. The
+         no-error case is LAST and is not a fallback: it is the answer that says the page was
+         running normally and then ceased to exist. */
+      function classify(p) {
+        if (!p) return null;
+        var cls, key;
+        if (p.gl && !p.gl.restored) { cls = 'GL'; key = 'gl'; }
+        else if (p.err) { cls = 'JS'; key = 'js'; }
+        else if (p.rej) { cls = 'PR'; key = 'pr'; }
+        else if (p.life && p.life.length && /hidden|pagehide|freeze/.test(p.life[p.life.length - 1].e)) { cls = 'BG'; key = 'bg'; }
+        else { cls = 'KL'; key = 'kl'; }
+        // The spoken code: class, then the last two breadcrumb ids. Short enough to read down a
+        // phone line, and enough to say WHERE it died without a stack trace.
+        var cr = p.crumbs || [];
+        var d = function (i) {
+          var e = cr[cr.length - i];
+          var n = e ? e[1] : 0;
+          return (n < 10 ? '0' : '') + n;
+        };
+        return { cls: cls, key: key, code: 'QOK-' + cls + '-' + d(2) + d(1), rec: p };
+      }
+
+      window.__QOK_BLACKBOX__ = {
+        C: C,
+        crumb: crumb,
+        flush: flush,
+        battle: function () { battleAt = Date.now(); crumb(C.BATTLE); flush('battle'); },
+        battleEnd: function () { battleAt = 0; crumb(C.BATTLE_END); },
+        live: function () { return rec; },
+        prior: function () { return prior; },
+        classify: function () { return classify(prior); },
+        classifyLive: function () { return classify(rec); }
+      };
+    })();
+
     /* ---- Recovery after an unannounced page restart --------------------------------------------
        READ THIS BEFORE CHANGING ANYTHING BELOW.
 
@@ -422,6 +638,11 @@
 
       function rd(k) { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } }
       function wr(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+      // The black box above. Every call site is guarded, so this module keeps working unchanged if
+      // that one ever fails to install -- the recovery net must not depend on the instrument.
+      function BB() { return window.__QOK_BLACKBOX__; }
+      function bbCrumb(code, d) { var b = BB(); if (b) try { b.crumb(code, d); } catch (e) {} }
+      function bbFlush(why) { var b = BB(); if (b) try { b.flush(why); } catch (e) {} }
       function G()  { return window.__PHASER_GAME__; }
       function S()  { return window.__GAME_STATE__; }
       function act(k) { var g = G(); return !!(g && g.scene && g.scene.isActive && g.scene.isActive(k)); }
@@ -586,12 +807,14 @@
           // After that first write this is skipped: the position at walk-start is the position at
           // the last walk-stop, which was already snapshotted, so it could only build a JSON blob
           // for the dedup to throw away, on the very frame the walk begins.
+          bbCrumb(10);   // in memory only: a breadcrumb must never put a write back into the walk
           if (!wroteOnce) trySnap('first-walk');
           // Beacon SECOND, so it carries mv:1 and the widened staleness window applies to it --
           // and so `live` sees the snapshot that trySnap above may just have written.
           beacon('walk-start');
           stopTimer();
         } else {
+          bbCrumb(11);
           beacon('walk-stop');
           trySnap('walk-stop');
           startTimer();
@@ -653,14 +876,25 @@
         if (!wm || !wm.events) return false;
         if (hookedTo === wm.events) return true;
         hookedTo = wm.events;
-        wm.events.on('pause',  function () { forceStand('pause'); });
-        wm.events.on('sleep',  function () { forceStand('sleep'); });
-        wm.events.on('resume', function () { trySnap('resume'); beacon('resume'); refresh(); });
-        wm.events.on('wake',   function () { trySnap('wake'); refresh(); });
+        /* The same edges carry the black box's breadcrumbs, and they are the ONLY places it is
+           written to storage. Battle start is deliberately among them: it is the moment the owner's
+           device dies, so it is the moment the record has to be durable. */
+        wm.events.on('pause',  function () {
+          var b = BB();
+          if (b) try { if (act('BattleScene')) b.battle(); else { b.crumb(b.C.MENU); b.flush('menu'); } } catch (e) {}
+          forceStand('pause');
+        });
+        wm.events.on('sleep',  function () { bbCrumb(9); bbFlush('sleep'); forceStand('sleep'); });
+        wm.events.on('resume', function () {
+          var b = BB(); if (b) try { b.battleEnd(); } catch (e) {}
+          trySnap('resume'); beacon('resume'); refresh(); bbFlush('resume');
+        });
+        wm.events.on('wake',   function () { bbCrumb(6); trySnap('wake'); refresh(); bbFlush('wake'); });
         // The destination map is not loaded yet when CREATE fires, so restorable() would refuse.
         // Three one-shots rather than a poll; the dedup makes the later ones free once one landed.
         wm.events.on('create', function () {
-          setTimeout(function () { trySnap('map'); }, 0);
+          bbCrumb(4, wm.currentMapId);
+          setTimeout(function () { trySnap('map'); bbFlush('map'); }, 0);
           setTimeout(function () { trySnap('map'); }, 400);
           setTimeout(function () { trySnap('map'); }, 1200);
         });
@@ -738,6 +972,96 @@
         ja: 'ちゅうだんした ところから 再開しました。',
         jaKanji: '中断した ところから 再開しました。'
       };
+      /* ---- the black box's report ------------------------------------------------------------
+         A PANEL, not a toast, because the owner has to be able to read it out or photograph it --
+         a message that fades in four seconds is no use to someone reaching for a phone camera. It
+         leads with the classification in plain words, because that is the sentence he will relay,
+         and it carries a short spoken code so he never has to read a stack trace aloud.
+         Dismissable, and it does not block play: the map is live behind it and the field controls
+         are outside it, so he can walk away without touching it. */
+      var MSG_CLASS = {
+        gl: { en: 'Graphics context was lost.',
+              ja: 'グラフィックの せつぞくが きれました。',
+              jaKanji: 'グラフィックの 接続が 切れました。' },
+        js: { en: 'Script error.',
+              ja: 'スクリプトエラーが おきました。',
+              jaKanji: 'スクリプトエラーが 起きました。' },
+        pr: { en: 'A background task failed.',
+              ja: 'ないぶしょりが しっぱいしました。',
+              jaKanji: '内部処理が 失敗しました。' },
+        bg: { en: 'The app was sent to the background first.',
+              ja: 'さきに アプリが バックグラウンドに なりました。',
+              jaKanji: '先に アプリが バックグラウンドに なりました。' },
+        kl: { en: 'No error recorded. The page was killed outright.',
+              ja: 'エラーは きろくされていません。ページが とつぜん おわりました。',
+              jaKanji: 'エラーは 記録されていません。ページが 突然 終わりました。' }
+      };
+      var MSG_CLOSE = { en: 'Close', ja: 'とじる', jaKanji: '閉じる' };
+      var MSG_TELL  = { en: 'Please read this code out.',
+                        ja: 'この コードを おしえてください。',
+                        jaKanji: 'この コードを 教えてください。' };
+
+      function panel(cls) {
+        var d = document.createElement('div');
+        d.setAttribute('data-qok-blackbox-panel', '1');
+        d.style.cssText = 'position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 96px);' +
+          'transform:translateX(-50%);z-index:10001;width:min(340px,92vw);box-sizing:border-box;' +
+          'padding:14px 16px 12px;border:1px solid rgba(201,169,97,.55);border-radius:7px;' +
+          'background:rgba(21,22,28,.97);color:#e8e2d4;font-size:12px;line-height:1.5;' +
+          'box-shadow:0 6px 24px rgba(0,0,0,.65);opacity:0;transition:opacity .3s ease-out;';
+        var add = function (html, css) {
+          var e = document.createElement('div');
+          e.style.cssText = css || '';
+          e.textContent = html;
+          d.appendChild(e);
+          return e;
+        };
+        add(say(MSG_RECOVERED), 'color:#c9a961;font-size:12px;margin-bottom:8px;');
+        add(say(MSG_CLASS[cls.key] || MSG_CLASS.kl), 'font-size:13px;font-weight:500;margin-bottom:10px;');
+        add(say(MSG_TELL), 'color:rgba(232,226,212,.6);font-size:11px;');
+        // The code, big and spaced, because this is the one line he has to get right by voice.
+        add(cls.code, 'font-size:22px;letter-spacing:2px;color:#c9a961;margin:2px 0 10px;' +
+          'font-family:ui-monospace,SFMono-Regular,Menlo,monospace;');
+        // The detail, small. Truncated hard: this is a phone, not a log viewer.
+        var p = cls.rec || {}, det = [];
+        if (p.err) det.push(p.err.m + (p.err.s ? '  (' + p.err.s + ')' : ''));
+        if (p.rej) det.push(p.rej.m);
+        if (p.gl) det.push('gl lost at ' + p.gl.t + 'ms, restored=' + p.gl.restored);
+        if (p.ctx) {
+          if (typeof p.ctx.inBattleMs === 'number') det.push('in battle ' + p.ctx.inBattleMs + 'ms');
+          if (p.ctx.map) det.push('map ' + p.ctx.map);
+          if (p.ctx.active) det.push('scenes ' + p.ctx.active);
+          if (typeof p.ctx.tex === 'number') det.push('textures ' + p.ctx.tex);
+        }
+        var tail = (p.crumbs || []).slice(-6).map(function (c) { return c[1]; }).join('>');
+        if (tail) det.push('trail ' + tail);
+        if (det.length) {
+          add(det.join('\n'), 'white-space:pre-wrap;word-break:break-word;color:rgba(232,226,212,.62);' +
+            'font-size:10.5px;line-height:1.45;max-height:132px;overflow:auto;' +
+            'border-top:1px solid rgba(201,169,97,.22);padding-top:8px;');
+        }
+        var b = document.createElement('button');
+        b.textContent = say(MSG_CLOSE);
+        b.style.cssText = 'display:block;margin:10px 0 0 auto;padding:7px 16px;min-height:34px;' +
+          'border:1px solid rgba(201,169,97,.5);border-radius:5px;background:transparent;' +
+          'color:#c9a961;font:inherit;font-size:12px;cursor:pointer;-webkit-tap-highlight-color:transparent;';
+        b.addEventListener('click', function () { if (d.parentNode) d.parentNode.removeChild(d); });
+        d.appendChild(b);
+        document.body.appendChild(d);
+        requestAnimationFrame(function () { d.style.opacity = '1'; });
+      }
+      // The panel is the richer form of the recovery message; the toast is what we fall back to if
+      // the black box is missing or anything in the panel throws. One of the two always appears,
+      // because that message is what tells the owner a recovery happened rather than a stutter.
+      function report() {
+        try {
+          var b = BB();
+          var cls = b && b.classify ? b.classify() : null;
+          if (cls) { panel(cls); return; }
+        } catch (e) { console.warn('[QOK-RECOVERY] panel failed:', e); }
+        toast(say(MSG_RECOVERED));
+      }
+
       var MSG_BLOCKED = {
         en: 'Repeated restarts. Auto-resume paused, tap Continue.',
         ja: 'さいきどうが つづいたため 自動復帰を 止めました。「つづきから」を えらんでください。',
@@ -889,7 +1213,8 @@
             }
             if (done) {
               window.__QOK_RECOVERING__ = 0;
-              toast(say(MSG_RECOVERED));
+              bbCrumb(17);
+              report();
               return;
             }
             if (Date.now() > deadline) {

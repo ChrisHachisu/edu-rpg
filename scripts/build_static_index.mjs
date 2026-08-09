@@ -104,8 +104,19 @@ export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '
 // The WorldMapScene pause/sleep edge also stands the hero down, so an encounter that fires while
 // the thumb is still on the stick cannot carry the stopped timer and the widened window through
 // the whole battle -- the kill-during-a-battle case keeps its 2 s beacon and 20 s window exactly.
+//
+// 2026-08-09: fab17fb9... -> 533f125a..., 63508 B -> 81844 B. THE BLACK BOX, on the owner's own
+// suggestion: "why don't you build in an error message that displays depending on the error type
+// on my phone? i can tell you the exact error message so you can pinpoint the issue." The page now
+// records webglcontextlost, window.onerror, unhandledrejection, page lifecycle and a 20-entry
+// breadcrumb ring, persists them across its own death, and on the next recovery boot shows a
+// dismissable PANEL naming the class in plain words plus a short code (QOK-<CLASS>-<NNNN>) he can
+// read down a phone line. No periodic work is added: breadcrumbs live in memory and reach storage
+// only on the scene edges the resume snapshot already uses, errors write immediately because they
+// are rare, and there is no timer in the module. The "no error recorded" class is a real finding,
+// not a fallback. Reviewed as a diff to index.html; this line is the sign-off.
 export const EXPECTED_STATIC_INDEX_SHA =
-  'fab17fb9dc312536467516c1d51a7e79b0882f1e8443c6fdb8bef4783ce91064';
+  '533f125af433a4211b96ff1357f67330386d485bded25836635164f617f5201a';
 
 /**
  * The authored shell loads its scripts by ABSOLUTE path so the Vite dev server resolves them;
