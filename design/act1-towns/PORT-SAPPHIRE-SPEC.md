@@ -7,6 +7,28 @@ status: OWNER-APPROVED DESIGN — generator not yet built
 
 # Port Sapphire — harbour town rebuild
 
+> [!warning] STATUS LINE ABOVE IS STALE — verified 2026-08-11
+> The frontmatter still reads *"generator not yet built"*, and the section below says every shipped
+> town is a 16x16 procedural room seeded from the first letter of its map id. **Neither describes
+> what a player sees today.** A hand-authored hi-fi Port Sapphire SHIPS and is what the game loads:
+>
+> | | shipped today |
+> |---|---|
+> | data | `public/act1-hifi/town/portSapphire-town.json` (built 2026-08-06) |
+> | grid | **65x65**, not 16x16 |
+> | art | `town/portSapphire-screen.png`, a 7 MB authored screen — not generated from the map name |
+> | walkable | `town/portSapphire-walkable.json` (31 KB authored) |
+> | arrival | `startCell` **[33, 4]** — horizontally centred, 4 cells from the NORTH edge |
+> | contents | 4 NPCs (healer, wisewoman, sailor, drake), `savePoint` [31.4, 29], `shopCounter` [24.5, 29.2] |
+>
+> Verified by reading the shipped runtime, and confirmed on device 2026-08-11 (iPhone 13 sim): the
+> town renders authored harbour art, and correctly shows **no minimap and no compass**.
+>
+> **What is NOT established here:** whether this spec's *generator* approach was formally abandoned
+> in favour of the `act1-hifi` hand-authored route, or is still intended for the remaining towns.
+> That is an owner call and is deliberately left open rather than guessed at. What is certain is that
+> **the "shipped towns are procedural 16x16" premise must not be used as a reason to redo this town.**
+
 First town of the town rebuild programme. It establishes the method that the
 remaining towns reuse: an authored plan type plus a site constraint, generated
 into semantic data, validated by mechanical gates.
