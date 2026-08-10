@@ -48,9 +48,15 @@ Tooling: `npm run repin` (whole pin chain, one command), `npm run gate`, `script
   **Build 12 is a dud** — it uploaded but never completed processing (blank status in the console),
   which is why ~20 group-assignment attempts returned 404 while the API still reported
   `processingState: VALID`. Builds 12 and 13 are the SAME commit `09396e1`.
-- **HEAD `09396e1`, 83 commits unpushed to origin.** Owner's standing rule: push only after a
-  device gate passes. The last full tier-2 gate FAILED on the dungeon fog, which is now fixed —
-  **the gate has not been re-run since.** That is the blocker on pushing, and it is stale, not real.
+- ~~**HEAD `09396e1`, 83 commits unpushed to origin.**~~ **RESOLVED 2026-08-11: the tier-2 gate was
+  re-run and PASSED, and all 84 commits are pushed. `origin/main` is now `5daa561` (was `42b17a8`).**
+  Gate of record, on the committed tree: `test:map-engine` 9 suites PASS (plate `205dbe88…`),
+  `ship-gate.sh` 74/74 pins + both Act 1 overlay verifies + iOS payload synced, bundle md5
+  `60d90b63…` intact, `fingerprint:check` EQUIVALENCE PASS. Device pass on sim `4B05EF44`
+  (iPhone 13, matching the owner's hardware): overworld baked terrain, **battle enter → quiz →
+  damage resolve → battle exit with no crash**, **dungeon `sunkenCellar` B3F with fog tracking the
+  hero**, and **Port Sapphire town**. Dungeon fog — the exact bug that failed the previous gate — is
+  verified fixed on device.
 - Device: **iPhone 13 (`iPhone14,5`), iOS 26.6.** Sim `4B05EF44` is an iPhone 13 on iOS 26.5.
 
 ## Owner's verdict on build 13, verbatim
@@ -70,13 +76,43 @@ smoothness work landed and is confirmed on real hardware.
   changes; beacon frozen 17.0 s and 14.9 s on device). **The freezes persist. Candidate dead.**
 - **They are not recoveries.** A recovery draws an on-screen toast; the owner confirms **no message
   appears** during the freezes. A real kill also costs 5.1 s of dark screen, not "momentary".
+  **Corroborated 2026-08-11 by capture:** a real recovery was triggered accidentally on the gate and
+  the toast is a large, centred, screen-blocking panel reading "Recovered from an interruption /
+  The page was killed outright" with a `QOK-KL-0104` code. It is unmissable. Nobody experiencing it
+  would describe it as a momentary freeze, which closes this candidate rather than merely doubting it.
 - **Not geometry.** iPhone 13 and iPhone 17 Pro compute an identical 33x39 window, 9-chunk ring,
   1584x1872 terrain canvas. Measured on both simulators.
 
-**LEADING SUSPECT, NEVER MEASURED: `public/ui-overhaul.js:1806` runs `setInterval(tick, 50)`
-permanently.** 20 Hz, **40x the cadence of the timer just removed**, shipped since before build 10
-so it is not the 10→11 delta — but it is by far the largest periodic main-thread cost in the shell
-and nobody has ever put a number on it. **Start here.**
+> [!warning] CORRECTED 2026-08-11 — this section's premise was wrong
+> ~~"`public/ui-overhaul.js:1806` … is by far the largest periodic main-thread cost in the shell"~~.
+> **The shell runs FOUR permanent timers, not one**, and "largest" was never measured — it was
+> asserted. Struck here, at the source, per `docs/GROUND-TRUTH.md`'s rule. The suspect below is
+> still a suspect; it is no longer the *only* one, and its ranking is unestablished.
+
+**SUSPECTS, ALL STILL UNMEASURED. The shell's full periodic-work inventory:**
+
+| file:line | period | what it does each tick |
+|---|---|---|
+| `public/ui-overhaul.js:1806` | 50 ms | screen dispatch; on the overworld `measureSafeArea` / `hookScenes` / `syncFieldNav` / `syncMsgCatcher` / `updateFieldHud` |
+| `public/dq-tiles.js:4255` | **80 ms** | terrain reskin, chunk drain, mountain consolidation, **dungeon fog**, town reskin |
+| `public/hero-override.js:205` | 200 ms | `listen` / `apply` / `hideGuideOnTouch` / `fixDefaultLocale` / `scaleHero` |
+| `public/act1-world-map.js:282` | 400 ms | `armWrappers`, idempotent-guarded |
+
+`dq-tiles.js:4255` is the same order of magnitude as the named suspect and does strictly more per
+call, so it cannot be excluded on cadence alone.
+
+**A uniform 20 Hz cost would read as constant slowness, not as *periodic* freezing.** The owner said
+"periodically". Whatever is found must explain the periodicity — look for work gated behind a
+signature change, a chunk bake, a cache eviction, or the 220 ms `drawFieldMap` throttle, rather than
+for a merely expensive tick.
+
+**Trap, already paid for:** `drawFieldMap` is *entered* on nearly every 50 ms tick (79 entries in
+4 s measured) but only **16** of those did real canvas work — the rest hit the 220 ms throttle's
+early return. Entry count and real-draw count are different numbers and conflating them overstates
+the cost ~5x. Say which one you mean.
+
+Harness already built and ready to run (three independent methods, nothing under `public/` touched):
+`scratchpad/timer-attribution/` — see `FINDINGS-partial.md` first.
 
 Second candidate: the simulator has never reproduced the freeze at all, so whatever it is may be
 device-only (thermal, WebKit-version, or a cost the M-series absorbs).
