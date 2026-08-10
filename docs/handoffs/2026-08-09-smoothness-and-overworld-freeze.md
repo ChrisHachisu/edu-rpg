@@ -89,7 +89,23 @@ smoothness work landed and is confirmed on real hardware.
 > asserted. Struck here, at the source, per `docs/GROUND-TRUTH.md`'s rule. The suspect below is
 > still a suspect; it is no longer the *only* one, and its ranking is unestablished.
 
-**SUSPECTS, ALL STILL UNMEASURED. The shell's full periodic-work inventory:**
+> [!success] MEASURED 2026-08-11 — see `docs/TIMER-ATTRIBUTION.md` for the full result
+> **All four timers are cheap and the named suspect is RETIRED.** `ui-overhaul.js:1806` costs
+> **0.21–0.44% of a walk** (6 clean 20 s runs, load 1.9–3.5, Chrome/M-series). `drawFieldMap`'s real
+> per-call cost is **0.04–0.10 ms**. Inside the tick, `updateFieldHud`'s own DOM writes cost **3–4x**
+> the canvas draw.
+>
+> **One real periodicity WAS found, in the other timer:** `dq-tiles.js:4255` is non-uniform — in all
+> six runs a burst at **t ≈ 5.0–6.2 s** consumes **45–58% of that timer's whole 20 s total in ~1.2 s**,
+> at the same walk-relative moment every run, i.e. **positional — a chunk-boundary crossing**. Right
+> shape, right trigger (walking). **But only 13–18 ms, spread over ~15 sub-5 ms calls — not enough to
+> explain a perceptible freeze on Chrome/M-series.**
+>
+> **Where to look next:** only **2.5–12.8 ms of ~20,150 ms** of profiled samples matched any of the
+> five named functions. **The overwhelming majority of overworld main-thread time is outside these
+> four timers entirely** — GC, texture upload/decode, Phaser's own step. That is the unexplored space.
+
+**The shell's full periodic-work inventory (all four now measured):**
 
 | file:line | period | what it does each tick |
 |---|---|---|
