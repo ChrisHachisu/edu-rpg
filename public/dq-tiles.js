@@ -1439,12 +1439,21 @@
       A1A.texQd[key]=1; A1A.texQ.push({c:c,layer:layer});
     });
   }
+  // Already on the GPU? Answers WITHOUT building, which is the whole point -- see a1aPlaceSprites.
+  function a1aTexHave(c,layer){ var key='a1a_'+layer+'_'+c.id; return A1A.tex[key]===1?key:null; }
+  // BASE FIRST, across chunks. The queue is otherwise FIFO, so one chunk's canopy could be built
+  // ahead of the next chunk's base and the ground would arrive last -- the one layer the player is
+  // actually standing on, and the one the flat sea is standing in for until it lands.
+  function a1aTakeTexJob(){
+    for(var i=0;i<A1A.texQ.length;i++) if(A1A.texQ[i].layer==='base') return A1A.texQ.splice(i,1)[0];
+    return A1A.texQ.shift();
+  }
   function a1aDrainTex(scene,n){
     if(!a1aSpriteMode()) return;
     A1A.spriteScene=scene;
     var did=0, guard=0;
     while(A1A.texQ.length && did<n && guard++<12){
-      var j=A1A.texQ.shift(), key='a1a_'+j.layer+'_'+j.c.id;
+      var j=a1aTakeTexJob(), key='a1a_'+j.layer+'_'+j.c.id;
       delete A1A.texQd[key];
       var rec=A1A.chunks[j.c.id];
       if(!rec||A1A.tex[key]) continue;                            // evicted, or already built on demand
@@ -1471,7 +1480,22 @@
         var layer=layers[L][0];
         if(layer==='water'&&!rec.water) continue;
         if(layer==='canopy'&&!rec.canopy) continue;
-        var key=a1aTexFor(scene,c,rec,layer); if(!key) continue;
+        // NEVER BUILD HERE. This used to call a1aTexFor, which builds and uploads on the spot, so a
+        // window step that brought two or three new chunks into view paid for every one of their
+        // layers inside a SINGLE frame: three 1536x1536 GPU uploads plus a 1536x1536 canopy
+        // composite. That is the freeze the owner reported, and it is why a1aDrainTex -- which
+        // exists precisely to spread this at one texture per 80 ms tick -- never got the chance to
+        // do its job. Measured 2026-08-11 on sim 4B05EF44: with the analytic splat provably at zero
+        // (panel sp0 pl1) the stalls were unchanged at 661 ms and 939 ms, and they arrived exactly
+        // with cv 4->6 and tx2 18->24, i.e. with this call and nothing else.
+        //
+        // A layer that is not ready yet is simply not drawn this frame. What shows through is the
+        // flat sea, which is the state the owner chose for art-not-yet-landed ("Flat ocean colour,
+        // no procedural"), and the ring prefetch means the common case is that it was built ticks
+        // ago and this is a plain lookup. Before the locked-art change this same skip would have
+        // exposed the procedural splat, which is why it could not have been done first.
+        var key=a1aTexHave(c,layer);
+        if(!key){ a1aEnqueueTex(c,rec); continue; }
         if(layer==='canopy') anyCanopy=true;
         live[key]=1;
         var im=A1A.imgs[key];
