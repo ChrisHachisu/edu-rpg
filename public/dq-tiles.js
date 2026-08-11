@@ -1039,6 +1039,26 @@
   function a1aReleaseChunks(){
     if(A1A.released) return;                       // idempotent: tick() calls this on EVERY non-'ow' tick
     A1A.released=true;
+    // INVALIDATE THE WINDOW CACHES, or nothing ever asks for the terrain back.
+    //
+    // This is the black screen the owner reported after a battle, and his own 85 s recording is what
+    // identified it: the HUD is drawn, the HERO IS DRAWN, fps is 60 -- so the scene is rendering and
+    // it is only the TERRAIN that is missing, which rules out the a1vShow visibility latch that was
+    // previously suspected (a `visible:false` scene would hide the hero too). Longest span 6.5 s,
+    // one of them immediately after a battle exit at 78,253.
+    //
+    // A battle takes tick()'s `!isActive('WorldMapScene')` early return, so `lastReskinMapId` is
+    // never cleared and the return goes down the ELSE branch with force=false. updateTerrain then
+    // hits `if(!force && key===terrainState.lastWin) return` -- the hero is on the same tile she
+    // left, so the key is identical -- and a1aRects, the ONLY thing that re-requests a dropped
+    // chunk, never runs. Nothing is loading, so nothing sets A1A.dirty, so no later tick forces it
+    // either. It is a deadlock that only the hero WALKING far enough to cross a 12-cell boundary can
+    // break, which is exactly a black screen of a few seconds that ends when she moves.
+    //
+    // Clearing the two window keys here costs one rebuild on the tick after any departure -- and on
+    // the plate that rebuild is now a1aRects plus sprite placement, not a 2.97 Mpx splat.
+    if(terrainState) terrainState.lastWin='';
+    if(overlayState) overlayState.lastKey='';
     var keep=Object.create(null), i;
     for(i=0;i<A1A.win.length;i++) keep[A1A.win[i]]=1;
     var next={}, lru=[];
