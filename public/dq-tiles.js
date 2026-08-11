@@ -669,6 +669,7 @@
   }
   function drawTerrain(ctx, map, X0, Y0, winW, winH){
     if (a1aBlit(ctx,X0,Y0,winW,winH,true)) return;   // wholly inside the Act 1 plate -> the baked art IS the terrain
+    COST.splat++;                                    // past this line is the 2.97 Mpx per-pixel loop; see COST
     var cw=winW*N, ch=winH*N, wox=X0*N, woy=Y0*N;
     var SANDLO=(typeof window.__DQ_BEACH__==='number')?window.__DQ_BEACH__:0.27, FOAMHI=0.555; // wider, more gradual beach
     // presence scan — skip the expensive fields in windows with none of that type
@@ -942,6 +943,14 @@
   //  STATE + LIFECYCLE
   // ============================================================
   var terrainState=null, overlayState=null;
+  // WHAT COST THAT FRAME. The owner's phone is the only instrument that has ever seen the freeze,
+  // and a screenshot of the diagnostic panel is the whole channel, so the panel has to carry enough
+  // to ATTRIBUTE a stall rather than just report one. Three counters, because there are exactly
+  // three candidates for a ~½–1 s hitch at a window step and they are indistinguishable by timing
+  // alone: the analytic splat (`sp`), a chunk's canopy composite on a 1536x1536 scratch canvas
+  // (`cv`), and a chunk texture upload (`tx2`). `pl` says whether the Act 1 plate owns the map --
+  // without it a reading of sp:0 cannot be told apart from a run where the override never applied.
+  var COST={ splat:0, canopy:0, tex:0 };
   var NEAREST=(window.Phaser&&Phaser.Textures&&Phaser.Textures.FilterMode)?Phaser.Textures.FilterMode.NEAREST:1;
 
   // Keep a generous off-screen tile margin and move the render window in chunks. The old window
@@ -1325,6 +1334,7 @@
     var key='a1a_'+layer+'_'+c.id, T=A1A.tex[key];
     if(T===1) return key;                              // already built
     if(T===0) return null;                             // known-unbuildable (source missing)
+    COST.tex++;                                        // a chunk layer is about to reach the GPU; see COST
     if(layer==='canopy'){
       if(!rec.base||!rec.canopy){ return null; }
       // base coloured by the canopy's alpha, on the scratch surface a1aCanopy already uses.
@@ -1410,6 +1420,7 @@
     if(!rec.base||!rec.canopy||!window.createImageBitmap) return;
     if(rec.bm&&rec.bm.canopyComposite) return;
     var cv=a1aCanopyCanvas(rec); if(!cv) return;
+    COST.canopy++;                                   // one 1536x1536 composite; see COST
     if(cv.transferToImageBitmap){ try{ rec.bm.canopyComposite=cv.transferToImageBitmap(); return; }catch(e){} }
     A1A.bmPend[key]=1;
     try{
@@ -1478,6 +1489,77 @@
     return anyCanopy;
   }
 
+  // ============================================================
+  //  LOCKED ART ONLY — the procedural surface is never what a player sees
+  // ============================================================
+  //  OWNER DIRECTIVE, 2026-08-11, asked directly and recorded in docs/GROUND-TRUTH.md:
+  //  "no. locked in art, full stop." drawTerrain's analytic splat is not a lower design tier for
+  //  the overworld. Inside Act 1 it is a BUG — and it was three reported bugs at once.
+  //
+  //  WHAT IT WAS DOING. updateTerrain called drawTerrain unconditionally and only afterwards
+  //  decided whether to SHOW the result, on `A1A.lastFull` — "is the whole 33x39 window covered
+  //  by loaded plate chunks". That window carries MARGIN=12 cells of OFF-SCREEN border on every
+  //  side, so it reports partial across the plate's entire northern band (full needs hero
+  //  y >= 247) even when every cell the CAMERA can see is baked art. Measured over all 9,376
+  //  walkable tiles at iPhone 13's 390x701 pt viewport: the visible viewport escapes the plate at
+  //  EIGHT of them, all at the far north. So the splat was never filling a coverage hole. It was
+  //  computing 2.97 Mpx / 11.86 MB behind art that was already present and correct, and showing
+  //  through wherever a chunk had not decoded yet. That is all three symptoms from build 14 —
+  //  ground that did not match the art, the straight-edged "crease" (a chunk boundary), and the
+  //  ~970 ms stall (docs/SMOOTH-ROUND-3-REFUTATION.md:244 measured this same operation at
+  //  962-1017 ms). `A1A.dirty`, set every time a chunk lands, is what re-fired it every 2-4 s.
+  //
+  //  WHAT REPLACES IT: nothing procedural. Where the baked art has not landed yet (a chunk still
+  //  decoding) or does not reach (north of y=218 — owner, 2026-08-11: "the far north will be
+  //  built in as act 5 so we don't need to worry that much about it now"), the backdrop is flat
+  //  sea taken from the owner's OWN bake — the modal deep-ocean pixel over the first 8x8 cells of
+  //  chunk c0-r0 is rgb(3,30,55), and the water glint layer contributes nothing that far offshore,
+  //  so this is the bake's colour and not a guess at it. One screen-locked quad at depth 0.5,
+  //  under the plate's base sprites (1.1) and under dqterrain (1). It never repaints.
+  //
+  //  The hero cannot walk off the plate: walkable ground spans x 24-158, y 224-393 inside bounds
+  //  x 16-163, y 218-399, i.e. at least six cells of blocked coast on every side. So the flat sea
+  //  is not standing in for anywhere she can reach.
+  var A1A_SEA='#031e37';
+  var seaState=null;
+  // TRUE once the Act 1 override has written its plate into THIS mapData. Deliberately NOT keyed
+  // on A1A.manifest: the suppression must hold from the first overworld frame, before the manifest
+  // fetch lands, or boot still pays one full splat — and it must not lapse when the LRU evicts a
+  // chunk, which is precisely when the splat used to become visible.
+  function a1aPlateOwns(scene){
+    var W=window.__ACT1_WORLD_MAP__;
+    return !!(W&&scene&&scene.currentMapId==='overworld'&&W.state&&W.state.appliedMap===scene.mapData);
+  }
+  function a1aPlateBounds(){ var W=window.__ACT1_WORLD_MAP__; return (W&&W.bounds)||null; }
+  // Inside the plate the baked art already carries every conifer, ridge and meadow detail. Judged
+  // on the plate's STATIC bounds, not on whether that chunk happens to be resident: a1aArtAt goes
+  // false the moment the LRU evicts one, and the overlay then sprays procedural pines and
+  // mountains across the owner's art at depth 5 — above it.
+  function a1aPlateCell(tx,ty){
+    var b=a1aPlateBounds();
+    return b ? (tx>=b[0]&&tx<=b[2]&&ty>=b[1]&&ty<=b[3]) : a1aArtAt(tx,ty);
+  }
+  function a1aSea(scene,on){
+    if(!on){ if(seaState&&seaState.img){ try{ seaState.img.setVisible(false); }catch(e){} } return; }
+    var key='dqsea';
+    if(!scene.textures.exists(key)){
+      var t=scene.textures.createCanvas(key,8,8);
+      t.context.fillStyle=A1A_SEA; t.context.fillRect(0,0,8,8); t.refresh();
+      try{ t.setFilter(NEAREST); }catch(e){}
+    }
+    var cam=scene.cameras.main;
+    if(!seaState||seaState.scene!==scene||!seaState.img||!seaState.img.scene){
+      if(seaState&&seaState.img){ try{ seaState.img.destroy(); }catch(e){} }
+      var im=scene.add.image(0,0,key).setOrigin(0,0).setScrollFactor(0).setDepth(0.5);
+      try{ im.texture.setFilter(NEAREST); }catch(e){}
+      seaState={ scene:scene, img:im, w:0, h:0 };
+    }
+    if(seaState.w!==cam.width||seaState.h!==cam.height){
+      seaState.img.setDisplaySize(cam.width,cam.height); seaState.w=cam.width; seaState.h=cam.height; }
+    if(!seaState.img.visible) seaState.img.setVisible(true);
+  }
+  function a1aDestroySea(){ if(seaState&&seaState.img){ try{ seaState.img.destroy(); }catch(e){} } seaState=null; }
+
   function ensureTerrain(scene){
     var cam=scene.cameras.main;
     var winW=Math.ceil(cam.worldView.width/TILE)+2*MARGIN, winH=Math.ceil(cam.worldView.height/TILE)+2*MARGIN;
@@ -1512,8 +1594,23 @@
     // single transient one is enough to hide them while the hero stands still -- at which point
     // the window key never changes and the early return below would never let them back.
     if (a1aSpriteMode() && A1A.lastRects && A1A.lastRects.length) a1aPlaceSprites(scene, A1A.lastRects);
+    // Same reason as the sprite re-show above: one transient non-'ow' tick hides the sea, and if
+    // the hero is standing still the window key never changes again.
+    if (a1aPlateOwns(scene)) a1aSea(scene,true);
     var key=X0+'_'+Y0; if(!force && key===terrainState.lastWin) return; terrainState.lastWin=key;
     if(!terrainState.firstDrawAt) terrainState.firstDrawAt=Date.now();   // starts the loading gate's art grace
+    // LOCKED ART ONLY — see the block above ensureTerrain. On the Act 1 plate the analytic splat
+    // is neither computed nor uploaded, and the window canvas is never shown. a1aRects still runs:
+    // it is what maintains the ring prefetch and the LRU that a1aPlaceSprites then consumes.
+    if (a1aPlateOwns(scene)){
+      var rs=a1aRects(X0,Y0,winW,winH)||[];
+      A1A.lastRects=rs; A1A.lastFull=!!rs.full;
+      terrainState.image.setPosition(X0*TILE, Y0*TILE).setVisible(false);
+      A1A.drew=a1aSpriteMode()?a1aPlaceSprites(scene,rs):false;
+      if (terrainState.cimg && terrainState.cimg.visible) terrainState.cimg.setVisible(false);
+      return;
+    }
+    a1aSea(scene,false);
     drawTerrain(terrainState.ct.context, map, X0, Y0, winW, winH);
     if (a1aSpriteMode()){
       // The plate is drawn by its own textures. The window canvas is still the terrain for
@@ -1536,7 +1633,7 @@
     }
   }
   function a1aHideCanopy(){ if(terrainState&&terrainState.cimg){ try{ terrainState.cimg.setVisible(false); }catch(e){} }
-                            a1aHideSprites(); }
+                            a1aHideSprites(); a1aSea(null,false); }
 
   function ensureOverlay(scene){
     if (overlayState && overlayState.scene===scene && overlayState.container && overlayState.container.scene) return;
@@ -1556,10 +1653,13 @@
     var objs=[];
     // Inside the Act 1 plate the baked art already contains every conifer, ridge and meadow detail.
     // Emitting the procedural sprites there would double the treeline and the mountains.
-    for (var ty=y0;ty<=y1;ty++) for (var tx=x0;tx<=x1;tx++){ if(a1aArtAt(tx,ty)) continue;
+    // a1aPlateCell, NOT a1aArtAt: residency is not the question, the owner's bounds are. Asking
+    // whether the chunk is decoded RIGHT NOW put procedural pines and mountains over his art at
+    // depth 5 every time the LRU evicted one — a second way the same load thrash became visible.
+    for (var ty=y0;ty<=y1;ty++) for (var tx=x0;tx<=x1;tx++){ if(a1aPlateCell(tx,ty)) continue;
       var co=cellObjects(map,tx,ty); for(var i=0;i<co.length;i++) objs.push(co[i]); }
     var fl=buildFlowers(map,x0,x1,y0,y1);
-    for(var f=0;f<fl.length;f++){ if(a1aArtAt(Math.floor(fl[f].x/TILE),Math.floor(fl[f].y/TILE))) continue; objs.push(fl[f]); }
+    for(var f=0;f<fl.length;f++){ if(a1aPlateCell(Math.floor(fl[f].x/TILE),Math.floor(fl[f].y/TILE))) continue; objs.push(fl[f]); }
     objs.sort(function(a,b){ return a.y-b.y; });
     for (var k=0;k<objs.length;k++){ var o=objs[k];
       if (o.kind==='pine'){
@@ -4188,11 +4288,15 @@
     // Guarded on kind==='ow', NOT kind!=='dng': sceneKind() returns null during map churn, and a
     // teardown on a transient null would make ensureDng rebuild the base canvas mid-dungeon.
     if (kind==='ow') destroyDng();                      // left a dungeon -> drop its base canvas + its fog
+    // The sea backdrop is screen-locked at depth 0.5, so left visible it would be a flat blue
+    // sheet over a town or a dungeon floor. Hidden on ANY non-'ow' kind, re-shown by updateTerrain.
+    // Guarded on a real kind, never a transient null, for the same reason destroyDng is.
+    if (kind && kind!=='ow') a1aSea(null,false);
     if ((kind==='town'||kind==='dng') && owMap) destroyOwProps(); // entered a town/dungeon -> drop landmark prop images (NOT on a transient null kind)
     if (kind!=='ow' && !SHIP_TOWN_DNG_RESKIN){
       // Overworld-only ship: tear down any stale overworld terrain/overlay so it can't linger over the engine's
       // native town/dungeon art, then bail — towns + dungeons render exactly as the base game does (unchanged).
-      if (terrainState&&terrainState.image){ try{terrainState.image.destroy();}catch(e){} try{if(terrainState.cimg)terrainState.cimg.destroy();}catch(e){} a1aDropAllGpu(); terrainState=null; lastReskinMapId=null; }
+      if (terrainState&&terrainState.image){ try{terrainState.image.destroy();}catch(e){} try{if(terrainState.cimg)terrainState.cimg.destroy();}catch(e){} a1aDropAllGpu(); a1aDestroySea(); terrainState=null; lastReskinMapId=null; }
       if (overlayState&&overlayState.container){ try{overlayState.container.destroy();}catch(e){} overlayState=null; }
       return;
     }
@@ -4350,5 +4454,11 @@
       a1aReq:A1A.req, a1aManifest:!!A1A.manifest, inBounds:a1aInBounds(sc.heroTileX,sc.heroTileY),
       drew:A1A.drew, hero:[sc.heroTileX,sc.heroTileY], ready:terrainReady() };
   }
-  window.__DQ_TILES__={ reskin:reskin, ready:terrainReady, readyWhy:terrainReadyWhy, redraw:function(){ if(terrainState){ terrainState.lastWin=''; updateTerrain(terrainState.scene,true);} if(overlayState){ overlayState.lastKey=''; rebuildOverlay(overlayState.scene,true);} } };
+  // Cumulative cost counters for the on-device panel — see COST. `plate` is read live, because it
+  // is the one field that says whether the locked-art path is in force at all.
+  function terrainCost(){
+    var sc=worldScene();
+    return { splat:COST.splat, canopy:COST.canopy, tex:COST.tex, plate:a1aPlateOwns(sc)?1:0 };
+  }
+  window.__DQ_TILES__={ reskin:reskin, ready:terrainReady, readyWhy:terrainReadyWhy, cost:terrainCost, redraw:function(){ if(terrainState){ terrainState.lastWin=''; updateTerrain(terrainState.scene,true);} if(overlayState){ overlayState.lastKey=''; rebuildOverlay(overlayState.scene,true);} } };
 })();

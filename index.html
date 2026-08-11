@@ -1460,8 +1460,19 @@
             if (g2 && g2.textures && g2.textures.list) heavy.tex = Object.keys(g2.textures.list).length;
             var dq = window.__DQ_TILES__;
             if (dq && dq.readyWhy) heavy.dq = JSON.stringify(dq.readyWhy()).replace(/["{}]/g, '').slice(0, 34);
+            // ATTRIBUTION, not just detection. A stall at a window step has exactly three
+            // candidates and they are indistinguishable by duration: the analytic splat (sp), a
+            // chunk's 1536x1536 canopy composite (cv), and a chunk texture upload (tx2). pl says
+            // the Act 1 plate owns the map -- without it, sp0 cannot be told from a run where the
+            // override never applied, which is the failure mode that would look like a fix.
+            if (dq && dq.cost) {
+              try {
+                var k = dq.cost();
+                heavy.sp = 'sp' + k.splat + ' cv' + k.canopy + ' tx2·' + k.tex + ' pl' + k.plate;
+              } catch (e) {}
+            }
           }
-          o.tex = heavy.tex; o.dq = heavy.dq;
+          o.tex = heavy.tex; o.dq = heavy.dq; o.sp = heavy.sp;
         } catch (e) {}
         return o;
       }
@@ -1526,6 +1537,7 @@
               '\n' + where + (c.map || '?') + (c.fl != null ? ':' + c.fl : '') +
               (c.x != null ? ' ' + c.x + ',' + c.y : '') + (c.mv ? ' mv' : '') + '  tx' + (c.tex || '?') +
               (c.dq ? '\n' + c.dq : '') +
+              (c.sp ? '\n' + c.sp : '') +
               '\nfreezes ' + total + (worst ? '  worst ' + worst.ms + 'ms' : '');
         var recent = events.slice(-3).reverse();
         for (var i = 0; i < recent.length; i++) txt += '\n' + line(recent[i]);

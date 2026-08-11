@@ -156,8 +156,18 @@ export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '
 // diagnostic must never eat the input of the thing it is diagnosing. Events carry a SESSION marker
 // so a reload is visible in the log rather than reading as time travel.
 // Reviewed as a diff to index.html by a fresh adversarial agent; this line is the sign-off.
+//
+// 2026-08-11 — panel gains ONE line: `sp<n> cv<n> tx2·<n> pl<0|1>`, read from
+// __DQ_TILES__.cost(). Signed off because the panel's whole purpose is that his phone is the only
+// instrument that has seen the freeze, and "freezes 15, worst 1220ms" detects without attributing.
+// A window-step stall has three candidates that are indistinguishable by duration -- the analytic
+// splat, a 1536x1536 canopy composite, a chunk texture upload -- and `pl` guards the failure mode
+// that would most look like a fix: sp0 because the Act 1 override never applied, rather than
+// because the splat was suppressed. Read-only counters; no new timer, no new storage write; the
+// values are already gathered on the existing HEAVY_MS tick beside `tex`, so this adds no work to
+// the frame it measures. The panel remains a suspect in its own right -- see the note above.
 export const EXPECTED_STATIC_INDEX_SHA =
-  'f42b8d927b454e8d61795cd0a7833d109b8f0d10f5e37002ff50ad4ec4f90e03';
+  '32b3028dbacd7f9ecd47e2c05a5b5b43d171b98ccf7ffdb1b0e1ee76b463b0c8';
 
 /**
  * The authored shell loads its scripts by ABSOLUTE path so the Vite dev server resolves them;
