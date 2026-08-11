@@ -89,9 +89,15 @@ a chunk / terrain-signature boundary crossed once during this walk. That matches
 `dq-tiles.js` documents for itself — chunk-texture drain ("one chunk texture per tick") and a
 terrain/overlay rebuild gated on `A1A.dirty`.
 
-**This is genuinely periodic on a cycle longer than its own timer, and it recurs per chunk crossing
-— i.e. it scales with walking, which is exactly when the owner sees freezes.** That is the shape the
-investigation was looking for.
+**This is genuinely non-uniform on a cycle longer than its own timer** — a burst tied to one crossing,
+not a steady cost. That is the shape the investigation was looking for.
+
+> [!caution] "…and it recurs per chunk crossing" — STRUCK 2026-08-11, same day it was written
+> That clause was an **inference from one crossing**, never a measurement, and the follow-up work
+> below undercuts it: across 6–7 genuinely fresh crossings in a later run, **only the first produced a
+> spike**. Whether the `dq-tiles` timer burst specifically repeats at every crossing was never
+> isolated and remains **unmeasured**. Do not build on it. Struck here rather than corrected only in
+> the follow-up section, per this repo's own rule.
 
 `ui-overhaul`'s ticks and `drawFieldMap`'s spans show **no** comparable spike in the same window, so
 this is specific to `dq-tiles`'s tick rather than a general main-thread pile-up.
@@ -125,3 +131,72 @@ All five rounds landed on 2026-08-08; `ios/build/last-testflight-build.txt` hold
 is self-written and proves nothing. **Recording which commit each TestFlight build was cut from is
 the cheapest high-value fix available to this project** — without it, every future "which build
 introduced this?" question is unanswerable, and this one is unanswerable right now.
+
+---
+
+# Follow-up: the whole main thread, and where the search ended
+
+Three further passes ran 2026-08-11 after the timer result above. **Conclusion: the freeze is NOT
+reproducible in the Chrome/M-series lane. The owner's iPhone 13 is the only remaining instrument.**
+
+## What was eliminated, with evidence
+
+| Candidate | Verdict |
+|---|---|
+| The four permanent timers | **Dead.** ~285 ms of self-time across 60 s of walking, all four files combined. |
+| `drawFieldMap` / the minimap render | **Dead.** 0.04–0.10 ms per real draw. |
+| The `dq-tiles` chunk-boundary burst | **Real but small.** 13–18 ms. Nothing else spikes in that window — no long frame, no raster, no GC. |
+| Fresh-chunk image decode | **One-time warm-up, not a per-chunk tax.** In the same run, fresh crossing #1 spiked 48–95 ms in every run; crossings #2–#6/7, all genuinely new ground, never did. The revisited-ground control produced **0 `Decode Image` events across 3 runs vs 18** in the fresh condition. |
+| Frame timing overall | **Clean.** Zero of ~3,598 frames over 33 ms (20 s runs); zero over 100 ms in any trusted run at any duration. |
+
+**97.45% of the main thread is idle during a walk.** Of the non-idle remainder, the largest single
+bucket is V8's own `(program)` internals — larger than every script file combined.
+
+## Still open
+
+**Eviction and re-entry: UNDETERMINED.** `GROUND-TRUTH.md` records live chunk residency as 9–10, so a
+long walk evicts. The walker could only reach **6–7 distinct chunks** before hitting a real dead-end
+pocket in the local geometry, so residency was probably never exceeded and the strict test never ran.
+Everything captured is consistent with "one-time", and a circuit's re-entry into its earliest chunk
+showed no spike — but that is not the same as having run the test.
+
+## A measurement artifact, caught before it became a finding
+
+A late probe reported **~40 main-thread blocks of ~1.2–1.3 s per 60 s run**, confirmed by three
+independent instruments, with CDP overhead and headless throttling both ruled out. It would have read
+as a spectacular confirmation of the freeze.
+
+**It was the instrument.** The arithmetic gave it away first — 34 blocks over 500 ms summing to
+40,763 ms of a 70,863 ms run is **57.5% of wall-clock blocked**, which is not "freezes periodically",
+it is an unusable game. A 2x2 settled it:
+
+| Walker | Duration | Blocks > 500 ms |
+|---|---|---|
+| trusted probe | 20 s | 0, 0, 0 |
+| trusted probe | **75 s** | **0, 0, 0** |
+| new walker | **20 s** | **6** |
+| new walker | 60–77 s | 34–41 per run |
+
+Holding the walker fixed and stretching duration changes nothing; swapping the walker reproduces it in
+under 21 seconds. The offending walker calls `canMove()` many times per rendered frame, which neither
+real input nor any earlier probe does.
+
+> [!warning] The lesson, since this repo collects these
+> **An instrument that is more aggressive than the thing it measures will measure itself.** Three
+> independent instruments agreeing did NOT make it real — they were all downstream of one bad walker.
+> The check that caught it was arithmetic against the reported symptom, not more instrumentation.
+
+## Incidental: `canMove` disagrees with the mover, again
+
+The walker work independently rediscovered, with a position trace, that `canMove(x,y)` returns `true`
+for tiles the hero cannot actually reach. `GROUND-TRUTH.md` already lists this pre-existing
+`canMove`-vs-mover disagreement as the reason a dungeon exit and 5 of 8 doors are undriven by the
+headless harness. **Fresh evidence for a known defect** — and the reason a naive walker gets stuck.
+
+## Where to go next
+
+Profiling this game on this Mac has been exhausted. Everything cheap enough to see here is cheap.
+**The next measurement has to happen on the device that actually exhibits the problem.** The shell
+already contains the machinery for that pattern: the recovery net's beacon and the `QOK-<CLASS>-<NNNN>`
+black-box codes in `index.html` show that on-device recording, surfaced as a code the owner reads out,
+is an established mechanism in this project rather than a new invention.
