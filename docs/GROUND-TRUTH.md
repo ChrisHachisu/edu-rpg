@@ -56,10 +56,22 @@ design tier. This single rule ties together three symptoms reported on build 14 
 not match the baked art, a visible "crease", and ~970 ms stalls while walking — because the splat is
 both the wrong surface AND the cost.
 
-**What is NOT settled and must not be assumed:** which bake is authoritative, and whether the
-walkable area is fully covered by baked art. The owner's own caveat about adjusted boundaries is the
-open risk: if walkable ground extends past the baked plate, "locked art only" cannot be satisfied by
-deleting the splat alone.
+**COVERAGE — MEASURED 2026-08-11, and it makes the directive achievable.** The baked plate covers
+**9,375 of 9,376 walkable tiles (99.99%)**. Exactly ONE tile, **(119,331)**, has no art beneath it.
+The owner's own reported positions (112,231 and 113,234), where his device drew procedural terrain,
+both **HAVE ART**. So the splat is not filling a coverage hole — it is painting over art that is
+present and correct, which makes this a pure RUNTIME defect and makes "locked art only" cost one
+tile rather than a re-bake.
+
+> [!warning] Measure coverage against `public/act1-world-map.js`, NEVER `walkable-regions-v1.json`
+> The first pass of this measurement used `public/act1-hifi/walkable-regions-v1.json` and reported
+> **8.28% of walkable ground uncovered** — wrong by three orders of magnitude. That file is marked
+> `status: design-only-owner-review-not-promoted` and its polygons are not what the runtime enforces.
+> The authority is `public/act1-world-map.js`'s `ROWS`/`BOUNDS` with `blocked(t) = t in {2,3,4} or
+> t >= 6`; it yields exactly 9,376 walkable tiles, matching the ship gate's own
+> "9376-cell single walkable region" line, which is how you know you have the right data.
+> That file also claims the art and its geometry are "one hash-locked design pair" — **there is no
+> hash in it.** The lock is prose, enforced by nothing.
 
 ## Claims that were WRONG and are now retired
 
