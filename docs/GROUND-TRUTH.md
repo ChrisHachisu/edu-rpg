@@ -38,6 +38,29 @@ in the source, not just in a doc. Do it at the source or it will be read again.
 | **Which map a seeded gate run is ACTUALLY testing** | the **on-screen floor/map label** in the screenshot | **NOT `seed_ios_save.py`'s own "map=… " line.** The seed writes `edu-rpg-save`, but the recovery net's snapshot (`edu-rpg-resume`, `index.html:612`) **outranks it** and replays the PREVIOUS map. `simctl terminate` looks exactly like a kill, so seed-then-relaunch inside `FRESH_MS` (**20 s**) silently loads the map you were on before. Hit 2026-08-11: seeded `portSapphire`, got `Sunken Cellar B3F` plus a `QOK-KL-0104` toast. **Wait out 20 s after terminating, and read the label in the screenshot before believing the run.** |
 | Whether `fingerprint:check` failed | the check's own output text | **NOT a non-zero exit alone.** It needs `dist` served on `:5174` (`npm run preview`); with no server it dies on `ERR_CONNECTION_REFUSED`, which looks like a gate failure and is not one. Its `renderedSignature` delta is likewise **informational by design**, never a failure — rendering is not verified by any gate. |
 
+## OWNER DIRECTIVES — 2026-08-11, asked and answered directly
+
+Recorded because this orchestrator drifted twice in one session on exactly these questions, and the
+owner's response was *"you are getting confused about the locked design version again and it is
+alarming. ask me if the records are unclear."* **Ask. Do not infer.**
+
+| Question put to the owner | His answer, verbatim in substance |
+|---|---|
+| Should the procedural terrain (`drawTerrain`'s analytic splat) ever be visible to a player? | **"no. locked in art, full stop."** |
+| Is the r26 bake in `public/act1-hifi/chunks/` the settled overworld art? | **"likely"** — he cannot be certain because the boundaries were adjusted repeatedly. NOT a confirmation; treat as probable, not authoritative. |
+| Is `LOCKED-ART-STYLE.md` (2026-07-20) still binding? | **Undecided** — he wants to see it before ruling, and expects it is out of date given the regressions. |
+
+**The binding one: THE PROCEDURAL SURFACE IS NEVER THE PLAYER-VISIBLE TERRAIN.** It is a loading
+fallback at most. Any behaviour where a player walks on procedurally-splatted ground is a BUG, not a
+design tier. This single rule ties together three symptoms reported on build 14 — ground that does
+not match the baked art, a visible "crease", and ~970 ms stalls while walking — because the splat is
+both the wrong surface AND the cost.
+
+**What is NOT settled and must not be assumed:** which bake is authoritative, and whether the
+walkable area is fully covered by baked art. The owner's own caveat about adjusted boundaries is the
+open risk: if walkable ground extends past the baked plate, "locked art only" cannot be satisfied by
+deleting the splat alone.
+
 ## Claims that were WRONG and are now retired
 
 Recorded so they cannot come back. Each was believed and acted on.
