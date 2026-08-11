@@ -126,7 +126,11 @@
    other consumer. Gilded Rail deleted the saturated blocks, so they are gone with them; .btn-em
    and .btn-slate stay because the healer confirm and the item-menu cancel still use them. */
 #qok-ui .btn-slate{background:#ffffff0a;border-color:var(--gold-line);color:var(--ink);}
-#qok-ui .sel{outline:2px solid var(--gold);outline-offset:1px;box-shadow:0 0 0 3px var(--gold-glow)!important;}
+/* CURSOR, NOT A CHOICE. Gated on .kbnav (set by setRailKb in ui-overhaul.js, the same
+   last-input-device flag the battle rail uses) so a touch player never sees index 0 gold-outlined
+   at rest. Owner ruled 2026-08-11: "Remove it on touch, same as the rail". The swatch / gchip /
+   variant rules below are deliberately NOT gated -- they mark a real choice, not a cursor. */
+#qok-ui.kbnav .sel{outline:2px solid var(--gold);outline-offset:1px;box-shadow:0 0 0 3px var(--gold-glow)!important;}
 
 #qok-ui .tabbar{margin-top:auto;display:flex;gap:4px;padding:7px 8px calc(7px + env(safe-area-inset-bottom,0px));background:#101116;border-top:1px solid rgba(201,169,97,.20);position:relative;z-index:6;flex:none;}
 #qok-ui .tab{flex:1;border:none;background:transparent;color:var(--ink-soft);font-weight:500;font-size:11px;display:flex;flex-direction:column;align-items:center;gap:3px;padding:0 3px;border-radius:12px;cursor:pointer;min-height:48px;justify-content:center;}
@@ -199,7 +203,7 @@
 #qok-ui .switch{width:50px;height:28px;border-radius:99px;background:#ffffff1f;position:relative;flex:none;cursor:pointer;} #qok-ui .switch.on{background:var(--emerald2);} #qok-ui .switch::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 2px 4px #0004;transition:left .12s;} #qok-ui .switch.on::after{left:25px;}
 #qok-ui .slider{height:8px;border-radius:99px;background:#ffffff14;position:relative;flex:1;cursor:pointer;} #qok-ui .slider i{position:absolute;left:0;top:0;height:100%;width:50%;border-radius:99px;background:var(--gold);} #qok-ui .slider b{position:absolute;top:50%;transform:translate(-50%,-50%);width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 2px 5px #0005;}
 #qok-ui .setrow{display:flex;align-items:center;gap:10px;padding:14px;border-radius:12px;background:#ffffff0a;border:1px solid transparent;cursor:pointer;min-height:52px;}
-#qok-ui .setrow.sel{outline:2px solid var(--gold);outline-offset:0;background:rgba(201,169,97,.10);} #qok-ui .setrow .lab{flex:1;font-weight:700;font-size:14.5px;color:var(--ink);display:flex;align-items:center;gap:10px;} #qok-ui .setrow .lab svg{width:21px;height:21px;flex:none;color:var(--gold);} #qok-ui .setrow .val{font-weight:700;color:var(--gold);font-size:14px;}
+#qok-ui.kbnav .setrow.sel{outline:2px solid var(--gold);outline-offset:0;background:rgba(201,169,97,.10);} #qok-ui .setrow .lab{flex:1;font-weight:700;font-size:14.5px;color:var(--ink);display:flex;align-items:center;gap:10px;} #qok-ui .setrow .lab svg{width:21px;height:21px;flex:none;color:var(--gold);} #qok-ui .setrow .val{font-weight:700;color:var(--gold);font-size:14px;}
 #qok-ui #qok-volume{appearance:none;-webkit-appearance:none;flex:1;min-width:100px;max-width:230px;height:28px;background:transparent;touch-action:pan-x;cursor:pointer;}
 #qok-ui #qok-volume::-webkit-slider-runnable-track{height:8px;border-radius:99px;background:linear-gradient(90deg,var(--gold),#ffffff1f);}
 #qok-ui #qok-volume::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;margin-top:-7px;border-radius:50%;background:var(--gold);border:none;box-shadow:0 2px 6px #0008;}

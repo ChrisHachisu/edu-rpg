@@ -913,6 +913,18 @@
     on = !!on;
     if (railKb === on) return;
     railKb = on;
+    // THE SAME SIGNAL, EXTENDED TO EVERY LIST SCREEN. `.sel` is a CURSOR on Items, Equip, Settings,
+    // Shop, the healer prompt and the battle quiz, so on a touch device index 0 sat gold-outlined
+    // from the moment the screen opened and something always looked chosen when nothing was -- worst
+    // on the quiz, where the first answer read as pre-selected before the player had touched it.
+    // Owner ruled 2026-08-11: "Remove it on touch, same as the rail", the rail being his own
+    // 2026-08-08 lock. Toggled on the ROOT and BEFORE the battle-only return below, because these
+    // screens are not the battle.
+    //
+    // Only the CURSOR rules are gated in the stylesheet. `.swatch.sel` (hero colour), `.gchip.sel`
+    // (grade) and the intro variant keep their own rules untouched, because those mark a real CHOICE
+    // the player has made and must stay visible whatever the input device.
+    if (root) root.classList.toggle('kbnav', railKb);
     if (curScreen !== 'battle') return;
     var bs = getScene('BattleScene');
     if (bs && bs.phase === 'playerMenu') paintRailSelection(bs.menuIndex); // repaint NOW, not on the next 50ms poll

@@ -1,11 +1,20 @@
 ---
 date: 2026-07-20
 type: locked-art-style
-project: edu-rpg-map-engine-semantic-data
+project: edu-rpg
+reaffirmed: 2026-08-11
 status: OWNER-LOCKED
 ---
 
 # Overworld art style + tone — OWNER-LOCKED 2026-07-20
+
+> [!success] STILL BINDS — re-affirmed by the owner 2026-08-11, asked directly.
+> `project:` said `edu-rpg-map-engine-semantic-data` until that ruling, which made this read as
+> another repo's document; it is corrected above. Nothing in the shipped bake contradicts it, and
+> the one clause that had been reported breached is not: **"no visible seams/joins"** measured
+> across all 49 internal chunk joins gives mean |diff| **15.14 ACROSS** a join against **14.27** for
+> two neighbouring pixels WITHIN a chunk — indistinguishable from ordinary texture. The "crease" the
+> owner saw on build 14 was the procedural/baked boundary, a runtime defect, fixed 2026-08-11.
 
 Locked by the owner after the Act 1 phone-frame pilot. Every overworld terrain generation MUST follow this. Do NOT let the model reinterpret the style (that caused the painterly/cartoony drift).
 
