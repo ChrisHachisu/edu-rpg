@@ -950,7 +950,19 @@
   // alone: the analytic splat (`sp`), a chunk's canopy composite on a 1536x1536 scratch canvas
   // (`cv`), and a chunk texture upload (`tx2`). `pl` says whether the Act 1 plate owns the map --
   // without it a reading of sp:0 cannot be told apart from a run where the override never applied.
-  var COST={ splat:0, canopy:0, tex:0 };
+  var COST={ splat:0, canopy:0, tex:0, wMs:0, wWhat:'-' };
+  // COUNTS WERE NOT ENOUGH. Throttling the builds to one per tick did not move the window-step
+  // stall (853/893 ms after, against 661/939 ms before), and this session's own counters refute the
+  // simple story: 24 texture builds and 8 canopy composites produced only TWO long frames, so it is
+  // not that every build is expensive. Something specific is, and only a stopwatch on the individual
+  // operation can say which. `wb` reports the worst single one and names it.
+  function costTime(what,fn){
+    var t0=(window.performance&&performance.now)?performance.now():Date.now();
+    var r=fn();
+    var d=((window.performance&&performance.now)?performance.now():Date.now())-t0;
+    if(d>COST.wMs){ COST.wMs=Math.round(d); COST.wWhat=what; }
+    return r;
+  }
   var NEAREST=(window.Phaser&&Phaser.Textures&&Phaser.Textures.FilterMode)?Phaser.Textures.FilterMode.NEAREST:1;
 
   // Keep a generous off-screen tile margin and move the render window in chunks. The old window
@@ -1341,19 +1353,19 @@
       // destination-in is a WHOLE-CANVAS operator, which is why this is one chunk per surface.
       if(rec.bm&&rec.bm.canopyComposite){
         if(scene.textures.exists(key)) scene.textures.remove(key);
-        scene.textures.addImage(key,rec.bm.canopyComposite);
+        costTime('addBmp:canopy',function(){ scene.textures.addImage(key,rec.bm.canopyComposite); });
         try{ scene.textures.get(key).setFilter(NEAREST); }catch(e){}
         A1A.tex[key]=1; return key;
       }
-      var cv=a1aCanopyCanvas(rec); if(!cv){ A1A.tex[key]=0; return null; }
+      var cv=costTime('cvcanvas',function(){ return a1aCanopyCanvas(rec); }); if(!cv){ A1A.tex[key]=0; return null; }
       if(scene.textures.exists(key)) scene.textures.remove(key);
-      var ct=scene.textures.addCanvas(key,cv); if(ct&&ct.refresh) ct.refresh();
+      var ct=costTime('addCanvas',function(){ var t=scene.textures.addCanvas(key,cv); if(t&&t.refresh) t.refresh(); return t; });
       try{ ct.setFilter(NEAREST); }catch(e){}
       A1A.tex[key]=1; return key;
     }
     var im=rec[layer]; if(!im) return null;
     if(scene.textures.exists(key)) scene.textures.remove(key);
-    scene.textures.addImage(key,im);
+    costTime('addImg:'+layer,function(){ scene.textures.addImage(key,im); });
     try{ scene.textures.get(key).setFilter(NEAREST); }catch(e){}
     A1A.tex[key]=1; return key;
   }
@@ -1419,9 +1431,9 @@
     if(A1A.tex[key]||A1A.bmPend[key]) return;
     if(!rec.base||!rec.canopy||!window.createImageBitmap) return;
     if(rec.bm&&rec.bm.canopyComposite) return;
-    var cv=a1aCanopyCanvas(rec); if(!cv) return;
+    var cv=costTime('prep:canvas',function(){ return a1aCanopyCanvas(rec); }); if(!cv) return;
     COST.canopy++;                                   // one 1536x1536 composite; see COST
-    if(cv.transferToImageBitmap){ try{ rec.bm.canopyComposite=cv.transferToImageBitmap(); return; }catch(e){} }
+    if(cv.transferToImageBitmap){ try{ rec.bm.canopyComposite=costTime('prep:transfer',function(){ return cv.transferToImageBitmap(); }); return; }catch(e){} }
     A1A.bmPend[key]=1;
     try{
       createImageBitmap(cv,{premultiplyAlpha:'none',colorSpaceConversion:'none'})
@@ -1627,10 +1639,10 @@
     // is neither computed nor uploaded, and the window canvas is never shown. a1aRects still runs:
     // it is what maintains the ring prefetch and the LRU that a1aPlaceSprites then consumes.
     if (a1aPlateOwns(scene)){
-      var rs=a1aRects(X0,Y0,winW,winH)||[];
+      var rs=costTime('rects',function(){ return a1aRects(X0,Y0,winW,winH); })||[];
       A1A.lastRects=rs; A1A.lastFull=!!rs.full;
       terrainState.image.setPosition(X0*TILE, Y0*TILE).setVisible(false);
-      A1A.drew=a1aSpriteMode()?a1aPlaceSprites(scene,rs):false;
+      A1A.drew=a1aSpriteMode()?costTime('place',function(){ return a1aPlaceSprites(scene,rs); }):false;
       if (terrainState.cimg && terrainState.cimg.visible) terrainState.cimg.setVisible(false);
       return;
     }
@@ -3154,14 +3166,29 @@
   // Assemble owmBuild's window out of the plate: one fill or one 48-row copy per CELL, against
   // owmBuild's 2.965 M evaluations plus two sweeps over the same. Uint8 rather than Uint16 because
   // every value is clamped; every sampler reads it as a number either way.
-  function owmAssemble(b,X0,Y0,winW,winH){
+  // `plate`: the Act 1 override owns this map, so the hero is confined to the plate -- see owmFor.
+  function owmAssemble(b,X0,Y0,winW,winH,plate){
     var cw=winW*N, ch=winH*N; if(!(cw>0&&ch>0)) return null;
     var idx=b.idx, blk=b.blk, far=b.far, mw=b.mapW, mh=b.mapH;
     var dist=new Uint8Array(cw*ch), cx, cy, mx, my, id, base, y, x, o, s, d;
     for(cy=0;cy<winH;cy++){ my=Y0+cy; if(my<0||my>=mh) return null;
       for(cx=0;cx<winW;cx++){ mx=X0+cx; if(mx<0||mx>=mw) return null;
         id=idx[my*mw+mx];
-        if(id===OWM_UNBAKED) return null;                        // outside the plate -> owmBuild
+        // ONE unbaked cell used to throw the WHOLE window away and fall through to owmBuild's
+        // per-pixel synthesis. That is the same defect shape as the terrain splat, on the other
+        // window: coverage judged per WINDOW rather than per reachable cell. The window carries
+        // MARGIN=12 cells of OFF-SCREEN border, so anywhere near the plate's north edge it always
+        // contains unbaked rows and the fallback fired on every 12-cell step -- measured on device
+        // 2026-08-11, `owm 625ms analytic` against a 620 ms freeze at the owner's own tile 111,231,
+        // the freeze that survived both the locked-art change and the texture throttle.
+        //
+        // Inside Act 1 an unbaked cell is instead SOLID, which is what it already is in practice:
+        // walkable ground spans x 24-158, y 224-393 inside plate bounds x 16-163, y 218-399, i.e.
+        // at least six cells of blocked coast on every side, so nothing outside the bake is
+        // reachable. Treating it as solid can only ever refuse a move she could not make anyway --
+        // the safe direction. Gated on `plate`, so a map the override does not own keeps the old
+        // bail and its analytic field rather than being silently walled in.
+        if(id===OWM_UNBAKED){ if(!plate) return null; continue; }
         if(id===OWM_BLOCKED) continue;                           // solid: the array is already 0
         base=cy*N*cw+cx*N;
         if(id===OWM_FARCELL){ for(y=0;y<N;y++){ d=base+y*cw; dist.fill(far,d,d+N); } }
@@ -3202,7 +3229,17 @@
     // built from the old array describes terrain that is no longer there.
     if(!owmState || owmState.map!==map || owmState.key!==key){
       var pf=(window.performance&&performance.now)?performance:null, t0=pf?pf.now():0;
-      var b=owmBakeFor(map), mm=b?owmAssemble(b,X0,Y0,winW,winH):null, src=mm?'baked':'analytic';
+      var b=owmBakeFor(map), plate=a1aPlateOwns(scene);
+      var mm=b?owmAssemble(b,X0,Y0,winW,winH,plate):null, src=mm?'baked':'analytic';
+      // COLD START. act1-overworld-walk.bin arrives asynchronously, so the first window or two can
+      // be asked for before it lands -- and on the plate that used to mean synthesising 3.85 M px
+      // analytically for a field the bake was about to answer in 4 ms. Measured 541 ms at boot.
+      // Returning null is not a failure: it is the same "outside -> the engine's own stepping" path
+      // this function already takes when the hero is not inside the window, so she steps on the
+      // engine's own grid for the moment it takes the file to arrive, under the loading cover.
+      // Only where the plate owns the map, where the bake IS the authority and is known to cover
+      // every reachable cell; elsewhere the analytic field is still the only answer there is.
+      if(!mm && plate) return null;
       if(!mm) mm=owmBuild(map,X0,Y0,winW,winH);
       var ms=pf?(pf.now()-t0):-1;                                // measured BEFORE the debug scan
       owmState={ map:map, key:key, m:mm };
@@ -4482,7 +4519,8 @@
   // is the one field that says whether the locked-art path is in force at all.
   function terrainCost(){
     var sc=worldScene();
-    return { splat:COST.splat, canopy:COST.canopy, tex:COST.tex, plate:a1aPlateOwns(sc)?1:0 };
+    return { splat:COST.splat, canopy:COST.canopy, tex:COST.tex, plate:a1aPlateOwns(sc)?1:0,
+             wMs:COST.wMs, wWhat:COST.wWhat };
   }
   window.__DQ_TILES__={ reskin:reskin, ready:terrainReady, readyWhy:terrainReadyWhy, cost:terrainCost, redraw:function(){ if(terrainState){ terrainState.lastWin=''; updateTerrain(terrainState.scene,true);} if(overlayState){ overlayState.lastKey=''; rebuildOverlay(overlayState.scene,true);} } };
 })();

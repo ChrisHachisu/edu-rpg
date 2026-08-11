@@ -166,8 +166,24 @@ export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '
 // because the splat was suppressed. Read-only counters; no new timer, no new storage write; the
 // values are already gathered on the existing HEAVY_MS tick beside `tex`, so this adds no work to
 // the frame it measures. The panel remains a suspect in its own right -- see the note above.
+//
+// Same day, second line: `wb <ms> <what>` -- the worst SINGLE operation and its name. Signed off
+// because counts turned out not to be enough: throttling the texture builds to one per tick left
+// the window-step stall where it was (853/893 ms after, 661/939 ms before), and the counters
+// refuted the obvious story themselves -- 24 builds and 8 composites in a session that produced
+// only two long frames, so it is not that every build is dear. One of them is, and a stopwatch on
+// the individual operation is the only thing that can name which. The timers wrap operations that
+// already run; they add two performance.now() calls each and nothing else.
+//
+// Same day, third line: `owm <ms> <src>`. Not a new measurement -- dq-tiles.js has always timed the
+// collision-window rebuild and published it on window.__DQ_OWM__, calling it "the one thing in the
+// overworld that can drop a frame"; nothing surfaced it where the freeze log could be read beside
+// it. Needed because the stopwatch refuted the texture theory too: a 684 ms stall was recorded in a
+// session whose worst single terrain operation was 87 ms, so the cost is outside the terrain path
+// entirely, and the collision window rebuilds on the same 12-cell boundary. Pure read of an existing
+// global; worst-seen rather than last, because a rebuild is over before the next sample lands.
 export const EXPECTED_STATIC_INDEX_SHA =
-  '32b3028dbacd7f9ecd47e2c05a5b5b43d171b98ccf7ffdb1b0e1ee76b463b0c8';
+  '13735bbf33d7faba5530460e3b8ce54ba7e1dc6d278a51cbc7c1fcd743dca2c4';
 
 /**
  * The authored shell loads its scripts by ABSOLUTE path so the Vite dev server resolves them;

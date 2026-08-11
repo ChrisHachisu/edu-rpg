@@ -1468,7 +1468,20 @@
             if (dq && dq.cost) {
               try {
                 var k = dq.cost();
-                heavy.sp = 'sp' + k.splat + ' cv' + k.canopy + ' tx2·' + k.tex + ' pl' + k.plate;
+                heavy.sp = 'sp' + k.splat + ' cv' + k.canopy + ' tx2·' + k.tex + ' pl' + k.plate +
+                           '\nwb ' + k.wMs + 'ms ' + k.wWhat;
+                // The COLLISION window rebuild. dq-tiles.js already times this one itself and
+                // publishes it -- "this rebuild is the one thing in the overworld that can drop a
+                // frame, and the last time it regressed it was found by measuring it on device".
+                // It runs on the same 12-cell boundary the terrain window does, so it is the other
+                // thing that happens at a step, and nothing was reporting it where the freeze log
+                // could be read beside it. Worst seen, not last: a rebuild is over long before the
+                // next HEAVY_MS sample lands.
+                var ow = window.__DQ_OWM__;
+                if (ow && typeof ow.ms === 'number' && ow.ms > (heavy.owmMs || 0)) {
+                  heavy.owmMs = ow.ms; heavy.owmSrc = ow.src;
+                }
+                if (heavy.owmMs) heavy.sp += '  owm ' + Math.round(heavy.owmMs) + 'ms ' + heavy.owmSrc;
               } catch (e) {}
             }
           }
