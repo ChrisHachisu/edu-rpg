@@ -9,11 +9,19 @@ tags: [handoff]
 
 # Handoff — the game is painting a procedural surface over the owner's locked art — 2026-08-11
 
+> [!danger] SUPERSEDED IN PART, 2026-08-11 (commit `3cf8fb1`)
+> The locked-art fix below is **DONE and verified**. The freeze claim in it is **REFUTED**.
+> ~~"Three symptoms the owner reported are ONE bug."~~ Two of them were. With the splat measured at
+> **zero** on the plate (`sp0 pl1`), the overworld still stalled 661 ms and 939 ms. The freeze is
+> **chunk landing** — a 1536x1536 canopy composite plus a chunk-layer GPU upload — attributed by the
+> panel's new `cv` / `tx2` counters. See `docs/GROUND-TRUTH.md`. Do not re-derive the splat theory.
+
 ## The one thing to know
 
-**Three symptoms the owner reported are ONE bug.** The overworld ground not matching his art, the
-visible "crease", and ~970 ms freezes every 2-4 seconds while walking are all `drawTerrain`'s
-procedural splat rendering as the player-visible surface where baked art already exists.
+**Two of the three symptoms the owner reported are ONE bug.** The overworld ground not matching his
+art and the visible "crease" are both `drawTerrain`'s procedural splat rendering as the
+player-visible surface where baked art already exists. **The freezes are a separate cause** — see the
+banner above.
 
 **Owner's directive, asked directly and recorded in `docs/GROUND-TRUTH.md`:**
 > *"no. locked in art, full stop."* — the procedural surface must NEVER be what a player sees.

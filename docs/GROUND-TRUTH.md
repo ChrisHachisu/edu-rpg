@@ -50,11 +50,26 @@ alarming. ask me if the records are unclear."* **Ask. Do not infer.**
 | Is the r26 bake in `public/act1-hifi/chunks/` the settled overworld art? | **"likely"** — he cannot be certain because the boundaries were adjusted repeatedly. NOT a confirmation; treat as probable, not authoritative. |
 | Is `LOCKED-ART-STYLE.md` (2026-07-20) still binding? | **Undecided** — he wants to see it before ruling, and expects it is out of date given the regressions. |
 
-**The binding one: THE PROCEDURAL SURFACE IS NEVER THE PLAYER-VISIBLE TERRAIN.** It is a loading
-fallback at most. Any behaviour where a player walks on procedurally-splatted ground is a BUG, not a
-design tier. This single rule ties together three symptoms reported on build 14 — ground that does
-not match the baked art, a visible "crease", and ~970 ms stalls while walking — because the splat is
-both the wrong surface AND the cost.
+**The binding one: THE PROCEDURAL SURFACE IS NEVER THE PLAYER-VISIBLE TERRAIN.** Any behaviour where
+a player walks on procedurally-splatted ground is a BUG, not a design tier. **Implemented 2026-08-11**
+(`public/dq-tiles.js`, `a1aPlateOwns`): on the Act 1 plate the splat is neither computed nor shown,
+and anything the art has not covered yet is flat sea sampled from the bake — the owner chose "flat
+ocean colour, no procedural" over keeping it as a loading fallback, so it is not one.
+
+> [!warning] ~~"This single rule ties together three symptoms — wrong ground, the crease, and the
+> ~970 ms stalls — because the splat is both the wrong surface AND the cost."~~ **Half refuted,
+> 2026-08-11, measured.** It explains the wrong ground and the crease. It does NOT explain the
+> freeze. With the splat provably at zero (`sp0 pl1` on the panel, sim 4B05EF44, load 8.3) the
+> overworld still stalled 661 ms at a window step and 939 ms at map build. The counters attribute it:
+> two new freezes arrived with `cv` 4→6 and `tx2` 18→24, i.e. **chunk landing** — a 1536x1536 canopy
+> composite plus the GPU upload of a chunk layer. That cost was always underneath the splat, and the
+> match between this repo's old 962-1017 ms splat measurement and the owner's 891-969 ms device
+> numbers was a coincidence of magnitude, not an identification. **The freeze is OPEN and its cause
+> is now named.**
+
+**Owner's ruling on the plate's north edge, asked 2026-08-11:** *"the far north will be built in as
+act 5 so we don't need to worry that much about it now."* The camera can see past the plate at only
+8 of 9,376 walkable tiles, all northern; flat sea covers them until Act 5 exists.
 
 **COVERAGE — MEASURED 2026-08-11, and it makes the directive achievable.** The baked plate covers
 **9,375 of 9,376 walkable tiles (99.99%)**. Exactly ONE tile, **(119,331)**, has no art beneath it.
