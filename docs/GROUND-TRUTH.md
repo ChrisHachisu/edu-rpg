@@ -61,11 +61,29 @@ ocean colour, no procedural" over keeping it as a loading fallback, so it is not
 > 2026-08-11, measured.** It explains the wrong ground and the crease. It does NOT explain the
 > freeze. With the splat provably at zero (`sp0 pl1` on the panel, sim 4B05EF44, load 8.3) the
 > overworld still stalled 661 ms at a window step and 939 ms at map build. The counters attribute it:
-> two new freezes arrived with `cv` 4→6 and `tx2` 18→24, i.e. **chunk landing** — a 1536x1536 canopy
-> composite plus the GPU upload of a chunk layer. That cost was always underneath the splat, and the
-> match between this repo's old 962-1017 ms splat measurement and the owner's 891-969 ms device
-> numbers was a coincidence of magnitude, not an identification. **The freeze is OPEN and its cause
-> is now named.**
+> two new freezes arrived with `cv` 4→6 and `tx2` 18→24. The match between this repo's old
+> 962-1017 ms splat measurement and the owner's 891-969 ms device numbers was a coincidence of
+> magnitude, not an identification.
+
+> [!success] THE FREEZE — FOUND AND FIXED, 2026-08-11 (`78d9ba6`). It is the **COLLISION** window.
+> `owmAssemble` threw the entire window away and fell through to `owmBuild`'s 3.85 Mpx per-pixel
+> synthesis **if one cell of it was unbaked**. That window carries the same MARGIN=12 cells of
+> off-screen border the terrain window does, so near the plate's north edge — the owner's own tiles
+> — it always contained unbaked rows and the fallback fired on every 12-cell step. **The same defect
+> as the splat, on the other window: coverage judged per WINDOW rather than per reachable cell.**
+> Measured `owm 625ms analytic` against a 620 ms freeze at 111,231; now `owm 4ms baked`, and a
+> multi-direction walk records ZERO freezes at fps60, worst frame 23 ms, at load 5.8.
+>
+> ~~"the cost is chunk landing — a 1536x1536 canopy composite plus a GPU upload"~~ **Wrong, twice
+> over.** Throttling those builds did not move the stall (853/893 ms after, against 661/939 before),
+> and a 684 ms freeze was then recorded in a session whose worst *single* terrain operation was
+> 87 ms — the counters refuted the theory they had themselves suggested. Chunk landing is real but
+> bounded at ~90-110 ms and was never the freeze.
+>
+> **The lesson worth keeping: COUNTS ARE NOT DURATIONS.** Two rounds went to a cause that correlated
+> in count with the symptom and could not possibly account for it in time. Arithmetic against the
+> symptom is what settled it — the same move that caught the over-aggressive probe in
+> `docs/TIMER-ATTRIBUTION.md`.
 
 **Owner's ruling on the plate's north edge, asked 2026-08-11:** *"the far north will be built in as
 act 5 so we don't need to worry that much about it now."* The camera can see past the plate at only

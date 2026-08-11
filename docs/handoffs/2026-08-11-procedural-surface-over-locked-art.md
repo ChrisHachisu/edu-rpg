@@ -9,12 +9,15 @@ tags: [handoff]
 
 # Handoff — the game is painting a procedural surface over the owner's locked art — 2026-08-11
 
-> [!danger] SUPERSEDED IN PART, 2026-08-11 (commit `3cf8fb1`)
-> The locked-art fix below is **DONE and verified**. The freeze claim in it is **REFUTED**.
-> ~~"Three symptoms the owner reported are ONE bug."~~ Two of them were. With the splat measured at
-> **zero** on the plate (`sp0 pl1`), the overworld still stalled 661 ms and 939 ms. The freeze is
-> **chunk landing** — a 1536x1536 canopy composite plus a chunk-layer GPU upload — attributed by the
-> panel's new `cv` / `tx2` counters. See `docs/GROUND-TRUTH.md`. Do not re-derive the splat theory.
+> [!danger] SUPERSEDED, 2026-08-11 — all three symptoms are FIXED, but not by one bug
+> Locked art: `3cf8fb1`. Freeze: `78d9ba6`. ~~"Three symptoms the owner reported are ONE bug."~~
+> Two of them were. The freeze is the **COLLISION** window, not the terrain one: `owmAssemble` bailed
+> to a 3.85 Mpx analytic build if a single window cell was unbaked, and the window's 12-cell
+> off-screen margin guaranteed that near the plate's north edge. `owm 625ms analytic` → `owm 4ms
+> baked`; a multi-direction walk now records zero freezes at fps60. It is the SAME defect shape as
+> the splat — coverage judged per window rather than per reachable cell — which is why the analogy in
+> this document was productive even though its attribution was wrong. Full account, including the two
+> refuted intermediate theories, in `docs/GROUND-TRUTH.md`. Do not re-derive any of them.
 
 ## The one thing to know
 
