@@ -1356,6 +1356,228 @@
         for (var i = 0; i < records.length; i++) if (records[i].attributeName === 'class') { setTimeout(refreshScale, 0); break; }
       }).observe(document.body, { attributes: true, attributeFilter: ['class'] });
     })();
+
+    /* ==========================================================================================
+       LONG-FRAME RECORDER — the owner's phone is the instrument, because nothing else has ever
+       seen the bug.
+
+       WHY THIS EXISTS. He reports the overworld "freezes periodically" on an iPhone 13 / iOS 26.6.
+       A full profiling investigation (docs/TIMER-ATTRIBUTION.md) eliminated every candidate that
+       could be measured here: the four permanent timers cost ~285 ms across 60 s of walking, the
+       minimap render is 0.04-0.10 ms a draw, fresh-chunk image decode is a ONE-TIME warm-up rather
+       than a per-chunk tax, and ZERO of ~3,598 sampled frames exceeded 33 ms. The freeze does not
+       reproduce in Chrome on an M-series Mac, and it has never reproduced on a simulator. So this
+       records it where it actually happens.
+
+       WHAT IT IS NOT. It is not a fix and it changes no game behaviour. It only watches.
+
+       COST. One rAF callback per frame doing a subtract and a compare. The expensive parts --
+       reading scene state, writing localStorage, touching the DOM -- run ONLY when a long frame
+       has already happened, which is by definition rare. Nothing periodic is added; the 2 s
+       recovery-net timer was removed from the walk for exactly that reason and is not reintroduced.
+
+       THE BACKGROUND GUARD IS LOAD-BEARING. rAF stops while the page is hidden, so the first frame
+       after returning from the app switcher or a lock screen shows a gap of seconds. Without the
+       guard, every app switch would log a fake multi-second freeze and the log would be worthless.
+       ========================================================================================== */
+    (function () {
+      var FREEZE_MS = 180;      // below this is a dropped frame or two, not something a human calls a freeze
+      var KEEP      = 24;       // ring-buffer depth; the panel shows the worst plus the last three
+      var WAKE_MS   = 1500;     // ignore frames this soon after the page becomes visible again
+      var GRACE_MS  = 3000;     // ... and this long after the map first becomes playable, or changes
+      var SAVE_MS   = 5000;     // minimum interval between localStorage writes -- see FEEDBACK LOOP
+      var HEAVY_MS  = 2000;     // how often the EXPENSIVE scene reads are sampled
+      var LF        = 'edu-rpg-lf2';   // v2: v1 predates the arming guard, so its ring is full of boot frames
+
+      var events = [], worst = null, total = 0, lastAt = 0, panel = null;
+      var armed = false, armedAt = 0, lastMap = null, justWoke = false;
+      var lastSave = 0, savePending = false;
+      // Events persist across a page load but `ev.t` is measured from THIS page's time origin, so
+      // without a session marker three lines reading t63s / t5s / t80s look like time travel. The
+      // marker is what says "a reload happened here" -- which matters, because a WebContent kill is
+      // itself one of the things being hunted.
+      var sess = Math.floor(Date.now() / 1000) % 1000;
+
+      /* ARMING. Booting is FULL of long frames -- the first measured run logged 6 events topping out
+         at 1614 ms before the hero had even moved, which is the loader doing its job, not the defect.
+         Left unarmed the log would fill with boot noise and bury the thing it exists to catch. So
+         recording starts only once the map is genuinely playable, using the SAME readiness test the
+         boot cover uses (mapArtReady, i.e. the baked relief has landed, plus WorldMapScene actually
+         active) and then waits out a grace period for the first-frame texture warm-up that
+         docs/TIMER-ATTRIBUTION.md measured as a one-time cost rather than a recurring one. The
+         grace is RE-ARMED on every map change, because a door, a town or a dungeon floor runs
+         WorldMapScene.create() again and that transition is expected to be slow. */
+      function playable() {
+        try {
+          var ui = window.__QOKUI, g = window.__PHASER_GAME__;
+          if (!(ui && ui.mapArtReady && ui.mapArtReady())) return false;
+          return !!(g && g.scene && g.scene.isActive && g.scene.isActive('WorldMapScene'));
+        } catch (e) { return false; }
+      }
+
+      try {
+        var prior = JSON.parse(localStorage.getItem(LF) || 'null');
+        if (prior && prior.events) { events = prior.events.slice(-KEEP); total = prior.total || events.length; worst = prior.worst || null; }
+      } catch (e) {}
+
+      /* THE WAKE GUARD IS A LATCH, NOT A WINDOW. rAF stops while the page is hidden, so the first
+         frame back shows a gap of however long the phone was away. A pure time window fails OPEN on
+         exactly the device this is built for: if a memory-pressured iPhone 13 takes longer than the
+         window to re-composite and re-decode, the guard passes and a ~600000 ms "freeze" is logged
+         and then PINNED as the worst-ever, which is the one number the owner reads out. So the first
+         frame after any visibility change is dropped unconditionally, and the time window is kept as
+         a second, independent belt. */
+      document.addEventListener('visibilitychange', function () {
+        if (!document.hidden) { justWoke = true; wokeAt = Date.now(); }
+      });
+      var wokeAt = Date.now();
+
+      // The cheap fields are safe to read every display tick. `tex` walks the whole texture list and
+      // `dq` stringifies an object, so they are sampled far more slowly -- see PERIODIC COST below.
+      var heavy = { tex: 0, dq: '' }, heavyAt = 0;
+      function ctx(now) {
+        var o = {};
+        try {
+          var g = window.__PHASER_GAME__;
+          var wm = g && g.scene && g.scene.getScene && g.scene.getScene('WorldMapScene');
+          if (wm) {
+            o.map = wm.currentMapId; o.x = wm.heroTileX; o.y = wm.heroTileY;
+            if (wm.currentFloor != null) o.fl = wm.currentFloor;
+            // "freezes while walking" is the whole symptom, so whether the hero was actually moving
+            // is the single most valuable bit on the line.
+            o.mv = !!wm.isMoving;
+          }
+          var ui = window.__QOKUI;
+          // Separates a genuine walking stall from a battle/menu/shop transition. Without it both
+          // render identically -- WorldMapScene keeps its map and tile coords while paused under a
+          // battle -- and an unadjudicable screenshot costs a round trip to his phone.
+          if (ui && ui.screen) o.screen = ui.screen();
+          if (now == null || now - heavyAt >= HEAVY_MS) {
+            heavyAt = now == null ? heavyAt : now;
+            var g2 = g;
+            // Texture count is the one memory-shaped number WebKit will actually give us --
+            // performance.memory is not exposed there. Same choice the recovery net makes.
+            if (g2 && g2.textures && g2.textures.list) heavy.tex = Object.keys(g2.textures.list).length;
+            var dq = window.__DQ_TILES__;
+            if (dq && dq.readyWhy) heavy.dq = JSON.stringify(dq.readyWhy()).replace(/["{}]/g, '').slice(0, 34);
+          }
+          o.tex = heavy.tex; o.dq = heavy.dq;
+        } catch (e) {}
+        return o;
+      }
+
+      /* FEEDBACK LOOP. save() serialises the ring and calls setItem SYNCHRONOUSLY, and it fires
+         immediately after a long frame -- i.e. when the system is already struggling. Its cost lands
+         inside the NEXT measured gap, so an unthrottled write can trip the next detection, which
+         writes again. Slow device storage is precisely the hypothesis the simulator could not
+         exonerate and the stated reason the recovery net's 640 B write was pulled from the walk, so
+         this must not be the one place it comes back. Writes are therefore rate-limited, with the
+         pending flush riding the display tick and pagehide. */
+      function save() {
+        try { localStorage.setItem(LF, JSON.stringify({ total: total, worst: worst, events: events })); } catch (e) {}
+        lastSave = Date.now(); savePending = false;
+      }
+
+      function line(ev) {
+        return ev.ms + 'ms' + (ev.gap != null ? ' +' + ev.gap + 's' : '') +
+               ' ' + (ev.screen && ev.screen !== 'world' ? ev.screen : (ev.map || '?')) +
+               (ev.fl != null ? ':' + ev.fl : '') +
+               (ev.x != null ? ' @' + ev.x + ',' + ev.y : '') +
+               (ev.mv ? ' mv' : '') + (ev.tex ? ' tx' + ev.tex : '') +
+               (ev.s != null ? ' s' + ev.s : '');
+      }
+
+      function ensurePanel() {
+        if (panel) return panel;
+        panel = document.createElement('div');
+        /* PLACEMENT AND POINTER-EVENTS, both learned the hard way on the simulator.
+           - top-left covered the HP panel (first build).
+           - bottom + 100px sat ON the analog stick. The stick is `bottom: inset + 76px`, 172 tall,
+             and `applyOrientation` moves it LEFT / centre / right, so at ctrl-left and ctrl-centre
+             the knob centre landed inside the panel. Clearing the stick's full height is the only
+             placement that is correct in all three orientations.
+           - pointer-events:none because the second build was tappable and, at ~250pt wide, swallowed
+             taps aimed at the game and toggled itself shut by accident. A diagnostic must never eat
+             the input of the thing it is diagnosing, and since the point is that it stays visible
+             for a screenshot, it has no reason to be interactive at all. */
+        panel.style.cssText = 'position:fixed;left:calc(env(safe-area-inset-left,0px) + 6px);' +
+          'bottom:calc(env(safe-area-inset-bottom,0px) + 256px);z-index:10001;max-width:70vw;' +
+          'pointer-events:none;padding:5px 8px;border-radius:4px;border:1px solid rgba(201,169,97,.45);' +
+          'background:rgba(16,17,22,.88);color:#c9a961;font-size:10px;line-height:1.5;' +
+          'letter-spacing:.2px;font-family:ui-monospace,Menlo,monospace;white-space:pre;';
+        (document.body || document.documentElement).appendChild(panel);
+        return panel;
+      }
+
+      var fpsCount = 0, fpsAt = 0, fps = 0, maxGap = 0, lastText = '';
+
+      function paint(now) {
+        var c = ctx(now);
+        // Re-arm the grace whenever the map changes: a door / town / dungeon-floor transition runs
+        // WorldMapScene.create() again and is expected to be slow.
+        if (c.map && c.map !== lastMap) { lastMap = c.map; armedAt = Date.now(); }
+        if (!armed) return;                       // nothing worth showing before the world exists
+        var p = ensurePanel();
+        // Name the SCREEN whenever it is not the world. WorldMapScene keeps its map id and tile
+        // coords while paused under a battle/menu/shop, so without this the header reads
+        // "overworld 118,290" during a battle and a screenshot taken mid-stall cannot be adjudicated.
+        var where = (c.screen && c.screen !== 'world') ? c.screen + ' / ' : '';
+        var txt = 'QOK' + sess + '  fps' + fps + '  max' + Math.round(maxGap) + 'ms' +
+              '\n' + where + (c.map || '?') + (c.fl != null ? ':' + c.fl : '') +
+              (c.x != null ? ' ' + c.x + ',' + c.y : '') + (c.mv ? ' mv' : '') + '  tx' + (c.tex || '?') +
+              (c.dq ? '\n' + c.dq : '') +
+              '\nfreezes ' + total + (worst ? '  worst ' + worst.ms + 'ms' : '');
+        var recent = events.slice(-3).reverse();
+        for (var i = 0; i < recent.length; i++) txt += '\n' + line(recent[i]);
+        if (txt !== lastText) { lastText = txt; p.textContent = txt; }
+      }
+
+      var prev = 0;
+      function frame(now) {
+        requestAnimationFrame(frame);
+        var gap = prev ? now - prev : 0;
+        prev = now;
+
+        // --- cheap per-frame bookkeeping: one compare and one increment, nothing else ---
+        fpsCount++;
+        if (gap > maxGap) maxGap = gap;
+        if (now - fpsAt >= 500) {
+          if (fpsAt) fps = Math.round(fpsCount * 1000 / (now - fpsAt));
+          fpsCount = 0; fpsAt = now;
+          paint(now);
+          maxGap = 0;                                   // max is per display window, not all-time
+          if (savePending && Date.now() - lastSave >= SAVE_MS) save();
+        }
+
+        if (!armed) { if (playable()) { armed = true; armedAt = Date.now(); } return; }
+        if (justWoke) { justWoke = false; return; }     // see WAKE GUARD -- latch, unconditional
+        if (Date.now() - armedAt < GRACE_MS) return;
+        if (gap < FREEZE_MS) return;
+        if (document.hidden || Date.now() - wokeAt < WAKE_MS) return;
+        var nowMs = Date.now();
+        var ev = ctx(null);
+        ev.ms = Math.round(gap);
+        ev.t = Math.round(now / 1000);
+        ev.s = sess;
+        if (lastAt) ev.gap = Math.round((nowMs - lastAt) / 1000);        // seconds since the previous freeze -- the periodicity
+        lastAt = nowMs;
+        total++;
+        events.push(ev);
+        if (events.length > KEEP) events.shift();
+        if (!worst || ev.ms > worst.ms) worst = ev;
+        if (nowMs - lastSave >= SAVE_MS) save(); else savePending = true;   // see FEEDBACK LOOP
+        lastText = '';                                   // force the next tick to repaint
+      }
+      requestAnimationFrame(frame);
+
+      window.addEventListener('pagehide', function () { save(); });
+
+      window.__QOKLF__ = {
+        all:   function () { return JSON.parse(JSON.stringify({ total: total, worst: worst, events: events })); },
+        // Clearing the log is a decision, not a step -- nothing calls this automatically.
+        reset: function () { events = []; worst = null; total = 0; lastAt = 0; save(); lastText = ''; }
+      };
+    })();
   </script>
 </body>
 </html>

@@ -115,8 +115,49 @@ export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '
 // only on the scene edges the resume snapshot already uses, errors write immediately because they
 // are rare, and there is no timer in the module. The "no error recorded" class is a real finding,
 // not a fallback. Reviewed as a diff to index.html; this line is the sign-off.
+//
+// 2026-08-11: 533f125a... -> f42b8d92..., 81844 B -> 95499 B. THE LIVE DIAGNOSTIC PANEL,
+// because the owner's phone is the only instrument that has ever seen the periodic overworld freeze.
+// A full profiling investigation (docs/TIMER-ATTRIBUTION.md) eliminated every candidate measurable
+// here -- the four permanent timers cost ~285 ms across 60 s of walking, the minimap render
+// 0.04-0.10 ms a draw, fresh-chunk image decode is a ONE-TIME warm-up rather than a per-chunk tax,
+// and ZERO of ~3,598 sampled frames exceeded 33 ms. It does not reproduce in Chrome on an M-series
+// Mac and has never reproduced on a simulator.
+//
+// Built to the owner's own instruction: "build in a persistent screen display of what is happening
+// in the background while i move around ... i can take a screen shot and share that with you". A
+// bottom-left panel shows, live: fps, the worst frame of the last 500 ms, map id (+floor), hero
+// tile, whether the hero is MOVING, texture count, the chunk/bake state from readyWhy(), and the
+// last three long frames WITH THE SECONDS BETWEEN THEM, each naming its SCREEN -- that gap field is the point, since it is
+// what turns "it freezes sometimes" into a measurable period. One screenshot carries the story.
+//
+// IT ADDS PERIODIC WORK, AND SAYING OTHERWISE WOULD BE THE BUG. An earlier draft of this sign-off
+// claimed "no periodic work is added"; that was FALSE and an adversarial review caught it. The truth:
+// a 2 Hz display tick reads cheap scene state and writes textContent only when the text changed, and
+// the expensive reads (Object.keys over the whole texture list, readyWhy + JSON.stringify) are
+// sampled at 0.5 Hz. The per-frame path is one compare and one increment. That is small, and it is
+// still 4x the cadence of the 2 s timer deliberately removed from the walk, and it is UNMEASURED on
+// the iPhone 13. So: if freezes persist on this build, THIS PANEL IS ITSELF A SUSPECT and must not be
+// excluded by a future reader. localStorage writes are rate-limited to one per 5 s because an
+// unthrottled write fires right after a long frame, lands inside the next measured gap, and can trip
+// the next detection -- slow device storage being the one hypothesis the simulator could not clear.
+//
+// Guards, every one of them learned from a defect in an earlier draft of this same module. ARMING:
+// recording starts only once the map is playable (mapArtReady + WorldMapScene active, the boot
+// cover's own test) plus a 3 s grace, RE-ARMED on every map change -- the first run logged 6 events
+// topping out at 1614 ms before the hero had moved, which was the loader, and door/town/floor
+// transitions run create() again and are expected to be slow. WAKE: the first frame after any
+// visibility change is dropped UNCONDITIONALLY, not merely within a time window -- rAF stops while
+// hidden, and a window fails open on exactly the memory-pressured device this is built for, pinning
+// a bogus ~600000 ms as the worst-ever number the owner reads out. PLACEMENT: bottom + 256px clears
+// the analog stick's full 172 px height, because `applyOrientation` moves that stick LEFT, centre or
+// right and at ctrl-left the knob centre sat inside an earlier placement. POINTER-EVENTS:NONE
+// because that draft was tappable and at ~250pt wide swallowed taps aimed at the game -- a
+// diagnostic must never eat the input of the thing it is diagnosing. Events carry a SESSION marker
+// so a reload is visible in the log rather than reading as time travel.
+// Reviewed as a diff to index.html by a fresh adversarial agent; this line is the sign-off.
 export const EXPECTED_STATIC_INDEX_SHA =
-  '533f125af433a4211b96ff1357f67330386d485bded25836635164f617f5201a';
+  'f42b8d927b454e8d61795cd0a7833d109b8f0d10f5e37002ff50ad4ec4f90e03';
 
 /**
  * The authored shell loads its scripts by ABSOLUTE path so the Vite dev server resolves them;
