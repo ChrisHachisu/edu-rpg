@@ -88,10 +88,16 @@ surface authoritative. It is superseded.
   permanently disarmed because it asks the latch, not the field. Clear colour is `#111111`, so an
   active-but-invisible scene is exactly a black play area with the HUD still on top. Fix proposed,
   NOT applied — see that investigation's three device questions below.
-- **Latent:** the demonKing victory path (bundle 82938) never resumes WorldMapScene at all.
-- **One artless walkable tile** at (119,331). Trivial.
-- **`LOCKED-ART-STYLE.md`** — owner has not ruled whether it still binds. Its `no visible seams/joins`
-  clause is breached regardless. Its frontmatter names a DIFFERENT repo.
+- ~~**Latent:** the demonKing victory path never resumes WorldMapScene.~~ **CLOSED** — real but
+  unreachable; VictoryScene's only four exits are all `scene.start("TitleScene")`, which restarts
+  WorldMapScene and fires `a1vShow`. See `docs/GROUND-TRUTH.md`.
+- ~~**One artless walkable tile** at (119,331).~~ **CLOSED, the claim was false** — that tile is
+  opaque baked grass, and all 9,376 walkable tiles pass a direct test against the base WebP.
+  Coverage is 100%.
+- **`LOCKED-ART-STYLE.md`** — owner has not ruled whether it still binds; put to him 2026-08-11.
+  Its frontmatter names a DIFFERENT repo. ~~Its `no visible seams/joins` clause is breached
+  regardless.~~ **Not supported**: across all 49 chunk joins the difference is 15.14 against 14.27
+  within a chunk, i.e. indistinguishable from texture.
 - **Dungeon + Port Sapphire polish/lock** — owner chose "polish to final, then lock"; he wants to
   play them first. Nothing started.
 - **The `.sel` always-highlighted state** on six screens — still his call.

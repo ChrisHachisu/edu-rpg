@@ -50,6 +50,18 @@ alarming. ask me if the records are unclear."* **Ask. Do not infer.**
 | Is the r26 bake in `public/act1-hifi/chunks/` the settled overworld art? | **"likely"** — he cannot be certain because the boundaries were adjusted repeatedly. NOT a confirmation; treat as probable, not authoritative. |
 | Is `LOCKED-ART-STYLE.md` (2026-07-20) still binding? | **Undecided** — he wants to see it before ruling, and expects it is out of date given the regressions. |
 
+> [!warning] ~~"`LOCKED-ART-STYLE.md`'s `no visible seams/joins` clause is breached regardless."~~
+> **Not supported by the bake.** Measured across all 49 internal chunk joins: mean |diff| ACROSS a
+> join **15.14**, against **14.27** for two neighbouring pixels WITHIN a chunk. A join is
+> statistically indistinguishable from ordinary texture variation. The only seam anyone has seen is
+> the procedural/baked "crease", which was a runtime defect and is fixed.
+
+> [!warning] ~~"Latent: the demonKing victory path never resumes WorldMapScene at all."~~ **Real, and
+> harmless.** The bundle does `scene.stop(), scene.start("VictoryScene")` (offset 4840576) and never
+> resumes WorldMapScene — but VictoryScene's ONLY four exits are all `scene.start("TitleScene")`, and
+> TitleScene starts WorldMapScene, which emits `start` and fires `a1vShow`. There is no reachable
+> path where the player is left looking at an invisible overworld. Nothing to fix.
+
 **The binding one: THE PROCEDURAL SURFACE IS NEVER THE PLAYER-VISIBLE TERRAIN.** Any behaviour where
 a player walks on procedurally-splatted ground is a BUG, not a design tier. **Implemented 2026-08-11**
 (`public/dq-tiles.js`, `a1aPlateOwns`): on the Act 1 plate the splat is neither computed nor shown,
@@ -90,7 +102,14 @@ act 5 so we don't need to worry that much about it now."* The camera can see pas
 8 of 9,376 walkable tiles, all northern; flat sea covers them until Act 5 exists.
 
 **COVERAGE — MEASURED 2026-08-11, and it makes the directive achievable.** The baked plate covers
-**9,375 of 9,376 walkable tiles (99.99%)**. Exactly ONE tile, **(119,331)**, has no art beneath it.
+**9,376 of 9,376 walkable tiles — 100%**.
+
+> [!warning] ~~"Exactly ONE tile, (119,331), has no art beneath it."~~ **False, re-measured the same
+> day.** That tile is fully opaque baked grass, mean rgb (105,119,34), in chunk `c3-r3` at pixel
+> (336,816). Re-run properly — every one of the 9,376 walkable tiles tested against the actual base
+> WebP for a transparent or all-black 48x48 block — **zero fail**. There is no artless tile and no
+> re-bake is owed. The earlier figure came from asking the RUNTIME (`a1aArtAt`), which answers
+> "is that chunk decoded right now", not "does the bake cover it".
 The owner's own reported positions (112,231 and 113,234), where his device drew procedural terrain,
 both **HAVE ART**. So the splat is not filling a coverage hole — it is painting over art that is
 present and correct, which makes this a pure RUNTIME defect and makes "locked art only" cost one
