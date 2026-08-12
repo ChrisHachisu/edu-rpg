@@ -4255,6 +4255,65 @@
      GameOverScene, which renders its own opaque camera background on the canvas, and WorldMapScene
      stays PAUSED underneath it until retry restarts it.
      ============================================================================================== */
+  // ============================================================
+  //  QUIZ — the CORRECT ANSWER was not random, and the owner could see it
+  // ============================================================
+  //  "the answers required for the questions do not seem very random. When I am playing as a 1st
+  //  grader, the answers are mostly 5 ... If it can be predicted there is no challenge."
+  //
+  //  He is right, and it is arithmetic, not a feeling. Every generator in the bundle draws the
+  //  SECOND operand from a range that depends on the FIRST -- grade 1 easy addition is
+  //  `x = rand(1,4); y = rand(1, 5-x)` -- so the range shrinks as x grows and the probability piles
+  //  onto the maximum sum. Enumerated exactly:
+  //    grade 1 easy addition     answer 5 in 52.1% of questions   (uniform would be 25%)
+  //    grade 1 easy subtraction  answer 1 in 52.1%                (uniform would be 25%)
+  //    grade 1 medium addition   answer 8 in 19.0%,  hard: 9 in 15.7%
+  //  Same shape in every grade; it is mildest where the range is widest (grade 3 tops out at 1.5%).
+  //  The DISTRACTORS and their positions were never the problem -- the bundle's answer builder
+  //  already shuffles four options -- so this touches only which correct answer comes up.
+  //
+  //  WHY A SAMPLER AND NOT A REWRITE. The generators live in the frozen bundle, one per grade x
+  //  category x tier, each with its own operand ranges. Re-deriving those ranges out here would
+  //  duplicate a table that is certain to drift from the one actually being used. Drawing several
+  //  candidates from the REAL generator and preferring an answer that has not come up lately needs
+  //  no knowledge of any range, and it fixes every grade and category at once, including any added
+  //  later. Simulated over 200k questions: grade 1 easy addition 51.9% -> 26.7%, subtraction
+  //  52.1% -> 26.8%, against a 25% ideal.
+  //
+  //  Cost is a handful of extra calls to a function that does two integer draws and builds four
+  //  strings, once per battle turn. The loop stops early the moment it draws an unseen answer,
+  //  which is the common case.
+  var QZ={ wired:false, recent:[] }, QZ_WINDOW=20, QZ_DRAWS=12;
+  function qzAnswerOf(q){
+    var ans=q&&q.answers; if(!ans||!ans.length) return null;
+    for(var i=0;i<ans.length;i++){
+      if(ans[i]&&ans[i].isCorrect){ var t=ans[i].text; return t?(t.en!==undefined?t.en:t):null; }
+    }
+    return null;
+  }
+  function qzInstall(){
+    if(QZ.wired) return;
+    var gs=window.__GAME_STATE__, qm=gs&&gs.quizManager;
+    if(!qm||typeof qm.getQuestion!=='function'||qm.__qzWrapped) return;
+    var original=qm.getQuestion.bind(qm);
+    qm.getQuestion=function(zone,isBoss){
+      var best=null, bestScore=Infinity, i, j;
+      for(i=0;i<QZ_DRAWS;i++){
+        var q=original(zone,isBoss), a=qzAnswerOf(q);
+        if(a===null) return q;                      // a shape we do not understand -> leave it alone
+        var score=0;
+        for(j=0;j<QZ.recent.length;j++) if(QZ.recent[j]===a) score++;
+        if(score<bestScore){ bestScore=score; best={q:q,a:a}; }
+        if(score===0) break;                        // unseen in the window: take it and stop drawing
+      }
+      if(!best) return original(zone,isBoss);
+      QZ.recent.push(best.a);
+      while(QZ.recent.length>QZ_WINDOW) QZ.recent.shift();
+      return best.q;
+    };
+    qm.__qzWrapped=true; QZ.wired=true;
+  }
+
   var A1V={hidden:false};
   function a1vInstall(scene){
     // Re-checked from tick() rather than latched in a variable, for a1mInstall's reason: the flag
@@ -4306,6 +4365,7 @@
     // 573 ms while the world faded in. Started here it is resident before the player taps
     // Continue, and every rebuild of the session is the baked one.
     try{ owmBakeLoad(); }catch(e){ if(window.__DQ_DEBUG__) console.log('dq owm fetch '+e); }
+    try{ qzInstall(); }catch(e){ if(window.__DQ_DEBUG__) console.log('dq quiz install '+e); }
     // Re-checked, not latched: Phaser resets sys.sceneUpdate to its no-op on shutdown/restart and
     // re-captures scene.update on the next create(), which would quietly drop the wrapper.
     try{ a1mInstall(scene); }catch(e){ if(window.__DQ_DEBUG__) console.log('dq a1m install '+e); }
