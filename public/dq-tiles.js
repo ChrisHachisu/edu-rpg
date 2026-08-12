@@ -1405,6 +1405,58 @@
   function a1aDropAllGpu(){ var ids={}; Object.keys(A1A.tex).concat(Object.keys(A1A.imgs)).forEach(function(k){
       var p=k.split('_'); ids[k.slice(p[0].length+p[1].length+2)]=1; });
     Object.keys(ids).forEach(a1aDropChunkGpu); }
+  // ONE layer, every chunk. The decoded source images and the canopy composites are KEPT, so this
+  // frees GPU residency without costing a re-fetch, a re-decode or a re-composite -- coming back is
+  // addImage from a bitmap we still hold. See the battle branch in tick() for why.
+  function a1aDropLayerGpu(layer){
+    var sc=A1A.spriteScene, pre='a1a_'+layer+'_';
+    Object.keys(A1A.tex).forEach(function(key){
+      if(key.indexOf(pre)!==0) return;
+      var im=A1A.imgs[key];
+      if(im){ try{ im.destroy(); }catch(e){} delete A1A.imgs[key]; }
+      if(sc&&sc.textures&&sc.textures.exists(key)){ try{ sc.textures.remove(key); }catch(e){} }
+      delete A1A.tex[key];
+    });
+  }
+  // ============================================================
+  //  THE GPU CONTEXT CAME BACK AND OUR BOOKKEEPING DID NOT KNOW
+  // ============================================================
+  //  Owner, device, build 17: "After exiting a battle, the overworld got stuck on a blue screen and
+  //  stays that way. Getting in and out of battles or towns did not change it." His black-box panel
+  //  names the cause outright -- `gl lost at 1471218ms, restored=1`, `scenes BattleScene`. The
+  //  WebGL context was lost during an encounter and restored, but every texture we had uploaded
+  //  died with it while `A1A.tex[key]` still said 1. a1aTexHave therefore kept answering "already on
+  //  the GPU", a1aPlaceSprites kept placing sprites on dead textures, and nothing ever rebuilt --
+  //  so what the player saw was the flat sea backdrop, for good. The blue IS the sea; before the
+  //  locked-art change the same failure would have shown as black.
+  //
+  //  Recovery has to throw away the bookkeeping, not the sources: the decoded chunk images and the
+  //  canopy composites are ordinary JS objects and survived the context loss untouched. Clearing
+  //  rec.bm as well is deliberate -- a composite handed over with transferToImageBitmap can have
+  //  been consumed, and re-making one is far cheaper than a permanently blank layer.
+  function a1aGpuInvalidate(){
+    A1A.tex={};
+    Object.keys(A1A.imgs).forEach(function(k){ var im=A1A.imgs[k]; if(im){ try{ im.destroy(); }catch(e){} } });
+    A1A.imgs={}; A1A.texQ=[]; A1A.texQd={}; A1A.bmPend={};
+    Object.keys(A1A.chunks).forEach(function(id){ var rec=A1A.chunks[id]; if(rec) rec.bm={}; });
+    if(terrainState) terrainState.lastWin='';
+    if(overlayState) overlayState.lastKey='';
+    A1A.dirty=true; A1A.drew=false;
+  }
+  // Armed on the canvas as soon as one exists, with the same bounded rAF loop index.html's black box
+  // uses for its own listener. Passive: no preventDefault, so Phaser's handling is unchanged.
+  (function a1aArmGpuWatch(deadline){
+    if(!deadline) deadline=Date.now()+60000;
+    var c=(typeof document!=='undefined')&&document.querySelector('canvas');
+    if(c){
+      c.addEventListener('webglcontextrestored',function(){
+        try{ a1aGpuInvalidate(); }catch(e){ if(window.__DQ_DEBUG__) console.log('dq gpu restore '+e); }
+      },false);
+      return;
+    }
+    if(Date.now()>deadline) return;
+    if(typeof requestAnimationFrame==='function') requestAnimationFrame(function(){ a1aArmGpuWatch(deadline); });
+  })();
   // WHY THE TEXTURES ARE BUILT AHEAD OF THE STEP, NOT AT IT.
   //
   // Phaser's TextureSource uploads to the GPU inside addImage/addCanvas, not lazily at first
@@ -4400,6 +4452,21 @@
       // BattleScene rather than to "inactive" so a menu or a shop -- which this file has not
       // measured -- keeps behaving exactly as it ships today.
       try{ if(g.scene.isActive('BattleScene')) a1vHide(g); }catch(e){ if(window.__DQ_DEBUG__) console.log('dq a1v hide '+e); }
+      // AND FREE THE LAYERS A BATTLE CANNOT SEE. The owner's device loses the GPU context ~half a
+      // second into an encounter -- `gl lost at 22270ms, restored=0`, `in battle 550ms`,
+      // `scenes BattleScene` -- and the recovery net then reloads the page, which is his "battle
+      // encounters tried to send the player to the intro screen". a1aReleaseChunks above already
+      // trims the cache to the departure window, but that window is still ~9 chunks, and each chunk
+      // holds base + water + canopy at 1536x1536 RGBA.
+      //
+      // Canopy and water are the treeline and the glint: both are drawn ABOVE the terrain, both are
+      // invisible under a full-screen battle overlay, and both come back from objects we still hold
+      // -- the decoded water image and the canopy composite bitmap -- so returning is an addImage,
+      // not a re-decode or a re-composite. BASE is deliberately kept: dropping it would leave the
+      // player looking at flat sea on the way out of every battle, which is the very symptom item 8
+      // reported. This attacks the encounter PEAK, which is where the context actually dies.
+      try{ a1aDropLayerGpu('canopy'); a1aDropLayerGpu('water'); }
+      catch(e){ if(window.__DQ_DEBUG__) console.log('dq battle layer drop '+e); }
       return;
     }
     // Safety net only, and it should never fire. RESUME and START restore visibility on the same
