@@ -207,8 +207,16 @@ export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '
 // visible JS objects. A blue screen with GLLOST and one without are different faults, and the panel
 // could not previously tell the owner which he was photographing. One boolean read on the existing
 // tick; no new timer, no new storage write.
+// 2026-08-13, third sign-off: the live panel steps aside for the black-box card, and the card's
+// detail block grows from 132px to 44vh. Owner, verbatim: "you also need to move the debugging text
+// box so the restart debug text box can show the full text." Both overlays sat at z-index 10001 in
+// the lower half of a 360pt screen, so the panel covered the card's opening lines -- including the
+// classifier verdict, the most useful line either prints. The panel now moves to the top while the
+// card is up and drops below it in z-order, rather than hiding: the card is the post-mortem of the
+// session that died and the panel is the live state of its replacement, and one photograph of both
+// is worth more than either alone. Presentation only; no counter, timer or storage write changes.
 export const EXPECTED_STATIC_INDEX_SHA =
-  '63479acbce62ec22b7f55104047768a569c3578033dcfd1a1dc6132a052b30d2';
+  'e35bb24b83146a61cdee075e39a465535350fef545639a86302071a2cf34f80d';
 
 /**
  * The authored shell loads its scripts by ABSOLUTE path so the Vite dev server resolves them;

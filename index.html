@@ -1037,7 +1037,9 @@
         if (tail) det.push('trail ' + tail);
         if (det.length) {
           add(det.join('\n'), 'white-space:pre-wrap;word-break:break-word;color:rgba(232,226,212,.62);' +
-            'font-size:10.5px;line-height:1.45;max-height:132px;overflow:auto;' +
+            // 132px cut the detail off mid-line on a phone and the block scrolls, so the truncated
+            // half was invisible in a screenshot -- which is the only way this text ever reaches me.
+            'font-size:10.5px;line-height:1.45;max-height:44vh;overflow:auto;' +
             'border-top:1px solid rgba(201,169,97,.22);padding-top:8px;');
         }
         var b = document.createElement('button');
@@ -1577,7 +1579,32 @@
         var recent = events.slice(-3).reverse();
         for (var i = 0; i < recent.length; i++) txt += '\n' + line(recent[i]);
         if (txt !== lastText) { lastText = txt; p.textContent = txt; }
+
+        /* GET OUT OF THE BLACK BOX'S WAY. Both overlays sat at z-index 10001 and both occupied the
+           lower half, so on the owner's 360pt screen this panel covered the recovery card's first
+           lines -- including the classifier verdict, which is the single most useful line either of
+           them prints ("page was killed outright"). He reported it as: "you also need to move the
+           debugging text box so the restart debug text box can show the full text."
+
+           While the card is up this panel moves to the TOP of the screen instead of being hidden,
+           because the two are complementary: the card is the post-mortem of the session that DIED
+           and this panel is the live state of the one that replaced it, and a photograph of both
+           together is worth more than either. It also drops below the card in z-order, so any
+           future overlap resolves in the card's favour rather than this one's. */
+        var bb = document.querySelector('[data-qok-blackbox-panel]');
+        if (bb && !panelHigh) {
+          panelHigh = true;
+          p.style.bottom = 'auto';
+          p.style.top = 'calc(env(safe-area-inset-top, 0px) + 6px)';
+          p.style.zIndex = '10000';
+        } else if (!bb && panelHigh) {
+          panelHigh = false;
+          p.style.top = 'auto';
+          p.style.bottom = 'calc(env(safe-area-inset-bottom, 0px) + 256px)';
+          p.style.zIndex = '10001';
+        }
       }
+      var panelHigh = false;
 
       var prev = 0;
       function frame(now) {
