@@ -1017,12 +1017,26 @@
   // disk, because they are almost entirely transparent. On-disk size says nothing about what a chunk
   // costs once it is decoded, which is how the old figure came to look safe.
   //
-  // The cap STAYS at 10, and lowering it is not the lever it looks like. Nine is the measured
-  // worst-case window intersection, so 9 leaves zero headroom and reintroduces the evict-refetch
-  // loop described above; the honest reading is that the overworld's floor is ~440 MB whatever this
-  // number says, and what would actually move it is the PER-CHUNK cost. One reduction was tried and
-  // rejected on measurement -- see a1aFreeComposite for why the composite is not free to free.
-  var A1A_MAX_CHUNKS=10;
+  // ~~"The cap STAYS at 10, and lowering it is not the lever it looks like."~~ **That was written
+  // earlier the same day and the ring change below made it FALSE.** It was true while the prefetch
+  // ring padded by MARGIN: the trim floor is `Math.max(A1A_MAX_CHUNKS, keep.length)` and `keep` is
+  // the RING, so a 9-chunk ring held the floor at 9 no matter what this number said. With
+  // A1A_RING_MARGIN=0 the ring IS the window -- 4 chunks on the owner's phone, 6 at the measured
+  // worst case -- so the floor is now `max(10, 4..6)` = **10, and this number is what binds.** The
+  // cache was still free to grow to ten chunks while walking; shrinking the ring alone did not stop
+  // that. Struck here rather than in a new note, per docs/GROUND-TRUTH.md.
+  //
+  // SET TO THE MEASURED WORST-CASE WINDOW. 6 is the peak intersection over 192 window steps swept
+  // across the plate (mean 3.58). It cannot evict a chunk that is being drawn, and not by luck: the
+  // ring is touched FIRST and the drawn chunks LAST, so the LRU's old end is always the speculative
+  // and departed ones, and the `max(cap, keep.length)` floor raises the cap on any device whose
+  // window genuinely needs more (iPad mini 8.3 portrait reaches 12). Worst case ~296 MB instead of
+  // ~493 MB.
+  //
+  // If BACK-TRACKING starts to churn -- walk east, turn around, and the chunk behind you has to come
+  // back -- this is the dial: 7 or 8 buys a window of hysteresis at ~49 MB a slot. Door round trips
+  // are already covered separately by a1aReleaseChunks keeping A1A.win.
+  var A1A_MAX_CHUNKS=6;
   // Leaving the overworld TRIMS the chunk cache down to the one window the hero is standing in, and
   // drops everything else. It used to drop ALL of it, and that was the whole of SMOOTH-5.
   //

@@ -163,6 +163,32 @@ tile rather than a re-bake.
 > **width 0**, a corpse any later re-upload draws as nothing — the blank layer the watchdog exists to
 > prevent. Recorded in `a1aFreeComposite` so it is not attempted again.
 
+> [!danger] THE BLUE SCREEN IS SYSTEM-WIDE MEMORY PRESSURE — the owner's own instrument said so.
+> Build 23, 2026-08-14: *"the moment the game went blue the video paused automatically"* — a YouTube
+> video playing in ANOTHER app. iOS does not pause background media for one tab's bookkeeping; it
+> does it when the SYSTEM is reclaiming. Together with his black box (`gl lost at 443205ms,
+> restored=1`, then "page was killed outright") this settles what three rounds of code-reading could
+> not: **the blue screen is the GPU context being taken away under memory pressure, and the reload is
+> the same pressure taking the whole process.** Every remaining fix on this symptom is a MEMORY fix.
+> Bookkeeping, watchdogs and redraw paths are done; they were real bugs and none of them was this.
+
+> [!warning] ~~"the prefetch ring was ~150 MB of peak residency"~~ **The ring change ALONE cut peak
+> residency by ZERO, and I shipped it as build 22 believing otherwise.** Simulating the REAL trim
+> rule over 192 window steps across the plate:
+>
+> | | peak resident | |
+> |---|---|---|
+> | cap 10, ring margin 12 | 10 chunks | ~493 MB |
+> | cap 10, ring margin 0 (build 22) | **10 chunks** | **~493 MB** |
+> | cap 6, ring margin 0 (build 24) | 6 chunks | ~296 MB |
+>
+> The trim floor is `Math.max(A1A_MAX_CHUNKS, keep.length)`. While the ring was wide, `keep` (the
+> ring) held the floor at 9 and the cap was inert — which is what the earlier note correctly said.
+> Shrinking the ring simply handed the binding role BACK to the cap, which was still 10, so the LRU
+> went on filling to ten while walking. **The measurement that fooled me was taken at ONE seeded
+> position before the cache had filled**: it showed 9→6 resident, which was true and irrelevant.
+> A static reading of a cache that fills over time is not a measurement of its peak.
+
 ## Claims that were WRONG and are now retired
 
 Recorded so they cannot come back. Each was believed and acted on.
