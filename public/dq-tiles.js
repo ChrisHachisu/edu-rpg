@@ -1240,11 +1240,53 @@
   // into a town dropped exactly the chunks the walk back out stepped into a second later, so the
   // retention round 1 added was itself feeding the splat: the c2 column was requested at parse
   // time, evicted at the door, and re-requested 12 cells into the walk. Measured re-request, gone.
+  // ============================================================
+  //  THE RING IS THE RESIDENCY, AND IT WAS NEVER FREE
+  // ============================================================
+  //  ~~"A RING OF ONE MARGIN IS FREE. The window already straddles up to 9 chunks."~~ **Measured
+  //  2026-08-13 and it is the padding that makes 9, not the window.** In the shipped runtime, seeded
+  //  on the overworld: the window TOUCHES 6 chunks and 9 are resident. On the owner's iPhone 13 the
+  //  panel reads `spr 4/4` -- his window touches FOUR -- while the same ring pins nine. At the
+  //  measured ~49.3 MB a chunk (see A1A_MAX_CHUNKS) that is ~250 MB of speculation on the device
+  //  that is being killed for its footprint, and his black box records exactly that ending:
+  //  `gl lost at 443205ms, restored=1`, then the page killed outright.
+  //
+  //  WHY IT IS SAFE TO SHRINK, AND WHY THE OLD REASONING MISSED IT. `keep` in a1aRects is the RING,
+  //  not the window, so the ring is what sets the trim floor -- lowering A1A_MAX_CHUNKS while the
+  //  ring stays wide does nothing at all. And the lookahead the ring was added for is ALREADY paid
+  //  for by the window itself: updateTerrain builds `winW = ceil(camera/TILE) + 2*MARGIN`, so the
+  //  window carries 12 cells of off-screen border on each side before the ring adds a second 12.
+  //  The window steps in MARGIN-cell units, so one step lands well inside a border the window
+  //  already holds. The ring was padding a pad.
+  //
+  //  WHAT THE RING ACTUALLY BOUGHT, swept over the real chunk geometry across the whole plate on the
+  //  12-cell window grid (192 window steps, iPhone 13's 33x39 window):
+  //
+  //                              chunks pinned          est. MB      steps that start a new load
+  //      ring margin 12       mean 5.96, peak 9      mean 294, peak 444        48/192 = 25%
+  //      ring margin 0        mean 3.58, peak 6      mean 176, peak 296        48/192 = 25%
+  //
+  //  **The stall rate is IDENTICAL.** The ring never reduced how OFTEN new loading is triggered --
+  //  it cannot, because each chunk along a path is first touched exactly once either way. What it
+  //  buys is starting that load one window-step (12 cells) EARLIER, so the decode overlaps the walk.
+  //  It charges ~150 MB of peak residency for that head start, on a device whose black box reads
+  //  `gl lost at 443205ms, restored=1` and then "page was killed outright". That is the wrong trade
+  //  for this device, and the owner's stated priority is crashes before smoothness.
+  //
+  //  HONEST COST: entering genuinely new territory can now pop a chunk in slightly later than
+  //  before, because the fetch starts when the window reaches it rather than a step ahead. If that
+  //  becomes visible, this constant is the dial -- raising it back to 12 restores the old behaviour
+  //  exactly, at the old price.
+  //
+  //  Kept as its own constant rather than folded into MARGIN because MARGIN is load-bearing for the
+  //  terrain window AND the collision window, and the collision window's coverage rule is the freeze
+  //  that took three rounds to find (78d9ba6). This number must be tunable without going near it.
+  var A1A_RING_MARGIN=0;
   function a1aRingChunks(X0,Y0,winW,winH){
     var m=A1A.manifest; if(!m) return [];
     var B=m.semanticBounds, S=A1A.S, ox=B[0]*TILE, oy=B[1]*TILE, hit=[];
-    var wx0=Math.max(0,X0-MARGIN)*TILE, wy0=Math.max(0,Y0-MARGIN)*TILE;
-    var wx1=(X0+winW+MARGIN)*TILE, wy1=(Y0+winH+MARGIN)*TILE;
+    var wx0=Math.max(0,X0-A1A_RING_MARGIN)*TILE, wy0=Math.max(0,Y0-A1A_RING_MARGIN)*TILE;
+    var wx1=(X0+winW+A1A_RING_MARGIN)*TILE, wy1=(Y0+winH+A1A_RING_MARGIN)*TILE;
     for(var i=0;i<m.chunks.length;i++){ var c=m.chunks[i];
       var cx0=ox+c.x*S, cy0=oy+c.y*S, cx1=cx0+c.width*S, cy1=cy0+c.height*S;
       if(Math.min(wx1,cx1)<=Math.max(wx0,cx0)||Math.min(wy1,cy1)<=Math.max(wy0,cy0)) continue;
