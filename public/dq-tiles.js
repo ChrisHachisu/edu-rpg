@@ -1513,8 +1513,50 @@
   //  records too, which is the right answer for the other failure this net covers (a chunk whose
   //  load failed and is never asked for again) and is worth its cost only once the cheap
   //  explanation is out.
-  var A1AW={ shortSince:0, lastFix:0, fixes:0, deep:0, shallowFailed:false };
+  //
+  //  ============================================================
+  //  IT WAS BLIND TO THE FAILURE IT WAS BUILT FOR, AND IT ATTACKED THE ONE IT WASN'T
+  //  ============================================================
+  //  Both halves measured in the shipped runtime 2026-08-13, after the owner reported build 20 as
+  //  *"still getting the blue screen. reload happens as well. interestingly when the reload happens
+  //  the blue screen resolves"*. That last clause is what cracked it: a reload resets THIS state.
+  //
+  //  BLIND HALF. Take a healthy overworld (`spr 6/6`), lose the GL context for real
+  //  (`WEBGL_lose_context.loseContext()`, `gl.isContextLost() === true`), pump 600 frames -- ten
+  //  seconds of game time, far past the 1500 ms grace. The watchdog still reads **6/6 and never
+  //  fires**, over a dead canvas. Of course it does: a lost context destroys the GPU objects, but
+  //  `A1A.tex[key]` is OUR bookkeeping and still says 1, and the sprite is still a live JS object
+  //  with `.visible === true`. Every dead texture counts as live. **The one failure this net was
+  //  written for is the one it cannot see.**
+  //
+  //  HARMFUL HALF. What it DOES fire on is a drain that has not finished yet -- and its remedy
+  //  destroys every sprite and every texture, which makes an unfinished drain slower, which drops
+  //  `live` further, which fires it again. Measured, same session, on a frame-starved renderer:
+  //  `live` fell 4/6 -> 2/6 while `fix` climbed to the cap of 8, and **`COST.tex` rose 14 -> 34
+  //  across those same heals**. Twenty textures were being built successfully while this function
+  //  was declaring the renderer broken and throwing them away. Then it hit A1AW_MAX and gave up,
+  //  leaving a permanent blue screen -- which is exactly what a reload cures, by resetting `fixes`
+  //  to 0 and letting the drain run from clean.
+  //
+  //  So: PROGRESS IS THE VETO. If the renderer built a texture since the last look, it is working
+  //  and does not need help, however far behind it is. That single test would have prevented every
+  //  one of the eight heals above. And a lost context is now READ from the GL context itself rather
+  //  than inferred from bookkeeping that cannot know -- healing is pointless while it is lost (there
+  //  is nothing to upload to), and the restore event is what drives recovery. That path is proven:
+  //  a real loseContext/restoreContext cycle fires our handler, drops `live` to 1, and rebuilds to
+  //  6/6 without the watchdog firing at all.
+  var A1AW={ shortSince:0, lastFix:0, fixes:0, deep:0, shallowFailed:false, lastTex:-1, glLost:false };
   var A1AW_GRACE=1500, A1AW_COOLDOWN=5000, A1AW_MAX=8;
+  // Authoritative, not inferred. Cheap: the context object is cached by the browser, and this reads
+  // one boolean. Returns false when there is no canvas/context yet, so boot is never called "lost".
+  function a1aGlLost(){
+    try{
+      var c=(typeof document!=='undefined')&&document.querySelector('canvas');
+      if(!c) return false;
+      var gl=c.getContext('webgl2')||c.getContext('webgl');
+      return !!(gl&&gl.isContextLost&&gl.isContextLost());
+    }catch(e){ return false; }
+  }
   function a1aSpriteWatchdog(scene){
     if(!a1aPlateOwns(scene)||!a1aSpriteMode()){ A1AW.shortSince=0; return; }
     var rs=A1A.lastRects;
@@ -1534,7 +1576,17 @@
     // HEALTHY is also what clears the escalation. A cheap pass that restored the sprites must not
     // leave the next, unrelated incident starting at pass 2 -- the whole point is that the expensive
     // pass fires only when the cheap one has just been SEEN to fail.
-    if(live>=want){ A1AW.shortSince=0; A1AW.shallowFailed=false; return; }
+    if(live>=want){ A1AW.shortSince=0; A1AW.shallowFailed=false; A1AW.lastTex=COST.tex; return; }
+    // THE PROGRESS VETO. A renderer that built a texture since the last look is working, and the
+    // only thing this function can do to it is take that work away. Being far behind is not the
+    // same as being broken, and telling them apart is the whole difference between a net and a
+    // wrecking ball -- see the memo above, where 20 successful builds were destroyed by 8 heals.
+    if(COST.tex!==A1AW.lastTex){ A1AW.lastTex=COST.tex; A1AW.shortSince=0; return; }
+    // A lost context cannot be healed: there is nothing to upload to, and every rebuild would be
+    // thrown away. Recovery is the restore event's job. Published so his panel can say which of the
+    // two failures he is looking at, which no counter here could previously distinguish.
+    A1AW.glLost=a1aGlLost();
+    if(A1AW.glLost){ A1AW.shortSince=0; return; }
     if(!A1AW.shortSince){ A1AW.shortSince=now; return; }
     if(now-A1AW.shortSince<A1AW_GRACE) return;
     if(now-A1AW.lastFix<A1AW_COOLDOWN) return;
@@ -4802,7 +4854,8 @@
     var sc=worldScene();
     return { splat:COST.splat, canopy:COST.canopy, tex:COST.tex, plate:a1aPlateOwns(sc)?1:0,
              wMs:COST.wMs, wWhat:COST.wWhat,
-             sprLive:A1A.sprLive|0, sprWant:A1A.sprWant|0, sprFix:A1AW.fixes|0, sprDeep:A1AW.deep|0 };
+             sprLive:A1A.sprLive|0, sprWant:A1A.sprWant|0, sprFix:A1AW.fixes|0, sprDeep:A1AW.deep|0,
+             sprGl:a1aGlLost()?1:0 };
   }
   window.__DQ_TILES__={ reskin:reskin, ready:terrainReady, readyWhy:terrainReadyWhy, cost:terrainCost, redraw:function(){ if(terrainState){ terrainState.lastWin=''; updateTerrain(terrainState.scene,true);} if(overlayState){ overlayState.lastKey=''; rebuildOverlay(overlayState.scene,true);} } };
 })();

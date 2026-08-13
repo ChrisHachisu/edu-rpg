@@ -1494,8 +1494,16 @@
                 // ~200 MB in one burst, which is the suspect for "the game went in loading again".
                 // `d` counts pass 2 only, so `fix5 d0` says every recovery was the cheap one and
                 // that suspect is dead; any non-zero `d` says pass 1 was watched to fail.
+                //
+                // `GLLOST` is read from the GL context itself (`isContextLost()`), not inferred.
+                // It exists because the counters beside it provably CANNOT see a context loss:
+                // measured 2026-08-13, a healthy 6/6 overworld with the context genuinely lost
+                // still reads 6/6 after 600 frames, because A1A.tex is our own bookkeeping and the
+                // sprites are still visible JS objects. So a blue screen with `spr 6/6` and no
+                // GLLOST is a DIFFERENT fault from a blue screen with GLLOST, and until now the
+                // panel called them the same thing.
                 heavy.sp += '  spr ' + k.sprLive + '/' + k.sprWant + (k.sprFix ? ' fix' + k.sprFix : '')
-                          + (k.sprDeep ? ' d' + k.sprDeep : '');
+                          + (k.sprDeep ? ' d' + k.sprDeep : '') + (k.sprGl ? ' GLLOST' : '');
               } catch (e) {}
             }
           }

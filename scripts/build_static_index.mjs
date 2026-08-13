@@ -200,8 +200,15 @@ export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '
 // is the leading suspect for provoking that kill. `d` counts pass 2 only, so `fix5 d0` says every
 // recovery was the cheap one and the suspect is dead, while any non-zero `d` says pass 1 was
 // watched to fail. Read of an existing counter on the existing tick; no new work in the frame.
+// 2026-08-13, second sign-off: the panel gains ` GLLOST`, read from `gl.isContextLost()` rather
+// than inferred. Signed off because the counters beside it were MEASURED blind to the very failure
+// they were written for: a healthy `spr 6/6` overworld whose GL context is genuinely lost still
+// reads 6/6 after 600 pumped frames, since A1A.tex is our own bookkeeping and the sprites remain
+// visible JS objects. A blue screen with GLLOST and one without are different faults, and the panel
+// could not previously tell the owner which he was photographing. One boolean read on the existing
+// tick; no new timer, no new storage write.
 export const EXPECTED_STATIC_INDEX_SHA =
-  '768c5c3bce8da289bce6216a304cf9038ba6b1de23c1a57c0fcb87f393f1f3d1';
+  '63479acbce62ec22b7f55104047768a569c3578033dcfd1a1dc6132a052b30d2';
 
 /**
  * The authored shell loads its scripts by ABSOLUTE path so the Vite dev server resolves them;
