@@ -191,8 +191,17 @@ export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '
 // a visible sprite. want 0 says the window never asked, live 0 against want 9 says the textures
 // went away, and a non-zero fix count says the self-heal in a1aSpriteWatchdog is the only reason
 // the terrain came back. Pure reads of counters the renderer already maintains.
+//
+// 2026-08-13: the same line gains ` d<N>`. Signed off because it is the one number that can settle
+// the build-19 report, in which the self-heal above WORKED -- the owner saw the blue screen recover
+// -- and the game then "went in loading again", i.e. WebContent was killed and the app reloaded.
+// The heal is now graduated (a1aSpriteWatchdog): pass 1 re-uploads from decoded images already
+// resident, pass 2 additionally drops the chunk records and re-decodes ~200 MB in one burst, which
+// is the leading suspect for provoking that kill. `d` counts pass 2 only, so `fix5 d0` says every
+// recovery was the cheap one and the suspect is dead, while any non-zero `d` says pass 1 was
+// watched to fail. Read of an existing counter on the existing tick; no new work in the frame.
 export const EXPECTED_STATIC_INDEX_SHA =
-  '3c6a2e2d9aa89666d26384705abe6851e00de5e66330daa9aaa85f28af532b2e';
+  '768c5c3bce8da289bce6216a304cf9038ba6b1de23c1a57c0fcb87f393f1f3d1';
 
 /**
  * The authored shell loads its scripts by ABSOLUTE path so the Vite dev server resolves them;

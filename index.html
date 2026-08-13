@@ -1487,7 +1487,15 @@
                 // has decoded should have a visible sprite. want 0 = the window never asked;
                 // live 0 against want 9 = the textures went away; a rising fix count = the
                 // self-heal in a1aSpriteWatchdog is the only reason the terrain came back.
-                heavy.sp += '  spr ' + k.sprLive + '/' + k.sprWant + (k.sprFix ? ' fix' + k.sprFix : '');
+                //
+                // `dN` is the ESCALATION count, and it is the number that settles the build-19
+                // report. The heal is graduated: pass 1 re-uploads from decoded images already
+                // resident, pass 2 additionally throws the chunk records away and re-decodes
+                // ~200 MB in one burst, which is the suspect for "the game went in loading again".
+                // `d` counts pass 2 only, so `fix5 d0` says every recovery was the cheap one and
+                // that suspect is dead; any non-zero `d` says pass 1 was watched to fail.
+                heavy.sp += '  spr ' + k.sprLive + '/' + k.sprWant + (k.sprFix ? ' fix' + k.sprFix : '')
+                          + (k.sprDeep ? ' d' + k.sprDeep : '');
               } catch (e) {}
             }
           }

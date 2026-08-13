@@ -1001,8 +1001,27 @@
   // 41,245). The cap must never sit below that or the trim evicts a chunk the current window still
   // needs, which re-requests and re-evicts it forever: the window never reports full coverage, so
   // the per-pixel splat runs every update and tick() force-rebuilds the overlay at 12.5 Hz.
-  // It must not sit far ABOVE it either -- a decoded chunk is ~9 MB of base plus ~9 MB of canopy,
-  // so every slot is ~19 MB of resident image. 10 is the smallest value with headroom over 9.
+  // It must not sit far ABOVE it either, because every slot is expensive.
+  //
+  // ~~"a decoded chunk is ~9 MB of base plus ~9 MB of canopy, so every slot is ~19 MB of resident
+  // image"~~ **THAT UNDERCOUNTS BY MORE THAN HALF.** Measured 2026-08-13 from the bake itself (20 of
+  // the 30 chunks are a full 1536x1536; the edge chunks are smaller), a fully-live slot is:
+  //     rec.base           1536*1536*4  =  9.44 MB   decoded, held
+  //     rec.canopy         1536*1536*4  =  9.44 MB   decoded, held
+  //     rec.water           512* 512*4  =  1.05 MB   decoded, held
+  //     canopy composite   1536*1536*4  =  9.44 MB   held by Phaser's TextureSource, see below
+  //     GPU textures       base+canopy+water = 19.93 MB
+  //                                           --------
+  //                                             49.3 MB per chunk, x10 = ~493 MB
+  // Note how small the FILES are by comparison: all 30 canopy chunks together are under 0.1 MB on
+  // disk, because they are almost entirely transparent. On-disk size says nothing about what a chunk
+  // costs once it is decoded, which is how the old figure came to look safe.
+  //
+  // The cap STAYS at 10, and lowering it is not the lever it looks like. Nine is the measured
+  // worst-case window intersection, so 9 leaves zero headroom and reintroduces the evict-refetch
+  // loop described above; the honest reading is that the overworld's floor is ~440 MB whatever this
+  // number says, and what would actually move it is the PER-CHUNK cost. One reduction was tried and
+  // rejected on measurement -- see a1aFreeComposite for why the composite is not free to free.
   var A1A_MAX_CHUNKS=10;
   // Leaving the overworld TRIMS the chunk cache down to the one window the hero is standing in, and
   // drops everything else. It used to drop ALL of it, and that was the whole of SMOOTH-5.
@@ -1031,8 +1050,9 @@
   // The invalidation is therefore "never, within a session", and the page load is what clears it.
   //
   // WHAT IT COSTS. Off-overworld residency goes from 0 to the departure window's chunks -- measured
-  // 4 of them (~19 MB each: 9.4 base + 9.4 canopy + 1.0 water), i.e. ~79 MB held while the player is
-  // in a town or a dungeon. That is strictly less than the A1A_MAX_CHUNKS=10 (~198 MB) the overworld
+  // 4 of them (~49.3 MB each, decoded images plus the composite and the GPU textures -- see the
+  // A1A_MAX_CHUNKS memo, where the old ~19 MB figure is corrected and measured), i.e. ~197 MB held
+  // while the player is in a town or a dungeon. That is strictly less than the ~493 MB the overworld
   // already holds while being played, so this raises the OFF-overworld floor without moving the
   // peak. The original concern -- a dungeon allocating its own base + fog canvases on top of a full
   // 10-slot cache -- is still addressed, because the other six slots are still dropped here.
@@ -1365,6 +1385,22 @@
   //  where it carried nothing but baked art anyway.
   var A1A_SPRITES=true;
   function a1aSpriteMode(){ return A1A_SPRITES && !!A1A.manifest; }
+  // Drop OUR reference to a chunk's canopy composite, so the next build re-composites from
+  // rec.base + rec.canopy instead of re-uploading a bitmap that may already have been consumed.
+  //
+  // IT DOES NOT AND MUST NOT close() IT. Measured in the shipped runtime 2026-08-13, not reasoned:
+  //     textures.addImage(key, bm); textures.get(key).source[0].image === bm   -> TRUE
+  //     bm.close();                 textures.get(key).source[0].image.width    -> 0
+  // Phaser's TextureSource holds the SAME ImageBitmap object we do, so there is no second copy here
+  // to reclaim -- an earlier draft of this change claimed ~9.44 MB per chunk of freeable duplicate
+  // and went looking for ~94 MB that does not exist. What close() would actually buy is leaving
+  // Phaser holding a zero-width corpse, and any later re-upload from that source -- its own
+  // context-restore path, for one -- draws nothing. That is the blank layer this whole net exists to
+  // prevent, so the optimisation would have caused the bug it was meant to help. The pixels come
+  // back when the TEXTURE goes, via textures.remove in a1aDropChunkGpu / a1aDropLayerGpu / a1aTexFor.
+  function a1aFreeComposite(rec){
+    if(rec&&rec.bm) rec.bm={};
+  }
   // one texture per chunk layer, built once and thereafter only positioned
   function a1aTexFor(scene,c,rec,layer){
     var key='a1a_'+layer+'_'+c.id, T=A1A.tex[key];
@@ -1459,7 +1495,25 @@
   //  The counters are published for the panel: `spr live/want fix N` is what will finally say which
   //  stage fails on his phone -- want 0 means the window never asked, live 0 with want 9 means the
   //  textures went away, and a rising fix count means this net is the only reason he can play.
-  var A1AW={ shortSince:0, lastFix:0, fixes:0 };
+  //
+  //  IT MUST NOT CURE THE BLUE SCREEN BY CAUSING THE CRASH -- added 2026-08-13.
+  //  Build 19 shipped the net above and the owner's verdict was that it WORKS and that the game now
+  //  does something worse: *"a little better and the blue screen recovered a couple times but when i
+  //  travelled more the game went in loading again"*. "Loading again" cannot be the boot cover --
+  //  finish() removes it from the DOM once lifted, so it cannot return -- so the app RELOADED, i.e.
+  //  WebContent was killed. The prime suspect is this heal's own cost: it dropped A1A.chunks
+  //  wholesale, so all ten slots re-fetched and re-decoded at once (~200 MB of decoded image in one
+  //  burst, per the measured per-chunk figures at A1A_MAX_CHUNKS) on a device already under enough
+  //  pressure to lose a GL context. Curing a blue screen by provoking a kill is not a cure.
+  //
+  //  So the heal is GRADUATED, and the cheap pass is the one that matches the known cause. A lost GL
+  //  context destroys TEXTURES; the decoded chunk images are ordinary JS objects and are untouched.
+  //  Pass 1 therefore rebuilds only the GPU side and re-uploads from images we still hold -- no
+  //  fetch, no decode, no allocation spike. Only if that is WATCHED to fail does pass 2 drop the
+  //  records too, which is the right answer for the other failure this net covers (a chunk whose
+  //  load failed and is never asked for again) and is worth its cost only once the cheap
+  //  explanation is out.
+  var A1AW={ shortSince:0, lastFix:0, fixes:0, deep:0, shallowFailed:false };
   var A1AW_GRACE=1500, A1AW_COOLDOWN=5000, A1AW_MAX=8;
   function a1aSpriteWatchdog(scene){
     if(!a1aPlateOwns(scene)||!a1aSpriteMode()){ A1AW.shortSince=0; return; }
@@ -1477,24 +1531,45 @@
     }
     A1A.sprLive=live; A1A.sprWant=want;
     var now=Date.now();
-    if(live>=want){ A1AW.shortSince=0; return; }
+    // HEALTHY is also what clears the escalation. A cheap pass that restored the sprites must not
+    // leave the next, unrelated incident starting at pass 2 -- the whole point is that the expensive
+    // pass fires only when the cheap one has just been SEEN to fail.
+    if(live>=want){ A1AW.shortSince=0; A1AW.shallowFailed=false; return; }
     if(!A1AW.shortSince){ A1AW.shortSince=now; return; }
     if(now-A1AW.shortSince<A1AW_GRACE) return;
     if(now-A1AW.lastFix<A1AW_COOLDOWN) return;
     if(A1AW.fixes>=A1AW_MAX) return;
+    // Here with sprites still short after a full cooldown. If the last attempt was the cheap one it
+    // did not work, so escalate exactly once; otherwise start cheap.
+    var deep=A1AW.shallowFailed;
     A1AW.lastFix=now; A1AW.shortSince=0; A1AW.fixes++;
-    a1aGpuInvalidate();
+    A1AW.shallowFailed=!deep;
+    if(deep) A1AW.deep++;
+    a1aGpuInvalidate(deep);
   }
-  function a1aGpuInvalidate(){
+  // `deep` is the escalation described above, and it is OFF by default on purpose: the
+  // webglcontextrestored handler below is the one caller that knows its cause exactly, and a
+  // restored context is precisely the case where the images are fine and only the GPU side died.
+  function a1aGpuInvalidate(deep){
     A1A.tex={};
     Object.keys(A1A.imgs).forEach(function(k){ var im=A1A.imgs[k]; if(im){ try{ im.destroy(); }catch(e){} } });
     A1A.imgs={}; A1A.texQ=[]; A1A.texQd={}; A1A.bmPend={};
-    // The chunk RECORDS go too, not just their GPU side. A record holds the decoded images and the
-    // pending-load flags, so keeping it means a chunk whose image load failed or was evicted is
-    // never asked for again -- and "the art stopped coming back" is precisely the state this
-    // recovers from. Dropping them makes a1aRects re-request from scratch; the files are in the
-    // HTTP cache, so it costs a decode rather than a download.
-    A1A.chunks={}; A1A.lru=[]; A1A.win=[];
+    if(deep){
+      // The chunk RECORDS go too, not just their GPU side. A record holds the decoded images and the
+      // pending-load flags, so keeping it means a chunk whose image load failed or was evicted is
+      // never asked for again -- and "the art stopped coming back" is precisely the state this
+      // recovers from. Dropping them makes a1aRects re-request from scratch; the files are in the
+      // HTTP cache, so it costs a decode rather than a download -- but ten decodes at once is the
+      // ~200 MB burst this pass is now rationed for.
+      A1A.chunks={}; A1A.lru=[]; A1A.win=[];
+    }else{
+      // Pass 1 keeps every decoded image and re-uploads from it. What it must NOT keep is the canopy
+      // COMPOSITE: it is handed over with transferToImageBitmap, which detaches the source canvas, so
+      // a retained one can be a corpse that uploads as nothing -- a permanently blank canopy layer,
+      // which is the failure this net exists to end. Re-compositing costs one 1536x1536 draw pair per
+      // chunk, spread one chunk per drain tick, and no allocation the pass does not hand straight back.
+      Object.keys(A1A.chunks).forEach(function(id){ a1aFreeComposite(A1A.chunks[id]); });
+    }
     if(terrainState) terrainState.lastWin='';
     if(overlayState) overlayState.lastKey='';
     A1A.dirty=true; A1A.drew=false;
@@ -4483,8 +4558,8 @@
     try{ a1vInstall(scene); }catch(e){ if(window.__DQ_DEBUG__) console.log('dq a1v install '+e); }
     // A BATTLE is the one departure from the overworld that this guard hides. Towns and dungeons
     // are map swaps -- WorldMapScene stays ACTIVE, so the kind!=='ow' branch below reaches
-    // a1aReleaseChunks and trims the Act 1 chunk cache from the full A1A_MAX_CHUNKS=10 (~198 MB)
-    // to the departure window (~4 chunks, ~79 MB). An encounter instead SLEEPS WorldMapScene and
+    // a1aReleaseChunks and trims the Act 1 chunk cache from the full A1A_MAX_CHUNKS=10 (~493 MB)
+    // to the departure window (~4 chunks, ~197 MB). An encounter instead SLEEPS WorldMapScene and
     // runs BattleScene, so tick() returned HERE and every trim below was unreachable: the whole
     // 10-slot cache stayed resident on the GPU underneath a full-screen battle background and a
     // monster sprite, for the entire battle. That is the same "a scene allocates on top of whatever
@@ -4535,7 +4610,7 @@
     // Leaving the overworld: the depth-11 canopy must not linger over a town/dungeon, AND the
     // Act 1 chunk cache is trimmed to the window she walked out of. A dungeon allocates its own
     // base + fog canvases on top of whatever the overworld still holds, so keeping the full
-    // ~198 MB 10-slot cache resident there is what starves the renderer -- but dropping it
+    // ~493 MB 10-slot cache resident there is what starves the renderer -- but dropping it
     // WHOLESALE is what made walking back out cost 4.6 s. See a1aReleaseChunks.
     if(kind!=='ow'){ lastReskinMapId=null; a1aHideCanopy(); a1aReleaseChunks(); }
     if (kind!=='town' && townState) destroyTown();      // left a town -> drop its canvas so it can't linger over ow/dng
@@ -4727,7 +4802,7 @@
     var sc=worldScene();
     return { splat:COST.splat, canopy:COST.canopy, tex:COST.tex, plate:a1aPlateOwns(sc)?1:0,
              wMs:COST.wMs, wWhat:COST.wWhat,
-             sprLive:A1A.sprLive|0, sprWant:A1A.sprWant|0, sprFix:A1AW.fixes|0 };
+             sprLive:A1A.sprLive|0, sprWant:A1A.sprWant|0, sprFix:A1AW.fixes|0, sprDeep:A1AW.deep|0 };
   }
   window.__DQ_TILES__={ reskin:reskin, ready:terrainReady, readyWhy:terrainReadyWhy, cost:terrainCost, redraw:function(){ if(terrainState){ terrainState.lastWin=''; updateTerrain(terrainState.scene,true);} if(overlayState){ overlayState.lastKey=''; rebuildOverlay(overlayState.scene,true);} } };
 })();
