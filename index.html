@@ -1482,6 +1482,12 @@
                   heavy.owmMs = ow.ms; heavy.owmSrc = ow.src;
                 }
                 if (heavy.owmMs) heavy.sp += '  owm ' + Math.round(heavy.owmMs) + 'ms ' + heavy.owmSrc;
+                // THE STAGE THAT FAILS. The blue screen has outlived two confident diagnoses, so
+                // the runtime now states the invariant it is meant to hold: every chunk whose art
+                // has decoded should have a visible sprite. want 0 = the window never asked;
+                // live 0 against want 9 = the textures went away; a rising fix count = the
+                // self-heal in a1aSpriteWatchdog is the only reason the terrain came back.
+                heavy.sp += '  spr ' + k.sprLive + '/' + k.sprWant + (k.sprFix ? ' fix' + k.sprFix : '');
               } catch (e) {}
             }
           }

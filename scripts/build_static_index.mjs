@@ -182,8 +182,17 @@ export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '
 // session whose worst single terrain operation was 87 ms, so the cost is outside the terrain path
 // entirely, and the collision window rebuilds on the same 12-cell boundary. Pure read of an existing
 // global; worst-seen rather than last, because a rebuild is over before the next sample lands.
+//
+// 2026-08-13: `spr <live>/<want> fix<N>`. The blue screen has now outlived TWO confident diagnoses
+// -- the a1vShow visibility latch, then GPU-context bookkeeping -- and the owner reported it again
+// on the build that was meant to fix it. Both wrong calls were reasoned from code without ever
+// reproducing the fault, on a Mac that does not have his phone's memory pressure. So the panel
+// stops carrying theories and carries the INVARIANT: every chunk whose art has decoded should have
+// a visible sprite. want 0 says the window never asked, live 0 against want 9 says the textures
+// went away, and a non-zero fix count says the self-heal in a1aSpriteWatchdog is the only reason
+// the terrain came back. Pure reads of counters the renderer already maintains.
 export const EXPECTED_STATIC_INDEX_SHA =
-  '13735bbf33d7faba5530460e3b8ce54ba7e1dc6d278a51cbc7c1fcd743dca2c4';
+  '3c6a2e2d9aa89666d26384705abe6851e00de5e66330daa9aaa85f28af532b2e';
 
 /**
  * The authored shell loads its scripts by ABSOLUTE path so the Vite dev server resolves them;

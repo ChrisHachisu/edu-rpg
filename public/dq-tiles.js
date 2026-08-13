@@ -1261,6 +1261,10 @@
     // trim against what this window TOUCHED, not what it managed to load -- a chunk mid-load counts
     while(A1A.lru.length>Math.max(A1A_MAX_CHUNKS,keep.length)){ var _ev=A1A.lru.shift(); delete A1A.chunks[_ev]; a1aDropChunkGpu(_ev); }
     out.full=(cov===winW*TILE*winH*TILE);
+    // How many chunks this window INTERSECTS, regardless of whether their art has decoded. The
+    // watchdog needs this and not out.length: if the failure is that the images never come back,
+    // every rect is filtered out above and a count taken from `out` would read 0/0 and look healthy.
+    out.touched=touched.length;
     return out;
   }
   // one layer of one chunk. k folds in the layer's own density: base/canopy ship at 48 px/cell so
@@ -1434,11 +1438,63 @@
   //  canopy composites are ordinary JS objects and survived the context loss untouched. Clearing
   //  rec.bm as well is deliberate -- a composite handed over with transferToImageBitmap can have
   //  been consumed, and re-making one is far cheaper than a permanently blank layer.
+  // ============================================================
+  //  THE TERRAIN MUST NOTICE THAT IT IS MISSING
+  // ============================================================
+  //  The blue screen has now been reported on build 17 AND on build 18, i.e. it survived the
+  //  webglcontextrestored handler that was written for it. Two diagnoses of this same symptom have
+  //  already been wrong -- the a1vShow visibility latch, then GPU-context bookkeeping -- and both
+  //  were wrong the same way: reasoned from the code without ever reproducing it, on a device whose
+  //  memory pressure this Mac does not have.
+  //
+  //  So this does not try to name the cause a third time. It states the INVARIANT instead: on the
+  //  Act 1 plate, every chunk whose base image has decoded should have a visible sprite. If that is
+  //  false for longer than the drain could possibly justify, something upstream broke, and the
+  //  renderer rebuilds itself from scratch rather than sitting on a blue screen the player cannot
+  //  escape. Whatever the cause, the failure mode stops being permanent.
+  //
+  //  1500 ms before acting: the drain builds one texture per 80 ms tick, so a full nine-chunk
+  //  window legitimately takes ~720 ms after a battle. 5 s between attempts, and a hard cap of 8 per
+  //  session, so a genuinely dead GPU degrades to "tried and gave up" instead of thrashing forever.
+  //  The counters are published for the panel: `spr live/want fix N` is what will finally say which
+  //  stage fails on his phone -- want 0 means the window never asked, live 0 with want 9 means the
+  //  textures went away, and a rising fix count means this net is the only reason he can play.
+  var A1AW={ shortSince:0, lastFix:0, fixes:0 };
+  var A1AW_GRACE=1500, A1AW_COOLDOWN=5000, A1AW_MAX=8;
+  function a1aSpriteWatchdog(scene){
+    if(!a1aPlateOwns(scene)||!a1aSpriteMode()){ A1AW.shortSince=0; return; }
+    var rs=A1A.lastRects;
+    if(!rs){ A1AW.shortSince=0; A1A.sprLive=0; A1A.sprWant=0; return; }
+    // WANT is what the window TOUCHES, not what managed to decode. Counting only decoded chunks
+    // would read 0/0 -- perfectly healthy -- in exactly the case where the art stopped coming back,
+    // which is the failure this net exists to catch.
+    var want=rs.touched|0, live=0, i;
+    if(!want){ A1AW.shortSince=0; A1A.sprLive=0; A1A.sprWant=0; return; }
+    for(i=0;i<rs.length;i++){
+      var r=rs[i]; if(!r||!r.rec||!r.rec.base) continue;
+      var key='a1a_base_'+r.c.id, im=A1A.imgs[key];
+      if(A1A.tex[key]===1 && im && im.scene && im.visible) live++;
+    }
+    A1A.sprLive=live; A1A.sprWant=want;
+    var now=Date.now();
+    if(live>=want){ A1AW.shortSince=0; return; }
+    if(!A1AW.shortSince){ A1AW.shortSince=now; return; }
+    if(now-A1AW.shortSince<A1AW_GRACE) return;
+    if(now-A1AW.lastFix<A1AW_COOLDOWN) return;
+    if(A1AW.fixes>=A1AW_MAX) return;
+    A1AW.lastFix=now; A1AW.shortSince=0; A1AW.fixes++;
+    a1aGpuInvalidate();
+  }
   function a1aGpuInvalidate(){
     A1A.tex={};
     Object.keys(A1A.imgs).forEach(function(k){ var im=A1A.imgs[k]; if(im){ try{ im.destroy(); }catch(e){} } });
     A1A.imgs={}; A1A.texQ=[]; A1A.texQd={}; A1A.bmPend={};
-    Object.keys(A1A.chunks).forEach(function(id){ var rec=A1A.chunks[id]; if(rec) rec.bm={}; });
+    // The chunk RECORDS go too, not just their GPU side. A record holds the decoded images and the
+    // pending-load flags, so keeping it means a chunk whose image load failed or was evicted is
+    // never asked for again -- and "the art stopped coming back" is precisely the state this
+    // recovers from. Dropping them makes a1aRects re-request from scratch; the files are in the
+    // HTTP cache, so it costs a decode rather than a download.
+    A1A.chunks={}; A1A.lru=[]; A1A.win=[];
     if(terrainState) terrainState.lastWin='';
     if(overlayState) overlayState.lastKey='';
     A1A.dirty=true; A1A.drew=false;
@@ -4528,6 +4584,9 @@
              try{ ensureTerrain(scene); updateTerrain(scene,a1fresh); }catch(e){ if(window.__DQ_DEBUG__) console.log('dq terr err '+e); }
              try{ rebuildOverlay(scene,a1fresh); }catch(e){ if(window.__DQ_DEBUG__) console.log('dq ovl err '+e); } }
       try{ owSpecialObjects(scene); }catch(e){ if(window.__DQ_DEBUG__) console.log('dq owprop err '+e+(e&&e.stack||'')); } // ALWAYS run props (even during boot map-churn)
+      // AFTER the rebuild, so a window that legitimately just changed is judged on its result and
+      // not mid-flight. See a1aSpriteWatchdog: this is what stops the blue screen being permanent.
+      try{ a1aSpriteWatchdog(scene); }catch(e){ if(window.__DQ_DEBUG__) console.log('dq watchdog '+e); }
     } else if (kind==='dng'){
       // Act-1 semantic floors. The loadMap wrapper is the normal path; the key check below is the
       // safety net for the two cases it cannot reach — the very first loadMap (fired in create()
@@ -4667,7 +4726,8 @@
   function terrainCost(){
     var sc=worldScene();
     return { splat:COST.splat, canopy:COST.canopy, tex:COST.tex, plate:a1aPlateOwns(sc)?1:0,
-             wMs:COST.wMs, wWhat:COST.wWhat };
+             wMs:COST.wMs, wWhat:COST.wWhat,
+             sprLive:A1A.sprLive|0, sprWant:A1A.sprWant|0, sprFix:A1AW.fixes|0 };
   }
   window.__DQ_TILES__={ reskin:reskin, ready:terrainReady, readyWhy:terrainReadyWhy, cost:terrainCost, redraw:function(){ if(terrainState){ terrainState.lastWin=''; updateTerrain(terrainState.scene,true);} if(overlayState){ overlayState.lastKey=''; rebuildOverlay(overlayState.scene,true);} } };
 })();

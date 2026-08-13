@@ -41,7 +41,7 @@ ACT1_OVERLAY_FILES = {
     # 2026-08-11: the diagnostic panel gains one attribution line (sp/cv/tx2/pl) fed by
     # __DQ_TILES__.cost(). Sign-off + reasoning: EXPECTED_STATIC_INDEX_SHA in
     # scripts/build_static_index.mjs. Both copies of this hash must move together.
-    "index.html": (97280, "13735bbf33d7faba5530460e3b8ce54ba7e1dc6d278a51cbc7c1fcd743dca2c4"),
+    "index.html": (97861, "3c6a2e2d9aa89666d26384705abe6851e00de5e66330daa9aaa85f28af532b2e"),
     # 2026-08-01, owner-authorised: dq-tiles.js now splats AI-generated terrain MATERIALS through
     # its existing continuous-world-pixel drawTerrain, plus a ridged mountain height field,
     # varied shore character and landmark sites derived from mapData. Fallback-safe -- until the
@@ -91,7 +91,7 @@ ACT1_OVERLAY_FILES = {
     # save format round-trips to itself (measured: 742 of 754 reportable cells reload unchanged, the
     # other 12 settle one cell north once; largest rescue nudge 28 px against a 96 px bound).
     "dq-tiles.js": (
-        350972, "3bd1b1ffaf657e9e9cc98a7b3dbdac08ec8351c7a2a919ce234dde089a10e77b"),
+        355053, "3dfed6d3bc39000d41b1b71712d725746e6cbc0ba6a1814312b4e230e71a6c7c"),
     # 2026-08-07: THE OVERWORLD'S COLLISION SHAPE, baked -- the overworld's answer to the dungeons'
     # `<floor>-walk.png` above, and as much a shipped authority as they are. Deriving it at runtime
     # was correct and unaffordable: owmBuild() evaluated waterField/mountainField per pixel over a
