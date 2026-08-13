@@ -125,6 +125,44 @@ tile rather than a re-bake.
 > That file also claims the art and its geometry are "one hash-locked design pair" — **there is no
 > hash in it.** The lock is prose, enforced by nothing.
 
+> [!success] THE SELF-HEAL WAS PART OF THE PROBLEM — MEASURED A/B, 2026-08-13 (`f699e4a`).
+> Build 19's sprite watchdog WORKS: the owner watched the blue screen recover. What he then got is
+> *"when i travelled more the game went in loading again"*, which is **not the boot cover** —
+> `finish()` removes it from the DOM once lifted, so it cannot come back — but a WebContent kill and
+> a reload. `a1aGpuInvalidate` dropped `A1A.chunks` wholesale, so every heal re-fetched and
+> re-decoded the whole window. The heal is now **graduated**: pass 1 rebuilds only the GPU side from
+> decoded images already held, pass 2 drops the records and fires only after pass 1 has been watched
+> to fail across a full cooldown. A recovery that works clears the escalation.
+>
+> **A/B, same seed (`overworld 130,292`), same 8 heals, same browser:**
+>
+> | | chunk HTTP requests | end state |
+> |---|---|---|
+> | parent `d16c26f` | **143** | `spr 4/6` — never converged |
+> | this change | **99** | `spr 6/6` — recovered, art fully painted |
+>
+> And the direct probe: dispatch `webglcontextrestored`, pump 900 frames, count chunk requests →
+> **0 refetched**, textures rebuilt (`tex` 56→65, 3 canopy re-composites), sprites back to 6/6.
+> Caveat, stated because this repo has been burned by exactly this: the browser pane starves rAF, so
+> these are not device numbers and the "never converged" column may carry run-to-run variance. The
+> **refetch delta is the structural claim** and it is what was measured directly.
+
+> [!warning] ~~"a decoded chunk is ~9 MB of base plus ~9 MB of canopy, so every slot is ~19 MB"~~
+> **Undercounts by more than half.** Measured from the bake 2026-08-13: base 9.44 + canopy 9.44 +
+> water 1.05 decoded, canopy composite 9.44, GPU textures 19.93 = **~49.3 MB per chunk**, so
+> `A1A_MAX_CHUNKS=10` is **~493 MB**, not the ~198 MB quoted in three places in `public/dq-tiles.js`.
+> All 30 canopy chunk FILES together are under 0.1 MB on disk because they are almost entirely
+> transparent — on-disk size says nothing about decoded cost, which is how the old figure looked safe.
+> Corrected at all three sources. The cap stays at 10: 9 is the measured worst-case window and would
+> thrash.
+
+> [!warning] ~~"free the canopy composite after upload and save ~94 MB"~~ **Tried, measured, rejected
+> the same day — and it would have caused the bug it was meant to help.** In the shipped runtime:
+> `addImage(key,bm)` leaves `textures.get(key).source[0].image === bm` **true**, so Phaser holds the
+> SAME ImageBitmap and there is no duplicate to reclaim; `bm.close()` then leaves that source at
+> **width 0**, a corpse any later re-upload draws as nothing — the blank layer the watchdog exists to
+> prevent. Recorded in `a1aFreeComposite` so it is not attempted again.
+
 ## Claims that were WRONG and are now retired
 
 Recorded so they cannot come back. Each was believed and acted on.
