@@ -1,0 +1,22 @@
+{
+ "_comment": "OWNER 2026-08-13/14, asked directly: 'draw over the hero AND be passable.' town.html paints one flat baked painting and then sorts NPCs/hero by foot Y on top of it, so nothing in the painting can ever draw in FRONT of her -- she always appears to stand on whatever tall thing she is actually standing under or behind. scripts/derive_town_foreground.py extracts the pixels listed here from the SAME locked painting (design/act1-towns/portSapphire-screen-v5-graded.png == the shipped public/act1-hifi/town/portSapphire-screen.png, byte-identical) into public/act1-hifi/town/portSapphire-foreground.png, a transparent layer town.html now draws AFTER the hero/NPC sort. The base painting is never touched -- see the script's own hash check.",
+ "_extraction": "Within each region's bboxArt, a pixel is kept OPAQUE if it fails the same paving_mask() test scripts/derive_town_walkable.py uses for collision (i.e. it reads as something other than pale cobblestone -- wood, metal, glass, stone, roof tile, foliage), and made transparent otherwise, so real pavement gaps between chain links or under a roof eave stay see-through. This is the same colour test the collision authority already trusts, applied to a different question: not 'can she stand here' but 'is this pixel part of the overhead prop, not the ground behind it'.",
+ "regions": [
+  {
+   "id": "ship-mast",
+   "bboxArt": [815, 1190, 975, 1345],
+   "why": "Same object as the collision exemption of the same id in portSapphire-authored-obstacles.json (centerArt [900,1256] r=30) -- confirmed member. The bbox is wider than the exemption circle because the visible rigging/stays fan out further than the small collision-relevant disk at deck level; occlusion is a purely visual question, not a collision one, so it does not need to match the circle."
+  },
+  {
+   "id": "demijohn",
+   "bboxArt": [1615, 1188, 1700, 1330],
+   "why": "Same object as the collision exemption of the same id (centerArt [1657,1289] r=34) -- confirmed member. Bbox extended upward to y1188 to include the chain and cargo-davit hook above the vessel, visible in the painting but outside the (deliberately tight, collision-only) exemption circle."
+  },
+  {
+   "id": "chimney-tower",
+   "bboxArt": [652, 846, 698, 913],
+   "solid": true,
+   "why": "Same object as the collision exemption of the same id (centerArt [684,882] r=18) -- confirmed member, added 2026-08-14 from the owner's report 'the one beside it BLOCKS him (should be passable)'. Bbox tightened to the tower's own visible silhouette (measured against design/act1-towns/portSapphire-screen-v5-graded.png) rather than the collision fix's small enclosed-hole footprint. `solid: true`: the paving-mask-inverse extraction every other region uses left this one a speckle at ~30% fill even after a 4px morphological close -- its sunlit stone face reads as paving-coloured across large patches, the same well-rim ambiguity derive_town_walkable.py already documents, and it does not resolve with more closing. The object is small and compact (44x64 art px, about 2 world cells), so filling its bbox solid trades a few px of extra pavement-coloured margin at the edges for a tower that reliably occludes, instead of a leaky one a hero could be seen through."
+  }
+ ]
+}

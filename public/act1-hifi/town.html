@@ -15,15 +15,7 @@
   #stage, #stage * { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
   #dialogue p, #dialogue b { -webkit-user-select: text; user-select: text; }
   #stage { position: absolute; inset: 0; }
-  /* Match the shipped overworld/dungeon canvas (root index.html:60): without this the browser's
-     default CSS-scaling filter (bilinear "auto") softens the canvas whenever its backing-store
-     resolution doesn't land on an exact integer multiple of the CSS box -- e.g. devicePixelRatio
-     is capped at 2 below (`Math.min(2, devicePixelRatio)`) so a 3x-dpr phone stretches a 2x buffer
-     across 3x physical pixels. NEAREST sampling in draw() (imageSmoothingEnabled=false) only
-     controls how the SOURCE painting is sampled into the canvas; it says nothing about how the
-     canvas ELEMENT itself is then scaled onto the page, which is a separate compositing step. */
-  canvas { position: absolute; inset: 0; display: block; width: 100%; height: 100%;
-    image-rendering: pixelated; image-rendering: crisp-edges; }
+  canvas { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
   #boot { position: absolute; inset: 0; z-index: 20; display: grid; place-items: center;
     background: linear-gradient(145deg, #101c27, #071018 58%, #040911); color: #9fb6c6;
     font-size: 13px; letter-spacing: .04em; transition: opacity .25s ease; }
@@ -42,13 +34,14 @@
   /* Hit-target only while visible: an invisible pill must never swallow a tap meant for the map. */
   #prompt[data-show="true"] { opacity: 1; pointer-events: auto; }
   #prompt:active { background: rgba(24,42,58,.92); }
-  /* Owner: the dialogue box rendered UNDER the bottom tab bar. Same root cause the #pad comment
-     below documents -- the parent's #fieldTabs (z-index 90, ~62-96px tall with its own safe-area
-     padding) sits in a STACKING CONTEXT above this whole iframe (z-index 70 in adapter.js), so no
-     z-index set in here can ever win against it; the fix has to be positional, not z-index. 76px
-     is the clearance this runtime already uses for the pad (`#pad`'s `bottom`, matching the
-     parent stick), reused here so the box sits fully above the bar instead of merely not
-     overlapping its very bottom edge. */
+  /* 2026-08-14, from device: the owner reported "Talk to X" hidden under the bottom tab bar. It
+     was never actually moved to clear it -- this rule still read 12px + env(safe-area-inset-bottom),
+     the SAME two mistakes #pad's own comment above already documents and was fixed for: (1) 12px is
+     far short of the parent's .field-tabs bar, which runs about 62px of content plus the safe-area
+     inset, not 12px; (2) env(safe-area-inset-bottom) resolves to 0 inside this same-origin iframe,
+     so on a device with a home indicator it was adding nothing at all. Reuses #pad's own proven
+     geometry (76px + the REAL inset the parent posts as --sa-bottom) rather than inventing a second
+     number, so the dialogue box clears the same bar the d-pad already clears. */
   #dialogue { position: absolute; left: 12px; right: 12px;
     bottom: calc(76px + var(--sa-bottom, env(safe-area-inset-bottom, 0px))); z-index: 12;
     padding: 14px 16px; border-radius: 12px; background: rgba(6,12,18,.94);
@@ -147,22 +140,22 @@ const [locks, town] = await Promise.all([
   }),
 ]);
 const walkable = await fetch(`./${town.walkable}`).then(r => r.json());
-// ---- scale needed before validation, all of it derived from the town config, none hardcoded ---
-const CELL_W = town.worldPxPerCell;                    // 16 world px per cell
-const cellToWorld = c => ({ x: c[0] * CELL_W, y: c[1] * CELL_W });
-
-// Owner: "the NPC icons need to be a hard blocker (we can walk through them)". The collision
-// authority (walkable-polygons.js) has no concept of an NPC -- it only knows regions, static
-// obstacles and dynamicBlockers -- so each stationary NPC is registered as a zero-length
-// dynamicBlocker segment (from === to, a plain disk via distanceToSegment) at her cell, BEFORE
-// validation runs so the geometry the game actually plays on is the one that gets checked. A
-// 7 world-px half-width is roughly a third of a cell: enough to read as a solid body without
-// swallowing the south-side approach band nearestNpc() uses for the talk prompt.
-const NPC_BLOCK_RADIUS = 7;
+// NPCs BLOCK. Owner-confirmed working, and restored here by hand after a merge silently dropped it:
+// the foreground-layer work branched from a base that predated this, so taking that side of
+// town.html reverted a fix he had already signed off. The walkable authority has no concept of an
+// NPC -- it knows regions, static obstacles and dynamicBlockers -- so each stationary NPC is
+// registered as a zero-length dynamicBlocker segment (from === to, a plain disk via
+// distanceToSegment) at her cell, BEFORE validation runs, so the geometry the game plays on is the
+// one that gets checked. A 7 world-px half-width is roughly a third of a cell: enough to read as a
+// solid body without swallowing the south-side approach band nearestNpc() uses for the talk prompt.
+// Computed from `town.worldPxPerCell` inline rather than through cellToWorld(): validation has to
+// run before the renderer's own constants exist, so that helper is not defined yet at this point in
+// the file and calling it here would throw on its temporal dead zone.
+const NPC_BLOCK_RADIUS = 7, NPC_CELL_W = town.worldPxPerCell;
 walkable.dynamicBlockers = [
   ...(walkable.dynamicBlockers || []),
   ...town.npcs.map(n => {
-    const point = cellToWorld(n.cell);
+    const point = { x: n.cell[0] * NPC_CELL_W, y: n.cell[1] * NPC_CELL_W };
     return { id: `npc-${n.id}`, from: point, to: point, halfWidth: NPC_BLOCK_RADIUS };
   }),
 ];
@@ -174,21 +167,42 @@ const loadImage = src => new Promise((resolve, reject) => {
   image.onerror = () => reject(new Error(`asset ${src}`));
   image.src = src;
 });
-const [screenArt, heroSheet, ...npcSheets] = await Promise.all([
+// The foreground layer is OPTIONAL: older/other town configs may not carry one yet, and this
+// runtime must keep working for them. It is the same painting's own pixels, re-extracted for the
+// tall/overhead props (mast, demijohn, rooftop chimney) so they can draw AFTER the hero/NPC sort
+// below and occlude her -- see scripts/derive_town_foreground.py and OWNER 2026-08-13/14,
+// "draw over the hero AND be passable".
+const [screenArt, foregroundArt, heroSheet, ...npcSheets] = await Promise.all([
   loadImage(`./${town.screen}`),
+  town.foreground ? loadImage(`./${town.foreground}`).catch(() => null) : Promise.resolve(null),
   loadImage('./hero-g3/hero-act1-female-walk-8x3-64-g3.png'),
   ...town.npcs.map(n => loadImage(`./${n.sheet}`)),
 ]);
+// Where that cropped foreground sits on the plate. Absent or unreadable -> the layer is skipped
+// rather than drawn in the wrong place: a mis-offset occlusion layer would paint a chimney across
+// open street, which is worse than not having one.
+let foregroundBox = null;
+if (town.foreground) {
+  try {
+    const r = await fetch(`./${town.foreground.replace(/\.png$/, '.json')}`);
+    if (r.ok) {
+      const b = await r.json();
+      if (b && b.full > 0 && b.w > 0 && b.h > 0) foregroundBox = b;
+    }
+  } catch (e) { foregroundBox = null; }
+}
 if (heroSheet.naturalWidth !== 192 || heroSheet.naturalHeight !== 512) {
   throw new Error(`hero sheet is ${heroSheet.naturalWidth}x${heroSheet.naturalHeight}; `
     + 'expected 192x512. See docs/CANONICAL-ASSETS.md');
 }
 
-// ---- remaining scale, all of it derived from the locks and the town config, none hardcoded ----
+// ---- scale, all of it derived from the locks and the town config, none hardcoded -------------
+const CELL_W = town.worldPxPerCell;                    // 16 world px per cell
 const WORLD = town.cells * CELL_W;                     // 1040 world px square
 const HERO_H = locks.heroWorldHeight;                  // 36
 const VIEW_W = locks.cameraWorldWidth;                 // 208
 const SPEED = walkable.movement?.movementSpeed ?? 52;  // world px / second
+const cellToWorld = c => ({ x: c[0] * CELL_W, y: c[1] * CELL_W });
 
 // NPC sheets are 3 cols x 4 rows of 64. The owner made these stationary, so only column 0 /
 // row 0 -- the front-facing idle -- is ever drawn; the other rows exist but are unused.
@@ -199,11 +213,10 @@ const camera = { x: 0, y: 0, zoom: 1 };
 function resize() {
   // OWNER 2026-08-14: the town was "way too fuzzy ... needs to match the overworld and dungeon
   // crispness". Capping at 2 on a 3x phone renders a 2x backing store and lets the compositor
-  // stretch it over 3x physical pixels -- image-rendering:pixelated only changes that blur into
+  // stretch it over 3x physical pixels -- image-rendering:pixelated only turns that blur into
   // blocks, it cannot put back resolution that was never drawn. The overworld renders at the
   // device's own ratio, which is exactly the crispness he is comparing against. Capped at 3 so a
-  // hypothetical 4x panel cannot quadruple the buffer; at 390x625 CSS this is ~8.8 MB against
-  // ~3.9 MB, which is noise next to the ~64 MB the chunk re-tile just gave back.
+  // hypothetical 4x panel cannot quadruple the buffer.
   const dpr = Math.min(3, window.devicePixelRatio || 1);
   const { width, height } = stage.getBoundingClientRect();
   canvas.width = Math.round(width * dpr);
@@ -370,6 +383,23 @@ function draw(time) {
         state.moving ? [0, 1, 0, 2][Math.floor(time / locks.walkPoseMs) % 4] : 0,
         { down: 0, left: 2, up: 3, right: 6 }[state.facing], 64, time, state.moving) }];
   actors.sort((a, b) => a.y - b.y).forEach(a => a.draw());
+  // Foreground: overhead props re-painted from the SAME source pixels, always last. These are
+  // tall/hanging things (a ship's mast and rigging, a demijohn on its chain, a rooftop chimney)
+  // that must always occlude an actor standing beneath or behind them, regardless of foot-Y sort
+  // order -- the camera looks down at a fixed angle from which she can never be "in front of"
+  // something that tall. Drawing with the identical source/dest rect as the base layer above
+  // keeps this pixel-aligned with it for free; see scripts/derive_town_foreground.py.
+  // CROPPED TO ITS CONTENT, not full-plate. The extraction is inherently sparse -- measured at
+  // 0.53% opaque -- so a full 1885x1885 layer spent 14.2 MB of decoded RGBA to carry a handful of
+  // props, on the device this whole line of work exists to keep alive. Cropped to the alpha bbox it
+  // is 2.1 MB, and `portSapphire-foreground.json` carries the offset so it still lands pixel-exact
+  // over the base painting. `full` is recorded so the mapping stays correct if the plate is ever
+  // re-rendered at another size.
+  if (foregroundArt && foregroundBox) {
+    const k = WORLD / foregroundBox.full;
+    ctx.drawImage(foregroundArt, 0, 0, foregroundArt.naturalWidth, foregroundArt.naturalHeight,
+      foregroundBox.x * k, foregroundBox.y * k, foregroundBox.w * k, foregroundBox.h * k);
+  }
 }
 
 // The camera target is a function so entry and every later frame agree. Easing in from (0,0)

@@ -375,11 +375,17 @@ ACT1_TOWN_FILES = {
     "act1-hifi/town.html": (
         24729, "d1356db2af7e2b733f6d5362f7c76d5176dbd3c888749d76853d8a7b7aaad6e7"),
     "act1-hifi/town/portSapphire-town.json": (
-        2_748, "51b45860151b23a983220b79409a9f04ab9f962988ea9725971bfa316b3a0b19"),
+        2799, "59607448f149b26e092725a73f122aa8db6807df7b62124d8dc2b911aeccb76d"),
     "act1-hifi/town/portSapphire-walkable.json": (
         32024, "372578ea5c3c4ca541a2225c85734cb1e0db8bdc34894f04554ad5d78619f38e"),
     "act1-hifi/town/portSapphire-screen.png": (
         6_973_000, "87a04490428c6ae26ed238a50949646b64c0cf11770dd06336a0075e07b4dc4c"),
+    # 2026-08-14, owner-authorised ("draw over the hero AND be passable"): the overhead-prop
+    # foreground layer -- mast, demijohn, rooftop chimney -- re-extracted from the SAME locked
+    # painting by scripts/derive_town_foreground.py and drawn by town.html AFTER the hero/NPC
+    # sort. Placeholder zeros; `npm run repin` fills the real size/hash in.
+    "act1-hifi/town/portSapphire-foreground.png": (
+        7951184, "80f9e4ef3197f7175d2a00283f5ed4cdbe6fc72478790e3ae4cf37c3ddcce488"),
     "act1-hifi/town/npc/portSapphire-drake-4x3-64.png": (
         51_557, "9a5ec1a3fc1f7e7077f9d30f89f6e044878211cf45b370a41e0c224500af4af3"),
     "act1-hifi/town/npc/portSapphire-healer-4x3-64.png": (
