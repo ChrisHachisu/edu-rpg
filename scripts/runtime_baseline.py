@@ -373,11 +373,11 @@ ACT1_DUNGEON_FILES = {
 # no URL bar). Pinned so it cannot quietly grow into something that mutates real save data.
 ACT1_TOWN_FILES = {
     "act1-hifi/town.html": (
-        21649, "d95d943de08fcf36bf53c2133808e03f5fd8adf7e8e8438908e67dc42608bdba"),
+        24036, "f74368d9865ea56f80bab547c81f48a032f5043ea5290036ebd5188efb806e70"),
     "act1-hifi/town/portSapphire-town.json": (
         2_748, "51b45860151b23a983220b79409a9f04ab9f962988ea9725971bfa316b3a0b19"),
     "act1-hifi/town/portSapphire-walkable.json": (
-        31259, "07a743f4328c744d17b4b7292cfda13e28bf18e1cebdf83507c255311b5ebdf0"),
+        31823, "2dad436d4b7f507f3aa3b8a9b436cb1ff0c32872c3c3db95af4ad0475517e0c3"),
     "act1-hifi/town/portSapphire-screen.png": (
         6_973_000, "87a04490428c6ae26ed238a50949646b64c0cf11770dd06336a0075e07b4dc4c"),
     "act1-hifi/town/npc/portSapphire-drake-4x3-64.png": (

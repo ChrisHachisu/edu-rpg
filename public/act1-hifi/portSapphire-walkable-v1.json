@@ -17,7 +17,8 @@
  "actorFootRadius": 4,
  "maxSubstep": 2,
  "movement": {
-  "movementSpeed": 52,
+  "movementSpeed": 260,
+  "movementSpeedNote": "OWNER 2026-08-13/14: town movement felt much slower than the overworld/dungeon. 52 was never derived from anything -- unlike the dungeon's continuous speed (public/dq-tiles.js A1M_SPEED), which was explicitly tuned so 'the same pace' survives the switch from the engine's 48px/150ms tile tween (320 px/s average). All three Act 1 hi-fi surfaces share cameraWorldWidth=208 and heroWorldHeight=36 (manifest.json designLocks), so world-px/second is directly comparable across them; 260 matches the dungeon's already owner-validated figure.",
   "collisionRule": "actor center must remain inside at least one walkable polygon with actor-foot clearance"
  },
  "designDecisions": {

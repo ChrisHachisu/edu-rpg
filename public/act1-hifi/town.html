@@ -15,7 +15,15 @@
   #stage, #stage * { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
   #dialogue p, #dialogue b { -webkit-user-select: text; user-select: text; }
   #stage { position: absolute; inset: 0; }
-  canvas { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
+  /* Match the shipped overworld/dungeon canvas (root index.html:60): without this the browser's
+     default CSS-scaling filter (bilinear "auto") softens the canvas whenever its backing-store
+     resolution doesn't land on an exact integer multiple of the CSS box -- e.g. devicePixelRatio
+     is capped at 2 below (`Math.min(2, devicePixelRatio)`) so a 3x-dpr phone stretches a 2x buffer
+     across 3x physical pixels. NEAREST sampling in draw() (imageSmoothingEnabled=false) only
+     controls how the SOURCE painting is sampled into the canvas; it says nothing about how the
+     canvas ELEMENT itself is then scaled onto the page, which is a separate compositing step. */
+  canvas { position: absolute; inset: 0; display: block; width: 100%; height: 100%;
+    image-rendering: pixelated; image-rendering: crisp-edges; }
   #boot { position: absolute; inset: 0; z-index: 20; display: grid; place-items: center;
     background: linear-gradient(145deg, #101c27, #071018 58%, #040911); color: #9fb6c6;
     font-size: 13px; letter-spacing: .04em; transition: opacity .25s ease; }
@@ -34,7 +42,15 @@
   /* Hit-target only while visible: an invisible pill must never swallow a tap meant for the map. */
   #prompt[data-show="true"] { opacity: 1; pointer-events: auto; }
   #prompt:active { background: rgba(24,42,58,.92); }
-  #dialogue { position: absolute; left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); z-index: 12;
+  /* Owner: the dialogue box rendered UNDER the bottom tab bar. Same root cause the #pad comment
+     below documents -- the parent's #fieldTabs (z-index 90, ~62-96px tall with its own safe-area
+     padding) sits in a STACKING CONTEXT above this whole iframe (z-index 70 in adapter.js), so no
+     z-index set in here can ever win against it; the fix has to be positional, not z-index. 76px
+     is the clearance this runtime already uses for the pad (`#pad`'s `bottom`, matching the
+     parent stick), reused here so the box sits fully above the bar instead of merely not
+     overlapping its very bottom edge. */
+  #dialogue { position: absolute; left: 12px; right: 12px;
+    bottom: calc(76px + var(--sa-bottom, env(safe-area-inset-bottom, 0px))); z-index: 12;
     padding: 14px 16px; border-radius: 12px; background: rgba(6,12,18,.94);
     border: 1px solid rgba(150,200,230,.42); color: #eaf3fa; display: none; }
   #dialogue[data-open="true"] { display: block; }
@@ -131,6 +147,25 @@ const [locks, town] = await Promise.all([
   }),
 ]);
 const walkable = await fetch(`./${town.walkable}`).then(r => r.json());
+// ---- scale needed before validation, all of it derived from the town config, none hardcoded ---
+const CELL_W = town.worldPxPerCell;                    // 16 world px per cell
+const cellToWorld = c => ({ x: c[0] * CELL_W, y: c[1] * CELL_W });
+
+// Owner: "the NPC icons need to be a hard blocker (we can walk through them)". The collision
+// authority (walkable-polygons.js) has no concept of an NPC -- it only knows regions, static
+// obstacles and dynamicBlockers -- so each stationary NPC is registered as a zero-length
+// dynamicBlocker segment (from === to, a plain disk via distanceToSegment) at her cell, BEFORE
+// validation runs so the geometry the game actually plays on is the one that gets checked. A
+// 7 world-px half-width is roughly a third of a cell: enough to read as a solid body without
+// swallowing the south-side approach band nearestNpc() uses for the talk prompt.
+const NPC_BLOCK_RADIUS = 7;
+walkable.dynamicBlockers = [
+  ...(walkable.dynamicBlockers || []),
+  ...town.npcs.map(n => {
+    const point = cellToWorld(n.cell);
+    return { id: `npc-${n.id}`, from: point, to: point, halfWidth: NPC_BLOCK_RADIUS };
+  }),
+];
 validateWalkableGeometry(walkable);
 
 const loadImage = src => new Promise((resolve, reject) => {
@@ -149,13 +184,11 @@ if (heroSheet.naturalWidth !== 192 || heroSheet.naturalHeight !== 512) {
     + 'expected 192x512. See docs/CANONICAL-ASSETS.md');
 }
 
-// ---- scale, all of it derived from the locks and the town config, none hardcoded -------------
-const CELL_W = town.worldPxPerCell;                    // 16 world px per cell
+// ---- remaining scale, all of it derived from the locks and the town config, none hardcoded ----
 const WORLD = town.cells * CELL_W;                     // 1040 world px square
 const HERO_H = locks.heroWorldHeight;                  // 36
 const VIEW_W = locks.cameraWorldWidth;                 // 208
 const SPEED = walkable.movement?.movementSpeed ?? 52;  // world px / second
-const cellToWorld = c => ({ x: c[0] * CELL_W, y: c[1] * CELL_W });
 
 // NPC sheets are 3 cols x 4 rows of 64. The owner made these stationary, so only column 0 /
 // row 0 -- the front-facing idle -- is ever drawn; the other rows exist but are unused.
