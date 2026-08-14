@@ -88,7 +88,7 @@ ACT1_OVERLAY_FILES = {
     # save format round-trips to itself (measured: 742 of 754 reportable cells reload unchanged, the
     # other 12 settle one cell north once; largest rescue nudge 28 px against a 96 px bound).
     "dq-tiles.js": (
-        328299, "966991ea404629640c5cfa2e20c07d2b247721eb23d3d6716d9e1ef888764af4"),
+        332312, "f029a0b031b91fb702e4fd6c9be64a18dcd09703516996e64eb2f41f43b18fae"),
     # 2026-08-07: THE OVERWORLD'S COLLISION SHAPE, baked -- the overworld's answer to the dungeons'
     # `<floor>-walk.png` above, and as much a shipped authority as they are. Deriving it at runtime
     # was correct and unaffordable: owmBuild() evaluated waterField/mountainField per pixel over a
@@ -143,7 +143,7 @@ ACT1_OVERLAY_FILES = {
     # the control-orientation setting, into the frame. First override of this file since the
     # v1.17.1 baseline was frozen, which is why it had no entry before.
     "ui-overhaul.js": (
-        127713, "19b2babfbf50367455e58ff35be4491dd64f0d45f66ae1065211f7191946d856"),
+        129768, "f7627e8053a283f7f30c6e6d5fd4ed56e461053e5c0aed9a5d980078f44dc909"),
     # 2026-08-06, owner pick: "Charcoal & Gold Leaf" (direction 4 of
     # design/ui-overhaul/chic-style-board.html). The same gold as before -- the pixel art, the
     # dungeon plates and the town screens were all approved against it -- spent differently:
@@ -153,7 +153,7 @@ ACT1_OVERLAY_FILES = {
     # bundled rather than fetched; the short version is that it never reached the phone at all.
     # Like ui-overhaul.js above, first override of this file since the baseline was frozen.
     "ui-overhaul.css": (
-        43040, "5d452094030ffcf635acb03c861f36df764095ad8ffe7f2a70b036400ce0e3bf"),
+        44401, "f70c1ff554c9e4a66cdcf96b4a88bd4e90df43e78f0a09a390710cb79695043b"),
 }
 # 2026-08-06, owner-picked ("Charcoal & Gold Leaf", direction 4 of
 # design/ui-overhaul/chic-style-board.html): the chrome the theme needs on disk rather than
@@ -272,7 +272,7 @@ ACT1_DUNGEON_FILES = {
     "act1-dungeon-art/sunkenCellar-f2-walk.png": (
         6975, "b22ccd7a8e74917db5bd5f745f87fab6f77cbab438c4a76b9153518cd11f300f"),
     "act1-dungeon-art/sunkenCellar-f3-walk.png": (
-        8406, "e4816933998c3855d41c3286a225f0ff083366c7059b623100245ee5cc92f6ea"),
+        9427, "2fe034dcad6145dec619999a0809ccb433c5f3a5841487b203d29e9d621fb4d9"),
     # 2026-08-06, owner: DARKFANG GROTTO (mistyGrotto), the Act 1 boss dungeon, shipped no baked
     # art at all and paid the full procedural cost on every entry. Its first three floors are now
     # baked at the locked 0.95 wall face; B4F and B5F have no authored layout (the bundle declares
