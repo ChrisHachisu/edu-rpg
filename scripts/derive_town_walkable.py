@@ -487,7 +487,12 @@ def main() -> None:
         },
         "width": world_w, "height": world_w,
         "actorFootRadius": 4, "maxSubstep": 2,
-        "movement": {"movementSpeed": 52,
+        # 260, not 52: matches public/dq-tiles.js A1M_SPEED, the dungeon's owner-validated
+        # continuous-movement pace. All three Act 1 hi-fi surfaces share cameraWorldWidth=208 and
+        # heroWorldHeight=36 (manifest.json designLocks), so world-px/second is directly
+        # comparable across them. 52 was an untuned placeholder; the owner reported town movement
+        # as "much slower, which feels weird" against the overworld/dungeon (2026-08-13/14).
+        "movement": {"movementSpeed": 260,
                      "collisionRule": ("actor center must remain inside at least one walkable "
                                        "polygon with actor-foot clearance")},
         "designDecisions": {
