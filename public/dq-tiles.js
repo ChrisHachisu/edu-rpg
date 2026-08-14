@@ -1037,6 +1037,8 @@
   // back -- this is the dial: 7 or 8 buys a window of hysteresis at ~49 MB a slot. Door round trips
   // are already covered separately by a1aReleaseChunks keeping A1A.win.
   var A1A_MAX_CHUNKS=6;
+  // Drain-rate state: >0 means "we just came back from a departure, rebuild fast". See kind==='ow'.
+  var A1AB={ burst:0 };
   // Leaving the overworld TRIMS the chunk cache down to the one window the hero is standing in, and
   // drops everything else. It used to drop ALL of it, and that was the whole of SMOOTH-5.
   //
@@ -4701,10 +4703,34 @@
       // Canopy and water are the treeline and the glint: both are drawn ABOVE the terrain, both are
       // invisible under a full-screen battle overlay, and both come back from objects we still hold
       // -- the decoded water image and the canopy composite bitmap -- so returning is an addImage,
-      // not a re-decode or a re-composite. BASE is deliberately kept: dropping it would leave the
-      // player looking at flat sea on the way out of every battle, which is the very symptom item 8
-      // reported. This attacks the encounter PEAK, which is where the context actually dies.
-      try{ a1aDropLayerGpu('canopy'); a1aDropLayerGpu('water'); }
+      // not a re-decode or a re-composite. This attacks the encounter PEAK, which is where the
+      // context actually dies.
+      //
+      // ~~"BASE is deliberately kept: dropping it would leave the player looking at flat sea on the
+      // way out of every battle."~~ **The owner's build-24 report retires that trade, 2026-08-14:**
+      // *"the pause happened right after a battle started. yt paused too. after the battle the
+      // screen was blue."* A YouTube video in ANOTHER app pausing is iOS reclaiming system-wide, so
+      // the encounter peak is still over the line, and the blue screen he got AFTER the battle is
+      // the context having died DURING it. Keeping base bought a smoother exit from a battle that
+      // increasingly does not survive to have one.
+      //
+      // Base comes back exactly as cheaply as the other two: `rec.base` is a decoded image we still
+      // hold and a1aTexFor's non-canopy path is a bare addImage from it. The drain also takes base
+      // jobs FIRST across chunks (a1aTakeTexJob), and the burst below shortens the gap further, so
+      // the cost is a brief sea-coloured moment on exit rather than the permanent one item 8
+      // reported -- that symptom was a renderer that never rebuilt at all, which is a different
+      // fault and is fixed.
+      //
+      // THE COMPOSITES GO TOO. Dropping the canopy TEXTURE hands back Phaser's reference to each
+      // 1536x1536 composite bitmap, but not ours (`rec.bm.canopyComposite`), so ~9.4 MB a chunk
+      // survived the drop it was supposed to be freed by. a1aFreeComposite drops our half; it is
+      // rebuilt from rec.base + rec.canopy, both still held. Together with base that is ~19 MB a
+      // chunk off the encounter peak, ~95 MB across a departure window.
+      try{
+        a1aDropLayerGpu('canopy'); a1aDropLayerGpu('water'); a1aDropLayerGpu('base');
+        Object.keys(A1A.chunks).forEach(function(id){ a1aFreeComposite(A1A.chunks[id]); });
+        A1A.drew=false;                                  // the sprites are gone; force a rebuild on return
+      }
       catch(e){ if(window.__DQ_DEBUG__) console.log('dq battle layer drop '+e); }
       return;
     }
@@ -4748,9 +4774,20 @@
       return;
     }
     if (kind==='ow'){
+      // RETURNING FROM A DEPARTURE IS A BURST, STEADY WALKING IS A TRICKLE. One texture per 80 ms
+      // tick is the right rate while the player is walking, because the ring has already loaded what
+      // the next step needs and a burst there would only cost frames. Coming back from a battle or a
+      // town is the opposite case: the battle path now drops every chunk layer from the GPU (see
+      // there), so the window has to be rebuilt from scratch and at one per tick a nine-texture
+      // window takes ~720 ms -- visible as a sea-coloured moment, which is exactly the cost the old
+      // "keep base" comment was avoiding. These uploads are addImage from bitmaps already in memory
+      // (~2 ms each, measured), so the burst is affordable in a frame the player is already watching
+      // a scene transition through. Three ticks of it clears a full window.
+      if(A1A.released) A1AB.burst=3;                   // latch the moment we come BACK, before the flag clears
       A1A.released=false;                              // back on the overworld: arm the next departure's trim
       a1aFetch();                                      // one-shot; the Act 1 art manifest + landmark table
-      try{ a1aDrainTex(scene,1); }catch(e){ if(window.__DQ_DEBUG__) console.log('dq tex q '+e); } // one chunk texture per tick, ahead of the step that needs it
+      var _n=1; if(A1AB.burst>0){ _n=6; A1AB.burst--; }
+      try{ a1aDrainTex(scene,_n); }catch(e){ if(window.__DQ_DEBUG__) console.log('dq tex q '+e); } // one chunk texture per tick while walking; a burst on return
       var mapId=scene.currentMapId+':'+scene.mapData.length+'x'+(scene.mapData[0]?scene.mapData[0].length:0);
       // DATA MUTATION (owner-approved sandbox exception): consolidate sprinkled mountains in mapData IN PLACE,
       // ONCE per map ARRAY, BEFORE reskin — so overlay + minimap + collision all read the same tiles. The body
