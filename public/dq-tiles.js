@@ -1026,17 +1026,31 @@
   // cache was still free to grow to ten chunks while walking; shrinking the ring alone did not stop
   // that. Struck here rather than in a new note, per docs/GROUND-TRUTH.md.
   //
-  // SET TO THE MEASURED WORST-CASE WINDOW. 6 is the peak intersection over 192 window steps swept
-  // across the plate (mean 3.58). It cannot evict a chunk that is being drawn, and not by luck: the
-  // ring is touched FIRST and the drawn chunks LAST, so the LRU's old end is always the speculative
-  // and departed ones, and the `max(cap, keep.length)` floor raises the cap on any device whose
-  // window genuinely needs more (iPad mini 8.3 portrait reaches 12). Worst case ~296 MB instead of
-  // ~493 MB.
+  // SET TO THE MEASURED WORST-CASE WINDOW -- **re-derived 2026-08-14 for the 16-cell grid.**
+  // ~~"6 is the peak intersection ... worst case ~296 MB"~~ was correct for the 32-cell chunks and
+  // is wrong now: the plate was RE-TILED from 30 chunks of 32 cells to 120 chunks of 16 cells
+  // (chunkSize 512 -> 256), because a 32-cell chunk against a ~9-cell camera meant most of every
+  // loaded chunk was off screen. Same pixels -- the re-cut is exact, proven over the FULL set at
+  // max abs diff 0, cropped from the existing baked raster rather than re-rendered.
+  //
+  // Swept over the real geometry, 192 window steps across the plate:
+  //     32-cell grid   window needs peak  6   ~443 MB worst ring
+  //     16-cell grid   window needs peak 12   ~148 MB worst ring   <- this
+  //      8-cell grid   window needs peak 72   ~222 MB, 3.4x the HTTP requests -- rejected
+  // 12 is that peak intersection, so the cap cannot evict a chunk being drawn -- and not by luck:
+  // the ring is touched FIRST and the drawn chunks LAST, so the LRU's old end is always the
+  // speculative and departed ones, and the `max(cap, keep.length)` floor raises the cap on any
+  // device whose window genuinely needs more.
+  //
+  // MEASURED IN A LIVE SCENE at the same seeded window, not simulated: resident chunk textures
+  // **156.9 MB -> 59.8 MB**. And it survives the test that killed the previous memory attempt: a
+  // real WEBGL_lose_context loss/restore cycle returns to the byte-identical resident state with
+  // ZERO network refetches (the reverted attempt managed 108 refetches and never recovered).
   //
   // If BACK-TRACKING starts to churn -- walk east, turn around, and the chunk behind you has to come
   // back -- this is the dial: 7 or 8 buys a window of hysteresis at ~49 MB a slot. Door round trips
   // are already covered separately by a1aReleaseChunks keeping A1A.win.
-  var A1A_MAX_CHUNKS=6;
+  var A1A_MAX_CHUNKS=12;
   // Drain-rate state: >0 means "we just came back from a departure, rebuild fast". See kind==='ow'.
   var A1AB={ burst:0 };
   // Leaving the overworld TRIMS the chunk cache down to the one window the hero is standing in, and
