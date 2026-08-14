@@ -3161,6 +3161,18 @@
     if(l<1e-6) return base;                                                  // flat field: no wall to read
     return base + k*A1M_CH*(1+ny/l)*0.5;         // 1 rock due north, 0.5 due east/west, 0 due south
   }
+  // How far past her SOLES a1mBump has to probe to be sure it lands inside the tile that
+  // actually stopped her, derived from the same numbers a1mNeed/a1mStep use rather than
+  // guessed. Her resting distance from rock is NOT a flat A1M_FOOT: a1mNeed just above adds up
+  // to A1M_LEAN*A1M_CH thirds (A1M_LEAN px) more when the rock is due north of her -- exactly
+  // the geometry of walking straight into a sign, a chest or a boss marker -- and because
+  // clearance is only re-checked once per A1M_STEP substep, the substep that finally gets
+  // refused can leave her resting up to one more A1M_STEP short of that boundary. Worst case is
+  // therefore A1M_FOOT + A1M_LEAN + A1M_STEP, plus 2px of slop.
+  // MEASURED 2026-08-14 at Sunken Cellar B1F's plaque (21,21): the old `A1M_FOOT+2` (14px) probe
+  // landed 1.3px short of the sign's own tile row and silently did nothing -- a straight,
+  // due-north bump into an object undershoots by exactly the lean term this now accounts for.
+  var A1M_BUMP_REACH = A1M_FOOT + A1M_LEAN + A1M_STEP + 2;
   /* ---- THE OVERWORLD'S SECOND AUTHORITY, AND WHY IT IS canMove ---------------------------------
      This mover replaced the engine's own tile stepping on the overworld (a1mStep now takes the
      field from a1mAnyFor, which falls through to owmFor). The engine's stepping consulted
@@ -3602,7 +3614,34 @@
     return v;
   }
   /* Walking into an OBJECT is the engine's interaction verb; mirror its own bump branch exactly
-     (tile 4 -> tryOpenTreasure, 7 and 18 -> interact) rather than inventing behaviour for it.
+     (tile 4 -> tryOpenTreasure, 7 -> tryBossInteract, 18 -> tryReadPlaque) rather than inventing
+     behaviour for it.
+
+     DISPATCH DIRECTLY TO THE TILE-SCOPED METHOD, NOT `scene.interact()`. `interact()` re-derives
+     the tile it acts on from `heroTileX/heroTileY + heroDir`, and heroTileX/heroTileY are
+     reported from the sprite CENTRE while collision (and this probe) work from her SOLES --
+     the same centre-vs-soles split a1mStep's own re-derivation comment already calls out
+     ("heroTile can now name a cell her body overlaps but her feet are not on"). MEASURED
+     2026-08-14 at Sunken Cellar B1F's plaque (21,21): by the time she is stopped at it,
+     heroTileY has already advanced onto the plaque's OWN row (sprite centre crossed in before
+     her soles arrived), so `interact()`'s re-derivation looked at (21,20) -- one tile past the
+     sign -- and found nothing, even though the bump had just identified (21,21) correctly.
+     tryOpenTreasure(x,y) and tryReadPlaque(x,y)/tryBossInteract(x,y) all take the exact cell
+     explicitly, exactly like this probe already has in `tx,ty`, so calling them directly removes
+     the re-derivation step instead of trying to keep it in sync.
+
+     TILE 14 (the save/warp crystal, Ts) ADDED 2026-08-14. It was in A1M_PROP -- so it already
+     stopped her, exactly like a chest or a boss marker -- but had no dispatch case here, so
+     bumping it did nothing at all: not even the base engine's OWN discrete canMove-refusal path
+     sends a bump to it (see WorldMapScene.update()'s h===... chain, which has no case for Ts
+     either), so this was dead on keyboard too, not just on touch. There is no standalone
+     tryXxx(x,y) for it -- the floor-1 entrance and every mid-floor crystal are both handled
+     inline inside interact() off `this.mapData[i][T] === Ts` -- so this one case still has to go
+     through interact(), and therefore still has to work around the re-derivation problem above:
+     it presents heroTileX/heroTileY as if they had not yet drifted onto the crystal's row (one
+     step back along heroDir, which the bump already knows), calls interact(), then restores the
+     real values immediately after. The crystal handlers never move the hero, so nothing is lost
+     by the round trip.
 
      AND A DOOR IS AN OBJECT YOU WALK INTO. Every Act 1 town entrance is a BLOCKER cell -- tile 6
      for a village, 15 for the Crystal gate -- and the engine enters one by asking checkTransition
@@ -3627,15 +3666,29 @@
     var l=Math.sqrt(dx*dx+dy*dy); if(!l) return;
     // Probe from the SOLES: a1mFree stopped her there, so that is where the object she walked into
     // is. Probing from the sprite centre would have looked a cell north of the thing that blocked.
+    // Reach is A1M_BUMP_REACH, not a flat A1M_FOOT+2 -- see its own comment for why a shorter
+    // probe systematically undershoots a due-north object.
     var gy=y+a1mFootDy(scene);
-    var tx=(((x+dx/l*(A1M_FOOT+2))/TILE)|0), ty=(((gy+dy/l*(A1M_FOOT+2))/TILE)|0);
+    var tx=(((x+dx/l*A1M_BUMP_REACH)/TILE)|0), ty=(((gy+dy/l*A1M_BUMP_REACH)/TILE)|0);
     var row=scene.mapData[ty], t=row?row[tx]:undefined;
     if(t===undefined || !(m.prop||A1M_PROP)[t]) return;
     var now=Date.now(); if(now-a1mState.bump<700) return; a1mState.bump=now;
     var ddx=tx-scene.heroTileX, ddy=ty-scene.heroTileY;                      // face it, like a step would
     if(Math.abs(ddx)+Math.abs(ddy)===1) scene.heroDir=ddx?(ddx>0?2:1):(ddy>0?0:3);
-    try{ if(t===4) scene.tryOpenTreasure(tx,ty);
-         else if(t===7||t===18) scene.interact(); }catch(e){}
+    try{
+      if(t===4) scene.tryOpenTreasure(tx,ty);
+      else if(t===18) scene.tryReadPlaque(tx,ty);
+      else if(t===7) scene.tryBossInteract(tx,ty);
+      else if(t===14){
+        // No standalone helper -- route through interact(), presenting the pre-drift position it
+        // needs to re-derive (tx,ty) itself (see the header comment above this function).
+        var fx=scene.heroTileX, fy=scene.heroTileY;
+        var ddx2=(scene.heroDir===2?1:(scene.heroDir===1?-1:0)),
+            ddy2=(scene.heroDir===0?1:(scene.heroDir===3?-1:0));
+        scene.heroTileX=tx-ddx2; scene.heroTileY=ty-ddy2;
+        try{ scene.interact(); } finally { scene.heroTileX=fx; scene.heroTileY=fy; }
+      }
+    }catch(e){}
   }
   /* ---- A DOOR IS ASKED FOR, NOT WALKED INTO ---------------------------------------------------
      Every Act 1 town entrance is a BLOCKER cell -- tile 6 for a village, 15 for the Crystal gate --

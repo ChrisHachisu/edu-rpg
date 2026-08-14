@@ -427,7 +427,21 @@
 @keyframes qok-enemycrit{ 0%{transform:scale(1); filter:brightness(1);} 18%{transform:scale(1.22); filter:brightness(1.9) saturate(2.4) sepia(.5) hue-rotate(-12deg);} 40%{transform:scale(1.04); filter:brightness(1.1);} 62%{transform:scale(1.14); filter:brightness(1.6) saturate(1.8) sepia(.4);} 100%{transform:scale(1); filter:brightness(1);} }
 #qok-stage.qok-shake{ animation:qok-shakeanim .42s ease; }
 @keyframes qok-shakeanim{ 0%,100%{transform:translate(0,0);} 18%{transform:translate(-6px,3px);} 38%{transform:translate(5px,-3px);} 58%{transform:translate(-4px,2px);} 78%{transform:translate(3px,-1px);} }
-@media (prefers-reduced-motion: reduce){ #qok-ui .dmgnum, #qok-ui .critlabel{ animation-duration:.6s; } #qok-stage.qok-shake, #qok-ui .bmon.qok-hit, #qok-ui .bmon.qok-crithit{ animation:none; } }
+/* Killing-blow collapse. Same punch-then-settle language as qok-enemycrit (scale + brightness/
+   saturate on the way in) so it reads as the same effects family, then sinks, shrinks and fades
+   the way a defeated sprite should -- never removed by JS, `forwards` holds the end state until
+   the next screen replaces the element outright. transform-origin matches qok-crithit's bottom
+   anchor so the collapse reads as falling onto the ground the sprite is already standing on. */
+#qok-ui .bmon.qok-defeated{ transform-origin:center bottom; animation:qok-enemydefeat .62s cubic-bezier(.4,0,.2,1) forwards; pointer-events:none; }
+@keyframes qok-enemydefeat{
+  0%   { transform:translateY(0) scale(1) rotate(0deg); filter:brightness(1) saturate(1); opacity:1; }
+  14%  { transform:translateY(-5px) scale(1.08) rotate(-3deg); filter:brightness(2.3) saturate(0); opacity:1; }
+  32%  { transform:translateY(2px) scale(.95) rotate(3deg); filter:brightness(1.2) saturate(.25); opacity:1; }
+  58%  { transform:translateY(9px) scale(.8) rotate(-4deg); filter:brightness(.75) saturate(0); opacity:.65; }
+  100% { transform:translateY(26px) scale(.3) rotate(6deg); filter:brightness(.5) saturate(0); opacity:0; }
+}
+@media (prefers-reduced-motion: reduce){ #qok-ui .dmgnum, #qok-ui .critlabel{ animation-duration:.6s; } #qok-stage.qok-shake, #qok-ui .bmon.qok-hit, #qok-ui .bmon.qok-crithit{ animation:none; } #qok-ui .bmon.qok-defeated{ animation-duration:.01s; animation-name:qok-defeatfadeonly; } }
+@keyframes qok-defeatfadeonly{ 0%{opacity:1;} 100%{opacity:0;} }
 
 /* item-use toast (surfaces the hidden showItemMessage feedback) */
 #qok-ui .qok-toast{ position:fixed; left:50%; bottom:17%; transform:translateX(-50%); z-index:70; pointer-events:none;

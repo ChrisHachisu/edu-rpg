@@ -776,6 +776,13 @@
   // capture each resolved hit, then re-bridge the visuals in the DOM. (Audio SFX still
   // fire from Phaser unaffected.)
   var _hitSeq = 0, _hitShown = 0, _lastHit = null;
+  // Owner report: "no satisfying defeat animation when an enemy is beaten". The Phaser-side
+  // showVictory() tween (frozen bundle) animates `this.monsterSprite` on the CANVAS, which is
+  // exactly the layer the comment above says is hidden behind this opaque DOM overlay during
+  // battle -- so that tween has never been visible on device, on any screen, ever. Same class of
+  // bug as the hit/crit FX above, same fix: catch the moment on handleCombatResult and play it in
+  // the DOM against the real `.bmon` element instead of touching the frozen bundle.
+  var _defeatSeq = 0, _defeatShown = 0;
   var _resolveBaseline = null; // messageText captured at answer-time; resolve feedback shows only until it changes
   function patchBattle(bs) {
     if (!bs || bs.__qokHitPatched) return;
@@ -787,6 +794,8 @@
         // record real damage hits only; victory/defeat/fled get their own screens
         if (x && typeof x.damage === 'number' && x.state !== 'victory' && x.state !== 'defeat' && x.state !== 'fled') {
           _lastHit = { who: this.quizForPlayer ? 'enemy' : 'player', dmg: x.damage | 0, crit: !!x.critical, seq: ++_hitSeq };
+        } else if (x && x.state === 'victory') {
+          _defeatSeq++;
         }
       } catch (e) {}
       return orig.apply(this, arguments);
@@ -827,8 +836,30 @@
       setTimeout(function () { try { cl.remove(); } catch (e) {} }, 1100);
     }
   }
+  // Killing blow: a short, non-blocking collapse on the real `.bmon` element -- reuses the same
+  // shake keyframe the hurt-flash already plays (see qok-shake in ui-overhaul.css) and one new
+  // keyframe (qok-enemydefeat) built from the same punch-then-settle language as qok-enemycrit,
+  // so it reads as part of the same effects family rather than a new style. 620ms total, well
+  // under the reward.celebration (900ms) token in design/GAME-FEEL.md, and it never blocks input:
+  // the victory message and battleAdvance tap target paint in the same frame as always, this is
+  // purely decorative on top. `animation-fill-mode: forwards` (in the CSS rule) holds the faded,
+  // shrunk end state so the sprite does not pop back to full size on the next identical-sig
+  // repaint while the victory text is still on screen.
+  function spawnDefeatFx() {
+    if (!root) return;
+    var el = root.querySelector('.bmon');
+    if (el) { el.classList.remove('qok-defeated'); void el.offsetWidth; el.classList.add('qok-defeated'); }
+    if (stage) {
+      stage.classList.remove('qok-shake'); void stage.offsetWidth; stage.classList.add('qok-shake');
+      setTimeout(function () { try { stage.classList.remove('qok-shake'); } catch (e) {} }, 460);
+    }
+  }
   function runBattleFx(bs) {
     patchBattle(bs);
+    if (_defeatSeq !== _defeatShown) {
+      _defeatShown = _defeatSeq;
+      try { spawnDefeatFx(); } catch (e) {}
+    }
     if (!_lastHit || _lastHit.seq === _hitShown) return;
     _hitShown = _lastHit.seq;
     try { spawnFx(_lastHit); } catch (e) {}
