@@ -88,7 +88,7 @@ ACT1_OVERLAY_FILES = {
     # save format round-trips to itself (measured: 742 of 754 reportable cells reload unchanged, the
     # other 12 settle one cell north once; largest rescue nudge 28 px against a 96 px bound).
     "dq-tiles.js": (
-        328299, "966991ea404629640c5cfa2e20c07d2b247721eb23d3d6716d9e1ef888764af4"),
+        332110, "abde05be7163e8828af63269ac4f3e114ece0a1036f0de8c49e5c0a9b7eceaa5"),
     # 2026-08-07: THE OVERWORLD'S COLLISION SHAPE, baked -- the overworld's answer to the dungeons'
     # `<floor>-walk.png` above, and as much a shipped authority as they are. Deriving it at runtime
     # was correct and unaffordable: owmBuild() evaluated waterField/mountainField per pixel over a
@@ -438,7 +438,17 @@ ACT1_R26_RUNTIME = ACT1_HIFI_RUNTIME / "act1-final-art-geometry-r26" / "runtime"
 # Total payload 18.0 MB against 19 MB, at three times the linear resolution.
 # NOTE: scripts/promote_act1_r26_runtime.py is SUPERSEDED by this and must not be run -- it
 # regenerates the 16 px chunks from candidate-art.png and would overwrite the bake.
-ACT1_HIFI_MANIFEST_SHA256 = "0c773b18de2956450d7bb7b4716dc66d39fd196bb0c133b15d977da7db2e5988"
+#
+# 2026-08-14, revision 11 -> 12: RE-TILED from 32-cell (512-unit) chunks to 16-cell (256-unit)
+# chunks -- same reason the SHA re-stamp exists on dq-tiles.js: an intentional structural change
+# must be a deliberate re-pin, never a silent drift. The owner's iPhone 13 was losing its WebGL
+# context because a live chunk window held up to 10 * ~49 MB (~493 MB peak): the 32-cell grid was
+# ~4x too coarse for a ~9-cell camera window, so almost every loaded chunk was mostly off-screen
+# padding. scripts/retile_act1_chunks.py CROPPED the existing 32-cell raster (never re-rendered
+# it) into the new grid and proved zero pixel difference on recomposition -- see
+# docs/handoffs/2026-08-14-act1-chunk-retile.md. Pixels are unchanged; only the chunk boundaries
+# moved, so this is a re-tiling, not new art.
+ACT1_HIFI_MANIFEST_SHA256 = "376296f5464c5436a554b5085df939011af6f78939b6c612c6a70c147fd22c84"
 # The chunk layers the shipped tree must carry, read out of the locked manifest above. `occlusion`
 # was retired with the 48 px bake; a stale entry here would make the gate demand a file that no
 # longer exists and reject the one that replaced it.
@@ -678,7 +688,7 @@ def verify_act1_overlay(root: Path, allowed_extra: frozenset[str] = frozenset())
     if sha256(hifi_manifest_path) != ACT1_HIFI_MANIFEST_SHA256:
         raise BaselineError("locked Act 1 high-fidelity manifest identity changed")
     hifi_manifest = json.loads(hifi_manifest_path.read_text(encoding="utf-8"))
-    if hifi_manifest.get("revision") != 11:
+    if hifi_manifest.get("revision") != 12:
         raise BaselineError("locked Act 1 high-fidelity manifest revision changed")
     hifi_files = {
         "index.html": "runtime.html",

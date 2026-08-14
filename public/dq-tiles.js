@@ -976,13 +976,40 @@
   var A1A={ manifest:null, req:false, S:0, chunks:{}, lru:[], win:[], released:false, landmarks:null, dirty:false, drew:false,
                 imgs:{}, tex:{}, spriteScene:null, lastRects:null, lastFull:false,
                 texQ:[], texQd:{}, bmPend:{} };
-  // A 40x38 window can INTERSECT 9 chunks (measured over every plate position, worst case at cell
-  // 41,245). The cap must never sit below that or the trim evicts a chunk the current window still
-  // needs, which re-requests and re-evicts it forever: the window never reports full coverage, so
-  // the per-pixel splat runs every update and tick() force-rebuilds the overlay at 12.5 Hz.
-  // It must not sit far ABOVE it either -- a decoded chunk is ~9 MB of base plus ~9 MB of canopy,
-  // so every slot is ~19 MB of resident image. 10 is the smallest value with headroom over 9.
-  var A1A_MAX_CHUNKS=10;
+  // 2026-08-14: RE-DERIVED for the 16-cell (256-unit) chunk grid -- the 32-cell grid this comment
+  // used to describe was ~4x too coarse in each axis for a ~9-cell camera window, so a live chunk
+  // window held up to A1A_MAX_CHUNKS(10) * ~49 MB =~ 493 MB, which is what was losing the WebGL
+  // context on an iPhone 13. Pixels are UNCHANGED (scripts/retile_act1_chunks.py crops the existing
+  // baked raster, proven zero-diff on recomposition); only the chunk boundaries got finer.
+  //
+  // A1A_RING_MARGIN is now 0 (see a1aRingChunks below) -- the one-step lookahead prefetch this file
+  // used to justify at length is TRADED AWAY here for peak residency, deliberately: with margin 0,
+  // a1aRingChunks degenerates to exactly the bare window a1aRects already computes, so "ring" and
+  // "window" chunk counts are identical for this grid.
+  //
+  // Measured over 192 window steps across the plate (33x39-cell window, the real iPhone 13/17 Pro
+  // size -- see the retired analysis a few screens down for why that size is device-stable):
+  //   16-cell window needs: mean 8.3 chunks, peak 12 (worst case, matches the geometry sweep in
+  //   docs/handoffs/2026-08-14-act1-chunk-retile.md). cap 12 -> peak resident ~148 MB;
+  //   cap 16 -> ~197 MB; cap 20 -> ~246 MB. Shipped 32-cell grid for comparison: peak 6 chunks
+  //   (no ring) / 9 (with the old MARGIN ring), ~296-443 MB.
+  // 12 is therefore the measured worst-case window intersection, not a padded guess -- the trim's
+  // own floor, Math.max(A1A_MAX_CHUNKS, keep.length), still protects any device whose window
+  // happens to need more than 12: the cap simply rises for that frame rather than evicting a chunk
+  // still on screen. A decoded+GPU-resident 16-cell chunk is ~12.32 MB (20*(48*16)^2 + 8*(16*16)^2
+  // bytes -- base decode + canopy decode + canopy composite + water decode, plus base + canopy +
+  // water GPU textures; every term is width*height*4 for some layer, so the coefficients scale
+  // exactly with cell size, not by re-fitting).
+  var A1A_MAX_CHUNKS=12;
+  // Ring lookahead padding, in CELLS, on all four sides of the bare window -- see a1aRingChunks.
+  // 0 for the 16-cell grid: the "ask one window-step early" prefetch this file argued for at
+  // length below (search "A RING OF ONE MARGIN IS FREE") assumed padding=MARGIN(12) was cheap
+  // because the coarse 32-cell grid was ALREADY loading up to 9 of its 30 chunks per window, so
+  // padding by one more window-step rarely added a chunk. At 16 cells the grid is 4x finer and
+  // that assumption is false -- the same padding would push the ring from 12 chunks to well past
+  // it. Set back to MARGIN (or a smaller nonzero value) only after re-measuring the ring cost at
+  // THIS grid size; do not restore it by inlining MARGIN again without re-deriving A1A_MAX_CHUNKS.
+  var A1A_RING_MARGIN=0;
   // Leaving the overworld TRIMS the chunk cache down to the one window the hero is standing in, and
   // drops everything else. It used to drop ALL of it, and that was the whole of SMOOTH-5.
   //
@@ -1009,12 +1036,16 @@
   //     retained image can only ever be re-blitted, never re-shown stale.
   // The invalidation is therefore "never, within a session", and the page load is what clears it.
   //
-  // WHAT IT COSTS. Off-overworld residency goes from 0 to the departure window's chunks -- measured
-  // 4 of them (~19 MB each: 9.4 base + 9.4 canopy + 1.0 water), i.e. ~79 MB held while the player is
-  // in a town or a dungeon. That is strictly less than the A1A_MAX_CHUNKS=10 (~198 MB) the overworld
-  // already holds while being played, so this raises the OFF-overworld floor without moving the
-  // peak. The original concern -- a dungeon allocating its own base + fog canvases on top of a full
-  // 10-slot cache -- is still addressed, because the other six slots are still dropped here.
+  // WHAT IT COSTS. Off-overworld residency goes from 0 to the departure window's chunks. Figures
+  // below are for the ORIGINAL 32-cell grid (measured 4 chunks, ~19 MB each: 9.4 base + 9.4 canopy
+  // + 1.0 water, ~79 MB) and have not been re-measured for the 2026-08-14 16-cell re-tile, where a
+  // decoded 16-cell chunk is ~4.98 MB (2.35 base + 2.35 canopy + 0.26 water) and A1A.win holds
+  // whatever the last window touched (up to A1A_MAX_CHUNKS=12 worst case, ~60 MB) rather than a
+  // fixed 4 -- strictly less either way than the ~148-197 MB the overworld already holds while
+  // being played (see the A1A_MAX_CHUNKS memo above), so this still raises the OFF-overworld floor
+  // without moving the peak. The original concern -- a dungeon allocating its own base + fog
+  // canvases on top of a full cache -- is still addressed, because the rest of the slots are still
+  // dropped here.
   function a1aReleaseChunks(){
     if(A1A.released) return;                       // idempotent: tick() calls this on EVERY non-'ow' tick
     A1A.released=true;
@@ -1066,8 +1097,9 @@
   // first real window be a blit instead.
   //
   // BEST-EFFORT BY CONSTRUCTION. The render window's size comes from the camera, which does not
-  // exist yet, so this uses the 40x38 window this file already documents as the worst case (see
-  // A1A_MAX_CHUNKS above), and windowStart's map-size clamp is skipped -- the plate sits well
+  // exist yet, so this uses a fixed 40x38 pre-camera estimate (A1A_PRE_W/A1A_PRE_H below, chosen
+  // larger than the real ~33x39 camera window so the prefetch over-asks rather than under-asks),
+  // and windowStart's map-size clamp is skipped -- the plate sits well
   // inside the 320x400 overworld, so the only effect is at most one extra chunk requested for a
   // save parked on the very last row. Whatever this misses, a1aRects requests on the first real
   // window exactly as it does today; nothing downstream depends on this having been right.
@@ -1147,6 +1179,13 @@
   // BEHIND the splat's own per-pixel loop -- the splat is what makes the wait it exists to cover.
   // So the whole cost is scheduling: ask before the step and there is nothing to cover.
   //
+  // SUPERSEDED 2026-08-14 for the 16-cell grid: A1A_RING_MARGIN is 0 (see the A1A_MAX_CHUNKS memo
+  // above), so every "ring straddles N chunks" figure below is the OLD 32-cell/MARGIN-padded ring
+  // and no longer describes what this code does -- a1aRingChunks(margin=0) now returns exactly the
+  // bare window a1aRects already computes. Left in place because the window-sizing measurements
+  // (iPhone 13/17 Pro both landing on 33x39 via the ceil(), not via dpr) are still true and are
+  // reused by the 16-cell derivation. Do not read the chunk-count/MB numbers below as current.
+  //
   // A RING OF ONE MARGIN IS FREE. The window already straddles up to 9 chunks; padding it by
   // MARGIN on all four sides (a 68x62-cell rect against the window's 44x38) still straddles at
   // most 9 at THIS window size. "Raises peak residency by exactly zero" -- what this comment said
@@ -1182,8 +1221,8 @@
   function a1aRingChunks(X0,Y0,winW,winH){
     var m=A1A.manifest; if(!m) return [];
     var B=m.semanticBounds, S=A1A.S, ox=B[0]*TILE, oy=B[1]*TILE, hit=[];
-    var wx0=Math.max(0,X0-MARGIN)*TILE, wy0=Math.max(0,Y0-MARGIN)*TILE;
-    var wx1=(X0+winW+MARGIN)*TILE, wy1=(Y0+winH+MARGIN)*TILE;
+    var wx0=Math.max(0,X0-A1A_RING_MARGIN)*TILE, wy0=Math.max(0,Y0-A1A_RING_MARGIN)*TILE;
+    var wx1=(X0+winW+A1A_RING_MARGIN)*TILE, wy1=(Y0+winH+A1A_RING_MARGIN)*TILE;
     for(var i=0;i<m.chunks.length;i++){ var c=m.chunks[i];
       var cx0=ox+c.x*S, cy0=oy+c.y*S, cx1=cx0+c.width*S, cy1=cy0+c.height*S;
       if(Math.min(wx1,cx1)<=Math.max(wx0,cx0)||Math.min(wy1,cy1)<=Math.max(wy0,cy0)) continue;
@@ -1294,7 +1333,9 @@
   //  sampling every frame. So every strategy that repaints LESS of that canvas -- ring buffer,
   //  blit-shift, strip repaint, partial texSubImage2D -- was refuted before it was written.
   //
-  //  The plate is 30 baked chunks on a 5x6 grid. Handing each one to the GPU as its own texture
+  //  The plate is baked chunks on a grid (120 chunks, 256-unit/16-cell footprint, since the
+  //  2026-08-14 re-tile -- was 30 chunks on a 5x6, 512-unit/32-cell grid; see the A1A_MAX_CHUNKS
+  //  memo above). Handing each one to the GPU as its own texture
   //  and letting the CAMERA move instead of the pixels removes the per-step work entirely rather
   //  than making it smaller or moving it earlier: a chunk uploads once when it decodes, and
   //  scrolling over an uploaded chunk costs 0.0 ms (measured in the live scene).
@@ -1382,8 +1423,9 @@
   // this is one chunk per surface -- exactly the reason a1aCanopy composites chunk by chunk.
   // OffscreenCanvas, not a DOM canvas, and transferToImageBitmap rather than createImageBitmap.
   // transferToImageBitmap hands the backing store straight over; createImageBitmap has to flush
-  // and COPY a 1536x1536 surface, which measured 60-137 ms on the main thread -- the whole of the
-  // residual hitch this design was meant to remove. Sources are the already-decoded ImageBitmaps
+  // and COPY the full chunk surface (measured 60-137 ms on the main thread at the original 1536x1536
+  // 32-cell chunk size; a 16-cell chunk is 768x768, 1/4 the pixels, so this cost scales down with
+  // it) -- the whole of the residual hitch this design was meant to remove. Sources are the already-decoded ImageBitmaps
   // where available, for the same reason.
   function a1aCanopyCanvas(rec){
     if(!rec.base||!rec.canopy) return null;
@@ -1391,8 +1433,9 @@
     var cv=(typeof OffscreenCanvas!=='undefined')?new OffscreenCanvas(w,h):document.createElement('canvas');
     // Was: `cv instanceof (OffscreenCanvas ?? Object)`. When OffscreenCanvas is absent that reduces
     // to `canvas instanceof Object`, which is ALWAYS true, so the sizing below never ran and the
-    // canopy surface stayed at the DOM default 300x150 instead of 1536x1536 -- 1.9% of a chunk,
-    // i.e. wrong pixels rather than a slow path. Unreachable since the iOS floor moved to 16.4
+    // canopy surface stayed at the DOM default 300x150 instead of the full chunk size (1536x1536
+    // at the original 32-cell grid, 1.9% of it; 768x768 since the 2026-08-14 16-cell re-tile,
+    // 7.6% of it) -- i.e. wrong pixels rather than a slow path. Unreachable since the iOS floor moved to 16.4
     // (OffscreenCanvas ships from Safari 16.2), but fixed so it cannot return if that floor drops.
     if(!(typeof OffscreenCanvas!=='undefined' && cv instanceof OffscreenCanvas)){ cv.width=w; cv.height=h; }
     var sc=cv.getContext('2d'); if(!sc) return null;
@@ -1402,8 +1445,9 @@
     return cv;
   }
   // Composite the canopy ahead of need and hand the result to the GPU as an ImageBitmap, for the
-  // same reason the base layers are: addCanvas of a 1536x1536 surface costs tens of milliseconds
-  // on the main thread, addImage of a bitmap costs ~2 ms.
+  // same reason the base layers are: addCanvas of the full chunk surface (1536x1536 at the
+  // original 32-cell grid, 768x768 since the 2026-08-14 16-cell re-tile) costs tens of
+  // milliseconds on the main thread, addImage of a bitmap costs ~2 ms.
   function a1aCanopyPrepare(c,rec){
     var key='a1a_canopy_'+c.id;
     if(A1A.tex[key]||A1A.bmPend[key]) return;
@@ -4134,10 +4178,11 @@
     try{ a1vInstall(scene); }catch(e){ if(window.__DQ_DEBUG__) console.log('dq a1v install '+e); }
     // A BATTLE is the one departure from the overworld that this guard hides. Towns and dungeons
     // are map swaps -- WorldMapScene stays ACTIVE, so the kind!=='ow' branch below reaches
-    // a1aReleaseChunks and trims the Act 1 chunk cache from the full A1A_MAX_CHUNKS=10 (~198 MB)
-    // to the departure window (~4 chunks, ~79 MB). An encounter instead SLEEPS WorldMapScene and
+    // a1aReleaseChunks and trims the Act 1 chunk cache from the full A1A_MAX_CHUNKS (12 since the
+    // 2026-08-14 16-cell re-tile, ~148 MB peak; was 10, ~198 MB, on the original 32-cell grid) to
+    // the departure window. An encounter instead SLEEPS WorldMapScene and
     // runs BattleScene, so tick() returned HERE and every trim below was unreachable: the whole
-    // 10-slot cache stayed resident on the GPU underneath a full-screen battle background and a
+    // cache stayed resident on the GPU underneath a full-screen battle background and a
     // monster sprite, for the entire battle. That is the same "a scene allocates on top of whatever
     // the overworld still holds" failure the dungeon comment at the kind!=='ow' branch describes --
     // battles were simply never on that path.
