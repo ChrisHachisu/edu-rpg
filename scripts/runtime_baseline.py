@@ -373,19 +373,24 @@ ACT1_DUNGEON_FILES = {
 # no URL bar). Pinned so it cannot quietly grow into something that mutates real save data.
 ACT1_TOWN_FILES = {
     "act1-hifi/town.html": (
-        24729, "d1356db2af7e2b733f6d5362f7c76d5176dbd3c888749d76853d8a7b7aaad6e7"),
+        26846, "ffd11883cb9945bcb9d294fd5e5255d361b3562e85126640e15e5caee9bbd28e"),
     "act1-hifi/town/portSapphire-town.json": (
         2799, "59607448f149b26e092725a73f122aa8db6807df7b62124d8dc2b911aeccb76d"),
     "act1-hifi/town/portSapphire-walkable.json": (
-        32024, "372578ea5c3c4ca541a2225c85734cb1e0db8bdc34894f04554ad5d78619f38e"),
+        30824, "48b084a385060fb474ac569dd7ba5e4d156fb557ad6ace2c44be2b68ac81a570"),
     "act1-hifi/town/portSapphire-screen.png": (
         6_973_000, "87a04490428c6ae26ed238a50949646b64c0cf11770dd06336a0075e07b4dc4c"),
     # 2026-08-14, owner-authorised ("draw over the hero AND be passable"): the overhead-prop
     # foreground layer -- mast, demijohn, rooftop chimney -- re-extracted from the SAME locked
     # painting by scripts/derive_town_foreground.py and drawn by town.html AFTER the hero/NPC
     # sort. Placeholder zeros; `npm run repin` fills the real size/hash in.
+    # The cropped foreground layer is useless without its offset: town.html SKIPS the layer
+    # entirely when this is missing rather than drawing it displaced, so an unstaged offset
+    # is a silent loss of the whole feature -- which is exactly how it first shipped.
+    "act1-hifi/town/portSapphire-foreground.json": (
+        62, "1ec3178fccd061940fa05b2a77d8abbf02150ab3492e066a85c7d75d4e116537"),
     "act1-hifi/town/portSapphire-foreground.png": (
-        7951184, "80f9e4ef3197f7175d2a00283f5ed4cdbe6fc72478790e3ae4cf37c3ddcce488"),
+        1267729, "5090e2f6e34c8f61e61320f17a8010bf322fd282c632e2559660835702f90de7"),
     "act1-hifi/town/npc/portSapphire-drake-4x3-64.png": (
         51_557, "9a5ec1a3fc1f7e7077f9d30f89f6e044878211cf45b370a41e0c224500af4af3"),
     "act1-hifi/town/npc/portSapphire-healer-4x3-64.png": (
