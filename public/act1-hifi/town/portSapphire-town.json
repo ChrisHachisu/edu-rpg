@@ -3,6 +3,7 @@
  "id": "portSapphire",
  "nameKey": "map.portSapphire",
  "screen": "town/portSapphire-screen.png",
+ "foreground": "town/portSapphire-foreground.png",
  "walkable": "town/portSapphire-walkable.json",
  "cells": 65,
  "artPxPerCell": 29,

@@ -34,7 +34,16 @@
   /* Hit-target only while visible: an invisible pill must never swallow a tap meant for the map. */
   #prompt[data-show="true"] { opacity: 1; pointer-events: auto; }
   #prompt:active { background: rgba(24,42,58,.92); }
-  #dialogue { position: absolute; left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); z-index: 12;
+  /* 2026-08-14, from device: the owner reported "Talk to X" hidden under the bottom tab bar. It
+     was never actually moved to clear it -- this rule still read 12px + env(safe-area-inset-bottom),
+     the SAME two mistakes #pad's own comment above already documents and was fixed for: (1) 12px is
+     far short of the parent's .field-tabs bar, which runs about 62px of content plus the safe-area
+     inset, not 12px; (2) env(safe-area-inset-bottom) resolves to 0 inside this same-origin iframe,
+     so on a device with a home indicator it was adding nothing at all. Reuses #pad's own proven
+     geometry (76px + the REAL inset the parent posts as --sa-bottom) rather than inventing a second
+     number, so the dialogue box clears the same bar the d-pad already clears. */
+  #dialogue { position: absolute; left: 12px; right: 12px;
+    bottom: calc(76px + var(--sa-bottom, env(safe-area-inset-bottom, 0px))); z-index: 12;
     padding: 14px 16px; border-radius: 12px; background: rgba(6,12,18,.94);
     border: 1px solid rgba(150,200,230,.42); color: #eaf3fa; display: none; }
   #dialogue[data-open="true"] { display: block; }
@@ -139,11 +148,30 @@ const loadImage = src => new Promise((resolve, reject) => {
   image.onerror = () => reject(new Error(`asset ${src}`));
   image.src = src;
 });
-const [screenArt, heroSheet, ...npcSheets] = await Promise.all([
+// The foreground layer is OPTIONAL: older/other town configs may not carry one yet, and this
+// runtime must keep working for them. It is the same painting's own pixels, re-extracted for the
+// tall/overhead props (mast, demijohn, rooftop chimney) so they can draw AFTER the hero/NPC sort
+// below and occlude her -- see scripts/derive_town_foreground.py and OWNER 2026-08-13/14,
+// "draw over the hero AND be passable".
+const [screenArt, foregroundArt, heroSheet, ...npcSheets] = await Promise.all([
   loadImage(`./${town.screen}`),
+  town.foreground ? loadImage(`./${town.foreground}`).catch(() => null) : Promise.resolve(null),
   loadImage('./hero-g3/hero-act1-female-walk-8x3-64-g3.png'),
   ...town.npcs.map(n => loadImage(`./${n.sheet}`)),
 ]);
+// Where that cropped foreground sits on the plate. Absent or unreadable -> the layer is skipped
+// rather than drawn in the wrong place: a mis-offset occlusion layer would paint a chimney across
+// open street, which is worse than not having one.
+let foregroundBox = null;
+if (town.foreground) {
+  try {
+    const r = await fetch(`./${town.foreground.replace(/\.png$/, '.json')}`);
+    if (r.ok) {
+      const b = await r.json();
+      if (b && b.full > 0 && b.w > 0 && b.h > 0) foregroundBox = b;
+    }
+  } catch (e) { foregroundBox = null; }
+}
 if (heroSheet.naturalWidth !== 192 || heroSheet.naturalHeight !== 512) {
   throw new Error(`hero sheet is ${heroSheet.naturalWidth}x${heroSheet.naturalHeight}; `
     + 'expected 192x512. See docs/CANONICAL-ASSETS.md');
@@ -330,6 +358,23 @@ function draw(time) {
         state.moving ? [0, 1, 0, 2][Math.floor(time / locks.walkPoseMs) % 4] : 0,
         { down: 0, left: 2, up: 3, right: 6 }[state.facing], 64, time, state.moving) }];
   actors.sort((a, b) => a.y - b.y).forEach(a => a.draw());
+  // Foreground: overhead props re-painted from the SAME source pixels, always last. These are
+  // tall/hanging things (a ship's mast and rigging, a demijohn on its chain, a rooftop chimney)
+  // that must always occlude an actor standing beneath or behind them, regardless of foot-Y sort
+  // order -- the camera looks down at a fixed angle from which she can never be "in front of"
+  // something that tall. Drawing with the identical source/dest rect as the base layer above
+  // keeps this pixel-aligned with it for free; see scripts/derive_town_foreground.py.
+  // CROPPED TO ITS CONTENT, not full-plate. The extraction is inherently sparse -- measured at
+  // 0.53% opaque -- so a full 1885x1885 layer spent 14.2 MB of decoded RGBA to carry a handful of
+  // props, on the device this whole line of work exists to keep alive. Cropped to the alpha bbox it
+  // is 2.1 MB, and `portSapphire-foreground.json` carries the offset so it still lands pixel-exact
+  // over the base painting. `full` is recorded so the mapping stays correct if the plate is ever
+  // re-rendered at another size.
+  if (foregroundArt && foregroundBox) {
+    const k = WORLD / foregroundBox.full;
+    ctx.drawImage(foregroundArt, 0, 0, foregroundArt.naturalWidth, foregroundArt.naturalHeight,
+      foregroundBox.x * k, foregroundBox.y * k, foregroundBox.w * k, foregroundBox.h * k);
+  }
 }
 
 // The camera target is a function so entry and every later frame agree. Easing in from (0,0)

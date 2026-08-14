@@ -230,6 +230,64 @@ def ring_area(ring):
     return 0.5 * float(np.sum(p[:, 0] * np.roll(p[:, 1], -1) - np.roll(p[:, 0], -1) * p[:, 1]))
 
 
+def stamp_exemptions(body, authored_path, s):
+    """Punch each authored OVERHEAD exemption directly into the already-SELECTED body mask, in
+    mask-sample space, before holes are traced from it.
+
+    This exists because the exemption merge lower in this file only ever drops a matching
+    STATIC OBSTACLE (derived or authored) by centroid -- it has never touched `regions[].holes`.
+    The demijohn sits inside `hole` #2 (a large enclosed background pocket, most likely the
+    warehouse this quay backs onto), not in `staticObstacles`, so that merge silently did
+    nothing for it: the owner reported "blocked at the bottle itself" with a passed collision
+    check, because the check only ever looked at obstacles.
+
+    Run this AFTER `body` is fixed to the single selected/opened component (never before) so it
+    can only ever ADD area to a shape whose identity is already locked in -- it cannot bridge two
+    otherwise-disconnected components (e.g. reconnect the moored ship's excluded deck to the
+    quay), because which raw component was "largest" was already decided upstream. A circle that
+    does not touch `body` at all (true today of the mast, which lands entirely outside the outer
+    ring already, over the ship's own deck) has zero effect: it cannot be reached by the single
+    boundary trace and is not part of `bg` either, so nothing changes -- safe by construction.
+
+    Also stamp the AUTHORED anti-obstacle bands (the inverse case: art the derivation wrongly
+    reads as paving, such as a sunlit roof-ridge cap) as NOT walkable, by clearing the mask
+    instead of setting it, using the same authored file so both directions share one source."""
+    if not os.path.exists(authored_path):
+        return body, []
+    spec = json.load(open(authored_path))
+    h, w = body.shape
+    yy, xx = np.mgrid[0:h, 0:w]
+    hit_ids = []
+    for e in spec.get("exemptions", []):
+        cx, cy = e["centerArt"][0] / s, e["centerArt"][1] / s
+        r = e["radiusArt"] / s
+        disk = (xx - cx) ** 2 + (yy - cy) ** 2 <= r * r
+        if disk.any():
+            hit_ids.append(e["id"])
+        body = body | disk
+    return body, hit_ids
+
+
+def stamp_roof_bands(mask, authored_path, s, art_to_world):
+    """Clear AUTHORED roof/ridge bands from the walkable mask before the surface is even traced.
+
+    The paving classifier cannot tell a sunlit ridge-cap tile from sunlit cobble by colour --
+    they measure the same, the same way the well's rim does -- so a band the player is not meant
+    to stand on (a roof) can pass the same per-pixel and local-density tests real paving does.
+    Colour cannot fix this any more than it could fix the well; the band is authored against the
+    painting instead, exactly like the well's radius is."""
+    if not os.path.exists(authored_path):
+        return mask
+    spec = json.load(open(authored_path))
+    h, w = mask.shape
+    yy, xx = np.mgrid[0:h, 0:w]
+    for band in spec.get("nonWalkableBands", []):
+        x0, y0, x1, y1 = [v / s for v in band["bboxArt"]]
+        clear = (xx >= x0) & (xx <= x1) & (yy >= y0) & (yy <= y1)
+        mask = mask & ~clear
+    return mask
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--screen", default=os.path.join(
@@ -353,6 +411,13 @@ def main() -> None:
     if args.wall_clearance > 0:
         mask = dilate(erode(mask, max(1, int(round(args.wall_clearance * px_per_cell)))), 0)
 
+    # ---- authored roof/ridge bands: clear BEFORE tracing, not after ---------------------------
+    # Same reasoning as the exemptions stamped into `body` below, run in the opposite direction
+    # and at the opposite time: this is subtractive (roof art the classifier wrongly reads as
+    # paving), and it has to happen before component selection so a wrongly-attached roof patch
+    # cannot pull in whatever it touches as part of the "largest component" choice.
+    mask = stamp_roof_bands(mask, args.authored, s, art_to_world)
+
     lab, n = components(mask)
     if n == 0:
         raise SystemExit("no walkable surface found -- has the paving classifier drifted?")
@@ -370,6 +435,21 @@ def main() -> None:
     if n2 > 1:
         keep = max(range(1, n2 + 1), key=lambda i: int((lab2 == i).sum()))
         body = lab2 == keep
+
+    # ---- authored OVERHEAD exemptions: stamped into the SELECTED body, not into staticObstacles
+    # See stamp_exemptions()'s docstring. This is what actually fixes "blocked at the demijohn
+    # itself" -- the exemption merge far below only ever dropped a matching staticObstacle, and
+    # the demijohn's blocker was never one; it was hole #2, an enclosed background pocket.
+    body, exemption_hits = stamp_exemptions(body, args.authored, s)
+    if os.path.exists(args.authored):
+        spec = json.load(open(args.authored))
+        want = {e["id"] for e in spec.get("exemptions", [])}
+        missed = want - set(exemption_hits)
+        if missed:
+            print(f"  NOTE: exemption(s) {sorted(missed)} touched no body pixel -- they land "
+                  f"entirely outside the derived surface (e.g. over the ship's own excluded "
+                  f"deck), so stamping them was a no-op, same as before this fix")
+
     dropped = [sz for sz, _ in sizes[1:] if sz > args.min_hole]
     print(f"screen {img.size}  mask {mask.shape[1]}x{mask.shape[0]} @ {s} art px/sample")
     print(f"paving components {n}; keeping the largest ({main_size} samples, "

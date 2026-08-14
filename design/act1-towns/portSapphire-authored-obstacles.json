@@ -33,7 +33,24 @@
       ],
       "radiusArt": 34,
       "why": "OWNER 2026-08-03: the rope-wrapped glass demijohn dangling from the cargo davit east of the warehouse, on its chain. Same reason as the mast: it hangs in the air over open quay. Covers both derived fragments -- the chain link above and the vessel below."
+    },
+    {
+      "id": "chimney-tower",
+      "shape": "circle",
+      "centerArt": [
+        684,
+        882
+      ],
+      "radiusArt": 18,
+      "why": "OWNER 2026-08-13/14, via the lead's measured coordinates: the stone chimney/vent standing beside the slate-and-terracotta roof pair at art x400-780,y860-1000 -- 'the one beside it BLOCKS him (should be passable)'. Its footprint reads as an ENCLOSED HOLE in the walkable region (art bbox ~676-692,868-892), not a staticObstacle, which is why the demijohn-era exemption merge -- which only ever dropped a matching staticObstacle -- never touched it either. Same fix as the demijohn: stamped into the selected body before holes are traced, so the pocket never forms."
     }
   ],
-  "_exemptionComment": "Regions where a DERIVED obstacle must be dropped because the object is OVERHEAD, not on the ground. The derivation reads a top-down painting and cannot infer height, so anything that is not paving becomes solid -- including masts, hanging signs and suspended props the player walks beneath. These are authored for the same reason the well is authored: no local test on the image can recover the missing dimension. Coordinates are ART pixels on portSapphire-screen-v5-graded.png (1885x1885, 29 art px/cell)."
+  "_exemptionComment": "Regions where a DERIVED obstacle -- or, since 2026-08-14, a derived HOLE -- must be dropped because the object is OVERHEAD, not on the ground. The derivation reads a top-down painting and cannot infer height, so anything that is not paving becomes solid -- including masts, hanging signs, suspended props and free-standing rooftop structures the player walks beneath or past. These are authored for the same reason the well is authored: no local test on the image can recover the missing dimension. Coordinates are ART pixels on portSapphire-screen-v5-graded.png (1885x1885, 29 art px/cell). `scripts/derive_town_walkable.py`'s `stamp_exemptions()` now stamps every circle here directly into the SELECTED walkable body (fixing both a staticObstacle AND an enclosed hole in one pass) rather than only ever dropping a matching staticObstacle by centroid, which is what let the demijohn's real blocker -- hole #2, not any staticObstacle -- ship unnoticed.",
+  "nonWalkableBands": [
+    {
+      "id": "roof-ridge-slate-terracotta-pair",
+      "bboxArt": [420, 892, 650, 935],
+      "why": "OWNER 2026-08-13/14, via the lead's measured coordinates: the walkable region's lower boundary runs ACROSS the sunlit ridge cap of the slate roof at art x400-760,y860-1000 -- confirmed by rasterising the shipped region and finding art (460-500,900) tests walkable. The ridge-cap highlight measures within the same range as sunlit cobble (paving_mask's own test passes it: r=178-198, |r-g|<25, b in range), the same ambiguity that makes the well's rim authored rather than derived. Positioned to clear the real courtyard pavement above (solid down to about y=888) and to stop short of the chimney-tower exemption to its east (which starts at x~666) so the two authored fixes never overlap. 'she should not be up there at all' -- owner, on the walk-on-top report."
+    }
+  ]
 }
