@@ -197,7 +197,14 @@ const npcs = town.npcs.map((n, i) => ({ ...n, sheet: npcSheets[i], point: cellTo
 
 const camera = { x: 0, y: 0, zoom: 1 };
 function resize() {
-  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  // OWNER 2026-08-14: the town was "way too fuzzy ... needs to match the overworld and dungeon
+  // crispness". Capping at 2 on a 3x phone renders a 2x backing store and lets the compositor
+  // stretch it over 3x physical pixels -- image-rendering:pixelated only changes that blur into
+  // blocks, it cannot put back resolution that was never drawn. The overworld renders at the
+  // device's own ratio, which is exactly the crispness he is comparing against. Capped at 3 so a
+  // hypothetical 4x panel cannot quadruple the buffer; at 390x625 CSS this is ~8.8 MB against
+  // ~3.9 MB, which is noise next to the ~64 MB the chunk re-tile just gave back.
+  const dpr = Math.min(3, window.devicePixelRatio || 1);
   const { width, height } = stage.getBoundingClientRect();
   canvas.width = Math.round(width * dpr);
   canvas.height = Math.round(height * dpr);
@@ -347,7 +354,7 @@ function drawActor(sheet, point, col, row, cells, time, moving) {
   ctx.restore();
 }
 function draw(time) {
-  const dpr = Math.min(2, devicePixelRatio || 1);
+  const dpr = Math.min(3, devicePixelRatio || 1);   // must match resize(); see there
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.fillStyle = '#02060a';
   ctx.fillRect(0, 0, canvas.width, canvas.height);

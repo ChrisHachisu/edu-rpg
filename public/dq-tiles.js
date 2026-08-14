@@ -1052,7 +1052,13 @@
   // are already covered separately by a1aReleaseChunks keeping A1A.win.
   var A1A_MAX_CHUNKS=12;
   // Drain-rate state: >0 means "we just came back from a departure, rebuild fast". See kind==='ow'.
-  var A1AB={ burst:0 };
+  // RATE x TICKS must comfortably exceed a full window's texture count (16 chunks x 3 layers = 48 on
+  // the 16-cell grid) so the rebuild finishes inside the transition rather than trickling into view.
+  // 12 x 8 = 96 leaves headroom for a device whose window needs more, and the burst stops the moment
+  // the queue empties, so the headroom costs nothing when it is not needed. Each upload is an
+  // addImage from a bitmap already in memory (~2 ms), and these frames are behind the battle-exit
+  // cover in index.html, which is the point of that cover.
+  var A1AB={ burst:0 }, A1AB_RATE=12, A1AB_TICKS=8;
   // Leaving the overworld TRIMS the chunk cache down to the one window the hero is standing in, and
   // drops everything else. It used to drop ALL of it, and that was the whole of SMOOTH-5.
   //
@@ -4850,10 +4856,18 @@
       // "keep base" comment was avoiding. These uploads are addImage from bitmaps already in memory
       // (~2 ms each, measured), so the burst is affordable in a frame the player is already watching
       // a scene transition through. Three ticks of it clears a full window.
-      if(A1A.released) A1AB.burst=3;                   // latch the moment we come BACK, before the flag clears
+      // BURST SIZE IS A FUNCTION OF THE GRID, AND THE GRID CHANGED UNDER IT. `6 per tick for 3
+      // ticks` was 18 textures, which covered a 6-chunk window on the old 32-cell grid. The re-tile
+      // made a window 16 chunks -- 48 textures -- so the burst covered a third of it and the rest
+      // trickled at one per 80 ms tick: ~2.4 s of flat sea after every battle, which is exactly what
+      // the owner reported on build 27 ("after battles, the screen briefly shows blue"). Sizing it
+      // to the QUEUE instead of to a number keeps it correct through the next re-tile too.
+      if(A1A.released) A1AB.burst=A1AB_TICKS;          // latch the moment we come BACK, before the flag clears
       A1A.released=false;                              // back on the overworld: arm the next departure's trim
       a1aFetch();                                      // one-shot; the Act 1 art manifest + landmark table
-      var _n=1; if(A1AB.burst>0){ _n=6; A1AB.burst--; }
+      var _n=1;
+      if(A1AB.burst>0 && A1A.texQ.length){ _n=A1AB_RATE; A1AB.burst--; }
+      else if(A1AB.burst>0){ A1AB.burst=0; }           // queue drained early: stop bursting, do not spend the frames
       try{ a1aDrainTex(scene,_n); }catch(e){ if(window.__DQ_DEBUG__) console.log('dq tex q '+e); } // one chunk texture per tick while walking; a burst on return
       var mapId=scene.currentMapId+':'+scene.mapData.length+'x'+(scene.mapData[0]?scene.mapData[0].length:0);
       // DATA MUTATION (owner-approved sandbox exception): consolidate sprinkled mountains in mapData IN PLACE,

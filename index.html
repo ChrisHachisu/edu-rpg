@@ -150,6 +150,34 @@
       opacity: 1; transition: opacity .24s ease-out;
     }
     #boot-cover.gone { opacity: 0; pointer-events: none; }
+
+    /* ---- Battle-exit cover -------------------------------------------------------------------
+       The owner, build 27: "after battles, the screen briefly shows blue but that resolves pretty
+       quickly. i am willing to allow a longer transition screen after the battle ends before going
+       back to the overworld as long as we can load the overworld cleanly."
+
+       That is the right trade and it is why this is a COVER and not a faster loader. The battle path
+       drops every chunk layer from the GPU on purpose -- that is what stopped the context loss -- so
+       coming back is always a rebuild, and racing it is a race we can only ever nearly win. Holding
+       a lid on until the terrain reports itself ready turns a visible failure into an intentional
+       transition, and it stays correct whatever the grid or the device does later.
+
+       Separate element from #boot-cover on purpose: that one is REMOVED from the DOM by finish()
+       once lifted, precisely so it can never come back, and this one has to be able to. */
+    #battle-cover {
+      position: fixed; inset: 0; z-index: 9998;
+      display: flex; align-items: center; justify-content: center;
+      background: radial-gradient(ellipse at center, #141428 0%, #0a0a14 70%);
+      opacity: 0; pointer-events: none; transition: opacity .18s ease-out;
+    }
+    #battle-cover.on { opacity: 1; pointer-events: auto; }
+    #battle-cover .bx {
+      width: 34px; height: 34px; border-radius: 50%;
+      border: 2px solid rgba(201,169,97,.28); border-top-color: #c9a961;
+      animation: bxspin .9s linear infinite;
+    }
+    @keyframes bxspin { to { transform: rotate(360deg); } }
+    @media (prefers-reduced-motion: reduce) { #battle-cover .bx { animation: none; } }
     .bc-plate {
       display: flex; flex-direction: column; align-items: center; gap: 18px;
       padding: 22px 34px;
@@ -175,6 +203,8 @@
 <body class="ctrl-right">
   <!-- Painted before anything else so the shell is never a black void. See #boot-cover above. -->
   <div id="boot-cover"><div class="bc-plate"><span class="bc-title">Quest of Knowledge</span><div class="bc-bar"><i></i></div></div></div>
+  <!-- Held over the battle->overworld handoff until the terrain reports ready. See #battle-cover. -->
+  <div id="battle-cover"><div class="bx"></div></div>
 
   <div class="frame-wrapper">
     <div class="rpg-frame">
@@ -516,6 +546,7 @@
         flush: flush,
         battle: function () { battleAt = Date.now(); crumb(C.BATTLE); flush('battle'); },
         battleEnd: function () { battleAt = 0; crumb(C.BATTLE_END); },
+        inBattle: function () { return !!battleAt; },   // read by the battle-exit cover, before battleEnd clears it
         live: function () { return rec; },
         prior: function () { return prior; },
         classify: function () { return classify(prior); },
@@ -886,10 +917,55 @@
         });
         wm.events.on('sleep',  function () { bbCrumb(9); bbFlush('sleep'); forceStand('sleep'); });
         wm.events.on('resume', function () {
-          var b = BB(); if (b) try { b.battleEnd(); } catch (e) {}
+          var b = BB();
+          /* Read the battle flag BEFORE battleEnd() clears it: `resume` also fires for menus and
+             shops, and those never dropped the terrain, so covering them would be a lid over
+             nothing. */
+          var fromBattle = false;
+          try { fromBattle = !!(b && b.inBattle && b.inBattle()); } catch (e) {}
+          if (b) try { b.battleEnd(); } catch (e) {}
+          if (fromBattle) bcHold();
           trySnap('resume'); beacon('resume'); refresh(); bbFlush('resume');
         });
         wm.events.on('wake',   function () { bbCrumb(6); trySnap('wake'); refresh(); bbFlush('wake'); });
+
+        /* ---- BATTLE-EXIT COVER ------------------------------------------------------------
+           Lifts on READINESS, not on a timer: the terrain publishes how many chunk sprites the
+           window wants and how many are live, so "the overworld is drawn" is a fact we can read
+           rather than a duration we would have to guess -- and a guess would be wrong on the next
+           re-tile or on a slower device, which is how the old fixed burst ended up a third of the
+           size it needed to be.
+
+           BOUNDED, and that bound is the whole safety argument. If readiness never arrives -- a
+           dead GPU, a chunk that will not decode -- the lid comes off anyway at BC_MAX and the
+           player gets the game back, blue or not. A cover that can outlive its own condition is a
+           worse bug than the flash it hides, so this one cannot. */
+        var BC_MAX = 4000, BC_MIN = 220, bcAt = 0, bcTimer = 0;
+        function bcEl() { return document.getElementById('battle-cover'); }
+        function bcReady() {
+          var dq = window.__DQ_TILES__;
+          if (!dq) return true;                       // no terrain module: nothing to wait for
+          try {
+            var k = dq.cost && dq.cost();
+            if (k && k.sprWant > 0) return k.sprLive >= k.sprWant;
+            return !dq.ready || dq.ready();           // off-plate maps have no chunk window
+          } catch (e) { return true; }
+        }
+        function bcDrop() {
+          if (bcTimer) { clearInterval(bcTimer); bcTimer = 0; }
+          var e = bcEl(); if (e) e.classList.remove('on');
+          bcAt = 0;
+        }
+        window.bcHold = function () {
+          var e = bcEl(); if (!e) return;
+          e.classList.add('on'); bcAt = Date.now();
+          if (bcTimer) clearInterval(bcTimer);
+          bcTimer = setInterval(function () {
+            var held = Date.now() - bcAt;
+            if (held < BC_MIN) return;                // never flash the lid itself on an instant return
+            if (bcReady() || held >= BC_MAX) bcDrop();
+          }, 60);
+        };
         // The destination map is not loaded yet when CREATE fires, so restorable() would refuse.
         // Three one-shots rather than a poll; the dedup makes the later ones free once one landed.
         wm.events.on('create', function () {

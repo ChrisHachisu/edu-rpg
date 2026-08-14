@@ -215,8 +215,17 @@ export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '
 // card is up and drops below it in z-order, rather than hiding: the card is the post-mortem of the
 // session that died and the panel is the live state of its replacement, and one photograph of both
 // is worth more than either alone. Presentation only; no counter, timer or storage write changes.
+// 2026-08-14, fourth sign-off: a BATTLE-EXIT COVER. Owner on build 27: "after battles, the screen
+// briefly shows blue but that resolves pretty quickly. i am willing to allow a longer transition
+// screen after the battle ends before going back to the overworld as long as we can load the
+// overworld cleanly." Signed off because the battle path deliberately drops every chunk layer from
+// the GPU -- that is what stopped the context loss -- so the return is ALWAYS a rebuild and racing
+// it is a race we can only nearly win. The lid lifts on READINESS (sprLive >= sprWant), read from
+// the terrain rather than guessed as a duration, and is hard-bounded at 4 s so it can never outlive
+// its own condition and trap the player. Separate element from #boot-cover, which finish() removes
+// from the DOM precisely so it cannot return; this one must be able to.
 export const EXPECTED_STATIC_INDEX_SHA =
-  'e35bb24b83146a61cdee075e39a465535350fef545639a86302071a2cf34f80d';
+  'e70440fa5b3787be789fb6195b28cd0bed09c2f29061206551bac929143a50f0';
 
 /**
  * The authored shell loads its scripts by ABSOLUTE path so the Vite dev server resolves them;

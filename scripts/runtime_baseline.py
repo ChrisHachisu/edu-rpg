@@ -41,7 +41,7 @@ ACT1_OVERLAY_FILES = {
     # 2026-08-11: the diagnostic panel gains one attribution line (sp/cv/tx2/pl) fed by
     # __DQ_TILES__.cost(). Sign-off + reasoning: EXPECTED_STATIC_INDEX_SHA in
     # scripts/build_static_index.mjs. Both copies of this hash must move together.
-    "index.html": (100886, "e35bb24b83146a61cdee075e39a465535350fef545639a86302071a2cf34f80d"),
+    "index.html": (105385, "e70440fa5b3787be789fb6195b28cd0bed09c2f29061206551bac929143a50f0"),
     # 2026-08-01, owner-authorised: dq-tiles.js now splats AI-generated terrain MATERIALS through
     # its existing continuous-world-pixel drawTerrain, plus a ridged mountain height field,
     # varied shore character and landmark sites derived from mapData. Fallback-safe -- until the
@@ -91,7 +91,7 @@ ACT1_OVERLAY_FILES = {
     # save format round-trips to itself (measured: 742 of 754 reportable cells reload unchanged, the
     # other 12 settle one cell north once; largest rescue nudge 28 px against a 96 px bound).
     "dq-tiles.js": (
-        377255, "fb03a0c1f39f4bc4c77754beb09b486008ee700cb7489560bdf0fcc84bebc24d"),
+        378584, "7f4fd969a83a67fc37386c4035ecb42488cad1cc13ebf989b6351732fbfbfa93"),
     # 2026-08-07: THE OVERWORLD'S COLLISION SHAPE, baked -- the overworld's answer to the dungeons'
     # `<floor>-walk.png` above, and as much a shipped authority as they are. Deriving it at runtime
     # was correct and unaffordable: owmBuild() evaluated waterField/mountainField per pixel over a
@@ -373,11 +373,11 @@ ACT1_DUNGEON_FILES = {
 # no URL bar). Pinned so it cannot quietly grow into something that mutates real save data.
 ACT1_TOWN_FILES = {
     "act1-hifi/town.html": (
-        24036, "f74368d9865ea56f80bab547c81f48a032f5043ea5290036ebd5188efb806e70"),
+        24729, "d1356db2af7e2b733f6d5362f7c76d5176dbd3c888749d76853d8a7b7aaad6e7"),
     "act1-hifi/town/portSapphire-town.json": (
         2_748, "51b45860151b23a983220b79409a9f04ab9f962988ea9725971bfa316b3a0b19"),
     "act1-hifi/town/portSapphire-walkable.json": (
-        31823, "2dad436d4b7f507f3aa3b8a9b436cb1ff0c32872c3c3db95af4ad0475517e0c3"),
+        32024, "372578ea5c3c4ca541a2225c85734cb1e0db8bdc34894f04554ad5d78619f38e"),
     "act1-hifi/town/portSapphire-screen.png": (
         6_973_000, "87a04490428c6ae26ed238a50949646b64c0cf11770dd06336a0075e07b4dc4c"),
     "act1-hifi/town/npc/portSapphire-drake-4x3-64.png": (
