@@ -3700,13 +3700,11 @@
       else if(t===18) scene.tryReadPlaque(tx,ty);
       else if(t===7) scene.tryBossInteract(tx,ty);
       else if(t===14){
-        // No standalone helper -- route through interact(), presenting the pre-drift position it
-        // needs to re-derive (tx,ty) itself (see the header comment above this function).
-        var fx=scene.heroTileX, fy=scene.heroTileY;
+        // Item 3: no longer routes straight into interact() -- see a1mCrystalShow's header for
+        // why touching the crystal must ask first, not act first.
         var ddx2=(scene.heroDir===2?1:(scene.heroDir===1?-1:0)),
             ddy2=(scene.heroDir===0?1:(scene.heroDir===3?-1:0));
-        scene.heroTileX=tx-ddx2; scene.heroTileY=ty-ddy2;
-        try{ scene.interact(); } finally { scene.heroTileX=fx; scene.heroTileY=fy; }
+        a1mCrystalTouch(scene,tx,ty,ddx2,ddy2);
       }
     }catch(e){}
   }
@@ -3910,13 +3908,176 @@
       if(t===4){ scene.tryOpenTreasure(tx,ty); return; }
       if(t===7){ scene.tryBossInteract(tx,ty); return; }
       if(t===18){ scene.tryReadPlaque(tx,ty); return; }
-      if(t===14){
-        var savedX=scene.heroTileX, savedY=scene.heroTileY;
-        scene.heroTileX=tx-dx; scene.heroTileY=ty-dy;                      // see the note above
-        try{ scene.interact(); } finally { scene.heroTileX=savedX; scene.heroTileY=savedY; }
+      if(t===14){ a1mCrystalTouch(scene,tx,ty,dx,dy); return; }
+    }catch(e){ if(window.__DQ_DEBUG__) console.log('a1 prompt dispatch '+e); }
+  }
+  /* ---- ITEM 3: THE CRYSTAL ASKS BEFORE IT ACTS ------------------------------------------------
+     Owner: "the save crystal works but immediately sends the player out the dungeon without
+     letting them select whether to cancel or save and teleport to the entrance. the UI is still
+     pc facing so this needs to be changed to a tappable phone first UI."
+
+     THE MECHANISM, FOUND IN THE FROZEN BUNDLE, NOT GUESSED. WorldMapScene wires exactly one
+     confirm path for its canvas menus (quest/mid-crystal/warp/healer/item), and it is a raw
+     `pointerdown` on the WHOLE SCENE, unconditional on where the tap landed:
+         s.input.on("pointerdown", function(){
+           if (s.midCrystalOverlayOpen) return s.confirmMidFloorCrystalOption();
+           if (s.warpOverlayOpen) return s.confirmWarpOption();  ... });
+     That is a mouse-click idiom (click precisely on the button you want) ported unchanged to
+     touch, where it means something else entirely: the instant `showMidFloorCrystalMenu()` opens
+     (index 0, "Warp to entrance", pre-selected), the player's very next touch ANYWHERE -- most
+     likely their thumb landing back on the analog stick to keep walking -- confirms option 0 and
+     ejects them. There is no PC/phone difference in the menu's rendering; the difference is that
+     a mouse click is aimed and a re-touched stick is not. This is "immediately sends the player
+     out" exactly as reported, and it is why a phone-first replacement means never letting that
+     menu open at all, not styling it.
+
+     THE FIX REUSES THE BUNDLE'S OWN TRANSITION CODE RATHER THAN REIMPLEMENTING IT. confirmWarp-
+     Option()/confirmMidFloorCrystalOption() do the real work (fade, floor swap, loadMap, hero
+     reposition) driven purely by state (`warpOverlayIndex`/`warpFloors`,
+     `midCrystalOverlayIndex`) -- neither reads anything about the menu being visually open. So
+     this sets that state directly and calls the confirm method WITHOUT ever setting
+     `warpOverlayOpen`/`midCrystalOverlayOpen`, which is also what keeps WorldMapScene's own
+     vulnerable pointerdown listener inert: it gates on those exact flags. For the "Save Here"
+     choice on a mid-floor crystal, interact() is the only path that carries the save+flag+heal
+     side effects, and it opens the menu unconditionally as part of that -- so it is allowed to
+     run, then the resulting menu is closed in the same synchronous tick, before any later input
+     can reach it. */
+  var A1M_CRYSTAL={ el:null, styled:false, open:false };
+  function a1mCrystalEnsureStyle(){
+    if(A1M_CRYSTAL.styled) return; A1M_CRYSTAL.styled=true;
+    var s=document.createElement('style');
+    // Colours match #qok-ui's own palette (ui-overhaul.css :root vars) by VALUE, not by
+    // inheritance -- this modal lives outside #qok-ui's subtree (it can open mid-exploration,
+    // with no menu overlay active), so those custom properties are not in scope here.
+    s.textContent =
+      '#a1mCrystal{position:fixed;inset:0;z-index:95;display:flex;align-items:center;'+
+      'justify-content:center;background:rgba(8,8,13,.6);padding:24px;box-sizing:border-box;'+
+      'touch-action:none;}'+
+      '#a1mCrystal .card{width:100%;max-width:300px;background:#1d1f27;'+
+      'border:1px solid rgba(201,169,97,.40);border-radius:16px;padding:18px;'+
+      'box-shadow:0 10px 34px rgba(0,0,0,.55);}'+
+      '#a1mCrystal .hd{font-size:15px;font-weight:700;color:#c9a961;text-align:center;'+
+      'letter-spacing:.02em;margin-bottom:14px;}'+
+      '#a1mCrystal button{display:block;width:100%;appearance:none;border:1px solid rgba(201,169,97,.40);'+
+      'border-radius:12px;padding:14px;font-size:14px;font-weight:700;color:#e8e2d4;'+
+      'background:#ffffff0d;margin-top:9px;touch-action:manipulation;'+
+      '-webkit-tap-highlight-color:transparent;}'+
+      '#a1mCrystal button:first-of-type{margin-top:0;}'+
+      '#a1mCrystal button.primary{background:#557e63;border-color:#557e63;color:#f2f6f3;}'+
+      '#a1mCrystal button.cancel{background:transparent;color:#a49e91;font-weight:500;}'+
+      '#a1mCrystal button:active{filter:brightness(1.18);}';
+    document.head.appendChild(s);
+  }
+  function a1mCrystalHide(){
+    if(A1M_CRYSTAL.el){ try{ A1M_CRYSTAL.el.remove(); }catch(e){} A1M_CRYSTAL.el=null; }
+    A1M_CRYSTAL.open=false;
+  }
+  // Which OTHER crystals this run has already activated, mirroring the bundle's own scan
+  // (interact()'s floor-1 branch) but read from OUR floors.json record for totalFloors rather
+  // than reaching into the bundle's private Xt table.
+  function a1mCrystalWarpTargets(scene){
+    var Q=window.__QOK, tt=Q&&Q.state&&Q.state();
+    var flags=tt&&tt.player&&tt.player.state&&tt.player.state.storyFlags;
+    var out=[]; if(!flags) return out;
+    var fl=a1dFloorFor(scene), total=(fl&&fl.totalFloors)||1, mapId=scene.currentMapId;
+    for(var c=2;c<=total;c++) if(flags['warp.'+mapId+'.f'+c]) out.push(c);
+    if(flags['warp.'+mapId+'.boss']) out.push(-1);
+    return out;
+  }
+  // The same pre-drift heroTileX/heroTileY substitution a1mBump/a1mDispatchInteract always used
+  // before calling interact() directly (see a1mDispatchInteract's own note): interact() re-derives
+  // its target from heroTileX/heroTileY + heroDir, which is a cell behind where the soles-based
+  // probe actually found the crystal.
+  function a1mCrystalInteract(scene,tx,ty,dx,dy){
+    var savedX=scene.heroTileX, savedY=scene.heroTileY;
+    scene.heroTileX=tx-dx; scene.heroTileY=ty-dy;
+    try{ scene.interact(); } finally { scene.heroTileX=savedX; scene.heroTileY=savedY; }
+  }
+  function a1mCrystalChoose(scene,tx,ty,dx,dy,action,payload){
+    a1mCrystalHide();
+    try{
+      if(action==='cancel') return;
+      if(action==='save'){
+        var floor=scene.currentFloor||1;
+        if(floor===1 && a1mCrystalWarpTargets(scene).length===0){
+          a1mCrystalInteract(scene,tx,ty,dx,dy);                    // the bundle's own no-menu save branch
+        } else if(floor===1){
+          // The bundle's floor-1 branch only saves when NO other crystal is active; "Save Here"
+          // is offered regardless, so replicate its no-menu save effects directly here (sfx is
+          // the one piece left out -- Jt is a module-private bundle singleton this layer cannot
+          // reach, unlike tt/Z which QOK() exposes on purpose).
+          var Q=window.__QOK, tt=Q&&Q.state&&Q.state();
+          if(tt){
+            tt.saveGame();
+            if(tt.player&&typeof tt.player.fullHeal==='function') tt.player.fullHeal();
+            if(typeof scene.updateHUD==='function') scene.updateHUD();
+            if(typeof scene._saveVfx==='function') scene._saveVfx(scene.hero.x,scene.hero.y);
+            if(typeof scene.showMessage==='function') scene.showMessage((Q.Z&&Q.Z('dungeon.crystalSaveEntrance'))||'Saved!');
+          }
+        } else {
+          // Mid-floor: interact() always saves + sets the warp/entrance-visible flags + opens
+          // the vulnerable menu, in that order. Let it run for the side effects, then close the
+          // menu it opened in the SAME synchronous tick, before any later touch can reach it.
+          a1mCrystalInteract(scene,tx,ty,dx,dy);
+          try{ if(scene.midCrystalOverlayOpen && typeof scene.hideMidFloorCrystalMenu==='function') scene.hideMidFloorCrystalMenu(); }catch(e){}
+        }
         return;
       }
-    }catch(e){ if(window.__DQ_DEBUG__) console.log('a1 prompt dispatch '+e); }
+      if(action==='entrance'){                                      // mid-floor -> floor 1
+        scene.midCrystalOverlayIndex=0;
+        if(typeof scene.confirmMidFloorCrystalOption==='function') scene.confirmMidFloorCrystalOption();
+        return;
+      }
+      if(action==='warp'){                                          // floor-1 hub -> a specific activated floor/boss
+        scene.warpFloors=payload.floors; scene.warpOverlayIndex=payload.index;
+        if(typeof scene.confirmWarpOption==='function') scene.confirmWarpOption();
+        return;
+      }
+    }catch(e){ if(window.__DQ_DEBUG__) console.log('a1 crystal choose '+e); }
+  }
+  function a1mCrystalShow(scene,tx,ty,dx,dy){
+    if(A1M_CRYSTAL.open) return;
+    a1mCrystalEnsureStyle();
+    var Q=window.__QOK, Z2=(Q&&Q.Z)||function(k){return k;};
+    var floor=scene.currentFloor||1, opts=[];
+    opts.push({label:Z2('menu.save')||'Save', action:'save'});
+    if(floor===1){
+      var targets=a1mCrystalWarpTargets(scene);
+      for(var i=0;i<targets.length;i++){
+        var f=targets[i];
+        opts.push({label: f===-1?Z2('dungeon.warpBossFloor'):Z2('dungeon.warpFloor',{floor:f}),
+                   action:'warp', payload:{floors:targets,index:i}});
+      }
+    } else {
+      opts.push({label:Z2('dungeon.warpToEntrance'), action:'entrance'});
+    }
+    var el=document.createElement('div'); el.id='a1mCrystal';
+    var card=document.createElement('div'); card.className='card';
+    var hd=document.createElement('div'); hd.className='hd'; hd.textContent=Z2('dungeon.warpTitle')||'Warp Crystal';
+    card.appendChild(hd);
+    function addBtn(label,onPick){
+      var b=document.createElement('button'); b.type='button'; b.textContent=label;
+      b.addEventListener('pointerdown', function(e){ e.preventDefault(); e.stopPropagation(); onPick(); });
+      return b;
+    }
+    for(var j=0;j<opts.length;j++){
+      var o=opts[j], b=addBtn(o.label, (function(oo){ return function(){ a1mCrystalChoose(scene,tx,ty,dx,dy,oo.action,oo.payload); }; })(o));
+      b.className='primary';
+      card.appendChild(b);
+    }
+    var cancelBtn=addBtn(Z2('dungeon.warpCancel')||'Cancel', function(){ a1mCrystalChoose(scene,tx,ty,dx,dy,'cancel'); });
+    cancelBtn.className='cancel';
+    card.appendChild(cancelBtn);
+    el.appendChild(card);
+    // Swallow any tap on the backdrop itself (outside the card) rather than letting it fall
+    // through to the stick/canvas underneath -- the whole point is that no touch reaches
+    // WorldMapScene while this is up.
+    el.addEventListener('pointerdown', function(e){ e.preventDefault(); e.stopPropagation(); });
+    (document.getElementById('touch-controls')||document.body).appendChild(el);
+    A1M_CRYSTAL.el=el; A1M_CRYSTAL.open=true;
+  }
+  function a1mCrystalTouch(scene,tx,ty,dx,dy){
+    a1mCrystalShow(scene,tx,ty,dx,dy);
   }
   // DUNGEON ONLY, deliberately -- a1mFor (not a1mAnyFor), so the overworld and any town never grow
   // a second prompt idiom next to their own. Hidden whenever a1mHalted() would also refuse a step:
@@ -3936,7 +4097,7 @@
   function a1mHalted(scene){
     return !!(scene.isMoving || scene.showingMessage || scene.itemOverlayOpen
       || scene.healerOverlayOpen || scene.warpOverlayOpen || scene.midCrystalOverlayOpen
-      || scene.questOverlayOpen
+      || scene.questOverlayOpen || A1M_CRYSTAL.open
       || (scene.tweens && scene.hero && scene.tweens.isTweening(scene.hero)));
   }
   function a1mStep(scene,dtms){
