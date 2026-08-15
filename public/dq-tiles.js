@@ -3865,8 +3865,21 @@
      from reaching through a wall into a parallel corridor -- real risk once reach exceeds one
      tile's clearance, even though no two DIFFERENT objects sit closer than ~4.5 tiles anywhere in
      Act 1 (measured against act1-dungeon-floors.json), so same-object false positives were never
-     the actual exposure; through-wall pickup of the SAME object from a room it is not in is. */
-  var A1M_PROMPT_REACH={4:32,7:32,14:32,18:52};                              // world px; plaque widest
+     the actual exposure; through-wall pickup of the SAME object from a room it is not in is.
+
+     THE FLOOR THE NUMBERS ARE MEASURED AGAINST: reach compares against the target's CENTRE, not
+     its near edge, and an object cell is blocked (a1mFree's A1M_PROP branch) at the exact tile
+     boundary rather than by the rock distance-field -- so the closest she can ever stand is that
+     boundary, 24px (half a cell) short of the centre, and the SAME 24px of soles-to-boundary
+     clearance the bump fix above measures (A1M_BUMP_REACH's 22-24px) applies before that. A probe
+     under about 48px therefore cannot even match a natural walk-up-and-stop, let alone read as
+     generous. MEASURED LIVE, the 48px floor was still not enough: the Y term is taken at the
+     SOLES (gy = y + a1mFootDy, ~31px south of the sprite centre, same as a1mFree/a1mBump), so an
+     object one cell away but roughly level with her sprite reads more like 57px once that offset
+     is in the distance, not 48 -- standing one tile west of Sunken Cellar B3F's own save crystal,
+     centre-to-soles measured 57.1px, over a first attempt at 56. The numbers below clear THAT
+     floor with real margin, plaque more than the rest. */
+  var A1M_PROMPT_REACH={4:64,7:64,14:64,18:86};                              // world px; plaque widest
   function a1mNearbyInteract(scene,m){
     var hero=scene&&scene.hero; if(!hero||!hero.scene||!scene.mapData) return null;
     var x=hero.x, y=hero.y, gy=y+a1mFootDy(scene);
@@ -4509,6 +4522,80 @@
       if(!img.visible)img.setVisible(true); } }
     for (var k2 in specImgs){ if(!seen[k2] && specImgs[k2] && specImgs[k2].visible) specImgs[k2].setVisible(false); } // cull off-screen
   }
+  /* ---- ITEM 4: THE BOSS ICON VANISHES INSTEAD OF STANDING FOREVER -----------------------------
+     Owner: "the boss enemy icon needs to disappear with a special animation after defeating it."
+
+     MEASURED, NOT ASSUMED: on the hi-fi ('-props.png') layer -- the default for every Act 1
+     dungeon that has one -- the boss marker is baked directly into that one static image at
+     authored scale/lighting (see a1dArtFor's own header comment), and dngSpecialObjects hides
+     every dynamic object sprite on that layer because the baked picture already shows them. Nothing
+     ever repaints that region. Seeded a save with `boss.giantCrab.defeated` already true and
+     compared it pixel-for-pixel against an undefeated save at the same spot (Sunken Cellar B3F,
+     tile (8,24)): byte-identical. The glowing red-eyed mark does not pop, fade or move -- it simply
+     never goes away, on every hi-fi floor, which is the actual defect "not just pop out of
+     existence" is asking to fix (there is no existing pop to improve on; there is nothing at all).
+
+     WHY THIS CAN DETECT THE MOMENT WITHOUT A BATTLE-END HOOK. endBattle() only resumes WorldMapScene
+     (this.scene.stop(), this.scene.resume("WorldMapScene")) -- it never reloads the floor, so
+     scene.mapData keeps reading tile 7 (boss) for the rest of that visit even though
+     storyFlags['boss.<id>.defeated'] just became true. a1dReplayProgress only reconciles the two on
+     the NEXT loadMap. So "flag says defeated, tile still says 7" is a clean, one-shot signal for
+     "she just walked back into this room from the fight," checked every dungeon tick alongside
+     dngSpecialTiles and claimed (a1dBossPatch[key]) before the tween starts so it can only fire once
+     per floor-visit; once a later reload converts the tile itself, the condition stops matching on
+     its own and nothing re-fires.
+
+     WHY A NEW SPRITE RATHER THAN ANIMATING THE BAKED PIXELS. A static PNG region cannot be
+     tweened. `act1-dungeon-art/assets/asset-boss.png` is the SAME dark-smoke-with-red-eyes mark
+     (already used as-is for the non-hi-fi/'material' fallback), so a live copy dropped over the
+     baked position at that path's own established scale (2.2 cells, origin bottom-centre -- see
+     dngSpecialObjects' material-layer branch, reused verbatim rather than re-derived) reads as the
+     same icon, not a swap. It plays the punch-then-settle language `.qok-defeated`
+     (public/ui-overhaul.css) already established for battle-monster defeats -- a brief bright
+     scale-up, then shrink/sink/fade -- kept to the same ~600ms budget so the celebration never
+     delays the player. A soft dark patch (Phaser Graphics, no new asset) sits one depth below it and
+     is revealed as the sprite fades, so the baked pixels stay hidden for good once the tween ends --
+     without it, the animation would finish and the still-baked mark would simply be sitting there
+     again underneath.
+
+     SCOPED TO THE FOUR ACT 1 DUNGEONS THAT ACTUALLY HAVE THIS BUG, NAMED EXPLICITLY. Crystal Cave
+     generation is off-limits (AGENTS.md); it is not in this table and nothing here touches it. */
+  var A1D_BOSS_ID={ sunkenCellar:'giantCrab', coastalReef:'coralTitan', mistyGrotto:'giantToad', whisperingWoodsCave:'mosswarden' };
+  var a1dBossPatch={};
+  function a1dBossVanishPlay(scene,bx,by){
+    try{
+      var cx=bx*TILE+TILE/2, cy=by*TILE+TILE;                              // same anchor dngSpecialObjects' material branch uses
+      var mg=scene.add.graphics().setDepth(3);                             // permanent mask: no new asset, needs no image load
+      mg.fillStyle(0x141312,0.95); mg.fillEllipse(cx,cy-TILE*0.4,TILE*1.15,TILE*0.85);
+      mg.fillStyle(0x141312,0.55); mg.fillEllipse(cx,cy-TILE*0.4,TILE*1.55,TILE*1.2);
+      var tex=a1dAssetTex(scene,'boss');
+      if(!tex){ return; }                                                  // still loading -- mask alone still hides the mark this tick
+      var asc=2.2;                                                          // locked scale, matches dngSpecialObjects' material-layer boss
+      var spr=scene.add.image(cx,cy,tex).setOrigin(0.5,1).setDepth(4);
+      spr.setDisplaySize(spr.width*asc,spr.height*asc);                    // spr.width/height: the frame's own natural size, pre-scale
+      scene.tweens.add({ targets:spr, scaleX:spr.scaleX*1.16, scaleY:spr.scaleY*1.16, duration:130, ease:'Quad.easeOut',
+        onComplete:function(){
+          scene.tweens.add({ targets:spr, scaleX:spr.scaleX*0.2, scaleY:spr.scaleY*0.2, y:spr.y+20, angle:9, alpha:0,
+            duration:430, ease:'Cubic.easeIn', onComplete:function(){ try{ spr.destroy(); }catch(e){} } });
+        }});
+    }catch(e){ if(window.__DQ_DEBUG__) console.log('a1 boss vanish '+e); }
+  }
+  function a1dBossVanish(scene){
+    var mapId=scene.currentMapId, bossId=A1D_BOSS_ID[mapId]; if(!bossId) return;
+    var key=mapId+'-f'+(scene.currentFloor||1);
+    if(a1dBossPatch[key]) return;
+    var Q=window.__QOK, tt=Q&&Q.state&&Q.state();
+    var flags=tt&&tt.player&&tt.player.state&&tt.player.state.storyFlags;
+    if(!flags || !flags['boss.'+bossId+'.defeated']) return;
+    var fl=a1dFloorFor(scene); if(!fl) return;
+    var boss=null, a=fl.assets||[];
+    for(var i=0;i<a.length;i++) if(a[i].kind==='boss'){ boss=a[i]; break; }
+    if(!boss) return;
+    var row=scene.mapData&&scene.mapData[boss.y];
+    if(!row || row[boss.x]!==7) return;                                    // already reconciled by a reload -> nothing to animate
+    a1dBossPatch[key]=true;                                                 // claim before the tween starts: one shot per floor-visit
+    a1dBossVanishPlay(scene,boss.x,boss.y);
+  }
   // hide/re-skin engine SPECIAL tiles; non-reskinned specials are raised so only our fog darkens them
   function dngSpecialTiles(scene){
     var map=scene.mapData, tg=scene.tileGrid; if(!map||!tg) return;
@@ -4518,6 +4605,7 @@
     for (var ty=Y0;ty<=Y1;ty++){ var row=tg[ty]; if(!row)continue; for (var tx=X0;tx<=X1;tx++){ var s=row[tx]; if(!s)continue; var t=map[ty][tx];
       if (dngRole(t)===0 && !RESKIN_SPECIAL[t]){ s.alpha=1; if(!s.visible)s.setVisible(true); if(s.depth!==3) s.setDepth(3); } } } // non-reskin specials: raise + light
     dngSpecialObjects(scene);                                                           // draw our detailed 48px assets as scene-level images
+    try{ a1dBossVanish(scene); }catch(e){ if(window.__DQ_DEBUG__) console.log('a1 boss vanish tick '+e); }
   }
   function dngHero(scene){ if(scene.hero&&scene.hero.x!=null) return scene.hero; if(scene.player&&scene.player.x!=null) return scene.player; var l=scene.children.list; for(var i=0;i<l.length;i++){ if(l[i].depth===10&&l[i].x!=null) return l[i]; } return null; }
   // which THEME this dungeon uses, from the engine tile prefix (our base canvas never changes those)
