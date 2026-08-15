@@ -41,7 +41,7 @@ ACT1_OVERLAY_FILES = {
     # 2026-08-11: the diagnostic panel gains one attribution line (sp/cv/tx2/pl) fed by
     # __DQ_TILES__.cost(). Sign-off + reasoning: EXPECTED_STATIC_INDEX_SHA in
     # scripts/build_static_index.mjs. Both copies of this hash must move together.
-    "index.html": (107155, "488492530912d89539c7bd638ffd7a3f5da978785f0b91c7211832486a5899d6"),
+    "index.html": (107966, "4ae0237cb66b153613721dc44e523f5e3d548a3c6cfb67c7bbdcee80a1a618d7"),
     # 2026-08-01, owner-authorised: dq-tiles.js now splats AI-generated terrain MATERIALS through
     # its existing continuous-world-pixel drawTerrain, plus a ridged mountain height field,
     # varied shore character and landmark sites derived from mapData. Fallback-safe -- until the

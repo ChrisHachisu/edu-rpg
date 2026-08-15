@@ -232,8 +232,14 @@ export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '
 // a memory one). The recording still runs; only the on-screen boxes are suppressed, so a regression
 // is still captured. Re-enable on a device with no rebuild:
 // localStorage.setItem('edu-rpg-debug','1'). Read once at boot, never per frame.
+// 2026-08-15, sixth sign-off: close the gap under the canvas. Owner on build 31: "there is a small
+// gap between the game screen and the bottom tabs". Measured, not nudged -- .field-tabs is
+// 7 + 48 + 7 = 62px plus the safe-area inset, while #game-container reserved 76px, so exactly 14px
+// of dead space showed. 76 is the ANALOG STICK's clearance, chosen so the stick sits clear of the
+// bar rather than flush; it was reused where the bar's true height was wanted. Now named
+// --tabbar-h so the canvas tracks the bar and the two cannot drift apart again. CSS only.
 export const EXPECTED_STATIC_INDEX_SHA =
-  '488492530912d89539c7bd638ffd7a3f5da978785f0b91c7211832486a5899d6';
+  '4ae0237cb66b153613721dc44e523f5e3d548a3c6cfb67c7bbdcee80a1a618d7';
 
 /**
  * The authored shell loads its scripts by ABSOLUTE path so the Vite dev server resolves them;

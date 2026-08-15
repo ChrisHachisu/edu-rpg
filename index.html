@@ -70,7 +70,16 @@
       #game-container { position: fixed; top: env(safe-area-inset-top, 0px); left: env(safe-area-inset-left, 0px); width: calc(100vw - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)); height: calc(100vh - env(safe-area-inset-top, 0px)); z-index: 1; }
       /* Keep the playable camera above the persistent field tabs. At map edges the camera can no
          longer leave the hero hidden behind the DOM navigation bar. */
-      body.show-controls #game-container { height: calc(100vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 76px); }
+      /* THE BAR'S HEIGHT AND THE STICK'S CLEARANCE ARE TWO DIFFERENT NUMBERS, and using one for the
+         other is what left a gap under the canvas (owner, build 31: "there is a small gap between
+         the game screen and the bottom tabs"). The bar measures 7 + 48 + 7 = 62px of content plus
+         the safe-area inset (see .field-tabs padding and .ft min-height below). 76px is the
+         clearance the analog stick and the dialogue box use so they sit CLEAR of the bar rather
+         than flush against it -- deliberately 14px more. The canvas must reserve the bar's real
+         height, not that padded figure, or those 14px show as dead space.
+         Named so the two cannot drift apart again: change .field-tabs' box, change --tabbar-h. */
+      :root { --tabbar-h: calc(62px + env(safe-area-inset-bottom, 0px)); }
+      body.show-controls #game-container { height: calc(100vh - env(safe-area-inset-top, 0px) - var(--tabbar-h)); }
       #game-container canvas { width: 100% !important; height: 100% !important; display: block; }
       /* Hide the Phaser canvas while the DOM overlay is up, so the old Phaser scene UI never
          flashes under it. ui-overhaul.js toggles .qok-overlay in activate/deactivate and ticks
