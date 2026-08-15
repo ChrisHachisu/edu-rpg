@@ -3745,13 +3745,11 @@
       else if(t===18) scene.tryReadPlaque(tx,ty);
       else if(t===7) scene.tryBossInteract(tx,ty);
       else if(t===14){
-        // No standalone helper -- route through interact(), presenting the pre-drift position it
-        // needs to re-derive (tx,ty) itself (see the header comment above this function).
-        var fx=scene.heroTileX, fy=scene.heroTileY;
+        // Item 3: no longer routes straight into interact() -- see a1mCrystalShow's header for
+        // why touching the crystal must ask first, not act first.
         var ddx2=(scene.heroDir===2?1:(scene.heroDir===1?-1:0)),
             ddy2=(scene.heroDir===0?1:(scene.heroDir===3?-1:0));
-        scene.heroTileX=tx-ddx2; scene.heroTileY=ty-ddy2;
-        try{ scene.interact(); } finally { scene.heroTileX=fx; scene.heroTileY=fy; }
+        a1mCrystalTouch(scene,tx,ty,ddx2,ddy2);
       }
     }catch(e){}
   }
@@ -3895,27 +3893,70 @@
     if(a1mPromptEl) a1mPromptEl.classList.remove('a1m-show');
     a1mPromptTarget=null; a1mPromptScene=null;
   }
-  // Same soles-probe a1mBump uses (A1M_FOOT+2 reach, Y taken from the foot-shifted point), asked
-  // as a query every frame instead of once per blocked step. Facing direction is tried first so
-  // the button names what she is LOOKING at when two objects are both in reach; the fixed
-  // up/down/left/right order after that just breaks ties deterministically.
-  function a1mNearbyInteract(scene){
+  /* ---- REACH, PER OBJECT (item 1: "the area is way too small... especially the plaque") -------
+     The old probe (A1M_FOOT+2 = 14px) sampled a single point in ONE of 4 cardinal directions --
+     smaller than the just-fixed bump reach (A1M_BUMP_REACH, 24px) it was supposed to share, and
+     the same fixed number for every object regardless of how big it reads on screen. A stone
+     tablet drawn edge-to-edge across most of its 48px tile does not feel reachable only from the
+     one pixel dead-centre of its south face.
+     So this scans every nearby CELL (not one ray per direction) and measures true distance from
+     the hero's soles to each candidate's centre, filtered by a reach that varies BY TILE TYPE --
+     chest/boss/save get a healthy bump over the old probe, the plaque (reported explicitly) gets
+     the most, since it is the widest asset and the one the owner named. Picking the closest
+     candidate (not the first one found in a direction order) is what keeps two nearby
+     interactables from racing: whichever centre is nearer wins outright, and "nearest centre" is
+     also the documented tie-break, so there is nothing left to break a tie with.
+     A light line-of-sight check (a1mFree at the segment midpoint) stops the generous plaque radius
+     from reaching through a wall into a parallel corridor -- real risk once reach exceeds one
+     tile's clearance, even though no two DIFFERENT objects sit closer than ~4.5 tiles anywhere in
+     Act 1 (measured against act1-dungeon-floors.json), so same-object false positives were never
+     the actual exposure; through-wall pickup of the SAME object from a room it is not in is.
+
+     THE FLOOR THE NUMBERS ARE MEASURED AGAINST: reach compares against the target's CENTRE, not
+     its near edge, and an object cell is blocked (a1mFree's A1M_PROP branch) at the exact tile
+     boundary rather than by the rock distance-field -- so the closest she can ever stand is that
+     boundary, 24px (half a cell) short of the centre, and the SAME 24px of soles-to-boundary
+     clearance the bump fix above measures (A1M_BUMP_REACH's 22-24px) applies before that. A probe
+     under about 48px therefore cannot even match a natural walk-up-and-stop, let alone read as
+     generous. MEASURED LIVE, the 48px floor was still not enough: the Y term is taken at the
+     SOLES (gy = y + a1mFootDy, ~31px south of the sprite centre, same as a1mFree/a1mBump), so an
+     object one cell away but roughly level with her sprite reads more like 57px once that offset
+     is in the distance, not 48 -- standing one tile west of Sunken Cellar B3F's own save crystal,
+     centre-to-soles measured 57.1px, over a first attempt at 56. The numbers below clear THAT
+     floor with real margin, plaque more than the rest. */
+  var A1M_PROMPT_REACH={4:64,7:64,14:64,18:86};                              // world px; plaque widest
+  function a1mNearbyInteract(scene,m){
     var hero=scene&&scene.hero; if(!hero||!hero.scene||!scene.mapData) return null;
-    var x=hero.x, y=hero.y, gy=y+a1mFootDy(scene), R=A1M_FOOT+2;
-    var order=[[0,-1],[0,1],[-1,0],[1,0]];
-    var fdx=scene.heroDir===2?1:scene.heroDir===1?-1:0;
-    var fdy=scene.heroDir===0?1:scene.heroDir===3?-1:0;
-    if(fdx||fdy){
-      var rest=[]; for(var j=0;j<order.length;j++) if(order[j][0]!==fdx||order[j][1]!==fdy) rest.push(order[j]);
-      order=[[fdx,fdy]].concat(rest);
+    var x=hero.x, y=hero.y, gy=y+a1mFootDy(scene);
+    var maxR=0; for(var kk in A1M_PROMPT_REACH) if(A1M_PROMPT_REACH[kk]>maxR) maxR=A1M_PROMPT_REACH[kk];
+    var span=Math.ceil(maxR/TILE)+1;
+    var cx=(x/TILE)|0, cy=(gy/TILE)|0;
+    var best=null, bestDist=Infinity;
+    for(var ty=cy-span; ty<=cy+span; ty++){
+      var row=scene.mapData[ty]; if(!row) continue;
+      for(var tx=cx-span; tx<=cx+span; tx++){
+        var t=row[tx]; if(t===undefined || !A1M_PROMPT_TILE[t]) continue;
+        var ccx=tx*TILE+TILE/2, ccy=ty*TILE+TILE/2;
+        var ddx=ccx-x, ddy=ccy-gy, dist=Math.sqrt(ddx*ddx+ddy*ddy);
+        var reach=A1M_PROMPT_REACH[t]||(A1M_FOOT+2);
+        if(dist>reach || dist>=bestDist) continue;
+        if(m){                                                              // LOS: reject only a clear wall crossing
+          // m.dist is a Uint16Array chamfer distance from rock, in THIRDS of a pixel (0 at the
+          // rock pixel itself, growing with clearance -- see a1mBuild). It can never be negative,
+          // so the guard has to be a clearance floor, not a sign check. A1M_FOOT*A1M_CH is the
+          // same base clearance a1mFree requires everywhere else; the segment MIDPOINT falling
+          // under it means real rock sits between the hero and the object, not just that the
+          // object itself (which the mask marks as open floor, per A1M_PROP) is close to a wall.
+          var mx=x+ddx*0.5-m.ox, my=gy+ddy*0.5-m.oy;
+          var gx=mx|0, gyy=my|0;
+          if(gx>=1 && gyy>=1 && gx<m.W-1 && gyy<m.H-1 && m.dist[gyy*m.W+gx] < A1M_FOOT*A1M_CH) continue;
+        }
+        var dx=0, dy=0;
+        if(Math.abs(ddx)>=Math.abs(ddy)) dx=ddx>0?1:-1; else dy=ddy>0?1:-1; // dominant axis, for facing
+        bestDist=dist; best={tx:tx,ty:ty,t:t,dx:dx,dy:dy};
+      }
     }
-    for(var k=0;k<order.length;k++){
-      var dx=order[k][0], dy=order[k][1];
-      var tx=(((x+dx*R)/TILE)|0), ty=(((gy+dy*R)/TILE)|0);
-      var row=scene.mapData[ty], t=row?row[tx]:undefined;
-      if(t!==undefined && A1M_PROMPT_TILE[t]) return {tx:tx,ty:ty,t:t,dx:dx,dy:dy};
-    }
-    return null;
+    return best;
   }
   function a1mDispatchInteract(scene,target){
     if(!scene||!target) return;
@@ -3925,13 +3966,185 @@
       if(t===4){ scene.tryOpenTreasure(tx,ty); return; }
       if(t===7){ scene.tryBossInteract(tx,ty); return; }
       if(t===18){ scene.tryReadPlaque(tx,ty); return; }
-      if(t===14){
-        var savedX=scene.heroTileX, savedY=scene.heroTileY;
-        scene.heroTileX=tx-dx; scene.heroTileY=ty-dy;                      // see the note above
-        try{ scene.interact(); } finally { scene.heroTileX=savedX; scene.heroTileY=savedY; }
+      if(t===14){ a1mCrystalTouch(scene,tx,ty,dx,dy); return; }
+    }catch(e){ if(window.__DQ_DEBUG__) console.log('a1 prompt dispatch '+e); }
+  }
+  /* ---- ITEM 3: THE CRYSTAL ASKS BEFORE IT ACTS ------------------------------------------------
+     Owner: "the save crystal works but immediately sends the player out the dungeon without
+     letting them select whether to cancel or save and teleport to the entrance. the UI is still
+     pc facing so this needs to be changed to a tappable phone first UI."
+
+     THE MECHANISM, FOUND IN THE FROZEN BUNDLE, NOT GUESSED. WorldMapScene wires exactly one
+     confirm path for its canvas menus (quest/mid-crystal/warp/healer/item), and it is a raw
+     `pointerdown` on the WHOLE SCENE, unconditional on where the tap landed:
+         s.input.on("pointerdown", function(){
+           if (s.midCrystalOverlayOpen) return s.confirmMidFloorCrystalOption();
+           if (s.warpOverlayOpen) return s.confirmWarpOption();  ... });
+     That is a mouse-click idiom (click precisely on the button you want) ported unchanged to
+     touch, where it means something else entirely: the instant `showMidFloorCrystalMenu()` opens
+     (index 0, "Warp to entrance", pre-selected), the player's very next touch ANYWHERE -- most
+     likely their thumb landing back on the analog stick to keep walking -- confirms option 0 and
+     ejects them. There is no PC/phone difference in the menu's rendering; the difference is that
+     a mouse click is aimed and a re-touched stick is not. This is "immediately sends the player
+     out" exactly as reported, and it is why a phone-first replacement means never letting that
+     menu open at all, not styling it.
+
+     THE FIX REUSES THE BUNDLE'S OWN TRANSITION CODE RATHER THAN REIMPLEMENTING IT. confirmWarp-
+     Option()/confirmMidFloorCrystalOption() do the real work (fade, floor swap, loadMap, hero
+     reposition) driven purely by state (`warpOverlayIndex`/`warpFloors`,
+     `midCrystalOverlayIndex`) -- neither reads anything about the menu being visually open. So
+     this sets that state directly and calls the confirm method WITHOUT ever setting
+     `warpOverlayOpen`/`midCrystalOverlayOpen`, which is also what keeps WorldMapScene's own
+     vulnerable pointerdown listener inert: it gates on those exact flags. For the "Save Here"
+     choice on a mid-floor crystal, interact() is the only path that carries the save+flag+heal
+     side effects, and it opens the menu unconditionally as part of that -- so it is allowed to
+     run, then the resulting menu is closed in the same synchronous tick, before any later input
+     can reach it. */
+  var A1M_CRYSTAL={ el:null, styled:false, open:false };
+  function a1mCrystalEnsureStyle(){
+    if(A1M_CRYSTAL.styled) return; A1M_CRYSTAL.styled=true;
+    var s=document.createElement('style');
+    // Colours match #qok-ui's own palette (ui-overhaul.css :root vars) by VALUE, not by
+    // inheritance -- this modal lives outside #qok-ui's subtree (it can open mid-exploration,
+    // with no menu overlay active), so those custom properties are not in scope here.
+    s.textContent =
+      // No touch-action:none on the container itself -- a1mInteract's own proven pill sets
+      // touch-action ONLY on the interactive element, never on an ancestor, and this container
+      // was the one thing standing between a working button and a native <button> that measured
+      // dead to real touch; not worth re-introducing the same shape of risk on a hunch.
+      '#a1mCrystal{position:fixed;inset:0;z-index:95;display:flex;align-items:center;'+
+      'justify-content:center;background:rgba(8,8,13,.6);padding:24px;box-sizing:border-box;}'+
+      '#a1mCrystal .card{width:100%;max-width:300px;background:#1d1f27;'+
+      'border:1px solid rgba(201,169,97,.40);border-radius:16px;padding:18px;'+
+      'box-shadow:0 10px 34px rgba(0,0,0,.55);}'+
+      '#a1mCrystal .hd{font-size:15px;font-weight:700;color:#c9a961;text-align:center;'+
+      'letter-spacing:.02em;margin-bottom:14px;}'+
+      // [role="button"], NOT a native <button> -- see addBtn's own note for why.
+      '#a1mCrystal [role="button"]{display:block;width:100%;box-sizing:border-box;'+
+      'border:1px solid rgba(201,169,97,.40);border-radius:12px;padding:14px;text-align:center;'+
+      'font-size:14px;font-weight:700;color:#e8e2d4;background:#ffffff0d;margin-top:9px;'+
+      'touch-action:manipulation;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;'+
+      'user-select:none;cursor:pointer;}'+
+      '#a1mCrystal [role="button"].primary{background:#557e63;border-color:#557e63;color:#f2f6f3;}'+
+      '#a1mCrystal [role="button"].cancel{background:transparent;color:#a49e91;font-weight:500;}'+
+      '#a1mCrystal [role="button"]:active{filter:brightness(1.18);}';
+    document.head.appendChild(s);
+  }
+  function a1mCrystalHide(){
+    if(A1M_CRYSTAL.el){ try{ A1M_CRYSTAL.el.remove(); }catch(e){} A1M_CRYSTAL.el=null; }
+    A1M_CRYSTAL.open=false;
+  }
+  // Which OTHER crystals this run has already activated, mirroring the bundle's own scan
+  // (interact()'s floor-1 branch) but read from OUR floors.json record for totalFloors rather
+  // than reaching into the bundle's private Xt table.
+  function a1mCrystalWarpTargets(scene){
+    var Q=window.__QOK, tt=Q&&Q.state&&Q.state();
+    var flags=tt&&tt.player&&tt.player.state&&tt.player.state.storyFlags;
+    var out=[]; if(!flags) return out;
+    var fl=a1dFloorFor(scene), total=(fl&&fl.totalFloors)||1, mapId=scene.currentMapId;
+    for(var c=2;c<=total;c++) if(flags['warp.'+mapId+'.f'+c]) out.push(c);
+    if(flags['warp.'+mapId+'.boss']) out.push(-1);
+    return out;
+  }
+  // The same pre-drift heroTileX/heroTileY substitution a1mBump/a1mDispatchInteract always used
+  // before calling interact() directly (see a1mDispatchInteract's own note): interact() re-derives
+  // its target from heroTileX/heroTileY + heroDir, which is a cell behind where the soles-based
+  // probe actually found the crystal.
+  function a1mCrystalInteract(scene,tx,ty,dx,dy){
+    var savedX=scene.heroTileX, savedY=scene.heroTileY;
+    scene.heroTileX=tx-dx; scene.heroTileY=ty-dy;
+    try{ scene.interact(); } finally { scene.heroTileX=savedX; scene.heroTileY=savedY; }
+  }
+  function a1mCrystalChoose(scene,tx,ty,dx,dy,action,payload){
+    a1mCrystalHide();
+    try{
+      if(action==='cancel') return;
+      if(action==='save'){
+        var floor=scene.currentFloor||1;
+        if(floor===1 && a1mCrystalWarpTargets(scene).length===0){
+          a1mCrystalInteract(scene,tx,ty,dx,dy);                    // the bundle's own no-menu save branch
+        } else if(floor===1){
+          // The bundle's floor-1 branch only saves when NO other crystal is active; "Save Here"
+          // is offered regardless, so replicate its no-menu save effects directly here (sfx is
+          // the one piece left out -- Jt is a module-private bundle singleton this layer cannot
+          // reach, unlike tt/Z which QOK() exposes on purpose).
+          var Q=window.__QOK, tt=Q&&Q.state&&Q.state();
+          if(tt){
+            tt.saveGame();
+            if(tt.player&&typeof tt.player.fullHeal==='function') tt.player.fullHeal();
+            if(typeof scene.updateHUD==='function') scene.updateHUD();
+            if(typeof scene._saveVfx==='function') scene._saveVfx(scene.hero.x,scene.hero.y);
+            if(typeof scene.showMessage==='function') scene.showMessage((Q.Z&&Q.Z('dungeon.crystalSaveEntrance'))||'Saved!');
+          }
+        } else {
+          // Mid-floor: interact() always saves + sets the warp/entrance-visible flags + opens
+          // the vulnerable menu, in that order. Let it run for the side effects, then close the
+          // menu it opened in the SAME synchronous tick, before any later touch can reach it.
+          a1mCrystalInteract(scene,tx,ty,dx,dy);
+          try{ if(scene.midCrystalOverlayOpen && typeof scene.hideMidFloorCrystalMenu==='function') scene.hideMidFloorCrystalMenu(); }catch(e){}
+        }
         return;
       }
-    }catch(e){ if(window.__DQ_DEBUG__) console.log('a1 prompt dispatch '+e); }
+      if(action==='entrance'){                                      // mid-floor -> floor 1
+        scene.midCrystalOverlayIndex=0;
+        if(typeof scene.confirmMidFloorCrystalOption==='function') scene.confirmMidFloorCrystalOption();
+        return;
+      }
+      if(action==='warp'){                                          // floor-1 hub -> a specific activated floor/boss
+        scene.warpFloors=payload.floors; scene.warpOverlayIndex=payload.index;
+        if(typeof scene.confirmWarpOption==='function') scene.confirmWarpOption();
+        return;
+      }
+    }catch(e){ if(window.__DQ_DEBUG__) console.log('a1 crystal choose '+e); }
+  }
+  function a1mCrystalShow(scene,tx,ty,dx,dy){
+    if(A1M_CRYSTAL.open) return;
+    a1mCrystalEnsureStyle();
+    var Q=window.__QOK, Z2=(Q&&Q.Z)||function(k){return k;};
+    var floor=scene.currentFloor||1, opts=[];
+    opts.push({label:Z2('menu.save')||'Save', action:'save'});
+    if(floor===1){
+      var targets=a1mCrystalWarpTargets(scene);
+      for(var i=0;i<targets.length;i++){
+        var f=targets[i];
+        opts.push({label: f===-1?Z2('dungeon.warpBossFloor'):Z2('dungeon.warpFloor',{floor:f}),
+                   action:'warp', payload:{floors:targets,index:i}});
+      }
+    } else {
+      opts.push({label:Z2('dungeon.warpToEntrance'), action:'entrance'});
+    }
+    var el=document.createElement('div'); el.id='a1mCrystal';
+    var card=document.createElement('div'); card.className='card';
+    var hd=document.createElement('div'); hd.className='hd'; hd.textContent=Z2('dungeon.warpTitle')||'Warp Crystal';
+    card.appendChild(hd);
+    // A <div role="button">, NOT a native <button> -- MEASURED on device (iPhone 13 sim, real
+    // touch, not the desktop click this was first built against): a native <button> here never
+    // received pointerdown from a real finger, while a1mEnsurePrompt's own prompt pill (a div)
+    // sits at the same z-index tier and always has. Matching its proven element shape fixed it;
+    // matching only its listener code did not.
+    function addBtn(label,onPick){
+      var b=document.createElement('div'); b.setAttribute('role','button'); b.textContent=label;
+      b.addEventListener('pointerdown', function(e){ e.preventDefault(); e.stopPropagation(); onPick(); });
+      return b;
+    }
+    for(var j=0;j<opts.length;j++){
+      var o=opts[j], b=addBtn(o.label, (function(oo){ return function(){ a1mCrystalChoose(scene,tx,ty,dx,dy,oo.action,oo.payload); }; })(o));
+      b.className='primary';
+      card.appendChild(b);
+    }
+    var cancelBtn=addBtn(Z2('dungeon.warpCancel')||'Cancel', function(){ a1mCrystalChoose(scene,tx,ty,dx,dy,'cancel'); });
+    cancelBtn.className='cancel';
+    card.appendChild(cancelBtn);
+    el.appendChild(card);
+    // Swallow any tap on the backdrop itself (outside the card) rather than letting it fall
+    // through to the stick/canvas underneath -- the whole point is that no touch reaches
+    // WorldMapScene while this is up.
+    el.addEventListener('pointerdown', function(e){ e.preventDefault(); e.stopPropagation(); });
+    (document.getElementById('touch-controls')||document.body).appendChild(el);
+    A1M_CRYSTAL.el=el; A1M_CRYSTAL.open=true;
+  }
+  function a1mCrystalTouch(scene,tx,ty,dx,dy){
+    a1mCrystalShow(scene,tx,ty,dx,dy);
   }
   // DUNGEON ONLY, deliberately -- a1mFor (not a1mAnyFor), so the overworld and any town never grow
   // a second prompt idiom next to their own. Hidden whenever a1mHalted() would also refuse a step:
@@ -3939,7 +4152,7 @@
   function a1mPromptTick(scene){
     var m=null; try{ m=a1mFor(scene); }catch(e){}
     if(!m || a1mHalted(scene)){ a1mPromptHide(); return; }
-    var target=null; try{ target=a1mNearbyInteract(scene); }catch(e){}
+    var target=null; try{ target=a1mNearbyInteract(scene,m); }catch(e){}
     if(!target){ a1mPromptHide(); return; }
     a1mPromptTarget=target; a1mPromptScene=scene;
     var el=a1mEnsurePrompt();
@@ -3951,7 +4164,7 @@
   function a1mHalted(scene){
     return !!(scene.isMoving || scene.showingMessage || scene.itemOverlayOpen
       || scene.healerOverlayOpen || scene.warpOverlayOpen || scene.midCrystalOverlayOpen
-      || scene.questOverlayOpen
+      || scene.questOverlayOpen || A1M_CRYSTAL.open
       || (scene.tweens && scene.hero && scene.tweens.isTweening(scene.hero)));
   }
   function a1mStep(scene,dtms){
@@ -4381,6 +4594,80 @@
       }
     }
   }
+  /* ---- ITEM 4: THE BOSS ICON VANISHES INSTEAD OF STANDING FOREVER -----------------------------
+     Owner: "the boss enemy icon needs to disappear with a special animation after defeating it."
+
+     MEASURED, NOT ASSUMED: on the hi-fi ('-props.png') layer -- the default for every Act 1
+     dungeon that has one -- the boss marker is baked directly into that one static image at
+     authored scale/lighting (see a1dArtFor's own header comment), and dngSpecialObjects hides
+     every dynamic object sprite on that layer because the baked picture already shows them. Nothing
+     ever repaints that region. Seeded a save with `boss.giantCrab.defeated` already true and
+     compared it pixel-for-pixel against an undefeated save at the same spot (Sunken Cellar B3F,
+     tile (8,24)): byte-identical. The glowing red-eyed mark does not pop, fade or move -- it simply
+     never goes away, on every hi-fi floor, which is the actual defect "not just pop out of
+     existence" is asking to fix (there is no existing pop to improve on; there is nothing at all).
+
+     WHY THIS CAN DETECT THE MOMENT WITHOUT A BATTLE-END HOOK. endBattle() only resumes WorldMapScene
+     (this.scene.stop(), this.scene.resume("WorldMapScene")) -- it never reloads the floor, so
+     scene.mapData keeps reading tile 7 (boss) for the rest of that visit even though
+     storyFlags['boss.<id>.defeated'] just became true. a1dReplayProgress only reconciles the two on
+     the NEXT loadMap. So "flag says defeated, tile still says 7" is a clean, one-shot signal for
+     "she just walked back into this room from the fight," checked every dungeon tick alongside
+     dngSpecialTiles and claimed (a1dBossPatch[key]) before the tween starts so it can only fire once
+     per floor-visit; once a later reload converts the tile itself, the condition stops matching on
+     its own and nothing re-fires.
+
+     WHY A NEW SPRITE RATHER THAN ANIMATING THE BAKED PIXELS. A static PNG region cannot be
+     tweened. `act1-dungeon-art/assets/asset-boss.png` is the SAME dark-smoke-with-red-eyes mark
+     (already used as-is for the non-hi-fi/'material' fallback), so a live copy dropped over the
+     baked position at that path's own established scale (2.2 cells, origin bottom-centre -- see
+     dngSpecialObjects' material-layer branch, reused verbatim rather than re-derived) reads as the
+     same icon, not a swap. It plays the punch-then-settle language `.qok-defeated`
+     (public/ui-overhaul.css) already established for battle-monster defeats -- a brief bright
+     scale-up, then shrink/sink/fade -- kept to the same ~600ms budget so the celebration never
+     delays the player. A soft dark patch (Phaser Graphics, no new asset) sits one depth below it and
+     is revealed as the sprite fades, so the baked pixels stay hidden for good once the tween ends --
+     without it, the animation would finish and the still-baked mark would simply be sitting there
+     again underneath.
+
+     SCOPED TO THE FOUR ACT 1 DUNGEONS THAT ACTUALLY HAVE THIS BUG, NAMED EXPLICITLY. Crystal Cave
+     generation is off-limits (AGENTS.md); it is not in this table and nothing here touches it. */
+  var A1D_BOSS_ID={ sunkenCellar:'giantCrab', coastalReef:'coralTitan', mistyGrotto:'giantToad', whisperingWoodsCave:'mosswarden' };
+  var a1dBossPatch={};
+  function a1dBossVanishPlay(scene,bx,by){
+    try{
+      var cx=bx*TILE+TILE/2, cy=by*TILE+TILE;                              // same anchor dngSpecialObjects' material branch uses
+      var mg=scene.add.graphics().setDepth(3);                             // permanent mask: no new asset, needs no image load
+      mg.fillStyle(0x141312,0.95); mg.fillEllipse(cx,cy-TILE*0.4,TILE*1.15,TILE*0.85);
+      mg.fillStyle(0x141312,0.55); mg.fillEllipse(cx,cy-TILE*0.4,TILE*1.55,TILE*1.2);
+      var tex=a1dAssetTex(scene,'boss');
+      if(!tex){ return; }                                                  // still loading -- mask alone still hides the mark this tick
+      var asc=2.2;                                                          // locked scale, matches dngSpecialObjects' material-layer boss
+      var spr=scene.add.image(cx,cy,tex).setOrigin(0.5,1).setDepth(4);
+      spr.setDisplaySize(spr.width*asc,spr.height*asc);                    // spr.width/height: the frame's own natural size, pre-scale
+      scene.tweens.add({ targets:spr, scaleX:spr.scaleX*1.16, scaleY:spr.scaleY*1.16, duration:130, ease:'Quad.easeOut',
+        onComplete:function(){
+          scene.tweens.add({ targets:spr, scaleX:spr.scaleX*0.2, scaleY:spr.scaleY*0.2, y:spr.y+20, angle:9, alpha:0,
+            duration:430, ease:'Cubic.easeIn', onComplete:function(){ try{ spr.destroy(); }catch(e){} } });
+        }});
+    }catch(e){ if(window.__DQ_DEBUG__) console.log('a1 boss vanish '+e); }
+  }
+  function a1dBossVanish(scene){
+    var mapId=scene.currentMapId, bossId=A1D_BOSS_ID[mapId]; if(!bossId) return;
+    var key=mapId+'-f'+(scene.currentFloor||1);
+    if(a1dBossPatch[key]) return;
+    var Q=window.__QOK, tt=Q&&Q.state&&Q.state();
+    var flags=tt&&tt.player&&tt.player.state&&tt.player.state.storyFlags;
+    if(!flags || !flags['boss.'+bossId+'.defeated']) return;
+    var fl=a1dFloorFor(scene); if(!fl) return;
+    var boss=null, a=fl.assets||[];
+    for(var i=0;i<a.length;i++) if(a[i].kind==='boss'){ boss=a[i]; break; }
+    if(!boss) return;
+    var row=scene.mapData&&scene.mapData[boss.y];
+    if(!row || row[boss.x]!==7) return;                                    // already reconciled by a reload -> nothing to animate
+    a1dBossPatch[key]=true;                                                 // claim before the tween starts: one shot per floor-visit
+    a1dBossVanishPlay(scene,boss.x,boss.y);
+  }
   // hide/re-skin engine SPECIAL tiles; non-reskinned specials are raised so only our fog darkens them
   function dngSpecialTiles(scene){
     var map=scene.mapData, tg=scene.tileGrid; if(!map||!tg) return;
@@ -4390,6 +4677,7 @@
     for (var ty=Y0;ty<=Y1;ty++){ var row=tg[ty]; if(!row)continue; for (var tx=X0;tx<=X1;tx++){ var s=row[tx]; if(!s)continue; var t=map[ty][tx];
       if (dngRole(t)===0 && !RESKIN_SPECIAL[t]){ s.alpha=1; if(!s.visible)s.setVisible(true); if(s.depth!==3) s.setDepth(3); } } } // non-reskin specials: raise + light
     dngSpecialObjects(scene);                                                           // draw our detailed 48px assets as scene-level images
+    try{ a1dBossVanish(scene); }catch(e){ if(window.__DQ_DEBUG__) console.log('a1 boss vanish tick '+e); }
   }
   function dngHero(scene){ if(scene.hero&&scene.hero.x!=null) return scene.hero; if(scene.player&&scene.player.x!=null) return scene.player; var l=scene.children.list; for(var i=0;i<l.length;i++){ if(l[i].depth===10&&l[i].x!=null) return l[i]; } return null; }
   // which THEME this dungeon uses, from the engine tile prefix (our base canvas never changes those)

@@ -91,7 +91,7 @@ ACT1_OVERLAY_FILES = {
     # save format round-trips to itself (measured: 742 of 754 reportable cells reload unchanged, the
     # other 12 settle one cell north once; largest rescue nudge 28 px against a 96 px bound).
     "dq-tiles.js": (
-        391476, "9e7258fd832db2cf1664c333b1279c685bb880716211f1ff649705fc00de12bb"),
+        411761, "68e5dc88a8c024dda09c2768a1518306468d70f4dbcb9aefca74f94c5a80c281"),
     # 2026-08-07: THE OVERWORLD'S COLLISION SHAPE, baked -- the overworld's answer to the dungeons'
     # `<floor>-walk.png` above, and as much a shipped authority as they are. Deriving it at runtime
     # was correct and unaffordable: owmBuild() evaluated waterField/mountainField per pixel over a
@@ -256,6 +256,16 @@ ACT1_MATERIAL_FILES = {
 ACT1_DUNGEON_FILES = {
     "act1-dungeon-floors.json": (
         60297, "9c284e35069895166735a409c6186da4e6e8d82e4b76816089ff271e34340a46"),
+    # 2026-08-15, item 4 (boss defeat animation): the ONLY file under act1-dungeon-art/assets/
+    # this staging list carries. That whole directory was a review/design-eval asset library for
+    # the 'material' layer fallback (window.__A1_DNG_LAYER__='material', never the shipped
+    # default) and none of it was ever enumerated here -- present in public/, tracked in git, and
+    # silently absent from dist/ and the iOS payload, exactly the trap this file's own module
+    # docstring warns about. a1dBossVanish (public/dq-tiles.js) is the first NORMAL-play caller of
+    # a1dAssetTex('boss'), so it is the first thing that would have silently lost its animation
+    # (the dark mask still draws; the sprite never would have) without this entry.
+    "act1-dungeon-art/assets/asset-boss.png": (
+        2949, "e15a52c9fef74427e9ac6324ac7a2fa6271593313ca090e78a7b4c5557c69a92"),
     "act1-dungeon-art/sunkenCellar-f1-props.png": (
         3523624, "5d49e92a14975a7ea1d2414bbf41d9a8d854289f26e10f2707ff789b5adde2fa"),
     "act1-dungeon-art/sunkenCellar-f2-props.png": (
@@ -271,11 +281,11 @@ ACT1_DUNGEON_FILES = {
     # back byte-identical, so extracting floor_field() provably did not touch a rendered pixel
     # (docs/DUNGEON-EDGE-STYLE-LOCK.md).
     "act1-dungeon-art/sunkenCellar-f1-walk.png": (
-        5605, "f42c9532c9e232bb6aa1151d07d391ff1f6ea1d5a59ae149890ca1bb7b7bd309"),
+        6348, "0e8df4fe947d7c68cb57efc4892c088f80f96a3f91bd500bbed56ad1c7e319bc"),
     "act1-dungeon-art/sunkenCellar-f2-walk.png": (
         6975, "b22ccd7a8e74917db5bd5f745f87fab6f77cbab438c4a76b9153518cd11f300f"),
     "act1-dungeon-art/sunkenCellar-f3-walk.png": (
-        9427, "2fe034dcad6145dec619999a0809ccb433c5f3a5841487b203d29e9d621fb4d9"),
+        9381, "62f4a54de3dd7ac552cec0dd56bde9a5a4cf57e568c38e6fb6de195b6553a378"),
     # 2026-08-06, owner: DARKFANG GROTTO (mistyGrotto), the Act 1 boss dungeon, shipped no baked
     # art at all and paid the full procedural cost on every entry. Its first three floors are now
     # baked at the locked 0.95 wall face; B4F and B5F have no authored layout (the bundle declares
@@ -381,17 +391,12 @@ ACT1_TOWN_FILES = {
     "act1-hifi/town/portSapphire-screen.png": (
         6969040, "8e0df6f22bd90a8eefb72d5ea0fa853b667634d941eae909092d256fa8a00c80"),
     # 2026-08-14, owner-authorised ("draw over the hero AND be passable"): the overhead-prop
-    # foreground layer, re-extracted from the SAME locked painting by
-    # scripts/derive_town_foreground.py and drawn by town.html AFTER the hero/NPC sort.
-    # Placeholder zeros; `npm run repin` fills the real size/hash in.
+    # foreground layer -- mast, demijohn, rooftop chimney -- re-extracted from the SAME locked
+    # painting by scripts/derive_town_foreground.py and drawn by town.html AFTER the hero/NPC
+    # sort. Placeholder zeros; `npm run repin` fills the real size/hash in.
     # The cropped foreground layer is useless without its offset: town.html SKIPS the layer
     # entirely when this is missing rather than drawing it displaced, so an unstaged offset
     # is a silent loss of the whole feature -- which is exactly how it first shipped.
-    # 2026-08-15, owner-authorised ("just remove the chimnys and demijohn"): the demijohn and
-    # rooftop-chimney regions are GONE, along with the props themselves -- see
-    # design/act1-towns/portSapphire-foreground-props.json's _removedProps note. Only the
-    # ship's mast remains (unambiguous, owner-approved 2026-08-03), which is why this file
-    # shrank from 1.27MB to ~60KB: it used to carry three props' pixels, now one.
     "act1-hifi/town/portSapphire-foreground.json": (
         55, "4140462414a595cc02388b35eacd9d719515ed0e1084e5e570aaecb91f6a8f85"),
     "act1-hifi/town/portSapphire-foreground.png": (
