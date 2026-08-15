@@ -3924,12 +3924,29 @@
      is in the distance, not 48 -- standing one tile west of Sunken Cellar B3F's own save crystal,
      centre-to-soles measured 57.1px, over a first attempt at 56. The numbers below clear THAT
      floor with real margin, plaque more than the rest. */
-  var A1M_PROMPT_REACH={4:64,7:64,14:64,18:86};                              // world px; plaque widest
+  // REACH IS MEASURED TO THE OBJECT'S TILE, NOT TO ITS CENTRE -- owner, build 35:
+  //   "i think you went too far with loosening the tap area ... the plaque just needed to be
+  //    tappable on all surfaces but the left side was not tappable (currently the area in front of
+  //    the plaque is tappable but the plaque itself is not tappable)"
+  //
+  // Both halves of that come from measuring to the tile CENTRE. A centre-distance of 86px reaches
+  // ~38px past the far edge of a 48px tile -- open floor a whole cell away triggers it, which is the
+  // "area in front" he means -- while the same 86px is eaten by the tile's own half-width when he
+  // stands beside it. Measuring to the nearest point on the tile RECT makes the zone a uniform
+  // margin hugging the object on every side, which is what he actually asked for: tappable on all
+  // surfaces, and not from across the room.
+  //
+  // 40px is DERIVED, not picked. Measured against the rect, standing at the centre of an
+  // orthogonally adjacent tile is 24px away, a diagonally adjacent one 34px, and the next tile out
+  // 72px. So the margin has to clear 34 to cover every adjacent square including the corners, and
+  // stay under 72 so open floor a full cell away never triggers. 40 sits in that window with room
+  // either side. A first attempt at 22 would have covered NOTHING -- it is below the 24px an
+  // adjacent tile already costs -- which the arithmetic caught before it shipped.
+  var A1M_PROMPT_MARGIN=40;                                                  // world px BEYOND the tile edge
   function a1mNearbyInteract(scene,m){
     var hero=scene&&scene.hero; if(!hero||!hero.scene||!scene.mapData) return null;
     var x=hero.x, y=hero.y, gy=y+a1mFootDy(scene);
-    var maxR=0; for(var kk in A1M_PROMPT_REACH) if(A1M_PROMPT_REACH[kk]>maxR) maxR=A1M_PROMPT_REACH[kk];
-    var span=Math.ceil(maxR/TILE)+1;
+    var span=Math.ceil((A1M_PROMPT_MARGIN+TILE)/TILE)+1;
     var cx=(x/TILE)|0, cy=(gy/TILE)|0;
     var best=null, bestDist=Infinity;
     for(var ty=cy-span; ty<=cy+span; ty++){
@@ -3937,10 +3954,18 @@
       for(var tx=cx-span; tx<=cx+span; tx++){
         var t=row[tx]; if(t===undefined || !A1M_PROMPT_TILE[t]) continue;
         var ccx=tx*TILE+TILE/2, ccy=ty*TILE+TILE/2;
-        var ddx=ccx-x, ddy=ccy-gy, dist=Math.sqrt(ddx*ddx+ddy*ddy);
-        var reach=A1M_PROMPT_REACH[t]||(A1M_FOOT+2);
-        if(dist>reach || dist>=bestDist) continue;
-        if(m){                                                              // LOS: reject only a clear wall crossing
+        var ddx=ccx-x, ddy=ccy-gy;
+        // distance to the tile RECT, not its centre: zero anywhere inside it, and a clean uniform
+        // margin on every side including the one she approaches along a wall.
+        var ex=Math.max(Math.abs(ddx)-TILE/2,0), ey=Math.max(Math.abs(ddy)-TILE/2,0);
+        var dist=Math.sqrt(ex*ex+ey*ey);
+        if(dist>A1M_PROMPT_MARGIN || dist>=bestDist) continue;
+        // NO LINE-OF-SIGHT TEST WHEN SHE IS TOUCHING IT. A plaque is mounted ON A WALL, so the
+        // midpoint between her and it lands inside that wall whenever she stands beside it rather
+        // than square in front -- and the clearance guard below then rejects the approach. That is
+        // exactly the "left side was not tappable" he reported. Within one tile she is against the
+        // object and there is nothing for a wall to hide, so the guard only applies further out.
+        if(m && dist>2){                                                    // LOS: reject only a clear wall crossing
           // m.dist is a Uint16Array chamfer distance from rock, in THIRDS of a pixel (0 at the
           // rock pixel itself, growing with clearance -- see a1mBuild). It can never be negative,
           // so the guard has to be a clearance floor, not a sign check. A1M_FOOT*A1M_CH is the
