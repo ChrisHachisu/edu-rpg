@@ -3850,27 +3850,57 @@
     if(a1mPromptEl) a1mPromptEl.classList.remove('a1m-show');
     a1mPromptTarget=null; a1mPromptScene=null;
   }
-  // Same soles-probe a1mBump uses (A1M_FOOT+2 reach, Y taken from the foot-shifted point), asked
-  // as a query every frame instead of once per blocked step. Facing direction is tried first so
-  // the button names what she is LOOKING at when two objects are both in reach; the fixed
-  // up/down/left/right order after that just breaks ties deterministically.
-  function a1mNearbyInteract(scene){
+  /* ---- REACH, PER OBJECT (item 1: "the area is way too small... especially the plaque") -------
+     The old probe (A1M_FOOT+2 = 14px) sampled a single point in ONE of 4 cardinal directions --
+     smaller than the just-fixed bump reach (A1M_BUMP_REACH, 24px) it was supposed to share, and
+     the same fixed number for every object regardless of how big it reads on screen. A stone
+     tablet drawn edge-to-edge across most of its 48px tile does not feel reachable only from the
+     one pixel dead-centre of its south face.
+     So this scans every nearby CELL (not one ray per direction) and measures true distance from
+     the hero's soles to each candidate's centre, filtered by a reach that varies BY TILE TYPE --
+     chest/boss/save get a healthy bump over the old probe, the plaque (reported explicitly) gets
+     the most, since it is the widest asset and the one the owner named. Picking the closest
+     candidate (not the first one found in a direction order) is what keeps two nearby
+     interactables from racing: whichever centre is nearer wins outright, and "nearest centre" is
+     also the documented tie-break, so there is nothing left to break a tie with.
+     A light line-of-sight check (a1mFree at the segment midpoint) stops the generous plaque radius
+     from reaching through a wall into a parallel corridor -- real risk once reach exceeds one
+     tile's clearance, even though no two DIFFERENT objects sit closer than ~4.5 tiles anywhere in
+     Act 1 (measured against act1-dungeon-floors.json), so same-object false positives were never
+     the actual exposure; through-wall pickup of the SAME object from a room it is not in is. */
+  var A1M_PROMPT_REACH={4:32,7:32,14:32,18:52};                              // world px; plaque widest
+  function a1mNearbyInteract(scene,m){
     var hero=scene&&scene.hero; if(!hero||!hero.scene||!scene.mapData) return null;
-    var x=hero.x, y=hero.y, gy=y+a1mFootDy(scene), R=A1M_FOOT+2;
-    var order=[[0,-1],[0,1],[-1,0],[1,0]];
-    var fdx=scene.heroDir===2?1:scene.heroDir===1?-1:0;
-    var fdy=scene.heroDir===0?1:scene.heroDir===3?-1:0;
-    if(fdx||fdy){
-      var rest=[]; for(var j=0;j<order.length;j++) if(order[j][0]!==fdx||order[j][1]!==fdy) rest.push(order[j]);
-      order=[[fdx,fdy]].concat(rest);
+    var x=hero.x, y=hero.y, gy=y+a1mFootDy(scene);
+    var maxR=0; for(var kk in A1M_PROMPT_REACH) if(A1M_PROMPT_REACH[kk]>maxR) maxR=A1M_PROMPT_REACH[kk];
+    var span=Math.ceil(maxR/TILE)+1;
+    var cx=(x/TILE)|0, cy=(gy/TILE)|0;
+    var best=null, bestDist=Infinity;
+    for(var ty=cy-span; ty<=cy+span; ty++){
+      var row=scene.mapData[ty]; if(!row) continue;
+      for(var tx=cx-span; tx<=cx+span; tx++){
+        var t=row[tx]; if(t===undefined || !A1M_PROMPT_TILE[t]) continue;
+        var ccx=tx*TILE+TILE/2, ccy=ty*TILE+TILE/2;
+        var ddx=ccx-x, ddy=ccy-gy, dist=Math.sqrt(ddx*ddx+ddy*ddy);
+        var reach=A1M_PROMPT_REACH[t]||(A1M_FOOT+2);
+        if(dist>reach || dist>=bestDist) continue;
+        if(m){                                                              // LOS: reject only a clear wall crossing
+          // m.dist is a Uint16Array chamfer distance from rock, in THIRDS of a pixel (0 at the
+          // rock pixel itself, growing with clearance -- see a1mBuild). It can never be negative,
+          // so the guard has to be a clearance floor, not a sign check. A1M_FOOT*A1M_CH is the
+          // same base clearance a1mFree requires everywhere else; the segment MIDPOINT falling
+          // under it means real rock sits between the hero and the object, not just that the
+          // object itself (which the mask marks as open floor, per A1M_PROP) is close to a wall.
+          var mx=x+ddx*0.5-m.ox, my=gy+ddy*0.5-m.oy;
+          var gx=mx|0, gyy=my|0;
+          if(gx>=1 && gyy>=1 && gx<m.W-1 && gyy<m.H-1 && m.dist[gyy*m.W+gx] < A1M_FOOT*A1M_CH) continue;
+        }
+        var dx=0, dy=0;
+        if(Math.abs(ddx)>=Math.abs(ddy)) dx=ddx>0?1:-1; else dy=ddy>0?1:-1; // dominant axis, for facing
+        bestDist=dist; best={tx:tx,ty:ty,t:t,dx:dx,dy:dy};
+      }
     }
-    for(var k=0;k<order.length;k++){
-      var dx=order[k][0], dy=order[k][1];
-      var tx=(((x+dx*R)/TILE)|0), ty=(((gy+dy*R)/TILE)|0);
-      var row=scene.mapData[ty], t=row?row[tx]:undefined;
-      if(t!==undefined && A1M_PROMPT_TILE[t]) return {tx:tx,ty:ty,t:t,dx:dx,dy:dy};
-    }
-    return null;
+    return best;
   }
   function a1mDispatchInteract(scene,target){
     if(!scene||!target) return;
@@ -3894,7 +3924,7 @@
   function a1mPromptTick(scene){
     var m=null; try{ m=a1mFor(scene); }catch(e){}
     if(!m || a1mHalted(scene)){ a1mPromptHide(); return; }
-    var target=null; try{ target=a1mNearbyInteract(scene); }catch(e){}
+    var target=null; try{ target=a1mNearbyInteract(scene,m); }catch(e){}
     if(!target){ a1mPromptHide(); return; }
     a1mPromptTarget=target; a1mPromptScene=scene;
     var el=a1mEnsurePrompt();
