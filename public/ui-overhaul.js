@@ -497,7 +497,31 @@
   }
 
   var SETTING_ICON = { difficulty: 'gauge', language: 'globe', kanji: 'text', timer: 'clock', sound: 'speaker', volume: 'speaker', controlOrientation: 'dpad' };
+  // Owner-reported gap (TestFlight build 29): Settings had no way back to the title screen.
+  // ms.settingsList is a bundle getter (difficulty/language/kanji/timer/sound/volume/controlOrientation
+  // only) and cannot be edited, so the "return to title" row is DOM-only, appended after the grid,
+  // and its own two-step confirm is local module state (settingsQuitConfirm) rather than bundle state.
+  // Confirmed against the bundle (tt.saveGame() call sites): the game saves ONLY at save points and at
+  // certain dungeon boss/crystal-entrance triggers (tt.autoSave() fires only on first boss-encounter
+  // flags) -- there is no continuous autosave -- so "progress since your last save point" is the
+  // accurate loss, not a blanket "your data will not be saved".
+  var settingsQuitConfirm = false;
+  function settingsQuitConfirmBody() {
+    var heading = isJa() ? 'タイトルへもどりますか？' : 'Return to Title?';
+    var warn = isJa()
+      ? '前回のセーブ地点からの進行状況は 失われます。'
+      : 'Progress since your last save point will be lost.';
+    return '<div class="body"><div class="zc pad stack g10" style="padding-top:14px;">' +
+      '<div class="scene-h">' + esc(heading) + '</div>' +
+      '<div class="panel" style="padding:16px;text-align:center;font-weight:700;color:var(--ink-soft);font-size:14px;line-height:1.5;">' + esc(warn) + '</div>' +
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px;">' +
+        '<button class="btn btn-em" data-act="quitCancel">' + esc(Z('settings.back')) + '</button>' +
+        '<button class="btn btn-slate" data-act="quitConfirm">' + esc(Z('gameover.title_screen')) + '</button>' +
+      '</div>' +
+    '</div></div>';
+  }
   function settingsBody(ms, st) {
+    if (settingsQuitConfirm) return settingsQuitConfirmBody();
     var listArr = ms.settingsList;
     var h = '<div class="body"><div class="zc pad stack g8 grid2"><div class="eyebrow">' + esc(Z('menu.settings')) + '</div>';
     for (var i = 0; i < listArr.length; i++) {
@@ -523,7 +547,11 @@
       var sp = (key === 'volume' || key === 'controlOrientation') ? ' span2' : '';
       h += '<div class="setrow' + (sel ? ' sel' : '') + sp + '" data-act="setting" data-i="' + i + '"><span class="lab">' + use(SETTING_ICON[key] || 'gear') + esc(lab) + '</span>' + ctrl + '</div>';
     }
-    return h + '</div></div>';
+    return h + '</div>' +
+      '<div class="zc pad" style="padding-top:0;">' +
+        '<button class="btn btn-slate" data-act="quitAsk" style="width:100%;font-weight:800;">' + esc(Z('gameover.title_screen')) + '</button>' +
+      '</div>' +
+    '</div>';
   }
 
   // ---- item-use toast ----
@@ -570,7 +598,7 @@
       '|' + st.hp + '/' + p.totalMaxHp + '|atk' + p.totalAtk + '|def' + p.totalDef + '|spd' + st.spd + '|g' + st.gold + '|lv' + st.level + '|xp' + st.exp +
       '|' + invSig + '|' + eqSig + '|' + locale() + '|t' + st.timerEnabled + '|s' + st.soundEnabled + '|v' + (draggingVolume ? 'drag' : st.masterVolume) + '|k' + st.kanjiMode + '|d' + st.quizDifficulty +
       '|q' + qs.totalCorrect + '/' + qs.totalAsked + '|o' + ((window.localStorage && localStorage.getItem('eduControlOrientation')) || 'right') +
-      '|psn' + (st.poisonedUntil && st.poisonedUntil > Date.now() ? 1 : 0);
+      '|psn' + (st.poisonedUntil && st.poisonedUntil > Date.now() ? 1 : 0) + '|qc' + (settingsQuitConfirm ? 1 : 0);
 
     activate('menu', false);
     paint(topbar(p, st) + body + tabbar(tab), sig);
@@ -1280,6 +1308,7 @@
     if (act === 'tab') {
       ms.tabIndex = i; ms.currentTab = ms.tabs[i]; ms.listIndex = 0;
       ms.equipMode = 'equipped'; ms.equipSlotIndex = 0; ms.equipInventoryIndex = 0; ms.equipTypeFilter = 'weapon'; ms.equipScrollOffset = 0;
+      settingsQuitConfirm = false; // leaving (or re-entering) any tab abandons an open quit-confirm
     } else if (act === 'item') {
       ms.listIndex = i; ms.useItem();
     } else if (act === 'equipSlot') {
@@ -1290,7 +1319,20 @@
       ms.equipTypeFilter = el.getAttribute('data-type'); ms.equipInventoryIndex = 0; ms.equipScrollOffset = 0; ms.equipMode = 'equipped';
     } else if (act === 'setting') {
       ms.listIndex = i; ms.handleSettingToggle(1);
+    } else if (act === 'quitAsk') {
+      settingsQuitConfirm = true;
+    } else if (act === 'quitCancel') {
+      settingsQuitConfirm = false;
+    } else if (act === 'quitConfirm') {
+      // Mirrors GameOverScene's own "title" action (this.scene.start("TitleScene")): MenuScene is
+      // launched as an overlay on a PAUSED WorldMapScene (WorldMapScene pauses itself before
+      // scene.launch("MenuScene")), so stop the paused WorldMapScene explicitly first -- otherwise
+      // it would sit paused-but-alive forever instead of being torn down like a real return-to-title.
+      settingsQuitConfirm = false;
+      ms.scene.stop('WorldMapScene');
+      ms.scene.start('TitleScene');
     } else if (act === 'close') {
+      settingsQuitConfirm = false;
       ms.scene.stop(); ms.scene.resume('WorldMapScene');
     }
   }
