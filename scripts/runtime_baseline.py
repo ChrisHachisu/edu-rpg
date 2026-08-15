@@ -256,6 +256,16 @@ ACT1_MATERIAL_FILES = {
 ACT1_DUNGEON_FILES = {
     "act1-dungeon-floors.json": (
         60297, "9c284e35069895166735a409c6186da4e6e8d82e4b76816089ff271e34340a46"),
+    # 2026-08-15, item 4 (boss defeat animation): the ONLY file under act1-dungeon-art/assets/
+    # this staging list carries. That whole directory was a review/design-eval asset library for
+    # the 'material' layer fallback (window.__A1_DNG_LAYER__='material', never the shipped
+    # default) and none of it was ever enumerated here -- present in public/, tracked in git, and
+    # silently absent from dist/ and the iOS payload, exactly the trap this file's own module
+    # docstring warns about. a1dBossVanish (public/dq-tiles.js) is the first NORMAL-play caller of
+    # a1dAssetTex('boss'), so it is the first thing that would have silently lost its animation
+    # (the dark mask still draws; the sprite never would have) without this entry.
+    "act1-dungeon-art/assets/asset-boss.png": (
+        2949, "e15a52c9fef74427e9ac6324ac7a2fa6271593313ca090e78a7b4c5557c69a92"),
     "act1-dungeon-art/sunkenCellar-f1-props.png": (
         3523624, "5d49e92a14975a7ea1d2414bbf41d9a8d854289f26e10f2707ff789b5adde2fa"),
     "act1-dungeon-art/sunkenCellar-f2-props.png": (
