@@ -4008,12 +4008,21 @@
     // inheritance -- this modal lives outside #qok-ui's subtree (it can open mid-exploration,
     // with no menu overlay active), so those custom properties are not in scope here.
     s.textContent =
-      // No touch-action:none on the container itself -- a1mInteract's own proven pill sets
-      // touch-action ONLY on the interactive element, never on an ancestor, and this container
-      // was the one thing standing between a working button and a native <button> that measured
-      // dead to real touch; not worth re-introducing the same shape of risk on a hunch.
+      // pointer-events:auto IS LOAD-BEARING, not decoration. index.html sets
+      // `#touch-controls{pointer-events:none}` as its baseline (a container that spans the
+      // full screen must default to none, or it would eat every tap meant for the canvas
+      // beneath it) and every child that needs taps opts back in explicitly -- .stick does
+      // (index.html), a1mInteract's own .a1m-show rule does. This modal is appended into that
+      // same container and, without its own opt-in, inherited the parent's none: MEASURED on
+      // device, every tap on a button inside it -- geometrically correct, right coordinates,
+      // right element underneath -- hit-tested straight through to the Phaser canvas behind
+      // it instead, because inherited pointer-events:none makes an element (and its subtree)
+      // invisible to hit-testing entirely, not merely un-styled. A `<button>` element, a
+      // pointerdown-vs-pointerup listener, none of that was ever the actual defect; this line
+      // was the whole fix, and the modal was never reachable by touch without it.
       '#a1mCrystal{position:fixed;inset:0;z-index:95;display:flex;align-items:center;'+
-      'justify-content:center;background:rgba(8,8,13,.6);padding:24px;box-sizing:border-box;}'+
+      'justify-content:center;background:rgba(8,8,13,.6);padding:24px;box-sizing:border-box;'+
+      'pointer-events:auto;}'+
       '#a1mCrystal .card{width:100%;max-width:300px;background:#1d1f27;'+
       'border:1px solid rgba(201,169,97,.40);border-radius:16px;padding:18px;'+
       'box-shadow:0 10px 34px rgba(0,0,0,.55);}'+
@@ -4117,14 +4126,18 @@
     var card=document.createElement('div'); card.className='card';
     var hd=document.createElement('div'); hd.className='hd'; hd.textContent=Z2('dungeon.warpTitle')||'Warp Crystal';
     card.appendChild(hd);
-    // A <div role="button">, NOT a native <button> -- MEASURED on device (iPhone 13 sim, real
-    // touch, not the desktop click this was first built against): a native <button> here never
-    // received pointerdown from a real finger, while a1mEnsurePrompt's own prompt pill (a div)
-    // sits at the same z-index tier and always has. Matching its proven element shape fixed it;
-    // matching only its listener code did not.
+    // Fires on pointerUP, arming on pointerdown rather than acting on it -- matches
+    // ui-overhaul.js's own pointerGuard, which already carries this exact lesson for this exact
+    // platform in its own words: "route DOM buttons on pointer/touch UP (reliable on iOS -- a
+    // click often never fires)". Kept as belt-and-suspenders alongside the pointer-events fix
+    // above (a1mCrystalEnsureStyle's own note): that CSS line was the actual defect, but acting
+    // on up rather than down costs nothing and matches the rest of the codebase's touch idiom.
     function addBtn(label,onPick){
       var b=document.createElement('div'); b.setAttribute('role','button'); b.textContent=label;
-      b.addEventListener('pointerdown', function(e){ e.preventDefault(); e.stopPropagation(); onPick(); });
+      var armed=false;
+      b.addEventListener('pointerdown', function(e){ e.preventDefault(); e.stopPropagation(); armed=true; });
+      b.addEventListener('pointerup', function(e){ e.preventDefault(); e.stopPropagation(); if(armed){ armed=false; onPick(); } });
+      b.addEventListener('pointercancel', function(){ armed=false; });
       return b;
     }
     for(var j=0;j<opts.length;j++){
