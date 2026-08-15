@@ -3160,8 +3160,12 @@
     var now=Date.now(); if(now-a1mState.bump<700) return; a1mState.bump=now;
     var ddx=tx-scene.heroTileX, ddy=ty-scene.heroTileY;                      // face it, like a step would
     if(Math.abs(ddx)+Math.abs(ddy)===1) scene.heroDir=ddx?(ddx>0?2:1):(ddy>0?0:3);
+    // t===14 added: the save/warp crystal had NO bump dispatch at all, so bumping into one just
+    // stopped her cold (A1M_PROP blocks it) and nothing happened -- the mechanic below (item 1's
+    // button) exists precisely because this path proved unreliable on device, but the bump/keyboard
+    // route stays wired too, per the brief: an addition, not a replacement.
     try{ if(t===4) scene.tryOpenTreasure(tx,ty);
-         else if(t===7||t===18) scene.interact(); }catch(e){}
+         else if(t===7||t===18||t===14) scene.interact(); }catch(e){}
   }
   /* ---- A DOOR IS ASKED FOR, NOT WALKED INTO ---------------------------------------------------
      Every Act 1 town entrance is a BLOCKER cell -- tile 6 for a village, 15 for the Crystal gate --
@@ -3221,6 +3225,138 @@
     try{ scene.performTransition(tr); }
     catch(e){ if(window.__DQ_DEBUG__) console.log('a1 door '+e); return false; }
     return true;
+  }
+  /* ---- THE INTERACT BUTTON -- a tap the player CHOOSES, replacing bump as the primary path ----
+     Owner, verbatim, after build 29: chests/plaques/the boss/the save crystal "cannot be
+     interacted with reliably", and the fix he specified is "make an interaction button (open,
+     read, battle, etc.) popup when the player touches the asset so players can clearly choose
+     when to interact with the thing". This is that button. It does NOT replace a1mBump/a1mDoor
+     above (desktop and existing muscle memory still work; see a1mBump's t===14 addition), it adds
+     a second, more reliable path for touch: a pill that appears the instant she is within reach of
+     an object and disappears the instant she is not, naming the exact verb for what it does.
+
+     WHY A NEW ROUTE RATHER THAN JUST FIXING THE BUMP. Both known failure modes were structural to
+     bumping, not tuning: a1mSlide can absorb the collision before the bump ever fires (see
+     a1mDoor's note, three paragraphs up, for the same failure against doors), and the probe reach
+     is a fixed A1M_FOOT+2 px that a player can under- or over-shoot depending on exactly where the
+     collider stopped her. A button keyed off PROXIMITY rather than a blocked step sidesteps both:
+     it is asked every frame, not once per debounced bump, and "in reach" is the same soles-probe
+     a1mBump already uses, just evaluated as a query instead of a one-shot event.
+
+     WHY IT DOES NOT SIT WHERE THE TOWN'S "Talk to X" PROMPT DOES. Same idiom (a fading pill,
+     centred, one line, the verb doing the work -- see act1-hifi/town.html's #prompt, which the
+     owner already approved and asked this not to reinvent), different geometry, because this
+     screen has two more elements the town's own iframe does not: the parent stick (172px tall,
+     bottom: 76px + safe-area) and the field tab bar (~62px + safe-area, z-index 90) both sit UNDER
+     it here. Centring at the town's 22%-from-bottom would land inside the stick's box on many
+     screen heights. Sitting above the stick's own top edge (248px + safe-area) with 12px clear
+     avoids both regardless of ctrl-left/right/center, so this does not need to know which side the
+     stick is on today or after it moves.
+
+     WHY tryOpenTreasure/tryBossInteract/tryReadPlaque ARE CALLED DIRECTLY, BUT THE CRYSTAL GOES
+     THROUGH scene.interact(). The first three are scene methods that take an explicit (x,y) and
+     never read heroTileX/heroTileY, so calling them with the coordinates THIS probe found is exact
+     -- no re-derivation, no drift. The crystal has no such method: its whole branch lives inline in
+     interact(), which recomputes its target from heroTileX/heroTileY + heroDir -- and heroTileX/Y
+     is the sprite CENTRE while this probe reads the SOLES (a1mStep's own note: about 31px apart),
+     so the two can name different cells for the exact same tap. Rather than accept that gap for the
+     one tile type that cannot take an explicit target, heroTileX/heroTileY are pinned to the cell
+     that makes interact()'s own derivation land exactly on the probed cell, then restored in a
+     finally -- so a1mStep's per-frame re-sync (from the sprite centre, next frame) never sees the
+     substitution and never mistakes it for a real step. */
+  var A1M_PROMPT_VERB={4:'Open',7:'Battle',14:'Save',18:'Read'};
+  var A1M_PROMPT_TILE={4:1,7:1,14:1,18:1};
+  var a1mPromptEl=null, a1mPromptStyled=false, a1mPromptTarget=null, a1mPromptScene=null;
+  function a1mEnsurePromptStyle(){
+    if(a1mPromptStyled) return; a1mPromptStyled=true;
+    var s=document.createElement('style');
+    // Visual language matches the town prompt (pill, fade, one line) with this screen's own
+    // gold accent (stick/tabs) rather than the town iframe's blue, since it sits among them.
+    s.textContent =
+      '#a1mInteract{position:fixed;left:50%;'+
+      'bottom:calc(260px + env(safe-area-inset-bottom,0px));'+
+      'transform:translateX(-50%);padding:10px 22px;border-radius:999px;'+
+      'background:rgba(21,22,28,.88);border:1px solid rgba(201,169,97,.55);'+
+      'color:#f0e6c8;font-size:15px;font-weight:500;letter-spacing:.02em;white-space:nowrap;'+
+      'box-shadow:0 0 10px rgba(0,0,0,.4);opacity:0;pointer-events:none;'+
+      'transition:opacity .12s ease;touch-action:manipulation;-webkit-tap-highlight-color:transparent;'+
+      '-webkit-user-select:none;user-select:none;z-index:5;}'+
+      '#a1mInteract.a1m-show{opacity:1;pointer-events:auto;}'+
+      '#a1mInteract:active{background:rgba(46,38,20,.94);}';
+    document.head.appendChild(s);
+  }
+  function a1mPromptActivate(){
+    var target=a1mPromptTarget, scene=a1mPromptScene;
+    a1mPromptHide();
+    if(!target||!scene||!scene.scene) return;
+    a1mDispatchInteract(scene,target);
+  }
+  function a1mEnsurePrompt(){
+    if(a1mPromptEl) return a1mPromptEl;
+    a1mEnsurePromptStyle();
+    var host=document.getElementById('touch-controls')||document.body;
+    var el=document.createElement('div');
+    el.id='a1mInteract'; el.setAttribute('role','button'); el.setAttribute('aria-hidden','true');
+    // pointerdown, like the town prompt: answers on contact and preventDefault stops it becoming
+    // a synthetic click / text selection / double-fire with a touch's own click event.
+    el.addEventListener('pointerdown', function(e){ e.preventDefault(); e.stopPropagation(); a1mPromptActivate(); });
+    host.appendChild(el);
+    return (a1mPromptEl=el);
+  }
+  function a1mPromptHide(){
+    if(a1mPromptEl) a1mPromptEl.classList.remove('a1m-show');
+    a1mPromptTarget=null; a1mPromptScene=null;
+  }
+  // Same soles-probe a1mBump uses (A1M_FOOT+2 reach, Y taken from the foot-shifted point), asked
+  // as a query every frame instead of once per blocked step. Facing direction is tried first so
+  // the button names what she is LOOKING at when two objects are both in reach; the fixed
+  // up/down/left/right order after that just breaks ties deterministically.
+  function a1mNearbyInteract(scene){
+    var hero=scene&&scene.hero; if(!hero||!hero.scene||!scene.mapData) return null;
+    var x=hero.x, y=hero.y, gy=y+a1mFootDy(scene), R=A1M_FOOT+2;
+    var order=[[0,-1],[0,1],[-1,0],[1,0]];
+    var fdx=scene.heroDir===2?1:scene.heroDir===1?-1:0;
+    var fdy=scene.heroDir===0?1:scene.heroDir===3?-1:0;
+    if(fdx||fdy){
+      var rest=[]; for(var j=0;j<order.length;j++) if(order[j][0]!==fdx||order[j][1]!==fdy) rest.push(order[j]);
+      order=[[fdx,fdy]].concat(rest);
+    }
+    for(var k=0;k<order.length;k++){
+      var dx=order[k][0], dy=order[k][1];
+      var tx=(((x+dx*R)/TILE)|0), ty=(((gy+dy*R)/TILE)|0);
+      var row=scene.mapData[ty], t=row?row[tx]:undefined;
+      if(t!==undefined && A1M_PROMPT_TILE[t]) return {tx:tx,ty:ty,t:t,dx:dx,dy:dy};
+    }
+    return null;
+  }
+  function a1mDispatchInteract(scene,target){
+    if(!scene||!target) return;
+    var tx=target.tx, ty=target.ty, t=target.t, dx=target.dx, dy=target.dy;
+    if(dx||dy) scene.heroDir=dx?(dx>0?2:1):(dy>0?0:3);                     // face it, like a step would
+    try{
+      if(t===4){ scene.tryOpenTreasure(tx,ty); return; }
+      if(t===7){ scene.tryBossInteract(tx,ty); return; }
+      if(t===18){ scene.tryReadPlaque(tx,ty); return; }
+      if(t===14){
+        var savedX=scene.heroTileX, savedY=scene.heroTileY;
+        scene.heroTileX=tx-dx; scene.heroTileY=ty-dy;                      // see the note above
+        try{ scene.interact(); } finally { scene.heroTileX=savedX; scene.heroTileY=savedY; }
+        return;
+      }
+    }catch(e){ if(window.__DQ_DEBUG__) console.log('a1 prompt dispatch '+e); }
+  }
+  // DUNGEON ONLY, deliberately -- a1mFor (not a1mAnyFor), so the overworld and any town never grow
+  // a second prompt idiom next to their own. Hidden whenever a1mHalted() would also refuse a step:
+  // a menu, a message box or the crystal's own warp menu already has her attention.
+  function a1mPromptTick(scene){
+    var m=null; try{ m=a1mFor(scene); }catch(e){}
+    if(!m || a1mHalted(scene)){ a1mPromptHide(); return; }
+    var target=null; try{ target=a1mNearbyInteract(scene); }catch(e){}
+    if(!target){ a1mPromptHide(); return; }
+    a1mPromptTarget=target; a1mPromptScene=scene;
+    var el=a1mEnsurePrompt();
+    el.textContent=A1M_PROMPT_VERB[target.t]||'Interact';
+    el.classList.add('a1m-show');
   }
   // Everything the engine's own update() refuses to move under. Kept as one list so a new
   // overlay cannot be added to the bundle and silently leave the hero drivable behind it.
@@ -3382,12 +3518,15 @@
     var orig=sys.sceneUpdate;
     var patched=function(time,delta){
       var on=false; try{ on=!!a1mAnyFor(this); }catch(e){}
-      if(!on) return orig.call(this,time,delta);
+      // Off this scene/map entirely (battle, menu-driven scene swap, overworld->town): drop any
+      // prompt left showing rather than let it survive into a screen it no longer applies to.
+      if(!on){ try{ a1mPromptHide(); }catch(e){} return orig.call(this,time,delta); }
       var was=this.isMoving; this.isMoving=true;
       try{ orig.call(this,time,delta); } finally { this.isMoving=was; }
       try{ a1mStep(this,delta); }catch(e){ if(window.__DQ_DEBUG__) console.log('a1 move '+e+(e&&e.stack||'')); }
       // after the hero has moved, and before Phaser's preRender reads the scroll for this frame
       try{ a1mCam(this,delta); }catch(e){ if(window.__DQ_DEBUG__) console.log('a1 cam '+e); }
+      try{ a1mPromptTick(this); }catch(e){ if(window.__DQ_DEBUG__) console.log('a1 prompt '+e); }
     };
     patched.__a1m=true; sys.sceneUpdate=patched;
   }
