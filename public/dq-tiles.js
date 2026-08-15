@@ -1820,7 +1820,18 @@
     for(i=0;i<rs.length;i++){
       var r=rs[i], c=r.c, rec=r.rec;
       var wx=ox+c.x*S, wy=oy+c.y*S;
-      var layers=[['base',1.1,1,1],['water',1.2,S,0.28],['canopy',11,1,1]];
+      // THE HERO IS NEVER HIDDEN BY THE TREELINE -- canopy 11 -> 9.5, below the hero at 10.
+      // Owner, build 32, with a screenshot in which she is a single visible sliver inside the
+      // forest: "the player hides under the forrest (they should be on top of the forrest) some
+      // times so this needs to be fixed."
+      //
+      // Depth 11 was deliberate -- see a1aCanopy's own note, "ABOVE the hero (10), so the treeline
+      // overdraws the player" -- and it buys a real sense of depth when she passes a tree edge. It
+      // also loses the player inside a solid conifer block, and losing your own character is a
+      // playability failure, not a stylistic trade. This is the same call he made on the town's
+      // chimneys the same day: where "walk under" is ambiguous, remove the ambiguity rather than
+      // keep tuning the boundary.
+      var layers=[['base',1.1,1,1],['water',1.2,S,0.28],['canopy',9.5,1,1]];
       for(var L=0;L<layers.length;L++){
         var layer=layers[L][0];
         if(layer==='water'&&!rec.water) continue;
@@ -1941,12 +1952,15 @@
     try{ ct.setFilter(NEAREST); }catch(e){}
     var img=scene.add.image(0,0,key).setOrigin(0,0).setDepth(1).setScale(SC);
     try{ img.texture.setFilter(NEAREST); }catch(e){}
-    // canopy: same window, depth 11 -> ABOVE the hero (10), so the treeline overdraws the player
+    // canopy: same window, depth 9.5 -> BELOW the hero (10). ~~"depth 11 -> ABOVE the hero (10),
+    // so the treeline overdraws the player"~~ retired 2026-08-15 on the owner's report that she
+    // vanishes inside the forest; the sprite-mode table above carries the reasoning. Kept in step
+    // with that table on purpose -- a flag flip to canvas mode must not reintroduce the symptom.
     var ckey='dqcanopy';
     if (scene.textures.exists(ckey)) scene.textures.remove(ckey);
     var cct=scene.textures.createCanvas(ckey, winW*N, winH*N);
     try{ cct.setFilter(NEAREST); }catch(e){}
-    var cimg=scene.add.image(0,0,ckey).setOrigin(0,0).setDepth(11).setScale(SC);
+    var cimg=scene.add.image(0,0,ckey).setOrigin(0,0).setDepth(9.5).setScale(SC);
     try{ cimg.texture.setFilter(NEAREST); }catch(e){}
     terrainState={ scene:scene, winW:winW, winH:winH, ct:ct, image:img, cct:cct, cimg:cimg, lastWin:'' };
   }
@@ -2129,8 +2143,39 @@
       var sc=OW_PROP_SCALE[name]||1.5; img.setOrigin(0.5,1).setPosition(tx*TILE+TILE/2, ty*TILE+TILE).setDisplaySize(TILE*sc,TILE*sc); // bigger + sit on the tile & rise up
       if(!img.visible)img.setVisible(true); seen[key]=1; } }
     a1aLandmarks(scene,map,X0,X1,Y0,Y1,seen);
-    for (var k2 in owImgs){ if(!seen[k2] && owImgs[k2] && owImgs[k2].visible) owImgs[k2].setVisible(false); } // cull off-screen
-    var vis=0; for(var vk in owImgs){ if(owImgs[vk]&&owImgs[vk].visible) vis++; } window.__OW_PROP_COUNT__=vis; // readiness signal for capture harness
+    // ---- CULL OFF-SCREEN, AND ACTUALLY DESTROY THE FAR ONES ----------------------------------
+    // This map used to only ever HIDE. Every prop tile the player had ever walked past kept its
+    // Phaser Image alive for the whole session, keyed by tile coordinate, and the overworld is ONE
+    // map -- so the `owMap !== currentMapId` reset above never fires while exploring it. The set
+    // therefore grew without bound for as long as the player kept walking, and BOTH loops here
+    // iterate all of it every frame, so the per-frame cost grew with distance travelled too.
+    // That is the shape of the owner's report on build 32: the blue screen "happened again after
+    // exploring the overworld for a while". A leak that scales with exploration is exactly what
+    // survives a fixed-cost audit -- every measurement I took was at a seeded starting position,
+    // which is precisely where this costs nothing.
+    //
+    // Hiding is still right for anything just off the edge: she turns around constantly, and
+    // rebuilding an Image she will need again next second is churn. Beyond KEEP_R tiles she is not
+    // coming straight back, and the texture stays in Phaser's cache either way, so re-creating one
+    // later is an add.image, not a load. Destroying inside the same pass that hides keeps this O(n)
+    // rather than adding a second sweep.
+    var OW_KEEP_R = 48;                                   // tiles from the camera centre; ~4x the window half-width
+    var ccx = (cam.scrollX + cam.width / 2) / TILE, ccy = (cam.scrollY + cam.height / 2) / TILE;
+    var vis = 0;
+    for (var k2 in owImgs){
+      var im2 = owImgs[k2]; if(!im2) { delete owImgs[k2]; continue; }
+      if (seen[k2]) { vis++; continue; }
+      if (im2.visible) im2.setVisible(false);
+      var p = k2.indexOf('_');                            // landmark keys are 'a1alm_<slug>' -- not tile-keyed, so never distance-culled
+      if (p < 0 || k2.lastIndexOf('a1alm_', 0) === 0) continue;
+      var kx = +k2.slice(0, p), ky = +k2.slice(p + 1);
+      if (kx !== kx || ky !== ky) continue;               // NaN guard: not a tile key
+      if (Math.abs(kx - ccx) > OW_KEEP_R || Math.abs(ky - ccy) > OW_KEEP_R){
+        try { im2.destroy(); } catch(e) {}
+        delete owImgs[k2];
+      }
+    }
+    window.__OW_PROP_COUNT__=vis;                         // readiness signal for capture harness
   }
 
   // ============================================================
@@ -4316,7 +4361,25 @@
       else if(!pn || pn.indexOf('door')>=0){ img.setOrigin(0,0).setPosition(tx*TILE,ty*TILE).setDisplaySize(TILE,TILE); }  // code-drawn (lava/spike) + doors: fill the tile
       else { var sc=PROP_SCALE[pn]||1.4; img.setOrigin(0.5,1).setPosition(tx*TILE+TILE/2,ty*TILE+TILE).setDisplaySize(TILE*sc,TILE*sc); } // objects: bigger, sit on the floor tile & rise up
       if(!img.visible)img.setVisible(true); } }
-    for (var k2 in specImgs){ if(!seen[k2] && specImgs[k2] && specImgs[k2].visible) specImgs[k2].setVisible(false); } // cull off-screen
+    // Same unbounded-growth fix as owImgs above, for the same reason: `specMap !== currentMapId`
+    // resets this on a MAP change, and the overworld is one map, so exploring it never resets and
+    // every special tile ever seen kept its Image alive. Hide anything just off-screen (she turns
+    // around constantly); destroy beyond SPEC_KEEP_R, where the texture stays cached so coming back
+    // is an add.image rather than a load.
+    var SPEC_KEEP_R = 48;
+    var sccx = (cam.scrollX + cam.width / 2) / TILE, sccy = (cam.scrollY + cam.height / 2) / TILE;
+    for (var k2 in specImgs){
+      var si = specImgs[k2]; if(!si){ delete specImgs[k2]; continue; }
+      if (seen[k2]) continue;
+      if (si.visible) si.setVisible(false);
+      var sp = k2.indexOf('_'); if (sp < 0) continue;
+      var sx = +k2.slice(0, sp), sy = +k2.slice(sp + 1);
+      if (sx !== sx || sy !== sy) continue;               // NaN guard: not a tile key
+      if (Math.abs(sx - sccx) > SPEC_KEEP_R || Math.abs(sy - sccy) > SPEC_KEEP_R){
+        try { si.destroy(); } catch(e) {}
+        delete specImgs[k2];
+      }
+    }
   }
   // hide/re-skin engine SPECIAL tiles; non-reskinned specials are raised so only our fog darkens them
   function dngSpecialTiles(scene){
