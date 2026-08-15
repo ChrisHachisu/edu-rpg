@@ -189,6 +189,18 @@ tile rather than a re-bake.
 > position before the cache had filled**: it showed 9→6 resident, which was true and irrelevant.
 > A static reading of a cache that fills over time is not a measurement of its peak.
 
+> [!warning] THE TOWN CANNOT MATCH THE OVERWORLD'S CRISPNESS, AND NO RUNTIME SETTING WILL FIX IT.
+> Measured 2026-08-15: `portSapphire-screen-v5-graded.png` is 1885x1885 over a 65-cell town = **29
+> art px per cell**, against the overworld's **48** (`TILE`). The town art is **1.66x lower
+> resolution than the overworld**, so it is upscaled further on the same screen and will always read
+> softer. Two fixes were aimed at this symptom and neither could have closed the gap: adding
+> `image-rendering: pixelated` (turns blur into blocks; restores no detail) and raising the town
+> canvas dpr cap from 2 to 3 (renders the buffer at device resolution, but the SOURCE is still
+> 29 px/cell). Both were correct and both were insufficient. **The only real fix is re-baking the
+> town art at overworld density** -- which the owner independently concluded: *"it's ok if we need
+> to update the animation because the resolution is too low anyways and needs to be higher
+> resolution."* Do not attempt a third runtime-side fix for this.
+
 ## Claims that were WRONG and are now retired
 
 Recorded so they cannot come back. Each was believed and acted on.
