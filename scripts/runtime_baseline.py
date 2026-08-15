@@ -377,20 +377,25 @@ ACT1_TOWN_FILES = {
     "act1-hifi/town/portSapphire-town.json": (
         2799, "59607448f149b26e092725a73f122aa8db6807df7b62124d8dc2b911aeccb76d"),
     "act1-hifi/town/portSapphire-walkable.json": (
-        30824, "48b084a385060fb474ac569dd7ba5e4d156fb557ad6ace2c44be2b68ac81a570"),
+        31082, "fe4278aec0e644b09415c2546b252662a535bd3c1e340d27e32ea0b28f2f8675"),
     "act1-hifi/town/portSapphire-screen.png": (
-        6_973_000, "87a04490428c6ae26ed238a50949646b64c0cf11770dd06336a0075e07b4dc4c"),
+        6969040, "8e0df6f22bd90a8eefb72d5ea0fa853b667634d941eae909092d256fa8a00c80"),
     # 2026-08-14, owner-authorised ("draw over the hero AND be passable"): the overhead-prop
-    # foreground layer -- mast, demijohn, rooftop chimney -- re-extracted from the SAME locked
-    # painting by scripts/derive_town_foreground.py and drawn by town.html AFTER the hero/NPC
-    # sort. Placeholder zeros; `npm run repin` fills the real size/hash in.
+    # foreground layer, re-extracted from the SAME locked painting by
+    # scripts/derive_town_foreground.py and drawn by town.html AFTER the hero/NPC sort.
+    # Placeholder zeros; `npm run repin` fills the real size/hash in.
     # The cropped foreground layer is useless without its offset: town.html SKIPS the layer
     # entirely when this is missing rather than drawing it displaced, so an unstaged offset
     # is a silent loss of the whole feature -- which is exactly how it first shipped.
+    # 2026-08-15, owner-authorised ("just remove the chimnys and demijohn"): the demijohn and
+    # rooftop-chimney regions are GONE, along with the props themselves -- see
+    # design/act1-towns/portSapphire-foreground-props.json's _removedProps note. Only the
+    # ship's mast remains (unambiguous, owner-approved 2026-08-03), which is why this file
+    # shrank from 1.27MB to ~60KB: it used to carry three props' pixels, now one.
     "act1-hifi/town/portSapphire-foreground.json": (
-        62, "1ec3178fccd061940fa05b2a77d8abbf02150ab3492e066a85c7d75d4e116537"),
+        55, "4140462414a595cc02388b35eacd9d719515ed0e1084e5e570aaecb91f6a8f85"),
     "act1-hifi/town/portSapphire-foreground.png": (
-        1267729, "5090e2f6e34c8f61e61320f17a8010bf322fd282c632e2559660835702f90de7"),
+        60503, "430352d385f02e7c16676fe3151c667d3249e943f1d9c3931bf4c10a584a6a50"),
     "act1-hifi/town/npc/portSapphire-drake-4x3-64.png": (
         51_557, "9a5ec1a3fc1f7e7077f9d30f89f6e044878211cf45b370a41e0c224500af4af3"),
     "act1-hifi/town/npc/portSapphire-healer-4x3-64.png": (

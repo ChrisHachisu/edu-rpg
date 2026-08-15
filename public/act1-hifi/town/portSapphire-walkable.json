@@ -27,7 +27,7 @@
   "shipDeckRule": "the moored trader's planks classify as paving and are excluded by CONNECTIVITY, not colour -- they are a separate component",
   "curveRule": "Ramer-Douglas-Peucker at 2.5 mask samples",
   "authoredObstacles": "the well is authored, not derived -- its rim is cobble and no local test can separate it",
-  "overheadExemptions": "3 derived obstacle(s) dropped as OVERHEAD (mast, hanging demijohn): a top-down painting cannot encode height, so props the player walks beneath read as solid"
+  "overheadExemptions": "1 derived obstacle(s) dropped as OVERHEAD (mast, hanging demijohn): a top-down painting cannot encode height, so props the player walks beneath read as solid"
  },
  "regions": [
   {
@@ -925,16 +925,16 @@
       "y": 633.4
      },
      {
-      "x": 913.7,
-      "y": 670.9
+      "x": 926.9,
+      "y": 653.2
      },
      {
       "x": 891.6,
-      "y": 679.7
+      "y": 659.9
      },
      {
-      "x": 907.0,
-      "y": 693.0
+      "x": 891.6,
+      "y": 715.0
      },
      {
       "x": 869.5,
@@ -1047,8 +1047,8 @@
       "y": 743.7
      },
      {
-      "x": 929.1,
-      "y": 697.4
+      "x": 926.9,
+      "y": 704.0
      }
     ]
    ],
@@ -1679,7 +1679,7 @@
    ]
   },
   {
-   "id": "prop-027",
+   "id": "prop-026",
    "kind": "town-prop",
    "polygon": [
     {
@@ -1701,7 +1701,7 @@
    ]
   },
   {
-   "id": "prop-028",
+   "id": "prop-027",
    "kind": "town-prop",
    "polygon": [
     {
@@ -1719,6 +1719,28 @@
     {
      "x": 688.6,
      "y": 505.4
+    }
+   ]
+  },
+  {
+   "id": "prop-028",
+   "kind": "town-prop",
+   "polygon": [
+    {
+     "x": 723.9,
+     "y": 509.8
+    },
+    {
+     "x": 734.9,
+     "y": 509.8
+    },
+    {
+     "x": 734.9,
+     "y": 512.0
+    },
+    {
+     "x": 723.9,
+     "y": 512.0
     }
    ]
   },
@@ -1727,47 +1749,25 @@
    "kind": "town-prop",
    "polygon": [
     {
-     "x": 723.9,
-     "y": 509.8
-    },
-    {
-     "x": 734.9,
-     "y": 509.8
-    },
-    {
-     "x": 734.9,
+     "x": 589.2,
      "y": 512.0
     },
     {
-     "x": 723.9,
+     "x": 602.5,
      "y": 512.0
+    },
+    {
+     "x": 602.5,
+     "y": 516.4
+    },
+    {
+     "x": 589.2,
+     "y": 516.4
     }
    ]
   },
   {
    "id": "prop-030",
-   "kind": "town-prop",
-   "polygon": [
-    {
-     "x": 589.2,
-     "y": 512.0
-    },
-    {
-     "x": 602.5,
-     "y": 512.0
-    },
-    {
-     "x": 602.5,
-     "y": 516.4
-    },
-    {
-     "x": 589.2,
-     "y": 516.4
-    }
-   ]
-  },
-  {
-   "id": "prop-031",
    "kind": "town-prop",
    "polygon": [
     {
@@ -1785,7 +1785,7 @@
    ]
   },
   {
-   "id": "prop-032",
+   "id": "prop-031",
    "kind": "town-prop",
    "polygon": [
     {
@@ -1803,7 +1803,7 @@
    ]
   },
   {
-   "id": "prop-033",
+   "id": "prop-032",
    "kind": "town-prop",
    "polygon": [
     {
@@ -1825,7 +1825,7 @@
    ]
   },
   {
-   "id": "prop-034",
+   "id": "prop-033",
    "kind": "town-prop",
    "polygon": [
     {
@@ -1843,20 +1843,42 @@
    ]
   },
   {
-   "id": "prop-035",
+   "id": "prop-034",
    "kind": "town-prop",
    "polygon": [
     {
      "x": 935.7,
-     "y": 635.6
+     "y": 637.8
     },
     {
      "x": 935.7,
      "y": 642.2
     },
     {
+     "x": 933.5,
+     "y": 644.4
+    },
+    {
+     "x": 933.5,
+     "y": 642.2
+    }
+   ]
+  },
+  {
+   "id": "prop-035",
+   "kind": "town-prop",
+   "polygon": [
+    {
+     "x": 931.3,
+     "y": 646.6
+    },
+    {
+     "x": 931.3,
+     "y": 648.8
+    },
+    {
      "x": 926.9,
-     "y": 653.2
+     "y": 651.0
     }
    ]
   },
@@ -1910,7 +1932,7 @@
     },
     {
      "x": 935.7,
-     "y": 686.3
+     "y": 688.6
     },
     {
      "x": 937.9,
@@ -2017,7 +2039,7 @@
    ]
   },
   {
-   "id": "prop-046",
+   "id": "prop-045",
    "kind": "town-prop",
    "polygon": [
     {
@@ -2047,7 +2069,7 @@
    ]
   },
   {
-   "id": "prop-047",
+   "id": "prop-046",
    "kind": "town-prop",
    "polygon": [
     {
@@ -2069,7 +2091,7 @@
    ]
   },
   {
-   "id": "prop-048",
+   "id": "prop-047",
    "kind": "town-prop",
    "polygon": [
     {
@@ -2087,7 +2109,7 @@
    ]
   },
   {
-   "id": "prop-049",
+   "id": "prop-048",
    "kind": "town-prop",
    "polygon": [
     {
@@ -2105,7 +2127,7 @@
    ]
   },
   {
-   "id": "prop-050",
+   "id": "prop-049",
    "kind": "town-prop",
    "polygon": [
     {
@@ -2123,7 +2145,7 @@
    ]
   },
   {
-   "id": "prop-051",
+   "id": "prop-050",
    "kind": "town-prop",
    "polygon": [
     {
@@ -2141,33 +2163,33 @@
     {
      "x": 194.2,
      "y": 748.1
+    }
+   ]
+  },
+  {
+   "id": "prop-051",
+   "kind": "town-prop",
+   "polygon": [
+    {
+     "x": 847.4,
+     "y": 745.9
+    },
+    {
+     "x": 862.9,
+     "y": 745.9
+    },
+    {
+     "x": 862.9,
+     "y": 750.3
+    },
+    {
+     "x": 847.4,
+     "y": 750.3
     }
    ]
   },
   {
    "id": "prop-052",
-   "kind": "town-prop",
-   "polygon": [
-    {
-     "x": 847.4,
-     "y": 745.9
-    },
-    {
-     "x": 862.9,
-     "y": 745.9
-    },
-    {
-     "x": 862.9,
-     "y": 750.3
-    },
-    {
-     "x": 847.4,
-     "y": 750.3
-    }
-   ]
-  },
-  {
-   "id": "prop-053",
    "kind": "town-prop",
    "polygon": [
     {
@@ -2193,7 +2215,7 @@
    ]
   },
   {
-   "id": "prop-054",
+   "id": "prop-053",
    "kind": "town-prop",
    "polygon": [
     {
@@ -2211,7 +2233,7 @@
    ]
   },
   {
-   "id": "prop-055",
+   "id": "prop-054",
    "kind": "town-prop",
    "polygon": [
     {
@@ -2229,7 +2251,7 @@
    ]
   },
   {
-   "id": "prop-056",
+   "id": "prop-055",
    "kind": "town-prop",
    "polygon": [
     {
@@ -2247,7 +2269,7 @@
    ]
   },
   {
-   "id": "prop-057",
+   "id": "prop-056",
    "kind": "town-prop",
    "polygon": [
     {
@@ -2269,7 +2291,7 @@
    ]
   },
   {
-   "id": "prop-058",
+   "id": "prop-057",
    "kind": "town-prop",
    "polygon": [
     {
@@ -2287,7 +2309,7 @@
    ]
   },
   {
-   "id": "prop-059",
+   "id": "prop-058",
    "kind": "town-prop",
    "polygon": [
     {
@@ -2305,7 +2327,7 @@
    ]
   },
   {
-   "id": "prop-060",
+   "id": "prop-059",
    "kind": "town-prop",
    "polygon": [
     {
@@ -2323,33 +2345,33 @@
     {
      "x": 37.5,
      "y": 787.9
+    }
+   ]
+  },
+  {
+   "id": "prop-060",
+   "kind": "town-prop",
+   "polygon": [
+    {
+     "x": 858.5,
+     "y": 792.3
+    },
+    {
+     "x": 860.7,
+     "y": 792.3
+    },
+    {
+     "x": 860.7,
+     "y": 801.1
+    },
+    {
+     "x": 858.5,
+     "y": 801.1
     }
    ]
   },
   {
    "id": "prop-061",
-   "kind": "town-prop",
-   "polygon": [
-    {
-     "x": 858.5,
-     "y": 792.3
-    },
-    {
-     "x": 860.7,
-     "y": 792.3
-    },
-    {
-     "x": 860.7,
-     "y": 801.1
-    },
-    {
-     "x": 858.5,
-     "y": 801.1
-    }
-   ]
-  },
-  {
-   "id": "prop-062",
    "kind": "town-prop",
    "polygon": [
     {
@@ -2379,7 +2401,7 @@
    ]
   },
   {
-   "id": "prop-063",
+   "id": "prop-062",
    "kind": "town-prop",
    "polygon": [
     {
@@ -2401,7 +2423,7 @@
    ]
   },
   {
-   "id": "prop-064",
+   "id": "prop-063",
    "kind": "town-prop",
    "polygon": [
     {
@@ -2419,7 +2441,7 @@
    ]
   },
   {
-   "id": "prop-065",
+   "id": "prop-064",
    "kind": "town-prop",
    "polygon": [
     {
@@ -2449,7 +2471,7 @@
    ]
   },
   {
-   "id": "prop-066",
+   "id": "prop-065",
    "kind": "town-prop",
    "polygon": [
     {
