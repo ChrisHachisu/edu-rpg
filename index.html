@@ -1131,7 +1131,27 @@
       // The panel is the richer form of the recovery message; the toast is what we fall back to if
       // the black box is missing or anything in the panel throws. One of the two always appears,
       // because that message is what tells the owner a recovery happened rather than a stutter.
+      /* DEBUG UI IS OFF BY DEFAULT — owner, once the overworld blue screen was confirmed fixed:
+         "can you also remove the debug boxes since the overworld issue is resolved?"
+
+         GATED, NOT DELETED, and the distinction is the whole point. These two surfaces are what
+         actually solved that bug: the live panel's `spr live/want fix N` is how the sprite watchdog
+         was caught making the blue screen WORSE, and the black box is what reported `gl lost at
+         443205ms, restored=1` followed by "page was killed outright", which is what turned the
+         investigation from a redraw bug into a memory one. Deleting them would mean re-deriving all
+         of it the next time something regresses. They cost nothing while off: the recording still
+         happens, only the on-screen boxes are suppressed.
+
+         Turn them back on, on a device, with no rebuild:
+             localStorage.setItem('edu-rpg-debug','1')   (then reload)
+         Read once at boot rather than per frame so it cannot become a per-tick storage hit — the
+         2 s write timer in this same file was already suspected of causing freezes once. */
+      var DEBUG_UI = (function () {
+        try { return localStorage.getItem('edu-rpg-debug') === '1'; } catch (e) { return false; }
+      })();
+
       function report() {
+        if (!DEBUG_UI) return;                 // the recovery still RECORDS; it just says nothing
         try {
           var b = BB();
           var cls = b && b.classify ? b.classify() : null;
@@ -1641,6 +1661,11 @@
         // WorldMapScene.create() again and is expected to be slow.
         if (c.map && c.map !== lastMap) { lastMap = c.map; armedAt = Date.now(); }
         if (!armed) return;                       // nothing worth showing before the world exists
+        // Off by default -- see DEBUG_UI. The freeze COUNTERS above this line still run and are
+        // still written to storage, so a regression is still recorded even with the box hidden;
+        // only the drawing is skipped. Bailing here rather than inside ensurePanel() means the
+        // element is never created at all.
+        if (!DEBUG_UI) return;
         var p = ensurePanel();
         // Name the SCREEN whenever it is not the world. WorldMapScene keeps its map id and tile
         // coords while paused under a battle/menu/shop, so without this the header reads

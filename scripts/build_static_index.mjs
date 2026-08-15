@@ -224,8 +224,16 @@ export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '
 // the terrain rather than guessed as a duration, and is hard-bounded at 4 s so it can never outlive
 // its own condition and trap the player. Separate element from #boot-cover, which finish() removes
 // from the DOM precisely so it cannot return; this one must be able to.
+// 2026-08-15, fifth sign-off: the DEBUG UI is now OFF by default. Owner, after confirming the
+// overworld blue screen fixed: "can you also remove the debug boxes since the overworld issue is
+// resolved?" GATED, NOT DELETED -- these two surfaces are what solved that bug (the live panel's
+// `spr live/want fix N` caught the watchdog making the blue screen worse; the black box reported
+// `gl lost ... restored=1` then "page was killed outright", which turned it from a redraw bug into
+// a memory one). The recording still runs; only the on-screen boxes are suppressed, so a regression
+// is still captured. Re-enable on a device with no rebuild:
+// localStorage.setItem('edu-rpg-debug','1'). Read once at boot, never per frame.
 export const EXPECTED_STATIC_INDEX_SHA =
-  'e70440fa5b3787be789fb6195b28cd0bed09c2f29061206551bac929143a50f0';
+  '488492530912d89539c7bd638ffd7a3f5da978785f0b91c7211832486a5899d6';
 
 /**
  * The authored shell loads its scripts by ABSOLUTE path so the Vite dev server resolves them;
