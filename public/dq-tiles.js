@@ -3963,22 +3963,26 @@
     // inheritance -- this modal lives outside #qok-ui's subtree (it can open mid-exploration,
     // with no menu overlay active), so those custom properties are not in scope here.
     s.textContent =
+      // No touch-action:none on the container itself -- a1mInteract's own proven pill sets
+      // touch-action ONLY on the interactive element, never on an ancestor, and this container
+      // was the one thing standing between a working button and a native <button> that measured
+      // dead to real touch; not worth re-introducing the same shape of risk on a hunch.
       '#a1mCrystal{position:fixed;inset:0;z-index:95;display:flex;align-items:center;'+
-      'justify-content:center;background:rgba(8,8,13,.6);padding:24px;box-sizing:border-box;'+
-      'touch-action:none;}'+
+      'justify-content:center;background:rgba(8,8,13,.6);padding:24px;box-sizing:border-box;}'+
       '#a1mCrystal .card{width:100%;max-width:300px;background:#1d1f27;'+
       'border:1px solid rgba(201,169,97,.40);border-radius:16px;padding:18px;'+
       'box-shadow:0 10px 34px rgba(0,0,0,.55);}'+
       '#a1mCrystal .hd{font-size:15px;font-weight:700;color:#c9a961;text-align:center;'+
       'letter-spacing:.02em;margin-bottom:14px;}'+
-      '#a1mCrystal button{display:block;width:100%;appearance:none;border:1px solid rgba(201,169,97,.40);'+
-      'border-radius:12px;padding:14px;font-size:14px;font-weight:700;color:#e8e2d4;'+
-      'background:#ffffff0d;margin-top:9px;touch-action:manipulation;'+
-      '-webkit-tap-highlight-color:transparent;}'+
-      '#a1mCrystal button:first-of-type{margin-top:0;}'+
-      '#a1mCrystal button.primary{background:#557e63;border-color:#557e63;color:#f2f6f3;}'+
-      '#a1mCrystal button.cancel{background:transparent;color:#a49e91;font-weight:500;}'+
-      '#a1mCrystal button:active{filter:brightness(1.18);}';
+      // [role="button"], NOT a native <button> -- see addBtn's own note for why.
+      '#a1mCrystal [role="button"]{display:block;width:100%;box-sizing:border-box;'+
+      'border:1px solid rgba(201,169,97,.40);border-radius:12px;padding:14px;text-align:center;'+
+      'font-size:14px;font-weight:700;color:#e8e2d4;background:#ffffff0d;margin-top:9px;'+
+      'touch-action:manipulation;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;'+
+      'user-select:none;cursor:pointer;}'+
+      '#a1mCrystal [role="button"].primary{background:#557e63;border-color:#557e63;color:#f2f6f3;}'+
+      '#a1mCrystal [role="button"].cancel{background:transparent;color:#a49e91;font-weight:500;}'+
+      '#a1mCrystal [role="button"]:active{filter:brightness(1.18);}';
     document.head.appendChild(s);
   }
   function a1mCrystalHide(){
@@ -4068,8 +4072,13 @@
     var card=document.createElement('div'); card.className='card';
     var hd=document.createElement('div'); hd.className='hd'; hd.textContent=Z2('dungeon.warpTitle')||'Warp Crystal';
     card.appendChild(hd);
+    // A <div role="button">, NOT a native <button> -- MEASURED on device (iPhone 13 sim, real
+    // touch, not the desktop click this was first built against): a native <button> here never
+    // received pointerdown from a real finger, while a1mEnsurePrompt's own prompt pill (a div)
+    // sits at the same z-index tier and always has. Matching its proven element shape fixed it;
+    // matching only its listener code did not.
     function addBtn(label,onPick){
-      var b=document.createElement('button'); b.type='button'; b.textContent=label;
+      var b=document.createElement('div'); b.setAttribute('role','button'); b.textContent=label;
       b.addEventListener('pointerdown', function(e){ e.preventDefault(); e.stopPropagation(); onPick(); });
       return b;
     }
