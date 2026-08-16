@@ -3924,7 +3924,12 @@
      is in the distance, not 48 -- standing one tile west of Sunken Cellar B3F's own save crystal,
      centre-to-soles measured 57.1px, over a first attempt at 56. The numbers below clear THAT
      floor with real margin, plaque more than the rest. */
-  var A1M_PROMPT_REACH={4:64,7:64,14:64,18:86};                              // world px; plaque widest
+  // All four at 64 -- owner: "drop the plaque to 64 like the others". The plaque was 86 to make it
+  // easier to reach, but distance is measured from the tile CENTRE, so 86 reaches ~38px past the
+  // far edge of a 48px tile: that is the "area in front of the plaque is tappable" he reported.
+  // Its blocked left side was never the range -- that was the line-of-sight guard, scoped below --
+  // so with the guard fixed the extra reach bought nothing and cost the phantom forward zone.
+  var A1M_PROMPT_REACH={4:64,7:64,14:64,18:64};                              // world px, uniform
   function a1mNearbyInteract(scene,m){
     var hero=scene&&scene.hero; if(!hero||!hero.scene||!scene.mapData) return null;
     var x=hero.x, y=hero.y, gy=y+a1mFootDy(scene);
