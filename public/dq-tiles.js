@@ -3747,6 +3747,10 @@
       else if(t===14){
         // Item 3: no longer routes straight into interact() -- see a1mCrystalShow's header for
         // why touching the crystal must ask first, not act first.
+        // A DORMANT ENTRANCE CRYSTAL SWALLOWS THE BUMP ENTIRELY. The prompt path is gated in
+        // a1mNearbyInteract; this is the other way in, and leaving it open would mean the object
+        // is still interactable by walking into it -- exactly the bug (a1mCrystalDormant's header).
+        if(a1mCrystalDormant(scene)) return;
         var ddx2=(scene.heroDir===2?1:(scene.heroDir===1?-1:0)),
             ddy2=(scene.heroDir===0?1:(scene.heroDir===3?-1:0));
         a1mCrystalTouch(scene,tx,ty,ddx2,ddy2);
@@ -3852,6 +3856,41 @@
      substitution and never mistakes it for a real step. */
   var A1M_PROMPT_VERB={4:'Open',7:'Battle',14:'Save',18:'Read'};
   var A1M_PROMPT_TILE={4:1,7:1,14:1,18:1};
+  /* ---- THE TWO CRYSTALS ARE DIFFERENT OBJECTS, AND ONE OF THEM STARTS DEAD -----------------------
+     Owner, build 36: "it can be interacted with even when it is not activated, so this is a bug. the
+     entrance crystal has no saving ability and only sends the player to the crystal near the boss (no
+     healing ability as well). the entrance crystal cannot be interactable until it is activated
+     (interacting with the crystal near the boss)."
+
+     This SUPERSEDES the earlier answer recorded in a1mCrystalChoose ("activating a crystal still
+     saves and full-heals ... activation is what switches it to its lit state"), which is now true of
+     the BOSS-FLOOR crystal only. The settled split:
+
+       boss-floor crystal  save + full heal + ACTIVATES the entrance crystal
+       entrance crystal    inert and non-interactable until activated; then teleport to the boss
+                           floor's crystal and nothing else -- no save, no heal
+
+     The flag already existed and was already written; it simply gated NOTHING, which is the bug he
+     found. It was also written by the wrong crystal (the entrance one activated itself on first use,
+     so it could never be dormant in practice), so both halves move here.
+
+     WHY floor 1 vs floor > 1 IS THE WHOLE TEST, measured off act1-dungeon-floors.json rather than
+     assumed: each of the four A1D_MAPS dungeons carries EXACTLY TWO "save" assets -- one on f1 and
+     one on its final floor, which is also the floor carrying the "boss" asset. There is no third
+     crystal and no mid-floor crystal anywhere in them, so "not floor 1" IS "the crystal near the
+     boss" for every dungeon this layer touches. crystalCave is deliberately outside A1D_MAPS (it has
+     no f1 crystal at all) and keeps the generic behaviour untouched. */
+  function a1mCrystalDormant(scene){
+    if(!scene || (scene.currentFloor||1)!==1 || !A1D_MAPS[scene.currentMapId]) return false;
+    var Q=window.__QOK, tt=Q&&Q.state&&Q.state();
+    var flags=tt&&tt.player&&tt.player.state&&tt.player.state.storyFlags;
+    return !(flags && flags['entrance.crystal.'+scene.currentMapId+'.activated']);
+  }
+  // Is THIS crystal the entrance one (floor 1 of a dungeon that has the new f1 asset)? Only reached
+  // once a1mCrystalDormant has already refused the un-activated case, so it means "activated".
+  function a1mCrystalIsEntrance(scene){
+    return !!(scene && (scene.currentFloor||1)===1 && A1D_MAPS[scene.currentMapId]);
+  }
   var a1mPromptEl=null, a1mPromptStyled=false, a1mPromptTarget=null, a1mPromptScene=null;
   function a1mEnsurePromptStyle(){
     if(a1mPromptStyled) return; a1mPromptStyled=true;
@@ -3924,27 +3963,91 @@
      is in the distance, not 48 -- standing one tile west of Sunken Cellar B3F's own save crystal,
      centre-to-soles measured 57.1px, over a first attempt at 56. The numbers below clear THAT
      floor with real margin, plaque more than the rest. */
-  // All four at 64 -- owner: "drop the plaque to 64 like the others". The plaque was 86 to make it
-  // easier to reach, but distance is measured from the tile CENTRE, so 86 reaches ~38px past the
-  // far edge of a 48px tile: that is the "area in front of the plaque is tappable" he reported.
-  // Its blocked left side was never the range -- that was the line-of-sight guard, scoped below --
-  // so with the guard fixed the extra reach bought nothing and cost the phantom forward zone.
-  var A1M_PROMPT_REACH={4:64,7:64,14:64,18:64};                              // world px, uniform
+  /* ---- CONTACT, NOT PROXIMITY -- and the number is BORROWED, not chosen -------------------------
+     ~~"All four at 64 -- owner: drop the plaque to 64 like the others."~~ RETIRED, build 36, by the
+     owner testing it: "the plaque is readable before touching it. i want it to be readable only when
+     the player touches it (bumps into it)" and "same with the entrance crystal, which is worse
+     because it is interactable way before bumping into it."
+
+     Both reports are the same defect and it is not the size of the number, it is WHAT IT MEASURES.
+     64px from the tile CENTRE reaches 40px past the edge of a 48px tile -- most of a cell of open
+     floor in every direction -- so the prompt was always going to appear before she arrived. No
+     value of a centre-measured reach fixes that: shrink it far enough to kill the forward zone and
+     it stops covering the object's own width, which is the build-35 complaint this replaced.
+
+     So measure to the tile RECT (zero anywhere inside it, a uniform margin on every side) and set
+     that margin to A1M_BUMP_REACH -- the SAME probe a1mBump walks forward from her soles to find
+     the thing she just walked into. That makes the two systems one definition rather than two
+     numbers that have to be kept in sympathy:
+
+         a1mBump's probe point sits A1M_BUMP_REACH from her soles along her heading. If that point
+         is inside the object's tile, then the nearest point of that tile is at most A1M_BUMP_REACH
+         away. So "rect distance <= A1M_BUMP_REACH" is exactly "a bump in SOME direction from here
+         would register" -- the prompt now appears precisely when touching it would work, which is
+         what he asked for, stated in the code rather than approximated by a constant.
+
+     A1M_BUMP_REACH is itself derived (A1M_FOOT + A1M_LEAN + A1M_STEP + 2 = 24): the furthest she
+     can come to rest from an object she has walked straight into, once the lean term and one
+     un-refused collision substep are paid. It is a WORST case, so the typical resting position is
+     nearer and the prompt is not marginal.
+
+     ~~"22px would match NOTHING -- adjacency already costs 24px."~~ That arithmetic measured the
+     wrong thing. 24px is where an ADJACENT TILE'S CENTRE sits, and she never stands there when she
+     is pressed against an object. Her RESTING distance is the quantity that matters, so it was
+     measured rather than reasoned about.
+
+     THE MEASUREMENT, AND WHY THERE ARE TWO NUMBERS AND NOT ONE. Sweeping every interactable in all
+     four A1D_MAPS dungeons on both floors, walking the sole point in against a1mFree itself (the
+     mover's own predicate, so the answer cannot drift from the mover's behaviour) and recording the
+     closest position it accepts, the 134 approachable orthogonal sides come out sharply bimodal:
+
+         chest    96 sides   95 at contact < 1 px
+         crystal  26 sides   25 at contact < 1 px
+         boss     12 sides   12 at contact < 1 px
+         plaque    4 sides    4 at contact 10-15 px      <- the odd one out
+         (the remaining 7 sides sit at 40+ px: those are walls, not approaches)
+
+     The plaque is different for a reason already recorded in this file: its marker cell reads
+     BLOCKED in the walk mask, because the sign is mounted in the wall, so the clearance term stops
+     her a foot-width short. Every other object's marker stands on open floor and she reaches its
+     tile edge. ONE margin therefore cannot serve both -- it is either too tight for the plaque or,
+     as the owner reported, a half-cell too generous for the crystal, which is exactly why he called
+     the crystal the worse of the two.
+
+     From a contact boundary, her resting position can sit one collision substep (A1M_STEP) plus one
+     outward slide correction (A1M_LIFT) further out, both bounded and both already constants here.
+     So each margin is contact + A1M_STEP + A1M_LIFT, rounded up:
+
+         plaque   15 + 6 + 3 = 24  ->  27   (a live walk into Sunken Cellar B1F's plaque rested at 24.7)
+         others    0 + 6 + 3 =  9  ->  12
+
+     The 3 px of headroom in each is deliberate slop, not a fudge: the field is an integer chamfer
+     quantised to thirds of a pixel, so the boundary it reports is good to about a pixel. */
+  var A1M_PROMPT_SLOP=A1M_STEP+A1M_LIFT+3;                   // 12 = substep + slide lift + 3px of quantisation
+  var A1M_PROMPT_MARGIN_DEFAULT=0+A1M_PROMPT_SLOP;           // 12: contact 0, marker stands on open floor
+  var A1M_PROMPT_MARGIN={18:15+A1M_PROMPT_SLOP};             // 27: contact 15, the plaque sits inside masked rock
+  var A1M_PROMPT_MARGIN_MAX=(function(){                     // widest of the above, for the scan span
+    var w=A1M_PROMPT_MARGIN_DEFAULT;
+    for(var k in A1M_PROMPT_MARGIN) if(A1M_PROMPT_MARGIN[k]>w) w=A1M_PROMPT_MARGIN[k];
+    return w; })();
   function a1mNearbyInteract(scene,m){
     var hero=scene&&scene.hero; if(!hero||!hero.scene||!scene.mapData) return null;
     var x=hero.x, y=hero.y, gy=y+a1mFootDy(scene);
-    var maxR=0; for(var kk in A1M_PROMPT_REACH) if(A1M_PROMPT_REACH[kk]>maxR) maxR=A1M_PROMPT_REACH[kk];
-    var span=Math.ceil(maxR/TILE)+1;
+    var span=Math.ceil((A1M_PROMPT_MARGIN_MAX+TILE)/TILE)+1;
     var cx=(x/TILE)|0, cy=(gy/TILE)|0;
     var best=null, bestDist=Infinity;
     for(var ty=cy-span; ty<=cy+span; ty++){
       var row=scene.mapData[ty]; if(!row) continue;
       for(var tx=cx-span; tx<=cx+span; tx++){
         var t=row[tx]; if(t===undefined || !A1M_PROMPT_TILE[t]) continue;
+        if(t===14 && a1mCrystalDormant(scene)) continue;                    // dormant entrance crystal: not interactable at all
         var ccx=tx*TILE+TILE/2, ccy=ty*TILE+TILE/2;
-        var ddx=ccx-x, ddy=ccy-gy, dist=Math.sqrt(ddx*ddx+ddy*ddy);
-        var reach=A1M_PROMPT_REACH[t]||(A1M_FOOT+2);
-        if(dist>reach || dist>=bestDist) continue;
+        var ddx=ccx-x, ddy=ccy-gy;
+        // Distance to the tile RECT, not to its centre: 0 anywhere inside the cell, and the same
+        // margin on every side including the one she has to approach along a wall.
+        var ex=Math.max(Math.abs(ddx)-TILE/2,0), ey=Math.max(Math.abs(ddy)-TILE/2,0);
+        var dist=Math.sqrt(ex*ex+ey*ey);
+        if(dist>(A1M_PROMPT_MARGIN[t]||A1M_PROMPT_MARGIN_DEFAULT) || dist>=bestDist) continue;
         // THE PLAQUE'S LEFT SIDE WAS THE LINE-OF-SIGHT GUARD, not the range. Owner, build 35: "the
         // plaque just needed to be tappable on all surfaces but the left side was not tappable."
         // A plaque is mounted ON A WALL, so standing beside it instead of square in front puts that
@@ -4108,20 +4211,47 @@
     a1mCrystalHide();
     try{
       if(action==='cancel') return;
-      // ITEM: THE ENTRANCE CRYSTAL LIGHTS UP THE MOMENT IT IS USED. Owner: "activating a crystal
-      // still saves and full-heals, exactly as today, and activation is what switches it to its
-      // lit state." Any non-cancel choice on floor 1's crystal counts -- Save, or picking a warp
-      // target -- exactly like the mid/boss crystal branch below already saves on every non-cancel
-      // choice. a1dEntranceCrystalTick (drawDungeon section) reads this flag every tick to choose
-      // the dormant vs lit sprite; A1D_MAPS scopes it to the four dungeons that actually carry this
-      // tile today (act1-dungeon-floors.json's new f1 "save" assets).
-      if((scene.currentFloor||1)===1 && A1D_MAPS[scene.currentMapId]){
+      // THE BOSS-FLOOR CRYSTAL IS WHAT LIGHTS THE ENTRANCE ONE.
+      // ~~"Any non-cancel choice on FLOOR 1's crystal counts"~~ -- retired at the source, build 36.
+      // That made the entrance crystal activate ITSELF on first use, so it was never dormant and the
+      // flag gated nothing. Owner: "the entrance crystal cannot be interactable until it is activated
+      // (interacting with the crystal near the boss)". So activation is written HERE, by the other
+      // crystal: floor > 1 in an A1D_MAPS dungeon is the boss-floor crystal and the only other one
+      // that exists (see a1mCrystalDormant's header for the count off act1-dungeon-floors.json).
+      // Any non-cancel choice counts, Save or Warp to entrance -- touching it IS interacting with it.
+      // a1dEntranceCrystalTick (drawDungeon section) reads this flag every tick to choose the dormant
+      // vs lit sprite.
+      if((scene.currentFloor||1)>1 && A1D_MAPS[scene.currentMapId]){
         var Q1=window.__QOK, tt1=Q1&&Q1.state&&Q1.state();
         var flags1=tt1&&tt1.player&&tt1.player.state&&tt1.player.state.storyFlags;
         if(flags1){
           var fkey='entrance.crystal.'+scene.currentMapId+'.activated';
           if(!flags1[fkey]){ flags1[fkey]=true; try{ tt1.saveGame(); }catch(e){} }
         }
+      }
+      /* THE ENTRANCE CRYSTAL'S ONE AND ONLY EFFECT. Owner: it "only sends the player to the crystal
+         near the boss (no healing ability as well)" and "has no saving ability". So this branch
+         deliberately does NOT go through a1mCrystalInteract -- interact() is the bundle's own crystal
+         handler and it saves, plays the save sfx, full-heals and raises the save VFX before it does
+         anything else. Reaching it at all would re-add both abilities he just removed.
+
+         confirmWarpOption() alone is the whole teleport: read from the bundle (offset 4684831) it
+         takes warpFloors[warpOverlayIndex], fades out, sets currentFloor, resets encounters, reloads
+         the map and drops the hero one row SOUTH of that floor's crystal tile -- which is the
+         landing he described, since the boss floor's only crystal is the one beside the boss.
+
+         The floor number is passed explicitly rather than via the bundle's -1 sentinel. Both end up
+         at `T.floors` and the sentinel is one line shorter, but -1 means "the boss is DEAD" in the
+         bundle's own vocabulary: `warp.<mapId>.boss` is written by BattleScene on a boss defeat
+         (offset 4837235), not by any crystal. Borrowing it here would tie this warp to a flag that
+         means something else, which is how the stale-claim problems in this repo start. */
+      if(action==='warpBoss'){
+        var flb=a1dFloorFor(scene), bossFloor=(flb&&flb.totalFloors)||1;
+        if(bossFloor>1 && typeof scene.confirmWarpOption==='function'){
+          scene.warpFloors=[bossFloor]; scene.warpOverlayIndex=0;
+          scene.confirmWarpOption();
+        }
+        return;
       }
       if(action==='save'){
         var floor=scene.currentFloor||1;
@@ -4199,8 +4329,19 @@
     a1mCrystalEnsureStyle();
     var Q=window.__QOK, Z2=(Q&&Q.Z)||function(k){return k;};
     var floor=scene.currentFloor||1, opts=[];
-    opts.push({label:Z2('menu.save')||'Save', action:'save'});
-    if(floor===1){
+    if(a1mCrystalIsEntrance(scene)){
+      /* ONE OPTION, AND SAVE IS NOT AMONG THEM. Owner, build 36: the entrance crystal "has no saving
+         ability and only sends the player to the crystal near the boss (no healing ability as well)".
+         a1mCrystalDormant has already refused this menu entirely while the crystal is un-activated,
+         so by the time we are here it is lit and the warp is its whole purpose. The per-floor warp
+         list below is not offered either: these dungeons have exactly one other crystal, so a list
+         would always have been a list of one. */
+      opts.push({label:Z2('dungeon.warpBossFloor'), action:'warpBoss'});
+    } else if(floor===1){
+      // Generic floor-1 crystal in a dungeon OUTSIDE A1D_MAPS. No such dungeon ships today
+      // (crystalCave, the only other one with crystals, carries its single crystal on f6), so this
+      // is the untouched original path kept for anything added later -- not dead code by accident.
+      opts.push({label:Z2('menu.save')||'Save', action:'save'});
       var targets=a1mCrystalWarpTargets(scene);
       for(var i=0;i<targets.length;i++){
         var f=targets[i];
@@ -4208,6 +4349,7 @@
                    action:'warp', payload:{floors:targets,index:i}});
       }
     } else {
+      opts.push({label:Z2('menu.save')||'Save', action:'save'});
       opts.push({label:Z2('dungeon.warpToEntrance'), action:'entrance'});
     }
     var el=document.createElement('div'); el.id='a1mCrystal';
@@ -4245,6 +4387,10 @@
     A1M_CRYSTAL.el=el; A1M_CRYSTAL.open=true;
   }
   function a1mCrystalTouch(scene,tx,ty,dx,dy){
+    // Belt and braces on the two callers already gated (a1mNearbyInteract, a1mBump): this is the one
+    // funnel every crystal interaction passes through, so the dormant rule is restated at the choke
+    // point rather than trusted to stay true of both entry paths as they change.
+    if(a1mCrystalDormant(scene)) return;
     a1mCrystalShow(scene,tx,ty,dx,dy);
   }
   // DUNGEON ONLY, deliberately -- a1mFor (not a1mAnyFor), so the overworld and any town never grow
@@ -4257,7 +4403,11 @@
     if(!target){ a1mPromptHide(); return; }
     a1mPromptTarget=target; a1mPromptScene=scene;
     var el=a1mEnsurePrompt();
-    el.textContent=A1M_PROMPT_VERB[target.t]||'Interact';
+    // "Save" would be a lie on the entrance crystal now that saving is the one thing it cannot do
+    // (a1mCrystalDormant's header). It is only ever reachable here once activated, and its whole
+    // effect is the warp, so the button says so.
+    el.textContent=(target.t===14 && a1mCrystalIsEntrance(scene)) ? 'Warp'
+                 : (A1M_PROMPT_VERB[target.t]||'Interact');
     el.classList.add('a1m-show');
   }
   // Everything the engine's own update() refuses to move under. Kept as one list so a new
