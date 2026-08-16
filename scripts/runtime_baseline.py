@@ -91,7 +91,7 @@ ACT1_OVERLAY_FILES = {
     # save format round-trips to itself (measured: 742 of 754 reportable cells reload unchanged, the
     # other 12 settle one cell north once; largest rescue nudge 28 px against a 96 px bound).
     "dq-tiles.js": (
-        414976, "77c0ee810f5e9348ae727d45b005f4d7b6afea854dadec490e75ac549315ae5c"),
+        428210, "9501a55d014d80b44072fca5cd89dbf544a68a9674e276ba62a2e171b850b779"),
     # 2026-08-07: THE OVERWORLD'S COLLISION SHAPE, baked -- the overworld's answer to the dungeons'
     # `<floor>-walk.png` above, and as much a shipped authority as they are. Deriving it at runtime
     # was correct and unaffordable: owmBuild() evaluated waterField/mountainField per pixel over a
@@ -255,7 +255,7 @@ ACT1_MATERIAL_FILES = {
 # it is rendered and pinned. New runtime paths as of 2026-08-03.
 ACT1_DUNGEON_FILES = {
     "act1-dungeon-floors.json": (
-        60297, "9c284e35069895166735a409c6186da4e6e8d82e4b76816089ff271e34340a46"),
+        60541, "6c0dff6bd43ce3cc22757000fc488986a4240a8a0787034c68317a8352a50f28"),
     # 2026-08-15, item 4 (boss defeat animation): the ONLY file under act1-dungeon-art/assets/
     # this staging list carries. That whole directory was a review/design-eval asset library for
     # the 'material' layer fallback (window.__A1_DNG_LAYER__='material', never the shipped
@@ -332,6 +332,18 @@ ACT1_DUNGEON_FILES = {
         11928, "e573eb74b554ba4fdb79a4c7cde420ca124b6a8e091ce5b34e19a723bcea8559"),
     "act1-dungeon-art/whisperingWoodsCave-f3-walk.png": (
         12791, "6e32e58e3250185ed9ac3b23c85531ad104a9dba5b80b0f2cdc7128557c6117d"),
+    # 2026-08-16, THE ENTRANCE CRYSTAL (owner, build 35): "the entrance portal crystal is still
+    # not in the game ... a crystal of an activated and inactivated state that lives next to the
+    # plaque on the wall." act1-dungeon-floors.json's f1 "assets" now carries a `kind:"save"` entry
+    # for each of the four A1D_MAPS dungeons; a1dEntranceCrystalTick (public/dq-tiles.js) is the
+    # first normal-play caller of these two textures, so -- exactly the asset-boss.png precedent
+    # two entries above -- they would have silently shipped with no picture without an entry here.
+    # Placeholder zeros below; `./scripts/repin.sh` fills in the real size/sha256 from the files
+    # Codex wrote to public/act1-dungeon-art/assets/.
+    "act1-dungeon-art/assets/asset-entrance-crystal-dormant.png": (
+        31902, "9cfdcc128633335e6a86a024d2bb9245fcde71b82517885bcaeea88d3d5f7fe2"),
+    "act1-dungeon-art/assets/asset-entrance-crystal-lit.png": (
+        31354, "3cfcda761f8216e53b9a0606d10a0a75f1050eb24bbb9582836fec19b8afd41c"),
     # 2026-08-07: THE OPEN-CHEST STATE. Owner, playing: "the treasure chest open state is not
     # baked in the game". It could not be -- *-props.png has the chest composited in CLOSED, so
     # looting one changed the tile (4->8, persisted, replayed on re-entry) and nothing else.
