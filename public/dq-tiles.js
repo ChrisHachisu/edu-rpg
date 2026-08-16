@@ -4077,10 +4077,52 @@
     scene.heroTileX=tx-dx; scene.heroTileY=ty-dy;
     try{ scene.interact(); } finally { scene.heroTileX=savedX; scene.heroTileY=savedY; }
   }
+  // Where floor 1's OWN crystal actually stands, for the four dungeons it was added to (see
+  // a1dEntranceCrystalTick below) -- one tile SOUTH of the crystal's own MARKER cell
+  // (A1M_PROP-blocked, like every other prop, so the marker's own cell is never a legal landing
+  // spot), open floor, facing north toward it.
+  //
+  // THE MARKER SITS ON WALKABLE FLOOR; ONLY THE PICTURE SITS IN THE WALL. Owner correction,
+  // mid-build: the crystal must read as "embedded in the wall face, the same way the plaque is."
+  // A first pass achieved that by moving the marker TILE itself into the wall row (mirroring the
+  // plaque's own marker cell) -- and broke interaction: MEASURED via the interact-prompt system,
+  // `<floor>-walk.png` (the continuous-collision mask a1mBuild reads, NOT mapData) reads BLOCKED
+  // at the plaque's own marker cell (21,21) here, same as the wall around it, unlike every chest
+  // marker checked (which reads WALKABLE, matching this file's own design note a few hundred
+  // lines up: "a chest, a boss marker, a plaque and a save crystal are OBJECTS standing on a
+  // cell... not terrain"). A marker cell inside masked rock leaves the hero's soles too far from
+  // it for a1mNearbyInteract's reach margin, or fails its line-of-sight clearance test outright --
+  // confirmed on-device: an object placed there is approached but never shows its interact prompt
+  // and cannot be bumped either. The plaque already ships with this same latent defect; it is out
+  // of this file's scope to fix, but the crystal does not have to repeat it.
+  // So the marker (act1-dungeon-floors.json's "save" asset) stays on the walkable floor cell one
+  // row south of the sign -- exactly where the very first, pre-correction pass put it, and where
+  // it is provably interactive -- and only the DRAWN SPRITE moves into the wall row above it
+  // (a1dEntranceCrystalTick's own anchor math). This is the same split drawPlaque() already uses
+  // for the plaque itself: its marker tile and its drawn picture are not the same cell either.
+  var A1M_ENTRANCE_LANDING={
+    sunkenCellar:{x:22,y:23}, coastalReef:{x:60,y:11},
+    mistyGrotto:{x:38,y:25}, whisperingWoodsCave:{x:14,y:25}
+  };
   function a1mCrystalChoose(scene,tx,ty,dx,dy,action,payload){
     a1mCrystalHide();
     try{
       if(action==='cancel') return;
+      // ITEM: THE ENTRANCE CRYSTAL LIGHTS UP THE MOMENT IT IS USED. Owner: "activating a crystal
+      // still saves and full-heals, exactly as today, and activation is what switches it to its
+      // lit state." Any non-cancel choice on floor 1's crystal counts -- Save, or picking a warp
+      // target -- exactly like the mid/boss crystal branch below already saves on every non-cancel
+      // choice. a1dEntranceCrystalTick (drawDungeon section) reads this flag every tick to choose
+      // the dormant vs lit sprite; A1D_MAPS scopes it to the four dungeons that actually carry this
+      // tile today (act1-dungeon-floors.json's new f1 "save" assets).
+      if((scene.currentFloor||1)===1 && A1D_MAPS[scene.currentMapId]){
+        var Q1=window.__QOK, tt1=Q1&&Q1.state&&Q1.state();
+        var flags1=tt1&&tt1.player&&tt1.player.state&&tt1.player.state.storyFlags;
+        if(flags1){
+          var fkey='entrance.crystal.'+scene.currentMapId+'.activated';
+          if(!flags1[fkey]){ flags1[fkey]=true; try{ tt1.saveGame(); }catch(e){} }
+        }
+      }
       if(action==='save'){
         var floor=scene.currentFloor||1;
         if(floor===1 && a1mCrystalWarpTargets(scene).length===0){
@@ -4109,7 +4151,40 @@
       }
       if(action==='entrance'){                                      // mid-floor -> floor 1
         scene.midCrystalOverlayIndex=0;
-        if(typeof scene.confirmMidFloorCrystalOption==='function') scene.confirmMidFloorCrystalOption();
+        if(typeof scene.confirmMidFloorCrystalOption==='function'){
+          scene.confirmMidFloorCrystalOption();
+          /* THE BUNDLE'S OWN LANDING IS WRONG FOR THESE FOUR DUNGEONS -- A BUG, NOT UNSTYLED.
+             confirmMidFloorCrystalOption() (dist bundle) lands on
+             findDungeonEntrance(castle||tower ? effectiveHeight : 0), and every dungeon this file
+             touches is neither castle nor tower, so that call ALWAYS passes 0 -- which makes
+             findDungeonEntrance assume the exit door sits in the map's TOP half and step one row
+             SOUTH of it to land "inside". Measured live off act1-dungeon-floors.json: sunkenCellar
+             f1's mouth (tile 6, the door back to the overworld) is at (20,26), five rows from the
+             BOTTOM of a 30-row map, and findDungeonEntrance(0) still returns (20,27) -- one row
+             south of the mouth, which is solid rock (row 27 is 28 '#' characters, not open floor).
+             That is "the return to entrance action sends the player outside of the dungeon": she
+             lands embedded in rock one step past her own exit door, and the collision-recovery /
+             door-arrival checks a1mStep and a1mDoor run on the very next frame read that as having
+             walked through it.
+             This is a bug in a frozen, uneditable bundle (AGENTS.md forbids recompiling it), not a
+             design choice, so it is worked around here instead of patched at its source: the
+             ORIGINAL call above still runs in full (floor swap, encounter reset, fade tween, sfx --
+             real work this file has no reason to reimplement), and a SECOND `camerafadeoutcomplete`
+             listener, registered immediately after it returns, queues behind the bundle's own
+             listener on the same Phaser EventEmitter and fires in the same synchronous dispatch --
+             before the fade-in's first rendered frame -- to overwrite the wrong position with the
+             entrance crystal's own landing tile. The player never sees the wrong placement; the
+             screen is still opaque black at that point. */
+          var landing=A1M_ENTRANCE_LANDING[scene.currentMapId];
+          if(landing && scene.cameras && scene.cameras.main){
+            scene.cameras.main.once('camerafadeoutcomplete', function(){
+              try{
+                scene.heroTileX=landing.x; scene.heroTileY=landing.y; scene.heroDir=3; // face north, toward the crystal
+                scene.updatePosition(); scene.createHero(); scene.updateCamera();
+              }catch(e){ if(window.__DQ_DEBUG__) console.log('a1 entrance landing fix '+e); }
+            });
+          }
+        }
         return;
       }
       if(action==='warp'){                                          // floor-1 hub -> a specific activated floor/boss
@@ -4694,6 +4769,97 @@
     a1dBossPatch[key]=true;                                                 // claim before the tween starts: one shot per floor-visit
     a1dBossVanishPlay(scene,boss.x,boss.y);
   }
+  /* ---- THE ENTRANCE CRYSTAL: DORMANT UNTIL ACTIVATED, DRAWN LIVE BECAUSE THE BAKE PREDATES IT --
+     Owner, build 35: "the entrance portal crystal is still not in the game ... my idea is to have
+     codex design a crystal of an activated and inactivated state that lives next to the plaque on
+     the wall." act1-dungeon-floors.json's f1 "assets" now carries a `kind:"save"` entry for each
+     of the four dungeons this file already reskins (A1D_MAPS) -- a1dTiles turns that into a real
+     tile 14 (A1M_PROP-blocked, interactable) the moment loadMap runs, so placement, collision and
+     interact-dispatch are already free: a1mBump, a1mDispatchInteract and a1mNearbyInteract all
+     already branch on t===14, wired for the mid/boss-floor crystal this reuses without change.
+
+     EMBEDDED IN THE WALL VISUALLY; A WALKABLE FLOOR CELL UNDERNEATH IT MECHANICALLY -- owner
+     correction, mid-build: "the crystal next to the plaque [should be] embedded in the wall like
+     the plaque ... an inset fixture flush with the stonework, not a free-standing crystal ...
+     same wall plane, same mounting logic, same silhouette discipline as the plaque." A first pass
+     took that literally and moved the mapData MARKER into the same wall row as the sign -- and
+     broke interaction: `<floor>-walk.png` (the continuous-collision mask, independent of mapData)
+     reads BLOCKED there, same as the plaque's own marker cell, and every object this file's own
+     design note calls out ("a chest, a boss marker, a plaque and a save crystal are OBJECTS
+     standing on a cell... not terrain") is supposed to sit on a mask-WALKABLE cell instead, with
+     A1M_PROP alone doing the "can't walk through it" work. Confirmed on-device: an object whose
+     marker sits inside masked rock is approached but never shows its interact prompt.
+     So the marker (act1-dungeon-floors.json's "save" asset, kind:"save") stays on the walkable
+     floor cell one row south of the sign, exactly where a chest marker would sit -- and only the
+     DRAWN SPRITE is offset into the wall row above it (see this function's own anchor math,
+     `ec.y*TILE` not `ec.y*TILE+TILE`). This is the same split drawPlaque() already uses for the
+     plaque itself: its marker tile and its drawn picture are two different cells too. The player
+     is never meant to stand on the marker's cell (A1M_PROP blocks it, like every prop), only
+     approach it from the floor tile immediately south (A1M_ENTRANCE_LANDING, one row further).
+
+     What is NOT free is the PICTURE. Floor 1's *-props.png was baked before this crystal existed,
+     so there is no baked pixel to show through where it now stands -- unlike the boss-floor
+     crystal, which the baked art already draws (dngSpecialObjects hides the generic live-sprite
+     path on that layer for exactly that reason: nothing to double). This draws a dedicated live
+     sprite instead, the same pattern a1dBossVanish already established for "the baked picture
+     cannot show this state on its own": Codex-generated asset-entrance-crystal-{dormant,lit}.png,
+     swapped by the `entrance.crystal.<mapId>.activated` flag a1mCrystalChoose sets the first time
+     the crystal is used (dungeon-props: painterly, no keyline -- docs/ART-GENERATION-PREFLIGHT.md;
+     generated against `plaque-wall-anchor.png`, a crop of this exact game's own baked plaque, as
+     the mounting-style anchor, per the owner's "same wall plane" instruction).
+     Scoped to currentFloor===1 (the only floor this asset exists on), so it can never collide with
+     the boss-floor crystal's own baked/live handling on later floors. */
+  // TARGET ON-SCREEN HEIGHT, not a multiplier on the source pixels -- the source PNG is generated
+  // at a higher native resolution than its on-screen footprint for crisp downscaling (same reason
+  // dqprop-*-128.png ships square regardless of the object's real aspect ratio), so deriving
+  // display size from raw source pixels would size it arbitrarily. Chosen to sit close to the
+  // plaque's own on-screen height, MEASURED off the baked art (sunkenCellar-f1-props.png's own
+  // stone tablet at (21,21): ~37.5px tall against this file's 48px TILE), since the two are meant
+  // to read as the same wall-fixture family side by side.
+  var A1D_ENTRANCE_TARGET_H=TILE*0.8;
+  var a1dEntranceSpr={}, a1dEntranceKey=null;
+  function a1dEntranceCrystalArt(scene,name){                                // async-load a Codex asset PNG as a Phaser texture; null until ready
+    var key='a1dasset_'+name; if(scene.textures.exists(key)) return key;
+    if(!propLoading[key]){ propLoading[key]=true; var im=new Image();
+      im.onload=function(){ if(!scene.textures.exists(key)){ try{scene.textures.addImage(key,im);}catch(e){} } };
+      im.src='act1-dungeon-art/assets/asset-'+name+'.png'; }
+    return null;
+  }
+  function a1dEntranceCrystalTick(scene){
+    var mapId=scene.currentMapId, floor=scene.currentFloor||1, key=mapId+'-f'+floor;
+    if(!A1D_MAPS[mapId] || floor!==1){                                       // wrong floor/map -> nothing to show; drop any stale sprite
+      if(a1dEntranceKey && a1dEntranceSpr[a1dEntranceKey]){ try{ a1dEntranceSpr[a1dEntranceKey].destroy(); }catch(e){} delete a1dEntranceSpr[a1dEntranceKey]; }
+      a1dEntranceKey=null;
+      return;
+    }
+    if(a1dEntranceKey && a1dEntranceKey!==key && a1dEntranceSpr[a1dEntranceKey]){
+      try{ a1dEntranceSpr[a1dEntranceKey].destroy(); }catch(e){} delete a1dEntranceSpr[a1dEntranceKey];
+    }
+    a1dEntranceKey=key;
+    var fl=a1dFloorFor(scene); if(!fl) return;
+    var a=fl.assets||[], ec=null;
+    for(var i=0;i<a.length;i++) if(a[i].kind==='save'){ ec=a[i]; break; }
+    if(!ec) return;
+    var row=scene.mapData&&scene.mapData[ec.y]; if(!row || row[ec.x]!==14) return; // sanity: still the crystal tile
+    var Q=window.__QOK, tt=Q&&Q.state&&Q.state();
+    var flags=tt&&tt.player&&tt.player.state&&tt.player.state.storyFlags;
+    var lit=!!(flags && flags['entrance.crystal.'+mapId+'.activated']);
+    var name=lit?'entrance-crystal-lit':'entrance-crystal-dormant';
+    var tex=a1dEntranceCrystalArt(scene,name); if(!tex) return;               // still loading -> place next tick
+    var spr=a1dEntranceSpr[key];
+    if(!spr){ spr=scene.add.image(0,0,tex).setOrigin(0.5,1).setDepth(3); a1dEntranceSpr[key]=spr; }
+    if(spr.texture.key!==tex) spr.setTexture(tex);
+    var frame=scene.textures.get(tex).get();                                  // the frame's own natural size, never a previously-scaled one
+    var sc=A1D_ENTRANCE_TARGET_H/frame.height;                                 // fixed on-screen height regardless of the source PNG's resolution
+    // ec.y*TILE, NOT ec.y*TILE+TILE: bottom-anchor at the TOP edge of the marker's own floor
+    // cell, i.e. the boundary it shares with the wall row immediately north of it -- the same
+    // line drawPlaque() mounts its picture against. The marker stays on walkable floor (see this
+    // function's header and A1M_ENTRANCE_LANDING's comment for why); only the drawn sprite moves
+    // up into the wall.
+    spr.setPosition(ec.x*TILE+TILE/2, ec.y*TILE)
+       .setDisplaySize(frame.width*sc, frame.height*sc);
+    if(!spr.visible) spr.setVisible(true);
+  }
   // hide/re-skin engine SPECIAL tiles; non-reskinned specials are raised so only our fog darkens them
   function dngSpecialTiles(scene){
     var map=scene.mapData, tg=scene.tileGrid; if(!map||!tg) return;
@@ -4704,6 +4870,7 @@
       if (dngRole(t)===0 && !RESKIN_SPECIAL[t]){ s.alpha=1; if(!s.visible)s.setVisible(true); if(s.depth!==3) s.setDepth(3); } } } // non-reskin specials: raise + light
     dngSpecialObjects(scene);                                                           // draw our detailed 48px assets as scene-level images
     try{ a1dBossVanish(scene); }catch(e){ if(window.__DQ_DEBUG__) console.log('a1 boss vanish tick '+e); }
+    try{ a1dEntranceCrystalTick(scene); }catch(e){ if(window.__DQ_DEBUG__) console.log('a1 entrance crystal tick '+e); }
   }
   function dngHero(scene){ if(scene.hero&&scene.hero.x!=null) return scene.hero; if(scene.player&&scene.player.x!=null) return scene.player; var l=scene.children.list; for(var i=0;i<l.length;i++){ if(l[i].depth===10&&l[i].x!=null) return l[i]; } return null; }
   // which THEME this dungeon uses, from the engine tile prefix (our base canvas never changes those)
