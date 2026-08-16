@@ -341,9 +341,9 @@ ACT1_DUNGEON_FILES = {
     # Placeholder zeros below; `./scripts/repin.sh` fills in the real size/sha256 from the files
     # Codex wrote to public/act1-dungeon-art/assets/.
     "act1-dungeon-art/assets/asset-entrance-crystal-dormant.png": (
-        31902, "9cfdcc128633335e6a86a024d2bb9245fcde71b82517885bcaeea88d3d5f7fe2"),
+        22838, "bf95939767876c62e3ec8cf0993154e9bf78d2e729c421bfb4d3b2d5b89f6b77"),
     "act1-dungeon-art/assets/asset-entrance-crystal-lit.png": (
-        31354, "3cfcda761f8216e53b9a0606d10a0a75f1050eb24bbb9582836fec19b8afd41c"),
+        23951, "f881b791c89f3ff57651f52261f5fed6d1e2479c8b9e24d8850f6064a6aa6ba2"),
     # 2026-08-07: THE OPEN-CHEST STATE. Owner, playing: "the treasure chest open state is not
     # baked in the game". It could not be -- *-props.png has the chest composited in CLOSED, so
     # looting one changed the tile (4->8, persisted, replayed on re-entry) and nothing else.
