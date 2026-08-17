@@ -41,7 +41,10 @@ ACT1_OVERLAY_FILES = {
     # 2026-08-11: the diagnostic panel gains one attribution line (sp/cv/tx2/pl) fed by
     # __DQ_TILES__.cost(). Sign-off + reasoning: EXPECTED_STATIC_INDEX_SHA in
     # scripts/build_static_index.mjs. Both copies of this hash must move together.
-    "index.html": (107966, "4ae0237cb66b153613721dc44e523f5e3d548a3c6cfb67c7bbdcee80a1a618d7"),
+    # 2026-08-17: the panel gains the RENDER CHAIN and the debug default is ON for this build only,
+    # so the owner's phone can answer whether the fuzziness is a global upscale. Same sign-off:
+    # EXPECTED_STATIC_INDEX_SHA in scripts/build_static_index.mjs.
+    "index.html": (116203, "4005c188ace7b59b4eabe2d746fdb47082e766bb3ff0c05a9a4366f290c8dac1"),
     # 2026-08-01, owner-authorised: dq-tiles.js now splats AI-generated terrain MATERIALS through
     # its existing continuous-world-pixel drawTerrain, plus a ridged mountain height field,
     # varied shore character and landmark sites derived from mapData. Fallback-safe -- until the
@@ -153,7 +156,7 @@ ACT1_OVERLAY_FILES = {
     # the control-orientation setting, into the frame. First override of this file since the
     # v1.17.1 baseline was frozen, which is why it had no entry before.
     "ui-overhaul.js": (
-        139336, "4bc3a6e4670b90aa2035feeb0e1f22ec7fec682daebc99c02758da2870effc69"),
+        140144, "c1efbd69c4cf75f0f65fafb331b4183a9a4268c9372d2cfbc4dbdc7779d0325c"),
     # 2026-08-06, owner pick: "Charcoal & Gold Leaf" (direction 4 of
     # design/ui-overhaul/chic-style-board.html). The same gold as before -- the pixel art, the
     # dungeon plates and the town screens were all approved against it -- spent differently:
@@ -163,7 +166,7 @@ ACT1_OVERLAY_FILES = {
     # bundled rather than fetched; the short version is that it never reached the phone at all.
     # Like ui-overhaul.js above, first override of this file since the baseline was frozen.
     "ui-overhaul.css": (
-        45433, "046ac3e2981c265aca5b90f5453e0f27280c45f5fbe121b7c60ef9eb2c051cab"),
+        45805, "6fbf57b31d0f30741194861da0a4334b49b9f16ff84f0197bf69e1a8d767f164"),
 }
 # 2026-08-06, owner-picked ("Charcoal & Gold Leaf", direction 4 of
 # design/ui-overhaul/chic-style-board.html): the chrome the theme needs on disk rather than

@@ -221,9 +221,37 @@ tile rather than a re-bake.
 > **What survives:** his observation itself, twice given and not in doubt — on device the town reads
 > soft and *"the texture is different from the hero"*. That second half is a STYLE mismatch
 > (painterly town against the hero's crisp faux-pixel finish) and a redesign genuinely does address
-> it. The softness needs its cause identified before it is priced: the candidates are the town
-> iframe's own camera zoom and filtering, not the source density. **Measure it on device against the
-> overworld before commissioning a re-bake.**
+> it. ~~The softness needs its cause identified before it is priced.~~ **The cause is now identified
+> — see below.**
+
+> [!info] THE SOFTNESS IS GLOBAL: THE GAME RENDERS AT 1/dpr — measured in WebKit 2026-08-17
+> Read off the live diagnostic panel with the shipped payload running in Mobile Safari on the
+> iPhone 13 simulator (same engine and device profile as the owner's WKWebView build), overworld:
+> **dpr 3, canvas backing store 390x677, canvas CSS box 390x677 — three device pixels per rendered
+> pixel, both axes.** `Scale.RESIZE` keeps the canvas sized in CSS pixels and nothing multiplies it
+> back up by `devicePixelRatio`, so the whole game is drawn at **one ninth of the screen's pixel
+> count** — town, overworld and dungeon alike. That is the owner's own hypothesis, confirmed:
+> *"i suspect the overworld and dungeons are the same fuzziness as well but i think they are just
+> harder to notice."*
+>
+> **Consequence for art spend: a higher-density re-bake cannot fix it.** New art is downsampled by
+> the same factor before it reaches the screen. Do not commission T1/T2 on RESOLUTION grounds; the
+> style case for a redesign is untouched and still stands.
+>
+> **Not a filter problem.** `image-rendering` computes to `pixelated` in the app, and a checkerboard
+> A/B on the device shows WebKit's `crisp-edges` and `pixelated` rendering identically hard-edged
+> (only `auto` is blurry). The upscale is nearest-neighbour; what is missing is detail, not
+> sharpening. Painterly art at 1/3 resolution reads as fuzz rather than as visible blocks, which is
+> why the town shows it first.
+>
+> **Also retired here:** the browser-pane figure of *"backing store 768 vs 1170 physical, ~1.5x
+> short"*. The full-viewport layout is behind `@media (pointer: coarse), (hover: none)`, which a
+> mouse-driven pane does not match, so it measured the 768px DESKTOP frame — a layout the phone
+> never takes. That was the unreconciled 768-inside-390 reading.
+>
+> **The fix has a real price and was NOT taken.** Device-resolution rendering is ~9x the fragment
+> work and render-target memory, on the device whose history here is GPU context loss and WebContent
+> kills. It needs its own measured A/B.
 
 ## Claims that were WRONG and are now retired
 

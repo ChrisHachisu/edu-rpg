@@ -647,6 +647,38 @@
        hoped for. If anything in the overlay throws, the save-point load stands -- degraded, but
        still a recovery.
     -------------------------------------------------------------------------------------------- */
+
+    /* ---- DEBUG_UI: one flag, SCRIPT scope, and the scope is the whole point -------------------
+       BUG FIXED HERE, found 2026-08-17 on the simulator. `var DEBUG_UI` used to sit inside the
+       recovery IIFE below, while the live diagnostic panel reads it from a SIBLING IIFE further
+       down this same <script>. `var` is function-scoped, so that read was a ReferenceError, thrown
+       out of paint() on every 500 ms tick from the moment the map became playable. The panel was
+       therefore DEAD SINCE 2026-08-15 — not merely off, but unable to draw even with the flag set
+       to '1'. It failed silently because the throw leaves the rAF loop intact (the next frame is
+       requested first) and nothing else in the app depends on paint().
+       That is why this measurement build could not have worked as a flag flip alone.
+
+       The panel and the black box are gated, not deleted: they are what solved the overworld blue
+       screen (`spr live/want fix N` caught the sprite watchdog making it worse; the black box
+       reported `gl lost ... restored=1` then "page was killed outright"). Recording runs either
+       way; only the on-screen boxes are suppressed. Read once at boot rather than per frame, so it
+       can never become a per-tick storage hit.
+
+       ON, BY DEFAULT, FOR THIS BUILD ONLY. The owner asked for the render chain measured on his
+       own phone and his instrument is a screenshot; a shipped WKWebView has no console in which to
+       set the flag, so the panel must be visible by default or the screenshot cannot exist. Turn
+       it off on the device with `localStorage.setItem('edu-rpg-debug','0')`, and set DEFAULT_ON
+       back to false in the build after the answer lands. It is a measurement, not a feature. */
+    var DEFAULT_ON = true;                          // <-- revert to false once the screenshot lands
+    var DEBUG_UI = (function () {
+      try {
+        var v = localStorage.getItem('edu-rpg-debug');
+        if (v === '1') return true;
+        if (v === '0') return false;
+        return DEFAULT_ON;
+      } catch (e) { return DEFAULT_ON; }
+    })();
+
     (function () {
       var HB   = 'edu-rpg-hb';         // liveness beacon:  {t, live, vis}
       var SNAP = 'edu-rpg-resume';     // last SAFE state. OUR key -- never the game's save slots.
@@ -1154,10 +1186,10 @@
          Turn them back on, on a device, with no rebuild:
              localStorage.setItem('edu-rpg-debug','1')   (then reload)
          Read once at boot rather than per frame so it cannot become a per-tick storage hit — the
-         2 s write timer in this same file was already suspected of causing freezes once. */
-      var DEBUG_UI = (function () {
-        try { return localStorage.getItem('edu-rpg-debug') === '1'; } catch (e) { return false; }
-      })();
+         2 s write timer in this same file was already suspected of causing freezes once.
+
+         The flag itself now lives at SCRIPT scope, above the first IIFE — see DEBUG_UI there for
+         why that move was a bug fix and not tidying. */
 
       function report() {
         if (!DEBUG_UI) return;                 // the recovery still RECORDS; it just says nothing
@@ -1662,6 +1694,90 @@
         return panel;
       }
 
+      /* ---- THE RENDER CHAIN ------------------------------------------------------------------
+         Owner: "the resolution is currently fuzzy on the app". A first measurement in a desktop
+         browser pane said the canvas backing store was 768 px wide against 1170 physical screen
+         pixels — the game roughly 1.5x short of device resolution, on EVERY surface, which is his
+         own reading of it ("i suspect the overworld and dungeons are the same fuzziness as well but
+         i think they are just harder to notice"). That number cannot be trusted here for two
+         reasons, and both are why this readout exists rather than another harness:
+
+           1. THE BROWSER PANE TOOK THE DESKTOP PATH. The full-viewport layout is behind
+              `@media (pointer: coarse), (hover: none)`; a mouse-driven pane matches neither, so it
+              measured `#game-container { width: 768px }` — the desktop frame — overflowing a 390 px
+              viewport. That is the mismatch the last write-up could not reconcile, and it means the
+              on-screen scale factor was never actually measured. The phone takes the OTHER branch,
+              where `#game-container canvas { width: 100% !important }` stretches whatever the
+              backing store is across the whole screen.
+           2. IT IS NOT WKWEBVIEW. The app ships in Capacitor; only his device can answer this.
+
+         So each field below is one link in the chain from a rendered pixel to a screen pixel:
+           dpr/win  what the device says it has          cv   the backing store actually rendered
+           box      the CSS box that store is stretched into
+           ->       device px per rendered px, ACROSS and DOWN. 1.00 is native. Above 1 is an
+                    upscale, and its SIZE is the answer to "how soft" — the two numbers are printed
+                    separately because a non-uniform stretch is its own bug.
+           ir       the COMPUTED image-rendering, which is the blocky-vs-fuzzy question itself. The
+                    stylesheet says `image-rendering: pixelated; image-rendering: crisp-edges;` and
+                    the LAST declaration wins wherever it parses. Blink drops `crisp-edges` and
+                    keeps `pixelated` (which is what the browser pane reported); WebKit accepts it,
+                    and WebKit's crisp-edges is not documented to be nearest-neighbour. If this
+                    reads `crisp-edges` on his phone while the pane read `pixelated`, that alone
+                    explains why an upscale he should see as BLOCKY arrives as FUZZ.
+           sm/gz/cam  Phaser's own scaling: scale mode (0 NONE, 5 RESIZE), game zoom, camera zoom.
+                    src/main.ts asks for NONE at 768x672; the shipped bundle uses RESIZE, which
+                    keeps the canvas in CSS pixels — i.e. it would render at 1/dpr of the screen.
+           tex      one sampled terrain texture's scaleMode (1 = NEAREST) with pixelArt/roundPixels,
+                    so "the textures are point-sampled" is read off the device instead of assumed.
+
+         COST: the whole thing is recomputed only when the backing store or the window size changes
+         — i.e. at boot and on rotation — because that is the only time any of it can move. The
+         layout read (`getBoundingClientRect`) and the style read are therefore not on the tick. */
+      var chain = '', chainKey = '';
+      function renderChain() {
+        try {
+          var g = window.__PHASER_GAME__;
+          var cv = g && g.canvas;
+          if (!cv) return;
+          var key = cv.width + 'x' + cv.height + '|' + window.innerWidth + 'x' + window.innerHeight;
+          if (key === chainKey) return;
+          chainKey = key;
+          var dpr = window.devicePixelRatio || 1;
+          var r = cv.getBoundingClientRect();
+          var bw = Math.round(r.width), bh = Math.round(r.height);
+          var upW = cv.width ? (bw * dpr) / cv.width : 0;
+          var upH = cv.height ? (bh * dpr) / cv.height : 0;
+          var ir = '?';
+          try { ir = (getComputedStyle(cv).imageRendering || '?'); } catch (e) {}
+          var sm = '?', gz = '?';
+          try { sm = g.scale.scaleMode; gz = Math.round(g.scale.zoom * 100) / 100; } catch (e) {}
+          var cam = '?';
+          try {
+            var wm = g.scene.getScene('WorldMapScene');
+            if (wm && wm.cameras && wm.cameras.main) cam = Math.round(wm.cameras.main.zoom * 100) / 100;
+          } catch (e) {}
+          // Sample a real terrain chunk if one is resident (that is the art he is looking at); fall
+          // back to the hero, then to anything, so the field is never blank on a non-plate map.
+          var tk = '-', tm = '?';
+          try {
+            var list = g.textures.list, keys = Object.keys(list), i;
+            for (i = 0; i < keys.length; i++) if (keys[i].indexOf('a1a_base_') === 0) { tk = 'a1a'; break; }
+            if (tk === '-') for (i = 0; i < keys.length; i++) if (keys[i].indexOf('hero') === 0) { tk = 'hero'; break; }
+            if (tk === '-' && keys.length) { tk = keys[keys.length - 1].slice(0, 6); i = keys.length - 1; }
+            var src = list[keys[i]] && list[keys[i]].source && list[keys[i]].source[0];
+            if (src && src.scaleMode != null) tm = src.scaleMode;
+          } catch (e) {}
+          var pa = '?', rp = '?';
+          try { pa = g.config.pixelArt ? 1 : 0; rp = g.config.roundPixels ? 1 : 0; } catch (e) {}
+          chain = 'rc dpr' + dpr + ' win' + window.innerWidth + 'x' + window.innerHeight +
+                  ' cv' + cv.width + 'x' + cv.height +
+                  '\nrc box' + bw + 'x' + bh + ' up' + (Math.round(upW * 100) / 100) + '/' +
+                  (Math.round(upH * 100) / 100) + 'x' +
+                  '\nrc ir=' + ir + ' sm' + sm + ' gz' + gz + ' cam' + cam +
+                  '\nrc ' + tk + ':sm' + tm + ' pa' + pa + ' rp' + rp;
+        } catch (e) {}
+      }
+
       var fpsCount = 0, fpsAt = 0, fps = 0, maxGap = 0, lastText = '';
 
       function paint(now) {
@@ -1676,6 +1792,7 @@
         // element is never created at all.
         if (!DEBUG_UI) return;
         var p = ensurePanel();
+        renderChain();                            // no-op unless the backing store or window moved
         // Name the SCREEN whenever it is not the world. WorldMapScene keeps its map id and tile
         // coords while paused under a battle/menu/shop, so without this the header reads
         // "overworld 118,290" during a battle and a screenshot taken mid-stall cannot be adjudicated.
@@ -1685,6 +1802,7 @@
               (c.x != null ? ' ' + c.x + ',' + c.y : '') + (c.mv ? ' mv' : '') + '  tx' + (c.tex || '?') +
               (c.dq ? '\n' + c.dq : '') +
               (c.sp ? '\n' + c.sp : '') +
+              (chain ? '\n' + chain : '') +
               '\nfreezes ' + total + (worst ? '  worst ' + worst.ms + 'ms' : '');
         var recent = events.slice(-3).reverse();
         for (var i = 0; i < recent.length; i++) txt += '\n' + line(recent[i]);

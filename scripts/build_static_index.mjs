@@ -238,8 +238,19 @@ export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '
 // of dead space showed. 76 is the ANALOG STICK's clearance, chosen so the stick sits clear of the
 // bar rather than flush; it was reused where the bar's true height was wanted. Now named
 // --tabbar-h so the canvas tracks the bar and the two cannot drift apart again. CSS only.
+// 2026-08-17, seventh sign-off: the live panel gains the RENDER CHAIN (dpr, backing store, the CSS
+// box it is stretched into, the resulting device-px-per-rendered-px both ways, the COMPUTED
+// image-rendering, Phaser scale mode / game zoom / camera zoom, and one sampled texture's
+// scaleMode) -- and the DEBUG UI default is flipped back ON for this build only. Owner: "the town
+// crispness definitely needs close examination ... i suspect the overworld and dungeons are the
+// same fuzziness as well but i think they are just harder to notice", and he asked for it measured
+// on HIS phone. A localStorage flag cannot be set inside a shipped WKWebView, so the panel must be
+// visible by default or the screenshot he is being asked for cannot exist. The earlier browser-pane
+// figures are not usable: the full-viewport layout is behind `(pointer: coarse)`, so a mouse-driven
+// pane measured the 768px DESKTOP frame, not the phone's stretched canvas. DEFAULT_ON in index.html
+// reverts to false in the build after the answer lands; the readout itself stays, gated as before.
 export const EXPECTED_STATIC_INDEX_SHA =
-  '4ae0237cb66b153613721dc44e523f5e3d548a3c6cfb67c7bbdcee80a1a618d7';
+  '4005c188ace7b59b4eabe2d746fdb47082e766bb3ff0c05a9a4366f290c8dac1';
 
 /**
  * The authored shell loads its scripts by ABSOLUTE path so the Vite dev server resolves them;

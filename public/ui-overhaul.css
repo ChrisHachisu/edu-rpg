@@ -478,7 +478,10 @@
 #qok-field-hud #qfh-map canvas{display:block;width:146px;height:146px;}
 #qok-field-hud #qfh-map.collapsed{width:40px;height:40px;border-radius:9px;padding:0;background:#15161ce6;}
 #qok-field-hud #qfh-map.collapsed canvas{display:none;}
-#qok-field-hud #qfh-map-icon{display:none;color:#c9a961;font-size:26px;line-height:36px;font-weight:700;}
+/* Collapsed map button: a folded-map SVG, not the old ▧ glyph. Sized to the 40px collapsed
+   button with the icon centred; hairline stroke in the HUD's gold, matching the compass. */
+#qok-field-hud #qfh-map-icon{display:none;box-sizing:border-box;width:40px;height:40px;padding:8px;line-height:0;color:#c9a961;}
+#qok-field-hud #qfh-map-icon svg{display:block;width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.4;stroke-linejoin:round;stroke-linecap:round;}
 /* COMPASS — one SVG, drawn in the same hairline language as the rest of the HUD.
    The dial carries the fixed cardinals (the camera is always north-up, so they do not move) and
    the needle carries the bearing to the target: the way OUT of a town, the quest marker in the

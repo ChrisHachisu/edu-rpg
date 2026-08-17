@@ -59,6 +59,18 @@ Owner decisions since: Port Sapphire is **FENCED** again, **ONE entrance** share
 sprite and the town screen, and NPCs get **4 directions** so they turn to face the hero (retiring the
 down-facing-only and approach-from-south rules).
 
+## Later feedback (same device, after build 38)
+
+| # | Verbatim | Kind | Status |
+|---|---|---|---|
+| H1 | "the collapsed map icon needs to be a map icon on the overworld. currently it is not" | UI | **FIXED** — it was the glyph `▧` (U+25A7, a hatched square). Now a folded-map SVG in the compass's hairline gold, drawn rather than typed so it cannot depend on the device's font substitution. Verified in WebKit at the 40px collapsed size; owner confirmed "map icon is good" |
+
+Found while verifying H1 and the render chain, not reported by anyone:
+
+| # | Defect | Status |
+|---|---|---|
+| P1 | **The live diagnostic panel had been dead since 2026-08-15** — not off, DEAD. `var DEBUG_UI` sat inside the recovery IIFE while the panel reads it from a SIBLING IIFE, so `paint()` threw a ReferenceError on every 500 ms tick from the moment the map became playable. `localStorage.setItem('edu-rpg-debug','1')` could not have brought it back. Silent because the throw leaves the rAF loop intact (the next frame is requested first) and nothing else depends on `paint()` | **FIXED** — flag hoisted to script scope |
+
 ## Sequencing note
 
 S1-S4 are contained code fixes in `public/ui-overhaul.js`. S5, D1, O2 are contained too. D2, O1, T1
@@ -74,39 +86,57 @@ are just harder to notice."*
 That hypothesis is consistent with the density correction above (the town's source art already
 matches the hero to within 2%), and a first measurement supports it.
 
-**MEASURED** on the served `dist/`, browser pane, viewport 390x780 CSS at **dpr 3** (iPhone-class),
-overworld, hero at (96,362):
+### SETTLED 2026-08-17 — the game renders at 1/dpr, i.e. 1/3 resolution on his phone
+
+**MEASURED IN REAL WEBKIT** — the shipped payload running in Mobile Safari on the iPhone 13
+simulator (4B05EF44), the same engine and the same device profile as his WKWebView build, read off
+the live diagnostic panel in the overworld:
 
 | quantity | value |
 |---|---|
 | device pixel ratio | **3** |
-| physical pixels across the screen | 390 x 3 = **1170** |
-| canvas backing store (`canvas.width`) | **768** |
-| canvas CSS box + `#game-container` | 768 x 672 |
-| Phaser scale mode | 5 = `RESIZE` |
-| game zoom / camera zoom | 1 / 1 |
-| texture scale modes sampled | 1 = NEAREST (hero-walk, a1a_base chunks) |
-| canvas `image-rendering` | `pixelated` |
+| viewport | 390 x 699 CSS px |
+| canvas backing store (`canvas.width/height`) | **390 x 677** |
+| canvas CSS box (`getBoundingClientRect`) | 390 x 677 |
+| device px per rendered px | **3.00 across, 3.00 down** |
+| Phaser scale mode / game zoom / camera zoom | 5 = `RESIZE` / 1 / 1 |
+| sampled chunk texture `scaleMode` | 1 = NEAREST (`a1a_base_*`), `pixelArt` on, `roundPixels` on |
+| canvas computed `image-rendering` | `pixelated` |
 
-**The backing store is 768 px wide where the screen has 1170.** The game is therefore not producing
-one rendered pixel per device pixel — roughly **1.5x short** — and that shortfall applies to every
-surface equally: town, overworld and dungeon. Which is exactly the owner's read: the same softness
-everywhere, only easier to see on the town's fine architectural detail than on organic grass.
+**The backing store equals the viewport in CSS PIXELS, so the game renders one pixel for every 3x3
+device pixels — one ninth of the screen's resolution.** `Scale.RESIZE` keeps the canvas in CSS px by
+design (`public/ui-overhaul.js` says so at the field-HUD comment: it is why the HUD was moved to
+DOM), and nothing multiplies it back up by dpr. This is uniform, both axes, and it applies to the
+town, the overworld and the dungeon identically — exactly the owner's read: *"i suspect the
+overworld and dungeons are the same fuzziness as well but i think they are just harder to notice."*
+It is easier to see on the town's fine architecture than on organic grass, but it is one defect.
 
-**NOT YET ESTABLISHED — do not quote these as fact:**
-- The canvas CSS box measures **768 CSS px inside a 390 CSS px viewport**, and `transform` is `none`
-  on the canvas, its parent, `body` and `html`. Those two do not reconcile yet; something not in this
-  probe (a `zoom`, a scaled ancestor, or the container genuinely overflowing) is sizing it. Until
-  that is understood, the exact on-screen scale factor is unknown even though the shortfall is real.
-- Whether the upscale reads as BLUR or as BLOCKINESS. `image-rendering: pixelated` plus NEAREST
-  textures should give hard blocky edges, not fuzz — and the owner reports fuzz. That mismatch is
-  unexplained and is the most informative loose end.
-- **This is a browser-pane number, not a device number.** The app ships in WKWebView via Capacitor.
-  Every figure here must be re-taken on the phone before anything is changed.
+**The earlier "1.5x short / backing store 768" figure is RETIRED.** The full-viewport layout is
+behind `@media (pointer: coarse), (hover: none)`; a mouse-driven browser pane matches neither, so it
+measured `#game-container { width: 768px }` — the DESKTOP frame — overflowing a 390 px viewport.
+That is the 768-inside-390 mismatch the last write-up could not reconcile. The pane was reading a
+layout the phone never takes.
 
-**Why this matters commercially:** if the softness is a global render-resolution issue, re-baking the
-town art at higher density fixes nothing — the new art gets downsampled by the same factor. Settle
-this before commissioning T1/T2 art on resolution grounds. The STYLE half of T1 (painterly vs the
-hero's faux-pixel finish) is a separate, real problem that a redesign does fix.
+**BLOCKY vs FUZZY — closed, and the obvious suspect was wrong.** The stylesheet says
+`image-rendering: pixelated; image-rendering: crisp-edges;` and the last declaration wins wherever
+it parses. Blink drops `crisp-edges`; **WebKit accepts it** (`CSS.supports` = true on the device), so
+the cascade genuinely differs by engine. But a side-by-side upscale of a 17x3 checkerboard on the
+simulator shows `crisp-edges` and `pixelated` rendering **identically hard-edged** — only `auto` is
+blurry — and in the app itself the computed value is `pixelated` anyway (a later, more specific rule
+wins). So the upscale IS nearest-neighbour. The softness is not a smoothing filter; it is that a
+1/3-resolution image has one ninth of the detail, which on painterly art reads as fuzz rather than
+as visible blocks.
 
-Probes: `.eduharness/probe-crispness.js`, `probe-crispness2.js`.
+**WHAT THIS MEANS FOR THE MONEY.** The shortfall is global, so a higher-density re-bake of the town
+buys nothing on its own — the new art is downsampled by the same factor before it reaches the
+screen. **T1/T2 must not be commissioned on RESOLUTION grounds.** The STYLE half of T1 (painterly
+town vs the hero's crisp faux-pixel finish) is a separate, real problem that a redesign does fix,
+and it is unaffected by any of this.
+
+**THE FIX IS NOT FREE, AND IS NOT TAKEN HERE.** Rendering at device resolution means ~9x the
+fragment work and ~9x the render-target memory on a device whose whole recorded history in this repo
+is GPU context loss, WebContent kills and ~190-228 MB of chunk residency. That is a deliberate,
+measured piece of work with its own A/B, not a one-line scale change.
+
+Probes: the live panel's `rc` lines (`index.html`); the engine comparison was a standalone page
+served to the simulator, not a repo harness.

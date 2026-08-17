@@ -1506,7 +1506,19 @@
     var d = document.createElement('div'); d.id = 'qok-field-hud';
     d.innerHTML = '<div class="qfhp"><div id="qfhp-text"></div><div class="qfhp-bar"><i id="qfhp-fill"></i></div></div>' +
       '<div id="qfh-floor"></div>' +
-      '<button id="qfh-map" aria-label="Map"><canvas id="qfh-map-canvas"></canvas><span id="qfh-map-icon">▧</span></button>' +
+      // COLLAPSED MAP BUTTON. Owner, 2026-08-17: "the collapsed map icon needs to be a map icon on
+      // the overworld. currently it is not." It was the glyph U+25A7 (▧) -- a hatched square, which
+      // is what a shaded box looks like, not a map. A folded map is the icon every player already
+      // reads as one, and drawing it as an SVG rather than a character also puts it in the same
+      // hairline gold language as the compass beside it instead of leaving it at the mercy of
+      // whichever font the device substitutes for a rare Unicode glyph.
+      '<button id="qfh-map" aria-label="Map"><canvas id="qfh-map-canvas"></canvas>' +
+        '<span id="qfh-map-icon">' +
+          '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+            '<path d="M2.6 6.1 9 3.8l6 2.3 6.4-2.3v14.1L15 20.2l-6-2.3-6.4 2.3z"/>' +
+            '<path d="M9 3.8v14.1M15 6.1v14.1"/>' +
+          '</svg>' +
+        '</span></button>' +
       // COMPASS. Was a CSS border-triangle inside a bordered div: a solid gold wedge whose
       // rotation centre was the 0x0 border box rather than the needle's own middle, so it swung
       // off-axis and sat high in the dial. It is one SVG now -- ring, ticks, cardinals and needle
