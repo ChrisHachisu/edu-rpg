@@ -1123,22 +1123,71 @@
     A1A.chunks=next; A1A.lru=lru; A1A.drew=false;
     if(a1aScratch){ try{ a1aScratch.width=1; a1aScratch.height=1; }catch(e){} a1aScratch=null; }
   }
+  /* THE MANIFEST IS THE OTHER WAY TO GET A PERMANENTLY BLUE MAP, AND THE WORSE ONE. The per-layer
+     retry above rescues one chunk; if the MANIFEST never arrives there are no chunks at all --
+     `a1aRects` returns null on its first line and the whole overworld is flat blue while movement and
+     gameplay carry on perfectly. That is the owner's symptom exactly, and at full-map scale it fits
+     "the map stops loading" better than a single chunk does.
+
+     This function was one-shot and had NO onerror on either request: `A1A.req` was set true and never
+     cleared, so a transient network failure, a 404, or an error page that fails JSON.parse all left
+     `A1A.manifest` null for the rest of the session. The loading gate deliberately does not wait on
+     it (see its "NOTHING HERE MAY WAIT ON AN ASSET THAT MIGHT NEVER ARRIVE"), which is correct and
+     also means nothing else would ever notice.
+
+     Now bounded-retryable on the same policy as the layers, driven by the tick() that already calls
+     this. The DENSITY GUARD is deliberately NOT retryable: an unexpected density is a decision to
+     leave the art off, not a failure, and re-fetching cannot change it. */
+  var A1A_REQ_TRIES=6, A1A_REQ_BACKOFF=1500;
+  function a1aReqFailed(){
+    A1A.req=false;                                               // let the next tick re-issue
+    A1A.reqFail=(A1A.reqFail|0)+1;
+    A1A.reqNext=Date.now()+A1A_REQ_BACKOFF*A1A.reqFail;
+  }
   function a1aFetch(){
-    if(A1A.req) return; A1A.req=true;
+    // FIRST, and unconditionally: the two requests fail independently, so a manifest that has already
+    // landed must not stop a failed landmark table from being retried.
+    a1aFetchLandmarks();
+    if(A1A.manifest||A1A.req) return;                            // landed, or in flight
+    if((A1A.reqFail|0)>=A1A_REQ_TRIES) return;                   // exhausted: quiet, as a 404 should be
+    if(Date.now()<(A1A.reqNext|0)) return;                       // backing off
+    A1A.req=true;
     var r=new XMLHttpRequest(); r.open('GET','act1-hifi/manifest.json',true);
-    r.onload=function(){ try{
-      var m=JSON.parse(r.responseText), B=m&&m.semanticBounds, cs=m&&m.chunks;
-      if(!B||!cs||!cs.length) return;
-      var mw=0; for(var i=0;i<cs.length;i++) mw=Math.max(mw,cs[i].x+cs[i].width);
-      var S=TILE*(B[2]-B[0]+1)/mw;                               // world px per manifest px
-      if(!(S>=1)||S!==Math.round(S)) return;                     // an unexpected density: leave the art off
-      A1A.S=S; A1A.manifest=m; A1A.dirty=true;
-      a1aPrefetchStart();                                        // chunks for the first window, now
-    }catch(e){} };
-    try{ r.send(); }catch(e){}
+    r.onload=function(){
+      if(r.status&&(r.status<200||r.status>=300)){ a1aReqFailed(); return; }
+      try{
+        var m=JSON.parse(r.responseText), B=m&&m.semanticBounds, cs=m&&m.chunks;
+        if(!B||!cs||!cs.length){ a1aReqFailed(); return; }
+        var mw=0; for(var i=0;i<cs.length;i++) mw=Math.max(mw,cs[i].x+cs[i].width);
+        var S=TILE*(B[2]-B[0]+1)/mw;                             // world px per manifest px
+        if(!(S>=1)||S!==Math.round(S)) return;                   // deliberate: leave the art off, do NOT retry
+        A1A.S=S; A1A.manifest=m; A1A.dirty=true; A1A.reqFail=0;
+        a1aPrefetchStart();                                      // chunks for the first window, now
+      }catch(e){ a1aReqFailed(); }
+    };
+    r.onerror=function(){ a1aReqFailed(); };
+    r.ontimeout=function(){ a1aReqFailed(); };
+    try{ r.send(); }catch(e){ a1aReqFailed(); }
+  }
+  // Separate flag from the manifest's: a missing landmark table must not keep the terrain off, and a
+  // missing manifest must not keep the table from arriving.
+  function a1aFetchLandmarks(){
+    if(A1A.landmarks||A1A.lmReq) return;
+    if((A1A.lmFail|0)>=A1A_REQ_TRIES) return;
+    if(Date.now()<(A1A.lmNext|0)) return;
+    A1A.lmReq=true;
+    var fail=function(){ A1A.lmReq=false; A1A.lmFail=(A1A.lmFail|0)+1;
+                         A1A.lmNext=Date.now()+A1A_REQ_BACKOFF*A1A.lmFail; };
     var l=new XMLHttpRequest(); l.open('GET','act1-hifi/landmarks/landmarks.json',true);
-    l.onload=function(){ try{ var d=JSON.parse(l.responseText); if(d&&d.landmarks&&d.landmarks.length) A1A.landmarks=d.landmarks; }catch(e){} };
-    try{ l.send(); }catch(e){}
+    l.onload=function(){
+      if(l.status&&(l.status<200||l.status>=300)){ fail(); return; }
+      try{ var d=JSON.parse(l.responseText);
+        if(d&&d.landmarks&&d.landmarks.length){ A1A.landmarks=d.landmarks; A1A.lmFail=0; }
+        else fail();
+      }catch(e){ fail(); }
+    };
+    l.onerror=function(){ fail(); };
+    try{ l.send(); }catch(e){ fail(); }
   }
   // Where the hero will be standing the first time an overworld window is built, in overworld cells.
   // Resumed on the overworld: that is the saved position. Resumed anywhere else (which includes a
