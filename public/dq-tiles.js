@@ -1831,7 +1831,7 @@
       // playability failure, not a stylistic trade. This is the same call he made on the town's
       // chimneys the same day: where "walk under" is ambiguous, remove the ambiguity rather than
       // keep tuning the boundary.
-      var layers=[['base',1.1,1,1],['water',1.2,S,0.28],['canopy',9.5,1,1]];
+      var layers=[['base',1.1,1,1],['water',1.2,S,0.28],['canopy',A1A_CANOPY_DEPTH,1,1]];
       for(var L=0;L<layers.length;L++){
         var layer=layers[L][0];
         if(layer==='water'&&!rec.water) continue;
@@ -2101,6 +2101,28 @@
       im.src='act1-hifi/landmarks/'+slug+'.png'; }
     return null;
   }
+  /* ---- A DOOR IS NEVER HIDDEN BY TREETOPS ------------------------------------------------------
+     Owner, build 38: "the darkfang grotto asset is sometimes rendered on top of the forrest and
+     sometimes partially below it. it should always be rendered on top."
+
+     Both halves are one cause. The landmark sprite sat at depth 6 and the chunk CANOPY layer sits
+     at 9.5, so the forest canopy always won -- and the "sometimes on top" is simply the frames
+     before that chunk's canopy texture has landed. a1aDrawChunks skips a layer that is not ready
+     yet (see its own note), so the grotto looks correct until the canopy arrives and then sinks
+     behind it. Nondeterministic-looking, entirely deterministic underneath: it is a load race, not
+     a sorting bug, and no amount of retrying would have shown a pattern.
+
+     Landmarks now sit BETWEEN the canopy and the hero. The order is the whole point, so all three
+     depths are named here rather than left as bare numbers three hundred lines apart:
+
+         canopy   9.5   treetops, drawn over the ground and over each other
+         landmark 9.6   town gates and cave mouths -- always visible, they are where the player
+                        is trying to GO, and a door you cannot see is a navigation bug
+         hero    10     still walks in front of the mouth she is about to enter
+
+     Applied to every hi-fi landmark, not just Darkfang: the same race exists for all of them and a
+     rule that holds for one entrance and not the others is the harder thing to reason about. */
+  var A1A_CANOPY_DEPTH=9.5, A1A_LANDMARK_DEPTH=9.6;      // hero draws at 10 -- see above
   function a1aLandmarks(scene,map,X0,X1,Y0,Y1,seen){
     var L=A1A.landmarks; if(!L) return;
     for(var i=0;i<L.length;i++){ var lm=L[i], cx=lm.cell[0], cy=lm.cell[1], sz=lm.size;
@@ -2114,7 +2136,7 @@
       var mrow=map&&map[cy]; if(!mrow||!OW_PROP[mrow[cx]]) continue;
       var tk=a1aLandmarkTex(scene,lm.slug); if(!tk) continue;           // PNG still loading -> next tick
       var key='a1alm_'+lm.slug, img=owImgs[key];
-      if(!img){ img=scene.add.image(0,0,tk).setDepth(6); owImgs[key]=img; }
+      if(!img){ img=scene.add.image(0,0,tk).setDepth(A1A_LANDMARK_DEPTH); owImgs[key]=img; }
       if(img.texture.key!==tk) img.setTexture(tk);
       img.setOrigin(lm.anchor[0]/sz, lm.anchor[1]/sz)
          .setPosition(cx*TILE+TILE/2, cy*TILE+TILE/2)                   // anchor pixel lands on the CELL CENTRE

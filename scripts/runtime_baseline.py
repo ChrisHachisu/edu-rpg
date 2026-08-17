@@ -91,7 +91,7 @@ ACT1_OVERLAY_FILES = {
     # save format round-trips to itself (measured: 742 of 754 reportable cells reload unchanged, the
     # other 12 settle one cell north once; largest rescue nudge 28 px against a 96 px bound).
     "dq-tiles.js": (
-        438390, "cc00acebeeecb7e81004e779e27f7d69d96981c72407083dce2bddc574ef3dec"),
+        440070, "50a271b8cbf221cd593ff1a709869c08571e9d1a78e791ffd53f3ba63b89a07b"),
     # 2026-08-07: THE OVERWORLD'S COLLISION SHAPE, baked -- the overworld's answer to the dungeons'
     # `<floor>-walk.png` above, and as much a shipped authority as they are. Deriving it at runtime
     # was correct and unaffordable: owmBuild() evaluated waterField/mountainField per pixel over a
@@ -153,7 +153,7 @@ ACT1_OVERLAY_FILES = {
     # the control-orientation setting, into the frame. First override of this file since the
     # v1.17.1 baseline was frozen, which is why it had no entry before.
     "ui-overhaul.js": (
-        135019, "99da080352194322ccfff0894892fb0a88745b7125e495b9f38eb84019b771ce"),
+        139336, "4bc3a6e4670b90aa2035feeb0e1f22ec7fec682daebc99c02758da2870effc69"),
     # 2026-08-06, owner pick: "Charcoal & Gold Leaf" (direction 4 of
     # design/ui-overhaul/chic-style-board.html). The same gold as before -- the pixel art, the
     # dungeon plates and the town screens were all approved against it -- spent differently:
@@ -163,7 +163,7 @@ ACT1_OVERLAY_FILES = {
     # bundled rather than fetched; the short version is that it never reached the phone at all.
     # Like ui-overhaul.js above, first override of this file since the baseline was frozen.
     "ui-overhaul.css": (
-        44791, "2b8e7ce4e3017c0375e5f7b22b9a865d1190e877db2ad1d8aa024d888424728d"),
+        45433, "046ac3e2981c265aca5b90f5453e0f27280c45f5fbe121b7c60ef9eb2c051cab"),
 }
 # 2026-08-06, owner-picked ("Charcoal & Gold Leaf", direction 4 of
 # design/ui-overhaul/chic-style-board.html): the chrome the theme needs on disk rather than

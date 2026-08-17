@@ -29,7 +29,7 @@ disappears on defeat.
 | # | Verbatim | Kind | Status |
 |---|---|---|---|
 | O1 | "lets have one entrance for each town and dungeon each and show an unpassable structure around it. please get an asset redesign from codex if necessary" | art + collision | OPEN |
-| O2 | "the darkfang grotto asset is sometimes rendered on top of the forrest and sometimes partially below it. it should always be rendered on top" | render order | OPEN |
+| O2 | "the darkfang grotto asset is sometimes rendered on top of the forrest and sometimes partially below it. it should always be rendered on top" | render order | **FIXED** — landmark depth 6 → 9.6, above the canopy's 9.5 and below the hero's 10. The "sometimes on top" was the frames before that chunk's canopy texture had landed: a load race, not a sorting bug |
 
 ## Towns
 
