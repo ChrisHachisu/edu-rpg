@@ -25,6 +25,9 @@ node scripts/build_static_index.mjs --check
 # The pins in runtime_baseline.py are GENERATED (scripts/regenerate_pins.py). Checking them
 # here is what stops a branch shipping a hand-edited or merge-mangled hash: the gate below
 # verifies dist against the pins, this verifies the pins against public/.
+# The design-only walkable sketch must stay inert. Prose in its header did not hold -- it was
+# read past twice, once at a cost of a measurement wrong by three orders of magnitude.
+python3 scripts/check_walkable_authority.py
 python3 scripts/regenerate_pins.py --check
 
 python3 scripts/runtime_baseline.py verify-act1 --input dist

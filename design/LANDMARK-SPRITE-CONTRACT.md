@@ -83,9 +83,20 @@ walls when there are monsters outside) and make the towns look a bit more styliz
 > 2026-07-30 enclosure lock above stands only for towns that have no town screen yet, and it is
 > a default, not a requirement.
 >
-> **Port Sapphire is explicitly UNFENCED**, on both the town screen and the overworld sprite.
-> Its gate set in `scripts/landmark_orientation.py` (N, E, W) still describes where the walkable
-> approaches are; it no longer implies a drawn gate in a drawn wall.
+> ~~**Port Sapphire is explicitly UNFENCED**, on both the town screen and the overworld sprite.~~
+> **REVERSED BY THE OWNER, 2026-08-17:** *"we can fense port sapphire. i think this will make it
+> easier to have the one entrance on both ends."* Port Sapphire is **FENCED** again, and the fence is
+> load-bearing rather than decorative: it is what makes a single, unambiguous entrance possible,
+> which is the same thing his overworld request asks for ("lets have one entrance for each town and
+> dungeon each and show an unpassable structure around it").
+>
+> This reverses the 2026-07-30 note below, and the reversal is the point of the whole rule: a town
+> whose boundary is drawn is a town whose boundary can be DERIVED from the drawing. An unfenced town
+> leaves the walkable edge to be inferred from paving colour alone, which is exactly where the
+> derived geometry has been weakest.
+>
+> **Still true and NOT reversed:** the south face is sea. The fence therefore runs the landward sides
+> only; the harbour is still the wall on the south.
 >
 > Consequence, and it is real: Port Sapphire's sprite now differs in treatment from the other
 > eleven Act 1 town sprites, which remain fenced and darker. They come into line as each gets
@@ -165,7 +176,10 @@ unchanged by a sprite. So:
 This matches the terrain measurement exactly — Port Sapphire scores N 100%, E 100%, W 100%
 walkable and **S 0%**, because the sea is directly south. So:
 
-- **Gates: N, E, W only. No south gate** — the sea is the wall on that side.
+- ~~**Gates: N, E, W only.**~~ **Superseded 2026-08-17** — with the fence restored the owner wants
+  ONE entrance, not three: *"lets have one entrance for each town and dungeon each."* N/E/W remains
+  the correct description of where walkable approach EXISTS; it is no longer the gate count.
+  **No south gate** stands — the sea is the wall on that side.
 - **The south face is a HARBOUR**, not a plain wall: a stone quay or timber jetty along the
   waterline, moored fishing boats, crates, barrels, drying nets, mooring posts. It should read
   as the working seaward side of a port.

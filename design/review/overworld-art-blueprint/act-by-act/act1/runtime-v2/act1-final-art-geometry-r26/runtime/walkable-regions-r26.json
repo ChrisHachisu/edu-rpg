@@ -1,8 +1,8 @@
 {
-  "schema": "act1-art-fit-polygon-authority-v2",
+  "schema": "act1-design-only-polygon-sketch-v2",
   "revision": 2,
   "status": "design-only-owner-review-not-promoted",
-  "authority": "The owner-approved Act 1 painting and this simplified geometry are one hash-locked design pair. Curves were fitted once to visible walkable ground; the derived mask is evidence only.",
+  "authority": "NOT THE RUNTIME AUTHORITY, AND NEVER WAS. Nothing under public/ or src/ reads this file; it is referenced only by design review pages and old handoffs. The overworld's real authority is public/act1-world-map.js's ROWS/BOUNDS with blocked(t) = t in {2,3,4} or t >= 6, which yields exactly 9376 walkable tiles. Measuring coverage against THIS file instead reported 8.28% of walkable ground uncovered -- wrong by three orders of magnitude (docs/GROUND-TRUTH.md). Its previous value claimed 'one hash-locked design pair'; there is no hash in this file and the lock was prose enforced by nothing. Its schema was also identical to the TOWN file's (portSapphire-walkable-v1.json), which IS enforced every frame -- that collision is the trap, and the schema above has been renamed to break it. Enforced by scripts/check_walkable_authority.py.",
   "coordinateSpace": {
     "id": "act1-world-art",
     "width": 2368,
@@ -29160,5 +29160,7 @@
         ]
       }
     ]
-  }
+  },
+  "runtimeAuthority": false,
+  "supersededBy": "public/act1-world-map.js (ROWS/BOUNDS)"
 }
