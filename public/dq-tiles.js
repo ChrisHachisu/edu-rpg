@@ -1193,28 +1193,90 @@
   // the next tick to rebuild a window still short of full coverage, and a window short of coverage
   // falls through a1aBlit into drawTerrain's per-pixel splat. Thirty chunks x three layers meant
   // one 2.97 M-px splat per tick for the whole of the load.
-  function a1aLayerLanded(c,rec,k,src){ rec[k]=src; if(rec.base) A1A.dirty=true; a1aEnqueueTex(c,rec); }
+  /* ---- A LAYER THAT FAILED TO LOAD MUST BE ASKED FOR AGAIN --------------------------------------
+     Owner, after build 43: "when the game gets overloaded the map stops loading and stays blue
+     (movement and game play is fine)", and he is explicit that this is a long-standing edge case
+     rather than a regression: "we just need to maybe harden the loading check?"
+
+     THAT SYMPTOM IS NOT A LOST CONTEXT, AND READING IT AS ONE SENT EVERY EARLIER FIX TO THE WRONG
+     PLACE. A lost GL context takes the hero, the props and the UI with it. Movement and gameplay
+     surviving means the renderer is alive and only the terrain never arrived, which is a LOADING
+     failure, and the loader had no retry at all:
+
+       * `a1aLoadLayerImg`'s `im.onerror` was an empty function, commented "a missing layer degrades,
+         never wedges". It degrades permanently. `rec[k]` is never set, so `a1aArtAt` reads false and
+         `a1aRects` filters the chunk out of every window from then on -- flat blue, forever.
+       * `a1aChunkRec` only ever issued loads on the frame it CREATED the record. Once the record
+         exists a missing layer is never requested again, however many times the window is rebuilt.
+
+     So one transient failure under memory pressure -- exactly "when the game gets overloaded", where
+     `createImageBitmap` and an `Image` decode are both liable to fail -- wedges that chunk for the
+     rest of the session. The watchdog cannot rescue it either: its cheap pass re-uploads from decoded
+     images and there IS no decoded image, its deep pass is capped at `A1AW_MAX` 8 for the whole
+     session, and its progress veto reads OTHER chunks succeeding as proof the renderer is healthy.
+     Which is why the documented cure was a reload (see A1AW's own comment).
+
+     The fix is to make the loader self-healing rather than to loosen the watchdog: record the
+     failure, back off, and let the next window rebuild ask again. Bounded so a genuinely absent file
+     cannot spin -- a 404 will exhaust its tries and go quiet, which is the old "degrades" behaviour
+     preserved for the case it was actually written for. */
+  var A1A_LAYERS=['base','canopy','water'];   // one list, so the loader and the retry cannot diverge
+  var A1A_LOAD_TRIES=6;         // per layer, per residency -- a re-entered chunk starts fresh
+  var A1A_LOAD_BACKOFF=1200;    // ms before a failed layer may be asked for again
+  function a1aLd(rec){ return rec.ld||(rec.ld={pend:{},fail:{},next:{}}); }
+  function a1aLayerLanded(c,rec,k,src){
+    var ld=a1aLd(rec); delete ld.pend[k]; ld.fail[k]=0;
+    rec[k]=src; if(rec.base) A1A.dirty=true; a1aEnqueueTex(c,rec);
+  }
+  function a1aLayerFailed(rec,k){
+    var ld=a1aLd(rec); delete ld.pend[k];
+    ld.fail[k]=(ld.fail[k]|0)+1;
+    ld.next[k]=Date.now()+A1A_LOAD_BACKOFF*ld.fail[k];         // linear back-off, not a tight spin
+  }
   function a1aLoadLayerImg(c,rec,k){
     var im=new Image();
     im.onload=function(){ a1aLayerLanded(c,rec,k,im); };
-    im.onerror=function(){};                                   // a missing layer degrades, never wedges
+    im.onerror=function(){ a1aLayerFailed(rec,k); };            // BOTH paths are now out: record it
     im.src='act1-hifi/'+c[k];
   }
   function a1aLoadLayer(c,rec,k){
+    a1aLd(rec).pend[k]=true;                                    // in flight: the sweep must not double-issue
     if(!(A1A_SPRITES&&window.createImageBitmap&&window.fetch)){ a1aLoadLayerImg(c,rec,k); return; }
     var done=false;
     try{
       fetch('act1-hifi/'+c[k]).then(function(r){ if(!r.ok) throw new Error('http'); return r.blob(); })
         .then(function(b){ return createImageBitmap(b,{premultiplyAlpha:'none',colorSpaceConversion:'none'}); })
         .then(function(bm){ done=true; a1aLayerLanded(c,rec,k,bm); })
-        .catch(function(){ if(!done&&!rec[k]) a1aLoadLayerImg(c,rec,k); });
+        .catch(function(){ if(done||rec[k]) return; a1aLoadLayerImg(c,rec,k); });  // pend stays set
     }catch(e){ a1aLoadLayerImg(c,rec,k); }
+  }
+  // Every RESIDENT chunk of the window she is standing in, re-asked on the watchdog's tick. Reads
+  // A1A.win (the ring a1aRects recorded) so it never fetches art the window does not need.
+  function a1aRetryWindow(){
+    var m=A1A.manifest, win=A1A.win; if(!m||!win||!win.length) return;
+    for(var i=0;i<m.chunks.length;i++){ var c=m.chunks[i];
+      if(win.indexOf(c.id)<0) continue;
+      var rec=A1A.chunks[c.id]; if(!rec) continue;               // evicted: a1aChunkRec will re-create it
+      a1aRetryLayers(c,rec);
+    }
+  }
+  // Re-ask for any layer of a RESIDENT chunk that neither landed nor is in flight. Runs from
+  // a1aChunkRec, i.e. once per window rebuild for exactly the chunks the window needs.
+  function a1aRetryLayers(c,rec){
+    var ld=a1aLd(rec), now=Date.now();
+    for(var i=0;i<A1A_LAYERS.length;i++){ var k=A1A_LAYERS[i];
+      if(!c[k]||rec[k]||ld.pend[k]) continue;                   // absent from the manifest, landed, or pending
+      if((ld.fail[k]|0)>=A1A_LOAD_TRIES) continue;              // exhausted: stay quiet
+      if(now<(ld.next[k]|0)) continue;                          // still backing off
+      A1A.reloads=(A1A.reloads|0)+1;                            // surfaced in dq.cost() for the panel
+      a1aLoadLayer(c,rec,k);
+    }
   }
   function a1aChunkRec(c){
     var rec=A1A.chunks[c.id];
     if(!rec){ rec=A1A.chunks[c.id]={bm:{}};
-      ['base','canopy','water'].forEach(function(k){ if(!c[k]) return; a1aLoadLayer(c,rec,k); });
-    }
+      for(var li=0;li<A1A_LAYERS.length;li++){ var lk=A1A_LAYERS[li]; if(c[lk]) a1aLoadLayer(c,rec,lk); }
+    } else a1aRetryLayers(c,rec);   // resident but incomplete -> ask again (see a1aRetryLayers)
     var i=A1A.lru.indexOf(c.id); if(i>=0) A1A.lru.splice(i,1); A1A.lru.push(c.id);
     return rec;
   }
@@ -1650,6 +1712,14 @@
       if(A1A.tex[key]===1 && im && im.scene && im.visible) live++;
     }
     A1A.sprLive=live; A1A.sprWant=want;
+    // RE-ASK FOR MISSING ART ON A TIMER, NOT ONLY ON MOVEMENT. The terrain path that calls a1aRects
+    // is gated on the window CHANGING (`key===terrainState.lastWin` -> return), so a layer that
+    // failed while she stands still would not be re-requested until she walked across a window
+    // boundary. The owner's report is "the map stops loading and stays blue" -- recovery must not
+    // depend on him moving. This sweep is the same bounded retry a1aChunkRec performs, driven by this
+    // watchdog's own tick, and it runs BEFORE the veto below: re-fetching art that never arrived is
+    // not the destructive heal the veto exists to suppress.
+    a1aRetryWindow();
     var now=Date.now();
     // HEALTHY is also what clears the escalation. A cheap pass that restored the sprites must not
     // leave the next, unrelated incident starting at pass 2 -- the whole point is that the expensive
@@ -5974,6 +6044,7 @@
     return { splat:COST.splat, canopy:COST.canopy, tex:COST.tex, plate:a1aPlateOwns(sc)?1:0,
              wMs:COST.wMs, wWhat:COST.wWhat,
              sprLive:A1A.sprLive|0, sprWant:A1A.sprWant|0, sprFix:A1AW.fixes|0, sprDeep:A1AW.deep|0,
+             reloads:A1A.reloads|0,   // layer re-requests: non-zero means a load failed and was retried
              sprGl:a1aGlLost()?1:0 };
   }
   window.__DQ_TILES__={ reskin:reskin, ready:terrainReady, readyWhy:terrainReadyWhy, cost:terrainCost, redraw:function(){ if(terrainState){ terrainState.lastWin=''; updateTerrain(terrainState.scene,true);} if(overlayState){ overlayState.lastKey=''; rebuildOverlay(overlayState.scene,true);} } };
