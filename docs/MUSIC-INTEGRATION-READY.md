@@ -20,6 +20,10 @@ time rather than a discovery.
   good enough!"* Named exactly for the `BgmTrack` union, so no scene-side changes.
 - **The player**, `design/music/music-override.js` — deliberately parked OUTSIDE `public/` so it
   cannot enter the runtime overlay and move pins until someone chooses to install it.
+  **This is the ONLY copy and is canonical.** The generating session deleted its own reference rather
+  than patch the `init()` bug below, on the reasoning that a second copy is how that bug survives.
+  Verified after that deletion: 189 lines, parses, both swap entry points present, and `masters/`
+  still holds all nine sources. Do not fork it; edit it here.
 
 ## The seam, and why it is the right one (all verified against the real bundle)
 
@@ -106,8 +110,15 @@ move together with reasoning. Routine, but it is a second signed artifact.
    energy, and that the orphaned Tone composer is not playing underneath. Set the analyser's
    `smoothingTimeConstant` to 0 first — its default decay reads as residual energy and will look like
    a mute bug that is not there.
-10. Hardware listen before shipping. The dungeon track is quiet and low and may vanish on an iPhone
-    speaker.
+10. **Hardware listen before shipping, and budget for the dungeon track.** It is the quiet one and
+    has never been heard on a phone speaker. Try the cheap fix first — a per-track trim in the player
+    (the gain node is already there) costs nothing and is worth ruling in or out. But do not expect it
+    to work: the masters are RMS-matched to −20 dB, so the track is quiet by *composition* (sparse and
+    low), not by level, and a small speaker rolls off exactly the low frequencies it lives in. Gain
+    cannot restore content the speaker will not reproduce. If the trim does not fix it, this is a
+    **regeneration**, not a mix change — the generating session still holds the environment and quotes
+    ~40 s per track, and `masters/` (9 files, seamless PCM16) is the source to re-encode from, never
+    the `m4a/`.
 
 ## Traps already paid for
 
