@@ -1270,6 +1270,30 @@
   // ============================================================
   // ---- pointer-based tap router (replaces the old click-only onTap) ----
   var downEl = null, downAct = null, gestureRouted = false;
+  /* WHY A TAP IS MEASURED BY FINGER MOVEMENT AND NOT BY ELEMENT IDENTITY. Owner, build 43: "on the
+     hero build screen, the text field acts funny and the player needs to tap check twice to commit
+     the name."
+
+     The router used to require `actEl === downEl` -- the same element hit-tested under the finger on
+     BOTH pointerdown and pointerup. That silently fails whenever the page reflows mid-press, and
+     tapping Start while the name field holds focus does exactly that: the first tap blurs the input,
+     iOS collapses the keyboard, the visual viewport grows and the whole intro panel is re-laid out
+     BETWEEN down and up. The button is no longer under the finger at pointerup, the identity test
+     fails, and fireTap never runs -- so the first tap only ever dismissed the keyboard. The second
+     tap, with the layout already settled, worked. Hence "tap check twice".
+
+     Re-hit-testing against downEl's fresh rect does NOT fix it either, because the element genuinely
+     MOVES. What actually distinguishes a tap from a drag is how far the FINGER travelled, which no
+     reflow can perturb. So: remember where the press started, and treat a press that ends within
+     TAP_SLOP of it as a tap on the element that was pressed. Dragging off a button still cancels,
+     which is the affordance the identity test was there to provide. */
+  var TAP_SLOP = 12;               // css px of finger travel still counted as a tap, not a drag
+  var downX = 0, downY = 0;
+  function pointOf(e) {
+    if (e.changedTouches && e.changedTouches.length) return e.changedTouches[0];
+    if (e.touches && e.touches.length) return e.touches[0];
+    return e;
+  }
   function isNameTarget(t) {
     if (!t) return false;
     var n = document.getElementById('qok-name');
@@ -1321,6 +1345,7 @@
     var ty = e.type;
     if (ty === 'pointerdown' || ty === 'touchstart') {
       downEl = actEl; downAct = actEl ? actEl.getAttribute('data-act') : null; gestureRouted = false;
+      var p0 = pointOf(e); downX = p0.clientX || 0; downY = p0.clientY || 0;
       setRailKb(false);      // touch wins: drop the keyboard cursor BEFORE the press paints...
       railPress(actEl, true); // ...so the only thing that lights up is the button under the finger
     } else if (ty === 'mousedown') {
@@ -1331,7 +1356,15 @@
       // every other event ends the press, so mouseup, click and a half-finished gesture cannot
       // leave a cell stuck at scale(.955)
       railPress(null, false);
-      if ((ty === 'pointerup' || ty === 'touchend') && !gestureRouted && actEl && actEl === downEl && downAct) { gestureRouted = true; fireTap(actEl, downAct); }
+      if ((ty === 'pointerup' || ty === 'touchend') && !gestureRouted && downAct && downEl) {
+        var p1 = pointOf(e);
+        var moved = Math.abs((p1.clientX || 0) - downX) + Math.abs((p1.clientY || 0) - downY);
+        // Either the finger never left the button (no reflow), or it barely moved at all (reflow
+        // shifted the button out from under it, but this was still a tap on what was pressed).
+        if (actEl === downEl || (moved <= TAP_SLOP && downEl.isConnected)) {
+          gestureRouted = true; fireTap(downEl, downAct);
+        }
+      }
     }
     // mousedown/mouseup/click are swallowed above (no route) — routing already happened on UP.
   }

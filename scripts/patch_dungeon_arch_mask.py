@@ -54,9 +54,46 @@ OPENING_LUM = 150     # the lit mouth itself
 PAD_CELLS = 3         # neighbourhood around the mouth cell
 MAX_LOSS = 0.02       # refuse if more than 2% of the floor's open area disappears
 
+# THE HERO HAS A BODY. This is the whole reason the first version of this script shipped three
+# unenterable dungeons (owner, build 44: "the arch in the dungeon entrance now blocks the player
+# from entering"). Its verification asked `ndimage.label` whether the mouth was still CONNECTED,
+# which is a question about a ZERO-WIDTH POINT. The runtime asks a different question: dq-tiles.js
+# `a1mFree` rejects any sole position whose chamfer distance to rock is below `a1mNeed`, which runs
+# from A1M_FOOT to A1M_FOOT+A1M_LEAN world px. So a 10 px throat between the arch's shoulders is
+# "connected" and utterly impassable, and that is exactly what was written to all three floors.
+#
+# Verify against the STRICTER end (FOOT+LEAN). The runtime guarantees the legal region CONTAINS the
+# erosion by FOOT+LEAN, so connectivity there is sufficient for reachability at any lean.
+A1M_FOOT = 12         # keep in sync with dq-tiles.js A1M_FOOT
+A1M_LEAN = 4          # keep in sync with dq-tiles.js A1M_LEAN
+CLEARANCE = A1M_FOOT + A1M_LEAN
+
 
 def luminance(rgb: np.ndarray) -> np.ndarray:
     return 0.2126 * rgb[:, :, 0] + 0.7152 * rgb[:, :, 1] + 0.0722 * rgb[:, :, 2]
+
+
+def body_reaches_mouth(walk: np.ndarray, mouth: dict) -> bool:
+    """Can a hero with a real body walk between the bulk floor and the mouth cell?
+
+    Mirrors a1mFree: erode the open field by the clearance the runtime demands, then ask whether the
+    mouth cell's surviving pixels share a component with the floor's largest one. A point-connectivity
+    test cannot answer this and must never be used here again.
+    """
+    legal = ndimage.distance_transform_edt(walk) >= CLEARANCE
+    lab, n = ndimage.label(legal)
+    if n == 0:
+        return False
+    y0, y1 = mouth["y"] * TILE, (mouth["y"] + 1) * TILE
+    x0, x1 = mouth["x"] * TILE, (mouth["x"] + 1) * TILE
+    cell = np.zeros_like(legal)
+    cell[y0:y1, x0:x1] = True
+    in_mouth = set(lab[cell & legal].tolist()) - {0}
+    if not in_mouth:
+        return False
+    sizes = ndimage.sum(legal, lab, range(1, n + 1))
+    bulk = int(np.argmax(sizes)) + 1
+    return bulk in in_mouth
 
 
 def patch_floor(key: str, mouth: dict, check: bool) -> tuple[bool, str]:
@@ -78,15 +115,15 @@ def patch_floor(key: str, mouth: dict, check: bool) -> tuple[bool, str]:
 
     new_sub = sub_w & ~stone
 
-    # VERIFY BEFORE WRITING. The mouth is an exit; stranding it is worse than the bug.
-    lab, _ = ndimage.label(new_sub)
-    opening = sub_l >= OPENING_LUM
-    seeds = set(lab[new_sub].tolist()) & set(lab[:, :6][new_sub[:, :6]].tolist())
-    open_ids = set(lab[new_sub & opening].tolist()) - {0}
-    if not (seeds & open_ids):
-        return False, f"{key}: REFUSED -- blocking the arch would strand the mouth"
-
     patched = walk.copy(); patched[y0:y1, x0:x1] = new_sub
+
+    # VERIFY BEFORE WRITING, AGAINST A HERO WITH A BODY. The mouth is an exit; stranding it is
+    # worse than the bug it fixes. Test the WHOLE patched floor, because reachability is a question
+    # about the path back to the bulk floor and cannot be answered inside the mouth's neighbourhood.
+    if not body_reaches_mouth(patched, mouth):
+        return False, (f"{key}: REFUSED -- blocking the arch leaves no throat a "
+                       f"{CLEARANCE}px-clearance body can pass; the mouth would be unenterable")
+
     loss = 1 - patched.sum() / max(before_open, 1)
     if loss > MAX_LOSS:
         return False, f"{key}: REFUSED -- would remove {100*loss:.1f}% of the floor's open area"
