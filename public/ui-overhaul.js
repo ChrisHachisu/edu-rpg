@@ -110,13 +110,16 @@
 
   // ---- hero sprite ----
   // real in-game hero armor colors (only 4 exist: gray/blue/pink/black)
-  var HEROHEX = { gray: '#8899bb', blue: '#4477dd', pink: '#cc6699', black: '#444455' };
-  function heroSvg(size, color) {
-    var c = HEROHEX[color] || '#3b63c4';
-    return '<svg class="spr" width="' + size + '" height="' + size + '" viewBox="0 0 16 16">' +
-      '<rect x="5" y="1" width="6" height="2" fill="#e0584f"/><rect x="4" y="3" width="8" height="4" fill="#9fb3c8"/>' +
-      '<rect x="5" y="4" width="2" height="2" fill="#fff"/><rect x="9" y="4" width="2" height="2" fill="#fff"/>' +
-      '<rect x="4" y="7" width="8" height="5" fill="' + c + '"/><rect x="6" y="12" width="4" height="3" fill="#5a3a22"/></svg>';
+  /* A SPINNER, NOT A STAND-IN HERO. Owner, build 38: "when the characters load on the character
+     build screen, a generic pixel player shows up, but i'd rather see a loading spinner than this."
+     ~~heroSvg()~~ drew a crude 16x16 blocky knight in both places art can be pending -- the title
+     avatar (waiting on the Phaser texture) and the create-screen previews (waiting on the PNG).
+     It read as a THIRD character in a game that has spent months getting down to two, and it is the
+     first thing a new player sees. A spinner says "loading" and cannot be mistaken for content.
+     Retired at the source rather than left beside its replacement: it had no other caller. */
+  function heroSpinner(size) {
+    var s = Math.max(18, Math.round(size * 0.42));
+    return '<span class="qok-spin" style="width:' + s + 'px;height:' + s + 'px;" role="img" aria-label="loading"></span>';
   }
 
   // ---- monster sprite: legacy PNGs (no real alpha) get their solid-black bg chroma-keyed
@@ -199,7 +202,7 @@
   function heroImg(size, color, ensure) {
     var src = getHeroSrc(color, ensure);
     if (src) return '<img class="heroimg" width="' + size + '" height="' + size + '" src="' + src + '" alt="" />';
-    return heroSvg(size, color); // graceful fallback until the texture is readable
+    return heroSpinner(size); // loading, not a stand-in hero -- see heroSpinner
   }
   // The snapshot above is taken ONCE per colour key and never invalidated, but `hero-walk` is not
   // stable: the bundle rebuilds the procedural knight into that key on every Continue / New Game,
@@ -238,7 +241,7 @@
   function variantImg(size, variant) {
     var src = variantSrc(variant);
     if (src) return '<img class="heroimg" width="' + size + '" height="' + size + '" src="' + src + '" alt="" style="image-rendering:pixelated;" />';
-    return heroSvg(size, 'gray'); // graceful fallback until the PNG loads
+    return heroSpinner(size); // loading, not a stand-in hero -- see heroSpinner
   }
 
   // ---- NPC sprite snapshot (e.g. shopkeeper portrait, cropped to the upper half) ----
@@ -776,6 +779,16 @@
     var rebuilt = (sig !== lastSig);
     paint(h, sig);
     if (rebuilt) { var inp = document.getElementById('qok-name'); if (inp) inp.value = (ts.heroName || ''); }
+    /* NOTHING IS PRESELECTED ON ARRIVAL. Owner, build 38: "the screen starts out by the name field
+       selected but this is not optimal. i don't want anything preselected."
+       The overlay never focused anything -- measured, there are TWO inputs on this screen: our
+       `#qok-name` and an anonymous one TitleScene creates and focuses itself, and it is the bundle's
+       that holds focus (and on a phone raises the keyboard over half the screen). The bundle cannot
+       be edited, so the focus is dropped here instead. Deliberately NOT removed: the element may
+       still be load-bearing for the bundle's own create path. Our own input is left alone, so a
+       player who taps the field keeps focus and can type. */
+    var act = document.activeElement;
+    if (act && act.tagName === 'INPUT' && act.id !== 'qok-name' && typeof act.blur === 'function') act.blur();
   }
 
   // ============================================================
@@ -1280,13 +1293,49 @@
     });
   }
 
+  /* EVERY LANDING-SCREEN BUTTON DIED AFTER ONE TRIP INTO CHARACTER CREATE AND BACK.
+     Owner, build 38: "after tapping the back button on the character build screen and returning to
+     the initial landing screen all buttons stop working."
+
+     Measured, not guessed (.eduharness/repro-back-button.js prints the scene state at each step):
+
+       fresh landing      menuItems=1  actions=["new"]   -> findIndex hits, confirm() runs
+       character create   menuItems=1  actions=[null]
+       back on landing    menuItems=1  actions=[null]    <- nothing rebuilt the title menu at all
+       tap New Game       findIndex -> -1, the `if` below is skipped, nothing happens, no error
+
+     ~~"drawTitle() rebuilt the items WITHOUT re-attaching their action data."~~ Wrong, and this is
+     the correction that found the real bug: the scene has NO `drawTitle`. `typeof ts.drawTitle` is
+     `undefined`. Its actual method is **`drawTitleScreen`**, and the Back handler's call sat inside
+     a `try/catch` that swallowed the TypeError, so the title menu was never rebuilt and the action
+     data stayed null forever. A misspelled method name, invisible because the catch was empty.
+     Fixed at the source in routeIntro's `introBack` branch.
+
+     Two things are kept here as defence, because the failure mode was silence rather than an error:
+     the positional fallback below (derived from the title's own composition -- renderTitle emits
+     New Game first, Continue second, and Continue exists only when a save does, the same
+     `edu-rpg-save` test it renders from), and hoisting the body out of `if (idx >= 0)` so a future
+     miss cannot no-op quietly again. Note `ts.confirm()` is itself data-driven off the same
+     `getData('action')`, so the index alone was never enough -- the menu genuinely has to be
+     rebuilt, which is why the method-name fix is the load-bearing half. */
   function routeTitle(act, i, el) {
     var ts = getScene('TitleScene'); if (!ts) return;
     if (act === 'titleLang') { ts.toggleLanguage(); return; }
     var action = act === 'titleNew' ? 'new' : act === 'titleContinue' ? 'continue' : null;
     if (!action) return;
-    var idx = (ts.menuItems || []).findIndex(function (m) { return m.getData && m.getData('action') === action; });
-    if (idx >= 0) { ts.selectedIndex = idx; if (ts.updateSelection) ts.updateSelection(); ts.confirm(); }
+    var items = ts.menuItems || [];
+    var idx = items.findIndex(function (m) { return m.getData && m.getData('action') === action; });
+    if (idx < 0) {
+      var hasSave = false;
+      try { hasSave = !!(window.localStorage && localStorage.getItem('edu-rpg-save')); } catch (e) {}
+      var order = hasSave ? ['new', 'continue'] : ['new'];
+      var pos = order.indexOf(action);
+      if (pos >= 0 && pos < items.length) idx = pos;
+    }
+    if (idx < 0) return;                    // genuinely absent (e.g. Continue with no save)
+    ts.selectedIndex = idx;
+    if (ts.updateSelection) ts.updateSelection();
+    ts.confirm();
   }
 
   function routeBattle(act, i, el) {
@@ -1335,7 +1384,16 @@
       // return to the title screen (overlay auto-switches to renderTitle when mode==='title')
       ts.mode = 'title';
       try { if (ts.removeNameInput) ts.removeNameInput(); } catch (e) {}
-      try { if (ts.drawTitle) ts.drawTitle(); } catch (e) {}
+      // ~~ts.drawTitle()~~ DOES NOT EXIST -- the scene's method is drawTitleScreen, and the guard
+      // `if (ts.drawTitle)` meant this line had been quietly doing nothing since it was written.
+      // That is the whole of the owner's "all buttons stop working" (routeTitle's header carries
+      // the measurement): without a rebuild, every title menu item keeps a null `action`, and both
+      // routeTitle's lookup AND the scene's own confirm() dispatch on exactly that value.
+      // Known, bounded side effect: drawTitleScreen APPENDS rather than replaces, so each round
+      // trip leaves one stale Text behind. They are invisible -- the DOM overlay covers the canvas
+      // -- and lookups match on `action`, which only the live item carries. Calling the scene's own
+      // method beats reimplementing its state transition here.
+      try { if (ts.drawTitleScreen) ts.drawTitleScreen(); } catch (e) {}
     }
     else if (act === 'introStart') {
       ts.createRow = 'start'; ts.confirmCreate();
