@@ -38,13 +38,26 @@ disappears on defeat.
 | T1 | "port sapphire's touch up is not working visually. i think we need to redo the town from scratch with clear instructions on making it clear where players can walk and a place for the shop and the healer. the resolution is currently fuzzy on the app and i can clearly tell that the texture is different from the hero so this needs to be matched in the updated design." | **art commission**, large | OPEN |
 | T2 | "please regenerate the first town with these rules and the boundary rules we decided previously and also generate all characters and place them all in the town as well" | **art commission**, large | OPEN |
 
-T1 confirms a measurement already on record and previously flagged to him as wanting a re-bake:
+> [!danger] T1's stated cause DID NOT SURVIVE A UNIT CHECK — read before pricing this
+> The re-bake was justified by "the town is 1.66x lower resolution than the overworld". That ratio
+> compares art px per TOWN cell (16 world px) against art px per OVERWORLD tile (48 world px). In one
+> unit — source px per world px — the town is **1.812**, the hero **1.778**, the overworld **1.000**.
+> The town already matches the hero to within 2% and is 1.8x DENSER than the overworld. A
+> higher-density re-bake is therefore **not established** as the fix for the softness he reports.
+> His observation stands and is not in doubt; its CAUSE is now unidentified. The style half ("the
+> texture is different from the hero" — painterly vs faux-pixel) is real and a redesign does fix it.
+> **Measure the softness on device against the overworld before committing to a re-bake.**
+> Corrected at source in `docs/GROUND-TRUTH.md`, 2026-08-17.
+
+~~T1 confirms a measurement already on record and previously flagged to him as wanting a re-bake:~~
 `portSapphire-screen-v5-graded.png` is 1885x1885 over a 65-cell town = **29 art px per cell**
 against the overworld's **48**, i.e. **1.66x lower resolution**. Two runtime-side fixes were tried
 and neither could close it (`image-rendering: pixelated`, raising the town dpr cap 2 -> 3). "the
 texture is different from the hero" is that same gap seen directly. **This is now commissioned.**
-T2's "boundary rules we decided previously" must be located and quoted before any generation —
-do not infer them.
+T2's boundary rules WERE located — see `claude_brain/04-Learnings/learning-20260817-town-walkable-derived-from-painted-art.md`.
+Owner decisions since: Port Sapphire is **FENCED** again, **ONE entrance** shared by the overworld
+sprite and the town screen, and NPCs get **4 directions** so they turn to face the hero (retiring the
+down-facing-only and approach-from-south rules).
 
 ## Sequencing note
 

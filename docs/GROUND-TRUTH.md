@@ -189,7 +189,8 @@ tile rather than a re-bake.
 > position before the cache had filled**: it showed 9→6 resident, which was true and irrelevant.
 > A static reading of a cache that fills over time is not a measurement of its peak.
 
-> [!warning] THE TOWN CANNOT MATCH THE OVERWORLD'S CRISPNESS, AND NO RUNTIME SETTING WILL FIX IT.
+> [!danger] ~~THE TOWN CANNOT MATCH THE OVERWORLD'S CRISPNESS, AND NO RUNTIME SETTING WILL FIX IT.~~
+> **THE RATIO BELOW IS MEASURED IN A UNIT THAT DOES NOT DESCRIBE SHARPNESS — corrected 2026-08-17.**
 > Measured 2026-08-15: `portSapphire-screen-v5-graded.png` is 1885x1885 over a 65-cell town = **29
 > art px per cell**, against the overworld's **48** (`TILE`). The town art is **1.66x lower
 > resolution than the overworld**, so it is upscaled further on the same screen and will always read
@@ -200,6 +201,29 @@ tile rather than a re-bake.
 > town art at overworld density** -- which the owner independently concluded: *"it's ok if we need
 > to update the animation because the resolution is too low anyways and needs to be higher
 > resolution."* Do not attempt a third runtime-side fix for this.
+
+> **THE CORRECTION.** "29 art px per cell against the overworld's 48" compares art pixels per TOWN
+> cell against art pixels per OVERWORLD tile — but a town cell is **16** world px and an overworld
+> tile is **48**. Those are different amounts of screen, so the 1.66x is not a resolution comparison
+> at all. In ONE unit, source art px per WORLD px:
+>
+> | | source px per world px |
+> |---|---|
+> | town (1885 over 65x16=1040) | **1.812** |
+> | hero (64 native at 36 world px) | **1.778** |
+> | overworld (48 per 48) | **1.000** |
+>
+> The town already matches the HERO to within 2%, and is **1.8x denser than the overworld** — the
+> opposite of the retired claim. So a higher-density re-bake is NOT established as the fix for the
+> softness the owner reports, and commissioning one on this reasoning risks paying for art that does
+> not change what he sees.
+>
+> **What survives:** his observation itself, twice given and not in doubt — on device the town reads
+> soft and *"the texture is different from the hero"*. That second half is a STYLE mismatch
+> (painterly town against the hero's crisp faux-pixel finish) and a redesign genuinely does address
+> it. The softness needs its cause identified before it is priced: the candidates are the town
+> iframe's own camera zoom and filtering, not the source density. **Measure it on device against the
+> overworld before commissioning a re-bake.**
 
 ## Claims that were WRONG and are now retired
 

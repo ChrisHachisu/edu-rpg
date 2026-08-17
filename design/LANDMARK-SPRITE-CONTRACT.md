@@ -177,8 +177,12 @@ This matches the terrain measurement exactly — Port Sapphire scores N 100%, E 
 walkable and **S 0%**, because the sea is directly south. So:
 
 - ~~**Gates: N, E, W only.**~~ **Superseded 2026-08-17** — with the fence restored the owner wants
-  ONE entrance, not three: *"lets have one entrance for each town and dungeon each."* N/E/W remains
-  the correct description of where walkable approach EXISTS; it is no longer the gate count.
+  ONE entrance, not three: *"lets have one entrance for each town and dungeon each."* Confirmed
+  2026-08-17 when asked directly whether "one entrance on both ends" meant one total or one per end:
+  **"one entrance in the overworld and the town."** So it is ONE entrance, and the two ends are the
+  two sides of the same transition — the overworld sprite's door and the town screen's door are the
+  same point, and they must line up. N/E/W remains the correct description of where walkable approach
+  EXISTS; it is no longer the gate count.
   **No south gate** stands — the sea is the wall on that side.
 - **The south face is a HARBOUR**, not a plain wall: a stone quay or timber jetty along the
   waterline, moored fishing boats, crates, barrels, drying nets, mooring posts. It should read
