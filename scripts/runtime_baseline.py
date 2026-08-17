@@ -22,6 +22,15 @@ MANIFEST = ROOT / "runtime" / "manifests" / f"{PROFILE}.json"
 CANDIDATES = ROOT / "public" / "assets" / "monsters"
 CANDIDATE_MANIFEST = ROOT / "runtime" / "manifests" / "regular-monster-candidates-v1.17.1.json"
 BUNDLE = "assets/index-BhoGQRaA.js"
+# IF YOU ARE ABOUT TO MOVE THESE TWO CONSTANTS, READ docs/MUSIC-INTEGRATION-READY.md FIRST.
+# There is a prepared, verified, owner-approved change WAITING for the next bundle edit: swapping the
+# procedural Tone.js BGM for orchestral .m4a loops, which needs 54 bytes added to the bundle's own
+# window.__QOK literal. The owner declined to re-stamp the provenance chain for a soundtrack ALONE
+# (2026-08-17, verbatim: "Wait and bundle it with the next edit"), so its trigger is precisely this
+# moment -- someone editing the bundle for an unrelated reason. Installing it in the SAME pass
+# re-stamps the pins once instead of twice.
+# The note lives HERE rather than only in that doc because whoever needs it arrives from the pin
+# side, not the music side.
 BUNDLE_SIZE = 4_987_581
 BUNDLE_SHA256 = "a56026574b42168985b353e4cee824562716af83f92d03f408df04eac9127381"
 EXPECTED_FILE_COUNT = 257

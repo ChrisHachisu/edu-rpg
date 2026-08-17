@@ -34,6 +34,11 @@
 set -eu
 cd "$(dirname "$0")/.."
 
+# CHANGING THIS md5 MEANS YOU EDITED THE BUNDLE ON PURPOSE. If so, read
+# docs/MUSIC-INTEGRATION-READY.md before you finish: an owner-approved music change is queued to ride
+# along with the NEXT bundle edit, so the identity chain is re-stamped once rather than twice. The
+# owner declined to do it for a soundtrack on its own ("Wait and bundle it with the next edit",
+# 2026-08-17) -- this is that next edit.
 FROZEN=60d90b63607b6e6980eb170aeeed445e
 
 # ORDER MATTERS, and not in the obvious way. build-dist.sh verifies pinned identity as part of

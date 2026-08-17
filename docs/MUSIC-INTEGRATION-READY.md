@@ -2,16 +2,29 @@
 date: 2026-08-17
 type: spec
 project: edu-rpg
-status: ready-to-execute, NOT executed
-tags: [audio, music, bundle-edit, needs-owner-signoff]
+status: DEFERRED by the owner — rides along with the next bundle edit
+tags: [audio, music, bundle-edit, deferred, waiting-for-a-trigger]
 ---
 
 # Orchestral BGM: verified, prepared, and deliberately NOT integrated
 
-**Status: everything is proven to work. It is not installed, and the reason is scope of authority,
-not doubt about the approach.** I applied the whole change, verified the seam, then reverted it when
-the blast radius turned out to be far larger than briefed. Details below so this is a decision next
-time rather than a discovery.
+> [!warning] "READY" DOES NOT MEAN "GO" — THE OWNER HAS ALREADY ANSWERED THIS
+> Asked whether to re-stamp the bundle's provenance chain for a soundtrack on its own, he chose to
+> defer. Verbatim: **"Wait and bundle it with the next edit"** (2026-08-17).
+>
+> Step 2 below is therefore **not** an open question awaiting a decision. It is a CLOSED one, answered
+> *"not on its own"*. **Do not install this because the plan looks complete.** The trigger is someone
+> editing the bundle for an unrelated reason, at which point this rides along in the SAME pass so the
+> pins and the provenance chain move once instead of twice.
+>
+> Pointers to this file sit in `scripts/runtime_baseline.py` (beside `BUNDLE_SHA256`) and
+> `scripts/repin.sh` (beside `FROZEN`), because whoever needs it arrives from the **pin** side, not
+> the music side.
+
+**Status: everything is proven to work, and NOT installing it is the owner-endorsed state rather than
+merely a cautious one.** I applied the whole change, verified the seam, then reverted it when the
+blast radius turned out to be far larger than briefed; the owner then made that revert the standing
+position. Details below so this is a decision next time rather than a discovery.
 
 ## What is ready
 
@@ -94,7 +107,9 @@ move together with reasoning. Routine, but it is a second signed artifact.
    are Stable Audio 3 under the Stability AI Community License — free commercial use under $1M
    revenue, but registration is required and it is an account creation, so no agent can do it.
    Reasoning: `claude_brain/04-Learnings/learning-20260817-ai-music-licensing-for-shipped-games.md`.
-2. **OWNER: authorise the bundle re-stamp**, given the list above.
+2. ~~**OWNER: authorise the bundle re-stamp**, given the list above.~~ **ANSWERED 2026-08-17: NOT ON
+   ITS OWN.** *"Wait and bundle it with the next edit."* Do not re-open this as a question; the
+   remaining steps execute when another change already requires a bundle edit, and not before.
 3. `design/music/music-override.js` → `public/`; the nine `.m4a` → `public/audio/`.
 4. Add the `<script src="/music-override.js">` tag to `index.html`.
 5. `scripts/runtime_baseline.py`: add `music-override.js` to `REQUIRED_ROOT_FILES` and an
