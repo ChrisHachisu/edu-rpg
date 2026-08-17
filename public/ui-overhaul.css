@@ -193,6 +193,36 @@
 #qok-ui .chiprow{display:flex;gap:7px;flex-wrap:wrap;justify-content:center;}
 #qok-ui .gchip{min-width:42px;text-align:center;padding:11px 8px;border-radius:10px;font-weight:700;font-size:15px;background:#ffffff0a;color:var(--ink-soft);cursor:pointer;}
 #qok-ui .gchip.sel{background:var(--gold);color:var(--bg3);box-shadow:none;}
+
+/* DIFFICULTY WHEEL. Owner, build 38: "the quiz difficulty selector needs to be a scrolling wheel
+   list rather than a tappable list (show the full text rather than generic numbers and letters and
+   the full text below). this way everything should fit in one screen."
+   So: the full grade NAME on every row, a scroll-snapped column instead of seven chips, and the
+   separate "selected grade" caption underneath is gone -- the centred row IS the caption, which is
+   what buys back the vertical space. Three rows visible; the middle one is the selection, marked by
+   the band drawn behind it rather than by colouring the row, so the text does not shift as it
+   passes through. Rows stay tappable too: a wheel that can only be dragged is slower for a
+   deliberate pick, and the tap target is the same element either way. */
+#qok-ui .gwheel{position:relative;z-index:1;background:transparent;height:102px;overflow-y:auto;overflow-x:hidden;
+  scroll-snap-type:y mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;
+  mask-image:linear-gradient(to bottom,transparent,#000 22%,#000 78%,transparent);
+  -webkit-mask-image:linear-gradient(to bottom,transparent,#000 22%,#000 78%,transparent);}
+#qok-ui .gwheel::-webkit-scrollbar{display:none;}
+/* The selection band sits in the WRAPPER, not in the scroller. Inside an overflow:auto element an
+   absolutely-positioned child scrolls with the content, so the band tracked the rows instead of
+   marking the middle -- measured on the simulator: at scrollTop 0 it highlighted row 0 while row 1
+   was the selection. Outside the scroller it is fixed to the middle 34px of the 102px viewport, and
+   the rows draw over it because .gwheel carries the higher z-index. */
+#qok-ui .gwheel-wrap{position:relative;}
+#qok-ui .gwheel-band{position:absolute;left:0;right:0;top:34px;height:34px;border-radius:10px;
+  background:var(--gold);opacity:.20;pointer-events:none;z-index:0;}
+#qok-ui .gwheel-list{position:relative;}
+#qok-ui .gwheel-pad{height:34px;}
+#qok-ui .gopt{height:34px;line-height:34px;scroll-snap-align:center;text-align:center;
+  font-weight:700;font-size:14px;color:var(--ink-soft);opacity:.55;cursor:pointer;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 6px;
+  transition:opacity .12s linear,color .12s linear;}
+#qok-ui .gopt.sel{opacity:1;color:var(--ink);font-weight:900;}
 #qok-ui .toggle{display:inline-flex;background:#ffffff0a;border-radius:99px;padding:3px;font-weight:700;font-size:13px;cursor:pointer;}
 #qok-ui .toggle span{padding:9px 17px;border-radius:99px;color:var(--ink-soft);} #qok-ui .toggle span.on{background:var(--gold);color:var(--bg3);box-shadow:none;}
 #qok-ui .seg{display:flex;background:#ffffff0a;border-radius:11px;padding:3px;gap:3px;}

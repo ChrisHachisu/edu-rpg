@@ -715,6 +715,63 @@
     paint(h, sig);
   }
 
+  /* ---- DIFFICULTY WHEEL BEHAVIOUR -------------------------------------------------------------
+     The markup is in renderIntro(); the SELECTION lives here, imperatively, because the wheel and a
+     re-render cannot share ownership of scrollTop. `di` is out of the intro signature (see there),
+     so nothing rebuilds this element while the player is dragging it.
+
+     GEOMETRY, and it has to agree with the CSS or the wheel lies about what is selected: the
+     viewport is 3 rows of GROW_ROW (34px, iOS-picker sized -- the whole row is also a tap target), the list is padded by one row top and bottom, so row `i` is
+     centred exactly when scrollTop === i * GROW_ROW. Changing .gopt/.gwheel-pad height in
+     ui-overhaul.css means changing this constant.
+
+     The scroll listener is attached ONCE per element (guarded by __gwWired) and settles on a short
+     timer rather than on every scroll event, so a flick does not write the player's difficulty
+     seven times on its way past. The `.sel` class follows the finger immediately even so, because
+     the highlight lagging the scroll is the thing that makes a wheel feel broken. */
+  var GROW_ROW = 34;   // must equal .gopt / .gwheel-pad height in ui-overhaul.css
+  function syncGradeWheel(ts, rebuilt) {
+    var el = document.getElementById('qok-gwheel');
+    if (!el || !ts) return;
+    var opts = el.querySelectorAll('.gopt');
+    if (!opts.length) return;
+    var want = Math.max(0, Math.min(opts.length - 1, ts.difficultyIndex || 0));
+
+    function mark(i) {
+      for (var k = 0; k < opts.length; k++) {
+        if (k === i) opts[k].classList.add('sel'); else opts[k].classList.remove('sel');
+      }
+    }
+
+    if (!el.__gwWired) {
+      el.__gwWired = true;
+      el.addEventListener('scroll', function () {
+        var i = Math.round(el.scrollTop / GROW_ROW);
+        i = Math.max(0, Math.min(opts.length - 1, i));
+        if (i !== el.__gwShown) { el.__gwShown = i; mark(i); }
+        if (el.__gwTimer) clearTimeout(el.__gwTimer);
+        el.__gwTimer = setTimeout(function () {
+          el.__gwTimer = 0;
+          var j = Math.max(0, Math.min(opts.length - 1, Math.round(el.scrollTop / GROW_ROW)));
+          el.__gwDi = j;
+          ts.difficultyIndex = j;                 // the bundle reads this on Start
+          mark(j);
+        }, 90);
+      }, { passive: true });
+    }
+
+    // A tap on a row, or a rebuild, is the only other way the selection moves. Do not fight a scroll
+    // in progress: if the player's finger is driving it, __gwTimer is pending and this stays out.
+    if (rebuilt) {
+      el.scrollTop = want * GROW_ROW;
+      el.__gwDi = want; el.__gwShown = want; mark(want);
+    } else if (!el.__gwTimer && el.__gwDi !== want) {
+      el.__gwDi = want; el.__gwShown = want; mark(want);
+      try { el.scrollTo({ top: want * GROW_ROW, behavior: 'smooth' }); }
+      catch (e) { el.scrollTop = want * GROW_ROW; }
+    }
+  }
+
   // ============================================================
   //  INTRO / HERO SETUP (TitleScene create mode)
   // ============================================================
@@ -744,41 +801,53 @@
     var variantOpts = '';
     for (var vo = 0; vo < VARIANTS.length; vo++) {
       var vv = VARIANTS[vo];
-      variantOpts += '<button class="variant-opt' + (vv === variant ? ' sel' : '') + '" data-act="introVariant" data-variant="' + vv + '" style="flex:1;min-width:0;display:flex;align-items:center;justify-content:center;background:' + (vv === variant ? 'rgba(201,168,76,.22)' : 'transparent') + ';border:2px solid ' + (vv === variant ? '#c9a84c' : '#d8c9a0') + ';border-radius:12px;padding:8px;cursor:pointer;">' + variantImg(56, vv) + '</button>';
+      variantOpts += '<button class="variant-opt' + (vv === variant ? ' sel' : '') + '" data-act="introVariant" data-variant="' + vv + '" style="flex:1;min-width:0;display:flex;align-items:center;justify-content:center;background:' + (vv === variant ? 'rgba(201,168,76,.22)' : 'transparent') + ';border:2px solid ' + (vv === variant ? '#c9a84c' : '#d8c9a0') + ';border-radius:12px;padding:8px;cursor:pointer;">' + variantImg(48, vv) + '</button>';
     }
-    var chips = '';
+    /* DIFFICULTY WHEEL, not chips. Owner, build 38: "the quiz difficulty selector needs to be a
+       scrolling wheel list rather than a tappable list (show the full text rather than generic
+       numbers and letters and the full text below). this way everything should fit in one screen."
+       Full grade name on every row, so the separate caption under the row can go -- that caption is
+       the vertical space this buys back. Rows keep `data-act="introGrade"` so a deliberate tap still
+       works; the wheel is for browsing, not a replacement for picking. */
+    var chips = '<div class="gwheel-list">' + '<div class="gwheel-pad"></div>';
     for (var g = 0; g < grades.length; g++) {
-      chips += '<b class="gchip' + (g === di ? ' sel' : '') + '" data-act="introGrade" data-i="' + g + '">' + esc(grades[g].toUpperCase()) + '</b>';
+      chips += '<div class="gopt' + (g === di ? ' sel' : '') + '" data-act="introGrade" data-i="' + g +
+               '">' + esc(Z('grade.' + grades[g])) + '</div>';
     }
+    chips += '<div class="gwheel-pad"></div></div>';
     var langCtrl = '<div class="toggle" data-act="introLang"><span class="' + (!ja ? 'on' : '') + '">English</span><span class="' + (ja ? 'on' : '') + '">日本語</span></div>';
-    var kanjiRow = ja ? ('<div class="panel" style="padding:12px 15px;display:flex;justify-content:space-between;align-items:center;gap:10px;"><span style="font-weight:800;color:var(--ink-soft);font-size:13px;">もじ</span><div class="toggle" data-act="introKanji"><span class="' + (!pstate() || !pstate().kanjiMode ? 'on' : '') + '">かんたん</span><span class="' + (pstate() && pstate().kanjiMode ? 'on' : '') + '">むずかしい</span></div></div>') : '';
+    var kanjiRow = ja ? ('<div class="panel" style="padding:9px 13px;display:flex;justify-content:space-between;align-items:center;gap:10px;"><span style="font-weight:800;color:var(--ink-soft);font-size:13px;">もじ</span><div class="toggle" data-act="introKanji"><span class="' + (!pstate() || !pstate().kanjiMode ? 'on' : '') + '">かんたん</span><span class="' + (pstate() && pstate().kanjiMode ? 'on' : '') + '">むずかしい</span></div></div>') : '';
 
-    var h = '<div class="body"><div class="zc stack pad g10 grid2" style="padding-top:14px;padding-bottom:18px;">' +
+    var h = '<div class="body"><div class="zc stack pad g8 grid2" style="padding-top:10px;padding-bottom:12px;">' +
       '<div class="span2" style="display:flex;justify-content:flex-start;"><button data-act="introBack" style="background:#2a2c4d;border:1.5px solid #9a7a36;color:#f3ead2;font-weight:800;font-size:14px;cursor:pointer;padding:6px 14px;border-radius:10px;display:inline-flex;align-items:center;gap:5px;">‹ ' + esc(Z('settings.back')) + '</button></div>' +
       '<div class="span2"><div class="scene-h">✦ ' + esc(Z('create.title')) + ' ✦</div></div>' +
-      '<div class="span2" style="display:grid;place-items:center;margin:4px 0 2px;">' +
-        '<div class="intro-hero">' + variantImg(120, variant) + '</div>' +
+      '<div class="span2" style="display:grid;place-items:center;margin:0;">' +
+        '<div class="intro-hero">' + variantImg(88, variant) + '</div>' +
       '</div>' +
-      '<div class="panel span2" style="padding:12px 15px;display:flex;align-items:center;gap:10px;">' +
+      '<div class="panel span2" style="padding:9px 13px;display:flex;align-items:center;gap:10px;">' +
         '<div style="font-weight:800;color:var(--ink-soft);font-size:13px;">' + esc(Z('create.name')) + '</div>' +
         '<input id="qok-name" data-act="name" type="text" maxlength="8" placeholder="' + esc(Z('create.namePlaceholder')) + '" style="flex:1;min-width:0;border:none;background:transparent;font-weight:900;font-size:18px;color:var(--ink);outline:none;" />' +
         '<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M14 4l6 6-9 9-4 1 1-4 9-9-3-3z" stroke="#9a7a36" stroke-width="2"/></svg>' +
       '</div>' +
-      '<div class="panel" style="padding:12px 15px;"><div style="font-weight:800;color:var(--ink-soft);font-size:12px;margin-bottom:9px;">' + (ja ? 'みため' : 'Look') + '</div><div style="display:flex;gap:10px;">' + variantOpts + '</div></div>' +
-      '<div class="panel" style="padding:12px 15px;"><div style="font-weight:800;color:var(--ink-soft);font-size:12px;margin-bottom:9px;">' + esc(Z('settings.difficulty')) + '</div><div class="chiprow">' + chips + '</div>' +
-        '<div style="text-align:center;font-weight:800;color:#8a6a26;font-size:13px;margin-top:9px;">' + esc(Z('grade.' + grades[di])) + '</div></div>' +
-      '<div class="panel" style="padding:12px 15px;display:flex;justify-content:space-between;align-items:center;gap:10px;"><span style="font-weight:800;color:var(--ink-soft);font-size:13px;">' + esc(Z('settings.language')) + '</span>' + langCtrl + '</div>' +
+      '<div class="panel" style="padding:9px 13px;"><div style="font-weight:800;color:var(--ink-soft);font-size:12px;margin-bottom:6px;">' + (ja ? 'みため' : 'Look') + '</div><div style="display:flex;gap:10px;">' + variantOpts + '</div></div>' +
+      '<div class="panel" style="padding:9px 13px;"><div style="font-weight:800;color:var(--ink-soft);font-size:12px;margin-bottom:6px;">' + esc(Z('settings.difficulty')) + '</div><div class="gwheel-wrap"><div class="gwheel-band"></div><div class="gwheel" id="qok-gwheel">' + chips + '</div></div></div>' +
+      '<div class="panel" style="padding:9px 13px;display:flex;justify-content:space-between;align-items:center;gap:10px;"><span style="font-weight:800;color:var(--ink-soft);font-size:13px;">' + esc(Z('settings.language')) + '</span>' + langCtrl + '</div>' +
       kanjiRow +
       '<button class="btn btn-gold span2" data-act="introStart" style="margin-top:8px;font-size:17px;">' + use('arrow', 'ic') + esc(Z('create.startGame')) + '</button>' +
       '<div id="qok-name-err" class="span2" style="text-align:center;color:#ff6b6b;font-size:12px;font-weight:700;min-height:14px;"></div>' +
     '</div></div>';
 
-    // heroName excluded from sig so typing doesn't rebuild the input (keeps focus)
-    var sig = 'intro|' + variant + '|' + di + '|' + ja + '|' + (pstate() && pstate().kanjiMode) + '|g' + grades.length;
+    /* heroName excluded from sig so typing doesn't rebuild the input (keeps focus), and `di` is
+       excluded for the SAME REASON now that the difficulty is a scroll wheel: a rebuild resets
+       scrollTop, so leaving di in the signature would mean the wheel snapped back to the top under
+       the player's own finger the instant their scroll changed the selection. The selection is
+       therefore applied imperatively below instead of by re-rendering. */
+    var sig = 'intro|' + variant + '|' + ja + '|' + (pstate() && pstate().kanjiMode) + '|g' + grades.length;
     activate('intro', false);
     var rebuilt = (sig !== lastSig);
     paint(h, sig);
     if (rebuilt) { var inp = document.getElementById('qok-name'); if (inp) inp.value = (ts.heroName || ''); }
+    syncGradeWheel(ts, rebuilt);
     /* NOTHING IS PRESELECTED ON ARRIVAL. Owner, build 38: "the screen starts out by the name field
        selected but this is not optimal. i don't want anything preselected."
        The overlay never focused anything -- measured, there are TWO inputs on this screen: our
