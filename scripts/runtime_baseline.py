@@ -94,7 +94,7 @@ ACT1_OVERLAY_FILES = {
     # save format round-trips to itself (measured: 742 of 754 reportable cells reload unchanged, the
     # other 12 settle one cell north once; largest rescue nudge 28 px against a 96 px bound).
     "dq-tiles.js": (
-        444100, "486dc7dbdd721d8dce8e52ac98e6125af15cce582113dd1400f113db2113526a"),
+        446232, "5f07c8f8707ebc247ef0e0c7fc2338ab962bc47ed88735c8a72fc654439b7423"),
     # 2026-08-07: THE OVERWORLD'S COLLISION SHAPE, baked -- the overworld's answer to the dungeons'
     # `<floor>-walk.png` above, and as much a shipped authority as they are. Deriving it at runtime
     # was correct and unaffordable: owmBuild() evaluated waterField/mountainField per pixel over a
@@ -291,7 +291,7 @@ ACT1_DUNGEON_FILES = {
     # back byte-identical, so extracting floor_field() provably did not touch a rendered pixel
     # (docs/DUNGEON-EDGE-STYLE-LOCK.md).
     "act1-dungeon-art/sunkenCellar-f1-walk.png": (
-        6348, "0e8df4fe947d7c68cb57efc4892c088f80f96a3f91bd500bbed56ad1c7e319bc"),
+        8347, "fd51e9af90884ea267655d1235ad136c77272addd8b4ebf09ca71a9629635100"),
     "act1-dungeon-art/sunkenCellar-f2-walk.png": (
         6975, "b22ccd7a8e74917db5bd5f745f87fab6f77cbab438c4a76b9153518cd11f300f"),
     "act1-dungeon-art/sunkenCellar-f3-walk.png": (
@@ -309,7 +309,7 @@ ACT1_DUNGEON_FILES = {
     "act1-dungeon-art/mistyGrotto-f3-props.png": (
         10362066, "1f621190741b4a7e0b55455b11dccbf3ae178a2cfdf7c4d5e00dc5bbbc476262"),
     "act1-dungeon-art/mistyGrotto-f1-walk.png": (
-        13583, "0931256df33448128a8fb5279b074c8e45a1c836343d30d3c20b3d77ead9e043"),
+        19380, "1986490dad6e98db72bde49cbbf980ca69717d32d34e912e47ea579734a78c1d"),
     "act1-dungeon-art/mistyGrotto-f2-walk.png": (
         15692, "e9e708e18ef7a1d3113b4f2672dd74e8bd2014bfa5d012b5fff06f3f18b8f9b4"),
     "act1-dungeon-art/mistyGrotto-f3-walk.png": (
@@ -325,7 +325,7 @@ ACT1_DUNGEON_FILES = {
     "act1-dungeon-art/coastalReef-f3-props.png": (
         16640569, "e123310bb2393826303e38d101165f291710421c2a12852b792a885177757464"),
     "act1-dungeon-art/coastalReef-f1-walk.png": (
-        16457, "ff6ab4a22a8347a7178b5194f3aa1d1be134133f6a6e181a7cd445104dc82a77"),
+        21422, "d98f6a8cf82e45ef378cc18c80f4dfde5a0167210b8218935b43852240a7aa50"),
     "act1-dungeon-art/coastalReef-f2-walk.png": (
         15886, "d87ab060c071c2147bcd0e0d09c0f059719cda0b3247bdf890c3297c96da4cb2"),
     "act1-dungeon-art/coastalReef-f3-walk.png": (

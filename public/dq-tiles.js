@@ -3299,7 +3299,40 @@
       var ok=a1mCanMove(scene,(wx/TILE)|0,(wy/TILE)|0);
       if(ok!==null) return ok;
     }
+    /* THE ENTRANCE CRYSTAL IS A WALL FIXTURE, SO ITS FLOOR CELL MUST NOT BLOCK. Owner on build 42:
+       "the entrance crystal interaction is also not flush to the wall, I bump into something
+       invisible in front of the crystal."
+
+       He is describing the gap between the two halves of this object exactly. The crystal is DRAWN
+       up on the wall (a1dEntranceCrystalTick anchors it one tile north of its marker), because an
+       earlier pass tried putting the marker itself in the wall row and broke interaction -- the
+       walk mask reads BLOCKED there, as it does for the plaque. So the marker was left on the floor
+       cell in front... and tile 14 is in A1M_PROP, which turned that floor cell into an invisible
+       wall standing a full cell out from the stonework she can see.
+
+       Unblocking it is the fix rather than moving it again: she can now walk right up to the wall
+       and the crystal reads as flush with it, which is what "embedded in the wall like the plaque"
+       asked for. Interaction is unaffected -- a1mNearbyInteract and the engine's own dispatch both
+       find tile 14 by PROXIMITY, not by her standing on it, and the mid/boss-floor crystals keep
+       their blocker because only the floor-1 entrance crystal is drawn onto a wall. */
+    if(t===14 && a1dIsEntranceCrystalCell(scene,(wx/TILE)|0,(wy/TILE)|0)) return true;
     return !(m.prop||A1M_PROP)[t];
+  }
+  // Which cell (if any) carries the floor-1 entrance crystal. Cached per map+floor: a1mFree runs
+  // per collision substep, and this must not walk the asset list on every one of them.
+  var a1dEcCell=null, a1dEcKey=null;
+  function a1dIsEntranceCrystalCell(scene,tx,ty){
+    try{
+      var mapId=scene.currentMapId, floor=scene.currentFloor||1, key=mapId+'-f'+floor;
+      if(a1dEcKey!==key){
+        a1dEcKey=key; a1dEcCell=null;
+        if(A1D_MAPS[mapId] && floor===1){
+          var fl=a1dFloorFor(scene), a=(fl&&fl.assets)||[];
+          for(var i=0;i<a.length;i++) if(a[i].kind==='save'){ a1dEcCell=[a[i].x,a[i].y]; break; }
+        }
+      }
+      return !!(a1dEcCell && a1dEcCell[0]===tx && a1dEcCell[1]===ty);
+    }catch(e){ return false; }
   }
   /* ---- SLIDE ALONG THE WALL, NOT ALONG THE AXES ----------------------------------------------
      Retrying X alone and then Y alone is only sliding on an AXIS-ALIGNED wall, and this cave is
