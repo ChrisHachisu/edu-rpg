@@ -9,9 +9,9 @@ Status values: OPEN / IN PROGRESS / FIXED `<sha>` / NEEDS OWNER.
 |---|---|---|---|
 | S1 | "after tapping the back button on the character build screen and returning to the initial landing screen all buttons stop working" | **blocker**, code | **FIXED** — root cause was a misspelled method (`ts.drawTitle`, which does not exist; the scene has `drawTitleScreen`) inside an empty `try/catch`, so the title menu was never rebuilt and every item kept a null `action` that both the overlay lookup and the scene's own `confirm()` dispatch on |
 | S2 | "when the characters load on the character build screen, a generic pixel player shows up, but i'd rather see a loading spinner than this" | code | **FIXED** — `heroSvg()` retired, `heroSpinner()` in both pending-art paths |
-| S3 | "the quiz difficulty selector needs to be a scrolling wheel list rather than a tappable list (show the full text rather than generic numbers and letters and the full text below). this way everything should fit in one screen." | UI redesign | OPEN |
+| S3 | "the quiz difficulty selector needs to be a scrolling wheel list rather than a tappable list (show the full text rather than generic numbers and letters and the full text below). this way everything should fit in one screen." | UI redesign | **FIXED** build 41 — scroll-snapped wheel, full grade name per row, caption dropped. The third clause needed a layout pass: measured 828 px against the app's ~763, now **758 = FITS** (portrait 120→88, thumbs 56→48, paddings and gaps tightened). Two simulator-only bugs fixed: `di` had to leave the render signature (a rebuild reset scrollTop under the finger) and the selection band had to leave the scroll container (an absolute child scrolls with the content) |
 | S4 | "the screen starts out by the name field selected but this is not optimal. i don't want anything preselected" | code | **FIXED** — the focused input was the bundle's own hidden one, not the overlay's; blurred on paint |
-| S5 | "darkfang grotto's entrance (inside of the dungeon) is unnatural (the player can walk on top of the arch above the entrance)" | collision | OPEN |
+| S5 | "darkfang grotto's entrance (inside of the dungeon) is unnatural (the player can walk on top of the arch above the entrance)" | collision | **OPEN — needs ART, not collision.** Measured: `mistyGrotto-f1-props.png` bakes the arch onto cell (40,26), and that cell is the ONLY approach to the mouth at (40,27) — rock sits at (39,27), (41,27), (40,28) and (40,25). Blocking the arch in `-walk.png` makes the exit unreachable. The clean fix is re-baking the mouth one cell up so its arch lands in the rock above |
 
 ## Dungeon
 
@@ -19,6 +19,8 @@ Status values: OPEN / IN PROGRESS / FIXED `<sha>` / NEEDS OWNER.
 |---|---|---|---|
 | D1 | "i want the entrance teleport crystal more embedded in the wall. essentially the interaction point should be flush to the wall surface you normally bump into" | geometry | OPEN |
 | D2 | "the boss asset looks like a background and not like an asset, so either a redesign is needed or the resolution needs to be fixed. also the hero gets overlayed on top of the boss, which looks very weird. (i realized after defeating a boss that it actually is partially a background, so we need this to fully be a sprite and have an actual floor underneath it and make the boss disappear after defeating it as well)" | **art + rendering**, large | OPEN |
+
+D2 status: (b) **FIXED** build 42 — `a1dBossSort` hides the baked mark and depth-sorts a live copy around the hero's soles (10.5 above / 9.5 below). (c) was **already done** (`a1dBossVanish`). (a) still needs the boss cut out of the baked plate — art.
 
 D2 is three requirements, not one: (a) the boss is a real sprite over real floor, not part of the
 baked background; (b) depth-sort it against the hero so she never draws on top of it; (c) it
