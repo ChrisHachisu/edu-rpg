@@ -749,26 +749,41 @@
         var i = Math.round(el.scrollTop / GROW_ROW);
         i = Math.max(0, Math.min(opts.length - 1, i));
         if (i !== el.__gwShown) { el.__gwShown = i; mark(i); }
+        /* SETTLE ONLY ONCE THE FLICK HAS ACTUALLY STOPPED. Owner: "i want the movement to be smooth
+           like a real wheel." The first version committed the selection 90 ms after the last scroll
+           event, which on iOS momentum fires mid-glide -- so a flick wrote a difficulty, then
+           another, then another, and the `scrollTo` correction below could fight the finger. Now it
+           waits for the position to stop CHANGING (two idle checks, 120 ms apart) before it commits
+           and nudges the row into line. */
         if (el.__gwTimer) clearTimeout(el.__gwTimer);
-        el.__gwTimer = setTimeout(function () {
+        el.__gwTimer = setTimeout(function settle() {
+          if (el.scrollTop !== el.__gwLastTop) {          // still gliding -- look again
+            el.__gwLastTop = el.scrollTop;
+            el.__gwTimer = setTimeout(settle, 120);
+            return;
+          }
           el.__gwTimer = 0;
           var j = Math.max(0, Math.min(opts.length - 1, Math.round(el.scrollTop / GROW_ROW)));
           el.__gwDi = j;
           ts.difficultyIndex = j;                 // the bundle reads this on Start
           mark(j);
-        }, 90);
+          // `proximity` snapping may leave it a few px off a row; glide the rest of the way.
+          if (Math.abs(el.scrollTop - j * GROW_ROW) > 1) el.scrollTop = j * GROW_ROW;
+        }, 120);
       }, { passive: true });
     }
 
     // A tap on a row, or a rebuild, is the only other way the selection moves. Do not fight a scroll
     // in progress: if the player's finger is driving it, __gwTimer is pending and this stays out.
     if (rebuilt) {
+      // First paint: land on the saved row without animating there from the top.
+      var sb = el.style.scrollBehavior; el.style.scrollBehavior = 'auto';
       el.scrollTop = want * GROW_ROW;
+      el.style.scrollBehavior = sb || '';
       el.__gwDi = want; el.__gwShown = want; mark(want);
     } else if (!el.__gwTimer && el.__gwDi !== want) {
       el.__gwDi = want; el.__gwShown = want; mark(want);
-      try { el.scrollTo({ top: want * GROW_ROW, behavior: 'smooth' }); }
-      catch (e) { el.scrollTop = want * GROW_ROW; }
+      el.scrollTop = want * GROW_ROW;          // CSS scroll-behavior:smooth animates this
     }
   }
 
