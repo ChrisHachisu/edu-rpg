@@ -5153,6 +5153,131 @@
     a1dBossPatch[key]=true;                                                 // claim before the tween starts: one shot per floor-visit
     a1dBossVanishPlay(scene,boss.x,boss.y);
   }
+  /* ---- THE CAVE-MOUTH ARCH SORTS AGAINST THE HERO INSTEAD OF ALWAYS LOSING TO HER ------------
+     Owner, build 38 and again on build 47: "the player walks on top of the entrance arch ...
+     it should walk through it (under it)." SAME ROOT CAUSE as a1dBossSort just above, and this
+     reuses its exact reasoning: on the hi-fi ('-props.png') layer the cave-mouth overhang is
+     BAKED into one static image drawn under everything (depth ~1), and the hero is a scene
+     sprite at depth 10. No depth lets a baked pixel win, so she draws over the arch from every
+     side, including from directly north of it, where she should vanish behind it.
+
+     A PRIOR ATTEMPT (e07947a, reverted in c0329fe) tried to fix this as a COLLISION problem --
+     subtracting the arch's silhouette from the floor's `-walk.png` mask. That sealed three of
+     the four dungeons: a1mFree needs A1M_FOOT..A1M_FOOT+A1M_LEAN (12..16 world px) of chamfer
+     clearance at the sole, not a merely-connected zero-width path, and no mask edit leaves that
+     much throat in the mouth. `scripts/patch_dungeon_arch_mask.py` now refuses all four floors
+     for exactly this reason. Collision stays untouched here; this is a RENDER fix only.
+
+     UNLIKE THE BOSS, THERE IS NO SEPARATE ASSET. The arch was never a Codex sprite composited
+     onto the bake -- it is hand-painted directly into `-props.png` alongside the cave wall around
+     it. So instead of drawing a second copy of a small `asset-*.png` (the boss's trick), this
+     crops a small rectangle OUT OF the same props image the floor is already blitted from
+     (a1dArtFor's `im`, the identical <img> a1dBlit reads) and redraws just that rectangle as a
+     depth-sortable sprite, positioned pixel-for-pixel over where it already sits. Because the
+     crop and the original are the same pixels at the same world position, the original baked
+     copy does NOT need hiding (verified on-device, see the shipped screenshots for this fix) --
+     unlike the boss, which physically moved and left a hole to patch.
+
+     WHERE THE ARCH LIVES: MEASURED, not assumed, from the actual `-props.png` pixels of all four
+     A1D_MAPS floor-1s (coastalReef 62,12 / mistyGrotto 40,27 / sunkenCellar 20,26 /
+     whisperingWoodsCave 13,33) against their floor.assets `kind:"mouth"` marker -- in every case
+     the overhang is painted entirely inside the WALL cell one row north of the mouth marker
+     (mouth.y-1), which makes sense: that cell is A1M_PROP-blocked in every one of these floors,
+     so of course the "you can't walk here" art lives inside it.
+
+     THE CROP IS ~ONE CELL TALL, NOT TWO -- a first pass here padded a whole extra cell to the
+     north "to be safe" and it was a real regression, caught on-device, not in review: with the
+     mouth's own room sitting north of the arch, EVERY approaching step keeps heroFoot north of
+     footLine (the whole room is north of the mouth), so the sprite's resolved depth is "arch in
+     front" continuously while she is still walking up, not just once she reaches the doorway. A
+     crop tall enough to reach into the approach corridor's own screen space then paints over her
+     while she is still a full cell away and plainly still walking toward it, not under anything --
+     confirmed by teleporting the hero to the corridor cell one row short of the arch and watching
+     her vanish completely. The fix is a crop that is only as tall as the wall cell the art is
+     actually baked in (mouth.y-1) plus a small PIXEL pad on each side (PADT/PADB above, not a
+     whole cell) for anti-aliasing and the torch bracket's tip -- generous in PIXELS, not in
+     CELLS. Horizontally it stays 3 cells wide (centred one cell left of the mouth column) to
+     catch the torch bracket that oversteps its cell on mistyGrotto and the wide boulder shoulders
+     on coastalReef; that width is safe to be generous with because every neighbouring cell in the
+     arch's own row is solid rock in all four floors (checked against each floor's own rows string,
+     not assumed) -- the hero can never stand there, so extra horizontal coverage can never paint
+     over her the way extra vertical coverage did.
+
+     FEET, NOT CENTRES, exactly as a1dBossSort: the comparison is her SOLE (a1mFootDy) against the
+     arch's own foot line -- the boundary between the wall cell it is baked in and the floor cell
+     below it, i.e. mouth.y*TILE. Sole north of that line -> she has stepped into the doorway's
+     threshold -> the arch draws in FRONT (10.5). Sole south -> she is still in the room, in front
+     of the archway -> she draws in front (9.5), same two constants a1dBossSort uses, because they
+     are the same two positions relative to the same hero depth (10).
+
+     ONE SPRITE PER FLOOR, dropped the moment the floor changes -- this file has a documented
+     history of per-tile sprite leaks (commit d747f8c), so a1dArchDrop is symmetric with
+     a1dBossDrop and runs on every tick, not just on exit.
+
+     KNOWN GAP -- coastalReef-f1 ONLY. On the other three floors (mistyGrotto, sunkenCellar,
+     whisperingWoodsCave) the arch's own wall cell (mouth.x, mouth.y-1) is itself walkable and
+     sits on the ONLY path to the mouth, so she always passes through it and the sole-vs-footLine
+     flip fires exactly once, right where it should. coastalReef's room instead runs alongside the
+     mouth's own row (mouth.y), and (mouth.x, mouth.y-1) -- the arch's cell -- is solid rock
+     (confirmed: canMove(62,11) is false, canMove(61,11) is true), so she approaches HORIZONTALLY
+     along row 12 and her sole never crosses north of footLine at all. heroFoot stays >= footLine
+     the entire approach, so this sort NEVER promotes the arch in front on this floor and the
+     original clipping (her sprite overlapping the overhang from the side) is UNCHANGED here --
+     confirmed on-device, not a regression, just unfixed. A correct fix for this floor needs a
+     second axis (proximity along the row, not just north/south of a line) and was left out
+     rather than guessed at; the mouth tile's own transition (walking onto it, both directions)
+     is unaffected either way -- confirmed live: standing on (62,12) fired the real exit to the
+     overworld. */
+  var a1dArchSprites={}, A1D_ARCH_REQ={};
+  function a1dArchDrop(key){
+    var e=a1dArchSprites[key]; if(!e) return;
+    try{ if(e.spr) e.spr.destroy(); }catch(x){}
+    delete a1dArchSprites[key];
+  }
+  var A1D_ARCH_PADT=8, A1D_ARCH_PADB=14;                                     // small PIXEL pads, not a whole cell -- see header for why a full extra cell is wrong
+  function a1dArchRect(mouth){                                              // the ONE source of truth for the crop rect, in world px -- texture build and
+    return {                                                                // sprite placement must agree on this exactly, or the copy lands off by a
+      x:(mouth.x-1)*TILE, y:(mouth.y-1)*TILE-A1D_ARCH_PADT,                  // cell and double-draws the arch (caught on-device: two doorways stacked
+      w:3*TILE, h:TILE+A1D_ARCH_PADT+A1D_ARCH_PADB                          // when this drifted from the sprite's own position below)
+    };
+  }
+  function a1dArchTex(scene,key,mouth){                                      // texture key for the cropped arch rect, or null while unresolved
+    var tk='a1darch_'+key;
+    if(scene.textures.exists(tk)) return tk;
+    if(A1D_ARCH_REQ[key]) return null;                                      // already resolved (or gave up) this floor-visit -- see below
+    var im=a1dArtFor(key);
+    if(im===undefined) return null;                                         // props render still in flight -> try again next tick, no giving up yet
+    A1D_ARCH_REQ[key]=true;                                                  // im is now either usable or permanently null; one attempt is enough
+    if(!im || a1dLayer[key]!=='props') return null;                         // no baked render, or material/procedural has nothing baked to crop
+    var r=a1dArchRect(mouth);
+    try{
+      var can=document.createElement('canvas'); can.width=r.w; can.height=r.h;
+      can.getContext('2d').drawImage(im,r.x,r.y,r.w,r.h,0,0,r.w,r.h);
+      scene.textures.addCanvas(tk,can);
+    }catch(e){ return null; }
+    return tk;
+  }
+  function a1dArchSort(scene){
+    var mapId=scene.currentMapId, key=mapId+'-f'+(scene.currentFloor||1);
+    for(var k in a1dArchSprites){ if(k!==key) a1dArchDrop(k); }              // drop any sprite left over from a floor we are no longer standing on
+    if(!A1D_MAPS[mapId] || (scene.currentFloor||1)!==1) return;              // the mouth asset only exists on floor 1 of these four dungeons
+    var fl=a1dFloorFor(scene); if(!fl) return;
+    var mouth=null, a=fl.assets||[], i;
+    for(i=0;i<a.length;i++) if(a[i].kind==='mouth'){ mouth=a[i]; break; }
+    if(!mouth) return;
+    var e=a1dArchSprites[key];
+    if(!e){
+      var tex=a1dArchTex(scene,key,mouth); if(!tex) return;                  // crop not ready yet -> next tick
+      var r=a1dArchRect(mouth);
+      var spr=scene.add.image(r.x,r.y,tex).setOrigin(0,0);
+      e=a1dArchSprites[key]={ spr:spr, depth:0 };
+    }
+    var hero=dngHero(scene); if(!hero) return;
+    var heroFoot=hero.y+a1mFootDy(scene);
+    var footLine=mouth.y*TILE;                                               // the wall/floor cell boundary the arch is baked against
+    var d=(heroFoot<footLine)?10.5:9.5;                                      // her soles north of it -> she is under/behind the arch
+    if(e.depth!==d){ e.depth=d; e.spr.setDepth(d); }
+  }
   /* ---- THE ENTRANCE CRYSTAL: DORMANT UNTIL ACTIVATED, DRAWN LIVE BECAUSE THE BAKE PREDATES IT --
      Owner, build 35: "the entrance portal crystal is still not in the game ... my idea is to have
      codex design a crystal of an activated and inactivated state that lives next to the plaque on
@@ -5255,6 +5380,7 @@
     dngSpecialObjects(scene);                                                           // draw our detailed 48px assets as scene-level images
     try{ a1dBossVanish(scene); }catch(e){ if(window.__DQ_DEBUG__) console.log('a1 boss vanish tick '+e); }
     try{ a1dBossSort(scene); }catch(e){ if(window.__DQ_DEBUG__) console.log('a1 boss sort tick '+e); }
+    try{ a1dArchSort(scene); }catch(e){ if(window.__DQ_DEBUG__) console.log('a1 arch sort tick '+e); }
     try{ a1dEntranceCrystalTick(scene); }catch(e){ if(window.__DQ_DEBUG__) console.log('a1 entrance crystal tick '+e); }
   }
   function dngHero(scene){ if(scene.hero&&scene.hero.x!=null) return scene.hero; if(scene.player&&scene.player.x!=null) return scene.player; var l=scene.children.list; for(var i=0;i<l.length;i++){ if(l[i].depth===10&&l[i].x!=null) return l[i]; } return null; }
