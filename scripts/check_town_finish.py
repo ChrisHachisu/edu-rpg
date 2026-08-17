@@ -66,10 +66,39 @@ HARD_STEP = 24                       # a "hard" step in luminance between neighb
 HARD_FRAC_MIN = 0.34                 # shipped plate 0.139, hero 0.475
 MEAN_STEP_MIN = 24.0                 # shipped plate 11.7, hero 31.6
 
+# ---- THE SOFT BAND, AND WHY IT EXISTS -------------------------------------------------------------
+# v6 PASSED every band above and the owner rejected it on sight: "the artwork looks like a painting
+# rather than pixel art". v8 then FAILED `hard_frac` (0.261) while being genuinely hard-edged, because
+# huge flat fills contribute zero steps. So neither the mean nor the hard fraction distinguishes
+# hand-pixelled art from its two failure modes, and a gate that cannot tell them apart is what let two
+# candidates through to the owner.
+#
+# Measured across all three, the discriminator is the MIDDLE of the step distribution:
+#
+#                       flat <4     soft 4-20     hard >=24
+#   hero (target)         13.1%        33.2%         47.5%
+#   shipping plate        34.6%        47.0%         13.9%     <- painterly: gradients everywhere
+#   v6 (posterized)       41.2%         9.0%         49.5%     <- the FILTER's fingerprint
+#
+# The hero is NOT flat-and-bimodal. She carries a THIRD of her steps in the intermediate band: that is
+# real shading, anti-aliasing and material rendering inside her shapes. A painting has too MUCH of it
+# (soft swamps hard). `-posterize` destroys it outright, which is why v6 scored 49.5% hard and still
+# read as filtered -- 9% is a distribution no hand-drawn art produces.
+#
+# So the soft band is checked FROM BOTH SIDES. A candidate must shade like the hero, neither smearing
+# (soft too high) nor flattening (soft too low). This is the band that would have caught v6.
+SOFT_LO, SOFT_HI = 4, 20             # the intermediate/gradient band
+SOFT_FRAC_MIN = 0.22                 # below this the art has been posterized or is flat vector fill
+SOFT_FRAC_MAX = 0.40                 # above this it is a painting (shipping plate 0.470)
+
 # The paving band derive_town_walkable.py keys on. Kept wide; the gate is that ENOUGH of the plate
 # still reads as pale paving, not that a specific hue is used.
 PAVING_LUM_MIN = 150
 PAVING_FRAC_MIN = 0.055              # shipped plate measures ~0.09
+# Overlap a candidate's paving must share with the reference town's, when --layout-ref is given.
+# Not 1.0: the finish legitimately moves a boundary by a pixel or two, and the plate is rescaled
+# 1885 -> 1950. But a re-invented street network scores far below this, which is the point.
+PAVING_IOU_MIN = 0.55
 
 
 def luminance(rgb: np.ndarray) -> np.ndarray:
@@ -95,6 +124,8 @@ def main() -> int:
     ap.add_argument('plate')
     ap.add_argument('--world', type=float, default=1040.0, help='world px the plate covers')
     ap.add_argument('--anchor', help='hero sheet to report beside the plate (not a gate)')
+    ap.add_argument('--layout-ref', help='plate whose PAVING LAYOUT this candidate must preserve '
+                                         '(normally the shipping plate). Gates IoU, not just coverage.')
     ap.add_argument('--report', action='store_true', help='print measurements and exit 0')
     args = ap.parse_args()
 
@@ -115,6 +146,8 @@ def main() -> int:
         'mean_step': float(d.mean()),
         'p90_step': float(np.percentile(d, 90)),
         'hard_frac': float((d >= HARD_STEP).mean()),
+        'flat_frac': float((d < SOFT_LO).mean()),
+        'soft_frac': float(((d >= SOFT_LO) & (d < SOFT_HI)).mean()),
         'paving_frac': float((lum >= PAVING_LUM_MIN).mean()),
     }
 
@@ -126,6 +159,9 @@ def main() -> int:
     print(f'  mean |pixel step|     {m["mean_step"]:.2f}   (min {MEAN_STEP_MIN})')
     print(f'  p90 |pixel step|      {m["p90_step"]:.1f}')
     print(f'  hard steps >= {HARD_STEP}      {100*m["hard_frac"]:.2f}%   (min {100*HARD_FRAC_MIN:.0f}%)')
+    print(f'  flat steps < {SOFT_LO}        {100*m["flat_frac"]:.2f}%   (hero 13.1%)')
+    print(f'  SOFT steps {SOFT_LO}-{SOFT_HI}       {100*m["soft_frac"]:.2f}%   '
+          f'(band {100*SOFT_FRAC_MIN:.0f}-{100*SOFT_FRAC_MAX:.0f}%, hero 33.2%)')
     print(f'  pale paving coverage  {100*m["paving_frac"]:.2f}%   (min {100*PAVING_FRAC_MIN:.1f}%)')
 
     if args.anchor:
@@ -133,10 +169,39 @@ def main() -> int:
         print(f'  ANCHOR {Path(args.anchor).name}: mean step {a["mean_step"]:.2f}, '
               f'hard {100*a["hard_frac"]:.2f}%  <- what the owner compares against')
 
+    # ---- LAYOUT PRESERVATION ---------------------------------------------------------------------
+    # Coverage alone is blind to WHERE the paving is. v6 held a plausible-looking 23.4% and had paved
+    # the lawns, making 14.2% of the town newly walkable; v8 held a fine 15.6% and had rebuilt the
+    # street network as a symmetric cross, which the owner rejected as "the game is not build on
+    # squares so it needs to look more natural". Since paving IS the collision map, a candidate that
+    # keeps the right AMOUNT in the wrong PLACES is worse than one that misses the amount: it silently
+    # rewrites where the player may walk. So compare the masks pixelwise, not their totals.
+    iou = None
+    if args.layout_ref:
+        ref = Image.open(args.layout_ref).convert('RGB')
+        ref_pav = luminance(np.asarray(ref).astype(float)) >= PAVING_LUM_MIN
+        if ref.size != im.size:                       # 1885 -> 1950: nearest, a mask has no midtones
+            ref_pav = np.asarray(Image.fromarray(ref_pav.astype(np.uint8) * 255)
+                                 .resize(im.size, Image.NEAREST)) > 127
+        cand = lum >= PAVING_LUM_MIN
+        inter = int((cand & ref_pav).sum()); union = int((cand | ref_pav).sum())
+        iou = inter / max(union, 1)
+        kept = inter / max(int(ref_pav.sum()), 1)
+        added = int((cand & ~ref_pav).sum()) / max(cand.size, 1)
+        print(f'  paving IoU vs ref     {iou:.3f}   (min {PAVING_IOU_MIN}) '
+              f'[keeps {100*kept:.1f}% of the reference streets, '
+              f'newly paves {100*added:.1f}% of the plate]')
+
     if args.report:
         return 0
 
     fails = []
+    if iou is not None and iou < PAVING_IOU_MIN:
+        fails.append(f'LAYOUT: paving IoU {iou:.3f} against {Path(args.layout_ref).name} is below '
+                     f'{PAVING_IOU_MIN}. The streets are not where the town\'s streets are. Paving is '
+                     f'the collision map, so this silently rewrites where the player may walk -- and '
+                     f'a re-laid street grid is exactly what the owner rejected in v8. Follow the '
+                     f'existing layout instead of inventing one.')
     if abs(m['art_per_world'] - TARGET_ART_PER_WORLD) > DENSITY_TOL:
         want = round(TARGET_ART_PER_WORLD * args.world)
         fails.append(f'DENSITY: {m["art_per_world"]:.4f} art px per world px gives a '
@@ -147,6 +212,17 @@ def main() -> int:
                      f'The settled town is bright; ART-DIRECTION.md\'s dark block is stale here.')
     if abs(m['br'] - BR_TARGET) > BR_TOL:
         fails.append(f'BLUE/RED: {m["br"]:.3f}, outside {BR_TARGET} +/- {BR_TOL}.')
+    if m['soft_frac'] < SOFT_FRAC_MIN:
+        fails.append(f'POSTERIZED / FLAT FILL: only {100*m["soft_frac"]:.1f}% of steps land in the '
+                     f'{SOFT_LO}-{SOFT_HI} band (hero 33.2%, floor {100*SOFT_FRAC_MIN:.0f}%). No '
+                     f'hand-drawn art has a middle this empty -- this is the signature of '
+                     f'-posterize/-unsharp or of flat vector fills. v6 scored 9.0% here and the '
+                     f'owner called it a painting on sight. The fix is to SHADE the shapes, not to '
+                     f'raise the edge count.')
+    if m['soft_frac'] > SOFT_FRAC_MAX:
+        fails.append(f'PAINTERLY: {100*m["soft_frac"]:.1f}% of steps are soft gradients '
+                     f'(ceiling {100*SOFT_FRAC_MAX:.0f}%, shipping plate 47.0%). Material '
+                     f'boundaries must be hard; shading inside a shape is what the band allows.')
     if m['hard_frac'] < HARD_FRAC_MIN or m['mean_step'] < MEAN_STEP_MIN:
         fails.append(f'FINISH: mean step {m["mean_step"]:.2f} / hard {100*m["hard_frac"]:.2f}% is '
                      f'still painterly (need >= {MEAN_STEP_MIN} and >= {100*HARD_FRAC_MIN:.0f}%). '
