@@ -86,7 +86,44 @@ are just harder to notice."*
 That hypothesis is consistent with the density correction above (the town's source art already
 matches the hero to within 2%), and a first measurement supports it.
 
-### SETTLED 2026-08-17 — the game renders at 1/dpr, i.e. 1/3 resolution on his phone
+### SETTLED 2026-08-17 — the town is a NON-INTEGER upscale; the canvas theory below was refuted
+
+**READ THIS FIRST; the section under it is kept only because its reasoning is the trap.**
+
+| surface | art px/world px | device px/world px | upscale | 3x3 device blocks uniform |
+|---|---|---|---|---|
+| overworld / dungeon (Phaser canvas) | ~1.0 | 3.0 | exactly **3x** | **100%** |
+| Port Sapphire (its own iframe canvas) | 1.8125 | 5.625 | **3.1034x** | **14%** |
+
+The town's canvas is already at the device's full ratio and point-samples the plate, so nothing is
+blurring it. Its upscale is simply not a whole number: at 3.1034x some art pixels land on 3 device
+pixels and others on 4, irregularly, and that irregularity is the fuzz. The overworld lands on an
+exact 3x and reads as a clean coarse grid. Same magnification, different KIND — which is why he
+could tell the town from the hero.
+
+**The 1/dpr canvas theory below was tested and REFUTED.** Rendering the Phaser canvas at 1170x2031
+with the camera zoomed to match produced a **pixel-identical** overworld (laplacian variance 647.1
+vs 645.5; 100% uniform 3x3 blocks in both) because the terrain art is only ~1 px per world px. It
+would have cost 9x the fragment work for no visible change, and the owner caught it from the
+screenshots before it shipped: *"i am seeing the screen shots but i do not see any visible
+difference."* He was right.
+
+**Both fixes approved by the owner, 2026-08-17 — "do both, camera snap now and the 1950 rebake":**
+1. **Camera snap (shipped):** round the art-to-device pixel ratio to a whole number, derive the zoom
+   from it. 14% -> **100%** uniform blocks, detail unchanged (335.8 -> 329.3). Costs 3.4% more town
+   on screen and 3.4% slower on-screen movement. `public/act1-hifi/town.html`.
+2. **Re-bake the plate at 1950x1950** = 1.875 art px per world px, only **3.4% more pixels than
+   today's 1885**, which lands on an exact 3x with no camera change and makes the snap a no-op.
+   Authored hard-edged for a 3x grid, this closes the STYLE gap too. 1:1 device pixels would need
+   5850x5850 (~137 MB decoded) and is not viable here.
+
+**T1 IS THEREFORE COMMISSIONABLE, and my earlier "a re-bake fixes nothing" was wrong.** What is true
+is the narrower claim: a denser re-bake alone, or a bigger canvas alone, changes nothing — the town
+needed its ratio made whole, and the plate density is what makes it whole permanently.
+
+---
+
+### SUPERSEDED — the 1/dpr canvas theory (kept as the trap)
 
 **MEASURED IN REAL WEBKIT** — the shipped payload running in Mobile Safari on the iPhone 13
 simulator (4B05EF44), the same engine and the same device profile as his WKWebView build, read off

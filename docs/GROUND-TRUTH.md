@@ -224,7 +224,52 @@ tile rather than a re-bake.
 > it. ~~The softness needs its cause identified before it is priced.~~ **The cause is now identified
 > — see below.**
 
-> [!info] THE SOFTNESS IS GLOBAL: THE GAME RENDERS AT 1/dpr — measured in WebKit 2026-08-17
+> [!danger] ~~THE SOFTNESS IS GLOBAL: THE GAME RENDERS AT 1/dpr~~ — HALF RIGHT, AND THE HALF THAT
+> MATTERED WAS WRONG. Retired the same day it was written, by pixel measurement. Read the block
+> AFTER this one first; this one is kept because its reasoning is the trap.
+>
+> **What the measurement showed.** The claim below says raising the canvas to device resolution is
+> the fix. It is not: rendered at 1170x2031 with the camera zoomed to match, the overworld came out
+> **pixel-identical** to today (same crop: laplacian variance 647.1 vs 645.5, and 100% of 3x3
+> device-pixel blocks uniform in BOTH). The terrain art is ~1 art px per world px, so a bigger
+> canvas magnifies the same pixels — 9x the fragment cost for nothing. It was nearly shipped.
+> The owner caught it first, from the screenshots: *"i am seeing the screen shots but i do not see
+> any visible difference."* He was right; there was none.
+>
+> **And the town is not even on that canvas.** Port Sapphire renders in its own iframe canvas at the
+> device's full ratio (`public/act1-hifi/town.html`), which is why it was unaffected by the canvas
+> experiment in both directions. Two surfaces, two different defects. The one below described the
+> Phaser canvas and then generalised to a surface it does not govern.
+
+> [!info] THE REAL CAUSE, PER SURFACE — measured in WebKit on an iPhone 13, 2026-08-17
+> Effective detail is `min(art density, canvas density)`, and the two surfaces fail differently:
+>
+> | surface | art px per world px | device px per world px | upscale | 3x3 blocks uniform |
+> |---|---|---|---|---|
+> | overworld / dungeon (Phaser canvas) | ~1.0 | 3.0 | exactly **3x** | **100%** |
+> | Port Sapphire (own canvas) | 1.8125 (1885 over 1040) | 5.625 | **3.1034x** | **14%** |
+>
+> **The town's fuzz is a NON-INTEGER nearest upscale.** At 3.1034x some art pixels become 3 device
+> px wide and others 4, irregularly. Nothing is blurring it — the backing store is already full
+> resolution and `imageSmoothingEnabled` is false. The overworld lands on an exact 3x, so it reads
+> as a clean coarse grid rather than mush. That difference in KIND, at the same magnification, is
+> exactly why he could tell the town from the hero: *"i can clearly tell that the texture is
+> different from the hero."*
+>
+> **Both halves of the town fix are owner-approved (2026-08-17):**
+> 1. **Camera snap, shipped:** round the art-to-device ratio to a whole number and derive the zoom
+>    from it. Measured 14% -> **100%** uniform blocks with detail unchanged (335.8 -> 329.3). Costs
+>    3.4% more town on screen (view 208 -> 215.2 world px) and 3.4% slower on-screen movement.
+> 2. **Re-bake the plate at 1950x1950** (1.875 art px per world px) — only **3.4% more pixels than
+>    today's 1885** — which lands on an exact 3x with no camera change and makes the snap a no-op.
+>    Authored hard-edged for a 3x grid, this is also the STYLE fix. True 1:1 device pixels would
+>    need 5850x5850 (~137 MB decoded) and is not viable on this device.
+>
+> **A denser re-bake alone, or a bigger canvas alone, changes nothing** — that is the lesson. For
+> the overworld both art and canvas sit at 1.0, so both would have to rise together; its art is the
+> binding constraint, not the canvas.
+
+> [!quote] SUPERSEDED — the reasoning that led to the 9x change (kept as the trap)
 > Read off the live diagnostic panel with the shipped payload running in Mobile Safari on the
 > iPhone 13 simulator (same engine and device profile as the owner's WKWebView build), overworld:
 > **dpr 3, canvas backing store 390x677, canvas CSS box 390x677 — three device pixels per rendered

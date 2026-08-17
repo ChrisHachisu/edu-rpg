@@ -44,7 +44,7 @@ ACT1_OVERLAY_FILES = {
     # 2026-08-17: the panel gains the RENDER CHAIN and the debug default is ON for this build only,
     # so the owner's phone can answer whether the fuzziness is a global upscale. Same sign-off:
     # EXPECTED_STATIC_INDEX_SHA in scripts/build_static_index.mjs.
-    "index.html": (116203, "4005c188ace7b59b4eabe2d746fdb47082e766bb3ff0c05a9a4366f290c8dac1"),
+    "index.html": (116286, "8b1fe5184af7a15371b30b8585040450cd7f6a5836e096b5657a3eb418215364"),
     # 2026-08-01, owner-authorised: dq-tiles.js now splats AI-generated terrain MATERIALS through
     # its existing continuous-world-pixel drawTerrain, plus a ridged mountain height field,
     # varied shore character and landmark sites derived from mapData. Fallback-safe -- until the
@@ -405,7 +405,7 @@ ACT1_DUNGEON_FILES = {
 # no URL bar). Pinned so it cannot quietly grow into something that mutates real save data.
 ACT1_TOWN_FILES = {
     "act1-hifi/town.html": (
-        26846, "ffd11883cb9945bcb9d294fd5e5255d361b3562e85126640e15e5caee9bbd28e"),
+        29895, "7aee38ca881fe791622871703234cb4d3ea524b42c47cf785936e73d9494e412"),
     "act1-hifi/town/portSapphire-town.json": (
         2799, "59607448f149b26e092725a73f122aa8db6807df7b62124d8dc2b911aeccb76d"),
     "act1-hifi/town/portSapphire-walkable.json": (

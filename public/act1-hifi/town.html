@@ -222,6 +222,45 @@ function resize() {
   canvas.width = Math.round(width * dpr);
   canvas.height = Math.round(height * dpr);
   camera.zoom = width / VIEW_W;
+
+  /* INTEGER PIXEL SNAP — this is the fix for "the resolution is currently fuzzy on the app and i
+     can clearly tell that the texture is different from the hero" (owner, build 38).
+
+     THE ACTUAL CAUSE, measured on an iPhone 13 in WebKit 2026-08-17. The backing store above is
+     already at the device's full ratio, and `imageSmoothingEnabled = false` in draw() means the
+     plate is point-sampled, so nothing here is blurring anything. What was wrong is that the
+     upscale factor was not a WHOLE NUMBER. The plate carries 1885 art px over 1040 world px
+     (1.8125 per world px) and the view is 208 world px across 390 CSS px at dpr 3, i.e. 5.625
+     device px per world px -- so each art pixel was stretched by 5.625 / 1.8125 = 3.1034x. At that
+     ratio nearest sampling makes some art pixels 3 device px wide and others 4, in an irregular
+     pattern. Measured on the cobbled street: only 14% of 3x3 device-pixel blocks were uniform.
+     THAT irregularity is what reads as fuzz. The overworld, by contrast, lands on an exact 3x and
+     measures 100% uniform blocks -- which is precisely the crispness he was comparing against, and
+     why the town looked like a different material from the hero.
+
+     So the snap rounds the ART-to-DEVICE pixel ratio to an integer and derives the zoom back from
+     it. Same pixels, same detail (laplacian variance 335.8 -> 329.3, i.e. nothing added or lost);
+     the grid simply becomes regular, and the same measurement then reads 100%.
+
+     WHAT IT COSTS, stated rather than hidden: rounding 3.1034 DOWN to 3 widens the view from 208
+     to 215.2 world px, 3.4% more town on screen. The 139 px/s movement calibration
+     (portSapphire-walkable.json) was derived from screen-widths per second at VIEW_W = 208, so the
+     hero now covers the screen 3.4% slower. Both are below perception and neither is worth
+     re-deriving; VIEW_W stays the lock it was, and this reads it rather than replacing it.
+
+     THIS IS THE CHEAP HALF OF THE FIX. It makes the grid regular; it cannot add detail the plate
+     does not have. The other half is re-baking the plate at 1950x1950 (1.875 art px per world px),
+     which lands on an exact 3x with NO camera change and lets the snap become a no-op -- owner
+     approved 2026-08-17. Authored hard-edged for a 3x grid, that is what closes the style gap with
+     the hero. See docs/FEEDBACK-BUILD-38.md (T1).
+
+     Derived, not hardcoded: `screenArt` is awaited above, so its true width is known here, and a
+     denser re-bake changes this arithmetic automatically. Generic across devices -- on a ratio that
+     is already whole the rounding is identity, and a ratio below 1 (a plate denser than the screen,
+     i.e. genuine downsampling) is left alone, because clamping it to 1 would zoom the camera. */
+  const artPxPerWorld = (screenArt && screenArt.naturalWidth ? screenArt.naturalWidth : 1885) / WORLD;
+  const rawRatio = dpr * camera.zoom / artPxPerWorld;
+  if (rawRatio >= 1) camera.zoom = Math.round(rawRatio) * artPxPerWorld / dpr;
 }
 addEventListener('resize', () => { resize(); Object.assign(camera, cameraTarget()); });
 resize();

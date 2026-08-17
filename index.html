@@ -664,12 +664,13 @@
        way; only the on-screen boxes are suppressed. Read once at boot rather than per frame, so it
        can never become a per-tick storage hit.
 
-       ON, BY DEFAULT, FOR THIS BUILD ONLY. The owner asked for the render chain measured on his
-       own phone and his instrument is a screenshot; a shipped WKWebView has no console in which to
-       set the flag, so the panel must be visible by default or the screenshot cannot exist. Turn
-       it off on the device with `localStorage.setItem('edu-rpg-debug','0')`, and set DEFAULT_ON
-       back to false in the build after the answer lands. It is a measurement, not a feature. */
-    var DEFAULT_ON = true;                          // <-- revert to false once the screenshot lands
+       OFF BY DEFAULT — AND THAT IS THE OWNER'S DECISION, NOT AN OVERSIGHT. It was flipped on for
+       one measurement build on 2026-08-17 and he corrected it the same day: *"the diagnostic panel
+       was intentionally turned off."* The measurement it existed for was taken another way (the
+       shipped payload in Mobile Safari on the matching simulator, docs/FEEDBACK-BUILD-38.md), so
+       nothing is owed to that flip. Do not flip it again to save a round trip: the simulator route
+       answers the same question without putting a debug box on his screen. */
+    var DEFAULT_ON = false;                         // owner's decision — see above, do not flip
     var DEBUG_UI = (function () {
       try {
         var v = localStorage.getItem('edu-rpg-debug');

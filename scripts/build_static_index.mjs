@@ -250,7 +250,7 @@ export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '
 // pane measured the 768px DESKTOP frame, not the phone's stretched canvas. DEFAULT_ON in index.html
 // reverts to false in the build after the answer lands; the readout itself stays, gated as before.
 export const EXPECTED_STATIC_INDEX_SHA =
-  '4005c188ace7b59b4eabe2d746fdb47082e766bb3ff0c05a9a4366f290c8dac1';
+  '8b1fe5184af7a15371b30b8585040450cd7f6a5836e096b5657a3eb418215364';
 
 /**
  * The authored shell loads its scripts by ABSOLUTE path so the Vite dev server resolves them;
