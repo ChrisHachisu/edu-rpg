@@ -64,3 +64,49 @@ down-facing-only and approach-from-south rules).
 S1-S4 are contained code fixes in `public/ui-overhaul.js`. S5, D1, O2 are contained too. D2, O1, T1
 and T2 are asset commissions with real cost and should each carry a measured brief per
 `docs/ART-GENERATION-PREFLIGHT.md`.
+
+## T1 follow-up — the fuzziness is very likely GLOBAL, not the town's art
+
+Owner, 2026-08-17: *"the town crispness definitely needs close examination because it definitely
+looks too off. i suspect the overworld and dungeons are the same fuzziness as well but i think they
+are just harder to notice."*
+
+That hypothesis is consistent with the density correction above (the town's source art already
+matches the hero to within 2%), and a first measurement supports it.
+
+**MEASURED** on the served `dist/`, browser pane, viewport 390x780 CSS at **dpr 3** (iPhone-class),
+overworld, hero at (96,362):
+
+| quantity | value |
+|---|---|
+| device pixel ratio | **3** |
+| physical pixels across the screen | 390 x 3 = **1170** |
+| canvas backing store (`canvas.width`) | **768** |
+| canvas CSS box + `#game-container` | 768 x 672 |
+| Phaser scale mode | 5 = `RESIZE` |
+| game zoom / camera zoom | 1 / 1 |
+| texture scale modes sampled | 1 = NEAREST (hero-walk, a1a_base chunks) |
+| canvas `image-rendering` | `pixelated` |
+
+**The backing store is 768 px wide where the screen has 1170.** The game is therefore not producing
+one rendered pixel per device pixel — roughly **1.5x short** — and that shortfall applies to every
+surface equally: town, overworld and dungeon. Which is exactly the owner's read: the same softness
+everywhere, only easier to see on the town's fine architectural detail than on organic grass.
+
+**NOT YET ESTABLISHED — do not quote these as fact:**
+- The canvas CSS box measures **768 CSS px inside a 390 CSS px viewport**, and `transform` is `none`
+  on the canvas, its parent, `body` and `html`. Those two do not reconcile yet; something not in this
+  probe (a `zoom`, a scaled ancestor, or the container genuinely overflowing) is sizing it. Until
+  that is understood, the exact on-screen scale factor is unknown even though the shortfall is real.
+- Whether the upscale reads as BLUR or as BLOCKINESS. `image-rendering: pixelated` plus NEAREST
+  textures should give hard blocky edges, not fuzz — and the owner reports fuzz. That mismatch is
+  unexplained and is the most informative loose end.
+- **This is a browser-pane number, not a device number.** The app ships in WKWebView via Capacitor.
+  Every figure here must be re-taken on the phone before anything is changed.
+
+**Why this matters commercially:** if the softness is a global render-resolution issue, re-baking the
+town art at higher density fixes nothing — the new art gets downsampled by the same factor. Settle
+this before commissioning T1/T2 art on resolution grounds. The STYLE half of T1 (painterly vs the
+hero's faux-pixel finish) is a separate, real problem that a redesign does fix.
+
+Probes: `.eduharness/probe-crispness.js`, `probe-crispness2.js`.
