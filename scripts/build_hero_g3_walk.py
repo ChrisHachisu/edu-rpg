@@ -33,14 +33,27 @@ SCALE AND BASELINE
 """
 from __future__ import annotations
 
+import argparse
 from pathlib import Path
 
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
-G3 = ROOT / "public/act1-hifi/hero-g3/hero-act1-female-walk-8x3-64-g3.png"
-REF = ROOT / "public/assets/hero/hero-openface-walk.png"   # baseline reference only, never written
-OUT = ROOT / "public/assets/hero/hero-g3-walk.png"
+# TWO CHARACTERS NOW, ONE CUT. The owner restored the character-create "Look" picker as a real
+# choice on build 36 ("have codex generate the male character in the same style as the female and
+# use that"), so the male sheet has to reach the tile runtime by exactly the path the heroine does.
+# Parameterised rather than copied: a second script would drift on the row map, the baseline
+# measurement or the frame count, and those three are the whole of this file's value.
+SOURCES = {
+    "g3":   ("public/act1-hifi/hero-g3/hero-act1-female-walk-8x3-64-g3.png",
+             "public/assets/hero/hero-g3-walk.png"),
+    "male": ("public/act1-hifi/hero-g3/hero-act1-male-walk-8x3-64-g3.png",
+             "public/assets/hero/hero-male-walk.png"),
+}
+# Baseline reference only, never written. This is the ONE remaining reason the retired 48px sheet
+# stays on disk: it carries the shipped sole row that both characters are aligned to, so deleting it
+# would silently change where every hero's feet land. It is referenced by nothing else.
+REF = ROOT / "public/assets/hero/hero-openface-walk.png"
 # 64, the canonical g3 NATIVE frame -- deliberately NOT downscaled to 48.
 # Owner, 2026-08-04: "the hero resolution is a bit too rough though. the size is good but it
 # needs to match the dungeon pixel count." The sheet used to be resampled 64->48 here and then
@@ -63,9 +76,16 @@ DIR_ROW = {0: 0, 1: 2, 2: 6, 3: 4}
 
 
 def main() -> int:
-    g3 = Image.open(G3).convert("RGBA")
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--variant", default="g3", choices=sorted(SOURCES))
+    args = ap.parse_args()
+    src_rel, out_rel = SOURCES[args.variant]
+    SRC, OUT = ROOT / src_rel, ROOT / out_rel
+    if not SRC.is_file():
+        raise SystemExit(f"source sheet missing: {src_rel}")
+    g3 = Image.open(SRC).convert("RGBA")
     if g3.size != (192, 512):
-        raise SystemExit(f"g3 sheet is {g3.size}, expected (192, 512) -- 3 cols x 8 rows of 64")
+        raise SystemExit(f"{args.variant} sheet is {g3.size}, expected (192, 512) -- 3 cols x 8 rows of 64")
     ref = Image.open(REF).convert("RGBA")
     if ref.size != (576, 48):
         raise SystemExit(f"reference sheet is {ref.size}, expected (576, 48)")
@@ -81,7 +101,7 @@ def main() -> int:
             small = cell if (FW, FH) == cell.size else cell.resize((FW, FH), Image.NEAREST)
             bb = small.getbbox()
             if not bb:
-                raise SystemExit(f"g3 cell dir={d} pose={pose} is empty")
+                raise SystemExit(f"{args.variant} cell dir={d} pose={pose} is empty")
             shifted = Image.new("RGBA", (FW, FH), (0, 0, 0, 0))
             shifted.paste(small, (0, sole - bb[3]))
             out.paste(shifted, ((d * 3 + pose) * FW, 0))
@@ -91,7 +111,7 @@ def main() -> int:
         raise SystemExit(f"frame 0 soles at {got[3]}, expected {sole} -- the hero would float")
     OUT.parent.mkdir(parents=True, exist_ok=True)
     out.save(OUT)
-    print(f"HERO G3 WALK SHEET: {OUT.relative_to(ROOT)}  {out.size}  {FRAMES} frames")
+    print(f"HERO WALK SHEET [{args.variant}]: {OUT.relative_to(ROOT)}  {out.size}  {FRAMES} frames")
     print(f"  soles aligned to y={sole}, measured from {REF.name}")
     print(f"  frame 0 content {got[2]-got[0]}x{got[3]-got[1]}px in a {FW}px cell")
     return 0

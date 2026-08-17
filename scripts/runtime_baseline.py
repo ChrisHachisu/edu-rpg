@@ -128,12 +128,19 @@ ACT1_OVERLAY_FILES = {
     # old sheet. The 48px sheet is a RE-CUT of the canonical 64px g3 asset, not new art --
     # scripts/build_hero_g3_walk.py, soles aligned to the shipped sheet's measured baseline so the
     # hero does not float. The two retired sheets stay on disk: they are baseline runtime files.
-    "hero-override.js": (12460, "5890d7092d4abbded7276a3803078172263031aa892f6935fb8dce19feee1272"),
+    "hero-override.js": (13069, "20d00157c4f4fff92bf89ce5d66d87d48ba624f1d6a402ec9dcead92b8f9744b"),
     # Re-pinned 2026-08-06: the g3 source sheet's NORTH row (row 4) was damaged art -- drawn
     # ~15% oversize, so the crown was sheared flat off the top of the cell -- and walking north
     # is the one direction the tile runtime draws from it. Replaced with generated pixels;
     # scripts/bake_hero_north_row.py carries the provenance and the eight reverted attempts.
     "assets/hero/hero-g3-walk.png": (59447, "070a8a452c3dda775bd6c8593a66d57a5a13d97b9fb33378ea5b2bb0e1fded3c"),
+    # The male counterpart, added 2026-08-17 when the owner restored the character-create "Look"
+    # picker as a real choice. Cut from its own 192x512 source by the same
+    # scripts/build_hero_g3_walk.py --variant male, so both heroes share one row map and one sole
+    # baseline. IT MUST BE PINNED HERE OR IT NEVER REACHES dist/ -- a tracked-but-unstaged asset
+    # has silently killed a boss animation and the town foreground layer before, with every gate
+    # still green, because staging and git are two different lists.
+    "assets/hero/hero-male-walk.png": (59032, "88cbed8f9d707b216ada01e108eedd5822c6bcfc69c8dd22af2457f231dc0976"),
     "act1-world-map.js": (
         47_908, "e5713be14ece51788798893c09a057d601d486671f97254dfb1825077ffe26b4"),
     # 2026-08-06, from device: the Port Sapphire movement stick was anchored bottom-LEFT and its
@@ -146,7 +153,7 @@ ACT1_OVERLAY_FILES = {
     # the control-orientation setting, into the frame. First override of this file since the
     # v1.17.1 baseline was frozen, which is why it had no entry before.
     "ui-overhaul.js": (
-        133642, "dfacca1ebbf6037e1c9fd0be49eeb3c38afdacf39fb8fa214bf3ae69ab239083"),
+        135019, "99da080352194322ccfff0894892fb0a88745b7125e495b9f38eb84019b771ce"),
     # 2026-08-06, owner pick: "Charcoal & Gold Leaf" (direction 4 of
     # design/ui-overhaul/chic-style-board.html). The same gold as before -- the pixel art, the
     # dungeon plates and the town screens were all approved against it -- spent differently:

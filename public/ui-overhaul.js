@@ -220,7 +220,10 @@
     var img = new Image();
     img.onload = function () {
       try {
-        var fw = Math.floor(img.width / 12), fh = img.height; // 12-frame strip; frame 0 = down-idle
+        // 12-frame strip; frame 0 = down-idle. Derived from the sheet rather than hardcoded, which
+        // is why this survived the 48px -> 64px move: the g3 strips are 768x64, the retired ones
+        // were 576x48, and both divide to a square cell.
+        var fw = Math.floor(img.width / 12), fh = img.height;
         var cv = document.createElement('canvas'); cv.width = fw; cv.height = fh;
         var ctx = cv.getContext('2d'); ctx.imageSmoothingEnabled = false;
         ctx.drawImage(img, 0, 0, fw, fh, 0, 0, fw, fh);
@@ -715,9 +718,22 @@
   function renderIntro() {
     var ts = getScene('TitleScene');
     if (!ts) return;
-    var VARIANTS = ['openface', 'feminine'];
-    var variant = 'openface';
-    try { var _lv = localStorage.getItem('edu-rpg-hero-variant'); if (_lv === 'openface' || _lv === 'feminine') variant = _lv; } catch (e) {}
+    // THE PICKER WAS DECORATIVE, AND ITS PREVIEWS WERE A DIFFERENT GAME'S ART.
+    // Owner on build 36: "we also need to fix the intro screen because it still has a bunch of old
+    // assets and needs to be made up to date." Two separate faults sat behind that one sentence:
+    //   1. `openface`/`feminine` are the retired 48px sheets. The title screen next door draws the
+    //      current 64px g3 heroine off the LIVE Phaser texture, so the two pre-game screens were
+    //      showing different protagonists to the same player.
+    //   2. Worse, the choice did nothing. hero-override.js gates every variant lookup on its own
+    //      VARIANTS table, which held only `g3`, so both options fell through to the heroine. The
+    //      control offered a choice the runtime could not honour.
+    // Owner's call, asked rather than inferred: keep the picker and make it real -- "have codex
+    // generate the male character in the same style as the female and use that". So the two options
+    // are now the shipped heroine and her authored male counterpart, and BOTH sides of the swap are
+    // live: this list, and the identical table in hero-override.js. Keep them in step.
+    var VARIANTS = ['g3', 'male'];
+    var variant = 'g3';
+    try { var _lv = localStorage.getItem('edu-rpg-hero-variant'); if (VARIANTS.indexOf(_lv) >= 0) variant = _lv; } catch (e) {}
     var grades = ts.difficultyOptions || ['k', '1', '2', '3', '4', '5', '6'];
     var di = ts.difficultyIndex || 0;
     var ja = isJa();

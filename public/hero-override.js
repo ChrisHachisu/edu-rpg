@@ -25,7 +25,13 @@
   // that check and fall through to g3 rather than resurrecting the old sheet.
   // hero-g3-walk.png is a re-cut of the canonical 64px g3 sheet, not new art
   // (scripts/build_hero_g3_walk.py). ?hero=procedural still opts out to the built-in hero.
-  var VARIANTS = { g3: 1 };
+  // `male` joins g3 on the owner's build-36 call: the character-create picker becomes a real choice
+  // again ("have codex generate the male character in the same style as the female and use that"),
+  // so the runtime has to be able to honour it -- while it held g3 alone, every lookup below fell
+  // through and the picker was decorative. The retired openface/feminine keys deliberately stay OUT:
+  // that guard is exactly what stops a stale localStorage value, an old save's heroVariant or
+  // ?hero=openface from resurrecting the 48px knight. Mirrored in ui-overhaul.js's own VARIANTS list.
+  var VARIANTS = { g3: 1, male: 1 };
   var params = new URLSearchParams(location.search);
   var forced = params.get('hero');            // 'openface' | 'feminine' | 'procedural' | null
   var imgs = {};                              // variant -> { img, ready }
