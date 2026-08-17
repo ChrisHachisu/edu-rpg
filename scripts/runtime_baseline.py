@@ -28,7 +28,8 @@ BUNDLE = "assets/index-BhoGQRaA.js"
 # window.__QOK literal. The owner declined to re-stamp the provenance chain for a soundtrack ALONE
 # (2026-08-17, verbatim: "Wait and bundle it with the next edit"), so its trigger is precisely this
 # moment -- someone editing the bundle for an unrelated reason. Installing it in the SAME pass
-# re-stamps the pins once instead of twice.
+# re-stamps the pins once instead of twice. Its licence gate is CLEARED, so this edit is the only
+# thing it is waiting for -- nothing else needs asking.
 # The note lives HERE rather than only in that doc because whoever needs it arrives from the pin
 # side, not the music side.
 BUNDLE_SIZE = 4_987_581

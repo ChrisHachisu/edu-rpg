@@ -20,6 +20,26 @@ tags: [audio, music, bundle-edit, deferred, waiting-for-a-trigger]
 > Pointers to this file sit in `scripts/runtime_baseline.py` (beside `BUNDLE_SHA256`) and
 > `scripts/repin.sh` (beside `FROZEN`), because whoever needs it arrives from the **pin** side, not
 > the music side.
+>
+> **There is exactly ONE open condition, and it is not the licence.** The licence cleared on
+> 2026-08-17 (step 1). Nothing is blocked on the owner. The only thing left is the trigger.
+
+## Licence conditions that outlive this task
+
+Cleared, but **conditional** — recorded here rather than only in a learning file, because this doc is
+where someone will look, and both of these are discovered at the worst possible moment if unrecorded.
+
+1. **The licence attaches to the registering ENTITY: 合同会社ChalkMap.** If Quest of Knowledge ever
+   ships under a different publisher — another company, or the owner personally — **this registration
+   does not cover it** and the music must be re-licensed before that release.
+   *Today this matches:* the app ships under Apple team `M969PWP3PU`, the 合同会社 corporate account
+   (`ios/App/fastlane/Appfile`), which is the registered entity. The risk is a future change of
+   publisher, not the present state — and note the personal Apple account is being allowed to lapse
+   deliberately, so a drift back to it would be a licence problem as well as a signing one.
+2. **The free grant ends at US$1M annual revenue for that entity**, at which point it becomes a paid
+   Stability Enterprise licence. Registered as "under $1M: Yes".
+
+Neither blocks anything today. Both survive this task, and both are the owner's to act on.
 
 **Status: everything is proven to work, and NOT installing it is the owner-endorsed state rather than
 merely a cautious one.** I applied the whole change, verified the seam, then reverted it when the
@@ -103,10 +123,12 @@ move together with reasoning. Routine, but it is a second signed artifact.
 
 ## Remaining steps, in order
 
-1. **OWNER: register at stability.ai/community-license.** Blocking for any public ship. The tracks
-   are Stable Audio 3 under the Stability AI Community License — free commercial use under $1M
-   revenue, but registration is required and it is an account creation, so no agent can do it.
-   Reasoning: `claude_brain/04-Learnings/learning-20260817-ai-music-licensing-for-shipped-games.md`.
+1. ~~**OWNER: register at stability.ai/community-license.**~~ **DONE 2026-08-17.** Submitted by the
+   owner and confirmed rather than assumed from the click: redirect to
+   `stability.ai/community-confirmation`, `submissionGuid=32cff83e-7df8-4013-a7fd-10b352519222`, form
+   gone, no validation errors. Registered as **合同会社ChalkMap**, admin@chalkmap.com, Japan, 1–10
+   employees, customer-facing, "under $1M annual revenue: Yes". Reasoning:
+   `claude_brain/04-Learnings/learning-20260817-ai-music-licensing-for-shipped-games.md`.
 2. ~~**OWNER: authorise the bundle re-stamp**, given the list above.~~ **ANSWERED 2026-08-17: NOT ON
    ITS OWN.** *"Wait and bundle it with the next edit."* Do not re-open this as a question; the
    remaining steps execute when another change already requires a bundle edit, and not before.
