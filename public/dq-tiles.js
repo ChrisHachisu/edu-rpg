@@ -4925,6 +4925,66 @@
         }});
     }catch(e){ if(window.__DQ_DEBUG__) console.log('a1 boss vanish '+e); }
   }
+  /* ---- THE BOSS SORTS AGAINST THE HERO INSTEAD OF ALWAYS LOSING TO HER --------------------------
+     Owner, build 38: "the hero gets overlayed on top of the boss, which looks very weird" -- the
+     second of D2's three requirements. The other two were already done: the mark vanishes on defeat
+     (a1dBossVanish, above) and the material-layer path draws it as a real sprite.
+
+     WHY IT HAPPENS. On the hi-fi ('-props.png') layer the boss is BAKED into one static image
+     drawn under everything, and the hero is a scene sprite at depth 10. There is no depth at which
+     a baked pixel can win, so she draws over the mark from every side -- including from directly
+     above it, where she should be behind.
+
+     THE FIX REUSES a1dBossVanish's OWN MECHANISM rather than inventing one: hide the baked mark
+     under the same dark patch, and put a live `asset-boss.png` copy at the same anchor and the same
+     locked 2.2-cell scale, so what the player sees is the identical icon -- then give that copy a
+     depth that flips around the hero's. Above her feet it draws at 10.5 (boss in front), below at
+     9.5 (hero in front). One comparison per tick, no new asset, and the two paths cannot drift
+     because both read A1D_BOSS_ID, a1dAssetTex('boss') and asc = 2.2.
+
+     FEET, NOT CENTRES. The comparison is her SOLE against the boss's own foot line (by*TILE+TILE),
+     the same anchor everything else in this file sorts on -- comparing sprite origins would flip
+     the order half a body too early on a 2.2-cell-tall mark.
+
+     ONLY WHILE IT IS ALIVE. Once `boss.<id>.defeated` is set, a1dBossVanish owns the region: this
+     hands over by destroying its sprite, so the two never both hold a copy of the same icon. */
+  var a1dBossSprites={};
+  function a1dBossDrop(key){
+    var e=a1dBossSprites[key]; if(!e) return;
+    try{ if(e.spr) e.spr.destroy(); if(e.mask) e.mask.destroy(); }catch(x){}
+    delete a1dBossSprites[key];
+  }
+  function a1dBossSort(scene){
+    var mapId=scene.currentMapId, bossId=A1D_BOSS_ID[mapId];
+    var key=mapId+'-f'+(scene.currentFloor||1);
+    // Drop any sprite belonging to a floor we are no longer standing on.
+    for(var k in a1dBossSprites){ if(k!==key) a1dBossDrop(k); }
+    if(!bossId) return;
+    var Q=window.__QOK, tt=Q&&Q.state&&Q.state();
+    var flags=tt&&tt.player&&tt.player.state&&tt.player.state.storyFlags;
+    if(flags && flags['boss.'+bossId+'.defeated']){ a1dBossDrop(key); return; }   // vanish path owns it now
+    var fl=a1dFloorFor(scene); if(!fl) return;
+    var boss=null, a=fl.assets||[], i;
+    for(i=0;i<a.length;i++) if(a[i].kind==='boss'){ boss=a[i]; break; }
+    if(!boss) return;
+    var row=scene.mapData&&scene.mapData[boss.y];
+    if(!row || row[boss.x]!==7) return;                                          // not a live boss tile
+    var cx=boss.x*TILE+TILE/2, cy=boss.y*TILE+TILE;                              // the anchor a1dBossVanish uses
+    var e=a1dBossSprites[key];
+    if(!e){
+      var tex=a1dAssetTex(scene,'boss'); if(!tex) return;                        // PNG still loading -> next tick
+      var mg=scene.add.graphics().setDepth(3);                                   // hide the baked mark, same patch as the vanish
+      mg.fillStyle(0x141312,0.95); mg.fillEllipse(cx,cy-TILE*0.4,TILE*1.15,TILE*0.85);
+      mg.fillStyle(0x141312,0.55); mg.fillEllipse(cx,cy-TILE*0.4,TILE*1.55,TILE*1.2);
+      var spr=scene.add.image(cx,cy,tex).setOrigin(0.5,1);
+      spr.setDisplaySize(spr.width*2.2,spr.height*2.2);                          // locked scale, as dngSpecialObjects uses
+      e=a1dBossSprites[key]={ spr:spr, mask:mg, depth:0 };
+    }
+    var hero=dngHero(scene); if(!hero) return;
+    var heroFoot=hero.y + a1mFootDy(scene);
+    var d=(heroFoot < cy) ? 10.5 : 9.5;                                          // her soles above the boss's -> she is behind it
+    if(e.depth!==d){ e.depth=d; e.spr.setDepth(d); }
+  }
   function a1dBossVanish(scene){
     var mapId=scene.currentMapId, bossId=A1D_BOSS_ID[mapId]; if(!bossId) return;
     var key=mapId+'-f'+(scene.currentFloor||1);
@@ -5042,6 +5102,7 @@
       if (dngRole(t)===0 && !RESKIN_SPECIAL[t]){ s.alpha=1; if(!s.visible)s.setVisible(true); if(s.depth!==3) s.setDepth(3); } } } // non-reskin specials: raise + light
     dngSpecialObjects(scene);                                                           // draw our detailed 48px assets as scene-level images
     try{ a1dBossVanish(scene); }catch(e){ if(window.__DQ_DEBUG__) console.log('a1 boss vanish tick '+e); }
+    try{ a1dBossSort(scene); }catch(e){ if(window.__DQ_DEBUG__) console.log('a1 boss sort tick '+e); }
     try{ a1dEntranceCrystalTick(scene); }catch(e){ if(window.__DQ_DEBUG__) console.log('a1 entrance crystal tick '+e); }
   }
   function dngHero(scene){ if(scene.hero&&scene.hero.x!=null) return scene.hero; if(scene.player&&scene.player.x!=null) return scene.player; var l=scene.children.list; for(var i=0;i<l.length;i++){ if(l[i].depth===10&&l[i].x!=null) return l[i]; } return null; }
