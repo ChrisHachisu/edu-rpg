@@ -159,7 +159,19 @@ def inventory(crop: Image.Image) -> str:
     return body
 
 
-BRIEF = """Draw this as hand-drawn, hard-edged pixel art at full detail.
+# THE FIRST LINE IS NOT BOILERPLATE, AND LEAVING IT OFF COSTS BOTH TIME AND QUALITY.
+# Measured 2026-08-19 on tile (0,0): `codex exec` produced a correct image at 08:30:49
+# (layout correlation +0.884) and then DID NOT EXIT. It dispatched sub-agents, each of which got its
+# own ~/.codex/generated_images session and redrew the tile -- 08:32 +0.865, 08:33 +0.856, then two
+# further sessions at 08:37 +0.868 / 08:38 +0.836 / 08:40 +0.674 and 08:43 +0.803 / 08:45 +0.805.
+# Nineteen minutes after the good image existed the process was still going. Two separate harms:
+# the wall-clock cost, and the fact that `newest_since()` takes the NEWEST file when the call
+# finally returns -- so the pipeline would have shipped a +0.805 redraw instead of the +0.884
+# original. Telling it to generate once and stop removes both.
+BRIEF = """DO THIS YOURSELF, one generation call, do not dispatch a sub-agent. Produce the image
+and stop; do not review it, do not redraw it, do not ask another agent to improve it.
+
+Draw this as hand-drawn, hard-edged pixel art at full detail.
 
 THE INPUT IS A PLAN, NOT A PICTURE. It is a flat colour-coded diagram, and it is ONE QUADRANT --
 tile ({i},{j}) of a 2x2 grid -- of a small top-down JRPG mill village inside a round timber
