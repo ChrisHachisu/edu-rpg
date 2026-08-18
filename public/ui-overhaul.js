@@ -339,6 +339,7 @@
       // releases the rail press, so a gesture the browser takes away cannot leave a cell pressed.
       document.addEventListener('pointercancel', function () { railPress(null, false); }, true);
       document.addEventListener('keydown', railKbWatch, true);  // last-input-device: keys raise the rail cursor
+      document.addEventListener('keydown', nameKeyGuard, true); // Return in the name field must MEAN something
       root.addEventListener('input', onInput, true);
       root.addEventListener('change', onInput, true);
       attached = true;
@@ -1696,6 +1697,42 @@
       catch (e) { try { panel.scrollIntoView(); } catch (e2) {} }
     }
     if (inp) setTimeout(function () { try { inp.focus(); } catch (e) {} }, 220);
+  }
+
+  /* RETURN IN THE NAME FIELD, WHICH USED TO DO NOTHING AT ALL.
+     Owner, build 54: "the double enter required ... is an issue again." Build 43's report was the
+     same complaint in different words ("the player needs to tap check twice to commit the name"),
+     and the fix then -- measuring a tap by finger travel instead of element identity -- was correct
+     and still holds: MEASURED, a press on Start survives a full rebuild of the panel landing between
+     touchstart and touchend (scripts/verify_name_double_enter.cjs, 'rebuild' sequence).
+
+     What was never fixed is RETURN. Measured on the real build: pressing Return with the name typed
+     leaves focus on the field, fires no focus event, does not commit, and silently advances the
+     frozen TitleScene's own row cursor from `name` to `color` -- its window-level key handler eats
+     the key and treats it as "next row". So on a phone the player types the name, presses the
+     keyboard's return key, sees NOTHING happen and the keyboard still up, and then has to press
+     again. That is the second press, and it is the whole bug: not a router failure, a dead key.
+
+     Return therefore commits here and never reaches the bundle:
+       * stopPropagation + preventDefault, so the frozen handler cannot move the row cursor to
+         `color` behind the player's back.
+       * blur, which is what actually drops the iOS keyboard. That matters beyond tidiness -- the
+         collapsing keyboard is the reflow that ate the FIRST tap in build 43, so releasing the
+         field on Return also removes the reflow from the next press entirely.
+     It deliberately does NOT start the game. Return means "I have finished this field", and hero
+     variant, difficulty and language all still sit below it unset; committing the whole screen on a
+     stray Return would skip choices the player never made. */
+  function nameKeyGuard(e) {
+    if (!e || (e.key !== 'Enter' && e.keyCode !== 13)) return;
+    var el = e.target;
+    if (!el || el.id !== 'qok-name') return;
+    e.stopPropagation();
+    e.preventDefault();
+    var ts = getScene('TitleScene');
+    if (ts) { try { ts.heroName = (el.value || '').slice(0, 8); } catch (err) {} }
+    try { el.blur(); } catch (err2) {}
+    lastSig = null;
+    try { tick(); } catch (err3) {}
   }
 
   function onInput(e) {

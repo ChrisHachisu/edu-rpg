@@ -8,8 +8,16 @@
  * Both input paths are exercised, because they are different code: mouse/pointer, and CDP touch
  * (Input.dispatchTouchEvent), which is what a finger produces.
  */
-const { chromium } = require('playwright-core');
+/* The Playwright harness lives at the MAIN checkout, so a worktree run has to reach for it there.
+   Hardcoding the bare specifier made this script unrunnable from any worktree. */
 const fs = require('fs');
+const nodePath = require('path');
+let chromium;
+for (const q of ['playwright-core', '../.eduharness/node_modules/playwright-core',
+                 nodePath.join(process.env.HOME || '', 'Documents/claudecode/edu-rpg/.eduharness/node_modules/playwright-core')]) {
+  try { ({ chromium } = require(q)); break; } catch (_) { /* next */ }
+}
+if (!chromium) throw new Error('no playwright-core: install the .eduharness harness');
 const OUT = process.argv[2] || '/tmp/edu-picker';
 const ORIGIN = process.env.EDU_URL || 'http://127.0.0.1:5178';
 
