@@ -309,6 +309,7 @@
   // ---- dom plumbing ----
   var root = null, stage = null, fx = null, attached = false, lastSig = null, curScreen = null;
   var draggingVolume = false;
+  var nameErrShown = false;   // create screen: Start was tapped with an empty name
   function ensure() {
     if (stage) return true;
     root = document.getElementById('qok-ui');
@@ -715,121 +716,198 @@
     paint(h, sig);
   }
 
-  /* ---- DIFFICULTY WHEEL BEHAVIOUR -------------------------------------------------------------
-     The markup is in renderIntro(); the SELECTION lives here. `di` is out of the intro signature
-     (see there), so nothing rebuilds this element while the player is dragging it.
+  /* ---- THE GRADE PICKER, DRIVEN BY POINTER EVENTS, NOT BY NATIVE SCROLL --------------------
+     Owner on build 53, the fifth failure: "grade wheel did not work btw. can you just replicate
+     what apple does with the timer setting wheel?"
 
-     THERE IS NO LONGER A ROW-HEIGHT CONSTANT HERE, and its absence is the point. The old GROW_ROW
-     had to equal .gopt/.gwheel-pad in ui-overhaul.css by hand, and every index was
-     `Math.round(scrollTop / GROW_ROW)` -- two files that silently disagreed the moment either
-     changed. syncGradeWheel now MEASURES which row is centred (offsetTop/offsetHeight against
-     clientHeight), so the CSS is free to move and the script cannot fall out of step with it. */
-  /* THE GRADE WHEEL, BUILT THE WAY PLATFORM PICKERS ARE BUILT.
-     Owner, three builds running: "it snaps back to the previously selected one ... research the
-     industry standard way to generate it and apply the fix and stop trying to re-invent the wheel."
+     WHY EVERY SCROLL-BASED VERSION FAILED, INCLUDING 53. Builds 44-53 all put the commit inside a
+     `scroll` (or `scrollend`) listener on an `overflow-y:auto` element. Measured in the harness:
+     a listener attached to `#qok-gwheel` receives ZERO scroll events while `scrollTop`
+     demonstrably changes. That was written off as a harness artefact for four builds. It is not:
+     it is the same class of behaviour the owner's device shows, and it makes the whole family of
+     fixes unobservable and unfixable. If the event never arrives, it does not matter how correct
+     the code inside it is -- the selection is never committed, so the next repaint restores
+     `ts.difficultyIndex`, i.e. the row the player started from. That IS "it snaps back".
 
-     THE BUG WAS NEVER THE SNAP MODE. Every previous version had the script writing `scrollTop` back
-     while the browser was mid-gesture -- a settle timer that "corrected" the position, plus this,
-     which ran on EVERY repaint:
+     SO THE NATIVE SCROLLER IS GONE. This is a UIPickerView, built the way UIPickerView is built:
+     the list is a transformed element, and WE own the physics from `pointerdown` to the final
+     snap. Nothing here depends on an event the engine may decline to deliver -- `pointermove` is
+     the event that drives a drag on every engine, and if it did not fire, the highlight would not
+     follow the finger, which the owner's own video shows it doing.
 
-         else if (!el.__gwTimer && el.__gwDi !== want) el.scrollTop = want * GROW_ROW;
+       1. DRAG. offset tracks the finger 1:1, with a rubber-band beyond the first and last row.
+       2. RELEASE. Velocity from the last few move samples is projected forward (Apple projects,
+          then snaps -- it does not decelerate to an arbitrary resting point), the projection is
+          rounded to a row, and the list eases to it. Landing is therefore always ON a row.
+       3. COMMIT CONTINUOUSLY. `ts.difficultyIndex` is written on every frame of the drag and the
+          settle, not once at the end. At any instant the model equals what is under the band, so
+          a rebuild landing mid-gesture can only ever restore what the player is already looking
+          at. This is kept from the previous build; it was the one correct idea in it.
+       4. A tap on a row still selects it (`data-act="introGrade"`), and a drag suppresses the
+          click that would otherwise follow it.
 
-     `want` is read from ts.difficultyIndex, i.e. the value BEFORE the flick commits. So any repaint
-     landing between the gesture and the commit hauled the list back to the previous row. That is
-     exactly "it snaps back to the previously selected one", and no amount of tuning `proximity`,
-     timers or thresholds could fix it, because the script and the compositor were both trying to
-     own the scroll position.
+     Row height is MEASURED, never assumed, so ui-overhaul.css is free to move. */
+  var GW_FRICTION = 140;      // ms of projected travel per unit of release velocity
+  var GW_MIN_MS = 170, GW_MAX_MS = 520;
 
-     THE STANDARD SHAPE, which is what iOS/Android pickers and every scroll-snap carousel do:
-       1. The BROWSER owns the physics. `scroll-snap-type: y mandatory` + `scroll-snap-align: center`
-          on the rows. The script never assigns scrollTop during a gesture -- not once.
-       2. The settled value is READ, not computed mid-flight, on the `scrollend` event. That event
-          exists precisely because "the scroll has finished" is not derivable from scroll events, and
-          hand-rolled idle timers get it wrong under momentum. A debounce fallback covers engines
-          without it.
-       3. Which row is selected is MEASURED GEOMETRICALLY -- the row whose centre is nearest the
-          viewport centre -- instead of `Math.round(scrollTop / ROW_HEIGHT)`. The arithmetic version
-          silently breaks whenever padding, row height or the band change, and it had to agree with
-          the CSS by hand.
-       4. An external change may reposition the list ONLY when the finger is off it. */
   function syncGradeWheel(ts, rebuilt) {
     var el = document.getElementById('qok-gwheel');
     if (!el || !ts) return;
+    var list = el.querySelector('.gwheel-list');
     var opts = el.querySelectorAll('.gopt');
-    if (!opts.length) return;
-    var want = Math.max(0, Math.min(opts.length - 1, ts.difficultyIndex || 0));
+    if (!list || !opts.length) return;
+    var n = opts.length;
+    var ROW = opts[0].offsetHeight || 34;
+    var MAX = (n - 1) * ROW;
+    var want = Math.max(0, Math.min(n - 1, ts.difficultyIndex || 0));
 
-    function mark(i) {
-      for (var k = 0; k < opts.length; k++) {
-        if (k === i) opts[k].classList.add('sel'); else opts[k].classList.remove('sel');
+    // Paint one offset: the transform, the per-row depth falloff, and the selected row.
+    function render(o) {
+      el.__gwO = o;
+      list.style.transform = 'translate3d(0,' + (-o).toFixed(2) + 'px,0)';
+      var sel = Math.max(0, Math.min(n - 1, Math.round(o / ROW)));
+      for (var k = 0; k < n; k++) {
+        // Apple's wheel fades and shrinks rows by their distance from the band. Doing it from the
+        // live offset rather than from the settled index is what makes it track the finger.
+        var d = Math.abs(k - o / ROW);
+        var f = Math.max(0, 1 - d * 0.42);
+        opts[k].style.opacity = (0.28 + 0.72 * f).toFixed(3);
+        opts[k].style.transform = 'scale(' + (0.84 + 0.16 * f).toFixed(3) + ')';
+        if (k === sel) opts[k].classList.add('sel'); else opts[k].classList.remove('sel');
+      }
+      if (el.__gwDi !== sel) {
+        el.__gwDi = sel;
+        try { ts.difficultyIndex = sel; } catch (e) {}   // the bundle reads this on Start
       }
     }
-    // MEASURED, not derived from an assumed row height: the row whose centre is closest to the
-    // wheel's own centre line. Survives any change to padding, row height or the selection band.
-    function nearest() {
-      var mid = el.scrollTop + el.clientHeight / 2, best = 0, bestD = Infinity;
-      for (var k = 0; k < opts.length; k++) {
-        var d = Math.abs((opts[k].offsetTop + opts[k].offsetHeight / 2) - mid);
-        if (d < bestD) { bestD = d; best = k; }
+
+    // Beyond the ends the list still moves, but a third as far -- the resistance that tells a
+    // finger it has reached the end without stopping dead.
+    function band(o) {
+      if (o < 0) return o / 3;
+      if (o > MAX) return MAX + (o - MAX) / 3;
+      return o;
+    }
+
+    function stopAnim() {
+      if (el.__gwRaf) { cancelAnimationFrame(el.__gwRaf); el.__gwRaf = 0; }
+    }
+
+    function settle(from, to, ms) {
+      stopAnim();
+      var t0 = 0;
+      function frame(t) {
+        if (!t0) t0 = t;
+        var u = Math.min(1, (t - t0) / ms);
+        var e = 1 - Math.pow(1 - u, 3);                  // easeOutCubic
+        render(from + (to - from) * e);
+        if (u < 1) el.__gwRaf = requestAnimationFrame(frame);
+        else { el.__gwRaf = 0; render(to); }
       }
-      return best;
+      el.__gwRaf = requestAnimationFrame(frame);
     }
-    function topFor(i) {
-      return opts[i].offsetTop + opts[i].offsetHeight / 2 - el.clientHeight / 2;
-    }
-    function commit() {
-      var j = nearest();
-      el.__gwDi = j; el.__gwShown = j;
-      try { ts.difficultyIndex = j; } catch (e) {}      // the bundle reads this on Start
-      mark(j);
+
+    function snapTo(i, animate) {
+      i = Math.max(0, Math.min(n - 1, i));
+      if (animate) settle(el.__gwO || 0, i * ROW, 220); else { stopAnim(); render(i * ROW); }
     }
 
     if (!el.__gwWired) {
       el.__gwWired = true;
-      // The highlight follows the finger immediately -- a highlight that lags the scroll is what
-      // makes a wheel feel broken. It does NOT commit; only scrollend does.
-      /* COMMIT ON EVERY SCROLL, NOT ONLY WHEN IT SETTLES. Owner, on build 50 -- which already had
-         the scrollend rewrite -- the wheel still returned to the SAVED row. The highlight followed
-         his finger, so the listener was running; what came back was `ts.difficultyIndex`, i.e. the
-         value from before the gesture. Anything that re-renders the screen mid-scroll restores that
-         stale value, and waiting for scrollend leaves a window several hundred ms wide where it is
-         stale to restore.
-         Writing an integer on every scroll event is free, and it closes the window entirely: at any
-         instant `ts.difficultyIndex` IS the row under the band, so a rebuild can only ever restore
-         what the player is already looking at. scrollend and the debounce below then just confirm
-         the final landing. */
-      el.addEventListener('scroll', function () {
-        var i = nearest();
-        if (i !== el.__gwShown) { el.__gwShown = i; mark(i); }
-        commit();
-        // BOTH, unconditionally. `'onscrollend' in el` reports true on this engine but is not proof
-        // it FIRES for momentum scrolling, and that assumption is what shipped build 50 broken.
-        if (el.__gwT) clearTimeout(el.__gwT);
-        el.__gwT = setTimeout(commit, 140);
-      }, { passive: true });
-      el.addEventListener('scrollend', commit);
+      el.__gwO = 0;
+      var drag = null;
 
-      // Whether the finger is on the wheel. An external sync must never haul the list out from
-      // under it -- that is the same class of bug as the correction this replaces.
-      ['pointerdown', 'touchstart'].forEach(function (t) {
-        el.addEventListener(t, function () { el.__gwHold = true; }, { passive: true });
-      });
-      ['pointerup', 'pointercancel', 'touchend', 'touchcancel'].forEach(function (t) {
-        el.addEventListener(t, function () { el.__gwHold = false; }, { passive: true });
-      });
+      function down(y, ev) {
+        stopAnim();
+        drag = { y0: y, o0: el.__gwO || 0, moved: 0, samples: [[y, ev.timeStamp || Date.now()]] };
+        el.__gwHold = true;
+      }
+      function move(y, ev) {
+        if (!drag) return;
+        var dy = y - drag.y0;
+        drag.moved = Math.max(drag.moved, Math.abs(dy));
+        drag.samples.push([y, ev.timeStamp || Date.now()]);
+        if (drag.samples.length > 5) drag.samples.shift();
+        render(band(drag.o0 - dy));
+      }
+      function up() {
+        if (!drag) return;
+        var d = drag; drag = null; el.__gwHold = false;
+        var o = el.__gwO || 0;
+        if (o < 0 || o > MAX) { snapTo(Math.round(o / ROW), true); return; }
+        // Velocity in px/ms over the tail of the gesture; negative dy means the list moved up.
+        var v = 0, s = d.samples;
+        if (s.length > 1) {
+          var dt = s[s.length - 1][1] - s[0][1];
+          if (dt > 0) v = -(s[s.length - 1][0] - s[0][0]) / dt;
+        }
+        var target;
+        if (d.moved <= 6) {
+          // A TAP, not a flick. pointerGuard no longer routes these (the picker is passed through
+          // to own its gesture), so the row under the finger is resolved here. Apple's picker does
+          // the same thing: tapping a visible row scrolls it to the band rather than doing nothing.
+          var r = el.getBoundingClientRect();
+          target = (Math.floor((o + (d.y0 - r.top)) / ROW) - 1) * ROW;
+        } else {
+          target = Math.round((o + v * GW_FRICTION) / ROW) * ROW;
+        }
+        target = Math.max(0, Math.min(MAX, target));
+        var ms = Math.max(GW_MIN_MS, Math.min(GW_MAX_MS, Math.abs(target - o) * 1.7));
+        // A drag must not also fire the row's click handler underneath it.
+        if (d.moved > 6) {
+          el.__gwSwallow = true;
+          setTimeout(function () { el.__gwSwallow = false; }, 350);
+        }
+        settle(o, target, ms);
+      }
+
+      // Pointer events where they exist, touch as the fallback. Both are delivered during a drag
+      // on every engine this game ships on; `scroll` demonstrably is not.
+      if (window.PointerEvent) {
+        el.addEventListener('pointerdown', function (e) {
+          down(e.clientY, e);
+          try { el.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        el.addEventListener('pointermove', function (e) {
+          if (drag) { e.preventDefault(); move(e.clientY, e); }
+        });
+        ['pointerup', 'pointercancel'].forEach(function (t) {
+          el.addEventListener(t, function () { up(); });
+        });
+      } else {
+        el.addEventListener('touchstart', function (e) {
+          if (e.touches.length === 1) down(e.touches[0].clientY, e);
+        }, { passive: true });
+        el.addEventListener('touchmove', function (e) {
+          if (drag && e.touches.length === 1) { e.preventDefault(); move(e.touches[0].clientY, e); }
+        }, { passive: false });
+        ['touchend', 'touchcancel'].forEach(function (t) {
+          el.addEventListener(t, function () { up(); });
+        });
+      }
+
+      // Desktop trackpad / mouse wheel.
+      el.addEventListener('wheel', function (e) {
+        e.preventDefault();
+        stopAnim();
+        var o = Math.max(0, Math.min(MAX, (el.__gwO || 0) + e.deltaY));
+        render(o);
+        if (el.__gwWT) clearTimeout(el.__gwWT);
+        el.__gwWT = setTimeout(function () { snapTo(Math.round((el.__gwO || 0) / ROW), true); }, 110);
+      }, { passive: false });
+
+      // Swallow the click a drag would otherwise deliver to whichever row ended under the finger.
+      el.addEventListener('click', function (e) {
+        if (el.__gwSwallow) { e.stopPropagation(); e.preventDefault(); }
+      }, true);
     }
 
     if (rebuilt) {
-      // First paint: land on the saved row without animating down from the top.
-      var sb = el.style.scrollBehavior; el.style.scrollBehavior = 'auto';
-      el.scrollTop = topFor(want);
-      el.style.scrollBehavior = sb || '';
-      el.__gwDi = want; el.__gwShown = want; mark(want);
-    } else if (!el.__gwHold && el.__gwDi !== want) {
-      // An external change (a load, a reset) -- never a correction of the player's own scroll.
-      el.__gwDi = want; el.__gwShown = want; mark(want);
-      try { el.scrollTo({ top: topFor(want), behavior: 'smooth' }); }
-      catch (e) { el.scrollTop = topFor(want); }
+      snapTo(want, false);
+    } else if (!el.__gwHold && !el.__gwRaf && el.__gwDi !== want) {
+      // An external change -- a load, a reset, or a deliberate tap on a row. Never a correction
+      // of the player's own drag: __gwHold and __gwRaf both exclude that.
+      snapTo(want, true);
     }
   }
 
@@ -885,17 +963,26 @@
       '<div class="span2" style="display:grid;place-items:center;margin:0;">' +
         '<div class="intro-hero">' + variantImg(88, variant) + '</div>' +
       '</div>' +
-      '<div class="panel span2" style="padding:9px 13px;display:flex;align-items:center;gap:10px;">' +
-        '<div style="font-weight:800;color:var(--ink-soft);font-size:13px;">' + esc(Z('create.name')) + '</div>' +
-        '<input id="qok-name" data-act="name" type="text" maxlength="8" placeholder="' + esc(Z('create.namePlaceholder')) + '" style="flex:1;min-width:0;border:none;background:transparent;font-weight:900;font-size:18px;color:var(--ink);outline:none;" />' +
-        '<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M14 4l6 6-9 9-4 1 1-4 9-9-3-3z" stroke="#9a7a36" stroke-width="2"/></svg>' +
+      /* THE ERROR SITS ON THE FIELD IT IS ABOUT. It used to be a line under the Start button at the
+         very bottom of the create screen -- the far end of a scrolling column from the empty input
+         it describes, and on a phone frequently off-screen entirely. Owner: "we need an error
+         message telling the player that they need to enter the name when they are blocked from
+         continuing. i want the screen to snap up as well." Both halves are one fix: put the message
+         where the problem is, and bring that place into view. */
+      '<div class="panel" id="qok-name-panel" style="padding:9px 13px;">' +
+        '<div style="display:flex;align-items:center;gap:10px;">' +
+          '<div style="font-weight:800;color:var(--ink-soft);font-size:13px;">' + esc(Z('create.name')) + '</div>' +
+          '<input id="qok-name" data-act="name" type="text" maxlength="8" placeholder="' + esc(Z('create.namePlaceholder')) + '" style="flex:1;min-width:0;border:none;background:transparent;font-weight:900;font-size:18px;color:var(--ink);outline:none;" />' +
+          '<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M14 4l6 6-9 9-4 1 1-4 9-9-3-3z" stroke="#9a7a36" stroke-width="2"/></svg>' +
+        '</div>' +
+        '<div id="qok-name-err" class="name-err' + (nameErrShown ? ' on' : '') + '">' +
+          (nameErrShown ? esc(Z('create.nameRequired')) : '') + '</div>' +
       '</div>' +
       '<div class="panel" style="padding:9px 13px;"><div style="font-weight:800;color:var(--ink-soft);font-size:12px;margin-bottom:6px;">' + (ja ? 'みため' : 'Look') + '</div><div style="display:flex;gap:10px;">' + variantOpts + '</div></div>' +
       '<div class="panel" style="padding:9px 13px;"><div style="font-weight:800;color:var(--ink-soft);font-size:12px;margin-bottom:6px;">' + esc(Z('settings.difficulty')) + '</div><div class="gwheel-wrap"><div class="gwheel-band"></div><div class="gwheel" id="qok-gwheel">' + chips + '</div></div></div>' +
       '<div class="panel" style="padding:9px 13px;display:flex;justify-content:space-between;align-items:center;gap:10px;"><span style="font-weight:800;color:var(--ink-soft);font-size:13px;">' + esc(Z('settings.language')) + '</span>' + langCtrl + '</div>' +
       kanjiRow +
       '<button class="btn btn-gold span2" data-act="introStart" style="margin-top:8px;font-size:17px;">' + use('arrow', 'ic') + esc(Z('create.startGame')) + '</button>' +
-      '<div id="qok-name-err" class="span2" style="text-align:center;color:#ff6b6b;font-size:12px;font-weight:700;min-height:14px;"></div>' +
     '</div></div>';
 
     /* heroName excluded from sig so typing doesn't rebuild the input (keeps focus), and `di` is
@@ -907,7 +994,8 @@
        screen is most of the time -- so the raw expression interpolated as "null", then as "false"
        the moment state appeared. That flipped the signature, rebuilt the screen mid-interaction and
        reset the wheel to the saved difficulty. Normalised, the term is only ever "true"/"false". */
-    var sig = 'intro|' + variant + '|' + ja + '|' + !!(pstate() && pstate().kanjiMode) + '|g' + grades.length;
+    var sig = 'intro|' + variant + '|' + ja + '|' + !!(pstate() && pstate().kanjiMode) + '|g' + grades.length +
+              '|e' + (nameErrShown ? 1 : 0);
     activate('intro', false);
     var rebuilt = (sig !== lastSig);
     paint(h, sig);
@@ -1390,6 +1478,17 @@
       if (t.id === 'qok-volume' && (e.type === 'pointerdown' || e.type === 'touchstart')) draggingVolume = true;
       return;
     }
+    /* THE GRADE PICKER OWNS ITS OWN GESTURE, AND THIS LINE IS WHY IT NEVER DID.
+       This guard runs on `document` in the CAPTURE phase and stopPropagation()s every pointer and
+       touch event inside the overlay, so the event is killed BEFORE it can reach the element it
+       landed on. That is the measured "a listener on #qok-gwheel receives ZERO scroll events" --
+       not a harness artefact, not a WebKit quirk, and not anything to do with scroll-snap: the
+       wheel's own listeners were never being called at all, on any engine. Five builds were spent
+       rewriting code inside handlers that could not run.
+       The wheel is therefore passed through exactly as a text field is. It is still shielded from
+       the live Phaser scene underneath by inputShield() on the bubble phase, and it routes its own
+       taps (see syncGradeWheel), so nothing this guard was protecting is given up. */
+    if (t.closest && t.closest('#qok-gwheel')) return;
     e.stopPropagation();                                     // keep the tap away from the live Phaser scene
     var actEl = t.closest ? t.closest('[data-act]') : null;
     var ty = e.type;
@@ -1563,10 +1662,40 @@
       try { if (ts.drawTitleScreen) ts.drawTitleScreen(); } catch (e) {}
     }
     else if (act === 'introStart') {
+      /* The bundle's confirmCreate() returns early on an empty name and writes the message into a
+         PHASER text object -- which this overlay covers completely, so nothing ever reached the
+         player. The old mirror here gated on `ts.errorText`, a bundle internal, and dropped the
+         text at the bottom of the column. Gate on the name itself: the condition the player failed
+         is the condition we can see, and it cannot go stale against the bundle. */
+      var blank = !((ts.heroName || '').trim());
       ts.createRow = 'start'; ts.confirmCreate();
-      var err = document.getElementById('qok-name-err');
-      if (err && ts.errorText && (!ts.heroName || !ts.heroName.trim())) err.textContent = Z('create.nameRequired');
+      /* THE MESSAGE IS STATE, NOT A DOM WRITE. Writing it straight into the element looked correct
+         and produced nothing on screen: fireTap() clears lastSig and calls tick() immediately after
+         route() returns, so renderIntro rebuilds the whole create screen -- and the freshly written
+         message, and the shake class, are thrown away microseconds after being set. Holding it as a
+         flag in the signature means the rebuild RENDERS the message instead of destroying it. */
+      nameErrShown = blank;
+      if (blank) { setTimeout(nameErrorEffects, 0); return; }
     }
+  }
+
+  /* "i want the screen to snap up as well." The create screen is one scrolling column with Start
+     at its bottom, so a player refused for an empty name is usually not looking at the name field
+     at all. scrollIntoView on the PANEL rather than the input brings the label, the field and the
+     new message up together; the focus is deferred past the scroll so the keyboard does not fight
+     it for the position. The shake is what makes the refusal register as a refusal instead of as a
+     button that did nothing. */
+  function nameErrorEffects() {
+    var panel = document.getElementById('qok-name-panel');
+    var inp = document.getElementById('qok-name');
+    if (panel) {
+      panel.classList.remove('name-shake');
+      void panel.offsetWidth;                        // restart the animation on a repeated tap
+      panel.classList.add('name-shake');
+      try { panel.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+      catch (e) { try { panel.scrollIntoView(); } catch (e2) {} }
+    }
+    if (inp) setTimeout(function () { try { inp.focus(); } catch (e) {} }, 220);
   }
 
   function onInput(e) {
@@ -1575,6 +1704,8 @@
     if (el.id === 'qok-name') {
       var ts = getScene('TitleScene');
       if (ts) { try { ts.heroName = (el.value || '').slice(0, 8); } catch (err) {} }
+      // The refusal is answered the moment they start typing; leaving it up would nag.
+      if (nameErrShown && (el.value || '').trim()) { nameErrShown = false; lastSig = null; }
       return;
     }
     if (el.id === 'qok-volume') {

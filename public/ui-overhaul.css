@@ -203,39 +203,48 @@
    the band drawn behind it rather than by colouring the row, so the text does not shift as it
    passes through. Rows stay tappable too: a wheel that can only be dragged is slower for a
    deliberate pick, and the tap target is the same element either way. */
-/* SNAP IS `mandatory`, AND THE SCRIPT NEVER CORRECTS THE SCROLL. Owner on builds 41, 43 and 47:
+/* THE PICKER IS SCRIPT-DRIVEN, NOT SCROLL-DRIVEN. Owner on builds 41, 43, 47 and 53:
    "the behavior is a bit finicky ... it snaps back to the previously selected one ... research the
    industry standard way to generate it and stop trying to re-invent the wheel."
 
-   `mandatory` is correct here and `proximity` was a workaround for the real bug. The list fought the
-   finger because the SCRIPT wrote scrollTop back during the gesture, not because of the snap mode --
-   see syncGradeWheel. With the script no longer correcting anything, the browser owns the physics
-   end to end, which is what every native picker does and what the platform is tuned for.
+   THE NATIVE SCROLLER IS GONE, and its absence is the fix. `overflow-y:auto` + `scroll-snap`
+   made the browser own the physics, which is correct in principle and fatal in practice here:
+   the `scroll` event that every version of the commit hung off is NOT delivered on this element
+   (measured -- zero events while scrollTop changed), so the selection was never written and the
+   next repaint restored the previous row. Five builds died on that. syncGradeWheel now drives a
+   transform from pointer events, so nothing depends on an event the engine may withhold.
 
-   `scroll-behavior:smooth` is NOT set globally: it applied to the user's own scrolling too, and a
-   smooth-behaviour scroller cannot land crisply on a snap point. Deliberate programmatic moves ask
-   for smooth per call via scrollTo({behavior:'smooth'}). */
-#qok-ui .gwheel{position:relative;z-index:1;background:transparent;height:102px;overflow-y:auto;overflow-x:hidden;
-  scroll-snap-type:y mandatory;overscroll-behavior:contain;
-  -webkit-overflow-scrolling:touch;scrollbar-width:none;
+   `touch-action:none` is load-bearing: without it the engine claims the vertical gesture for
+   page scrolling and pointermove stops arriving mid-drag, which would reproduce the same bug by
+   a different route. */
+#qok-ui .gwheel{position:relative;z-index:1;background:transparent;height:102px;overflow:hidden;
+  touch-action:none;-webkit-user-select:none;user-select:none;cursor:grab;
   mask-image:linear-gradient(to bottom,transparent,#000 22%,#000 78%,transparent);
   -webkit-mask-image:linear-gradient(to bottom,transparent,#000 22%,#000 78%,transparent);}
-#qok-ui .gwheel::-webkit-scrollbar{display:none;}
-/* The selection band sits in the WRAPPER, not in the scroller. Inside an overflow:auto element an
-   absolutely-positioned child scrolls with the content, so the band tracked the rows instead of
-   marking the middle -- measured on the simulator: at scrollTop 0 it highlighted row 0 while row 1
-   was the selection. Outside the scroller it is fixed to the middle 34px of the 102px viewport, and
-   the rows draw over it because .gwheel carries the higher z-index. */
+#qok-ui .gwheel:active{cursor:grabbing;}
+/* The selection band sits in the WRAPPER, not in the list. Inside the transformed list it would
+   travel with the rows instead of marking the middle. Outside it, it is fixed to the middle 34px
+   of the 102px viewport, and the rows draw over it because .gwheel carries the higher z-index. */
 #qok-ui .gwheel-wrap{position:relative;}
 #qok-ui .gwheel-band{position:absolute;left:0;right:0;top:34px;height:34px;border-radius:10px;
   background:var(--gold);opacity:.20;pointer-events:none;z-index:0;}
-#qok-ui .gwheel-list{position:relative;}
+#qok-ui .gwheel-list{position:relative;will-change:transform;}
 #qok-ui .gwheel-pad{height:34px;}
-#qok-ui .gopt{height:34px;line-height:34px;scroll-snap-align:center;text-align:center;
+/* No opacity/transform transition: syncGradeWheel writes both every frame of the drag, and a
+   transition on a per-frame write lags the finger instead of smoothing it. */
+#qok-ui .gopt{height:34px;line-height:34px;text-align:center;
   font-weight:700;font-size:14px;color:var(--ink-soft);opacity:.55;cursor:pointer;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 6px;
-  transition:opacity .12s linear,color .12s linear;}
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 6px;}
 #qok-ui .gopt.sel{opacity:1;color:var(--ink);font-weight:900;}
+/* The create-screen name refusal. `min-height:0` when empty so the panel does not carry a blank
+   reserved strip on every visit -- the row only exists when there is something to say. */
+#qok-ui .name-err{color:#ff6b6b;font-size:12px;font-weight:800;line-height:1.3;max-height:0;
+  opacity:0;overflow:hidden;transition:max-height .16s ease-out,opacity .16s ease-out,margin-top .16s ease-out;}
+#qok-ui .name-err.on{max-height:34px;opacity:1;margin-top:6px;}
+@keyframes qok-nameshake{10%,90%{transform:translateX(-2px);}20%,80%{transform:translateX(3px);}
+  30%,50%,70%{transform:translateX(-5px);}40%,60%{transform:translateX(5px);}100%{transform:none;}}
+#qok-ui .name-shake{animation:qok-nameshake .42s cubic-bezier(.36,.07,.19,.97) both;}
+@media (prefers-reduced-motion:reduce){#qok-ui .name-shake{animation:none;}}
 #qok-ui .toggle{display:inline-flex;background:#ffffff0a;border-radius:99px;padding:3px;font-weight:700;font-size:13px;cursor:pointer;}
 #qok-ui .toggle span{padding:9px 17px;border-radius:99px;color:var(--ink-soft);} #qok-ui .toggle span.on{background:var(--gold);color:var(--bg3);box-shadow:none;}
 #qok-ui .seg{display:flex;background:#ffffff0a;border-radius:11px;padding:3px;gap:3px;}
