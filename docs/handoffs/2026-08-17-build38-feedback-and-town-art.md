@@ -3,7 +3,8 @@ date: 2026-08-17
 type: handoff
 project: edu-rpg
 milestone: build-38-feedback + Port Sapphire art
-status: active
+status: superseded
+superseded_by: "[[2026-08-18-wheel-arch-and-prop-based-town]]"
 tags: [handoff]
 ---
 
