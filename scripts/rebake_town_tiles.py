@@ -81,8 +81,24 @@ BAND = 130           # overlap band in FINAL px that a tile shares with its neig
 MODEL = "gpt-5.6-sol"
 
 
-def newest_since(t0):
-    root = os.path.expanduser("~/.codex/generated_images")
+def newest_since(t0, only_under=None):
+    """The newest generated image since t0 -- and TWO ways this has silently corrupted a plate.
+
+    1. IT SCANS A SHARED DIRECTORY. `~/.codex/generated_images` is global, so with two towns baking
+       at once the newest file is not necessarily YOURS. Measured 2026-08-19: millbrook's tile,
+       generated at 08:02, was about to be grafted into greenhollow's plate. `only_under` scopes the
+       search when the caller knows where its own output landed.
+
+    2. NEWEST IS NOT BEST. `codex exec` does not always stop after producing an image -- it
+       dispatches sub-agents that REDRAW it, each writing its own file, and the call exits long
+       after the good one. Measured on millbrook tile (0,0): the correct image landed at 08:30:49
+       with layout correlation +0.884, then nineteen further minutes produced +0.865, +0.856, +0.868,
+       +0.836, +0.674, +0.803 and +0.805. Taking the newest ships +0.805 and nobody ever sees the
+       +0.884. The brief now opens with "do this yourself, one generation call, do not dispatch a
+       sub-agent", and a caller that can score its candidates should score them rather than trust
+       arrival order -- see scripts/millbrook_bake.py and scripts/greenhollow_bake.py.
+    """
+    root = os.path.expanduser(only_under or "~/.codex/generated_images")
     best, bt = None, t0
     for d, _, fs in os.walk(root):
         for f in fs:
@@ -186,7 +202,10 @@ LIGHT AND PALETTE. One upper-left sun, short soft shadows, {light}. Mean luminan
 about 90. Do not darken, warm or cool it.
 """
 
-PLAN_BRIEF = """Draw this as hand-drawn, hard-edged pixel art at full detail.
+PLAN_BRIEF = """DO THIS YOURSELF, one generation call, do not dispatch a sub-agent. Produce the
+image and stop.
+
+Draw this as hand-drawn, hard-edged pixel art at full detail.
 
 THE INPUT IS A PLAN, NOT A PICTURE. It is a flat colour-coded diagram of one tile ({i},{j}) of a
 {n}x{n} grid covering {subject}. It is not a blurry painting to be sharpened; it is a map telling you
