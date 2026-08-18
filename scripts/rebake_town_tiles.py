@@ -29,9 +29,46 @@ import numpy as np
 from PIL import Image
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OUT = os.path.join(ROOT, "design/act1-towns/rebake")
-REF = os.path.join(ROOT, "design/act1-towns/rebake-v1-raw.png")   # layout + style reference
-SHIP = os.path.join(ROOT, "public/act1-hifi/town/portSapphire-screen.png")
+# PER-TOWN PATHS, because there are three Act 1 towns and only one of them is Port Sapphire.
+# `--town` selects them; the default keeps every existing invocation working unchanged.
+# greenhollow and millbrook prime from an AUTHORED plan (scripts/town_layout.py) rather than from a
+# painting, so their REF is the plan and their collision authority already exists before the art.
+TOWNS = {
+    "portSapphire": {
+        "out": "design/act1-towns/rebake",
+        "ref": "design/act1-towns/rebake-v1-raw.png",
+        "ship": "public/act1-hifi/town/portSapphire-screen.png",
+        "mode": "repaint",
+        "subject": "a top-down JRPG harbour town",
+        "light": "bright coastal daylight",
+    },
+    "greenhollow": {
+        "out": "design/act1-towns/greenhollow",
+        "ref": "design/act1-towns/greenhollow/primer.png",
+        "ship": "public/act1-hifi/town/greenhollow-screen.png",
+        "mode": "plan",
+        "subject": ("a small top-down JRPG forest village inside a round timber palisade, with one "
+                    "gate at the SOUTH, cottages of stone and dark timber facing inward under "
+                    "steep shingled roofs, a packed-earth yard around a stone well, and dense "
+                    "green woodland pressing in beyond the palisade"),
+        "light": "warm late-morning woodland daylight",
+    },
+    "millbrook": {
+        "out": "design/act1-towns/millbrook",
+        "ref": "design/act1-towns/millbrook/primer.png",
+        "ship": "public/act1-hifi/town/millbrook-screen.png",
+        "mode": "plan",
+        "subject": ("a small top-down JRPG mill village inside a timber palisade, with one gate at "
+                    "the SOUTH, a clear millstream running west to east across the north of the "
+                    "village, a working watermill with a wooden wheel turning in that stream, a "
+                    "plank bridge where the main lane crosses it, and a packed-earth yard around a "
+                    "stone well"),
+        "light": "warm late-morning daylight over open farmland",
+    },
+}
+OUT = os.path.join(ROOT, TOWNS["portSapphire"]["out"])
+REF = os.path.join(ROOT, TOWNS["portSapphire"]["ref"])
+SHIP = os.path.join(ROOT, TOWNS["portSapphire"]["ship"])
 GEN = 1254           # what the tool returns, always
 PLATE = 1950
 # 2x2, NOT 3x3. A 3x3 grid has four seam LINES across the plate; 2x2 has two, and each tile still
@@ -124,11 +161,11 @@ def primer(i, j, plate):
 
 BRIEF = """Redraw this image at full detail as hand-drawn, hard-edged pixel art.
 
-It is ONE NINTH of a top-down JRPG harbour town, tile ({i},{j}) of a 3x3 grid, shown blurry because
-it has been enlarged from a smaller rendering. Every building, street, fence, tree, boat, jetty and
-patch of ground is ALREADY IN THE RIGHT PLACE at the right size. Reproduce all of it exactly where
-it is. Do not move anything, do not resize anything, do not add a building, do not remove one, do
-not redesign anything. Your only job is to draw what is here properly.
+It is one tile ({i},{j}) of a {n}x{n} grid covering {subject}, shown blurry because it has been
+enlarged from a smaller rendering. Every building, street, fence, tree, boat, jetty and patch of
+ground is ALREADY IN THE RIGHT PLACE at the right size. Reproduce all of it exactly where it is. Do
+not move anything, do not resize anything, do not add a building, do not remove one, do not redesign
+anything. Your only job is to draw what is here properly.
 {addition}
 {bandnote}
 OUTPUT: one RGB PNG the same pixel dimensions as the input. Print its absolute path on a line of
@@ -145,8 +182,54 @@ intermediate tones. Hand-drawn art of this kind measures, on the mean absolute l
 between neighbouring pixels, 26 or more overall, 34-52% of steps at 24 or above, and 22-40% of steps
 between 4 and 20. That middle band is real shading inside shapes; keep it.
 
-LIGHT AND PALETTE. One upper-left sun, short soft shadows, bright coastal daylight. Mean luminance
+LIGHT AND PALETTE. One upper-left sun, short soft shadows, {light}. Mean luminance
 about 90. Do not darken, warm or cool it.
+"""
+
+PLAN_BRIEF = """Draw this as hand-drawn, hard-edged pixel art at full detail.
+
+THE INPUT IS A PLAN, NOT A PICTURE. It is a flat colour-coded diagram of one tile ({i},{j}) of a
+{n}x{n} grid covering {subject}. It is not a blurry painting to be sharpened; it is a map telling you
+WHERE EVERYTHING GOES. Draw the finished village that this plan describes, keeping every element in
+exactly the position and at exactly the size the plan gives it.
+
+READ THE COLOURS LIKE THIS, and change nothing about where they are:
+  pale warm grey (176,168,148)  the packed-earth street and yard. THIS IS WHERE THE PLAYER WALKS, so
+                                it must read unmistakably as open, even ground -- worn earth and set
+                                stone, no clutter across it, no bushes or crates growing into it.
+  mid green (96,132,70)         grass and planting INSIDE the palisade.
+  dark green (58,92,48)         the woodland/meadow OUTSIDE the palisade.
+  brown ring (104,82,54)        the TIMBER PALISADE. A continuous wall of upright logs. It must be
+                                unbroken all the way round except at the one gate.
+  tan gap at the bottom         THE ONE GATE, and the only way in or out. Draw a real gateway there:
+                                posts, a lintel, open leaves. Everywhere else the wall is solid.
+  brown blocks with a coloured  BUILDINGS. The coloured upper part is the ROOF, the brown lower part
+  upper band                    is the facade, so each building faces DOWN-SCREEN toward the yard.
+                                Give every one a door on that facade and windows, and stand it
+                                exactly on its block.
+  blue                          WATER.
+  grey disc                     a stone well.
+
+WHAT YOU ARE ADDING is craft, not content: texture, material, light, doors, windows, shutters, roof
+tiles, fence posts, cart ruts, planting at the edges of the grass. Do not add a building the plan
+does not have, do not move one, do not open a second gap in the wall, and do not pave over grass or
+grass over paving -- the boundary between them is the collision the game already uses.
+{addition}
+{bandnote}
+OUTPUT: one RGB PNG the same pixel dimensions as the input. Print its absolute path on a line of its
+own. Do not delete it and do not write anywhere under /tmp.
+
+THE FINISH. Crisp definite boundaries between materials. Shading in discrete flat steps, two or
+three values per material, dithering where a transition is needed. Individual roof tiles, individual
+cobbles, individual planks, individual window panes, distinct leaf clumps. No airbrushed gradients,
+no blur, no bloom, no soft focus, no photographic texture.
+
+DRAW IT HARD; DO NOT FILTER A SOFT IMAGE TO FAKE IT. No sharpen, no unsharp mask, no posterize, no
+palette reduction. Hand-drawn art of this kind measures, on the mean absolute luminance step between
+neighbouring pixels, 26 or more overall, 34-52% of steps at 24 or above, and 22-40% of steps between
+4 and 20. That middle band is real shading inside shapes; keep it.
+
+LIGHT AND PALETTE. One upper-left sun, short soft shadows, {light}. Mean luminance about 90.
 """
 
 ADDITION = """
@@ -213,6 +296,7 @@ change across it is a failure.
 
 def main():
     ap = argparse.ArgumentParser()
+    ap.add_argument("--town", choices=sorted(TOWNS), default="portSapphire")
     ap.add_argument("--only", help="i,j to regenerate a single tile")
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--edit", help="edit an ALREADY-BAKED tile instead of rebaking it: primes from "
@@ -225,6 +309,13 @@ def main():
                                                  "attempt can be measured before it replaces "
                                                  "anything")
     a = ap.parse_args()
+    global OUT, REF, SHIP
+    OUT = os.path.join(ROOT, TOWNS[a.town]["out"])
+    REF = os.path.join(ROOT, TOWNS[a.town]["ref"])
+    SHIP = os.path.join(ROOT, TOWNS[a.town]["ship"])
+    if not os.path.exists(REF):
+        raise SystemExit(f"{a.town}: no layout reference at {os.path.relpath(REF, ROOT)}. "
+                         f"For an authored town run: python3 scripts/town_layout.py --town {a.town}")
     if a.edit and not a.only:
         ap.error("--edit needs --only i,j: an edit is local to one tile by definition")
     os.makedirs(OUT, exist_ok=True)
@@ -253,8 +344,10 @@ def main():
                      else "LEFT AND TOP EDGES" if i and j else None)
             bn = "" if which is None else BANDNOTE.format(
                 which=which, bandpx=int(round(BAND * GEN / (TILE + BAND))))
-            brief = BRIEF.format(i=i, j=j, bandnote=bn,
-                                 addition=ADDITION.format(add=a.add) if a.add else "")
+            tmpl = PLAN_BRIEF if TOWNS[a.town].get("mode") == "plan" else BRIEF
+            brief = tmpl.format(i=i, j=j, n=N, bandnote=bn,
+                                subject=TOWNS[a.town]["subject"], light=TOWNS[a.town]["light"],
+                                addition=ADDITION.format(add=a.add) if a.add else "")
         bp = os.path.join(OUT, f"brief-{i}{j}{'-edit' if a.edit else ''}.md")
         open(bp, "w").write(brief)
         print(f"  tile {i},{j}  primer {pr.size}  box {box}  -> {os.path.relpath(pp, ROOT)}")
