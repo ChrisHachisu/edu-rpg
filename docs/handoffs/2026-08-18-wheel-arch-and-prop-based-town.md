@@ -38,8 +38,10 @@ TestFlight **44 → 53**, each verified `externalBuildState == IN_BETA_TESTING` 
 
 - TestFlight **50, 51, 52, 53** all `VALID`, `internal=IN_BETA_TESTING`,
   `external=IN_BETA_TESTING`, groups `['Internal Testers','Beta Testers']`, `expired=False`.
-  **Build 53 is the head and carries everything.** The owner reported 53 "not live on TF" while the
-  API reports it distributed identically to 50–52 — treat as client/propagation, not submission.
+  **Build 53 is the head and carries everything, and the owner has it installed** (confirmed
+  2026-08-18). It briefly did not appear in his TestFlight while the API already reported it
+  distributed — that gap is propagation, not a submission problem. Do not re-submit on that symptom;
+  check the API first, then wait.
 - HEAD: `ede721f`, branch `fix/graduated-gpu-heal`, **NOT merged to main**.
 - Ship order remains `./scripts/ship-ios.sh` → `asc.py` → `assign.py <n>` → `submit.py <n>`.
 
