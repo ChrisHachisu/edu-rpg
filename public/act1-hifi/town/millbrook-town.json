@@ -1,0 +1,81 @@
+{
+ "_comment": "Millbrook town runtime config. Cells are the 65x65 town grid; an NPC cell is the character's FEET (bottom-centre), matching scripts/render_town_hero_proof.py and scripts/place_town_npcs.py. ids and dialogueKeys are FIXED by the frozen bundle -- quests turn in against them -- so they are not free to rename.",
+ "id": "millbrook",
+ "nameKey": "map.millbrook",
+ "screen": "town/millbrook-screen.png",
+ "walkable": "town/millbrook-walkable.json",
+ "cells": 65,
+ "artPxPerCell": 30,
+ "worldPxPerCell": 16,
+ "startCell": [
+  32.5,
+  57.0
+ ],
+ "npcs": [
+  {
+   "id": "sage",
+   "dialogueKey": "npc.sage.greeting",
+   "nameKey": "npc.sage.name",
+   "sheet": "town/npc/millbrook-sage-4x3-64.png",
+   "cell": [
+    24.0,
+    20.0
+   ],
+   "name": "Sage",
+   "text": "I have read these woods for forty years. The old paths still hold, if you know where to set your feet. Bring me what you find out there and I will tell you what it means."
+  },
+  {
+   "id": "healer",
+   "dialogueKey": "npc.healer",
+   "nameKey": "npc.healer.name",
+   "sheet": "town/npc/millbrook-healer-4x3-64.png",
+   "cell": [
+    25.2,
+    42.7
+   ],
+   "name": "Healer",
+   "text": "Sit down and let me look at you. I can heal your wounds, and there is no charge for anyone who walked in through that gate."
+  },
+  {
+   "id": "miller",
+   "dialogueKey": "npc.miller",
+   "nameKey": "npc.miller.name",
+   "sheet": "town/npc/millbrook-miller-4x3-64.png",
+   "cell": [
+    38.5,
+    20.5
+   ],
+   "name": "Miller",
+   "text": "That wheel has turned every day since my father's time. Grain from the fields, flour for the whole valley. Mind the bridge planks, they are wet through."
+  },
+  {
+   "id": "herbalist",
+   "dialogueKey": "npc.herbalist",
+   "nameKey": "npc.herbalist.name",
+   "sheet": "town/npc/millbrook-herbalist-4x3-64.png",
+   "cell": [
+    40.9,
+    29.2
+   ],
+   "name": "Herbalist",
+   "text": "Everything worth picking grows along the stream bank. Stay on this side of it, though. What grows past the water belongs to the woods."
+  }
+ ],
+ "savePoint": [
+  37.0,
+  41.0
+ ],
+ "exit": {
+  "cell": [
+   32.5,
+   60.5
+  ],
+  "targetMapId": "overworld",
+  "toX": 39,
+  "toY": 345,
+  "note": "The mouth of the south approach trail, OUTSIDE the palisade -- the gate itself sits at y~59 and the lane runs on to y=62. toX/toY are the millbrook LANDMARK's own exit cell in public/act1-world-map.js -- {\"mapId\":\"millbrook\",\"at\":{\"x\":39,\"y\":344},\"exit\":{\"x\":39,\"y\":345}} -- i.e. the open ground immediately south of the door she came in by. Placed 3.5 cells south of startCell ON PURPOSE: town.html only arms the exit once the player is more than 2.5 cells clear of it, so an exit any nearer the arrival point either never arms or bounces her straight back out. At 60.5 she spawns already clear, walks in freely, and leaves by walking back out through the gateway."
+ },
+ "_dialogueNote": "name/text are English FALLBACK strings in the voice of the shipped Port Sapphire entries, so the town is playable standalone. The runtime also posts act1-town-interact to the parent so the bundle's real localised dialogue system can take over once the adapter hands off. ids and dialogueKeys match the frozen bundle: sage is a quest turn-in.",
+ "_layoutNote": "startCell, savePoint and every NPC cell are taken verbatim from design/act1-towns/millbrook/spec.json, which scripts/town_layout.py wrote AFTER snapping each one to ground a body with actorFootRadius 4 can actually stand on. Verified before shipping: all four NPCs and the save point are reachable from startCell by flood fill over millbrook-walkable.json. Do not hand-edit these.",
+ "_foregroundNote": "Millbrook has no foreground layer, and `foreground` is optional in town.html -- the key is omitted rather than pointed at a file that does not exist."
+}
