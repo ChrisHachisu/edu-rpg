@@ -1,5 +1,5 @@
 {
-  "url": "http://127.0.0.1:5231/",
+  "url": "http://127.0.0.1:52106/",
   "rows": [
     {
       "mapId": "greenhollow",
@@ -34,7 +34,7 @@
       },
       "endCell": {
         "x": 8,
-        "y": 14
+        "y": 13
       },
       "verdict": "DOOR FIRED, entered",
       "restedOnBlocker": false,
@@ -109,7 +109,7 @@
       },
       "endCell": {
         "x": 8,
-        "y": 14
+        "y": 13
       },
       "verdict": "DOOR FIRED, entered",
       "restedOnBlocker": false,
@@ -166,7 +166,7 @@
       },
       "endCell": {
         "x": 8,
-        "y": 14
+        "y": 15
       },
       "verdict": "DOOR FIRED, entered",
       "restedOnBlocker": false,
@@ -329,10 +329,10 @@
         "y": 231
       },
       "endCell": {
-        "x": 101,
-        "y": 231
+        "x": 13,
+        "y": 34
       },
-      "verdict": "DOOR FIRED, story-gated",
+      "verdict": "DOOR FIRED, entered",
       "restedOnBlocker": false,
       "wrongDoors": []
     },
@@ -350,10 +350,10 @@
         "y": 231
       },
       "endCell": {
-        "x": 101,
-        "y": 231
+        "x": 13,
+        "y": 33
       },
-      "verdict": "DOOR FIRED, story-gated",
+      "verdict": "DOOR FIRED, entered",
       "restedOnBlocker": false,
       "wrongDoors": []
     },
@@ -371,10 +371,10 @@
         "y": 231
       },
       "endCell": {
-        "x": 101,
-        "y": 231
+        "x": 13,
+        "y": 33
       },
-      "verdict": "DOOR FIRED, story-gated",
+      "verdict": "DOOR FIRED, entered",
       "restedOnBlocker": false,
       "wrongDoors": []
     },
@@ -418,10 +418,10 @@
         "y": 372
       },
       "endCell": {
-        "x": 145,
-        "y": 372
+        "x": 61,
+        "y": 13
       },
-      "verdict": "DOOR FIRED, story-gated",
+      "verdict": "DOOR FIRED, entered",
       "restedOnBlocker": false,
       "wrongDoors": []
     },
@@ -456,7 +456,7 @@
       },
       "endCell": {
         "x": 40,
-        "y": 27
+        "y": 26
       },
       "verdict": "DOOR FIRED, entered",
       "restedOnBlocker": false,
@@ -521,12 +521,15 @@
         "step": 2
       },
       "seat": "standable",
-      "fired": null,
-      "endCell": {
+      "fired": {
         "x": 149,
-        "y": 280
+        "y": 278
       },
-      "verdict": "REFUSED",
+      "endCell": {
+        "x": 76,
+        "y": 31
+      },
+      "verdict": "DOOR FIRED, entered",
       "restedOnBlocker": false,
       "wrongDoors": []
     },
@@ -540,7 +543,7 @@
       },
       "seat": "standable",
       "fired": {
-        "x": 149,
+        "x": 150,
         "y": 278
       },
       "endCell": {
@@ -560,12 +563,15 @@
         "step": 2
       },
       "seat": "standable",
-      "fired": null,
-      "endCell": {
-        "x": 147,
+      "fired": {
+        "x": 148,
         "y": 278
       },
-      "verdict": "REFUSED",
+      "endCell": {
+        "x": 76,
+        "y": 31
+      },
+      "verdict": "DOOR FIRED, entered",
       "restedOnBlocker": false,
       "wrongDoors": []
     }
