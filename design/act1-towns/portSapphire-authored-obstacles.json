@@ -1,16 +1,33 @@
 {
-  "_comment": "Obstacles AUTHORED against the painting, merged into the derived geometry by scripts/derive_town_walkable.py. This exists because a handful of large props cannot be derived: the well's rim is real cobble -- the same stone, the same colour, with open cobble all around it -- so no colour, texture or local-density test separates it from the square, and tightening the derivation to catch it only buys well coverage by eroding open ground. That is the same reason walkable-regions-v1.json says the overworld's own curves were 'fitted once to visible walkable ground' with the mask as evidence only. Coordinates are ART pixels on portSapphire-screen-v5-graded.png (1885x1885, 29 art px/cell); the script converts to world pixels.",
+  "_comment": "Obstacles AUTHORED against the painting, merged into the derived geometry by scripts/derive_town_walkable.py. This exists because a handful of large props cannot be derived: the well's rim is real cobble -- the same stone, the same colour, with open cobble all around it -- so no colour, texture or local-density test separates it from the square, and tightening the derivation to catch it only buys well coverage by eroding open ground. That is the same reason walkable-regions-v1.json says the overworld's own curves were 'fitted once to visible walkable ground' with the mask as evidence only. The script converts art px to world px from the image's own width, so it is resolution-agnostic -- but THIS FILE IS NOT, and the space is declared in `artSpace` below.",
+  "artSpace": {
+    "image": "public/act1-hifi/town/portSapphire-screen.png",
+    "size": 1950,
+    "pxPerCell": 30,
+    "why": "RESCALED 1885 -> 1950 ON 2026-08-18, x1.034483. Every coordinate below used to be measured on portSapphire-screen-v5-graded.png (1885x1885, 29 art px/cell). The shipped painting is now the 2x2 tiled rebake at 1950x1950 (30 art px/cell), which is what makes the town land on an exact 3.0000x device upscale. The rebake preserved the layout, and the rescale was VERIFIED rather than assumed: the well and the ship's mast both land dead-centre on their rescaled coordinates in the new plate. Anyone running scripts/derive_town_walkable.py MUST point --screen at the 1950 image (which is now its default); running it against the old 1885 painting with these numbers would misplace every circle here by about 3.4%."
+  },
   "obstacles": [
     {
       "id": "well",
       "kind": "town-prop",
       "shape": "circle",
       "centerArt": [
-        945,
-        803
+        978,
+        831
       ],
-      "radiusArt": 36,
-      "why": "Measured radially from the well's centre: paving coverage runs 0% at r=0, 33% at r=9, 17% at r=18, 36% at r=27, 49% at r=33 and only reaches 72% at r=39. The structure therefore ends at about r=36. Owner flagged it twice; the derivation reached 74% coverage and stalled on the lit rim."
+      "radiusArt": 37,
+      "why": "Measured radially from the well's centre: paving coverage runs 0% at r=0, 33% at r=9, 17% at r=18, 36% at r=27, 49% at r=33 and only reaches 72% at r=39. The structure therefore ends at about r=36. Owner flagged it twice; the derivation reached 74% coverage and stalled on the lit rim. Coordinates rescaled to the 1950 plate 2026-08-18 (was [945,803] r36) and confirmed against it: the well sits centred on [978,831]."
+    },
+    {
+      "id": "roof-chimney",
+      "kind": "town-prop",
+      "shape": "circle",
+      "centerArt": [
+        738,
+        1026
+      ],
+      "radiusArt": 32,
+      "why": "OWNER 2026-08-18 reversed his own 2026-08-15 removal: taking the chimney out left the spot looking wrong, so it is back in the art. It is RESTORED ON A ROOF -- the big orange-tiled roof south of the market square -- and not as the free-standing courtyard tower it used to be, and that placement is the whole reason it costs nothing in gameplay. Measured against the shipped collision authority BEFORE the entry was added: the disk is already 0.0% walkable, because it lies inside the roof. The old free-standing spot (art [712,932] on this plate) measures 89.7% walkable, so restoring it there would have meant either a NEW blocker in the middle of the market square -- exactly the confusion the owner objected to on 2026-08-13/14, 'the one beside it BLOCKS him (should be passable)' -- or a chimney the player walks through. On a roof neither question arises. This entry is therefore a redundant guarantee rather than a change: it is here so that if the derivation is ever re-run and the chimney's sunlit grey masonry reads as pale paving (the same ambiguity that makes the well's rim authored rather than derived), the player still cannot be put on top of it."
     }
   ],
   "exemptions": [
@@ -18,19 +35,30 @@
       "id": "ship-mast",
       "shape": "circle",
       "centerArt": [
-        900,
-        1256
+        931,
+        1299
       ],
-      "radiusArt": 30,
-      "why": "OWNER 2026-08-03: 'the mast of the ship should not block the player's path.' The moored trader's mast rises from the deck BELOW the quay and its upper section and yard-arm cross over the walkable paving. The derivation is structural -- it reads a top-down painting, where height is not encoded -- so the overlap read as a solid object at ground level. The player walks under it."
+      "radiusArt": 31,
+      "why": "OWNER 2026-08-03: 'the mast of the ship should not block the player's path.' The moored trader's mast rises from the deck BELOW the quay and its upper section and yard-arm cross over the walkable paving. The derivation is structural -- it reads a top-down painting, where height is not encoded -- so the overlap read as a solid object at ground level. The player walks under it. Coordinates rescaled to the 1950 plate 2026-08-18 (was [900,1256] r30) and confirmed against it."
+    },
+    {
+      "id": "demijohn",
+      "shape": "circle",
+      "centerArt": [
+        1683,
+        1341
+      ],
+      "radiusArt": 40,
+      "why": "OWNER 2026-08-18, same reversal as the chimney: the rope-wrapped glass demijohn is back, hanging on its chain from the timber cargo davit east of the warehouse. Its old home at art [1657,1289] on the 1885 painting had been clone-patched to flat cobble, and the rebake inherited that patch, which is why the davit was left reaching out over an empty quay with nothing on its hook -- the 'weird' the owner reported. It is redrawn hanging from the davit's own outer end. This circle is MEASURED ON THE SHIPPED 1950 PLATE rather than rescaled from the old one, because the prop is drawn in a new position and at a new size: the vessel occupies art x1655-1711, y1303-1380 and its chain runs up from there to the davit at about y1213. It needs an exemption for the same reason the mast does and the chimney does not: it is OVERHEAD but it hangs over OPEN GROUND. Measured against the shipped collision authority, this disk is 76.5% walkable quay, so a derivation that read the vessel as a solid object would put a blocker in the middle of a walkable street -- exactly the bug the owner reported on 2026-08-03 as 'blocked at the bottle itself'. The circle is sized to the VESSEL and deliberately not stretched up the chain: widening it to swallow the chain as well would also swallow the water barrel at art x1625-1657 and the davit's own posts, and those are ground objects that must go on blocking. The chain itself is about 8 art px wide, well under the derivation's --min-obstacle floor of 4 mask samples (16 art px), so it cannot raise a blocker of its own."
     }
   ],
-  "_exemptionComment": "Regions where a DERIVED obstacle -- or, since 2026-08-14, a derived HOLE -- must be dropped because the object is OVERHEAD, not on the ground. The derivation reads a top-down painting and cannot infer height, so anything that is not paving becomes solid -- including masts, hanging signs, suspended props and free-standing rooftop structures the player walks beneath or past. These are authored for the same reason the well is authored: no local test on the image can recover the missing dimension. Coordinates are ART pixels on portSapphire-screen-v5-graded.png (1885x1885, 29 art px/cell). `scripts/derive_town_walkable.py`'s `stamp_exemptions()` now stamps every circle here directly into the SELECTED walkable body (fixing both a staticObstacle AND an enclosed hole in one pass) rather than only ever dropping a matching staticObstacle by centroid, which is what let the demijohn's real blocker -- hole #2, not any staticObstacle -- ship unnoticed. 2026-08-15, OWNER: 'just remove the chimnys and demijohn so there is not confusion where players can walk' -- the demijohn and chimney-tower exemptions that once lived in the list above are gone along with the props themselves (clone-patched out of the painting), so `exemptions` now holds only ship-mast.",
+  "_exemptionComment": "Regions where a DERIVED obstacle -- or, since 2026-08-14, a derived HOLE -- must be dropped because the object is OVERHEAD, not on the ground. The derivation reads a top-down painting and cannot infer height, so anything that is not paving becomes solid -- including masts, hanging signs and suspended props the player walks beneath. These are authored for the same reason the well is authored: no local test on the image can recover the missing dimension. `scripts/derive_town_walkable.py`'s `stamp_exemptions()` stamps every circle here directly into the SELECTED walkable body (fixing both a staticObstacle AND an enclosed hole in one pass) rather than only ever dropping a matching staticObstacle by centroid, which is what let the demijohn's real blocker -- hole #2, not any staticObstacle -- ship unnoticed. HISTORY, because this list has now been emptied and refilled once: on 2026-08-15 the owner said 'just remove the chimnys and demijohn so there is not confusion where players can walk', both props were clone-patched out of the painting and their entries deleted; on 2026-08-18 he reversed that -- removing them had made those spots look weird, and the fresh tiled rebake had inherited the flat patched cobble -- so both are back in the art and the chimney is on a roof this time, which is what lets it be restored without putting anything new in the player's way.",
   "nonWalkableBands": [
     {
       "id": "roof-ridge-slate-terracotta-pair",
-      "bboxArt": [420, 892, 650, 935],
-      "why": "OWNER 2026-08-13/14, via the lead's measured coordinates: the walkable region's lower boundary runs ACROSS the sunlit ridge cap of the slate roof at art x400-760,y860-1000 -- confirmed by rasterising the shipped region and finding art (460-500,900) tests walkable. The ridge-cap highlight measures within the same range as sunlit cobble (paving_mask's own test passes it: r=178-198, |r-g|<25, b in range), the same ambiguity that makes the well's rim authored rather than derived. Positioned to clear the real courtyard pavement above (solid down to about y=888) and to stop short of x~666 to its east so it never overlapped the chimney-tower exemption that used to sit there. 2026-08-15: the chimney itself is gone (see _exemptionComment) and this band's own bbox is unchanged and still correct -- it fixes a DIFFERENT ambiguity (a sunlit roof-ridge cap reading as paving), on the neighbouring roof, unrelated to the chimney object. 'she should not be up there at all' -- owner, on the walk-on-top report."
+      "bboxArt": [434, 923, 672, 967],
+      "why": "OWNER 2026-08-13/14, via the lead's measured coordinates: the walkable region's lower boundary runs ACROSS the sunlit ridge cap of the slate roof south of the market square -- confirmed by rasterising the shipped region and finding the ridge testing walkable. The ridge-cap highlight measures within the same range as sunlit cobble (paving_mask's own test passes it: r=178-198, |r-g|<25, b in range), the same ambiguity that makes the well's rim authored rather than derived. 'she should not be up there at all' -- owner, on the walk-on-top report. Positioned to clear the real courtyard pavement above it. Coordinates rescaled to the 1950 plate 2026-08-18 (was [420,892,650,935] on 1885). It fixes a DIFFERENT ambiguity from the chimney entry above -- a sunlit roof-ridge cap reading as paving -- on the neighbouring roof, and the two do not overlap."
     }
-  ]
+  ],
+  "_walkableNotRegenerated": "THE COLLISION GEOMETRY WAS DELIBERATELY NOT RE-DERIVED FOR THIS CHANGE, and the reason is measured, not cautious. Re-running scripts/derive_town_walkable.py against the 1950 rebake with these rescaled coordinates produces a WORSE network than the one shipped: walkable ground falls from 14.07% of the frame to 10.89%, a quarter of it lost (IoU 0.729 against the shipped region, 25.19% of previously-walkable area gone), and check_town_finish.py's LAYOUT band gets worse rather than better (63.5% paved-but-not-walkable against the shipped 55.7%, versus a 55% ceiling). The rebake's cobble is drawn differently from the painting the paving classifier was tuned on, so the classifier needs retuning BEFORE the authority is rebuilt from the new art -- that is its own piece of work. Until then the shipped portSapphire-walkable.json stands, and neither restored prop changes it: the chimney's disk is already 0.0% walkable because it is on a roof, and the demijohn hangs over quay that is already walkable and stays that way. The two entries above are what make that outcome survive the eventual re-derivation."
 }

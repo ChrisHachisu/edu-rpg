@@ -290,8 +290,21 @@ def stamp_roof_bands(mask, authored_path, s, art_to_world):
 
 def main() -> None:
     ap = argparse.ArgumentParser()
+    # THE DEFAULT MUST BE THE SHIPPED PAINTING, because portSapphire-authored-obstacles.json is
+    # measured in that painting's own pixels and says so in its `artSpace` block. It moved from the
+    # 1885 v5 painting to the 1950 tiled rebake on 2026-08-18; pointing this at the old image while
+    # the authored file holds 1950 coordinates would misplace every authored circle by ~3.4%.
+    #
+    # RE-RUNNING THIS AGAINST THE REBAKE IS NOT YET SAFE, MEASURED 2026-08-18. The output is a
+    # WORSE network than the one shipped: walkable ground 14.07% -> 10.89% of the frame, IoU 0.729
+    # against the shipped region with 25.19% of previously-walkable area lost, and
+    # check_town_finish.py's LAYOUT band moving the wrong way (55.7% -> 63.5% paved-but-not-walkable
+    # against a 55% ceiling). The rebake draws its cobble differently from the painting paving_mask
+    # was tuned on, so the CLASSIFIER has to be retuned before the authority is rebuilt from the new
+    # art. Until that is done the shipped portSapphire-walkable.json stands and this script is a
+    # measuring instrument, not a build step.
     ap.add_argument("--screen", default=os.path.join(
-        ROOT, "design/act1-towns/portSapphire-screen-v5-graded.png"))
+        ROOT, "public/act1-hifi/town/portSapphire-screen.png"))
     ap.add_argument("--cells", type=int, default=65)
     ap.add_argument("--sample", type=int, default=4,
                     help="art px per mask sample; 4 keeps the mask ~471px and the trace fast")
