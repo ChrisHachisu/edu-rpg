@@ -4028,6 +4028,38 @@
      that makes interact()'s own derivation land exactly on the probed cell, then restored in a
      finally -- so a1mStep's per-frame re-sync (from the sprite centre, next frame) never sees the
      substitution and never mistakes it for a real step. */
+  /* THE INTERACT PROMPT SPEAKS THE PLAYER'S LANGUAGE. Owner, build 48: "the buttons that appear
+     when getting close to an asset for interaction do not have the i18n yet and are showing english
+     even in japanese setting."
+
+     These verbs could not simply become Z() keys: the shipped bundle carries the whole locale table
+     and it is FROZEN, so a new key would resolve to nothing and the button would read
+     "prompt.open". `menu.save` DOES exist in all three variants and is used directly below; the rest
+     are carried here, which is the same thing the crystal dialog already does for its own strings.
+
+     LOCALE IS `en`/`ja` AND KANJI IS A SEPARATE FLAG -- read from the bundle rather than assumed.
+     Its own selector is `Ln === "ja" && kanji && Da[k] ? Da[k] : Ba[Ln][k] ?? Ba.en[k]`, i.e. the
+     kanji table is an overlay on ja, not a third locale. Mirroring that here is what keeps the
+     prompt in step with every other string when the player toggles kanji mode mid-game.
+
+     Register matched to the shipped strings: `ja` is spaced kana for young readers (the shipped
+     "きろくした！HPが かんぜんに かいふくした！"), `jaKanji` uses kanji. The verbs are the standard
+     JRPG command set, which is what a player of this genre expects to see on a chest or a plaque. */
+  var A1M_VERB_I18N={
+    en:      {4:'Open',   7:'Battle',  18:'Read', warp:'Warp',   any:'Interact'},
+    ja:      {4:'あける', 7:'たたかう', 18:'よむ', warp:'ワープ', any:'しらべる'},
+    jaKanji: {4:'開ける', 7:'戦う',     18:'読む', warp:'ワープ', any:'調べる'}
+  };
+  function a1mVerbTable(){
+    var Q=window.__QOK;
+    var loc=(Q&&Q.loc&&Q.loc())||'en';
+    if(loc!=='ja') return A1M_VERB_I18N.en;
+    var st=null; try{ st=Q&&Q.state&&Q.state(); }catch(e){}
+    var kanji=!!(st&&st.player&&st.player.state&&st.player.state.kanjiMode);
+    return kanji?A1M_VERB_I18N.jaKanji:A1M_VERB_I18N.ja;
+  }
+  // Tile -> verb. `Save` is NOT here: menu.save ships in every locale, so it goes through Z() below
+  // and cannot drift from the save wording used everywhere else in the game.
   var A1M_PROMPT_VERB={4:'Open',7:'Battle',14:'Save',18:'Read'};
   var A1M_PROMPT_TILE={4:1,7:1,14:1,18:1};
   /* ---- THE TWO CRYSTALS ARE DIFFERENT OBJECTS, AND ONE OF THEM STARTS DEAD -----------------------
@@ -4580,8 +4612,10 @@
     // "Save" would be a lie on the entrance crystal now that saving is the one thing it cannot do
     // (a1mCrystalDormant's header). It is only ever reachable here once activated, and its whole
     // effect is the warp, so the button says so.
-    el.textContent=(target.t===14 && a1mCrystalIsEntrance(scene)) ? 'Warp'
-                 : (A1M_PROMPT_VERB[target.t]||'Interact');
+    var Qp=window.__QOK, Zp=(Qp&&Qp.Z)||function(k){return k;}, verb=a1mVerbTable();
+    el.textContent=(target.t===14 && a1mCrystalIsEntrance(scene)) ? verb.warp
+                 : (target.t===14) ? (Zp('menu.save')||'Save')
+                 : (verb[target.t]||verb.any);
     el.classList.add('a1m-show');
   }
   // Everything the engine's own update() refuses to move under. Kept as one list so a new
