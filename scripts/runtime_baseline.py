@@ -438,7 +438,7 @@ ACT1_TOWN_FILES = {
     "act1-hifi/town/portSapphire-walkable.json": (
         31082, "fe4278aec0e644b09415c2546b252662a535bd3c1e340d27e32ea0b28f2f8675"),
     "act1-hifi/town/portSapphire-screen.png": (
-        8764303, "07d5e10bb9eebdaf135862b44b614c8441349686bfae316d8d1d6e915269eda7"),
+        8747966, "f0d29456d4750fe074fdae1722b69a61cc23cabb4adcf97e1f6308befe4211ff"),
     # 2026-08-14, owner-authorised ("draw over the hero AND be passable"): the overhead-prop
     # foreground layer -- mast, demijohn, rooftop chimney -- re-extracted from the SAME locked
     # painting by scripts/derive_town_foreground.py and drawn by town.html AFTER the hero/NPC

@@ -70,13 +70,32 @@ def primer(i, j, plate):
     The band is now taken from the neighbour's RAW generated output, at the generator's own
     resolution, so it reaches the model as obviously-finished pixels in the target style. That is the
     whole difference between "here is a blurry hint" and "here is the drawing you are continuing".
+
+    THE SCALE FACTOR IS PER AXIS, AND ASSUMING IT WAS NOT COST THE PLATE ITS WORST SEAM.
+    A tile with a band on only one side is NOT square in final pixels -- tile (1,0) covers 975 x
+    1105 -- yet the primer is always 1254x1254, so the primer is aspect-distorted and its px-per-
+    final-px differs between the axes (1.286 across, 1.135 down). The first version computed one
+    `k = GEN / W` from the WIDTH and used it for the TOP graft as well, and computed the neighbour's
+    raw-px-per-final-px from the neighbour's WIDTH when cropping a strip off its BOTTOM. Both are
+    the wrong axis, and the two errors do not cancel:
+
+        tile (1,0)  top band pasted 167 primer rows tall where 130 final px is 148  -> +13% stretch
+        tile (1,1)  bottom strip cropped 148 raw rows where 130 final px is 167     -> +13% stretch
+
+    So the "already finished artwork" the brief tells the generator to reproduce exactly arrived
+    VERTICALLY STRETCHED, and the generator faithfully reproduced the stretch. Measured against what
+    each band was supposed to be showing, luminance correlation 0.475 for tile (1,0) and 0.505 for
+    (1,1), peaking at 0.635 once shifted by dy=+10 and dy=-6 -- the signature of a scale error, not
+    of a redraw. The LEFT bands, whose axis happened to match `k`, correlate 0.88 with no shift.
+    That is the whole of the y=975 seam: the joins that used the right scale are fine and the joins
+    that used the wrong one are not.
     """
     x0, y0 = j * TILE - (BAND if j else 0), i * TILE - (BAND if i else 0)
     x1, y1 = x0 + TILE + (BAND if j else 0), y0 + TILE + (BAND if i else 0)
-    W = x1 - x0
+    W, H = x1 - x0, y1 - y0
     ref = Image.open(REF).convert("RGB").resize((PLATE, PLATE), Image.LANCZOS)
     pr = ref.crop((x0, y0, x1, y1)).resize((GEN, GEN), Image.LANCZOS)
-    k = GEN / W                                   # primer px per final px
+    kx, ky = GEN / W, GEN / H                     # primer px per final px, PER AXIS
 
     def graft(ni, nj, side):
         """Paste the neighbour's own raw output into this primer's band, at generator detail."""
@@ -84,18 +103,17 @@ def primer(i, j, plate):
         if not os.path.exists(raw_p):
             return
         raw = Image.open(raw_p).convert("RGB")
-        nw = TILE + (BAND if nj else 0)           # final px the neighbour's raw image covers
-        rk = raw.size[0] / nw                     # raw px per final px
-        b = int(round(BAND * rk))
-        strip = raw.crop((raw.size[0] - b, 0, raw.size[0], raw.size[1])) if side == "left" else \
-                raw.crop((0, raw.size[1] - b, raw.size[0], raw.size[1]))
-        tgt = int(round(BAND * k))
+        nW = TILE + (BAND if nj else 0)           # final px the neighbour's raw image covers, x
+        nH = TILE + (BAND if ni else 0)           #                                            y
         if side == "left":
-            strip = strip.resize((tgt, GEN), Image.LANCZOS)
-            pr.paste(strip, (0, 0))
+            b = int(round(BAND * raw.size[0] / nW))       # raw COLUMNS spanning BAND final px
+            strip = raw.crop((raw.size[0] - b, 0, raw.size[0], raw.size[1]))
+            strip = strip.resize((int(round(BAND * kx)), GEN), Image.LANCZOS)
         else:
-            strip = strip.resize((GEN, tgt), Image.LANCZOS)
-            pr.paste(strip, (0, 0))
+            b = int(round(BAND * raw.size[1] / nH))       # raw ROWS spanning BAND final px
+            strip = raw.crop((0, raw.size[1] - b, raw.size[0], raw.size[1]))
+            strip = strip.resize((GEN, int(round(BAND * ky))), Image.LANCZOS)
+        pr.paste(strip, (0, 0))
 
     if j:
         graft(i, j - 1, "left")
@@ -111,7 +129,7 @@ it has been enlarged from a smaller rendering. Every building, street, fence, tr
 patch of ground is ALREADY IN THE RIGHT PLACE at the right size. Reproduce all of it exactly where
 it is. Do not move anything, do not resize anything, do not add a building, do not remove one, do
 not redesign anything. Your only job is to draw what is here properly.
-
+{addition}
 {bandnote}
 OUTPUT: one RGB PNG the same pixel dimensions as the input. Print its absolute path on a line of
 its own. Do not delete it and do not write anywhere under /tmp.
@@ -131,6 +149,59 @@ LIGHT AND PALETTE. One upper-left sun, short soft shadows, bright coastal daylig
 about 90. Do not darken, warm or cool it.
 """
 
+ADDITION = """
+ONE THING IS MISSING FROM THE LAYOUT AND YOU MUST ADD IT. {add} This is the single exception to
+"do not add anything": everything ELSE is already in place and is only being drawn properly.
+"""
+
+# ---- EDITING AN ALREADY-ACCEPTED TILE ------------------------------------------------------------
+# MEASURED 2026-08-18: THIS DOES NOT WORK ON THIS MODEL, AND THE MEASUREMENT IS THE POINT.
+# The first attempt asked gpt-5.6-sol to add one chimney to tile (0,0) and change nothing else. It
+# changed 27.8% of the tile's pixels by more than 18 luminance, over a bounding box covering the
+# whole 975x975 cell -- it redrew the market stall at a different size and position -- and it did
+# NOT draw the chimney. So the result failed on both halves at once: not local, and not the edit.
+# `--suffix` is what caught it, by keeping the candidate out of the plate until it was measured.
+#
+# The tool is image-to-image generation, not inpainting; there is no mask, so "leave the rest alone"
+# is a request the model has no mechanism to honour. Adding a prop therefore goes through --add on
+# the FULL bake instead, which is the path that produced the accepted plate, and it is only safe on
+# a tile NOTHING ELSE DEPENDS ON. Generation runs in reading order and each tile's band is grafted
+# from its left and upper neighbours' raw output, so re-baking tile (1,1) invalidates nothing, while
+# re-baking tile (0,0) invalidates all three others.
+#
+# The edit path is kept because it is the right shape for the job and would work against a model
+# with a mask; do not reach for it again on this one without re-running the locality measurement.
+# Restoring a prop is NOT the same job as baking a tile, and running it through BRIEF would throw
+# away work the owner has already approved. BRIEF primes from `rebake-v1-raw.png`, a blurry layout
+# hint, and asks for a full redraw -- so a tile regenerated that way comes back as a DIFFERENT
+# drawing of the same layout. The owner said "port sapphire looks perfect now"; a redraw spends that.
+#
+# The edit brief primes from the tile's OWN raw output instead: finished art, at the generator's
+# native resolution, i.e. the exact condition the neighbour-band mechanism already relies on to get
+# faithful reproduction (measured: bands grafted at native resolution correlate 0.88, bands that
+# arrived upscaled were redrawn outright). The tile is then verified by correlating the result
+# against its source OUTSIDE the edit box; a low score means the model redrew rather than edited,
+# and the result is rejected rather than shipped.
+EDIT_BRIEF = """This image is FINISHED hand-drawn pixel art. It is not a sketch and it does not need
+improving. Your job is a single local edit, and everything else must survive untouched.
+
+THE EDIT: {edit}
+
+EVERYTHING ELSE IS UNCHANGED. Outside the area named above, reproduce this image EXACTLY --
+pixel for pixel, the same shapes, the same colours, the same dithering, the same level of detail.
+Do not redraw the buildings. Do not restyle the ground. Do not move, resize, add or remove anything
+else. Do not brighten, darken, warm or cool the image. Do not sharpen, blur, posterize or reduce the
+palette. If you are unsure whether something is part of the edit, it is not: leave it alone.
+
+MATCH THE DRAWING YOU ARE EDITING. The new object must be drawn in the same hand as the rest of the
+image: hard-edged, flat shading in two or three discrete steps per material, dithering for
+transitions, individual stones and planks and panes, lit from the upper left with a short soft
+shadow on the ground beneath it. It must look like it was always there.
+
+OUTPUT: one RGB PNG the same pixel dimensions as the input. Print its absolute path on a line of
+its own. Do not delete it and do not write anywhere under /tmp.
+"""
+
 BANDNOTE = """THE {which} OF THIS IMAGE IS ALREADY FINISHED ARTWORK, carried over from the tile
 drawn before this one. Reproduce those {bandpx} pixels EXACTLY -- same shapes, same colours, same
 level of detail -- and continue that same drawing inward across the rest of the tile. Do not
@@ -144,7 +215,18 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--only", help="i,j to regenerate a single tile")
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--edit", help="edit an ALREADY-BAKED tile instead of rebaking it: primes from "
+                                   "the tile's own raw output and applies only this instruction. "
+                                   "MEASURED NOT TO WORK on gpt-5.6-sol -- see ADDITION's comment")
+    ap.add_argument("--add", help="one prop the layout reference does not contain, to be drawn "
+                                  "during a FULL bake. Only safe on a tile no other tile's band "
+                                  "is grafted from, i.e. the last in reading order")
+    ap.add_argument("--suffix", default="", help="write raw-/tile-<ij><suffix>.png, so an edit "
+                                                 "attempt can be measured before it replaces "
+                                                 "anything")
     a = ap.parse_args()
+    if a.edit and not a.only:
+        ap.error("--edit needs --only i,j: an edit is local to one tile by definition")
     os.makedirs(OUT, exist_ok=True)
     plate_p = os.path.join(OUT, "plate.png")
     plate = (Image.open(plate_p).convert("RGB") if os.path.exists(plate_p)
@@ -153,15 +235,27 @@ def main():
     cells = [tuple(int(v) for v in a.only.split(","))] if a.only else \
             [(i, j) for i in range(N) for j in range(N)]
     for i, j in cells:
-        pr, box = primer(i, j, plate)
-        pp = os.path.join(OUT, f"primer-{i}{j}.png")
-        pr.save(pp)
-        which = ("LEFT EDGE" if j and not i else "TOP EDGE" if i and not j
-                 else "LEFT AND TOP EDGES" if i and j else None)
-        bn = "" if which is None else BANDNOTE.format(
-            which=which, bandpx=int(round(BAND * GEN / (TILE + BAND))))
-        brief = BRIEF.format(i=i, j=j, bandnote=bn)
-        bp = os.path.join(OUT, f"brief-{i}{j}.md")
+        if a.edit:
+            src = os.path.join(OUT, f"raw-{i}{j}.png")
+            if not os.path.exists(src):
+                raise SystemExit(f"--edit needs {src}: there is no baked tile to edit")
+            pr = Image.open(src).convert("RGB")
+            box = (j * TILE - (BAND if j else 0), i * TILE - (BAND if i else 0),
+                   j * TILE + TILE, i * TILE + TILE)
+            pp = os.path.join(OUT, f"primer-{i}{j}-edit.png")
+            pr.save(pp)
+            brief = EDIT_BRIEF.format(edit=a.edit)
+        else:
+            pr, box = primer(i, j, plate)
+            pp = os.path.join(OUT, f"primer-{i}{j}.png")
+            pr.save(pp)
+            which = ("LEFT EDGE" if j and not i else "TOP EDGE" if i and not j
+                     else "LEFT AND TOP EDGES" if i and j else None)
+            bn = "" if which is None else BANDNOTE.format(
+                which=which, bandpx=int(round(BAND * GEN / (TILE + BAND))))
+            brief = BRIEF.format(i=i, j=j, bandnote=bn,
+                                 addition=ADDITION.format(add=a.add) if a.add else "")
+        bp = os.path.join(OUT, f"brief-{i}{j}{'-edit' if a.edit else ''}.md")
         open(bp, "w").write(brief)
         print(f"  tile {i},{j}  primer {pr.size}  box {box}  -> {os.path.relpath(pp, ROOT)}")
         if a.dry_run:
@@ -173,21 +267,32 @@ def main():
         if not got:
             print(f"    FAILED (exit {r.returncode}); last output:\n{r.stdout[-600:]}")
             continue
-        Image.open(got).convert("RGB").save(os.path.join(OUT, f"raw-{i}{j}.png"))
+        sfx = a.suffix
+        Image.open(got).convert("RGB").save(os.path.join(OUT, f"raw-{i}{j}{sfx}.png"))
         art = Image.open(got).convert("RGB").resize(
             (box[2] - box[0], box[3] - box[1]), Image.LANCZOS)
-        art.save(os.path.join(OUT, f"tile-{i}{j}.png"))
+        art.save(os.path.join(OUT, f"tile-{i}{j}{sfx}.png"))
+        print(f"    -> {os.path.relpath(got, os.path.expanduser('~'))}  "
+              f"raw-/tile-{i}{j}{sfx}.png written")
+        if sfx:
+            # A suffixed run is a CANDIDATE. It is not allowed to touch the plate or the unsuffixed
+            # tiles until it has been measured -- which is the whole reason the flag exists.
+            continue
         # THE BAND IS INPUT CONTEXT, NOT OUTPUT. Pasting the whole tile, band included, overwrites
         # the neighbour's finished pixels with this tile's re-drawing of them -- and the generator
         # does not reproduce them exactly, so the join became a hard edge: measured 88.7 mean step
         # across x=554 against a plate mean of 20.4, i.e. 4.3x. Pasting only the tile's OWN cell
         # leaves the neighbour intact and leaves the band doing what it was for, which is telling
         # the generator what it is drawing towards.
+        #
+        # scripts/stitch_plate.py supersedes this paste for the SHIPPED plate: a hard cut has no
+        # tolerance for whatever disagreement survives, and the 130 px overlap it throws away is
+        # exactly what a minimum-error cut needs. This paste is kept as the pipeline's own running
+        # preview, not as the thing that goes to the owner.
         ox, oy = (BAND if j else 0), (BAND if i else 0)
         own = art.crop((ox, oy, ox + TILE, oy + TILE))
         plate.paste(own, (j * TILE, i * TILE))
         plate.save(plate_p)
-        print(f"    -> {os.path.relpath(got, os.path.expanduser('~'))}  placed at {box[:2]}")
     print("  plate ->", os.path.relpath(plate_p, ROOT))
     return 0
 
