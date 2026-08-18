@@ -478,6 +478,12 @@ ACT1_TOWN_FILES = {
         67532, "f5940bc2ba64a6a13d5851185d0dd11a989dd07cc23735436d91b3e85b93b324"),
     "act1-hifi/town/npc/millbrook-sage-4x3-64.png": (
         51514, "9d99d1436b613bf3c733b7ff6907cde413e154095c7dfb686c489a2bad226a60"),
+    "act1-hifi/town/greenhollow-walkable.json": (
+        5818, "756a877cad2c30c1b7384b3b5a2b70c1041369512a1d587a6d5df8106abdc3d9"),
+    "act1-hifi/town/millbrook-walkable.json": (
+        5741, "c391c3ad1d0cacbe1d5aca006b2e65d9fe615a13e42ed267a09fb55ceb7d506e"),
+    "act1-hifi/town/millbrook-town.json": (
+        3804, "c7df49fdf74853844c2db6a63caa94346b94e529cce498e85df639813fa87bd2"),
     "act1-hifi/verify/seed.html": (
         2089, "6f34401b6845582f223abdc80dd191c3a1392bc7808aee81d11eb89313b80c14"),
 }
