@@ -716,20 +716,42 @@
   }
 
   /* ---- DIFFICULTY WHEEL BEHAVIOUR -------------------------------------------------------------
-     The markup is in renderIntro(); the SELECTION lives here, imperatively, because the wheel and a
-     re-render cannot share ownership of scrollTop. `di` is out of the intro signature (see there),
-     so nothing rebuilds this element while the player is dragging it.
+     The markup is in renderIntro(); the SELECTION lives here. `di` is out of the intro signature
+     (see there), so nothing rebuilds this element while the player is dragging it.
 
-     GEOMETRY, and it has to agree with the CSS or the wheel lies about what is selected: the
-     viewport is 3 rows of GROW_ROW (34px, iOS-picker sized -- the whole row is also a tap target), the list is padded by one row top and bottom, so row `i` is
-     centred exactly when scrollTop === i * GROW_ROW. Changing .gopt/.gwheel-pad height in
-     ui-overhaul.css means changing this constant.
+     THERE IS NO LONGER A ROW-HEIGHT CONSTANT HERE, and its absence is the point. The old GROW_ROW
+     had to equal .gopt/.gwheel-pad in ui-overhaul.css by hand, and every index was
+     `Math.round(scrollTop / GROW_ROW)` -- two files that silently disagreed the moment either
+     changed. syncGradeWheel now MEASURES which row is centred (offsetTop/offsetHeight against
+     clientHeight), so the CSS is free to move and the script cannot fall out of step with it. */
+  /* THE GRADE WHEEL, BUILT THE WAY PLATFORM PICKERS ARE BUILT.
+     Owner, three builds running: "it snaps back to the previously selected one ... research the
+     industry standard way to generate it and apply the fix and stop trying to re-invent the wheel."
 
-     The scroll listener is attached ONCE per element (guarded by __gwWired) and settles on a short
-     timer rather than on every scroll event, so a flick does not write the player's difficulty
-     seven times on its way past. The `.sel` class follows the finger immediately even so, because
-     the highlight lagging the scroll is the thing that makes a wheel feel broken. */
-  var GROW_ROW = 34;   // must equal .gopt / .gwheel-pad height in ui-overhaul.css
+     THE BUG WAS NEVER THE SNAP MODE. Every previous version had the script writing `scrollTop` back
+     while the browser was mid-gesture -- a settle timer that "corrected" the position, plus this,
+     which ran on EVERY repaint:
+
+         else if (!el.__gwTimer && el.__gwDi !== want) el.scrollTop = want * GROW_ROW;
+
+     `want` is read from ts.difficultyIndex, i.e. the value BEFORE the flick commits. So any repaint
+     landing between the gesture and the commit hauled the list back to the previous row. That is
+     exactly "it snaps back to the previously selected one", and no amount of tuning `proximity`,
+     timers or thresholds could fix it, because the script and the compositor were both trying to
+     own the scroll position.
+
+     THE STANDARD SHAPE, which is what iOS/Android pickers and every scroll-snap carousel do:
+       1. The BROWSER owns the physics. `scroll-snap-type: y mandatory` + `scroll-snap-align: center`
+          on the rows. The script never assigns scrollTop during a gesture -- not once.
+       2. The settled value is READ, not computed mid-flight, on the `scrollend` event. That event
+          exists precisely because "the scroll has finished" is not derivable from scroll events, and
+          hand-rolled idle timers get it wrong under momentum. A debounce fallback covers engines
+          without it.
+       3. Which row is selected is MEASURED GEOMETRICALLY -- the row whose centre is nearest the
+          viewport centre -- instead of `Math.round(scrollTop / ROW_HEIGHT)`. The arithmetic version
+          silently breaks whenever padding, row height or the band change, and it had to agree with
+          the CSS by hand.
+       4. An external change may reposition the list ONLY when the finger is off it. */
   function syncGradeWheel(ts, rebuilt) {
     var el = document.getElementById('qok-gwheel');
     if (!el || !ts) return;
@@ -742,48 +764,61 @@
         if (k === i) opts[k].classList.add('sel'); else opts[k].classList.remove('sel');
       }
     }
+    // MEASURED, not derived from an assumed row height: the row whose centre is closest to the
+    // wheel's own centre line. Survives any change to padding, row height or the selection band.
+    function nearest() {
+      var mid = el.scrollTop + el.clientHeight / 2, best = 0, bestD = Infinity;
+      for (var k = 0; k < opts.length; k++) {
+        var d = Math.abs((opts[k].offsetTop + opts[k].offsetHeight / 2) - mid);
+        if (d < bestD) { bestD = d; best = k; }
+      }
+      return best;
+    }
+    function topFor(i) {
+      return opts[i].offsetTop + opts[i].offsetHeight / 2 - el.clientHeight / 2;
+    }
+    function commit() {
+      var j = nearest();
+      el.__gwDi = j; el.__gwShown = j;
+      try { ts.difficultyIndex = j; } catch (e) {}      // the bundle reads this on Start
+      mark(j);
+    }
 
     if (!el.__gwWired) {
       el.__gwWired = true;
+      // The highlight follows the finger immediately -- a highlight that lags the scroll is what
+      // makes a wheel feel broken. It does NOT commit; only scrollend does.
       el.addEventListener('scroll', function () {
-        var i = Math.round(el.scrollTop / GROW_ROW);
-        i = Math.max(0, Math.min(opts.length - 1, i));
+        var i = nearest();
         if (i !== el.__gwShown) { el.__gwShown = i; mark(i); }
-        /* SETTLE ONLY ONCE THE FLICK HAS ACTUALLY STOPPED. Owner: "i want the movement to be smooth
-           like a real wheel." The first version committed the selection 90 ms after the last scroll
-           event, which on iOS momentum fires mid-glide -- so a flick wrote a difficulty, then
-           another, then another, and the `scrollTo` correction below could fight the finger. Now it
-           waits for the position to stop CHANGING (two idle checks, 120 ms apart) before it commits
-           and nudges the row into line. */
-        if (el.__gwTimer) clearTimeout(el.__gwTimer);
-        el.__gwTimer = setTimeout(function settle() {
-          if (el.scrollTop !== el.__gwLastTop) {          // still gliding -- look again
-            el.__gwLastTop = el.scrollTop;
-            el.__gwTimer = setTimeout(settle, 120);
-            return;
-          }
-          el.__gwTimer = 0;
-          var j = Math.max(0, Math.min(opts.length - 1, Math.round(el.scrollTop / GROW_ROW)));
-          el.__gwDi = j;
-          ts.difficultyIndex = j;                 // the bundle reads this on Start
-          mark(j);
-          // `proximity` snapping may leave it a few px off a row; glide the rest of the way.
-          if (Math.abs(el.scrollTop - j * GROW_ROW) > 1) el.scrollTop = j * GROW_ROW;
-        }, 120);
+        if (!('onscrollend' in el)) {                    // fallback only where scrollend is absent
+          if (el.__gwT) clearTimeout(el.__gwT);
+          el.__gwT = setTimeout(commit, 140);
+        }
       }, { passive: true });
+      if ('onscrollend' in el) el.addEventListener('scrollend', commit);
+
+      // Whether the finger is on the wheel. An external sync must never haul the list out from
+      // under it -- that is the same class of bug as the correction this replaces.
+      ['pointerdown', 'touchstart'].forEach(function (t) {
+        el.addEventListener(t, function () { el.__gwHold = true; }, { passive: true });
+      });
+      ['pointerup', 'pointercancel', 'touchend', 'touchcancel'].forEach(function (t) {
+        el.addEventListener(t, function () { el.__gwHold = false; }, { passive: true });
+      });
     }
 
-    // A tap on a row, or a rebuild, is the only other way the selection moves. Do not fight a scroll
-    // in progress: if the player's finger is driving it, __gwTimer is pending and this stays out.
     if (rebuilt) {
-      // First paint: land on the saved row without animating there from the top.
+      // First paint: land on the saved row without animating down from the top.
       var sb = el.style.scrollBehavior; el.style.scrollBehavior = 'auto';
-      el.scrollTop = want * GROW_ROW;
+      el.scrollTop = topFor(want);
       el.style.scrollBehavior = sb || '';
       el.__gwDi = want; el.__gwShown = want; mark(want);
-    } else if (!el.__gwTimer && el.__gwDi !== want) {
+    } else if (!el.__gwHold && el.__gwDi !== want) {
+      // An external change (a load, a reset) -- never a correction of the player's own scroll.
       el.__gwDi = want; el.__gwShown = want; mark(want);
-      el.scrollTop = want * GROW_ROW;          // CSS scroll-behavior:smooth animates this
+      try { el.scrollTo({ top: topFor(want), behavior: 'smooth' }); }
+      catch (e) { el.scrollTop = topFor(want); }
     }
   }
 

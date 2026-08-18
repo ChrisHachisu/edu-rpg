@@ -203,13 +203,20 @@
    the band drawn behind it rather than by colouring the row, so the text does not shift as it
    passes through. Rows stay tappable too: a wheel that can only be dragged is slower for a
    deliberate pick, and the tap target is the same element either way. */
-/* SNAP IS `proximity`, NOT `mandatory`. Owner on build 41: "the behavior is a bit finicky. i want
-   the movement to be smooth like a real wheel." `mandatory` re-targets the scroller on EVERY frame
-   of a flick, so the list fights the finger and lands hard; `proximity` lets the flick run its own
-   momentum and only settles when it is already near a row. `scroll-behavior:smooth` then makes the
-   programmatic corrections glide rather than jump. */
+/* SNAP IS `mandatory`, AND THE SCRIPT NEVER CORRECTS THE SCROLL. Owner on builds 41, 43 and 47:
+   "the behavior is a bit finicky ... it snaps back to the previously selected one ... research the
+   industry standard way to generate it and stop trying to re-invent the wheel."
+
+   `mandatory` is correct here and `proximity` was a workaround for the real bug. The list fought the
+   finger because the SCRIPT wrote scrollTop back during the gesture, not because of the snap mode --
+   see syncGradeWheel. With the script no longer correcting anything, the browser owns the physics
+   end to end, which is what every native picker does and what the platform is tuned for.
+
+   `scroll-behavior:smooth` is NOT set globally: it applied to the user's own scrolling too, and a
+   smooth-behaviour scroller cannot land crisply on a snap point. Deliberate programmatic moves ask
+   for smooth per call via scrollTo({behavior:'smooth'}). */
 #qok-ui .gwheel{position:relative;z-index:1;background:transparent;height:102px;overflow-y:auto;overflow-x:hidden;
-  scroll-snap-type:y proximity;scroll-behavior:smooth;overscroll-behavior:contain;
+  scroll-snap-type:y mandatory;overscroll-behavior:contain;
   -webkit-overflow-scrolling:touch;scrollbar-width:none;
   mask-image:linear-gradient(to bottom,transparent,#000 22%,#000 78%,transparent);
   -webkit-mask-image:linear-gradient(to bottom,transparent,#000 22%,#000 78%,transparent);}
