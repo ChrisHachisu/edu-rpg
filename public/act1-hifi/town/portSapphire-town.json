@@ -6,7 +6,7 @@
  "foreground": "town/portSapphire-foreground.png",
  "walkable": "town/portSapphire-walkable.json",
  "cells": 65,
- "artPxPerCell": 29,
+ "artPxPerCell": 30,
  "worldPxPerCell": 16,
  "startCell": [
   33.0,

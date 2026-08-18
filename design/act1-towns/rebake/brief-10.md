@@ -1,12 +1,12 @@
 Redraw this image at full detail as hand-drawn, hard-edged pixel art.
 
-It is ONE NINTH of a top-down JRPG harbour town, tile (1,1) of a 3x3 grid, shown blurry because
+It is ONE NINTH of a top-down JRPG harbour town, tile (1,0) of a 3x3 grid, shown blurry because
 it has been enlarged from a smaller rendering. Every building, street, fence, tree, boat, jetty and
 patch of ground is ALREADY IN THE RIGHT PLACE at the right size. Reproduce all of it exactly where
 it is. Do not move anything, do not resize anything, do not add a building, do not remove one, do
 not redesign anything. Your only job is to draw what is here properly.
 
-THE LEFT AND TOP EDGES OF THIS IMAGE IS ALREADY FINISHED ARTWORK, carried over from the tile
+THE TOP EDGE OF THIS IMAGE IS ALREADY FINISHED ARTWORK, carried over from the tile
 drawn before this one. Reproduce those 148 pixels EXACTLY -- same shapes, same colours, same
 level of detail -- and continue that same drawing inward across the rest of the tile. Do not
 restyle them, do not brighten them, do not reinterpret them. They are the join, and a visible
