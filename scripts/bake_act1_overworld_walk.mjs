@@ -89,7 +89,11 @@ const PLATE_PATH = resolve(ROOT, 'public/act1-world-map.js');
 
 const BUNDLE_SHA256 = 'a56026574b42168985b353e4cee824562716af83f92d03f408df04eac9127381';
 const FINAL_MAP_SHA256 = '2d82e050b51095280b74395db8656aed52ae919206385827502265f6e0a65202';
-const PLATED_MAP_SHA256 = '01337b61c117ecbfd6fa7704fdcf7cbf0c90b4eba56d726fea93dd21c959e453';
+// Moved 2026-08-18 by the single-entrance pass: act1-world-map.js now stamps 44 landmark-footprint
+// blocker cells (tile 21) so the player cannot walk on top of a drawn town or cave. Tile 21 is not
+// water, bridge or mountain, so the FIELD this file bakes is byte-identical either side of that
+// change -- only the plated map's identity moved, which is exactly what this pin is for.
+const PLATED_MAP_SHA256 = '6d85b741fd8ab815aee102f73f0b9cb0696d38d957ef309c3f5f480a5bd21d7c';
 const MAP_WIDTH = 320, MAP_HEIGHT = 400;
 const ACT1_START = [60, 341];
 const ACT1_BOUNDS = [16, 218, 163, 399];

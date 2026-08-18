@@ -122,7 +122,7 @@ ACT1_OVERLAY_FILES = {
     # three inputs (the frozen bundle's generator, dq-tiles.js's consolidator, dq-tiles.js's own
     # field functions, which the bake SLICES rather than re-implements so the two cannot drift).
     "act1-overworld-walk.bin": (
-        10803776, "06fd52e12efc6a3420004b19a621d363ac8b84b1827f3fff01c826da2dcb656c"),
+        10803776, "7c11c5d3adf224e62ebd9b7353d7a3425f750afc2bc921e2142629a0b707345a"),
     # 2026-08-03, owner direction ("please redo the collision setting based on what i created (my
     # paint)"): the Act-1 collision plate is now generated from the OWNER'S PAINTED TERRAIN
     # (owner-terrain.json acts.1 + continent-macro-g3/land-mask.npy) instead of the generated
@@ -155,7 +155,7 @@ ACT1_OVERLAY_FILES = {
     # still green, because staging and git are two different lists.
     "assets/hero/hero-male-walk.png": (59032, "88cbed8f9d707b216ada01e108eedd5822c6bcfc69c8dd22af2457f231dc0976"),
     "act1-world-map.js": (
-        47_908, "e5713be14ece51788798893c09a057d601d486671f97254dfb1825077ffe26b4"),
+        48811, "5b25a1fb48dee783622685cbd81b9f96218d861f15fb5178271d7ba1e2db37ff"),
     # 2026-08-06, from device: the Port Sapphire movement stick was anchored bottom-LEFT and its
     # lower half sat behind the field tab bar, where the overworld and every dungeon put the same
     # control bottom-right and fully visible. The town runs in a same-origin IFRAME

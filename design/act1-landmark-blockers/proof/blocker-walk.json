@@ -1,0 +1,574 @@
+{
+  "url": "http://127.0.0.1:5231/",
+  "rows": [
+    {
+      "mapId": "greenhollow",
+      "side": "north",
+      "start": {
+        "x": 69,
+        "y": 253,
+        "step": 2
+      },
+      "seat": "blocked",
+      "fired": null,
+      "endCell": {
+        "x": 69,
+        "y": 253
+      },
+      "verdict": "REFUSED",
+      "restedOnBlocker": false,
+      "wrongDoors": []
+    },
+    {
+      "mapId": "greenhollow",
+      "side": "south",
+      "start": {
+        "x": 69,
+        "y": 257,
+        "step": 2
+      },
+      "seat": "standable",
+      "fired": {
+        "x": 69,
+        "y": 255
+      },
+      "endCell": {
+        "x": 8,
+        "y": 14
+      },
+      "verdict": "DOOR FIRED, entered",
+      "restedOnBlocker": false,
+      "wrongDoors": []
+    },
+    {
+      "mapId": "greenhollow",
+      "side": "east",
+      "start": {
+        "x": 72,
+        "y": 255,
+        "step": 3
+      },
+      "seat": "blocked",
+      "fired": null,
+      "endCell": {
+        "x": 72,
+        "y": 255
+      },
+      "verdict": "REFUSED",
+      "restedOnBlocker": false,
+      "wrongDoors": []
+    },
+    {
+      "mapId": "greenhollow",
+      "side": "west",
+      "start": {
+        "x": 66,
+        "y": 255,
+        "step": 3
+      },
+      "seat": "blocked",
+      "fired": null,
+      "endCell": {
+        "x": 67,
+        "y": 255
+      },
+      "verdict": "REFUSED",
+      "restedOnBlocker": false,
+      "wrongDoors": []
+    },
+    {
+      "mapId": "millbrook",
+      "side": "north",
+      "start": {
+        "x": 39,
+        "y": 341,
+        "step": 3
+      },
+      "seat": "blocked",
+      "fired": null,
+      "endCell": {
+        "x": 39,
+        "y": 341
+      },
+      "verdict": "REFUSED",
+      "restedOnBlocker": false,
+      "wrongDoors": []
+    },
+    {
+      "mapId": "millbrook",
+      "side": "south",
+      "start": {
+        "x": 39,
+        "y": 346,
+        "step": 2
+      },
+      "seat": "standable",
+      "fired": {
+        "x": 39,
+        "y": 344
+      },
+      "endCell": {
+        "x": 8,
+        "y": 14
+      },
+      "verdict": "DOOR FIRED, entered",
+      "restedOnBlocker": false,
+      "wrongDoors": []
+    },
+    {
+      "mapId": "millbrook",
+      "side": "east",
+      "start": {
+        "x": 42,
+        "y": 344,
+        "step": 3
+      },
+      "seat": "blocked",
+      "fired": null,
+      "endCell": {
+        "x": 42,
+        "y": 344
+      },
+      "verdict": "REFUSED",
+      "restedOnBlocker": false,
+      "wrongDoors": []
+    },
+    {
+      "mapId": "millbrook",
+      "side": "west",
+      "start": {
+        "x": 36,
+        "y": 344,
+        "step": 3
+      },
+      "seat": "blocked",
+      "fired": null,
+      "endCell": {
+        "x": 37,
+        "y": 344
+      },
+      "verdict": "REFUSED",
+      "restedOnBlocker": false,
+      "wrongDoors": []
+    },
+    {
+      "mapId": "portSapphire",
+      "side": "north",
+      "start": {
+        "x": 133,
+        "y": 347,
+        "step": 2
+      },
+      "seat": "standable",
+      "fired": {
+        "x": 133,
+        "y": 348
+      },
+      "endCell": {
+        "x": 8,
+        "y": 14
+      },
+      "verdict": "DOOR FIRED, entered",
+      "restedOnBlocker": false,
+      "wrongDoors": []
+    },
+    {
+      "mapId": "portSapphire",
+      "side": "south",
+      "start": null,
+      "seat": "no ground",
+      "fired": null,
+      "verdict": "NO GROUND"
+    },
+    {
+      "mapId": "portSapphire",
+      "side": "east",
+      "start": {
+        "x": 136,
+        "y": 349,
+        "step": 3
+      },
+      "seat": "blocked",
+      "fired": null,
+      "endCell": {
+        "x": 136,
+        "y": 349
+      },
+      "verdict": "REFUSED",
+      "restedOnBlocker": false,
+      "wrongDoors": []
+    },
+    {
+      "mapId": "portSapphire",
+      "side": "west",
+      "start": {
+        "x": 130,
+        "y": 349,
+        "step": 3
+      },
+      "seat": "blocked",
+      "fired": null,
+      "endCell": {
+        "x": 130,
+        "y": 349
+      },
+      "verdict": "REFUSED",
+      "restedOnBlocker": false,
+      "wrongDoors": []
+    },
+    {
+      "mapId": "sunkenCellar",
+      "side": "north",
+      "start": {
+        "x": 30,
+        "y": 272,
+        "step": 2
+      },
+      "seat": "blocked",
+      "fired": null,
+      "endCell": {
+        "x": 30,
+        "y": 272
+      },
+      "verdict": "REFUSED",
+      "restedOnBlocker": false,
+      "wrongDoors": []
+    },
+    {
+      "mapId": "sunkenCellar",
+      "side": "south",
+      "start": {
+        "x": 30,
+        "y": 276,
+        "step": 2
+      },
+      "seat": "standable",
+      "fired": {
+        "x": 30,
+        "y": 274
+      },
+      "endCell": {
+        "x": 20,
+        "y": 26
+      },
+      "verdict": "DOOR FIRED, entered",
+      "restedOnBlocker": false,
+      "wrongDoors": []
+    },
+    {
+      "mapId": "sunkenCellar",
+      "side": "east",
+      "start": {
+        "x": 32,
+        "y": 274,
+        "step": 2
+      },
+      "seat": "blocked",
+      "fired": {
+        "x": 30,
+        "y": 274
+      },
+      "endCell": {
+        "x": 20,
+        "y": 27
+      },
+      "verdict": "DOOR FIRED, entered",
+      "restedOnBlocker": false,
+      "wrongDoors": []
+    },
+    {
+      "mapId": "sunkenCellar",
+      "side": "west",
+      "start": {
+        "x": 28,
+        "y": 274,
+        "step": 2
+      },
+      "seat": "blocked",
+      "fired": {
+        "x": 30,
+        "y": 274
+      },
+      "endCell": {
+        "x": 20,
+        "y": 26
+      },
+      "verdict": "DOOR FIRED, entered",
+      "restedOnBlocker": false,
+      "wrongDoors": []
+    },
+    {
+      "mapId": "whisperingWoodsCave",
+      "side": "north",
+      "start": {
+        "x": 101,
+        "y": 229,
+        "step": 2
+      },
+      "seat": "blocked",
+      "fired": null,
+      "endCell": {
+        "x": 101,
+        "y": 229
+      },
+      "verdict": "REFUSED",
+      "restedOnBlocker": false,
+      "wrongDoors": []
+    },
+    {
+      "mapId": "whisperingWoodsCave",
+      "side": "south",
+      "start": {
+        "x": 101,
+        "y": 233,
+        "step": 2
+      },
+      "seat": "standable",
+      "fired": {
+        "x": 101,
+        "y": 231
+      },
+      "endCell": {
+        "x": 101,
+        "y": 231
+      },
+      "verdict": "DOOR FIRED, story-gated",
+      "restedOnBlocker": false,
+      "wrongDoors": []
+    },
+    {
+      "mapId": "whisperingWoodsCave",
+      "side": "east",
+      "start": {
+        "x": 103,
+        "y": 231,
+        "step": 2
+      },
+      "seat": "blocked",
+      "fired": {
+        "x": 101,
+        "y": 231
+      },
+      "endCell": {
+        "x": 101,
+        "y": 231
+      },
+      "verdict": "DOOR FIRED, story-gated",
+      "restedOnBlocker": false,
+      "wrongDoors": []
+    },
+    {
+      "mapId": "whisperingWoodsCave",
+      "side": "west",
+      "start": {
+        "x": 99,
+        "y": 231,
+        "step": 2
+      },
+      "seat": "blocked",
+      "fired": {
+        "x": 101,
+        "y": 231
+      },
+      "endCell": {
+        "x": 101,
+        "y": 231
+      },
+      "verdict": "DOOR FIRED, story-gated",
+      "restedOnBlocker": false,
+      "wrongDoors": []
+    },
+    {
+      "mapId": "coastalReef",
+      "side": "north",
+      "start": {
+        "x": 144,
+        "y": 370,
+        "step": 2
+      },
+      "seat": "blocked",
+      "fired": null,
+      "endCell": {
+        "x": 144,
+        "y": 370
+      },
+      "verdict": "REFUSED",
+      "restedOnBlocker": false,
+      "wrongDoors": []
+    },
+    {
+      "mapId": "coastalReef",
+      "side": "south",
+      "start": null,
+      "seat": "no ground",
+      "fired": null,
+      "verdict": "NO GROUND"
+    },
+    {
+      "mapId": "coastalReef",
+      "side": "east",
+      "start": {
+        "x": 146,
+        "y": 372,
+        "step": 2
+      },
+      "seat": "standable",
+      "fired": {
+        "x": 145,
+        "y": 372
+      },
+      "endCell": {
+        "x": 145,
+        "y": 372
+      },
+      "verdict": "DOOR FIRED, story-gated",
+      "restedOnBlocker": false,
+      "wrongDoors": []
+    },
+    {
+      "mapId": "coastalReef",
+      "side": "west",
+      "start": null,
+      "seat": "no ground",
+      "fired": null,
+      "verdict": "NO GROUND"
+    },
+    {
+      "mapId": "mistyGrotto",
+      "side": "north",
+      "start": null,
+      "seat": "no ground",
+      "fired": null,
+      "verdict": "NO GROUND"
+    },
+    {
+      "mapId": "mistyGrotto",
+      "side": "south",
+      "start": {
+        "x": 96,
+        "y": 361,
+        "step": 2
+      },
+      "seat": "standable",
+      "fired": {
+        "x": 96,
+        "y": 359
+      },
+      "endCell": {
+        "x": 40,
+        "y": 27
+      },
+      "verdict": "DOOR FIRED, entered",
+      "restedOnBlocker": false,
+      "wrongDoors": []
+    },
+    {
+      "mapId": "mistyGrotto",
+      "side": "east",
+      "start": {
+        "x": 98,
+        "y": 359,
+        "step": 2
+      },
+      "seat": "blocked",
+      "fired": {
+        "x": 96,
+        "y": 359
+      },
+      "endCell": {
+        "x": 40,
+        "y": 27
+      },
+      "verdict": "DOOR FIRED, entered",
+      "restedOnBlocker": false,
+      "wrongDoors": []
+    },
+    {
+      "mapId": "mistyGrotto",
+      "side": "west",
+      "start": {
+        "x": 94,
+        "y": 359,
+        "step": 2
+      },
+      "seat": "blocked",
+      "fired": {
+        "x": 96,
+        "y": 359
+      },
+      "endCell": {
+        "x": 40,
+        "y": 27
+      },
+      "verdict": "DOOR FIRED, entered",
+      "restedOnBlocker": false,
+      "wrongDoors": []
+    },
+    {
+      "mapId": "crystalCave",
+      "side": "north",
+      "start": null,
+      "seat": "no ground",
+      "fired": null,
+      "verdict": "NO GROUND"
+    },
+    {
+      "mapId": "crystalCave",
+      "side": "south",
+      "start": {
+        "x": 149,
+        "y": 280,
+        "step": 2
+      },
+      "seat": "standable",
+      "fired": null,
+      "endCell": {
+        "x": 149,
+        "y": 280
+      },
+      "verdict": "REFUSED",
+      "restedOnBlocker": false,
+      "wrongDoors": []
+    },
+    {
+      "mapId": "crystalCave",
+      "side": "east",
+      "start": {
+        "x": 151,
+        "y": 278,
+        "step": 2
+      },
+      "seat": "standable",
+      "fired": {
+        "x": 149,
+        "y": 278
+      },
+      "endCell": {
+        "x": 76,
+        "y": 31
+      },
+      "verdict": "DOOR FIRED, entered",
+      "restedOnBlocker": false,
+      "wrongDoors": []
+    },
+    {
+      "mapId": "crystalCave",
+      "side": "west",
+      "start": {
+        "x": 147,
+        "y": 278,
+        "step": 2
+      },
+      "seat": "standable",
+      "fired": null,
+      "endCell": {
+        "x": 147,
+        "y": 278
+      },
+      "verdict": "REFUSED",
+      "restedOnBlocker": false,
+      "wrongDoors": []
+    }
+  ],
+  "errors": []
+}

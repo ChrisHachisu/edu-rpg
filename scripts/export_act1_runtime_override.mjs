@@ -17,6 +17,14 @@
 //   3. checkTransition     fires the eight Act-1 doors at the OWNER'S coordinates, both ways
 //   4. getCompassTarget    aims the quest compass at the owner's coordinates
 //
+// SINGLE ENTRANCE, 2026-08-18 (owner): "only one entrance for towns and dungeons (unless they
+// connect acts or in other special circumstances) and the edge need to be blockers so the user
+// cannot walk on top of it." The plate the builder hands over still calls the ground under every
+// landmark SPRITE plain grass, so the player walked over the drawn palisade and reached each door
+// from all four sides. `act1_landmark_footprints.mjs` runs as a post-pass over the plate and
+// stamps those cells unwalkable, leaving the door and ONE gateway cell -- so the collision now
+// carries the art's own silhouette rather than a single 48 px door in an open field.
+//
 // (3) is required, not optional. The bundle's connection table is frozen at the generated layout
 // (Greenhollow 60,340 / Millbrook 100,320 / Misty Grotto 120,260 ...) and its overworld branch only
 // accepts a connection within Manhattan distance 3 of the cell stepped into, so moving the doors
@@ -28,6 +36,7 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { buildAct1OwnerPaintPlate, validatePlate } from './act1_owner_paint_plate.mjs';
+import { applyLandmarkFootprints } from './act1_landmark_footprints.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const OUTPUTS = [
@@ -54,7 +63,7 @@ function renderRuntimeOverride(plate) {
     + `// uses for the art. Owner source SHA-256: ${plate.sourceSha256}\n`
     + `(function () {\n`
     + `  'use strict';\n`
-    + `  var REVISION = 6;\n`
+    + `  var REVISION = 7;\n`
     + `  var SOURCE_SHA256 = '${plate.sourceSha256}';\n`
     + `  var PLATE_SHA256 = '${plate.plateSha256}';\n`
     + `  var BOUNDS = ${JSON.stringify(plate.bounds)};\n`
@@ -68,6 +77,11 @@ function renderRuntimeOverride(plate) {
     + `  var BRIDGE_DECKS = ${JSON.stringify(plate.bridgeDecks)};\n`
     + `  var HARBOR_CELLS = ${JSON.stringify(plate.harborCells)};\n`
     + `  var GATE = ${JSON.stringify(plate.gate)};\n`
+    + `  // Every cell the landmark SPRITES cover closely enough to hide the hero inside, stamped\n`
+    + `  // unwalkable so she cannot walk on top of the drawn town or cave. Derived from each\n`
+    + `  // sprite's own alpha eroded by her 12 px contact disc -- scripts/act1_landmark_footprints.mjs.\n`
+    + `  // Exposed for verification only; the collision itself is already in ROWS.\n`
+    + `  var LANDMARK_BLOCKERS = ${JSON.stringify(plate.landmarkBlockers)};\n`
     + `  var state = { appliedMap: null, relocation: null, wrappedScene: null, repairs: 0 };\n`
     + `  var ENTRY = {}, EXITS = {}, COMPASS = {};\n`
     + `  for (var li = 0; li < LANDMARKS.length; li++) { var L = LANDMARKS[li];\n`
@@ -202,22 +216,39 @@ function renderRuntimeOverride(plate) {
     + `    wrapScene(scene);\n`
     + `    return ensurePlate(scene,true);\n`
     + `  }\n`
-    + `  window.__ACT1_WORLD_MAP__={ revision:REVISION, sourceSha256:SOURCE_SHA256, plateSha256:PLATE_SHA256, bounds:BOUNDS.slice(), landmarks:LANDMARKS, forestBlock:FOREST_BLOCK, bridgeDecks:BRIDGE_DECKS, harborCells:HARBOR_CELLS, gate:GATE, apply:apply, ensurePlate:ensurePlate, armWrappers:armWrappers, armTimer:armTimer, state:state };\n`
+    + `  window.__ACT1_WORLD_MAP__={ revision:REVISION, sourceSha256:SOURCE_SHA256, plateSha256:PLATE_SHA256, bounds:BOUNDS.slice(), landmarks:LANDMARKS, forestBlock:FOREST_BLOCK, bridgeDecks:BRIDGE_DECKS, harborCells:HARBOR_CELLS, gate:GATE, landmarkBlockers:LANDMARK_BLOCKERS, apply:apply, ensurePlate:ensurePlate, armWrappers:armWrappers, armTimer:armTimer, state:state };\n`
     + `})();\n`;
 }
 
 const args = process.argv.slice(2);
 assert(args.length <= 1 && (args.length === 0 || args[0] === '--check'), 'usage: export_act1_runtime_override.mjs [--check]');
 const plate = buildAct1OwnerPaintPlate();
+// THE SINGLE-ENTRANCE POST-PASS. The owner's plate places the doors; this stamps the sprite
+// footprints around them so each landmark has exactly one way in and no walkable roof. It runs
+// BEFORE validatePlate deliberately -- the connectivity, reachability and no-leak assertions there
+// are the proof that blocking did not strand anything, and re-using them beats writing a second,
+// weaker copy here.
+const footprints = applyLandmarkFootprints(plate);
 const stats = validatePlate(plate);
 const content = renderRuntimeOverride(plate);
 
 if (args[0] === '--check') {
   for (const output of OUTPUTS) assert(readFileSync(output, 'utf8') === content, `${output} is stale`);
   console.log(`ACT 1 RUNTIME OVERRIDE CHECK PASS: ${sha256(content)}`
-    + ` (${stats.landmarks} owner-placed landmarks, ${stats.regionCells}-cell single walkable region)`);
+    + ` (${stats.landmarks} owner-placed landmarks, ${stats.regionCells}-cell single walkable region,`
+    + ` ${plate.landmarkBlockers.length} landmark blocker cells)`);
 } else {
   for (const output of OUTPUTS) writeFileSync(output, content);
   console.log(`ACT 1 RUNTIME OVERRIDE WRITTEN: ${sha256(content)}`
-    + ` (${stats.landmarks} owner-placed landmarks, ${stats.regionCells}-cell single walkable region)`);
+    + ` (${stats.landmarks} owner-placed landmarks, ${stats.regionCells}-cell single walkable region,`
+    + ` ${plate.landmarkBlockers.length} landmark blocker cells)`);
+  for (const entry of footprints.landmarks) {
+    console.log(`  ${entry.mapId.padEnd(20)} ${entry.skipped
+      ? `SKIPPED (${entry.skipped})`
+      : `${String(entry.blocked).padStart(2)} of ${String(entry.footprint).padStart(2)} footprint cells blocked;`
+        + ` one entrance from the ${entry.approach} at ${entry.gateway.x},${entry.gateway.y}`}`);
+  }
+  if (footprints.undrawn.length) {
+    console.log(`  sprites with no door, never drawn, not blocked: ${footprints.undrawn.join(', ')}`);
+  }
 }

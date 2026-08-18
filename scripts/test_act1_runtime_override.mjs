@@ -17,7 +17,7 @@ const source = readFileSync(new URL('../public/act1-world-map.js', import.meta.u
 const window = { __GAME_STATE__: { player: { state: { storyFlags: {} } } } };
 vm.runInNewContext(source, { window, Error, Math, parseInt, Object, JSON });
 const runtime = window.__ACT1_WORLD_MAP__;
-assert(runtime?.revision === 6, 'runtime override revision must be 6');
+assert(runtime?.revision === 7, 'runtime override revision must be 7');
 
 // The owner's placement. If owner-terrain.json moves, this is what has to move with it.
 const OWNER_DOORS = {
@@ -203,6 +203,55 @@ for (let y = minY; y <= maxY; y += 1) {
 assert(leaks.length === 0, `Act 1 boundary is walkable at ${leaks.join(' ')}`);
 
 // ---------------------------------------------------------------------------------------------
+// SINGLE ENTRANCE. Owner, 2026-08-18: "only one entrance for towns and dungeons (unless they
+// connect acts or in other special circumstances) and the edge need to be blockers so the user
+// cannot walk on top of it."
+//
+// Asserted against the SHIPPED artefact's own map, not against the generator: the property is
+// "how many cells can the player stand on next to this door", which is a question about mapData.
+
+assert(Array.isArray(runtime.landmarkBlockers) && runtime.landmarkBlockers.length > 0,
+  'the override must publish its landmark blocker cells');
+
+const GATE_EXEMPT = new Set(['crystalCave']);   // the act-connecting gate, owner-exempt
+for (const landmark of runtime.landmarks) {
+  const ways = [[0, 1], [0, -1], [1, 0], [-1, 0]]
+    .map(([dx, dy]) => ({ x: landmark.at.x + dx, y: landmark.at.y + dy }))
+    .filter(point => insideAct1(point.x, point.y) && walkable(point.x, point.y));
+  if (GATE_EXEMPT.has(landmark.mapId)) {
+    assert(ways.length > 0, `${landmark.mapId} must stay enterable`);
+    continue;
+  }
+  assert(ways.length === 1,
+    `${landmark.mapId} has ${ways.length} walkable sides (${ways.map(p => `${p.x},${p.y}`).join(' ')})`
+    + ' -- exactly one entrance is the rule');
+  assert(ways[0].x === landmark.exit.x && ways[0].y === landmark.exit.y,
+    `${landmark.mapId}'s single entrance ${ways[0].x},${ways[0].y} is not its exit `
+    + `${landmark.exit.x},${landmark.exit.y} -- the way in and the way out must be one cell`);
+}
+
+// Every blocker actually blocks, sits inside Act 1, and is not a second door. A blocker that
+// triggered checkTransition would be an entrance wearing a wall's tile code.
+for (const cell of runtime.landmarkBlockers) {
+  assert(insideAct1(cell.x, cell.y), `blocker ${cell.x},${cell.y} is outside the Act 1 rectangle`);
+  assert(!scene.canMove(cell.x, cell.y), `landmark blocker ${cell.x},${cell.y} is walkable`);
+  assert(!TRIGGERS.has(map[cell.y][cell.x]),
+    `blocker ${cell.x},${cell.y} carries trigger tile ${map[cell.y][cell.x]} -- it is a door, not a wall`);
+}
+
+// Crystal Cave is left exactly as the owner's plate had it: no blocker may touch its ring.
+for (const cell of runtime.landmarkBlockers) {
+  assert(Math.abs(cell.x - OWNER_DOORS.crystalCave.x) > 1
+    || Math.abs(cell.y - OWNER_DOORS.crystalCave.y) > 1,
+    `blocker ${cell.x},${cell.y} intrudes on the act gate at Crystal Cave`);
+}
+
+// Coastal Reef's entrance moved from the NORTH -- the back of the drawn cliff, and the side a
+// 3/4 top-down sprite cannot show a mouth on -- to the EAST, where its arch and tidal spill face.
+assert(runtime.landmarks.find(l => l.mapId === 'coastalReef').exit.x === OWNER_DOORS.coastalReef.x + 1,
+  'coastalReef must be entered from the east, matching the side its mouth is drawn on');
+
+// ---------------------------------------------------------------------------------------------
 // Transitions -- the piece without which the plate alone would brick three destinations
 
 assert(scene.__act1TransitionWrapped, 'checkTransition must be wrapped');
@@ -356,11 +405,15 @@ assert(keptScene.heroTileX === 69 && keptScene.heroTileY === 256,
   // And a same-array mutation -- the reskin pass consolidates mountains in place after apply() --
   // is repaired by the deep sweep without disturbing the hero.
   const repairsBefore = runtime.state.repairs;
+  // (70,256) is Greenhollow's south-east palisade -- a landmark blocker since the single-entrance
+  // pass, not open ground. The sweep has to restore the BLOCKER, which is the case that matters:
+  // a reskin that quietly reopened one of these would hand the town a second entrance.
   afterTown[256][70] = 4;
   afterTown[255][69] = 0;
   present(reentryScene);
   assert(runtime.state.repairs === repairsBefore + 1, 'the deep sweep must record one repair');
-  assert(afterTown[256][70] === 0 && afterTown[255][69] === 6, 'the deep sweep must restore the plate');
+  assert(afterTown[256][70] === 21 && afterTown[255][69] === 6,
+    'the deep sweep must restore the plate, blockers included');
   assert(reentryScene.heroTileX === 69 && reentryScene.heroTileY === 256,
     'repairing the plate must not move the hero');
   present(reentryScene);
