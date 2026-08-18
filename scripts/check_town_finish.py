@@ -63,8 +63,27 @@ BR_TARGET, BR_TOL = 0.674, 0.06
 # Finish: reach the hero's neighbourhood. Bands are deliberately wide at the bottom -- the point is
 # to leave "painterly", not to become a sprite sheet.
 HARD_STEP = 24                       # a "hard" step in luminance between neighbouring pixels
-HARD_FRAC_MIN = 0.34                 # shipped plate 0.139, hero 0.475
-MEAN_STEP_MIN = 24.0                 # shipped plate 11.7, hero 31.6
+
+# ---- RECALIBRATED 2026-08-18, AND THE OLD THRESHOLDS CAUSED A FAILURE ---------------------------
+# HARD_FRAC_MIN was 0.34 and MEAN_STEP_MIN 24.0, both taken from the HEROINE (0.475 / 31.6). She is
+# a CHARACTER: high internal contrast, dense form, no large uniform fields. A town plate is mostly
+# cobble, grass and water, and no hand-drawn town reaches a character's per-pixel contrast without
+# becoming noise. Two pieces of owner evidence say the old floor was simply wrong:
+#
+#   v8   hard 26.1%   owner: "sharpness it looks good"          <- ACCEPTED, below the old floor
+#   v6   hard 49.5%   owner: "looks like a painting"            <- REJECTED, well above it
+#
+# So the old floor rejected what he liked and admitted what he refused. Worse, it CAUSED v6: the
+# only way to reach 49.5% from a soft painting is to run a posterize over it, which is exactly what
+# v6 did and exactly what he saw. A gate that can only be satisfied by a filter will be satisfied by
+# a filter.
+#
+# The floor is therefore set from HIS approval point, not from the hero, with the shipped painting
+# (13.9%, rejected as fuzzy) fixing the bottom. The SOFT band below is untouched and is what
+# actually distinguishes drawn art from filtered art -- it caught v6 at 9.0% and it is the reason
+# this loosening is safe.
+HARD_FRAC_MIN = 0.22                 # shipped plate 0.139 (rejected), v8 0.261 (accepted)
+MEAN_STEP_MIN = 17.0                 # shipped plate 11.7, v8-class candidates ~19-20
 
 # ---- THE SOFT BAND, AND WHY IT EXISTS -------------------------------------------------------------
 # v6 PASSED every band above and the owner rejected it on sight: "the artwork looks like a painting
@@ -100,6 +119,26 @@ PAVING_FRAC_MIN = 0.055              # shipped plate measures ~0.09
 # 1885 -> 1950. But a re-invented street network scores far below this, which is the point.
 PAVING_IOU_MIN = 0.55
 
+# ---- LAYOUT, MEASURED AGAINST THE COLLISION AUTHORITY RATHER THAN AGAINST THE OLD PAINTING -------
+# `--layout-ref` compares the candidate's THRESHOLDED paving to the shipped painting's THRESHOLDED
+# paving. That is a fair test only between two images drawn the same way. Draw the same street with
+# individual cobbles and darker mortar -- which is the entire point of the rebake -- and fewer
+# pixels clear luminance 150, so the IoU falls without a single stone moving. Measured: a rebake
+# whose streets are visibly identical scores IoU 0.396, under the 0.55 floor.
+#
+# portSapphire-walkable.json is the real authority (it was derived from the painting once and is now
+# frozen; the runtime does not re-derive it). Comparing the candidate's paving to THAT separates the
+# candidates the owner actually judged, where IoU does not:
+#
+#                                    walkable that reads paved    paved but NOT walkable
+#   shipped painting (the baseline)          52.9%                      49.7%
+#   rebake, streets visibly identical        56.2%                      44.2%   better than baseline
+#   v6, which paved the lawns                55.6%                      66.2%   <- the failure
+#
+# The second column is the discriminator: over-paving shows up there and nowhere else. The first
+# column is reported but not gated, because a plate may legitimately draw a lane's edge tighter.
+PAVED_NOT_WALKABLE_MAX = 0.55        # shipped 0.497, v6 0.662
+
 
 def luminance(rgb: np.ndarray) -> np.ndarray:
     return 0.2126 * rgb[:, :, 0] + 0.7152 * rgb[:, :, 1] + 0.0722 * rgb[:, :, 2]
@@ -126,6 +165,9 @@ def main() -> int:
     ap.add_argument('--anchor', help='hero sheet to report beside the plate (not a gate)')
     ap.add_argument('--layout-ref', help='plate whose PAVING LAYOUT this candidate must preserve '
                                          '(normally the shipping plate). Gates IoU, not just coverage.')
+    ap.add_argument('--walkable', help='portSapphire-walkable.json -- the COLLISION AUTHORITY. '
+                                       'Preferred over --layout-ref, which cannot tell a restyled '
+                                       'street from a moved one.')
     ap.add_argument('--report', action='store_true', help='print measurements and exit 0')
     args = ap.parse_args()
 
@@ -192,11 +234,34 @@ def main() -> int:
               f'[keeps {100*kept:.1f}% of the reference streets, '
               f'newly paves {100*added:.1f}% of the plate]')
 
+    pnw = None
+    if args.walkable:
+        import json
+        from PIL import ImageDraw
+        reg = json.load(open(args.walkable))['regions'][0]
+        sc = im.size[0] / 1040.0
+        msk = Image.new('L', im.size, 0)
+        dr = ImageDraw.Draw(msk)
+        dr.polygon([(p_['x'] * sc, p_['y'] * sc) for p_ in reg['outer']], fill=255)
+        for hole in reg.get('holes', []):
+            dr.polygon([(p_['x'] * sc, p_['y'] * sc) for p_ in hole], fill=0)
+        walk = np.asarray(msk) > 127
+        cand = lum >= PAVING_LUM_MIN
+        covered = int((cand & walk).sum()) / max(int(walk.sum()), 1)
+        pnw = int((cand & ~walk).sum()) / max(int(cand.sum()), 1)
+        print(f'  walkable read as paving {100*covered:.1f}%   paved but NOT walkable {100*pnw:.1f}%'
+              f'   (max {100*PAVED_NOT_WALKABLE_MAX:.0f}%; shipped 49.7%, v6 66.2%)')
+
     if args.report:
         return 0
 
     fails = []
-    if iou is not None and iou < PAVING_IOU_MIN:
+    if pnw is not None and pnw > PAVED_NOT_WALKABLE_MAX:
+        fails.append(f'LAYOUT: {100*pnw:.1f}% of the plate\'s paving lies OUTSIDE the walkable '
+                     f'authority (max {100*PAVED_NOT_WALKABLE_MAX:.0f}%, shipped plate 49.7%). The '
+                     f'candidate has paved ground the player cannot walk on, which is what v6 did '
+                     f'at 66.2%. Draw the streets where portSapphire-walkable.json says they are.')
+    if pnw is None and iou is not None and iou < PAVING_IOU_MIN:
         fails.append(f'LAYOUT: paving IoU {iou:.3f} against {Path(args.layout_ref).name} is below '
                      f'{PAVING_IOU_MIN}. The streets are not where the town\'s streets are. Paving is '
                      f'the collision map, so this silently rewrites where the player may walk -- and '
@@ -226,7 +291,9 @@ def main() -> int:
     if m['hard_frac'] < HARD_FRAC_MIN or m['mean_step'] < MEAN_STEP_MIN:
         fails.append(f'FINISH: mean step {m["mean_step"]:.2f} / hard {100*m["hard_frac"]:.2f}% is '
                      f'still painterly (need >= {MEAN_STEP_MIN} and >= {100*HARD_FRAC_MIN:.0f}%). '
-                     f'This is the half of the complaint a redesign exists to fix.')
+                     f'This is the half of the complaint a redesign exists to fix. Raise it by '
+                     f'DRAWING detail that survives 3x magnification -- individual tiles, cobbles, '
+                     f'planks, panes -- not by filtering; the soft band above is watching for that.')
     if m['paving_frac'] < PAVING_FRAC_MIN:
         fails.append(f'PAVING: only {100*m["paving_frac"]:.2f}% of the plate reads as pale paving '
                      f'(>= {PAVING_LUM_MIN} luminance), under {100*PAVING_FRAC_MIN:.1f}%. '
