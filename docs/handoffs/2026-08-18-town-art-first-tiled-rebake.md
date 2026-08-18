@@ -3,8 +3,9 @@ date: 2026-08-18
 type: handoff
 project: edu-rpg
 milestone: build-54 UI fixes + the tiled art-first town rebake
-status: active
+status: superseded
 supersedes: "[[2026-08-18-wheel-arch-and-prop-based-town]]"
+superseded_by: "[[2026-08-19-act1-towns-dungeons-single-entrance]]"
 tags: [handoff]
 ---
 
