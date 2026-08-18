@@ -104,7 +104,7 @@ ACT1_OVERLAY_FILES = {
     # save format round-trips to itself (measured: 742 of 754 reportable cells reload unchanged, the
     # other 12 settle one cell north once; largest rescue nudge 28 px against a 96 px bound).
     "dq-tiles.js": (
-        463900, "03344e39a4f85f2449a153c6866a4ef536463463c62fbdc0b3910f937b1d71a0"),
+        457499, "4418085ec19d7e58a5ff0115a96c6e558d4b73a45c296055322c4777abffb3dc"),
     # 2026-08-07: THE OVERWORLD'S COLLISION SHAPE, baked -- the overworld's answer to the dungeons'
     # `<floor>-walk.png` above, and as much a shipped authority as they are. Deriving it at runtime
     # was correct and unaffordable: owmBuild() evaluated waterField/mountainField per pixel over a
@@ -286,6 +286,23 @@ ACT1_DUNGEON_FILES = {
     # (the dark mask still draws; the sprite never would have) without this entry.
     "act1-dungeon-art/assets/asset-boss.png": (
         2949, "e15a52c9fef74427e9ac6324ac7a2fa6271593313ca090e78a7b4c5557c69a92"),
+    # 2026-08-18: THE OVERHEAD LAYER, one per floor-1 cave mouth. Owner, build 48: "something that
+    # the player walks under needs to be on a completely separate layer." These carry the arch's
+    # crown WITH ALPHA so the hero shows through the archway opening and the floor, which a crop of
+    # the opaque props plate could never do. Pinned for the same reason the walk masks are: a silent
+    # swap changes what the player can see herself behind.
+    # THEY ARE PINNED **BECAUSE** THE GATE CANNOT SEE THEM OTHERWISE. Baked into public/ and copied
+    # to dist/ by hand, they passed every gate while reaching NEITHER dist/ nor the iOS payload --
+    # build-dist.sh assembles from this enumeration, so an unpinned new file is silently dropped from
+    # the shipped app and the ship gate still says PASS. Caught by counting the files on disk.
+    "act1-dungeon-art/coastalReef-f1-overhead.png": (
+        90957, "4f62a134eb395c6203dfcbf898aafc6afc8b4ffa9066e70a577f66cca6c9e01f"),
+    "act1-dungeon-art/mistyGrotto-f1-overhead.png": (
+        76751, "df96e4581ab5b6bf5b9bd832e636c4cb7f5553404de190c5aff8c4ad3eb35746"),
+    "act1-dungeon-art/sunkenCellar-f1-overhead.png": (
+        65822, "c16c07734f6b064317fd53d545e1f71d3c50fe9c99d766b20eacf2308cff5ff0"),
+    "act1-dungeon-art/whisperingWoodsCave-f1-overhead.png": (
+        71749, "e4e3e039b60e40c392c404e5fc180a86ebccc594a1855439333f9f9d9bc2742c"),
     "act1-dungeon-art/sunkenCellar-f1-props.png": (
         3523624, "5d49e92a14975a7ea1d2414bbf41d9a8d854289f26e10f2707ff789b5adde2fa"),
     "act1-dungeon-art/sunkenCellar-f2-props.png": (
