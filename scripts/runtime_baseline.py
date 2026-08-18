@@ -296,13 +296,13 @@ ACT1_DUNGEON_FILES = {
     # build-dist.sh assembles from this enumeration, so an unpinned new file is silently dropped from
     # the shipped app and the ship gate still says PASS. Caught by counting the files on disk.
     "act1-dungeon-art/coastalReef-f1-overhead.png": (
-        90957, "4f62a134eb395c6203dfcbf898aafc6afc8b4ffa9066e70a577f66cca6c9e01f"),
+        90983, "36be442cbf8df4d2dddccb5473af4de7537757f1ec97729660676442f5c5b193"),
     "act1-dungeon-art/mistyGrotto-f1-overhead.png": (
-        76751, "df96e4581ab5b6bf5b9bd832e636c4cb7f5553404de190c5aff8c4ad3eb35746"),
+        76755, "e385da4fe84c912c653b6f24d3e306340ce5adc19cc6973d5fdd54d8d6005e9b"),
     "act1-dungeon-art/sunkenCellar-f1-overhead.png": (
-        65822, "c16c07734f6b064317fd53d545e1f71d3c50fe9c99d766b20eacf2308cff5ff0"),
+        65843, "9ffd9bb2c56823defd7d95bdee1d89dd670841a0bc4c3ba8aa632797963ba622"),
     "act1-dungeon-art/whisperingWoodsCave-f1-overhead.png": (
-        71749, "e4e3e039b60e40c392c404e5fc180a86ebccc594a1855439333f9f9d9bc2742c"),
+        71759, "0fa360627eec9d1450e867ef78e81f094ef9cbdbfaa7c12a2796329e4d32f513"),
     "act1-dungeon-art/sunkenCellar-f1-props.png": (
         3523624, "5d49e92a14975a7ea1d2414bbf41d9a8d854289f26e10f2707ff789b5adde2fa"),
     "act1-dungeon-art/sunkenCellar-f2-props.png": (
