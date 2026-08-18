@@ -5216,7 +5216,19 @@
     delete a1dOverSprites[key];
   }
   var A1D_OVER_DEPTH=10.6;      // above the hero's 10 and above the boss's 10.5; it is scenery she is under
+  /* DISABLED 2026-08-18, and the reason is a design failure not a tuning miss. Owner: "you keep
+     applying the same fix that does not work here."
+
+     Three versions of this layer all derived the arch by HEURISTIC from the baked plate -- a band
+     above the opening, then a dilated ring, then a ring unioned with the walk mask -- and each one
+     covered walkable floor. Measured across the four floors, 33%..51% of the overlay's own pixels
+     sat on WALKABLE ground, so wherever she stood near an entrance she vanished. That is worse than
+     the bug it replaced (drawing over the arch was cosmetic; losing the character is not), so the
+     layer is off until it is an AUTHORED ASSET with a real silhouette, which is what the owner asked
+     for twice. The bake script and the assets stay for that work; nothing draws them. */
+  var A1D_OVERHEAD_ON=false;
   function a1dOverheadTick(scene){
+    if(!A1D_OVERHEAD_ON){ for(var kk in a1dOverSprites) a1dOverDrop(kk); return; }
     var mapId=scene.currentMapId, key=mapId+'-f'+(scene.currentFloor||1);
     for(var k in a1dOverSprites){ if(k!==key) a1dOverDrop(k); }              // never leak a sprite across floors
     if(!A1D_MAPS[mapId] || (scene.currentFloor||1)!==1) return;              // only floor 1 carries a cave mouth
