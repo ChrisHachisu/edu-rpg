@@ -458,6 +458,26 @@ ACT1_TOWN_FILES = {
         44_604, "585a14be6724a84dac872b82325bfaf70237974134693ceb549bb34873b6a90b"),
     "act1-hifi/town/npc/portSapphire-wisewoman-4x3-64.png": (
         46_937, "390c12022a813f8cd0c6894988b18e7bebab8d7facee63c9c5d67575b8615c0b"),
+    "act1-hifi/town/npc/greenhollow-elder-4x3-64.png": (
+        55173, "7cfe7e0b5b9942ad9052634d9ebd416168a6d8da23eec6a415134fd50d0b3343"),
+    "act1-hifi/town/npc/greenhollow-fisherman-4x3-64.png": (
+        58180, "0d8eaf9166211dad14234d0164bf6302ec17d4f5a87a764e9bb8280f80e200ab"),
+    "act1-hifi/town/npc/greenhollow-healer-4x3-64.png": (
+        55941, "98cc0be568ef49c3e81bd22e1633e8b61063db042905d81a60ec349ee1175f82"),
+    "act1-hifi/town/npc/greenhollow-kiki-4x3-64.png": (
+        34587, "fe79c8fc52251525feca8e58dc09ed218470a90dd02a9187e67b77962adbbfb2"),
+    "act1-hifi/town/npc/greenhollow-villager1-4x3-64.png": (
+        58967, "2b6731a479ce1cb7abddbb7b635e4b8c753d2d3778acf12227915ab54eecf302"),
+    "act1-hifi/town/npc/greenhollow-villager2-4x3-64.png": (
+        61846, "7e11fa5bdb02d3e6ea374aef424d273122622508c719a25f839ae770ffe5380d"),
+    "act1-hifi/town/npc/millbrook-healer-4x3-64.png": (
+        49336, "e83d3186971f742c6fa0cad6e51c623a395facc17825c374e3f4e62d800f1666"),
+    "act1-hifi/town/npc/millbrook-herbalist-4x3-64.png": (
+        56646, "7e979e9e81722c8fcf69c0623630f78dbdf2b7c225b400d2e50450b9581132b4"),
+    "act1-hifi/town/npc/millbrook-miller-4x3-64.png": (
+        67532, "f5940bc2ba64a6a13d5851185d0dd11a989dd07cc23735436d91b3e85b93b324"),
+    "act1-hifi/town/npc/millbrook-sage-4x3-64.png": (
+        51514, "9d99d1436b613bf3c733b7ff6907cde413e154095c7dfb686c489a2bad226a60"),
     "act1-hifi/verify/seed.html": (
         2089, "6f34401b6845582f223abdc80dd191c3a1392bc7808aee81d11eb89313b80c14"),
 }
