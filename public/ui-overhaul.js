@@ -788,15 +788,26 @@
       el.__gwWired = true;
       // The highlight follows the finger immediately -- a highlight that lags the scroll is what
       // makes a wheel feel broken. It does NOT commit; only scrollend does.
+      /* COMMIT ON EVERY SCROLL, NOT ONLY WHEN IT SETTLES. Owner, on build 50 -- which already had
+         the scrollend rewrite -- the wheel still returned to the SAVED row. The highlight followed
+         his finger, so the listener was running; what came back was `ts.difficultyIndex`, i.e. the
+         value from before the gesture. Anything that re-renders the screen mid-scroll restores that
+         stale value, and waiting for scrollend leaves a window several hundred ms wide where it is
+         stale to restore.
+         Writing an integer on every scroll event is free, and it closes the window entirely: at any
+         instant `ts.difficultyIndex` IS the row under the band, so a rebuild can only ever restore
+         what the player is already looking at. scrollend and the debounce below then just confirm
+         the final landing. */
       el.addEventListener('scroll', function () {
         var i = nearest();
         if (i !== el.__gwShown) { el.__gwShown = i; mark(i); }
-        if (!('onscrollend' in el)) {                    // fallback only where scrollend is absent
-          if (el.__gwT) clearTimeout(el.__gwT);
-          el.__gwT = setTimeout(commit, 140);
-        }
+        commit();
+        // BOTH, unconditionally. `'onscrollend' in el` reports true on this engine but is not proof
+        // it FIRES for momentum scrolling, and that assumption is what shipped build 50 broken.
+        if (el.__gwT) clearTimeout(el.__gwT);
+        el.__gwT = setTimeout(commit, 140);
       }, { passive: true });
-      if ('onscrollend' in el) el.addEventListener('scrollend', commit);
+      el.addEventListener('scrollend', commit);
 
       // Whether the finger is on the wheel. An external sync must never haul the list out from
       // under it -- that is the same class of bug as the correction this replaces.
@@ -892,7 +903,11 @@
        scrollTop, so leaving di in the signature would mean the wheel snapped back to the top under
        the player's own finger the instant their scroll changed the selection. The selection is
        therefore applied imperatively below instead of by re-rendering. */
-    var sig = 'intro|' + variant + '|' + ja + '|' + (pstate() && pstate().kanjiMode) + '|g' + grades.length;
+    /* `!!` IS LOad-BEARING. pstate() is null until the player state exists -- which on the CREATE
+       screen is most of the time -- so the raw expression interpolated as "null", then as "false"
+       the moment state appeared. That flipped the signature, rebuilt the screen mid-interaction and
+       reset the wheel to the saved difficulty. Normalised, the term is only ever "true"/"false". */
+    var sig = 'intro|' + variant + '|' + ja + '|' + !!(pstate() && pstate().kanjiMode) + '|g' + grades.length;
     activate('intro', false);
     var rebuilt = (sig !== lastSig);
     paint(h, sig);
