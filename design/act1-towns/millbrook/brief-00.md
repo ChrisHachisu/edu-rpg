@@ -1,32 +1,45 @@
 Draw this as hand-drawn, hard-edged pixel art at full detail.
 
-THE INPUT IS A PLAN, NOT A PICTURE. It is a flat colour-coded diagram of one tile (0,0) of a
-2x2 grid covering a small top-down JRPG mill village inside a timber palisade, with one gate at the SOUTH, a clear millstream running west to east across the north of the village, a working watermill with a wooden wheel turning in that stream, a plank bridge where the main lane crosses it, and a packed-earth yard around a stone well. It is not a blurry painting to be sharpened; it is a map telling you
-WHERE EVERYTHING GOES. Draw the finished village that this plan describes, keeping every element in
-exactly the position and at exactly the size the plan gives it.
+THE INPUT IS A PLAN, NOT A PICTURE. It is a flat colour-coded diagram, and it is ONE QUADRANT --
+tile (0,0) of a 2x2 grid -- of a small top-down JRPG mill village inside a round timber
+palisade. It is not a blurry painting to be sharpened and it is not a theme to riff on: it is a map
+telling you WHERE EVERY SINGLE THING GOES inside this crop. Draw the finished village that this
+exact crop describes, keeping every element in exactly the position, at exactly the size, and with
+exactly the extent the plan gives it.
 
-READ THE COLOURS LIKE THIS, and change nothing about where they are:
-  pale warm grey (176,168,148)  the packed-earth street and yard. THIS IS WHERE THE PLAYER WALKS, so
-                                it must read unmistakably as open, even ground -- worn earth and set
-                                stone, no clutter across it, no bushes or crates growing into it.
-  mid green (96,132,70)         grass and planting INSIDE the palisade.
-  dark green (58,92,48)         the woodland/meadow OUTSIDE the palisade.
-  brown ring (104,82,54)        the TIMBER PALISADE. A continuous wall of upright logs. It must be
-                                unbroken all the way round except at the one gate.
-  tan gap at the bottom         THE ONE GATE, and the only way in or out. Draw a real gateway there:
-                                posts, a lintel, open leaves. Everywhere else the wall is solid.
-  brown blocks with a coloured  BUILDINGS. The coloured upper part is the ROOF, the brown lower part
-  upper band                    is the facade, so each building faces DOWN-SCREEN toward the yard.
-                                Give every one a door on that facade and windows, and stand it
-                                exactly on its block.
-  blue                          WATER.
-  grey disc                     a stone well.
+WHAT IS ACTUALLY IN THIS CROP, measured off the image you have been given:
 
-WHAT YOU ARE ADDING is craft, not content: texture, material, light, doors, windows, shutters, roof
-tiles, fence posts, cart ruts, planting at the edges of the grass. Do not add a building the plan
-does not have, do not move one, do not open a second gap in the wall, and do not pave over grass or
-grass over paving -- the boundary between them is the collision the game already uses.
+  - dark-green WOODLAND, outside the palisade: 42.5% of this crop, spanning 1%-94% across and 1%-95% down
+  - mid-green GRASS, inside the palisade: 22.9% of this crop, spanning 24%-98% across and 22%-99% down
+  - pale PACKED-EARTH STREET AND YARD, the ground the player walks on: 14.0% of this crop, spanning 49%-99% across and 50%-99% down
+  - brown BUILDING FACADE, the lower band of a building block: 4.2% of this crop, spanning 35%-73% across and 45%-55% down
+  - slate-blue ROOF, the upper band of a building block: 6.9% of this crop, spanning 35%-73% across and 28%-45% down
+  - the TIMBER PALISADE, a wall of upright logs: 3.4% of this crop, spanning 18%-98% across and 16%-98% down; it meets the bottom edge at 17%-20%; right edge at 15%-19%
+  - the MILLSTREAM, clear running water: 5.8% of this crop, spanning 24%-91% across and 73%-84% down; it does not reach any edge of this crop, so do not run it to one
 
+NOT PRESENT IN THIS CROP AT ALL, and therefore MUST NOT BE DRAWN INTO IT:
+  red-brown ROOF, the upper band of a building block
+  the ONE GATE through the palisade
+  a round STONE WELL
+
+READ THAT LIST LITERALLY. It is the complete contents of this crop. This is a QUADRANT of a larger
+plan, so most of the village's landmarks are in the OTHER quadrants and are not your problem. Do not
+add a gate, a well, a bridge, a watermill, a wheel, a pond, a building, a path or a stream that is
+not in the list above, however natural it would look and however much the village as a whole might
+have one somewhere else. Inventing a landmark here puts it in the wrong place on the finished town,
+and the pale ground is the COLLISION MAP the game already uses -- so paving over grass or grassing
+over paving changes where the player is allowed to walk.
+
+GEOMETRY IS THE POINT. The palisade must follow the plan's brown curve along its whole length and
+meet the crop's edges exactly where the list says it does, so that it continues into the neighbouring
+quadrants. Water must do the same. A building's block must keep its position and footprint: the
+coloured upper part is the ROOF and the brown lower part is the FACADE, so the building faces
+DOWN-SCREEN. Give every building a door on that facade, and windows.
+
+WHAT YOU ARE ADDING is craft, not content: texture, material, light, roof tiles, shutters, planks,
+fence posts, cart ruts, individual cobbles, tussocks and planting at the edges of the grass. The
+pale ground must read unmistakably as open, even, walkable ground -- worn earth and set stone, with
+nothing built across it.
 
 OUTPUT: one RGB PNG the same pixel dimensions as the input. Print its absolute path on a line of its
 own. Do not delete it and do not write anywhere under /tmp.
@@ -41,4 +54,5 @@ palette reduction. Hand-drawn art of this kind measures, on the mean absolute lu
 neighbouring pixels, 26 or more overall, 34-52% of steps at 24 or above, and 22-40% of steps between
 4 and 20. That middle band is real shading inside shapes; keep it.
 
-LIGHT AND PALETTE. One upper-left sun, short soft shadows, warm late-morning daylight over open farmland. Mean luminance about 90.
+LIGHT AND PALETTE. One upper-left sun, short soft shadows, warm late-morning daylight over open
+farmland. Mean luminance about 90.

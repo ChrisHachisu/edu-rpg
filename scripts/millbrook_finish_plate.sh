@@ -19,6 +19,29 @@
 #      node scripts/millbrook_verify.cjs http://127.0.0.1:5177/     # expect 19/19
 #   5. add 'millbrook' to TOWN_IDS in public/act1-hifi/adapter.js, rebuild, then
 #      node scripts/millbrook_verify_ingame.cjs http://127.0.0.1:5177/
+# THE PIN KEYS THIS TOWN NEEDS -- THREE, NOT TWO. Paste this block into ACT1_TOWN_FILES in
+# scripts/runtime_baseline.py (just after the portSapphire-foreground entries) BEFORE running the
+# install step below; `regenerate_pins.py` rewrites pin VALUES and never adds pin KEYS.
+#
+#     "act1-hifi/town/millbrook-town.json": (
+#         0, "0000000000000000000000000000000000000000000000000000000000000000"),
+#     "act1-hifi/town/millbrook-walkable.json": (
+#         0, "0000000000000000000000000000000000000000000000000000000000000000"),
+#     "act1-hifi/town/millbrook-screen.png": (
+#         0, "0000000000000000000000000000000000000000000000000000000000000000"),
+#
+# The walkable one is the entry that looks unnecessary and is not. It was committed to public/ ahead
+# of the art (collision first, art second), but build-dist.sh copies "the Act 1 overlay files
+# ENUMERATED FROM THE GATE, never hardcoded", so a file in public/ that no pin names never reaches
+# dist/ or the iOS payload. town.html fetches it by name at boot, so without it Millbrook would pass
+# every local gate on a tree where it works and 404 its collision authority on the device.
+# Measured: 716 payload files before, and ios/App/App/public/act1-hifi/town/ held only
+# portSapphire's three. With all three keys it must become 719.
+#
+# The keys are DELIBERATELY not committed to runtime_baseline.py yet: build-dist.sh refuses to
+# assemble dist/ while a named file is missing from public/ ("gate wants
+# act1-hifi/town/millbrook-screen.png but public/ does not have it"), so adding them before the
+# plate exists would leave HEAD unbuildable.
 set -u
 WT=/Users/christopherhachisu/Documents/claudecode/edu-rpg/.claude/worktrees/agent-a75ff6d22f4a6d6d0
 cd "$WT" || exit 1
