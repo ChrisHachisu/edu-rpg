@@ -50,23 +50,35 @@ PLATE = int(CELLS * PX)      # 1950 -- the density check_town_finish.py gates on
 HERO_WORLD = 36.0
 
 # The catalogue, from the sheet the owner approved. Width in CELLS; `kind` drives placement.
-# WIDTHS IN CELLS. The shipped painting draws houses ~10 cells wide, but that plate has no street
-# network under it -- here the blocks between lanes are 4 to 9 cells of frontage, so a 7-cell house
-# fits almost nowhere and the first run placed ONE building in the whole town. At 5 cells a cottage
-# stands about 2.4x the heroine's height, which is the JRPG proportion, and a block takes two or
-# three of them with room for a garden between.
-HOUSES = [(0, 5.0), (1, 4.8), (2, 4.7), (3, 5.1), (4, 4.9),
-          (5, 5.3), (6, 5.0), (7, 4.8), (8, 5.2), (9, 5.0)]
-SHOP, INN, CLINIC, WELL = (10, 5.6), (11, 5.4), (12, 5.2), (13, 2.3)
-STALL = (14, 4.8)
-WISEWOMAN = ("v3-wisewoman-a", 5.2)
-TREES = [(20, 2.6), (21, 2.8)]
-# VERIFIED AGAINST A LABELLED CONTACT SHEET, NOT AGAINST THE SHEET'S VISUAL ORDER. The cutter
-# numbered these differently from how they read on props-v2-sheet.png: 22 is the LAMP and 24 is the
-# FENCE, not the other way round. Assuming the visual order scattered a hundred stone lamp posts
-# across the meadows.
-LAMP, BUSH, FENCE, CRATES = (22, 1.0), (23, 1.4), (24, 3.0), (18, 2.0)
-JETTY, ROWBOAT, SAILBOAT, BOLLARD = (15, 4.2), (16, 2.6), (17, 4.0), (19, 1.4)
+# WIDTHS IN CELLS, SET FROM THE SHIPPED PLATE, NOT FROM WHAT THE STREET PLAN WOULD SWALLOW.
+#
+# Owner, on the first composed town: "the asset scaling is completely wrong ... the houses are
+# practically all huts and they need to be sized realistically." He is right, and the cause was a
+# bad trade: the frontage runs measured 4-9 cells, so the houses were shrunk to 5 to make them fit.
+# That bends the ART to suit a placement rule, which is backwards -- the rule is mine, the scale is
+# the game's.
+#
+# Measured on portSapphire-screen.png, the plate whose scale he has never objected to (1.8125 art px
+# per world px, heroine 65 art px there): roof masses run 7.5, 8.6, 10.9 cells wide, i.e. 3.3 to 4.8
+# HERO HEIGHTS wide. The heroine is 36 world px = 2.25 cells tall. So:
+#
+#     single-storey cottage    8.0 cells wide  ->  8.6 tall  = 3.8 hero heights
+#     two-storey house         9.6 cells wide  -> 11.5 tall  = 5.1 hero heights
+#     well                     3.0 cells wide  ->  3.2 tall  = 1.4 hero heights
+#
+# A door in these props sits about a fifth of the sprite height, which at 8 cells is ~2.6 cells --
+# comfortably taller than the heroine, which is the check that "hut" fails.
+HOUSES = [(0, 8.0), (5, 9.6), (1, 8.2), (6, 9.4), (2, 7.8),
+          (7, 9.8), (3, 8.4), (8, 9.6), (4, 8.0), (9, 9.4)]
+SHOP, INN, CLINIC, WELL = (10, 9.2), (11, 9.6), (12, 9.0), (13, 3.0)
+STALL = (14, 7.6)
+WISEWOMAN = ("v3-wisewoman-a", 9.0)   # generated this session, same approved family
+TREES = [(20, 4.4), (21, 4.6)]
+# VERIFIED AGAINST A LABELLED CONTACT SHEET, NOT THE SHEET'S VISUAL ORDER. The cutter numbered these
+# differently from how they read on props-v2-sheet.png: 22 is the LAMP and 24 is the FENCE, not the
+# other way round. Assuming the visual order scattered a hundred stone lamp posts across the meadows.
+LAMP, BUSH, FENCE, CRATES = (22, 1.7), (23, 2.4), (24, 4.6), (18, 3.2)
+JETTY, ROWBOAT, SAILBOAT, BOLLARD = (15, 6.5), (16, 4.2), (17, 6.4), (19, 2.2)
 
 
 def key_magenta(im):
@@ -293,11 +305,15 @@ def build_ground(street, sea, land, aprons, seed=0xA17):
     n = rng.random((PLATE // 12 + 2, PLATE // 12 + 2))
     n = np.asarray(Image.fromarray((n * 255).astype(np.uint8)).resize((PLATE, PLATE), Image.BICUBIC)).astype(float)
     n = (n / 255.0 - 0.5) * 2.0
-    m = (d + n * 11.0) > 0                                   # the join, displaced at cobble scale
+    # AMPLITUDE 11 px PUSHED GRASS INTO THE MIDDLE OF LANES. The displacement has to be large enough
+    # to break the polygon edge and small enough that it cannot reach past the kerb -- at a third of
+    # a cell it wanders around individual stones, which is the whole point, without opening lawns in
+    # the roadway.
+    m = (d + n * 7.0) > 0
 
     out = np.where(m[..., None], pav, grass)
-    out = np.where((m & (d < 9) & (n > 0.15))[..., None], grass, out)     # grass through the stones
-    out = np.where(((~m) & (d > -16) & (n < -0.45))[..., None], pav, out) # loose stones in the grass
+    out = np.where((m & (d < 6) & (n > 0.30))[..., None], grass, out)     # grass through the stones
+    out = np.where(((~m) & (d > -14) & (n < -0.45))[..., None], pav, out) # loose stones in the grass
 
     # The waterline: a band of shore between the land and the sea, so the two never butt.
     ds = distance_transform_edt(~sea)
@@ -362,6 +378,11 @@ def place(street, sea, land):
         box = foot_box(sp, cx, feet)
         if not site.fits(box):
             return None
+        # The footprint must stand on LAND. `fits` only knows about lanes and other props, so
+        # without this a seafront building happily hangs its base over the harbour.
+        fx0, fy0, fx1, fy1 = box
+        if not land[fy0:fy1, max(0, fx0):fx1].all():
+            return None
         roof = footprint(sp, cx, feet)
         if roof_test and not site.roof_clear(roof):
             return None
@@ -372,11 +393,14 @@ def place(street, sea, land):
         """Nearest frontage to `cell` that will take this building."""
         sp = prop(*spec)
         tx, ty = cell[0] * PX, cell[1] * PX
+        # A BUILDING NEEDS LAND UNDER ITS FOOTPRINT, NOT A FRONTAGE RUN AS WIDE AS ITSELF.
+        # Requiring the run to exceed the sprite width is what capped houses at 5 cells and made
+        # them huts: the runs measure 4-9 cells because the street edge STEPS, while the land behind
+        # it continues. A building may overhang both ends of the run it fronts onto, so candidates
+        # are sampled across the run and judged by whether their footprint fits.
         cands = []
         for x0, x1, y in runs:
-            cx = float(np.clip(tx, x0 + sp.size[0] / 2, x1 - sp.size[0] / 2))
-            if x1 - x0 < sp.size[0]:
-                continue
+            cx = float(np.clip(tx, x0, x1))
             cands.append(((cx - tx) ** 2 + (y - ty) ** 2, cx, y))
         for _, cx, feet in sorted(cands)[:14]:
             r = try_at(sp, cx, feet)
@@ -401,21 +425,18 @@ def place(street, sea, land):
     # ---- fill the remaining frontage ---------------------------------------------------------
     hi = 0
     for x0, x1, ytop in sorted(runs, key=lambda r: -(r[1] - r[0])):
-        x = x0 + PX * 0.4
-        while x < x1 - PX * 2.5:
+        x = x0
+        while x <= x1:
             spec = HOUSES[hi % len(HOUSES)]
             s2 = prop(*spec)
-            cx = x + s2.size[0] / 2
-            if cx + s2.size[0] / 2 > x1:
-                break
-            r = try_at(s2, cx, ytop)
+            r = try_at(s2, x, ytop)
             if r:
                 out.append((s2, r[0], r[1], "house"))
                 apron_for(r[0], r[1])
                 hi += 1
-                x += s2.size[0] + PX * (0.9 + 0.7 * ((hi * 7) % 3))   # varied gaps, not a comb
+                x += s2.size[0] * 0.55 + PX * (1.0 + 0.7 * ((hi * 7) % 3))
             else:
-                x += PX * 1.2
+                x += PX * 0.8
 
     # ---- a second rank, set back behind the front row ----------------------------------------
     # A single row per lane leaves the deep blocks empty and the town reads as a village strung
