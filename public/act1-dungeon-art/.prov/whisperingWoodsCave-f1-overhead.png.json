@@ -1,5 +1,5 @@
 {
- "artefact": "whisperingWoodsCave-f1-walk.png",
+ "artefact": "whisperingWoodsCave-f1-overhead.png",
  "command": "bake_dungeon_arch.py",
  "generator": "scripts/bake_dungeon_arch.py",
  "generatorSha256": "d8ef0f8b41f2ac99cad61e2300cdda7f911ea380862939ed5d97b42eee437ef3",
@@ -12,6 +12,6 @@
   "kind": "authored-arch",
   "scale": 0.14815
  },
- "sha256": "94e3b834c7144ed93f1c4e7db4039dba619a7b71c78765c3a9b4c7f67871bbba",
+ "sha256": "c586167a19fe9dddd96d7984e5f9b19bd176096c52be1eaadf80073de787f4ef",
  "writtenAt": "2026-08-18T23:01:49+09:00"
 }

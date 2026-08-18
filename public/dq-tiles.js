@@ -5204,11 +5204,11 @@
      work on coastalReef, whose approach runs alongside the mouth and never crossed that line. All
      four floors now behave the same way for the same reason.
 
-     The layer is BAKED, not derived at runtime: scripts/bake_dungeon_overhead.py writes
-     `<floor>-overhead.png` beside the props plate. Keying it on the lit opening is what makes it
-     robust -- masonry, gravel and rock all overlap in luminance and cannot be threshold-separated
-     (measured: three different bands each produced a broken ring), but the opening is unambiguous,
-     so "the crown of masonry directly above the opening" is a rule that holds on every floor. */
+     The layer is BAKED, not derived at runtime: scripts/bake_dungeon_arch.py writes
+     `<floor>-overhead.png` beside the props plate. Its silhouette is AUTHORED, not keyed off the
+     picture -- luminance cannot do this job, because masonry, gravel and rock overlap in every band
+     that was tried and three separate attempts each produced a broken ring that swallowed the
+     player. See that script's header for the two measured invariants that make the layer safe. */
   var a1dOverSprites={}, A1D_OVER_REQ={};
   function a1dOverDrop(key){
     var e=a1dOverSprites[key]; if(!e) return;
@@ -5216,17 +5216,28 @@
     delete a1dOverSprites[key];
   }
   var A1D_OVER_DEPTH=10.6;      // above the hero's 10 and above the boss's 10.5; it is scenery she is under
-  /* DISABLED 2026-08-18, and the reason is a design failure not a tuning miss. Owner: "you keep
-     applying the same fix that does not work here."
+  /* RE-ENABLED 2026-08-19, on the condition the owner set: the silhouette is AUTHORED.
 
-     Three versions of this layer all derived the arch by HEURISTIC from the baked plate -- a band
-     above the opening, then a dilated ring, then a ring unioned with the walk mask -- and each one
-     covered walkable floor. Measured across the four floors, 33%..51% of the overlay's own pixels
-     sat on WALKABLE ground, so wherever she stood near an entrance she vanished. That is worse than
-     the bug it replaced (drawing over the arch was cosmetic; losing the character is not), so the
-     layer is off until it is an AUTHORED ASSET with a real silhouette, which is what the owner asked
-     for twice. The bake script and the assets stay for that work; nothing draws them. */
-  var A1D_OVERHEAD_ON=false;
+     It was disabled 2026-08-18 because three versions of this layer all DERIVED the arch by
+     heuristic from the baked plate -- a band above the opening, then a dilated ring, then a ring
+     unioned with the walk mask -- and each one covered walkable floor. Measured across the four
+     floors, 33%..51% of the overlay's own pixels sat on WALKABLE ground, so wherever she stood near
+     an entrance she vanished. That is worse than the bug it replaced: drawing over the arch is
+     cosmetic, losing the character is not.
+
+     What changed is the SOURCE, not the tuning. scripts/bake_dungeon_arch.py now builds this layer
+     from design/act1-dungeons/arch/archasset-<dungeon>.png -- the assets the owner asked for twice
+     -- and refuses to write unless two things measure true on every floor:
+       * every DERIVED pixel of the overlay sits on mask-BLOCKED ground, where she can never stand
+         and drawing over her is unobservable. Only the AUTHORED silhouette may cover open floor.
+       * the deepest the overlay covers open floor is under one hero clearance (16 px). Measured
+         11.4..12.2, so at most a 24 px patch of a 64 px sprite is ever hidden. She passes BEHIND
+         the stone; she cannot stand still and disappear, which is the failure that switched this
+         off before and the one thing that must never come back.
+     The same bake blocks the arch's JAMBS in <floor>-walk.png, so she also stops walking on top of
+     them. The CROWN is deliberately not collision -- top-down, the crown and the tile she walks
+     through to reach the mouth are the same pixels, and blocking it sealed all four dungeons. */
+  var A1D_OVERHEAD_ON=true;
   function a1dOverheadTick(scene){
     if(!A1D_OVERHEAD_ON){ for(var kk in a1dOverSprites) a1dOverDrop(kk); return; }
     var mapId=scene.currentMapId, key=mapId+'-f'+(scene.currentFloor||1);

@@ -1,5 +1,5 @@
 {
- "artefact": "mistyGrotto-f1-walk.png",
+ "artefact": "mistyGrotto-f1-overhead.png",
  "command": "bake_dungeon_arch.py",
  "generator": "scripts/bake_dungeon_arch.py",
  "generatorSha256": "d8ef0f8b41f2ac99cad61e2300cdda7f911ea380862939ed5d97b42eee437ef3",
@@ -12,6 +12,6 @@
   "kind": "authored-arch",
   "scale": 0.14407
  },
- "sha256": "2a2885241dc181dd7bea2bf51214f883cb9d75b2fd7141c84ebeaa0539bc781b",
+ "sha256": "2daee40778fc7dc383d81c224231178b9d40fced5e64542da803153bde4769d0",
  "writtenAt": "2026-08-18T23:01:45+09:00"
 }

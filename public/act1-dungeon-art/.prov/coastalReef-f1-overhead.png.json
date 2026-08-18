@@ -1,5 +1,5 @@
 {
- "artefact": "coastalReef-f1-walk.png",
+ "artefact": "coastalReef-f1-overhead.png",
  "command": "bake_dungeon_arch.py",
  "generator": "scripts/bake_dungeon_arch.py",
  "generatorSha256": "d8ef0f8b41f2ac99cad61e2300cdda7f911ea380862939ed5d97b42eee437ef3",
@@ -12,6 +12,6 @@
   "kind": "authored-arch",
   "scale": 0.14085
  },
- "sha256": "5ea2038824753b06e62924c9b2b4b8fdeb0e240c436078991db4ce8c8b8a987d",
+ "sha256": "8099b6c5303de2b5993e3962f388df018f49f17b637512d5667b5203e1e198ce",
  "writtenAt": "2026-08-18T23:01:44+09:00"
 }

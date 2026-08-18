@@ -1,5 +1,5 @@
 {
- "artefact": "sunkenCellar-f1-walk.png",
+ "artefact": "sunkenCellar-f1-overhead.png",
  "command": "bake_dungeon_arch.py",
  "generator": "scripts/bake_dungeon_arch.py",
  "generatorSha256": "d8ef0f8b41f2ac99cad61e2300cdda7f911ea380862939ed5d97b42eee437ef3",
@@ -12,6 +12,6 @@
   "kind": "authored-arch",
   "scale": 0.14326
  },
- "sha256": "7f31e8ab9b4b97f4a9c0e9cdfe879988e66b8a96e443f026fa024b1b7bfe6e19",
+ "sha256": "12aa00ff0e72e28f0f64e1bae69c7c6ecef3b8d3156acc61c1e38a4c981487e5",
  "writtenAt": "2026-08-18T23:01:47+09:00"
 }

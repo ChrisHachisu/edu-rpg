@@ -1,0 +1,36 @@
+{
+  "coastalReef": {
+    "px": [
+      2975,
+      603
+    ],
+    "cell": [
+      61,
+      12
+    ],
+    "depth": 11.40175425099138
+  },
+  "mistyGrotto": {
+    "px": [
+      1935,
+      1287
+    ],
+    "cell": [
+      40,
+      26
+    ],
+    "depth": 1.0
+  },
+  "sunkenCellar": null,
+  "whisperingWoodsCave": {
+    "px": [
+      636,
+      1575
+    ],
+    "cell": [
+      13,
+      32
+    ],
+    "depth": 2.0
+  }
+}

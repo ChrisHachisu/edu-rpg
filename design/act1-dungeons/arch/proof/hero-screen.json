@@ -1,0 +1,34 @@
+{
+  "coastalReef-west": {
+    "x": 648,
+    "y": 360
+  },
+  "coastalReef-mouth": {
+    "x": 688,
+    "y": 360
+  },
+  "mistyGrotto-north": {
+    "x": 693,
+    "y": 360
+  },
+  "mistyGrotto-mouth": {
+    "x": 696,
+    "y": 360
+  },
+  "sunkenCellar-north": {
+    "x": 504,
+    "y": 480
+  },
+  "sunkenCellar-mouth": {
+    "x": 507,
+    "y": 508
+  },
+  "whisperingWoodsCave-north": {
+    "x": 480,
+    "y": 480
+  },
+  "whisperingWoodsCave-mouth": {
+    "x": 480,
+    "y": 500
+  }
+}
