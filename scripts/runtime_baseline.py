@@ -458,6 +458,28 @@ ACT1_TOWN_FILES = {
         44_604, "585a14be6724a84dac872b82325bfaf70237974134693ceb549bb34873b6a90b"),
     "act1-hifi/town/npc/portSapphire-wisewoman-4x3-64.png": (
         46_937, "390c12022a813f8cd0c6894988b18e7bebab8d7facee63c9c5d67575b8615c0b"),
+    # GREENHOLLOW, the starting village. Same shape as Port Sapphire minus the foreground layer,
+    # which town.html treats as optional and this town does not have.
+    #
+    # THE WALKABLE JSON IS PINNED HERE FOR A REASON THAT IS EASY TO MISS. It was committed with the
+    # authored-collision-first work and nothing pinned it, so `expected_paths` never contained it,
+    # build-dist.sh never copied it into dist/, and the iOS payload never carried it -- while every
+    # local gate stayed green, because a file no dict names is a file no gate looks for. town.html
+    # fetches `town.walkable` before it draws anything, so on the device that is not a degraded
+    # town, it is a town that throws on load.
+    #
+    # `act1-hifi/town/greenhollow-screen.png` IS DELIBERATELY NOT PINNED YET, and this is the note
+    # for whoever finishes it. The plate does not exist: the four-tile bake ran out of image-model
+    # quota partway through (2026-08-19). A pin key naming a file that is not on disk is not a
+    # harmless placeholder -- regenerate_pins.py REFUSES TO WRITE while any pin is unresolved, and
+    # build-dist.sh stops with "gate wants ... but public/ does not have it", so it would break the
+    # build for every worktree rather than only for this town. Add the key in the same pass that
+    # adds the plate, then `npm run repin`. Greenhollow also stays out of adapter.js's TOWN_IDS
+    # until then: an entry that loads a town with no screen is a 404 where the town should be.
+    "act1-hifi/town/greenhollow-town.json": (
+        3930, "30ae2f67582a64f030fa17e8c0a86481784d7b0c254a3d5f8a637f6ed6b78730"),
+    "act1-hifi/town/greenhollow-walkable.json": (
+        5818, "756a877cad2c30c1b7384b3b5a2b70c1041369512a1d587a6d5df8106abdc3d9"),
     "act1-hifi/town/npc/greenhollow-elder-4x3-64.png": (
         55173, "7cfe7e0b5b9942ad9052634d9ebd416168a6d8da23eec6a415134fd50d0b3343"),
     "act1-hifi/town/npc/greenhollow-fisherman-4x3-64.png": (
