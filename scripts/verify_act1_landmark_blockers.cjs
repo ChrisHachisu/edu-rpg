@@ -111,7 +111,17 @@ function baseSave(x, y) {
       inventory: [{ itemId: 'herb', quantity: 3 }], gold: 500,
       position: { mapId: 'overworld', x, y, floor: 1 },
       storyFlags: { 'boss.giantToad.defeated': true },
-      activeQuests: [], completedQuests: [], questProgress: {},
+      /* THE QUEST GATES HAVE TO BE OPEN OR THIS TEST LIES ABOUT COLLISION.
+         Two Act 1 dungeons refuse entry on a QUEST, not on geometry -- the frozen bundle's own
+         table is `{ whisperingWoodsCave: 'owlsLesson', coastalReef: 'drakeCargo' }`, checked in
+         performTransition AFTER the door has already fired. Without them seeded, coastalReef
+         reported "the door never fired" on two consecutive clean runs and read exactly like an
+         unenterable dungeon -- the build-44 failure. It was neither: driving the same approach by
+         hand showed performTransition being called with target `coastalReef` every time, and with
+         `drakeCargo` active she walks in and lands at (61,13).
+         So seed them. This harness is asking whether the BLOCKERS let her reach the door; a story
+         gate answering "not yet" is the game working, and must not be scored as a wall. */
+      activeQuests: ['drakeCargo', 'owlsLesson'], completedQuests: [], questProgress: {},
       timerEnabled: false, quizDifficulty: '3', locale: 'en', soundEnabled: false,
       masterVolume: 0, kanjiMode: false,
     },
@@ -175,10 +185,34 @@ async function armTransitionSpy(page) {
   });
 }
 
+/* WALK HER WITH THE KEYS A PLAYER PRESSES, NOT WITH THE SYNTHETIC STICK.
+   `window.__DQ_STICK__` moved her on seven of the eight landmarks and, MEASURED, did not move her
+   one pixel on coastalReef's east approach -- fourteen samples over three seconds, all at (146,372).
+   Real arrow keys from the identical seed walk her to (145,372) in ~440 ms and fire the door. So the
+   stick was reporting "the door never fired" for a landmark whose door fires every time, which is
+   indistinguishable in the log from an unenterable dungeon -- the build-44 failure this harness
+   exists to catch. An input path the player does not use is not worth that risk. */
+const ARROW = { '-1,0': 'ArrowLeft', '1,0': 'ArrowRight', '0,-1': 'ArrowUp', '0,1': 'ArrowDown' };
+
+/* AND LET GO THE MOMENT SHE ARRIVES. Holding the key for the full 2.6 s does not stop at the door:
+   she enters the dungeon and keeps walking, straight back out through its own mouth, and the exit
+   registers as a door to `overworld` -- which the wrong-door check then scores as a failure on
+   sunkenCellar and mistyGrotto. Both had already entered correctly. The question this asks is
+   "does the approach reach the door", and it is answered the instant the map changes. */
 async function walkToward(page, dx, dy, ms) {
-  await page.evaluate(({ dx, dy }) => { window.__DQ_STICK__ = { x: dx, y: dy, m: 1 }; }, { dx, dy });
-  await page.waitForTimeout(ms);
-  await page.evaluate(() => { window.__DQ_STICK__ = { x: 0, y: 0, m: 0 }; });
+  const key = ARROW[`${dx},${dy}`];
+  if (!key) throw new Error(`no arrow key for ${dx},${dy}`);
+  const before = await page.evaluate(() => window.__PHASER_GAME__.scene.getScene('WorldMapScene').currentMapId);
+  await page.keyboard.down(key);
+  const deadline = Date.now() + ms;
+  for (;;) {
+    await page.waitForTimeout(100);
+    if (Date.now() >= deadline) break;
+    // eslint-disable-next-line no-await-in-loop
+    const now = await page.evaluate(() => window.__PHASER_GAME__.scene.getScene('WorldMapScene').currentMapId);
+    if (now !== before) break;
+  }
+  await page.keyboard.up(key);
   await page.waitForTimeout(300);
 }
 
@@ -311,8 +345,18 @@ async function census(page, x, y) {
         // eslint-disable-next-line no-await-in-loop
         const out = await readOutcome(page);
 
+        /* A WRONG DOOR ONLY COUNTS BEFORE THE RIGHT ONE. Once she is inside the landmark the walk
+           has already proved what it was asking, and she is still holding the direction -- so she
+           crosses the floor and leaves through the dungeon's own mouth, logging a door back to
+           `overworld`. Scoring that as "she reached a door she should not have" is false, and it is
+           also NON-DETERMINISTIC: consecutive clean runs flagged sunkenCellar+mistyGrotto, then
+           sunkenCellar+whisperingWoodsCave+mistyGrotto, purely on how far she got before the key
+           was released. Releasing the key earlier narrows the window but cannot close it, because
+           the door fires before currentMapId changes. Order is the honest test, not timing. */
+        const firstHit = out.doors.findIndex(d => d.target === landmark.mapId);
         const hits = out.doors.filter(d => d.target === landmark.mapId);
-        const wrong = out.doors.filter(d => d.target !== landmark.mapId);
+        const wrong = out.doors.filter((d, i) => d.target !== landmark.mapId
+          && (firstHit < 0 || i < firstHit));
         const fired = hits.length > 0 ? hits[0] : null;
         if (fired) firedFrom.add(`${fired.heroTile.x},${fired.heroTile.y}`);
         // INV-3, asked of a1mFree rather than of the cell grid.
