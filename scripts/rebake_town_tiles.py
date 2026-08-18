@@ -34,9 +34,13 @@ REF = os.path.join(ROOT, "design/act1-towns/rebake-v1-raw.png")   # layout + sty
 SHIP = os.path.join(ROOT, "public/act1-hifi/town/portSapphire-screen.png")
 GEN = 1254           # what the tool returns, always
 PLATE = 1950
-N = 3
-TILE = PLATE // N    # 650
-BAND = 96            # overlap band in FINAL px that a tile shares with its neighbours
+# 2x2, NOT 3x3. A 3x3 grid has four seam LINES across the plate; 2x2 has two, and each tile still
+# covers a quarter of the town at 1254 px -- 2.41 art px per world px, downscaled to 1.875, so it is
+# if anything sharper than the 3x3 tile measured. Halving the seams halves the one risk that can
+# ruin the plate outright, and it halves the generation time.
+N = 2
+TILE = PLATE // N    # 975
+BAND = 130           # overlap band in FINAL px that a tile shares with its neighbours
 MODEL = "gpt-5.6-sol"
 
 
@@ -55,22 +59,49 @@ def newest_since(t0):
 
 
 def primer(i, j, plate):
-    """The tile's input: the reference layout for this cell, plus any finished neighbour bands.
+    """The tile's input: layout for this cell, plus any finished neighbour band AT FULL DETAIL.
 
-    The primer is built at FINAL resolution and then upscaled to GEN, so the generator sees the
-    right composition at the right proportions and its job is purely to add detail.
+    THE FIRST VERSION BUILT THE WHOLE PRIMER AT FINAL RESOLUTION AND THEN UPSCALED IT, band included.
+    So the "already finished artwork" the brief told the generator to reproduce exactly arrived
+    BLURRED, indistinguishable from the low-detail layout around it -- and the generator, quite
+    reasonably, redrew it. Measured across the join: 88.7 mean step against a plate mean of 20.4,
+    and a structure cut in half.
+
+    The band is now taken from the neighbour's RAW generated output, at the generator's own
+    resolution, so it reaches the model as obviously-finished pixels in the target style. That is the
+    whole difference between "here is a blurry hint" and "here is the drawing you are continuing".
     """
     x0, y0 = j * TILE - (BAND if j else 0), i * TILE - (BAND if i else 0)
     x1, y1 = x0 + TILE + (BAND if j else 0), y0 + TILE + (BAND if i else 0)
+    W = x1 - x0
     ref = Image.open(REF).convert("RGB").resize((PLATE, PLATE), Image.LANCZOS)
-    tile = ref.crop((x0, y0, x1, y1))
-    # paste back whatever is already finished, so the seam is drawn rather than blended
-    fin = plate.crop((x0, y0, x1, y1))
-    a = np.asarray(fin)
-    done = a.sum(axis=2) > 0
-    if done.any():
-        tile = Image.composite(fin, tile, Image.fromarray((done * 255).astype(np.uint8)).convert("1"))
-    return tile.resize((GEN, GEN), Image.LANCZOS), (x0, y0, x1, y1)
+    pr = ref.crop((x0, y0, x1, y1)).resize((GEN, GEN), Image.LANCZOS)
+    k = GEN / W                                   # primer px per final px
+
+    def graft(ni, nj, side):
+        """Paste the neighbour's own raw output into this primer's band, at generator detail."""
+        raw_p = os.path.join(OUT, f"raw-{ni}{nj}.png")
+        if not os.path.exists(raw_p):
+            return
+        raw = Image.open(raw_p).convert("RGB")
+        nw = TILE + (BAND if nj else 0)           # final px the neighbour's raw image covers
+        rk = raw.size[0] / nw                     # raw px per final px
+        b = int(round(BAND * rk))
+        strip = raw.crop((raw.size[0] - b, 0, raw.size[0], raw.size[1])) if side == "left" else \
+                raw.crop((0, raw.size[1] - b, raw.size[0], raw.size[1]))
+        tgt = int(round(BAND * k))
+        if side == "left":
+            strip = strip.resize((tgt, GEN), Image.LANCZOS)
+            pr.paste(strip, (0, 0))
+        else:
+            strip = strip.resize((GEN, tgt), Image.LANCZOS)
+            pr.paste(strip, (0, 0))
+
+    if j:
+        graft(i, j - 1, "left")
+    if i:
+        graft(i - 1, j, "top")
+    return pr, (x0, y0, x1, y1)
 
 
 BRIEF = """Redraw this image at full detail as hand-drawn, hard-edged pixel art.
@@ -128,7 +159,7 @@ def main():
         which = ("LEFT EDGE" if j and not i else "TOP EDGE" if i and not j
                  else "LEFT AND TOP EDGES" if i and j else None)
         bn = "" if which is None else BANDNOTE.format(
-            which=which, bandpx=int(BAND * GEN / pr.size[0] * pr.size[0] / (TILE + BAND)))
+            which=which, bandpx=int(round(BAND * GEN / (TILE + BAND))))
         brief = BRIEF.format(i=i, j=j, bandnote=bn)
         bp = os.path.join(OUT, f"brief-{i}{j}.md")
         open(bp, "w").write(brief)
@@ -142,10 +173,19 @@ def main():
         if not got:
             print(f"    FAILED (exit {r.returncode}); last output:\n{r.stdout[-600:]}")
             continue
+        Image.open(got).convert("RGB").save(os.path.join(OUT, f"raw-{i}{j}.png"))
         art = Image.open(got).convert("RGB").resize(
             (box[2] - box[0], box[3] - box[1]), Image.LANCZOS)
         art.save(os.path.join(OUT, f"tile-{i}{j}.png"))
-        plate.paste(art, (box[0], box[1]))
+        # THE BAND IS INPUT CONTEXT, NOT OUTPUT. Pasting the whole tile, band included, overwrites
+        # the neighbour's finished pixels with this tile's re-drawing of them -- and the generator
+        # does not reproduce them exactly, so the join became a hard edge: measured 88.7 mean step
+        # across x=554 against a plate mean of 20.4, i.e. 4.3x. Pasting only the tile's OWN cell
+        # leaves the neighbour intact and leaves the band doing what it was for, which is telling
+        # the generator what it is drawing towards.
+        ox, oy = (BAND if j else 0), (BAND if i else 0)
+        own = art.crop((ox, oy, ox + TILE, oy + TILE))
+        plate.paste(own, (j * TILE, i * TILE))
         plate.save(plate_p)
         print(f"    -> {os.path.relpath(got, os.path.expanduser('~'))}  placed at {box[:2]}")
     print("  plate ->", os.path.relpath(plate_p, ROOT))
