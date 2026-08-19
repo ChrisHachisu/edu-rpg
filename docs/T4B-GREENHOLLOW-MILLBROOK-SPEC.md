@@ -224,14 +224,51 @@ upscale to 1950 (the tile rule; it produced the rejected v6).
 3. **`newest_since()` scans a SHARED directory.** With two towns baking at once, millbrook's output
    was about to be grafted into greenhollow's plate. Scope it to the town's own folder.
 
-## To resume once credits return
+## To resume once credits return — OWNER DECISION 2026-08-19: park until Aug 21, style anchor FIRST
 
+The owner chose to wait for the quota rather than buy credits, and to try the style anchor before
+spending generations on the flat-primer path. `scripts/town_bake.py` already carries it, so this is
+one command, not a reconstruction.
+
+**STEP 1 — ONE TILE, MEASURED, BEFORE ANYTHING ELSE.**
 ```
-python3 scripts/millbrook_bake.py   --only 0,1     # then 1,0 then 1,1, in reading order
-python3 scripts/greenhollow_bake.py --only 0,0     # etc
+python3 scripts/town_bake.py --town millbrook --only 0,1
 ```
-Reading order matters: tile 0,0 feeds the bands of 0,1 and 1,0, so a bad 0,0 poisons everything
-after it. Then stitch with `scripts/stitch_plate.py` (exposure-match BEFORE the join), gate with
-`check_town_finish.py --walkable <town>-walkable.json`, add the `<id>-screen.png` pin key, `npm run
-repin`, COUNT the payload (720 now, 722 with both screens), and only then add the ids to `TOWN_IDS`
-in `adapter.js`. **`TOWN_IDS` last**: a town in that set without a plate shows the player a 404.
+It prints every candidate's layout correlation and takes the best, refusing under 0.60. Then measure
+the FINISH, which is the whole reason for the anchor:
+```
+python3 - <<'EOF'
+import numpy as np; from PIL import Image
+a=np.asarray(Image.open('design/act1-towns/millbrook/tile-01.png').convert('RGB')).astype(float)
+l=0.2126*a[:,:,0]+0.7152*a[:,:,1]+0.0722*a[:,:,2]
+st=np.concatenate([np.abs(np.diff(l,axis=1)).ravel(), np.abs(np.diff(l,axis=0)).ravel()])
+print('mean %.2f  hard>=24 %.1f%%  soft4-20 %.1f%%'%(st.mean(),100*(st>=24).mean(),100*((st>=4)&(st<20)).mean()))
+EOF
+```
+**The number to beat is mean >= 17 and hard >= 22%**, against the flat-primer result of 11.8 / 14.0%.
+Port Sapphire, accepted, is 22.17 / 29.7%.
+
+- If it clears: bake the rest in READING ORDER (0,0 feeds the bands of 0,1 and 1,0, so a bad 0,0
+  poisons everything after it), both towns, then continue to step 2.
+- If it does NOT clear: **stop and report rather than baking seven more tiles.** The next lever is a
+  denser PRIMER, not a longer brief -- give `town_layout.py` a texture pass so the plan carries
+  stipple/grain in its ground fills and the model has something to redraw. Do not reach for a grain
+  CLAUSE again; it was measured to make `hard` worse.
+
+**STEP 2 — finish and ship.** Stitch with `scripts/stitch_plate.py` (exposure-match the four tiles to
+EACH OTHER BEFORE the join; stitch-then-grade is the bug that shipped the seam the owner complained
+about). Gate with
+`check_town_finish.py <plate> --walkable public/act1-hifi/town/<id>-walkable.json`. LAYOUT is the one
+these towns should PASS where Port Sapphire fails, because their collision was authored first; if it
+fails, the generator paved somewhere it should not have -- fix the art, NEVER the polygon.
+
+**STEP 3 — pins, then the switch, in that order.** Add the `<id>-screen.png` pin key by hand in
+`runtime_baseline.py`, `npm run repin`, COUNT `ios/App/App/public` (**720** now, 722 with both
+screens). Do NOT add a pin key for a file that does not exist yet: `regenerate_pins.py` refuses to
+write while any pin is unresolved and `build-dist.sh` then stops outright, breaking every worktree.
+**Only then** add the ids to `TOWN_IDS` in `adapter.js` -- last, because a town in that set without a
+plate shows the player a 404 where the town should be.
+
+**STEP 4 — the entry walk, which has never been run.** `scripts/greenhollow_verify_entry.cjs` and
+`scripts/millbrook_verify_ingame.cjs` both need `TOWN_IDS` set first. Everything else is already
+proven: greenhollow's six NPCs and millbrook's 19/19 ran against a stand-in plate.
