@@ -113,12 +113,39 @@ towns `greenhollow`, `millbrook`, `portSapphire`; dungeons `sunkenCellar`, `whis
 
 ## OPEN — say these to the owner, do not bury them
 
-1. **The two town interiors (greenhollow, millbrook) are NOT built.** Their ten NPC sheets are done,
-   gated, baked, pinned and shipping in build 55 (unused). Everything else is specified in
-   `docs/T4B-GREENHOLLOW-MILLBROOK-SPEC.md`. **The hi-fi town is an IFRAME**: `adapter.js` keeps
-   `TOWN_IDS = {'portSapphire'}` and swaps in `town.html`; `dq-tiles.js`'s `reskinTown` is procedural
-   and never reads the plate. So each town is 8 new runtime files plus one line in `TOWN_IDS`, added
-   LAST so a half-built town cannot ship live.
+1. **The two town interiors are BUILT EXCEPT THE PLATE, and blocked on Codex credits.** Superseded
+   by the tail of `docs/T4B-GREENHOLLOW-MILLBROOK-SPEC.md`, which carries the full state; the HEAD of
+   that file is the original plan and two of its claims are now wrong (a town needs THREE runtime
+   files, not eight, because `town.html`'s foreground layer is OPTIONAL; and the collision is
+   AUTHORED by `scripts/town_layout.py`, not derived -- do not run `derive_town_walkable.py` at them).
+   DONE and verified in the RUNNING GAME: both walkable authorities passing the shipped
+   `validateWalkableGeometry`, both manifests, all ten NPC sheets, and both towns' geometry --
+   greenhollow's six NPCs reached and named back by the game's own `nearestNpc`, palisade held 0/16
+   samples outside, the healer correctly posts `act1-town-service`, exit posts (69,256); millbrook
+   19/19, all five buildings refuse her, 145 reachable nodes outside the ring and 0 outside the gate
+   corridor, exit posts (39,345). **Both ran against a STAND-IN plate** -- geometry proven, art not.
+   Payload 716 -> **720**. `TOWN_IDS` is still `{'portSapphire'}` ON PURPOSE: a town in that set
+   without a plate shows the player a 404 where the town should be.
+   BLOCKED: `codex exec` returns `You've hit your usage limit ... try again at Aug 21st, 2026
+   9:03 AM`. Only millbrook tile 0,0 exists, at layout correlation +0.88. Do NOT substitute
+   nano-banana (prohibited on this project) and do NOT upscale to 1950 (the tile rule; it made v6).
+
+   **AND THE FINDING THAT CHANGES THE RECIPE: plan-primed art is TOO SOFT, structurally.** Measured
+   against the accepted plate's 22.17 mean step / 29.7% hard: millbrook 11.78 / 14.0%, greenhollow
+   12.31 / 13.8% -- on both towns, both brief variants, and the raw 1254 output as well as the
+   downscale. A "grain" clause aimed at it moved `hard` the WRONG way, turning soft steps into flat
+   ones. It is not wording: Port Sapphire's primer was a detailed PAINTING already carrying texture,
+   and these primers are flat colour blocks with nothing in them, so the LAYOUT came out right for
+   exactly the reason the FINISH came out wrong. Untested hypothesis, no credits to try it: pass BOTH
+   images -- the plan for WHERE, and `portSapphire-screen.png` as a STYLE ANCHOR for HOW DENSE
+   (`codex exec -i` is variadic, which is why the brief must go on stdin). Try that before spending
+   generations on the flat-primer path.
+
+   Three pipeline bugs were found and fixed; do not rediscover them. A whole-town colour legend given
+   to a model shown ONE QUADRANT makes it draw the legend (+0.282 -> +0.884 once the brief named only
+   what is measurably in that crop). `codex exec` dispatches SUB-AGENTS that redraw the image, so
+   taking the newest file ships +0.805 instead of +0.884. And its output directory is SHARED, so
+   millbrook's tile was about to be grafted into greenhollow's plate.
 2. **`check_town_finish.py` still FAILS on LAYOUT** — 56.7% of drawn paving lies outside the walkable
    authority (max 55%). **This is pre-existing**: the plate the owner accepted in build 54 was already
    at 55.7% and also failing. The real cause is that the walkable authority is still derived from the
