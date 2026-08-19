@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Bake Millbrook's four tiles from its authored plan, with a brief that describes EACH CROP.
+"""Bake a town's four tiles from its authored plan, with a brief that describes EACH CROP.
 
 WHY THIS EXISTS AND WHY IT IS NOT AN EDIT TO rebake_town_tiles.py
     Two reasons, and the second is the binding one.
@@ -45,8 +45,18 @@ import numpy as np
 from PIL import Image
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OUT = os.path.join(ROOT, "design/act1-towns/millbrook")
-REF = os.path.join(OUT, "primer.png")
+TOWNS = {
+    "millbrook":   {"water": "the MILLSTREAM, clear running water",
+                    "subject": "a small top-down JRPG mill village inside a round timber palisade, "
+                               "with one gate at the south and a millstream crossing it"},
+    "greenhollow": {"water": "WATER",
+                    "subject": "a small top-down JRPG forest village inside a round timber "
+                               "palisade, with one gate at the south, cottages facing inward "
+                               "around a packed-earth yard, and dense woodland beyond the wall"},
+}
+STYLE_ANCHOR = "public/act1-hifi/town/portSapphire-screen.png"
+OUT = None            # both set from --town in main(); a town is a path, not a constant
+REF = None
 
 GEN = 1254          # what the image tool returns, always
 PLATE = 1950        # 1.875 art px per world px -> an exact 3x device upscale
@@ -76,24 +86,46 @@ HUMAN = {
     "roof_slate": "slate-blue ROOF, the upper band of a building block",
     "roof_tile": "red-brown ROOF, the upper band of a building block",
     "palisade": "the TIMBER PALISADE, a wall of upright logs",
-    "water": "the MILLSTREAM, clear running water",
+    "water": "WATER",   # replaced per town in main()
     "gate": "the ONE GATE through the palisade",
     "well": "a round STONE WELL",
 }
 
 
-def newest_since(t0):
+def candidates_since(t0):
+    """EVERY image generated since t0, newest last -- not just the newest one.
+
+    TWO measured failures live here. (1) `~/.codex/generated_images` is SHARED, so with two towns
+    baking at once the newest file is not necessarily yours: millbrook's tile, generated at 08:02,
+    was about to be grafted into greenhollow's plate. (2) `codex exec` does not reliably stop after
+    producing an image -- it dispatches sub-agents that REDRAW it, each writing its own file. On
+    millbrook tile (0,0) the correct image landed at 08:30:49 with layout correlation +0.884, then
+    nineteen further minutes produced +0.865, +0.856, +0.868, +0.836, +0.674, +0.803 and +0.805.
+    Taking the newest ships +0.805 and nobody ever sees the +0.884.
+
+    So collect them all and let the caller SCORE them. Arrival order is not quality order.
+    """
     root = os.path.expanduser("~/.codex/generated_images")
-    best, bt = None, t0
+    out = []
     for d, _, fs in os.walk(root):
         for f in fs:
             if not f.endswith(".png"):
                 continue
-            p = os.path.join(d, f)
-            m = os.path.getmtime(p)
-            if m > bt:
-                best, bt = p, m
-    return best
+            q = os.path.join(d, f)
+            if os.path.getmtime(q) > t0:
+                out.append((os.path.getmtime(q), q))
+    return [q for _, q in sorted(out)]
+
+
+def score(cand: str, plan_only: Image.Image) -> float:
+    """Layout fidelity: luminance correlation against the tile's own plan. Cheap and decisive --
+    a model that answered from the legend instead of the crop scores +0.28 where a faithful one
+    scores +0.88, and the two are indistinguishable by eye because both are beautifully drawn."""
+    a = np.asarray(Image.open(cand).convert("RGB").resize((128, 128), Image.LANCZOS)).astype(float)
+    b = np.asarray(plan_only.convert("RGB").resize((128, 128), Image.LANCZOS)).astype(float)
+    la = 0.2126 * a[:, :, 0] + 0.7152 * a[:, :, 1] + 0.0722 * a[:, :, 2]
+    lb = 0.2126 * b[:, :, 0] + 0.7152 * b[:, :, 1] + 0.0722 * b[:, :, 2]
+    return float(np.corrcoef(la.ravel(), lb.ravel())[0, 1])
 
 
 def mask_for(arr: np.ndarray, rgb) -> np.ndarray:
@@ -174,8 +206,7 @@ and stop; do not review it, do not redraw it, do not ask another agent to improv
 Draw this as hand-drawn, hard-edged pixel art at full detail.
 
 THE INPUT IS A PLAN, NOT A PICTURE. It is a flat colour-coded diagram, and it is ONE QUADRANT --
-tile ({i},{j}) of a 2x2 grid -- of a small top-down JRPG mill village inside a round timber
-palisade. It is not a blurry painting to be sharpened and it is not a theme to riff on: it is a map
+tile ({i},{j}) of a 2x2 grid -- of {subject}. It is not a blurry painting to be sharpened and it is not a theme to riff on: it is a map
 telling you WHERE EVERY SINGLE THING GOES inside this crop. Draw the finished village that this
 exact crop describes, keeping every element in exactly the position, at exactly the size, and with
 exactly the extent the plan gives it.
@@ -218,6 +249,21 @@ neighbouring pixels, 26 or more overall, 34-52% of steps at 24 or above, and 22-
 
 LIGHT AND PALETTE. One upper-left sun, short soft shadows, warm late-morning daylight over open
 farmland. Mean luminance about 90.
+"""
+
+STYLENOTE = """
+TWO IMAGES ARE ATTACHED, AND THEY DO DIFFERENT JOBS.
+  IMAGE 1 is the PLAN. It sets WHERE everything goes, and only that. Its flat colours are a key, not
+          a palette: do not reproduce them as flat fills.
+  IMAGE 2 is FINISHED ART from the same game, and it sets HOW DENSELY DRAWN the result must be. Match
+          its level of detail, its material texture, its dithering and its contrast -- individual
+          stones, planks, tiles and leaves, everywhere, including across large areas of ground.
+Do not copy image 2's buildings, layout or content. Take POSITION from image 1 and FINISH from image 2.
+
+This is not a preference. Tiles drawn from the plan alone measure about half the pixel-step energy of
+image 2 (mean absolute luminance step between neighbouring pixels 11.8 against 22.2, hard steps 14%
+against 30%), because a flat plan gives you nothing to redraw and the result comes back as smooth
+fields. Image 2 is what a finished plate of this town has to look like up close.
 """
 
 BANDNOTE = """
@@ -276,10 +322,18 @@ def primer(i, j):
 
 def main() -> int:
     ap = argparse.ArgumentParser()
+    ap.add_argument("--town", choices=sorted(TOWNS), required=True)
     ap.add_argument("--only", help="i,j to generate a single tile")
+    ap.add_argument("--no-style-anchor", action="store_true",
+                    help="generate from the plan alone. Measured to come back HALF as dense as the "
+                         "accepted plate; kept only to reproduce that result.")
     ap.add_argument("--dry-run", action="store_true")
     a = ap.parse_args()
 
+    global OUT, REF
+    OUT = os.path.join(ROOT, "design/act1-towns", a.town)
+    REF = os.path.join(OUT, "primer.png")
+    HUMAN["water"] = TOWNS[a.town]["water"]
     os.makedirs(OUT, exist_ok=True)
     cells = ([tuple(int(v) for v in a.only.split(","))] if a.only
              else [(i, j) for i in range(N) for j in range(N)])
@@ -291,24 +345,36 @@ def main() -> int:
                  else "LEFT AND TOP EDGES" if i and j else None)
         bn = "" if which is None else BANDNOTE.format(
             which=which, bandpx=int(round(BAND * GEN / (TILE + BAND))))
-        brief = BRIEF.format(i=i, j=j, inventory=inventory(plan_only), bandnote=bn)
+        brief = BRIEF.format(i=i, j=j, inventory=inventory(plan_only), bandnote=bn,
+                             subject=TOWNS[a.town]["subject"]) + (
+            "" if a.no_style_anchor else STYLENOTE)
         bp = os.path.join(OUT, f"brief-{i}{j}.md")
         open(bp, "w").write(brief)
         print(f"  tile {i},{j}  primer {pr.size}  box {box}  -> {os.path.relpath(pp, ROOT)}")
         if a.dry_run:
             continue
         t0 = time.time() - 1
-        r = subprocess.run(["codex", "exec", "-m", MODEL, "--skip-git-repo-check", "-i", pp],
-                           stdin=open(bp), capture_output=True, text=True, timeout=3000)
-        got = newest_since(t0)
-        if not got:
+        cmd = ["codex", "exec", "-m", MODEL, "--skip-git-repo-check", "-i", pp]
+        if not a.no_style_anchor:
+            cmd += [os.path.join(ROOT, STYLE_ANCHOR)]   # -i is VARIADIC; the brief goes on stdin
+        r = subprocess.run(cmd, stdin=open(bp), capture_output=True, text=True, timeout=3000)
+        cands = candidates_since(t0)
+        if not cands:
             print(f"    FAILED (exit {r.returncode}); last output:\n{r.stdout[-600:]}")
+            continue
+        scored = sorted(((score(c, plan_only), c) for c in cands), reverse=True)
+        for sc, c in scored:
+            print(f"      candidate {os.path.basename(c):<28} layout {sc:+.3f}")
+        best_score, got = scored[0]
+        if best_score < 0.60:
+            print(f"    REJECTED: best candidate scores {best_score:+.3f}, under the 0.60 floor. "
+                  "The model answered from the legend rather than the crop; fix the brief, not the art.")
             continue
         Image.open(got).convert("RGB").save(os.path.join(OUT, f"raw-{i}{j}.png"))
         art = Image.open(got).convert("RGB").resize(
             (box[2] - box[0], box[3] - box[1]), Image.LANCZOS)
         art.save(os.path.join(OUT, f"tile-{i}{j}.png"))
-        print(f"    -> raw-/tile-{i}{j}.png written from {os.path.basename(got)}")
+        print(f"    -> raw-/tile-{i}{j}.png from {os.path.basename(got)}, layout {best_score:+.3f}")
     print("  BAKE DONE")
     return 0
 
