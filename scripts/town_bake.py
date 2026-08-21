@@ -77,6 +77,7 @@ PLAN = {
     "water": (58, 104, 132),
     "gate": (150, 126, 92),
     "well": (120, 120, 126),
+    "clutter": (214, 140, 40),
 }
 HUMAN = {
     "woodland": "dark-green WOODLAND, outside the palisade",
@@ -89,6 +90,15 @@ HUMAN = {
     "water": "WATER",   # replaced per town in main()
     "gate": "the ONE GATE through the palisade",
     "well": "a round STONE WELL",
+    # The amber marks are the ONE place this plan asks for invention, and it is bounded: they sit
+    # only on ground the walkable authority already refuses, so nothing drawn here can block a
+    # player who was never able to stand there. Sizes and spacing come from the plan, the CHOICE of
+    # object does not -- that is what stops eight tiles of identical barrels.
+    "clutter": ("VILLAGE CLUTTER. Each amber mark is one piece of stored property standing on the "
+                "ground: a barrel, a crate, a stack of firewood, a sack pile, a covered handcart, "
+                "a water trough, a stack of crab pots or roof tiles, a coil of rope. Vary them, "
+                "give each one a cast shadow, and draw them at the size and position of the mark. "
+                "They belong to the buildings and the wall they stand against"),
 }
 
 

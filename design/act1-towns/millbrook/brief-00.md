@@ -12,16 +12,17 @@ exactly the extent the plan gives it.
 WHAT IS ACTUALLY IN THIS CROP, measured off the image you have been given:
 
   - dark-green WOODLAND, outside the palisade: 42.5% of this crop, spanning 1%-94% across and 1%-95% down
-  - mid-green GRASS, inside the palisade: 22.9% of this crop, spanning 24%-98% across and 22%-99% down
+  - mid-green GRASS, inside the palisade: 20.6% of this crop, spanning 24%-98% across and 22%-99% down
   - pale PACKED-EARTH STREET AND YARD, the ground the player walks on: 14.0% of this crop, spanning 49%-99% across and 50%-99% down
   - brown BUILDING FACADE, the lower band of a building block: 4.2% of this crop, spanning 35%-73% across and 45%-55% down
   - slate-blue ROOF, the upper band of a building block: 6.9% of this crop, spanning 35%-73% across and 28%-45% down
   - the TIMBER PALISADE, a wall of upright logs: 3.4% of this crop, spanning 18%-98% across and 16%-98% down; it meets the bottom edge at 17%-20%; right edge at 15%-19%
   - the MILLSTREAM, clear running water: 5.8% of this crop, spanning 24%-91% across and 73%-84% down; it does not reach any edge of this crop, so do not run it to one
+  - the ONE GATE through the palisade: 0.3% of this crop, spanning 24%-98% across and 23%-99% down
+  - VILLAGE CLUTTER. Each amber mark is one piece of stored property standing on the ground: a barrel, a crate, a stack of firewood, a sack pile, a covered handcart, a water trough, a stack of crab pots or roof tiles, a coil of rope. Vary them, give each one a cast shadow, and draw them at the size and position of the mark. They belong to the buildings and the wall they stand against: 2.1% of this crop, spanning 24%-99% across and 22%-97% down
 
 NOT PRESENT IN THIS CROP AT ALL, and therefore MUST NOT BE DRAWN INTO IT:
   red-brown ROOF, the upper band of a building block
-  the ONE GATE through the palisade
   a round STONE WELL
 
 READ THAT LIST LITERALLY. It is the complete contents of this crop. This is a QUADRANT of a larger

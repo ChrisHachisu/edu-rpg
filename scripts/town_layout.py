@@ -81,6 +81,7 @@ COL = {
     "roofB": (78, 96, 132),
     "palisade": (104, 82, 54),
     "well": (120, 120, 126),
+    "clutter": (214, 140, 40),    # props -- ONLY on ground the walkable authority already refuses
 }
 
 
@@ -320,6 +321,62 @@ def emit_walkable(spec: dict, body: np.ndarray) -> dict:
 
 # ---------------------------------------------------------------- the primer
 
+def scatter_clutter(spec: dict, inside, body, ring, water, bld) -> np.ndarray:
+    """Prop marks for the primer, on ground the collision authority ALREADY refuses.
+
+    WHY THIS IS THE ONLY PLACE PROPS MAY GO
+        Rendered beside portSapphire, millbrook and greenhollow read as empty: a palisade, six plain
+        buildings, a well, and large bare fields. That emptiness is also the whole of their one gate
+        failure -- PAINTERLY 44-45% soft against a 40% ceiling -- because props make hard edges and
+        bare ground makes soft stipple, so a town with nothing on its ground measures painterly no
+        matter how well it is drawn. The cause was the plan vocabulary: ten entries, none a prop,
+        and a brief telling the model that anything unlisted must not be drawn.
+
+        But collision here is AUTHORED FIRST and the art is drawn from it, so a barrel invented in
+        the middle of the street is a barrel the player walks through. Owner's call, 2026-08-21: put
+        props ONLY where the walkable body already says nobody stands. Then the polygons never move,
+        `emit_walkable` is untouched, and greenhollow's six-NPC walk and millbrook's 19/19 stay
+        valid without being re-run.
+
+    THE MARGIN IS NOT DECORATION
+        The primer is rasterised at WORLD*RASTER and resampled twice before the model sees it
+        (BILINEAR to 1254) and once more on the way back. A prop sitting flush against the paving
+        would bleed blended pixels onto the street, and the street is thresholded out of pale paving
+        to build the walkable network -- so a blob touching a lane could silently narrow it. Eroding
+        the free ground by 0.6 of a cell before placing anything keeps every prop clear of both the
+        walkable body and any wall.
+    """
+    free = inside & ~body & ~ring & ~water & ~bld
+    step = int(round(0.6 * CELL * RASTER))
+    clear = ndimage.binary_erosion(free, np.ones((3, 3), bool), iterations=step)
+    # Clutter belongs against something, not adrift in a meadow: keep to within a few cells of a
+    # building wall or the palisade, which is also exactly where a town naturally stacks its stores.
+    solid = bld | ring
+    near = clear & (ndimage.distance_transform_edt(~solid) <= 3.2 * CELL * RASTER)
+    ys, xs = np.where(near)
+    out = np.zeros_like(free)
+    if not len(ys):
+        return out
+    # Deterministic: the same plan must produce the same primer on any machine, or a re-bake is not
+    # a re-bake. Seeded from the town's own id rather than the clock.
+    rng = np.random.default_rng(abs(hash(spec["id"])) % (2 ** 32))
+    order = rng.permutation(len(ys))
+    gap = 1.8 * CELL * RASTER          # minimum centre-to-centre spacing, so they read as objects
+    yy, xx = np.mgrid[0:free.shape[0], 0:free.shape[1]]
+    taken: list[tuple[int, int]] = []
+    for k in order:
+        cy, cx = int(ys[k]), int(xs[k])
+        if any((cy - py) ** 2 + (cx - px) ** 2 < gap ** 2 for py, px in taken):
+            continue
+        r = float(rng.uniform(0.42, 0.82) * CELL * RASTER)
+        blob = ((yy - cy) ** 2 + (xx - cx) ** 2) <= r ** 2
+        out |= blob & clear
+        taken.append((cy, cx))
+        if len(taken) >= 120:
+            break
+    return out
+
+
 def draw_primer(spec: dict, body, ring, water, bld) -> Image.Image:
     n = body.shape[0]
     img = np.zeros((n, n, 3), np.uint8)
@@ -331,6 +388,7 @@ def draw_primer(spec: dict, body, ring, water, bld) -> Image.Image:
     img[water] = COL["water"]
     img[body] = COL["paving"]
     img[ring] = COL["palisade"]
+    img[scatter_clutter(spec, inside, body, ring, water, bld)] = COL["clutter"]
 
     out = Image.fromarray(img)
     d = ImageDraw.Draw(out)
