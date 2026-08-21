@@ -192,7 +192,7 @@ def spec_greenhollow() -> dict:
         "lanes": [
             ((cx, 60.0), (cx, 33.0), 5.0),
         ],
-        "well": (cx, 31.0, 2.2),
+        "well": (26.0, 25.0, 2.2),
         # SEATED BY BEARING, not typed as coordinates -- see _seat(). Greenhollow is the bigger
         # village and reads as a ring of cottages facing a wide common, hall due north.
         "buildings": [
@@ -236,7 +236,7 @@ def spec_millbrook() -> dict:
         "lanes": [
             ((cx, 60.0), (cx, 39.0), 5.0),
         ],
-        "well": (cx, 38.0, 2.2),
+        "well": (27.0, 40.0, 2.2),
         # Fewer and larger than greenhollow, and deliberately NOT the same bearings -- owner,
         # 2026-08-21: "we can have the general shape and container of the town but move the
         # houses/shops around depending on the town."
@@ -301,7 +301,7 @@ def spec_portSapphire() -> dict:
             (31.0, shore - 1.0, 3.0, 13.0),
             (41.0, shore - 1.0, 3.0, 10.0),
         ],
-        "well": (cx, 28.0, 2.2),
+        "well": (27.0, 24.0, 2.2),
         # Seated north of the shoreline so nothing stands in the water. Bearings deliberately differ
         # from both villages: a port crowds its buildings around the head of the harbour.
         # FOUR ON THE ARC, TWO ON THE QUAY. Six would not fit around the northern half alone -- at
@@ -620,6 +620,21 @@ def check(spec: dict, body: np.ndarray, walk: dict) -> list[str]:
         if far > rgc["r"]:
             problems.append(f"building {b['id']} reaches {far:.2f} cells from the centre, "
                             f"outside the palisade at r={rgc['r']}")
+    # NO POINT FEATURE MAY SIT ON A TILE SEAM. The plate is quilted from four 975 px tiles, so the
+    # seams fall at art px 975 in both axes -- cell 32.5 exactly. Every town's well was authored at
+    # cx = 32.5, i.e. straddling the vertical seam, and greenhollow's came back DRAWN TWICE: each
+    # neighbouring tile saw half a well in its own crop and completed it. millbrook and portSapphire
+    # survived the same placement by luck, which is worse than failing, because it hides the fault
+    # until a re-bake.
+    #
+    # A building is safe because it is large and the graft band carries it; a small round object
+    # centred on the cut is not. Keep point features a clear well-radius plus margin off both seams.
+    seam = CELLS / 2.0
+    wx, wy, wr = spec["well"]
+    need = wr + 2.0
+    if abs(wx - seam) < need or abs(wy - seam) < need:
+        problems.append(f"the well at ({wx}, {wy}) is within {need:.1f} cells of the tile seam at "
+                        f"{seam} -- it will be drawn twice, once by each neighbouring tile")
     # NO TWO BUILDINGS MAY COME WITHIN MIN_GAP CELLS OF EACH OTHER, which is a STRICTER rule than
     # the non-overlap one below and replaces it in practice. Owner, 2026-08-21: "one of the houses in
     # green hollow looks like it is attached to another house." They were right and the overlap guard

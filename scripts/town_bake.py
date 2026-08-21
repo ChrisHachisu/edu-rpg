@@ -93,7 +93,14 @@ PLAN = {
     "clutter": (214, 140, 40),
 }
 HUMAN = {
-    "woodland": "dark-green WOODLAND, outside the palisade",
+    # "dark-green WOODLAND" alone was answered LITERALLY on millbrook tile (0,1), 2026-08-21: the
+    # whole area outside the palisade came back as one flat untextured dark field, not a single tree
+    # in it. The layout score cannot catch that -- a flat fill correlates perfectly with the flat
+    # plan colour it was drawn from -- so the brief has to ask for the trees in as many words.
+    "woodland": ("DENSE FOREST CANOPY outside the palisade: individual rounded treetops drawn one by "
+                 "one, each with its own highlight and cast shadow, packed edge to edge so no two "
+                 "are identical. It must never be a flat field of colour -- if this area reads as "
+                 "plain dark green with no trees in it, the tile is wrong"),
     "grass": "mid-green GRASS, inside the palisade",
     "paving": "pale PACKED-EARTH STREET AND YARD, the ground the player walks on",
     "facade": "brown BUILDING FACADE, the lower band of a building block",
