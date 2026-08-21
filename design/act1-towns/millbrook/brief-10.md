@@ -4,8 +4,7 @@ and stop; do not review it, do not redraw it, do not ask another agent to improv
 Draw this as hand-drawn, hard-edged pixel art at full detail.
 
 THE INPUT IS A PLAN, NOT A PICTURE. It is a flat colour-coded diagram, and it is ONE QUADRANT --
-tile (1,0) of a 2x2 grid -- of a small top-down JRPG mill village inside a round timber
-palisade. It is not a blurry painting to be sharpened and it is not a theme to riff on: it is a map
+tile (1,0) of a 2x2 grid -- of a small top-down JRPG mill village inside a round timber palisade, with one gate at the south and a millstream crossing it. It is not a blurry painting to be sharpened and it is not a theme to riff on: it is a map
 telling you WHERE EVERY SINGLE THING GOES inside this crop. Draw the finished village that this
 exact crop describes, keeping every element in exactly the position, at exactly the size, and with
 exactly the extent the plan gives it.
@@ -65,3 +64,16 @@ neighbouring pixels, 26 or more overall, 34-52% of steps at 24 or above, and 22-
 
 LIGHT AND PALETTE. One upper-left sun, short soft shadows, warm late-morning daylight over open
 farmland. Mean luminance about 90.
+
+TWO IMAGES ARE ATTACHED, AND THEY DO DIFFERENT JOBS.
+  IMAGE 1 is the PLAN. It sets WHERE everything goes, and only that. Its flat colours are a key, not
+          a palette: do not reproduce them as flat fills.
+  IMAGE 2 is FINISHED ART from the same game, and it sets HOW DENSELY DRAWN the result must be. Match
+          its level of detail, its material texture, its dithering and its contrast -- individual
+          stones, planks, tiles and leaves, everywhere, including across large areas of ground.
+Do not copy image 2's buildings, layout or content. Take POSITION from image 1 and FINISH from image 2.
+
+This is not a preference. Tiles drawn from the plan alone measure about half the pixel-step energy of
+image 2 (mean absolute luminance step between neighbouring pixels 11.8 against 22.2, hard steps 14%
+against 30%), because a flat plan gives you nothing to redraw and the result comes back as smooth
+fields. Image 2 is what a finished plate of this town has to look like up close.

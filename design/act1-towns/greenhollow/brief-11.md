@@ -1,54 +1,53 @@
+DO THIS YOURSELF, one generation call, do not dispatch a sub-agent. Produce the image
+and stop; do not review it, do not redraw it, do not ask another agent to improve it.
+
 Draw this as hand-drawn, hard-edged pixel art at full detail.
 
-THE INPUT IS A PLAN, NOT A PICTURE. It is a flat colour-coded diagram of ONE QUADRANT -- tile
-(1,1) of a 2x2 grid -- of a small top-down JRPG forest village inside a round timber palisade, with one gate at the SOUTH, cottages of stone and dark timber facing inward under steep shingled roofs, a packed-earth yard around a stone well, and dense green woodland pressing in beyond the palisade. It is not a blurry painting to be sharpened; it is a map
-telling you WHERE EVERYTHING GOES. Draw the finished village that this plan describes, keeping every
-element in exactly the position and at exactly the size the plan gives it.
+THE INPUT IS A PLAN, NOT A PICTURE. It is a flat colour-coded diagram, and it is ONE QUADRANT --
+tile (1,1) of a 2x2 grid -- of a small top-down JRPG forest village inside a round timber palisade, with one gate at the south, cottages facing inward around a packed-earth yard, and dense woodland beyond the wall. It is not a blurry painting to be sharpened and it is not a theme to riff on: it is a map
+telling you WHERE EVERY SINGLE THING GOES inside this crop. Draw the finished village that this
+exact crop describes, keeping every element in exactly the position, at exactly the size, and with
+exactly the extent the plan gives it.
 
-YOU ARE SEEING ONE CORNER OF THE VILLAGE, NOT THE WHOLE OF IT. Everything below describes THIS CROP
-and only this crop. Draw what is listed as present. Do not draw anything listed as absent, however
-natural it would be in a village of this kind -- the missing parts are in the other three tiles and
-drawing them here would put two of them in the finished map.
+WHAT IS ACTUALLY IN THIS CROP, measured off the image you have been given:
 
-WHAT IS IN THIS TILE, AND WHAT EACH COLOUR MEANS HERE:
-  dark green (58,92,48) is the WOODLAND OUTSIDE the palisade.
-  mid green (96,132,70) is GRASS inside the palisade.
-  pale warm grey (176,168,148) is the PACKED-EARTH STREET AND YARD, which is where the player walks.
-  brown band (104,82,54) is the TIMBER PALISADE, a wall of upright logs.
-  the block with the dull red upper band in the upper centre is a BUILDING. The coloured part is its ROOF and the brown strip below it is its FACADE, so it faces DOWN-SCREEN. Give it a door on that facade and windows, and stand it exactly on its block.
-  the block with the slate blue upper band in the centre is a BUILDING. The coloured part is its ROOF and the brown strip below it is its FACADE, so it faces DOWN-SCREEN. Give it a door on that facade and windows, and stand it exactly on its block.
-  the grey disc in the upper left is a STONE WELL. Only the part of it inside this tile is drawn here.
-  the tan gap in the palisade in the lower left is THE ONE GATE of the village, and the only way in or out. Draw a real gateway there: posts, a lintel, open leaves.
+  - dark-green WOODLAND, outside the palisade: 37.4% of this crop, spanning 5%-99% across and 5%-99% down
+  - mid-green GRASS, inside the palisade: 19.8% of this crop, spanning 1%-80% across and 2%-77% down
+  - pale PACKED-EARTH STREET AND YARD, the ground the player walks on: 23.7% of this crop, spanning 2%-57% across and 1%-88% down
+  - brown BUILDING FACADE, the lower band of a building block: 5.3% of this crop, spanning 41%-72% across and 35%-70% down
+  - slate-blue ROOF, the upper band of a building block: 4.4% of this crop, spanning 41%-72% across and 49%-62% down
+  - red-brown ROOF, the upper band of a building block: 4.0% of this crop, spanning 44%-72% across and 22%-34% down
+  - the TIMBER PALISADE, a wall of upright logs: 2.9% of this crop, spanning 2%-85% across and 2%-82% down; it meets the top edge at 81%-84%; left edge at 80%-83%
+  - the ONE GATE through the palisade: 1.4% of this crop, spanning 4%-50% across and 12%-88% down
+  - a round STONE WELL: 1.1% of this crop, spanning 6%-17% across and 2%-13% down
 
-WHAT IS *NOT* IN THIS TILE. DO NOT DRAW ANY OF THESE:
-  There is NO WATER anywhere in this village: no stream, no pond, no river, no well-fed channel, no bridge.
+NOT PRESENT IN THIS CROP AT ALL, and therefore MUST NOT BE DRAWN INTO IT:
+  WATER
 
-WHAT YOU ARE ADDING is craft, not content: texture, material, light, doors, windows, shutters, roof
-tiles, fence posts, cart ruts, planting at the edges of the grass. Do not add a building the plan
-does not have, do not move one, do not open a gap in the palisade, and do not pave over grass or
-grass over paving -- the boundary between them is the collision the game already uses.
+READ THAT LIST LITERALLY. It is the complete contents of this crop. This is a QUADRANT of a larger
+plan, so most of the village's landmarks are in the OTHER quadrants and are not your problem. Do not
+add a gate, a well, a bridge, a watermill, a wheel, a pond, a building, a path or a stream that is
+not in the list above, however natural it would look and however much the village as a whole might
+have one somewhere else. Inventing a landmark here puts it in the wrong place on the finished town,
+and the pale ground is the COLLISION MAP the game already uses -- so paving over grass or grassing
+over paving changes where the player is allowed to walk.
 
-THE GRAIN IS COARSE, AND THIS IS THE MOST IMPORTANT INSTRUCTION ABOUT HOW IT IS DRAWN. Draw as
-though the smallest mark you can make is a 3x3 block. No single-pixel speckle anywhere. No fine
-noise, no stipple, no per-pixel value wobble.
+GEOMETRY IS THE POINT. The palisade must follow the plan's brown curve along its whole length and
+meet the crop's edges exactly where the list says it does, so that it continues into the neighbouring
+quadrants. Water must do the same. A building's block must keep its position and footprint: the
+coloured upper part is the ROOF and the brown lower part is the FACADE, so the building faces
+DOWN-SCREEN. Give every building a door on that facade, and windows.
 
-  GRASS is flat areas of two or three greens with clean hard boundaries between them, plus a
-  scattering of DISTINCT tufts and flowers big enough to see, not a carpet of tiny dots.
-  PACKED EARTH AND PAVING is individually drawn stones 8 to 14 pixels across with a definite dark
-  line of mortar or shadow between them, and flat worn earth between the stones. They must read one
-  by one, not as gravel texture.
-  ROOFS are individual tiles or shingles in rows, each one a flat block with a hard edge.
-  WOODLAND is distinct tree crowns with hard silhouettes and flat interiors, two or three values
-  each, not a fine-grained canopy texture.
+WHAT YOU ARE ADDING is craft, not content: texture, material, light, roof tiles, shutters, planks,
+fence posts, cart ruts, individual cobbles, tussocks and planting at the edges of the grass. The
+pale ground must read unmistakably as open, even, walkable ground -- worn earth and set stone, with
+nothing built across it.
 
-Every boundary between two materials is a hard line, never a blend. Inside a material use two or
-three flat values and dithering, never a gradient.
-THE LEFT AND TOP EDGES OF THIS IMAGE IS ALREADY FINISHED ARTWORK, carried over from the tile
-drawn before this one. Reproduce those 148 pixels EXACTLY -- same shapes, same colours, same
-level of detail -- and continue that same drawing inward across the rest of the tile. Do not
-restyle them, do not brighten them, do not reinterpret them. They are the join, and a visible
-change across it is a failure.
-
+THE LEFT AND TOP EDGES OF THIS IMAGE IS ALREADY FINISHED ARTWORK, carried over from the tile drawn before this
+one. Reproduce those 148 pixels EXACTLY -- same shapes, same colours, same level of detail --
+and continue that same drawing inward across the rest of the tile. Do not restyle them, do not
+brighten them, do not reinterpret them. They are the join, and a visible change across it is a
+failure.
 
 OUTPUT: one RGB PNG the same pixel dimensions as the input. Print its absolute path on a line of its
 own. Do not delete it and do not write anywhere under /tmp.
@@ -60,9 +59,21 @@ no blur, no bloom, no soft focus, no photographic texture.
 
 DRAW IT HARD; DO NOT FILTER A SOFT IMAGE TO FAKE IT. No sharpen, no unsharp mask, no posterize, no
 palette reduction. Hand-drawn art of this kind measures, on the mean absolute luminance step between
-neighbouring pixels, 22 or more overall, with 30% or more of steps at 24 or above and 22-40% of
-steps between 4 and 20. That middle band is real shading inside shapes; keep it, but do not let it
-swamp the picture -- too much of it is what a painting looks like to this measurement.
+neighbouring pixels, 26 or more overall, 34-52% of steps at 24 or above, and 22-40% of steps between
+4 and 20. That middle band is real shading inside shapes; keep it.
 
-LIGHT AND PALETTE. One upper-left sun, short soft shadows, warm late-morning woodland daylight. Mean luminance about 90; do not
-draw it darker than that.
+LIGHT AND PALETTE. One upper-left sun, short soft shadows, warm late-morning daylight over open
+farmland. Mean luminance about 90.
+
+TWO IMAGES ARE ATTACHED, AND THEY DO DIFFERENT JOBS.
+  IMAGE 1 is the PLAN. It sets WHERE everything goes, and only that. Its flat colours are a key, not
+          a palette: do not reproduce them as flat fills.
+  IMAGE 2 is FINISHED ART from the same game, and it sets HOW DENSELY DRAWN the result must be. Match
+          its level of detail, its material texture, its dithering and its contrast -- individual
+          stones, planks, tiles and leaves, everywhere, including across large areas of ground.
+Do not copy image 2's buildings, layout or content. Take POSITION from image 1 and FINISH from image 2.
+
+This is not a preference. Tiles drawn from the plan alone measure about half the pixel-step energy of
+image 2 (mean absolute luminance step between neighbouring pixels 11.8 against 22.2, hard steps 14%
+against 30%), because a flat plan gives you nothing to redraw and the result comes back as smooth
+fields. Image 2 is what a finished plate of this town has to look like up close.
