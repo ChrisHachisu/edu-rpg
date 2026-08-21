@@ -68,6 +68,45 @@ STYLE_ANCHOR = "design/act1-towns/_anchor/style-anchor-portSapphire-accepted.png
 # dark on the first Port Sapphire attempt; numbers are what fixed it.
 TARGET_LUM = 90.0
 
+
+
+# Where each town actually stands, from public/act1-world-map.js LANDMARKS. The town screen's
+# border must agree with the ground the player was standing on one second earlier.
+SITES = {"millbrook": (39, 344), "greenhollow": (69, 255), "portSapphire": (133, 349)}
+
+
+def overworld_surround(town: str, rad_cells: int = 18) -> str:
+    """Cut the REAL terrain around this town out of the shipped overworld chunks.
+
+    Written because the first pass got this badly wrong. The briefs said "DENSE FOREST pressing in
+    on all four sides" for both villages, on my inference from tile codes -- and the shipped
+    overworld art says otherwise: millbrook stands in 89% open grass meadow with water seven cells
+    west, greenhollow in 86% meadow with rocky cliffs two cells north-west. Neither has forest
+    around it at all. A description of the terrain is a claim; a crop of the terrain is the terrain,
+    so the painter now gets the crop.
+    """
+    import json
+    m = json.load(open(os.path.join(ROOT, "public/act1-hifi/manifest.json")))
+    bx, by = m["semanticBounds"][0], m["semanticBounds"][1]
+    cx_cell, cy_cell = SITES[town]
+    px, py = (cx_cell - bx) * 16, (cy_cell - by) * 16
+    r = rad_cells * 16
+    x0, y0, x1, y1 = px - r, py - r, px + r, py + r
+    out = Image.new("RGBA", (x1 - x0, y1 - y0), (0, 0, 0, 255))
+    for c in m["chunks"]:
+        if c["x"] + c["width"] <= x0 or c["x"] >= x1: continue
+        if c["y"] + c["height"] <= y0 or c["y"] >= y1: continue
+        for layer in ("base", "canopy"):
+            rel = c.get(layer)
+            if not rel: continue
+            fp = os.path.join(ROOT, "public/act1-hifi", rel)
+            if os.path.exists(fp):
+                out.alpha_composite(Image.open(fp).convert("RGBA"), (c["x"] - x0, c["y"] - y0))
+    dest = os.path.join(ROOT, "design/act1-towns", town, "overworld-surround.png")
+    out.convert("RGB").save(dest)
+    return dest
+
+
 TOWNS = {
     "millbrook": {
         "what": "a small mill village",
@@ -78,11 +117,15 @@ TOWNS = {
             "wall is correct here. Sacks of grain, a handcart and stacked timber belong against "
             "the mill's walls."),
         "surround": (
-            "DENSE FOREST pressing in on all four sides, drawn as individual rounded "
-            "treetops each with its own highlight and shadow, packed edge to edge. Never a flat "
-            "field of green."),
+            "OPEN SUNLIT GRASS MEADOW on every side -- the same bright grass as the attached "
+            "approved town, scattered with small leafy shrubs, clumps of wildflowers and the odd "
+            "grey stone. This is NOT forest. Do not ring the village with trees. A few individual "
+            "trees standing in the meadow are fine; a wall of woodland is wrong. Along the WEST "
+            "edge of the picture only, open WATER may show as a distant band -- the coast lies "
+            "seven cells that way -- and a low grey rocky outcrop may break the grass toward the "
+            "SOUTH-WEST."),
         "people": "four villagers live here: a miller, a sage, a herbalist and a healer",
-        "buildings": "five or six buildings, fewer and larger than a bigger village would have",
+        "buildings": "eight or nine buildings, the mill much the largest",
     },
     "greenhollow": {
         "what": "a small forest village",
@@ -91,11 +134,15 @@ TOWNS = {
             "around a common. An ELDER'S HALL is the largest building. There is NO river and NO "
             "stream anywhere in this picture."),
         "surround": (
-            "DEEP OLD FOREST pressing in on all four sides, drawn as individual rounded "
-            "treetops each with its own highlight and shadow, packed edge to edge. Never a flat "
-            "field of green."),
+            "OPEN SUNLIT GRASS MEADOW on every side -- the same bright grass as the attached "
+            "approved town, scattered with small leafy shrubs, clumps of wildflowers and the odd "
+            "grey stone. This is NOT forest. Do not ring the village with trees. A few individual "
+            "trees standing in the meadow are fine; a wall of woodland is wrong. Toward the "
+            "NORTH-WEST corner, GREY ROCKY CLIFFS and mossy boulders rise out of the grass and "
+            "close that corner off -- they stand only two cells from the village and are the one "
+            "strong landscape feature here."),
         "people": "six villagers live here, the most of any town in the act",
-        "buildings": "six or seven buildings, cottage-sized, around a wide common",
+        "buildings": "nine or ten buildings, cottage-sized, around a wide common",
     },
 }
 
@@ -104,11 +151,17 @@ and stop; do not review it, do not redraw it, do not ask another agent to improv
 
 # Task: paint the {town} town screen, top-down, for a 2D JRPG
 
-TWO images are attached. The FIRST is Port Sapphire, an ALREADY-APPROVED town from this same game:
-it is the STYLE, the DENSITY, the DAYLIGHT and the DRAWING QUALITY you must match. It is NOT the
-layout -- do not copy its harbour, its coastline or its street plan. The SECOND, if present, is
-this town's own overworld map icon: match its identity and its rough character. It is a
-reference for what kind of place this is, NOT an instruction about whether to draw a wall.
+THREE images are attached.
+- The FIRST is Port Sapphire, an ALREADY-APPROVED town from this same game: it is the STYLE, the
+  DENSITY, the DAYLIGHT and the DRAWING QUALITY you must match, and it shows how completely a town
+  should fill its frame. It is NOT the layout -- do not copy its harbour, its coastline or its
+  street plan.
+- The SECOND is the ACTUAL OVERWORLD GROUND this town stands on, cut from the shipped world map at
+  this town's own coordinates. **The country around your village must be THAT country.** The player
+  walks in off it, so grass that turns to forest at the town gate is a continuity error. Match its
+  grass, its shrubs, its wildflowers and its stone.
+- The THIRD is this town's overworld map icon: identity and rough character only. It is NOT an
+  instruction about whether to draw a wall.
 
 ## OUTPUT
 One RGB PNG, square. Print its absolute path on a line of its own. Do not write under /tmp.
@@ -129,6 +182,11 @@ One RGB PNG, square. Print its absolute path on a line of its own. Do not write 
   opening anywhere is a second exit and is wrong. If you draw an enclosure, it is unbroken except
   where that trail passes through it. If you draw none, the surrounding country must close the
   village in on the other three sides so there is nowhere else to walk out.
+- **THE VILLAGE FILLS THE PICTURE.** Leave a border of only TWO OR THREE CELLS of open ground
+  between the outermost building or fence and the edge of the frame. The attached approved town
+  fills 97% of its frame; a deep margin of scenery around a small cluster in the middle is the
+  single most common way this task is failed, and it makes the town look like a model of itself.
+  Spread the buildings across the WHOLE width and height, not into a clump at the centre.
 - {buildings}, arranged the way a real village grows -- not on a circle, not evenly spaced, not in
   a ring. Some close together facing a lane, some set back with a garden. It must look grown rather
   than laid out.

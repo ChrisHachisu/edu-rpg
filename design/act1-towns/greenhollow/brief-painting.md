@@ -3,11 +3,17 @@ and stop; do not review it, do not redraw it, do not ask another agent to improv
 
 # Task: paint the greenhollow town screen, top-down, for a 2D JRPG
 
-TWO images are attached. The FIRST is Port Sapphire, an ALREADY-APPROVED town from this same game:
-it is the STYLE, the DENSITY, the DAYLIGHT and the DRAWING QUALITY you must match. It is NOT the
-layout -- do not copy its harbour, its coastline or its street plan. The SECOND, if present, is
-this town's own overworld map icon: match its identity and its rough character. It is a
-reference for what kind of place this is, NOT an instruction about whether to draw a wall.
+THREE images are attached.
+- The FIRST is Port Sapphire, an ALREADY-APPROVED town from this same game: it is the STYLE, the
+  DENSITY, the DAYLIGHT and the DRAWING QUALITY you must match, and it shows how completely a town
+  should fill its frame. It is NOT the layout -- do not copy its harbour, its coastline or its
+  street plan.
+- The SECOND is the ACTUAL OVERWORLD GROUND this town stands on, cut from the shipped world map at
+  this town's own coordinates. **The country around your village must be THAT country.** The player
+  walks in off it, so grass that turns to forest at the town gate is a continuity error. Match its
+  grass, its shrubs, its wildflowers and its stone.
+- The THIRD is this town's overworld map icon: identity and rough character only. It is NOT an
+  instruction about whether to draw a wall.
 
 ## OUTPUT
 One RGB PNG, square. Print its absolute path on a line of its own. Do not write under /tmp.
@@ -28,12 +34,17 @@ six villagers live here, the most of any town in the act, so there must be open 
   opening anywhere is a second exit and is wrong. If you draw an enclosure, it is unbroken except
   where that trail passes through it. If you draw none, the surrounding country must close the
   village in on the other three sides so there is nowhere else to walk out.
-- six or seven buildings, cottage-sized, around a wide common, arranged the way a real village grows -- not on a circle, not evenly spaced, not in
+- **THE VILLAGE FILLS THE PICTURE.** Leave a border of only TWO OR THREE CELLS of open ground
+  between the outermost building or fence and the edge of the frame. The attached approved town
+  fills 97% of its frame; a deep margin of scenery around a small cluster in the middle is the
+  single most common way this task is failed, and it makes the town look like a model of itself.
+  Spread the buildings across the WHOLE width and height, not into a clump at the centre.
+- nine or ten buildings, cottage-sized, around a wide common, arranged the way a real village grows -- not on a circle, not evenly spaced, not in
   a ring. Some close together facing a lane, some set back with a garden. It must look grown rather
   than laid out.
 - A generous open COMMON or yard with a stone WELL, big enough for several people to stand around
   the well without blocking the way past.
-- Around the village: DEEP OLD FOREST pressing in on all four sides, drawn as individual rounded treetops each with its own highlight and shadow, packed edge to edge. Never a flat field of green.
+- Around the village: OPEN SUNLIT GRASS MEADOW on every side -- the same bright grass as the attached approved town, scattered with small leafy shrubs, clumps of wildflowers and the odd grey stone. This is NOT forest. Do not ring the village with trees. A few individual trees standing in the meadow are fine; a wall of woodland is wrong. Toward the NORTH-WEST corner, GREY ROCKY CLIFFS and mossy boulders rise out of the grass and close that corner off -- they stand only two cells from the village and are the one strong landscape feature here.
 
 ## WALKABLE CLARITY -- the most important rule, and the game reads it out of your picture
 **Every lane, the common and the trail out are PALE GREY COBBLED STONE -- the SAME stone as the
@@ -72,7 +83,7 @@ place the player can never reach.
 ## SCALE, WHICH IS FIXED
 One cell is 30 px and the picture is 65 cells across. The player character is about 68 px tall --
 just over two cells. A cottage is 8 to 11 cells wide. **No building may ever be near the player's
-height.** About nine to eleven buildings would span the full width, which is why six or seven buildings, cottage-sized, around a wide common
+height.** About nine to eleven buildings would span the full width, which is why nine or ten buildings, cottage-sized, around a wide common
 leaves so much open ground.
 
 ## LIGHT AND COLOUR -- measured, because "bright" in prose has already failed twice
