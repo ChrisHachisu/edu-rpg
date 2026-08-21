@@ -4,25 +4,25 @@ and stop; do not review it, do not redraw it, do not ask another agent to improv
 Draw this as hand-drawn, hard-edged pixel art at full detail.
 
 THE INPUT IS A PLAN, NOT A PICTURE. It is a flat colour-coded diagram, and it is ONE QUADRANT --
-tile (0,1) of a 2x2 grid -- of a small top-down JRPG mill village inside a round timber palisade, with one gate at the south and a millstream crossing it. It is not a blurry painting to be sharpened and it is not a theme to riff on: it is a map
+tile (0,1) of a 2x2 grid -- of a small top-down JRPG mill village inside a round timber palisade, with one gate at the south. It has NO river and NO stream: the mill is driven by a wheel on its own wall. It is not a blurry painting to be sharpened and it is not a theme to riff on: it is a map
 telling you WHERE EVERY SINGLE THING GOES inside this crop. Draw the finished village that this
 exact crop describes, keeping every element in exactly the position, at exactly the size, and with
 exactly the extent the plan gives it.
 
 WHAT IS ACTUALLY IN THIS CROP, measured off the image you have been given:
 
-  - dark-green WOODLAND, outside the palisade: 38.6% of this crop, spanning 5%-99% across and 1%-95% down
-  - mid-green GRASS, inside the palisade: 16.5% of this crop, spanning 1%-80% across and 21%-98% down
-  - pale PACKED-EARTH STREET AND YARD, the ground the player walks on: 15.9% of this crop, spanning 2%-55% across and 48%-99% down
-  - brown BUILDING FACADE, the lower band of a building block: 5.6% of this crop, spanning 27%-69% across and 46%-58% down
-  - slate-blue ROOF, the upper band of a building block: 2.5% of this crop, spanning 46%-78% across and 92%-100% down
-  - red-brown ROOF, the upper band of a building block: 9.1% of this crop, spanning 28%-69% across and 25%-45% down
-  - the TIMBER PALISADE, a wall of upright logs: 3.3% of this crop, spanning 2%-84% across and 16%-98% down; it meets the bottom edge at 82%-85%; left edge at 16%-20%
-  - the MILLSTREAM, clear running water: 5.5% of this crop, spanning 1%-77% across and 70%-81% down; it meets the left edge at 72%-83%
-  - the ONE GATE through the palisade: 0.4% of this crop, spanning 2%-78% across and 22%-98% down
-  - VILLAGE CLUTTER. Each amber mark is one piece of stored property standing on the ground: a barrel, a crate, a stack of firewood, a sack pile, a covered handcart, a water trough, a stack of crab pots or roof tiles, a coil of rope. Vary them, give each one a cast shadow, and draw them at the size and position of the mark. They belong to the buildings and the wall they stand against: 2.6% of this crop, spanning 3%-78% across and 22%-99% down
+  - dark-green WOODLAND, outside the palisade: 41.1% of this crop, spanning 5%-99% across and 1%-94% down
+  - mid-green GRASS, inside the palisade: 20.6% of this crop, spanning 1%-79% across and 21%-96% down
+  - pale PACKED-EARTH STREET AND YARD, the ground the player walks on: 10.6% of this crop, spanning 1%-41% across and 72%-100% down
+  - brown BUILDING FACADE, the lower band of a building block: 8.7% of this crop, spanning 7%-73% across and 59%-99% down
+  - slate-blue ROOF, the upper band of a building block: 5.0% of this crop, spanning 43%-75% across and 75%-90% down
+  - red-brown ROOF, the upper band of a building block: 9.1% of this crop, spanning 6%-48% across and 38%-58% down
+  - the TIMBER PALISADE, a wall of upright logs: 4.6% of this crop, spanning 2%-84% across and 16%-97% down; it meets the bottom edge at 82%-85%; left edge at 16%-20%
+  - VILLAGE CLUTTER. Each amber mark is one piece of stored property standing on the ground: a barrel, a crate, a stack of firewood, a sack pile, a covered handcart, a water trough, a stack of crab pots or roof tiles, a coil of rope. Vary them, give each one a cast shadow, and draw them at the size and position of the mark. They belong to the buildings and the wall they stand against: 0.2% of this crop, spanning 22%-30% across and 72%-77% down
 
 NOT PRESENT IN THIS CROP AT ALL, and therefore MUST NOT BE DRAWN INTO IT:
+  WATER
+  the ONE GATE through the palisade
   a round STONE WELL
 
 READ THAT LIST LITERALLY. It is the complete contents of this crop. This is a QUADRANT of a larger

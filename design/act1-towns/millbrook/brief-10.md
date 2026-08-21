@@ -4,26 +4,26 @@ and stop; do not review it, do not redraw it, do not ask another agent to improv
 Draw this as hand-drawn, hard-edged pixel art at full detail.
 
 THE INPUT IS A PLAN, NOT A PICTURE. It is a flat colour-coded diagram, and it is ONE QUADRANT --
-tile (1,0) of a 2x2 grid -- of a small top-down JRPG mill village inside a round timber palisade, with one gate at the south and a millstream crossing it. It is not a blurry painting to be sharpened and it is not a theme to riff on: it is a map
+tile (1,0) of a 2x2 grid -- of a small top-down JRPG mill village inside a round timber palisade, with one gate at the south. It has NO river and NO stream: the mill is driven by a wheel on its own wall. It is not a blurry painting to be sharpened and it is not a theme to riff on: it is a map
 telling you WHERE EVERY SINGLE THING GOES inside this crop. Draw the finished village that this
 exact crop describes, keeping every element in exactly the position, at exactly the size, and with
 exactly the extent the plan gives it.
 
 WHAT IS ACTUALLY IN THIS CROP, measured off the image you have been given:
 
-  - dark-green WOODLAND, outside the palisade: 42.4% of this crop, spanning 1%-90% across and 5%-99% down
-  - mid-green GRASS, inside the palisade: 20.9% of this crop, spanning 23%-91% across and 1%-76% down
-  - pale PACKED-EARTH STREET AND YARD, the ground the player walks on: 19.5% of this crop, spanning 44%-99% across and 2%-80% down
-  - brown BUILDING FACADE, the lower band of a building block: 3.5% of this crop, spanning 28%-64% across and 47%-56% down
-  - red-brown ROOF, the upper band of a building block: 5.6% of this crop, spanning 28%-64% across and 32%-47% down
-  - the TIMBER PALISADE, a wall of upright logs: 3.6% of this crop, spanning 17%-89% across and 2%-82% down; it meets the top edge at 18%-21%
-  - the ONE GATE through the palisade: 1.0% of this crop, spanning 26%-100% across and 4%-88% down
+  - dark-green WOODLAND, outside the palisade: 42.8% of this crop, spanning 1%-90% across and 5%-99% down
+  - mid-green GRASS, inside the palisade: 22.3% of this crop, spanning 23%-91% across and 5%-77% down
+  - pale PACKED-EARTH STREET AND YARD, the ground the player walks on: 17.5% of this crop, spanning 65%-100% across and 1%-83% down
+  - brown BUILDING FACADE, the lower band of a building block: 6.1% of this crop, spanning 32%-70% across and 0%-45% down
+  - red-brown ROOF, the upper band of a building block: 5.6% of this crop, spanning 35%-70% across and 21%-35% down
+  - the TIMBER PALISADE, a wall of upright logs: 4.2% of this crop, spanning 18%-88% across and 2%-82% down; it meets the top edge at 18%-21%; right edge at 93%-93%
+  - the ONE GATE through the palisade: 0.5% of this crop, spanning 50%-100% across and 7%-88% down
   - a round STONE WELL: 0.6% of this crop, spanning 94%-100% across and 21%-32% down
-  - VILLAGE CLUTTER. Each amber mark is one piece of stored property standing on the ground: a barrel, a crate, a stack of firewood, a sack pile, a covered handcart, a water trough, a stack of crab pots or roof tiles, a coil of rope. Vary them, give each one a cast shadow, and draw them at the size and position of the mark. They belong to the buildings and the wall they stand against: 2.8% of this crop, spanning 24%-89% across and 3%-76% down
+  - VILLAGE CLUTTER. Each amber mark is one piece of stored property standing on the ground: a barrel, a crate, a stack of firewood, a sack pile, a covered handcart, a water trough, a stack of crab pots or roof tiles, a coil of rope. Vary them, give each one a cast shadow, and draw them at the size and position of the mark. They belong to the buildings and the wall they stand against: 0.4% of this crop, spanning 47%-60% across and 7%-49% down
 
 NOT PRESENT IN THIS CROP AT ALL, and therefore MUST NOT BE DRAWN INTO IT:
   slate-blue ROOF, the upper band of a building block
-  the MILLSTREAM, clear running water
+  WATER
 
 READ THAT LIST LITERALLY. It is the complete contents of this crop. This is a QUADRANT of a larger
 plan, so most of the village's landmarks are in the OTHER quadrants and are not your problem. Do not

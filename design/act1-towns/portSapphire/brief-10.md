@@ -4,26 +4,26 @@ and stop; do not review it, do not redraw it, do not ask another agent to improv
 Draw this as hand-drawn, hard-edged pixel art at full detail.
 
 THE INPUT IS A PLAN, NOT A PICTURE. It is a flat colour-coded diagram, and it is ONE QUADRANT --
-tile (1,1) of a 2x2 grid -- of a small top-down JRPG forest village inside a round timber palisade, with one gate at the south, cottages facing inward around a packed-earth yard, and dense woodland beyond the wall. It is not a blurry painting to be sharpened and it is not a theme to riff on: it is a map
+tile (1,0) of a 2x2 grid -- of a small top-down JRPG harbour town, its one gate at the north, buildings around a packed-earth market, and a stone quay along the south with timber piers running out into the bay. It is not a blurry painting to be sharpened and it is not a theme to riff on: it is a map
 telling you WHERE EVERY SINGLE THING GOES inside this crop. Draw the finished village that this
 exact crop describes, keeping every element in exactly the position, at exactly the size, and with
 exactly the extent the plan gives it.
 
 WHAT IS ACTUALLY IN THIS CROP, measured off the image you have been given:
 
-  - dark-green WOODLAND, outside the palisade: 39.0% of this crop, spanning 5%-99% across and 5%-99% down
-  - mid-green GRASS, inside the palisade: 25.3% of this crop, spanning 1%-80% across and 2%-77% down
-  - pale PACKED-EARTH STREET AND YARD, the ground the player walks on: 23.1% of this crop, spanning 1%-46% across and 1%-88% down
-  - brown BUILDING FACADE, the lower band of a building block: 2.5% of this crop, spanning 38%-67% across and 41%-50% down
-  - red-brown ROOF, the upper band of a building block: 4.0% of this crop, spanning 38%-67% across and 28%-41% down
-  - the TIMBER PALISADE, a wall of upright logs: 3.8% of this crop, spanning 2%-85% across and 2%-82% down; it meets the top edge at 81%-84%; left edge at 80%-83%
-  - the ONE GATE through the palisade: 0.8% of this crop, spanning 4%-48% across and 40%-88% down
-  - a round STONE WELL: 1.1% of this crop, spanning 6%-17% across and 2%-13% down
-  - VILLAGE CLUTTER. Each amber mark is one piece of stored property standing on the ground: a barrel, a crate, a stack of firewood, a sack pile, a covered handcart, a water trough, a stack of crab pots or roof tiles, a coil of rope. Vary them, give each one a cast shadow, and draw them at the size and position of the mark. They belong to the buildings and the wall they stand against: 0.2% of this crop, spanning 41%-58% across and 51%-55% down
+  - dark-green WOODLAND, outside the palisade: 6.3% of this crop, spanning 0%-19% across and 1%-34% down
+  - mid-green GRASS, inside the palisade: 8.2% of this crop, spanning 22%-88% across and 2%-34% down
+  - pale PACKED-EARTH STREET AND YARD, the ground the player walks on: 12.0% of this crop, spanning 65%-100% across and 1%-62% down
+  - brown BUILDING FACADE, the lower band of a building block: 5.9% of this crop, spanning 23%-65% across and 1%-32% down
+  - slate-blue ROOF, the upper band of a building block: 4.5% of this crop, spanning 22%-64% across and 0%-35% down
+  - the TIMBER PALISADE, a wall of upright logs: 1.1% of this crop, spanning 17%-24% across and 1%-34% down; it meets the top edge at 18%-21%
+  - the HARBOUR, open salt water: 61.1% of this crop, spanning 2%-96% across and 36%-99% down; it meets the bottom edge at 0%-100%; left edge at 35%-100%; right edge at 68%-100%
+  - a round STONE WELL: 0.4% of this crop, spanning 65%-100% across and 0%-62% down
+  - VILLAGE CLUTTER. Each amber mark is one piece of stored property standing on the ground: a barrel, a crate, a stack of firewood, a sack pile, a covered handcart, a water trough, a stack of crab pots or roof tiles, a coil of rope. Vary them, give each one a cast shadow, and draw them at the size and position of the mark. They belong to the buildings and the wall they stand against: 0.4% of this crop, spanning 25%-61% across and 11%-37% down
 
 NOT PRESENT IN THIS CROP AT ALL, and therefore MUST NOT BE DRAWN INTO IT:
-  slate-blue ROOF, the upper band of a building block
-  WATER
+  red-brown ROOF, the upper band of a building block
+  the ONE GATE through the palisade
 
 READ THAT LIST LITERALLY. It is the complete contents of this crop. This is a QUADRANT of a larger
 plan, so most of the village's landmarks are in the OTHER quadrants and are not your problem. Do not
@@ -44,7 +44,7 @@ fence posts, cart ruts, individual cobbles, tussocks and planting at the edges o
 pale ground must read unmistakably as open, even, walkable ground -- worn earth and set stone, with
 nothing built across it.
 
-THE LEFT AND TOP EDGES OF THIS IMAGE IS ALREADY FINISHED ARTWORK, carried over from the tile drawn before this
+THE TOP EDGE OF THIS IMAGE IS ALREADY FINISHED ARTWORK, carried over from the tile drawn before this
 one. Reproduce those 148 pixels EXACTLY -- same shapes, same colours, same level of detail --
 and continue that same drawing inward across the rest of the tile. Do not restyle them, do not
 brighten them, do not reinterpret them. They are the join, and a visible change across it is a

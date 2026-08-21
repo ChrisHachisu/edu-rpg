@@ -4,26 +4,26 @@ and stop; do not review it, do not redraw it, do not ask another agent to improv
 Draw this as hand-drawn, hard-edged pixel art at full detail.
 
 THE INPUT IS A PLAN, NOT A PICTURE. It is a flat colour-coded diagram, and it is ONE QUADRANT --
-tile (1,1) of a 2x2 grid -- of a small top-down JRPG forest village inside a round timber palisade, with one gate at the south, cottages facing inward around a packed-earth yard, and dense woodland beyond the wall. It is not a blurry painting to be sharpened and it is not a theme to riff on: it is a map
+tile (0,1) of a 2x2 grid -- of a small top-down JRPG harbour town, its one gate at the north, buildings around a packed-earth market, and a stone quay along the south with timber piers running out into the bay. It is not a blurry painting to be sharpened and it is not a theme to riff on: it is a map
 telling you WHERE EVERY SINGLE THING GOES inside this crop. Draw the finished village that this
 exact crop describes, keeping every element in exactly the position, at exactly the size, and with
 exactly the extent the plan gives it.
 
 WHAT IS ACTUALLY IN THIS CROP, measured off the image you have been given:
 
-  - dark-green WOODLAND, outside the palisade: 39.0% of this crop, spanning 5%-99% across and 5%-99% down
-  - mid-green GRASS, inside the palisade: 25.3% of this crop, spanning 1%-80% across and 2%-77% down
-  - pale PACKED-EARTH STREET AND YARD, the ground the player walks on: 23.1% of this crop, spanning 1%-46% across and 1%-88% down
-  - brown BUILDING FACADE, the lower band of a building block: 2.5% of this crop, spanning 38%-67% across and 41%-50% down
-  - red-brown ROOF, the upper band of a building block: 4.0% of this crop, spanning 38%-67% across and 28%-41% down
-  - the TIMBER PALISADE, a wall of upright logs: 3.8% of this crop, spanning 2%-85% across and 2%-82% down; it meets the top edge at 81%-84%; left edge at 80%-83%
-  - the ONE GATE through the palisade: 0.8% of this crop, spanning 4%-48% across and 40%-88% down
-  - a round STONE WELL: 1.1% of this crop, spanning 6%-17% across and 2%-13% down
-  - VILLAGE CLUTTER. Each amber mark is one piece of stored property standing on the ground: a barrel, a crate, a stack of firewood, a sack pile, a covered handcart, a water trough, a stack of crab pots or roof tiles, a coil of rope. Vary them, give each one a cast shadow, and draw them at the size and position of the mark. They belong to the buildings and the wall they stand against: 0.2% of this crop, spanning 41%-58% across and 51%-55% down
+  - dark-green WOODLAND, outside the palisade: 39.7% of this crop, spanning 6%-99% across and 1%-95% down
+  - mid-green GRASS, inside the palisade: 14.6% of this crop, spanning 2%-80% across and 21%-99% down
+  - pale PACKED-EARTH STREET AND YARD, the ground the player walks on: 16.8% of this crop, spanning 1%-39% across and 9%-99% down
+  - brown BUILDING FACADE, the lower band of a building block: 8.6% of this crop, spanning 2%-72% across and 57%-98% down
+  - slate-blue ROOF, the upper band of a building block: 5.6% of this crop, spanning 42%-73% across and 71%-87% down
+  - red-brown ROOF, the upper band of a building block: 8.4% of this crop, spanning 1%-52% across and 39%-56% down
+  - the TIMBER PALISADE, a wall of upright logs: 4.0% of this crop, spanning 2%-84% across and 17%-97% down; it meets the bottom edge at 82%-85%; left edge at 16%-20%
+  - the ONE GATE through the palisade: 0.9% of this crop, spanning 4%-40% across and 10%-70% down
+  - a round STONE WELL: 1.3% of this crop, spanning 6%-17% across and 80%-92% down
 
 NOT PRESENT IN THIS CROP AT ALL, and therefore MUST NOT BE DRAWN INTO IT:
-  slate-blue ROOF, the upper band of a building block
-  WATER
+  the HARBOUR, open salt water
+  VILLAGE CLUTTER. Each amber mark is one piece of stored property standing on the ground: a barrel, a crate, a stack of firewood, a sack pile, a covered handcart, a water trough, a stack of crab pots or roof tiles, a coil of rope. Vary them, give each one a cast shadow, and draw them at the size and position of the mark. They belong to the buildings and the wall they stand against
 
 READ THAT LIST LITERALLY. It is the complete contents of this crop. This is a QUADRANT of a larger
 plan, so most of the village's landmarks are in the OTHER quadrants and are not your problem. Do not
@@ -44,7 +44,7 @@ fence posts, cart ruts, individual cobbles, tussocks and planting at the edges o
 pale ground must read unmistakably as open, even, walkable ground -- worn earth and set stone, with
 nothing built across it.
 
-THE LEFT AND TOP EDGES OF THIS IMAGE IS ALREADY FINISHED ARTWORK, carried over from the tile drawn before this
+THE LEFT EDGE OF THIS IMAGE IS ALREADY FINISHED ARTWORK, carried over from the tile drawn before this
 one. Reproduce those 148 pixels EXACTLY -- same shapes, same colours, same level of detail --
 and continue that same drawing inward across the rest of the tile. Do not restyle them, do not
 brighten them, do not reinterpret them. They are the join, and a visible change across it is a
