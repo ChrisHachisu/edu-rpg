@@ -3,13 +3,14 @@
  "id": "portSapphire",
  "nameKey": "map.portSapphire",
  "screen": "town/portSapphire-screen.png",
+ "foreground": "town/portSapphire-foreground.png",
  "walkable": "town/portSapphire-walkable.json",
  "cells": 65,
  "artPxPerCell": 30,
  "worldPxPerCell": 16,
  "startCell": [
-  32.5,
-  6.0
+  33.0,
+  4.0
  ],
  "npcs": [
   {
@@ -18,8 +19,8 @@
    "nameKey": "npc.healer.name",
    "sheet": "town/npc/portSapphire-healer-4x3-64.png",
    "cell": [
-    24.0,
-    30.0
+    38.6,
+    29.9
    ],
    "name": "Healer",
    "text": "Welcome to the clinic! I can heal your wounds."
@@ -30,8 +31,8 @@
    "nameKey": "npc.wisewoman.name",
    "sheet": "town/npc/portSapphire-wisewoman-4x3-64.png",
    "cell": [
-    27.5,
-    23.5
+    30.2,
+    27.8
    ],
    "name": "Wise Woman",
    "text": "The Darkfang Grotto lies to the west. Defeat the Giant Toad there to unseal the Crystal Cave to the east. That's where the first crystal shard awaits!"
@@ -42,8 +43,8 @@
    "nameKey": "npc.sailor.name",
    "sheet": "town/npc/portSapphire-sailor-4x3-64.png",
    "cell": [
-    33.5,
-    38.5
+    19.5,
+    43.5
    ],
    "name": "Sailor",
    "text": "I hear a dragon lives in the caves to the north, sealed behind a dark barrier. Scary stuff!"
@@ -54,20 +55,20 @@
    "nameKey": "npc.drake.name",
    "sheet": "town/npc/portSapphire-drake-4x3-64.png",
    "cell": [
-    39.0,
-    23.5
+    31.9,
+    41.5
    ],
    "name": "Captain Drake",
    "text": "Ahoy! Name's Captain Drake. I've sailed every sea on this continent. If you need passage anywhere, I'm your man, once my ship's back in shape, that is."
   }
  ],
  "savePoint": [
-  27.5,
-  33.0
+  31.4,
+  29
  ],
  "shopCounter": [
-  38.0,
-  31.0
+  24.5,
+  29.2
  ],
  "shopId": "portSapphire",
  "exit": {
@@ -81,6 +82,5 @@
   "note": "connections[0] of the shipped portSapphire town definition; north trail mouth"
  },
  "_dialogueNote": "name/text are the shipped English strings, lifted verbatim from runtime/baselines/v1.17.1-ipad-hud-walk so the town is playable standalone. They are a FALLBACK: the runtime also posts act1-town-interact to the parent so the bundle's real localised dialogue system can take over once the adapter hands off.",
- "_startNote": "The north trail mouth, cell [33,3]. The town now has exactly ONE entrance, per the locked rule: the palisade closes the north, east and west arcs and the harbour closes the south. The older note here claimed three land exits N/W/E, which predates the authored-collision rebake and is no longer true.",
- "_foregroundNote": "REMOVED 2026-08-21 with the rebake. portSapphire-foreground.png holds an EXACT COPY of the OLD painting's pixels for the mast, the demijohn chain, a chimney and a roof ridge (scripts/derive_town_foreground.py). Kept over the new plate it would draw the old ship's mast floating above art that no longer contains a ship. town.html treats the layer as optional and skips it when absent, which is the correct state until it is re-derived from the NEW plate."
+ "_startNote": "The north trail mouth. The shipped town definition's own entry (8,15 of a 16x16 grid) is the BOTTOM edge, which here is open sea -- Port Sapphire's three land exits are N, W and E. Verified inside the walkable geometry before shipping."
 }
