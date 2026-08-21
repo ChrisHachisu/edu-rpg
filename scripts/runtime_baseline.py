@@ -468,14 +468,19 @@ ACT1_TOWN_FILES = {
     # fetches `town.walkable` before it draws anything, so on the device that is not a degraded
     # town, it is a town that throws on load.
     #
-    # `act1-hifi/town/greenhollow-screen.png` IS DELIBERATELY NOT PINNED YET, and this is the note
-    # for whoever finishes it. The plate does not exist: the four-tile bake ran out of image-model
-    # quota partway through (2026-08-19). A pin key naming a file that is not on disk is not a
-    # harmless placeholder -- regenerate_pins.py REFUSES TO WRITE while any pin is unresolved, and
-    # build-dist.sh stops with "gate wants ... but public/ does not have it", so it would break the
-    # build for every worktree rather than only for this town. Add the key in the same pass that
-    # adds the plate, then `npm run repin`. Greenhollow also stays out of adapter.js's TOWN_IDS
-    # until then: an entry that loads a town with no screen is a 404 where the town should be.
+    # `act1-hifi/town/greenhollow-screen.png` was DELIBERATELY NOT PINNED between 2026-08-19 and
+    # 2026-08-21, because the plate did not exist: the four-tile bake ran out of image-model quota
+    # partway through. The plate landed 2026-08-21 and is pinned below. The warning it carried is
+    # still live and still true for the NEXT town: a pin key naming a file that is not on disk is
+    # not a harmless placeholder -- regenerate_pins.py REFUSES TO WRITE while any pin is
+    # unresolved, and build-dist.sh then stops with "gate wants ... but public/ does not have it",
+    # so it breaks the build for every worktree rather than only for that town. Put the file on
+    # disk first, add the key with placeholder zeros second, then `npm run repin`.
+    #
+    # AND THE PLACEHOLDER MUST BE 64 LITERAL ZEROS, not `"0" * 64`. regenerate_pins.py finds pins
+    # with a regex wanting [0-9a-f]{64} inside the quotes, so an expression is not a placeholder it
+    # can see: it reports "0 updated", leaves the zeros in place, and the very next step fails with
+    # "Act 1 town identity mismatch" pointing at the file you just added. Cost 2026-08-21.
     "act1-hifi/town/greenhollow-town.json": (
         3930, "30ae2f67582a64f030fa17e8c0a86481784d7b0c254a3d5f8a637f6ed6b78730"),
     "act1-hifi/town/greenhollow-walkable.json": (
@@ -506,6 +511,14 @@ ACT1_TOWN_FILES = {
         5741, "c391c3ad1d0cacbe1d5aca006b2e65d9fe615a13e42ed267a09fb55ceb7d506e"),
     "act1-hifi/town/millbrook-town.json": (
         3804, "c7df49fdf74853844c2db6a63caa94346b94e529cce498e85df639813fa87bd2"),
+    # 2026-08-21: the two plates the note above was waiting for. Both are the four-tile bake,
+    # exposure-matched per tile and quilted on a minimum-error cut by scripts/stitch_plate.py.
+    # Placeholder zeros; `npm run repin` fills the real size/hash in -- and the FILES ARE ON DISK
+    # BEFORE THESE KEYS EXIST, which is the whole point of the warning above.
+    "act1-hifi/town/millbrook-screen.png": (
+        9165658, "07dd646289597fc7705922488dc42d787dd92d387a340578a8bfe13e99ea3524"),
+    "act1-hifi/town/greenhollow-screen.png": (
+        9276232, "c47440be9cadc9e547a00e707b0f861ab9935335da5a61c5dd902037281c41c2"),
     "act1-hifi/verify/seed.html": (
         2089, "6f34401b6845582f223abdc80dd191c3a1392bc7808aee81d11eb89313b80c14"),
 }
