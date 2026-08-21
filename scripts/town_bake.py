@@ -46,15 +46,24 @@ from PIL import Image
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TOWNS = {
-    "millbrook":   {"water": "the MILLSTREAM, clear running water",
+    "millbrook":   {"water": "WATER",
                     "subject": "a small top-down JRPG mill village inside a round timber palisade, "
-                               "with one gate at the south and a millstream crossing it"},
+                               "with one gate at the south. It has NO river and NO stream: the mill "
+                               "is driven by a wheel on its own wall"},
+    "portSapphire": {"water": "the HARBOUR, open salt water",
+                     "subject": "a small top-down JRPG harbour town, its one gate at the north, "
+                                "buildings around a packed-earth market, and a stone quay along "
+                                "the south with timber piers running out into the bay"},
     "greenhollow": {"water": "WATER",
                     "subject": "a small top-down JRPG forest village inside a round timber "
                                "palisade, with one gate at the south, cottages facing inward "
                                "around a packed-earth yard, and dense woodland beyond the wall"},
 }
-STYLE_ANCHOR = "public/act1-hifi/town/portSapphire-screen.png"
+# THE ANCHOR IS A COPY, NOT THE SHIPPING FILE. portSapphire-screen.png is itself being rebaked now,
+# and a bake that overwrote it would silently remove the density reference every LATER tile is drawn
+# against -- the runs before and after the overwrite would not be the same experiment. This is the
+# accepted 2026-08-14 plate, frozen under design/ where nothing rewrites it.
+STYLE_ANCHOR = "design/act1-towns/_anchor/style-anchor-portSapphire-accepted.png"
 OUT = None            # both set from --town in main(); a town is a path, not a constant
 REF = None
 
@@ -66,17 +75,21 @@ BAND = 130          # overlap band, in FINAL px, shared with the left/upper neig
 MODEL = "gpt-5.6-sol"
 
 # The plan's palette, sampled from primer.png. These are flat, exact fills.
+# THESE ARE READ OFF town_layout.COL AND MUST NOT DRIFT FROM IT. inventory() classifies every pixel
+# of the crop by NEAREST entry here, so a stale copy does not fail loudly -- it silently mislabels
+# the ground and writes a confident brief about materials that are not in the picture. The palette
+# was re-keyed to the accepted landmark sprites on 2026-08-21; this is that same set.
 PLAN = {
-    "woodland": (58, 92, 48),
-    "grass": (96, 132, 70),
-    "paving": (176, 168, 148),
-    "facade": (128, 96, 74),
-    "roof_slate": (78, 96, 132),
-    "roof_tile": (150, 78, 60),
-    "palisade": (104, 82, 54),
+    "woodland": (44, 72, 40),
+    "grass": (104, 112, 68),
+    "paving": (150, 134, 110),
+    "facade": (120, 96, 72),
+    "roof_slate": (82, 98, 126),
+    "roof_tile": (146, 82, 58),
+    "palisade": (96, 76, 50),
     "water": (58, 104, 132),
-    "gate": (150, 126, 92),
-    "well": (120, 120, 126),
+    "gate": (122, 100, 74),
+    "well": (118, 118, 122),
     "clutter": (214, 140, 40),
 }
 HUMAN = {
