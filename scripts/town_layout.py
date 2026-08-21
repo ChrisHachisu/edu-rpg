@@ -67,6 +67,7 @@ CELL = WORLD // CELLS  # 16
 GEN = 1254            # the primer is drawn at the generator's own size
 FOOT = 4              # actorFootRadius, world px
 RASTER = 2            # supersample factor for the mask the polygons are traced from
+MIN_GAP = 3.5         # cells between building boxes; below this they draw as one building
 
 # Palette for the primer. Flat, unambiguous, and NOT art: the generator is being told what is where,
 # not shown how it should look. Style comes from the anchor image passed alongside the brief.
@@ -117,6 +118,20 @@ def gate_point(rg: dict):
     return pt[0], pt[1], half, side
 
 
+def _ring_bearings(count, gate_deg=90.0, keep_clear=30.0):
+    """`count` bearings spread evenly around the ring, leaving the gate approach alone.
+
+    Hand-picked bearings are what produced both spacing bugs: they look evenly spread in a list and
+    are not, because the arc between two of them depends on the widths of the buildings sitting on
+    them. Spreading them mechanically over the arc that is actually available removes the judgement.
+    """
+    span = 360.0 - 2 * keep_clear
+    start = gate_deg + keep_clear
+    # Wrap into (-180, 180]. `x % 360 - 180` is NOT that -- it rotates every bearing by half a turn,
+    # which put a millbrook building at +90, standing squarely in its own south gateway.
+    return [((start + span * (k + 0.5) / count + 180.0) % 360.0) - 180.0 for k in range(count)]
+
+
 def _seat(cx, cy, r, deg, w, h, clear=2.0, max_y=None):
     """Place a w x h building box centred on a bearing, guaranteed INSIDE the palisade.
 
@@ -164,6 +179,7 @@ def spec_greenhollow() -> dict:
     yard, one gate. Six NPCs live here, the most of any Act 1 town, so the yard is the widest part.
     """
     cx, cy, r = 32.5, 32.0, 27.0
+    _B6 = _ring_bearings(6)
     return {
         "id": "greenhollow",
         "nameKey": "map.greenhollow",
@@ -180,14 +196,15 @@ def spec_greenhollow() -> dict:
         # SEATED BY BEARING, not typed as coordinates -- see _seat(). Greenhollow is the bigger
         # village and reads as a ring of cottages facing a wide common, hall due north.
         "buildings": [
-            {"id": "elder-hall",  "box": _seat(cx, cy, r, -90, 15.0, 9.0), "roof": "roofA"},
-            {"id": "cottage-nw",  "box": _seat(cx, cy, r, -145, 11.0, 8.0), "roof": "roofB"},
-            {"id": "cottage-ne",  "box": _seat(cx, cy, r, -35, 11.0, 8.0), "roof": "roofA"},
-            {"id": "healer",      "box": _seat(cx, cy, r, 175, 12.0, 9.0), "roof": "roofB"},
-            {"id": "cottage-se",  "box": _seat(cx, cy, r, 35, 11.0, 8.0), "roof": "roofA"},
-            # Kept well off the gate bearing (+90). It once sat astride the main lane and severed
-            # the gate from the yard: 45,929 px of walkable body stranded.
-            {"id": "store",       "box": _seat(cx, cy, r, 132, 12.0, 8.0), "roof": "roofB"},
+            # Bearings from _ring_bearings(6): mechanically even, gate approach kept clear.
+            # Sizes trimmed so the MIN_GAP guard passes -- 15-wide halls could not clear 3.5 cells
+            # from their neighbours at this radius.
+            {"id": "elder-hall",  "box": _seat(cx, cy, r, _B6[1], 13.0, 9.0), "roof": "roofA"},
+            {"id": "cottage-nw",  "box": _seat(cx, cy, r, _B6[2], 10.0, 7.0), "roof": "roofB"},
+            {"id": "cottage-ne",  "box": _seat(cx, cy, r, _B6[3], 10.0, 7.0), "roof": "roofA"},
+            {"id": "healer",      "box": _seat(cx, cy, r, _B6[4], 11.0, 8.0), "roof": "roofB"},
+            {"id": "cottage-se",  "box": _seat(cx, cy, r, _B6[5], 10.0, 7.0), "roof": "roofA"},
+            {"id": "store",       "box": _seat(cx, cy, r, _B6[0], 11.0, 7.0), "roof": "roofB"},
         ],
         "water": [],
         # cell positions for the six NPCs, on paving, facing the yard
@@ -208,6 +225,7 @@ def spec_millbrook() -> dict:
     second greenhollow, so it crosses the whole town and the main lane bridges it.
     """
     cx, cy, r = 32.5, 32.0, 27.0
+    _B5 = _ring_bearings(5)
     return {
         "id": "millbrook",
         "nameKey": "map.millbrook",
@@ -223,11 +241,11 @@ def spec_millbrook() -> dict:
         # 2026-08-21: "we can have the general shape and container of the town but move the
         # houses/shops around depending on the town."
         "buildings": [
-            {"id": "mill",       "box": _seat(cx, cy, r, -68, 16.0, 11.0), "roof": "roofA"},
-            {"id": "sage-house", "box": _seat(cx, cy, r, -160, 13.0, 9.0), "roof": "roofB"},
-            {"id": "herbalist",  "box": _seat(cx, cy, r, -12, 12.0, 8.0), "roof": "roofB"},
-            {"id": "healer",     "box": _seat(cx, cy, r, 152, 12.0, 9.0), "roof": "roofA"},
-            {"id": "granary",    "box": _seat(cx, cy, r, 42, 12.0, 9.0), "roof": "roofB"},
+            {"id": "mill",       "box": _seat(cx, cy, r, _B5[2], 13.0, 10.0), "roof": "roofA"},
+            {"id": "sage-house", "box": _seat(cx, cy, r, _B5[1], 10.0, 8.0), "roof": "roofB"},
+            {"id": "herbalist",  "box": _seat(cx, cy, r, _B5[3], 11.0, 7.0), "roof": "roofB"},
+            {"id": "healer",     "box": _seat(cx, cy, r, _B5[0], 11.0, 8.0), "roof": "roofA"},
+            {"id": "granary",    "box": _seat(cx, cy, r, _B5[4], 11.0, 8.0), "roof": "roofB"},
         ],
         # NO WATER. The millstream is GONE (owner, 2026-08-21: "the surrounding terrain needs to
         # match the actual surrounding terrain. this means that we need to remove the river").
@@ -292,12 +310,14 @@ def spec_portSapphire() -> dict:
         # the two that belong on the waterfront anyway, placed as explicit boxes at the west and
         # east ends of the quay where they flank the piers instead of blocking them.
         "buildings": [
-            {"id": "harbourmaster", "box": _seat(cx, cy, r, -165, 12.0, 9.0, max_y=shore - 5.0), "roof": "roofB"},
-            {"id": "market-hall",   "box": _seat(cx, cy, r, -115, 15.0, 9.0, max_y=shore - 5.0), "roof": "roofA"},
-            {"id": "shop",          "box": _seat(cx, cy, r, -60, 13.0, 9.0, max_y=shore - 5.0), "roof": "roofA"},
-            {"id": "healer",        "box": _seat(cx, cy, r, -15, 12.0, 9.0, max_y=shore - 5.0), "roof": "roofB"},
-            {"id": "warehouse",     "box": (7.0, 33.0, 11.0, 7.0), "roof": "roofB"},
-            {"id": "tavern",        "box": (47.0, 33.0, 11.0, 7.0), "roof": "roofA"},
+            # THREE ON THE ARC, NOT FOUR. The dry arc is a half circle and MIN_GAP is 3.5 cells;
+            # four 12-13 wide buildings cannot all clear that at this radius, and the previous
+            # layout had FIVE pairs under 1.5 cells reading as one terrace.
+            {"id": "harbourmaster", "box": _seat(cx, cy, r, -150, 10.0, 9.0, max_y=shore - 5.0), "roof": "roofB"},
+            {"id": "market-hall",   "box": _seat(cx, cy, r, -90, 12.0, 9.0, max_y=shore - 5.0), "roof": "roofA"},
+            {"id": "shop",          "box": _seat(cx, cy, r, -30, 10.0, 9.0, max_y=shore - 5.0), "roof": "roofA"},
+            {"id": "warehouse",     "box": (7.0, 32.0, 10.0, 7.0), "roof": "roofB"},
+            {"id": "tavern",        "box": (48.0, 32.0, 10.0, 7.0), "roof": "roofA"},
         ],
         "water": [],
         # ids preserved from the shipped manifest; snap() moves them to legal ground.
@@ -600,6 +620,24 @@ def check(spec: dict, body: np.ndarray, walk: dict) -> list[str]:
         if far > rgc["r"]:
             problems.append(f"building {b['id']} reaches {far:.2f} cells from the centre, "
                             f"outside the palisade at r={rgc['r']}")
+    # NO TWO BUILDINGS MAY COME WITHIN MIN_GAP CELLS OF EACH OTHER, which is a STRICTER rule than
+    # the non-overlap one below and replaces it in practice. Owner, 2026-08-21: "one of the houses in
+    # green hollow looks like it is attached to another house." They were right and the overlap guard
+    # was blind to it -- greenhollow's hall sat 1.91 cells from BOTH its neighbours and portSapphire
+    # had five pairs under 1.5. At 30 art px per cell, two cells is 60 px, and once the generator
+    # draws roof overhang and a cast shadow on each, that closes to nothing and reads as one long
+    # building. Non-overlap is not the same as visibly separate.
+    for i in range(len(spec["buildings"])):
+        for j in range(i + 1, len(spec["buildings"])):
+            ax, ay, aw, ah = spec["buildings"][i]["box"]
+            bx2, by2, bw2, bh2 = spec["buildings"][j]["box"]
+            gx = max(bx2 - (ax + aw), ax - (bx2 + bw2), 0.0)
+            gy = max(by2 - (ay + ah), ay - (by2 + bh2), 0.0)
+            gap = max(gx, gy)
+            if gap < MIN_GAP:
+                problems.append(f"buildings {spec['buildings'][i]['id']} and "
+                                f"{spec['buildings'][j]['id']} are {gap:.2f} cells apart "
+                                f"(min {MIN_GAP}) -- they will read as one building")
     # NO TWO BUILDINGS MAY OVERLAP. Seating by bearing makes crossing the wall impossible but says
     # nothing about neighbours, and the shoreline clamp actively pushes buildings INTO each other:
     # Port Sapphire's first six-on-the-arc layout drew four overlapping pairs.

@@ -46,6 +46,7 @@ USAGE
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import os
 import sys
 
@@ -56,6 +57,11 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from make_town_materials import min_error_seam            # noqa: E402  the Efros-Freeman cut
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+_tl_spec = importlib.util.spec_from_file_location(
+    "_tl", os.path.join(os.path.dirname(os.path.abspath(__file__)), "town_layout.py"))
+_tl = importlib.util.module_from_spec(_tl_spec)
+_tl_spec.loader.exec_module(_tl)
+_TOWN_SPECS = _tl.SPECS
 OUT = os.path.join(ROOT, "design/act1-towns/rebake")
 PLATE = 1950
 N = 2
@@ -225,6 +231,86 @@ def report(plate):
         print(f"  seam {name}={TILE}   cut |step| {cut:6.2f}   plate-mean ratio {cut/d.mean():.2f}x")
 
 
+
+GREEN_ANCHOR = os.path.join(ROOT, "design/act1-towns/_anchor/style-anchor-portSapphire-accepted.png")
+
+
+def _foliage(a):
+    r, g, b = a[:, :, 0], a[:, :, 1], a[:, :, 2]
+    return (g > r + 10) & (g > b + 10)
+
+
+def _lum(a):
+    return 0.2126 * a[:, :, 0] + 0.7152 * a[:, :, 1] + 0.0722 * a[:, :, 2]
+
+
+def match_grass_to_anchor(plate, town):
+    """Match the town's INTERIOR GRASS to the accepted plate's lawn, at constant luminance.
+
+    Owner, twice: "the color scheme is a bit off as well (port sapphire looks better)", then "the
+    colors are still weird". Three things had to be measured before this landed, and two earlier
+    attempts are recorded here so they are not retried:
+
+    1. IT IS NOT THE GROUND. Walkable ground reads rgb(195,194,129) and (183,182,130) against the
+       anchor's (206,196,148) -- close, and its blue/red is 0.66-0.71 against 0.718. Fine already.
+
+    2. IT IS NOT ALL FOLIAGE, AND MATCHING ALL OF IT GIVES KHAKI. Split by the palisade, interior
+       grass is luminance 97-101 -- the same brightness as the anchor's lawn at 97 -- while exterior
+       forest is 68-71. The forest is dark canopy the anchor barely contains; recolouring it to a
+       lawn's ratio turns a village olive-drab. Only the interior is touched, feathered across the
+       wall, and the woodland is deliberately left cool.
+
+    3. MATCHING blue/red ALONE ALSO GIVES KHAKI. Interior grass is b/r 0.544 against the anchor's
+       0.142, and pulling only those two channels together raises red to meet an untouched green.
+       The anchor's lawn is rgb(75,113,11): green sits far above BOTH others. So the whole colour
+       DIRECTION is matched and the luminance renormalised, which lands grass at (79,118,12) with
+       luminance unchanged.
+
+    Why the whole-plate blue/red gate cannot arbitrate this: all three plates measure 0.672 while
+    their foliage differs FOURFOLD (0.142 against 0.603 and 0.536). That number is a function of
+    composition -- the anchor is 27% foliage with water and cobble making up the rest, a forest
+    village is 75% foliage -- so forcing it equal is what MAKES village grass blue. check_town_finish
+    now compares surface to surface instead.
+    """
+    if not os.path.exists(GREEN_ANCHOR):
+        print("  match-grass SKIPPED: no anchor on disk")
+        return plate
+    spec_fn = _TOWN_SPECS.get(town)
+    if spec_fn is None:
+        print(f"  match-grass SKIPPED: no ring geometry for {town!r}")
+        return plate
+    anch = np.asarray(Image.open(GREEN_ANCHOR).convert("RGB")).astype(float)
+    am = _foliage(anch)
+    tgt = np.array([anch[:, :, c][am].mean() for c in range(3)])
+
+    a = np.clip(plate, 0, 255)
+    n = a.shape[0]
+    rg = spec_fn()["ring"]
+    yy, xx = np.mgrid[0:n, 0:n]
+    sc = n / 65.0
+    d = np.sqrt((xx / sc - rg["cx"]) ** 2 + (yy / sc - rg["cy"]) ** 2)
+    w = np.clip((rg["r"] - 0.5 - d) / 2.0, 0, 1)          # feather across the wall
+    w = np.where(_foliage(a), w, 0.0)
+    sel = w > 0.5
+    if sel.sum() < 500:
+        print("  match-grass SKIPPED: no interior grass to match")
+        return plate
+    cur = np.array([a[:, :, c][sel].mean() for c in range(3)])
+    gain = tgt / np.maximum(cur, 1e-6)
+    # renormalise the gain so the matched region keeps the luminance it had
+    gain *= _lum(a)[sel].mean() / (0.2126 * gain[0] * cur[0]
+                                   + 0.7152 * gain[1] * cur[1] + 0.0722 * gain[2] * cur[2])
+    out = a.copy()
+    for c in range(3):
+        out[:, :, c] = a[:, :, c] * (1 + (gain[c] - 1) * w)
+    out = np.clip(out, 0, 255)
+    got = np.array([out[:, :, c][sel].mean() for c in range(3)])
+    print(f"  match-grass   interior grass {tuple(cur.round().astype(int))} -> "
+          f"{tuple(got.round().astype(int))}, anchor {tuple(tgt.round().astype(int))}; "
+          f"luminance {_lum(a)[sel].mean():.0f} -> {_lum(out)[sel].mean():.0f}")
+    return out
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--src", default=OUT)
@@ -233,6 +319,8 @@ def main():
     ap.add_argument("--target-br", type=float, default=0.674, help="plate blue/red anchor")
     ap.add_argument("--no-match", action="store_true", help="quilt only, skip exposure match")
     ap.add_argument("--no-quilt", action="store_true", help="exposure match only, hard cut")
+    ap.add_argument("--town", help="town id, for the interior-grass match to the accepted plate")
+    ap.add_argument("--no-match-grass", action="store_true", help="skip that match")
     a = ap.parse_args()
 
     tiles = load_tiles(a.src)
@@ -247,6 +335,8 @@ def main():
     else:
         plate = stitch(tiles)
     report(plate)
+    if not a.no_match_grass and a.town:
+        plate = match_grass_to_anchor(plate, a.town)
     Image.fromarray(np.clip(plate, 0, 255).astype(np.uint8), "RGB").save(a.out)
     print("  ->", os.path.relpath(a.out, ROOT))
 

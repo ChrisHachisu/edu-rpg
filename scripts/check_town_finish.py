@@ -45,11 +45,14 @@ USAGE
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 from pathlib import Path
 
 import numpy as np
 from PIL import Image
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Device geometry, measured -- see the module docstring.
 DEVICE_PX_PER_WORLD = 5.625          # 390 CSS px * dpr 3 / 208 world px view
@@ -59,6 +62,23 @@ DENSITY_TOL = 0.004                  # ~4 px on a 1950 plate
 # Palette: hold the settled town. Measured on the shipped plate.
 LUM_TARGET, LUM_TOL = 90.1, 6.0
 BR_TARGET, BR_TOL = 0.674, 0.06
+# ---- WHOLE-PLATE blue/red IS A COMPOSITION STATISTIC, NOT A COLOUR CHECK (2026-08-21) ------------
+# Measured on the three Act 1 towns, all of which sat at 0.672 +/- 0.001 -- inside the band, looking
+# identical to this gate -- while their FOLIAGE differed by a factor of four:
+#
+#                     foliage b/r    ground b/r    foliage % of plate    WHOLE b/r
+#   portSapphire         0.142         0.718            26.8%             0.672
+#   millbrook            0.603         0.661            78.6%             0.672
+#   greenhollow          0.536         0.709            70.4%             0.671
+#
+# The aggregate is pinned because the mix is different, not because the colours agree: a harbour is
+# a quarter foliage with water and cobble making up the rest, a forest village is three quarters
+# foliage. Worse, the gate CAUSED the fault the owner reported twice -- to reach 0.672 overall with
+# 75% foliage, that foliage has to be blue-green, which is exactly what "the colors are still weird"
+# was pointing at. So compare like with like: grass against the anchor's lawn, ground against its
+# ground. The whole-plate figure is still REPORTED, because it is a useful summary, and no longer
+# gated on its own.
+SURFACE_BR_TOL = 0.14                # per-surface blue/red tolerance against the anchor
 
 # Finish: reach the hero's neighbourhood. Bands are deliberately wide at the bottom -- the point is
 # to leave "painterly", not to become a sprite sheet.
@@ -150,6 +170,19 @@ def steps(lum: np.ndarray, mask: np.ndarray | None = None) -> np.ndarray:
     return d[~np.isnan(d)]
 
 
+def surface_br(rgb: np.ndarray) -> dict:
+    """blue/red of the two surfaces that are comparable between any two towns."""
+    a = rgb.astype(float)
+    r, g, b = a[:, :, 0], a[:, :, 1], a[:, :, 2]
+    l = 0.2126 * r + 0.7152 * g + 0.0722 * b
+    green = (g > r + 10) & (g > b + 10)
+    water = (b > r + 22) & (b > g + 8)
+    out = {}
+    for name, m in (('grass', green & (l > 85)), ('ground', (l > 140) & ~green & ~water)):
+        out[name] = None if m.sum() < 500 else float(b[m].mean() / max(r[m].mean(), 1e-6))
+    return out
+
+
 def measure_anchor(path: Path) -> dict:
     a = np.asarray(Image.open(path).convert('RGBA')).astype(float)
     op = a[:, :, 3] > 8
@@ -163,6 +196,11 @@ def main() -> int:
     ap.add_argument('plate')
     ap.add_argument('--world', type=float, default=1040.0, help='world px the plate covers')
     ap.add_argument('--anchor', help='hero sheet to report beside the plate (not a gate)')
+    ap.add_argument('--style-anchor', default='design/act1-towns/_anchor/'
+                                              'style-anchor-portSapphire-accepted.png',
+                    help='ACCEPTED TOWN PLATE whose grass and ground this plate is matched against. '
+                         'Distinct from --anchor, which is a hero sheet: overloading that flag '
+                         'would have made two unrelated checks share one argument.')
     ap.add_argument('--layout-ref', help='plate whose PAVING LAYOUT this candidate must preserve '
                                          '(normally the shipping plate). Gates IoU, not just coverage.')
     ap.add_argument('--walkable', help='portSapphire-walkable.json -- the COLLISION AUTHORITY. '
@@ -185,6 +223,7 @@ def main() -> int:
         'device_ratio': ratio,
         'lum': float(lum.mean()),
         'br': float(rgb[:, :, 2].mean() / max(rgb[:, :, 0].mean(), 1e-6)),
+        'surf': surface_br(rgb),
         'mean_step': float(d.mean()),
         'p90_step': float(np.percentile(d, 90)),
         'hard_frac': float((d >= HARD_STEP).mean()),
@@ -206,6 +245,15 @@ def main() -> int:
           f'(band {100*SOFT_FRAC_MIN:.0f}-{100*SOFT_FRAC_MAX:.0f}%, hero 33.2%)')
     print(f'  pale paving coverage  {100*m["paving_frac"]:.2f}%   (min {100*PAVING_FRAC_MIN:.1f}%)')
 
+    sa = Path(ROOT) / args.style_anchor if not os.path.isabs(args.style_anchor) else Path(args.style_anchor)
+    if sa.exists() and sa.resolve() != Path(args.plate).resolve():
+        m['surf']['anchor'] = surface_br(np.asarray(Image.open(sa).convert('RGB')))
+        av, gv = m['surf']['anchor'].get('grass'), m['surf'].get('grass')
+        ao, go = m['surf']['anchor'].get('ground'), m['surf'].get('ground')
+        print(f'  grass  blue/red       {gv if gv is None else round(gv,3)}   '
+              f'(anchor {av if av is None else round(av,3)} +/- {SURFACE_BR_TOL})')
+        print(f'  ground blue/red       {go if go is None else round(go,3)}   '
+              f'(anchor {ao if ao is None else round(ao,3)} +/- {SURFACE_BR_TOL})')
     if args.anchor:
         a = measure_anchor(Path(args.anchor))
         print(f'  ANCHOR {Path(args.anchor).name}: mean step {a["mean_step"]:.2f}, '
@@ -275,8 +323,19 @@ def main() -> int:
     if abs(m['lum'] - LUM_TARGET) > LUM_TOL:
         fails.append(f'LUMINANCE: {m["lum"]:.1f}, outside {LUM_TARGET} +/- {LUM_TOL}. '
                      f'The settled town is bright; ART-DIRECTION.md\'s dark block is stale here.')
-    if abs(m['br'] - BR_TARGET) > BR_TOL:
-        fails.append(f'BLUE/RED: {m["br"]:.3f}, outside {BR_TARGET} +/- {BR_TOL}.')
+    if m.get('surf') and m['surf'].get('anchor'):
+        for name in ('grass', 'ground'):
+            got, want = m['surf'].get(name), m['surf']['anchor'].get(name)
+            if got is None or want is None:
+                continue
+            if abs(got - want) > SURFACE_BR_TOL:
+                fails.append(f'SURFACE COLOUR: {name} blue/red {got:.3f} against the anchor\'s '
+                             f'{want:.3f} (tolerance {SURFACE_BR_TOL}). Match the surface, not the '
+                             f'whole-plate ratio -- see the note by BR_TARGET.')
+    elif abs(m['br'] - BR_TARGET) > BR_TOL:
+        fails.append(f'BLUE/RED: {m["br"]:.3f}, outside {BR_TARGET} +/- {BR_TOL}. '
+                     f'(No --anchor given, so this falls back to the whole-plate ratio, which is a '
+                     f'composition statistic; pass --anchor for the per-surface check.)')
     if m['soft_frac'] < SOFT_FRAC_MIN:
         fails.append(f'POSTERIZED / FLAT FILL: only {100*m["soft_frac"]:.1f}% of steps land in the '
                      f'{SOFT_LO}-{SOFT_HI} band (hero 33.2%, floor {100*SOFT_FRAC_MIN:.0f}%). No '
