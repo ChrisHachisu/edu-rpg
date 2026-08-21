@@ -779,3 +779,44 @@ def main() -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
+
+
+# ---------------------------------------------------------------- one definition of each surface
+
+def surface_masks(rgb, town=None):
+    """The surfaces two town plates can be compared on, defined ONCE for every script.
+
+    stitch_plate.py corrects the grass and check_town_finish.py judges it, and on 2026-08-21 they
+    disagreed about what grass IS: the fixer matched the ring INTERIOR and the gate measured every
+    bright green pixel on the plate, forest canopy included. The fixer hit its target exactly and
+    the gate reported a miss on the same image. A metric and the thing that satisfies it must not
+    hold two definitions of the same word, so both now call this.
+
+    INTERIOR ONLY, when the town is known. Exterior woodland is dark canopy that the accepted
+    harbour plate barely contains, and it is deliberately left cooler than a lawn.
+    """
+    a = rgb.astype(float)
+    r, g, b = a[:, :, 0], a[:, :, 1], a[:, :, 2]
+    l = 0.2126 * r + 0.7152 * g + 0.0722 * b
+    green = (g > r + 10) & (g > b + 10)
+    water = (b > r + 22) & (b > g + 8)
+    interior = np.ones(green.shape, bool)
+    if town in SPECS:
+        rg = SPECS[town]()["ring"]
+        n = green.shape[0]
+        yy, xx = np.mgrid[0:n, 0:n]
+        sc = n / float(CELLS)
+        interior = (((xx / sc - rg["cx"]) ** 2 + (yy / sc - rg["cy"]) ** 2)
+                    <= (rg["r"] - 0.5) ** 2)
+    return {"grass": green & interior,
+            "ground": (l > 140) & ~green & ~water & interior,
+            "water": water}
+
+
+def surface_blue_red(rgb, town=None, min_px=500):
+    out = {}
+    a = rgb.astype(float)
+    for name, m in surface_masks(rgb, town).items():
+        out[name] = (None if m.sum() < min_px
+                     else float(a[:, :, 2][m].mean() / max(a[:, :, 0][m].mean(), 1e-6)))
+    return out

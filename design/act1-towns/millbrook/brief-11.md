@@ -11,19 +11,19 @@ exactly the extent the plan gives it.
 
 WHAT IS ACTUALLY IN THIS CROP, measured off the image you have been given:
 
-  - dark-green WOODLAND, outside the palisade: 39.0% of this crop, spanning 5%-99% across and 5%-99% down
-  - mid-green GRASS, inside the palisade: 20.0% of this crop, spanning 1%-80% across and 6%-78% down
-  - pale PACKED-EARTH STREET AND YARD, the ground the player walks on: 23.3% of this crop, spanning 1%-43% across and 1%-88% down
-  - brown BUILDING FACADE, the lower band of a building block: 5.7% of this crop, spanning 32%-74% across and 3%-54% down
-  - slate-blue ROOF, the upper band of a building block: 6.0% of this crop, spanning 31%-71% across and 0%-45% down
+  - DENSE FOREST CANOPY outside the palisade: individual rounded treetops drawn one by one, each with its own highlight and cast shadow, packed edge to edge so no two are identical. It must never be a flat field of colour -- if this area reads as plain dark green with no trees in it, the tile is wrong: 39.0% of this crop, spanning 5%-99% across and 5%-99% down
+  - mid-green GRASS, inside the palisade: 24.3% of this crop, spanning 2%-80% across and 1%-77% down
+  - pale PACKED-EARTH STREET AND YARD, the ground the player walks on: 25.2% of this crop, spanning 1%-42% across and 1%-84% down
+  - brown BUILDING FACADE, the lower band of a building block: 2.5% of this crop, spanning 40%-69% across and 38%-46% down
+  - slate-blue ROOF, the upper band of a building block: 4.0% of this crop, spanning 40%-69% across and 24%-37% down
   - the TIMBER PALISADE, a wall of upright logs: 3.8% of this crop, spanning 2%-85% across and 2%-82% down; it meets the top edge at 81%-84%; left edge at 80%-83%
-  - the ONE GATE through the palisade: 0.8% of this crop, spanning 4%-45% across and 15%-88% down
-  - a round STONE WELL: 1.2% of this crop, spanning 6%-18% across and 21%-32% down
-  - VILLAGE CLUTTER. Each amber mark is one piece of stored property standing on the ground: a barrel, a crate, a stack of firewood, a sack pile, a covered handcart, a water trough, a stack of crab pots or roof tiles, a coil of rope. Vary them, give each one a cast shadow, and draw them at the size and position of the mark. They belong to the buildings and the wall they stand against: 0.2% of this crop, spanning 44%-62% across and 13%-60% down
+  - the ONE GATE through the palisade: 0.8% of this crop, spanning 4%-56% across and 38%-88% down
+  - a round STONE WELL: 0.2% of this crop, spanning 0%-42% across and 24%-37% down
 
 NOT PRESENT IN THIS CROP AT ALL, and therefore MUST NOT BE DRAWN INTO IT:
   red-brown ROOF, the upper band of a building block
   WATER
+  VILLAGE CLUTTER. Each amber mark is one piece of stored property standing on the ground: a barrel, a crate, a stack of firewood, a sack pile, a covered handcart, a water trough, a stack of crab pots or roof tiles, a coil of rope. Vary them, give each one a cast shadow, and draw them at the size and position of the mark. They belong to the buildings and the wall they stand against
 
 READ THAT LIST LITERALLY. It is the complete contents of this crop. This is a QUADRANT of a larger
 plan, so most of the village's landmarks are in the OTHER quadrants and are not your problem. Do not

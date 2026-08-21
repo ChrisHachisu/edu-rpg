@@ -53,6 +53,10 @@ import numpy as np
 from PIL import Image
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+import importlib.util as _ilu
+_tl_spec = _ilu.spec_from_file_location('_tl', os.path.join(ROOT, 'scripts', 'town_layout.py'))
+_tl = _ilu.module_from_spec(_tl_spec)
+_tl_spec.loader.exec_module(_tl)
 
 # Device geometry, measured -- see the module docstring.
 DEVICE_PX_PER_WORLD = 5.625          # 390 CSS px * dpr 3 / 208 world px view
@@ -170,17 +174,9 @@ def steps(lum: np.ndarray, mask: np.ndarray | None = None) -> np.ndarray:
     return d[~np.isnan(d)]
 
 
-def surface_br(rgb: np.ndarray) -> dict:
-    """blue/red of the two surfaces that are comparable between any two towns."""
-    a = rgb.astype(float)
-    r, g, b = a[:, :, 0], a[:, :, 1], a[:, :, 2]
-    l = 0.2126 * r + 0.7152 * g + 0.0722 * b
-    green = (g > r + 10) & (g > b + 10)
-    water = (b > r + 22) & (b > g + 8)
-    out = {}
-    for name, m in (('grass', green & (l > 85)), ('ground', (l > 140) & ~green & ~water)):
-        out[name] = None if m.sum() < 500 else float(b[m].mean() / max(r[m].mean(), 1e-6))
-    return out
+def surface_br(rgb: np.ndarray, town=None) -> dict:
+    """Delegates to town_layout.surface_blue_red so the gate and the fixer cannot disagree."""
+    return _tl.surface_blue_red(rgb, town)
 
 
 def measure_anchor(path: Path) -> dict:
@@ -206,10 +202,16 @@ def main() -> int:
     ap.add_argument('--walkable', help='portSapphire-walkable.json -- the COLLISION AUTHORITY. '
                                        'Preferred over --layout-ref, which cannot tell a restyled '
                                        'street from a moved one.')
+    ap.add_argument('--town', help="town id; decides which pixels count as GRASS (ring interior). "
+                                   "Inferred from the plate's folder when not given.")
     ap.add_argument('--report', action='store_true', help='print measurements and exit 0')
     args = ap.parse_args()
 
     p = Path(args.plate)
+    # The town id decides what counts as GRASS: inside the palisade only. Inferred from the plate's
+    # own folder (design/act1-towns/<town>/plate-stitched.png) so the common case needs no flag, and
+    # overridable for a plate living somewhere else.
+    town = args.town or (p.parent.name if p.parent.name in _tl.SPECS else None)
     im = Image.open(p).convert('RGB')
     rgb = np.asarray(im).astype(float)
     lum = luminance(rgb)
@@ -223,7 +225,7 @@ def main() -> int:
         'device_ratio': ratio,
         'lum': float(lum.mean()),
         'br': float(rgb[:, :, 2].mean() / max(rgb[:, :, 0].mean(), 1e-6)),
-        'surf': surface_br(rgb),
+        'surf': surface_br(rgb, town),
         'mean_step': float(d.mean()),
         'p90_step': float(np.percentile(d, 90)),
         'hard_frac': float((d >= HARD_STEP).mean()),

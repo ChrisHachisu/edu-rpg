@@ -11,19 +11,19 @@ exactly the extent the plan gives it.
 
 WHAT IS ACTUALLY IN THIS CROP, measured off the image you have been given:
 
-  - dark-green WOODLAND, outside the palisade: 6.3% of this crop, spanning 0%-19% across and 1%-34% down
-  - mid-green GRASS, inside the palisade: 8.2% of this crop, spanning 22%-88% across and 2%-34% down
-  - pale PACKED-EARTH STREET AND YARD, the ground the player walks on: 12.0% of this crop, spanning 65%-100% across and 1%-62% down
-  - brown BUILDING FACADE, the lower band of a building block: 5.9% of this crop, spanning 23%-65% across and 1%-32% down
-  - slate-blue ROOF, the upper band of a building block: 4.5% of this crop, spanning 22%-64% across and 0%-35% down
-  - the TIMBER PALISADE, a wall of upright logs: 1.1% of this crop, spanning 17%-24% across and 1%-34% down; it meets the top edge at 18%-21%
-  - the HARBOUR, open salt water: 61.1% of this crop, spanning 2%-96% across and 36%-99% down; it meets the bottom edge at 0%-100%; left edge at 35%-100%; right edge at 68%-100%
-  - a round STONE WELL: 0.4% of this crop, spanning 65%-100% across and 0%-62% down
-  - VILLAGE CLUTTER. Each amber mark is one piece of stored property standing on the ground: a barrel, a crate, a stack of firewood, a sack pile, a covered handcart, a water trough, a stack of crab pots or roof tiles, a coil of rope. Vary them, give each one a cast shadow, and draw them at the size and position of the mark. They belong to the buildings and the wall they stand against: 0.4% of this crop, spanning 25%-61% across and 11%-37% down
+  - DENSE FOREST CANOPY outside the palisade: individual rounded treetops drawn one by one, each with its own highlight and cast shadow, packed edge to edge so no two are identical. It must never be a flat field of colour -- if this area reads as plain dark green with no trees in it, the tile is wrong: 6.3% of this crop, spanning 0%-19% across and 1%-34% down
+  - mid-green GRASS, inside the palisade: 12.3% of this crop, spanning 22%-87% across and 1%-34% down
+  - pale PACKED-EARTH STREET AND YARD, the ground the player walks on: 12.3% of this crop, spanning 66%-100% across and 1%-62% down
+  - brown BUILDING FACADE, the lower band of a building block: 2.2% of this crop, spanning 22%-52% across and 22%-29% down
+  - slate-blue ROOF, the upper band of a building block: 3.7% of this crop, spanning 22%-52% across and 11%-35% down
+  - the TIMBER PALISADE, a wall of upright logs: 1.2% of this crop, spanning 17%-24% across and 1%-34% down; it meets the top edge at 18%-21%
+  - the HARBOUR, open salt water: 61.2% of this crop, spanning 2%-96% across and 36%-99% down; it meets the bottom edge at 0%-100%; left edge at 35%-100%; right edge at 68%-100%
+  - VILLAGE CLUTTER. Each amber mark is one piece of stored property standing on the ground: a barrel, a crate, a stack of firewood, a sack pile, a covered handcart, a water trough, a stack of crab pots or roof tiles, a coil of rope. Vary them, give each one a cast shadow, and draw them at the size and position of the mark. They belong to the buildings and the wall they stand against: 0.5% of this crop, spanning 33%-61% across and 0%-34% down
 
 NOT PRESENT IN THIS CROP AT ALL, and therefore MUST NOT BE DRAWN INTO IT:
   red-brown ROOF, the upper band of a building block
   the ONE GATE through the palisade
+  a round STONE WELL
 
 READ THAT LIST LITERALLY. It is the complete contents of this crop. This is a QUADRANT of a larger
 plan, so most of the village's landmarks are in the OTHER quadrants and are not your problem. Do not
