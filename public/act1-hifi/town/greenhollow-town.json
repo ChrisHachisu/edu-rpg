@@ -30,8 +30,8 @@
       "nameKey": "npc.kiki.name",
       "sheet": "town/npc/greenhollow-kiki-4x3-64.png",
       "cell": [
-        27.6,
-        23.3
+        27.62,
+        23.31
       ],
       "name": "Kiki",
       "text": "You want to be an adventurer? Prove it! Take my challenge, answer what I ask out on the road, and come back here to claim your reward."
@@ -42,8 +42,8 @@
       "nameKey": "npc.healer.name",
       "sheet": "town/npc/greenhollow-healer-4x3-64.png",
       "cell": [
-        22.1,
-        40.4
+        21.81,
+        39.12
       ],
       "name": "Healer",
       "text": "Come in whenever you are hurt. I will mend you, and it costs you nothing here in Greenhollow."
@@ -54,8 +54,8 @@
       "nameKey": "npc.villager1.name",
       "sheet": "town/npc/greenhollow-villager1-4x3-64.png",
       "cell": [
-        18.5,
-        28.0
+        24.0,
+        36.0
       ],
       "name": "Villager",
       "text": "Save your progress at the well before you leave. Everyone forgets once, and only once."
@@ -66,8 +66,8 @@
       "nameKey": "npc.villager2.name",
       "sheet": "town/npc/greenhollow-villager2-4x3-64.png",
       "cell": [
-        46.5,
-        28.0
+        41.0,
+        37.0
       ],
       "name": "Villager",
       "text": "Monsters roam outside the palisade now. Fight them and you will grow stronger, but run if a fight turns against you."
@@ -78,8 +78,8 @@
       "nameKey": "npc.fisherman.name",
       "sheet": "town/npc/greenhollow-fisherman-4x3-64.png",
       "cell": [
-        43.7,
-        41.0
+        43.44,
+        40.06
       ],
       "name": "Fisherman",
       "text": "The stream runs down to Millbrook, and the mill folk trade well. Long walk, though. Pack something to eat."
@@ -101,11 +101,11 @@
   },
   "_dialogueNote": "name/text are English FALLBACK strings in the voice of the shipped Port Sapphire entries, so the town is playable standalone. The runtime also posts act1-town-interact to the parent, so the frozen bundle's localised dialogue system takes over once the adapter hands off -- which is why dialogueKey must stay exactly as the bundle has it.",
   "_startNote": "The south gate mouth, one and a half cells inside it. spec.json's `start` cell, verified inside greenhollow-walkable.json before shipping. No `foreground` key: greenhollow has no foreground layer, and town.html treats that layer as optional.",
-  "_noShopNote": "No shopCounter/shopId. spec.json authors no counter position and the walkable authority was traced from that same plan, so a counter here would be invented rather than measured. town.html filters the service list on Array.isArray(cell), so omitting it is supported.",
   "shopId": "greenhollow",
   "shopCounter": [
-    16.5,
-    34.0
+    16.06,
+    35.81
   ],
-  "_serviceNote": "shopCounter stands on the lane below the striped awning, and shopId matches the inventory src/data/shops.ts already defines. Both were None, so the shop was unreachable even though the map data expected it."
+  "_serviceNote": "shopCounter stands on the lane below the striped awning, and shopId matches the inventory src/data/shops.ts already defines. Both were None, so the shop was unreachable even though the map data expected it.",
+  "_layoutNote": "REPLACED 2026-08-22. These cells no longer come from design/act1-towns/greenhollow/spec.json: scripts/town_layout.py wrote it for the plan-primed layout the owner scrapped, and the village was repainted afterwards, so its snapping described geometry the art no longer has. Towns are ART-FIRST -- the painting is authored, scripts/derive_town_walkable.py derives collision from the finished plate, and scripts/place_town_actors.py places actors against THAT, eroding by actorFootRadius so the body fits and flood-filling from startCell so nothing stands somewhere the player cannot reach. villager1 and villager2 were CHOSEN by hand rather than auto-snapped: their old cells landed on the market stall's counter and the herbalist's porch in the painted village, and the nearest standable ground was 5.1 and 5.7 cells away, far enough that the snap would have decided the composition instead of reporting it."
 }
