@@ -112,22 +112,32 @@ def main():
     items = [(k, town[k]) for k in SCALARS if town.get(k)]
     items += [(f"npc:{n['id']}", n["cell"]) for n in town.get("npcs", [])]
 
+    # SNAP TO REACHABLE GROUND, NOT MERELY STANDABLE GROUND. Snapping to the eroded mask alone
+    # finds the nearest place a body FITS, which is not the same as the nearest place a body can
+    # GET TO: a pocket cut off by a neck narrower than two foot-radii is standable and stranded.
+    # Measured on Port Sapphire's repainted plate, where 5.3% of standable ground is walled off in
+    # exactly that way -- the sailor snapped 1.59 cells onto one of those pockets and came back
+    # unreachable. Reporting it would have been enough to catch it; refusing to choose it is
+    # better, because then the reported distance is the distance to somewhere the player can
+    # actually stand next to the NPC.
+    start = nearest(mask, town["startCell"][0] * cell, town["startCell"][1] * cell)
+    if start is None:
+        print("  FATAL: startCell has nowhere to stand; everything else is moot")
+        return 1
+    seen = reach(mask, (start[0], start[1]))
+    reachable_mask = mask & seen
+
     snapped, fails = {}, []
     for name, c in items:
-        got = nearest(mask, c[0] * cell, c[1] * cell)
+        target = reachable_mask if name != "startCell" else mask
+        got = nearest(target, c[0] * cell, c[1] * cell)
         if got is None:
-            fails.append(f"{name}: no standable ground within 240 world px of cell {c}")
+            fails.append(f"{name}: no reachable standable ground within 240 world px of cell {c}")
             continue
         x, y, dist = got
         snapped[name] = (x, y, round(x / cell, 2), round(y / cell, 2), dist)
 
-    if "startCell" not in snapped:
-        print("  FATAL: startCell has nowhere to stand; everything else is moot")
-        for f in fails:
-            print("   ", f)
-        return 1
     sx, sy = snapped["startCell"][0], snapped["startCell"][1]
-    seen = reach(mask, (sx, sy))
 
     print(f"  {'actor':22s} {'cell':>14s} -> {'snapped':>14s}  {'moved':>7s}  reachable")
     bad = 0

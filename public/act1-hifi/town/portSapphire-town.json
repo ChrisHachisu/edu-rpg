@@ -3,7 +3,6 @@
   "id": "portSapphire",
   "nameKey": "map.portSapphire",
   "screen": "town/portSapphire-screen.png",
-  "foreground": "town/portSapphire-foreground.png",
   "walkable": "town/portSapphire-walkable.json",
   "cells": 65,
   "artPxPerCell": 30,
@@ -19,8 +18,8 @@
       "nameKey": "npc.healer.name",
       "sheet": "town/npc/portSapphire-healer-4x3-64.png",
       "cell": [
-        38.6,
-        29.9
+        38.38,
+        30.38
       ],
       "name": "Healer",
       "text": "Welcome to the clinic! I can heal your wounds."
@@ -31,8 +30,8 @@
       "nameKey": "npc.wisewoman.name",
       "sheet": "town/npc/portSapphire-wisewoman-4x3-64.png",
       "cell": [
-        30.2,
-        27.8
+        31.25,
+        28.25
       ],
       "name": "Wise Woman",
       "text": "The Darkfang Grotto lies to the west. Defeat the Giant Toad there to unseal the Crystal Cave to the east. That's where the first crystal shard awaits!"
@@ -43,8 +42,8 @@
       "nameKey": "npc.sailor.name",
       "sheet": "town/npc/portSapphire-sailor-4x3-64.png",
       "cell": [
-        19.5,
-        43.5
+        19.69,
+        45.25
       ],
       "name": "Sailor",
       "text": "I hear a dragon lives in the caves to the north, sealed behind a dark barrier. Scary stuff!"
@@ -55,7 +54,7 @@
       "nameKey": "npc.drake.name",
       "sheet": "town/npc/portSapphire-drake-4x3-64.png",
       "cell": [
-        31.9,
+        31.88,
         41.5
       ],
       "name": "Captain Drake",
@@ -63,12 +62,12 @@
     }
   ],
   "savePoint": [
-    31.4,
-    29
+    31.38,
+    29.0
   ],
   "shopCounter": [
     24.5,
-    29.2
+    30.75
   ],
   "shopId": "portSapphire",
   "exit": {
@@ -82,5 +81,7 @@
     "note": "Exit lands on the overworld, and the AUTHORITY is public/act1-world-map.js's LANDMARKS entry for this town -- `EXITS[mapId] = L.exit`, the open cell beside its door. NOT src/data/maps.ts. maps.ts's connection (130,291) is legacy: the Act 1 override REWRITES it at runtime, but only inside scene.checkTransition, which is the SHIPPED town's edge-exit path. A hi-fi town never goes through it -- adapter.js's act1-town-exit handler assigns scene.heroTileX/heroTileY = data.toX/toY directly -- so for these towns the value here is used RAW and must already be the landmark exit. || connections[0] of the shipped portSapphire town definition; north trail mouth"
   },
   "_dialogueNote": "name/text are the shipped English strings, lifted verbatim from runtime/baselines/v1.17.1-ipad-hud-walk so the town is playable standalone. They are a FALLBACK: the runtime also posts act1-town-interact to the parent so the bundle's real localised dialogue system can take over once the adapter hands off.",
-  "_startNote": "The north trail mouth. The shipped town definition's own entry (8,15 of a 16x16 grid) is the BOTTOM edge, which here is open sea -- Port Sapphire's three land exits are N, W and E. Verified inside the walkable geometry before shipping."
+  "_startNote": "The north trail mouth. The shipped town definition's own entry (8,15 of a 16x16 grid) is the BOTTOM edge, which here is open sea -- Port Sapphire's three land exits are N, W and E. Verified inside the walkable geometry before shipping.",
+  "_foregroundNote": "RETIRED 2026-08-22 with the repainted plate, and the files deleted. The foreground overlay existed for exactly two props on the old art -- the ship's mast and a hanging demijohn -- which a top-down painting cannot encode as height, so they read as solid and the player had to be drawn BENEATH them. The owner's brief for the repaint was that nothing overhangs walkable stone, and nothing does, so the layer has nothing left to draw. town.html treats `foreground` as optional and skips the whole path when the key is absent.",
+  "_layoutNote": "REPLACED 2026-08-22 with the repainted plate. Cells are placed by scripts/place_town_actors.py against collision DERIVED from the finished plate, eroded by actorFootRadius so the body fits rather than the point, and snapped only to ground that is REACHABLE from startCell -- 5.3% of this town's standable ground is walled off behind necks narrower than two foot-radii, and the sailor's first snap landed on one of those pockets. shopCounter moved 1.55 cells and the sailor 1.76: the ground directly south of the market stall is solid in the new art, so those are the nearest cells a player can actually stand on. Re-run that script rather than hand-editing."
 }

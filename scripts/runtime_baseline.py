@@ -446,10 +446,6 @@ ACT1_TOWN_FILES = {
     # The cropped foreground layer is useless without its offset: town.html SKIPS the layer
     # entirely when this is missing rather than drawing it displaced, so an unstaged offset
     # is a silent loss of the whole feature -- which is exactly how it first shipped.
-    "act1-hifi/town/portSapphire-foreground.json": (
-        55, "4140462414a595cc02388b35eacd9d719515ed0e1084e5e570aaecb91f6a8f85"),
-    "act1-hifi/town/portSapphire-foreground.png": (
-        60503, "430352d385f02e7c16676fe3151c667d3249e943f1d9c3931bf4c10a584a6a50"),
     "act1-hifi/town/npc/portSapphire-drake-4x3-64.png": (
         51_557, "9a5ec1a3fc1f7e7077f9d30f89f6e044878211cf45b370a41e0c224500af4af3"),
     "act1-hifi/town/npc/portSapphire-healer-4x3-64.png": (
