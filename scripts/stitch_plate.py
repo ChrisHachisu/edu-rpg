@@ -315,13 +315,41 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--src", default=OUT)
     ap.add_argument("--out", default=os.path.join(OUT, "plate-stitched.png"))
-    ap.add_argument("--target", type=float, default=90.1, help="plate mean luminance anchor")
-    ap.add_argument("--target-br", type=float, default=0.674, help="plate blue/red anchor")
+    # THE ANCHORS ARE PER-TOWN, AND HARDCODING PORT SAPPHIRE'S NEARLY COST MILLBROOK ITS COLOUR.
+    # 90.1 / 0.674 are Port Sapphire's plate statistics. Measured on the three approved paintings:
+    #     portSapphire  96.36 / 0.5464     millbrook 119.84 / 0.5535     greenhollow 107.58 / 0.4468
+    # Stitching millbrook against the defaults darkens the plate about a fifth and lifts its
+    # blue/red 22%, which is the same mechanism the handoff recorded as "a blue/red gate actively
+    # FORCING village grass blue-green". Passing the right numbers by hand works and is exactly the
+    # kind of flag that gets forgotten on the third town, so the default now MEASURES them from the
+    # painting the tiles were primed from. Port Sapphire's --src (design/act1-towns/rebake) holds no
+    # painting, so it keeps the literal defaults and its behaviour is unchanged.
+    ap.add_argument("--target", type=float, default=None, help="plate mean luminance anchor; "
+                    "default measured from <src>/painting-graded.png or painting-raw.png")
+    ap.add_argument("--target-br", type=float, default=None, help="plate blue/red anchor; "
+                    "default measured the same way")
     ap.add_argument("--no-match", action="store_true", help="quilt only, skip exposure match")
     ap.add_argument("--no-quilt", action="store_true", help="exposure match only, hard cut")
     ap.add_argument("--town", help="town id, for the interior-grass match to the accepted plate")
     ap.add_argument("--no-match-grass", action="store_true", help="skip that match")
     a = ap.parse_args()
+
+    if a.target is None or a.target_br is None:
+        lum, br = 90.1, 0.674
+        src_dir = a.src if os.path.isdir(a.src) else os.path.dirname(a.src)
+        for name in ("painting-graded.png", "painting-raw.png"):
+            cand = os.path.join(src_dir, name)
+            if os.path.exists(cand):
+                px = np.asarray(Image.open(cand).convert("RGB"), np.float32).reshape(-1, 3).mean(0)
+                lum, br = float(px @ LUM_W), float(px[2] / px[0])
+                print(f"  anchors measured from {os.path.relpath(cand, ROOT)}: "
+                      f"luminance {lum:.2f}, blue/red {br:.4f}")
+                break
+        else:
+            print(f"  anchors: no painting under {os.path.relpath(src_dir, ROOT)}, "
+                  f"using the Port Sapphire literals {lum} / {br}")
+        a.target = lum if a.target is None else a.target
+        a.target_br = br if a.target_br is None else a.target_br
 
     tiles = load_tiles(a.src)
     if not a.no_match:

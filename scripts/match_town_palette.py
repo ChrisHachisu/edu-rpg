@@ -35,6 +35,17 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 REFERENCE = "millbrook"          # the town whose theme the owner picked
 
 
+def paving_mask(im: np.ndarray) -> np.ndarray:
+    """Pale set stone: bright, red and green close together, blue present but not dominant.
+
+    Same family `derive_town_walkable.paving_mask` keys collision off, deliberately -- if the grade
+    moved paving colour away from what the derivation recognises, the town's walkable surface would
+    quietly shrink. Kept slightly tighter here (mx > 110) so only lit paving is regraded.
+    """
+    r, g, b = im[..., 0], im[..., 1], im[..., 2]
+    return (r > 95) & (np.abs(r - g) < 42) & (b > r * 0.5) & (b < r * 1.25) & (im.max(2) > 110)
+
+
 def green_mask(im: np.ndarray) -> np.ndarray:
     """Grass, canopy, hedge and planting -- hue 55-175 with enough saturation to be foliage."""
     a = im / 255.0
@@ -47,27 +58,49 @@ def green_mask(im: np.ndarray) -> np.ndarray:
     return (h > 55) & (h < 175) & (s > 0.15)
 
 
-def anchors(im: np.ndarray):
-    """This painting's sunlit green and its shade green, as RGB triples."""
-    m = green_mask(im)
+def anchors(im: np.ndarray, which=green_mask):
+    """This image's lit and shaded value for one surface family, as RGB triples."""
+    m = which(im)
     px = im[m]
+    if len(px) < 500:
+        return None, None
     lum = 0.299 * px[:, 0] + 0.587 * px[:, 1] + 0.114 * px[:, 2]
     return px[lum >= np.percentile(lum, 60)].mean(0), px[lum <= np.percentile(lum, 30)].mean(0)
 
 
-def grade(src: np.ndarray, sun_t: np.ndarray, shade_t: np.ndarray) -> np.ndarray:
-    sun_s, shade_s = anchors(src)
-    out = src.copy()
+def grade_one(src: np.ndarray, cur: np.ndarray, which, sun_t, shade_t) -> np.ndarray:
+    """Apply one surface family's curve to `cur`, blending through a feathered mask of `src`."""
+    sun_s, shade_s = anchors(src, which)
+    if sun_s is None or sun_t is None:
+        return cur
+    out = cur.copy()
     for c in range(3):
         xs = [0.0, float(shade_s[c]), float(sun_s[c]), 255.0]
         ys = [0.0, float(shade_t[c]), float(sun_t[c]), 255.0]
         for k in range(1, 4):                      # keep it monotone even if an anchor inverts
             xs[k] = max(xs[k], xs[k - 1] + 1e-3)
             ys[k] = max(ys[k], ys[k - 1] + 1e-3)
-        out[..., c] = np.interp(src[..., c], xs, ys)
-    w = np.asarray(Image.fromarray((green_mask(src) * 255).astype(np.uint8))
+        out[..., c] = np.interp(cur[..., c], xs, ys)
+    w = np.asarray(Image.fromarray((which(src) * 255).astype(np.uint8))
                    .filter(ImageFilter.GaussianBlur(2.0)), np.float32)[..., None] / 255.0
-    return np.clip(src * (1 - w) + out * w, 0, 255)
+    return np.clip(cur * (1 - w) + out * w, 0, 255)
+
+
+def grade(src: np.ndarray, ref: np.ndarray) -> np.ndarray:
+    """Grade BOTH surface families -- foliage and pale paving -- onto the reference's values.
+
+    Greens alone were enough for stage 1, where the two towns being matched already shared the
+    reference's cobble to within 3/255. It is NOT enough for a generated PLATE: measured on
+    millbrook's tiles, the generator returned grass with the blue channel crushed from 45 to 11 and
+    cobble shifted from warm cream toward grey-green. The stitch's blue/red anchor drags some of
+    that back, but it is a whole-plate scalar and cannot put the warmth back in one surface without
+    taking it out of another. Matching each family to its own anchor can.
+    """
+    out = src.astype(np.float32)
+    for which in (green_mask, paving_mask):
+        st, sh = anchors(ref, which)
+        out = grade_one(src, out, which, st, sh)
+    return out
 
 
 def main():
@@ -75,20 +108,31 @@ def main():
     ap.add_argument("--town", required=True)
     ap.add_argument("--src", default=None, help="default design/act1-towns/<town>/painting-raw.png")
     ap.add_argument("--out", default=None, help="default alongside src as painting-graded.png")
+    ap.add_argument("--ref", default=None,
+                    help="image whose surfaces are the target; defaults to millbrook's painting. "
+                         "Pass a town's OWN painting to pull its generated plate back onto it.")
     a = ap.parse_args()
     src_p = a.src or f"design/act1-towns/{a.town}/painting-raw.png"
     out_p = a.out or os.path.join(os.path.dirname(src_p), "painting-graded.png")
-    ref = np.asarray(Image.open(
-        f"design/act1-towns/{REFERENCE}/painting-raw.png").convert("RGB")).astype(np.float32)
-    sun_t, shade_t = anchors(ref)
+    ref_p = a.ref or f"design/act1-towns/{REFERENCE}/painting-raw.png"
+    ref = np.asarray(Image.open(ref_p).convert("RGB")).astype(np.float32)
     src = np.asarray(Image.open(src_p).convert("RGB")).astype(np.float32)
-    res = grade(src, sun_t, shade_t)
+    res = grade(src, ref)
     Image.fromarray(res.astype(np.uint8)).save(out_p)
-    s_sun, s_sh = anchors(src)
-    r_sun, r_sh = anchors(res)
-    f = lambda v: "(%5.1f,%5.1f,%5.1f)" % tuple(v)
-    print(f"{a.town}: sunlit {f(s_sun)} -> {f(r_sun)}  target {f(sun_t)}")
-    print(f"{a.town}: shade  {f(s_sh)} -> {f(r_sh)}  target {f(shade_t)}")
+    # REPORT OVER A FIXED PIXEL SET. Re-selecting the "lit" subset on the OUTPUT measures a
+    # different population -- grading lifts red, which lifts luminance, which changes who is in the
+    # top 40% -- and it read as the blue channel moving BACKWARDS (24.8 -> 21.2 against a 45.2
+    # target) while the same pixels had in fact gone 25.7 -> 33.7. The mask is taken from the SOURCE
+    # for both measurements, so before and after describe the same pixels.
+    f = lambda v: "  n/a" if v is None else "(%5.1f,%5.1f,%5.1f)" % tuple(v)
+    print(f"{a.town}: reference {os.path.relpath(ref_p)}")
+    for name, which in (("foliage", green_mask), ("paving ", paving_mask)):
+        msk = which(src)
+        if msk.sum() < 500:
+            continue
+        tgt = ref[which(ref)].mean(0)
+        print(f"  {name} {f(src[msk].mean(0))} -> {f(res[msk].mean(0))}   target {f(tgt)}"
+              f"   ({msk.mean()*100:.1f}% of frame)")
     print("  ->", out_p)
     return 0
 
