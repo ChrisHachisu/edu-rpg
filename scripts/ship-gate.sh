@@ -28,6 +28,7 @@ node scripts/build_static_index.mjs --check
 # The design-only walkable sketch must stay inert. Prose in its header did not hold -- it was
 # read past twice, once at a cost of a measurement wrong by three orders of magnitude.
 python3 scripts/check_walkable_authority.py
+python3 scripts/check_town_transitions.py
 python3 scripts/regenerate_pins.py --check
 
 python3 scripts/runtime_baseline.py verify-act1 --input dist

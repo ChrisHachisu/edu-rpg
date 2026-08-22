@@ -95,9 +95,9 @@
       59.0
     ],
     "targetMapId": "overworld",
-    "toX": 69,
-    "toY": 256,
-    "note": "The one gate, at the SOUTH of the palisade -- design/act1-towns/greenhollow/spec.json ring.gate. toX/toY are act1-world-map.js LANDMARKS greenhollow.exit, i.e. the overworld cell the door stands on."
+    "toX": 60,
+    "toY": 341,
+    "note": "Exit lands on the SHIPPED overworld, so toX/toY are SHIPPED coordinates -- the 320x400 grid in src/data/maps.ts, whose greenhollow connection is fromX 60, fromY 340. adapter.js writes data.toX/toY straight into scene.heroTileX/Y with no conversion, and the overworld is still the shipped tile runtime (TOWN_IDS gates towns only). CORRECTED 2026-08-22: this was (69, 256), the landmark's exit cell from public/act1-hifi/act1-world-map.js, which is a DIFFERENT coordinate space -- it would have dropped the player far from this town's own door. Port Sapphire always carried the shipped value and is unaffected; these two are wrong precisely because TOWN_IDS made them unreachable, so the bug was never walked into. || The one gate, at the SOUTH of the palisade -- design/act1-towns/greenhollow/spec.json ring.gate. toX/toY are act1-world-map.js LANDMARKS greenhollow.exit, i.e. the overworld cell the door stands on."
   },
   "_dialogueNote": "name/text are English FALLBACK strings in the voice of the shipped Port Sapphire entries, so the town is playable standalone. The runtime also posts act1-town-interact to the parent, so the frozen bundle's localised dialogue system takes over once the adapter hands off -- which is why dialogueKey must stay exactly as the bundle has it.",
   "_startNote": "The south gate mouth, one and a half cells inside it. spec.json's `start` cell, verified inside greenhollow-walkable.json before shipping. No `foreground` key: greenhollow has no foreground layer, and town.html treats that layer as optional.",
