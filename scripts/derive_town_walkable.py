@@ -602,12 +602,28 @@ def main() -> None:
         },
         "width": world_w, "height": world_w,
         "actorFootRadius": 4, "maxSubstep": 2,
-        # 260, not 52: matches public/dq-tiles.js A1M_SPEED, the dungeon's owner-validated
-        # continuous-movement pace. All three Act 1 hi-fi surfaces share cameraWorldWidth=208 and
-        # heroWorldHeight=36 (manifest.json designLocks), so world-px/second is directly
-        # comparable across them. 52 was an untuned placeholder; the owner reported town movement
-        # as "much slower, which feels weird" against the overworld/dungeon (2026-08-13/14).
-        "movement": {"movementSpeed": 260,
+        # 139, NOT 260, AND THIS DEFAULT HAS ALREADY CLOBBERED THE OWNER'S DECISION ONCE.
+        # The reasoning for 260 -- that all three Act 1 surfaces share cameraWorldWidth=208, so
+        # world-px/second is directly comparable -- is wrong, and the owner rejected it on feel:
+        # 260 was "way too fast" (2026-08-14). 208 is fixed for the TOWN, which zooms to fit, but
+        # the overworld and dungeon run at zoom 1, so their world view is the canvas size, about
+        # 390 px on his phone. Matched by SCREEN-WIDTHS per second instead of raw px/s,
+        # 260 * 208/390 = 139. That calibration is preserved verbatim in movementSpeedNote.
+        #
+        # The 139 lived only in the shipped JSON, while this script still emitted 260, so
+        # re-deriving collision on 2026-08-22 silently reset all three towns to the rejected
+        # speed and the owner felt it immediately in build 56. A generator that does not carry an
+        # owner decision will overwrite it the first time anyone regenerates.
+        "movement": {"movementSpeed": 139,
+                     "movementSpeedNote": (
+                         "OWNER 2026-08-14: 260 was \"way too fast\". The town's view is a FIXED "
+                         "208 world px wide (it zooms to fit) while the overworld and dungeon run "
+                         "at zoom 1, so their view is the canvas size, ~390 px on a 390pt phone. "
+                         "At the same 260 px/s that is 1.25 screen-widths per second in town "
+                         "against 0.67 in the dungeon -- 1.9x faster ON SCREEN, which is what he "
+                         "felt. Matched by screen-widths per second: 260 * 208/390 = 139. "
+                         "RE-CLOBBERED 2026-08-22 by a collision re-derive and caught by the owner "
+                         "on build 56; the value now lives in the generator, not only in the JSON."),
                      "collisionRule": ("actor center must remain inside at least one walkable "
                                        "polygon with actor-foot clearance")},
         "designDecisions": {

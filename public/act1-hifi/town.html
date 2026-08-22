@@ -420,7 +420,14 @@ function draw(time) {
       drawActor(n.sheet, n.point, 0, 0, NPC_FRAME, time, false) })),
     { y: position.y, draw: () => drawActor(heroSheet, position,
         state.moving ? [0, 1, 0, 2][Math.floor(time / locks.walkPoseMs) % 4] : 0,
-        { down: 0, left: 2, up: 3, right: 6 }[state.facing], 64, time, state.moving) }];
+        // ROW 4 IS NORTH, NOT ROW 3. The g3 sheet is 3 pose columns x 8 DIRECTION rows, a 45-degree
+        // wheel starting at south: 0=S 1=SW 2=W 3=NW 4=N 5=NE 6=E 7=SE (scripts/bake_hero_north_row.py
+        // states the wheel and exists solely because row 4 had to be redrawn). Mapping up->3 draws
+        // the NORTH-WEST three-quarter view, in which her FACE is still visible, so walking north
+        // never showed her back. Owner, repeatedly and across all three towns: "the hero's back shot
+        // (north facing shot) is still incorrect ... you never got around to match it with the
+        // overworld and dungeons." The redrawn row was there the whole time; nothing read it.
+        { down: 0, left: 2, up: 4, right: 6 }[state.facing], 64, time, state.moving) }];
   actors.sort((a, b) => a.y - b.y).forEach(a => a.draw());
   // Foreground: overhead props re-painted from the SAME source pixels, always last. These are
   // tall/hanging things (a ship's mast and rigging, a demijohn on its chain, a rooftop chimney)
