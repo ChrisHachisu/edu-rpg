@@ -69,9 +69,20 @@ def main() -> int:
     # processing-state field reflects. Owner, 2026-08-22: "this is a pattern now so please fix your
     # process." A rule that has to be remembered is not a fix, so the check runs HERE, in the only
     # path that ships, and a failure is a non-zero exit rather than a note.
-    verifier = Path.home() / ".agents/skills/push-to-testflight/verify-delivery.py"
-    if not verifier.is_file():
-        raise SystemExit(f"missing delivery verifier: {verifier}")
+    skill = Path.home() / ".agents/skills/push-to-testflight"
+    verifier, assigner = skill / "verify-delivery.py", skill / "assign-beta-group.py"
+    for f in (verifier, assigner):
+        if not f.is_file():
+            raise SystemExit(f"missing shipping dependency: {f}")
+
+    # ASSIGNING "Beta Testers" IS PART OF THE SHIP FOR THIS APP, not an optional follow-up. The
+    # owner receives edu-rpg builds on the EXTERNAL channel: builds 54 and 55 were assigned and he
+    # installed both; 56 was not and read `externalBuildState: READY_FOR_BETA_SUBMISSION`, which is
+    # the whole reason it was undeliverable. Beta review clears in seconds while the version is
+    # already approved. Non-fatal on its own -- the verifier below is what decides.
+    r = subprocess.run([sys.executable, str(assigner), "--app", "edu-rpg", build, "Beta Testers"],
+                       capture_output=True, text=True)
+    print(r.stdout.strip() or r.stderr.strip()[-300:])
     deadline = time.time() + 20 * 60          # ASC lags upload by ~5-15 min
     while True:
         r = subprocess.run([sys.executable, str(verifier), "--app", "edu-rpg", "--build", build],
