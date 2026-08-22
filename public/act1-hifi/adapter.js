@@ -324,6 +324,17 @@ async function enterAct1(scene) {
 addEventListener('message', event => {
   const data = event.data;
   if (!data || event.source !== frame.contentWindow || !townEntry) return;
+  if (data.type === 'act1-town-strings-request') {
+    // Answer the whole table in one message so the town never has to paint English first. Missing
+    // keys come back from the shipped i18n as the key itself; the town treats that as "no
+    // translation" and keeps its bundled English rather than showing a raw dotted key.
+    const translate = window.__QOK?.Z;
+    if (typeof translate !== 'function') return;
+    const strings = {};
+    for (const k of data.keys || []) { try { strings[k] = translate(k); } catch (e) {} }
+    frame.contentWindow.postMessage({ type: 'act1-town-strings', strings }, '*');
+    return;
+  }
   if (data.type === 'act1-town-interact') {
     // `__QOK.Z` is the shipped i18n function, so the player reads dialogue in the locale they
     // chose. The frame's bundled English is only what shows for the frame it takes to reply.

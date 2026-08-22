@@ -198,6 +198,8 @@ export const enStrings: Record<string, string> = {
   "npc.gordo.name": "Gordo",
   "npc.luna.name": "Luna",
   "npc.elder.name": "Elder",
+  "npc.villager1.name": "Villager",
+  "npc.villager2.name": "Villager",
   "npc.villager.name": "Villager",
   "npc.miller.name": "Miller",
   "npc.herbalist.name": "Herbalist",

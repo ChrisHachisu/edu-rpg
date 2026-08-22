@@ -198,6 +198,8 @@ export const jaKanjiStrings: Record<string, string> = {
   "npc.gordo.name": "ゴルド",
   "npc.luna.name": "ルナ",
   "npc.elder.name": "長老",
+  "npc.villager1.name": "村人",
+  "npc.villager2.name": "村人",
   "npc.villager.name": "村人",
   "npc.miller.name": "粉挽き",
   "npc.herbalist.name": "薬草師",

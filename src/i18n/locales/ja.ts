@@ -198,6 +198,8 @@ export const jaStrings: Record<string, string> = {
   "npc.gordo.name": "ゴルド",
   "npc.luna.name": "ルナ",
   "npc.elder.name": "ちょうろう",
+  "npc.villager1.name": "むらびと",
+  "npc.villager2.name": "むらびと",
   "npc.villager.name": "むらびと",
   "npc.miller.name": "こなひき",
   "npc.herbalist.name": "やくそうし",

@@ -363,9 +363,29 @@ function showDialogue(name, text) {
   dialogueEl.querySelector('p').textContent = text;
   dialogueEl.dataset.open = 'true';
 }
+// TRANSLATE AT LOAD, NOT AT TAP. interact() used to paint the bundled ENGLISH immediately and
+// only swap once the parent answered, so the first thing on screen was always English and stayed
+// English for as long as the round trip took. Owner on build 56: "the interaction text is not
+// localized (all are in english)." The strings are now requested the moment the town is ready and
+// cached, so the box is drawn localised the first time it opens and nothing has to be replaced.
+// The per-tap reply below is kept as a late fallback for anything the bulk pass missed.
+const strings = new Map();
+function localised(key, fallback) {
+  const v = strings.get(key);
+  // A missing key comes back as the key itself from the shipped i18n's identity fallback; that is
+  // worse than English, so only take a value that actually differs from what was asked for.
+  return (v && v !== key) ? v : fallback;
+}
 addEventListener('message', event => {
   const data = event.data;
-  if (!data || data.type !== 'act1-town-text' || !talking || data.npc !== talking.id) return;
+  if (!data) return;
+  if (data.type === 'act1-town-strings' && data.strings) {
+    for (const [k, v] of Object.entries(data.strings)) strings.set(k, v);
+    if (talking) showDialogue(localised(talking.nameKey, talking.name || talking.id),
+                              localised(talking.dialogueKey, talking.text));
+    return;
+  }
+  if (data.type !== 'act1-town-text' || !talking || data.npc !== talking.id) return;
   showDialogue(data.name || talking.name, data.text || talking.text);
 });
 
@@ -386,7 +406,8 @@ function interact() {
   // Paint the bundled English immediately so there is never an empty box, then ask the parent
   // for the real localised strings. The shipped bundle owns i18n (`window.__QOK.Z`); this frame
   // must not carry a second, drifting copy of the translations.
-  showDialogue(npc.name || npc.id, npc.text || `(${npc.dialogueKey})`);
+  showDialogue(localised(npc.nameKey, npc.name || npc.id),
+               localised(npc.dialogueKey, npc.text || `(${npc.dialogueKey})`));
   parent.postMessage({ type: 'act1-town-interact', town: town.id, npc: npc.id,
                        dialogueKey: npc.dialogueKey, nameKey: npc.nameKey }, '*');
 }
@@ -515,6 +536,9 @@ window.__ACT1_TOWN__ = { town, walkable, npcs, state, interact, nearestNpc, near
   exitState: () => ({ armed: exitArmed, exiting }),
   position: () => position, camera, locks };
 parent.postMessage({ type: 'act1-town-ready', town: town.id }, '*');
+// Every key this town can ever show, asked for once. The parent owns i18n; this frame owns none.
+parent.postMessage({ type: 'act1-town-strings-request', town: town.id,
+  keys: [...new Set(npcs.flatMap(n => [n.nameKey, n.dialogueKey]).filter(Boolean))] }, '*');
 requestAnimationFrame(frame);
 </script>
 </body>
