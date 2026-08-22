@@ -1,68 +1,71 @@
 #!/usr/bin/env python3
-"""Every hi-fi town's exit must land where the SHIPPED overworld actually keeps that town's door.
+"""Every hi-fi town's exit must be its own LANDMARK exit cell in public/act1-world-map.js.
 
-THE BUG THIS EXISTS TO CATCH, found 2026-08-22. `public/act1-hifi/town/<town>-town.json` carries
-`exit.toX/toY`, and `adapter.js` writes those straight into `scene.heroTileX/heroTileY` with no
-conversion. The scene they land in is the SHIPPED tile runtime -- `TOWN_IDS` gates only the TOWNS
-onto the hi-fi overlay, and adapter.js says so in its own header: the overworld "goes back to the
-shipped tile runtime until a real hi-fi overworld exists". So those numbers live in the 320x400
-space of `src/data/maps.ts`, and nothing else.
+WHICH FILE IS THE AUTHORITY, AND WHY IT IS NOT THE OBVIOUS ONE
+--------------------------------------------------------------
+`public/act1-hifi/town/<town>-town.json` carries `exit.toX/toY`. There are two candidate sources for
+that number and picking the wrong one puts the player tens of cells from the town they just left:
 
-Two of the three towns had them in the WRONG SPACE. millbrook read (39,345) and greenhollow (69,256)
--- their landmark exit cells from `public/act1-world-map.js`, a different grid entirely. millbrook's
-own note asserted this was correct. Walking out of millbrook would have put the player about 61
-cells from its door. Port Sapphire was right, and that is exactly why nobody noticed: it is the only
-town TOWN_IDS lets anyone reach, so it is the only exit ever walked through.
+  * `src/data/maps.ts` -- each town's `connections` entry back to the overworld. **LEGACY.**
+  * `public/act1-world-map.js` -- `LANDMARKS[].exit`, collected into `EXITS[mapId]`. **AUTHORITY.**
 
-That is the shape of bug a gate is for -- silent, data-only, invisible until the feature ships, and
-introduced by a note confidently describing the wrong authority.
+The Act 1 runtime override supersedes maps.ts at runtime, but only on one path. In
+`wrapCheckTransition` it takes the base result and, when the target is the overworld and the landing
+cell is inside the Act 1 bounds, rewrites it:
+
+    var out = EXITS[this.currentMapId];
+    if (out) { result.toX = out.x; result.toY = out.y; }
+
+That path is `scene.checkTransition` -- the SHIPPED town's edge-exit. **A hi-fi town never reaches
+it.** `adapter.js`'s `act1-town-exit` handler assigns `scene.heroTileX/heroTileY = data.toX/toY` and
+calls `loadMap` directly. So for a hi-fi town the value in town.json is used RAW, with no rewrite,
+and it must therefore ALREADY be the landmark exit cell.
+
+For the shipped 16x16 towns maps.ts is still fine, because the override corrects them on the way
+out. That is exactly what makes this confusing: maps.ts looks authoritative, is authoritative for
+the towns that still use it, and is wrong for the ones that do not.
+
+Measured 2026-08-22: portSapphire carried maps.ts's (130,291) against a landmark exit of (133,348) --
+57 cells adrift, and LIVE, because it is the only town TOWN_IDS lets anyone reach.
 """
 from __future__ import annotations
 import json, os, re, sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TOWN_DIR = os.path.join(ROOT, "public/act1-hifi/town")
-MAPS_TS = os.path.join(ROOT, "src/data/maps.ts")
+WORLD_MAP = os.path.join(ROOT, "public/act1-world-map.js")
 
 
-def shipped_exits() -> dict[str, tuple[int, int]]:
-    """Each town's own `connections` entry back to the overworld, from the shipped map data."""
-    src = open(MAPS_TS).read()
-    out = {}
-    for m in re.finditer(r"^  (\w+): \{\n(.*?)\n  \},", src, re.S | re.M):
-        town, body = m.group(1), m.group(2)
-        if "type: 'town'" not in body:
-            continue
-        c = re.search(r"targetMap: 'overworld',[^}]*?toX: (\d+), toY: (\d+)", body)
-        if c:
-            out[town] = (int(c.group(1)), int(c.group(2)))
-    return out
+def landmark_exits() -> dict[str, tuple[int, int]]:
+    src = open(WORLD_MAP).read()
+    m = re.search(r"var LANDMARKS = (\[.*?\]);", src, re.S)
+    if not m:
+        raise SystemExit("check_town_transitions: no LANDMARKS array in public/act1-world-map.js")
+    return {l["mapId"]: (l["exit"]["x"], l["exit"]["y"]) for l in json.loads(m.group(1))}
 
 
 def main() -> int:
-    shipped = shipped_exits()
-    bad = []
-    checked = 0
+    want = landmark_exits()
+    bad, checked = [], 0
     for f in sorted(os.listdir(TOWN_DIR)):
         if not f.endswith("-town.json"):
             continue
         town = f[: -len("-town.json")]
-        d = json.load(open(os.path.join(TOWN_DIR, f)))
-        ex = d.get("exit") or {}
+        ex = (json.load(open(os.path.join(TOWN_DIR, f))).get("exit") or {})
         got = (ex.get("toX"), ex.get("toY"))
-        want = shipped.get(town)
-        if want is None:
-            bad.append(f"  {town}: no 'town' entry with an overworld connection in src/data/maps.ts")
+        if town not in want:
+            bad.append(f"  {town}: no LANDMARKS entry in public/act1-world-map.js")
             continue
         checked += 1
-        if got != want:
-            bad.append(f"  {town}: exit.toX/toY is {got}, shipped maps.ts says {want}")
+        if got != want[town]:
+            bad.append(f"  {town}: exit.toX/toY is {got}, landmark exit is {want[town]} "
+                       f"-- adapter.js uses this value raw, so the player would land there")
     if bad:
         print("TOWN TRANSITION CHECK FAIL:")
         print("\n".join(bad))
         return 1
-    print(f"TOWN TRANSITION CHECK PASS: {checked} hi-fi town exits land on their shipped "
-          f"overworld door")
+    print(f"TOWN TRANSITION CHECK PASS: {checked} hi-fi town exits match their landmark exit cell "
+          f"in public/act1-world-map.js")
     return 0
 
 

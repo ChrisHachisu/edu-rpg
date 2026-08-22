@@ -1,86 +1,86 @@
 {
- "_comment": "Port Sapphire town runtime config. Cells are the 65x65 town grid; an NPC cell is the character's FEET (bottom-centre), matching scripts/render_town_hero_proof.py and scripts/place_town_npcs.py. ids and dialogueKeys are preserved from the shipped bundle.",
- "id": "portSapphire",
- "nameKey": "map.portSapphire",
- "screen": "town/portSapphire-screen.png",
- "foreground": "town/portSapphire-foreground.png",
- "walkable": "town/portSapphire-walkable.json",
- "cells": 65,
- "artPxPerCell": 30,
- "worldPxPerCell": 16,
- "startCell": [
-  33.0,
-  4.0
- ],
- "npcs": [
-  {
-   "id": "healer",
-   "dialogueKey": "npc.healer",
-   "nameKey": "npc.healer.name",
-   "sheet": "town/npc/portSapphire-healer-4x3-64.png",
-   "cell": [
-    38.6,
-    29.9
-   ],
-   "name": "Healer",
-   "text": "Welcome to the clinic! I can heal your wounds."
-  },
-  {
-   "id": "wisewoman",
-   "dialogueKey": "npc.wisewoman",
-   "nameKey": "npc.wisewoman.name",
-   "sheet": "town/npc/portSapphire-wisewoman-4x3-64.png",
-   "cell": [
-    30.2,
-    27.8
-   ],
-   "name": "Wise Woman",
-   "text": "The Darkfang Grotto lies to the west. Defeat the Giant Toad there to unseal the Crystal Cave to the east. That's where the first crystal shard awaits!"
-  },
-  {
-   "id": "sailor",
-   "dialogueKey": "npc.sailor",
-   "nameKey": "npc.sailor.name",
-   "sheet": "town/npc/portSapphire-sailor-4x3-64.png",
-   "cell": [
-    19.5,
-    43.5
-   ],
-   "name": "Sailor",
-   "text": "I hear a dragon lives in the caves to the north, sealed behind a dark barrier. Scary stuff!"
-  },
-  {
-   "id": "drake",
-   "dialogueKey": "npc.drake.greeting",
-   "nameKey": "npc.drake.name",
-   "sheet": "town/npc/portSapphire-drake-4x3-64.png",
-   "cell": [
-    31.9,
-    41.5
-   ],
-   "name": "Captain Drake",
-   "text": "Ahoy! Name's Captain Drake. I've sailed every sea on this continent. If you need passage anywhere, I'm your man, once my ship's back in shape, that is."
-  }
- ],
- "savePoint": [
-  31.4,
-  29
- ],
- "shopCounter": [
-  24.5,
-  29.2
- ],
- "shopId": "portSapphire",
- "exit": {
-  "cell": [
-   33.0,
-   3.0
+  "_comment": "Port Sapphire town runtime config. Cells are the 65x65 town grid; an NPC cell is the character's FEET (bottom-centre), matching scripts/render_town_hero_proof.py and scripts/place_town_npcs.py. ids and dialogueKeys are preserved from the shipped bundle.",
+  "id": "portSapphire",
+  "nameKey": "map.portSapphire",
+  "screen": "town/portSapphire-screen.png",
+  "foreground": "town/portSapphire-foreground.png",
+  "walkable": "town/portSapphire-walkable.json",
+  "cells": 65,
+  "artPxPerCell": 30,
+  "worldPxPerCell": 16,
+  "startCell": [
+    33.0,
+    4.0
   ],
-  "targetMapId": "overworld",
-  "toX": 130,
-  "toY": 291,
-  "note": "connections[0] of the shipped portSapphire town definition; north trail mouth"
- },
- "_dialogueNote": "name/text are the shipped English strings, lifted verbatim from runtime/baselines/v1.17.1-ipad-hud-walk so the town is playable standalone. They are a FALLBACK: the runtime also posts act1-town-interact to the parent so the bundle's real localised dialogue system can take over once the adapter hands off.",
- "_startNote": "The north trail mouth. The shipped town definition's own entry (8,15 of a 16x16 grid) is the BOTTOM edge, which here is open sea -- Port Sapphire's three land exits are N, W and E. Verified inside the walkable geometry before shipping."
+  "npcs": [
+    {
+      "id": "healer",
+      "dialogueKey": "npc.healer",
+      "nameKey": "npc.healer.name",
+      "sheet": "town/npc/portSapphire-healer-4x3-64.png",
+      "cell": [
+        38.6,
+        29.9
+      ],
+      "name": "Healer",
+      "text": "Welcome to the clinic! I can heal your wounds."
+    },
+    {
+      "id": "wisewoman",
+      "dialogueKey": "npc.wisewoman",
+      "nameKey": "npc.wisewoman.name",
+      "sheet": "town/npc/portSapphire-wisewoman-4x3-64.png",
+      "cell": [
+        30.2,
+        27.8
+      ],
+      "name": "Wise Woman",
+      "text": "The Darkfang Grotto lies to the west. Defeat the Giant Toad there to unseal the Crystal Cave to the east. That's where the first crystal shard awaits!"
+    },
+    {
+      "id": "sailor",
+      "dialogueKey": "npc.sailor",
+      "nameKey": "npc.sailor.name",
+      "sheet": "town/npc/portSapphire-sailor-4x3-64.png",
+      "cell": [
+        19.5,
+        43.5
+      ],
+      "name": "Sailor",
+      "text": "I hear a dragon lives in the caves to the north, sealed behind a dark barrier. Scary stuff!"
+    },
+    {
+      "id": "drake",
+      "dialogueKey": "npc.drake.greeting",
+      "nameKey": "npc.drake.name",
+      "sheet": "town/npc/portSapphire-drake-4x3-64.png",
+      "cell": [
+        31.9,
+        41.5
+      ],
+      "name": "Captain Drake",
+      "text": "Ahoy! Name's Captain Drake. I've sailed every sea on this continent. If you need passage anywhere, I'm your man, once my ship's back in shape, that is."
+    }
+  ],
+  "savePoint": [
+    31.4,
+    29
+  ],
+  "shopCounter": [
+    24.5,
+    29.2
+  ],
+  "shopId": "portSapphire",
+  "exit": {
+    "cell": [
+      33.0,
+      3.0
+    ],
+    "targetMapId": "overworld",
+    "toX": 133,
+    "toY": 348,
+    "note": "Exit lands on the overworld, and the AUTHORITY is public/act1-world-map.js's LANDMARKS entry for this town -- `EXITS[mapId] = L.exit`, the open cell beside its door. NOT src/data/maps.ts. maps.ts's connection (130,291) is legacy: the Act 1 override REWRITES it at runtime, but only inside scene.checkTransition, which is the SHIPPED town's edge-exit path. A hi-fi town never goes through it -- adapter.js's act1-town-exit handler assigns scene.heroTileX/heroTileY = data.toX/toY directly -- so for these towns the value here is used RAW and must already be the landmark exit. || connections[0] of the shipped portSapphire town definition; north trail mouth"
+  },
+  "_dialogueNote": "name/text are the shipped English strings, lifted verbatim from runtime/baselines/v1.17.1-ipad-hud-walk so the town is playable standalone. They are a FALLBACK: the runtime also posts act1-town-interact to the parent so the bundle's real localised dialogue system can take over once the adapter hands off.",
+  "_startNote": "The north trail mouth. The shipped town definition's own entry (8,15 of a 16x16 grid) is the BOTTOM edge, which here is open sea -- Port Sapphire's three land exits are N, W and E. Verified inside the walkable geometry before shipping."
 }
