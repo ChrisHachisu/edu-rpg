@@ -59,6 +59,78 @@ def paving_mask(art: np.ndarray) -> np.ndarray:
     return (r > 95) & (np.abs(r - g) < 42) & (b > r * 0.5) & (b < r * 1.25)
 
 
+def lawn_mask(art: np.ndarray) -> np.ndarray:
+    """Open, sunlit grass -- walkable. Deliberately NOT all green: tree canopy, bushes and deep
+    shade are the same hue and are not ground, and they separate cleanly on luminance."""
+    r, g, b = art[..., 0], art[..., 1], art[..., 2]
+    mx, mn = art.max(2), art.min(2)
+    d = mx - mn + 1e-6
+    s = np.where(mx > 0, (mx - mn) / np.maximum(mx, 1e-6), 0)
+    h = np.where(mx == r, ((g - b) / d) % 6,
+                 np.where(mx == g, (b - r) / d + 2, (r - g) / d + 4)) * 60
+    lum = 0.299 * r + 0.587 * g + 0.114 * b
+    return (h > 55) & (h < 175) & (s > 0.15) & (lum >= 95)
+
+
+def timber_mask(art: np.ndarray) -> np.ndarray:
+    """Fence timber, and every other brown wooden thing. Only used radially, where the outermost
+    hit on a ray is the perimeter fence."""
+    r, g, b = art[..., 0], art[..., 1], art[..., 2]
+    mx, mn = art.max(2), art.min(2)
+    d = mx - mn + 1e-6
+    s = np.where(mx > 0, (mx - mn) / np.maximum(mx, 1e-6), 0)
+    h = np.where(mx == r, ((g - b) / d) % 6,
+                 np.where(mx == g, (b - r) / d + 2, (r - g) / d + 4)) * 60
+    lum = 0.299 * r + 0.587 * g + 0.114 * b
+    return (h >= 12) & (h < 50) & (s > 0.22) & (lum > 35) & (lum < 185)
+
+
+def town_boundary(art: np.ndarray, rays: int = 360, smooth: int = 25):
+    """Trace the perimeter fence and return it as a closed ring of art-pixel points.
+
+    WHY THIS IS AUTHORED-FROM-THE-ART RATHER THAN DERIVED FROM COLOUR ALONE. Owner, 2026-08-22:
+    *"grass is walkable but fences are not, so you can set the boundaries as necessary."* Making
+    grass walkable removes the thing that used to bound a town -- paving -- and hands the job to
+    the fence. The fence cannot do it as a colour mask, and that was MEASURED rather than assumed:
+
+      * point-sampling at 4 art px/sample steps straight over a rail and the town leaks on every
+        side (millbrook touched 1,936 frame-edge cells)
+      * block-pooling the ground mask does not help either, at any threshold up to 1.0 (still
+        1,909 edge cells at 100%)
+      * morphological closing of the not-ground mask fails at every radius 2-6; the two runs that
+        looked sealed had simply lost the seed
+
+    The reason is physical: these are POST-AND-RAIL fences with real grass visible between the
+    rails, so there is no continuous not-ground path around the town to find.
+
+    What IS reliable is that the fence is the OUTERMOST timber on any ray from the town centre.
+    So each ray records its furthest timber hit, and a circular rolling median over neighbouring
+    rays rejects the props and roofs that occasionally out-reach it and fills the few rays that
+    find nothing. The result is a convex-ish ring that follows the painted fence.
+
+    Measured on all three towns: sealed, zero frame-edge leakage, against thousands before.
+    """
+    n = art.shape[0]
+    c = n / 2.0
+    tim = timber_mask(art)
+    steps = np.arange(n * 0.18, n * 0.52, 2.0)
+    radii = np.full(rays, np.nan)
+    for k in range(rays):
+        th = np.deg2rad(k * 360.0 / rays)
+        xs = (c + steps * np.cos(th)).astype(int)
+        ys = (c + steps * np.sin(th)).astype(int)
+        ok = (xs >= 0) & (xs < n) & (ys >= 0) & (ys < n)
+        hit = tim[ys[ok], xs[ok]]
+        if hit.any():
+            radii[k] = steps[ok][np.nonzero(hit)[0][-1]]
+    w = smooth
+    pad = np.concatenate([radii[-w:], radii, radii[:w]])
+    sm = np.array([np.nanmedian(pad[i:i + 2 * w + 1]) for i in range(rays)])
+    sm = np.where(np.isfinite(sm), sm, np.nanmedian(sm[np.isfinite(sm)]))
+    return [(c + sm[k] * np.cos(np.deg2rad(k * 360.0 / rays)),
+             c + sm[k] * np.sin(np.deg2rad(k * 360.0 / rays))) for k in range(rays)], sm
+
+
 def _shift_and(mask, dy, dx):
     out = np.zeros_like(mask)
     h, w = mask.shape
@@ -340,6 +412,10 @@ def main() -> None:
                     help="extra pull-back from non-floor edges. DEFAULT 0: the runtime already applies "
                          "actorFootRadius, and pre-eroding here also deletes the prop obstacles "
                          "by disconnecting their pockets from the hole set (78 -> 2).")
+    ap.add_argument("--grass", dest="grass", action="store_true", default=True,
+                    help="walkable = paving + open grass inside the traced fence ring (default)")
+    ap.add_argument("--no-grass", dest="grass", action="store_false",
+                    help="legacy: paving only, for a town with no fence to trace")
     ap.add_argument("--out", default=os.path.join(
         ROOT, "public/act1-hifi/portSapphire-walkable-v1.json"))
     # --authored DEFAULTED TO PORT SAPPHIRE'S FILE FOR EVERY TOWN, which is a silent
@@ -377,7 +453,29 @@ def main() -> None:
     art_to_world = world_px_per_cell / art_px_per_cell
     s = args.sample
     px_per_cell = art_px_per_cell / s          # mask samples per world cell
-    mask = paving_mask(art)[::s, ::s]
+    # GROUND IS PAVING **PLUS OPEN GRASS**, CLIPPED TO THE PERIMETER FENCE. Owner, 2026-08-22:
+    # "grass is walkable but fences are not, so you can set the boundaries as necessary." The old
+    # rule -- paving only, cottage gardens excluded as private -- made the lanes the boundary. With
+    # grass walkable the lanes bound nothing, so the fence has to, and town_boundary() traces it.
+    # --no-grass restores the previous paving-only behaviour for a town that has no fence to trace.
+    if args.grass:
+        ring, _r = town_boundary(art)
+        inside = np.asarray(Image.new("L", (art.shape[1], art.shape[0]), 0))
+        img_ring = Image.new("L", (art.shape[1], art.shape[0]), 0)
+        ImageDraw.Draw(img_ring).polygon(ring, fill=255)
+        inside = np.asarray(img_ring) > 0
+        # THE RING CLIPS GRASS, NOT PAVING, and getting that backwards locks the player in. Clipping
+        # both put every town's exit cell OUTSIDE the walkable surface -- the approach lane runs out
+        # through the gate, which is by definition beyond the fence, so the player could reach no
+        # exit at all and Port Sapphire's spawn was dragged 4 cells inside. Paving is walkable
+        # wherever it is painted, because a lane is only ever painted where you are meant to walk;
+        # the ring exists solely to stop open grass continuing into the surrounding meadow.
+        ground = paving_mask(art) | (lawn_mask(art) & inside)
+        print(f"ground = paving (anywhere) + open grass inside the traced fence ring "
+              f"({ground.mean() * 100:.1f}% of frame before props)")
+        mask = ground[::s, ::s]
+    else:
+        mask = paving_mask(art)[::s, ::s]
 
     # Close the cobble grout ONLY. The first pass closed at radius 2, which is ~16 art px, and
     # that swallowed exactly the props this has to keep -- a barrel is ~22 art px across.
