@@ -83,6 +83,19 @@
       ],
       "name": "Fisherman",
       "text": "The stream runs down to Millbrook, and the mill folk trade well. Long walk, though. Pack something to eat."
+    },
+    {
+      "id": "shopkeeper",
+      "dialogueKey": "npc.shopkeeper",
+      "nameKey": "npc.shopkeeper.name",
+      "sheet": "town/npc/greenhollow-shopkeeper-4x3-64.png",
+      "cell": [
+        16.0,
+        31.5
+      ],
+      "fixed": true,
+      "name": "Shopkeeper",
+      "text": "Take a look at my wares, traveller."
     }
   ],
   "savePoint": [
@@ -107,5 +120,6 @@
     35.81
   ],
   "_serviceNote": "shopCounter stands on the lane below the striped awning, and shopId matches the inventory src/data/shops.ts already defines. Both were None, so the shop was unreachable even though the map data expected it.",
-  "_layoutNote": "REPLACED 2026-08-22. These cells no longer come from design/act1-towns/greenhollow/spec.json: scripts/town_layout.py wrote it for the plan-primed layout the owner scrapped, and the village was repainted afterwards, so its snapping described geometry the art no longer has. Towns are ART-FIRST -- the painting is authored, scripts/derive_town_walkable.py derives collision from the finished plate, and scripts/place_town_actors.py places actors against THAT, eroding by actorFootRadius so the body fits and flood-filling from startCell so nothing stands somewhere the player cannot reach. villager1 and villager2 were CHOSEN by hand rather than auto-snapped: their old cells landed on the market stall's counter and the herbalist's porch in the painted village, and the nearest standable ground was 5.1 and 5.7 cells away, far enough that the snap would have decided the composition instead of reporting it."
+  "_layoutNote": "REPLACED 2026-08-22. These cells no longer come from design/act1-towns/greenhollow/spec.json: scripts/town_layout.py wrote it for the plan-primed layout the owner scrapped, and the village was repainted afterwards, so its snapping described geometry the art no longer has. Towns are ART-FIRST -- the painting is authored, scripts/derive_town_walkable.py derives collision from the finished plate, and scripts/place_town_actors.py places actors against THAT, eroding by actorFootRadius so the body fits and flood-filling from startCell so nothing stands somewhere the player cannot reach. villager1 and villager2 were CHOSEN by hand rather than auto-snapped: their old cells landed on the market stall's counter and the herbalist's porch in the painted village, and the nearest standable ground was 5.1 and 5.7 cells away, far enough that the snap would have decided the composition instead of reporting it.",
+  "_shopkeeperNote": "Owner 2026-08-22: \"i cannot find the shopkeeper and the shopkeeper needs to be in a shop.\" He stands INSIDE the market stall, behind the counter, which is why he carries `fixed: true` -- scripts/place_town_actors.py snaps actors onto walkable ground and the inside of a stall is deliberately not walkable, so snapping him would put him out on the lane. town.html routes a tap on him to the shop the same way it routes the healer to the heal flow, so the shipped ShopScene stays the single implementation. shopCounter remains the spot in FRONT of the stall where the player stands."
 }

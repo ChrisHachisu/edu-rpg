@@ -395,7 +395,13 @@ function interact() {
   // The healer's heal flow lives in the shipped scene (`handleHealer` owns the full-HP check,
   // the gold check, the price and the confirm overlay), so she is handed off rather than given
   // a dialogue box here. Duplicating any of that would fork the economy.
-  const service = npc?.id === 'healer' ? { kind: 'healer' } : nearestService();
+  // The shopkeeper is a PERSON and a SERVICE, exactly like the healer. Owner 2026-08-22: "i
+  // cannot find the shopkeeper and the shopkeeper needs to be in a shop." He now stands behind his
+  // counter inside the stall, and talking to him opens the shipped ShopScene rather than a
+  // dialogue box, so the town never forks the inventory or the prices.
+  const service = npc?.id === 'healer' ? { kind: 'healer' }
+                : npc?.id === 'shopkeeper' ? { kind: 'shop' }
+                : nearestService();
   if (service) {
     parent.postMessage({ type: 'act1-town-service', town: town.id, kind: service.kind,
                          shopId: town.shopId }, '*');

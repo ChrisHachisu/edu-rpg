@@ -110,7 +110,13 @@ def main():
     print(f"{a.town}: standable {mask.mean()*100:.1f}% of {walk['width']}x{walk['height']} world px")
 
     items = [(k, town[k]) for k in SCALARS if town.get(k)]
-    items += [(f"npc:{n['id']}", n["cell"]) for n in town.get("npcs", [])]
+    # A `fixed` NPC is deliberately standing somewhere the PLAYER cannot: the shopkeeper is behind
+    # his counter, inside the stall, and the inside of a stall is not walkable on purpose. Snapping
+    # him would put him out on the lane, which is exactly the bug this tool exists to prevent for
+    # everyone else. He is reported, never moved -- the player reaches him across the counter,
+    # which nearestNpc() allows (it accepts the player up to ~2 cells below an NPC).
+    fixed = {f"npc:{n['id']}" for n in town.get("npcs", []) if n.get("fixed")}
+    items += [(f"npc:{n['id']}", n["cell"]) for n in town.get("npcs", []) if not n.get("fixed")]
 
     # SNAP TO REACHABLE GROUND, NOT MERELY STANDABLE GROUND. Snapping to the eroded mask alone
     # finds the nearest place a body FITS, which is not the same as the nearest place a body can
@@ -149,6 +155,10 @@ def main():
               f"{dist/cell:6.2f}c  {'yes' if ok else 'NO'}")
     for f in fails:
         print("   ", f)
+    for name in sorted(fixed):
+        c = next(n["cell"] for n in town["npcs"] if f"npc:{n['id']}" == name)
+        print(f"  {name + ' (fixed)':22s} {f'[{c[0]},{c[1]}]':>14s}  not snapped -- stands inside "
+              f"its building by design")
     ex = town.get("exit", {}).get("cell")
     if ex:
         exx, exy = int(ex[0] * cell), int(ex[1] * cell)

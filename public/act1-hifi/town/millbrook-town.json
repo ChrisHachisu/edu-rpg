@@ -59,6 +59,19 @@
       ],
       "name": "Herbalist",
       "text": "Everything worth picking grows along the stream bank. Stay on this side of it, though. What grows past the water belongs to the woods."
+    },
+    {
+      "id": "shopkeeper",
+      "dialogueKey": "npc.shopkeeper",
+      "nameKey": "npc.shopkeeper.name",
+      "sheet": "town/npc/millbrook-shopkeeper-4x3-64.png",
+      "cell": [
+        15.0,
+        35.5
+      ],
+      "fixed": true,
+      "name": "Shopkeeper",
+      "text": "Take a look at my wares, traveller."
     }
   ],
   "savePoint": [
@@ -83,5 +96,6 @@
     15.0,
     38.62
   ],
-  "_serviceNote": "shopCounter stands on the lane in front of the market stall's produce counter, and shopId matches the inventory src/data/shops.ts already defines. savePoint MOVED 2026-08-22: [37,41] was valid against the scrapped plan-primed collision and lands on the brown cottage's ROOF in the painted village; it is now the paving just south of the well, which is where the save point reads."
+  "_serviceNote": "shopCounter stands on the lane in front of the market stall's produce counter, and shopId matches the inventory src/data/shops.ts already defines. savePoint MOVED 2026-08-22: [37,41] was valid against the scrapped plan-primed collision and lands on the brown cottage's ROOF in the painted village; it is now the paving just south of the well, which is where the save point reads.",
+  "_shopkeeperNote": "Owner 2026-08-22: \"i cannot find the shopkeeper and the shopkeeper needs to be in a shop.\" He stands INSIDE the market stall, behind the counter, which is why he carries `fixed: true` -- scripts/place_town_actors.py snaps actors onto walkable ground and the inside of a stall is deliberately not walkable, so snapping him would put him out on the lane. town.html routes a tap on him to the shop the same way it routes the healer to the heal flow, so the shipped ShopScene stays the single implementation. shopCounter remains the spot in FRONT of the stall where the player stands."
 }

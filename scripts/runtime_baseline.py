@@ -432,9 +432,9 @@ ACT1_DUNGEON_FILES = {
 # no URL bar). Pinned so it cannot quietly grow into something that mutates real save data.
 ACT1_TOWN_FILES = {
     "act1-hifi/town.html": (
-        32147, "0140e2a1005e7c5f0ea0e20c9bf17cb65917ede41f95abd0715ef2e81b0bd72e"),
+        32582, "c7c6c28a2a62fab3ecc8b2de2a92c1801ca97b1223e6d23331eea92c9c6f7d14"),
     "act1-hifi/town/portSapphire-town.json": (
-        4760, "cf9a6f3c5227dcabe006b2671fc58ecc68be7bafa4166ea5cf70b0e08094664e"),
+        5700, "453218fbcbb9c6677d71cf02780c895a5152ee0a80526657e233f5ba62b0c0a5"),
     "act1-hifi/town/portSapphire-walkable.json": (
         41658, "4cedc99051f2924e1e10fbbe74d4e68fc5b467e82ef92f32f7c3e29a815b6598"),
     "act1-hifi/town/portSapphire-screen.png": (
@@ -449,7 +449,7 @@ ACT1_TOWN_FILES = {
     "act1-hifi/town/npc/portSapphire-drake-4x3-64.png": (
         72411, "ebc699ce53ec05ea46302104518271bc8f730b62903c1dba3a1c52454b0e52fa"),
     "act1-hifi/town/npc/portSapphire-healer-4x3-64.png": (
-        68676, "c4be28f66f7e50c24e30871da364896fe172fb4b42757ba8fad4b58e93aa23bc"),
+        64526, "fd16d4d3d9992f8078e381b7c77b441ba0d943dc2b7a53433aa12566eb6e9d68"),
     "act1-hifi/town/npc/portSapphire-sailor-4x3-64.png": (
         63031, "a365feb2d0f3296b8e34f263f68194f047fb0e3f5e9e11463a5fd9477a6d6137"),
     "act1-hifi/town/npc/portSapphire-wisewoman-4x3-64.png": (
@@ -478,35 +478,46 @@ ACT1_TOWN_FILES = {
     # can see: it reports "0 updated", leaves the zeros in place, and the very next step fails with
     # "Act 1 town identity mismatch" pointing at the file you just added. Cost 2026-08-21.
     "act1-hifi/town/greenhollow-town.json": (
-        5716, "902cbb094431dfbcacb229e532c235576ff519c68576980dd1dd8bd93934cb3b"),
+        6655, "50420e29b480f006221cbd37fb65bd9aa5f4908bfba8adaf4a7d6053763f6307"),
     "act1-hifi/town/greenhollow-walkable.json": (
         34337, "e0676ea64712576f5f43e89889ea1f7effebadfb6bde8eb81b360c96aace8595"),
     "act1-hifi/town/npc/greenhollow-elder-4x3-64.png": (
-        62614, "e06d2ee7370b09782493dd7fc947c87873bea105a38532fb7c0e06f3a39b9902"),
+        57351, "c98893637ec7a55f4202933d716dd995bc7a08b49d39b4698e68bea6a758ff76"),
     "act1-hifi/town/npc/greenhollow-fisherman-4x3-64.png": (
         68151, "cf20067d7a180ddd0e7e64b7894a46609a75ef45745e2456f488ead419231ed3"),
     "act1-hifi/town/npc/greenhollow-healer-4x3-64.png": (
-        66563, "fb1a009a4b3144f5e230c063b6886517bbbf9a5d25c85744994d2f956f164698"),
+        64526, "fd16d4d3d9992f8078e381b7c77b441ba0d943dc2b7a53433aa12566eb6e9d68"),
     "act1-hifi/town/npc/greenhollow-kiki-4x3-64.png": (
-        42698, "36e7e4435f0ed9781936bb50ce3dddfbf38d2d13c9fe4cefef4553d66a6fbb7c"),
+        52125, "8566b65c00f1f8969118630162ecb18fd4c09ca784d966be1f250c89bf01d889"),
     "act1-hifi/town/npc/greenhollow-villager1-4x3-64.png": (
         67078, "40d2355cb7bc1d9fb90933e133caa18d24bcf5be8f2d915af3c45f16637fbf8c"),
     "act1-hifi/town/npc/greenhollow-villager2-4x3-64.png": (
         74715, "46eb1754759a95ab58993b3fc73098fdf623c601e092c32c992d78678b3c015c"),
+    # The shopkeeper, added 2026-08-22. Owner: "i cannot find the shopkeeper and the shopkeeper
+    # needs to be in a shop." One recurring character, the same bytes in all three towns, standing
+    # inside each market stall. Placeholder zeros here and `npm run repin` fills them -- and the
+    # FILES ARE ON DISK BEFORE THESE KEYS EXIST, because regenerate_pins.py refuses to write while
+    # any pin is unresolved and build-dist.sh then breaks every worktree, not just this town.
+    "act1-hifi/town/npc/greenhollow-shopkeeper-4x3-64.png": (
+        65590, "2237ee95ff09dacd6fe70a73d9423e3129cce4c1a737c3d50a2833b9d6fdcf98"),
+    "act1-hifi/town/npc/millbrook-shopkeeper-4x3-64.png": (
+        65590, "2237ee95ff09dacd6fe70a73d9423e3129cce4c1a737c3d50a2833b9d6fdcf98"),
+    "act1-hifi/town/npc/portSapphire-shopkeeper-4x3-64.png": (
+        65590, "2237ee95ff09dacd6fe70a73d9423e3129cce4c1a737c3d50a2833b9d6fdcf98"),
     "act1-hifi/town/npc/millbrook-healer-4x3-64.png": (
-        60907, "ff5833d54b9966afe79d9c9045c120e00d758dfa7d557533f5abace2efd2f244"),
+        64526, "fd16d4d3d9992f8078e381b7c77b441ba0d943dc2b7a53433aa12566eb6e9d68"),
     "act1-hifi/town/npc/millbrook-herbalist-4x3-64.png": (
         68561, "6273649ede8b289a8f407022544e48f739766fb1a86ea54331e17033cbc50c82"),
     "act1-hifi/town/npc/millbrook-miller-4x3-64.png": (
-        78675, "1989415133aade3860ef666dc992b69697787eedba25810b45d8ad3e2fbc5ebe"),
+        81769, "109dcfe334662503b62b7aa125a29156c559dd1c773849c356180363a23a5efb"),
     "act1-hifi/town/npc/millbrook-sage-4x3-64.png": (
-        61872, "7ec94aaff609902774026ce536f2843de889ed2962a95c71f1a5b4068183d244"),
+        70119, "b843302a64c34736a1ccd4a1653b1bd02ab3460d36caca88c38e85bcfa9e9386"),
     "act1-hifi/town/greenhollow-walkable.json": (
         34337, "e0676ea64712576f5f43e89889ea1f7effebadfb6bde8eb81b360c96aace8595"),
     "act1-hifi/town/millbrook-walkable.json": (
         56575, "beb559cb3e2a5aacb0df9761115d5e28832ccc8ab16d2f77e6f2539af5f10f26"),
     "act1-hifi/town/millbrook-town.json": (
-        5457, "c83e003d664bbf1996fd6eb2ba85a689f43380f39d450aa691e1d6a915d6c593"),
+        6394, "7b00c024879050acfb945f2f939fd9f285eeeb126c3771b91f1c47b5b8adf1d5"),
     # 2026-08-21: the two plates the note above was waiting for. Both are the four-tile bake,
     # exposure-matched per tile and quilted on a minimum-error cut by scripts/stitch_plate.py.
     # Placeholder zeros; `npm run repin` fills the real size/hash in -- and the FILES ARE ON DISK
