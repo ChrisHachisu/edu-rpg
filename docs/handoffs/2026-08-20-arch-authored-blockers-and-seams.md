@@ -3,7 +3,8 @@ date: 2026-08-20
 type: handoff
 project: edu-rpg
 milestone: act1 arch, single entrance, plate seams
-status: active
+status: superseded
+superseded_by: "[[2026-08-22-act1-town-art-first-paintings]]"
 supersedes: "[[2026-08-19-act1-towns-dungeons-single-entrance]]"
 tags: [handoff]
 ---
