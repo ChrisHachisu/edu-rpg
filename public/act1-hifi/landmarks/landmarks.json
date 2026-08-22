@@ -22,11 +22,11 @@
       ],
       "size": 144,
       "anchor": [
-        74,
-        88
+        72,
+        86
       ],
-      "contactWidth": 107,
-      "contactBand": 33
+      "contactWidth": 143,
+      "contactBand": 45
     },
     {
       "name": "Crystal Cave",
@@ -60,11 +60,11 @@
       ],
       "size": 144,
       "anchor": [
-        73,
-        90
+        76,
+        88
       ],
-      "contactWidth": 141,
-      "contactBand": 44
+      "contactWidth": 134,
+      "contactBand": 36
     },
     {
       "name": "Greenhollow",
@@ -155,11 +155,11 @@
       ],
       "size": 144,
       "anchor": [
-        74,
-        84
+        76,
+        82
       ],
-      "contactWidth": 118,
-      "contactBand": 26
+      "contactWidth": 117,
+      "contactBand": 30
     },
     {
       "name": "Whispering Woods",
@@ -174,11 +174,11 @@
       ],
       "size": 144,
       "anchor": [
-        80,
-        93
+        76,
+        90
       ],
-      "contactWidth": 122,
-      "contactBand": 25
+      "contactWidth": 127,
+      "contactBand": 32
     }
   ]
 }

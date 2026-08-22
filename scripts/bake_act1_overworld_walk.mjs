@@ -103,7 +103,11 @@ const FINAL_MAP_SHA256 = '2d82e050b51095280b74395db8656aed52ae919206385827502265
 // Moved a THIRD time 2026-08-22: the town blocker rule became the UNION of the hero-foot
 // erosion and 25% cell coverage, so the owner cannot walk onto a drawn town's edge. 42 -> 45
 // blocker cells. Still tile 21, so the field is still untouched.
-const PLATED_MAP_SHA256 = '41c8d19684551db06cb2a34bacaf6f7de82338a2e973f8e7d2ac441730aab803';
+//
+// FOURTH move 2026-08-23: the four Act 1 dungeon sprites were redrawn to match their own terrain
+// and to face their real entrance, so their alpha -- and therefore their derived blockers --
+// changed again. 45 -> 49 cells. Tile 21 as always; field unchanged, checked not assumed.
+const PLATED_MAP_SHA256 = 'aa7e269d000e8a41698fceeb03d78ebf8d56477b50f96d5e4120e3c8a4dc43d5';
 const MAP_WIDTH = 320, MAP_HEIGHT = 400;
 const ACT1_START = [60, 341];
 const ACT1_BOUNDS = [16, 218, 163, 399];
