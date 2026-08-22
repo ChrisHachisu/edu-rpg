@@ -6,6 +6,8 @@ import hashlib
 import os
 from pathlib import Path
 import subprocess
+import time
+import sys
 
 
 def main() -> int:
@@ -57,8 +59,33 @@ def main() -> int:
     build_file = root / "ios/build/last-testflight-build.txt"
     if not build_file.is_file():
         raise SystemExit("upload returned without an exact build-number record")
-    print(f"CODEX REPORT: uploaded edu-rpg build {build_file.read_text().strip()}; ASC processing/assignment still required")
-    return 0
+    build = build_file.read_text().strip()
+    print(f"uploaded edu-rpg build {build}; now proving it is actually installable")
+
+    # UPLOADED IS NOT SHIPPED, AND `processingState: VALID` IS NOT INSTALLABLE. This script used to
+    # end at the line above, and the caller then read VALID off check-build.py and told the owner to
+    # install. Three edu-rpg builds were reported that way and none of them was downloadable: the
+    # owner's tester record read `state: INVITED`, an invitation never accepted, which no
+    # processing-state field reflects. Owner, 2026-08-22: "this is a pattern now so please fix your
+    # process." A rule that has to be remembered is not a fix, so the check runs HERE, in the only
+    # path that ships, and a failure is a non-zero exit rather than a note.
+    verifier = Path.home() / ".agents/skills/push-to-testflight/verify-delivery.py"
+    if not verifier.is_file():
+        raise SystemExit(f"missing delivery verifier: {verifier}")
+    deadline = time.time() + 20 * 60          # ASC lags upload by ~5-15 min
+    while True:
+        r = subprocess.run([sys.executable, str(verifier), "--app", "edu-rpg", "--build", build],
+                           capture_output=True, text=True)
+        print(r.stdout, end="")
+        if r.returncode == 0:
+            print(f"CODEX REPORT: edu-rpg build {build} uploaded AND installable")
+            return 0
+        # exit 1 with "is not in ASC yet" is the only retryable state; everything else is a verdict
+        if "not in ASC yet" not in r.stdout or time.time() > deadline:
+            print(r.stderr[-400:], file=sys.stderr)
+            raise SystemExit(f"edu-rpg build {build} uploaded but is NOT installable -- see above. "
+                             f"Do NOT report this build as shipped.")
+        time.sleep(60)
 
 
 if __name__ == "__main__":
