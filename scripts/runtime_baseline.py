@@ -122,7 +122,7 @@ ACT1_OVERLAY_FILES = {
     # three inputs (the frozen bundle's generator, dq-tiles.js's consolidator, dq-tiles.js's own
     # field functions, which the bake SLICES rather than re-implements so the two cannot drift).
     "act1-overworld-walk.bin": (
-        10803776, "fd051b599b90665d6ad527a07f3508ec0f6bb60b8e2e1f231335632347556df5"),
+        10803776, "82a018614ce520a38f76dc4206e643a2895750884c91f6f4f986ee8916a2d365"),
     # 2026-08-03, owner direction ("please redo the collision setting based on what i created (my
     # paint)"): the Act-1 collision plate is now generated from the OWNER'S PAINTED TERRAIN
     # (owner-terrain.json acts.1 + continent-macro-g3/land-mask.npy) instead of the generated
@@ -155,7 +155,7 @@ ACT1_OVERLAY_FILES = {
     # still green, because staging and git are two different lists.
     "assets/hero/hero-male-walk.png": (59032, "88cbed8f9d707b216ada01e108eedd5822c6bcfc69c8dd22af2457f231dc0976"),
     "act1-world-map.js": (
-        48897, "1861da85c5ac4b5c43ae76d2bf60ee4e100159078b6c973b93168ff64fbd43e7"),
+        48915, "20d8156e129032ba5dc36520d29c4d8190eddc2af1773b85da5bee6c929f27d5"),
     # 2026-08-06, from device: the Port Sapphire movement stick was anchored bottom-LEFT and its
     # lower half sat behind the field tab bar, where the overworld and every dungeon put the same
     # control bottom-right and fully visible. The town runs in a same-origin IFRAME
@@ -447,13 +447,13 @@ ACT1_TOWN_FILES = {
     # entirely when this is missing rather than drawing it displaced, so an unstaged offset
     # is a silent loss of the whole feature -- which is exactly how it first shipped.
     "act1-hifi/town/npc/portSapphire-drake-4x3-64.png": (
-        72411, "ebc699ce53ec05ea46302104518271bc8f730b62903c1dba3a1c52454b0e52fa"),
+        72410, "693c0fd79544d69495a80daea400e2bdca1c0af926abfe770497eacf8ddb16fd"),
     "act1-hifi/town/npc/portSapphire-healer-4x3-64.png": (
-        64526, "fd16d4d3d9992f8078e381b7c77b441ba0d943dc2b7a53433aa12566eb6e9d68"),
+        74496, "033cc4f5e26773162fb5e3e848cf7d20a632aca21f65e51d4dee49fc0f2357cd"),
     "act1-hifi/town/npc/portSapphire-sailor-4x3-64.png": (
-        63031, "a365feb2d0f3296b8e34f263f68194f047fb0e3f5e9e11463a5fd9477a6d6137"),
+        63030, "ef4dcc7cb9cf51492dda19714c6e92d1d89f32b4f799ccd5594e829109a99c98"),
     "act1-hifi/town/npc/portSapphire-wisewoman-4x3-64.png": (
-        63685, "86fcfd6244dfc7be90969e19f65d4ed4b1bcb88a4a8301b8fe510840d69dce05"),
+        63681, "4808577fcb242387d1b5015703ec96c5dd64d17bed11954b18ed8d91c4316d80"),
     # GREENHOLLOW, the starting village. Same shape as Port Sapphire minus the foreground layer,
     # which town.html treats as optional and this town does not have.
     #
@@ -484,34 +484,34 @@ ACT1_TOWN_FILES = {
     "act1-hifi/town/npc/greenhollow-elder-4x3-64.png": (
         57351, "c98893637ec7a55f4202933d716dd995bc7a08b49d39b4698e68bea6a758ff76"),
     "act1-hifi/town/npc/greenhollow-fisherman-4x3-64.png": (
-        68151, "cf20067d7a180ddd0e7e64b7894a46609a75ef45745e2456f488ead419231ed3"),
+        68111, "78be4ba5efafb2c1d84a2534eff69497a45c14d8e17e0c487bee677226a32c9d"),
     "act1-hifi/town/npc/greenhollow-healer-4x3-64.png": (
-        64526, "fd16d4d3d9992f8078e381b7c77b441ba0d943dc2b7a53433aa12566eb6e9d68"),
+        74496, "033cc4f5e26773162fb5e3e848cf7d20a632aca21f65e51d4dee49fc0f2357cd"),
     "act1-hifi/town/npc/greenhollow-kiki-4x3-64.png": (
-        52125, "8566b65c00f1f8969118630162ecb18fd4c09ca784d966be1f250c89bf01d889"),
+        72803, "059a93a3d62986e4c6f329364c7acc5fff46cef448387ddd00180bb74139666f"),
     "act1-hifi/town/npc/greenhollow-villager1-4x3-64.png": (
-        67078, "40d2355cb7bc1d9fb90933e133caa18d24bcf5be8f2d915af3c45f16637fbf8c"),
+        67078, "1afe325d1549ac25725628e9271ee0bb93847904c21926afd6c1de4d342c9872"),
     "act1-hifi/town/npc/greenhollow-villager2-4x3-64.png": (
-        74715, "46eb1754759a95ab58993b3fc73098fdf623c601e092c32c992d78678b3c015c"),
+        74658, "efa839e6f793ca35a37975d7ffd762113624b0d9f960652e132fb3c1f2bc998e"),
     # The shopkeeper, added 2026-08-22. Owner: "i cannot find the shopkeeper and the shopkeeper
     # needs to be in a shop." One recurring character, the same bytes in all three towns, standing
     # inside each market stall. Placeholder zeros here and `npm run repin` fills them -- and the
     # FILES ARE ON DISK BEFORE THESE KEYS EXIST, because regenerate_pins.py refuses to write while
     # any pin is unresolved and build-dist.sh then breaks every worktree, not just this town.
     "act1-hifi/town/npc/greenhollow-shopkeeper-4x3-64.png": (
-        65590, "2237ee95ff09dacd6fe70a73d9423e3129cce4c1a737c3d50a2833b9d6fdcf98"),
+        69318, "4eaf9c32fc18275ab9de7fd58236716da4d831201972e09507d2fd29dda72abf"),
     "act1-hifi/town/npc/millbrook-shopkeeper-4x3-64.png": (
-        65590, "2237ee95ff09dacd6fe70a73d9423e3129cce4c1a737c3d50a2833b9d6fdcf98"),
+        69318, "4eaf9c32fc18275ab9de7fd58236716da4d831201972e09507d2fd29dda72abf"),
     "act1-hifi/town/npc/portSapphire-shopkeeper-4x3-64.png": (
-        65590, "2237ee95ff09dacd6fe70a73d9423e3129cce4c1a737c3d50a2833b9d6fdcf98"),
+        69318, "4eaf9c32fc18275ab9de7fd58236716da4d831201972e09507d2fd29dda72abf"),
     "act1-hifi/town/npc/millbrook-healer-4x3-64.png": (
-        64526, "fd16d4d3d9992f8078e381b7c77b441ba0d943dc2b7a53433aa12566eb6e9d68"),
+        74496, "033cc4f5e26773162fb5e3e848cf7d20a632aca21f65e51d4dee49fc0f2357cd"),
     "act1-hifi/town/npc/millbrook-herbalist-4x3-64.png": (
-        68561, "6273649ede8b289a8f407022544e48f739766fb1a86ea54331e17033cbc50c82"),
+        68569, "c962a66d0b29b838b772fc539f1b4241b2d4f98e1debd0bf759519c2395c2c13"),
     "act1-hifi/town/npc/millbrook-miller-4x3-64.png": (
-        81769, "109dcfe334662503b62b7aa125a29156c559dd1c773849c356180363a23a5efb"),
+        81730, "da440e3e82fa80a38a16bbb12f3edb96e2c376122c8dd2765353fde8c724343f"),
     "act1-hifi/town/npc/millbrook-sage-4x3-64.png": (
-        70119, "b843302a64c34736a1ccd4a1653b1bd02ab3460d36caca88c38e85bcfa9e9386"),
+        73385, "86582c8c88235fcbc6cef140a48dbe172653f0c9e1788392aded6072ea659fb2"),
     "act1-hifi/town/greenhollow-walkable.json": (
         34337, "e0676ea64712576f5f43e89889ea1f7effebadfb6bde8eb81b360c96aace8595"),
     "act1-hifi/town/millbrook-walkable.json": (
@@ -544,7 +544,7 @@ ACT1_TOWN_FILES = {
 # Generated by scripts/build_act1_landmark_runtime.py.
 ACT1_LANDMARK_FILES = {
     "act1-hifi/landmarks/coastal-reef.png": (
-        31027, "8a953215cf87d5413dcdb3768ed78ce24a7a0813cc77ba51a5ba763ad4788065"),
+        38110, "4f6262bb420dbf86a33f302dc7195d6ec6f4a8dd3812ac67934ab504c2851589"),
     "act1-hifi/landmarks/crystal-cave.png": (
         28_179, "a39bfdfa82cd36dbca0d9bcd11b029f23cfc2b288f7657b4e9723531ea93bfa2"),
     "act1-hifi/landmarks/darkfang.png": (
@@ -552,7 +552,7 @@ ACT1_LANDMARK_FILES = {
     "act1-hifi/landmarks/greenhollow.png": (
         68436, "393ab4d1a7f8c75a8dc92cae519cd3909da78cd442cb1b8c075551fa440eebb8"),
     "act1-hifi/landmarks/landmarks.json": (
-        3138, "a74d5d207020535363b98002cbf17cb4f64f57b8c20c8ed93f22bcf670c6819d"),
+        3138, "0b7e43f7ba532dd7079c2d90a1203bb7c9341a43b041993a3d9a0bcf24bc9437"),
     "act1-hifi/landmarks/millbrook.png": (
         65999, "cca7ed1437459bf32698639c41a73dd6d29329465aac75100b09e088a323e243"),
     "act1-hifi/landmarks/misty-grotto.png": (
