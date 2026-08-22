@@ -80,9 +80,25 @@ def main() -> int:
     # installed both; 56 was not and read `externalBuildState: READY_FOR_BETA_SUBMISSION`, which is
     # the whole reason it was undeliverable. Beta review clears in seconds while the version is
     # already approved. Non-fatal on its own -- the verifier below is what decides.
-    r = subprocess.run([sys.executable, str(assigner), "--app", "edu-rpg", build, "Beta Testers"],
-                       capture_output=True, text=True)
-    print(r.stdout.strip() or r.stderr.strip()[-300:])
+    # ASSIGNMENT MUST WAIT FOR THE BUILD TO EXIST IN ASC. Running it straight after upload looks
+    # right and is not: ASC lags the upload by minutes, assign-beta-group.py returns "build not
+    # found on ASC yet", and because this step is non-fatal the ship carried on to a build nobody
+    # could install. Build 57 did exactly that on 2026-08-23 -- the delivery check below caught it
+    # and refused to report a ship, which is the gate working, but the assignment should not have
+    # needed rescuing by hand. It now RETRIES until ASC has the build.
+    deadline = time.time() + 20 * 60
+    while True:
+        r = subprocess.run([sys.executable, str(assigner), "--app", "edu-rpg", build,
+                            "Beta Testers"], capture_output=True, text=True)
+        out = (r.stdout or "") + (r.stderr or "")
+        print(out.strip()[-400:])
+        if "not found on ASC yet" not in out:
+            break
+        if time.time() > deadline:
+            print("  assignment still cannot see the build after 20 min; the delivery check below "
+                  "decides whether this ship is real")
+            break
+        time.sleep(60)
     deadline = time.time() + 20 * 60          # ASC lags upload by ~5-15 min
     while True:
         r = subprocess.run([sys.executable, str(verifier), "--app", "edu-rpg", "--build", build],
