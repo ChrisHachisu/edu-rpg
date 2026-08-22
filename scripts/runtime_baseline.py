@@ -122,7 +122,7 @@ ACT1_OVERLAY_FILES = {
     # three inputs (the frozen bundle's generator, dq-tiles.js's consolidator, dq-tiles.js's own
     # field functions, which the bake SLICES rather than re-implements so the two cannot drift).
     "act1-overworld-walk.bin": (
-        10803776, "7c11c5d3adf224e62ebd9b7353d7a3425f750afc2bc921e2142629a0b707345a"),
+        10803776, "b70e3475df7c26ba1231c62fb87d150d06b5dac5d48e9f999437b48738fb6bb2"),
     # 2026-08-03, owner direction ("please redo the collision setting based on what i created (my
     # paint)"): the Act-1 collision plate is now generated from the OWNER'S PAINTED TERRAIN
     # (owner-terrain.json acts.1 + continent-macro-g3/land-mask.npy) instead of the generated
@@ -155,7 +155,7 @@ ACT1_OVERLAY_FILES = {
     # still green, because staging and git are two different lists.
     "assets/hero/hero-male-walk.png": (59032, "88cbed8f9d707b216ada01e108eedd5822c6bcfc69c8dd22af2457f231dc0976"),
     "act1-world-map.js": (
-        48811, "5b25a1fb48dee783622685cbd81b9f96218d861f15fb5178271d7ba1e2db37ff"),
+        48775, "ca5b43535cb862c2768c54480c6d2ecd1134d5acac45a106fb781007762c69a9"),
     # 2026-08-06, from device: the Port Sapphire movement stick was anchored bottom-LEFT and its
     # lower half sat behind the field tab bar, where the overworld and every dungeon put the same
     # control bottom-right and fully visible. The town runs in a same-origin IFRAME
@@ -539,15 +539,15 @@ ACT1_LANDMARK_FILES = {
     "act1-hifi/landmarks/darkfang.png": (
         30_673, "41e3e7f9fac3a7ab8f53402c2bc1c312ecf9b854f33062cf8e04765d0aeaa279"),
     "act1-hifi/landmarks/greenhollow.png": (
-        65_028, "958b6bc727cceb8d88c16939ce9d01245d7b4781c4c3b1f64c208edc39c09573"),
+        68436, "393ab4d1a7f8c75a8dc92cae519cd3909da78cd442cb1b8c075551fa440eebb8"),
     "act1-hifi/landmarks/landmarks.json": (
-        3_138, "103c00eca55272f6a4ca83c749060d6d822c721043494c15b306aefce1e22e44"),
+        3138, "3c2a57fe06477652ba3701582ea83b2ce74c5ac87e668811da95b354e62a3e28"),
     "act1-hifi/landmarks/millbrook.png": (
-        69_617, "05d648fbca6ec6bf5753ee86d149ac433c9f93ec0d44471ae900084836efb0b0"),
+        65999, "cca7ed1437459bf32698639c41a73dd6d29329465aac75100b09e088a323e243"),
     "act1-hifi/landmarks/misty-grotto.png": (
         23_421, "bd8e2af135c398ea17138ce0c390b76ac2bc186ec174f20578550de48b50928e"),
     "act1-hifi/landmarks/port-sapphire.png": (
-        78_566, "7834c4217d1678dd7791830725f6471fb122a2449490373ad84fe5bd4b4f74cd"),
+        65636, "8df5f3572297ec8b2ad514bb58abebccd78c235571c9a1eff19ff6bd93143200"),
     "act1-hifi/landmarks/sunken-cellar.png": (
         19_878, "91cc4479b28edb9c335cc027e79ccee3dd3aa34235ccda037f5b694fae2c69e9"),
     "act1-hifi/landmarks/whispering-woods.png": (

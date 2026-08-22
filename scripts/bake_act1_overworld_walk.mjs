@@ -89,11 +89,17 @@ const PLATE_PATH = resolve(ROOT, 'public/act1-world-map.js');
 
 const BUNDLE_SHA256 = 'a56026574b42168985b353e4cee824562716af83f92d03f408df04eac9127381';
 const FINAL_MAP_SHA256 = '2d82e050b51095280b74395db8656aed52ae919206385827502265f6e0a65202';
-// Moved 2026-08-18 by the single-entrance pass: act1-world-map.js now stamps 44 landmark-footprint
+// Moved 2026-08-18 by the single-entrance pass: act1-world-map.js now stamps landmark-footprint
 // blocker cells (tile 21) so the player cannot walk on top of a drawn town or cave. Tile 21 is not
 // water, bridge or mountain, so the FIELD this file bakes is byte-identical either side of that
 // change -- only the plated map's identity moved, which is exactly what this pin is for.
-const PLATED_MAP_SHA256 = '6d85b741fd8ab815aee102f73f0b9cb0696d38d957ef309c3f5f480a5bd21d7c';
+//
+// Moved AGAIN 2026-08-22, same mechanism, same reason. The three Act 1 town sprites were redrawn
+// from their finished town plates, and landmark collision is DERIVED FROM THE SPRITE'S OWN OPAQUE
+// MASK (LANDMARK-SPRITE-CONTRACT.md: "art and collision can never disagree"), so new silhouettes
+// move the blocker set: 44 cells -> 42, and the single walkable region 9332 -> 9334. Still only
+// tile 21, so the baked field is again unchanged; verified rather than assumed below.
+const PLATED_MAP_SHA256 = '4bbc418ab7d3ffab1a32548837561365d7e7fb33a94566750cd48983786b4e7b';
 const MAP_WIDTH = 320, MAP_HEIGHT = 400;
 const ACT1_START = [60, 341];
 const ACT1_BOUNDS = [16, 218, 163, 399];
