@@ -342,11 +342,24 @@ def main() -> None:
                          "by disconnecting their pockets from the hole set (78 -> 2).")
     ap.add_argument("--out", default=os.path.join(
         ROOT, "public/act1-hifi/portSapphire-walkable-v1.json"))
-    ap.add_argument("--authored", default=os.path.join(
-        ROOT, "design/act1-towns/portSapphire-authored-obstacles.json"))
+    # --authored DEFAULTED TO PORT SAPPHIRE'S FILE FOR EVERY TOWN, which is a silent
+    # cross-contamination bug the moment a second town is derived: running this for millbrook
+    # without remembering the flag would merge PORT SAPPHIRE's well and roof-chimney circles into
+    # MILLBROOK's collision, at Port Sapphire's coordinates, and nothing would say so -- the file
+    # exists, so the "no authored file, skipping" branch never fires. The default is now derived
+    # from the screen's own filename, and a town with no such file simply has none.
+    ap.add_argument("--authored", default=None,
+                    help="authored obstacles for THIS town; defaults to "
+                         "design/act1-towns/<town>-authored-obstacles.json, inferred from --screen")
     ap.add_argument("--proof", default=os.path.join(
         ROOT, "design/act1-towns/portSapphire-walkable-proof.png"))
     args = ap.parse_args()
+
+    if args.authored is None:
+        stem = os.path.basename(args.screen).replace("-screen.png", "").replace(".png", "")
+        args.authored = os.path.join(ROOT, f"design/act1-towns/{stem}-authored-obstacles.json")
+    print(f"authored obstacles: {os.path.relpath(args.authored, ROOT)}"
+          f"{'' if os.path.exists(args.authored) else '  (absent -- none merged)'}")
 
     img = Image.open(args.screen).convert("RGB")
     art = np.asarray(img).astype(np.float32)
