@@ -12,7 +12,13 @@ const TOWN_URL = new URL('./town.html', import.meta.url);
 // real iOS app that renders a phone inside a phone. It also streams `chunks/`, which is the
 // SCRAPPED dark painterly overworld, not the settled `act1-material-map.png`. The overworld
 // therefore goes back to the shipped tile runtime until a real hi-fi overworld exists.
-const TOWN_IDS = new Set(['portSapphire']);
+// TOWN_IDS gates which maps this overlay takes over. It has been portSapphire alone since the
+// overlay shipped, which is why the two villages' art, collision and manifests could rot
+// unexercised -- both carried a shopId of None and millbrook's save point sat on a cottage
+// roof, and nothing caught either because no player could reach them. OPENED 2026-08-22, on
+// the owner's ask for a play test, now all three have a finished plate, collision derived
+// from that plate, and every actor verified standable and reachable from startCell.
+const TOWN_IDS = new Set(['portSapphire', 'millbrook', 'greenhollow']);
 const MANIFEST_URL = new URL('./manifest.json', import.meta.url);
 const SEARCH = new URLSearchParams(location.search);
 const VERIFY = SEARCH.has('act1Verification');

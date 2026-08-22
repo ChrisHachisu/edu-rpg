@@ -434,11 +434,11 @@ ACT1_TOWN_FILES = {
     "act1-hifi/town.html": (
         29895, "7aee38ca881fe791622871703234cb4d3ea524b42c47cf785936e73d9494e412"),
     "act1-hifi/town/portSapphire-town.json": (
-        2799, "ed8f5999700e9c72499129ef07338469da994206fa9590bfe2ec2edbc20b80ad"),
+        4760, "cf9a6f3c5227dcabe006b2671fc58ecc68be7bafa4166ea5cf70b0e08094664e"),
     "act1-hifi/town/portSapphire-walkable.json": (
-        31082, "fe4278aec0e644b09415c2546b252662a535bd3c1e340d27e32ea0b28f2f8675"),
+        27851, "5fb9d313a0bb76bacf8bd8437e9d295c3de9bfc7ccc1e7508723af7e02769a23"),
     "act1-hifi/town/portSapphire-screen.png": (
-        8747966, "f0d29456d4750fe074fdae1722b69a61cc23cabb4adcf97e1f6308befe4211ff"),
+        8721920, "d883904e7cd7301af82099dc04cb968bf6e30017948f8f62de04902bbe91e4f9"),
     # 2026-08-14, owner-authorised ("draw over the hero AND be passable"): the overhead-prop
     # foreground layer -- mast, demijohn, rooftop chimney -- re-extracted from the SAME locked
     # painting by scripts/derive_town_foreground.py and drawn by town.html AFTER the hero/NPC
@@ -478,9 +478,9 @@ ACT1_TOWN_FILES = {
     # can see: it reports "0 updated", leaves the zeros in place, and the very next step fails with
     # "Act 1 town identity mismatch" pointing at the file you just added. Cost 2026-08-21.
     "act1-hifi/town/greenhollow-town.json": (
-        5205, "0f145f17874e988981f38dc5d75da244f7906d68018f3b9e5ee9cc4c56b77b45"),
+        5716, "902cbb094431dfbcacb229e532c235576ff519c68576980dd1dd8bd93934cb3b"),
     "act1-hifi/town/greenhollow-walkable.json": (
-        5818, "756a877cad2c30c1b7384b3b5a2b70c1041369512a1d587a6d5df8106abdc3d9"),
+        21741, "f1c6e4882dabda8435d57cd0829a0323a54ab2b5b478b8b0652c55c510d8ee38"),
     "act1-hifi/town/npc/greenhollow-elder-4x3-64.png": (
         55173, "7cfe7e0b5b9942ad9052634d9ebd416168a6d8da23eec6a415134fd50d0b3343"),
     "act1-hifi/town/npc/greenhollow-fisherman-4x3-64.png": (
@@ -502,11 +502,11 @@ ACT1_TOWN_FILES = {
     "act1-hifi/town/npc/millbrook-sage-4x3-64.png": (
         51514, "9d99d1436b613bf3c733b7ff6907cde413e154095c7dfb686c489a2bad226a60"),
     "act1-hifi/town/greenhollow-walkable.json": (
-        5818, "756a877cad2c30c1b7384b3b5a2b70c1041369512a1d587a6d5df8106abdc3d9"),
+        21741, "f1c6e4882dabda8435d57cd0829a0323a54ab2b5b478b8b0652c55c510d8ee38"),
     "act1-hifi/town/millbrook-walkable.json": (
         35508, "5bde67446afdcca7a3654aad8a62f8b5561e54fd517cc98cc25df4259e9c4996"),
     "act1-hifi/town/millbrook-town.json": (
-        5594, "e4a7b2a95a4fecf7dad50eb5e7a2a194224cf432f2a85bce5c13daf0ef77f056"),
+        5457, "c83e003d664bbf1996fd6eb2ba85a689f43380f39d450aa691e1d6a915d6c593"),
     # 2026-08-21: the two plates the note above was waiting for. Both are the four-tile bake,
     # exposure-matched per tile and quilted on a minimum-error cut by scripts/stitch_plate.py.
     # Placeholder zeros; `npm run repin` fills the real size/hash in -- and the FILES ARE ON DISK
@@ -514,7 +514,7 @@ ACT1_TOWN_FILES = {
     "act1-hifi/town/millbrook-screen.png": (
         8064226, "a206e48240e409bf3460326cfaef82ee9b625ca6ec63c05506048ecd23a76943"),
     "act1-hifi/town/greenhollow-screen.png": (
-        9276232, "c47440be9cadc9e547a00e707b0f861ab9935335da5a61c5dd902037281c41c2"),
+        8464986, "649e6c9c83b8c33d40e6101237a001febfb0c942400af7db2b52020ee1f917e9"),
     "act1-hifi/verify/seed.html": (
         2089, "6f34401b6845582f223abdc80dd191c3a1392bc7808aee81d11eb89313b80c14"),
 }
