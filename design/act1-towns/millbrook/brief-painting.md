@@ -28,12 +28,12 @@ four villagers live here: a miller, a sage, a herbalist and a healer, so there m
   stone wall, a ditch and bank, or no enclosure at all with the forest simply closing in around
   the houses -- choose whatever suits the place and draw it convincingly. Do not draw a wall
   because you think one is expected.
-- **ONE WAY IN AND OUT, AT THE BOTTOM (SOUTH).** A single trail leaves the village southward and
-  runs DOWN to the bottom edge of the picture. **That trail is the ONLY place any walkable ground
-  may touch the edge of the frame** -- the game reads the way out of your picture, so a second
+- **ONE WAY IN AND OUT, AT THE BOTTOM (SOUTH).** A single trail leaves the town and runs DOWN to
+  the BOTTOM edge of the picture. **That trail is the ONLY place any walkable ground may touch
+  the edge of the frame** -- the game reads the way out of your picture, so a second
   opening anywhere is a second exit and is wrong. If you draw an enclosure, it is unbroken except
-  where that trail passes through it. If you draw none, the surrounding country must close the
-  village in on the other three sides so there is nowhere else to walk out.
+  where that trail passes through it. If you draw none, the surrounding country must close the town
+  in on the other three sides so there is nowhere else to walk out.
 - **THE VILLAGE FILLS THE PICTURE.** Leave a border of only TWO OR THREE CELLS of open ground
   between the outermost building or fence and the edge of the frame. The attached approved town
   fills 97% of its frame; a deep margin of scenery around a small cluster in the middle is the
@@ -75,10 +75,17 @@ place the player can never reach.
   clear ground between neighbours.
 - Vary them: different widths, roof colours, roof pitches, door and window placement. No two
   identical.
-- **The HEALER is a herbalist's porch** -- bundles of drying herbs strung under the eaves, a stone
-  water basin, a low bench, planted pots -- warm, domestic, and instantly distinct from every
-  ordinary house. The ground directly in front of it stays completely clear: the player stands
-  there to talk.
+- **TWO BUILDINGS ARE SERVICES AND THE GAME NEEDS BOTH.** They must be instantly distinct from
+  every ordinary house AND from each other, and the ground directly in front of each must be left
+  completely clear open stone -- that is where the player stands to be served.
+
+  **THE SHOP.** Its ground floor opens onto the common under a WIDE AWNING, with a COUNTER running
+  the full width of the opening and goods on display: barrels, sacks, crates, strings of wares hung
+  under the awning, produce in baskets. It must read as a shop instantly from the building's shape
+  alone, before anyone looks at the detail. Do not draw a door and call it a shop.
+
+  **THE HEALER.** A herbalist's porch: bundles of drying herbs strung under the eaves, a stone water
+  basin, a low bench for waiting, planted pots. Warm and domestic, and clearly NOT the shop.
 
 ## SCALE, WHICH IS FIXED
 One cell is 30 px and the picture is 65 cells across. The player character is about 68 px tall --
@@ -103,6 +110,18 @@ not fade out. Shading in discrete flat steps, two or three values per material, 
 transition is needed. Detail that survives 3x magnification: individual roof tiles, individual
 cobbles, individual planks, individual window panes, distinct leaf clumps. No airbrushed gradients,
 no blur, no bloom, no soft focus. **Draw it hard; do not filter a soft image to fake it.**
+
+## NOTHING MAY OVERHANG THE GROUND THE PLAYER WALKS ON
+The game draws this picture flat and then draws the player ON TOP of it, so anything in the art that
+should pass IN FRONT of her cannot. Port Sapphire had to have a whole extra transparent layer cut
+out of it because a ship's mast, a hanging demijohn and a roof ridge reached out over the lanes, and
+the player appeared to stand on them.
+
+So: keep every tall or projecting thing OVER ITS OWN BUILDING or over grass, never over stone the
+player can walk on. No mast, no crane arm, no gantry, no hanging sign or lamp on a bracket, no
+overhanging balcony, no branch, no roof eave or ridge extending across a lane or the common. Chimneys
+sit on roofs, not over the street. Awnings may cover the shop's own counter but must not reach out
+across the open common.
 
 ## FORBIDDEN
 No people, no animals, no text, no labels, no numbers, no lettered signage, no UI, no borders or

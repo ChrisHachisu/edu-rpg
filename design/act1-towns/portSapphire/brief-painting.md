@@ -1,7 +1,7 @@
 DO THIS YOURSELF, one generation call, do not dispatch a sub-agent. Produce the image
 and stop; do not review it, do not redraw it, do not ask another agent to improve it.
 
-# Task: paint the greenhollow town screen, top-down, for a 2D JRPG
+# Task: paint the portSapphire town screen, top-down, for a 2D JRPG
 
 THREE images are attached.
 - The FIRST is Port Sapphire, an ALREADY-APPROVED town from this same game: it is the STYLE, the
@@ -19,17 +19,17 @@ THREE images are attached.
 One RGB PNG, square. Print its absolute path on a line of its own. Do not write under /tmp.
 
 ## THE TOWN
-a small forest village called greenhollow. THE STARTING VILLAGE, and the friendliest place in the game. Cottages face inward around a common. An ELDER'S HALL is the largest building. There is NO river and NO stream anywhere in this picture.
+a small coastal harbour town called portSapphire. A WORKING HARBOUR TOWN, the biggest settlement in the act and the busiest. Along its SOUTH side lies the SEA: a stone QUAY, timber JETTIES running out over the water, and small fishing BOATS moored against them. Nets, lobster pots, coiled rope, crates of catch and stacked barrels belong along the quay. It is a prosperous little port, not a fishing hamlet. It has NO enclosing wall of any kind -- it is an open town.
 
-six villagers live here, the most of any town in the act, so there must be open ground for people to stand in without blocking the way.
+four townsfolk live here: a healer, a wise woman, a sailor and a trader, so there must be open ground for people to stand in without blocking the way.
 
 ## THE SHAPE OF IT -- this is the layout and it is yours to design
 - **WHETHER THIS VILLAGE IS WALLED IS YOUR DECISION.** A timber palisade, a thorn hedge, a low
   stone wall, a ditch and bank, or no enclosure at all with the forest simply closing in around
   the houses -- choose whatever suits the place and draw it convincingly. Do not draw a wall
   because you think one is expected.
-- **ONE WAY IN AND OUT, AT THE BOTTOM (SOUTH).** A single trail leaves the town and runs DOWN to
-  the BOTTOM edge of the picture. **That trail is the ONLY place any walkable ground may touch
+- **ONE WAY IN AND OUT, AT THE TOP (NORTH).** A single trail leaves the town and runs UP to
+  the TOP edge of the picture. **That trail is the ONLY place any walkable ground may touch
   the edge of the frame** -- the game reads the way out of your picture, so a second
   opening anywhere is a second exit and is wrong. If you draw an enclosure, it is unbroken except
   where that trail passes through it. If you draw none, the surrounding country must close the town
@@ -39,12 +39,12 @@ six villagers live here, the most of any town in the act, so there must be open 
   fills 97% of its frame; a deep margin of scenery around a small cluster in the middle is the
   single most common way this task is failed, and it makes the town look like a model of itself.
   Spread the buildings across the WHOLE width and height, not into a clump at the centre.
-- nine or ten buildings, cottage-sized, around a wide common, arranged the way a real village grows -- not on a circle, not evenly spaced, not in
+- eleven or twelve buildings, packed close along the lanes the way a port is, arranged the way a real village grows -- not on a circle, not evenly spaced, not in
   a ring. Some close together facing a lane, some set back with a garden. It must look grown rather
   than laid out.
 - A generous open COMMON or yard with a stone WELL, big enough for several people to stand around
   the well without blocking the way past.
-- Around the village: OPEN SUNLIT GRASS MEADOW on every side -- the same bright grass as the attached approved town, scattered with small leafy shrubs, clumps of wildflowers and the odd grey stone. This is NOT forest. Do not ring the village with trees. A few individual trees standing in the meadow are fine; a wall of woodland is wrong. Toward the NORTH-WEST corner, GREY ROCKY CLIFFS and mossy boulders rise out of the grass and close that corner off -- they stand only two cells from the village and are the one strong landscape feature here.
+- Around the village: OPEN SUNLIT GRASS MEADOW on the NORTH, EAST and WEST -- the same bright grass as the attached approved town, scattered with shrubs, wildflowers and the odd grey stone, with fenced cottage gardens at the edges. NOT forest. The SOUTH of the picture is open SEA.
 
 ## WALKABLE CLARITY -- the most important rule, and the game reads it out of your picture
 **Every lane, the common and the trail out are PALE GREY COBBLED STONE -- the SAME stone as the
@@ -90,7 +90,7 @@ place the player can never reach.
 ## SCALE, WHICH IS FIXED
 One cell is 30 px and the picture is 65 cells across. The player character is about 68 px tall --
 just over two cells. A cottage is 8 to 11 cells wide. **No building may ever be near the player's
-height.** About nine to eleven buildings would span the full width, which is why nine or ten buildings, cottage-sized, around a wide common
+height.** About nine to eleven buildings would span the full width, which is why eleven or twelve buildings, packed close along the lanes the way a port is
 leaves so much open ground.
 
 ## LIGHT AND COLOUR -- measured, because "bright" in prose has already failed twice

@@ -108,6 +108,23 @@ def overworld_surround(town: str, rad_cells: int = 18) -> str:
 
 
 TOWNS = {
+    "portSapphire": {
+        "what": "a small coastal harbour town",
+        "identity": (
+            "A WORKING HARBOUR TOWN, the biggest settlement in the act and the busiest. Along its "
+            "SOUTH side lies the SEA: a stone QUAY, timber JETTIES running out over the water, and "
+            "small fishing BOATS moored against them. Nets, lobster pots, coiled rope, crates of "
+            "catch and stacked barrels belong along the quay. It is a prosperous little port, not a "
+            "fishing hamlet. It has NO enclosing wall of any kind -- it is an open town."),
+        "surround": (
+            "OPEN SUNLIT GRASS MEADOW on the NORTH, EAST and WEST -- the same bright grass as the "
+            "attached approved town, scattered with shrubs, wildflowers and the odd grey stone, "
+            "with fenced cottage gardens at the edges. NOT forest. The SOUTH of the picture is "
+            "open SEA."),
+        "people": "four townsfolk live here: a healer, a wise woman, a sailor and a trader",
+        "exit_word": "TOP (NORTH)", "exit_dir": "UP", "exit_edge": "TOP",
+        "buildings": "eleven or twelve buildings, packed close along the lanes the way a port is",
+    },
     "millbrook": {
         "what": "a small mill village",
         "identity": (
@@ -125,6 +142,7 @@ TOWNS = {
             "seven cells that way -- and a low grey rocky outcrop may break the grass toward the "
             "SOUTH-WEST."),
         "people": "four villagers live here: a miller, a sage, a herbalist and a healer",
+        "exit_word": "BOTTOM (SOUTH)", "exit_dir": "DOWN", "exit_edge": "BOTTOM",
         "buildings": "eight or nine buildings, the mill much the largest",
     },
     "greenhollow": {
@@ -142,6 +160,7 @@ TOWNS = {
             "close that corner off -- they stand only two cells from the village and are the one "
             "strong landscape feature here."),
         "people": "six villagers live here, the most of any town in the act",
+        "exit_word": "BOTTOM (SOUTH)", "exit_dir": "DOWN", "exit_edge": "BOTTOM",
         "buildings": "nine or ten buildings, cottage-sized, around a wide common",
     },
 }
@@ -176,12 +195,12 @@ One RGB PNG, square. Print its absolute path on a line of its own. Do not write 
   stone wall, a ditch and bank, or no enclosure at all with the forest simply closing in around
   the houses -- choose whatever suits the place and draw it convincingly. Do not draw a wall
   because you think one is expected.
-- **ONE WAY IN AND OUT, AT THE BOTTOM (SOUTH).** A single trail leaves the village southward and
-  runs DOWN to the bottom edge of the picture. **That trail is the ONLY place any walkable ground
-  may touch the edge of the frame** -- the game reads the way out of your picture, so a second
+- **ONE WAY IN AND OUT, AT THE {exit_word}.** A single trail leaves the town and runs {exit_dir} to
+  the {exit_edge} edge of the picture. **That trail is the ONLY place any walkable ground may touch
+  the edge of the frame** -- the game reads the way out of your picture, so a second
   opening anywhere is a second exit and is wrong. If you draw an enclosure, it is unbroken except
-  where that trail passes through it. If you draw none, the surrounding country must close the
-  village in on the other three sides so there is nowhere else to walk out.
+  where that trail passes through it. If you draw none, the surrounding country must close the town
+  in on the other three sides so there is nowhere else to walk out.
 - **THE VILLAGE FILLS THE PICTURE.** Leave a border of only TWO OR THREE CELLS of open ground
   between the outermost building or fence and the edge of the frame. The attached approved town
   fills 97% of its frame; a deep margin of scenery around a small cluster in the middle is the
@@ -223,10 +242,17 @@ place the player can never reach.
   clear ground between neighbours.
 - Vary them: different widths, roof colours, roof pitches, door and window placement. No two
   identical.
-- **The HEALER is a herbalist's porch** -- bundles of drying herbs strung under the eaves, a stone
-  water basin, a low bench, planted pots -- warm, domestic, and instantly distinct from every
-  ordinary house. The ground directly in front of it stays completely clear: the player stands
-  there to talk.
+- **TWO BUILDINGS ARE SERVICES AND THE GAME NEEDS BOTH.** They must be instantly distinct from
+  every ordinary house AND from each other, and the ground directly in front of each must be left
+  completely clear open stone -- that is where the player stands to be served.
+
+  **THE SHOP.** Its ground floor opens onto the common under a WIDE AWNING, with a COUNTER running
+  the full width of the opening and goods on display: barrels, sacks, crates, strings of wares hung
+  under the awning, produce in baskets. It must read as a shop instantly from the building's shape
+  alone, before anyone looks at the detail. Do not draw a door and call it a shop.
+
+  **THE HEALER.** A herbalist's porch: bundles of drying herbs strung under the eaves, a stone water
+  basin, a low bench for waiting, planted pots. Warm and domestic, and clearly NOT the shop.
 
 ## SCALE, WHICH IS FIXED
 One cell is 30 px and the picture is 65 cells across. The player character is about 68 px tall --
@@ -251,6 +277,18 @@ not fade out. Shading in discrete flat steps, two or three values per material, 
 transition is needed. Detail that survives 3x magnification: individual roof tiles, individual
 cobbles, individual planks, individual window panes, distinct leaf clumps. No airbrushed gradients,
 no blur, no bloom, no soft focus. **Draw it hard; do not filter a soft image to fake it.**
+
+## NOTHING MAY OVERHANG THE GROUND THE PLAYER WALKS ON
+The game draws this picture flat and then draws the player ON TOP of it, so anything in the art that
+should pass IN FRONT of her cannot. Port Sapphire had to have a whole extra transparent layer cut
+out of it because a ship's mast, a hanging demijohn and a roof ridge reached out over the lanes, and
+the player appeared to stand on them.
+
+So: keep every tall or projecting thing OVER ITS OWN BUILDING or over grass, never over stone the
+player can walk on. No mast, no crane arm, no gantry, no hanging sign or lamp on a bracket, no
+overhanging balcony, no branch, no roof eave or ridge extending across a lane or the common. Chimneys
+sit on roofs, not over the street. Awnings may cover the shop's own counter but must not reach out
+across the open common.
 
 ## FORBIDDEN
 No people, no animals, no text, no labels, no numbers, no lettered signage, no UI, no borders or
@@ -280,6 +318,7 @@ def audit(path: str, town: str) -> list[str]:
     (0.0% connected) on paintings the real deriver reads cleanly at 8.8% and 10.8%.
     """
     notes = []
+    want = TOWNS.get(town, {}).get("exit_edge", "BOTTOM")
     rgb = np.asarray(Image.open(path).convert("RGB"))
     a = rgb.astype(float)
     lum = 0.2126 * a[:, :, 0] + 0.7152 * a[:, :, 1] + 0.0722 * a[:, :, 2]
@@ -297,8 +336,14 @@ def audit(path: str, town: str) -> list[str]:
 
     d = np.concatenate([np.abs(np.diff(lum, axis=1)).ravel(),
                         np.abs(np.diff(lum, axis=0)).ravel()])
-    notes.append(f"mean pixel step {d.mean():.2f}, hard>=24 {100*(d>=24).mean():.1f}% "
-                 f"(a soft painting measures ~11.7 / 13.9%; the accepted plate 22.2 / 29.7%)")
+    # THE PAINTING IS STAGE ONE AND IS NOT EXPECTED TO BE HARD YET. Measured on Port Sapphire's own
+    # chain: its stage-1 painting is 15.42 / 20.8%, the hard redraw takes it to 20.64 / 29.2%, and
+    # the tiled plate lands at 22.17 / 29.7%. Demanding the FINAL figure here would have rejected
+    # Port Sapphire's own painting -- and it cost two workers their whole retry budget trading
+    # sharpness against layout, when sharpening is stage two's job and layout can only be fixed here.
+    notes.append(f"mean pixel step {d.mean():.2f}, hard>=24 {100*(d>=24).mean():.1f}%   "
+                 f"(stage-1 target: >= 13 / >= 17%, i.e. Port Sapphire's own painting at "
+                 f"15.4 / 20.8%. The rebake hardens this to ~22 / 30%.)")
 
     lab, n = ndimage.label(cob)
     sizes = ndimage.sum(cob, lab, range(1, n + 1))
@@ -330,8 +375,8 @@ def audit(path: str, town: str) -> list[str]:
     desc = ", ".join(f"{s} at {100*a0/cob.shape[1]:.0f}%-{100*a1/cob.shape[1]:.0f}%"
                      for s, a0, a1 in merged)
     notes.append(f"the walkable network reaches the frame edge in {len(merged)} place(s): "
-                 f"{desc if merged else 'none'}   (want exactly 1, BOTTOM)"
-                 + ("" if len(merged) == 1 and merged[0][0] == "BOTTOM" else "   <-- WRONG"))
+                 f"{desc if merged else 'none'}   (want exactly 1, {want})"
+                 + ("" if len(merged) == 1 and merged[0][0] == want else "   <-- WRONG"))
     return notes
 
 
@@ -359,7 +404,8 @@ def main() -> int:
 
     imgs = [os.path.join(ROOT, STYLE_ANCHOR)]
     icon = os.path.join(ROOT, "public/act1-hifi/landmarks",
-                        {"millbrook": "millbrook.png", "greenhollow": "greenhollow.png"}[a.town])
+                        {"millbrook": "millbrook.png", "greenhollow": "greenhollow.png",
+                         "portSapphire": "port-sapphire.png"}[a.town])
     if os.path.exists(icon):
         imgs.append(icon)
     cmd = ["codex", "exec", "-m", MODEL, "--skip-git-repo-check"]
