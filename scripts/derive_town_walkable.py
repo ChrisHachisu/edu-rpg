@@ -351,7 +351,15 @@ def main() -> None:
     img = Image.open(args.screen).convert("RGB")
     art = np.asarray(img).astype(np.float32)
     art_px_per_cell = img.width / args.cells
-    world_px_per_cell = json.load(open(SEMIDX))["act1"]["pxPerCell"]
+    # SEMIDX IS GITIGNORED AND IS NOT IN EVERY WORKTREE, so reading it unconditionally made this
+    # script uncallable rather than merely unconfigured: `design/continent-terrain-class-method/
+    # owner-terrain/*` is ignored at .gitignore:83, so a fresh clone or worktree has no copy and
+    # every invocation died on FileNotFoundError before doing any work. Measured 2026-08-22, which
+    # is when stage 3 needed it. The one value read from it is Act 1's world px per cell, and that
+    # is not a free parameter: 16 is what every town manifest carries (`worldPxPerCell`) and what
+    # this file's own docstring states, so the fallback restates a constant rather than guessing.
+    world_px_per_cell = (json.load(open(SEMIDX))["act1"]["pxPerCell"]
+                         if os.path.exists(SEMIDX) else 16)
     world_w = args.cells * world_px_per_cell
     art_to_world = world_px_per_cell / art_px_per_cell
     s = args.sample

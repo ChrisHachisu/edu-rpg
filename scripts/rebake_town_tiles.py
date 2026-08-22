@@ -29,41 +29,48 @@ import numpy as np
 from PIL import Image
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-# PER-TOWN PATHS, because there are three Act 1 towns and only one of them is Port Sapphire.
-# `--town` selects them; the default keeps every existing invocation working unchanged.
-# greenhollow and millbrook prime from an AUTHORED plan (scripts/town_layout.py) rather than from a
-# painting, so their REF is the plan and their collision authority already exists before the art.
+# PER-TOWN PATHS. TOWNS ARE ART-FIRST: the REF is the town's own approved PAINTING, and collision
+# is DERIVED from the finished plate afterwards. It is never an authored plan -- the plan-primed
+# route (scripts/town_layout.py, mode "plan") is the one the owner scrapped twice, and both villages
+# were pointed at it until 2026-08-22. A grid is never an input.
+#
+# portSapphire writes into its OWN directory, not into design/act1-towns/rebake. That directory
+# holds the LIVE plate (plate-stitched.png is byte-identical to the shipped screen) and the fresh
+# painting is a REPLACEMENT that must not overwrite live art before stage 3 lands.
+#
+# `paint` is what primes the tiles. It is painting-graded.png where one exists -- the owner picked
+# millbrook's colour theme on 2026-08-22 and the other two were graded onto it by
+# scripts/match_town_palette.py -- and painting-raw.png for millbrook, which IS the theme.
 TOWNS = {
     "portSapphire": {
-        "out": "design/act1-towns/rebake",
-        "ref": "design/act1-towns/rebake-v1-raw.png",
+        "out": "design/act1-towns/portSapphire",
+        "ref": "design/act1-towns/portSapphire/painting-graded.png",
         "ship": "public/act1-hifi/town/portSapphire-screen.png",
         "mode": "repaint",
-        "subject": "a top-down JRPG harbour town",
-        "light": "bright coastal daylight",
+        "subject": ("a top-down JRPG harbour town: cottages and a market stall around a stone well "
+                    "on pale paving, with timber jetties and moored rowing boats along the water "
+                    "at the bottom and open meadow at the top"),
+        "light": "warm late-morning daylight",
     },
     "greenhollow": {
         "out": "design/act1-towns/greenhollow",
-        "ref": "design/act1-towns/greenhollow/primer.png",
+        "ref": "design/act1-towns/greenhollow/painting-graded.png",
         "ship": "public/act1-hifi/town/greenhollow-screen.png",
-        "mode": "plan",
-        "subject": ("a small top-down JRPG forest village inside a round timber palisade, with one "
-                    "gate at the SOUTH, cottages of stone and dark timber facing inward under "
-                    "steep shingled roofs, a packed-earth yard around a stone well, and dense "
-                    "green woodland pressing in beyond the palisade"),
-        "light": "warm late-morning woodland daylight",
+        "mode": "repaint",
+        "subject": ("a small top-down JRPG forest village: stone-and-timber cottages, a market "
+                    "stall and a healer's cottage around a stone well on pale paving, a low fence "
+                    "at the edges, a rock outcrop at the top and woodland pressing in"),
+        "light": "warm late-morning daylight",
     },
     "millbrook": {
         "out": "design/act1-towns/millbrook",
-        "ref": "design/act1-towns/millbrook/primer.png",
+        "ref": "design/act1-towns/millbrook/painting-raw.png",
         "ship": "public/act1-hifi/town/millbrook-screen.png",
-        "mode": "plan",
-        "subject": ("a small top-down JRPG mill village inside a timber palisade, with one gate at "
-                    "the SOUTH, a clear millstream running west to east across the north of the "
-                    "village, a working watermill with a wooden wheel turning in that stream, a "
-                    "plank bridge where the main lane crosses it, and a packed-earth yard around a "
-                    "stone well"),
-        "light": "warm late-morning daylight over open farmland",
+        "mode": "repaint",
+        "subject": ("a small top-down JRPG mill village inside a low stone-and-timber fence: a "
+                    "watermill with a wooden wheel, cottages, a market stall and a healer's "
+                    "cottage around a stone well on pale paving, one gate at the SOUTH"),
+        "light": "warm late-morning daylight",
     },
 }
 OUT = os.path.join(ROOT, TOWNS["portSapphire"]["out"])
@@ -198,8 +205,10 @@ intermediate tones. Hand-drawn art of this kind measures, on the mean absolute l
 between neighbouring pixels, 26 or more overall, 34-52% of steps at 24 or above, and 22-40% of steps
 between 4 and 20. That middle band is real shading inside shapes; keep it.
 
-LIGHT AND PALETTE. One upper-left sun, short soft shadows, {light}. Mean luminance
-about 90. Do not darken, warm or cool it.
+LIGHT AND PALETTE. One upper-left sun, short soft shadows, {light}. THE INPUT'S OWN COLOUR IS THE
+AUTHORITY: reproduce its greens, its paving, its roof colours and its water exactly as they are.
+Its mean luminance is about {lum:.0f}; come back within a few points of that. Do not darken,
+brighten, warm or cool it, and do not restyle the grass.
 """
 
 PLAN_BRIEF = """DO THIS YOURSELF, one generation call, do not dispatch a sub-agent. Produce the
@@ -335,6 +344,8 @@ def main():
     if not os.path.exists(REF):
         raise SystemExit(f"{a.town}: no layout reference at {os.path.relpath(REF, ROOT)}. "
                          f"For an authored town run: python3 scripts/town_layout.py --town {a.town}")
+    _r = np.asarray(Image.open(REF).convert("RGB"), np.float32)
+    ref_lum = float((0.299 * _r[..., 0] + 0.587 * _r[..., 1] + 0.114 * _r[..., 2]).mean())
     if a.edit and not a.only:
         ap.error("--edit needs --only i,j: an edit is local to one tile by definition")
     os.makedirs(OUT, exist_ok=True)
@@ -364,7 +375,7 @@ def main():
             bn = "" if which is None else BANDNOTE.format(
                 which=which, bandpx=int(round(BAND * GEN / (TILE + BAND))))
             tmpl = PLAN_BRIEF if TOWNS[a.town].get("mode") == "plan" else BRIEF
-            brief = tmpl.format(i=i, j=j, n=N, bandnote=bn,
+            brief = tmpl.format(i=i, j=j, n=N, bandnote=bn, lum=ref_lum,
                                 subject=TOWNS[a.town]["subject"], light=TOWNS[a.town]["light"],
                                 addition=ADDITION.format(add=a.add) if a.add else "")
         bp = os.path.join(OUT, f"brief-{i}{j}{'-edit' if a.edit else ''}.md")
