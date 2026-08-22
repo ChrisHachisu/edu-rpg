@@ -489,7 +489,8 @@ def main() -> None:
     print(f"paving components {n}; keeping the largest ({main_size} samples, "
           f"{100*main_size/mask.size:.1f}% of frame)")
     print(f"  dropped {len(sizes)-1} disconnected patches "
-          f"(largest few: {dropped[:5]}) -- the ship's deck is among these by design")
+          f"(largest few: {dropped[:5]}) -- pale surfaces that are not ground: awning fabric, "
+          f"rock piles, wall faces, and in Port Sapphire the moored trader's deck")
 
     ys, xs = np.where(body)
     start = (int(ys.min()), int(xs[ys == ys.min()].min()))
