@@ -231,10 +231,65 @@ export function spriteFootprintCells(entry, worldPxPerCell) {
   const sprite = readPngAlpha(resolve(SPRITE_DIR, `${entry.slug}.png`));
   assert(sprite.width === entry.size && sprite.height === entry.size,
     `${entry.slug}.png is ${sprite.width}x${sprite.height}, manifest says ${entry.size}`);
-  const eroded = erodeByHeroFoot(sprite);
+  // A TOWN IS SOLID; A DUNGEON MOUTH IS EMBEDDED. These want different rules and using one for
+  // both is what left Port Sapphire walkable.
+  //
+  // The hero-foot erosion below asks "could she stand fully on the drawn art here", which is
+  // right for a cave mouth -- LANDMARK-SPRITE-CONTRACT wants those "naturally embedded in the
+  // terrain", so the thin edges of the rock SHOULD stay walkable. Applied to a town it is far too
+  // permissive, because a town sprite is mostly low detail -- jetties, boats, yard, a fence one
+  // rail thick -- that never hides a 12 px foot disc. Measured on the regenerated sprites it
+  // blocked 5 of 18 cells for Port Sapphire against 11 and 12 for the villages: the same kind of
+  // object, wildly different results, and the owner walked over the harbour. His rule is the
+  // blunt one: "the town asset in the overworld needs a hard blocker around the edges of the town"
+  // and, earlier, "the edge need to be blockers so the user cannot walk on top of it."
+  //
+  // So a TOWN cell is blocked when at least a QUARTER of it is drawn town. That is a coverage
+  // threshold, which this file argues against for the hero-standing question and rightly -- but
+  // this is a different question. "Is this cell part of the town" has an honest answer at 25%:
+  // it takes the drawn town including its fence and outermost buildings, and leaves the soft alpha
+  // skirt -- the pad fading into terrain, which is ground and should stay walkable. Measured
+  // across the three towns it blocks 12, 12 and 13 of 18, i.e. consistently, which the erosion
+  // never did. Towns are the 192 px sprites; dungeon mouths and portals are 144.
+  const TOWN_SIZE = 192;
+  const TOWN_CELL_COVERAGE = 0.25;
   const originX = entry.cell[0] * worldPxPerCell + Math.floor(worldPxPerCell / 2) - entry.anchor[0];
   const originY = entry.cell[1] * worldPxPerCell + Math.floor(worldPxPerCell / 2) - entry.anchor[1];
   const cells = new Map();
+  if (entry.size === TOWN_SIZE) {
+    const counts = new Map();
+    for (let y = 0; y < sprite.height; y += 1) {
+      for (let x = 0; x < sprite.width; x += 1) {
+        if (!sprite.alpha[y * sprite.width + x]) continue;
+        const cx = Math.floor((originX + x) / worldPxPerCell);
+        const cy = Math.floor((originY + y) / worldPxPerCell);
+        const k = `${cx},${cy}`;
+        counts.set(k, (counts.get(k) || 0) + 1);
+      }
+    }
+    const need = worldPxPerCell * worldPxPerCell * TOWN_CELL_COVERAGE;
+    for (const [k, n] of counts) {
+      if (n < need) continue;
+      const [cx, cy] = k.split(',').map(Number);
+      cells.set(k, { x: cx, y: cy });
+    }
+    // UNION with the hero-foot rule, never instead of it. Coverage alone came out STRICTER than
+    // the erosion on the two villages -- greenhollow 13 cells against 14, millbrook 12 against 13 --
+    // so swapping one for the other made the towns LESS solid, which is the opposite of what was
+    // asked. A cell is town if the hero could stand on the art there OR a quarter of it is drawn
+    // town; both are reasons to block and neither is a reason to allow.
+    const eroded0 = erodeByHeroFoot(sprite);
+    for (let y = 0; y < sprite.height; y += 1) {
+      for (let x = 0; x < sprite.width; x += 1) {
+        if (!eroded0[y * sprite.width + x]) continue;
+        const cx = Math.floor((originX + x) / worldPxPerCell);
+        const cy = Math.floor((originY + y) / worldPxPerCell);
+        cells.set(`${cx},${cy}`, { x: cx, y: cy });
+      }
+    }
+    return [...cells.values()].sort((a, b) => a.y - b.y || a.x - b.x);
+  }
+  const eroded = erodeByHeroFoot(sprite);
   for (let y = 0; y < sprite.height; y += 1) {
     for (let x = 0; x < sprite.width; x += 1) {
       if (!eroded[y * sprite.width + x]) continue;

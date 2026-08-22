@@ -99,7 +99,11 @@ const FINAL_MAP_SHA256 = '2d82e050b51095280b74395db8656aed52ae919206385827502265
 // MASK (LANDMARK-SPRITE-CONTRACT.md: "art and collision can never disagree"), so new silhouettes
 // move the blocker set: 44 cells -> 42, and the single walkable region 9332 -> 9334. Still only
 // tile 21, so the baked field is again unchanged; verified rather than assumed below.
-const PLATED_MAP_SHA256 = '4bbc418ab7d3ffab1a32548837561365d7e7fb33a94566750cd48983786b4e7b';
+//
+// Moved a THIRD time 2026-08-22: the town blocker rule became the UNION of the hero-foot
+// erosion and 25% cell coverage, so the owner cannot walk onto a drawn town's edge. 42 -> 45
+// blocker cells. Still tile 21, so the field is still untouched.
+const PLATED_MAP_SHA256 = '41c8d19684551db06cb2a34bacaf6f7de82338a2e973f8e7d2ac441730aab803';
 const MAP_WIDTH = 320, MAP_HEIGHT = 400;
 const ACT1_START = [60, 341];
 const ACT1_BOUNDS = [16, 218, 163, 399];

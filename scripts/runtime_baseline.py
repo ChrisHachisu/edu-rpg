@@ -122,7 +122,7 @@ ACT1_OVERLAY_FILES = {
     # three inputs (the frozen bundle's generator, dq-tiles.js's consolidator, dq-tiles.js's own
     # field functions, which the bake SLICES rather than re-implements so the two cannot drift).
     "act1-overworld-walk.bin": (
-        10803776, "b70e3475df7c26ba1231c62fb87d150d06b5dac5d48e9f999437b48738fb6bb2"),
+        10803776, "012f5e3545b41bfb3ff473a919aee4e386341471e21a69cd835b86dfb43b16aa"),
     # 2026-08-03, owner direction ("please redo the collision setting based on what i created (my
     # paint)"): the Act-1 collision plate is now generated from the OWNER'S PAINTED TERRAIN
     # (owner-terrain.json acts.1 + continent-macro-g3/land-mask.npy) instead of the generated
@@ -155,7 +155,7 @@ ACT1_OVERLAY_FILES = {
     # still green, because staging and git are two different lists.
     "assets/hero/hero-male-walk.png": (59032, "88cbed8f9d707b216ada01e108eedd5822c6bcfc69c8dd22af2457f231dc0976"),
     "act1-world-map.js": (
-        48775, "ca5b43535cb862c2768c54480c6d2ecd1134d5acac45a106fb781007762c69a9"),
+        48827, "02732cf79b92cf90302c180820fb50924ca85d1f310f63806bf4568af80daedf"),
     # 2026-08-06, from device: the Port Sapphire movement stick was anchored bottom-LEFT and its
     # lower half sat behind the field tab bar, where the overworld and every dungeon put the same
     # control bottom-right and fully visible. The town runs in a same-origin IFRAME
@@ -432,11 +432,11 @@ ACT1_DUNGEON_FILES = {
 # no URL bar). Pinned so it cannot quietly grow into something that mutates real save data.
 ACT1_TOWN_FILES = {
     "act1-hifi/town.html": (
-        29895, "7aee38ca881fe791622871703234cb4d3ea524b42c47cf785936e73d9494e412"),
+        32147, "0140e2a1005e7c5f0ea0e20c9bf17cb65917ede41f95abd0715ef2e81b0bd72e"),
     "act1-hifi/town/portSapphire-town.json": (
         4760, "cf9a6f3c5227dcabe006b2671fc58ecc68be7bafa4166ea5cf70b0e08094664e"),
     "act1-hifi/town/portSapphire-walkable.json": (
-        27851, "5fb9d313a0bb76bacf8bd8437e9d295c3de9bfc7ccc1e7508723af7e02769a23"),
+        41658, "4cedc99051f2924e1e10fbbe74d4e68fc5b467e82ef92f32f7c3e29a815b6598"),
     "act1-hifi/town/portSapphire-screen.png": (
         8721920, "d883904e7cd7301af82099dc04cb968bf6e30017948f8f62de04902bbe91e4f9"),
     # 2026-08-14, owner-authorised ("draw over the hero AND be passable"): the overhead-prop
@@ -447,13 +447,13 @@ ACT1_TOWN_FILES = {
     # entirely when this is missing rather than drawing it displaced, so an unstaged offset
     # is a silent loss of the whole feature -- which is exactly how it first shipped.
     "act1-hifi/town/npc/portSapphire-drake-4x3-64.png": (
-        51_557, "9a5ec1a3fc1f7e7077f9d30f89f6e044878211cf45b370a41e0c224500af4af3"),
+        72411, "ebc699ce53ec05ea46302104518271bc8f730b62903c1dba3a1c52454b0e52fa"),
     "act1-hifi/town/npc/portSapphire-healer-4x3-64.png": (
-        50_519, "93e7edb092c0aab3cc9a922bd2397af4232caeced15270074a356377bbf3b3f4"),
+        68676, "c4be28f66f7e50c24e30871da364896fe172fb4b42757ba8fad4b58e93aa23bc"),
     "act1-hifi/town/npc/portSapphire-sailor-4x3-64.png": (
-        44_604, "585a14be6724a84dac872b82325bfaf70237974134693ceb549bb34873b6a90b"),
+        63031, "a365feb2d0f3296b8e34f263f68194f047fb0e3f5e9e11463a5fd9477a6d6137"),
     "act1-hifi/town/npc/portSapphire-wisewoman-4x3-64.png": (
-        46_937, "390c12022a813f8cd0c6894988b18e7bebab8d7facee63c9c5d67575b8615c0b"),
+        63685, "86fcfd6244dfc7be90969e19f65d4ed4b1bcb88a4a8301b8fe510840d69dce05"),
     # GREENHOLLOW, the starting village. Same shape as Port Sapphire minus the foreground layer,
     # which town.html treats as optional and this town does not have.
     #
@@ -480,31 +480,31 @@ ACT1_TOWN_FILES = {
     "act1-hifi/town/greenhollow-town.json": (
         5716, "902cbb094431dfbcacb229e532c235576ff519c68576980dd1dd8bd93934cb3b"),
     "act1-hifi/town/greenhollow-walkable.json": (
-        21741, "f1c6e4882dabda8435d57cd0829a0323a54ab2b5b478b8b0652c55c510d8ee38"),
+        34337, "e0676ea64712576f5f43e89889ea1f7effebadfb6bde8eb81b360c96aace8595"),
     "act1-hifi/town/npc/greenhollow-elder-4x3-64.png": (
-        55173, "7cfe7e0b5b9942ad9052634d9ebd416168a6d8da23eec6a415134fd50d0b3343"),
+        62614, "e06d2ee7370b09782493dd7fc947c87873bea105a38532fb7c0e06f3a39b9902"),
     "act1-hifi/town/npc/greenhollow-fisherman-4x3-64.png": (
-        58180, "0d8eaf9166211dad14234d0164bf6302ec17d4f5a87a764e9bb8280f80e200ab"),
+        68151, "cf20067d7a180ddd0e7e64b7894a46609a75ef45745e2456f488ead419231ed3"),
     "act1-hifi/town/npc/greenhollow-healer-4x3-64.png": (
-        55941, "98cc0be568ef49c3e81bd22e1633e8b61063db042905d81a60ec349ee1175f82"),
+        66563, "fb1a009a4b3144f5e230c063b6886517bbbf9a5d25c85744994d2f956f164698"),
     "act1-hifi/town/npc/greenhollow-kiki-4x3-64.png": (
-        34587, "fe79c8fc52251525feca8e58dc09ed218470a90dd02a9187e67b77962adbbfb2"),
+        42698, "36e7e4435f0ed9781936bb50ce3dddfbf38d2d13c9fe4cefef4553d66a6fbb7c"),
     "act1-hifi/town/npc/greenhollow-villager1-4x3-64.png": (
-        58967, "2b6731a479ce1cb7abddbb7b635e4b8c753d2d3778acf12227915ab54eecf302"),
+        67078, "40d2355cb7bc1d9fb90933e133caa18d24bcf5be8f2d915af3c45f16637fbf8c"),
     "act1-hifi/town/npc/greenhollow-villager2-4x3-64.png": (
-        61846, "7e11fa5bdb02d3e6ea374aef424d273122622508c719a25f839ae770ffe5380d"),
+        74715, "46eb1754759a95ab58993b3fc73098fdf623c601e092c32c992d78678b3c015c"),
     "act1-hifi/town/npc/millbrook-healer-4x3-64.png": (
-        49336, "e83d3186971f742c6fa0cad6e51c623a395facc17825c374e3f4e62d800f1666"),
+        60907, "ff5833d54b9966afe79d9c9045c120e00d758dfa7d557533f5abace2efd2f244"),
     "act1-hifi/town/npc/millbrook-herbalist-4x3-64.png": (
-        56646, "7e979e9e81722c8fcf69c0623630f78dbdf2b7c225b400d2e50450b9581132b4"),
+        68561, "6273649ede8b289a8f407022544e48f739766fb1a86ea54331e17033cbc50c82"),
     "act1-hifi/town/npc/millbrook-miller-4x3-64.png": (
-        67532, "f5940bc2ba64a6a13d5851185d0dd11a989dd07cc23735436d91b3e85b93b324"),
+        78675, "1989415133aade3860ef666dc992b69697787eedba25810b45d8ad3e2fbc5ebe"),
     "act1-hifi/town/npc/millbrook-sage-4x3-64.png": (
-        51514, "9d99d1436b613bf3c733b7ff6907cde413e154095c7dfb686c489a2bad226a60"),
+        61872, "7ec94aaff609902774026ce536f2843de889ed2962a95c71f1a5b4068183d244"),
     "act1-hifi/town/greenhollow-walkable.json": (
-        21741, "f1c6e4882dabda8435d57cd0829a0323a54ab2b5b478b8b0652c55c510d8ee38"),
+        34337, "e0676ea64712576f5f43e89889ea1f7effebadfb6bde8eb81b360c96aace8595"),
     "act1-hifi/town/millbrook-walkable.json": (
-        35508, "5bde67446afdcca7a3654aad8a62f8b5561e54fd517cc98cc25df4259e9c4996"),
+        56575, "beb559cb3e2a5aacb0df9761115d5e28832ccc8ab16d2f77e6f2539af5f10f26"),
     "act1-hifi/town/millbrook-town.json": (
         5457, "c83e003d664bbf1996fd6eb2ba85a689f43380f39d450aa691e1d6a915d6c593"),
     # 2026-08-21: the two plates the note above was waiting for. Both are the four-tile bake,
