@@ -30,7 +30,7 @@ Transparency is chroma-keyed, not generated: the tool returns opaque RGB, so the
 pure magenta and `scripts/key_landmark_sprite.py` keys it out and feathers 1 px.
 """
 from __future__ import annotations
-import argparse, os, subprocess, time
+import argparse, json, os, subprocess, time
 import numpy as np
 from PIL import Image
 
@@ -179,8 +179,47 @@ def main():
     r = subprocess.run(["python3", os.path.join(ROOT, "scripts/key_landmark_sprite.py"), raw,
                         "--out", dst, "--size", str(CANVAS)], capture_output=True, text=True)
     print(r.stdout.strip() or r.stderr.strip()[-400:])
+    if not os.path.exists(dst):
+        print("    FAILED: keying produced no sprite")
+        return 1
     print(f"    raw {os.path.relpath(raw, ROOT)}  ->  {os.path.relpath(dst, ROOT)}")
-    return 0
+    return remeasure(SLUG[a.town], dst)
+
+
+def remeasure(slug: str, sprite_path: str) -> int:
+    """Re-measure the sprite's ground anchor and write it back into landmarks.json.
+
+    THE RUNTIME PLACES BY THE STORED ANCHOR, NOT BY THE IMAGE. `public/dq-tiles.js` does
+    `img.setOrigin(lm.anchor[0]/sz, lm.anchor[1]/sz)` and drops that pixel on the cell centre. So a
+    replaced PNG whose silhouette sits differently is placed by the OLD sprite's anchor, and the
+    building lands off its own earth pad. `LANDMARK-SPRITE-CONTRACT.md` records this exact failure
+    already: a hardcoded "80% down the canvas" was wrong by 43 px -- nearly a full cell -- on
+    Greenhollow, and that is what made the sprites look like they were floating.
+
+    `contactWidth` and `contactBand` are stored alongside and drive the contact shadow and the pad,
+    so all three are re-measured together and stay agreeing by construction.
+    """
+    import importlib.util
+    spec = importlib.util.spec_from_file_location(
+        "_kls", os.path.join(ROOT, "scripts/key_landmark_sprite.py"))
+    kls = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(kls)
+    sp = Image.open(sprite_path).convert("RGBA")
+    fx, fy, wmax, band = kls.footprint(sp)
+    man_p = os.path.join(ROOT, "public/act1-hifi/landmarks/landmarks.json")
+    man = json.load(open(man_p))
+    for e in man["landmarks"]:
+        if e.get("slug") == slug:
+            was = (e.get("anchor"), e.get("contactWidth"), e.get("contactBand"))
+            e["anchor"] = [int(fx), int(fy)]
+            e["contactWidth"], e["contactBand"] = int(wmax), int(band)
+            json.dump(man, open(man_p, "w"), indent=2)
+            open(man_p, "a").write("\n")
+            print(f"    anchor {was[0]} -> {e['anchor']}   contactWidth {was[1]} -> {wmax}   "
+                  f"contactBand {was[2]} -> {band}")
+            return 0
+    print(f"    FAILED: no landmarks.json entry with slug {slug!r}")
+    return 1
 
 
 if __name__ == "__main__":
