@@ -118,6 +118,66 @@ def newest_since(t0, only_under=None):
     return best
 
 
+def image_dirs():
+    """The per-call subdirectories of ~/.codex/generated_images, as a set.
+
+    Every `codex exec` writes into its OWN uuid subdirectory. Snapshotting the set before a call
+    and diffing after it gives EXACT per-call scoping, which mtime alone cannot: mtime says "newer
+    than my start", and any other codex user on this machine -- another Claude session, the bridge
+    daemon -- writes newer files too. That is the same shared-directory hazard that once put
+    millbrook's tile into greenhollow's plate, and it does not require the two runs to be mine.
+    """
+    root = os.path.expanduser("~/.codex/generated_images")
+    return {e.path for e in os.scandir(root) if e.is_dir()} if os.path.isdir(root) else set()
+
+
+def best_since(t0, primer_img, only_under=None):
+    """The BEST generated image since t0, not the newest -- scored against the primer it came from.
+
+    `newest_since` documents the failure and then commits it: `codex exec` dispatches sub-agents
+    that REDRAW the image, each writing its own file, and the call exits long after the good one.
+    Measured on a millbrook tile, the correct image landed first at layout correlation +0.884 and
+    nineteen further minutes produced +0.865, +0.856, +0.868, +0.836, +0.674, +0.803, +0.805.
+    Taking the newest ships +0.805 and nobody ever sees the +0.884.
+
+    The docstring's own advice was "a caller that can score its candidates should score them", and
+    pointed at scripts/millbrook_bake.py and scripts/greenhollow_bake.py -- both of which were
+    deleted with the scrapped plan-primed work, taking the only implementation with them. This is
+    that implementation, in the one place every town now goes through.
+
+    The score is the Pearson correlation of downscaled luminance against the primer. The primer is
+    blurry and the candidate is not, so the absolute value is never 1.0; what it measures is whether
+    the drawing still has the SAME THINGS IN THE SAME PLACES, which is exactly the axis a sub-agent
+    redraw slips on.
+    """
+    roots = ([only_under] if isinstance(only_under, str)
+             else sorted(only_under) if only_under
+             else [os.path.expanduser("~/.codex/generated_images")])
+    ref = np.asarray(primer_img.convert("L").resize((160, 160), Image.LANCZOS), np.float32).ravel()
+    ref -= ref.mean()
+    rn = np.linalg.norm(ref) or 1.0
+    cands = []
+    for _root in roots:
+      for d, _, fs in os.walk(_root):
+        for f in fs:
+            if not f.endswith(".png"):
+                continue
+            p = os.path.join(d, f)
+            if os.path.getmtime(p) <= t0:
+                continue
+            try:
+                c = np.asarray(Image.open(p).convert("L").resize((160, 160), Image.LANCZOS),
+                               np.float32).ravel()
+            except Exception:
+                continue
+            c -= c.mean()
+            cands.append((float(ref @ c / (rn * (np.linalg.norm(c) or 1.0))), p))
+    if not cands:
+        return None, []
+    cands.sort(reverse=True)
+    return cands[0][1], cands
+
+
 def primer(i, j, plate):
     """The tile's input: layout for this cell, plus any finished neighbour band AT FULL DETAIL.
 
@@ -182,7 +242,10 @@ def primer(i, j, plate):
     return pr, (x0, y0, x1, y1)
 
 
-BRIEF = """Redraw this image at full detail as hand-drawn, hard-edged pixel art.
+BRIEF = """DO THIS YOURSELF, one generation call, do not dispatch a sub-agent. Produce the image
+and stop.
+
+Redraw this image at full detail as hand-drawn, hard-edged pixel art.
 
 It is one tile ({i},{j}) of a {n}x{n} grid covering {subject}, shown blurry because it has been
 enlarged from a smaller rendering. Every building, street, fence, tree, boat, jetty and patch of
@@ -384,9 +447,15 @@ def main():
         if a.dry_run:
             continue
         t0 = time.time() - 1
+        before = image_dirs()
         r = subprocess.run(["codex", "exec", "-m", MODEL, "--skip-git-repo-check", "-i", pp],
                            stdin=open(bp), capture_output=True, text=True, timeout=2400)
-        got = newest_since(t0)
+        mine = image_dirs() - before
+        got, cands = best_since(t0, pr, only_under=mine or None)
+        if len(cands) > 1:
+            print(f"    {len(cands)} candidates; corr "
+                  + ", ".join(f"{c:+.3f}" for c, _ in cands[:6])
+                  + f"  -> keeping {cands[0][0]:+.3f}")
         if not got:
             print(f"    FAILED (exit {r.returncode}); last output:\n{r.stdout[-600:]}")
             continue

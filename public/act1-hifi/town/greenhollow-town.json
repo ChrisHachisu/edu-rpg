@@ -1,105 +1,111 @@
 {
- "_comment": "Greenhollow town runtime config. Cells are the 65x65 town grid; an NPC cell is the character's FEET (bottom-centre), matching scripts/render_town_hero_proof.py and scripts/place_town_npcs.py. ids and dialogueKeys are FIXED by the frozen bundle -- kikisChallenge turns in against npc id `kiki` here -- so they are never renamed to match the art.",
- "id": "greenhollow",
- "nameKey": "map.greenhollow",
- "screen": "town/greenhollow-screen.png",
- "walkable": "town/greenhollow-walkable.json",
- "cells": 65,
- "artPxPerCell": 30,
- "worldPxPerCell": 16,
- "startCell": [
-  32.5,
-  57.0
- ],
- "npcs": [
-  {
-   "id": "elder",
-   "dialogueKey": "npc.elder.greeting",
-   "nameKey": "npc.elder.name",
-   "sheet": "town/npc/greenhollow-elder-4x3-64.png",
-   "cell": [
+  "_comment": "Greenhollow town runtime config. Cells are the 65x65 town grid; an NPC cell is the character's FEET (bottom-centre), matching scripts/render_town_hero_proof.py and scripts/place_town_npcs.py. ids and dialogueKeys are FIXED by the frozen bundle -- kikisChallenge turns in against npc id `kiki` here -- so they are never renamed to match the art.",
+  "id": "greenhollow",
+  "nameKey": "map.greenhollow",
+  "screen": "town/greenhollow-screen.png",
+  "walkable": "town/greenhollow-walkable.json",
+  "cells": 65,
+  "artPxPerCell": 30,
+  "worldPxPerCell": 16,
+  "startCell": [
     32.5,
-    21.5
-   ],
-   "name": "Elder Rowan",
-   "text": "Welcome home, child. Greenhollow is safe, but the world beyond the gate is not. Follow the south road to Millbrook when you are ready, and mind the woods."
-  },
-  {
-   "id": "kiki",
-   "dialogueKey": "npc.kiki.greeting",
-   "nameKey": "npc.kiki.name",
-   "sheet": "town/npc/greenhollow-kiki-4x3-64.png",
-   "cell": [
-    27.6,
-    23.3
-   ],
-   "name": "Kiki",
-   "text": "You want to be an adventurer? Prove it! Take my challenge, answer what I ask out on the road, and come back here to claim your reward."
-  },
-  {
-   "id": "healer",
-   "dialogueKey": "npc.healer",
-   "nameKey": "npc.healer.name",
-   "sheet": "town/npc/greenhollow-healer-4x3-64.png",
-   "cell": [
-    22.1,
-    40.4
-   ],
-   "name": "Healer",
-   "text": "Come in whenever you are hurt. I will mend you, and it costs you nothing here in Greenhollow."
-  },
-  {
-   "id": "villager1",
-   "dialogueKey": "npc.villager1",
-   "nameKey": "npc.villager1.name",
-   "sheet": "town/npc/greenhollow-villager1-4x3-64.png",
-   "cell": [
-    18.5,
-    28.0
-   ],
-   "name": "Villager",
-   "text": "Save your progress at the well before you leave. Everyone forgets once, and only once."
-  },
-  {
-   "id": "villager2",
-   "dialogueKey": "npc.villager2",
-   "nameKey": "npc.villager2.name",
-   "sheet": "town/npc/greenhollow-villager2-4x3-64.png",
-   "cell": [
-    46.5,
-    28.0
-   ],
-   "name": "Villager",
-   "text": "Monsters roam outside the palisade now. Fight them and you will grow stronger, but run if a fight turns against you."
-  },
-  {
-   "id": "fisherman",
-   "dialogueKey": "npc.fisherman",
-   "nameKey": "npc.fisherman.name",
-   "sheet": "town/npc/greenhollow-fisherman-4x3-64.png",
-   "cell": [
-    43.7,
-    41.0
-   ],
-   "name": "Fisherman",
-   "text": "The stream runs down to Millbrook, and the mill folk trade well. Long walk, though. Pack something to eat."
-  }
- ],
- "savePoint": [
-  37.0,
-  34.0
- ],
- "exit": {
-  "cell": [
-   32.5,
-   59.0
+    57.0
   ],
-  "targetMapId": "overworld",
-  "toX": 69,
-  "toY": 256,
-  "note": "The one gate, at the SOUTH of the palisade -- design/act1-towns/greenhollow/spec.json ring.gate. toX/toY are act1-world-map.js LANDMARKS greenhollow.exit, i.e. the overworld cell the door stands on."
- },
- "_dialogueNote": "name/text are English FALLBACK strings in the voice of the shipped Port Sapphire entries, so the town is playable standalone. The runtime also posts act1-town-interact to the parent, so the frozen bundle's localised dialogue system takes over once the adapter hands off -- which is why dialogueKey must stay exactly as the bundle has it.",
- "_startNote": "The south gate mouth, one and a half cells inside it. spec.json's `start` cell, verified inside greenhollow-walkable.json before shipping. No `foreground` key: greenhollow has no foreground layer, and town.html treats that layer as optional.",
- "_noShopNote": "No shopCounter/shopId. spec.json authors no counter position and the walkable authority was traced from that same plan, so a counter here would be invented rather than measured. town.html filters the service list on Array.isArray(cell), so omitting it is supported."
+  "npcs": [
+    {
+      "id": "elder",
+      "dialogueKey": "npc.elder.greeting",
+      "nameKey": "npc.elder.name",
+      "sheet": "town/npc/greenhollow-elder-4x3-64.png",
+      "cell": [
+        32.5,
+        21.5
+      ],
+      "name": "Elder Rowan",
+      "text": "Welcome home, child. Greenhollow is safe, but the world beyond the gate is not. Follow the south road to Millbrook when you are ready, and mind the woods."
+    },
+    {
+      "id": "kiki",
+      "dialogueKey": "npc.kiki.greeting",
+      "nameKey": "npc.kiki.name",
+      "sheet": "town/npc/greenhollow-kiki-4x3-64.png",
+      "cell": [
+        27.6,
+        23.3
+      ],
+      "name": "Kiki",
+      "text": "You want to be an adventurer? Prove it! Take my challenge, answer what I ask out on the road, and come back here to claim your reward."
+    },
+    {
+      "id": "healer",
+      "dialogueKey": "npc.healer",
+      "nameKey": "npc.healer.name",
+      "sheet": "town/npc/greenhollow-healer-4x3-64.png",
+      "cell": [
+        22.1,
+        40.4
+      ],
+      "name": "Healer",
+      "text": "Come in whenever you are hurt. I will mend you, and it costs you nothing here in Greenhollow."
+    },
+    {
+      "id": "villager1",
+      "dialogueKey": "npc.villager1",
+      "nameKey": "npc.villager1.name",
+      "sheet": "town/npc/greenhollow-villager1-4x3-64.png",
+      "cell": [
+        18.5,
+        28.0
+      ],
+      "name": "Villager",
+      "text": "Save your progress at the well before you leave. Everyone forgets once, and only once."
+    },
+    {
+      "id": "villager2",
+      "dialogueKey": "npc.villager2",
+      "nameKey": "npc.villager2.name",
+      "sheet": "town/npc/greenhollow-villager2-4x3-64.png",
+      "cell": [
+        46.5,
+        28.0
+      ],
+      "name": "Villager",
+      "text": "Monsters roam outside the palisade now. Fight them and you will grow stronger, but run if a fight turns against you."
+    },
+    {
+      "id": "fisherman",
+      "dialogueKey": "npc.fisherman",
+      "nameKey": "npc.fisherman.name",
+      "sheet": "town/npc/greenhollow-fisherman-4x3-64.png",
+      "cell": [
+        43.7,
+        41.0
+      ],
+      "name": "Fisherman",
+      "text": "The stream runs down to Millbrook, and the mill folk trade well. Long walk, though. Pack something to eat."
+    }
+  ],
+  "savePoint": [
+    37.0,
+    34.0
+  ],
+  "exit": {
+    "cell": [
+      32.5,
+      59.0
+    ],
+    "targetMapId": "overworld",
+    "toX": 69,
+    "toY": 256,
+    "note": "The one gate, at the SOUTH of the palisade -- design/act1-towns/greenhollow/spec.json ring.gate. toX/toY are act1-world-map.js LANDMARKS greenhollow.exit, i.e. the overworld cell the door stands on."
+  },
+  "_dialogueNote": "name/text are English FALLBACK strings in the voice of the shipped Port Sapphire entries, so the town is playable standalone. The runtime also posts act1-town-interact to the parent, so the frozen bundle's localised dialogue system takes over once the adapter hands off -- which is why dialogueKey must stay exactly as the bundle has it.",
+  "_startNote": "The south gate mouth, one and a half cells inside it. spec.json's `start` cell, verified inside greenhollow-walkable.json before shipping. No `foreground` key: greenhollow has no foreground layer, and town.html treats that layer as optional.",
+  "_noShopNote": "No shopCounter/shopId. spec.json authors no counter position and the walkable authority was traced from that same plan, so a counter here would be invented rather than measured. town.html filters the service list on Array.isArray(cell), so omitting it is supported.",
+  "shopId": "greenhollow",
+  "shopCounter": [
+    16.5,
+    34.0
+  ],
+  "_serviceNote": "shopCounter stands on the lane below the striped awning, and shopId matches the inventory src/data/shops.ts already defines. Both were None, so the shop was unreachable even though the map data expected it."
 }
