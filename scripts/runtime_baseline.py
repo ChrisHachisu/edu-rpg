@@ -482,7 +482,7 @@ ACT1_TOWN_FILES = {
     # can see: it reports "0 updated", leaves the zeros in place, and the very next step fails with
     # "Act 1 town identity mismatch" pointing at the file you just added. Cost 2026-08-21.
     "act1-hifi/town/greenhollow-town.json": (
-        3930, "30ae2f67582a64f030fa17e8c0a86481784d7b0c254a3d5f8a637f6ed6b78730"),
+        5205, "0f145f17874e988981f38dc5d75da244f7906d68018f3b9e5ee9cc4c56b77b45"),
     "act1-hifi/town/greenhollow-walkable.json": (
         5818, "756a877cad2c30c1b7384b3b5a2b70c1041369512a1d587a6d5df8106abdc3d9"),
     "act1-hifi/town/npc/greenhollow-elder-4x3-64.png": (
@@ -508,15 +508,15 @@ ACT1_TOWN_FILES = {
     "act1-hifi/town/greenhollow-walkable.json": (
         5818, "756a877cad2c30c1b7384b3b5a2b70c1041369512a1d587a6d5df8106abdc3d9"),
     "act1-hifi/town/millbrook-walkable.json": (
-        5741, "c391c3ad1d0cacbe1d5aca006b2e65d9fe615a13e42ed267a09fb55ceb7d506e"),
+        35508, "5bde67446afdcca7a3654aad8a62f8b5561e54fd517cc98cc25df4259e9c4996"),
     "act1-hifi/town/millbrook-town.json": (
-        3804, "c7df49fdf74853844c2db6a63caa94346b94e529cce498e85df639813fa87bd2"),
+        5594, "e4a7b2a95a4fecf7dad50eb5e7a2a194224cf432f2a85bce5c13daf0ef77f056"),
     # 2026-08-21: the two plates the note above was waiting for. Both are the four-tile bake,
     # exposure-matched per tile and quilted on a minimum-error cut by scripts/stitch_plate.py.
     # Placeholder zeros; `npm run repin` fills the real size/hash in -- and the FILES ARE ON DISK
     # BEFORE THESE KEYS EXIST, which is the whole point of the warning above.
     "act1-hifi/town/millbrook-screen.png": (
-        9165658, "07dd646289597fc7705922488dc42d787dd92d387a340578a8bfe13e99ea3524"),
+        8064226, "a206e48240e409bf3460326cfaef82ee9b625ca6ec63c05506048ecd23a76943"),
     "act1-hifi/town/greenhollow-screen.png": (
         9276232, "c47440be9cadc9e547a00e707b0f861ab9935335da5a61c5dd902037281c41c2"),
     "act1-hifi/verify/seed.html": (
