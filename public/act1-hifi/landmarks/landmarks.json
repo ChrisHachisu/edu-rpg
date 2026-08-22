@@ -79,11 +79,11 @@
       ],
       "size": 192,
       "anchor": [
-        97,
-        104
+        96,
+        113
       ],
-      "contactWidth": 188,
-      "contactBand": 87
+      "contactWidth": 192,
+      "contactBand": 83
     },
     {
       "name": "Millbrook",
@@ -102,7 +102,7 @@
         106
       ],
       "contactWidth": 192,
-      "contactBand": 92
+      "contactBand": 82
     },
     {
       "name": "Misty Grotto",
@@ -137,10 +137,10 @@
       "size": 192,
       "anchor": [
         96,
-        98
+        110
       ],
-      "contactWidth": 192,
-      "contactBand": 104
+      "contactWidth": 190,
+      "contactBand": 82
     },
     {
       "name": "Sunken Cellar",
