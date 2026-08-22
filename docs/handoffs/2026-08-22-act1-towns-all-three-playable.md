@@ -20,8 +20,8 @@ overworld landmark sprites and the TestFlight push.
 | match the other towns to millbrook's colour theme | **DONE** — greens only; cobble already matched to within 3/255 |
 | create the boundaries | **DONE** — collision derived from each finished plate |
 | add all assets so the towns are playable | **DONE** — shops, save points, healers, exits, NPCs all wired and verified |
-| match the overworld assets to the town artwork | **IN FLIGHT** — three landmark sprites baking |
-| push to TF for a play test | **NOT STARTED** — blocked only on the sprites |
+| match the overworld assets to the town artwork | **DONE** — all three sprites regenerated from the finished plates |
+| push to TF for a play test | **DONE** — build 56, VALID in TestFlight 2026-08-22 |
 
 ## Live state (verified 2026-08-22)
 
@@ -75,23 +75,34 @@ overworld landmark sprites and the TestFlight push.
 - The 2026-08-21 kernel panic was **simctl churn, not codex**. codex generation is network-bound and
   cheap locally; what contends is `xcodebuild`.
 
-## Resume here
+## Shipped
 
-**Next action:** finish the three landmark sprites, then ship.
+**TestFlight build 56, VALID.** The milestone is complete; what follows is the owner's play test.
 
-```
-python3 scripts/bake_town_landmark.py --town millbrook      # then greenhollow, then portSapphire
-```
-One at a time — `~/.codex/generated_images` is shared. The tool primes from the town's finished
-plate, scores candidates, keys the magenta at 192x192, and **re-measures the ground anchor back into
-`landmarks.json`** — which matters because `public/dq-tiles.js` places by the STORED anchor, not by
-the image, and a stale one floats the sprite off its pad.
+Things a play test may surface, in the order I would look at them:
 
-Then:
+1. **millbrook may read soft on the phone.** Its plate is under the finish gate's absolute minimum
+   (15.19 / 20.39% against 17.0 / 22%). I judged that composition rather than softness — 39% open
+   plaza against Port Sapphire's harbour clutter, and its cobble is surface-for-surface crisper than
+   the painting it came from. If it reads soft on device, the fix is to REPAINT millbrook at 1950
+   and re-run the chain, not to re-bake from the 1254 painting.
+2. **Port Sapphire is plainer than the plate it replaced** — the owner chose this knowingly, trading
+   the ship, the mast and harbour density for the matched palette and fresh boundaries. If he wants
+   the density back, `bake_town_landmark`-style: re-bake tile (1,1) with `--add`, which is the only
+   tile no other tile's band is grafted from.
+3. **5.3% of Port Sapphire's standable ground is unreachable** — pockets behind necks narrower than
+   two foot-radii. Nothing stands in them now, but they are dead decoration the player can see and
+   not enter.
+
+## If more work is needed
+
 ```
 npm run repin && npm run gate && ./scripts/ship-ios.sh
 ```
 `ship-ios.sh` runs the gate itself and then `fastlane beta`; the build number comes from ASC.
+Landmark sprites: `python3 scripts/bake_town_landmark.py --town <town>`, one at a time.
+Port Sapphire's sprite needs `--tol 130` on the key — at the default 88 the magenta field bleeds
+into the dark harbour water.
 
 | purpose | path |
 |---|---|
