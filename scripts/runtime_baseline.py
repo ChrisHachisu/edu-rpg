@@ -482,17 +482,17 @@ ACT1_TOWN_FILES = {
     "act1-hifi/town/greenhollow-walkable.json": (
         37899, "950e5c58a91307eba70924f398c1e4598d81b3f87cc8ab0ec27d49280678265f"),
     "act1-hifi/town/npc/greenhollow-elder-4x3-64.png": (
-        72823, "59cc740c50ae3deaca835884eaaf69976e5e6d7cc07bac9fc49293ab72365f72"),
+        83896, "93b763cebc3c419e5ef7d8e3368507bf604445133e4bcd37b6106881561293f7"),
     "act1-hifi/town/npc/greenhollow-fisherman-4x3-64.png": (
-        65051, "a4168fdbb4ec226d42c7bda160142de732f297ab519f66bde03f611c844b8456"),
+        69584, "9582ebb57dbad3bb7e81c334d8d3d8095d725184dd33a1cf35c4f67f0da6beb9"),
     "act1-hifi/town/npc/greenhollow-healer-4x3-64.png": (
         65667, "ce54239b9072702760ba345979ae58e9c6262d80d877b4fbda998ecc9c2b20bc"),
     "act1-hifi/town/npc/greenhollow-kiki-4x3-64.png": (
-        73764, "0d4221d5a4e635525e01d17a9d2549c97d0abe9fc5dc37af9849ed33a0f79621"),
+        76317, "50f15a525160d6598f4911d653c09894632beefbf0fdbdc67eccdcf5c22ce3a7"),
     "act1-hifi/town/npc/greenhollow-villager1-4x3-64.png": (
-        68399, "b0f3c096482462d0875de893f1711a3109b7712ca62cb667f8f4edd838b7d849"),
+        71160, "44fb8263696ac3f1529d332053969f2cbd8b3de6dd4e7a4e24152d6c3eaa2480"),
     "act1-hifi/town/npc/greenhollow-villager2-4x3-64.png": (
-        72466, "bd0f7859943ba311611349f32cef513c27bfa96cf19c033ad92450b0660e8fab"),
+        71056, "672c5519e512f2b0215786e1b2d880e73ee69896ee2770b9b828dec3364f4c4e"),
     # The shopkeeper, added 2026-08-22. Owner: "i cannot find the shopkeeper and the shopkeeper
     # needs to be in a shop." One recurring character, the same bytes in all three towns, standing
     # inside each market stall. Placeholder zeros here and `npm run repin` fills them -- and the
@@ -507,11 +507,11 @@ ACT1_TOWN_FILES = {
     "act1-hifi/town/npc/millbrook-healer-4x3-64.png": (
         65667, "ce54239b9072702760ba345979ae58e9c6262d80d877b4fbda998ecc9c2b20bc"),
     "act1-hifi/town/npc/millbrook-herbalist-4x3-64.png": (
-        64228, "294d717309deba03b1bfdf5e71581e54db1925a5669ba163f6f5ac46a176a6c9"),
+        67396, "73bf3f4b8dcd488dbee121db5eaec14b1dc3985534b0789e18315d36d0359d9f"),
     "act1-hifi/town/npc/millbrook-miller-4x3-64.png": (
-        76397, "7dd8ce21cc7768f006c630da96183666e548706d4258f41544f877b20f81dbe0"),
+        86994, "3ddb795ae3e97f52c507a916ccce46b1b653924799d9ac37aff6921b1d251055"),
     "act1-hifi/town/npc/millbrook-sage-4x3-64.png": (
-        68606, "0ae7838c596ebaae9262ed2cded81bad57710a7e0646070e42761b318939171c"),
+        75065, "84d718b211333b17a09859dcace6c58d8ae4b7645a4c0504e4ab3c34066b49d8"),
     "act1-hifi/town/greenhollow-walkable.json": (
         37899, "950e5c58a91307eba70924f398c1e4598d81b3f87cc8ab0ec27d49280678265f"),
     "act1-hifi/town/millbrook-walkable.json": (
