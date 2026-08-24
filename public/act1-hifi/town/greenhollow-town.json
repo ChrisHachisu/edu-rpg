@@ -9,7 +9,7 @@
   "worldPxPerCell": 16,
   "startCell": [
     32.5,
-    57.0
+    52.0
   ],
   "npcs": [
     {
@@ -18,8 +18,8 @@
       "nameKey": "npc.elder.name",
       "sheet": "town/npc/greenhollow-elder-4x3-64.png",
       "cell": [
-        32.5,
-        21.5
+        32.19,
+        21.81
       ],
       "name": "Elder Rowan",
       "text": "Welcome home, child. Greenhollow is safe, but the world beyond the gate is not. Follow the south road to Millbrook when you are ready, and mind the woods."
@@ -30,8 +30,8 @@
       "nameKey": "npc.kiki.name",
       "sheet": "town/npc/greenhollow-kiki-4x3-64.png",
       "cell": [
-        27.62,
-        23.31
+        27.56,
+        22.88
       ],
       "name": "Kiki",
       "text": "You want to be an adventurer? Prove it! Take my challenge, answer what I ask out on the road, and come back here to claim your reward."
@@ -42,8 +42,8 @@
       "nameKey": "npc.healer.name",
       "sheet": "town/npc/greenhollow-healer-4x3-64.png",
       "cell": [
-        21.81,
-        39.12
+        21.75,
+        38.19
       ],
       "name": "Healer",
       "text": "Come in whenever you are hurt. I will mend you, and it costs you nothing here in Greenhollow."
@@ -54,8 +54,8 @@
       "nameKey": "npc.villager1.name",
       "sheet": "town/npc/greenhollow-villager1-4x3-64.png",
       "cell": [
-        24.0,
-        36.0
+        23.56,
+        36.06
       ],
       "name": "Villager",
       "text": "Save your progress at the well before you leave. Everyone forgets once, and only once."
@@ -66,8 +66,8 @@
       "nameKey": "npc.villager2.name",
       "sheet": "town/npc/greenhollow-villager2-4x3-64.png",
       "cell": [
-        41.0,
-        37.0
+        41.31,
+        37.31
       ],
       "name": "Villager",
       "text": "Monsters roam outside the palisade now. Fight them and you will grow stronger, but run if a fight turns against you."
@@ -79,7 +79,7 @@
       "sheet": "town/npc/greenhollow-fisherman-4x3-64.png",
       "cell": [
         43.44,
-        40.06
+        39.12
       ],
       "name": "Fisherman",
       "text": "The stream runs down to Millbrook, and the mill folk trade well. Long walk, though. Pack something to eat."
@@ -105,15 +105,15 @@
   "exit": {
     "cell": [
       32.5,
-      59.0
+      55.5
     ],
     "targetMapId": "overworld",
     "toX": 69,
     "toY": 256,
-    "note": "Exit lands on the overworld, and the AUTHORITY is public/act1-world-map.js's LANDMARKS entry for this town -- `EXITS[mapId] = L.exit`, the open cell beside its door. NOT src/data/maps.ts. maps.ts's connection (60,341) is legacy: the Act 1 override REWRITES it at runtime, but only inside scene.checkTransition, which is the SHIPPED town's edge-exit path. A hi-fi town never goes through it -- adapter.js's act1-town-exit handler assigns scene.heroTileX/heroTileY = data.toX/toY directly -- so for these towns the value here is used RAW and must already be the landmark exit. || The one gate, at the SOUTH of the palisade -- design/act1-towns/greenhollow/spec.json ring.gate. toX/toY are act1-world-map.js LANDMARKS greenhollow.exit, i.e. the overworld cell the door stands on."
+    "note": "Exit lands on the overworld, and the AUTHORITY is public/act1-world-map.js's LANDMARKS entry for this town -- `EXITS[mapId] = L.exit`, the open cell beside its door. NOT src/data/maps.ts. maps.ts's connection (60,341) is legacy: the Act 1 override REWRITES it at runtime, but only inside scene.checkTransition, which is the SHIPPED town's edge-exit path. A hi-fi town never goes through it -- adapter.js's act1-town-exit handler assigns scene.heroTileX/heroTileY = data.toX/toY directly -- so for these towns the value here is used RAW and must already be the landmark exit. || IN-TOWN HALF RE-MEASURED 2026-08-24 AGAINST THE PAINTING. Owner, on build 57: \"the in-town exit does not match what we see on screen.\" He was right, and it was the same defect in all three towns: `cell` sat 2.5-3.5 cells BEYOND the drawn gate, out on the open trail, so the player walked visibly out of the village and kept going before the screen changed. Millbrook's fence line measures at cell y=56 by timber_mask (12.6 / 21.5 / 10.6 % of rows 55/56/57 against under 1% either side); greenhollow's at y=55.5; Port Sapphire has no gate and its mouth is where the trail leaves the frame at y=0. The old cells -- 60.5, 59.0 and 3.0 -- predate the current paintings. || `cell` is now the GATE AS PAINTED and `startCell` is 3.5 cells INSIDE it. That combination is what makes town.html's arming work without a code change: it arms once the player is more than 2.5 cells clear, so a 3.5-cell spawn is armed on arrival but outside the dy<1.0 / dx<1.6 fire box, and the exit then fires exactly when she steps into the gate. The previous arrangement solved the same arming problem the other way round -- exit outside, spawn on the gate -- which is what put the trigger out in the grass. || The OVERWORLD half (toX/toY) is unchanged and still gated by scripts/check_town_transitions.py."
   },
   "_dialogueNote": "name/text are English FALLBACK strings in the voice of the shipped Port Sapphire entries, so the town is playable standalone. The runtime also posts act1-town-interact to the parent, so the frozen bundle's localised dialogue system takes over once the adapter hands off -- which is why dialogueKey must stay exactly as the bundle has it.",
-  "_startNote": "The south gate mouth, one and a half cells inside it. spec.json's `start` cell, verified inside greenhollow-walkable.json before shipping. No `foreground` key: greenhollow has no foreground layer, and town.html treats that layer as optional.",
+  "_startNote": "MOVED 2026-08-24 from [32.5, 57.0] to [32.5, 52.0]: 3.5 cells inside the painted gate, which is what arms the exit on arrival without firing it. See exit.note.",
   "shopId": "greenhollow",
   "shopCounter": [
     16.06,

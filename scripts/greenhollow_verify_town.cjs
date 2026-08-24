@@ -53,22 +53,58 @@ const TOWN_URL = `${ROOT_URL}act1-hifi/town.html?town=greenhollow&debug`;
 
 const ARROW = { left: 'ArrowLeft', right: 'ArrowRight', up: 'ArrowUp', down: 'ArrowDown' };
 
-/* WHERE SHE HAS TO STAND TO BE ABLE TO TALK, per NPC, in cells.
+/* WHERE SHE HAS TO STAND TO BE ABLE TO TALK, per NPC, in cells -- DERIVED, NOT AUTHORED.
+
    town.html's nearestNpc() only sees her when |dx| <= 1.1 cells and dy is between -0.35 and +2.1
    cells (dy positive = she is BELOW the NPC, the owner's approach-from-the-south rule). Each NPC is
    also a dynamicBlocker disc of 7 world px and the hero carries a 4 px foot radius, so the band's
-   inner edge is unusable. These are the point in each NPC's band that is closest to straight-below
-   while clearing the blocker, the region edge and every static obstacle -- solved against
-   greenhollow-walkable.json, which is the same geometry the runtime loads. They are the harness's
-   targets only; nothing in the game reads them. */
-const APPROACH = {
-  elder: [32.5, 22.4],
-  kiki: [27.6, 24.2],
-  healer: [21.5, 40.9],
-  villager1: [18.5, 28.9],
-  villager2: [46.5, 28.9],
-  fisherman: [43.7, 41.8],
-};
+   inner edge is unusable.
+
+   THIS USED TO BE A HARD-CODED TABLE OF SIX CELLS AND IT ROTTED, which is worse than useless
+   because it fails as though the TOWN were broken. Run against HEAD on 2026-08-24 it scored four of
+   six NPCs unreachable and then crashed on the shopkeeper, who has no entry at all because he was
+   added after the table was written -- while `place_town_actors.py` reported every one of them
+   reachable, correctly. A harness whose constants describe an older layout is not evidence.
+
+   So the approach point is now solved against the LIVE geometry, in the page, using the same
+   `isInsideWalkable` the runtime walks on. Among the band positions the predicate accepts, it takes
+   the one with the most accepted neighbours -- open ground rather than a one-pixel notch -- and
+   breaks ties toward straight-below the NPC. If the band has no accepted position at all, that IS
+   the town failing, and it is reported as such rather than as a walking failure. */
+const BAND = { dx: 1.1, dyMin: -0.35, dyMax: 2.1 };
+/* The follower accepts a waypoint within 0.5 cells, so an approach point ON the band's edge can be
+   "reached" from OUTSIDE the band and score a perfectly good NPC as unreachable -- which is what
+   villager2 and the fisherman did, stopping at dx 1.20 and 1.34 against the band's 1.1 limit.
+   The point is therefore chosen from the band shrunk by more than that tolerance on every side, so
+   arriving anywhere the follower calls "arrived" is still inside the band the game reads. */
+const MARGIN = 0.55;
+
+const approachFor = (page, npcId) => page.evaluate(({ npcId, BAND, MARGIN }) => {
+  const T = window.__ACT1_TOWN__;
+  const C = T.town.worldPxPerCell;
+  const npc = T.town.npcs.find(n => n.id === npcId);
+  const cx = npc.cell[0] * C, cy = npc.cell[1] * C;
+  const ok = (x, y) => window.__GH_INSIDE__({ x, y }, T.walkable);
+  const search = (m) => {
+    let best = null;
+    for (let ox = -(BAND.dx - m) * C; ox <= (BAND.dx - m) * C; ox += 2) {
+      for (let oy = (BAND.dyMin + m) * C; oy <= (BAND.dyMax - m) * C; oy += 2) {
+        const x = cx + ox, y = cy + oy;
+        if (!ok(x, y)) continue;
+        let room = 0;
+        for (const [nx, ny] of [[8, 0], [-8, 0], [0, 8], [0, -8], [8, 8], [-8, 8], [8, -8], [-8, -8]]) {
+          if (ok(x + nx, y + ny)) room += 1;
+        }
+        const score = room * 1000 - Math.abs(ox);
+        if (!best || score > best.score) best = { score, x: x / C, y: y / C, room, margin: m };
+      }
+    }
+    return best;
+  };
+  // Fall back to the unshrunk band only if the margin leaves nothing: a genuinely tight NPC should
+  // still be attempted, and reported honestly, rather than declared unreachable by the margin.
+  return search(MARGIN) || search(0);
+}, { npcId, BAND, MARGIN });
 
 /* Where is she, in CELLS, according to the running game rather than according to us. */
 const cellNow = page => page.evaluate(() => {
@@ -77,10 +113,11 @@ const cellNow = page => page.evaluate(() => {
   return { x: p.x / T.town.worldPxPerCell, y: p.y / T.town.worldPxPerCell };
 });
 
-async function hold(page, dir, ms) {
-  await page.keyboard.down(ARROW[dir]);
+async function hold(page, dirs, ms) {
+  const keys = (Array.isArray(dirs) ? dirs : [dirs]).filter(Boolean);
+  for (const d of keys) await page.keyboard.down(ARROW[d]);
   await page.waitForTimeout(ms);
-  await page.keyboard.up(ARROW[dir]);
+  for (const d of keys) await page.keyboard.up(ARROW[d]);
 }
 
 /* ROUTE FIRST, THEN WALK -- and the first version of this file proves why the order matters.
@@ -179,7 +216,12 @@ async function walkTo(page, tx, ty, budgetMs = 90_000) {
   const deadline = Date.now() + budgetMs;
   const route = await planRoute(page, tx, ty);
   if (!route) return { arrived: false, noRoute: true, at: await cellNow(page), route: 0 };
-  const way = route.filter((_, i) => i % 4 === 0);
+  /* KEEP EVERY SECOND LATTICE NODE, NOT EVERY FOURTH. At 8 world px a stride of four is 32 px --
+     two cells -- and the straight push between two such waypoints cuts the corner of any lane
+     narrower than that. Authoring building footprints on 2026-08-24 narrowed several greenhollow
+     lanes to about that width, and the coarse stride started jamming her against cottage corners on
+     routes the BFS had already proved. */
+  const way = route.filter((_, i) => i % 2 === 0);
   way.push({ x: tx, y: ty });
   let idx = 0, stubborn = 0;
   while (idx < way.length && Date.now() < deadline) {
@@ -187,12 +229,28 @@ async function walkTo(page, tx, ty, budgetMs = 90_000) {
     while (idx < way.length && Math.hypot(way[idx].x - at.x, way[idx].y - at.y) < 0.5) idx += 1;
     if (idx >= way.length) break;
     const dx = way[idx].x - at.x, dy = way[idx].y - at.y;
-    await hold(page, Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left')
-      : (dy > 0 ? 'down' : 'up'), 200);
-    const after = await cellNow(page);
+    const major = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up');
+    const minor = Math.abs(dx) > Math.abs(dy) ? (dy > 0 ? 'down' : 'up') : (dx > 0 ? 'right' : 'left');
+    /* ONE AXIS AT A TIME, AND A DIAGONAL PRESS WAS TRIED AND IS WORSE -- MEASURED, so that nobody
+       re-runs the experiment. Holding both keys whenever the waypoint was diagonal (minor axis over
+       0.15 cells) took a run that had walked all six NPCs down to two, wedging her in the south lane
+       at y~37 on four separate legs: the constant sideways component pushes her into the lane wall
+       and the follower's own stall recovery then fights it. Pushing the major axis and only
+       sidestepping when she actually stops is what works here. */
+    await hold(page, major, 200);
+    let after = await cellNow(page);
     if (Math.hypot(after.x - at.x, after.y - at.y) < 0.12) {
-      stubborn += 1;
-      if (stubborn >= 3) { idx += 1; stubborn = 0; }
+      /* SLIDE ALONG THE WALL RATHER THAN GIVING UP ON THE WAYPOINT. The old loop only ever pushed
+         the major axis and skipped the waypoint after three stalls, so a hero pressed into a corner
+         abandoned the route and the run scored a reachable NPC as unreachable -- differently on
+         each run, because where she gave up depended on where the previous walk left her. The
+         perpendicular push is what gets her off the corner; only a stall on BOTH axes counts. */
+      await hold(page, minor, 200);
+      after = await cellNow(page);
+      if (Math.hypot(after.x - at.x, after.y - at.y) < 0.12) {
+        stubborn += 1;
+        if (stubborn >= 4) { idx += 1; stubborn = 0; }
+      } else stubborn = 0;
     } else stubborn = 0;
   }
   const at = await cellNow(page);
@@ -279,11 +337,24 @@ async function pushAndSample(page, dir, ms, samples = 12) {
     // ---- REACH + TALK ---------------------------------------------------------------------
     console.log('\nREACH + TALK');
     for (const npc of townCfg.npcs) {
+      /* A `fixed` NPC stands inside his own building on purpose -- the shopkeeper, behind his
+         counter -- and the player reaches his shop through `shopCounter`, not through nearestNpc().
+         Walking at him is not a question this harness has any business asking. */
+      if (npc.fixed) {
+        console.log(`  ${npc.id.padEnd(10)} fixed -- stands inside its building, reached via shopCounter`);
+        continue;
+      }
       /* Approach is from the SOUTH by owner rule -- town.html's nearestNpc() only looks in the band
          BELOW an NPC -- and she is also a dynamicBlocker, so the target is the point in that band
-         with full foot clearance, not her feet. APPROACH[] is measured against the same polygon
+         with full foot clearance, not her feet. approachFor() solves that point against the same polygon
          the runtime uses; if one of these were unreachable that would be the town's failure. */
-      const goal = APPROACH[npc.id];
+      const spot = await approachFor(page, npc.id);
+      if (!spot) {
+        fail(`${npc.id}: nowhere inside the talk band the runtime will let her stand`);
+        report.npcs.push({ id: npc.id, approach: null, reached: false });
+        continue;
+      }
+      const goal = [spot.x, spot.y];
       const walk = await walkTo(page, goal[0], goal[1], 45_000);
       const near = await page.evaluate(() => window.__ACT1_TOWN__.nearestNpc()?.id ?? null);
       await page.keyboard.press('Enter');
@@ -339,23 +410,80 @@ async function pushAndSample(page, dir, ms, samples = 12) {
     }
     await page.screenshot({ path: path.join(OUT, '03-against-the-palisade.png') });
 
-    /* And a building specifically. cottage-ne's footprint is cells x44-55, y18-26, so its facade is
-       the line y=26; stand under it and push north, and she must stop against the wall rather than
-       walk into the room. cottage-ne rather than the elder hall because the hall has the elder
-       standing in front of it: her 7 px blocker would stop the push first and the run would score
-       an NPC as a building. Nothing here is within 1.1 cells of villager2, for the same reason. */
-    await walkTo(page, 49.0, 27.6);
-    const intoCottage = await pushAndSample(page, 'up', 2400, 16);
-    const deepest = Math.min(...intoCottage.map(s => s.at.y));
-    const walkedIn = intoCottage.some(s => !s.inside) || deepest < 26.0;
-    report.buildings.push({ id: 'cottage-ne', facadeY: 26.0, deepestY: deepest, entered: walkedIn });
-    console.log(`  cottage-ne  pushed north to y=${deepest.toFixed(2)}`
-      + ` (facade at y=26)  ${walkedIn ? '*** WALKED INTO THE BUILDING ***' : 'held'}`);
-    if (walkedIn) failures += 1;
+    /* AND EVERY BUILDING, DERIVED FROM THE AUTHORED FOOTPRINTS RATHER THAN FROM ONE MEMORISED BOX.
+       This used to push north into "cottage-ne, cells x44-55 y18-26" and assert she stopped at
+       y=26. That cottage is not where the current painting puts it -- the constant described the
+       scrapped plan-primed layout -- so on 2026-08-24 the check walked to a cell that no longer
+       exists as ground and then scored the town as letting her INTO a building.
+
+       The footprints in design/act1-towns/greenhollow-authored-obstacles.json are the same polygons
+       derive_town_walkable.py clears from the walkable mask, so this asks the runtime the exact
+       question the owner asked: *"the towns are walkable on weird places like the roofs of
+       houses."* For each footprint she is placed on open ground below its south edge and driven
+       hard at it; every sampled position must stay outside the polygon. Footprints with no clear
+       standing room below them (an NPC in the way, or the town edge) are reported as SKIPPED rather
+       than silently passed. */
+    const bands = JSON.parse(fs.readFileSync(
+      path.join(__dirname, '..', 'design/act1-towns/greenhollow-authored-obstacles.json'),
+      'utf8')).nonWalkableBands;
+    const ART_PER_CELL = 30, WORLD_PER_CELL = 16;
+    const inPoly = (px, py, poly) => {
+      let hit = false;
+      for (let i = 0, j = poly.length - 1; i < poly.length; j = i, i += 1) {
+        const [xi, yi] = poly[i], [xj, yj] = poly[j];
+        if ((yi > py) !== (yj > py) && px < ((xj - xi) * (py - yi)) / (yj - yi) + xi) hit = !hit;
+      }
+      return hit;
+    };
+    for (const band of bands) {
+      const poly = band.polygonArt;
+      const xs = poly.map(p => p[0]), ys = poly.map(p => p[1]);
+      const midX = (Math.min(...xs) + Math.max(...xs)) / 2 / ART_PER_CELL;
+      const southY = Math.max(...ys) / ART_PER_CELL;
+      /* Find open ground below the south edge that the runtime accepts and that is clear of every
+         NPC blocker -- otherwise the push stops against a villager and scores her as a wall. */
+      const start = await page.evaluate(({ midX, southY }) => {
+        const T = window.__ACT1_TOWN__;
+        const C = T.town.worldPxPerCell;
+        const ok = (x, y) => window.__GH_INSIDE__({ x, y }, T.walkable);
+        for (let dy = 0.6; dy <= 3.0; dy += 0.2) {
+          for (const dx of [0, -0.6, 0.6, -1.2, 1.2, -1.8, 1.8]) {
+            const cx = midX + dx, cy = southY + dy;
+            if (!ok(cx * C, cy * C)) continue;
+            if (T.town.npcs.some(n => Math.hypot(n.cell[0] - cx, n.cell[1] - cy) < 1.5)) continue;
+            return { x: cx, y: cy };
+          }
+        }
+        return null;
+      }, { midX, southY });
+      if (!start) {
+        console.log(`  ${band.id.padEnd(18)} SKIPPED -- no clear standing room below its south edge`);
+        report.buildings.push({ id: band.id, skipped: true });
+        continue;
+      }
+      await walkTo(page, start.x, start.y, 30_000);
+      const push = await pushAndSample(page, 'up', 2000, 14);
+      const inside = push.filter(sm => inPoly(sm.at.x * ART_PER_CELL, sm.at.y * ART_PER_CELL, poly));
+      const leftPolygon = push.some(sm => !sm.inside);
+      const walkedIn = inside.length > 0 || leftPolygon;
+      const deepest = Math.min(...push.map(sm => sm.at.y));
+      report.buildings.push({ id: band.id, southEdgeCell: +southY.toFixed(2),
+                              deepestY: +deepest.toFixed(2), entered: walkedIn });
+      console.log(`  ${band.id.padEnd(18)} pushed north to y=${deepest.toFixed(2)}`
+        + ` (south edge y=${southY.toFixed(1)})  `
+        + (walkedIn ? '*** WALKED INTO THE BUILDING ***' : 'held'));
+      if (walkedIn) failures += 1;
+    }
 
     // ---- EXIT -----------------------------------------------------------------------------
     console.log('\nEXIT');
-    await walkTo(page, townCfg.exit.cell[0], townCfg.exit.cell[1]);
+    /* Start the exit walk from the SPAWN, not from wherever the last building push left her.
+       The building probes deliberately drive her hard into walls all over the village, so the exit
+       leg was starting from an arbitrary corner and its outcome depended on the run's history --
+       one run walked out and posted, the next stalled four cells short of the gate and scored the
+       exit as broken. Re-homing makes this leg measure the exit rather than the walker. */
+    await walkTo(page, townCfg.startCell[0], townCfg.startCell[1], 90_000);
+    await walkTo(page, townCfg.exit.cell[0], townCfg.exit.cell[1], 60_000);
     await page.waitForTimeout(400);
     const exits = await page.evaluate(() => window.__GH_EXIT__);
     const at = await cellNow(page);

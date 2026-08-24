@@ -341,22 +341,58 @@ def stamp_exemptions(body, authored_path, s):
 
 
 def stamp_roof_bands(mask, authored_path, s, art_to_world):
-    """Clear AUTHORED roof/ridge bands from the walkable mask before the surface is even traced.
+    """Clear AUTHORED roof/building bands from the walkable mask before the surface is even traced.
 
     The paving classifier cannot tell a sunlit ridge-cap tile from sunlit cobble by colour --
     they measure the same, the same way the well's rim does -- so a band the player is not meant
     to stand on (a roof) can pass the same per-pixel and local-density tests real paving does.
     Colour cannot fix this any more than it could fix the well; the band is authored against the
-    painting instead, exactly like the well's radius is."""
+    painting instead, exactly like the well's radius is.
+
+    THE BANDS ARE NOW WHOLE BUILDING FOOTPRINTS, and that is not a widening for its own sake.
+    Owner, 2026-08-24: *"the towns are walkable on weird places like the roofs of houses."* He was
+    right, and the cause is broader than the green roofs he guessed at. Measured on millbrook's
+    painting, three separate roofs classify as ground and none of them by the same clause:
+
+      * teal shingle  RGB(90,103,85)   -> lawn_mask   (hue 93, sat 0.17, lum 98)
+      * green shingle RGB(101,125,55)  -> lawn AND paving
+      * lavender slate RGB(122,98,122) -> paving_mask (pale, low-saturation, blue present)
+
+    and cream plaster walls read as paving too. Every non-colour separation was measured and
+    rejected before this file gained a footprint:
+
+      * morphological opening of the ground mask: at the radius that finally detaches the green
+        and teal roofs (r=5-6 samples) the north lane is already gone, and the lavender roof is
+        STILL attached at r=8. It abuts open cobble directly.
+      * connectivity from the paving network alone: the lavender roof is inside the largest
+        paving-only component, so a paving-seeded flood fill reaches it.
+      * closing the not-ground mask to isolate buildings as blobs: fences, canopies, shadows and
+        every building merge into one 142k-sample component at every radius tried.
+      * structure-tensor edge coherence over a 15px window: shingles 0.26-0.41, open cobble 0.31.
+        No separation.
+
+    The reason none of them can work is the PROJECTION, not the tuning. These plates are painted
+    three-quarter top-down, so a building's rear wall is hidden behind its own roof and the roof's
+    back edge meets the ground directly. There is no wall, no shadow and no gap between roof and
+    lawn for any local or connectivity test to find. Height is simply not in the image -- the same
+    missing dimension `stamp_exemptions` exists for, in the opposite direction.
+
+    So the footprints are AUTHORED against the painting, for exactly the reason the well is:
+    no local test can separate them. A band may be an axis-aligned `bboxArt` or, preferably, a
+    `polygonArt` traced round the building so a gabled corner does not eat the lane beside it."""
     if not os.path.exists(authored_path):
         return mask
     spec = json.load(open(authored_path))
     h, w = mask.shape
-    yy, xx = np.mgrid[0:h, 0:w]
     for band in spec.get("nonWalkableBands", []):
-        x0, y0, x1, y1 = [v / s for v in band["bboxArt"]]
-        clear = (xx >= x0) & (xx <= x1) & (yy >= y0) & (yy <= y1)
-        mask = mask & ~clear
+        if "polygonArt" in band:
+            pts = [(x / s, y / s) for x, y in band["polygonArt"]]
+        else:
+            x0, y0, x1, y1 = [v / s for v in band["bboxArt"]]
+            pts = [(x0, y0), (x1, y0), (x1, y1), (x0, y1)]
+        im = Image.new("1", (w, h), 0)
+        ImageDraw.Draw(im).polygon(pts, fill=1)
+        mask = mask & ~np.asarray(im).astype(bool)
     return mask
 
 

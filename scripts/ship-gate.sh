@@ -29,6 +29,15 @@ node scripts/build_static_index.mjs --check
 # read past twice, once at a cost of a measurement wrong by three orders of magnitude.
 python3 scripts/check_walkable_authority.py
 python3 scripts/check_town_transitions.py
+# Roofs are not floors. The colour classifiers cannot tell shingle from grass or slate from
+# cobble, so building footprints are AUTHORED and this proves the derivation still honours
+# them. See scripts/check_town_roofs.py for the measurements behind that.
+python3 scripts/check_town_roofs.py
+# Every actor stands on ground the collision allows AND can be reached from the spawn.
+for T in millbrook greenhollow portSapphire; do python3 scripts/place_town_actors.py --town "$T"; done
+# Standing on valid ground is not the same as being talkable: nearestNpc() only looks in the band
+# BELOW an NPC, and authored building footprints can swallow that band whole.
+python3 scripts/check_town_talkable.py
 python3 scripts/regenerate_pins.py --check
 
 python3 scripts/runtime_baseline.py verify-act1 --input dist

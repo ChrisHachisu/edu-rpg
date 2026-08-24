@@ -9,7 +9,7 @@
   "worldPxPerCell": 16,
   "startCell": [
     33.0,
-    4.0
+    5.0
   ],
   "npcs": [
     {
@@ -18,8 +18,8 @@
       "nameKey": "npc.healer.name",
       "sheet": "town/npc/portSapphire-healer-4x3-64.png",
       "cell": [
-        38.38,
-        30.38
+        38.81,
+        30.31
       ],
       "name": "Healer",
       "text": "Welcome to the clinic! I can heal your wounds."
@@ -30,8 +30,8 @@
       "nameKey": "npc.wisewoman.name",
       "sheet": "town/npc/portSapphire-wisewoman-4x3-64.png",
       "cell": [
-        31.25,
-        28.25
+        31.31,
+        28.69
       ],
       "name": "Wise Woman",
       "text": "The Darkfang Grotto lies to the west. Defeat the Giant Toad there to unseal the Crystal Cave to the east. That's where the first crystal shard awaits!"
@@ -42,8 +42,8 @@
       "nameKey": "npc.sailor.name",
       "sheet": "town/npc/portSapphire-sailor-4x3-64.png",
       "cell": [
-        19.69,
-        45.25
+        21.81,
+        45.81
       ],
       "name": "Sailor",
       "text": "I hear a dragon lives in the caves to the north, sealed behind a dark barrier. Scary stuff!"
@@ -55,7 +55,7 @@
       "sheet": "town/npc/portSapphire-drake-4x3-64.png",
       "cell": [
         31.88,
-        41.5
+        41.06
       ],
       "name": "Captain Drake",
       "text": "Ahoy! Name's Captain Drake. I've sailed every sea on this continent. If you need passage anywhere, I'm your man, once my ship's back in shape, that is."
@@ -80,21 +80,21 @@
   ],
   "shopCounter": [
     24.5,
-    30.75
+    31.31
   ],
   "shopId": "portSapphire",
   "exit": {
     "cell": [
       33.0,
-      3.0
+      1.5
     ],
     "targetMapId": "overworld",
     "toX": 133,
     "toY": 348,
-    "note": "Exit lands on the overworld, and the AUTHORITY is public/act1-world-map.js's LANDMARKS entry for this town -- `EXITS[mapId] = L.exit`, the open cell beside its door. NOT src/data/maps.ts. maps.ts's connection (130,291) is legacy: the Act 1 override REWRITES it at runtime, but only inside scene.checkTransition, which is the SHIPPED town's edge-exit path. A hi-fi town never goes through it -- adapter.js's act1-town-exit handler assigns scene.heroTileX/heroTileY = data.toX/toY directly -- so for these towns the value here is used RAW and must already be the landmark exit. || connections[0] of the shipped portSapphire town definition; north trail mouth"
+    "note": "Exit lands on the overworld, and the AUTHORITY is public/act1-world-map.js's LANDMARKS entry for this town -- `EXITS[mapId] = L.exit`, the open cell beside its door. NOT src/data/maps.ts. maps.ts's connection (130,291) is legacy: the Act 1 override REWRITES it at runtime, but only inside scene.checkTransition, which is the SHIPPED town's edge-exit path. A hi-fi town never goes through it -- adapter.js's act1-town-exit handler assigns scene.heroTileX/heroTileY = data.toX/toY directly -- so for these towns the value here is used RAW and must already be the landmark exit. || IN-TOWN HALF RE-MEASURED 2026-08-24 AGAINST THE PAINTING. Owner, on build 57: \"the in-town exit does not match what we see on screen.\" He was right, and it was the same defect in all three towns: `cell` sat 2.5-3.5 cells BEYOND the drawn gate, out on the open trail, so the player walked visibly out of the village and kept going before the screen changed. Millbrook's fence line measures at cell y=56 by timber_mask (12.6 / 21.5 / 10.6 % of rows 55/56/57 against under 1% either side); greenhollow's at y=55.5; Port Sapphire has no gate and its mouth is where the trail leaves the frame at y=0. The old cells -- 60.5, 59.0 and 3.0 -- predate the current paintings. || `cell` is now the GATE AS PAINTED and `startCell` is 3.5 cells INSIDE it. That combination is what makes town.html's arming work without a code change: it arms once the player is more than 2.5 cells clear, so a 3.5-cell spawn is armed on arrival but outside the dy<1.0 / dx<1.6 fire box, and the exit then fires exactly when she steps into the gate. The previous arrangement solved the same arming problem the other way round -- exit outside, spawn on the gate -- which is what put the trigger out in the grass. || The OVERWORLD half (toX/toY) is unchanged and still gated by scripts/check_town_transitions.py."
   },
   "_dialogueNote": "name/text are the shipped English strings, lifted verbatim from runtime/baselines/v1.17.1-ipad-hud-walk so the town is playable standalone. They are a FALLBACK: the runtime also posts act1-town-interact to the parent so the bundle's real localised dialogue system can take over once the adapter hands off.",
-  "_startNote": "The north trail mouth. The shipped town definition's own entry (8,15 of a 16x16 grid) is the BOTTOM edge, which here is open sea -- Port Sapphire's three land exits are N, W and E. Verified inside the walkable geometry before shipping.",
+  "_startNote": "MOVED 2026-08-24 from [33.0, 4.0] to [33.0, 5.0]: 3.5 cells inside the painted gate, which is what arms the exit on arrival without firing it. See exit.note.",
   "_foregroundNote": "RETIRED 2026-08-22 with the repainted plate, and the files deleted. The foreground overlay existed for exactly two props on the old art -- the ship's mast and a hanging demijohn -- which a top-down painting cannot encode as height, so they read as solid and the player had to be drawn BENEATH them. The owner's brief for the repaint was that nothing overhangs walkable stone, and nothing does, so the layer has nothing left to draw. town.html treats `foreground` as optional and skips the whole path when the key is absent.",
   "_layoutNote": "REPLACED 2026-08-22 with the repainted plate. Cells are placed by scripts/place_town_actors.py against collision DERIVED from the finished plate, eroded by actorFootRadius so the body fits rather than the point, and snapped only to ground that is REACHABLE from startCell -- 5.3% of this town's standable ground is walled off behind necks narrower than two foot-radii, and the sailor's first snap landed on one of those pockets. shopCounter moved 1.55 cells and the sailor 1.76: the ground directly south of the market stall is solid in the new art, so those are the nearest cells a player can actually stand on. Re-run that script rather than hand-editing.",
   "_shopkeeperNote": "Owner 2026-08-22: \"i cannot find the shopkeeper and the shopkeeper needs to be in a shop.\" He stands INSIDE the market stall, behind the counter, which is why he carries `fixed: true` -- scripts/place_town_actors.py snaps actors onto walkable ground and the inside of a stall is deliberately not walkable, so snapping him would put him out on the lane. town.html routes a tap on him to the shop the same way it routes the healer to the heal flow, so the shipped ShopScene stays the single implementation. shopCounter remains the spot in FRONT of the stall where the player stands."

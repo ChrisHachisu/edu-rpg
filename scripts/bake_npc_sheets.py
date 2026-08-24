@@ -39,6 +39,24 @@ def main() -> None:
         sheet = Image.open(path)
         if sheet.size != (COLS * N, ROWS * N):
             raise SystemExit(f"{path} is {sheet.size}, expected {(COLS*N, ROWS*N)}")
+        # REFUSE AN ALREADY-KEYED SHEET INSTEAD OF SILENTLY RUINING IT.
+        # key_cell() measures chroma distance to literal magenta on the RGB channels. Feed it a file
+        # that has already been keyed -- RGBA, with whatever the keyer happened to leave under
+        # alpha 0 -- and there is nothing magenta left to find: a sheet whose transparent pixels
+        # went to near-black bakes to a 100%-opaque ruin, and one whose transparent pixels kept a
+        # magenta-ish tint bakes to something that merely differs from what shipped.
+        #
+        # Measured 2026-08-24: `design/act1-towns/npc/final/` had drifted into a MIXED directory --
+        # eight already-keyed RGBA sheets alongside two RGB-on-magenta ones -- so the documented
+        # command `bake_npc_sheets.py --src design/act1-towns/npc/final` destroyed greenhollow-elder
+        # and millbrook-miller outright and changed four more. It was caught in a scratch directory
+        # rather than in public/, by luck. The authored format is RGB on pure magenta; anything else
+        # is a mistake this now names instead of performing.
+        if sheet.mode != "RGB":
+            raise SystemExit(
+                f"{path} is {sheet.mode}, not RGB. Authored NPC sheets are RGB on pure magenta "
+                f"(255,0,255); an RGBA file here has already been keyed and re-keying it produces "
+                f"a corrupt sprite. Bake from the authored source, not from a baked output.")
         out = Image.new("RGBA", sheet.size, (0, 0, 0, 0))
         for r in range(ROWS):
             for c in range(COLS):

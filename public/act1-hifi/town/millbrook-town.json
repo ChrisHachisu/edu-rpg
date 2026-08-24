@@ -9,7 +9,7 @@
   "worldPxPerCell": 16,
   "startCell": [
     32.5,
-    57.0
+    53.0
   ],
   "npcs": [
     {
@@ -18,8 +18,8 @@
       "nameKey": "npc.sage.name",
       "sheet": "town/npc/millbrook-sage-4x3-64.png",
       "cell": [
-        21.38,
-        22.62
+        21.69,
+        23.75
       ],
       "name": "Sage",
       "text": "I have read these woods for forty years. The old paths still hold, if you know where to set your feet. Bring me what you find out there and I will tell you what it means."
@@ -30,8 +30,8 @@
       "nameKey": "npc.healer.name",
       "sheet": "town/npc/millbrook-healer-4x3-64.png",
       "cell": [
-        25.19,
-        42.69
+        25.5,
+        43.0
       ],
       "name": "Healer",
       "text": "Sit down and let me look at you. I can heal your wounds, and there is no charge for anyone who walked in through that gate."
@@ -42,8 +42,8 @@
       "nameKey": "npc.miller.name",
       "sheet": "town/npc/millbrook-miller-4x3-64.png",
       "cell": [
-        38.5,
-        20.5
+        38.56,
+        20.06
       ],
       "name": "Miller",
       "text": "That wheel has turned every day since my father's time. Grain from the fields, flour for the whole valley. Mind the bridge planks, they are wet through."
@@ -54,8 +54,8 @@
       "nameKey": "npc.herbalist.name",
       "sheet": "town/npc/millbrook-herbalist-4x3-64.png",
       "cell": [
-        40.38,
-        29.56
+        40.44,
+        29.12
       ],
       "name": "Herbalist",
       "text": "Everything worth picking grows along the stream bank. Stay on this side of it, though. What grows past the water belongs to the woods."
@@ -81,12 +81,12 @@
   "exit": {
     "cell": [
       32.5,
-      60.5
+      56.5
     ],
     "targetMapId": "overworld",
     "toX": 39,
     "toY": 345,
-    "note": "Exit lands on the overworld, and the AUTHORITY is public/act1-world-map.js's LANDMARKS entry for this town -- `EXITS[mapId] = L.exit`, the open cell beside its door. NOT src/data/maps.ts. maps.ts's connection (100,321) is legacy: the Act 1 override REWRITES it at runtime, but only inside scene.checkTransition, which is the SHIPPED town's edge-exit path. A hi-fi town never goes through it -- adapter.js's act1-town-exit handler assigns scene.heroTileX/heroTileY = data.toX/toY directly -- so for these towns the value here is used RAW and must already be the landmark exit. || The mouth of the south approach trail, OUTSIDE the palisade -- the gate itself sits at y~59 and the lane runs on to y=62. toX/toY are the millbrook LANDMARK's own exit cell in public/act1-world-map.js -- {\"mapId\":\"millbrook\",\"at\":{\"x\":39,\"y\":344},\"exit\":{\"x\":39,\"y\":345}} -- i.e. the open ground immediately south of the door she came in by. Placed 3.5 cells south of startCell ON PURPOSE: town.html only arms the exit once the player is more than 2.5 cells clear of it, so an exit any nearer the arrival point either never arms or bounces her straight back out. At 60.5 she spawns already clear, walks in freely, and leaves by walking back out through the gateway."
+    "note": "Exit lands on the overworld, and the AUTHORITY is public/act1-world-map.js's LANDMARKS entry for this town -- `EXITS[mapId] = L.exit`, the open cell beside its door. NOT src/data/maps.ts. maps.ts's connection (100,321) is legacy: the Act 1 override REWRITES it at runtime, but only inside scene.checkTransition, which is the SHIPPED town's edge-exit path. A hi-fi town never goes through it -- adapter.js's act1-town-exit handler assigns scene.heroTileX/heroTileY = data.toX/toY directly -- so for these towns the value here is used RAW and must already be the landmark exit. || IN-TOWN HALF RE-MEASURED 2026-08-24 AGAINST THE PAINTING. Owner, on build 57: \"the in-town exit does not match what we see on screen.\" He was right, and it was the same defect in all three towns: `cell` sat 2.5-3.5 cells BEYOND the drawn gate, out on the open trail, so the player walked visibly out of the village and kept going before the screen changed. Millbrook's fence line measures at cell y=56 by timber_mask (12.6 / 21.5 / 10.6 % of rows 55/56/57 against under 1% either side); greenhollow's at y=55.5; Port Sapphire has no gate and its mouth is where the trail leaves the frame at y=0. The old cells -- 60.5, 59.0 and 3.0 -- predate the current paintings. || `cell` is now the GATE AS PAINTED and `startCell` is 3.5 cells INSIDE it. That combination is what makes town.html's arming work without a code change: it arms once the player is more than 2.5 cells clear, so a 3.5-cell spawn is armed on arrival but outside the dy<1.0 / dx<1.6 fire box, and the exit then fires exactly when she steps into the gate. The previous arrangement solved the same arming problem the other way round -- exit outside, spawn on the gate -- which is what put the trigger out in the grass. || The OVERWORLD half (toX/toY) is unchanged and still gated by scripts/check_town_transitions.py."
   },
   "_dialogueNote": "name/text are English FALLBACK strings in the voice of the shipped Port Sapphire entries, so the town is playable standalone. The runtime also posts act1-town-interact to the parent so the bundle's real localised dialogue system can take over once the adapter hands off. ids and dialogueKeys match the frozen bundle: sage is a quest turn-in.",
   "_layoutNote": "REPLACED 2026-08-22. These cells no longer come from design/act1-towns/millbrook/spec.json: scripts/town_layout.py wrote that file for the plan-primed layout the owner scrapped, and the village was repainted afterwards, so its snapping described geometry the art no longer has -- savePoint sat on a cottage roof. Towns are ART-FIRST: the painting is authored, scripts/derive_town_walkable.py derives collision from the finished plate, and scripts/place_town_actors.py places the actors against THAT, eroding by actorFootRadius so the body fits rather than the point and flood-filling from startCell so nothing sits in a courtyard the player cannot enter. Re-run that script rather than hand-editing; it verifies as well as writes, and it reported every actor here standable and reachable.",
@@ -94,8 +94,9 @@
   "shopId": "millbrook",
   "shopCounter": [
     15.0,
-    38.62
+    38.69
   ],
   "_serviceNote": "shopCounter stands on the lane in front of the market stall's produce counter, and shopId matches the inventory src/data/shops.ts already defines. savePoint MOVED 2026-08-22: [37,41] was valid against the scrapped plan-primed collision and lands on the brown cottage's ROOF in the painted village; it is now the paving just south of the well, which is where the save point reads.",
-  "_shopkeeperNote": "Owner 2026-08-22: \"i cannot find the shopkeeper and the shopkeeper needs to be in a shop.\" He stands INSIDE the market stall, behind the counter, which is why he carries `fixed: true` -- scripts/place_town_actors.py snaps actors onto walkable ground and the inside of a stall is deliberately not walkable, so snapping him would put him out on the lane. town.html routes a tap on him to the shop the same way it routes the healer to the heal flow, so the shipped ShopScene stays the single implementation. shopCounter remains the spot in FRONT of the stall where the player stands."
+  "_shopkeeperNote": "Owner 2026-08-22: \"i cannot find the shopkeeper and the shopkeeper needs to be in a shop.\" He stands INSIDE the market stall, behind the counter, which is why he carries `fixed: true` -- scripts/place_town_actors.py snaps actors onto walkable ground and the inside of a stall is deliberately not walkable, so snapping him would put him out on the lane. town.html routes a tap on him to the shop the same way it routes the healer to the heal flow, so the shipped ShopScene stays the single implementation. shopCounter remains the spot in FRONT of the stall where the player stands.",
+  "_startNote": "MOVED 2026-08-24 from [32.5, 57.0] to [32.5, 53.0]: 3.5 cells inside the painted gate, which is what arms the exit on arrival without firing it. See exit.note."
 }

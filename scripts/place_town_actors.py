@@ -81,6 +81,73 @@ def nearest(mask: np.ndarray, x: float, y: float, limit_px: int = 240):
     return (int(xs[k]), int(ys[k]), dist) if dist <= limit_px else None
 
 
+# town.html's nearestNpc() band, and the disc every stationary NPC is registered as.
+NPC_BLOCK_RADIUS = 7.0                        # world px
+DX_MAX, DY_MIN, DY_MAX = 1.1, -0.35, 2.1      # cells; dy positive = player BELOW the NPC
+
+
+def talk_band_area(reachable: np.ndarray, cx: float, cy: float, cell: float,
+                   own_disc: bool = True) -> int:
+    """How much ground the player can actually stand on inside this NPC's talk band.
+
+    STANDING ON A VALID CELL IS NOT THE SAME AS BEING TALKABLE, and that gap shipped once.
+    `nearestNpc()` only sees the player from a band BELOW the NPC, so an NPC placed hard against a
+    building's south wall is perfectly valid, perfectly reachable, and can never be spoken to --
+    her band is inside the wall. Nothing else in this file would notice.
+
+    It became load-bearing on 2026-08-24, when building footprints were authored to get the player
+    off the roofs (`derive_town_walkable.py::stamp_roof_bands`). That removed about a cell of margin
+    around every building, and greenhollow's healer and fisherman went from 1225 and 646 reachable
+    band pixels to 137 each -- still non-zero, so still 'valid', but a sliver the player has to
+    hunt for."""
+    h, w = reachable.shape
+    x0, x1 = int(round(cx - DX_MAX * cell)), int(round(cx + DX_MAX * cell)) + 1
+    y0, y1 = int(round(cy + DY_MIN * cell)), int(round(cy + DY_MAX * cell)) + 1
+    x0, y0 = max(0, x0), max(0, y0)
+    x1, y1 = min(w, x1), min(h, y1)
+    if x1 <= x0 or y1 <= y0:
+        return 0
+    sub = reachable[y0:y1, x0:x1]
+    if own_disc:
+        # The player cannot stand ON the NPC. The band starts 0.35 cells ABOVE her feet, which is
+        # inside her own 7 px blocker, so counting that overlap would credit her with ground she is
+        # occupying herself.
+        yy, xx = np.mgrid[y0:y1, x0:x1]
+        sub = sub & ~((xx - cx) ** 2 + (yy - cy) ** 2 <= NPC_BLOCK_RADIUS ** 2)
+    return int(sub.sum())
+
+
+def nearest_talkable(reachable: np.ndarray, x: float, y: float, cell: float,
+                     min_band: int, limit_px: int = 240):
+    """Nearest reachable standable pixel whose TALK BAND also has room to stand in.
+
+    `reachable` here must already have every OTHER NPC's blocker disc removed but NOT this NPC's
+    own. Removing her own would make her current cell illegal to herself, and the snap would then
+    shuffle her about 7 px -- one blocker radius -- on every single run. That is not a hypothetical:
+    it made this script non-idempotent, so the ship gate reported a 0.44-cell move for every NPC in
+    all three towns forever, and a gate that is never a fixed point stops being read.
+
+    Falls back to the plain nearest reachable pixel when no candidate clears `min_band`, so this can
+    only ever improve on the old behaviour -- it never refuses to place an NPC."""
+    ys, xs = np.nonzero(reachable)
+    if not len(ys):
+        return None, 0
+    d2 = (xs - x) ** 2 + (ys - y) ** 2
+    order = np.argsort(d2)
+    best_any = None
+    for k in order:
+        dist = float(np.sqrt(d2[k]))
+        if dist > limit_px:
+            break
+        px, py = int(xs[k]), int(ys[k])
+        if best_any is None:
+            best_any = (px, py, dist, talk_band_area(reachable, px, py, cell))
+        area = talk_band_area(reachable, px, py, cell)
+        if area >= min_band:
+            return (px, py, dist), area
+    return (best_any[:3] if best_any else None), (best_any[3] if best_any else 0)
+
+
 def reach(mask: np.ndarray, start) -> np.ndarray:
     seen = np.zeros_like(mask)
     if not mask[start[1], start[0]]:
@@ -101,6 +168,15 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--town", required=True)
     ap.add_argument("--write", action="store_true", help="update the manifest in place")
+    ap.add_argument("--min-talk-band", type=int, default=600,
+                    help="minimum REACHABLE world px inside an NPC's south approach band, with her "
+                         "own blocker and every other NPC's removed. An NPC standing in the open "
+                         "measures ~1370, the theoretical maximum for the band. 600 was chosen by "
+                         "sweeping: at 600 every NPC in all three towns is satisfied by a move of "
+                         "0.50 cells or less, and at 700 millbrook's sage jumps 3.6 cells because "
+                         "nothing nearer clears it -- a floor that rearranges the composition is "
+                         "the wrong floor. Snapping ignores this when nothing within 240 px clears "
+                         "it, so it can only improve a placement, never block one.")
     a = ap.parse_args()
     tj = os.path.join(TOWN_DIR, f"{a.town}-town.json")
     town = json.load(open(tj))
@@ -133,26 +209,53 @@ def main():
     seen = reach(mask, (start[0], start[1]))
     reachable_mask = mask & seen
 
-    snapped, fails = {}, []
+    # NPCs are solid to each other and to the player, so the ground an NPC's own talk band offers
+    # has to be measured with every OTHER NPC's disc already removed -- otherwise two neighbours
+    # each "have" a band that is really the same square of paving one of them is standing on.
+    yy, xx = np.mgrid[0:mask.shape[0], 0:mask.shape[1]]
+    def disc(bx, by):
+        return (xx - bx) ** 2 + (yy - by) ** 2 <= NPC_BLOCK_RADIUS ** 2
+    all_npcs = town.get("npcs", [])
+
+    snapped, bands, fails = {}, {}, []
     for name, c in items:
-        target = reachable_mask if name != "startCell" else mask
-        got = nearest(target, c[0] * cell, c[1] * cell)
+        if name == "startCell":
+            got = nearest(mask, c[0] * cell, c[1] * cell)
+            area = None
+        elif name.startswith("npc:"):
+            me = name[len("npc:"):]
+            others = np.zeros_like(mask)
+            for n in all_npcs:
+                if n["id"] == me:
+                    continue
+                others |= disc(n["cell"][0] * cell, n["cell"][1] * cell)
+            got, area = nearest_talkable(reachable_mask & ~others,
+                                         c[0] * cell, c[1] * cell, cell, a.min_talk_band)
+        else:
+            got, area = nearest(reachable_mask, c[0] * cell, c[1] * cell), None
         if got is None:
             fails.append(f"{name}: no reachable standable ground within 240 world px of cell {c}")
             continue
         x, y, dist = got
         snapped[name] = (x, y, round(x / cell, 2), round(y / cell, 2), dist)
+        if area is not None:
+            bands[name] = area
 
     sx, sy = snapped["startCell"][0], snapped["startCell"][1]
 
-    print(f"  {'actor':22s} {'cell':>14s} -> {'snapped':>14s}  {'moved':>7s}  reachable")
+    print(f"  {'actor':22s} {'cell':>14s} -> {'snapped':>14s}  {'moved':>7s}  reachable  talk band")
     bad = 0
     for name, (x, y, cx, cy, dist) in snapped.items():
         ok = bool(seen[y, x])
-        bad += (not ok) or dist > 1.5 * cell
+        band = bands.get(name)
+        # A band under the floor is reported, not failed: the floor is a comfort target, and an NPC
+        # the composition wants against a wall may honestly have less. Zero IS a failure -- that NPC
+        # can never be talked to. scripts/check_town_talkable.py gates the zero case.
+        bad += (not ok) or dist > 1.5 * cell or (band == 0)
         orig = dict(items)[name]
         print(f"  {name:22s} {f'[{orig[0]},{orig[1]}]':>14s} -> {f'[{cx},{cy}]':>14s}  "
-              f"{dist/cell:6.2f}c  {'yes' if ok else 'NO'}")
+              f"{dist/cell:6.2f}c  {'yes' if ok else 'NO':>9s}  "
+              f"{'-' if band is None else f'{band:5d} px'}")
     for f in fails:
         print("   ", f)
     for name in sorted(fixed):
