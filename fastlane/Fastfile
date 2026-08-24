@@ -16,14 +16,14 @@
 require 'json'
 default_platform(:ios)
 
-ROOT          = "/Users/christopherhachisu/Documents/claudecode/edu-rpg"
+ROOT          = File.expand_path("..", __dir__)
 APP_ID        = "app.chalkmap.questofknowledge"
 APP_NAME      = "Quest of Knowledge"
 SKU           = "questofknowledge2026"
 TEAM_ID       = "M969PWP3PU"
 ASC_KEY_ID    = "52937L4S9H"
 ASC_ISSUER_ID = "006a572e-afa8-464e-8f46-ce19bd161a9f"
-ASC_KEY_PATH  = "/Users/christopherhachisu/Documents/claudecode/chalkmap-v2/.eas-credentials/AuthKey_52937L4S9H.p8"
+ASC_KEY_PATH  = File.expand_path("~/Documents/claudecode/chalkmap-v2/.eas-credentials/AuthKey_52937L4S9H.p8")
 WORKSPACE     = "#{ROOT}/ios/App/App.xcworkspace"
 PROJECT       = "#{ROOT}/ios/App/App.xcodeproj"
 SCHEME        = "App"

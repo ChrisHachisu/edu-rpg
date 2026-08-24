@@ -30,6 +30,38 @@ those steps at 24 or more:
 Measure with `scripts/measure_npc_style.py`. A sheet that reads mushy at 64px is one whose forms
 have no hard edge between them; the fix is drawing decision, not sharpening.
 
+### THE TWO RULES, AND THEY MOVE DIFFERENT NUMBERS (added 2026-08-24, on `tr`)
+
+The v4 brief above measured the target correctly but named only half the cause. `step` and `hard%`
+respond to DIFFERENT drawing decisions, and a sheet that fixes only the first stalls at ~30 hard%:
+
+1. **VALUE STRUCTURE moves `step`.** A large NEAR-WHITE mass placed directly against a large DARK
+   mass — a pale apron on a dark dress, a cream stole on a dark robe, a white shirt under a dark
+   jerkin. Roughly a quarter of the figure each, never one mid-tone over the whole torso.
+
+2. **BREAKING UP FLAT AREAS moves `hard%`, and this is the one that was missing.** `hard%` is the
+   SHARE of adjacent-pixel pairs stepping 24+, so a large smooth region *actively lowers* the score
+   no matter how dark or light it is. Every big garment area needs REPEATED hard-edged detail
+   spaced a few pixels apart: stripes, woven bands, trim, panel seams, laces, a banded hem, and
+   fold shadows drawn as **distinct darker BLOCKS** rather than soft shading.
+   **This is why `portSapphire-sailor` tops the cast — his striped jersey puts a hard boundary
+   every few pixels, not one boundary in the middle of his chest.**
+
+Measured on `greenhollow-elder`, same character, same palette, same pipeline:
+
+| prompt | step | hard% | |
+|---|---|---|---|
+| original sheet | 17.8 | 24.6 | the sheet being replaced |
+| + value structure only | 23.1 | 30.2 | `step` passes, `hard%` still SOFT |
+| + break up flat areas | **32.0** | **40.4** | passes, above the sailor's 28.2 / 40.1 |
+
+### MEASURE THE BAKED SHEET, NOT THE `final/` COPY
+
+`measure_npc_style.py` must run on the **baked RGBA** sheet. On the RGB-on-magenta copy there is no
+alpha, so the flat magenta background counts as opaque and its zero-steps drag the mean down: the
+same elder sheet reads **8.16 pre-bake vs 20.22 baked**. Measuring the wrong copy makes a good
+sheet look catastrophically soft.
+
 What that means when drawing:
 - **Stepped shading with FEW tones and hard boundaries between them.** Two to four tones per hue,
   each a distinct block. No smooth gradients across a garment.
@@ -98,6 +130,14 @@ softest sheet in the cast and needs the biggest change in contrast.
 - `python3 scripts/check_character_finish.py <your sheets>` → **PASS** (no drawn dark keyline,
   soft edge, and key bleed <= 25 — that last one catches the magenta halo two workers shipped on
   2026-08-24 by measuring the outermost OPAQUE ring, which excludes the halo by construction).
+- `python3 scripts/check_npc_pose_rows.py <your sheets>` -> **PASS**. This gate was added
+  2026-08-24 because `greenhollow-villager1` passed style (32.76 / 44.2) AND finish while its
+  ROW 2, the RIGHT facing, had been drawn as a view from BEHIND with the character's prop missing
+  -- in game she turned her back when walking right. Contrast and edge gates are blind to whether
+  the twelve cells carry the four facings the runtime indexes them by, and the rows are small
+  enough that a human reading a contact sheet reported "distinct L/R poses" for that very sheet.
+  Rows 1 and 2 must BOTH show the face; row 3 is the only view from behind; row 2 must not be
+  row 1 flipped. The big prop stays visible and in the same hand in rows 0, 1 and 2.
 - 192x256, 3x4 of 64, feet on row 58 in all twelve cells, measured directly.
 - For the healer only: md5 identical across the three town copies.
 - `python3 scripts/measure_npc_palette.py` → your character's hue family share, and confirm nobody
