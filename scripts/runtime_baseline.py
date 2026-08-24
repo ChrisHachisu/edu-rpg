@@ -432,7 +432,7 @@ ACT1_DUNGEON_FILES = {
 # no URL bar). Pinned so it cannot quietly grow into something that mutates real save data.
 ACT1_TOWN_FILES = {
     "act1-hifi/town.html": (
-        35000, "12b0e274ecb11e630a8a5a031aabd6e6b1fd5c8f3152f1675b905ea688e988ed"),
+        36164, "a2cb948c32bcb607cbe19b1be1a44e6bd7932b1fb1812c55030a9900e0222b73"),
     "act1-hifi/town/portSapphire-town.json": (
         7899, "b646efffd974bbb9de0c7552062f63882f2903694a930d884a68b070e2047bd3"),
     "act1-hifi/town/portSapphire-walkable.json": (
@@ -478,9 +478,9 @@ ACT1_TOWN_FILES = {
     # can see: it reports "0 updated", leaves the zeros in place, and the very next step fails with
     # "Act 1 town identity mismatch" pointing at the file you just added. Cost 2026-08-21.
     "act1-hifi/town/greenhollow-town.json": (
-        8734, "5f1289c9aed1d8ade5c11877c75966a57a6936f194cfdfedd1fa50ae055ddbd5"),
+        9717, "1cecc4f4cc5a3d2682626bbc12e3399b5151517b21531c5264df3e34802f2284"),
     "act1-hifi/town/greenhollow-walkable.json": (
-        27559, "281981bb20170651544013ccdfeef5ceced918f175ab70958ba9ba38c8aea0c6"),
+        37899, "950e5c58a91307eba70924f398c1e4598d81b3f87cc8ab0ec27d49280678265f"),
     "act1-hifi/town/npc/greenhollow-elder-4x3-64.png": (
         72823, "59cc740c50ae3deaca835884eaaf69976e5e6d7cc07bac9fc49293ab72365f72"),
     "act1-hifi/town/npc/greenhollow-fisherman-4x3-64.png": (
@@ -513,7 +513,7 @@ ACT1_TOWN_FILES = {
     "act1-hifi/town/npc/millbrook-sage-4x3-64.png": (
         68606, "0ae7838c596ebaae9262ed2cded81bad57710a7e0646070e42761b318939171c"),
     "act1-hifi/town/greenhollow-walkable.json": (
-        27559, "281981bb20170651544013ccdfeef5ceced918f175ab70958ba9ba38c8aea0c6"),
+        37899, "950e5c58a91307eba70924f398c1e4598d81b3f87cc8ab0ec27d49280678265f"),
     "act1-hifi/town/millbrook-walkable.json": (
         36534, "15b692b6f6776bda711476219fb88d8811e17910e5e95cf90ba1aab3376952f3"),
     "act1-hifi/town/millbrook-town.json": (
