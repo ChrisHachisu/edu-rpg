@@ -28,6 +28,22 @@
  *            question is whether the RUNTIME holds, not whether the geometry looks closed.
  *   EXIT     walking back out through the south gate posts act1-town-exit with the overworld cell.
  *
+ * READ THIS BEFORE BELIEVING A RED RESULT: THE REACH LEG IS FLAKY, THE OTHERS ARE NOT.
+ *   Measured over six consecutive runs on 2026-08-24, against geometry that every deterministic
+ *   check passes: ARRIVE, PALISADE, BUILDINGS and EXIT came out identical every time, and REACH
+ *   scored anywhere between six of six and two of six. The walker is the reason -- it presses arrow
+ *   keys toward a waypoint and has no model of what it is stuck on, so where it gives up depends on
+ *   where the previous leg happened to leave the hero. Three follower fixes helped and none made it
+ *   deterministic (finer waypoints, sidestep-on-stall, alternating the sidestep so the well in the
+ *   plaza stops eating the route to the elder); a diagonal-press follower was tried and measured
+ *   WORSE, and is documented at the site rather than left to be rediscovered.
+ *
+ *   So: a REACH failure here is a hypothesis, not a verdict. The mechanical answer to the same
+ *   question is `scripts/check_town_talkable.py`, which is deterministic, covers all three towns
+ *   and IS in the ship gate. This file is not, and must not be read as one. What it is uniquely
+ *   good for is the two things no offline check can prove -- that the RUNTIME holds the player out
+ *   of a building when she is driven at it, and that the exit fires where the gate is painted.
+ *
  * USAGE
  *   python3 -m http.server 5178 --directory dist    # NEVER `serve -s dist`: it rewrites modules
  *   node scripts/greenhollow_verify_town.cjs [url-root] [--out DIR]
@@ -245,11 +261,16 @@ async function walkTo(page, tx, ty, budgetMs = 90_000) {
          abandoned the route and the run scored a reachable NPC as unreachable -- differently on
          each run, because where she gave up depended on where the previous walk left her. The
          perpendicular push is what gets her off the corner; only a stall on BOTH axes counts. */
-      await hold(page, minor, 200);
+      /* SIDESTEP BOTH WAYS BEFORE GIVING UP. Always trying the same perpendicular walks her into
+         whatever is on that side -- in greenhollow that is the well in the middle of the plaza,
+         sitting directly on the straight line from the spawn to the elder, and the elder was the
+         NPC that kept coming back unreachable at y=28-31 while every other leg passed. */
+      const opposite = { up: 'down', down: 'up', left: 'right', right: 'left' }[minor];
+      await hold(page, stubborn % 2 === 0 ? minor : opposite, 200);
       after = await cellNow(page);
       if (Math.hypot(after.x - at.x, after.y - at.y) < 0.12) {
         stubborn += 1;
-        if (stubborn >= 4) { idx += 1; stubborn = 0; }
+        if (stubborn >= 6) { idx += 1; stubborn = 0; }
       } else stubborn = 0;
     } else stubborn = 0;
   }
