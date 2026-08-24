@@ -65,9 +65,15 @@ ROOF_PROBES = {
         "terracotta-roof": ((1560, 500), (84, 44, 6)), "olive-roof": ((1100, 1300), (211, 173, 94)),
         "market-roof": ((470, 800), (181, 92, 30)), "mill-roof": ((300, 250), (44, 75, 105)),
     },
+    # herb-shop-roof was re-frozen 2026-08-25 from (60,47,1) to (37,23,0): the herb-shop
+    # quarter was repainted on owner report ("the town artwork is incorrect in some
+    # locations"), which is exactly the case this check exists to catch. The probe point
+    # itself did not move and was verified BY EYE to still sit on the roof shingles before
+    # the new RGB was accepted -- re-measuring without looking would let a probe drift off
+    # a roof onto whatever replaced it and keep passing forever.
     "greenhollow": {
         "stone-roof-nw": ((330, 220), (0, 1, 0)), "cottages-n-roof": ((760, 300), (8, 7, 0)),
-        "market-stall-roof": ((430, 760), (79, 66, 0)), "herb-shop-roof": ((1380, 700), (60, 47, 1)),
+        "market-stall-roof": ((430, 760), (79, 66, 0)), "herb-shop-roof": ((1380, 700), (37, 23, 0)),
         "teal-roof-sw": ((370, 1280), (0, 63, 58)), "green-roof-s": ((690, 1290), (42, 63, 8)),
         "brown-roof-se": ((1220, 1300), (234, 210, 152)), "blue-roof-se": ((1580, 1330), (0, 64, 36)),
     },

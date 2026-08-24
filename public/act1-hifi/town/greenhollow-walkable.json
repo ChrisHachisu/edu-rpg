@@ -2232,6 +2232,44 @@
         }
       ],
       "_note": "OWNER 2026-08-25 build 59: the hero could stand inside the central well. Its rim is cobble-coloured so derive_town_walkable.py cannot separate it from the square by colour; it is authored in design/act1-towns/greenhollow-authored-obstacles.json as 'well-centre' and added here directly rather than by re-deriving, because greenhollow's surface feeds the eight frozen probes in check_town_roofs.py and a full re-derive would move them."
+    },
+    {
+      "id": "prop-well-herbshop",
+      "kind": "town-prop-authored",
+      "polygon": [
+        {
+          "x": 653.9,
+          "y": 547.7
+        },
+        {
+          "x": 664.5,
+          "y": 534.9
+        },
+        {
+          "x": 680.5,
+          "y": 534.9
+        },
+        {
+          "x": 691.2,
+          "y": 547.7
+        },
+        {
+          "x": 691.2,
+          "y": 566.9
+        },
+        {
+          "x": 680.5,
+          "y": 579.7
+        },
+        {
+          "x": 664.5,
+          "y": 579.7
+        },
+        {
+          "x": 653.9,
+          "y": 566.9
+        }
+      ]
     }
   ],
   "dynamicBlockers": [],

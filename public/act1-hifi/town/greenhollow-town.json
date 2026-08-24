@@ -42,11 +42,12 @@
       "nameKey": "npc.healer.name",
       "sheet": "town/npc/greenhollow-healer-4x3-64.png",
       "cell": [
-        21.75,
-        38.19
+        46.9,
+        32.9
       ],
       "name": "Healer",
-      "text": "Come in whenever you are hurt. I will mend you, and it costs you nothing here in Greenhollow."
+      "text": "Come in whenever you are hurt. I will mend you, and it costs you nothing here in Greenhollow.",
+      "_placementNote": "MOVED 2026-08-25 from [21.75, 38.19] to [46.9,32.9]. OWNER: \"isn't the healer supposed to be in the shop with the herbs dangling from it? Please place her there.\" That is the herb shop on the east side; she now stands on its stone floor just in front of the hanging herbs rather than out by the market stall. Chosen because the cells 1.0-1.8 due south of her are all walkable, so nearestNpc()'s south approach band is reachable -- verified against the walkable authority before it was written here, and again by the gate's TOWN TALKABLE CHECK."
     },
     {
       "id": "villager1",

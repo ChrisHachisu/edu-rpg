@@ -449,7 +449,7 @@ ACT1_TOWN_FILES = {
     "act1-hifi/town/npc/portSapphire-drake-4x3-64.png": (
         72410, "693c0fd79544d69495a80daea400e2bdca1c0af926abfe770497eacf8ddb16fd"),
     "act1-hifi/town/npc/portSapphire-healer-4x3-64.png": (
-        65667, "ce54239b9072702760ba345979ae58e9c6262d80d877b4fbda998ecc9c2b20bc"),
+        81201, "50b0bc09520fb446adcacf350be13a51efaa283bf3d7a7836af90ab8fe176e0b"),
     "act1-hifi/town/npc/portSapphire-sailor-4x3-64.png": (
         63030, "ef4dcc7cb9cf51492dda19714c6e92d1d89f32b4f799ccd5594e829109a99c98"),
     "act1-hifi/town/npc/portSapphire-wisewoman-4x3-64.png": (
@@ -478,15 +478,15 @@ ACT1_TOWN_FILES = {
     # can see: it reports "0 updated", leaves the zeros in place, and the very next step fails with
     # "Act 1 town identity mismatch" pointing at the file you just added. Cost 2026-08-21.
     "act1-hifi/town/greenhollow-town.json": (
-        9717, "1cecc4f4cc5a3d2682626bbc12e3399b5151517b21531c5264df3e34802f2284"),
+        10288, "eb4fb0008a0a4dba5b7133dbfd10c76a98ccf0ee62a89f33254c0110b3969f98"),
     "act1-hifi/town/greenhollow-walkable.json": (
-        37899, "950e5c58a91307eba70924f398c1e4598d81b3f87cc8ab0ec27d49280678265f"),
+        38520, "fc62f491b3877da4182efd0b3c245bedac239442bd2dffa03408cd1801284cc8"),
     "act1-hifi/town/npc/greenhollow-elder-4x3-64.png": (
         83896, "93b763cebc3c419e5ef7d8e3368507bf604445133e4bcd37b6106881561293f7"),
     "act1-hifi/town/npc/greenhollow-fisherman-4x3-64.png": (
         69584, "9582ebb57dbad3bb7e81c334d8d3d8095d725184dd33a1cf35c4f67f0da6beb9"),
     "act1-hifi/town/npc/greenhollow-healer-4x3-64.png": (
-        65667, "ce54239b9072702760ba345979ae58e9c6262d80d877b4fbda998ecc9c2b20bc"),
+        81201, "50b0bc09520fb446adcacf350be13a51efaa283bf3d7a7836af90ab8fe176e0b"),
     "act1-hifi/town/npc/greenhollow-kiki-4x3-64.png": (
         76317, "50f15a525160d6598f4911d653c09894632beefbf0fdbdc67eccdcf5c22ce3a7"),
     "act1-hifi/town/npc/greenhollow-villager1-4x3-64.png": (
@@ -505,7 +505,7 @@ ACT1_TOWN_FILES = {
     "act1-hifi/town/npc/portSapphire-shopkeeper-4x3-64.png": (
         75201, "2dd2ec57d6ea8583d575eb2deba476075eb69381d9f367da9501b7ac5df696aa"),
     "act1-hifi/town/npc/millbrook-healer-4x3-64.png": (
-        65667, "ce54239b9072702760ba345979ae58e9c6262d80d877b4fbda998ecc9c2b20bc"),
+        81201, "50b0bc09520fb446adcacf350be13a51efaa283bf3d7a7836af90ab8fe176e0b"),
     "act1-hifi/town/npc/millbrook-herbalist-4x3-64.png": (
         67396, "73bf3f4b8dcd488dbee121db5eaec14b1dc3985534b0789e18315d36d0359d9f"),
     "act1-hifi/town/npc/millbrook-miller-4x3-64.png": (
@@ -513,7 +513,7 @@ ACT1_TOWN_FILES = {
     "act1-hifi/town/npc/millbrook-sage-4x3-64.png": (
         75065, "84d718b211333b17a09859dcace6c58d8ae4b7645a4c0504e4ab3c34066b49d8"),
     "act1-hifi/town/greenhollow-walkable.json": (
-        37899, "950e5c58a91307eba70924f398c1e4598d81b3f87cc8ab0ec27d49280678265f"),
+        38520, "fc62f491b3877da4182efd0b3c245bedac239442bd2dffa03408cd1801284cc8"),
     "act1-hifi/town/millbrook-walkable.json": (
         36534, "15b692b6f6776bda711476219fb88d8811e17910e5e95cf90ba1aab3376952f3"),
     "act1-hifi/town/millbrook-town.json": (
@@ -525,7 +525,7 @@ ACT1_TOWN_FILES = {
     "act1-hifi/town/millbrook-screen.png": (
         8064226, "a206e48240e409bf3460326cfaef82ee9b625ca6ec63c05506048ecd23a76943"),
     "act1-hifi/town/greenhollow-screen.png": (
-        8464986, "649e6c9c83b8c33d40e6101237a001febfb0c942400af7db2b52020ee1f917e9"),
+        8434343, "4370b87d20fdb2766bf0c6942216c56dd1c1b77d25724c0e264cc16f8bc1b7a6"),
     "act1-hifi/verify/seed.html": (
         2089, "6f34401b6845582f223abdc80dd191c3a1392bc7808aee81d11eb89313b80c14"),
 }
