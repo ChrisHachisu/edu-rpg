@@ -30,6 +30,19 @@ walkable minus holes minus static obstacles, eroded by `actorFootRadius`, i.e. t
 means the derivation drifted from the art or a band was edited without re-deriving.
 
 A town with no authored file is reported and skipped rather than passed silently.
+
+AND A SET OF FIXED PROBE POINTS, WHICH IS THE HALF THAT CANNOT BE GAMED. The footprint test above
+measures the standable mask against the authored bands, so it says nothing at all if a BAND itself
+is wrong -- shrink a band off a roof and the test still passes while the roof is walkable again.
+That is not hypothetical: on 2026-08-24 the owner said the boundaries were still wrong in places
+and every band in millbrook and greenhollow was pulled inward to stop them eating the lanes
+(`scripts/tighten_town_bands.py`), which is exactly the edit this test is blind to.
+
+So `ROOF_PROBES` holds eight points per town, measured once ON a roof in ART coordinates, and they
+must never be standable no matter what the bands say. They are deliberately hard-coded and
+deliberately NOT derived from the bands -- a probe derived from the thing it is checking is not a
+check. If a plate is ever repainted these have to be re-measured, and the RGB each one sampled when
+it was frozen is recorded beside it so that re-measurement can be verified rather than guessed.
 """
 from __future__ import annotations
 import glob, importlib.util, json, os, sys
@@ -42,6 +55,29 @@ _spec = importlib.util.spec_from_file_location(
     "_pta", os.path.join(ROOT, "scripts/place_town_actors.py"))
 _pta = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(_pta)
+
+
+# art-space points ON a roof, frozen 2026-08-24 with the RGB each one sampled at the time.
+ROOF_PROBES = {
+    "millbrook": {
+        "green-roof": ((1094, 269), (101, 125, 55)), "teal-roof": ((412, 1287), (90, 103, 85)),
+        "purple-roof": ((1512, 1287), (122, 98, 122)), "thatch": ((1512, 862), (188, 146, 48)),
+        "terracotta-roof": ((1560, 500), (84, 44, 6)), "olive-roof": ((1100, 1300), (211, 173, 94)),
+        "market-roof": ((470, 800), (181, 92, 30)), "mill-roof": ((300, 250), (44, 75, 105)),
+    },
+    "greenhollow": {
+        "stone-roof-nw": ((330, 220), (0, 1, 0)), "cottages-n-roof": ((760, 300), (8, 7, 0)),
+        "market-stall-roof": ((430, 760), (79, 66, 0)), "herb-shop-roof": ((1380, 700), (60, 47, 1)),
+        "teal-roof-sw": ((370, 1280), (0, 63, 58)), "green-roof-s": ((690, 1290), (42, 63, 8)),
+        "brown-roof-se": ((1220, 1300), (234, 210, 152)), "blue-roof-se": ((1580, 1330), (0, 64, 36)),
+    },
+    "portSapphire": {
+        "blue-roof-n": ((720, 180), (36, 52, 33)), "terracotta-roof-nw": ((370, 360), (116, 62, 0)),
+        "market-roof": ((690, 640), (88, 103, 43)), "red-roof-w": ((240, 760), (25, 7, 2)),
+        "slate-roof-e": ((1700, 850), (159, 160, 99)), "net-loft-roof": ((1350, 1150), (193, 206, 160)),
+        "green-roof-se": ((1700, 1250), (255, 252, 199)), "blue-roof-sw": ((240, 1180), (102, 113, 53)),
+    },
+}
 
 
 def main() -> int:
@@ -75,7 +111,18 @@ def main() -> int:
                 ys, xs = np.nonzero(stand & np.asarray(im).astype(bool))
                 bad.append(f"  {town}/{b['id']}: {hit} standable art px inside the building "
                            f"footprint, e.g. ({int(xs[0])},{int(ys[0])})")
-        print(f"  {town}: {len(bands)} authored building footprints, "
+        probes = ROOF_PROBES.get(town, {})
+        art_px = np.asarray(screen.convert("RGB"))
+        for name, ((px, py), was) in probes.items():
+            wx, wy = int(px * mask.shape[1] / aw), int(py * mask.shape[0] / ah)
+            if mask[wy, wx]:
+                bad.append(f"  {town}/{name}: the fixed roof probe at art ({px},{py}) is STANDABLE "
+                           f"-- a band was pulled off a roof, or the plate moved")
+            now = tuple(int(v) for v in art_px[py, px])
+            if now != was:
+                bad.append(f"  {town}/{name}: probe art ({px},{py}) sampled {now}, was {was} when "
+                           f"frozen -- the plate was repainted, so re-measure the probes")
+        print(f"  {town}: {len(bands)} authored building footprints, {len(probes)} fixed roof probes, "
               f"standable {mask.mean() * 100:.1f}% of the frame, 0 px on a building")
     for t in skipped:
         print(f"  {t}: no design/act1-towns/{t}-authored-obstacles.json -- SKIPPED, not passed")

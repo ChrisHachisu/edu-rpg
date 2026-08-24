@@ -66,10 +66,9 @@
       "nameKey": "npc.shopkeeper.name",
       "sheet": "town/npc/millbrook-shopkeeper-4x3-64.png",
       "cell": [
-        15.0,
-        35.5
+        16.62,
+        38.62
       ],
-      "fixed": true,
       "name": "Shopkeeper",
       "text": "Take a look at my wares, traveller."
     }
@@ -97,6 +96,6 @@
     38.69
   ],
   "_serviceNote": "shopCounter stands on the lane in front of the market stall's produce counter, and shopId matches the inventory src/data/shops.ts already defines. savePoint MOVED 2026-08-22: [37,41] was valid against the scrapped plan-primed collision and lands on the brown cottage's ROOF in the painted village; it is now the paving just south of the well, which is where the save point reads.",
-  "_shopkeeperNote": "Owner 2026-08-22: \"i cannot find the shopkeeper and the shopkeeper needs to be in a shop.\" He stands INSIDE the market stall, behind the counter, which is why he carries `fixed: true` -- scripts/place_town_actors.py snaps actors onto walkable ground and the inside of a stall is deliberately not walkable, so snapping him would put him out on the lane. town.html routes a tap on him to the shop the same way it routes the healer to the heal flow, so the shipped ShopScene stays the single implementation. shopCounter remains the spot in FRONT of the stall where the player stands.",
+  "_shopkeeperNote": "MOVED OUT IN FRONT 2026-08-24. Owner, on build 58: \"the shop keeper is placed on top of the shop so lets put him in front of the shop.\" He was standing INSIDE the stall, three to four cells above shopCounter and level with the hanging produce, which from a top-down camera reads as standing ON the stall rather than behind its counter -- the 2026-08-22 note below asked for him to be findable in his shop and this was the wrong way to give him that. He now stands on the lane beside the counter, on ground the player walks on, so he is a person in front of a shop. || `fixed` is DROPPED with him: it existed only because the inside of a stall is deliberately not walkable and snapping him would have thrown him out onto the lane -- which is now where he is meant to be. scripts/place_town_actors.py places and validates him like every other NPC, including the talk-band check. || Tapping him still opens the shipped ShopScene rather than a dialogue box, so the town never forks the inventory or the prices, and shopCounter remains the service spot in front of the stall. || PREVIOUS NOTE: Owner 2026-08-22: \"i cannot find the shopkeeper and the shopkeeper needs to be in a shop.\" He stands INSIDE the market stall, behind the counter, which is why he carries `fixed: true` -- scripts/place_town_actors.py snaps actors onto walkable ground and the inside of a stall is deliberately not walkable, so snapping him would put him out on the lane. town.html routes a tap on him to the shop the same way it routes the healer to the heal flow, so the shipped ShopScene stays the single implementation. shopCounter remains the spot in FRONT of the stall where the player stands.",
   "_startNote": "MOVED 2026-08-24 from [32.5, 57.0] to [32.5, 53.0]: 3.5 cells inside the painted gate, which is what arms the exit on arrival without firing it. See exit.note."
 }

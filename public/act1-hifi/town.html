@@ -26,7 +26,25 @@
      be unreachable in the app -- caught on the iPhone 17 simulator. Reusing the prompt rather than
      adding a second control keeps one affordance that already appears exactly when there is
      something to interact with and already names it ("Shop" / "Save" / "Talk to ..."). */
-  #prompt { position: absolute; left: 50%; bottom: 22%; transform: translateX(-50%);
+  /* 2026-08-24, from device. Owner: "the interaction buttons are overlayed on top of the control
+     pad but it needs to be moved in the same location as the dungeons. i don't know why you do not
+     re-use working systems in different screens."
+
+     He is right on both counts. `bottom: 22%` is PROPORTIONAL and the pad is ABSOLUTE, so they were
+     never going to agree: measured on a 390x844 phone the pill ran x 156-233 / y 618-658 against a
+     pad at x 198-370 / y 596-768 -- overlapping even with the shortest label there is ("Shop", 77px
+     wide). "Talk to Shopkeeper" is about 180px and would sit half inside the stick.
+
+     The dungeon solved this already and the number is not a new one: `#a1mInteract` in
+     public/dq-tiles.js sits at `bottom: calc(260px + inset)`. The stick is 172px tall standing
+     76px + inset off the bottom, so its top edge is at 248px and 260px clears it by 12. This file's
+     own #pad comment already documents that exact geometry -- 172px, 76px + inset up, 20px in --
+     which is why the two screens can share one constant instead of each inventing one. Same
+     var(--sa-bottom) the parent posts in, for the same reason #dialogue uses it: env() resolves to
+     0 inside this same-origin iframe. */
+  #prompt { position: absolute; left: 50%;
+    bottom: calc(260px + var(--sa-bottom, env(safe-area-inset-bottom, 0px)));
+    transform: translateX(-50%);
     padding: 10px 20px; border-radius: 999px; background: rgba(8,14,20,.82);
     border: 1px solid rgba(150,200,230,.34); color: #dcecf7; font-size: 15px;
     white-space: nowrap; opacity: 0; transition: opacity .12s ease; pointer-events: none;
@@ -47,6 +65,15 @@
     padding: 14px 16px; border-radius: 12px; background: rgba(6,12,18,.94);
     border: 1px solid rgba(150,200,230,.42); color: #eaf3fa; display: none; }
   #dialogue[data-open="true"] { display: block; }
+  /* The stick is INERT while a dialogue is open -- the update loop zeroes the input vector when
+     `talking` is set -- and the box sits in the pad's own band (both start 76px + inset off the
+     bottom, and the pad is 172px tall), so leaving it drawn puts a dead control on top of the
+     text the player is trying to read. The dungeon never has this problem because its modal is a
+     centred full-screen card, not a bottom bar.
+     Keyed off `#dialogue`'s own data-open rather than a second JS flag, so the two cannot drift
+     apart; and it is only a visual hide, so if :has() were ever unsupported the fallback is
+     exactly today's behaviour rather than a broken control. */
+  body:has(#dialogue[data-open="true"]) #pad { opacity: 0; pointer-events: none; }
   #dialogue b { display: block; margin-bottom: 6px; color: #ffd98a; font-size: 13px; letter-spacing: .05em; }
   #dialogue p { margin: 0; font-size: 15px; line-height: 1.45; }
   #dialogue small { display: block; margin-top: 10px; color: #8fa8b8; font-size: 11px; }
@@ -395,10 +422,13 @@ function interact() {
   // The healer's heal flow lives in the shipped scene (`handleHealer` owns the full-HP check,
   // the gold check, the price and the confirm overlay), so she is handed off rather than given
   // a dialogue box here. Duplicating any of that would fork the economy.
-  // The shopkeeper is a PERSON and a SERVICE, exactly like the healer. Owner 2026-08-22: "i
-  // cannot find the shopkeeper and the shopkeeper needs to be in a shop." He now stands behind his
-  // counter inside the stall, and talking to him opens the shipped ShopScene rather than a
-  // dialogue box, so the town never forks the inventory or the prices.
+  // The shopkeeper is a PERSON and a SERVICE, exactly like the healer. Owner 2026-08-22: "i cannot
+  // find the shopkeeper and the shopkeeper needs to be in a shop"; then 2026-08-24: "the shop keeper
+  // is placed on top of the shop so lets put him in front of the shop." Putting him INSIDE the stall
+  // satisfied the first note and broke the second -- from a top-down camera, standing three cells
+  // behind the counter among the hanging produce reads as standing ON the stall. He now stands on
+  // the lane beside his counter. Either way, talking to him opens the shipped ShopScene rather than
+  // a dialogue box, so the town never forks the inventory or the prices.
   const service = npc?.id === 'healer' ? { kind: 'healer' }
                 : npc?.id === 'shopkeeper' ? { kind: 'shop' }
                 : nearestService();

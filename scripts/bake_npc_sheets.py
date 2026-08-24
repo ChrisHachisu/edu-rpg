@@ -20,6 +20,12 @@ import os
 
 from PIL import Image
 
+_dspec = importlib.util.spec_from_file_location(
+    "_dfr", os.path.join(os.path.dirname(os.path.abspath(__file__)), "defringe_sprite.py"))
+_dfr = importlib.util.module_from_spec(_dspec)
+_dspec.loader.exec_module(_dfr)
+_defringe = _dfr.defringe
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 _spec = importlib.util.spec_from_file_location(
     "_ptn", os.path.join(os.path.dirname(os.path.abspath(__file__)), "place_town_npcs.py"))
@@ -62,10 +68,21 @@ def main() -> None:
             for c in range(COLS):
                 cell = _ptn.key_cell(sheet.crop((c * N, r * N, (c + 1) * N, (r + 1) * N)))
                 out.paste(cell, (c * N, r * N))
+        # DEFRINGE HERE, NOT AS A STEP SOMEBODY REMEMBERS. Keying feathers the edge and a feathered
+        # pixel keeps the RGB it had -- a blend of the sprite and the magenta field -- so a sheet
+        # that is 100% correct by every opaque-pixel measurement still paints a pink rim over the
+        # grass. Measured 2026-08-24 on the two sheets redrawn that day: semi-transparent pixels
+        # averaging RGB(199,39,173) and (206,49,180), against -14..+9 magenta-ward for every sheet
+        # that had been through defringe_sprite.py. Two separate workers reported "no cast" because
+        # the brief told them to measure the outermost OPAQUE ring, which excludes the halo by
+        # construction -- so the fix belongs in the bake, where it cannot be skipped, rather than in
+        # a checklist step. Idempotent, so re-baking a clean sheet is a no-op.
+        out, moved = _defringe(out)
         dst = os.path.join(args.out, os.path.basename(path))
         out.save(dst)
         opaque = sum(1 for p in out.getdata() if p[3] > 200)
-        print(f"  {os.path.basename(path):<34} -> RGBA, {opaque} opaque px of {out.width*out.height}")
+        print(f"  {os.path.basename(path):<34} -> RGBA, {opaque} opaque px of {out.width*out.height}"
+              f", defringed {moved} soft px")
 
 
 if __name__ == "__main__":

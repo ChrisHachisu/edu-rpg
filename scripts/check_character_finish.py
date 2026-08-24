@@ -20,9 +20,24 @@ happened. So it gets a number and a gate:
               The heroine measures about -17. The rejected batch measured -61 to -95.
   soft edge   partially-transparent pixels per 100 opaque. The heroine measures about 13.
               A hard 1px cut measures under 1 and is wrong.
+  key bleed   how far the SEMI-TRANSPARENT pixels lean toward the magenta key, as
+              (R+B)/2 - G. Added 2026-08-24, and it is the third measurement because the first
+              two both passed a sheet that was visibly wrong.
 
-Both are compared against the heroine herself rather than against constants, so the gate follows
-the anchor if the anchor is ever re-authored.
+The first two are compared against the heroine herself rather than against constants, so the gate
+follows the anchor if the anchor is ever re-authored.
+
+WHY THE THIRD ONE EXISTS. Keying feathers the edge, and a feathered pixel keeps the RGB it had --
+a blend of the sprite and the magenta field it was drawn on. Fully transparent pixels are invisible,
+so nobody notices; a pixel at 42% alpha carrying (206,35,160) paints a pink rim over the grass.
+
+On 2026-08-24 two NPC sheets shipped that way, and the reason is worth keeping: BOTH authors
+measured, both reported "no cast", and both were measuring the outermost OPAQUE ring -- which
+excludes the halo by construction, because the halo lives in the semi-transparent pixels. Their
+briefs told them to do exactly that. It was caught by looking at a contact sheet, not by any number.
+Measured: the two new sheets ran +147 and +144 magenta-ward, against -14 to +9 for every sheet that
+had been through defringe_sprite.py. The bake now defringes unconditionally
+(`bake_npc_sheets.py`), so this gate should never fire again -- which is the point of having it.
 
 Usage:
     check_character_finish.py <sheet.png> [...] [--cols 3] [--rows 4] [--tol 25]
@@ -53,6 +68,21 @@ _key_cell = _ptn.key_cell
 
 def lum(a):
     return 0.2126 * a[..., 0] + 0.7152 * a[..., 1] + 0.0722 * a[..., 2]
+
+
+def key_bleed(sheet_path: str) -> float:
+    """Mean (R+B)/2 - G over the SEMI-transparent pixels of a baked RGBA sheet.
+
+    Pure magenta scores +255 and any neutral edge scores about 0. Measured on a raw RGB-on-magenta
+    authored sheet this is meaningless -- there is no alpha yet -- so it returns nan for one of
+    those and the caller skips it."""
+    a = np.asarray(Image.open(sheet_path).convert("RGBA")).astype(np.float32)
+    alpha = a[..., 3]
+    semi = (alpha > 0) & (alpha < 250)
+    if not semi.any() or (alpha >= 250).all():
+        return float("nan")
+    m = a[..., :3][semi].mean(0)
+    return float((m[0] + m[2]) / 2 - m[1])
 
 
 def as_rgba(cell: Image.Image) -> np.ndarray:
@@ -100,9 +130,13 @@ def main() -> None:
     ap.add_argument("--cols", type=int, default=3)
     ap.add_argument("--rows", type=int, default=4)
     ap.add_argument("--tol", type=float, default=15.0,
-                    help="how far the edge step may drift from the heroine's, in luminance. "
-                         "15, not 25: the rejected batch ran -49 to -87 against her -25, so a "
-                         "25 tolerance passed two sheets that are plainly outlined by eye.")
+                    help="how far BELOW the heroine's edge step a sheet may sit. ONE-SIDED, and "
+                         "that is the whole point -- see the note in main().")
+    ap.add_argument("--max-key-bleed", type=float, default=25.0,
+                    help="how far the semi-transparent edge may lean toward the magenta key, as "
+                         "(R+B)/2 - G. Defringed sheets measure -14 to +9; two undefringed ones "
+                         "measured +147 and +144. 25 is clear of every honest sheet and nowhere "
+                         "near a real halo.")
     ap.add_argument("--soft-frac", type=float, default=0.40,
                     help="minimum soft-edge count as a fraction of the heroine's. This is the "
                          "sharper of the two tests and the one that never gave a false pass: "
@@ -122,8 +156,8 @@ def main() -> None:
     print(f"ANCHOR  {os.path.basename(HERO)}")
     print(f"  edge step {h_step:+6.1f}   soft-edge px per 100 opaque {h_soft:5.1f}")
     soft_min = h_soft * args.soft_frac
-    print(f"  gate: edge step within {args.tol:.0f} of the anchor's, "
-          f"AND soft-edge >= {soft_min:.1f}\n")
+    print(f"  gate: edge step >= {h_step - args.tol:+.1f} (no drawn dark keyline), "
+          f"soft-edge >= {soft_min:.1f}, key bleed <= {args.max_key_bleed:.0f}\n")
 
     bad = 0
     for path in args.sheets:
@@ -134,18 +168,36 @@ def main() -> None:
                 steps.append(st)
                 softs.append(sf)
         step, soft = float(np.mean(steps)), float(np.mean(softs))
+        bleed = key_bleed(path)
         drift = abs(step - h_step)
-        ok_step, ok_soft = drift <= args.tol, soft >= soft_min
-        ok = ok_step and ok_soft
+        # ONE-SIDED, RECALIBRATED 2026-08-24. This was `abs(step - h_step) <= tol`, and a two-sided
+        # band around the heroine's -27 is the wrong shape for the defect it exists to catch. The
+        # failure is a DRAWN DARK KEYLINE -- the rejected 2026-08-01 batch measured -49 to -87 --
+        # so only the dark side is a defect. An edge BRIGHTER than the body is rim light, which is
+        # what a well-drawn chibi sprite does.
+        #
+        # Measured on the whole cast the day the owner named his favourites: with the two-sided
+        # band, 13 of 17 sheets failed, INCLUDING all three Port Sapphire NPCs he singled out as
+        # the quality bar ("the npcs in port sapphire look much better, so try to match to their
+        # style") at drifts of 24.5, 29.2 and 31.3. A gate that fails the best work in the repo
+        # gets ignored, and this one was: it is not in ship-gate.sh and 10 sheets had been failing
+        # it since they shipped. The floor now sits at the anchor minus tol (-42), which admits
+        # every honestly drawn sheet in the cast and still rejects the outlined batch outright.
+        ok_step, ok_soft = step >= h_step - args.tol, soft >= soft_min
+        ok_bleed = not (bleed == bleed) or bleed <= args.max_key_bleed
+        ok = ok_step and ok_soft and ok_bleed
         bad += 0 if ok else 1
         why = []
         if not ok_step:
-            why.append("keyline too dark")
+            why.append(f"drawn dark keyline (edge {step:+.1f}, floor {h_step - args.tol:+.1f})")
         if not ok_soft:
             why.append("edge hard-cut, not anti-aliased")
+        if not ok_bleed:
+            why.append("magenta halo -- run defringe_sprite.py, or re-bake")
         note = "" if ok else "  <- " + "; ".join(why)
         print(f"  [{'PASS' if ok else 'FAIL'}] {os.path.basename(path):<34} "
-              f"edge step {step:+6.1f} (drift {drift:5.1f})  soft-edge {soft:5.1f}{note}")
+              f"edge step {step:+6.1f} (drift {drift:5.1f})  soft-edge {soft:5.1f}  "
+              f"key bleed {'   n/a' if bleed != bleed else f'{bleed:+6.1f}'}{note}")
 
     if bad:
         print(f"\n{bad} sheet(s) FAILED the finish gate. See design/ART-DIRECTION.md, "
