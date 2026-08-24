@@ -75,6 +75,14 @@ def main() -> int:
         "LANG": "en_US.UTF-8",
         "LC_ALL": "en_US.UTF-8",
         "SHIP_IOS_NO_SLACK": env.get("SHIP_IOS_NO_SLACK", "1"),
+        # fastlane allows `xcodebuild -showBuildSettings` only 3s with 4 retries by default. That
+        # is fine on a machine with a warm DerivedData for this workspace and NOT fine on a cold
+        # one: the first ship attempt from a fresh checkout on 2026-08-24 died here after signing
+        # had already succeeded and the build number had been resolved (58 -> 59), which makes it
+        # look like a signing or project fault when it is purely a timeout. Raised rather than
+        # left to the caller's environment so the failure cannot recur on the next new machine.
+        "FASTLANE_XCODEBUILD_SETTINGS_TIMEOUT": env.get("FASTLANE_XCODEBUILD_SETTINGS_TIMEOUT", "180"),
+        "FASTLANE_XCODEBUILD_SETTINGS_RETRIES": env.get("FASTLANE_XCODEBUILD_SETTINGS_RETRIES", "6"),
     })
     subprocess.run(["fastlane", "beta"], cwd=root / "ios/App", env=env, check=True)
     build_file = root / "ios/build/last-testflight-build.txt"

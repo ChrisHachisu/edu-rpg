@@ -128,6 +128,13 @@ node scripts/build_static_index.mjs
 echo "==> [5/5] mirroring dist/ into the iOS payload"
 if [ ! -f ios/App/App/capacitor.config.json ] || [ ! -f ios/App/App/config.xml ]; then
   echo "    generating Capacitor's gitignored config (fresh checkout)"
+  # `cap copy` ALSO writes dist/ into ios/App/App/public, and if that directory already holds a
+  # payload it lands beside it as macOS-style " 2" duplicates ("index 2.html", "cordova 2.js",
+  # ...) rather than overwriting. Measured 2026-08-24: 19 duplicates in the payload and 3 in
+  # dist/, which the runtime baseline then rejects as `extra=[...]` -- AFTER signing has already
+  # succeeded, so it reads as a gate bug rather than a copy artefact. Emptying the payload first
+  # makes the copy collision-free; sync-ios.sh below is the authoritative mirror either way.
+  rm -rf ios/App/App/public
   npx --no-install cap copy ios >/dev/null 2>&1 || npx cap copy ios >/dev/null
 fi
 mkdir -p ios/App/App/public
