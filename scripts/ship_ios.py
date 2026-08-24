@@ -10,6 +10,27 @@ import time
 import sys
 
 
+def _ship_support(root: Path) -> Path:
+    """Where the push-to-testflight support scripts live, repo copy FIRST.
+
+    They used to be read only from ~/.agents/skills/push-to-testflight, which is not in any repo
+    and not covered by the ~/.claude sync whitelist. Migrating to a second Mac on 2026-08-24 found
+    both consequences at once: `verify-delivery.py` did not exist there at all, and -- worse --
+    ~/.agents and ~/.claude/skills had silently DIVERGED on the original machine, with ~/.agents
+    holding a newer `assign-beta-group.py` (5114 B, 2026-08-22) than ~/.claude/skills (4211 B,
+    2026-06-09). Anything that "helpfully" pointed ~/.agents at the ~/.claude copy therefore wired
+    up the STALE assigner -- precisely the component whose 2026-08-22 fix exists because builds 56
+    and 57 shipped undeliverable.
+
+    Keeping the scripts in the repo makes the ship path travel with the checkout, so a fresh clone
+    plus the (correctly gitignored) signing key is enough. The ~/.agents location is still honoured
+    as a fallback so the original machine keeps working unchanged.
+    """
+    repo = root / "scripts/ship-support"
+    home = Path.home() / ".agents/skills/push-to-testflight"
+    return repo if (repo / "verify-delivery.py").is_file() else home
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--app-dir", required=True)
@@ -19,7 +40,7 @@ def main() -> int:
 
     root = Path(args.app_dir).resolve()
     owner = Path(__file__).resolve().parent.parent
-    skill = Path.home() / ".agents/skills/push-to-testflight"
+    skill = _ship_support(root)
     if root != owner:
         raise SystemExit(f"checkout mismatch: --app-dir={root}, script owner={owner}")
     for required in (skill / "SKILL.md", root / "scripts/ship-gate.sh", root / "ios/App/fastlane/Fastfile"):
@@ -69,7 +90,7 @@ def main() -> int:
     # processing-state field reflects. Owner, 2026-08-22: "this is a pattern now so please fix your
     # process." A rule that has to be remembered is not a fix, so the check runs HERE, in the only
     # path that ships, and a failure is a non-zero exit rather than a note.
-    skill = Path.home() / ".agents/skills/push-to-testflight"
+    skill = _ship_support(root)
     verifier, assigner = skill / "verify-delivery.py", skill / "assign-beta-group.py"
     for f in (verifier, assigner):
         if not f.is_file():
