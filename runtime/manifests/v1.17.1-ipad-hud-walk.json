@@ -18,7 +18,7 @@
     ]
   },
   "fileCount": 257,
-  "totalBytes": 42683025,
+  "totalBytes": 42683079,
   "files": [
     {
       "path": "assets/backgrounds/bg-boss_celestial_guardian.webp",
@@ -155,8 +155,8 @@
     {
       "path": "assets/index-BhoGQRaA.js",
       "category": "opaque-bundle",
-      "bytes": 4987581,
-      "sha256": "a56026574b42168985b353e4cee824562716af83f92d03f408df04eac9127381"
+      "bytes": 4987635,
+      "sha256": "ab4fc9ad1204f23b4ea55dbae2d72bdf193a52e643271bcfe8642e2210556456"
     },
     {
       "path": "assets/item-icons/aegisOfDawn.webp",

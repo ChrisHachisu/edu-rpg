@@ -32,10 +32,15 @@ BUNDLE = "assets/index-BhoGQRaA.js"
 # thing it is waiting for -- nothing else needs asking.
 # The note lives HERE rather than only in that doc because whoever needs it arrives from the pin
 # side, not the music side.
-BUNDLE_SIZE = 4_987_581
-BUNDLE_SHA256 = "a56026574b42168985b353e4cee824562716af83f92d03f408df04eac9127381"
+BUNDLE_SIZE = 4_987_635
+BUNDLE_SHA256 = "ab4fc9ad1204f23b4ea55dbae2d72bdf193a52e643271bcfe8642e2210556456"
 EXPECTED_FILE_COUNT = 257
-EXPECTED_TOTAL_BYTES = 42_683_025
+# 2026-08-25, owner-authorised: +54 bytes. The orchestral BGM's one-line hook into the bundle's
+# existing __QOK literal (audio: Jt), per docs/MUSIC-INTEGRATION-READY.md. The bundle is frozen
+# and hand-edited, so this constant, BUNDLE_SIZE/BUNDLE_SHA256, the manifest, the preserved
+# baseline COPY of the bundle, repin.sh's md5 tripwire and eight other provenance points all
+# move together -- they are one identity chain, not independent numbers.
+EXPECTED_TOTAL_BYTES = 42_683_079
 ACT1_OVERLAY_FILES = {
     # 2026-08-03, owner: "make the game controllable with the keypad ... use the joy stick type
     # keypad on the port sapphire screen". The 4-way d-pad held exactly ONE arrow key at a time
@@ -54,7 +59,7 @@ ACT1_OVERLAY_FILES = {
     # 2026-08-17: the panel gains the RENDER CHAIN and the debug default is ON for this build only,
     # so the owner's phone can answer whether the fuzziness is a global upscale. Same sign-off:
     # EXPECTED_STATIC_INDEX_SHA in scripts/build_static_index.mjs.
-    "index.html": (116286, "8b1fe5184af7a15371b30b8585040450cd7f6a5836e096b5657a3eb418215364"),
+    "index.html": (116600, "b333db92f4206212fcc86283eca308118e8ddd28b4670e1acf591143ff2ba447"),
     # 2026-08-01, owner-authorised: dq-tiles.js now splats AI-generated terrain MATERIALS through
     # its existing continuous-world-pixel drawTerrain, plus a ridged mountain height field,
     # varied shore character and landmark sites derived from mapData. Fallback-safe -- until the
@@ -122,7 +127,7 @@ ACT1_OVERLAY_FILES = {
     # three inputs (the frozen bundle's generator, dq-tiles.js's consolidator, dq-tiles.js's own
     # field functions, which the bake SLICES rather than re-implements so the two cannot drift).
     "act1-overworld-walk.bin": (
-        10803776, "82a018614ce520a38f76dc4206e643a2895750884c91f6f4f986ee8916a2d365"),
+        10803776, "3005bdf9a9a61d6a24b003f70c24e4ae80dd0dc1059fb67285a240aa52fc1453"),
     # 2026-08-03, owner direction ("please redo the collision setting based on what i created (my
     # paint)"): the Act-1 collision plate is now generated from the OWNER'S PAINTED TERRAIN
     # (owner-terrain.json acts.1 + continent-macro-g3/land-mask.npy) instead of the generated
@@ -254,6 +259,24 @@ UI_ASSET_FILES = {
     # cannot ship disagreeing with collision.
     "ui-map/overworld-relief.png": (
         130031, "3dfc6903cf0dc4b357aba8a71a1e79cea6ec30c030f2435066a1237cd468d9d0"),
+    # 2026-08-25, owner-authorised: the ORCHESTRAL BGM (docs/MUSIC-INTEGRATION-READY.md).
+    # Nine .m4a loops plus the player that swaps them in through the bundle's existing __QOK audio
+    # hook. Deferred since 2026-08-17 to ride along with "the next bundle edit"; the owner took it
+    # as its own edit on 2026-08-25 after noticing the music was still unchanged on build 60 --
+    # the bundle is frozen, so the edit it was waiting for was never going to arrive on its own.
+    # Pinned by hash like every other shipped asset: a silent swap of a music file is exactly as
+    # invisible as a silent swap of art, and the override FAILS SOFT (it keeps the chiptune) so a
+    # missing or corrupt track would not announce itself at runtime.
+    "music-override.js": (7911, "72ad7c593f457c2dc5b4122263278245cf5ddd9f1cb130fb5904aa258d5e0bbd"),
+    "audio/battle.m4a": (366808, "ec61f086099d4c9ea687563597198bdf17a9360e9861eb64d02ee9dbb6b8aa00"),
+    "audio/bossBattle.m4a": (366492, "4fe64bc355274c1193a695c343a5cb39152e3d62709ecf26cb1bf71cfeaee254"),
+    "audio/dungeon.m4a": (366236, "6ae4b9707338920f2c3bf410495217db9985ed65f55a1dd623aea091ee6ed029"),
+    "audio/finalBoss.m4a": (366262, "7566985d95213c882255f529fe70c5577eab0eef736035e372cc3e33bd54c022"),
+    "audio/gameOver.m4a": (183513, "55fcc4ab89b0b7e217a59faf286be2cde1dedfdfa8f1c153a2ac65dbbdc93cbd"),
+    "audio/overworld.m4a": (366566, "0a2eb04e1aa904ff5ab5aa729c8a29aa0b1e7ec10896964231fa9ed2a134552a"),
+    "audio/title.m4a": (366326, "f27f874ab003b43c11284a4ef0b49febf477536fe8ba4c67d406218242d8acd0"),
+    "audio/town.m4a": (366307, "b04c35ba53b5add18f353d6d6b08395a8630291bafa3c4b34c7135a258366647"),
+    "audio/victory.m4a": (147043, "89da12fead02cc8aa47884a9eb6f3ba3c8e5a89a4eb116bffec8769f2d7fb773"),
 }
 # The four tiling terrain materials the renderer above samples. New runtime paths as of
 # 2026-08-01; pinned by hash rather than merely tolerated, because they are shipped art and a
@@ -645,6 +668,11 @@ REQUIRED_ROOT_FILES = {
     "hero-override.js",
     "ui-overhaul.js",
     "ui-overhaul.css",
+    # 2026-08-25, owner-authorised: the orchestral BGM. Swaps the procedural Tone.js composer for
+    # nine .m4a loops through the bundle's existing __QOK audio hook. See
+    # docs/MUSIC-INTEGRATION-READY.md -- this is the "next bundle edit" that release was waiting on,
+    # taken as its own edit because the bundle is frozen and no unrelated edit was ever going to come.
+    "music-override.js",
 }
 
 
@@ -687,6 +715,11 @@ def category(relative_path: str) -> str:
         return "battle-background"
     if relative_path.startswith("assets/hero/"):
         return "hero-walk-sheet"
+    if relative_path.startswith("audio/"):
+        # 2026-08-25: the orchestral BGM loops. category() RAISES on an unclassified file rather
+        # than dropping it, so omitting this branch fails build-dist.sh loudly -- which is the
+        # behaviour we want, but it still has to be answered here.
+        return "bgm-track"
     if relative_path.startswith("owprops/"):
         return "overworld-prop"
     if relative_path.startswith("props/"):

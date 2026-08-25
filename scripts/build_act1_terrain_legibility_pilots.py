@@ -74,7 +74,7 @@ PROTECTED = {
     ),
     "bundle": (
         ROOT / "dist/assets/index-BhoGQRaA.js",
-        "a56026574b42168985b353e4cee824562716af83f92d03f408df04eac9127381",
+        "ab4fc9ad1204f23b4ea55dbae2d72bdf193a52e643271bcfe8642e2210556456",
     ),
 }
 

@@ -239,6 +239,10 @@
   <script src="/dq-tiles.js"></script>
   <script src="/hero-override.js"></script>
   <script type="module" src="/act1-hifi/adapter.js"></script>
+  <!-- Orchestral BGM. ADDITIVE: swaps the procedural Tone.js composer for the .m4a loops via
+       __QOK.audio, and no-ops if the files or the hook are missing (docs/MUSIC-INTEGRATION-READY.md).
+       Loaded AFTER the bundle so window.__QOK exists when it runs. -->
+  <script src="/music-override.js"></script>
 
   <script>
     /* ---- The loading cover ---------------------------------------------------------------------

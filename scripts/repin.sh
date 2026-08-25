@@ -39,7 +39,7 @@ cd "$(dirname "$0")/.."
 # along with the NEXT bundle edit, so the identity chain is re-stamped once rather than twice. The
 # owner declined to do it for a soundtrack on its own ("Wait and bundle it with the next edit",
 # 2026-08-17) -- this is that next edit.
-FROZEN=60d90b63607b6e6980eb170aeeed445e
+FROZEN=f7095264a6fd610e34aede6c248a3a93
 
 # ORDER MATTERS, and not in the obvious way. build-dist.sh verifies pinned identity as part of
 # assembling dist/, so running it FIRST on an edited public/ file fails before anything can be

@@ -87,7 +87,7 @@ const BUNDLE_PATH = resolve(ROOT, 'dist/assets/index-BhoGQRaA.js');
 const DQ_PATH = resolve(ROOT, 'public/dq-tiles.js');
 const PLATE_PATH = resolve(ROOT, 'public/act1-world-map.js');
 
-const BUNDLE_SHA256 = 'a56026574b42168985b353e4cee824562716af83f92d03f408df04eac9127381';
+const BUNDLE_SHA256 = 'ab4fc9ad1204f23b4ea55dbae2d72bdf193a52e643271bcfe8642e2210556456';
 const FINAL_MAP_SHA256 = '2d82e050b51095280b74395db8656aed52ae919206385827502265f6e0a65202';
 // Moved 2026-08-18 by the single-entrance pass: act1-world-map.js now stamps landmark-footprint
 // blocker cells (tile 21) so the player cannot walk on top of a drawn town or cave. Tile 21 is not

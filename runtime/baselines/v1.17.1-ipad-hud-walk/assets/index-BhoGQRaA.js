@@ -84484,7 +84484,8 @@ ${x.join(`
         state: function() { return typeof tt !== "undefined" ? tt : null },
         shops: typeof Fn !== "undefined" ? Fn : null,
         loc: function() { return typeof vi !== "undefined" ? vi() : "en" },
-        setVolume: function(v) { if (typeof Jt !== "undefined") Jt.setVolume(v) }
+        setVolume: function(v) { if (typeof Jt !== "undefined") Jt.setVolume(v) },
+        audio: typeof Jt !== "undefined" ? Jt : null
     };
     const i = T.canvas;
     i.style.width = "100%", i.style.height = "100%";

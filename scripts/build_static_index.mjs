@@ -249,8 +249,16 @@ export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '
 // figures are not usable: the full-viewport layout is behind `(pointer: coarse)`, so a mouse-driven
 // pane measured the 768px DESKTOP frame, not the phone's stretched canvas. DEFAULT_ON in index.html
 // reverts to false in the build after the answer lands; the readout itself stays, gated as before.
+// MOVED 2026-08-25, owner-authorised: index.html gained ONE tag,
+// `<script src="/music-override.js">`, for the orchestral BGM
+// (docs/MUSIC-INTEGRATION-READY.md). That release had been deferred since 2026-08-17 waiting for
+// "the next bundle edit" to ride along with -- and no such edit was ever going to come, because the
+// bundle is deliberately frozen. The owner authorised it as its own edit on 2026-08-25 after
+// noticing the music still had not changed on TestFlight build 60.
+// The tag loads AFTER the bundle so window.__QOK exists when the override runs, and the override
+// no-ops when the hook or the audio files are absent, so this is additive.
 export const EXPECTED_STATIC_INDEX_SHA =
-  '8b1fe5184af7a15371b30b8585040450cd7f6a5836e096b5657a3eb418215364';
+  'b333db92f4206212fcc86283eca308118e8ddd28b4670e1acf591143ff2ba447';
 
 /**
  * The authored shell loads its scripts by ABSOLUTE path so the Vite dev server resolves them;

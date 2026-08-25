@@ -16,7 +16,7 @@ function mutableClone(value: unknown): any {
 const bundle = readFileSync('dist/assets/index-BhoGQRaA.js', 'utf8');
 assert(
   createHash('sha256').update(bundle).digest('hex')
-    === 'a56026574b42168985b353e4cee824562716af83f92d03f408df04eac9127381',
+    === 'ab4fc9ad1204f23b4ea55dbae2d72bdf193a52e643271bcfe8642e2210556456',
   'the later-gate census test must use the preserved bundle',
 );
 const evidenceNear = (needle: string, radius = 900): string => {
