@@ -62,13 +62,42 @@
     get: function () { return this.cur; }
   });
 
-  FilePlayer.prototype._decode = function (track) {
-    var self = this;
-    return fetch('audio/' + track + '.m4a', { cache: 'force-cache' })
-      .then(function (r) {
+  // FETCH DOES NOT WORK ON CAPACITOR'S CUSTOM SCHEME, AND THAT IS WHAT BROKE BUILD 61.
+  //
+  // In the packaged app the document is `capacitor://localhost/index.html`, and
+  // `fetch('audio/title.m4a')` there resolves, connects to nothing, and settles as
+  // `ok=false status=0` -- measured in the iOS Simulator, six identical retries then PLAY-FAILED.
+  // status 0 is not an HTTP status; it is "the request never happened". It is NOT visible in a
+  // browser, where the same code over http:// works perfectly, which is exactly why this shipped.
+  //
+  // XMLHttpRequest DOES read app-bundle resources over the custom scheme, so it is the primary
+  // path and fetch is kept only as a fallback for a plain-http context (the dev server, the
+  // browser harness). `cache: 'force-cache'` is gone: on a custom scheme there is no HTTP cache
+  // for it to consult and it can only add a failure mode.
+  function loadBytes(url) {
+    return new Promise(function (resolve, reject) {
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', url, true);
+      xhr.responseType = 'arraybuffer';
+      xhr.onload = function () {
+        // A custom-scheme XHR reports status 0 on SUCCESS as well, so the payload is the test.
+        if (xhr.response && xhr.response.byteLength > 0) resolve(xhr.response);
+        else reject(new Error('empty response (status ' + xhr.status + ')'));
+      };
+      xhr.onerror = function () { reject(new Error('xhr error (status ' + xhr.status + ')')); };
+      xhr.send();
+    }).catch(function (e) {
+      if (typeof fetch !== 'function') throw e;
+      return fetch(url).then(function (r) {
         if (!r.ok) throw new Error('http ' + r.status);
         return r.arrayBuffer();
-      })
+      });
+    });
+  }
+
+  FilePlayer.prototype._decode = function (track) {
+    var self = this;
+    return loadBytes('audio/' + track + '.m4a')
       .then(function (ab) { return self.ctx.decodeAudioData(ab); })
       .then(function (raw) {
         var want = Math.round(LOOP_SECONDS[track] * raw.sampleRate);
@@ -148,17 +177,51 @@
   // ---- install: wrap init() so we swap the composer the moment it exists ----------------
 
   // The one swap, factored out so BOTH entry points below use identical logic.
-  function swap(am) {
+  // SWAP ONLY AFTER PROVING WE CAN ACTUALLY PLAY. FAIL SAFE, NOT SILENT.
+  //
+  // Build 61's real damage was not that the .m4a failed to load -- it was that the override had
+  // ALREADY thrown the working chiptune away by then, so the failure mode was total silence,
+  // strictly worse than the music it replaced. An override that cannot do its job must leave the
+  // thing it is replacing alone. So: decode one track FIRST, and only take over if that succeeds.
+  function swapWhenProven(am) {
+    if (!am || !am.composer || am.composer instanceof FilePlayer) return;
+    if (!am.ctx) return;
+    if (am.__musicSwapPending) return;
+    am.__musicSwapPending = true;
+    var probe = new FilePlayer(am);
+    probe._load('title').then(function () {
+      am.__musicSwapPending = false;
+      swap(am, probe);
+    }, function (e) {
+      // Leave the existing composer running. The game keeps its original music and the player
+      // hears SOMETHING, which is the whole point of failing safe.
+      am.__musicSwapPending = false;
+      try { console.warn('[music-override] staying on the built-in composer:', e && e.message); } catch (x) {}
+    });
+  }
+
+  function swap(am, prebuilt) {
     if (!am.composer || am.composer instanceof FilePlayer) return;
     if (!am.ctx) return;                       // pre-init: nothing to attach a graph to yet
+    // CARRY THE PLAYING TRACK ACROSS THE SWAP.
+    //
+    // Read it BEFORE stop(), because stop() clears it. Without this the swap is silent-by-
+    // construction whenever BGM had already started: the outgoing composer is stopped, the
+    // FilePlayer starts with nothing playing, and nothing re-triggers it until some LATER
+    // scene change happens to call playBgm() again -- which, for a scene whose music already
+    // started, may be never. The result is no music at all, which is indistinguishable from
+    // the override failing to load, and is worse than the chiptune it replaced.
+    var carry = null;
+    try { carry = am.composer.currentBgm || null; } catch (e) { /* ignore */ }
     try { am.composer.stop(); } catch (e) { /* ignore */ }
-    var fp = new FilePlayer(am);
+    var fp = prebuilt || new FilePlayer(am);
     // Mirror AudioManager.setVolume's own dB mapping so the first track is not at the wrong
     // level before any volume change arrives. masterVolume 1 -> -6 dB, which is exactly the
     // Tone.Volume(-6) the procedural composer used, so this is parity and not a new choice.
     fp.setVolume(am.masterVolume > 0 ? -30 + am.masterVolume * 24 : -Infinity);
     am.composer = fp;
     window.__QOK_MUSIC__ = fp;                 // verification handle: .failed / .tries / .cur
+    if (carry) { try { fp.play(carry); } catch (e) { /* ignore */ } }
   }
 
   function install() {
@@ -174,8 +237,8 @@
     //   * already initialised -> swap right now;
     //   * not yet             -> swap when init() resolves.
     var origInit = am.init.bind(am);
-    am.init = function () { return origInit().then(function (r) { swap(am); return r; }); };
-    if (am.initialized) swap(am);
+    am.init = function () { return origInit().then(function (r) { swapWhenProven(am); return r; }); };
+    if (am.initialized) swapWhenProven(am);
     return true;
   }
 

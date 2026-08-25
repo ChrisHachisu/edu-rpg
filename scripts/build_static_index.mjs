@@ -258,7 +258,7 @@ export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '
 // The tag loads AFTER the bundle so window.__QOK exists when the override runs, and the override
 // no-ops when the hook or the audio files are absent, so this is additive.
 export const EXPECTED_STATIC_INDEX_SHA =
-  'b333db92f4206212fcc86283eca308118e8ddd28b4670e1acf591143ff2ba447';
+  'dd64be9a54f6fefb27d7428f622fa4a817bd4b35a51659a63b802bd76c25da2d';
 
 /**
  * The authored shell loads its scripts by ABSOLUTE path so the Vite dev server resolves them;
@@ -274,6 +274,13 @@ export const REWRITES = [
   ['src="/dq-tiles.js"', 'src="dq-tiles.js"'],
   ['src="/hero-override.js"', 'src="hero-override.js"'],
   ['src="/act1-hifi/adapter.js"', 'src="act1-hifi/adapter.js"'],
+  // 2026-08-26: the BGM override. It was added to index.html on 2026-08-25 and NOT added here,
+  // so the shipped shell kept `src="/music-override.js"` while every sibling was rewritten
+  // relative. A root-absolute path resolves fine off a web server root -- which is why the
+  // browser check passed -- and does NOT resolve in the packaged app, so build 61 shipped with
+  // the override silently never loading. The assertRewrites() guard below now makes a missed
+  // entry impossible rather than merely documented.
+  ['src="/music-override.js"', 'src="music-override.js"'],
 ];
 
 export const sha256 = bytes => createHash('sha256').update(bytes).digest('hex');
@@ -293,6 +300,26 @@ export function staticIndexFrom(authored) {
       );
     }
     html = html.replace(from, to);
+  }
+  // GUARD, added 2026-08-26 after build 61 shipped a non-loading script.
+  //
+  // The loop above proves every rewrite we REMEMBERED to list still matches. It cannot see a tag
+  // that was added to index.html and never listed here -- that tag simply keeps its authored
+  // root-absolute path. `/music-override.js` did exactly that: it resolves off a web-server root,
+  // so a browser check of dist/ passes, and it does NOT resolve in the packaged app, so the BGM
+  // silently never loaded on device. Every other gate was green, because every other gate compares
+  // the shell to its own pinned hash rather than asking whether its paths can resolve.
+  //
+  // The shipped shell is served from its own directory, so NO local src/href may be root-absolute.
+  // Protocol-relative and absolute URLs (https:, data:, //) are left alone.
+  const absolute = [...html.matchAll(/(?:src|href)="(\/[^/][^"]*)"/g)].map((m) => m[1]);
+  if (absolute.length) {
+    throw new Error(
+      `the derived shell still carries root-absolute local path(s): ${absolute.join(', ')} -- ` +
+      'the shipped shell is served from its own directory, so these will not resolve in the ' +
+      'packaged app even though they resolve when dist/ is served from a web root. Add a ' +
+      'REWRITES entry for each.',
+    );
   }
   return html;
 }

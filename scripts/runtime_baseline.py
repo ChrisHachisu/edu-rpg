@@ -59,7 +59,7 @@ ACT1_OVERLAY_FILES = {
     # 2026-08-17: the panel gains the RENDER CHAIN and the debug default is ON for this build only,
     # so the owner's phone can answer whether the fuzziness is a global upscale. Same sign-off:
     # EXPECTED_STATIC_INDEX_SHA in scripts/build_static_index.mjs.
-    "index.html": (116600, "b333db92f4206212fcc86283eca308118e8ddd28b4670e1acf591143ff2ba447"),
+    "index.html": (116599, "dd64be9a54f6fefb27d7428f622fa4a817bd4b35a51659a63b802bd76c25da2d"),
     # 2026-08-01, owner-authorised: dq-tiles.js now splats AI-generated terrain MATERIALS through
     # its existing continuous-world-pixel drawTerrain, plus a ridged mountain height field,
     # varied shore character and landmark sites derived from mapData. Fallback-safe -- until the
@@ -267,7 +267,7 @@ UI_ASSET_FILES = {
     # Pinned by hash like every other shipped asset: a silent swap of a music file is exactly as
     # invisible as a silent swap of art, and the override FAILS SOFT (it keeps the chiptune) so a
     # missing or corrupt track would not announce itself at runtime.
-    "music-override.js": (7911, "72ad7c593f457c2dc5b4122263278245cf5ddd9f1cb130fb5904aa258d5e0bbd"),
+    "music-override.js": (11469, "0c63cded00bdc63d7d36cebbd8d02573b628bf93f60c3c0c64d180aeaa1a1ca3"),
     "audio/battle.m4a": (366808, "ec61f086099d4c9ea687563597198bdf17a9360e9861eb64d02ee9dbb6b8aa00"),
     "audio/bossBattle.m4a": (366492, "4fe64bc355274c1193a695c343a5cb39152e3d62709ecf26cb1bf71cfeaee254"),
     "audio/dungeon.m4a": (366236, "6ae4b9707338920f2c3bf410495217db9985ed65f55a1dd623aea091ee6ed029"),
