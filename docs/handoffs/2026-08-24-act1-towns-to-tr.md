@@ -3,8 +3,9 @@ date: 2026-08-24
 type: handoff
 project: edu-rpg
 milestone: act1-town-plates
-status: active
+status: superseded
 supersedes: "[[2026-08-24-act1-towns-build58-shipped]]"
+superseded_by: "[[2026-08-26-build62-feedback]]"
 tags: [handoff, machine-migration]
 ---
 
