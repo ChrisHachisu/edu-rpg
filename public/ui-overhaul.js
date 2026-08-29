@@ -244,30 +244,11 @@
     return heroSpinner(size); // loading, not a stand-in hero -- see heroSpinner
   }
 
-  // ---- NPC sprite snapshot (e.g. shopkeeper portrait, cropped to the upper half) ----
-  var npcCache = {};
-  function getNpcSrc(key, topFrac) {
-    var ck = 'npc|' + key + '|' + (topFrac || 1);
-    var v = npcCache[ck];
-    if (v) return v === 'none' ? null : v;
-    var g = G();
-    if (!g || !g.textures || !g.textures.exists(key)) return null;
-    var tex = g.textures.get(key);
-    var img = tex.getSourceImage ? tex.getSourceImage() : (tex.source && tex.source[0] && tex.source[0].image);
-    if (!img || !img.width) return null;
-    try {
-      var sw = img.width, sh = img.height, ch = topFrac ? Math.round(sh * topFrac) : sh;
-      var cv = document.createElement('canvas'); cv.width = sw; cv.height = ch;
-      var ctx = cv.getContext('2d'); ctx.imageSmoothingEnabled = false;
-      ctx.drawImage(img, 0, 0, sw, ch, 0, 0, sw, ch);
-      var url = cv.toDataURL('image/png'); npcCache[ck] = url; return url;
-    } catch (e) { npcCache[ck] = 'none'; return null; }
-  }
-  function shopAvatar() {
-    var src = getNpcSrc('shopkeeper', 0.9); // show more of him so he sits smaller in the frame
-    if (src) return '<img class="npcimg" src="' + src + '" alt="" />';
-    return use('person', 'ic', '#e0b757'); // fallback
-  }
+  // The NPC sprite-snapshot helpers (getNpcSrc / shopAvatar) lived here and are GONE with the shop
+  // avatar that was their only caller. They snapshotted a texture out of the frozen bundle, which
+  // is what made them a liability: the bundle's NPC art cannot be updated, so anything drawn from
+  // it silently drifts behind the town's own sprites. If a portrait is ever wanted again, take it
+  // from `public/act1-hifi/town/npc/`, which is the art the player is actually looking at.
 
   // ---- item icon: unique high-density art with the legacy SVGs as fallback ----
   var ITEM_ART = Object.create(null);
@@ -630,8 +611,13 @@
 
     var shopTitle = Z('map.' + ss.shopId);
     if (!shopTitle || shopTitle.charAt(0) === '[') shopTitle = '';
+    // NO AVATAR. It rendered the bundle's `shopkeeper` TEXTURE, which is the pre-2026-08-24
+    // shopkeeper -- the old artwork, still sitting in the frozen bundle and now three redraws
+    // behind the NPC the player is standing in front of. OWNER, build 64: "The shop keeper icon is
+    // not needed on the shop menu. This is the old shopkeeper artwork." Dropping it is also the
+    // only fix that cannot go stale again: there is no second copy of the art to keep in step.
+    // `.topbar` is a flexbox and `.who` is the flex:1 child, so the title simply moves left.
     var h = '<div class="topbar">' +
-      '<div class="av" style="background:linear-gradient(160deg,#5a3f2a,#3a2818);overflow:hidden;">' + shopAvatar() + '</div>' +
       '<div class="who" style="min-width:0;">' +
         (shopTitle ? '<div class="nm" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + esc(shopTitle) + '</div>' : '') +
         '<div class="lv" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">' + esc(Z('shop.welcome')) + '</div>' +

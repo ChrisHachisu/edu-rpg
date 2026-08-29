@@ -274,6 +274,85 @@ async function walkIn(page) {
           `standing at ${st.cell.map(n => n.toFixed(2))}`);
       }
     }
+
+    // ---- ITEM 5: a shop or a menu must not cost the player her position --------------------
+    // The town's position lives in the iframe and nowhere else, so the real assertion is that the
+    // IFRAME SURVIVES. A stamp on its window proves it: if the overlay was torn down and re-entered
+    // -- which is exactly what used to happen, because a paused WorldMapScene reports isActive()
+    // false -- the stamp is gone and she is standing on startCell again.
+    console.log('\nITEM 5  opening a shop or a menu keeps the player where she was');
+    for (const [kind, open, close] of [
+      ['shop', async () => {
+        await page.evaluate(sel => document.querySelector(sel).contentWindow.__ACT1_TOWN__.interact(),
+          frameSel);
+        await page.waitForFunction(
+          () => window.__PHASER_GAME__.scene.isActive('ShopScene'), { timeout: 15_000 });
+      }, async () => {
+        await page.evaluate(() => window.__PHASER_GAME__.scene.getScene('ShopScene').leave());
+      }],
+      ['menu', async () => {
+        await page.evaluate(() => {
+          const w = window.__PHASER_GAME__.scene.getScene('WorldMapScene');
+          w.scene.launch('MenuScene'); w.scene.pause();
+        });
+        await page.waitForFunction(
+          () => window.__PHASER_GAME__.scene.isPaused('WorldMapScene'), { timeout: 15_000 });
+      }, async () => {
+        await page.evaluate(() => {
+          const m = window.__PHASER_GAME__.scene.getScene('MenuScene');
+          m.scene.stop(); m.scene.resume('WorldMapScene');
+        });
+      }],
+    ]) {
+      await bootToOverworld(page, save(SEED.x, SEED.y, { 'act1.townOpened.greenhollow': true }), false);
+      await walkIn(page);
+      // stand her beside the shop counter -- somewhere that is NOT startCell, so a reset shows up
+      await page.evaluate(([sel, a]) => {
+        const f = document.querySelector(sel);
+        f.src = f.getAttribute('src').replace(/&at=[^&]*/, '') + `&at=${a}`;
+      }, [frameSel, '16.06,37.0']);
+      await page.waitForFunction(sel => document.querySelector(sel)?.contentWindow?.__ACT1_TOWN__,
+        frameSel, { timeout: 20_000 });
+      await page.waitForTimeout(900);
+      const before = await page.evaluate(sel => {
+        const f = document.querySelector(sel);
+        f.contentWindow.__positionProbe = 'alive';        // dies with the document on any reload
+        const t = f.contentWindow.__ACT1_TOWN__, p = t.position(), c = t.town.worldPxPerCell;
+        return { cell: [p.x / c, p.y / c], src: f.getAttribute('src') };
+      }, frameSel);
+      await open();
+      await page.waitForTimeout(900);
+      await page.screenshot({ path: path.join(OUT, `07-${kind}-open.png`) });
+      const during = await page.evaluate(sel => {
+        const f = document.querySelector(sel);
+        return { townAlive: Boolean(f?.contentWindow?.__ACT1_TOWN__),
+                 stamp: f?.contentWindow?.__positionProbe ?? null,
+                 src: f?.getAttribute('src') ?? null };
+      }, frameSel);
+      check(`the town runtime SURVIVES the ${kind} (frame not torn down)`,
+        during.townAlive && during.stamp === 'alive' && during.src === before.src,
+        `alive=${during.townAlive} stamp=${during.stamp} src ${during.src === before.src ? 'unchanged' : 'RELOADED'}`);
+      await close();
+      await page.waitForFunction(
+        () => window.__PHASER_GAME__.scene.isActive('WorldMapScene'), { timeout: 15_000 });
+      await page.waitForTimeout(900);
+      const after = await page.evaluate(sel => {
+        const f = document.querySelector(sel);
+        const t = f?.contentWindow?.__ACT1_TOWN__;
+        if (!t) return null;
+        const p = t.position(), c = t.town.worldPxPerCell;
+        return { cell: [p.x / c, p.y / c], stamp: f.contentWindow.__positionProbe ?? null,
+                 hidden: document.querySelector('#act1-hifi-preserved-root').hidden };
+      }, frameSel);
+      check(`she is in the SAME position after closing the ${kind}`,
+        after && near(after.cell[0], before.cell[0], 0.05) && near(after.cell[1], before.cell[1], 0.05),
+        after ? `${before.cell.map(n => n.toFixed(2))} -> ${after.cell.map(n => n.toFixed(2))} `
+                + `(startCell is ${START}, which is where the bug put her)`
+              : 'the town runtime was gone entirely');
+      check(`the town is visible again after the ${kind}`, after && after.hidden === false,
+        `overlay hidden=${after?.hidden}`);
+      await page.screenshot({ path: path.join(OUT, `08-after-${kind}.png`) });
+    }
   } finally {
     await browser.close();
   }

@@ -110,6 +110,26 @@ function worldSceneActive() {
   return Boolean(phaserGame()?.scene?.isActive?.('WorldMapScene'));
 }
 
+// PAUSED IS NOT GONE, AND CONFUSING THE TWO COST THE PLAYER HER POSITION.
+// Every shipped UI that sits on top of the world -- the shop and the menu both -- does
+// `launch(<other scene>)` then `this.scene.pause()`, and a paused Phaser scene reports
+// `isActive() === false`. tick()'s guard used to be `worldSceneActive()` alone, so opening a shop
+// or a menu inside a hi-fi town dropped straight through to `releaseRoot()`: `frame.src` went to
+// about:blank and the whole town runtime was destroyed. Closing the UI then re-entered from
+// scratch and town.html spawned her on `startCell`, the arrival cell by the gate -- OWNER, build
+// 64: "after opening a menu screen or shop screen the user snaps to near the entrance of the town
+// but they need to be in the same position as they were and in the same location."
+//
+// The town's position lives in the iframe and nowhere else, so keeping the iframe ALIVE is the
+// whole fix: suspended, hidden, not reloaded. Never widen this to "any scene is active" -- the
+// point is that WorldMapScene itself is still the player's scene, merely stopped for a moment.
+function worldScenePaused() {
+  return Boolean(phaserGame()?.scene?.isPaused?.('WorldMapScene'));
+}
+function worldSceneLive() {
+  return worldSceneActive() || worldScenePaused();
+}
+
 function prepareRoot() {
   root.hidden = false;
   document.body.classList.add('act1-hifi-active');
@@ -679,13 +699,19 @@ for (const type of ['keydown', 'keyup']) {
 async function tick() {
   const scene = worldScene();
   patchScene(scene);
-  if (scene && TOWN_IDS.has(activeMapId(scene)) && worldSceneActive()) {
+  if (scene && TOWN_IDS.has(activeMapId(scene)) && worldSceneLive()) {
     const mapId = activeMapId(scene);
     prepareRoot();
     suppressLegacyWorldRender(scene);
+    // A PAUSED world scene means a shipped UI is on top of it. Step aside for it exactly as the
+    // act1-town-service path does -- including for the ones that never send us a message, which is
+    // how the MENU gets here: WorldMapScene.launch('MenuScene') + pause() happens entirely inside
+    // the shipped scene and the overlay is never told.
+    if (worldScenePaused() && !townSuspended) suspendTownOverlay();
     if (townSuspended) {
-      // Hand control back the moment the shipped shop/heal/save UI is done with it.
-      if (!shippedUiBusy(scene)) restoreTownOverlay();
+      // Hand control back the moment the shipped shop / menu / heal / save UI is done with it, and
+      // not one frame earlier: `active` is the only state in which the player can move again.
+      if (worldSceneActive() && !shippedUiBusy(scene)) restoreTownOverlay();
       requestAnimationFrame(tick);
       return;
     }
