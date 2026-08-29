@@ -109,7 +109,7 @@ ACT1_OVERLAY_FILES = {
     # save format round-trips to itself (measured: 742 of 754 reportable cells reload unchanged, the
     # other 12 settle one cell north once; largest rescue nudge 28 px against a 96 px bound).
     "dq-tiles.js": (
-        461624, "b1be99de1d7022b11e44c49b7cec1a3cac717de99e1521260b5e00f8977160fc"),
+        465094, "cfaa1cfbc875bf0c49eb91c140139fd65063babe26a98ba9b8e1530358cae7c9"),
     # 2026-08-07: THE OVERWORLD'S COLLISION SHAPE, baked -- the overworld's answer to the dungeons'
     # `<floor>-walk.png` above, and as much a shipped authority as they are. Deriving it at runtime
     # was correct and unaffordable: owmBuild() evaluated waterField/mountainField per pixel over a
@@ -319,13 +319,13 @@ ACT1_DUNGEON_FILES = {
     # build-dist.sh assembles from this enumeration, so an unpinned new file is silently dropped from
     # the shipped app and the ship gate still says PASS. Caught by counting the files on disk.
     "act1-dungeon-art/coastalReef-f1-overhead.png": (
-        17482754, "8099b6c5303de2b5993e3962f388df018f49f17b637512d5667b5203e1e198ce"),
+        17483675, "10f3d9e40cea686ba4c0e612380cae087f11edfd015a4a11927dc5615b18165d"),
     "act1-dungeon-art/mistyGrotto-f1-overhead.png": (
-        7782211, "2daee40778fc7dc383d81c224231178b9d40fced5e64542da803153bde4769d0"),
+        7782376, "06caa62a423d66ab0be66824dfed07966ed360b7ab1fc64a73ab6e05bbc0d25d"),
     "act1-dungeon-art/sunkenCellar-f1-overhead.png": (
-        3857207, "12aa00ff0e72e28f0f64e1bae69c7c6ecef3b8d3156acc61c1e38a4c981487e5"),
+        3858171, "489c96d550b2651fb991cf518324fe0e448bc58d4eac6b03dd3e5368f7980f88"),
     "act1-dungeon-art/whisperingWoodsCave-f1-overhead.png": (
-        6350351, "c586167a19fe9dddd96d7984e5f9b19bd176096c52be1eaadf80073de787f4ef"),
+        6351577, "1b033b907bd88b0d36c9ca691d7b2d72c8ae0ef30af47dd7b578a8aea582a570"),
     "act1-dungeon-art/sunkenCellar-f1-props.png": (
         3523624, "5d49e92a14975a7ea1d2414bbf41d9a8d854289f26e10f2707ff789b5adde2fa"),
     "act1-dungeon-art/sunkenCellar-f2-props.png": (
@@ -341,7 +341,7 @@ ACT1_DUNGEON_FILES = {
     # back byte-identical, so extracting floor_field() provably did not touch a rendered pixel
     # (docs/DUNGEON-EDGE-STYLE-LOCK.md).
     "act1-dungeon-art/sunkenCellar-f1-walk.png": (
-        6365, "7f31e8ab9b4b97f4a9c0e9cdfe879988e66b8a96e443f026fa024b1b7bfe6e19"),
+        6380, "b3cd2f2560ca1de0c9a4aa9b373c422acadbbfcffb5fefff87ce901f3da0a7d4"),
     "act1-dungeon-art/sunkenCellar-f2-walk.png": (
         6975, "b22ccd7a8e74917db5bd5f745f87fab6f77cbab438c4a76b9153518cd11f300f"),
     "act1-dungeon-art/sunkenCellar-f3-walk.png": (
@@ -359,7 +359,7 @@ ACT1_DUNGEON_FILES = {
     "act1-dungeon-art/mistyGrotto-f3-props.png": (
         10362066, "1f621190741b4a7e0b55455b11dccbf3ae178a2cfdf7c4d5e00dc5bbbc476262"),
     "act1-dungeon-art/mistyGrotto-f1-walk.png": (
-        14997, "2a2885241dc181dd7bea2bf51214f883cb9d75b2fd7141c84ebeaa0539bc781b"),
+        14969, "a10d33bc97432dc232c909cbe64990f493b5eee0935679a058a6566acd2288e7"),
     "act1-dungeon-art/mistyGrotto-f2-walk.png": (
         15692, "e9e708e18ef7a1d3113b4f2672dd74e8bd2014bfa5d012b5fff06f3f18b8f9b4"),
     "act1-dungeon-art/mistyGrotto-f3-walk.png": (
@@ -375,7 +375,7 @@ ACT1_DUNGEON_FILES = {
     "act1-dungeon-art/coastalReef-f3-props.png": (
         16640569, "e123310bb2393826303e38d101165f291710421c2a12852b792a885177757464"),
     "act1-dungeon-art/coastalReef-f1-walk.png": (
-        19187, "5ea2038824753b06e62924c9b2b4b8fdeb0e240c436078991db4ce8c8b8a987d"),
+        19181, "0f3f2e5bad80b086afe42f94b821afcb15b4da9070d496eecacf8ffa607896a3"),
     "act1-dungeon-art/coastalReef-f2-walk.png": (
         15886, "d87ab060c071c2147bcd0e0d09c0f059719cda0b3247bdf890c3297c96da4cb2"),
     "act1-dungeon-art/coastalReef-f3-walk.png": (
@@ -387,7 +387,7 @@ ACT1_DUNGEON_FILES = {
     "act1-dungeon-art/whisperingWoodsCave-f3-props.png": (
         7817478, "542adfa29a81e58b34ae350eeebe7703ee501372bf1f68bb9fff57edaf6932d0"),
     "act1-dungeon-art/whisperingWoodsCave-f1-walk.png": (
-        11280, "94e3b834c7144ed93f1c4e7db4039dba619a7b71c78765c3a9b4c7f67871bbba"),
+        11259, "3ba320b23af5d9da3eb5195b498904978f2d93ab386895c2b5ab62fb5ee8a6da"),
     "act1-dungeon-art/whisperingWoodsCave-f2-walk.png": (
         11928, "e573eb74b554ba4fdb79a4c7cde420ca124b6a8e091ce5b34e19a723bcea8559"),
     "act1-dungeon-art/whisperingWoodsCave-f3-walk.png": (

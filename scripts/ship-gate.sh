@@ -32,6 +32,9 @@ python3 scripts/check_town_transitions.py
 # check_town_transitions.py only looks at the exit's OVERWORLD half. The IN-TOWN half was
 # unguarded and got shipped wrong three builds running; this covers it.
 python3 scripts/check_town_exits.py
+# A dungeon entry carries no landing cell -- LANDMARKS give every cave the same leftover (50,1) and
+# the player only reaches the mouth because that coordinate is illegal and the rescue fires.
+python3 scripts/check_dungeon_entries.py
 # Roofs are not floors. The colour classifiers cannot tell shingle from grass or slate from
 # cobble, so building footprints are AUTHORED and this proves the derivation still honours
 # them. See scripts/check_town_roofs.py for the measurements behind that.

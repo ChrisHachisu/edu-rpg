@@ -1,8 +1,8 @@
 {
  "artefact": "coastalReef-f1-overhead.png",
- "command": "bake_dungeon_arch.py",
+ "command": "bake_dungeon_arch.py --arch-scale 1.2",
  "generator": "scripts/bake_dungeon_arch.py",
- "generatorSha256": "d8ef0f8b41f2ac99cad61e2300cdda7f911ea380862939ed5d97b42eee437ef3",
+ "generatorSha256": "6d40509faf3d79f61b6c23b567466dac281fb89b61b1b662f4b73213db21c93e",
  "inputs": {
   "design/act1-dungeons/arch/archasset-coastalReef.png": "b99b31f267763d4769d468a96d6eeee4cea329bf035c5d1b8e20e08d58d11cc2",
   "public/act1-dungeon-art/coastalReef-f1-props.png": "ce5762e8d54d7a6d9469524d9a0967969279344948356fece4ca5bdb4d8fd0e0"
@@ -10,8 +10,8 @@
  "params": {
   "clearance": 16,
   "kind": "authored-arch",
-  "scale": 0.14085
+  "scale": 0.16901
  },
- "sha256": "8099b6c5303de2b5993e3962f388df018f49f17b637512d5667b5203e1e198ce",
- "writtenAt": "2026-08-18T23:01:44+09:00"
+ "sha256": "10f3d9e40cea686ba4c0e612380cae087f11edfd015a4a11927dc5615b18165d",
+ "writtenAt": "2026-08-29T22:46:10+09:00"
 }

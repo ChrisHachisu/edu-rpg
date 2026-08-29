@@ -1,8 +1,8 @@
 {
  "artefact": "whisperingWoodsCave-f1-overhead.png",
- "command": "bake_dungeon_arch.py",
+ "command": "bake_dungeon_arch.py --arch-scale 1.2",
  "generator": "scripts/bake_dungeon_arch.py",
- "generatorSha256": "d8ef0f8b41f2ac99cad61e2300cdda7f911ea380862939ed5d97b42eee437ef3",
+ "generatorSha256": "6d40509faf3d79f61b6c23b567466dac281fb89b61b1b662f4b73213db21c93e",
  "inputs": {
   "design/act1-dungeons/arch/archasset-whisperingWoodsCave.png": "ad6b3a6083a56403e8767ed646e8bdacfa8e9548f6c77e009d0d52745767ddb5",
   "public/act1-dungeon-art/whisperingWoodsCave-f1-props.png": "00fb45c180dc4789491229295b660206e572783f067aaf04cab3f9c8665f1ea6"
@@ -10,8 +10,8 @@
  "params": {
   "clearance": 16,
   "kind": "authored-arch",
-  "scale": 0.14815
+  "scale": 0.17778
  },
- "sha256": "c586167a19fe9dddd96d7984e5f9b19bd176096c52be1eaadf80073de787f4ef",
- "writtenAt": "2026-08-18T23:01:49+09:00"
+ "sha256": "1b033b907bd88b0d36c9ca691d7b2d72c8ae0ef30af47dd7b578a8aea582a570",
+ "writtenAt": "2026-08-29T22:46:14+09:00"
 }

@@ -3031,8 +3031,28 @@
   // it was never the map. Act 1 was uncompletable. The bounds now come from scene.mapData, which
   // the engine has already built for ANY dungeon, so the guard no longer needs generated data.
   // Still called only from the kind==='dng' branch, so the overworld and towns are untouched.
+  // ARRIVING ON A FLOOR IS NOT THE SAME AS RECOVERING ON ONE, AND CONFLATING THEM SKIPPED AN
+  // ENTRANCE. Everything below has two customers: a player who has just been dropped on a floor by
+  // the engine's fixed entry coordinate, and a player whose SAVED position rounded onto an illegal
+  // cell centre. The second wants the smallest possible nudge -- teleporting her across the map on
+  // reload was a real bug. The first wants the authored anchor, always.
+  //
+  // They were told apart by distance, "nudge if within 2 cells, else anchor", and that reads the
+  // wrong thing. coastalReef is 66x53, so the engine's leftover landing of (50,1) is INSIDE its
+  // map -- rock, so the rescue fired, but the 2-cell nudge found legal ground at (49,2) and
+  // returned. The player entered the dungeon sixteen cells from its mouth, in a corner she had no
+  // way to recognise, which is exactly what the owner meant by build 65's "hard block the player
+  // from entering the dungeon from an unauthorized location". The other three only escaped it
+  // because (50,1) is off their maps entirely.
+  //
+  // So tell them apart by WHAT HAPPENED instead: the floor key changing means she has just arrived.
+  // While arriving, the nudge is skipped and the anchor wins; the flag clears the moment she is
+  // standing legally, after which recovery behaves exactly as before.
+  var a1dRescueKey=null, a1dArriving=false;
   function a1dRescueHero(scene){
     if(!scene.mapData||!scene.mapData.length) return;
+    var a1dKeyNow=scene.currentMapId+'-f'+(scene.currentFloor||1);
+    if(a1dKeyNow!==a1dRescueKey){ a1dRescueKey=a1dKeyNow; a1dArriving=true; }
     // WHERE THE MASK IS THE AUTHORITY, THIS GUARD IS NOT. Its legality test is
     // `!A1D_BLOCK[mapData[y][x]]`, and A1D_BLOCK contains 1 = rock -- but the whole point of the
     // continuous mover is that 35 cells a floor are `#` on the lattice and open in the picture.
@@ -3045,7 +3065,10 @@
     // of at most 28 px, inside the 2-cell bound, so none of them reach the anchor teleport below.
     try{ var mm=a1mFor(scene);
          if(mm && scene.hero){
-           if(a1mFree(scene,mm,scene.hero.x,scene.hero.y)) return;
+           if(a1mFree(scene,mm,scene.hero.x,scene.hero.y)){ a1dArriving=false; return; }
+         }
+         // The nudge is for RECOVERY only; on arrival it is what skipped coastalReef's entrance.
+         if(mm && scene.hero && !a1dArriving){
            // She is not standing legally -- but the engine places by CELL, and a cell CENTRE is a
            // lattice coordinate the art never promised was open. Reloading a save made in cell
            // (7,24) put her on its centre, which is inside the rock lip, and the anchor rescue
@@ -3070,7 +3093,7 @@
     // (7,24) is `#` to the lattice. Defer while the request is still outstanding, but ONLY for a
     // hero already inside the map: the case this guard exists for is an entry coordinate off the
     // edge of it (the overworld connection's fixed toX/toY), and that one cannot wait.
-    try{ if(a1mPending(scene)){
+    try{ if(a1mPending(scene) && !a1dArriving){
       var pm=scene.mapData, ph=pm.length, pw=(pm[0]||[]).length;
       if(scene.heroTileX>=0 && scene.heroTileX<pw && scene.heroTileY>=0 && scene.heroTileY<ph)
         return;
@@ -3079,7 +3102,7 @@
     var md=scene.mapData, H=md.length, W=(md[0]||[]).length;
     if(!W) return;
     var x=scene.heroTileX,y=scene.heroTileY;
-    if(y>=0&&y<H&&x>=0&&x<W&&!A1D_BLOCK[md[y][x]]) return;                  // already somewhere legal
+    if(y>=0&&y<H&&x>=0&&x<W&&!A1D_BLOCK[md[y][x]]){ a1dArriving=false; return; }  // already legal
     if(!fl){
       // No authored anchors to aim for. Clamp the engine's intended landing back inside the map
       // and take the NEAREST walkable cell to it -- landing beside the intended mouth beats
@@ -3101,8 +3124,8 @@
     }
     W=fl.width; H=fl.height;
     var want=(scene.currentFloor||1)>1?['stairsUp','stairsDown','mouth']:['mouth','stairsUp','stairsDown'];
-    var a=fl.assets||[],tx=-1,ty=-1,i,j;
-    for(j=0;j<want.length&&tx<0;j++) for(i=0;i<a.length;i++) if(a[i].kind===want[j]){ tx=a[i].x; ty=a[i].y; break; }
+    var a=fl.assets||[],tx=-1,ty=-1,anchor=null,i,j;
+    for(j=0;j<want.length&&tx<0;j++) for(i=0;i<a.length;i++) if(a[i].kind===want[j]){ tx=a[i].x; ty=a[i].y; anchor=want[j]; break; }
     if(tx<0){ for(ty=0;ty<H&&tx<0;ty++) for(i=0;i<W;i++) if(!A1D_BLOCK[scene.mapData[ty][i]]){ tx=i; break; } }
     if(tx<0) return;                                                        // nothing walkable at all -> leave the engine alone
     if(A1D_BLOCK[scene.mapData[ty][tx]]){                                   // stairs are walkable, but a chest/sign anchor is not
@@ -3110,7 +3133,28 @@
       for(k=0;k<4;k++){ var nx=tx+n[k][0],ny=ty+n[k][1];
         if(ny>=0&&ny<H&&nx>=0&&nx<W&&!A1D_BLOCK[scene.mapData[ny][nx]]){ tx=nx; ty=ny; break; } }
     }
-    scene.heroTileX=tx; scene.heroTileY=ty;
+    scene.heroTileX=tx; scene.heroTileY=ty; a1dArriving=false;
+    // SHE ARRIVES FACING INTO THE DUNGEON, NOT WHICHEVER WAY SHE LAST WALKED ON THE OVERWORLD.
+    // Owner, build 65: "entering into dungeons should always position the players in the entrance
+    // direction or hard block the player from entering the dungeon from an unauthorized location."
+    // Position was already right -- every mouth is the dead end of a one-cell slot and this rescue
+    // lands her on it -- but nothing ever set `heroDir`, so her facing was whatever the last step
+    // outside happened to leave. It looked correct only by accident: three of the four mouths are
+    // approached from the south, so walking up into the door left her facing up, and coastalReef's
+    // is approached from the east, which left her facing LEFT into the wall of a westward slot.
+    // The direction into the dungeon is not a constant -- it is wherever the slot's open neighbour
+    // is -- so read it off the map rather than hard-coding one per dungeon.
+    if(anchor==='mouth'){
+      var dirs=[[0,1,0],[-1,0,1],[1,0,2],[0,-1,3]],dk,nd=-1;   // dx,dy,heroDir: 0 down 1 left 2 right 3 up
+      for(dk=0;dk<4;dk++){ var ax=tx+dirs[dk][0],ay=ty+dirs[dk][1];
+        if(ay>=0&&ay<H&&ax>=0&&ax<W&&!A1D_BLOCK[scene.mapData[ay][ax]]){ nd=dirs[dk][2]; break; } }
+      if(nd>=0){ scene.heroDir=nd;
+        // heroDir alone is state, not a picture: the bundle draws the hero with
+        // `setFrame(this.heroDir * 3)` and only on a move. Set the frame too, or she stands at the
+        // mouth facing the way she came until her first step.
+        try{ if(scene.hero&&typeof scene.hero.setFrame==='function') scene.hero.setFrame(nd*3); }catch(e){}
+      }
+    }
     try{ if(scene.hero){ scene.hero.x=tx*TILE+TILE/2; scene.hero.y=ty*TILE+TILE/2; }
          if(typeof scene.updatePosition==='function') scene.updatePosition();
          if(typeof scene.updateCamera==='function') scene.updateCamera();

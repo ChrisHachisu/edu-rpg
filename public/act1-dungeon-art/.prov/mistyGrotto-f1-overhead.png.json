@@ -1,8 +1,8 @@
 {
  "artefact": "mistyGrotto-f1-overhead.png",
- "command": "bake_dungeon_arch.py",
+ "command": "bake_dungeon_arch.py --arch-scale 1.2",
  "generator": "scripts/bake_dungeon_arch.py",
- "generatorSha256": "d8ef0f8b41f2ac99cad61e2300cdda7f911ea380862939ed5d97b42eee437ef3",
+ "generatorSha256": "6d40509faf3d79f61b6c23b567466dac281fb89b61b1b662f4b73213db21c93e",
  "inputs": {
   "design/act1-dungeons/arch/archasset-mistyGrotto.png": "ea6179bbb06316d00f7cf665d1f9b0700dfb8f1d16b7f50f8fa4dfdf13f28e76",
   "public/act1-dungeon-art/mistyGrotto-f1-props.png": "e8d426db42349e334eed41f6de9f45cabfa678a0bf240589bfef81b0043b4ad9"
@@ -10,8 +10,8 @@
  "params": {
   "clearance": 16,
   "kind": "authored-arch",
-  "scale": 0.14407
+  "scale": 0.17288
  },
- "sha256": "2daee40778fc7dc383d81c224231178b9d40fced5e64542da803153bde4769d0",
- "writtenAt": "2026-08-18T23:01:45+09:00"
+ "sha256": "06caa62a423d66ab0be66824dfed07966ed360b7ab1fc64a73ab6e05bbc0d25d",
+ "writtenAt": "2026-08-29T22:46:11+09:00"
 }

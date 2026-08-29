@@ -127,6 +127,29 @@ BASE = ROOT / "design" / "act1-dungeons" / "arch" / "walk-base"
 FLOORS = ROOT / "dist" / "act1-dungeon-floors.json"
 TILE = 48
 
+# HOW BIG THE ARCH IS, AND WHY IT IS NO LONGER JUST THE FIT.
+# Fitting the authored opening to the plate's lit mouth gives an arch about 2.2 x 1.8 cells, whose
+# opening is 36 x 51 px -- and the hero is ~34 x 60 px. The doorway was therefore the same size as
+# the person walking through it, and against black fang-rock the dark masonry did not read as an
+# arch at all. Owner, build 65: "the arch in the dungeon is very close but is set prematurally and
+# the player emerges from a slit in the arch in the dungeon (the overlay is not set large enough)."
+# ARCH_SCALE multiplies the derived fit; the opening's BASE LINE is held, so the arch grows upward
+# and outward from the ground she walks in on and stays anchored to the mouth it frames. It is a
+# ceiling on nothing: every invariant below still has to pass at whatever value this is set to, and
+# the bake REFUSES to write rather than ship an arch that seals a mouth or swallows the hero.
+#
+# 1.2 IS THE CONSIDERED VALUE, NOT THE MAXIMUM. Measured, the no-vanish invariant holds to 1.25
+# (deepest cover 14.3..15.1 px against the 16 px clearance) and REFUSES at 1.35 (16.0). Bigger
+# looks better right up until the crown swallows her, and the whole reason this layer was switched
+# off in the past is that it did. 1.2 lands at 13.9..15.0 and keeps a pixel of headroom against a
+# limit that is about losing the character, so the arch is bigger AND the margin is still there.
+ARCH_SCALE = 1.2
+
+# How dark the authored stone may be toned to sit in an unlit cave. 1.0 would paste it at asset
+# brightness (a cut-out); 0 would let it vanish into the rock, which is the bug being fixed. The
+# floor keeps the arch readable however black the plate around it is.
+TONE_FLOOR = 0.55
+
 OPENING_LUM = 200     # the lit mouth on the plate: the one feature that is unambiguous
 PAD_CELLS = 3         # neighbourhood searched for the opening, and the scope of every write
 
@@ -219,16 +242,16 @@ def plate_opening(props: Image.Image, mouth: dict) -> tuple[int, int, int, int]:
     return x0 + int(xs.min()), x0 + int(xs.max()), y0 + int(ys.min()), y0 + int(ys.max())
 
 
-def place(dungeon: str, props: Image.Image, mouth: dict):
-    """Scale and position the authored arch onto the plate. No free parameters -- see the header."""
+def place(dungeon: str, props: Image.Image, mouth: dict, arch_scale: float = 1.0):
+    """Scale and position the authored arch onto the plate. One parameter -- see ARCH_SCALE."""
     rgb, opaque = key_authored(ASSETS / f"archasset-{dungeon}.png")
     ax0, ax1, ay0, ay1 = asset_opening(opaque)
     px0, px1, py0, py1 = plate_opening(props, mouth)
 
-    scale = (py1 - py0 + 1) / (ay1 - ay0 + 1)          # fit opening HEIGHT; the plate opening is
-                                                       # proportionally narrower than the authored
-                                                       # one, and height is what the hero's sprite
-                                                       # is measured against.
+    scale = (py1 - py0 + 1) / (ay1 - ay0 + 1) * arch_scale   # fit opening HEIGHT to the plate's lit
+                                                       # mouth, then apply ARCH_SCALE. The base line
+                                                       # is held below, so the arch grows UPWARD and
+                                                       # OUTWARD from the ground she walks in on.
     H, W = opaque.shape
     nw, nh = max(1, int(round(W * scale))), max(1, int(round(H * scale)))
     sil = np.asarray(Image.fromarray((opaque * 255).astype(np.uint8)).resize((nw, nh), Image.LANCZOS)) > 127
@@ -236,12 +259,22 @@ def place(dungeon: str, props: Image.Image, mouth: dict):
     ox = int(round((px0 + px1) / 2 - (ax0 + ax1) / 2 * scale))   # openings share a centre line
     oy = int(round(py1 - ay1 * scale))                            # and sit on the same base
 
+    # The asset's own PIXELS travel with its silhouette. Until 2026-08-29 they did not: the overlay
+    # was built from the PLATE's pixels through this stencil, so what the player saw at a cave mouth
+    # was arch-shaped BLACK FANG ROCK -- the authored stone archway was never once drawn. That is
+    # what "the arch in the dungeon is very close" means: the geometry was right and the paint was
+    # missing, so the mouth read as a slit in the rock rather than a doorway.
+    art = np.asarray(Image.fromarray(np.clip(rgb, 0, 255).astype(np.uint8))
+                 .resize((nw, nh), Image.LANCZOS)).astype(np.uint8)
+
     PW, PH = props.size
     full = np.zeros((PH, PW), bool)
+    rgb_full = np.zeros((PH, PW, 3), np.uint8)
     sx0, sy0 = max(0, ox), max(0, oy)
     sx1, sy1 = min(PW, ox + nw), min(PH, oy + nh)
     full[sy0:sy1, sx0:sx1] = sil[sy0 - oy:sy1 - oy, sx0 - ox:sx1 - ox]
-    return full, (px0, px1, py0, py1), scale
+    rgb_full[sy0:sy1, sx0:sx1] = art[sy0 - oy:sy1 - oy, sx0 - ox:sx1 - ox]
+    return full, (px0, px1, py0, py1), scale, rgb_full
 
 
 # ---------------------------------------------------------------- collision
@@ -297,8 +330,20 @@ def largest_safe_blocker(walk: np.ndarray, jambs: np.ndarray, mouth: dict):
 
 
 def build_overhead(props: Image.Image, sil: np.ndarray, walk: np.ndarray,
-                   opening: tuple[int, int, int, int]) -> np.ndarray:
-    """RGBA overlay: the plate's own pixels, through the authored silhouette plus the rock it abuts."""
+                   opening: tuple[int, int, int, int], arch_rgb: np.ndarray) -> np.ndarray:
+    """RGBA overlay: the AUTHORED arch inside its own silhouette, the plate's rock around it.
+
+    THE SILHOUETTE IS UNCHANGED, SO EVERY INVARIANT BELOW IS UNCHANGED. This function only decides
+    what COLOUR the covered pixels are; `assert_only_authored_hides` measures where the alpha lands,
+    and the alpha is still exactly `sil | (near & ~walk)`. That is why this could be fixed without
+    re-litigating the collision or the no-vanish argument.
+
+    The authored stone is TONED to the plate it sits on rather than pasted at full brightness. These
+    are unlit caves lit by a torch; a grey-white arch dropped in at asset brightness reads as a
+    cut-out from another picture. The scale factor is the ratio of the plate's own median luminance
+    around the mouth to the asset's, clamped so the arch can be darkened to sit in the gloom but
+    never brightened into a lightbox.
+    """
     _, _, _, base = opening
     rows = np.arange(props.size[1])[:, None] * np.ones((1, props.size[0]), bool)
 
@@ -308,8 +353,16 @@ def build_overhead(props: Image.Image, sil: np.ndarray, walk: np.ndarray,
     near = ndimage.binary_dilation(sil, np.ones((3, 3)), iterations=ROCK_REACH)
     alpha = (sil | (near & ~walk)) & (rows <= base)
 
+    plate = np.asarray(props.convert("RGB"))
     rgba = np.zeros((props.size[1], props.size[0], 4), np.uint8)
-    rgba[:, :, :3] = np.asarray(props.convert("RGB"))
+    rgba[:, :, :3] = plate                              # the derived rock term keeps the plate's own
+    if sil.any():                                       # look; only the AUTHORED arch is repainted
+        ring = ndimage.binary_dilation(sil, np.ones((3, 3)), iterations=6) & ~sil
+        lum1 = lambda px: 0.2126 * px[:, 0] + 0.7152 * px[:, 1] + 0.0722 * px[:, 2]
+        plate_l = float(np.median(lum1(plate[ring].astype(float)))) if ring.any() else 0.0
+        art_l = float(np.median(lum1(arch_rgb[sil].astype(float)))) or 1.0
+        tone = min(1.0, max(TONE_FLOOR, plate_l / art_l))
+        rgba[:, :, :3][sil] = np.clip(arch_rgb[sil].astype(float) * tone, 0, 255).astype(np.uint8)
     rgba[:, :, 3] = alpha * 255
     return rgba
 
@@ -344,7 +397,7 @@ def assert_only_authored_hides(alpha: np.ndarray, walk: np.ndarray, sil: np.ndar
 # ---------------------------------------------------------------- per floor
 
 def do_floor(key: str, mouth: dict, check: bool, proof: Path | None,
-             seed_base: bool = False) -> tuple[bool, str]:
+             seed_base: bool = False, arch_scale: float = 1.0) -> tuple[bool, str]:
     dungeon = key.split("-")[0]
     asset = ASSETS / f"archasset-{dungeon}.png"
     props_p, walk_p = ART / f"{key}-props.png", ART / f"{key}-walk.png"
@@ -353,7 +406,7 @@ def do_floor(key: str, mouth: dict, check: bool, proof: Path | None,
         return True, f"{key}: no authored asset or no props/walk pair, skipped"
 
     props = Image.open(props_p)
-    sil, opening, scale = place(dungeon, props, mouth)
+    sil, opening, scale, arch_rgb = place(dungeon, props, mouth, arch_scale)
 
     base_p = BASE / f"{key}-walk.png"
     if seed_base or not base_p.exists():
@@ -392,7 +445,7 @@ def do_floor(key: str, mouth: dict, check: bool, proof: Path | None,
     stand_after = int(((ndimage.distance_transform_edt(patched) >= CLEARANCE) & jambs).sum())
 
     # --- occlusion, against the PATCHED mask.
-    rgba = build_overhead(props, sil, patched, opening)
+    rgba = build_overhead(props, sil, patched, opening, arch_rgb)
     under, deepest = assert_only_authored_hides(rgba[:, :, 3] > 0, patched, sil)
 
     over_px = int((rgba[:, :, 3] > 0).sum())
@@ -435,6 +488,8 @@ def main() -> int:
     ap.add_argument("--proof", type=Path, default=None)
     ap.add_argument("--seed-base", action="store_true",
                     help="re-snapshot the pristine walk masks before patching")
+    ap.add_argument("--arch-scale", type=float, default=ARCH_SCALE,
+                    help="multiplier on the derived fit; see ARCH_SCALE")
     args = ap.parse_args()
 
     floors = json.loads(FLOORS.read_text())["floors"]
@@ -445,7 +500,7 @@ def main() -> int:
         mouth = next((a for a in fl.get("assets", []) if a.get("kind") == "mouth"), None)
         if not mouth:
             continue
-        good, msg = do_floor(key, mouth, args.check, args.proof, args.seed_base)
+        good, msg = do_floor(key, mouth, args.check, args.proof, args.seed_base, args.arch_scale)
         print("  " + msg)
         ok = ok and good
     return 0 if ok else 1

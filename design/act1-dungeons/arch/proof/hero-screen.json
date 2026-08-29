@@ -8,11 +8,11 @@
     "y": 360
   },
   "mistyGrotto-north": {
-    "x": 693,
+    "x": 696,
     "y": 360
   },
   "mistyGrotto-mouth": {
-    "x": 696,
+    "x": 698,
     "y": 360
   },
   "sunkenCellar-north": {
@@ -29,6 +29,6 @@
   },
   "whisperingWoodsCave-mouth": {
     "x": 480,
-    "y": 500
+    "y": 504
   }
 }

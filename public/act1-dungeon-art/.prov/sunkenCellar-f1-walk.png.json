@@ -1,8 +1,8 @@
 {
  "artefact": "sunkenCellar-f1-walk.png",
- "command": "bake_dungeon_arch.py",
+ "command": "bake_dungeon_arch.py --arch-scale 1.2",
  "generator": "scripts/bake_dungeon_arch.py",
- "generatorSha256": "d8ef0f8b41f2ac99cad61e2300cdda7f911ea380862939ed5d97b42eee437ef3",
+ "generatorSha256": "6d40509faf3d79f61b6c23b567466dac281fb89b61b1b662f4b73213db21c93e",
  "inputs": {
   "design/act1-dungeons/arch/archasset-sunkenCellar.png": "e383170f697a6c0ff2fa4c51bc011288a4b9e95de16f7dd2e06cbba6300155b4",
   "public/act1-dungeon-art/sunkenCellar-f1-props.png": "5d49e92a14975a7ea1d2414bbf41d9a8d854289f26e10f2707ff789b5adde2fa"
@@ -10,8 +10,8 @@
  "params": {
   "clearance": 16,
   "kind": "authored-arch",
-  "scale": 0.14326
+  "scale": 0.17191
  },
- "sha256": "7f31e8ab9b4b97f4a9c0e9cdfe879988e66b8a96e443f026fa024b1b7bfe6e19",
- "writtenAt": "2026-08-18T23:01:47+09:00"
+ "sha256": "b3cd2f2560ca1de0c9a4aa9b373c422acadbbfcffb5fefff87ce901f3da0a7d4",
+ "writtenAt": "2026-08-29T22:46:12+09:00"
 }
