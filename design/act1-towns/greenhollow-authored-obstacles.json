@@ -210,44 +210,6 @@
       ]
     },
     {
-      "id": "well-centre",
-      "_note": "OWNER 2026-08-25 (build 59): 'I can walk on the well. The parameter needs to be blocking.' The well's rim is cobble-coloured, so no local colour test separates it from the square it stands on -- derive_town_walkable.py cannot find it and never did. Authored octagon around the ring measured off the painting: centre art (992,1000), outer bbox x 940-1045, y 945-1055.",
-      "polygonArt": [
-        [
-          942,
-          978
-        ],
-        [
-          970,
-          948
-        ],
-        [
-          1014,
-          948
-        ],
-        [
-          1042,
-          978
-        ],
-        [
-          1042,
-          1022
-        ],
-        [
-          1014,
-          1052
-        ],
-        [
-          970,
-          1052
-        ],
-        [
-          942,
-          1022
-        ]
-      ]
-    },
-    {
       "id": "well-herbshop",
       "_note": "The second well, beside the herb shop. Repainted 2026-08-25 from a flat overhead ring with no front wall (owner: 'there is a half drawn well') into a proper raised well, so it is now a solid object and must block like the central one. Same reason the central well needed authoring: its stone reads as ground to a colour-based derivation.",
       "polygonArt": [

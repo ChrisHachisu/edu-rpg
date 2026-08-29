@@ -346,13 +346,19 @@ const atParam = (search.get('at') || '').split(',').map(Number);
 // (see its _startNote). The NEW-GAME opening wants the hero in front of the elder instead
 // (OWNER 2026-08-25: "the hero needs to start the game in front of the elder, facing him, at
 // interacting distance"). Driving both off one field would teleport the player to the elder on
-// every re-entry, so `firstEntryCell` is consulted ONLY on the first ever visit to this town.
-// The flag is per-town and lives in localStorage; clearing it replays the opening, which is also
-// how to test it. `?at=` still wins over both -- it is the verification hatch.
-const FIRST_KEY = `edu-rpg-town-first-${townId}`;
-let firstEntry = false;
-try { firstEntry = Boolean(town.firstEntryCell) && !localStorage.getItem(FIRST_KEY); } catch (e) {}
-if (firstEntry) { try { localStorage.setItem(FIRST_KEY, '1'); } catch (e) {} }
+// every re-entry, so `firstEntryCell` is consulted ONLY on the first visit of a PLAYTHROUGH.
+//
+// WHO DECIDES: the PARENT does, and passes `?first=1`. This page must not decide for itself.
+// Build 62 shipped the decision here, as `!localStorage.getItem('edu-rpg-town-first-<town>')`.
+// That key records "this town has EVER been visited on this device", which is not the question --
+// nothing clears it, least of all starting a new game, so the opening played exactly once per
+// install and every later new game fell through to `startCell`, the town GATE. That is the
+// regression the owner reported on build 62, and it is invisible on a fresh install, which is why
+// it shipped. The lifetime that is actually wanted is the SAVE's: see adapter.js's
+// `firstTownEntry()`, which reads and sets a story flag on the live player state -- story flags are
+// wiped by `gameState.newGame()` and persisted by `saveGame()`, so a new game replays the opening
+// and a re-entry does not. `?at=` still wins over both -- it is the verification hatch.
+const firstEntry = search.get('first') === '1' && Boolean(town.firstEntryCell);
 const startCell = atParam.length === 2 && atParam.every(Number.isFinite)
   ? atParam : (firstEntry ? town.firstEntryCell : town.startCell);
 let position = cellToWorld(startCell);

@@ -501,6 +501,38 @@ function shippedUiBusy(scene) {
     || Boolean(scene?.healerOverlayOpen);
 }
 
+// Is this the town's first entry OF THIS PLAYTHROUGH? town.html opens in front of the town elder
+// when it is (`firstEntryCell`) and on the arrival cell by the gate when it is not (`startCell`).
+//
+// The lifetime has to be the SAVE's, and story flags are the only per-playthrough store there is:
+// `gameState.newGame()` replaces `player.state` wholesale, so the flag is gone on a new game, and
+// `saveGame()` writes storyFlags out with the rest of the player. Build 62 used a localStorage key
+// instead, which records "ever visited on this device" -- nothing clears it, so the opening played
+// once per install and never again. Correct on a fresh install, wrong forever after.
+//
+// The flag cannot be one the shipped game already sets. `compass.visited.<mapId>` looks perfect and
+// is useless here: WorldMapScene.loadMap() sets it for every town on load, which for the starting
+// town happens BEFORE this overlay opens, so it would read "already visited" on the very first
+// frame of a new game. Hence a flag of our own, under the act1 prefix nothing else touches.
+//
+// Not persisted until the player's next save, by design -- writing localStorage behind
+// SaveManager's back means reproducing its profile-slot key scheme, and the failure mode of being
+// a save behind is replaying the opening once, which is the harmless direction.
+// Flat boolean keys, same shape as `compass.visited.<mapId>`: storyFlags is serialized straight
+// into the save as JSON and read back by SaveManager, so it stays a flat string->boolean map.
+// Read and mark are separate because enterTown() is retried by tick() after a failed load: burning
+// the flag on an attempt that never rendered would cost the player the opening entirely.
+const townOpenedFlag = mapId => `act1.townOpened.${mapId}`;
+function isFirstTownEntry(mapId) {
+  const flags = playerState()?.storyFlags;
+  // No live player state means no playthrough to be at the start of, so this is not an opening.
+  return Boolean(flags) && !flags[townOpenedFlag(mapId)];
+}
+function markTownOpened(mapId) {
+  const flags = playerState()?.storyFlags;
+  if (flags) flags[townOpenedFlag(mapId)] = true;
+}
+
 async function enterTown(scene, mapId) {
   const token = ++generation;
   prepareRoot();
@@ -510,7 +542,8 @@ async function enterTown(scene, mapId) {
     frame.onload = resolve;
     frame.onerror = () => reject(new Error('town runtime iframe failed to load'));
   });
-  frame.src = `${TOWN_URL.href}?town=${encodeURIComponent(mapId)}`;
+  const first = isFirstTownEntry(mapId);
+  frame.src = `${TOWN_URL.href}?town=${encodeURIComponent(mapId)}${first ? '&first=1' : ''}`;
   await loaded;
   // The town runtime has no corridor to align to and no semantic route to commit, so there is
   // nothing to wait for beyond its own readiness flag.
@@ -523,6 +556,7 @@ async function enterTown(scene, mapId) {
   if (token !== generation || activeMapId(scene) !== mapId) return;
   if (!win.__ACT1_TOWN__) throw new Error(`town runtime ${mapId} did not become ready`);
   townEntry = { scene, mapId, runtime: win.__ACT1_TOWN__, ready: true };
+  if (first) markTownOpened(mapId);   // only now: the opening was actually rendered
   lastError = null;
   root.dataset.ready = 'true';
   lastChromeSig = '';

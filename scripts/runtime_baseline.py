@@ -455,9 +455,9 @@ ACT1_DUNGEON_FILES = {
 # no URL bar). Pinned so it cannot quietly grow into something that mutates real save data.
 ACT1_TOWN_FILES = {
     "act1-hifi/town.html": (
-        36164, "a2cb948c32bcb607cbe19b1be1a44e6bd7932b1fb1812c55030a9900e0222b73"),
+        36763, "197a796a44d9dc4a71def6e418505a7c96f84dbd4b96550833ed789828699ace"),
     "act1-hifi/town/portSapphire-town.json": (
-        7899, "b646efffd974bbb9de0c7552062f63882f2903694a930d884a68b070e2047bd3"),
+        9075, "922bc1eb70bc8c447616064f83f076c8bff3ff3f32bf5f16168f5ea676d51a81"),
     "act1-hifi/town/portSapphire-walkable.json": (
         25513, "dc6f8e6299508e9417e32a0be93a1e75b3541ee32275d3a49a99384b32f76893"),
     "act1-hifi/town/portSapphire-screen.png": (
@@ -501,9 +501,9 @@ ACT1_TOWN_FILES = {
     # can see: it reports "0 updated", leaves the zeros in place, and the very next step fails with
     # "Act 1 town identity mismatch" pointing at the file you just added. Cost 2026-08-21.
     "act1-hifi/town/greenhollow-town.json": (
-        10288, "eb4fb0008a0a4dba5b7133dbfd10c76a98ccf0ee62a89f33254c0110b3969f98"),
+        12398, "2aa0713733b2789200cb4171a3aef8ff191d3633e7655e9c93595651a070968d"),
     "act1-hifi/town/greenhollow-walkable.json": (
-        38520, "fc62f491b3877da4182efd0b3c245bedac239442bd2dffa03408cd1801284cc8"),
+        36447, "4b4a9126d7759ebfd0a4dad1ab61da74f7a7028ed37950c0e0c529f4b720d61c"),
     "act1-hifi/town/npc/greenhollow-elder-4x3-64.png": (
         83896, "93b763cebc3c419e5ef7d8e3368507bf604445133e4bcd37b6106881561293f7"),
     "act1-hifi/town/npc/greenhollow-fisherman-4x3-64.png": (
@@ -536,11 +536,11 @@ ACT1_TOWN_FILES = {
     "act1-hifi/town/npc/millbrook-sage-4x3-64.png": (
         75065, "84d718b211333b17a09859dcace6c58d8ae4b7645a4c0504e4ab3c34066b49d8"),
     "act1-hifi/town/greenhollow-walkable.json": (
-        38520, "fc62f491b3877da4182efd0b3c245bedac239442bd2dffa03408cd1801284cc8"),
+        36447, "4b4a9126d7759ebfd0a4dad1ab61da74f7a7028ed37950c0e0c529f4b720d61c"),
     "act1-hifi/town/millbrook-walkable.json": (
         36534, "15b692b6f6776bda711476219fb88d8811e17910e5e95cf90ba1aab3376952f3"),
     "act1-hifi/town/millbrook-town.json": (
-        8245, "c99915211c3ffe8d6534e16aaab322cb8d1c65ec07d781bec54e4eeaf1d2b08b"),
+        9421, "1268f241d70346a5baf5958dd1ae9ea46eecad2c695824f1a9c5b873499bf19e"),
     # 2026-08-21: the two plates the note above was waiting for. Both are the four-tile bake,
     # exposure-matched per tile and quilted on a minimum-error cut by scripts/stitch_plate.py.
     # Placeholder zeros; `npm run repin` fills the real size/hash in -- and the FILES ARE ON DISK
@@ -548,7 +548,7 @@ ACT1_TOWN_FILES = {
     "act1-hifi/town/millbrook-screen.png": (
         8064226, "a206e48240e409bf3460326cfaef82ee9b625ca6ec63c05506048ecd23a76943"),
     "act1-hifi/town/greenhollow-screen.png": (
-        8434343, "4370b87d20fdb2766bf0c6942216c56dd1c1b77d25724c0e264cc16f8bc1b7a6"),
+        8432994, "962e67edfb452a17d2fdacb1347453aa0b847c138c9316504cb6cfc975c9f792"),
     "act1-hifi/verify/seed.html": (
         2089, "6f34401b6845582f223abdc80dd191c3a1392bc7808aee81d11eb89313b80c14"),
 }
