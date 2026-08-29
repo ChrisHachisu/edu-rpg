@@ -374,6 +374,17 @@ const state = { facing: (firstEntry && town.firstEntryFacing) || 'down', moving:
 let talking = null;
 let exitArmed = false;
 let exiting = false;
+// The exit is a LINE ACROSS THE TOWN'S MOUTH and the player leaves the moment she CROSSES it.
+// Every town's mouth runs east-west, so the line is a y value and only the sign differs; if a town
+// ever gets an east or west mouth this needs the other axis, and `exit.axis` is where to say so.
+const EXIT_SIGN = (town.exit?.axis ?? (town.exit?.cell?.[1] < town.cells / 2 ? 'north' : 'south'))
+  === 'north' ? -1 : 1;
+// Half-width of the mouth. 2.4 cells covers the narrowest reachable crossing in all three towns --
+// greenhollow spans x 30.31-34.06 at its gate, millbrook 29.31-33.88, Port Sapphire 31.44-33.75 --
+// measured by BFS from startCell over the walkable authority. Too small is not a cosmetic error: a
+// player hugging the edge of the gate walks straight through the line and out into the apron with
+// no way to leave.
+const EXIT_HALF_WIDTH = 2.4;
 
 // Service spots are places, not people: the shop counter under the awning and the save point by
 // the well. The healer is BOTH -- she is an NPC you talk to, and talking to her is the heal
@@ -552,13 +563,29 @@ function frame(now) {
     position = result.position ?? result;
   }
   // ---- leaving the town ---------------------------------------------------------------------
-  // The exit is the north trail mouth the player entered by. It ARMS only once they have walked
-  // clear of it, so spawning on the trail does not immediately bounce them back to the overworld.
+  // CROSSING the mouth leaves. This used to be a symmetric box -- fire when |dy| < 1.0 and
+  // |dx| < 1.6 of `exit.cell` -- and the box is what made the exit feel wrong twice running. It
+  // fires a WHOLE CELL BEFORE the line on the way out, so on build 62, with the exit on the painted
+  // gate, the screen changed while the player was still inside the fence (OWNER: "the exit of the
+  // town is set at a weird place"); and being symmetric it also fires a cell PAST the line, so
+  // pushing the exit out to the map edge to fix that left an eight-cell trudge across empty grass
+  // (OWNER, build 63: "the player needs to exit the town the moment they touch the edge of the
+  // town. currently they need to walk off of the map to exit it").
+  //
+  // A directional test has neither failure: `outward` is negative inside the town and crosses zero
+  // exactly at the line, so the transition happens on the step that reaches the gate and nowhere
+  // else. It also makes `exit.cell` mean what it says -- it is the line, and the minimap marker
+  // drawn from it now sits where the screen actually changes.
+  //
+  // ARMING still exists, but for the only reason it ever had: never fire on the frame the player
+  // arrives. She spawns at `startCell`, several cells inside, so she arms immediately and cannot
+  // fire until she has walked out; the old "2.5 cells clear in any direction" was measuring the
+  // wrong thing, because with a crossing test the inside is a half-plane, not a radius.
   const exitCell = town.exit?.cell ?? town.startCell;
-  const dyExit = Math.abs(position.y / CELL_W - exitCell[1]);
-  const dxExit = Math.abs(position.x / CELL_W - exitCell[0]);
-  if (!exitArmed && (dyExit > 2.5 || dxExit > 2.5)) exitArmed = true;
-  if (exitArmed && !exiting && dyExit < 1.0 && dxExit < 1.6) {
+  const outward = (position.y / CELL_W - exitCell[1]) * EXIT_SIGN;
+  const lateral = Math.abs(position.x / CELL_W - exitCell[0]);
+  if (!exitArmed && outward <= -0.75) exitArmed = true;
+  if (exitArmed && !exiting && outward >= 0 && lateral < EXIT_HALF_WIDTH) {
     exiting = true;
     parent.postMessage({ type: 'act1-town-exit', town: town.id,
                          targetMapId: town.exit?.targetMapId ?? 'overworld',

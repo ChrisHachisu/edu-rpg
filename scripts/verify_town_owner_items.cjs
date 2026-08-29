@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/* The four build-62 owner items, verified against the SHIPPING dist payload.
+/* The owner's town feedback items, verified against the SHIPPING dist payload.
  *
  * WHY A SCRIPT RATHER THAN A LOOK
  *   Item 1 is a state-lifetime bug: the opening played once per install and never again, which is
@@ -16,7 +16,7 @@
  *   the half of item 1 that actually changed.
  *
  * USAGE
- *   node scripts/verify_build63_items.cjs [url] [--out DIR]
+ *   node scripts/verify_town_owner_items.cjs [url] [--out DIR]
  */
 const fs = require('node:fs');
 const path = require('node:path');
@@ -31,14 +31,15 @@ if (!chromium) throw new Error('no playwright-core: install the .eduharness harn
 const args = process.argv.slice(2);
 const URL_ = args.find(a => !a.startsWith('--')) || 'http://127.0.0.1:5174/';
 const oi = args.indexOf('--out');
-const OUT = oi >= 0 ? args[oi + 1] : path.join(__dirname, '..', 'design/act1-towns/greenhollow/proof-build63');
+const OUT = oi >= 0 ? args[oi + 1] : path.join(__dirname, '..', 'design/act1-towns/greenhollow/proof-owner-items');
 
 const SEED = { x: 69, y: 257 };            // one cell outside greenhollow's overworld door (69,256)
 const TOWN = JSON.parse(fs.readFileSync(
   path.join(__dirname, '..', 'public/act1-hifi/town/greenhollow-town.json'), 'utf8'));
 const FIRST = TOWN.firstEntryCell;         // [32.19, 23.61] -- in front of Elder Rowan
 const START = TOWN.startCell;              // [32.5, 52.0]   -- the ARRIVAL cell at the gate
-const EXIT = TOWN.exit.cell;               // [32.5, 64.5]   -- the map edge
+const EXIT = TOWN.exit.cell;               // [32.19, 57.0]  -- the town's MOUTH, a crossing line
+const EXIT_SIGN = TOWN.exit.axis === 'north' ? -1 : 1;
 const near = (a, b, tol) => Math.abs(a - b) <= tol;
 
 function save(x, y, flags) {
@@ -183,8 +184,9 @@ async function walkIn(page) {
       const t = document.querySelector('#act1-hifi-preserved-root iframe').contentWindow.__ACT1_TOWN__;
       return { exit: t.town.exit.cell, cells: t.town.cells, state: t.exitState() };
     });
-    check('exit cell is the outermost cell of the 65-cell map',
-      ex.exit[1] === ex.cells - 0.5, `exit ${ex.exit} on a ${ex.cells}-cell map`);
+    check('the exit line sits at the town mouth, not out on the empty apron',
+      ex.exit[1] === EXIT[1] && EXIT[1] < ex.cells - 4,
+      `exit ${ex.exit} on a ${ex.cells}-cell map (the apron below it is ${(ex.cells - EXIT[1]).toFixed(1)} cells)`);
     check('arrival ARMED the exit without firing it', ex.state.armed && !ex.state.exiting,
       JSON.stringify(ex.state));
 
@@ -225,17 +227,21 @@ async function walkIn(page) {
     await page.waitForTimeout(1500);
     const backOut = await page.evaluate(
       () => window.__PHASER_GAME__.scene.getScene('WorldMapScene')?.currentMapId ?? null);
-    check('walked PAST the old gate exit line (y 55.5) without being thrown out', deepest > 57.5,
-      `deepest y reached ${deepest.toFixed(2)}`);
-    check('the exit fired only at the map edge', firedAt !== null && firedAt > EXIT[1] - 1.0,
-      `fired at y ${firedAt === null ? 'never' : firedAt.toFixed(2)}, deepest ${deepest.toFixed(2)}, `
-      + `exit ${EXIT[1]}, fire box starts ${EXIT[1] - 1.0}`);
+    // The two ways the old symmetric box got this wrong, asserted in both directions.
+    check('it did NOT fire early -- the player reached the line before the screen changed',
+      firedAt !== null && (firedAt - EXIT[1]) * EXIT_SIGN >= -0.05,
+      `fired at y ${firedAt === null ? 'never' : firedAt.toFixed(2)}, line ${EXIT[1]}`);
+    check('it fired the MOMENT she touched the line, not cells past it',
+      firedAt !== null && (firedAt - EXIT[1]) * EXIT_SIGN <= 0.6,
+      `fired ${firedAt === null ? 'never' : ((firedAt - EXIT[1]) * EXIT_SIGN).toFixed(2)} cells past `
+      + `the line; the apron beyond runs ${(65 - EXIT[1]).toFixed(1)} cells`);
     check('the exit actually fired and handed back to the overworld', gone && backOut === 'overworld',
       `overlay gone=${gone}, parent map=${backOut}`);
 
     // ---- ITEMS 2 and 4: the healer clear of the herbs, the well gone and walkable -----------
     console.log('\nITEMS 2 and 4  healer placement and the covered well, in the running town');
-    for (const [tag, at] of [['04-healer', '46.9,36.2'], ['05-well-centre', '33.1,33.5']]) {
+    for (const [tag, at] of [['04-healer', '46.9,36.2'], ['05-well-centre', '33.1,33.5'],
+                             ['06-sw-woodpile', '32.6,51.6']]) {
       await bootToOverworld(page, save(SEED.x, SEED.y, { 'act1.townOpened.greenhollow': true }), false);
       await walkIn(page);
       await page.evaluate(([sel, a]) => {
@@ -256,10 +262,16 @@ async function walkIn(page) {
       if (tag === '04-healer') {
         check('the healer is talkable from her south approach band', /Healer/i.test(st.prompt || ''),
           `standing at ${st.cell.map(n => n.toFixed(2))}, prompt ${st.prompt}`);
-      } else {
+      } else if (tag === '05-well-centre') {
         check('the hero STANDS where the central well was (no invisible collision)',
           near(st.cell[0], 33.1, 0.6) && near(st.cell[1], 33.5, 0.6),
           `asked for 33.1,33.5 and the runtime placed her at ${st.cell.map(n => n.toFixed(2))}`);
+      } else {
+        // The owner's own viewpoint for the half-drawn well by the south-west woodpile. It carried
+        // no collision, so there is nothing mechanical left to assert -- this capture is the check.
+        check('the south-west woodpile view is reachable and renders',
+          near(st.cell[0], 32.6, 0.6) && near(st.cell[1], 51.6, 0.6),
+          `standing at ${st.cell.map(n => n.toFixed(2))}`);
       }
     }
   } finally {
@@ -268,10 +280,10 @@ async function walkIn(page) {
 
   if (errors.length) console.log(`\npage errors:\n  ${errors.join('\n  ')}`);
   const failed = results.filter(r => !r.ok).length + errors.length;
-  fs.writeFileSync(path.join(OUT, 'build63-verify.json'),
+  fs.writeFileSync(path.join(OUT, 'town-owner-items-verify.json'),
     `${JSON.stringify({ url: URL_, results, errors }, null, 2)}\n`);
   console.log(failed === 0
-    ? `\nBUILD 63 ITEM VERIFY PASS: ${results.length} checks, all green (${OUT})`
-    : `\nBUILD 63 ITEM VERIFY FAIL: ${failed} problem(s) (${OUT})`);
+    ? `\nTOWN OWNER ITEM VERIFY PASS: ${results.length} checks, all green (${OUT})`
+    : `\nTOWN OWNER ITEM VERIFY FAIL: ${failed} problem(s) (${OUT})`);
   process.exit(failed === 0 ? 0 : 1);
 })();

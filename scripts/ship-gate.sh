@@ -29,6 +29,9 @@ node scripts/build_static_index.mjs --check
 # read past twice, once at a cost of a measurement wrong by three orders of magnitude.
 python3 scripts/check_walkable_authority.py
 python3 scripts/check_town_transitions.py
+# check_town_transitions.py only looks at the exit's OVERWORLD half. The IN-TOWN half was
+# unguarded and got shipped wrong three builds running; this covers it.
+python3 scripts/check_town_exits.py
 # Roofs are not floors. The colour classifiers cannot tell shingle from grass or slate from
 # cobble, so building footprints are AUTHORED and this proves the derivation still honours
 # them. See scripts/check_town_roofs.py for the measurements behind that.
