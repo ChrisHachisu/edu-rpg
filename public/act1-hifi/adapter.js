@@ -346,12 +346,17 @@ addEventListener('message', event => {
   if (!data || event.source !== frame.contentWindow || !townEntry) return;
   if (data.type === 'act1-town-strings-request') {
     // Answer the whole table in one message so the town never has to paint English first. Missing
-    // keys come back from the shipped i18n as the key itself; the town treats that as "no
-    // translation" and keeps its bundled English rather than showing a raw dotted key.
+    // keys come back from the shipped i18n as the key itself (or as `[key]`); the town treats
+    // either as "no translation" and keeps its bundled English rather than showing a raw dotted key.
     const translate = window.__QOK?.Z;
     if (typeof translate !== 'function') return;
     const strings = {};
-    for (const k of data.keys || []) { try { strings[k] = translate(k); } catch (e) {} }
+    for (const k of data.keys || []) {
+      try {
+        const v = translate(k);
+        strings[k] = untranslated(k, v) ? (bundlePredates(k) ?? v) : v;
+      } catch (e) {}
+    }
     frame.contentWindow.postMessage({ type: 'act1-town-strings', strings }, '*');
     return;
   }
@@ -360,10 +365,19 @@ addEventListener('message', event => {
     // chose. The frame's bundled English is only what shows for the frame it takes to reply.
     const translate = window.__QOK?.Z;
     if (typeof translate !== 'function') return;
+    // THIS is the reply the box actually renders, and it is why the bulk-strings fix alone did not
+    // show up: town.html's `act1-town-text` branch takes `data.name` as given, so a raw
+    // `[npc.villager2.name]` from here lands straight on screen no matter how careful the cache is.
+    // Both paths go through the same untranslated() test now.
+    const localise = key => {
+      if (!key) return undefined;
+      const v = translate(key);
+      return untranslated(key, v) ? (bundlePredates(key) ?? undefined) : v;
+    };
     frame.contentWindow.postMessage({
       type: 'act1-town-text', npc: data.npc,
-      name: data.nameKey ? translate(data.nameKey) : undefined,
-      text: translate(data.dialogueKey),
+      name: localise(data.nameKey),                       // undefined -> the town uses its own name
+      text: localise(data.dialogueKey),
     }, '*');
     return;
   }
@@ -416,6 +430,36 @@ addEventListener('message', event => {
     lifetimeStats.parentTransitions += 1;
   }
 });
+
+/* ---- the two keys the frozen bundle predates -------------------------------------------------
+   `npc.villager1.name` and `npc.villager2.name` exist in src/i18n/locales/{en,ja,jaKanji}.ts and
+   are NOT in dist/assets/index-*.js: the bundle was frozen before they were added, and it cannot be
+   rebuilt. The shipped translate therefore answers `[npc.villager2.name]`, which the town used to
+   print verbatim onto a villager's dialogue box (OWNER, build 66: "Villager names show system
+   text"). town.html now rejects a bracketed answer and falls back to the name authored in its own
+   JSON, which fixes English on its own -- but that fallback is English-only, and a Japanese player
+   would have read a Japanese line under the name "Villager".
+
+   So the 24 keys the bundle DOES carry are still answered by the shipped i18n, unchanged, and only
+   these two are filled in here, with the same three strings the locale files already hold. This is
+   a BRIDGE, not a second home for translations: when the bundle is next rebuilt these keys resolve
+   on their own and `bundlePredates` returns null for them without any code change, because it is
+   only ever consulted when the shipped translate has already said it does not know the key. */
+const BUNDLE_PREDATES = {
+  'npc.villager1.name': { en: 'Villager', ja: 'むらびと', jaKanji: '村人' },
+  'npc.villager2.name': { en: 'Villager', ja: 'むらびと', jaKanji: '村人' },
+};
+function untranslated(key, value) {
+  return !value || value === key
+    || (typeof value === 'string' && value.charAt(0) === '[' && value.charAt(value.length - 1) === ']');
+}
+function bundlePredates(key) {
+  const row = BUNDLE_PREDATES[key];
+  if (!row) return null;
+  const st = playerState();
+  if (st?.locale !== 'ja') return row.en;
+  return st?.kanjiMode ? row.jaKanji : row.ja;
+}
 
 /* ---- parent chrome -> town frame -------------------------------------------------------------
    Two things the town frame cannot work out for itself:

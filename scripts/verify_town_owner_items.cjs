@@ -353,6 +353,60 @@ async function walkIn(page) {
         `overlay hidden=${after?.hidden}`);
       await page.screenshot({ path: path.join(OUT, `08-after-${kind}.png`) });
     }
+
+    // ---- ITEM 6: villager names, and closing the box by tapping beside it -------------------
+    // Both need the PARENT in the loop. Opening town.html directly cannot reproduce the name bug
+    // at all: with nobody answering `act1-town-strings-request` the town falls back to the name in
+    // its own JSON and looks correct. The defect only exists when the shipped i18n answers, because
+    // it answers `[npc.villager2.name]` -- that key is in src/i18n/locales and NOT in the frozen
+    // bundle -- and a bracketed answer used to be taken as a translation.
+    console.log('\nITEM 6  villager names are names, and a tap beside the box closes it');
+    await bootToOverworld(page, save(SEED.x, SEED.y, { 'act1.townOpened.greenhollow': true }), false);
+    await walkIn(page);
+    const villager = TOWN.npcs.find(n => n.id === 'villager2');
+    await page.evaluate(([sel, a]) => {
+      const f = document.querySelector(sel);
+      f.src = f.getAttribute('src').replace(/&at=[^&]*/, '') + `&at=${a}`;
+    }, [frameSel, `${villager.cell[0]},${(villager.cell[1] + 1.4).toFixed(2)}`]);
+    await page.waitForFunction(sel => document.querySelector(sel)?.contentWindow?.__ACT1_TOWN__,
+      frameSel, { timeout: 20_000 });
+    await page.waitForTimeout(1400);              // let the bulk strings round trip land
+    await page.evaluate(sel => document.querySelector(sel).contentWindow.__ACT1_TOWN__.interact(),
+      frameSel);
+    await page.waitForTimeout(500);
+    const box = await page.evaluate(sel => {
+      const doc = document.querySelector(sel).contentDocument;
+      const d = doc.querySelector('#dialogue'), r = d.getBoundingClientRect();
+      return { open: d.dataset.open, name: d.querySelector('b').textContent,
+               rect: { x: r.x, y: r.y, w: r.width, h: r.height } };
+    }, frameSel);
+    check('the dialogue opened on the villager', box.open === 'true', `open=${box.open}`);
+    check('her name is a NAME, not a raw i18n key',
+      !/^\[.*\]$/.test(box.name) && box.name === (villager.name || ''),
+      `showed ${JSON.stringify(box.name)}, town JSON says ${JSON.stringify(villager.name)}`);
+    await page.screenshot({ path: path.join(OUT, '09-villager-dialogue.png') });
+    // tap well clear of the box -- the middle of the map, which is where a thumb actually lands
+    await page.mouse.click(480, 240);
+    await page.waitForTimeout(400);
+    const afterTap = await page.evaluate(sel => {
+      const doc = document.querySelector(sel).contentDocument;
+      return doc.querySelector('#dialogue').dataset.open;
+    }, frameSel);
+    check('tapping BESIDE the box closes it', afterTap === 'false', `open=${afterTap}`);
+    // and one tap must not close-then-reopen: the box handler used to run after the closer
+    await page.evaluate(sel => document.querySelector(sel).contentWindow.__ACT1_TOWN__.interact(),
+      frameSel);
+    await page.waitForTimeout(300);
+    const r2 = await page.evaluate(sel => {
+      const d = document.querySelector(sel).contentDocument.querySelector('#dialogue');
+      const r = d.getBoundingClientRect();
+      return { x: r.x + r.width / 2, y: r.y + r.height / 2 };
+    }, frameSel);
+    await page.mouse.click(r2.x, r2.y);
+    await page.waitForTimeout(400);
+    const onBox = await page.evaluate(sel =>
+      document.querySelector(sel).contentDocument.querySelector('#dialogue').dataset.open, frameSel);
+    check('tapping ON the box still closes it, once', onBox === 'false', `open=${onBox}`);
   } finally {
     await browser.close();
   }

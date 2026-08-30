@@ -307,6 +307,22 @@ addEventListener('keyup', e => { const d = KEY[e.key]; if (d) held.delete(d); })
 // the pad does, and preventDefault stops the tap becoming a synthetic click / text selection.
 promptEl.addEventListener('pointerdown', e => { e.preventDefault(); interact(); });
 dialogueEl.addEventListener('pointerdown', e => { e.preventDefault(); interact(); });
+// AN OPEN DIALOGUE IS CLOSED BY A TAP ANYWHERE, not only by a tap on the box. The box says "Tap to
+// close" and that is what it meant -- tapping the box worked, tapping beside it did nothing, and
+// the box covers a strip at the bottom of a phone screen while the thing the player's thumb is
+// nearest is the map (OWNER, build 66: "the tap out does not work"). Measured before changing it:
+// tap ON the box -> open=false, tap OUTSIDE -> open=true.
+//
+// CAPTURE, and it stops the event. Without stopPropagation this would close the box and then let
+// the box's own handler run interact() a SECOND time, which -- with `talking` already cleared --
+// falls through to the open branch and starts the conversation again. One tap, one close.
+addEventListener('pointerdown', e => {
+  if (!talking) return;
+  e.preventDefault();
+  e.stopPropagation();
+  talking = null;
+  dialogueEl.dataset.open = 'false';
+}, true);
 let padId = null;
 pad.addEventListener('pointerdown', e => {
   padId = e.pointerId; pad.setPointerCapture(e.pointerId); movePad(e);
@@ -429,9 +445,15 @@ function showDialogue(name, text) {
 const strings = new Map();
 function localised(key, fallback) {
   const v = strings.get(key);
-  // A missing key comes back as the key itself from the shipped i18n's identity fallback; that is
-  // worse than English, so only take a value that actually differs from what was asked for.
-  return (v && v !== key) ? v : fallback;
+  // A missing key comes back from the shipped i18n as the key itself -- and, for the shipped
+  // translate, as the key IN SQUARE BRACKETS. Only the bare form was rejected here, so the
+  // bracketed one sailed through as if it were a translation and the player read
+  // "[npc.villager2.name]" off a villager's dialogue box (OWNER, build 66: "Villager names show
+  // system text"). ui-overhaul.js has always tested `charAt(0) === '['` for exactly this; the two
+  // now agree. `npc.villager1.name` and `npc.villager2.name` are the two keys it bites: they exist
+  // in src/i18n/locales but NOT in the frozen bundle, which predates them.
+  const missing = !v || v === key || (v.charAt(0) === '[' && v.charAt(v.length - 1) === ']');
+  return missing ? fallback : v;
 }
 addEventListener('message', event => {
   const data = event.data;
