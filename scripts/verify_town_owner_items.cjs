@@ -407,6 +407,60 @@ async function walkIn(page) {
     const onBox = await page.evaluate(sel =>
       document.querySelector(sel).contentDocument.querySelector('#dialogue').dataset.open, frameSel);
     check('tapping ON the box still closes it, once', onBox === 'false', `open=${onBox}`);
+
+    // ---- ITEM 7: the controls hide for the PARENT's text box too ---------------------------
+    console.log('\nITEM 7  a shipped message over the town hides the town\'s own controls');
+    await bootToOverworld(page, save(SEED.x, SEED.y, { 'act1.townOpened.greenhollow': true }), false);
+    await walkIn(page);
+    const controls = async () => page.evaluate(sel => {
+      const doc = document.querySelector(sel).contentDocument;
+      const g = el => getComputedStyle(el).opacity;
+      return { pad: g(doc.querySelector('#pad')), prompt: g(doc.querySelector('#prompt')),
+               flag: doc.body.dataset.parentDialogue };
+    }, frameSel);
+    await page.evaluate(() => {
+      const w = window.__PHASER_GAME__.scene.getScene('WorldMapScene');
+      w.showMessage('A key NPC is talking over the town.');
+    });
+    await page.waitForTimeout(700);
+    const during = await controls();
+    check('the parent dialogue is forwarded into the town', during.flag === 'true', `flag=${during.flag}`);
+    check('the joystick is hidden while the parent text box is up', during.pad === '0', `pad opacity ${during.pad}`);
+    check('the interact button is hidden with it', during.prompt === '0', `prompt opacity ${during.prompt}`);
+    await page.evaluate(() => {
+      const w = window.__PHASER_GAME__.scene.getScene('WorldMapScene');
+      w.hideMessage?.(); w.showingMessage = false;
+    });
+    await page.waitForTimeout(700);
+    const after2 = await controls();
+    check('the joystick comes back when the box closes', after2.flag === 'false' && after2.pad !== '0',
+      `flag=${after2.flag} pad opacity ${after2.pad}`);
+
+    // ---- ITEM 8: the healer charges, and asks -----------------------------------------------
+    console.log('\nITEM 8  the Greenhollow healer asks for a fee instead of healing silently');
+    const heal = await page.evaluate(() => {
+      const w = window.__PHASER_GAME__.scene.getScene('WorldMapScene');
+      const price = w.constructor.HEALER_PRICES.greenhollow;
+      const st = window.__GAME_STATE__.player.state;
+      st.hp = 5; st.gold = 200;                       // hurt, and able to pay
+      w.handleHealer();
+      return { price, open: !!w.healerOverlayOpen, overlayPrice: w.healerOverlayPrice,
+               hp: st.hp, gold: st.gold };
+    });
+    check('Greenhollow has a heal fee at all', heal.price > 0, `HEALER_PRICES.greenhollow = ${heal.price}`);
+    check('a hurt player gets the CONFIRM popup, not a silent free heal',
+      heal.open === true && heal.overlayPrice === heal.price,
+      `overlayOpen=${heal.open} price=${heal.overlayPrice}`);
+    check('nothing is charged or healed until she chooses',
+      heal.hp === 5 && heal.gold === 200, `hp=${heal.hp} gold=${heal.gold}`);
+    const paid = await page.evaluate(() => {
+      const w = window.__PHASER_GAME__.scene.getScene('WorldMapScene');
+      w.healerOverlayIndex = 1; w.confirmHealerOption();          // 1 = Leave
+      const st = window.__GAME_STATE__.player.state;
+      return { open: !!w.healerOverlayOpen, hp: st.hp, gold: st.gold };
+    });
+    check('choosing Leave cancels without charging', !paid.open && paid.hp === 5 && paid.gold === 200,
+      `open=${paid.open} hp=${paid.hp} gold=${paid.gold}`);
   } finally {
     await browser.close();
   }

@@ -455,9 +455,9 @@ ACT1_DUNGEON_FILES = {
 # no URL bar). Pinned so it cannot quietly grow into something that mutates real save data.
 ACT1_TOWN_FILES = {
     "act1-hifi/town.html": (
-        40382, "8eca610da3127b2707142337ba8e168138bbb68d80266b79a5f2af7892248049"),
+        41070, "74d97d53d2f5e9686183a0e7f39426487eb855fabaab264d1b79e82ea8eb3a7c"),
     "act1-hifi/town/portSapphire-town.json": (
-        10485, "850ba60a7507bb28d40a906bbce20f9992b3a45b5addb9aba1a5bef1a069d20f"),
+        11311, "d7c1d2a6d067dfdf2268dc308e13acec1b6eb8144c27ddedc47c935b775cc54d"),
     "act1-hifi/town/portSapphire-walkable.json": (
         25513, "dc6f8e6299508e9417e32a0be93a1e75b3541ee32275d3a49a99384b32f76893"),
     "act1-hifi/town/portSapphire-screen.png": (
@@ -501,7 +501,7 @@ ACT1_TOWN_FILES = {
     # can see: it reports "0 updated", leaves the zeros in place, and the very next step fails with
     # "Act 1 town identity mismatch" pointing at the file you just added. Cost 2026-08-21.
     "act1-hifi/town/greenhollow-town.json": (
-        13517, "161b783c90833a084fa1bfb3b66db9f93ad18dd8cfef6a2db03bdb8e51153a1e"),
+        14731, "de834ba1db412c386853adda26fd66dca787acecf5fc5864f42882b6d86d5c22"),
     "act1-hifi/town/greenhollow-walkable.json": (
         36447, "4b4a9126d7759ebfd0a4dad1ab61da74f7a7028ed37950c0e0c529f4b720d61c"),
     "act1-hifi/town/npc/greenhollow-elder-4x3-64.png": (
@@ -540,7 +540,7 @@ ACT1_TOWN_FILES = {
     "act1-hifi/town/millbrook-walkable.json": (
         36534, "15b692b6f6776bda711476219fb88d8811e17910e5e95cf90ba1aab3376952f3"),
     "act1-hifi/town/millbrook-town.json": (
-        10539, "9a1c769e9c073fe0abe23401e3c95e9df01c69caadc64ba1431536440d59fd1e"),
+        11365, "8a6ae6bcd935a887a379c7ddaea8f4ae290d83f6aba22b8079623d256eec2163"),
     # 2026-08-21: the two plates the note above was waiting for. Both are the four-tile bake,
     # exposure-matched per tile and quilted on a minimum-error cut by scripts/stitch_plate.py.
     # Placeholder zeros; `npm run repin` fills the real size/hash in -- and the FILES ARE ON DISK

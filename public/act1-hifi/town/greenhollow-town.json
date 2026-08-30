@@ -8,8 +8,8 @@
   "artPxPerCell": 30,
   "worldPxPerCell": 16,
   "startCell": [
-    32.5,
-    52.0
+    32.19,
+    55.5
   ],
   "npcs": [
     {
@@ -46,8 +46,8 @@
         34.5
       ],
       "name": "Healer",
-      "text": "Come in whenever you are hurt. I will mend you, and it costs you nothing here in Greenhollow.",
-      "_placementNote": "MOVED 2026-08-25 from [21.75, 38.19] to [46.9,32.9]. OWNER: \"isn't the healer supposed to be in the shop with the herbs dangling from it? Please place her there.\" That is the herb shop on the east side; she now stands on its stone floor just in front of the hanging herbs rather than out by the market stall. Chosen because the cells 1.0-1.8 due south of her are all walkable, so nearestNpc()'s south approach band is reachable -- verified against the walkable authority before it was written here, and again by the gate's TOWN TALKABLE CHECK. || MOVED 2026-08-29 from [46.9,32.9] to [46.9,34.5]. OWNER on build 62: \"just move the healer slightly a little more out of the shop (just slightly) so she does not touch the dangling herbs.\" The nudge is bigger than it sounds because the herbs hang far lower than the earlier estimate of art y 780-880: measured off the plate, the lowest bundle tips in her column reach art y ~968, and the stone floor starts at ~970 and runs to ~1105. A cell coordinate is FEET and town.html draws the sprite 36 world px (67.5 art px) tall lifted 58/64 of that, so her head sits 61 art px above her feet: at y=32.9 her head was at art 926, a full 42 px up inside the herbs. Clearing them needs feet at art y >= 1029 (cell 34.3); 34.5 gives 6 px of margin and still leaves 2.3 cells of stone floor in front of her, so she stays under the awning and in the shop. Anything smaller leaves her head in the bundles, which is the thing he asked to fix."
+      "text": "Come in whenever you are hurt. A few coins and I will mend you.",
+      "_placementNote": "MOVED 2026-08-25 from [21.75, 38.19] to [46.9,32.9]. OWNER: \"isn't the healer supposed to be in the shop with the herbs dangling from it? Please place her there.\" That is the herb shop on the east side; she now stands on its stone floor just in front of the hanging herbs rather than out by the market stall. Chosen because the cells 1.0-1.8 due south of her are all walkable, so nearestNpc()'s south approach band is reachable -- verified against the walkable authority before it was written here, and again by the gate's TOWN TALKABLE CHECK. || MOVED 2026-08-29 from [46.9,32.9] to [46.9,34.5]. OWNER on build 62: \"just move the healer slightly a little more out of the shop (just slightly) so she does not touch the dangling herbs.\" The nudge is bigger than it sounds because the herbs hang far lower than the earlier estimate of art y 780-880: measured off the plate, the lowest bundle tips in her column reach art y ~968, and the stone floor starts at ~970 and runs to ~1105. A cell coordinate is FEET and town.html draws the sprite 36 world px (67.5 art px) tall lifted 58/64 of that, so her head sits 61 art px above her feet: at y=32.9 her head was at art 926, a full 42 px up inside the herbs. Clearing them needs feet at art y >= 1029 (cell 34.3); 34.5 gives 6 px of margin and still leaves 2.3 cells of stone floor in front of her, so she stays under the awning and in the shop. Anything smaller leaves her head in the bundles, which is the thing he asked to fix. || TEXT 2026-08-30: the old line promised free healing ('it costs you nothing here in Greenhollow'). It never reached the screen -- talking to her posts act1-town-service, so handleHealer() runs and this string is only the fallback for a dialogue box she never opens -- but it is now also untrue: adapter.js sets HEALER_PRICES.greenhollow to 3 so the shipped confirm popup runs here like it does in every other town."
     },
     {
       "id": "villager1",
@@ -114,7 +114,7 @@
     "axis": "south"
   },
   "_dialogueNote": "name/text are English FALLBACK strings in the voice of the shipped Port Sapphire entries, so the town is playable standalone. The runtime also posts act1-town-interact to the parent, so the frozen bundle's localised dialogue system takes over once the adapter hands off -- which is why dialogueKey must stay exactly as the bundle has it.",
-  "_startNote": "MOVED 2026-08-24 from [32.5, 57.0] to [32.5, 52.0]: 3.5 cells inside the painted gate, which is what arms the exit on arrival without firing it. See exit.note.",
+  "_startNote": "MOVED 2026-08-24 from [32.5, 57.0] to [32.5, 52.0]: 3.5 cells inside the painted gate, which is what arms the exit on arrival without firing it. See exit.note. || MOVED TO THE GATE 2026-08-30. OWNER on build 67: \"entering the town from the overworld places the player in a weird location (not the edge of the town).\" She was arriving 4-6 cells INSIDE the mouth, on open path with no landmark, which reads as being dropped in the middle of nowhere rather than as walking in through the gate. Arrival is now 1.5 cells inside the exit line -- at the gate she just came through, facing the town -- and lines up with the same edge she leaves by, so entering and leaving happen in the same place instead of two different ones. 1.5 is not arbitrary: town.html arms the exit at 0.75 cells inside, so this is double the minimum, which keeps a spawn from ever firing the exit on arrival while still putting her ON the gate. x moves to the exit line's own x so she arrives centred in the mouth.",
   "shopId": "greenhollow",
   "shopCounter": [
     16.06,

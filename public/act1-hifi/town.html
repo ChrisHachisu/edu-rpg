@@ -73,7 +73,9 @@
      Keyed off `#dialogue`'s own data-open rather than a second JS flag, so the two cannot drift
      apart; and it is only a visual hide, so if :has() were ever unsupported the fallback is
      exactly today's behaviour rather than a broken control. */
-  body:has(#dialogue[data-open="true"]) #pad { opacity: 0; pointer-events: none; }
+  body:has(#dialogue[data-open="true"]) #pad,
+  body[data-parent-dialogue="true"] #pad,
+  body[data-parent-dialogue="true"] #prompt { opacity: 0; pointer-events: none; }
   #dialogue b { display: block; margin-bottom: 6px; color: #ffd98a; font-size: 13px; letter-spacing: .05em; }
   #dialogue p { margin: 0; font-size: 15px; line-height: 1.45; }
   #dialogue small { display: block; margin-top: 10px; color: #8fa8b8; font-size: 11px; }
@@ -157,6 +159,13 @@ addEventListener('message', event => {
   s.setProperty('--sa-bottom', (Number(d.safeBottom) || 0) + 'px');
   s.setProperty('--sa-left', (Number(d.safeLeft) || 0) + 'px');
   s.setProperty('--sa-right', (Number(d.safeRight) || 0) + 'px');
+  // The PARENT's message box is a text box too, and the town could not see it. Its own controls
+  // hide for its own #dialogue, but a shipped message drawn over the town -- a quest update, a
+  // plaque, anything routed through WorldMapScene.showMessage -- left the pad and the interact
+  // button sitting on top of it (OWNER, build 67: "the joy stick and the interaction button needs
+  // to be hidden whenever a text box shows up (this does not happen with key npcs)"). The parent
+  // already knows; it just never said so.
+  document.body.dataset.parentDialogue = d.dialogue ? 'true' : 'false';
 });
 
 const [locks, town] = await Promise.all([

@@ -170,7 +170,33 @@ function releaseRoot() {
   }
 }
 
+/* ---- the healer charges in Greenhollow too ----------------------------------------------------
+   OWNER, build 67: "healer needs to ask for a fee when the player needs healing and the player
+   needs to be able to choose whether to pay and heal or cancel (menu popup). the fact that this is
+   gone is a regression."
+
+   Nothing is broken and nothing needs writing: `handleHealer()` already prices the heal, already
+   refuses politely when the player is short, and already opens a confirm popup with Heal / Leave --
+   `npc.healer.popupTitle` ("Shall I heal you?"), `.offer`, `.healOption`, `.leaveOption` are all in
+   the frozen bundle, in every locale. The ONE reason none of it ever runs in the starting town is
+   `HEALER_PRICES.greenhollow === 0`, and a price of zero takes the early-return branch that heals
+   silently for free.
+
+   So the fix is the price, not the flow, and the price is reachable: TypeScript's `private static`
+   is a compile-time fiction, so the table is a plain static on the scene's constructor at runtime.
+   Setting it here means the shipped confirm path runs exactly as it does in every other town --
+   same prompt, same gold arithmetic, same save format -- rather than this file growing a second
+   heal implementation, which is the fork every other service in this adapter is careful to avoid.
+
+   3 G, below millbrook's 5 and Port Sapphire's 8, so the starting town stays the cheapest. */
+const GREENHOLLOW_HEAL_PRICE = 3;
+function patchHealerPrice(scene) {
+  const table = scene?.constructor?.HEALER_PRICES;
+  if (table && table.greenhollow === 0) table.greenhollow = GREENHOLLOW_HEAL_PRICE;
+}
+
 function patchScene(scene) {
+  patchHealerPrice(scene);
   if (!scene || scene.__act1HifiPreservedPatch) return;
   const originalUpdate = scene.update;
   const originalLoadMap = scene.loadMap;
@@ -483,6 +509,11 @@ function currentChrome() {
   return {
     type: 'act1-town-chrome',
     ctrl: cls.slice(5),
+    // The town hides its own pad for its own dialogue box, but it cannot see the SHIPPED message
+    // box drawn over it. Forward that, so one text box on screen means one set of controls hidden
+    // whichever surface drew it. postTownChrome() only posts on a real change, so this rides the
+    // existing signature and costs nothing per frame.
+    dialogue: Boolean(worldScene()?.showingMessage),
     safeBottom: Number(safe.bottom) || 0,
     safeLeft: Number(safe.left) || 0,
     safeRight: Number(safe.right) || 0,
