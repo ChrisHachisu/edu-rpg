@@ -2103,7 +2103,16 @@
     }
     var showing = !!wm.showingMessage; fieldDialog.style.display = showing ? 'flex' : 'none';
     if (showing) {
-      var speaker = wm.messageSpeaker && wm.messageSpeaker.text ? String(wm.messageSpeaker.text) : '';
+      // A DESTROYED Phaser text still answers `.text`, and that is how the healer ended up
+      // narrating a signpost. WorldMapScene.showMessage() only CREATES `messageSpeaker` when it is
+      // given a speaker, and hideMessage() destroys it without clearing the reference -- so after
+      // any NPC has spoken, every later speaker-less message (a quest gate, a signpost, a blocked
+      // path) still found the last NPC's name hanging off a dead object and printed it.
+      // OWNER, build 68: "the message is implying the healer is speaking (previous npc that the
+      // player talked to?)". `.scene` is the liveness test this file already uses elsewhere for
+      // exactly this -- it is undefined once destroy() has run.
+      var sp = wm.messageSpeaker;
+      var speaker = (sp && sp.scene && sp.text) ? String(sp.text) : '';
       fieldDialogSpeaker.textContent = speaker; fieldDialogSpeaker.style.display = speaker ? 'block' : 'none';
       fieldDialogText.textContent = wm.messageText && wm.messageText.text ? String(wm.messageText.text) : '';
     }

@@ -461,6 +461,45 @@ async function walkIn(page) {
     });
     check('choosing Leave cancels without charging', !paid.open && paid.hp === 5 && paid.gold === 200,
       `open=${paid.open} hp=${paid.hp} gold=${paid.gold}`);
+
+    // ---- ITEM 9: a destroyed speaker must not narrate the next message ----------------------
+    // WorldMapScene.showMessage() creates `messageSpeaker` only when it is GIVEN a speaker, and
+    // hideMessage() destroys it without clearing the reference -- and a destroyed Phaser text still
+    // answers `.text`. So after any NPC had spoken, every later speaker-less message (a quest gate,
+    // a signpost, a blocked path) printed the last NPC's name. OWNER, build 68: "the message is
+    // implying the healer is speaking (previous npc that the player talked to?)".
+    console.log('\nITEM 9  a speaker-less message has no speaker');
+    // AS THE APP, deliberately. updateFieldHud() only activates the DOM field HUD for a coarse
+    // pointer OR under Capacitor, so on the desktop viewport this harness uses,
+    // #qfh-dialog-speaker is always empty and both assertions below would pass without testing
+    // anything. A check that cannot fail is worse than no check -- this one caught itself only
+    // because its positive case ("an NPC with a name still shows it") went red. Declaring Capacitor
+    // is the faithful switch rather than a viewport trick: the shipped build IS a Capacitor app,
+    // and it is the same branch the device takes.
+    const phone = page;
+    await phone.addInitScript(() => { window.Capacitor = { isNativePlatform: () => true }; });
+    await bootToOverworld(phone, save(SEED.x, SEED.y, { 'act1.townOpened.greenhollow': true }), false);
+    const speakerNow = () => phone.evaluate(() => {
+      const e = document.querySelector('#qfh-dialog-speaker');
+      const w = window.__PHASER_GAME__.scene.getScene('WorldMapScene');
+      return { dom: e ? e.textContent : null,
+               raw: w.messageSpeaker?.text ? String(w.messageSpeaker.text) : null,
+               alive: Boolean(w.messageSpeaker?.scene) };
+    });
+    await phone.evaluate(() => window.__PHASER_GAME__.scene.getScene('WorldMapScene')
+      .showMessage('I will mend you.', 'Healer'));
+    await phone.waitForTimeout(500);
+    const spoke = await speakerNow();
+    check('an NPC with a name still shows it', spoke.dom === 'Healer', `speaker=${JSON.stringify(spoke.dom)}`);
+    await phone.evaluate(() => window.__PHASER_GAME__.scene.getScene('WorldMapScene').hideMessage());
+    await phone.waitForTimeout(300);
+    await phone.evaluate(() => window.__PHASER_GAME__.scene.getScene('WorldMapScene')
+      .showMessage('The woods are too dangerous to enter alone.'));
+    await phone.waitForTimeout(600);
+    const gate = await speakerNow();
+    check('the NEXT message, with no speaker, names nobody', gate.dom === '',
+      `speaker=${JSON.stringify(gate.dom)}; the destroyed object still reports `
+      + `${JSON.stringify(gate.raw)} (alive=${gate.alive}), which is the trap`);
   } finally {
     await browser.close();
   }
