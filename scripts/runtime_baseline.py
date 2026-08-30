@@ -109,7 +109,7 @@ ACT1_OVERLAY_FILES = {
     # save format round-trips to itself (measured: 742 of 754 reportable cells reload unchanged, the
     # other 12 settle one cell north once; largest rescue nudge 28 px against a 96 px bound).
     "dq-tiles.js": (
-        465094, "cfaa1cfbc875bf0c49eb91c140139fd65063babe26a98ba9b8e1530358cae7c9"),
+        468044, "ae1a788119de79bce0b339b67a6c45fc4f736f5c892c224f68cf34e9afd6e388"),
     # 2026-08-07: THE OVERWORLD'S COLLISION SHAPE, baked -- the overworld's answer to the dungeons'
     # `<floor>-walk.png` above, and as much a shipped authority as they are. Deriving it at runtime
     # was correct and unaffordable: owmBuild() evaluated waterField/mountainField per pixel over a
@@ -171,7 +171,7 @@ ACT1_OVERLAY_FILES = {
     # the control-orientation setting, into the frame. First override of this file since the
     # v1.17.1 baseline was frozen, which is why it had no entry before.
     "ui-overhaul.js": (
-        159719, "317e3921ba1c6190ca6fbf7f0c9454cc58609bcb22b6773f0ec91bf204fccaa9"),
+        171505, "b03d95c76c5318ac58b7dcfeeaf799f274f1516cf67933681365c6057c1b9734"),
     # 2026-08-06, owner pick: "Charcoal & Gold Leaf" (direction 4 of
     # design/ui-overhaul/chic-style-board.html). The same gold as before -- the pixel art, the
     # dungeon plates and the town screens were all approved against it -- spent differently:
@@ -181,7 +181,7 @@ ACT1_OVERLAY_FILES = {
     # bundled rather than fetched; the short version is that it never reached the phone at all.
     # Like ui-overhaul.js above, first override of this file since the baseline was frozen.
     "ui-overhaul.css": (
-        49814, "45a16cefb1af1598ccd025fd38ac0b2aaf1117f106ddd4c1591608be12d130eb"),
+        52466, "8f767e73aafbd9e7c89ff7a2294cc4c6e9c3b5892a76ba6197a889ec71bbed70"),
 }
 # 2026-08-06, owner-picked ("Charcoal & Gold Leaf", direction 4 of
 # design/ui-overhaul/chic-style-board.html): the chrome the theme needs on disk rather than
@@ -457,7 +457,7 @@ ACT1_TOWN_FILES = {
     "act1-hifi/town.html": (
         41070, "74d97d53d2f5e9686183a0e7f39426487eb855fabaab264d1b79e82ea8eb3a7c"),
     "act1-hifi/town/portSapphire-town.json": (
-        11311, "d7c1d2a6d067dfdf2268dc308e13acec1b6eb8144c27ddedc47c935b775cc54d"),
+        11831, "28373d5e26fd19990b7f3acd6cc77559e0c279aa73b65b2c0bcfc2985d69b33a"),
     "act1-hifi/town/portSapphire-walkable.json": (
         25513, "dc6f8e6299508e9417e32a0be93a1e75b3541ee32275d3a49a99384b32f76893"),
     "act1-hifi/town/portSapphire-screen.png": (
@@ -540,7 +540,7 @@ ACT1_TOWN_FILES = {
     "act1-hifi/town/millbrook-walkable.json": (
         36534, "15b692b6f6776bda711476219fb88d8811e17910e5e95cf90ba1aab3376952f3"),
     "act1-hifi/town/millbrook-town.json": (
-        11365, "8a6ae6bcd935a887a379c7ddaea8f4ae290d83f6aba22b8079623d256eec2163"),
+        12077, "7c595c2b67c4ea6abf5af413a4a46bd76f30e429e75dea2183a8082abad80ef8"),
     # 2026-08-21: the two plates the note above was waiting for. Both are the four-tile bake,
     # exposure-matched per tile and quilted on a minimum-error cut by scripts/stitch_plate.py.
     # Placeholder zeros; `npm run repin` fills the real size/hash in -- and the FILES ARE ON DISK

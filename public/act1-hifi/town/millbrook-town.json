@@ -30,11 +30,12 @@
       "nameKey": "npc.healer.name",
       "sheet": "town/npc/millbrook-healer-4x3-64.png",
       "cell": [
-        25.5,
-        43.0
+        51.0,
+        37.5
       ],
       "name": "Healer",
-      "text": "Sit down and let me look at you. I can heal your wounds, and there is no charge for anyone who walked in through that gate."
+      "text": "Sit down and let me look at you. I can heal your wounds, and there is no charge for anyone who walked in through that gate.",
+      "_placementNote": "MOVED 2026-08-30 from [25.5,43.0]. OWNER on build 68: \"the healer needs to be placed in the healer's shop or in front of the healers shop in every town (millbrook, but most likely the healers are placed in random locations in other towns).\" She was standing on open path between two cottages, attached to nothing. Millbrook has no drawn healer's shop, so she goes to the door of the building the HERBALIST already works out of -- herbs and healing are the same trade here, and it is the same reading that put greenhollow's healer in its herb shop. [51.0,37.5] is on the cobble directly in front of that door, between the flower planters, with her full south approach band reachable."
     },
     {
       "id": "miller",

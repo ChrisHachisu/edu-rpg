@@ -565,3 +565,42 @@ body.qok-dialogue #qok-field-hud #qfh-dialog{bottom:calc(env(safe-area-inset-bot
 @media (prefers-reduced-motion: reduce){
   #qok-ui .qok-spin{ animation-duration:2200ms; }
 }
+
+/* ---- NEW EQUIPMENT ---------------------------------------------------------------------------
+   A dot on the Equip tab while the player is carrying gear that beats what they have on, and a
+   pill on the item itself for the one visit after they open the screen. Owner, build 67. */
+#qok-ui .tab{ position:relative; }
+#fieldTabs .ft{ position:relative; }
+#qok-ui .newdot, #fieldTabs .newdot{ position:absolute; top:5px; right:calc(50% - 20px);
+  width:9px; height:9px; border-radius:50%; background:var(--emerald,#2fbf5f);
+  box-shadow:0 0 0 2px var(--bg2,#151922), 0 0 6px rgba(47,191,95,.85); }
+#qok-ui .newpill{ display:inline-block; margin-left:7px; padding:1px 6px; border-radius:99px;
+  font-size:10px; font-weight:900; letter-spacing:.06em; vertical-align:middle;
+  color:#06210f; background:var(--emerald,#2fbf5f); }
+
+/* ---- SHOP: the mode bar stays put, and the list keeps its place ------------------------------
+   Buy / Sell / Leave scrolled away with the list, so the way out of the shop disappeared as soon
+   as the player looked at anything below the fold. Owner, build 68. */
+#qok-ui .shopseg{ position:sticky; top:0; z-index:4; margin-top:0;
+  background:var(--bg2,#151922); box-shadow:0 6px 10px -8px #000a; }
+
+/* ---- SHOP: the purchase confirm ---------------------------------------------------------------
+   Same modal language as the healer's Heal / Leave popup rather than a second idiom. */
+#qok-ui .shopconf{ position:absolute; inset:0; z-index:20; display:flex; align-items:center;
+  justify-content:center; background:rgba(4,7,12,.62); padding:18px; }
+#qok-ui .shopconf .card2{ width:100%; max-width:330px; background:var(--bg2,#151922);
+  border:1px solid var(--gold-line,#8b734066); border-radius:14px; padding:16px 16px 14px;
+  box-shadow:0 18px 40px -12px #000c; }
+#qok-ui .shopconf .qtyrow{ display:flex; align-items:center; justify-content:center; gap:14px;
+  margin:12px 0 6px; }
+#qok-ui .shopconf .qtybtn{ width:38px; height:38px; border-radius:10px; font-size:20px;
+  font-weight:900; color:var(--ink); background:#ffffff14; border:1px solid var(--gold-line,#8b734066); }
+#qok-ui .shopconf .qtybtn[disabled]{ opacity:.35; }
+#qok-ui .shopconf .qtyval{ min-width:46px; text-align:center; font-size:22px; font-weight:900;
+  color:var(--ink); }
+#qok-ui .shopconf .totrow{ display:flex; justify-content:space-between; align-items:baseline;
+  margin:8px 2px 2px; font-weight:800; }
+#qok-ui .shopconf .tot{ font-size:18px; color:var(--gold); }
+#qok-ui .shopconf .tot.over{ color:var(--ruby,#d62a2a); }
+#qok-ui .shopconf .btnrow{ display:flex; gap:10px; margin-top:14px; }
+#qok-ui .shopconf .btnrow .btn{ flex:1; }

@@ -1746,21 +1746,70 @@
       return !!(gl&&gl.isContextLost&&gl.isContextLost());
     }catch(e){ return false; }
   }
+  /* ---- THE BLUE FRAME IS NEVER SHOWN, IT IS COVERED -------------------------------------------
+     OWNER, build 67: "blue screen bug still happens. there needs to be a definitive checker that
+     does not allow this, even if the loading spinner is shown for longer."
+
+     a1aSpriteWatchdog below already DETECTS the condition exactly -- `live < want`, where want is
+     what the camera window touches and live is what actually decoded -- and it recovers by
+     re-requesting the art. Recovery is not what he is asking for. Between the failure and the
+     recovery the camera has nothing to draw but its own background, and that background is the blue
+     the player sees. So this takes the same signal the watchdog computes and puts a veil over the
+     frame until the art it needs is present.
+
+     It is a COVER, not a pause: the scene keeps running underneath, the retry keeps retrying, and
+     the veil lifts on the first tick where the window is whole. That is the trade he asked for --
+     a longer spinner instead of a blue map -- and it cannot itself hang the game, because it is
+     driven by the same per-tick measurement rather than by a timer or a promise that might never
+     settle.
+
+     Deliberately NOT gated on a grace period. A blue frame for 200 ms is still a blue frame, and a
+     veil that only appears after a delay would show exactly the flash it exists to hide. */
+  var _a1aVeil=null;
+  function a1aVeilEl(){
+    if(_a1aVeil && _a1aVeil.isConnected) return _a1aVeil;
+    var d=document.createElement('div');
+    d.id='a1a-loading-veil';
+    d.setAttribute('aria-live','polite');
+    d.style.cssText='position:fixed;inset:0;z-index:60;display:none;place-items:center;'
+      +'background:linear-gradient(145deg,#101c27,#071018 58%,#040911);color:#9fb6c6;'
+      +'font:13px/1.4 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;'
+      +'letter-spacing:.04em;';
+    d.innerHTML='<div style="display:grid;gap:12px;justify-items:center;">'
+      +'<div style="width:34px;height:34px;border-radius:50%;border:3px solid #2a3a49;'
+      +'border-top-color:#8b7340;animation:a1aspin 900ms linear infinite;"></div>'
+      +'<div id="a1a-veil-text">Loading the world...</div></div>';
+    var st=document.createElement('style');
+    st.textContent='@keyframes a1aspin{to{transform:rotate(360deg)}}';
+    d.appendChild(st);
+    document.body.appendChild(d);
+    _a1aVeil=d; return d;
+  }
+  function a1aVeilSet(on){
+    var d=a1aVeilEl();
+    var want=on?'grid':'none';
+    if(d.style.display!==want) d.style.display=want;
+  }
+
   function a1aSpriteWatchdog(scene){
-    if(!a1aPlateOwns(scene)||!a1aSpriteMode()){ A1AW.shortSince=0; return; }
+    if(!a1aPlateOwns(scene)||!a1aSpriteMode()){ A1AW.shortSince=0; a1aVeilSet(false); return; }
     var rs=A1A.lastRects;
-    if(!rs){ A1AW.shortSince=0; A1A.sprLive=0; A1A.sprWant=0; return; }
+    // No rects yet means the window has not been measured -- the map cannot be drawn, so hold.
+    if(!rs){ A1AW.shortSince=0; A1A.sprLive=0; A1A.sprWant=0; a1aVeilSet(true); return; }
     // WANT is what the window TOUCHES, not what managed to decode. Counting only decoded chunks
     // would read 0/0 -- perfectly healthy -- in exactly the case where the art stopped coming back,
     // which is the failure this net exists to catch.
     var want=rs.touched|0, live=0, i;
-    if(!want){ A1AW.shortSince=0; A1A.sprLive=0; A1A.sprWant=0; return; }
+    if(!want){ A1AW.shortSince=0; A1A.sprLive=0; A1A.sprWant=0; a1aVeilSet(false); return; }
     for(i=0;i<rs.length;i++){
       var r=rs[i]; if(!r||!r.rec||!r.rec.base) continue;
       var key='a1a_base_'+r.c.id, im=A1A.imgs[key];
       if(A1A.tex[key]===1 && im && im.scene && im.visible) live++;
     }
     A1A.sprLive=live; A1A.sprWant=want;
+    // THE GATE. Whole window -> show the map; anything missing -> keep the veil up. Same numbers
+    // the recovery below acts on, so the two can never disagree about whether the map is ready.
+    a1aVeilSet(live<want);
     // RE-ASK FOR MISSING ART ON A TIMER, NOT ONLY ON MOVEMENT. The terrain path that calls a1aRects
     // is gated on the window CHANGING (`key===terrainState.lastWin` -> return), so a layer that
     // failed while she stands still would not be re-requested until she walked across a window

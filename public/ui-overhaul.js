@@ -332,18 +332,59 @@
     root.classList.toggle('battle', !!isBattle);
     if (!isBattle) clearBattleBg();
     try { document.body.classList.add('qok-overlay'); } catch (e) {} // hide the Phaser canvas under us (no old-UI flash)
-    if (curScreen !== name) { curScreen = name; lastSig = null; }
+    if (curScreen !== name) {
+      if (curScreen === 'equip') equipVisitLeave();   // the "New" pills last exactly one visit
+      curScreen = name; lastSig = null;
+    }
+  }
+  /* THE MAP SLID DOWN INTO PLACE EVERY TIME A MENU CLOSED, and the camera is why.
+     `qok-overlay` hides the Phaser canvas while a DOM screen is up; the canvas is relaid out, the
+     Scale Manager resizes, and the camera's clamp against the map bounds moves with it. MEASURED in
+     sunkenCellar on a phone viewport: scrollY 742 with the dungeon up, 680 the moment the menu
+     opened. WorldMapScene follows the hero with a LERP (startFollow(..., 0.09, 0.09)), so on the
+     way back it crawls 699 -> 737 -> 741 -> 742 over about 320 ms, which reads exactly as the owner
+     described it: "when returning to the dungeon map, the dungeon map seems like it snaps from
+     above the screen" (build 67).
+
+     The scene itself already knows the answer -- updateCamera() ends with `centerOn` and calls it
+     "Snap camera to hero immediately on map load (avoid initial lerp drift)". It is simply never
+     called on the way back from an overlay. Snapping on the frame AFTER the class is removed, so
+     the canvas has been resized before the camera is centred; a second pass one frame later covers
+     a resize that lands late. Nothing else is touched, so a scene that is not the field is
+     unaffected -- there is no hero to centre on and the guard drops out. */
+  function snapFieldCamera() {
+    try {
+      var g = window.__PHASER_GAME__;
+      if (!g || !g.scene.isActive('WorldMapScene')) return;
+      var w = g.scene.getScene('WorldMapScene');
+      if (!w || !w.hero || !w.cameras || !w.cameras.main) return;
+      w.cameras.main.centerOn(w.hero.x, w.hero.y);
+    } catch (e) {}
   }
   function deactivate() {
     if (root && root.classList.contains('active')) { root.classList.remove('active', 'battle'); stage.innerHTML = ''; }
     clearBattleBg();
     try { document.body.classList.remove('qok-overlay'); } catch (e) {} // show the canvas again (field/dungeon, or a non-overlaid Phaser scene)
     curScreen = null; lastSig = null;
+    try {
+      requestAnimationFrame(function () { snapFieldCamera(); requestAnimationFrame(snapFieldCamera); });
+    } catch (e) { snapFieldCamera(); }
   }
+  // THE PANEL IS REBUILT WHOLESALE ON EVERY SIGNATURE CHANGE, and `.body` is the scroller, so any
+  // repaint used to throw the player back to the top of a list. In the shop that is constant: the
+  // signature carries gold and the selected row, so buying anything, or even moving the selection,
+  // scrolled the list home under the player's thumb (OWNER, build 68: "the shop screen snaps back
+  // top when scrolling down but it shouldnt"). Carry scrollTop across a repaint of the SAME screen,
+  // and only that screen -- arriving somewhere new should always start at the top.
+  var _painted = { screen: null, top: 0 };
   function paint(html, sig) {
     if (sig === lastSig) return;
     lastSig = sig;
+    var prev = stage.querySelector('.body');
+    var keep = (prev && _painted.screen === curScreen) ? prev.scrollTop : 0;
     stage.innerHTML = '<div class="screen"><div class="col">' + html + '</div></div>';
+    _painted = { screen: curScreen, top: keep };
+    if (keep) { var now = stage.querySelector('.body'); if (now) now.scrollTop = keep; }
   }
 
   // ============================================================
@@ -354,6 +395,70 @@
   // sheet via tabIcon(index) now; these SVG symbol names are no longer looked up for them.
   var TAB_ICON = { status: 'person', items: 'flasko', equip: 'sword', settings: 'gear' };
   var TAB_KEY  = { status: 'menu.status', items: 'menu.items', equip: 'menu.equip', settings: 'menu.settings' };
+  /* ---- NEW EQUIPMENT: a green dot on the tab, a "New" pill on the item ----------------------
+     OWNER, build 67: "when the player obtains a weapon or gear that is stronger than what they
+     have, the relevant bottom tab needs to get a green dot ... and the equipment menu screen needs
+     to show 'New' on a new eqiupment that they have not seen yet (seeing it clears it)."
+
+     "Stronger than what they have" is NOT a new judgement -- equipBody already computes exactly it,
+     per slot, to draw its up/down delta arrow. Both use the same comparison so the dot can never
+     disagree with the arrow the player sees when they open the screen.
+
+     SEEN IS SNAPSHOTTED ON ENTRY, not cleared on render. The panel repaints on every signature
+     change, so clearing as each pill drew would have blanked the pills while the player was still
+     reading them. Opening the Equip screen marks everything currently new as seen -- which clears
+     the dot immediately, as asked -- and the pills for THIS visit come from a snapshot taken at
+     that moment, so they survive until the screen is left. */
+  var SEEN_EQUIP_KEY = 'edu-rpg-seen-equipment';
+  var _seenEquip = null, _newEquipVisit = null;
+  function seenEquip() {
+    if (_seenEquip) return _seenEquip;
+    _seenEquip = {};
+    try {
+      var raw = JSON.parse(localStorage.getItem(SEEN_EQUIP_KEY) || '[]');
+      for (var i = 0; i < raw.length; i++) _seenEquip[raw[i]] = 1;
+    } catch (e) {}
+    return _seenEquip;
+  }
+  function markEquipSeen(ids) {
+    var m = seenEquip(), changed = false;
+    for (var i = 0; i < ids.length; i++) if (!m[ids[i]]) { m[ids[i]] = 1; changed = true; }
+    if (!changed) return;
+    try { localStorage.setItem(SEEN_EQUIP_KEY, JSON.stringify(Object.keys(m))); } catch (e) {}
+  }
+  // Owned equipment that beats what is in its slot right now. Same arithmetic as equipBody's arrow.
+  function equipUpgradeIds() {
+    var st = pstate(); if (!st || !st.inventory) return [];
+    var out = [];
+    for (var i = 0; i < st.inventory.length; i++) {
+      var it = find(st.inventory[i].itemId);
+      if (!it || SLOTS.indexOf(it.type) < 0) continue;
+      var curId = st.equipment[it.type], cur = curId ? find(curId) : null;
+      var atkV = it.stats ? it.stats.atk : undefined, defV = it.stats ? it.stats.def : undefined;
+      var nv = atkV !== undefined ? atkV : (defV !== undefined ? defV : 0);
+      var ov = atkV !== undefined ? ((cur && cur.stats && cur.stats.atk) || 0)
+                                  : (defV !== undefined ? ((cur && cur.stats && cur.stats.def) || 0) : 0);
+      if (nv - ov > 0) out.push(it.id);
+    }
+    return out;
+  }
+  function newEquipIds() {
+    var m = seenEquip(), up = equipUpgradeIds(), out = [];
+    for (var i = 0; i < up.length; i++) if (!m[up[i]]) out.push(up[i]);
+    return out;
+  }
+  function hasNewEquip() { return newEquipIds().length > 0; }
+  // Called when the Equip screen is entered / left, so the pills last exactly one visit.
+  function equipVisitEnter() {
+    if (_newEquipVisit) return;
+    _newEquipVisit = {};
+    var ids = newEquipIds();
+    for (var i = 0; i < ids.length; i++) _newEquipVisit[ids[i]] = 1;
+    markEquipSeen(ids);
+  }
+  function equipVisitLeave() { _newEquipVisit = null; }
+  function isNewThisVisit(id) { return !!(_newEquipVisit && _newEquipVisit[id]); }
+
   var SLOTS = ['weapon', 'armor', 'shield', 'helmet', 'accessory'];
   var SLOT_KEY = { weapon: 'equip.slot.weapon', armor: 'equip.slot.armor', shield: 'equip.slot.shield', helmet: 'equip.slot.helmet', accessory: 'equip.slot.accessory' };
 
@@ -373,7 +478,8 @@
     var h = '<div class="tabbar">';
     for (var i = 0; i < 4; i++) {
       var t = ['status', 'items', 'equip', 'settings'][i];
-      h += '<button class="tab' + (cur === t ? ' on' : '') + '" data-act="tab" data-i="' + i + '">' + tabIcon(i) + esc(Z(TAB_KEY[t])) + '</button>';
+      var dot = (t === 'equip' && hasNewEquip()) ? '<i class="newdot"></i>' : '';
+      h += '<button class="tab' + (cur === t ? ' on' : '') + '" data-act="tab" data-i="' + i + '">' + tabIcon(i) + esc(Z(TAB_KEY[t])) + dot + '</button>';
     }
     return h + '</div>';
   }
@@ -436,6 +542,7 @@
   }
 
   function equipBody(ms, p, st) {
+    equipVisitEnter();                       // clears the dot; the pills come from the snapshot
     var filter = ms.equipTypeFilter || 'weapon';
     var h = '<div class="body"><div class="zc pad stack g10 grid2"><div class="eyebrow">' + esc(Z('menu.equip')) + '</div>';
     // equipped slots panel
@@ -477,9 +584,13 @@
         var d = newVal - oldVal;
         var dHtml = d > 0 ? '<div class="delta-up">▲ +' + d + '</div>' : (d < 0 ? '<div class="delta-dn">▼ ' + d + '</div>' : '');
         var ss = (atkV !== undefined ? '+' + atkV + Z('menu.atk') : '') + (defV !== undefined ? ' +' + defV + Z('menu.def') : '');
+        // NOT Z('equip.new'): that key is in no locale table and not in the frozen bundle, so the
+        // shipped translate would answer "[equip.new]" and print it -- the same defect the villager
+        // names had. A local literal has no key to miss.
+        var newPill = isNewThisVisit(idt.id) ? '<span class="newpill">' + (isJa() ? 'NEW' : 'New') + '</span>' : '';
         h += '<div class="card' + (isel ? ' sel' : '') + '" data-act="equipInv" data-i="' + k + '">' +
           '<div class="ic">' + itemIcon(idt) + '</div>' +
-          '<div class="t"><div class="n">' + esc(Z(idt.nameKey)) + '</div><div class="d">' + esc(ss) + '</div></div>' + dHtml + '</div>';
+          '<div class="t"><div class="n">' + esc(Z(idt.nameKey)) + newPill + '</div><div class="d">' + esc(ss) + '</div></div>' + dHtml + '</div>';
       }
     }
     return h + '</div></div>';
@@ -627,7 +738,7 @@
 
     h += '<div class="body"><div class="zc pad stack g8 grid2">';
     // mode seg (treat the shop's initial 'menu' state as the default Buy view)
-    h += '<div class="seg span2" style="margin-bottom:2px;">' +
+    h += '<div class="seg shopseg span2" style="margin-bottom:2px;">' +
       '<b class="' + (mode !== 'sell' ? 'on' : '') + '" data-act="shopMode" data-mode="buy">' + esc(Z('shop.buy')) + '</b>' +
       '<b class="' + (mode === 'sell' ? 'on' : '') + '" data-act="shopMode" data-mode="sell">' + esc(Z('shop.sell')) + '</b>' +
       '<b data-act="shopLeave">' + esc(Z('shop.leave')) + '</b></div>';
@@ -666,11 +777,65 @@
     if (ss.message) h += '<div class="msg span2" style="text-align:center;margin-top:4px;">' + esc(ss.message) + '</div>';
     h += '<button class="btn btn-gold mt6 span2" data-act="shopLeave">' + use('check') + esc(Z('shop.done')) + '</button>';
     h += '</div></div>';
+    h += shopConfirmHtml(st, EQ);
 
     var slSig = mode === 'sell' ? shopSellList().map(function (x) { return x.itemId + ':' + x.quantity; }).join(',') : '';
-    var sig = 'shop|' + ss.shopId + '|' + mode + '|' + ss.listIndex + '|g' + st.gold + '|' + locale() + '|m' + (ss.message || '') + '|' + slSig + '|eq' + EQ.map(function (e) { return st.equipment[e] || '-'; }).join(',');
+    var sig = 'shop|' + ss.shopId + '|' + mode + '|' + ss.listIndex + '|g' + st.gold + '|' + locale() + '|m' + (ss.message || '') + '|' + slSig + '|eq' + EQ.map(function (e) { return st.equipment[e] || '-'; }).join(',')
+      + '|c' + (shopConfirm ? shopConfirm.id + 'x' + shopConfirm.qty : '-');
     activate('shop', false);
     paint(h, sig);
+  }
+
+  /* ---- BUYING ASKS FIRST ------------------------------------------------------------------
+     OWNER, build 68: "buying an item also needs to make a confirmation button popup (option to buy
+     or cancel and the price). the quantity needs to be selected for expendable items (not
+     equipment) and total cost also need to be displayed (needs a blocker for exceeding current
+     wallet amount)."
+
+     The MODAL is DOM; the PURCHASE is not. Confirming runs the shipped `ShopScene.buyItem()` once
+     per unit, so the gold arithmetic, the inventory-full refusal, the "cannot afford" message and
+     the buy sound all stay the shipped ones. Reimplementing the transaction here would fork the
+     economy, which is the thing every other service in this overlay is careful not to do.
+
+     THE WALLET BLOCKER IS STRUCTURAL, not a warning: the stepper's own maximum is
+     floor(gold / price), so a total the player cannot afford is not reachable. The total still
+     turns red if it ever exceeds the purse -- gold can drop underneath an open dialog -- and the
+     Buy button goes with it.
+
+     Quantity is offered for CONSUMABLES ONLY. Equipment is capped at 1 because the shop already
+     refuses to sell a second copy of gear you own (`blocked` in the list above). */
+  var shopConfirm = null;   // { id, index, qty }
+  function shopConfirmMax(item, st) {
+    if (!item || !item.buyPrice) return 1;
+    return Math.max(1, Math.min(99, Math.floor(st.gold / item.buyPrice)));
+  }
+  function shopConfirmHtml(st, EQ) {
+    if (!shopConfirm) return '';
+    var it = find(shopConfirm.id); if (!it) return '';
+    var isEq = EQ.indexOf(it.type) >= 0;
+    var qty = isEq ? 1 : Math.max(1, shopConfirm.qty);
+    var total = it.buyPrice * qty;
+    var over = total > st.gold;
+    var max = isEq ? 1 : shopConfirmMax(it, st);
+    var ja = isJa();
+    var qtyBlock = isEq ? '' :
+      '<div class="qtyrow">' +
+        '<button class="qtybtn" data-act="shopQty" data-d="-1"' + (qty <= 1 ? ' disabled' : '') + '>-</button>' +
+        '<div class="qtyval">' + qty + '</div>' +
+        '<button class="qtybtn" data-act="shopQty" data-d="1"' + (qty >= max ? ' disabled' : '') + '>+</button>' +
+      '</div>';
+    return '<div class="shopconf" data-act="shopCancel"><div class="card2" data-act="shopNoop">' +
+      '<div class="scene-h">' + esc(Z(it.nameKey)) + '</div>' +
+      '<div class="d" style="text-align:center;margin-top:2px;">' + esc(it.buyPrice + ' G' + (isEq ? '' : ' ' + (ja ? 'ずつ' : 'each'))) + '</div>' +
+      qtyBlock +
+      '<div class="totrow"><span>' + esc(ja ? 'ごうけい' : 'Total') + '</span>' +
+        '<span class="tot' + (over ? ' over' : '') + '">' + total + ' G</span></div>' +
+      '<div class="totrow" style="font-size:12px;opacity:.8;"><span>' + esc(ja ? 'しょじきん' : 'Wallet') + '</span>' +
+        '<span>' + st.gold + ' G</span></div>' +
+      '<div class="btnrow">' +
+        '<button class="btn btn-em" data-act="shopConfirmBuy"' + (over ? ' disabled' : '') + '>' + use('check', 'ic') + esc(Z('shop.buy')) + '</button>' +
+        '<button class="btn btn-slate" data-act="shopCancel">' + esc(ja ? 'やめる' : 'Cancel') + '</button>' +
+      '</div></div></div>';
   }
 
   // ============================================================
@@ -1613,7 +1778,32 @@
       var mode = el.getAttribute('data-mode');
       ss.menuIndex = (mode === 'buy') ? 0 : 1; ss.mode = mode; ss.listIndex = 0; ss.message = '';
     } else if (act === 'shopBuy') {
-      ss.mode = 'buy'; ss.listIndex = i; ss.buyItem();
+      // Open the confirm instead of buying on the spot. `blocked` gear (already owned) still goes
+      // straight through to the shipped refusal so the message the player gets is unchanged.
+      var q = QOK(), sh = (q && q.shops || {})[ss.shopId] || { items: [] };
+      var bid = sh.items[i], bit = bid ? find(bid) : null;
+      ss.mode = 'buy'; ss.listIndex = i; ss.message = '';
+      if (!bit) return;
+      shopConfirm = { id: bid, index: i, qty: 1 };
+    } else if (act === 'shopQty') {
+      if (!shopConfirm) return;
+      var qit = find(shopConfirm.id), qst = pstate();
+      var step = parseInt(el.getAttribute('data-d'), 10) || 0;
+      var qmax = shopConfirmMax(qit, qst);
+      shopConfirm.qty = Math.max(1, Math.min(qmax, shopConfirm.qty + step));
+    } else if (act === 'shopConfirmBuy') {
+      if (!shopConfirm) return;
+      var cit = find(shopConfirm.id), cst = pstate();
+      var n = Math.max(1, Math.min(shopConfirm.qty, shopConfirmMax(cit, cst)));
+      ss.mode = 'buy'; ss.listIndex = shopConfirm.index;
+      // one shipped purchase per unit: it re-checks gold and inventory space every time, so a
+      // stack that stops being affordable or does not fit stops itself, with its own message.
+      for (var b = 0; b < n; b++) ss.buyItem();
+      shopConfirm = null;
+    } else if (act === 'shopCancel') {
+      shopConfirm = null;
+    } else if (act === 'shopNoop') {
+      return;                                  // taps inside the card must not reach the backdrop
     } else if (act === 'shopSell') {
       ss.mode = 'sell'; ss.listIndex = i; ss.sellItem();
     } else if (act === 'shopLeave') {
@@ -2134,11 +2324,18 @@
   function syncFieldNav() {
     var el = _fieldNavEl || (_fieldNavEl = document.getElementById('fieldTabs'));
     if (!el) return;
-    var sig = 'fn|' + locale();
+    // The dot has to be part of the signature or the bar would never redraw to show it: this
+    // function is a no-op whenever the signature matches, and locale alone almost never changes.
+    var newEq = hasNewEquip();
+    var sig = 'fn|' + locale() + '|' + (newEq ? 'new' : '-');
     if (sig !== _fieldNavSig) {
       _fieldNavSig = sig;
       var tabs = ['status', 'items', 'equip', 'settings'], h = '';
-      for (var i = 0; i < 4; i++) { var t = tabs[i]; h += '<button class="ft" data-fi="' + i + '">' + tabIcon(i) + '<span>' + esc(Z(TAB_KEY[t])) + '</span></button>'; }
+      for (var i = 0; i < 4; i++) {
+        var t = tabs[i];
+        var dot = (t === 'equip' && newEq) ? '<i class="newdot"></i>' : '';
+        h += '<button class="ft" data-fi="' + i + '">' + tabIcon(i) + '<span>' + esc(Z(TAB_KEY[t])) + '</span>' + dot + '</button>';
+      }
       el.innerHTML = h;
     }
     if (!el.__bound) {

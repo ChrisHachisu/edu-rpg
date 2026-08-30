@@ -18,11 +18,12 @@
       "nameKey": "npc.healer.name",
       "sheet": "town/npc/portSapphire-healer-4x3-64.png",
       "cell": [
-        38.81,
-        30.31
+        42.0,
+        30.0
       ],
       "name": "Healer",
-      "text": "Welcome to the clinic! I can heal your wounds."
+      "text": "Welcome to the clinic! I can heal your wounds.",
+      "_placementNote": "MOVED 2026-08-30 from [38.81,30.31]. Same owner item. She was BESIDE the herb shop rather than in it -- out on the cobble next to the little well, which reads as loitering near a building rather than working in one. [42.0,30.0] is ON the shop's stone floor under the awning, in front of the hanging herbs, the same relationship greenhollow's healer has to hers. Checked against the plate first: the floor runs cells x 40-46.5, y 27-30, and the bundles hang at the back, so nothing overlaps her."
     },
     {
       "id": "wisewoman",
