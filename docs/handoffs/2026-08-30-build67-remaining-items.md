@@ -1,4 +1,6 @@
-# Build-67 feedback: the five items NOT in build 68
+# Open items after build 69
+
+(Started as the five left over from build 67; the owner has since added three more.)
 
 Build 68 carries three of the owner's eight: controls hiding for the parent's text box,
 arrival at the town gate, and the Greenhollow heal fee. These five are open. Each entry
@@ -87,3 +89,59 @@ A one-frame gap between those two is exactly "snaps from above". Instrument
   different reply path.
 * **Grep the shipped artefact, not the source.** Two i18n keys exist in `src/i18n/locales`
   and not in the frozen bundle.
+
+
+---
+
+# Added after build 68 — three more, none started
+
+## A. Shop screen: scrolling, sticky tabs, and a real purchase flow
+
+> "the shop screen snaps back top when scrolling down but it shouldnt. also, the buy, sell, leave
+> buttons should be sticky when scrolling. buying an item also needs to make a confirmation button
+> popup (option to buy or cancel and the price). the quantity needs to be selected for expendable
+> items (not equipment) and total cost also need to be displayed (needs a blocker for exceeding
+> current wallet amount). use the impeccable skill to design this."
+
+All of it lives in `renderShop()` in `public/ui-overhaul.js` — the DOM overlay owns this screen, so
+nothing in the frozen bundle has to change. Four separate pieces:
+
+* **Scroll snap-back.** The overlay re-renders on a signature (`var sig = 'shop|' + ...`); when the
+  signature changes the list is rebuilt and scrollTop is lost. Preserve and restore scrollTop across
+  a re-render, or make the render diff rather than replace.
+* **Sticky Buy / Sell / Leave.** They are `.seg` inside `.body > .zc`; making that bar sticky is CSS.
+* **Confirmation popup with price.** The healer already has exactly this shape — `showHealerOverlay`
+  + `routeHealer` + `confirmHealerOption`, rendered by `renderHealer()`. Copy that pattern rather
+  than inventing a second modal idiom.
+* **Quantity for consumables only, with a wallet blocker.** "Expendable" = the item's `type` is not
+  one of `weapon/armor/shield/helmet/accessory` (that list is already in `renderShop` as `EQ`).
+  Total = unit x qty; cap the stepper at `floor(gold / price)` so the blocker is structural rather
+  than an error message.
+
+The owner asked for a named skill to design it ("the impeccable skill"). No skill by that name is
+installed — ASK HIM which he means before designing; the plausible candidates here are
+`game-design` (game UI/feel) and `frontend-design`.
+
+## B. Healer placement in every town
+
+> "the healer needs to be placed in the healer's shop or in front of the healers shop in every town
+> (millbrook, but most likely the healers are placed in random locations in other towns)"
+
+Greenhollow's healer was moved into the herb shop on 2026-08-29. millbrook and portSapphire were
+never re-checked; their `healer` entries in `<town>-town.json` are wherever the original pass put
+them. Same method as greenhollow: find the healer's building on the plate, measure the floor, put
+her on it, and confirm the south approach band with `check_town_talkable.py`. Note the herb-shop
+lesson — measure the ART for the overlap, do not trust a number written in prose.
+
+## C. Blue screen, with a definitive checker
+
+> "blue screen bug still happens. there needs to be a definitive checker that does not allow this,
+> even if the loading spinner is shown for longer"
+
+`a1aSpriteWatchdog` in `dq-tiles.js` already exists for this and is described in its own comment as
+"what stops the blue screen being permanent" — so the current design DETECTS and RECOVERS rather
+than PREVENTS, which is exactly what the owner is rejecting. He is explicitly willing to trade a
+longer spinner for never showing the blue frame. That means a readiness GATE before the first
+render: do not reveal the map until the plate/chunks/mask the frame needs have actually landed.
+Find every path that can present a frame before its art is ready, and hold the spinner across all
+of them.
