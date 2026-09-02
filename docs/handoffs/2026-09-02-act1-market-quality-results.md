@@ -46,6 +46,19 @@ Written on `tr`, worktree `.claude/worktrees/goofy-moser-2a1df4`, branch `claude
 Artifact "Act 1 Steady Walk Report" (published from this session) with the six asks; the six
 questions are also in `docs/ACT1-ACCEPTANCE-BAR.md`.
 
+## Added after the owner's answers (builds 73 and 74)
+- Owner: walk speed stays 5.4 cells/s ("Keep it. The overworld is quite sparse"); image quality:
+  "Sharper the better" → `e10148b` sharpened chunks + landmarks (lossless), build 73.
+- My calls on Q3–Q6: boss fixed now; boundaries accepted for this release (collect his spots);
+  Kids band 6–8 with the grade wheel; Dragon Quest is the bar.
+- `162da43` boss: plates re-rendered with `--skip-kind boss` (renderer is byte-deterministic), cover
+  ellipses deleted, and a BLOCKER fixed: Darkfang Grotto's boss cell shipped as a warp (engine has
+  5 floors, ours 3; `a1dReplayProgress` mirrored the engine map) so the Giant Toad could never be
+  fought. Now the story flag decides. `verify_boss_vanish.cjs` 12/12, `verify_boss_fight_reachable.cjs`
+  reaches BattleScene giantToad. Build 74.
+- Chunk authority is `design/…/act1-final-art-geometry-r26/runtime/` (tracked); `public/act1-hifi/chunks`
+  mirrors it; `ACT1_HIFI_MANIFEST_SHA256` is a hand tripwire (sign-off comment required).
+
 ## Open, in priority order
 1. Owner verifies build 72 on his phone (walk + leaving a town).
 2. Owner decisions Q1–Q6 (walk speed, image quality route, boundary spots, boss gate, grade band,
@@ -53,9 +66,8 @@ questions are also in `docs/ACT1-ACCEPTANCE-BAR.md`.
    materials are 531 px ≈ 48 px/cell painterly. A sharpen-at-bake comparison exists.
 3. SMOOTH-4 residual (~145 ms chunk-arrival block) — unchanged since round 5.
 4. Sunken Cellar B1F wedge near the stairs (census D2) — manual walk on device; it is the
-   backed-out boundaries item.
-5. The two backed-out items (boundaries, baked boss) — unchanged, see
-   `2026-08-30-build67-remaining-items.md`.
+   backed-out boundaries item (owner spots wanted).
+5. Boundaries only; the baked boss is DONE (build 74).
 
 ## Gotchas for next session (new this run)
 - **`tr` has 8 GB RAM.** Never run the simulator and headless Chrome together; load hit 300–450 and

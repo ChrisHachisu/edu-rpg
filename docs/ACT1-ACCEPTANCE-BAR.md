@@ -30,7 +30,7 @@ Legend: PASS = measured green this session · OPEN = not yet green · Q = needs 
 |---|---|---|---|
 | 2.1 | Render path is exact integer nearest-neighbour: ≥ 90% of aligned 3x3 device-pixel blocks uniform on the field | research §1 "pixel-perfect needs an integer factor"; owner 2026-08-17 crispness | **PASS** — 93.6% measured this session on a 390x844 @3x field |
 | 2.2 | Every surface shows ~3 device px per art px (towns 3.1, overworld 3.0, dungeons 3.0) | owner "needs to match the overworld and dungeon crispness" | PASS by measurement — the surfaces already match |
-| 2.3 | The overworld terrain does not read "poor" | owner build 70 "image quality poor" | **DECIDED by the owner 2026-09-02 ("Sharper the better")**: the shipped chunks and landmarks are sharpened in place (`scripts/sharpen_act1_chunks.py`, unsharp radius 1.0 / 220%, lossless) |
+| 2.3 | The overworld terrain does not read "poor" | owner build 70 "image quality poor" | **SHIPPED build 73** per the owner ("Sharper the better"): chunks and landmarks sharpened in place (`scripts/sharpen_act1_chunks.py`, unsharp 1.0 / 220%, lossless). Owner to confirm on the phone |
 | 2.4 | Hero g3 is the only hero asset on every surface; 64-px frames at 36 world px in towns, 1.0125x on the field | owner "use the canonical g3 as the default and stop using anything else" | PASS |
 | 2.5 | No procedural terrain visible where baked art exists; no blue screen, ever | owner "no. locked in art, full stop"; "there needs to be a definitive checker" | PASS on builds 47+70 (veil); re-verify in the playthrough |
 | 2.6 | HUD/dialogue text on the Phaser canvas at device resolution | PROJECT-RUNBOOK bug 4 | OPEN — owner-flagged "dedicated, carefully-verified effort"; not touched this session |
@@ -53,7 +53,7 @@ Legend: PASS = measured green this session · OPEN = not yet green · Q = needs 
 |---|---|---|---|
 | 4.1 | Enter at the mouth facing in; one entrance; arch painted and passable | owner build 65/66 | PASS build 66/70; re-verify |
 | 4.2 | Continuous movement; collision from the painted floor, no invisible grid | owner 2026-08-05 | PASS (mask mover); boundaries per 3.7 |
-| 4.3 | The boss is a live sprite that fully vanishes, shadow included | owner build 67 | OPEN — needs art regeneration of four boss-room floor patches. **OWNER-Q4**: gate this release on it? |
+| 4.3 | The boss is a live sprite that fully vanishes, shadow included | owner build 67 | **PASS (build 74)**: the four boss floors re-rendered without the baked mark (`render_dungeon_material_map.py --skip-kind boss`, deterministic), cover patches deleted; `verify_boss_vanish.cjs` 12/12. Found and fixed on the way: Darkfang Grotto's boss cell shipped as a WARP (engine has 5 floors, ours 3), so the Giant Toad could never be fought; `verify_boss_fight_reachable.cjs` now proves the battle starts |
 | 4.4 | Save crystals: entrance crystal inert until activated; interact by bump + button | owner build 29/35/36 | PASS; re-verify |
 
 ## 5. Battle, menus, text
