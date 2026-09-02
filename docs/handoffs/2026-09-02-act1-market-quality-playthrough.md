@@ -43,7 +43,7 @@ Written on machine `tr`, in worktree `.claude/worktrees/youthful-bohr-737608` on
   install 2/2** — verified via `python3 scripts/ship-support/verify-delivery.py --app edu-rpg --build 70`
   (`VERIFY DELIVERY PASS: build 70 is installable`). Internal Testers 0/1 is the known unaccepted
   invitation; not a blocker.
-- HEAD: `95b25bb` — `git log`; pushed to `origin/fix/graduated-gpu-heal`
+- HEAD: `2148a40` (this handoff; code HEAD is `95b25bb`) — `git log`; pushed to `origin/fix/graduated-gpu-heal`
 - Working tree clean apart from untracked proof folders (`design/**/proof-*`) and iOS build byproducts
 
 ## Locked decisions (this run)
@@ -130,7 +130,7 @@ Written on machine `tr`, in worktree `.claude/worktrees/youthful-bohr-737608` on
 edu-rpg — Act 1 market-quality playthrough. Machine `tr`.
 
   cd ~/Documents/claudecode/edu-rpg && git fetch && git checkout fix/graduated-gpu-heal && git pull
-  # HEAD should be 95b25bb. Work in your own worktree if you prefer; the branch is pushed.
+  # HEAD should be at or past 2148a40 (this handoff's own commit). Work in your own worktree if you prefer; the branch is pushed.
 
 READ FIRST (only these): docs/handoffs/2026-09-02-act1-market-quality-playthrough.md (this handoff),
 then AGENTS.md and docs/AGENT-WORKFLOW.md as the project CLAUDE.md requires. Do NOT preload
