@@ -59,7 +59,7 @@ ACT1_OVERLAY_FILES = {
     # 2026-08-17: the panel gains the RENDER CHAIN and the debug default is ON for this build only,
     # so the owner's phone can answer whether the fuzziness is a global upscale. Same sign-off:
     # EXPECTED_STATIC_INDEX_SHA in scripts/build_static_index.mjs.
-    "index.html": (116599, "dd64be9a54f6fefb27d7428f622fa4a817bd4b35a51659a63b802bd76c25da2d"),
+    "index.html": (118443, "987ded74911dca6f834c3b41f828d2b7b8cb2442e07a3a74d090cc4af3632b87"),
     # 2026-08-01, owner-authorised: dq-tiles.js now splats AI-generated terrain MATERIALS through
     # its existing continuous-world-pixel drawTerrain, plus a ridged mountain height field,
     # varied shore character and landmark sites derived from mapData. Fallback-safe -- until the
@@ -171,7 +171,7 @@ ACT1_OVERLAY_FILES = {
     # the control-orientation setting, into the frame. First override of this file since the
     # v1.17.1 baseline was frozen, which is why it had no entry before.
     "ui-overhaul.js": (
-        177302, "2003ca347613a90aa9f3c39c16fac09e8d20dce1301200734d64867eecd66d47"),
+        178580, "01e56d136dea5f95ab3a3a5de27ce50569dc1eec28ad436f3588463f4297c68c"),
     # 2026-08-06, owner pick: "Charcoal & Gold Leaf" (direction 4 of
     # design/ui-overhaul/chic-style-board.html). The same gold as before -- the pixel art, the
     # dungeon plates and the town screens were all approved against it -- spent differently:

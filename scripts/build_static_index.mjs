@@ -257,8 +257,11 @@ export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '
 // noticing the music still had not changed on TestFlight build 60.
 // The tag loads AFTER the bundle so window.__QOK exists when the override runs, and the override
 // no-ops when the hook or the audio files are absent, so this is additive.
+// 2026-09-02 SIGN-OFF: dd64be9a... -> 987ded74... -- index.html's diagnostic panel gains a rolling
+// 30 s summary line and a device line (owner reports lag on his phone that the Mac bench cannot
+// reproduce; Settings now has a switch for the panel so he can screenshot real numbers).
 export const EXPECTED_STATIC_INDEX_SHA =
-  'dd64be9a54f6fefb27d7428f622fa4a817bd4b35a51659a63b802bd76c25da2d';
+  '987ded74911dca6f834c3b41f828d2b7b8cb2442e07a3a74d090cc4af3632b87';
 
 /**
  * The authored shell loads its scripts by ABSOLUTE path so the Vite dev server resolves them;

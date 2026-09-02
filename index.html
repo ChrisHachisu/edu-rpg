@@ -1680,6 +1680,7 @@
       function ensurePanel() {
         if (panel) return panel;
         panel = document.createElement('div');
+        panel.id = 'qok-perf-panel';
         /* PLACEMENT AND POINTER-EVENTS, both learned the hard way on the simulator.
            - top-left covered the HP panel (first build).
            - bottom + 100px sat ON the analog stick. The stick is `bottom: inset + 76px`, 172 tall,
@@ -1784,6 +1785,25 @@
       }
 
       var fpsCount = 0, fpsAt = 0, fps = 0, maxGap = 0, lastText = '';
+      var r30 = [];                                   // [t, gap, t, gap, ...] for the last 30 s
+      function roll30() {
+        var n = r30.length / 2; if (n < 10) return '';
+        var gaps = [], over33 = 0, over100 = 0, worst = 0, i;
+        for (i = 1; i < r30.length; i += 2) { var g = r30[i]; gaps.push(g); if (g > 33.4) over33++; if (g > 100) over100++; if (g > worst) worst = g; }
+        gaps.sort(function (a, b) { return a - b; });
+        var med = gaps[gaps.length >> 1], span = (r30[r30.length - 2] - r30[0]) / 1000;
+        var hz = med < 10 ? 120 : (med < 20 ? 60 : Math.round(1000 / med));
+        return '30s ' + n + 'f/' + span.toFixed(0) + 's  ~' + hz + 'Hz  med ' + med.toFixed(1) + 'ms' +
+               '  >33ms ' + over33 + '  >100ms ' + over100 + '  worst ' + Math.round(worst) + 'ms';
+      }
+      var devLine = (function () {
+        try {
+          var ua = navigator.userAgent || '', ios = (ua.match(/OS (\d+_\d+)/) || [])[1] || '?';
+          return 'dev iOS' + ios.replace('_', '.') + ' cores' + (navigator.hardwareConcurrency || '?') +
+                 ' dpr' + (window.devicePixelRatio || 1) + ' ' + window.innerWidth + 'x' + window.innerHeight +
+                 (navigator.deviceMemory ? ' mem' + navigator.deviceMemory + 'G' : '');
+        } catch (e) { return ''; }
+      })();
 
       function paint(now) {
         var c = ctx(now);
@@ -1808,7 +1828,8 @@
               (c.dq ? '\n' + c.dq : '') +
               (c.sp ? '\n' + c.sp : '') +
               (chain ? '\n' + chain : '') +
-              '\nfreezes ' + total + (worst ? '  worst ' + worst.ms + 'ms' : '');
+              '\nfreezes ' + total + (worst ? '  worst ' + worst.ms + 'ms' : '') +
+              (roll30() ? '\n' + roll30() : '') + (devLine ? '\n' + devLine : '');
         var recent = events.slice(-3).reverse();
         for (var i = 0; i < recent.length; i++) txt += '\n' + line(recent[i]);
         if (txt !== lastText) { lastText = txt; p.textContent = txt; }
@@ -1848,6 +1869,10 @@
         // --- cheap per-frame bookkeeping: one compare and one increment, nothing else ---
         fpsCount++;
         if (gap > maxGap) maxGap = gap;
+        // ROLLING 30 s, for the owner's phone. The Mac bench cannot reproduce his lag, so the
+        // panel now carries what a 30 s walk on the device looked like -- one push per frame, the
+        // maths only when the panel repaints (every 500 ms). Off by default like the rest.
+        if (DEBUG_UI && gap > 0) { r30.push(now, gap); while (r30.length && r30[0] < now - 30000) r30.splice(0, 2); }
         if (now - fpsAt >= 500) {
           if (fpsAt) fps = Math.round(fpsCount * 1000 / (now - fpsAt));
           fpsCount = 0; fpsAt = now;

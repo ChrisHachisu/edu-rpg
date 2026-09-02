@@ -665,10 +665,19 @@
     }
     return h + '</div>' +
       '<div class="zc pad" style="padding-top:0;">' +
-        '<button class="btn btn-slate" data-act="quitAsk" style="width:100%;font-weight:800;">' + esc(Z('gameover.title_screen')) + '</button>' +
+        // PERFORMANCE READOUT. index.html carries a diagnostic panel (fps, worst frame, freezes, a
+        // rolling 30 s summary and the device line) that is OFF by default at the owner's request
+        // (2026-08-17). His phone is the only place the lag reproduces and the Mac bench cannot, so
+        // this row lets him switch the panel on for one walk and screenshot it, then off again.
+        // DOM-only, like the return-to-title row: the flag lives in localStorage and is read once
+        // at boot, hence the reload. Local literals, no bundle key exists for it.
+        '<div class="setrow span2" data-act="perfToggle"><span class="lab">' + use('gauge') + esc(isJa() ? 'パフォーマンスひょうじ' : 'Performance readout') + '</span>' +
+          '<div class="switch ' + (perfReadoutOn() ? 'on' : '') + '" style="pointer-events:none;"></div></div>' +
+        '<button class="btn btn-slate" data-act="quitAsk" style="width:100%;font-weight:800;margin-top:8px;">' + esc(Z('gameover.title_screen')) + '</button>' +
       '</div>' +
     '</div>';
   }
+  function perfReadoutOn() { try { return localStorage.getItem('edu-rpg-debug') === '1'; } catch (e) { return false; } }
 
   // ---- item-use toast ----
   // MenuScene.useItem() DOES work (applies the effect + decrements), but its feedback
@@ -2025,6 +2034,10 @@
       ms.listIndex = i; ms.handleSettingToggle(1);
     } else if (act === 'quitAsk') {
       settingsQuitConfirm = true;
+    } else if (act === 'perfToggle') {
+      // See settingsBody(): the panel reads the flag at boot, so flip it and reload.
+      try { localStorage.setItem('edu-rpg-debug', perfReadoutOn() ? '0' : '1'); } catch (e) {}
+      try { location.reload(); } catch (e2) {}
     } else if (act === 'quitCancel') {
       settingsQuitConfirm = false;
     } else if (act === 'quitConfirm') {
