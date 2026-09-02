@@ -1,8 +1,8 @@
 {
  "artefact": "mistyGrotto-f3-props.png",
- "command": "render_dungeon_material_map.py --floor mistyGrotto-f3 --props --out public/act1-dungeon-art/mistyGrotto-f3-props.png",
+ "command": "render_dungeon_material_map.py --floor mistyGrotto-f3 --materials design/act1-dungeon-interiors/materials/mistyGrotto --props --skip-kind boss --allow-stale --out public/act1-dungeon-art/mistyGrotto-f3-props.png",
  "generator": "scripts/render_dungeon_material_map.py",
- "generatorSha256": "28a3dbae1bee8013ee2446cb5a35c83129db03ba52528dcec163d815051fce1c",
+ "generatorSha256": "c11626fdfe9437a3abdef0a3e7f7f472a80477be3d7c9a548e2512e5308981b7",
  "inputs": {
   "design/act1-dungeon-interiors/materials/mistyGrotto/mat-accent.png": "287eb20bd27e55e95273b7bd8fb166bdd43f377383f13e25902e224cb250f119",
   "design/act1-dungeon-interiors/materials/mistyGrotto/mat-floor.png": "46bedbc77ecc0205fb3e2696fd7770683f3366ca34e17a8d2cc007165375715b",
@@ -15,8 +15,11 @@
   "placeholder": false,
   "props": true,
   "scale": 1,
+  "skipKinds": [
+   "boss"
+  ],
   "theme": "jagged black fang rock"
  },
- "sha256": "1f621190741b4a7e0b55455b11dccbf3ae178a2cfdf7c4d5e00dc5bbbc476262",
- "writtenAt": "2026-08-07T15:49:01+09:00"
+ "sha256": "7e3361ca906950b2ea49220a3542cd6dba9b5c381132b035c5de0c786171103e",
+ "writtenAt": "2026-09-02T18:52:00+09:00"
 }

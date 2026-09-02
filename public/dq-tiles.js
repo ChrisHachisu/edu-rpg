@@ -2969,7 +2969,17 @@
     var has7=false, warp=0, r,c,row;
     for(r=0;r<prev.length;r++){ row=prev[r]; if(!row) continue;
       for(c=0;c<row.length;c++){ if(row[c]===7) has7=true; else if(row[c]===10||row[c]===12) warp=row[c]; } }
-    if(has7) return;                                                        // boss still alive -> keep our marker
+    // THE STORY FLAG DECIDES, NOT THE ENGINE'S MAP. Mirroring the engine's map ("no 7 left -> the
+    // boss must be dead") was right only while the engine's dungeon and ours had the same floor
+    // count. The engine's mistyGrotto has FIVE floors and its Giant Toad lives on the fifth; our
+    // Darkfang Grotto has three. So on our last floor the engine's own map never held a 7, the
+    // marker was read as "defeated", and the boss cell shipped as a WARP: walking into the Toad
+    // dropped the player onto the overworld at (96,360) and the fight could never start -- the
+    // Crystal Cave gate (boss.giantToad.defeated) was unreachable. Found 2026-09-02 by the boss
+    // harness; the other three dungeons have three engine floors and never hit it.
+    var bossId=(typeof A1D_BOSS_ID!=='undefined')?A1D_BOSS_ID[id]:null;
+    var dead = bossId ? !!(flags && flags['boss.'+bossId+'.defeated']) : !has7;
+    if(!dead) return;                                                       // boss still alive -> keep our marker
     warp=warp||10;
     for(y=0;y<tiles.length;y++) for(x=0;x<tiles[y].length;x++) if(tiles[y][x]===7) tiles[y][x]=warp;
   }
@@ -5206,11 +5216,12 @@
   function a1dBossVanishPlay(scene,bx,by){
     try{
       var cx=bx*TILE+TILE/2, cy=by*TILE+TILE;                              // same anchor dngSpecialObjects' material branch uses
-      var mg=scene.add.graphics().setDepth(3);                             // permanent mask: no new asset, needs no image load
-      mg.fillStyle(0x141312,0.95); mg.fillEllipse(cx,cy-TILE*0.4,TILE*1.15,TILE*0.85);
-      mg.fillStyle(0x141312,0.55); mg.fillEllipse(cx,cy-TILE*0.4,TILE*1.55,TILE*1.2);
+      // NO COVER PATCH ANY MORE. The boss is no longer baked into the four `-f3-props.png` plates
+      // (render_dungeon_material_map.py --skip-kind boss, 2026-09-02), so there is nothing under
+      // the sprite to hide. The dark ellipse that used to sit here was the "shadow" the owner saw
+      // remain after the kill (build 67): "the shadow does not remain even after defeating it".
       var tex=a1dAssetTex(scene,'boss');
-      if(!tex){ return; }                                                  // still loading -- mask alone still hides the mark this tick
+      if(!tex){ return; }                                                  // still loading -- nothing baked underneath, nothing to hide
       var asc=2.2;                                                          // locked scale, matches dngSpecialObjects' material-layer boss
       var spr=scene.add.image(cx,cy,tex).setOrigin(0.5,1).setDepth(4);
       spr.setDisplaySize(spr.width*asc,spr.height*asc);                    // spr.width/height: the frame's own natural size, pre-scale
@@ -5269,12 +5280,11 @@
     var e=a1dBossSprites[key];
     if(!e){
       var tex=a1dAssetTex(scene,'boss'); if(!tex) return;                        // PNG still loading -> next tick
-      var mg=scene.add.graphics().setDepth(3);                                   // hide the baked mark, same patch as the vanish
-      mg.fillStyle(0x141312,0.95); mg.fillEllipse(cx,cy-TILE*0.4,TILE*1.15,TILE*0.85);
-      mg.fillStyle(0x141312,0.55); mg.fillEllipse(cx,cy-TILE*0.4,TILE*1.55,TILE*1.2);
+      // The plate no longer carries a baked mark (see a1dBossVanishPlay), so the live sprite IS
+      // the boss and needs no dark patch under it.
       var spr=scene.add.image(cx,cy,tex).setOrigin(0.5,1);
       spr.setDisplaySize(spr.width*2.2,spr.height*2.2);                          // locked scale, as dngSpecialObjects uses
-      e=a1dBossSprites[key]={ spr:spr, mask:mg, depth:0 };
+      e=a1dBossSprites[key]={ spr:spr, mask:null, depth:0 };
     }
     var hero=dngHero(scene); if(!hero) return;
     var heroFoot=hero.y + a1mFootDy(scene);

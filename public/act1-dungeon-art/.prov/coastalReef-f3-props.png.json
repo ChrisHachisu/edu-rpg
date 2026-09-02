@@ -1,8 +1,8 @@
 {
  "artefact": "coastalReef-f3-props.png",
- "command": "render_dungeon_material_map.py --floor coastalReef-f3 --props --out public/act1-dungeon-art/coastalReef-f3-props.png",
+ "command": "render_dungeon_material_map.py --floor coastalReef-f3 --materials design/act1-dungeon-interiors/materials/coastalReef --props --skip-kind boss --allow-stale --out public/act1-dungeon-art/coastalReef-f3-props.png",
  "generator": "scripts/render_dungeon_material_map.py",
- "generatorSha256": "28a3dbae1bee8013ee2446cb5a35c83129db03ba52528dcec163d815051fce1c",
+ "generatorSha256": "c11626fdfe9437a3abdef0a3e7f7f472a80477be3d7c9a548e2512e5308981b7",
  "inputs": {
   "design/act1-dungeon-interiors/coastalReef-f3.json": "9b3a2c79c73a4ef94cf0cb7f0838267328c82edecd1099bfd536e255c6165f2a",
   "design/act1-dungeon-interiors/materials/coastalReef/mat-accent.png": "a7788b4046fd34b7f7ef3b77e231dd410381b90e5e4d88c88a309ef50f5b1b39",
@@ -15,8 +15,11 @@
   "placeholder": false,
   "props": true,
   "scale": 1,
+  "skipKinds": [
+   "boss"
+  ],
   "theme": "tidal coral reef"
  },
- "sha256": "e123310bb2393826303e38d101165f291710421c2a12852b792a885177757464",
- "writtenAt": "2026-08-07T15:46:35+09:00"
+ "sha256": "d200ad48956873f5a02cc8b3bda2f3892c39da73e6712bd76e9be14b86e6ee86",
+ "writtenAt": "2026-09-02T19:04:40+09:00"
 }

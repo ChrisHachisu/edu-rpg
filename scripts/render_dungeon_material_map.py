@@ -1287,7 +1287,7 @@ def walkable_mask(rows: list[str], assets: list | None = None) -> Image.Image:
 
 def render(rows: list[str], mats: dict, theme: str, scale: int = 1,
            assets: list | None = None, props: bool = False,
-           hero: tuple | None = None) -> Image.Image:
+           hero: tuple | None = None, skip_kinds: tuple = ()) -> Image.Image:
     fld = floor_field(rows, scale, assets)
     fw, prot, xx, yy = fld.fw, fld.prot, fld.xx, fld.yy
     px, W, H, Ww, Hw = fld.px, fld.W, fld.H, fld.Ww, fld.Hw
@@ -1492,8 +1492,14 @@ def render(rows: list[str], mats: dict, theme: str, scale: int = 1,
     #
     #    ON-WALL props are the exception and go AFTER the occluder. A plaque is MOUNTED on the
     #    rock and the cave mouth is an opening THROUGH it — occluding those would erase them.
-    on_wall = [a for a in (assets or []) if a.get("onWall")]
-    in_room = [a for a in (assets or []) if not a.get("onWall")]
+    # `skip_kinds` leaves an asset OUT of the picture while keeping it in the geometry
+    # (floor_field above still sees it). Used to stop baking the BOSS into the plate: the runtime
+    # draws it as a live sprite (dq-tiles.js a1dBossSort) that vanishes on defeat, and a baked mark
+    # underneath could only ever be hidden with a dark patch the owner reads as "the shadow
+    # remains" (build 67). Deterministic renderer, so this changes exactly the boss's own pixels.
+    drawn = [a for a in (assets or []) if a.get("kind") not in skip_kinds]
+    on_wall = [a for a in drawn if a.get("onWall")]
+    in_room = [a for a in drawn if not a.get("onWall")]
     if assets and props:
         paste_props(master, in_room, px)
     if hero is not None:
@@ -1545,6 +1551,8 @@ def main() -> None:
                     help="PREVIEW ONLY. 1 = full 48px/cell and the only shippable value; 2 = half, "
                          "which the game then blows back up 4x with nearest-neighbour "
                          "(pixelArt: true, ZOOM>=2) into visible blocks. Never review art at >1.")
+    ap.add_argument("--skip-kind", action="append", default=[],
+                    help="asset kind to leave OUT of the picture (repeatable), e.g. boss")
     ap.add_argument("--props", action="store_true",
                     help="composite the prop sprites onto the MASTER, before reduction")
     ap.add_argument("--hero", help="X,Y cell to stand the heroine on, for scale review")
@@ -1588,7 +1596,8 @@ def main() -> None:
     hero = None
     if args.hero:
         hero = tuple(int(v) for v in args.hero.split(","))
-    img = render(fl["rows"], mats, theme, args.scale, fl.get("assets"), args.props, hero)
+    img = render(fl["rows"], mats, theme, args.scale, fl.get("assets"), args.props, hero,
+                 tuple(args.skip_kind))
     out = args.out or os.path.join(DIR, f"{args.floor}-material"
                                         f"{'-placeholder' if args.placeholder else ''}.png")
     img.save(out)
@@ -1602,7 +1611,8 @@ def main() -> None:
                              if os.path.isfile(os.path.join(mdir, f"mat-{m}.png"))])
     prov.stamp(out, inputs=inputs, generator=__file__,
                params={"theme": theme, "scale": args.scale, "props": bool(args.props),
-                       "hero": args.hero, "placeholder": bool(args.placeholder)})
+                       "hero": args.hero, "placeholder": bool(args.placeholder),
+                       **({"skipKinds": sorted(args.skip_kind)} if args.skip_kind else {})})
 
     print(f"{fl['id']}  {fl['width']}x{fl['height']} cells  ->  {img.size[0]}x{img.size[1]}px")
     print(f"theme: {theme}")

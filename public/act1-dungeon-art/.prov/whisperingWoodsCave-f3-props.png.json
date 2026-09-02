@@ -1,8 +1,8 @@
 {
  "artefact": "whisperingWoodsCave-f3-props.png",
- "command": "render_dungeon_material_map.py --floor whisperingWoodsCave-f3 --props --out public/act1-dungeon-art/whisperingWoodsCave-f3-props.png",
+ "command": "render_dungeon_material_map.py --floor whisperingWoodsCave-f3 --materials design/act1-dungeon-interiors/materials/whisperingWoodsCave --props --skip-kind boss --allow-stale --out public/act1-dungeon-art/whisperingWoodsCave-f3-props.png",
  "generator": "scripts/render_dungeon_material_map.py",
- "generatorSha256": "28a3dbae1bee8013ee2446cb5a35c83129db03ba52528dcec163d815051fce1c",
+ "generatorSha256": "c11626fdfe9437a3abdef0a3e7f7f472a80477be3d7c9a548e2512e5308981b7",
  "inputs": {
   "design/act1-dungeon-interiors/materials/whisperingWoodsCave/mat-accent.png": "38107f760533e0378366bf1e57408be1bc22c1e191b9bd70ba99f6a1fc267879",
   "design/act1-dungeon-interiors/materials/whisperingWoodsCave/mat-floor.png": "2c7fcf635208aa05d8339e8d83cbfad3cbd2f740282c3c46ac329a9413c4f68c",
@@ -15,8 +15,11 @@
   "placeholder": false,
   "props": true,
   "scale": 1,
+  "skipKinds": [
+   "boss"
+  ],
   "theme": "root-riddled earth cave"
  },
- "sha256": "542adfa29a81e58b34ae350eeebe7703ee501372bf1f68bb9fff57edaf6932d0",
- "writtenAt": "2026-08-07T15:57:11+09:00"
+ "sha256": "4bf599345f1356d9792bf14900056a5af0c5c6d226ad1d1c417a138bb5653028",
+ "writtenAt": "2026-09-02T19:09:14+09:00"
 }
