@@ -533,6 +533,14 @@ addEventListener('message', event => {
 
 function interact() {
   if (talking) { talking = null; dialogueEl.dataset.open = 'false'; return; }
+  // ONE TEXT BOX AT A TIME. While the PARENT's shipped message box is up (the opening narration,
+  // a heal receipt, the save confirmation), this page hides its pad and prompt (see the
+  // data-parent-dialogue rules in the stylesheet) -- but a keyboard Enter, or any caller of this
+  // function, still reached the branches below and opened a SECOND box on top of the parent's,
+  // with the parent's `showingMessage` gate then freezing movement under both (2026-09-02
+  // playthrough census, defect 1). Refuse here, at the one entry point, rather than in every
+  // branch: the parent's box owns the screen until it is dismissed.
+  if (document.body.dataset.parentDialogue === 'true') return;
   const npc = nearestNpc();
   // The healer's heal flow lives in the shipped scene (`handleHealer` owns the full-HP check,
   // the gold check, the price and the confirm overlay), so she is handed off rather than given
