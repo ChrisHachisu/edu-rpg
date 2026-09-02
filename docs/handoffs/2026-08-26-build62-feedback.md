@@ -3,7 +3,8 @@ date: 2026-08-26
 type: handoff
 project: edu-rpg
 milestone: act1-town-plates
-status: active
+status: superseded
+superseded_by: "[[2026-09-02-act1-market-quality-playthrough]]"
 supersedes: "[[2026-08-24-act1-towns-to-tr]]"
 tags: [handoff, act1, towns, audio]
 ---
