@@ -820,6 +820,7 @@
      Quantity is offered for CONSUMABLES ONLY. Equipment is capped at 1 because the shop already
      refuses to sell a second copy of gear you own (`blocked` in the list above). */
   var shopConfirm = null;   // { id, index, qty }
+  var titleConfirm = false; // New Game over an existing save: the overwrite confirm is up
   function shopConfirmMax(item, st) {
     if (!item || !item.buyPrice) return 1;
     return Math.max(1, Math.min(99, Math.floor(st.gold / item.buyPrice)));
@@ -1565,7 +1566,28 @@
           '<div class="toggle" data-act="titleLang" style="margin-top:4px;"><span class="' + (!ja ? 'on' : '') + '">English</span><span class="' + (ja ? 'on' : '') + '">日本語</span></div>' +
         '</div>' +
       '</div>';
-    var sig = 'title|' + ja + '|' + hasSave + '|' + heroColor + '|' + (ts.ngPlus ? 1 : 0);
+    // NEW GAME OVER AN EXISTING SAVE ASKS FIRST. src/scenes/TitleScene.ts has an overwrite confirm;
+    // the FROZEN bundle predates it (no "title.overwrite*" key exists in dist/assets/index-*.js), so
+    // "New Game" with a save on the device went straight to character creation and the next save
+    // silently replaced the old adventure (found by the 2026-09-02 playthrough census). The confirm
+    // lives here, in the overlay that owns the title screen, and reuses the shop confirm's own
+    // markup and classes. Local literals, not Z(): the keys are in no locale table (see the
+    // equip.new note above), and the Japanese follows the overlay's kana-first house style.
+    if (titleConfirm && hasSave) {
+      var kj = !!(pstate() && pstate().kanjiMode);
+      var tTitle = ja ? (kj ? '最初から始める？' : 'はじめから はじめる？') : 'Start over?';
+      var tBody = ja ? (kj ? 'セーブした冒険は消えます。' : 'セーブした ぼうけんは きえます。') : 'Your saved adventure will be replaced.';
+      var tGo = ja ? (kj ? '始める' : 'はじめる') : 'Start over';
+      var tNo = ja ? 'やめる' : 'Cancel';
+      h += '<div class="shopconf" data-act="titleNewCancel"><div class="card2" data-act="titleNoop">' +
+        '<div class="scene-h">' + esc(tTitle) + '</div>' +
+        '<div class="d" style="text-align:center;margin-top:6px;">' + esc(tBody) + '</div>' +
+        '<div class="btnrow">' +
+          '<button class="btn btn-em" data-act="titleNewConfirm">' + use('check', 'ic') + esc(tGo) + '</button>' +
+          '<button class="btn btn-slate" data-act="titleNewCancel">' + esc(tNo) + '</button>' +
+        '</div></div></div>';
+    }
+    var sig = 'title|' + ja + '|' + hasSave + '|' + heroColor + '|' + (ts.ngPlus ? 1 : 0) + '|c' + (titleConfirm ? 1 : 0);
     activate('title', false);
     paint(h, sig);
   }
@@ -1754,8 +1776,17 @@
   function routeTitle(act, i, el) {
     var ts = getScene('TitleScene'); if (!ts) return;
     if (act === 'titleLang') { ts.toggleLanguage(); return; }
-    var action = act === 'titleNew' ? 'new' : act === 'titleContinue' ? 'continue' : null;
+    if (act === 'titleNoop') return;                                   // a tap on the confirm card itself
+    if (act === 'titleNewCancel') { titleConfirm = false; lastSig = null; return; }
+    var action = act === 'titleNew' ? 'new' : act === 'titleContinue' ? 'continue' : act === 'titleNewConfirm' ? 'new' : null;
     if (!action) return;
+    if (act === 'titleNew') {
+      // See renderTitle(): with a save on the device, New Game asks before it erases anything.
+      var saved = false;
+      try { saved = !!(window.localStorage && localStorage.getItem('edu-rpg-save')); } catch (e) {}
+      if (saved) { titleConfirm = true; lastSig = null; return; }
+    }
+    titleConfirm = false;
     var items = ts.menuItems || [];
     var idx = items.findIndex(function (m) { return m.getData && m.getData('action') === action; });
     if (idx < 0) {
