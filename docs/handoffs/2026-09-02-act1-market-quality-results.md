@@ -59,6 +59,18 @@ questions are also in `docs/ACT1-ACCEPTANCE-BAR.md`.
 - Chunk authority is `design/…/act1-final-art-geometry-r26/runtime/` (tracked); `public/act1-hifi/chunks`
   mirrors it; `ACT1_HIFI_MANIFEST_SHA256` is a hand tripwire (sign-off comment required).
 
+## Builds 75 and 76 (the owner's second and third messages)
+- Owner: "figure out a way to recreate the lag issue ... or eliminate it from a different angle"
+  → build 75: Settings → **Performance readout** switch (the off-by-default index.html panel gains a
+  rolling 30 s line + a device line). He screenshots it after a 30 s walk.
+- Owner: "the frequent world loading really bothers me" → THE lag: the build-70 readiness veil
+  fired for chunks off screen. `7a36282`: veil scoped to the camera + 500 ms grace + relief
+  placeholder under a missing visible chunk (`verify_slow_chunks_no_veil.cjs`: b70 veil 11.9 s of
+  a 14 s walk with 1.5 s chunk delay, fix 0 ms). Build 76.
+- Owner: sharpen "hurts my eyes" → re-applied at 130%/r0.9 from the originals (build 76).
+- The Mac CPU profile of a walk is 92% idle; the phone's remaining lag (if any) must be read off
+  the readout: `wb Nms` = texture build cost per chunk, `~Hz`, `>100ms` count.
+
 ## Open, in priority order
 1. Owner verifies build 72 on his phone (walk + leaving a town).
 2. Owner decisions Q1–Q6 (walk speed, image quality route, boundary spots, boss gate, grade band,

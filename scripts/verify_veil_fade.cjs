@@ -49,7 +49,11 @@ const SAVE = { version: 4, timestamp: 1754500000000, player: { name: 'Perf', her
   const endedHidden = log.length && log[log.length - 1][1] === 'none';
   console.log('veil samples after exit:', log.length, 'shown:', shown.length, 'ramp samples:', ramp.length, 'last shown:', JSON.stringify(lastShown), 'ends hidden:', endedHidden);
   console.log('timeline:', shown.filter((e, i) => i % 3 === 0 || e[2] < 0.95).slice(-24).map((e) => e[0] + ':' + e[2]).join(' '));
-  const ok = shown.length > 0 && ramp.length >= 2 && endedHidden;
+  // Since the veil was scoped to the camera (7a36282) it normally never shows at all after a town
+  // exit -- the relief placeholder covers a missing chunk instead. That is the better outcome; the
+  // fade is only judged on the runs where the veil did come up.
+  const ok = endedHidden && (shown.length === 0 || ramp.length >= 2);
+  if (shown.length === 0) console.log('veil never shown after the exit (placeholder covered the gap): nothing to fade');
   console.log(ok ? 'VEIL FADE: PASS' : 'VEIL FADE: FAIL');
   await browser.close(); process.exit(ok ? 0 : 1);
 })().catch((e) => { console.error(e); process.exit(2); });
