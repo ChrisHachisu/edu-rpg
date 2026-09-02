@@ -21,7 +21,7 @@ Legend: PASS = measured green this session · OPEN = not yet green · Q = needs 
 | 1.5 | Continue → controllable on real terrain ≤ 1500 ms (SMOOTH-1) | smooth skill; owner "It takes forever to start" | OPEN — re-measure |
 | 1.6 | Map swap tap → playable ≤ 500 ms both directions (SMOOTH-5) | smooth skill; owner "Doors are slow" | OPEN — re-measure |
 | 1.7 | Tap → visible response ≤ 100 ms (SMOOTH-6) | smooth skill; research §1 ≤ 100 ms outer bound | OPEN — re-measure |
-| 1.8 | Walk speed stays 260 px/s (5.4 cells/s) on overworld AND dungeons | owner LOCKED "i prefer expanding the dungeons" over changing speed | PASS (unchanged). **OWNER-Q1**: research convention is 4 tiles/s; 5.4 is faster than DQ/Pokémon. Keep? |
+| 1.8 | Walk speed stays 260 px/s (5.4 cells/s) on overworld AND dungeons | owner LOCKED "i prefer expanding the dungeons" over changing speed | **LOCKED by the owner 2026-09-02**: "Keep it. The overworld is quite sparse so we need a certain level of speed." |
 | 1.9 | Walk pose cadence 125 ms per pose, four-pose cycle, everywhere | owner-locked design token `walkPoseMs` | PASS (unchanged) |
 
 ## 2. Image quality and art consistency
@@ -30,7 +30,7 @@ Legend: PASS = measured green this session · OPEN = not yet green · Q = needs 
 |---|---|---|---|
 | 2.1 | Render path is exact integer nearest-neighbour: ≥ 90% of aligned 3x3 device-pixel blocks uniform on the field | research §1 "pixel-perfect needs an integer factor"; owner 2026-08-17 crispness | **PASS** — 93.6% measured this session on a 390x844 @3x field |
 | 2.2 | Every surface shows ~3 device px per art px (towns 3.1, overworld 3.0, dungeons 3.0) | owner "needs to match the overworld and dungeon crispness" | PASS by measurement — the surfaces already match |
-| 2.3 | The overworld terrain does not read "poor" | owner build 70 "image quality poor" | **OPEN, art-side**: the 48 px/cell materials are painterly; the renderer adds no blur. **OWNER-Q2**: sharpen at bake (comparison image prepared) / regenerate materials at 96 px per cell as crisp pixel art (needs a 3x canvas and ~4x chunk memory) / accept |
+| 2.3 | The overworld terrain does not read "poor" | owner build 70 "image quality poor" | **DECIDED by the owner 2026-09-02 ("Sharper the better")**: the shipped chunks and landmarks are sharpened in place (`scripts/sharpen_act1_chunks.py`, unsharp radius 1.0 / 220%, lossless) |
 | 2.4 | Hero g3 is the only hero asset on every surface; 64-px frames at 36 world px in towns, 1.0125x on the field | owner "use the canonical g3 as the default and stop using anything else" | PASS |
 | 2.5 | No procedural terrain visible where baked art exists; no blue screen, ever | owner "no. locked in art, full stop"; "there needs to be a definitive checker" | PASS on builds 47+70 (veil); re-verify in the playthrough |
 | 2.6 | HUD/dialogue text on the Phaser canvas at device resolution | PROJECT-RUNBOOK bug 4 | OPEN — owner-flagged "dedicated, carefully-verified effort"; not touched this session |
@@ -84,9 +84,7 @@ Legend: PASS = measured green this session · OPEN = not yet green · Q = needs 
 
 ## Questions for the owner (the gray areas the record cannot close)
 
-- **Q1** Walk speed: keep 5.4 cells/s (your lock) or move toward the 4 cells/s JRPG convention?
-- **Q2** Overworld image quality: (a) sharpen the existing art at bake (comparison attached), (b) regenerate the four terrain materials as crisp pixel art at 96 px/cell with a 3x canvas (bigger job, memory-sensitive), or (c) accept the painterly look?
-- **Q3** Boundaries: mark the 10% of spots on a rendered audit, or accept for this release?
-- **Q4** Does the boss-as-live-sprite item gate this release, or ship after the art regeneration?
-- **Q5** Target grade band(s) for Act 1 text and the Kids Category age band; is kanjiMode the only kanji control you want?
-- **Q6** Which comparison title defines the bar (Dragon Quest? Pokémon? a specific 学習ゲーム)? Every "feel" number above sharpens once one is named.
+Answered 2026-09-02. Q1 keep 5.4 cells/s (owner). Q2 sharpen, "sharper the better" (owner). Q3-Q6 delegated
+to my recommendation: Q3 accept the boundaries for this release and collect the owner's specific spots
+from his build-72 play; Q4 fix the baked boss now (art regeneration, bounded); Q5 Kids Category 6-8 with
+the in-game grade wheel unchanged and kanjiMode as the only kanji switch; Q6 Dragon Quest is the bar.
