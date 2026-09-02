@@ -70,6 +70,22 @@ style.textContent = `
      gone; one of them (#qfh-hp) never matched anything anyway, because the HP block is a
      class, .qfhp -- this whole block is a template literal, so it cannot quote them. */
   body.act1-hifi-active.qok-dialogue #touch-controls { display: none !important; }
+  /* THE OVERWORLD FADE-IN, the other half of "the illusion of leaving the map" (owner, build 70,
+     his fourth report of this defect). town.html fades to black and holds the act1-town-exit
+     postMessage until that fade completes -- see its EXIT_FADE_MS -- so by the time this handler
+     ever runs, the screen is already solid black; this element IS that black, carried across the
+     handoff so there is no gap for a raw, unfaded overworld frame to flash through. 300ms
+     ease-in-out is the screen.transition token in design/GAME-FEEL.md, the same one the town side
+     uses, so the two fades read as one continuous transition rather than two different effects
+     stitched together -- no backticks in this comment: this whole block is a JS template literal
+     (see the class/.qfhp note just above), and a backtick here would close the string early exactly
+     the way this one did on the first pass, breaking the module with a syntax error two lines later.
+     z-index 75: above the town root (70, see above) so it can cover the last frame of the
+     town overlay while releaseRoot() and loadMap() run, below #touch-controls and #fieldTabs
+     (100/90) so it never blocks the controls once it is transparent, and pointer-events:none
+     throughout -- exactly like #exitFade in town.html, this is decoration, never a tappable surface. */
+  #act1-overworld-fade { position: fixed; inset: 0; z-index: 75; background: #02060a; opacity: 0;
+    pointer-events: none; transition: opacity 300ms ease-in-out; }
 `;
 document.head.append(style);
 
@@ -82,6 +98,30 @@ frame.title = 'Playable Act 1 overworld';
 frame.allow = 'gamepad';
 root.append(frame);
 document.body.append(root);
+
+const overworldFade = document.createElement('div');
+overworldFade.id = 'act1-overworld-fade';
+document.body.append(overworldFade);
+// Snapped to fully opaque with NO transition, before releaseRoot() ever runs -- see the
+// act1-town-exit handler. town.html already faded to black on its side before it ever sent the
+// postMessage this handler answers, so the screen is solid black the instant this fires; holding
+// that black here (rather than starting a fresh fade from whatever this frame happens to show)
+// is what keeps a raw, unfaded overworld frame from flashing through while releaseRoot() and
+// loadMap() do their work.
+function holdOverworldFade() {
+  overworldFade.style.transition = 'none';
+  overworldFade.style.opacity = '1';
+  // Force the browser to paint the opaque frame before any later transition is set, or the two
+  // style writes coalesce into one and there is nothing left to fade FROM.
+  void overworldFade.offsetHeight;
+}
+// Fades the held black back out once the overworld is actually ready to be seen -- 300ms
+// ease-in-out, the screen.transition token in design/GAME-FEEL.md, matching town.html's own fade
+// so the two halves of the handoff read as one continuous transition.
+function releaseOverworldFade() {
+  overworldFade.style.transition = 'opacity 300ms ease-in-out';
+  requestAnimationFrame(() => { overworldFade.style.opacity = '0'; });
+}
 
 let manifest = null;
 let entry = null;
@@ -448,6 +488,9 @@ addEventListener('message', event => {
     // Same sequence the shipped town edge-exit uses: set the id, floor and hero tile, then load.
     const scene = townEntry.scene;
     const target = data.targetMapId || 'overworld';
+    // Hold the screen black BEFORE releaseRoot() tears the town frame down -- see holdOverworldFade()
+    // for why this has to happen first rather than as part of the fade-out below.
+    holdOverworldFade();
     releaseRoot();
     scene.currentMapId = target;
     scene.currentFloor = 1;
@@ -484,6 +527,9 @@ addEventListener('message', event => {
       // else (a scene event loadMap fires synchronously) repaints the hero after this line runs.
       requestAnimationFrame(paintFacing);
     }
+    // Release the held black now that loadMap() has actually placed the overworld, matching the
+    // town side's own fade (screen.transition, 300ms ease-in-out) -- see releaseOverworldFade().
+    releaseOverworldFade();
     lifetimeStats.parentTransitions += 1;
   }
 });
