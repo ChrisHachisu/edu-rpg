@@ -1785,10 +1785,27 @@
     document.body.appendChild(d);
     _a1aVeil=d; return d;
   }
+  // LIFT WITH A FADE, COVER INSTANTLY. Lifting used to flip display grid -> none, a hard cut: on
+  // the device video of a town exit (2026-09-02) the screen went black (the exit veil), then sat on
+  // this dim gradient for ~1.5 s while the chunks arrived, then POPPED to the full overworld in one
+  // frame. Every other map/dungeon/battle transition in this game uses the 300 ms ease-in-out
+  // `screen.transition` token (design/GAME-FEEL.md); the world's own reveal now does too. Covering
+  // stays instant with no transition, because a veil that appears late shows exactly the flash it
+  // exists to hide (see the block above). display:none still lands at the end of the fade so the
+  // veil never sits invisible over the field.
+  var _a1aVeilFade=0;
   function a1aVeilSet(on){
     var d=a1aVeilEl();
-    var want=on?'grid':'none';
-    if(d.style.display!==want) d.style.display=want;
+    if(on){
+      clearTimeout(_a1aVeilFade); _a1aVeilFade=0;
+      d.style.transition='none'; d.style.opacity='1';
+      if(d.style.display!=='grid') d.style.display='grid';
+      return;
+    }
+    if(d.style.display==='none' || _a1aVeilFade) return;
+    d.style.transition='opacity 300ms ease-in-out';
+    d.style.opacity='0';
+    _a1aVeilFade=setTimeout(function(){ _a1aVeilFade=0; if(d.style.opacity==='0') d.style.display='none'; },320);
   }
 
   function a1aSpriteWatchdog(scene){
