@@ -20,6 +20,19 @@
     background: linear-gradient(145deg, #101c27, #071018 58%, #040911); color: #9fb6c6;
     font-size: 13px; letter-spacing: .04em; transition: opacity .25s ease; }
   body[data-ready="true"] #boot { opacity: 0; visibility: hidden; }
+  /* Leaving a town used to be an instant CUT to the overworld -- the screen just changed, with no
+     signal that a boundary had been crossed. Owner, four times running on this exact defect
+     (builds 57/62/63/66), most recently: "still not the edge of the map. the player needs to get
+     the illusion that they are leaving the map." The map-end void painted in draw() supplies half
+     of that illusion (there is now visibly nowhere left to walk); this supplies the other half, a
+     brief fade to black over the crossing instead of a hard swap. 300ms ease-in-out is the
+     screen.transition token in design/GAME-FEEL.md -- the same one every other map/dungeon/battle
+     transition in this game already uses, so a town exit now reads as the SAME kind of event as
+     any other map change instead of a one-off cut. z-index above everything drawn on #stage but
+     below nothing else -- this iframe has no sibling chrome to stay under. pointer-events:none
+     throughout: the fade is decoration, never a surface that can eat a tap. */
+  #exitFade { position: absolute; inset: 0; z-index: 25; background: #02060a; opacity: 0;
+    pointer-events: none; transition: opacity 300ms ease-in-out; }
   /* Prompt and dialogue sit in CSS pixels, not world pixels: they must stay legible at any zoom. */
   /* The prompt is also the ACTION BUTTON. There is no hardware keyboard on a phone, so if the
      only route into interact() stayed `keydown` the shop, healer, save point and every NPC would
@@ -122,6 +135,7 @@
   <div id="debug"></div>
 </div>
 <div id="boot">Loading Port Sapphire…</div>
+<div id="exitFade"></div>
 <script type="module">
 /*
   Port Sapphire town runtime.
@@ -145,6 +159,7 @@ const dialogueEl = document.querySelector('#dialogue');
 const debugEl = document.querySelector('#debug');
 const pad = document.querySelector('#pad');
 const knob = document.querySelector('#knob');
+const exitFadeEl = document.querySelector('#exitFade');
 const search = new URLSearchParams(location.search);
 const townId = search.get('town') || 'portSapphire';
 
@@ -395,7 +410,20 @@ if (!isInsideWalkable(position, walkable)) {
   if (!found) throw new Error('start cell is outside the walkable geometry and no fallback found');
   position = found;
 }
-const state = { facing: (firstEntry && town.firstEntryFacing) || 'down', moving: false };
+// FACING CONTINUITY, entering. The parent knows which way the hero was walking on the overworld
+// when she stepped into the door (`WorldMapScene.heroDir`, see adapter.js's enterTown()) and passes
+// it as `?facing=`. Before this, town.html hard-coded 'down' no matter which side she entered from,
+// so a player walking up through a north gate (facing up) popped into the town facing the camera --
+// backwards from how she just walked. Precedence: `firstEntryFacing` wins on the OPENING (the elder
+// scene locks a specific facing on purpose, see the block above); the parent's `facing` wins on
+// every ordinary entry; 'down' is the last-resort default if neither is present or valid. `?at=`
+// (the verification hatch) is a POSITION override only -- it says nothing about facing and must not
+// change this precedence.
+const FACING_WORDS = new Set(['down', 'left', 'up', 'right']);
+const facingParam = search.get('facing');
+const state = { facing: (firstEntry && town.firstEntryFacing)
+  || (FACING_WORDS.has(facingParam) ? facingParam : null)
+  || 'down', moving: false };
 let talking = null;
 let exitArmed = false;
 let exiting = false;
@@ -410,6 +438,32 @@ const EXIT_SIGN = (town.exit?.axis ?? (town.exit?.cell?.[1] < town.cells / 2 ? '
 // player hugging the edge of the gate walks straight through the line and out into the apron with
 // no way to leave.
 const EXIT_HALF_WIDTH = 2.4;
+// Hoisted out of frame() so draw() can paint the void relative to the same line the crossing test
+// uses -- there must never be a second copy of "where the mouth is" to drift out of sync with it.
+const exitCell = town.exit?.cell ?? town.startCell;
+// MAP-END VOID. The 65-cell canvas is bigger than any painted town -- greenhollow and millbrook
+// stop at a fence a few rows past their gate, Port Sapphire's frame simply ends -- so the ground
+// beyond the mouth is a grass apron with nothing on it, fully visible on screen right up to the
+// moment the exit fires. Owner, on build 70, his FOURTH report of this: "still not the edge of the
+// map. the player needs to get the illusion that they are leaving the map." The trigger line itself
+// is NOT moving again -- see exit.note in every town/*.json for the three moves that already
+// happened chasing this by relocating the line instead. What was missing is not a better line, it
+// is that nothing on screen ever said "this is the edge": the fix is to make the map visibly END at
+// the line the player already crosses.
+//
+// EDGE_MARGIN keeps the gate/trail head itself painted -- the void starts one full cell BEYOND the
+// mouth, never on top of it, so the last thing she sees before the fade is still the gate, not a
+// wall of black at her feet. FADE_CELLS is how many cells the transparent-to-void gradient spans
+// before going fully solid; the apron itself is still walkable underneath (constrainWalkableMovement
+// does not read pixels), so a player who somehow stopped inside the void is not stuck.
+const EDGE_MARGIN = 1.0;
+const FADE_CELLS = 1.5;
+// SCREEN FADE ON EXIT. The screen.transition token in design/GAME-FEEL.md is 300ms ease-in-out --
+// the same timing every other map/dungeon/battle transition in this game already uses -- so a town
+// exit now reads as the same KIND of event as any other map change, not a one-off cut. See #exitFade
+// in the CSS above and the exit-crossing block in frame() below, which holds the act1-town-exit
+// postMessage until this elapses instead of firing it the instant she crosses the line.
+const EXIT_FADE_MS = 300;
 
 // Service spots are places, not people: the shop counter under the awning and the save point by
 // the well. The healer is BOTH -- she is an NPC you talk to, and talking to her is the heal
@@ -533,6 +587,38 @@ function draw(time) {
   ctx.imageSmoothingEnabled = false;
   ctx.drawImage(screenArt, 0, 0, screenArt.naturalWidth, screenArt.naturalHeight,
     0, 0, WORLD, WORLD);
+  // ---- map-end void: the apron beyond the mouth is not part of the town -------------------------
+  // Drawn in the SAME world-space transform as the plate above, so it scrolls with the map like any
+  // other painted feature, and BEFORE actors so the hero and NPCs still draw on top of it (she can
+  // legitimately stand just inside EDGE_MARGIN, mid-arm or mid-exit). See EDGE_MARGIN/FADE_CELLS
+  // above for why the numbers are what they are.
+  if (EXIT_SIGN === 1) {
+    // South mouth: the void runs from one cell past the line down to the bottom of the world.
+    const voidStart = (exitCell[1] + EDGE_MARGIN) * CELL_W;
+    const fadeEnd = voidStart + FADE_CELLS * CELL_W;
+    if (fadeEnd > voidStart) {
+      const grad = ctx.createLinearGradient(0, voidStart, 0, fadeEnd);
+      grad.addColorStop(0, 'rgba(2,6,10,0)');
+      grad.addColorStop(1, '#02060a');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, voidStart, WORLD, fadeEnd - voidStart);
+    }
+    ctx.fillStyle = '#02060a';
+    ctx.fillRect(0, Math.max(voidStart, fadeEnd), WORLD, WORLD - Math.max(voidStart, fadeEnd));
+  } else {
+    // North mouth: the void runs from one cell past the line up to the top of the world.
+    const voidStart = (exitCell[1] - EDGE_MARGIN) * CELL_W;
+    const fadeEnd = voidStart - FADE_CELLS * CELL_W;
+    if (voidStart > fadeEnd) {
+      const grad = ctx.createLinearGradient(0, voidStart, 0, fadeEnd);
+      grad.addColorStop(0, 'rgba(2,6,10,0)');
+      grad.addColorStop(1, '#02060a');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, Math.max(0, fadeEnd), WORLD, voidStart - Math.max(0, fadeEnd));
+    }
+    ctx.fillStyle = '#02060a';
+    ctx.fillRect(0, 0, WORLD, Math.max(0, Math.min(voidStart, fadeEnd)));
+  }
   // Painter's order by foot Y, so a character in front of a building overlaps correctly.
   const actors = [...npcs.map(n => ({ y: n.point.y, draw: () =>
       drawActor(n.sheet, n.point, 0, 0, NPC_FRAME, time, false) })),
@@ -583,7 +669,14 @@ let last = 0;
 function frame(now) {
   const delta = last === 0 ? 0 : Math.min(0.05, (now - last) / 1000);
   last = now;
-  const input = talking ? { x: 0, y: 0 } : inputVector();
+  // Once she has crossed the mouth, the walk is no longer the player's -- she keeps walking
+  // straight out along the mouth's own axis (down for a south mouth, up for a north one) so the
+  // fade covers her visibly leaving rather than freezing her mid-step. `EXIT_SIGN` already IS that
+  // axis: `outward` below is defined as `(y - exitCell.y) * EXIT_SIGN`, so an input of
+  // `{x:0, y:EXIT_SIGN}` is exactly "more outward", the same sign convention the crossing test
+  // itself uses. constrainWalkableMovement still runs on this input below, same as any other step,
+  // so she cannot be walked off the walkable authority even while forced.
+  const input = talking ? { x: 0, y: 0 } : exiting ? { x: 0, y: EXIT_SIGN } : inputVector();
   state.moving = Boolean(input.x || input.y);
   if (state.moving) {
     state.facing = Math.abs(input.x) > Math.abs(input.y)
@@ -612,15 +705,31 @@ function frame(now) {
   // arrives. She spawns at `startCell`, several cells inside, so she arms immediately and cannot
   // fire until she has walked out; the old "2.5 cells clear in any direction" was measuring the
   // wrong thing, because with a crossing test the inside is a half-plane, not a radius.
-  const exitCell = town.exit?.cell ?? town.startCell;
   const outward = (position.y / CELL_W - exitCell[1]) * EXIT_SIGN;
   const lateral = Math.abs(position.x / CELL_W - exitCell[0]);
   if (!exitArmed && outward <= -0.75) exitArmed = true;
   if (exitArmed && !exiting && outward >= 0 && lateral < EXIT_HALF_WIDTH) {
     exiting = true;
-    parent.postMessage({ type: 'act1-town-exit', town: town.id,
-                         targetMapId: town.exit?.targetMapId ?? 'overworld',
-                         toX: town.exit?.toX, toY: town.exit?.toY }, '*');
+    // THE ILLUSION OF LEAVING THE MAP. Owner, build 70 (his fourth report of this defect): "still
+    // not the edge of the map. the player needs to get the illusion that they are leaving the map."
+    // A hard cut the instant she crosses the line cannot carry that illusion no matter where the
+    // line sits -- draw()'s map-end void handles the SPATIAL half (there is now visibly nowhere
+    // left to walk), and this handles the TEMPORAL half: fade to black over the screen.transition
+    // token (300ms, design/GAME-FEEL.md) instead of swapping the instant she touches the line. The
+    // act1-town-exit postMessage is now HELD until the fade completes -- see below -- rather than
+    // fired on this same tick, and `input` above keeps her walking outward for the whole hold so
+    // the fade covers her visibly leaving, not a freeze-frame.
+    if (exitFadeEl) exitFadeEl.style.opacity = '1';
+    setTimeout(() => {
+      // FACING CONTINUITY, leaving. `state.facing` by the time this fires is still the outward
+      // direction she has been forced to walk since the crossing ('down' for a south mouth, 'up'
+      // for a north one) -- see adapter.js's act1-town-exit handler, which maps this back onto the
+      // overworld's heroDir so she keeps walking the direction she was already going instead of
+      // facing back into the door.
+      parent.postMessage({ type: 'act1-town-exit', town: town.id,
+                           targetMapId: town.exit?.targetMapId ?? 'overworld',
+                           toX: town.exit?.toX, toY: town.exit?.toY, facing: state.facing }, '*');
+    }, EXIT_FADE_MS);
   }
 
   const target = cameraTarget();
