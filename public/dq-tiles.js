@@ -1450,12 +1450,12 @@
     // neighbour, never a chunk being drawn this frame.
     var ring=a1aRingChunks(X0,Y0,winW,winH), ringIds=[], ri;
     for(ri=0;ri<ring.length;ri++){ a1aChunkRec(ring[ri]); ringIds.push(ring[ri].id); }
-    var wx0=X0*TILE, wy0=Y0*TILE, wx1=wx0+winW*TILE, wy1=wy0+winH*TILE, out=[], cov=0, touched=[];
+    var wx0=X0*TILE, wy0=Y0*TILE, wx1=wx0+winW*TILE, wy1=wy0+winH*TILE, out=[], cov=0, touched=[], touchedChunks=[];
     for(var i=0;i<m.chunks.length;i++){ var c=m.chunks[i];
       var cx0=ox+c.x*S, cy0=oy+c.y*S, cx1=cx0+c.width*S, cy1=cy0+c.height*S;
       var ix0=Math.max(wx0,cx0), iy0=Math.max(wy0,cy0), ix1=Math.min(wx1,cx1), iy1=Math.min(wy1,cy1);
       if(ix1<=ix0||iy1<=iy0) continue;
-      touched.push(c.id);                                         // TOUCHED by a1aChunkRec -> must survive the trim
+      touched.push(c.id); touchedChunks.push(c);                  // TOUCHED by a1aChunkRec -> must survive the trim
       var rec=a1aChunkRec(c); if(!rec.base) continue;             // still loading -> this window is partial
       out.push({c:c,rec:rec,sx:ix0-cx0,sy:iy0-cy0,w:ix1-ix0,h:iy1-iy0,dx:ix0-wx0,dy:iy0-wy0});
       cov+=(ix1-ix0)*(iy1-iy0);
@@ -1474,6 +1474,7 @@
     // watchdog needs this and not out.length: if the failure is that the images never come back,
     // every rect is filtered out above and a count taken from `out` would read 0/0 and look healthy.
     out.touched=touched.length;
+    out.touchedChunks=touchedChunks;                              // the same set as OBJECTS, for the view-scoped watchdog
     return out;
   }
   // one layer of one chunk. k folds in the layer's own density: base/canopy ship at 48 px/cell so
@@ -1734,7 +1735,7 @@
   //  is nothing to upload to), and the restore event is what drives recovery. That path is proven:
   //  a real loseContext/restoreContext cycle fires our handler, drops `live` to 1, and rebuilds to
   //  6/6 without the watchdog firing at all.
-  var A1AW={ shortSince:0, lastFix:0, fixes:0, deep:0, shallowFailed:false, lastTex:-1, glLost:false };
+  var A1AW={ shortSince:0, lastFix:0, fixes:0, deep:0, shallowFailed:false, lastTex:-1, glLost:false, blankSince:0 };
   var A1AW_GRACE=1500, A1AW_COOLDOWN=5000, A1AW_MAX=8;
   // Authoritative, not inferred. Cheap: the context object is cached by the browser, and this reads
   // one boolean. Returns false when there is no canvas/context yet, so boot is never called "lost".
@@ -1808,8 +1809,58 @@
     _a1aVeilFade=setTimeout(function(){ _a1aVeilFade=0; if(d.style.opacity==='0') d.style.display='none'; },320);
   }
 
+  // Chunks that intersect the CAMERA (plus one cell of slack), from the window's touched set.
+  function a1aVisibleChunks(scene,rs){
+    var out=[], m=A1A.manifest, cam=scene&&scene.cameras&&scene.cameras.main;
+    var list=rs&&rs.touchedChunks; if(!m||!cam||!list) return out;
+    var B=m.semanticBounds, S=A1A.S, ox=B[0]*TILE, oy=B[1]*TILE, v=cam.worldView;
+    var vx0=v.x-TILE, vy0=v.y-TILE, vx1=v.x+v.width+TILE, vy1=v.y+v.height+TILE;
+    for(var i=0;i<list.length;i++){ var c=list[i];
+      var cx0=ox+c.x*S, cy0=oy+c.y*S, cx1=cx0+c.width*S, cy1=cy0+c.height*S;
+      if(cx1>vx0&&cx0<vx1&&cy1>vy0&&cy0<vy1) out.push(c); }
+    return out;
+  }
+  /* ---- THE PLACEHOLDER UNDER A CHUNK THAT HAS NOT LANDED ----------------------------------------
+     What used to show under a missing chunk was the flat sea colour, and the build-70 veil then
+     covered the whole screen to hide it. Neither is a map. ui-map/overworld-relief.png is the
+     minimap's own 6 px-per-cell relief of the WHOLE world, already shipped and already decoded for
+     the HUD -- drawn under the field at 8x with linear filtering it is a soft, correct-coloured
+     version of exactly the ground that is about to arrive. One shared texture; one cheap Image per
+     missing visible chunk, cropped to that chunk's cells; dropped the tick the real base goes live.
+     Depth 1.05: over dqterrain (1), under the base plate (1.1). */
+  var A1A_PH={ tex:null, req:false, imgs:{} };
+  function a1aPlaceholderTick(scene,vis){
+    var m=A1A.manifest; if(!m) return;
+    if(!A1A_PH.tex){
+      if(!A1A_PH.req){ A1A_PH.req=true; var pim=new Image();
+        pim.onload=function(){ try{ if(!scene.textures.exists('a1a_relief')) scene.textures.addImage('a1a_relief',pim);
+          try{ scene.textures.get('a1a_relief').setFilter(0); }catch(e){} A1A_PH.tex='a1a_relief'; }catch(e2){} };
+        pim.onerror=function(){ A1A_PH.req=false; };
+        pim.src='ui-map/overworld-relief.png'; }
+      return;
+    }
+    var B=m.semanticBounds, S=A1A.S, ox=B[0]*TILE, oy=B[1]*TILE, keep={}, i;
+    var rt=scene.textures.get('a1a_relief'), rw=rt&&rt.source&&rt.source[0]?rt.source[0].width:0; if(!rw) return;
+    var ppc=rw/320;                                                   // relief px per world cell (6)
+    for(i=0;i<vis.length;i++){ var c=vis[i], key='a1a_base_'+c.id, im=A1A.imgs[key];
+      if(A1A.tex[key]===1 && im && im.scene && im.visible) continue;  // real art is up
+      keep[c.id]=1;
+      var ph=A1A_PH.imgs[c.id];
+      if(!ph||!ph.scene){
+        var cellX=B[0]+c.x/16, cellY=B[1]+c.y/16, cellsW=c.width/16, cellsH=c.height/16;
+        ph=scene.add.image(0,0,'a1a_relief').setOrigin(0,0).setDepth(1.05).setScale(TILE/ppc);
+        ph.setCrop(cellX*ppc, cellY*ppc, cellsW*ppc, cellsH*ppc);
+        A1A_PH.imgs[c.id]=ph;
+      }
+      if(!ph.visible) ph.setVisible(true);
+    }
+    Object.keys(A1A_PH.imgs).forEach(function(id){ if(!keep[id]){ var x=A1A_PH.imgs[id]; try{ x.destroy(); }catch(e){} delete A1A_PH.imgs[id]; } });
+  }
   function a1aSpriteWatchdog(scene){
-    if(!a1aPlateOwns(scene)||!a1aSpriteMode()){ A1AW.shortSince=0; a1aVeilSet(false); return; }
+    if(!a1aPlateOwns(scene)||!a1aSpriteMode()){ A1AW.shortSince=0; A1AW.blankSince=0; a1aVeilSet(false);
+      // off the plate (town, dungeon, Act 2+): no placeholders may linger under the next map
+      Object.keys(A1A_PH.imgs).forEach(function(id){ try{ A1A_PH.imgs[id].destroy(); }catch(e){} delete A1A_PH.imgs[id]; });
+      return; }
     var rs=A1A.lastRects;
     // No rects yet means the window has not been measured -- the map cannot be drawn, so hold.
     if(!rs){ A1AW.shortSince=0; A1A.sprLive=0; A1A.sprWant=0; a1aVeilSet(true); return; }
@@ -1824,9 +1875,23 @@
       if(A1A.tex[key]===1 && im && im.scene && im.visible) live++;
     }
     A1A.sprLive=live; A1A.sprWant=want;
-    // THE GATE. Whole window -> show the map; anything missing -> keep the veil up. Same numbers
-    // the recovery below acts on, so the two can never disagree about whether the map is ready.
-    a1aVeilSet(live<want);
+    // THE GATE, SCOPED TO WHAT IS ON SCREEN. `want` counts every chunk the 33x39-cell WINDOW
+    // touches -- up to nine -- while the phone shows about 8x17 cells, i.e. two to four of them.
+    // On the owner's phone chunks decode slowly enough that the ring is rarely complete while he
+    // walks, so this veil ("Loading the world...") popped every few steps for art that was NOT
+    // on screen. Owner, build 74: "the frequent world loading really bothers me so we definitely
+    // need to fix it." The recovery numbers above are unchanged; only the veil's own decision
+    // narrows to the chunks intersecting the camera, and it waits 500 ms of genuinely NOTHING
+    // visible before it covers -- under a missing visible chunk the relief placeholder
+    // (a1aPlaceholderTick) is already showing, so there is no blue to hide.
+    var vis=a1aVisibleChunks(scene,rs), vWant=vis.length, vLive=0;
+    for(i=0;i<vis.length;i++){ var vk='a1a_base_'+vis[i].id, vim=A1A.imgs[vk];
+      if(A1A.tex[vk]===1 && vim && vim.scene && vim.visible) vLive++; }
+    try{ a1aPlaceholderTick(scene,vis); }catch(e){ if(window.__DQ_DEBUG__) console.log('a1a placeholder '+e); }
+    var nowV=Date.now();
+    if(vWant>0 && vLive===0){ if(!A1AW.blankSince) A1AW.blankSince=nowV; }
+    else A1AW.blankSince=0;
+    a1aVeilSet(!!A1AW.blankSince && nowV-A1AW.blankSince>=500);
     // RE-ASK FOR MISSING ART ON A TIMER, NOT ONLY ON MOVEMENT. The terrain path that calls a1aRects
     // is gated on the window CHANGING (`key===terrainState.lastWin` -> return), so a layer that
     // failed while she stands still would not be re-requested until she walked across a window
@@ -6320,5 +6385,6 @@
              reloads:A1A.reloads|0,   // layer re-requests: non-zero means a load failed and was retried
              sprGl:a1aGlLost()?1:0 };
   }
+  window.__A1A_PH__=A1A_PH;                                     // verification only: placeholder registry
   window.__DQ_TILES__={ reskin:reskin, ready:terrainReady, readyWhy:terrainReadyWhy, cost:terrainCost, redraw:function(){ if(terrainState){ terrainState.lastWin=''; updateTerrain(terrainState.scene,true);} if(overlayState){ overlayState.lastKey=''; rebuildOverlay(overlayState.scene,true);} } };
 })();
