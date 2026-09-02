@@ -93,3 +93,4 @@ scripts/__pycache__/
 
 # Agent evidence: device recordings, screenshots, probe output. Large and regenerable.
 scratchpad/
+scripts/device-motion/framedump
