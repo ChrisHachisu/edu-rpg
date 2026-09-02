@@ -44,6 +44,23 @@ const check = (name, ok, detail) => { console.log((ok ? 'PASS ' : 'FAIL ') + nam
       const st3 = await page.evaluate(() => ({ mode: window.__PHASER_GAME__.scene.getScene('TitleScene').mode, conf: !!document.querySelector('.shopconf') }));
       check(locale + ': Start over proceeds to character creation', st3.mode !== mode0 && !st3.conf, JSON.stringify(st3));
     }
+    // Keyboard path: the frozen TitleScene confirms on Enter/Space/Z on its own keydown. With a save and
+    // New Game selected, Enter must open the card (not erase), Escape must close it.
+    await page.goto(URL_, { waitUntil: 'domcontentloaded', timeout: 120000 });
+    await page.evaluate((s) => localStorage.setItem('edu-rpg-save', JSON.stringify(s)), { ...SAVE, player: { ...SAVE.player, locale } });
+    await page.reload({ waitUntil: 'load', timeout: 120000 });
+    await page.waitForFunction(() => !!window.__PHASER_GAME__, { timeout: 120000 });
+    await page.evaluate(() => { const g = window.__PHASER_GAME__; if (g.scene.isActive('BootScene')) { g.scene.start('TitleScene'); g.scene.stop('BootScene'); } });
+    await page.waitForSelector('[data-act="titleNew"]', { timeout: 120000 });
+    await page.waitForFunction(() => { const c = window.__QOK_COVER__; return !c || c.phase() !== 'boot'; }, { timeout: 60000 }).catch(() => {});
+    await page.evaluate(() => { const t = window.__PHASER_GAME__.scene.getScene('TitleScene'); const i = t.menuItems.findIndex((m) => m.getData && m.getData('action') === 'new'); t.selectedIndex = i; if (t.updateSelection) t.updateSelection(); });
+    const km0 = await page.evaluate(() => window.__PHASER_GAME__.scene.getScene('TitleScene').mode);
+    await page.keyboard.press('Enter'); await page.waitForTimeout(500);
+    const k1 = await page.evaluate(() => ({ conf: !!document.querySelector('.shopconf [data-act="titleNewConfirm"]'), mode: window.__PHASER_GAME__.scene.getScene('TitleScene').mode }));
+    check(locale + ': keyboard Enter on New Game with a save opens the card instead of erasing', k1.conf && k1.mode === km0, JSON.stringify(k1));
+    await page.keyboard.press('Escape'); await page.waitForTimeout(400);
+    const k2 = await page.evaluate(() => ({ conf: !!document.querySelector('.shopconf'), mode: window.__PHASER_GAME__.scene.getScene('TitleScene').mode }));
+    check(locale + ': Escape closes the card and keeps the title', !k2.conf && k2.mode === km0, JSON.stringify(k2));
   }
   // No save: New Game must NOT ask.
   await page.goto(URL_, { waitUntil: 'domcontentloaded', timeout: 120000 });

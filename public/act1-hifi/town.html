@@ -528,6 +528,10 @@ addEventListener('message', event => {
     return;
   }
   if (data.type !== 'act1-town-text' || !talking || data.npc !== talking.id) return;
+  // The same one-box rule as interact(): the parent's box may have opened in the round trip
+  // between act1-town-interact and this reply (a heal receipt, the opening narration). If it did,
+  // the parent owns the screen; drop the reply and the pending talk rather than stack a box on it.
+  if (document.body.dataset.parentDialogue === 'true') { talking = null; dialogueEl.dataset.open = 'false'; return; }
   showDialogue(data.name || talking.name, data.text || talking.text);
 });
 
@@ -728,6 +732,10 @@ function frame(now) {
     // fired on this same tick, and `input` above keeps her walking outward for the whole hold so
     // the fade covers her visibly leaving, not a freeze-frame.
     if (exitFadeEl) exitFadeEl.style.opacity = '1';
+    // Tell the parent the crossing happened NOW, so its own veil (which sits over the HUD and tab
+    // bar this iframe cannot cover) fades in step with #exitFade; the exit itself follows after
+    // the hold below.
+    parent.postMessage({ type: 'act1-town-exit-start', town: town.id }, '*');
     setTimeout(() => {
       // FACING CONTINUITY, leaving. `state.facing` by the time this fires is still the outward
       // direction she has been forced to walk since the crossing ('down' for a south mouth, 'up'

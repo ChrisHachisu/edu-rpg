@@ -84,7 +84,7 @@ style.textContent = `
      town overlay while releaseRoot() and loadMap() run, below #touch-controls and #fieldTabs
      (100/90) so it never blocks the controls once it is transparent, and pointer-events:none
      throughout -- exactly like #exitFade in town.html, this is decoration, never a tappable surface. */
-  #act1-overworld-fade { position: fixed; inset: 0; z-index: 75; background: #02060a; opacity: 0;
+  #act1-overworld-fade { position: fixed; inset: 0; z-index: 95; background: #02060a; opacity: 0;
     pointer-events: none; transition: opacity 300ms ease-in-out; }
 `;
 document.head.append(style);
@@ -121,6 +121,20 @@ function holdOverworldFade() {
 function releaseOverworldFade() {
   overworldFade.style.transition = 'opacity 300ms ease-in-out';
   requestAnimationFrame(() => { overworldFade.style.opacity = '0'; });
+}
+// The town's own #exitFade lives INSIDE the iframe (z-index 70), so during its 300 ms the parent's
+// field HUD, minimap and tab bar (80/90) stayed lit over a darkening town, and the minimap popped
+// from town to overworld mid-fade. The town now announces the crossing (act1-town-exit-start) and
+// this fades the parent's veil -- z-index 95, above the HUD and tabs, below the stick (100) and
+// the DOM screens (200) -- in step with it, so one black covers everything the player is looking
+// at. A watchdog releases it if the exit itself never arrives (nothing known can drop it, but a
+// stuck veil is a black screen, so the failure mode is bounded rather than trusted).
+let exitStartWatchdog = 0;
+function beginOverworldFade() {
+  overworldFade.style.transition = 'opacity 300ms ease-in-out';
+  overworldFade.style.opacity = '1';
+  clearTimeout(exitStartWatchdog);
+  exitStartWatchdog = setTimeout(() => { if (townEntry && !pendingTownExit) releaseOverworldFade(); }, 3000);
 }
 
 let manifest = null;
@@ -201,6 +215,7 @@ function releaseRoot() {
   entryPromise = null;
   townEntry = null;
   townSuspended = false;
+  pendingTownExit = null;
   window.__ACT1_TOWN_VIEW__ = null;
   root.hidden = true;
   root.dataset.ready = 'false';
@@ -484,13 +499,30 @@ addEventListener('message', event => {
     }
     return;
   }
+  if (data.type === 'act1-town-exit-start') { beginOverworldFade(); return; }
   if (data.type === 'act1-town-exit') {
-    // Same sequence the shipped town edge-exit uses: set the id, floor and hero tile, then load.
-    const scene = townEntry.scene;
-    const target = data.targetMapId || 'overworld';
-    // Hold the screen black BEFORE releaseRoot() tears the town frame down -- see holdOverworldFade()
-    // for why this has to happen first rather than as part of the fade-out below.
-    holdOverworldFade();
+    // A menu or the shop can be opened from the parent's tab bar during the town's 300 ms fade
+    // hold; the town is then SUSPENDED (WorldMapScene paused under MenuScene/ShopScene) but still
+    // alive, and tearing it down under a paused scene is untested ground. Park the exit and let
+    // restoreTownOverlay() -- the one place a suspended town comes back -- run it.
+    if (townSuspended) { pendingTownExit = data; return; }
+    handleTownExit(data);
+  }
+});
+
+let pendingTownExit = null;
+function handleTownExit(data) {
+  // Same sequence the shipped town edge-exit uses: set the id, floor and hero tile, then load.
+  const scene = townEntry.scene;
+  const target = data.targetMapId || 'overworld';
+  clearTimeout(exitStartWatchdog);
+  // Hold the screen black BEFORE releaseRoot() tears the town frame down -- see holdOverworldFade()
+  // for why this has to happen first rather than as part of the fade-out below.
+  holdOverworldFade();
+  // Everything between the hold and the release runs under `finally`: a throw anywhere in here
+  // (loadMap is wrapped three deep, releaseRoot juggles focus) used to leave the veil at opacity 1
+  // for the rest of the session -- a black field with a live HUD, and no way back but a relaunch.
+  try {
     releaseRoot();
     scene.currentMapId = target;
     scene.currentFloor = 1;
@@ -527,12 +559,13 @@ addEventListener('message', event => {
       // else (a scene event loadMap fires synchronously) repaints the hero after this line runs.
       requestAnimationFrame(paintFacing);
     }
-    // Release the held black now that loadMap() has actually placed the overworld, matching the
-    // town side's own fade (screen.transition, 300ms ease-in-out) -- see releaseOverworldFade().
-    releaseOverworldFade();
     lifetimeStats.parentTransitions += 1;
+  } finally {
+    // Release the held black now that loadMap() has actually placed the overworld (or failed),
+    // matching the town side's own fade (screen.transition, 300ms ease-in-out).
+    releaseOverworldFade();
   }
-});
+}
 
 /* ---- the two keys the frozen bundle predates -------------------------------------------------
    `npc.villager1.name` and `npc.villager2.name` exist in src/i18n/locales/{en,ja,jaKanji}.ts and
@@ -660,6 +693,13 @@ function suspendTownOverlay() {
 function restoreTownOverlay() {
   townSuspended = false;
   if (!townEntry) return;
+  if (pendingTownExit) {
+    // The exit crossed while a menu or the shop was up (see the act1-town-exit branch): the town
+    // never needs to come back, it is being left. Run the parked exit now that the scene is live.
+    const parked = pendingTownExit; pendingTownExit = null;
+    handleTownExit(parked);
+    return;
+  }
   prepareRoot();
   suppressLegacyWorldRender(townEntry.scene);
   root.dataset.ready = 'true';

@@ -171,7 +171,7 @@ ACT1_OVERLAY_FILES = {
     # the control-orientation setting, into the frame. First override of this file since the
     # v1.17.1 baseline was frozen, which is why it had no entry before.
     "ui-overhaul.js": (
-        175264, "fad72264ed91a530db349a7e45e6a525fa498ecf99fbe1d7afefcd06168a036f"),
+        177302, "2003ca347613a90aa9f3c39c16fac09e8d20dce1301200734d64867eecd66d47"),
     # 2026-08-06, owner pick: "Charcoal & Gold Leaf" (direction 4 of
     # design/ui-overhaul/chic-style-board.html). The same gold as before -- the pixel art, the
     # dungeon plates and the town screens were all approved against it -- spent differently:
@@ -455,7 +455,7 @@ ACT1_DUNGEON_FILES = {
 # no URL bar). Pinned so it cannot quietly grow into something that mutates real save data.
 ACT1_TOWN_FILES = {
     "act1-hifi/town.html": (
-        49933, "2b5847ff77d970816a2182e805fd281c702af4fac844e3bc788bbe1af4f8967e"),
+        50640, "0cbb8dfe24399bc37bf3be7741558567c11857d4c651ce8b1b654029c4324dd2"),
     "act1-hifi/town/portSapphire-town.json": (
         11831, "28373d5e26fd19990b7f3acd6cc77559e0c279aa73b65b2c0bcfc2985d69b33a"),
     "act1-hifi/town/portSapphire-walkable.json": (

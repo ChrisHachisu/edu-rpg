@@ -321,6 +321,7 @@
       document.addEventListener('pointercancel', function () { railPress(null, false); }, true);
       document.addEventListener('keydown', railKbWatch, true);  // last-input-device: keys raise the rail cursor
       document.addEventListener('keydown', nameKeyGuard, true); // Return in the name field must MEAN something
+      document.addEventListener('keydown', titleKeyGuard, true); // Enter on New Game with a save asks first
       root.addEventListener('input', onInput, true);
       root.addEventListener('change', onInput, true);
       attached = true;
@@ -1944,6 +1945,35 @@
      It deliberately does NOT start the game. Return means "I have finished this field", and hero
      variant, difficulty and language all still sit below it unset; committing the whole screen on a
      stray Return would skip choices the player never made. */
+  /* The frozen TitleScene confirms on its own keydown (Enter / Space / Z), which bypassed the
+     New-Game confirm card: a hardware keyboard could erase a save with one key. While the DOM
+     title is up and the bundle's selection sits on New Game with a save present, those keys now
+     open the card instead; while the card is up, Enter accepts and Escape cancels. Everything else
+     (arrow keys moving the bundle's selection, Enter on Continue) passes through untouched. */
+  function titleKeyGuard(e) {
+    if (!e || curScreen !== 'title') return;
+    var key = e.key, code = e.keyCode;
+    var isConfirm = key === 'Enter' || key === ' ' || key === 'z' || key === 'Z' || code === 13 || code === 32 || code === 90;
+    var isCancel = key === 'Escape' || code === 27;
+    if (!isConfirm && !isCancel) return;
+    if (titleConfirm) {
+      e.stopPropagation(); e.preventDefault();
+      if (isCancel) { titleConfirm = false; lastSig = null; try { tick(); } catch (err) {} return; }
+      routeTitle('titleNewConfirm', 0, null);
+      return;
+    }
+    if (!isConfirm) return;
+    var ts = getScene('TitleScene'); if (!ts || ts.mode !== 'title') return;
+    var items = ts.menuItems || [], sel = items[ts.selectedIndex || 0];
+    var action = sel && sel.getData ? sel.getData('action') : null;
+    var saved = false;
+    try { saved = !!(window.localStorage && localStorage.getItem('edu-rpg-save')); } catch (err2) {}
+    if (action !== 'new' || !saved) return;
+    e.stopPropagation(); e.preventDefault();
+    titleConfirm = true; lastSig = null;
+    try { tick(); } catch (err3) {}
+  }
+
   function nameKeyGuard(e) {
     if (!e || (e.key !== 'Enter' && e.keyCode !== 13)) return;
     var el = e.target;
@@ -2527,9 +2557,14 @@
     if (sceneActive('GameOverScene')) { renderGameOver(); return; }
     var ts = getScene('TitleScene');
     if (ts && sceneActive('TitleScene')) {
+      // The New-Game confirm card belongs to the title screen only: whatever moved the scene on
+      // (the card's own Start over, or the bundle's keyboard confirm) must not leave it armed to
+      // reappear, unasked, on the next visit to the title.
+      if (ts.mode !== 'title') titleConfirm = false;
       if (ts.mode === 'create') { renderIntro(); return; }
       if (ts.mode === 'title') { renderTitle(); return; }
     }
+    titleConfirm = false;
     deactivate();
   }
   // Poll on a timer, NOT requestAnimationFrame: rAF is throttled/paused when the
