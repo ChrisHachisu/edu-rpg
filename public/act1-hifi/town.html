@@ -395,7 +395,20 @@ if (!isInsideWalkable(position, walkable)) {
   if (!found) throw new Error('start cell is outside the walkable geometry and no fallback found');
   position = found;
 }
-const state = { facing: (firstEntry && town.firstEntryFacing) || 'down', moving: false };
+// FACING CONTINUITY, entering. The parent knows which way the hero was walking on the overworld
+// when she stepped into the door (`WorldMapScene.heroDir`, see adapter.js's enterTown()) and passes
+// it as `?facing=`. Before this, town.html hard-coded 'down' no matter which side she entered from,
+// so a player walking up through a north gate (facing up) popped into the town facing the camera --
+// backwards from how she just walked. Precedence: `firstEntryFacing` wins on the OPENING (the elder
+// scene locks a specific facing on purpose, see the block above); the parent's `facing` wins on
+// every ordinary entry; 'down' is the last-resort default if neither is present or valid. `?at=`
+// (the verification hatch) is a POSITION override only -- it says nothing about facing and must not
+// change this precedence.
+const FACING_WORDS = new Set(['down', 'left', 'up', 'right']);
+const facingParam = search.get('facing');
+const state = { facing: (firstEntry && town.firstEntryFacing)
+  || (FACING_WORDS.has(facingParam) ? facingParam : null)
+  || 'down', moving: false };
 let talking = null;
 let exitArmed = false;
 let exiting = false;
@@ -618,9 +631,13 @@ function frame(now) {
   if (!exitArmed && outward <= -0.75) exitArmed = true;
   if (exitArmed && !exiting && outward >= 0 && lateral < EXIT_HALF_WIDTH) {
     exiting = true;
+    // FACING CONTINUITY, leaving. She crossed the mouth walking outward, so `state.facing` at this
+    // instant already says which way that was ('down' for a south mouth, 'up' for a north one) --
+    // see adapter.js's act1-town-exit handler, which maps this back onto the overworld's heroDir so
+    // she keeps walking the direction she was already going instead of facing back into the door.
     parent.postMessage({ type: 'act1-town-exit', town: town.id,
                          targetMapId: town.exit?.targetMapId ?? 'overworld',
-                         toX: town.exit?.toX, toY: town.exit?.toY }, '*');
+                         toX: town.exit?.toX, toY: town.exit?.toY, facing: state.facing }, '*');
   }
 
   const target = cameraTarget();

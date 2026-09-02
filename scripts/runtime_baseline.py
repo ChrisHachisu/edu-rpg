@@ -455,7 +455,7 @@ ACT1_DUNGEON_FILES = {
 # no URL bar). Pinned so it cannot quietly grow into something that mutates real save data.
 ACT1_TOWN_FILES = {
     "act1-hifi/town.html": (
-        41070, "74d97d53d2f5e9686183a0e7f39426487eb855fabaab264d1b79e82ea8eb3a7c"),
+        42480, "f6f9973ea8f7ef3302a2ba2f1cf2853b69531e6c1f98fc5509245a02df3a0b9a"),
     "act1-hifi/town/portSapphire-town.json": (
         11831, "28373d5e26fd19990b7f3acd6cc77559e0c279aa73b65b2c0bcfc2985d69b33a"),
     "act1-hifi/town/portSapphire-walkable.json": (

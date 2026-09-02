@@ -33,6 +33,13 @@ const MOVE_KEYS = new Set([
   'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown',
   'a', 'A', 'd', 'D', 'w', 'W', 's', 'S',
 ]);
+// FACING CONTINUITY between the overworld and a town. WorldMapScene.heroDir is a number -- 0 down,
+// 1 left, 2 right, 3 up, the same order dq-tiles.js's dungeon-arrival rescue uses (public/dq-tiles.js
+// ~3197) -- and town.html speaks the direction WORDS its own `state.facing` already uses. These two
+// tables are the one place that mapping lives; both enterTown() (entering) and the act1-town-exit
+// handler (leaving) go through them so the two directions can never drift apart.
+const HERO_DIR_TO_FACING = ['down', 'left', 'right', 'up'];
+const FACING_TO_HERO_DIR = { down: 0, left: 1, right: 2, up: 3 };
 
 const style = document.createElement('style');
 style.textContent = `
@@ -453,6 +460,30 @@ addEventListener('message', event => {
       if (Number.isFinite(data.toY)) state.position.y = data.toY;
     }
     scene.loadMap(target);
+    // FACING CONTINUITY, leaving. `state.facing` at the moment she crossed the mouth already says
+    // which way that was (town.html's exit-crossing block posts it) -- map it back onto the
+    // overworld's heroDir so she keeps walking the direction she was already going, instead of
+    // facing whichever way she faced BEFORE she ever entered the town (usually up, back into the
+    // door she just walked out of -- the bug this fixes). Applied AFTER loadMap(), the same order
+    // dq-tiles.js's dungeon-arrival rescue uses for its own post-load facing (a1dApply,
+    // public/dq-tiles.js ~3200): loadMap() repositions `scene.hero`, it does not replace it, so this
+    // repaints the SAME sprite loadMap just placed. heroDir alone is state, not a picture -- the
+    // bundle only redraws the hero's frame on a move -- so setFrame(heroDir*3) has to be called
+    // here too, or she stands at the mouth facing whichever way her last overworld step left her.
+    const facingDir = FACING_TO_HERO_DIR[data.facing];
+    if (facingDir !== undefined) {
+      const paintFacing = () => {
+        try {
+          scene.heroDir = facingDir;
+          if (scene.hero && typeof scene.hero.setFrame === 'function') scene.hero.setFrame(facingDir * 3);
+        } catch (error) { /* display-only: never let this break the transition itself */ }
+      };
+      paintFacing();
+      // Belt-and-braces: the overworld does not rebuild the hero synchronously inside loadMap() the
+      // way the dungeon rescue's caller does, so reapply once on the next frame in case anything
+      // else (a scene event loadMap fires synchronously) repaints the hero after this line runs.
+      requestAnimationFrame(paintFacing);
+    }
     lifetimeStats.parentTransitions += 1;
   }
 });
@@ -638,7 +669,13 @@ async function enterTown(scene, mapId) {
     frame.onerror = () => reject(new Error('town runtime iframe failed to load'));
   });
   const first = isFirstTownEntry(mapId);
-  frame.src = `${TOWN_URL.href}?town=${encodeURIComponent(mapId)}${first ? '&first=1' : ''}`;
+  // FACING CONTINUITY, entering. `scene.heroDir` is still the overworld's -- read it before the
+  // frame's src ever changes -- so a player who just walked north through the door arrives facing
+  // the way she walked, not hard-coded 'down' as this used to be. `firstEntryFacing` still wins on
+  // the opening (town.html's own precedence), so this is a no-op there.
+  const facingWord = HERO_DIR_TO_FACING[scene.heroDir] || 'down';
+  frame.src = `${TOWN_URL.href}?town=${encodeURIComponent(mapId)}${first ? '&first=1' : ''}`
+    + `&facing=${facingWord}`;
   await loaded;
   // The town runtime has no corridor to align to and no semantic route to commit, so there is
   // nothing to wait for beyond its own readiness flag.
