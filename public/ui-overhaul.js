@@ -362,10 +362,25 @@
     } catch (e) {}
   }
   function deactivate() {
+    // deactivate() is not an event: tick() calls it on EVERY pass while no DOM screen is up (the
+    // `!QOK() || !GS()` guard and the no-screen fall-through both land here), i.e. every frame of
+    // ordinary walking. The camera snap below was added for the menu -> dungeon return (build 70)
+    // and, called from here unconditionally, ran centerOn() on every tick of the field -- against
+    // dq-tiles.js's a1mCam, which lerps a float scroll and writes it rounded. Traced on build 70,
+    // per frame: a1mCam writes 12041, the snap writes the exact 12046.41, a1mCam resyncs and
+    // writes 12047, then 12052, then (no snap that frame) 12054 ... The rendered camera stepped
+    // 6, 5, 2, 7, 4, 2, 7, 4, 2 world px while the hero moved a steady 4.33 -- a 15 Hz stutter at a
+    // healthy 60 fps, which is exactly "extremely laggy and jittery" (owner, build 70) on a build
+    // whose frame times were fine. The snap is now taken ONLY when an overlay was actually up, the
+    // one case the build-67 complaint ("the dungeon map seems like it snaps from above the screen")
+    // was about; a plain tick with nothing to close leaves the camera to its one driver.
+    var wasUp = false;
+    try { wasUp = !!((root && root.classList.contains('active')) || document.body.classList.contains('qok-overlay')); } catch (e) {}
     if (root && root.classList.contains('active')) { root.classList.remove('active', 'battle'); stage.innerHTML = ''; }
     clearBattleBg();
     try { document.body.classList.remove('qok-overlay'); } catch (e) {} // show the canvas again (field/dungeon, or a non-overlaid Phaser scene)
     curScreen = null; lastSig = null;
+    if (!wasUp) return;
     try {
       requestAnimationFrame(function () { snapFieldCamera(); requestAnimationFrame(snapFieldCamera); });
     } catch (e) { snapFieldCamera(); }
