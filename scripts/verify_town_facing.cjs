@@ -43,7 +43,9 @@ const PORT_SAPPHIRE = JSON.parse(fs.readFileSync(
 // step onto, approached from one cell further out, walking toward it.
 const DOORS = {
   greenhollow: { seed: { x: 69, y: 257 }, dir: 'ArrowUp' },     // trigger (69,255), one cell south
-  portSapphire: { seed: { x: 133, y: 351 }, dir: 'ArrowUp' },   // trigger (133,349), two cells south
+  // (133,350)/(133,351) are HARBOR water cells (act1-world-map.js HARBOR_CELLS); the town's only
+  // approach is from the NORTH -- its landmark exit is (133,348) -- so seed north and walk DOWN.
+  portSapphire: { seed: { x: 133, y: 346 }, dir: 'ArrowDown' }, // trigger (133,349), three cells north
 };
 
 const near = (a, b, tol) => Math.abs(a - b) <= tol;

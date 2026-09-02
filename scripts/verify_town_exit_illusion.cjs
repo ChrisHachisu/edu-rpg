@@ -361,7 +361,11 @@ async function meanBrightness(page, selectorInfo) {
     await page.keyboard.down('ArrowDown');
     await page.waitForTimeout(1600);
     await page.keyboard.up('ArrowDown');
-    await page.waitForTimeout(600);
+    // The overworld load that follows the swap blocks the main thread for seconds (SMOOTH-5), so
+    // the rAF sampler above gets starved and the fade-in's release lands well after the crossing.
+    // 600 ms here read the still-held fade as "never released" (2026-09-02); wait long enough for
+    // the overworld to be placed and the 300 ms release to play before judging.
+    await page.waitForTimeout(6000);
     const opLog = await page.evaluate(() => window.__opacityLog || []);
     fs.writeFileSync(path.join(OUT, `${TAG}-opacity-log.json`), JSON.stringify(opLog, null, 2));
     const townOpacities = opLog.map(e => parseFloat(e.town)).filter(n => !Number.isNaN(n));
