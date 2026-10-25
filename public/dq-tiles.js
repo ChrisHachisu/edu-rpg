@@ -1230,6 +1230,10 @@
     return r;
   }
   var NEAREST=(window.Phaser&&Phaser.Textures&&Phaser.Textures.FilterMode)?Phaser.Textures.FilterMode.NEAREST:1;
+  // Phaser's FilterMode is LINEAR=0, NEAREST=1. The base underpaint called setFilter(1) under a
+  // "linear" comment, so the 6 px/cell substrate was magnified 5.6x nearest-neighbour: while a hi-res
+  // chunk streamed in, its coast showed as ~11 px stair steps with a foam band (owner, build 85).
+  var LINEAR=(window.Phaser&&Phaser.Textures&&Phaser.Textures.FilterMode)?Phaser.Textures.FilterMode.LINEAR:0;
 
   // Keep a generous off-screen tile margin and move the render window in chunks. The old window
   // followed the camera one tile at a time, repainting millions of pixels and rebuilding every tree
@@ -1694,14 +1698,14 @@
     try{
       if(!scene.textures.exists(key)){
         var tex=scene.textures.addImage(key,up.image);
-        if(tex&&tex.setFilter) tex.setFilter(1); // linear: the substrate is deliberately low resolution
+        if(tex&&tex.setFilter) tex.setFilter(LINEAR); // the substrate is deliberately low resolution
       }
       var b=A1A.manifest.semanticBounds,x=b[0]*OW_TILE,y=b[1]*OW_TILE,scale=OW_TILE/spec.pixelsPerCell;
       var spriteKey=up.maskScene===scene&&up.maskTexture&&scene.textures.exists('a1a_underpaint_mask')?'a1a_underpaint_mask':key;
       if(!up.sprite||up.scene!==scene||!up.sprite.scene||up.sprite.texture.key!==spriteKey){
         if(up.sprite&&up.sprite.scene) try{up.sprite.destroy();}catch(e){}
         up.sprite=scene.add.image(x,y,spriteKey).setOrigin(0,0).setDepth(0.7).setScale(scale);
-        try{ up.sprite.texture.setFilter(1); }catch(e){}
+        try{ up.sprite.texture.setFilter(LINEAR); }catch(e){}
         up.scene=scene;
       } else {if(up.sprite.texture!==scene.textures.get(spriteKey))up.sprite.setTexture(spriteKey);up.sprite.setPosition(x,y).setScale(scale);}
       if(!up.sprite.visible) up.sprite.setVisible(true);
@@ -1782,7 +1786,7 @@
         up.maskTexture=scene.textures.addCanvas(key,canvas);
       }
       if(!up.maskTexture){a1aUnderpaintBaseMaskDispose(scene,up);return false;}
-      if(up.maskTexture.setFilter)up.maskTexture.setFilter(1);
+      if(up.maskTexture.setFilter)up.maskTexture.setFilter(LINEAR);
       up.maskScene=scene;up.maskKey=signature;up.maskLiveKey=signature;
       if(up.sprite&&up.sprite.scene)up.sprite.setTexture(key);
       return true;
