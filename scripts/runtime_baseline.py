@@ -121,7 +121,7 @@ ACT1_OVERLAY_FILES = {
     # other 12 settle one cell north once; largest rescue nudge 28 px against a 96 px bound).
     # Updated 2026-10-03 for the approved scoped forest+mountain visible-terrain union.
     "dq-tiles.js": (
-        603596, "ea2fbe9387c350867cffba1d8ff605f48351a1633e73060f606f6601e1542ea8"),
+        604924, "e6f04e8de964148a6cc676101fa0e34cb52e9fa0e013d2b772f2edcc5e76b7cb"),
     # 2026-08-07: THE OVERWORLD'S COLLISION SHAPE, baked -- the overworld's answer to the dungeons'
     # `<floor>-walk.png` above, and as much a shipped authority as they are. Deriving it at runtime
     # was correct and unaffordable: owmBuild() evaluated waterField/mountainField per pixel over a
@@ -172,7 +172,7 @@ ACT1_OVERLAY_FILES = {
     # still green, because staging and git are two different lists.
     "assets/hero/hero-male-walk.png": (59032, "88cbed8f9d707b216ada01e108eedd5822c6bcfc69c8dd22af2457f231dc0976"),
     "act1-world-map.js": (
-        55792, "fb466fc6dbe7e05ccbb209c70867cacf4f903d55837ea69ca716e81f7196c96f"),
+        55738, "f5bdc0c69a03c4ec5d73171fd080f32930b40ea8f2cb1b41926fc5595bf8258d"),
     # 2026-08-06, from device: the Port Sapphire movement stick was anchored bottom-LEFT and its
     # lower half sat behind the field tab bar, where the overworld and every dungeon put the same
     # control bottom-right and fully visible. The town runs in a same-origin IFRAME

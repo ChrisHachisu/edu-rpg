@@ -5992,8 +5992,19 @@
      opens, so the owner's eight doors, the base game's connections and anything added later all
      work without naming a single id. */
   var a1mDoorAt=0;
+  // SOUTH-ONLY DOORS (build 86). Whispering Woods' row behind its door is walkable again (its pixel
+  // rock mask owns the collision), so a door whose exit lies SOUTH of it must refuse a hero standing
+  // north of it -- the build-65 rule that a dungeon is entered only from its authorised side.
+  function a1mNorthOfSouthDoor(scene,cx,cy){
+    if(!scene||scene.currentMapId!=='overworld'||!(scene.heroTileY<cy)) return false;
+    var wm=window.__ACT1_WORLD_MAP__, ls=wm&&wm.landmarks; if(!ls) return false;
+    for(var i=0;i<ls.length;i++){ var L=ls[i];
+      if(L&&L.at&&L.exit&&L.at.x===cx&&L.at.y===cy&&L.exit.y>L.at.y) return true; }
+    return false;
+  }
   function a1mAsk(scene,cx,cy){
     var row=scene.mapData[cy]; if(!row||row[cx]===undefined) return null;
+    if(a1mNorthOfSouthDoor(scene,cx,cy)) return null;
     var tr=null; try{ tr=scene.checkTransition(cx,cy); }catch(e){}
     if(!tr) return null;
     var ddx=cx-scene.heroTileX, ddy=cy-scene.heroTileY;                      // face it, like a step would

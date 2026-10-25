@@ -126,6 +126,11 @@ export const BLOCKER_TILE = 21;
 export const APPROACH_PREFERENCE = [[0, 1], [1, 0], [-1, 0], [0, -1]];
 // Left exactly as it is: the act-connecting gate, and the owner's own named exemption.
 export const EXEMPT_MAP_IDS = new Set(['crystalCave']);
+// Build 86 (owner, on build 85): "the one to the right of the first town" -- Whispering Woods --
+// blocked the hero a full cell north of its visible rock. Its collision is owned by the pixel rock
+// mask in dq-tiles.js (A1M_WW_MASK_B64 / a1mWwContactFree), so footprint cells NORTH of its door
+// row are not stamped. South-only entry is enforced by a1mDoor's north-entry guard instead.
+export const PIXEL_MASK_NORTH_OPEN = new Map([['whisperingWoodsCave', 'pixel rock mask owns its collision']]);
 
 // The plate's own blocked set (act1_owner_paint_plate.mjs OVERWORLD_BLOCKED), restated here
 // rather than imported so this module stays free of a cycle with the plate it post-processes.
@@ -392,6 +397,7 @@ export function applyLandmarkFootprints(plate) {
       if (cell.x === landmark.at.x && cell.y === landmark.at.y) continue;      // the door
       if (cell.x === gateway.x && cell.y === gateway.y) continue;             // the one entrance
       if (!walkable(cell.x, cell.y)) continue;   // already sea, forest, mountain or another door
+      if (PIXEL_MASK_NORTH_OPEN.has(landmark.mapId) && cell.y < landmark.at.y) continue;
       setTile(cell.x, cell.y, BLOCKER_TILE);
       stamped.push({ x: cell.x, y: cell.y });
       blocked += 1;

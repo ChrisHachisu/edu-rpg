@@ -242,6 +242,14 @@ for (const landmark of runtime.landmarks) {
     assert(ways.length > 0, `${landmark.mapId} must stay enterable`);
     continue;
   }
+  // Build 86: Whispering Woods' pixel rock mask owns its collision, so the cell north of its door is
+  // open ground; dq-tiles' a1mNorthOfSouthDoor refuses entry from there. Count only non-north sides.
+  if (landmark.mapId === 'whisperingWoodsCave') {
+    const entries = ways.filter(p => p.y >= landmark.at.y);
+    assert(entries.length === 1 && entries[0].y === landmark.at.y + 1,
+      `${landmark.mapId} must have exactly its south entrance (got ${entries.map(p => `${p.x},${p.y}`).join(' ')})`);
+    continue;
+  }
   assert(ways.length === 1,
     `${landmark.mapId} has ${ways.length} walkable sides (${ways.map(p => `${p.x},${p.y}`).join(' ')})`
     + ' -- exactly one entrance is the rule');

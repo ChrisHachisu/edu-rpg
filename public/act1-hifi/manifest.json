@@ -1433,7 +1433,7 @@
       "waterSha256": "d89a5edb195a7bcebeda7be2b33960fdff7ea0ccb066f3496151d3c4949375ac",
       "basePixelsPerCell": 32,
       "forest": "chunks/forest/c3-r0.png",
-      "forestSha256": "50d107ad27ffb7373164d21758dfb5f981af0bd4d4e7180a1073feb000c4a91d",
+      "forestSha256": "8383e5e3a8235315693492bc5b972d03eb78318ca90a499b2c9eaacd406cf76d",
       "waterPixelsPerCell": 32
     },
     {
@@ -1609,7 +1609,7 @@
       "waterSha256": "a7af3fcb9ebd17251b4f2d645ade6b609eeb52dd50ab6d81301330ebecf1d516",
       "basePixelsPerCell": 32,
       "forest": "chunks/forest/c3-r1.png",
-      "forestSha256": "11973db6672a266bc9dd994df9f8853d32bf8124c2227137b91ebabab97e4537",
+      "forestSha256": "95569d77890d6628c5e727d6fb7ca985d2e2aa049d57a3ac86707b9ced751c5d",
       "waterPixelsPerCell": 32
     },
     {
@@ -3527,7 +3527,7 @@
       4736,
       5824
     ],
-    "sha256": "a0d08d9d1bae329355f9c44b60d6b3484f5e00717386d7d99cd4a8f309d6307e",
+    "sha256": "beacfc1aa7fedd644bb96dbaf9fa2762cd4d060ec4af8d82c4bf525d66196cac",
     "sourceArtifact": "../evidence/final-visible-plus-north-support-collision-alpha.png",
     "sourceSha256": "0baf807bfd429b8ae945439c62c23610fcf62ae0fa6eeae01dcbf5c7d468fae7",
     "format": "qok-forest-bitset-v1",
