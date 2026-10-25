@@ -208,4 +208,55 @@ platform :ios do
 
     UI.success("Uploaded #{APP_VERSION} (#{build_num}) to TestFlight - processing ~5-15 min on Apple's side.")
   end
+
+  # Plain TestFlight path (build 85, 2026-10-25). Same signing/build/upload as :beta, without the
+  # sealed release-identity and forward-terrain evidence envelopes, which could not be produced
+  # for this build. Replaces them with direct payload checks: frozen bundle, overlay twins, pins.
+  desc "Build + upload to TestFlight without the sealed identity/evidence envelope (owner-authorized)"
+  lane :beta_unsealed do
+    frozen = Digest::SHA256.file(File.join(ROOT, "dist/assets/index-BhoGQRaA.js")).hexdigest
+    UI.user_error!("Frozen bundle changed: #{frozen}") unless frozen == "ab4fc9ad1204f23b4ea55dbae2d72bdf193a52e643271bcfe8642e2210556456"
+    %w[dq-tiles.js hero-override.js ui-overhaul.js ui-overhaul.css].each do |f|
+      sh("cmp #{Shellwords.escape(File.join(ROOT, 'public', f))} #{Shellwords.escape(File.join(ROOT, 'dist', f))}")
+      sh("cmp #{Shellwords.escape(File.join(ROOT, 'dist', f))} #{Shellwords.escape(File.join(ROOT, 'ios/App/App/public', f))}")
+    end
+    sh("cmp #{Shellwords.escape(File.join(ROOT, 'dist/index.html'))} #{Shellwords.escape(File.join(ROOT, 'ios/App/App/public/index.html'))}")
+    sh("cd #{Shellwords.escape(ROOT)} && python3 scripts/regenerate_pins.py --check")
+
+    api_key = app_store_connect_api_key(key_id: ASC_KEY_ID, issuer_id: ASC_ISSUER_ID, key_filepath: ASC_KEY_PATH, in_house: false)
+    if File.exist?(KEYCHAIN_PATH)
+      unlock_keychain(path: KEYCHAIN_NAME, password: KEYCHAIN_PW, add_to_search_list: true, set_default: false)
+    else
+      create_keychain(name: KEYCHAIN_NAME, password: KEYCHAIN_PW, default_keychain: false, unlock: true,
+                      timeout: 3600, lock_when_sleeps: false, add_to_search_list: true)
+    end
+    cert(api_key: api_key, keychain_path: KEYCHAIN_PATH, keychain_password: KEYCHAIN_PW, output_path: SIGNING_DIR)
+    cert_sha1 = sh("security find-identity -v -p codesigning #{KEYCHAIN_PATH} | grep 'Apple Distribution' | head -1 | awk '{print $2}'").strip
+    login_kc = File.expand_path("~/Library/Keychains/login.keychain-db")
+    sh("security list-keychains -d user -s '#{KEYCHAIN_PATH}' '#{login_kc}'")
+    sh("security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k '#{KEYCHAIN_PW}' '#{KEYCHAIN_PATH}' >/dev/null 2>&1; true")
+    sigh(api_key: api_key, app_identifier: APP_ID, output_path: SIGNING_DIR, force: true)
+    profile_name = lane_context[SharedValues::SIGH_NAME]
+
+    latest = latest_testflight_build_number(app_identifier: APP_ID, api_key: api_key, version: APP_VERSION, initial_build_number: BUILD_FLOOR)
+    build_num = [latest, BUILD_FLOOR].max + 1
+    UI.important("Version #{APP_VERSION}: TestFlight latest = #{latest} -> building #{build_num}")
+
+    pbxproj = File.join(__dir__, "..", "App.xcodeproj", "project.pbxproj")
+    pbx_backup = File.read(pbxproj)
+    begin
+      update_code_signing_settings(use_automatic_signing: false, path: "App.xcodeproj", team_id: TEAM_ID, targets: ["App"],
+                                   build_configurations: ["Release"], code_sign_identity: cert_sha1, profile_name: profile_name)
+      build_app(workspace: WORKSPACE, scheme: SCHEME, configuration: "Release", export_method: "app-store",
+                output_directory: OUTPUT_DIR, output_name: "questofknowledge.ipa", clean: true,
+                xcargs: "MARKETING_VERSION=#{APP_VERSION} CURRENT_PROJECT_VERSION=#{build_num} IPHONEOS_DEPLOYMENT_TARGET=16.4",
+                export_options: { signingStyle: "manual", teamID: TEAM_ID, provisioningProfiles: { APP_ID => profile_name } })
+    ensure
+      File.write(pbxproj, pbx_backup)
+    end
+
+    upload_to_testflight(api_key: api_key, app_identifier: APP_ID, skip_submission: true, skip_waiting_for_build_processing: true)
+    File.write(File.join(OUTPUT_DIR, "last-testflight-build.txt"), build_num.to_s)
+    UI.success("Uploaded #{APP_VERSION} (#{build_num}) to TestFlight")
+  end
 end
