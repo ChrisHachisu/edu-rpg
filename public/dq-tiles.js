@@ -849,7 +849,7 @@
     }
     ctx.imageSmoothingEnabled=smooth;
   }
-  function drawTerrain(ctx, scene, map, X0, Y0, winW, winH,useR2Sea){
+  function drawTerrain(ctx, scene, map, X0, Y0, winW, winH,useR2Sea,legacyPlateClip){
     if (a1aBlit(ctx,X0,Y0,winW,winH,true)) return;   // wholly inside the Act 1 plate -> the baked art IS the terrain
     COST.splat++;                                    // past this line is the 2.97 Mpx per-pixel loop; see COST
     var cw=winW*N, ch=winH*N, wox=X0*N, woy=Y0*N;
@@ -883,7 +883,8 @@
       for (var _s=0;_s<_all.length;_s++){ var _q=_all[_s], _m=_q.r*2.2;
         if (_q.x>wox-_m && _q.x<wox+cw+_m && _q.y>woy-_m && _q.y<woy+ch+_m) _winSites.push(_q); } }
     var img=ctx.createImageData(cw,ch), data=img.data; // alpha 0 everywhere by default
-    for (var py=0;py<ch;py+=sample){ var wy=woy+py, ty=Math.floor(wy/N), opaqueSpans=a1aOpaqueBaseSpans(opaqueBaseRects,A1A.baseAlpha,py,cw), opaqueSpan=0;
+    for (var py=0;py<ch;py+=sample){ var wy=woy+py, ty=Math.floor(wy/N), opaqueSpans=a1aOpaqueBaseSpans(opaqueBaseRects,A1A.baseAlpha,py,cw), opaqueSpan=0,
+        clipRow=!!(legacyPlateClip&&py>=legacyPlateClip.y&&py+sample<=legacyPlateClip.y+legacyPlateClip.height);
       for (var pxk=0;pxk<cw;pxk+=sample){
         while(opaqueSpan<opaqueSpans.length&&pxk>=opaqueSpans[opaqueSpan].x1) opaqueSpan++;
         if(opaqueSpan<opaqueSpans.length){
@@ -893,9 +894,10 @@
             continue;
           }
         }
-        var wx=wox+pxk, tx=Math.floor(wx/N), tB=et(map,tx,ty);
+        var wx=wox+pxk, tx=Math.floor(wx/N), tB=et(map,tx,ty),
+            clipSample=clipRow&&pxk>=legacyPlateClip.x&&pxk+sample<=legacyPlateClip.x+legacyPlateClip.width;
         if (isSpecial(tB)){                              // landmark tiles -> ground under our prop
-          if(OW_LANDMARK[tB]) setDataBlock(data,cw,pxk,py, MAT.ready
+          if(OW_LANDMARK[tB]&&!clipSample) setDataBlock(data,cw,pxk,py, MAT.ready
             ? matShade('grass',wx,wy,0.90+(vnoise(wx,wy,620,7)*0.6+vnoise(wx,wy,190,9)*0.4)*0.22)
             : gshade(wx,wy),sample);
           continue;                                      // other specials stay transparent
@@ -907,6 +909,11 @@
         // true water transparent; land-side shore, roads and later props still render.
         if(useR2Sea&&W>=0.50) continue;
         var Mf0 = (W<0.50 && hasMtn) ? dqFieldCacheMountain(map,wx,wy,sample) : -1;
+        // The partial Act 1 plate is cleared immediately after this raster pass. Preserve the
+        // water/mountain field-cache reads above, but do not shade or write a complete sample
+        // block that the exact later clear will discard. Clip edges currently align to sample;
+        // keep whole-block containment explicit so a future grid change cannot bleed.
+        if(clipSample) continue;
         if (MAT.ready){
           // ---- MATERIAL PATH: same fields, textured fill instead of a palette ramp --------
           if (W>=0.50){
@@ -3543,7 +3550,7 @@
     // legacy terrain canvas remains over it outside the authored plate, except true water when
     // the matching R2 TileSprite is ready and can provide the continuous approved phase.
     a1aSea(scene,!!legacyPlateClip);
-    drawTerrain(terrainState.ct.context, scene, map, X0, Y0, winW, winH,useR2Sea);
+    drawTerrain(terrainState.ct.context, scene, map, X0, Y0, winW, winH,useR2Sea,legacyPlateClip);
     if(legacyPlateClip) a1aClearLegacyPlate(terrainState.ct.context,legacyPlateClip);
     if (a1aSpriteMode()){
       // The plate is drawn by its own textures. The window canvas is still the terrain for
