@@ -1,0 +1,87 @@
+{
+  "baseline": {
+    "manifestPath": "design/terrain-current-profile-20261007/review-evidence/crystal-roof-20261016/source-output-separation/pre-crystal-output-manifest-reconstructed.json",
+    "manifestSha256": "0455970820ff6c71252760f38422ad0209c45c1ceb1a00cfbb7eef4a6b1b2b91",
+    "receiptPath": "design/terrain-current-profile-20261007/review-evidence/cave-roof-20261016/source-output-separation/generation-a-output-receipt.json",
+    "receiptSha256": "04012f89c10b48c4baeae064d5a1cfb47ba7d8c84bf5f33df4761599b4ef0861"
+  },
+  "baselineManifestReconstruction": {
+    "expectedSha256": "0455970820ff6c71252760f38422ad0209c45c1ceb1a00cfbb7eef4a6b1b2b91",
+    "method": "restored only the three changed manifest fields enumerated by the pinned Crystal rebind comparison, using the exact pre-rebind generator/A1OW review fields from the prior output receipt",
+    "verifiedSha256": "0455970820ff6c71252760f38422ad0209c45c1ceb1a00cfbb7eef4a6b1b2b91"
+  },
+  "current": {
+    "manifestPath": "design/terrain-current-profile-20261007/generated-output/act1-hifi/manifest.json",
+    "manifestSha256": "1cd1271b118b6de1b278856e3e747087973f2ac1a1b37ced61b7bf50796ee006",
+    "publicMirrorSha256": "1cd1271b118b6de1b278856e3e747087973f2ac1a1b37ced61b7bf50796ee006",
+    "receiptPath": "design/terrain-current-profile-20261007/evidence/output-receipt.json",
+    "receiptSha256": "a5fb2b0b08fc6be8a23bf77bcc01835e1fbfdfb82f597a97bbe44ad10cc37a3f",
+    "underpaintAssetHashes": {
+      "act1-plate.png": {
+        "bytes": 2124729,
+        "sha256": "1e67889ea30c7505270cf57f5e528b6a256b7deb5670d77662b62efd77dc4977"
+      },
+      "forest-rgba.png": {
+        "bytes": 1022310,
+        "sha256": "1acbeffbe184abc0b643dc8c7021b12a96037b4a14258c19263b23326f83f9fb"
+      }
+    }
+  },
+  "phaseValues": {
+    "activeDqTilesSha256": "a7e267a5c2d2d1061af7f66956d82853b42f00c82c1f63baf043defbeb1b2a43",
+    "basePixelsPerCell": 32,
+    "chunksIntersectingSemanticBounds": 120,
+    "dimensionsPx6": [
+      888,
+      1092
+    ],
+    "manifestSha256": "1cd1271b118b6de1b278856e3e747087973f2ac1a1b37ced61b7bf50796ee006",
+    "originCell": [
+      16,
+      218
+    ],
+    "phaseMismatches": 0,
+    "pixelsPerCell": 6,
+    "sameOwTileWorldGrid": true,
+    "scope": "declared-origin-and-scale-phase-v1",
+    "semanticBounds": [
+      16,
+      218,
+      163,
+      399
+    ],
+    "semanticCellsCoveredExactlyOnce": true
+  },
+  "rebind": {
+    "allOtherOutputBytesUnchanged": true,
+    "changedOutputPaths": [
+      "act1-hifi/manifest.json"
+    ],
+    "comparisonPath": "design/terrain-current-profile-20261007/review-evidence/crystal-roof-20261016/source-output-separation/metadata-only-rebind-comparison-r3.json",
+    "comparisonSha256": "704a3663d27d4bdf60474b21c5c2a1826f5019dd8eb57ae138cb88ced422ff95",
+    "generationAReceiptPath": "design/terrain-current-profile-20261007/review-evidence/crystal-roof-20261016/source-output-separation/generation-a-output-receipt-r3.json",
+    "generationAReceiptSha256": "a5fb2b0b08fc6be8a23bf77bcc01835e1fbfdfb82f597a97bbe44ad10cc37a3f",
+    "generationBReceiptPath": "design/terrain-current-profile-20261007/review-evidence/crystal-roof-20261016/source-output-separation/generation-b-output-receipt-r3.json",
+    "generationBReceiptSha256": "a5fb2b0b08fc6be8a23bf77bcc01835e1fbfdfb82f597a97bbe44ad10cc37a3f",
+    "manifestChangedFields": [
+      "/forwardTerrainProfile/generatorSha256",
+      "/source/act1TerrainUnionA1OWReviewPath",
+      "/source/act1TerrainUnionA1OWReviewSha256"
+    ],
+    "outputPathCount": 494,
+    "unchangedOutputCount": 493,
+    "underpaintAssetsByteIdentical": true
+  },
+  "reviewBasis": "The v3 current manifest retains the reviewed 888\u00d71092, 6 pixels-per-cell, origin [16,218], bounds [16,218,163,399], and 120-chunk coverage. Both underpaint PNGs are byte-identical to the pre-Crystal inventory. Independent v3 494-entry comparison confirms only act1-hifi/manifest.json changed; public/dist manifest mirrors match.",
+  "reviewedAt": "2026-10-16",
+  "reviewerRole": "independent",
+  "schema": "qok-forward-underpaint-phase-metadata-bridge-v1",
+  "scope": "Crystal v3 metadata-only phase bridge. Carries forward the prior declared-origin/scale phase after independently checking the v3 494-output inventories, both unchanged underpaint PNGs, and the sole generated-output manifest metadata change. No new underpaint raster or rendered review is claimed.",
+  "sourceProof": {
+    "bytes": 2625,
+    "path": "design/terrain-current-profile-20261007/review-evidence/cave-reentry-20261015/underpaint-phase-independent-20261015-r1.json",
+    "scope": "immutable prior spatial phase check for DQ 6a605a8 / manifest 931240cf; referenced only as phase basis, not relabeled as Crystal evidence",
+    "sha256": "d5ae6038613d8ab30085e823b37c94c46ffedb30be4d5c46c52d2b0baee162ab"
+  },
+  "status": "PASS_CURRENT_MANIFEST_PHASE_PRESERVED"
+}

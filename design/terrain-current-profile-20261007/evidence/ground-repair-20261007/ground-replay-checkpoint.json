@@ -1,0 +1,899 @@
+{
+  "status": "PASS_A_FULL_WITH_SAMPLED_DETERMINISM",
+  "profileId": "act1-forward-20261007-v1",
+  "sourceCodeSha256": "d7d9fb98e585d1f3d9226d0a38d7202fdf234fa6c92b8820e0341c9fbe317707",
+  "replayRunnerSha256": "b78da33a887e4d21ef27ebdb8575a8a191f824b83ae8a60ea1f6a6e3b8e4e26f",
+  "frozenSourceReceiptSha256": "3d51f2c74d22cdcd3aed0d5913fbfa6fdaa4e28ef297243832211b8b700b7e95",
+  "frozenSourceInventoryRowsVerified": 488,
+  "correctedA": {
+    "baseChunks": 120,
+    "allChunksDecoded": true,
+    "fallbackBytes": 1850682,
+    "fallbackSha256": "3cbb33a9bc78bbbfa0b8ab8300d8c85a21f24014f176c488959fda0f1e163b1d",
+    "fallbackDimensions": [
+      888,
+      1092
+    ],
+    "groundPolicy": {
+      "policy": "single-r4-material-field-owner-fm-meadow-v1",
+      "ownerFMMaterialCells": 10189,
+      "ownerFMCellsAlreadyMeadow": 0,
+      "ownerFMCellsReclassified": 10189,
+      "ownerFMWaterOverlap": 0,
+      "routeFactor": "preserved existing effective factor: 1 inside owner F/M; original R4 meadow weight outside"
+    }
+  },
+  "routeFactorAudits": {
+    "32ppc120windows": {
+      "ppc": 32,
+      "routeSegments": 71,
+      "windows": 120,
+      "rasterizedRoutePixels": 764330,
+      "routePixelsInsideOwnerFM": 285451,
+      "effectiveFactorPixelsChanged": 0,
+      "maxEffectiveFactorDelta": 7.589868178392578e-08,
+      "maxAdjustedRouteWeightBeforeExistingMeadowMultiply": 1.946564793586731,
+      "zeroNewMeadowWeightUnderPositiveRoute": 0,
+      "representativeRouteSeed": {
+        "ownerCell": [
+          106,
+          248
+        ],
+        "ownerClass": 1,
+        "geometricRouteWeight": 0.00741759643274803,
+        "oldEffectiveFactor": 0.00741759643274803
+      },
+      "policy": {
+        "policy": "single-r4-material-field-owner-fm-meadow-v1",
+        "ownerFMMaterialCells": 10189,
+        "ownerFMCellsAlreadyMeadow": 0,
+        "ownerFMCellsReclassified": 10189,
+        "ownerFMWaterOverlap": 0,
+        "routeFactor": "preserved existing effective factor: 1 inside owner F/M; original R4 meadow weight outside"
+      }
+    },
+    "6ppcFullFallback": {
+      "ppc": 6,
+      "routeSegments": 71,
+      "windows": 1,
+      "rasterizedRoutePixels": 26902,
+      "routePixelsInsideOwnerFM": 10049,
+      "effectiveFactorPixelsChanged": 0,
+      "maxEffectiveFactorDelta": 5.960464477539063e-08,
+      "maxAdjustedRouteWeightBeforeExistingMeadowMultiply": 1.711409330368042,
+      "zeroNewMeadowWeightUnderPositiveRoute": 0,
+      "representativeRouteSeed": {
+        "ownerCell": [
+          106,
+          249
+        ],
+        "ownerClass": 1,
+        "geometricRouteWeight": 0.1483121054660536,
+        "oldEffectiveFactor": 0.1483121054660536
+      },
+      "policy": {
+        "policy": "single-r4-material-field-owner-fm-meadow-v1",
+        "ownerFMMaterialCells": 10189,
+        "ownerFMCellsAlreadyMeadow": 0,
+        "ownerFMCellsReclassified": 10189,
+        "ownerFMWaterOverlap": 0,
+        "routeFactor": "preserved existing effective factor: 1 inside owner F/M; original R4 meadow weight outside"
+      }
+    }
+  },
+  "ownerFMWaterOverlap": 0,
+  "affectedGroundDelta": {
+    "changedBasePixels": 964243,
+    "baseChunksChanged": [
+      {
+        "id": "c1-r0",
+        "pixels": 4007,
+        "bounds": [
+          393,
+          454,
+          512,
+          512
+        ]
+      },
+      {
+        "id": "c2-r0",
+        "pixels": 27700,
+        "bounds": [
+          0,
+          295,
+          512,
+          500
+        ]
+      },
+      {
+        "id": "c3-r0",
+        "pixels": 33200,
+        "bounds": [
+          0,
+          0,
+          512,
+          512
+        ]
+      },
+      {
+        "id": "c4-r0",
+        "pixels": 16380,
+        "bounds": [
+          0,
+          221,
+          512,
+          440
+        ]
+      },
+      {
+        "id": "c5-r0",
+        "pixels": 14687,
+        "bounds": [
+          0,
+          189,
+          512,
+          280
+        ]
+      },
+      {
+        "id": "c6-r0",
+        "pixels": 9462,
+        "bounds": [
+          0,
+          253,
+          163,
+          512
+        ]
+      },
+      {
+        "id": "c8-r0",
+        "pixels": 1794,
+        "bounds": [
+          491,
+          109,
+          512,
+          213
+        ]
+      },
+      {
+        "id": "c9-r0",
+        "pixels": 20980,
+        "bounds": [
+          0,
+          11,
+          128,
+          374
+        ]
+      },
+      {
+        "id": "c0-r1",
+        "pixels": 12026,
+        "bounds": [
+          359,
+          296,
+          512,
+          512
+        ]
+      },
+      {
+        "id": "c1-r1",
+        "pixels": 30307,
+        "bounds": [
+          0,
+          0,
+          499,
+          373
+        ]
+      },
+      {
+        "id": "c2-r1",
+        "pixels": 9083,
+        "bounds": [
+          223,
+          253,
+          512,
+          512
+        ]
+      },
+      {
+        "id": "c3-r1",
+        "pixels": 13111,
+        "bounds": [
+          0,
+          0,
+          279,
+          343
+        ]
+      },
+      {
+        "id": "c4-r1",
+        "pixels": 439,
+        "bounds": [
+          489,
+          486,
+          512,
+          512
+        ]
+      },
+      {
+        "id": "c5-r1",
+        "pixels": 19574,
+        "bounds": [
+          0,
+          201,
+          512,
+          512
+        ]
+      },
+      {
+        "id": "c6-r1",
+        "pixels": 8432,
+        "bounds": [
+          0,
+          0,
+          161,
+          257
+        ]
+      },
+      {
+        "id": "c0-r2",
+        "pixels": 10909,
+        "bounds": [
+          327,
+          0,
+          512,
+          215
+        ]
+      },
+      {
+        "id": "c1-r2",
+        "pixels": 15174,
+        "bounds": [
+          0,
+          125,
+          512,
+          249
+        ]
+      },
+      {
+        "id": "c2-r2",
+        "pixels": 9868,
+        "bounds": [
+          0,
+          0,
+          312,
+          152
+        ]
+      },
+      {
+        "id": "c4-r2",
+        "pixels": 17698,
+        "bounds": [
+          325,
+          0,
+          512,
+          512
+        ]
+      },
+      {
+        "id": "c5-r2",
+        "pixels": 335,
+        "bounds": [
+          0,
+          0,
+          512,
+          282
+        ]
+      },
+      {
+        "id": "c6-r2",
+        "pixels": 258,
+        "bounds": [
+          0,
+          216,
+          211,
+          508
+        ]
+      },
+      {
+        "id": "c1-r3",
+        "pixels": 13406,
+        "bounds": [
+          136,
+          295,
+          512,
+          512
+        ]
+      },
+      {
+        "id": "c2-r3",
+        "pixels": 16266,
+        "bounds": [
+          0,
+          197,
+          512,
+          354
+        ]
+      },
+      {
+        "id": "c3-r3",
+        "pixels": 12402,
+        "bounds": [
+          0,
+          230,
+          252,
+          512
+        ]
+      },
+      {
+        "id": "c4-r3",
+        "pixels": 19538,
+        "bounds": [
+          325,
+          0,
+          512,
+          470
+        ]
+      },
+      {
+        "id": "c5-r3",
+        "pixels": 5445,
+        "bounds": [
+          0,
+          364,
+          84,
+          512
+        ]
+      },
+      {
+        "id": "c6-r3",
+        "pixels": 12897,
+        "bounds": [
+          62,
+          1,
+          512,
+          512
+        ]
+      },
+      {
+        "id": "c7-r3",
+        "pixels": 16733,
+        "bounds": [
+          0,
+          285,
+          512,
+          443
+        ]
+      },
+      {
+        "id": "c8-r3",
+        "pixels": 11503,
+        "bounds": [
+          0,
+          317,
+          259,
+          512
+        ]
+      },
+      {
+        "id": "c0-r4",
+        "pixels": 7173,
+        "bounds": [
+          455,
+          39,
+          512,
+          512
+        ]
+      },
+      {
+        "id": "c1-r4",
+        "pixels": 21105,
+        "bounds": [
+          0,
+          0,
+          290,
+          499
+        ]
+      },
+      {
+        "id": "c3-r4",
+        "pixels": 16197,
+        "bounds": [
+          157,
+          0,
+          283,
+          512
+        ]
+      },
+      {
+        "id": "c5-r4",
+        "pixels": 43340,
+        "bounds": [
+          9,
+          0,
+          512,
+          512
+        ]
+      },
+      {
+        "id": "c6-r4",
+        "pixels": 4763,
+        "bounds": [
+          0,
+          0,
+          512,
+          512
+        ]
+      },
+      {
+        "id": "c7-r4",
+        "pixels": 6023,
+        "bounds": [
+          0,
+          109,
+          512,
+          512
+        ]
+      },
+      {
+        "id": "c8-r4",
+        "pixels": 12597,
+        "bounds": [
+          0,
+          0,
+          250,
+          512
+        ]
+      },
+      {
+        "id": "c0-r5",
+        "pixels": 28046,
+        "bounds": [
+          262,
+          0,
+          500,
+          512
+        ]
+      },
+      {
+        "id": "c2-r5",
+        "pixels": 1320,
+        "bounds": [
+          446,
+          383,
+          512,
+          512
+        ]
+      },
+      {
+        "id": "c3-r5",
+        "pixels": 15160,
+        "bounds": [
+          0,
+          0,
+          186,
+          511
+        ]
+      },
+      {
+        "id": "c5-r5",
+        "pixels": 25384,
+        "bounds": [
+          39,
+          0,
+          512,
+          512
+        ]
+      },
+      {
+        "id": "c6-r5",
+        "pixels": 17279,
+        "bounds": [
+          0,
+          0,
+          220,
+          512
+        ]
+      },
+      {
+        "id": "c7-r5",
+        "pixels": 14830,
+        "bounds": [
+          106,
+          0,
+          509,
+          512
+        ]
+      },
+      {
+        "id": "c8-r5",
+        "pixels": 23,
+        "bounds": [
+          0,
+          1,
+          40,
+          20
+        ]
+      },
+      {
+        "id": "c0-r6",
+        "pixels": 25542,
+        "bounds": [
+          230,
+          0,
+          512,
+          512
+        ]
+      },
+      {
+        "id": "c1-r6",
+        "pixels": 16859,
+        "bounds": [
+          0,
+          285,
+          512,
+          504
+        ]
+      },
+      {
+        "id": "c2-r6",
+        "pixels": 20068,
+        "bounds": [
+          0,
+          0,
+          511,
+          511
+        ]
+      },
+      {
+        "id": "c3-r6",
+        "pixels": 17313,
+        "bounds": [
+          1,
+          0,
+          512,
+          512
+        ]
+      },
+      {
+        "id": "c4-r6",
+        "pixels": 40789,
+        "bounds": [
+          0,
+          5,
+          512,
+          512
+        ]
+      },
+      {
+        "id": "c5-r6",
+        "pixels": 26624,
+        "bounds": [
+          0,
+          0,
+          511,
+          512
+        ]
+      },
+      {
+        "id": "c6-r6",
+        "pixels": 16338,
+        "bounds": [
+          0,
+          0,
+          511,
+          512
+        ]
+      },
+      {
+        "id": "c7-r6",
+        "pixels": 15409,
+        "bounds": [
+          0,
+          0,
+          512,
+          501
+        ]
+      },
+      {
+        "id": "c8-r6",
+        "pixels": 1385,
+        "bounds": [
+          0,
+          284,
+          120,
+          512
+        ]
+      },
+      {
+        "id": "c0-r7",
+        "pixels": 13548,
+        "bounds": [
+          265,
+          0,
+          506,
+          154
+        ]
+      },
+      {
+        "id": "c2-r7",
+        "pixels": 942,
+        "bounds": [
+          217,
+          2,
+          511,
+          512
+        ]
+      },
+      {
+        "id": "c3-r7",
+        "pixels": 16781,
+        "bounds": [
+          2,
+          0,
+          512,
+          512
+        ]
+      },
+      {
+        "id": "c4-r7",
+        "pixels": 19130,
+        "bounds": [
+          1,
+          0,
+          512,
+          430
+        ]
+      },
+      {
+        "id": "c5-r7",
+        "pixels": 27394,
+        "bounds": [
+          0,
+          0,
+          512,
+          512
+        ]
+      },
+      {
+        "id": "c6-r7",
+        "pixels": 4921,
+        "bounds": [
+          0,
+          0,
+          90,
+          151
+        ]
+      },
+      {
+        "id": "c7-r7",
+        "pixels": 82,
+        "bounds": [
+          463,
+          370,
+          512,
+          512
+        ]
+      },
+      {
+        "id": "c8-r7",
+        "pixels": 15130,
+        "bounds": [
+          0,
+          0,
+          163,
+          512
+        ]
+      },
+      {
+        "id": "c1-r8",
+        "pixels": 65,
+        "bounds": [
+          458,
+          296,
+          512,
+          364
+        ]
+      },
+      {
+        "id": "c2-r8",
+        "pixels": 568,
+        "bounds": [
+          0,
+          1,
+          279,
+          361
+        ]
+      },
+      {
+        "id": "c3-r8",
+        "pixels": 10182,
+        "bounds": [
+          263,
+          0,
+          512,
+          217
+        ]
+      },
+      {
+        "id": "c4-r8",
+        "pixels": 18202,
+        "bounds": [
+          0,
+          158,
+          512,
+          440
+        ]
+      },
+      {
+        "id": "c5-r8",
+        "pixels": 20737,
+        "bounds": [
+          0,
+          0,
+          412,
+          443
+        ]
+      },
+      {
+        "id": "c7-r8",
+        "pixels": 299,
+        "bounds": [
+          330,
+          0,
+          503,
+          296
+        ]
+      },
+      {
+        "id": "c8-r8",
+        "pixels": 13949,
+        "bounds": [
+          135,
+          0,
+          227,
+          512
+        ]
+      },
+      {
+        "id": "c6-r9",
+        "pixels": 9,
+        "bounds": [
+          286,
+          194,
+          294,
+          203
+        ]
+      },
+      {
+        "id": "c8-r9",
+        "pixels": 17957,
+        "bounds": [
+          200,
+          0,
+          512,
+          471
+        ]
+      },
+      {
+        "id": "c9-r9",
+        "pixels": 7166,
+        "bounds": [
+          0,
+          396,
+          128,
+          505
+        ]
+      }
+    ],
+    "fallback6ppcChangedPixels": 34967
+  },
+  "determinismSamples": {
+    "scope": "sampled only; no full B replay",
+    "rows": [
+      {
+        "label": "native-mapped-c7-r3",
+        "boxWorldPixels": [
+          1792,
+          768,
+          256,
+          256
+        ],
+        "sha256": "1057088e5521c9e477a63fb0c4b058b3c739829cb6833a30ce7d3657650e05b9",
+        "matchedAChunkSetExactly": true
+      },
+      {
+        "label": "plain-forest-transition",
+        "boxWorldPixels": [
+          1936,
+          832,
+          128,
+          128
+        ],
+        "sha256": "50b9496e020a8ec10f8be933925579bb99c92d3b0edf21dce0e5991b2602abf9",
+        "matchedAChunkSetExactly": true
+      },
+      {
+        "label": "mountain-plain-transition",
+        "boxWorldPixels": [
+          1968,
+          848,
+          128,
+          128
+        ],
+        "sha256": "e577f382f5ea9acd65c24ef971669f9ecc8a4df2c4fed3aa34adc575587e5d6d",
+        "matchedAChunkSetExactly": true
+      },
+      {
+        "label": "water-shore",
+        "boxWorldPixels": [
+          848,
+          0,
+          128,
+          128
+        ],
+        "sha256": "8477a8950a69aec978d85aaae2b0fe49558b3d0954425a3e853226a94346b44f",
+        "matchedAChunkSetExactly": true
+      },
+      {
+        "label": "route-context",
+        "boxWorldPixels": [
+          1376,
+          416,
+          128,
+          128
+        ],
+        "sha256": "1b28e7d4cad61df5902c0ca12425bb2f23d7bfa5d902e72bb72c2433875116ed",
+        "matchedAChunkSetExactly": true
+      }
+    ],
+    "fallbackFullImageRecomputedSeparately": true
+  },
+  "protectedFrozenOutputs": {
+    "act1-hifi/forest-collision.bin": {
+      "bytes": 3447872,
+      "sha256": "cfb22774fac5315d3cef2c4b4cdde29ebb5324a054fe0bc3c07e56886cbaab16"
+    },
+    "act1-hifi/manifest.json": {
+      "bytes": 282250,
+      "sha256": "0ee38ee74cb8faff4c07ba78c040548cf41bbaa974234855d8faa81591593155"
+    },
+    "evidence/final-visible-raised-alpha.png": {
+      "bytes": 105552,
+      "sha256": "9354cdd077b9f8f5f157834634485a052d4485fac04009f66739f2a52472a723"
+    },
+    "act1-hifi/underpaint/act1-plate.png": {
+      "bytes": 1852232,
+      "sha256": "2c67b478cb9ebfb1da86601a6911ffc6c7888e056c06baedd808c32fe0129f05"
+    },
+    "act1-hifi/chunks/water/c7-r3.png": {
+      "bytes": 355,
+      "sha256": "8e76bf479100a7b1515805c1fd528e3ca24b4ef79c24dcc37d22926a63124b56"
+    },
+    "act1-hifi/chunks/canopy/c7-r3.webp": {
+      "bytes": 31416,
+      "sha256": "e7c6e95ee19be3b433f07b641f00dea3e3b5c6e6194c62c1a8f94cb69314f0d5"
+    },
+    "act1-hifi/chunks/forest/c7-r3.png": {
+      "bytes": 471178,
+      "sha256": "3c67a9b9061bd9736bc2adab33021d729612a4459ba1bea03feed32670820f97"
+    }
+  },
+  "otherFrozenOutputInventory": {
+    "rows": 367,
+    "canonicalRowsSha256": "105cfba25556bbda56799c8d113d8fc50c5ca4770edc10882bf53e9bcb4c9bb0",
+    "verifiedAgainstFrozenReceipt": true
+  },
+  "a1owExternalInput": {
+    "path": "/Users/chris/.codex/workspaces/edu-rpg-forward-20261007/public/act1-overworld-walk.bin",
+    "bytes": 9688640,
+    "sha256": "d87c6572cbf3012180a289196cfe5e7eee7c50dc86beb06a999fa491eeacfdf3",
+    "changed": false
+  },
+  "limitations": [
+    "W-only corrected base/fallback replay; no public install, descriptor repin, build, or native run",
+    "raised artwork, visible alpha, QOK, A1OW, water, canopy, geometry, and placements remain frozen inputs",
+    "fallback alpha/resampling remains distinct from 32ppc collision; no claim of exact fallback silhouette parity",
+    "native phone/tablet acceptance remains pending a rebuilt candidate"
+  ]
+}

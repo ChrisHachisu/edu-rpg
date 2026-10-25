@@ -1,0 +1,114 @@
+{
+  "inputs": {
+    "a1owSha256": "00a520ae09089547ca4af4ef1077b84acdad98d4989de238f3ee30e28ad092c6",
+    "alphaThreshold": 128,
+    "atlasSha256": "b2701dd847e7d1df26c8488aa95877b57682be732a7bdc10d00fa12363613a04",
+    "dqTilesSha256AtReview": "c3c231cb4634039aa838e70c728b2e6922645ce9a40b86705d6a48d4f5f40c1a",
+    "frozenBundleSha256": "ab4fc9ad1204f23b4ea55dbae2d72bdf193a52e643271bcfe8642e2210556456",
+    "fullWorldMapBytesSha256": "175f8f5dc486e4b4d2bed660924999dca72c0c6516f396e195752debfc92a215",
+    "outputReceiptSha256": "caa119e842428ce77db226f25828b1412403609e26353c8e9d5284bb854ac3e5",
+    "pinnedCollisionDqSha256": "c18ce18e2f25ef6779165389d86163cea64136711f8999c4fd843154e6799c7a",
+    "platedMapDeclaredBundleSha256": "ab4fc9ad1204f23b4ea55dbae2d72bdf193a52e643271bcfe8642e2210556456",
+    "platedMapSha256": "9d380c41ae38795320bedf6dff8be90ef019ad4e2db59c12cd7b24a9f3823ccf",
+    "qokSha256": "05c4a76f914d9f20c82bf42d1eb574d774f15bd924dbee708aca09d260c97346",
+    "raster": {
+      "pixelsPerCell": 32,
+      "scale": "nearest 0.5x",
+      "sizePx": [
+        284,
+        300
+      ]
+    },
+    "recipeSha256": "e84409c166b6754d59d02cb5fcf8c8b54acf524e61b615dc1c996e783b99b007",
+    "routeAuthorityScriptSha256": "9b22791aaa5c72802760a4905ce6e94bce2bb55fe7888a075d2fe86c802764ef",
+    "uncropInventorySha256": "0e9f5264acf028c8408b221eb735c57c01dc7844e4abf9de6cff768bcb158b64",
+    "upperCropXYXY": [
+      15,
+      0,
+      583,
+      600
+    ],
+    "worldMapSha256": "fb466fc6dbe7e05ccbb209c70867cacf4f903d55837ea69ca716e81f7196c96f"
+  },
+  "limits": [
+    "The full-world map is the frozen 320x400 runtime map artifact, whose bundleSha256 must equal the frozen base bundle; support pixel centers and every cell touched by their 1.5px raster footprints are checked. This is not a route search or native traversal proof.",
+    "It does not change the QOK plate dimensions. In-map support remains governed by the separate 1,414-bit union check."
+  ],
+  "outsidePlateFootprint": {
+    "a1owDistanceThirdsHistogramAtEachSupportPixelCenter": {
+      "0": 90100,
+      "10": 5,
+      "11": 9,
+      "12": 13,
+      "14": 2,
+      "15": 9,
+      "16": 1,
+      "3": 136,
+      "4": 21,
+      "6": 70,
+      "7": 15,
+      "8": 14,
+      "9": 47
+    },
+    "allPositiveAreaOverlapCellsBlockedByOWBlock": true,
+    "allSamplesBelowA1owWalkableClearance": true,
+    "allSamplesOnWaterTile2": true,
+    "mapTileCountsByExactWorldPixelSample": {
+      "2": 90442
+    },
+    "mapTileCountsForEveryCellWithPositiveAreaSupportOverlap": {
+      "2": 132
+    },
+    "maxA1owDistanceThirds": 16,
+    "minSupportWorldYCellApprox": 208.625,
+    "minimumWaterClearanceRequirementThirds": 51.4286,
+    "nearbyAuthoredLandmarks": [],
+    "placements": [
+      {
+        "id": "ridge-02-broad-joining-mass-B-94",
+        "newUniqueWorldPixels": 27649,
+        "outsidePlateHardAlphaPixels": 27649,
+        "worldOrigin": [
+          94,
+          218
+        ]
+      },
+      {
+        "id": "fill-02-rear-mass-B-98",
+        "newUniqueWorldPixels": 22617,
+        "outsidePlateHardAlphaPixels": 27649,
+        "worldOrigin": [
+          98,
+          218
+        ]
+      },
+      {
+        "id": "ridge-04-broad-joining-mass-B-106",
+        "newUniqueWorldPixels": 27516,
+        "outsidePlateHardAlphaPixels": 27649,
+        "worldOrigin": [
+          106,
+          218
+        ]
+      },
+      {
+        "id": "fill-04-right-pocket-mass-B-110",
+        "newUniqueWorldPixels": 12660,
+        "outsidePlateHardAlphaPixels": 16170,
+        "worldOrigin": [
+          110,
+          220
+        ]
+      }
+    ],
+    "plateNorthWorldYCell": 218,
+    "uniqueOutsideHardAlphaPixels": 90442,
+    "worldBoundsApproxPx": [
+      4550.25,
+      10116.75,
+      5699.25,
+      10463.25
+    ]
+  },
+  "schema": "north-perimeter-independent-outside-support-v1"
+}

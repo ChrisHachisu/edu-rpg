@@ -1,0 +1,33 @@
+{
+  "schema": "edu-rpg-boot-cover-readiness-independent-review-v1",
+  "reviewedSource": {
+    "path": "S/index.html",
+    "sha256": "67b5f8f108c48118bb04d45541ef5c7d790a67924ec42fe06af1b94b6e90cc8e"
+  },
+  "reviewedTest": {
+    "path": "S/scripts/boot-cover-world-readiness.test.cjs",
+    "sha256": "092771a8ba7ee7279dc3a1794af6f8a4ce4d935659505467423be06b961c45d5",
+    "command": "node --test scripts/boot-cover-world-readiness.test.cjs",
+    "result": "PASS: 6 tests, 0 failures"
+  },
+  "independentRegression": {
+    "method": "Copied current index.html to /tmp and changed only the post-deadline predicate from !ready && elapsed > WORLD_CAP to elapsed > WORLD_CAP, reproducing the pre-fix readiness-timeout behavior.",
+    "command": "QOK_BOOT_COVER_HTML=/tmp/qok-index-world-cap-before-fix.html node --test scripts/boot-cover-world-readiness.test.cjs",
+    "result": "EXPECTED_FAIL: late-readiness-after-cap test failed at first post-cap sample; remaining 5 tests passed."
+  },
+  "reviewFindings": {
+    "verdict": "PASS for the scoped static readiness fix",
+    "semantics": [
+      "A fully ready world may complete its existing three consecutive requestAnimationFrame readiness samples even when the first sample arrives after WORLD_CAP.",
+      "A false readiness sample after WORLD_CAP still enters the existing visible error phase immediately; a partial ready streak does not extend the deadline.",
+      "Explicit underpaint failure remains immediate, retry starts a fresh attempt and still requires three ready samples, and normal title-to-scene-start progression remains covered.",
+      "The changed predicate gates timeout failure on !ready, so the cap remains bounded for unready worlds without falsely hiding a ready world during the stability frames."
+    ],
+    "existingLegacyBootCoverTests": "No dedicated legacy boot-cover/startup test suite was found; existing project tests are map-engine tests.",
+    "scopeLimit": "Static harness review only. Does not prove native Release behavior or startup shader recovery; no UI or app state changed."
+  },
+  "checks": {
+    "gitDiffCheckIndexHtml": "PASS",
+    "nodeCheckTestSource": "PASS"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "schema": "act1-water-texture-r2-v1",
+  "assetPath": "design/terrain-current-profile-20261007/materials/act1-water-r2.png",
+  "sha256": "39e7ae458009fc28b6060b1d2a58faa5dadcca356e382f602358eaf7dce3dbd0",
+  "dimensionsPx": [
+    1254,
+    1254
+  ],
+  "mode": "RGB",
+  "outputPixelsPerCell": 32,
+  "sourceTexelsPerCell": 96,
+  "mask": "R4 smoothed semantic material weights; 32ppc bilinear expansion from the renderer class field",
+  "phase": "global world-cell origin; texture coordinate is worldCell*96 + outputPixel*3",
+  "displayScale": {
+    "logicalTilePx": 48,
+    "overworldScale": 0.7,
+    "physicalTilePx": 33.6
+  },
+  "blend": "normal alpha composite over preserved ground; same RGB sampler used for north-support water backing",
+  "sourceApproval": "Owner-approved water-r2 lighter-water preview revision",
+  "previewRevision": "water-r2",
+  "semanticMask": "R4 _weights(\"water\") from manifest-referenced smoothed semantic classgrid at 32px/cell"
+}

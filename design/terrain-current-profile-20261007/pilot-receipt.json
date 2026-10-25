@@ -1,0 +1,504 @@
+{
+  "status": "PILOT_PASS",
+  "profileId": "act1-forward-20261007-v1",
+  "artifactKind": "terrain-compositor-pilot",
+  "fullWorldComplete": false,
+  "gateReady": false,
+  "pilotRunnerSha256": "531905731ce287d08bab90f6260e14dd956404929edcec0091a9a60aaee6d84a",
+  "tools": {
+    "python": "3.9.6",
+    "numpy": "2.0.2",
+    "pillow": "11.3.0",
+    "node": "v20.20.0"
+  },
+  "windowWorldPixels": [
+    3136,
+    416,
+    640,
+    512
+  ],
+  "windowWorldCells": [
+    114,
+    231,
+    133,
+    246
+  ],
+  "authoringInputs": {
+    "bundlePath": "inputs/terrain-current-profile-20261007",
+    "bundleVerification": "PASS",
+    "bundleManifestSha256": "091df7c664cfbe73b3b75f1359639c1f646bf3fd80eb7f698678e695b65430ea",
+    "worldMapSha256": "f1ea99546b799b50cec7d6fd40b1fae2ad53669fae22afaebe3760f225d12cad",
+    "dqTilesSha256": "80b1fcaf6d593bd704f720239c2f9fd533e7b49ca1af7c8d6401901b9d876090",
+    "currentManifestSha256": "c6d69d659ea4e82b09feabae624c2cbd4406627405bb389a36547bd44cc4183f",
+    "ownerJsonSha256": "14ace76ef6d8051e711e770a55b1e85219ceacacc998b486d0bff7cbae145e8a",
+    "semanticSha256": "97f1a64fe6bfec7b40af16fef05f70caa80bdd076a8c4c3806474b848c975068",
+    "r4RendererSha256": "8a2f8f7d9cd3a24c8a20e45630e8a181c820082bcdb2b5b3876d15429cbb98a2",
+    "r4ConfigSha256": "e98f6dc03f98ff9f13b1b32d1df2e5017b88a7a71319c364b9807481ee09399f",
+    "forestPlacementsSha256": "969cb20783142b6b14e03a3421400cfebd0cc6b18ad41e96f1e2f78d4e51a4bd",
+    "cliffPlacementsSha256": "8f5f0ece745dc4d9378c24e21c1fc2992d8ca03cee842aeeac444daf5eda0fa7",
+    "cliffCompositionSha256": "5e0de19a4c29e415b3066dedbd24089e8d9382fd4cf67b5415f44b69dea7efad",
+    "heroSheets": [
+      {
+        "path": "inputs/terrain-current-profile-20261007/heroes/hero-g3-walk.png",
+        "sha256": "070a8a452c3dda775bd6c8593a66d57a5a13d97b9fb33378ea5b2bb0e1fded3c"
+      },
+      {
+        "path": "inputs/terrain-current-profile-20261007/heroes/hero-male-walk.png",
+        "sha256": "88cbed8f9d707b216ada01e108eedd5822c6bcfc69c8dd22af2457f231dc0976"
+      }
+    ],
+    "previewActorSourceSha256": "b1e03de47337d8d2aca8d89e80c1c524c95ac2cc2cf88ed1ebd2b37b86424b2e"
+  },
+  "runtimeFlowEvidence": {
+    "currentDQPrefetch": "DQ a1aStartCell is first-window asset-prefetch authority; it does not establish actual game spawn. Its saved-overworld/live-landmark/manifest-last-resort branches are pinned above.",
+    "actualSpawnRecovery": "Not inferred from the known-stale TypeScript sources; actual spawn/save-resume mapping remains for later runtime integration review."
+  },
+  "freshCurrentGuard": {
+    "extractor": "Node VM executes bundled current act1-world-map.js; seedWalkableAt cardinal neighbors of each current landmark door at; both selectable hero sheets, 12 frames each, alpha>=8, scaled62x62 and centered on cells",
+    "mapRevision": 7,
+    "landmarkCount": 8,
+    "exitCount": 8,
+    "approachCount": 11,
+    "guardCells": [
+      [
+        30,
+        275
+      ],
+      [
+        39,
+        345
+      ],
+      [
+        69,
+        256
+      ],
+      [
+        96,
+        360
+      ],
+      [
+        101,
+        232
+      ],
+      [
+        133,
+        348
+      ],
+      [
+        145,
+        372
+      ],
+      [
+        148,
+        278
+      ],
+      [
+        149,
+        277
+      ],
+      [
+        149,
+        279
+      ],
+      [
+        150,
+        278
+      ]
+    ],
+    "pilotCropProjectedGuardPixels": 0,
+    "currentStartCell": {
+      "x": 69,
+      "y": 256
+    },
+    "currentStartSemantics": "DQ a1aStartCell is a saved overworld position when present; otherwise live map landmark exit/at for saved mapId or default greenhollow; if no live landmark exists it uses manifest.startCell or null. This source function governs hi-fi start/prefetch selection, not proof of actual game new-game spawn. Current manifest startCell equals live Greenhollow exit [69,256].",
+    "legacyFallbackProbe": {
+      "cell": {
+        "x": 130,
+        "y": 290
+      },
+      "classification": "preserved manifest legacyFallback; not referenced by a1aStartCell and not labeled current runtime branch",
+      "pilotCropProjectedGuardPixels": 0
+    },
+    "savedOverworldPosition": "dynamic user save position is not statically enumerable; route proof requires runtime/saved-position validation"
+  },
+  "generatedOutputs": {
+    "outputs/pilot-approved-reference-diff-mask.png": {
+      "bytes": 1323,
+      "sha256": "e211d3fb9c8ef647bd3e8f052a028770ea60d22eddf14406d69cf98b127ff997"
+    },
+    "outputs/pilot-approved-reference-side-by-side.png": {
+      "bytes": 659071,
+      "sha256": "001427951969f89c38402c26724ae6466354ed15161f0b04d7203dbc2b19f24b"
+    },
+    "outputs/pilot-baseline-visible-art-over-P-mask.png": {
+      "bytes": 816,
+      "sha256": "23b53ba580850c6f985a5e436d756cd6ecbfe1310cd19f213d9887356a5151b9"
+    },
+    "outputs/pilot-chunk-reconstruction.png": {
+      "bytes": 724952,
+      "sha256": "06e0547adb97875b576e532a1444ddb9f526384d04a09932e1abd27af049c078"
+    },
+    "outputs/pilot-cleaned-fm-ground-mask.png": {
+      "bytes": 1394,
+      "sha256": "f996cb3f1ab033cb6f975c370c7eebbd3aed856a017ef8f3dc749b0ef1ca2269"
+    },
+    "outputs/pilot-collision-mask.png": {
+      "bytes": 2204,
+      "sha256": "533ff0e84258405640f9d453c3558e2e7677886e671a4cd1832fe1303d590594"
+    },
+    "outputs/pilot-final-raised-alpha.png": {
+      "bytes": 2204,
+      "sha256": "533ff0e84258405640f9d453c3558e2e7677886e671a4cd1832fe1303d590594"
+    },
+    "outputs/pilot-gap-residual.png": {
+      "bytes": 630841,
+      "sha256": "1b587e82c76b9eaa9ef2551c41c0b805afde6bd5cf97c3ba75a15783a913607f"
+    },
+    "outputs/pilot-ground-clean-fm-support.png": {
+      "bytes": 490192,
+      "sha256": "dcc68fdbe797149428922fc4a203d55b683d0e788bb0042256bb8bef15d57c07"
+    },
+    "outputs/pilot-ground-current-semantic.png": {
+      "bytes": 404764,
+      "sha256": "aadadd8d69328033a2f4eab2ae4fb9c6b0455d5719a46a043c18a8f5fa9f4758"
+    },
+    "outputs/pilot-ground.png": {
+      "bytes": 490192,
+      "sha256": "dcc68fdbe797149428922fc4a203d55b683d0e788bb0042256bb8bef15d57c07"
+    },
+    "outputs/pilot-lowres-6ppc.png": {
+      "bytes": 32428,
+      "sha256": "d46393379333bb77ff8d485a0d0dd938c9e6af6352696d88f5a4dbec74994a6c"
+    },
+    "outputs/pilot-raised-art.png": {
+      "bytes": 658775,
+      "sha256": "b74c4d201f01b2daa4d087833b89f0e387c39065ea95ad0b01e31b5f2aa5a2ac"
+    },
+    "outputs/pilot-scene.png": {
+      "bytes": 632183,
+      "sha256": "4d94607764ab6bce7f6f2043438f1e8b42c226e1d7a5f1ea8b2991a61e540376"
+    },
+    "outputs/pilot-static-actor-clearance.png": {
+      "bytes": 633467,
+      "sha256": "3d464139f070bef784fdfe7a24a16a3bcd4fda5e67ed8bf99551b8feb8f26a28"
+    },
+    "outputs/pilot-water-locked-composite.png": {
+      "bytes": 1351,
+      "sha256": "37598ed86d51c076a7c4ca49948c9a084b17773a805b0832a24b1f020abf3d9f"
+    }
+  },
+  "checks": {
+    "waterAndCanopyLockedHashesMatchManifest": true,
+    "globalSharedYOrder": true,
+    "globalSortKey": "contactY ascending then stable object label; forest and cliffs share the forest RGBA slot at depth9.5 below hero10",
+    "groundPrep": "general policy replaces ground material with clean meadow at current owner F/M cells in the pilot rendering bounds; P and other semantic cells keep true R4 weights; R4 route-weight function is unmodified and active in both passes",
+    "globalToFourChunkReconstructionPixelExact": true,
+    "actualCrossedChunkCutsLocalPx": [
+      448,
+      96
+    ],
+    "collisionDerivation": "threshold16 applied to final globally composited raised-art alpha; each source sprite is renderer-hard-cut at128 first",
+    "collisionEqualsFinalRaisedAlphaNonzero": true,
+    "collisionAlphaXorPixels": 0,
+    "sourceAlpha16To127PixelsDiscarded": 38204,
+    "finalRaisedAlphaOutput": "outputs/pilot-final-raised-alpha.png",
+    "collisionMaskOutput": "outputs/pilot-collision-mask.png",
+    "newCollisionHitsOwnerP": 0,
+    "baselineCollisionHitsOwnerP": 2863,
+    "baselineForestVisibleArtPpixelHits": 2863,
+    "baselineCliffVisibleArtPpixelHits": 0,
+    "baselineVisibleArtPpixelContributors": [
+      {
+        "id": "tree:forest-r4-01180",
+        "kind": "tree",
+        "Ppixels": 428
+      },
+      {
+        "id": "tree:forest-r4-01683",
+        "kind": "tree",
+        "Ppixels": 1042
+      },
+      {
+        "id": "tree:forest-r4-02022",
+        "kind": "tree",
+        "Ppixels": 24
+      },
+      {
+        "id": "tree:forest-r4-02041",
+        "kind": "tree",
+        "Ppixels": 698
+      },
+      {
+        "id": "tree:forest-r4-02050",
+        "kind": "tree",
+        "Ppixels": 1967
+      }
+    ],
+    "baselineVisibleArtOverPOwnerMask": "outputs/pilot-baseline-visible-art-over-P-mask.png",
+    "newCollisionHitsCurrentGuard": 0,
+    "baselineExposedGapPixels": 25038,
+    "pilotRemainingBaselineGapPixels": 0,
+    "pilotGapResidualLocalPxBounds": null,
+    "pilotGapResidualPixelSample": [],
+    "eligiblePilotFMBoundaryCandidates": 61,
+    "selectedPilotFMBoundaryCandidates": [
+      {
+        "id": "forest-edge-r15-121.490",
+        "center": [
+          121.49,
+          239.355
+        ],
+        "sourceIndex": 5,
+        "side": 68,
+        "flipX": false,
+        "candidateRow": 15
+      },
+      {
+        "id": "forest-edge-r15-126.655",
+        "center": [
+          126.655,
+          239.355
+        ],
+        "sourceIndex": 3,
+        "side": 68,
+        "flipX": true,
+        "candidateRow": 15
+      },
+      {
+        "id": "forest-edge-r15-130.265",
+        "center": [
+          130.265,
+          239.355
+        ],
+        "sourceIndex": 3,
+        "side": 68,
+        "flipX": false,
+        "candidateRow": 15
+      },
+      {
+        "id": "forest-edge-r16-132.830",
+        "center": [
+          132.83,
+          240.56
+        ],
+        "sourceIndex": 4,
+        "side": 68,
+        "flipX": false,
+        "candidateRow": 16
+      },
+      {
+        "id": "forest-edge-r16-124.055",
+        "center": [
+          124.055,
+          240.56
+        ],
+        "sourceIndex": 3,
+        "side": 68,
+        "flipX": false,
+        "candidateRow": 16
+      },
+      {
+        "id": "forest-edge-r16-128.760",
+        "center": [
+          128.76,
+          240.56
+        ],
+        "sourceIndex": 1,
+        "side": 68,
+        "flipX": false,
+        "candidateRow": 16
+      },
+      {
+        "id": "forest-edge-r15-120.215",
+        "center": [
+          120.215,
+          239.355
+        ],
+        "sourceIndex": 0,
+        "side": 68,
+        "flipX": false,
+        "candidateRow": 15
+      },
+      {
+        "id": "forest-edge-r16-123.205",
+        "center": [
+          123.205,
+          240.56
+        ],
+        "sourceIndex": 6,
+        "side": 68,
+        "flipX": true,
+        "candidateRow": 16
+      },
+      {
+        "id": "forest-edge-r16-127.700",
+        "center": [
+          127.7,
+          240.56
+        ],
+        "sourceIndex": 3,
+        "side": 68,
+        "flipX": true,
+        "candidateRow": 16
+      },
+      {
+        "id": "forest-edge-r15-126.230",
+        "center": [
+          126.23,
+          239.355
+        ],
+        "sourceIndex": 2,
+        "side": 68,
+        "flipX": false,
+        "candidateRow": 15
+      },
+      {
+        "id": "forest-edge-r16-132.405",
+        "center": [
+          132.405,
+          240.56
+        ],
+        "sourceIndex": 1,
+        "side": 68,
+        "flipX": true,
+        "candidateRow": 16
+      }
+    ],
+    "actorPCell": [
+      115,
+      232
+    ],
+    "actorFullSelectableFrameUnionHits": 0,
+    "approvedReferenceComparison": {
+      "differentPixels": 4891,
+      "pixelCount": 327680,
+      "meanAbsChannelDelta": 0.13269755045572917,
+      "maxAbsChannelDelta": 104,
+      "referenceSha256": "73a1517c532bee65fed602b733a6681e0798bae299dd408d0aa7afbe8bcdbbf4",
+      "visibleArtRegionPixels": 302405,
+      "differentPixelsInsideVisibleArtRegion": 199,
+      "differentPixelsOutsideVisibleArtRegion": 4692
+    },
+    "waterBytesUnchanged": true,
+    "canopyCompatibilityBytesUnchanged": true,
+    "lowresDerivedFromSameGloballySortedScene": true
+  },
+  "boundaryRule": "generalized rule indexes current owner-map F/M adjacencies, tests candidates from the approved R4 lattice, requires an F contact root, the final rendered hard-alpha>=128 footprint entirely in F/M, rejects the freshly regenerated current guard using final sprite alpha at runtime threshold16, then greedily covers the current exposed cliff-to-forest interval with stable ID tie-break. Runtime threshold16 is applied to the final globally composited raised-art alpha after source hard-cut at128. Pilot execution is restricted to approved seam rows14-16 and x=119.5..133; full-map candidate placements were not generated.",
+  "limitations": [
+    "pilot only; no full-world outputs or complete output inventory",
+    "current R4 semantic ground retains its route material weight; live DQ road/landmark art layers and all runtime landmark files remain unchanged and are not represented in static scene",
+    "legacyFallback is retained as a labeled probe only; no claim it is an active fallback",
+    "saved-position recovery, full route reachability, game integration, runtime streaming, native/device behavior, and gate readiness are unproven",
+    "existing compatibility canopy resource is preserved and not used as a fifth layer"
+  ],
+  "lockedRuntimeChunks": [
+    {
+      "chunk": "c6-r0",
+      "layer": "water",
+      "path": "inputs/runtime-locked/water/c6-r0.png",
+      "sha256": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f",
+      "bytes": 334
+    },
+    {
+      "chunk": "c6-r0",
+      "layer": "canopy",
+      "path": "inputs/runtime-locked/canopy/c6-r0.webp",
+      "sha256": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af",
+      "bytes": 52
+    },
+    {
+      "chunk": "c7-r0",
+      "layer": "water",
+      "path": "inputs/runtime-locked/water/c7-r0.png",
+      "sha256": "7d29deef83ab6e43519a44dcedfdc95ece47cab359700b01f3e280c2d653fbed",
+      "bytes": 412
+    },
+    {
+      "chunk": "c7-r0",
+      "layer": "canopy",
+      "path": "inputs/runtime-locked/canopy/c7-r0.webp",
+      "sha256": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af",
+      "bytes": 52
+    },
+    {
+      "chunk": "c6-r1",
+      "layer": "water",
+      "path": "inputs/runtime-locked/water/c6-r1.png",
+      "sha256": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f",
+      "bytes": 334
+    },
+    {
+      "chunk": "c6-r1",
+      "layer": "canopy",
+      "path": "inputs/runtime-locked/canopy/c6-r1.webp",
+      "sha256": "73dddc1a867216b7ecfda49ff3fb7d502306003b3a8015e2f3c534ba10bb9cad",
+      "bytes": 33086
+    },
+    {
+      "chunk": "c7-r1",
+      "layer": "water",
+      "path": "inputs/runtime-locked/water/c7-r1.png",
+      "sha256": "2c400bafa21b653f6ee64d601a0428c7cc580252b6ffc6302d435e4bd024c920",
+      "bytes": 385
+    },
+    {
+      "chunk": "c7-r1",
+      "layer": "canopy",
+      "path": "inputs/runtime-locked/canopy/c7-r1.webp",
+      "sha256": "26b4c89f77c072ec9f00571075ca082f65f42bc0b1581ac1659d51e25a27f43f",
+      "bytes": 29852
+    }
+  ],
+  "outsideBundleAccessDenied": true,
+  "bundleReads": [
+    "/private/tmp/edu-rpg-build83-paint-audit-20261005/current-terrain-generation-20261007/inputs/reference-approved-v2-seam.png",
+    "/private/tmp/edu-rpg-build83-paint-audit-20261005/current-terrain-generation-20261007/inputs/runtime-locked/canopy/c6-r0.webp",
+    "/private/tmp/edu-rpg-build83-paint-audit-20261005/current-terrain-generation-20261007/inputs/runtime-locked/canopy/c6-r1.webp",
+    "/private/tmp/edu-rpg-build83-paint-audit-20261005/current-terrain-generation-20261007/inputs/runtime-locked/canopy/c7-r0.webp",
+    "/private/tmp/edu-rpg-build83-paint-audit-20261005/current-terrain-generation-20261007/inputs/runtime-locked/canopy/c7-r1.webp",
+    "/private/tmp/edu-rpg-build83-paint-audit-20261005/current-terrain-generation-20261007/inputs/runtime-locked/water/c6-r0.png",
+    "/private/tmp/edu-rpg-build83-paint-audit-20261005/current-terrain-generation-20261007/inputs/runtime-locked/water/c6-r1.png",
+    "/private/tmp/edu-rpg-build83-paint-audit-20261005/current-terrain-generation-20261007/inputs/runtime-locked/water/c7-r0.png",
+    "/private/tmp/edu-rpg-build83-paint-audit-20261005/current-terrain-generation-20261007/inputs/runtime-locked/water/c7-r1.png",
+    "/private/tmp/edu-rpg-build83-paint-audit-20261005/current-terrain-generation-20261007/inputs/terrain-current-profile-20261007/atlases/act1-cliff-kit-imagegen-v1.png",
+    "/private/tmp/edu-rpg-build83-paint-audit-20261005/current-terrain-generation-20261007/inputs/terrain-current-profile-20261007/atlases/companion-cliff-kit-imagegen-v2.png",
+    "/private/tmp/edu-rpg-build83-paint-audit-20261005/current-terrain-generation-20261007/inputs/terrain-current-profile-20261007/current/act1-hifi-manifest.json",
+    "/private/tmp/edu-rpg-build83-paint-audit-20261005/current-terrain-generation-20261007/inputs/terrain-current-profile-20261007/current/act1-smoothed-semantic.png",
+    "/private/tmp/edu-rpg-build83-paint-audit-20261005/current-terrain-generation-20261007/inputs/terrain-current-profile-20261007/current/act1-world-map.js",
+    "/private/tmp/edu-rpg-build83-paint-audit-20261005/current-terrain-generation-20261007/inputs/terrain-current-profile-20261007/current/dq-tiles.js",
+    "/private/tmp/edu-rpg-build83-paint-audit-20261005/current-terrain-generation-20261007/inputs/terrain-current-profile-20261007/current/owner-terrain.json",
+    "/private/tmp/edu-rpg-build83-paint-audit-20261005/current-terrain-generation-20261007/inputs/terrain-current-profile-20261007/heroes/hero-act1-male-walk-8x3-64-g3.png",
+    "/private/tmp/edu-rpg-build83-paint-audit-20261005/current-terrain-generation-20261007/inputs/terrain-current-profile-20261007/heroes/hero-g3-walk.png",
+    "/private/tmp/edu-rpg-build83-paint-audit-20261005/current-terrain-generation-20261007/inputs/terrain-current-profile-20261007/heroes/hero-male-walk.png",
+    "/private/tmp/edu-rpg-build83-paint-audit-20261005/current-terrain-generation-20261007/inputs/terrain-current-profile-20261007/input-manifest.json",
+    "/private/tmp/edu-rpg-build83-paint-audit-20261005/current-terrain-generation-20261007/inputs/terrain-current-profile-20261007/placements/cliff-composition-report.json",
+    "/private/tmp/edu-rpg-build83-paint-audit-20261005/current-terrain-generation-20261007/inputs/terrain-current-profile-20261007/placements/cliff-selected-layout-whole-act1.json",
+    "/private/tmp/edu-rpg-build83-paint-audit-20261005/current-terrain-generation-20261007/inputs/terrain-current-profile-20261007/placements/forest-r4-whole-act1.json",
+    "/private/tmp/edu-rpg-build83-paint-audit-20261005/current-terrain-generation-20261007/inputs/terrain-current-profile-20261007/portable-root/design/continent-terrain-class-method/owner-terrain/art-tiles/act1-smoothed-semantic.png",
+    "/private/tmp/edu-rpg-build83-paint-audit-20261005/current-terrain-generation-20261007/inputs/terrain-current-profile-20261007/portable-root/design/review/overworld-art-blueprint/act-by-act/act1/runtime-v2/act1-final-art-geometry-r26/runtime/manifest.json",
+    "/private/tmp/edu-rpg-build83-paint-audit-20261005/current-terrain-generation-20261007/inputs/terrain-current-profile-20261007/portable-root/design/review/overworld-art-blueprint/act-by-act/act1/runtime-v4/act1-painted-overworld-r4/runtime/manifest.json",
+    "/private/tmp/edu-rpg-build83-paint-audit-20261005/current-terrain-generation-20261007/inputs/terrain-current-profile-20261007/r4-source/canopy-atlas-r4-hybrid.png",
+    "/private/tmp/edu-rpg-build83-paint-audit-20261005/current-terrain-generation-20261007/inputs/terrain-current-profile-20261007/r4-source/meadow-atlas-r4-v5-periodic.png",
+    "/private/tmp/edu-rpg-build83-paint-audit-20261005/current-terrain-generation-20261007/inputs/terrain-current-profile-20261007/r4-source/paint-source-r4-v5.json",
+    "/private/tmp/edu-rpg-build83-paint-audit-20261005/current-terrain-generation-20261007/inputs/terrain-current-profile-20261007/r4-source/rock-motif-atlas-r2.png",
+    "/private/tmp/edu-rpg-build83-paint-audit-20261005/current-terrain-generation-20261007/inputs/terrain-current-profile-20261007/r4-source/scripts/render_material_map_r4.py",
+    "/private/tmp/edu-rpg-build83-paint-audit-20261005/current-terrain-generation-20261007/inputs/terrain-current-profile-20261007/r4-source/surface-atlas-r4-crisp.png",
+    "/private/tmp/edu-rpg-build83-paint-audit-20261005/current-terrain-generation-20261007/outputs/pilot-approved-reference-diff-mask.png",
+    "/private/tmp/edu-rpg-build83-paint-audit-20261005/current-terrain-generation-20261007/outputs/pilot-approved-reference-side-by-side.png",
+    "/private/tmp/edu-rpg-build83-paint-audit-20261005/current-terrain-generation-20261007/outputs/pilot-baseline-visible-art-over-P-mask.png",
+    "/private/tmp/edu-rpg-build83-paint-audit-20261005/current-terrain-generation-20261007/outputs/pilot-chunk-reconstruction.png",
+    "/private/tmp/edu-rpg-build83-paint-audit-20261005/current-terrain-generation-20261007/outputs/pilot-cleaned-fm-ground-mask.png",
+    "/private/tmp/edu-rpg-build83-paint-audit-20261005/current-terrain-generation-20261007/outputs/pilot-collision-mask.png",
+    "/private/tmp/edu-rpg-build83-paint-audit-20261005/current-terrain-generation-20261007/outputs/pilot-final-raised-alpha.png",
+    "/private/tmp/edu-rpg-build83-paint-audit-20261005/current-terrain-generation-20261007/outputs/pilot-gap-residual.png",
+    "/private/tmp/edu-rpg-build83-paint-audit-20261005/current-terrain-generation-20261007/outputs/pilot-ground-clean-fm-support.png",
+    "/private/tmp/edu-rpg-build83-paint-audit-20261005/current-terrain-generation-20261007/outputs/pilot-ground-current-semantic.png",
+    "/private/tmp/edu-rpg-build83-paint-audit-20261005/current-terrain-generation-20261007/outputs/pilot-ground.png",
+    "/private/tmp/edu-rpg-build83-paint-audit-20261005/current-terrain-generation-20261007/outputs/pilot-lowres-6ppc.png",
+    "/private/tmp/edu-rpg-build83-paint-audit-20261005/current-terrain-generation-20261007/outputs/pilot-raised-art.png",
+    "/private/tmp/edu-rpg-build83-paint-audit-20261005/current-terrain-generation-20261007/outputs/pilot-scene.png",
+    "/private/tmp/edu-rpg-build83-paint-audit-20261005/current-terrain-generation-20261007/outputs/pilot-static-actor-clearance.png",
+    "/private/tmp/edu-rpg-build83-paint-audit-20261005/current-terrain-generation-20261007/outputs/pilot-water-locked-composite.png",
+    "/private/tmp/edu-rpg-build83-paint-audit-20261005/current-terrain-generation-20261007/pilot_compositor.py"
+  ]
+}

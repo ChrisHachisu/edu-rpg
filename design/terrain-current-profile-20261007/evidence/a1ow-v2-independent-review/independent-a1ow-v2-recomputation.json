@@ -1,0 +1,64 @@
+{
+  "schema": "independent-a1ow-v2-integration-review-v1",
+  "status": "PASS_A1OW_V2_IDENTITY_AND_BODY",
+  "inputs": {
+    "candidateRoot": "/Users/chris/.codex/workspaces/edu-rpg-forward-20261007",
+    "v2Path": "public/act1-overworld-walk.bin",
+    "v2Sha256": "00a520ae09089547ca4af4ef1077b84acdad98d4989de238f3ee30e28ad092c6",
+    "dqTilesSha256": "c18ce18e2f25ef6779165389d86163cea64136711f8999c4fd843154e6799c7a",
+    "bakerPath": "scripts/bake_act1_overworld_walk.mjs",
+    "bakerSha256": "8f172f77de9ccddebafd0d742a13fdc22d5258c652eacf5df5b0ba5d25c9eb2b",
+    "mapProofSha256": "a9fecf54db9de1f18a1f26c3f74b1bab9be230a247076e10580859e7074ab212",
+    "frozenV1Sha256": "d87c6572cbf3012180a289196cfe5e7eee7c50dc86beb06a999fa491eeacfdf3"
+  },
+  "v2Header": {
+    "magic": "A1OW",
+    "version": 2,
+    "headerBytes": 96,
+    "pixelsPerCell": 48,
+    "mapCells": [
+      320,
+      400
+    ],
+    "far": 255,
+    "reservedBytesZero": true,
+    "blocks": 4094,
+    "exactLength": 9688672
+  },
+  "semantics": {
+    "sha256": "a6e6e7f228d040381539618d99f03e774a16dd7cadbaf8cc76a115934d324f67",
+    "sourceFunctionNames": [
+      "_h",
+      "vnoise",
+      "et",
+      "fieldAt",
+      "waterField",
+      "mountainField",
+      "buildMutedWater",
+      "owmSupportBounds",
+      "owmSupportEt",
+      "owmSupportInputBytes"
+    ],
+    "sourceSha256": "4ed7c44a096169e9f9354c4a568ffa3dab4ebfe9fb2fd5339ae8b31dce2bacdb"
+  },
+  "support": {
+    "bounds": {
+      "x0": 0,
+      "y0": 173,
+      "x1": 208,
+      "y1": 399
+    },
+    "classByteCount": 47443,
+    "schema": "a1ow-effective-support-v1",
+    "mutedWater": "4-connected global components <= 12 suppressed",
+    "sha256": "eeaf65c08cda239ea8755a3af0026ed0ca61e19a2683cafc10610b5c4027914a",
+    "fnv32": 4271507709,
+    "effectiveClassBytesSha256": "63d55c8dd75d6d946f5b56e3f58ce6a4ec287e6ccccddebed61329a70fb972d3"
+  },
+  "payload": {
+    "frozenV1BodySha256": "05be9638d04a692668c3a1c8b4bd3d809216bcede2e090a74a0712cb5467498c",
+    "v2BodySha256": "05be9638d04a692668c3a1c8b4bd3d809216bcede2e090a74a0712cb5467498c",
+    "bytes": 9688576,
+    "byteIdentical": true
+  }
+}

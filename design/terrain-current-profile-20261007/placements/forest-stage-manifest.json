@@ -1,0 +1,3390 @@
+{
+  "kind": "act1-forest-r4-world-integration-stage",
+  "revision": "R4-whole-act1-stage",
+  "forestMode": "whole-object-v8",
+  "semanticBounds": [
+    16,
+    218,
+    163,
+    399
+  ],
+  "chunks": [
+    {
+      "id": "c0-r0",
+      "x": 0,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c0-r0.png",
+      "baseSha256": "b025b3de58f214ee74d7408be6f47ec60161849c28425484781a17e3097af593",
+      "forest": "chunks/forest/c0-r0.png",
+      "forestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "sourceBaseSha256": "4a08076b59a0bc547fe01327ec018476dc4ad867d89e66fb515f9f9e3be141b8",
+      "sourceForestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c1-r0",
+      "x": 256,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c1-r0.png",
+      "baseSha256": "464f52c3c41905c634be4af0ade0c5644a1e1be5a1aaef242589019cbf99f49a",
+      "forest": "chunks/forest/c1-r0.png",
+      "forestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "sourceBaseSha256": "c3390790d1169c1518ee4d2ab06571546f66a830ba2a9945fcb765bbef45b581",
+      "sourceForestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c2-r0",
+      "x": 512,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c2-r0.png",
+      "baseSha256": "e95d4b7865a8c12d0c0aba04196432f476c473ab1f29d8197343bb5c046bf22a",
+      "forest": "chunks/forest/c2-r0.png",
+      "forestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "sourceBaseSha256": "a640435829d9b37235530e6a7ef05c4f82b599eaf15fe5b679441bc438046449",
+      "sourceForestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c3-r0",
+      "x": 768,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c3-r0.png",
+      "baseSha256": "6dca032f56749cf4a78da26695fe811506f09217304cfd8f5cc5d3a2ef11b6ad",
+      "forest": "chunks/forest/c3-r0.png",
+      "forestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "sourceBaseSha256": "cd6315111fd9513166c229db8f7b0bd08799ca5103fbde7f3dc81bce7d946974",
+      "sourceForestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c4-r0",
+      "x": 1024,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c4-r0.png",
+      "baseSha256": "e34b7571515ebb96350b4208468a5364ff296a06000d80fb980e8d6491cd7b90",
+      "forest": "chunks/forest/c4-r0.png",
+      "forestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "sourceBaseSha256": "718288a11e245d6e2342fdf8a4044db5cc05759da6bc1d5ebfdcf70edc681951",
+      "sourceForestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c5-r0",
+      "x": 1280,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c5-r0.png",
+      "baseSha256": "c2179a537ba303c3bc988bddd0f84792e0b55ae53fd4d388e3c49ad674cc4105",
+      "forest": "chunks/forest/c5-r0.png",
+      "forestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "sourceBaseSha256": "ad4c76533393acd14f4e63ac71c418c4a8307911ddb0306c9cece760657c403a",
+      "sourceForestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c6-r0",
+      "x": 1536,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c6-r0.png",
+      "baseSha256": "2d974c27ee6d78cb2b0f200a5c9357b99f418b3c3ff236591a2ce919feb96183",
+      "forest": "chunks/forest/c6-r0.png",
+      "forestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "sourceBaseSha256": "41efd23578dc809d719176b542419b8cdb1caea4b5b85c842895d1999aa4779f",
+      "sourceForestSha256": "17bbd338c6b4ce5adafacebfd51e9f03f0ad9e53dc14c508944c35c13dad55dd",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 12,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c7-r0",
+      "x": 1792,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c7-r0.png",
+      "baseSha256": "e765efcdc15f90af28596740e2c28d7ab9c9635ce08bada18c7ecea843b6f9c1",
+      "forest": "chunks/forest/c7-r0.png",
+      "forestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "sourceBaseSha256": "74a3374e4e30cc90a36440bd61e60ee23f9f70bc48d975708fb8b5329dce2f90",
+      "sourceForestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c8-r0",
+      "x": 2048,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c8-r0.png",
+      "baseSha256": "a9940c55f22e28bd4643b08528e63556199596bf44719a8d80850ded650feba4",
+      "forest": "chunks/forest/c8-r0.png",
+      "forestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "sourceBaseSha256": "539cf90b4d42f2dd00112f5ae864389d24a6cbd1cebe5e2f1a743a8cf005b449",
+      "sourceForestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c9-r0",
+      "x": 2304,
+      "y": 0,
+      "width": 64,
+      "height": 256,
+      "base": "chunks/base/c9-r0.png",
+      "baseSha256": "e1d1ab688c3b89d9f2b63106ee8293c7ad8e6c72cc523e7ba251bb8835e4acb3",
+      "forest": "chunks/forest/c9-r0.png",
+      "forestSha256": "47583f26d679ac48c830afc0fce8ffd86a8bc344db79ba2c1e6b0112686e2e07",
+      "sourceBaseSha256": "6eb8aa03a47d187332fb924c77ebab1c93177a9b75ee79697de794a8a83a6f5c",
+      "sourceForestSha256": "47583f26d679ac48c830afc0fce8ffd86a8bc344db79ba2c1e6b0112686e2e07",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c0-r1",
+      "x": 0,
+      "y": 256,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c0-r1.png",
+      "baseSha256": "81e5e85136d95fdc557827689265423a346e2c59363e68afb4b3d737257d04d2",
+      "forest": "chunks/forest/c0-r1.png",
+      "forestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "sourceBaseSha256": "9da925729b538810ae6d0242dd926a6f2ec0c94764bf131132eb60a51fc0de03",
+      "sourceForestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c1-r1",
+      "x": 256,
+      "y": 256,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c1-r1.png",
+      "baseSha256": "d14da458b73d2398130cf203257e67c61df9de98bf6993c50b3b6cf4de474ef3",
+      "forest": "chunks/forest/c1-r1.png",
+      "forestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "sourceBaseSha256": "e1e5b32e096af45eaf7f53a950cdd1627a3601304b9e513c2fed2b3fa072dbf0",
+      "sourceForestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c2-r1",
+      "x": 512,
+      "y": 256,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c2-r1.png",
+      "baseSha256": "8d6423a770b5ad6f8f281b6ff03e2ff2c667a64b027ff2f93659a4ad37693836",
+      "forest": "chunks/forest/c2-r1.png",
+      "forestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "sourceBaseSha256": "ec531c7e7f4833eef1edc0042bce83a2ea375715748274698e62f10063a2fb9e",
+      "sourceForestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c3-r1",
+      "x": 768,
+      "y": 256,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c3-r1.png",
+      "baseSha256": "eb8f84731bea9d88b122da307fe5c8f293260dbe89b60586cc822ba8b8d8d8c3",
+      "forest": "chunks/forest/c3-r1.png",
+      "forestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "sourceBaseSha256": "b8ae248fe2e1b287991c317c7006fc4c02322575396ed8b5c2571f0ed1b8e418",
+      "sourceForestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c4-r1",
+      "x": 1024,
+      "y": 256,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c4-r1.png",
+      "baseSha256": "84db662bfbfb6f668489863e104c14db03566a5217611b09efaef30ba55e5df1",
+      "forest": "chunks/forest/c4-r1.png",
+      "forestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "sourceBaseSha256": "513367d1c9f8f5003bacfb49174fd12dc2eaec5e2d7eaea5be08db5183d22eee",
+      "sourceForestSha256": "c5c9aa852c2f2d205f0ef04faf6dea2d543ebc95dc2d9a597d4d3359aa9cdf9b",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 2,
+      "revealedOldSupportPixels": 557,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c5-r1",
+      "x": 1280,
+      "y": 256,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c5-r1.png",
+      "baseSha256": "8c51ac46c04aa5b8f1409e47523a5d191b3f1240813ee7d4bc3d72f6d88b81aa",
+      "forest": "chunks/forest/c5-r1.png",
+      "forestSha256": "b7adab7092e9d4a631ab1bfe9ce876a4303903bdce5ab391e9229257af6022ce",
+      "sourceBaseSha256": "6f833b4f7302d344c0b310cfc88d5f701f9b663f781e7dbfab11bf0868f0c454",
+      "sourceForestSha256": "5fae3155d0b6ae954aa018971e18e0b7a6df13775f79b41000382764806ee59d",
+      "baseChangedPixels": 2313,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 93337,
+      "crownCountIntersecting": 49,
+      "revealedOldSupportPixels": 8310,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c6-r1",
+      "x": 1536,
+      "y": 256,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c6-r1.png",
+      "baseSha256": "30bc8d7f673bcf3bd411d40392bd54dac0fb797cb41f8bae742a722685c601a1",
+      "forest": "chunks/forest/c6-r1.png",
+      "forestSha256": "b583f25b84c58a2ab0d013ce6476f2b90b95018d78efe118cd9d62ccde56ed36",
+      "sourceBaseSha256": "9c348e5bf9cbc87cf89490e757b044684c01d635fe2a5147c4b82752287c4c29",
+      "sourceForestSha256": "2c0101caad245856f535ac1193631c17fa1d2baad16129d409c623b2902c4634",
+      "baseChangedPixels": 5900,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 170740,
+      "crownCountIntersecting": 97,
+      "revealedOldSupportPixels": 16484,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c7-r1",
+      "x": 1792,
+      "y": 256,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c7-r1.png",
+      "baseSha256": "382b70b15e3248a9e5e1b9710cf57e2a91295cfe64bb7dda2d8e64990611e7cf",
+      "forest": "chunks/forest/c7-r1.png",
+      "forestSha256": "ee5d4759f374723365e4cab19f87a66be14f95fc08cea79c8fb2f407551962e8",
+      "sourceBaseSha256": "d4881819613ff7a6592dabe47094cbd5709781c44d28858f21d7cee55f588ec5",
+      "sourceForestSha256": "cb45c80889d3c9f27a116bbe392b9266566cdc9e62b42f7b236c20fc788f69ad",
+      "baseChangedPixels": 6300,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 126403,
+      "crownCountIntersecting": 98,
+      "revealedOldSupportPixels": 15672,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c8-r1",
+      "x": 2048,
+      "y": 256,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c8-r1.png",
+      "baseSha256": "91e60946311e6d3c46f105889a2563d9cbadfb8f99f657845fd36a36be22647b",
+      "forest": "chunks/forest/c8-r1.png",
+      "forestSha256": "5f1e35e98ed8737e8ac863f8e2c6614dd29bbffa93f0e017c968cf67615104c0",
+      "sourceBaseSha256": "376d525805c9a2365ae69a1a004103a2f29ea54a7a1f8695680fd333ba0b473f",
+      "sourceForestSha256": "6b7603dafa34ac5af3932babf1ac558ed3d11dbaf794a973d3f106c08c00a6d7",
+      "baseChangedPixels": 2205,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 13235,
+      "crownCountIntersecting": 18,
+      "revealedOldSupportPixels": 4965,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c9-r1",
+      "x": 2304,
+      "y": 256,
+      "width": 64,
+      "height": 256,
+      "base": "chunks/base/c9-r1.png",
+      "baseSha256": "85d2c99707d4d12e5f2eb70a0641365d9c8a1e954bd64b32d32e56026dd6d50b",
+      "forest": "chunks/forest/c9-r1.png",
+      "forestSha256": "47583f26d679ac48c830afc0fce8ffd86a8bc344db79ba2c1e6b0112686e2e07",
+      "sourceBaseSha256": "1cf65cf070a2df5162a4beee6590d7321ca2b6aa22035b4ab40baa5c7e798f55",
+      "sourceForestSha256": "47583f26d679ac48c830afc0fce8ffd86a8bc344db79ba2c1e6b0112686e2e07",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c0-r2",
+      "x": 0,
+      "y": 512,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c0-r2.png",
+      "baseSha256": "f7729fbbbb5212b78f3774a7acc61e7b4e0ce00d156be1f9a36c3511faed1e4c",
+      "forest": "chunks/forest/c0-r2.png",
+      "forestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "sourceBaseSha256": "4cccd29c6d5644c5a90a8d44639e6379b78c92e6b35cf2d8231b47d312b0c122",
+      "sourceForestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c1-r2",
+      "x": 256,
+      "y": 512,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c1-r2.png",
+      "baseSha256": "a5376d52f6b1816cbfc2e1564adc8314d9064e90445da17ff07d94623f2fc9dd",
+      "forest": "chunks/forest/c1-r2.png",
+      "forestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "sourceBaseSha256": "c78699434b883c0575dfc882f67e0eb42edab41f8288d42362ab77b1d0135ae5",
+      "sourceForestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c2-r2",
+      "x": 512,
+      "y": 512,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c2-r2.png",
+      "baseSha256": "1395e70f9acd5bc956a37e538a28b4aea439f13687fadab4f5e6ad633c916681",
+      "forest": "chunks/forest/c2-r2.png",
+      "forestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "sourceBaseSha256": "d0f1c5214447c5f4196f2a54b80a5e5c4bd0541ce9b09237f4bd43a7f1195f75",
+      "sourceForestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c3-r2",
+      "x": 768,
+      "y": 512,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c3-r2.png",
+      "baseSha256": "542faf7e9057cf4d04dc6daf3b5758244afc2f2b4ff57c196f04d7c950cb234e",
+      "forest": "chunks/forest/c3-r2.png",
+      "forestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "sourceBaseSha256": "8862a456a1591f00725fbb749689f218bf221af50440a2f22aa472d9f0264ca8",
+      "sourceForestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c4-r2",
+      "x": 1024,
+      "y": 512,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c4-r2.png",
+      "baseSha256": "5517d603b1de16fbc4ed76f2397a69816e8aa8dcb3f1c3422470773368494550",
+      "forest": "chunks/forest/c4-r2.png",
+      "forestSha256": "75367eabb98e28ad10f4935d1a04d042de4bcb0bde5755f42a5f4a8c12b54584",
+      "sourceBaseSha256": "71d2d4d6a43d81ba32c6003a63eff76f3dd98132e6ef1569e35221f3d554071f",
+      "sourceForestSha256": "32f9f939997b7301c04eb857723845d0fbf2ecdc0fabec67de3565fc7479b482",
+      "baseChangedPixels": 429,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 77714,
+      "crownCountIntersecting": 40,
+      "revealedOldSupportPixels": 4079,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c5-r2",
+      "x": 1280,
+      "y": 512,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c5-r2.png",
+      "baseSha256": "0de818487cd63dc590e4ecdd9410664a46ab90ef67568a82b8829e4db1cea9a7",
+      "forest": "chunks/forest/c5-r2.png",
+      "forestSha256": "5a82e77671897354356bb69319769e679117536bbdc78acd48f0014bea40f138",
+      "sourceBaseSha256": "91325902a72beb5ac14cb8d0e70f26be745bb6976d82d0857c471ebbebc6fd51",
+      "sourceForestSha256": "f85e246ce4448bd289d681a22993989bc419a4741134ae6048a37087789ba01e",
+      "baseChangedPixels": 16928,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 261982,
+      "crownCountIntersecting": 140,
+      "revealedOldSupportPixels": 162,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c6-r2",
+      "x": 1536,
+      "y": 512,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c6-r2.png",
+      "baseSha256": "78488ec20d9c9e51e96a4619ab711b0f5646e20dd766fd256baaa364b53668d1",
+      "forest": "chunks/forest/c6-r2.png",
+      "forestSha256": "de4b287072e081e25c954a40f0f96d2287101d34492805e44d0774c53c732140",
+      "sourceBaseSha256": "e04d0cb45628bae158fc6332bbb2dec1f7485f014a74d552920216334034e0ed",
+      "sourceForestSha256": "d598848e44ed7a85302eaafa113e2b2455c6ac51a47c03b0c772a441ac37a005",
+      "baseChangedPixels": 19996,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 262102,
+      "crownCountIntersecting": 130,
+      "revealedOldSupportPixels": 42,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c7-r2",
+      "x": 1792,
+      "y": 512,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c7-r2.png",
+      "baseSha256": "7c7a5957e7eaa61ae5d5d32ecb71ed51aaa9b401d1a67f2cf9fbd8f7a57fe856",
+      "forest": "chunks/forest/c7-r2.png",
+      "forestSha256": "c1f315d79e13d1a7fee9dc3c29acc7e4b6c9024658c274944695d565cffbbfa6",
+      "sourceBaseSha256": "01f3fd4a2d3dc0c2a0c9d904b2c5cde1597bf300f4825b3f1554e2fcfa2b5448",
+      "sourceForestSha256": "c68c71124f8bccdd7466f86e956be523ef0c63ddfbba54b329d647db9a340120",
+      "baseChangedPixels": 709,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 242860,
+      "crownCountIntersecting": 149,
+      "revealedOldSupportPixels": 4150,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c8-r2",
+      "x": 2048,
+      "y": 512,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c8-r2.png",
+      "baseSha256": "00f25e0adb602ccfcfd7acb9a60a956ed624d20a1480b083ed276000c5d27a0f",
+      "forest": "chunks/forest/c8-r2.png",
+      "forestSha256": "f80af0070810623059bc6af4b8453005aab38e9b12d1beccc2b6836d2af029c3",
+      "sourceBaseSha256": "766d7623b2f02b1d07f60f8616357b64e411800163e1bab2260c37778df80c28",
+      "sourceForestSha256": "75d3e249637fdae9c7f8aca2cb7c9c8e1e38f8c69d55fe3158a8eac97c23e2e5",
+      "baseChangedPixels": 1639,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 5913,
+      "crownCountIntersecting": 10,
+      "revealedOldSupportPixels": 3724,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c9-r2",
+      "x": 2304,
+      "y": 512,
+      "width": 64,
+      "height": 256,
+      "base": "chunks/base/c9-r2.png",
+      "baseSha256": "dbb8ce61bc426440d2d0a22aa07b20110d4438e77f190bed20b118500c3a078b",
+      "forest": "chunks/forest/c9-r2.png",
+      "forestSha256": "47583f26d679ac48c830afc0fce8ffd86a8bc344db79ba2c1e6b0112686e2e07",
+      "sourceBaseSha256": "1973e4e35f17854ff4d11cb0fb5d2d3d0bf356410b1da0dc9873e2b5151dad01",
+      "sourceForestSha256": "47583f26d679ac48c830afc0fce8ffd86a8bc344db79ba2c1e6b0112686e2e07",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c0-r3",
+      "x": 0,
+      "y": 768,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c0-r3.png",
+      "baseSha256": "04468a618fcddbecb30220bcd8ae225a52f5ebcaac5c2c042790295edbaae50c",
+      "forest": "chunks/forest/c0-r3.png",
+      "forestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "sourceBaseSha256": "22c77205239ab2c710a491b19cb3494fd303152a010d71b3d7804ba54838d832",
+      "sourceForestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c1-r3",
+      "x": 256,
+      "y": 768,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c1-r3.png",
+      "baseSha256": "18c0bea6ee710f0da1a74284b9115b6b047748fa0d1c3b821b637bdb088f3b74",
+      "forest": "chunks/forest/c1-r3.png",
+      "forestSha256": "943472909aaa56bd6f2cdb97a7bc38b050dc1df05311524fc49b24def2135154",
+      "sourceBaseSha256": "fd7749777016880c97b86accc33ee0b2bfeaa836b34c50b6075d308f1f65ba15",
+      "sourceForestSha256": "87a1ba8401b517a7cb025ec0412bab228321db154991e0f25a0644a2aed02373",
+      "baseChangedPixels": 202,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 35775,
+      "crownCountIntersecting": 25,
+      "revealedOldSupportPixels": 482,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c2-r3",
+      "x": 512,
+      "y": 768,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c2-r3.png",
+      "baseSha256": "4b519e2d428144781a15bdfb192affce23e57c8d8f41ed283f7cf5fd642ec12f",
+      "forest": "chunks/forest/c2-r3.png",
+      "forestSha256": "fef720b1eea7ea8227ad7f9037246fd80fdeba1a4efbe3671cfe7ab545a1fe33",
+      "sourceBaseSha256": "1b89623b1b4c87892acad32d4fbaa3d28da30d23cf7b53dcccf2f679e18e9082",
+      "sourceForestSha256": "10cac2157a54288e8412c33bfbb79f4d9e14b6a475c2520841de36b5612fb5a6",
+      "baseChangedPixels": 1552,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 136973,
+      "crownCountIntersecting": 77,
+      "revealedOldSupportPixels": 8169,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c3-r3",
+      "x": 768,
+      "y": 768,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c3-r3.png",
+      "baseSha256": "e7a238e2336f6301bed200a3db00cf2b78ae1fa657272c96bb112d0ee682a78f",
+      "forest": "chunks/forest/c3-r3.png",
+      "forestSha256": "28a45707b763205786d5ed6cab526c1cb2197d080d96c79f28612d799cee225b",
+      "sourceBaseSha256": "91e55c00e70c497de6dc64725e0fc0f9bc68ec0d93d7e52426e414ad2c49c401",
+      "sourceForestSha256": "9877bf244400caa447774c6db1fe72c615ae4bf0bac3b22fb754816a36376f85",
+      "baseChangedPixels": 1035,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 55693,
+      "crownCountIntersecting": 32,
+      "revealedOldSupportPixels": 2584,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c4-r3",
+      "x": 1024,
+      "y": 768,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c4-r3.png",
+      "baseSha256": "8240e02142ec3a429d63bfa5712f74100676ed6ad63e862ac5e2cd40ea30bef7",
+      "forest": "chunks/forest/c4-r3.png",
+      "forestSha256": "33e45da690bea53527491a829bcb1008fbff9b0bf49c3c20d2b4d7b9f114a5bd",
+      "sourceBaseSha256": "38e40e67fa317eeda3f7e2a8e846a8988ebed5954afecd88c66aa5b657e8cddc",
+      "sourceForestSha256": "5966052a9de5afa27fd6d21f06a326e5f089d5e6f88d41f60ab256a14a0f638d",
+      "baseChangedPixels": 18,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 66350,
+      "crownCountIntersecting": 29,
+      "revealedOldSupportPixels": 588,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c5-r3",
+      "x": 1280,
+      "y": 768,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c5-r3.png",
+      "baseSha256": "3393a8e3f4585fe798333c627ecfcc7809c10cb3a99ee0a719be9edbb9fe4c75",
+      "forest": "chunks/forest/c5-r3.png",
+      "forestSha256": "fca59b41e81c67e9fb5093ed661a10a0797a5e6460b9c3e730637fad13ebaa90",
+      "sourceBaseSha256": "72283be2a30f18b0d9878c91f06303a4ba3c7a698f8ac3ecb5c1708575659e4c",
+      "sourceForestSha256": "25df052bf8bb6632651e2839e5221b95d8eb809a22355fff13ec9db75502dbfb",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 262061,
+      "crownCountIntersecting": 134,
+      "revealedOldSupportPixels": 8,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c6-r3",
+      "x": 1536,
+      "y": 768,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c6-r3.png",
+      "baseSha256": "14d0ea1df47d4290db4847aeec157eb07cc4d1f1670491556988cf93594023ec",
+      "forest": "chunks/forest/c6-r3.png",
+      "forestSha256": "953e62807ab5d510fedafe244017a27aafadd72456f09d2a7f8edd5e41f9fd94",
+      "sourceBaseSha256": "6dec69597550cd8467ecb506692f86282870b6cc309f65c03603119361c8f715",
+      "sourceForestSha256": "5ba5c552a1d68ab993c3237236aea0094b6274b55be8b8ef69b4116c097861d2",
+      "baseChangedPixels": 31731,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 249899,
+      "crownCountIntersecting": 122,
+      "revealedOldSupportPixels": 85,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c7-r3",
+      "x": 1792,
+      "y": 768,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c7-r3.png",
+      "baseSha256": "0e87c89c0fbd864099ec864710f7bf967f1d48e6d96edf9077c2313e4b686a19",
+      "forest": "chunks/forest/c7-r3.png",
+      "forestSha256": "5f6ee8eb5c3ec1e38ebe1c9c99a2def7f099e2fd1be24dd2a8b5ea07ad3dcaae",
+      "sourceBaseSha256": "cd39acf5e36edcc72c41113df6e12a85fbe0cdce4dfd69e2f771577f2aaf2d6b",
+      "sourceForestSha256": "1e0170e7887b590e79221fe0808fee9f4f95ffd5a212a30db82b9f90f68ee8e2",
+      "baseChangedPixels": 1921,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 160933,
+      "crownCountIntersecting": 77,
+      "revealedOldSupportPixels": 4867,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c8-r3",
+      "x": 2048,
+      "y": 768,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c8-r3.png",
+      "baseSha256": "172d7b88fb6c62e2b42ae6da052a81ea9ca635437c08f7bdda9f37ac422d762c",
+      "forest": "chunks/forest/c8-r3.png",
+      "forestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "sourceBaseSha256": "7e67105c3a4e33c3ef2ac7d93358ea64586c4c0e745ed3fe04ca86d8fcf2156d",
+      "sourceForestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c9-r3",
+      "x": 2304,
+      "y": 768,
+      "width": 64,
+      "height": 256,
+      "base": "chunks/base/c9-r3.png",
+      "baseSha256": "e8870f7a9856259b5272692ae9697738e0e05bdda89dc5db7652a90df3ab97a4",
+      "forest": "chunks/forest/c9-r3.png",
+      "forestSha256": "47583f26d679ac48c830afc0fce8ffd86a8bc344db79ba2c1e6b0112686e2e07",
+      "sourceBaseSha256": "7c6140d5c1867640d6852758de35baa6bb800a31514b17ccdb7fee8b988e71ef",
+      "sourceForestSha256": "47583f26d679ac48c830afc0fce8ffd86a8bc344db79ba2c1e6b0112686e2e07",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c0-r4",
+      "x": 0,
+      "y": 1024,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c0-r4.png",
+      "baseSha256": "b2c9c2b667d48e582aa162fd8456731bbf5fb7bdb2be8c6dbbfcd78f344e33ed",
+      "forest": "chunks/forest/c0-r4.png",
+      "forestSha256": "805de1577fee7ce8892db11f99f0bcc288bc84e8831cfaa3ac2a299a8fe5d154",
+      "sourceBaseSha256": "41b1df1240e88ee3d6b8d68c0db8e436c81391fd172ca172de958f7462c9a0dd",
+      "sourceForestSha256": "82ad9ecf985081d740e03cc13a5ade4e07552c97878d49ae8f635d7117d00df0",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 13606,
+      "crownCountIntersecting": 13,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c1-r4",
+      "x": 256,
+      "y": 1024,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c1-r4.png",
+      "baseSha256": "2e7ea97e137b58bd3eec279b8ebae72273531321dbafc337c185edfdf55bdf9a",
+      "forest": "chunks/forest/c1-r4.png",
+      "forestSha256": "dcd8929ef8c91dda9cdce7eccd69ef7b7649aa2a2a414fb4cbeae3aa2e874083",
+      "sourceBaseSha256": "3cf4721c9abf859ddaddd4ced6fe37a3fb2531ffd1839c459054eb2e446fd716",
+      "sourceForestSha256": "5bf9887e3aad3b093285d91ae2ba2ad2c5ac5b7019810ec8bf0f773f02785d70",
+      "baseChangedPixels": 561,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 259584,
+      "crownCountIntersecting": 122,
+      "revealedOldSupportPixels": 652,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c2-r4",
+      "x": 512,
+      "y": 1024,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c2-r4.png",
+      "baseSha256": "651366e777f69399c322f8de915de341681306bd22e3eca36cbb01fea33f0a46",
+      "forest": "chunks/forest/c2-r4.png",
+      "forestSha256": "09f2f4251b2c76586564e8e64d4b836b5ff35ad1f8749e8caa516a39fdb2d9a4",
+      "sourceBaseSha256": "4c3c44795d458b6aa51a5869d62a135cbc1e92df6c9a8b7610e3cc9a7b5f88c8",
+      "sourceForestSha256": "d17562e46fe6f09985b947c624a2e34455cf976c70acda643002eb29f3b870d7",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 262102,
+      "crownCountIntersecting": 145,
+      "revealedOldSupportPixels": 41,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c3-r4",
+      "x": 768,
+      "y": 1024,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c3-r4.png",
+      "baseSha256": "798c8ea221c72de22e62ea762c9e3257a610320842d530740f7c36b9933a7bae",
+      "forest": "chunks/forest/c3-r4.png",
+      "forestSha256": "fb5f3c77d08709e7ceaddd19c22b06abdf80bff867889eac6d1afef628a50689",
+      "sourceBaseSha256": "8f5804e8291d67506dd38294785ac34d9c8e54955e5f14d17c34b537e3dad07a",
+      "sourceForestSha256": "a97971ddff441812309e6c8e63dd1d92dcb67b3451355301b4971b4df15fc9ea",
+      "baseChangedPixels": 1365,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 137558,
+      "crownCountIntersecting": 63,
+      "revealedOldSupportPixels": 2850,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c4-r4",
+      "x": 1024,
+      "y": 1024,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c4-r4.png",
+      "baseSha256": "d8db862b21aee7c6453c9ed546c2a7bf3b0d98338a885b8d28c9045f4542d1e8",
+      "forest": "chunks/forest/c4-r4.png",
+      "forestSha256": "37dc9777f5ff2b57ccb4df8528c64443c0f627fda3b2fcef34e425270c2f1b65",
+      "sourceBaseSha256": "75ba70f60a19c1753e09e37ab129d9aedec4ff300351c901053ab97d8e84466b",
+      "sourceForestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 88,
+      "crownCountIntersecting": 2,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c5-r4",
+      "x": 1280,
+      "y": 1024,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c5-r4.png",
+      "baseSha256": "8035188406c832b4da2abfe2a24eeeeb60bea3767432c66c0b380e9a551f5db6",
+      "forest": "chunks/forest/c5-r4.png",
+      "forestSha256": "5185d1e1582f3f5319ddcd451dd0b0f84fb1d10dc217e9ba438115f73e945f7c",
+      "sourceBaseSha256": "bcbfc88a37e7870e2c43d84b935c9e3396fbc8c4bfba42f735012a59fcff9233",
+      "sourceForestSha256": "0d576fe17a245640dce5800ea5debba9397d8842e85c8defd799f68ab1855c95",
+      "baseChangedPixels": 936,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 187093,
+      "crownCountIntersecting": 78,
+      "revealedOldSupportPixels": 1407,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c6-r4",
+      "x": 1536,
+      "y": 1024,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c6-r4.png",
+      "baseSha256": "9ffa22895eb89f6c3ac0ec18c7e55e870560da516f59a65f961d786889679b72",
+      "forest": "chunks/forest/c6-r4.png",
+      "forestSha256": "6fe08a3e1f4319bed97b0fea623de16c245ba883ea8c55a5d3f5f98fe57e9ea6",
+      "sourceBaseSha256": "2511da27d6634eb58659c09e5d2d68430718d0744fe74aa1f9f12f9b34339a95",
+      "sourceForestSha256": "951708dc95d8999cdcb8591f0143af1fa558b8ef9e124428e5c1560e9623cd36",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 6619,
+      "crownCountIntersecting": 10,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c7-r4",
+      "x": 1792,
+      "y": 1024,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c7-r4.png",
+      "baseSha256": "d0f8dd1fa8fcc715ae23b87ad5478c5c68dfdd31fc83148b5b58aa9507c05831",
+      "forest": "chunks/forest/c7-r4.png",
+      "forestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "sourceBaseSha256": "b30929f55264c939440a75eeec97e67163ba6af3692e97778bbf45ab35667b4b",
+      "sourceForestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c8-r4",
+      "x": 2048,
+      "y": 1024,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c8-r4.png",
+      "baseSha256": "8ccb95fc64ba2c1d34933c0c9ca5061cd4bc4df4b0848a9ac5863033bfabcbcf",
+      "forest": "chunks/forest/c8-r4.png",
+      "forestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "sourceBaseSha256": "90ed8bf101252cad5dc014d8b8ae7a48399c8cb3235c8744d5dcdf4426d7195a",
+      "sourceForestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c9-r4",
+      "x": 2304,
+      "y": 1024,
+      "width": 64,
+      "height": 256,
+      "base": "chunks/base/c9-r4.png",
+      "baseSha256": "e1bf40e009b2536c2e1baeea75c78979f59536e1d7e0f094c1a500ab4ff65959",
+      "forest": "chunks/forest/c9-r4.png",
+      "forestSha256": "47583f26d679ac48c830afc0fce8ffd86a8bc344db79ba2c1e6b0112686e2e07",
+      "sourceBaseSha256": "630962cc1054d2485ec4ff7836fff40d6d2a006e0a88cf2f6b87447c3e5b4f38",
+      "sourceForestSha256": "47583f26d679ac48c830afc0fce8ffd86a8bc344db79ba2c1e6b0112686e2e07",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c0-r5",
+      "x": 0,
+      "y": 1280,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c0-r5.png",
+      "baseSha256": "eec6fb0b7ea095aeea4254b65a9bdbc265fb6632cc9cc5f6f7bb5b56ad0f4497",
+      "forest": "chunks/forest/c0-r5.png",
+      "forestSha256": "5d70e8778707d9a9b3231fb0f6d9be54ec3640a72be8e370663907e463c3c886",
+      "sourceBaseSha256": "fd5d3ceb633403dcca253341573ffbf49066fb49be86a2cd993c2c8fa88d9f19",
+      "sourceForestSha256": "7b705eaf48ad87be30654133ba4c40698a454c68b8109a109151b101ee00081a",
+      "baseChangedPixels": 696,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 83277,
+      "crownCountIntersecting": 50,
+      "revealedOldSupportPixels": 1690,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c1-r5",
+      "x": 256,
+      "y": 1280,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c1-r5.png",
+      "baseSha256": "773d5a2ab757425b45ad4e09bfbbef5c3c72689794bfafbb0da9a10be308c371",
+      "forest": "chunks/forest/c1-r5.png",
+      "forestSha256": "ecec47f8f97bfe36e9b16dbd13c6e0fc477eceb894b981bbaa314b1442d030d1",
+      "sourceBaseSha256": "4218be3fb86f00cbd11373d25116ab851738c8a1c88a368b19d0cba3b783e8d4",
+      "sourceForestSha256": "74389228f634dc9734b83fa4e7948ee6f4fb6d28289623e83ecb08a64e164c43",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 262087,
+      "crownCountIntersecting": 145,
+      "revealedOldSupportPixels": 19,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c2-r5",
+      "x": 512,
+      "y": 1280,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c2-r5.png",
+      "baseSha256": "50d95e2ba5bfa5320161f9bed4dc1b301ee9d2a89347da8a9c0d2c285a4501db",
+      "forest": "chunks/forest/c2-r5.png",
+      "forestSha256": "9ed65d121cf806430abfdf7f6bd2dbc5d2a3685054312a188685f0b0970a8df8",
+      "sourceBaseSha256": "ecd83b99c5455cdcfab5ae69ee4196fdc0de4465615eb2aa3be54f57bb521a5f",
+      "sourceForestSha256": "eb2585c1a990e26ce9711e8ba023e0420372d2a541c825c836a03dad652d4eda",
+      "baseChangedPixels": 19,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 262010,
+      "crownCountIntersecting": 146,
+      "revealedOldSupportPixels": 78,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c3-r5",
+      "x": 768,
+      "y": 1280,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c3-r5.png",
+      "baseSha256": "939e491a503b9202f71d69c9220090d1d8cf88f610ec0ddcde460dd3f7db5e8a",
+      "forest": "chunks/forest/c3-r5.png",
+      "forestSha256": "ed6d6e28621cbf22a206d2e0e9f0902c04ab5b93379ba11f59cb566e7cb53b5c",
+      "sourceBaseSha256": "3fe0074d60050eb95b44a1a386fd9c249a63cc8b0581c6ca75d79e8b257861e1",
+      "sourceForestSha256": "b38f463553ceb7ebc1afda267a2ec687163b5006639e2ac47bfb61a9c84307a5",
+      "baseChangedPixels": 1068,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 57135,
+      "crownCountIntersecting": 35,
+      "revealedOldSupportPixels": 273,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c4-r5",
+      "x": 1024,
+      "y": 1280,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c4-r5.png",
+      "baseSha256": "553ad3b380f19b90dc0a04c7882b7da62d99dda248b8c29efdf3e06e8747dcb5",
+      "forest": "chunks/forest/c4-r5.png",
+      "forestSha256": "744ac6484bf1aff5c4931a9600751e532decf3329bf9cda8eda0c5f0b3de9fe4",
+      "sourceBaseSha256": "13a4e21eb4a9ed547c88d2d3c3c53967c032a4b551c7c1592a5a5163178de097",
+      "sourceForestSha256": "f48ac34346afaff82fdfca8d6285af465d5716c95dc12c86f23709f4c96fe843",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 695,
+      "crownCountIntersecting": 1,
+      "revealedOldSupportPixels": 99,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c5-r5",
+      "x": 1280,
+      "y": 1280,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c5-r5.png",
+      "baseSha256": "ba33b51f292c89b2943612067c13ecc1f0b6de8d924f15ef06f14fb903aad55a",
+      "forest": "chunks/forest/c5-r5.png",
+      "forestSha256": "4a67b21d98af40a6bb33d42308bf6d2f98460b30fd4975bc4bcb9e4549bdb884",
+      "sourceBaseSha256": "9f11d7ce94fb39ab489d10c5fcc70955b5174b2686a40962c2f20bcebe0f9758",
+      "sourceForestSha256": "4c75f8f51886bd4a2370c5113d3595cf2067f0e5992dc0fbf09b6ed456fd8a12",
+      "baseChangedPixels": 686,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 212621,
+      "crownCountIntersecting": 95,
+      "revealedOldSupportPixels": 1769,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c6-r5",
+      "x": 1536,
+      "y": 1280,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c6-r5.png",
+      "baseSha256": "94c026a440eb2b9b5bbda904082f67922a22132bebc1e526036240b15ba2fab9",
+      "forest": "chunks/forest/c6-r5.png",
+      "forestSha256": "a356105d3c17379ddd6109d13cb4eb37467c805da45fb2ff1e439531beb8ed8d",
+      "sourceBaseSha256": "ae159cdb94304b09d3f198684ea27ee66fb9776e5301e704316c6e7ac15e03bb",
+      "sourceForestSha256": "6ccbfb31295d8b58171241232ff8ed6f8454586f55d199ffa55c58e2c7dace61",
+      "baseChangedPixels": 142,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 74133,
+      "crownCountIntersecting": 36,
+      "revealedOldSupportPixels": 356,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c7-r5",
+      "x": 1792,
+      "y": 1280,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c7-r5.png",
+      "baseSha256": "264dc27af7f807d7a7b1888fc90af2c2e4ab19d298d7373c10adf19f6719e217",
+      "forest": "chunks/forest/c7-r5.png",
+      "forestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "sourceBaseSha256": "55dcbde2ad105b3a9fcbf2bdde323aabc1d2169f87799dc4ac1cca0bbac3b1d2",
+      "sourceForestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c8-r5",
+      "x": 2048,
+      "y": 1280,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c8-r5.png",
+      "baseSha256": "775bf226031dd03caed3097d2fcdcd9cc3a455af41e87f07579f4b096c1036e5",
+      "forest": "chunks/forest/c8-r5.png",
+      "forestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "sourceBaseSha256": "9ec7b7753c4aa43476cc7b8fd4e175696c3c446eb1d32a00a89536567799de74",
+      "sourceForestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c9-r5",
+      "x": 2304,
+      "y": 1280,
+      "width": 64,
+      "height": 256,
+      "base": "chunks/base/c9-r5.png",
+      "baseSha256": "5d77fbb34f699c8f6e57a942fe8fd1949fa4213b211d288d22b6c3732ad7559f",
+      "forest": "chunks/forest/c9-r5.png",
+      "forestSha256": "47583f26d679ac48c830afc0fce8ffd86a8bc344db79ba2c1e6b0112686e2e07",
+      "sourceBaseSha256": "de1b6764638e324777ba23c4998e52358eed08cf0131fac74a916609e3c28203",
+      "sourceForestSha256": "47583f26d679ac48c830afc0fce8ffd86a8bc344db79ba2c1e6b0112686e2e07",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c0-r6",
+      "x": 0,
+      "y": 1536,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c0-r6.png",
+      "baseSha256": "8258093d2fb89116857921cd40cb1644196d2de92df49ecfd5784efb72fd2207",
+      "forest": "chunks/forest/c0-r6.png",
+      "forestSha256": "d957fb312cdeabf8456bb9a065f41ec03e2c5df21d458edeff2e732e09928db1",
+      "sourceBaseSha256": "ec5e96ff79678ac7e8e1c1d71c1b9ff414d2c164f45087f619143598626c26f0",
+      "sourceForestSha256": "ac8675becd39d5a8f8d0f10e26763929cc873d0ae67fc92b557e1d1de44b8c6f",
+      "baseChangedPixels": 182,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 138023,
+      "crownCountIntersecting": 62,
+      "revealedOldSupportPixels": 230,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c1-r6",
+      "x": 256,
+      "y": 1536,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c1-r6.png",
+      "baseSha256": "3261504b8d3afec374380e438d7f89b28003c4cdb63b260d9907e3b16b150018",
+      "forest": "chunks/forest/c1-r6.png",
+      "forestSha256": "d1d3443385a3b7a4d5f46f292663c1a7a04e0367f96187785890e15c7e15b47a",
+      "sourceBaseSha256": "f905c8449c805e6ea2ac92a65036a5d2667629734d14de5eed95c8383c59e03e",
+      "sourceForestSha256": "6a019239d063b3469000f13fab4a8a7ecfa805eb25e73238b400bcc2ab85fa1d",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 205430,
+      "crownCountIntersecting": 104,
+      "revealedOldSupportPixels": 8,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c2-r6",
+      "x": 512,
+      "y": 1536,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c2-r6.png",
+      "baseSha256": "a64806d671afe115174b3473bf268c25718a8326badb7dd5f3a74d55b8192236",
+      "forest": "chunks/forest/c2-r6.png",
+      "forestSha256": "ae39d02e83f84ac6c4aba3500bdcb24ea70fd0388ae4adb5222347226fabf7b8",
+      "sourceBaseSha256": "9e77820a05c4436234223c8425be2d2df10c505a0f301a2d4c5b3521b33d40ec",
+      "sourceForestSha256": "772caead9837e7e77113d5ff6deef3d024593efb8bbb5b48f365d436d55d958c",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 103621,
+      "crownCountIntersecting": 55,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c3-r6",
+      "x": 768,
+      "y": 1536,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c3-r6.png",
+      "baseSha256": "703849b68192b7729bb2cb0279214061a7db75aee6400ebebfbd156418cc0153",
+      "forest": "chunks/forest/c3-r6.png",
+      "forestSha256": "82845ba19bb266a2a7f7ca55d40f7b50b25e00bda7ff8e3dbcef4efc54419ba6",
+      "sourceBaseSha256": "b511eda26f20b12a9059c60688fb39d31fed48aa358bb33902172be2c63cfa69",
+      "sourceForestSha256": "9255b7ba5023bf18fb6b48ab95d75a1f61207570cd6e97640fd2f5a55a631657",
+      "baseChangedPixels": 425,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 75807,
+      "crownCountIntersecting": 45,
+      "revealedOldSupportPixels": 16151,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c4-r6",
+      "x": 1024,
+      "y": 1536,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c4-r6.png",
+      "baseSha256": "56fa82713396d34df213fc0461d89b426735bf63d0aa24d94453ca1ea2f7702f",
+      "forest": "chunks/forest/c4-r6.png",
+      "forestSha256": "82458dd446487e6d50f26fbd14db2675b0feda0895be35605c0861ef1a7a1447",
+      "sourceBaseSha256": "babf85d7d3af2788a9acc6c6eddb8d9455dd99552ee191e8e02cd81969427045",
+      "sourceForestSha256": "0c6b15d01c3fcc8fafda50dd10d8560a5552be8fb8337fcf967f8fa2e0b83c22",
+      "baseChangedPixels": 540,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 157991,
+      "crownCountIntersecting": 73,
+      "revealedOldSupportPixels": 2857,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c5-r6",
+      "x": 1280,
+      "y": 1536,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c5-r6.png",
+      "baseSha256": "6a109d02a6d4a40a09e3d9a8ece3ece800d2001404af19f0c1dd21e707652375",
+      "forest": "chunks/forest/c5-r6.png",
+      "forestSha256": "a72da7bec7d4d527778f809ed903655d80e7e7588f57ebd8d20a1946d500ffd0",
+      "sourceBaseSha256": "1a1e854ce8473c77608af235efcc7625ad47c066ef4637a7957bf942543aba19",
+      "sourceForestSha256": "d1585285fa37cd8a5aedd3b1a0075a662055e8a6e82065e03ab33469b627636f",
+      "baseChangedPixels": 16586,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 250181,
+      "crownCountIntersecting": 129,
+      "revealedOldSupportPixels": 633,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c6-r6",
+      "x": 1536,
+      "y": 1536,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c6-r6.png",
+      "baseSha256": "b30651736f937a651581869724ad48160069ec8b8265c13352fbd0560b942648",
+      "forest": "chunks/forest/c6-r6.png",
+      "forestSha256": "b74425d39184d1b082eed57bc5b6d879fbea567b75fb3cd22a6ab02cbb1eee8f",
+      "sourceBaseSha256": "a9a25f867f2e66c33570b85755f51651239949a6d476a6672307dd8b376bf6a7",
+      "sourceForestSha256": "7890c7f7d34b18a74f8565b500ddc082fa976f586b167369c833ff1d22cd4a29",
+      "baseChangedPixels": 15234,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 94980,
+      "crownCountIntersecting": 51,
+      "revealedOldSupportPixels": 5338,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c7-r6",
+      "x": 1792,
+      "y": 1536,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c7-r6.png",
+      "baseSha256": "d3e9daecddc96d7b2e73011cf2bb23ed5a5fd7c99eb3f703a3018f9afce9b079",
+      "forest": "chunks/forest/c7-r6.png",
+      "forestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "sourceBaseSha256": "0e06506fd88661df69fc9858e2334dc98c21cbc98428bec215a7a7d677a5afb0",
+      "sourceForestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c8-r6",
+      "x": 2048,
+      "y": 1536,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c8-r6.png",
+      "baseSha256": "895e79fc06f867d95a0eb5333933c0e9cb3165912443fd79bf9843e88dd7f7fb",
+      "forest": "chunks/forest/c8-r6.png",
+      "forestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "sourceBaseSha256": "040f8e45aedcd464c542aaeb752489953c982f47251646bbce35bb8b82418bb8",
+      "sourceForestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c9-r6",
+      "x": 2304,
+      "y": 1536,
+      "width": 64,
+      "height": 256,
+      "base": "chunks/base/c9-r6.png",
+      "baseSha256": "463a8adf994c160f73a4bc1fb728587f53fca36c46e633b4680d8b17c1713c1a",
+      "forest": "chunks/forest/c9-r6.png",
+      "forestSha256": "47583f26d679ac48c830afc0fce8ffd86a8bc344db79ba2c1e6b0112686e2e07",
+      "sourceBaseSha256": "3e9b898d300fea479a88fcefc39453a904a591450422c117c82fb40162f909d6",
+      "sourceForestSha256": "47583f26d679ac48c830afc0fce8ffd86a8bc344db79ba2c1e6b0112686e2e07",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c0-r7",
+      "x": 0,
+      "y": 1792,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c0-r7.png",
+      "baseSha256": "cc9a7b48ff58d11e4cbd59592376fc259d89cc974de603dfb098a2150d1e4798",
+      "forest": "chunks/forest/c0-r7.png",
+      "forestSha256": "b2be80dcfe67beb176e719bb226aa34c8398f48ee13e70f8ab6f63080d45eb54",
+      "sourceBaseSha256": "79a2a42b6c72bbe4203bbaea9d11613d1194f5b16503695817ad568358b80309",
+      "sourceForestSha256": "3bd0a19ca1ad50bf9ecf462c331f2d7388133665505691407bbeab7557e8ecf2",
+      "baseChangedPixels": 25,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 24594,
+      "crownCountIntersecting": 6,
+      "revealedOldSupportPixels": 28,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c1-r7",
+      "x": 256,
+      "y": 1792,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c1-r7.png",
+      "baseSha256": "6795b94e7e8c623f0678abf232e9f7b9e7259892466db2d70bc219e40193f273",
+      "forest": "chunks/forest/c1-r7.png",
+      "forestSha256": "a1a31d1ddb08d78f0472de90b05a34880c741bc0350c2ecba060f43733e6805b",
+      "sourceBaseSha256": "32aec1a636de2fa363a3cb62c5e9ee42d783a300690ac07706dc016157d81d66",
+      "sourceForestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 66,
+      "crownCountIntersecting": 1,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c2-r7",
+      "x": 512,
+      "y": 1792,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c2-r7.png",
+      "baseSha256": "d2ce33b9682f1e1ba4b56dd3475df5ee31dfb1eaa6ed38dba20a170fa9feb34a",
+      "forest": "chunks/forest/c2-r7.png",
+      "forestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "sourceBaseSha256": "29dacf1c2e9b0856cf7b5975b2ad75b99931c224afb569d1fe0f5ad202d5dd90",
+      "sourceForestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c3-r7",
+      "x": 768,
+      "y": 1792,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c3-r7.png",
+      "baseSha256": "e890fe49549a10294d4296f39256f8872f51e699cb8adc15e2a867843f5e09c1",
+      "forest": "chunks/forest/c3-r7.png",
+      "forestSha256": "57bc2210816c743aa47376784253009792f28fbb9eefaea6796e9625afa87a28",
+      "sourceBaseSha256": "6df6d61e24b197440716c3bab08a4ffc69cd365aef6c1496c8c06b3bfcb38f9c",
+      "sourceForestSha256": "42492d186c4470608a162c1fdeb99b8fb3e6850c98cbc64734bcbb2210b51473",
+      "baseChangedPixels": 25054,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 167130,
+      "crownCountIntersecting": 82,
+      "revealedOldSupportPixels": 1870,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c4-r7",
+      "x": 1024,
+      "y": 1792,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c4-r7.png",
+      "baseSha256": "12b6bd0e8f32633b7b1c94a43b9bf55f161ecfa0b2a6b030473b267079e9336d",
+      "forest": "chunks/forest/c4-r7.png",
+      "forestSha256": "40753b3292a3a4dd5a3851cabb585b27a1c5b3dce350e75daeebf9bd89f3b5d8",
+      "sourceBaseSha256": "ce2412489882a8f817713ed4e6772928c2ab04ae167234feb5c8b5fc3e10c1f3",
+      "sourceForestSha256": "8566212440f94c00ba8d5238cfd05d2f7b189d793cbcd6130d51b2ed8406bf02",
+      "baseChangedPixels": 41289,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 248847,
+      "crownCountIntersecting": 126,
+      "revealedOldSupportPixels": 27,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c5-r7",
+      "x": 1280,
+      "y": 1792,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c5-r7.png",
+      "baseSha256": "e5c2c9dafb08d307b3497d093a65f47bafb7213f1a533e1634f50992d13a44ab",
+      "forest": "chunks/forest/c5-r7.png",
+      "forestSha256": "fe54e35ab875eaff1258c5154610eae5e2ecf512310adf0e6dfc36d1fccb3fa7",
+      "sourceBaseSha256": "e8b3721355a0e96cb4f04c0ada561254ef52912c7636e99e61cfb2c6d43405df",
+      "sourceForestSha256": "d1792cb72a24bf25c92f70a9702045fd2c2aec406982be1a423c055bc15e455a",
+      "baseChangedPixels": 27168,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 223003,
+      "crownCountIntersecting": 98,
+      "revealedOldSupportPixels": 327,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c6-r7",
+      "x": 1536,
+      "y": 1792,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c6-r7.png",
+      "baseSha256": "0b30caabb9b163148aa5e9d847dc6e3a09f666440a8755397629b72f6f19e8f5",
+      "forest": "chunks/forest/c6-r7.png",
+      "forestSha256": "1f61e4dd5229767d531d57d6911d1e0d173e79daa4dc8d13141c31bcba4baa02",
+      "sourceBaseSha256": "13b61f641ba10b56c4d8a586e84c717946ac6bfaf42acea3152a8616bbfaf229",
+      "sourceForestSha256": "0083a973e024a18033a86e5c808d2e8c559c3e207bbe660fea170ff035ed28d6",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 6982,
+      "crownCountIntersecting": 5,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c7-r7",
+      "x": 1792,
+      "y": 1792,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c7-r7.png",
+      "baseSha256": "6204510fff5b972be360a53b0e55d9f410982f70542586cd2352517948371520",
+      "forest": "chunks/forest/c7-r7.png",
+      "forestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "sourceBaseSha256": "6a388816936e8e91defc29df2bc4ce66dd2a760efb4b9739b3e0cba4d841c766",
+      "sourceForestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c8-r7",
+      "x": 2048,
+      "y": 1792,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c8-r7.png",
+      "baseSha256": "4d2b1c5540ae6c5f79f2b435fe8adc20018f981fb4806ed2db0e14db36e219ae",
+      "forest": "chunks/forest/c8-r7.png",
+      "forestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "sourceBaseSha256": "e2dbd1a1a9cd4ef3386b0a5573cc984cfe151a8291a68f927372ce485a77193e",
+      "sourceForestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c9-r7",
+      "x": 2304,
+      "y": 1792,
+      "width": 64,
+      "height": 256,
+      "base": "chunks/base/c9-r7.png",
+      "baseSha256": "2b7ac7c5b62304b32269180964a848f5ff3a1899d6e78411107d8c6dcbb1e660",
+      "forest": "chunks/forest/c9-r7.png",
+      "forestSha256": "47583f26d679ac48c830afc0fce8ffd86a8bc344db79ba2c1e6b0112686e2e07",
+      "sourceBaseSha256": "d140c9f80c459ee38945cbb994458be1b7dc71d60353d7f92ea5900e927c4fed",
+      "sourceForestSha256": "47583f26d679ac48c830afc0fce8ffd86a8bc344db79ba2c1e6b0112686e2e07",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c0-r8",
+      "x": 0,
+      "y": 2048,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c0-r8.png",
+      "baseSha256": "e6eb033e80d88a77a0cf16cf6c6126c0e88034c2975b451039ce07090a64033d",
+      "forest": "chunks/forest/c0-r8.png",
+      "forestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "sourceBaseSha256": "660743e3ae6da8e48fd6af45d3ab824dfb7e808dc1104e0a2be650efaa30d838",
+      "sourceForestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c1-r8",
+      "x": 256,
+      "y": 2048,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c1-r8.png",
+      "baseSha256": "98064435818c343879252089f1166dc8cdbc61417754105e04dd6bd1479ef101",
+      "forest": "chunks/forest/c1-r8.png",
+      "forestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "sourceBaseSha256": "71cc2fe239144030394105b4150bf925d4681e45b1bf7e59010e7b5abde5cdab",
+      "sourceForestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c2-r8",
+      "x": 512,
+      "y": 2048,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c2-r8.png",
+      "baseSha256": "43cea218d83485a8242868df8297309ac0abe71d9c53de0fc60cfc515004d8a1",
+      "forest": "chunks/forest/c2-r8.png",
+      "forestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "sourceBaseSha256": "936f838841e6762375da689f368fb4af2708db5237f70a7817a5aaa46faae7f6",
+      "sourceForestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c3-r8",
+      "x": 768,
+      "y": 2048,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c3-r8.png",
+      "baseSha256": "cfa18e38a71230b27f9301226bc327a7fc2469cb5969eb485dd23c8357978608",
+      "forest": "chunks/forest/c3-r8.png",
+      "forestSha256": "8e492ed6212474cef93a959fee3c8e55b96bf38440865499fab82ea80bb0e309",
+      "sourceBaseSha256": "92bff731659ec5339f1aa1289ff294ba696683c54929e6a29964487cbedb07b0",
+      "sourceForestSha256": "c2eeed67219d4a8bbd7eb2354e2df747e5515198320cd525dcb5da0202a7f5a9",
+      "baseChangedPixels": 115,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 27983,
+      "crownCountIntersecting": 18,
+      "revealedOldSupportPixels": 7110,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c4-r8",
+      "x": 1024,
+      "y": 2048,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c4-r8.png",
+      "baseSha256": "5129df4747a0ba78f0d543519517ce35280a91a6ce83cbd332af42a877e033e8",
+      "forest": "chunks/forest/c4-r8.png",
+      "forestSha256": "be70bbb3f0bfbc90cc531c8a5435f4d09a0b15be1e5fbdf74f76571eb0415f89",
+      "sourceBaseSha256": "9baa20591cd96d5982f169a396b51c62e1f20a6c8f149aba32e69e9281ac3f42",
+      "sourceForestSha256": "8cffe0780d492ed47acf8fcea039f2291b81909172a3eea4f7a851998839761c",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 173431,
+      "crownCountIntersecting": 79,
+      "revealedOldSupportPixels": 6,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c5-r8",
+      "x": 1280,
+      "y": 2048,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c5-r8.png",
+      "baseSha256": "3ae4d0e65ac7dab4cb07dfdac34bc7b5162d5ceb10db543d7ba59e7a7c17492b",
+      "forest": "chunks/forest/c5-r8.png",
+      "forestSha256": "50b7e526dad88c10e958e405a52a83e449cc4bb5ff100521bba8c5cc74ef2750",
+      "sourceBaseSha256": "0fbe0f225a5906c262b942eee4b22b6463c2755967132353e0a42b399e39b610",
+      "sourceForestSha256": "98113c295d35442093e1e4e989aa67bd10e520d3c6083cb10c2ced637ecaeb29",
+      "baseChangedPixels": 15,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 160140,
+      "crownCountIntersecting": 66,
+      "revealedOldSupportPixels": 57,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c6-r8",
+      "x": 1536,
+      "y": 2048,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c6-r8.png",
+      "baseSha256": "72b171695d025cefe6f8896892b09ad7a4433107f588b9e52f69135550d4971b",
+      "forest": "chunks/forest/c6-r8.png",
+      "forestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "sourceBaseSha256": "567dead2b513a57963bd18367b01f93824aad4170ab959617ea07eb9c23eb3bb",
+      "sourceForestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c7-r8",
+      "x": 1792,
+      "y": 2048,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c7-r8.png",
+      "baseSha256": "27b44963c0114830c7798fbb9c23d066e59fc6affab5d50c9a39964f00d037b3",
+      "forest": "chunks/forest/c7-r8.png",
+      "forestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "sourceBaseSha256": "2290e6f3d924135b83527dcd82a1c4a02580f71bac83857c3e756e03dce8b31b",
+      "sourceForestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c8-r8",
+      "x": 2048,
+      "y": 2048,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c8-r8.png",
+      "baseSha256": "2b572b71773d1bcf5b66e62b85952f410e37bec8d07fc6b2b18b3ac2fdf3cb1b",
+      "forest": "chunks/forest/c8-r8.png",
+      "forestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "sourceBaseSha256": "fb4860be0d2a6170accafc9c631c626fec4a9a8090719c264577f3105d25d822",
+      "sourceForestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c9-r8",
+      "x": 2304,
+      "y": 2048,
+      "width": 64,
+      "height": 256,
+      "base": "chunks/base/c9-r8.png",
+      "baseSha256": "ea70a33e96246799821cf464ab3fa65f2728e182f2b5f8ce8bb9fe4a9bd56250",
+      "forest": "chunks/forest/c9-r8.png",
+      "forestSha256": "47583f26d679ac48c830afc0fce8ffd86a8bc344db79ba2c1e6b0112686e2e07",
+      "sourceBaseSha256": "d01c18f351af8a370a8a98bb44c5b5540a1de323dcefb101761296fd27833d1c",
+      "sourceForestSha256": "47583f26d679ac48c830afc0fce8ffd86a8bc344db79ba2c1e6b0112686e2e07",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c0-r9",
+      "x": 0,
+      "y": 2304,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c0-r9.png",
+      "baseSha256": "e62fa5000e2f937146b0e0c6169cacd1155fac97c82cf9d4c08cfa5366427572",
+      "forest": "chunks/forest/c0-r9.png",
+      "forestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "sourceBaseSha256": "ad8bcab376175593d19d6eeb7af08b5b281109cf93393e38213381b324d3d92e",
+      "sourceForestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c1-r9",
+      "x": 256,
+      "y": 2304,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c1-r9.png",
+      "baseSha256": "3fe7f05141b9f282f5406db8788caa3278fe19939694c7d5e7424fe76fa58da4",
+      "forest": "chunks/forest/c1-r9.png",
+      "forestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "sourceBaseSha256": "18c3193c5d0ed6dc55f952a2f7f94eda22dcbcb61f22312492f7a8d49a5158a6",
+      "sourceForestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c2-r9",
+      "x": 512,
+      "y": 2304,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c2-r9.png",
+      "baseSha256": "7a169f1386f70dfdcfbe94271de6d7e902580e216fe22472994019e3ddca7dda",
+      "forest": "chunks/forest/c2-r9.png",
+      "forestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "sourceBaseSha256": "d2ca7be5be639581d8b0a836a3269afd0599fc1f51a295a57cfebb0cad9237c7",
+      "sourceForestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c3-r9",
+      "x": 768,
+      "y": 2304,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c3-r9.png",
+      "baseSha256": "11c7093d8d966386406f339d60927c69513ae15cb8b0c00a1f49815cd4c3711b",
+      "forest": "chunks/forest/c3-r9.png",
+      "forestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "sourceBaseSha256": "928defe3137321d9c644b905ac7d78a39e2351ce77157be68bbd8a8403e7bb2d",
+      "sourceForestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c4-r9",
+      "x": 1024,
+      "y": 2304,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c4-r9.png",
+      "baseSha256": "86ae3c77cd62e92dedb58285d236a58e1d9b4371abac613a757d0e90fa4bf2b8",
+      "forest": "chunks/forest/c4-r9.png",
+      "forestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "sourceBaseSha256": "c79b314f964431213627510c9bee2354414b1cff77c322cb5fd47b7bdf8dc14f",
+      "sourceForestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c5-r9",
+      "x": 1280,
+      "y": 2304,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c5-r9.png",
+      "baseSha256": "c10b1048c99066b247990612f61e2e1e55efe8c58da6d4a8056fb318c696cddc",
+      "forest": "chunks/forest/c5-r9.png",
+      "forestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "sourceBaseSha256": "e3107d4786f017d47d92f7f5ae36779343c0418aab726c08cae47315e3f16e2e",
+      "sourceForestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c6-r9",
+      "x": 1536,
+      "y": 2304,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c6-r9.png",
+      "baseSha256": "13cc893fbf7608f45bd0cf0edfa84beae8d3da0dc5297dfcd898ea8bf11f6f97",
+      "forest": "chunks/forest/c6-r9.png",
+      "forestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "sourceBaseSha256": "1629d535f76f23e15a9d6dc71b1e050a069f729b0e3c1e89c873bea8e74b2077",
+      "sourceForestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c7-r9",
+      "x": 1792,
+      "y": 2304,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c7-r9.png",
+      "baseSha256": "7db92c231cdc12ee5a3bc6643e37cd8bdfaac9cb59248088c1ded494e125fc1b",
+      "forest": "chunks/forest/c7-r9.png",
+      "forestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "sourceBaseSha256": "6fbbe82fb8c6916ba41a298900be6a2695042f3445fff36dd7a26e29ed3ba3f6",
+      "sourceForestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c8-r9",
+      "x": 2048,
+      "y": 2304,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c8-r9.png",
+      "baseSha256": "cfd8a9cec872e62eaae09d8253e4433655541a763bf7a0fdb60a02e93efc98a6",
+      "forest": "chunks/forest/c8-r9.png",
+      "forestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "sourceBaseSha256": "1e64bf2f0690d91fb5de6e4fd625dd430fb701ead48a7a7d3f5218885442e537",
+      "sourceForestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c9-r9",
+      "x": 2304,
+      "y": 2304,
+      "width": 64,
+      "height": 256,
+      "base": "chunks/base/c9-r9.png",
+      "baseSha256": "7e4e6ebf317124fa89c575fdf3cc0a840ee183642d883aa92cb42b4c3ca49884",
+      "forest": "chunks/forest/c9-r9.png",
+      "forestSha256": "47583f26d679ac48c830afc0fce8ffd86a8bc344db79ba2c1e6b0112686e2e07",
+      "sourceBaseSha256": "99795fa914a72bb92ee47244e854ab6dc0e59756c38f3c823e0204510ffae479",
+      "sourceForestSha256": "47583f26d679ac48c830afc0fce8ffd86a8bc344db79ba2c1e6b0112686e2e07",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c0-r10",
+      "x": 0,
+      "y": 2560,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c0-r10.png",
+      "baseSha256": "2806faddca2e8c1e4c75a400f0c56740e232288ab7d17f373fd2279db95b5d46",
+      "forest": "chunks/forest/c0-r10.png",
+      "forestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "sourceBaseSha256": "65575f2c6092567a0af0d5303f2470f20a18d213eb67a48b6dbd588aca5281eb",
+      "sourceForestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c1-r10",
+      "x": 256,
+      "y": 2560,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c1-r10.png",
+      "baseSha256": "86e93fa566da5f904f6ab2aa4f192db466103a3cad85e2da8382f63f8c25eb66",
+      "forest": "chunks/forest/c1-r10.png",
+      "forestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "sourceBaseSha256": "33fd26dbe2859deb6ad83f8d791c153cb2cfb3c3da974a09d47b76d50420ee7d",
+      "sourceForestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c2-r10",
+      "x": 512,
+      "y": 2560,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c2-r10.png",
+      "baseSha256": "994078a411ba188823af4beb3f68680b3a1e979adc0172bd032e30ee720141f6",
+      "forest": "chunks/forest/c2-r10.png",
+      "forestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "sourceBaseSha256": "b8c45b38ab6329d82e6b05eaa630593efd98b819927bb07e3e1286de3c2ed303",
+      "sourceForestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c3-r10",
+      "x": 768,
+      "y": 2560,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c3-r10.png",
+      "baseSha256": "3525f6f6d08b9508997af749c04bb6bb11939620f2423bc7ed66238914cb54af",
+      "forest": "chunks/forest/c3-r10.png",
+      "forestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "sourceBaseSha256": "ce23b741fd00b2714424daf98f7a9b60b22c9b2e3834727d087be5b0a9d4c52f",
+      "sourceForestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c4-r10",
+      "x": 1024,
+      "y": 2560,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c4-r10.png",
+      "baseSha256": "748d149ede7ba19ef7ef8b1f168fbeb0ab5dae70ac66f13ad8053cef6dc783a2",
+      "forest": "chunks/forest/c4-r10.png",
+      "forestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "sourceBaseSha256": "aa12c1d7118121e9aa069176e40169c54ed0be3044797e38944b00dc56015e87",
+      "sourceForestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c5-r10",
+      "x": 1280,
+      "y": 2560,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c5-r10.png",
+      "baseSha256": "ee8a27f5fba4c6d28bc357d2d25db5014026085c0e425e80e3703e4b6b3a810a",
+      "forest": "chunks/forest/c5-r10.png",
+      "forestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "sourceBaseSha256": "82618cd3f852c78723485aa56ff250249a8fc946b753ac1e2623e914412a10ed",
+      "sourceForestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c6-r10",
+      "x": 1536,
+      "y": 2560,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c6-r10.png",
+      "baseSha256": "5a3891ce2ba7f04df168efe4b7df16575687aded7684acd049838f8ee8b814e8",
+      "forest": "chunks/forest/c6-r10.png",
+      "forestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "sourceBaseSha256": "ffaf230bed8be1a05a843af1870e240bb875496c7e8288ec84e30facaff5a53b",
+      "sourceForestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c7-r10",
+      "x": 1792,
+      "y": 2560,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c7-r10.png",
+      "baseSha256": "f1add221b5785e0a450427573bb35811f85ccca235e3d05a9b231e45b89e3aed",
+      "forest": "chunks/forest/c7-r10.png",
+      "forestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "sourceBaseSha256": "1eade3a92cabf7faf880a84d1904ec166eb0bc11082f208a23a3eb032a7d39c3",
+      "sourceForestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c8-r10",
+      "x": 2048,
+      "y": 2560,
+      "width": 256,
+      "height": 256,
+      "base": "chunks/base/c8-r10.png",
+      "baseSha256": "55b5ee718e1487e2632e45992ac2aa16f6d5e53f77859127104e48417c405dbf",
+      "forest": "chunks/forest/c8-r10.png",
+      "forestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "sourceBaseSha256": "6fb5b11ee09ac9c96ae4936503c095f68e5c664544e575a261bf8ba3eba5e3e0",
+      "sourceForestSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c9-r10",
+      "x": 2304,
+      "y": 2560,
+      "width": 64,
+      "height": 256,
+      "base": "chunks/base/c9-r10.png",
+      "baseSha256": "6187c33e94b845037a3fac2895c06ff943be91a9e946bc9330f47607a1dd74e6",
+      "forest": "chunks/forest/c9-r10.png",
+      "forestSha256": "47583f26d679ac48c830afc0fce8ffd86a8bc344db79ba2c1e6b0112686e2e07",
+      "sourceBaseSha256": "33c1788d8367b8c7968c82f17578eb33c301bf3ea1ae8dfa1690e6cf03deec92",
+      "sourceForestSha256": "47583f26d679ac48c830afc0fce8ffd86a8bc344db79ba2c1e6b0112686e2e07",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c0-r11",
+      "x": 0,
+      "y": 2816,
+      "width": 256,
+      "height": 96,
+      "base": "chunks/base/c0-r11.png",
+      "baseSha256": "04dd53b79b6cfad2377e84c061b37f4fa1a2cb897429d9de98fd7dad623d4807",
+      "forest": "chunks/forest/c0-r11.png",
+      "forestSha256": "5f0efb9ed03b94d86feab74d61dd715d2c457c0eff3eaf7129b17c611656cfdc",
+      "sourceBaseSha256": "1abd95de5a0ccc1405f9ff183510785a1e4f97890a6a209de504b2d933f887d1",
+      "sourceForestSha256": "5f0efb9ed03b94d86feab74d61dd715d2c457c0eff3eaf7129b17c611656cfdc",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c1-r11",
+      "x": 256,
+      "y": 2816,
+      "width": 256,
+      "height": 96,
+      "base": "chunks/base/c1-r11.png",
+      "baseSha256": "90fa42e67b1bd4eb5025ec686f696c3e76d6d1306adb3a6b674b132cb547223c",
+      "forest": "chunks/forest/c1-r11.png",
+      "forestSha256": "5f0efb9ed03b94d86feab74d61dd715d2c457c0eff3eaf7129b17c611656cfdc",
+      "sourceBaseSha256": "ae95bd008a43f32fd6b396cf6c3a7d0e49d2accc661e7e071c30a43c13b60a15",
+      "sourceForestSha256": "5f0efb9ed03b94d86feab74d61dd715d2c457c0eff3eaf7129b17c611656cfdc",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c2-r11",
+      "x": 512,
+      "y": 2816,
+      "width": 256,
+      "height": 96,
+      "base": "chunks/base/c2-r11.png",
+      "baseSha256": "f8643048668c433c220e9588fb21fc2bacdc5a3a2a4424fd4b6209b2dc8de09d",
+      "forest": "chunks/forest/c2-r11.png",
+      "forestSha256": "5f0efb9ed03b94d86feab74d61dd715d2c457c0eff3eaf7129b17c611656cfdc",
+      "sourceBaseSha256": "2c720216e24b582703aa9a7cd6aa235e10f63df3aa85b9c78e8a6f5c63c850b9",
+      "sourceForestSha256": "5f0efb9ed03b94d86feab74d61dd715d2c457c0eff3eaf7129b17c611656cfdc",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c3-r11",
+      "x": 768,
+      "y": 2816,
+      "width": 256,
+      "height": 96,
+      "base": "chunks/base/c3-r11.png",
+      "baseSha256": "a077ee91a49fbf501a54f7b4a932b7dc141d798262ec78daad5025b42121e536",
+      "forest": "chunks/forest/c3-r11.png",
+      "forestSha256": "5f0efb9ed03b94d86feab74d61dd715d2c457c0eff3eaf7129b17c611656cfdc",
+      "sourceBaseSha256": "5a7534e054f24162bbf402d73fd11972bcb26fa14108f21734d21f5c10a15371",
+      "sourceForestSha256": "5f0efb9ed03b94d86feab74d61dd715d2c457c0eff3eaf7129b17c611656cfdc",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c4-r11",
+      "x": 1024,
+      "y": 2816,
+      "width": 256,
+      "height": 96,
+      "base": "chunks/base/c4-r11.png",
+      "baseSha256": "2f1a43b4f99b2ec8e62deb385a1e1a5d2625acea142038c86212f035fab34584",
+      "forest": "chunks/forest/c4-r11.png",
+      "forestSha256": "5f0efb9ed03b94d86feab74d61dd715d2c457c0eff3eaf7129b17c611656cfdc",
+      "sourceBaseSha256": "23795b90717e20d877a5af4f576d60a8d61fd8c34f1a27475b6e74c134426709",
+      "sourceForestSha256": "5f0efb9ed03b94d86feab74d61dd715d2c457c0eff3eaf7129b17c611656cfdc",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c5-r11",
+      "x": 1280,
+      "y": 2816,
+      "width": 256,
+      "height": 96,
+      "base": "chunks/base/c5-r11.png",
+      "baseSha256": "b0a59dd80f7613a64ae82d8cbc5a5333e934c243e876c95580f30c12938276db",
+      "forest": "chunks/forest/c5-r11.png",
+      "forestSha256": "5f0efb9ed03b94d86feab74d61dd715d2c457c0eff3eaf7129b17c611656cfdc",
+      "sourceBaseSha256": "c08f273c6d98cad52f4a34f4155d1f25c6b778724c130dea3edb9f533d9d7dd6",
+      "sourceForestSha256": "5f0efb9ed03b94d86feab74d61dd715d2c457c0eff3eaf7129b17c611656cfdc",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c6-r11",
+      "x": 1536,
+      "y": 2816,
+      "width": 256,
+      "height": 96,
+      "base": "chunks/base/c6-r11.png",
+      "baseSha256": "017bcbbbc2ee60ce087e4bc2bd8a0462ff7e8bf5f4a4478630e0f7211f600934",
+      "forest": "chunks/forest/c6-r11.png",
+      "forestSha256": "5f0efb9ed03b94d86feab74d61dd715d2c457c0eff3eaf7129b17c611656cfdc",
+      "sourceBaseSha256": "a4681527a3a13d31f36a1829dfd6bac59e0bd88a81e86fcb100b0fc85aa7d2f3",
+      "sourceForestSha256": "5f0efb9ed03b94d86feab74d61dd715d2c457c0eff3eaf7129b17c611656cfdc",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c7-r11",
+      "x": 1792,
+      "y": 2816,
+      "width": 256,
+      "height": 96,
+      "base": "chunks/base/c7-r11.png",
+      "baseSha256": "00dd2becb0f640abf72742a1493fa40b7e419ad5ad2b23de18b01ba2935307bd",
+      "forest": "chunks/forest/c7-r11.png",
+      "forestSha256": "5f0efb9ed03b94d86feab74d61dd715d2c457c0eff3eaf7129b17c611656cfdc",
+      "sourceBaseSha256": "2b8fb39ef9301bf659f6b5887608ce9a9a27eb1d2089b5e26651cfa75c121d04",
+      "sourceForestSha256": "5f0efb9ed03b94d86feab74d61dd715d2c457c0eff3eaf7129b17c611656cfdc",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c8-r11",
+      "x": 2048,
+      "y": 2816,
+      "width": 256,
+      "height": 96,
+      "base": "chunks/base/c8-r11.png",
+      "baseSha256": "78691720b8b719e87857c905097980b956c2fd18716e584497267c14fd131f82",
+      "forest": "chunks/forest/c8-r11.png",
+      "forestSha256": "5f0efb9ed03b94d86feab74d61dd715d2c457c0eff3eaf7129b17c611656cfdc",
+      "sourceBaseSha256": "5c9673b8a64911f0c6c1b9c9e0c969223aaed0bfeb39d070fd03ebb1be811165",
+      "sourceForestSha256": "5f0efb9ed03b94d86feab74d61dd715d2c457c0eff3eaf7129b17c611656cfdc",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    },
+    {
+      "id": "c9-r11",
+      "x": 2304,
+      "y": 2816,
+      "width": 64,
+      "height": 96,
+      "base": "chunks/base/c9-r11.png",
+      "baseSha256": "0c954f4897b84013fd2b36b5bfb5303374c0fb23f9fc50b8b30cefe877bd31c2",
+      "forest": "chunks/forest/c9-r11.png",
+      "forestSha256": "09a0bdd40458aafd01fcbeb8c8d5bfe094ae26d0cd2599a8c9aa5cdb26f85dd6",
+      "sourceBaseSha256": "8f97fcc90d4f8979e2da2f5a0f848d5d3d212b285c337e6ca05e1acde8dca885",
+      "sourceForestSha256": "09a0bdd40458aafd01fcbeb8c8d5bfe094ae26d0cd2599a8c9aa5cdb26f85dd6",
+      "baseChangedPixels": 0,
+      "rockOrSolidBaseChangedPixels": 0,
+      "finalCanopyAlphaPixels": 0,
+      "crownCountIntersecting": 0,
+      "revealedOldSupportPixels": 0,
+      "actorClearanceMeadowPixels": 0,
+      "coastalOverridePixels": 0
+    }
+  ],
+  "safeCells": [
+    {
+      "x": 101,
+      "y": 232
+    },
+    {
+      "x": 69,
+      "y": 256
+    },
+    {
+      "x": 30,
+      "y": 275
+    },
+    {
+      "x": 149,
+      "y": 277
+    },
+    {
+      "x": 148,
+      "y": 278
+    },
+    {
+      "x": 150,
+      "y": 278
+    },
+    {
+      "x": 149,
+      "y": 279
+    },
+    {
+      "x": 120,
+      "y": 283
+    },
+    {
+      "x": 120,
+      "y": 284
+    },
+    {
+      "x": 120,
+      "y": 285
+    },
+    {
+      "x": 120,
+      "y": 286
+    },
+    {
+      "x": 120,
+      "y": 287
+    },
+    {
+      "x": 120,
+      "y": 288
+    },
+    {
+      "x": 120,
+      "y": 289
+    },
+    {
+      "x": 120,
+      "y": 290
+    },
+    {
+      "x": 130,
+      "y": 290
+    },
+    {
+      "x": 120,
+      "y": 291
+    },
+    {
+      "x": 121,
+      "y": 291
+    },
+    {
+      "x": 122,
+      "y": 291
+    },
+    {
+      "x": 123,
+      "y": 291
+    },
+    {
+      "x": 124,
+      "y": 291
+    },
+    {
+      "x": 125,
+      "y": 291
+    },
+    {
+      "x": 126,
+      "y": 291
+    },
+    {
+      "x": 127,
+      "y": 291
+    },
+    {
+      "x": 128,
+      "y": 291
+    },
+    {
+      "x": 129,
+      "y": 291
+    },
+    {
+      "x": 130,
+      "y": 291
+    },
+    {
+      "x": 131,
+      "y": 291
+    },
+    {
+      "x": 132,
+      "y": 291
+    },
+    {
+      "x": 133,
+      "y": 291
+    },
+    {
+      "x": 134,
+      "y": 291
+    },
+    {
+      "x": 135,
+      "y": 291
+    },
+    {
+      "x": 136,
+      "y": 291
+    },
+    {
+      "x": 137,
+      "y": 291
+    },
+    {
+      "x": 138,
+      "y": 291
+    },
+    {
+      "x": 139,
+      "y": 291
+    },
+    {
+      "x": 140,
+      "y": 291
+    },
+    {
+      "x": 141,
+      "y": 291
+    },
+    {
+      "x": 142,
+      "y": 291
+    },
+    {
+      "x": 143,
+      "y": 291
+    },
+    {
+      "x": 144,
+      "y": 291
+    },
+    {
+      "x": 145,
+      "y": 291
+    },
+    {
+      "x": 146,
+      "y": 291
+    },
+    {
+      "x": 147,
+      "y": 291
+    },
+    {
+      "x": 148,
+      "y": 291
+    },
+    {
+      "x": 130,
+      "y": 292
+    },
+    {
+      "x": 142,
+      "y": 292
+    },
+    {
+      "x": 148,
+      "y": 292
+    },
+    {
+      "x": 130,
+      "y": 293
+    },
+    {
+      "x": 142,
+      "y": 293
+    },
+    {
+      "x": 148,
+      "y": 293
+    },
+    {
+      "x": 130,
+      "y": 294
+    },
+    {
+      "x": 142,
+      "y": 294
+    },
+    {
+      "x": 148,
+      "y": 294
+    },
+    {
+      "x": 130,
+      "y": 295
+    },
+    {
+      "x": 142,
+      "y": 295
+    },
+    {
+      "x": 148,
+      "y": 295
+    },
+    {
+      "x": 130,
+      "y": 296
+    },
+    {
+      "x": 142,
+      "y": 296
+    },
+    {
+      "x": 130,
+      "y": 297
+    },
+    {
+      "x": 142,
+      "y": 297
+    },
+    {
+      "x": 130,
+      "y": 298
+    },
+    {
+      "x": 142,
+      "y": 298
+    },
+    {
+      "x": 130,
+      "y": 299
+    },
+    {
+      "x": 142,
+      "y": 299
+    },
+    {
+      "x": 130,
+      "y": 300
+    },
+    {
+      "x": 142,
+      "y": 300
+    },
+    {
+      "x": 130,
+      "y": 301
+    },
+    {
+      "x": 142,
+      "y": 301
+    },
+    {
+      "x": 130,
+      "y": 302
+    },
+    {
+      "x": 142,
+      "y": 302
+    },
+    {
+      "x": 130,
+      "y": 303
+    },
+    {
+      "x": 142,
+      "y": 303
+    },
+    {
+      "x": 130,
+      "y": 304
+    },
+    {
+      "x": 142,
+      "y": 304
+    },
+    {
+      "x": 130,
+      "y": 305
+    },
+    {
+      "x": 142,
+      "y": 305
+    },
+    {
+      "x": 130,
+      "y": 306
+    },
+    {
+      "x": 142,
+      "y": 306
+    },
+    {
+      "x": 130,
+      "y": 307
+    },
+    {
+      "x": 142,
+      "y": 307
+    },
+    {
+      "x": 130,
+      "y": 308
+    },
+    {
+      "x": 142,
+      "y": 308
+    },
+    {
+      "x": 130,
+      "y": 309
+    },
+    {
+      "x": 142,
+      "y": 309
+    },
+    {
+      "x": 80,
+      "y": 310
+    },
+    {
+      "x": 130,
+      "y": 310
+    },
+    {
+      "x": 142,
+      "y": 310
+    },
+    {
+      "x": 143,
+      "y": 310
+    },
+    {
+      "x": 80,
+      "y": 311
+    },
+    {
+      "x": 130,
+      "y": 311
+    },
+    {
+      "x": 143,
+      "y": 311
+    },
+    {
+      "x": 80,
+      "y": 312
+    },
+    {
+      "x": 130,
+      "y": 312
+    },
+    {
+      "x": 143,
+      "y": 312
+    },
+    {
+      "x": 80,
+      "y": 313
+    },
+    {
+      "x": 130,
+      "y": 313
+    },
+    {
+      "x": 143,
+      "y": 313
+    },
+    {
+      "x": 80,
+      "y": 314
+    },
+    {
+      "x": 130,
+      "y": 314
+    },
+    {
+      "x": 143,
+      "y": 314
+    },
+    {
+      "x": 130,
+      "y": 315
+    },
+    {
+      "x": 143,
+      "y": 315
+    },
+    {
+      "x": 130,
+      "y": 316
+    },
+    {
+      "x": 143,
+      "y": 316
+    },
+    {
+      "x": 130,
+      "y": 317
+    },
+    {
+      "x": 143,
+      "y": 317
+    },
+    {
+      "x": 130,
+      "y": 318
+    },
+    {
+      "x": 143,
+      "y": 318
+    },
+    {
+      "x": 130,
+      "y": 319
+    },
+    {
+      "x": 143,
+      "y": 319
+    },
+    {
+      "x": 130,
+      "y": 320
+    },
+    {
+      "x": 143,
+      "y": 320
+    },
+    {
+      "x": 120,
+      "y": 321
+    },
+    {
+      "x": 121,
+      "y": 321
+    },
+    {
+      "x": 122,
+      "y": 321
+    },
+    {
+      "x": 123,
+      "y": 321
+    },
+    {
+      "x": 124,
+      "y": 321
+    },
+    {
+      "x": 125,
+      "y": 321
+    },
+    {
+      "x": 126,
+      "y": 321
+    },
+    {
+      "x": 127,
+      "y": 321
+    },
+    {
+      "x": 128,
+      "y": 321
+    },
+    {
+      "x": 129,
+      "y": 321
+    },
+    {
+      "x": 130,
+      "y": 321
+    },
+    {
+      "x": 143,
+      "y": 321
+    },
+    {
+      "x": 143,
+      "y": 322
+    },
+    {
+      "x": 143,
+      "y": 323
+    },
+    {
+      "x": 143,
+      "y": 324
+    },
+    {
+      "x": 142,
+      "y": 325
+    },
+    {
+      "x": 143,
+      "y": 325
+    },
+    {
+      "x": 142,
+      "y": 326
+    },
+    {
+      "x": 142,
+      "y": 327
+    },
+    {
+      "x": 142,
+      "y": 328
+    },
+    {
+      "x": 142,
+      "y": 329
+    },
+    {
+      "x": 142,
+      "y": 330
+    },
+    {
+      "x": 142,
+      "y": 331
+    },
+    {
+      "x": 142,
+      "y": 332
+    },
+    {
+      "x": 142,
+      "y": 333
+    },
+    {
+      "x": 142,
+      "y": 334
+    },
+    {
+      "x": 142,
+      "y": 335
+    },
+    {
+      "x": 142,
+      "y": 336
+    },
+    {
+      "x": 142,
+      "y": 337
+    },
+    {
+      "x": 140,
+      "y": 338
+    },
+    {
+      "x": 141,
+      "y": 338
+    },
+    {
+      "x": 142,
+      "y": 338
+    },
+    {
+      "x": 140,
+      "y": 339
+    },
+    {
+      "x": 60,
+      "y": 340
+    },
+    {
+      "x": 140,
+      "y": 340
+    },
+    {
+      "x": 45,
+      "y": 341
+    },
+    {
+      "x": 46,
+      "y": 341
+    },
+    {
+      "x": 47,
+      "y": 341
+    },
+    {
+      "x": 48,
+      "y": 341
+    },
+    {
+      "x": 49,
+      "y": 341
+    },
+    {
+      "x": 50,
+      "y": 341
+    },
+    {
+      "x": 51,
+      "y": 341
+    },
+    {
+      "x": 52,
+      "y": 341
+    },
+    {
+      "x": 53,
+      "y": 341
+    },
+    {
+      "x": 54,
+      "y": 341
+    },
+    {
+      "x": 55,
+      "y": 341
+    },
+    {
+      "x": 56,
+      "y": 341
+    },
+    {
+      "x": 57,
+      "y": 341
+    },
+    {
+      "x": 58,
+      "y": 341
+    },
+    {
+      "x": 59,
+      "y": 341
+    },
+    {
+      "x": 60,
+      "y": 341
+    },
+    {
+      "x": 61,
+      "y": 341
+    },
+    {
+      "x": 62,
+      "y": 341
+    },
+    {
+      "x": 63,
+      "y": 341
+    },
+    {
+      "x": 64,
+      "y": 341
+    },
+    {
+      "x": 65,
+      "y": 341
+    },
+    {
+      "x": 66,
+      "y": 341
+    },
+    {
+      "x": 67,
+      "y": 341
+    },
+    {
+      "x": 68,
+      "y": 341
+    },
+    {
+      "x": 140,
+      "y": 341
+    },
+    {
+      "x": 45,
+      "y": 342
+    },
+    {
+      "x": 140,
+      "y": 342
+    },
+    {
+      "x": 45,
+      "y": 343
+    },
+    {
+      "x": 140,
+      "y": 343
+    },
+    {
+      "x": 45,
+      "y": 344
+    },
+    {
+      "x": 140,
+      "y": 344
+    },
+    {
+      "x": 39,
+      "y": 345
+    },
+    {
+      "x": 45,
+      "y": 345
+    },
+    {
+      "x": 140,
+      "y": 345
+    },
+    {
+      "x": 45,
+      "y": 346
+    },
+    {
+      "x": 140,
+      "y": 346
+    },
+    {
+      "x": 45,
+      "y": 347
+    },
+    {
+      "x": 140,
+      "y": 347
+    },
+    {
+      "x": 45,
+      "y": 348
+    },
+    {
+      "x": 133,
+      "y": 348
+    },
+    {
+      "x": 140,
+      "y": 348
+    },
+    {
+      "x": 45,
+      "y": 349
+    },
+    {
+      "x": 140,
+      "y": 349
+    },
+    {
+      "x": 45,
+      "y": 350
+    },
+    {
+      "x": 140,
+      "y": 350
+    },
+    {
+      "x": 96,
+      "y": 360
+    },
+    {
+      "x": 145,
+      "y": 372
+    }
+  ],
+  "startCell": {
+    "x": 69,
+    "y": 256
+  },
+  "legacyFallback": {
+    "x": 130,
+    "y": 290
+  },
+  "liveLandmarkExits": [
+    {
+      "id": "greenhollow",
+      "x": 69,
+      "y": 256,
+      "door": {
+        "x": 69,
+        "y": 255
+      }
+    },
+    {
+      "id": "millbrook",
+      "x": 39,
+      "y": 345,
+      "door": {
+        "x": 39,
+        "y": 344
+      }
+    },
+    {
+      "id": "portSapphire",
+      "x": 133,
+      "y": 348,
+      "door": {
+        "x": 133,
+        "y": 349
+      }
+    },
+    {
+      "id": "sunkenCellar",
+      "x": 30,
+      "y": 275,
+      "door": {
+        "x": 30,
+        "y": 274
+      }
+    },
+    {
+      "id": "whisperingWoodsCave",
+      "x": 101,
+      "y": 232,
+      "door": {
+        "x": 101,
+        "y": 231
+      }
+    },
+    {
+      "id": "coastalReef",
+      "x": 145,
+      "y": 372,
+      "door": {
+        "x": 144,
+        "y": 372
+      }
+    },
+    {
+      "id": "mistyGrotto",
+      "x": 96,
+      "y": 360,
+      "door": {
+        "x": 96,
+        "y": 359
+      }
+    },
+    {
+      "id": "crystalCave",
+      "x": 149,
+      "y": 279,
+      "door": {
+        "x": 149,
+        "y": 278
+      }
+    }
+  ],
+  "liveValidApproaches": [
+    {
+      "x": 101,
+      "y": 232,
+      "landmarkId": "whisperingWoodsCave"
+    },
+    {
+      "x": 69,
+      "y": 256,
+      "landmarkId": "greenhollow"
+    },
+    {
+      "x": 30,
+      "y": 275,
+      "landmarkId": "sunkenCellar"
+    },
+    {
+      "x": 149,
+      "y": 277,
+      "landmarkId": "crystalCave"
+    },
+    {
+      "x": 148,
+      "y": 278,
+      "landmarkId": "crystalCave"
+    },
+    {
+      "x": 150,
+      "y": 278,
+      "landmarkId": "crystalCave"
+    },
+    {
+      "x": 149,
+      "y": 279,
+      "landmarkId": "crystalCave"
+    },
+    {
+      "x": 39,
+      "y": 345,
+      "landmarkId": "millbrook"
+    },
+    {
+      "x": 133,
+      "y": 348,
+      "landmarkId": "portSapphire"
+    },
+    {
+      "x": 96,
+      "y": 360,
+      "landmarkId": "mistyGrotto"
+    },
+    {
+      "x": 145,
+      "y": 372,
+      "landmarkId": "coastalReef"
+    }
+  ],
+  "underpaint": {
+    "src": "underpaint/base-underpaint-6ppc.png",
+    "pixelWidth": 888,
+    "pixelHeight": 1092,
+    "pixelsPerCell": 6
+  },
+  "forestUnderpaint": {
+    "src": "underpaint/forest-underpaint-6ppc.png",
+    "width": 888,
+    "height": 1092,
+    "pixelsPerCell": 6,
+    "bounds": [
+      16,
+      218,
+      163,
+      399
+    ]
+  },
+  "collision": {
+    "artifact": "collision/forest-collision.bin",
+    "storagePath": "collision/forest-collision.bin",
+    "format": "qok-forest-bitset-v1",
+    "version": 1,
+    "bounds": [
+      16,
+      218,
+      163,
+      399
+    ],
+    "dimensionsPx32": [
+      4736,
+      5824
+    ],
+    "pixelsPerCell": 32,
+    "alphaThreshold": 16,
+    "sha256": "59b021239c220a094bb0bd87c5af6d76b78c693e3fe197b394fd8471b30ae34d",
+    "sourceSha256": "36e4e14bae3a1dcffa35a8f9495b4075d5ab519583592f4854a51f73454822ec",
+    "bytes": 3447872
+  },
+  "source": {
+    "atlasSha256": "7eef91d2fa4749e059d3c73be79624551d9ef9be2c179a6b4bc5b99a0fb7a984",
+    "sourceManifestSha256": "3b932bdcd019b36ef16318333537c3f5553754a1cfded4ad33149269b5a49e3a",
+    "solidRockMaskSha256": "f9f4407187cd003668da4df9b823c01bb96369f2cfe20b252ebb7dd6ab31b9e5",
+    "heroFrameUnionPixels": 2132,
+    "placementCount": 2061,
+    "chunkCount": 120,
+    "placementSeed": 20261003,
+    "protectionAuthority": "executed live world API new-game start, runtime last-resort fallback, all active landmark exits and valid approaches; old art/semantic routes and generic SAFE probes do not reserve canopy",
+    "alphaRule": "whole 68px native-scale atlas crowns; nearest-neighbor source sampling; source alpha >=128 becomes opaque"
+  },
+  "placements": "evidence/placements-r4-whole-act1.json",
+  "audit": "evidence/forest-audit.json",
+  "evidence": {
+    "routeClearance": "evidence/actual-production-stencil-route-audit-v2.json",
+    "recoveryCells": "evidence/recovery-cell-audit.json"
+  }
+}

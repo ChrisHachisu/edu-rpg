@@ -1,0 +1,3 @@
+  FAIL VictoryScene enters the actual New Game+ creation path — {"ngPlus":true,"savedName":"Legacy Hero"}
+  PASS New Game+ retains the fresh-town opening and intro sequence — {"first":true,"intro":true,"introDone":false}
+FAIL 1 issue(s)

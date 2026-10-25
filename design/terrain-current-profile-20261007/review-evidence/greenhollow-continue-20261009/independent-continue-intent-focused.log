@@ -1,0 +1,3 @@
+  PASS failed Continue leaves flags unchanged and does not start the world — {"flags":{"keepExisting":"yes"},"flagsUnchanged":true,"mode":"title","worldActive":false,"loadWrapperRestored":true}
+  PASS synthetic Continue clears an interrupted New Game opening intent only after load — http://127.0.0.1:5174/act1-hifi/town.html?town=greenhollow&facing=up
+PASS 2 checks

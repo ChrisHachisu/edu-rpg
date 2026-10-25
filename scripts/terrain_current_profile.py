@@ -1,0 +1,1803 @@
+"""Fail-closed validation for the separately selected forward terrain profile.
+
+The descriptor SHA is deliberately unset until a complete, independently reviewed
+full-world descriptor exists. The W-side crop/pilot receipt is not a descriptor.
+"""
+from __future__ import annotations
+
+import hashlib
+import json
+import re
+import struct
+from pathlib import Path, PurePosixPath
+from typing import Any
+
+PROFILE_ID = "act1-forward-20261007-v1"
+PROOF_FIELD_SPLIT_VERSION = "forward-proof-field-split-v1"
+DESCRIPTOR_RELATIVE = "design/terrain-current-profile-20261007/forward-profile-descriptor.json"
+GENERATED_OUTPUT_ROOT = "design/terrain-current-profile-20261007/generated-output"
+CURRENT_SEMANTIC_MANIFEST = "design/terrain-current-profile-20261007/current/act1-hifi-manifest.json"
+FORWARD_GENERATOR_SOURCE = "design/terrain-current-profile-20261007/generate_forward_profile.py"
+FORWARD_LAYOUT_RECIPE = "design/terrain-current-profile-20261007/accepted-whole-layout-v2.json"
+FORWARD_NORTH_RECIPE = "design/terrain-current-profile-20261007/north-contact-y-20261007-recipe-v1.json"
+FORWARD_WATER_R2_RECIPE = "design/terrain-current-profile-20261007/materials/act1-water-r2.json"
+FORWARD_WATER_R2_ASSET = "design/terrain-current-profile-20261007/materials/act1-water-r2.png"
+ROOT_A1OW_SOURCE = "public/act1-overworld-walk.bin"
+CRYSTAL_DQ_REVIEW_RELATIVE = "design/terrain-current-profile-20261007/review-evidence/crystal-roof-20261016/a1ow-source-equivalence.json"
+CRYSTAL_DQ_REVIEW_SHA256 = "28ca32f73147f9d2e9868b4cd1f847537c9d9fbf2351f10dbb26471066ac5df7"
+CRYSTAL_DQ_DIAGNOSTICS_ROOT = Path("/private/tmp/edu-rpg-build84-feedback-20261013/native-cave-contact-20261016/crystal-independent")
+
+def _is_approved_crystal_dq_diagnostic(path: str | Path) -> bool:
+    candidate = Path(path).resolve()
+    return CRYSTAL_DQ_DIAGNOSTICS_ROOT.resolve() in candidate.parents
+# Set only after owner review of the descriptor and its independent root authority.
+PINNED_DESCRIPTOR_SHA256: str | None = "9557461cde005883f70806b98dd15617b43c0c7731ba0c9677670ce99d6a5a4c"
+NORMALIZED_VALIDATOR_SOURCE = (
+    "design/terrain-current-profile-20261007/review-evidence/"
+    "crystal-roof-20261016/validator-root-pin-normalized-source.txt"
+)
+NORMALIZED_VALIDATOR_PIN_LINE = re.compile(
+    rb'(?m)^PINNED_DESCRIPTOR_SHA256: str \| None = "[0-9a-f]{64}"$'
+)
+
+REQUIRED_PROOFS = frozenset({
+    "cleanRegeneration", "decodedPixels", "globalCropReconstruction",
+    "chunkBoundaries", "underpaintPhase", "collisionDecode", "a1owDecode", "visibleAlpha",
+    "heroFrameClearance", "safeCells", "currentGuard", "routes",
+    "runtimeInvariants", "sourceResourceClosure", "renderedReview",
+})
+# A QA-preparation descriptor proves all immutable/static closure. Dynamic checks are
+# named explicitly and completed in a sidecar after the exact Simulator candidate runs.
+PREPARATION_PROOFS = REQUIRED_PROOFS - {"routes"}
+PENDING_DYNAMIC_CHECKS = (
+    "terrainContactBothHeroes",
+    "cliffGrassRoutes",
+    "caveDoorBridgeRoutes",
+    "chunkStreamingAndResume",
+    "savePreservationAndInterruption",
+    "battleFleeBossReturn",
+)
+DYNAMIC_CHECKS = frozenset(PENDING_DYNAMIC_CHECKS)
+PREPARATION_RECEIPT_SCHEMA = "qok-forward-preparation-receipt-v1"
+RELEASE_EVIDENCE_SCHEMA = "qok-forward-release-evidence/v2"
+NORTH_UNION_PROOF_PATH = (
+    "design/terrain-current-profile-20261007/review-evidence/"
+    "water-r2-final-20261013/north-qok-final18-union-review.json"
+)
+NORTH_UNION_PROOF_SHA256 = "3090babc684217ebecd145888be2b7df5c99f1c5d92c505b62acb3f13d5d1de7"
+NORTH_BASELINE_ALPHA_PATH = "evidence/final-visible-raised-alpha.png"
+NORTH_BASELINE_ALPHA_SHA256 = "267f7bd1e00b58a1e8b366633fceac6673919e39267578295df598735526bbeb"
+NORTH_UNION_ALPHA_PATH = "evidence/final-visible-plus-north-support-collision-alpha.png"
+NORTH_UNION_ALPHA_SHA256 = "0baf807bfd429b8ae945439c62c23610fcf62ae0fa6eeae01dcbf5c7d468fae7"
+NORTH_DELTA_ALPHA_PATH = "evidence/north-support-collision-alpha.png"
+NORTH_DELTA_ALPHA_SHA256 = "d339fa63833b0ce52cbdc503cf25f05b28cb7bccba5f0a5b2ad6bcdee524b13a"
+NORTH_DELTA_PACKED_BITS_SHA256 = "dc773fb84b8f87c137d3660ffb32a9bab102db5aecbd6c685c3cfa7742695bff"
+NORTH_UNION_PACKED_BITS_SHA256 = "72558e1a7605850a657d32b52c5c49ad7d07a6f83ec3069bdfeaba1956e43b3d"
+NORTH_UNION_NEW_BITS = 1414
+A1OW_V2_FORMAT = "A1OW-v2"
+PENDING_PROOF_ASSERTION_GROUPS = {
+    "a1owDecode.mountainCollisionReconciled": ("terrainContactBothHeroes", "cliffGrassRoutes"),
+    "a1owDecode.heroFootClearanceRecomputed": ("terrainContactBothHeroes", "caveDoorBridgeRoutes"),
+    "visibleAlpha.noHiddenSelectableHeroFrame": ("terrainContactBothHeroes", "chunkStreamingAndResume"),
+    "heroFrameClearance.clearanceRecomputed": ("terrainContactBothHeroes", "cliffGrassRoutes", "caveDoorBridgeRoutes"),
+    "runtimeInvariants.existingSaveResume": ("savePreservationAndInterruption", "chunkStreamingAndResume"),
+    "routes.startAndLegacyFallbackVerified": ("savePreservationAndInterruption", "caveDoorBridgeRoutes"),
+    "routes.savedPositionRecoveryVerified": ("savePreservationAndInterruption", "caveDoorBridgeRoutes"),
+    "routes.crystalCaveRoundTrip": ("caveDoorBridgeRoutes", "battleFleeBossReturn"),
+    "routes.allExitsReachable": ("caveDoorBridgeRoutes", "cliffGrassRoutes"),
+    "routes.noTraversableTerrainSeam": ("terrainContactBothHeroes", "cliffGrassRoutes"),
+    "routes.leftPlainsOpeningRetained": ("cliffGrassRoutes",),
+}
+PENDING_PROOF_ASSERTIONS = tuple(PENDING_PROOF_ASSERTION_GROUPS)
+PREPARATION_PROOF_VALUE_KEYS = {
+    "underpaintPhase": frozenset({
+        "scope", "manifestSha256", "activeDqTilesSha256", "originCell", "dimensionsPx6",
+        "pixelsPerCell", "basePixelsPerCell", "semanticBounds", "chunksIntersectingSemanticBounds",
+        "phaseMismatches", "semanticCellsCoveredExactlyOnce", "sameOwTileWorldGrid",
+    }),
+    "collisionDecode": frozenset({
+        "independentDecode", "heroFramesChecked", "heroStencilScope", "safeCellCount",
+        "runtimeFormat", "collisionSha256", "boundsChecked", "bitOrderAndLengthChecked",
+    }),
+    "a1owDecode": frozenset({
+        "format", "artifactSha256", "runtimeParser", "version", "headerBytes", "profileId",
+        "supportSchema", "supportFNV32", "semanticsSha256", "supportSha256",
+        "payloadSha256", "blockCount", "waterOnlyInsideAct1", "analyticMountainsOutsideAndPadding",
+    }),
+    "visibleAlpha": frozenset({"sourceAuthority", "sourceArtifactSha256", "collisionSha256"}),
+    "heroFrameClearance": frozenset({
+        "allSelectableHeroes", "allFramesAtRuntimeScale", "scope", "heroCount", "framesPerHero",
+        "runtimeScale", "heroFrameSources",
+    }),
+    "safeCells": frozenset({
+        "recomputedFromCollisionSha256", "count", "recomputed", "scope", "offsets",
+        "framesPerHero", "heroFrameSources", "qokHits",
+    }),
+}
+FULL_PROOF_VALUE_KEYS = {
+    "underpaintPhase": PREPARATION_PROOF_VALUE_KEYS["underpaintPhase"],
+    "collisionDecode": PREPARATION_PROOF_VALUE_KEYS["collisionDecode"],
+    "a1owDecode": PREPARATION_PROOF_VALUE_KEYS["a1owDecode"] | {
+        "mountainCollisionReconciled", "heroFootClearanceRecomputed",
+    },
+    "visibleAlpha": PREPARATION_PROOF_VALUE_KEYS["visibleAlpha"] | {"noHiddenSelectableHeroFrame"},
+    "heroFrameClearance": PREPARATION_PROOF_VALUE_KEYS["heroFrameClearance"] | {"clearanceRecomputed"},
+    "safeCells": PREPARATION_PROOF_VALUE_KEYS["safeCells"],
+    "runtimeInvariants": frozenset({"viewport", "saveVersion", "existingSaveResume"}),
+    "routes": frozenset({
+        "startAndLegacyFallbackVerified", "savedPositionRecoveryVerified", "crystalCaveRoundTrip",
+        "allExitsReachable", "noTraversableTerrainSeam", "leftPlainsOpeningRetained", "staleGuardAccepted",
+    }),
+}
+LOCKED_GEOMETRY_FIELDS = ("designLocks", "semanticBounds", "semanticRows", "chunkSize", "streaming", "detailRegions", "pathConstraints")
+REQUIRED_OUTPUTS = frozenset({
+    "runtimeChunks", "underpaints", "collision", "visibleAlpha", "a1ow",
+    "runtimeManifest", "consumedNonterrainOverrides", "outputReceipt",
+})
+OUTPUT_CONTAINER_KEYS = frozenset({"root", "inventory"}) | REQUIRED_OUTPUTS
+REQUIRED_GUARD_INPUTS = frozenset({
+    "worldMapSha256", "dqTilesSha256", "semanticNavigationSha256",
+    "semanticNavigationFileSha256",
+    "maleHeroSha256", "femaleHeroSha256", "extractorVersion",
+    "finalManifestSha256",
+})
+COLLISION_MAGIC = b"QOKF8COL"
+COLLISION_HEADER_BYTES = 64
+COLLISION_DIMENSIONS = [4736, 5824]
+COLLISION_BOUNDS = [16, 218, 163, 399]
+A1OW_MAGIC = b"A1OW"
+
+A1OW_V2_PROFILE_ID = "act1-forward-20261007-v1"
+A1OW_V2_HEADER_BYTES = 96
+A1OW_V2_SEMANTICS_SHA256 = "a6e6e7f228d040381539618d99f03e774a16dd7cadbaf8cc76a115934d324f67"
+A1OW_V2_SUPPORT_SCHEMA = "a1ow-effective-support-v1"
+A1OW_V2_SUPPORT_SHA256 = "eeaf65c08cda239ea8755a3af0026ed0ca61e19a2683cafc10610b5c4027914a"
+A1OW_V2_SUPPORT_FNV32 = 4271507709
+A1OW_V2_BLOCKS = 4094
+A1OW_V2_PAYLOAD_SHA256 = "05be9638d04a692668c3a1c8b4bd3d809216bcede2e090a74a0712cb5467498c"
+A1OW_V2_ARTIFACT_SHA256 = "00a520ae09089547ca4af4ef1077b84acdad98d4989de238f3ee30e28ad092c6"
+A1OW_V2_BAKER_PATH = "scripts/bake_act1_overworld_walk.mjs"
+A1OW_V2_BAKER_SHA256 = "8f172f77de9ccddebafd0d742a13fdc22d5258c652eacf5df5b0ba5d25c9eb2b"
+
+
+def decode_a1ow(path: Path, contract: dict[str, Any]) -> dict[str, Any]:
+    """Strictly validate the reviewed v2 support-bound A1OW format and unchanged distance body."""
+    expected_contract = {
+        "path": "act1-overworld-walk.bin", "format": A1OW_V2_FORMAT,
+        "sha256": A1OW_V2_ARTIFACT_SHA256,
+        "bakerPath": A1OW_V2_BAKER_PATH, "bakerSha256": A1OW_V2_BAKER_SHA256,
+        "version": 2, "headerBytes": A1OW_V2_HEADER_BYTES,
+        "profileId": A1OW_V2_PROFILE_ID, "supportSchema": A1OW_V2_SUPPORT_SCHEMA,
+        "pixelsPerCell": 48, "mapCells": [320, 400], "far": 255,
+        "blockCount": A1OW_V2_BLOCKS, "supportFNV32": A1OW_V2_SUPPORT_FNV32,
+        "semanticsSha256": A1OW_V2_SEMANTICS_SHA256,
+        "supportSha256": A1OW_V2_SUPPORT_SHA256,
+        "payloadSha256": A1OW_V2_PAYLOAD_SHA256,
+        "scope": "water-only-inside-act1; analytic-mountains-outside-and-padding",
+    }
+    if not isinstance(contract, dict) or contract != expected_contract:
+        raise ProfileError("A1OW descriptor differs from the exact reviewed v2 profile/support contract")
+    size = path.stat().st_size
+    if size < A1OW_V2_HEADER_BYTES:
+        raise ProfileError("A1OW artifact is shorter than its v2 header")
+    with path.open("rb") as handle:
+        header = handle.read(A1OW_V2_HEADER_BYTES)
+        payload_digest = hashlib.sha256()
+        payload_digest.update(handle.read())
+    if sha256(path) != A1OW_V2_ARTIFACT_SHA256:
+        raise ProfileError("A1OW artifact bytes differ from the reviewed v2 output")
+    if len(header) != A1OW_V2_HEADER_BYTES or header[:4] != A1OW_MAGIC:
+        raise ProfileError("A1OW artifact magic/header is invalid")
+    version, ppc, map_width, map_height, far, header_bytes = struct.unpack_from("<HHHHHH", header, 4)
+    blocks, support_fnv = struct.unpack_from("<II", header, 16)
+    reserved_a, reserved_b = struct.unpack_from("<II", header, 24)
+    semantics_sha, support_sha = header[32:64].hex(), header[64:96].hex()
+    expected_size = header_bytes + map_width * map_height * 2 + blocks * ppc * ppc
+    if (version != 2 or ppc != 48 or map_width != 320 or map_height != 400
+            or far != 255 or header_bytes != A1OW_V2_HEADER_BYTES
+            or reserved_a != 0 or reserved_b != 0 or blocks != A1OW_V2_BLOCKS
+            or expected_size != size):
+        raise ProfileError("A1OW artifact length or header differs from dq-tiles.js::owmBakeParse v2")
+    if semantics_sha != A1OW_V2_SEMANTICS_SHA256:
+        raise ProfileError("A1OW field semantics identity differs from reviewed v2 runtime")
+    if support_sha != A1OW_V2_SUPPORT_SHA256 or support_fnv != A1OW_V2_SUPPORT_FNV32:
+        raise ProfileError("A1OW support identity differs from reviewed current effective map inputs")
+    if payload_digest.hexdigest() != A1OW_V2_PAYLOAD_SHA256:
+        raise ProfileError("A1OW distance payload differs from preserved v1 field bytes")
+    return {"version": version, "headerBytes": header_bytes, "mapWidth": map_width,
+            "mapHeight": map_height, "blocks": blocks, "supportFNV32": support_fnv,
+            "semanticsSha256": semantics_sha, "supportSha256": support_sha,
+            "payloadSha256": payload_digest.hexdigest()}
+
+
+def decode_forward_collision(path: Path, contract: dict[str, Any], *,
+                             expected_source_sha256: str | None = None) -> dict[str, Any]:
+    """Decode the existing dq-tiles.js qok-forest-bitset-v1 production format."""
+    expected_width, expected_height = COLLISION_DIMENSIONS
+    expected_payload = (expected_width * expected_height + 7) // 8
+    if (contract.get("runtimeFormat") != "qok-forest-bitset-v1"
+            or contract.get("version") != 1
+            or contract.get("headerBytes") != COLLISION_HEADER_BYTES
+            or contract.get("dimensionsPx32") != COLLISION_DIMENSIONS
+            or contract.get("bounds") != COLLISION_BOUNDS
+            or contract.get("pixelsPerCell") != 32
+            or contract.get("alphaThreshold") != 16
+            or contract.get("bitOrder") != "little-within-byte"
+            or contract.get("bytes") != COLLISION_HEADER_BYTES + expected_payload):
+        raise ProfileError("forward collision descriptor differs from the existing production decoder contract")
+    if path.stat().st_size != COLLISION_HEADER_BYTES + expected_payload:
+        raise ProfileError("forward collision pack length differs from the existing production geometry")
+    with path.open("rb") as handle:
+        header = handle.read(COLLISION_HEADER_BYTES)
+    if len(header) != COLLISION_HEADER_BYTES or header[:8] != COLLISION_MAGIC:
+        raise ProfileError("forward collision pack magic/header is invalid")
+    version, header_bytes, width, height, pixels_per_cell = struct.unpack_from("<HHIII", header, 8)
+    source_sha = header[24:56].hex()
+    expected_source = expected_source_sha256 or contract.get("sourceSha256")
+    if (version != 1 or header_bytes != COLLISION_HEADER_BYTES or width != expected_width
+            or height != expected_height or pixels_per_cell != 32
+            or source_sha != expected_source):
+        raise ProfileError("forward collision pack header/source-alpha SHA differs from dq-tiles.js decoder expectations")
+    with path.open("rb") as handle:
+        handle.seek(COLLISION_HEADER_BYTES)
+        payload = handle.read(expected_payload)
+    return {"widthPixels": width, "heightPixels": height, "payloadBytes": expected_payload,
+            "payloadSha256": hashlib.sha256(payload).hexdigest()}
+
+
+def png_dimensions(path: Path, label: str) -> tuple[int, int]:
+    try:
+        header = path.read_bytes()[:24]
+    except OSError as exc:
+        raise ProfileError(f"{label} PNG cannot be read: {exc}") from exc
+    if len(header) < 24 or header[:8] != b"\x89PNG\r\n\x1a\n":
+        raise ProfileError(f"{label} is not a PNG image")
+    return struct.unpack(">II", header[16:24])
+
+
+def validate_north_collision_union(north: dict[str, Any], generation_receipt: dict[str, Any],
+                                   output_root: Path, output_map: dict[str, str],
+                                   union_proof: dict[str, Any]) -> str:
+    """Bind the north raster to the reviewed monotonic QOK union evidence."""
+    union = north.get("collisionUnion")
+    if not isinstance(union, dict) or union != generation_receipt.get("northSupportCollision"):
+        raise ProfileError("north collision-union manifest differs from the generation receipt")
+    if (union.get("schema") != "north-support-qok-union-v1"
+            or union.get("bounds") != COLLISION_BOUNDS
+            or union.get("pixelsPerCell") != 32
+            or union.get("sourceAlphaThreshold") != 128
+            or union.get("outsideMapPixelsExcluded") is not True
+            or union.get("supportAlphaPixelsInsideMap") != 11479
+            or union.get("newCollisionPixels") != NORTH_UNION_NEW_BITS
+            or union.get("postUnionPackedBitsSha256") != NORTH_UNION_PACKED_BITS_SHA256):
+        raise ProfileError("north collision-union dimensions, policy, delta count, or packed bits differ from the reviewed support")
+    source_alpha = generation_receipt.get("sourceAlpha")
+    collision_pack = generation_receipt.get("collisionPack")
+    if (not isinstance(source_alpha, dict) or not isinstance(collision_pack, dict)
+            or source_alpha.get("path") != NORTH_BASELINE_ALPHA_PATH
+            or source_alpha.get("sha256") != NORTH_BASELINE_ALPHA_SHA256
+            or source_alpha.get("collisionEqualsBaselineRaisedArtAlpha") is not True
+            or source_alpha.get("collisionUnionAddsNorthSupportPixels") != NORTH_UNION_NEW_BITS
+            or source_alpha.get("collisionUnionSourceSha256") != NORTH_UNION_ALPHA_SHA256
+            or collision_pack.get("sourceSha256") != NORTH_UNION_ALPHA_SHA256
+            or source_alpha.get("pixelsPerCell") != 32
+            or source_alpha.get("dimensions") != list(COLLISION_DIMENSIONS)):
+        raise ProfileError("north collision union does not preserve baseline alpha and bind the combined alpha source")
+    if (output_map.get(NORTH_BASELINE_ALPHA_PATH) != NORTH_BASELINE_ALPHA_SHA256
+            or output_map.get(NORTH_UNION_ALPHA_PATH) != NORTH_UNION_ALPHA_SHA256
+            or output_map.get(NORTH_DELTA_ALPHA_PATH) != NORTH_DELTA_ALPHA_SHA256):
+        raise ProfileError("north baseline, support-delta, or combined-alpha artifact differs from its exact output inventory pin")
+    for rel in (NORTH_UNION_ALPHA_PATH, NORTH_DELTA_ALPHA_PATH):
+        if png_dimensions(output_root / rel, rel) != tuple(COLLISION_DIMENSIONS):
+            raise ProfileError(f"north collision alpha dimensions differ from QOK geometry: {rel}")
+    proposal = union_proof.get("proposal") if isinstance(union_proof, dict) else None
+    if (not isinstance(proposal, dict)
+            or proposal.get("monotonicUnionVerified") is not True
+            or proposal.get("removedQokBits") != 0
+            or proposal.get("newQokBits") != NORTH_UNION_NEW_BITS
+            or proposal.get("addedDeltaMaskSha256") != NORTH_DELTA_PACKED_BITS_SHA256
+            or proposal.get("postUnionMaskSha256") != NORTH_UNION_PACKED_BITS_SHA256
+            or proposal.get("candidateUnionPixelsInMap") != 11479):
+        raise ProfileError("independent north collision delta proof does not establish the exact monotonic union")
+    return NORTH_UNION_ALPHA_SHA256
+
+
+def expected_collision_authority(has_north_support: bool) -> str:
+    if has_north_support:
+        return ("QOKF8COL union of unchanged final visible forest+cliff alpha and only in-map hard-cut alpha "
+                "from the four connected companion-B north supports; no prior bit removals or dilation")
+    return "final visible forest+cliff object alpha; QOKF8COL forest-collision.bin derived at runtime threshold16"
+
+
+def validate_generation_alpha_receipt(receipt_alpha: dict[str, Any], source_path: str,
+                                      source_sha: str, has_north_support: bool) -> None:
+    common_valid = (
+        receipt_alpha.get("path") == source_path
+        and receipt_alpha.get("sha256") == source_sha
+        and receipt_alpha.get("thresholdBeforeCollision") == 128
+        and receipt_alpha.get("collisionThreshold") == 16
+    )
+    if has_north_support:
+        north_valid = (
+            receipt_alpha.get("collisionEqualsBaselineRaisedArtAlpha") is True
+            and receipt_alpha.get("collisionUnionAddsNorthSupportPixels") == NORTH_UNION_NEW_BITS
+            and receipt_alpha.get("collisionUnionSourceSha256") == NORTH_UNION_ALPHA_SHA256
+        )
+        if not common_valid or not north_valid:
+            raise ProfileError("generated-output receipt must preserve baseline alpha and bind North union source")
+    elif (not common_valid or receipt_alpha.get("collisionEqualsAlphaNonzero") is not True
+          or receipt_alpha.get("collisionXorPixels") != 0):
+        raise ProfileError("generated-output receipt alpha differs from the legacy exact source-alpha contract")
+
+
+class ProfileError(RuntimeError):
+    pass
+
+
+def validate_water_treatment(manifest: dict[str, Any], geometry_manifest: dict[str, Any],
+                             output_root: Path, output_map: dict[str, str],
+                             input_map: dict[str, str], repo_root: Path) -> bool:
+    """Validate either exact legacy water copies or the strict shared R2 painter."""
+    treatment = manifest.get("waterTreatment")
+    if treatment is None:
+        for old, new in zip(geometry_manifest["chunks"], manifest["chunks"]):
+            if new.get("water") != old.get("water") or new.get("waterSha256") != old.get("waterSha256"):
+                raise ProfileError(f"forward runtime manifest changed pinned legacy water at {old.get('id')}")
+        return False
+    expected_keys = {"schema", "assetPath", "assetSha256", "assetDimensionsPx",
+                     "sourceRecipePath", "sourceRecipeSha256", "sourceAssetPath",
+                     "sourceAssetSha256", "pixelsPerCell", "sourceTexelsPerCell",
+                     "semanticMask", "phase", "blend"}
+    if not isinstance(treatment, dict) or set(treatment) != expected_keys:
+        raise ProfileError("water-r2 treatment schema fields differ")
+    if (treatment.get("schema") != "act1-water-r2-global-phase-v1"
+            or treatment.get("assetPath") != "materials/act1-water-r2.png"
+            or treatment.get("pixelsPerCell") != 32
+            or treatment.get("sourceTexelsPerCell") != 96
+            or treatment.get("semanticMask") != "R4 _weights(\"water\") floored to 1.0 on exact smoothed semantic W tokens; 32ppc output"
+            or treatment.get("phase") != "global world-cell origin; 96 texture texels per cell"
+            or treatment.get("blend") != "normal alpha composite"):
+        raise ProfileError("water-r2 treatment differs from its reviewed density/mask/phase contract")
+    asset_sha = _digest(treatment.get("assetSha256"), "waterTreatment.assetSha256")
+    recipe_sha = _digest(treatment.get("sourceRecipeSha256"), "waterTreatment.sourceRecipeSha256")
+    source_asset_sha = _digest(treatment.get("sourceAssetSha256"), "waterTreatment.sourceAssetSha256")
+    if (treatment.get("sourceRecipePath") != FORWARD_WATER_R2_RECIPE
+            or treatment.get("sourceAssetPath") != FORWARD_WATER_R2_ASSET
+            or source_asset_sha != asset_sha
+            or input_map.get(FORWARD_WATER_R2_ASSET) != asset_sha
+            or input_map.get(FORWARD_WATER_R2_RECIPE) != recipe_sha):
+        raise ProfileError("water-r2 source asset/recipe are not bound to exact authoring inputs")
+    try:
+        recipe = json.loads((repo_root / FORWARD_WATER_R2_RECIPE).read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise ProfileError(f"water-r2 source recipe cannot be read: {exc}") from exc
+    if (recipe.get("schema") != "act1-water-texture-r2-v1"
+            or recipe.get("assetPath") != FORWARD_WATER_R2_ASSET
+            or recipe.get("sha256") != asset_sha
+            or recipe.get("dimensionsPx") != treatment.get("assetDimensionsPx")
+            or recipe.get("mode") != "RGB"
+            or recipe.get("outputPixelsPerCell") != 32
+            or recipe.get("sourceTexelsPerCell") != 96
+            or recipe.get("semanticMask") != "R4 _weights(\"water\") from manifest-referenced smoothed semantic classgrid at 32px/cell"
+            or recipe.get("phase") != "global world-cell origin; texture coordinate is worldCell*96 + outputPixel*3"):
+        raise ProfileError("water-r2 source recipe content differs from the generated texture contract")
+    if input_map.get(FORWARD_WATER_R2_ASSET) != sha256(repo_root / FORWARD_WATER_R2_ASSET):
+        raise ProfileError("water-r2 source texture bytes differ from the authoring inventory")
+    asset_output = "act1-hifi/" + treatment["assetPath"]
+    if output_map.get(asset_output) != asset_sha:
+        raise ProfileError("water-r2 texture output is not pinned to its source asset")
+    texture_path = output_root / asset_output
+    if png_dimensions(texture_path, "water-r2 texture") != tuple(treatment.get("assetDimensionsPx", [])):
+        raise ProfileError("water-r2 texture dimensions differ from its manifest")
+    for old, new in zip(geometry_manifest["chunks"], manifest["chunks"]):
+        if (new.get("waterPixelsPerCell") != 32
+                or not isinstance(new.get("water"), str)
+                or not new["water"].startswith("chunks/water-r2/")
+                or not new["water"].endswith(".png")):
+            raise ProfileError(f"water-r2 chunk schema differs at {old.get('id')}")
+        rel = "act1-hifi/" + _safe_relative(new["water"])
+        sha = _digest(new.get("waterSha256"), f"chunks.{old.get('id')}.waterSha256")
+        if output_map.get(rel) != sha:
+            raise ProfileError(f"water-r2 chunk is not output-pinned at {old.get('id')}")
+        if png_dimensions(output_root / rel, f"water-r2 chunk {old.get('id')}") != (old["width"] * 2, old["height"] * 2):
+            raise ProfileError(f"water-r2 chunk dimensions differ from 32ppc geometry at {old.get('id')}")
+    return True
+
+
+def _safe_relative(value: Any) -> str:
+    if not isinstance(value, str) or not value or "\\" in value:
+        raise ProfileError(f"unsafe or missing descriptor path: {value!r}")
+    path = PurePosixPath(value)
+    if path.is_absolute() or any(part in {"", ".", ".."} for part in path.parts):
+        raise ProfileError(f"unsafe descriptor path: {value!r}")
+    return path.as_posix()
+
+
+def _digest(value: Any, label: str) -> str:
+    if not isinstance(value, str) or len(value) != 64 or any(c not in "0123456789abcdef" for c in value):
+        raise ProfileError(f"{label} must be a lowercase SHA-256")
+    return value
+
+
+def validate_inventory(root: Path, entries: Any, label: str, *, exact_paths: set[str] | None = None) -> dict[str, Path]:
+    if not isinstance(entries, list) or not entries:
+        raise ProfileError(f"{label} inventory is missing or empty")
+    found: dict[str, Path] = {}
+    for entry in entries:
+        if not isinstance(entry, dict):
+            raise ProfileError(f"{label} inventory entry is not an object")
+        rel = _safe_relative(entry.get("path"))
+        if rel in found:
+            raise ProfileError(f"{label} inventory contains duplicate path: {rel}")
+        path = root / rel
+        cursor = root
+        for part in PurePosixPath(rel).parts:
+            cursor = cursor / part
+            if cursor.is_symlink():
+                raise ProfileError(f"{label} path traverses a symlink: {rel}")
+        try:
+            path.resolve(strict=True).relative_to(root.resolve(strict=True))
+        except (OSError, ValueError):
+            raise ProfileError(f"{label} path escapes its declared root: {rel}")
+        if not path.is_file():
+            raise ProfileError(f"{label} source is missing or not a regular file: {rel}")
+        size = entry.get("bytes")
+        digest = _digest(entry.get("sha256"), f"{label} {rel} sha256")
+        if not isinstance(size, int) or size < 0 or path.stat().st_size != size:
+            raise ProfileError(f"{label} source size changed: {rel}")
+        if sha256(path) != digest:
+            raise ProfileError(f"{label} source hash changed: {rel}")
+        found[rel] = path
+    if exact_paths is not None and set(found) != exact_paths:
+        raise ProfileError(f"{label} exact path set mismatch; missing={sorted(exact_paths-set(found))}, extra={sorted(set(found)-exact_paths)}")
+    return found
+
+
+def sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for block in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(block)
+    return digest.hexdigest()
+
+
+def inventory_digest(entries: list[dict[str, Any]]) -> str:
+    lines = []
+    for entry in sorted(entries, key=lambda item: item["path"]):
+        lines.append(f"{entry['path']}\t{entry['bytes']}\t{entry['sha256']}\n")
+    return hashlib.sha256("".join(lines).encode("utf-8")).hexdigest()
+
+
+def validate_optional_north_support(manifest: dict[str, Any], geometry_manifest: dict[str, Any],
+                                    output_root: Path, output_map: dict[str, str]) -> list[str]:
+    """Validate the optional top-row north overhang without weakening legacy manifests.
+
+    Runtimes without ``northSupport`` remain valid only when no chunk advertises a north
+    resource. The v1 extension is deliberately narrow: each referenced PNG is inventory-bound,
+    dimensioned to its owning chunk, and anchored at row zero so dq-tiles' negative-height draw
+    offset cannot be redirected into another map row.
+    """
+    north = manifest.get("northSupport")
+    chunks = manifest.get("chunks")
+    if not isinstance(chunks, list):
+        raise ProfileError("north-support validation requires the runtime chunk list")
+    chunk_refs = [chunk for chunk in chunks if isinstance(chunk, dict)
+                  and ("north" in chunk or "northSha256" in chunk)]
+    if north is None:
+        if chunk_refs:
+            raise ProfileError("north chunk references require the northSupport schema")
+        return []
+    if not isinstance(north, dict) or north.get("schema") != "north-cliff-overhang-v1":
+        raise ProfileError("northSupport schema is unsupported")
+    legacy_keys = {"schema", "pixelsPerCell", "heightPixels", "anchor", "depth", "prefixMask",
+                   "sourceSupport", "chunks", "sharedContactYCompositor", "prefixChunkProof",
+                   "collisionChanged", "collisionUnion"}
+    gap_mask_key = "northEnclosedWaterGapMask"
+    sea_mask_key = "northSeaBackingMask"
+    if set(north) not in (legacy_keys, legacy_keys | {gap_mask_key},
+                          legacy_keys | {sea_mask_key},
+                          legacy_keys | {gap_mask_key, sea_mask_key}):
+        raise ProfileError("northSupport v1 fields differ from the strict reviewed schema")
+    if (north.get("pixelsPerCell") != 32 or north.get("heightPixels") != 300
+            or north.get("anchor") != "north edge of manifest chunk row y=0"
+            or north.get("depth") != "above-plate pixels use the north overhang layer; in-map B110 pixels use the shared contactY foreground compositor"):
+        raise ProfileError("northSupport height, pixel phase, anchor, or draw offset differs from the reviewed v1 contract")
+    prefix = north.get("prefixMask")
+    if (not isinstance(prefix, dict) or set(prefix) != {"northWorldY", "bandCells", "terrainRow", "contact", "noContact"}
+            or prefix != {"northWorldY": 218, "bandCells": 8,
+                          "terrainRow": "owner terrain row 0, only M cells",
+                          "contact": "first nonzero cliff alpha from existing cliff chunks or these four connected support pixels",
+                          "noContact": "leave base opaque"}):
+        raise ProfileError("northSupport prefix-mask region or contact rule differs from reviewed v1")
+    source = north.get("sourceSupport")
+    if (not isinstance(source, dict) or set(source) != {"sourceAtlasSha256", "recipeSha256", "supportIds",
+            "processedRecipeObjectCount", "connectedCropBoundaryOpaqueColumns", "upperSourceCropXYXY",
+            "lowerPixelIdentity", "adjacentProcessedCropBoundaryRows", "cropBoundaryRgbaSha256"}
+            or source.get("supportIds") != ["fill-02-rear-mass-B-98", "fill-04-right-pocket-mass-B-110",
+                "ridge-02-broad-joining-mass-B-94", "ridge-04-broad-joining-mass-B-106"]
+            or source.get("upperSourceCropXYXY") != [15, 0, 583, 600]
+            or source.get("lowerPixelIdentity") != "exact"
+            or source.get("adjacentProcessedCropBoundaryRows") != [299, 300]
+            or source.get("processedRecipeObjectCount") != 9
+            or source.get("connectedCropBoundaryOpaqueColumns") != 375):
+        raise ProfileError("northSupport source crop/support inventory differs from reviewed v1")
+    _digest(source.get("sourceAtlasSha256"), "northSupport.sourceAtlasSha256")
+    _digest(source.get("recipeSha256"), "northSupport.recipeSha256")
+    _digest(source.get("cropBoundaryRgbaSha256"), "northSupport.cropBoundaryRgbaSha256")
+    if north.get("collisionChanged") is not True or not isinstance(north.get("prefixChunkProof"), list):
+        raise ProfileError("northSupport prefix or collision proof is missing")
+    if gap_mask_key in north:
+        validate_north_enclosed_water_gap_mask(north[gap_mask_key], geometry_manifest)
+    if sea_mask_key in north:
+        validate_north_authored_sea_backing_mask(north[sea_mask_key], geometry_manifest)
+    declared = north.get("chunks")
+    if (not isinstance(declared, list) or not declared
+            or any(not isinstance(cid, str) or not cid for cid in declared)
+            or len(set(declared)) != len(declared)):
+        raise ProfileError("northSupport chunk list is missing, malformed, or duplicated")
+    ids = [chunk.get("id") for chunk in chunks if isinstance(chunk, dict)]
+    if len(ids) != len(chunks) or len(set(ids)) != len(ids):
+        raise ProfileError("north-support runtime chunk IDs are malformed or duplicated")
+    referenced = [chunk["id"] for chunk in chunk_refs]
+    if declared != referenced:
+        raise ProfileError("northSupport chunk list differs from exact north resource references")
+    geometry_chunks = geometry_manifest.get("chunks")
+    if not isinstance(geometry_chunks, list):
+        raise ProfileError("northSupport has no pinned geometry chunk list")
+    geometry_by_id = {chunk.get("id"): chunk for chunk in geometry_chunks if isinstance(chunk, dict)}
+    bounds = geometry_manifest.get("semanticBounds")
+    if not isinstance(bounds, list) or len(bounds) != 4 or not all(isinstance(v, int) for v in bounds):
+        raise ProfileError("northSupport geometry bounds are malformed")
+    max_chunk_x = (bounds[2] - bounds[0] + 1) * 16
+    for chunk in chunks:
+        if not isinstance(chunk, dict):
+            raise ProfileError("north-support runtime chunk is malformed")
+        cid = chunk["id"]
+        has_north = "north" in chunk or "northSha256" in chunk
+        if has_north and chunk.get("y") != 0:
+            raise ProfileError(f"north resource is only allowed on the top chunk row: {cid}")
+        x, width = chunk.get("x"), chunk.get("width")
+        if has_north and (not isinstance(x, int) or not isinstance(width, int) or x < 0
+                          or x % 16 or width <= 0 or width % 16 or x + width > max_chunk_x):
+            raise ProfileError(f"north resource chunk offset/extent is outside the top-row plate: {cid}")
+        old = geometry_by_id.get(cid)
+        if old is None or any(chunk.get(key) != old.get(key) for key in ("x", "y", "width", "height")):
+            raise ProfileError(f"north-support chunk placement differs from pinned geometry: {cid}")
+        if not has_north:
+            continue
+        rel = _safe_relative(chunk.get("north"))
+        if not rel.startswith("chunks/north/") or not rel.endswith(".png"):
+            raise ProfileError(f"north resource path has unsupported layer or format: {cid}")
+        digest = _digest(chunk.get("northSha256"), f"north resource {cid} sha256")
+        inventory_path = f"act1-hifi/{rel}"
+        if output_map.get(inventory_path) != digest:
+            raise ProfileError(f"north resource is not bound to exact generated output inventory: {cid}")
+        path = output_root / inventory_path
+        try:
+            header = path.read_bytes()[:24]
+        except OSError as exc:
+            raise ProfileError(f"north resource cannot be read: {cid}: {exc}") from exc
+        if (len(header) < 24 or header[:8] != b"\x89PNG\r\n\x1a\n"):
+            raise ProfileError(f"north resource is not a PNG image: {cid}")
+        width_px, height_px = struct.unpack(">II", header[16:24])
+        if (width_px, height_px) != (width * 2, north["heightPixels"]):
+            raise ProfileError(f"north resource dimensions/offset differ from its top-row chunk: {cid}")
+    return declared
+
+
+def validate_north_enclosed_water_gap_mask(mask: Any, geometry_manifest: dict[str, Any]) -> None:
+    """Validate the reviewed full-world north-connected cut extension exactly.
+
+    The optional extension is pinned to the accepted R26 geometry and audited
+    component totals. Legacy northSupport v1 manifests without it keep their
+    existing validation behavior.
+    """
+    expected = {
+        "schema": "enclosed-north-water-gap-v1",
+        "connectivity": 4,
+        "seed": "four-neighbor adjacency to preserved north prefix cut",
+        "bandCells": 8,
+        "ownerTerrainClass": "M at each candidate pixel world row",
+        "requiresCliffContactInBand": True,
+        "candidatePixels": 3687,
+        "candidateComponents": 18,
+        "seededCandidateComponents": 12,
+        "acceptedComponents": 12,
+        "rejectedUnseededComponents": 6,
+        "rejectedBandBottomComponents": 0,
+        "rejectedPlateSideComponents": 0,
+        "cutPixels": 2514,
+        "contactColumns": 2916,
+        "ownerMPixels": 718848,
+        "globalChunkSeamsChecked": True,
+    }
+    if not isinstance(mask, dict) or set(mask) != set(expected):
+        raise ProfileError("north enclosed-water-gap mask fields differ from the strict reviewed schema")
+    for key, value in expected.items():
+        if type(mask.get(key)) is not type(value) or mask.get(key) != value:
+            raise ProfileError(f"north enclosed-water-gap mask {key} differs from the reviewed contract")
+    if (mask["candidatePixels"] < mask["cutPixels"]
+            or mask["candidateComponents"] != mask["seededCandidateComponents"] + mask["rejectedUnseededComponents"]
+            or mask["seededCandidateComponents"] != mask["acceptedComponents"]
+            + mask["rejectedBandBottomComponents"] + mask["rejectedPlateSideComponents"]
+            or mask["contactColumns"] > mask["ownerMPixels"]):
+        raise ProfileError("north enclosed-water-gap mask component/count relationships are inconsistent")
+    bounds = geometry_manifest.get("semanticBounds")
+    geometry_chunks = geometry_manifest.get("chunks")
+    if not isinstance(geometry_chunks, list):
+        raise ProfileError("north enclosed-water-gap mask requires the reviewed full-world R26 geometry")
+    top_ids = [row.get("id") for row in geometry_chunks
+               if isinstance(row, dict) and row.get("y") == 0]
+    if bounds != [16, 218, 163, 399] or len(geometry_chunks) != 120:
+        raise ProfileError("north enclosed-water-gap mask requires the reviewed full-world R26 geometry")
+    if top_ids != [f"c{x}-r0" for x in range(10)]:
+        raise ProfileError("north enclosed-water-gap mask requires the reviewed ten-chunk top row")
+
+
+def validate_north_authored_sea_backing_mask(mask: Any, geometry_manifest: dict[str, Any]) -> None:
+    """Validate source-backed north sea pixels and bounded cliff-contact extension."""
+    expected = {
+        "schema": "authored-north-sea-backing-v1", "connectivity": 4,
+        "semanticMountainToken": [128, 126, 122], "semanticSeaToken": [30, 82, 170],
+        "exteriorSea": "exact semantic W connected to north, west, or east map edge",
+        "frontageRule": "north-recipe/support contributor or legacy cliff authored at northern semantic bound",
+        "skylineRule": "first real in-map visible-or-support alpha per column; candidate pixels are strictly north of it",
+        "searchDomain": "complete authored semantic bounds; no band cutoff or missing-alpha sentinel",
+        "semanticSourcePath": "portable-root/design/continent-terrain-class-method/owner-terrain/art-tiles/act1-smoothed-semantic.png",
+        "semanticSourceDimensionsPx": [2368, 2912], "semanticSourcePixelsPerCell": 16,
+        "semanticProjection": "exact RGB tokens replicated 2x2 with nearest semantics to 32px/cell",
+    }
+    if not isinstance(mask, dict) or any(mask.get(key) != value for key, value in expected.items()):
+        raise ProfileError("north sea-backing source semantics differ from the reviewed contract")
+    _digest(mask.get("semanticSourceSha256"), "north sea-backing semanticSourceSha256")
+    count_keys = ("candidatePixels", "candidateComponents", "waterSeededComponents",
+                  "frontageQualifiedComponents", "acceptedComponents", "acceptedPixels",
+                  "rejectedForMissingWaterOrFrontage", "missingSkylineColumns",
+                  "visibleArtOverlapPixels", "nonMountainSemanticOverlapPixels",
+                  "collisionOverlapPixels", "heroRouteGuardOverlapPixels",
+                  "routeCorridorOverlapPixels")
+    for key in count_keys:
+        if type(mask.get(key)) is not int or mask[key] < 0:
+            raise ProfileError(f"north sea-backing {key} must be a nonnegative integer")
+    if (mask["missingSkylineColumns"] != 0 or mask.get("missingSkylineColumnIds") != []
+            or mask.get("touchesWestOrEastMapEdge") is not False
+            or mask.get("touchesSouthMapEdge") is not False
+            or any(mask[key] != 0 for key in ("visibleArtOverlapPixels", "nonMountainSemanticOverlapPixels",
+                "collisionOverlapPixels", "heroRouteGuardOverlapPixels", "routeCorridorOverlapPixels"))):
+        raise ProfileError("north sea-backing mask has missing skyline, boundary escape, or protected-pixel overlap")
+    contact = mask.get("fringeContact")
+    contact_expected = {
+        "schema": "north-sea-authored-contact-v1",
+        "rule": "single horizontal pass from original accepted north-sea pixels through clear exact-M to first opaque authored contact; no reseeding or new rows",
+    }
+    if not isinstance(contact, dict) or any(contact.get(key) != value for key, value in contact_expected.items()):
+        raise ProfileError("north sea-backing authored-contact proof differs from the reviewed bounded rule")
+    contact_count_keys = ("addedPixels", "components", "nonMountainSemanticOverlapPixels",
+                          "visibleArtOverlapPixels", "collisionOverlapPixels", "heroRouteGuardOverlapPixels",
+                          "routeCorridorOverlapPixels", "outsideOriginalSeedRows")
+    for key in contact_count_keys:
+        if type(contact.get(key)) is not int or contact[key] < 0:
+            raise ProfileError(f"north sea-backing authored-contact {key} must be a nonnegative integer")
+    source_ids = contact.get("acceptedSourceIds")
+    pixels_by_source = contact.get("addedPixelsBySource")
+    contacts = contact.get("contacts")
+    if (contact["components"] > contact["addedPixels"]
+            or any(contact[key] != 0 for key in ("nonMountainSemanticOverlapPixels", "visibleArtOverlapPixels",
+                "collisionOverlapPixels", "heroRouteGuardOverlapPixels", "routeCorridorOverlapPixels",
+                "outsideOriginalSeedRows"))
+            or not isinstance(source_ids, list) or source_ids != sorted(set(source_ids))
+            or not isinstance(pixels_by_source, dict) or sorted(pixels_by_source) != source_ids
+            or any(type(value) is not int or value <= 0 for value in pixels_by_source.values())
+            or not isinstance(contacts, list)):
+        raise ProfileError("north sea-backing authored-contact counts, protections, or source inventory are inconsistent")
+    for item in contacts:
+        if (not isinstance(item, dict) or set(item) != {"y", "endpointX", "addedStartX", "addedEndX", "sourceIds"}
+                or any(type(item[key]) is not int for key in ("y", "endpointX", "addedStartX", "addedEndX"))
+                or not 0 <= item["y"] < 32 * (geometry_manifest["semanticBounds"][3] - geometry_manifest["semanticBounds"][1] + 1)
+                or not 0 <= item["endpointX"] < 32 * (geometry_manifest["semanticBounds"][2] - geometry_manifest["semanticBounds"][0] + 1)
+                or not 0 <= item["addedStartX"] < item["addedEndX"] <= 32 * (geometry_manifest["semanticBounds"][2] - geometry_manifest["semanticBounds"][0] + 1)
+                or item["endpointX"] in range(item["addedStartX"], item["addedEndX"])
+                or not isinstance(item["sourceIds"], list) or not item["sourceIds"]
+                or item["sourceIds"] != sorted(set(item["sourceIds"]))
+                or any(source_id not in source_ids for source_id in item["sourceIds"])):
+            raise ProfileError("north sea-backing authored-contact endpoint record is malformed")
+    components = mask.get("components")
+    inventory = mask.get("frontageContributorInventory")
+    if not isinstance(inventory, list):
+        raise ProfileError("north sea-backing frontage contributor inventory is missing")
+    contributor_by_id = {}
+    for contributor in inventory:
+        if (not isinstance(contributor, dict)
+                or set(contributor) != {"sourceId", "sourceKind", "rootSourceIds", "directOverlapPixels", "skylinePointCount"}):
+            raise ProfileError("north sea-backing frontage contributor fields differ from the strict schema")
+        source_id = contributor["sourceId"]
+        roots = contributor["rootSourceIds"]
+        if (not isinstance(source_id, str) or not source_id or source_id in contributor_by_id
+                or contributor["sourceKind"] not in {"authored-north-root", "north-support-root", "one-hop-north-alpha-overlap"}
+                or not isinstance(roots, list) or not roots or any(not isinstance(root, str) or not root for root in roots)
+                or roots != sorted(set(roots))
+                or type(contributor["directOverlapPixels"]) is not int or contributor["directOverlapPixels"] <= 0
+                or type(contributor["skylinePointCount"]) is not int or contributor["skylinePointCount"] <= 0):
+            raise ProfileError("north sea-backing frontage contributor provenance is malformed")
+        if contributor["sourceKind"] in {"authored-north-root", "north-support-root"} and roots != [source_id]:
+            raise ProfileError("north sea-backing root contributor does not self-identify its source")
+        if contributor["sourceKind"] == "one-hop-north-alpha-overlap" and source_id in roots:
+            raise ProfileError("north sea-backing one-hop contributor cannot promote itself to a root")
+        contributor_by_id[source_id] = contributor
+    if any(source_id not in contributor_by_id
+            or contributor_by_id[source_id]["sourceKind"] not in {"authored-north-root", "one-hop-north-alpha-overlap"}
+            for source_id in contact["acceptedSourceIds"]):
+        raise ProfileError("north sea-backing contact endpoint lacks original-root or one-hop cliff provenance")
+    if (not isinstance(components, list) or len(components) != mask["acceptedComponents"]
+            or mask["acceptedComponents"] == 0
+            or mask["acceptedPixels"] == 0
+            or mask["acceptedComponents"] > min(mask["waterSeededComponents"], mask["frontageQualifiedComponents"])
+            or mask["candidateComponents"] != mask["acceptedComponents"] + mask["rejectedForMissingWaterOrFrontage"]
+            or mask["candidatePixels"] < mask["acceptedPixels"]):
+        raise ProfileError("north sea-backing component/count relationships are inconsistent")
+    pixels = 0
+    for component in components:
+        if (not isinstance(component, dict)
+                or set(component) != {"sourceIds", "frontageRootIds", "pixels", "bboxPixelsXYXY", "bboxWorldXYXY", "seaSeedPixels", "realSkylineColumns"}):
+            raise ProfileError("north sea-backing component fields differ from the strict reviewed schema")
+        ids = component["sourceIds"]
+        roots = component["frontageRootIds"]
+        box = component["bboxPixelsXYXY"]
+        if (not isinstance(ids, list) or not ids or any(not isinstance(value, str) or not value for value in ids)
+                or ids != sorted(set(ids))
+                or not isinstance(roots, list) or not roots or any(not isinstance(value, str) or not value for value in roots)
+                or roots != sorted(set(roots))
+                or any(source_id not in contributor_by_id for source_id in ids)
+                or any(root_id not in {r for c in contributor_by_id.values() for r in c["rootSourceIds"]} for root_id in roots)
+                or type(component["pixels"]) is not int or component["pixels"] <= 0
+                or type(component["seaSeedPixels"]) is not int or component["seaSeedPixels"] <= 0
+                or type(component["realSkylineColumns"]) is not int or component["realSkylineColumns"] <= 0
+                or not isinstance(box, list) or len(box) != 4
+                or any(type(value) is not int for value in box)
+                or box[0] < 0 or box[1] < 0 or box[2] <= box[0] or box[3] <= box[1]):
+            raise ProfileError("north sea-backing component provenance or extent is malformed")
+        if not any(contributor_by_id[source_id]["rootSourceIds"] for source_id in ids):
+            raise ProfileError("north sea-backing component has no qualifying north root provenance")
+        pixels += component["pixels"]
+    if pixels != mask["acceptedPixels"]:
+        raise ProfileError("north sea-backing component pixels do not sum to the accepted mask")
+    bounds = geometry_manifest.get("semanticBounds")
+    geometry_chunks = geometry_manifest.get("chunks")
+    top_ids = [row.get("id") for row in geometry_chunks or []
+               if isinstance(row, dict) and row.get("y") == 0]
+    if bounds != [16, 218, 163, 399] or not isinstance(geometry_chunks, list) or len(geometry_chunks) != 120:
+        raise ProfileError("north sea-backing mask requires the reviewed full-world R26 geometry")
+    if top_ids != [f"c{x}-r0" for x in range(10)]:
+        raise ProfileError("north sea-backing mask requires the reviewed ten-chunk top row")
+
+
+def load_reviewed_descriptor(repo_root: Path) -> tuple[dict[str, Any], str]:
+    descriptor_path = repo_root / DESCRIPTOR_RELATIVE
+    if not descriptor_path.is_file():
+        raise ProfileError(
+            f"forward terrain profile evidence is unavailable: missing {DESCRIPTOR_RELATIVE}; "
+            "the W-side crop pilot is not full-world collision or route evidence"
+        )
+    actual_digest = sha256(descriptor_path)
+    if PINNED_DESCRIPTOR_SHA256 is None:
+        raise ProfileError("forward terrain descriptor has no independently reviewed root SHA-256 pin")
+    if actual_digest != PINNED_DESCRIPTOR_SHA256:
+        raise ProfileError("forward terrain descriptor SHA-256 differs from its independent root pin")
+    try:
+        descriptor = json.loads(descriptor_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise ProfileError(f"forward terrain descriptor cannot be read: {exc}") from exc
+    if not isinstance(descriptor, dict):
+        raise ProfileError("forward terrain descriptor must be an object")
+    return descriptor, actual_digest
+
+
+def normalize_validator_descriptor_pin(source: bytes) -> bytes:
+    """Replace exactly one valid descriptor-pin literal for non-circular source coverage."""
+    matches = list(NORMALIZED_VALIDATOR_PIN_LINE.finditer(source))
+    if len(matches) != 1:
+        raise ProfileError("validator source must contain exactly one well-formed descriptor SHA pin")
+    match = matches[0]
+    return source[:match.start()] + b'PINNED_DESCRIPTOR_SHA256: str | None = "<DESCRIPTOR_SHA256_PIN>"' + source[match.end():]
+
+
+def validate_descriptor(repo_root: Path, descriptor: dict[str, Any], *, stage: str = "release") -> dict[str, Any]:
+    if descriptor.get("schema") != "qok-forward-terrain-profile-v1" or descriptor.get("profileId") != PROFILE_ID:
+        raise ProfileError("forward terrain descriptor schema/profile identity mismatch")
+    allowed_descriptor_keys = {"schema", "profileId", "proofFieldSplitVersion", "rootAuthority", "fullWorldComplete",
+                               "gateReady", "authoringInputs", "generatedOutputs", "regeneration",
+                               "geometryContract", "collisionContract", "a1owContract", "currentGuard", "proofs",
+                               "independentGateReceipt"}
+    preparation_keys = {"stage", "releaseEligible", "pendingDynamicChecks", "pendingProofAssertions"}
+    is_preparation = descriptor.get("stage") == "qa-preparation"
+    if stage not in {"release", "preparation"}:
+        raise ProfileError(f"unknown forward descriptor validation stage: {stage}")
+    if stage == "preparation" and not is_preparation:
+        raise ProfileError("QA preparation requires a descriptor explicitly marked stage=qa-preparation")
+    expected_descriptor_keys = allowed_descriptor_keys | preparation_keys if is_preparation else allowed_descriptor_keys
+    if set(descriptor) != expected_descriptor_keys:
+        raise ProfileError("forward terrain descriptor contains missing or unreviewed top-level fields")
+    if descriptor.get("proofFieldSplitVersion") != PROOF_FIELD_SPLIT_VERSION:
+        raise ProfileError("forward terrain proof-field split version is missing or unsupported")
+    if is_preparation:
+        if stage == "release":
+            raise ProfileError("QA_PREPARATION_PASS is nonshippable; release evidence is required")
+        if (descriptor.get("fullWorldComplete") is not True or descriptor.get("gateReady") is not False
+                or descriptor.get("releaseEligible") is not False):
+            raise ProfileError("QA preparation descriptor must be complete static closure with releaseEligible=false")
+        if descriptor.get("pendingDynamicChecks") != list(PENDING_DYNAMIC_CHECKS):
+            raise ProfileError("QA preparation must enumerate the exact pending dynamic checks")
+        if descriptor.get("pendingProofAssertions") != list(PENDING_PROOF_ASSERTIONS):
+            raise ProfileError("QA preparation must enumerate the exact pending proof assertions")
+    elif descriptor.get("fullWorldComplete") is not True or descriptor.get("gateReady") is not True:
+        raise ProfileError("forward terrain descriptor is pilot-only or incomplete; full-world evidence is required")
+    authority = descriptor.get("rootAuthority")
+    if (not isinstance(authority, dict) or authority.get("independentReview") is not True
+            or not isinstance(authority.get("reviewRecordPath"), str)):
+        raise ProfileError("forward terrain descriptor lacks independently reviewed root authority")
+    authority_path = _safe_relative(authority["reviewRecordPath"])
+    authority_sha = _digest(authority.get("reviewRecordSha256"), "rootAuthority.reviewRecordSha256")
+    validate_inventory(repo_root, [{"path": authority_path, "bytes": authority.get("reviewRecordBytes"),
+                                    "sha256": authority_sha}], "root authority review record")
+
+    inputs = validate_inventory(repo_root, descriptor.get("authoringInputs"), "authoring input")
+    validator_source = repo_root / "scripts/terrain_current_profile.py"
+    normalized_validator = inputs.get(NORMALIZED_VALIDATOR_SOURCE)
+    if normalized_validator is None:
+        raise ProfileError("authoring input closure omits the normalized validator source")
+    try:
+        normalized_bytes = normalize_validator_descriptor_pin(validator_source.read_bytes())
+        pinned_normalized_bytes = normalized_validator.read_bytes()
+    except OSError as exc:
+        raise ProfileError(f"normalized validator source cannot be read: {exc}") from exc
+    if normalized_bytes != pinned_normalized_bytes:
+        raise ProfileError("validator semantic source differs from its independently inventoried normalized snapshot")
+    geometry = descriptor.get("geometryContract")
+    if not isinstance(geometry, dict) or geometry.get("revision") != 12 or geometry.get("chunkCount") != 120 or geometry.get("basePixelsPerCell") != 32:
+        raise ProfileError("forward profile must preserve reviewed R26 revision 12, 120 chunks, and 32 pixels per cell")
+    geometry_path = _safe_relative(geometry.get("manifestPath"))
+    geometry_sha = _digest(geometry.get("manifestSha256"), "geometryContract.manifestSha256")
+    if geometry_path not in inputs or sha256(inputs[geometry_path]) != geometry_sha:
+        raise ProfileError("forward profile geometry source must be present in the pinned authoring-input closure")
+    try:
+        geometry_manifest = json.loads(inputs[geometry_path].read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise ProfileError(f"pinned R26 geometry manifest cannot be read: {exc}") from exc
+    if geometry_manifest.get("revision") != 12 or len(geometry_manifest.get("chunks", [])) != 120:
+        raise ProfileError("pinned R26 geometry source is not revision 12 with 120 chunks")
+    outputs = descriptor.get("generatedOutputs")
+    if not isinstance(outputs, dict) or set(outputs) != OUTPUT_CONTAINER_KEYS:
+        raise ProfileError("forward terrain descriptor generatedOutputs must enumerate chunks, underpaints, collision, visible alpha, A1OW, manifest, consumed overrides, and receipt")
+    output_root_rel = _safe_relative(outputs.get("root"))
+    if output_root_rel != GENERATED_OUTPUT_ROOT:
+        raise ProfileError(f"generated output root must be the dedicated exact subtree {GENERATED_OUTPUT_ROOT}")
+    output_root = repo_root / output_root_rel
+    try:
+        output_root.resolve(strict=True).relative_to(repo_root.resolve(strict=True))
+    except (OSError, ValueError):
+        raise ProfileError(f"generated output root escapes repository or is missing: {output_root_rel}")
+    if not output_root.is_dir() or output_root.is_symlink():
+        raise ProfileError(f"generated output root is missing or unsafe: {output_root_rel}")
+    output_entries = outputs.get("inventory")
+    output_files = validate_inventory(output_root, output_entries, "generated output")
+    actual_output_paths = {p.relative_to(output_root).as_posix() for p in output_root.rglob("*") if p.is_file()}
+    if actual_output_paths != set(output_files):
+        raise ProfileError(f"generated output inventory is not exact; missing={sorted(actual_output_paths-set(output_files))}, extra={sorted(set(output_files)-actual_output_paths)}")
+    for section in REQUIRED_OUTPUTS - {"outputReceipt", "a1ow", "consumedNonterrainOverrides"}:
+        section_files = validate_inventory(output_root, outputs.get(section), f"generated output {section}")
+        for rel, path in section_files.items():
+            if rel not in output_files or (path.stat().st_size, sha256(path)) != (
+                    output_files[rel].stat().st_size, sha256(output_files[rel])):
+                raise ProfileError(f"generated output {section} section differs from combined inventory: {rel}")
+    # These sections describe unchanged runtime inputs consumed by this profile,
+    # not newly generated output files. Keep their source paths and hashes exact.
+    a1ow_rows = validate_inventory(repo_root, outputs.get("a1ow"), "unchanged A1OW runtime input")
+    if set(a1ow_rows) != {ROOT_A1OW_SOURCE}:
+        raise ProfileError("forward profile must preserve exactly the existing root-level A1OW runtime input")
+    consumed_rows = validate_inventory(repo_root, outputs.get("consumedNonterrainOverrides"),
+                                       "preserved nonterrain Act 1 runtime input")
+    if not consumed_rows or any(not path.startswith("public/act1-hifi/") for path in consumed_rows):
+        raise ProfileError("preserved nonterrain runtime inputs must be explicitly inventoried public/act1-hifi files")
+    for rel, path in consumed_rows.items():
+        if rel not in inputs or inputs[rel] != path:
+            raise ProfileError(f"preserved nonterrain runtime input is not bound to authoring inputs: {rel}")
+    receipt = outputs.get("outputReceipt")
+    if not isinstance(receipt, dict) or receipt.get("selfHash") is not None:
+        raise ProfileError("output receipt must be separately inventoried and must not contain a circular self-hash")
+    _digest(receipt.get("sha256"), "output receipt sha256")
+    receipt_path = _safe_relative(receipt.get("path"))
+    receipt_file = repo_root / receipt_path
+    validate_inventory(repo_root, [{"path": receipt_path, "bytes": receipt.get("bytes"), "sha256": receipt.get("sha256")}], "output receipt")
+    if not receipt_file.is_file():
+        raise ProfileError("output receipt identity differs from generated output inventory")
+    try:
+        generation_receipt = json.loads(receipt_file.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise ProfileError(f"portable generation output receipt cannot be read: {exc}") from exc
+    receipt_inventory = generation_receipt.get("outputInventory") if isinstance(generation_receipt, dict) else None
+    if (not isinstance(generation_receipt, dict)
+            or generation_receipt.get("profileId") != PROFILE_ID
+            or generation_receipt.get("fullWorldComplete") is not True
+            or generation_receipt.get("gateReady") is not False
+            or generation_receipt.get("nativeVerified") is not False
+            or not isinstance(receipt_inventory, dict)):
+        raise ProfileError("portable generation receipt must be complete static output with native and gate readiness still false")
+    normalized_receipt = {
+        (path.removeprefix("public/") if path.startswith("public/") else path): pin
+        for path, pin in receipt_inventory.items()
+    }
+    descriptor_inventory = {item["path"]: {"bytes": item["bytes"], "sha256": item["sha256"]}
+                           for item in output_entries}
+    if normalized_receipt != descriptor_inventory:
+        raise ProfileError("dedicated generated-output directory differs from exact portable receipt inventory")
+    a1ow_review_ref = descriptor.get("proofs", {}).get("a1owDecode", {})
+    expected_review = {
+        "path": a1ow_review_ref.get("path"),
+        "sha256": a1ow_review_ref.get("sha256"),
+        "schema": "independent-a1ow-v2-integration-review-v1",
+    }
+    if generation_receipt.get("a1owReview") != expected_review:
+        raise ProfileError("portable generation receipt does not consume the descriptor-pinned A1OW v2 review")
+
+    regeneration = descriptor.get("regeneration")
+    if not isinstance(regeneration, dict) or regeneration.get("cleanRoots") != 2 or regeneration.get("sourceLimited") is not True:
+        raise ProfileError("descriptor must prove two clean regenerations using declared authoring inputs only")
+    if regeneration.get("pathSetsEqual") is not True or regeneration.get("byteHashesEqual") is not True or regeneration.get("decodedPixelsEqual") is not True:
+        raise ProfileError("clean regeneration path, byte, or decoded-pixel comparison is incomplete")
+    guards = descriptor.get("currentGuard")
+    if not isinstance(guards, dict) or not REQUIRED_GUARD_INPUTS.issubset(guards) or not isinstance(guards.get("inputPaths"), dict):
+        raise ProfileError("current guard must pin current map, dq, semantic navigation, both heroes, extractor, and final manifest")
+    if guards.get("staleGuardAccepted") is not False:
+        raise ProfileError("forward current guard must explicitly reject stale guard evidence")
+    for key in REQUIRED_GUARD_INPUTS - {"extractorVersion"}:
+        _digest(guards.get(key), f"currentGuard.{key}")
+    if not isinstance(guards.get("extractorVersion"), str) or not guards["extractorVersion"]:
+        raise ProfileError("current guard extractor version is missing")
+    if guards.get("semanticNavigationScope") != "reviewed-runtime-navigation-fields-v1":
+        raise ProfileError("current guard semantic navigation scope is not the reviewed current format")
+    guard_paths = guards["inputPaths"]
+    required_guard_paths = {"worldMap", "dqTiles", "semanticNavigation", "maleHero", "femaleHero", "finalManifest"}
+    if set(guard_paths) != required_guard_paths:
+        raise ProfileError("current guard input path set is incomplete or has unreviewed fields")
+    input_map = {path: item["sha256"] for path, item in ((entry["path"], entry) for entry in descriptor["authoringInputs"])}
+    for key, guard_key in (("worldMap", "worldMapSha256"), ("dqTiles", "dqTilesSha256"),
+                           ("semanticNavigation", "semanticNavigationFileSha256"),
+                           ("maleHero", "maleHeroSha256"), ("femaleHero", "femaleHeroSha256")):
+        rel = _safe_relative(guard_paths[key])
+        if input_map.get(rel) != guards[guard_key]:
+            raise ProfileError(f"current guard {key} pin is not bound to its declared authoring input")
+    if (guard_paths["worldMap"] != "public/act1-world-map.js"
+            or guard_paths["dqTiles"] != "public/dq-tiles.js"
+            or guard_paths["semanticNavigation"] != CURRENT_SEMANTIC_MANIFEST
+            or guard_paths["maleHero"] != "public/assets/hero/hero-male-walk.png"
+            or guard_paths["femaleHero"] != "public/assets/hero/hero-g3-walk.png"):
+        raise ProfileError("current route guard must bind the actual candidate world-map and dq runtime sources")
+    for key in ("worldMap", "dqTiles", "maleHero", "femaleHero"):
+        actual_source = repo_root / _safe_relative(guard_paths[key])
+        if not actual_source.is_file() or sha256(actual_source) != guards[f"{key}Sha256"]:
+            raise ProfileError(f"current route guard is stale against candidate {key} source")
+    semantic_source = repo_root / _safe_relative(guard_paths["semanticNavigation"])
+    try:
+        live_manifest = json.loads(semantic_source.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise ProfileError(f"current semantic navigation manifest cannot be read: {exc}") from exc
+    navigation = {key: live_manifest.get(key) for key in ("startCell", "legacyFallback", "liveLandmarkExits", "liveValidApproaches")}
+    navigation_bytes = json.dumps(navigation, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    if hashlib.sha256(navigation_bytes).hexdigest() != guards["semanticNavigationSha256"]:
+        raise ProfileError("current guard semantic navigation digest is stale against live manifest fields")
+    final_manifest_rel = _safe_relative(guard_paths["finalManifest"])
+    output_map = {item["path"]: item["sha256"] for item in outputs["inventory"]}
+    def runtime_asset(path: str) -> str:
+        safe = _safe_relative(path)
+        return safe if safe.startswith("act1-hifi/") else f"act1-hifi/{safe}"
+    if output_map.get(final_manifest_rel) != guards["finalManifestSha256"]:
+        raise ProfileError("current guard final manifest pin is not bound to generated output inventory")
+    generated_manifest_files = outputs.get("runtimeManifest", [])
+    if len(generated_manifest_files) != 1:
+        raise ProfileError("forward profile must have exactly one generated runtime manifest")
+    generated_manifest_path = _safe_relative(generated_manifest_files[0].get("path"))
+    if generated_manifest_path not in output_files or guard_paths["finalManifest"] != generated_manifest_path:
+        raise ProfileError("current guard and exact output inventory must bind the generated runtime manifest")
+    try:
+        generated_manifest = json.loads((output_root / generated_manifest_path).read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise ProfileError(f"generated forward runtime manifest cannot be read: {exc}") from exc
+    if generated_manifest.get("source", {}).get("act1TerrainUnionA1OWReviewPath") != expected_review["path"] or generated_manifest.get("source", {}).get("act1TerrainUnionA1OWReviewSha256") != expected_review["sha256"] or generated_manifest.get("source", {}).get("act1TerrainUnionA1OWReviewSchema") != expected_review["schema"]:
+        raise ProfileError("generated runtime manifest does not consume the descriptor-pinned A1OW v2 review")
+    # The shipped R26 manifest is the runtime contract. Forward generation adds
+    # its receipt under `forwardTerrainProfile`; it does not invent a new
+    # top-level schema or change the existing manifest layout.
+    forward_profile = generated_manifest.get("forwardTerrainProfile")
+    north_support = generated_manifest.get("northSupport")
+    collision_authority = expected_collision_authority(north_support is not None)
+    recipe_pins = {
+        "generatorSha256": FORWARD_GENERATOR_SOURCE,
+        "acceptedLayoutRecipeSha256": FORWARD_LAYOUT_RECIPE,
+        "northRecipeSha256": FORWARD_NORTH_RECIPE,
+    }
+    if (generated_manifest.get("revision") != 12
+            or not isinstance(generated_manifest.get("chunks"), list)
+            or len(generated_manifest["chunks"]) != 120
+            or not isinstance(forward_profile, dict)
+            or forward_profile.get("profileId") != PROFILE_ID
+            or forward_profile.get("status") != "generated-static-profile-not-runtime-approved"
+            or forward_profile.get("fullWorldComplete") is not True
+            or forward_profile.get("gateReady") is not False
+            or forward_profile.get("nativeVerified") is not False
+            or forward_profile.get("collisionAuthority") != collision_authority
+            or forward_profile.get("sourceAlphaFringeIgnored") is not True
+            or forward_profile.get("northObjectCount") != 9
+            or forward_profile.get("pilotSeedCount") != 11
+            or forward_profile.get("boundaryPlacementCount") != 40):
+        raise ProfileError("generated manifest differs from the reviewed R26 forward-profile receipt contract")
+    for field, input_path in recipe_pins.items():
+        expected_pin = input_map.get(input_path)
+        if expected_pin is None or forward_profile.get(field) != expected_pin:
+            raise ProfileError(f"generated forward profile {field} is not bound to its exact pinned source")
+        if generation_receipt.get(field) != expected_pin:
+            raise ProfileError(f"generated-output receipt {field} differs from the pinned source and manifest")
+    for field, expected in (("profileId", PROFILE_ID), ("fullWorldComplete", True),
+                            ("gateReady", False), ("nativeVerified", False)):
+        if forward_profile.get(field) != expected or generation_receipt.get(field) != expected:
+            raise ProfileError(f"generated manifest/receipt {field} identity or readiness differs")
+    collision_contract = descriptor.get("collisionContract")
+    expected_collision_fields = {"path", "sha256", "sourceArtifact", "sourceSha256", "sourceAuthority",
+                                 "runtimeFormat", "version", "dimensionsPx32", "bounds",
+                                 "pixelsPerCell", "alphaThreshold", "headerBytes", "bitOrder", "bytes"}
+    if not isinstance(collision_contract, dict) or set(collision_contract) != expected_collision_fields:
+        raise ProfileError("forward descriptor is missing the reviewed collision format/geometry contract")
+    collision_path = _safe_relative(collision_contract.get("path"))
+    collision_sha = _digest(collision_contract.get("sha256"), "collisionContract.sha256")
+    if (collision_contract.get("sourceAuthority") != "final-visible-whole-object-union"
+            or collision_contract.get("runtimeFormat") != "qok-forest-bitset-v1"
+            or collision_contract.get("pixelsPerCell") != 32
+            or collision_contract.get("dimensionsPx32") != COLLISION_DIMENSIONS
+            or collision_contract.get("bounds") != COLLISION_BOUNDS
+            or collision_contract.get("alphaThreshold") != 16
+            or collision_contract.get("bitOrder") != "little-within-byte"):
+        raise ProfileError("forward collision format/geometry/bit order differs from the existing production interface")
+    if not collision_path.startswith("act1-hifi/") or output_map.get(collision_path) != collision_sha:
+        raise ProfileError("forward collision output is not bound to the exact generated output inventory")
+    source_alpha_path = _safe_relative(collision_contract.get("sourceArtifact"))
+    source_alpha_sha = _digest(collision_contract.get("sourceSha256"), "collisionContract.sourceSha256")
+    alpha_inventory_path = source_alpha_path if source_alpha_path.startswith("evidence/") else runtime_asset(source_alpha_path)
+    if output_map.get(alpha_inventory_path) != source_alpha_sha:
+        raise ProfileError("production collision header source SHA is not bound to emitted visible-alpha input")
+    receipt_alpha = generation_receipt.get("sourceAlpha")
+    receipt_collision = generation_receipt.get("collisionPack")
+    north_support = generated_manifest.get("northSupport")
+    collision_pack_source_sha = source_alpha_sha
+    if north_support is not None:
+        union_proof_file = inputs.get(NORTH_UNION_PROOF_PATH)
+        if (input_map.get(NORTH_UNION_PROOF_PATH) != NORTH_UNION_PROOF_SHA256
+                or union_proof_file is None or sha256(union_proof_file) != NORTH_UNION_PROOF_SHA256):
+            raise ProfileError("north collision union lacks the exact pinned independent no-removal proof")
+        try:
+            union_proof = json.loads(union_proof_file.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            raise ProfileError(f"north collision union proof cannot be read: {exc}") from exc
+        collision_pack_source_sha = validate_north_collision_union(
+            north_support, generation_receipt, output_root, output_map, union_proof)
+        if collision_contract.get("sourceArtifact") != NORTH_BASELINE_ALPHA_PATH:
+            raise ProfileError("north collision contract must preserve the original baseline alpha artifact")
+        if png_dimensions(output_root / NORTH_BASELINE_ALPHA_PATH, "baseline raised alpha") != tuple(COLLISION_DIMENSIONS):
+            raise ProfileError("north collision baseline alpha dimensions differ from QOK geometry")
+    decode_result = decode_forward_collision(
+        output_root / collision_path, collision_contract,
+        expected_source_sha256=collision_pack_source_sha)
+    if not isinstance(receipt_alpha, dict):
+        raise ProfileError("generated-output receipt alpha section is malformed")
+    validate_generation_alpha_receipt(receipt_alpha, source_alpha_path, source_alpha_sha,
+                                      has_north_support=north_support is not None)
+    if (not isinstance(receipt_collision, dict)
+            or receipt_collision.get("bytes") != collision_contract["bytes"]
+            or receipt_collision.get("sha256") != collision_sha
+            or receipt_collision.get("dimensions") != COLLISION_DIMENSIONS
+            or receipt_collision.get("pixelsPerCell") != 32
+            or receipt_collision.get("bitOrder") != "little-within-byte"
+            or receipt_collision.get("sourceSha256") != collision_pack_source_sha):
+        raise ProfileError("generated-output receipt alpha/collision pins differ from the production output contract")
+    if north_support is not None and decode_result.get("payloadSha256") != NORTH_UNION_PACKED_BITS_SHA256:
+        raise ProfileError("north collision pack payload differs from the reviewed post-union bitplane")
+    if collision_sha == "766c0deb37abc682c8a18ef0f5e087b8ef9bfa76ba7dbce3b074bea002d16f53":
+        raise ProfileError("forward profile cannot reuse the historical collision pack")
+    collision_spec = generated_manifest.get("collision")
+    expected_collision_spec = {
+        "artifact": Path(collision_path).name,
+        "dimensionsPx32": COLLISION_DIMENSIONS,
+        "sha256": collision_sha,
+        "sourceSha256": collision_pack_source_sha,
+        "format": "qok-forest-bitset-v1",
+        "version": 1,
+        "bounds": COLLISION_BOUNDS,
+        "pixelsPerCell": 32,
+        "alphaThreshold": 16,
+        "bytes": COLLISION_HEADER_BYTES + (COLLISION_DIMENSIONS[0] * COLLISION_DIMENSIONS[1] // 8),
+    }
+    if not isinstance(collision_spec, dict) or any(collision_spec.get(key) != value for key, value in expected_collision_spec.items()):
+        raise ProfileError("forward collision manifest differs from the existing dq-tiles.js forest decoder contract")
+    for field, dimensions in (("underpaint", (888,1092)), ("forestUnderpaint", (888,1092))):
+        layer = generated_manifest.get(field)
+        if not isinstance(layer, dict) or output_map.get(runtime_asset(layer.get("src"))) is None:
+            raise ProfileError(f"forward profile {field} resource is absent from output inventory")
+        width = layer.get("pixelWidth", layer.get("width"))
+        height = layer.get("pixelHeight", layer.get("height"))
+        if (width, height, layer.get("pixelsPerCell")) != (*dimensions, 6):
+            raise ProfileError(f"forward profile {field} dimensions/phase differ from the existing runtime contract")
+    for key in LOCKED_GEOMETRY_FIELDS:
+        if generated_manifest.get(key) != geometry_manifest.get(key):
+            raise ProfileError(f"forward profile changed locked R26 geometry field: {key}")
+    old_chunks = geometry_manifest["chunks"]
+    new_chunks = generated_manifest.get("chunks")
+    if not isinstance(new_chunks, list) or len(new_chunks) != 120:
+        raise ProfileError("forward runtime manifest must retain exactly 120 chunks")
+    for old, new in zip(old_chunks, new_chunks):
+        if old.get("id") != new.get("id"):
+            raise ProfileError("forward runtime manifest changed chunk order or IDs")
+        if any(new.get(field) != old.get(field) for field in ("x", "y", "width", "height")):
+            raise ProfileError(f"forward runtime manifest changed R26 geometry at {old.get('id')}")
+        if new.get("basePixelsPerCell") != 32:
+            raise ProfileError(f"forward runtime manifest changed 32ppc base at {old.get('id')}")
+        for layer in ("base", "forest", "canopy"):
+            rel = new.get(layer)
+            digest = new.get(f"{layer}Sha256")
+            if not isinstance(rel, str) or not isinstance(digest, str) or output_map.get(runtime_asset(rel)) != digest:
+                raise ProfileError(f"forward runtime manifest {old.get('id')} {layer} resource is not output-pinned")
+    validate_water_treatment(generated_manifest, geometry_manifest, output_root, output_map, input_map, repo_root)
+    for old, new in zip(old_chunks, new_chunks):
+        if generated_manifest.get("waterTreatment") is None:
+            if output_map.get(runtime_asset(new.get("water"))) != new.get("waterSha256"):
+                raise ProfileError(f"forward runtime manifest {old.get('id')} water resource is not output-pinned")
+    validate_optional_north_support(generated_manifest, geometry_manifest, output_root, output_map)
+    a1ow_contract = descriptor.get("a1owContract")
+    if not isinstance(a1ow_contract, dict) or set(a1ow_contract) != {
+        "path", "format", "sha256", "version", "headerBytes", "profileId", "supportSchema",
+            "bakerPath", "bakerSha256", "pixelsPerCell", "mapCells", "far", "blockCount", "supportFNV32",
+            "semanticsSha256", "supportSha256", "payloadSha256", "scope"}:
+        raise ProfileError("forward descriptor is missing the exact A1OW v2 support-bound contract")
+    a1ow_path = _safe_relative(a1ow_contract.get("path"))
+    if a1ow_path != "act1-overworld-walk.bin":
+        raise ProfileError("forward profile must retain the existing act1-overworld-walk.bin runtime resource")
+    a1ow_sha = _digest(a1ow_contract.get("sha256"), "a1owContract.sha256")
+    # A1OW remains a root-level runtime resource. Its v2 header authenticates
+    # exact effective support inputs and preserves the prior distance payload.
+    a1ow_source_path = ROOT_A1OW_SOURCE
+    if input_map.get(a1ow_source_path) != a1ow_sha:
+        raise ProfileError("A1OW runtime resource is not bound to the unchanged authoring input")
+    if input_map.get(A1OW_V2_BAKER_PATH) != A1OW_V2_BAKER_SHA256:
+        raise ProfileError("A1OW v2 artifact is not bound to its reviewed canonical baker source")
+    decoded_a1ow = decode_a1ow(repo_root / a1ow_source_path, a1ow_contract)
+    proofs = descriptor.get("proofs")
+    required_proofs = PREPARATION_PROOFS if is_preparation else REQUIRED_PROOFS
+    if not isinstance(proofs, dict) or set(proofs) != required_proofs:
+        raise ProfileError(f"forward terrain descriptor proof sections mismatch; missing={sorted(required_proofs - set(proofs or {}))}, extra={sorted(set(proofs or {}) - required_proofs)}")
+    for name in required_proofs:
+        proof = proofs[name]
+        if not isinstance(proof, dict) or proof.get("passed") is not True:
+            raise ProfileError(f"forward terrain proof is not passed: {name}")
+        proof_path = _safe_relative(proof.get("path"))
+        _digest(proof.get("sha256"), f"proofs.{name}.sha256")
+        validate_inventory(repo_root, [{"path": proof_path, "bytes": proof.get("bytes"), "sha256": proof["sha256"]}], f"proof {name}")
+    try:
+        a1ow_review = json.loads((repo_root / _safe_relative(expected_review["path"])).read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise ProfileError(f"independent A1OW v2 review cannot be read: {exc}") from exc
+    review_inputs = a1ow_review.get("inputs", {})
+    review_projection = a1ow_review.get("independentDqSourceEquivalence", {})
+    projection_schema = review_projection.get("schema")
+    if (a1ow_review.get("schema") != expected_review["schema"]
+            or a1ow_review.get("status") != "PASS_A1OW_V2_IDENTITY_AND_BODY"
+            or review_inputs.get("v2Sha256") != a1ow_sha):
+        raise ProfileError("independent A1OW v2 review is stale or its artifact identity differs")
+    if projection_schema in {None, "a1ow-dq-source-equivalence-v1"}:
+        # Keep the original v1 decision path and all of its exact predicates intact.
+        projection = review_projection.get("postAnchorDelta", {})
+        review_checks = review_projection.get("checks", {})
+        if (review_inputs.get("dqTilesSha256") != guards["dqTilesSha256"]
+                or review_projection.get("updatedSha256") != guards["dqTilesSha256"]
+                or review_projection.get("identicalCollisionRuntimeTail") is not False
+                or review_checks.get("collisionRuntimeExactAfterWaterCleanupProjection") is not True
+                or projection.get("occurrences") != 2
+                or projection.get("normalizedTailByteIdenticalToBaseline") is not True
+                or projection.get("normalization") != "remove only the two exact water-backing cleanup call strings plus their preceding added spaces from current tail"):
+            raise ProfileError("independent A1OW v2 review is stale or its exact approved cleanup projection differs")
+    elif projection_schema == "a1ow-dq-source-projection-v2-cave-local-delta":
+        import base64
+        crystal_review_path = repo_root / CRYSTAL_DQ_REVIEW_RELATIVE
+        try:
+            crystal_review = json.loads(crystal_review_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            raise ProfileError(f"independent Crystal DQ source-only review cannot be read: {exc}") from exc
+        if (sha256(crystal_review_path) != CRYSTAL_DQ_REVIEW_SHA256
+                or set(crystal_review) != {"schema","status","scope","nativeOrRenderedPassClaimed","independentDqSourceEquivalence"}
+                or crystal_review.get("schema") != "independent-crystal-dq-source-equivalence-review-v1"
+                or crystal_review.get("status") != "PASS_SOURCE_STATIC"
+                or crystal_review.get("scope") != "independent source/contact review record; not an artifact-level A1OW integration acceptance record"
+                or crystal_review.get("nativeOrRenderedPassClaimed") is not False
+                or crystal_review.get("independentDqSourceEquivalence") != review_projection):
+            raise ProfileError("independent Crystal DQ source-only record is stale, invalid, or differs from the A1OW integration projection")
+        projection = review_projection
+        expected_projection_keys = {"schema","status","baselineSource","currentSource","sourceDelta","normalizedSourceSha256",
+            "baselineTail","functionProjections","immutableInputs","staticProof","claims"}
+        if set(projection) != expected_projection_keys or projection.get("status") != "PASS":
+            raise ProfileError("independent DQ cave projection is incomplete or not independently passed")
+        public_path = repo_root / "public/dq-tiles.js"
+        current = public_path.read_bytes()
+        expected_baseline = "6a605a8f0d7d2513871c9b8e5a18f30fa7a403ee2ec0e42a4f1646d2e4d5da1d"
+        expected_current = "a7e267a5c2d2d1061af7f66956d82853b42f00c82c1f63baf043defbeb1b2a43"
+        helper_start = b"  // Whispering Woods is a sprite prop,"
+        helper_end = b"  // (x,y) is the SPRITE position"
+        cave_call = b"    if(!a1mWwContactFree(scene,m,x,y)) return false;\n"
+        if (sha256(public_path) != expected_current
+                or guards.get("dqTilesSha256") != expected_current
+                or review_inputs.get("dqTilesSha256") != expected_current):
+            raise ProfileError("public DQ source differs from the exact reviewed cave candidate")
+        baseline = projection["baselineSource"]
+        current_record = projection["currentSource"]
+        delta = projection["sourceDelta"]
+        if (set(baseline) != {"sha256","path","bytes"}
+                or baseline != {"sha256":expected_baseline,"path":"public/dq-tiles.js","bytes":591893}
+                or set(current_record) != {"sha256","publicPath","distPath","bytes","twinsByteIdentical"}
+                or current_record != {"sha256":expected_current,"publicPath":"public/dq-tiles.js","distPath":"dist/dq-tiles.js","bytes":len(current),"twinsByteIdentical":True}
+                or set(delta) != {"helper","callsite"}):
+            raise ProfileError("DQ source projection identities or exact delta fields differ")
+        hinfo=delta["helper"]; cinfo=delta["callsite"]
+        if current.count(helper_start)!=1 or current.count(helper_end)!=1 or current.count(cave_call)!=1:
+            raise ProfileError("DQ cave helper anchors or callsite are missing or duplicated")
+        i=current.index(helper_start); j=current.index(helper_end,i); helper=current[i:j]
+        expected_helper={"anchor":"single cave-contact helper span beginning at the reviewed Whispering Woods comment and ending immediately before `  // (x,y) is the SPRITE position`; includes the exact pinned Crystal branch",
+            "bytes":10977,"sha256":"5855a9746b66a8f73efea1066a2a37cb0f93a7df579539e735a7f15abc96f457", "occurrences":1}
+        expected_call={"anchor":"inside function a1mFree(scene,m,x,y)","bytes":53,
+            "sha256":"3bc0cf4dc07804c8025f4db4a4bb71b699be8b0386746bc80dfe9955cd9538e0","occurrences":1}
+        if (set(hinfo)!=set(expected_helper) or hinfo!=expected_helper
+                or set(cinfo)!=set(expected_call) or cinfo!=expected_call):
+            raise ProfileError("DQ cave helper or callsite bytes differ from the independently reviewed exact additions")
+        normalized=current[:i]+current[j:]
+        if normalized.count(cave_call)!=1:
+            raise ProfileError("cave callsite is not unique after removing the helper span")
+        normalized=normalized.replace(cave_call,b"",1)
+        normalized_sha=hashlib.sha256(normalized).hexdigest()
+        if normalized_sha!=expected_baseline or projection.get("normalizedSourceSha256")!=expected_baseline:
+            raise ProfileError("DQ contains a source change outside the exact cave helper and callsite")
+        baseline_tail=projection["baselineTail"]
+        tail_sha=hashlib.sha256(normalized[normalized.index(b"var A1M_FOOT=12;"):]).hexdigest()
+        expected_tail={"sha256":"7974f54097586584fb1d3a7fd2d3a483055ec52d4e2f2699581f46ec15256be9",
+            "legacyReviewPath":"design/terrain-current-profile-20261007/review-evidence/cave-reentry-20261015/a1ow-source-equivalence.json",
+            "legacyReviewSha256":"a9e7ca02240613adf34d864016ef9f6083cd913a6b89eba54d22ade35aee2c55",
+            "sourceSchema":"a1ow-dq-source-equivalence-v1",
+            "waterNormalization":{"rule":"remove only the two exact water-backing cleanup call strings plus their preceding added spaces from current tail",
+                "occurrences":2,"exactAddedBytes":"a1aDropPlateWaterBacking(terrainState,scene); "},
+            "scope":"normalized semantic tail of baseline DQ 6a605a8 only; not a current-tail identity"}
+        if baseline_tail!=expected_tail or tail_sha!=expected_tail["sha256"]:
+            raise ProfileError("DQ cave projection prior-tail reference is not the exact baseline-only legacy projection")
+        legacy_path=repo_root / expected_tail["legacyReviewPath"]
+        legacy=json.loads(legacy_path.read_text(encoding="utf-8"))["independentDqSourceEquivalence"]
+        if (sha256(legacy_path)!=expected_tail["legacyReviewSha256"]
+                or legacy.get("schema")!="a1ow-dq-source-equivalence-v1"
+                or legacy.get("currentCollisionRuntimeTailSha256")!=expected_tail["sha256"]
+                or legacy.get("exactPrepatchTailByteIdentical") is not True):
+            raise ProfileError("pinned legacy DQ evidence no longer corroborates the baseline-only tail")
+        functions=projection["functionProjections"]
+        def function_bytes(name: str, source: bytes) -> bytes:
+            marker=b"  function "+name.encode()+b"("
+            start_at=source.find(marker)
+            if start_at<0 or source.count(marker)!=1: raise ProfileError("DQ source projection function anchor missing/repeated: "+name)
+            brace=source.find(b"{",start_at); depth=0; state="code"; escaped=False; quote=0
+            pos=brace
+            while pos<len(source):
+                ch=source[pos]; nxt=source[pos+1] if pos+1<len(source) else 0
+                if state=="line":
+                    if ch==10: state="code"
+                    pos+=1; continue
+                if state=="block":
+                    if ch==42 and nxt==47: state="code"; pos+=2; continue
+                    pos+=1; continue
+                if state=="string":
+                    if escaped: escaped=False
+                    elif ch==92: escaped=True
+                    elif ch==quote: state="code"
+                    pos+=1; continue
+                if ch==47 and nxt==47: state="line"; pos+=2; continue
+                if ch==47 and nxt==42: state="block"; pos+=2; continue
+                if ch in (34,39,96): state="string"; quote=ch; pos+=1; continue
+                if ch==123: depth+=1
+                elif ch==125:
+                    depth-=1
+                    if depth==0: return source[start_at:pos+1]
+                pos+=1
+            raise ProfileError("unbalanced DQ source projection function: "+name)
+        free=function_bytes("a1mFree",current)
+        if free.count(cave_call)!=1: raise ProfileError("a1mFree cave call is missing or duplicated")
+        free_hash=hashlib.sha256(free.replace(cave_call,b"",1)).hexdigest()
+        expected_free={"baselineSha256":free_hash,"currentAfterCallRemovalSha256":free_hash,
+            "normalization":"remove only exact one-line cave call bytes from extracted a1mFree function","equal":True}
+        expected_free={"baselineSha256":"c1bf0f36277a2d607254477ea4c9bf8519e8bd2ca1618641aa8a9d56e146345d",
+            "currentAfterCallRemovalSha256":"c1bf0f36277a2d607254477ea4c9bf8519e8bd2ca1618641aa8a9d56e146345d",
+            "normalization":"remove only exact one-line cave call bytes from extracted a1mFree function","equal":True}
+        if hashlib.sha256(free.replace(cave_call,b"",1)).hexdigest()!=expected_free["baselineSha256"] or set(functions)!={"a1mFree","unchangedFunctions"} or functions.get("a1mFree")!=expected_free:
+            raise ProfileError("a1mFree projection is not exactly the approved one-call delta")
+        unchanged_names=("owmBakeParse","owmSupportBounds","owmSupportEt","owmSupportInputBytes","owmInvalidateSupport",
+            "owmSupportMatches","owmSupportHex","owmSupportFor","owmAssemble","a1mFootDy","a1fBuildStencil","a1fHeroFree")
+        expected_functions={}
+        for name in unchanged_names:
+            value={
+                "owmBakeParse":"1dc1634017dcb91be462f9be20bdcb2e828d30961ec99174d7f9e8b88df01174",
+                "owmSupportBounds":"51fef291a7960999b9ad05201918906783cc08eb88c00ec9e80d8826e9647f95",
+                "owmSupportEt":"05a36638d93f2d1e0809ea9c1ec753021f30e872fa888c2ab60abc98d02237c6",
+                "owmSupportInputBytes":"48c909ffc5b6d1c206e7b2a538afc10fea3edb7137ffbd665d905bb2fd3ca480",
+                "owmInvalidateSupport":"5d8d176996fb5350959ae7e3a6d140af927c04b3c3a3ef6c18890ab056af2552",
+                "owmSupportMatches":"ee31635230ec29213e8a6abf3e2109b025daf1f5c6d0bccf65d41ab9ff20f097",
+                "owmSupportHex":"f57f73ac4d11acd600fcea10cf8865bb9c34ef2647f1aec88efabe93bcf8200f",
+                "owmSupportFor":"350f52c4b7acd672c2bd3cc669cb458357223816b7ad456b56e310f951ed6006",
+                "owmAssemble":"acbac9d7385ee28c90a10458692338dd0555795c7df12b8f97e81617c95f1a5d",
+                "a1mFootDy":"416739f80a17924abe44da0e8d5c3ec44504a10980a187b0451874a4355b8bb1",
+                "a1fBuildStencil":"4d5dbdab4b20bf77a60135c30c2fbc16e7c0d0eabe76846ef6f83717edb2e79d",
+                "a1fHeroFree":"ac1caf8af4baa51faea770760888f3d349216d804bacb49c5eef671de2d3ba80"}[name]
+            if hashlib.sha256(function_bytes(name,current)).hexdigest()!=value:
+                raise ProfileError("A1OW parser/support/hero function differs from pinned reviewed baseline: "+name)
+            expected_functions[name]={"baselineSha256":value,"currentSha256":value,"byteIdentical":True}
+        if functions.get("unchangedFunctions")!=expected_functions:
+            raise ProfileError("A1OW parser/support/hero-foot/full-hero function projections differ")
+        immutable=projection["immutableInputs"]
+        if set(immutable)!={"a1ow","baker","mapProof","qok","caveArt","crystalCaveArt","landmarks","manifests","terrainFixture"}:
+            raise ProfileError("DQ cave projection immutable input inventory is incomplete")
+        def check_identity(item: Any, expected_path: str) -> None:
+            if not isinstance(item,dict) or set(item)!={"path","sha256","bytes"} or item.get("path")!=expected_path:
+                raise ProfileError("DQ cave projection input has unexpected path/fields: "+expected_path)
+            path=repo_root/expected_path
+            if not path.is_file() or sha256(path)!=item.get("sha256") or path.stat().st_size!=item.get("bytes"):
+                raise ProfileError("DQ cave projection input hash/length mismatch: "+expected_path)
+        check_identity(immutable["a1ow"],"public/act1-overworld-walk.bin")
+        check_identity(immutable["baker"],"scripts/bake_act1_overworld_walk.mjs")
+        check_identity(immutable["mapProof"],"design/terrain-current-profile-20261007/evidence/a1ow-v2-independent-review/baked-final-map.json")
+        check_identity(immutable["qok"],"public/act1-hifi/forest-collision.bin")
+        check_identity(immutable["caveArt"],"public/act1-hifi/landmarks/whispering-woods.png")
+        check_identity(immutable["crystalCaveArt"],"public/act1-hifi/landmarks/crystal-cave.png")
+        check_identity(immutable["landmarks"],"public/act1-hifi/landmarks/landmarks.json")
+        if set(immutable["manifests"])!={"current","generationInput"}:
+            raise ProfileError("DQ cave projection manifest input set differs")
+        check_identity(immutable["manifests"]["current"],"design/terrain-current-profile-20261007/current/act1-hifi-manifest.json")
+        check_identity(immutable["manifests"]["generationInput"],"design/terrain-current-profile-20261007/input-manifest.json")
+        check_identity(immutable["terrainFixture"],"scripts/test_act1_terrain_collision_integration.cjs")
+        static=projection["staticProof"]
+        if set(static)!={"review","preview","maskRaster","crystalMaskRaster","contactPathCheck","crystalContactPathCheck","testRuns"}:
+            raise ProfileError("DQ cave static proof inventory differs")
+        def check_external_identity(item: Any, keys: set[str]) -> Path:
+            if not isinstance(item,dict) or set(item)!=keys or not isinstance(item.get("path"),str):
+                raise ProfileError("DQ cave proof artifact record has unexpected fields")
+            raw=Path(item["path"])
+            path=raw if raw.is_absolute() else repo_root/_safe_relative(item["path"])
+            if raw.is_absolute():
+                if not _is_approved_crystal_dq_diagnostic(path):
+                    raise ProfileError("DQ cave proof artifact path is outside approved Crystal diagnostic root")
+            if not path.is_file() or sha256(path)!=item.get("sha256"):
+                raise ProfileError("DQ cave proof artifact hash mismatch: "+item["path"])
+            return path
+        check_external_identity(static["review"],{"path","sha256"})
+        check_external_identity(static["preview"],{"path","sha256"})
+        mask_record=static["maskRaster"]
+        if set(mask_record)!={"path","sha256","packedBitsetSha256","packedBytes","solidPixels","outsideAlphaPixels","alphaThreshold"}:
+            raise ProfileError("DQ cave raster evidence fields differ")
+        mask_file=check_external_identity({"path":mask_record.get("path"),"sha256":mask_record.get("sha256")},{"path","sha256"})
+        mask_json=json.loads(mask_file.read_text(encoding="utf-8"))
+        encoded=re.search(rb"var A1M_WW_MASK_B64='([A-Za-z0-9+/=]+)';",current)
+        if not encoded: raise ProfileError("DQ cave compact mask is missing")
+        packed=base64.b64decode(encoded.group(1),validate=True)
+        solid=sum((packed[i>>3]>>(i&7))&1 for i in range(144*144))
+        if (mask_record.get("packedBitsetSha256")!=hashlib.sha256(packed).hexdigest()
+                or mask_record.get("packedBytes")!=2592 or mask_record.get("solidPixels")!=4808
+                or mask_record.get("outsideAlphaPixels")!=0 or mask_record.get("alphaThreshold")!=128
+                or len(packed)!=2592 or solid!=4808
+                or mask_json.get("schema")!="independent-cave-contact-mask-raster-check-v1"
+                or mask_json.get("dqTilesSha256")!=expected_current
+                or mask_json.get("pinnedArtSha256")!=immutable["caveArt"]["sha256"]
+                or mask_json.get("packedMaskBytes")!=2592 or mask_json.get("setPixels")!=4808
+                or mask_json.get("outsideAlphaSetPixels")!=0 or mask_json.get("alphaThreshold")!=128
+                or mask_json.get("independentRasterMatchesEmbeddedMask") is not True):
+            raise ProfileError("DQ cave mask evidence differs from the reviewed pinned-art bitset")
+        crystal_mask=static["crystalMaskRaster"]
+        if set(crystal_mask)!={"path","sha256","packedBitsetSha256","packedBytes","solidPixels","outsideAlphaPixels","alphaThreshold"}:
+            raise ProfileError("Crystal mask raster evidence fields differ")
+        crystal_mask_file=check_external_identity({"path":crystal_mask.get("path"),"sha256":crystal_mask.get("sha256")},{"path","sha256"})
+        crystal_mask_json=json.loads(crystal_mask_file.read_text(encoding="utf-8"))
+        crystal_encoded=re.search(rb"var A1M_CRYSTAL_MASK_B64='([A-Za-z0-9+/=]+)';",current)
+        if not crystal_encoded: raise ProfileError("Crystal compact mask is missing")
+        crystal_packed=base64.b64decode(crystal_encoded.group(1),validate=True)
+        crystal_solid=sum((crystal_packed[i>>3]>>(i&7))&1 for i in range(144*144))
+        expected_channel=[[53,75],[52,65],[57,55],[64,49],[72,48],[78,54],[81,64],[82,73],[86,83],[91,92],[93,103],[94,114],[96,125],[96,134],[55,134],[54,125],[55,115],[56,105],[54,95],[52,85]]
+        if (crystal_mask.get("packedBitsetSha256")!=hashlib.sha256(crystal_packed).hexdigest()
+                or crystal_mask.get("packedBytes")!=2592 or crystal_mask.get("solidPixels")!=5802
+                or crystal_mask.get("outsideAlphaPixels")!=0 or crystal_mask.get("alphaThreshold")!=128
+                or len(crystal_packed)!=2592 or crystal_solid!=5802
+                or crystal_mask_json.get("schema")!="crystal-contact-mask-raster-v1"
+                or crystal_mask_json.get("dqTilesSha256")!=expected_current
+                or crystal_mask_json.get("pinnedArtSha256")!=immutable["crystalCaveArt"]["sha256"]
+                or crystal_mask_json.get("packedMaskBytes")!=2592
+                or crystal_mask_json.get("packedMaskSha256")!=hashlib.sha256(crystal_packed).hexdigest()
+                or crystal_mask_json.get("solidPixels")!=5802
+                or crystal_mask_json.get("outsideAlphaPixels")!=0 or crystal_mask_json.get("alphaThreshold")!=128
+                or crystal_mask_json.get("channelPolygon")!=expected_channel):
+            raise ProfileError("Crystal mask evidence differs from exact alpha-clipped doorway bitset")
+        contact=static["contactPathCheck"]
+        if set(contact)!={"path","sha256","resultPath","resultSha256"}:
+            raise ProfileError("DQ cave contact-path proof fields differ")
+        check_external_identity({"path":contact["path"],"sha256":contact["sha256"]},{"path","sha256"})
+        check_external_identity({"path":contact["path"],"sha256":contact["sha256"]},{"path","sha256"})
+        contact_path=Path(contact["resultPath"])
+        if not contact_path.is_absolute(): contact_path=repo_root/_safe_relative(contact["resultPath"])
+        elif not _is_approved_crystal_dq_diagnostic(contact_path):
+            raise ProfileError("DQ cave contact-path result is outside approved Crystal diagnostic root")
+        if not contact_path.is_file() or sha256(contact_path)!=contact["resultSha256"]:
+            raise ProfileError("DQ cave contact-path result hash mismatch")
+        contact_json=json.loads(contact_path.read_text(encoding="utf-8"))
+        if contact_json!={"productionGate":"a1mFree","southSamples":101,"southApproach":"clear through existing door cell","p1Roof":"blocked","bothSides":"blocked","exteriorGrass":"free","neighborGrass":"free","channel":"free"}:
+            raise ProfileError("DQ cave contact-path result does not prove the bounded route")
+        crystal_contact=static["crystalContactPathCheck"]
+        if set(crystal_contact)!={"path","sha256","resultPath","resultSha256"}:
+            raise ProfileError("Crystal contact-path proof fields differ")
+        crystal_test=check_external_identity({"path":crystal_contact["path"],"sha256":crystal_contact["sha256"]},{"path","sha256"})
+        crystal_result_file=check_external_identity({"path":crystal_contact["resultPath"],"sha256":crystal_contact["resultSha256"]},{"path","sha256"})
+        crystal_result=json.loads(crystal_result_file.read_text(encoding="utf-8"))
+        if crystal_result!={"productionGate":"a1mFree","roofPose":"blocked","bothSides":"blocked","exteriorGrass":"free","entryCell149x278":"free","exitCell149x279":"free","southApproach":"free","continuousSouthSweepSamples":101,"continuousSouthSweep":"clear","doorAdapter":"149,279→149,278→crystalCave","bothHeroSoleRows":"pass"}:
+            raise ProfileError("Crystal contact-path result does not prove bounded entry/exit")
+        test_runs=static["testRuns"]
+        if set(test_runs)!={"path","sha256","allPassed"} or test_runs.get("allPassed") is not True:
+            raise ProfileError("DQ cave static test receipt is missing or failing")
+        runs_path=check_external_identity({"path":test_runs["path"],"sha256":test_runs["sha256"]},{"path","sha256"})
+        runs=json.loads(runs_path.read_text(encoding="utf-8"))
+        expected_runs=[
+            (["python3","scripts/generate_ww_contact_mask.py","--check"],None,"scripts/generate_ww_contact_mask.py"),
+            (["python3","scripts/generate_crystal_contact_mask.py","--check"],None,"scripts/generate_crystal_contact_mask.py"),
+            (["node","scripts/test_dq_tiles_landmark_contact.cjs"],"public/dq-tiles.js","scripts/test_dq_tiles_landmark_contact.cjs"),
+            (["node","scripts/test_dq_tiles_landmark_contact.cjs","dist/dq-tiles.js"],"dist/dq-tiles.js","scripts/test_dq_tiles_landmark_contact.cjs"),
+            (["node","scripts/test_dq_tiles_scene_reentry.cjs"],"public/dq-tiles.js","scripts/test_dq_tiles_scene_reentry.cjs"),
+            (["node","scripts/test_dq_tiles_scene_reentry.cjs","dist/dq-tiles.js"],"dist/dq-tiles.js","scripts/test_dq_tiles_scene_reentry.cjs")]
+        if not isinstance(runs,list) or len(runs)!=len(expected_runs): raise ProfileError("DQ cave static test run count differs")
+        for run,(args,target,script_rel) in zip(runs,expected_runs):
+            script_path=repo_root/script_rel
+            if (run.get("args")!=args or run.get("target")!=target or run.get("exitCode")!=0 or run.get("result")!="PASS"
+                    or run.get("stderr")!="" or run.get("script")!={"path":script_rel,"sha256":sha256(script_path),"bytes":script_path.stat().st_size}):
+                raise ProfileError("DQ cave static test receipt differs: "+script_rel)
+        if projection.get("claims")!={"nativeOrRenderedPassClaimed":False,"wholeCollisionRuntimeTailIdentical":False}:
+            raise ProfileError("DQ cave source projection cannot claim native or whole-tail acceptance")
+    else:
+        raise ProfileError("independent A1OW v2 review has an unknown DQ source-equivalence schema")
+    for proof_name in PREPARATION_PROOF_VALUE_KEYS:
+        values = proofs[proof_name].get("values")
+        expected_keys = (PREPARATION_PROOF_VALUE_KEYS[proof_name] if is_preparation
+                         else FULL_PROOF_VALUE_KEYS[proof_name])
+        if not isinstance(values, dict) or set(values) != expected_keys:
+            raise ProfileError(f"{proof_name} values do not match the exact {stage}-stage proof-field split")
+    phase = proofs["underpaintPhase"].get("values")
+    if (not isinstance(phase, dict)
+            or phase.get("scope") != "declared-origin-and-scale-phase-v1"
+            or phase.get("manifestSha256") != guards["finalManifestSha256"]
+            or phase.get("activeDqTilesSha256") != guards["dqTilesSha256"]
+            or phase.get("originCell") != geometry_manifest.get("semanticBounds", [])[:2]
+            or phase.get("dimensionsPx6") != [888, 1092]
+            or phase.get("pixelsPerCell") != 6 or phase.get("basePixelsPerCell") != 32
+            or phase.get("semanticBounds") != geometry_manifest.get("semanticBounds")
+            or phase.get("chunksIntersectingSemanticBounds") != 120
+            or phase.get("phaseMismatches") != 0
+            or phase.get("semanticCellsCoveredExactlyOnce") is not True
+            or phase.get("sameOwTileWorldGrid") is not True):
+        raise ProfileError("underpaint proof must establish declared origin/scale phase and all 120 chunk boundaries only")
+    invariants = proofs["runtimeInvariants"].get("values")
+    expected_invariant_fields = {"viewport", "saveVersion"} if is_preparation else FULL_PROOF_VALUE_KEYS["runtimeInvariants"]
+    if (not isinstance(invariants, dict) or invariants.get("viewport") != [320, 400]
+            or invariants.get("saveVersion") != 4
+            or set(invariants) != expected_invariant_fields
+            or (not is_preparation and invariants.get("existingSaveResume") is not True)):
+        raise ProfileError("runtime proof must assert 320x400 and SAVE_VERSION 4; release also requires existing-save resume")
+    collision = proofs["collisionDecode"].get("values")
+    if (not isinstance(collision, dict) or collision.get("independentDecode") is not True
+            or collision.get("heroFramesChecked") != "all-selectable-frames-at-safe-cells"
+            or collision.get("heroStencilScope") != "safe-cell-QOK-stencil-v1"
+            or collision.get("safeCellCount") != 149
+            or collision.get("runtimeFormat") != collision_contract.get("runtimeFormat")
+            or collision.get("collisionSha256") != collision_sha
+            or collision.get("boundsChecked") is not True
+            or collision.get("bitOrderAndLengthChecked") is not True):
+        raise ProfileError("collision proof must independently decode the pack and bind the bounded safe-cell frame census")
+    a1ow_proof = proofs["a1owDecode"].get("values")
+    expected_a1ow_proof = {
+        "format": A1OW_V2_FORMAT,
+        "artifactSha256": a1ow_sha, "runtimeParser": "dq-tiles.js::owmBakeParse",
+        "version": decoded_a1ow["version"], "headerBytes": decoded_a1ow["headerBytes"],
+        "profileId": A1OW_V2_PROFILE_ID, "supportSchema": A1OW_V2_SUPPORT_SCHEMA,
+        "supportFNV32": decoded_a1ow["supportFNV32"],
+        "semanticsSha256": decoded_a1ow["semanticsSha256"],
+        "supportSha256": decoded_a1ow["supportSha256"],
+        "payloadSha256": decoded_a1ow["payloadSha256"], "blockCount": decoded_a1ow["blocks"],
+        "waterOnlyInsideAct1": True, "analyticMountainsOutsideAndPadding": True,
+    }
+    if not isinstance(a1ow_proof, dict):
+        raise ProfileError("A1OW proof must be an object")
+    if (any(a1ow_proof.get(key) != value for key, value in expected_a1ow_proof.items())
+            or (is_preparation and set(a1ow_proof) != PREPARATION_PROOF_VALUE_KEYS["a1owDecode"])):
+        raise ProfileError("A1OW proof must bind the exact v2 header, support identities, and preserved distance payload")
+    if not is_preparation and (set(a1ow_proof) != FULL_PROOF_VALUE_KEYS["a1owDecode"]
+            or any(a1ow_proof.get(key) != value for key, value in expected_a1ow_proof.items())
+            or a1ow_proof.get("mountainCollisionReconciled") is not True
+            or a1ow_proof.get("heroFootClearanceRecomputed") is not True):
+        raise ProfileError("A1OW proof must bind exact v2 static identity and resolved terrain/foot assertions")
+    alpha = proofs["visibleAlpha"].get("values")
+    if (not isinstance(alpha, dict) or alpha.get("sourceAuthority") != "final-visible-whole-object-union"
+            or alpha.get("sourceArtifactSha256") != source_alpha_sha
+            or alpha.get("collisionSha256") != collision_sha
+            or (not is_preparation and alpha.get("noHiddenSelectableHeroFrame") is not True)):
+        raise ProfileError("visible-alpha proof must bind the final whole-object union; release also requires runtime frame visibility")
+    hero = proofs["heroFrameClearance"].get("values")
+    if (not isinstance(hero, dict) or hero.get("allSelectableHeroes") is not True
+            or hero.get("allFramesAtRuntimeScale") is not True
+            or hero.get("scope") != "safe-cell-QOK-stencil-v1"
+            or hero.get("heroCount") != 2 or hero.get("framesPerHero") != 12
+            or hero.get("runtimeScale") != 0.7
+            or hero.get("heroFrameSources") != {
+                "g3": guards["femaleHeroSha256"], "male": guards["maleHeroSha256"]}
+            or (not is_preparation and hero.get("clearanceRecomputed") is not True)):
+        raise ProfileError("hero proof must bind the exact two-sheet, twelve-frame safe-cell stencil census")
+    safe = proofs["safeCells"].get("values")
+    safe_cells = generated_manifest.get("safeCells")
+    if (not isinstance(safe, dict) or not isinstance(safe_cells, list)
+            or safe.get("recomputedFromCollisionSha256") != collision_sha
+            or safe.get("count") != len(safe_cells)
+            or safe.get("count") != 149 or safe.get("recomputed") is not True
+            or safe.get("scope") != "safe-cell-QOK-stencil-v1"
+            or safe.get("offsets") != [[0,0],[-1,0],[1,0],[0,-1],[0,1]]
+            or safe.get("framesPerHero") != 12
+            or safe.get("heroFrameSources") != {"g3":guards["femaleHeroSha256"],"male":guards["maleHeroSha256"]}
+            or safe.get("qokHits") != {"g3":0,"male":0}):
+        raise ProfileError("safe-cell proof must bind all 149 QOK-only stencil centers and four one-pixel offsets")
+    coords = set()
+    for cell in safe_cells:
+        if (not isinstance(cell, dict) or not isinstance(cell.get("x"), int)
+                or not isinstance(cell.get("y"), int) or (cell["x"], cell["y"]) in coords):
+            raise ProfileError("forward manifest safe cells must be unique integer coordinates")
+        coords.add((cell["x"], cell["y"]))
+    routes = proofs.get("routes", {}).get("values") if not is_preparation else None
+    expected_exits = [("greenhollow",69,256),("millbrook",39,345),("portSapphire",133,348),
+                      ("sunkenCellar",30,275),("whisperingWoodsCave",101,232),
+                      ("coastalReef",145,372),("mistyGrotto",96,360),("crystalCave",149,279)]
+    expected_approaches = [("whisperingWoodsCave",101,232),("greenhollow",69,256),("sunkenCellar",30,275),
+                           ("crystalCave",149,277),("crystalCave",148,278),("crystalCave",150,278),
+                           ("crystalCave",149,279),("millbrook",39,345),("portSapphire",133,348),
+                           ("mistyGrotto",96,360),("coastalReef",145,372)]
+    if not is_preparation and not isinstance(routes, dict):
+        raise ProfileError("forward route proof values are missing")
+    if not is_preparation and set(routes) != FULL_PROOF_VALUE_KEYS["routes"]:
+        raise ProfileError("release route proof values do not match the exact completed assertion set")
+    actual_exits = [(x.get("id"),x.get("x"),x.get("y")) for x in generated_manifest.get("liveLandmarkExits", [])]
+    actual_approaches = [(x.get("landmarkId"),x.get("x"),x.get("y")) for x in generated_manifest.get("liveValidApproaches", [])]
+    if (generated_manifest.get("startCell") != {"x":69,"y":256}
+            or generated_manifest.get("legacyFallback") != {"x":130,"y":290}
+            or actual_exits != expected_exits or actual_approaches != expected_approaches
+            or generated_manifest.get("startCell") != live_manifest.get("startCell")
+            or generated_manifest.get("legacyFallback") != live_manifest.get("legacyFallback")
+            or generated_manifest.get("liveLandmarkExits") != live_manifest.get("liveLandmarkExits")
+            or generated_manifest.get("liveValidApproaches") != live_manifest.get("liveValidApproaches")
+            or (not is_preparation and (not isinstance(routes, dict)
+                or routes.get("startAndLegacyFallbackVerified") is not True
+                or routes.get("savedPositionRecoveryVerified") is not True
+                or routes.get("crystalCaveRoundTrip") is not True
+                or routes.get("allExitsReachable") is not True
+                or routes.get("noTraversableTerrainSeam") is not True
+                or routes.get("leftPlainsOpeningRetained") is not True))):
+        raise ProfileError("forward routes do not prove current start/fallback, all reviewed approaches, cave round-trip, seams, and recovery")
+    if not is_preparation and routes.get("staleGuardAccepted") is not False:
+        raise ProfileError("route proof must explicitly reject stale guard evidence")
+
+    receipt_info = descriptor.get("independentGateReceipt")
+    if not isinstance(receipt_info, dict):
+        raise ProfileError("forward descriptor requires a separately pinned independent gate receipt")
+    receipt_rel = _safe_relative(receipt_info.get("path"))
+    receipt_item = {"path": receipt_rel, "bytes": receipt_info.get("bytes"), "sha256": receipt_info.get("sha256")}
+    receipt_path = repo_root / receipt_rel
+    validate_inventory(repo_root, [receipt_item], "independent gate receipt")
+    try:
+        receipt_data = json.loads(receipt_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise ProfileError(f"independent gate receipt cannot be read: {exc}") from exc
+    expected_receipt_schema = PREPARATION_RECEIPT_SCHEMA if is_preparation else "qok-forward-gate-receipt-v1"
+    expected_receipt_result = "QA_PREPARATION_PASS" if is_preparation else "PASS"
+    if (receipt_data.get("schema") != expected_receipt_schema
+            or receipt_data.get("profileId") != PROFILE_ID
+            or receipt_data.get("result") != expected_receipt_result
+            or receipt_data.get("reviewerRole") != "independent"):
+        raise ProfileError("independent gate receipt schema, profile, reviewer, or result is invalid")
+    if (receipt_data.get("authoringInputInventorySha256") != inventory_digest(descriptor["authoringInputs"])
+            or receipt_data.get("generatedOutputInventorySha256") != inventory_digest(output_entries)):
+        raise ProfileError("independent gate receipt does not bind the exact authoring/output inventories")
+    receipt_checks = receipt_data.get("checks")
+    if not isinstance(receipt_checks, dict) or set(receipt_checks) != required_proofs:
+        raise ProfileError("independent gate receipt must cover every proof required by this stage")
+    for name, proof in proofs.items():
+        checked = receipt_checks.get(name)
+        if (not isinstance(checked, dict) or checked.get("result") != "PASS"
+                or checked.get("proofSha256") != proof["sha256"]):
+            raise ProfileError(f"independent gate receipt does not independently bind proof artifact: {name}")
+    runner = receipt_data.get("runner")
+    if (not isinstance(runner, dict) or not isinstance(runner.get("version"), str)
+            or not runner["version"] or not isinstance(runner.get("path"), str)):
+        raise ProfileError("independent gate receipt must identify the deterministic checker version")
+    runner_path = _safe_relative(runner["path"])
+    runner_sha = _digest(runner.get("sha256"), "independent gate receipt runner sha256")
+    if input_map.get(runner_path) != runner_sha:
+        raise ProfileError("independent gate receipt checker path/hash is not present in pinned authoring inputs")
+    runner_file = repo_root / runner_path
+    if not runner_file.is_file() or sha256(runner_file) != runner_sha:
+        raise ProfileError("independent gate receipt checker source changed")
+    return {"inputs": inputs, "geometry": geometry_manifest, "outputRoot": output_root,
+            "outputInventory": output_entries,
+            "preservedRuntimeInventory": outputs["consumedNonterrainOverrides"],
+            "pendingDynamicChecks": list(PENDING_DYNAMIC_CHECKS) if is_preparation else [],
+            "pendingProofAssertions": list(PENDING_PROOF_ASSERTIONS) if is_preparation else []}
+
+
+def validate_completed_proof_assertions(completed: Any, reviewed: Any) -> None:
+    """Require every deferred legacy assertion and assertion-level independent review."""
+    expected = set(PENDING_PROOF_ASSERTION_GROUPS)
+    if not isinstance(completed, dict) or set(completed) != expected:
+        raise ProfileError("release evidence must complete the exact pending proof assertion set")
+    if not isinstance(reviewed, dict) or set(reviewed) != expected:
+        raise ProfileError("independent review must cover the exact pending proof assertion set")
+    for path, expected_groups in PENDING_PROOF_ASSERTION_GROUPS.items():
+        record = completed[path]
+        if (not isinstance(record, dict) or set(record) != {"value", "requiredGroups"}
+                or record.get("value") is not True
+                or record.get("requiredGroups") != list(expected_groups)):
+            raise ProfileError(f"completed proof assertion is false or maps to unreviewed groups: {path}")
+        review = reviewed[path]
+        if (not isinstance(review, dict) or set(review) != {"result", "requiredGroups"}
+                or review.get("result") != "PASS"
+                or review.get("requiredGroups") != list(expected_groups)):
+            raise ProfileError(f"independent review does not explicitly pass the exact assertion/groups: {path}")
+
+
+def _profile_runtime_paths(output_inventory: list[dict[str, Any]], preserved_runtime: list[dict[str, Any]],
+                           a1ow_path: Any) -> set[str]:
+    """Map reviewed output rows to shipped paths with one explicit root asset exception."""
+    paths = {_safe_relative(item["path"]) for item in output_inventory
+             if _safe_relative(item["path"]).startswith("act1-hifi/")}
+    safe_a1ow = _safe_relative(a1ow_path)
+    if safe_a1ow != "act1-overworld-walk.bin":
+        raise ProfileError("forward profile may add only the reviewed root-level A1OW runtime path")
+    paths.add(safe_a1ow)
+    for item in preserved_runtime:
+        source = _safe_relative(item.get("path"))
+        if not source.startswith("public/act1-hifi/"):
+            raise ProfileError(f"preserved runtime input is outside the exact Act 1 subtree: {source}")
+        paths.add(source.removeprefix("public/"))
+    return paths
+
+
+def _forward_overlay_pins(repo_root: Path, descriptor: dict[str, Any], baseline: Any) -> dict[str, tuple[int, str]]:
+    """Use the reviewed current DQ source pin for this forward profile only."""
+    pins = {path: pin for path, pin in baseline.ACT1_OVERLAY_FILES.items()
+            if path != "act1-overworld-walk.bin"}
+    guards = descriptor.get("currentGuard")
+    guard_paths = guards.get("inputPaths") if isinstance(guards, dict) else None
+    dq_path = _safe_relative(guard_paths.get("dqTiles")) if isinstance(guard_paths, dict) else ""
+    if dq_path != "public/dq-tiles.js":
+        raise ProfileError("forward DQ runtime pin must use the exact reviewed public/dq-tiles.js guard input")
+    rows = [row for row in descriptor.get("authoringInputs", [])
+            if isinstance(row, dict) and row.get("path") == dq_path]
+    if len(rows) != 1:
+        raise ProfileError("forward DQ runtime pin requires exactly one reviewed public/dq-tiles.js authoring row")
+    row = rows[0]
+    size = row.get("bytes")
+    digest = row.get("sha256")
+    _digest(digest, "reviewed public/dq-tiles.js authoring SHA-256")
+    if not isinstance(size, int) or size < 0:
+        raise ProfileError("reviewed public/dq-tiles.js authoring byte count is invalid")
+    public_dq = repo_root / dq_path
+    if not public_dq.is_file() or public_dq.stat().st_size != size or sha256(public_dq) != digest:
+        raise ProfileError("current public/dq-tiles.js differs from its reviewed authoring row")
+    pins["dq-tiles.js"] = (size, digest)
+    return pins
+
+
+def validate_runtime(repo_root: Path, root: Path, allowed_extra: frozenset[str], baseline: Any,
+                     *, stage: str = "release") -> tuple[str, str]:
+    """Retain immutable runtime and nonterrain pins without consulting historical terrain globals."""
+    descriptor, digest = load_reviewed_descriptor(repo_root)
+    validated = validate_descriptor(repo_root, descriptor, stage=stage)
+    manifest = baseline.load_manifest()
+    entries = {entry["path"]: entry for entry in manifest["files"]}
+    actual = baseline.files_under(root)
+    try:
+        overlay_pins = _forward_overlay_pins(repo_root, descriptor, baseline)
+    except ProfileError as exc:
+        raise baseline.BaselineError(str(exc)) from exc
+    expected = (set(entries) | set(overlay_pins) | set(baseline.ACT1_DUNGEON_FILES)
+                | set(baseline.ACT1_TOWN_FILES) | set(baseline.ACT1_LANDMARK_FILES)
+                | set(baseline.ACT1_MATERIAL_FILES) | set(baseline.UI_ASSET_FILES)
+                | {"act1-world-map.js"})
+    # Terrain paths are sourced only from the forward descriptor, not historical profile globals.
+    # The output receipt carries a separately inventoried static visible-alpha
+    # source under evidence/. It is collision provenance, not a shipped runtime file.
+    a1ow_path = _safe_relative(descriptor["a1owContract"]["path"])
+    try:
+        outpaths = _profile_runtime_paths(validated["outputInventory"], validated["preservedRuntimeInventory"], a1ow_path)
+    except ProfileError as exc:
+        raise baseline.BaselineError(str(exc)) from exc
+    expected |= outpaths
+    extra = set(actual) - expected
+    missing = expected - set(actual)
+    if missing or not extra.issubset(allowed_extra):
+        raise baseline.BaselineError(f"forward profile runtime path set mismatch; missing={sorted(missing)}, extra={sorted(extra)}")
+    for rel, entry in entries.items():
+        path = actual[rel]
+        expected_size, expected_digest = overlay_pins.get(rel, (entry["bytes"], entry["sha256"]))
+        if path.stat().st_size != expected_size or baseline.sha256(path) != expected_digest:
+            raise baseline.BaselineError(f"frozen runtime identity mismatch: {rel}")
+    baseline.semantic_checks(root, actual)
+    for mapping_name in ("ACT1_DUNGEON_FILES", "ACT1_TOWN_FILES", "ACT1_LANDMARK_FILES", "ACT1_MATERIAL_FILES", "UI_ASSET_FILES"):
+        mapping = getattr(baseline, mapping_name)
+        for rel, (size, digest_pin) in mapping.items():
+            if rel not in actual:
+                raise baseline.BaselineError(f"required nonterrain runtime file missing: {rel}")
+            if actual[rel].stat().st_size != size or baseline.sha256(actual[rel]) != digest_pin:
+                raise baseline.BaselineError(f"nonterrain runtime identity mismatch: {rel}")
+            public_file = repo_root / "public" / rel
+            if not public_file.is_file() or public_file.read_bytes() != actual[rel].read_bytes():
+                raise baseline.BaselineError(f"public/runtime nonterrain twins differ: {rel}")
+    for rel, (size, digest_pin) in overlay_pins.items():
+        if rel not in actual or actual[rel].stat().st_size != size or baseline.sha256(actual[rel]) != digest_pin:
+            raise baseline.BaselineError(f"nonterrain override identity mismatch: {rel}")
+    # Runtime terrain rows must match shipped bytes exactly. The only runtime
+    # path outside act1-hifi is the separately pinned, unchanged root A1OW file.
+    for item in validated["outputInventory"]:
+        rel = _safe_relative(item["path"])
+        if rel == a1ow_path:
+            continue
+        if not rel.startswith("act1-hifi/"):
+            continue
+        if rel not in actual:
+            raise baseline.BaselineError(f"generated terrain output absent from runtime: {rel}")
+        path = actual[rel]
+        if path.stat().st_size != item["bytes"] or baseline.sha256(path) != item["sha256"]:
+            raise baseline.BaselineError(f"generated terrain output differs from descriptor: {rel}")
+        public_path = repo_root / "public" / rel
+        if not public_path.is_file() or public_path.read_bytes() != path.read_bytes():
+            raise baseline.BaselineError(f"public/runtime terrain twins differ: {rel}")
+    a1ow_runtime = actual[a1ow_path]
+    a1ow_public = repo_root / "public" / a1ow_path
+    a1ow_pin = descriptor["a1owContract"]["sha256"]
+    if (baseline.sha256(a1ow_runtime) != a1ow_pin or not a1ow_public.is_file()
+            or baseline.sha256(a1ow_public) != a1ow_pin
+            or a1ow_public.read_bytes() != a1ow_runtime.read_bytes()):
+        raise baseline.BaselineError("unchanged root-level A1OW public/runtime identity differs from descriptor pin")
+    expected_hifi = {path.removeprefix("act1-hifi/") for path in expected if path.startswith("act1-hifi/")}
+    public_hifi = baseline.files_under(repo_root / "public" / "act1-hifi")
+    source_only = "portSapphire-walkable-v1.json"
+    source_only_path = repo_root / "public" / "act1-hifi" / source_only
+    if (not source_only_path.is_file() or source_only_path.stat().st_size != 30318
+            or baseline.sha256(source_only_path) != "87e7ff272a4da3304ed798584a69077ffdf0c0c1d4481758cfb7d623a55b5eaf"):
+        raise baseline.BaselineError("source-only Port Sapphire walkable input identity changed")
+    public_hifi.pop(source_only, None)
+    if set(public_hifi) != expected_hifi:
+        raise baseline.BaselineError("forward profile public Act 1 runtime inventory mismatch")
+    for rel in expected_hifi:
+        runtime_path = actual[f"act1-hifi/{rel}"]
+        if public_hifi[rel].read_bytes() != runtime_path.read_bytes():
+            raise baseline.BaselineError(f"public/runtime Act 1 resource twins differ: {rel}")
+    html = actual["index.html"].read_text(encoding="utf-8")
+    for before, after, label in (("act1-world-map.js", "dq-tiles.js", "world-map override order"),
+                                 ("assets/index-BhoGQRaA.js", "battle-recovery.js", "battle recovery order"),
+                                 ("hero-override.js", "act1-hifi/adapter.js", "terrain adapter order")):
+        if before not in html or after not in html or html.index(before) > html.index(after):
+            raise baseline.BaselineError(f"forward profile shell {label} mismatch")
+    for rel in ("dq-tiles.js", "hero-override.js", "ui-overhaul.js", "ui-overhaul.css", "act1-world-map.js"):
+        if (repo_root / "public" / rel).read_bytes() != actual[rel].read_bytes():
+            raise baseline.BaselineError(f"public/runtime override twins differ: {rel}")
+    if ("battle-recovery.js" not in html or html.index("battle-recovery.js") < html.index("assets/index-BhoGQRaA.js")
+            or html.index("battle-recovery.js") < html.index("hero-override.js")):
+        raise baseline.BaselineError("battle recovery must load after the frozen module declaration and sibling overrides")
+    return digest, inventory_digest(validated["outputInventory"])
+
+
+def validate_source_inventory(repo_root: Path, *, stage: str = "release") -> tuple[str, str]:
+    descriptor, _ = load_reviewed_descriptor(repo_root)
+    validated = validate_descriptor(repo_root, descriptor, stage=stage)
+    return sha256(repo_root / DESCRIPTOR_RELATIVE), inventory_digest(validated["outputInventory"])

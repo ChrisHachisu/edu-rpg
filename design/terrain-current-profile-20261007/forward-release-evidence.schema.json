@@ -1,0 +1,743 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://edu-rpg.invalid/schemas/forward-release-evidence-v2.json",
+  "title": "Forward terrain release evidence envelope with assertion-level completion",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "profileId",
+    "proofFieldSplitVersion",
+    "result",
+    "releaseEligible",
+    "descriptorSha256",
+    "authoringInputInventorySha256",
+    "generatedOutputInventorySha256",
+    "candidateId",
+    "candidateCoreSha256",
+    "sourceInputsSha256",
+    "nativeInputsSha256",
+    "runtimePayloadSha256",
+    "runtimeFileCount",
+    "buildNumber",
+    "simulatorAppSha256",
+    "sealedReceiptSha256s",
+    "checks",
+    "completedProofAssertions",
+    "independentReview"
+  ],
+  "properties": {
+    "schema": {
+      "const": "qok-forward-release-evidence/v2"
+    },
+    "profileId": {
+      "const": "act1-forward-20261007-v1"
+    },
+    "result": {
+      "const": "PASS"
+    },
+    "releaseEligible": {
+      "const": true
+    },
+    "descriptorSha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "authoringInputInventorySha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "generatedOutputInventorySha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "candidateId": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "candidateCoreSha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "sourceInputsSha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "nativeInputsSha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "runtimePayloadSha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "simulatorAppSha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "runtimeFileCount": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "buildNumber": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "sealedReceiptSha256s": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "phone",
+        "tablet"
+      ],
+      "properties": {
+        "phone": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "tablet": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "checks": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "terrainContactBothHeroes",
+        "cliffGrassRoutes",
+        "caveDoorBridgeRoutes",
+        "chunkStreamingAndResume",
+        "savePreservationAndInterruption",
+        "battleFleeBossReturn"
+      ],
+      "properties": {
+        "terrainContactBothHeroes": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "result",
+            "phoneEvidenceSha256",
+            "tabletEvidenceSha256"
+          ],
+          "properties": {
+            "result": {
+              "const": "PASS"
+            },
+            "phoneEvidenceSha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "tabletEvidenceSha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          }
+        },
+        "cliffGrassRoutes": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "result",
+            "phoneEvidenceSha256",
+            "tabletEvidenceSha256"
+          ],
+          "properties": {
+            "result": {
+              "const": "PASS"
+            },
+            "phoneEvidenceSha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "tabletEvidenceSha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          }
+        },
+        "caveDoorBridgeRoutes": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "result",
+            "phoneEvidenceSha256",
+            "tabletEvidenceSha256"
+          ],
+          "properties": {
+            "result": {
+              "const": "PASS"
+            },
+            "phoneEvidenceSha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "tabletEvidenceSha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          }
+        },
+        "chunkStreamingAndResume": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "result",
+            "phoneEvidenceSha256",
+            "tabletEvidenceSha256"
+          ],
+          "properties": {
+            "result": {
+              "const": "PASS"
+            },
+            "phoneEvidenceSha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "tabletEvidenceSha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          }
+        },
+        "savePreservationAndInterruption": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "result",
+            "phoneEvidenceSha256",
+            "tabletEvidenceSha256"
+          ],
+          "properties": {
+            "result": {
+              "const": "PASS"
+            },
+            "phoneEvidenceSha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "tabletEvidenceSha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          }
+        },
+        "battleFleeBossReturn": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "result",
+            "phoneEvidenceSha256",
+            "tabletEvidenceSha256"
+          ],
+          "properties": {
+            "result": {
+              "const": "PASS"
+            },
+            "phoneEvidenceSha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "tabletEvidenceSha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          }
+        }
+      }
+    },
+    "independentReview": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "reviewer",
+        "independentOfImplementation",
+        "recordPath",
+        "recordBytes",
+        "recordSha256",
+        "assertionResults"
+      ],
+      "properties": {
+        "reviewer": {
+          "type": "string",
+          "minLength": 2
+        },
+        "independentOfImplementation": {
+          "const": true
+        },
+        "recordPath": {
+          "type": "string",
+          "minLength": 1
+        },
+        "recordBytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "recordSha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "assertionResults": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "a1owDecode.mountainCollisionReconciled",
+            "a1owDecode.heroFootClearanceRecomputed",
+            "visibleAlpha.noHiddenSelectableHeroFrame",
+            "heroFrameClearance.clearanceRecomputed",
+            "runtimeInvariants.existingSaveResume",
+            "routes.startAndLegacyFallbackVerified",
+            "routes.savedPositionRecoveryVerified",
+            "routes.crystalCaveRoundTrip",
+            "routes.allExitsReachable",
+            "routes.noTraversableTerrainSeam",
+            "routes.leftPlainsOpeningRetained"
+          ],
+          "properties": {
+            "a1owDecode.mountainCollisionReconciled": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "result",
+                "requiredGroups"
+              ],
+              "properties": {
+                "result": {
+                  "const": "PASS"
+                },
+                "requiredGroups": {
+                  "const": [
+                    "terrainContactBothHeroes",
+                    "cliffGrassRoutes"
+                  ]
+                }
+              }
+            },
+            "a1owDecode.heroFootClearanceRecomputed": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "result",
+                "requiredGroups"
+              ],
+              "properties": {
+                "result": {
+                  "const": "PASS"
+                },
+                "requiredGroups": {
+                  "const": [
+                    "terrainContactBothHeroes",
+                    "caveDoorBridgeRoutes"
+                  ]
+                }
+              }
+            },
+            "visibleAlpha.noHiddenSelectableHeroFrame": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "result",
+                "requiredGroups"
+              ],
+              "properties": {
+                "result": {
+                  "const": "PASS"
+                },
+                "requiredGroups": {
+                  "const": [
+                    "terrainContactBothHeroes",
+                    "chunkStreamingAndResume"
+                  ]
+                }
+              }
+            },
+            "heroFrameClearance.clearanceRecomputed": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "result",
+                "requiredGroups"
+              ],
+              "properties": {
+                "result": {
+                  "const": "PASS"
+                },
+                "requiredGroups": {
+                  "const": [
+                    "terrainContactBothHeroes",
+                    "cliffGrassRoutes",
+                    "caveDoorBridgeRoutes"
+                  ]
+                }
+              }
+            },
+            "runtimeInvariants.existingSaveResume": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "result",
+                "requiredGroups"
+              ],
+              "properties": {
+                "result": {
+                  "const": "PASS"
+                },
+                "requiredGroups": {
+                  "const": [
+                    "savePreservationAndInterruption",
+                    "chunkStreamingAndResume"
+                  ]
+                }
+              }
+            },
+            "routes.startAndLegacyFallbackVerified": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "result",
+                "requiredGroups"
+              ],
+              "properties": {
+                "result": {
+                  "const": "PASS"
+                },
+                "requiredGroups": {
+                  "const": [
+                    "savePreservationAndInterruption",
+                    "caveDoorBridgeRoutes"
+                  ]
+                }
+              }
+            },
+            "routes.savedPositionRecoveryVerified": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "result",
+                "requiredGroups"
+              ],
+              "properties": {
+                "result": {
+                  "const": "PASS"
+                },
+                "requiredGroups": {
+                  "const": [
+                    "savePreservationAndInterruption",
+                    "caveDoorBridgeRoutes"
+                  ]
+                }
+              }
+            },
+            "routes.crystalCaveRoundTrip": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "result",
+                "requiredGroups"
+              ],
+              "properties": {
+                "result": {
+                  "const": "PASS"
+                },
+                "requiredGroups": {
+                  "const": [
+                    "caveDoorBridgeRoutes",
+                    "battleFleeBossReturn"
+                  ]
+                }
+              }
+            },
+            "routes.allExitsReachable": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "result",
+                "requiredGroups"
+              ],
+              "properties": {
+                "result": {
+                  "const": "PASS"
+                },
+                "requiredGroups": {
+                  "const": [
+                    "caveDoorBridgeRoutes",
+                    "cliffGrassRoutes"
+                  ]
+                }
+              }
+            },
+            "routes.noTraversableTerrainSeam": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "result",
+                "requiredGroups"
+              ],
+              "properties": {
+                "result": {
+                  "const": "PASS"
+                },
+                "requiredGroups": {
+                  "const": [
+                    "terrainContactBothHeroes",
+                    "cliffGrassRoutes"
+                  ]
+                }
+              }
+            },
+            "routes.leftPlainsOpeningRetained": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "result",
+                "requiredGroups"
+              ],
+              "properties": {
+                "result": {
+                  "const": "PASS"
+                },
+                "requiredGroups": {
+                  "const": [
+                    "cliffGrassRoutes"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "proofFieldSplitVersion": {
+      "const": "forward-proof-field-split-v1"
+    },
+    "completedProofAssertions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "a1owDecode.mountainCollisionReconciled",
+        "a1owDecode.heroFootClearanceRecomputed",
+        "visibleAlpha.noHiddenSelectableHeroFrame",
+        "heroFrameClearance.clearanceRecomputed",
+        "runtimeInvariants.existingSaveResume",
+        "routes.startAndLegacyFallbackVerified",
+        "routes.savedPositionRecoveryVerified",
+        "routes.crystalCaveRoundTrip",
+        "routes.allExitsReachable",
+        "routes.noTraversableTerrainSeam",
+        "routes.leftPlainsOpeningRetained"
+      ],
+      "properties": {
+        "a1owDecode.mountainCollisionReconciled": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "value",
+            "requiredGroups"
+          ],
+          "properties": {
+            "value": {
+              "const": true
+            },
+            "requiredGroups": {
+              "const": [
+                "terrainContactBothHeroes",
+                "cliffGrassRoutes"
+              ]
+            }
+          }
+        },
+        "a1owDecode.heroFootClearanceRecomputed": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "value",
+            "requiredGroups"
+          ],
+          "properties": {
+            "value": {
+              "const": true
+            },
+            "requiredGroups": {
+              "const": [
+                "terrainContactBothHeroes",
+                "caveDoorBridgeRoutes"
+              ]
+            }
+          }
+        },
+        "visibleAlpha.noHiddenSelectableHeroFrame": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "value",
+            "requiredGroups"
+          ],
+          "properties": {
+            "value": {
+              "const": true
+            },
+            "requiredGroups": {
+              "const": [
+                "terrainContactBothHeroes",
+                "chunkStreamingAndResume"
+              ]
+            }
+          }
+        },
+        "heroFrameClearance.clearanceRecomputed": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "value",
+            "requiredGroups"
+          ],
+          "properties": {
+            "value": {
+              "const": true
+            },
+            "requiredGroups": {
+              "const": [
+                "terrainContactBothHeroes",
+                "cliffGrassRoutes",
+                "caveDoorBridgeRoutes"
+              ]
+            }
+          }
+        },
+        "runtimeInvariants.existingSaveResume": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "value",
+            "requiredGroups"
+          ],
+          "properties": {
+            "value": {
+              "const": true
+            },
+            "requiredGroups": {
+              "const": [
+                "savePreservationAndInterruption",
+                "chunkStreamingAndResume"
+              ]
+            }
+          }
+        },
+        "routes.startAndLegacyFallbackVerified": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "value",
+            "requiredGroups"
+          ],
+          "properties": {
+            "value": {
+              "const": true
+            },
+            "requiredGroups": {
+              "const": [
+                "savePreservationAndInterruption",
+                "caveDoorBridgeRoutes"
+              ]
+            }
+          }
+        },
+        "routes.savedPositionRecoveryVerified": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "value",
+            "requiredGroups"
+          ],
+          "properties": {
+            "value": {
+              "const": true
+            },
+            "requiredGroups": {
+              "const": [
+                "savePreservationAndInterruption",
+                "caveDoorBridgeRoutes"
+              ]
+            }
+          }
+        },
+        "routes.crystalCaveRoundTrip": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "value",
+            "requiredGroups"
+          ],
+          "properties": {
+            "value": {
+              "const": true
+            },
+            "requiredGroups": {
+              "const": [
+                "caveDoorBridgeRoutes",
+                "battleFleeBossReturn"
+              ]
+            }
+          }
+        },
+        "routes.allExitsReachable": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "value",
+            "requiredGroups"
+          ],
+          "properties": {
+            "value": {
+              "const": true
+            },
+            "requiredGroups": {
+              "const": [
+                "caveDoorBridgeRoutes",
+                "cliffGrassRoutes"
+              ]
+            }
+          }
+        },
+        "routes.noTraversableTerrainSeam": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "value",
+            "requiredGroups"
+          ],
+          "properties": {
+            "value": {
+              "const": true
+            },
+            "requiredGroups": {
+              "const": [
+                "terrainContactBothHeroes",
+                "cliffGrassRoutes"
+              ]
+            }
+          }
+        },
+        "routes.leftPlainsOpeningRetained": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "value",
+            "requiredGroups"
+          ],
+          "properties": {
+            "value": {
+              "const": true
+            },
+            "requiredGroups": {
+              "const": [
+                "cliffGrassRoutes"
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}

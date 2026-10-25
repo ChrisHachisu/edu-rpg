@@ -1,0 +1,84 @@
+{
+  "schema": "terrain-current-profile-portable-relocation-receipt-v1",
+  "provenance": "NEW_CURRENT_SOURCE_PROFILE; this receipt documents byte-preserving relocation and adapter wiring only. It does not recover or replace historical R8/R9 authority.",
+  "originalRenderer": {
+    "bundlePath": "r4-source/scripts/render_material_map_r4.py",
+    "sha256": "8a2f8f7d9cd3a24c8a20e45630e8a181c820082bcdb2b5b3876d15429cbb98a2",
+    "modified": false
+  },
+  "runtimeManifest": {
+    "preservedR5Path": "/Users/chris/Documents/Codex/2026-09-15/edu-rpg-act1-feedback/taskwork/20260927-crisp-terrain-implementation/handoff-source-r5-final/dependencies/runtime-v4/act1-painted-overworld-r4/runtime/manifest.json",
+    "sha256": "6d9d2a0a8d0636d442d9411726368d11cd5dbe17cea184ca522e461892e2aadc",
+    "bundleCopies": [
+      "r4-source/runtime/manifest.json",
+      "portable-root/design/review/overworld-art-blueprint/act-by-act/act1/runtime-v4/act1-painted-overworld-r4/runtime/manifest.json"
+    ],
+    "copyIdentity": "both files byte-match preserved R5 source"
+  },
+  "requiredPathMappings": [
+    {
+      "sourceManifestField": "source.mask",
+      "sourceValue": "design/continent-terrain-class-method/owner-terrain/art-tiles/act1-smoothed-semantic.png",
+      "bundleResolvedPath": "portable-root/design/continent-terrain-class-method/owner-terrain/art-tiles/act1-smoothed-semantic.png",
+      "sha256": "97f1a64fe6bfec7b40af16fef05f70caa80bdd076a8c4c3806474b848c975068",
+      "method": "exact byte copy from current/act1-smoothed-semantic.png"
+    },
+    {
+      "rendererConstant": "ACT1_R26_MANIFEST",
+      "bundleResolvedPath": "portable-root/design/review/overworld-art-blueprint/act-by-act/act1/runtime-v2/act1-final-art-geometry-r26/runtime/manifest.json",
+      "sha256": "7306e81411a230d3d83d8d179c9a55de5d0a234f26757654872b1b2c264210a4",
+      "method": "exact byte copy from current/r26-manifest.json"
+    },
+    {
+      "rendererConfig": "r4-source/paint-source-r4-v5.json",
+      "atlasResolution": "configuration-relative filenames in r4-source/; config pins each atlas SHA-256"
+    },
+    {
+      "forestPlacementAtlasField": "placements/forest-r4-whole-act1.json::atlas",
+      "sourceValue": "/private/tmp/edu-rpg-terrain-r9-20261001/design/review/overworld-art-blueprint/act-by-act/act1/runtime-v4/act1-painted-overworld-r4/source/canopy-atlas-r4-hybrid.png",
+      "bundleResolvedPath": "r4-source/canopy-atlas-r4-hybrid.png",
+      "sha256": "7eef91d2fa4749e059d3c73be79624551d9ef9be2c179a6b4bc5b99a0fb7a984",
+      "basis": "placement atlasSha256 equals bundled R4 config-pinned canopy atlas; placements select cells by sourceIndex"
+    },
+    {
+      "cliffCompositionSourcePaths": "placements/cliff-composition-report.json::coordinateContract.assetComponents[*].sourcePath",
+      "bundleResolvedPaths": [
+        "atlases/act1-cliff-kit-imagegen-v1.png",
+        "atlases/companion-cliff-kit-imagegen-v2.png"
+      ],
+      "method": "exact preserved atlas copies; raw composition report unchanged"
+    }
+  ],
+  "runner": {
+    "path": "render_ground_crop.py",
+    "sha256": "67ad45eec47d3fd00442b6e6c26a8b376339f84d163a410c2cf0b9b1e6d11573",
+    "behavior": "new adapter explicitly sets renderer ROOT, R4 manifest, R26 path, and config to bundle paths; disables tree, rock, route, and landmark painting; renders a bounded meadow-only crop",
+    "temporaryImportLocator": "creates then deletes r4-source/scripts/runtime_baseline.py inside bundle solely to satisfy unchanged renderer import-time root locator; this is not a validator and is not retained"
+  },
+  "accessGuard": {
+    "allowed": "bundle files and installed Python runtime files only",
+    "externalAssetReads": "denied by guarded open APIs during rendering",
+    "landmarkPainting": "disabled; runtime landmark art remains separate and unchanged"
+  },
+  "canonicalCrop": {
+    "source": "/private/tmp/edu-rpg-build83-paint-audit-20261005/depth-order-preview-20261007/v2/ground-material-only.png",
+    "windowWorld16": [
+      1568,
+      208,
+      320,
+      256
+    ],
+    "pixelsPerCell": 32,
+    "dimensions": [
+      640,
+      512
+    ],
+    "canonicalPngSha256": "62c79f2d7b4246f6e9c8b850ff80b396074040406e145203d9d89d54886eb4cf",
+    "canonicalRgbPixelSha256": "638b7859094b7574e174ca094baeab13f7427bdd28e682ff40e9dcca94a2755e"
+  },
+  "limits": [
+    "No whole-world generation was run or reproduced.",
+    "Preserved route guard hashes do not bind to Cnew current dq-tiles.js and active hifi manifest; current route safety remains unresolved.",
+    "No historical R8/R9 closure or R6 mask recovery is claimed."
+  ]
+}

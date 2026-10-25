@@ -1,0 +1,262 @@
+{
+  "inputs": {
+    "a1owSha256": "00a520ae09089547ca4af4ef1077b84acdad98d4989de238f3ee30e28ad092c6",
+    "atlasSha256": "b2701dd847e7d1df26c8488aa95877b57682be732a7bdc10d00fa12363613a04",
+    "dqTilesSha256": "d3b8ff8f86dda251898d3082d658ccefd723c4c5e188977e8888fcfd4024cd8e",
+    "existingRoutePathsSha256": "85b94da010dceccfb34ef7bdc44dac4b637468c656c605323660f3be944b2f0d",
+    "heroSha256": {
+      "g3": "070a8a452c3dda775bd6c8593a66d57a5a13d97b9fb33378ea5b2bb0e1fded3c",
+      "male": "88cbed8f9d707b216ada01e108eedd5822c6bcfc69c8dd22af2457f231dc0976"
+    },
+    "outputReceiptSha256": "caa119e842428ce77db226f25828b1412403609e26353c8e9d5284bb854ac3e5",
+    "pinnedCollisionDqSha256": "c18ce18e2f25ef6779165389d86163cea64136711f8999c4fd843154e6799c7a",
+    "proposedUpperRaster": {
+      "cropXYXY": [
+        15,
+        0,
+        583,
+        600
+      ],
+      "resizedNearest": [
+        284,
+        300
+      ]
+    },
+    "qokSha256": "05c4a76f914d9f20c82bf42d1eb574d774f15bd924dbee708aca09d260c97346",
+    "recipeAlphaThreshold": 128,
+    "recipeSha256": "e84409c166b6754d59d02cb5fcf8c8b54acf524e61b615dc1c996e783b99b007",
+    "routeAuthorityScriptSha256": "9b22791aaa5c72802760a4905ce6e94bce2bb55fe7888a075d2fe86c802764ef",
+    "uncropInventorySha256": "0e9f5264acf028c8408b221eb735c57c01dc7844e4abf9de6cff768bcb158b64",
+    "worldMapSha256": "fb466fc6dbe7e05ccbb209c70867cacf4f903d55837ea69ca716e81f7196c96f"
+  },
+  "limits": [
+    "This proves only the stored passing route polylines remain valid under the proposed union; it does not prove untested routes, native traversal, or authored north-edge visual acceptance."
+  ],
+  "proposal": {
+    "addedDeltaMaskSha256": "dc773fb84b8f87c137d3660ffb32a9bab102db5aecbd6c685c3cfa7742695bff",
+    "addedExtent": {
+      "qokXYXYInclusive": [
+        3033,
+        0,
+        3287,
+        63
+      ],
+      "worldBoundsApprox": [
+        110.78125,
+        218.0,
+        118.71875,
+        219.96875
+      ]
+    },
+    "candidateUnionPixelsInMap": 11479,
+    "monotonicUnionVerified": true,
+    "newQokBits": 1414,
+    "placements": [
+      {
+        "id": "ridge-02-broad-joining-mass-B-94",
+        "inBoundsAlphaPixels": 0,
+        "inBoundsRect": null,
+        "newToProposalUnion": 0,
+        "qokOrigin": [
+          2496,
+          -300
+        ],
+        "worldOrigin": [
+          94,
+          218
+        ]
+      },
+      {
+        "id": "fill-02-rear-mass-B-98",
+        "inBoundsAlphaPixels": 0,
+        "inBoundsRect": null,
+        "newToProposalUnion": 0,
+        "qokOrigin": [
+          2624,
+          -300
+        ],
+        "worldOrigin": [
+          98,
+          218
+        ]
+      },
+      {
+        "id": "ridge-04-broad-joining-mass-B-106",
+        "inBoundsAlphaPixels": 0,
+        "inBoundsRect": null,
+        "newToProposalUnion": 0,
+        "qokOrigin": [
+          2880,
+          -300
+        ],
+        "worldOrigin": [
+          106,
+          218
+        ]
+      },
+      {
+        "id": "fill-04-right-pocket-mass-B-110",
+        "inBoundsAlphaPixels": 11479,
+        "inBoundsRect": [
+          3008,
+          0,
+          3292,
+          64
+        ],
+        "newToProposalUnion": 11479,
+        "qokOrigin": [
+          3008,
+          -236
+        ],
+        "worldOrigin": [
+          110,
+          220
+        ]
+      }
+    ],
+    "postUnionMaskSha256": "4d1a5b9b505b5a01c2e6910937fdb59e7cd8729a823f853a4c255c25273621d1",
+    "removedQokBits": 0
+  },
+  "routeImpact": {
+    "allPreviouslyPassingSegmentsRetained": true,
+    "g3": {
+      "approach:greenhollow:69,256": {
+        "firstFailure": null,
+        "pathPoints": 1,
+        "segmentsChecked": 0,
+        "status": "pass_under_union"
+      },
+      "approach:millbrook:39,345": {
+        "firstFailure": null,
+        "pathPoints": 1039,
+        "segmentsChecked": 1038,
+        "status": "pass_under_union"
+      },
+      "approach:mistyGrotto:96,360": {
+        "firstFailure": null,
+        "pathPoints": 1161,
+        "segmentsChecked": 1160,
+        "status": "pass_under_union"
+      },
+      "approach:sunkenCellar:30,275": {
+        "firstFailure": null,
+        "pathPoints": 465,
+        "segmentsChecked": 464,
+        "status": "pass_under_union"
+      },
+      "approach:whisperingWoodsCave:101,232": {
+        "firstFailure": null,
+        "pathPoints": 449,
+        "segmentsChecked": 448,
+        "status": "pass_under_union"
+      },
+      "exit:greenhollow": {
+        "firstFailure": null,
+        "pathPoints": 1,
+        "segmentsChecked": 0,
+        "status": "pass_under_union"
+      },
+      "exit:millbrook": {
+        "firstFailure": null,
+        "pathPoints": 1039,
+        "segmentsChecked": 1038,
+        "status": "pass_under_union"
+      },
+      "exit:mistyGrotto": {
+        "firstFailure": null,
+        "pathPoints": 1161,
+        "segmentsChecked": 1160,
+        "status": "pass_under_union"
+      },
+      "exit:sunkenCellar": {
+        "firstFailure": null,
+        "pathPoints": 465,
+        "segmentsChecked": 464,
+        "status": "pass_under_union"
+      },
+      "exit:whisperingWoodsCave": {
+        "firstFailure": null,
+        "pathPoints": 449,
+        "segmentsChecked": 448,
+        "status": "pass_under_union"
+      },
+      "new-game-start:greenhollow": {
+        "firstFailure": null,
+        "pathPoints": 1,
+        "segmentsChecked": 0,
+        "status": "pass_under_union"
+      }
+    },
+    "male": {
+      "approach:greenhollow:69,256": {
+        "firstFailure": null,
+        "pathPoints": 1,
+        "segmentsChecked": 0,
+        "status": "pass_under_union"
+      },
+      "approach:millbrook:39,345": {
+        "firstFailure": null,
+        "pathPoints": 1039,
+        "segmentsChecked": 1038,
+        "status": "pass_under_union"
+      },
+      "approach:mistyGrotto:96,360": {
+        "firstFailure": null,
+        "pathPoints": 1161,
+        "segmentsChecked": 1160,
+        "status": "pass_under_union"
+      },
+      "approach:sunkenCellar:30,275": {
+        "firstFailure": null,
+        "pathPoints": 465,
+        "segmentsChecked": 464,
+        "status": "pass_under_union"
+      },
+      "approach:whisperingWoodsCave:101,232": {
+        "firstFailure": null,
+        "pathPoints": 449,
+        "segmentsChecked": 448,
+        "status": "pass_under_union"
+      },
+      "exit:greenhollow": {
+        "firstFailure": null,
+        "pathPoints": 1,
+        "segmentsChecked": 0,
+        "status": "pass_under_union"
+      },
+      "exit:millbrook": {
+        "firstFailure": null,
+        "pathPoints": 1039,
+        "segmentsChecked": 1038,
+        "status": "pass_under_union"
+      },
+      "exit:mistyGrotto": {
+        "firstFailure": null,
+        "pathPoints": 1161,
+        "segmentsChecked": 1160,
+        "status": "pass_under_union"
+      },
+      "exit:sunkenCellar": {
+        "firstFailure": null,
+        "pathPoints": 465,
+        "segmentsChecked": 464,
+        "status": "pass_under_union"
+      },
+      "exit:whisperingWoodsCave": {
+        "firstFailure": null,
+        "pathPoints": 449,
+        "segmentsChecked": 448,
+        "status": "pass_under_union"
+      },
+      "new-game-start:greenhollow": {
+        "firstFailure": null,
+        "pathPoints": 1,
+        "segmentsChecked": 0,
+        "status": "pass_under_union"
+      }
+    },
+    "test": "revalidated every adjacent segment of each existing passing route using Authority.edge_free; each position uses full selectable-hero QOK stencil, cardinal padding, A1OW, map/canMove, at the preserved audit step gap"
+  },
+  "schema": "north-perimeter-independent-clearance-v1",
+  "scope": "Only the proposed four same-source B upper support placements and the existing exact-current passing route polylines; no source/runtime/map edits or route search."
+}

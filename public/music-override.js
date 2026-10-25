@@ -1,4 +1,4 @@
-// public/music-override.js — REFERENCE IMPLEMENTATION, not yet installed.
+// public/music-override.js — installed orchestral player and audio lifecycle bridge.
 //
 // Replaces the procedural Tone.js BGM with the orchestral .m4a loops, as an ADDITIVE
 // override (AGENTS.md rule 4) rather than logic frozen into the preserved bundle.
@@ -35,12 +35,33 @@
 
   var MAX_TRIES = 6;          // bounded, linear back-off, matching dq-tiles' a1aLd pattern
   var RETRY_BASE_MS = 400;
+  var lifecycle = {
+    desired: null,
+    intentionallyStopped: false,
+    hidden: typeof document !== 'undefined' && document.hidden === true,
+    initAttempts: 0,
+    initFailures: 0,
+    resumeAttempts: 0,
+    resumeFailures: 0,
+    pauses: 0,
+    resumes: 0,
+    lastReason: null,
+    lastError: null
+  };
 
-  function FilePlayer(am) {
+  function noteError(reason, error) {
+    lifecycle.lastReason = reason;
+    lifecycle.lastError = String(error && (error.message || error) || 'unknown').slice(0, 200);
+  }
+
+  function FilePlayer(am, fallback) {
     this.am = am;
     this.ctx = am.ctx;
+    this.fallback = fallback || null;
     this.cur = null;
     this.src = null;
+    this.playToken = 0;
+    this.lifecyclePaused = lifecycle.hidden;
     this.buffers = {};
     this.inflight = {};
     // Music gets its own gain, deliberately NOT routed through am.masterGain. That mirrors
@@ -61,6 +82,27 @@
   Object.defineProperty(FilePlayer.prototype, 'currentBgm', {
     get: function () { return this.cur; }
   });
+
+  FilePlayer.prototype.snapshot = function () {
+    return {
+      desired: lifecycle.desired,
+      intentionallyStopped: lifecycle.intentionallyStopped,
+      cur: this.cur,
+      srcLive: !!this.src,
+      owner: this.src ? 'file' : (this.fallback && this.fallback.currentBgm ? 'fallback' : null),
+      fallbackCurrent: this.fallback && this.fallback.currentBgm || null,
+      context: this.ctx && this.ctx.state || null,
+      hidden: lifecycle.hidden,
+      initAttempts: lifecycle.initAttempts,
+      initFailures: lifecycle.initFailures,
+      resumeAttempts: lifecycle.resumeAttempts,
+      resumeFailures: lifecycle.resumeFailures,
+      pauses: lifecycle.pauses,
+      resumes: lifecycle.resumes,
+      lastReason: lifecycle.lastReason,
+      lastError: lifecycle.lastError
+    };
+  };
 
   // FETCH DOES NOT WORK ON CAPACITOR'S CUSTOM SCHEME, AND THAT IS WHAT BROKE BUILD 61.
   //
@@ -141,37 +183,86 @@
     return this.inflight[track];
   };
 
-  FilePlayer.prototype.play = function (track) {
+  FilePlayer.prototype._stopSource = function () {
+    if (!this.src) return;
+    try { this.src.stop(); } catch (e) { /* already stopped */ }
+    try { this.src.disconnect(); } catch (e) { /* ignore */ }
+    this.src = null;
+  };
+
+  FilePlayer.prototype._stopFallback = function () {
+    if (!this.fallback || typeof this.fallback.stop !== 'function') return;
+    try { this.fallback.stop(); } catch (e) { /* ignore */ }
+  };
+
+  FilePlayer.prototype._startFallback = function (track) {
+    if (!this.fallback || typeof this.fallback.play !== 'function') return;
+    try {
+      if (this.fallback.currentBgm !== track) this.fallback.play(track);
+    } catch (error) { noteError('fallback:' + track, error); }
+  };
+
+  FilePlayer.prototype.play = function (track, force) {
     var self = this;
     if (!LOOP_SECONDS.hasOwnProperty(track)) return;
-    if (this.cur === track) return;
-    this.stop();
+    if (!force && this.cur === track && this.src && !this.lifecyclePaused && this.ctx.state === 'running') return;
+    this.playToken++;
+    var token = this.playToken;
+    this._stopSource();
     this.cur = track;
+    if (this.lifecyclePaused || lifecycle.hidden || !this.am.soundEnabled) {
+      this._stopFallback();
+      return;
+    }
+    // One active owner at a time. While an uncached file is decoded, the built-in composer owns
+    // the requested track. A successful decode stops it before starting the file source; a failed
+    // decode leaves it as the audible fallback instead of turning the scene silent.
+    if (!this.buffers[track]) this._startFallback(track);
     this._load(track).then(function (buf) {
-      if (self.cur !== track) return;              // a newer play() won the race
+      if (self.playToken !== token || self.cur !== track || self.lifecyclePaused || lifecycle.hidden || !self.am.soundEnabled) return;
+      self._stopFallback();
       var s = self.ctx.createBufferSource();
       s.buffer = buf;
       s.loop = true;
       s.connect(self.out);
+      s.onended = function () { if (self.src === s) self.src = null; };
       s.start();
       self.src = s;
-    }, function () {
-      if (self.cur === track) self.cur = null;     // let a later call retry this track
+    }, function (error) {
+      noteError('decode:' + track, error);
+      // The matching fallback remains the sole owner. A later same-track request still retries,
+      // because the healthy fast path above requires a live file source.
     });
   };
 
   FilePlayer.prototype.stop = function () {
-    if (this.src) {
-      try { this.src.stop(); } catch (e) { /* already stopped */ }
-      try { this.src.disconnect(); } catch (e) { /* ignore */ }
-      this.src = null;
-    }
+    this.playToken++;
+    this._stopSource();
+    this._stopFallback();
     this.cur = null;
+  };
+
+  FilePlayer.prototype.pauseForLifecycle = function () {
+    if (this.lifecyclePaused) return;
+    this.lifecyclePaused = true;
+    this.playToken++;
+    this._stopSource();
+    this._stopFallback();
+    lifecycle.pauses++;
+  };
+
+  FilePlayer.prototype.resumeForLifecycle = function () {
+    if (!this.lifecyclePaused && this.src) return;
+    this.lifecyclePaused = false;
+    lifecycle.resumes++;
   };
 
   // AudioManager hands us dB in roughly -30..0, or -Infinity for silence.
   FilePlayer.prototype.setVolume = function (db) {
     this.out.gain.value = (db === -Infinity || !isFinite(db)) ? 0 : Math.pow(10, db / 20);
+    if (this.fallback && typeof this.fallback.setVolume === 'function') {
+      try { this.fallback.setVolume(db); } catch (e) { /* ignore */ }
+    }
   };
 
   // ---- install: wrap init() so we swap the composer the moment it exists ----------------
@@ -188,16 +279,49 @@
     if (!am.ctx) return;
     if (am.__musicSwapPending) return;
     am.__musicSwapPending = true;
-    var probe = new FilePlayer(am);
-    probe._load('title').then(function () {
-      am.__musicSwapPending = false;
-      swap(am, probe);
-    }, function (e) {
-      // Leave the existing composer running. The game keeps its original music and the player
-      // hears SOMETHING, which is the whole point of failing safe.
-      am.__musicSwapPending = false;
-      try { console.warn('[music-override] staying on the built-in composer:', e && e.message); } catch (x) {}
-    });
+    var probe = new FilePlayer(am, am.composer);
+    function abandonProbe() {
+      try { probe.out.disconnect(); } catch (e) { /* ignore */ }
+    }
+    function proveLatest() {
+      var track = lifecycle.desired;
+      if (!track && !lifecycle.intentionallyStopped) {
+        try { track = am.composer.currentBgm || null; } catch (e) { /* ignore */ }
+        // A late install has not observed the playBgm() call that started this track. Record the
+        // live composer's track as intent so lifecycle pauses during the probe can still restore it.
+        if (track) lifecycle.desired = track;
+      }
+      if (!track) track = 'title';
+      probe._load(track).then(function () {
+        // A scene may have changed while this file decoded. Never discard the working composer
+        // until the track that would actually replace it has also been proven.
+        var latest = lifecycle.desired;
+        if (!latest) {
+          am.__musicSwapPending = false;
+          if (lifecycle.intentionallyStopped) {
+            abandonProbe();              // an explicit stop cancelled the takeover
+          } else {
+            // The manager was initialized but idle before this script installed. The title probe
+            // proves the file path without inventing playback; swap() carries no track and stays idle.
+            swap(am, probe);
+          }
+          return;
+        }
+        if (latest !== track) {
+          proveLatest();
+          return;
+        }
+        am.__musicSwapPending = false;
+        swap(am, probe);
+      }, function (e) {
+        // Leave the existing composer running. The game keeps its original music and the player
+        // hears SOMETHING, which is the whole point of failing safe.
+        am.__musicSwapPending = false;
+        abandonProbe();
+        try { console.warn('[music-override] staying on the built-in composer:', e && e.message); } catch (x) {}
+      });
+    }
+    proveLatest();
   }
 
   function swap(am, prebuilt) {
@@ -211,8 +335,8 @@
     // scene change happens to call playBgm() again -- which, for a scene whose music already
     // started, may be never. The result is no music at all, which is indistinguishable from
     // the override failing to load, and is worse than the chiptune it replaced.
-    var carry = null;
-    try { carry = am.composer.currentBgm || null; } catch (e) { /* ignore */ }
+    var carry = lifecycle.desired;
+    if (!carry) { try { carry = am.composer.currentBgm || null; } catch (e) { /* ignore */ } }
     try { am.composer.stop(); } catch (e) { /* ignore */ }
     var fp = prebuilt || new FilePlayer(am);
     // Mirror AudioManager.setVolume's own dB mapping so the first track is not at the wrong
@@ -221,7 +345,117 @@
     fp.setVolume(am.masterVolume > 0 ? -30 + am.masterVolume * 24 : -Infinity);
     am.composer = fp;
     window.__QOK_MUSIC__ = fp;                 // verification handle: .failed / .tries / .cur
-    if (carry) { try { fp.play(carry); } catch (e) { /* ignore */ } }
+    fp.lifecyclePaused = lifecycle.hidden;
+    if (carry && am.soundEnabled) { try { fp.play(carry); } catch (e) { /* ignore */ } }
+  }
+
+  function originalPlay(am, track) {
+    var play = am.__musicOriginalPlayBgm;
+    if (play && am.initialized && am.soundEnabled) play(track);
+  }
+
+  function playDesired(am, force) {
+    var track = lifecycle.desired;
+    if (!track || !am.initialized || !am.soundEnabled || lifecycle.hidden) return;
+    if (am.composer instanceof FilePlayer) am.composer.play(track, !!force);
+    else originalPlay(am, track);
+  }
+
+  function resumeDesired(am, reason) {
+    if (!am || !am.initialized || !am.soundEnabled || lifecycle.hidden) return Promise.resolve(false);
+    if (am.__musicResumePending) return am.__musicResumePending;
+    var ctx = am.ctx;
+    var resume = function () {
+      if (am.composer instanceof FilePlayer) am.composer.resumeForLifecycle();
+      // FilePlayer.play() already restarts a named track when its live source is absent, while
+      // leaving a healthy same-track source alone. This makes duplicate pageshow/focus events
+      // idempotent without weakening interrupted-context recovery.
+      playDesired(am, false);
+      lifecycle.lastReason = reason;
+      lifecycle.lastError = null;
+      return true;
+    };
+    if (!ctx || (ctx.state !== 'suspended' && ctx.state !== 'interrupted')) return Promise.resolve(resume());
+    lifecycle.resumeAttempts++;
+    am.__musicResumePending = Promise.resolve().then(function () { return ctx.resume(); }).then(function () {
+      am.__musicResumePending = null;
+      return resume();
+    }, function (error) {
+      am.__musicResumePending = null;
+      lifecycle.resumeFailures++;
+      noteError('resume:' + reason, error);
+      return false;
+    });
+    return am.__musicResumePending;
+  }
+
+  function ensureStarted(am, reason) {
+    if (!am || !am.soundEnabled || lifecycle.hidden) return Promise.resolve(false);
+    if (!lifecycle.desired) {
+      if (lifecycle.intentionallyStopped) return Promise.resolve(false);
+      lifecycle.desired = 'title';
+    }
+    if (am.initialized) return resumeDesired(am, reason);
+    if (am.__musicEnsurePending) return am.__musicEnsurePending;
+    lifecycle.initAttempts++;
+    // Invoke init synchronously in the trusted event stack. Tone.start() is the first operation in
+    // the frozen initializer and WebKit may otherwise consume transient activation before it runs.
+    var initResult;
+    try { initResult = am.init(); } catch (error) {
+      am.initPromise = null;
+      lifecycle.initFailures++;
+      noteError('init:' + reason, error);
+      return Promise.resolve(false);
+    }
+    am.__musicEnsurePending = Promise.resolve(initResult).then(function () {
+      am.__musicEnsurePending = null;
+      if (!am.initialized) {
+        lifecycle.initFailures++;
+        // Frozen AudioManager caches even a caught/failed _init promise. Clear only that failed
+        // promise so a later trusted gesture can retry the normal initializer.
+        am.initPromise = null;
+        noteError('init:' + reason, 'AudioManager remained uninitialized');
+        return false;
+      }
+      return resumeDesired(am, reason);
+    }, function (error) {
+      am.__musicEnsurePending = null;
+      am.initPromise = null;
+      lifecycle.initFailures++;
+      noteError('init:' + reason, error);
+      return false;
+    });
+    return am.__musicEnsurePending;
+  }
+
+  function installLifecycle(am) {
+    if (am.__musicLifecycleWired) return;
+    am.__musicLifecycleWired = true;
+    window.__QOK_MUSIC_LIFECYCLE__ = lifecycle;
+
+    function pause(reason) {
+      lifecycle.hidden = true;
+      lifecycle.lastReason = reason;
+      if (am.composer instanceof FilePlayer) am.composer.pauseForLifecycle();
+      else if (am.composer && typeof am.composer.stop === 'function') am.composer.stop();
+    }
+    function wake(reason) {
+      lifecycle.hidden = typeof document !== 'undefined' && document.hidden === true;
+      if (!lifecycle.hidden) resumeDesired(am, reason);
+    }
+    function visibility() {
+      if (document.hidden) pause('visibility:hidden');
+      else wake('visibility:visible');
+    }
+    function gesture() { ensureStarted(am, 'gesture'); }
+
+    document.addEventListener('visibilitychange', visibility, true);
+    document.addEventListener('pointerdown', gesture, true);
+    document.addEventListener('touchstart', gesture, true);
+    document.addEventListener('keydown', gesture, true);
+    window.addEventListener('pagehide', function () { pause('pagehide'); });
+    window.addEventListener('pageshow', function () { wake('pageshow'); });
+    window.addEventListener('focus', function () { wake('focus'); });
   }
 
   function install() {
@@ -237,7 +471,65 @@
     //   * already initialised -> swap right now;
     //   * not yet             -> swap when init() resolves.
     var origInit = am.init.bind(am);
-    am.init = function () { return origInit().then(function (r) { swapWhenProven(am); return r; }); };
+    var origPlayBgm = typeof am.playBgm === 'function' ? am.playBgm.bind(am) : null;
+    var origStopBgm = typeof am.stopBgm === 'function' ? am.stopBgm.bind(am) : null;
+    var origSetMuted = typeof am.setMuted === 'function' ? am.setMuted.bind(am) : null;
+    var origLoadSettings = typeof am.loadSettings === 'function' ? am.loadSettings.bind(am) : null;
+    am.__musicOriginalPlayBgm = origPlayBgm;
+    am.init = function () {
+      return Promise.resolve(origInit()).then(function (r) {
+        if (am.initialized) {
+          originalPlay(am, lifecycle.desired);
+          swapWhenProven(am);
+        }
+        return r;
+      });
+    };
+    am.playBgm = function (track) {
+      if (LOOP_SECONDS.hasOwnProperty(track)) {
+        lifecycle.desired = track;
+        lifecycle.intentionallyStopped = false;
+      }
+      if (!am.initialized || !am.soundEnabled || !LOOP_SECONDS.hasOwnProperty(track)) return;
+      if (am.ctx && (am.ctx.state === 'suspended' || am.ctx.state === 'interrupted')) {
+        return resumeDesired(am, 'play:' + track);
+      }
+      if (am.composer instanceof FilePlayer) return am.composer.play(track);
+      var result = origPlayBgm && origPlayBgm(track);
+      swapWhenProven(am);
+      return result;
+    };
+    if (origStopBgm) am.stopBgm = function () {
+      if (!am.__musicPreserveDesiredOnStop) {
+        lifecycle.desired = null;
+        lifecycle.intentionallyStopped = true;
+      }
+      return origStopBgm();
+    };
+    if (origSetMuted) am.setMuted = function (muted) {
+      var result;
+      if (muted) am.__musicPreserveDesiredOnStop = true;
+      try { result = origSetMuted(muted); }
+      finally { am.__musicPreserveDesiredOnStop = false; }
+      if (muted) {
+        if (am.composer instanceof FilePlayer) am.composer.pauseForLifecycle();
+      } else {
+        if (am.composer instanceof FilePlayer) am.composer.lifecyclePaused = lifecycle.hidden;
+        ensureStarted(am, 'unmute');
+      }
+      return result;
+    };
+    if (origLoadSettings) am.loadSettings = function (enabled, volume) {
+      var result = origLoadSettings(enabled, volume);
+      if (am.composer && typeof am.composer.setVolume === 'function') {
+        am.composer.setVolume(volume > 0 ? -30 + volume * 24 : -Infinity);
+      }
+      if (!enabled) {
+        if (am.composer && typeof am.composer.stop === 'function') am.composer.stop();
+      } else resumeDesired(am, 'load-settings');
+      return result;
+    };
+    installLifecycle(am);
     if (am.initialized) swapWhenProven(am);
     return true;
   }

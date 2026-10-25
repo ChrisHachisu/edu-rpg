@@ -1,0 +1,35 @@
+{
+  "status": "PASS",
+  "mode": "metadata-only-rebind",
+  "sourceOutput": "/Users/chris/.codex/workspaces/edu-rpg-forward-20261007/design/terrain-current-profile-20261007/generated-output",
+  "sourceReceipt": "/Users/chris/.codex/workspaces/edu-rpg-forward-20261007/design/terrain-current-profile-20261007/evidence/output-receipt.json",
+  "sourceManifestSha256": "fbad11cf27c35be30e0fed8cade9a68019bee7a3b368e4cf67d8dd3dcaa2ad88",
+  "sourceReceiptSha256": "ea0d4e5792aa03df8e82e901115bf60734e752c8f61d8a308784c58cb2b3bb48",
+  "r26AuthoritySha256": "6d9d2a0a8d0636d442d9411726368d11cd5dbe17cea184ca522e461892e2aadc",
+  "generatorSha256": "bb2a8fa9f00b5ea69603132bfb72d6d3032e21e778be747710552e8c543be911",
+  "changedManifestFields": [
+    "forwardTerrainProfile",
+    "source"
+  ],
+  "pathConstraintsSha256": "e169f2e853c1ae7cc4a677ab9462ad1403f36d4ccccc040312f343d7bcd002f4",
+  "designLocksSha256": "dfe7050920603031afb79445eabc1ee974c6038466142add38c5b54bd23c2656",
+  "outputA": "/private/tmp/edu-rpg-build84-feedback-20261013/terrain-implementation-plan/generation-water-r2-runtime-metadata-rebind-r1/generation-a",
+  "outputB": "/private/tmp/edu-rpg-build84-feedback-20261013/terrain-implementation-plan/generation-water-r2-runtime-metadata-rebind-r1/generation-b",
+  "outputAManifestSha256": "b13ba107d926ff924d45a59f3b5d6dd1ec14234249dabfb64655ce6f6fc1ac0a",
+  "outputBManifestSha256": "b13ba107d926ff924d45a59f3b5d6dd1ec14234249dabfb64655ce6f6fc1ac0a",
+  "outputAReceiptSha256": "a567b7bb838853cee973fb7186c4c5dcd5e50a43692c93a1bfaeff79f2b7cb27",
+  "outputBReceiptSha256": "a567b7bb838853cee973fb7186c4c5dcd5e50a43692c93a1bfaeff79f2b7cb27",
+  "outputPathCount": 494,
+  "changedOutputPaths": [
+    "act1-hifi/manifest.json"
+  ],
+  "changedManifestSourceSha256": "fbad11cf27c35be30e0fed8cade9a68019bee7a3b368e4cf67d8dd3dcaa2ad88",
+  "changedManifestEmittedSha256": "b13ba107d926ff924d45a59f3b5d6dd1ec14234249dabfb64655ce6f6fc1ac0a",
+  "unchangedOutputCount": 493,
+  "unchangedOutputInventorySha256": "a85a3d48b21cff83f949e98d1b51ef76d958bf7da0955a1c759e98aeac215776",
+  "emittedOutputInventorySha256": "a7bca0bf81558f2c2ebbae565eafff7f1bcbd8b71f030496db3c88573c8486d9",
+  "a1owPath": "public/act1-overworld-walk.bin",
+  "a1owSha256": "00a520ae09089547ca4af4ef1077b84acdad98d4989de238f3ee30e28ad092c6",
+  "publicManifestBeforeSha256": "fbad11cf27c35be30e0fed8cade9a68019bee7a3b368e4cf67d8dd3dcaa2ad88",
+  "allOtherOutputBytesUnchanged": true
+}

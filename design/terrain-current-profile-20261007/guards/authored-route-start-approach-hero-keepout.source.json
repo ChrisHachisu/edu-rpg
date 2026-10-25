@@ -1,0 +1,147 @@
+{
+  "kind": "act1-current-runtime-start-exit-approach-whole-hero-keepout-v2",
+  "boundsInclusive": [
+    16,
+    218,
+    163,
+    399
+  ],
+  "pixelsPerCell": 32,
+  "liveApiRevision": 7,
+  "liveAuthorityPath": "/private/tmp/edu-rpg-terrain-r9-20261001/public/act1-world-map.js",
+  "liveAuthoritySha256": "f1ea99546b799b50cec7d6fd40b1fae2ad53669fae22afaebe3760f225d12cad",
+  "spawnPolicyAuthorityPath": "/private/tmp/edu-rpg-terrain-r9-20261001/public/dq-tiles.js",
+  "spawnPolicyAuthoritySha256": "286b5b527a5aac1a89b5da532bc703969249cfbc6c80a226f8d9683ba4a300c8",
+  "activeManifestSha256": "3b932bdcd019b36ef16318333537c3f5553754a1cfded4ad33149269b5a49e3a",
+  "heroSourceSha256": {
+    "g3": "070a8a452c3dda775bd6c8593a66d57a5a13d97b9fb33378ea5b2bb0e1fded3c",
+    "male": "88cbed8f9d707b216ada01e108eedd5822c6bcfc69c8dd22af2457f231dc0976"
+  },
+  "runtimeLandmarkCount": 8,
+  "liveExits": [
+    {
+      "mapId": "greenhollow",
+      "x": 69,
+      "y": 256
+    },
+    {
+      "mapId": "millbrook",
+      "x": 39,
+      "y": 345
+    },
+    {
+      "mapId": "portSapphire",
+      "x": 133,
+      "y": 348
+    },
+    {
+      "mapId": "sunkenCellar",
+      "x": 30,
+      "y": 275
+    },
+    {
+      "mapId": "whisperingWoodsCave",
+      "x": 101,
+      "y": 232
+    },
+    {
+      "mapId": "coastalReef",
+      "x": 145,
+      "y": 372
+    },
+    {
+      "mapId": "mistyGrotto",
+      "x": 96,
+      "y": 360
+    },
+    {
+      "mapId": "crystalCave",
+      "x": 149,
+      "y": 279
+    }
+  ],
+  "validWalkableDoorNeighborApproaches": [
+    {
+      "mapId": "greenhollow",
+      "x": 69,
+      "y": 256
+    },
+    {
+      "mapId": "millbrook",
+      "x": 39,
+      "y": 345
+    },
+    {
+      "mapId": "portSapphire",
+      "x": 133,
+      "y": 348
+    },
+    {
+      "mapId": "sunkenCellar",
+      "x": 30,
+      "y": 275
+    },
+    {
+      "mapId": "whisperingWoodsCave",
+      "x": 101,
+      "y": 232
+    },
+    {
+      "mapId": "coastalReef",
+      "x": 145,
+      "y": 372
+    },
+    {
+      "mapId": "mistyGrotto",
+      "x": 96,
+      "y": 360
+    },
+    {
+      "mapId": "crystalCave",
+      "x": 149,
+      "y": 277
+    },
+    {
+      "mapId": "crystalCave",
+      "x": 150,
+      "y": 278
+    },
+    {
+      "mapId": "crystalCave",
+      "x": 149,
+      "y": 279
+    },
+    {
+      "mapId": "crystalCave",
+      "x": 148,
+      "y": 278
+    }
+  ],
+  "newGameStart": {
+    "source": "current Greenhollow live exit",
+    "cell": [
+      69,
+      256
+    ]
+  },
+  "manifestLastResortFallback": {
+    "cell": [
+      130,
+      290
+    ],
+    "status": "guarded only because dq-tiles.js explicitly uses manifest startCell when live landmark table is unavailable"
+  },
+  "savedOverworldResumePolicy": "Saved overworld positions are dynamic resume candidates, not permanent map-wide exclusions; final full-hero collision clearance must validate each candidate.",
+  "routePolicy": "No permanent road/route cutouts. Current manifest art-space points and semanticCells are obsolete fixtures; any BFS witness is verification evidence only.",
+  "sampling": "All alpha>8 frames from both selectable 64x64 hero sheets, mapped at source-approved world scale, stamped at each current live exit, each seedWalkableAt-valid cardinal neighbor of a live door, current new-game exit, and actual manifest last-resort fallback; includes one art-pixel cardinal movement margin.",
+  "counts": {
+    "protectedPixels": 26996,
+    "newGameStartPixels": 2317,
+    "fallbackPixels": 2317,
+    "exitPixels": 18536,
+    "validApproachPixels": 24679,
+    "obsoleteRoutePixels": 0,
+    "validApproachCount": 11
+  },
+  "genericRecoveryCandidatesExcluded": 299
+}

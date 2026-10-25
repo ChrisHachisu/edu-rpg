@@ -1,0 +1,355 @@
+{
+  "schema": "edu-rpg-act1-north-contact-y-generator-input-v2",
+  "profileId": "act1-forward-20261007-v1",
+  "version": "north-contact-y-whole-object-v2",
+  "provenance": {
+    "extractedNorthRecipeSha256": "397a81cf48031b84a770810e233918a8a9537b03604b34ede500b727683108bc",
+    "contactYPreviewHtmlSha256": "3b8cfffb19aebbeba962ac4165605d3dd3f99fc1fac9628bac793170f4f48935",
+    "contactYPreviewEvidenceSha256": "bc94e420e07c973b47cadde3437926d64362226281f87d689bc6b60bea77a21c",
+    "atlasSha256": "4ad26ea3e7d38f4a768dd869a9a3c1db86812891c5911b461ac573af72684b1e",
+    "cliffPlacementSha256": "8f5f0ece745dc4d9378c24e21c1fc2992d8ca03cee842aeeac444daf5eda0fa7",
+    "companionAtlasSha256": "b2701dd847e7d1df26c8488aa95877b57682be732a7bdc10d00fa12363613a04",
+    "wholeObjectPreviewRaisedAlphaSha256": "80723f662ed8694794d4b89582a836f352178dd269a4f793369c6c00050eb338"
+  },
+  "northWindow": {
+    "worldCells": [
+      88,
+      218,
+      124,
+      242
+    ],
+    "localRasterXYWH": [
+      2304,
+      0,
+      1152,
+      768
+    ],
+    "replacementRectLocalXYWH": [
+      40,
+      0,
+      890,
+      400
+    ],
+    "replacementRectGlobalXYXY": [
+      2344,
+      0,
+      3234,
+      400
+    ],
+    "northRasterOrigin": [
+      2304,
+      0
+    ]
+  },
+  "replacementPolicy": {
+    "mountainMask": "Keep source hard-alpha whole for each current cliff object. Omit a current cliff object only when every displayed alpha pixel lies within replacementRectGlobalXYXY; preserve any crossing or disjoint object whole. Never apply a per-pixel rectangle cut to retained objects.",
+    "nonMountainCollision": "preserve; no A1OW or route data mutation",
+    "northFill": "draw four approved whole fill objects in the shared contactY order; classify owner-P overlap against this approved nine-object silhouette and report by role"
+  },
+  "objects": [
+    {
+      "id": "ridge-01-broad-joining-mass-A-89",
+      "role": "ridge",
+      "name": "broad-joining-mass-A",
+      "atlasCrop": [
+        565,
+        7,
+        1236,
+        623
+      ],
+      "scale": 0.5,
+      "originWorldCell": [
+        89,
+        218
+      ],
+      "atlasGroup": "main",
+      "atlasSha256": "4ad26ea3e7d38f4a768dd869a9a3c1db86812891c5911b461ac573af72684b1e",
+      "processedRgbaSha256": "ff6054b512b6c17a9375c13503a16f2fff5fd231b7813a1a2da095cafc8a89fd",
+      "processedAlphaSha256": "7c6e598cd52de7ba51d337c9d3f33fb90fa2a0516cb71da2b769831e31c0d590"
+    },
+    {
+      "id": "fill-01-rear-mass-A-92",
+      "role": "fill",
+      "name": "rear-mass-A",
+      "atlasCrop": [
+        565,
+        7,
+        1236,
+        623
+      ],
+      "scale": 0.5,
+      "originWorldCell": [
+        92,
+        218
+      ],
+      "atlasGroup": "main",
+      "atlasSha256": "4ad26ea3e7d38f4a768dd869a9a3c1db86812891c5911b461ac573af72684b1e",
+      "processedRgbaSha256": "ff6054b512b6c17a9375c13503a16f2fff5fd231b7813a1a2da095cafc8a89fd",
+      "processedAlphaSha256": "7c6e598cd52de7ba51d337c9d3f33fb90fa2a0516cb71da2b769831e31c0d590"
+    },
+    {
+      "id": "ridge-03-broad-joining-mass-A-100",
+      "role": "ridge",
+      "name": "broad-joining-mass-A",
+      "atlasCrop": [
+        565,
+        7,
+        1236,
+        623
+      ],
+      "scale": 0.5,
+      "originWorldCell": [
+        100,
+        218
+      ],
+      "atlasGroup": "main",
+      "atlasSha256": "4ad26ea3e7d38f4a768dd869a9a3c1db86812891c5911b461ac573af72684b1e",
+      "processedRgbaSha256": "ff6054b512b6c17a9375c13503a16f2fff5fd231b7813a1a2da095cafc8a89fd",
+      "processedAlphaSha256": "7c6e598cd52de7ba51d337c9d3f33fb90fa2a0516cb71da2b769831e31c0d590"
+    },
+    {
+      "id": "fill-03-rear-mass-A-104",
+      "role": "fill",
+      "name": "rear-mass-A",
+      "atlasCrop": [
+        565,
+        7,
+        1236,
+        623
+      ],
+      "scale": 0.5,
+      "originWorldCell": [
+        104,
+        218
+      ],
+      "atlasGroup": "main",
+      "atlasSha256": "4ad26ea3e7d38f4a768dd869a9a3c1db86812891c5911b461ac573af72684b1e",
+      "processedRgbaSha256": "ff6054b512b6c17a9375c13503a16f2fff5fd231b7813a1a2da095cafc8a89fd",
+      "processedAlphaSha256": "7c6e598cd52de7ba51d337c9d3f33fb90fa2a0516cb71da2b769831e31c0d590"
+    },
+    {
+      "id": "ridge-05-broad-joining-mass-A-112",
+      "role": "ridge",
+      "name": "broad-joining-mass-A",
+      "atlasCrop": [
+        565,
+        7,
+        1236,
+        623
+      ],
+      "scale": 0.5,
+      "originWorldCell": [
+        112,
+        218
+      ],
+      "atlasGroup": "main",
+      "atlasSha256": "4ad26ea3e7d38f4a768dd869a9a3c1db86812891c5911b461ac573af72684b1e",
+      "processedRgbaSha256": "ff6054b512b6c17a9375c13503a16f2fff5fd231b7813a1a2da095cafc8a89fd",
+      "processedAlphaSha256": "7c6e598cd52de7ba51d337c9d3f33fb90fa2a0516cb71da2b769831e31c0d590"
+    },
+    {
+      "id": "ridge-02-broad-joining-mass-B-94",
+      "role": "ridge",
+      "name": "broad-joining-mass-B",
+      "atlasCrop": [
+        15,
+        600,
+        583,
+        1218
+      ],
+      "scale": 0.5,
+      "originWorldCell": [
+        94,
+        218
+      ],
+      "atlasGroup": "companion",
+      "atlasSha256": "b2701dd847e7d1df26c8488aa95877b57682be732a7bdc10d00fa12363613a04",
+      "processedRgbaSha256": "6459a127514860315c83dbe4a9ac65c404bdc841723c7864ad423169825eaa41",
+      "processedAlphaSha256": "1a64808131813ace3b472a096d362b19cb0ce91af2edc510497e81d11bd483cf"
+    },
+    {
+      "id": "fill-02-rear-mass-B-98",
+      "role": "fill",
+      "name": "rear-mass-B",
+      "atlasCrop": [
+        15,
+        600,
+        583,
+        1218
+      ],
+      "scale": 0.5,
+      "originWorldCell": [
+        98,
+        218
+      ],
+      "atlasGroup": "companion",
+      "atlasSha256": "b2701dd847e7d1df26c8488aa95877b57682be732a7bdc10d00fa12363613a04",
+      "processedRgbaSha256": "6459a127514860315c83dbe4a9ac65c404bdc841723c7864ad423169825eaa41",
+      "processedAlphaSha256": "1a64808131813ace3b472a096d362b19cb0ce91af2edc510497e81d11bd483cf"
+    },
+    {
+      "id": "ridge-04-broad-joining-mass-B-106",
+      "role": "ridge",
+      "name": "broad-joining-mass-B",
+      "atlasCrop": [
+        15,
+        600,
+        583,
+        1218
+      ],
+      "scale": 0.5,
+      "originWorldCell": [
+        106,
+        218
+      ],
+      "atlasGroup": "companion",
+      "atlasSha256": "b2701dd847e7d1df26c8488aa95877b57682be732a7bdc10d00fa12363613a04",
+      "processedRgbaSha256": "6459a127514860315c83dbe4a9ac65c404bdc841723c7864ad423169825eaa41",
+      "processedAlphaSha256": "1a64808131813ace3b472a096d362b19cb0ce91af2edc510497e81d11bd483cf"
+    },
+    {
+      "id": "fill-04-right-pocket-mass-B-110",
+      "role": "fill",
+      "name": "right-pocket-mass-B",
+      "atlasCrop": [
+        15,
+        600,
+        583,
+        1218
+      ],
+      "scale": 0.5,
+      "originWorldCell": [
+        110,
+        220
+      ],
+      "atlasGroup": "companion",
+      "atlasSha256": "b2701dd847e7d1df26c8488aa95877b57682be732a7bdc10d00fa12363613a04",
+      "processedRgbaSha256": "6459a127514860315c83dbe4a9ac65c404bdc841723c7864ad423169825eaa41",
+      "processedAlphaSha256": "1a64808131813ace3b472a096d362b19cb0ce91af2edc510497e81d11bd483cf"
+    }
+  ],
+  "drawOrder": {
+    "rule": "ascending component bottom-alpha-row contactY; ties by source origin X, source origin Y, source name, then this stable recipe ID",
+    "sourceAlphaHardCut": 128,
+    "usesCommonSortWithForestAndCliffs": true
+  },
+  "expectedPreviewInvariant": {
+    "objectCount": 9,
+    "alphaUnionPixels": 278478,
+    "contactYDrawOrder": [
+      {
+        "id": "ridge-02-broad-joining-mass-B-94",
+        "contactYLocalPx": 254,
+        "contactXLocalPx": 424
+      },
+      {
+        "id": "fill-02-rear-mass-B-98",
+        "contactYLocalPx": 254,
+        "contactXLocalPx": 552
+      },
+      {
+        "id": "ridge-04-broad-joining-mass-B-106",
+        "contactYLocalPx": 254,
+        "contactXLocalPx": 808
+      },
+      {
+        "id": "ridge-01-broad-joining-mass-A-89",
+        "contactYLocalPx": 307,
+        "contactXLocalPx": 289
+      },
+      {
+        "id": "fill-01-rear-mass-A-92",
+        "contactYLocalPx": 307,
+        "contactXLocalPx": 385
+      },
+      {
+        "id": "ridge-03-broad-joining-mass-A-100",
+        "contactYLocalPx": 307,
+        "contactXLocalPx": 641
+      },
+      {
+        "id": "fill-03-rear-mass-A-104",
+        "contactYLocalPx": 307,
+        "contactXLocalPx": 769
+      },
+      {
+        "id": "ridge-05-broad-joining-mass-A-112",
+        "contactYLocalPx": 307,
+        "contactXLocalPx": 1025
+      },
+      {
+        "id": "fill-04-right-pocket-mass-B-110",
+        "contactYLocalPx": 318,
+        "contactXLocalPx": 936
+      }
+    ],
+    "noResizeOrOriginChange": true,
+    "wholeObjectPolicy": {
+      "sourceObjects": 194,
+      "omittedContained": 25,
+      "retainedCrossing": 6,
+      "retainedDisjoint": 163,
+      "retainedTotal": 169,
+      "pixelClipping": false
+    }
+  },
+  "limitations": [
+    "current-source adaptation; not exact historical replay",
+    "six historical water chunks are absent; use current active water unchanged",
+    "preview alpha invariants cover only the nine object composite; current global art and collision require separate verification"
+  ],
+  "wholeObjectPolicy": {
+    "identityKey": "group|asset|originWorldCellX,originWorldCellY",
+    "sourcePlacementPath": "placements/cliff-selected-layout-whole-act1.json",
+    "sourcePlacementSha256": "8f5f0ece745dc4d9378c24e21c1fc2992d8ca03cee842aeeac444daf5eda0fa7",
+    "classificationAlpha": "transformed atlas crop after source alpha hard cut at128; opaque pixels are alpha>0",
+    "rectangle": "northWindow.replacementRectGlobalXYXY, exclusive right/bottom",
+    "expectedCounts": {
+      "source": 194,
+      "contained": 25,
+      "crossing": 6,
+      "disjoint": 163,
+      "retained": 169,
+      "omitted": 25
+    },
+    "expectedStableIdentities": {
+      "contained": [
+        "companion|companion-low-shoulder|102,222",
+        "companion|companion-low-shoulder|105,222",
+        "companion|companion-low-shoulder|107,222",
+        "companion|companion-low-shoulder|107,223",
+        "companion|companion-low-shoulder|95,223",
+        "companion|companion-low-shoulder|99,222",
+        "companion|companion-narrow-buttress|101,218",
+        "companion|companion-narrow-buttress|103,218",
+        "companion|companion-narrow-buttress|105,218",
+        "companion|companion-narrow-buttress|107,218",
+        "companion|companion-narrow-buttress|109,218",
+        "companion|companion-narrow-buttress|111,218",
+        "companion|companion-narrow-buttress|111,222",
+        "companion|companion-narrow-buttress|91,218",
+        "companion|companion-narrow-buttress|91,222",
+        "companion|companion-narrow-buttress|93,218",
+        "companion|companion-narrow-buttress|93,222",
+        "companion|companion-narrow-buttress|95,218",
+        "companion|companion-narrow-buttress|95,219",
+        "companion|companion-narrow-buttress|97,218",
+        "companion|companion-narrow-buttress|97,221",
+        "companion|companion-narrow-buttress|99,218",
+        "companion|companion-tall-fin|110,221",
+        "companion|companion-tall-fin|115,226",
+        "companion|companion-tall-fin|90,218"
+      ],
+      "crossing": [
+        "main|broad-joining-mass-A|113,219",
+        "main|interior-rock-panel|113,218",
+        "main|interior-rock-panel|115,220",
+        "main|interior-rock-panel|80,218",
+        "main|narrow-notch-buttress|116,224",
+        "main|narrow-notch-buttress|86,218"
+      ]
+    },
+    "retainedRule": "omit contained; retain crossing and disjoint whole; no alpha clipping",
+    "preserveAllSourceContactAnchors": true
+  }
+}

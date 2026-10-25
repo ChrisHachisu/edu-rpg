@@ -59,6 +59,26 @@
     #game-container { line-height: 0; width: 768px; height: 672px; }
     canvas { image-rendering: pixelated; image-rendering: crisp-edges; display: block; }
 
+    /* Shared tab styling: the town adapter also exposes these controls on desktop. */
+    /* --- Field/dungeon bottom menu tabs (replace the floating menu button). Populated + handled by ui-overhaul.js. --- */
+    .field-tabs {
+      position: fixed; left: 0; right: 0; bottom: 0; z-index: 90;
+      display: flex; gap: 4px; pointer-events: auto;
+      padding: 7px 8px calc(7px + env(safe-area-inset-bottom, 0px));
+      background: #101116;
+      border-top: 1px solid rgba(201,169,97,.20);
+    }
+    .field-tabs .ft {
+      flex: 1; min-height: 48px; border: none; background: transparent; cursor: pointer;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+      color: rgba(232,226,212,.55); font-size: 11px; font-weight: 500; border-radius: 10px;
+      -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+    }
+    /* .tabic itself is defined in ui-overhaul.css -- one definition for both tab bars. */
+    .field-tabs .ft .tabic { color: rgba(201,169,97,.60); }
+    .field-tabs .ft.pressed { background: rgba(201,169,97,.14); color: #e8e2d4; }
+    .field-tabs .ft.pressed .tabic { color: #c9a961; }
+
     /* ---- Touch controls: hidden by default, shown only on touch + overworld ---- */
     #touch-controls { display: none; }
 
@@ -109,25 +129,6 @@
       }
       .stick.active .stick-knob { background: rgba(201,169,97,.62); border-color: #c9a961; }
 
-      /* --- Field/dungeon bottom menu tabs (replace the floating menu button). Populated + handled by ui-overhaul.js. --- */
-      .field-tabs {
-        position: fixed; left: 0; right: 0; bottom: 0; z-index: 90;
-        display: flex; gap: 4px; pointer-events: auto;
-        padding: 7px 8px calc(7px + env(safe-area-inset-bottom, 0px));
-        background: #101116;
-        border-top: 1px solid rgba(201,169,97,.20);
-      }
-      .field-tabs .ft {
-        flex: 1; min-height: 48px; border: none; background: transparent; cursor: pointer;
-        display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
-        color: rgba(232,226,212,.55); font-size: 11px; font-weight: 500; border-radius: 10px;
-        -webkit-tap-highlight-color: transparent; touch-action: manipulation;
-      }
-      /* .tabic itself is defined in ui-overhaul.css -- one definition for both tab bars. */
-      .field-tabs .ft .tabic { color: rgba(201,169,97,.60); }
-      .field-tabs .ft.pressed { background: rgba(201,169,97,.14); color: #e8e2d4; }
-      .field-tabs .ft.pressed .tabic { color: #c9a961; }
-
       /* --- Orientation: d-pad position (raised to sit above the bottom tab bar) --- */
       .stick { bottom: calc(76px + env(safe-area-inset-bottom, 0px)); }
       /* LEFT (default): d-pad bottom-left */
@@ -159,6 +160,11 @@
       opacity: 1; transition: opacity .24s ease-out;
     }
     #boot-cover.gone { opacity: 0; pointer-events: none; }
+    #boot-cover .bc-error { display: none; max-width: 250px; color: #d5d1c7; font-size: 13px; line-height: 1.45; text-align: center; }
+    #boot-cover .bc-retry { display: none; border: 1px solid #c9a961; border-radius: 4px; padding: 8px 18px;
+      color: #f0ddb0; background: #242119; font: inherit; cursor: pointer; }
+    #boot-cover.error .bc-bar { display: none; }
+    #boot-cover.error .bc-error, #boot-cover.error .bc-retry { display: block; }
 
     /* ---- Battle-exit cover -------------------------------------------------------------------
        The owner, build 27: "after battles, the screen briefly shows blue but that resolves pretty
@@ -211,7 +217,7 @@
 </head>
 <body class="ctrl-right">
   <!-- Painted before anything else so the shell is never a black void. See #boot-cover above. -->
-  <div id="boot-cover"><div class="bc-plate"><span class="bc-title">Quest of Knowledge</span><div class="bc-bar"><i></i></div></div></div>
+  <div id="boot-cover"><div class="bc-plate"><span class="bc-title">Quest of Knowledge</span><div class="bc-bar"><i></i></div><div class="bc-error">The area could not finish loading.</div><button class="bc-retry" type="button">Retry</button></div></div>
   <!-- Held over the battle->overworld handoff until the terrain reports ready. See #battle-cover. -->
   <div id="battle-cover"><div class="bx"></div></div>
 
@@ -238,6 +244,9 @@
   <script src="/act1-world-map.js"></script>
   <script src="/dq-tiles.js"></script>
   <script src="/hero-override.js"></script>
+  <!-- Battle loss/retry recovery. The frozen module is declared above; this
+       additive override polls for its runtime hooks and is safe to load here. -->
+  <script src="/battle-recovery.js"></script>
   <script type="module" src="/act1-hifi/adapter.js"></script>
   <!-- Orchestral BGM. ADDITIVE: swaps the procedural Tone.js composer for the .m4a loops via
        __QOK.audio, and no-ops if the files or the hook are missing (docs/MUSIC-INTEGRATION-READY.md).
@@ -277,12 +286,10 @@
          4. hero is g3             __HERO_VARIANT__, set by hero-override.js only after the swap
                                    actually succeeded.
 
-       DELIBERATELY NOT GATED ON: the Act 1 hi-fi TOWN overlay (a ~19 MB iframe with its own 30 s
-       timeout -- covering that would mean a half-minute cover on every town entry), audio, and
-       monster art that is not on screen. And the gate is armed ONCE: after the first world entry
-       it is latched off and the node is removed, so this can never reappear over a battle, a menu
-       or a dungeon transition. That is a deliberate scope limit, not an oversight -- a cover on
-       every map change is a different product decision than the one that was asked for.
+       The same retained cover is re-armed for every save-driven world start. Act 1 towns wait for
+       their matching ready iframe and suppressed legacy scene; the twelve authored dungeon floors
+       wait for the exact applied floor and a successful baked-art blit. Other maps keep the generic
+       terrain contract above.
 
        Both caps are safety valves, not tuning: a boot that fails for any reason must end up
        showing the game's own failure, never a cover that hides it forever. */
@@ -290,7 +297,13 @@
       var cover = document.getElementById('boot-cover');
       if (!cover) return;
       var TITLE_CAP = 10000, WORLD_CAP = 20000;
-      var phase = 'boot', frames = 0, t0 = Date.now(), worldT0 = 0;
+      var phase = 'boot', frames = 0, t0 = Date.now(), worldT0 = 0, reason = 'boot';
+      var STARTUP_RETRY_KEY = 'qok-startup-webgl-retry-v1';
+      var startupRetryStorageAvailable = false, startupRetryUsed = false, firstTitleReady = false, titleFrames = 0;
+      try {
+        startupRetryUsed = sessionStorage.getItem(STARTUP_RETRY_KEY) === '1';
+        startupRetryStorageAvailable = true;
+      } catch (e) {}
 
       function titlePainted() {
         // The recovery module below is about to press Continue for the player, so the title is a
@@ -308,46 +321,176 @@
         return true;
       }
       function worldReady() {
-        var g = window.__PHASER_GAME__, wm = g.scene.getScene('WorldMapScene');
+        var g = window.__PHASER_GAME__;
+        if (!g || !g.scene || !g.scene.getScene) return false;
+        var wm = g.scene.getScene('WorldMapScene');
+        if (!worldActive()) return false;
         if (!wm || !wm.mapData || !wm.mapData.length) return false;
         var dq = window.__DQ_TILES__, ui = window.__QOKUI;
-        if (!dq || !dq.ready || !dq.ready()) return false;
         if (!ui || !ui.iconsReady || !ui.iconsReady()) return false;
-        if (wm.currentMapId === 'overworld' && !(ui.mapArtReady && ui.mapArtReady())) return false;
         if (!window.__HERO_VARIANT__) return false;
+        var townIds = {greenhollow:1,millbrook:1,portSapphire:1};
+        var town = window.__ACT1_PRESERVED_CUTOVER__;
+        if (townIds[wm.currentMapId]) return !!(town && town.townSurfaceReady && town.townSurfaceReady(wm) === true);
+        if (!dq) return false;
+        var authoredDungeons = {coastalReef:1,sunkenCellar:1,whisperingWoodsCave:1,mistyGrotto:1};
+        var floor = wm.currentFloor || 1;
+        if (authoredDungeons[wm.currentMapId] && floor >= 1 && floor <= 3)
+          return !!(dq.dungeonSurfaceReady && dq.dungeonSurfaceReady(wm) === true);
+        if (!dq.ready || !dq.ready()) return false;
+        if (wm.currentMapId === 'overworld' && !(ui.mapArtReady && ui.mapArtReady())) return false;
         return true;
       }
       function worldActive() {
         var g = window.__PHASER_GAME__;
         return !!(g && g.scene && g.scene.isActive && g.scene.isActive('WorldMapScene'));
       }
-      function show() { cover.classList.remove('gone'); }
-      function hide() { cover.classList.add('gone'); }
-      function finish() {
-        hide();
-        setTimeout(function () { if (cover.parentNode) cover.parentNode.removeChild(cover); }, 400);
+      function underpaintFailed() {
+        var dq = window.__DQ_TILES__, why;
+        try { why = dq && dq.readyWhy ? dq.readyWhy() : null; } catch (e) { return false; }
+        return !!(why && why.underpaintRequired && why.underpaint === 'error');
       }
+      function saveGatewayActive() {
+        var g = window.__PHASER_GAME__;
+        return !!(g && g.scene && g.scene.isActive
+          && (g.scene.isActive('TitleScene') || g.scene.isActive('GameOverScene')));
+      }
+      function show() { cover.classList.remove('gone'); }
+      function hide() { cover.classList.add('gone'); cover.classList.remove('error'); }
+      function beginWorldLoad(why) {
+        reason = why || 'world-load'; frames = 0; worldT0 = Date.now();
+        cover.classList.remove('error'); show(); phase = 'world';
+      }
+      function finishWorld() {
+        hide(); phase = 'active';
+      }
+      function failWorld(why) {
+        if (why) reason = why;
+        var q = window.__QOK, loc = 'en', kanji = false;
+        try { loc = q && q.loc ? q.loc() : 'en'; } catch (e) {}
+        try { var gs = q && q.state ? q.state() : null; kanji = !!(gs && gs.player && gs.player.state && gs.player.state.kanjiMode); } catch (e) {}
+        var message = cover.querySelector('.bc-error');
+        if (loc === 'ja') {
+          if (message) message.textContent = kanji ? '場所を読み込めませんでした。' : 'ばしょを よみこめませんでした。';
+          if (retry) retry.textContent = kanji ? 'もう一度' : 'もういちど';
+        } else {
+          if (message) message.textContent = 'The area could not finish loading.';
+          if (retry) retry.textContent = 'Retry';
+        }
+        frames = 0; cover.classList.add('error'); show(); phase = 'error';
+      }
+      var retry = cover.querySelector('.bc-retry');
+      if (retry) retry.onclick = function () {
+        if (phase === 'startup-error') {
+          if (startupRetryUsed || !startupRetryStorageAvailable) return;
+          try {
+            sessionStorage.setItem(STARTUP_RETRY_KEY, '1');
+            if (sessionStorage.getItem(STARTUP_RETRY_KEY) !== '1') throw new Error('session retry marker was not retained');
+          } catch (e) {
+            var unavailable = cover.querySelector('.bc-error');
+            if (unavailable) unavailable.textContent = startupRetryMessage(false, true);
+            retry.disabled = true;
+            retry.style.display = 'none';
+            return;
+          }
+          startupRetryUsed = true;
+          window.location.reload();
+          return;
+        }
+        var g = window.__PHASER_GAME__, wm = g && g.scene && g.scene.getScene && g.scene.getScene('WorldMapScene');
+        try { if (window.__DQ_TILES__ && window.__DQ_TILES__.retryUnderpaint) window.__DQ_TILES__.retryUnderpaint(); } catch (e) {}
+        try { if (window.__ACT1_PRESERVED_CUTOVER__ && window.__ACT1_PRESERVED_CUTOVER__.retryTownSurface) window.__ACT1_PRESERVED_CUTOVER__.retryTownSurface(wm); } catch (e) {}
+        try { if (window.__DQ_TILES__ && window.__DQ_TILES__.retryDungeonSurface) window.__DQ_TILES__.retryDungeonSurface(wm); } catch (e) {}
+        try { if (window.__DQ_TILES__ && window.__DQ_TILES__.redraw) window.__DQ_TILES__.redraw(); } catch (e) {}
+        beginWorldLoad('retry:' + reason);
+      };
+      function startupRetryLocale() {
+        // The game locale API may not exist yet when Phaser reports an early shader-link error.
+        // The persisted setting is available before engine startup; default safely to English.
+        try { return localStorage.getItem('edu-rpg-locale') === 'ja' ? 'ja' : 'en'; } catch (e) { return 'en'; }
+      }
+      function startupRetryMessage(repeated, unavailable) {
+        var q = window.__QOK, loc = startupRetryLocale(), kanji = false;
+        try { var gs = q && q.state ? q.state() : null; kanji = !!(gs && gs.player && gs.player.state && gs.player.state.kanjiMode); } catch (e) {}
+        if (loc === 'ja') {
+          if (repeated || unavailable) return kanji ? 'ゲームを開始できませんでした。アプリを終了して、もう一度起動してください。' : 'ゲームを はじめられませんでした。アプリを おわって、もういちど ひらいてください。';
+          return kanji ? 'ゲームを開始できませんでした。もう一度お試しください。' : 'ゲームを はじめられませんでした。もういちど おためしください。';
+        }
+        if (repeated) return 'The graphics error happened again. Close and reopen the app to try starting the game again.';
+        if (unavailable) return 'The game graphics could not start. Close and reopen the app to try again.';
+        return 'The game graphics could not start. Tap Retry to try starting the game again.';
+      }
+      function startupRetryLabel() {
+        if (startupRetryLocale() === 'ja') {
+          try {
+            var q = window.__QOK, gs = q && q.state ? q.state() : null;
+            return gs && gs.player && gs.player.state && gs.player.state.kanjiMode ? 'もう一度' : 'もういちど';
+          } catch (e) { return 'もういちど'; }
+        }
+        return 'Retry';
+      }
+      function showStartupShaderError() {
+        if (firstTitleReady || phase === 'startup-error') return;
+        var message = cover.querySelector('.bc-error');
+        if (message) message.textContent = startupRetryMessage(startupRetryUsed, !startupRetryStorageAvailable);
+        if (retry) {
+          retry.textContent = startupRetryLabel();
+          retry.disabled = startupRetryUsed || !startupRetryStorageAvailable;
+          retry.style.display = retry.disabled ? 'none' : 'block';
+        }
+        cover.classList.add('error'); show(); phase = 'startup-error';
+      }
+      window.addEventListener('error', function (e) {
+        if (firstTitleReady || (e && e.target && e.target !== window)) return;
+        var message = e && e.message;
+        if (!message && e && e.error) message = e.error.message;
+        if (typeof message === 'string' && message.indexOf('Link Shader failed') !== -1) showStartupShaderError();
+      }, true);
       function tick() {
+        // Observe the first actually ready Title independently of the boot-cover safety cap.
+        // TITLE_CAP may lift the cover before a slow Title appears; that does not mean startup
+        // succeeded and must not clear the one-retry session marker or admit later shader errors.
+        if (!firstTitleReady) {
+          titleFrames = titlePainted() ? titleFrames + 1 : 0;
+          if (titleFrames >= 3) {
+            firstTitleReady = true;
+            if (startupRetryUsed) {
+              try { sessionStorage.removeItem(STARTUP_RETRY_KEY); startupRetryUsed = false; } catch (e) {}
+            }
+            if (retry) { retry.disabled = false; retry.style.display = ''; }
+          }
+        }
         if (phase === 'boot') {
           // A recovery starts the world scene without the title ever being lifted to. Hand
           // straight to gate 2 rather than lifting and immediately re-covering. This cannot fire
           // on a normal boot: reaching the world needs a tap on Continue, and the cover swallows
           // taps until it has already lifted (phase 'waiting').
-          if (worldActive()) { worldT0 = Date.now(); phase = 'world'; }
+          if (worldActive()) { beginWorldLoad('boot-world'); }
           else {
             frames = titlePainted() ? frames + 1 : 0;
             if (frames >= 3 || Date.now() - t0 > TITLE_CAP) { hide(); phase = 'waiting'; }
           }
         } else if (phase === 'waiting') {
           // Title is up and the player is choosing. Arm gate 2 the moment the world scene starts.
-          if (worldActive()) { show(); worldT0 = Date.now(); phase = 'world'; }
+          if (worldActive()) beginWorldLoad('scene-start');
         } else if (phase === 'world') {
-          if (worldReady() || Date.now() - worldT0 > WORLD_CAP) { finish(); return; }
+          var ready = worldReady();
+          frames = ready ? frames + 1 : 0;
+          if (underpaintFailed()) failWorld('underpaint');
+          else if (frames >= 3) finishWorld();
+          // The deadline bounds time spent waiting for readiness. Once every gate is ready,
+          // allow the existing three-frame stability check to complete, even if that check
+          // starts just after the deadline. A false sample after the deadline still fails now.
+          else if (!ready && Date.now() - worldT0 > WORLD_CAP) failWorld();
+        } else if (phase === 'active') {
+          // Battle, menu, shop and dialogue pause the world too. Only title/game-over are save
+          // gateways; waiting on every ordinary pause would compete with the battle-return cover.
+          if (!worldActive() && saveGatewayActive()) phase = 'waiting';
         }
         requestAnimationFrame(tick);
       }
       requestAnimationFrame(tick);
-      window.__QOK_COVER__ = { phase: function () { return phase; } };
+      window.__QOK_COVER__ = { phase: function () { return phase; }, reason: function () { return reason; }, beginWorldLoad: beginWorldLoad, showError: failWorld, ready: worldReady };
     })();
 
     /* ---- The black box -------------------------------------------------------------------------
@@ -726,6 +869,12 @@
 
       /* ---- the beacon + the snapshot ------------------------------------------------------- */
       var wroteOnce = false, lastJson = '';
+      // A hi-fi town owns the live position while its iframe is active. The frozen WorldMapScene
+      // can still expose the last overworld tile (for example 8,14) during that overlay, so a
+      // periodic recovery tick must not replace a just-saved town checkpoint with that stale
+      // engine coordinate. This authority is intentionally in-memory and expires on map change;
+      // the persisted snapshot remains the ordinary recovery envelope below.
+      var townSnapshotAuthority = null;
       // In-memory only, and the instrument for the claim "no periodic write while walking".
       // Read it with __QOK_RECOVERY__.writes() before and after a walk; the delta must be 0.
       var writes = { beacon: 0, snapshot: 0, deduped: 0, reasons: {} };
@@ -759,26 +908,66 @@
         return restorable() && act('WorldMapScene') && !act('BattleScene');
       }
 
-      function writeSnapshot(why) {
+      function snapshotPlayerForWrite(s) {
+        var player = s && s.player && s.player.state;
+        var authority = townSnapshotAuthority;
+        if (!player) return player;
+        if (authority) {
+          var wm = G() && G().scene && G().scene.getScene && G().scene.getScene('WorldMapScene');
+          if (wm && wm.currentMapId === authority.mapId) {
+            return Object.assign({}, player, { position: Object.assign({}, authority) });
+          }
+          // Leaving the authored town ends the iframe-owned position authority. The next
+          // ordinary map/create edge may write the native overworld position as usual.
+          townSnapshotAuthority = null;
+        }
+        return player;
+      }
+      function writeSnapshot(why, playerOverride) {
         var s = S();
+        if (!s || !s.player || !s.player.state) return false;
+        var player = playerOverride || snapshotPlayerForWrite(s);
         // Same shape and same version the game's own SaveManager writes, so the shipped loader
         // reads it without a migration. playtime is computed, never committed back into the
         // GameState -- saveGame()/autoSave() own that bookkeeping and must stay the only writers.
         var json = JSON.stringify({
           version: 4,
           timestamp: Date.now(),
-          player: s.player.state,
+          player: player,
           playtime: s.playtime + (Date.now() - s.startTime) / 1000,
           quizStats: s.quizManager.getStats()
         });
         // Re-snapshotting an unchanged state rewrites an identical blob; skip it. (timestamp and
         // playtime move on their own, so compare with those stripped.)
         var sig = json.replace(/"timestamp":\d+/, '').replace(/"playtime":[\d.e+-]+/, '');
-        if (sig === lastJson) { writes.deduped++; writes.reasons['dedup:' + why] = (writes.reasons['dedup:' + why] || 0) + 1; return; }
+        if (sig === lastJson) { writes.deduped++; writes.reasons['dedup:' + why] = (writes.reasons['dedup:' + why] || 0) + 1; return true; }
         lastJson = sig;
-        try { localStorage.setItem(SNAP, json); wroteOnce = true; tally('snapshot', why); } catch (e) {}
+        try { localStorage.setItem(SNAP, json); wroteOnce = true; tally('snapshot', why); return true; } catch (e) { return false; }
       }
       function trySnap(why) { if (restorable()) writeSnapshot(why); }
+
+      // The adapter has already validated the town iframe's full-foot position against its
+      // authored collision authority and has assigned that same envelope to the native save.
+      // Require an explicit validation witness plus matching live map identity here so this API
+      // cannot become a general state-injection path or reinterpret a stale overworld save.
+      function syncTownSnapshot(reason, details) {
+        var s = S(), g = G(), wm = g && g.scene && g.scene.getScene && g.scene.getScene('WorldMapScene');
+        var townId = details && details.townId;
+        var point = details && details.position;
+        if (!details || details.validated !== true || typeof townId !== 'string' || !townId
+            || !point || point.mapId !== townId || !wm || wm.currentMapId !== townId
+            || !s || !s.player || !s.player.state || act('TitleScene') || act('BattleScene')
+            || !Number.isFinite(Number(point.x)) || !Number.isFinite(Number(point.y))
+            || !Number.isFinite(Number(point.floor || 1))) return false;
+        townSnapshotAuthority = {
+          mapId: townId,
+          x: Number(point.x),
+          y: Number(point.y),
+          floor: Number(point.floor || 1),
+        };
+        var player = Object.assign({}, s.player.state, { position: Object.assign({}, townSnapshotAuthority) });
+        return restorable() && writeSnapshot(reason || 'town-save', player);
+      }
 
       var visible = 1, walking = false;
       function beacon(why) {
@@ -1048,6 +1237,7 @@
         report:    function () { return log(); },
         heartbeat: function () { return rd(HB); },
         snapshot:  function () { return rd(SNAP); },
+        syncSnapshot: function (reason, details) { return syncTownSnapshot(reason, details); },
         // The instrument for "no periodic write while walking". In memory, never stored: sample it
         // before and after a walk and the delta must be zero. `reasons` says which edge fired.
         writes:    function () { return JSON.parse(JSON.stringify(writes)); },

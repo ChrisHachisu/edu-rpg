@@ -1,0 +1,117 @@
+{
+  "collisionDecode": {
+    "bitOrderAndLengthChecked": true,
+    "boundsChecked": true,
+    "collisionSha256": "a0d08d9d1bae329355f9c44b60d6b3484f5e00717386d7d99cd4a8f309d6307e",
+    "heroFramesChecked": "all-selectable-frames-at-safe-cells",
+    "heroStencilScope": "safe-cell-QOK-stencil-v1",
+    "independentDecode": true,
+    "payloadMatchesCollisionUnionAlphaPixelForPixel": true,
+    "runtimeFormat": "qok-forest-bitset-v1",
+    "safeCellCount": 149
+  },
+  "heroFrameClearance": {
+    "allFramesAtRuntimeScale": true,
+    "allSelectableHeroes": true,
+    "clearanceRecomputed": true,
+    "framesPerHero": 12,
+    "heroCount": 2,
+    "heroFrameSources": {
+      "g3": "070a8a452c3dda775bd6c8593a66d57a5a13d97b9fb33378ea5b2bb0e1fded3c",
+      "male": "88cbed8f9d707b216ada01e108eedd5822c6bcfc69c8dd22af2457f231dc0976"
+    },
+    "qokHits": {
+      "g3": 0,
+      "male": 0
+    },
+    "runtimeScale": 0.7,
+    "safeCellCount": 149,
+    "scope": "safe-cell-QOK-stencil-v1",
+    "substepSamplesPerCell": 5
+  },
+  "inputs": {
+    "collisionPackSha256": "a0d08d9d1bae329355f9c44b60d6b3484f5e00717386d7d99cd4a8f309d6307e",
+    "collisionUnionAlphaPath": "/private/tmp/edu-rpg-build84-feedback-20261013/terrain-implementation-plan/generation-water-r2-final-r2/generation-a/evidence/final-visible-plus-north-support-collision-alpha.png",
+    "collisionUnionAlphaSha256": "0baf807bfd429b8ae945439c62c23610fcf62ae0fa6eeae01dcbf5c7d468fae7",
+    "collisionUnionSourceAlphaSha256": "0baf807bfd429b8ae945439c62c23610fcf62ae0fa6eeae01dcbf5c7d468fae7",
+    "finalR2BOutputReceiptSha256": "379376e6db270a7c7c1d2f14abed46bb0404a7bb7ed440db972fadae6cd50ecf",
+    "finalR2OutputReceiptSha256": "ea0d4e5792aa03df8e82e901115bf60734e752c8f61d8a308784c58cb2b3bb48",
+    "heroFrameSheets": {
+      "g3": {
+        "path": "public/assets/hero/hero-g3-walk.png",
+        "sha256": "070a8a452c3dda775bd6c8593a66d57a5a13d97b9fb33378ea5b2bb0e1fded3c"
+      },
+      "male": {
+        "path": "public/assets/hero/hero-male-walk.png",
+        "sha256": "88cbed8f9d707b216ada01e108eedd5822c6bcfc69c8dd22af2457f231dc0976"
+      }
+    },
+    "qokHeader": {
+      "headerBytes": 64,
+      "height": 5824,
+      "magic": "QOKF8COL",
+      "payloadBytes": 3447808,
+      "pixelsPerCell": 32,
+      "version": 1,
+      "width": 4736
+    },
+    "runtimeManifestSha256": "fbad11cf27c35be30e0fed8cade9a68019bee7a3b368e4cf67d8dd3dcaa2ad88",
+    "selectedFrameMapping": "12 contiguous runtime frames, each 64x64; alpha > 8; runtime projection 1.0125/0.7 at 32/48 QOK scale"
+  },
+  "limitations": [
+    "Static QOK and safe-cell clearance evidence only; does not establish native movement, runtime collision loading, or routes."
+  ],
+  "perHeroChecks": {
+    "g3": {
+      "heroFrameSheetSha256": "070a8a452c3dda775bd6c8593a66d57a5a13d97b9fb33378ea5b2bb0e1fded3c",
+      "qokHits": 0,
+      "safeCellCentersChecked": 149,
+      "selectedFrames": 12,
+      "substepSamplesPerCell": 5,
+      "unionStencilPoints": 2051
+    },
+    "male": {
+      "heroFrameSheetSha256": "88cbed8f9d707b216ada01e108eedd5822c6bcfc69c8dd22af2457f231dc0976",
+      "qokHits": 0,
+      "safeCellCentersChecked": 149,
+      "selectedFrames": 12,
+      "substepSamplesPerCell": 5,
+      "unionStencilPoints": 1941
+    }
+  },
+  "safeCells": {
+    "count": 149,
+    "framesPerHero": 12,
+    "manifestCoordinatesSha256": "423a31148591744d9f44155d53dba6246cb152f55dd6e71f4022532af53b201d",
+    "offsets": [
+      [
+        0,
+        0
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        0,
+        1
+      ]
+    ],
+    "qokHits": {
+      "g3": 0,
+      "male": 0
+    },
+    "recomputed": true,
+    "scope": "safe-cell-QOK-stencil-v1"
+  },
+  "schema": "independent-safe-cell-qok-clearance-v1",
+  "scope": "Static QOK collision decode and safe-cell hero-frame census only; no runtime/native or route acceptance."
+}

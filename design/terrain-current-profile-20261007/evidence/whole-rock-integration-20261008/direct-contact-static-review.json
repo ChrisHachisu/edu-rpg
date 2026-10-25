@@ -1,0 +1,553 @@
+{
+  "schema": "independent-direct-current-qok-fixture-review-v1",
+  "status": "PASS_BOUNDED_STATIC_CONTACTS",
+  "scope": "direct position and bidirectional adjacent-edge samples only; no route search or native movement claim",
+  "routeAuditorSha256": "9b22791aaa5c72802760a4905ce6e94bce2bb55fe7888a075d2fe86c802764ef",
+  "sourceInputs": {
+    "outputReceiptSha256": "caa119e842428ce77db226f25828b1412403609e26353c8e9d5284bb854ac3e5",
+    "qokSha256": "05c4a76f914d9f20c82bf42d1eb574d774f15bd924dbee708aca09d260c97346",
+    "finalAlphaSha256": "944062209c3ee9392c4a971fa5b792e19bdcec83ec2b08dbfd24155680a52fdd",
+    "a1owV2Sha256": "00a520ae09089547ca4af4ef1077b84acdad98d4989de238f3ee30e28ad092c6",
+    "a1owSupportSha256": "eeaf65c08cda239ea8755a3af0026ed0ca61e19a2683cafc10610b5c4027914a",
+    "a1owSemanticsSha256": "a6e6e7f228d040381539618d99f03e774a16dd7cadbaf8cc76a115934d324f67",
+    "dqTilesSha256": "c18ce18e2f25ef6779165389d86163cea64136711f8999c4fd843154e6799c7a",
+    "worldMapSha256": "fb466fc6dbe7e05ccbb209c70867cacf4f903d55837ea69ca716e81f7196c96f",
+    "heroSheets": {
+      "g3": "070a8a452c3dda775bd6c8593a66d57a5a13d97b9fb33378ea5b2bb0e1fded3c",
+      "male": "88cbed8f9d707b216ada01e108eedd5822c6bcfc69c8dd22af2457f231dc0976"
+    }
+  },
+  "fixtures": {
+    "north106230": {
+      "cells": [
+        [
+          106,
+          229
+        ],
+        [
+          106,
+          230
+        ],
+        [
+          106,
+          231
+        ]
+      ],
+      "interpretation": "approach/contact/reverse cells around the north contact"
+    },
+    "flank117234": {
+      "cells": [
+        [
+          116,
+          234
+        ],
+        [
+          117,
+          234
+        ],
+        [
+          118,
+          234
+        ]
+      ],
+      "interpretation": "approach/contact/rock-side cells at the approved flank"
+    }
+  },
+  "results": {
+    "g3": {
+      "north106230": {
+        "positions": [
+          {
+            "cell": [
+              106,
+              229
+            ],
+            "worldPx": [
+              5112,
+              11016
+            ],
+            "free": true,
+            "failure": null
+          },
+          {
+            "cell": [
+              106,
+              230
+            ],
+            "worldPx": [
+              5112,
+              11064
+            ],
+            "free": true,
+            "failure": null
+          },
+          {
+            "cell": [
+              106,
+              231
+            ],
+            "worldPx": [
+              5112,
+              11112
+            ],
+            "free": true,
+            "failure": null
+          }
+        ],
+        "edges": [
+          {
+            "direction": "approach",
+            "from": [
+              106,
+              229
+            ],
+            "to": [
+              106,
+              230
+            ],
+            "free": true,
+            "failure": null
+          },
+          {
+            "direction": "reverse",
+            "from": [
+              106,
+              230
+            ],
+            "to": [
+              106,
+              229
+            ],
+            "free": true,
+            "failure": null
+          },
+          {
+            "direction": "approach",
+            "from": [
+              106,
+              230
+            ],
+            "to": [
+              106,
+              231
+            ],
+            "free": true,
+            "failure": null
+          },
+          {
+            "direction": "reverse",
+            "from": [
+              106,
+              231
+            ],
+            "to": [
+              106,
+              230
+            ],
+            "free": true,
+            "failure": null
+          }
+        ]
+      },
+      "flank117234": {
+        "positions": [
+          {
+            "cell": [
+              116,
+              234
+            ],
+            "worldPx": [
+              5592,
+              11256
+            ],
+            "free": true,
+            "failure": null
+          },
+          {
+            "cell": [
+              117,
+              234
+            ],
+            "worldPx": [
+              5640,
+              11256
+            ],
+            "free": true,
+            "failure": null
+          },
+          {
+            "cell": [
+              118,
+              234
+            ],
+            "worldPx": [
+              5688,
+              11256
+            ],
+            "free": false,
+            "failure": {
+              "rule": "QOK visible-alpha stencil",
+              "source": "forest-collision.bin",
+              "worldPx": [
+                5688,
+                11256
+              ],
+              "collisionPx": [
+                3273,
+                504
+              ],
+              "stencilOffset": [
+                -7,
+                -24
+              ],
+              "padding": [
+                0,
+                0
+              ]
+            }
+          }
+        ],
+        "edges": [
+          {
+            "direction": "approach",
+            "from": [
+              116,
+              234
+            ],
+            "to": [
+              117,
+              234
+            ],
+            "free": true,
+            "failure": null
+          },
+          {
+            "direction": "reverse",
+            "from": [
+              117,
+              234
+            ],
+            "to": [
+              116,
+              234
+            ],
+            "free": true,
+            "failure": null
+          },
+          {
+            "direction": "approach",
+            "from": [
+              117,
+              234
+            ],
+            "to": [
+              118,
+              234
+            ],
+            "free": false,
+            "failure": {
+              "rule": "QOK visible-alpha stencil",
+              "source": "forest-collision.bin",
+              "worldPx": [
+                5668.235,
+                11256.0
+              ],
+              "collisionPx": [
+                3282,
+                509
+              ],
+              "stencilOffset": [
+                14,
+                -19
+              ],
+              "padding": [
+                1,
+                0
+              ]
+            }
+          },
+          {
+            "direction": "reverse",
+            "from": [
+              118,
+              234
+            ],
+            "to": [
+              117,
+              234
+            ],
+            "free": false,
+            "failure": {
+              "rule": "QOK visible-alpha stencil",
+              "source": "forest-collision.bin",
+              "worldPx": [
+                5688,
+                11256
+              ],
+              "collisionPx": [
+                3273,
+                504
+              ],
+              "stencilOffset": [
+                -7,
+                -24
+              ],
+              "padding": [
+                0,
+                0
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "male": {
+      "north106230": {
+        "positions": [
+          {
+            "cell": [
+              106,
+              229
+            ],
+            "worldPx": [
+              5112,
+              11016
+            ],
+            "free": true,
+            "failure": null
+          },
+          {
+            "cell": [
+              106,
+              230
+            ],
+            "worldPx": [
+              5112,
+              11064
+            ],
+            "free": true,
+            "failure": null
+          },
+          {
+            "cell": [
+              106,
+              231
+            ],
+            "worldPx": [
+              5112,
+              11112
+            ],
+            "free": true,
+            "failure": null
+          }
+        ],
+        "edges": [
+          {
+            "direction": "approach",
+            "from": [
+              106,
+              229
+            ],
+            "to": [
+              106,
+              230
+            ],
+            "free": true,
+            "failure": null
+          },
+          {
+            "direction": "reverse",
+            "from": [
+              106,
+              230
+            ],
+            "to": [
+              106,
+              229
+            ],
+            "free": true,
+            "failure": null
+          },
+          {
+            "direction": "approach",
+            "from": [
+              106,
+              230
+            ],
+            "to": [
+              106,
+              231
+            ],
+            "free": true,
+            "failure": null
+          },
+          {
+            "direction": "reverse",
+            "from": [
+              106,
+              231
+            ],
+            "to": [
+              106,
+              230
+            ],
+            "free": true,
+            "failure": null
+          }
+        ]
+      },
+      "flank117234": {
+        "positions": [
+          {
+            "cell": [
+              116,
+              234
+            ],
+            "worldPx": [
+              5592,
+              11256
+            ],
+            "free": true,
+            "failure": null
+          },
+          {
+            "cell": [
+              117,
+              234
+            ],
+            "worldPx": [
+              5640,
+              11256
+            ],
+            "free": true,
+            "failure": null
+          },
+          {
+            "cell": [
+              118,
+              234
+            ],
+            "worldPx": [
+              5688,
+              11256
+            ],
+            "free": false,
+            "failure": {
+              "rule": "QOK visible-alpha stencil",
+              "source": "forest-collision.bin",
+              "worldPx": [
+                5688,
+                11256
+              ],
+              "collisionPx": [
+                3281,
+                506
+              ],
+              "stencilOffset": [
+                1,
+                -22
+              ],
+              "padding": [
+                0,
+                0
+              ]
+            }
+          }
+        ],
+        "edges": [
+          {
+            "direction": "approach",
+            "from": [
+              116,
+              234
+            ],
+            "to": [
+              117,
+              234
+            ],
+            "free": true,
+            "failure": null
+          },
+          {
+            "direction": "reverse",
+            "from": [
+              117,
+              234
+            ],
+            "to": [
+              116,
+              234
+            ],
+            "free": true,
+            "failure": null
+          },
+          {
+            "direction": "approach",
+            "from": [
+              117,
+              234
+            ],
+            "to": [
+              118,
+              234
+            ],
+            "free": false,
+            "failure": {
+              "rule": "QOK visible-alpha stencil",
+              "source": "forest-collision.bin",
+              "worldPx": [
+                5672.471,
+                11256.0
+              ],
+              "collisionPx": [
+                3281,
+                507
+              ],
+              "stencilOffset": [
+                10,
+                -21
+              ],
+              "padding": [
+                1,
+                0
+              ]
+            }
+          },
+          {
+            "direction": "reverse",
+            "from": [
+              118,
+              234
+            ],
+            "to": [
+              117,
+              234
+            ],
+            "free": false,
+            "failure": {
+              "rule": "QOK visible-alpha stencil",
+              "source": "forest-collision.bin",
+              "worldPx": [
+                5688,
+                11256
+              ],
+              "collisionPx": [
+                3281,
+                506
+              ],
+              "stencilOffset": [
+                1,
+                -22
+              ],
+              "padding": [
+                0,
+                0
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "note": "The map seed predicate may mark [117,234] as a forest proxy; live a1mFree deliberately defers tile-3 terrain-required cells to the current exact QOK silhouette after the hero stencil passes. This report uses the auditor translation of that actual runtime branch."
+}

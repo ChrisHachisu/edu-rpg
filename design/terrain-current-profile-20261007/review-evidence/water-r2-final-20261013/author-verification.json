@@ -1,0 +1,58 @@
+{
+  "generationAandBByteParity": "PASS",
+  "generationAandBDecodedPngWebpParity": "PASS",
+  "regenerationComparisonSha256": "a8e3c11e959bd8d03a1952ca8fa27b2364e9a9938266055de8dcfa41b6f246f2",
+  "results": {
+    "generation-a": {
+      "baseVisibleChangesConfinedToContact": "PASS",
+      "collisionBytesAndGeometryEvidenceIdenticalToR1": "PASS",
+      "decodedImageParityAgainstOtherRun": "PASS",
+      "exactWAndContactFullyCovered": "PASS",
+      "inventoryClosure": "PASS",
+      "northSeaMask": {
+        "components": 8,
+        "pixels": 37893,
+        "protectedOverlapsZero": true
+      },
+      "outputFiles": 494,
+      "r6GroundReuseChunks": [
+        120,
+        120,
+        120
+      ],
+      "receiptSha256": "ea0d4e5792aa03df8e82e901115bf60734e752c8f61d8a308784c58cb2b3bb48",
+      "transparentRgbPayloadDifferencesOutsideContact": 168,
+      "underpaintChangesConfinedToContactProjection": "PASS",
+      "waterAlphaOutsideExactWAndContactUnchanged": "PASS",
+      "waterChunks": 120,
+      "waterRgbPhaseAndR1Parity": "PASS"
+    },
+    "generation-b": {
+      "baseVisibleChangesConfinedToContact": "PASS",
+      "collisionBytesAndGeometryEvidenceIdenticalToR1": "PASS",
+      "decodedImageParityAgainstOtherRun": "PASS",
+      "exactWAndContactFullyCovered": "PASS",
+      "inventoryClosure": "PASS",
+      "northSeaMask": {
+        "components": 8,
+        "pixels": 37893,
+        "protectedOverlapsZero": true
+      },
+      "outputFiles": 494,
+      "r6GroundReuseChunks": [
+        120,
+        120,
+        120
+      ],
+      "receiptSha256": "379376e6db270a7c7c1d2f14abed46bb0404a7bb7ed440db972fadae6cd50ecf",
+      "transparentRgbPayloadDifferencesOutsideContact": 168,
+      "underpaintChangesConfinedToContactProjection": "PASS",
+      "waterAlphaOutsideExactWAndContactUnchanged": "PASS",
+      "waterChunks": 120,
+      "waterRgbPhaseAndR1Parity": "PASS"
+    }
+  },
+  "schema": "edu-rpg-water-r2-final-r2-author-verification-v1",
+  "sourceFreezeSha256": "c21e9773a8fcb141a6ae562ffdec0d17e1d90347ad48e69007ded7602928bf9e",
+  "status": "PASS"
+}

@@ -1,0 +1,86 @@
+{
+  "authoringInputInventorySha256": "d456495c0ff48844670bb13da2ac697a4f04600be4fdd0767f00cd38f8bdeae9",
+  "checks": {
+    "a1owDecode": {
+      "proofPath": "design/terrain-current-profile-20261007/evidence/a1ow-v2-independent-review/independent-a1ow-v2-current-dq-20261010.json",
+      "proofSha256": "64b513b50db0bbdcdc7063130e9c38a3ebf89144367d4b519bb9c4688b0c9903",
+      "result": "PASS"
+    },
+    "chunkBoundaries": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/north-perimeter-repair-20261010/independent-full-generation-output-review-20261010.md",
+      "proofSha256": "efdeaf0227fa2d2fc5a701bc1cf3b87b1938212bb43f8f597446165f07dbe701",
+      "result": "PASS"
+    },
+    "cleanRegeneration": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/north-perimeter-repair-20261010/regeneration-comparison.json",
+      "proofSha256": "36648d40429a70e9c74eb899c7de46b3b6463b9a1df05dd32b86dde307342a40",
+      "result": "PASS"
+    },
+    "collisionDecode": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/north-perimeter-repair-20261010/independent-final-review.md",
+      "proofSha256": "04695c926adbf1c0135ac5c87e28815bc7e27c953e89fa85f1e5f4383b670ffa",
+      "result": "PASS"
+    },
+    "currentGuard": {
+      "proofPath": "design/terrain-current-profile-20261007/evidence/runtime-invariants-static.json",
+      "proofSha256": "d5c67c80c061223674c544241abeb5993d6f698b808646ef6a3fa912bb2f7129",
+      "result": "PASS"
+    },
+    "decodedPixels": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/north-perimeter-repair-20261010/generated-output-audit.json",
+      "proofSha256": "80f825c0730771605bef9b3fd61c381d24a56404941c570274dc2e9ca6aefb68",
+      "result": "PASS"
+    },
+    "globalCropReconstruction": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/north-perimeter-repair-20261010/independent-full-generation-output-review-20261010.md",
+      "proofSha256": "efdeaf0227fa2d2fc5a701bc1cf3b87b1938212bb43f8f597446165f07dbe701",
+      "result": "PASS"
+    },
+    "heroFrameClearance": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/north-perimeter-repair-20261010/independent-clearance-result.json",
+      "proofSha256": "eaead2c2d1d04b127379e26d04e40a6d8de7d9dc09da679dd50edde1fb4e7db6",
+      "result": "PASS"
+    },
+    "renderedReview": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/north-perimeter-repair-20261010/independent-full-generation-output-review-20261010.md",
+      "proofSha256": "efdeaf0227fa2d2fc5a701bc1cf3b87b1938212bb43f8f597446165f07dbe701",
+      "result": "PASS"
+    },
+    "runtimeInvariants": {
+      "proofPath": "design/terrain-current-profile-20261007/evidence/runtime-invariants-static.json",
+      "proofSha256": "d5c67c80c061223674c544241abeb5993d6f698b808646ef6a3fa912bb2f7129",
+      "result": "PASS"
+    },
+    "safeCells": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/north-perimeter-repair-20261010/independent-final-review.md",
+      "proofSha256": "04695c926adbf1c0135ac5c87e28815bc7e27c953e89fa85f1e5f4383b670ffa",
+      "result": "PASS"
+    },
+    "sourceResourceClosure": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/north-perimeter-repair-20261010/independent-full-generation-output-review-20261010.md",
+      "proofSha256": "efdeaf0227fa2d2fc5a701bc1cf3b87b1938212bb43f8f597446165f07dbe701",
+      "result": "PASS"
+    },
+    "underpaintPhase": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/north-perimeter-repair-20261010/independent-full-generation-output-review-20261010.md",
+      "proofSha256": "efdeaf0227fa2d2fc5a701bc1cf3b87b1938212bb43f8f597446165f07dbe701",
+      "result": "PASS"
+    },
+    "visibleAlpha": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/north-perimeter-repair-20261010/independent-final-review.md",
+      "proofSha256": "04695c926adbf1c0135ac5c87e28815bc7e27c953e89fa85f1e5f4383b670ffa",
+      "result": "PASS"
+    }
+  },
+  "claim": "Independent static QA-preparation review only. The v2 integration review is bound by path and SHA-256. Six native groups and eleven dynamic assertions remain pending; releaseEligible=false.",
+  "generatedOutputInventorySha256": "529f2de6ebe4b3e83f256b0b048fc5511d196af7e63f3ffa45764edb600e8d16",
+  "profileId": "act1-forward-20261007-v1",
+  "result": "QA_PREPARATION_PASS",
+  "reviewerRole": "independent",
+  "runner": {
+    "path": "design/terrain-current-profile-20261007/review-tools/recompute_forward_outputs.py",
+    "sha256": "2017b4a00aeb7cc82054c8afa56b731c58d2a57578b27d5f55894c05f076e0eb",
+    "version": "forward-static-recompute-review-v4-whole-rock-a1ow-v2"
+  },
+  "schema": "qok-forward-preparation-receipt-v1"
+}

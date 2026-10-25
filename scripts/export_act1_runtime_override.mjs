@@ -82,7 +82,7 @@ function renderRuntimeOverride(plate) {
     + `  // sprite's own alpha eroded by her 12 px contact disc -- scripts/act1_landmark_footprints.mjs.\n`
     + `  // Exposed for verification only; the collision itself is already in ROWS.\n`
     + `  var LANDMARK_BLOCKERS = ${JSON.stringify(plate.landmarkBlockers)};\n`
-    + `  var state = { appliedMap: null, relocation: null, wrappedScene: null, repairs: 0 };\n`
+    + `  var state = { appliedMap: null, relocationScene: null, relocation: null, pendingRelocation: null, wrappedScene: null, repairs: 0 };\n`
     + `  var ENTRY = {}, EXITS = {}, COMPASS = {};\n`
     + `  for (var li = 0; li < LANDMARKS.length; li++) { var L = LANDMARKS[li];\n`
     + `    ENTRY[L.at.x + ',' + L.at.y] = L; EXITS[L.mapId] = L.exit; COMPASS[L.mapId] = L.at; }\n`
@@ -97,6 +97,10 @@ function renderRuntimeOverride(plate) {
     + `  function blocked(tile){ return tile===2||tile===3||tile===4||tile>=6; }\n`
     + `  function gateOpen(){ var gs=window.__GAME_STATE__,flags=gs&&gs.player&&gs.player.state&&gs.player.state.storyFlags; return !!(flags&&flags[GATE.requiredFlag]); }\n`
     + `  function gateRestricted(x,y){ if(gateOpen()) return false; for(var i=0;i<GATE.closedSide.length;i++){var p=GATE.closedSide[i];if(p.x===x&&p.y===y)return true;} return false; }\n`
+    + `  // Read-only pre-apply authority for a persisted Act-1 overworld tile. It deliberately\n`
+    + `  // shares TILES, blocked() and gateRestricted() with writePlate/canMove so seed policy\n`
+    + `  // cannot drift into a parallel walkability definition.\n`
+    + `  function seedWalkableAt(x,y){ return Number.isFinite(x)&&Number.isFinite(y)&&x===Math.floor(x)&&y===Math.floor(y)&&inside(x,y)&&!blocked(tileAt(x,y))&&!gateRestricted(x,y); }\n`
     + `  function wrapCanMove(scene){\n`
     + `    if(scene.__act1CanMoveWrapped||typeof scene.canMove!=='function') return;\n`
     + `    var original=scene.canMove;\n`
@@ -131,14 +135,51 @@ function renderRuntimeOverride(plate) {
     + `    };\n`
     + `    scene.__act1TransitionWrapped=true;\n`
     + `  }\n`
+    + `  // Frozen overworld entrance coordinates (not exit coordinates). The engine returns only\n`
+    + `  // ox/oy for quest targets, so mapId alone cannot identify these relocated landmarks.\n`
+    + `  var OLD_COMPASS = {'60,340':'greenhollow','100,320':'millbrook','130,290':'portSapphire',\n`
+    + `    '45,350':'sunkenCellar','80,310':'whisperingWoodsCave','140,350':'coastalReef',\n`
+    + `    '120,260':'mistyGrotto','148,295':'crystalCave'};\n`
+    + `  function wrapQuestObjectivePresentation(){\n`
+    + `    var gs=window.__GAME_STATE__, qm=gs&&gs.questManager;\n`
+    + `    if(!qm||qm.__act1ObjectivePresentation||typeof qm.getObjectiveProgress!=='function') return;\n`
+    + `    var original=qm.getObjectiveProgress;\n`
+    + `    qm.getObjectiveProgress=function(id,playerState){\n`
+    + `      var rows=original.apply(this,arguments);\n`
+    + `      if(id!=='drakeCargo'||!playerState) return rows;\n`
+    + `      var active=(playerState.activeQuests||[]).indexOf(id)!==-1;\n`
+    + `      var complete=(playerState.completedQuests||[]).indexOf(id)!==-1;\n`
+    + `      if(!active&&!complete) return rows;\n`
+    + `      // Two frozen Drake talk rows share a counter. Display the final report as pending\n`
+    + `      // until actual turn-in completes, without changing progress, readiness or rewards.\n`
+    + `      return rows.map(function(row){\n`
+    + `        var objective=row.objective;\n`
+    + `        if(!objective||objective.type!=='talk'||objective.targetId!=='drake'\n`
+    + `            ||objective.descriptionKey!=='quest.drakeCargo.obj3') return row;\n`
+    + `        var copy=Object.assign({},row);\n`
+    + `        copy.current=complete?row.target:0;\n`
+    + `        return copy;\n`
+    + `      });\n`
+    + `    };\n`
+    + `    qm.__act1ObjectivePresentation=true;\n`
+    + `  }\n`
+    + `  function correctQuestTurnIn(){\n`
+    + `    var gs=window.__GAME_STATE__, qm=gs&&gs.questManager, ps=gs&&gs.player&&gs.player.state;\n`
+    + `    if(!ps||!qm||typeof qm.getActiveQuests!=='function') return;\n`
+    + `    // getActiveQuests exposes the existing metadata objects; no quest/save implementation forks.\n`
+    + `    var quests=qm.getActiveQuests(ps);\n`
+    + `    for(var i=0;i<quests.length;i++) if(quests[i].id==='crystalCaveGate'&&quests[i].turnInMapId==='greenhollow')\n`
+    + `      quests[i].turnInMapId='millbrook';\n`
+    + `  }\n`
     + `  // The quest compass reads a frozen ox/oy table too, so without this it points at open sea.\n`
     + `  function wrapCompass(scene){\n`
     + `    if(scene.__act1CompassWrapped||typeof scene.getCompassTarget!=='function') return;\n`
     + `    var original=scene.getCompassTarget;\n`
     + `    scene.getCompassTarget=function(){\n`
+    + `      correctQuestTurnIn();\n`
     + `      var target=original.call(this);\n`
     + `      if(!target) return target;\n`
-    + `      var moved=COMPASS[target.mapId];\n`
+    + `      var moved=COMPASS[target.mapId||OLD_COMPASS[target.ox+','+target.oy]];\n`
     + `      if(!moved) return target;\n`
     + `      var copy={}; for(var k in target) if(Object.prototype.hasOwnProperty.call(target,k)) copy[k]=target[k];\n`
     + `      copy.ox=moved.x; copy.oy=moved.y; return copy;\n`
@@ -147,6 +188,7 @@ function renderRuntimeOverride(plate) {
     + `  }\n`
     + `  function wrapScene(scene){\n`
     + `    if(!scene) return false;\n`
+    + `    wrapQuestObjectivePresentation();\n`
     + `    wrapCanMove(scene); wrapCheckTransition(scene); wrapCompass(scene);\n`
     + `    state.wrappedScene=scene; return true;\n`
     + `  }\n`
@@ -161,19 +203,76 @@ function renderRuntimeOverride(plate) {
     + `  function armWrappers(){ try{ var s=findScene(); wrapScene(s); ensurePlate(s,true); }catch(e){} }\n`
     + `  armWrappers();\n`
     + `  var armTimer=(typeof window.setInterval==='function')?window.setInterval(armWrappers, 400):null;\n`
-    + `  function relocateIfNeeded(scene){\n`
-    + `    var x=scene.heroTileX,y=scene.heroTileY;\n`
-    + `    if(!inside(x,y)||(!blocked(scene.mapData[y][x])&&!gateRestricted(x,y))) return null;\n`
-    + `    var best=null,bestD=Infinity;\n`
-    + `    for(var i=0;i<SAFE.length;i++){ var p=SAFE[i],t=scene.mapData[p.y][p.x]; if(blocked(t)||gateRestricted(p.x,p.y)) continue;\n`
-    + `      var d=Math.abs(p.x-x)+Math.abs(p.y-y); if(d<bestD){best=p;bestD=d;} }\n`
-    + `    if(!best) throw new Error('Act 1 override has no safe relocation candidate');\n`
-    + `    scene.heroTileX=best.x; scene.heroTileY=best.y;\n`
-    + `    var sprite=scene.hero,first=scene.tileGrid&&scene.tileGrid[0]&&scene.tileGrid[0][0];\n`
-    + `    var size=(first&&first.displayWidth)||48; if(sprite){sprite.x=best.x*size+size/2;sprite.y=best.y*size+size/2;}\n`
+    + `  var RELOCATE_RADIUS_CELLS=6, RELOCATE_RETRY_LIMIT=40, RELOCATE_RETRY_MS=400;\n`
+    + `  function checkSpawn(scene,px,py){\n`
+    + `    var dq=window.__DQ_TILES__;\n`
+    + `    if(!dq||typeof dq.checkOverworldSpawn!=='function') return {status:'pending',reason:'movement-authority-unavailable'};\n`
+    + `    try{ return dq.checkOverworldSpawn(scene,px,py)||{status:'pending',reason:'empty-authority-result'}; }\n`
+    + `    catch(e){ return {status:'error',reason:'movement-authority-threw'}; }\n`
+    + `  }\n`
+    + `  function cellCenter(x){ var dq=window.__DQ_TILES__,space=dq&&dq.overworldSpace;\n`
+    + `    return space&&typeof space.cellCenter==='function'?space.cellCenter(x):null; }\n`
+    + `  function samePosition(scene,p){\n`
+    + `    var h=scene&&scene.hero;\n`
+    + `    if(h&&Number.isFinite(h.x)&&Number.isFinite(h.y)&&(!Number.isFinite(p.spriteX)||!Number.isFinite(p.spriteY))){\n`
+    + `      p.tileX=scene.heroTileX; p.tileY=scene.heroTileY; p.spriteX=h.x; p.spriteY=h.y; return true;\n`
+    + `    }\n`
+    + `    return !!(h&&Math.abs((scene.heroTileX||0)-p.tileX)<1e-6&&Math.abs((scene.heroTileY||0)-p.tileY)<1e-6\n`
+    + `      &&Math.abs(h.x-p.spriteX)<0.01&&Math.abs(h.y-p.spriteY)<0.01);\n`
+    + `  }\n`
+    + `  function moveToSafe(scene,p,from){\n`
+    + `    scene.heroTileX=p.x; scene.heroTileY=p.y;\n`
+    + `    if(scene.hero){ scene.hero.x=cellCenter(p.x); scene.hero.y=cellCenter(p.y); }\n`
     + `    if(typeof scene.updatePosition==='function') scene.updatePosition();\n`
     + `    if(typeof scene.updateCamera==='function') scene.updateCamera();\n`
-    + `    return {from:{x:x,y:y},to:{x:best.x,y:best.y}};\n`
+    + `    return {status:'relocated',from:from,to:{x:p.x,y:p.y}};\n`
+    + `  }\n`
+    + `  function relocateIfNeeded(scene){\n`
+    + `    var x=scene.heroTileX,y=scene.heroTileY,sprite=scene.hero;\n`
+    + `    if(!inside(x,y)) return {status:'outside-act1',at:{x:x,y:y}};\n`
+    + `    if(!sprite||!Number.isFinite(sprite.x)||!Number.isFinite(sprite.y)) return {status:'pending',reason:'hero-position-unavailable'};\n`
+    + `    var from={x:x,y:y,spriteX:sprite.x,spriteY:sprite.y},current=checkSpawn(scene,sprite.x,sprite.y);\n`
+    + `    if(current.status==='pending'||current.status==='outside-field'||current.status==='unavailable')\n`
+    + `      return {status:'pending',reason:current.reason||current.status,from:from};\n`
+    + `    if(current.status==='error') return {status:'error',reason:current.reason||'movement-authority-error',from:from};\n`
+    + `    if(current.status!=='ready') return {status:'error',reason:'unknown-movement-authority-status',from:from};\n`
+    + `    if(current.free) return {status:'kept',at:{x:x,y:y},sprite:{x:sprite.x,y:sprite.y}};\n`
+    + `    var dq=window.__DQ_TILES__,space=dq&&dq.overworldSpace;\n`
+    + `    if(!space||typeof space.toCanonical!=='function'||typeof space.cellCenter!=='function')\n`
+    + `      return {status:'pending',reason:'overworld-coordinate-authority-unavailable',from:from};\n`
+    + `    var ox=space.toCanonical(sprite.x)/48-0.5,oy=space.toCanonical(sprite.y)/48-0.5,rows=[];\n`
+    + `    for(var i=0;i<SAFE.length;i++){ var p=SAFE[i],d=Math.abs(p.x-ox)+Math.abs(p.y-oy);\n`
+    + `      if(d<=RELOCATE_RADIUS_CELLS) rows.push({p:p,d:d,i:i}); }\n`
+    + `    rows.sort(function(a,b){ return a.d-b.d||a.i-b.i; });\n`
+    + `    if(!rows.length) return {status:'error',reason:'no-nearby-safe-candidate',from:from};\n`
+    + `    for(var j=0;j<rows.length;j++){ var row=rows[j],cx=space.cellCenter(row.p.x),cy=space.cellCenter(row.p.y);\n`
+    + `      var candidate=checkSpawn(scene,cx,cy);\n`
+    + `      if(candidate.status==='pending'||candidate.status==='outside-field'||candidate.status==='unavailable')\n`
+    + `        return {status:'pending',reason:'nearer-safe-candidate-unevaluable',candidate:{x:row.p.x,y:row.p.y},from:from};\n`
+    + `      if(candidate.status==='error') return {status:'error',reason:candidate.reason||'movement-authority-error',from:from};\n`
+    + `      if(candidate.status!=='ready') return {status:'error',reason:'unknown-candidate-authority-status',from:from};\n`
+    + `      if(candidate.free) return moveToSafe(scene,row.p,{x:x,y:y,spriteX:sprite.x,spriteY:sprite.y});\n`
+    + `    }\n`
+    + `    return {status:'error',reason:'no-legal-safe-candidate-in-bounded-field',from:from};\n`
+    + `  }\n`
+    + `  function beginPendingRelocation(scene){\n`
+    + `    var h=scene&&scene.hero;\n`
+    + `    state.pendingRelocation={scene:scene,mapData:scene&&scene.mapData,tileX:scene&&scene.heroTileX,tileY:scene&&scene.heroTileY,\n`
+    + `      spriteX:h&&h.x,spriteY:h&&h.y,attempts:0,lastAttempt:0};\n`
+    + `  }\n`
+    + `  function retryPendingRelocation(scene){\n`
+    + `    var p=state.pendingRelocation; if(!p) return null;\n`
+    + `    if(p.scene!==scene||p.mapData!==scene.mapData){ state.pendingRelocation=null;\n`
+    + `      return (state.relocation={status:'cancelled-stale-scene'}); }\n`
+    + `    if(!samePosition(scene,p)){ state.pendingRelocation=null;\n`
+    + `      return (state.relocation={status:'cancelled-position-changed'}); }\n`
+    + `    var now=Date.now(); if(p.lastAttempt&&now-p.lastAttempt<RELOCATE_RETRY_MS) return state.relocation;\n`
+    + `    if(p.attempts>=RELOCATE_RETRY_LIMIT){ state.pendingRelocation=null;\n`
+    + `      return (state.relocation={status:'error',reason:'movement-authority-timeout',attempts:p.attempts}); }\n`
+    + `    p.lastAttempt=now; p.attempts++;\n`
+    + `    var result=relocateIfNeeded(scene); state.relocation=result;\n`
+    + `    if(result.status!=='pending') state.pendingRelocation=null;\n`
+    + `    return result;\n`
     + `  }\n`
     + `  function usable(scene){\n`
     + `    return !!(scene&&scene.currentMapId==='overworld'&&scene.mapData&&scene.mapData.length===400\n`
@@ -203,12 +302,15 @@ function renderRuntimeOverride(plate) {
     + `    if(applying||!usable(scene)) return false;\n`
     + `    applying=true;\n`
     + `    try{\n`
-    + `      if(state.appliedMap!==scene.mapData){\n`
-    + `        writePlate(scene); state.appliedMap=scene.mapData; state.relocation=relocateIfNeeded(scene);\n`
-    + `        return true;\n`
+    + `      var mapChanged=state.appliedMap!==scene.mapData;\n`
+    + `      if(mapChanged){ writePlate(scene); state.appliedMap=scene.mapData; }\n`
+    + `      if(mapChanged||state.relocationScene!==scene){\n`
+    + `        state.relocationScene=scene; beginPendingRelocation(scene); retryPendingRelocation(scene); return mapChanged;\n`
     + `      }\n`
-    + `      if(deep&&!plateIntact(scene)){ writePlate(scene); state.repairs++; return true; }\n`
-    + `      return false;\n`
+    + `      var repaired=false;\n`
+    + `      if(deep&&!plateIntact(scene)){ writePlate(scene); state.repairs++; repaired=true; }\n`
+    + `      if(deep&&state.pendingRelocation) retryPendingRelocation(scene);\n`
+    + `      return repaired;\n`
     + `    } finally { applying=false; }\n`
     + `  }\n`
     + `  function apply(scene){\n`
@@ -216,12 +318,16 @@ function renderRuntimeOverride(plate) {
     + `    wrapScene(scene);\n`
     + `    return ensurePlate(scene,true);\n`
     + `  }\n`
-    + `  window.__ACT1_WORLD_MAP__={ revision:REVISION, sourceSha256:SOURCE_SHA256, plateSha256:PLATE_SHA256, bounds:BOUNDS.slice(), landmarks:LANDMARKS, forestBlock:FOREST_BLOCK, bridgeDecks:BRIDGE_DECKS, harborCells:HARBOR_CELLS, gate:GATE, landmarkBlockers:LANDMARK_BLOCKERS, apply:apply, ensurePlate:ensurePlate, armWrappers:armWrappers, armTimer:armTimer, state:state };\n`
+    + `  window.__ACT1_WORLD_MAP__={ revision:REVISION, sourceSha256:SOURCE_SHA256, plateSha256:PLATE_SHA256, bounds:BOUNDS.slice(), landmarks:LANDMARKS, forestBlock:FOREST_BLOCK, bridgeDecks:BRIDGE_DECKS, harborCells:HARBOR_CELLS, gate:GATE, landmarkBlockers:LANDMARK_BLOCKERS, seedWalkableAt:seedWalkableAt, apply:apply, ensurePlate:ensurePlate, armWrappers:armWrappers, armTimer:armTimer, state:state };\n`
     + `})();\n`;
 }
 
 const args = process.argv.slice(2);
-assert(args.length <= 1 && (args.length === 0 || args[0] === '--check'), 'usage: export_act1_runtime_override.mjs [--check]');
+assert(args.length <= 2 && new Set(args).size === args.length
+  && args.every(arg => arg === '--check' || arg === '--public-only'),
+  'usage: export_act1_runtime_override.mjs [--check] [--public-only]');
+const checkOnly = args.includes('--check');
+const outputs = args.includes('--public-only') ? [OUTPUTS[0]] : OUTPUTS;
 const plate = buildAct1OwnerPaintPlate();
 // THE SINGLE-ENTRANCE POST-PASS. The owner's plate places the doors; this stamps the sprite
 // footprints around them so each landmark has exactly one way in and no walkable roof. It runs
@@ -232,13 +338,13 @@ const footprints = applyLandmarkFootprints(plate);
 const stats = validatePlate(plate);
 const content = renderRuntimeOverride(plate);
 
-if (args[0] === '--check') {
-  for (const output of OUTPUTS) assert(readFileSync(output, 'utf8') === content, `${output} is stale`);
+if (checkOnly) {
+  for (const output of outputs) assert(readFileSync(output, 'utf8') === content, `${output} is stale`);
   console.log(`ACT 1 RUNTIME OVERRIDE CHECK PASS: ${sha256(content)}`
     + ` (${stats.landmarks} owner-placed landmarks, ${stats.regionCells}-cell single walkable region,`
     + ` ${plate.landmarkBlockers.length} landmark blocker cells)`);
 } else {
-  for (const output of OUTPUTS) writeFileSync(output, content);
+  for (const output of outputs) writeFileSync(output, content);
   console.log(`ACT 1 RUNTIME OVERRIDE WRITTEN: ${sha256(content)}`
     + ` (${stats.landmarks} owner-placed landmarks, ${stats.regionCells}-cell single walkable region,`
     + ` ${plate.landmarkBlockers.length} landmark blocker cells)`);

@@ -1,0 +1,400 @@
+{
+  "schema": "qok-forward-portable-static-evidence-v1",
+  "items": [
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/a1ow-v2-independent-review/baked-final-map.json",
+      "bytes": 262999,
+      "sha256": "a9fecf54db9de1f18a1f26c3f74b1bab9be230a247076e10580859e7074ab212"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/a1ow-v2-independent-review/composed-root-identities.json",
+      "bytes": 2133,
+      "sha256": "f09a168d0c421d060c0c578dd3af9d4d48f32ef59c7ff268b8bd5167813a35db"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/a1ow-v2-independent-review/independent-a1ow-v2-integration-review-20261011.json",
+      "bytes": 7680,
+      "sha256": "da89d9f50d78beb45555f299eb83ce11516ad627052480a111eb0b35fc36cef1"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/a1ow-v2-independent-review/independent-a1ow-v2-recomputation.json",
+      "bytes": 2131,
+      "sha256": "0226b32538ae8aff716ca1294cb398cdff4aed7ae5fc4c66a7a85165c2d11297"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/a1ow-v2-independent-review/portable-runner-recomputation.json",
+      "bytes": 6728,
+      "sha256": "5ab17e63eb5e034e5df7543244d778d88abda8936c7dfe9f33ccec433285d348"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/full-generation-report.md",
+      "bytes": 4698,
+      "sha256": "eacc7f6fc4eba2c07d05724e16a5780a868af0fd274c1d7c089aa5a5f018d4cf"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/full-region-review/INDEPENDENT-STATIC-CHECKPOINT.md",
+      "bytes": 3654,
+      "sha256": "523aa452899bc3f9d55922cb5fc3773ce0aea49c72d2e043b619138ea8ed89e3"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/full-region-review/METADATA-REBIND-REVIEW.md",
+      "bytes": 4035,
+      "sha256": "e6e35575fdadb9b90347ada85afe9d4bc1f3a0a0cc6d0175fedd4b3e17862ebb"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/full-region-review/REVIEW-REPORT.md",
+      "bytes": 5165,
+      "sha256": "170bc0052482bd17d426f3772fabfef4e747080d65b4e3feb5e74c5e97951e48"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/full-region-review/final-independent-recomputation.json",
+      "bytes": 6185,
+      "sha256": "a8f5b5ef4ecbea25f661a5e9c8a9e36a06d438379a7df6adfb1ef3a3e845c30b"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/full-region-review/ground-repair-independent-recomputation.json",
+      "bytes": 6117,
+      "sha256": "3f6e43d548d070446096dac59ce4048cd49c879fd1aedd7e20de1e0d489d5d21"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/full-region-review/independent-recomputation.json",
+      "bytes": 3839,
+      "sha256": "b521fb40547cab4616204b8a502ec1897ae2c03708b16212d3b371e2eb021696"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/full-region-review/portable-recheck-with-safe-cells.json",
+      "bytes": 4494,
+      "sha256": "808a57bf4c96c5ce7e57e04d896757ff4f12fab7787a5b344ff3799002cd395c"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/full-region-review/portable-recheck.json",
+      "bytes": 3839,
+      "sha256": "b521fb40547cab4616204b8a502ec1897ae2c03708b16212d3b371e2eb021696"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/full-region-review/reviewer-checker-portability.diff",
+      "bytes": 13075,
+      "sha256": "7d7e05bdb9a2c725856a0083500abc669b388ff6ff55f159483a67f1b9e8b441"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/full-region-review/startup-recovery-independent-recomputation-20261008.json",
+      "bytes": 6117,
+      "sha256": "75be60d66e420698273c9c834687bb1224d5b19153752be7aa4aa0c463e8256c"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/full-region-review/visual/companion-fin-contact-full.png",
+      "bytes": 371762,
+      "sha256": "55f27e99d7c0a6518bab3e8633e024af880c6050e440844df972dfe1b2b76c6d"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/full-region-review/visual/east-fm-fallback6x8.png",
+      "bytes": 93296,
+      "sha256": "49fac6414145c910bb98edd708ae0d46b611faff4e96d7448df71d0323ab34d9"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/full-region-review/visual/east-fm-full.png",
+      "bytes": 1804520,
+      "sha256": "d9ae76638760b34debdf3ef31d71f573a540a0b628530af29a330f3cb86aca12"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/full-region-review/visual/east-fm-tight-fallback6x8.png",
+      "bytes": 8726,
+      "sha256": "99e5bbd38906e758f447a09a5daf70d58053d4e7eb7e4e1d6cc3ba1d26c4d4ea"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/full-region-review/visual/east-fm-tight-full.png",
+      "bytes": 159354,
+      "sha256": "4db790322d2570e64666c9d36ac1bc6a120499d4a77cd305f03ab61c23c5eb81"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/full-region-review/visual/north-fallback6x8.png",
+      "bytes": 92812,
+      "sha256": "27b190b75030d66d59a920e056c6065290892901f0058af27a29bd3b68bf1d0a"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/full-region-review/visual/north-full.png",
+      "bytes": 1298299,
+      "sha256": "e77fc7ed946a947331830d16d13b06bf7e90f2c283998246a4e14f7024350a29"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/full-region-review/visual/residual-six-crop.png",
+      "bytes": 91883,
+      "sha256": "60c2d3abefaf1704d09f206f57dc264667fe1f8cbe34133f8fa5523b9d02d3e9"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/full-region-review/visual/west-forest-full.png",
+      "bytes": 1741856,
+      "sha256": "61e94ee3692573a212b115b7ed546c1f9507052abf69a20a8746b7990572ce92"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/ground-repair-20261007/composed-full-root-comparison.json",
+      "bytes": 4821,
+      "sha256": "dd1a0becf0681ca2921cf97d1ddbecb5cae17552d41586eeb83676efa5cd18e2"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/ground-repair-20261007/ground-ab-comparison.json",
+      "bytes": 42726,
+      "sha256": "12a6e559edb5460e627975061149f2449e8ba1043daf0dd3efe086cf33822fb9"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/ground-repair-20261007/ground-contexts.png",
+      "bytes": 1077499,
+      "sha256": "cef23015bc9f99c923cf7ad4668bcb96069a350256a25ae1a92d00adcea71617"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/ground-repair-20261007/ground-repair-report.md",
+      "bytes": 5109,
+      "sha256": "eb47f3a86833ceb6e3bc4de61aaf54903659fa3838a7bb46bf1c9eff13b7461d"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/ground-repair-20261007/ground-replay-checkpoint.json",
+      "bytes": 17333,
+      "sha256": "086e9c4db06900bdb5a01ace8784cbf275396488bdff06c07c348b49296af47d"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/ground-repair-20261007/independent-ground-review.md",
+      "bytes": 2779,
+      "sha256": "2f671e274025d2f1da3b73a6d18b7be578cf1b3ca612ab12fed10db8f3adb03a"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/ground-repair-20261007/native-registered-after.png",
+      "bytes": 82777,
+      "sha256": "6d2ab5ca321b50a182569f39feeef2e91a7a9caffd95b4dd7c19dde6e5e5c7aa"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/ground-repair-20261007/native-registered-before.png",
+      "bytes": 82479,
+      "sha256": "bf26ecfbb015bf18cdd6c37b42f1747354205dfe2a0f497227f0119d39171dca"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/ground-repair-20261007/prior-forward-profile-descriptor.json",
+      "bytes": 231564,
+      "sha256": "5d33b85abde60112990559c6aa30a73ef857a4282b8ae51f45a4b8321f7f3dbe"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/ground-repair-20261007/prior-generated-manifest.json",
+      "bytes": 282250,
+      "sha256": "0ee38ee74cb8faff4c07ba78c040548cf41bbaa974234855d8faa81591593155"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/ground-repair-20261007/prior-independent-static-review.json",
+      "bytes": 14545,
+      "sha256": "f509c6994ea5611ad6daf856c3f3d47d037e20b492ce031243f38e1e9f210e31"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/ground-repair-20261007/prior-output-receipt.json",
+      "bytes": 165666,
+      "sha256": "3d51f2c74d22cdcd3aed0d5913fbfa6fdaa4e28ef297243832211b8b700b7e95"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/ground-repair-20261007/prior-regeneration-comparison.json",
+      "bytes": 785,
+      "sha256": "bbd8dcbaab6cda45235cd269a551002f547cf4e34ed37ad288f540c51ebacc1c"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/ground-repair-20261007/sample-mountain-plain-transition.png",
+      "bytes": 156839,
+      "sha256": "e577f382f5ea9acd65c24ef971669f9ecc8a4df2c4fed3aa34adc575587e5d6d"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/ground-repair-20261007/sample-native-mapped-c7-r3.png",
+      "bytes": 513883,
+      "sha256": "1057088e5521c9e477a63fb0c4b058b3c739829cb6833a30ce7d3657650e05b9"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/ground-repair-20261007/sample-plain-forest-transition.png",
+      "bytes": 155332,
+      "sha256": "50b9496e020a8ec10f8be933925579bb99c92d3b0edf21dce0e5991b2602abf9"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/ground-repair-20261007/sample-route-context.png",
+      "bytes": 153768,
+      "sha256": "1b28e7d4cad61df5902c0ca12425bb2f23d7bfa5d902e72bb72c2433875116ed"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/ground-repair-20261007/sample-water-shore.png",
+      "bytes": 137437,
+      "sha256": "8477a8950a69aec978d85aaae2b0fe49558b3d0954425a3e853226a94346b44f"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/output-receipt.json",
+      "bytes": 168154,
+      "sha256": "da6c3875ee094d99a5bd901d5a0b5b53014fba3251bbcf0ffd36574de5765765"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/pathconstraints-metadata-rebind.json",
+      "bytes": 2552,
+      "sha256": "5b52a6502ec0807073c92f9ce9817a0a15625ff989946a02c6875511fd774f75"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/regeneration-comparison.json",
+      "bytes": 785,
+      "sha256": "bbd8dcbaab6cda45235cd269a551002f547cf4e34ed37ad288f540c51ebacc1c"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/route-audit/FOLLOW-UP.md",
+      "bytes": 1403,
+      "sha256": "79ed22525844595dc666300ebebba2e88ece850af106075e990ade964c4fb6ad"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/route-audit/ROUTE-AUDIT-CLASSIFICATION.md",
+      "bytes": 4773,
+      "sha256": "de89891b75d917e1d883a58f2f35204697d1731cd7be288e93c8ad2067483f5b"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/route-audit/ROUTE-AUDIT.json",
+      "bytes": 31381,
+      "sha256": "92f5f341ec102edede2ef2795c354f89cb381304c6dbff7b9a48fd87662411b5"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/route-audit/route-paths.json",
+      "bytes": 791910,
+      "sha256": "b508422dee9fcb132ecf5e0001978e02378db75cec1adb2eb6cc86c2480cf83d"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/route-audit/route-progress.json",
+      "bytes": 1996,
+      "sha256": "019128d067c9caccaaa8d55b35311614147c602132be4d31bdc28413a2dd0b71"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/runtime-invariants-static.json",
+      "bytes": 2991,
+      "sha256": "19f7311cc229f99b2c1fd7be4eb548cf38593580bddce82a36c84a970e21d293"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/startup-recovery-20261008/IMPLEMENTATION-REPORT.md",
+      "bytes": 4186,
+      "sha256": "28cd6aa7dd053101071c30b88120174e426e50eec9d38d51274b8a9061e6db95"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/startup-recovery-20261008/INDEPENDENT-REVIEW.md",
+      "bytes": 3762,
+      "sha256": "0254012fbb19d9e073d9dfeafc3a29c695ddb2be2480c447fc5e82e0caa6c139"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/whole-rock-integration-20261008/approved-north-preview.png",
+      "bytes": 8173,
+      "sha256": "80723f662ed8694794d4b89582a836f352178dd269a4f793369c6c00050eb338"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/whole-rock-integration-20261008/boundary-crown-alpha-attribution.json",
+      "bytes": 13882,
+      "sha256": "406c1f5a7457666180153270c63cf31efa7b2fbdfb0b823153b131db5e7d94ab"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/whole-rock-integration-20261008/direct-contact-static-review.json",
+      "bytes": 12297,
+      "sha256": "db1de7dc03be005027a238c725ae1c6b1fdb924e3ac45a6d5fa25ec6f5ec4a87"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/whole-rock-integration-20261008/independent-static-review.json",
+      "bytes": 9722,
+      "sha256": "4132adb666119e06816297a4c38614184cd9c66e578db1614271e679005961e5"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/whole-rock-integration-20261008/install-receipt.json",
+      "bytes": 15995,
+      "sha256": "73c180abb3b67e3bf40f60a43a5cbb1c4b40c634b321f4928af3682383fe906c"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/whole-rock-integration-20261008/portable-recomputation-20261008.json",
+      "bytes": 10007,
+      "sha256": "297717ce52b4e5469bed68ad3afefae84856d8dbda4ff4ef84ae2c18c2a822cd"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/whole-rock-integration-20261008/regeneration-comparison.json",
+      "bytes": 731,
+      "sha256": "796712b792dd32aa611f839b29e43f47d993009ad97cd9d69b332c89a1366bc6"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/whole-rock-integration-20261008/route-audit/ROUTE-AUDIT-CLASSIFICATION-WHOLE-ROCK.md",
+      "bytes": 3201,
+      "sha256": "0563b16d078ac494fabb562a163e27adb06026c57fb34f33a2d4d0ae98cac675"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/whole-rock-integration-20261008/route-audit/ROUTE-AUDIT.json",
+      "bytes": 32292,
+      "sha256": "18b1c09a9dca0f62245bb13fcfba30434b950f7821fe1da76ad775b7fd47e62b"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/whole-rock-integration-20261008/route-audit/route-audit-v2-binding-closure.json",
+      "bytes": 5943,
+      "sha256": "7629effe04131124bdb203d6af15fd0af15f9c9eaccd13e81da45e7639e26ac7"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/whole-rock-integration-20261008/route-audit/route-paths.json",
+      "bytes": 792825,
+      "sha256": "85b94da010dceccfb34ef7bdc44dac4b637468c656c605323660f3be944b2f0d"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/whole-rock-integration-20261008/whole-crop-global-contact-order.png",
+      "bytes": 1596563,
+      "sha256": "f5a212be3491f20ac13786705eec2f4ec1baf46f4e0f19f14637da1805f5cb68"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/review-evidence/north-perimeter-repair-20261010/generation-final-v3/evidence/north-full-final-v3.png",
+      "bytes": 2538107,
+      "sha256": "fa50ed8033ce087cca240e318190418189da7dcfcc196a7e44a7124808ecda8b"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/review-evidence/north-perimeter-repair-20261010/generation-final-v3/evidence/north-hero-final-v3.png",
+      "bytes": 553199,
+      "sha256": "d3f1434af53dd8ff26b6bc4526f444d7184787871562a7d0fa6c5d46e2e5bf46"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/review-evidence/north-perimeter-repair-20261010/generation-v3-reproducibility-20261010.json",
+      "bytes": 2445,
+      "sha256": "e3a2ce0a51f4187e1f3d3e5e603e82e98028e19974ffe07ccb30893afb00928f"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/review-evidence/north-perimeter-repair-20261010/independent-clearance-result.json",
+      "bytes": 7773,
+      "sha256": "eaead2c2d1d04b127379e26d04e40a6d8de7d9dc09da679dd50edde1fb4e7db6"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/review-evidence/north-perimeter-repair-20261010/independent-final-review.md",
+      "bytes": 7239,
+      "sha256": "676bd1c3b4545ce7e0416072f4068f0b82480eefdab25aede47d6a1d17d23cdc"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/review-evidence/north-perimeter-repair-20261010/independent-north-fetch-lifecycle.cjs",
+      "bytes": 7690,
+      "sha256": "85238aee71895b394b35ecf04b5fd57f9193ee2a49b4c1d48f1a6c606e5aa4f7"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/review-evidence/north-perimeter-repair-20261010/independent-outside-support-report.md",
+      "bytes": 3187,
+      "sha256": "d76a105eb19458d342f06b0eac9f2885eed682a65b6960c844d50446d1bc55a3"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/review-evidence/north-perimeter-repair-20261010/independent-outside-support-result.json",
+      "bytes": 3854,
+      "sha256": "32b465983d54b7b9dd7ef81cdf35816e26439e40b47c4f93ce34d3cd25a49894"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/review-evidence/north-perimeter-repair-20261010/independent-renderer-review-20261010.md",
+      "bytes": 4371,
+      "sha256": "bc5a3204a390ba93579efb1dfa0c1cbc6c540b034ad99a3ed177fb91f2985ac2"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/review-evidence/north-perimeter-repair-20261010/metadata-only-rebind-comparison-20261010.json",
+      "bytes": 2467,
+      "sha256": "f3cc72e6db40d5b6d05c615ac555eaa176bf1e2f6f8a664f7f1a73d9796b7ee2"
+    }
+  ],
+  "notes": [
+    "The original full-region static review remains an unchanged historical proof for the frozen non-ground content; the ground repair has its own independent report and recomputation.",
+    "The corrected ground compositor was rerendered in two separate ground-only output roots (120 chunks plus 888x1092 fallback each); all rendered ground bytes and decoded pixels match.",
+    "The composed full-profile roots have exact matching 488-path inventories. 121 ground resources were rerendered, 71 changed bytes and 50 were byte-identical; 366 non-ground rows were retained byte-identically and the manifest was regenerated.",
+    "The refreshed independent recomputation binds the new manifest, output receipt, exact QOK, 149 safe cells, current A1OW decode, underpaint phase, R26 locked geometry, and unchanged source collision/water/canopy. It does not establish all-route movement.",
+    "Route audit remains acceptance-inconclusive; capped searches and blocked anchors remain pending dynamic checks.",
+    "No native phone/tablet movement, fallback streaming, save/resume, cave transition, battle return, or release eligibility is established by these static artifacts.",
+    "Whole-rock stage A/B is the current static profile candidate: 488 receipt rows match both regenerated roots and installed candidate; the exact installation changed 9 public paths and 13 generated-output rows, preserving 49 unrelated public overlays.",
+    "The current independent source/object review binds the five-main/four-companion north recipe, exact 9-piece union, 194 whole-cliff-source classification (25 contained omitted, 6 crossing plus 163 disjoint retained), and no per-pixel clipping.",
+    "Current route evidence is acceptance-inconclusive: 11 pass, 5 blocked-at-target, and 4 expansion-capped targets per hero. Equal prior waypoints and bounded static contacts do not prove all routes, Crystal Cave progression, or Port Sapphire access.",
+    "Bounded contact samples use the current QOK and both current hero stencils: north contact/reverse samples pass for both heroes; the open flank approach passes and the rock-side cell remains blocked. These are static samples, not native movement evidence.",
+    "A1OW v2 header/support identity and distance payload remain exactly reviewed and unchanged; mountains remain analytic outside/padding. This does not establish broad A1OW mountain reconciliation or runtime hero-foot clearance.",
+    "No native movement, save/resume, cave round-trip, chunk streaming, battle return, or release eligibility is asserted; gateReady=false and nativeVerified=false.",
+    "North-perimeter v3 evidence binds the 493-row clean regeneration, north-layer lifecycle and collision union; it remains static evidence only and does not establish native release gates."
+  ]
+}

@@ -1,0 +1,300 @@
+{
+  "status": "PASS_BOUNDED_STATIC_OUTPUT_RECOMPUTATION",
+  "source": {
+    "path": "/Users/chris/.codex/workspaces/edu-rpg-forward-20261007/design/terrain-current-profile-20261007/generate_forward_profile.py",
+    "sha256": "571f8f1a8bb803aea8dd2d5ab1ef34c3bfde2162c6a42b9d86f8ed3d69e383d4"
+  },
+  "portableReceiptSha256": "caa119e842428ce77db226f25828b1412403609e26353c8e9d5284bb854ac3e5",
+  "outputInventory": {
+    "fileCount": 488,
+    "AInventoryErrors": 0,
+    "BInventoryErrors": 0,
+    "portableInventoryErrors": 0,
+    "AandBIdentical": true,
+    "frozenOutputRootsIdentical": true,
+    "installedCandidateReceiptSha256": "caa119e842428ce77db226f25828b1412403609e26353c8e9d5284bb854ac3e5",
+    "installedGeneratedAndPublicCopiesMatchAllRows": true,
+    "installedInventoryErrors": 0,
+    "installReceiptSha256": "73c180abb3b67e3bf40f60a43a5cbb1c4b40c634b321f4928af3682383fe906c",
+    "preservedUnrelatedPublicOverlays": 49,
+    "portableVsAOnlyExpectedDifferences": {}
+  },
+  "outputAlpha": {
+    "sha256": "944062209c3ee9392c4a971fa5b792e19bdcec83ec2b08dbfd24155680a52fdd",
+    "pixels": 10508818,
+    "shape": [
+      4736,
+      5824
+    ],
+    "chunkReconstructionXorPixels": 0,
+    "thresholdValues": [
+      0,
+      255
+    ]
+  },
+  "qok": {
+    "magic": "QOKF8COL",
+    "version": 1,
+    "headerBytes": 64,
+    "width": 4736,
+    "height": 5824,
+    "pixelsPerCell": 32,
+    "sourceSha256Matches": true,
+    "xorPixels": 0
+  },
+  "underpaintPhase": {
+    "manifestSha256": "24f3de319530c68a15a6097b20e14f4567d6bfe63d5dfff895a4883ecef35c5b",
+    "baseUnderpaintSha256": "3cbb33a9bc78bbbfa0b8ab8300d8c85a21f24014f176c488959fda0f1e163b1d",
+    "forestUnderpaintSha256": "ab5f809f3e562d4b7fe7c39d34407225d1b62bcfc4ae6900df63778ab54d47fd",
+    "dimensionsPx6": [
+      888,
+      1092
+    ],
+    "pixelsPerCell": 6,
+    "semanticBounds": [
+      16,
+      218,
+      163,
+      399
+    ],
+    "activeDqTilesSha256": "c18ce18e2f25ef6779165389d86163cea64136711f8999c4fd843154e6799c7a",
+    "runtimeDepths": {
+      "substrate": 0.7,
+      "base": 1.1,
+      "forestStencil": 9.5
+    },
+    "recomputedChunkOriginAndEdgeAlignment": {
+      "chunksIntersectingSemanticBounds": 120,
+      "mismatches": 0,
+      "semanticCellsCoveredExactlyOnce": true,
+      "sameOwTileWorldGrid": true
+    },
+    "staticSourceAndVisualEvidenceOnly": true
+  },
+  "a1owDecode": {
+    "sha256": "00a520ae09089547ca4af4ef1077b84acdad98d4989de238f3ee30e28ad092c6",
+    "bytes": 9688672,
+    "format": "A1OW-v2",
+    "version": 2,
+    "headerBytes": 96,
+    "pixelsPerCell": 48,
+    "mapCells": [
+      320,
+      400
+    ],
+    "far": 255,
+    "reservedBytesZero": true,
+    "blocks": 4094,
+    "supportFNV32": 4271507709,
+    "supportSha256": "eeaf65c08cda239ea8755a3af0026ed0ca61e19a2683cafc10610b5c4027914a",
+    "semanticsSha256": "a6e6e7f228d040381539618d99f03e774a16dd7cadbaf8cc76a115934d324f67",
+    "payloadSha256": "05be9638d04a692668c3a1c8b4bd3d809216bcede2e090a74a0712cb5467498c",
+    "payloadMatchesFrozenV1BodySha256": true,
+    "supportBounds": {
+      "x0": 0,
+      "y0": 173,
+      "x1": 208,
+      "y1": 399
+    },
+    "supportClassBytes": 47443,
+    "supportEffectiveClassBytesSha256": "63d55c8dd75d6d946f5b56e3f58ce6a4ec287e6ccccddebed61329a70fb972d3",
+    "supportMapProofSha256": "a9fecf54db9de1f18a1f26c3f74b1bab9be230a247076e10580859e7074ab212",
+    "productionParserSourceSha256": "c18ce18e2f25ef6779165389d86163cea64136711f8999c4fd843154e6799c7a",
+    "scope": "water only inside semantic bounds [16,218,163,399]; mountain remains analytic outside and in the 40-cell bake padding",
+    "mountainsRemainAnalytic": true,
+    "fullRuntimeMovementUnproven": true
+  },
+  "safeCellsQok": {
+    "count": 149,
+    "collisionSha256": "05c4a76f914d9f20c82bf42d1eb574d774f15bd924dbee708aca09d260c97346",
+    "heroChecks": {
+      "g3": {
+        "sourceSha256": "070a8a452c3dda775bd6c8593a66d57a5a13d97b9fb33378ea5b2bb0e1fded3c",
+        "unionStencilPoints": 2051,
+        "safeCellCentersChecked": 149,
+        "substepSamplesPerCell": 5,
+        "qokHits": 0
+      },
+      "male": {
+        "sourceSha256": "88cbed8f9d707b216ada01e108eedd5822c6bcfc69c8dd22af2457f231dc0976",
+        "unionStencilPoints": 1941,
+        "safeCellCentersChecked": 149,
+        "substepSamplesPerCell": 5,
+        "qokHits": 0
+      }
+    }
+  },
+  "geometryAndCopies": {
+    "chunkCount": 120,
+    "sourceGeometryExact": true,
+    "allWaterAndCanopyHashesMatchFrozenCurrentManifest": true,
+    "A1OWSourcePinPreserved": true,
+    "r26LockedFieldsExact": [
+      "designLocks",
+      "semanticBounds",
+      "semanticRows",
+      "chunkSize",
+      "streaming",
+      "detailRegions",
+      "pathConstraints"
+    ],
+    "r26AuthoritySha256": "7306e81411a230d3d83d8c179c9a55de5d0a234f26757654872b1b2c264210a4",
+    "pathConstraintsSha256": "e169f2e853c1ae7cc4a677ab9462ad1403f36d4ccccc040312f343d7bcd002f4",
+    "designLocksSha256": "dfe7050920603031afb79445eabc1ee974c6038466142add38c5b54bd23c2656"
+  },
+  "northRecipe": {
+    "objects": 9,
+    "recomputedAlphaUnionPixels": 278478,
+    "expectedAlphaUnionPixels": 278478,
+    "contactRowsMatchApprovedRecipe": true,
+    "atlasGroups": {
+      "main": 5,
+      "companion": 4
+    },
+    "perPieceSourceAndProcessedHashesVerified": true,
+    "ownerApprovedNorthPlainPixels": {
+      "ridge": 50075,
+      "fill": 52976
+    }
+  },
+  "wholeObjectPolicy": {
+    "sourcePlacementSha256": "8f5f0ece745dc4d9378c24e21c1fc2992d8ca03cee842aeeac444daf5eda0fa7",
+    "sourceObjects": 194,
+    "stableIdentityCount": 194,
+    "rectangleGlobalXYXY": [
+      2344,
+      0,
+      3234,
+      400
+    ],
+    "classificationCounts": {
+      "contained": 25,
+      "crossing": 6,
+      "disjoint": 163
+    },
+    "omittedContainedStableIdentityCount": 25,
+    "retainedCrossingStableIdentityCount": 6,
+    "retainedDisjointStableIdentityCount": 163,
+    "retainedTotal": 169,
+    "perPixelClipping": false,
+    "receiptMatchesIndependentClassification": true
+  },
+  "boundary": {
+    "FMEdges": 78,
+    "placements": 40,
+    "immutablePilotSeeds": 11,
+    "flank118925": true,
+    "flank135625": true,
+    "rejected136050Absent": true,
+    "targetBefore": 36421,
+    "targetAfter": 6,
+    "newPPixelsBoundaryOnly": 0,
+    "currentGuardHits": 0,
+    "retainedResidual": {
+      "pixelCount": 6,
+      "components": [
+        {
+          "pixels": 2,
+          "bounds": [
+            4016,
+            1809,
+            4018,
+            1810
+          ]
+        },
+        {
+          "pixels": 1,
+          "bounds": [
+            4049,
+            1809,
+            4050,
+            1810
+          ]
+        },
+        {
+          "pixels": 3,
+          "bounds": [
+            4060,
+            1809,
+            4063,
+            1810
+          ]
+        }
+      ],
+      "selectableHeroAlphaUnionBoundsPx": [
+        50,
+        54
+      ],
+      "classification": "three disconnected single-row exposed F/M pinholes (2, 1, and 3 pixels); not a continuous wedge; retained unfilled for visual/native collision review",
+      "guardOverlapPixels": 0
+    }
+  },
+  "routeEvidence": {
+    "runnerSha256": "9b22791aaa5c72802760a4905ce6e94bce2bb55fe7888a075d2fe86c802764ef",
+    "reportSha256": "18b1c09a9dca0f62245bb13fcfba30434b950f7821fe1da76ad775b7fd47e62b",
+    "pathDataSha256": "85b94da010dceccfb34ef7bdc44dac4b637468c656c605323660f3be944b2f0d",
+    "bindingClosureSha256": "7629effe04131124bdb203d6af15fd0af15f9c9eaccd13e81da45e7639e26ac7",
+    "status": "inconclusive",
+    "targetsPerHero": 20,
+    "perHeroCounts": {
+      "g3": {
+        "pass": 11,
+        "blocked-at-target": 5,
+        "expansion-cap": 4
+      },
+      "male": {
+        "pass": 11,
+        "blocked-at-target": 5,
+        "expansion-cap": 4
+      }
+    },
+    "targetResultsAndWaypointsMatchPriorAudit": true,
+    "collisionAwareAllRoutesProven": false,
+    "nativeMovementProven": false,
+    "caveProgressionProven": false,
+    "portSapphireAnchorProven": false,
+    "reason": "The static collision-aware audit remains inconclusive: it has blocked tile-center anchors and expansion-capped searches. Exact parity with the prior audit proves no named-route regression, not all-route connectivity."
+  },
+  "directContactSamples": {
+    "reportSha256": "db1de7dc03be005027a238c725ae1c6b1fdb924e3ac45a6d5fa25ec6f5ec4a87",
+    "status": "PASS_BOUNDED_STATIC_CONTACTS",
+    "northBothDirectionsPassForBothHeroes": true,
+    "flankOpenApproachContactPassForBothHeroes": true,
+    "flankRockSideBlockedForBothHeroes": true,
+    "nativeMovementProven": false
+  },
+  "deliveryState": {
+    "fullWorldComplete": true,
+    "gateReady": false,
+    "nativeVerified": false,
+    "releaseEligible": false,
+    "nativeGroupsPending": 6,
+    "pendingDynamicChecks": [
+      "terrainContactBothHeroes",
+      "cliffGrassRoutes",
+      "caveDoorBridgeRoutes",
+      "chunkStreamingAndResume",
+      "savePreservationAndInterruption",
+      "battleFleeBossReturn"
+    ],
+    "nativeAssertionsPending": 11,
+    "pendingProofAssertions": [
+      "a1owDecode.mountainCollisionReconciled",
+      "a1owDecode.heroFootClearanceRecomputed",
+      "visibleAlpha.noHiddenSelectableHeroFrame",
+      "heroFrameClearance.clearanceRecomputed",
+      "runtimeInvariants.existingSaveResume",
+      "routes.startAndLegacyFallbackVerified",
+      "routes.savedPositionRecoveryVerified",
+      "routes.crystalCaveRoundTrip",
+      "routes.allExitsReachable",
+      "routes.noTraversableTerrainSeam",
+      "routes.leftPlainsOpeningRetained"
+    ]
+  },
+  "limitations": [
+    "The collision-aware audit remains inconclusive (11 pass, 5 blocked-at-target, 4 capped per hero); equal prior waypoint paths do not establish all-route connectivity.",
+    "Port Sapphire stand and Crystal Cave entry/round-trip remain unresolved; Coastal Reef has an item-dependent Flame Cloak exception.",
+    "Static output only; native runtime streaming, lowres fallback parity, device behavior, movement, transitions, cave/Port acceptance remain unverified."
+  ]
+}

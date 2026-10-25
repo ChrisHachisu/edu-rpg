@@ -1,0 +1,14 @@
+{
+  "status": "PASS",
+  "profileId": "act1-forward-20261007-v1",
+  "generationAReceiptSha256": "caa119e842428ce77db226f25828b1412403609e26353c8e9d5284bb854ac3e5",
+  "generationBReceiptSha256": "b52c90427efe6ef7bb09c730c86da76dfa9e314ee73e75a6dd990b484a9e493a",
+  "pathSetMatches": true,
+  "outputInventoryMismatches": [],
+  "cleanDeterministicRegeneration": true,
+  "fullWorldComplete": true,
+  "gateReady": false,
+  "generationA": "/private/tmp/edu-rpg-build83-paint-audit-20261005/whole-rock-integration-20261008/staged-full/generation-whole-rock-a",
+  "generationB": "/private/tmp/edu-rpg-build83-paint-audit-20261005/whole-rock-integration-20261008/staged-full/generation-whole-rock-b",
+  "generatedAtFixed": "deterministic"
+}

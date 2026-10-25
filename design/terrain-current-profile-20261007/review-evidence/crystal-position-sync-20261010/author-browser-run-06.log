@@ -1,0 +1,30 @@
+PASS Crystal exit repairs only the successful cross-map position and retains other player data
+PASS cross-map reentry writes the loaded destination map and its floor
+PASS initial scene creation and already-consistent Continue leave position alone
+PASS same-map floor loads and failed or partial destination loads are nonmutating
+PASS invalid/uninitialized coordinates and out-of-bounds destination do not mutate saves
+PASS wrapped load syncs only after success, waits for fulfillment, and preserves throws/rejections
+
+6/6 focused checks passed.
+PASS browser earned Crystal fixture reaches B1F through Continue — {"position":{"floor":1,"mapId":"crystalCave","x":76,"y":31},"defeated":true,"encountered":true}
+PASS browser Crystal exit immediately synchronizes live position without another step — {"mapId":"overworld","x":149,"y":279,"position":{"mapId":"overworld","x":149,"y":279,"floor":1},"defeated":true,"encountered":true}
+PASS browser earned Toad flags survive Crystal exit — {"mapId":"overworld","x":149,"y":279,"position":{"mapId":"overworld","x":149,"y":279,"floor":1},"defeated":true,"encountered":true}
+PASS browser idle resume snapshot matches loaded overworld coordinates without another movement — {"live":{"mapId":"overworld","x":149,"y":279,"floor":1},"resume":{"mapId":"overworld","x":149,"y":279,"floor":1},"idleWrites":7,"defeated":true}
+PASS browser real-control re-entry from the Crystal exit synchronizes the cave map ID — {"mapId":"crystalCave","position":{"mapId":"crystalCave","x":76,"y":31,"floor":1},"defeated":true,"encountered":true}
+PASS browser legacy Continue preserves its loaded map and coordinates — {"mapId":"overworld","position":{"mapId":"overworld","x":69,"y":256,"floor":1},"defeated":true}
+FAIL browser actual New Game keeps its Elder opening — {"mapId":"greenhollow","showingMessage":true,"townSrc":"http://127.0.0.1:56719/act1-hifi/town.html?town=greenhollow&first=1&facing=up"}
+BROWSER_REPORT /private/tmp/edu-rpg-build83-paint-audit-20261005/native-whole-rock-20261008/crystal-position-sync-20261010/browser-evidence/run-06/browser-report.json sha256=997d9edab5b0e33117cd10a75b0dc2c4aded1afaba3237edf43604f514373e66
+BROWSER_ERROR Error: actual New Game keeps its Elder opening: {"mapId":"greenhollow","showingMessage":true,"townSrc":"http://127.0.0.1:56719/act1-hifi/town.html?town=greenhollow&first=1&facing=up"}
+    at record (/Users/chris/.codex/workspaces/edu-rpg-forward-20261007/scripts/test_worldmap_transition_position_sync.cjs:191:24)
+    at runBrowserChecks (/Users/chris/.codex/workspaces/edu-rpg-forward-20261007/scripts/test_worldmap_transition_position_sync.cjs:391:5)
+    at runNextTicks (node:internal/process/task_queues:65:5)
+    at process.processImmediate (node:internal/timers:453:9)
+    at process.callbackTrampoline (node:internal/async_hooks:130:17)
+    at async /Users/chris/.codex/workspaces/edu-rpg-forward-20261007/scripts/test_worldmap_transition_position_sync.cjs:427:20
+Error: actual New Game keeps its Elder opening: {"mapId":"greenhollow","showingMessage":true,"townSrc":"http://127.0.0.1:56719/act1-hifi/town.html?town=greenhollow&first=1&facing=up"}
+    at record (/Users/chris/.codex/workspaces/edu-rpg-forward-20261007/scripts/test_worldmap_transition_position_sync.cjs:191:24)
+    at runBrowserChecks (/Users/chris/.codex/workspaces/edu-rpg-forward-20261007/scripts/test_worldmap_transition_position_sync.cjs:391:5)
+    at runNextTicks (node:internal/process/task_queues:65:5)
+    at process.processImmediate (node:internal/timers:453:9)
+    at process.callbackTrampoline (node:internal/async_hooks:130:17)
+    at async /Users/chris/.codex/workspaces/edu-rpg-forward-20261007/scripts/test_worldmap_transition_position_sync.cjs:427:20

@@ -495,7 +495,7 @@
 @keyframes qok-defeatfadeonly{ 0%{opacity:1;} 100%{opacity:0;} }
 
 /* item-use toast (surfaces the hidden showItemMessage feedback) */
-#qok-ui .qok-toast{ position:fixed; left:50%; bottom:17%; transform:translateX(-50%); z-index:70; pointer-events:none;
+#qok-ui .qok-toast, #qok-town-quest-toast{ position:fixed; left:50%; bottom:17%; transform:translateX(-50%); z-index:70; pointer-events:none;
   background:#15161cf2; border:1px solid var(--gold-line); border-radius:12px; padding:12px 20px; max-width:80%;
   color:var(--ink); font-family:var(--font); font-weight:700; font-size:15px; line-height:1.35; text-align:center;
   box-shadow:0 8px 22px rgba(0,0,0,.5); animation:qok-toast 1.9s ease forwards; }
@@ -533,6 +533,32 @@
    button with the icon centred; hairline stroke in the HUD's gold, matching the compass. */
 #qok-field-hud #qfh-map-icon{display:none;box-sizing:border-box;width:40px;height:40px;padding:8px;line-height:0;color:#c9a961;}
 #qok-field-hud #qfh-map-icon svg{display:block;width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.4;stroke-linejoin:round;stroke-linecap:round;}
+/* Quest tracker: the same 156px left rail as the map, directly below the current map/location
+   anchor. JavaScript supplies --qfh-quest-top because a localized floor label has live height. */
+#qok-field-hud #qfh-quest{position:absolute;top:var(--qfh-quest-top,calc(env(safe-area-inset-top,0px) + 216px));left:7px;width:156px;max-height:calc(100vh - var(--qfh-quest-top,216px) - env(safe-area-inset-bottom,0px) - 92px);border:1px solid rgba(201,169,97,.45);border-radius:9px;background:#15161ce6;box-shadow:0 3px 12px #0009;overflow:hidden;pointer-events:auto;touch-action:manipulation;}
+#qok-field-hud #qfh-quest-toggle{appearance:none;display:flex;align-items:center;gap:7px;width:100%;min-height:44px;padding:8px 9px;border:0;border-radius:0;background:transparent;color:#c9a961;font-family:inherit;font-size:13px;font-weight:500;line-height:1.35;text-align:left;}
+#qok-field-hud #qfh-quest-toggle>svg:first-child{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round;flex:none;}
+#qok-field-hud #qfh-quest-toggle .qfq-chevron{width:12px;height:12px;margin-left:auto;fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round;opacity:.75;transition:transform .16s ease-out;}
+#qok-field-hud #qfh-quest.collapsed{width:44px;height:44px;}
+#qok-field-hud #qfh-quest.collapsed #qfh-quest-toggle{justify-content:center;padding:7px;}
+#qok-field-hud #qfh-quest.collapsed #qfh-quest-toggle>span,#qok-field-hud #qfh-quest.collapsed .qfq-chevron{display:none;}
+#qok-field-hud #qfh-quest-content{max-height:calc(100vh - var(--qfh-quest-top,216px) - env(safe-area-inset-bottom,0px) - 134px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#c9a96155 transparent;}
+#qok-field-hud .qfq-entry{margin:0;padding:0;border:0;background:transparent;}
+#qok-field-hud .qfq-entry+.qfq-entry::before{content:'';display:block;height:1px;margin:0 9px;background:#c9a96126;}
+#qok-field-hud .qfq-title{appearance:none;display:flex;align-items:center;gap:4px;width:100%;min-height:44px;padding:7px 9px;border:0;border-radius:0;background:transparent;color:#e8e2d4;font-family:inherit;font-size:14px;font-weight:700;line-height:1.4;text-align:left;}
+#qok-field-hud .qfq-title span{min-width:0;overflow-wrap:anywhere;}
+#qok-field-hud .qfq-title svg{width:12px;height:12px;margin-left:auto;fill:none;stroke:#c9a961;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round;opacity:.8;flex:none;transition:transform .16s ease-out;}
+#qok-field-hud .qfq-entry.open>.qfq-title svg{transform:rotate(90deg);}
+#qok-field-hud .qfq-detail{padding:0 9px 10px;color:#c6c5b9;}
+#qok-field-hud .qfq-objective,#qok-field-hud .qfq-progress,#qok-field-hud .qfq-state{margin:0;font-size:13px;line-height:1.45;}
+#qok-field-hud .qfq-progress,#qok-field-hud .qfq-ready{margin-top:4px;color:#8eaf97;font-size:12px;}
+#qok-field-hud .qfq-state{padding:0 9px 10px;color:#c6c5b9;}
+#qok-field-hud :is(#qfh-quest-toggle,.qfq-title):focus-visible{outline:2px solid #dbc486;outline-offset:-3px;border-radius:7px;}
+@media(hover:hover){#qok-field-hud :is(#qfh-quest-toggle,.qfq-title):hover{background:#ffffff07;}}
+body.qok-dialogue #qok-field-hud #qfh-quest-content{display:none;}
+body.qok-dialogue #qok-field-hud #qfh-quest{width:44px;height:44px;}
+body.qok-dialogue #qok-field-hud #qfh-quest-toggle{justify-content:center;padding:7px;}
+body.qok-dialogue #qok-field-hud #qfh-quest-toggle>span,body.qok-dialogue #qok-field-hud .qfq-chevron{display:none;}
 /* COMPASS — one SVG, drawn in the same hairline language as the rest of the HUD.
    The dial carries the fixed cardinals (the camera is always north-up, so they do not move) and
    the needle carries the bearing to the target: the way OUT of a town, the quest marker in the
@@ -555,6 +581,25 @@
 body.qok-dialogue #qok-field-hud #qfh-dialog{bottom:calc(env(safe-area-inset-bottom,0px) + 8px);}
 #qok-field-hud #qfh-dialog-speaker{color:#c9a961;font-size:15px;font-weight:700;}
 
+/* Quest completion is document-level so it remains above the painted-town iframe and the field
+   input bridges. Reward rows describe the already-applied frozen-engine result; they are inert. */
+#qok-quest-completion{position:fixed;inset:0;z-index:230;display:grid;place-items:center;padding:calc(env(safe-area-inset-top,0px) + 18px) 16px calc(env(safe-area-inset-bottom,0px) + 18px);background:#071016c9;backdrop-filter:blur(3px);font-family:'Zen Maru Gothic',-apple-system,BlinkMacSystemFont,'Helvetica Neue','Hiragino Kaku Gothic ProN','Meiryo',sans-serif;color:#e8e2d4;pointer-events:auto;}
+#qok-quest-completion[hidden]{display:none;}
+#qok-quest-completion .qqc-card{width:min(100%,360px);max-height:100%;overflow:auto;text-align:center;border:1px solid #c0a361;background:linear-gradient(160deg,#24323b,#101920);border-radius:12px;padding:28px 17px 18px;box-shadow:0 14px 50px #0009;animation:qok-quest-arrive .35s ease-out;}
+#qok-quest-completion .qqc-emblem{width:54px;height:54px;margin-bottom:10px;fill:#b89b5920;stroke:#d8bf7a;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+#qok-quest-completion h2{margin:4px 0 8px;color:#f2dfa8;font-size:28px;font-weight:700;line-height:1.2;}
+#qok-quest-completion .qqc-title{margin:0 0 19px;color:#e8e2d4;font-size:17px;font-weight:700;line-height:1.4;}
+#qok-quest-completion .qqc-rewards{display:grid;grid-template-columns:repeat(auto-fit,minmax(82px,1fr));border-top:1px solid #786a46;border-bottom:1px solid #786a46;padding:14px 0;gap:10px;}
+#qok-quest-completion .qqc-rewards:empty{display:none;}
+#qok-quest-completion .qqc-rewards span{min-width:0;color:#bfc7cc;}
+#qok-quest-completion .qqc-rewards small{display:block;font-size:12px;line-height:1.35;overflow-wrap:anywhere;}
+#qok-quest-completion .qqc-rewards strong{display:block;margin-top:3px;color:#f0e6ca;font-size:22px;line-height:1.2;}
+#qok-quest-completion .qqc-received{margin:11px 0 8px;color:#a9c3a9;font-size:12px;}
+#qok-quest-completion .qqc-dismiss{appearance:none;width:100%;min-height:44px;margin-top:4px;border:1px solid #d7bc7a;border-radius:8px;background:#bb9d59;color:#111920;font-family:inherit;font-size:15px;font-weight:700;line-height:1.2;}
+#qok-quest-completion .qqc-dismiss:focus-visible{outline:3px solid #f7e4a8;outline-offset:3px;}
+@keyframes qok-quest-arrive{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){#qok-field-hud .qfq-title svg,#qok-field-hud #qfh-quest-toggle .qfq-chevron,#qok-quest-completion .qqc-card{transition:none;animation:none;}}
+
 /* Loading spinner for pending hero art (heroSpinner in ui-overhaul.js). Replaces a crude blocky
    knight that read as a third character on the first screen a new player sees -- owner, build 38:
    "i'd rather see a loading spinner than this". Gold ring on the panel ink, matching the chrome. */
@@ -571,9 +616,11 @@ body.qok-dialogue #qok-field-hud #qfh-dialog{bottom:calc(env(safe-area-inset-bot
    pill on the item itself for the one visit after they open the screen. Owner, build 67. */
 #qok-ui .tab{ position:relative; }
 #fieldTabs .ft{ position:relative; }
+#qok-ui .segcat b{ position:relative; }
 #qok-ui .newdot, #fieldTabs .newdot{ position:absolute; top:5px; right:calc(50% - 20px);
   width:9px; height:9px; border-radius:50%; background:var(--emerald,#2fbf5f);
   box-shadow:0 0 0 2px var(--bg2,#151922), 0 0 6px rgba(47,191,95,.85); }
+#qok-ui .segcat .filterdot{ top:4px; right:4px; width:7px; height:7px; box-shadow:0 0 0 1px var(--bg2,#151922), 0 0 5px rgba(47,191,95,.8); }
 #qok-ui .newpill{ display:inline-block; margin-left:7px; padding:1px 6px; border-radius:99px;
   font-size:10px; font-weight:900; letter-spacing:.06em; vertical-align:middle;
   color:#06210f; background:var(--emerald,#2fbf5f); }
@@ -604,3 +651,6 @@ body.qok-dialogue #qok-field-hud #qfh-dialog{bottom:calc(env(safe-area-inset-bot
 #qok-ui .shopconf .tot.over{ color:var(--ruby,#d62a2a); }
 #qok-ui .shopconf .btnrow{ display:flex; gap:10px; margin-top:14px; }
 #qok-ui .shopconf .btnrow .btn{ flex:1; }
+
+/* Town feedback sits above the preserved iframe; input always passes through. */
+#qok-town-quest-toast { z-index:151; }

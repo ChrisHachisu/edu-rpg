@@ -1,0 +1,90 @@
+{
+  "schema": "qok-forward-generation-v3-reproducibility-v1",
+  "status": "PASS",
+  "sourceGeneratorSha256": "40e5c1bc30ca0b1885c4aec39356c16f06ae73985d317414b685b26b8db06cfd",
+  "generationA": {
+    "root": "generation-final-v3",
+    "receiptSha256": "57e53c9c96782080f65c2eab1447f91cc06a6c498a3558e9b2ec0d4e25275f78",
+    "generationLabel": "A"
+  },
+  "generationB": {
+    "root": "second-clean-generation-v3/generation-v3-second",
+    "receiptSha256": "57e53c9c96782080f65c2eab1447f91cc06a6c498a3558e9b2ec0d4e25275f78",
+    "generationLabel": "A"
+  },
+  "receiptBytesEqual": true,
+  "generatedAtFixed": "deterministic; no wall-clock fields",
+  "outputInventory": {
+    "count": 493,
+    "pathSetsEqual": true,
+    "bytesAndSha256Equal": true,
+    "decodedPixelsEqualByIdenticalEncodedBytes": true,
+    "allFilesRehashed": true
+  },
+  "northSupportCollision": {
+    "newCollisionPixels": 1414,
+    "postUnionPackedBitsSha256": "4d1a5b9b505b5a01c2e6910937fdb59e7cd8729a823f853a4c255c25273621d1",
+    "placements": [
+      {
+        "id": "fill-02-rear-mass-B-98",
+        "worldOriginCell": [
+          98,
+          218
+        ],
+        "qokOriginPx32": [
+          2624,
+          -300
+        ],
+        "sourceAlphaPixels": 27649,
+        "insideMapPixels": 0,
+        "newCollisionPixels": 0
+      },
+      {
+        "id": "fill-04-right-pocket-mass-B-110",
+        "worldOriginCell": [
+          110,
+          220
+        ],
+        "qokOriginPx32": [
+          3008,
+          -236
+        ],
+        "sourceAlphaPixels": 27649,
+        "insideMapPixels": 11479,
+        "newCollisionPixels": 1414
+      },
+      {
+        "id": "ridge-02-broad-joining-mass-B-94",
+        "worldOriginCell": [
+          94,
+          218
+        ],
+        "qokOriginPx32": [
+          2496,
+          -300
+        ],
+        "sourceAlphaPixels": 27649,
+        "insideMapPixels": 0,
+        "newCollisionPixels": 0
+      },
+      {
+        "id": "ridge-04-broad-joining-mass-B-106",
+        "worldOriginCell": [
+          106,
+          218
+        ],
+        "qokOriginPx32": [
+          2880,
+          -300
+        ],
+        "sourceAlphaPixels": 27649,
+        "insideMapPixels": 0,
+        "newCollisionPixels": 0
+      }
+    ]
+  },
+  "intendedNondeterministicFields": [],
+  "limitations": [
+    "This compares two clean independent generator roots and is static output evidence only; it does not establish native/runtime/release gates."
+  ]
+}

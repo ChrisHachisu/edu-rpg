@@ -1,0 +1,575 @@
+{
+  "profileId": "act1-forward-20261007-v1",
+  "recipeVersion": "accepted-whole-layout-v2",
+  "status": "approved-local-correction-awaiting-full-generation",
+  "basis": {
+    "generationAReceiptSha256": "0ea8a9bcbde6c4d20eed93910f346afaefb83cb8d5ec4839055f7e238cc255f6",
+    "generationAManifestSha256": "48976881c11e64054184d2384afdc3e13656e047c233057746318de478053fc0",
+    "generationAInputBundleManifestSha256": "091df7c664cfbe73b3b75f1359639c1f646bf3fd80eb7f698678e695b65430ea",
+    "pilotReceiptSha256": "cf23c18db3871ad9e59818f4c4be82bc1e09a08371de8e4880ac7f5dfea48110",
+    "fixed4pxSubgridEvidenceSha256": "25857bb583938b500a4f746968c8c8192dca7f7379467529bc21d06f92f2210d",
+    "pilotFinalRaisedAlphaSha256": "533ff0e84258405640f9d453c3558e2e7677886e671a4cd1832fe1303d590594",
+    "northRecipeSha256": "c3875927a7370045cbbdc19e2bc84464dad838135cb6ec5ca3fee15284100cad"
+  },
+  "placementRule": "exact full 39-record boundary selection from frozen generation-A output manifest, minus rejected crop-freeze substitute, plus the two visually accepted original whole-crown flank candidates. Preserve every record transform, center, source index, side, and flip. No new greedy selection, clipping, masking, crop eligibility, or crop parity assertion. Sort remains shared contactY/source-origin stable order.",
+  "removedIds": [
+    "forest-edge-r16-136.050"
+  ],
+  "addedIds": [
+    "forest-edge-r14-118.925",
+    "forest-edge-r16-135.625"
+  ],
+  "boundaryPlacementCount": 40,
+  "boundaryPlacementRecords": [
+    {
+      "id": "forest-edge-r15-121.490",
+      "center": [
+        121.49,
+        239.355
+      ],
+      "sourceIndex": 5,
+      "side": 68,
+      "flipX": false,
+      "candidateRow": 15
+    },
+    {
+      "id": "forest-edge-r15-126.655",
+      "center": [
+        126.655,
+        239.355
+      ],
+      "sourceIndex": 3,
+      "side": 68,
+      "flipX": true,
+      "candidateRow": 15
+    },
+    {
+      "id": "forest-edge-r15-130.265",
+      "center": [
+        130.265,
+        239.355
+      ],
+      "sourceIndex": 3,
+      "side": 68,
+      "flipX": false,
+      "candidateRow": 15
+    },
+    {
+      "id": "forest-edge-r16-132.830",
+      "center": [
+        132.83,
+        240.56
+      ],
+      "sourceIndex": 4,
+      "side": 68,
+      "flipX": false,
+      "candidateRow": 16
+    },
+    {
+      "id": "forest-edge-r16-124.055",
+      "center": [
+        124.055,
+        240.56
+      ],
+      "sourceIndex": 3,
+      "side": 68,
+      "flipX": false,
+      "candidateRow": 16
+    },
+    {
+      "id": "forest-edge-r16-128.760",
+      "center": [
+        128.76,
+        240.56
+      ],
+      "sourceIndex": 1,
+      "side": 68,
+      "flipX": false,
+      "candidateRow": 16
+    },
+    {
+      "id": "forest-edge-r15-120.215",
+      "center": [
+        120.215,
+        239.355
+      ],
+      "sourceIndex": 0,
+      "side": 68,
+      "flipX": false,
+      "candidateRow": 15
+    },
+    {
+      "id": "forest-edge-r16-123.205",
+      "center": [
+        123.205,
+        240.56
+      ],
+      "sourceIndex": 6,
+      "side": 68,
+      "flipX": true,
+      "candidateRow": 16
+    },
+    {
+      "id": "forest-edge-r16-127.700",
+      "center": [
+        127.7,
+        240.56
+      ],
+      "sourceIndex": 3,
+      "side": 68,
+      "flipX": true,
+      "candidateRow": 16
+    },
+    {
+      "id": "forest-edge-r15-126.230",
+      "center": [
+        126.23,
+        239.355
+      ],
+      "sourceIndex": 2,
+      "side": 68,
+      "flipX": false,
+      "candidateRow": 15
+    },
+    {
+      "id": "forest-edge-r16-132.405",
+      "center": [
+        132.405,
+        240.56
+      ],
+      "sourceIndex": 1,
+      "side": 68,
+      "flipX": true,
+      "candidateRow": 16
+    },
+    {
+      "id": "forest-edge-r16-136.900",
+      "center": [
+        136.9,
+        240.56
+      ],
+      "sourceIndex": 5,
+      "side": 68,
+      "flipX": true,
+      "candidateRow": 16
+    },
+    {
+      "id": "forest-edge-r35-141.765",
+      "center": [
+        141.765,
+        266.815
+      ],
+      "sourceIndex": 3,
+      "side": 68,
+      "flipX": true,
+      "candidateRow": 35
+    },
+    {
+      "id": "forest-edge-r31-143.535",
+      "center": [
+        143.535,
+        261.225
+      ],
+      "sourceIndex": 5,
+      "side": 68,
+      "flipX": true,
+      "candidateRow": 31
+    },
+    {
+      "id": "forest-edge-r39-141.695",
+      "center": [
+        141.695,
+        272.405
+      ],
+      "sourceIndex": 3,
+      "side": 68,
+      "flipX": true,
+      "candidateRow": 39
+    },
+    {
+      "id": "forest-edge-r24-146.240",
+      "center": [
+        146.24,
+        251.74
+      ],
+      "sourceIndex": 1,
+      "side": 68,
+      "flipX": true,
+      "candidateRow": 24
+    },
+    {
+      "id": "forest-edge-r27-142.755",
+      "center": [
+        142.755,
+        255.88
+      ],
+      "sourceIndex": 4,
+      "side": 68,
+      "flipX": false,
+      "candidateRow": 27
+    },
+    {
+      "id": "forest-edge-r21-146.930",
+      "center": [
+        146.93,
+        247.635
+      ],
+      "sourceIndex": 0,
+      "side": 68,
+      "flipX": true,
+      "candidateRow": 21
+    },
+    {
+      "id": "forest-edge-r37-142.155",
+      "center": [
+        142.155,
+        269.715
+      ],
+      "sourceIndex": 5,
+      "side": 68,
+      "flipX": true,
+      "candidateRow": 37
+    },
+    {
+      "id": "forest-edge-r17-139.890",
+      "center": [
+        139.89,
+        242.045
+      ],
+      "sourceIndex": 1,
+      "side": 68,
+      "flipX": false,
+      "candidateRow": 17
+    },
+    {
+      "id": "forest-edge-r19-144.595",
+      "center": [
+        144.595,
+        244.7
+      ],
+      "sourceIndex": 0,
+      "side": 68,
+      "flipX": false,
+      "candidateRow": 19
+    },
+    {
+      "id": "forest-edge-r34-142.845",
+      "center": [
+        142.845,
+        265.575
+      ],
+      "sourceIndex": 5,
+      "side": 68,
+      "flipX": true,
+      "candidateRow": 34
+    },
+    {
+      "id": "forest-edge-r38-141.075",
+      "center": [
+        141.075,
+        270.92
+      ],
+      "sourceIndex": 3,
+      "side": 68,
+      "flipX": true,
+      "candidateRow": 38
+    },
+    {
+      "id": "forest-edge-r28-142.525",
+      "center": [
+        142.525,
+        257.085
+      ],
+      "sourceIndex": 3,
+      "side": 68,
+      "flipX": false,
+      "candidateRow": 28
+    },
+    {
+      "id": "forest-edge-r23-147.320",
+      "center": [
+        147.32,
+        250.29
+      ],
+      "sourceIndex": 6,
+      "side": 68,
+      "flipX": false,
+      "candidateRow": 23
+    },
+    {
+      "id": "forest-edge-r30-142.915",
+      "center": [
+        142.915,
+        260.02
+      ],
+      "sourceIndex": 5,
+      "side": 68,
+      "flipX": true,
+      "candidateRow": 30
+    },
+    {
+      "id": "forest-edge-r20-146.065",
+      "center": [
+        146.065,
+        246.15
+      ],
+      "sourceIndex": 1,
+      "side": 68,
+      "flipX": true,
+      "candidateRow": 20
+    },
+    {
+      "id": "forest-edge-r39-140.420",
+      "center": [
+        140.42,
+        272.405
+      ],
+      "sourceIndex": 5,
+      "side": 68,
+      "flipX": true,
+      "candidateRow": 39
+    },
+    {
+      "id": "forest-edge-r33-141.800",
+      "center": [
+        141.8,
+        264.125
+      ],
+      "sourceIndex": 5,
+      "side": 68,
+      "flipX": true,
+      "candidateRow": 33
+    },
+    {
+      "id": "forest-edge-r21-148.630",
+      "center": [
+        148.63,
+        247.635
+      ],
+      "sourceIndex": 6,
+      "side": 68,
+      "flipX": false,
+      "candidateRow": 21
+    },
+    {
+      "id": "forest-edge-r39-141.270",
+      "center": [
+        141.27,
+        272.405
+      ],
+      "sourceIndex": 2,
+      "side": 68,
+      "flipX": false,
+      "candidateRow": 39
+    },
+    {
+      "id": "forest-edge-r39-139.995",
+      "center": [
+        139.995,
+        272.405
+      ],
+      "sourceIndex": 4,
+      "side": 68,
+      "flipX": false,
+      "candidateRow": 39
+    },
+    {
+      "id": "forest-edge-r26-144.685",
+      "center": [
+        144.685,
+        254.43
+      ],
+      "sourceIndex": 1,
+      "side": 68,
+      "flipX": true,
+      "candidateRow": 26
+    },
+    {
+      "id": "forest-edge-r39-140.845",
+      "center": [
+        140.845,
+        272.405
+      ],
+      "sourceIndex": 6,
+      "side": 68,
+      "flipX": true,
+      "candidateRow": 39
+    },
+    {
+      "id": "forest-edge-sub-r40-x141110-y273750-dx+0-dy-20",
+      "center": [
+        141.04,
+        273.23
+      ],
+      "sourceIndex": 5,
+      "side": 68,
+      "flipX": true,
+      "candidateRow": 40,
+      "subgridOffsetPx": [
+        0,
+        -20
+      ]
+    },
+    {
+      "id": "forest-edge-sub-r28-x144330-y257190-dx+0-dy-12",
+      "center": [
+        144.225,
+        256.71
+      ],
+      "sourceIndex": 5,
+      "side": 68,
+      "flipX": true,
+      "candidateRow": 28,
+      "subgridOffsetPx": [
+        0,
+        -12
+      ]
+    },
+    {
+      "id": "forest-edge-sub-r24-x144790-y251670-dx+8-dy+20",
+      "center": [
+        144.97,
+        252.365
+      ],
+      "sourceIndex": 2,
+      "side": 68,
+      "flipX": true,
+      "candidateRow": 24,
+      "subgridOffsetPx": [
+        8,
+        20
+      ]
+    },
+    {
+      "id": "forest-edge-sub-r32-x141570-y262710-dx+8-dy+20",
+      "center": [
+        141.855,
+        263.3
+      ],
+      "sourceIndex": 2,
+      "side": 68,
+      "flipX": true,
+      "candidateRow": 32,
+      "subgridOffsetPx": [
+        8,
+        20
+      ]
+    },
+    {
+      "id": "forest-edge-r14-118.925",
+      "center": [
+        118.925,
+        237.905
+      ],
+      "sourceIndex": 0,
+      "side": 68,
+      "flipX": false,
+      "candidateRow": 14
+    },
+    {
+      "id": "forest-edge-r16-135.625",
+      "center": [
+        135.625,
+        240.56
+      ],
+      "sourceIndex": 1,
+      "side": 68,
+      "flipX": true,
+      "candidateRow": 16
+    }
+  ],
+  "approvedPilotSeedIds": [
+    "forest-edge-r15-121.490",
+    "forest-edge-r15-126.655",
+    "forest-edge-r15-130.265",
+    "forest-edge-r16-132.830",
+    "forest-edge-r16-124.055",
+    "forest-edge-r16-128.760",
+    "forest-edge-r15-120.215",
+    "forest-edge-r16-123.205",
+    "forest-edge-r16-127.700",
+    "forest-edge-r15-126.230",
+    "forest-edge-r16-132.405"
+  ],
+  "pilotTargetRectGlobal32ppc": [
+    3328,
+    416,
+    3776,
+    928
+  ],
+  "pilotCropRectGlobal32ppc": [
+    3136,
+    416,
+    3776,
+    928
+  ],
+  "pilotParityPolicy": "No full-crop alpha parity claim. Preserve 11 exact approved whole placements; measure target gap and all RGB/alpha deltas. The accepted proposal had zero target alpha delta and zero remaining measured target gap; full-crop alpha XOR=2419.",
+  "expectedBoundaryPlacementCount": 40,
+  "fixed4pxSubgridRule": {
+    "offsetStepPixels": 4,
+    "sourceOriginalGeneratorSha256": "bdd838807aa473c0970ecbbe03058237f339ce07c4b2369cdf88d34c486f0578",
+    "evidenceSha256": "25857bb583938b500a4f746968c8c8192dca7f7379467529bc21d06f92f2210d",
+    "additions": [
+      {
+        "id": "forest-edge-sub-r40-x141110-y273750-dx+0-dy-20",
+        "center": [
+          141.04,
+          273.23
+        ],
+        "sourceIndex": 5,
+        "side": 68,
+        "flipX": true,
+        "candidateRow": 40,
+        "subgridOffsetPx": [
+          0,
+          -20
+        ]
+      },
+      {
+        "id": "forest-edge-sub-r28-x144330-y257190-dx+0-dy-12",
+        "center": [
+          144.225,
+          256.71
+        ],
+        "sourceIndex": 5,
+        "side": 68,
+        "flipX": true,
+        "candidateRow": 28,
+        "subgridOffsetPx": [
+          0,
+          -12
+        ]
+      },
+      {
+        "id": "forest-edge-sub-r24-x144790-y251670-dx+8-dy+20",
+        "center": [
+          144.97,
+          252.365
+        ],
+        "sourceIndex": 2,
+        "side": 68,
+        "flipX": true,
+        "candidateRow": 24,
+        "subgridOffsetPx": [
+          8,
+          20
+        ]
+      },
+      {
+        "id": "forest-edge-sub-r32-x141570-y262710-dx+8-dy+20",
+        "center": [
+          141.855,
+          263.3
+        ],
+        "sourceIndex": 2,
+        "side": 68,
+        "flipX": true,
+        "candidateRow": 32,
+        "subgridOffsetPx": [
+          8,
+          20
+        ]
+      }
+    ]
+  }
+}

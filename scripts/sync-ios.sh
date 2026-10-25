@@ -18,6 +18,29 @@
 # So: --delete, plus an explicit exclude for the Capacitor glue. Nothing else.
 set -euo pipefail
 cd "$(dirname "$0")/.."
+TERRAIN_PROFILE=historical
+QA_PREPARATION=0
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --terrain-profile) [ "$#" -ge 2 ] || { echo "--terrain-profile needs a value" >&2; exit 2; }; TERRAIN_PROFILE=$2; shift 2 ;;
+    --qa-preparation) QA_PREPARATION=1; shift ;;
+    *) echo "usage: $0 [--terrain-profile historical|act1-forward-20261007-v1] [--qa-preparation]" >&2; exit 2 ;;
+  esac
+done
+case "$TERRAIN_PROFILE" in
+  historical|act1-forward-20261007-v1) ;;
+  *) echo "unknown terrain profile: $TERRAIN_PROFILE" >&2; exit 2 ;;
+esac
+if [ "$QA_PREPARATION" -eq 1 ] && [ "$TERRAIN_PROFILE" != "act1-forward-20261007-v1" ]; then
+  echo "--qa-preparation requires --terrain-profile act1-forward-20261007-v1" >&2; exit 2
+fi
+if [ "$TERRAIN_PROFILE" = "act1-forward-20261007-v1" ]; then
+  if [ "$QA_PREPARATION" -eq 1 ]; then
+    python3 scripts/runtime_baseline.py verify-forward-terrain-preparation
+  else
+    python3 scripts/runtime_baseline.py verify-forward-terrain-source
+  fi
+fi
 
 DEST="ios/App/App/public"
 
@@ -33,6 +56,12 @@ for glue in cordova.js cordova_plugins.js; do
 done
 
 echo "==> verifying the mirrored tree against the Act 1 overlay baseline"
-python3 scripts/runtime_baseline.py verify-act1 --input "$DEST" --allow-capacitor-glue
+VERIFY_ARGS=(--input "$DEST" --allow-capacitor-glue --terrain-profile "$TERRAIN_PROFILE")
+if [ "$QA_PREPARATION" -eq 1 ]; then VERIFY_ARGS+=(--qa-preparation); fi
+python3 scripts/runtime_baseline.py verify-act1 "${VERIFY_ARGS[@]}"
 
-echo "SYNC OK: $DEST matches dist/ and passes the Act 1 overlay gate"
+if [ "$QA_PREPARATION" -eq 1 ]; then
+  echo "QA_PREPARATION_PASS releaseEligible=false: $DEST matches dist/ static closure"
+else
+  echo "SYNC OK: $DEST matches dist/ and passes the Act 1 overlay gate"
+fi

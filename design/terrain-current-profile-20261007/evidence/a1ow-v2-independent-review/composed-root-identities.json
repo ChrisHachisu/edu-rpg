@@ -1,0 +1,34 @@
+{
+  "schema": "composed-v2-current-roots-v1",
+  "fullRegenerationClaim": false,
+  "method": "hardlink frozen C/D output trees; replace only manifest metadata row with current v2 manifest; portable root links exact current generated-output; normalize candidate closure receipt by removing only its stage-relative duplicate manifest row",
+  "candidateOutputReceiptSha256": "da6c3875ee094d99a5bd901d5a0b5b53014fba3251bbcf0ffd36574de5765765",
+  "rootOutputReceiptSha256": "c54e5b59bd2902fa7ff45f1f363a5484f910272c3c765a069018454929f1662b",
+  "manifestSha256": "83fd77795f670ca6fa5911c87c05f57f67f651dbc516dadbd8c7b8139c97f0de",
+  "roots": [
+    {
+      "root": "/private/tmp/edu-rpg-build83-paint-audit-20261005/native-forward-20261007/owm-support-independent-review/composed-current-v2/run-a",
+      "receiptSha256": "c54e5b59bd2902fa7ff45f1f363a5484f910272c3c765a069018454929f1662b",
+      "inventoryCount": 488,
+      "inventorySha256": "8b7c4fba3622409f0557f1016ee42a7b868f2536dabc5b1380182b9e6df8bc3e",
+      "manifestSha256": "83fd77795f670ca6fa5911c87c05f57f67f651dbc516dadbd8c7b8139c97f0de",
+      "allRowsVerified": true
+    },
+    {
+      "root": "/private/tmp/edu-rpg-build83-paint-audit-20261005/native-forward-20261007/owm-support-independent-review/composed-current-v2/run-b",
+      "receiptSha256": "c54e5b59bd2902fa7ff45f1f363a5484f910272c3c765a069018454929f1662b",
+      "inventoryCount": 488,
+      "inventorySha256": "8b7c4fba3622409f0557f1016ee42a7b868f2536dabc5b1380182b9e6df8bc3e",
+      "manifestSha256": "83fd77795f670ca6fa5911c87c05f57f67f651dbc516dadbd8c7b8139c97f0de",
+      "allRowsVerified": true
+    },
+    {
+      "root": "/private/tmp/edu-rpg-build83-paint-audit-20261005/native-forward-20261007/owm-support-independent-review/composed-current-v2/portable",
+      "receiptSha256": "c54e5b59bd2902fa7ff45f1f363a5484f910272c3c765a069018454929f1662b",
+      "inventoryCount": 488,
+      "inventorySha256": "8b7c4fba3622409f0557f1016ee42a7b868f2536dabc5b1380182b9e6df8bc3e",
+      "manifestSha256": "83fd77795f670ca6fa5911c87c05f57f67f651dbc516dadbd8c7b8139c97f0de",
+      "allRowsVerified": true
+    }
+  ]
+}

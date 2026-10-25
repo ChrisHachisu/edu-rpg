@@ -1,0 +1,47 @@
+{
+  "schema": "qok-forward-underpaint-phase-metadata-bridge-v1",
+  "status": "PASS_METADATA_ONLY_PHASE_PRESERVATION",
+  "scope": "The reviewed final-r2 phase/crop evidence applies to unchanged generated payloads; the metadata-only A/B rebind changed only act1-hifi/manifest.json.",
+  "sourceProof": {
+    "path": "design/terrain-current-profile-20261007/review-evidence/water-r2-final-20261013/independent-final-r2-output-review.md",
+    "sha256": "edf7ef282db1405ea31c77f831c63c5acdb2b7f9d9358fa9fc13d6e3e4743b4e"
+  },
+  "metadataRebind": {
+    "path": "design/terrain-current-profile-20261007/review-evidence/water-r2-runtime-rebind-20261013/metadata-only-rebind-comparison-water-r2-runtime-r1.json",
+    "sha256": "d7752c1ae67c7559afc3e84ee910d0865626702c110220d167d9ae021f94c1e8"
+  },
+  "sourceManifestSha256": "fbad11cf27c35be30e0fed8cade9a68019bee7a3b368e4cf67d8dd3dcaa2ad88",
+  "currentManifestSha256": "b13ba107d926ff924d45a59f3b5d6dd1ec14234249dabfb64655ce6f6fc1ac0a",
+  "currentDqTilesSha256": "ca2447a5e816455e1f2441687d01839e1cce8192df9f116f486de0aff98fc5df",
+  "unchangedOutputCount": 493,
+  "changedOutputPaths": [
+    "act1-hifi/manifest.json"
+  ],
+  "allOtherOutputBytesUnchanged": true,
+  "phaseValues": {
+    "scope": "declared-origin-and-scale-phase-v1",
+    "originCell": [
+      16,
+      218
+    ],
+    "dimensionsPx6": [
+      888,
+      1092
+    ],
+    "pixelsPerCell": 6,
+    "basePixelsPerCell": 32,
+    "semanticBounds": [
+      16,
+      218,
+      163,
+      399
+    ],
+    "chunksIntersectingSemanticBounds": 120,
+    "phaseMismatches": 0,
+    "semanticCellsCoveredExactlyOnce": true,
+    "sameOwTileWorldGrid": true
+  },
+  "limitations": [
+    "This bridge does not assert a fresh terrain render or native runtime behavior."
+  ]
+}

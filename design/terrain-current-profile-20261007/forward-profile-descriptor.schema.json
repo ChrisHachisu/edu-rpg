@@ -1,0 +1,1905 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "qok-forward-terrain-profile-v2",
+  "title": "Reviewed forward terrain profile descriptor with bounded proof-field split",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "profileId",
+    "proofFieldSplitVersion",
+    "rootAuthority",
+    "fullWorldComplete",
+    "gateReady",
+    "authoringInputs",
+    "generatedOutputs",
+    "regeneration",
+    "geometryContract",
+    "collisionContract",
+    "a1owContract",
+    "currentGuard",
+    "proofs",
+    "independentGateReceipt"
+  ],
+  "properties": {
+    "schema": {
+      "const": "qok-forward-terrain-profile-v1"
+    },
+    "profileId": {
+      "const": "act1-forward-20261007-v1"
+    },
+    "rootAuthority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "independentReview",
+        "reviewRecordPath",
+        "reviewRecordBytes",
+        "reviewRecordSha256"
+      ],
+      "properties": {
+        "independentReview": {
+          "const": true
+        },
+        "reviewRecordPath": {
+          "type": "string"
+        },
+        "reviewRecordBytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "reviewRecordSha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "fullWorldComplete": {
+      "const": true
+    },
+    "gateReady": {
+      "type": "boolean"
+    },
+    "authoringInputs": {
+      "$ref": "#/$defs/inventory"
+    },
+    "geometryContract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "manifestPath",
+        "manifestSha256",
+        "revision",
+        "chunkCount",
+        "basePixelsPerCell"
+      ],
+      "properties": {
+        "manifestPath": {
+          "type": "string"
+        },
+        "manifestSha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "revision": {
+          "const": 12
+        },
+        "chunkCount": {
+          "const": 120
+        },
+        "basePixelsPerCell": {
+          "const": 32
+        }
+      }
+    },
+    "collisionContract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "sha256",
+        "sourceArtifact",
+        "sourceSha256",
+        "sourceAuthority",
+        "runtimeFormat",
+        "version",
+        "dimensionsPx32",
+        "bounds",
+        "pixelsPerCell",
+        "alphaThreshold",
+        "headerBytes",
+        "bitOrder",
+        "bytes"
+      ],
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "sourceArtifact": {
+          "type": "string"
+        },
+        "sourceSha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "sourceAuthority": {
+          "const": "final-visible-whole-object-union"
+        },
+        "runtimeFormat": {
+          "const": "qok-forest-bitset-v1"
+        },
+        "version": {
+          "const": 1
+        },
+        "dimensionsPx32": {
+          "const": [
+            4736,
+            5824
+          ]
+        },
+        "bounds": {
+          "const": [
+            16,
+            218,
+            163,
+            399
+          ]
+        },
+        "pixelsPerCell": {
+          "const": 32
+        },
+        "alphaThreshold": {
+          "const": 16
+        },
+        "headerBytes": {
+          "const": 64
+        },
+        "bitOrder": {
+          "const": "little-within-byte"
+        },
+        "bytes": {
+          "const": 3447872
+        }
+      }
+    },
+    "a1owContract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "format",
+        "sha256",
+        "bakerPath",
+        "bakerSha256",
+        "version",
+        "headerBytes",
+        "profileId",
+        "supportSchema",
+        "pixelsPerCell",
+        "mapCells",
+        "far",
+        "blockCount",
+        "supportFNV32",
+        "semanticsSha256",
+        "supportSha256",
+        "payloadSha256",
+        "scope"
+      ],
+      "properties": {
+        "path": {
+          "const": "act1-overworld-walk.bin"
+        },
+        "format": {
+          "const": "A1OW-v2"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "bakerPath": {
+          "const": "scripts/bake_act1_overworld_walk.mjs"
+        },
+        "bakerSha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "version": {
+          "const": 2
+        },
+        "headerBytes": {
+          "const": 96
+        },
+        "profileId": {
+          "const": "act1-forward-20261007-v1"
+        },
+        "supportSchema": {
+          "const": "a1ow-effective-support-v1"
+        },
+        "pixelsPerCell": {
+          "const": 48
+        },
+        "mapCells": {
+          "const": [
+            320,
+            400
+          ]
+        },
+        "far": {
+          "const": 255
+        },
+        "blockCount": {
+          "const": 4094
+        },
+        "supportFNV32": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "semanticsSha256": {
+          "const": "a6e6e7f228d040381539618d99f03e774a16dd7cadbaf8cc76a115934d324f67"
+        },
+        "supportSha256": {
+          "const": "eeaf65c08cda239ea8755a3af0026ed0ca61e19a2683cafc10610b5c4027914a"
+        },
+        "payloadSha256": {
+          "const": "05be9638d04a692668c3a1c8b4bd3d809216bcede2e090a74a0712cb5467498c"
+        },
+        "scope": {
+          "const": "water-only-inside-act1; analytic-mountains-outside-and-padding"
+        }
+      }
+    },
+    "generatedOutputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "root",
+        "inventory",
+        "runtimeChunks",
+        "underpaints",
+        "collision",
+        "visibleAlpha",
+        "a1ow",
+        "runtimeManifest",
+        "consumedNonterrainOverrides",
+        "outputReceipt"
+      ],
+      "properties": {
+        "root": {
+          "const": "design/terrain-current-profile-20261007/generated-output",
+          "description": "Dedicated exact stage subtree; never the public root or a wildcard runtime directory."
+        },
+        "inventory": {
+          "$ref": "#/$defs/inventory"
+        },
+        "runtimeChunks": {
+          "$ref": "#/$defs/inventory"
+        },
+        "underpaints": {
+          "$ref": "#/$defs/inventory"
+        },
+        "collision": {
+          "$ref": "#/$defs/inventory"
+        },
+        "visibleAlpha": {
+          "$ref": "#/$defs/inventory"
+        },
+        "a1ow": {
+          "$ref": "#/$defs/inventory",
+          "description": "The one unchanged root-level A1OW source input at public/act1-overworld-walk.bin."
+        },
+        "runtimeManifest": {
+          "$ref": "#/$defs/inventory"
+        },
+        "consumedNonterrainOverrides": {
+          "$ref": "#/$defs/inventory",
+          "description": "Exact unchanged public/act1-hifi runtime files preserved beside generated outputs; not generated-output rows."
+        },
+        "outputReceipt": {
+          "type": "object",
+          "description": "Portable generator receipt for every exact inventoried generated output row; does not include preserved runtime inputs.",
+          "required": [
+            "path",
+            "bytes",
+            "sha256"
+          ],
+          "properties": {
+            "path": {
+              "type": "string"
+            },
+            "bytes": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "selfHash": {
+              "type": "null"
+            }
+          }
+        }
+      }
+    },
+    "regeneration": {
+      "type": "object",
+      "required": [
+        "cleanRoots",
+        "sourceLimited",
+        "pathSetsEqual",
+        "byteHashesEqual",
+        "decodedPixelsEqual"
+      ],
+      "properties": {
+        "cleanRoots": {
+          "const": 2
+        },
+        "sourceLimited": {
+          "const": true
+        },
+        "pathSetsEqual": {
+          "const": true
+        },
+        "byteHashesEqual": {
+          "const": true
+        },
+        "decodedPixelsEqual": {
+          "const": true
+        }
+      }
+    },
+    "currentGuard": {
+      "type": "object",
+      "required": [
+        "worldMapSha256",
+        "dqTilesSha256",
+        "semanticNavigationSha256",
+        "semanticNavigationFileSha256",
+        "maleHeroSha256",
+        "femaleHeroSha256",
+        "extractorVersion",
+        "finalManifestSha256",
+        "semanticNavigationScope",
+        "inputPaths",
+        "staleGuardAccepted"
+      ],
+      "properties": {
+        "staleGuardAccepted": {
+          "const": false
+        }
+      }
+    },
+    "proofs": {
+      "type": "object",
+      "required": [
+        "cleanRegeneration",
+        "decodedPixels",
+        "globalCropReconstruction",
+        "chunkBoundaries",
+        "underpaintPhase",
+        "collisionDecode",
+        "a1owDecode",
+        "visibleAlpha",
+        "heroFrameClearance",
+        "safeCells",
+        "currentGuard",
+        "runtimeInvariants",
+        "sourceResourceClosure",
+        "renderedReview"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "cleanRegeneration": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "path",
+            "bytes",
+            "sha256",
+            "passed",
+            "values"
+          ],
+          "properties": {
+            "path": {
+              "type": "string",
+              "minLength": 1
+            },
+            "bytes": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "passed": {
+              "const": true
+            },
+            "values": {
+              "type": "object"
+            }
+          }
+        },
+        "decodedPixels": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "path",
+            "bytes",
+            "sha256",
+            "passed",
+            "values"
+          ],
+          "properties": {
+            "path": {
+              "type": "string",
+              "minLength": 1
+            },
+            "bytes": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "passed": {
+              "const": true
+            },
+            "values": {
+              "type": "object"
+            }
+          }
+        },
+        "globalCropReconstruction": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "path",
+            "bytes",
+            "sha256",
+            "passed",
+            "values"
+          ],
+          "properties": {
+            "path": {
+              "type": "string",
+              "minLength": 1
+            },
+            "bytes": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "passed": {
+              "const": true
+            },
+            "values": {
+              "type": "object"
+            }
+          }
+        },
+        "chunkBoundaries": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "path",
+            "bytes",
+            "sha256",
+            "passed",
+            "values"
+          ],
+          "properties": {
+            "path": {
+              "type": "string",
+              "minLength": 1
+            },
+            "bytes": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "passed": {
+              "const": true
+            },
+            "values": {
+              "type": "object"
+            }
+          }
+        },
+        "underpaintPhase": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "path",
+            "bytes",
+            "sha256",
+            "passed",
+            "values"
+          ],
+          "properties": {
+            "path": {
+              "type": "string",
+              "minLength": 1
+            },
+            "bytes": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "passed": {
+              "const": true
+            },
+            "values": {
+              "type": "object"
+            }
+          }
+        },
+        "collisionDecode": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "path",
+            "bytes",
+            "sha256",
+            "passed",
+            "values"
+          ],
+          "properties": {
+            "path": {
+              "type": "string",
+              "minLength": 1
+            },
+            "bytes": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "passed": {
+              "const": true
+            },
+            "values": {
+              "type": "object"
+            }
+          }
+        },
+        "a1owDecode": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "path",
+            "bytes",
+            "sha256",
+            "passed",
+            "values"
+          ],
+          "properties": {
+            "path": {
+              "type": "string",
+              "minLength": 1
+            },
+            "bytes": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "passed": {
+              "const": true
+            },
+            "values": {
+              "type": "object"
+            }
+          }
+        },
+        "visibleAlpha": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "path",
+            "bytes",
+            "sha256",
+            "passed",
+            "values"
+          ],
+          "properties": {
+            "path": {
+              "type": "string",
+              "minLength": 1
+            },
+            "bytes": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "passed": {
+              "const": true
+            },
+            "values": {
+              "type": "object"
+            }
+          }
+        },
+        "heroFrameClearance": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "path",
+            "bytes",
+            "sha256",
+            "passed",
+            "values"
+          ],
+          "properties": {
+            "path": {
+              "type": "string",
+              "minLength": 1
+            },
+            "bytes": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "passed": {
+              "const": true
+            },
+            "values": {
+              "type": "object"
+            }
+          }
+        },
+        "safeCells": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "path",
+            "bytes",
+            "sha256",
+            "passed",
+            "values"
+          ],
+          "properties": {
+            "path": {
+              "type": "string",
+              "minLength": 1
+            },
+            "bytes": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "passed": {
+              "const": true
+            },
+            "values": {
+              "type": "object"
+            }
+          }
+        },
+        "currentGuard": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "path",
+            "bytes",
+            "sha256",
+            "passed",
+            "values"
+          ],
+          "properties": {
+            "path": {
+              "type": "string",
+              "minLength": 1
+            },
+            "bytes": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "passed": {
+              "const": true
+            },
+            "values": {
+              "type": "object"
+            }
+          }
+        },
+        "runtimeInvariants": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "path",
+            "bytes",
+            "sha256",
+            "passed",
+            "values"
+          ],
+          "properties": {
+            "path": {
+              "type": "string",
+              "minLength": 1
+            },
+            "bytes": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "passed": {
+              "const": true
+            },
+            "values": {
+              "type": "object"
+            }
+          }
+        },
+        "sourceResourceClosure": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "path",
+            "bytes",
+            "sha256",
+            "passed",
+            "values"
+          ],
+          "properties": {
+            "path": {
+              "type": "string",
+              "minLength": 1
+            },
+            "bytes": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "passed": {
+              "const": true
+            },
+            "values": {
+              "type": "object"
+            }
+          }
+        },
+        "renderedReview": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "path",
+            "bytes",
+            "sha256",
+            "passed",
+            "values"
+          ],
+          "properties": {
+            "path": {
+              "type": "string",
+              "minLength": 1
+            },
+            "bytes": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "passed": {
+              "const": true
+            },
+            "values": {
+              "type": "object"
+            }
+          }
+        },
+        "routes": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "path",
+            "bytes",
+            "sha256",
+            "passed",
+            "values"
+          ],
+          "properties": {
+            "path": {
+              "type": "string",
+              "minLength": 1
+            },
+            "bytes": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "passed": {
+              "const": true
+            },
+            "values": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    "independentGateReceipt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "bytes",
+        "sha256"
+      ],
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "stage": {
+      "const": "qa-preparation"
+    },
+    "releaseEligible": {
+      "type": "boolean"
+    },
+    "pendingDynamicChecks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    },
+    "proofFieldSplitVersion": {
+      "const": "forward-proof-field-split-v1"
+    },
+    "pendingProofAssertions": {
+      "type": "array",
+      "const": [
+        "a1owDecode.mountainCollisionReconciled",
+        "a1owDecode.heroFootClearanceRecomputed",
+        "visibleAlpha.noHiddenSelectableHeroFrame",
+        "heroFrameClearance.clearanceRecomputed",
+        "runtimeInvariants.existingSaveResume",
+        "routes.startAndLegacyFallbackVerified",
+        "routes.savedPositionRecoveryVerified",
+        "routes.crystalCaveRoundTrip",
+        "routes.allExitsReachable",
+        "routes.noTraversableTerrainSeam",
+        "routes.leftPlainsOpeningRetained"
+      ]
+    }
+  },
+  "$defs": {
+    "inventory": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "path",
+          "bytes",
+          "sha256"
+        ],
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "bytes": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "stage": {
+            "const": "qa-preparation"
+          }
+        },
+        "required": [
+          "stage"
+        ]
+      },
+      "then": {
+        "required": [
+          "stage",
+          "releaseEligible",
+          "pendingDynamicChecks",
+          "pendingProofAssertions"
+        ],
+        "properties": {
+          "gateReady": {
+            "const": false
+          },
+          "releaseEligible": {
+            "const": false
+          },
+          "pendingDynamicChecks": {
+            "const": [
+              "terrainContactBothHeroes",
+              "cliffGrassRoutes",
+              "caveDoorBridgeRoutes",
+              "chunkStreamingAndResume",
+              "savePreservationAndInterruption",
+              "battleFleeBossReturn"
+            ]
+          },
+          "proofs": {
+            "properties": {
+              "underpaintPhase": {
+                "properties": {
+                  "values": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "scope",
+                      "manifestSha256",
+                      "activeDqTilesSha256",
+                      "originCell",
+                      "dimensionsPx6",
+                      "pixelsPerCell",
+                      "basePixelsPerCell",
+                      "semanticBounds",
+                      "chunksIntersectingSemanticBounds",
+                      "phaseMismatches",
+                      "semanticCellsCoveredExactlyOnce",
+                      "sameOwTileWorldGrid"
+                    ],
+                    "properties": {
+                      "scope": {
+                        "const": "declared-origin-and-scale-phase-v1"
+                      },
+                      "manifestSha256": {
+                        "type": "string",
+                        "pattern": "^[0-9a-f]{64}$"
+                      },
+                      "activeDqTilesSha256": {
+                        "type": "string",
+                        "pattern": "^[0-9a-f]{64}$"
+                      },
+                      "originCell": {
+                        "const": [
+                          16,
+                          218
+                        ]
+                      },
+                      "dimensionsPx6": {
+                        "const": [
+                          888,
+                          1092
+                        ]
+                      },
+                      "pixelsPerCell": {
+                        "const": 6
+                      },
+                      "basePixelsPerCell": {
+                        "const": 32
+                      },
+                      "semanticBounds": {
+                        "const": [
+                          16,
+                          218,
+                          163,
+                          399
+                        ]
+                      },
+                      "chunksIntersectingSemanticBounds": {
+                        "const": 120
+                      },
+                      "phaseMismatches": {
+                        "const": 0
+                      },
+                      "semanticCellsCoveredExactlyOnce": {
+                        "const": true
+                      },
+                      "sameOwTileWorldGrid": {
+                        "const": true
+                      }
+                    }
+                  }
+                }
+              },
+              "collisionDecode": {
+                "properties": {
+                  "values": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "independentDecode",
+                      "heroFramesChecked",
+                      "heroStencilScope",
+                      "safeCellCount",
+                      "runtimeFormat",
+                      "collisionSha256",
+                      "boundsChecked",
+                      "bitOrderAndLengthChecked"
+                    ],
+                    "properties": {
+                      "independentDecode": {
+                        "const": true
+                      },
+                      "heroFramesChecked": {
+                        "const": "all-selectable-frames-at-safe-cells"
+                      },
+                      "heroStencilScope": {
+                        "const": "safe-cell-QOK-stencil-v1"
+                      },
+                      "safeCellCount": {
+                        "const": 149
+                      },
+                      "runtimeFormat": {
+                        "const": "qok-forest-bitset-v1"
+                      },
+                      "collisionSha256": {
+                        "type": "string",
+                        "pattern": "^[0-9a-f]{64}$"
+                      },
+                      "boundsChecked": {
+                        "const": true
+                      },
+                      "bitOrderAndLengthChecked": {
+                        "const": true
+                      }
+                    }
+                  }
+                }
+              },
+              "a1owDecode": {
+                "properties": {
+                  "values": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "format",
+                      "artifactSha256",
+                      "runtimeParser",
+                      "version",
+                      "headerBytes",
+                      "profileId",
+                      "supportSchema",
+                      "supportFNV32",
+                      "semanticsSha256",
+                      "supportSha256",
+                      "payloadSha256",
+                      "blockCount",
+                      "waterOnlyInsideAct1",
+                      "analyticMountainsOutsideAndPadding"
+                    ],
+                    "properties": {
+                      "format": {
+                        "const": "A1OW-v2"
+                      },
+                      "artifactSha256": {
+                        "type": "string",
+                        "pattern": "^[0-9a-f]{64}$"
+                      },
+                      "runtimeParser": {
+                        "const": "dq-tiles.js::owmBakeParse"
+                      },
+                      "version": {
+                        "const": 2
+                      },
+                      "headerBytes": {
+                        "const": 96
+                      },
+                      "profileId": {
+                        "const": "act1-forward-20261007-v1"
+                      },
+                      "supportSchema": {
+                        "const": "a1ow-effective-support-v1"
+                      },
+                      "supportFNV32": {
+                        "const": 4271507709
+                      },
+                      "semanticsSha256": {
+                        "const": "a6e6e7f228d040381539618d99f03e774a16dd7cadbaf8cc76a115934d324f67"
+                      },
+                      "supportSha256": {
+                        "const": "eeaf65c08cda239ea8755a3af0026ed0ca61e19a2683cafc10610b5c4027914a"
+                      },
+                      "payloadSha256": {
+                        "const": "05be9638d04a692668c3a1c8b4bd3d809216bcede2e090a74a0712cb5467498c"
+                      },
+                      "blockCount": {
+                        "const": 4094
+                      },
+                      "waterOnlyInsideAct1": {
+                        "const": true
+                      },
+                      "analyticMountainsOutsideAndPadding": {
+                        "const": true
+                      }
+                    }
+                  }
+                }
+              },
+              "visibleAlpha": {
+                "properties": {
+                  "values": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "sourceAuthority",
+                      "sourceArtifactSha256",
+                      "collisionSha256"
+                    ],
+                    "properties": {
+                      "sourceAuthority": {
+                        "const": "final-visible-whole-object-union"
+                      },
+                      "sourceArtifactSha256": {
+                        "type": "string",
+                        "pattern": "^[0-9a-f]{64}$"
+                      },
+                      "collisionSha256": {
+                        "type": "string",
+                        "pattern": "^[0-9a-f]{64}$"
+                      }
+                    }
+                  }
+                }
+              },
+              "heroFrameClearance": {
+                "properties": {
+                  "values": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "allSelectableHeroes",
+                      "allFramesAtRuntimeScale",
+                      "scope",
+                      "heroCount",
+                      "framesPerHero",
+                      "runtimeScale",
+                      "heroFrameSources"
+                    ],
+                    "properties": {
+                      "allSelectableHeroes": {
+                        "const": true
+                      },
+                      "allFramesAtRuntimeScale": {
+                        "const": true
+                      },
+                      "scope": {
+                        "const": "safe-cell-QOK-stencil-v1"
+                      },
+                      "heroCount": {
+                        "const": 2
+                      },
+                      "framesPerHero": {
+                        "const": 12
+                      },
+                      "runtimeScale": {
+                        "const": 0.7
+                      },
+                      "heroFrameSources": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "g3",
+                          "male"
+                        ],
+                        "properties": {
+                          "g3": {
+                            "type": "string",
+                            "pattern": "^[0-9a-f]{64}$"
+                          },
+                          "male": {
+                            "type": "string",
+                            "pattern": "^[0-9a-f]{64}$"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "safeCells": {
+                "properties": {
+                  "values": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "recomputedFromCollisionSha256",
+                      "count",
+                      "recomputed",
+                      "scope",
+                      "offsets",
+                      "framesPerHero",
+                      "heroFrameSources",
+                      "qokHits"
+                    ],
+                    "properties": {
+                      "recomputedFromCollisionSha256": {
+                        "type": "string",
+                        "pattern": "^[0-9a-f]{64}$"
+                      },
+                      "count": {
+                        "const": 149
+                      },
+                      "recomputed": {
+                        "const": true
+                      },
+                      "scope": {
+                        "const": "safe-cell-QOK-stencil-v1"
+                      },
+                      "offsets": {
+                        "const": [
+                          [
+                            0,
+                            0
+                          ],
+                          [
+                            -1,
+                            0
+                          ],
+                          [
+                            1,
+                            0
+                          ],
+                          [
+                            0,
+                            -1
+                          ],
+                          [
+                            0,
+                            1
+                          ]
+                        ]
+                      },
+                      "framesPerHero": {
+                        "const": 12
+                      },
+                      "heroFrameSources": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "g3",
+                          "male"
+                        ],
+                        "properties": {
+                          "g3": {
+                            "type": "string",
+                            "pattern": "^[0-9a-f]{64}$"
+                          },
+                          "male": {
+                            "type": "string",
+                            "pattern": "^[0-9a-f]{64}$"
+                          }
+                        }
+                      },
+                      "qokHits": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "g3",
+                          "male"
+                        ],
+                        "properties": {
+                          "g3": {
+                            "const": 0
+                          },
+                          "male": {
+                            "const": 0
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "runtimeInvariants": {
+                "properties": {
+                  "values": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "viewport",
+                      "saveVersion"
+                    ],
+                    "properties": {
+                      "viewport": {
+                        "const": [
+                          320,
+                          400
+                        ]
+                      },
+                      "saveVersion": {
+                        "const": 4
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "pendingProofAssertions": {
+            "const": [
+              "a1owDecode.mountainCollisionReconciled",
+              "a1owDecode.heroFootClearanceRecomputed",
+              "visibleAlpha.noHiddenSelectableHeroFrame",
+              "heroFrameClearance.clearanceRecomputed",
+              "runtimeInvariants.existingSaveResume",
+              "routes.startAndLegacyFallbackVerified",
+              "routes.savedPositionRecoveryVerified",
+              "routes.crystalCaveRoundTrip",
+              "routes.allExitsReachable",
+              "routes.noTraversableTerrainSeam",
+              "routes.leftPlainsOpeningRetained"
+            ]
+          }
+        },
+        "not": {
+          "required": [
+            "proofs"
+          ],
+          "properties": {
+            "proofs": {
+              "required": [
+                "routes"
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "not": {
+          "required": [
+            "stage"
+          ]
+        }
+      },
+      "then": {
+        "properties": {
+          "gateReady": {
+            "const": true
+          },
+          "proofs": {
+            "required": [
+              "cleanRegeneration",
+              "decodedPixels",
+              "globalCropReconstruction",
+              "chunkBoundaries",
+              "underpaintPhase",
+              "collisionDecode",
+              "a1owDecode",
+              "visibleAlpha",
+              "heroFrameClearance",
+              "safeCells",
+              "currentGuard",
+              "runtimeInvariants",
+              "sourceResourceClosure",
+              "renderedReview",
+              "routes"
+            ],
+            "properties": {
+              "underpaintPhase": {
+                "properties": {
+                  "values": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "scope",
+                      "manifestSha256",
+                      "activeDqTilesSha256",
+                      "originCell",
+                      "dimensionsPx6",
+                      "pixelsPerCell",
+                      "basePixelsPerCell",
+                      "semanticBounds",
+                      "chunksIntersectingSemanticBounds",
+                      "phaseMismatches",
+                      "semanticCellsCoveredExactlyOnce",
+                      "sameOwTileWorldGrid"
+                    ],
+                    "properties": {
+                      "scope": {
+                        "const": "declared-origin-and-scale-phase-v1"
+                      },
+                      "manifestSha256": {
+                        "type": "string",
+                        "pattern": "^[0-9a-f]{64}$"
+                      },
+                      "activeDqTilesSha256": {
+                        "type": "string",
+                        "pattern": "^[0-9a-f]{64}$"
+                      },
+                      "originCell": {
+                        "const": [
+                          16,
+                          218
+                        ]
+                      },
+                      "dimensionsPx6": {
+                        "const": [
+                          888,
+                          1092
+                        ]
+                      },
+                      "pixelsPerCell": {
+                        "const": 6
+                      },
+                      "basePixelsPerCell": {
+                        "const": 32
+                      },
+                      "semanticBounds": {
+                        "const": [
+                          16,
+                          218,
+                          163,
+                          399
+                        ]
+                      },
+                      "chunksIntersectingSemanticBounds": {
+                        "const": 120
+                      },
+                      "phaseMismatches": {
+                        "const": 0
+                      },
+                      "semanticCellsCoveredExactlyOnce": {
+                        "const": true
+                      },
+                      "sameOwTileWorldGrid": {
+                        "const": true
+                      }
+                    }
+                  }
+                }
+              },
+              "collisionDecode": {
+                "properties": {
+                  "values": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "independentDecode",
+                      "heroFramesChecked",
+                      "heroStencilScope",
+                      "safeCellCount",
+                      "runtimeFormat",
+                      "collisionSha256",
+                      "boundsChecked",
+                      "bitOrderAndLengthChecked"
+                    ],
+                    "properties": {
+                      "independentDecode": {
+                        "const": true
+                      },
+                      "heroFramesChecked": {
+                        "const": "all-selectable-frames-at-safe-cells"
+                      },
+                      "heroStencilScope": {
+                        "const": "safe-cell-QOK-stencil-v1"
+                      },
+                      "safeCellCount": {
+                        "const": 149
+                      },
+                      "runtimeFormat": {
+                        "const": "qok-forest-bitset-v1"
+                      },
+                      "collisionSha256": {
+                        "type": "string",
+                        "pattern": "^[0-9a-f]{64}$"
+                      },
+                      "boundsChecked": {
+                        "const": true
+                      },
+                      "bitOrderAndLengthChecked": {
+                        "const": true
+                      }
+                    }
+                  }
+                }
+              },
+              "a1owDecode": {
+                "properties": {
+                  "values": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "format",
+                      "artifactSha256",
+                      "runtimeParser",
+                      "version",
+                      "headerBytes",
+                      "profileId",
+                      "supportSchema",
+                      "supportFNV32",
+                      "semanticsSha256",
+                      "supportSha256",
+                      "payloadSha256",
+                      "blockCount",
+                      "waterOnlyInsideAct1",
+                      "analyticMountainsOutsideAndPadding",
+                      "mountainCollisionReconciled",
+                      "heroFootClearanceRecomputed"
+                    ],
+                    "properties": {
+                      "format": {
+                        "const": "A1OW-v2"
+                      },
+                      "artifactSha256": {
+                        "type": "string",
+                        "pattern": "^[0-9a-f]{64}$"
+                      },
+                      "runtimeParser": {
+                        "const": "dq-tiles.js::owmBakeParse"
+                      },
+                      "version": {
+                        "const": 2
+                      },
+                      "headerBytes": {
+                        "const": 96
+                      },
+                      "profileId": {
+                        "const": "act1-forward-20261007-v1"
+                      },
+                      "supportSchema": {
+                        "const": "a1ow-effective-support-v1"
+                      },
+                      "supportFNV32": {
+                        "const": 4271507709
+                      },
+                      "semanticsSha256": {
+                        "const": "a6e6e7f228d040381539618d99f03e774a16dd7cadbaf8cc76a115934d324f67"
+                      },
+                      "supportSha256": {
+                        "const": "eeaf65c08cda239ea8755a3af0026ed0ca61e19a2683cafc10610b5c4027914a"
+                      },
+                      "payloadSha256": {
+                        "const": "05be9638d04a692668c3a1c8b4bd3d809216bcede2e090a74a0712cb5467498c"
+                      },
+                      "blockCount": {
+                        "const": 4094
+                      },
+                      "waterOnlyInsideAct1": {
+                        "const": true
+                      },
+                      "analyticMountainsOutsideAndPadding": {
+                        "const": true
+                      },
+                      "mountainCollisionReconciled": {
+                        "const": true
+                      },
+                      "heroFootClearanceRecomputed": {
+                        "const": true
+                      }
+                    }
+                  }
+                }
+              },
+              "visibleAlpha": {
+                "properties": {
+                  "values": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "sourceAuthority",
+                      "sourceArtifactSha256",
+                      "collisionSha256",
+                      "noHiddenSelectableHeroFrame"
+                    ],
+                    "properties": {
+                      "sourceAuthority": {
+                        "const": "final-visible-whole-object-union"
+                      },
+                      "sourceArtifactSha256": {
+                        "type": "string",
+                        "pattern": "^[0-9a-f]{64}$"
+                      },
+                      "collisionSha256": {
+                        "type": "string",
+                        "pattern": "^[0-9a-f]{64}$"
+                      },
+                      "noHiddenSelectableHeroFrame": {
+                        "const": true
+                      }
+                    }
+                  }
+                }
+              },
+              "heroFrameClearance": {
+                "properties": {
+                  "values": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "allSelectableHeroes",
+                      "allFramesAtRuntimeScale",
+                      "scope",
+                      "heroCount",
+                      "framesPerHero",
+                      "runtimeScale",
+                      "heroFrameSources",
+                      "clearanceRecomputed"
+                    ],
+                    "properties": {
+                      "allSelectableHeroes": {
+                        "const": true
+                      },
+                      "allFramesAtRuntimeScale": {
+                        "const": true
+                      },
+                      "scope": {
+                        "const": "safe-cell-QOK-stencil-v1"
+                      },
+                      "heroCount": {
+                        "const": 2
+                      },
+                      "framesPerHero": {
+                        "const": 12
+                      },
+                      "runtimeScale": {
+                        "const": 0.7
+                      },
+                      "heroFrameSources": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "g3",
+                          "male"
+                        ],
+                        "properties": {
+                          "g3": {
+                            "type": "string",
+                            "pattern": "^[0-9a-f]{64}$"
+                          },
+                          "male": {
+                            "type": "string",
+                            "pattern": "^[0-9a-f]{64}$"
+                          }
+                        }
+                      },
+                      "clearanceRecomputed": {
+                        "const": true
+                      }
+                    }
+                  }
+                }
+              },
+              "safeCells": {
+                "properties": {
+                  "values": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "recomputedFromCollisionSha256",
+                      "count",
+                      "recomputed",
+                      "scope",
+                      "offsets",
+                      "framesPerHero",
+                      "heroFrameSources",
+                      "qokHits"
+                    ],
+                    "properties": {
+                      "recomputedFromCollisionSha256": {
+                        "type": "string",
+                        "pattern": "^[0-9a-f]{64}$"
+                      },
+                      "count": {
+                        "const": 149
+                      },
+                      "recomputed": {
+                        "const": true
+                      },
+                      "scope": {
+                        "const": "safe-cell-QOK-stencil-v1"
+                      },
+                      "offsets": {
+                        "const": [
+                          [
+                            0,
+                            0
+                          ],
+                          [
+                            -1,
+                            0
+                          ],
+                          [
+                            1,
+                            0
+                          ],
+                          [
+                            0,
+                            -1
+                          ],
+                          [
+                            0,
+                            1
+                          ]
+                        ]
+                      },
+                      "framesPerHero": {
+                        "const": 12
+                      },
+                      "heroFrameSources": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "g3",
+                          "male"
+                        ],
+                        "properties": {
+                          "g3": {
+                            "type": "string",
+                            "pattern": "^[0-9a-f]{64}$"
+                          },
+                          "male": {
+                            "type": "string",
+                            "pattern": "^[0-9a-f]{64}$"
+                          }
+                        }
+                      },
+                      "qokHits": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "g3",
+                          "male"
+                        ],
+                        "properties": {
+                          "g3": {
+                            "const": 0
+                          },
+                          "male": {
+                            "const": 0
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "runtimeInvariants": {
+                "properties": {
+                  "values": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "viewport",
+                      "saveVersion",
+                      "existingSaveResume"
+                    ],
+                    "properties": {
+                      "viewport": {
+                        "const": [
+                          320,
+                          400
+                        ]
+                      },
+                      "saveVersion": {
+                        "const": 4
+                      },
+                      "existingSaveResume": {
+                        "const": true
+                      }
+                    }
+                  }
+                }
+              },
+              "routes": {
+                "properties": {
+                  "values": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "startAndLegacyFallbackVerified",
+                      "savedPositionRecoveryVerified",
+                      "crystalCaveRoundTrip",
+                      "allExitsReachable",
+                      "noTraversableTerrainSeam",
+                      "leftPlainsOpeningRetained",
+                      "staleGuardAccepted"
+                    ],
+                    "properties": {
+                      "startAndLegacyFallbackVerified": {
+                        "const": true
+                      },
+                      "savedPositionRecoveryVerified": {
+                        "const": true
+                      },
+                      "crystalCaveRoundTrip": {
+                        "const": true
+                      },
+                      "allExitsReachable": {
+                        "const": true
+                      },
+                      "noTraversableTerrainSeam": {
+                        "const": true
+                      },
+                      "leftPlainsOpeningRetained": {
+                        "const": true
+                      },
+                      "staleGuardAccepted": {
+                        "const": false
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "not": {
+          "anyOf": [
+            {
+              "required": [
+                "releaseEligible"
+              ]
+            },
+            {
+              "required": [
+                "pendingDynamicChecks"
+              ]
+            },
+            {
+              "required": [
+                "pendingProofAssertions"
+              ]
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

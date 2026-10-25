@@ -1,0 +1,95 @@
+{
+  "schema": "edu-rpg-greenhollow-elder-independent-review-v1",
+  "status": "PASS_WITH_HARNESS_FOLLOWUP_RESOLVED",
+  "reviewer": "Codex independent reviewer",
+  "candidate": {
+    "repository": "/Users/chris/.codex/workspaces/edu-rpg-forward-20261007",
+    "adapter": {
+      "path": "public/act1-hifi/adapter.js",
+      "sha256": "bfc84a24e602c7b2da4de210a396079082ca24ae29c9c8997448a1a6c8418481"
+    },
+    "test": {
+      "path": "scripts/test_greenhollow_new_game_continue_intent.cjs",
+      "sha256": "b18c4f967f0108dc4ed2c62adab311636d3b716fbf14ad44a0e0834b4081d6df"
+    },
+    "frozenBundle": {
+      "path": "derived-release84/Build/Products/Release-iphonesimulator/App.app/public/assets/index-BhoGQRaA.js",
+      "sha256": "ab4fc9ad1204f23b4ea55dbae2d72bdf193a52e643271bcfe8642e2210556456"
+    },
+    "adapterBaselineSha256": "f898789e9759b61f85c673b3243c1e6267fdf28cc90436864978a85e34ad819b"
+  },
+  "browserRun": {
+    "runtime": "frozen bundle with candidate adapter route interception",
+    "urlRewriting": false,
+    "authorReportedFinalRun": {
+      "checksPassed": 6,
+      "pageErrors": 0,
+      "result": "PASS",
+      "independentlyRerunAfterHarnessEdit": false,
+      "reviewerReason": "Harness follow-up changed server instructions and attached pageerror listeners; adapter scenarios were unchanged. The reviewer statically verified interception scope and listener coverage."
+    },
+    "reviewerRunBeforeHarnessEdit": {
+      "checksPassed": 6,
+      "pageErrors": 0,
+      "result": "PASS"
+    },
+    "checks": [
+      "actual New Game uses first=1",
+      "New Game starts at authored Elder cell",
+      "successful opening writes town-opened flag",
+      "legacy Continue stays at its saved overworld location",
+      "legacy Continue enters at town gate without first=1",
+      "Continue restores a saved town-local position without marker"
+    ]
+  },
+  "failureRetryProbe": {
+    "result": "PASS",
+    "procedure": "With a prior legacy save, injected one first town iframe navigation failure after actual title New Game; observed error cover, pressed Escape, then used visible Retry control.",
+    "observed": {
+      "errorCoverPhase": "error",
+      "errorCoverZIndex": 9999,
+      "escapeOpenedMenuScene": false,
+      "retryLoadedOpening": true,
+      "loadedAtElderCell": [32.19, 23.61],
+      "townOpenedFlagSetAfterReady": true
+    },
+    "interpretation": "Fresh intent survives the failed iframe attempt and is consumed only when the Greenhollow runtime becomes ready. The tested production UI exposed Retry while the error cover was active; Escape did not reach the menu route."
+  },
+  "sourceReview": {
+    "newGameHookInstalledBeforeTestedTitleAction": true,
+    "intentSetOnlyAfterOriginalNewGameReturns": true,
+    "newGamePlusDelegatesThroughWrappedNewGame": true,
+    "intentRetainedAcrossFailedNavigation": true,
+    "intentClearedAfterMatchingTownReady": true,
+    "loadGameReplacesPlayerWithoutCallingNewGame": true,
+    "manualSaveRecoveryBoundary": {
+      "result": "PASS_SOURCE_INSPECTION_ONLY",
+      "detail": "Manual save serializes the live GameState. The town snapshot API checks a validation witness and matching live town, then writes the separate recovery snapshot key; no recovery flags are merged into the manual-save record.",
+      "runtimeRouteTested": false
+    }
+  },
+  "resolvedHarnessFindings": [
+    {
+      "id": "serve-clean-url-redirect",
+      "status": "RESOLVED",
+      "detail": "Header now documents serve config cleanUrls:false, which preserves town.html and its relative asset base."
+    },
+    {
+      "id": "pageerror-listener-coverage",
+      "status": "RESOLVED",
+      "detail": "trackPageErrors is attached to the New Game, legacy Continue, and saved-town Playwright pages before navigation."
+    }
+  ],
+  "evidenceDirectory": ".",
+  "evidence": [
+    "REVIEW.md",
+    "failure-retry-probe.json",
+    "failure-cover.png",
+    "retry-recovered-opening.png"
+  ],
+  "limitations": [
+    "Browser evidence does not certify iOS simulator or physical-device behavior.",
+    "No production UI path to same-session Continue was observed while the town failure cover was active; reload resets module-local intent, and Retry consumes it after successful readiness.",
+    "Manual-save versus recovery-snapshot separation was reviewed in source and was not independently exercised in this browser route."
+  ]
+}

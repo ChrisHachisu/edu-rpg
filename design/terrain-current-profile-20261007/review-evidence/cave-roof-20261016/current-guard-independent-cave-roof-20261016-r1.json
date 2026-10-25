@@ -1,0 +1,60 @@
+{
+  "baselineReview": {
+    "bytes": 3387,
+    "path": "design/terrain-current-profile-20261007/review-evidence/cave-reentry-20261015/current-guard-independent-20261015-r1.json",
+    "scope": "retained prior guard evidence for DQ 6a605a8 and manifest 931240cf; not relabeled as current",
+    "sha256": "8dcb1712558a85079183cdfeff26ba39778fc843d5854bf3b60af074c19ff06b"
+  },
+  "currentGuard": {
+    "dqTilesSha256": "b12d7eedea5420d18605633d66ee698fda24a538e1b026e9e7a092b3a1ddcb0a",
+    "extractorVersion": "current-semantic-navigation-extractor-v1",
+    "femaleHeroSha256": "070a8a452c3dda775bd6c8593a66d57a5a13d97b9fb33378ea5b2bb0e1fded3c",
+    "finalManifestSha256": "39c3cd1effc6168b1c3d49e7fff5d49d372e87829aee8a2bd144fb268da12dd0",
+    "inputPaths": {
+      "dqTiles": "public/dq-tiles.js",
+      "femaleHero": "public/assets/hero/hero-g3-walk.png",
+      "finalManifest": "act1-hifi/manifest.json",
+      "maleHero": "public/assets/hero/hero-male-walk.png",
+      "semanticNavigation": "design/terrain-current-profile-20261007/current/act1-hifi-manifest.json",
+      "worldMap": "public/act1-world-map.js"
+    },
+    "maleHeroSha256": "88cbed8f9d707b216ada01e108eedd5822c6bcfc69c8dd22af2457f231dc0976",
+    "semanticNavigationFileSha256": "c6d69d659ea4e82b09feabae624c2cbd4406627405bb389a36547bd44cc4183f",
+    "semanticNavigationScope": "reviewed-runtime-navigation-fields-v1",
+    "semanticNavigationSha256": "27629e741b731b97ce7746097f0f2b8ab3de286ffa3b2870f2b14dd6751d1729",
+    "staleGuardAccepted": false,
+    "worldMapSha256": "fb466fc6dbe7e05ccbb209c70867cacf4f903d55837ea69ca716e81f7196c96f"
+  },
+  "evidence": {
+    "a1owSourceEquivalenceBytes": 42404,
+    "a1owSourceEquivalencePath": "design/terrain-current-profile-20261007/review-evidence/cave-roof-20261016/a1ow-source-equivalence.json",
+    "a1owSourceEquivalenceSha256": "48d66cea69463ab2edf4e296db0a5d44b9f02beae6c1715dd32e90ee470e2684",
+    "currentManifestSha256": "39c3cd1effc6168b1c3d49e7fff5d49d372e87829aee8a2bd144fb268da12dd0",
+    "currentOutputReceiptPath": "design/terrain-current-profile-20261007/evidence/output-receipt.json",
+    "currentOutputReceiptSha256": "a3aaca8e0eecc31d2dff157e8b86b16c9d2b42784952b7c18412bbd6252f4475",
+    "metadataComparisonPath": "design/terrain-current-profile-20261007/review-evidence/cave-roof-20261016/metadata-only-rebind-comparison.json",
+    "metadataComparisonSha256": "bd50556e967721e4306e7fc57469b7232d7d44f13e02e9f169860da5d6d08511",
+    "nativeOrRenderedPassClaimed": false
+  },
+  "reviewedAt": "2026-10-16",
+  "reviewerRole": "independent",
+  "schema": "independent-current-forward-guard-review-v1",
+  "scope": "Static candidate-source and manifest guard identity only. It establishes exact current public/dist DQ and metadata pins; it does not establish that an installed app contains this DQ or prove native/rendered behavior.",
+  "status": "PASS_CURRENT_SOURCE_GUARD",
+  "verified": {
+    "a1owReviewStatus": "PASS_A1OW_V2_IDENTITY_AND_BODY",
+    "a1owSourceHashBoundToProjection": true,
+    "a1owV2BodyIdenticalToFrozenV1": true,
+    "currentFemaleHeroSha256": "070a8a452c3dda775bd6c8593a66d57a5a13d97b9fb33378ea5b2bb0e1fded3c",
+    "currentMaleHeroSha256": "88cbed8f9d707b216ada01e108eedd5822c6bcfc69c8dd22af2457f231dc0976",
+    "currentPublicDistDQByteIdentical": true,
+    "currentPublicDistDQSha256": "b12d7eedea5420d18605633d66ee698fda24a538e1b026e9e7a092b3a1ddcb0a",
+    "currentWorldMapSha256": "fb466fc6dbe7e05ccbb209c70867cacf4f903d55837ea69ca716e81f7196c96f",
+    "generatedManifestSha256": "39c3cd1effc6168b1c3d49e7fff5d49d372e87829aee8a2bd144fb268da12dd0",
+    "nativeAppCurrentDQClaim": false,
+    "publicManifestMirrorByteIdentical": true,
+    "semanticNavigationFieldsSha256": "27629e741b731b97ce7746097f0f2b8ab3de286ffa3b2870f2b14dd6751d1729",
+    "semanticNavigationFileSha256": "c6d69d659ea4e82b09feabae624c2cbd4406627405bb389a36547bd44cc4183f",
+    "staleGuardAccepted": false
+  }
+}

@@ -1,0 +1,447 @@
+{
+  "schema": "edu-rpg-act1-current-terrain-profile-inputs-v1",
+  "profileId": "terrain-current-profile-20261007",
+  "provenance": "NEW_CURRENT_SOURCE_PROFILE; assembled from live Cnew current authorities and byte-preserved approved artifacts. This is not recovery or a replacement for historical R8/R9 authority.",
+  "scope": {
+    "authoringInputBundle": "bounded terrain ground-only + existing approved whole-Act1 forest/cliff object sources",
+    "forestPlacementCount": 2061,
+    "cliffPlacementCount": 194,
+    "landmarkPainting": "disabled; runtime landmark assets remain separate and unchanged",
+    "fullWorldGenerationRecipe": "unknown / not included; no whole-world generation is claimed",
+    "wholeAct1ArtCompleteness": "placements/atlases are full-Act1 authorities; renderer reproduction, route reachability, and cave-access proof are outside this bundle"
+  },
+  "historicalDependencies": {
+    "R6SolidMask": {
+      "sha256": "f9f4407187cd003668da4df9b823c01bb96369f2cfe20b252ebb7dd6ab31b9e5",
+      "status": "unresolved historical source; required by old composer only",
+      "newObjectCompositorDependency": "undetermined; do not substitute a different mask or infer impossibility"
+    },
+    "R8/R9HistoricalClosure": "incomplete and intentionally not represented by this profile"
+  },
+  "relocationReceipt": {
+    "sourceGuardJson": "guards/authored-route-start-approach-hero-keepout.source.json",
+    "sourceGuardJsonSha256": "29258bed0c1e221eafa9c8db39378f5e27dd9bc1bd64d2c97407de39dddb5a81",
+    "ephemeralPathsRetainedOnlyAsSourceMetadata": true,
+    "bundledGuardArrays": "guards/authored-route-start-approach-hero-keepout.npz",
+    "mapping": [
+      {
+        "sourceField": "liveAuthorityPath",
+        "sourceValue": "/private/tmp/edu-rpg-terrain-r9-20261001/public/act1-world-map.js",
+        "bundlePath": "current/act1-world-map.js"
+      },
+      {
+        "sourceField": "spawnPolicyAuthorityPath",
+        "sourceValue": "/private/tmp/edu-rpg-terrain-r9-20261001/public/dq-tiles.js",
+        "bundlePath": "current/dq-tiles.js"
+      }
+    ],
+    "note": "Original metadata is preserved byte-for-byte. Bundle paths are documented here; no historical metadata or hashes were rewritten.",
+    "cliffAssetPathMappings": [
+      {
+        "sourcePath": "/Users/chris/.codex/artifacts/edu-rpg-r9-implementation-20261001/world-integration-20261003/mountain-assets/act1-cliff-kit-imagegen-v1.png",
+        "bundlePath": "atlases/act1-cliff-kit-imagegen-v1.png"
+      },
+      {
+        "sourcePath": "/Users/chris/.codex/artifacts/edu-rpg-r9-implementation-20261001/world-integration-20261003/mountain/companion-cliff-kit-imagegen-v2.png",
+        "bundlePath": "atlases/companion-cliff-kit-imagegen-v2.png"
+      }
+    ],
+    "cliffAssetPathNote": "composition-report.json remains byte-exact; these mappings replace no embedded historical sourcePath values and are for a future portable reader only.",
+    "portableR4Renderer": {
+      "rendererPath": "r4-source/scripts/render_material_map_r4.py",
+      "rendererSha256": "8a2f8f7d9cd3a24c8a20e45630e8a181c820082bcdb2b5b3876d15429cbb98a2",
+      "originalRendererPreservedByteForByte": true,
+      "newAdapter": "render_ground_crop.py",
+      "authorityMappings": [
+        {
+          "source": "runtime-v4/act1-painted-overworld-r4/runtime/manifest.json",
+          "bundlePath": "portable-root/design/review/overworld-art-blueprint/act-by-act/act1/runtime-v4/act1-painted-overworld-r4/runtime/manifest.json",
+          "sha256": "6d9d2a0a8d0636d442d9411726368d11cd5dbe17cea184ca522e461892e2aadc"
+        },
+        {
+          "source": "current/act1-smoothed-semantic.png",
+          "bundlePath": "portable-root/design/continent-terrain-class-method/owner-terrain/art-tiles/act1-smoothed-semantic.png",
+          "sameBytes": true
+        },
+        {
+          "source": "current/r26-manifest.json",
+          "bundlePath": "portable-root/design/review/overworld-art-blueprint/act-by-act/act1/runtime-v2/act1-final-art-geometry-r26/runtime/manifest.json",
+          "sameBytes": true
+        },
+        {
+          "source": "r4-source/paint-source-r4-v5.json",
+          "bundlePath": "r4-source config-relative atlases",
+          "sameBytes": true
+        }
+      ],
+      "forestAtlasResolution": "forest placement source records absolute provenance only; its atlas identity resolves by sourceIndex into bundled r4-source/canopy-atlas-r4-hybrid.png, pinned by config and input manifest. No absolute atlas path is read.",
+      "importRootBootstrap": "adapter uses a temporary marker at r4-source/scripts/runtime_baseline.py only during import-time root discovery, removes it immediately, then explicitly overrides renderer ROOT and R26 manifest under portable-root."
+    }
+  },
+  "files": [
+    {
+      "path": "atlases/act1-cliff-kit-imagegen-v1.png",
+      "sha256": "4ad26ea3e7d38f4a768dd869a9a3c1db86812891c5911b461ac573af72684b1e",
+      "bytes": 2049403,
+      "role": "approved main cliff atlas",
+      "provenance": "preserved-current-approved-input",
+      "originPath": "/Users/chris/.codex/artifacts/edu-rpg-r9-implementation-20261001/world-integration-20261003/mountain-assets/act1-cliff-kit-imagegen-v1.png"
+    },
+    {
+      "path": "atlases/companion-cliff-kit-imagegen-v2.png",
+      "sha256": "b2701dd847e7d1df26c8488aa95877b57682be732a7bdc10d00fa12363613a04",
+      "bytes": 1144687,
+      "role": "approved companion cliff atlas",
+      "provenance": "preserved-current-approved-input",
+      "originPath": "/Users/chris/.codex/artifacts/edu-rpg-r9-implementation-20261001/world-integration-20261003/mountain/companion-cliff-kit-imagegen-v2.png"
+    },
+    {
+      "path": "current/act1-hifi-manifest.json",
+      "sha256": "c6d69d659ea4e82b09feabae624c2cbd4406627405bb389a36547bd44cc4183f",
+      "bytes": 138266,
+      "role": "current active Act1 hifi manifest",
+      "provenance": "preserved-current-approved-input",
+      "originPath": "/Users/chris/Documents/Codex/2026-09-15/edu-rpg-act1-feedback/taskwork/20261007-build84-source-recovery/recovered-candidate/public/act1-hifi/manifest.json"
+    },
+    {
+      "path": "current/act1-smoothed-semantic.png",
+      "sha256": "97f1a64fe6bfec7b40af16fef05f70caa80bdd076a8c4c3806474b848c975068",
+      "bytes": 51156,
+      "role": "current semantic raster authority",
+      "provenance": "preserved-current-approved-input",
+      "originPath": "/Users/chris/Documents/Codex/2026-09-15/edu-rpg-act1-feedback/taskwork/20261007-build84-source-recovery/recovered-candidate/design/continent-terrain-class-method/owner-terrain/art-tiles/act1-smoothed-semantic.png"
+    },
+    {
+      "path": "current/act1-world-map.js",
+      "sha256": "f1ea99546b799b50cec7d6fd40b1fae2ad53669fae22afaebe3760f225d12cad",
+      "bytes": 51510,
+      "role": "current live world map and exits",
+      "provenance": "preserved-current-approved-input",
+      "originPath": "/Users/chris/Documents/Codex/2026-09-15/edu-rpg-act1-feedback/taskwork/20261007-build84-source-recovery/recovered-candidate/public/act1-world-map.js"
+    },
+    {
+      "path": "current/dq-tiles.js",
+      "sha256": "80b1fcaf6d593bd704f720239c2f9fd533e7b49ca1af7c8d6401901b9d876090",
+      "bytes": 549895,
+      "role": "current spawn policy",
+      "provenance": "preserved-current-approved-input",
+      "originPath": "/Users/chris/Documents/Codex/2026-09-15/edu-rpg-act1-feedback/taskwork/20261007-build84-source-recovery/recovered-candidate/public/dq-tiles.js"
+    },
+    {
+      "path": "current/owner-terrain.json",
+      "sha256": "14ace76ef6d8051e711e770a55b1e85219ceacacc998b486d0bff7cbae145e8a",
+      "bytes": 141154,
+      "role": "current owner terrain class authority",
+      "provenance": "preserved-current-approved-input",
+      "originPath": "/Users/chris/Documents/Codex/2026-09-15/edu-rpg-act1-feedback/taskwork/20261007-build84-source-recovery/recovered-candidate/design/continent-terrain-class-method/owner-terrain/owner-terrain.json"
+    },
+    {
+      "path": "current/polygon-authority.json",
+      "sha256": "4010715a99926260a9d4e842cc97e0e6e04df93bffbc69b4ccf4ef4baf086834",
+      "bytes": 490608,
+      "role": "current polygon authority",
+      "provenance": "preserved-current-approved-input",
+      "originPath": "/Users/chris/Documents/Codex/2026-09-15/edu-rpg-act1-feedback/taskwork/20261007-build84-source-recovery/recovered-candidate/design/review/overworld-art-blueprint/act-by-act/act1/runtime-v2/act1-final-art-geometry-r26/polygon-authority.json"
+    },
+    {
+      "path": "current/r26-manifest.json",
+      "sha256": "7306e81411a230d3d83d8c179c9a55de5d0a234f26757654872b1b2c264210a4",
+      "bytes": 236890,
+      "role": "current R26 geometry manifest",
+      "provenance": "preserved-current-approved-input",
+      "originPath": "/Users/chris/Documents/Codex/2026-09-15/edu-rpg-act1-feedback/taskwork/20261007-build84-source-recovery/recovered-candidate/design/review/overworld-art-blueprint/act-by-act/act1/runtime-v2/act1-final-art-geometry-r26/runtime/manifest.json"
+    },
+    {
+      "path": "current/r3-runtime-manifest.json",
+      "sha256": "6d9d2a0a8d0636d442d9411726368d11cd5dbe17cea184ca522e461892e2aadc",
+      "bytes": 244087,
+      "role": "current R3 runtime manifest referenced by R4 config",
+      "provenance": "preserved-current-approved-input",
+      "originPath": "/Users/chris/Documents/Codex/2026-09-15/edu-rpg-act1-feedback/taskwork/20260927-crisp-terrain-implementation/handoff-source-r5-final/dependencies/runtime-v4/act1-painted-overworld-r4/runtime/manifest.json"
+    },
+    {
+      "path": "guards/authored-route-start-approach-hero-keepout.npz",
+      "sha256": "8a0432ff2434218f10f9328b222ce6e2e05c9dd2397f80ba8e57c05f4ca5cedb",
+      "bytes": 168601,
+      "role": "current full-Act1 exit/approach/start hero guard arrays",
+      "provenance": "preserved-current-approved-input",
+      "originPath": "/Users/chris/.codex/artifacts/edu-rpg-r9-implementation-20261001/world-integration-20261003/mountain/diagnostics/authored-route-start-approach-hero-keepout.npz"
+    },
+    {
+      "path": "guards/authored-route-start-approach-hero-keepout.source.json",
+      "sha256": "29258bed0c1e221eafa9c8db39378f5e27dd9bc1bd64d2c97407de39dddb5a81",
+      "bytes": 3637,
+      "role": "original guard metadata JSON; raw bytes preserved",
+      "provenance": "preserved-current-approved-input",
+      "originPath": "/Users/chris/.codex/artifacts/edu-rpg-r9-implementation-20261001/world-integration-20261003/mountain/diagnostics/authored-route-start-approach-hero-keepout.json"
+    },
+    {
+      "path": "heroes/hero-act1-male-walk-8x3-64-g3.png",
+      "sha256": "b1e03de47337d8d2aca8d89e80c1c524c95ac2cc2cf88ed1ebd2b37b86424b2e",
+      "bytes": 124618,
+      "role": "current preview sample hero sheet",
+      "provenance": "preserved-current-approved-input",
+      "originPath": "/Users/chris/Documents/Codex/2026-09-15/edu-rpg-act1-feedback/taskwork/20261007-build84-source-recovery/recovered-candidate/public/act1-hifi/hero-g3/hero-act1-male-walk-8x3-64-g3.png"
+    },
+    {
+      "path": "heroes/hero-g3-walk.png",
+      "sha256": "070a8a452c3dda775bd6c8593a66d57a5a13d97b9fb33378ea5b2bb0e1fded3c",
+      "bytes": 59447,
+      "role": "current selectable G3 full-frame hero sheet",
+      "provenance": "preserved-current-approved-input",
+      "originPath": "/Users/chris/Documents/Codex/2026-09-15/edu-rpg-act1-feedback/taskwork/20261007-build84-source-recovery/recovered-candidate/public/assets/hero/hero-g3-walk.png"
+    },
+    {
+      "path": "heroes/hero-male-walk.png",
+      "sha256": "88cbed8f9d707b216ada01e108eedd5822c6bcfc69c8dd22af2457f231dc0976",
+      "bytes": 59032,
+      "role": "current selectable male full-frame hero sheet",
+      "provenance": "preserved-current-approved-input",
+      "originPath": "/Users/chris/Documents/Codex/2026-09-15/edu-rpg-act1-feedback/taskwork/20261007-build84-source-recovery/recovered-candidate/public/assets/hero/hero-male-walk.png"
+    },
+    {
+      "path": "materials/mat-forest.png",
+      "sha256": "e2bd92984bf2b0f927b039bbf3047419ddafb764f2ea822ae9c039c5ca38a71a",
+      "bytes": 603397,
+      "role": "R4 required terrain material; exact R5 runtime pin",
+      "provenance": "preserved-current-approved-input",
+      "originPath": "/Users/chris/.codex/artifacts/edu-rpg-r9-implementation-20261001/world-integration-20261003/review/native-phone/checkpoint-20261003/App.app/public/materials/mat-forest.png"
+    },
+    {
+      "path": "materials/mat-grass.png",
+      "sha256": "9fa43b08867a4344ebc36dd581e806bf2d833ee4ca924f1ce7f517a57ca3fb76",
+      "bytes": 660235,
+      "role": "R4 required terrain material; exact R5 runtime pin",
+      "provenance": "preserved-current-approved-input",
+      "originPath": "/Users/chris/.codex/artifacts/edu-rpg-r9-implementation-20261001/world-integration-20261003/review/native-phone/checkpoint-20261003/App.app/public/materials/mat-grass.png"
+    },
+    {
+      "path": "materials/mat-rock.png",
+      "sha256": "e2573d08fb2eac036b0888795f1e6a1787e35d9acd7f44cbff80fb5e6e7518ae",
+      "bytes": 674501,
+      "role": "R4 required terrain material; exact R5 runtime pin",
+      "provenance": "preserved-current-approved-input",
+      "originPath": "/Users/chris/.codex/artifacts/edu-rpg-r9-implementation-20261001/world-integration-20261003/review/native-phone/checkpoint-20261003/App.app/public/materials/mat-rock.png"
+    },
+    {
+      "path": "materials/mat-water.png",
+      "sha256": "78b08a4cfda57d9a7d763e95c461ad5d2c0bbe442b4135e9df95cdaf8339dcc7",
+      "bytes": 451430,
+      "role": "R4 required terrain material; exact R5 runtime pin",
+      "provenance": "preserved-current-approved-input",
+      "originPath": "/Users/chris/.codex/artifacts/edu-rpg-r9-implementation-20261001/world-integration-20261003/review/native-phone/checkpoint-20261003/App.app/public/materials/mat-water.png"
+    },
+    {
+      "path": "placements/cliff-composition-report.json",
+      "sha256": "5e0de19a4c29e415b3066dedbd24089e8d9382fd4cf67b5415f44b69dea7efad",
+      "bytes": 95236,
+      "role": "whole-Act1 cliff composition metadata and atlas component mapping",
+      "provenance": "preserved-current-approved-input",
+      "originPath": "/Users/chris/.codex/artifacts/edu-rpg-r9-implementation-20261001/world-integration-20261003/mountain/stage/composition-report.json"
+    },
+    {
+      "path": "placements/cliff-selected-layout-whole-act1.json",
+      "sha256": "8f5f0ece745dc4d9378c24e21c1fc2992d8ca03cee842aeeac444daf5eda0fa7",
+      "bytes": 64711,
+      "role": "whole-Act1 cliff selected layout",
+      "provenance": "preserved-current-approved-input",
+      "originPath": "/Users/chris/.codex/artifacts/edu-rpg-r9-implementation-20261001/world-integration-20261003/mountain/diagnostics/selected-layout-screen.json"
+    },
+    {
+      "path": "placements/forest-r4-whole-act1.json",
+      "sha256": "969cb20783142b6b14e03a3421400cfebd0cc6b18ad41e96f1e2f78d4e51a4bd",
+      "bytes": 393965,
+      "role": "whole-Act1 current forest placements",
+      "provenance": "preserved-current-approved-input",
+      "originPath": "/Users/chris/.codex/artifacts/edu-rpg-r9-implementation-20261001/world-integration-20261003/forest/stage/evidence/placements-r4-whole-act1.json"
+    },
+    {
+      "path": "placements/forest-stage-manifest.json",
+      "sha256": "ef294637dfbbc5e8d7b6aa28e03d7845a18aa3ba29802c3f5ed68f4d34c35ae5",
+      "bytes": 110171,
+      "role": "preserved forest stage authority/metadata",
+      "provenance": "preserved-current-approved-input",
+      "originPath": "/Users/chris/.codex/artifacts/edu-rpg-r9-implementation-20261001/world-integration-20261003/forest/stage/manifest.json"
+    },
+    {
+      "path": "portable-root/design/continent-terrain-class-method/owner-terrain/art-tiles/act1-smoothed-semantic.png",
+      "sha256": "97f1a64fe6bfec7b40af16fef05f70caa80bdd076a8c4c3806474b848c975068",
+      "bytes": 51156,
+      "role": "relocated duplicate of packaged current semantic bytes",
+      "provenance": "exact-source-copy",
+      "originPath": "/Users/chris/Documents/Codex/2026-09-15/edu-rpg-act1-feedback/taskwork/20261007-build84-source-recovery/recovered-candidate/design/terrain-current-profile-20261007/current/act1-smoothed-semantic.png"
+    },
+    {
+      "path": "portable-root/design/review/overworld-art-blueprint/act-by-act/act1/runtime-v2/act1-final-art-geometry-r26/runtime/manifest.json",
+      "sha256": "7306e81411a230d3d83d8c179c9a55de5d0a234f26757654872b1b2c264210a4",
+      "bytes": 236890,
+      "role": "relocated current R26 manifest for renderer authority cross-check",
+      "provenance": "exact-source-copy",
+      "originPath": "/Users/chris/Documents/Codex/2026-09-15/edu-rpg-act1-feedback/taskwork/20261007-build84-source-recovery/recovered-candidate/design/review/overworld-art-blueprint/act-by-act/act1/runtime-v2/act1-final-art-geometry-r26/runtime/manifest.json"
+    },
+    {
+      "path": "portable-root/design/review/overworld-art-blueprint/act-by-act/act1/runtime-v4/act1-painted-overworld-r4/runtime/manifest.json",
+      "sha256": "6d9d2a0a8d0636d442d9411726368d11cd5dbe17cea184ca522e461892e2aadc",
+      "bytes": 244087,
+      "role": "portable-root relocated exact R4 runtime manifest",
+      "provenance": "exact-source-copy",
+      "originPath": "/Users/chris/Documents/Codex/2026-09-15/edu-rpg-act1-feedback/taskwork/20260927-crisp-terrain-implementation/handoff-source-r5-final/dependencies/runtime-v4/act1-painted-overworld-r4/runtime/manifest.json"
+    },
+    {
+      "path": "r4-source/canopy-atlas-r4-hybrid.png",
+      "sha256": "7eef91d2fa4749e059d3c73be79624551d9ef9be2c179a6b4bc5b99a0fb7a984",
+      "bytes": 1427954,
+      "role": "R4 canopy atlas",
+      "provenance": "preserved-current-approved-input",
+      "originPath": "/Users/chris/Documents/Codex/2026-09-15/edu-rpg-act1-feedback/taskwork/20260927-crisp-terrain-implementation/handoff-source-r5-final/dependencies/runtime-v4/act1-painted-overworld-r4/source/canopy-atlas-r4-hybrid.png"
+    },
+    {
+      "path": "r4-source/meadow-atlas-r4-v5-periodic.png",
+      "sha256": "7a6befc783e66bc58f091e9dec05c9ac9e6059a4df560d12f4f0b4fdf9b9a350",
+      "bytes": 2564948,
+      "role": "R4 meadow atlas",
+      "provenance": "preserved-current-approved-input",
+      "originPath": "/Users/chris/Documents/Codex/2026-09-15/edu-rpg-act1-feedback/taskwork/20260927-crisp-terrain-implementation/handoff-source-r5-final/dependencies/runtime-v4/act1-painted-overworld-r4/source/meadow-atlas-r4-v5-periodic.png"
+    },
+    {
+      "path": "r4-source/mountain-cutout-atlas-r2.png",
+      "sha256": "7842a067007234bf43f00c8b835be9abc458ec54c4a47cea06369428da754965",
+      "bytes": 4202592,
+      "role": "R4 mountain cutout atlas",
+      "provenance": "preserved-current-approved-input",
+      "originPath": "/Users/chris/Documents/Codex/2026-09-15/edu-rpg-act1-feedback/taskwork/20260927-crisp-terrain-implementation/handoff-source-r5-final/dependencies/runtime-v4/act1-painted-overworld-r4/source/mountain-cutout-atlas-r2.png"
+    },
+    {
+      "path": "r4-source/paint-source-r4-v5.json",
+      "sha256": "e98f6dc03f98ff9f13b1b32d1df2e5017b88a7a71319c364b9807481ee09399f",
+      "bytes": 4857,
+      "role": "R4 source configuration",
+      "provenance": "preserved-current-approved-input",
+      "originPath": "/Users/chris/Documents/Codex/2026-09-15/edu-rpg-act1-feedback/taskwork/20260927-crisp-terrain-implementation/handoff-source-r5-final/dependencies/runtime-v4/act1-painted-overworld-r4/source/paint-source-r4-v5.json"
+    },
+    {
+      "path": "r4-source/rock-motif-atlas-r2.png",
+      "sha256": "568fffcf1c61fbe7ff9d10ebd9bab24a6be88252be6d9a8af566d917d2e2c4c2",
+      "bytes": 1754310,
+      "role": "R4 rock motif atlas",
+      "provenance": "preserved-current-approved-input",
+      "originPath": "/Users/chris/Documents/Codex/2026-09-15/edu-rpg-act1-feedback/taskwork/20260927-crisp-terrain-implementation/handoff-source-r5-final/dependencies/runtime-v4/act1-painted-overworld-r4/source/rock-motif-atlas-r2.png"
+    },
+    {
+      "path": "r4-source/runtime/manifest.json",
+      "sha256": "6d9d2a0a8d0636d442d9411726368d11cd5dbe17cea184ca522e461892e2aadc",
+      "bytes": 244087,
+      "role": "genuine R4 runtime manifest; R5 preserved input",
+      "provenance": "exact-source-copy",
+      "originPath": "/Users/chris/Documents/Codex/2026-09-15/edu-rpg-act1-feedback/taskwork/20260927-crisp-terrain-implementation/handoff-source-r5-final/dependencies/runtime-v4/act1-painted-overworld-r4/runtime/manifest.json"
+    },
+    {
+      "path": "r4-source/scripts/key_landmark_sprite.py",
+      "sha256": "4f36a9aa3c54760245c54d23fb658e145093082d7ffd38227db577dd1684a7c8",
+      "bytes": 12580,
+      "role": "R4 landmark footprint helper (landmark painting disabled in this profile)",
+      "provenance": "preserved-current-approved-input",
+      "originPath": "/Users/chris/Documents/Codex/2026-09-15/edu-rpg-act1-feedback/taskwork/20261007-build84-source-recovery/recovered-candidate/scripts/key_landmark_sprite.py"
+    },
+    {
+      "path": "r4-source/scripts/render_material_map_r4.py",
+      "sha256": "8a2f8f7d9cd3a24c8a20e45630e8a181c820082bcdb2b5b3876d15429cbb98a2",
+      "bytes": 60661,
+      "role": "R4 terrain ground/material renderer source",
+      "provenance": "preserved-current-approved-input",
+      "originPath": "/Users/chris/Documents/Codex/2026-09-15/edu-rpg-act1-feedback/taskwork/20260927-crisp-terrain-implementation/handoff-source-r5-final/dependencies/runtime-v4/act1-painted-overworld-r4/source/scripts/render_material_map_r4.py"
+    },
+    {
+      "path": "r4-source/surface-atlas-r4-crisp.png",
+      "sha256": "1a085362bd7c2a3fd912ed07c5931b2e2945b83bcd1b1a71ada8abf923c3fd19",
+      "bytes": 2300294,
+      "role": "R4 surface atlas",
+      "provenance": "preserved-current-approved-input",
+      "originPath": "/Users/chris/Documents/Codex/2026-09-15/edu-rpg-act1-feedback/taskwork/20260927-crisp-terrain-implementation/handoff-source-r5-final/dependencies/runtime-v4/act1-painted-overworld-r4/source/surface-atlas-r4-crisp.png"
+    },
+    {
+      "path": "relocation-receipt.json",
+      "sha256": "f2d4c09f2124034f59592f3f250f733569f5fa26f8c3dd4dc7c12cc27238c142",
+      "bytes": 4614,
+      "role": "new byte-preserving R4 relocation receipt and current-profile atlas path resolution",
+      "provenance": "new current-profile relocation record",
+      "originPath": "created in current profile package"
+    },
+    {
+      "path": "render_ground_crop.py",
+      "sha256": "67ad45eec47d3fd00442b6e6c26a8b376339f84d163a410c2cf0b9b1e6d11573",
+      "bytes": 7118,
+      "role": "new portable ground-only crop adapter with outside-asset access guard",
+      "provenance": "new current-profile adapter",
+      "originPath": "created in current profile package"
+    }
+  ],
+  "verifier": {
+    "path": "verify_bundle.py",
+    "sha256": "e6ae0ad9ca4e4ac3d274881f878ba131d4d181f01e39c927f20f838bac661bc1"
+  },
+  "routeGuardBinding": {
+    "status": "UNRESOLVED_STALE_SOURCE_PINS",
+    "rawGuardEvidencePreserved": true,
+    "checks": [
+      {
+        "authority": "act1-world-map.js",
+        "guardSha256": "f1ea99546b799b50cec7d6fd40b1fae2ad53669fae22afaebe3760f225d12cad",
+        "bundleSha256": "f1ea99546b799b50cec7d6fd40b1fae2ad53669fae22afaebe3760f225d12cad",
+        "matches": true
+      },
+      {
+        "authority": "dq-tiles.js",
+        "guardSha256": "286b5b527a5aac1a89b5da532bc703969249cfbc6c80a226f8d9683ba4a300c8",
+        "bundleSha256": "80b1fcaf6d593bd704f720239c2f9fd533e7b49ca1af7c8d6401901b9d876090",
+        "matches": false
+      },
+      {
+        "authority": "act1-hifi manifest",
+        "guardSha256": "3b932bdcd019b36ef16318333537c3f5553754a1cfded4ad33149269b5a49e3a",
+        "bundleSha256": "c6d69d659ea4e82b09feabae624c2cbd4406627405bb389a36547bd44cc4183f",
+        "matches": false
+      },
+      {
+        "authority": "G3 hero sheet",
+        "guardSha256": "070a8a452c3dda775bd6c8593a66d57a5a13d97b9fb33378ea5b2bb0e1fded3c",
+        "bundleSha256": "070a8a452c3dda775bd6c8593a66d57a5a13d97b9fb33378ea5b2bb0e1fded3c",
+        "matches": true
+      },
+      {
+        "authority": "male hero sheet",
+        "guardSha256": "88cbed8f9d707b216ada01e108eedd5822c6bcfc69c8dd22af2457f231dc0976",
+        "bundleSha256": "88cbed8f9d707b216ada01e108eedd5822c6bcfc69c8dd22af2457f231dc0976",
+        "matches": true
+      }
+    ],
+    "meaning": "The preserved guard arrays are byte-verifiable but are not route-safety evidence for the Cnew current spawn policy/active manifest until regenerated or independently rebound."
+  },
+  "readiness": {
+    "inputIntegrity": "verifiable",
+    "routeSafetyBoundToCurrentCnew": "false",
+    "fullWorldGeneration": "not established",
+    "readyForGeneratorIntegration": "requires owner review and current guard rebind/revalidation"
+  },
+  "portableGroundCrop": {
+    "adapter": "render_ground_crop.py",
+    "status": "new adapter; original renderer bytes are unchanged",
+    "r4RuntimeManifest": "r4-source/runtime/manifest.json",
+    "r4RuntimeManifestSha256": "6d9d2a0a8d0636d442d9411726368d11cd5dbe17cea184ca522e461892e2aadc",
+    "portableRoot": "portable-root",
+    "canonicalWindowWorld16": [
+      1568,
+      208,
+      320,
+      256
+    ],
+    "canonicalPixelsPerCell": 32,
+    "outsideAssetAccessGuard": "allow only bundle and installed Python runtime file opens",
+    "landmarkPainting": "disabled",
+    "wholeWorldGeneration": "not established",
+    "adapterSha256": "67ad45eec47d3fd00442b6e6c26a8b376339f84d163a410c2cf0b9b1e6d11573",
+    "canonicalOutputSha256": "62c79f2d7b4246f6e9c8b850ff80b396074040406e145203d9d89d54886eb4cf",
+    "canonicalOutputPath": "/private/tmp/edu-rpg-build83-paint-audit-20261005/depth-order-preview-20261007/v2/ground-material-only.png",
+    "canonicalOutputPixelSha256": "638b7859094b7574e174ca094baeab13f7427bdd28e682ff40e9dcca94a2755e"
+  }
+}

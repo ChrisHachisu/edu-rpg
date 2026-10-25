@@ -1,0 +1,5298 @@
+{
+  "profileId": "act1-forward-20261007-v1",
+  "generationLabel": "A",
+  "generatedAtFixed": "deterministic; no wall-clock fields",
+  "generatorSha256": "2bd8c853cfa15fbdcd32d5771d33efc48707c4f269f03f74e5fa1f0f4ff14b1f",
+  "acceptedLayoutRecipeSha256": "4405f222f027d61f1e96e4d4f6a7d8a15e4b1826bec3622ad6f3f3e5d6e4b93f",
+  "northRecipeSha256": "c3875927a7370045cbbdc19e2bc84464dad838135cb6ec5ca3fee15284100cad",
+  "fullWorldComplete": true,
+  "gateReady": false,
+  "nativeVerified": false,
+  "sourceBundleManifestSha256": "091df7c664cfbe73b3b75f1359639c1f646bf3fd80eb7f698678e695b65430ea",
+  "groundCacheReuse": {
+    "sourceGeneration": "/private/tmp/edu-rpg-build83-paint-audit-20261005/current-terrain-generation-20261007/full-world/north-contact-y-20261007/generation-corrected-a",
+    "sourceReceiptSha256": "551ebd07fc660604d6b24911fb231f38a80318f659ffb557c3e1a9345fc671ae",
+    "sourceManifestSha256": "f274cf664a3f178645d6c090a8b9e1a9b749c123684ee21d3212be6f93f2e215",
+    "sourceBundleManifestSha256": "091df7c664cfbe73b3b75f1359639c1f646bf3fd80eb7f698678e695b65430ea",
+    "chunks": {
+      "c0-r0": {
+        "base": "7305246aa96e2119756548c30c61931357bf9b41a1a6416fa9617e77538182d3",
+        "water": "d4b95a4509d1cd81d3a3f2aee2852f7411ca66ed28ac18b0fcb10c505d14c8df",
+        "canopy": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+      },
+      "c1-r0": {
+        "base": "feb7ede41d2cc42a4216ced02b5c4b386ac3b4407fffafd004dbd8616c647b73",
+        "water": "68873a055049b60c52bc683cdcb9a97ffa1b9e6b5762e34ed0a393df77536ab1",
+        "canopy": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+      },
+      "c2-r0": {
+        "base": "909006e42454bb196c339c2033d30ffc6752aca95a01bcab75a5c0b206695973",
+        "water": "4a98f17efe5e046cee22d77ddfbc3df5acdd46d18cada5cd2b5b065110952b45",
+        "canopy": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+      },
+      "c3-r0": {
+        "base": "7b914ce3d8ac13508a12f66670318a9932ecc8b3cbc47e81de1616011ee9d7c3",
+        "water": "f8387d2f29803ca4f385650fc3915869917370662e5f7ef9c419623de09cd43a",
+        "canopy": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+      },
+      "c4-r0": {
+        "base": "33495f8e177ea73ecfcfe23e4a8e64e5240a028d5697d4e0ae34a2cd47a09243",
+        "water": "8b4772fc4f738a1232110858431825c77afb7f23000c44d00ed261ebf937db24",
+        "canopy": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+      },
+      "c5-r0": {
+        "base": "bb31ffa3cbb4af86c4d1999b308de6b316eef9b2463fdb2bfec5aa2543a49c57",
+        "water": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f",
+        "canopy": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+      },
+      "c6-r0": {
+        "base": "a4ae79e24e8836bd414f9952e88a5135e0fd25e40ed7369c47a3bc9451e8ded4",
+        "water": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f",
+        "canopy": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+      },
+      "c7-r0": {
+        "base": "741f6549d4d24c972638d4d53c774b696ea712b3b090ae9a3a4d311b240078c0",
+        "water": "7d29deef83ab6e43519a44dcedfdc95ece47cab359700b01f3e280c2d653fbed",
+        "canopy": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+      },
+      "c8-r0": {
+        "base": "c72d045712f6832852bcf48e63612b898b0b9df83e387011bfeb02c93b4f2600",
+        "water": "67c615d8bb9d870f44d475baf21fb226a78a8f8e9ad4db18bb4bb4fa1077a6a8",
+        "canopy": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+      },
+      "c9-r0": {
+        "base": "a946c11b7ab1fdba50e1e23b9cb1ffc80f4e4495a31ed10745511cd6d26d0543",
+        "water": "081c013a3aedfd3eacb1535aafa352ebebdb5cad60551e7447eecc4743cfedba",
+        "canopy": "371a4a0894957e68c4e5f3b62989172d462645be77d52797d88e5bc535cc54af"
+      },
+      "c0-r1": {
+        "base": "0d0cc5fdde3e281f31798018d2baf0f5c4c2eaf237a16e807a9e9d1282349f04",
+        "water": "f503c679f57d48cf5d199297822e76a3c5d0956a038edb4a411f1dc26cc10b21",
+        "canopy": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+      },
+      "c1-r1": {
+        "base": "ebbb01593aa9e69b57a4a26539231274a59038a5aa549b4ec2577ba2ffd9db7b",
+        "water": "a4d543cadf05ec9a42188b081692e71e35f9cd4901f2553069f61e29c42d455b",
+        "canopy": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+      },
+      "c2-r1": {
+        "base": "288306a36dea6bc289af064038680db73dee1f6e4f18ad1aaeaa7d5b72b1611e",
+        "water": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f",
+        "canopy": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+      },
+      "c3-r1": {
+        "base": "3bfa526d1c62c985250cdfb35cd41e82713ef194f640286f5b717d665527c9f3",
+        "water": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f",
+        "canopy": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+      },
+      "c4-r1": {
+        "base": "21a29ed7a6f02f5da259ebd25387448ed159046c674b2954d678fdb2a6a28927",
+        "water": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f",
+        "canopy": "2406fbcdc28b098305dd17aad62c8540cc54c29e46e24f6c0c0b67cea24b9b7b"
+      },
+      "c5-r1": {
+        "base": "0367d4b8864a732dc4c8ed7014b937ccda9c4f483cd2dd25f0d55a20f5fee5a9",
+        "water": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f",
+        "canopy": "b68a5e91ba0442136973478b784037ae653207dcadac352764cd173a562f2db4"
+      },
+      "c6-r1": {
+        "base": "3bf884dd4c718842fd436e2eac14121075c9dda81ffa2205dd349c2b39538f8e",
+        "water": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f",
+        "canopy": "73dddc1a867216b7ecfda49ff3fb7d502306003b3a8015e2f3c534ba10bb9cad"
+      },
+      "c7-r1": {
+        "base": "97f647381488c14defc829ff2ea4a9ad5016792c2e31b0cd165a5271058488f0",
+        "water": "2c400bafa21b653f6ee64d601a0428c7cc580252b6ffc6302d435e4bd024c920",
+        "canopy": "26b4c89f77c072ec9f00571075ca082f65f42bc0b1581ac1659d51e25a27f43f"
+      },
+      "c8-r1": {
+        "base": "74e20fd36b4720f6f96ab9e2d6db4e5cd31dd9ef9ff873830c7df4d30b47cbc8",
+        "water": "a6df884fdac2db0983c3e94004faeac6d2424393abb6704b9816630e81f5f4c9",
+        "canopy": "68158348f7552bad99f0b9b656bacf5790ecb19d586993c854a711ecfaff9017"
+      },
+      "c9-r1": {
+        "base": "c4168409ed6db159c0d5227649dfc370022ac4f2f9e5da585f44c9e5823fa751",
+        "water": "60bd6ed2e13179d057e2aed1e35dd30145485dc983212d1defef8075a3ad6fcc",
+        "canopy": "371a4a0894957e68c4e5f3b62989172d462645be77d52797d88e5bc535cc54af"
+      },
+      "c0-r2": {
+        "base": "3cfd5597c2cd98e537310b7fdd73155ad78ea5fffbce2199c846b782a76befc2",
+        "water": "f3c54dcd11a0f8e7a09e45d52c0d618a2e9c89b0cac699a2f5f7ed416047c224",
+        "canopy": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+      },
+      "c1-r2": {
+        "base": "1247236d3fba29d64a98cc7cae480ab42a9807b5f4b063e0b6e3ab23749704ce",
+        "water": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f",
+        "canopy": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+      },
+      "c2-r2": {
+        "base": "b0dfcd3f97254f39d44014c0b7b92c8ce100251d056631deef848a7681120226",
+        "water": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f",
+        "canopy": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+      },
+      "c3-r2": {
+        "base": "614bd31d8a3bfc3b2bffcf4d7f7ac4f09b258bab4ddf3170466e1a9cc1207162",
+        "water": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f",
+        "canopy": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+      },
+      "c4-r2": {
+        "base": "8528a25a9eda1cf03c57f93753acf4027b575922c3f4b6ebb463ce90d52c2422",
+        "water": "9454671eb4e7dd343ed25285c82f53d5e7f43782411356c8c34188e45f58b5e8",
+        "canopy": "8abe38717a7f8f107836fa49c5ab03e99026fcf92dedce6c9c319f426a71a5fa"
+      },
+      "c5-r2": {
+        "base": "d09c7e0ebe62fab01133d6e53e6dd4acea883289cf8b4ad89703a8b6710b544d",
+        "water": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f",
+        "canopy": "6b58fbb34ffc8c088edd1db04c859d36258e2bb3b7ee931dce5e321b0ac9e127"
+      },
+      "c6-r2": {
+        "base": "5aad988a81a366d8a82c1a486e864debbd9f8cdf0d751c95d1520e553ccc6083",
+        "water": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f",
+        "canopy": "d37bae370d4377ea0567763710fd97c9c8f908c624f1739b732ed31f81bba16a"
+      },
+      "c7-r2": {
+        "base": "e766b42f0f1f5df8df665f8e993495a8413b804b8593504c0a0ce982360f0f91",
+        "water": "a71974395a96238a62434bda662a6ac7ef92598a71587536bacfc585d5e63bc8",
+        "canopy": "b0d416166504847b5c65bd09b9a62cbe608c91449bfe772277a4614e1398d155"
+      },
+      "c8-r2": {
+        "base": "fa6ca5aad06d58ce36e02e404d6003713fe45a411d2a01a535b98504353a93ed",
+        "water": "f5f5e25a1edbcc3316b00005fdf7b62388e19e2e6c7e5ba0d724df02d5d616c0",
+        "canopy": "be7c342048c373a52b227dce05672e0782f3b3a8fdd8cb00d2b594518f6e2c45"
+      },
+      "c9-r2": {
+        "base": "c1cab948fc2a913e699d9c0a42fd28e061dc5c274602fa275495295036b7356d",
+        "water": "4985d928adece9139a76ff98d0e07b1eb4280898081dc6302e2919ec06077ab5",
+        "canopy": "371a4a0894957e68c4e5f3b62989172d462645be77d52797d88e5bc535cc54af"
+      },
+      "c0-r3": {
+        "base": "685537963a2d02366ecf6b4a04bdcd4e432dd6109d6231772da51b03abde456e",
+        "water": "161c27273e6f4413740fe70fb03c5d7baf52e4efaf4e7ea07634501a2642ba81",
+        "canopy": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+      },
+      "c1-r3": {
+        "base": "dfd389cfa37d215602e286801ac132a178d633804e1fef94e4268835a2528101",
+        "water": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f",
+        "canopy": "58e49087da78633e619ea45145ee6fd578e56b9ff62fb24ca4187cf153c63d6e"
+      },
+      "c2-r3": {
+        "base": "68d24bd577c69c9b3462379feb916a615c433794a114f56c6c50c28cbbba3a64",
+        "water": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f",
+        "canopy": "4d4755d14b67a1535cb9f69142145cbec083403d9343f68e1b80749c5788bcc0"
+      },
+      "c3-r3": {
+        "base": "d586088ecbeb69f9ef3f96579a8c1fadd72487d97110805e7b3a8c3b56d4db9e",
+        "water": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f",
+        "canopy": "9a73fb71af51ad2aa42f569afcdacdf909382f716ec0da9cb01e1a403e83509c"
+      },
+      "c4-r3": {
+        "base": "f7bc7502ab6dfebb6255855a594342cb0b687924e9e7aa00aec4b4455eba62dd",
+        "water": "2fdfac43aafed5f22082e9d5dbfe60607974ac7376f7562ba3faf94fbf8790b3",
+        "canopy": "8a0fb8030cb3b4a2362f58f7713f3a35d49162f12b30ac96872785f0c8e42970"
+      },
+      "c5-r3": {
+        "base": "38b8cb9e2f135d86eeb71b5f8b7dcc73d709266304342fdf4c451a61423af5bd",
+        "water": "87f8e818a0eb5102fb68a53bc90151eed40e5660d53affc651309d5b979d07d4",
+        "canopy": "d57632a718c95f4a5ad666b5e9090810988046d445979d6485c4122cf2c0893b"
+      },
+      "c6-r3": {
+        "base": "510b5537e7ffed27e4d9dbb37043e67ec9d3fa7ddf740a1a2db404ce0b893131",
+        "water": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f",
+        "canopy": "442feb54b460eb0afcfb6dfcd1aa6e9b2214545aa0fe4d02c9c86d948ef89ff9"
+      },
+      "c7-r3": {
+        "base": "2e3d71eed1c6b967807cd1d6730e11d4cd5bf064959760c284e3911ece972e1a",
+        "water": "8e76bf479100a7b1515805c1fd528e3ca24b4ef79c24dcc37d22926a63124b56",
+        "canopy": "e7c6e95ee19be3b433f07b641f00dea3e3b5c6e6194c62c1a8f94cb69314f0d5"
+      },
+      "c8-r3": {
+        "base": "5debc0c92ccc0c7052c5a36f52d24b65cb4e3946095d4382875f9b98669b39fe",
+        "water": "ea1d635bbfd58224774dca7e5fc35cf3ee10216082c12cd507e82704030f9b22",
+        "canopy": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+      },
+      "c9-r3": {
+        "base": "d0894da4ca2dd15e40b388e5eb631314d5989212203da5b062bb94b22eca559f",
+        "water": "ce8688534434d82dd2bfa62f06efd2092850ab6c1febc2c32b57bbddbd8d9dee",
+        "canopy": "371a4a0894957e68c4e5f3b62989172d462645be77d52797d88e5bc535cc54af"
+      },
+      "c0-r4": {
+        "base": "f4e8711a9cd579b3f6b5065a698251b89622e515ba4121d2cdd32a8adc5c5b42",
+        "water": "4ae2104a0f52b177335f09121ae74f2e57725498f9bce4536458b9ce7d2cefbc",
+        "canopy": "3c0572fa3b1cae934d57179d40cdf295737dc1871a73b278af5a6265e0a1b1ba"
+      },
+      "c1-r4": {
+        "base": "f9ff510630e85a8f58ad15808a6869cb489829491edf2cee38fd12b04a69b0fd",
+        "water": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f",
+        "canopy": "da390d9c4e66a7569819d56d676a0981a433d0d4d89d289eaa1b52fac7205f9c"
+      },
+      "c2-r4": {
+        "base": "bce12e9a618f32cb47fa03c58d4f114014cff965563b45cabd34c9b1d4ce5420",
+        "water": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f",
+        "canopy": "400440630e4836900375868c670e7b148d6053500a5f4ec9a4bca259774e73d1"
+      },
+      "c3-r4": {
+        "base": "b0e42d095a86b875d9e04b6210b00c56612e85fd70a0a7e4b90faa5b54ac7c22",
+        "water": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f",
+        "canopy": "b7518f0208c692b408076170e407383e3701d8cd5e1e1efbd3635df1eb1561fb"
+      },
+      "c4-r4": {
+        "base": "8e418b2e0961a6835398e551b75a243b26e61385a40b854625afecdfd3326a17",
+        "water": "ff45a2c9043d282c87c9f41d0e47ffbf6fe377c0e43d110472d191fc9a1a5b0c",
+        "canopy": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+      },
+      "c5-r4": {
+        "base": "bb8b8d7c48bbf13c24b214f9e2cabfb9d140a8b756ae17e176258db535ec963c",
+        "water": "e081a4b08b106909b3b7d43acaffbbd0467eba11809b7981e5f249b7b3ef141b",
+        "canopy": "a622f8624c7caa55cb6c1887c5ddb9e459bb1a7a0515ec50898e7d5cdd3491af"
+      },
+      "c6-r4": {
+        "base": "3660858a006b22c4d6f1ad0775b3bc6f0ee9e44c2a9bcca5504c7cebf29877a0",
+        "water": "00dfe4dd2b8238cf9e0ab3eb077c5220e01f1368af625a660a928cc4b761cfcf",
+        "canopy": "c89979a4c1b794ca8c4a7429e308d0e6b53b75ea858efd4370d95e7e1326710c"
+      },
+      "c7-r4": {
+        "base": "9ef257811c811814c1957a14c14a77a21421a137c5d35d31f9d4ef35800f25ba",
+        "water": "6fb429016633732b613c5588acce2698b27af1952d6e70eb92f14c0c43f907ef",
+        "canopy": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+      },
+      "c8-r4": {
+        "base": "648b05874d2e649e0e0ccad80605366dbb6faac365addf89e8c0c1906488e871",
+        "water": "900648adfd3da3929b39296cca28786063a6e368778cb02aae7f10599a6a895a",
+        "canopy": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+      },
+      "c9-r4": {
+        "base": "2939f4f91c475b2a082f090d7e25804aa67f9ac4d317a6923dc2eb1c3861e4a0",
+        "water": "c65d3a45cf306c2ebf8f6caca35e083e39a040376c0183b3453c5c8c8225a0ac",
+        "canopy": "371a4a0894957e68c4e5f3b62989172d462645be77d52797d88e5bc535cc54af"
+      },
+      "c0-r5": {
+        "base": "ffed62b2d1a2859af864982a03e51ee794f82998a914feb8ce9754daaa22dbb1",
+        "water": "e0967f10396ee3bc48619d3cf0e5508c238358353f62ca3fb6bc0fcb11c2ca79",
+        "canopy": "65efdc403644ee1e389a742f9a9392f425c7010bcf36ad681cac2abf7b2b8966"
+      },
+      "c1-r5": {
+        "base": "22191d2144c57e1386574b89755211ff6e32b06a723ce6ca24bd2965780f94d8",
+        "water": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f",
+        "canopy": "806500b8fc434166c80063b3eb775c2367780c7d0d2d3e9f49aa64b8ee2dc144"
+      },
+      "c2-r5": {
+        "base": "9c412f33763de40c43d34c3730ed7d3c788438729bdb1989a336f6e4d04a09f3",
+        "water": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f",
+        "canopy": "6af120c8a8592ed6a490a58830b7cb845d1bb8a0fc0f8feb9b44f742408509ea"
+      },
+      "c3-r5": {
+        "base": "4b73e1faeb60e2ac76cf0ffd686b6efc32542e24dc0ed64115546c0be8f69cb9",
+        "water": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f",
+        "canopy": "1cd394e04173ac8d667aacb13ac65de655523d9986f5e51fd48ed7aac83d303a"
+      },
+      "c4-r5": {
+        "base": "777987d3ba2b73f449f2791807e5671652b12069010ae000d4b02f9c762f2388",
+        "water": "be66d7c8d40d4dc036c7b919d3fcf53e2241732eaa9a832779994feea800b485",
+        "canopy": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+      },
+      "c5-r5": {
+        "base": "b83c0377b11b50e193ea6c745c966674c0d8a23cfe7e135738a8a0a157cda646",
+        "water": "b144b58271ef2be0f8b91660eb27ba282a9491205c61735557c1154af262c4af",
+        "canopy": "7fc7a9a2276f614e1587ad4b5cb14159487ba7e6945428afc17f49e550dbea84"
+      },
+      "c6-r5": {
+        "base": "9a3c8bf224c55a44013cfcc8d69cf421d6ac8c90433929a19558058a018dffe2",
+        "water": "ade6257b668f05c9116714d7cdeba365f86eecb914972d6bfc805a815b0885c0",
+        "canopy": "c5dc212360607d5d208cbc186c42f27cdbd217b4d79bc9aeb8002f6119ba4694"
+      },
+      "c7-r5": {
+        "base": "2c5311ea241da265dcbab23f40cf866b5bda26037e77f01a1059b4395a4c1d2f",
+        "water": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f",
+        "canopy": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+      },
+      "c8-r5": {
+        "base": "4792b56b45d4f161a84e0351cb22acefae18e2e8818608ce497deb2304e77325",
+        "water": "45078acb8d86f5f0fd93508b3c26d8abcb7189719c5014f3d1dac64a50b95a86",
+        "canopy": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+      },
+      "c9-r5": {
+        "base": "f9546b9e0b78d8c04e5beb6f5a1acec0a12877ab84b3f578df9836701e9f9316",
+        "water": "774cee73e6b3e4cbd7f1cd0683d7afa7c3c26877035f10d59104449fb55bf2e5",
+        "canopy": "371a4a0894957e68c4e5f3b62989172d462645be77d52797d88e5bc535cc54af"
+      },
+      "c0-r6": {
+        "base": "4bdfa2fc13bc72f7b8db38380cf5719e744381ee77b9d53bf41fc65e4546af94",
+        "water": "932992f315d1b87286f9767a5cf5176a29e23d55f437cf243bb195ca3d7234a8",
+        "canopy": "2da0b97f92b0e2ea7ad6aed61108431ac71b88b602093fb0c052678df05ec15f"
+      },
+      "c1-r6": {
+        "base": "0aecd35f38c69bcf91b0829d3e2801323a47805e5eda56316b7e6c2e06f77336",
+        "water": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f",
+        "canopy": "f5792110ecc586eed239a79427fa75c05cbf20b3990935fd84eefc73b01fc935"
+      },
+      "c2-r6": {
+        "base": "377372841c664b79f7e9b74c712b33dae09e5e6f54f18479a7980ea1db14ec57",
+        "water": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f",
+        "canopy": "a21dd37421582e9dc1d99526d26671a946781193efc52a828768b8ebc2c80c44"
+      },
+      "c3-r6": {
+        "base": "4639e2ff426f426831295c853eba17a629805c52b009cff978c897620a4ea7d8",
+        "water": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f",
+        "canopy": "dc55fa21cffeb3d819c4392ecfa809521f52abfe83cb7b3aacd42526ffda866e"
+      },
+      "c4-r6": {
+        "base": "42c4eff90180e7ecbf0e62d59e52e7d08f2db27220d8357278ddf029d93fb669",
+        "water": "e3c2f66addc2c5a4444da3318f2531de472050dd52f0c5925822f955fcffc222",
+        "canopy": "51fbc92e4f5cc173bcd3929f2ee2b70034c37a6bf84c109ffb8d2c6dcb8411e0"
+      },
+      "c5-r6": {
+        "base": "759c38b9d7096f07b0e8f832f2a030c99daf0a64aebd3f9d61c3e60bb7332983",
+        "water": "342afc1e54fd797afda9bc6dca733fe8630d424f82c29ba0430ed45cbf8c6082",
+        "canopy": "beddc7722e66d5c00d0324f5e3268b826c37d0e98d3d9143cd41bf4141a78de6"
+      },
+      "c6-r6": {
+        "base": "1499298f905ff8caf3ad8eab0a6d9478964b735fadb0cf6af6083fa91ffaae54",
+        "water": "597edc171b7052cfc3d1a7949f8668b1d9479c5829911c68597aa6850f6422ea",
+        "canopy": "facc9d278c016f0657423dd869a5478f9d4aa786b47675262c091732093dd1f0"
+      },
+      "c7-r6": {
+        "base": "4db422c790c1f41ea197f81bb81310f26be63315c5e61194fcbb11776395627d",
+        "water": "ea8779832141a932a80a074010a112ef74ebde483985c4e84fdea9b2da15c250",
+        "canopy": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+      },
+      "c8-r6": {
+        "base": "999590cac93bf7e63468430f2c880c9381d7b2c6ef7a00c0b8bd159fa535e2e8",
+        "water": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f",
+        "canopy": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+      },
+      "c9-r6": {
+        "base": "3edb7672a25eb9020bc2ba36cb7696cfae4068dafddac897c64311b809b353b4",
+        "water": "ee2924bab5e2a4e68982e8cf5fa6306207bf155e97ef928beefb579dd1c61747",
+        "canopy": "371a4a0894957e68c4e5f3b62989172d462645be77d52797d88e5bc535cc54af"
+      },
+      "c0-r7": {
+        "base": "19616b52f92a5b40e32efb7e783ba81cf956243b6ecd33185661f1e7f25eb204",
+        "water": "ad5d72cff22a693da620f0324beeb1e485517399ac1560b18570827c865c051a",
+        "canopy": "96fdf34a63ff13bee288c5eb02ba2ba58b9daa8523fff63ed52d6c6ed1a0d432"
+      },
+      "c1-r7": {
+        "base": "3258b24b1543ded88b432411a3348d5664401d6246682efd06f5dd23327d4255",
+        "water": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f",
+        "canopy": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+      },
+      "c2-r7": {
+        "base": "5c761a46645c626fc60387d1e7a52bd6761a07ed6eb0f2b05007e3569f663d8c",
+        "water": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f",
+        "canopy": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+      },
+      "c3-r7": {
+        "base": "36c0920282716d15365f2b94e5396f8f0629985eb91a46c54306b1b6bf574783",
+        "water": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f",
+        "canopy": "74b8154af16dc5d48bd5c3304e84a912e727ef7ce1861458e90126bab478a3e0"
+      },
+      "c4-r7": {
+        "base": "a54d41fccd611b0d48affa602f54b15fd47cd796872f171c1e37899eb7abe857",
+        "water": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f",
+        "canopy": "374f38cdfc2ff133970a905d32bac34d3d41bd978fc5f5edd3e1b7820b1aeccc"
+      },
+      "c5-r7": {
+        "base": "236c83b39873857aaa54cc6b67265fb848ba139aba2298210d5f1d06dee66abc",
+        "water": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f",
+        "canopy": "c972ca870537eb5f831877fb319e61e95a11b99d774b9bb4ce1dd543324c9a56"
+      },
+      "c6-r7": {
+        "base": "1aadb6ad5367080a9d6b2bb8d86dd3a27821e5c9198964ff1886eb23226e575d",
+        "water": "85cd3ca4da6ae084cd2a8befd559c4f93248825dfa47b1feb84974c43425105a",
+        "canopy": "8f32e6e784af92a0dd455d4e02684c9641417e55dcdf040a1bf2b824dc7d22a8"
+      },
+      "c7-r7": {
+        "base": "61e79cf1d92be7baab4a843ea8dfc4a802b78bed2d459a8f2d298f6c054b5e95",
+        "water": "c6ba771b24454a7259584c557ccf7ea9f16987562a725f40b4d666f49ab6aa6b",
+        "canopy": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+      },
+      "c8-r7": {
+        "base": "227c9a75e614102778a05ef8a74ff9d7e674f14712fdb5d5878dd5bee35289e2",
+        "water": "f4cf73f9ad224c95ca48aa487dad98cf2253ac082b7a8697cb35f16eb0efb818",
+        "canopy": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+      },
+      "c9-r7": {
+        "base": "dd172231deb705139b373c93ac4dba2e7cf142d96ed0f6ecb3aff77085bd601a",
+        "water": "16faf119777bf6f40e3e92440d52905ec79504a59702f4a035ed75397825698a",
+        "canopy": "371a4a0894957e68c4e5f3b62989172d462645be77d52797d88e5bc535cc54af"
+      },
+      "c0-r8": {
+        "base": "dbc9046b551fbe3d0ea8ca805387439439955db672836c9caff2dfe8376e54ea",
+        "water": "ccc33662f75183458e594525c86547bd35a9047b50408bcdc28035d6083f7fad",
+        "canopy": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+      },
+      "c1-r8": {
+        "base": "c52fdbc5fc17cddd32cf760e80429c0d3ecc287cd5abb6b5f2ef515d512b69cf",
+        "water": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f",
+        "canopy": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+      },
+      "c2-r8": {
+        "base": "82e5aec1c5ba7249f4aec3877e069abb4bbf075ea4f79b82eba948c140d26657",
+        "water": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f",
+        "canopy": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+      },
+      "c3-r8": {
+        "base": "952427f958c94e1f7a66865e470f2ccee5da87c29f9330871df2084efd85d40a",
+        "water": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f",
+        "canopy": "477bac693aaad1c2d7826422542b5212e156f1155f24590419c1de1cea0113f6"
+      },
+      "c4-r8": {
+        "base": "b4cc840cddd0b008e447a31823d141e6f73bba9c28bad47998b716f2ef8c0796",
+        "water": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f",
+        "canopy": "b599213a7c8a14ed20f134af2cb4ca0858a9a41dc8d07f7540fff1855b2df808"
+      },
+      "c5-r8": {
+        "base": "5d34ccb530630efc0fecef58f877662405e2a04500df4e9b2e1629023adfc9f0",
+        "water": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f",
+        "canopy": "e7590dcf9d9e6231ebf8e919a53eaafa86450c35a682cd8c685650886c475f40"
+      },
+      "c6-r8": {
+        "base": "abab7f20b96e0ef1eb7d303aad27aa9bbcd09225af8d4e16f3c49a312633a9ef",
+        "water": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f",
+        "canopy": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+      },
+      "c7-r8": {
+        "base": "2a01950a7fe71fa43d42d215156eeb7eae1c55b7cf76f107f7a69dbed4aa7521",
+        "water": "4e7abb5f955302ae5a7b6396297d7706fb8c1824a1484d87c34e9590315863cb",
+        "canopy": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+      },
+      "c8-r8": {
+        "base": "170eeba60b8ae9b98d1183a43570d430e52841915fb69a8839cd1a7ef5dd682a",
+        "water": "ef1041e663b03111c7e52ea29cbc926d5f9b88507ab7ce949198b128e8ef16cc",
+        "canopy": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+      },
+      "c9-r8": {
+        "base": "0e15036b90cea0853bdf92523ebd86973ff77dc2e84a234f6566cb7306e4b0eb",
+        "water": "4b503860dd5925ae8be1ba2488a98633d24a967a0792f7ddd922192b8463bec4",
+        "canopy": "371a4a0894957e68c4e5f3b62989172d462645be77d52797d88e5bc535cc54af"
+      },
+      "c0-r9": {
+        "base": "87644b8d717dfbd852ef5c6b02f7e44e576406a28c122dfddfd6c12978e2feab",
+        "water": "687556148da3be13f353ba7afd5086e5a9f478dd0740f1e8c840e1e8b389bc15",
+        "canopy": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+      },
+      "c1-r9": {
+        "base": "9bb7845101e7e3e4e41e24f13634e9dadee60d3414a34c880702b44af4559760",
+        "water": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f",
+        "canopy": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+      },
+      "c2-r9": {
+        "base": "2642390e82e38ce6f70ef3d716769bcc382a5364baefaa783c225c9b1540003e",
+        "water": "06d9651222f5be692f9523e53d0b858559768e24a55d8e111cbf4343b64954cc",
+        "canopy": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+      },
+      "c3-r9": {
+        "base": "3f293b974fde5df951ef3393147bbaba7e5b8e7e5fc102f6e8bbfbad72fa8d74",
+        "water": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f",
+        "canopy": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+      },
+      "c4-r9": {
+        "base": "f12ce8396de1d86cae6b9aee01148be08a6d754cd98a9d8067d2506a89efc79e",
+        "water": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f",
+        "canopy": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+      },
+      "c5-r9": {
+        "base": "d223190cbde73596d6c3e1c9b35b8f6bb33760482ae04f531ba7a489160b2d8e",
+        "water": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f",
+        "canopy": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+      },
+      "c6-r9": {
+        "base": "73151688c91c36e3bc8a62621cfa6c4f0f61489ded9b526eec3507ad8dd7c53b",
+        "water": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f",
+        "canopy": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+      },
+      "c7-r9": {
+        "base": "a428caca622063e60155db4edfce5352f6bdb3a77f641d9f2332f5a330ec8812",
+        "water": "9f8d29de249016f02bc2d5d479669ffc9b1cc0eacb76da87ac5843123c1a3dd5",
+        "canopy": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+      },
+      "c8-r9": {
+        "base": "bd00e67bc4f1806ee8db95526ce40888ef9f415f7e4a5fc6af03498ddf773e8e",
+        "water": "708c8be496163e6dc880dd5007bb0855eb5480d5a1d1a90eca810a9f80e6c13c",
+        "canopy": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+      },
+      "c9-r9": {
+        "base": "a37fb9f0e27485c007cdca5d81d7133258a0d1d0960821dccee1bdaab06fb2d8",
+        "water": "59580884db8066df20e3e23426499761cc454bcf26219b2e27431b56716dc414",
+        "canopy": "371a4a0894957e68c4e5f3b62989172d462645be77d52797d88e5bc535cc54af"
+      },
+      "c0-r10": {
+        "base": "c5fbf83fd6f7de4165c73ac52755b47069d1b41e46bb24deeff5611de91131d2",
+        "water": "ad001f1988b1bf2dcb86bc96b49bb7dafcf31da2365de290c828e9fdf3dcc5d0",
+        "canopy": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+      },
+      "c1-r10": {
+        "base": "1b6848699d832e1b16e4bad9672cbd36ad1fc89f44620b024f22d77d4a1693d7",
+        "water": "ca2c94fdd1c7bff0bce05998f6abb7306dfea2317a3c8a50a142bc331f048f23",
+        "canopy": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+      },
+      "c2-r10": {
+        "base": "8a2b215f896784a185922a5bf29157d78796b1215744a8aabff62ec847b0ce37",
+        "water": "14437c272dfb395a69526f178593f69bdc02314059a38041d28abc81a7b7ef06",
+        "canopy": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+      },
+      "c3-r10": {
+        "base": "9df79b5582255dd6f6a8802a6ec659bfe4ae88b96a46448ad7207486080c5a3b",
+        "water": "804944dccd0ed092684b3618dc9f689e0743af27303ffd09c1422d32bba07426",
+        "canopy": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+      },
+      "c4-r10": {
+        "base": "94158c769e144946e7329efab2211764ad1657eba1e304b3bae2484af284db1b",
+        "water": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f",
+        "canopy": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+      },
+      "c5-r10": {
+        "base": "1e366b6ddc82cfe660ac35ad58b70f4f160003e9775d67430d657bfcbbd52c96",
+        "water": "bc1e9f60544a312d5ba9edcaa771322c783fb85e7d45c5d3230c5c172aff2515",
+        "canopy": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+      },
+      "c6-r10": {
+        "base": "ed2525b4b7342a863bc8bd505398c49bf0b6c1980dbfa3676fa5f626e8521775",
+        "water": "ba6fc236d70218168b93b62c02a3ac33cb38171df48d564f848f8c4ae9425ce1",
+        "canopy": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+      },
+      "c7-r10": {
+        "base": "41cdfa76310f140ddc54dd75031bdd69d0b7511617136ccb2351f2aae696229b",
+        "water": "baea21cdadbda14afecb6e4364b03b61f3b967c2e4e4455b91fe8e00e74ca766",
+        "canopy": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+      },
+      "c8-r10": {
+        "base": "729b4b02e4c7cff957fe42388fdff4d54c245ae95b5eb7d18af65a64a74d57c5",
+        "water": "c5ab291633b788a095ff592b68dfcd095c237a7a021c022cc1bc2b2a39e7fa41",
+        "canopy": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+      },
+      "c9-r10": {
+        "base": "a930224f50235f2c83ec8eb992c0ab1ee6955b72d023c4f4f045a13f528f922e",
+        "water": "970b25ad401dff13545f8a5f0a2bf2c836478f7e1e6423fa9ef61d9f53faecba",
+        "canopy": "371a4a0894957e68c4e5f3b62989172d462645be77d52797d88e5bc535cc54af"
+      },
+      "c0-r11": {
+        "base": "ba90d34d33ae4c165f99a8d9cdcec64d4336f1c4ed5d34d9b36fe818a63407ab",
+        "water": "b40a90898a633f63ef376a7e3c13f0dc0f4acbc60f1b775b80876ee4a64de389",
+        "canopy": "edea247bae1143c4e2a2d63bd1e01735d912e39ba93507061173ad03995992fe"
+      },
+      "c1-r11": {
+        "base": "33ddc1d971a72845c48ae4756006eb6ddbed6d72628eddc1c74d00c9aa3e2d27",
+        "water": "7f94e82ec67be79e36e0fa5b8e4f4dfe25c487b80124955d54a789f1d73085f9",
+        "canopy": "edea247bae1143c4e2a2d63bd1e01735d912e39ba93507061173ad03995992fe"
+      },
+      "c2-r11": {
+        "base": "861f616581901bd31cb934c7a79d15c786c248e0a6c1e71550115a4295f0e4b1",
+        "water": "37a0158e4ec9f4e39cf33d5b933c76aa7552df4637bdc2ca7ad0b973b8d03fc6",
+        "canopy": "edea247bae1143c4e2a2d63bd1e01735d912e39ba93507061173ad03995992fe"
+      },
+      "c3-r11": {
+        "base": "72ea61a63cc447bd3153203e1dd561476b7cc62fac5ecc1d1dfc7b39eae255bc",
+        "water": "b7cc696b4b214990cabbbbafcdb99703cf070e18b0616ccde7797df0256b5cff",
+        "canopy": "edea247bae1143c4e2a2d63bd1e01735d912e39ba93507061173ad03995992fe"
+      },
+      "c4-r11": {
+        "base": "c03c35d10249cb60f56cfe8000b06afae18734de0bd012834c1b6839f2b341a0",
+        "water": "9082495bd66c5963e977b61a5c7a4781f53df0e2c44c45a8ea28cd8a3af05d10",
+        "canopy": "edea247bae1143c4e2a2d63bd1e01735d912e39ba93507061173ad03995992fe"
+      },
+      "c5-r11": {
+        "base": "f2a2ee642b10630c777ee7f578315daffaf6b5669d19257fcfae4da5e80063ae",
+        "water": "dd3f8ab5bfb72690a2013e16f59857b6d5b1c7921a7d9c769b74460bc85569fe",
+        "canopy": "edea247bae1143c4e2a2d63bd1e01735d912e39ba93507061173ad03995992fe"
+      },
+      "c6-r11": {
+        "base": "1d272052f2ff688cd868689ca562957c815e2c84ba9e694799f1fd9b7598c83e",
+        "water": "9082495bd66c5963e977b61a5c7a4781f53df0e2c44c45a8ea28cd8a3af05d10",
+        "canopy": "edea247bae1143c4e2a2d63bd1e01735d912e39ba93507061173ad03995992fe"
+      },
+      "c7-r11": {
+        "base": "c30467db6237b5da6751c53590603526b32585c96543c00f4f295099ec732c1e",
+        "water": "d4d4b7a83aceaa67081408bf83fc72edc91370bc09cf139e515ac0761f170590",
+        "canopy": "edea247bae1143c4e2a2d63bd1e01735d912e39ba93507061173ad03995992fe"
+      },
+      "c8-r11": {
+        "base": "99f9203d460e1438e59d07ccc854cfec7629f292380c627da78f835cd8c70bf6",
+        "water": "2a25809b05c9c65e5e2746d19e5bf015122c34138bce7235fa1877b30136a1f5",
+        "canopy": "edea247bae1143c4e2a2d63bd1e01735d912e39ba93507061173ad03995992fe"
+      },
+      "c9-r11": {
+        "base": "09728cccecc42a334be58034bc6330fdb85304bea30d57ba551c32d0e12af763",
+        "water": "1ccd52f45c040c435c64d8c414beac00e0f4db89756e6b65112865efbe84f6a6",
+        "canopy": "7e1659518b6af64f83c4dbed1ce13ebd1277e2a2d3acdb2a26f60208713fafa3"
+      }
+    },
+    "underpaint": {
+      "path": "underpaint/act1-plate.png",
+      "sha256": "2c67b478cb9ebfb1da86601a6911ffc6c7888e056c06baedd808c32fe0129f05",
+      "dimensions": [
+        888,
+        1092
+      ]
+    },
+    "reusedBaseChunkCount": 120,
+    "reusedWaterChunkCount": 120,
+    "reusedCanopyChunkCount": 120
+  },
+  "outputInventory": {
+    "public/act1-hifi/chunks/base/c0-r0.webp": {
+      "bytes": 83082,
+      "sha256": "7305246aa96e2119756548c30c61931357bf9b41a1a6416fa9617e77538182d3"
+    },
+    "public/act1-hifi/chunks/base/c0-r1.webp": {
+      "bytes": 109508,
+      "sha256": "0d0cc5fdde3e281f31798018d2baf0f5c4c2eaf237a16e807a9e9d1282349f04"
+    },
+    "public/act1-hifi/chunks/base/c0-r10.webp": {
+      "bytes": 82272,
+      "sha256": "c5fbf83fd6f7de4165c73ac52755b47069d1b41e46bb24deeff5611de91131d2"
+    },
+    "public/act1-hifi/chunks/base/c0-r11.webp": {
+      "bytes": 31652,
+      "sha256": "ba90d34d33ae4c165f99a8d9cdcec64d4336f1c4ed5d34d9b36fe818a63407ab"
+    },
+    "public/act1-hifi/chunks/base/c0-r2.webp": {
+      "bytes": 286888,
+      "sha256": "3cfd5597c2cd98e537310b7fdd73155ad78ea5fffbce2199c846b782a76befc2"
+    },
+    "public/act1-hifi/chunks/base/c0-r3.webp": {
+      "bytes": 263504,
+      "sha256": "685537963a2d02366ecf6b4a04bdcd4e432dd6109d6231772da51b03abde456e"
+    },
+    "public/act1-hifi/chunks/base/c0-r4.webp": {
+      "bytes": 93932,
+      "sha256": "f4e8711a9cd579b3f6b5065a698251b89622e515ba4121d2cdd32a8adc5c5b42"
+    },
+    "public/act1-hifi/chunks/base/c0-r5.webp": {
+      "bytes": 218224,
+      "sha256": "ffed62b2d1a2859af864982a03e51ee794f82998a914feb8ce9754daaa22dbb1"
+    },
+    "public/act1-hifi/chunks/base/c0-r6.webp": {
+      "bytes": 286254,
+      "sha256": "4bdfa2fc13bc72f7b8db38380cf5719e744381ee77b9d53bf41fc65e4546af94"
+    },
+    "public/act1-hifi/chunks/base/c0-r7.webp": {
+      "bytes": 291474,
+      "sha256": "19616b52f92a5b40e32efb7e783ba81cf956243b6ecd33185661f1e7f25eb204"
+    },
+    "public/act1-hifi/chunks/base/c0-r8.webp": {
+      "bytes": 240718,
+      "sha256": "dbc9046b551fbe3d0ea8ca805387439439955db672836c9caff2dfe8376e54ea"
+    },
+    "public/act1-hifi/chunks/base/c0-r9.webp": {
+      "bytes": 74618,
+      "sha256": "87644b8d717dfbd852ef5c6b02f7e44e576406a28c122dfddfd6c12978e2feab"
+    },
+    "public/act1-hifi/chunks/base/c1-r0.webp": {
+      "bytes": 89790,
+      "sha256": "feb7ede41d2cc42a4216ced02b5c4b386ac3b4407fffafd004dbd8616c647b73"
+    },
+    "public/act1-hifi/chunks/base/c1-r1.webp": {
+      "bytes": 412472,
+      "sha256": "ebbb01593aa9e69b57a4a26539231274a59038a5aa549b4ec2577ba2ffd9db7b"
+    },
+    "public/act1-hifi/chunks/base/c1-r10.webp": {
+      "bytes": 82372,
+      "sha256": "1b6848699d832e1b16e4bad9672cbd36ad1fc89f44620b024f22d77d4a1693d7"
+    },
+    "public/act1-hifi/chunks/base/c1-r11.webp": {
+      "bytes": 32246,
+      "sha256": "33ddc1d971a72845c48ae4756006eb6ddbed6d72628eddc1c74d00c9aa3e2d27"
+    },
+    "public/act1-hifi/chunks/base/c1-r2.webp": {
+      "bytes": 411224,
+      "sha256": "1247236d3fba29d64a98cc7cae480ab42a9807b5f4b063e0b6e3ab23749704ce"
+    },
+    "public/act1-hifi/chunks/base/c1-r3.webp": {
+      "bytes": 421536,
+      "sha256": "dfd389cfa37d215602e286801ac132a178d633804e1fef94e4268835a2528101"
+    },
+    "public/act1-hifi/chunks/base/c1-r4.webp": {
+      "bytes": 425924,
+      "sha256": "f9ff510630e85a8f58ad15808a6869cb489829491edf2cee38fd12b04a69b0fd"
+    },
+    "public/act1-hifi/chunks/base/c1-r5.webp": {
+      "bytes": 394920,
+      "sha256": "22191d2144c57e1386574b89755211ff6e32b06a723ce6ca24bd2965780f94d8"
+    },
+    "public/act1-hifi/chunks/base/c1-r6.webp": {
+      "bytes": 416134,
+      "sha256": "0aecd35f38c69bcf91b0829d3e2801323a47805e5eda56316b7e6c2e06f77336"
+    },
+    "public/act1-hifi/chunks/base/c1-r7.webp": {
+      "bytes": 394534,
+      "sha256": "3258b24b1543ded88b432411a3348d5664401d6246682efd06f5dd23327d4255"
+    },
+    "public/act1-hifi/chunks/base/c1-r8.webp": {
+      "bytes": 451784,
+      "sha256": "c52fdbc5fc17cddd32cf760e80429c0d3ecc287cd5abb6b5f2ef515d512b69cf"
+    },
+    "public/act1-hifi/chunks/base/c1-r9.webp": {
+      "bytes": 70916,
+      "sha256": "9bb7845101e7e3e4e41e24f13634e9dadee60d3414a34c880702b44af4559760"
+    },
+    "public/act1-hifi/chunks/base/c2-r0.webp": {
+      "bytes": 212498,
+      "sha256": "909006e42454bb196c339c2033d30ffc6752aca95a01bcab75a5c0b206695973"
+    },
+    "public/act1-hifi/chunks/base/c2-r1.webp": {
+      "bytes": 417846,
+      "sha256": "288306a36dea6bc289af064038680db73dee1f6e4f18ad1aaeaa7d5b72b1611e"
+    },
+    "public/act1-hifi/chunks/base/c2-r10.webp": {
+      "bytes": 81910,
+      "sha256": "8a2b215f896784a185922a5bf29157d78796b1215744a8aabff62ec847b0ce37"
+    },
+    "public/act1-hifi/chunks/base/c2-r11.webp": {
+      "bytes": 31260,
+      "sha256": "861f616581901bd31cb934c7a79d15c786c248e0a6c1e71550115a4295f0e4b1"
+    },
+    "public/act1-hifi/chunks/base/c2-r2.webp": {
+      "bytes": 418396,
+      "sha256": "b0dfcd3f97254f39d44014c0b7b92c8ce100251d056631deef848a7681120226"
+    },
+    "public/act1-hifi/chunks/base/c2-r3.webp": {
+      "bytes": 410642,
+      "sha256": "68d24bd577c69c9b3462379feb916a615c433794a114f56c6c50c28cbbba3a64"
+    },
+    "public/act1-hifi/chunks/base/c2-r4.webp": {
+      "bytes": 393898,
+      "sha256": "bce12e9a618f32cb47fa03c58d4f114014cff965563b45cabd34c9b1d4ce5420"
+    },
+    "public/act1-hifi/chunks/base/c2-r5.webp": {
+      "bytes": 399080,
+      "sha256": "9c412f33763de40c43d34c3730ed7d3c788438729bdb1989a336f6e4d04a09f3"
+    },
+    "public/act1-hifi/chunks/base/c2-r6.webp": {
+      "bytes": 462732,
+      "sha256": "377372841c664b79f7e9b74c712b33dae09e5e6f54f18479a7980ea1db14ec57"
+    },
+    "public/act1-hifi/chunks/base/c2-r7.webp": {
+      "bytes": 442494,
+      "sha256": "5c761a46645c626fc60387d1e7a52bd6761a07ed6eb0f2b05007e3569f663d8c"
+    },
+    "public/act1-hifi/chunks/base/c2-r8.webp": {
+      "bytes": 455814,
+      "sha256": "82e5aec1c5ba7249f4aec3877e069abb4bbf075ea4f79b82eba948c140d26657"
+    },
+    "public/act1-hifi/chunks/base/c2-r9.webp": {
+      "bytes": 98846,
+      "sha256": "2642390e82e38ce6f70ef3d716769bcc382a5364baefaa783c225c9b1540003e"
+    },
+    "public/act1-hifi/chunks/base/c3-r0.webp": {
+      "bytes": 408822,
+      "sha256": "7b914ce3d8ac13508a12f66670318a9932ecc8b3cbc47e81de1616011ee9d7c3"
+    },
+    "public/act1-hifi/chunks/base/c3-r1.webp": {
+      "bytes": 420036,
+      "sha256": "3bfa526d1c62c985250cdfb35cd41e82713ef194f640286f5b717d665527c9f3"
+    },
+    "public/act1-hifi/chunks/base/c3-r10.webp": {
+      "bytes": 122184,
+      "sha256": "9df79b5582255dd6f6a8802a6ec659bfe4ae88b96a46448ad7207486080c5a3b"
+    },
+    "public/act1-hifi/chunks/base/c3-r11.webp": {
+      "bytes": 31602,
+      "sha256": "72ea61a63cc447bd3153203e1dd561476b7cc62fac5ecc1d1dfc7b39eae255bc"
+    },
+    "public/act1-hifi/chunks/base/c3-r2.webp": {
+      "bytes": 393716,
+      "sha256": "614bd31d8a3bfc3b2bffcf4d7f7ac4f09b258bab4ddf3170466e1a9cc1207162"
+    },
+    "public/act1-hifi/chunks/base/c3-r3.webp": {
+      "bytes": 409838,
+      "sha256": "d586088ecbeb69f9ef3f96579a8c1fadd72487d97110805e7b3a8c3b56d4db9e"
+    },
+    "public/act1-hifi/chunks/base/c3-r4.webp": {
+      "bytes": 410920,
+      "sha256": "b0e42d095a86b875d9e04b6210b00c56612e85fd70a0a7e4b90faa5b54ac7c22"
+    },
+    "public/act1-hifi/chunks/base/c3-r5.webp": {
+      "bytes": 448312,
+      "sha256": "4b73e1faeb60e2ac76cf0ffd686b6efc32542e24dc0ed64115546c0be8f69cb9"
+    },
+    "public/act1-hifi/chunks/base/c3-r6.webp": {
+      "bytes": 426422,
+      "sha256": "4639e2ff426f426831295c853eba17a629805c52b009cff978c897620a4ea7d8"
+    },
+    "public/act1-hifi/chunks/base/c3-r7.webp": {
+      "bytes": 427530,
+      "sha256": "36c0920282716d15365f2b94e5396f8f0629985eb91a46c54306b1b6bf574783"
+    },
+    "public/act1-hifi/chunks/base/c3-r8.webp": {
+      "bytes": 414452,
+      "sha256": "952427f958c94e1f7a66865e470f2ccee5da87c29f9330871df2084efd85d40a"
+    },
+    "public/act1-hifi/chunks/base/c3-r9.webp": {
+      "bytes": 415306,
+      "sha256": "3f293b974fde5df951ef3393147bbaba7e5b8e7e5fc102f6e8bbfbad72fa8d74"
+    },
+    "public/act1-hifi/chunks/base/c4-r0.webp": {
+      "bytes": 413944,
+      "sha256": "33495f8e177ea73ecfcfe23e4a8e64e5240a028d5697d4e0ae34a2cd47a09243"
+    },
+    "public/act1-hifi/chunks/base/c4-r1.webp": {
+      "bytes": 394984,
+      "sha256": "21a29ed7a6f02f5da259ebd25387448ed159046c674b2954d678fdb2a6a28927"
+    },
+    "public/act1-hifi/chunks/base/c4-r10.webp": {
+      "bytes": 468190,
+      "sha256": "94158c769e144946e7329efab2211764ad1657eba1e304b3bae2484af284db1b"
+    },
+    "public/act1-hifi/chunks/base/c4-r11.webp": {
+      "bytes": 36472,
+      "sha256": "c03c35d10249cb60f56cfe8000b06afae18734de0bd012834c1b6839f2b341a0"
+    },
+    "public/act1-hifi/chunks/base/c4-r2.webp": {
+      "bytes": 414136,
+      "sha256": "8528a25a9eda1cf03c57f93753acf4027b575922c3f4b6ebb463ce90d52c2422"
+    },
+    "public/act1-hifi/chunks/base/c4-r3.webp": {
+      "bytes": 420704,
+      "sha256": "f7bc7502ab6dfebb6255855a594342cb0b687924e9e7aa00aec4b4455eba62dd"
+    },
+    "public/act1-hifi/chunks/base/c4-r4.webp": {
+      "bytes": 265018,
+      "sha256": "8e418b2e0961a6835398e551b75a243b26e61385a40b854625afecdfd3326a17"
+    },
+    "public/act1-hifi/chunks/base/c4-r5.webp": {
+      "bytes": 242706,
+      "sha256": "777987d3ba2b73f449f2791807e5671652b12069010ae000d4b02f9c762f2388"
+    },
+    "public/act1-hifi/chunks/base/c4-r6.webp": {
+      "bytes": 356892,
+      "sha256": "42c4eff90180e7ecbf0e62d59e52e7d08f2db27220d8357278ddf029d93fb669"
+    },
+    "public/act1-hifi/chunks/base/c4-r7.webp": {
+      "bytes": 429552,
+      "sha256": "a54d41fccd611b0d48affa602f54b15fd47cd796872f171c1e37899eb7abe857"
+    },
+    "public/act1-hifi/chunks/base/c4-r8.webp": {
+      "bytes": 410394,
+      "sha256": "b4cc840cddd0b008e447a31823d141e6f73bba9c28bad47998b716f2ef8c0796"
+    },
+    "public/act1-hifi/chunks/base/c4-r9.webp": {
+      "bytes": 393010,
+      "sha256": "f12ce8396de1d86cae6b9aee01148be08a6d754cd98a9d8067d2506a89efc79e"
+    },
+    "public/act1-hifi/chunks/base/c5-r0.webp": {
+      "bytes": 407598,
+      "sha256": "bb31ffa3cbb4af86c4d1999b308de6b316eef9b2463fdb2bfec5aa2543a49c57"
+    },
+    "public/act1-hifi/chunks/base/c5-r1.webp": {
+      "bytes": 420976,
+      "sha256": "0367d4b8864a732dc4c8ed7014b937ccda9c4f483cd2dd25f0d55a20f5fee5a9"
+    },
+    "public/act1-hifi/chunks/base/c5-r10.webp": {
+      "bytes": 367276,
+      "sha256": "1e366b6ddc82cfe660ac35ad58b70f4f160003e9775d67430d657bfcbbd52c96"
+    },
+    "public/act1-hifi/chunks/base/c5-r11.webp": {
+      "bytes": 31252,
+      "sha256": "f2a2ee642b10630c777ee7f578315daffaf6b5669d19257fcfae4da5e80063ae"
+    },
+    "public/act1-hifi/chunks/base/c5-r2.webp": {
+      "bytes": 428404,
+      "sha256": "d09c7e0ebe62fab01133d6e53e6dd4acea883289cf8b4ad89703a8b6710b544d"
+    },
+    "public/act1-hifi/chunks/base/c5-r3.webp": {
+      "bytes": 397754,
+      "sha256": "38b8cb9e2f135d86eeb71b5f8b7dcc73d709266304342fdf4c451a61423af5bd"
+    },
+    "public/act1-hifi/chunks/base/c5-r4.webp": {
+      "bytes": 440920,
+      "sha256": "bb8b8d7c48bbf13c24b214f9e2cabfb9d140a8b756ae17e176258db535ec963c"
+    },
+    "public/act1-hifi/chunks/base/c5-r5.webp": {
+      "bytes": 424568,
+      "sha256": "b83c0377b11b50e193ea6c745c966674c0d8a23cfe7e135738a8a0a157cda646"
+    },
+    "public/act1-hifi/chunks/base/c5-r6.webp": {
+      "bytes": 458886,
+      "sha256": "759c38b9d7096f07b0e8f832f2a030c99daf0a64aebd3f9d61c3e60bb7332983"
+    },
+    "public/act1-hifi/chunks/base/c5-r7.webp": {
+      "bytes": 464584,
+      "sha256": "236c83b39873857aaa54cc6b67265fb848ba139aba2298210d5f1d06dee66abc"
+    },
+    "public/act1-hifi/chunks/base/c5-r8.webp": {
+      "bytes": 415656,
+      "sha256": "5d34ccb530630efc0fecef58f877662405e2a04500df4e9b2e1629023adfc9f0"
+    },
+    "public/act1-hifi/chunks/base/c5-r9.webp": {
+      "bytes": 393020,
+      "sha256": "d223190cbde73596d6c3e1c9b35b8f6bb33760482ae04f531ba7a489160b2d8e"
+    },
+    "public/act1-hifi/chunks/base/c6-r0.webp": {
+      "bytes": 417688,
+      "sha256": "a4ae79e24e8836bd414f9952e88a5135e0fd25e40ed7369c47a3bc9451e8ded4"
+    },
+    "public/act1-hifi/chunks/base/c6-r1.webp": {
+      "bytes": 411612,
+      "sha256": "3bf884dd4c718842fd436e2eac14121075c9dda81ffa2205dd349c2b39538f8e"
+    },
+    "public/act1-hifi/chunks/base/c6-r10.webp": {
+      "bytes": 99538,
+      "sha256": "ed2525b4b7342a863bc8bd505398c49bf0b6c1980dbfa3676fa5f626e8521775"
+    },
+    "public/act1-hifi/chunks/base/c6-r11.webp": {
+      "bytes": 31786,
+      "sha256": "1d272052f2ff688cd868689ca562957c815e2c84ba9e694799f1fd9b7598c83e"
+    },
+    "public/act1-hifi/chunks/base/c6-r2.webp": {
+      "bytes": 431646,
+      "sha256": "5aad988a81a366d8a82c1a486e864debbd9f8cdf0d751c95d1520e553ccc6083"
+    },
+    "public/act1-hifi/chunks/base/c6-r3.webp": {
+      "bytes": 445114,
+      "sha256": "510b5537e7ffed27e4d9dbb37043e67ec9d3fa7ddf740a1a2db404ce0b893131"
+    },
+    "public/act1-hifi/chunks/base/c6-r4.webp": {
+      "bytes": 430108,
+      "sha256": "3660858a006b22c4d6f1ad0775b3bc6f0ee9e44c2a9bcca5504c7cebf29877a0"
+    },
+    "public/act1-hifi/chunks/base/c6-r5.webp": {
+      "bytes": 418452,
+      "sha256": "9a3c8bf224c55a44013cfcc8d69cf421d6ac8c90433929a19558058a018dffe2"
+    },
+    "public/act1-hifi/chunks/base/c6-r6.webp": {
+      "bytes": 443710,
+      "sha256": "1499298f905ff8caf3ad8eab0a6d9478964b735fadb0cf6af6083fa91ffaae54"
+    },
+    "public/act1-hifi/chunks/base/c6-r7.webp": {
+      "bytes": 407136,
+      "sha256": "1aadb6ad5367080a9d6b2bb8d86dd3a27821e5c9198964ff1886eb23226e575d"
+    },
+    "public/act1-hifi/chunks/base/c6-r8.webp": {
+      "bytes": 435412,
+      "sha256": "abab7f20b96e0ef1eb7d303aad27aa9bbcd09225af8d4e16f3c49a312633a9ef"
+    },
+    "public/act1-hifi/chunks/base/c6-r9.webp": {
+      "bytes": 361884,
+      "sha256": "73151688c91c36e3bc8a62621cfa6c4f0f61489ded9b526eec3507ad8dd7c53b"
+    },
+    "public/act1-hifi/chunks/base/c7-r0.webp": {
+      "bytes": 396278,
+      "sha256": "741f6549d4d24c972638d4d53c774b696ea712b3b090ae9a3a4d311b240078c0"
+    },
+    "public/act1-hifi/chunks/base/c7-r1.webp": {
+      "bytes": 394728,
+      "sha256": "97f647381488c14defc829ff2ea4a9ad5016792c2e31b0cd165a5271058488f0"
+    },
+    "public/act1-hifi/chunks/base/c7-r10.webp": {
+      "bytes": 83076,
+      "sha256": "41cdfa76310f140ddc54dd75031bdd69d0b7511617136ccb2351f2aae696229b"
+    },
+    "public/act1-hifi/chunks/base/c7-r11.webp": {
+      "bytes": 31684,
+      "sha256": "c30467db6237b5da6751c53590603526b32585c96543c00f4f295099ec732c1e"
+    },
+    "public/act1-hifi/chunks/base/c7-r2.webp": {
+      "bytes": 393564,
+      "sha256": "e766b42f0f1f5df8df665f8e993495a8413b804b8593504c0a0ce982360f0f91"
+    },
+    "public/act1-hifi/chunks/base/c7-r3.webp": {
+      "bytes": 411080,
+      "sha256": "2e3d71eed1c6b967807cd1d6730e11d4cd5bf064959760c284e3911ece972e1a"
+    },
+    "public/act1-hifi/chunks/base/c7-r4.webp": {
+      "bytes": 463346,
+      "sha256": "9ef257811c811814c1957a14c14a77a21421a137c5d35d31f9d4ef35800f25ba"
+    },
+    "public/act1-hifi/chunks/base/c7-r5.webp": {
+      "bytes": 460828,
+      "sha256": "2c5311ea241da265dcbab23f40cf866b5bda26037e77f01a1059b4395a4c1d2f"
+    },
+    "public/act1-hifi/chunks/base/c7-r6.webp": {
+      "bytes": 457612,
+      "sha256": "4db422c790c1f41ea197f81bb81310f26be63315c5e61194fcbb11776395627d"
+    },
+    "public/act1-hifi/chunks/base/c7-r7.webp": {
+      "bytes": 408322,
+      "sha256": "61e79cf1d92be7baab4a843ea8dfc4a802b78bed2d459a8f2d298f6c054b5e95"
+    },
+    "public/act1-hifi/chunks/base/c7-r8.webp": {
+      "bytes": 354254,
+      "sha256": "2a01950a7fe71fa43d42d215156eeb7eae1c55b7cf76f107f7a69dbed4aa7521"
+    },
+    "public/act1-hifi/chunks/base/c7-r9.webp": {
+      "bytes": 158502,
+      "sha256": "a428caca622063e60155db4edfce5352f6bdb3a77f641d9f2332f5a330ec8812"
+    },
+    "public/act1-hifi/chunks/base/c8-r0.webp": {
+      "bytes": 396970,
+      "sha256": "c72d045712f6832852bcf48e63612b898b0b9df83e387011bfeb02c93b4f2600"
+    },
+    "public/act1-hifi/chunks/base/c8-r1.webp": {
+      "bytes": 394660,
+      "sha256": "74e20fd36b4720f6f96ab9e2d6db4e5cd31dd9ef9ff873830c7df4d30b47cbc8"
+    },
+    "public/act1-hifi/chunks/base/c8-r10.webp": {
+      "bytes": 81738,
+      "sha256": "729b4b02e4c7cff957fe42388fdff4d54c245ae95b5eb7d18af65a64a74d57c5"
+    },
+    "public/act1-hifi/chunks/base/c8-r11.webp": {
+      "bytes": 30812,
+      "sha256": "99f9203d460e1438e59d07ccc854cfec7629f292380c627da78f835cd8c70bf6"
+    },
+    "public/act1-hifi/chunks/base/c8-r2.webp": {
+      "bytes": 393916,
+      "sha256": "fa6ca5aad06d58ce36e02e404d6003713fe45a411d2a01a535b98504353a93ed"
+    },
+    "public/act1-hifi/chunks/base/c8-r3.webp": {
+      "bytes": 409882,
+      "sha256": "5debc0c92ccc0c7052c5a36f52d24b65cb4e3946095d4382875f9b98669b39fe"
+    },
+    "public/act1-hifi/chunks/base/c8-r4.webp": {
+      "bytes": 437696,
+      "sha256": "648b05874d2e649e0e0ccad80605366dbb6faac365addf89e8c0c1906488e871"
+    },
+    "public/act1-hifi/chunks/base/c8-r5.webp": {
+      "bytes": 398670,
+      "sha256": "4792b56b45d4f161a84e0351cb22acefae18e2e8818608ce497deb2304e77325"
+    },
+    "public/act1-hifi/chunks/base/c8-r6.webp": {
+      "bytes": 435262,
+      "sha256": "999590cac93bf7e63468430f2c880c9381d7b2c6ef7a00c0b8bd159fa535e2e8"
+    },
+    "public/act1-hifi/chunks/base/c8-r7.webp": {
+      "bytes": 469208,
+      "sha256": "227c9a75e614102778a05ef8a74ff9d7e674f14712fdb5d5878dd5bee35289e2"
+    },
+    "public/act1-hifi/chunks/base/c8-r8.webp": {
+      "bytes": 408976,
+      "sha256": "170eeba60b8ae9b98d1183a43570d430e52841915fb69a8839cd1a7ef5dd682a"
+    },
+    "public/act1-hifi/chunks/base/c8-r9.webp": {
+      "bytes": 463628,
+      "sha256": "bd00e67bc4f1806ee8db95526ce40888ef9f415f7e4a5fc6af03498ddf773e8e"
+    },
+    "public/act1-hifi/chunks/base/c9-r0.webp": {
+      "bytes": 93712,
+      "sha256": "a946c11b7ab1fdba50e1e23b9cb1ffc80f4e4495a31ed10745511cd6d26d0543"
+    },
+    "public/act1-hifi/chunks/base/c9-r1.webp": {
+      "bytes": 117504,
+      "sha256": "c4168409ed6db159c0d5227649dfc370022ac4f2f9e5da585f44c9e5823fa751"
+    },
+    "public/act1-hifi/chunks/base/c9-r10.webp": {
+      "bytes": 21350,
+      "sha256": "a930224f50235f2c83ec8eb992c0ab1ee6955b72d023c4f4f045a13f528f922e"
+    },
+    "public/act1-hifi/chunks/base/c9-r11.webp": {
+      "bytes": 8482,
+      "sha256": "09728cccecc42a334be58034bc6330fdb85304bea30d57ba551c32d0e12af763"
+    },
+    "public/act1-hifi/chunks/base/c9-r2.webp": {
+      "bytes": 117292,
+      "sha256": "c1cab948fc2a913e699d9c0a42fd28e061dc5c274602fa275495295036b7356d"
+    },
+    "public/act1-hifi/chunks/base/c9-r3.webp": {
+      "bytes": 117654,
+      "sha256": "d0894da4ca2dd15e40b388e5eb631314d5989212203da5b062bb94b22eca559f"
+    },
+    "public/act1-hifi/chunks/base/c9-r4.webp": {
+      "bytes": 117094,
+      "sha256": "2939f4f91c475b2a082f090d7e25804aa67f9ac4d317a6923dc2eb1c3861e4a0"
+    },
+    "public/act1-hifi/chunks/base/c9-r5.webp": {
+      "bytes": 117548,
+      "sha256": "f9546b9e0b78d8c04e5beb6f5a1acec0a12877ab84b3f578df9836701e9f9316"
+    },
+    "public/act1-hifi/chunks/base/c9-r6.webp": {
+      "bytes": 117576,
+      "sha256": "3edb7672a25eb9020bc2ba36cb7696cfae4068dafddac897c64311b809b353b4"
+    },
+    "public/act1-hifi/chunks/base/c9-r7.webp": {
+      "bytes": 117512,
+      "sha256": "dd172231deb705139b373c93ac4dba2e7cf142d96ed0f6ecb3aff77085bd601a"
+    },
+    "public/act1-hifi/chunks/base/c9-r8.webp": {
+      "bytes": 117508,
+      "sha256": "0e15036b90cea0853bdf92523ebd86973ff77dc2e84a234f6566cb7306e4b0eb"
+    },
+    "public/act1-hifi/chunks/base/c9-r9.webp": {
+      "bytes": 125642,
+      "sha256": "a37fb9f0e27485c007cdca5d81d7133258a0d1d0960821dccee1bdaab06fb2d8"
+    },
+    "public/act1-hifi/chunks/canopy/c0-r0.webp": {
+      "bytes": 52,
+      "sha256": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+    },
+    "public/act1-hifi/chunks/canopy/c0-r1.webp": {
+      "bytes": 52,
+      "sha256": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+    },
+    "public/act1-hifi/chunks/canopy/c0-r10.webp": {
+      "bytes": 52,
+      "sha256": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+    },
+    "public/act1-hifi/chunks/canopy/c0-r11.webp": {
+      "bytes": 42,
+      "sha256": "edea247bae1143c4e2a2d63bd1e01735d912e39ba93507061173ad03995992fe"
+    },
+    "public/act1-hifi/chunks/canopy/c0-r2.webp": {
+      "bytes": 52,
+      "sha256": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+    },
+    "public/act1-hifi/chunks/canopy/c0-r3.webp": {
+      "bytes": 52,
+      "sha256": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+    },
+    "public/act1-hifi/chunks/canopy/c0-r4.webp": {
+      "bytes": 720,
+      "sha256": "3c0572fa3b1cae934d57179d40cdf295737dc1871a73b278af5a6265e0a1b1ba"
+    },
+    "public/act1-hifi/chunks/canopy/c0-r5.webp": {
+      "bytes": 11890,
+      "sha256": "65efdc403644ee1e389a742f9a9392f425c7010bcf36ad681cac2abf7b2b8966"
+    },
+    "public/act1-hifi/chunks/canopy/c0-r6.webp": {
+      "bytes": 24442,
+      "sha256": "2da0b97f92b0e2ea7ad6aed61108431ac71b88b602093fb0c052678df05ec15f"
+    },
+    "public/act1-hifi/chunks/canopy/c0-r7.webp": {
+      "bytes": 2538,
+      "sha256": "96fdf34a63ff13bee288c5eb02ba2ba58b9daa8523fff63ed52d6c6ed1a0d432"
+    },
+    "public/act1-hifi/chunks/canopy/c0-r8.webp": {
+      "bytes": 52,
+      "sha256": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+    },
+    "public/act1-hifi/chunks/canopy/c0-r9.webp": {
+      "bytes": 52,
+      "sha256": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+    },
+    "public/act1-hifi/chunks/canopy/c1-r0.webp": {
+      "bytes": 52,
+      "sha256": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+    },
+    "public/act1-hifi/chunks/canopy/c1-r1.webp": {
+      "bytes": 52,
+      "sha256": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+    },
+    "public/act1-hifi/chunks/canopy/c1-r10.webp": {
+      "bytes": 52,
+      "sha256": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+    },
+    "public/act1-hifi/chunks/canopy/c1-r11.webp": {
+      "bytes": 42,
+      "sha256": "edea247bae1143c4e2a2d63bd1e01735d912e39ba93507061173ad03995992fe"
+    },
+    "public/act1-hifi/chunks/canopy/c1-r2.webp": {
+      "bytes": 52,
+      "sha256": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+    },
+    "public/act1-hifi/chunks/canopy/c1-r3.webp": {
+      "bytes": 9244,
+      "sha256": "58e49087da78633e619ea45145ee6fd578e56b9ff62fb24ca4187cf153c63d6e"
+    },
+    "public/act1-hifi/chunks/canopy/c1-r4.webp": {
+      "bytes": 35196,
+      "sha256": "da390d9c4e66a7569819d56d676a0981a433d0d4d89d289eaa1b52fac7205f9c"
+    },
+    "public/act1-hifi/chunks/canopy/c1-r5.webp": {
+      "bytes": 38184,
+      "sha256": "806500b8fc434166c80063b3eb775c2367780c7d0d2d3e9f49aa64b8ee2dc144"
+    },
+    "public/act1-hifi/chunks/canopy/c1-r6.webp": {
+      "bytes": 28052,
+      "sha256": "f5792110ecc586eed239a79427fa75c05cbf20b3990935fd84eefc73b01fc935"
+    },
+    "public/act1-hifi/chunks/canopy/c1-r7.webp": {
+      "bytes": 52,
+      "sha256": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+    },
+    "public/act1-hifi/chunks/canopy/c1-r8.webp": {
+      "bytes": 52,
+      "sha256": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+    },
+    "public/act1-hifi/chunks/canopy/c1-r9.webp": {
+      "bytes": 52,
+      "sha256": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+    },
+    "public/act1-hifi/chunks/canopy/c2-r0.webp": {
+      "bytes": 52,
+      "sha256": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+    },
+    "public/act1-hifi/chunks/canopy/c2-r1.webp": {
+      "bytes": 52,
+      "sha256": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+    },
+    "public/act1-hifi/chunks/canopy/c2-r10.webp": {
+      "bytes": 52,
+      "sha256": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+    },
+    "public/act1-hifi/chunks/canopy/c2-r11.webp": {
+      "bytes": 42,
+      "sha256": "edea247bae1143c4e2a2d63bd1e01735d912e39ba93507061173ad03995992fe"
+    },
+    "public/act1-hifi/chunks/canopy/c2-r2.webp": {
+      "bytes": 52,
+      "sha256": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+    },
+    "public/act1-hifi/chunks/canopy/c2-r3.webp": {
+      "bytes": 22442,
+      "sha256": "4d4755d14b67a1535cb9f69142145cbec083403d9343f68e1b80749c5788bcc0"
+    },
+    "public/act1-hifi/chunks/canopy/c2-r4.webp": {
+      "bytes": 33498,
+      "sha256": "400440630e4836900375868c670e7b148d6053500a5f4ec9a4bca259774e73d1"
+    },
+    "public/act1-hifi/chunks/canopy/c2-r5.webp": {
+      "bytes": 32230,
+      "sha256": "6af120c8a8592ed6a490a58830b7cb845d1bb8a0fc0f8feb9b44f742408509ea"
+    },
+    "public/act1-hifi/chunks/canopy/c2-r6.webp": {
+      "bytes": 16026,
+      "sha256": "a21dd37421582e9dc1d99526d26671a946781193efc52a828768b8ebc2c80c44"
+    },
+    "public/act1-hifi/chunks/canopy/c2-r7.webp": {
+      "bytes": 52,
+      "sha256": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+    },
+    "public/act1-hifi/chunks/canopy/c2-r8.webp": {
+      "bytes": 52,
+      "sha256": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+    },
+    "public/act1-hifi/chunks/canopy/c2-r9.webp": {
+      "bytes": 52,
+      "sha256": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+    },
+    "public/act1-hifi/chunks/canopy/c3-r0.webp": {
+      "bytes": 52,
+      "sha256": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+    },
+    "public/act1-hifi/chunks/canopy/c3-r1.webp": {
+      "bytes": 52,
+      "sha256": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+    },
+    "public/act1-hifi/chunks/canopy/c3-r10.webp": {
+      "bytes": 52,
+      "sha256": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+    },
+    "public/act1-hifi/chunks/canopy/c3-r11.webp": {
+      "bytes": 42,
+      "sha256": "edea247bae1143c4e2a2d63bd1e01735d912e39ba93507061173ad03995992fe"
+    },
+    "public/act1-hifi/chunks/canopy/c3-r2.webp": {
+      "bytes": 52,
+      "sha256": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+    },
+    "public/act1-hifi/chunks/canopy/c3-r3.webp": {
+      "bytes": 11000,
+      "sha256": "9a73fb71af51ad2aa42f569afcdacdf909382f716ec0da9cb01e1a403e83509c"
+    },
+    "public/act1-hifi/chunks/canopy/c3-r4.webp": {
+      "bytes": 24338,
+      "sha256": "b7518f0208c692b408076170e407383e3701d8cd5e1e1efbd3635df1eb1561fb"
+    },
+    "public/act1-hifi/chunks/canopy/c3-r5.webp": {
+      "bytes": 10450,
+      "sha256": "1cd394e04173ac8d667aacb13ac65de655523d9986f5e51fd48ed7aac83d303a"
+    },
+    "public/act1-hifi/chunks/canopy/c3-r6.webp": {
+      "bytes": 14130,
+      "sha256": "dc55fa21cffeb3d819c4392ecfa809521f52abfe83cb7b3aacd42526ffda866e"
+    },
+    "public/act1-hifi/chunks/canopy/c3-r7.webp": {
+      "bytes": 34144,
+      "sha256": "74b8154af16dc5d48bd5c3304e84a912e727ef7ce1861458e90126bab478a3e0"
+    },
+    "public/act1-hifi/chunks/canopy/c3-r8.webp": {
+      "bytes": 6502,
+      "sha256": "477bac693aaad1c2d7826422542b5212e156f1155f24590419c1de1cea0113f6"
+    },
+    "public/act1-hifi/chunks/canopy/c3-r9.webp": {
+      "bytes": 52,
+      "sha256": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+    },
+    "public/act1-hifi/chunks/canopy/c4-r0.webp": {
+      "bytes": 52,
+      "sha256": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+    },
+    "public/act1-hifi/chunks/canopy/c4-r1.webp": {
+      "bytes": 784,
+      "sha256": "2406fbcdc28b098305dd17aad62c8540cc54c29e46e24f6c0c0b67cea24b9b7b"
+    },
+    "public/act1-hifi/chunks/canopy/c4-r10.webp": {
+      "bytes": 52,
+      "sha256": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+    },
+    "public/act1-hifi/chunks/canopy/c4-r11.webp": {
+      "bytes": 42,
+      "sha256": "edea247bae1143c4e2a2d63bd1e01735d912e39ba93507061173ad03995992fe"
+    },
+    "public/act1-hifi/chunks/canopy/c4-r2.webp": {
+      "bytes": 17486,
+      "sha256": "8abe38717a7f8f107836fa49c5ab03e99026fcf92dedce6c9c319f426a71a5fa"
+    },
+    "public/act1-hifi/chunks/canopy/c4-r3.webp": {
+      "bytes": 15138,
+      "sha256": "8a0fb8030cb3b4a2362f58f7713f3a35d49162f12b30ac96872785f0c8e42970"
+    },
+    "public/act1-hifi/chunks/canopy/c4-r4.webp": {
+      "bytes": 52,
+      "sha256": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+    },
+    "public/act1-hifi/chunks/canopy/c4-r5.webp": {
+      "bytes": 52,
+      "sha256": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+    },
+    "public/act1-hifi/chunks/canopy/c4-r6.webp": {
+      "bytes": 28912,
+      "sha256": "51fbc92e4f5cc173bcd3929f2ee2b70034c37a6bf84c109ffb8d2c6dcb8411e0"
+    },
+    "public/act1-hifi/chunks/canopy/c4-r7.webp": {
+      "bytes": 49776,
+      "sha256": "374f38cdfc2ff133970a905d32bac34d3d41bd978fc5f5edd3e1b7820b1aeccc"
+    },
+    "public/act1-hifi/chunks/canopy/c4-r8.webp": {
+      "bytes": 21606,
+      "sha256": "b599213a7c8a14ed20f134af2cb4ca0858a9a41dc8d07f7540fff1855b2df808"
+    },
+    "public/act1-hifi/chunks/canopy/c4-r9.webp": {
+      "bytes": 52,
+      "sha256": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+    },
+    "public/act1-hifi/chunks/canopy/c5-r0.webp": {
+      "bytes": 52,
+      "sha256": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+    },
+    "public/act1-hifi/chunks/canopy/c5-r1.webp": {
+      "bytes": 23368,
+      "sha256": "b68a5e91ba0442136973478b784037ae653207dcadac352764cd173a562f2db4"
+    },
+    "public/act1-hifi/chunks/canopy/c5-r10.webp": {
+      "bytes": 52,
+      "sha256": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+    },
+    "public/act1-hifi/chunks/canopy/c5-r11.webp": {
+      "bytes": 42,
+      "sha256": "edea247bae1143c4e2a2d63bd1e01735d912e39ba93507061173ad03995992fe"
+    },
+    "public/act1-hifi/chunks/canopy/c5-r2.webp": {
+      "bytes": 46502,
+      "sha256": "6b58fbb34ffc8c088edd1db04c859d36258e2bb3b7ee931dce5e321b0ac9e127"
+    },
+    "public/act1-hifi/chunks/canopy/c5-r3.webp": {
+      "bytes": 32092,
+      "sha256": "d57632a718c95f4a5ad666b5e9090810988046d445979d6485c4122cf2c0893b"
+    },
+    "public/act1-hifi/chunks/canopy/c5-r4.webp": {
+      "bytes": 38970,
+      "sha256": "a622f8624c7caa55cb6c1887c5ddb9e459bb1a7a0515ec50898e7d5cdd3491af"
+    },
+    "public/act1-hifi/chunks/canopy/c5-r5.webp": {
+      "bytes": 33884,
+      "sha256": "7fc7a9a2276f614e1587ad4b5cb14159487ba7e6945428afc17f49e550dbea84"
+    },
+    "public/act1-hifi/chunks/canopy/c5-r6.webp": {
+      "bytes": 39330,
+      "sha256": "beddc7722e66d5c00d0324f5e3268b826c37d0e98d3d9143cd41bf4141a78de6"
+    },
+    "public/act1-hifi/chunks/canopy/c5-r7.webp": {
+      "bytes": 44024,
+      "sha256": "c972ca870537eb5f831877fb319e61e95a11b99d774b9bb4ce1dd543324c9a56"
+    },
+    "public/act1-hifi/chunks/canopy/c5-r8.webp": {
+      "bytes": 26280,
+      "sha256": "e7590dcf9d9e6231ebf8e919a53eaafa86450c35a682cd8c685650886c475f40"
+    },
+    "public/act1-hifi/chunks/canopy/c5-r9.webp": {
+      "bytes": 52,
+      "sha256": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+    },
+    "public/act1-hifi/chunks/canopy/c6-r0.webp": {
+      "bytes": 52,
+      "sha256": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+    },
+    "public/act1-hifi/chunks/canopy/c6-r1.webp": {
+      "bytes": 33086,
+      "sha256": "73dddc1a867216b7ecfda49ff3fb7d502306003b3a8015e2f3c534ba10bb9cad"
+    },
+    "public/act1-hifi/chunks/canopy/c6-r10.webp": {
+      "bytes": 52,
+      "sha256": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+    },
+    "public/act1-hifi/chunks/canopy/c6-r11.webp": {
+      "bytes": 42,
+      "sha256": "edea247bae1143c4e2a2d63bd1e01735d912e39ba93507061173ad03995992fe"
+    },
+    "public/act1-hifi/chunks/canopy/c6-r2.webp": {
+      "bytes": 42158,
+      "sha256": "d37bae370d4377ea0567763710fd97c9c8f908c624f1739b732ed31f81bba16a"
+    },
+    "public/act1-hifi/chunks/canopy/c6-r3.webp": {
+      "bytes": 49652,
+      "sha256": "442feb54b460eb0afcfb6dfcd1aa6e9b2214545aa0fe4d02c9c86d948ef89ff9"
+    },
+    "public/act1-hifi/chunks/canopy/c6-r4.webp": {
+      "bytes": 1036,
+      "sha256": "c89979a4c1b794ca8c4a7429e308d0e6b53b75ea858efd4370d95e7e1326710c"
+    },
+    "public/act1-hifi/chunks/canopy/c6-r5.webp": {
+      "bytes": 15396,
+      "sha256": "c5dc212360607d5d208cbc186c42f27cdbd217b4d79bc9aeb8002f6119ba4694"
+    },
+    "public/act1-hifi/chunks/canopy/c6-r6.webp": {
+      "bytes": 20882,
+      "sha256": "facc9d278c016f0657423dd869a5478f9d4aa786b47675262c091732093dd1f0"
+    },
+    "public/act1-hifi/chunks/canopy/c6-r7.webp": {
+      "bytes": 966,
+      "sha256": "8f32e6e784af92a0dd455d4e02684c9641417e55dcdf040a1bf2b824dc7d22a8"
+    },
+    "public/act1-hifi/chunks/canopy/c6-r8.webp": {
+      "bytes": 52,
+      "sha256": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+    },
+    "public/act1-hifi/chunks/canopy/c6-r9.webp": {
+      "bytes": 52,
+      "sha256": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+    },
+    "public/act1-hifi/chunks/canopy/c7-r0.webp": {
+      "bytes": 52,
+      "sha256": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+    },
+    "public/act1-hifi/chunks/canopy/c7-r1.webp": {
+      "bytes": 29852,
+      "sha256": "26b4c89f77c072ec9f00571075ca082f65f42bc0b1581ac1659d51e25a27f43f"
+    },
+    "public/act1-hifi/chunks/canopy/c7-r10.webp": {
+      "bytes": 52,
+      "sha256": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+    },
+    "public/act1-hifi/chunks/canopy/c7-r11.webp": {
+      "bytes": 42,
+      "sha256": "edea247bae1143c4e2a2d63bd1e01735d912e39ba93507061173ad03995992fe"
+    },
+    "public/act1-hifi/chunks/canopy/c7-r2.webp": {
+      "bytes": 36930,
+      "sha256": "b0d416166504847b5c65bd09b9a62cbe608c91449bfe772277a4614e1398d155"
+    },
+    "public/act1-hifi/chunks/canopy/c7-r3.webp": {
+      "bytes": 31416,
+      "sha256": "e7c6e95ee19be3b433f07b641f00dea3e3b5c6e6194c62c1a8f94cb69314f0d5"
+    },
+    "public/act1-hifi/chunks/canopy/c7-r4.webp": {
+      "bytes": 52,
+      "sha256": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+    },
+    "public/act1-hifi/chunks/canopy/c7-r5.webp": {
+      "bytes": 52,
+      "sha256": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+    },
+    "public/act1-hifi/chunks/canopy/c7-r6.webp": {
+      "bytes": 52,
+      "sha256": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+    },
+    "public/act1-hifi/chunks/canopy/c7-r7.webp": {
+      "bytes": 52,
+      "sha256": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+    },
+    "public/act1-hifi/chunks/canopy/c7-r8.webp": {
+      "bytes": 52,
+      "sha256": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+    },
+    "public/act1-hifi/chunks/canopy/c7-r9.webp": {
+      "bytes": 52,
+      "sha256": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+    },
+    "public/act1-hifi/chunks/canopy/c8-r0.webp": {
+      "bytes": 52,
+      "sha256": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+    },
+    "public/act1-hifi/chunks/canopy/c8-r1.webp": {
+      "bytes": 6138,
+      "sha256": "68158348f7552bad99f0b9b656bacf5790ecb19d586993c854a711ecfaff9017"
+    },
+    "public/act1-hifi/chunks/canopy/c8-r10.webp": {
+      "bytes": 52,
+      "sha256": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+    },
+    "public/act1-hifi/chunks/canopy/c8-r11.webp": {
+      "bytes": 42,
+      "sha256": "edea247bae1143c4e2a2d63bd1e01735d912e39ba93507061173ad03995992fe"
+    },
+    "public/act1-hifi/chunks/canopy/c8-r2.webp": {
+      "bytes": 5058,
+      "sha256": "be7c342048c373a52b227dce05672e0782f3b3a8fdd8cb00d2b594518f6e2c45"
+    },
+    "public/act1-hifi/chunks/canopy/c8-r3.webp": {
+      "bytes": 52,
+      "sha256": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+    },
+    "public/act1-hifi/chunks/canopy/c8-r4.webp": {
+      "bytes": 52,
+      "sha256": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+    },
+    "public/act1-hifi/chunks/canopy/c8-r5.webp": {
+      "bytes": 52,
+      "sha256": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+    },
+    "public/act1-hifi/chunks/canopy/c8-r6.webp": {
+      "bytes": 52,
+      "sha256": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+    },
+    "public/act1-hifi/chunks/canopy/c8-r7.webp": {
+      "bytes": 52,
+      "sha256": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+    },
+    "public/act1-hifi/chunks/canopy/c8-r8.webp": {
+      "bytes": 52,
+      "sha256": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+    },
+    "public/act1-hifi/chunks/canopy/c8-r9.webp": {
+      "bytes": 52,
+      "sha256": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af"
+    },
+    "public/act1-hifi/chunks/canopy/c9-r0.webp": {
+      "bytes": 42,
+      "sha256": "371a4a0894957e68c4e5f3b62989172d462645be77d52797d88e5bc535cc54af"
+    },
+    "public/act1-hifi/chunks/canopy/c9-r1.webp": {
+      "bytes": 42,
+      "sha256": "371a4a0894957e68c4e5f3b62989172d462645be77d52797d88e5bc535cc54af"
+    },
+    "public/act1-hifi/chunks/canopy/c9-r10.webp": {
+      "bytes": 42,
+      "sha256": "371a4a0894957e68c4e5f3b62989172d462645be77d52797d88e5bc535cc54af"
+    },
+    "public/act1-hifi/chunks/canopy/c9-r11.webp": {
+      "bytes": 40,
+      "sha256": "7e1659518b6af64f83c4dbed1ce13ebd1277e2a2d3acdb2a26f60208713fafa3"
+    },
+    "public/act1-hifi/chunks/canopy/c9-r2.webp": {
+      "bytes": 42,
+      "sha256": "371a4a0894957e68c4e5f3b62989172d462645be77d52797d88e5bc535cc54af"
+    },
+    "public/act1-hifi/chunks/canopy/c9-r3.webp": {
+      "bytes": 42,
+      "sha256": "371a4a0894957e68c4e5f3b62989172d462645be77d52797d88e5bc535cc54af"
+    },
+    "public/act1-hifi/chunks/canopy/c9-r4.webp": {
+      "bytes": 42,
+      "sha256": "371a4a0894957e68c4e5f3b62989172d462645be77d52797d88e5bc535cc54af"
+    },
+    "public/act1-hifi/chunks/canopy/c9-r5.webp": {
+      "bytes": 42,
+      "sha256": "371a4a0894957e68c4e5f3b62989172d462645be77d52797d88e5bc535cc54af"
+    },
+    "public/act1-hifi/chunks/canopy/c9-r6.webp": {
+      "bytes": 42,
+      "sha256": "371a4a0894957e68c4e5f3b62989172d462645be77d52797d88e5bc535cc54af"
+    },
+    "public/act1-hifi/chunks/canopy/c9-r7.webp": {
+      "bytes": 42,
+      "sha256": "371a4a0894957e68c4e5f3b62989172d462645be77d52797d88e5bc535cc54af"
+    },
+    "public/act1-hifi/chunks/canopy/c9-r8.webp": {
+      "bytes": 42,
+      "sha256": "371a4a0894957e68c4e5f3b62989172d462645be77d52797d88e5bc535cc54af"
+    },
+    "public/act1-hifi/chunks/canopy/c9-r9.webp": {
+      "bytes": 42,
+      "sha256": "371a4a0894957e68c4e5f3b62989172d462645be77d52797d88e5bc535cc54af"
+    },
+    "public/act1-hifi/chunks/forest/c0-r0.png": {
+      "bytes": 1097,
+      "sha256": "b262bd68d44f93637b9949caf7ff7ce0b6b6ed839c3a2468681952b215ec4d95"
+    },
+    "public/act1-hifi/chunks/forest/c0-r1.png": {
+      "bytes": 25280,
+      "sha256": "f27595959aaf0dd5cc12e213ea110b95b98a0be52c305b826f74baf7e92e5cc1"
+    },
+    "public/act1-hifi/chunks/forest/c0-r10.png": {
+      "bytes": 1097,
+      "sha256": "b262bd68d44f93637b9949caf7ff7ce0b6b6ed839c3a2468681952b215ec4d95"
+    },
+    "public/act1-hifi/chunks/forest/c0-r11.png": {
+      "bytes": 461,
+      "sha256": "d82fe42c088eb6523002cfa1331dc5b14ded39c6fb9669bcabe46d143477cf8e"
+    },
+    "public/act1-hifi/chunks/forest/c0-r2.png": {
+      "bytes": 43894,
+      "sha256": "3938f97b4fb107d5b686405dbc407e366afafcc36cbad3723ce001c640e69ce8"
+    },
+    "public/act1-hifi/chunks/forest/c0-r3.png": {
+      "bytes": 1097,
+      "sha256": "b262bd68d44f93637b9949caf7ff7ce0b6b6ed839c3a2468681952b215ec4d95"
+    },
+    "public/act1-hifi/chunks/forest/c0-r4.png": {
+      "bytes": 41604,
+      "sha256": "4118f2cea460bfaa26c45e75d373e06739f3fc53a9e4473b401f143b28780062"
+    },
+    "public/act1-hifi/chunks/forest/c0-r5.png": {
+      "bytes": 227479,
+      "sha256": "c7e1853f2d3bf3b7a128705916a2a677098c34eaecced4992461422870874136"
+    },
+    "public/act1-hifi/chunks/forest/c0-r6.png": {
+      "bytes": 372372,
+      "sha256": "f1215586ebe50a5d1b0492b598c7fb618c7d063c5ae59b3d9861a428ece83cdb"
+    },
+    "public/act1-hifi/chunks/forest/c0-r7.png": {
+      "bytes": 70920,
+      "sha256": "510f2fa41de4a5dbe8121bd52571db98b893c9819adad634c1ac85e4efa46c36"
+    },
+    "public/act1-hifi/chunks/forest/c0-r8.png": {
+      "bytes": 1097,
+      "sha256": "b262bd68d44f93637b9949caf7ff7ce0b6b6ed839c3a2468681952b215ec4d95"
+    },
+    "public/act1-hifi/chunks/forest/c0-r9.png": {
+      "bytes": 1097,
+      "sha256": "b262bd68d44f93637b9949caf7ff7ce0b6b6ed839c3a2468681952b215ec4d95"
+    },
+    "public/act1-hifi/chunks/forest/c1-r0.png": {
+      "bytes": 1380,
+      "sha256": "1fa16f7175ebd364581e7d1a2e3be686784fee2ff0dba142b32a75af73e4ca70"
+    },
+    "public/act1-hifi/chunks/forest/c1-r1.png": {
+      "bytes": 444239,
+      "sha256": "48ef495bd7ef771071f437184b48b186d074582a82b919a21f01b2d6166a5ac2"
+    },
+    "public/act1-hifi/chunks/forest/c1-r10.png": {
+      "bytes": 1097,
+      "sha256": "b262bd68d44f93637b9949caf7ff7ce0b6b6ed839c3a2468681952b215ec4d95"
+    },
+    "public/act1-hifi/chunks/forest/c1-r11.png": {
+      "bytes": 461,
+      "sha256": "d82fe42c088eb6523002cfa1331dc5b14ded39c6fb9669bcabe46d143477cf8e"
+    },
+    "public/act1-hifi/chunks/forest/c1-r2.png": {
+      "bytes": 190406,
+      "sha256": "9c78a2cee3281e326b94b0a19b8d549eb56b052d084a8ce0a99d875c2f5f5863"
+    },
+    "public/act1-hifi/chunks/forest/c1-r3.png": {
+      "bytes": 102144,
+      "sha256": "39c17bdcd7840b9fcaa36587787a8a8e09b340a0f2c55d73897099b715ad004d"
+    },
+    "public/act1-hifi/chunks/forest/c1-r4.png": {
+      "bytes": 654905,
+      "sha256": "4157b740950035c276acbf5c48de6b611c343a7bd21a4d810f044910f75f1f33"
+    },
+    "public/act1-hifi/chunks/forest/c1-r5.png": {
+      "bytes": 626314,
+      "sha256": "aa0516274b439b771d7ffd7fc9dee20ce2b2748db6600c4626e3fc7ff0fc7d76"
+    },
+    "public/act1-hifi/chunks/forest/c1-r6.png": {
+      "bytes": 495659,
+      "sha256": "e70f27dc1892324606b74a70f4465798d1f408bff8cd8cf458d58bce34b3730f"
+    },
+    "public/act1-hifi/chunks/forest/c1-r7.png": {
+      "bytes": 1356,
+      "sha256": "15f174061408d9d0a893b01e2112bfc56d43d2113f1892addb16217b25b11084"
+    },
+    "public/act1-hifi/chunks/forest/c1-r8.png": {
+      "bytes": 1097,
+      "sha256": "b262bd68d44f93637b9949caf7ff7ce0b6b6ed839c3a2468681952b215ec4d95"
+    },
+    "public/act1-hifi/chunks/forest/c1-r9.png": {
+      "bytes": 1097,
+      "sha256": "b262bd68d44f93637b9949caf7ff7ce0b6b6ed839c3a2468681952b215ec4d95"
+    },
+    "public/act1-hifi/chunks/forest/c2-r0.png": {
+      "bytes": 153174,
+      "sha256": "3d602203d37ab7ff108979110b6acedfc004e4059866c322ba46992a8356b5e4"
+    },
+    "public/act1-hifi/chunks/forest/c2-r1.png": {
+      "bytes": 559596,
+      "sha256": "e5c51c98f83cf62058362841a636c0c5674d450be20a08f7b336350913b315e7"
+    },
+    "public/act1-hifi/chunks/forest/c2-r10.png": {
+      "bytes": 1097,
+      "sha256": "b262bd68d44f93637b9949caf7ff7ce0b6b6ed839c3a2468681952b215ec4d95"
+    },
+    "public/act1-hifi/chunks/forest/c2-r11.png": {
+      "bytes": 461,
+      "sha256": "d82fe42c088eb6523002cfa1331dc5b14ded39c6fb9669bcabe46d143477cf8e"
+    },
+    "public/act1-hifi/chunks/forest/c2-r2.png": {
+      "bytes": 31235,
+      "sha256": "22a9af012c8100177ad8e92755b2dc17c0d266cbbe71743fbb78e5ac9dfde078"
+    },
+    "public/act1-hifi/chunks/forest/c2-r3.png": {
+      "bytes": 350023,
+      "sha256": "babf29b22c879621b9a2ceb9530f7c852269102e19ed66a2aedda3109f08d972"
+    },
+    "public/act1-hifi/chunks/forest/c2-r4.png": {
+      "bytes": 644533,
+      "sha256": "8a6834ccc583e32d55174c6cd5c9862ddaad421d416e7b192dbe3f028cba6c2c"
+    },
+    "public/act1-hifi/chunks/forest/c2-r5.png": {
+      "bytes": 644497,
+      "sha256": "0c898b68831aae60a2f71140fb595b92c36de3bedf85f7a2cccfb13cbe75a73f"
+    },
+    "public/act1-hifi/chunks/forest/c2-r6.png": {
+      "bytes": 272161,
+      "sha256": "3a1b0fa68c3c016277e91c7afae09dbc78525c4b5f6aecbcbd6754cb9d8858ff"
+    },
+    "public/act1-hifi/chunks/forest/c2-r7.png": {
+      "bytes": 1097,
+      "sha256": "b262bd68d44f93637b9949caf7ff7ce0b6b6ed839c3a2468681952b215ec4d95"
+    },
+    "public/act1-hifi/chunks/forest/c2-r8.png": {
+      "bytes": 1097,
+      "sha256": "b262bd68d44f93637b9949caf7ff7ce0b6b6ed839c3a2468681952b215ec4d95"
+    },
+    "public/act1-hifi/chunks/forest/c2-r9.png": {
+      "bytes": 1097,
+      "sha256": "b262bd68d44f93637b9949caf7ff7ce0b6b6ed839c3a2468681952b215ec4d95"
+    },
+    "public/act1-hifi/chunks/forest/c3-r0.png": {
+      "bytes": 385033,
+      "sha256": "50d107ad27ffb7373164d21758dfb5f981af0bd4d4e7180a1073feb000c4a91d"
+    },
+    "public/act1-hifi/chunks/forest/c3-r1.png": {
+      "bytes": 64264,
+      "sha256": "d63a97669afa372c417f9cb21a580964b361ad17dc36ba9a46ac7fbfcbdf68b3"
+    },
+    "public/act1-hifi/chunks/forest/c3-r10.png": {
+      "bytes": 1097,
+      "sha256": "b262bd68d44f93637b9949caf7ff7ce0b6b6ed839c3a2468681952b215ec4d95"
+    },
+    "public/act1-hifi/chunks/forest/c3-r11.png": {
+      "bytes": 461,
+      "sha256": "d82fe42c088eb6523002cfa1331dc5b14ded39c6fb9669bcabe46d143477cf8e"
+    },
+    "public/act1-hifi/chunks/forest/c3-r2.png": {
+      "bytes": 1097,
+      "sha256": "b262bd68d44f93637b9949caf7ff7ce0b6b6ed839c3a2468681952b215ec4d95"
+    },
+    "public/act1-hifi/chunks/forest/c3-r3.png": {
+      "bytes": 152134,
+      "sha256": "034850e145df6451da7e162ad11d18b3d0f07f49d83ac7a19055e05ee89af220"
+    },
+    "public/act1-hifi/chunks/forest/c3-r4.png": {
+      "bytes": 372964,
+      "sha256": "e78d659b129839a7dc9ae91ccdaabb904853a7ab30895c140d94781944e6e066"
+    },
+    "public/act1-hifi/chunks/forest/c3-r5.png": {
+      "bytes": 160734,
+      "sha256": "adebdd3bf4703109f7e444b03427ed994246861fdcba8fbe7a923b58622f4f59"
+    },
+    "public/act1-hifi/chunks/forest/c3-r6.png": {
+      "bytes": 212479,
+      "sha256": "bce018a2964c3e3d475223d2a4c1655c5867953690a50780be4811bb69221881"
+    },
+    "public/act1-hifi/chunks/forest/c3-r7.png": {
+      "bytes": 446059,
+      "sha256": "c65fe3d8da5ef3309939fd23586c167898f66e411c3cce4e37fe7757654b1c00"
+    },
+    "public/act1-hifi/chunks/forest/c3-r8.png": {
+      "bytes": 71674,
+      "sha256": "c8346d536ce9494b3c09584a253fe2038401d732cea8cbf4006eee72b9cb6927"
+    },
+    "public/act1-hifi/chunks/forest/c3-r9.png": {
+      "bytes": 1097,
+      "sha256": "b262bd68d44f93637b9949caf7ff7ce0b6b6ed839c3a2468681952b215ec4d95"
+    },
+    "public/act1-hifi/chunks/forest/c4-r0.png": {
+      "bytes": 321752,
+      "sha256": "d8688fc802e16fb0cc19d99d523cea0e27465df3aad640eee795dfec08cffb0a"
+    },
+    "public/act1-hifi/chunks/forest/c4-r1.png": {
+      "bytes": 1097,
+      "sha256": "b262bd68d44f93637b9949caf7ff7ce0b6b6ed839c3a2468681952b215ec4d95"
+    },
+    "public/act1-hifi/chunks/forest/c4-r10.png": {
+      "bytes": 1097,
+      "sha256": "b262bd68d44f93637b9949caf7ff7ce0b6b6ed839c3a2468681952b215ec4d95"
+    },
+    "public/act1-hifi/chunks/forest/c4-r11.png": {
+      "bytes": 461,
+      "sha256": "d82fe42c088eb6523002cfa1331dc5b14ded39c6fb9669bcabe46d143477cf8e"
+    },
+    "public/act1-hifi/chunks/forest/c4-r2.png": {
+      "bytes": 218220,
+      "sha256": "44507355f9de10c564734c805c63d40654f01a4b76659bf0ceb34208c5a86d77"
+    },
+    "public/act1-hifi/chunks/forest/c4-r3.png": {
+      "bytes": 187412,
+      "sha256": "4b53f633cfd244a877ae0a6e613210ab4680230fb33b79c7ec0071c9539555c9"
+    },
+    "public/act1-hifi/chunks/forest/c4-r4.png": {
+      "bytes": 1410,
+      "sha256": "1400eaf17d42a77f8fb4108f56e1fc344761b615cfe4c9f8d89df19cb2ba0d50"
+    },
+    "public/act1-hifi/chunks/forest/c4-r5.png": {
+      "bytes": 3674,
+      "sha256": "ba0821f9db79dc8ca01b79be7e5eb5d251f0f26fc6f32f5a3b2fe3a481636d33"
+    },
+    "public/act1-hifi/chunks/forest/c4-r6.png": {
+      "bytes": 402090,
+      "sha256": "9b12dd7aef7142bf5fa61cbb18cecacb8b7855f2ef1d6ae5a16ad626af026eea"
+    },
+    "public/act1-hifi/chunks/forest/c4-r7.png": {
+      "bytes": 610604,
+      "sha256": "a8351a0f01b2e700d3601f91c3560cca2defd61a29df15f4f46879c0f38c1466"
+    },
+    "public/act1-hifi/chunks/forest/c4-r8.png": {
+      "bytes": 451326,
+      "sha256": "62d4544168c9f3ee1a7a6af836cb049100253e29825daa5a30a68e702d5d54e0"
+    },
+    "public/act1-hifi/chunks/forest/c4-r9.png": {
+      "bytes": 1097,
+      "sha256": "b262bd68d44f93637b9949caf7ff7ce0b6b6ed839c3a2468681952b215ec4d95"
+    },
+    "public/act1-hifi/chunks/forest/c5-r0.png": {
+      "bytes": 219148,
+      "sha256": "f4444bde054a88a690a31a04bcc14b4d5d006215cd6e8069505a50deb791dd73"
+    },
+    "public/act1-hifi/chunks/forest/c5-r1.png": {
+      "bytes": 244773,
+      "sha256": "768c40908086e444cd48e2658f01aae259ccf2a3700edf2f867f6d0f6e2c6922"
+    },
+    "public/act1-hifi/chunks/forest/c5-r10.png": {
+      "bytes": 1097,
+      "sha256": "b262bd68d44f93637b9949caf7ff7ce0b6b6ed839c3a2468681952b215ec4d95"
+    },
+    "public/act1-hifi/chunks/forest/c5-r11.png": {
+      "bytes": 461,
+      "sha256": "d82fe42c088eb6523002cfa1331dc5b14ded39c6fb9669bcabe46d143477cf8e"
+    },
+    "public/act1-hifi/chunks/forest/c5-r2.png": {
+      "bytes": 621268,
+      "sha256": "323401ad906490f397a1d3a8351cd8a3a96517c16f536e0bbbe2a0a35cdd45cd"
+    },
+    "public/act1-hifi/chunks/forest/c5-r3.png": {
+      "bytes": 632011,
+      "sha256": "1f6bc1e2b1300a778da103c683d44482fe51fca309f1658ae31358ddef5503ce"
+    },
+    "public/act1-hifi/chunks/forest/c5-r4.png": {
+      "bytes": 492216,
+      "sha256": "00ceb0f95459bedc66950613aaa0a2101bf8b75c67fdcb8b15e58cda04ea6190"
+    },
+    "public/act1-hifi/chunks/forest/c5-r5.png": {
+      "bytes": 551248,
+      "sha256": "0d4fbb40bc66a0c61958020d27d3353367c083005f2fc8293037eb948ec7b82f"
+    },
+    "public/act1-hifi/chunks/forest/c5-r6.png": {
+      "bytes": 616031,
+      "sha256": "31d62abe09daf7aca7949b627037104ac82251e9274765a18efecf503b31d3bf"
+    },
+    "public/act1-hifi/chunks/forest/c5-r7.png": {
+      "bytes": 562642,
+      "sha256": "93cd7ff7d2f8cc43abcce0ea3e2c8c5556ea252855282414b28fd42e1909989f"
+    },
+    "public/act1-hifi/chunks/forest/c5-r8.png": {
+      "bytes": 402311,
+      "sha256": "f2191fdc18e80c1375ae6a36e7f26795cb4292025040cffa531a825794742107"
+    },
+    "public/act1-hifi/chunks/forest/c5-r9.png": {
+      "bytes": 1097,
+      "sha256": "b262bd68d44f93637b9949caf7ff7ce0b6b6ed839c3a2468681952b215ec4d95"
+    },
+    "public/act1-hifi/chunks/forest/c6-r0.png": {
+      "bytes": 330325,
+      "sha256": "d34435bfba40df2eb61ed8fc0e6aa577c858de4f34c9a68d21bbcc42f19370c5"
+    },
+    "public/act1-hifi/chunks/forest/c6-r1.png": {
+      "bytes": 565136,
+      "sha256": "95a7f93e8853005f93bbdeca28dfc0c21b72c90303b8b7220c32e434f4f148d9"
+    },
+    "public/act1-hifi/chunks/forest/c6-r10.png": {
+      "bytes": 1097,
+      "sha256": "b262bd68d44f93637b9949caf7ff7ce0b6b6ed839c3a2468681952b215ec4d95"
+    },
+    "public/act1-hifi/chunks/forest/c6-r11.png": {
+      "bytes": 461,
+      "sha256": "d82fe42c088eb6523002cfa1331dc5b14ded39c6fb9669bcabe46d143477cf8e"
+    },
+    "public/act1-hifi/chunks/forest/c6-r2.png": {
+      "bytes": 648433,
+      "sha256": "5ec4aa75fc1b19ed3b95a6bf5e7479d00b5a3d64b5fa8608ddf44a86c848c2bd"
+    },
+    "public/act1-hifi/chunks/forest/c6-r3.png": {
+      "bytes": 601820,
+      "sha256": "c1418dfe5994b850e128d7e53876ef743a808e7c8f8ecf90ea37023a175bb4ae"
+    },
+    "public/act1-hifi/chunks/forest/c6-r4.png": {
+      "bytes": 21279,
+      "sha256": "24d067259e5e5ce7aa0cfbbf61876921ab675f0442a8728164b27ae842cc78c9"
+    },
+    "public/act1-hifi/chunks/forest/c6-r5.png": {
+      "bytes": 196269,
+      "sha256": "268fca07dda2139ae1ef24d8dcd9ffa5f00c7fece4fd60bfef94b6854b390c67"
+    },
+    "public/act1-hifi/chunks/forest/c6-r6.png": {
+      "bytes": 257914,
+      "sha256": "e70667a065dada09be8262713b341a78c38476e4836b4b1f2c61fe23b5dcbe79"
+    },
+    "public/act1-hifi/chunks/forest/c6-r7.png": {
+      "bytes": 22380,
+      "sha256": "41adbb5b533d31b30a7183975a11d1377511e09c4b85b3942f46b88edaf521b6"
+    },
+    "public/act1-hifi/chunks/forest/c6-r8.png": {
+      "bytes": 1097,
+      "sha256": "b262bd68d44f93637b9949caf7ff7ce0b6b6ed839c3a2468681952b215ec4d95"
+    },
+    "public/act1-hifi/chunks/forest/c6-r9.png": {
+      "bytes": 1097,
+      "sha256": "b262bd68d44f93637b9949caf7ff7ce0b6b6ed839c3a2468681952b215ec4d95"
+    },
+    "public/act1-hifi/chunks/forest/c7-r0.png": {
+      "bytes": 137756,
+      "sha256": "35db3876825521f99315faa84e4b3faba948e37899cbff78e9ccca8a20c3720c"
+    },
+    "public/act1-hifi/chunks/forest/c7-r1.png": {
+      "bytes": 635498,
+      "sha256": "0edb8564651ae4fec18ed7752dac629cf7165b567170ddc2e83b1cd53d5e6ad5"
+    },
+    "public/act1-hifi/chunks/forest/c7-r10.png": {
+      "bytes": 1097,
+      "sha256": "b262bd68d44f93637b9949caf7ff7ce0b6b6ed839c3a2468681952b215ec4d95"
+    },
+    "public/act1-hifi/chunks/forest/c7-r11.png": {
+      "bytes": 461,
+      "sha256": "d82fe42c088eb6523002cfa1331dc5b14ded39c6fb9669bcabe46d143477cf8e"
+    },
+    "public/act1-hifi/chunks/forest/c7-r2.png": {
+      "bytes": 649321,
+      "sha256": "84e9315232f2e4a087e3416af827f58125bb970195d5d72da26edadee7cd3682"
+    },
+    "public/act1-hifi/chunks/forest/c7-r3.png": {
+      "bytes": 471178,
+      "sha256": "3c67a9b9061bd9736bc2adab33021d729612a4459ba1bea03feed32670820f97"
+    },
+    "public/act1-hifi/chunks/forest/c7-r4.png": {
+      "bytes": 10498,
+      "sha256": "cfe7ea8545a8143f5b1dad58821c009e151f9e5b6fe10a94d177876c556df3df"
+    },
+    "public/act1-hifi/chunks/forest/c7-r5.png": {
+      "bytes": 151803,
+      "sha256": "1227044ee1d017e7b79bff9b41c06cc87748a92e19882ae6b4f96ec26c5048ff"
+    },
+    "public/act1-hifi/chunks/forest/c7-r6.png": {
+      "bytes": 116251,
+      "sha256": "2ee5a20c3b55aec0a5bcf91ace07bbfe664b9618f14ec2c04cd8bc10f69da29b"
+    },
+    "public/act1-hifi/chunks/forest/c7-r7.png": {
+      "bytes": 1097,
+      "sha256": "b262bd68d44f93637b9949caf7ff7ce0b6b6ed839c3a2468681952b215ec4d95"
+    },
+    "public/act1-hifi/chunks/forest/c7-r8.png": {
+      "bytes": 1097,
+      "sha256": "b262bd68d44f93637b9949caf7ff7ce0b6b6ed839c3a2468681952b215ec4d95"
+    },
+    "public/act1-hifi/chunks/forest/c7-r9.png": {
+      "bytes": 1097,
+      "sha256": "b262bd68d44f93637b9949caf7ff7ce0b6b6ed839c3a2468681952b215ec4d95"
+    },
+    "public/act1-hifi/chunks/forest/c8-r0.png": {
+      "bytes": 109141,
+      "sha256": "4f2e192a5057dd53e5549a966058a341c7a9dde1a96e4915483ccd81c8021bba"
+    },
+    "public/act1-hifi/chunks/forest/c8-r1.png": {
+      "bytes": 622122,
+      "sha256": "3f1ed93eb720156447a3d7d1e4b011873889f31392191530516c29d5251aab5b"
+    },
+    "public/act1-hifi/chunks/forest/c8-r10.png": {
+      "bytes": 1097,
+      "sha256": "b262bd68d44f93637b9949caf7ff7ce0b6b6ed839c3a2468681952b215ec4d95"
+    },
+    "public/act1-hifi/chunks/forest/c8-r11.png": {
+      "bytes": 461,
+      "sha256": "d82fe42c088eb6523002cfa1331dc5b14ded39c6fb9669bcabe46d143477cf8e"
+    },
+    "public/act1-hifi/chunks/forest/c8-r2.png": {
+      "bytes": 613226,
+      "sha256": "e7ab83e8b3c5d7b9a4690a70de201bb578f877992db14f10e15a35853d5aa18b"
+    },
+    "public/act1-hifi/chunks/forest/c8-r3.png": {
+      "bytes": 483582,
+      "sha256": "9d1ba3f102ba393782f77b8745fc2151a63394348743ef6d87f0a0139f6e3630"
+    },
+    "public/act1-hifi/chunks/forest/c8-r4.png": {
+      "bytes": 514160,
+      "sha256": "ea03870bde6b5891b9a17e8eb8078f9e4d1f89152415b50572cfc7fb15e246d5"
+    },
+    "public/act1-hifi/chunks/forest/c8-r5.png": {
+      "bytes": 609852,
+      "sha256": "22ac93c9cb31062b08d5ed1a99549d6ac34f02d8a948578389a3d86fe843f7a0"
+    },
+    "public/act1-hifi/chunks/forest/c8-r6.png": {
+      "bytes": 591668,
+      "sha256": "23e03cf305961bbc7f5e3e16b44c75fb13e7692d0b20b6a84233c6ba8f2453dc"
+    },
+    "public/act1-hifi/chunks/forest/c8-r7.png": {
+      "bytes": 511116,
+      "sha256": "8ac2c50d5817c424ad12d4f4522574275650d8dce1883b18a0fd7370bd65fe39"
+    },
+    "public/act1-hifi/chunks/forest/c8-r8.png": {
+      "bytes": 392125,
+      "sha256": "a9cf82f409cbbd705fd37dfe119bb6c9829f402d7662cd46d50f2eae685782c2"
+    },
+    "public/act1-hifi/chunks/forest/c8-r9.png": {
+      "bytes": 170518,
+      "sha256": "7368c266a9fef2b6c82fca4c63c7a9db84992ffc61f322fefbff6bc96fba22bd"
+    },
+    "public/act1-hifi/chunks/forest/c9-r0.png": {
+      "bytes": 29733,
+      "sha256": "936599b893541417a22d14e5770f7461ee39085f2572d6f6b7c9c747868b4d85"
+    },
+    "public/act1-hifi/chunks/forest/c9-r1.png": {
+      "bytes": 136551,
+      "sha256": "9e6a6bde80eafdd8bd353007363a75fec443a21a0687ebc43857d15925341d63"
+    },
+    "public/act1-hifi/chunks/forest/c9-r10.png": {
+      "bytes": 334,
+      "sha256": "198d9e4f83b820ed52db9d97d3238be7c71c238a8d728458e9fecfd9cf3203b5"
+    },
+    "public/act1-hifi/chunks/forest/c9-r11.png": {
+      "bytes": 175,
+      "sha256": "8f86ccf2cf49c8a36294f15416de3456247aa2130bb6032ff07dbbeab8fe136a"
+    },
+    "public/act1-hifi/chunks/forest/c9-r2.png": {
+      "bytes": 136978,
+      "sha256": "81a6313a918646ac6697447756103f4a46d824cfeb507f56cde1303849a1ef54"
+    },
+    "public/act1-hifi/chunks/forest/c9-r3.png": {
+      "bytes": 132469,
+      "sha256": "5e3d3bef6bbdfa896b68ee17f9c342bd3f101a6e94eb7a7deb32d857e721ff0c"
+    },
+    "public/act1-hifi/chunks/forest/c9-r4.png": {
+      "bytes": 133917,
+      "sha256": "2b29725b16f435a604b42ec28dca4dc647ed4a2dfe30288108e73ddf959d7737"
+    },
+    "public/act1-hifi/chunks/forest/c9-r5.png": {
+      "bytes": 137837,
+      "sha256": "41f3e32c3ae551db3f9986352704741601d1728014738f59cac524f062ba1d17"
+    },
+    "public/act1-hifi/chunks/forest/c9-r6.png": {
+      "bytes": 130751,
+      "sha256": "32e06bec103892d80a05eabee98e31ee23caebbc92c4977fee7225ccdfb6e1bd"
+    },
+    "public/act1-hifi/chunks/forest/c9-r7.png": {
+      "bytes": 134280,
+      "sha256": "a1e7030158b1033759cd6984c1b90f6df6253fea6b26357b6c886ee3a0b4d24c"
+    },
+    "public/act1-hifi/chunks/forest/c9-r8.png": {
+      "bytes": 138583,
+      "sha256": "a017377f83fa2fa94efa4d39311f286a9b717d988ea34831c616798ed94eb53a"
+    },
+    "public/act1-hifi/chunks/forest/c9-r9.png": {
+      "bytes": 114584,
+      "sha256": "cb96e709b0f2d46e69c06e6a48f5fc7598029107ee81964d9b84552a569a4fdf"
+    },
+    "public/act1-hifi/chunks/water/c0-r0.png": {
+      "bytes": 513,
+      "sha256": "d4b95a4509d1cd81d3a3f2aee2852f7411ca66ed28ac18b0fcb10c505d14c8df"
+    },
+    "public/act1-hifi/chunks/water/c0-r1.png": {
+      "bytes": 502,
+      "sha256": "f503c679f57d48cf5d199297822e76a3c5d0956a038edb4a411f1dc26cc10b21"
+    },
+    "public/act1-hifi/chunks/water/c0-r10.png": {
+      "bytes": 458,
+      "sha256": "ad001f1988b1bf2dcb86bc96b49bb7dafcf31da2365de290c828e9fdf3dcc5d0"
+    },
+    "public/act1-hifi/chunks/water/c0-r11.png": {
+      "bytes": 205,
+      "sha256": "b40a90898a633f63ef376a7e3c13f0dc0f4acbc60f1b775b80876ee4a64de389"
+    },
+    "public/act1-hifi/chunks/water/c0-r2.png": {
+      "bytes": 471,
+      "sha256": "f3c54dcd11a0f8e7a09e45d52c0d618a2e9c89b0cac699a2f5f7ed416047c224"
+    },
+    "public/act1-hifi/chunks/water/c0-r3.png": {
+      "bytes": 437,
+      "sha256": "161c27273e6f4413740fe70fb03c5d7baf52e4efaf4e7ea07634501a2642ba81"
+    },
+    "public/act1-hifi/chunks/water/c0-r4.png": {
+      "bytes": 466,
+      "sha256": "4ae2104a0f52b177335f09121ae74f2e57725498f9bce4536458b9ce7d2cefbc"
+    },
+    "public/act1-hifi/chunks/water/c0-r5.png": {
+      "bytes": 470,
+      "sha256": "e0967f10396ee3bc48619d3cf0e5508c238358353f62ca3fb6bc0fcb11c2ca79"
+    },
+    "public/act1-hifi/chunks/water/c0-r6.png": {
+      "bytes": 439,
+      "sha256": "932992f315d1b87286f9767a5cf5176a29e23d55f437cf243bb195ca3d7234a8"
+    },
+    "public/act1-hifi/chunks/water/c0-r7.png": {
+      "bytes": 446,
+      "sha256": "ad5d72cff22a693da620f0324beeb1e485517399ac1560b18570827c865c051a"
+    },
+    "public/act1-hifi/chunks/water/c0-r8.png": {
+      "bytes": 436,
+      "sha256": "ccc33662f75183458e594525c86547bd35a9047b50408bcdc28035d6083f7fad"
+    },
+    "public/act1-hifi/chunks/water/c0-r9.png": {
+      "bytes": 445,
+      "sha256": "687556148da3be13f353ba7afd5086e5a9f478dd0740f1e8c840e1e8b389bc15"
+    },
+    "public/act1-hifi/chunks/water/c1-r0.png": {
+      "bytes": 493,
+      "sha256": "68873a055049b60c52bc683cdcb9a97ffa1b9e6b5762e34ed0a393df77536ab1"
+    },
+    "public/act1-hifi/chunks/water/c1-r1.png": {
+      "bytes": 375,
+      "sha256": "a4d543cadf05ec9a42188b081692e71e35f9cd4901f2553069f61e29c42d455b"
+    },
+    "public/act1-hifi/chunks/water/c1-r10.png": {
+      "bytes": 459,
+      "sha256": "ca2c94fdd1c7bff0bce05998f6abb7306dfea2317a3c8a50a142bc331f048f23"
+    },
+    "public/act1-hifi/chunks/water/c1-r11.png": {
+      "bytes": 209,
+      "sha256": "7f94e82ec67be79e36e0fa5b8e4f4dfe25c487b80124955d54a789f1d73085f9"
+    },
+    "public/act1-hifi/chunks/water/c1-r2.png": {
+      "bytes": 334,
+      "sha256": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f"
+    },
+    "public/act1-hifi/chunks/water/c1-r3.png": {
+      "bytes": 334,
+      "sha256": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f"
+    },
+    "public/act1-hifi/chunks/water/c1-r4.png": {
+      "bytes": 334,
+      "sha256": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f"
+    },
+    "public/act1-hifi/chunks/water/c1-r5.png": {
+      "bytes": 334,
+      "sha256": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f"
+    },
+    "public/act1-hifi/chunks/water/c1-r6.png": {
+      "bytes": 334,
+      "sha256": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f"
+    },
+    "public/act1-hifi/chunks/water/c1-r7.png": {
+      "bytes": 334,
+      "sha256": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f"
+    },
+    "public/act1-hifi/chunks/water/c1-r8.png": {
+      "bytes": 334,
+      "sha256": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f"
+    },
+    "public/act1-hifi/chunks/water/c1-r9.png": {
+      "bytes": 334,
+      "sha256": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f"
+    },
+    "public/act1-hifi/chunks/water/c2-r0.png": {
+      "bytes": 443,
+      "sha256": "4a98f17efe5e046cee22d77ddfbc3df5acdd46d18cada5cd2b5b065110952b45"
+    },
+    "public/act1-hifi/chunks/water/c2-r1.png": {
+      "bytes": 334,
+      "sha256": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f"
+    },
+    "public/act1-hifi/chunks/water/c2-r10.png": {
+      "bytes": 420,
+      "sha256": "14437c272dfb395a69526f178593f69bdc02314059a38041d28abc81a7b7ef06"
+    },
+    "public/act1-hifi/chunks/water/c2-r11.png": {
+      "bytes": 200,
+      "sha256": "37a0158e4ec9f4e39cf33d5b933c76aa7552df4637bdc2ca7ad0b973b8d03fc6"
+    },
+    "public/act1-hifi/chunks/water/c2-r2.png": {
+      "bytes": 334,
+      "sha256": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f"
+    },
+    "public/act1-hifi/chunks/water/c2-r3.png": {
+      "bytes": 334,
+      "sha256": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f"
+    },
+    "public/act1-hifi/chunks/water/c2-r4.png": {
+      "bytes": 334,
+      "sha256": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f"
+    },
+    "public/act1-hifi/chunks/water/c2-r5.png": {
+      "bytes": 334,
+      "sha256": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f"
+    },
+    "public/act1-hifi/chunks/water/c2-r6.png": {
+      "bytes": 334,
+      "sha256": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f"
+    },
+    "public/act1-hifi/chunks/water/c2-r7.png": {
+      "bytes": 334,
+      "sha256": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f"
+    },
+    "public/act1-hifi/chunks/water/c2-r8.png": {
+      "bytes": 334,
+      "sha256": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f"
+    },
+    "public/act1-hifi/chunks/water/c2-r9.png": {
+      "bytes": 358,
+      "sha256": "06d9651222f5be692f9523e53d0b858559768e24a55d8e111cbf4343b64954cc"
+    },
+    "public/act1-hifi/chunks/water/c3-r0.png": {
+      "bytes": 398,
+      "sha256": "f8387d2f29803ca4f385650fc3915869917370662e5f7ef9c419623de09cd43a"
+    },
+    "public/act1-hifi/chunks/water/c3-r1.png": {
+      "bytes": 334,
+      "sha256": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f"
+    },
+    "public/act1-hifi/chunks/water/c3-r10.png": {
+      "bytes": 453,
+      "sha256": "804944dccd0ed092684b3618dc9f689e0743af27303ffd09c1422d32bba07426"
+    },
+    "public/act1-hifi/chunks/water/c3-r11.png": {
+      "bytes": 213,
+      "sha256": "b7cc696b4b214990cabbbbafcdb99703cf070e18b0616ccde7797df0256b5cff"
+    },
+    "public/act1-hifi/chunks/water/c3-r2.png": {
+      "bytes": 334,
+      "sha256": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f"
+    },
+    "public/act1-hifi/chunks/water/c3-r3.png": {
+      "bytes": 334,
+      "sha256": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f"
+    },
+    "public/act1-hifi/chunks/water/c3-r4.png": {
+      "bytes": 334,
+      "sha256": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f"
+    },
+    "public/act1-hifi/chunks/water/c3-r5.png": {
+      "bytes": 334,
+      "sha256": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f"
+    },
+    "public/act1-hifi/chunks/water/c3-r6.png": {
+      "bytes": 334,
+      "sha256": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f"
+    },
+    "public/act1-hifi/chunks/water/c3-r7.png": {
+      "bytes": 334,
+      "sha256": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f"
+    },
+    "public/act1-hifi/chunks/water/c3-r8.png": {
+      "bytes": 334,
+      "sha256": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f"
+    },
+    "public/act1-hifi/chunks/water/c3-r9.png": {
+      "bytes": 334,
+      "sha256": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f"
+    },
+    "public/act1-hifi/chunks/water/c4-r0.png": {
+      "bytes": 384,
+      "sha256": "8b4772fc4f738a1232110858431825c77afb7f23000c44d00ed261ebf937db24"
+    },
+    "public/act1-hifi/chunks/water/c4-r1.png": {
+      "bytes": 334,
+      "sha256": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f"
+    },
+    "public/act1-hifi/chunks/water/c4-r10.png": {
+      "bytes": 334,
+      "sha256": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f"
+    },
+    "public/act1-hifi/chunks/water/c4-r11.png": {
+      "bytes": 175,
+      "sha256": "9082495bd66c5963e977b61a5c7a4781f53df0e2c44c45a8ea28cd8a3af05d10"
+    },
+    "public/act1-hifi/chunks/water/c4-r2.png": {
+      "bytes": 377,
+      "sha256": "9454671eb4e7dd343ed25285c82f53d5e7f43782411356c8c34188e45f58b5e8"
+    },
+    "public/act1-hifi/chunks/water/c4-r3.png": {
+      "bytes": 447,
+      "sha256": "2fdfac43aafed5f22082e9d5dbfe60607974ac7376f7562ba3faf94fbf8790b3"
+    },
+    "public/act1-hifi/chunks/water/c4-r4.png": {
+      "bytes": 468,
+      "sha256": "ff45a2c9043d282c87c9f41d0e47ffbf6fe377c0e43d110472d191fc9a1a5b0c"
+    },
+    "public/act1-hifi/chunks/water/c4-r5.png": {
+      "bytes": 465,
+      "sha256": "be66d7c8d40d4dc036c7b919d3fcf53e2241732eaa9a832779994feea800b485"
+    },
+    "public/act1-hifi/chunks/water/c4-r6.png": {
+      "bytes": 461,
+      "sha256": "e3c2f66addc2c5a4444da3318f2531de472050dd52f0c5925822f955fcffc222"
+    },
+    "public/act1-hifi/chunks/water/c4-r7.png": {
+      "bytes": 334,
+      "sha256": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f"
+    },
+    "public/act1-hifi/chunks/water/c4-r8.png": {
+      "bytes": 334,
+      "sha256": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f"
+    },
+    "public/act1-hifi/chunks/water/c4-r9.png": {
+      "bytes": 334,
+      "sha256": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f"
+    },
+    "public/act1-hifi/chunks/water/c5-r0.png": {
+      "bytes": 334,
+      "sha256": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f"
+    },
+    "public/act1-hifi/chunks/water/c5-r1.png": {
+      "bytes": 334,
+      "sha256": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f"
+    },
+    "public/act1-hifi/chunks/water/c5-r10.png": {
+      "bytes": 366,
+      "sha256": "bc1e9f60544a312d5ba9edcaa771322c783fb85e7d45c5d3230c5c172aff2515"
+    },
+    "public/act1-hifi/chunks/water/c5-r11.png": {
+      "bytes": 218,
+      "sha256": "dd3f8ab5bfb72690a2013e16f59857b6d5b1c7921a7d9c769b74460bc85569fe"
+    },
+    "public/act1-hifi/chunks/water/c5-r2.png": {
+      "bytes": 334,
+      "sha256": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f"
+    },
+    "public/act1-hifi/chunks/water/c5-r3.png": {
+      "bytes": 376,
+      "sha256": "87f8e818a0eb5102fb68a53bc90151eed40e5660d53affc651309d5b979d07d4"
+    },
+    "public/act1-hifi/chunks/water/c5-r4.png": {
+      "bytes": 359,
+      "sha256": "e081a4b08b106909b3b7d43acaffbbd0467eba11809b7981e5f249b7b3ef141b"
+    },
+    "public/act1-hifi/chunks/water/c5-r5.png": {
+      "bytes": 377,
+      "sha256": "b144b58271ef2be0f8b91660eb27ba282a9491205c61735557c1154af262c4af"
+    },
+    "public/act1-hifi/chunks/water/c5-r6.png": {
+      "bytes": 345,
+      "sha256": "342afc1e54fd797afda9bc6dca733fe8630d424f82c29ba0430ed45cbf8c6082"
+    },
+    "public/act1-hifi/chunks/water/c5-r7.png": {
+      "bytes": 334,
+      "sha256": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f"
+    },
+    "public/act1-hifi/chunks/water/c5-r8.png": {
+      "bytes": 334,
+      "sha256": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f"
+    },
+    "public/act1-hifi/chunks/water/c5-r9.png": {
+      "bytes": 334,
+      "sha256": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f"
+    },
+    "public/act1-hifi/chunks/water/c6-r0.png": {
+      "bytes": 334,
+      "sha256": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f"
+    },
+    "public/act1-hifi/chunks/water/c6-r1.png": {
+      "bytes": 334,
+      "sha256": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f"
+    },
+    "public/act1-hifi/chunks/water/c6-r10.png": {
+      "bytes": 391,
+      "sha256": "ba6fc236d70218168b93b62c02a3ac33cb38171df48d564f848f8c4ae9425ce1"
+    },
+    "public/act1-hifi/chunks/water/c6-r11.png": {
+      "bytes": 175,
+      "sha256": "9082495bd66c5963e977b61a5c7a4781f53df0e2c44c45a8ea28cd8a3af05d10"
+    },
+    "public/act1-hifi/chunks/water/c6-r2.png": {
+      "bytes": 334,
+      "sha256": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f"
+    },
+    "public/act1-hifi/chunks/water/c6-r3.png": {
+      "bytes": 334,
+      "sha256": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f"
+    },
+    "public/act1-hifi/chunks/water/c6-r4.png": {
+      "bytes": 346,
+      "sha256": "00dfe4dd2b8238cf9e0ab3eb077c5220e01f1368af625a660a928cc4b761cfcf"
+    },
+    "public/act1-hifi/chunks/water/c6-r5.png": {
+      "bytes": 346,
+      "sha256": "ade6257b668f05c9116714d7cdeba365f86eecb914972d6bfc805a815b0885c0"
+    },
+    "public/act1-hifi/chunks/water/c6-r6.png": {
+      "bytes": 358,
+      "sha256": "597edc171b7052cfc3d1a7949f8668b1d9479c5829911c68597aa6850f6422ea"
+    },
+    "public/act1-hifi/chunks/water/c6-r7.png": {
+      "bytes": 372,
+      "sha256": "85cd3ca4da6ae084cd2a8befd559c4f93248825dfa47b1feb84974c43425105a"
+    },
+    "public/act1-hifi/chunks/water/c6-r8.png": {
+      "bytes": 334,
+      "sha256": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f"
+    },
+    "public/act1-hifi/chunks/water/c6-r9.png": {
+      "bytes": 334,
+      "sha256": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f"
+    },
+    "public/act1-hifi/chunks/water/c7-r0.png": {
+      "bytes": 412,
+      "sha256": "7d29deef83ab6e43519a44dcedfdc95ece47cab359700b01f3e280c2d653fbed"
+    },
+    "public/act1-hifi/chunks/water/c7-r1.png": {
+      "bytes": 385,
+      "sha256": "2c400bafa21b653f6ee64d601a0428c7cc580252b6ffc6302d435e4bd024c920"
+    },
+    "public/act1-hifi/chunks/water/c7-r10.png": {
+      "bytes": 462,
+      "sha256": "baea21cdadbda14afecb6e4364b03b61f3b967c2e4e4455b91fe8e00e74ca766"
+    },
+    "public/act1-hifi/chunks/water/c7-r11.png": {
+      "bytes": 202,
+      "sha256": "d4d4b7a83aceaa67081408bf83fc72edc91370bc09cf139e515ac0761f170590"
+    },
+    "public/act1-hifi/chunks/water/c7-r2.png": {
+      "bytes": 346,
+      "sha256": "a71974395a96238a62434bda662a6ac7ef92598a71587536bacfc585d5e63bc8"
+    },
+    "public/act1-hifi/chunks/water/c7-r3.png": {
+      "bytes": 355,
+      "sha256": "8e76bf479100a7b1515805c1fd528e3ca24b4ef79c24dcc37d22926a63124b56"
+    },
+    "public/act1-hifi/chunks/water/c7-r4.png": {
+      "bytes": 362,
+      "sha256": "6fb429016633732b613c5588acce2698b27af1952d6e70eb92f14c0c43f907ef"
+    },
+    "public/act1-hifi/chunks/water/c7-r5.png": {
+      "bytes": 334,
+      "sha256": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f"
+    },
+    "public/act1-hifi/chunks/water/c7-r6.png": {
+      "bytes": 414,
+      "sha256": "ea8779832141a932a80a074010a112ef74ebde483985c4e84fdea9b2da15c250"
+    },
+    "public/act1-hifi/chunks/water/c7-r7.png": {
+      "bytes": 497,
+      "sha256": "c6ba771b24454a7259584c557ccf7ea9f16987562a725f40b4d666f49ab6aa6b"
+    },
+    "public/act1-hifi/chunks/water/c7-r8.png": {
+      "bytes": 353,
+      "sha256": "4e7abb5f955302ae5a7b6396297d7706fb8c1824a1484d87c34e9590315863cb"
+    },
+    "public/act1-hifi/chunks/water/c7-r9.png": {
+      "bytes": 415,
+      "sha256": "9f8d29de249016f02bc2d5d479669ffc9b1cc0eacb76da87ac5843123c1a3dd5"
+    },
+    "public/act1-hifi/chunks/water/c8-r0.png": {
+      "bytes": 466,
+      "sha256": "67c615d8bb9d870f44d475baf21fb226a78a8f8e9ad4db18bb4bb4fa1077a6a8"
+    },
+    "public/act1-hifi/chunks/water/c8-r1.png": {
+      "bytes": 403,
+      "sha256": "a6df884fdac2db0983c3e94004faeac6d2424393abb6704b9816630e81f5f4c9"
+    },
+    "public/act1-hifi/chunks/water/c8-r10.png": {
+      "bytes": 451,
+      "sha256": "c5ab291633b788a095ff592b68dfcd095c237a7a021c022cc1bc2b2a39e7fa41"
+    },
+    "public/act1-hifi/chunks/water/c8-r11.png": {
+      "bytes": 193,
+      "sha256": "2a25809b05c9c65e5e2746d19e5bf015122c34138bce7235fa1877b30136a1f5"
+    },
+    "public/act1-hifi/chunks/water/c8-r2.png": {
+      "bytes": 460,
+      "sha256": "f5f5e25a1edbcc3316b00005fdf7b62388e19e2e6c7e5ba0d724df02d5d616c0"
+    },
+    "public/act1-hifi/chunks/water/c8-r3.png": {
+      "bytes": 498,
+      "sha256": "ea1d635bbfd58224774dca7e5fc35cf3ee10216082c12cd507e82704030f9b22"
+    },
+    "public/act1-hifi/chunks/water/c8-r4.png": {
+      "bytes": 509,
+      "sha256": "900648adfd3da3929b39296cca28786063a6e368778cb02aae7f10599a6a895a"
+    },
+    "public/act1-hifi/chunks/water/c8-r5.png": {
+      "bytes": 393,
+      "sha256": "45078acb8d86f5f0fd93508b3c26d8abcb7189719c5014f3d1dac64a50b95a86"
+    },
+    "public/act1-hifi/chunks/water/c8-r6.png": {
+      "bytes": 334,
+      "sha256": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f"
+    },
+    "public/act1-hifi/chunks/water/c8-r7.png": {
+      "bytes": 385,
+      "sha256": "f4cf73f9ad224c95ca48aa487dad98cf2253ac082b7a8697cb35f16eb0efb818"
+    },
+    "public/act1-hifi/chunks/water/c8-r8.png": {
+      "bytes": 516,
+      "sha256": "ef1041e663b03111c7e52ea29cbc926d5f9b88507ab7ce949198b128e8ef16cc"
+    },
+    "public/act1-hifi/chunks/water/c8-r9.png": {
+      "bytes": 466,
+      "sha256": "708c8be496163e6dc880dd5007bb0855eb5480d5a1d1a90eca810a9f80e6c13c"
+    },
+    "public/act1-hifi/chunks/water/c9-r0.png": {
+      "bytes": 184,
+      "sha256": "081c013a3aedfd3eacb1535aafa352ebebdb5cad60551e7447eecc4743cfedba"
+    },
+    "public/act1-hifi/chunks/water/c9-r1.png": {
+      "bytes": 199,
+      "sha256": "60bd6ed2e13179d057e2aed1e35dd30145485dc983212d1defef8075a3ad6fcc"
+    },
+    "public/act1-hifi/chunks/water/c9-r10.png": {
+      "bytes": 157,
+      "sha256": "970b25ad401dff13545f8a5f0a2bf2c836478f7e1e6423fa9ef61d9f53faecba"
+    },
+    "public/act1-hifi/chunks/water/c9-r11.png": {
+      "bytes": 104,
+      "sha256": "1ccd52f45c040c435c64d8c414beac00e0f4db89756e6b65112865efbe84f6a6"
+    },
+    "public/act1-hifi/chunks/water/c9-r2.png": {
+      "bytes": 192,
+      "sha256": "4985d928adece9139a76ff98d0e07b1eb4280898081dc6302e2919ec06077ab5"
+    },
+    "public/act1-hifi/chunks/water/c9-r3.png": {
+      "bytes": 192,
+      "sha256": "ce8688534434d82dd2bfa62f06efd2092850ab6c1febc2c32b57bbddbd8d9dee"
+    },
+    "public/act1-hifi/chunks/water/c9-r4.png": {
+      "bytes": 193,
+      "sha256": "c65d3a45cf306c2ebf8f6caca35e083e39a040376c0183b3453c5c8c8225a0ac"
+    },
+    "public/act1-hifi/chunks/water/c9-r5.png": {
+      "bytes": 170,
+      "sha256": "774cee73e6b3e4cbd7f1cd0683d7afa7c3c26877035f10d59104449fb55bf2e5"
+    },
+    "public/act1-hifi/chunks/water/c9-r6.png": {
+      "bytes": 143,
+      "sha256": "ee2924bab5e2a4e68982e8cf5fa6306207bf155e97ef928beefb579dd1c61747"
+    },
+    "public/act1-hifi/chunks/water/c9-r7.png": {
+      "bytes": 168,
+      "sha256": "16faf119777bf6f40e3e92440d52905ec79504a59702f4a035ed75397825698a"
+    },
+    "public/act1-hifi/chunks/water/c9-r8.png": {
+      "bytes": 185,
+      "sha256": "4b503860dd5925ae8be1ba2488a98633d24a967a0792f7ddd922192b8463bec4"
+    },
+    "public/act1-hifi/chunks/water/c9-r9.png": {
+      "bytes": 169,
+      "sha256": "59580884db8066df20e3e23426499761cc454bcf26219b2e27431b56716dc414"
+    },
+    "public/act1-hifi/forest-collision.bin": {
+      "bytes": 3447872,
+      "sha256": "cfb22774fac5315d3cef2c4b4cdde29ebb5324a054fe0bc3c07e56886cbaab16"
+    },
+    "public/act1-hifi/manifest.json": {
+      "bytes": 282250,
+      "sha256": "0ee38ee74cb8faff4c07ba78c040548cf41bbaa974234855d8faa81591593155"
+    },
+    "public/act1-hifi/underpaint/act1-plate.png": {
+      "bytes": 1852232,
+      "sha256": "2c67b478cb9ebfb1da86601a6911ffc6c7888e056c06baedd808c32fe0129f05"
+    },
+    "public/act1-hifi/underpaint/forest-rgba.png": {
+      "bytes": 1002161,
+      "sha256": "cb0b81d4768a7b07607364da6577ca8125dbb3d31c368e0c840c795bd5072ed2"
+    },
+    "evidence/final-visible-raised-alpha.png": {
+      "bytes": 105552,
+      "sha256": "9354cdd077b9f8f5f157834634485a052d4485fac04009f66739f2a52472a723"
+    },
+    "evidence/fm-contacts-overview.png": {
+      "bytes": 1927888,
+      "sha256": "a7f3fac42717aff1952f6e04cfc646d1e2dc330f0db3b2009184e7243c8b1125"
+    },
+    "evidence/fm-residual-closeup.png": {
+      "bytes": 18850,
+      "sha256": "4e7eacf2113401966356686f0bf179d74ba11f78450927be3e6b8ccdeda64337"
+    },
+    "evidence/lowres-only-support-6ppc.png": {
+      "bytes": 14299,
+      "sha256": "1a2a007918cceebc6f8537ea510653ac6e681cbabe8ca7abdfcf34ea56d87449"
+    }
+  },
+  "sourceAlpha": {
+    "path": "evidence/final-visible-raised-alpha.png",
+    "sha256": "9354cdd077b9f8f5f157834634485a052d4485fac04009f66739f2a52472a723",
+    "pixelsSha256": "d208a0fdd2f7293c05f37b21b1dcb507135b3ef8df007673dad06a45aec09682",
+    "bounds": [
+      16,
+      218,
+      163,
+      399
+    ],
+    "dimensions": [
+      4736,
+      5824
+    ],
+    "pixelsPerCell": 32,
+    "thresholdBeforeCollision": 128,
+    "collisionThreshold": 16,
+    "collisionEqualsAlphaNonzero": true,
+    "collisionXorPixels": 0
+  },
+  "collisionPack": {
+    "bytes": 3447872,
+    "sha256": "cfb22774fac5315d3cef2c4b4cdde29ebb5324a054fe0bc3c07e56886cbaab16",
+    "decodedPixelCount": 10034569,
+    "dimensions": [
+      4736,
+      5824
+    ],
+    "pixelsPerCell": 32,
+    "bitOrder": "little-within-byte",
+    "sourceSha256": "9354cdd077b9f8f5f157834634485a052d4485fac04009f66739f2a52472a723"
+  },
+  "lowresFallbackSupport": {
+    "lowres6ppcAlphaThresholdCounts": {
+      "gt0": 365434,
+      "gte16": 358684,
+      "gte128": 353700
+    },
+    "projectedHighresCollisionThresholds": {
+      "gte16": 352877,
+      "gte128": 352877
+    },
+    "supportOutsideProjectedHighresCollision": {
+      "gt0": {
+        "pixels": 12566,
+        "maxDistanceFromProjectedHighresSupport6ppcPx": 4.0,
+        "p95DistanceFromProjectedHighresSupport6ppcPx": 3.0
+      },
+      "gte16": {
+        "pixels": 5834,
+        "maxDistanceFromProjectedHighresSupport6ppcPx": 2.23606797749979,
+        "p95DistanceFromProjectedHighresSupport6ppcPx": 1.4142135623730951
+      },
+      "gte128": {
+        "pixels": 1781,
+        "maxDistanceFromProjectedHighresSupport6ppcPx": 1.4142135623730951,
+        "p95DistanceFromProjectedHighresSupport6ppcPx": 1.0
+      }
+    },
+    "interpretation": "6ppc LANCZOS support outside the projected 32ppc collision is reported at alpha>0, >=16, and >=128; distance is to nearest projected high-resolution support pixel in 6ppc coordinates. This measures fringe and possible silhouette displacement but does not certify rendered fallback parity.",
+    "lowresOnlyMaskSha256": "2eb345c57f23b524cae48b8236ce8f7f1cca9560bb22c5481c4edf50c8ce0cd4"
+  },
+  "chunks": {
+    "count": 120,
+    "ids": [
+      "c0-r0",
+      "c1-r0",
+      "c2-r0",
+      "c3-r0",
+      "c4-r0",
+      "c5-r0",
+      "c6-r0",
+      "c7-r0",
+      "c8-r0",
+      "c9-r0",
+      "c0-r1",
+      "c1-r1",
+      "c2-r1",
+      "c3-r1",
+      "c4-r1",
+      "c5-r1",
+      "c6-r1",
+      "c7-r1",
+      "c8-r1",
+      "c9-r1",
+      "c0-r2",
+      "c1-r2",
+      "c2-r2",
+      "c3-r2",
+      "c4-r2",
+      "c5-r2",
+      "c6-r2",
+      "c7-r2",
+      "c8-r2",
+      "c9-r2",
+      "c0-r3",
+      "c1-r3",
+      "c2-r3",
+      "c3-r3",
+      "c4-r3",
+      "c5-r3",
+      "c6-r3",
+      "c7-r3",
+      "c8-r3",
+      "c9-r3",
+      "c0-r4",
+      "c1-r4",
+      "c2-r4",
+      "c3-r4",
+      "c4-r4",
+      "c5-r4",
+      "c6-r4",
+      "c7-r4",
+      "c8-r4",
+      "c9-r4",
+      "c0-r5",
+      "c1-r5",
+      "c2-r5",
+      "c3-r5",
+      "c4-r5",
+      "c5-r5",
+      "c6-r5",
+      "c7-r5",
+      "c8-r5",
+      "c9-r5",
+      "c0-r6",
+      "c1-r6",
+      "c2-r6",
+      "c3-r6",
+      "c4-r6",
+      "c5-r6",
+      "c6-r6",
+      "c7-r6",
+      "c8-r6",
+      "c9-r6",
+      "c0-r7",
+      "c1-r7",
+      "c2-r7",
+      "c3-r7",
+      "c4-r7",
+      "c5-r7",
+      "c6-r7",
+      "c7-r7",
+      "c8-r7",
+      "c9-r7",
+      "c0-r8",
+      "c1-r8",
+      "c2-r8",
+      "c3-r8",
+      "c4-r8",
+      "c5-r8",
+      "c6-r8",
+      "c7-r8",
+      "c8-r8",
+      "c9-r8",
+      "c0-r9",
+      "c1-r9",
+      "c2-r9",
+      "c3-r9",
+      "c4-r9",
+      "c5-r9",
+      "c6-r9",
+      "c7-r9",
+      "c8-r9",
+      "c9-r9",
+      "c0-r10",
+      "c1-r10",
+      "c2-r10",
+      "c3-r10",
+      "c4-r10",
+      "c5-r10",
+      "c6-r10",
+      "c7-r10",
+      "c8-r10",
+      "c9-r10",
+      "c0-r11",
+      "c1-r11",
+      "c2-r11",
+      "c3-r11",
+      "c4-r11",
+      "c5-r11",
+      "c6-r11",
+      "c7-r11",
+      "c8-r11",
+      "c9-r11"
+    ],
+    "geometryPreserved": true,
+    "basePixelsPerCell": 32,
+    "inputGeometryPixelsPerCell": 16,
+    "layerDimensionsValidated": true,
+    "waterCanopyCopyHashesMatchCurrentManifest": true,
+    "forestAlphaReconstructedFromChunksExactly": true,
+    "objectAdjacentSeamsPixelExact": 218,
+    "objectCornersPixelExact": 99,
+    "baseGroundAdjacentSeamsPixelExact": 218,
+    "baseGroundCornersPixelExact": 99
+  },
+  "boundaryRule": {
+    "FMBoundaryCount": 78,
+    "globalLatticeEligibleCandidates": 242,
+    "selectedBoundaryObjects": 40,
+    "selectedRecords": [
+      {
+        "id": "forest-edge-r15-121.490",
+        "center": [
+          121.49,
+          239.355
+        ],
+        "sourceIndex": 5,
+        "side": 68,
+        "flipX": false,
+        "candidateRow": 15
+      },
+      {
+        "id": "forest-edge-r15-126.655",
+        "center": [
+          126.655,
+          239.355
+        ],
+        "sourceIndex": 3,
+        "side": 68,
+        "flipX": true,
+        "candidateRow": 15
+      },
+      {
+        "id": "forest-edge-r15-130.265",
+        "center": [
+          130.265,
+          239.355
+        ],
+        "sourceIndex": 3,
+        "side": 68,
+        "flipX": false,
+        "candidateRow": 15
+      },
+      {
+        "id": "forest-edge-r16-132.830",
+        "center": [
+          132.83,
+          240.56
+        ],
+        "sourceIndex": 4,
+        "side": 68,
+        "flipX": false,
+        "candidateRow": 16
+      },
+      {
+        "id": "forest-edge-r16-124.055",
+        "center": [
+          124.055,
+          240.56
+        ],
+        "sourceIndex": 3,
+        "side": 68,
+        "flipX": false,
+        "candidateRow": 16
+      },
+      {
+        "id": "forest-edge-r16-128.760",
+        "center": [
+          128.76,
+          240.56
+        ],
+        "sourceIndex": 1,
+        "side": 68,
+        "flipX": false,
+        "candidateRow": 16
+      },
+      {
+        "id": "forest-edge-r15-120.215",
+        "center": [
+          120.215,
+          239.355
+        ],
+        "sourceIndex": 0,
+        "side": 68,
+        "flipX": false,
+        "candidateRow": 15
+      },
+      {
+        "id": "forest-edge-r16-123.205",
+        "center": [
+          123.205,
+          240.56
+        ],
+        "sourceIndex": 6,
+        "side": 68,
+        "flipX": true,
+        "candidateRow": 16
+      },
+      {
+        "id": "forest-edge-r16-127.700",
+        "center": [
+          127.7,
+          240.56
+        ],
+        "sourceIndex": 3,
+        "side": 68,
+        "flipX": true,
+        "candidateRow": 16
+      },
+      {
+        "id": "forest-edge-r15-126.230",
+        "center": [
+          126.23,
+          239.355
+        ],
+        "sourceIndex": 2,
+        "side": 68,
+        "flipX": false,
+        "candidateRow": 15
+      },
+      {
+        "id": "forest-edge-r16-132.405",
+        "center": [
+          132.405,
+          240.56
+        ],
+        "sourceIndex": 1,
+        "side": 68,
+        "flipX": true,
+        "candidateRow": 16
+      },
+      {
+        "id": "forest-edge-r16-136.900",
+        "center": [
+          136.9,
+          240.56
+        ],
+        "sourceIndex": 5,
+        "side": 68,
+        "flipX": true,
+        "candidateRow": 16
+      },
+      {
+        "id": "forest-edge-r35-141.765",
+        "center": [
+          141.765,
+          266.815
+        ],
+        "sourceIndex": 3,
+        "side": 68,
+        "flipX": true,
+        "candidateRow": 35
+      },
+      {
+        "id": "forest-edge-r31-143.535",
+        "center": [
+          143.535,
+          261.225
+        ],
+        "sourceIndex": 5,
+        "side": 68,
+        "flipX": true,
+        "candidateRow": 31
+      },
+      {
+        "id": "forest-edge-r39-141.695",
+        "center": [
+          141.695,
+          272.405
+        ],
+        "sourceIndex": 3,
+        "side": 68,
+        "flipX": true,
+        "candidateRow": 39
+      },
+      {
+        "id": "forest-edge-r24-146.240",
+        "center": [
+          146.24,
+          251.74
+        ],
+        "sourceIndex": 1,
+        "side": 68,
+        "flipX": true,
+        "candidateRow": 24
+      },
+      {
+        "id": "forest-edge-r27-142.755",
+        "center": [
+          142.755,
+          255.88
+        ],
+        "sourceIndex": 4,
+        "side": 68,
+        "flipX": false,
+        "candidateRow": 27
+      },
+      {
+        "id": "forest-edge-r21-146.930",
+        "center": [
+          146.93,
+          247.635
+        ],
+        "sourceIndex": 0,
+        "side": 68,
+        "flipX": true,
+        "candidateRow": 21
+      },
+      {
+        "id": "forest-edge-r37-142.155",
+        "center": [
+          142.155,
+          269.715
+        ],
+        "sourceIndex": 5,
+        "side": 68,
+        "flipX": true,
+        "candidateRow": 37
+      },
+      {
+        "id": "forest-edge-r17-139.890",
+        "center": [
+          139.89,
+          242.045
+        ],
+        "sourceIndex": 1,
+        "side": 68,
+        "flipX": false,
+        "candidateRow": 17
+      },
+      {
+        "id": "forest-edge-r19-144.595",
+        "center": [
+          144.595,
+          244.7
+        ],
+        "sourceIndex": 0,
+        "side": 68,
+        "flipX": false,
+        "candidateRow": 19
+      },
+      {
+        "id": "forest-edge-r34-142.845",
+        "center": [
+          142.845,
+          265.575
+        ],
+        "sourceIndex": 5,
+        "side": 68,
+        "flipX": true,
+        "candidateRow": 34
+      },
+      {
+        "id": "forest-edge-r38-141.075",
+        "center": [
+          141.075,
+          270.92
+        ],
+        "sourceIndex": 3,
+        "side": 68,
+        "flipX": true,
+        "candidateRow": 38
+      },
+      {
+        "id": "forest-edge-r28-142.525",
+        "center": [
+          142.525,
+          257.085
+        ],
+        "sourceIndex": 3,
+        "side": 68,
+        "flipX": false,
+        "candidateRow": 28
+      },
+      {
+        "id": "forest-edge-r23-147.320",
+        "center": [
+          147.32,
+          250.29
+        ],
+        "sourceIndex": 6,
+        "side": 68,
+        "flipX": false,
+        "candidateRow": 23
+      },
+      {
+        "id": "forest-edge-r30-142.915",
+        "center": [
+          142.915,
+          260.02
+        ],
+        "sourceIndex": 5,
+        "side": 68,
+        "flipX": true,
+        "candidateRow": 30
+      },
+      {
+        "id": "forest-edge-r20-146.065",
+        "center": [
+          146.065,
+          246.15
+        ],
+        "sourceIndex": 1,
+        "side": 68,
+        "flipX": true,
+        "candidateRow": 20
+      },
+      {
+        "id": "forest-edge-r39-140.420",
+        "center": [
+          140.42,
+          272.405
+        ],
+        "sourceIndex": 5,
+        "side": 68,
+        "flipX": true,
+        "candidateRow": 39
+      },
+      {
+        "id": "forest-edge-r33-141.800",
+        "center": [
+          141.8,
+          264.125
+        ],
+        "sourceIndex": 5,
+        "side": 68,
+        "flipX": true,
+        "candidateRow": 33
+      },
+      {
+        "id": "forest-edge-r21-148.630",
+        "center": [
+          148.63,
+          247.635
+        ],
+        "sourceIndex": 6,
+        "side": 68,
+        "flipX": false,
+        "candidateRow": 21
+      },
+      {
+        "id": "forest-edge-r39-141.270",
+        "center": [
+          141.27,
+          272.405
+        ],
+        "sourceIndex": 2,
+        "side": 68,
+        "flipX": false,
+        "candidateRow": 39
+      },
+      {
+        "id": "forest-edge-r39-139.995",
+        "center": [
+          139.995,
+          272.405
+        ],
+        "sourceIndex": 4,
+        "side": 68,
+        "flipX": false,
+        "candidateRow": 39
+      },
+      {
+        "id": "forest-edge-r26-144.685",
+        "center": [
+          144.685,
+          254.43
+        ],
+        "sourceIndex": 1,
+        "side": 68,
+        "flipX": true,
+        "candidateRow": 26
+      },
+      {
+        "id": "forest-edge-r39-140.845",
+        "center": [
+          140.845,
+          272.405
+        ],
+        "sourceIndex": 6,
+        "side": 68,
+        "flipX": true,
+        "candidateRow": 39
+      },
+      {
+        "id": "forest-edge-r14-118.925",
+        "center": [
+          118.925,
+          237.905
+        ],
+        "sourceIndex": 0,
+        "side": 68,
+        "flipX": false,
+        "candidateRow": 14
+      },
+      {
+        "id": "forest-edge-r16-135.625",
+        "center": [
+          135.625,
+          240.56
+        ],
+        "sourceIndex": 1,
+        "side": 68,
+        "flipX": true,
+        "candidateRow": 16
+      },
+      {
+        "id": "forest-edge-sub-r40-x141110-y273750-dx+0-dy-20",
+        "center": [
+          141.04,
+          273.23
+        ],
+        "sourceIndex": 5,
+        "side": 68,
+        "flipX": true,
+        "candidateRow": 40,
+        "subgridOffsetPx": [
+          0,
+          -20
+        ]
+      },
+      {
+        "id": "forest-edge-sub-r28-x144330-y257190-dx+0-dy-12",
+        "center": [
+          144.225,
+          256.71
+        ],
+        "sourceIndex": 5,
+        "side": 68,
+        "flipX": true,
+        "candidateRow": 28,
+        "subgridOffsetPx": [
+          0,
+          -12
+        ]
+      },
+      {
+        "id": "forest-edge-sub-r24-x144790-y251670-dx+8-dy+20",
+        "center": [
+          144.97,
+          252.365
+        ],
+        "sourceIndex": 2,
+        "side": 68,
+        "flipX": true,
+        "candidateRow": 24,
+        "subgridOffsetPx": [
+          8,
+          20
+        ]
+      },
+      {
+        "id": "forest-edge-sub-r32-x141570-y262710-dx+8-dy+20",
+        "center": [
+          141.855,
+          263.3
+        ],
+        "sourceIndex": 2,
+        "side": 68,
+        "flipX": true,
+        "candidateRow": 32,
+        "subgridOffsetPx": [
+          8,
+          20
+        ]
+      }
+    ],
+    "acceptedLayoutRecipeSha256": "4405f222f027d61f1e96e4d4f6a7d8a15e4b1826bec3622ad6f3f3e5d6e4b93f",
+    "acceptedLayoutRecipeRecords": [
+      {
+        "id": "forest-edge-r15-121.490",
+        "center": [
+          121.49,
+          239.355
+        ],
+        "sourceIndex": 5,
+        "side": 68,
+        "flipX": false,
+        "candidateRow": 15
+      },
+      {
+        "id": "forest-edge-r15-126.655",
+        "center": [
+          126.655,
+          239.355
+        ],
+        "sourceIndex": 3,
+        "side": 68,
+        "flipX": true,
+        "candidateRow": 15
+      },
+      {
+        "id": "forest-edge-r15-130.265",
+        "center": [
+          130.265,
+          239.355
+        ],
+        "sourceIndex": 3,
+        "side": 68,
+        "flipX": false,
+        "candidateRow": 15
+      },
+      {
+        "id": "forest-edge-r16-132.830",
+        "center": [
+          132.83,
+          240.56
+        ],
+        "sourceIndex": 4,
+        "side": 68,
+        "flipX": false,
+        "candidateRow": 16
+      },
+      {
+        "id": "forest-edge-r16-124.055",
+        "center": [
+          124.055,
+          240.56
+        ],
+        "sourceIndex": 3,
+        "side": 68,
+        "flipX": false,
+        "candidateRow": 16
+      },
+      {
+        "id": "forest-edge-r16-128.760",
+        "center": [
+          128.76,
+          240.56
+        ],
+        "sourceIndex": 1,
+        "side": 68,
+        "flipX": false,
+        "candidateRow": 16
+      },
+      {
+        "id": "forest-edge-r15-120.215",
+        "center": [
+          120.215,
+          239.355
+        ],
+        "sourceIndex": 0,
+        "side": 68,
+        "flipX": false,
+        "candidateRow": 15
+      },
+      {
+        "id": "forest-edge-r16-123.205",
+        "center": [
+          123.205,
+          240.56
+        ],
+        "sourceIndex": 6,
+        "side": 68,
+        "flipX": true,
+        "candidateRow": 16
+      },
+      {
+        "id": "forest-edge-r16-127.700",
+        "center": [
+          127.7,
+          240.56
+        ],
+        "sourceIndex": 3,
+        "side": 68,
+        "flipX": true,
+        "candidateRow": 16
+      },
+      {
+        "id": "forest-edge-r15-126.230",
+        "center": [
+          126.23,
+          239.355
+        ],
+        "sourceIndex": 2,
+        "side": 68,
+        "flipX": false,
+        "candidateRow": 15
+      },
+      {
+        "id": "forest-edge-r16-132.405",
+        "center": [
+          132.405,
+          240.56
+        ],
+        "sourceIndex": 1,
+        "side": 68,
+        "flipX": true,
+        "candidateRow": 16
+      },
+      {
+        "id": "forest-edge-r16-136.900",
+        "center": [
+          136.9,
+          240.56
+        ],
+        "sourceIndex": 5,
+        "side": 68,
+        "flipX": true,
+        "candidateRow": 16
+      },
+      {
+        "id": "forest-edge-r35-141.765",
+        "center": [
+          141.765,
+          266.815
+        ],
+        "sourceIndex": 3,
+        "side": 68,
+        "flipX": true,
+        "candidateRow": 35
+      },
+      {
+        "id": "forest-edge-r31-143.535",
+        "center": [
+          143.535,
+          261.225
+        ],
+        "sourceIndex": 5,
+        "side": 68,
+        "flipX": true,
+        "candidateRow": 31
+      },
+      {
+        "id": "forest-edge-r39-141.695",
+        "center": [
+          141.695,
+          272.405
+        ],
+        "sourceIndex": 3,
+        "side": 68,
+        "flipX": true,
+        "candidateRow": 39
+      },
+      {
+        "id": "forest-edge-r24-146.240",
+        "center": [
+          146.24,
+          251.74
+        ],
+        "sourceIndex": 1,
+        "side": 68,
+        "flipX": true,
+        "candidateRow": 24
+      },
+      {
+        "id": "forest-edge-r27-142.755",
+        "center": [
+          142.755,
+          255.88
+        ],
+        "sourceIndex": 4,
+        "side": 68,
+        "flipX": false,
+        "candidateRow": 27
+      },
+      {
+        "id": "forest-edge-r21-146.930",
+        "center": [
+          146.93,
+          247.635
+        ],
+        "sourceIndex": 0,
+        "side": 68,
+        "flipX": true,
+        "candidateRow": 21
+      },
+      {
+        "id": "forest-edge-r37-142.155",
+        "center": [
+          142.155,
+          269.715
+        ],
+        "sourceIndex": 5,
+        "side": 68,
+        "flipX": true,
+        "candidateRow": 37
+      },
+      {
+        "id": "forest-edge-r17-139.890",
+        "center": [
+          139.89,
+          242.045
+        ],
+        "sourceIndex": 1,
+        "side": 68,
+        "flipX": false,
+        "candidateRow": 17
+      },
+      {
+        "id": "forest-edge-r19-144.595",
+        "center": [
+          144.595,
+          244.7
+        ],
+        "sourceIndex": 0,
+        "side": 68,
+        "flipX": false,
+        "candidateRow": 19
+      },
+      {
+        "id": "forest-edge-r34-142.845",
+        "center": [
+          142.845,
+          265.575
+        ],
+        "sourceIndex": 5,
+        "side": 68,
+        "flipX": true,
+        "candidateRow": 34
+      },
+      {
+        "id": "forest-edge-r38-141.075",
+        "center": [
+          141.075,
+          270.92
+        ],
+        "sourceIndex": 3,
+        "side": 68,
+        "flipX": true,
+        "candidateRow": 38
+      },
+      {
+        "id": "forest-edge-r28-142.525",
+        "center": [
+          142.525,
+          257.085
+        ],
+        "sourceIndex": 3,
+        "side": 68,
+        "flipX": false,
+        "candidateRow": 28
+      },
+      {
+        "id": "forest-edge-r23-147.320",
+        "center": [
+          147.32,
+          250.29
+        ],
+        "sourceIndex": 6,
+        "side": 68,
+        "flipX": false,
+        "candidateRow": 23
+      },
+      {
+        "id": "forest-edge-r30-142.915",
+        "center": [
+          142.915,
+          260.02
+        ],
+        "sourceIndex": 5,
+        "side": 68,
+        "flipX": true,
+        "candidateRow": 30
+      },
+      {
+        "id": "forest-edge-r20-146.065",
+        "center": [
+          146.065,
+          246.15
+        ],
+        "sourceIndex": 1,
+        "side": 68,
+        "flipX": true,
+        "candidateRow": 20
+      },
+      {
+        "id": "forest-edge-r39-140.420",
+        "center": [
+          140.42,
+          272.405
+        ],
+        "sourceIndex": 5,
+        "side": 68,
+        "flipX": true,
+        "candidateRow": 39
+      },
+      {
+        "id": "forest-edge-r33-141.800",
+        "center": [
+          141.8,
+          264.125
+        ],
+        "sourceIndex": 5,
+        "side": 68,
+        "flipX": true,
+        "candidateRow": 33
+      },
+      {
+        "id": "forest-edge-r21-148.630",
+        "center": [
+          148.63,
+          247.635
+        ],
+        "sourceIndex": 6,
+        "side": 68,
+        "flipX": false,
+        "candidateRow": 21
+      },
+      {
+        "id": "forest-edge-r39-141.270",
+        "center": [
+          141.27,
+          272.405
+        ],
+        "sourceIndex": 2,
+        "side": 68,
+        "flipX": false,
+        "candidateRow": 39
+      },
+      {
+        "id": "forest-edge-r39-139.995",
+        "center": [
+          139.995,
+          272.405
+        ],
+        "sourceIndex": 4,
+        "side": 68,
+        "flipX": false,
+        "candidateRow": 39
+      },
+      {
+        "id": "forest-edge-r26-144.685",
+        "center": [
+          144.685,
+          254.43
+        ],
+        "sourceIndex": 1,
+        "side": 68,
+        "flipX": true,
+        "candidateRow": 26
+      },
+      {
+        "id": "forest-edge-r39-140.845",
+        "center": [
+          140.845,
+          272.405
+        ],
+        "sourceIndex": 6,
+        "side": 68,
+        "flipX": true,
+        "candidateRow": 39
+      },
+      {
+        "id": "forest-edge-sub-r40-x141110-y273750-dx+0-dy-20",
+        "center": [
+          141.04,
+          273.23
+        ],
+        "sourceIndex": 5,
+        "side": 68,
+        "flipX": true,
+        "candidateRow": 40,
+        "subgridOffsetPx": [
+          0,
+          -20
+        ]
+      },
+      {
+        "id": "forest-edge-sub-r28-x144330-y257190-dx+0-dy-12",
+        "center": [
+          144.225,
+          256.71
+        ],
+        "sourceIndex": 5,
+        "side": 68,
+        "flipX": true,
+        "candidateRow": 28,
+        "subgridOffsetPx": [
+          0,
+          -12
+        ]
+      },
+      {
+        "id": "forest-edge-sub-r24-x144790-y251670-dx+8-dy+20",
+        "center": [
+          144.97,
+          252.365
+        ],
+        "sourceIndex": 2,
+        "side": 68,
+        "flipX": true,
+        "candidateRow": 24,
+        "subgridOffsetPx": [
+          8,
+          20
+        ]
+      },
+      {
+        "id": "forest-edge-sub-r32-x141570-y262710-dx+8-dy+20",
+        "center": [
+          141.855,
+          263.3
+        ],
+        "sourceIndex": 2,
+        "side": 68,
+        "flipX": true,
+        "candidateRow": 32,
+        "subgridOffsetPx": [
+          8,
+          20
+        ]
+      },
+      {
+        "id": "forest-edge-r14-118.925",
+        "center": [
+          118.925,
+          237.905
+        ],
+        "sourceIndex": 0,
+        "side": 68,
+        "flipX": false,
+        "candidateRow": 14
+      },
+      {
+        "id": "forest-edge-r16-135.625",
+        "center": [
+          135.625,
+          240.56
+        ],
+        "sourceIndex": 1,
+        "side": 68,
+        "flipX": true,
+        "candidateRow": 16
+      }
+    ],
+    "targetGapPixelsBefore": 36421,
+    "targetGapPixelsAfter": 6,
+    "routeGuardCells": [
+      [
+        30,
+        275
+      ],
+      [
+        39,
+        345
+      ],
+      [
+        69,
+        256
+      ],
+      [
+        96,
+        360
+      ],
+      [
+        101,
+        232
+      ],
+      [
+        133,
+        348
+      ],
+      [
+        145,
+        372
+      ],
+      [
+        148,
+        278
+      ],
+      [
+        149,
+        277
+      ],
+      [
+        149,
+        279
+      ],
+      [
+        150,
+        278
+      ]
+    ],
+    "routeGuardPixels": 22584,
+    "baselineRouteGuardHits": 0,
+    "finalRouteGuardHits": 0,
+    "newOwnerPPixels": 0,
+    "baselineOwnerPVisiblePixels": 542217,
+    "otherSemanticVisiblePixels": 0,
+    "northRecipe": {
+      "recipeSha256": "c3875927a7370045cbbdc19e2bc84464dad838135cb6ec5ca3fee15284100cad",
+      "pilotReceiptSha256": "cf23c18db3871ad9e59818f4c4be82bc1e09a08371de8e4880ac7f5dfea48110",
+      "objectCount": 9,
+      "alphaUnionPixels": 290662,
+      "retainedCliffRecords": 194,
+      "cliffAlphaPixelsRemovedInsideReplacement": 1134729,
+      "cliffAnchorCountPreserved": 194,
+      "northOwnerPPixelsByRole": {
+        "ridge": 75173,
+        "fill": 74155
+      }
+    },
+    "pilotSeed": {
+      "receiptSha256": "cf23c18db3871ad9e59818f4c4be82bc1e09a08371de8e4880ac7f5dfea48110",
+      "selectedCrowns": 11,
+      "ids": [
+        "forest-edge-r15-121.490",
+        "forest-edge-r15-126.655",
+        "forest-edge-r15-130.265",
+        "forest-edge-r16-132.830",
+        "forest-edge-r16-124.055",
+        "forest-edge-r16-128.760",
+        "forest-edge-r15-120.215",
+        "forest-edge-r16-123.205",
+        "forest-edge-r16-127.700",
+        "forest-edge-r15-126.230",
+        "forest-edge-r16-132.405"
+      ],
+      "approvedCrop": [
+        3136,
+        416,
+        640,
+        512
+      ],
+      "fullCropAlphaXorPixels": 2419,
+      "originalMeasuredTargetAlphaXorPixels": 0,
+      "originalMeasuredTargetBoundsGlobal32ppc": [
+        3328,
+        416,
+        3776,
+        928
+      ]
+    },
+    "single4pxSubgridPass": {
+      "sourceEvidenceSha256": "25857bb583938b500a4f746968c8c8192dca7f7379467529bc21d06f92f2210d",
+      "additions": [
+        {
+          "id": "forest-edge-sub-r40-x141110-y273750-dx+0-dy-20",
+          "center": [
+            141.04,
+            273.23
+          ],
+          "sourceIndex": 5,
+          "side": 68,
+          "flipX": true,
+          "candidateRow": 40,
+          "subgridOffsetPx": [
+            0,
+            -20
+          ]
+        },
+        {
+          "id": "forest-edge-sub-r28-x144330-y257190-dx+0-dy-12",
+          "center": [
+            144.225,
+            256.71
+          ],
+          "sourceIndex": 5,
+          "side": 68,
+          "flipX": true,
+          "candidateRow": 28,
+          "subgridOffsetPx": [
+            0,
+            -12
+          ]
+        },
+        {
+          "id": "forest-edge-sub-r24-x144790-y251670-dx+8-dy+20",
+          "center": [
+            144.97,
+            252.365
+          ],
+          "sourceIndex": 2,
+          "side": 68,
+          "flipX": true,
+          "candidateRow": 24,
+          "subgridOffsetPx": [
+            8,
+            20
+          ]
+        },
+        {
+          "id": "forest-edge-sub-r32-x141570-y262710-dx+8-dy+20",
+          "center": [
+            141.855,
+            263.3
+          ],
+          "sourceIndex": 2,
+          "side": 68,
+          "flipX": true,
+          "candidateRow": 32,
+          "subgridOffsetPx": [
+            8,
+            20
+          ]
+        }
+      ]
+    },
+    "acceptedNaturalResidual": {
+      "pixelCount": 6,
+      "components": [
+        {
+          "pixels": 2,
+          "bounds": [
+            4016,
+            1809,
+            4018,
+            1810
+          ]
+        },
+        {
+          "pixels": 1,
+          "bounds": [
+            4049,
+            1809,
+            4050,
+            1810
+          ]
+        },
+        {
+          "pixels": 3,
+          "bounds": [
+            4060,
+            1809,
+            4063,
+            1810
+          ]
+        }
+      ],
+      "selectableHeroAlphaUnionBoundsPx": [
+        50,
+        54
+      ],
+      "classification": "three disconnected single-row exposed F/M pinholes (2, 1, and 3 pixels); not a continuous wedge; retained unfilled for visual/native collision review",
+      "guardOverlapPixels": 0
+    },
+    "actorGuardProof": [
+      {
+        "cell": [
+          30,
+          275
+        ],
+        "visibleArtStencilHits": 0
+      },
+      {
+        "cell": [
+          39,
+          345
+        ],
+        "visibleArtStencilHits": 0
+      },
+      {
+        "cell": [
+          69,
+          256
+        ],
+        "visibleArtStencilHits": 0
+      },
+      {
+        "cell": [
+          96,
+          360
+        ],
+        "visibleArtStencilHits": 0
+      },
+      {
+        "cell": [
+          101,
+          232
+        ],
+        "visibleArtStencilHits": 0
+      },
+      {
+        "cell": [
+          133,
+          348
+        ],
+        "visibleArtStencilHits": 0
+      },
+      {
+        "cell": [
+          145,
+          372
+        ],
+        "visibleArtStencilHits": 0
+      },
+      {
+        "cell": [
+          148,
+          278
+        ],
+        "visibleArtStencilHits": 0
+      },
+      {
+        "cell": [
+          149,
+          277
+        ],
+        "visibleArtStencilHits": 0
+      },
+      {
+        "cell": [
+          149,
+          279
+        ],
+        "visibleArtStencilHits": 0
+      },
+      {
+        "cell": [
+          150,
+          278
+        ],
+        "visibleArtStencilHits": 0
+      }
+    ],
+    "sourceAlpha16To127Discarded": 690621,
+    "edgeTargetSamples": [
+      {
+        "edge": [
+          [
+            117,
+            233
+          ],
+          [
+            117,
+            234
+          ]
+        ],
+        "uncoveredPixelsBefore": 0,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            117,
+            234
+          ],
+          [
+            118,
+            234
+          ]
+        ],
+        "uncoveredPixelsBefore": 0,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            118,
+            234
+          ],
+          [
+            118,
+            235
+          ]
+        ],
+        "uncoveredPixelsBefore": 0,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            118,
+            235
+          ],
+          [
+            119,
+            235
+          ]
+        ],
+        "uncoveredPixelsBefore": 0,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            118,
+            236
+          ],
+          [
+            119,
+            236
+          ]
+        ],
+        "uncoveredPixelsBefore": 0,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            118,
+            237
+          ],
+          [
+            119,
+            237
+          ]
+        ],
+        "uncoveredPixelsBefore": 583,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            119,
+            237
+          ],
+          [
+            119,
+            238
+          ]
+        ],
+        "uncoveredPixelsBefore": 0,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            119,
+            238
+          ],
+          [
+            120,
+            238
+          ]
+        ],
+        "uncoveredPixelsBefore": 0,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            120,
+            238
+          ],
+          [
+            120,
+            239
+          ]
+        ],
+        "uncoveredPixelsBefore": 0,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            120,
+            239
+          ],
+          [
+            121,
+            239
+          ]
+        ],
+        "uncoveredPixelsBefore": 0,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            121,
+            239
+          ],
+          [
+            121,
+            240
+          ]
+        ],
+        "uncoveredPixelsBefore": 0,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            122,
+            239
+          ],
+          [
+            122,
+            240
+          ]
+        ],
+        "uncoveredPixelsBefore": 0,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            123,
+            239
+          ],
+          [
+            123,
+            240
+          ]
+        ],
+        "uncoveredPixelsBefore": 889,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            124,
+            239
+          ],
+          [
+            124,
+            240
+          ]
+        ],
+        "uncoveredPixelsBefore": 731,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            125,
+            239
+          ],
+          [
+            125,
+            240
+          ]
+        ],
+        "uncoveredPixelsBefore": 0,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            126,
+            239
+          ],
+          [
+            126,
+            240
+          ]
+        ],
+        "uncoveredPixelsBefore": 190,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            127,
+            239
+          ],
+          [
+            127,
+            240
+          ]
+        ],
+        "uncoveredPixelsBefore": 1104,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            128,
+            239
+          ],
+          [
+            128,
+            240
+          ]
+        ],
+        "uncoveredPixelsBefore": 43,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            129,
+            239
+          ],
+          [
+            129,
+            240
+          ]
+        ],
+        "uncoveredPixelsBefore": 0,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            130,
+            239
+          ],
+          [
+            130,
+            240
+          ]
+        ],
+        "uncoveredPixelsBefore": 483,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            131,
+            239
+          ],
+          [
+            131,
+            240
+          ]
+        ],
+        "uncoveredPixelsBefore": 1308,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            132,
+            239
+          ],
+          [
+            132,
+            240
+          ]
+        ],
+        "uncoveredPixelsBefore": 237,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            132,
+            240
+          ],
+          [
+            133,
+            240
+          ]
+        ],
+        "uncoveredPixelsBefore": 0,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            133,
+            240
+          ],
+          [
+            133,
+            241
+          ]
+        ],
+        "uncoveredPixelsBefore": 1425,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            134,
+            240
+          ],
+          [
+            134,
+            241
+          ]
+        ],
+        "uncoveredPixelsBefore": 743,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            135,
+            240
+          ],
+          [
+            135,
+            241
+          ]
+        ],
+        "uncoveredPixelsBefore": 1383,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            136,
+            240
+          ],
+          [
+            136,
+            241
+          ]
+        ],
+        "uncoveredPixelsBefore": 1349,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            137,
+            240
+          ],
+          [
+            137,
+            241
+          ]
+        ],
+        "uncoveredPixelsBefore": 520,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            137,
+            241
+          ],
+          [
+            138,
+            241
+          ]
+        ],
+        "uncoveredPixelsBefore": 0,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            138,
+            241
+          ],
+          [
+            138,
+            242
+          ]
+        ],
+        "uncoveredPixelsBefore": 1540,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            139,
+            241
+          ],
+          [
+            139,
+            242
+          ]
+        ],
+        "uncoveredPixelsBefore": 607,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            140,
+            241
+          ],
+          [
+            140,
+            242
+          ]
+        ],
+        "uncoveredPixelsBefore": 0,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            140,
+            242
+          ],
+          [
+            141,
+            242
+          ]
+        ],
+        "uncoveredPixelsBefore": 0,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            141,
+            242
+          ],
+          [
+            141,
+            243
+          ]
+        ],
+        "uncoveredPixelsBefore": 0,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            142,
+            242
+          ],
+          [
+            142,
+            243
+          ]
+        ],
+        "uncoveredPixelsBefore": 0,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            143,
+            242
+          ],
+          [
+            143,
+            243
+          ]
+        ],
+        "uncoveredPixelsBefore": 0,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            143,
+            243
+          ],
+          [
+            144,
+            243
+          ]
+        ],
+        "uncoveredPixelsBefore": 0,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            144,
+            243
+          ],
+          [
+            144,
+            244
+          ]
+        ],
+        "uncoveredPixelsBefore": 1140,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            145,
+            243
+          ],
+          [
+            145,
+            244
+          ]
+        ],
+        "uncoveredPixelsBefore": 0,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            145,
+            244
+          ],
+          [
+            146,
+            244
+          ]
+        ],
+        "uncoveredPixelsBefore": 0,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            146,
+            244
+          ],
+          [
+            146,
+            245
+          ]
+        ],
+        "uncoveredPixelsBefore": 56,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            146,
+            245
+          ],
+          [
+            147,
+            245
+          ]
+        ],
+        "uncoveredPixelsBefore": 35,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            146,
+            246
+          ],
+          [
+            147,
+            246
+          ]
+        ],
+        "uncoveredPixelsBefore": 571,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            147,
+            246
+          ],
+          [
+            147,
+            247
+          ]
+        ],
+        "uncoveredPixelsBefore": 422,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            147,
+            247
+          ],
+          [
+            148,
+            247
+          ]
+        ],
+        "uncoveredPixelsBefore": 867,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            147,
+            248
+          ],
+          [
+            148,
+            248
+          ]
+        ],
+        "uncoveredPixelsBefore": 943,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            147,
+            249
+          ],
+          [
+            148,
+            249
+          ]
+        ],
+        "uncoveredPixelsBefore": 0,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            147,
+            249
+          ],
+          [
+            147,
+            250
+          ]
+        ],
+        "uncoveredPixelsBefore": 0,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            146,
+            250
+          ],
+          [
+            147,
+            250
+          ]
+        ],
+        "uncoveredPixelsBefore": 1056,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            146,
+            251
+          ],
+          [
+            147,
+            251
+          ]
+        ],
+        "uncoveredPixelsBefore": 0,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            146,
+            251
+          ],
+          [
+            146,
+            252
+          ]
+        ],
+        "uncoveredPixelsBefore": 0,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            145,
+            252
+          ],
+          [
+            146,
+            252
+          ]
+        ],
+        "uncoveredPixelsBefore": 1441,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            145,
+            253
+          ],
+          [
+            146,
+            253
+          ]
+        ],
+        "uncoveredPixelsBefore": 547,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            145,
+            253
+          ],
+          [
+            145,
+            254
+          ]
+        ],
+        "uncoveredPixelsBefore": 0,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            144,
+            254
+          ],
+          [
+            145,
+            254
+          ]
+        ],
+        "uncoveredPixelsBefore": 0,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            144,
+            255
+          ],
+          [
+            145,
+            255
+          ]
+        ],
+        "uncoveredPixelsBefore": 0,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            144,
+            255
+          ],
+          [
+            144,
+            256
+          ]
+        ],
+        "uncoveredPixelsBefore": 0,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            143,
+            256
+          ],
+          [
+            144,
+            256
+          ]
+        ],
+        "uncoveredPixelsBefore": 1680,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            143,
+            257
+          ],
+          [
+            144,
+            257
+          ]
+        ],
+        "uncoveredPixelsBefore": 1452,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            143,
+            258
+          ],
+          [
+            144,
+            258
+          ]
+        ],
+        "uncoveredPixelsBefore": 50,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            143,
+            258
+          ],
+          [
+            143,
+            259
+          ]
+        ],
+        "uncoveredPixelsBefore": 0,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            142,
+            259
+          ],
+          [
+            143,
+            259
+          ]
+        ],
+        "uncoveredPixelsBefore": 753,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            142,
+            260
+          ],
+          [
+            143,
+            260
+          ]
+        ],
+        "uncoveredPixelsBefore": 1287,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            142,
+            261
+          ],
+          [
+            143,
+            261
+          ]
+        ],
+        "uncoveredPixelsBefore": 883,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            142,
+            262
+          ],
+          [
+            143,
+            262
+          ]
+        ],
+        "uncoveredPixelsBefore": 642,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            142,
+            263
+          ],
+          [
+            143,
+            263
+          ]
+        ],
+        "uncoveredPixelsBefore": 272,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            142,
+            264
+          ],
+          [
+            143,
+            264
+          ]
+        ],
+        "uncoveredPixelsBefore": 0,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            142,
+            264
+          ],
+          [
+            142,
+            265
+          ]
+        ],
+        "uncoveredPixelsBefore": 0,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            141,
+            265
+          ],
+          [
+            142,
+            265
+          ]
+        ],
+        "uncoveredPixelsBefore": 492,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            141,
+            266
+          ],
+          [
+            142,
+            266
+          ]
+        ],
+        "uncoveredPixelsBefore": 1588,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            141,
+            267
+          ],
+          [
+            142,
+            267
+          ]
+        ],
+        "uncoveredPixelsBefore": 1239,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            141,
+            268
+          ],
+          [
+            142,
+            268
+          ]
+        ],
+        "uncoveredPixelsBefore": 1084,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            141,
+            269
+          ],
+          [
+            142,
+            269
+          ]
+        ],
+        "uncoveredPixelsBefore": 839,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            141,
+            270
+          ],
+          [
+            142,
+            270
+          ]
+        ],
+        "uncoveredPixelsBefore": 224,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            141,
+            271
+          ],
+          [
+            142,
+            271
+          ]
+        ],
+        "uncoveredPixelsBefore": 1260,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            141,
+            272
+          ],
+          [
+            142,
+            272
+          ]
+        ],
+        "uncoveredPixelsBefore": 1551,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            141,
+            273
+          ],
+          [
+            142,
+            273
+          ]
+        ],
+        "uncoveredPixelsBefore": 463,
+        "uncoveredPixelsAfter": 0
+      },
+      {
+        "edge": [
+          [
+            141,
+            274
+          ],
+          [
+            142,
+            274
+          ]
+        ],
+        "uncoveredPixelsBefore": 655,
+        "uncoveredPixelsAfter": 6,
+        "remainingLocalBounds": [
+          4016,
+          1809,
+          4063,
+          1810
+        ]
+      }
+    ]
+  },
+  "routeSource": {
+    "mapRevision": 7,
+    "worldMapSha256": "f1ea99546b799b50cec7d6fd40b1fae2ad53669fae22afaebe3760f225d12cad",
+    "dqTilesSha256": "80b1fcaf6d593bd704f720239c2f9fd533e7b49ca1af7c8d6401901b9d876090",
+    "landmarks": [
+      {
+        "id": "greenhollow",
+        "exit": {
+          "x": 69,
+          "y": 256
+        },
+        "door": {
+          "x": 69,
+          "y": 255
+        },
+        "approaches": [
+          {
+            "x": 69,
+            "y": 256
+          }
+        ]
+      },
+      {
+        "id": "millbrook",
+        "exit": {
+          "x": 39,
+          "y": 345
+        },
+        "door": {
+          "x": 39,
+          "y": 344
+        },
+        "approaches": [
+          {
+            "x": 39,
+            "y": 345
+          }
+        ]
+      },
+      {
+        "id": "portSapphire",
+        "exit": {
+          "x": 133,
+          "y": 348
+        },
+        "door": {
+          "x": 133,
+          "y": 349
+        },
+        "approaches": [
+          {
+            "x": 133,
+            "y": 348
+          }
+        ]
+      },
+      {
+        "id": "sunkenCellar",
+        "exit": {
+          "x": 30,
+          "y": 275
+        },
+        "door": {
+          "x": 30,
+          "y": 274
+        },
+        "approaches": [
+          {
+            "x": 30,
+            "y": 275
+          }
+        ]
+      },
+      {
+        "id": "whisperingWoodsCave",
+        "exit": {
+          "x": 101,
+          "y": 232
+        },
+        "door": {
+          "x": 101,
+          "y": 231
+        },
+        "approaches": [
+          {
+            "x": 101,
+            "y": 232
+          }
+        ]
+      },
+      {
+        "id": "coastalReef",
+        "exit": {
+          "x": 145,
+          "y": 372
+        },
+        "door": {
+          "x": 144,
+          "y": 372
+        },
+        "approaches": [
+          {
+            "x": 145,
+            "y": 372
+          }
+        ]
+      },
+      {
+        "id": "mistyGrotto",
+        "exit": {
+          "x": 96,
+          "y": 360
+        },
+        "door": {
+          "x": 96,
+          "y": 359
+        },
+        "approaches": [
+          {
+            "x": 96,
+            "y": 360
+          }
+        ]
+      },
+      {
+        "id": "crystalCave",
+        "exit": {
+          "x": 149,
+          "y": 279
+        },
+        "door": {
+          "x": 149,
+          "y": 278
+        },
+        "approaches": [
+          {
+            "x": 149,
+            "y": 277
+          },
+          {
+            "x": 150,
+            "y": 278
+          },
+          {
+            "x": 149,
+            "y": 279
+          },
+          {
+            "x": 148,
+            "y": 278
+          }
+        ]
+      }
+    ],
+    "exitCount": 8,
+    "approachCount": 11,
+    "startCell": {
+      "x": 69,
+      "y": 256
+    },
+    "startSemantics": "DQ a1aStartCell is first-window prefetch: saved overworld position, else live exit/at for saved map/default Greenhollow, else manifest.startCell/null; actual new-game spawn and dynamic save recovery are not inferred."
+  },
+  "northRecipe": {
+    "recipeSha256": "c3875927a7370045cbbdc19e2bc84464dad838135cb6ec5ca3fee15284100cad",
+    "pilotReceiptSha256": "cf23c18db3871ad9e59818f4c4be82bc1e09a08371de8e4880ac7f5dfea48110",
+    "objectCount": 9,
+    "alphaUnionPixels": 290662,
+    "retainedCliffRecords": 194,
+    "cliffAlphaPixelsRemovedInsideReplacement": 1134729,
+    "cliffAnchorCountPreserved": 194,
+    "northOwnerPPixelsByRole": {
+      "ridge": 75173,
+      "fill": 74155
+    }
+  },
+  "pilotSeed": {
+    "receiptSha256": "cf23c18db3871ad9e59818f4c4be82bc1e09a08371de8e4880ac7f5dfea48110",
+    "selectedCrowns": 11,
+    "ids": [
+      "forest-edge-r15-121.490",
+      "forest-edge-r15-126.655",
+      "forest-edge-r15-130.265",
+      "forest-edge-r16-132.830",
+      "forest-edge-r16-124.055",
+      "forest-edge-r16-128.760",
+      "forest-edge-r15-120.215",
+      "forest-edge-r16-123.205",
+      "forest-edge-r16-127.700",
+      "forest-edge-r15-126.230",
+      "forest-edge-r16-132.405"
+    ],
+    "approvedCrop": [
+      3136,
+      416,
+      640,
+      512
+    ],
+    "fullCropAlphaXorPixels": 2419,
+    "originalMeasuredTargetAlphaXorPixels": 0,
+    "originalMeasuredTargetBoundsGlobal32ppc": [
+      3328,
+      416,
+      3776,
+      928
+    ]
+  },
+  "limitations": [
+    "static full Act1 generation only; no app/public/gate/native changes",
+    "actual game new-game spawn/save-resume and runtime collision/streaming are unverified",
+    "6ppc underpaint/fallback alpha is LANCZOS-resampled and is not proven silhouette-identical to the 32ppc QOK collision; see lowresFallbackSupport",
+    "current A1OW was copied exactly and left unchanged; no reinterpretation or collision rebake was performed",
+    "R26 polygon authority remains design-only, not runtime collision"
+  ]
+}

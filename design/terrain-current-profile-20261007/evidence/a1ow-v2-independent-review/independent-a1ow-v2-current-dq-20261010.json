@@ -1,0 +1,127 @@
+{
+  "consumerIntegration": {
+    "consumerFunction": "verified_a1ow_v2_source_overlay",
+    "consumerPath": "/Users/chris/.codex/workspaces/edu-rpg-forward-20261007/design/terrain-current-profile-20261007/generate_forward_profile.py",
+    "currentPinnedReviewSha256": "fc2f7a5e449cc1079edb3f8bd2ceb7127ad7236e110c35ceb6349f931cb1e20e",
+    "currentProofPath": "/Users/chris/.codex/workspaces/edu-rpg-forward-20261007/design/terrain-current-profile-20261007/evidence/a1ow-v2-independent-review/independent-a1ow-v2-recomputation-c3c231cb-review.json",
+    "currentProofSha256": "fc2f7a5e449cc1079edb3f8bd2ceb7127ad7236e110c35ceb6349f931cb1e20e",
+    "integrationStatus": "PRE-REBIND: strict generator still pins the historical c3-bound review; current-DQ report awaits the existing path/hash pin update",
+    "newProofIsNotConsumerPinned": true
+  },
+  "independentDqSourceEquivalence": {
+    "schema": "a1ow-dq-source-equivalence-v1",
+    "baselinePath": "/private/tmp/edu-rpg-build83-paint-audit-20261005/native-whole-rock-20261008/derived-release84-north/Build/Products/Release-iphonesimulator/App.app/public/dq-tiles.js",
+    "baselineSha256": "c3c231cb4634039aa838e70c728b2e6922645ce9a40b86705d6a48d4f5f40c1a",
+    "baselineTailByteOffset": 307731,
+    "updatedPath": "/Users/chris/.codex/workspaces/edu-rpg-forward-20261007/public/dq-tiles.js",
+    "updatedSha256": "2012fbce196d2c1ed2b62a1bb09cb8325292da35ca9d2a4b2f93542a5e5167ac",
+    "updatedTailByteOffset": 314795,
+    "changedDiffHunks": [
+      "@@ -1090 +1090,2 @@\n",
+      "@@ -1467 +1468,2 @@\n",
+      "@@ -1469 +1471 @@\n",
+      "@@ -1472 +1474 @@\n",
+      "@@ -1508,0 +1511,47 @@\n",
+      "@@ -1790,0 +1840,23 @@\n",
+      "@@ -1793 +1865 @@\n",
+      "@@ -2878,2 +2949,0 @@\n",
+      "@@ -2881,3 +2951,7 @@\n",
+      "@@ -2895,0 +2970,8 @@\n",
+      "@@ -2970,0 +3053,21 @@\n",
+      "@@ -3049 +3152,4 @@\n",
+      "@@ -3050,0 +3157 @@\n"
+    ],
+    "allChangedDiffHunksBeforeCollisionRuntimeAnchor": true,
+    "collisionRuntimeTailAnchor": "var A1M_FOOT=12;",
+    "collisionRuntimeTailAnchorLine": 4424,
+    "lastChangedOldSourceLine": 3049,
+    "collisionRuntimeTailBytes": 252252,
+    "collisionRuntimeTailSha256": "f542b7570cec71c7e347090d2cdab2a7cf8c844c5d8fd781bac12dbec5ceed44",
+    "identicalCollisionRuntimeTail": true,
+    "interpretation": "Current DQ renderer changes are before the A1M_FOOT anchor. The A1M/A1F/OWM runtime implementation tail, including A1OW decode/assembly, collision, and movement functions, is byte-identical to the immediately preceding c3 DQ runtime.",
+    "checks": {
+      "a1owBinarySha256MatchesContract": true,
+      "allChangedDiffHunksBeforeCollisionRuntimeAnchor": true,
+      "bakerShaMatchesContract": true,
+      "collisionTailExact": true,
+      "currentSourceMatchesUpdatedProof": true,
+      "dqHashMatchesFinalSource": true,
+      "mapProofShaMatches": true,
+      "originalA1owBodyReviewPass": true,
+      "decodedHeaderAndSupportMatchHistoricalReview": true,
+      "currentConsumerPinStateVerified": true
+    }
+  },
+  "inputs": {
+    "bakerPath": "scripts/bake_act1_overworld_walk.mjs",
+    "bakerSha256": "8f172f77de9ccddebafd0d742a13fdc22d5258c652eacf5df5b0ba5d25c9eb2b",
+    "candidateRoot": "/Users/chris/.codex/workspaces/edu-rpg-forward-20261007",
+    "dqTilesSha256": "2012fbce196d2c1ed2b62a1bb09cb8325292da35ca9d2a4b2f93542a5e5167ac",
+    "frozenV1Sha256": "d87c6572cbf3012180a289196cfe5e7eee7c50dc86beb06a999fa491eeacfdf3",
+    "mapProofSha256": "a9fecf54db9de1f18a1f26c3f74b1bab9be230a247076e10580859e7074ab212",
+    "v2Path": "public/act1-overworld-walk.bin",
+    "v2Sha256": "00a520ae09089547ca4af4ef1077b84acdad98d4989de238f3ee30e28ad092c6"
+  },
+  "payload": {
+    "byteIdentical": true,
+    "bytes": 9688576,
+    "frozenV1BodySha256": "05be9638d04a692668c3a1c8b4bd3d809216bcede2e090a74a0712cb5467498c",
+    "v2BodySha256": "05be9638d04a692668c3a1c8b4bd3d809216bcede2e090a74a0712cb5467498c"
+  },
+  "schema": "independent-a1ow-v2-integration-review-v1",
+  "semantics": {
+    "sha256": "a6e6e7f228d040381539618d99f03e774a16dd7cadbaf8cc76a115934d324f67",
+    "sourceFunctionNames": [
+      "_h",
+      "vnoise",
+      "et",
+      "fieldAt",
+      "waterField",
+      "mountainField",
+      "buildMutedWater",
+      "owmSupportBounds",
+      "owmSupportEt",
+      "owmSupportInputBytes"
+    ],
+    "sourceSha256": "4ed7c44a096169e9f9354c4a568ffa3dab4ebfe9fb2fd5339ae8b31dce2bacdb"
+  },
+  "status": "PASS_A1OW_V2_IDENTITY_AND_BODY",
+  "support": {
+    "bounds": {
+      "x0": 0,
+      "x1": 208,
+      "y0": 173,
+      "y1": 399
+    },
+    "classByteCount": 47443,
+    "effectiveClassBytesSha256": "63d55c8dd75d6d946f5b56e3f58ce6a4ec287e6ccccddebed61329a70fb972d3",
+    "fnv32": 4271507709,
+    "mutedWater": "4-connected global components <= 12 suppressed",
+    "schema": "a1ow-effective-support-v1",
+    "sha256": "eeaf65c08cda239ea8755a3af0026ed0ca61e19a2683cafc10610b5c4027914a"
+  },
+  "v2Header": {
+    "blocks": 4094,
+    "exactLength": 9688672,
+    "far": 255,
+    "headerBytes": 96,
+    "magic": "A1OW",
+    "mapCells": [
+      320,
+      400
+    ],
+    "pixelsPerCell": 48,
+    "reservedBytesZero": true,
+    "version": 2
+  },
+  "reissueProvenance": {
+    "priorReviewPath": "/private/tmp/edu-rpg-build83-paint-audit-20261005/native-whole-rock-20261008/north-perimeter-repair-20261010/independent-a1ow-v2-recomputation-c3c231cb-review.json",
+    "priorReviewSha256": "fc2f7a5e449cc1079edb3f8bd2ceb7127ad7236e110c35ceb6349f931cb1e20e",
+    "retainedHistoricalGenerationProof": true,
+    "newFullGenerationPerformed": false,
+    "currentConsumerReviewPath": "/Users/chris/.codex/workspaces/edu-rpg-forward-20261007/design/terrain-current-profile-20261007/evidence/a1ow-v2-independent-review/independent-a1ow-v2-recomputation-c3c231cb-review.json",
+    "currentConsumerReviewSha256": "fc2f7a5e449cc1079edb3f8bd2ceb7127ad7236e110c35ceb6349f931cb1e20e",
+    "currentConsumerPrePinState": "generate_forward_profile.py still pins the c3-bound review at the path/hash above; this current-DQ review awaits the existing path/hash pin update.",
+    "currentInputValidation": "Current descriptor A1OW contract, A1OW v2 binary, baker, and baked-final-map proof were independently hashed/decoded and match the retained historical review."
+  }
+}

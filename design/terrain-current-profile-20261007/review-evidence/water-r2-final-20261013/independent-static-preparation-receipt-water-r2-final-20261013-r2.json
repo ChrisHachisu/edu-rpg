@@ -1,0 +1,122 @@
+{
+  "authoringInputInventorySha256": "d3c383100c489cd984d18bd695b6f14bfac2d22e885bc28a5a5df1e75aa8f938",
+  "checks": {
+    "a1owDecode": {
+      "proofPath": "design/terrain-current-profile-20261007/evidence/a1ow-v2-independent-review/independent-a1ow-v2-current-dq-20261013-water-r2-contact-source-review-identity-r1.json",
+      "proofSha256": "c154db43b899e07db58d27adb55767ad42c906f6133bcca258280db5b7151484",
+      "result": "PASS"
+    },
+    "chunkBoundaries": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/water-r2-final-20261013/independent-final-r2-output-review.md",
+      "proofSha256": "edf7ef282db1405ea31c77f831c63c5acdb2b7f9d9358fa9fc13d6e3e4743b4e",
+      "result": "PASS"
+    },
+    "cleanRegeneration": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/water-r2-final-20261013/regeneration-comparison.json",
+      "proofSha256": "a8e3c11e959bd8d03a1952ca8fa27b2364e9a9938266055de8dcfa41b6f246f2",
+      "result": "PASS"
+    },
+    "collisionDecode": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/water-r2-final-20261013/final-r2-safe-cell-clearance-review.json",
+      "proofSha256": "a8b5ed56b328d37cdee8ba46e8738015f8e3e6d9ece5ece2466c3ee8ffbe5693",
+      "result": "PASS"
+    },
+    "currentGuard": {
+      "proofPath": "design/terrain-current-profile-20261007/evidence/runtime-invariants-static.json",
+      "proofSha256": "19f7311cc229f99b2c1fd7be4eb548cf38593580bddce82a36c84a970e21d293",
+      "result": "PASS"
+    },
+    "decodedPixels": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/water-r2-final-20261013/independent-final-r2-output-review.md",
+      "proofSha256": "edf7ef282db1405ea31c77f831c63c5acdb2b7f9d9358fa9fc13d6e3e4743b4e",
+      "result": "PASS"
+    },
+    "globalCropReconstruction": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/water-r2-final-20261013/independent-final-r2-output-review.md",
+      "proofSha256": "edf7ef282db1405ea31c77f831c63c5acdb2b7f9d9358fa9fc13d6e3e4743b4e",
+      "result": "PASS"
+    },
+    "heroFrameClearance": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/water-r2-final-20261013/final-r2-safe-cell-clearance-review.json",
+      "proofSha256": "a8b5ed56b328d37cdee8ba46e8738015f8e3e6d9ece5ece2466c3ee8ffbe5693",
+      "result": "PASS"
+    },
+    "renderedReview": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/water-r2-final-20261013/independent-final-r2-output-review.md",
+      "proofSha256": "edf7ef282db1405ea31c77f831c63c5acdb2b7f9d9358fa9fc13d6e3e4743b4e",
+      "result": "PASS"
+    },
+    "runtimeInvariants": {
+      "proofPath": "design/terrain-current-profile-20261007/evidence/runtime-invariants-static.json",
+      "proofSha256": "19f7311cc229f99b2c1fd7be4eb548cf38593580bddce82a36c84a970e21d293",
+      "result": "PASS"
+    },
+    "safeCells": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/water-r2-final-20261013/final-r2-safe-cell-clearance-review.json",
+      "proofSha256": "a8b5ed56b328d37cdee8ba46e8738015f8e3e6d9ece5ece2466c3ee8ffbe5693",
+      "result": "PASS"
+    },
+    "sourceResourceClosure": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/water-r2-final-20261013/independent-final-r2-output-review.md",
+      "proofSha256": "edf7ef282db1405ea31c77f831c63c5acdb2b7f9d9358fa9fc13d6e3e4743b4e",
+      "result": "PASS"
+    },
+    "underpaintPhase": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/water-r2-final-20261013/independent-final-r2-output-review.md",
+      "proofSha256": "edf7ef282db1405ea31c77f831c63c5acdb2b7f9d9358fa9fc13d6e3e4743b4e",
+      "result": "PASS"
+    },
+    "visibleAlpha": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/water-r2-final-20261013/north-qok-final18-union-review.json",
+      "proofSha256": "3090babc684217ebecd145888be2b7df5c99f1c5d92c505b62acb3f13d5d1de7",
+      "result": "PASS"
+    }
+  },
+  "claim": "Independent static QA-preparation review of final-r2 terrain outputs and source proof bundle. Evidence binds A/B output identity, water and contact mask changes, current collision union, QOK decode, 149-cell hero-frame clearance, and rendered crop reconstruction. Preparation only; no runtime, native, device, route, or release acceptance.",
+  "generatedOutputInventorySha256": "a509447d1f75ff701bae7aea3c2e2fc5149d9eba5ac125eb7b22d67e018819a9",
+  "integrationRecheck": {
+    "allAandBInventoryBytesAndPathsEqual": true,
+    "collisionUnionAlphaSha256": "0baf807bfd429b8ae945439c62c23610fcf62ae0fa6eeae01dcbf5c7d468fae7",
+    "fallbackVersusSpriteDecodedCropDifferences": 0,
+    "finalR2AuthorHandoffSha256": "ba22a440ad62376c2f0c2478d82ad94a5d3f277850e35e989f3b065bbe6b053e",
+    "finalR2CollisionSha256": "a0d08d9d1bae329355f9c44b60d6b3484f5e00717386d7d99cd4a8f309d6307e",
+    "finalR2OutputReceiptsSha256": [
+      "ea0d4e5792aa03df8e82e901115bf60734e752c8f61d8a308784c58cb2b3bb48",
+      "379376e6db270a7c7c1d2f14abed46bb0404a7bb7ed440db972fadae6cd50ecf"
+    ],
+    "newQokBits": 1414,
+    "northSupportAlphaSha256": "d339fa63833b0ce52cbdc503cf25f05b28cb7bccba5f0a5b2ad6bcdee524b13a",
+    "outputFilesPerRun": 494,
+    "r2bActualFallbackCropManifestSha256": "a91c149d010dc253c797b9ed1ec3650f41b0c39284e58f07e49d27c749866c38",
+    "raisedArtAlphaSha256": "267f7bd1e00b58a1e8b366633fceac6673919e39267578295df598735526bbeb",
+    "safeCellCount": 149,
+    "safeCellQokHits": {
+      "g3": 0,
+      "male": 0
+    },
+    "staticOnly": true,
+    "unionPackedBitsSha256": "72558e1a7605850a657d32b52c5c49ad7d07a6f83ec3069bdfeaba1956e43b3d"
+  },
+  "limitations": [
+    "QA preparation only. gateReady and releaseEligible must remain false.",
+    "No app runtime, simulator, native collision/movement, device, route, or release acceptance is established.",
+    "Profile test outcome is author-reported and not represented as reviewer-run."
+  ],
+  "profileId": "act1-forward-20261007-v1",
+  "result": "QA_PREPARATION_PASS",
+  "reviewerRole": "independent",
+  "runner": {
+    "path": "design/terrain-current-profile-20261007/review-tools/recompute_forward_outputs.py",
+    "sha256": "2017b4a00aeb7cc82054c8afa56b731c58d2a57578b27d5f55894c05f076e0eb",
+    "version": "pinned-forward-output-recomputation-v1"
+  },
+  "schema": "qok-forward-preparation-receipt-v1",
+  "toolingReview": {
+    "independentOutputReviewPath": "design/terrain-current-profile-20261007/review-evidence/water-r2-final-20261013/independent-final-r2-output-review.md",
+    "independentOutputReviewSha256": "edf7ef282db1405ea31c77f831c63c5acdb2b7f9d9358fa9fc13d6e3e4743b4e",
+    "independentQokUnionProofPath": "design/terrain-current-profile-20261007/review-evidence/water-r2-final-20261013/north-qok-final18-union-review.json",
+    "independentQokUnionProofSha256": "3090babc684217ebecd145888be2b7df5c99f1c5d92c505b62acb3f13d5d1de7",
+    "independentSafeCellClearanceSha256": "a8b5ed56b328d37cdee8ba46e8738015f8e3e6d9ece5ece2466c3ee8ffbe5693",
+    "profileTests": "author-reported 34 passed; not rerun by reviewer"
+  }
+}

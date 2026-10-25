@@ -1,0 +1,110 @@
+{
+  "authoringInputInventorySha256": "5da327a76fce3eaa25f7a812f6248f8c230caa324369b76a571a4dd6a76e9d70",
+  "checks": {
+    "a1owDecode": {
+      "proofSha256": "94c02f5080b243e06a32e1b11d16b41ee4787d7225e79f567b32a9498fda179e",
+      "result": "PASS"
+    },
+    "chunkBoundaries": {
+      "proofSha256": "edf7ef282db1405ea31c77f831c63c5acdb2b7f9d9358fa9fc13d6e3e4743b4e",
+      "result": "PASS"
+    },
+    "cleanRegeneration": {
+      "proofSha256": "a8e3c11e959bd8d03a1952ca8fa27b2364e9a9938266055de8dcfa41b6f246f2",
+      "result": "PASS"
+    },
+    "collisionDecode": {
+      "proofSha256": "a8b5ed56b328d37cdee8ba46e8738015f8e3e6d9ece5ece2466c3ee8ffbe5693",
+      "result": "PASS"
+    },
+    "currentGuard": {
+      "proofSha256": "9b194b86f60211a872c66492d5ad00c1d5367ecb87c78a809851f3aac4869055",
+      "result": "PASS"
+    },
+    "decodedPixels": {
+      "proofSha256": "edf7ef282db1405ea31c77f831c63c5acdb2b7f9d9358fa9fc13d6e3e4743b4e",
+      "result": "PASS"
+    },
+    "globalCropReconstruction": {
+      "proofSha256": "edf7ef282db1405ea31c77f831c63c5acdb2b7f9d9358fa9fc13d6e3e4743b4e",
+      "result": "PASS"
+    },
+    "heroFrameClearance": {
+      "proofSha256": "a8b5ed56b328d37cdee8ba46e8738015f8e3e6d9ece5ece2466c3ee8ffbe5693",
+      "result": "PASS"
+    },
+    "renderedReview": {
+      "proofSha256": "edf7ef282db1405ea31c77f831c63c5acdb2b7f9d9358fa9fc13d6e3e4743b4e",
+      "result": "PASS"
+    },
+    "runtimeInvariants": {
+      "proofSha256": "5586906e021e1938cfaf77de9eb955bead32ee5eebd3cd19d1c4f08bd0cc3037",
+      "result": "PASS"
+    },
+    "safeCells": {
+      "proofSha256": "a8b5ed56b328d37cdee8ba46e8738015f8e3e6d9ece5ece2466c3ee8ffbe5693",
+      "result": "PASS"
+    },
+    "sourceResourceClosure": {
+      "proofSha256": "7ec18170c0c157446ab14f83047e7fdd09f3c6c5f7608d0e1f0de51233d166ab",
+      "result": "PASS"
+    },
+    "underpaintPhase": {
+      "proofSha256": "9c9339b62826461ab34f65c323bf5ad932291eec2ed8e9fea42489c13a405661",
+      "result": "PASS"
+    },
+    "visibleAlpha": {
+      "proofSha256": "3090babc684217ebecd145888be2b7df5c99f1c5d92c505b62acb3f13d5d1de7",
+      "result": "PASS"
+    }
+  },
+  "claim": "Independent static QA-preparation review of the accepted Crystal cave-contact DQ source delta and its metadata-only generated-output rebind. This binds the exact candidate inputs/outputs and every preparation-stage proof. It does not establish current-candidate native gameplay, release eligibility, or a ready gate.",
+  "generatedOutputInventorySha256": "23f8507e5607b83ba3ed9e6f13f64a8e531469937cfcf5838fee510f41b20b5f",
+  "limitations": [
+    "Static preparation only; current-candidate native build and simulator interaction have not been performed by this review.",
+    "gateReady and releaseEligible remain false; dynamic checks and pending proof assertions remain open.",
+    "Native verification must demonstrate the x\u224868 dark-mouth approach, exact (149,279)\u2192(149,278) transition/interception, and roof/side refusal without opaque off-art traversal.",
+    "Prior underpaint phase and other listed static proof artifacts are bound by their existing exact hashes; this review does not claim a fresh underpaint render."
+  ],
+  "profileId": "act1-forward-20261007-v1",
+  "result": "QA_PREPARATION_PASS",
+  "review": {
+    "a1owSourceEquivalencePath": "design/terrain-current-profile-20261007/review-evidence/crystal-roof-20261016/a1ow-source-equivalence-integration-v2.json",
+    "a1owSourceEquivalenceSha256": "94c02f5080b243e06a32e1b11d16b41ee4787d7225e79f567b32a9498fda179e",
+    "allOtherOutputBytesUnchanged": true,
+    "baselineManifestSha256": "0455970820ff6c71252760f38422ad0209c45c1ceb1a00cfbb7eef4a6b1b2b91",
+    "baselineOutputReceiptSha256": "04012f89c10b48c4baeae064d5a1cfb47ba7d8c84bf5f33df4761599b4ef0861",
+    "changedPaths": [
+      "act1-hifi/manifest.json"
+    ],
+    "crystalPortalGeometryPath": "design/terrain-current-profile-20261007/review-evidence/crystal-roof-20261016/portal-cell-geometry.json",
+    "crystalPortalGeometrySha256": "158e2d39de5f453e2e739ee41a62162f3bb43ab5564ee841b231a8fd799528c9",
+    "crystalStaticReviewPath": "design/terrain-current-profile-20261007/review-evidence/crystal-roof-20261016/review.md",
+    "crystalStaticReviewSha256": "fed50b316a2b8b76f087b66e4199e88a56510cbf88dc6969f462a8e521c81d25",
+    "currentDqSha256": "a7e267a5c2d2d1061af7f66956d82853b42f00c82c1f63baf043defbeb1b2a43",
+    "currentOutputReceiptSha256": "a61d3c35260fb45b1c77d1769b053c08fce487660a1daf75e8dd1b4361d30a38",
+    "gateReady": false,
+    "generatorSha256": "82d6ce09ecbdfddd37591c43cf446d71f7003508af290ae5a39b852c1fd6b648",
+    "manifestSha256": "c3daa1ab14ee4af04e2941c92422e96330423658b7d23adb4c763db87db94008",
+    "metadataComparisonPath": "design/terrain-current-profile-20261007/review-evidence/crystal-roof-20261016/source-output-separation/metadata-only-rebind-comparison.json",
+    "metadataComparisonSha256": "482a9c3599eec87d07d5dd620bff2992df8090629bf26163897719cd8825b8f8",
+    "nativeOrRenderedAcceptance": false,
+    "outputPathCount": 494,
+    "protectedArtifacts": {
+      "a1owSha256": "00a520ae09089547ca4af4ef1077b84acdad98d4989de238f3ee30e28ad092c6",
+      "frozenEngineSha256": "ab4fc9ad1204f23b4ea55dbae2d72bdf193a52e643271bcfe8642e2210556456",
+      "publicDistDqByteIdentical": true,
+      "publicDistManifestByteIdentical": true,
+      "qokSha256": "a0d08d9d1bae329355f9c44b60d6b3484f5e00717386d7d99cd4a8f309d6307e"
+    },
+    "releaseEligible": false,
+    "unchangedPriorOutputs": 493
+  },
+  "reviewerRole": "independent",
+  "runner": {
+    "path": "scripts/test_terrain_current_profile.py",
+    "sha256": "9850b84107b0eaff1e540f54d23ad928f7ad49925314ee7d0ae3200858fcafbf",
+    "version": "terrain-current-profile-preparation-suite-v1"
+  },
+  "schema": "qok-forward-preparation-receipt-v1"
+}

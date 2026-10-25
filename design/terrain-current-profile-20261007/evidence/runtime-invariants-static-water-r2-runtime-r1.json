@@ -1,0 +1,39 @@
+{
+  "schema": "qok-forward-runtime-invariants-static-observation-v1",
+  "profileId": "act1-forward-20261007-v1",
+  "status": "scoped-current-source-observation; requires independent typed receipt",
+  "assertions": {
+    "viewport": [
+      320,
+      400
+    ],
+    "saveVersion": 4
+  },
+  "assertionScope": "Only viewport and SAVE_VERSION are asserted here; they are unchanged from the prior static observation.",
+  "priorObservation": {
+    "path": "design/terrain-current-profile-20261007/evidence/runtime-invariants-static.json",
+    "sha256": "19f7311cc229f99b2c1fd7be4eb548cf38593580bddce82a36c84a970e21d293",
+    "reusedAssertions": [
+      "viewport",
+      "saveVersion"
+    ],
+    "notReused": [
+      "current DQ identity",
+      "current manifest identity",
+      "native/runtime behavior"
+    ]
+  },
+  "currentIdentity": {
+    "dqTilesPath": "public/dq-tiles.js",
+    "dqTilesSha256": "ca2447a5e816455e1f2441687d01839e1cce8192df9f116f486de0aff98fc5df",
+    "manifestPath": "public/act1-hifi/manifest.json",
+    "manifestSha256": "b13ba107d926ff924d45a59f3b5d6dd1ec14234249dabfb64655ce6f6fc1ac0a",
+    "generatorPath": "design/terrain-current-profile-20261007/generate_forward_profile.py",
+    "generatorSha256": "bb2a8fa9f00b5ea69603132bfb72d6d3032e21e778be747710552e8c543be911",
+    "runtimeReviewPath": "design/terrain-current-profile-20261007/review-evidence/water-r2-runtime-repair-20261013/independent-partial-water-r2-runtime-review-20261013.md",
+    "runtimeReviewSha256": "584834de2e286386a38bf996fc738cce1140482385a01d48bfe29684ebe9212d"
+  },
+  "limitations": [
+    "No native/runtime behavior, route connectivity, or device validation is asserted."
+  ]
+}

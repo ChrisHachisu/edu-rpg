@@ -1,0 +1,794 @@
+{
+  "artifactFileVerification": [
+    {
+      "bytes": 185316,
+      "classification": "file",
+      "identityScope": "pre-next-rebind source snapshot; future pin edit changes this hash",
+      "label": "current consumer",
+      "path": "/Users/chris/.codex/workspaces/edu-rpg-forward-20261007/design/terrain-current-profile-20261007/generate_forward_profile.py",
+      "sha256": "2a8c37fdc80edef953171ffd4aa13ceccfbd8a16f49fa0eca5c668ccab1f2027"
+    },
+    {
+      "bytes": 19974,
+      "classification": "file",
+      "identityScope": "existing failed consumer pin before this repair",
+      "label": "currently pinned predecessor review",
+      "path": "/Users/chris/.codex/workspaces/edu-rpg-forward-20261007/design/terrain-current-profile-20261007/evidence/a1ow-v2-independent-review/independent-a1ow-v2-current-dq-20261013-water-r2-contact-source-review-identity-r1.json",
+      "sha256": "c154db43b899e07db58d27adb55767ad42c906f6133bcca258280db5b7151484"
+    },
+    {
+      "bytes": 597870,
+      "classification": "file",
+      "identityScope": "Current public source for the reviewed cave-local delta.",
+      "label": "current DQ public",
+      "path": "/Users/chris/.codex/workspaces/edu-rpg-forward-20261007/public/dq-tiles.js",
+      "sha256": "b12d7eedea5420d18605633d66ee698fda24a538e1b026e9e7a092b3a1ddcb0a"
+    },
+    {
+      "bytes": 597870,
+      "classification": "file",
+      "identityScope": "Byte-identical dist twin for the reviewed cave-local delta.",
+      "label": "current DQ dist",
+      "path": "/Users/chris/.codex/workspaces/edu-rpg-forward-20261007/dist/dq-tiles.js",
+      "sha256": "b12d7eedea5420d18605633d66ee698fda24a538e1b026e9e7a092b3a1ddcb0a"
+    },
+    {
+      "bytes": 591893,
+      "classification": "file",
+      "identityScope": "Still the 6a605a8 baseline; not synchronized to b12 and excluded from candidate twin claim.",
+      "label": "current DQ iOS",
+      "path": "/Users/chris/.codex/workspaces/edu-rpg-forward-20261007/ios/App/App/public/dq-tiles.js",
+      "sha256": "6a605a8f0d7d2513871c9b8e5a18f30fa7a403ee2ec0e42a4f1646d2e4d5da1d"
+    },
+    {
+      "bytes": 185316,
+      "classification": "file",
+      "identityScope": "pre-next-rebind source snapshot; future pin edit changes this hash",
+      "label": "generator",
+      "path": "/Users/chris/.codex/workspaces/edu-rpg-forward-20261007/design/terrain-current-profile-20261007/generate_forward_profile.py",
+      "sha256": "2a8c37fdc80edef953171ffd4aa13ceccfbd8a16f49fa0eca5c668ccab1f2027"
+    },
+    {
+      "bytes": 1850,
+      "classification": "file",
+      "label": "overlay",
+      "path": "/Users/chris/.codex/workspaces/edu-rpg-forward-20261007/design/terrain-current-profile-20261007/placements/cliff-current-feedback-overlay-v1.json",
+      "sha256": "ddcd827c2343772ea2b2b7391ea123acd16153ee45dfde5ca87a3d28a93b104d"
+    },
+    {
+      "bytes": 6960,
+      "classification": "file",
+      "label": "overlay focused test",
+      "path": "/Users/chris/.codex/workspaces/edu-rpg-forward-20261007/design/terrain-current-profile-20261007/test_cliff_feedback_overlay.py",
+      "sha256": "cc5113ec9f8e507e205340fbb03b660594ecaddc1dbb995c5e077a84af0615c5"
+    },
+    {
+      "bytes": 9764,
+      "classification": "file",
+      "label": "water loader test",
+      "path": "/Users/chris/.codex/workspaces/edu-rpg-forward-20261007/scripts/test_act1_water_r2_loader.cjs",
+      "sha256": "b11d4a2818c247a9a732742083462c6db8e58989e037d1373d2e35df0d417599"
+    },
+    {
+      "bytes": 124289,
+      "classification": "file",
+      "label": "strict decoder",
+      "path": "/Users/chris/.codex/workspaces/edu-rpg-forward-20261007/scripts/terrain_current_profile.py",
+      "sha256": "f669be8f6087e62453746790142f8821bafd24d828a0d1754487579fb9359c6f"
+    },
+    {
+      "bytes": 255379,
+      "classification": "file",
+      "label": "forward descriptor",
+      "path": "/Users/chris/.codex/workspaces/edu-rpg-forward-20261007/design/terrain-current-profile-20261007/forward-profile-descriptor.json",
+      "sha256": "e986f6a185100ee98209d1076b4830f52a41ca889bafe2ff9818ab0a070e30d4"
+    },
+    {
+      "bytes": 30624,
+      "classification": "file",
+      "label": "A1OW baker",
+      "path": "/Users/chris/.codex/workspaces/edu-rpg-forward-20261007/scripts/bake_act1_overworld_walk.mjs",
+      "sha256": "8f172f77de9ccddebafd0d742a13fdc22d5258c652eacf5df5b0ba5d25c9eb2b"
+    },
+    {
+      "bytes": 9688672,
+      "classification": "file",
+      "label": "A1OW public binary",
+      "path": "/Users/chris/.codex/workspaces/edu-rpg-forward-20261007/public/act1-overworld-walk.bin",
+      "sha256": "00a520ae09089547ca4af4ef1077b84acdad98d4989de238f3ee30e28ad092c6"
+    },
+    {
+      "bytes": 9688672,
+      "classification": "file",
+      "label": "A1OW dist binary",
+      "path": "/Users/chris/.codex/workspaces/edu-rpg-forward-20261007/dist/act1-overworld-walk.bin",
+      "sha256": "00a520ae09089547ca4af4ef1077b84acdad98d4989de238f3ee30e28ad092c6"
+    },
+    {
+      "bytes": 9688672,
+      "classification": "file",
+      "label": "A1OW iOS binary",
+      "path": "/Users/chris/.codex/workspaces/edu-rpg-forward-20261007/ios/App/App/public/act1-overworld-walk.bin",
+      "sha256": "00a520ae09089547ca4af4ef1077b84acdad98d4989de238f3ee30e28ad092c6"
+    },
+    {
+      "bytes": 262999,
+      "classification": "file",
+      "label": "baked map proof",
+      "path": "/Users/chris/.codex/workspaces/edu-rpg-forward-20261007/design/terrain-current-profile-20261007/evidence/a1ow-v2-independent-review/baked-final-map.json",
+      "sha256": "a9fecf54db9de1f18a1f26c3f74b1bab9be230a247076e10580859e7074ab212"
+    },
+    {
+      "bytes": 16322,
+      "classification": "file",
+      "label": "prior A1OW basis review",
+      "path": "/Users/chris/.codex/workspaces/edu-rpg-forward-20261007/design/terrain-current-profile-20261007/evidence/a1ow-v2-independent-review/independent-a1ow-v2-current-dq-20261013-water-cache-r1.json",
+      "sha256": "bbd871d26a2aef234faa91fc54bd6c9dc658473ac65ac2592e6bfcf6d59fbdc3"
+    },
+    {
+      "bytes": 12889,
+      "classification": "file",
+      "label": "prior overlay source review",
+      "path": "/Users/chris/.codex/workspaces/edu-rpg-forward-20261007/design/terrain-current-profile-20261007/evidence/a1ow-v2-independent-review/independent-a1ow-v2-current-dq-20261013-overlay18-source-review.json",
+      "sha256": "64133089266cb06f9a58b663d67de61e55c68f4d2ef9074741296d7e083d204e"
+    },
+    {
+      "bytes": 40511,
+      "classification": "file",
+      "label": "correct r1d checkpoint",
+      "path": "/private/tmp/edu-rpg-build84-feedback-20261013/terrain-implementation-plan/generation-water-r2-final-r1/source-checkpoint-semantic-w-r1c/north-contact-r1d/checkpoint.json",
+      "sha256": "90f84702be88274d1237bd868b9fd2ce5d7518363e4849c33d940b5bbf8d541b"
+    },
+    {
+      "bytes": 69025,
+      "classification": "file",
+      "label": "post-contact 108 diagnostic",
+      "path": "/private/tmp/edu-rpg-build84-feedback-20261013/terrain-implementation-plan/generation-water-r2-final-r1/source-checkpoint-semantic-w-r1c/north-contact-r1d/post-contact-108-diagnostic.json",
+      "sha256": "2faa7ad403f2364b5ff6a9947c2738aa0028f6640f16be1d83a063b4952adb0f"
+    },
+    {
+      "bytes": 397127,
+      "classification": "file",
+      "label": "correct r1d crop",
+      "path": "/private/tmp/edu-rpg-build84-feedback-20261013/terrain-implementation-plan/generation-water-r2-final-r1/source-checkpoint-semantic-w-r1c/north-contact-r1d/north-contact-fringe-zoom.png",
+      "sha256": "5f2a76eb5a46fa2ab9323612d06f9a2a913350f5062d351e095df0f1a9089c14"
+    },
+    {
+      "bytes": 5420,
+      "classification": "file",
+      "label": "contact delta",
+      "path": "/private/tmp/edu-rpg-build84-feedback-20261013/terrain-implementation-plan/generation-water-r2-final-r1/source-checkpoint-semantic-w-r1c/north-contact-r1d/north-contact-delta.png",
+      "sha256": "6f967ec9bc649e69c09392749ac8bb1bbdb0f5cfed9b5368b75d62368594a2a5"
+    },
+    {
+      "bytes": 138266,
+      "classification": "file",
+      "label": "actual generation input manifest",
+      "path": "/Users/chris/.codex/workspaces/edu-rpg-forward-20261007/design/terrain-current-profile-20261007/current/act1-hifi-manifest.json",
+      "sha256": "c6d69d659ea4e82b09feabae624c2cbd4406627405bb389a36547bd44cc4183f"
+    },
+    {
+      "bytes": 28509,
+      "classification": "file",
+      "label": "superseded defective review",
+      "path": "/private/tmp/edu-rpg-build84-feedback-20261013/independent-review/independent-a1ow-v2-current-dq-20261013-water-r2-contact-source-review-r1d.json",
+      "sha256": "82a08ce367e0fc8311a7cf9e7cc3e0f5f70c106f7cbcab324df554a7b429de8b"
+    },
+    {
+      "bytes": 11973,
+      "classification": "file",
+      "label": "runtime focused DQ test",
+      "path": "/Users/chris/.codex/workspaces/edu-rpg-forward-20261007/scripts/test_partial_water_r2_runtime.cjs",
+      "sha256": "331f05e34ee6e923e97d5c3b336d6a76faef67e5267c9d8c70d3e636915cfab7"
+    },
+    {
+      "bytes": 2713,
+      "classification": "file",
+      "label": "independent partial-water runtime review",
+      "path": "/private/tmp/edu-rpg-build84-feedback-20261013/independent-review/partial-water-r2-runtime-review-20261013.md",
+      "sha256": "584834de2e286386a38bf996fc738cce1140482385a01d48bfe29684ebe9212d"
+    },
+    {
+      "bytes": 589783,
+      "classification": "file",
+      "label": "historical pre-runtime DQ snapshot",
+      "path": "/private/tmp/edu-rpg-build84-feedback-20261013/native-r2-20261013/DerivedData/Build/Products/Release-iphonesimulator/App.app/public/dq-tiles.js",
+      "sha256": "b98a4ca9a3f2c5bc528db4657ada7b1b7793b0d8469973356c9e2ed06af8135b"
+    },
+    {
+      "bytes": 19974,
+      "classification": "file",
+      "label": "prior current-DQ identity record",
+      "path": "/Users/chris/.codex/workspaces/edu-rpg-forward-20261007/design/terrain-current-profile-20261007/evidence/a1ow-v2-independent-review/independent-a1ow-v2-current-dq-20261013-water-r2-contact-source-review-identity-r1.json",
+      "sha256": "c154db43b899e07db58d27adb55767ad42c906f6133bcca258280db5b7151484"
+    },
+    {
+      "bytes": 591324,
+      "classification": "file",
+      "label": "exact prepatch DQ snapshot",
+      "path": "/private/tmp/edu-rpg-build84-feedback-20261013/native-remaining-gate-20261015/cave-reentry-fix/prepatch-public-dq-tiles.js",
+      "sha256": "ca2447a5e816455e1f2441687d01839e1cce8192df9f116f486de0aff98fc5df"
+    },
+    {
+      "bytes": 8402,
+      "classification": "file",
+      "identityScope": "Focused source regression for clipped cave mask and contact behavior.",
+      "label": "cave landmark contact test",
+      "path": "/Users/chris/.codex/workspaces/edu-rpg-forward-20261007/scripts/test_dq_tiles_landmark_contact.cjs",
+      "sha256": "557cb6dacc93bef90eff636cce4070170f464c77ceff89fb86ae1732dcae42ac"
+    },
+    {
+      "bytes": 5488,
+      "classification": "file",
+      "identityScope": "Focused source regression for same-scene prop lifecycle.",
+      "label": "scene re-entry regression",
+      "path": "/Users/chris/.codex/workspaces/edu-rpg-forward-20261007/scripts/test_dq_tiles_scene_reentry.cjs",
+      "sha256": "7ea9edfb84278e127cf430d650a64aad4e428d7c8108bfec1f5e928e08e4613a"
+    },
+    {
+      "bytes": 3229,
+      "classification": "file",
+      "identityScope": "Independent mask raster check source.",
+      "label": "cave mask generator",
+      "path": "/Users/chris/.codex/workspaces/edu-rpg-forward-20261007/scripts/generate_ww_contact_mask.py",
+      "sha256": "d8cb70dfa412b0a9d6c794ade035353480c5358fa3096ae4fe4b38403f8478d2"
+    },
+    {
+      "bytes": 124248,
+      "classification": "file",
+      "identityScope": "Current validator semantic snapshot with only the approved record-path pin removed.",
+      "label": "normalized preparation validator source",
+      "path": "/Users/chris/.codex/workspaces/edu-rpg-forward-20261007/design/terrain-current-profile-20261007/review-evidence/cave-roof-20261016/validator-root-pin-normalized-source.txt",
+      "sha256": "86032cb2c9d19245d04fce6b9dacd572e97845565e7b4061af1246bdf068bf06"
+    }
+  ],
+  "consumerIntegration": {
+    "consumerFunction": "verified_a1ow_v2_source_overlay",
+    "consumerPath": "design/terrain-current-profile-20261007/generate_forward_profile.py",
+    "integrationStatus": "Source/provenance and metadata-only QA preparation integration for current public/dist a7e267a is complete. Preserved installed App300d remains the prior b12d7ee candidate; this integration makes no new binary or native claim.",
+    "preRebindGeneratorSha256": "2a8c37fdc80edef953171ffd4aa13ceccfbd8a16f49fa0eca5c668ccab1f2027",
+    "preRebindReviewDQSha256": "b12d7eedea5420d18605633d66ee698fda24a538e1b026e9e7a092b3a1ddcb0a",
+    "preRebindReviewPath": "design/terrain-current-profile-20261007/evidence/a1ow-v2-independent-review/independent-a1ow-v2-current-dq-20261013-water-r2-runtime-source-review-r1.json",
+    "preRebindReviewSha256": "108742acf7da29409a2f4abdf14cb485a90a29a4b9e88c8d21dde2e3eba3a4bd",
+    "proposedProjectTargetPath": "design/terrain-current-profile-20261007/review-evidence/crystal-roof-20261016/a1ow-source-equivalence-integration-v2.json",
+    "stagedNestedProjectionTargetPath": "design/terrain-current-profile-20261007/review-evidence/crystal-roof-20261016/a1ow-source-projection.json"
+  },
+  "currentGeneratorConsumerCheck": {
+    "generatorSha256": "2a8c37fdc80edef953171ffd4aa13ceccfbd8a16f49fa0eca5c668ccab1f2027",
+    "method": "Independent review of the bounded v2 consumer changes and author-run focused suite. Positive v2 generator/validator fixtures reached full validation; v1 compatibility/regression and invalid projection/contact hash/escaped test-run path falsifiers were exercised. The test loader now targets the staged nested record at the final repo-relative path; that exact integrated-path rerun remains pending root materializing this record.",
+    "normalizedValidatorSourceSha256": "86032cb2c9d19245d04fce6b9dacd572e97845565e7b4061af1246bdf068bf06",
+    "productionMetadataIntegration": "PENDING. No integrated descriptor/preparation receipt pass is claimed.",
+    "result": "PASS_STATIC_TESTS_WITH_INTEGRATED_RECORD_RERUN_PENDING",
+    "validatorSha256": "f669be8f6087e62453746790142f8821bafd24d828a0d1754487579fb9359c6f"
+  },
+  "currentIdentityCrosscheck": {
+    "a1owPaths": [
+      "public/act1-overworld-walk.bin",
+      "dist/act1-overworld-walk.bin",
+      "ios/App/App/public/act1-overworld-walk.bin"
+    ],
+    "a1owSha256": "00a520ae09089547ca4af4ef1077b84acdad98d4989de238f3ee30e28ad092c6",
+    "a1owTwinsByteIdentical": true,
+    "actualGenerationInputManifestPath": "/Users/chris/.codex/workspaces/edu-rpg-forward-20261007/design/terrain-current-profile-20261007/current/act1-hifi-manifest.json",
+    "actualGenerationInputManifestSha256": "c6d69d659ea4e82b09feabae624c2cbd4406627405bb389a36547bd44cc4183f",
+    "bakerSha256": "8f172f77de9ccddebafd0d742a13fdc22d5258c652eacf5df5b0ba5d25c9eb2b",
+    "decoded": {
+      "blocks": 4094,
+      "headerBytes": 96,
+      "mapHeight": 400,
+      "mapWidth": 320,
+      "payloadSha256": "05be9638d04a692668c3a1c8b4bd3d809216bcede2e090a74a0712cb5467498c",
+      "semanticsSha256": "a6e6e7f228d040381539618d99f03e774a16dd7cadbaf8cc76a115934d324f67",
+      "supportFNV32": 4271507709,
+      "supportSha256": "eeaf65c08cda239ea8755a3af0026ed0ca61e19a2683cafc10610b5c4027914a",
+      "version": 2
+    },
+    "dqTilesSha256": "a7e267a5c2d2d1061af7f66956d82853b42f00c82c1f63baf043defbeb1b2a43",
+    "dqTwinPaths": [
+      "public/dq-tiles.js",
+      "dist/dq-tiles.js"
+    ],
+    "dqTwinsByteIdentical": true,
+    "installedApp300dDQStatus": "Preserved installed App300d remains tied to prior b12d7ee candidate per its build provenance; this wrapper does not claim that binary contains current a7e267a source or provide a new binary/native identity check.",
+    "iosDQStatus": "The not-yet-assembled iOS public copy remains the 6a605a8 baseline; it is not synchronized to current a7e267a public/dist source.",
+    "iosDqMatchesCandidate": false,
+    "iosDqSha256": "6a605a8f0d7d2513871c9b8e5a18f30fa7a403ee2ec0e42a4f1646d2e4d5da1d",
+    "mapProofSha256": "a9fecf54db9de1f18a1f26c3f74b1bab9be230a247076e10580859e7074ab212",
+    "overlaySha256": "ddcd827c2343772ea2b2b7391ea123acd16153ee45dfde5ca87a3d28a93b104d",
+    "qokHeaderSourceAlphaSha256": "0baf807bfd429b8ae945439c62c23610fcf62ae0fa6eeae01dcbf5c7d468fae7",
+    "qokPayloadSha256": "72558e1a7605850a657d32b52c5c49ad7d07a6f83ec3069bdfeaba1956e43b3d",
+    "qokSha256": "a0d08d9d1bae329355f9c44b60d6b3484f5e00717386d7d99cd4a8f309d6307e",
+    "qokUnionReviewPath": "design/terrain-current-profile-20261007/review-evidence/water-r2-final-20261013/north-qok-final18-union-review.json",
+    "qokUnionReviewSha256": "3090babc684217ebecd145888be2b7df5c99f1c5d92c505b62acb3f13d5d1de7",
+    "safeCellProofPath": "design/terrain-current-profile-20261007/review-evidence/water-r2-final-20261013/final-r2-safe-cell-clearance-review.json",
+    "safeCellProofSha256": "a8b5ed56b328d37cdee8ba46e8738015f8e3e6d9ece5ece2466c3ee8ffbe5693",
+    "worldMapSha256": "fb466fc6dbe7e05ccbb209c70867cacf4f903d55837ea69ca716e81f7196c96f"
+  },
+  "independentCacheRegression": {
+    "currentSourceResult": "PASS on baseline DQ 6a605a8: stale same-scene landmark replaced; live hidden same-scene sprite reused; both shared cache call sites guarded. Cave-local delta is separately covered by current b12d7ee contact/reentry test receipts.",
+    "path": "scripts/test_dq_tiles_scene_reentry.cjs",
+    "prepatchResult": "EXPECTED FAIL at same-map Continue assertion: no image attached after Phaser shutdown.",
+    "prepatchSourcePath": "/private/tmp/edu-rpg-build84-feedback-20261013/native-remaining-gate-20261015/cave-reentry-fix/prepatch-public-dq-tiles.js",
+    "prepatchSourceSha256": "ca2447a5e816455e1f2441687d01839e1cce8192df9f116f486de0aff98fc5df",
+    "scope": "Deterministic source harness; prior baseline-cache regression plus current cave-local static regressions only; not exact-candidate rendered/native acceptance.",
+    "sha256": "7ea9edfb84278e127cf430d650a64aad4e428d7c8108bfec1f5e928e08e4613a"
+  },
+  "independentDqSourceEquivalence": {
+    "baselineSource": {
+      "bytes": 591893,
+      "path": "public/dq-tiles.js",
+      "sha256": "6a605a8f0d7d2513871c9b8e5a18f30fa7a403ee2ec0e42a4f1646d2e4d5da1d"
+    },
+    "baselineTail": {
+      "legacyReviewPath": "design/terrain-current-profile-20261007/review-evidence/cave-reentry-20261015/a1ow-source-equivalence.json",
+      "legacyReviewSha256": "a9e7ca02240613adf34d864016ef9f6083cd913a6b89eba54d22ade35aee2c55",
+      "scope": "normalized semantic tail of baseline DQ 6a605a8 only; not a current-tail identity",
+      "sha256": "7974f54097586584fb1d3a7fd2d3a483055ec52d4e2f2699581f46ec15256be9",
+      "sourceSchema": "a1ow-dq-source-equivalence-v1",
+      "waterNormalization": {
+        "exactAddedBytes": "a1aDropPlateWaterBacking(terrainState,scene); ",
+        "occurrences": 2,
+        "rule": "remove only the two exact water-backing cleanup call strings plus their preceding added spaces from current tail"
+      }
+    },
+    "claims": {
+      "nativeOrRenderedPassClaimed": false,
+      "wholeCollisionRuntimeTailIdentical": false
+    },
+    "currentSource": {
+      "bytes": 602923,
+      "distPath": "dist/dq-tiles.js",
+      "publicPath": "public/dq-tiles.js",
+      "sha256": "a7e267a5c2d2d1061af7f66956d82853b42f00c82c1f63baf043defbeb1b2a43",
+      "twinsByteIdentical": true
+    },
+    "functionProjections": {
+      "a1mFree": {
+        "baselineSha256": "c1bf0f36277a2d607254477ea4c9bf8519e8bd2ca1618641aa8a9d56e146345d",
+        "currentAfterCallRemovalSha256": "c1bf0f36277a2d607254477ea4c9bf8519e8bd2ca1618641aa8a9d56e146345d",
+        "equal": true,
+        "normalization": "remove only exact one-line cave call bytes from extracted a1mFree function"
+      },
+      "unchangedFunctions": {
+        "a1fBuildStencil": {
+          "baselineSha256": "4d5dbdab4b20bf77a60135c30c2fbc16e7c0d0eabe76846ef6f83717edb2e79d",
+          "byteIdentical": true,
+          "currentSha256": "4d5dbdab4b20bf77a60135c30c2fbc16e7c0d0eabe76846ef6f83717edb2e79d"
+        },
+        "a1fHeroFree": {
+          "baselineSha256": "ac1caf8af4baa51faea770760888f3d349216d804bacb49c5eef671de2d3ba80",
+          "byteIdentical": true,
+          "currentSha256": "ac1caf8af4baa51faea770760888f3d349216d804bacb49c5eef671de2d3ba80"
+        },
+        "a1mFootDy": {
+          "baselineSha256": "416739f80a17924abe44da0e8d5c3ec44504a10980a187b0451874a4355b8bb1",
+          "byteIdentical": true,
+          "currentSha256": "416739f80a17924abe44da0e8d5c3ec44504a10980a187b0451874a4355b8bb1"
+        },
+        "owmAssemble": {
+          "baselineSha256": "acbac9d7385ee28c90a10458692338dd0555795c7df12b8f97e81617c95f1a5d",
+          "byteIdentical": true,
+          "currentSha256": "acbac9d7385ee28c90a10458692338dd0555795c7df12b8f97e81617c95f1a5d"
+        },
+        "owmBakeParse": {
+          "baselineSha256": "1dc1634017dcb91be462f9be20bdcb2e828d30961ec99174d7f9e8b88df01174",
+          "byteIdentical": true,
+          "currentSha256": "1dc1634017dcb91be462f9be20bdcb2e828d30961ec99174d7f9e8b88df01174"
+        },
+        "owmInvalidateSupport": {
+          "baselineSha256": "5d8d176996fb5350959ae7e3a6d140af927c04b3c3a3ef6c18890ab056af2552",
+          "byteIdentical": true,
+          "currentSha256": "5d8d176996fb5350959ae7e3a6d140af927c04b3c3a3ef6c18890ab056af2552"
+        },
+        "owmSupportBounds": {
+          "baselineSha256": "51fef291a7960999b9ad05201918906783cc08eb88c00ec9e80d8826e9647f95",
+          "byteIdentical": true,
+          "currentSha256": "51fef291a7960999b9ad05201918906783cc08eb88c00ec9e80d8826e9647f95"
+        },
+        "owmSupportEt": {
+          "baselineSha256": "05a36638d93f2d1e0809ea9c1ec753021f30e872fa888c2ab60abc98d02237c6",
+          "byteIdentical": true,
+          "currentSha256": "05a36638d93f2d1e0809ea9c1ec753021f30e872fa888c2ab60abc98d02237c6"
+        },
+        "owmSupportFor": {
+          "baselineSha256": "350f52c4b7acd672c2bd3cc669cb458357223816b7ad456b56e310f951ed6006",
+          "byteIdentical": true,
+          "currentSha256": "350f52c4b7acd672c2bd3cc669cb458357223816b7ad456b56e310f951ed6006"
+        },
+        "owmSupportHex": {
+          "baselineSha256": "f57f73ac4d11acd600fcea10cf8865bb9c34ef2647f1aec88efabe93bcf8200f",
+          "byteIdentical": true,
+          "currentSha256": "f57f73ac4d11acd600fcea10cf8865bb9c34ef2647f1aec88efabe93bcf8200f"
+        },
+        "owmSupportInputBytes": {
+          "baselineSha256": "48c909ffc5b6d1c206e7b2a538afc10fea3edb7137ffbd665d905bb2fd3ca480",
+          "byteIdentical": true,
+          "currentSha256": "48c909ffc5b6d1c206e7b2a538afc10fea3edb7137ffbd665d905bb2fd3ca480"
+        },
+        "owmSupportMatches": {
+          "baselineSha256": "ee31635230ec29213e8a6abf3e2109b025daf1f5c6d0bccf65d41ab9ff20f097",
+          "byteIdentical": true,
+          "currentSha256": "ee31635230ec29213e8a6abf3e2109b025daf1f5c6d0bccf65d41ab9ff20f097"
+        }
+      }
+    },
+    "immutableInputs": {
+      "a1ow": {
+        "bytes": 9688672,
+        "path": "public/act1-overworld-walk.bin",
+        "sha256": "00a520ae09089547ca4af4ef1077b84acdad98d4989de238f3ee30e28ad092c6"
+      },
+      "baker": {
+        "bytes": 30624,
+        "path": "scripts/bake_act1_overworld_walk.mjs",
+        "sha256": "8f172f77de9ccddebafd0d742a13fdc22d5258c652eacf5df5b0ba5d25c9eb2b"
+      },
+      "caveArt": {
+        "bytes": 34534,
+        "path": "public/act1-hifi/landmarks/whispering-woods.png",
+        "sha256": "a06eea6ab98c7c630119db1488dfea912a40bc69150ac16e387b4e696aa5f047"
+      },
+      "crystalCaveArt": {
+        "bytes": 30289,
+        "path": "public/act1-hifi/landmarks/crystal-cave.png",
+        "sha256": "45fb2c0b7cf1ad2e63ee9a28bbf0ad66e3d4d9ca9258beaf7a68566e04692b55"
+      },
+      "landmarks": {
+        "bytes": 3138,
+        "path": "public/act1-hifi/landmarks/landmarks.json",
+        "sha256": "0b7e43f7ba532dd7079c2d90a1203bb7c9341a43b041993a3d9a0bcf24bc9437"
+      },
+      "manifests": {
+        "current": {
+          "bytes": 138266,
+          "path": "design/terrain-current-profile-20261007/current/act1-hifi-manifest.json",
+          "sha256": "c6d69d659ea4e82b09feabae624c2cbd4406627405bb389a36547bd44cc4183f"
+        },
+        "generationInput": {
+          "bytes": 25916,
+          "path": "design/terrain-current-profile-20261007/input-manifest.json",
+          "sha256": "091df7c664cfbe73b3b75f1359639c1f646bf3fd80eb7f698678e695b65430ea"
+        }
+      },
+      "mapProof": {
+        "bytes": 262999,
+        "path": "design/terrain-current-profile-20261007/evidence/a1ow-v2-independent-review/baked-final-map.json",
+        "sha256": "a9fecf54db9de1f18a1f26c3f74b1bab9be230a247076e10580859e7074ab212"
+      },
+      "qok": {
+        "bytes": 3447872,
+        "path": "public/act1-hifi/forest-collision.bin",
+        "sha256": "a0d08d9d1bae329355f9c44b60d6b3484f5e00717386d7d99cd4a8f309d6307e"
+      },
+      "terrainFixture": {
+        "bytes": 16956,
+        "path": "scripts/test_act1_terrain_collision_integration.cjs",
+        "sha256": "b62906ac51c60353e951674af0e35df060f68be0fa5881c1e8e54e6ae67e184f"
+      }
+    },
+    "normalizedSourceSha256": "6a605a8f0d7d2513871c9b8e5a18f30fa7a403ee2ec0e42a4f1646d2e4d5da1d",
+    "schema": "a1ow-dq-source-projection-v2-cave-local-delta",
+    "sourceDelta": {
+      "callsite": {
+        "anchor": "inside function a1mFree(scene,m,x,y)",
+        "bytes": 53,
+        "occurrences": 1,
+        "sha256": "3bc0cf4dc07804c8025f4db4a4bb71b699be8b0386746bc80dfe9955cd9538e0"
+      },
+      "helper": {
+        "anchor": "single cave-contact helper span beginning at the reviewed Whispering Woods comment and ending immediately before `  // (x,y) is the SPRITE position`; includes the exact pinned Crystal branch",
+        "bytes": 10977,
+        "occurrences": 1,
+        "sha256": "5855a9746b66a8f73efea1066a2a37cb0f93a7df579539e735a7f15abc96f457"
+      }
+    },
+    "staticProof": {
+      "contactPathCheck": {
+        "path": "design/terrain-current-profile-20261007/review-evidence/crystal-roof-20261016/ww-contact-path-check.cjs",
+        "resultPath": "design/terrain-current-profile-20261007/review-evidence/crystal-roof-20261016/ww-contact-path-result.json",
+        "resultSha256": "6fcd7324c646e158ecde599d4c98795b891ff66002a92c7135f1b90a9380564a",
+        "sha256": "9476ed7a2b99c2a132106717baee00dfd186cb24877b1db81d555a8477df60f8"
+      },
+      "crystalContactPathCheck": {
+        "path": "design/terrain-current-profile-20261007/review-evidence/crystal-roof-20261016/crystal-contact-path-check.cjs",
+        "resultPath": "design/terrain-current-profile-20261007/review-evidence/crystal-roof-20261016/crystal-contact-path-result.json",
+        "resultSha256": "a42ea1bfc501080cb5827173c8d3c8c5aa2bd237836075ddc39c4c10bb1ca97e",
+        "sha256": "58e6b723b16b5fd4108c853efe70e2495b22de9c90262b20dd535f64e48b26a4"
+      },
+      "crystalMaskRaster": {
+        "alphaThreshold": 128,
+        "outsideAlphaPixels": 0,
+        "packedBitsetSha256": "1ae835b2124a690df1a0c7136259722a9d013a5497ac6d05d6e921e110a9c884",
+        "packedBytes": 2592,
+        "path": "design/terrain-current-profile-20261007/review-evidence/crystal-roof-20261016/crystal-mask-raster-result.json",
+        "sha256": "28cd39dd7cc8bc2766fc9d68745d11fafba440ab2801c6c132b25cbe289d856f",
+        "solidPixels": 5802
+      },
+      "maskRaster": {
+        "alphaThreshold": 128,
+        "outsideAlphaPixels": 0,
+        "packedBitsetSha256": "85bd96745aed97c2a5a73c8ca8b52f24bd9c729d59acaa0b3e6941a861b27519",
+        "packedBytes": 2592,
+        "path": "design/terrain-current-profile-20261007/review-evidence/crystal-roof-20261016/ww-mask-raster-result.json",
+        "sha256": "a442ca569ec1996010ad3e76f9793826ae64fc3579a6cc9dee62f9f64070ed5f",
+        "solidPixels": 4808
+      },
+      "preview": {
+        "path": "design/terrain-current-profile-20261007/review-evidence/crystal-roof-20261016/preview.png",
+        "sha256": "354321af2165ad3ded6cbb6e1c900c16f8cded0826e3c81668b1acd7103256b2"
+      },
+      "review": {
+        "path": "design/terrain-current-profile-20261007/review-evidence/crystal-roof-20261016/review.md",
+        "sha256": "fed50b316a2b8b76f087b66e4199e88a56510cbf88dc6969f462a8e521c81d25"
+      },
+      "testRuns": {
+        "allPassed": true,
+        "path": "design/terrain-current-profile-20261007/review-evidence/crystal-roof-20261016/static-test-runs.json",
+        "sha256": "b0e1a3a08c66f1496c48dee936788f6ff365acd76afb35c1b3cb04450eb433aa"
+      }
+    },
+    "status": "PASS"
+  },
+  "independentQokIdentity": {
+    "decodedPack": {
+      "bytes": 3447872,
+      "heightPixels": 5824,
+      "payloadBytes": 3447808,
+      "payloadSha256": "72558e1a7605850a657d32b52c5c49ad7d07a6f83ec3069bdfeaba1956e43b3d",
+      "sha256": "a0d08d9d1bae329355f9c44b60d6b3484f5e00717386d7d99cd4a8f309d6307e",
+      "widthPixels": 4736
+    },
+    "descriptorCollisionContract": {
+      "alphaThreshold": 16,
+      "bitOrder": "little-within-byte",
+      "bounds": [
+        16,
+        218,
+        163,
+        399
+      ],
+      "bytes": 3447872,
+      "dimensionsPx32": [
+        4736,
+        5824
+      ],
+      "headerBytes": 64,
+      "path": "act1-hifi/forest-collision.bin",
+      "pixelsPerCell": 32,
+      "runtimeFormat": "qok-forest-bitset-v1",
+      "sha256": "a0d08d9d1bae329355f9c44b60d6b3484f5e00717386d7d99cd4a8f309d6307e",
+      "sourceArtifact": "evidence/final-visible-raised-alpha.png",
+      "sourceAuthority": "final-visible-whole-object-union",
+      "sourceSha256": "267f7bd1e00b58a1e8b366633fceac6673919e39267578295df598735526bbeb",
+      "version": 1
+    },
+    "safeCellProof": {
+      "path": "design/terrain-current-profile-20261007/review-evidence/water-r2-final-20261013/final-r2-safe-cell-clearance-review.json",
+      "qokHits": {
+        "g3": 0,
+        "male": 0
+      },
+      "recomputedFromCollisionSha256": "a0d08d9d1bae329355f9c44b60d6b3484f5e00717386d7d99cd4a8f309d6307e",
+      "safeCellCount": 149,
+      "sha256": "a8b5ed56b328d37cdee8ba46e8738015f8e3e6d9ece5ece2466c3ee8ffbe5693"
+    },
+    "unionProof": {
+      "monotonicUnionVerified": true,
+      "newQokBits": 1414,
+      "packedUnionBitsSha256": "72558e1a7605850a657d32b52c5c49ad7d07a6f83ec3069bdfeaba1956e43b3d",
+      "path": "design/terrain-current-profile-20261007/review-evidence/water-r2-final-20261013/north-qok-final18-union-review.json",
+      "removedQokBits": 0,
+      "reusedUnchangedInputs": true,
+      "schema": "independent-north-qok-current-output-union-review-v1",
+      "sha256": "3090babc684217ebecd145888be2b7df5c99f1c5d92c505b62acb3f13d5d1de7",
+      "status": "PASS_STATIC_OUTPUT_UNION_ONLY",
+      "unionAlphaSha256": "0baf807bfd429b8ae945439c62c23610fcf62ae0fa6eeae01dcbf5c7d468fae7"
+    }
+  },
+  "inputs": {
+    "bakerPath": "scripts/bake_act1_overworld_walk.mjs",
+    "bakerSha256": "8f172f77de9ccddebafd0d742a13fdc22d5258c652eacf5df5b0ba5d25c9eb2b",
+    "candidateRoot": "/Users/chris/.codex/workspaces/edu-rpg-forward-20261007",
+    "dqTilesSha256": "a7e267a5c2d2d1061af7f66956d82853b42f00c82c1f63baf043defbeb1b2a43",
+    "frozenV1Sha256": "d87c6572cbf3012180a289196cfe5e7eee7c50dc86beb06a999fa491eeacfdf3",
+    "mapProofSha256": "a9fecf54db9de1f18a1f26c3f74b1bab9be230a247076e10580859e7074ab212",
+    "v2Path": "public/act1-overworld-walk.bin",
+    "v2Sha256": "00a520ae09089547ca4af4ef1077b84acdad98d4989de238f3ee30e28ad092c6"
+  },
+  "payload": {
+    "byteIdentical": true,
+    "bytes": 9688576,
+    "frozenV1BodySha256": "05be9638d04a692668c3a1c8b4bd3d809216bcede2e090a74a0712cb5467498c",
+    "v2BodySha256": "05be9638d04a692668c3a1c8b4bd3d809216bcede2e090a74a0712cb5467498c"
+  },
+  "provenance": {
+    "basisRecordDQSha256": "6a605a8f0d7d2513871c9b8e5a18f30fa7a403ee2ec0e42a4f1646d2e4d5da1d",
+    "basisRecordPath": "design/terrain-current-profile-20261007/review-evidence/cave-reentry-20261015/a1ow-source-equivalence.json",
+    "basisRecordSha256": "a9e7ca02240613adf34d864016ef9f6083cd913a6b89eba54d22ade35aee2c55",
+    "prepatchSnapshotPath": "/private/tmp/edu-rpg-build84-feedback-20261013/native-remaining-gate-20261015/cave-reentry-fix/prepatch-public-dq-tiles.js",
+    "prepatchSnapshotSha256": "6a605a8f0d7d2513871c9b8e5a18f30fa7a403ee2ec0e42a4f1646d2e4d5da1d",
+    "repairScope": "Independent A1OW v2 source-continuity review for the narrow alpha-clipped Whispering Woods contact-mask change. Rechecked the exact 6a605a8-to-b12d7ee DQ delta, unchanged selected A1OW parser/support/hero-foot projections, current A1OW decode/twins, map proof, QOK pack and retained proof identities. The cave-local helper and one a1mFree call are the only DQ source delta. Static only; no descriptor integration or exact-binary native acceptance.",
+    "reusedProofs": "A1OW body/support, map proof, final-r2 QOK union/safe-cell proof, and corrected r1d contact checkpoint are retained from the prior independent review because their immutable file identities were rechecked and the underlying A1OW/QOK/map inputs are unchanged. Their original scopes remain in force.",
+    "reviewedAt": "2026-10-16",
+    "reviewerRole": "independent"
+  },
+  "retainedBoundedContactSourceProof": {
+    "checkpointSha256": "90f84702be88274d1237bd868b9fd2ce5d7518363e4849c33d940b5bbf8d541b",
+    "components": 8,
+    "correctedChunkId": "c3-r0",
+    "cropPath": "/private/tmp/edu-rpg-build84-feedback-20261013/terrain-implementation-plan/generation-water-r2-final-r1/source-checkpoint-semantic-w-r1c/north-contact-r1d/north-contact-fringe-zoom.png",
+    "cropSha256": "5f2a76eb5a46fa2ab9323612d06f9a2a913350f5062d351e095df0f1a9089c14",
+    "deltaPath": "/private/tmp/edu-rpg-build84-feedback-20261013/terrain-implementation-plan/generation-water-r2-final-r1/source-checkpoint-semantic-w-r1c/north-contact-r1d/north-contact-delta.png",
+    "deltaPixels": 842,
+    "deltaSha256": "6f967ec9bc649e69c09392749ac8bb1bbdb0f5cfed9b5368b75d62368594a2a5",
+    "independentDeltaExact": true,
+    "path": "/private/tmp/edu-rpg-build84-feedback-20261013/terrain-implementation-plan/generation-water-r2-final-r1/source-checkpoint-semantic-w-r1c/north-contact-r1d/checkpoint.json",
+    "postContactCheckpointSha256": "90f84702be88274d1237bd868b9fd2ce5d7518363e4849c33d940b5bbf8d541b",
+    "postContactCropSha256": "5f2a76eb5a46fa2ab9323612d06f9a2a913350f5062d351e095df0f1a9089c14",
+    "postContactDiagnosticCounts": {
+      "collisionMask": 0,
+      "compositeMatchesOpaqueWater": 108,
+      "contactDeltaPixels": 108,
+      "exactM": 108,
+      "exactW": 0,
+      "finalBaseAlphaZero": 108,
+      "finalWaterAlpha255": 108,
+      "greenishDiagnosticPredicate": 0,
+      "heroRouteGuard": 0,
+      "locatorPixels": 108,
+      "routeCorridorGuard": 0,
+      "visibleOrSupportAlpha": 0
+    },
+    "postContactDiagnosticPath": "/private/tmp/edu-rpg-build84-feedback-20261013/terrain-implementation-plan/generation-water-r2-final-r1/source-checkpoint-semantic-w-r1c/north-contact-r1d/post-contact-108-diagnostic.json",
+    "postContactDiagnosticSha256": "2faa7ad403f2364b5ff6a9947c2738aa0028f6640f16be1d83a063b4952adb0f",
+    "preContactDiagnosticSuperseded": true,
+    "protectedOverlaps": 0,
+    "remainingFringeConclusion": "Same 108 pre-contact locator coordinates independently match contact delta; base alpha is 0, water alpha is 255, composite RGB equals water RGB, and greenish diagnostic predicate is false at all 108.",
+    "remainingFringeDiagnosticPath": "/private/tmp/edu-rpg-build84-feedback-20261013/terrain-implementation-plan/generation-water-r2-final-r1/source-checkpoint-semantic-w-r1c/north-contact-r1d/post-contact-108-diagnostic.json",
+    "remainingFringeDiagnosticSha256": "2faa7ad403f2364b5ff6a9947c2738aa0028f6640f16be1d83a063b4952adb0f",
+    "remainingFringePixels": 0,
+    "scope": "bounded two-chunk source checkpoint using saved generation-A coverage; not full output.",
+    "sha256": "90f84702be88274d1237bd868b9fd2ce5d7518363e4849c33d940b5bbf8d541b",
+    "verificationProvenance": "Retained independently reviewed r1d crop/108-coordinate result. All referenced checkpoint, diagnostic, crop, delta file hashes rechecked by this identity repair; pixels not re-reviewed in this bounded metadata repair."
+  },
+  "reviewEvidence": {
+    "browserDiagnostic": {
+      "files": [
+        {
+          "bytes": 1968,
+          "path": "design/terrain-current-profile-20261007/review-evidence/cave-roof-20261016/browser-egress/independent-result.md",
+          "sha256": "24423673de2e17f9b90a06afd3b0eaedef4680a8d6aea730275e311db18ecbaa"
+        },
+        {
+          "bytes": 21987,
+          "path": "design/terrain-current-profile-20261007/review-evidence/cave-roof-20261016/browser-egress/result.json",
+          "sha256": "975b8f2410150af522a02e770b5b90f82d6c737fea2d982f1fed897204c02ccf"
+        },
+        {
+          "bytes": 1055545,
+          "path": "design/terrain-current-profile-20261007/review-evidence/cave-roof-20261016/browser-egress/after-continue.png",
+          "sha256": "b74d8cdb61abb966a4d9a60e6f25adfce8b88cd9cac4fd274d1bd2b699abac6a"
+        },
+        {
+          "bytes": 1058456,
+          "path": "design/terrain-current-profile-20261007/review-evidence/cave-roof-20261016/browser-egress/step-01-down.png",
+          "sha256": "2cb244085367a5671577ef163b5e2d3dd5c49fe0bd27e62c21016cfd0e09885c"
+        },
+        {
+          "bytes": 1091221,
+          "path": "design/terrain-current-profile-20261007/review-evidence/cave-roof-20261016/browser-egress/step-02-right.png",
+          "sha256": "7d0696f8f9e1f91d655547ec60fd9763dc534070673614ed5c3f3555a3f1cbb9"
+        },
+        {
+          "bytes": 1122428,
+          "path": "design/terrain-current-profile-20261007/review-evidence/cave-roof-20261016/browser-egress/step-03-down.png",
+          "sha256": "d0c7e6c8503e8501415b847ef9c2d288aaf1ec7e137709872c8f01300e5da973"
+        }
+      ],
+      "scope": "Browser-only diagnostic; prior immutable App public tree with an in-memory DQ override. Not native or exact built candidate proof."
+    },
+    "contactCheck": {
+      "bytes": 3115,
+      "path": "design/terrain-current-profile-20261007/review-evidence/cave-roof-20261016/contact-path-check.cjs",
+      "sha256": "d0abb69327eab1588e618d56dc46da0a79a30040462f463d9243e86d59fb930a"
+    },
+    "contactResult": {
+      "bytes": 236,
+      "path": "design/terrain-current-profile-20261007/review-evidence/cave-roof-20261016/contact-path-result.json",
+      "sha256": "08025e0a242a1fa7344744c70ccb31cf1c74afa994ebee66ce9a7e24f42e6704"
+    },
+    "maskRaster": {
+      "bytes": 575,
+      "path": "design/terrain-current-profile-20261007/review-evidence/cave-roof-20261016/mask-raster-result.json",
+      "sha256": "39c0255282a54d2eaadbcff63bbfb8b3b6ea92c1cc6b92afe78c923d370772a3"
+    },
+    "preview": {
+      "bytes": 163565,
+      "path": "design/terrain-current-profile-20261007/review-evidence/cave-roof-20261016/preview.png",
+      "sha256": "226a274a933d0da9e25a45c08a643e304de457c10434b716c4ac64eddeb510bf"
+    },
+    "projection": {
+      "bytes": 8832,
+      "path": "design/terrain-current-profile-20261007/review-evidence/cave-roof-20261016/a1ow-source-projection.json",
+      "sha256": "5025432e607fd15bc5cd839ec44e1b7b1eba722dc9a6f3a295f1fabf45a72f8c"
+    },
+    "review": {
+      "bytes": 5099,
+      "path": "design/terrain-current-profile-20261007/review-evidence/cave-roof-20261016/review.md",
+      "sha256": "9afdda7ff3ad8d1d985acb5806497baed6354baad3c9758885aab0c0da0b30c9"
+    },
+    "staticTestRuns": {
+      "bytes": 2874,
+      "path": "design/terrain-current-profile-20261007/review-evidence/cave-roof-20261016/static-test-runs.json",
+      "sha256": "b1e2ea88f89de526f6eb17dc8c286c748c9fcf4189c2ca414dd8f9ad0436ef0b"
+    },
+    "validatorNormalizedSnapshot": {
+      "bytes": 124248,
+      "path": "design/terrain-current-profile-20261007/review-evidence/cave-roof-20261016/validator-root-pin-normalized-source.txt",
+      "sha256": "86032cb2c9d19245d04fce6b9dacd572e97845565e7b4061af1246bdf068bf06"
+    }
+  },
+  "schema": "independent-a1ow-v2-integration-review-v1",
+  "scopeLimitations": {
+    "freshChecks": "Exact DQ 6a605a8-to-a7e267a helper/call delta and selected unchanged A1OW source projections; strict A1OW v2 decode and current public/dist source identity, plus retained prior App300d/iOS identities as distinct older payloads; current map-to-baked-map proof; QOK decode/header/payload and retained independent union/safe-cell proof identities; Crystal/Whispering cave-mask rasterization and contact-path checks; focused DQ and consumer regression evidence.",
+    "generation": "A1OW header/body/support and QOK identity only. No forward-profile generation or fresh image/collision output generation is claimed.",
+    "ios": "The not-yet-assembled iOS public copy remains the 6a605a8 baseline, not current reviewed a7e267a public/dist source. Preserved installed App300d remains tied to prior b12d7ee; neither proves a binary containing current a7.",
+    "metadata": "The full A1OW wrapper carries the accepted Crystal nested projection, and the generator/descriptor metadata-only QA preparation rebind is complete. The descriptor remains releaseEligible=false; native acceptance is pending.",
+    "renderedOrNativeAcceptance": "Native acceptance is pending. A separate browser-only diagnostic used the prior immutable App public tree with only the reviewed DQ source overridden in memory; it observed the approved P1 Continue state and usable movement around the cave. This is not exact-built-candidate, simulator, device, or release acceptance.",
+    "reusedProofs": "Existing union and safe-cell results are carried forward only because their current files, QOK bytes, raised/support alpha identities, hero sheet hashes, map proof and collision-runtime source projections remain unchanged. Their original scopes remain in force."
+  },
+  "semantics": {
+    "currentFunctionBodiesByteIdenticalToPriorReviewedDq": true,
+    "sha256": "a6e6e7f228d040381539618d99f03e774a16dd7cadbaf8cc76a115934d324f67",
+    "sourceFunctionNames": [
+      "_h",
+      "vnoise",
+      "et",
+      "fieldAt",
+      "waterField",
+      "mountainField",
+      "buildMutedWater",
+      "owmSupportBounds",
+      "owmSupportEt",
+      "owmSupportInputBytes"
+    ],
+    "sourceSha256": "4ed7c44a096169e9f9354c4a568ffa3dab4ebfe9fb2fd5339ae8b31dce2bacdb"
+  },
+  "sourceContinuity": {
+    "baselineSha256": "6a605a8f0d7d2513871c9b8e5a18f30fa7a403ee2ec0e42a4f1646d2e4d5da1d",
+    "currentSha256": "b12d7eedea5420d18605633d66ee698fda24a538e1b026e9e7a092b3a1ddcb0a",
+    "exactDelta": "One alpha-clipped Whispering Woods helper span (5924 bytes) plus one a1mFree callsite (53 bytes); removing exactly these restores the baseline source hash.",
+    "selectedFunctionProjections": "All twelve A1OW parser/support/hero-foot/full-hero projections match baseline; a1mFree matches after the exact call removal.",
+    "tailBoundary": "The 7974f540\u2026 tail hash is retained only as the normalized semantic baseline from DQ 6a605a8. This record does not claim the current whole collision runtime tail is identical."
+  },
+  "status": "PASS_A1OW_V2_IDENTITY_AND_BODY",
+  "statusMeaning": "A1OW v2 identity/body and scoped source-continuity review only; this status does not mean production metadata integration, rendered/native acceptance, or release acceptance.",
+  "support": {
+    "bounds": {
+      "x0": 0,
+      "x1": 208,
+      "y0": 173,
+      "y1": 399
+    },
+    "classByteCount": 47443,
+    "effectiveClassBytesSha256": "63d55c8dd75d6d946f5b56e3f58ce6a4ec287e6ccccddebed61329a70fb972d3",
+    "fnv32": 4271507709,
+    "mutedWater": "4-connected global components <= 12 suppressed",
+    "schema": "a1ow-effective-support-v1",
+    "sha256": "eeaf65c08cda239ea8755a3af0026ed0ca61e19a2683cafc10610b5c4027914a"
+  },
+  "v2Header": {
+    "blocks": 4094,
+    "exactLength": 9688672,
+    "far": 255,
+    "headerBytes": 96,
+    "magic": "A1OW",
+    "mapCells": [
+      320,
+      400
+    ],
+    "pixelsPerCell": 48,
+    "reservedBytesZero": true,
+    "version": 2
+  }
+}

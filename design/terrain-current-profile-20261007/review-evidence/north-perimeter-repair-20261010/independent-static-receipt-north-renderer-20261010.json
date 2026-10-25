@@ -1,0 +1,86 @@
+{
+  "authoringInputInventorySha256": "917b36429df9dfd075ed8ecc15cd42bb39657c331a892115d5aa6f4ddd3423ce",
+  "checks": {
+    "a1owDecode": {
+      "proofPath": "design/terrain-current-profile-20261007/evidence/a1ow-v2-independent-review/independent-a1ow-v2-current-dq-20261010.json",
+      "proofSha256": "64b513b50db0bbdcdc7063130e9c38a3ebf89144367d4b519bb9c4688b0c9903",
+      "result": "PASS"
+    },
+    "chunkBoundaries": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/north-perimeter-repair-20261010/independent-final-review.md",
+      "proofSha256": "04695c926adbf1c0135ac5c87e28815bc7e27c953e89fa85f1e5f4383b670ffa",
+      "result": "PASS"
+    },
+    "cleanRegeneration": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/north-perimeter-repair-20261010/metadata-only-rebind-comparison-20261010.json",
+      "proofSha256": "f3cc72e6db40d5b6d05c615ac555eaa176bf1e2f6f8a664f7f1a73d9796b7ee2",
+      "result": "PASS"
+    },
+    "collisionDecode": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/north-perimeter-repair-20261010/independent-final-review.md",
+      "proofSha256": "04695c926adbf1c0135ac5c87e28815bc7e27c953e89fa85f1e5f4383b670ffa",
+      "result": "PASS"
+    },
+    "currentGuard": {
+      "proofPath": "design/terrain-current-profile-20261007/evidence/runtime-invariants-static.json",
+      "proofSha256": "d5c67c80c061223674c544241abeb5993d6f698b808646ef6a3fa912bb2f7129",
+      "result": "PASS"
+    },
+    "decodedPixels": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/north-perimeter-repair-20261010/generation-v3-reproducibility-20261010.json",
+      "proofSha256": "e3a2ce0a51f4187e1f3d3e5e603e82e98028e19974ffe07ccb30893afb00928f",
+      "result": "PASS"
+    },
+    "globalCropReconstruction": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/north-perimeter-repair-20261010/independent-final-review.md",
+      "proofSha256": "04695c926adbf1c0135ac5c87e28815bc7e27c953e89fa85f1e5f4383b670ffa",
+      "result": "PASS"
+    },
+    "heroFrameClearance": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/north-perimeter-repair-20261010/independent-clearance-result.json",
+      "proofSha256": "eaead2c2d1d04b127379e26d04e40a6d8de7d9dc09da679dd50edde1fb4e7db6",
+      "result": "PASS"
+    },
+    "renderedReview": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/north-perimeter-repair-20261010/independent-renderer-review-20261010.md",
+      "proofSha256": "bc5a3204a390ba93579efb1dfa0c1cbc6c540b034ad99a3ed177fb91f2985ac2",
+      "result": "PASS"
+    },
+    "runtimeInvariants": {
+      "proofPath": "design/terrain-current-profile-20261007/evidence/runtime-invariants-static.json",
+      "proofSha256": "d5c67c80c061223674c544241abeb5993d6f698b808646ef6a3fa912bb2f7129",
+      "result": "PASS"
+    },
+    "safeCells": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/north-perimeter-repair-20261010/independent-final-review.md",
+      "proofSha256": "04695c926adbf1c0135ac5c87e28815bc7e27c953e89fa85f1e5f4383b670ffa",
+      "result": "PASS"
+    },
+    "sourceResourceClosure": {
+      "proofPath": "design/terrain-current-profile-20261007/evidence/static-evidence-inventory.json",
+      "proofSha256": "08a6b7c2b45f237be55e54cae0fd135c18407d8ce17448e68be6867dac8196bc",
+      "result": "PASS"
+    },
+    "underpaintPhase": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/north-perimeter-repair-20261010/independent-renderer-review-20261010.md",
+      "proofSha256": "bc5a3204a390ba93579efb1dfa0c1cbc6c540b034ad99a3ed177fb91f2985ac2",
+      "result": "PASS"
+    },
+    "visibleAlpha": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/north-perimeter-repair-20261010/independent-final-review.md",
+      "proofSha256": "04695c926adbf1c0135ac5c87e28815bc7e27c953e89fa85f1e5f4383b670ffa",
+      "result": "PASS"
+    }
+  },
+  "claim": "Bounded independent QA preparation only. Review report: /private/tmp/edu-rpg-build83-paint-audit-20261005/native-whole-rock-20261008/north-perimeter-repair-20261010/independent-static-integration-review-20261010.md; SHA-256 17db0e5968b7a3972dd97ae17e28f735cc90ec4bd61be3684d60b1e6963eae71. All 14 static proof artifacts and exact 252-row authoring/493-row output inventories validated. Six native groups and 11 dynamic assertions remain pending; releaseEligible=false.",
+  "generatedOutputInventorySha256": "8f4e17455c7d92c028b212969e7e64363aff14fb12fce223d761afda40532023",
+  "profileId": "act1-forward-20261007-v1",
+  "result": "QA_PREPARATION_PASS",
+  "reviewerRole": "independent",
+  "runner": {
+    "path": "design/terrain-current-profile-20261007/review-tools/recompute_forward_outputs.py",
+    "sha256": "2017b4a00aeb7cc82054c8afa56b731c58d2a57578b27d5f55894c05f076e0eb",
+    "version": "forward-static-recompute-review-v4-whole-rock-a1ow-v2"
+  },
+  "schema": "qok-forward-preparation-receipt-v1"
+}

@@ -1,0 +1,102 @@
+[
+  {
+    "args": [
+      "python3",
+      "scripts/generate_ww_contact_mask.py",
+      "--check"
+    ],
+    "exitCode": 0,
+    "result": "PASS",
+    "script": {
+      "bytes": 3229,
+      "path": "scripts/generate_ww_contact_mask.py",
+      "sha256": "d8cb70dfa412b0a9d6c794ade035353480c5358fa3096ae4fe4b38403f8478d2"
+    },
+    "stderr": "",
+    "stdout": "{\"artSha256\": \"a06eea6ab98c7c630119db1488dfea912a40bc69150ac16e387b4e696aa5f047\", \"authoredSolidPixels\": 5645, \"outsideAlphaSolidPixels\": 0, \"packedMaskBytes\": 2592, \"status\": \"PASS\", \"visibleSolidPixels\": 4808}\n",
+    "target": null
+  },
+  {
+    "args": [
+      "python3",
+      "scripts/generate_crystal_contact_mask.py",
+      "--check"
+    ],
+    "exitCode": 0,
+    "result": "PASS",
+    "script": {
+      "bytes": 3455,
+      "path": "scripts/generate_crystal_contact_mask.py",
+      "sha256": "c12cd0c95a8baba843f081df691ddc10bff06e9e20bb3dfe210f6de1ebfae322"
+    },
+    "stderr": "",
+    "stdout": "{\"alphaThreshold\": 128, \"channelPolygon\": [[53, 75], [52, 65], [57, 55], [64, 49], [72, 48], [78, 54], [81, 64], [82, 73], [86, 83], [91, 92], [93, 103], [94, 114], [96, 125], [96, 134], [55, 134], [54, 125], [55, 115], [56, 105], [54, 95], [52, 85]], \"dqTilesSha256\": \"a7e267a5c2d2d1061af7f66956d82853b42f00c82c1f63baf043defbeb1b2a43\", \"opaquePixels\": 8347, \"outsideAlphaPixels\": 0, \"packedMaskBytes\": 2592, \"packedMaskSha256\": \"1ae835b2124a690df1a0c7136259722a9d013a5497ac6d05d6e921e110a9c884\", \"pinnedArtSha256\": \"45fb2c0b7cf1ad2e63ee9a28bbf0ad66e3d4d9ca9258beaf7a68566e04692b55\", \"schema\": \"crystal-contact-mask-raster-v1\", \"solidPixels\": 5802}\n",
+    "target": null
+  },
+  {
+    "args": [
+      "node",
+      "scripts/test_dq_tiles_landmark_contact.cjs"
+    ],
+    "exitCode": 0,
+    "result": "PASS",
+    "script": {
+      "bytes": 12787,
+      "path": "scripts/test_dq_tiles_landmark_contact.cjs",
+      "sha256": "27a2f4368f622d4aabb77ff08019f91872153dce5aed215700aa40064c4e4e0d"
+    },
+    "stderr": "",
+    "stdout": "DQ LANDMARK CONTACT PASS: pinned WW and Crystal masks; native Crystal roof and both sides blocked for both sole rows; exterior grass and 101-step doorway-to-exit corridor open; exact portal adapter retained; masks cached; A1OW stencil unchanged\n",
+    "target": "public/dq-tiles.js"
+  },
+  {
+    "args": [
+      "node",
+      "scripts/test_dq_tiles_landmark_contact.cjs",
+      "dist/dq-tiles.js"
+    ],
+    "exitCode": 0,
+    "result": "PASS",
+    "script": {
+      "bytes": 12787,
+      "path": "scripts/test_dq_tiles_landmark_contact.cjs",
+      "sha256": "27a2f4368f622d4aabb77ff08019f91872153dce5aed215700aa40064c4e4e0d"
+    },
+    "stderr": "",
+    "stdout": "DQ LANDMARK CONTACT PASS: pinned WW and Crystal masks; native Crystal roof and both sides blocked for both sole rows; exterior grass and 101-step doorway-to-exit corridor open; exact portal adapter retained; masks cached; A1OW stencil unchanged\n",
+    "target": "dist/dq-tiles.js"
+  },
+  {
+    "args": [
+      "node",
+      "scripts/test_dq_tiles_scene_reentry.cjs"
+    ],
+    "exitCode": 0,
+    "result": "PASS",
+    "script": {
+      "bytes": 5488,
+      "path": "scripts/test_dq_tiles_scene_reentry.cjs",
+      "sha256": "7ea9edfb84278e127cf430d650a64aad4e428d7c8108bfec1f5e928e08e4613a"
+    },
+    "stderr": "",
+    "stdout": "DQ TILES SCENE RE-ENTRY PASS: stale same-instance landmark replaced; valid hidden sprite reused; both shared-cache paths guarded\n",
+    "target": "public/dq-tiles.js"
+  },
+  {
+    "args": [
+      "node",
+      "scripts/test_dq_tiles_scene_reentry.cjs",
+      "dist/dq-tiles.js"
+    ],
+    "exitCode": 0,
+    "result": "PASS",
+    "script": {
+      "bytes": 5488,
+      "path": "scripts/test_dq_tiles_scene_reentry.cjs",
+      "sha256": "7ea9edfb84278e127cf430d650a64aad4e428d7c8108bfec1f5e928e08e4613a"
+    },
+    "stderr": "",
+    "stdout": "DQ TILES SCENE RE-ENTRY PASS: stale same-instance landmark replaced; valid hidden sprite reused; both shared-cache paths guarded\n",
+    "target": "dist/dq-tiles.js"
+  }
+]

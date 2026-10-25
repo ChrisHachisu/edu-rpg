@@ -1,0 +1,322 @@
+{
+  "schema": "independent-whole-rock-static-review-v1",
+  "status": "PASS_BOUNDED_STATIC_AND_RENDERED_RECONSTRUCTION",
+  "generatorSha256": "571f8f1a8bb803aea8dd2d5ab1ef34c3bfde2162c6a42b9d86f8ed3d69e383d4",
+  "recipeSha256": "e84409c166b6754d59d02cb5fcf8c8b54acf524e61b615dc1c996e783b99b007",
+  "stage": {
+    "receiptA": "caa119e842428ce77db226f25828b1412403609e26353c8e9d5284bb854ac3e5",
+    "receiptB": "b52c90427efe6ef7bb09c730c86da76dfa9e314ee73e75a6dd990b484a9e493a",
+    "inventoryRows": 488,
+    "AequalsB": true,
+    "bothFilesystemClosed": true,
+    "fullWorldComplete": true,
+    "gateReady": false,
+    "nativeVerified": false
+  },
+  "northWindow": {
+    "sourceCliffs": 194,
+    "containedOmitted": 25,
+    "crossingWhole": 6,
+    "disjointWhole": 163,
+    "retainedWhole": 169,
+    "perPixelClipping": false,
+    "xywh": [
+      40,
+      0,
+      890,
+      400
+    ],
+    "globalXYXY": [
+      2344,
+      0,
+      3234,
+      400
+    ],
+    "stableIdentityCountsUnique": true,
+    "nineNorthObjects": [
+      {
+        "id": "ridge-01-broad-joining-mass-A-89",
+        "atlasGroup": "main",
+        "atlasSha256": "4ad26ea3e7d38f4a768dd869a9a3c1db86812891c5911b461ac573af72684b1e",
+        "processedRgbaSha256": "ff6054b512b6c17a9375c13503a16f2fff5fd231b7813a1a2da095cafc8a89fd",
+        "processedAlphaSha256": "7c6e598cd52de7ba51d337c9d3f33fb90fa2a0516cb71da2b769831e31c0d590",
+        "crop": [
+          565,
+          7,
+          1236,
+          623
+        ],
+        "scale": 0.5,
+        "originWorldCell": [
+          89,
+          218
+        ]
+      },
+      {
+        "id": "fill-01-rear-mass-A-92",
+        "atlasGroup": "main",
+        "atlasSha256": "4ad26ea3e7d38f4a768dd869a9a3c1db86812891c5911b461ac573af72684b1e",
+        "processedRgbaSha256": "ff6054b512b6c17a9375c13503a16f2fff5fd231b7813a1a2da095cafc8a89fd",
+        "processedAlphaSha256": "7c6e598cd52de7ba51d337c9d3f33fb90fa2a0516cb71da2b769831e31c0d590",
+        "crop": [
+          565,
+          7,
+          1236,
+          623
+        ],
+        "scale": 0.5,
+        "originWorldCell": [
+          92,
+          218
+        ]
+      },
+      {
+        "id": "ridge-03-broad-joining-mass-A-100",
+        "atlasGroup": "main",
+        "atlasSha256": "4ad26ea3e7d38f4a768dd869a9a3c1db86812891c5911b461ac573af72684b1e",
+        "processedRgbaSha256": "ff6054b512b6c17a9375c13503a16f2fff5fd231b7813a1a2da095cafc8a89fd",
+        "processedAlphaSha256": "7c6e598cd52de7ba51d337c9d3f33fb90fa2a0516cb71da2b769831e31c0d590",
+        "crop": [
+          565,
+          7,
+          1236,
+          623
+        ],
+        "scale": 0.5,
+        "originWorldCell": [
+          100,
+          218
+        ]
+      },
+      {
+        "id": "fill-03-rear-mass-A-104",
+        "atlasGroup": "main",
+        "atlasSha256": "4ad26ea3e7d38f4a768dd869a9a3c1db86812891c5911b461ac573af72684b1e",
+        "processedRgbaSha256": "ff6054b512b6c17a9375c13503a16f2fff5fd231b7813a1a2da095cafc8a89fd",
+        "processedAlphaSha256": "7c6e598cd52de7ba51d337c9d3f33fb90fa2a0516cb71da2b769831e31c0d590",
+        "crop": [
+          565,
+          7,
+          1236,
+          623
+        ],
+        "scale": 0.5,
+        "originWorldCell": [
+          104,
+          218
+        ]
+      },
+      {
+        "id": "ridge-05-broad-joining-mass-A-112",
+        "atlasGroup": "main",
+        "atlasSha256": "4ad26ea3e7d38f4a768dd869a9a3c1db86812891c5911b461ac573af72684b1e",
+        "processedRgbaSha256": "ff6054b512b6c17a9375c13503a16f2fff5fd231b7813a1a2da095cafc8a89fd",
+        "processedAlphaSha256": "7c6e598cd52de7ba51d337c9d3f33fb90fa2a0516cb71da2b769831e31c0d590",
+        "crop": [
+          565,
+          7,
+          1236,
+          623
+        ],
+        "scale": 0.5,
+        "originWorldCell": [
+          112,
+          218
+        ]
+      },
+      {
+        "id": "ridge-02-broad-joining-mass-B-94",
+        "atlasGroup": "companion",
+        "atlasSha256": "b2701dd847e7d1df26c8488aa95877b57682be732a7bdc10d00fa12363613a04",
+        "processedRgbaSha256": "6459a127514860315c83dbe4a9ac65c404bdc841723c7864ad423169825eaa41",
+        "processedAlphaSha256": "1a64808131813ace3b472a096d362b19cb0ce91af2edc510497e81d11bd483cf",
+        "crop": [
+          15,
+          600,
+          583,
+          1218
+        ],
+        "scale": 0.5,
+        "originWorldCell": [
+          94,
+          218
+        ]
+      },
+      {
+        "id": "fill-02-rear-mass-B-98",
+        "atlasGroup": "companion",
+        "atlasSha256": "b2701dd847e7d1df26c8488aa95877b57682be732a7bdc10d00fa12363613a04",
+        "processedRgbaSha256": "6459a127514860315c83dbe4a9ac65c404bdc841723c7864ad423169825eaa41",
+        "processedAlphaSha256": "1a64808131813ace3b472a096d362b19cb0ce91af2edc510497e81d11bd483cf",
+        "crop": [
+          15,
+          600,
+          583,
+          1218
+        ],
+        "scale": 0.5,
+        "originWorldCell": [
+          98,
+          218
+        ]
+      },
+      {
+        "id": "ridge-04-broad-joining-mass-B-106",
+        "atlasGroup": "companion",
+        "atlasSha256": "b2701dd847e7d1df26c8488aa95877b57682be732a7bdc10d00fa12363613a04",
+        "processedRgbaSha256": "6459a127514860315c83dbe4a9ac65c404bdc841723c7864ad423169825eaa41",
+        "processedAlphaSha256": "1a64808131813ace3b472a096d362b19cb0ce91af2edc510497e81d11bd483cf",
+        "crop": [
+          15,
+          600,
+          583,
+          1218
+        ],
+        "scale": 0.5,
+        "originWorldCell": [
+          106,
+          218
+        ]
+      },
+      {
+        "id": "fill-04-right-pocket-mass-B-110",
+        "atlasGroup": "companion",
+        "atlasSha256": "b2701dd847e7d1df26c8488aa95877b57682be732a7bdc10d00fa12363613a04",
+        "processedRgbaSha256": "6459a127514860315c83dbe4a9ac65c404bdc841723c7864ad423169825eaa41",
+        "processedAlphaSha256": "1a64808131813ace3b472a096d362b19cb0ce91af2edc510497e81d11bd483cf",
+        "crop": [
+          15,
+          600,
+          583,
+          1218
+        ],
+        "scale": 0.5,
+        "originWorldCell": [
+          110,
+          220
+        ]
+      }
+    ],
+    "contactDrawOrder": [
+      {
+        "id": "ridge-02-broad-joining-mass-B-94",
+        "contactYLocalPx": 254,
+        "contactXLocalPx": 424
+      },
+      {
+        "id": "fill-02-rear-mass-B-98",
+        "contactYLocalPx": 254,
+        "contactXLocalPx": 552
+      },
+      {
+        "id": "ridge-04-broad-joining-mass-B-106",
+        "contactYLocalPx": 254,
+        "contactXLocalPx": 808
+      },
+      {
+        "id": "ridge-01-broad-joining-mass-A-89",
+        "contactYLocalPx": 307,
+        "contactXLocalPx": 289
+      },
+      {
+        "id": "fill-01-rear-mass-A-92",
+        "contactYLocalPx": 307,
+        "contactXLocalPx": 385
+      },
+      {
+        "id": "ridge-03-broad-joining-mass-A-100",
+        "contactYLocalPx": 307,
+        "contactXLocalPx": 641
+      },
+      {
+        "id": "fill-03-rear-mass-A-104",
+        "contactYLocalPx": 307,
+        "contactXLocalPx": 769
+      },
+      {
+        "id": "ridge-05-broad-joining-mass-A-112",
+        "contactYLocalPx": 307,
+        "contactXLocalPx": 1025
+      },
+      {
+        "id": "fill-04-right-pocket-mass-B-110",
+        "contactYLocalPx": 318,
+        "contactXLocalPx": 936
+      }
+    ],
+    "alphaUnionPixels": 278478
+  },
+  "renderedCrop": {
+    "referencePreviewSha256": "80723f662ed8694794d4b89582a836f352178dd269a4f793369c6c00050eb338",
+    "stageAlphaSha256": "944062209c3ee9392c4a971fa5b792e19bdcec83ec2b08dbfd24155680a52fdd",
+    "stageOnlyPixelsVsPreview": 19619,
+    "previewMissingFromStage": 0,
+    "approvedBoundaryCrowns": 40,
+    "stageCropEqualsPreviewOrAcceptedCrowns": true,
+    "combinedCropImage": "/private/tmp/edu-rpg-build83-paint-audit-20261005/whole-rock-integration-20261008/whole-crop-global-contact-order.png"
+  },
+  "collision": {
+    "qokSha256": "05c4a76f914d9f20c82bf42d1eb574d774f15bd924dbee708aca09d260c97346",
+    "magic": "QOKF8COL",
+    "version": 1,
+    "pixelsPerCell": 32,
+    "alphaNonzeroXorPixels": 0,
+    "generatorComposedAlphaXorPixels": 0
+  },
+  "safeCells": {
+    "count": 149,
+    "heroes": {
+      "g3": {
+        "heroSheetSha256": "070a8a452c3dda775bd6c8593a66d57a5a13d97b9fb33378ea5b2bb0e1fded3c",
+        "heroFrames": 12,
+        "stencilPoints": 2051,
+        "safeCells": 149,
+        "substepSamplesPerCell": 5,
+        "qokHits": 0
+      },
+      "male": {
+        "heroSheetSha256": "88cbed8f9d707b216ada01e108eedd5822c6bcfc69c8dd22af2457f231dc0976",
+        "heroFrames": 12,
+        "stencilPoints": 1941,
+        "safeCells": 149,
+        "substepSamplesPerCell": 5,
+        "qokHits": 0
+      }
+    }
+  },
+  "boundary": {
+    "placedCrowns": 40,
+    "FMBoundaryCount": 78,
+    "targetGapAfter": 6,
+    "routeGuardHits": 0,
+    "actorGuardChecks": 11,
+    "actorGuardHits": 0
+  },
+  "routes": {
+    "mapRevision": 7,
+    "worldMapSha256": "f1ea99546b799b50cec7d6fd40b1fae2ad53669fae22afaebe3760f225d12cad",
+    "startCell": {
+      "x": 69,
+      "y": 256
+    },
+    "exits": 8,
+    "approaches": 11,
+    "crystalCaveExit": [
+      149,
+      279
+    ],
+    "heroGuardChecks": 11,
+    "heroGuardArtHits": 0,
+    "scope": "map seed-walkability graph/actor guard only; not runtime collision connectivity"
+  },
+  "preservedTreeAndWaterInputs": {
+    "forestPlacementCount": 2061,
+    "forestPlacementSha256": "969cb20783142b6b14e03a3421400cfebd0cc6b18ad41e96f1e2f78d4e51a4bd",
+    "waterChunksByteEqualToCurrent": 120,
+    "canopyChunksByteEqualToCurrent": 120
+  },
+  "limits": [
+    "Static evidence only; no running-game/rendering or new-game spawn was tested.",
+    "Map endpoint and hero-guard checks do not prove collision-aware connected paths or native movement."
+  ]
+}

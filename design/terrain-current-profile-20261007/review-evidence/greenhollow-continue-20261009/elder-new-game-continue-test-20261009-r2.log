@@ -1,0 +1,21 @@
+  PASS New Game town start reaches the visible retry after the simulated first-frame failure — townAttempts=1
+  PASS actual New Game still starts the Elder opening — {"src":"http://127.0.0.1:5174/act1-hifi/town.html?town=greenhollow&first=1&facing=up","cell":[32.19,23.61],"flag":true,"intro":true}
+  PASS actual New Game uses the Elder opening — http://127.0.0.1:5174/act1-hifi/town.html?town=greenhollow&first=1&facing=up
+  PASS New Game enters at the authored Elder cell — cell 32.19,23.61
+  PASS successful opening writes the existing town-opened flag — true
+  PASS retry consumed the original New Game intent only after the town became ready — attempts=2; http://127.0.0.1:5174/act1-hifi/town.html?town=greenhollow&first=1&facing=up
+  PASS successful legacy Continue migrates only the intro flag — {"map":"overworld","town":false,"position":{"mapId":"overworld","x":69,"y":256,"floor":1},"introDone":true}
+  PASS legacy Continue stays at its saved overworld location until movement — {"map":"overworld","town":false,"position":{"mapId":"overworld","x":69,"y":256,"floor":1},"introDone":true}
+  PASS legacy Continue arrives at the town gate, not Elder Rowan — src=http://127.0.0.1:5174/act1-hifi/town.html?town=greenhollow&facing=up; cell=32.19,55.50
+  PASS saved-town Continue suppresses the legacy Elder opening before world start — {"showingMessage":false,"message":null,"introDone":true,"position":{"mapId":"greenhollow","x":35.803,"y":33.573,"floor":1}}
+  PASS saved position is at the actual Save service — service=save
+  PASS real town Save persists intro.done and preserves the existing live flags — {"intro.done":true,"compass.visited.greenhollow":true}
+  PASS cold Continue restores saved town position without intro or New-Game marker — src=http://127.0.0.1:5174/act1-hifi/town.html?town=greenhollow&at=35.803%2C33.573&facing=down; cell=35.80,33.57; intro=false; flags={"intro.done":true,"compass.visited.greenhollow":true}
+  PASS recovery snapshot missing intro.done is migrated after snapshot overlay — {"intro":false,"introDone":true,"src":"http://127.0.0.1:5174/act1-hifi/town.html?town=greenhollow&at=35.803%2C33.573&facing=down","position":{"mapId":"greenhollow","x":35.803,"y":33.573,"floor":1}}
+  PASS failed Continue leaves flags unchanged and does not start the world — {"flags":{"keepExisting":"yes"},"flagsUnchanged":true,"mode":"title","worldActive":false,"loadWrapperRestored":true}
+  FAIL VictoryScene enters the actual New Game+ creation path — {"ngPlus":true,"savedName":"Plus Ope"}
+  PASS New Game+ retains the fresh-town opening and intro sequence — {"first":true,"intro":true,"introDone":false}
+Page errors: new-game page: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.
+FAIL 2 issue(s)
+
+Exit status: 1

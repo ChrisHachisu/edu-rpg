@@ -2,8 +2,10 @@
 /* Bake the Act 1 overworld walkable distance field.
  *
  * WHY THIS EXISTS
- *   dq-tiles.js derives overworld collision from the SAME continuous fields drawTerrain paints
- *   with, so the blocker sits on the painted coastline instead of the tile lattice. Correct, and
+ *   dq-tiles.js derives the water collision layer from the SAME continuous field drawTerrain paints
+ *   with, so the blocker sits on the painted coastline instead of the tile lattice. Act 1 mountain
+ *   collision is supplied by the approved visible-alpha union pack and is deliberately excluded
+ *   here; other overworld regions retain their analytic water+mountain fallback. Correct, and
  *   measured at 434-492 ms per rebuild on device (mean ~470 ms, six samples, two launches) against
  *   a 40 ms budget -- one frozen half-second every 2.2 s of walking. Split by phase in Node:
  *   the per-pixel waterField/mountainField evaluation is ~87% of it and the chamfer the rest, so
@@ -16,7 +18,7 @@
  *
  * WHAT IS BAKED
  *   Exactly what owmBuild() computes, evaluated once here instead of ~450 times a playthrough:
- *     b = waterField >= 0.50 || mountainField >= 0.50, minus bridge decks (tile 5)
+ *     b = waterField >= 0.50, minus bridge decks (tile 5)
  *     dist = chamfer-3-4 distance from every open pixel to the nearest b, in THIRDS of a pixel
  *   clamped to 255. 255 is chosen, not convenient: a1mFree's largest requirement is
  *   A1M_FOOT*A1M_CH + A1M_LEAN*A1M_CH = 48 thirds, so every value at or above 49 is already
@@ -61,6 +63,8 @@
  *   intermediate map states are pinned below so that cannot happen quietly again.
  *
  *   bake_act1_overworld_walk.mjs             rebake public/act1-overworld-walk.bin
+ *   bake_act1_overworld_walk.mjs --bake-to <path>
+ *                                            bake + verify without touching the public binary
  *   bake_act1_overworld_walk.mjs --check     verify the .bin's provenance, write nothing
  *   bake_act1_overworld_walk.mjs --verify    rebuild the field and diff it against owmBuild()
  *   bake_act1_overworld_walk.mjs --emit-map <path>
@@ -121,10 +125,15 @@ const TILE = 48;                 // world px per cell, dq-tiles.js's N
 const FAR = 255;                 // the clamp, in chamfer thirds (see header)
 const PLATE_PAD = 40;            // cells (see THE PLATE)
 const GUARD = 4;                 // extra cells chamfered but not emitted, so plate blocks are exact
-const HEADER = 64;
+const HEADER = 96;
 const SENT_FAR = 0xFFFF, SENT_BLOCKED = 0xFFFE, SENT_UNBAKED = 0xFFFD;
 const MAGIC = 0x574F3141;        // 'A1OW' little-endian
-const VERSION = 1;
+const VERSION = 2;
+const PROFILE_ID = 'act1-forward-20261007-v1';
+const SUPPORT_INPUT_SCHEMA = 'a1ow-effective-support-v1';
+const SUPPORT_WATER_THRESHOLD = 12;
+const SUPPORT_WATER_WIGGLE = 0.26;
+const SUPPORT_SEMANTICS_SHA256 = 'a6e6e7f228d040381539618d99f03e774a16dd7cadbaf8cc76a115934d324f67';
 
 const sha256 = value => createHash('sha256').update(value).digest('hex');
 const assert = (condition, message) => { if (!condition) throw new Error(message); };
@@ -148,6 +157,7 @@ function sliceFunction(source, name) {
 }
 const FIELD_FUNCTIONS = ['_h', 'vnoise', 'et', 'fieldAt', 'waterField', 'mountainField',
   'buildMutedWater'];
+const SUPPORT_FUNCTIONS = ['owmSupportBounds', 'owmSupportEt', 'owmSupportInputBytes'];
 
 function extractRawTerrain(bundle) {
   const helper = bundle.indexOf('function Js(n)');
@@ -195,43 +205,66 @@ function buildFinalMap(bundle, dq, plateSource) {
   return { map, plateSha256: plate.plateSha256 };
 }
 
-/* THE RUNTIME'S IDENTITY CHECK, and deliberately not a hash of the whole map. Gameplay writes into
-   mapData -- a chest opens, a boss falls -- and a whole-map hash would send the overworld back to
-   the 470 ms path forever the first time one did. What the bake depends on is only the membership
-   the two fields read, so that is what is hashed: water, bridge, mountain, everything else. Any
-   edit that could move the painted coastline changes it; nothing else can.
-   FNV-1a/32 rather than sha256 because the runtime has no synchronous crypto. */
-function terrainClass(v) { return v === 2 ? 1 : v === 5 ? 2 : v === 4 ? 3 : 0; }
-function fnv1a32Map(map) {
-  let h = 0x811c9dc5;
-  for (let y = 0; y < map.length; y += 1) {
-    const row = map[y];
-    for (let x = 0; x < row.length; x += 1) {
-      h = (h ^ terrainClass(row[x])) >>> 0; h = Math.imul(h, 0x01000193) >>> 0;
-    }
-  }
-  return h >>> 0;
-}
-
 function fieldSource(dq) {
   return FIELD_FUNCTIONS.map(name => sliceFunction(dq, name)).join('\n');
 }
-function provenance(dq, map) {
-  return sha256(Buffer.concat([
-    Buffer.from(BUNDLE_SHA256, 'hex'), Buffer.from(map.flat()),
-    Buffer.from(fieldSource(dq), 'utf8'),
-    Buffer.from(`${TILE}|${FAR}|${PLATE_PAD}|${GUARD}|${VERSION}`, 'utf8'),
-  ]));
+function semanticsBytes(dq) {
+  const semanticSource = FIELD_FUNCTIONS.concat(SUPPORT_FUNCTIONS)
+    .map(name => sliceFunction(dq, name)).join('\n');
+  const contract = {
+    schema: 'a1ow-field-semantics-v2', profileId: PROFILE_ID,
+    sourceSha256: sha256(Buffer.from(semanticSource, 'utf8')),
+    functions: FIELD_FUNCTIONS.concat(SUPPORT_FUNCTIONS),
+    map: [MAP_WIDTH, MAP_HEIGHT], tile: TILE, far: FAR,
+    act1Bounds: ACT1_BOUNDS, platePad: PLATE_PAD, guard: GUARD,
+    mutedWater: { connectivity: 4, threshold: SUPPORT_WATER_THRESHOLD },
+    fields: { water: { want: 2, bridge: 5, wiggle: SUPPORT_WATER_WIGGLE, scale: 20, seed: 33 },
+      mountain: { want: 4, amplitude: 0.20, scale: 18, seed: 91 } },
+    packedDistances: 'two-pass-chamfer-3-4-clamped-far', version: VERSION,
+  };
+  return Buffer.from(JSON.stringify(contract), 'utf8');
+}
+function semanticsSha256(dq) { return sha256(semanticsBytes(dq)); }
+function fnv1a32Bytes(bytes) {
+  let h = 0x811c9dc5;
+  for (const value of bytes) { h = (h ^ value) >>> 0; h = Math.imul(h, 0x01000193) >>> 0; }
+  return h >>> 0;
+}
+function supportBounds() {
+  const p = plateBounds();
+  const x0 = Math.max(0, p.x0 - GUARD), y0 = Math.max(0, p.y0 - GUARD);
+  const x1 = Math.min(MAP_WIDTH - 1, p.x1 + GUARD), y1 = Math.min(MAP_HEIGHT - 1, p.y1 + GUARD);
+  // fieldAt samples adjacent cell centres. West/south are clipped out-of-map zero reads;
+  // east/north add one real map cell where it exists.
+  return { x0: Math.max(0, x0 - 1), y0: Math.max(0, y0 - 1),
+    x1: Math.min(MAP_WIDTH - 1, x1 + 1), y1: Math.min(MAP_HEIGHT - 1, y1 + 1) };
+}
+function supportInput(dq, map, fields = fieldsFor(dq, map)) {
+  const bounds = supportBounds();
+  const values = Buffer.alloc((bounds.x1 - bounds.x0 + 1) * (bounds.y1 - bounds.y0 + 1));
+  let at = 0;
+  for (let y = bounds.y0; y <= bounds.y1; y += 1) {
+    for (let x = bounds.x0; x <= bounds.x1; x += 1) {
+      const value = fields.et(map, x, y);
+      values[at++] = value === 2 ? 1 : value === 5 ? 2 : value === 4 ? 3 : 0;
+    }
+  }
+  const domain = Buffer.from(JSON.stringify({ schema: SUPPORT_INPUT_SCHEMA, profileId: PROFILE_ID,
+    bounds, dimensions: [MAP_WIDTH, MAP_HEIGHT], tile: TILE, far: FAR, platePad: PLATE_PAD,
+    guard: GUARD, mutedWaterThreshold: SUPPORT_WATER_THRESHOLD,
+    waterWiggle: SUPPORT_WATER_WIGGLE, semanticsSha256: semanticsSha256(dq) }), 'utf8');
+  const bytes = Buffer.concat([domain, Buffer.from([0]), values]);
+  return { bounds, bytes, sha256: sha256(bytes), fnv32: fnv1a32Bytes(bytes) };
 }
 
-// waterField/mountainField bound to this map, with dq-tiles.js's own MUTED small-lake suppression
-// in force (et() consults it, and reskin() installs it before any field is ever sampled).
+// waterField/mountainField bound to this map with a fresh exact MUTED set, independent of the
+// runtime render cache's lifecycle.
 function fieldsFor(dq, map) {
   const src = fieldSource(dq);
   const make = new Function('window', 'map', 'N', `
     ${src}
     var MUTED_W = map[0].length;
-    var MUTED = buildMutedWater(map, 12);
+    var MUTED = buildMutedWater(map, ${SUPPORT_WATER_THRESHOLD});
     return { et: et, waterField: waterField, mountainField: mountainField, muted: MUTED.size };
   `);
   return make({}, map, TILE);
@@ -255,14 +288,17 @@ function buildPlateDistance(fields, map) {
   const gx1 = Math.min(MAP_WIDTH - 1, p.x1 + GUARD), gy1 = Math.min(MAP_HEIGHT - 1, p.y1 + GUARD);
   const W = (gx1 - gx0 + 1) * TILE, H = (gy1 - gy0 + 1) * TILE;
   const dist = new Uint16Array(W * H), INF = 60000;
-  const { et, waterField, mountainField } = fields;
+  const { et, waterField } = fields;
   for (let y = 0; y < H; y += 1) {
     const wy = gy0 * TILE + y, row = y * W, ty = (wy / TILE) | 0;
     for (let x = 0; x < W; x += 1) {
       const wx = gx0 * TILE + x;
       let b = 0;
       if (waterField(map, wx, wy) >= 0.50) b = 1;
-      if (!b && mountainField(map, wx, wy) >= 0.50) b = 1;
+      const tx = (wx / TILE) | 0, tyCell = (wy / TILE) | 0;
+      const inAct1 = tx >= ACT1_BOUNDS[0] && tx <= ACT1_BOUNDS[2]
+        && tyCell >= ACT1_BOUNDS[1] && tyCell <= ACT1_BOUNDS[3];
+      if (!b && !inAct1 && fields.mountainField(map, wx, wy) >= 0.50) b = 1;
       if (b && et(map, (wx / TILE) | 0, ty) === 5) b = 0;
       dist[row + x] = b ? 0 : INF;
     }
@@ -296,9 +332,11 @@ function buildPlateDistance(fields, map) {
   return { dist, W, H, gx0, gy0, plate: p };
 }
 
-function bake(bundle, dq, plateSource) {
-  const { map } = buildFinalMap(bundle, dq, plateSource);
+function bakeMap(dq, map) {
+  assert(semanticsSha256(dq) === SUPPORT_SEMANTICS_SHA256,
+    `field semantics changed: expected ${SUPPORT_SEMANTICS_SHA256}, got ${semanticsSha256(dq)}`);
   const fields = fieldsFor(dq, map);
+  const support = supportInput(dq, map, fields);
   const { dist, W, gx0, gy0, plate } = buildPlateDistance(fields, map);
 
   const index = new Uint16Array(MAP_WIDTH * MAP_HEIGHT).fill(SENT_UNBAKED);
@@ -332,10 +370,11 @@ function bake(bundle, dq, plateSource) {
   out.writeUInt16LE(MAP_WIDTH, 8);
   out.writeUInt16LE(MAP_HEIGHT, 10);
   out.writeUInt16LE(FAR, 12);
-  out.writeUInt16LE(0, 14);
   out.writeUInt32LE(blocks.length, 16);
-  out.writeUInt32LE(fnv1a32Map(map), 20);
-  Buffer.from(provenance(dq, map), 'hex').copy(out, 32);
+  out.writeUInt32LE(support.fnv32, 20);
+  out.writeUInt16LE(HEADER, 14);
+  Buffer.from(SUPPORT_SEMANTICS_SHA256, 'hex').copy(out, 32);
+  Buffer.from(support.sha256, 'hex').copy(out, 64);
   // Written explicitly little-endian. The runtime maps the index straight through as a
   // Uint16Array view, which is host-endian -- true on every platform this ships to (arm64/x64),
   // and stated here rather than assumed silently.
@@ -343,7 +382,11 @@ function bake(bundle, dq, plateSource) {
   let at = HEADER + index.byteLength;
   for (const b of blocks) { out.set(b, at); at += b.length; }
 
-  return { buffer: out, blocks: blocks.length, map, fields, dist, W, gx0, gy0, plate, index };
+  return { buffer: out, blocks: blocks.length, map, fields, dist, W, gx0, gy0, plate, index, support };
+}
+function bake(bundle, dq, plateSource) {
+  const { map } = buildFinalMap(bundle, dq, plateSource);
+  return bakeMap(dq, map);
 }
 
 /* ---- the verification that matters ----------------------------------------------------------
@@ -356,23 +399,27 @@ function bake(bundle, dq, plateSource) {
    other. That mistake is exactly how a baked artefact drifts from its consumer. */
 function runtimeReader(dq) {
   const body = ['owmBakeParse', 'owmAssemble'].map(n => sliceFunction(dq, n)).join('\n');
-  return new Function('window', 'N', 'OWM_UNBAKED', 'OWM_BLOCKED', 'OWM_FARCELL', 'owmTileBlock', `
+  return new Function('window', 'N', 'OWM_UNBAKED', 'OWM_BLOCKED', 'OWM_FARCELL', 'owmTileBlock',
+    'OWM_HEADER', 'OWM_VERSION', 'OWM_SUPPORT_FAR', 'OWM_SUPPORT_SEMANTICS_SHA256', `
     ${body}
     return { parse: owmBakeParse, assemble: owmAssemble };
-  `)({}, TILE, SENT_UNBAKED, SENT_BLOCKED, SENT_FAR, () => ({}));
+  `)({}, TILE, SENT_UNBAKED, SENT_BLOCKED, SENT_FAR, () => ({}), HEADER, VERSION, FAR,
+    SUPPORT_SEMANTICS_SHA256);
 }
 function parse(buffer) {
   assert(buffer.readUInt32LE(0) === MAGIC && buffer.readUInt16LE(4) === VERSION, 'bad header');
+  assert(buffer.readUInt16LE(14) === HEADER, 'bad v2 header length');
   return { nBlocks: buffer.readUInt32LE(16), far: buffer.readUInt16LE(12),
-           mapHash: buffer.readUInt32LE(20), provenance: buffer.subarray(32, 64).toString('hex') };
+    supportFNV: buffer.readUInt32LE(20), semanticsSha256: buffer.subarray(32, 64).toString('hex'),
+    supportSha256: buffer.subarray(64, 96).toString('hex') };
 }
 function owmBuildReference(dq, map, fields, X0, Y0, winW, winH) {
   const body = `${sliceFunction(dq, 'owmPresence')}\n${sliceFunction(dq, 'owmBuild')}`;
-  const fn = new Function('window', 'map', 'N', 'et', 'waterField', 'mountainField', 'owmTileBlock', `
+  const fn = new Function('window', 'map', 'N', 'et', 'waterField', 'mountainField', 'owmTileBlock', 'a1aPlateBounds', `
     ${body}
     return owmBuild;
-  `)({}, map, TILE, fields.et, fields.waterField, fields.mountainField, () => ({}));
-  return fn(map, X0, Y0, winW, winH);
+  `)({}, map, TILE, fields.et, fields.waterField, fields.mountainField, () => ({}), () => ACT1_BOUNDS);
+  return fn(map, X0, Y0, winW, winH, true);
 }
 function verify(dq, baked) {
   const reader = runtimeReader(dq);
@@ -380,6 +427,8 @@ function verify(dq, baked) {
   const view = reader.parse(ab);
   assert(view, 'dq-tiles.js owmBakeParse refused the freshly baked .bin');
   assert(view.far === FAR && view.mapW === MAP_WIDTH && view.mapH === MAP_HEIGHT, 'parsed header mismatch');
+  assert(view.semantics === SUPPORT_SEMANTICS_SHA256 && view.support === baked.support.sha256
+    && view.hash === baked.support.fnv32, 'runtime parser lost v2 support identity');
   const windows = [];
   for (const [tx, ty, label] of [[91, 276, 'headland WORLD(91,276)'], [60, 341, 'ACT1_START'],
     [80, 300, 'mid'], [40, 240, 'nw'], [120, 360, 'se'], [100, 250, 'ne'], [30, 380, 'sw']]) {
@@ -431,10 +480,10 @@ function verify(dq, baked) {
 
 const args = process.argv.slice(2);
 const mode = args[0] || '--bake';
-assert(['--bake', '--check', '--verify', '--emit-map'].includes(mode),
-  'usage: bake_act1_overworld_walk.mjs [--bake|--check|--verify|--emit-map <path>]');
-assert(mode === '--emit-map' ? args.length === 2 : args.length <= 1,
-  '--emit-map takes exactly one path; the other modes take no argument');
+assert(['--bake', '--bake-to', '--check', '--verify', '--emit-map'].includes(mode),
+  'usage: bake_act1_overworld_walk.mjs [--bake|--check|--verify|--bake-to <path>|--emit-map <path>]');
+assert(mode === '--emit-map' || mode === '--bake-to' ? args.length === 2 : args.length <= 1,
+  '--bake-to and --emit-map take exactly one path; the other modes take no argument');
 
 const bundle = readFileSync(BUNDLE_PATH);
 const dq = readFileSync(DQ_PATH, 'utf8');
@@ -459,21 +508,28 @@ if (mode === '--emit-map') {
   console.log(`ACT 1 SHIPPED MAP EMITTED: ${MAP_WIDTH}x${MAP_HEIGHT} plated ${platedSha256.slice(0, 16)} `
     + `from plate source ${record.plateSourceSha256.slice(0, 16)}`);
 } else if (mode === '--check') {
-  // Cheap: rebuild the INPUTS' digest, not the 108 M px field.
+  // Recompute only the bounded support input and its global muted-water dependency, not the field.
   const { map } = buildFinalMap(bundle, dq, plateSource);
-  const want = provenance(dq, map);
+  const support = supportInput(dq, map);
+  const wantSemantics = semanticsSha256(dq);
   const have = parse(readFileSync(OUTPUT));
-  assert(have.provenance === want, 'act1-overworld-walk.bin is stale -- rerun bake_act1_overworld_walk.mjs');
-  assert(have.mapHash === fnv1a32Map(map), 'baked map hash mismatch');
+  assert(wantSemantics === SUPPORT_SEMANTICS_SHA256, `field semantics pin is stale: ${wantSemantics}`);
+  assert(have.semanticsSha256 === wantSemantics, 'A1OW field semantics mismatch -- rerun the v2 bake');
+  assert(have.supportSha256 === support.sha256 && have.supportFNV === support.fnv32,
+    'A1OW effective support is stale -- rerun the v2 bake');
   console.log(`ACT 1 OVERWORLD WALK CHECK PASS: ${have.nBlocks} blocks, far=${have.far}, `
-    + `provenance ${have.provenance.slice(0, 16)}`);
+    + `support ${have.supportSha256.slice(0, 16)} / semantics ${have.semanticsSha256.slice(0, 16)}`);
 } else {
   const baked = bake(bundle, dq, plateSource);
   if (mode === '--verify') { verify(dq, baked); }
   else {
-    writeFileSync(OUTPUT, baked.buffer);
+    const output = mode === '--bake-to' ? resolve(args[1]) : OUTPUT;
+    assert(mode !== '--bake-to' || output !== OUTPUT,
+      '--bake-to refuses the canonical public binary; use --bake only for an authorized installation');
+    if (mode === '--bake-to') verify(dq, baked);
+    writeFileSync(output, baked.buffer);
     console.log(`ACT 1 OVERWORLD WALK WRITTEN: ${baked.buffer.length} B, ${baked.blocks} explicit `
       + `blocks of ${(baked.plate.x1 - baked.plate.x0 + 1) * (baked.plate.y1 - baked.plate.y0 + 1)}, `
-      + `plate [${baked.plate.x0},${baked.plate.y0}]..[${baked.plate.x1},${baked.plate.y1}]`);
+      + `plate [${baked.plate.x0},${baked.plate.y0}]..[${baked.plate.x1},${baked.plate.y1}] at ${output}`);
   }
 }

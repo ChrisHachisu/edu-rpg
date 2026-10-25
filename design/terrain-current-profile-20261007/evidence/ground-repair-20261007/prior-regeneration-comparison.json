@@ -1,0 +1,14 @@
+{
+  "status": "PASS",
+  "profileId": "act1-forward-20261007-v1",
+  "generationAReceiptSha256": "551ebd07fc660604d6b24911fb231f38a80318f659ffb557c3e1a9345fc671ae",
+  "generationBReceiptSha256": "6ad10a1e00b8df8debac70602f11b60a56495d0aef42a7e7045c4543497fd5bb",
+  "pathSetMatches": true,
+  "outputInventoryMismatches": [],
+  "cleanDeterministicRegeneration": true,
+  "fullWorldComplete": true,
+  "gateReady": false,
+  "generationA": "/private/tmp/edu-rpg-build83-paint-audit-20261005/current-terrain-generation-20261007/full-world/north-contact-y-20261007/generation-corrected-a",
+  "generationB": "/private/tmp/edu-rpg-build83-paint-audit-20261005/current-terrain-generation-20261007/full-world/north-contact-y-20261007/generation-corrected-b",
+  "generatedAtFixed": "deterministic"
+}

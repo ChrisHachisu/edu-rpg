@@ -1,0 +1,48 @@
+{
+  "schema": "act1-cliff-feedback-overlay-v1",
+  "profileId": "terrain-current-profile-20261007",
+  "status": "source-hook-enabled-pending-output-validation",
+  "sourcePlacementCount": 194,
+  "sourcePins": {
+    "cliffPlacementsSha256": "8f5f0ece745dc4d9378c24e21c1fc2992d8ca03cee842aeeac444daf5eda0fa7",
+    "northRecipeSha256": "e84409c166b6754d59d02cb5fcf8c8b54acf524e61b615dc1c996e783b99b007",
+    "mainAtlasSha256": "4ad26ea3e7d38f4a768dd869a9a3c1db86812891c5911b461ac573af72684b1e",
+    "companionAtlasSha256": "b2701dd847e7d1df26c8488aa95877b57682be732a7bdc10d00fa12363613a04"
+  },
+  "removeStableIdentities": [
+    "companion|companion-low-shoulder|160,218",
+    "companion|companion-low-shoulder|160,219",
+    "companion|companion-low-shoulder|32,244",
+    "companion|companion-low-shoulder|35,241",
+    "companion|companion-low-shoulder|43,253",
+    "companion|companion-low-shoulder|45,234",
+    "companion|companion-low-shoulder|64,237",
+    "companion|companion-narrow-buttress|28,250",
+    "companion|companion-narrow-buttress|60,242",
+    "companion|companion-tall-fin|160,218",
+    "companion|companion-tall-fin|163,297",
+    "companion|companion-tall-fin|163,357",
+    "companion|companion-tall-fin|163,361",
+    "companion|companion-tall-fin|28,249",
+    "companion|companion-tall-fin|29,247",
+    "companion|companion-tall-fin|34,242",
+    "companion|companion-tall-fin|80,227",
+    "companion|companion-tall-fin|86,224"
+  ],
+  "addWholePlacements": [
+    {
+      "group": "main",
+      "asset": "broad-joining-mass-A",
+      "originWorldCell": [
+        34,
+        242
+      ]
+    }
+  ],
+  "compositionPolicy": {
+    "applyAfter": "canonical-north-whole-object-policy",
+    "scale": "existing-main-atlas-scale",
+    "sort": "existing-shared-contactY-event-sort",
+    "visibleAndCollisionAlpha": "same-expanded-event-list"
+  }
+}

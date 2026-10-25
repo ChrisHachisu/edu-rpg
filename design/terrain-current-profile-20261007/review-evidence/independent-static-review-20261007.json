@@ -1,0 +1,262 @@
+{
+  "schema": "qok-forward-preparation-receipt-v1",
+  "profileId": "act1-forward-20261007-v1",
+  "result": "QA_PREPARATION_PASS",
+  "reviewerRole": "independent",
+  "claim": "Bounded static QA preparation only, including current A1OW-v2 support identity, 488-output closure, and the independently reviewed startup-recovery source patch; the profile remains nonshippable and releaseEligible=false. The v2 manifest update is provenance metadata only; no terrain render was regenerated.",
+  "authoringInputInventorySha256": "80fb1f3a11cf987e162793ec00480c2ebdb51da36965796f263047feea35e51b",
+  "generatedOutputInventorySha256": "ad49569a3290f039bdf3c2120ccc771398d6d4596d09a10c9b09048d5b734023",
+  "runner": {
+    "path": "design/terrain-current-profile-20261007/review-tools/recompute_forward_outputs.py",
+    "sha256": "a3454ec68fbf2ed1e5d8e3a983cb9f5292f2f2194743b75c1a713a8bdbdf556e",
+    "version": "forward-static-recompute-review-v3-a1ow-v2"
+  },
+  "checks": {
+    "cleanRegeneration": {
+      "result": "PASS",
+      "proofPath": "design/terrain-current-profile-20261007/evidence/a1ow-v2-independent-review/portable-runner-recomputation.json",
+      "proofSha256": "5ab17e63eb5e034e5df7543244d778d88abda8936c7dfe9f33ccec433285d348",
+      "evidenceArtifacts": [
+        {
+          "path": "design/terrain-current-profile-20261007/evidence/a1ow-v2-independent-review/portable-runner-recomputation.json",
+          "bytes": 6728,
+          "sha256": "5ab17e63eb5e034e5df7543244d778d88abda8936c7dfe9f33ccec433285d348"
+        }
+      ],
+      "scope": "composed two-root output closure: prior two-root proof covers unchanged rows; current A/B independently rerender 121 ground resources and regenerated metadata; not a second full generator run"
+    },
+    "decodedPixels": {
+      "result": "PASS",
+      "proofPath": "design/terrain-current-profile-20261007/evidence/full-region-review/startup-recovery-independent-recomputation-20261008.json",
+      "proofSha256": "75be60d66e420698273c9c834687bb1224d5b19153752be7aa4aa0c463e8256c",
+      "evidenceArtifacts": [
+        {
+          "path": "design/terrain-current-profile-20261007/evidence/full-region-review/startup-recovery-independent-recomputation-20261008.json",
+          "bytes": 6117,
+          "sha256": "75be60d66e420698273c9c834687bb1224d5b19153752be7aa4aa0c463e8256c"
+        }
+      ]
+    },
+    "globalCropReconstruction": {
+      "result": "PASS",
+      "proofPath": "design/terrain-current-profile-20261007/evidence/full-region-review/startup-recovery-independent-recomputation-20261008.json",
+      "proofSha256": "75be60d66e420698273c9c834687bb1224d5b19153752be7aa4aa0c463e8256c",
+      "evidenceArtifacts": [
+        {
+          "path": "design/terrain-current-profile-20261007/evidence/full-region-review/startup-recovery-independent-recomputation-20261008.json",
+          "bytes": 6117,
+          "sha256": "75be60d66e420698273c9c834687bb1224d5b19153752be7aa4aa0c463e8256c"
+        }
+      ]
+    },
+    "chunkBoundaries": {
+      "result": "PASS",
+      "proofPath": "design/terrain-current-profile-20261007/evidence/full-region-review/startup-recovery-independent-recomputation-20261008.json",
+      "proofSha256": "75be60d66e420698273c9c834687bb1224d5b19153752be7aa4aa0c463e8256c",
+      "evidenceArtifacts": [
+        {
+          "path": "design/terrain-current-profile-20261007/evidence/full-region-review/startup-recovery-independent-recomputation-20261008.json",
+          "bytes": 6117,
+          "sha256": "75be60d66e420698273c9c834687bb1224d5b19153752be7aa4aa0c463e8256c"
+        }
+      ]
+    },
+    "underpaintPhase": {
+      "result": "PASS",
+      "proofPath": "design/terrain-current-profile-20261007/evidence/a1ow-v2-independent-review/portable-runner-recomputation.json",
+      "proofSha256": "5ab17e63eb5e034e5df7543244d778d88abda8936c7dfe9f33ccec433285d348",
+      "evidenceArtifacts": [
+        {
+          "path": "design/terrain-current-profile-20261007/evidence/a1ow-v2-independent-review/portable-runner-recomputation.json",
+          "bytes": 6728,
+          "sha256": "5ab17e63eb5e034e5df7543244d778d88abda8936c7dfe9f33ccec433285d348"
+        }
+      ]
+    },
+    "collisionDecode": {
+      "result": "PASS",
+      "proofPath": "design/terrain-current-profile-20261007/evidence/full-region-review/startup-recovery-independent-recomputation-20261008.json",
+      "proofSha256": "75be60d66e420698273c9c834687bb1224d5b19153752be7aa4aa0c463e8256c",
+      "evidenceArtifacts": [
+        {
+          "path": "design/terrain-current-profile-20261007/evidence/full-region-review/startup-recovery-independent-recomputation-20261008.json",
+          "bytes": 6117,
+          "sha256": "75be60d66e420698273c9c834687bb1224d5b19153752be7aa4aa0c463e8256c"
+        }
+      ]
+    },
+    "a1owDecode": {
+      "result": "PASS",
+      "proofPath": "design/terrain-current-profile-20261007/evidence/a1ow-v2-independent-review/portable-runner-recomputation.json",
+      "proofSha256": "5ab17e63eb5e034e5df7543244d778d88abda8936c7dfe9f33ccec433285d348",
+      "evidenceArtifacts": [
+        {
+          "path": "design/terrain-current-profile-20261007/evidence/a1ow-v2-independent-review/portable-runner-recomputation.json",
+          "bytes": 6728,
+          "sha256": "5ab17e63eb5e034e5df7543244d778d88abda8936c7dfe9f33ccec433285d348"
+        }
+      ]
+    },
+    "visibleAlpha": {
+      "result": "PASS",
+      "proofPath": "design/terrain-current-profile-20261007/evidence/full-region-review/startup-recovery-independent-recomputation-20261008.json",
+      "proofSha256": "75be60d66e420698273c9c834687bb1224d5b19153752be7aa4aa0c463e8256c",
+      "evidenceArtifacts": [
+        {
+          "path": "design/terrain-current-profile-20261007/evidence/full-region-review/startup-recovery-independent-recomputation-20261008.json",
+          "bytes": 6117,
+          "sha256": "75be60d66e420698273c9c834687bb1224d5b19153752be7aa4aa0c463e8256c"
+        }
+      ]
+    },
+    "heroFrameClearance": {
+      "result": "PASS",
+      "proofPath": "design/terrain-current-profile-20261007/evidence/full-region-review/startup-recovery-independent-recomputation-20261008.json",
+      "proofSha256": "75be60d66e420698273c9c834687bb1224d5b19153752be7aa4aa0c463e8256c",
+      "evidenceArtifacts": [
+        {
+          "path": "design/terrain-current-profile-20261007/evidence/full-region-review/startup-recovery-independent-recomputation-20261008.json",
+          "bytes": 6117,
+          "sha256": "75be60d66e420698273c9c834687bb1224d5b19153752be7aa4aa0c463e8256c"
+        }
+      ]
+    },
+    "safeCells": {
+      "result": "PASS",
+      "proofPath": "design/terrain-current-profile-20261007/evidence/full-region-review/startup-recovery-independent-recomputation-20261008.json",
+      "proofSha256": "75be60d66e420698273c9c834687bb1224d5b19153752be7aa4aa0c463e8256c",
+      "evidenceArtifacts": [
+        {
+          "path": "design/terrain-current-profile-20261007/evidence/full-region-review/startup-recovery-independent-recomputation-20261008.json",
+          "bytes": 6117,
+          "sha256": "75be60d66e420698273c9c834687bb1224d5b19153752be7aa4aa0c463e8256c"
+        }
+      ]
+    },
+    "currentGuard": {
+      "result": "PASS",
+      "proofPath": "design/terrain-current-profile-20261007/evidence/runtime-invariants-static.json",
+      "proofSha256": "26b2cc590d35aa5452a423d284d25c859f864022627221d1e6059776dd6a3700",
+      "evidenceArtifacts": [
+        {
+          "path": "design/terrain-current-profile-20261007/evidence/runtime-invariants-static.json",
+          "bytes": 2305,
+          "sha256": "26b2cc590d35aa5452a423d284d25c859f864022627221d1e6059776dd6a3700"
+        }
+      ]
+    },
+    "runtimeInvariants": {
+      "result": "PASS",
+      "proofPath": "design/terrain-current-profile-20261007/evidence/runtime-invariants-static.json",
+      "proofSha256": "26b2cc590d35aa5452a423d284d25c859f864022627221d1e6059776dd6a3700",
+      "evidenceArtifacts": [
+        {
+          "path": "design/terrain-current-profile-20261007/evidence/runtime-invariants-static.json",
+          "bytes": 2305,
+          "sha256": "26b2cc590d35aa5452a423d284d25c859f864022627221d1e6059776dd6a3700"
+        }
+      ]
+    },
+    "sourceResourceClosure": {
+      "result": "PASS",
+      "proofPath": "design/terrain-current-profile-20261007/evidence/static-evidence-inventory.json",
+      "proofSha256": "059c41c844f98fa1b10f38e6ce345070bd75d8df7e583e5ef402861340ddb491",
+      "evidenceArtifacts": [
+        {
+          "path": "design/terrain-current-profile-20261007/evidence/static-evidence-inventory.json",
+          "bytes": 13565,
+          "sha256": "059c41c844f98fa1b10f38e6ce345070bd75d8df7e583e5ef402861340ddb491"
+        }
+      ]
+    },
+    "renderedReview": {
+      "result": "PASS",
+      "proofPath": "design/terrain-current-profile-20261007/evidence/ground-repair-20261007/independent-ground-review.md",
+      "proofSha256": "2f671e274025d2f1da3b73a6d18b7be578cf1b3ca612ab12fed10db8f3adb03a",
+      "evidenceArtifacts": [
+        {
+          "path": "design/terrain-current-profile-20261007/evidence/ground-repair-20261007/independent-ground-review.md",
+          "bytes": 2779,
+          "sha256": "2f671e274025d2f1da3b73a6d18b7be578cf1b3ca612ab12fed10db8f3adb03a"
+        }
+      ]
+    }
+  },
+  "supportingReviewRecords": [
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/full-region-review/METADATA-REBIND-REVIEW.md",
+      "bytes": 4035,
+      "sha256": "e6e35575fdadb9b90347ada85afe9d4bc1f3a0a0cc6d0175fedd4b3e17862ebb",
+      "role": "intermediate current metadata-rebind review note (pre-receipt checkpoint)"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/full-region-review/REVIEW-REPORT.md",
+      "bytes": 5165,
+      "sha256": "170bc0052482bd17d426f3772fabfef4e747080d65b4e3feb5e74c5e97951e48",
+      "role": "preserved original full-region rendered review"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/route-audit/FOLLOW-UP.md",
+      "bytes": 1403,
+      "sha256": "79ed22525844595dc666300ebebba2e88ece850af106075e990ade964c4fb6ad",
+      "role": "later route-audit classification addendum"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/full-region-review/INDEPENDENT-STATIC-CHECKPOINT.md",
+      "bytes": 3654,
+      "sha256": "523aa452899bc3f9d55922cb5fc3773ce0aea49c72d2e043b619138ea8ed89e3",
+      "role": "historical static checkpoint preserved; current manifest pin is superseded by current addendum"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/ground-repair-20261007/independent-ground-review.md",
+      "bytes": 2779,
+      "sha256": "2f671e274025d2f1da3b73a6d18b7be578cf1b3ca612ab12fed10db8f3adb03a",
+      "role": "independent review of the corrected ground repair and W-only outputs"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/ground-repair-20261007/ground-repair-report.md",
+      "bytes": 5109,
+      "sha256": "eb47f3a86833ceb6e3bc4de61aaf54903659fa3838a7bb46bf1c9eff13b7461d",
+      "role": "corrected ground generation report; full A plus five sampled deterministic repeats"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/ground-repair-20261007/composed-full-root-comparison.json",
+      "bytes": 4821,
+      "sha256": "dd1a0becf0681ca2921cf97d1ddbecb5cae17552d41586eeb83676efa5cd18e2",
+      "role": "composed two-root exact inventory closure; explicitly not a second full generator run"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/full-region-review/ground-repair-independent-recomputation.json",
+      "bytes": 6117,
+      "sha256": "3f6e43d548d070446096dac59ce4048cd49c879fd1aedd7e20de1e0d489d5d21",
+      "role": "refreshed independent recomputation bound to corrected source, manifest, and output receipt"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/startup-recovery-20261008/IMPLEMENTATION-REPORT.md",
+      "bytes": 4186,
+      "sha256": "28cd6aa7dd053101071c30b88120174e426e50eec9d38d51274b8a9061e6db95",
+      "role": "author implementation checkpoint for startup recovery"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/startup-recovery-20261008/INDEPENDENT-REVIEW.md",
+      "bytes": 3762,
+      "sha256": "0254012fbb19d9e073d9dfeafc3a29c695ddb2be2480c447fc5e82e0caa6c139",
+      "role": "independent scoped static review of startup recovery"
+    },
+    {
+      "path": "design/terrain-current-profile-20261007/evidence/full-region-review/startup-recovery-independent-recomputation-20261008.json",
+      "bytes": 6117,
+      "sha256": "75be60d66e420698273c9c834687bb1224d5b19153752be7aa4aa0c463e8256c",
+      "role": "independent bounded recomputation against the reviewed current map and DQ sources"
+    }
+  ],
+  "limitations": [
+    "The 11 dynamic proof assertions remain pending across exactly six QA groups.",
+    "This static receipt does not assert gameplay movement, collision-aware full route connectivity, fallback-contact equivalence, streaming/resume, native phone/tablet behavior, release eligibility, or TestFlight delivery.",
+    "The collision-aware route audit includes blocked anchors and capped searches; those outcomes remain inconclusive.",
+    "Composed output closure is explicit: 121 ground resources were independently rerendered twice and compared; prior reviewed output evidence covers unchanged rows; this is not a second full 488-file generator run.",
+    "The corrected ground repair was visually reviewed at the registered seam and sampled contexts; no public install/build/native proof is implied by the earlier W-only review.",
+    "The startup recovery source change has static focused-test coverage only; it has not been assembled into a new native binary or independently exercised in native gameplay.",
+    "The startup-recovery and DQ/map source changes have updated static checks only; they have not been assembled into a fresh native binary or independently exercised in native gameplay."
+  ]
+}

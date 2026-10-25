@@ -1,0 +1,298 @@
+{
+  "schema": "whole-rock-exact-stage-install-v1",
+  "sourceReceipt": "/private/tmp/edu-rpg-build83-paint-audit-20261005/whole-rock-integration-20261008/staged-full/generation-whole-rock-a/output-receipt.json",
+  "sourceReceiptSha256": "caa119e842428ce77db226f25828b1412403609e26353c8e9d5284bb854ac3e5",
+  "sourceInventoryCount": 488,
+  "sourceInventorySha256": "bad325a05e02dd3523784f576733c049b1d669ff2d98e69fae9d60cd392a6f24",
+  "publicExpected": 484,
+  "publicActual": 533,
+  "preservedUnrelatedPublicOverlayCount": 49,
+  "preservedUnrelatedPublicOverlayPaths": [
+    "adapter.js",
+    "hero-g3/hero-act1-female-walk-8x3-64-g3.png",
+    "hero-g3/hero-act1-male-walk-8x3-64-g3.png",
+    "landmarks/coastal-reef.png",
+    "landmarks/crystal-cave.png",
+    "landmarks/darkfang.png",
+    "landmarks/greenhollow.png",
+    "landmarks/landmarks.json",
+    "landmarks/millbrook.png",
+    "landmarks/misty-grotto.png",
+    "landmarks/port-sapphire.png",
+    "landmarks/sunken-cellar.png",
+    "landmarks/whispering-woods.png",
+    "path-corridor.js",
+    "portSapphire-walkable-v1.json",
+    "runtime.html",
+    "town.html",
+    "town/greenhollow-foreground.json",
+    "town/greenhollow-foreground.png",
+    "town/greenhollow-screen.png",
+    "town/greenhollow-town.json",
+    "town/greenhollow-walkable.json",
+    "town/millbrook-screen.png",
+    "town/millbrook-town.json",
+    "town/millbrook-walkable.json",
+    "town/npc/greenhollow-elder-4x3-64.png",
+    "town/npc/greenhollow-fisherman-4x3-64.png",
+    "town/npc/greenhollow-healer-4x3-64.png",
+    "town/npc/greenhollow-kiki-4x3-64.png",
+    "town/npc/greenhollow-shopkeeper-4x3-64.png",
+    "town/npc/greenhollow-villager1-4x3-64.png",
+    "town/npc/greenhollow-villager2-4x3-64.png",
+    "town/npc/millbrook-healer-4x3-64.png",
+    "town/npc/millbrook-herbalist-4x3-64.png",
+    "town/npc/millbrook-miller-4x3-64.png",
+    "town/npc/millbrook-sage-4x3-64.png",
+    "town/npc/millbrook-shopkeeper-4x3-64.png",
+    "town/npc/portSapphire-drake-4x3-64.png",
+    "town/npc/portSapphire-healer-4x3-64.png",
+    "town/npc/portSapphire-sailor-4x3-64.png",
+    "town/npc/portSapphire-shopkeeper-4x3-64.png",
+    "town/npc/portSapphire-wisewoman-4x3-64.png",
+    "town/portSapphire-screen.png",
+    "town/portSapphire-town.json",
+    "town/portSapphire-walkable.json",
+    "verify/seed.html",
+    "walkable-polygons.js",
+    "walkable-regions-v1.json",
+    "walkable-route-state.js"
+  ],
+  "publicChangedRows": 9,
+  "generatedOutputChangedRows": 13,
+  "changedRows": [
+    {
+      "scope": "public",
+      "path": "public/act1-hifi/chunks/forest/c4-r0.png",
+      "oldBytes": 321752,
+      "oldSha256": "d8688fc802e16fb0cc19d99d523cea0e27465df3aad640eee795dfec08cffb0a",
+      "newBytes": 312793,
+      "newSha256": "bb84b0e8abfbd6a41dad916106177eb1e7d339a68e2ce4414e287ee76d4778f7",
+      "source": "/private/tmp/edu-rpg-build83-paint-audit-20261005/whole-rock-integration-20261008/staged-full/generation-whole-rock-a/public/act1-hifi/chunks/forest/c4-r0.png"
+    },
+    {
+      "scope": "public",
+      "path": "public/act1-hifi/chunks/forest/c5-r0.png",
+      "oldBytes": 219148,
+      "oldSha256": "f4444bde054a88a690a31a04bcc14b4d5d006215cd6e8069505a50deb791dd73",
+      "newBytes": 222736,
+      "newSha256": "513790376f7d42c5213b7d7d4f0b47ceeec8e51120cc7b56d53a8840a25a1b87",
+      "source": "/private/tmp/edu-rpg-build83-paint-audit-20261005/whole-rock-integration-20261008/staged-full/generation-whole-rock-a/public/act1-hifi/chunks/forest/c5-r0.png"
+    },
+    {
+      "scope": "public",
+      "path": "public/act1-hifi/chunks/forest/c6-r0.png",
+      "oldBytes": 330325,
+      "oldSha256": "d34435bfba40df2eb61ed8fc0e6aa577c858de4f34c9a68d21bbcc42f19370c5",
+      "newBytes": 513661,
+      "newSha256": "50547470d323e3f0226253ddee5f8bc0f685a0cdcdf3997a5b8aa18672436963",
+      "source": "/private/tmp/edu-rpg-build83-paint-audit-20261005/whole-rock-integration-20261008/staged-full/generation-whole-rock-a/public/act1-hifi/chunks/forest/c6-r0.png"
+    },
+    {
+      "scope": "public",
+      "path": "public/act1-hifi/chunks/forest/c7-r0.png",
+      "oldBytes": 137756,
+      "oldSha256": "35db3876825521f99315faa84e4b3faba948e37899cbff78e9ccca8a20c3720c",
+      "newBytes": 522858,
+      "newSha256": "57f3427d8a45d6d0fa00a7cb7cf776e676ced2e082cd1fabe8101f579aa8c13e",
+      "source": "/private/tmp/edu-rpg-build83-paint-audit-20261005/whole-rock-integration-20261008/staged-full/generation-whole-rock-a/public/act1-hifi/chunks/forest/c7-r0.png"
+    },
+    {
+      "scope": "public",
+      "path": "public/act1-hifi/chunks/forest/c8-r0.png",
+      "oldBytes": 109141,
+      "oldSha256": "4f2e192a5057dd53e5549a966058a341c7a9dde1a96e4915483ccd81c8021bba",
+      "newBytes": 510871,
+      "newSha256": "2f68dbd46cd60f2c726f4d0d06582dee46ebcce3ca1b2f95af719a391e56b660",
+      "source": "/private/tmp/edu-rpg-build83-paint-audit-20261005/whole-rock-integration-20261008/staged-full/generation-whole-rock-a/public/act1-hifi/chunks/forest/c8-r0.png"
+    },
+    {
+      "scope": "public",
+      "path": "public/act1-hifi/chunks/forest/c9-r0.png",
+      "oldBytes": 29733,
+      "oldSha256": "936599b893541417a22d14e5770f7461ee39085f2572d6f6b7c9c747868b4d85",
+      "newBytes": 72594,
+      "newSha256": "c9fbea2e213798bf09df1cd530133004d141d279e0d2a4fa75e77ab8353b6194",
+      "source": "/private/tmp/edu-rpg-build83-paint-audit-20261005/whole-rock-integration-20261008/staged-full/generation-whole-rock-a/public/act1-hifi/chunks/forest/c9-r0.png"
+    },
+    {
+      "scope": "public",
+      "path": "public/act1-hifi/forest-collision.bin",
+      "oldBytes": 3447872,
+      "oldSha256": "cfb22774fac5315d3cef2c4b4cdde29ebb5324a054fe0bc3c07e56886cbaab16",
+      "newBytes": 3447872,
+      "newSha256": "05c4a76f914d9f20c82bf42d1eb574d774f15bd924dbee708aca09d260c97346",
+      "source": "/private/tmp/edu-rpg-build83-paint-audit-20261005/whole-rock-integration-20261008/staged-full/generation-whole-rock-a/public/act1-hifi/forest-collision.bin"
+    },
+    {
+      "scope": "public",
+      "path": "public/act1-hifi/manifest.json",
+      "oldBytes": 283004,
+      "oldSha256": "83fd77795f670ca6fa5911c87c05f57f67f651dbc516dadbd8c7b8139c97f0de",
+      "newBytes": 283075,
+      "newSha256": "24f3de319530c68a15a6097b20e14f4567d6bfe63d5dfff895a4883ecef35c5b",
+      "source": "/private/tmp/edu-rpg-build83-paint-audit-20261005/whole-rock-integration-20261008/staged-full/generation-whole-rock-a/public/act1-hifi/manifest.json"
+    },
+    {
+      "scope": "public",
+      "path": "public/act1-hifi/underpaint/forest-rgba.png",
+      "oldBytes": 1002161,
+      "oldSha256": "cb0b81d4768a7b07607364da6577ca8125dbb3d31c368e0c840c795bd5072ed2",
+      "newBytes": 1025558,
+      "newSha256": "ab5f809f3e562d4b7fe7c39d34407225d1b62bcfc4ae6900df63778ab54d47fd",
+      "source": "/private/tmp/edu-rpg-build83-paint-audit-20261005/whole-rock-integration-20261008/staged-full/generation-whole-rock-a/public/act1-hifi/underpaint/forest-rgba.png"
+    },
+    {
+      "scope": "generated",
+      "path": "design/terrain-current-profile-20261007/generated-output/evidence/final-visible-raised-alpha.png",
+      "oldBytes": 105552,
+      "oldSha256": "9354cdd077b9f8f5f157834634485a052d4485fac04009f66739f2a52472a723",
+      "newBytes": 107945,
+      "newSha256": "944062209c3ee9392c4a971fa5b792e19bdcec83ec2b08dbfd24155680a52fdd",
+      "source": "/private/tmp/edu-rpg-build83-paint-audit-20261005/whole-rock-integration-20261008/staged-full/generation-whole-rock-a/evidence/final-visible-raised-alpha.png"
+    },
+    {
+      "scope": "generated",
+      "path": "design/terrain-current-profile-20261007/generated-output/evidence/fm-contacts-overview.png",
+      "oldBytes": 1927888,
+      "oldSha256": "a7f3fac42717aff1952f6e04cfc646d1e2dc330f0db3b2009184e7243c8b1125",
+      "newBytes": 1913499,
+      "newSha256": "5ec34f89ab66a82615bfe6f7a87fd041356384ebb4e32c3b6a427b97fc387791",
+      "source": "/private/tmp/edu-rpg-build83-paint-audit-20261005/whole-rock-integration-20261008/staged-full/generation-whole-rock-a/evidence/fm-contacts-overview.png"
+    },
+    {
+      "scope": "generated",
+      "path": "design/terrain-current-profile-20261007/generated-output/evidence/fm-residual-closeup.png",
+      "oldBytes": 18850,
+      "oldSha256": "4e7eacf2113401966356686f0bf179d74ba11f78450927be3e6b8ccdeda64337",
+      "newBytes": 18904,
+      "newSha256": "96f97742d083d8e01106e3a2ae9f4deeef12abd2776d1dd1b56a3a7b5029324b",
+      "source": "/private/tmp/edu-rpg-build83-paint-audit-20261005/whole-rock-integration-20261008/staged-full/generation-whole-rock-a/evidence/fm-residual-closeup.png"
+    },
+    {
+      "scope": "generated",
+      "path": "design/terrain-current-profile-20261007/generated-output/evidence/lowres-only-support-6ppc.png",
+      "oldBytes": 14299,
+      "oldSha256": "1a2a007918cceebc6f8537ea510653ac6e681cbabe8ca7abdfcf34ea56d87449",
+      "newBytes": 14609,
+      "newSha256": "4cd211838caca0513babc1b8eb8990ec33f1bf785796bc811a3a9fe1896ca273",
+      "source": "/private/tmp/edu-rpg-build83-paint-audit-20261005/whole-rock-integration-20261008/staged-full/generation-whole-rock-a/evidence/lowres-only-support-6ppc.png"
+    },
+    {
+      "scope": "generated",
+      "path": "design/terrain-current-profile-20261007/generated-output/act1-hifi/chunks/forest/c4-r0.png",
+      "oldBytes": 321752,
+      "oldSha256": "d8688fc802e16fb0cc19d99d523cea0e27465df3aad640eee795dfec08cffb0a",
+      "newBytes": 312793,
+      "newSha256": "bb84b0e8abfbd6a41dad916106177eb1e7d339a68e2ce4414e287ee76d4778f7",
+      "source": "/private/tmp/edu-rpg-build83-paint-audit-20261005/whole-rock-integration-20261008/staged-full/generation-whole-rock-a/public/act1-hifi/chunks/forest/c4-r0.png"
+    },
+    {
+      "scope": "generated",
+      "path": "design/terrain-current-profile-20261007/generated-output/act1-hifi/chunks/forest/c5-r0.png",
+      "oldBytes": 219148,
+      "oldSha256": "f4444bde054a88a690a31a04bcc14b4d5d006215cd6e8069505a50deb791dd73",
+      "newBytes": 222736,
+      "newSha256": "513790376f7d42c5213b7d7d4f0b47ceeec8e51120cc7b56d53a8840a25a1b87",
+      "source": "/private/tmp/edu-rpg-build83-paint-audit-20261005/whole-rock-integration-20261008/staged-full/generation-whole-rock-a/public/act1-hifi/chunks/forest/c5-r0.png"
+    },
+    {
+      "scope": "generated",
+      "path": "design/terrain-current-profile-20261007/generated-output/act1-hifi/chunks/forest/c6-r0.png",
+      "oldBytes": 330325,
+      "oldSha256": "d34435bfba40df2eb61ed8fc0e6aa577c858de4f34c9a68d21bbcc42f19370c5",
+      "newBytes": 513661,
+      "newSha256": "50547470d323e3f0226253ddee5f8bc0f685a0cdcdf3997a5b8aa18672436963",
+      "source": "/private/tmp/edu-rpg-build83-paint-audit-20261005/whole-rock-integration-20261008/staged-full/generation-whole-rock-a/public/act1-hifi/chunks/forest/c6-r0.png"
+    },
+    {
+      "scope": "generated",
+      "path": "design/terrain-current-profile-20261007/generated-output/act1-hifi/chunks/forest/c7-r0.png",
+      "oldBytes": 137756,
+      "oldSha256": "35db3876825521f99315faa84e4b3faba948e37899cbff78e9ccca8a20c3720c",
+      "newBytes": 522858,
+      "newSha256": "57f3427d8a45d6d0fa00a7cb7cf776e676ced2e082cd1fabe8101f579aa8c13e",
+      "source": "/private/tmp/edu-rpg-build83-paint-audit-20261005/whole-rock-integration-20261008/staged-full/generation-whole-rock-a/public/act1-hifi/chunks/forest/c7-r0.png"
+    },
+    {
+      "scope": "generated",
+      "path": "design/terrain-current-profile-20261007/generated-output/act1-hifi/chunks/forest/c8-r0.png",
+      "oldBytes": 109141,
+      "oldSha256": "4f2e192a5057dd53e5549a966058a341c7a9dde1a96e4915483ccd81c8021bba",
+      "newBytes": 510871,
+      "newSha256": "2f68dbd46cd60f2c726f4d0d06582dee46ebcce3ca1b2f95af719a391e56b660",
+      "source": "/private/tmp/edu-rpg-build83-paint-audit-20261005/whole-rock-integration-20261008/staged-full/generation-whole-rock-a/public/act1-hifi/chunks/forest/c8-r0.png"
+    },
+    {
+      "scope": "generated",
+      "path": "design/terrain-current-profile-20261007/generated-output/act1-hifi/chunks/forest/c9-r0.png",
+      "oldBytes": 29733,
+      "oldSha256": "936599b893541417a22d14e5770f7461ee39085f2572d6f6b7c9c747868b4d85",
+      "newBytes": 72594,
+      "newSha256": "c9fbea2e213798bf09df1cd530133004d141d279e0d2a4fa75e77ab8353b6194",
+      "source": "/private/tmp/edu-rpg-build83-paint-audit-20261005/whole-rock-integration-20261008/staged-full/generation-whole-rock-a/public/act1-hifi/chunks/forest/c9-r0.png"
+    },
+    {
+      "scope": "generated",
+      "path": "design/terrain-current-profile-20261007/generated-output/act1-hifi/forest-collision.bin",
+      "oldBytes": 3447872,
+      "oldSha256": "cfb22774fac5315d3cef2c4b4cdde29ebb5324a054fe0bc3c07e56886cbaab16",
+      "newBytes": 3447872,
+      "newSha256": "05c4a76f914d9f20c82bf42d1eb574d774f15bd924dbee708aca09d260c97346",
+      "source": "/private/tmp/edu-rpg-build83-paint-audit-20261005/whole-rock-integration-20261008/staged-full/generation-whole-rock-a/public/act1-hifi/forest-collision.bin"
+    },
+    {
+      "scope": "generated",
+      "path": "design/terrain-current-profile-20261007/generated-output/act1-hifi/manifest.json",
+      "oldBytes": 283004,
+      "oldSha256": "83fd77795f670ca6fa5911c87c05f57f67f651dbc516dadbd8c7b8139c97f0de",
+      "newBytes": 283075,
+      "newSha256": "24f3de319530c68a15a6097b20e14f4567d6bfe63d5dfff895a4883ecef35c5b",
+      "source": "/private/tmp/edu-rpg-build83-paint-audit-20261005/whole-rock-integration-20261008/staged-full/generation-whole-rock-a/public/act1-hifi/manifest.json"
+    },
+    {
+      "scope": "generated",
+      "path": "design/terrain-current-profile-20261007/generated-output/act1-hifi/underpaint/forest-rgba.png",
+      "oldBytes": 1002161,
+      "oldSha256": "cb0b81d4768a7b07607364da6577ca8125dbb3d31c368e0c840c795bd5072ed2",
+      "newBytes": 1025558,
+      "newSha256": "ab5f809f3e562d4b7fe7c39d34407225d1b62bcfc4ae6900df63778ab54d47fd",
+      "source": "/private/tmp/edu-rpg-build83-paint-audit-20261005/whole-rock-integration-20261008/staged-full/generation-whole-rock-a/public/act1-hifi/underpaint/forest-rgba.png"
+    }
+  ],
+  "metadataBackups": [
+    {
+      "scope": "metadata-backup",
+      "path": "forward-profile-descriptor.json",
+      "oldBytes": 233714,
+      "oldSha256": "bc39e56e06f3cdf5e15a171765b14881c611f30ba3c4ad53953db84248fdef46",
+      "backup": "/private/tmp/edu-rpg-build83-paint-audit-20261005/whole-rock-integration-20261008/pre-install-exact-a-20261008/metadata/forward-profile-descriptor.json"
+    },
+    {
+      "scope": "metadata-backup",
+      "path": "evidence/output-receipt.json",
+      "oldBytes": 168154,
+      "oldSha256": "da6c3875ee094d99a5bd901d5a0b5b53014fba3251bbcf0ffd36574de5765765",
+      "backup": "/private/tmp/edu-rpg-build83-paint-audit-20261005/whole-rock-integration-20261008/pre-install-exact-a-20261008/metadata/evidence/output-receipt.json"
+    },
+    {
+      "scope": "metadata-backup",
+      "path": "evidence/static-evidence-inventory.json",
+      "oldBytes": 13565,
+      "oldSha256": "059c41c844f98fa1b10f38e6ce345070bd75d8df7e583e5ef402861340ddb491",
+      "backup": "/private/tmp/edu-rpg-build83-paint-audit-20261005/whole-rock-integration-20261008/pre-install-exact-a-20261008/metadata/evidence/static-evidence-inventory.json"
+    },
+    {
+      "scope": "metadata-backup",
+      "path": "review-evidence/independent-static-review-20261007.json",
+      "oldBytes": 14067,
+      "oldSha256": "f297e9ec9c03816721c2ef23b8d3288d4a96aa8d6438ec5a684a42e435356fa7",
+      "backup": "/private/tmp/edu-rpg-build83-paint-audit-20261005/whole-rock-integration-20261008/pre-install-exact-a-20261008/metadata/review-evidence/independent-static-review-20261007.json"
+    }
+  ],
+  "backupRoot": "/private/tmp/edu-rpg-build83-paint-audit-20261005/whole-rock-integration-20261008/pre-install-exact-a-20261008",
+  "finalOutputRowsVerified": 488,
+  "stageFullWorldComplete": true,
+  "stageGateReady": false,
+  "stageNativeVerified": false
+}

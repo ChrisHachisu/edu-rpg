@@ -1,0 +1,14 @@
+{
+  "status": "PASS",
+  "profileId": "act1-forward-20261007-v1",
+  "generationAReceiptSha256": "ea0d4e5792aa03df8e82e901115bf60734e752c8f61d8a308784c58cb2b3bb48",
+  "generationBReceiptSha256": "379376e6db270a7c7c1d2f14abed46bb0404a7bb7ed440db972fadae6cd50ecf",
+  "pathSetMatches": true,
+  "outputInventoryMismatches": [],
+  "cleanDeterministicRegeneration": true,
+  "fullWorldComplete": true,
+  "gateReady": false,
+  "generationA": "/private/tmp/edu-rpg-build84-feedback-20261013/terrain-implementation-plan/generation-water-r2-final-r2/generation-a",
+  "generationB": "/private/tmp/edu-rpg-build84-feedback-20261013/terrain-implementation-plan/generation-water-r2-final-r2/generation-b",
+  "generatedAtFixed": "deterministic"
+}

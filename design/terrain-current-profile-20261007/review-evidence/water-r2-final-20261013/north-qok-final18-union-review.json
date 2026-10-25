@@ -1,0 +1,67 @@
+{
+  "schema": "independent-north-qok-current-output-union-review-v1",
+  "profileId": "act1-forward-20261007-v1",
+  "status": "PASS_STATIC_OUTPUT_UNION_ONLY",
+  "reviewerRole": "independent",
+  "scope": "Recomputed the exact final-r2 raised-art/support alpha union and QOK packed payload from generated A, then verified byte-identical generated B and final-r1 collision artifacts. This binds the strict north collision-union constants; it does not independently re-run object-placement geometry or establish native movement/collision.",
+  "inputs": {
+    "sourceFreezePath": "/private/tmp/edu-rpg-build84-feedback-20261013/terrain-implementation-plan/generation-water-r2-final-r2/source-freeze.json",
+    "sourceFreezeSha256": "c21e9773a8fcb141a6ae562ffdec0d17e1d90347ad48e69007ded7602928bf9e",
+    "final18OverlaySha256": "ddcd827c2343772ea2b2b7391ea123acd16153ee45dfde5ca87a3d28a93b104d",
+    "generatorSha256": "c92ef8328f4f4d1190cb6d051320aac356cd710877716d2a22e67f4e4e5e8d22",
+    "generationAReceiptSha256": "ea0d4e5792aa03df8e82e901115bf60734e752c8f61d8a308784c58cb2b3bb48",
+    "generationBReceiptSha256": "379376e6db270a7c7c1d2f14abed46bb0404a7bb7ed440db972fadae6cd50ecf",
+    "final18BaselineSourceProof": {
+      "path": "/private/tmp/edu-rpg-build84-feedback-20261013/terrain-implementation-plan/generation-water-r2-final-r1/pre-water-source-baseline/baseline-proof.json",
+      "sha256": "bddf1828c67015f50e8f06bb705a3f6cbcd1389279b2decbaad9328d7cb78109",
+      "role": "Generator-produced pre-water alpha/support capture; cited as source provenance, not represented as an independent review."
+    },
+    "r1CollisionOutput": {
+      "raisedAlphaSha256": "267f7bd1e00b58a1e8b366633fceac6673919e39267578295df598735526bbeb",
+      "supportAlphaSha256": "d339fa63833b0ce52cbdc503cf25f05b28cb7bccba5f0a5b2ad6bcdee524b13a",
+      "unionAlphaSha256": "0baf807bfd429b8ae945439c62c23610fcf62ae0fa6eeae01dcbf5c7d468fae7",
+      "qokSha256": "a0d08d9d1bae329355f9c44b60d6b3484f5e00717386d7d99cd4a8f309d6307e"
+    },
+    "outputReviewPath": "/private/tmp/edu-rpg-build84-feedback-20261013/independent-review/final-r2-output-review.md",
+    "outputReviewSha256": "edf7ef282db1405ea31c77f831c63c5acdb2b7f9d9358fa9fc13d6e3e4743b4e"
+  },
+  "recomputed": {
+    "dimensionsPx": [4736, 5824],
+    "pixelsPerCell": 32,
+    "raisedArtAlphaPixelsAtThreshold128": 10483376,
+    "northSupportAlphaPixelsInsideMap": 11479,
+    "raisedSupportUnionPixels": 10484790,
+    "newQokBits": 1414,
+    "removedQokBits": 0,
+    "unionEqualsRaisedAlphaOrNorthSupportAlpha": true,
+    "unionAlphaSha256": "0baf807bfd429b8ae945439c62c23610fcf62ae0fa6eeae01dcbf5c7d468fae7",
+    "supportAlphaSha256": "d339fa63833b0ce52cbdc503cf25f05b28cb7bccba5f0a5b2ad6bcdee524b13a",
+    "packedUnionBitsSha256": "72558e1a7605850a657d32b52c5c49ad7d07a6f83ec3069bdfeaba1956e43b3d",
+    "packedAddedDeltaBitsSha256": "dc773fb84b8f87c137d3660ffb32a9bab102db5aecbd6c685c3cfa7742695bff",
+    "qok": {
+      "magic": "QOKF8COL",
+      "version": 1,
+      "headerBytes": 64,
+      "dimensionsPx": [4736, 5824],
+      "pixelsPerCell": 32,
+      "payloadBytes": 3447808,
+      "payloadMatchesLittleWithinByteUnion": true,
+      "headerSourceSha256MatchesUnionAlpha": true,
+      "fileSha256": "a0d08d9d1bae329355f9c44b60d6b3484f5e00717386d7d99cd4a8f309d6307e"
+    },
+    "generationAandBCollisionInputsAndOutputsByteIdentical": true,
+    "finalR1AndFinalR2RaisedAlphaSupportUnionAndQokByteIdentical": true
+  },
+  "proposal": {
+    "monotonicUnionVerified": true,
+    "removedQokBits": 0,
+    "newQokBits": 1414,
+    "addedDeltaMaskSha256": "dc773fb84b8f87c137d3660ffb32a9bab102db5aecbd6c685c3cfa7742695bff",
+    "postUnionMaskSha256": "72558e1a7605850a657d32b52c5c49ad7d07a6f83ec3069bdfeaba1956e43b3d",
+    "candidateUnionPixelsInMap": 11479
+  },
+  "limitations": [
+    "This record proves the exact generated alpha union and packed QOK bytes only. Existing independently reviewed support-placement/route evidence must remain separately bound.",
+    "No app runtime, simulator, native collision, movement, save/resume, or release acceptance is claimed."
+  ]
+}

@@ -1,0 +1,70 @@
+{
+  "schema": "qok-forward-runtime-invariants-static-observation-v1",
+  "profileId": "act1-forward-20261007-v1",
+  "status": "observed-source-values-only; requires independent typed receipt",
+  "compiledBundle": {
+    "sourcePath": "runtime/baselines/v1.17.1-ipad-hud-walk/assets/index-BhoGQRaA.js",
+    "currentDistPath": "dist/assets/index-BhoGQRaA.js",
+    "bytes": 4987635,
+    "sha256": "ab4fc9ad1204f23b4ea55dbae2d72bdf193a52e643271bcfe8642e2210556456",
+    "gitHeadBytes": 4987635,
+    "gitHeadSha256": "ab4fc9ad1204f23b4ea55dbae2d72bdf193a52e643271bcfe8642e2210556456",
+    "matchesGitHead": true,
+    "matchesCurrentDist": true
+  },
+  "monsterSprites": {
+    "sourceRoot": "public/assets/monsters",
+    "distRoot": "dist/assets/monsters",
+    "count": 75,
+    "distCount": 75,
+    "sourceInventorySha256": "e8056a42f8ba72f337bb5e1ad55f2211e783d2d4fcf738005e1f365850c6490b",
+    "distInventorySha256": "e8056a42f8ba72f337bb5e1ad55f2211e783d2d4fcf738005e1f365850c6490b",
+    "publicAndDistExact": true
+  },
+  "currentLoadedOverrides": {
+    "indexSourceSha256": "90192e362a5dae192a519b118466b3059bbd14d241ad9b6954bd093ee63ab1d0",
+    "mapPath": "public/act1-world-map.js",
+    "mapSha256": "fb466fc6dbe7e05ccbb209c70867cacf4f903d55837ea69ca716e81f7196c96f",
+    "mapRevision": 7,
+    "overlayBounds": [
+      16,
+      218,
+      163,
+      399
+    ],
+    "overlayRows": 182,
+    "overlayRowWidth": 148,
+    "fullMapShape": [
+      320,
+      400
+    ],
+    "mapShapeGuardFound": true,
+    "dqPath": "public/dq-tiles.js",
+    "dqSha256": "04cb7bc6caae81a2e6cc61dbbf004a0876b5b9cd686f6f05ac16fd01b98e2c27",
+    "dqDimensionsGuardFound": true,
+    "heroOverridePath": "public/hero-override.js",
+    "heroOverrideSha256": "20d00157c4f4fff92bf89ce5d66d87d48ba624f1d6a402ec9dcead92b8f9744b",
+    "finalManifestPath": "public/act1-hifi/manifest.json",
+    "finalManifestSha256": "761f954f194b71478ec74c820b76e7fc51cb290d37d5df57d47e631a3ed61fac"
+  },
+  "runtimeValues": {
+    "worldMapWidth": 320,
+    "worldMapHeight": 400,
+    "saveVersion": 4,
+    "saveVersionPattern": "compiled baseline bundle localStorage save manager constant"
+  },
+  "limitations": [
+    "This is a static source observation; the new terrain profile is not native/runtime verified.",
+    "No native movement, all-route connectivity, cave transition, streaming, save/resume, or phone/tablet pass is asserted.",
+    "Route audit is acceptance-inconclusive (11 pass, 5 blocked-at-target, 4 capped per hero); blocked anchors and caps remain pending."
+  ],
+  "currentSourceRecheck": {
+    "basis": "static file reads after metadata-only rebind; no game runtime was executed",
+    "currentDqSha256": "04cb7bc6caae81a2e6cc61dbbf004a0876b5b9cd686f6f05ac16fd01b98e2c27",
+    "currentManifestSha256": "761f954f194b71478ec74c820b76e7fc51cb290d37d5df57d47e631a3ed61fac",
+    "preservedBundleMatchesBaseline": true,
+    "monsterSpriteTwinCount": 75,
+    "monsterSpriteTwinsMatch": true,
+    "dqDimensionsGuardFound": true
+  }
+}

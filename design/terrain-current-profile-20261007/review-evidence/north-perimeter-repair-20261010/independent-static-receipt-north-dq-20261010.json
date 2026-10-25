@@ -1,0 +1,86 @@
+{
+  "authoringInputInventorySha256": "fed386f512abe36d530f47ea24a23e7294078f697ad88058572fae17f805d47d",
+  "checks": {
+    "a1owDecode": {
+      "proofPath": "design/terrain-current-profile-20261007/evidence/whole-rock-integration-20261008/portable-recomputation-20261008.json",
+      "proofSha256": "297717ce52b4e5469bed68ad3afefae84856d8dbda4ff4ef84ae2c18c2a822cd",
+      "result": "PASS"
+    },
+    "chunkBoundaries": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/north-perimeter-repair-20261010/independent-final-review.md",
+      "proofSha256": "04695c926adbf1c0135ac5c87e28815bc7e27c953e89fa85f1e5f4383b670ffa",
+      "result": "PASS"
+    },
+    "cleanRegeneration": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/north-perimeter-repair-20261010/generation-v3-reproducibility-20261010.json",
+      "proofSha256": "e3a2ce0a51f4187e1f3d3e5e603e82e98028e19974ffe07ccb30893afb00928f",
+      "result": "PASS"
+    },
+    "collisionDecode": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/north-perimeter-repair-20261010/independent-final-review.md",
+      "proofSha256": "04695c926adbf1c0135ac5c87e28815bc7e27c953e89fa85f1e5f4383b670ffa",
+      "result": "PASS"
+    },
+    "currentGuard": {
+      "proofPath": "design/terrain-current-profile-20261007/evidence/runtime-invariants-static.json",
+      "proofSha256": "91e5ce8b6a05951494960b1dd10e075bc4dd302f1a7e622749bb430e6aa0c118",
+      "result": "PASS"
+    },
+    "decodedPixels": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/north-perimeter-repair-20261010/generation-v3-reproducibility-20261010.json",
+      "proofSha256": "e3a2ce0a51f4187e1f3d3e5e603e82e98028e19974ffe07ccb30893afb00928f",
+      "result": "PASS"
+    },
+    "globalCropReconstruction": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/north-perimeter-repair-20261010/independent-final-review.md",
+      "proofSha256": "04695c926adbf1c0135ac5c87e28815bc7e27c953e89fa85f1e5f4383b670ffa",
+      "result": "PASS"
+    },
+    "heroFrameClearance": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/north-perimeter-repair-20261010/independent-clearance-result.json",
+      "proofSha256": "eaead2c2d1d04b127379e26d04e40a6d8de7d9dc09da679dd50edde1fb4e7db6",
+      "result": "PASS"
+    },
+    "renderedReview": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/north-perimeter-repair-20261010/independent-final-review.md",
+      "proofSha256": "04695c926adbf1c0135ac5c87e28815bc7e27c953e89fa85f1e5f4383b670ffa",
+      "result": "PASS"
+    },
+    "runtimeInvariants": {
+      "proofPath": "design/terrain-current-profile-20261007/evidence/runtime-invariants-static.json",
+      "proofSha256": "91e5ce8b6a05951494960b1dd10e075bc4dd302f1a7e622749bb430e6aa0c118",
+      "result": "PASS"
+    },
+    "safeCells": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/north-perimeter-repair-20261010/independent-final-review.md",
+      "proofSha256": "04695c926adbf1c0135ac5c87e28815bc7e27c953e89fa85f1e5f4383b670ffa",
+      "result": "PASS"
+    },
+    "sourceResourceClosure": {
+      "proofPath": "design/terrain-current-profile-20261007/evidence/static-evidence-inventory.json",
+      "proofSha256": "1e6feb725ed05f10dd6f14dcb2c86d7c59cbe7780aa31375ff704e58bcc84973",
+      "result": "PASS"
+    },
+    "underpaintPhase": {
+      "proofPath": "design/terrain-current-profile-20261007/evidence/output-receipt.json",
+      "proofSha256": "57e53c9c96782080f65c2eab1447f91cc06a6c498a3558e9b2ec0d4e25275f78",
+      "result": "PASS"
+    },
+    "visibleAlpha": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/north-perimeter-repair-20261010/independent-final-review.md",
+      "proofSha256": "04695c926adbf1c0135ac5c87e28815bc7e27c953e89fa85f1e5f4383b670ffa",
+      "result": "PASS"
+    }
+  },
+  "claim": "Bounded nonshippable QA preparation only. Independently reviewed the exact 247-row authoring-input closure, exact 493-row generated-output closure, two-root deterministic generation comparison, north-support collision union, optional north-layer assembly guard, forward DQ runtime identity binding, and all 14 preparation proof artifacts. Native dynamic checks and proof assertions remain pending; this receipt does not establish release eligibility.",
+  "generatedOutputInventorySha256": "64d3e9e60a70ccf1c8dafd6a02b7d22300a28ee22ff13b05eacd6c15e92a4ded",
+  "profileId": "act1-forward-20261007-v1",
+  "result": "QA_PREPARATION_PASS",
+  "reviewerRole": "independent",
+  "runner": {
+    "path": "design/terrain-current-profile-20261007/review-tools/recompute_forward_outputs.py",
+    "sha256": "2017b4a00aeb7cc82054c8afa56b731c58d2a57578b27d5f55894c05f076e0eb",
+    "version": "forward-static-recompute-review-v4-whole-rock-a1ow-v2"
+  },
+  "schema": "qok-forward-preparation-receipt-v1"
+}

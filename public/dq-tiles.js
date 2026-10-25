@@ -21,6 +21,14 @@
   'use strict';
 
   var N = 48, TILE = 48, SC = 1, MARGIN = 12;
+  // The overworld keeps its 320x400 logical grid, but occupies 70% of its former
+  // physical distance. Interiors remain on TILE. Keep this rational and derive
+  // every overworld placement from it so fractional 33.6px cells cannot drift.
+  var OW_SCALE=7/10, OW_TILE=TILE*OW_SCALE;
+  function owScene(scene){ return !!(scene&&scene.currentMapId==='overworld'); }
+  function owPhysical(v){ return v*OW_SCALE; }
+  function owCanonical(v){ return v/OW_SCALE; }
+  function owCellCenter(v){ return (v+0.5)*OW_TILE; }
 
   /* THE DIAGNOSTICS IN THIS FILE WERE UNREACHABLE ON THE ONLY SURFACE THAT MATTERS. Roughly
      twenty branches here log under window.__DQ_DEBUG__, and inside the real app there is no URL
@@ -315,6 +323,34 @@
   var OW_BLOCK={2:1,4:1,6:1,7:1,8:1,9:1,10:1,11:1,12:1,13:1,14:1,15:1,16:1,19:1,20:1,21:1};
   var OW_LANDMARKS=[6,7,8,9,10,11,12,15,16,19,20];
   function owWalkable(v){ return !OW_BLOCK[v]; }
+  // Act 1's authored walkable cells can be blocked in the frozen generator and
+  // become walkable only when the plate is written after consolidation. An
+  // exact exported exit is valid during the transition itself. A later resume
+  // is valid only when the native overworld/F1 position resolves to the exact
+  // live tile and the plate's own ROWS/gate authority says that tile is
+  // walkable. All other starts retain the generator's state-dependent policy.
+  function act1ConsolidationSeed(scene){
+    var map=scene&&scene.mapData, world=window.__ACT1_WORLD_MAP__, marks=world&&world.landmarks;
+    if(!scene||scene.currentMapId!=='overworld'||!map||map.length!==400||!map[0]||map[0].length!==320||!Array.isArray(marks)||!marks.length) return null;
+    var x=scene.heroTileX, y=scene.heroTileY, exact=false, i, p;
+    for(i=1;i<map.length;i++) if(!map[i]||map[i].length!==320) return null;
+    if(!Number.isFinite(x)||!Number.isFinite(y)||x!==Math.floor(x)||y!==Math.floor(y)||x<0||y<0||x>=320||y>=400) return null;
+    for(i=0;i<marks.length;i++){ p=marks[i]&&marks[i].exit;
+      if(p&&p.x===x&&p.y===y){ exact=true; break; } }
+    if(!exact){
+      var player=window.__GAME_STATE__&&window.__GAME_STATE__.player,
+          position=player&&player.state&&player.state.position;
+      // World positions use continuous tile coordinates; heroTileX/Y are their
+      // floored runtime cell. Accept fractional persistence only within that
+      // exact cell, never by radius or nearest-landmark inference.
+      exact=!!(position&&position.mapId==='overworld'&&position.floor===1
+        &&Number.isFinite(position.x)&&Number.isFinite(position.y)
+        &&Math.floor(position.x)===x&&Math.floor(position.y)===y
+        &&typeof world.seedWalkableAt==='function'&&world.seedWalkableAt(x,y)===true);
+    }
+    if(!exact||owWalkable(map[y][x])) return null;
+    return {x:x,y:y,verifiedAct1Exit:true};
+  }
   // BFS reachable-walkable set from (sx,sy); returns { seen:Uint8Array, lm:Set of "<val>@x,y" reachable landmarks }
   function owReach(map,W,H,sx,sy){
     var seen=new Uint8Array(W*H), q=[sx,sy], head=0; seen[sy*W+sx]=1;
@@ -331,13 +367,15 @@
   // The mutation. Cached per map-array identity so it runs exactly once per map load. Returns a stats object.
   var mutatedMap=null, mutStats=null;
   var DXc=[-1,0,1,-1,1,-1,0,1], DYc=[-1,-1,-1,0,0,1,1,1];
-  function consolidateMapData(scene){
+  function consolidateMapData(scene, seed){
     var map=scene.mapData; if(!map||!map.length) return null;
     if(mutatedMap===map && mutStats) return mutStats;               // already mutated this map
     var H=map.length, W=map[0].length;
     // player start (for the reachability gate). Fall back to any walkable tile if hero pos missing.
-    var sx=(typeof scene.heroTileX==='number')?scene.heroTileX:-1, sy=(typeof scene.heroTileY==='number')?scene.heroTileY:-1;
-    if(sx<0||sy<0||sx>=W||sy>=H||!owWalkable(map[sy][sx])){ sx=-1; for(var yy=0;yy<H&&sx<0;yy++) for(var xx=0;xx<W;xx++){ if(owWalkable(map[yy][xx])){ sx=xx; sy=yy; break; } } }
+    var verifiedSeed=!!(seed&&seed.verifiedAct1Exit===true),
+        sx=(seed&&typeof seed.x==='number')?seed.x:((typeof scene.heroTileX==='number')?scene.heroTileX:-1),
+        sy=(seed&&typeof seed.y==='number')?seed.y:((typeof scene.heroTileY==='number')?scene.heroTileY:-1);
+    if(sx<0||sy<0||sx>=W||sy>=H||(!verifiedSeed&&!owWalkable(map[sy][sx]))){ sx=-1; for(var yy=0;yy<H&&sx<0;yy++) for(var xx=0;xx<W;xx++){ if(owWalkable(map[yy][xx])){ sx=xx; sy=yy; break; } } }
     var before=owReach(map,W,H,sx,sy);
 
     // ---- 1. PRUNE: straggler mountain(4) components < MIN_KEEP -> majority background 4-neighbour value ----
@@ -480,6 +518,13 @@
   function hline(ctx,x0,x1,y,c){ var a=Math.min(x0,x1),b=Math.max(x0,x1); rect(ctx,a,y,b-a+1,1,c); }
   function vline(ctx,x,y0,y1,c){ var a=Math.min(y0,y1),b=Math.max(y0,y1); rect(ctx,x,a,1,b-a+1,c); }
   function setData(data,w,x,y,c){ var i=(y*w+x)*4; data[i]=c[0]; data[i+1]=c[1]; data[i+2]=c[2]; data[i+3]=255; }
+  function setDataBlock(data,w,x,y,c,k){
+    if(k===1){ setData(data,w,x,y,c); return; }
+    for(var yy=0;yy<k;yy++) for(var xx=0;xx<k;xx++){
+      var i=((y+yy)*w+x+xx)*4;
+      data[i]=c[0]; data[i+1]=c[1]; data[i+2]=c[2]; data[i+3]=255;
+    }
+  }
 
   // per-tile detail (matches .py grass_tile / water_tile / dirt_tile speckles)
   function grassSpeckle(ctx,bx,by,seed){ var r=RNG(seed), n=ri(r,3,5);   // small green grass-blade tufts (NO coloured flowers) -> slightly more detailed grass
@@ -558,6 +603,93 @@
   // separate RM sampler is needed: overlay mass, minimap, and collision all read the same mutated tiles.
   function mountainField(map,wx,wy){ return fieldAt(map,wx,wy,4,0.20,18,91); }
   // paths smoothed VERY GRADUALLY (low amp) -> uniform width, gentle curves
+  // Bounded overlap cache for raw terrain fields. Keep palette/material/overlay and every
+  // loading/coverage decision in drawTerrain live; only deterministic scalar samples are reused.
+  var __DQ_FIELD_CACHE_VERSION__=1, __DQ_FIELD_CACHE_LIMIT__=10*1024*1024;
+  var __DQ_FIELD_CACHE__={map:null,h:0,w:0,rows:null,mapSnap:null,mutedObj:null,mutedW:0,mutedSnap:null,wiggle:null,version:0,windows:[],active:null};
+  function dqFieldCacheClear(){
+    __DQ_FIELD_CACHE__.map=null;__DQ_FIELD_CACHE__.h=0;__DQ_FIELD_CACHE__.w=0;
+    __DQ_FIELD_CACHE__.rows=null;__DQ_FIELD_CACHE__.mapSnap=null;
+    __DQ_FIELD_CACHE__.mutedObj=null;__DQ_FIELD_CACHE__.mutedW=0;__DQ_FIELD_CACHE__.mutedSnap=null;
+    __DQ_FIELD_CACHE__.wiggle=null;__DQ_FIELD_CACHE__.version=0;
+    __DQ_FIELD_CACHE__.windows=[];__DQ_FIELD_CACHE__.active=null;
+  }
+  function dqFieldCacheBytes(){
+    var c=__DQ_FIELD_CACHE__,bytes=0;
+    if(c.mapSnap)bytes+=c.mapSnap.byteLength;if(c.rows)bytes+=c.rows.byteLength;if(c.mutedSnap)bytes+=c.mutedSnap.byteLength;
+    for(var i=0;i<c.windows.length;i++){var q=c.windows[i];bytes+=q.water.byteLength+q.mountain.byteLength+q.valid.byteLength;}
+    return bytes;
+  }
+  function dqFieldCacheMapMatches(map){
+    var c=__DQ_FIELD_CACHE__;
+    if(map!==c.map||!Array.isArray(map)||map.length!==c.h||!map[0]||map[0].length!==c.w)return false;
+    var p=0;for(var y=0;y<c.h;y++){var row=map[y];if(!Array.isArray(row)||row.length!==c.rows[y])return false;
+      for(var x=0;x<c.w;x++){var v=row[x];if(v==null)v=0;if(typeof v!=='number'||!Number.isFinite(v)||!Object.is(v,c.mapSnap[p++]))return false;}}
+    return true;
+  }
+  function dqFieldCacheMapSnapshot(map){
+    if(!Array.isArray(map)||!map.length||!Array.isArray(map[0]))return null;
+    var h=map.length,w=map[0].length,rows=new Uint32Array(h);
+    if(h*w*8+h*4+(MUTED?MUTED.size*8:0)>__DQ_FIELD_CACHE_LIMIT__)return null;
+    var vals=new Float64Array(h*w),p=0;
+    for(var y=0;y<h;y++){var row=map[y];if(!Array.isArray(row)||row.length!==w)return null;rows[y]=row.length;
+      for(var x=0;x<w;x++){var v=row[x];if(v==null)v=0;if(typeof v!=='number'||!Number.isFinite(v))return null;vals[p++]=v;}}
+    return {h:h,w:w,rows:rows,vals:vals};
+  }
+  function dqFieldCacheMutedMatches(){
+    var c=__DQ_FIELD_CACHE__;
+    if(!MUTED)return c.mutedObj===null&&MUTED_W===c.mutedW;
+    if(MUTED!==c.mutedObj||MUTED_W!==c.mutedW||MUTED.size!==c.mutedSnap.length)return false;
+    for(var v of MUTED){if(typeof v!=='number'||!Number.isFinite(v))return false;
+      var lo=0,hi=c.mutedSnap.length-1,found=false;while(lo<=hi){var mid=(lo+hi)>>1,q=c.mutedSnap[mid];if(q===v){found=true;break;}if(q<v)lo=mid+1;else hi=mid-1;}if(!found)return false;}
+    return true;
+  }
+  function dqFieldCacheMutedSnapshot(){
+    if(!MUTED)return {obj:null,w:MUTED_W,vals:new Float64Array(0)};
+    var a=Array.from(MUTED);for(var i=0;i<a.length;i++)if(typeof a[i]!=='number'||!Number.isFinite(a[i]))return null;
+    a.sort(function(x,y){return x-y;});return {obj:MUTED,w:MUTED_W,vals:Float64Array.from(a)};
+  }
+  function dqFieldCachePrepare(map,sample,X0,Y0,winW,winH){
+    var c=__DQ_FIELD_CACHE__;c.active=null;if(sample!==4)return;
+    var sameMap=c.mapSnap&&dqFieldCacheMapMatches(map),sameMuted=dqFieldCacheMutedMatches();
+    var wiggle=(typeof window.__DQ_WIGGLE__==='number')?window.__DQ_WIGGLE__:0.26;
+    var sameWiggle=Object.is(c.wiggle,wiggle),sameVersion=c.version===__DQ_FIELD_CACHE_VERSION__;
+    if(!sameMap||!sameMuted||!sameWiggle||!sameVersion){
+      dqFieldCacheClear();
+      var ms=dqFieldCacheMapSnapshot(map),muted=dqFieldCacheMutedSnapshot();if(!ms||!muted)return;
+      if(ms.vals.byteLength+ms.rows.byteLength+muted.vals.byteLength>__DQ_FIELD_CACHE_LIMIT__)return;
+      c.map=map;c.h=ms.h;c.w=ms.w;c.rows=ms.rows;c.mapSnap=ms.vals;
+      c.mutedObj=muted.obj;c.mutedW=muted.w;c.mutedSnap=muted.vals;c.wiggle=wiggle;c.version=__DQ_FIELD_CACHE_VERSION__;
+    }
+    var cw=winW*N,ch=winH*N,cols=Math.ceil(cw/sample),rows=Math.ceil(ch/sample),entry=null;
+    for(var i=0;i<c.windows.length;i++){var q=c.windows[i];if(q.x===X0*N&&q.y===Y0*N&&q.cw===cw&&q.ch===ch&&q.sample===sample){entry=q;c.windows.splice(i,1);break;}}
+    if(!entry){
+      var bytesNeeded=cols*rows*17;
+      while(c.windows.length>=2)c.windows.pop();
+      while(c.windows.length&&dqFieldCacheBytes()+bytesNeeded>__DQ_FIELD_CACHE_LIMIT__)c.windows.pop();
+      if(dqFieldCacheBytes()+bytesNeeded>__DQ_FIELD_CACHE_LIMIT__)return;
+      entry={x:X0*N,y:Y0*N,cw:cw,ch:ch,cols:cols,rows:rows,sample:sample,
+        water:new Float64Array(cols*rows),mountain:new Float64Array(cols*rows),valid:new Uint8Array(cols*rows)};
+    }
+    c.windows.unshift(entry);c.active=entry;
+  }
+  function dqFieldCacheSlot(wx,wy,sample,fieldBit){
+    var c=__DQ_FIELD_CACHE__;if(sample!==4||!c.active)return null;var empty=null;
+    for(var i=0;i<c.windows.length;i++){var q=c.windows[i],dx=wx-q.x,dy=wy-q.y;
+      if(dx>=0&&dy>=0&&dx<q.cw&&dy<q.ch&&dx%sample===0&&dy%sample===0){var index=(dy/sample)*q.cols+dx/sample;
+        if(q.valid[index]&fieldBit)return {q:q,index:index};if(q===c.active)empty={q:q,index:index};}}
+    return empty;
+  }
+  function dqFieldCacheWater(map,wx,wy,sample){
+    var s=dqFieldCacheSlot(wx,wy,sample,1);if(!s)return waterField(map,wx,wy);
+    if(s.q.valid[s.index]&1)return s.q.water[s.index];
+    var v=waterField(map,wx,wy);s.q.water[s.index]=v;s.q.valid[s.index]|=1;return v;
+  }
+  function dqFieldCacheMountain(map,wx,wy,sample){
+    var s=dqFieldCacheSlot(wx,wy,sample,2);if(!s)return mountainField(map,wx,wy);
+    if(s.q.valid[s.index]&2)return s.q.mountain[s.index];
+    var v=mountainField(map,wx,wy);s.q.mountain[s.index]=v;s.q.valid[s.index]|=2;return v;
+  }
   function pathField(map,wx,wy){ var amp=(typeof window.__DQ_PATH_WIGGLE__==='number')?window.__DQ_PATH_WIGGLE__:0.10; return fieldAt(map,wx,wy,1,amp,22,53); }
   // natural water — SMOOTH gradient (lerp, no hard tone patches): light/shallow near shore ->
   // deep/dark, driven by the depth field W + low-freq noise, plus sparse wavelet glints.
@@ -667,10 +799,71 @@
       }
     }
   }
-  function drawTerrain(ctx, map, X0, Y0, winW, winH){
+  // The frozen renderer owns five biome-fill tile appearances. Its 128k-tile
+  // layer is skipped on this overworld, so copy only these existing generated
+  // textures into the procedural window. The numbers are the frozen texture's
+  // own base fills, used only if a texture is momentarily unavailable.
+  var OW_BIOME_FILL={13:4038205,14:1728026,17:14214382,18:15255664,21:15761408};
+  function paintBiomeFills(ctx,scene,map,X0,Y0,winW,winH,sample,SANDLO,FOAMHI,useR2Sea){
+    var images={}, smooth=ctx.imageSmoothingEnabled;
+    ctx.imageSmoothingEnabled=false;
+    for(var y=0;y<winH;y++) for(var x=0;x<winW;x++){
+      var tx=X0+x, ty=Y0+y, t=et(map,tx,ty); if(OW_BIOME_FILL[t]===undefined) continue;
+      if(!(t in images)){
+        var key='ow-'+t, tex=scene&&scene.textures&&scene.textures.exists(key)&&scene.textures.get(key);
+        try{ images[t]=tex&&tex.getSourceImage()||null; }catch(e){ images[t]=null; }
+      }
+      if(images[t]) ctx.drawImage(images[t],x*N,y*N,N,N);
+      else { ctx.fillStyle='#'+('000000'+OW_BIOME_FILL[t].toString(16)).slice(-6); ctx.fillRect(x*N,y*N,N,N); }
+      // fieldAt samples only the four surrounding tile centres. If none of this
+      // tile's eight neighbours is water (or a bridge over water), the noise
+      // term alone cannot reach the 0.50 waterline; keep its frozen art exact.
+      var shore=false;
+      for(var dy=-1;dy<=1&&!shore;dy++) for(var dx=-1;dx<=1;dx++){
+        var nt=et(map,tx+dx,ty+dy); if(nt===2||nt===5){ shore=true; break; }
+      }
+      if(!shore) continue;
+      // The frozen biome tile is the land fill. At its shore, reveal the same
+      // continuous water field and water shading that drawTerrain uses next
+      // door. Both use globally aligned samples; roads still draw afterward.
+      for(var py=0;py<N;py+=sample){
+        var clearRun=-1;
+        for(var pxk=0;pxk<N;pxk+=sample){
+        var wx=tx*N+pxk, wy=ty*N+py, W=waterField(map,wx,wy);
+        if(W<0.50){
+          if(useR2Sea&&clearRun>=0){ctx.clearRect(x*N+clearRun,y*N+py,pxk-clearRun,sample);clearRun=-1;}
+          continue;
+        }
+        if(useR2Sea){if(clearRun<0)clearRun=pxk;continue;}
+        var col;
+        if(MAT.ready){
+          var dep=(W-0.50)/0.45; if(dep>1)dep=1;
+          col=matShade('water',wx,wy,1.0-dep*0.40);
+          col=bankOver(col,wx,wy,W,SANDLO-0.02,beachyAt(wx,wy));
+          col=siteOver(col,wx,wy,W);
+        } else col=W<FOAMHI?P.foam:waterColor(wx,wy,W);
+        ctx.fillStyle=rgb(col); ctx.fillRect(x*N+pxk,y*N+py,sample,sample);
+        }
+        if(useR2Sea&&clearRun>=0)ctx.clearRect(x*N+clearRun,y*N+py,N-clearRun,sample);
+      }
+    }
+    ctx.imageSmoothingEnabled=smooth;
+  }
+  function drawTerrain(ctx, scene, map, X0, Y0, winW, winH,useR2Sea){
     if (a1aBlit(ctx,X0,Y0,winW,winH,true)) return;   // wholly inside the Act 1 plate -> the baked art IS the terrain
     COST.splat++;                                    // past this line is the 2.97 Mpx per-pixel loop; see COST
     var cw=winW*N, ch=winH*N, wox=X0*N, woy=Y0*N;
+    // Outside the authored plate, color one globally aligned 4x4 pixel block at a
+    // time. Keep the same 48px/cell canvas, roads, props and world coordinates.
+    var sample=a1aPlateWindow(X0,Y0,winW,winH)?1:4;
+    dqFieldCachePrepare(map,sample,X0,Y0,winW,winH);
+    // Loaded, proven-opaque base sprites are drawn over this procedural underpaint
+    // later in the frame. Their covered samples cannot reach the screen, so leave
+    // those pixels transparent here and retain the normal path for every uncertain
+    // or alpha-bearing texture. This does not change roads, water, or sprite order.
+    var opaqueBaseRects=a1aSpriteMode()?
+      a1aDrawableOpaqueBaseRects(scene,A1A.lastRects||[],A1A.baseAlpha,A1A.imgs,A1A.tex,
+        scene.textures,a1aGlLost(),A1A.underpaint,a1aUnderpaintRequiredForView(scene)):[];
     var SANDLO=(typeof window.__DQ_BEACH__==='number')?window.__DQ_BEACH__:0.27, FOAMHI=0.555; // wider, more gradual beach
     // presence scan — skip the expensive fields in windows with none of that type
     var hasMtn=false, hasPath=false;
@@ -690,17 +883,30 @@
       for (var _s=0;_s<_all.length;_s++){ var _q=_all[_s], _m=_q.r*2.2;
         if (_q.x>wox-_m && _q.x<wox+cw+_m && _q.y>woy-_m && _q.y<woy+ch+_m) _winSites.push(_q); } }
     var img=ctx.createImageData(cw,ch), data=img.data; // alpha 0 everywhere by default
-    for (var py=0;py<ch;py++){ var wy=woy+py, ty=Math.floor(wy/N);
-      for (var pxk=0;pxk<cw;pxk++){ var wx=wox+pxk, tx=Math.floor(wx/N), tB=et(map,tx,ty);
+    for (var py=0;py<ch;py+=sample){ var wy=woy+py, ty=Math.floor(wy/N), opaqueSpans=a1aOpaqueBaseSpans(opaqueBaseRects,A1A.baseAlpha,py,cw), opaqueSpan=0;
+      for (var pxk=0;pxk<cw;pxk+=sample){
+        while(opaqueSpan<opaqueSpans.length&&pxk>=opaqueSpans[opaqueSpan].x1) opaqueSpan++;
+        if(opaqueSpan<opaqueSpans.length){
+          var opaqueStart=Math.ceil(opaqueSpans[opaqueSpan].x0/sample)*sample;
+          if(pxk>=opaqueStart&&pxk<opaqueSpans[opaqueSpan].x1){
+            pxk=a1aOpaqueSkipEnd(opaqueSpans[opaqueSpan].x1,sample);
+            continue;
+          }
+        }
+        var wx=wox+pxk, tx=Math.floor(wx/N), tB=et(map,tx,ty);
         if (isSpecial(tB)){                              // landmark tiles -> ground under our prop
-          if(OW_LANDMARK[tB]) setData(data,cw,pxk,py, MAT.ready
+          if(OW_LANDMARK[tB]) setDataBlock(data,cw,pxk,py, MAT.ready
             ? matShade('grass',wx,wy,0.90+(vnoise(wx,wy,620,7)*0.6+vnoise(wx,wy,190,9)*0.4)*0.22)
-            : gshade(wx,wy));
+            : gshade(wx,wy),sample);
           continue;                                      // other specials stay transparent
         }
         var col;
-        var W=waterField(map,wx,wy);                     // water field covers bridge(5) too -> water under the deck
-        var Mf0 = (W<0.50 && hasMtn) ? mountainField(map,wx,wy) : -1;
+        var W=dqFieldCacheWater(map,wx,wy,sample);       // exact raw field cache; every color/overlay decision remains live
+        // When the matching full-screen R2 TileSprite is active, it is already the
+        // correctly phased water layer beneath this partial-window canvas. Leave only
+        // true water transparent; land-side shore, roads and later props still render.
+        if(useR2Sea&&W>=0.50) continue;
+        var Mf0 = (W<0.50 && hasMtn) ? dqFieldCacheMountain(map,wx,wy,sample) : -1;
         if (MAT.ready){
           // ---- MATERIAL PATH: same fields, textured fill instead of a palette ramp --------
           if (W>=0.50){
@@ -744,10 +950,11 @@
             col=gshade(wx,wy);                                          // grass (paths are a SEPARATE overlaid road layer)
           }
         }
-        setData(data,cw,pxk,py,col);
+        setDataBlock(data,cw,pxk,py,col,sample);
       }
     }
     ctx.putImageData(img,0,0);
+    paintBiomeFills(ctx,scene,map,X0,Y0,winW,winH,sample,SANDLO,FOAMHI,useR2Sea);
     // ROAD LAYER: deliberate auto-tiled roads (path + bridge + landmark-on-path) drawn ON TOP of the base terrain
     for (var rty=0;rty<winH;rty++){ var RTY=Y0+rty; for (var rtx=0;rtx<winW;rtx++){ var RTX=X0+rtx;
       if (isOwRoad(map,RTX,RTY)) drawRoadTile(ctx,map,RTX,RTY,rtx*N,rty*N); } }
@@ -763,6 +970,58 @@
     }
     a1aBlit(ctx,X0,Y0,winW,winH,false);   // window straddles the plate edge: the baked art overdraws its own half
   }
+  // Return merged, clipped opaque-base intervals that cover this fallback row.
+  // The base-alpha cache is deliberately tri-state: only an explicit false proves
+  // that the loaded base image has no transparent pixels.
+  function a1aOpaqueBaseSpans(rects,baseAlpha,py,width){
+    var spans=[];
+    for(var i=0;i<rects.length;i++){
+      var r=rects[i];
+      if(!r||r.northOnly||!r.rec||!r.rec.base||!r.c||baseAlpha[r.c.id]!==false) continue;
+      var x0=Math.max(0,r.dx), x1=Math.min(width,r.dx+r.w), y0=r.dy, y1=r.dy+r.h;
+      if(x1<=x0||py<y0||py>=y1) continue;
+      spans.push({x0:x0,x1:x1});
+    }
+    spans.sort(function(a,b){return a.x0-b.x0||a.x1-b.x1;});
+    var merged=[];
+    for(var j=0;j<spans.length;j++){
+      var last=merged[merged.length-1], span=spans[j];
+      if(last&&span.x0<=last.x1){if(span.x1>last.x1)last.x1=span.x1;}
+      else merged.push({x0:span.x0,x1:span.x1});
+    }
+    return merged;
+  }
+  // A decoded opaque source is not proof that its pixels cover this render. The
+  // upload may still be queued/evicted, or the renderer may be between context-loss
+  // and recovery. Require the current scene's existing Image and registered
+  // texture; a1aPlaceSprites runs later in this same update and makes this Image
+  // visible before Phaser renders. If a substrate mask is active, only skip when
+  // its exact live-base signature is already cached: a failed rebuild hides Images.
+  function a1aDrawableOpaqueBaseRects(scene,rects,baseAlpha,sprites,texState,textures,glLost,underpaint,underpaintRequiredForView){
+    if(glLost||!scene||!textures||!textures.exists) return [];
+    if(underpaintRequiredForView&&(!underpaint||underpaint.status!=='ready'||!underpaint.sprite||
+       !underpaint.sprite.visible||underpaint.scene!==scene)) return [];
+    var opaque=[],liveIds=[],uncertainReadyBase=false;
+    for(var i=0;i<rects.length;i++){
+      var r=rects[i]; if(!r||r.northOnly||!r.rec||!r.rec.base||!r.c) continue;
+      var id=r.c.id,key='a1a_base_'+id;
+      if(texState[key]!==1||!textures.exists(key)) continue;
+      var im=sprites[key],drawable=!!(im&&im.scene===scene&&im.texture&&im.texture.key===key);
+      liveIds.push(id);
+      if(!drawable){ uncertainReadyBase=true; continue; }
+      if(baseAlpha[id]===false) opaque.push(r);
+    }
+    if(underpaint&&underpaint.spec&&underpaint.image&&liveIds.length){
+      if(uncertainReadyBase) return [];
+      liveIds.sort();
+      var signature=liveIds.join('|');
+      if(underpaint.maskScene!==scene||underpaint.maskKey!==signature||!underpaint.maskTexture||!textures.exists('a1a_underpaint_mask')) return [];
+    }
+    return opaque;
+  }
+  // The last covered point on the fallback sample grid; ceil handles clipped
+  // fractional rect edges without repeating a covered sample forever.
+  function a1aOpaqueSkipEnd(x1,sample){return Math.ceil(x1/sample)*sample-sample;}
   // bridge side rails (along the run) so a path crossing water reads as a bridge
   function bridgeRails(ctx,map,TX,TY,bx,by){
     var vertical = (et(map,TX-1,TY)===2||et(map,TX+1,TY)===2); // water on L/R -> bridge runs N-S
@@ -968,8 +1227,8 @@
   // Keep a generous off-screen tile margin and move the render window in chunks. The old window
   // followed the camera one tile at a time, repainting millions of pixels and rebuilding every tree
   // on practically every player step.
-  function windowStart(worldPos,winTiles,totalTiles){
-    var wanted=Math.floor(worldPos/TILE)-MARGIN, step=Math.max(1,MARGIN);
+  function windowStart(worldPos,winTiles,totalTiles,pitch){
+    var wanted=Math.floor(worldPos/(pitch||TILE))-MARGIN, step=Math.max(1,MARGIN);
     var snapped=Math.floor(wanted/step)*step;
     return Math.max(0,Math.min(Math.max(0,totalTiles-winTiles),snapped));
   }
@@ -982,10 +1241,10 @@
   //  to it, WebP loss aside), so this is the same relationship drawDungeon/a1dBlit already has with
   //  the baked dungeon floors — copy the pixels, draw nothing.
   //
-  //  GEOMETRY. A chunk's manifest x/y/width/height are its footprint in a 16-px-per-cell space;
-  //  the shipped base/canopy images are 3x denser (48 px/cell = TILE), which is why the blit needs
-  //  no rescaling. That 3 is DERIVED from the manifest below, not hardcoded, so a re-bake at a
-  //  different density keeps working. Chunk (0,0) is the plate origin, cell (bounds[0],bounds[1]).
+  //  GEOMETRY. A chunk's manifest x/y/width/height are its footprint in a 16-px-per-cell space.
+  //  Base/canopy source density comes from each image's intrinsic dimensions and is scaled to this
+  //  footprint; both the former 48px/cell bake and the new 32px/cell paint therefore share the same
+  //  manifest coordinates. Chunk (0,0) is the plate origin, cell (bounds[0],bounds[1]).
   //
   //  CANOPY is not a second painting. It is an alpha-only mask (0 or 242) over pixels that are
   //  identical to base — forest crowns, cut out of the base and redrawn ABOVE the hero (depth 10)
@@ -996,7 +1255,72 @@
   // `released` latches the trim so it runs once per departure rather than on every 80 ms tick.
   var A1A={ manifest:null, req:false, S:0, chunks:{}, lru:[], win:[], released:false, landmarks:null, dirty:false, drew:false,
                 imgs:{}, tex:{}, spriteScene:null, lastRects:null, lastFull:false,
-                texQ:[], texQd:{}, bmPend:{} };
+                texQ:[], texQd:{}, bmPend:{}, baseAlpha:{}, alphaProbe:null, underpaint:{spec:null,status:'absent',image:null,request:null,requestTimer:null,sprite:null,scene:null,fail:0,next:0,
+                  maskCanvas:null,maskTexture:null,maskScene:null,maskKey:null,maskLiveKey:'',
+                  forest:{spec:null,status:'absent',image:null,request:null,timer:0,sprite:null,fail:0,next:0,
+                    maskCanvas:null,maskTexture:null,maskScene:null,maskKey:null,maskLiveKeys:[],rawFallback:false,rawFallbackKey:null,rawFallbackNext:0,rawFallbackFailures:0}},
+                uploadLastBatch:0, uploadBatchMax:0, queuePeak:0 };
+  var A1A_WATER_R2={identity:'',url:'',status:'absent',image:null,pixels:null,width:0,height:0,attempts:0,retryAt:0};
+  var A1A_WATER_R2_MAX_ATTEMPTS=3,A1A_WATER_R2_RETRY_MS=1000;
+  function a1aWaterR2Spec(){
+    var w=A1A.manifest&&A1A.manifest.waterTreatment;
+    return w&&w.schema==='act1-water-r2-global-phase-v1'&&w.pixelsPerCell===32
+      &&w.sourceTexelsPerCell===96&&w.blend==='normal alpha composite'?w:null;
+  }
+  function a1aWaterR2StartRequest(state,spec){
+    state.status='loading';state.retryAt=0;
+    var image=new Image();state.image=image;
+    image.onload=function(){
+      if(A1A_WATER_R2!==state||state.image!==image)return;
+      try{
+        var w=image.naturalWidth||image.width,h=image.naturalHeight||image.height;
+        if(w!==spec.assetDimensionsPx[0]||h!==spec.assetDimensionsPx[1])throw new Error('water-r2 dimensions differ');
+        var canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
+        var context=canvas.getContext('2d',{willReadFrequently:true});if(!context)throw new Error('water-r2 canvas unavailable');
+        context.drawImage(image,0,0,w,h);var pixels=context.getImageData(0,0,w,h).data;
+        state.pixels=pixels;state.width=w;state.height=h;state.status='ready';state.retryAt=0;
+        A1A.dirty=true;
+      }catch(e){state.status='error';state.pixels=null;state.retryAt=state.attempts<A1A_WATER_R2_MAX_ATTEMPTS?Date.now()+A1A_WATER_R2_RETRY_MS*state.attempts:Infinity;}
+    };
+    image.onerror=function(){
+      if(A1A_WATER_R2!==state||state.image!==image)return;
+      state.status='error';state.pixels=null;
+      state.retryAt=state.attempts<A1A_WATER_R2_MAX_ATTEMPTS?Date.now()+A1A_WATER_R2_RETRY_MS*state.attempts:Infinity;
+    };
+    state.attempts++;
+    try{image.src=state.url;}catch(e){
+      if(A1A_WATER_R2===state&&state.image===image){state.status='error';state.pixels=null;state.retryAt=state.attempts<A1A_WATER_R2_MAX_ATTEMPTS?Date.now()+A1A_WATER_R2_RETRY_MS*state.attempts:Infinity;}
+    }
+  }
+  function a1aWaterR2Pixels(){
+    var spec=a1aWaterR2Spec();if(!spec)return null;
+    var url='act1-hifi/'+spec.assetPath,identity=url+'|'+spec.assetSha256;
+    if(A1A_WATER_R2.identity!==identity){
+      var previous=A1A_WATER_R2;
+      A1A_WATER_R2={identity:identity,url:url,status:'absent',image:null,pixels:null,width:0,height:0,attempts:0,retryAt:0,
+        textureKey:previous.textureKey||'',textureScene:previous.textureScene||null};
+      a1aWaterR2StartRequest(A1A_WATER_R2,spec);
+    }else if(A1A_WATER_R2.status==='error'&&A1A_WATER_R2.attempts<A1A_WATER_R2_MAX_ATTEMPTS&&Date.now()>=A1A_WATER_R2.retryAt){
+      a1aWaterR2StartRequest(A1A_WATER_R2,spec);
+    }
+    return A1A_WATER_R2.status==='ready'?A1A_WATER_R2:null;
+  }
+  function a1aWaterR2Texture(scene){
+    var loaded=a1aWaterR2Pixels();
+    if(!loaded||!scene||!scene.textures)return null;
+    try{
+      var key='dqwater-r2-'+loaded.identity.split('|').pop().slice(0,16);
+      if(loaded.textureKey&&loaded.textureKey!==key&&loaded.textureScene===scene&&scene.textures.exists(loaded.textureKey))scene.textures.remove(loaded.textureKey);
+      if(!scene.textures.exists(key))scene.textures.addImage(key,loaded.image);
+      var texture=scene.textures.get(key);if(texture&&texture.setFilter)texture.setFilter(NEAREST);
+      if(!scene.textures.exists(key))return null;
+      loaded.textureKey=key;loaded.textureScene=scene;return key;
+    }catch(e){return null;}
+  }
+  // V8 is an explicit manifest opt-in. Its global packed collision mask is independent of chunk
+  // residency; `stencil` is built once from the active Phaser hero texture, never a filename guess.
+  var A1A_FOREST={mode:false,spec:null,status:'absent',bits:null,request:null,timer:0,fail:0,next:0,
+                  error:'',stencil:null,stencilKey:null,stencilBounds:null};
   // A 40x38 window can INTERSECT 9 chunks (measured over every plate position, worst case at cell
   // 41,245). The cap must never sit below that or the trim evicts a chunk the current window still
   // needs, which re-requests and re-evicts it forever: the window never reports full coverage, so
@@ -1058,7 +1382,7 @@
   // the queue empties, so the headroom costs nothing when it is not needed. Each upload is an
   // addImage from a bitmap already in memory (~2 ms), and these frames are behind the battle-exit
   // cover in index.html, which is the point of that cover.
-  var A1AB={ burst:0 }, A1AB_RATE=12, A1AB_TICKS=8;
+  var A1AB={ burst:0, empty:0 }, A1AB_RATE=12, A1AB_TICKS=8;
   // Leaving the overworld TRIMS the chunk cache down to the one window the hero is standing in, and
   // drops everything else. It used to drop ALL of it, and that was the whole of SMOOTH-5.
   //
@@ -1092,7 +1416,29 @@
   // already holds while being played, so this raises the OFF-overworld floor without moving the
   // peak. The original concern -- a dungeon allocating its own base + fog canvases on top of a full
   // 10-slot cache -- is still addressed, because the other six slots are still dropped here.
-  function a1aReleaseChunks(){
+  // Snapshot the chunks that intersect the camera NOW. A1A.win is updated by the most recent
+  // terrain rebuild, which runs on an 80 ms clock and can still describe the previous snapped
+  // window when an encounter pauses the scene between ticks. The camera is the authority at that
+  // boundary. This is an exact visible intersection, without the walking prefetch margin.
+  function a1aCameraChunks(scene){
+    var m=A1A.manifest, v=scene&&scene.cameras&&scene.cameras.main&&scene.cameras.main.worldView;
+    var out=[];
+    if(!m||!m.chunks||!m.semanticBounds||!(A1A.S>0)||!scene||scene.currentMapId!=='overworld'||!v||!(v.width>0&&v.height>0)) return out;
+    var B=m.semanticBounds, S=A1A.S, ox=B[0]*TILE, oy=B[1]*TILE;
+    var vx0=owCanonical(v.x), vy0=owCanonical(v.y), vx1=owCanonical(v.x+v.width), vy1=owCanonical(v.y+v.height);
+    for(var i=0;i<m.chunks.length;i++){ var c=m.chunks[i];
+      var x=ox+c.x*S, y=oy+c.y*S;
+      var nh=a1aNorthHeight(c);
+      var baseHit=x+c.width*S>vx0&&x<vx1&&y+c.height*S>vy0&&y<vy1;
+      var northHit=nh>0&&x+c.width*S>vx0&&x<vx1&&y>vy0&&y-nh<vy1;
+      if(!baseHit&&!northHit) continue;
+      out.push(c);
+      if(out.length>=A1A_MAX_CHUNKS) break;              // the hard residency ceiling still binds
+    }
+    return out;
+  }
+  function a1aCameraChunkIds(scene){ return a1aCameraChunks(scene).map(function(c){ return c.id; }); }
+  function a1aReleaseChunks(scene){
     if(A1A.released) return;                       // idempotent: tick() calls this on EVERY non-'ow' tick
     A1A.released=true;
     // INVALIDATE THE WINDOW CACHES, or nothing ever asks for the terrain back.
@@ -1115,7 +1461,17 @@
     // the plate that rebuild is now a1aRects plus sprite placement, not a 2.97 Mpx splat.
     if(terrainState) terrainState.lastWin='';
     if(overlayState) overlayState.lastKey='';
-    var keep=Object.create(null), i;
+    // Current-camera chunks win when the saved window is stale. Fill any remaining slots from the
+    // saved window for door/battle hysteresis, but never let a disjoint union exceed the measured
+    // 12-chunk ceiling. Missing current records stay in A1A.win so the first return rebuild asks for
+    // them; this boundary never starts new network work under the battle overlay.
+    var ids=a1aCameraChunkIds(scene), seen=Object.create(null), i;
+    for(i=0;i<ids.length;i++) seen[ids[i]]=1;
+    for(i=0;i<A1A.win.length&&ids.length<A1A_MAX_CHUNKS;i++){
+      if(!seen[A1A.win[i]]){ seen[A1A.win[i]]=1; ids.push(A1A.win[i]); }
+    }
+    if(ids.length) A1A.win=ids;
+    var keep=Object.create(null);
     for(i=0;i<A1A.win.length;i++) keep[A1A.win[i]]=1;
     var next={}, lru=[];
     for(i=0;i<A1A.lru.length;i++){ var id=A1A.lru[i];
@@ -1138,30 +1494,461 @@
      Now bounded-retryable on the same policy as the layers, driven by the tick() that already calls
      this. The DENSITY GUARD is deliberately NOT retryable: an unexpected density is a decision to
      leave the art off, not a failure, and re-fetching cannot change it. */
-  var A1A_REQ_TRIES=6, A1A_REQ_BACKOFF=1500;
+  var A1A_REQ_TRIES=6, A1A_REQ_BACKOFF=1500, A1A_REQ_TIMEOUT=5000;
   function a1aReqFailed(){
     A1A.req=false;                                               // let the next tick re-issue
     A1A.reqFail=(A1A.reqFail|0)+1;
     A1A.reqNext=Date.now()+A1A_REQ_BACKOFF*A1A.reqFail;
   }
+  // New paint manifests may provide one continuous low-resolution substrate behind the streamed
+  // chunk art. It is optional for old manifests. Its exact intrinsic dimensions and density are
+  // checked against the inclusive semantic bounds so a bad descriptor can never stretch land over
+  // the authored coast or let the legacy blue fill masquerade as a successful new-paint load.
+  function a1aUnderpaintSpec(m){
+    if(!m||!Object.prototype.hasOwnProperty.call(m,'underpaint'))
+      return Object.prototype.hasOwnProperty.call(m,'forestMode')?false:null;
+    var u=m.underpaint,B=m.semanticBounds;
+    if(!u||typeof u.src!=='string'||!u.src||u.src.charAt(0)==='/'||/(^|\/)\.\.(\/|$)/.test(u.src)
+       ||!Number.isInteger(u.pixelWidth)||!Number.isInteger(u.pixelHeight)||!Number.isInteger(u.pixelsPerCell)
+       ||u.pixelWidth<1||u.pixelHeight<1||u.pixelsPerCell<1||u.pixelWidth>2048||u.pixelHeight>2048
+       ||!B||B.length<4) return false;
+    var cellsW=B[2]-B[0]+1,cellsH=B[3]-B[1]+1;
+    if(u.pixelWidth!==cellsW*u.pixelsPerCell||u.pixelHeight!==cellsH*u.pixelsPerCell) return false;
+    var forest=null;
+    if(m.forestMode==='whole-object-v8'){
+      var f=m.forestUnderpaint;
+      if(!f||!a1aSafeAssetPath(f.src)||!Number.isInteger(f.width)||!Number.isInteger(f.height)
+         ||!Number.isInteger(f.pixelsPerCell)||!Array.isArray(f.bounds)||f.bounds.join(',')!==B.join(',')
+         ||f.width!==cellsW*f.pixelsPerCell||f.height!==cellsH*f.pixelsPerCell) return false;
+      forest={src:f.src,width:f.width,height:f.height,pixelsPerCell:f.pixelsPerCell,bounds:B.slice()};
+    }
+    return {src:u.src,pixelWidth:u.pixelWidth,pixelHeight:u.pixelHeight,pixelsPerCell:u.pixelsPerCell,forest:forest};
+  }
+  function a1aSafeAssetPath(path){
+    return typeof path==='string'&&!!path&&path.charAt(0)!=='/'&&!/(^|\/)\.\.(\/|$)/.test(path);
+  }
+  function a1aForestManifestSpec(m){
+    if(!m||!Object.prototype.hasOwnProperty.call(m,'forestMode')) return null;
+    if(m.forestMode!=='whole-object-v8') return false;
+    var B=m.semanticBounds,c=m.collision,u=m.forestUnderpaint,cs=m.chunks;
+    if(!Array.isArray(B)||B.length!==4||B.join(',')!=='16,218,163,399'
+       ||!Array.isArray(cs)||cs.length!==120||!c||!u) return false;
+    var dims=c.dimensionsPx32;
+    if(!Array.isArray(dims)||dims.length!==2||dims[0]!==4736||dims[1]!==5824
+       ||c.artifact!=='forest-collision.bin'||c.format!=='qok-forest-bitset-v1'||c.version!==1
+       ||!Array.isArray(c.bounds)||c.bounds.join(',')!==B.join(',')||c.pixelsPerCell!==32||c.alphaThreshold!==16
+       ||!(/^[a-f0-9]{64}$/i).test(c.sha256||'')||!(/^[a-f0-9]{64}$/i).test(c.sourceSha256||'')) return false;
+    if(!a1aSafeAssetPath(c.artifact)||!a1aSafeAssetPath(u.src)
+       ||!Number.isInteger(u.width)||!Number.isInteger(u.height)||!Number.isInteger(u.pixelsPerCell)
+       ||u.width!==888||u.height!==1092||u.pixelsPerCell!==6
+       ||!Array.isArray(u.bounds)||u.bounds.join(',')!==B.join(',')) return false;
+    for(var i=0;i<cs.length;i++){
+      var q=cs[i];
+      if(!q||!a1aSafeAssetPath(q.forest)||!(/^[a-f0-9]{64}$/i).test(q.forestSha256||'')) return false;
+    }
+    return {collision:c,forestUnderpaint:{src:u.src,width:u.width,height:u.height,pixelsPerCell:u.pixelsPerCell,bounds:B.slice()}};
+  }
+  var A1A_FOREST_TRIES=6,A1A_FOREST_BACKOFF=1200,A1A_FOREST_TIMEOUT=15000;
+  function a1aForestFail(message){
+    var f=A1A_FOREST;
+    if(f.timer){clearTimeout(f.timer);f.timer=0;}
+    f.request=null; f.bits=null; f.fail=(f.fail|0)+1; f.error=message||'collision-load';
+    f.status=f.fail>=A1A_FOREST_TRIES?'error':'waiting';
+    f.next=Date.now()+A1A_FOREST_BACKOFF*f.fail; A1A.dirty=true;
+  }
+  function a1aForestHash(buf){
+    if(!window.crypto||!window.crypto.subtle) return Promise.reject(new Error('sha256-unavailable'));
+    return window.crypto.subtle.digest('SHA-256',buf).then(function(d){
+      return Array.prototype.map.call(new Uint8Array(d),function(v){return v.toString(16).padStart(2,'0');}).join('');
+    });
+  }
+  function a1aForestDecode(buf,spec){
+    var bytes=new Uint8Array(buf),v=new DataView(buf),magic='QOKF8COL',i;
+    if(bytes.length<64) throw new Error('collision-short');
+    for(i=0;i<magic.length;i++) if(bytes[i]!==magic.charCodeAt(i)) throw new Error('collision-magic');
+    var w=v.getUint32(12,true),h=v.getUint32(16,true),ppc=v.getUint32(20,true);
+    if(v.getUint16(8,true)!==1||v.getUint16(10,true)!==64||w!==4736||h!==5824||ppc!==32
+       ||bytes.length!==64+Math.ceil(w*h/8)) throw new Error('collision-header');
+    var src=Array.prototype.map.call(bytes.subarray(24,56),function(n){return n.toString(16).padStart(2,'0');}).join('');
+    if(src!==spec.sourceSha256) throw new Error('collision-source');
+    return new Uint8Array(buf,64);
+  }
+  function a1aForestRequest(){
+    var f=A1A_FOREST,s=f.spec;
+    if(!f.mode||!s||f.status==='loading'||f.status==='ready'||f.status==='error'||Date.now()<f.next) return;
+    var xhr=new XMLHttpRequest(); f.request=xhr; f.status='loading';
+    xhr.open('GET','act1-hifi/'+s.artifact,true); xhr.responseType='arraybuffer'; xhr.timeout=A1A_FOREST_TIMEOUT;
+    xhr.onload=function(){
+      if(f.request!==xhr) return;
+      if(xhr.status&&(xhr.status<200||xhr.status>=300)){a1aForestFail('collision-http');return;}
+      var buf=xhr.response;
+      a1aForestHash(buf).then(function(hash){
+        if(f.request!==xhr) return;
+        if(hash!==s.sha256) throw new Error('collision-sha256');
+        var bits=a1aForestDecode(buf,s);
+        if(f.request!==xhr) return;
+        f.bits=bits; f.request=null; f.status='ready'; f.fail=0; f.error=''; A1A.dirty=true;
+      }).catch(function(e){ if(f.request===xhr) a1aForestFail(String(e&&e.message||'collision-invalid')); });
+    };
+    xhr.onerror=xhr.ontimeout=function(){if(f.request===xhr)a1aForestFail('collision-network');};
+    try{xhr.send();}catch(e){a1aForestFail('collision-request');}
+  }
+  function a1aForestRetry(){
+    var f=A1A_FOREST;
+    if(!f.mode||!f.spec) return false;
+    if(f.request){try{f.request.abort();}catch(e){} f.request=null;}
+    if(f.timer){clearTimeout(f.timer);f.timer=0;}
+    f.status='waiting';f.fail=0;f.next=0;f.error='';f.bits=null;f.stencil=null;f.stencilKey=null;f.stencilBounds=null; A1A.dirty=true;
+    a1aForestRequest();return true;
+  }
+  var A1A_UNDERPAINT_TRIES=6, A1A_UNDERPAINT_BACKOFF=1200, A1A_UNDERPAINT_TIMEOUT=15000;
+  function a1aUnderpaintFail(up,im){
+    if(up.request!==im) return false;
+    if(up.requestTimer){ clearTimeout(up.requestTimer); up.requestTimer=null; }
+    up.request=null; up.image=null; up.fail=(up.fail|0)+1;
+    up.status=up.fail>=A1A_UNDERPAINT_TRIES?'error':'waiting';
+    up.next=Date.now()+A1A_UNDERPAINT_BACKOFF*up.fail; A1A.dirty=true;
+    return true;
+  }
+  function a1aUnderpaintRequest(){
+    var up=A1A.underpaint;
+    a1aForestUnderpaintRequest(up);
+    if(!up.spec||up.image||up.request||up.status==='ready'||up.status==='error'||Date.now()<up.next) return;
+    var im=new Image(); up.status='loading'; up.request=im;
+    im.onload=function(){
+      if(up.request!==im) return;
+      if(up.requestTimer){ clearTimeout(up.requestTimer); up.requestTimer=null; }
+      up.request=null;
+      if(im.naturalWidth!==up.spec.pixelWidth||im.naturalHeight!==up.spec.pixelHeight){ up.image=null; up.status='error'; up.fail=A1A_UNDERPAINT_TRIES; A1A.dirty=true; return; }
+      up.image=im; up.status='decoded'; up.fail=0; A1A.dirty=true;
+      a1aUnderpaintPlace(A1A.spriteScene);
+    };
+    im.onerror=function(){
+      if(up.request!==im) return;
+      a1aUnderpaintFail(up,im);
+    };
+    up.requestTimer=setTimeout(function(){
+      if(up.request!==im) return;
+      // Invalidate before aborting: WebKit may still deliver an event for a request
+      // whose source was cleared, and that stale callback must not affect a later retry.
+      im.onload=null; im.onerror=null;
+      if(!a1aUnderpaintFail(up,im)) return;
+      try{ im.src=''; }catch(e){}
+    },A1A_UNDERPAINT_TIMEOUT);
+    try{ im.src='act1-hifi/'+up.spec.src; }
+    catch(e){ a1aUnderpaintFail(up,im); }
+  }
+  function a1aForestUnderpaintRequest(up){
+    var f=up&&up.forest,s=f&&f.spec;
+    if(!s||f.image||f.request||f.status==='ready'||f.status==='error'||Date.now()<f.next) return;
+    var im=new Image(); f.status='loading';f.request=im;
+    im.onload=function(){
+      if(f.request!==im) return;
+      if(im.naturalWidth!==s.width||im.naturalHeight!==s.height){f.request=null;f.status='error';f.fail=6;A1A.dirty=true;return;}
+      f.request=null;f.image=im;f.status='decoded';f.fail=0;A1A.dirty=true;
+      a1aForestUnderpaintPlace(A1A.spriteScene);
+    };
+    im.onerror=function(){if(f.request!==im)return;f.request=null;f.fail=(f.fail|0)+1;
+      f.status=f.fail>=6?'error':'waiting';f.next=Date.now()+1200*f.fail;A1A.dirty=true;};
+    f.timer=setTimeout(function(){
+      if(f.request!==im)return;im.onload=null;im.onerror=null;f.request=null;f.fail=(f.fail|0)+1;
+      f.status=f.fail>=6?'error':'waiting';f.next=Date.now()+1200*f.fail;A1A.dirty=true;try{im.src='';}catch(e){}
+    },15000);
+    try{im.src='act1-hifi/'+s.src;}catch(e){im.onerror();}
+  }
+  // V8 movement is authoritative only when the collision pack, matching visible fallback and
+  // live hero stencil agree. Keep that same dependency visible: a ready ground underpaint cannot
+  // dismiss a failed forest-pack Retry state while movement remains held.
+  function a1aForestAuthorityError(){
+    var f=A1A.underpaint&&A1A.underpaint.forest;
+    return !!(A1A_FOREST.mode&&(A1A_FOREST.status==='error'||(f&&f.status==='error')));
+  }
+  function a1aUnderpaintRequired(){ return !!(A1A.manifest&&(A1A.manifest.underpaint||A1A_FOREST.mode)); }
+  function a1aPlateVisibleInView(scene){
+    if(!a1aPlateOwns(scene)) return false;
+    var b=a1aPlateBounds(); if(!b) return true;
+    var cam=scene.cameras&&scene.cameras.main, v=cam&&cam.worldView;
+    if(v){
+      var x0=owCanonical(v.x), y0=owCanonical(v.y), x1=owCanonical(v.x+v.width), y1=owCanonical(v.y+v.height);
+      var eps=1e-6;
+      return x1-b[0]*TILE>eps&&(b[2]+1)*TILE-x0>eps&&y1-b[1]*TILE>eps&&(b[3]+1)*TILE-y0>eps;
+    }
+    var h=scene.hero;
+    return !!(h&&a1aPlateCell(Math.floor(owCanonical(h.x)/TILE),Math.floor(owCanonical(h.y)/TILE)));
+  }
+  function a1aUnderpaintRequiredForView(scene){
+    return a1aUnderpaintRequired()&&a1aPlateVisibleInView(scene);
+  }
+  function a1aUnderpaintPlace(scene){
+    var up=A1A.underpaint,spec=up.spec;
+    if(up.status==='error') return false;
+    if(!spec||!up.image||!scene||!scene.textures||!scene.add) return false;
+    var key='a1a_underpaint';
+    try{
+      if(!scene.textures.exists(key)){
+        var tex=scene.textures.addImage(key,up.image);
+        if(tex&&tex.setFilter) tex.setFilter(1); // linear: the substrate is deliberately low resolution
+      }
+      var b=A1A.manifest.semanticBounds,x=b[0]*OW_TILE,y=b[1]*OW_TILE,scale=OW_TILE/spec.pixelsPerCell;
+      var spriteKey=up.maskScene===scene&&up.maskTexture&&scene.textures.exists('a1a_underpaint_mask')?'a1a_underpaint_mask':key;
+      if(!up.sprite||up.scene!==scene||!up.sprite.scene||up.sprite.texture.key!==spriteKey){
+        if(up.sprite&&up.sprite.scene) try{up.sprite.destroy();}catch(e){}
+        up.sprite=scene.add.image(x,y,spriteKey).setOrigin(0,0).setDepth(0.7).setScale(scale);
+        try{ up.sprite.texture.setFilter(1); }catch(e){}
+        up.scene=scene;
+      } else {if(up.sprite.texture!==scene.textures.get(spriteKey))up.sprite.setTexture(spriteKey);up.sprite.setPosition(x,y).setScale(scale);}
+      if(!up.sprite.visible) up.sprite.setVisible(true);
+      up.status='ready';
+      if(up.forest&&up.forest.spec) return a1aForestUnderpaintPlace(scene);
+      return true;
+    }catch(e){
+      up.fail=A1A_UNDERPAINT_TRIES; up.status='error';
+      return false;
+    }
+  }
+  // Convert only currently displayed high-resolution forest chunks into transparent holes in the
+  // continuous 6ppc fallback. Chunk and underpaint coordinates share manifest-space edges; using
+  // the exact scaled edge endpoints (rather than independently rounding each width) prevents 1px
+  // gaps/overlaps at partial edge chunks.
+  function a1aForestLiveChunkKeys(live){
+    var keys=[];Object.keys(live||{}).forEach(function(k){
+      if(k.indexOf('a1a_forest_')===0&&live[k])keys.push(k.slice('a1a_forest_'.length));
+    });
+    keys.sort();return keys;
+  }
+  function a1aForestMaskRects(m,s,readyKeys){
+    if(!m||!s||!Array.isArray(m.chunks)||!Array.isArray(readyKeys)) return [];
+    var ready={},maxX=0,maxY=0,out=[];
+    for(var i=0;i<readyKeys.length;i++) ready[readyKeys[i]]=1;
+    for(var j=0;j<m.chunks.length;j++){
+      var q=m.chunks[j]; maxX=Math.max(maxX,q.x+q.width);maxY=Math.max(maxY,q.y+q.height);
+    }
+    if(!maxX||!maxY) return out;
+    for(var k=0;k<m.chunks.length;k++){
+      var c=m.chunks[k]; if(!ready[c.id]) continue;
+      var x0=Math.max(0,Math.min(s.width,Math.round(c.x*s.width/maxX)));
+      var y0=Math.max(0,Math.min(s.height,Math.round(c.y*s.height/maxY)));
+      var x1=Math.max(x0,Math.min(s.width,Math.round((c.x+c.width)*s.width/maxX)));
+      var y1=Math.max(y0,Math.min(s.height,Math.round((c.y+c.height)*s.height/maxY)));
+      if(x1>x0&&y1>y0) out.push({id:c.id,x:x0,y:y0,width:x1-x0,height:y1-y0});
+    }
+    return out;
+  }
+  // The low-resolution ground is fallback only. Once a high-resolution base chunk is live, erase
+  // the fallback under that chunk so transparent edge pixels reveal the sea, not a second,
+  // differently sampled copy of the ground. Rebuild only when the live-base set changes.
+  function a1aUnderpaintBaseKeys(live){
+    var keys=[];Object.keys(live||{}).forEach(function(k){if(k.indexOf('a1a_base_')===0&&live[k])keys.push(k.slice('a1a_base_'.length));});
+    keys.sort();return keys;
+  }
+  function a1aUnderpaintBaseMaskDispose(scene,up){
+    var key='a1a_underpaint_mask';
+    if(up&&up.sprite&&up.sprite.scene&&up.sprite.texture&&up.sprite.texture.key===key)
+      try{up.sprite.setTexture('a1a_underpaint');}catch(e){}
+    if(scene&&scene.textures&&scene.textures.exists(key))try{scene.textures.remove(key);}catch(e){}
+    if(up){up.maskTexture=null;up.maskScene=null;up.maskKey=null;up.maskLiveKey='';}
+  }
+  function a1aUnderpaintBaseMask(scene,up,live){
+    if(!up||!up.spec||!up.image||!scene||!scene.textures||!scene.add)return false;
+    var ids=a1aUnderpaintBaseKeys(live),signature=ids.join('|'),key='a1a_underpaint_mask';
+    if(up.maskScene===scene&&up.maskKey===signature&&up.maskTexture&&scene.textures.exists(key))return true;
+    if(!ids.length){
+      a1aUnderpaintBaseMaskDispose(scene,up);up.maskScene=scene;up.maskKey='';
+      return true;
+    }
+    var s={width:up.spec.pixelWidth,height:up.spec.pixelHeight},canvas=up.maskCanvas;
+    if(!canvas){canvas=document.createElement('canvas');up.maskCanvas=canvas;}
+    if(canvas.width!==s.width||canvas.height!==s.height){canvas.width=s.width;canvas.height=s.height;}
+    var ctx=canvas.getContext&&canvas.getContext('2d');if(!ctx){a1aUnderpaintBaseMaskDispose(scene,up);return false;}
+    ctx.save();ctx.globalCompositeOperation='source-over';ctx.globalAlpha=1;
+    ctx.clearRect(0,0,s.width,s.height);ctx.drawImage(up.image,0,0,s.width,s.height);
+    ctx.globalCompositeOperation='destination-out';
+    var rects=a1aForestMaskRects(A1A.manifest,s,ids);
+    if(rects.length!==ids.length){a1aUnderpaintBaseMaskDispose(scene,up);return false;}
+    for(var i=0;i<rects.length;i++){var r=rects[i];ctx.fillRect(r.x,r.y,r.width,r.height);}
+    ctx.restore();
+    try{
+      if(up.maskScene===scene&&up.maskTexture&&scene.textures.exists(key)){
+        if(up.maskTexture.refresh)up.maskTexture.refresh();
+      }else{
+        if(scene.textures.exists(key))scene.textures.remove(key);
+        up.maskTexture=scene.textures.addCanvas(key,canvas);
+      }
+      if(!up.maskTexture){a1aUnderpaintBaseMaskDispose(scene,up);return false;}
+      if(up.maskTexture.setFilter)up.maskTexture.setFilter(1);
+      up.maskScene=scene;up.maskKey=signature;up.maskLiveKey=signature;
+      if(up.sprite&&up.sprite.scene)up.sprite.setTexture(key);
+      return true;
+    }catch(e){a1aUnderpaintBaseMaskDispose(scene,up);return false;}
+  }
+  function a1aForestMaskDispose(f,dropCanvas){
+    if(f&&f.maskScene&&f.maskScene.textures&&f.maskScene.textures.exists('a1a_forest_underpaint'))
+      try{f.maskScene.textures.remove('a1a_forest_underpaint');}catch(e){}
+    if(f){f.maskTexture=null;f.maskScene=null;f.maskKey=null;f.rawFallback=false;f.rawFallbackKey=null;f.rawFallbackNext=0;f.rawFallbackFailures=0;
+      if(dropCanvas) f.maskCanvas=null;}
+  }
+  function a1aForestRawFallback(scene,f,s){
+    var key='a1a_forest_underpaint';
+    try{
+      a1aForestMaskDispose(f,false);
+      var tex=scene.textures.addImage(key,f.image);
+      if(tex&&tex.setFilter)tex.setFilter(NEAREST);
+      var b=A1A.manifest.semanticBounds,x=b[0]*OW_TILE,y=b[1]*OW_TILE,scale=OW_TILE/s.pixelsPerCell;
+      if(!f.sprite||f.maskScene!==scene||!f.sprite.scene){
+        if(f.sprite&&f.sprite.scene)try{f.sprite.destroy();}catch(e){}
+        f.sprite=scene.add.image(x,y,key).setOrigin(0,0).setDepth(A1A_CANOPY_DEPTH).setScale(scale);
+      }else f.sprite.setTexture(key).setPosition(x,y).setScale(scale);
+      if(f.sprite&&!f.sprite.visible)f.sprite.setVisible(true);
+      // Force the masked canvas to be recreated next time; this raw image is a complete fallback.
+      f.maskTexture=null;f.maskScene=scene;f.maskKey=null;f.rawFallback=true;return true;
+    }catch(e){return false;}
+  }
+  function a1aForestFallbackTexture(scene,f,s,readyKeys){
+    var ids=(readyKeys||[]).slice().sort(),signature=ids.join('|'),key='a1a_forest_underpaint';
+    if(f.maskScene&&f.maskScene!==scene) a1aForestMaskDispose(f,false);
+    if(f.maskScene===scene&&f.maskKey===signature&&f.maskTexture
+       &&scene.textures.exists(key)) return true;
+    // When canvas masking is temporarily unavailable, keep the raw coarse layer visible and retry
+    // with bounded backoff. A changed live set or scene retries immediately; stable sets never
+    // recreate/upload a texture on every render tick.
+    if(f.rawFallback&&f.maskScene===scene&&f.rawFallbackKey===signature&&Date.now()<(f.rawFallbackNext||0)) return true;
+    var canvas=f.maskCanvas;
+    if(!canvas){canvas=document.createElement('canvas');f.maskCanvas=canvas;}
+    if(canvas.width!==s.width||canvas.height!==s.height){canvas.width=s.width;canvas.height=s.height;}
+    var ctx=canvas.getContext&&canvas.getContext('2d'); if(!ctx) return false;
+    ctx.save();ctx.globalCompositeOperation='source-over';ctx.globalAlpha=1;
+    ctx.clearRect(0,0,s.width,s.height);ctx.drawImage(f.image,0,0,s.width,s.height);
+    ctx.globalCompositeOperation='destination-out';
+    var rects=a1aForestMaskRects(A1A.manifest,s,ids);
+    for(var i=0;i<rects.length;i++){
+      var r=rects[i];ctx.fillRect(r.x,r.y,r.width,r.height);
+    }
+    ctx.restore();
+    try{
+      if(!f.maskTexture||f.maskScene!==scene||!scene.textures.exists(key)){
+        if(scene.textures.exists(key)) scene.textures.remove(key);
+        f.maskTexture=scene.textures.addCanvas(key,canvas);
+        if(f.maskTexture&&f.maskTexture.setFilter) f.maskTexture.setFilter(NEAREST);
+      }else if(f.maskTexture.refresh) f.maskTexture.refresh();
+      if(!f.maskTexture) return false;
+      f.maskScene=scene;f.maskKey=signature;f.rawFallback=false;f.rawFallbackKey=null;f.rawFallbackNext=0;f.rawFallbackFailures=0;return true;
+    }catch(e){return false;}
+  }
+  function a1aForestMaskFailure(scene,f,s,signature){
+    if(!a1aForestRawFallback(scene,f,s)){
+      f.status='error';f.fail=6;A1A.dirty=true;
+      return false;
+    }
+    f.rawFallback=true;f.rawFallbackKey=signature;
+    f.rawFallbackFailures=(f.rawFallbackFailures|0)+1;
+    f.rawFallbackNext=Date.now()+Math.min(60000,1500*Math.pow(2,Math.min(5,f.rawFallbackFailures-1)));
+    f.status='ready';return true;
+  }
+  function a1aForestUnderpaintPlace(scene){
+    var up=A1A.underpaint,f=up&&up.forest,s=f&&f.spec;
+    if(!s) return true;
+    if(f.status==='error'||!f.image||!scene||!scene.textures||!scene.add) return false;
+    var key='a1a_forest_underpaint';
+    var liveKeys=f.maskLiveKeys||[], maskSignature=liveKeys.slice().sort().join('|');
+    try{
+      if(!a1aForestFallbackTexture(scene,f,s,liveKeys)){
+        return a1aForestMaskFailure(scene,f,s,maskSignature);
+      }
+      var b=A1A.manifest.semanticBounds,x=b[0]*OW_TILE,y=b[1]*OW_TILE,scale=OW_TILE/s.pixelsPerCell;
+      if(!f.sprite||up.scene!==scene||!f.sprite.scene||f.sprite.texture.key!==key){
+        if(f.sprite&&f.sprite.scene)try{f.sprite.destroy();}catch(e){}
+        f.sprite=scene.add.image(x,y,key).setOrigin(0,0).setDepth(A1A_CANOPY_DEPTH).setScale(scale);
+        // This is the native-resolution forest sheet, not the intentionally soft low-resolution
+        // plate below it. Keep nearest sampling so emitted canopy edges and their alpha collision
+        // authority stay pixel-aligned.
+        try{f.sprite.texture.setFilter(NEAREST);}catch(e){}
+      } else {
+        // Phaser sprites keep a reference to the Texture object, not merely its cache key. A raw
+        // Image fallback can be replaced by a same-key canvas texture after recovery; rebind it.
+        var desiredTexture=f.maskTexture||(scene.textures.get&&scene.textures.get(key));
+        if(desiredTexture&&f.sprite.texture!==desiredTexture) f.sprite.setTexture(key);
+        f.sprite.setPosition(x,y).setScale(scale);
+      }
+      if(!f.sprite.visible)f.sprite.setVisible(true);
+      f.status='ready';return true;
+    }catch(e){return a1aForestMaskFailure(scene,f,s,maskSignature);}
+  }
+  function a1aUnderpaintReady(scene){
+    if(!a1aUnderpaintRequired()) return true;
+    return a1aUnderpaintPlace(scene||A1A.spriteScene);
+  }
+  function a1aUnderpaintHide(){ if(A1A.underpaint.sprite) try{ A1A.underpaint.sprite.setVisible(false); }catch(e){}
+    if(A1A.underpaint.forest&&A1A.underpaint.forest.sprite)try{A1A.underpaint.forest.sprite.setVisible(false);}catch(e){} }
+  function a1aUnderpaintRetry(){
+    var up=A1A.underpaint;
+    var f=up.forest;
+    if(!up.spec&&(!f||!f.spec)) return false;
+    if(up.status==='ready'&&(!f||!f.spec||f.status==='ready')&&(!A1A_FOREST.mode||A1A_FOREST.status==='ready')) return false;
+    if(up.sprite&&up.sprite.scene) try{up.sprite.destroy();}catch(e){}
+    if(up.scene&&up.scene.textures&&up.scene.textures.exists('a1a_underpaint')) try{up.scene.textures.remove('a1a_underpaint');}catch(e){}
+    if(up.request){
+      if(up.requestTimer){ clearTimeout(up.requestTimer); up.requestTimer=null; }
+      var stale=up.request; up.request=null; stale.onload=null; stale.onerror=null;
+      try{stale.src='';}catch(e){}
+    }
+    if(f){
+      if(f.sprite&&f.sprite.scene)try{f.sprite.destroy();}catch(e){}
+      if(f.request){var fs=f.request;f.request=null;fs.onload=null;fs.onerror=null;try{fs.src='';}catch(e){}}
+      if(f.timer){clearTimeout(f.timer);f.timer=0;}
+      if(f.spec){f.image=null;f.status='waiting';f.fail=0;f.next=0;}
+      a1aForestMaskDispose(f,true);f.maskLiveKeys=[];
+    }
+    if(up.requestTimer){ clearTimeout(up.requestTimer); up.requestTimer=null; }
+    up.sprite=null; up.scene=null; up.image=null; up.request=null; up.status='waiting'; up.fail=0; up.next=0;
+    a1aVeilError(false); a1aForestRetry(); a1aUnderpaintRequest(); return true;
+  }
   function a1aFetch(){
     // FIRST, and unconditionally: the two requests fail independently, so a manifest that has already
     // landed must not stop a failed landmark table from being retried.
     a1aFetchLandmarks();
+    if(A1A.manifest){ a1aUnderpaintRequest(); a1aForestRequest(); }
     if(A1A.manifest||A1A.req) return;                            // landed, or in flight
     if((A1A.reqFail|0)>=A1A_REQ_TRIES) return;                   // exhausted: quiet, as a 404 should be
-    if(Date.now()<(A1A.reqNext|0)) return;                       // backing off
+    if(Date.now()<(A1A.reqNext||0)) return;                       // backing off
     A1A.req=true;
-    var r=new XMLHttpRequest(); r.open('GET','act1-hifi/manifest.json',true);
+    var r=new XMLHttpRequest(); r.open('GET','act1-hifi/manifest.json',true); r.timeout=A1A_REQ_TIMEOUT;
     r.onload=function(){
       if(r.status&&(r.status<200||r.status>=300)){ a1aReqFailed(); return; }
       try{
-        var m=JSON.parse(r.responseText), B=m&&m.semanticBounds, cs=m&&m.chunks;
+        var m=JSON.parse(r.responseText), B=m&&m.semanticBounds, cs=m&&m.chunks, wt=m&&m.waterTreatment;
         if(!B||!cs||!cs.length){ a1aReqFailed(); return; }
+        if(wt&&(!/^[0-9a-f]{64}$/.test(wt.assetSha256||'')||wt.schema!=='act1-water-r2-global-phase-v1'
+            ||wt.pixelsPerCell!==32||wt.sourceTexelsPerCell!==96
+            ||wt.blend!=='normal alpha composite'||typeof wt.assetPath!=='string'
+            ||wt.assetPath.indexOf('materials/')!==0||wt.assetPath.indexOf('..')!==-1
+            ||!Array.isArray(wt.assetDimensionsPx)||wt.assetDimensionsPx.length!==2
+            ||!(wt.assetDimensionsPx[0]>0&&wt.assetDimensionsPx[1]>0))){
+          A1A.req=false;A1A.reqFail=A1A_REQ_TRIES;A1A.manifestError='water-schema';return;
+        }
+        var underpaintSpec=a1aUnderpaintSpec(m), forestSpec=a1aForestManifestSpec(m);
+        if(underpaintSpec===false||forestSpec===false){
+          A1A.req=false; A1A.reqFail=A1A_REQ_TRIES; A1A.manifestError=forestSpec===false?'forest-schema':'underpaint-schema';
+          if(Object.prototype.hasOwnProperty.call(m,'forestMode')){
+            A1A_FOREST.mode=true; A1A_FOREST.status='error'; A1A_FOREST.error=A1A.manifestError;
+          }
+          return;
+        }
         var mw=0; for(var i=0;i<cs.length;i++) mw=Math.max(mw,cs[i].x+cs[i].width);
         var S=TILE*(B[2]-B[0]+1)/mw;                             // world px per manifest px
-        if(!(S>=1)||S!==Math.round(S)) return;                   // deliberate: leave the art off, do NOT retry
+        if(!(S>=1)||S!==Math.round(S)){ A1A.req=false; A1A.reqFail=A1A_REQ_TRIES; return; }
         A1A.S=S; A1A.manifest=m; A1A.dirty=true; A1A.reqFail=0;
+        A1A_FOREST.mode=!!forestSpec; A1A_FOREST.spec=forestSpec&&forestSpec.collision||null;
+        A1A_FOREST.status=forestSpec?'waiting':'absent'; A1A_FOREST.bits=null; A1A_FOREST.fail=0;
+        A1A_FOREST.error=''; A1A_FOREST.next=0; A1A_FOREST.stencil=null; A1A_FOREST.stencilKey=null; A1A_FOREST.stencilBounds=null;
+        if(forestSpec) a1aForestRequest();
+        if(underpaintSpec){
+          A1A.underpaint={spec:underpaintSpec,status:'waiting',image:null,request:null,requestTimer:null,sprite:null,scene:null,fail:0,next:0,
+            forest:{spec:underpaintSpec.forest,status:underpaintSpec.forest?'waiting':'absent',image:null,request:null,timer:0,sprite:null,fail:0,next:0}};
+          a1aUnderpaintRequest();
+          var world=worldScene();
+          if(world&&a1aPlateOwns(world)){ a1aVeilError(false); a1aVeilSet(true); }
+        } else A1A.underpaint={spec:null,status:'absent',image:null,request:null,requestTimer:null,sprite:null,scene:null,fail:0,next:0,
+          forest:{spec:null,status:'absent',image:null,request:null,timer:0,sprite:null,fail:0,next:0}};
         a1aPrefetchStart();                                      // chunks for the first window, now
       }catch(e){ a1aReqFailed(); }
     };
@@ -1174,11 +1961,11 @@
   function a1aFetchLandmarks(){
     if(A1A.landmarks||A1A.lmReq) return;
     if((A1A.lmFail|0)>=A1A_REQ_TRIES) return;
-    if(Date.now()<(A1A.lmNext|0)) return;
+    if(Date.now()<(A1A.lmNext||0)) return;
     A1A.lmReq=true;
     var fail=function(){ A1A.lmReq=false; A1A.lmFail=(A1A.lmFail|0)+1;
                          A1A.lmNext=Date.now()+A1A_REQ_BACKOFF*A1A.lmFail; };
-    var l=new XMLHttpRequest(); l.open('GET','act1-hifi/landmarks/landmarks.json',true);
+    var l=new XMLHttpRequest(); l.open('GET','act1-hifi/landmarks/landmarks.json',true); l.timeout=A1A_REQ_TIMEOUT;
     l.onload=function(){
       if(l.status&&(l.status<200||l.status>=300)){ fail(); return; }
       try{ var d=JSON.parse(l.responseText);
@@ -1187,6 +1974,7 @@
       }catch(e){ fail(); }
     };
     l.onerror=function(){ fail(); };
+    l.ontimeout=function(){ fail(); };
     try{ l.send(); }catch(e){ fail(); }
   }
   // Where the hero will be standing the first time an overworld window is built, in overworld cells.
@@ -1231,10 +2019,9 @@
   // costs 43-72 ms -- the same copy, billed at whichever door you use. Decoding from the BLOB
   // instead produces the bitmap off-thread, and `addImage(ImageBitmap)` then costs 1.5-2.6 ms.
   //
-  // premultiplyAlpha:'none' is not a detail. It keeps the source exactly what the Image path gave
-  // Phaser -- straight alpha, premultiplied by the GL upload (UNPACK_PREMULTIPLY_ALPHA_WEBGL) --
-  // so the pixels that reach the screen are the same ones. Anything else double-premultiplies the
-  // canopy (alpha 242) and the water glint.
+  // Decoded authored ImageBitmaps retain their explicit source-alpha representation.
+  // ImageBitmap uploads ignore WebGL unpack flags; the separately constructed canopy composite
+  // selects premultiplied alpha at ImageBitmap construction because it uses normal source-over.
   //
   // Both paths flip A1A.dirty only when THIS layer can change what the window shows. A canopy or
   // water layer that lands before its own base is dead weight: a1aRects skips the whole chunk
@@ -1269,35 +2056,96 @@
      failure, back off, and let the next window rebuild ask again. Bounded so a genuinely absent file
      cannot spin -- a 404 will exhaust its tries and go quiet, which is the old "degrades" behaviour
      preserved for the case it was actually written for. */
-  var A1A_LAYERS=['base','canopy','water'];   // one list, so the loader and the retry cannot diverge
+  var A1A_LAYERS=['base','canopy','water','forest','north'];   // one list, so the loader and the retry cannot diverge
+  function a1aNorthHeight(c){
+    var n=A1A.manifest&&A1A.manifest.northSupport;
+    if(!c||!c.north||!n||n.schema!=='north-cliff-overhang-v1'||!(n.heightPixels>0)||!(n.pixelsPerCell>0)) return 0;
+    return n.heightPixels*TILE/n.pixelsPerCell;                // canonical pixels above this top-row chunk
+  }
+  function a1aLayerEnabled(k){
+    var m=A1A.manifest;
+    return !(A1A_FOREST.mode&&k==='canopy')&&!!(m&&m.chunks)
+      &&(k!=='north'||!!(m.northSupport&&m.northSupport.schema==='north-cliff-overhang-v1'));
+  }
   var A1A_LOAD_TRIES=6;         // per layer, per residency -- a re-entered chunk starts fresh
   var A1A_LOAD_BACKOFF=1200;    // ms before a failed layer may be asked for again
   function a1aLd(rec){ return rec.ld||(rec.ld={pend:{},fail:{},next:{}}); }
+  function a1aBaseHasAlpha(c,src){
+    if(!c||!src)return true;
+    if(Object.prototype.hasOwnProperty.call(A1A.baseAlpha,c.id))return A1A.baseAlpha[c.id];
+    var w=src.naturalWidth||src.width,h=src.naturalHeight||src.height,found=true;
+    try{
+      if(!(w>0&&h>0))throw new Error('base image dimensions unavailable');
+      var cv=A1A.alphaProbe;if(!cv){cv=document.createElement('canvas');A1A.alphaProbe=cv;}
+      if(cv.width!==w||cv.height!==h){cv.width=w;cv.height=h;}
+      var cx=cv.getContext('2d',{willReadFrequently:true});if(!cx)throw new Error('base alpha canvas unavailable');
+      // Base sources are at most 512x512. Scan each once on load so any authored alpha—not only
+      // alpha on a particular neighboring edge—keeps its exact geometry instead of being stretched
+      // by seam overdraw on another side of the same sprite.
+      cx.clearRect(0,0,w,h);cx.drawImage(src,0,0,w,h);
+      var data=cx.getImageData(0,0,w,h).data;found=false;
+      for(var i=3;i<data.length;i+=4)if(data[i]!==255){found=true;break;}
+    }catch(e){found=true;} // unknown alpha is conservative: preserve exact authored geometry
+    A1A.baseAlpha[c.id]=found;return found;
+  }
+  function a1aBaseDrawGeometry(alphaBearing,edge,seamBleed,scaleX,scaleY,texW,texH,x,y){
+    var l=!alphaBearing&&edge&&edge.left?seamBleed:0,r=!alphaBearing&&edge&&edge.right?seamBleed:0,
+        t=!alphaBearing&&edge&&edge.top?seamBleed:0,b=!alphaBearing&&edge&&edge.bottom?seamBleed:0;
+    return{x:x-l,y:y-t,scaleX:scaleX+(l+r)/Math.max(1,texW),scaleY:scaleY+(t+b)/Math.max(1,texH)};
+  }
   function a1aLayerLanded(c,rec,k,src){
     var ld=a1aLd(rec); delete ld.pend[k]; ld.fail[k]=0;
-    rec[k]=src; if(rec.base) A1A.dirty=true; a1aEnqueueTex(c,rec);
+    rec[k]=src;if(k==='base')a1aBaseHasAlpha(c,src); if(rec.base||k==='north') A1A.dirty=true; a1aEnqueueTex(c,rec);
   }
   function a1aLayerFailed(rec,k){
     var ld=a1aLd(rec); delete ld.pend[k];
     ld.fail[k]=(ld.fail[k]|0)+1;
     ld.next[k]=Date.now()+A1A_LOAD_BACKOFF*ld.fail[k];         // linear back-off, not a tight spin
   }
-  function a1aLoadLayerImg(c,rec,k){
-    var im=new Image();
-    im.onload=function(){ a1aLayerLanded(c,rec,k,im); };
-    im.onerror=function(){ a1aLayerFailed(rec,k); };            // BOTH paths are now out: record it
-    im.src='act1-hifi/'+c[k];
+  var A1A_LOAD_TIMEOUT=15000; // total fetch/decode/fallback budget; a hung load must release its pending flag
+  function a1aLoadLayerImg(c,rec,k,job){
+    if(!job.active()) return;
+    var im=new Image(); job.image=im;
+    im.onload=function(){ job.landed(im); };
+    im.onerror=function(){ job.failed(); };
+    try{ im.src='act1-hifi/'+c[k]; }catch(e){ job.failed(); }
   }
   function a1aLoadLayer(c,rec,k){
-    a1aLd(rec).pend[k]=true;                                    // in flight: the sweep must not double-issue
-    if(!(A1A_SPRITES&&window.createImageBitmap&&window.fetch)){ a1aLoadLayerImg(c,rec,k); return; }
-    var done=false;
+    var ld=a1aLd(rec), jobs=ld.jobs||(ld.jobs={});
+    if(ld.pend[k]) return;
+    var job={timer:0,image:null,controller:null,deadline:Date.now()+A1A_LOAD_TIMEOUT}; jobs[k]=job;
+    ld.pend[k]=true;
+    job.active=function(){ return jobs[k]===job&&A1A.chunks[c.id]===rec; };
+    function finish(cancel){
+      clearTimeout(job.timer);
+      if(jobs[k]===job){ delete jobs[k]; delete ld.pend[k]; }
+      if(job.image){ job.image.onload=null; job.image.onerror=null;
+        if(cancel) try{ job.image.src=''; }catch(e){} }
+      if(cancel&&job.controller) try{ job.controller.abort(); }catch(e){}
+    }
+    job.failed=function(){
+      var current=job.active(); finish(true);
+      if(current) a1aLayerFailed(rec,k);
+    };
+    job.landed=function(src){
+      if(!job.active()){
+        finish(true);
+        // This result never reached Phaser: unlike live texture sources, it is safe to release.
+        if(src&&typeof src.close==='function') try{ src.close(); }catch(e){}
+        return;
+      }
+      finish(false); a1aLayerLanded(c,rec,k,src);
+    };
+    job.timer=setTimeout(job.failed,A1A_LOAD_TIMEOUT);
+    if(!(A1A_SPRITES&&window.createImageBitmap&&window.fetch)){ a1aLoadLayerImg(c,rec,k,job); return; }
     try{
-      fetch('act1-hifi/'+c[k]).then(function(r){ if(!r.ok) throw new Error('http'); return r.blob(); })
-        .then(function(b){ return createImageBitmap(b,{premultiplyAlpha:'none',colorSpaceConversion:'none'}); })
-        .then(function(bm){ done=true; a1aLayerLanded(c,rec,k,bm); })
-        .catch(function(){ if(done||rec[k]) return; a1aLoadLayerImg(c,rec,k); });  // pend stays set
-    }catch(e){ a1aLoadLayerImg(c,rec,k); }
+      if(typeof AbortController!=='undefined') job.controller=new AbortController();
+      fetch('act1-hifi/'+c[k],job.controller?{signal:job.controller.signal}:undefined)
+        .then(function(r){ if(!job.active()) throw new Error('stale layer'); if(!r.ok) throw new Error('http'); return r.blob(); })
+        .then(function(b){ if(!job.active()) throw new Error('stale layer'); return createImageBitmap(b,{premultiplyAlpha:'none',colorSpaceConversion:'none'}); })
+        .then(job.landed)
+        .catch(function(){ if(job.active()) a1aLoadLayerImg(c,rec,k,job); else finish(true); });
+    }catch(e){ if(job.active()) a1aLoadLayerImg(c,rec,k,job); else finish(true); }
   }
   // Every RESIDENT chunk of the window she is standing in, re-asked on the watchdog's tick. Reads
   // A1A.win (the ring a1aRects recorded) so it never fetches art the window does not need.
@@ -1314,9 +2162,10 @@
   function a1aRetryLayers(c,rec){
     var ld=a1aLd(rec), now=Date.now();
     for(var i=0;i<A1A_LAYERS.length;i++){ var k=A1A_LAYERS[i];
+      if(!a1aLayerEnabled(k)) continue;
       if(!c[k]||rec[k]||ld.pend[k]) continue;                   // absent from the manifest, landed, or pending
       if((ld.fail[k]|0)>=A1A_LOAD_TRIES) continue;              // exhausted: stay quiet
-      if(now<(ld.next[k]|0)) continue;                          // still backing off
+      if(now<(ld.next[k]||0)) continue;                          // still backing off
       A1A.reloads=(A1A.reloads|0)+1;                            // surfaced in dq.cost() for the panel
       a1aLoadLayer(c,rec,k);
     }
@@ -1324,7 +2173,7 @@
   function a1aChunkRec(c){
     var rec=A1A.chunks[c.id];
     if(!rec){ rec=A1A.chunks[c.id]={bm:{}};
-      for(var li=0;li<A1A_LAYERS.length;li++){ var lk=A1A_LAYERS[li]; if(c[lk]) a1aLoadLayer(c,rec,lk); }
+      for(var li=0;li<A1A_LAYERS.length;li++){ var lk=A1A_LAYERS[li]; if(a1aLayerEnabled(lk)&&c[lk]) a1aLoadLayer(c,rec,lk); }
     } else a1aRetryLayers(c,rec);   // resident but incomplete -> ask again (see a1aRetryLayers)
     var i=A1A.lru.indexOf(c.id); if(i>=0) A1A.lru.splice(i,1); A1A.lru.push(c.id);
     return rec;
@@ -1436,7 +2285,11 @@
     var wx1=(X0+winW+A1A_RING_MARGIN)*TILE, wy1=(Y0+winH+A1A_RING_MARGIN)*TILE;
     for(var i=0;i<m.chunks.length;i++){ var c=m.chunks[i];
       var cx0=ox+c.x*S, cy0=oy+c.y*S, cx1=cx0+c.width*S, cy1=cy0+c.height*S;
-      if(Math.min(wx1,cx1)<=Math.max(wx0,cx0)||Math.min(wy1,cy1)<=Math.max(wy0,cy0)) continue;
+      var northY0=cy0-a1aNorthHeight(c);
+      var horizontal=Math.min(wx1,cx1)>Math.max(wx0,cx0);
+      var baseHit=Math.min(wy1,cy1)>Math.max(wy0,cy0);
+      var northHit=a1aNorthHeight(c)>0&&Math.min(wy1,cy0)>Math.max(wy0,northY0);
+      if(!horizontal||(!baseHit&&!northHit)) continue;
       hit.push(c);
     }
     return hit;
@@ -1454,11 +2307,18 @@
     for(var i=0;i<m.chunks.length;i++){ var c=m.chunks[i];
       var cx0=ox+c.x*S, cy0=oy+c.y*S, cx1=cx0+c.width*S, cy1=cy0+c.height*S;
       var ix0=Math.max(wx0,cx0), iy0=Math.max(wy0,cy0), ix1=Math.min(wx1,cx1), iy1=Math.min(wy1,cy1);
-      if(ix1<=ix0||iy1<=iy0) continue;
+      var baseHit=ix1>ix0&&iy1>iy0, northH=a1aNorthHeight(c);
+      var nix0=Math.max(wx0,cx0), nix1=Math.min(wx1,cx1), niy0=Math.max(wy0,cy0-northH), niy1=Math.min(wy1,cy0);
+      var northHit=northH>0&&nix1>nix0&&niy1>niy0;
+      if(!baseHit&&!northHit) continue;
       touched.push(c.id); touchedChunks.push(c);                  // TOUCHED by a1aChunkRec -> must survive the trim
-      var rec=a1aChunkRec(c); if(!rec.base) continue;             // still loading -> this window is partial
-      out.push({c:c,rec:rec,sx:ix0-cx0,sy:iy0-cy0,w:ix1-ix0,h:iy1-iy0,dx:ix0-wx0,dy:iy0-wy0});
-      cov+=(ix1-ix0)*(iy1-iy0);
+      var rec=a1aChunkRec(c);
+      if(baseHit&&rec.base){
+        out.push({c:c,rec:rec,sx:ix0-cx0,sy:iy0-cy0,w:ix1-ix0,h:iy1-iy0,dx:ix0-wx0,dy:iy0-wy0});
+        cov+=(ix1-ix0)*(iy1-iy0);
+      } else if(northHit&&rec.north){
+        out.push({c:c,rec:rec,sx:nix0-cx0,sy:0,w:nix1-nix0,h:0,dx:nix0-wx0,dy:niy0-wy0,northOnly:true});
+      }
     }
     // The window this call describes, for a1aReleaseChunks to keep when the player leaves. Recorded
     // for every window build, so it always names the window she is standing in when she walks into a
@@ -1477,12 +2337,19 @@
     out.touchedChunks=touchedChunks;                              // the same set as OBJECTS, for the view-scoped watchdog
     return out;
   }
-  // one layer of one chunk. k folds in the layer's own density: base/canopy ship at 48 px/cell so
-  // k===1 and the copy is 1:1; water is still the 16 px/cell glint sheet, so k===1/S and it scales.
+  // one layer of one chunk. k folds in each layer's own intrinsic density: base/canopy pixels per
+  // manifest pixel are read from the source image; water remains the 16 px/cell glint sheet.
   function a1aDrawLayer(ctx,im,r,dx,dy){
     var k=im.width/(r.c.width*A1A.S);
     ctx.drawImage(im, r.sx*k, r.sy*k, r.w*k, r.h*k,
                   dx===undefined?r.dx:dx, dy===undefined?r.dy:dy, r.w, r.h);
+  }
+  function a1aDrawNorthLayer(ctx,im,r,Y0,winH){
+    var m=A1A.manifest, B=m.semanticBounds, S=A1A.S, k=im.width/(r.c.width*S);
+    var chunkTop=B[1]*TILE+r.c.y*S, supportTop=chunkTop-im.height/k, winTop=Y0*TILE, winBottom=winTop+winH*TILE;
+    var sy0=Math.max(0,(winTop-supportTop)*k), sy1=Math.min(im.height,(winBottom-supportTop)*k);
+    if(sy1<=sy0) return;
+    ctx.drawImage(im,r.sx*k,sy0,r.w*k,sy1-sy0,r.dx,supportTop+sy0/k-winTop,r.w,(sy1-sy0)/k);
   }
   function a1aBlit(ctx,X0,Y0,winW,winH,needFull){
     var rs=a1aRects(X0,Y0,winW,winH);
@@ -1496,8 +2363,15 @@
     ctx.save(); ctx.imageSmoothingEnabled=false;
     if(needFull) ctx.clearRect(0,0,winW*TILE,winH*TILE);
     for(var i=0;i<rs.length;i++) a1aDrawLayer(ctx,rs[i].rec.base,rs[i]);
-    ctx.globalCompositeOperation='screen'; ctx.globalAlpha=0.28;  // water: the sparse glint sheet, as runtime.html blends it
+    var waterR2=!!a1aWaterR2Spec();
+    // r2 is a full-phase RGBA treatment whose coverage alpha is authored by the
+    // semantic water weights. Match the sprite path's NORMAL/1 blend exactly;
+    // only legacy glint sheets retain the historical screen/.28 treatment.
+    ctx.globalCompositeOperation=waterR2?'source-over':'screen';
+    ctx.globalAlpha=waterR2?1:0.28;
     for(var w=0;w<rs.length;w++){ if(rs[w].rec.water) a1aDrawLayer(ctx,rs[w].rec.water,rs[w]); }
+    ctx.globalCompositeOperation='source-over'; ctx.globalAlpha=1;
+    for(var n=0;n<rs.length;n++) if(rs[n].rec.north) a1aDrawNorthLayer(ctx,rs[n].rec.north,rs[n],Y0,winH);
     ctx.restore();
     return rs.full;
   }
@@ -1607,7 +2481,11 @@
         try{ scene.textures.get(key).setFilter(NEAREST); }catch(e){}
         A1A.tex[key]=1; return key;
       }
-      var cv=costTime('cvcanvas',function(){ return a1aCanopyCanvas(rec); }); if(!cv){ A1A.tex[key]=0; return null; }
+      // A failed ImageBitmap preparation retains this exact canvas as a bounded fallback.
+      // Canvas is a separate texImage2D source type, so Phaser's existing GL unpack contract applies.
+      var cv=rec.bm&&rec.bm.canopyCanvas;
+      if(!cv) cv=costTime('cvcanvas',function(){ return a1aCanopyCanvas(rec); });
+      if(!cv){ A1A.tex[key]=0; return null; }
       if(scene.textures.exists(key)) scene.textures.remove(key);
       var ct=costTime('addCanvas',function(){ var t=scene.textures.addCanvas(key,cv); if(t&&t.refresh) t.refresh(); return t; });
       try{ ct.setFilter(NEAREST); }catch(e){}
@@ -1623,7 +2501,14 @@
   // drop the decoded images, so a texture can never outlive the chunk record that named it.
   function a1aDropChunkGpu(id){
     var sc=A1A.spriteScene;
-    ['base','water','canopy'].forEach(function(layer){
+    // Eviction also removes pending work for this record, so an old window cannot fill the bounded
+    // queue with jobs that can never be admitted again.
+    A1A.texQ=A1A.texQ.filter(function(j){
+      if(j.c.id!==id) return true;
+      delete A1A.texQd['a1a_'+j.layer+'_'+id]; return false;
+    });
+    ['base','water','canopy','forest','north'].forEach(function(layer){
+      if(!a1aLayerEnabled(layer)) return;
       var key='a1a_'+layer+'_'+id, im=A1A.imgs[key];
       if(im){ try{ im.destroy(); }catch(e){} delete A1A.imgs[key]; }
       if(A1A.tex[key]!==undefined){
@@ -1662,8 +2547,8 @@
   //
   //  Recovery has to throw away the bookkeeping, not the sources: the decoded chunk images and the
   //  canopy composites are ordinary JS objects and survived the context loss untouched. Clearing
-  //  rec.bm as well is deliberate -- a composite handed over with transferToImageBitmap can have
-  //  been consumed, and re-making one is far cheaper than a permanently blank layer.
+  //  rec.bm as well is deliberate -- a retained ImageBitmap or canvas composite can be stale after
+  //  context loss, and re-making one is far cheaper than a permanently blank layer.
   // ============================================================
   //  THE TERRAIN MUST NOTICE THAT IT IS MISSING
   // ============================================================
@@ -1779,12 +2664,28 @@
     d.innerHTML='<div style="display:grid;gap:12px;justify-items:center;">'
       +'<div style="width:34px;height:34px;border-radius:50%;border:3px solid #2a3a49;'
       +'border-top-color:#8b7340;animation:a1aspin 900ms linear infinite;"></div>'
-      +'<div id="a1a-veil-text">Loading the world...</div></div>';
+      +'<div id="a1a-veil-text">Loading the world...</div>'
+      +'<button id="a1a-veil-retry" type="button" style="display:none;border:1px solid #8b7340;'
+      +'border-radius:8px;background:#182431;color:#f0dfb0;padding:9px 18px;font:inherit;">Retry</button></div>';
     var st=document.createElement('style');
     st.textContent='@keyframes a1aspin{to{transform:rotate(360deg)}}';
     d.appendChild(st);
     document.body.appendChild(d);
+    var retry=d.querySelector&&d.querySelector('#a1a-veil-retry');
+    if(retry) retry.onclick=function(){
+      if(a1aUnderpaintRequired()&&(A1A.underpaint.status==='error'||a1aForestAuthorityError())){ a1aUnderpaintRetry(); return; }
+      A1A.req=false; A1A.reqFail=0; A1A.reqNext=0; a1aVeilError(false); a1aFetch();
+    };
     _a1aVeil=d; return d;
+  }
+  function a1aVeilError(on){
+    var d=a1aVeilEl(), text=d.querySelector&&d.querySelector('#a1a-veil-text');
+    var retry=d.querySelector&&d.querySelector('#a1a-veil-retry');
+    if(text) text.textContent=on?'The world could not load.':'Loading the world...';
+    // While the shell's area-recovery cover exists it owns pointer input; do not leave a second,
+    // unreachable Retry control underneath its higher z-index.
+    var cover=document.getElementById('boot-cover');
+    if(retry) retry.style.display=on&&(!cover||cover.classList.contains('gone'))?'block':'none';
   }
   // LIFT WITH A FADE, COVER INSTANTLY. Lifting used to flip display grid -> none, a hard cut: on
   // the device video of a town exit (2026-09-02) the screen went black (the exit veil), then sat on
@@ -1814,10 +2715,12 @@
     var out=[], m=A1A.manifest, cam=scene&&scene.cameras&&scene.cameras.main;
     var list=rs&&rs.touchedChunks; if(!m||!cam||!list) return out;
     var B=m.semanticBounds, S=A1A.S, ox=B[0]*TILE, oy=B[1]*TILE, v=cam.worldView;
-    var vx0=v.x-TILE, vy0=v.y-TILE, vx1=v.x+v.width+TILE, vy1=v.y+v.height+TILE;
+    var vx0=owCanonical(v.x)-TILE, vy0=owCanonical(v.y)-TILE;
+    var vx1=owCanonical(v.x+v.width)+TILE, vy1=owCanonical(v.y+v.height)+TILE;
     for(var i=0;i<list.length;i++){ var c=list[i];
       var cx0=ox+c.x*S, cy0=oy+c.y*S, cx1=cx0+c.width*S, cy1=cy0+c.height*S;
-      if(cx1>vx0&&cx0<vx1&&cy1>vy0&&cy0<vy1) out.push(c); }
+      var nh=a1aNorthHeight(c);
+      if(cx1>vx0&&cx0<vx1&&cy1>vy0&&cy0<vy1 || nh>0&&cx1>vx0&&cx0<vx1&&cy0>vy0&&cy0-nh<vy1) out.push(c); }
     return out;
   }
   /* ---- THE PLACEHOLDER UNDER A CHUNK THAT HAS NOT LANDED ----------------------------------------
@@ -1828,17 +2731,45 @@
      version of exactly the ground that is about to arrive. One shared texture; one cheap Image per
      missing visible chunk, cropped to that chunk's cells; dropped the tick the real base goes live.
      Depth 1.05: over dqterrain (1), under the base plate (1.1). */
-  var A1A_PH={ tex:null, req:false, imgs:{} };
+  var A1A_PH={ tex:null, req:false, imgs:{}, fail:0, next:0, load:null };
+  var A1A_PH_TIMEOUT=5000, A1A_PH_BACKOFF=1500, A1A_PH_TRIES=6;
+  function a1aPlaceholderLoad(scene){
+    if(A1A_PH.req || A1A_PH.fail>=A1A_PH_TRIES || Date.now()<A1A_PH.next) return;
+    var pim=new Image(), job={image:pim,timer:0};
+    A1A_PH.req=true; A1A_PH.load=job;
+    function finish(ok){
+      if(A1A_PH.load!==job) return;
+      clearTimeout(job.timer); pim.onload=null; pim.onerror=null;
+      A1A_PH.load=null; A1A_PH.req=false;
+      if(ok){ A1A_PH.fail=0; A1A_PH.next=0; }
+      else { A1A_PH.fail++; A1A_PH.next=Date.now()+A1A_PH_BACKOFF*A1A_PH.fail; }
+    }
+    function fail(){
+      if(A1A_PH.load!==job) return;
+      finish(false);
+      try{ pim.src=''; }catch(e){}                           // abandon a timed-out request after detaching callbacks
+    }
+    pim.onload=function(){
+      if(A1A_PH.load!==job) return;                          // an expired attempt cannot install late art
+      try{
+        if(!scene.textures.exists('a1a_relief')) scene.textures.addImage('a1a_relief',pim);
+        var rt=scene.textures.get('a1a_relief');
+        if(!rt||!rt.source||!rt.source[0]||!rt.source[0].width) throw new Error('relief texture unavailable');
+        try{ rt.setFilter(0); }catch(e){}
+        A1A_PH.tex='a1a_relief'; finish(true);
+      }catch(e){
+        try{ if(scene.textures.exists('a1a_relief')) scene.textures.remove('a1a_relief'); }catch(e2){}
+        fail();
+      }
+    };
+    pim.onerror=fail;
+    job.timer=setTimeout(fail,A1A_PH_TIMEOUT);
+    try{ pim.src='ui-map/overworld-relief.png'; }catch(e){ fail(); }
+  }
   function a1aPlaceholderTick(scene,vis){
     var m=A1A.manifest; if(!m) return;
-    if(!A1A_PH.tex){
-      if(!A1A_PH.req){ A1A_PH.req=true; var pim=new Image();
-        pim.onload=function(){ try{ if(!scene.textures.exists('a1a_relief')) scene.textures.addImage('a1a_relief',pim);
-          try{ scene.textures.get('a1a_relief').setFilter(0); }catch(e){} A1A_PH.tex='a1a_relief'; }catch(e2){} };
-        pim.onerror=function(){ A1A_PH.req=false; };
-        pim.src='ui-map/overworld-relief.png'; }
-      return;
-    }
+    if(A1A_PH.tex&&!scene.textures.exists(A1A_PH.tex)) A1A_PH.tex=null;
+    if(!A1A_PH.tex){ a1aPlaceholderLoad(scene); return; }
     var B=m.semanticBounds, S=A1A.S, ox=B[0]*TILE, oy=B[1]*TILE, keep={}, i;
     var rt=scene.textures.get('a1a_relief'), rw=rt&&rt.source&&rt.source[0]?rt.source[0].width:0; if(!rw) return;
     var ppc=rw/320;                                                   // relief px per world cell (6)
@@ -1846,9 +2777,10 @@
       if(A1A.tex[key]===1 && im && im.scene && im.visible) continue;  // real art is up
       keep[c.id]=1;
       var ph=A1A_PH.imgs[c.id];
-      if(!ph||!ph.scene){
+      if(!ph||!ph.scene||ph.texture!==rt){
+        if(ph&&ph.scene){ try{ ph.destroy(); }catch(e){} }
         var cellX=B[0]+c.x/16, cellY=B[1]+c.y/16, cellsW=c.width/16, cellsH=c.height/16;
-        ph=scene.add.image(0,0,'a1a_relief').setOrigin(0,0).setDepth(1.05).setScale(TILE/ppc);
+        ph=scene.add.image(0,0,'a1a_relief').setOrigin(0,0).setDepth(1.05).setScale(OW_TILE/ppc);
         ph.setCrop(cellX*ppc, cellY*ppc, cellsW*ppc, cellsH*ppc);
         A1A_PH.imgs[c.id]=ph;
       }
@@ -1856,14 +2788,103 @@
     }
     Object.keys(A1A_PH.imgs).forEach(function(id){ if(!keep[id]){ var x=A1A_PH.imgs[id]; try{ x.destroy(); }catch(e){} delete A1A_PH.imgs[id]; } });
   }
+  // Transition-only gate: relief is safe walking coverage, but it is not the finished base art.
+  // Read ALL manifest chunks; lastRects/win may omit a missing visible chunk during startup.
+  function a1aVisibleBaseCoverage(scene){
+    var m=A1A.manifest, v=scene&&scene.cameras&&scene.cameras.main&&scene.cameras.main.worldView;
+    var result={ready:false,visible:0,missing:[],reason:'missing-manifest'};
+    if(!m||!m.chunks||!m.semanticBounds||!(A1A.S>0)) return result;
+    if(!scene||scene.currentMapId!=='overworld'||!v||!(v.width>0&&v.height>0)){ result.reason='inactive-camera';return result; }
+    var B=m.semanticBounds,S=A1A.S,vx0=owCanonical(v.x),vy0=owCanonical(v.y),vx1=owCanonical(v.x+v.width),vy1=owCanonical(v.y+v.height);
+    for(var i=0;i<m.chunks.length;i++){
+      var c=m.chunks[i],x=B[0]*TILE+c.x*S,y=B[1]*TILE+c.y*S;
+      if(x+c.width*S<=vx0||x>=vx1||y+c.height*S<=vy0||y>=vy1)continue;
+      result.visible++;
+      var key='a1a_base_'+c.id,rec=A1A.chunks[c.id],im=A1A.imgs[key];
+      var tex=scene.textures&&scene.textures.exists(key)?scene.textures.get(key):null;
+      var src=tex&&tex.source&&tex.source[0];
+      if(!(rec&&rec.base&&rec.base.width>0&&rec.base.height>0&&A1A.tex[key]===1&&src&&src.width>0&&src.height>0&&src.image===rec.base
+          &&im&&im.scene===scene&&im.visible&&im.alpha>0&&im.texture===tex)) result.missing.push(c.id);
+    }
+    result.ready=result.visible>0&&result.missing.length===0;
+    result.reason=result.ready?'ready':result.visible?'missing-visible-base':'no-visible-chunks';
+    return result;
+  }
+  window.__A1_VISIBLE_BASE_COVERAGE__=a1aVisibleBaseCoverage;
+  // Count uncovered camera intersections, not merely absent base sprites. A relief sprite is
+  // coverage only while its texture and visible scene object exist; registry entries alone are not art.
+  function a1aUncoveredChunks(scene,vis){
+    var m=A1A.manifest, B=m.semanticBounds, S=A1A.S, v=scene.cameras.main.worldView, missing=0;
+    var vx0=owCanonical(v.x),vy0=owCanonical(v.y),vx1=owCanonical(v.x+v.width),vy1=owCanonical(v.y+v.height);
+    for(var i=0;i<vis.length;i++){
+      var c=vis[i], x=B[0]*TILE+c.x*S, y=B[1]*TILE+c.y*S;
+      if(x+c.width*S<=vx0||x>=vx1||y+c.height*S<=vy0||y>=vy1) continue;
+      var key='a1a_base_'+c.id, im=A1A.imgs[key];
+      if(A1A.tex[key]===1&&im&&im.scene===scene&&im.visible&&im.alpha>0) continue;
+      var ph=A1A_PH.imgs[c.id];
+      if(A1A_PH.tex&&scene.textures.exists(A1A_PH.tex)&&ph&&ph.scene===scene&&ph.visible&&ph.alpha>0
+          &&ph.texture===scene.textures.get(A1A_PH.tex)) continue;
+      missing++;
+    }
+    return missing;
+  }
+  // A missing base still within its loader deadline is loading, not evidence of broken GPU state.
+  // Do not restart it through a deep heal before that bounded attempt can finish.
+  function a1aPendingBases(now){
+    var win=A1A.win||[];
+    for(var i=0;i<win.length;i++){
+      var rec=A1A.chunks[win[i]], ld=rec&&rec.ld, job=ld&&ld.jobs&&ld.jobs.base;
+      if(rec&&!rec.base&&ld&&ld.pend.base&&job&&now<job.deadline&&job.active()) return true;
+    }
+    return false;
+  }
   function a1aSpriteWatchdog(scene){
-    if(!a1aPlateOwns(scene)||!a1aSpriteMode()){ A1AW.shortSince=0; A1AW.blankSince=0; a1aVeilSet(false);
+    if(!a1aPlateOwns(scene)){ A1AW.shortSince=0; A1AW.blankSince=0; a1aVeilError(false); a1aVeilSet(false);
       // off the plate (town, dungeon, Act 2+): no placeholders may linger under the next map
       Object.keys(A1A_PH.imgs).forEach(function(id){ try{ A1A_PH.imgs[id].destroy(); }catch(e){} delete A1A_PH.imgs[id]; });
       return; }
+    if(!a1aPlateVisibleInView(scene)){
+      a1aVeilError(false); a1aVeilSet(false); A1AW.shortSince=0; A1AW.blankSince=0;
+      return;
+    }
+    if(!a1aSpriteMode()){
+      // The authored plate suppresses procedural terrain before the manifest arrives. Never clear
+      // into its flat-sea backing. A bounded request series remains a loading state; exhaustion is
+      // an explicit Retry state that re-arms the same bounded loader.
+      A1AW.shortSince=0; A1AW.blankSince=0;
+      a1aVeilError(!A1A.req&&(A1A.reqFail|0)>=A1A_REQ_TRIES); a1aVeilSet(true);
+      return;
+    }
+    if(a1aUnderpaintRequiredForView(scene)){
+      a1aUnderpaintRequest();
+      if(!a1aUnderpaintReady(scene)){
+        a1aVeilError(A1A.underpaint.status==='error'||a1aForestAuthorityError());
+        a1aVeilSet(true); A1AW.shortSince=0; A1AW.blankSince=0;
+        return;
+      }
+    }
+    // Do not let ordinary base/chunk coverage clear the veil while V8's separate forest
+    // authority is loading, unreadable, or has exhausted retries. a1mStep applies this same
+    // readiness predicate, so the visible state and movement gate cannot disagree.
+    var watchHX=scene.hero?owCanonical(scene.hero.x):0, watchHY=scene.hero?owCanonical(scene.hero.y):0;
+    if(a1fRequiredAt(scene,watchHX,watchHY)&&!a1fReady(scene)){
+      a1aVeilError(a1aForestAuthorityError());
+      a1aVeilSet(true); A1AW.shortSince=0; A1AW.blankSince=0;
+      return;
+    }
+    a1aVeilError(false);
     var rs=A1A.lastRects;
     // No rects yet means the window has not been measured -- the map cannot be drawn, so hold.
-    if(!rs){ A1AW.shortSince=0; A1A.sprLive=0; A1A.sprWant=0; a1aVeilSet(true); return; }
+    if(!rs){
+      A1AW.shortSince=0; A1A.sprLive=0; A1A.sprWant=0;
+      // A return can reach RUNNING before its first padded terrain window is built. The manifest
+      // still gives us exact current-camera chunks, so let the relief cover those cells and release
+      // the veil once it really does; waiting for lastRects alone could otherwise hold forever.
+      var firstVis=a1aCameraChunks(scene);
+      try{ a1aPlaceholderTick(scene,firstVis); }catch(e){ if(window.__DQ_DEBUG__) console.log('a1a first placeholder '+e); }
+      a1aVeilSet(!(firstVis.length&&a1aUncoveredChunks(scene,firstVis)===0));
+      return;
+    }
     // WANT is what the window TOUCHES, not what managed to decode. Counting only decoded chunks
     // would read 0/0 -- perfectly healthy -- in exactly the case where the art stopped coming back,
     // which is the failure this net exists to catch.
@@ -1881,15 +2902,13 @@
     // walks, so this veil ("Loading the world...") popped every few steps for art that was NOT
     // on screen. Owner, build 74: "the frequent world loading really bothers me so we definitely
     // need to fix it." The recovery numbers above are unchanged; only the veil's own decision
-    // narrows to the chunks intersecting the camera, and it waits 500 ms of genuinely NOTHING
-    // visible before it covers -- under a missing visible chunk the relief placeholder
-    // (a1aPlaceholderTick) is already showing, so there is no blue to hide.
-    var vis=a1aVisibleChunks(scene,rs), vWant=vis.length, vLive=0;
-    for(i=0;i<vis.length;i++){ var vk='a1a_base_'+vis[i].id, vim=A1A.imgs[vk];
-      if(A1A.tex[vk]===1 && vim && vim.scene && vim.visible) vLive++; }
+    // narrows to the chunks intersecting the camera, and it waits 500 ms of uncovered terrain
+    // before it covers. A missing base with visible relief remains playable without a veil;
+    // missing relief must also be counted, even if another base chunk is already visible.
+    var vis=a1aVisibleChunks(scene,rs);
     try{ a1aPlaceholderTick(scene,vis); }catch(e){ if(window.__DQ_DEBUG__) console.log('a1a placeholder '+e); }
     var nowV=Date.now();
-    if(vWant>0 && vLive===0){ if(!A1AW.blankSince) A1AW.blankSince=nowV; }
+    if(a1aUncoveredChunks(scene,vis)>0){ if(!A1AW.blankSince) A1AW.blankSince=nowV; }
     else A1AW.blankSince=0;
     a1aVeilSet(!!A1AW.blankSince && nowV-A1AW.blankSince>=500);
     // RE-ASK FOR MISSING ART ON A TIMER, NOT ONLY ON MOVEMENT. The terrain path that calls a1aRects
@@ -1915,6 +2934,7 @@
     // two failures he is looking at, which no counter here could previously distinguish.
     A1AW.glLost=a1aGlLost();
     if(A1AW.glLost){ A1AW.shortSince=0; return; }
+    if(a1aPendingBases(now)){ A1AW.shortSince=0; return; }
     if(!A1AW.shortSince){ A1AW.shortSince=now; return; }
     if(now-A1AW.shortSince<A1AW_GRACE) return;
     if(now-A1AW.lastFix<A1AW_COOLDOWN) return;
@@ -1944,10 +2964,9 @@
       A1A.chunks={}; A1A.lru=[]; A1A.win=[];
     }else{
       // Pass 1 keeps every decoded image and re-uploads from it. What it must NOT keep is the canopy
-      // COMPOSITE: it is handed over with transferToImageBitmap, which detaches the source canvas, so
-      // a retained one can be a corpse that uploads as nothing -- a permanently blank canopy layer,
-      // which is the failure this net exists to end. Re-compositing costs one 1536x1536 draw pair per
-      // chunk, spread one chunk per drain tick, and no allocation the pass does not hand straight back.
+      // COMPOSITE: its retained ImageBitmap or canvas source can be stale after GPU recovery, causing
+      // a permanently blank canopy layer. Re-compositing costs one 1536x1536 draw pair per chunk,
+      // spread one chunk per drain tick, and no allocation the pass does not hand straight back.
       Object.keys(A1A.chunks).forEach(function(id){ a1aFreeComposite(A1A.chunks[id]); });
     }
     if(terrainState) terrainState.lastWin='';
@@ -1985,11 +3004,11 @@
   // not.
   // base coloured by the canopy's alpha. destination-in is a WHOLE-CANVAS operator, which is why
   // this is one chunk per surface -- exactly the reason a1aCanopy composites chunk by chunk.
-  // OffscreenCanvas, not a DOM canvas, and transferToImageBitmap rather than createImageBitmap.
-  // transferToImageBitmap hands the backing store straight over; createImageBitmap has to flush
-  // and COPY a 1536x1536 surface, which measured 60-137 ms on the main thread -- the whole of the
-  // residual hitch this design was meant to remove. Sources are the already-decoded ImageBitmaps
-  // where available, for the same reason.
+  // OffscreenCanvas creates one chunk-local canvas. The preferred ImageBitmap must request
+  // premultiplied alpha at construction: WebGL ignores unpack flags for ImageBitmap sources.
+  // createImageBitmap can flush and COPY a 1536x1536 surface (historically 60-137 ms), so the
+  // queue still admits one texture job per tick. If that conversion fails, retain this canvas for
+  // one bounded canvas-source upload; WebGL unpack premultiplication applies to canvas sources.
   function a1aCanopyCanvas(rec){
     if(!rec.base||!rec.canopy) return null;
     var w=rec.base.width, h=rec.base.height;
@@ -2009,55 +3028,97 @@
   // Composite the canopy ahead of need and hand the result to the GPU as an ImageBitmap, for the
   // same reason the base layers are: addCanvas of a 1536x1536 surface costs tens of milliseconds
   // on the main thread, addImage of a bitmap costs ~2 ms.
+  function a1aCanopySource(rec){
+    return !!(rec&&rec.bm&&(rec.bm.canopyComposite||rec.bm.canopyCanvas));
+  }
   function a1aCanopyPrepare(c,rec){
     var key='a1a_canopy_'+c.id;
-    if(A1A.tex[key]||A1A.bmPend[key]) return;
-    if(!rec.base||!rec.canopy||!window.createImageBitmap) return;
-    if(rec.bm&&rec.bm.canopyComposite) return;
-    var cv=costTime('prep:canvas',function(){ return a1aCanopyCanvas(rec); }); if(!cv) return;
+    if(A1A.tex[key]||a1aCanopySource(rec)) return 'ready';
+    // Pending must short-circuit before composing a new 1536px canvas on every drain tick.
+    if(A1A.bmPend[key]) return 'pending';
+    if(!rec.base||!rec.canopy) return 'unbuildable';
+    var cv=costTime('prep:canvas',function(){ return a1aCanopyCanvas(rec); }); if(!cv) return 'unbuildable';
     COST.canopy++;                                   // one 1536x1536 composite; see COST
-    if(cv.transferToImageBitmap){ try{ rec.bm.canopyComposite=costTime('prep:transfer',function(){ return cv.transferToImageBitmap(); }); return; }catch(e){} }
+    // A canvas fallback is retained only if ImageBitmap construction is unavailable or fails.
+    // a1aFreeComposite drops our reference together with the chunk's other composite state.
+    function canvasFallback(){ rec.bm.canopyCanvas=cv; delete A1A.bmPend[key]; return 'ready'; }
+    if(!window.createImageBitmap) return canvasFallback();
     A1A.bmPend[key]=1;
     try{
-      createImageBitmap(cv,{premultiplyAlpha:'none',colorSpaceConversion:'none'})
+      createImageBitmap(cv,{premultiplyAlpha:'premultiply',colorSpaceConversion:'none'})
         .then(function(bm){ rec.bm.canopyComposite=bm; delete A1A.bmPend[key]; })
-        .catch(function(){ delete A1A.bmPend[key]; });
-    }catch(e){ delete A1A.bmPend[key]; }
+        .catch(function(){ canvasFallback(); });
+      return 'pending';
+    }catch(e){ return canvasFallback(); }
   }
   function a1aEnqueueTex(c,rec){
-    if(!A1A_SPRITES) return;
-    ['base','water','canopy'].forEach(function(layer){
+    if(!A1A_SPRITES&&!A1A_FOREST.mode) return;
+    ['base','water','canopy','forest','north'].forEach(function(layer){
+      if(!a1aLayerEnabled(layer)) return;
       if(!rec[layer]) return;
       if(layer==='canopy'&&!rec.base) return;                     // the composite needs both
       var key='a1a_'+layer+'_'+c.id;
-      if(A1A.tex[key]||A1A.texQd[key]) return;
+      // A canopy 0 is a known-unbuildable composite for this residency. Preserve base/water retry
+      // semantics; a1aGpuInvalidate's existing A1A.tex={} reset makes this eligible after recovery.
+      if(A1A.tex[key]===1||(layer==='canopy'&&A1A.tex[key]===0)||A1A.texQd[key]) return;
+      if(A1A.texQ.length>=A1A_MAX_CHUNKS*A1A_LAYERS.length) return;
       A1A.texQd[key]=1; A1A.texQ.push({c:c,layer:layer});
     });
+    if(A1A.texQ.length>A1A.queuePeak) A1A.queuePeak=A1A.texQ.length;
   }
   // Already on the GPU? Answers WITHOUT building, which is the whole point -- see a1aPlaceSprites.
   function a1aTexHave(c,layer){ var key='a1a_'+layer+'_'+c.id; return A1A.tex[key]===1?key:null; }
   // BASE FIRST, across chunks. The queue is otherwise FIFO, so one chunk's canopy could be built
   // ahead of the next chunk's base and the ground would arrive last -- the one layer the player is
   // actually standing on, and the one the flat sea is standing in for until it lands.
-  function a1aTakeTexJob(){
+  function a1aTakeTexJob(scene){
+    var visible=Object.create(null), now=a1aCameraChunks(scene);
+    for(var v=0;v<now.length;v++) visible[now[v].id]=1;
+    for(var j=0;j<A1A.texQ.length;j++) if(A1A.texQ[j].layer==='base'&&visible[A1A.texQ[j].c.id]) return A1A.texQ.splice(j,1)[0];
     for(var i=0;i<A1A.texQ.length;i++) if(A1A.texQ[i].layer==='base') return A1A.texQ.splice(i,1)[0];
     return A1A.texQ.shift();
   }
   function a1aDrainTex(scene,n){
     if(!a1aSpriteMode()) return;
     A1A.spriteScene=scene;
-    var did=0, guard=0;
-    while(A1A.texQ.length && did<n && guard++<12){
-      var j=a1aTakeTexJob(), key='a1a_'+j.layer+'_'+j.c.id;
+    var did=0, guard=0, cap=Math.min(Math.max(0,n|0),1);
+    while(A1A.texQ.length && did<cap && guard++<12){
+      var j=a1aTakeTexJob(scene); if(!j) break;
+      var key='a1a_'+j.layer+'_'+j.c.id;
       delete A1A.texQd[key];
       var rec=A1A.chunks[j.c.id];
       if(!rec||A1A.tex[key]) continue;                            // evicted, or already built on demand
-      if(j.layer==='canopy'&&!(rec.bm&&rec.bm.canopyComposite)){
-        a1aCanopyPrepare(j.c,rec);                                // async; re-queue so the drain picks it up once ready
-        A1A.texQd[key]=1; A1A.texQ.push(j); did++; continue;
+      if(j.layer==='canopy'&&!a1aCanopySource(rec)){
+        var prep=a1aCanopyPrepare(j.c,rec);
+        if(prep==='unbuildable'){ A1A.tex[key]=0; did++; continue; }
+        if(!a1aCanopySource(rec)){
+          // ImageBitmap is pending: keep exactly this job in the bounded queue until it settles.
+          A1A.texQd[key]=1; A1A.texQ.push(j); did++; continue;
+        }
       }
       if(a1aTexFor(scene,j.c,rec,j.layer)) did++;
     }
+    A1A.uploadLastBatch=did; if(did>A1A.uploadBatchMax) A1A.uploadBatchMax=did;
+  }
+  // Cache exact full-side adjacencies from the immutable manifest. Partial overlaps are
+  // deliberately ignored so ragged plate edges never grow into uncovered map space.
+  var A1A_BASE_SEAM_CACHE=null;
+  function a1aBaseSeamData(m){
+    if(A1A_BASE_SEAM_CACHE&&A1A_BASE_SEAM_CACHE.manifest===m) return A1A_BASE_SEAM_CACHE;
+    var chunks=(m&&m.chunks)||[], edges=Object.create(null), depth=Object.create(null);
+    var ordered=chunks.slice().sort(function(a,b){ return a.y-b.y||a.x-b.x||String(a.id).localeCompare(String(b.id)); });
+    for(var i=0;i<chunks.length;i++) edges[chunks[i].id]={left:0,right:0,top:0,bottom:0};
+    for(var a=0;a<chunks.length;a++) for(var b=0;b<chunks.length;b++){
+      if(a===b) continue;
+      var c=chunks[a], n=chunks[b], e=edges[c.id];
+      if(n.x+n.width===c.x&&n.y===c.y&&n.height===c.height) e.left=1;
+      if(c.x+c.width===n.x&&n.y===c.y&&n.height===c.height) e.right=1;
+      if(n.y+n.height===c.y&&n.x===c.x&&n.width===c.width) e.top=1;
+      if(c.y+c.height===n.y&&n.x===c.x&&n.width===c.width) e.bottom=1;
+    }
+    for(var r=0;r<ordered.length;r++) depth[ordered[r].id]=1.1+(ordered.length>1?0.019*r/(ordered.length-1):0);
+    A1A_BASE_SEAM_CACHE={manifest:m,edges:edges,depth:depth};
+    return A1A_BASE_SEAM_CACHE;
   }
   function a1aHideSprites(){ Object.keys(A1A.imgs).forEach(function(k){
       var im=A1A.imgs[k]; if(im){ try{ im.setVisible(false); }catch(e){} } }); }
@@ -2065,11 +3126,15 @@
   // the LRU touch and the ring prefetch are all exactly what the canvas path used.
   function a1aPlaceSprites(scene,rs){
     A1A.spriteScene=scene;
+    // New manifests never expose partially streamed chunks before their authored continuous
+    // substrate is ready. Old manifests have no substrate field and retain their shipped flow.
+    if(a1aUnderpaintRequiredForView(scene)&&!a1aUnderpaintReady(scene)){ a1aHideSprites(); return false; }
     var m=A1A.manifest, B=m.semanticBounds, S=A1A.S, ox=B[0]*TILE, oy=B[1]*TILE;
-    var live={}, anyCanopy=false, i;
+    var seamData=a1aBaseSeamData(m), zoom=scene.cameras&&scene.cameras.main&&scene.cameras.main.zoom||1;
+    var seamBleed=0.5/Math.max(1e-6,zoom), live={}, anyCanopy=false, i;
     for(i=0;i<rs.length;i++){
       var r=rs[i], c=r.c, rec=r.rec;
-      var wx=ox+c.x*S, wy=oy+c.y*S;
+      var wx=owPhysical(ox+c.x*S), wy=owPhysical(oy+c.y*S);
       // THE HERO IS NEVER HIDDEN BY THE TREELINE -- canopy 11 -> 9.5, below the hero at 10.
       // Owner, build 32, with a screenshot in which she is a single visible sliver inside the
       // forest: "the player hides under the forrest (they should be on top of the forrest) some
@@ -2081,11 +3146,28 @@
       // playability failure, not a stylistic trade. This is the same call he made on the town's
       // chimneys the same day: where "walk under" is ambiguous, remove the ambiguity rather than
       // keep tuning the boundary.
-      var layers=[['base',1.1,1,1],['water',1.2,S,0.28],['canopy',A1A_CANOPY_DEPTH,1,1]];
+      var bw=c.width*S*OW_SCALE, bh=c.height*S*OW_SCALE,
+          baseScaleX=bw/Math.max(1,rec.base&&rec.base.width||c.width*S),
+          baseScaleY=bh/Math.max(1,rec.base&&rec.base.height||c.height*S),
+          waterScaleX=bw/Math.max(1,rec.water&&rec.water.width||c.width*S),
+          waterScaleY=bh/Math.max(1,rec.water&&rec.water.height||c.height*S),
+          forestScaleX=bw/Math.max(1,rec.forest&&rec.forest.width||c.width*S),
+          forestScaleY=bh/Math.max(1,rec.forest&&rec.forest.height||c.height*S),
+          northHeight=a1aNorthHeight(c),
+          northScaleX=rec.north?bw/Math.max(1,rec.north.width):baseScaleX,
+          northScaleY=rec.north?northHeight*OW_SCALE/Math.max(1,rec.north.height):baseScaleY;
+      // V8 forest is original-crown RGBA, already independent from base. Draw it directly at
+      // the established foreground depth below the hero; legacy mode keeps its destination-in canopy.
+        var waterR2=!!a1aWaterR2Spec();
+        var layers=A1A_FOREST.mode
+        ? [['base',1.1,baseScaleX,baseScaleY,1],['water',1.2,waterScaleX,waterScaleY,waterR2?1:0.28],['north',A1A_CANOPY_DEPTH,northScaleX,northScaleY,1],['forest',A1A_CANOPY_DEPTH,forestScaleX,forestScaleY,1]]
+        : [['base',1.1,baseScaleX,baseScaleY,1],['water',1.2,waterScaleX,waterScaleY,waterR2?1:0.28],['north',A1A_CANOPY_DEPTH,northScaleX,northScaleY,1],['canopy',A1A_CANOPY_DEPTH,baseScaleX,baseScaleY,1]];
       for(var L=0;L<layers.length;L++){
         var layer=layers[L][0];
         if(layer==='water'&&!rec.water) continue;
+        if(layer==='north'&&!rec.north) continue;
         if(layer==='canopy'&&!rec.canopy) continue;
+        if(layer==='forest'&&(!rec.forest||A1A.underpaint.forest.rawFallback)) continue;
         // NEVER BUILD HERE. This used to call a1aTexFor, which builds and uploads on the spot, so a
         // window step that brought two or three new chunks into view paid for every one of their
         // layers inside a SINGLE frame: three 1536x1536 GPU uploads plus a 1536x1536 canopy
@@ -2095,27 +3177,60 @@
         // (panel sp0 pl1) the stalls were unchanged at 661 ms and 939 ms, and they arrived exactly
         // with cv 4->6 and tx2 18->24, i.e. with this call and nothing else.
         //
-        // A layer that is not ready yet is simply not drawn this frame. What shows through is the
-        // flat sea, which is the state the owner chose for art-not-yet-landed ("Flat ocean colour,
-        // no procedural"), and the ring prefetch means the common case is that it was built ticks
-        // ago and this is a plain lookup. Before the locked-art change this same skip would have
-        // exposed the procedural splat, which is why it could not have been done first.
+        // A layer that is not ready yet is simply not drawn this frame. New manifests keep their
+        // continuous authored underpaint below the visible chunks while this stream catches up;
+        // legacy manifests retain their existing sea backing. The ring means the common case is a
+        // plain lookup, not a build or upload in this placement pass.
         var key=a1aTexHave(c,layer);
         if(!key){ a1aEnqueueTex(c,rec); continue; }
-        if(layer==='canopy') anyCanopy=true;
+        if(layer==='canopy'||layer==='forest') anyCanopy=true;
         live[key]=1;
-        var im=A1A.imgs[key];
+        var im=A1A.imgs[key], edge=layer==='base'?seamData.edges[c.id]:null;
+        var texW=layer==='base'&&rec.base?rec.base.width:0, texH=layer==='base'&&rec.base?rec.base.height:0;
+        var baseGeometry=layer==='base'?a1aBaseDrawGeometry(a1aBaseHasAlpha(c,rec.base),edge,seamBleed,
+          layers[L][2],layers[L][3],texW||c.width*S,texH||c.height*S,wx,wy):null;
+        var bleedL=edge&&edge.left?seamBleed:0,bleedT=edge&&edge.top?seamBleed:0;
+        var drawX=baseGeometry?baseGeometry.x:wx-bleedL;
+        var drawY=(baseGeometry?baseGeometry.y:wy-bleedT)-(layer==='north'&&rec.north?rec.north.height*layers[L][3]:0);
+        var drawScaleX=baseGeometry?baseGeometry.scaleX:layers[L][2];
+        var drawScaleY=baseGeometry?baseGeometry.scaleY:layers[L][3];
+        var drawDepth=layer==='base'?seamData.depth[c.id]:layers[L][1];
         if(!im||!im.scene){
-          im=scene.add.image(wx,wy,key).setOrigin(0,0).setDepth(layers[L][1])
-               .setScale(layers[L][2]).setAlpha(layers[L][3]);
-          if(layer==='water'){ try{ im.setBlendMode((window.Phaser&&Phaser.BlendModes&&Phaser.BlendModes.SCREEN!==undefined)?Phaser.BlendModes.SCREEN:3); }catch(e){} }
+          im=scene.add.image(drawX,drawY,key).setOrigin(0,0).setDepth(drawDepth)
+               .setScale(drawScaleX,drawScaleY).setAlpha(layers[L][4]);
+          if(layer==='water'&&!waterR2){ try{ im.setBlendMode((window.Phaser&&Phaser.BlendModes&&Phaser.BlendModes.SCREEN!==undefined)?Phaser.BlendModes.SCREEN:3); }catch(e){} }
+          else if(layer==='water'&&waterR2){ try{ im.setBlendMode((window.Phaser&&Phaser.BlendModes&&Phaser.BlendModes.NORMAL!==undefined)?Phaser.BlendModes.NORMAL:0); }catch(e){} }
           try{ im.texture.setFilter(NEAREST); }catch(e){}
           A1A.imgs[key]=im;
-        } else { im.setPosition(wx,wy); }
+        } else { im.setPosition(drawX,drawY).setDepth(drawDepth).setScale(drawScaleX,drawScaleY); }
         if(!im.visible) im.setVisible(true);
       }
     }
     Object.keys(A1A.imgs).forEach(function(k){ if(!live[k]){ var im=A1A.imgs[k]; if(im&&im.visible) im.setVisible(false); } });
+    // The coarse base is fallback only. Once an exact high-resolution base chunk is resident,
+    // erase the fallback behind it so alpha and seam pixels reveal the sea rather than a second
+    // differently sampled ground. If canvas upload fails, retain the complete fallback and hide
+    // base sprites for this pass; the next placement tick retries the mask rebuild.
+    if(A1A.underpaint&&A1A.underpaint.spec&&A1A.underpaint.image
+       &&!a1aUnderpaintBaseMask(scene,A1A.underpaint,live)){
+      Object.keys(live).forEach(function(k){if(k.indexOf('a1a_base_')===0){var im=A1A.imgs[k];if(im&&im.visible)im.setVisible(false);delete live[k];}});
+    }
+    // Keep the coarse forest substrate only where no high-resolution forest sprite is actually
+    // visible. This is chunk-scoped rather than all-ready: a missing/loading/failed chunk retains
+    // its fallback while neighboring ready chunks show only the 32ppc layer.
+    if(A1A_FOREST.mode&&A1A.underpaint&&A1A.underpaint.forest&&A1A.underpaint.forest.spec){
+      var forestFallback=A1A.underpaint.forest;forestFallback.maskLiveKeys=a1aForestLiveChunkKeys(live);
+      if(!a1aForestUnderpaintPlace(scene)){
+        // If the fallback mask cannot be refreshed, expose the unmasked substrate and keep every
+        // high-resolution forest sprite hidden. A renderer fault must degrade to one complete layer.
+        forestFallback.maskLiveKeys=[];
+        Object.keys(live).forEach(function(k){if(k.indexOf('a1a_forest_')===0){var im=A1A.imgs[k];if(im&&im.visible)im.setVisible(false);delete live[k];}});
+        for(var li=0;li<rs.length;li++){var fc=rs[li].c,fkey='a1a_forest_'+fc.id;
+          if(A1A.imgs[fkey]&&A1A.imgs[fkey].visible)A1A.imgs[fkey].setVisible(false);}
+        a1aForestFallbackTexture(scene,forestFallback,forestFallback.spec,[]);
+        anyCanopy=false;
+      }
+    }
     return anyCanopy;
   }
 
@@ -2150,7 +3265,7 @@
   //  The hero cannot walk off the plate: walkable ground spans x 24-158, y 224-393 inside bounds
   //  x 16-163, y 218-399, i.e. at least six cells of blocked coast on every side. So the flat sea
   //  is not standing in for anywhere she can reach.
-  var A1A_SEA='#031e37';
+  var A1A_SEA='#052f58';
   var seaState=null;
   // TRUE once the Act 1 override has written its plate into THIS mapData. Deliberately NOT keyed
   // on A1A.manifest: the suppression must hold from the first overworld frame, before the manifest
@@ -2169,38 +3284,202 @@
     var b=a1aPlateBounds();
     return b ? (tx>=b[0]&&tx<=b[2]&&ty>=b[1]&&ty<=b[3]) : a1aArtAt(tx,ty);
   }
+  // The plate marks one RECT of a shared, all-act map. A window crossing that rect
+  // still needs the procedural ground underneath its uncovered cells.
+  function a1aPlateWindow(X0,Y0,winW,winH){
+    var b=a1aPlateBounds();
+    return !!(b&&X0>=b[0]&&Y0>=b[1]&&X0+winW-1<=b[2]&&Y0+winH-1<=b[3]);
+  }
+  // A partial window still runs the legacy analytic terrain across its full canvas. The
+  // authored plate sprites sit above it, but reviewed north-prefix alpha cuts intentionally
+  // expose the backing layer. Clear only the exact plate/window intersection after that analytic
+  // pass. Outside the plate, true water may instead be left transparent when the matching R2
+  // TileSprite is active; all land-side fallback pixels remain unchanged.
+  function a1aPlateWindowRect(X0,Y0,winW,winH){
+    var b=a1aPlateBounds(); if(!b) return null;
+    var x0=Math.max(X0,b[0]), y0=Math.max(Y0,b[1]);
+    var x1=Math.min(X0+winW,b[2]+1), y1=Math.min(Y0+winH,b[3]+1);
+    if(!(x1>x0&&y1>y0)) return null;
+    return {x:(x0-X0)*N,y:(y0-Y0)*N,width:(x1-x0)*N,height:(y1-y0)*N};
+  }
+  function a1aLegacyPlateClip(scene,X0,Y0,winW,winH){
+    if(!a1aPlateOwns(scene)||!a1aSpriteMode()) return null;
+    return a1aPlateWindowRect(X0,Y0,winW,winH);
+  }
+  function a1aClearLegacyPlate(ctx,rect){
+    if(!ctx||!rect) return false;
+    ctx.clearRect(rect.x,rect.y,rect.width,rect.height);
+    return true;
+  }
   function a1aSea(scene,on){
     if(!on){ if(seaState&&seaState.img){ try{ seaState.img.setVisible(false); }catch(e){} } return; }
-    var key='dqsea';
-    if(!scene.textures.exists(key)){
+    var waterTexture=a1aWaterR2Texture(scene),key=waterTexture||'dqsea';
+    if(key==='dqsea'&&!scene.textures.exists(key)){
       var t=scene.textures.createCanvas(key,8,8);
       t.context.fillStyle=A1A_SEA; t.context.fillRect(0,0,8,8); t.refresh();
       try{ t.setFilter(NEAREST); }catch(e){}
     }
     var cam=scene.cameras.main;
-    if(!seaState||seaState.scene!==scene||!seaState.img||!seaState.img.scene){
+    if(!seaState||seaState.scene!==scene||!seaState.img||!seaState.img.scene||seaState.key!==key){
       if(seaState&&seaState.img){ try{ seaState.img.destroy(); }catch(e){} }
-      var im=scene.add.image(0,0,key).setOrigin(0,0).setScrollFactor(0).setDepth(0.5);
+      var im=waterTexture&&scene.add.tileSprite
+        ?scene.add.tileSprite(0,0,cam.width,cam.height,key).setOrigin(0,0).setScrollFactor(0).setDepth(0.5)
+        :scene.add.image(0,0,key).setOrigin(0,0).setScrollFactor(0).setDepth(0.5);
       try{ im.texture.setFilter(NEAREST); }catch(e){}
-      seaState={ scene:scene, img:im, w:0, h:0 };
+      seaState={ scene:scene, img:im, key:key, w:0, h:0 };
     }
     if(seaState.w!==cam.width||seaState.h!==cam.height){
-      seaState.img.setDisplaySize(cam.width,cam.height); seaState.w=cam.width; seaState.h=cam.height; }
+      if(waterTexture&&seaState.img.setSize)seaState.img.setSize(cam.width,cam.height);
+      else seaState.img.setDisplaySize(cam.width,cam.height);
+      seaState.w=cam.width; seaState.h=cam.height; }
+    if(waterTexture){
+      var tileScale=OW_TILE/96,wv=cam.worldView;
+      try{seaState.img.setTileScale(tileScale,tileScale).setTilePosition(wv.x/tileScale,wv.y/tileScale);}catch(e){}
+    }
     if(!seaState.img.visible) seaState.img.setVisible(true);
+  }
+  // A1A base/underpaint intentionally contains transparent north-water cuts. Keep their
+  // backing on the same world-pixel phase as the analytic terrain outside the plate, but draw
+  // only water here: analytic land, cliffs, roads and props must never leak through authored
+  // transparency. The backing sits below both the coarse fallback and streamed plate sprites.
+  function a1aPlateWaterBackingColor(map,wx,wy){
+    var W=waterField(map,wx,wy),col;
+    if(MAT.ready){
+      // At a non-water map cell the plate's authored alpha deliberately exposes the sea.
+      // Continue the shallow-water phase there; where the map itself is water, preserve the
+      // exact analytic depth multiplier and shoreline treatment.
+      var waterW=W<0.50?0.50:W;
+      var dep=(waterW-0.50)/0.45;if(dep<0)dep=0;if(dep>1)dep=1;
+      col=matShade('water',wx,wy,1.0-dep*0.40);
+      if(W>=0.50){
+        var sandLo=(typeof window.__DQ_BEACH__==='number')?window.__DQ_BEACH__:0.27;
+        col=bankOver(col,wx,wy,W,sandLo-0.02,beachyAt(wx,wy));
+      }
+    }else col=waterColor(wx,wy,W>=0.50?W:0.50);
+    return col;
+  }
+  // Only the reviewed north prefix-mask band can expose this backing. Keep each 16-cell
+  // manifest chunk at the analytic renderer's 48 samples/cell, aligned to global world pixels.
+  // Resident canvases are bounded to visible chunks instead of allocating a full-width strip.
+  var A1A_PLATE_WATER_PPC=32, A1A_PLATE_WATER_CHUNK_CELLS=16;
+  function a1aPlateWaterBounds(){
+    var b=a1aPlateBounds(),n=A1A.manifest&&A1A.manifest.northSupport,p=n&&n.prefixMask;
+    if(!b||!n||n.schema!=='north-cliff-overhang-v1'||!p||p.northWorldY!==b[1]
+       ||!Number.isInteger(p.bandCells)||p.bandCells<1||p.bandCells>b[3]-b[1]+1) return null;
+    return [b[0],p.northWorldY,b[2],p.northWorldY+p.bandCells-1];
+  }
+  function a1aPlateWaterSegments(bounds,viewX,viewY,viewW,viewH,chunkCells){
+    if(!bounds||!Number.isFinite(viewX)||!Number.isFinite(viewY)||!(viewW>0)||!(viewH>0)
+       ||!Number.isInteger(chunkCells)||chunkCells<1) return [];
+    var left=Math.max(bounds[0],Math.floor(viewX/OW_TILE));
+    var right=Math.min(bounds[2],Math.floor((viewX+viewW-1e-7)/OW_TILE));
+    var top=bounds[1]*OW_TILE,bottom=(bounds[3]+1)*OW_TILE;
+    if(right<left||viewY>=bottom||viewY+viewH<=top) return [];
+    var first=Math.floor(left/chunkCells)*chunkCells,last=Math.floor(right/chunkCells)*chunkCells,out=[];
+    for(var x=first;x<=last;x+=chunkCells){
+      var x0=Math.max(bounds[0],x),x1=Math.min(bounds[2],x+chunkCells-1);
+      if(x1>=x0) out.push([x0,bounds[1],x1,bounds[3]]);
+    }
+    return out;
+  }
+  function a1aDrawPlateWaterBacking(ctx,map,bounds,ppc){
+    if(!ctx||!map||!bounds||!ctx.createImageData||!ctx.putImageData||!Number.isInteger(ppc)||ppc<=0) return false;
+    var cellW=bounds[2]-bounds[0]+1,cellH=bounds[3]-bounds[1]+1;
+    if(cellW<=0||cellH<=0) return false;
+    var width=cellW*ppc,height=cellH*ppc,img=ctx.createImageData(width,height),data=img.data,stride=N/ppc;
+    var waterR2=a1aWaterR2Spec()&&a1aWaterR2Pixels();
+    if(waterR2){
+      if(96%ppc) return false;
+      var tex=waterR2.pixels,tw=waterR2.width,th=waterR2.height,sourceStep=96/ppc;
+      for(var ry=0;ry<height;ry++){
+        var ty=((bounds[1]*96)+ry*sourceStep)%th,row2=ry*width*4;
+        for(var rx=0;rx<width;rx++){
+          var tx=((bounds[0]*96)+rx*sourceStep)%tw,si=(ty*tw+tx)*4,di=row2+rx*4;
+          data[di]=tex[si];data[di+1]=tex[si+1];data[di+2]=tex[si+2];data[di+3]=255;
+        }
+      }
+      ctx.putImageData(img,0,0);return true;
+    }else if(!Number.isFinite(stride)||stride<=0) return false;
+    for(var py=0;py<height;py++){
+      var wy=bounds[1]*N+(py+0.5)*stride,row=py*width*4;
+      for(var px=0;px<width;px++){
+        var wx=bounds[0]*N+(px+0.5)*stride,c=a1aPlateWaterBackingColor(map,wx,wy),i=row+px*4;
+        data[i]=c[0]|0;data[i+1]=c[1]|0;data[i+2]=c[2]|0;data[i+3]=255;
+      }
+    }
+    ctx.putImageData(img,0,0);return true;
+  }
+  function a1aDropPlateWaterBacking(st,scene){
+    var segments=st&&st.waterSegments;if(!segments)return;
+    for(var id in segments)if(Object.prototype.hasOwnProperty.call(segments,id)){
+      var rec=segments[id],owner=rec.scene||scene;try{if(rec.image)rec.image.destroy();}catch(e){}
+      try{if(owner&&owner.textures&&owner.textures.exists(rec.key))owner.textures.remove(rec.key);}catch(e){}
+      delete segments[id];
+    }
+    st.waterSegments={};st.waterMap=null;st.waterKey='';
+  }
+  function a1aPlateWaterBackingUpdate(scene,map,view,force){
+    var st=terrainState;if(!st)return false;
+    var old=st.waterSegments||(st.waterSegments={});
+    if(!a1aPlateOwns(scene)||!a1aSpriteMode()||!view){
+      a1aDropPlateWaterBacking(st,scene);return false;
+    }
+    var bounds=a1aPlateWaterBounds();if(!bounds){a1aDropPlateWaterBacking(st,scene);return false;}
+    var segments=a1aPlateWaterSegments(bounds,view.x,view.y,view.width,view.height,A1A_PLATE_WATER_CHUNK_CELLS);
+    var wanted=Object.create(null),keyBase='dqplatewater',ppc=A1A_PLATE_WATER_PPC;
+    var wiggle=(typeof window.__DQ_WIGGLE__==='number')?window.__DQ_WIGGLE__:'default';
+    var waterSpec=a1aWaterR2Spec(),waterPixels=waterSpec&&a1aWaterR2Pixels();
+    var waterIdentity=waterSpec?('act1-hifi/'+waterSpec.assetPath+'|'+waterSpec.assetSha256):'';
+    var waterState=waterSpec&&A1A_WATER_R2.identity===waterIdentity?A1A_WATER_R2.status:'absent';
+    var rasterKey=waterSpec
+      ?[bounds.join(','),'water-r2',waterSpec.assetPath,waterSpec.assetSha256,waterPixels?'ready':'analytic-'+waterState].join('|')
+      :[bounds.join(','),MAT.ready?1:0,wiggle,window.__DQ_BEACH__].join('|');
+    for(var si=0;si<segments.length;si++){
+      var sb=segments[si],id='c'+sb[0],key=keyBase+'_'+id,cellW=sb[2]-sb[0]+1,cellH=sb[3]-sb[1]+1;
+      wanted[id]=1;var rec=old[id];
+      try{
+        if(!rec||!rec.image||!rec.image.scene||rec.scene!==scene||rec.width!==cellW*ppc||rec.height!==cellH*ppc){
+          if(rec){var oldScene=rec.scene;try{if(rec.image)rec.image.destroy();}catch(e){}try{if(oldScene&&oldScene.textures.exists(rec.key))oldScene.textures.remove(rec.key);}catch(e){}}
+          else try{if(scene.textures.exists(key))scene.textures.remove(key);}catch(e){}
+          var ct=scene.textures.createCanvas(key,cellW*ppc,cellH*ppc);try{ct.setFilter(1);}catch(e){}
+          var image=scene.add.image(sb[0]*OW_TILE,sb[1]*OW_TILE,key).setOrigin(0,0).setDepth(0.6).setScale(OW_TILE/ppc);
+          try{image.texture.setFilter(1);}catch(e){}
+          rec=old[id]={key:key,scene:scene,width:cellW*ppc,height:cellH*ppc,ct:ct,image:image,rasterKey:''};
+        }
+        if(rec.rasterKey!==rasterKey||st.waterMap!==map){
+          var drawn=false;try{drawn=a1aDrawPlateWaterBacking(rec.ct.context,map,sb,ppc);}catch(e){drawn=false;}
+          if(!drawn)throw new Error('plate water raster failed');
+          rec.ct.refresh();rec.rasterKey=rasterKey;
+        }
+        rec.image.setPosition(sb[0]*OW_TILE,sb[1]*OW_TILE).setScale(OW_TILE/ppc);
+        if(!rec.image.visible)rec.image.setVisible(true);
+      }catch(e){
+        try{if(rec&&rec.image)rec.image.destroy();}catch(_e){}
+        try{if(scene.textures.exists(key))scene.textures.remove(key);}catch(_e){}
+        delete old[id];
+      }
+    }
+    for(var oldId in old)if(Object.prototype.hasOwnProperty.call(old,oldId)&&!wanted[oldId]){
+      var stale=old[oldId];try{if(stale.image)stale.image.destroy();}catch(e){}
+      try{if(scene.textures.exists(stale.key))scene.textures.remove(stale.key);}catch(e){}
+      delete old[oldId];
+    }
+    st.waterMap=map;st.waterKey=rasterKey;return Object.keys(old).length>0;
   }
   function a1aDestroySea(){ if(seaState&&seaState.img){ try{ seaState.img.destroy(); }catch(e){} } seaState=null; }
 
   function ensureTerrain(scene){
     var cam=scene.cameras.main;
-    var winW=Math.ceil(cam.worldView.width/TILE)+2*MARGIN, winH=Math.ceil(cam.worldView.height/TILE)+2*MARGIN;
+    var winW=Math.ceil(cam.worldView.width/OW_TILE)+2*MARGIN, winH=Math.ceil(cam.worldView.height/OW_TILE)+2*MARGIN;
     if (terrainState && terrainState.scene===scene && terrainState.winW===winW && terrainState.winH===winH && terrainState.image && terrainState.image.scene) return;
     if (terrainState && terrainState.image){ try{ terrainState.image.destroy(); }catch(e){} }
     if (terrainState && terrainState.cimg){ try{ terrainState.cimg.destroy(); }catch(e){} }
+    if (terrainState) a1aDropPlateWaterBacking(terrainState,scene);
     var key='dqterrain';
     if (scene.textures.exists(key)) scene.textures.remove(key);
     var ct=scene.textures.createCanvas(key, winW*N, winH*N);
     try{ ct.setFilter(NEAREST); }catch(e){}
-    var img=scene.add.image(0,0,key).setOrigin(0,0).setDepth(1).setScale(SC);
+    var img=scene.add.image(0,0,key).setOrigin(0,0).setDepth(1).setScale(SC*OW_SCALE);
     try{ img.texture.setFilter(NEAREST); }catch(e){}
     // canopy: same window, depth 9.5 -> BELOW the hero (10). ~~"depth 11 -> ABOVE the hero (10),
     // so the treeline overdraws the player"~~ retired 2026-08-15 on the owner's report that she
@@ -2210,15 +3489,15 @@
     if (scene.textures.exists(ckey)) scene.textures.remove(ckey);
     var cct=scene.textures.createCanvas(ckey, winW*N, winH*N);
     try{ cct.setFilter(NEAREST); }catch(e){}
-    var cimg=scene.add.image(0,0,ckey).setOrigin(0,0).setDepth(9.5).setScale(SC);
+    var cimg=scene.add.image(0,0,ckey).setOrigin(0,0).setDepth(9.5).setScale(SC*OW_SCALE);
     try{ cimg.texture.setFilter(NEAREST); }catch(e){}
-    terrainState={ scene:scene, winW:winW, winH:winH, ct:ct, image:img, cct:cct, cimg:cimg, lastWin:'' };
+    terrainState={ scene:scene, winW:winW, winH:winH, ct:ct, image:img, cct:cct, cimg:cimg,lastWaterKey:'',lastWin:'' };
   }
   function updateTerrain(scene,force){
     if (!terrainState || terrainState.scene!==scene) return;
     var map=scene.mapData; if(!map||!map.length) return;
     var cam=scene.cameras.main, wv=cam.worldView, W=map[0].length, H=map.length, winW=terrainState.winW, winH=terrainState.winH;
-    var X0=windowStart(wv.x,winW,W), Y0=windowStart(wv.y,winH,H);
+    var X0=windowStart(wv.x,winW,W,OW_TILE), Y0=windowStart(wv.y,winH,H,OW_TILE);
     // re-show BEFORE the window-cache early-return: a single transient non-'ow' tick hides the
     // canopy, and if the hero is standing still the window key never changes, so a re-show placed
     // after this line would not run again until the window snapped to a new 12-cell boundary.
@@ -2230,57 +3509,79 @@
     // Same reason as the sprite re-show above: one transient non-'ow' tick hides the sea, and if
     // the hero is standing still the window key never changes again.
     if (a1aPlateOwns(scene)) a1aSea(scene,true);
-    var key=X0+'_'+Y0; if(!force && key===terrainState.lastWin) return; terrainState.lastWin=key;
+    a1aPlateWaterBackingUpdate(scene,map,wv,!!force);
+    if(a1aUnderpaintRequired()){
+      a1aUnderpaintRequest();
+      a1aUnderpaintPlace(scene);
+    }
+    var key=X0+'_'+Y0;
+    var fullPlateWindow=a1aPlateOwns(scene)&&a1aPlateWindow(X0,Y0,winW,winH);
+    var legacyPlateClip=fullPlateWindow?null:a1aLegacyPlateClip(scene,X0,Y0,winW,winH);
+    var r2TextureKey=legacyPlateClip?a1aWaterR2Texture(scene):null;
+    var useR2Sea=!!(r2TextureKey&&seaState&&seaState.scene===scene&&seaState.key===r2TextureKey
+      &&seaState.img&&seaState.img.visible&&typeof seaState.img.setTileScale==='function');
+    // A snapped window can stay still while the R2 image loads, retries, or changes
+    // manifest identity. Include that effective layer state in the raster cache key.
+    var waterKey=legacyPlateClip
+      ?[A1A_WATER_R2.identity,A1A_WATER_R2.status,A1A_WATER_R2.attempts,r2TextureKey||'analytic',useR2Sea?'tile':'fallback'].join('|')
+      :'';
+    if(!force && key===terrainState.lastWin && waterKey===terrainState.lastWaterKey) return;
+    terrainState.lastWin=key; terrainState.lastWaterKey=waterKey;
     if(!terrainState.firstDrawAt) terrainState.firstDrawAt=Date.now();   // starts the loading gate's art grace
     // LOCKED ART ONLY — see the block above ensureTerrain. On the Act 1 plate the analytic splat
     // is neither computed nor uploaded, and the window canvas is never shown. a1aRects still runs:
     // it is what maintains the ring prefetch and the LRU that a1aPlaceSprites then consumes.
-    if (a1aPlateOwns(scene)){
+    if (fullPlateWindow){
       var rs=costTime('rects',function(){ return a1aRects(X0,Y0,winW,winH); })||[];
       A1A.lastRects=rs; A1A.lastFull=!!rs.full;
-      terrainState.image.setPosition(X0*TILE, Y0*TILE).setVisible(false);
+      terrainState.image.setPosition(X0*OW_TILE, Y0*OW_TILE).setVisible(false);
       A1A.drew=a1aSpriteMode()?costTime('place',function(){ return a1aPlaceSprites(scene,rs); }):false;
       if (terrainState.cimg && terrainState.cimg.visible) terrainState.cimg.setVisible(false);
       return;
     }
-    a1aSea(scene,false);
-    drawTerrain(terrainState.ct.context, map, X0, Y0, winW, winH);
+    // Keep the backing visible on the first partial-window frame as well as steady frames. The
+    // legacy terrain canvas remains over it outside the authored plate, except true water when
+    // the matching R2 TileSprite is ready and can provide the continuous approved phase.
+    a1aSea(scene,!!legacyPlateClip);
+    drawTerrain(terrainState.ct.context, scene, map, X0, Y0, winW, winH,useR2Sea);
+    if(legacyPlateClip) a1aClearLegacyPlate(terrainState.ct.context,legacyPlateClip);
     if (a1aSpriteMode()){
       // The plate is drawn by its own textures. The window canvas is still the terrain for
       // everything OUTSIDE the plate, so it is hidden only while the window is wholly inside it --
       // which is precisely the case where it used to carry nothing but the baked art.
       var full=A1A.lastFull;
       if(!full) terrainState.ct.refresh();
-      terrainState.image.setPosition(X0*TILE, Y0*TILE).setVisible(!full);
+      terrainState.image.setPosition(X0*OW_TILE, Y0*OW_TILE).setVisible(!full);
       A1A.drew=a1aPlaceSprites(scene, A1A.lastRects||[]);
       if (terrainState.cimg && terrainState.cimg.visible) terrainState.cimg.setVisible(false);
       return;
     }
     terrainState.ct.refresh();
-    terrainState.image.setPosition(X0*TILE, Y0*TILE);
+    terrainState.image.setPosition(X0*OW_TILE, Y0*OW_TILE).setVisible(true);
     if (terrainState.cimg){
       var drew=a1aCanopy(terrainState.cct.context, X0, Y0, winW, winH);
       if (drew || A1A.drew) terrainState.cct.refresh();   // outside Act 1 there is nothing to upload
       A1A.drew=drew;
-      terrainState.cimg.setPosition(X0*TILE, Y0*TILE).setVisible(drew);
+      terrainState.cimg.setPosition(X0*OW_TILE, Y0*OW_TILE).setVisible(drew);
     }
   }
   function a1aHideCanopy(){ if(terrainState&&terrainState.cimg){ try{ terrainState.cimg.setVisible(false); }catch(e){} }
+                            if(terrainState) a1aDropPlateWaterBacking(terrainState,terrainState.scene);
                             a1aHideSprites(); a1aSea(null,false); }
 
   function ensureOverlay(scene){
     if (overlayState && overlayState.scene===scene && overlayState.container && overlayState.container.scene) return;
     if (overlayState && overlayState.container){ try{ overlayState.container.destroy(); }catch(e){} }
-    var c=scene.add.container(0,0); c.setDepth(5);
+    var c=scene.add.container(0,0); c.setDepth(5).setScale(OW_SCALE);
     overlayState={ scene:scene, container:c, lastKey:'' };
   }
   function rebuildOverlay(scene,force){
     if (!overlayState || overlayState.scene!==scene) return;
     var map=scene.mapData; if(!map||!map.length) return;
     var cam=scene.cameras.main, wv=cam.worldView, W=map[0].length, H=map.length, M=MARGIN;
-    var winW=Math.ceil(wv.width/TILE)+2*M, winH=Math.ceil(wv.height/TILE)+2*M;
-    var x0=windowStart(wv.x,winW,W), x1=Math.min(W-1,x0+winW-1);
-    var y0=windowStart(wv.y,winH,H), y1=Math.min(H-1,y0+winH-1);
+    var winW=Math.ceil(wv.width/OW_TILE)+2*M, winH=Math.ceil(wv.height/OW_TILE)+2*M;
+    var x0=windowStart(wv.x,winW,W,OW_TILE), x1=Math.min(W-1,x0+winW-1);
+    var y0=windowStart(wv.y,winH,H,OW_TILE), y1=Math.min(H-1,y0+winH-1);
     var key=x0+'_'+x1+'_'+y0+'_'+y1; if(!force && key===overlayState.lastKey) return; overlayState.lastKey=key;
     var c=overlayState.container; c.removeAll(true);
     var objs=[];
@@ -2321,7 +3622,8 @@
   //  OVERWORLD SPECIAL PROPS — Codex 128px landmark PNGs (owprops/) replace the engine ow-6..ow-21
   //  LANDMARK tiles, rendered BIGGER + bottom-anchored (like the dungeon props) so the 128px detail
   //  reads at game scale, not crushed to 48px. Ground is drawn under them by drawTerrain (landmark ->
-  //  grass). Biome-FILL specials (13 ice · 14 grass · 17 snow · 18 sand · 21 lava) stay engine-drawn.
+  //  grass). Biome-FILL specials (13 ice · 14 grass · 17 snow · 18 sand · 21 lava) reuse the
+  //  engine's exact generated textures in the terrain window because the 128k-tile layer is absent.
   //  ⚠️ tile→prop map is a BEST GUESS for the ambiguous few (10/16/19) — owner to confirm/correct.
   // ============================================================
   var OW_PROP={ 6:'village', 7:'cave', 8:'castle', 9:'portal', 10:'shadow-cave', 11:'signpost', 12:'storm-nest', 15:'crystal-cave', 16:'ice-cave', 19:'desert-tomb', 20:'desert-signpost' }; // 10/15/16/19 = codex-generated biome dungeon entrances (2026-07-03)
@@ -2376,7 +3678,7 @@
   function a1aLandmarks(scene,map,X0,X1,Y0,Y1,seen){
     var L=A1A.landmarks; if(!L) return;
     for(var i=0;i<L.length;i++){ var lm=L[i], cx=lm.cell[0], cy=lm.cell[1], sz=lm.size;
-      var pad=Math.ceil(sz/TILE)+1;                                     // a 192px sprite overhangs its cell by ~2 cells
+      var pad=Math.ceil(sz/OW_TILE)+1;                                  // fixed-size sprite spans more compressed cells
       if(cx<X0-pad||cx>X1+pad||cy<Y0-pad||cy>Y1+pad) continue;
       // Only where the map actually has an entrance. landmarks.json still carries `misty-grotto`
       // at (91,378), which is plain walkable grass (tile 0) -- Darkfang at (96,359) is the real
@@ -2385,24 +3687,36 @@
       // fake door, and self-heals if that cell ever gets a real tile.
       var mrow=map&&map[cy]; if(!mrow||!OW_PROP[mrow[cx]]) continue;
       var tk=a1aLandmarkTex(scene,lm.slug); if(!tk) continue;           // PNG still loading -> next tick
-      var key='a1alm_'+lm.slug, img=owImgs[key];
-      if(!img){ img=scene.add.image(0,0,tk).setDepth(A1A_LANDMARK_DEPTH); owImgs[key]=img; }
+      var key='a1alm_'+lm.slug, img=owPropImage(scene,key,tk,A1A_LANDMARK_DEPTH);
       if(img.texture.key!==tk) img.setTexture(tk);
       img.setOrigin(lm.anchor[0]/sz, lm.anchor[1]/sz)
-         .setPosition(cx*TILE+TILE/2, cy*TILE+TILE/2)                   // anchor pixel lands on the CELL CENTRE
+         .setPosition(owCellCenter(cx), owCellCenter(cy))              // anchor moves; sprite dimensions do not
          .setDisplaySize(sz,sz);
       if(!img.visible) img.setVisible(true); seen[key]=1;
     }
   }
   var owImgs={}, owMap=null;
   function destroyOwProps(){ for(var k in owImgs){ if(owImgs[k])try{owImgs[k].destroy();}catch(e){} } owImgs={}; owMap=null; }
+  function owPropImage(scene,key,texture,depth){
+    var img=owImgs[key];
+    // Scene shutdown destroys every display-list child and sets its `scene` to undefined, but this
+    // module-level cache survives. Continue restarts the same WorldMapScene with the same map id,
+    // so map-change cleanup cannot catch it. Hidden, pooled images still belong to this scene and
+    // remain reusable; only a detached or destroyed object is stale.
+    if(img && (img.scene!==scene || img.destroyed===true)){
+      try{img.destroy();}catch(e){}
+      delete owImgs[key]; img=null;
+    }
+    if(!img){ img=scene.add.image(0,0,texture).setDepth(depth); owImgs[key]=img; }
+    return img;
+  }
   function owSpecialObjects(scene){
     var map=scene.mapData, tg=scene.tileGrid; if(!map||!tg) return;
     if(window.__DQ_DEBUG__){ var d=window.__OW_DBG__=(window.__OW_DBG__||{calls:0,land:0,tex:0,imgs:0}); d.calls++; }
     if (owMap!==scene.currentMapId){ destroyOwProps(); owMap=scene.currentMapId; preloadOwProps(scene); } // preload all prop textures on map entry via Phaser loader
     var cam=scene.cameras.main, W=map[0].length, H=map.length;
-    var X0=Math.max(0,Math.floor(cam.scrollX/TILE)-3), X1=Math.min(W-1,Math.ceil((cam.scrollX+cam.width)/TILE)+3);
-    var Y0=Math.max(0,Math.floor(cam.scrollY/TILE)-3), Y1=Math.min(H-1,Math.ceil((cam.scrollY+cam.height)/TILE)+3);
+    var X0=Math.max(0,Math.floor(cam.scrollX/OW_TILE)-3), X1=Math.min(W-1,Math.ceil((cam.scrollX+cam.width)/OW_TILE)+3);
+    var Y0=Math.max(0,Math.floor(cam.scrollY/OW_TILE)-3), Y1=Math.min(H-1,Math.ceil((cam.scrollY+cam.height)/OW_TILE)+3);
     var seen={};
     for (var ty=Y0;ty<=Y1;ty++){ var mrow=map[ty]; if(!mrow)continue; for (var tx=X0;tx<=X1;tx++){ var t=mrow[tx], name=OW_PROP[t]; if(!name)continue;
       if(window.__OW_DBG__)window.__OW_DBG__.land++;
@@ -2410,9 +3724,9 @@
       if(a1aInBounds(tx,ty)) continue;                                                // Act 1 plate: the hi-fi sprite below owns this cell, not the old flat prop
       var tk=ensureOwPropTex(scene,name); if(!tk)continue;                            // PNG still loading -> next tick
       if(window.__OW_DBG__)window.__OW_DBG__.tex++;
-      var key=tx+'_'+ty, img=owImgs[key]; if(!img){ img=scene.add.image(0,0,tk).setDepth(6); owImgs[key]=img; }
+      var key=tx+'_'+ty, img=owPropImage(scene,key,tk,6);
       if(img.texture.key!==tk) img.setTexture(tk);
-      var sc=OW_PROP_SCALE[name]||1.5; img.setOrigin(0.5,1).setPosition(tx*TILE+TILE/2, ty*TILE+TILE).setDisplaySize(TILE*sc,TILE*sc); // bigger + sit on the tile & rise up
+      var sc=OW_PROP_SCALE[name]||1.5; img.setOrigin(0.5,1).setPosition(owCellCenter(tx), (ty+1)*OW_TILE).setDisplaySize(TILE*sc,TILE*sc); // anchor compresses; approved sprite size stays fixed
       if(!img.visible)img.setVisible(true); seen[key]=1; } }
     a1aLandmarks(scene,map,X0,X1,Y0,Y1,seen);
     // ---- CULL OFF-SCREEN, AND ACTUALLY DESTROY THE FAR ONES ----------------------------------
@@ -2432,7 +3746,7 @@
     // later is an add.image, not a load. Destroying inside the same pass that hides keeps this O(n)
     // rather than adding a second sweep.
     var OW_KEEP_R = 48;                                   // tiles from the camera centre; ~4x the window half-width
-    var ccx = (cam.scrollX + cam.width / 2) / TILE, ccy = (cam.scrollY + cam.height / 2) / TILE;
+    var ccx = (cam.scrollX + cam.width / 2) / OW_TILE, ccy = (cam.scrollY + cam.height / 2) / OW_TILE;
     var vis = 0;
     for (var k2 in owImgs){
       var im2 = owImgs[k2]; if(!im2) { delete owImgs[k2]; continue; }
@@ -3001,6 +4315,7 @@
   var A1D_TILE={mouth:6,stairsUp:6,stairsDown:9,chest:4,boss:7,save:14,sign:18,torch:0};
   var A1D_BLOCK={1:1,4:1,5:1,7:1,14:1,18:1,23:1,28:1};                      // mirrors canMove()'s dungeon branch
   var a1dFloors=null, a1dAsked=false, a1dPatched=false, a1dKey=null, a1dChanged=false;
+  var a1dApplied=null, a1dBlitted=null;
   function a1dFetch(){                                                      // one lazy request; silence is a valid outcome
     if (a1dAsked) return; a1dAsked=true;
     try{ var r=new XMLHttpRequest(); r.open('GET','act1-dungeon-floors.json',true);
@@ -3056,6 +4371,7 @@
     scene.effectiveWidth=fl.width; scene.effectiveHeight=fl.height;         // loadMap already ran; re-derive from OUR map
     scene.renderMap();                                                      // idempotent: destroys tileLayer, rebuilds tileGrid
     a1dKey=scene.currentMapId+'-f'+(scene.currentFloor||1);
+    a1dApplied={scene:scene,key:a1dKey,mapData:tiles};
     a1dChanged=true;                                                        // force updateDng past its window-key cache
     return true;
   }
@@ -3073,6 +4389,36 @@
     if(typeof scene.loadMap!=='function') return; a1dPatched=true; scene.__a1dPatched=true;
     var orig=scene.loadMap;
     scene.loadMap=function(id){
+      // The frozen transition path sets currentMapId to the source map until this
+      // call. A save restore loads a map whose id is already current, so this is a
+      // reliable fresh-entry marker rather than a guess from the saved coordinates.
+      // It also survives the generic (50,1) connection and the engine's subsequent
+      // findDungeonEntrance rewrite to the cell below the authored mouth.
+      try{
+        // A Retry-specific strict-mask requirement belongs only to the current failed visit. Any
+        // subsequent map load is a cancellation/restart and must not carry its movement hold or
+        // failure evidence into another map/floor.
+        if(this.__a1dStrictRetryKey){
+          this.__a1dStrictRetryKey=null;
+          this.__a1dEntryWaiting=false;
+          this.__a1dEntryDegraded=false;
+          this.__a1dEntryWaitFrames=0;
+          this.__a1dEntryError=null;
+          a1dRescueKey=null;
+          a1dArriving=false;
+        }
+        if(A1D_MAPS[id] && this.currentMapId!==id){
+          this.__a1dFreshEntryKey=id+'-f'+(this.currentFloor||1);
+          // Hold movement before the frozen loadMap/caller sequence writes its
+          // generic landing. The rescue tick releases this only after placing a
+          // validated inward position.
+          this.__a1dEntryWaiting=true;
+          this.__a1dEntryDegraded=false;
+          this.__a1dEntryWaitFrames=0;
+          this.__a1dEntryError=null;
+          a1dRescueKey=null;
+        }
+      }catch(e){}
       var r=orig.apply(this,arguments);
       // AFTER the original: every caller sets heroTileX/Y *after* loadMap returns and
       // reads this.mapData to do it (findDungeonEntrance, the tile-9 scan in __floor_up__,
@@ -3190,10 +4536,82 @@
   // While arriving, the nudge is skipped and the anchor wins; the flag clears the moment she is
   // standing legally, after which recovery behaves exactly as before.
   var a1dRescueKey=null, a1dArriving=false;
+  var A1D_ENTRY_WAIT_LIMIT=30;
+  function a1dSetHeroPosition(scene,tx,ty,dir){
+    scene.heroTileX=tx; scene.heroTileY=ty;
+    if(dir!==undefined){
+      scene.heroDir=dir;
+      try{ if(scene.hero&&typeof scene.hero.setFrame==='function') scene.hero.setFrame(dir*3); }catch(e){}
+    }
+    try{ if(scene.hero){ scene.hero.x=tx*TILE+TILE/2; scene.hero.y=ty*TILE+TILE/2; }
+         if(typeof scene.updatePosition==='function') scene.updatePosition();
+         if(typeof scene.updateCamera==='function') scene.updateCamera();
+         if(scene.fogEnabled&&typeof scene.updateFogVisibility==='function') scene.updateFogVisibility();
+    }catch(e){ if(window.__DQ_DEBUG__) console.log('a1 dng hero '+e); }
+  }
+  function a1dStrictSoleFree(scene,m,x,y){
+    // a1mFree deliberately permits the authored mouth aperture so a player can
+    // walk OUT. Entry placement must be stricter: the entire sole must already be
+    // on the resolved walk mask and outside every authored prop.
+    var fd=a1mFootDy(scene), wx=x, wy=y+fd, fx=wx-m.ox, fy=wy-m.oy;
+    if(fx<1||fy<1||fx>=m.W-1||fy>=m.H-1) return false;
+    var gx=fx|0, gy=fy|0, t=a1mTileAt(scene,wx,wy);
+    if(t===undefined || (m.prop||A1M_PROP)[t]) return false;
+    return m.dist[gy*m.W+gx] >= a1mNeed(m,gx,gy);
+  }
+  function a1dEntryLanding(scene,fl,md,mm){
+    var a=fl&&fl.assets||[], mouth=null, i;
+    for(i=0;i<a.length;i++) if(a[i].kind==='mouth'){ mouth=a[i]; break; }
+    if(!mouth) return null;
+    // The authored rows identify the inward side. Do not infer it from a nearest
+    // pixel: the four mouths are N,N,N,W respectively and this remains stable when
+    // a mask is regenerated at a different resolution.
+    var dirs=[[0,-1,3],[0,1,0],[-1,0,1],[1,0,2]], candidates=[];
+    for(i=0;i<dirs.length;i++){
+      var tx=mouth.x+dirs[i][0], ty=mouth.y+dirs[i][1], d=dirs[i][2];
+      if(ty<0||tx<0||ty>=md.length||tx>=(md[0]||[]).length) continue;
+      if(A1D_BLOCK[md[ty][tx]] || (mm&&((mm.prop||A1M_PROP)[md[ty][tx]]))) continue;
+      // An authored floor row is authoritative during the short interval before
+      // the swapped map is visible; reject a rock row even if the old map is open.
+      if(fl.rows&&fl.rows[ty]&&fl.rows[ty].charAt(tx)==='#') continue;
+      candidates.push({x:tx,y:ty,dir:d});
+    }
+    if(!candidates.length) return null;
+    if(!mm) return candidates[0];
+    var best=null, bestClear=-1, half=TILE/2-3, step=3;
+    for(i=0;i<candidates.length;i++){
+      var c=candidates[i], cx=c.x*TILE+TILE/2, cy=c.y*TILE+TILE/2;
+      // Keep the landing inside its inward cell, but adjust it toward the point
+      // with the greatest strict sole clearance if the cell centre is on the lip.
+      for(var oy=-half;oy<=half;oy+=step) for(var ox=-half;ox<=half;ox+=step){
+        var px=cx+ox, py=cy+oy, fd=a1mFootDy(scene), gx=((px-mm.ox)|0), gy=((py+fd-mm.oy)|0);
+        if(gx<1||gy<1||gx>=mm.W-1||gy>=mm.H-1) continue;
+        if(!a1dStrictSoleFree(scene,mm,px,py)) continue;
+        var clear=mm.dist[gy*mm.W+gx], delta=ox*ox+oy*oy;
+        if(!best || clear>bestClear || (clear===bestClear && delta<best.delta))
+          best={x:c.x,y:c.y,dir:c.dir,px:px,py:py,delta:delta,clear:clear};
+      }
+    }
+    return best;
+  }
   function a1dRescueHero(scene){
     if(!scene.mapData||!scene.mapData.length) return;
     var a1dKeyNow=scene.currentMapId+'-f'+(scene.currentFloor||1);
-    if(a1dKeyNow!==a1dRescueKey){ a1dRescueKey=a1dKeyNow; a1dArriving=true; }
+    if(scene.__a1dStrictRetryKey && scene.__a1dStrictRetryKey!==a1dKeyNow){
+      // Floor identity changed without a loadMap call. Cancel the old retry before examining the
+      // new floor so its error/hold cannot become authority over a different surface.
+      scene.__a1dStrictRetryKey=null;
+      scene.__a1dEntryWaiting=false;
+      scene.__a1dEntryDegraded=false;
+      scene.__a1dEntryWaitFrames=0;
+      scene.__a1dEntryError=null;
+      a1dArriving=false;
+    }
+    var strictRetry=scene.__a1dStrictRetryKey===a1dKeyNow;
+    var fresh=scene.__a1dFreshEntryKey===a1dKeyNow;
+    if(fresh) scene.__a1dFreshEntryKey=null;
+    if(a1dKeyNow!==a1dRescueKey){ a1dRescueKey=a1dKeyNow; a1dArriving=fresh; if(fresh) scene.__a1dEntryWaitFrames=0; }
+    else if(fresh){ a1dArriving=true; }
     // WHERE THE MASK IS THE AUTHORITY, THIS GUARD IS NOT. Its legality test is
     // `!A1D_BLOCK[mapData[y][x]]`, and A1D_BLOCK contains 1 = rock -- but the whole point of the
     // continuous mover is that 35 cells a floor are `#` on the lattice and open in the picture.
@@ -3205,11 +4623,36 @@
     // three floors: 742 of 754 reportable cells are legal as placed, the rest recover with a nudge
     // of at most 28 px, inside the 2-cell bound, so none of them reach the anchor teleport below.
     try{ var mm=a1mFor(scene);
+         // A fresh authored entry waits for its own floor mask. The movement
+         // wrapper sees this flag and keeps engine housekeeping alive while
+         // suppressing the frozen tween, so held input cannot bounce through the
+         // mouth during image decode.
+         if(scene.__a1dEntryWaiting && !mm && !a1mPending(scene)){
+           if(strictRetry){
+             // The previous decoded mask proved that the authored fallback was unsafe. A failed
+             // replacement request cannot downgrade that evidence to the ordinary no-mask path.
+             scene.__a1dEntryWaiting=true;
+             scene.__a1dEntryDegraded=true;
+             scene.__a1dEntryWaitFrames=0;
+             scene.__a1dEntryError='strict-retry-mask-unavailable';
+             a1dArriving=false;
+             return;
+           }
+           scene.__a1dEntryWaiting=false;
+           scene.__a1dEntryWaitFrames=0;
+         }
+         if(a1dArriving && a1mPending(scene)){
+           scene.__a1dEntryWaiting=true;
+           scene.__a1dEntryWaitFrames=(scene.__a1dEntryWaitFrames|0)+1;
+           return;
+         }
          if(mm && scene.hero){
-           if(a1mFree(scene,mm,scene.hero.x,scene.hero.y)){ a1dArriving=false; return; }
+           if(!a1dArriving && !scene.__a1dEntryDegraded && a1mFree(scene,mm,scene.hero.x,scene.hero.y)){
+             a1dArriving=false; scene.__a1dEntryWaiting=false; scene.__a1dEntryWaitFrames=0; return;
+           }
          }
          // The nudge is for RECOVERY only; on arrival it is what skipped coastalReef's entrance.
-         if(mm && scene.hero && !a1dArriving){
+         if(mm && scene.hero && !a1dArriving && !scene.__a1dEntryDegraded){
            // She is not standing legally -- but the engine places by CELL, and a cell CENTRE is a
            // lattice coordinate the art never promised was open. Reloading a save made in cell
            // (7,24) put her on its centre, which is inside the rock lip, and the anchor rescue
@@ -3234,16 +4677,19 @@
     // (7,24) is `#` to the lattice. Defer while the request is still outstanding, but ONLY for a
     // hero already inside the map: the case this guard exists for is an entry coordinate off the
     // edge of it (the overworld connection's fixed toX/toY), and that one cannot wait.
-    try{ if(a1mPending(scene) && !a1dArriving){
+    try{ if(a1mPending(scene)){
       var pm=scene.mapData, ph=pm.length, pw=(pm[0]||[]).length;
-      if(scene.heroTileX>=0 && scene.heroTileX<pw && scene.heroTileY>=0 && scene.heroTileY<ph)
+      if(a1dArriving || (scene.heroTileX>=0 && scene.heroTileX<pw && scene.heroTileY>=0 && scene.heroTileY<ph)){
+        scene.__a1dEntryWaiting=true;
         return;
+      }
     } }catch(e){}
     var fl=a1dFloorFor(scene);                                              // null outside the 3 in-scope dungeons
     var md=scene.mapData, H=md.length, W=(md[0]||[]).length;
     if(!W) return;
     var x=scene.heroTileX,y=scene.heroTileY;
-    if(y>=0&&y<H&&x>=0&&x<W&&!A1D_BLOCK[md[y][x]]){ a1dArriving=false; return; }  // already legal
+    if(scene.__a1dEntryDegraded){ scene.__a1dEntryWaiting=true; return; }
+    if(!a1dArriving && y>=0&&y<H&&x>=0&&x<W&&!A1D_BLOCK[md[y][x]]){ a1dArriving=false; return; }  // already legal
     if(!fl){
       // No authored anchors to aim for. Clamp the engine's intended landing back inside the map
       // and take the NEAREST walkable cell to it -- landing beside the intended mouth beats
@@ -3274,7 +4720,42 @@
       for(k=0;k<4;k++){ var nx=tx+n[k][0],ny=ty+n[k][1];
         if(ny>=0&&ny<H&&nx>=0&&nx<W&&!A1D_BLOCK[scene.mapData[ny][nx]]){ tx=nx; ty=ny; break; } }
     }
-    scene.heroTileX=tx; scene.heroTileY=ty; a1dArriving=false;
+    if(a1dArriving && (scene.currentFloor||1)===1 && anchor==='mouth'){
+      var landing=a1dEntryLanding(scene,fl,md,mm);
+      if(landing){
+        scene.__a1dEntryWaiting=false; scene.__a1dEntryWaitFrames=0; scene.__a1dEntryError=null;
+        scene.__a1dStrictRetryKey=null; a1dArriving=false;
+        if(landing.px!==undefined){
+          scene.heroTileX=landing.x; scene.heroTileY=landing.y; scene.heroDir=landing.dir;
+          try{ if(scene.hero){ scene.hero.x=landing.px; scene.hero.y=landing.py;
+                 if(typeof scene.hero.setFrame==='function') scene.hero.setFrame(landing.dir*3); }
+               if(typeof scene.updatePosition==='function') scene.updatePosition();
+               if(typeof scene.updateCamera==='function') scene.updateCamera();
+               if(scene.fogEnabled&&typeof scene.updateFogVisibility==='function') scene.updateFogVisibility();
+          }catch(e){ if(window.__DQ_DEBUG__) console.log('a1 dng hero '+e); }
+        } else a1dSetHeroPosition(scene,landing.x,landing.y,landing.dir);
+        return;
+      }
+      // A resolved mask with no legal inward point is an authored-data failure.
+      // Retry for a bounded number of frames, then use the existing authored-cell
+      // fallback and expose the failure; never fall through to a1mUnstick.
+      if(mm){
+        scene.__a1dEntryWaitFrames=(scene.__a1dEntryWaitFrames|0)+1;
+        if(scene.__a1dEntryWaitFrames<A1D_ENTRY_WAIT_LIMIT){ scene.__a1dEntryWaiting=true; return; }
+        scene.__a1dEntryError='no-strict-inward-landing';
+        var fallback=a1dEntryLanding(scene,fl,md,null);
+        if(fallback){
+          // This is an explicit degraded authored-cell fallback. Keep the
+          // movement gate held because its sole was not proven by the mask;
+          // never hand this position to a1mUnstick on the next frame.
+          scene.__a1dEntryWaiting=true; scene.__a1dEntryDegraded=true;
+          scene.__a1dEntryWaitFrames=0; a1dArriving=false;
+          a1dSetHeroPosition(scene,fallback.x,fallback.y,fallback.dir); return; }
+        scene.__a1dEntryWaiting=true; return;
+      }
+    }
+    if(scene.__a1dEntryDegraded){ scene.__a1dEntryWaiting=true; return; }
+    scene.__a1dEntryWaiting=false; scene.heroTileX=tx; scene.heroTileY=ty; a1dArriving=false;
     // SHE ARRIVES FACING INTO THE DUNGEON, NOT WHICHEVER WAY SHE LAST WALKED ON THE OVERWORLD.
     // Owner, build 65: "entering into dungeons should always position the players in the entrance
     // direction or hard block the player from entering the dungeon from an unauthorized location."
@@ -3367,7 +4848,7 @@
   // The engine's dungeon blockers MINUS rock. Rock is what the mask now owns; these are objects
   // standing on a cell, and bumping one is how the engine interacts with it.
   var A1M_PROP={4:1,5:1,7:1,14:1,18:1,23:1,28:1};
-  var a1mMasks={}, a1mReq={}, a1mState=null;
+  var a1mMasks={}, a1mReq={}, a1mState=null, a1mExitRetry=null;
 
   // Chamfer-3-4 distance from every open pixel to the nearest rock, in thirds of a pixel.
   // Two sequential sweeps over ~2.3 M pixels; measured under 40 ms on the sim, once per floor.
@@ -3477,12 +4958,13 @@
     a1mSole[key]=off;
     return off;
   }
-  function a1mFootDy(scene){
-    if(typeof window.__A1_DNG_FOOTDY__==='number') return window.__A1_DNG_FOOTDY__;
+  function a1mMetric(m,v){ return m&&m.ow ? v/OW_SCALE : v; }
+  function a1mFootDy(scene,m){
+    if(typeof window.__A1_DNG_FOOTDY__==='number') return a1mMetric(m,window.__A1_DNG_FOOTDY__);
     var hero=scene&&scene.hero; if(!hero||!hero.texture) return 0;
     var off=a1mSoleOffset(hero); if(off===null) return 0;
     var s=(typeof hero.scaleY==='number'&&hero.scaleY>0)?hero.scaleY:1;
-    return off*s;
+    return a1mMetric(m,off*s);
   }
   /* ---- CLEARANCE LEANS, BECAUSE THE SPRITE STANDS ON ITS FEET --------------------------------
      The mover collides at a POINT (her soles, per the sole-contact rule above) but the game draws
@@ -3543,8 +5025,9 @@
   var A1M_LEAN=4;             // extra world px of clearance, scaled by how far NORTH the rock lies
   // Required clearance at a SOLE pixel, in the field's own thirds-of-a-pixel units.
   function a1mNeed(m,gx,gy){
-    var base=A1M_FOOT*A1M_CH;
+    var base=a1mMetric(m,A1M_FOOT)*A1M_CH;
     var k=(typeof window.__A1_DNG_LEAN__==='number')?window.__A1_DNG_LEAN__:A1M_LEAN;
+    k=a1mMetric(m,k);
     if(!(k>0) || gx<1 || gy<1 || gx>=m.W-1 || gy>=m.H-1) return base;
     var i=gy*m.W+gx;
     var nx=m.dist[i+1]-m.dist[i-1], ny=m.dist[i+m.W]-m.dist[i-m.W];          // grows AWAY from rock
@@ -3577,29 +5060,182 @@
      a copy of a rule in a second file is the drift this whole section exists to remove.
 
      WHAT canMove MUST NOT BE ALLOWED TO ANSWER is water and mountain. Its overworld branch tests
-     those on the raw LATTICE, and the entire point of the field above is that they are painted
-     CONTINUOUSLY -- delegating them would put the square blockers straight back under the organic
-     coastline. So the two authorities are split along the boundary the file already draws
-     (see WHAT DELIBERATELY STAYS ON TILES): the field answers for the painted masses and the
-     bridge decks carved out of them, canMove answers for every other cell. Dungeons are untouched
-     -- they keep the prop table beside their baked mask, exactly as before. */
-  var OWM_FIELD_OWNED={2:1,4:1,5:1};       // water, mountain, bridge: the field's cells, not canMove's
+     those on the raw LATTICE. Water remains owned by this continuous field everywhere. Outside the
+     authored Act 1 paint bounds, mountain remains owned by its continuous field too. Inside that
+     rect, the combined visible forest+cliff alpha pack owns both natural silhouettes, while this
+     field keeps water and bridge clearance. Tile 4 stays field-owned so its old square canMove
+     blocker cannot reappear underneath the cliff alpha. Dungeons remain unchanged. */
+  var OWM_FIELD_OWNED={2:1,4:1,5:1};       // continuous water/mountain or the scoped Act 1 alpha authority
   function a1mCanMove(scene,tx,ty){
     var f=scene&&scene.canMove;
     if(typeof f!=='function') return null;                                   // unknown -> caller falls back
     try{ return !!f.call(scene,tx,ty); }catch(e){ return null; }
   }
+  // Whole-object V8 forest collision uses the same globally stitched visible-alpha bits as
+  // rendering. Canonical collision pixels are 32/cell while the active overworld solver is 48/cell.
+  // The stencil is the union of every actual live hero texture frame, transformed with the sprite's
+  // own origin and display scale; transparent sheet corners never become grass walls.
+  function a1fMode(scene){ return !!(owScene(scene)&&A1A_FOREST.mode); }
+  function a1fRequiredAt(scene,x,y){
+    if(!owScene(scene)||!a1aPlateOwns(scene)) return false;
+    if(a1aPlateCell(Math.floor(x/TILE),Math.floor(y/TILE))) return true;
+    // Near the plate edge, keep testing only the part of the full hero stencil that lies within
+    // this pack's authored bounds. Extents are cached with the texture-frame union, so the scope
+    // check is constant-time on each movement substep.
+    var b=A1A_FOREST.stencilBounds;
+    if(!b){ a1fBuildStencil(scene.hero); b=A1A_FOREST.stencilBounds; }
+    if(!b){
+      // If canvas/source access is temporarily unavailable, conservatively use the real current
+      // frame's display extent. The 64px fallback is bounded to this edge test only; distant acts
+      // never inherit the Act 1 authority.
+      var h=scene.hero, fr=h&&h.frame, fw=fr&&(fr.cutWidth||fr.width)||64, fh=fr&&(fr.cutHeight||fr.height)||64;
+      var sx=Math.abs(h&&h.scaleX||1), sy=Math.abs(h&&h.scaleY||1);
+      var rx=Math.ceil(fw*sx/OW_SCALE*32/48/2)+1, ry=Math.ceil(fh*sy/OW_SCALE*32/48/2)+1;
+      b={minX:-rx,maxX:rx,minY:-ry,maxY:ry};
+    }
+    var cx=(x-16*TILE)*32/48, cy=(y-218*TILE)*32/48, pad=1;
+    return cx+b.maxX+pad>=0&&cx+b.minX-pad<4736
+      &&cy+b.maxY+pad>=0&&cy+b.minY-pad<5824;
+  }
+  function a1fBit(px,py){
+    // The composite pack owns ACT1's painted rectangle only. Outside it, retain the existing
+    // analytic terrain and tile authorities instead of treating an absent pack pixel as rock.
+    if(px<0||py<0||px>=4736||py>=5824) return 0;
+    var i=py*4736+px; return !!(A1A_FOREST.bits[i>>3]&(1<<(i&7)));
+  }
+  function a1fBuildStencil(hero){
+    if(!hero||!hero.texture) return null;
+    var tex=hero.texture, src=null, frames=[], key, names, i;
+    try{ src=tex.getSourceImage?tex.getSourceImage():(tex.source&&tex.source[0]&&tex.source[0].image); }catch(e){}
+    if(!src||!src.width) return null;
+    try{ names=tex.getFrameNames?tex.getFrameNames():Object.keys(tex.frames||{}); }catch(e){ names=[]; }
+    for(i=0;i<names.length;i++){ var fr=null; try{fr=tex.get(names[i]);}catch(e){} if(fr&&(fr.cutWidth||fr.width)&&(fr.cutHeight||fr.height)) frames.push(fr); }
+    if(!frames.length&&hero.frame) frames=[hero.frame];
+    key=(tex.key||'')+'|'+src.width+'x'+src.height+'|'+frames.map(function(f){return [f.cutX||0,f.cutY||0,f.cutWidth||f.width,f.cutHeight||f.height].join(',');}).join(';')+'|'+hero.scaleX+'|'+hero.scaleY+'|'+hero.originX+'|'+hero.originY;
+    if(A1A_FOREST.stencilKey===key&&A1A_FOREST.stencil) return A1A_FOREST.stencil;
+    var cv=document.createElement('canvas'), g, out=[], seen=Object.create(null), minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity, sx=(hero.scaleX||1)/OW_SCALE, sy=(hero.scaleY||1)/OW_SCALE;
+    for(i=0;i<frames.length;i++){
+      var f=frames[i], fw=f.cutWidth||f.width, fh=f.cutHeight||f.height;
+      cv.width=fw;cv.height=fh;g=cv.getContext('2d',{willReadFrequently:true}); if(!g) return null;
+      g.clearRect(0,0,fw,fh);g.drawImage(src,f.cutX||0,f.cutY||0,fw,fh,0,0,fw,fh);
+      var d=g.getImageData(0,0,fw,fh).data, ox=(hero.originX===undefined?0.5:hero.originX)*fw, oy=(hero.originY===undefined?0.5:hero.originY)*fh;
+      for(var y=0;y<fh;y++)for(var x=0;x<fw;x++)if(d[(y*fw+x)*4+3]>8){
+        // Quantizing only after display transform makes the same source pose align at any actual scale.
+        var dx=Math.round(((x+0.5)-ox)*sx*32/48),dy=Math.round(((y+0.5)-oy)*sy*32/48), k=dx+','+dy;
+        if(!seen[k]){seen[k]=1;out.push([dx,dy]);minX=Math.min(minX,dx);minY=Math.min(minY,dy);maxX=Math.max(maxX,dx);maxY=Math.max(maxY,dy);}
+      }
+    }
+    if(!out.length) return null;
+    A1A_FOREST.stencil=out;A1A_FOREST.stencilKey=key;A1A_FOREST.stencilBounds={minX:minX,minY:minY,maxX:maxX,maxY:maxY};return out;
+  }
+  function a1fReady(scene){
+    if(!a1fMode(scene)) return true;
+    var up=A1A.underpaint&&A1A.underpaint.forest;
+    return A1A_FOREST.status==='ready'&&A1A_FOREST.bits&&up&&up.status==='ready'&&!!a1fBuildStencil(scene.hero);
+  }
+  function a1fHeroFree(scene,x,y){
+    var pts=a1fBuildStencil(scene.hero); if(!pts) return false;
+    // x/y are canonical 48px solver coordinates. One physical-pixel clearance is expressed in
+    // collision source pixels; no forest dilation is added to the pack.
+    var cx=Math.round((x-16*TILE)*32/48),cy=Math.round((y-218*TILE)*32/48), margin=Math.ceil(32/(48*OW_SCALE));
+    for(var i=0;i<pts.length;i++){
+      var px=cx+pts[i][0],py=cy+pts[i][1];
+      if(a1fBit(px,py)||a1fBit(px-margin,py)||a1fBit(px+margin,py)||a1fBit(px,py-margin)||a1fBit(px,py+margin)) return false;
+    }
+    return true;
+  }
+  // Whispering Woods is a sprite prop, so it is not present in the A1OW terrain support
+  // raster used by a1fHeroFree. Keep its collision tied to the exact rendered prop transform
+  // (landmarks/landmarks.json: cell 101,231; 144 px; anchor 76,90) and the pinned PNG below.
+  // This authored silhouette marks only the visible rock mass; the second polygon follows the
+  // visible arch and gravel approach as a continuous doorway channel. It stays separate from the
+  // discrete door tile and from the whole-hero terrain stencil.
+  var A1M_WW_ART_SHA='a06eea6ab98c7c630119db1488dfea912a40bc69150ac16e387b4e696aa5f047';
+  var A1M_WW_ROCK=[
+    [55,20],[59,14],[69,10],[81,12],[91,18],[101,20],[109,28],[115,39],[120,51],[123,63],
+    [121,74],[116,84],[109,93],[101,101],[92,107],[82,111],[72,111],[62,108],[53,103],[45,96],
+    [39,87],[35,77],[34,66],[36,55],[40,45],[43,36],[48,27]
+  ];
+  var A1M_WW_CHANNEL=[
+    [67,74],[72,70],[80,71],[86,76],[90,84],[90,92],[87,100],[85,108],[88,117],[92,128],
+    [98,143],[62,143],[66,130],[69,119],[66,109],[62,100],[59,91],[60,83],[63,77]
+  ];
+  var A1M_CRYSTAL_ART_SHA='45fb2c0b7cf1ad2e63ee9a28bbf0ad66e3d4d9ca9258beaf7a68566e04692b55';
+  var A1M_CRYSTAL_CHANNEL=[[53,75],[52,65],[57,55],[64,49],[72,48],[78,54],[81,64],[82,73],[86,83],[92,92],[98,102],[102,113],[104,125],[98,133],[90,134],[86,123],[81,113],[76,104],[71,96],[65,88],[58,81]];
+  var A1M_CRYSTAL_MASK_B64='AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAA4AHAAAAAAAAAAAAAAAAAADg7+cfAAAAAAAAAAAAAAAAAADw//8/AAAAAAAAAAAAAAAAAAD4//8/AAAAAAAAAAAAAAAAAAD4//9/AAAAAAAAAAAAAAAAAAD/////AAAAAAAAAAAAAAAAAID/////AAAAAAAAAAAAAAAAAMD/////AwAAAAAAAAAAAAAAHMD/////BwAAAAAAAAAAAAAAHMD/////HwAAAAAAAAAAAAAAPuD/////PwAAAAAAAAAAAAAAPvj/////PwAAAAAAAAAAAAAAf/7/////PwAAAAAAAAAAAAAAf///////PwAAAAAAAAAAAAAAf///////PwAAAAAAAAAAAAAA////////fwAAAAAAAAAAAAAA/////////wcAAAAAAAAAAACA/////////x8AAAAAAAAAAADA/////////z8AAAAAAAAAAADo/////////z8AAAAAAAAAAADc/////////z8AAAAAAAAAAADc/////////z8AAAAAAAAAAAD+/////////z8AAAAAAAAAAAD+//////////8AAAAAAAAAAAD+//////////8BAAAAAAAAAAD8//////////8HAAAAAAAAAAD8//////////8HAAAAAAAAAAD8//////////8HAAAAAAAAAMD///////////8HAAAAAAAAAOD///8P//////8HAAAAAAAAAPD//38A/v////8HAAAAAAAAAPj//z8A/P////8PAAAAAAAAAPj//x8A+P////8PAAAAAAAAAPD//w8A8P////8PAAAAAAAAAPj//wcA4P////8PAAAAAAAAAPj//wMAwP////8/AAAAAAAAAPz//wEAwP////9/AAAAAAAAAPz//wAAgP////9/AAAAAAAAAPz//wAAgP////9/AAAAAAAAAPz/fwAAgP////9/AAAAAAAAAPz/fwAAAP////9/AAAAAAAAAPz/PwAAAP//////AAAAAAAAAP7/PwAAAP//////AAAAAAAAgP//HwAAAP7/////AAAAAAAAwP//HwAAAP7/////AAAAAAAAwP//DwAAAP7/////AQAAAAAA4P//DwAAAP7/////AQAAAAAA4P//DwAAAP7/////AQAAAAAA4P//DwAAAP7/////AQAAAAAA4P//DwAAAP7/////AQAAAAAA4P//DwAAAPz/////AQAAAAAA4P//HwAAAPz/////AQAAAAAA+P//HwAAAPz/////AQAAAAAA/P//HwAAAPz/////AwAAAAAA/P//HwAAAPz/////AwAAAAAA/P//HwAAAPj/////BwAAAAAA/P//HwAAAPj/////BwAAAAAA/P//HwAAAPj/////DwAAAAAA+P//HwAAAPD/////DwAAAAAA+P//HwAAAPD/////DwAAAAAA+P//HwAAAOD/////DwAAAAAA+P//DwAAAOD/////DwAAAAAA/P//DwAAAOD/////DwAAAAAA/v//DwAAAMD/////BwAAAAAA/v//DwAAAMD/////AwAAAAAA/v//DwAAAID/////AQAAAAAA/P//DwAAAID/////AwAAAAAA/P//DwAAAAD/////AwAAAAAA/P//DwAAAAD/////AwAAAAAA/v//HwAAAAD+////AQAAAAAA////HwAAAAD8////AQAAAAAA////HwAAAAD8////AAAAAAAA////HwAAAAD4////AQAAAAAA////HwAAAAD4////AAAAAACA////PwAAAAD4////AQAAAADA////PwAAAAD4////AQAAAADA////PwAAAADw////AwAAAADA////PwAAAADw////AwAAAADA////PwAAAADw////AwAAAADA////fwAAAADw////AwAAAADA////fwAAAADw////AwAAAADA////fwAAAADg////AwAAAADA////fwAAAADg////AwAAAACA////fwAAAADg////AwAAAAAA/v///wAAAADg////AwAAAAAA/v///wAAAADg////AwAAAAAA/v///wAAAADg////AwAAAAAA/P///wAAAADg////AQAAAAAA+P///wAAAADg////AQAAAAAAwP///wAAAADg////AAAAAAAAAP///wAAAADA////AAAAAAAAAP//fwAAAADA//9/AAAAAAAAAP7/fwAAAADA//8/AAAAAAAAAPj/fwAAAADA//8fAAAAAAAAAPD/fwAAAADA//8fAAAAAAAAAOD/fwAAAADA//8PAAAAAAAAAMD/fwAAAADA//8HAAAAAAAAAID/fwAAAADA//8DAAAAAAAAAAD/fwAAAACA//8BAAAAAAAAAAD8fwAAAACA/38AAAAAAAAAAAD4fwAAAACA/w8AAAAAAAAAAADgPwAAAACA/w8AAAAAAAAAAAAAPAAAAACA/wcAAAAAAAAAAAAAIAAAAAAA/wEAAAAAAAAAAAAAAAAAAAAAfwAAAAAAAAAAAAAAAAAAAAAADwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+  var a1mCrystalRockMask=null;
+  function a1mCrystalMask(){
+    if(a1mCrystalRockMask) return a1mCrystalRockMask;
+    var packed=atob(A1M_CRYSTAL_MASK_B64),bits=new Uint8Array(144*144);
+    for(var i=0;i<bits.length;i++) bits[i]=(packed.charCodeAt(i>>3)>>(i&7))&1;
+    a1mCrystalRockMask=bits;
+    return bits;
+  }
+  var a1mWwRockMask=null;
+  // The material contour is clipped offline to alpha>=128 in the exact pinned PNG. The
+  // compact bitset is decoded once; movement never scans image pixels or guessed geometry.
+  var A1M_WW_MASK_B64='AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD+AAAAAAAAAAAAAAAAAAAAAID/AQAAAAAAAAAAAAAAAAAAAMD//wMAAAAAAAAAAAAAAAAAAMD//wcAAAAAAAAAAAAAAAAAAOD//w8AAAAAAAAAAAAAAAAAAPz//w8AAAAAAAAAAAAAAAAAgP////8AAAAAAAAAAAAAAAAAwP////8DAAAAAAAAAAAAAAAA4P////8PAAAAAAAAAAAAAAAA8P////8fAAAAAAAAAAAAAAAA8P////8fAAAAAAAAAAAAAAAA+P////8/AAAAAAAAAAAAAAAA+P////8/AAAAAAAAAAAAAAAA/P////8/AAAAAAAAAAAAAAAA/v////9/AgAAAAAAAAAAAACA////////AwAAAAAAAAAAAADQ////////DwAAAAAAAAAAAAD4////////PwAAAAAAAAAAAAD8/////////wAAAAAAAAAAAAD8/////////wEAAAAAAAAAAAD8/////////wMAAAAAAAAAAAD+/////////wcAAAAAAAAAAAD+/////////wcAAAAAAAAAAAD+/////////w8AAAAAAAAAAAD//////////w8AAAAAAAAAAAD//////////w8AAAAAAAAAAAD//////////x8AAAAAAAAAAID//////////x8AAAAAAAAAAID//////////x8AAAAAAAAAAID//////////x8AAAAAAAAAAMD//////////z8AAAAAAAAAAMD//////////38AAAAAAAAAAOD///////////8BAAAAAAAAAOD///////////8DAAAAAAAAAOD///////////8HAAAAAAAAAPD///////////8HAAAAAAAAAPD///////////8PAAAAAAAAAPD///////////8PAAAAAAAAAPD///////////8fAAAAAAAAAPj///////////8fAAAAAAAAAPj///////////9/AAAAAAAAAPj/////////////AAAAAAAAAPj/////////////AAAAAAAAAPj/////////////AQAAAAAAAPz/////////////AQAAAAAAAPz/////////////AwAAAAAAAPz/////////////AwAAAAAAAPz/////////////AwAAAAAAAPz/////////////AwAAAAAAAPz/////////////AwAAAAAAAPz/////////////AwAAAAAAAPz///9/8P//////AwAAAAAAAPz///8/AP7/////AQAAAAAAAPj///8fAPz/////AQAAAAAAAPj///8PAPj/////AQAAAAAAAPj///8DAPD/////AQAAAAAAAPj///8BAOD/////AAAAAAAAAPj///8AAMD/////AAAAAAAAAPj//38AAID///9/AAAAAAAAAPD//z8AAID///9/AAAAAAAAAPD//z8AAAD///8/AAAAAAAAAPD//x8AAAD///8/AAAAAAAAAOD//x8AAAD+//8fAAAAAAAAAOD//w8AAAD+//8fAAAAAAAAAMD//w8AAAD8//8PAAAAAAAAAMD//w8AAAD8//8PAAAAAAAAAMD//w8AAAD8//8HAAAAAAAAAID//w8AAAD8//8DAAAAAAAAAID//wcAAAD8//8BAAAAAAAAAAD//wcAAAD8//8AAAAAAAAAAAD+/wcAAAD8//8AAAAAAAAAAAD+/wcAAAD8/38AAAAAAAAAAAD8/wcAAAD8/z8AAAAAAAAAAAD4/wcAAAD8/x8AAAAAAAAAAAD4/w8AAAD+/w8AAAAAAAAAAADw/w8AAAD+/wcAAAAAAAAAAADg/w8AAAD+/wMAAAAAAAAAAADA/x8AAAD//wEAAAAAAAAAAACA/x8AAAD//wAAAAAAAAAAAAAA/x8AAAD/fwAAAAAAAAAAAAAA/j8AAID/PwAAAAAAAAAAAAAA/D8AAID/HwAAAAAAAAAAAAAA+H8AAID/DwAAAAAAAAAAAAAA8H8AAMD/BwAAAAAAAAAAAAAAwP8AAMD/AQAAAAAAAAAAAAAAAP8AAMD/AAAAAAAAAAAAAAAAAP4AAMA/AAAAAAAAAAAAAAAAAPgBAOAfAAAAAAAAAAAAAAAAAOABAOAHAAAAAAAAAAAAAAAAAAADAOAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+  var a1mWwRockMask=null;
+  function a1mWwMask(){
+    if(a1mWwRockMask) return a1mWwRockMask;
+    var packed=atob(A1M_WW_MASK_B64),bits=new Uint8Array(144*144);
+    for(var i=0;i<bits.length;i++) bits[i]=(packed.charCodeAt(i>>3)>>(i&7))&1;
+    a1mWwRockMask=bits;
+    return bits;
+  }
+  function a1mWwContactFree(scene,m,x,y){
+    if(!m||!m.ow||!scene||scene.currentMapId!=='overworld') return true;
+    var r=A1M_FOOT;
+    // Crystal Cave is the intentional act-gate exception to discrete footprint blockers.
+    // This local continuous sole mask follows only its opaque roof/side rock; the arch and
+    // landing stay open so the existing exact entry-cell query can still fire.
+    var ccx=owCellCenter(149),ccy=owCellCenter(278),cleft=ccx-76,ctop=ccy-92;
+    var csx=owPhysical(x)-cleft,csy=owPhysical(y+a1mFootDy(scene,m))-ctop;
+    if(csx+r>=0&&csx-r<=143&&csy+r>=0&&csy-r<=143){
+      var cbits=a1mCrystalMask(),cx0=Math.max(0,Math.floor(csx-r)),cx1=Math.min(143,Math.floor(csx+r));
+      var cy0=Math.max(0,Math.floor(csy-r)),cy1=Math.min(143,Math.floor(csy+r)),cr2=r*r;
+      for(var cpy=cy0;cpy<=cy1;cpy++) for(var cpx=cx0;cpx<=cx1;cpx++) if(cbits[cpy*144+cpx]){
+        var cqx=csx<cpx?cpx:(csx>cpx+1?cpx+1:csx),cqy=csy<cpy?cpy:(csy>cpy+1?cpy+1:csy);
+        var cdx=csx-cqx,cdy=csy-cqy;
+        if(cdx*cdx+cdy*cdy<=cr2) return false;
+      }
+    }
+    var lmCenterX=owCellCenter(101),lmCenterY=owCellCenter(231),left=lmCenterX-76,top=lmCenterY-90;
+    var sx=owPhysical(x)-left,sy=owPhysical(y+a1mFootDy(scene,m))-top;
+    // Most steps are nowhere near this prop; avoid scanning its one bounded mask.
+    if(sx+r<34||sx-r>123||sy+r<10||sy-r>143) return true;
+    var bits=a1mWwMask(),x0=Math.max(0,Math.floor(sx-r)),x1=Math.min(143,Math.floor(sx+r));
+    var y0=Math.max(0,Math.floor(sy-r)),y1=Math.min(143,Math.floor(sy+r)),r2=r*r;
+    for(var py=y0;py<=y1;py++) for(var px=x0;px<=x1;px++) if(bits[py*144+px]){
+      var qx=sx<px?px:(sx>px+1?px+1:sx),qy=sy<py?py:(sy>py+1?py+1:sy);
+      var dx=sx-qx,dy=sy-qy;
+      if(dx*dx+dy*dy<=r2) return false;
+    }
+    return true;
+  }
   // (x,y) is the SPRITE position everywhere -- that is what the engine sets, what the rescue guard
   // holds and what the camera follows -- and the mask is sampled at the soles below it.
   function a1mFree(scene,m,x,y){
-    var wx=x, wy=y+a1mFootDy(scene);                                         // WORLD px: the tile test reads the map
+    // V8 takes ownership only once its visible fallback, packed alpha and pose stencil agree.
+    // Until then a1mStep holds, so no engine tile tween can walk through a loading forest.
+    // The ACT1 A1OW payload is water-only inside the authored plate. Before its manifest opts
+    // into the combined visible-terrain pack, keep movement held rather than exposing the old
+    // mountain gap during the manifest's asynchronous first load/retry window.
+    var terrainRequired=m.ow&&a1fRequiredAt(scene,x,y);
+    if(terrainRequired&&(!A1A_FOREST.mode||!a1fReady(scene))) return false;
+    if(m.ow&&terrainRequired&&!a1fHeroFree(scene,x,y)) return false;
+    if(!a1mWwContactFree(scene,m,x,y)) return false;
+    var wx=x, wy=y+a1mFootDy(scene,m);                                       // solver-space px: canonical on overworld
     var fx=wx-m.ox, fy=wy-m.oy;                                              // FIELD px: 0 offset for a dungeon mask
     if(fx<1||fy<1||fx>=m.W-1||fy>=m.H-1) return false;
     var gx=fx|0, gy=fy|0;
-    if(m.dist[(gy*m.W)+gx] < a1mNeed(m,gx,gy)) return false;                 // too close to rock
     var t=a1mTileAt(scene,wx,wy);
     if(t===undefined) return false;
+    if(m.dist[(gy*m.W)+gx] < a1mNeed(m,gx,gy) &&
+       !(t===6 && a1dIsMouthCell(scene,(wx/TILE)|0,(wy/TILE)|0))) return false; // authored door enters masked arch
     if(m.ow && !OWM_FIELD_OWNED[t]){
+      // Forest tile 3 was the old square proxy. V8 has already checked the full visible silhouette.
+      if(t===3&&terrainRequired) return true;
       var ok=a1mCanMove(scene,(wx/TILE)|0,(wy/TILE)|0);
       if(ok!==null) return ok;
     }
@@ -3638,6 +5274,26 @@
       return !!(a1dEcCell && a1dEcCell[0]===tx && a1dEcCell[1]===ty);
     }catch(e){ return false; }
   }
+  // The authored floor-1 mouth is drawn into the rock mask, but tile 6 is the
+  // engine's existing dungeon transition cell. Allow only that exact cell to
+  // be entered so a real step can reach checkTransition/performTransition.
+  var a1dMouthCell=null, a1dMouthKey=null;
+  function a1dIsMouthCell(scene,tx,ty){
+    try{
+      var mapId=scene.currentMapId, floor=scene.currentFloor||1, key=mapId+'-f'+floor;
+      if(a1dMouthKey!==key){
+        // An in-flight floor manifest is not a resolved negative lookup. Do
+        // not poison this cache before the authored data arrives.
+        if(!a1dFloors) return false;
+        a1dMouthKey=key; a1dMouthCell=null;
+        if(A1D_MAPS[mapId] && floor===1){
+          var fl=a1dFloorFor(scene), a=(fl&&fl.assets)||[];
+          for(var i=0;i<a.length;i++) if(a[i].kind==='mouth'){ a1dMouthCell=[a[i].x,a[i].y]; break; }
+        }
+      }
+      return !!(a1dMouthCell && a1dMouthCell[0]===tx && a1dMouthCell[1]===ty);
+    }catch(e){ return false; }
+  }
   /* ---- SLIDE ALONG THE WALL, NOT ALONG THE AXES ----------------------------------------------
      Retrying X alone and then Y alone is only sliding on an AXIS-ALIGNED wall, and this cave is
      organic -- almost none of its walls run straight. Measured over the three floors' real contact
@@ -3658,7 +5314,7 @@
      cadence is paced by the distance she actually walked. */
   var A1M_LIFT=3;             // max world px of outward correction per substep (see below)
   function a1mSlide(scene,m,x,y,sx,sy){
-    var fd=a1mFootDy(scene), gx=(x-m.ox)|0, gy=(y+fd-m.oy)|0;
+    var fd=a1mFootDy(scene,m), gx=(x-m.ox)|0, gy=(y+fd-m.oy)|0;
     if(gx<1||gy<1||gx>=m.W-1||gy>=m.H-1) return null;
     var i=gy*m.W+gx;
     var nx=m.dist[i+1]-m.dist[i-1], ny=m.dist[i+m.W]-m.dist[i-m.W];           // grows AWAY from rock
@@ -3683,13 +5339,13 @@
        therefore whose requirement is different. One pass measured 1.1-1.5% dead stops against the
        uniform collider's 0.2-0.6%; re-sampling at the corrected point puts it back. Still capped
        in TOTAL by A1M_LIFT, so this buys accuracy, not reach. */
-    var lift=0;
+    var lift=0, liftMax=a1mMetric(m,A1M_LIFT);
     for(var p=0;p<2;p++){
       var ex=(x+tx-m.ox)|0, ey=(y+ty+fd-m.oy)|0;
       if(ex<1||ey<1||ex>=m.W-1||ey>=m.H-1) break;
       var need=a1mNeed(m,ex,ey)-m.dist[ey*m.W+ex];   // the SAME requirement a1mFree will apply
       if(need<=0) break;
-      var add=Math.min(A1M_LIFT-lift,(need/A1M_CH)+0.5);
+      var add=Math.min(liftMax-lift,(need/A1M_CH)+0.5);
       if(add<=0) break;
       tx+=nx*add; ty+=ny*add; lift+=add;
     }
@@ -3701,7 +5357,7 @@
   // deliberately exempt from the renderer's prop pockets. Without this she would spawn embedded
   // and never move again.
   function a1mUnstick(scene,m,x,y){
-    var fd=a1mFootDy(scene);                                                 // score the SOLES, like a1mFree tests them
+    var fd=a1mFootDy(scene,m);                                               // score the SOLES, like a1mFree tests them
     for(var r=4;r<=288;r+=4){                                                // bounded at 6 cells
       var best=null, bd=-1, k, n=Math.max(8,Math.round(r*0.9));
       for(k=0;k<n;k++){
@@ -3740,10 +5396,11 @@
      mouth, a tomb, a signpost, a village -- so a cell-shaped blocker is what its picture actually
      is, and bumping one is how the engine interacts with it. Those keep the tile test, exactly as
      the dungeon keeps A1M_PROP beside its mask. Removing 2 and 4 from that table is the whole
-     point: the field owns them now, at the painted edge instead of the lattice edge.
+     point: continuous water and mountain (or the Act 1 alpha union) own them at the painted edge
+     instead of the lattice edge.
 
      THIS SPLIT IS ALSO THE OWNERSHIP BOUNDARY a1mFree uses to decide who answers for a cell: the
-     FIELD answers for 2, 4 and 5 (the painted masses, and the decks carved back out of them) and
+     field/Act 1 alpha answers for 2, 4 and 5 (the painted masses and bridge decks) and
      scene.canMove answers for every other cell. See a1mFree.
 
      BRIDGES ARE CARVED BACK OUT, OR THE MAP DISCONNECTS. waterField's membership counts tile 5 as
@@ -3771,7 +5428,8 @@
   var owmState=null;
   // Presence scan, as drawTerrain does it, WITH one cell of margin -- fieldAt interpolates across
   // tile CENTRES, so a mass one cell outside the window still reaches into it. Bit 1 water (and
-  // bridge, which waterField counts), bit 2 mountain.
+  // bridge, which waterField counts), bit 2 mountain. Active Act 1 paint suppresses only mountain
+  // pixels inside its exact bounds; padded neighbors retain the analytic mountain blocker.
   function owmPresence(map,X0,Y0,winW,winH){
     var p=0, sx, sy, sv;
     for(sy=-1;sy<=winH && p!==3;sy++) for(sx=-1;sx<=winW;sx++){
@@ -3779,16 +5437,17 @@
       if(sv===2||sv===5) p|=1; else if(sv===4) p|=2; }
     return p;
   }
-  function owmBuild(map,X0,Y0,winW,winH){
+  function owmBuild(map,X0,Y0,winW,winH,act1Paint){
     var cw=winW*N, ch=winH*N, wox=X0*N, woy=Y0*N, n=cw*ch;
     if(!(n>0)) return null;
-    var pres=owmPresence(map,X0,Y0,winW,winH), hasW=!!(pres&1), hasM=!!(pres&2);
+    var pres=owmPresence(map,X0,Y0,winW,winH), hasW=!!(pres&1), hasM=!!(pres&2), bounds=act1Paint&&a1aPlateBounds();
     var dist=new Uint16Array(n), INF=60000, i,x,y,v;
     if(!hasW && !hasM){ for(i=0;i<n;i++) dist[i]=INF; }          // open ground: nothing to collide with
     else for(y=0;y<ch;y++){ var wy=woy+y, row=y*cw, ty=(wy/N)|0;
       for(x=0;x<cw;x++){ var wx=wox+x, b=0;
         if(hasW && waterField(map,wx,wy)>=0.50) b=1;             // the SAME 0.50 drawTerrain paints with
-        if(!b && hasM && mountainField(map,wx,wy)>=0.50) b=1;
+        var inAct1=!!(bounds&&(wx/N|0)>=bounds[0]&&(wx/N|0)<=bounds[2]&&(wy/N|0)>=bounds[1]&&(wy/N|0)<=bounds[3]);
+        if(!b && hasM && !(act1Paint&&inAct1) && mountainField(map,wx,wy)>=0.50) b=1;
         if(b && et(map,(wx/N)|0,ty)===5) b=0;                    // a bridge deck is walkable water
         dist[row+x]=b?0:INF; } }
     // chamfer 3-4, two sweeps -- identical to a1mBuild, over a field built rather than loaded
@@ -3840,12 +5499,17 @@
      within reach of a coast. Deep inland every candidate ties -- which is exactly what today's
      window chamfer already does whenever the window holds no water at all.
 
-     FALLBACK-SAFE, three ways: no .bin (404, malformed, still loading) -> owmBuild; a window that
-     reaches outside the baked plate -> owmBuild; and __DQ_WIGGLE__ or __DQ_WATER_THRESH__ moved
-     off the values the bake was taken at -> owmBuild, so the field knobs still re-tune the
-     coastline live for review exactly as they did before. */
+     FALLBACK-SAFE outside the owned plate: no .bin (404, malformed, still loading), a window
+     reaching outside the baked plate, or changed __DQ_WIGGLE__/__DQ_WATER_THRESH__ keeps the old
+     analytic path there. Inside the owned Act 1 plate, missing or unauthenticated v2 evidence
+     holds the movement field unavailable; it never falls back to a different collision field. */
   var OWM_UNBAKED=0xFFFD, OWM_BLOCKED=0xFFFE, OWM_FARCELL=0xFFFF;
-  var owmBake=null, owmBakeReq=false;
+  var OWM_HEADER=96, OWM_VERSION=2, OWM_SUPPORT_PROFILE='act1-forward-20261007-v1';
+  var OWM_SUPPORT_SCHEMA='a1ow-effective-support-v1', OWM_SUPPORT_THRESHOLD=12, OWM_SUPPORT_WIGGLE=0.26;
+  var OWM_SUPPORT_PAD=40, OWM_SUPPORT_GUARD=4, OWM_SUPPORT_FAR=255;
+  var OWM_SUPPORT_SEMANTICS_SHA256='a6e6e7f228d040381539618d99f03e774a16dd7cadbaf8cc76a115934d324f67';
+  var owmBake=null, owmBakeReq=false, owmSupportEpoch=0, owmSupportPending=null;
+  var owmSupportVerified=null, owmSupportFailure=null, owmObservedPlateMap=null, owmObservedPlateRepairs=null;
   function owmBakeLoad(){                                        // once, like a1dFetch's manifest
     if(owmBakeReq) return; owmBakeReq=true;
     try{
@@ -3853,69 +5517,153 @@
       r.responseType='arraybuffer';
       r.onload=function(){ try{ owmBake=owmBakeParse(r.response)||null; }catch(e){ owmBake=null;
         if(window.__DQ_DEBUG__) console.log('dq owm bake '+e); } };
-      r.onerror=function(){ owmBake=null; };                     // no bake -> owmBuild, as before
+      r.onerror=function(){ owmBake=null; };                     // owned plate holds; outside keeps analytic fallback
       r.send();
     }catch(e){ owmBake=null; }
   }
   function owmBakeParse(ab){
-    if(!ab || ab.byteLength<64) return null;
+    if(!ab || ab.byteLength<OWM_HEADER) return null;
     var h=new DataView(ab);
     if(h.getUint32(0,true)!==0x574F3141) return null;             // 'A1OW'
-    if(h.getUint16(4,true)!==1) return null;                      // format version
+    if(h.getUint16(4,true)!==OWM_VERSION) return null;            // v2 support-bound format only
     if(h.getUint16(6,true)!==N) return null;                      // baked at this file's px/cell
     var mw=h.getUint16(8,true), mh=h.getUint16(10,true), far=h.getUint16(12,true);
     var nb=h.getUint32(16,true), hash=h.getUint32(20,true), cells=mw*mh;
-    if(!(mw>0&&mh>0&&far>0&&far<256)) return null;
-    if(ab.byteLength!==64+cells*2+nb*N*N) return null;            // truncated or padded -> refuse
-    return { mapW:mw, mapH:mh, far:far, hash:hash,
-             idx:new Uint16Array(ab,64,cells), blk:new Uint8Array(ab,64+cells*2,nb*N*N) };
+    if(!(mw===320&&mh===400&&far===OWM_SUPPORT_FAR&&h.getUint16(14,true)===OWM_HEADER)) return null;
+    if(h.getUint32(24,true)!==0||h.getUint32(28,true)!==0) return null;
+    var semantics=Array.prototype.map.call(new Uint8Array(ab,32,32),function(v){return v.toString(16).padStart(2,'0');}).join('');
+    var support=Array.prototype.map.call(new Uint8Array(ab,64,32),function(v){return v.toString(16).padStart(2,'0');}).join('');
+    if(semantics!==OWM_SUPPORT_SEMANTICS_SHA256) return null;
+    if(ab.byteLength!==OWM_HEADER+cells*2+nb*N*N) return null;   // truncated or padded -> refuse
+    return { mapW:mw, mapH:mh, far:far, hash:hash, semantics:semantics, support:support,
+             idx:new Uint16Array(ab,OWM_HEADER,cells),
+             blk:new Uint8Array(ab,OWM_HEADER+cells*2,nb*N*N) };
   }
-  /* The bake describes ONE map, and mapData reaches this file through three hands: the bundle's
-     generator, consolidateMapData's mountain clustering, and act1-world-map.js writing the owner's
-     painted Act 1 plate over the middle of it. That last one moves 5,817 cells in or out of the
-     painted masses, so a bake taken before it describes a coastline the hero is not standing on --
-     which is exactly what this check caught the first time it ran on device.
-     IT HASHES MEMBERSHIP, NOT TILES. Gameplay writes into mapData too (a chest opens, a boss
-     falls), and a whole-map hash would send the overworld back to the 470 ms path forever the
-     first time one did. Only water, bridge and mountain can move the field, so only those are
-     hashed. FNV-1a/32, because there is no synchronous crypto here.
-
-     NOT MEMOISED ON THE ARRAY, and that is the fix for the owner's "loading is still extremely
-     slow, even after battles" (2026-08-07). It used to cache `{map, h}` and return the cached `h`
-     whenever the same ARRAY came back. But act1-world-map.js writes the owner's plate INTO the
-     rows of that array (`target[...]=...`), so the contents change while the identity does not:
-     any call that landed before the plate cached the pre-plate hash, nothing ever invalidated it,
-     and owmBakeFor then compared a stale hash against the bake's and returned null FOR THE LIFE
-     OF THAT ARRAY. Measured on device: Coastal Reef never baked at all (analytic 2008-2615 ms),
-     and after ANY town round trip the same window went from `baked 1.0 ms` to `analytic 634 ms`
-     and never recovered that session.
-
-     A generation counter bumped by the plate would fix this writer and leave the next one to
-     rediscover the bug, because memoising a value derived from IN-PLACE MUTATED contents has no
-     sound key that is not the contents themselves. So it is simply recomputed. The single caller
-     is owmBakeFor, reached only when owmFor rebuilds its window -- about once every 12 cells of
-     travel, not per frame -- and the loop measures 0.22 ms over the 320x400 map against the 1-2 ms
-     that rebuild costs when it hits the bake and the 634-2615 ms it costs when it misses. The memo
-     was saving 0.22 ms and risking all of it. */
-  function owmMapHash(map){
-    var h=0x811c9dc5, H=map.length, W=map[0].length, y, x, row, v;
-    for(y=0;y<H;y++){ row=map[y];
-      for(x=0;x<W;x++){ v=row[x];
-        h=(h^(v===2?1:v===5?2:v===4?3:0))>>>0; h=Math.imul(h,0x01000193)>>>0; } }
-    return h>>>0;
+  // The v2 baker support identity is based on the exact effective field inputs, not a raw map
+  // rectangle. Remote water can affect this region through the global MUTED component rule.
+  // These helpers are also source-pinned by bake_act1_overworld_walk.mjs's semantics digest.
+  function owmSupportBounds(map){
+    if(!map||map.length!==400||!map[0]||map[0].length!==320) return null;
+    var b=a1aPlateBounds(); if(!b||b.length<4) return null;
+    if(b[0]!==16||b[1]!==218||b[2]!==163||b[3]!==399) return null;
+    var gx0=Math.max(0,b[0]-OWM_SUPPORT_PAD-OWM_SUPPORT_GUARD),
+        gy0=Math.max(0,b[1]-OWM_SUPPORT_PAD-OWM_SUPPORT_GUARD),
+        gx1=Math.min(map[0].length-1,b[2]+OWM_SUPPORT_PAD+OWM_SUPPORT_GUARD),
+        gy1=Math.min(map.length-1,b[3]+OWM_SUPPORT_PAD+OWM_SUPPORT_GUARD);
+    return {x0:Math.max(0,gx0-1),y0:Math.max(0,gy0-1),
+      x1:Math.min(map[0].length-1,gx1+1),y1:Math.min(map.length-1,gy1+1)};
+  }
+  function owmSupportEt(map,x,y,muted,W){
+    var row=map[y]; if(!row||row[x]==null) return 0;
+    var v=row[x]; if(v===2&&muted.has(y*W+x)) return 0;
+    return v;
+  }
+  function owmSupportInputBytes(map){
+    var bounds=owmSupportBounds(map); if(!bounds) return null;
+    var W=map[0].length,H=map.length;
+    for(var y=0;y<H;y++) if(!map[y]||map[y].length!==W) return null;
+    var muted=buildMutedWater(map,OWM_SUPPORT_THRESHOLD);
+    var values=new Uint8Array((bounds.x1-bounds.x0+1)*(bounds.y1-bounds.y0+1)),at=0,v;
+    for(y=bounds.y0;y<=bounds.y1;y++) for(var x=bounds.x0;x<=bounds.x1;x++){
+      v=owmSupportEt(map,x,y,muted,W);
+      values[at++]=v===2?1:v===5?2:v===4?3:0;
+    }
+    var domain=JSON.stringify({schema:OWM_SUPPORT_SCHEMA,profileId:OWM_SUPPORT_PROFILE,
+      bounds:bounds,dimensions:[W,H],tile:N,far:OWM_SUPPORT_FAR,platePad:OWM_SUPPORT_PAD,
+      guard:OWM_SUPPORT_GUARD,mutedWaterThreshold:OWM_SUPPORT_THRESHOLD,
+      waterWiggle:OWM_SUPPORT_WIGGLE,semanticsSha256:OWM_SUPPORT_SEMANTICS_SHA256});
+    var bytes=new Uint8Array(domain.length+1+values.length),i,h=0x811c9dc5;
+    for(i=0;i<domain.length;i++) bytes[i]=domain.charCodeAt(i);
+    for(i=0;i<values.length;i++) bytes[domain.length+1+i]=values[i];
+    for(i=0;i<bytes.length;i++){ h=(h^bytes[i])>>>0; h=Math.imul(h,0x01000193)>>>0; }
+    return {bounds:bounds,bytes:bytes,fnv32:h>>>0};
+  }
+  var owmSupportEpoch=0, owmSupportPending=null, owmSupportVerified=null, owmSupportFailure=null;
+  var owmObservedPlateMap=null, owmObservedPlateRepairs=null;
+  function owmInvalidateSupport(){
+    owmSupportEpoch++; owmSupportPending=null; owmSupportVerified=null; owmSupportFailure=null; owmState=null;
+  }
+  function owmObservePlateLifecycle(){
+    var p=window.__ACT1_WORLD_MAP__,s=p&&p.state;
+    if(!s) return;
+    var applied=s.appliedMap||null,repairs=(s.repairs||0);
+    if(owmObservedPlateMap!==null&&(applied!==owmObservedPlateMap||repairs!==owmObservedPlateRepairs))
+      owmInvalidateSupport();
+    owmObservedPlateMap=applied; owmObservedPlateRepairs=repairs;
+  }
+  function owmSupportMatches(a,b){
+    if(!a||!b||a.length!==b.length) return false;
+    for(var i=0;i<a.length;i++) if(a[i]!==b[i]) return false;
+    return true;
+  }
+  function owmSupportHex(ab){
+    var bytes=new Uint8Array(ab),out='';
+    for(var i=0;i<bytes.length;i++) out+=bytes[i].toString(16).padStart(2,'0');
+    return out;
+  }
+  // Returns ready/pending/invalid. The O(map) fresh floodfill+support walk is run only on a
+  // field-window cache miss. While SHA is pending, calls coalesce; its completion callback then
+  // verifies the current map reference AND recomputes effective bytes to catch same-array writes.
+  function owmSupportFor(scene,map,b){
+    if(!b||b.semantics!==OWM_SUPPORT_SEMANTICS_SHA256||b.mapW!==320||b.mapH!==400) return 'invalid';
+    if((typeof window.__DQ_WIGGLE__==='number'&&window.__DQ_WIGGLE__!==OWM_SUPPORT_WIGGLE)
+      ||(typeof window.__DQ_WATER_THRESH__==='number'&&window.__DQ_WATER_THRESH__!==OWM_SUPPORT_THRESHOLD)) return 'invalid';
+    if(owmSupportFailure&&owmSupportFailure.map===map&&owmSupportFailure.epoch===owmSupportEpoch) return 'invalid';
+    if(owmSupportPending&&owmSupportPending.scene===scene&&owmSupportPending.map===map
+      &&owmSupportPending.epoch===owmSupportEpoch) return 'pending';
+    // Once the exact support bytes have been authenticated and the first post-SHA call has
+    // rechecked them, later window rebuilds reuse that result for this map/setup epoch. The only
+    // ordinary same-array overworld writer is the observed plate repair lifecycle above; map
+    // replacement and plate repair both invalidate this epoch before a field can be reused.
+    if(owmSupportVerified&&owmSupportVerified.map===map&&owmSupportVerified.epoch===owmSupportEpoch
+      &&!owmSupportVerified.justResolved){
+      if(scene.currentMapId==='overworld'&&scene.mapData===map) return 'ready';
+      owmSupportVerified=null; owmState=null;
+    }
+    var input=owmSupportInputBytes(map); if(!input) return 'invalid';
+    if(input.fnv32!==b.hash){ owmSupportFailure={map:map,epoch:owmSupportEpoch,reason:'support-fnv'}; return 'invalid'; }
+    if(owmSupportVerified&&owmSupportVerified.map===map&&owmSupportVerified.epoch===owmSupportEpoch){
+      // FNV is only a fast header prefilter. Even on the first lookup after async SHA completion,
+      // the exact effective bytes must still match the bytes that were authenticated.
+      if(owmSupportMatches(input.bytes,owmSupportVerified.bytes)){
+        if(owmSupportVerified.justResolved) owmSupportVerified.justResolved=false;
+        return 'ready';
+      }
+      owmSupportVerified=null; owmState=null;
+    }
+    var subtle=window.crypto&&window.crypto.subtle;
+    if(!subtle||typeof subtle.digest!=='function'){ owmSupportFailure={map:map,epoch:owmSupportEpoch,reason:'webcrypto-unavailable'}; return 'invalid'; }
+    var work={scene:scene,map:map,epoch:owmSupportEpoch,bytes:input.bytes}; owmSupportPending=work;
+    try{
+      subtle.digest('SHA-256',input.bytes).then(function(digest){
+        if(owmSupportPending!==work) return;
+        if(scene.currentMapId!=='overworld'||scene.mapData!==map||owmSupportEpoch!==work.epoch){
+          owmSupportPending=null; owmSupportFailure={map:map,epoch:work.epoch,reason:'stale-scene-map'}; return;
+        }
+        var current=owmSupportInputBytes(scene.mapData);
+        if(!current||!owmSupportMatches(work.bytes,current.bytes)||current.fnv32!==b.hash
+          ||owmSupportHex(digest)!==b.support){
+          owmSupportPending=null; owmSupportFailure={map:map,epoch:work.epoch,reason:'changed-or-mismatched-support'}; return;
+        }
+        owmSupportPending=null; owmSupportVerified={map:map,epoch:work.epoch,bytes:current.bytes,justResolved:true};
+      }).catch(function(){
+        if(owmSupportPending===work){ owmSupportPending=null; owmSupportFailure={map:map,epoch:work.epoch,reason:'digest-failed'}; }
+      });
+    }catch(e){ owmSupportPending=null; owmSupportFailure={map:map,epoch:work.epoch,reason:'digest-failed'}; return 'invalid'; }
+    return 'pending';
   }
   function owmBakeFor(map){
     var b=owmBake; if(!b) return null;
-    if(typeof window.__DQ_WIGGLE__==='number' && window.__DQ_WIGGLE__!==0.26) return null;
-    if(typeof window.__DQ_WATER_THRESH__==='number' && window.__DQ_WATER_THRESH__!==12) return null;
-    if(map.length!==b.mapH || map[0].length!==b.mapW) return null;
-    if(owmMapHash(map)!==b.hash) return null;
+    if(typeof window.__DQ_WIGGLE__==='number'&&window.__DQ_WIGGLE__!==OWM_SUPPORT_WIGGLE) return null;
+    if(typeof window.__DQ_WATER_THRESH__==='number'&&window.__DQ_WATER_THRESH__!==OWM_SUPPORT_THRESHOLD) return null;
+    if(map.length!==b.mapH||map[0].length!==b.mapW) return null;
     return b;
   }
   // Assemble owmBuild's window out of the plate: one fill or one 48-row copy per CELL, against
   // owmBuild's 2.965 M evaluations plus two sweeps over the same. Uint8 rather than Uint16 because
   // every value is clamped; every sampler reads it as a number either way.
-  // `plate`: the Act 1 override owns this map, so the hero is confined to the plate -- see owmFor.
+  // `plate`: the hero stands on the authored Act 1 rect. Only there may
+  // unbaked window-margin cells be treated as solid; later acts share this map.
   function owmAssemble(b,X0,Y0,winW,winH,plate){
     var cw=winW*N, ch=winH*N; if(!(cw>0&&ch>0)) return null;
     var idx=b.idx, blk=b.blk, far=b.far, mw=b.mapW, mh=b.mapH;
@@ -3946,20 +5694,57 @@
             for(x=0;x<N;x++) dist[d+x]=blk[s+x]; } } } }
     return { W:cw, H:ch, ox:X0*N, oy:Y0*N, dist:dist, prop:owmTileBlock(), ow:1 };
   }
+  function owmLocalWindow(map,hx,hy,rescue){
+    var w=Math.min(rescue?24:14,map[0].length), h=Math.min(rescue?24:14,map.length);
+    var tx=Math.floor(hx/N), ty=Math.floor(hy/N), x, y;
+    if(rescue){ x=tx-11; y=ty-11; }
+    else { x=Math.floor((tx-5)/2)*2; y=Math.floor((ty-5)/2)*2; }
+    return {x:Math.max(0,Math.min(map[0].length-w,x)),y:Math.max(0,Math.min(map.length-h,y)),w:w,h:h};
+  }
+  function owmRescueFor(scene,x,y){
+    var map=scene&&scene.mapData; if(!map||!map.length||!map[0]) return null;
+    if(a1aPlateOwns(scene)&&a1aPlateCell(Math.floor(x/N),Math.floor(y/N))){
+      if(owEnsureMapSetup(scene)) owSetupPending=true;
+      owmObservePlateLifecycle();
+      owmBakeLoad();
+      var bake=owmBakeFor(map);
+      if(owmSupportFor(scene,map,bake)!=='ready') return null;
+    }
+    var a=owmLocalWindow(map,x,y,true);
+    var act1Paint=a1aPlateOwns(scene)&&a1aPlateCell(Math.floor(x/N),Math.floor(y/N));
+    return owmBuild(map,a.x,a.y,a.w,a.h,act1Paint);
+  }
   function owmFor(scene){
-    if(window.__DQ_OW_CONTINUOUS__===false) return null;         // review escape hatch, like __A1_DNG_CONTINUOUS__
     if(!scene || scene.currentMapId!=='overworld') return null;  // only the BFS-validated real overworld
     var map=scene.mapData; if(!map||!map.length||!map[0]) return null;
     var hero=scene.hero; if(!hero||!hero.scene) return null;
     var cam=scene.cameras&&scene.cameras.main; if(!cam||!cam.worldView) return null;
     owmBakeLoad();
+    owmObservePlateLifecycle();
     // The map must be FINISHED before its collision field is derived from it -- consolidated and
     // plated, i.e. the shape act1-overworld-walk.bin was baked over. See owEnsureMapSetup for what
     // deriving from a half-set-up map cost and for why this call is not a reordering of the work.
     if(owEnsureMapSetup(scene)) owSetupPending=true;
-    var winW=Math.ceil(cam.worldView.width/TILE)+2*MARGIN, winH=Math.ceil(cam.worldView.height/TILE)+2*MARGIN;
-    var X0=windowStart(cam.worldView.x,winW,map[0].length), Y0=windowStart(cam.worldView.y,winH,map.length);
-    var key=X0+'_'+Y0+'_'+winW+'_'+winH;
+    owmObservePlateLifecycle();
+    var hx=owCanonical(hero.x), hy=owCanonical(hero.y);
+    // The same 320x400 map contains every act. Only a hero standing on the
+    // authored Act 1 rect may treat unbaked cells in the window as solid.
+    var plate=a1aPlateOwns(scene)&&a1aPlateCell(Math.floor(hx/N),Math.floor(hy/N));
+    var winW,winH,X0,Y0;
+    if(plate){
+      winW=Math.ceil(cam.worldView.width/OW_TILE)+2*MARGIN;
+      winH=Math.ceil(cam.worldView.height/OW_TILE)+2*MARGIN;
+      X0=windowStart(cam.worldView.x,winW,map[0].length,OW_TILE);
+      Y0=windowStart(cam.worldView.y,winH,map.length,OW_TILE);
+    } else {
+      // The collider only queries the hero's soles and a <=0.12s substep.
+      // Five cells of margin exceed the 85px distance clamp, the 23px
+      // clearance and a 42px worst-frame move combined. A blocked landing
+      // gets a larger field for the separate six-cell rescue search.
+      var local=owmLocalWindow(map,hx,hy,false);
+      winW=local.w; winH=local.h; X0=local.x; Y0=local.y;
+    }
+    var key=X0+'_'+Y0+'_'+winW+'_'+winH+'_'+(plate?'plate':'outside');
     /* SHE MUST BE INSIDE THE WINDOW, AND THAT IS DECIDED BEFORE IT IS BUILT, NOT AFTER.
        The identical test lives four lines below, against the built field's own ox/oy/W/H -- but
        those are just X0*N, Y0*N, winW*N and winH*N, every one of them known here. Asking first
@@ -3972,24 +5757,27 @@
        outside the Act 1 plate so it cannot come from the bake -- and owmBuild synthesised
        3.85 M px of waterField/mountainField for it, 411.8 ms, one frame before the real window
        replaced it. Rejecting it up front is a straight deletion of that block. */
-    var fx0=hero.x-X0*N, fy0=hero.y-Y0*N;
-    if(fx0<8||fy0<8||fx0>=winW*N-8||fy0>=winH*N-8) return null;  // outside -> the engine's own stepping
+    var fx0=hx-X0*N, fy0=hy-Y0*N;
+    if(fx0<8||fy0<8||fx0>=winW*N-8||fy0>=winH*N-8) return null;  // stale window -> hold; never run a 48px step
     // Identity on the ARRAY as well as the window: a town exit swaps mapData wholesale, and a field
     // built from the old array describes terrain that is no longer there.
     if(!owmState || owmState.map!==map || owmState.key!==key){
       var pf=(window.performance&&performance.now)?performance:null, t0=pf?pf.now():0;
-      var b=owmBakeFor(map), plate=a1aPlateOwns(scene);
+      var b=owmBakeFor(map);
+      var supportStatus=b?owmSupportFor(scene,map,b):'invalid';
+      if(supportStatus!=='ready'&&plate) return null;             // a support mismatch never falls back on the owned plate
+      if(supportStatus!=='ready') b=null;                        // outside the plate keeps its existing analytic path
       var mm=b?owmAssemble(b,X0,Y0,winW,winH,plate):null, src=mm?'baked':'analytic';
       // COLD START. act1-overworld-walk.bin arrives asynchronously, so the first window or two can
       // be asked for before it lands -- and on the plate that used to mean synthesising 3.85 M px
       // analytically for a field the bake was about to answer in 4 ms. Measured 541 ms at boot.
-      // Returning null is not a failure: it is the same "outside -> the engine's own stepping" path
-      // this function already takes when the hero is not inside the window, so she steps on the
-      // engine's own grid for the moment it takes the file to arrive, under the loading cover.
-      // Only where the plate owns the map, where the bake IS the authority and is known to cover
-      // every reachable cell; elsewhere the analytic field is still the only answer there is.
+      // On the compressed overworld null means HOLD under the loading cover. a1mInstall owns all
+      // overworld frames, so the frozen engine's 48px tween cannot become a fallback. Only while
+      // the hero stands on the authored rect may a missing bake hold movement; elsewhere the
+      // analytic field remains the answer.
       if(!mm && plate) return null;
-      if(!mm) mm=owmBuild(map,X0,Y0,winW,winH);
+      if(!mm) mm=owmBuild(map,X0,Y0,winW,winH,plate);
+      mm.local=!plate;
       var ms=pf?(pf.now()-t0):-1;                                // measured BEFORE the debug scan
       owmState={ map:map, key:key, m:mm };
       // Published because this rebuild is the one thing in the overworld that can drop a frame,
@@ -4004,8 +5792,8 @@
     // Kept, though the pre-build test above now answers the same question off the same numbers:
     // this one reads the field's OWN geometry, so it still holds if a builder ever returns
     // something other than the window it was asked for. It costs four comparisons.
-    var fx=hero.x-m.ox, fy=hero.y-m.oy;                          // she must be inside it, with room to work
-    if(fx<8||fy<8||fx>=m.W-8||fy>=m.H-8) return null;            // outside -> the engine's own stepping
+    var fx=hx-m.ox, fy=hy-m.oy;                                  // field remains in canonical 48px space
+    if(fx<8||fy<8||fx>=m.W-8||fy>=m.H-8) return null;            // stale field -> hold; next frame rebuilds
     return m;
   }
   // The field in force for this scene: the dungeon's baked mask, else the overworld's derived one.
@@ -4015,6 +5803,49 @@
     if(m) return m;
     try{ return owmFor(scene); }catch(e){ if(window.__DQ_DEBUG__) console.log('dq owm '+e+(e&&e.stack||'')); }
     return null;
+  }
+  // Startup relocation must ask the same live authority as movement. The caller supplies
+  // physical sprite coordinates (which can be fractional at OW_SCALE); keep that conversion
+  // here so a saved sub-tile position is tested exactly as a1mStep would test it.
+  function a1mOverworldSpawnCheck(scene,physicalX,physicalY){
+    if(!owScene(scene)||!scene.hero||!Number.isFinite(physicalX)||!Number.isFinite(physicalY))
+      return {status:'unavailable',reason:'scene-or-position'};
+    var x=owCanonical(physicalX), y=owCanonical(physicalY), m;
+    try{ m=a1mAnyFor(scene); }catch(e){ m=null; }
+    if(!m||!m.ow) return {status:'pending',reason:'movement-field'};
+    var soleX=x, soleY=y+a1mFootDy(scene,m), fx=soleX-m.ox, fy=soleY-m.oy;
+    // A moving window cannot answer for a point outside its distance field. Report that as
+    // unevaluable so a caller never mistakes a stale/out-of-window sample for a collision.
+    if(fx<1||fy<1||fx>=m.W-1||fy>=m.H-1)
+      return {status:'outside-field',reason:'movement-field-extent'};
+    if(a1fRequiredAt(scene,x,y)&&(!A1A_FOREST.mode||!a1fReady(scene))){
+      var uf=A1A.underpaint&&A1A.underpaint.forest;
+      var failed=A1A_FOREST.status==='error'||!!(uf&&uf.status==='error');
+      return {status:failed?'error':'pending',reason:'visible-forest-authority',
+        forestStatus:A1A_FOREST.status,underpaintStatus:uf&&uf.status||null};
+    }
+    return {status:'ready',free:a1mFree(scene,m,x,y)};
+  }
+  // Re-anchor only positions that are recognisably the frozen engine's 48px cell
+  // centres. Continuous physical positions are otherwise left untouched. This
+  // catches resume and every interior -> overworld transition without changing
+  // the logical save cell or letting a one-frame 48px jump reach preRender.
+  function owSyncPhysicalFrame(scene){
+    if(!owScene(scene)) return;
+    var map=scene.mapData, hero=scene.hero, cam=scene.cameras&&scene.cameras.main;
+    if(map&&map.length&&map[0]&&cam){
+      var bw=map[0].length*OW_TILE,bh=map.length*OW_TILE,bk=bw+'x'+bh,b=cam._bounds;
+      if(scene.__dqOwScaleBounds!==bk||!b||!Number.isFinite(b.width)||!Number.isFinite(b.height)||Math.abs(b.width-bw)>0.01||Math.abs(b.height-bh)>0.01){
+        cam.setBounds(0,0,bw,bh);
+        scene.__dqOwScaleBounds=bk;
+      }
+    }
+    if(!hero||!hero.scene||!Number.isFinite(scene.heroTileX)||!Number.isFinite(scene.heroTileY)) return;
+    var lx=scene.heroTileX*TILE+TILE/2, ly=scene.heroTileY*TILE+TILE/2;
+    if(Math.abs(hero.x-lx)<0.01&&Math.abs(hero.y-ly)<0.01){
+      hero.x=owCellCenter(scene.heroTileX); hero.y=owCellCenter(scene.heroTileY);
+      if(cam&&cam.centerOn) cam.centerOn(hero.x,hero.y);
+    }
   }
   // State identity for the mover. Keyed on the MAP, never on the window -- the walk cadence and the
   // bump debounce must survive the field being rebuilt under her every 12 cells of travel.
@@ -4036,6 +5867,9 @@
     if(scene.mirrorActive){ v.x=-v.x; v.y=-v.y; }
     v.m=Math.max(0,Math.min(1,mag));
     return v;
+  }
+  function a1mExitRetryOutward(inp,p){
+    return !!(inp && ((inp.x*p.dx)+(inp.y*p.dy))>0.5);
   }
   /* Walking into an OBJECT is the engine's interaction verb; mirror its own bump branch exactly
      (tile 4 -> tryOpenTreasure, 7 -> tryBossInteract, 18 -> tryReadPlaque) rather than inventing
@@ -4092,8 +5926,8 @@
     // is. Probing from the sprite centre would have looked a cell north of the thing that blocked.
     // Reach is A1M_BUMP_REACH, not a flat A1M_FOOT+2 -- see its own comment for why a shorter
     // probe systematically undershoots a due-north object.
-    var gy=y+a1mFootDy(scene);
-    var tx=(((x+dx/l*A1M_BUMP_REACH)/TILE)|0), ty=(((gy+dy/l*A1M_BUMP_REACH)/TILE)|0);
+    var gy=y+a1mFootDy(scene,m), reach=a1mMetric(m,A1M_BUMP_REACH);
+    var tx=(((x+dx/l*reach)/TILE)|0), ty=(((gy+dy/l*reach)/TILE)|0);
     var row=scene.mapData[ty], t=row?row[tx]:undefined;
     if(t===undefined || !(m.prop||A1M_PROP)[t]) return;
     var now=Date.now(); if(now-a1mState.bump<700) return; a1mState.bump=now;
@@ -4814,6 +6648,9 @@
   function a1mStep(scene,dtms){
     var m=a1mAnyFor(scene); if(!m) return;
     var hero=scene.hero; if(!hero||!hero.scene) return;
+    // Explicit V8 readiness is a movement gate, not a degraded tile fallback.
+    var hxReady=m.ow?owCanonical(hero.x):hero.x, hyReady=m.ow?owCanonical(hero.y):hero.y;
+    if(m.ow&&a1fRequiredAt(scene,hxReady,hyReady)&&(!A1A_FOREST.mode||!a1fReady(scene))) return;
     var key=a1mStateKey(scene);
     if(!a1mState || a1mState.scene!==scene || a1mState.key!==key)
       a1mState={ scene:scene, key:key, phase:0, bump:0 };
@@ -4822,10 +6659,30 @@
     // The hero SPRITE is the position of record. performTransition destroys and recreates it,
     // every entry path re-anchors it, and updateCamera follows it -- so a cached position would
     // silently diverge from the one the game itself believes in.
-    var x=hero.x, y=hero.y;
-    if(!a1mFree(scene,m,x,y)){ var u=a1mUnstick(scene,m,x,y); if(!u) return; x=u.x; y=u.y; }
+    var scaled=!!m.ow;
+    var x=scaled?owCanonical(hero.x):hero.x, y=scaled?owCanonical(hero.y):hero.y;
+    if(!a1mFree(scene,m,x,y)){
+      if(m.ow&&m.local){ var rescue=owmRescueFor(scene,x,y); if(rescue) m=rescue; }
+      var u=a1mUnstick(scene,m,x,y); if(!u) return; x=u.x; y=u.y;
+    }
 
     var inp=a1mInput(scene), moved=0;
+    // A transition query consumes the frozen scene's one-frame cooldown even
+    // when it returns null. Preserve that authored F1 mouth query while the
+    // player remains on the same cell, but require current outward input before
+    // asking again. Release/idle and inward input therefore do not auto-exit;
+    // held or newly pressed outward input may retry after the cooldown.
+    if(a1mExitRetry){
+      var ep=a1mExitRetry;
+      if(ep.scene!==scene || ep.mapId!==scene.currentMapId || ep.floor!==(scene.currentFloor||1)
+         || scene.heroTileX!==ep.x || scene.heroTileY!==ep.y){
+        a1mExitRetry=null;
+      } else if(a1mExitRetryOutward(inp,ep) && !(scene.transitionCooldown>0)){
+        var er=a1mAsk(scene,ep.x,ep.y);
+        if(er){ a1mExitRetry=null; try{ scene.performTransition(er); }catch(e){ if(window.__DQ_DEBUG__) console.log('a1 exit retry '+e); } return; }
+        a1mExitRetry=null;
+      }
+    }
     if(inp){
       scene.heroDir = Math.abs(inp.x)>Math.abs(inp.y) ? (inp.x>0?2:1) : (inp.y>0?0:3);
       var speed=a1mSpeed();
@@ -4835,14 +6692,18 @@
       // over 50 ms there and every frame's travel was being clipped to 0.05 s of it. 0.12 s is
       // safe to give back precisely because the substep loop below exists -- the worst frame it
       // admits is 30 px, walked in 6 px steps against the mask, so nothing can be tunnelled.
-      var total=speed*(0.45+0.55*inp.m)*Math.min(0.12,dtms/1000);
-      var n=Math.max(1,Math.ceil(total/A1M_STEP)), sx=inp.x*total/n, sy=inp.y*total/n, k;
+      // The solver and masks stay in canonical 48px space. Dividing only the
+      // overworld displacement by P preserves the existing physical px/s.
+      var total=speed*(0.45+0.55*inp.m)*Math.min(0.12,dtms/1000)/(scaled?OW_SCALE:1);
+      // Whole-forest sweeps at one physical pixel or less; old authorities retain their established step.
+      var maxStep=(m.ow&&a1fRequiredAt(scene,x,y))?(1/OW_SCALE):a1mMetric(m,A1M_STEP);
+      var n=Math.max(1,Math.ceil(total/maxStep)), sx=inp.x*total/n, sy=inp.y*total/n, k;
       for(k=0;k<n;k++){
         var nx=x+sx, ny=y+sy;
         if(a1mFree(scene,m,nx,ny)){ x=nx; y=ny; moved+=Math.sqrt(sx*sx+sy*sy); continue; }
         // The step was refused: give the engine its ASK-FIRST chance before anything glides past
         // the thing she walked into. See a1mDoor -- this is where the town entrances live.
-        if(a1mDoor(scene,m,x,y,sx,sy)){ hero.x=x; hero.y=y; return; }
+        if(a1mDoor(scene,m,x,y,sx,sy)){ hero.x=scaled?owPhysical(x):x; hero.y=scaled?owPhysical(y):y; return; }
         // Slide rather than stick: give up only what the rock actually took away -- which is the
         // component INTO the wall, not a whole axis. See a1mSlide. The axis retries stay as the
         // fallback for what the tangent cannot serve; they are what used to run alone.
@@ -4856,13 +6717,14 @@
         if(!slid){ a1mBump(scene,m,x,y,sx,sy); break; }
       }
     }
-    a1mState.phase += moved;                                                 // EUCLIDEAN px travelled
+    var physicalMoved=moved*(scaled?OW_SCALE:1);
+    a1mState.phase += physicalMoved;                                         // physical EUCLIDEAN px travelled
     // 12 frames = dir*3 + pose (hero-override.js). The cycle and its rate are the town's, held at
     // the locked 125 ms/pose by deriving the flip distance from the speed in force. See A1M_POSE.
     var posePx = a1mSpeed()*(A1M_POSE_MS/1000);
-    var pose = moved>0 ? A1M_POSE[Math.floor(a1mState.phase/posePx) % A1M_POSE.length] : 0;
+    var pose = physicalMoved>0 ? A1M_POSE[Math.floor(a1mState.phase/posePx) % A1M_POSE.length] : 0;
     try{ hero.setFrame(scene.heroDir*3+pose); }catch(e){}
-    hero.x=x; hero.y=y;
+    hero.x=scaled?owPhysical(x):x; hero.y=scaled?owPhysical(y):y;
 
     // ---- re-derive the tile the rest of the game runs on, and fire the per-step work exactly
     //      once per cell, exactly as the step tween's onComplete did.
@@ -4891,11 +6753,20 @@
     // the generated Act 1 floors contain, and props are opened by BUMPING, not by standing.
     var tx=(x/TILE)|0, ty=(y/TILE)|0;
     if(tx===scene.heroTileX && ty===scene.heroTileY) return;
+    var prevTx=scene.heroTileX, prevTy=scene.heroTileY;
     scene.heroTileX=tx; scene.heroTileY=ty;
     // checkTransition CONSUMES transitionCooldown on every call, so it must be asked once per
     // cell entered and never per frame.
+    var cooldownBefore=(typeof scene.transitionCooldown==='number')?scene.transitionCooldown:0;
     var tr=null; try{ tr=scene.checkTransition(tx,ty); }catch(e){}
     if(tr){ try{ scene.performTransition(tr); }catch(e){ if(window.__DQ_DEBUG__) console.log('a1 move tr '+e); } return; }
+    if(!tr && cooldownBefore>0 && (scene.transitionCooldown===cooldownBefore-1)
+       && (scene.currentFloor||1)===1 && A1D_MAPS[scene.currentMapId]
+       && a1dIsMouthCell(scene,tx,ty) && Math.abs(tx-prevTx)+Math.abs(ty-prevTy)===1
+       && a1mExitRetryOutward(inp,{dx:tx-prevTx,dy:ty-prevTy})){
+      a1mExitRetry={scene:scene,mapId:scene.currentMapId,floor:scene.currentFloor||1,
+                    x:tx,y:ty,dx:tx-prevTx,dy:ty-prevTy};
+    }
     try{ scene.onStep(); }catch(e){ if(window.__DQ_DEBUG__) console.log('a1 move step '+e); }
     try{ scene.updatePosition(); }catch(e){}
     try{ if(scene.fogEnabled && scene.updateFogVisibility) scene.updateFogVisibility(); }catch(e){}
@@ -4949,8 +6820,8 @@
   // WRAP sys.sceneUpdate, NOT scene.update. Phaser captures the scene's update method ONCE, in
   // bootScene/create (`y.sceneUpdate = v.update`), and calls `this.sceneUpdate.call(this.scene)`
   // from Systems.step forever after -- so a wrapper installed on `scene.update` after create()
-  // is never called. It is also reset to the no-op on shutdown/restart, which is why this is
-  // re-checked from tick() rather than latched with a one-shot flag.
+  // is never called. On create Phaser re-captures scene.update before emitting CREATE; install
+  // there as well as from tick(), so a held key cannot take one frozen 48px step first.
   //
   // The engine's update() is two halves: per-frame housekeeping (compass, visible tiles, minimap,
   // the mechanic timers), then an early return, then the cursor read that starts the 150 ms step
@@ -4959,16 +6830,37 @@
   // without patching, re-implementing or racing it.
   function a1mInstall(scene){
     var sys=scene&&scene.sys;
-    if(!sys||typeof sys.sceneUpdate!=='function'||sys.sceneUpdate.__a1m) return;
+    if(!sys) return;
+    var events=sys.events, hook=scene.__a1mCreateHook;
+    if(events&&typeof events.on==='function'&&(!hook||hook.events!==events)){
+      if(hook&&hook.events&&typeof hook.events.off==='function')
+        hook.events.off('create',hook.listener);
+      var listener=function(){ if(scene.sys&&scene.sys.events===events) a1mInstall(scene); };
+      events.on('create',listener);
+      scene.__a1mCreateHook={events:events,listener:listener};
+    }
+    if(typeof sys.sceneUpdate!=='function'||sys.sceneUpdate.__a1m) return;
     var orig=sys.sceneUpdate;
     var patched=function(time,delta){
       var on=false; try{ on=!!a1mAnyFor(this); }catch(e){}
+      var scaledOw=owScene(this);
+      if(!scaledOw) this.__dqOwScaleBounds=null;
+      // Scaling makes the frozen 48px tween an invalid fallback. Own every
+      // overworld frame; if its field is not ready a1mStep holds position.
+      if(scaledOw){ try{ owSyncPhysicalFrame(this); }catch(e){} on=true; }
+      var entryWaiting=!!(this&&this.__a1dEntryWaiting);
       // Off this scene/map entirely (battle, menu-driven scene swap, overworld->town): drop any
       // prompt left showing rather than let it survive into a screen it no longer applies to.
-      if(!on){ try{ a1mPromptHide(); }catch(e){} return orig.call(this,time,delta); }
+      if(!on&&!entryWaiting){
+        try{ a1mPromptHide(); }catch(e){}
+        var result=orig.call(this,time,delta);
+        if(owScene(this)) try{ owSyncPhysicalFrame(this); }catch(e){}
+        return result;
+      }
       var was=this.isMoving; this.isMoving=true;
       try{ orig.call(this,time,delta); } finally { this.isMoving=was; }
-      try{ a1mStep(this,delta); }catch(e){ if(window.__DQ_DEBUG__) console.log('a1 move '+e+(e&&e.stack||'')); }
+      if(on&&!entryWaiting) try{ a1mStep(this,delta); }catch(e){ if(window.__DQ_DEBUG__) console.log('a1 move '+e+(e&&e.stack||'')); }
+      if(owScene(this)) try{ owSyncPhysicalFrame(this); }catch(e){}
       // after the hero has moved, and before Phaser's preRender reads the scroll for this frame
       try{ a1mCam(this,delta); }catch(e){ if(window.__DQ_DEBUG__) console.log('a1 cam '+e); }
       try{ a1mPromptTick(this); }catch(e){ if(window.__DQ_DEBUG__) console.log('a1 prompt '+e); }
@@ -5135,6 +7027,7 @@
     if(sw<=0||sh<=0) return false;
     ctx.clearRect(0,0,winW*N,winH*N);                                       // map smaller than the window -> the rest stays clear
     ctx.drawImage(im,sx,sy,sw,sh,0,0,sw,sh);
+    a1dBlitted={scene:dngState.scene,key:a1dKey,mapData:dngState.scene.mapData};
     return true;
   }
   function drawDungeon(ctx,map,X0,Y0,winW,winH){
@@ -5343,6 +7236,13 @@
     if(!row || row[boss.x]!==7) return;                                          // not a live boss tile
     var cx=boss.x*TILE+TILE/2, cy=boss.y*TILE+TILE;                              // the anchor a1dBossVanish uses
     var e=a1dBossSprites[key];
+    // Game Over Retry can reuse this closure after the old WorldMapScene's
+    // display object has been destroyed. A truthy stale cache entry must not
+    // suppress creation of the live boss on the replacement scene.
+    if(e && (!e.spr || e.spr.scene!==scene || e.spr.destroyed===true)){
+      a1dBossDrop(key);
+      e=null;
+    }
     if(!e){
       var tex=a1dAssetTex(scene,'boss'); if(!tex) return;                        // PNG still loading -> next tick
       // The plate no longer carries a baked mark (see a1dBossVanishPlay), so the live sprite IS
@@ -5817,7 +7717,7 @@
     var W=map[0].length, H=map.length;
     MUTED=null;                                                                    // raw tile reads for fieldAt (no stale overworld water-muting)
     townRoad=buildRoadMask(map);                                                   // connected cross-road mask
-    if (terrainState&&terrainState.image){ try{terrainState.image.destroy();}catch(e){} try{if(terrainState.cimg)terrainState.cimg.destroy();}catch(e){} a1aDropAllGpu(); terrainState=null; lastReskinMapId=null; } // tear down stale overworld
+    if (terrainState&&terrainState.image){ try{terrainState.image.destroy();}catch(e){} try{if(terrainState.cimg)terrainState.cimg.destroy();}catch(e){} a1aDropPlateWaterBacking(terrainState,scene); a1aDropAllGpu(); terrainState=null; lastReskinMapId=null; } // tear down stale overworld
     if (overlayState&&overlayState.container){ try{overlayState.container.destroy();}catch(e){} overlayState=null; }
     destroyDng();
     if (townState&&townState.image){ try{townState.image.destroy();}catch(e){} }
@@ -5885,8 +7785,9 @@
   function owEnsureMapSetup(scene){
     if(!scene || scene.currentMapId!=='overworld' || owMapRef===scene.mapData) return false;
     var md=scene.mapData; if(!md||!md.length||!md[0]) return false;
+    owmInvalidateSupport();                            // this array is about to be consolidated and plated
     owMapRef=md;                                        // BEFORE the body: one attempt per array, even on throw
-    try{ consolidateMapData(scene);
+    try{ consolidateMapData(scene, act1ConsolidationSeed(scene));
          // Owner-locked Act 1 V3 plate: apply only after legacy mountain consolidation so
          // semantic forest, harbor water, and both bridge decks remain authoritative.
          if(window.__ACT1_WORLD_MAP__&&typeof window.__ACT1_WORLD_MAP__.apply==='function') window.__ACT1_WORLD_MAP__.apply(scene);
@@ -5944,32 +7845,32 @@
      pairs with pause(). Flipping `visible` leaves the pause/resume contract exactly as the bundle
      wrote it and touches nothing else.
 
-     RESTORE IS EVENT-DRIVEN, NOT POLLED, AND THAT IS THE WHOLE POINT. tick() runs on an 80 ms
-     interval; restoring from there would leave up to 80 ms of an undrawn canvas after the battle
-     tears its overlay down -- a black flash on every single return.
+     THE RETURN GATE STARTS EVENT-DRIVEN. tick() runs on an 80 ms interval, so the resume/start
+     events must establish the hold before the battle overlay is removed. tick() then rechecks the
+     exact visible-base coverage while the resumed scene rebuilds behind that hold.
 
      The ordering is not what it looks like, so do not "simplify" it. endBattle() calls
      ScenePlugin.resume, and ScenePlugin.resume does NOT resume anything: it is
      `this.manager.queueOp("resume", ...)` (bundle), deferred to the queue drain at the top of the
      NEXT game step. Systems.resume is the one that runs synchronously
      (`y.status=RUNNING, y.active=!0, v.emit(l.RESUME, ...)`), and it runs inside that drain --
-     which happens before that step's render. The net effect is what matters and it was measured,
-     not reasoned: over 40 frames across an endBattle(), settings.visible flipped on frame 1, the
-     flip's stack was `a1vShow <- emit <- Systems.resume` (i.e. the listener, NOT the 80 ms tick),
-     and the count of frames in which WorldMapScene was RUNNING-but-not-drawn was ZERO. The
-     BattleScene shutdown that removes the DOM overlay is drained from the same queue on the same
-     step, so the overlay and the overworld change over together.
+     which happens before that step's render. The measured pre-gate behavior established the event
+     ordering: over 40 frames across an endBattle(), the callback stack was
+     `a1vShow <- emit <- Systems.resume`, before the 80 ms tick. The callback now deliberately keeps
+     the world invisible when current base coverage is incomplete; the later tick reveals it only
+     after READY or the bounded failure escape below. BattleScene shutdown is drained on the same
+     step, so missing terrain cannot be exposed merely because the DOM overlay left first.
 
      Hiding, by contrast, is safe to poll: the encounter has already run cameras.main.fadeOut(400)
      to solid black before it launches BattleScene, so the worst case is one extra 80 ms of drawing
      a black screen.
 
-     Three independent restores, because a missed one is a black screen the player cannot escape:
-       1. RESUME  -- the normal exit (win, flee, and every non-battle pauser).
-       2. START   -- Systems.start() sets `visible = true` itself; the listener only clears our
-                     flag. This is the GameOverScene "retry" path, which does scene.start(
+     Three independent gate paths, because a missed one is a black screen the player cannot escape:
+       1. RESUME  -- the normal exit (win, flee, and every non-battle pauser) starts the gate.
+       2. START   -- Systems.start() sets `visible = true` itself; the listener re-applies the hold
+                     when needed. This is the GameOverScene "retry" path, which does scene.start(
                      'WorldMapScene') without ever resuming.
-       3. tick()  -- if WorldMapScene is somehow RUNNING while we still believe we hid it, undo it.
+       3. tick()  -- rechecks coverage and applies the bounded escape once the scene is RUNNING.
      A defeat deliberately keeps the overworld hidden: BattleScene stops straight into
      GameOverScene, which renders its own opaque camera background on the canvas, and WorldMapScene
      stays PAUSED underneath it until retry restarts it.
@@ -6033,7 +7934,13 @@
     qm.__qzWrapped=true; QZ.wired=true;
   }
 
-  var A1V={hidden:false};
+  // 2026-09-08: restoring visibility on RESUME was earlier than restoring the base textures. A
+  // deliberately delayed visible chunk proved the battle cover could clear ~1.65 s before the
+  // authored terrain was READY. Keep the event-driven wake-up, but let the active scene rebuild
+  // behind the cover until the current camera has complete base coverage. The 2.5 s ceiling keeps
+  // asset failure on the existing relief/watchdog path instead of creating an infinite black hold.
+  var A1V={hidden:false,returnAt:0,veil:false};
+  var A1V_VEIL_DELAY=500, A1V_MAX_HOLD=2500;
   function a1vInstall(scene){
     // Re-checked from tick() rather than latched in a variable, for a1mInstall's reason: the flag
     // lives on the Systems object, so a scene that is destroyed and re-created re-arms itself.
@@ -6049,14 +7956,30 @@
     // PAUSED specifically, not merely "not RUNNING": a scene that is still INIT/CREATING, or one
     // already SHUTDOWN, must not have its visibility rewritten out from under Systems.start().
     if(!wm.sys.isPaused||!wm.sys.isPaused()||!wm.sys.settings.visible) return;
-    wm.sys.settings.visible=false; A1V.hidden=true;
+    wm.sys.settings.visible=false;
+    A1V.hidden=true; A1V.returnAt=0; A1V.veil=false;
   }
   function a1vShow(){
     if(!A1V.hidden) return;
-    A1V.hidden=false;
-    var g=window.__PHASER_GAME__; if(!g) return;
-    var wm; try{ wm=g.scene.getScene('WorldMapScene'); }catch(e){ return; }
-    if(wm&&wm.sys&&wm.sys.settings) wm.sys.settings.visible=true;
+    var g=window.__PHASER_GAME__; if(!g){ A1V.hidden=false; return; }
+    var wm; try{ wm=g.scene.getScene('WorldMapScene'); }catch(e){ A1V.hidden=false; return; }
+    if(!wm||!wm.sys||!wm.sys.settings){ A1V.hidden=false; return; }
+    if(wm.currentMapId==='overworld'){
+      var now=Date.now(); if(!A1V.returnAt) A1V.returnAt=now;
+      var act1View=a1aUnderpaintRequiredForView(wm);
+      var coverage=act1View?a1aVisibleBaseCoverage(wm):{ready:true}, backingReady=!act1View||a1aUnderpaintReady(wm), waited=now-A1V.returnAt;
+      if((!coverage.ready||!backingReady)&&waited<A1V_MAX_HOLD){
+        wm.sys.settings.visible=false;
+        if(waited>=A1V_VEIL_DELAY){ a1aVeilSet(true); A1V.veil=true; }
+        return;
+      }
+      // At the bounded fallback, leave our veil up. The view-scoped watchdog below clears it only
+      // when base or relief really covers the camera, and otherwise retains its existing failure UI.
+      if((!coverage.ready||!backingReady)&&A1V.veil) A1AW.blankSince=now-A1V_VEIL_DELAY;
+      else if(coverage.ready&&backingReady&&A1V.veil) a1aVeilSet(false);
+    }
+    wm.sys.settings.visible=true;
+    A1V.hidden=false; A1V.returnAt=0; A1V.veil=false;
   }
   function tick(){
     var g=window.__PHASER_GAME__; if(!g) return;
@@ -6113,7 +8036,7 @@
     // departure window is deliberately KEPT rather than dropped wholesale -- dropping everything is
     // what made walking back out cost 4.6 s (see a1aReleaseChunks).
     if (!g.scene.isActive('WorldMapScene')){
-      try{ a1aHideCanopy(); a1aReleaseChunks(); }catch(e){ if(window.__DQ_DEBUG__) console.log('dq battle release '+e); }
+      try{ a1aHideCanopy(); a1aReleaseChunks(scene); }catch(e){ if(window.__DQ_DEBUG__) console.log('dq battle release '+e); }
       // The cache trim above attacks the FLOOR the encounter peak sits on. This attacks the peak
       // itself: while BattleScene is up the overworld is drawn and never seen. Scoped to
       // BattleScene rather than to "inactive" so a menu or a shop -- which this file has not
@@ -6160,10 +8083,9 @@
       catch(e){ if(window.__DQ_DEBUG__) console.log('dq battle layer drop '+e); }
       return;
     }
-    // Safety net only, and it should never fire. RESUME and START restore visibility on the same
-    // step that makes the scene RUNNING, i.e. before that step renders (measured: zero
-    // RUNNING-but-not-drawn frames; see A1V above). This catches a path that reached RUNNING
-    // without emitting either, and pays up to 80 ms of black to do it.
+    // RESUME/START establish the return hold before render. This tick is the bounded recheck that
+    // releases it when current base coverage becomes READY; it also remains the safety net for a
+    // RUNNING path that somehow emitted neither event.
     if (A1V.hidden) a1vShow();
     if (!scene.mapData || !scene.tileGrid || !scene.tileGrid.length) return;
     var kind=sceneKind(scene);
@@ -6172,7 +8094,9 @@
     // base + fog canvases on top of whatever the overworld still holds, so keeping the full
     // ~493 MB 10-slot cache resident there is what starves the renderer -- but dropping it
     // WHOLESALE is what made walking back out cost 4.6 s. See a1aReleaseChunks.
-    if(kind!=='ow'){ lastReskinMapId=null; a1aHideCanopy(); a1aReleaseChunks(); }
+    // currentMapId and the camera have already changed on a town/dungeon swap, so there is no
+    // authoritative overworld camera left to sample here; retain the last built overworld window.
+    if(kind!=='ow'){ lastReskinMapId=null; A1AB.burst=0; A1AB.empty=0; a1aHideCanopy(); a1aReleaseChunks(); }
     if (kind!=='town' && townState) destroyTown();      // left a town -> drop its canvas so it can't linger over ow/dng
     // The same rule for the dungeon, which never had one. reskinTown has torn dngState down since
     // towns shipped -- so walking a dungeon -> town was always clean -- but NOTHING did on the way
@@ -6190,12 +8114,12 @@
     // The sea backdrop is screen-locked at depth 0.5, so left visible it would be a flat blue
     // sheet over a town or a dungeon floor. Hidden on ANY non-'ow' kind, re-shown by updateTerrain.
     // Guarded on a real kind, never a transient null, for the same reason destroyDng is.
-    if (kind && kind!=='ow') a1aSea(null,false);
+    if (kind && kind!=='ow'){ a1aSea(null,false); a1aUnderpaintHide(); }
     if ((kind==='town'||kind==='dng') && owMap) destroyOwProps(); // entered a town/dungeon -> drop landmark prop images (NOT on a transient null kind)
     if (kind!=='ow' && !SHIP_TOWN_DNG_RESKIN){
       // Overworld-only ship: tear down any stale overworld terrain/overlay so it can't linger over the engine's
       // native town/dungeon art, then bail — towns + dungeons render exactly as the base game does (unchanged).
-      if (terrainState&&terrainState.image){ try{terrainState.image.destroy();}catch(e){} try{if(terrainState.cimg)terrainState.cimg.destroy();}catch(e){} a1aDropAllGpu(); a1aDestroySea(); terrainState=null; lastReskinMapId=null; }
+      if (terrainState&&terrainState.image){ try{terrainState.image.destroy();}catch(e){} try{if(terrainState.cimg)terrainState.cimg.destroy();}catch(e){} a1aDropPlateWaterBacking(terrainState,scene); a1aDropAllGpu(); a1aDestroySea(); terrainState=null; lastReskinMapId=null; }
       if (overlayState&&overlayState.container){ try{overlayState.container.destroy();}catch(e){} overlayState=null; }
       return;
     }
@@ -6215,12 +8139,15 @@
       // trickled at one per 80 ms tick: ~2.4 s of flat sea after every battle, which is exactly what
       // the owner reported on build 27 ("after battles, the screen briefly shows blue"). Sizing it
       // to the QUEUE instead of to a number keeps it correct through the next re-tile too.
-      if(A1A.released) A1AB.burst=A1AB_TICKS;          // latch the moment we come BACK, before the flag clears
+      if(A1A.released){ A1AB.burst=A1AB_TICKS; A1AB.empty=0; } // latch before the flag clears
       A1A.released=false;                              // back on the overworld: arm the next departure's trim
       a1aFetch();                                      // one-shot; the Act 1 art manifest + landmark table
       var _n=1;
-      if(A1AB.burst>0 && A1A.texQ.length){ _n=A1AB_RATE; A1AB.burst--; }
-      else if(A1AB.burst>0){ A1AB.burst=0; }           // queue drained early: stop bursting, do not spend the frames
+      if(A1AB.burst>0 && A1A.texQ.length){ _n=A1AB_RATE; A1AB.burst--; A1AB.empty=0; }
+      // On the first return tick the queue is still empty because updateTerrain, below, is what
+      // enqueues the rebuilt window. Do not clear the burst before that rebuild has happened.
+      else if(A1AB.burst>0&&!A1A.drew){ if(++A1AB.empty>=A1AB_TICKS) A1AB.burst=0; }
+      else if(A1AB.burst>0){ A1AB.burst=0; A1AB.empty=0; } // genuinely drained: stop spending frames
       try{ a1aDrainTex(scene,_n); }catch(e){ if(window.__DQ_DEBUG__) console.log('dq tex q '+e); } // one chunk texture per tick while walking; a burst on return
       var mapId=scene.currentMapId+':'+scene.mapData.length+'x'+(scene.mapData[0]?scene.mapData[0].length:0);
       // DATA MUTATION (owner-approved sandbox exception): consolidate sprinkled mountains in mapData IN PLACE,
@@ -6350,6 +8277,7 @@
   var READY_GRACE=1800;
   function terrainState_ready(sc){
     if(!terrainState || !terrainState.lastWin) return false;
+    if(a1aUnderpaintRequiredForView(sc)&&!a1aUnderpaintReady(sc)) return false;
     var waited=terrainState.firstDrawAt?(Date.now()-terrainState.firstDrawAt):READY_GRACE;
     if(waited>=READY_GRACE) return true;
     if(!MAT.ready) return false;
@@ -6366,6 +8294,48 @@
     if(sceneKind(sc)!=='ow') return true;
     return terrainState_ready(sc);
   }
+  // Exact readiness for the twelve authored Act-1 dungeon floors. null means this scene is outside
+  // that authored surface contract and the shell should use its existing generic readiness path.
+  function dungeonSurfaceReady(scene){
+    if(!scene||!A1D_MAPS[scene.currentMapId]) return null;
+    var floor=scene.currentFloor||1;
+    if(floor<1||floor>3) return null;
+    var key=scene.currentMapId+'-f'+floor, fl=a1dFloors&&a1dFloors[key], md=scene.mapData;
+    if(!fl||!md||md.length!==fl.height||(md[0]||[]).length!==fl.width) return false;
+    if(a1dKey!==key||!a1dApplied||a1dApplied.scene!==scene||a1dApplied.key!==key||a1dApplied.mapData!==md) return false;
+    if(scene.__a1dEntryWaiting||scene.__a1dEntryDegraded||scene.__a1dEntryError) return false;
+    if(!dngState||dngState.scene!==scene||dngState.mapRef!==md||!dngState.lastWin||!dngState.image||!dngState.image.scene) return false;
+    return !!(a1dBlitted&&a1dBlitted.scene===scene&&a1dBlitted.key===key&&a1dBlitted.mapData===md);
+  }
+  function retryDungeonSurface(scene){
+    if(!scene||!A1D_MAPS[scene.currentMapId]) return false;
+    var live=typeof worldScene==='function'?worldScene():null;
+    if(live&&live!==scene) return false; // a delayed Retry must not mutate a replaced scene instance
+    var floor=scene.currentFloor||1;
+    if(floor<1||floor>3) return false;
+    var key=scene.currentMapId+'-f'+floor;
+    // A strict entry failure deliberately leaves movement held in a degraded fallback. Reloading
+    // the mask alone cannot escape that state: a1dRescueHero returns early while the latch remains.
+    // Rearm only that failure path. An art-only Retry from a valid saved position must not turn into
+    // a fresh dungeon entry and move the hero back to the mouth.
+    if(scene.__a1dEntryDegraded||scene.__a1dEntryError){
+      scene.__a1dEntryWaiting=true;
+      scene.__a1dEntryDegraded=false;
+      scene.__a1dEntryWaitFrames=0;
+      scene.__a1dEntryError=null;
+      scene.__a1dStrictRetryKey=key;
+      // Bind the retry to this exact current floor without leaving a durable fresh-entry marker on
+      // the scene. If the map/floor changes before the next rescue tick, its normal key transition
+      // cancels a1dArriving; unresolved movement remains blocked by __a1dEntryWaiting meanwhile.
+      a1dRescueKey=key;
+      a1dArriving=true;
+    }
+    if(!a1dFloors||!a1dFloors[key]){ a1dAsked=false; a1dFetch(); }
+    delete a1dArt[key]; delete a1dArtReq[key]; a1dArtFor(key);
+    delete a1mMasks[key]; delete a1mReq[key]; a1mMaskFor(key);
+    a1dChanged=true;
+    return true;
+  }
   // Diagnostic for the loading gate: which condition is still outstanding.
   function terrainReadyWhy(){
     var sc=worldScene();
@@ -6373,6 +8343,8 @@
     return { kind:sceneKind(sc), mapData:!!(sc.mapData&&sc.mapData.length), tileGrid:!!(sc.tileGrid&&sc.tileGrid.length),
       terrainState:!!terrainState, lastWin:terrainState?terrainState.lastWin:null, mat:MAT.ready,
       a1aReq:A1A.req, a1aManifest:!!A1A.manifest, inBounds:a1aInBounds(sc.heroTileX,sc.heroTileY),
+      underpaint:A1A.underpaint.status, underpaintRequired:a1aUnderpaintRequired(),
+      underpaintVisible:!!(A1A.underpaint.sprite&&A1A.underpaint.sprite.visible), underpaintFailures:A1A.underpaint.fail|0,
       drew:A1A.drew, hero:[sc.heroTileX,sc.heroTileY], ready:terrainReady() };
   }
   // Cumulative cost counters for the on-device panel — see COST. `plate` is read live, because it
@@ -6383,8 +8355,17 @@
              wMs:COST.wMs, wWhat:COST.wWhat,
              sprLive:A1A.sprLive|0, sprWant:A1A.sprWant|0, sprFix:A1AW.fixes|0, sprDeep:A1AW.deep|0,
              reloads:A1A.reloads|0,   // layer re-requests: non-zero means a load failed and was retried
+             uploadLastBatch:A1A.uploadLastBatch|0, uploadBatchMax:A1A.uploadBatchMax|0,
+             queueDepth:A1A.texQ.length, queuePeak:A1A.queuePeak|0, residents:Object.keys(A1A.chunks).length,
+             underpaint:A1A.underpaint.status,
              sprGl:a1aGlLost()?1:0 };
   }
   window.__A1A_PH__=A1A_PH;                                     // verification only: placeholder registry
-  window.__DQ_TILES__={ reskin:reskin, ready:terrainReady, readyWhy:terrainReadyWhy, cost:terrainCost, redraw:function(){ if(terrainState){ terrainState.lastWin=''; updateTerrain(terrainState.scene,true);} if(overlayState){ overlayState.lastKey=''; rebuildOverlay(overlayState.scene,true);} } };
+  window.__DQ_TILES__={ reskin:reskin, ready:terrainReady, dungeonSurfaceReady:dungeonSurfaceReady, retryDungeonSurface:retryDungeonSurface, readyWhy:terrainReadyWhy, cost:terrainCost,
+    checkOverworldSpawn:a1mOverworldSpawnCheck,
+    retryUnderpaint:function(){ return a1aUnderpaintRequired()&&a1aUnderpaintRetry(); },
+    overworldSpace:{ scale:OW_SCALE, pitch:OW_TILE, cellCenter:owCellCenter,
+      toCanonical:owCanonical, toPhysical:owPhysical,
+      cellAt:function(v){ return Math.floor(v/OW_TILE); } },
+    redraw:function(){ if(terrainState){ terrainState.lastWin=''; updateTerrain(terrainState.scene,true);} if(dngState){ dngState.lastWin=''; updateDng(dngState.scene,true);} if(overlayState){ overlayState.lastKey=''; rebuildOverlay(overlayState.scene,true);} } };
 })();

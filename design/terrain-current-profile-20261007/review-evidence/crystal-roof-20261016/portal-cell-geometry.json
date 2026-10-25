@@ -1,0 +1,36 @@
+{
+  "candidateSha256": "a7e267a5c2d2d1061af7f66956d82853b42f00c82c1f63baf043defbeb1b2a43",
+  "diagnosticQualification": {
+    "101SampleX76Path": "continues into tile row 278 to the entry anchor; diagnostic only and not evidence of post-transition walkability",
+    "exactTransitionIntercept": "pending native verification",
+    "nativeOrRenderedPassClaimed": false
+  },
+  "pinnedCrystalArtSha256": "45fb2c0b7cf1ad2e63ee9a28bbf0ad66e3d4d9ca9258beaf7a68566e04692b55",
+  "portalCell": {
+    "anchorLocalPx": [
+      76,
+      92
+    ],
+    "extentConvention": "[left,top,right,bottom), derived as anchor \u00b1 half-cell",
+    "localExtentPx": [
+      59.2,
+      75.2,
+      92.8,
+      108.8
+    ],
+    "tile": [
+      149,
+      278
+    ],
+    "worldCellPx": 33.6
+  },
+  "reviewMarkdownSha256": "fed50b316a2b8b76f087b66e4199e88a56510cbf88dc6969f462a8e521c81d25",
+  "schema": "crystal-portal-cell-geometry-review-v1",
+  "scope": "static art-coordinate alignment and candidate-predicate corridor; not native transition proof",
+  "visualAssessment": {
+    "approachFromExitCell": "clear mouth route reaches the south boundary of tile 149,278 before advancing onto the right lip",
+    "darkMouthCenterlineLocalX": 68,
+    "entryAnchorOverlaps": "right opaque rock lip",
+    "southLandingAndSteps": "intended traversable approach art"
+  }
+}

@@ -47,11 +47,8 @@ style.textContent = `
   #act1-hifi-preserved-root[hidden] { display: none; }
   #act1-hifi-preserved-root iframe { width: 100%; height: 100%; border: 0; display: block; background: #02060a; opacity: 0; }
   #act1-hifi-preserved-root[data-ready="true"] iframe { opacity: 1; }
-  /* The field HUD STAYS UP over the town. It used to be hidden here, which is why Port Sapphire
-     had no HP bar, minimap or compass while the overworld and the dungeons had all three. It
-     draws town-correct content from __ACT1_TOWN_VIEW__ -- see publishTownView() below. The floor
-     tag is the one piece with nothing to say in a town. */
-  body.act1-hifi-active #qfh-floor { display: none !important; }
+  /* The field HUD stays up over the town and draws town-correct content from
+     __ACT1_TOWN_VIEW__ -- see publishTownView() below. */
   /* Owner 2026-08-04: the town overlay is FULL-BLEED at the top -- the art runs under the status
      bar and the field HUD stays hidden -- but the BOTTOM TAB BAR has to stay reachable over it.
      The bar is #fieldTabs, a child of #touch-controls, so hiding that container (which this rule
@@ -101,6 +98,8 @@ document.body.append(root);
 
 const overworldFade = document.createElement('div');
 overworldFade.id = 'act1-overworld-fade';
+overworldFade.setAttribute('aria-live','polite');
+overworldFade.style.cssText='display:flex;align-items:center;justify-content:center;color:#d5d1c7;font:inherit';
 document.body.append(overworldFade);
 // Snapped to fully opaque with NO transition, before releaseRoot() ever runs -- see the
 // act1-town-exit handler. town.html already faded to black on its side before it ever sent the
@@ -163,8 +162,61 @@ function playerState() {
   return gameState()?.player?.state || null;
 }
 
+// A town iframe is the live owner of its local position. The frozen engine's transition
+// callback writes the town arrival coordinates into player.state.position before it changes
+// currentMapId, so calling the native save directly would serialize (for example) Millbrook's
+// local [8,14] as an overworld location. Keep this conversion at the overlay boundary: the
+// frozen save format still owns persistence, and a world save whose mapId is actually
+// `overworld` is never reinterpreted as a town.
+function townSavePosition(entry) {
+  const town = entry?.runtime?.town;
+  const point = entry?.runtime?.position?.();
+  const cellPx = Number(town?.worldPxPerCell);
+  const cells = Number(town?.cells);
+  if (!town || town.id !== entry.mapId || !(cellPx > 0) || !(cells > 0)
+      || !Number.isFinite(point?.x) || !Number.isFinite(point?.y)) return null;
+  if (point.x < 0 || point.y < 0 || point.x > cells * cellPx || point.y > cells * cellPx) return null;
+  if (typeof entry.runtime.isInsideWalkable === 'function' && !entry.runtime.isInsideWalkable(point)) return null;
+  return { mapId: town.id, x: point.x / cellPx, y: point.y / cellPx, floor: 1 };
+}
+
+function townResumeAt(saved, mapId, firstEntry) {
+  if (firstEntry || saved?.position?.mapId !== mapId) return '';
+  const x = Number(saved.position.x), y = Number(saved.position.y);
+  if (!Number.isFinite(x) || !Number.isFinite(y)) return '';
+  return `&at=${encodeURIComponent(`${x},${y}`)}`;
+}
+
 function activeMapId(scene) {
   return scene?.currentMapId || playerState()?.position?.mapId || null;
+}
+
+// Exact shell-cover contract. null means the scene is not one of this adapter's towns; false means
+// it is one, but the matching iframe surface has not replaced and suppressed the legacy scene yet.
+function townSurfaceReady(scene) {
+  const mapId = activeMapId(scene);
+  if (!TOWN_IDS.has(mapId)) return null;
+  return Boolean(townEntry?.ready
+    && townEntry.scene === scene
+    && townEntry.mapId === mapId
+    && townEntry.runtime
+    && frame.contentWindow?.__ACT1_TOWN__ === townEntry.runtime
+    && root.dataset.ready === 'true'
+    && !root.hidden
+    && suppressedScene === scene);
+}
+
+function retryTownSurface(scene) {
+  const mapId = activeMapId(scene);
+  if (!TOWN_IDS.has(mapId)) return false;
+  generation += 1;
+  lastError = null;
+  townEntry = null;
+  root.dataset.ready = 'false';
+  // Resolve a hung iframe navigation so its token-stale enterTown() can finish; the normal tick
+  // starts one fresh attempt after entryPromise clears.
+  frame.src = 'about:blank';
+  return true;
 }
 
 function worldSceneActive() {
@@ -214,6 +266,7 @@ function releaseRoot() {
   entry = null;
   entryPromise = null;
   townEntry = null;
+  lastError = null;
   townSuspended = false;
   pendingTownExit = null;
   window.__ACT1_TOWN_VIEW__ = null;
@@ -257,17 +310,124 @@ function patchHealerPrice(scene) {
   if (table && table.greenhollow === 0) table.greenhollow = GREENHOLLOW_HEAL_PRICE;
 }
 
+// The frozen transition writes destination x/y while currentMapId still names the source map,
+// then loadMap() changes currentMapId without calling updatePosition(). Repair only that exact
+// successful cross-map edge: the scene's loaded map and hero tile are the authority, while
+// same-map floor loads, initial create/Continue, town-exit's already-correct position, and failed
+// or partial loads remain untouched. The recovery shell's normal idle snapshot then persists the
+// repaired live position even when the player does not take another step.
+function syncPositionAfterSuccessfulMapLoad(scene, mapId, previousMapId) {
+  if (typeof previousMapId !== 'string' || !previousMapId || previousMapId === mapId
+      || typeof mapId !== 'string' || scene?.currentMapId !== mapId) return false;
+  const state = playerState();
+  const position = state?.position;
+  const map = scene?.mapData;
+  const x = scene?.heroTileX;
+  const y = scene?.heroTileY;
+  const floor = scene?.currentFloor ?? 1;
+  if (!position || position.mapId !== previousMapId || !Array.isArray(map) || !map.length
+      || !Number.isInteger(x) || !Number.isInteger(y) || y < 0 || y >= map.length
+      || !Array.isArray(map[y]) || x < 0 || x >= map[y].length
+      || !Number.isFinite(floor)) return false;
+  try {
+    if (typeof scene.updatePosition === 'function') scene.updatePosition();
+    else state.position = { ...position, mapId, x, y, floor };
+    return state.position?.mapId === mapId
+      && state.position.x === x && state.position.y === y
+      && (state.position.floor ?? 1) === floor;
+  } catch (error) {
+    console.warn('[act1-hifi] post-load position sync failed', error);
+    return false;
+  }
+}
+
+function callMapLoadWithPositionSync(scene, mapId, args, originalLoadMap) {
+  const previousMapId = scene.currentMapId;
+  const result = originalLoadMap.call(scene, mapId, ...args);
+  const completed = value => {
+    syncPositionAfterSuccessfulMapLoad(scene, mapId, previousMapId);
+    installTownLoadingHold(scene);
+    return value;
+  };
+  const failed = error => {
+    installTownLoadingHold(scene);
+    throw error;
+  };
+  if (result && typeof result.then === 'function') return result.then(completed, failed);
+  return completed(result);
+}
+
+// Hold only the legacy update while its replacement town surface loads. Phaser's
+// Systems.step still emits plugin/timer events; pausing the scene would stop those too.
+// Phaser captures scene.update in sys.sceneUpdate at create(), so patch that live entrypoint.
+// dq-tiles.js wraps the same entrypoint and brands it __a1m; retain that brand to avoid a
+// wrapper-install loop. Check every tick because Phaser replaces the function on restart.
+function installTownLoadingHold(scene) {
+  const sys = scene?.sys;
+  if (!sys || typeof sys.sceneUpdate !== 'function' || sys.sceneUpdate.__act1TownLoadingHold) return;
+  const original = sys.sceneUpdate;
+  function townLoadingUpdate(time, delta) {
+    const mapId = activeMapId(this);
+    const townReady = townEntry?.ready && townEntry.scene === this && townEntry.mapId === mapId;
+    if (TOWN_IDS.has(mapId) && !townReady) return;
+    return original.call(this, time, delta);
+  }
+  townLoadingUpdate.__act1TownLoadingHold = true;
+  if (original.__a1m) townLoadingUpdate.__a1m = original.__a1m;
+  sys.sceneUpdate = townLoadingUpdate;
+}
+
+// Full frozen strings for exactly intro.elder5 and npc.elder.greeting in EN/kana/kanji.
+// Darkfang is south of relocated Greenhollow. Other east/west instructions stay untouched.
+const ELDER_DIRECTION_TEXT = new Map([
+  [
+    "Head east to the Darkfang Grotto first. Buy supplies at the shop before you leave. The fate of all knowledge rests with you!",
+    "Head south to the Darkfang Grotto first. Buy supplies at the shop before you leave. The fate of all knowledge rests with you!"
+  ],
+  [
+    "まずは ひがしの きりのどうくつへ むかえ。おみせで じゅんびしてから でかけるのじゃぞ。ちしきの うんめいは おまえに かかっておる！",
+    "まずは みなみの きりのどうくつへ むかえ。おみせで じゅんびしてから でかけるのじゃぞ。ちしきの うんめいは おまえに かかっておる！"
+  ],
+  [
+    "まずは 東の 霧の洞窟へ 向かえ。お店で 準備してから 出かけるのじゃぞ。知識の 運命は お前に かかっておる！",
+    "まずは 南の 霧の洞窟へ 向かえ。お店で 準備してから 出かけるのじゃぞ。知識の 運命は お前に かかっておる！"
+  ],
+  [
+    "Be safe, hero. Head east toward the Darkfang Grotto. Defeat its guardian to prove your worth and open the path to the Crystal Cave!",
+    "Be safe, hero. Head south toward the Darkfang Grotto. Defeat its guardian to prove your worth and open the path to the Crystal Cave!"
+  ],
+  [
+    "きをつけるのじゃ ゆうしゃよ。ひがしの きりのどうくつへ むかうのじゃ。ボスを たおせば すいしょうのどうくつへの みちが ひらくぞ！",
+    "きをつけるのじゃ ゆうしゃよ。みなみの きりのどうくつへ むかうのじゃ。ボスを たおせば すいしょうのどうくつへの みちが ひらくぞ！"
+  ],
+  [
+    "気をつけるのじゃ 勇者よ。東の 霧の洞窟へ 向かうのじゃ。ボスを 倒せば 水晶の洞窟への 道が 開くぞ！",
+    "気をつけるのじゃ 勇者よ。南の 霧の洞窟へ 向かうのじゃ。ボスを 倒せば 水晶の洞窟への 道が 開くぞ！"
+  ]
+]);
+function patchElderDirection(scene) {
+  if (!scene || typeof scene.showMessage !== 'function' || scene.showMessage.__act1ElderDirection) return;
+  const original = scene.showMessage;
+  function elderDirectionMessage(...args) {
+    if (ELDER_DIRECTION_TEXT.has(args[0])) args[0] = ELDER_DIRECTION_TEXT.get(args[0]);
+    return original.apply(this, args);
+  }
+  elderDirectionMessage.__act1ElderDirection = true;
+  scene.showMessage = elderDirectionMessage;
+}
+
 function patchScene(scene) {
+  patchElderDirection(scene);
+  installTownLoadingHold(scene);
   patchHealerPrice(scene);
   if (!scene || scene.__act1HifiPreservedPatch) return;
   const originalUpdate = scene.update;
   const originalLoadMap = scene.loadMap;
-  // The overworld branch used to force `isMoving` so the mockup runtime kept animating. Towns
-  // do not need it -- town.html drives its own loop -- so the scene's update is left alone.
+  // Leave scene.update itself intact; installTownLoadingHold guards Phaser's captured callback.
   scene.update = originalUpdate;
   scene.loadMap = function preservedAct1LoadMap(mapId, ...args) {
     if (TOWN_IDS.has(mapId)) prepareRoot();
-    return originalLoadMap.call(this, mapId, ...args);
+    return callMapLoadWithPositionSync(this, mapId, args, originalLoadMap);
   };
   scene.__act1HifiPreservedPatch = { revision: REVISION, originalUpdate, originalLoadMap };
 }
@@ -449,6 +609,28 @@ addEventListener('message', event => {
     return;
   }
   if (data.type === 'act1-town-interact') {
+    const scene = townEntry.scene;
+    const town = townEntry.runtime?.town;
+    const npc = town?.npcs?.find(candidate => candidate.id === data.npc);
+    if (!townEntry.ready || townEntry.mapId !== data.town || town?.id !== data.town
+        || activeMapId(scene) !== data.town || !npc) return;
+    if (typeof scene.handleNpcInteraction === 'function') {
+      // The frozen engine owns quest offers/progress/rewards and progressive dialogue.
+      // Acknowledge ownership even when busy, so the frame never leaves a second box pending.
+      frame.contentWindow.postMessage({ type: 'act1-town-parent-dialogue', npc: npc.id }, '*');
+      const now = performance.now();
+      if (shippedUiBusy(scene) || worldScenePaused() || scene.questOverlayOpen
+          || scene.itemOverlayOpen || scene.warpOverlayOpen || scene.midCrystalOverlayOpen
+          || now < (townEntry.npcNextAt || 0)) return;
+      townEntry.npcNextAt = now + 300;
+      scene.handleNpcInteraction(npc);
+      if (scene.showingMessage) {
+        townEntry.npcDialogueFocus = true;
+        window.focus?.(); // Existing Phaser Enter listener owns progressive dialogue.
+      }
+      postTownChrome(true);
+      return;
+    }
     // `__QOK.Z` is the shipped i18n function, so the player reads dialogue in the locale they
     // chose. The frame's bundled English is only what shows for the frame it takes to reply.
     const translate = window.__QOK?.Z;
@@ -470,14 +652,18 @@ addEventListener('message', event => {
     return;
   }
   if (data.type === 'act1-town-service') {
-    // Shop, healer and save all render on the PHASER canvas, which the town overlay is covering.
-    // So the overlay steps aside for the duration rather than trying to reproduce any of them:
-    // the shipped ShopScene, `handleHealer()` and `saveGame()` stay the single implementation,
-    // which keeps prices, inventory and save format from forking. tick() puts the town back when
-    // the shipped UI is finished.
+    // The iframe can only act on the live town entry that owns this message. In particular,
+    // never let a stale frame save a different town's position after a transition or reload.
+    // The Phaser scene remains the single owner of shop, healer and save state. The shipped
+    // ui-overhaul mirrors those live screens in DOM above the hi-fi frame, so prices, inventory
+    // and save format stay unified without revealing the suppressed legacy town. tick() puts the
+    // town back when the shipped UI is finished.
     const scene = townEntry.scene;
     const translate = window.__QOK?.Z;
     const state = window.__QOK?.state?.();
+    if (!townEntry.ready || townEntry.mapId !== data.town
+        || townEntry.runtime?.town?.id !== data.town || activeMapId(scene) !== data.town
+        || !['shop', 'healer', 'save'].includes(data.kind)) return;
     suspendTownOverlay();
     try {
       if (data.kind === 'shop') {
@@ -487,8 +673,30 @@ addEventListener('message', event => {
       } else if (data.kind === 'healer') {
         scene.handleHealer();
       } else if (data.kind === 'save') {
+        const position = townSavePosition(townEntry);
+        if (!position || !state?.player?.state || typeof state.saveGame !== 'function') {
+          restoreTownOverlay();
+          return;
+        }
+        // Set only the position envelope. The native save still serializes the complete live
+        // player object, including quests, inventory, equipment and settings.
+        state.player.state.position = position;
         state?.saveGame?.();
         state?.player?.fullHeal?.();
+        // The native save keeps the existing service semantics (it serializes HP before the
+        // service's full-heal), while the crash-recovery checkpoint represents the live state
+        // after that heal. The iframe supplied `position` was already checked against its full
+        // foot-disc walkable authority above; pass that exact town-local point to QOK so its
+        // periodic engine snapshot cannot replace it with the frozen world's stale 8,14 tile.
+        const recovery = window.__QOK_RECOVERY__;
+        if (typeof recovery?.syncSnapshot === 'function') {
+          const synced = recovery.syncSnapshot('town-save', {
+            validated: true,
+            townId: position.mapId,
+            position,
+          });
+          if (!synced) console.warn('[act1-hifi-town] recovery town snapshot was not accepted');
+        }
         if (typeof translate === 'function') scene.showMessage?.(translate('npc.savePoint'));
         scene.updateHUD?.();
       }
@@ -510,6 +718,52 @@ addEventListener('message', event => {
   }
 });
 
+// Keep existing scene updates alive while decoded base images replace safe relief.
+const EXIT_ART_TIMEOUT_MS=5000;
+function waitForVisibleBase(scene,target){
+  const started=performance.now();
+  const status=window.__ACT1_EXIT_ART__={status:'WAITING',target,started,coverage:null};
+  return new Promise(resolve=>{
+    let done=false,consecutive=0,raf=0,timer=0;
+    const finish=(state,reason)=>{if(done)return;done=true;cancelAnimationFrame(raf);clearTimeout(timer);
+      status.status=state;status.reason=reason;status.elapsedMs=performance.now()-started;
+      overworldFade.textContent='';resolve(status);};
+    timer=setTimeout(()=>finish('DEGRADED','visible-base-timeout'),EXIT_ART_TIMEOUT_MS);
+    const tick=()=>{
+      if(scene.currentMapId!==target){finish('CANCELLED','map-changed');return;}
+      try{
+        status.coverage=window.__A1_VISIBLE_BASE_COVERAGE__?.(scene)||{ready:false,reason:'coverage-api-unavailable'};
+        consecutive=status.coverage.ready?consecutive+1:0;
+        if(consecutive>=2){finish('READY','two-ready-frames');return;}
+        if(performance.now()-started>=800){
+          const state=playerState();overworldFade.textContent=state?.locale==='ja'?(state.kanjiMode?'読み込み中…':'よみこみちゅう…'):'Loading…';
+        }
+        raf=requestAnimationFrame(tick);
+      }catch(error){finish('DEGRADED','coverage-error');status.error=String(error);}
+    };
+    raf=requestAnimationFrame(tick);
+  });
+}
+function holdTownExitInput(scene){
+  const keyboard=scene.input?.keyboard,enabled=keyboard?.enabled;
+  const pointer=overworldFade.style.pointerEvents,zIndex=overworldFade.style.zIndex;
+  let stopped=false,raf=0;
+  overworldFade.style.pointerEvents='auto';overworldFade.style.zIndex='250';
+  const clear=()=>{
+    if(keyboard){keyboard.enabled=false;keyboard.resetKeys?.();}
+    const stick=window.__DQ_STICK__;if(stick){stick.x=0;stick.y=0;stick.m=0;}
+  };
+  const tick=()=>{if(stopped)return;clear();raf=requestAnimationFrame(tick);};tick();
+  return ()=>{if(stopped)return;stopped=true;cancelAnimationFrame(raf);clear();
+    if(keyboard)keyboard.enabled=enabled;
+    overworldFade.style.pointerEvents=pointer;overworldFade.style.zIndex=zIndex;overworldFade.textContent='';};
+}
+function finishTownExit(scene,target,loaded,restoreInput){
+  const release=()=>{try{releaseOverworldFade();}finally{setTimeout(restoreInput,300);}};
+  if(!loaded){window.__ACT1_EXIT_ART__={status:'DEGRADED',reason:'loadMap-error'};release();return;}
+  try{waitForVisibleBase(scene,target).then(release,()=>{window.__ACT1_EXIT_ART__={status:'DEGRADED',reason:'wait-error'};release();});}
+  catch(error){window.__ACT1_EXIT_ART__={status:'DEGRADED',reason:'wait-error',error:String(error)};release();}
+}
 let pendingTownExit = null;
 function handleTownExit(data) {
   // Same sequence the shipped town edge-exit uses: set the id, floor and hero tile, then load.
@@ -519,6 +773,8 @@ function handleTownExit(data) {
   // Hold the screen black BEFORE releaseRoot() tears the town frame down -- see holdOverworldFade()
   // for why this has to happen first rather than as part of the fade-out below.
   holdOverworldFade();
+  const restoreInput=holdTownExitInput(scene);
+  let loaded=false;
   // Everything between the hold and the release runs under `finally`: a throw anywhere in here
   // (loadMap is wrapped three deep, releaseRoot juggles focus) used to leave the veil at opacity 1
   // for the rest of the session -- a black field with a live HUD, and no way back but a relaunch.
@@ -560,10 +816,10 @@ function handleTownExit(data) {
       requestAnimationFrame(paintFacing);
     }
     lifetimeStats.parentTransitions += 1;
+    loaded=true;
   } finally {
-    // Release the held black now that loadMap() has actually placed the overworld (or failed),
-    // matching the town side's own fade (screen.transition, 300ms ease-in-out).
-    releaseOverworldFade();
+    // Timeout is explicitly DEGRADED, never a QA pass; release remains bounded after errors.
+    finishTownExit(scene,target,loaded,restoreInput);
   }
 }
 
@@ -624,6 +880,7 @@ function currentChrome() {
     // whichever surface drew it. postTownChrome() only posts on a real change, so this rides the
     // existing signature and costs nothing per frame.
     dialogue: Boolean(worldScene()?.showingMessage),
+    inputBlocked: townSuspended || worldScenePaused() || shippedUiBusy(worldScene()),
     safeBottom: Number(safe.bottom) || 0,
     safeLeft: Number(safe.left) || 0,
     safeRight: Number(safe.right) || 0,
@@ -637,6 +894,10 @@ function postTownChrome(force) {
   const win = frame.contentWindow;
   if (!win || root.hidden) return;
   const chrome = currentChrome();
+  if (townEntry?.npcDialogueFocus && !chrome.dialogue && !townSuspended && worldSceneActive()) {
+    townEntry.npcDialogueFocus = false;
+    win.focus?.(); // Only return focus after a dialogue whose keyboard ownership we took.
+  }
   const sig = JSON.stringify(chrome);
   if (!force && sig === lastChromeSig) return;
   lastChromeSig = sig;
@@ -683,11 +944,13 @@ function publishTownView() {
 
 function suspendTownOverlay() {
   townSuspended = true;
+  // The shipped DOM UI already renders the live shop/healer screens at z-index 200, and the
+  // field HUD renders save confirmation. Keep the hi-fi town frame as the backdrop while those
+  // screens are open. Hiding it and revealing the suppressed Phaser WorldMapScene briefly showed
+  // the retired procedural town animation behind the healer dialog. `postTownChrome(true)` blocks
+  // the iframe's own prompt/input; the legacy scene stays suppressed until restoreTownOverlay().
+  postTownChrome(true);
   window.__ACT1_TOWN_VIEW__ = null;
-  root.hidden = true;
-  document.body.classList.remove('act1-hifi-active');
-  suppressedScene?.sys?.setVisible?.(true);
-  suppressedScene?.scene?.setVisible?.(true);
 }
 
 function restoreTownOverlay() {
@@ -713,54 +976,129 @@ function shippedUiBusy(scene) {
     || Boolean(scene?.healerOverlayOpen);
 }
 
-// Is this the town's first entry OF THIS PLAYTHROUGH? town.html opens in front of the town elder
-// when it is (`firstEntryCell`) and on the arrival cell by the gate when it is not (`startCell`).
-//
-// The lifetime has to be the SAVE's, and story flags are the only per-playthrough store there is:
-// `gameState.newGame()` replaces `player.state` wholesale, so the flag is gone on a new game, and
-// `saveGame()` writes storyFlags out with the rest of the player. Build 62 used a localStorage key
-// instead, which records "ever visited on this device" -- nothing clears it, so the opening played
-// once per install and never again. Correct on a fresh install, wrong forever after.
-//
-// The flag cannot be one the shipped game already sets. `compass.visited.<mapId>` looks perfect and
-// is useless here: WorldMapScene.loadMap() sets it for every town on load, which for the starting
-// town happens BEFORE this overlay opens, so it would read "already visited" on the very first
-// frame of a new game. Hence a flag of our own, under the act1 prefix nothing else touches.
-//
-// Not persisted until the player's next save, by design -- writing localStorage behind
-// SaveManager's back means reproducing its profile-slot key scheme, and the failure mode of being
-// a save behind is replaying the opening once, which is the harmless direction.
-// Flat boolean keys, same shape as `compass.visited.<mapId>`: storyFlags is serialized straight
-// into the save as JSON and read back by SaveManager, so it stays a flat string->boolean map.
-// Read and mark are separate because enterTown() is retried by tick() after a failed load: burning
-// the flag on an attempt that never rendered would cost the player the opening entirely.
+// Only the actual GameState.newGame() call grants this in-memory opening intent. Missing town
+// flags also occur in older Continue saves, so they cannot identify New Game. The hook is installed
+// from tick before a player can reach the title actions; New Game+ still delegates through
+// newGame(), preserving its existing first-entry behavior. The intent stays live across an iframe
+// failure/retry and is consumed only after the Greenhollow surface is ready.
+let freshGreenhollowOpeningPending = false;
+function installNewGameOpeningHook() {
+  const gameState = window.__GAME_STATE__;
+  if (!gameState || typeof gameState.newGame !== 'function' || gameState.newGame.__act1OpeningIntent) return;
+  const original = gameState.newGame;
+  function markActualNewGame(...args) {
+    const result = original.apply(this, args);
+    freshGreenhollowOpeningPending = true;
+    return result;
+  }
+  markActualNewGame.__act1OpeningIntent = true;
+  gameState.newGame = markActualNewGame;
+}
+// A successful Continue is not a new playthrough. Some legacy saves have no `intro.done`, so
+// the frozen WorldMapScene would replay its New-Game Elder narration when such a save starts in
+// Greenhollow. Wrap the title's actual Continue confirmation and, only around its loadGame call,
+// mark that one story flag after the CURRENT loader returns true. The recovery overlay temporarily
+// wraps loadGame too and overlays its fresher player snapshot before returning; wrapping the
+// current function here means the marker lands after that overlay but before confirmTitle starts
+// WorldMapScene. A bare loadGame hook would run too early and could be overwritten by the snapshot.
+function installContinueIntroMigrationHook() {
+  const scene = phaserGame()?.scene?.getScene?.('TitleScene');
+  if (!scene || typeof scene.confirmTitle !== 'function'
+      || scene.confirmTitle.__act1ContinueIntroMigration) return;
+  const originalConfirmTitle = scene.confirmTitle;
+  function confirmTitleWithContinueMigration(...args) {
+    const action = this?.mode === 'title'
+      ? this.menuItems?.[this.selectedIndex]?.getData?.('action') : null;
+    if (action !== 'continue') return originalConfirmTitle.apply(this, args);
+
+    const state = gameState();
+    const originalLoadGame = state?.loadGame;
+    if (!state || typeof originalLoadGame !== 'function') {
+      return originalConfirmTitle.apply(this, args);
+    }
+    function markSuccessfulContinue(...loadArgs) {
+      const loaded = originalLoadGame.apply(this, loadArgs);
+      if (loaded) {
+        // A later Continue replaces the active playthrough, even if a prior New Game's town
+        // iframe failed before its one-shot opening was consumed.
+        freshGreenhollowOpeningPending = false;
+        const flags = state.player?.state?.storyFlags;
+        if (flags && typeof flags === 'object') flags['intro.done'] = true;
+      }
+      return loaded;
+    }
+    markSuccessfulContinue.__act1ContinueIntroMigration = true;
+    state.loadGame = markSuccessfulContinue;
+    try {
+      return originalConfirmTitle.apply(this, args);
+    } finally {
+      // Recovery restores its own one-shot wrapper before returning. Do not replace that
+      // intentional restoration; restore only when our wrapper still owns the slot.
+      if (state.loadGame === markSuccessfulContinue) state.loadGame = originalLoadGame;
+    }
+  }
+  confirmTitleWithContinueMigration.__act1ContinueIntroMigration = true;
+  scene.confirmTitle = confirmTitleWithContinueMigration;
+}
 const townOpenedFlag = mapId => `act1.townOpened.${mapId}`;
 function isFirstTownEntry(mapId) {
-  const flags = playerState()?.storyFlags;
-  // No live player state means no playthrough to be at the start of, so this is not an opening.
-  return Boolean(flags) && !flags[townOpenedFlag(mapId)];
+  return mapId === 'greenhollow' && freshGreenhollowOpeningPending;
 }
 function markTownOpened(mapId) {
   const flags = playerState()?.storyFlags;
   if (flags) flags[townOpenedFlag(mapId)] = true;
 }
 
+// A failed iframe navigation does not reliably emit `error` in WebKit. Bound it independently of
+// the shell cover so an ordinary walk-in (where the save-load cover is normally hidden) still
+// reaches the visible Retry state. Generation polling also settles a superseded navigation; the
+// identity checks in finish() keep its cleanup from removing a newer attempt's handlers.
+const TOWN_NAV_TIMEOUT_MS = 12_000;
+function waitForTownNavigation(token) {
+  return new Promise((resolve, reject) => {
+    let settled = false;
+    const finish = (complete, value) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      if (frame.onload === loaded) frame.onload = null;
+      if (frame.onerror === failed) frame.onerror = null;
+      complete(value);
+    };
+    const loaded = () => finish(resolve);
+    const failed = () => finish(reject, new Error('town runtime iframe failed to load'));
+    const checkOwner = () => {
+      if (settled) return;
+      if (token !== generation) {
+        finish(reject, new Error('superseded town runtime load'));
+        return;
+      }
+      requestAnimationFrame(checkOwner);
+    };
+    const timer = setTimeout(() => {
+      finish(reject, new Error('town runtime iframe load timed out'));
+    }, TOWN_NAV_TIMEOUT_MS);
+    frame.onload = loaded;
+    frame.onerror = failed;
+    requestAnimationFrame(checkOwner);
+  });
+}
+
 async function enterTown(scene, mapId) {
   const token = ++generation;
+  const state = playerState();
   prepareRoot();
   suppressLegacyWorldRender(scene);
   root.dataset.ready = 'false';
-  const loaded = new Promise((resolve, reject) => {
-    frame.onload = resolve;
-    frame.onerror = () => reject(new Error('town runtime iframe failed to load'));
-  });
   const first = isFirstTownEntry(mapId);
   // FACING CONTINUITY, entering. `scene.heroDir` is still the overworld's -- read it before the
   // frame's src ever changes -- so a player who just walked north through the door arrives facing
   // the way she walked, not hard-coded 'down' as this used to be. `firstEntryFacing` still wins on
   // the opening (town.html's own precedence), so this is a no-op there.
   const facingWord = HERO_DIR_TO_FACING[scene.heroDir] || 'down';
-  frame.src = `${TOWN_URL.href}?town=${encodeURIComponent(mapId)}${first ? '&first=1' : ''}`
+  const resumeAt = townResumeAt(state, mapId, first);
+  const loaded = waitForTownNavigation(token);
+  frame.src = `${TOWN_URL.href}?town=${encodeURIComponent(mapId)}${first ? '&first=1' : ''}${resumeAt}`
     + `&facing=${facingWord}`;
   await loaded;
   // The town runtime has no corridor to align to and no semantic route to commit, so there is
@@ -774,7 +1112,10 @@ async function enterTown(scene, mapId) {
   if (token !== generation || activeMapId(scene) !== mapId) return;
   if (!win.__ACT1_TOWN__) throw new Error(`town runtime ${mapId} did not become ready`);
   townEntry = { scene, mapId, runtime: win.__ACT1_TOWN__, ready: true };
-  if (first) markTownOpened(mapId);   // only now: the opening was actually rendered
+  if (first) {
+    markTownOpened(mapId);             // only now: the opening was actually rendered
+    freshGreenhollowOpeningPending = false;
+  }
   lastError = null;
   root.dataset.ready = 'true';
   lastChromeSig = '';
@@ -877,6 +1218,8 @@ window.__ACT1_PRESERVED_CUTOVER__ = {
   manifestSha256: MANIFEST_SHA256,
   get ready() { return Boolean(entry?.ready); },
   get frame() { return frame; },
+  townSurfaceReady,
+  retryTownSurface,
   flushSemanticState() {
     if (entry?.ready) syncSemanticState(entry);
     return snapshot();
@@ -895,30 +1238,44 @@ for (const type of ['keydown', 'keyup']) {
 }
 
 async function tick() {
+  installNewGameOpeningHook();
+  installContinueIntroMigrationHook();
   const scene = worldScene();
   patchScene(scene);
   if (scene && TOWN_IDS.has(activeMapId(scene)) && worldSceneLive()) {
     const mapId = activeMapId(scene);
-    prepareRoot();
-    suppressLegacyWorldRender(scene);
     // A PAUSED world scene means a shipped UI is on top of it. Step aside for it exactly as the
     // act1-town-service path does -- including for the ones that never send us a message, which is
     // how the MENU gets here: WorldMapScene.launch('MenuScene') + pause() happens entirely inside
     // the shipped scene and the overlay is never told.
     if (worldScenePaused() && !townSuspended) suspendTownOverlay();
     if (townSuspended) {
+      postTownChrome(false);
       // Hand control back the moment the shipped shop / menu / heal / save UI is done with it, and
       // not one frame earlier: `active` is the only state in which the player can move again.
       if (worldSceneActive() && !shippedUiBusy(scene)) restoreTownOverlay();
       requestAnimationFrame(tick);
       return;
     }
+    prepareRoot();
+    suppressLegacyWorldRender(scene);
     if (townEntry) { postTownChrome(false); publishTownView(); }
-    if (!townEntry && !entryPromise) {
-      entryPromise = enterTown(scene, mapId).catch(error => {
+    if (!townEntry && !entryPromise && !lastError) {
+      const pending = enterTown(scene, mapId);
+      const attemptGeneration = generation;
+      let tracked;
+      tracked = pending.catch(error => {
+        // releaseRoot(), Retry, or another town visit owns the frame now. A stale failure must not
+        // poison that visit or summon a cover over its current scene.
+        if (generation !== attemptGeneration || worldScene() !== scene || activeMapId(scene) !== mapId) return;
         lastError = error.stack || error.message;
+        window.__QOK_COVER__?.showError?.('town-entry');
         console.error('[act1-hifi-town]', error);
-      }).finally(() => { entryPromise = null; });
+      }).finally(() => {
+        // releaseRoot() may have cleared the slot and a newer visit may already own it.
+        if (entryPromise === tracked) entryPromise = null;
+      });
+      entryPromise = tracked;
     }
   } else if (entry || entryPromise || townEntry || !root.hidden) {
     releaseRoot();

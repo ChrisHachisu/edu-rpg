@@ -1,0 +1,111 @@
+{
+  "status": "PASS_POST_RUN_V2_BINDING",
+  "scope": "Post-run closure that strict final A1OW v2 decoder/proof fields match the same binary and that route solver methods are unchanged between executed and final reviewed W runner. This does not relabel the route search as executed by the final runner hash.",
+  "executedRunnerSha256": "53d44c20090377f069fa7dc41d5ed500f31bc607fbc38267a4e05808b1dd5d36",
+  "finalReviewedRunnerSha256": "9b22791aaa5c72802760a4905ce6e94bce2bb55fe7888a075d2fe86c802764ef",
+  "originalCandidateRunnerSha256": "9ba7c856c948b4c86f78d3087b5937aea749f32c88c7d8deba4349ba86e4731b",
+  "routeAlgorithmMethodBundleSha256": "60ed5a5a575ed13ef9beff010cd5ecf7c1c07d87613d1c1bd6b7e943a39de7b7",
+  "routeAlgorithmMethodsCompared": [
+    "Authority.context_image",
+    "Authority.edge_free",
+    "Authority.field_distance",
+    "Authority.find_route",
+    "Authority.position_free",
+    "Authority.qok_block",
+    "Authority.seed_walkable",
+    "Authority.targets",
+    "jsround",
+    "make_stencil",
+    "parse_json_assignment"
+  ],
+  "routeReportSha256": "18b1c09a9dca0f62245bb13fcfba30434b950f7821fe1da76ad775b7fd47e62b",
+  "routePathDataSha256": "85b94da010dceccfb34ef7bdc44dac4b637468c656c605323660f3be944b2f0d",
+  "priorRouteReportSha256": "92f5f341ec102edede2ef2795c354f89cb381304c6dbff7b9a48fd87662411b5",
+  "priorRoutePathDataSha256": "b508422dee9fcb132ecf5e0001978e02378db75cec1adb2eb6cc86c2480cf83d",
+  "targetResultRecordsExactlyEqualToPriorQokAudit": true,
+  "completeWaypointsExactlyEqualToPriorQokAudit": true,
+  "routeProfileStatus": "inconclusive",
+  "sourceInputs": {
+    "a1ow": {
+      "path": "/Users/chris/.codex/workspaces/edu-rpg-forward-20261007/public/act1-overworld-walk.bin",
+      "sha256": "00a520ae09089547ca4af4ef1077b84acdad98d4989de238f3ee30e28ad092c6"
+    },
+    "a1owV2IndependentProof": {
+      "path": "/Users/chris/.codex/workspaces/edu-rpg-forward-20261007/design/terrain-current-profile-20261007/evidence/a1ow-v2-independent-review/independent-a1ow-v2-recomputation.json",
+      "sha256": "0226b32538ae8aff716ca1294cb398cdff4aed7ae5fc4c66a7a85165c2d11297"
+    },
+    "a1owV2MapProof": {
+      "path": "/Users/chris/.codex/workspaces/edu-rpg-forward-20261007/design/terrain-current-profile-20261007/evidence/a1ow-v2-independent-review/baked-final-map.json",
+      "sha256": "a9fecf54db9de1f18a1f26c3f74b1bab9be230a247076e10580859e7074ab212"
+    },
+    "activeOutputManifest": {
+      "path": "/private/tmp/edu-rpg-build83-paint-audit-20261005/current-terrain-generation-20261007/full-world/north-contact-y-20261007/generation-whole-rock-a-review/public/act1-hifi/manifest.json",
+      "sha256": "24f3de319530c68a15a6097b20e14f4567d6bfe63d5dfff895a4883ecef35c5b"
+    },
+    "currentWorldMap": {
+      "path": "/Users/chris/.codex/workspaces/edu-rpg-forward-20261007/public/act1-world-map.js",
+      "sha256": "fb466fc6dbe7e05ccbb209c70867cacf4f903d55837ea69ca716e81f7196c96f"
+    },
+    "dqTiles": {
+      "path": "/Users/chris/.codex/workspaces/edu-rpg-forward-20261007/public/dq-tiles.js",
+      "sha256": "c18ce18e2f25ef6779165389d86163cea64136711f8999c4fd843154e6799c7a"
+    },
+    "finalAlpha": {
+      "path": "/private/tmp/edu-rpg-build83-paint-audit-20261005/current-terrain-generation-20261007/full-world/north-contact-y-20261007/generation-whole-rock-a-review/evidence/final-visible-raised-alpha.png",
+      "sha256": "944062209c3ee9392c4a971fa5b792e19bdcec83ec2b08dbfd24155680a52fdd"
+    },
+    "heroes": {
+      "g3": {
+        "path": "/Users/chris/.codex/workspaces/edu-rpg-forward-20261007/public/assets/hero/hero-g3-walk.png",
+        "sha256": "070a8a452c3dda775bd6c8593a66d57a5a13d97b9fb33378ea5b2bb0e1fded3c"
+      },
+      "male": {
+        "path": "/Users/chris/.codex/workspaces/edu-rpg-forward-20261007/public/assets/hero/hero-male-walk.png",
+        "sha256": "88cbed8f9d707b216ada01e108eedd5822c6bcfc69c8dd22af2457f231dc0976"
+      }
+    },
+    "outputReceipt": {
+      "path": "/private/tmp/edu-rpg-build83-paint-audit-20261005/current-terrain-generation-20261007/full-world/north-contact-y-20261007/generation-whole-rock-a-review/output-receipt.json",
+      "sha256": "caa119e842428ce77db226f25828b1412403609e26353c8e9d5284bb854ac3e5"
+    },
+    "platedMap": {
+      "path": "/private/tmp/edu-rpg-build83-paint-audit-20261005/current-terrain-generation-20261007/route-audit/plated-map.json",
+      "sha256": "9d380c41ae38795320bedf6dff8be90ef019ad4e2db59c12cd7b24a9f3823ccf"
+    },
+    "preservedBaseBundle": {
+      "path": "/Users/chris/.codex/workspaces/edu-rpg-forward-20261007/dist/assets/index-BhoGQRaA.js",
+      "sha256": "ab4fc9ad1204f23b4ea55dbae2d72bdf193a52e643271bcfe8642e2210556456"
+    },
+    "qok": {
+      "path": "/private/tmp/edu-rpg-build83-paint-audit-20261005/current-terrain-generation-20261007/full-world/north-contact-y-20261007/generation-whole-rock-a-review/public/act1-hifi/forest-collision.bin",
+      "sha256": "05c4a76f914d9f20c82bf42d1eb574d774f15bd924dbee708aca09d260c97346"
+    }
+  },
+  "a1owV2": {
+    "artifactSha256": "00a520ae09089547ca4af4ef1077b84acdad98d4989de238f3ee30e28ad092c6",
+    "headerMatchesIndependentProof": true,
+    "semanticsMatchesIndependentProof": true,
+    "supportShaAndFnvMatchIndependentProof": true,
+    "distanceBodySha256": "05be9638d04a692668c3a1c8b4bd3d809216bcede2e090a74a0712cb5467498c",
+    "bodyMatchesFrozenV1": true
+  },
+  "routeRecords": {
+    "g3": {
+      "count": 20,
+      "statusCounts": {
+        "blocked-at-target": 5,
+        "expansion-cap": 4,
+        "pass": 11
+      }
+    },
+    "male": {
+      "count": 20,
+      "statusCounts": {
+        "blocked-at-target": 5,
+        "expansion-cap": 4,
+        "pass": 11
+      }
+    }
+  },
+  "interpretation": "Each hero has 11 target passes, 5 blocked-at-target anchors, and 4 expansion-cap results. The latter two classes remain blocked/inconclusive static evidence and do not prove native route reachability or gate progression."
+}

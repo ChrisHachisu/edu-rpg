@@ -2,8 +2,40 @@
 set -eu
 
 ROOT=${1:?repo root required}
+shift
 ROOT=$(CDPATH= cd -- "$ROOT" && pwd -P)
 cd "$ROOT"
+TERRAIN_PROFILE=historical
+RELEASE_IDENTITY=""
+IDENTITY_SHA256=""
+TERRAIN_EVIDENCE=""
+TERRAIN_EVIDENCE_SHA256=""
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --terrain-profile) [ "$#" -ge 2 ] || { echo "--terrain-profile needs a value" >&2; exit 2; }; TERRAIN_PROFILE=$2; shift 2 ;;
+    --release-identity) [ "$#" -ge 2 ] || { echo "--release-identity needs a path" >&2; exit 2; }; RELEASE_IDENTITY=$2; shift 2 ;;
+    --identity-sha256) [ "$#" -ge 2 ] || { echo "--identity-sha256 needs a value" >&2; exit 2; }; IDENTITY_SHA256=$2; shift 2 ;;
+    --terrain-evidence) [ "$#" -ge 2 ] || { echo "--terrain-evidence needs a path" >&2; exit 2; }; TERRAIN_EVIDENCE=$2; shift 2 ;;
+    --terrain-evidence-sha256) [ "$#" -ge 2 ] || { echo "--terrain-evidence-sha256 needs a value" >&2; exit 2; }; TERRAIN_EVIDENCE_SHA256=$2; shift 2 ;;
+    *) echo "unknown ship-gate argument: $1" >&2; exit 2 ;;
+  esac
+done
+case "$TERRAIN_PROFILE" in
+  historical|act1-forward-20261007-v1) ;;
+  *) echo "unknown terrain profile: $TERRAIN_PROFILE" >&2; exit 2 ;;
+esac
+if [ "$TERRAIN_PROFILE" = "act1-forward-20261007-v1" ]; then
+  [ -n "$RELEASE_IDENTITY" ] && [ -n "$IDENTITY_SHA256" ] && \
+    [ -n "$TERRAIN_EVIDENCE" ] && [ -n "$TERRAIN_EVIDENCE_SHA256" ] || {
+      echo "forward shipping requires a sealed identity plus externally SHA-pinned terrain evidence" >&2; exit 1;
+    }
+  python3 scripts/verify_edu_rpg_release_identity.py candidate \
+    --root "$ROOT" --identity "$RELEASE_IDENTITY" --identity-sha256 "$IDENTITY_SHA256" \
+    --terrain-profile "$TERRAIN_PROFILE" --terrain-evidence "$TERRAIN_EVIDENCE" \
+    --terrain-evidence-sha256 "$TERRAIN_EVIDENCE_SHA256"
+elif [ -n "$TERRAIN_EVIDENCE" ] || [ -n "$TERRAIN_EVIDENCE_SHA256" ]; then
+  echo "forward terrain evidence cannot be used with historical shipping" >&2; exit 2
+fi
 
 # The shipped shell, verified against the TRACKED source it is derived from.
 #
@@ -46,8 +78,13 @@ for T in millbrook greenhollow portSapphire; do python3 scripts/place_town_actor
 python3 scripts/check_town_talkable.py
 python3 scripts/regenerate_pins.py --check
 
-python3 scripts/runtime_baseline.py verify-act1 --input dist
-python3 scripts/runtime_baseline.py verify-act1 --input ios/App/App/public --allow-capacitor-glue
+if [ "$TERRAIN_PROFILE" = "act1-forward-20261007-v1" ]; then
+  python3 scripts/runtime_baseline.py verify-act1 --input dist --terrain-profile "$TERRAIN_PROFILE" --qa-preparation
+  python3 scripts/runtime_baseline.py verify-act1 --input ios/App/App/public --allow-capacitor-glue --terrain-profile "$TERRAIN_PROFILE" --qa-preparation
+else
+  python3 scripts/runtime_baseline.py verify-act1 --input dist --terrain-profile "$TERRAIN_PROFILE"
+  python3 scripts/runtime_baseline.py verify-act1 --input ios/App/App/public --allow-capacitor-glue --terrain-profile "$TERRAIN_PROFILE"
+fi
 
 for FILE in dq-tiles.js hero-override.js ui-overhaul.js ui-overhaul.css; do
   cmp "public/$FILE" "dist/$FILE"

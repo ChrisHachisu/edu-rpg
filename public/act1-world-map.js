@@ -206,7 +206,7 @@
   // sprite's own alpha eroded by her 12 px contact disc -- scripts/act1_landmark_footprints.mjs.
   // Exposed for verification only; the collision itself is already in ROWS.
   var LANDMARK_BLOCKERS = [{"x":100,"y":230},{"x":101,"y":230},{"x":102,"y":230},{"x":100,"y":231},{"x":102,"y":231},{"x":68,"y":253},{"x":69,"y":253},{"x":68,"y":254},{"x":69,"y":254},{"x":70,"y":254},{"x":71,"y":254},{"x":67,"y":255},{"x":68,"y":255},{"x":70,"y":255},{"x":71,"y":255},{"x":68,"y":256},{"x":70,"y":256},{"x":71,"y":256},{"x":29,"y":273},{"x":30,"y":273},{"x":31,"y":273},{"x":29,"y":274},{"x":31,"y":274},{"x":37,"y":343},{"x":38,"y":343},{"x":39,"y":343},{"x":40,"y":343},{"x":41,"y":343},{"x":37,"y":344},{"x":38,"y":344},{"x":40,"y":344},{"x":41,"y":344},{"x":38,"y":345},{"x":40,"y":345},{"x":41,"y":345},{"x":132,"y":348},{"x":134,"y":348},{"x":135,"y":348},{"x":131,"y":349},{"x":135,"y":349},{"x":135,"y":350},{"x":95,"y":358},{"x":95,"y":359},{"x":97,"y":359},{"x":95,"y":360},{"x":143,"y":371},{"x":144,"y":371},{"x":145,"y":371},{"x":143,"y":372},{"x":145,"y":373}];
-  var state = { appliedMap: null, relocation: null, wrappedScene: null, repairs: 0 };
+  var state = { appliedMap: null, relocationScene: null, relocation: null, pendingRelocation: null, wrappedScene: null, repairs: 0 };
   var ENTRY = {}, EXITS = {}, COMPASS = {};
   for (var li = 0; li < LANDMARKS.length; li++) { var L = LANDMARKS[li];
     ENTRY[L.at.x + ',' + L.at.y] = L; EXITS[L.mapId] = L.exit; COMPASS[L.mapId] = L.at; }
@@ -221,6 +221,10 @@
   function blocked(tile){ return tile===2||tile===3||tile===4||tile>=6; }
   function gateOpen(){ var gs=window.__GAME_STATE__,flags=gs&&gs.player&&gs.player.state&&gs.player.state.storyFlags; return !!(flags&&flags[GATE.requiredFlag]); }
   function gateRestricted(x,y){ if(gateOpen()) return false; for(var i=0;i<GATE.closedSide.length;i++){var p=GATE.closedSide[i];if(p.x===x&&p.y===y)return true;} return false; }
+  // Read-only pre-apply authority for a persisted Act-1 overworld tile. It deliberately
+  // shares TILES, blocked() and gateRestricted() with writePlate/canMove so seed policy
+  // cannot drift into a parallel walkability definition.
+  function seedWalkableAt(x,y){ return Number.isFinite(x)&&Number.isFinite(y)&&x===Math.floor(x)&&y===Math.floor(y)&&inside(x,y)&&!blocked(tileAt(x,y))&&!gateRestricted(x,y); }
   function wrapCanMove(scene){
     if(scene.__act1CanMoveWrapped||typeof scene.canMove!=='function') return;
     var original=scene.canMove;
@@ -255,14 +259,51 @@
     };
     scene.__act1TransitionWrapped=true;
   }
+  // Frozen overworld entrance coordinates (not exit coordinates). The engine returns only
+  // ox/oy for quest targets, so mapId alone cannot identify these relocated landmarks.
+  var OLD_COMPASS = {'60,340':'greenhollow','100,320':'millbrook','130,290':'portSapphire',
+    '45,350':'sunkenCellar','80,310':'whisperingWoodsCave','140,350':'coastalReef',
+    '120,260':'mistyGrotto','148,295':'crystalCave'};
+  function wrapQuestObjectivePresentation(){
+    var gs=window.__GAME_STATE__, qm=gs&&gs.questManager;
+    if(!qm||qm.__act1ObjectivePresentation||typeof qm.getObjectiveProgress!=='function') return;
+    var original=qm.getObjectiveProgress;
+    qm.getObjectiveProgress=function(id,playerState){
+      var rows=original.apply(this,arguments);
+      if(id!=='drakeCargo'||!playerState) return rows;
+      var active=(playerState.activeQuests||[]).indexOf(id)!==-1;
+      var complete=(playerState.completedQuests||[]).indexOf(id)!==-1;
+      if(!active&&!complete) return rows;
+      // Two frozen Drake talk rows share a counter. Display the final report as pending
+      // until actual turn-in completes, without changing progress, readiness or rewards.
+      return rows.map(function(row){
+        var objective=row.objective;
+        if(!objective||objective.type!=='talk'||objective.targetId!=='drake'
+            ||objective.descriptionKey!=='quest.drakeCargo.obj3') return row;
+        var copy=Object.assign({},row);
+        copy.current=complete?row.target:0;
+        return copy;
+      });
+    };
+    qm.__act1ObjectivePresentation=true;
+  }
+  function correctQuestTurnIn(){
+    var gs=window.__GAME_STATE__, qm=gs&&gs.questManager, ps=gs&&gs.player&&gs.player.state;
+    if(!ps||!qm||typeof qm.getActiveQuests!=='function') return;
+    // getActiveQuests exposes the existing metadata objects; no quest/save implementation forks.
+    var quests=qm.getActiveQuests(ps);
+    for(var i=0;i<quests.length;i++) if(quests[i].id==='crystalCaveGate'&&quests[i].turnInMapId==='greenhollow')
+      quests[i].turnInMapId='millbrook';
+  }
   // The quest compass reads a frozen ox/oy table too, so without this it points at open sea.
   function wrapCompass(scene){
     if(scene.__act1CompassWrapped||typeof scene.getCompassTarget!=='function') return;
     var original=scene.getCompassTarget;
     scene.getCompassTarget=function(){
+      correctQuestTurnIn();
       var target=original.call(this);
       if(!target) return target;
-      var moved=COMPASS[target.mapId];
+      var moved=COMPASS[target.mapId||OLD_COMPASS[target.ox+','+target.oy]];
       if(!moved) return target;
       var copy={}; for(var k in target) if(Object.prototype.hasOwnProperty.call(target,k)) copy[k]=target[k];
       copy.ox=moved.x; copy.oy=moved.y; return copy;
@@ -271,6 +312,7 @@
   }
   function wrapScene(scene){
     if(!scene) return false;
+    wrapQuestObjectivePresentation();
     wrapCanMove(scene); wrapCheckTransition(scene); wrapCompass(scene);
     state.wrappedScene=scene; return true;
   }
@@ -285,19 +327,76 @@
   function armWrappers(){ try{ var s=findScene(); wrapScene(s); ensurePlate(s,true); }catch(e){} }
   armWrappers();
   var armTimer=(typeof window.setInterval==='function')?window.setInterval(armWrappers, 400):null;
-  function relocateIfNeeded(scene){
-    var x=scene.heroTileX,y=scene.heroTileY;
-    if(!inside(x,y)||(!blocked(scene.mapData[y][x])&&!gateRestricted(x,y))) return null;
-    var best=null,bestD=Infinity;
-    for(var i=0;i<SAFE.length;i++){ var p=SAFE[i],t=scene.mapData[p.y][p.x]; if(blocked(t)||gateRestricted(p.x,p.y)) continue;
-      var d=Math.abs(p.x-x)+Math.abs(p.y-y); if(d<bestD){best=p;bestD=d;} }
-    if(!best) throw new Error('Act 1 override has no safe relocation candidate');
-    scene.heroTileX=best.x; scene.heroTileY=best.y;
-    var sprite=scene.hero,first=scene.tileGrid&&scene.tileGrid[0]&&scene.tileGrid[0][0];
-    var size=(first&&first.displayWidth)||48; if(sprite){sprite.x=best.x*size+size/2;sprite.y=best.y*size+size/2;}
+  var RELOCATE_RADIUS_CELLS=6, RELOCATE_RETRY_LIMIT=40, RELOCATE_RETRY_MS=400;
+  function checkSpawn(scene,px,py){
+    var dq=window.__DQ_TILES__;
+    if(!dq||typeof dq.checkOverworldSpawn!=='function') return {status:'pending',reason:'movement-authority-unavailable'};
+    try{ return dq.checkOverworldSpawn(scene,px,py)||{status:'pending',reason:'empty-authority-result'}; }
+    catch(e){ return {status:'error',reason:'movement-authority-threw'}; }
+  }
+  function cellCenter(x){ var dq=window.__DQ_TILES__,space=dq&&dq.overworldSpace;
+    return space&&typeof space.cellCenter==='function'?space.cellCenter(x):null; }
+  function samePosition(scene,p){
+    var h=scene&&scene.hero;
+    if(h&&Number.isFinite(h.x)&&Number.isFinite(h.y)&&(!Number.isFinite(p.spriteX)||!Number.isFinite(p.spriteY))){
+      p.tileX=scene.heroTileX; p.tileY=scene.heroTileY; p.spriteX=h.x; p.spriteY=h.y; return true;
+    }
+    return !!(h&&Math.abs((scene.heroTileX||0)-p.tileX)<1e-6&&Math.abs((scene.heroTileY||0)-p.tileY)<1e-6
+      &&Math.abs(h.x-p.spriteX)<0.01&&Math.abs(h.y-p.spriteY)<0.01);
+  }
+  function moveToSafe(scene,p,from){
+    scene.heroTileX=p.x; scene.heroTileY=p.y;
+    if(scene.hero){ scene.hero.x=cellCenter(p.x); scene.hero.y=cellCenter(p.y); }
     if(typeof scene.updatePosition==='function') scene.updatePosition();
     if(typeof scene.updateCamera==='function') scene.updateCamera();
-    return {from:{x:x,y:y},to:{x:best.x,y:best.y}};
+    return {status:'relocated',from:from,to:{x:p.x,y:p.y}};
+  }
+  function relocateIfNeeded(scene){
+    var x=scene.heroTileX,y=scene.heroTileY,sprite=scene.hero;
+    if(!inside(x,y)) return {status:'outside-act1',at:{x:x,y:y}};
+    if(!sprite||!Number.isFinite(sprite.x)||!Number.isFinite(sprite.y)) return {status:'pending',reason:'hero-position-unavailable'};
+    var from={x:x,y:y,spriteX:sprite.x,spriteY:sprite.y},current=checkSpawn(scene,sprite.x,sprite.y);
+    if(current.status==='pending'||current.status==='outside-field'||current.status==='unavailable')
+      return {status:'pending',reason:current.reason||current.status,from:from};
+    if(current.status==='error') return {status:'error',reason:current.reason||'movement-authority-error',from:from};
+    if(current.status!=='ready') return {status:'error',reason:'unknown-movement-authority-status',from:from};
+    if(current.free) return {status:'kept',at:{x:x,y:y},sprite:{x:sprite.x,y:sprite.y}};
+    var dq=window.__DQ_TILES__,space=dq&&dq.overworldSpace;
+    if(!space||typeof space.toCanonical!=='function'||typeof space.cellCenter!=='function')
+      return {status:'pending',reason:'overworld-coordinate-authority-unavailable',from:from};
+    var ox=space.toCanonical(sprite.x)/48-0.5,oy=space.toCanonical(sprite.y)/48-0.5,rows=[];
+    for(var i=0;i<SAFE.length;i++){ var p=SAFE[i],d=Math.abs(p.x-ox)+Math.abs(p.y-oy);
+      if(d<=RELOCATE_RADIUS_CELLS) rows.push({p:p,d:d,i:i}); }
+    rows.sort(function(a,b){ return a.d-b.d||a.i-b.i; });
+    if(!rows.length) return {status:'error',reason:'no-nearby-safe-candidate',from:from};
+    for(var j=0;j<rows.length;j++){ var row=rows[j],cx=space.cellCenter(row.p.x),cy=space.cellCenter(row.p.y);
+      var candidate=checkSpawn(scene,cx,cy);
+      if(candidate.status==='pending'||candidate.status==='outside-field'||candidate.status==='unavailable')
+        return {status:'pending',reason:'nearer-safe-candidate-unevaluable',candidate:{x:row.p.x,y:row.p.y},from:from};
+      if(candidate.status==='error') return {status:'error',reason:candidate.reason||'movement-authority-error',from:from};
+      if(candidate.status!=='ready') return {status:'error',reason:'unknown-candidate-authority-status',from:from};
+      if(candidate.free) return moveToSafe(scene,row.p,{x:x,y:y,spriteX:sprite.x,spriteY:sprite.y});
+    }
+    return {status:'error',reason:'no-legal-safe-candidate-in-bounded-field',from:from};
+  }
+  function beginPendingRelocation(scene){
+    var h=scene&&scene.hero;
+    state.pendingRelocation={scene:scene,mapData:scene&&scene.mapData,tileX:scene&&scene.heroTileX,tileY:scene&&scene.heroTileY,
+      spriteX:h&&h.x,spriteY:h&&h.y,attempts:0,lastAttempt:0};
+  }
+  function retryPendingRelocation(scene){
+    var p=state.pendingRelocation; if(!p) return null;
+    if(p.scene!==scene||p.mapData!==scene.mapData){ state.pendingRelocation=null;
+      return (state.relocation={status:'cancelled-stale-scene'}); }
+    if(!samePosition(scene,p)){ state.pendingRelocation=null;
+      return (state.relocation={status:'cancelled-position-changed'}); }
+    var now=Date.now(); if(p.lastAttempt&&now-p.lastAttempt<RELOCATE_RETRY_MS) return state.relocation;
+    if(p.attempts>=RELOCATE_RETRY_LIMIT){ state.pendingRelocation=null;
+      return (state.relocation={status:'error',reason:'movement-authority-timeout',attempts:p.attempts}); }
+    p.lastAttempt=now; p.attempts++;
+    var result=relocateIfNeeded(scene); state.relocation=result;
+    if(result.status!=='pending') state.pendingRelocation=null;
+    return result;
   }
   function usable(scene){
     return !!(scene&&scene.currentMapId==='overworld'&&scene.mapData&&scene.mapData.length===400
@@ -327,12 +426,15 @@
     if(applying||!usable(scene)) return false;
     applying=true;
     try{
-      if(state.appliedMap!==scene.mapData){
-        writePlate(scene); state.appliedMap=scene.mapData; state.relocation=relocateIfNeeded(scene);
-        return true;
+      var mapChanged=state.appliedMap!==scene.mapData;
+      if(mapChanged){ writePlate(scene); state.appliedMap=scene.mapData; }
+      if(mapChanged||state.relocationScene!==scene){
+        state.relocationScene=scene; beginPendingRelocation(scene); retryPendingRelocation(scene); return mapChanged;
       }
-      if(deep&&!plateIntact(scene)){ writePlate(scene); state.repairs++; return true; }
-      return false;
+      var repaired=false;
+      if(deep&&!plateIntact(scene)){ writePlate(scene); state.repairs++; repaired=true; }
+      if(deep&&state.pendingRelocation) retryPendingRelocation(scene);
+      return repaired;
     } finally { applying=false; }
   }
   function apply(scene){
@@ -340,5 +442,5 @@
     wrapScene(scene);
     return ensurePlate(scene,true);
   }
-  window.__ACT1_WORLD_MAP__={ revision:REVISION, sourceSha256:SOURCE_SHA256, plateSha256:PLATE_SHA256, bounds:BOUNDS.slice(), landmarks:LANDMARKS, forestBlock:FOREST_BLOCK, bridgeDecks:BRIDGE_DECKS, harborCells:HARBOR_CELLS, gate:GATE, landmarkBlockers:LANDMARK_BLOCKERS, apply:apply, ensurePlate:ensurePlate, armWrappers:armWrappers, armTimer:armTimer, state:state };
+  window.__ACT1_WORLD_MAP__={ revision:REVISION, sourceSha256:SOURCE_SHA256, plateSha256:PLATE_SHA256, bounds:BOUNDS.slice(), landmarks:LANDMARKS, forestBlock:FOREST_BLOCK, bridgeDecks:BRIDGE_DECKS, harborCells:HARBOR_CELLS, gate:GATE, landmarkBlockers:LANDMARK_BLOCKERS, seedWalkableAt:seedWalkableAt, apply:apply, ensurePlate:ensurePlate, armWrappers:armWrappers, armTimer:armTimer, state:state };
 })();

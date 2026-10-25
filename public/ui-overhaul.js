@@ -67,6 +67,7 @@
     '<symbol id="qok-spd" viewBox="0 0 24 24"><path fill="#e0b757" d="M13.4 2L4.8 13.2H10l-1.8 8.8L19 10.4h-5.2z"/></symbol>' +
     '<symbol id="qok-check" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" fill="none" stroke="currentColor" stroke-width="2.4"/></symbol>' +
     '<symbol id="qok-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4"/></symbol>' +
+    '<symbol id="qok-book" viewBox="0 0 24 24"><path d="M4 4.5h11a3 3 0 0 1 3 3v12H7a3 3 0 0 1-3-3z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M7 4.5v15M10 9h5M10 12h5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></symbol>' +
     // settings-row category icons
     '<symbol id="qok-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 7v5l3.5 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>' +
     '<symbol id="qok-speaker" viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 5v14l-4.5-4.5H4z" fill="currentColor"/><path d="M15.5 9a4 4 0 010 6M18 6.5a8 8 0 010 11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>' +
@@ -418,13 +419,15 @@
 
      "Stronger than what they have" is NOT a new judgement -- equipBody already computes exactly it,
      per slot, to draw its up/down delta arrow. Both use the same comparison so the dot can never
-     disagree with the arrow the player sees when they open the screen.
+     disagree with the arrow the player sees when they open the screen. Upgrade dots are based on
+     currently owned positive-quantity inventory, independent of the seen set; only the New pills
+     use seen state.
 
      SEEN IS SNAPSHOTTED ON ENTRY, not cleared on render. The panel repaints on every signature
      change, so clearing as each pill drew would have blanked the pills while the player was still
-     reading them. Opening the Equip screen marks everything currently new as seen -- which clears
-     the dot immediately, as asked -- and the pills for THIS visit come from a snapshot taken at
-     that moment, so they survive until the screen is left. */
+     reading them. Opening the Equip screen marks everything currently new as seen; the availability
+     dot remains until no stronger positive-quantity item is owned. The pills for THIS visit come
+     from a snapshot taken at entry, so they survive until the screen is left. */
   var SEEN_EQUIP_KEY = 'edu-rpg-seen-equipment';
   var _seenEquip = null, _newEquipVisit = null;
   function seenEquip() {
@@ -443,13 +446,17 @@
     try { localStorage.setItem(SEEN_EQUIP_KEY, JSON.stringify(Object.keys(m))); } catch (e) {}
   }
   // Owned equipment that beats what is in its slot right now. Same arithmetic as equipBody's arrow.
+  // Upgrade dots are availability signals, so they deliberately do not consult seenEquip().
   function equipUpgradeIds() {
     var st = pstate(); if (!st || !st.inventory) return [];
     var out = [];
     for (var i = 0; i < st.inventory.length; i++) {
-      var it = find(st.inventory[i].itemId);
+      var entry = st.inventory[i];
+      if (!entry || !(Number(entry.quantity) > 0)) continue;
+      var it = find(entry.itemId);
       if (!it || SLOTS.indexOf(it.type) < 0) continue;
       var curId = st.equipment[it.type], cur = curId ? find(curId) : null;
+      if (curId && it.id === curId) continue;
       var atkV = it.stats ? it.stats.atk : undefined, defV = it.stats ? it.stats.def : undefined;
       var nv = atkV !== undefined ? atkV : (defV !== undefined ? defV : 0);
       var ov = atkV !== undefined ? ((cur && cur.stats && cur.stats.atk) || 0)
@@ -458,6 +465,14 @@
     }
     return out;
   }
+  function equipUpgradeTypes() {
+    var ids = equipUpgradeIds(), types = {};
+    for (var i = 0; i < ids.length; i++) {
+      var it = find(ids[i]); if (it && it.type) types[it.type] = 1;
+    }
+    return types;
+  }
+  function hasEquipUpgrade() { return equipUpgradeIds().length > 0; }
   function newEquipIds() {
     var m = seenEquip(), up = equipUpgradeIds(), out = [];
     for (var i = 0; i < up.length; i++) if (!m[up[i]]) out.push(up[i]);
@@ -494,7 +509,7 @@
     var h = '<div class="tabbar">';
     for (var i = 0; i < 4; i++) {
       var t = ['status', 'items', 'equip', 'settings'][i];
-      var dot = (t === 'equip' && hasNewEquip()) ? '<i class="newdot"></i>' : '';
+      var dot = (t === 'equip' && hasEquipUpgrade()) ? '<i class="newdot"></i>' : '';
       h += '<button class="tab' + (cur === t ? ' on' : '') + '" data-act="tab" data-i="' + i + '">' + tabIcon(i) + esc(Z(TAB_KEY[t])) + dot + '</button>';
     }
     return h + '</div>';
@@ -581,8 +596,10 @@
     // owned header + type filter
     h += '<div class="row span2" style="gap:6px;"><b style="font-size:11px;letter-spacing:.1em;color:var(--gold);font-weight:800;flex:1;">' + esc(Z('equip.owned')) + '</b></div>';
     h += '<div class="seg segcat span2">';
+    var upgradeTypes = equipUpgradeTypes();
     for (var f = 0; f < SLOTS.length; f++) {
-      h += '<b class="' + (SLOTS[f] === filter ? 'on' : '') + '" data-act="equipFilter" data-type="' + SLOTS[f] + '">' + catIcon(SLOTS[f], 20) + '<span>' + esc(Z(SLOT_KEY[SLOTS[f]])) + '</span></b>';
+      var filterType = SLOTS[f], filterDot = upgradeTypes[filterType] ? '<i class="newdot filterdot"></i>' : '';
+      h += '<b class="' + (filterType === filter ? 'on' : '') + '" data-act="equipFilter" data-type="' + filterType + '">' + catIcon(filterType, 20) + '<span>' + esc(Z(SLOT_KEY[filterType])) + '</span>' + filterDot + '</b>';
     }
     h += '</div>';
     // inventory list
@@ -691,11 +708,39 @@
     var orig = ms.showItemMessage.bind(ms);
     ms.showItemMessage = function (txt) { try { _itemMsg = String(txt == null ? '' : txt); _itemSeq++; } catch (e) {} return orig(txt); };
   }
-  function showToast(text) {
-    if (!fx || !text) return;
+  function showToast(text, host) {
+    if (!(host || fx) || !text) return;
     var t = document.createElement('div'); t.className = 'qok-toast'; t.textContent = text;
-    fx.appendChild(t);
+    (host || fx).appendChild(t);
     setTimeout(function () { try { t.remove(); } catch (e) {} }, 1900);
+    return t;
+  }
+  // Frozen quest notifications live on the suppressed Phaser scene while a painted town
+  // is active. Mirror its exact live text once, using the existing toast presentation.
+  var townQuestSource = null, townQuestToast = null;
+  function runTownQuestToast() {
+    var wm = getScene('WorldMapScene');
+    var active = document.body.classList.contains('act1-hifi-active') && sceneActive('WorldMapScene');
+    var source = wm && wm.questNotifText;
+    if (!active || !source || !source.scene || !source.text) {
+      if (townQuestToast) townQuestToast.remove();
+      townQuestToast = null;
+      if (!source || !source.scene) townQuestSource = null;
+      return;
+    }
+    if (source === townQuestSource) return;
+    if (townQuestToast) townQuestToast.remove();
+    townQuestSource = source;
+    townQuestToast = showToast(String(source.text), document.body);
+    if (townQuestToast) {
+      townQuestToast.id = 'qok-town-quest-toast';
+      // This toast lives outside #qok-ui; preserve its current theme rather than
+      // depending on custom properties scoped to that hidden overlay ancestor.
+      var theme = getComputedStyle(root);
+      ['--ink', '--font', '--gold-line'].forEach(function (name) {
+        townQuestToast.style.setProperty(name, theme.getPropertyValue(name));
+      });
+    }
   }
   function runItemToast(ms) {
     patchItemMsg(ms);
@@ -718,10 +763,11 @@
     // signature — include everything the render depends on
     var invSig = st.inventory.map(function (x) { return x.itemId + ':' + x.quantity; }).join(',');
     var eqSig = SLOTS.map(function (s) { return st.equipment[s] || '-'; }).join(',');
+    var upgradeSig = equipUpgradeIds().join(',');
     var qs = GS().quizManager ? GS().quizManager.getStats() : { totalAsked: 0, totalCorrect: 0 };
     var sig = 'menu|' + tab + '|' + ms.listIndex + '|' + ms.equipMode + '|' + ms.equipSlotIndex + '|' + ms.equipInventoryIndex + '|' + (ms.equipTypeFilter || '') +
       '|' + st.hp + '/' + p.totalMaxHp + '|atk' + p.totalAtk + '|def' + p.totalDef + '|spd' + st.spd + '|g' + st.gold + '|lv' + st.level + '|xp' + st.exp +
-      '|' + invSig + '|' + eqSig + '|' + locale() + '|t' + st.timerEnabled + '|s' + st.soundEnabled + '|v' + (draggingVolume ? 'drag' : st.masterVolume) + '|k' + st.kanjiMode + '|d' + st.quizDifficulty +
+      '|' + invSig + '|' + eqSig + '|up' + upgradeSig + '|' + locale() + '|t' + st.timerEnabled + '|s' + st.soundEnabled + '|v' + (draggingVolume ? 'drag' : st.masterVolume) + '|k' + st.kanjiMode + '|d' + st.quizDifficulty +
       '|q' + qs.totalCorrect + '/' + qs.totalAsked + '|o' + ((window.localStorage && localStorage.getItem('eduControlOrientation')) || 'right') +
       '|psn' + (st.poisonedUntil && st.poisonedUntil > Date.now() ? 1 : 0) + '|qc' + (settingsQuitConfirm ? 1 : 0);
 
@@ -1241,23 +1287,86 @@
   // the DOM against the real `.bmon` element instead of touching the frozen bundle.
   var _defeatSeq = 0, _defeatShown = 0;
   var _resolveBaseline = null; // messageText captured at answer-time; resolve feedback shows only until it changes
-  function patchBattle(bs) {
-    if (!bs || bs.__qokHitPatched) return;
-    var orig = bs.handleCombatResult;
-    if (typeof orig !== 'function') return;
-    bs.__qokHitPatched = true;
-    bs.handleCombatResult = function (x) {
-      try {
-        // record real damage hits only; victory/defeat/fled get their own screens
-        if (x && typeof x.damage === 'number' && x.state !== 'victory' && x.state !== 'defeat' && x.state !== 'fled') {
-          _lastHit = { who: this.quizForPlayer ? 'enemy' : 'player', dmg: x.damage | 0, crit: !!x.critical, seq: ++_hitSeq };
-        } else if (x && x.state === 'victory') {
-          _defeatSeq++;
-        }
-      } catch (e) {}
-      return orig.apply(this, arguments);
+  function qokResolveWrongAnswer(engine, translate) {
+    // Mirror the delivered wrong-answer branch before applying the narrow finish cap.
+    var player = engine.player, monster = engine.monster;
+    var swordWraithReflection = monster && monster.id === 'swordWraith' &&
+      player && typeof player.hasItem === 'function' && !player.hasItem('holyAmulet');
+    var weakDamage = Math.max(1, Math.floor(engine.calculateDamage(player.totalAtk, monster.baseDef) * 0.25));
+
+    if (swordWraithReflection) {
+      var reflectedDamage = Math.floor(weakDamage * 0.9);
+      var attemptedMonsterDamage = Math.max(1, weakDamage - reflectedDamage);
+      var reflectedApplied = Math.max(0, Math.min(attemptedMonsterDamage, engine.monsterHp - 1));
+      // The frozen branch mutates monster HP before applying reflected player damage;
+      // retain that ordering even when the reflected hit also defeats the player.
+      engine.monsterHp -= reflectedApplied;
+      player.state.hp = Math.max(0, player.state.hp - reflectedDamage);
+      if (player.state.hp <= 0) {
+        engine.state = 'defeat';
+        return {
+          state: 'defeat',
+          message: translate('battle.defeated', { name: player.state.name }),
+          damage: reflectedDamage
+        };
+      }
+      engine.state = 'enemyTurn';
+      return {
+        state: 'playerResolve',
+        message: translate('dungeon.sunkenTempleDungeon.damageReflect') + ' ' + translate('battle.partialHit', { damage: reflectedApplied }),
+        damage: reflectedApplied,
+        partial: true
+      };
+    }
+
+    var appliedDamage = Math.max(0, Math.min(weakDamage, engine.monsterHp - 1));
+    engine.monsterHp -= appliedDamage;
+    engine.state = 'enemyTurn';
+    return {
+      state: 'playerResolve',
+      message: translate('battle.partialHit', { damage: appliedDamage }),
+      damage: appliedDamage,
+      partial: true
     };
   }
+
+  function patchBattle(bs) {
+    if (!bs) return;
+    if (!bs.__qokHitPatched) {
+      var orig = bs.handleCombatResult;
+      if (typeof orig === 'function') {
+        bs.__qokHitPatched = true;
+        bs.handleCombatResult = function (x) {
+          try {
+            // record real damage hits only; victory/defeat/fled get their own screens
+            if (x && typeof x.damage === 'number' && x.state !== 'victory' && x.state !== 'defeat' && x.state !== 'fled') {
+              _lastHit = { who: this.quizForPlayer ? 'enemy' : 'player', dmg: x.damage | 0, crit: !!x.critical, seq: ++_hitSeq };
+            } else if (x && x.state === 'victory') {
+              _defeatSeq++;
+            }
+          } catch (e) {}
+          return orig.apply(this, arguments);
+        };
+      }
+    }
+
+    // A wrong answer is a weak hit, but it must leave the monster alive so the player
+    // still has to answer a later question correctly. This is deliberately attached to
+    // each live engine instance: BattleScene creates a new engine for every encounter.
+    // Correct answers delegate to the frozen method, preserving its critical/fast paths,
+    // boss reflection, rewards, and victory transition exactly.
+    var engine = bs.engine;
+    if (!engine || engine.__qokWrongFinishPatched || typeof engine.resolvePlayerAttack !== 'function') return;
+    var originalResolvePlayerAttack = engine.resolvePlayerAttack;
+    engine.__qokWrongFinishPatched = true;
+    engine.resolvePlayerAttack = function (correct, timeRatio, elapsed3s) {
+      if (correct || !(this.monsterHp > 0)) {
+        return originalResolvePlayerAttack.apply(this, arguments);
+      }
+      return qokResolveWrongAnswer(this, Z);
+    };
+  }
+
   function spawnFx(hit) {
     if (!fx || !root) return;
     var crit = hit.crit, dmg = hit.dmg, toEnemy = (hit.who === 'enemy'), miss = !(dmg > 0);
@@ -1465,10 +1574,11 @@
         var at = (ans[a].text && (ans[a].text[loc] || ans[a].text.en)) || '';
         ah += '<button class="qbtn' + (a === bs.quizSelectedIndex ? ' sel' : '') + '" data-act="quizAns" data-i="' + a + '">' + esc(at) + '</button>';
       }
+      var quizPromptKey = bs.quizForPlayer ? 'quiz.answerToAttack' : 'quiz.answerToDefend';
       content = '<div class="qcard panel">' + timer +
-        '<div class="qprompt">' + esc(Z('quiz.answerToAttack')) + '</div>' +
+        '<div class="qprompt">' + esc(Z(quizPromptKey)) + '</div>' +
         '<div class="qq">' + esc(qtext) + '</div><div class="qans">' + ah + '</div></div>';
-      dyn = 'quiz|' + qtext + '|' + bs.quizSelectedIndex + '|' + ans.length;
+      dyn = 'quiz|' + quizPromptKey + '|' + qtext + '|' + bs.quizSelectedIndex + '|' + ans.length;
       showPlayerBar = false; // the quiz card is tall; drop the player bar to keep the enemy on screen
     } else if (phase === 'itemSelect') {
       var ir = '<div class="itemrow">';
@@ -1606,7 +1716,7 @@
   //  TAP ROUTER
   // ============================================================
   // ---- pointer-based tap router (replaces the old click-only onTap) ----
-  var downEl = null, downAct = null, gestureRouted = false;
+  var downEl = null, downAct = null, downScreen = null, gestureRouted = false;
   /* WHY A TAP IS MEASURED BY FINGER MOVEMENT AND NOT BY ELEMENT IDENTITY. Owner, build 43: "on the
      hero build screen, the text field acts funny and the player needs to tap check twice to commit
      the name."
@@ -1692,7 +1802,7 @@
     var actEl = t.closest ? t.closest('[data-act]') : null;
     var ty = e.type;
     if (ty === 'pointerdown' || ty === 'touchstart') {
-      downEl = actEl; downAct = actEl ? actEl.getAttribute('data-act') : null; gestureRouted = false;
+      downEl = actEl; downAct = actEl ? actEl.getAttribute('data-act') : null; downScreen = curScreen; gestureRouted = false;
       var p0 = pointOf(e); downX = p0.clientX || 0; downY = p0.clientY || 0;
       setRailKb(false);      // touch wins: drop the keyboard cursor BEFORE the press paints...
       railPress(actEl, true); // ...so the only thing that lights up is the button under the finger
@@ -1709,8 +1819,15 @@
         var moved = Math.abs((p1.clientX || 0) - downX) + Math.abs((p1.clientY || 0) - downY);
         // Either the finger never left the button (no reflow), or it barely moved at all (reflow
         // shifted the button out from under it, but this was still a tap on what was pressed).
-        if (actEl === downEl || (moved <= TAP_SLOP && downEl.isConnected)) {
-          gestureRouted = true; fireTap(downEl, downAct);
+        // Title can repaint between DOWN and UP (for example a save/language
+        // signature change). Continue the same stationary action on its new
+        // live node; the new branch cannot route a detached or changed target.
+        var titleReplaced = downScreen === 'title' && curScreen === 'title' &&
+          !downEl.isConnected && moved <= TAP_SLOP && actEl && actEl.isConnected &&
+          actEl.getAttribute('data-act') === downAct;
+        if ((downScreen !== 'title' || curScreen === 'title') &&
+            (actEl === downEl || (moved <= TAP_SLOP && downEl.isConnected) || titleReplaced)) {
+          gestureRouted = true; fireTap(titleReplaced ? actEl : downEl, downAct);
         }
       }
     }
@@ -1750,6 +1867,9 @@
     if (act !== 'gameOverOpt') return;
     go.menuIndex = i;
     if (go.updateMenuHighlight) { try { go.updateMenuHighlight(); } catch (e) {} }
+    if ((i === 0 || i === 1) && window.__QOK_COVER__ && window.__QOK_COVER__.beginWorldLoad) {
+      window.__QOK_COVER__.beginWorldLoad(i === 0 ? 'gameover-retry' : 'gameover-restart-save');
+    }
     // the scene confirms on a keydown-ENTER (inline handler reads menuTexts[menuIndex].action)
     ['keydown', 'keyup'].forEach(function (type) {
       var ev = new KeyboardEvent(type, { key: 'Enter', code: 'Enter', bubbles: true, cancelable: true });
@@ -1809,6 +1929,9 @@
     if (idx < 0) return;                    // genuinely absent (e.g. Continue with no save)
     ts.selectedIndex = idx;
     if (ts.updateSelection) ts.updateSelection();
+    if (action === 'continue' && window.__QOK_COVER__ && window.__QOK_COVER__.beginWorldLoad) {
+      window.__QOK_COVER__.beginWorldLoad('title-continue');
+    }
     ts.confirm();
   }
 
@@ -2064,10 +2187,89 @@
   var fieldRoot = null, fieldHpText = null, fieldHpFill = null, fieldFloor = null;
   var fieldMap = null, fieldMapCanvas = null, fieldMapIcon = null, fieldMapCollapsed = false, fieldMapDrawAt = 0;
   var fieldCompass = null, fieldCompassArrow = null, fieldDialog = null, fieldDialogSpeaker = null, fieldDialogText = null;
+  var fieldQuest = null, fieldQuestToggle = null, fieldQuestContent = null, fieldQuestSig = null;
+  var fieldQuestOpen = {}, questCompletion = null, questCompletionReturnFocus = null, questCompletionKeyboard = null;
+  var questCompletionState = null, lastQuestCompletionSig = null;
+  function questUiCopy() {
+    var st = pstate() || {}, ja = isJa();
+    if (!ja) return { complete:'Quest Complete', received:'Rewards received', continue:'Continue adventure', expand:'Expand quests', collapse:'Collapse quests', loading:'Reading quest progress…', unavailable:'Quest details unavailable', empty:Z('menu.noQuests') };
+    return st.kanjiMode
+      ? { complete:'クエスト完了', received:'報酬を受け取りました', continue:'冒険を続ける', expand:'クエストを開く', collapse:'クエストを閉じる', loading:'クエストを読み込んでいます…', unavailable:'クエスト情報を表示できません', empty:Z('menu.noQuests') }
+      : { complete:'クエストかんりょう', received:'ほうしゅうを うけとった', continue:'ぼうけんを つづける', expand:'クエストを ひらく', collapse:'クエストを とじる', loading:'クエストを よみこんでいます…', unavailable:'クエストを ひょうじできません', empty:Z('menu.noQuests') };
+  }
+  function questRewardRows(rewards) {
+    var rows = [], r = rewards || {};
+    if (r.exp) rows.push({ label:Z('menu.exp'), value:'+' + r.exp });
+    if (r.gold) rows.push({ label:Z('menu.gold'), value:'+' + r.gold });
+    if (r.items) for (var i = 0; i < r.items.length; i++) {
+      var reward = r.items[i], item = find(reward.itemId);
+      if (item) rows.push({ label:Z(item.nameKey), value:'×' + reward.quantity });
+    }
+    return rows;
+  }
+  function dismissQuestCompletion() {
+    if (!questCompletion || questCompletion.hidden) return;
+    questCompletion.hidden = true;
+    try { document.body.classList.remove('qok-quest-complete'); } catch (e) {}
+    if (questCompletionKeyboard) {
+      try { if (typeof questCompletionKeyboard.keyboard.resetKeys === 'function') questCompletionKeyboard.keyboard.resetKeys(); } catch (ek) {}
+      try { questCompletionKeyboard.keyboard.enabled = questCompletionKeyboard.enabled; } catch (ek2) {}
+      questCompletionKeyboard = null;
+    }
+    var target = questCompletionReturnFocus; questCompletionReturnFocus = null;
+    try { if (target && target.isConnected && !target.disabled) target.focus(); else if (fieldQuestToggle) fieldQuestToggle.focus(); } catch (e2) {}
+  }
+  function ensureQuestCompletion() {
+    if (questCompletion) return questCompletion;
+    var d = document.createElement('div'); d.id = 'qok-quest-completion'; d.hidden = true;
+    d.innerHTML = '<section class="qqc-card" role="dialog" aria-modal="true" aria-labelledby="qqc-heading">' +
+      '<svg class="qqc-emblem" viewBox="0 0 64 64" aria-hidden="true"><path d="m32 4 8 18 20 2-15 14 4 21-17-11-17 11 4-21L4 24l20-2Z"/><path d="m22 32 7 7 14-16"/></svg>' +
+      '<h2 id="qqc-heading"></h2><p class="qqc-title"></p><div class="qqc-rewards"></div><p class="qqc-received"></p><button type="button" class="qqc-dismiss"></button></section>';
+    (document.body || document.documentElement).appendChild(d);
+    var dismiss = d.querySelector('.qqc-dismiss');
+    ['pointerdown','pointerup','touchstart','touchend','click'].forEach(function (type) {
+      d.addEventListener(type, function (e) { e.stopPropagation(); if (type !== 'click') e.preventDefault(); });
+    });
+    dismiss.addEventListener('click', dismissQuestCompletion);
+    // Keep the shield mounted through the release event. Hiding synchronously on pointerup can let
+    // WebKit retarget its compatibility click to the town iframe or world controls underneath.
+    dismiss.addEventListener('pointerup', function (e) { e.preventDefault(); e.stopPropagation(); setTimeout(dismissQuestCompletion, 0); });
+    dismiss.addEventListener('touchend', function (e) { e.preventDefault(); e.stopPropagation(); setTimeout(dismissQuestCompletion, 0); });
+    d.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') { e.preventDefault(); e.stopImmediatePropagation(); dismissQuestCompletion(); }
+      else if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopImmediatePropagation(); dismissQuestCompletion(); }
+      else { e.preventDefault(); e.stopImmediatePropagation(); if (e.key === 'Tab') dismiss.focus(); }
+    }, true);
+    questCompletion = d; return d;
+  }
+  function showQuestCompletion(title, rewards) {
+    var st = pstate() || {}, completed = st.completedQuests || [];
+    if (st !== questCompletionState) { questCompletionState = st; lastQuestCompletionSig = null; }
+    var sig = completed.join(',') + '|' + title + '|' + JSON.stringify(rewards || {});
+    if (sig === lastQuestCompletionSig) return;
+    lastQuestCompletionSig = sig;
+    var d = ensureQuestCompletion(), copy = questUiCopy(), rows = questRewardRows(rewards);
+    d.querySelector('#qqc-heading').textContent = copy.complete;
+    d.querySelector('.qqc-title').textContent = title;
+    d.querySelector('.qqc-received').textContent = copy.received;
+    d.querySelector('.qqc-dismiss').textContent = copy.continue;
+    d.querySelector('.qqc-rewards').innerHTML = rows.map(function (row) {
+      return '<span><small>' + esc(row.label) + '</small><strong>' + esc(row.value) + '</strong></span>';
+    }).join('');
+    questCompletionReturnFocus = document.activeElement; d.hidden = false;
+    var wm = getScene('WorldMapScene'), keyboard = wm && wm.input && wm.input.keyboard;
+    if (keyboard && !questCompletionKeyboard) {
+      questCompletionKeyboard = { keyboard:keyboard, enabled:keyboard.enabled !== false };
+      try { if (typeof keyboard.resetKeys === 'function') keyboard.resetKeys(); } catch (ek) {}
+      try { keyboard.enabled = false; } catch (ek2) {}
+    }
+    try { document.body.classList.add('qok-quest-complete'); } catch (e) {}
+    try { d.querySelector('.qqc-dismiss').focus(); } catch (e2) {}
+  }
   function hideNativeFieldHud(wm) {
     if (!wm || !fieldRoot || !fieldRoot.classList.contains('active')) return;
     [wm.hudHpPanel, wm.hpText, wm.hpBarBg, wm.hpBarFg, wm.hudFloorPanel, wm.floorText, wm.compassContainer,
-      wm.minimapGfx, wm.minimapPlayerDot, wm._minimapBtn, wm._minimapBtnLabel, wm.messageBox, wm.messageSpeaker, wm.messageText].forEach(function (o) {
+      wm.minimapGfx, wm.minimapPlayerDot, wm._minimapBtn, wm._minimapBtnLabel, wm.messageBox, wm.messageSpeaker, wm.messageText].concat(wm._questTrackerObjs || []).forEach(function (o) {
       try { if (o && o.setVisible) o.setVisible(false); } catch (e) {}
     });
     try { if (wm._minimapHit && wm._minimapHit.disableInteractive) wm._minimapHit.disableInteractive(); } catch (e2) {}
@@ -2075,6 +2277,15 @@
   function nativeHudKey(wm) {
     var st = pstate() || {}, quests = st.activeQuests || [], progress = st.questProgress || {};
     return wm.currentMapId + '|' + wm.currentFloor + '|' + quests.join(',') + '|' + JSON.stringify(progress);
+  }
+  function questReadyForNpc(npc) {
+    var gs = GS(), qm = gs && gs.questManager, st = pstate();
+    if (!npc || !qm || !st || typeof qm.getActiveQuests !== 'function' || typeof qm.isQuestReady !== 'function') return false;
+    try {
+      var quests = qm.getActiveQuests(st) || [];
+      for (var i = 0; i < quests.length; i++) if (quests[i].turnInNpcId === npc.id && qm.isQuestReady(quests[i].id, st)) return true;
+    } catch (e) {}
+    return false;
   }
   function patchFieldScene(wm) {
     if (!wm || wm.__qokFieldHudPatched) return; wm.__qokFieldHudPatched = true;
@@ -2100,6 +2311,78 @@
         var r = original.apply(this, arguments); hideNativeFieldHud(this); return r;
       };
     });
+    if (typeof wm.showQuestCompleteNotification === 'function') {
+      wm.__qokQuestCompleteOriginal = wm.showQuestCompleteNotification;
+      wm.showQuestCompleteNotification = function (title, rewards) { showQuestCompletion(String(title == null ? '' : title), rewards || {}); };
+    }
+    // The frozen ready-turn-in path first presents `${npc}.questComplete` through the ordinary
+    // dialogue box, then its callback grants the reward and calls showQuestCompleteNotification.
+    // Bypass only that ready callback-bearing sequence. Offers, reminders and ordinary NPC speech
+    // continue through the untouched showDialogSequence implementation.
+    if (typeof wm.handleNpcInteraction === 'function') {
+      var handleNpcInteraction = wm.handleNpcInteraction;
+      wm.handleNpcInteraction = function (npc) {
+        var scene = this, showDialogSequence = scene.showDialogSequence, intercepted = false;
+        if (typeof showDialogSequence !== 'function') return handleNpcInteraction.apply(scene, arguments);
+        scene.showDialogSequence = function (lines, callback) {
+          if (!intercepted && typeof callback === 'function' && questReadyForNpc(npc)) {
+            intercepted = true; callback(); return;
+          }
+          return showDialogSequence.apply(scene, arguments);
+        };
+        try { return handleNpcInteraction.apply(scene, arguments); }
+        finally { scene.showDialogSequence = showDialogSequence; }
+      };
+    }
+  }
+  function questProgressMarkup(quest, qm, st) {
+    var progress = qm.getObjectiveProgress(quest.id, st) || [], next = null;
+    for (var i = 0; i < progress.length; i++) if (progress[i].current < progress[i].target) { next = progress[i]; break; }
+    if (!next) return '<p class="qfq-objective qfq-ready">' + esc(Z('quest.objectivesComplete')) + '</p>';
+    var count = next.target > 1 ? '<span>' + Math.min(next.current, next.target) + ' / ' + next.target + '</span>' : '';
+    return '<p class="qfq-objective">' + esc(Z(next.objective.descriptionKey)) + '</p>' + (count ? '<p class="qfq-progress">' + count + '</p>' : '');
+  }
+  function questTapWithinSlop(down, e) {
+    if (!down) return false;
+    var p = pointOf(e);
+    return Math.abs((p.clientX || 0) - down.x) + Math.abs((p.clientY || 0) - down.y) <= TAP_SLOP;
+  }
+  function questDisclosureState(wm) {
+    var collapsed = !!wm.questTrackerCollapsed || !!wm.showingMessage, copy = questUiCopy();
+    return { collapsed:collapsed, expanded:!collapsed, label:collapsed ? copy.expand : copy.collapse };
+  }
+  function renderFieldQuests(wm) {
+    if (!fieldQuest || !fieldQuestContent) return;
+    var gs = GS(), st = pstate(), qm = gs && gs.questManager, quests = [], state = 'ready';
+    if (!qm || !st || typeof qm.getActiveQuests !== 'function' || typeof qm.getObjectiveProgress !== 'function') state = 'loading';
+    else { try { quests = qm.getActiveQuests(st) || []; } catch (e) { state = 'error'; } }
+    var sig = state + '|' + locale() + '|' + !!(st && st.kanjiMode) + '|' + (st && JSON.stringify(st.questProgress || {})) + '|' + quests.map(function (q) { return q.id; }).join(',');
+    if (sig !== fieldQuestSig) {
+      var focusedEntry = document.activeElement && document.activeElement.closest ? document.activeElement.closest('.qfq-entry') : null;
+      var focusedId = focusedEntry && focusedEntry.getAttribute('data-quest-id');
+      fieldQuestSig = sig;
+      if (state !== 'ready') fieldQuestContent.innerHTML = '<p class="qfq-state">' + esc(state === 'loading' ? questUiCopy().loading : questUiCopy().unavailable) + '</p>';
+      else if (!quests.length) fieldQuestContent.innerHTML = '<p class="qfq-state">' + esc(questUiCopy().empty) + '</p>';
+      else fieldQuestContent.innerHTML = quests.map(function (quest, i) {
+        var open = fieldQuestOpen[quest.id]; if (open == null) open = i === 0;
+        return '<section class="qfq-entry' + (open ? ' open' : '') + '" data-quest-id="' + esc(quest.id) + '">' +
+          '<button type="button" class="qfq-title" aria-expanded="' + open + '"><span>' + esc(Z(quest.titleKey)) + '</span><svg viewBox="0 0 12 12" aria-hidden="true"><path d="m4 3 3 3-3 3"/></svg></button>' +
+          '<div class="qfq-detail"' + (open ? '' : ' hidden') + '>' + questProgressMarkup(quest, qm, st) + '</div></section>';
+      }).join('');
+      if (focusedId) {
+        var entries = fieldQuestContent.querySelectorAll('.qfq-entry');
+        for (var ei = 0; ei < entries.length; ei++) if (entries[ei].getAttribute('data-quest-id') === focusedId) {
+          var focusButton = entries[ei].querySelector('.qfq-title'); if (focusButton) focusButton.focus(); break;
+        }
+      }
+    }
+    // Dialogue temporarily compacts the visible tracker without changing the player's logical
+    // questTrackerCollapsed choice. When the message closes, the prior selection returns.
+    var disclosure = questDisclosureState(wm);
+    fieldQuest.classList.toggle('collapsed', disclosure.collapsed);
+    fieldQuestToggle.setAttribute('aria-expanded', String(disclosure.expanded));
+    fieldQuestToggle.setAttribute('aria-label', disclosure.label);
+    fieldQuestContent.hidden = disclosure.collapsed;
   }
   function ensureFieldHud() {
     if (fieldRoot) return fieldRoot;
@@ -2146,12 +2429,46 @@
           '<circle class="qfc-pivot" cx="34" cy="34" r="2.2"/>' +
         '</svg>' +
       '</div>' +
+      '<section id="qfh-quest"><button type="button" id="qfh-quest-toggle" aria-controls="qfh-quest-content"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#qok-book"/></svg><span></span><svg class="qfq-chevron" viewBox="0 0 12 12" aria-hidden="true"><path d="m3 7 3-3 3 3"/></svg></button><div id="qfh-quest-content"></div></section>' +
       '<div id="qfh-dialog"><b id="qfh-dialog-speaker"></b><span id="qfh-dialog-text"></span></div>';
     (document.body || document.documentElement).appendChild(d);
     fieldRoot = d; fieldHpText = d.querySelector('#qfhp-text'); fieldHpFill = d.querySelector('#qfhp-fill');
     fieldFloor = d.querySelector('#qfh-floor'); fieldMap = d.querySelector('#qfh-map'); fieldMapCanvas = d.querySelector('#qfh-map-canvas'); fieldMapIcon = d.querySelector('#qfh-map-icon');
     fieldCompass = d.querySelector('#qfh-compass'); fieldCompassArrow = d.querySelector('#qfh-compass-arrow');
     fieldDialog = d.querySelector('#qfh-dialog'); fieldDialogSpeaker = d.querySelector('#qfh-dialog-speaker'); fieldDialogText = d.querySelector('#qfh-dialog-text');
+    fieldQuest = d.querySelector('#qfh-quest'); fieldQuestToggle = d.querySelector('#qfh-quest-toggle'); fieldQuestContent = d.querySelector('#qfh-quest-content');
+    fieldQuestToggle.querySelector('span').textContent = Z('quest.tracker.title');
+    ['pointerdown', 'pointerup', 'touchstart', 'touchend', 'click'].forEach(function (type) { fieldQuest.addEventListener(type, function (e) { e.stopPropagation(); }); });
+    fieldQuestToggle.addEventListener('pointerdown', function (e) { var p = pointOf(e); fieldQuestToggle.__qokDown = { x:p.clientX || 0, y:p.clientY || 0 }; });
+    function toggleQuestPanel(e) {
+      if (e.type === 'click' && e.detail !== 0 && fieldQuestToggle.__qokPointerAt && Date.now() - fieldQuestToggle.__qokPointerAt < 500) return;
+      if (e.type === 'pointerup') {
+        fieldQuestToggle.__qokPointerAt = Date.now();
+        if (!questTapWithinSlop(fieldQuestToggle.__qokDown, e)) return;
+      }
+      var wm = getScene('WorldMapScene'); if (!wm) return;
+      wm.questTrackerCollapsed = !wm.questTrackerCollapsed; wm.questDotActive = false; renderFieldQuests(wm);
+    }
+    fieldQuestToggle.addEventListener('pointerup', toggleQuestPanel);
+    fieldQuestToggle.addEventListener('click', toggleQuestPanel);
+    fieldQuestContent.addEventListener('pointerdown', function (e) {
+      var button = e.target && e.target.closest ? e.target.closest('.qfq-title') : null, p = pointOf(e);
+      fieldQuestContent.__qokDownButton = button; fieldQuestContent.__qokDown = { x:p.clientX || 0, y:p.clientY || 0 };
+    });
+    function toggleQuestEntry(e) {
+      var button = e.target && e.target.closest ? e.target.closest('.qfq-title') : null; if (!button) return;
+      if (e.type === 'click' && e.detail !== 0 && button.__qokPointerAt && Date.now() - button.__qokPointerAt < 500) return;
+      if (e.type === 'pointerup') {
+        button.__qokPointerAt = Date.now();
+        if (button !== fieldQuestContent.__qokDownButton || !questTapWithinSlop(fieldQuestContent.__qokDown, e)) return;
+      }
+      var entry = button.closest('.qfq-entry'), id = entry && entry.getAttribute('data-quest-id'); if (!id) return;
+      var open = !entry.classList.contains('open'); fieldQuestOpen[id] = open; entry.classList.toggle('open', open);
+      button.setAttribute('aria-expanded', String(open)); var detail = entry.querySelector('.qfq-detail'); if (detail) detail.hidden = !open;
+    }
+    fieldQuestContent.addEventListener('pointerup', toggleQuestEntry);
+    fieldQuestContent.addEventListener('click', toggleQuestEntry);
+    ['keydown', 'keyup'].forEach(function (type) { fieldQuest.addEventListener(type, function (e) { e.stopImmediatePropagation(); }); });
     ['pointerdown', 'pointerup', 'touchstart', 'touchend', 'click'].forEach(function (type) { fieldMap.addEventListener(type, function (e) { e.preventDefault(); e.stopPropagation(); }); });
     fieldMap.addEventListener('pointerup', function () {
       var wm = getScene('WorldMapScene'); fieldMapCollapsed = !fieldMapCollapsed;
@@ -2331,6 +2648,7 @@
   function updateFieldHud() {
     var d = ensureFieldHud(), wm = getScene('WorldMapScene');
     patchFieldScene(wm);
+    if (questCompletion && !questCompletion.hidden && (!wm || !sceneActive('WorldMapScene') || pstate() !== questCompletionState)) dismissQuestCompletion();
     var touchHud = !!((window.matchMedia && window.matchMedia('(pointer:coarse), (hover:none)').matches) || (window.Capacitor && (!window.Capacitor.isNativePlatform || window.Capacitor.isNativePlatform())));
     var active = !!(touchHud && wm && sceneActive('WorldMapScene') && !sceneActive('MenuScene') && !sceneActive('ShopScene') && !sceneActive('BattleScene') && !sceneActive('GameOverScene'));
     d.classList.toggle('active', active); if (!active) { try { document.body.classList.remove('qok-dialogue'); } catch (e) {} return; }
@@ -2373,6 +2691,10 @@
       fieldMapCollapsed = !!wm.minimapCollapsed; fieldMap.classList.toggle('collapsed', fieldMapCollapsed); fieldMapIcon.style.display = fieldMapCollapsed ? 'block' : 'none';
       if (!fieldMapCollapsed) drawFieldMap(wm);
     }
+    var questTop = hasMap ? (fieldMapCollapsed ? 100 : 216) : 53;
+    if (!hasMap && floorText) questTop += Math.max(34, Math.ceil(fieldFloor.getBoundingClientRect().height)) + 6;
+    fieldQuest.style.setProperty('--qfh-quest-top', 'calc(env(safe-area-inset-top,0px) + ' + questTop + 'px)');
+    fieldQuestToggle.querySelector('span').textContent = Z('quest.tracker.title'); renderFieldQuests(wm);
     var compassOn = !!wm.compassEnabled;
     fieldCompass.style.display = compassOn ? 'block' : 'none';
     if (compassOn) {
@@ -2402,6 +2724,7 @@
   //  MAIN LOOP
   // ============================================================
   // ---- field/dungeon bottom tabs (replace the floating menu button): open the menu to the tapped tab ----
+  var pendingFieldOpen = null;
   var pendingTab = null, _fieldNavEl = null, _fieldNavSig = '';
   function fireEsc() {
     ['keydown', 'keyup'].forEach(function (type) {
@@ -2410,12 +2733,47 @@
       window.dispatchEvent(ev);
     });
   }
+  // Escape is ignored by the shipped world while its last movement tween finishes.
+  // Keep this visible tab request briefly, tied to this exact field visit, and send
+  // only once when the original handler can accept it. Never replay Escape into a menu.
+  function cancelFieldOpen() { pendingFieldOpen = null; pendingTab = null; }
+  function flushFieldOpen() {
+    var req = pendingFieldOpen;
+    if (!req) return;
+    if (sceneActive('MenuScene')) { pendingFieldOpen = null; return; }
+    var wm = getScene('WorldMapScene');
+    if (Date.now() >= req.expires || !wm || wm !== req.world ||
+        wm.currentMapId !== req.map || wm.currentFloor !== req.floor ||
+        !sceneActive('WorldMapScene') || sceneActive('ShopScene') ||
+        sceneActive('BattleScene') || sceneActive('TitleScene') || sceneActive('GameOverScene') ||
+        wm.showingMessage || wm.questOverlayOpen || wm.midCrystalOverlayOpen ||
+        wm.warpOverlayOpen || wm.healerOverlayOpen || wm.itemOverlayOpen) {
+      cancelFieldOpen(); return;
+    }
+    var keyboard = wm.input && wm.input.keyboard;
+    if (req.sent || wm.isMoving || !keyboard || keyboard.enabled === false ||
+        (keyboard.manager && keyboard.manager.enabled === false)) return;
+    req.sent = true;
+    fireEsc();
+  }
+  function requestFieldTab(index) {
+    if (index < 0 || index > 3 || index !== Math.floor(index)) return;
+    pendingTab = index;
+    if (sceneActive('MenuScene')) { pendingFieldOpen = null; return; }
+    var wm = getScene('WorldMapScene');
+    // Repeated taps update the requested tab without queuing another Escape.
+    if (!pendingFieldOpen) pendingFieldOpen = {
+      world: wm, map: wm && wm.currentMapId, floor: wm && wm.currentFloor,
+      expires: Date.now() + 1500, sent: false
+    };
+    flushFieldOpen();
+  }
   function syncFieldNav() {
     var el = _fieldNavEl || (_fieldNavEl = document.getElementById('fieldTabs'));
     if (!el) return;
     // The dot has to be part of the signature or the bar would never redraw to show it: this
     // function is a no-op whenever the signature matches, and locale alone almost never changes.
-    var newEq = hasNewEquip();
+    var newEq = hasEquipUpgrade();
     var sig = 'fn|' + locale() + '|' + (newEq ? 'new' : '-');
     if (sig !== _fieldNavSig) {
       _fieldNavSig = sig;
@@ -2432,8 +2790,7 @@
       el.addEventListener('click', function (e) {
         var b = e.target && e.target.closest ? e.target.closest('[data-fi]') : null;
         if (!b) return;
-        pendingTab = parseInt(b.getAttribute('data-fi'), 10);
-        fireEsc();
+        requestFieldTab(parseInt(b.getAttribute('data-fi'), 10));
       });
     }
   }
@@ -2536,7 +2893,7 @@
   }
   function syncMsgCatcher() {
     var wm = getScene('WorldMapScene');
-    var showing = !!(wm && wm.showingMessage && sceneActive('WorldMapScene') && root && !root.classList.contains('active'));
+    var showing = !!(wm && wm.showingMessage && sceneActive('WorldMapScene') && root && !root.classList.contains('active') && (!questCompletion || questCompletion.hidden));
     ensureMsgCatcher().style.display = showing ? 'block' : 'none';
   }
 
@@ -2559,8 +2916,10 @@
     if (!QOK() || !GS()) { deactivate(); return; }
     hookScenes();
     syncFieldNav();
+    flushFieldOpen();
     syncMsgCatcher();
     updateFieldHud();
+    runTownQuestToast();
     // healer is a field overlay inside WorldMapScene — check before generic world
     var wm = getScene('WorldMapScene');
     if (wm && sceneActive('WorldMapScene') && wm.healerOverlayOpen) { renderHealer(); return; }

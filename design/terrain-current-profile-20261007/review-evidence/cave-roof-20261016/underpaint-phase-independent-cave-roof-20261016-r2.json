@@ -1,0 +1,82 @@
+{
+  "baseline": {
+    "manifestPath": "design/terrain-current-profile-20261007/review-evidence/cave-roof-20261016/metadata-rebind-baseline-manifest.json",
+    "manifestSha256": "931240cf16decc0ad17f225b0baeabbf2ca8dcecd0b9342056fc1b76a0d69707",
+    "receiptPath": "design/terrain-current-profile-20261007/review-evidence/cave-roof-20261016/metadata-rebind-baseline-output-receipt.json",
+    "receiptSha256": "f3c7ebb1cd3471480e7564584dcb0a36812b4654a67ae86bea1e4ec76a3aa0df"
+  },
+  "current": {
+    "manifestPath": "design/terrain-current-profile-20261007/generated-output/act1-hifi/manifest.json",
+    "manifestSha256": "0455970820ff6c71252760f38422ad0209c45c1ceb1a00cfbb7eef4a6b1b2b91",
+    "publicMirrorSha256": "0455970820ff6c71252760f38422ad0209c45c1ceb1a00cfbb7eef4a6b1b2b91",
+    "receiptPath": "design/terrain-current-profile-20261007/evidence/output-receipt.json",
+    "receiptSha256": "04012f89c10b48c4baeae064d5a1cfb47ba7d8c84bf5f33df4761599b4ef0861",
+    "underpaintAssetHashes": {
+      "act1-plate.png": {
+        "bytes": 2124729,
+        "sha256": "1e67889ea30c7505270cf57f5e528b6a256b7deb5670d77662b62efd77dc4977"
+      },
+      "forest-rgba.png": {
+        "bytes": 1022310,
+        "sha256": "1acbeffbe184abc0b643dc8c7021b12a96037b4a14258c19263b23326f83f9fb"
+      }
+    }
+  },
+  "phaseValues": {
+    "activeDqTilesSha256": "b12d7eedea5420d18605633d66ee698fda24a538e1b026e9e7a092b3a1ddcb0a",
+    "basePixelsPerCell": 32,
+    "chunksIntersectingSemanticBounds": 120,
+    "dimensionsPx6": [
+      888,
+      1092
+    ],
+    "manifestSha256": "0455970820ff6c71252760f38422ad0209c45c1ceb1a00cfbb7eef4a6b1b2b91",
+    "originCell": [
+      16,
+      218
+    ],
+    "phaseMismatches": 0,
+    "pixelsPerCell": 6,
+    "sameOwTileWorldGrid": true,
+    "scope": "declared-origin-and-scale-phase-v1",
+    "semanticBounds": [
+      16,
+      218,
+      163,
+      399
+    ],
+    "semanticCellsCoveredExactlyOnce": true
+  },
+  "rebind": {
+    "allOtherOutputBytesUnchanged": true,
+    "changedOutputPaths": [
+      "act1-hifi/manifest.json"
+    ],
+    "comparisonPath": "design/terrain-current-profile-20261007/review-evidence/cave-roof-20261016/source-output-separation/metadata-only-rebind-comparison.json",
+    "comparisonSha256": "6c79d7a297caf584038ac9e4533a2e31b1efd46a78b285ff29bd3cd32eda0a3f",
+    "generationAReceiptPath": "design/terrain-current-profile-20261007/review-evidence/cave-roof-20261016/source-output-separation/generation-a-output-receipt.json",
+    "generationAReceiptSha256": "04012f89c10b48c4baeae064d5a1cfb47ba7d8c84bf5f33df4761599b4ef0861",
+    "generationBReceiptPath": "design/terrain-current-profile-20261007/review-evidence/cave-roof-20261016/source-output-separation/generation-b-output-receipt.json",
+    "generationBReceiptSha256": "04012f89c10b48c4baeae064d5a1cfb47ba7d8c84bf5f33df4761599b4ef0861",
+    "manifestChangedFields": [
+      "/forwardTerrainProfile/generatorSha256",
+      "/source/act1TerrainUnionA1OWReviewPath",
+      "/source/act1TerrainUnionA1OWReviewSha256"
+    ],
+    "outputPathCount": 494,
+    "unchangedOutputCount": 493,
+    "underpaintAssetsByteIdentical": true
+  },
+  "reviewBasis": "The current phase values preserve spatial dimensions [888,1092], 6 pixels per cell, origin [16,218], and semantic bounds [16,218,163,399]. The two current underpaint PNGs retain their exact pinned hashes and are byte-identical to the preserved baseline generation. The independently rechecked 494-output rebind changed only act1-hifi/manifest.json; all other 493 outputs remain byte-identical. The old phase record remains immutable and still describes its original 6a605a8/931240cf pair.",
+  "reviewedAt": "2026-10-16",
+  "reviewerRole": "independent",
+  "schema": "qok-forward-underpaint-phase-metadata-bridge-v1",
+  "scope": "Metadata-only underpaint phase bridge. The previous immutable phase proof establishes declared origin/scale alignment; the preserved baseline/current receipts show all 493 non-manifest outputs, including both exact-hash underpaint images, are byte-identical. Only DQ/A1OW/generator source identity fields in the manifest changed. No underpaint image was rerendered or relabeled as new visual review.",
+  "sourceProof": {
+    "bytes": 2625,
+    "path": "design/terrain-current-profile-20261007/review-evidence/cave-reentry-20261015/underpaint-phase-independent-20261015-r1.json",
+    "scope": "immutable prior phase check for DQ 6a605a8 / manifest 931240cf",
+    "sha256": "d5ae6038613d8ab30085e823b37c94c46ffedb30be4d5c46c52d2b0baee162ab"
+  },
+  "status": "PASS_CURRENT_MANIFEST_PHASE_PRESERVED"
+}

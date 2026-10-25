@@ -1,0 +1,306 @@
+{
+  "authoringInputInventorySha256": "bec641b4f57cf13507a1745332711dc883a379eb80ee6643c6d0fd348b7c933f",
+  "checks": {
+    "a1owDecode": {
+      "evidenceArtifacts": [
+        {
+          "bytes": 6185,
+          "path": "design/terrain-current-profile-20261007/evidence/full-region-review/final-independent-recomputation.json",
+          "sha256": "a8f5b5ef4ecbea25f661a5e9c8a9e36a06d438379a7df6adfb1ef3a3e845c30b"
+        },
+        {
+          "bytes": 549895,
+          "path": "design/terrain-current-profile-20261007/current/dq-tiles.js",
+          "sha256": "80b1fcaf6d593bd704f720239c2f9fd533e7b49ca1af7c8d6401901b9d876090"
+        },
+        {
+          "bytes": 138266,
+          "path": "design/terrain-current-profile-20261007/current/act1-hifi-manifest.json",
+          "sha256": "c6d69d659ea4e82b09feabae624c2cbd4406627405bb389a36547bd44cc4183f"
+        }
+      ],
+      "proofPath": "design/terrain-current-profile-20261007/evidence/full-region-review/final-independent-recomputation.json",
+      "proofSha256": "a8f5b5ef4ecbea25f661a5e9c8a9e36a06d438379a7df6adfb1ef3a3e845c30b",
+      "result": "PASS"
+    },
+    "chunkBoundaries": {
+      "evidenceArtifacts": [
+        {
+          "bytes": 6185,
+          "path": "design/terrain-current-profile-20261007/evidence/full-region-review/final-independent-recomputation.json",
+          "sha256": "a8f5b5ef4ecbea25f661a5e9c8a9e36a06d438379a7df6adfb1ef3a3e845c30b"
+        },
+        {
+          "bytes": 4698,
+          "path": "design/terrain-current-profile-20261007/evidence/full-generation-report.md",
+          "sha256": "eacc7f6fc4eba2c07d05724e16a5780a868af0fd274c1d7c089aa5a5f018d4cf"
+        }
+      ],
+      "proofPath": "design/terrain-current-profile-20261007/evidence/full-region-review/final-independent-recomputation.json",
+      "proofSha256": "a8f5b5ef4ecbea25f661a5e9c8a9e36a06d438379a7df6adfb1ef3a3e845c30b",
+      "result": "PASS"
+    },
+    "cleanRegeneration": {
+      "evidenceArtifacts": [
+        {
+          "bytes": 4035,
+          "path": "design/terrain-current-profile-20261007/evidence/full-region-review/METADATA-REBIND-REVIEW.md",
+          "sha256": "e6e35575fdadb9b90347ada85afe9d4bc1f3a0a0cc6d0175fedd4b3e17862ebb"
+        },
+        {
+          "bytes": 6185,
+          "path": "design/terrain-current-profile-20261007/evidence/full-region-review/final-independent-recomputation.json",
+          "sha256": "a8f5b5ef4ecbea25f661a5e9c8a9e36a06d438379a7df6adfb1ef3a3e845c30b"
+        },
+        {
+          "bytes": 165666,
+          "path": "design/terrain-current-profile-20261007/evidence/output-receipt.json",
+          "sha256": "3d51f2c74d22cdcd3aed0d5913fbfa6fdaa4e28ef297243832211b8b700b7e95"
+        },
+        {
+          "bytes": 2552,
+          "path": "design/terrain-current-profile-20261007/evidence/pathconstraints-metadata-rebind.json",
+          "sha256": "5b52a6502ec0807073c92f9ce9817a0a15625ff989946a02c6875511fd774f75"
+        },
+        {
+          "bytes": 785,
+          "path": "design/terrain-current-profile-20261007/evidence/regeneration-comparison.json",
+          "sha256": "bbd8dcbaab6cda45235cd269a551002f547cf4e34ed37ad288f540c51ebacc1c"
+        }
+      ],
+      "proofPath": "design/terrain-current-profile-20261007/evidence/regeneration-comparison.json",
+      "proofSha256": "bbd8dcbaab6cda45235cd269a551002f547cf4e34ed37ad288f540c51ebacc1c",
+      "result": "PASS"
+    },
+    "collisionDecode": {
+      "evidenceArtifacts": [
+        {
+          "bytes": 6185,
+          "path": "design/terrain-current-profile-20261007/evidence/full-region-review/final-independent-recomputation.json",
+          "sha256": "a8f5b5ef4ecbea25f661a5e9c8a9e36a06d438379a7df6adfb1ef3a3e845c30b"
+        },
+        {
+          "bytes": 165666,
+          "path": "design/terrain-current-profile-20261007/evidence/output-receipt.json",
+          "sha256": "3d51f2c74d22cdcd3aed0d5913fbfa6fdaa4e28ef297243832211b8b700b7e95"
+        }
+      ],
+      "proofPath": "design/terrain-current-profile-20261007/evidence/full-region-review/final-independent-recomputation.json",
+      "proofSha256": "a8f5b5ef4ecbea25f661a5e9c8a9e36a06d438379a7df6adfb1ef3a3e845c30b",
+      "result": "PASS"
+    },
+    "currentGuard": {
+      "evidenceArtifacts": [
+        {
+          "bytes": 2305,
+          "path": "design/terrain-current-profile-20261007/evidence/runtime-invariants-static.json",
+          "sha256": "b638740125420ae5a8d10bde1f11dec01dcd48daa27eae655c06fa2530da83f4"
+        },
+        {
+          "bytes": 31381,
+          "path": "design/terrain-current-profile-20261007/evidence/route-audit/ROUTE-AUDIT.json",
+          "sha256": "92f5f341ec102edede2ef2795c354f89cb381304c6dbff7b9a48fd87662411b5"
+        }
+      ],
+      "proofPath": "design/terrain-current-profile-20261007/evidence/runtime-invariants-static.json",
+      "proofSha256": "b638740125420ae5a8d10bde1f11dec01dcd48daa27eae655c06fa2530da83f4",
+      "result": "PASS"
+    },
+    "decodedPixels": {
+      "evidenceArtifacts": [
+        {
+          "bytes": 6185,
+          "path": "design/terrain-current-profile-20261007/evidence/full-region-review/final-independent-recomputation.json",
+          "sha256": "a8f5b5ef4ecbea25f661a5e9c8a9e36a06d438379a7df6adfb1ef3a3e845c30b"
+        }
+      ],
+      "proofPath": "design/terrain-current-profile-20261007/evidence/full-region-review/final-independent-recomputation.json",
+      "proofSha256": "a8f5b5ef4ecbea25f661a5e9c8a9e36a06d438379a7df6adfb1ef3a3e845c30b",
+      "result": "PASS"
+    },
+    "globalCropReconstruction": {
+      "evidenceArtifacts": [
+        {
+          "bytes": 6185,
+          "path": "design/terrain-current-profile-20261007/evidence/full-region-review/final-independent-recomputation.json",
+          "sha256": "a8f5b5ef4ecbea25f661a5e9c8a9e36a06d438379a7df6adfb1ef3a3e845c30b"
+        }
+      ],
+      "proofPath": "design/terrain-current-profile-20261007/evidence/full-region-review/final-independent-recomputation.json",
+      "proofSha256": "a8f5b5ef4ecbea25f661a5e9c8a9e36a06d438379a7df6adfb1ef3a3e845c30b",
+      "result": "PASS"
+    },
+    "heroFrameClearance": {
+      "evidenceArtifacts": [
+        {
+          "bytes": 6185,
+          "path": "design/terrain-current-profile-20261007/evidence/full-region-review/final-independent-recomputation.json",
+          "sha256": "a8f5b5ef4ecbea25f661a5e9c8a9e36a06d438379a7df6adfb1ef3a3e845c30b"
+        },
+        {
+          "bytes": 4773,
+          "path": "design/terrain-current-profile-20261007/evidence/route-audit/ROUTE-AUDIT-CLASSIFICATION.md",
+          "sha256": "de89891b75d917e1d883a58f2f35204697d1731cd7be288e93c8ad2067483f5b"
+        }
+      ],
+      "proofPath": "design/terrain-current-profile-20261007/evidence/full-region-review/final-independent-recomputation.json",
+      "proofSha256": "a8f5b5ef4ecbea25f661a5e9c8a9e36a06d438379a7df6adfb1ef3a3e845c30b",
+      "result": "PASS"
+    },
+    "renderedReview": {
+      "evidenceArtifacts": [
+        {
+          "bytes": 3654,
+          "path": "design/terrain-current-profile-20261007/evidence/full-region-review/INDEPENDENT-STATIC-CHECKPOINT.md",
+          "sha256": "523aa452899bc3f9d55922cb5fc3773ce0aea49c72d2e043b619138ea8ed89e3"
+        },
+        {
+          "bytes": 5165,
+          "path": "design/terrain-current-profile-20261007/evidence/full-region-review/REVIEW-REPORT.md",
+          "sha256": "170bc0052482bd17d426f3772fabfef4e747080d65b4e3feb5e74c5e97951e48"
+        },
+        {
+          "bytes": 1403,
+          "path": "design/terrain-current-profile-20261007/evidence/route-audit/FOLLOW-UP.md",
+          "sha256": "79ed22525844595dc666300ebebba2e88ece850af106075e990ade964c4fb6ad"
+        }
+      ],
+      "proofPath": "design/terrain-current-profile-20261007/evidence/full-region-review/INDEPENDENT-STATIC-CHECKPOINT.md",
+      "proofSha256": "523aa452899bc3f9d55922cb5fc3773ce0aea49c72d2e043b619138ea8ed89e3",
+      "result": "PASS"
+    },
+    "runtimeInvariants": {
+      "evidenceArtifacts": [
+        {
+          "bytes": 2305,
+          "path": "design/terrain-current-profile-20261007/evidence/runtime-invariants-static.json",
+          "sha256": "b638740125420ae5a8d10bde1f11dec01dcd48daa27eae655c06fa2530da83f4"
+        }
+      ],
+      "proofPath": "design/terrain-current-profile-20261007/evidence/runtime-invariants-static.json",
+      "proofSha256": "b638740125420ae5a8d10bde1f11dec01dcd48daa27eae655c06fa2530da83f4",
+      "result": "PASS"
+    },
+    "safeCells": {
+      "evidenceArtifacts": [
+        {
+          "bytes": 6185,
+          "path": "design/terrain-current-profile-20261007/evidence/full-region-review/final-independent-recomputation.json",
+          "sha256": "a8f5b5ef4ecbea25f661a5e9c8a9e36a06d438379a7df6adfb1ef3a3e845c30b"
+        }
+      ],
+      "proofPath": "design/terrain-current-profile-20261007/evidence/full-region-review/final-independent-recomputation.json",
+      "proofSha256": "a8f5b5ef4ecbea25f661a5e9c8a9e36a06d438379a7df6adfb1ef3a3e845c30b",
+      "result": "PASS"
+    },
+    "sourceResourceClosure": {
+      "evidenceArtifacts": [
+        {
+          "bytes": 3991,
+          "path": "design/terrain-current-profile-20261007/PROOF-FIELD-SPLIT.md",
+          "sha256": "645b83bcb628b0405b513ec5a539edc2d0293cf36c68038cb901eb84e6e728d0"
+        },
+        {
+          "bytes": 3654,
+          "path": "design/terrain-current-profile-20261007/evidence/full-region-review/INDEPENDENT-STATIC-CHECKPOINT.md",
+          "sha256": "523aa452899bc3f9d55922cb5fc3773ce0aea49c72d2e043b619138ea8ed89e3"
+        },
+        {
+          "bytes": 6185,
+          "path": "design/terrain-current-profile-20261007/evidence/full-region-review/final-independent-recomputation.json",
+          "sha256": "a8f5b5ef4ecbea25f661a5e9c8a9e36a06d438379a7df6adfb1ef3a3e845c30b"
+        },
+        {
+          "bytes": 7083,
+          "path": "design/terrain-current-profile-20261007/evidence/static-evidence-inventory.json",
+          "sha256": "d048209c9d9d8a923dac7eaf2d8d225a3469b3ec7a73ae4a4a8341a30b865792"
+        },
+        {
+          "bytes": 51231,
+          "path": "design/terrain-current-profile-20261007/forward-profile-descriptor.schema.json",
+          "sha256": "9c3e27cc91dcf3fc7d8b7651bd09fda96841f242167582b440e34962f275f4ea"
+        },
+        {
+          "bytes": 20283,
+          "path": "design/terrain-current-profile-20261007/forward-release-evidence.schema.json",
+          "sha256": "1d76cd8645d29097da1887957a2e3c45381a501f98ac2e69cd9f4d426d8d8140"
+        }
+      ],
+      "proofPath": "design/terrain-current-profile-20261007/evidence/static-evidence-inventory.json",
+      "proofSha256": "d048209c9d9d8a923dac7eaf2d8d225a3469b3ec7a73ae4a4a8341a30b865792",
+      "result": "PASS"
+    },
+    "underpaintPhase": {
+      "evidenceArtifacts": [
+        {
+          "bytes": 6185,
+          "path": "design/terrain-current-profile-20261007/evidence/full-region-review/final-independent-recomputation.json",
+          "sha256": "a8f5b5ef4ecbea25f661a5e9c8a9e36a06d438379a7df6adfb1ef3a3e845c30b"
+        }
+      ],
+      "proofPath": "design/terrain-current-profile-20261007/evidence/full-region-review/final-independent-recomputation.json",
+      "proofSha256": "a8f5b5ef4ecbea25f661a5e9c8a9e36a06d438379a7df6adfb1ef3a3e845c30b",
+      "result": "PASS"
+    },
+    "visibleAlpha": {
+      "evidenceArtifacts": [
+        {
+          "bytes": 6185,
+          "path": "design/terrain-current-profile-20261007/evidence/full-region-review/final-independent-recomputation.json",
+          "sha256": "a8f5b5ef4ecbea25f661a5e9c8a9e36a06d438379a7df6adfb1ef3a3e845c30b"
+        },
+        {
+          "bytes": 165666,
+          "path": "design/terrain-current-profile-20261007/evidence/output-receipt.json",
+          "sha256": "3d51f2c74d22cdcd3aed0d5913fbfa6fdaa4e28ef297243832211b8b700b7e95"
+        }
+      ],
+      "proofPath": "design/terrain-current-profile-20261007/evidence/full-region-review/final-independent-recomputation.json",
+      "proofSha256": "a8f5b5ef4ecbea25f661a5e9c8a9e36a06d438379a7df6adfb1ef3a3e845c30b",
+      "result": "PASS"
+    }
+  },
+  "claim": "Bounded static QA preparation only; the profile is not release eligible.",
+  "generatedOutputInventorySha256": "aa863b3f09258273cae08c926b72eb544336bfbf21607ad698d3dcacd727bc6e",
+  "limitations": [
+    "The 11 dynamic proof assertions remain pending across exactly six QA groups.",
+    "This receipt does not assert gameplay movement, full collision-aware route connectivity, fallback-contact equivalence, streaming/resume, native phone/tablet behavior, release eligibility, or TestFlight delivery.",
+    "The collision-aware route audit includes blocked anchors and capped searches; those outcomes remain inconclusive.",
+    "The prior frozen rendered review and static checkpoint remain preserved; this receipt binds the metadata-only R26 correction and current output hashes."
+  ],
+  "profileId": "act1-forward-20261007-v1",
+  "result": "QA_PREPARATION_PASS",
+  "reviewerRole": "independent",
+  "runner": {
+    "path": "design/terrain-current-profile-20261007/review-tools/recompute_forward_outputs.py",
+    "sha256": "e2b7e9a3ebdc2512a5c07330f0284a98be383a5eda31579fcebd2aa7c7900234",
+    "version": "forward-static-recompute-review-v2"
+  },
+  "schema": "qok-forward-preparation-receipt-v1",
+  "supportingReviewRecords": [
+    {
+      "bytes": 4035,
+      "path": "design/terrain-current-profile-20261007/evidence/full-region-review/METADATA-REBIND-REVIEW.md",
+      "role": "intermediate current metadata-rebind review note (pre-receipt checkpoint)",
+      "sha256": "e6e35575fdadb9b90347ada85afe9d4bc1f3a0a0cc6d0175fedd4b3e17862ebb"
+    },
+    {
+      "bytes": 5165,
+      "path": "design/terrain-current-profile-20261007/evidence/full-region-review/REVIEW-REPORT.md",
+      "role": "preserved original full-region rendered review",
+      "sha256": "170bc0052482bd17d426f3772fabfef4e747080d65b4e3feb5e74c5e97951e48"
+    },
+    {
+      "bytes": 1403,
+      "path": "design/terrain-current-profile-20261007/evidence/route-audit/FOLLOW-UP.md",
+      "role": "later route-audit classification addendum",
+      "sha256": "79ed22525844595dc666300ebebba2e88ece850af106075e990ade964c4fb6ad"
+    },
+    {
+      "bytes": 3654,
+      "path": "design/terrain-current-profile-20261007/evidence/full-region-review/INDEPENDENT-STATIC-CHECKPOINT.md",
+      "role": "historical static checkpoint preserved; current manifest pin is superseded by current addendum",
+      "sha256": "523aa452899bc3f9d55922cb5fc3773ce0aea49c72d2e043b619138ea8ed89e3"
+    }
+  ]
+}

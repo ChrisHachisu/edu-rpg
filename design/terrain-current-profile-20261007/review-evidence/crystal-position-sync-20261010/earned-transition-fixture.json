@@ -1,0 +1,104 @@
+{
+  "envelope": {
+    "player": {
+      "activeQuests": [],
+      "atk": 150,
+      "completedQuests": [],
+      "def": 5,
+      "equipment": {
+        "accessory": null,
+        "armor": null,
+        "helmet": null,
+        "shield": null,
+        "weapon": null
+      },
+      "exp": 0,
+      "expToNext": 17,
+      "gold": 515,
+      "heroColor": "gray",
+      "hp": 489,
+      "inventory": [
+        {
+          "itemId": "herb",
+          "quantity": 3
+        },
+        {
+          "itemId": "potion",
+          "quantity": 1
+        },
+        {
+          "itemId": "toadShield",
+          "quantity": 1
+        }
+      ],
+      "kanjiMode": false,
+      "level": 99,
+      "locale": "en",
+      "masterVolume": 0.7,
+      "maxHp": 500,
+      "name": "Hero",
+      "position": {
+        "floor": 1,
+        "mapId": "crystalCave",
+        "x": 76,
+        "y": 31
+      },
+      "questProgress": {},
+      "quizDifficulty": "3",
+      "soundEnabled": true,
+      "spd": 6,
+      "storyFlags": {
+        "boss.giantToad.defeated": true,
+        "boss.giantToad.encountered": true,
+        "intro.done": true
+      },
+      "timerEnabled": true
+    },
+    "playtime": 2842.462,
+    "quizStats": {
+      "byCategory": {
+        "addition": {
+          "asked": 1,
+          "correct": 0
+        },
+        "subtraction": {
+          "asked": 2,
+          "correct": 1
+        }
+      },
+      "totalAsked": 3,
+      "totalCorrect": 1
+    },
+    "timestamp": 1791560072425,
+    "version": 4
+  },
+  "provenance": {
+    "changedPlayerFields": [
+      "position"
+    ],
+    "earnedFlagsPreserved": [
+      "boss.giantToad.encountered",
+      "boss.giantToad.defeated"
+    ],
+    "sourceBackup": "phone-qa-continue-20261009/backups/post-crystal-exit-south-step.sqlite3",
+    "sourceBackupSha256": "62ae9515e38bedc52493c2d675447b6134fbc2df25c0340721aaa7bc6f34ead4",
+    "sourcePosition": {
+      "floor": 1,
+      "mapId": "overworld",
+      "x": 149,
+      "y": 283
+    },
+    "sourceRawBytes": 1714,
+    "sourceRawSha256": "b5b8b2acc1dc7c96ef3127fff61836e7f3803cf09e31f47b541a4f5eaed044e1",
+    "sourceStorageKey": "edu-rpg-resume",
+    "sourceTimestamp": 1791560072425,
+    "testPosition": {
+      "floor": 1,
+      "mapId": "crystalCave",
+      "x": 76,
+      "y": 31
+    }
+  },
+  "purpose": "Browser transition test starting from a Crystal B1F position while preserving an actually earned Giant Toad state.",
+  "schema": "crystal-transition-test-fixture-v1"
+}

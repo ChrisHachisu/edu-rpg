@@ -1,0 +1,112 @@
+{
+  "authoringInputInventorySha256": "9dd7941d9c6a14687cda0ab8bf1bd26f18e63eb9e95042412be55a70d886c125",
+  "checks": {
+    "a1owDecode": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/cave-roof-20261016/a1ow-source-equivalence.json",
+      "proofSha256": "48d66cea69463ab2edf4e296db0a5d44b9f02beae6c1715dd32e90ee470e2684",
+      "result": "PASS"
+    },
+    "chunkBoundaries": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/water-r2-final-20261013/independent-final-r2-output-review.md",
+      "proofSha256": "edf7ef282db1405ea31c77f831c63c5acdb2b7f9d9358fa9fc13d6e3e4743b4e",
+      "result": "PASS"
+    },
+    "cleanRegeneration": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/water-r2-final-20261013/regeneration-comparison.json",
+      "proofSha256": "a8e3c11e959bd8d03a1952ca8fa27b2364e9a9938266055de8dcfa41b6f246f2",
+      "result": "PASS"
+    },
+    "collisionDecode": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/water-r2-final-20261013/final-r2-safe-cell-clearance-review.json",
+      "proofSha256": "a8b5ed56b328d37cdee8ba46e8738015f8e3e6d9ece5ece2466c3ee8ffbe5693",
+      "result": "PASS"
+    },
+    "currentGuard": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/cave-roof-20261016/current-guard-independent-cave-roof-20261016-r2.json",
+      "proofSha256": "93b46f7d2e25d28a461f86b0a90a3409809f8661d80c8b5653530f32f9e0f269",
+      "result": "PASS"
+    },
+    "decodedPixels": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/water-r2-final-20261013/independent-final-r2-output-review.md",
+      "proofSha256": "edf7ef282db1405ea31c77f831c63c5acdb2b7f9d9358fa9fc13d6e3e4743b4e",
+      "result": "PASS"
+    },
+    "globalCropReconstruction": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/water-r2-final-20261013/independent-final-r2-output-review.md",
+      "proofSha256": "edf7ef282db1405ea31c77f831c63c5acdb2b7f9d9358fa9fc13d6e3e4743b4e",
+      "result": "PASS"
+    },
+    "heroFrameClearance": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/water-r2-final-20261013/final-r2-safe-cell-clearance-review.json",
+      "proofSha256": "a8b5ed56b328d37cdee8ba46e8738015f8e3e6d9ece5ece2466c3ee8ffbe5693",
+      "result": "PASS"
+    },
+    "renderedReview": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/water-r2-final-20261013/independent-final-r2-output-review.md",
+      "proofSha256": "edf7ef282db1405ea31c77f831c63c5acdb2b7f9d9358fa9fc13d6e3e4743b4e",
+      "result": "PASS"
+    },
+    "runtimeInvariants": {
+      "proofPath": "design/terrain-current-profile-20261007/evidence/runtime-invariants-static-water-r2-runtime-r1.json",
+      "proofSha256": "5586906e021e1938cfaf77de9eb955bead32ee5eebd3cd19d1c4f08bd0cc3037",
+      "result": "PASS"
+    },
+    "safeCells": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/water-r2-final-20261013/final-r2-safe-cell-clearance-review.json",
+      "proofSha256": "a8b5ed56b328d37cdee8ba46e8738015f8e3e6d9ece5ece2466c3ee8ffbe5693",
+      "result": "PASS"
+    },
+    "sourceResourceClosure": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/cave-reentry-20261015/source-resource-closure-independent-20261015-r1.json",
+      "proofSha256": "7ec18170c0c157446ab14f83047e7fdd09f3c6c5f7608d0e1f0de51233d166ab",
+      "result": "PASS"
+    },
+    "underpaintPhase": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/cave-roof-20261016/underpaint-phase-independent-cave-roof-20261016-r2.json",
+      "proofSha256": "1b713bdd8a301cf6711172fa1de57f90ec4f414bf865003bb490e7375ff0c600",
+      "result": "PASS"
+    },
+    "visibleAlpha": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/water-r2-final-20261013/north-qok-final18-union-review.json",
+      "proofSha256": "3090babc684217ebecd145888be2b7df5c99f1c5d92c505b62acb3f13d5d1de7",
+      "result": "PASS"
+    }
+  },
+  "claim": "Independent static QA-preparation review for the cave-roof DQ source delta and metadata-only rebind. Current source guard, A1OW identity/body, underpaint phase preservation, all listed static proofs, and exact authoring/output inventories are bound. The metadata comparison ties the preserved baseline and current 494-output states: 493 outputs are byte-identical and only the manifest changed. This records preparation evidence only.",
+  "generatedOutputInventorySha256": "a053b1161cbb816361e6ff1698093ed70932cbcddf495a5ea2a875359fa1d548",
+  "limitations": [
+    "No current candidate native build or Simulator interaction, physical-device proof, complete route/movement acceptance, TestFlight, or release claim.",
+    "gateReady and releaseEligible remain false; all declared dynamic checks and pending proof assertions remain open.",
+    "The current underpaint phase is carried forward from its immutable prior spatial proof because both underpaint assets are byte-identical; no fresh render is claimed."
+  ],
+  "profileId": "act1-forward-20261007-v1",
+  "result": "QA_PREPARATION_PASS",
+  "review": {
+    "a1owSourceEquivalencePath": "design/terrain-current-profile-20261007/review-evidence/cave-roof-20261016/a1ow-source-equivalence.json",
+    "a1owSourceEquivalenceSha256": "48d66cea69463ab2edf4e296db0a5d44b9f02beae6c1715dd32e90ee470e2684",
+    "allOtherOutputBytesUnchanged": true,
+    "baselineManifestSha256": "931240cf16decc0ad17f225b0baeabbf2ca8dcecd0b9342056fc1b76a0d69707",
+    "baselineOutputReceiptSha256": "f3c7ebb1cd3471480e7564584dcb0a36812b4654a67ae86bea1e4ec76a3aa0df",
+    "changedPaths": [
+      "act1-hifi/manifest.json"
+    ],
+    "currentDqSha256": "b12d7eedea5420d18605633d66ee698fda24a538e1b026e9e7a092b3a1ddcb0a",
+    "currentOutputReceiptSha256": "04012f89c10b48c4baeae064d5a1cfb47ba7d8c84bf5f33df4761599b4ef0861",
+    "gateReady": false,
+    "generatorSha256": "43015d9c0a93e7832ef3cd4702b3a7b49576795333663c7d2bce195fe95e20e9",
+    "manifestSha256": "0455970820ff6c71252760f38422ad0209c45c1ceb1a00cfbb7eef4a6b1b2b91",
+    "metadataComparisonPath": "design/terrain-current-profile-20261007/review-evidence/cave-roof-20261016/source-output-separation/metadata-only-rebind-comparison.json",
+    "metadataComparisonSha256": "6c79d7a297caf584038ac9e4533a2e31b1efd46a78b285ff29bd3cd32eda0a3f",
+    "nativeOrRenderedAcceptance": false,
+    "outputPathCount": 494,
+    "releaseEligible": false,
+    "unchangedPriorOutputs": 493
+  },
+  "reviewerRole": "independent",
+  "runner": {
+    "path": "design/terrain-current-profile-20261007/review-evidence/cave-roof-20261016/validator-root-pin-normalized-source.txt",
+    "sha256": "afbc74d3c1e003d47bbb1467031164e4c25b8ba13117daae5d01ad7853afb7ef",
+    "version": "qok-forward-preparation-static-contract-review-v1"
+  },
+  "schema": "qok-forward-preparation-receipt-v1"
+}

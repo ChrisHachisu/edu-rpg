@@ -159,14 +159,120 @@ def patch_runtime(path: str) -> bool:
     return True
 
 
+def paint_pilot(source_root: str, out_root: str, ppc: int, quality: int,
+                only: str, raw_root: str | None) -> None:
+    """Stage a bounded new-raster pilot without touching public/ or dist/."""
+    if ppc <= 0 or ppc > 48:
+        raise SystemExit("--ppc must be between 1 and 48 source pixels per semantic cell")
+    source_root = os.path.abspath(source_root)
+    out_root = os.path.abspath(out_root)
+    public_root = os.path.join(ROOT, "public/act1-hifi")
+    if source_root != public_root:
+        raise SystemExit("pilot source must be the current public/act1-hifi tree")
+    if out_root.startswith(os.path.abspath(os.path.join(ROOT, "public"))) or out_root.startswith(os.path.abspath(os.path.join(ROOT, "dist"))):
+        raise SystemExit("paint pilot output must remain outside public/ and dist/")
+    if os.path.exists(out_root):
+        shutil.rmtree(out_root)
+    shutil.copytree(source_root, out_root)
+
+    import sys
+    sys.path.insert(0, os.path.dirname(__file__))
+    import render_material_map as rm
+    manifest_path = os.path.join(source_root, "manifest.json")
+    renderer = rm.Act1PaintRenderer(manifest_path=manifest_path, old_root=source_root)
+    manifest = json.load(open(os.path.join(out_root, "manifest.json"), encoding="utf-8"))
+    wanted = set(only.split(",")) if only else set()
+    chunks = [c for c in manifest["chunks"] if not wanted or c["id"] in wanted]
+    if wanted and wanted != {c["id"] for c in chunks}:
+        raise SystemExit(f"unknown pilot chunk ids: {sorted(wanted - {c['id'] for c in chunks})}")
+    if not chunks:
+        raise SystemExit("no chunks selected for raster pilot")
+    if raw_root:
+        raw_root = os.path.abspath(raw_root)
+        stage_root = os.path.abspath(os.path.dirname(os.path.dirname(out_root)))
+        if os.path.commonpath((stage_root, raw_root)) != stage_root:
+            raise SystemExit("raw pilot PNGs must remain inside the paint-pilot staging root")
+        if os.path.exists(raw_root):
+            shutil.rmtree(raw_root)
+        os.makedirs(raw_root)
+
+    totals = {"base": 0, "canopy": 0}
+    for i, c in enumerate(chunks, 1):
+        rgb, alpha = renderer.render_window(c["x"], c["y"], c["width"], c["height"], ppc=ppc)
+        expected = (c["height"] // 16 * ppc, c["width"] // 16 * ppc)
+        if rgb.shape[:2] != expected or alpha.shape != expected:
+            raise SystemExit(f"{c['id']}: renderer returned {rgb.shape[:2]}, expected {expected}")
+        base_path = os.path.join(out_root, c["base"])
+        canopy_path = os.path.join(out_root, c["canopy"])
+        os.makedirs(os.path.dirname(base_path), exist_ok=True)
+        os.makedirs(os.path.dirname(canopy_path), exist_ok=True)
+        Image.fromarray(rgb, "RGB").save(base_path, "WEBP", quality=quality, method=6)
+        # Preserve the binary 0/242 occlusion alpha contract, but derive the silhouette from
+        # the new imagegen crown sprites instead of retaining the former alpha bitmap.
+        binary = np.where(alpha >= 128, 242, 0).astype(np.uint8)
+        rgba = np.zeros(rgb.shape[:2] + (4,), np.uint8)
+        rgba[..., 3] = binary
+        Image.fromarray(rgba, "RGBA").save(canopy_path, "WEBP", lossless=True, method=6)
+        c["baseSha256"] = sha256(base_path)
+        c["canopySha256"] = sha256(canopy_path)
+        c["basePixelsPerCell"] = ppc
+        totals["base"] += os.path.getsize(base_path)
+        totals["canopy"] += os.path.getsize(canopy_path)
+        if raw_root:
+            Image.fromarray(rgb, "RGB").save(os.path.join(raw_root, c["id"] + "-base.png"))
+            Image.fromarray(binary, "L").save(os.path.join(raw_root, c["id"] + "-canopy.png"))
+        print(f"[{i}/{len(chunks)}] {c['id']} {expected[1]}x{expected[0]} "
+              f"base={os.path.getsize(base_path)/1024:.1f}KB mask={os.path.getsize(canopy_path)/1024:.1f}KB")
+
+    # Whole-map backing is an image from the same materials, routes and global motif seed.
+    # It covers exact semanticBounds; browser/runtime positioning comes from the manifest.
+    bw, bh = renderer.cells_w * 16, renderer.cells_h * 16
+    underpaint, _ = renderer.render_window(0, 0, bw, bh, ppc=6)
+    upath = os.path.join(out_root, "underpaint/act1-plate.png")
+    os.makedirs(os.path.dirname(upath), exist_ok=True)
+    Image.fromarray(underpaint, "RGB").save(upath, "PNG", optimize=True)
+    manifest["underpaint"] = {
+        "src": "underpaint/act1-plate.png",
+        "pixelWidth": renderer.cells_w * 6,
+        "pixelHeight": renderer.cells_h * 6,
+        "pixelsPerCell": 6,
+    }
+    src = dict(manifest.get("source", {}))
+    src.update({
+        "renderer": "scripts/render_material_map.py::Act1PaintRenderer",
+        "mask": os.path.relpath(renderer.mask_path, ROOT),
+        "maskSha256": renderer.mask_hash,
+        "paintSource": os.path.relpath(rm.PAINT_CONFIG, ROOT),
+        "paintSourceSha256": rm._sha256_file(rm.PAINT_CONFIG),
+        "paintSeed": int(renderer.cfg.get("seed", rm.ACT1_PAINT_SEED)),
+        "pilotPixelsPerCell": ppc,
+        "pilotChunks": sorted(c["id"] for c in chunks),
+        "stage": "mixed-resolution-review-pilot",
+    })
+    manifest["source"] = src
+    manifest["status"] = "act1-r26-painted-pilot"
+    json.dump(manifest, open(os.path.join(out_root, "manifest.json"), "w", encoding="utf-8"),
+              indent=2, ensure_ascii=False)
+    print(f"staged {len(chunks)} painted chunks; changed base {totals['base']/1024:.1f}KB, "
+          f"new canopy {totals['canopy']/1024:.1f}KB, underpaint {os.path.getsize(upath)/1024:.1f}KB")
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", required=True, help="staging directory (a full act1-hifi copy)")
+    ap.add_argument("--paint", action="store_true", help="use the new imagegen raster pilot compositor")
+    ap.add_argument("--source-root", default=os.path.join(ROOT, "public/act1-hifi"))
+    ap.add_argument("--ppc", type=int, default=32, help="new raster source pixels per semantic cell")
+    ap.add_argument("--raw-dir", help="optional staging directory for lossless PNG join evidence")
     ap.add_argument("--px-tile", type=int, default=48)
     ap.add_argument("--quality", type=int, default=82, help="WebP quality for the base layer")
     ap.add_argument("--patch-runtime", action="store_true")
     ap.add_argument("--only", help="comma-separated chunk ids, for a quick trial")
     args = ap.parse_args()
+
+    if args.paint:
+        paint_pilot(args.source_root, args.out, args.ppc, args.quality, args.only, args.raw_dir)
+        return
 
     scale = args.px_tile // ART_PX_TILE
     if scale * ART_PX_TILE != args.px_tile:

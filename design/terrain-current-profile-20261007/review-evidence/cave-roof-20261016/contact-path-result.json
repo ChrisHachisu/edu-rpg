@@ -1,0 +1,10 @@
+{
+  "productionGate": "a1mFree",
+  "southSamples": 101,
+  "southApproach": "clear through existing door cell",
+  "p1Roof": "blocked",
+  "bothSides": "blocked",
+  "exteriorGrass": "free",
+  "neighborGrass": "free",
+  "channel": "free"
+}

@@ -1,0 +1,136 @@
+{
+  "status": "PASS_BOUNDED_STATIC_OUTPUT_RECOMPUTATION",
+  "source": {
+    "path": "/Users/chris/Documents/Codex/2026-09-15/edu-rpg-act1-feedback/taskwork/20261007-build84-source-recovery/recovered-candidate/design/terrain-current-profile-20261007/generate_forward_profile.py",
+    "sha256": "ae4b0b40f36eaa1b8d077c3e703856acdd4945679a4c934e6e76bfcff45f6fc7"
+  },
+  "portableReceiptSha256": "f1347de0b33db4b8428abed9f722045d44f94ed3a08d50133ddfb509b30a456e",
+  "outputInventory": {
+    "fileCount": 488,
+    "AInventoryErrors": 0,
+    "BInventoryErrors": 0,
+    "portableInventoryErrors": 0,
+    "AandBIdentical": true,
+    "portableVsAOnlyExpectedDifferences": {
+      "public/act1-hifi/manifest.json": {
+        "a": {
+          "bytes": 149284,
+          "sha256": "f274cf664a3f178645d6c090a8b9e1a9b749c123684ee21d3212be6f93f2e215"
+        },
+        "portable": {
+          "bytes": 149375,
+          "sha256": "4ac18222133b25b0a2acb7fdda326a177a390de0221b65efeaf37ddae588892c"
+        }
+      },
+      "evidence/fm-residual-closeup.png": {
+        "a": {
+          "bytes": 18932,
+          "sha256": "5f61f325bef335c49e01d19bc0ce3e9d442b1c0b5182fe3e1aaa8202008809d4"
+        },
+        "portable": {
+          "bytes": 18850,
+          "sha256": "4e7eacf2113401966356686f0bf179d74ba11f78450927be3e6b8ccdeda64337"
+        }
+      }
+    }
+  },
+  "outputAlpha": {
+    "sha256": "9354cdd077b9f8f5f157834634485a052d4485fac04009f66739f2a52472a723",
+    "pixels": 10034569,
+    "shape": [
+      4736,
+      5824
+    ],
+    "chunkReconstructionXorPixels": 0,
+    "thresholdValues": [
+      0,
+      255
+    ]
+  },
+  "qok": {
+    "magic": "QOKF8COL",
+    "version": 1,
+    "headerBytes": 64,
+    "width": 4736,
+    "height": 5824,
+    "pixelsPerCell": 32,
+    "sourceSha256Matches": true,
+    "xorPixels": 0
+  },
+  "geometryAndCopies": {
+    "chunkCount": 120,
+    "sourceGeometryExact": true,
+    "allWaterAndCanopyHashesMatchFrozenCurrentManifest": true,
+    "A1OWSourcePinPreserved": true
+  },
+  "northRecipe": {
+    "objects": 9,
+    "recomputedAlphaUnionPixels": 290662,
+    "expectedAlphaUnionPixels": 290662,
+    "contactRowsMatchApprovedRecipe": true,
+    "ownerApprovedNorthPlainPixels": {
+      "ridge": 75173,
+      "fill": 74155
+    }
+  },
+  "boundary": {
+    "FMEdges": 78,
+    "placements": 40,
+    "immutablePilotSeeds": 11,
+    "flank118925": true,
+    "flank135625": true,
+    "rejected136050Absent": true,
+    "targetBefore": 36421,
+    "targetAfter": 6,
+    "newPPixelsBoundaryOnly": 0,
+    "currentGuardHits": 0,
+    "retainedResidual": {
+      "pixelCount": 6,
+      "components": [
+        {
+          "pixels": 2,
+          "bounds": [
+            4016,
+            1809,
+            4018,
+            1810
+          ]
+        },
+        {
+          "pixels": 1,
+          "bounds": [
+            4049,
+            1809,
+            4050,
+            1810
+          ]
+        },
+        {
+          "pixels": 3,
+          "bounds": [
+            4060,
+            1809,
+            4063,
+            1810
+          ]
+        }
+      ],
+      "selectableHeroAlphaUnionBoundsPx": [
+        50,
+        54
+      ],
+      "classification": "three disconnected single-row exposed F/M pinholes (2, 1, and 3 pixels); not a continuous wedge; retained unfilled for visual/native collision review",
+      "guardOverlapPixels": 0
+    }
+  },
+  "routeEvidence": {
+    "exits": 8,
+    "approaches": 11,
+    "mapRevision": 7,
+    "caveReachability": true
+  },
+  "limitations": [
+    "Route numbers derive from current bundled world-map seedWalkableAt graph plus hero-envelope guards at start/exits/approaches; no post-collision connected-path/static route sweep is recorded.",
+    "Static output only; native runtime streaming, lowres fallback parity, device behavior, and runtime route/movement acceptance remain unverified."
+  ]
+}

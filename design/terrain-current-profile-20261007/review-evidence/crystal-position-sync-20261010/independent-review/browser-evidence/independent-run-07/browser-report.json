@@ -1,0 +1,82 @@
+{
+  "schema": "worldmap-transition-position-sync-browser-v1",
+  "candidatePublicPath": "/private/tmp/edu-rpg-build83-paint-audit-20261005/native-whole-rock-20261008/derived-release84-continue/Build/Products/Release-iphonesimulator/App.app/public",
+  "frozenBundleSha256": "ab4fc9ad1204f23b4ea55dbae2d72bdf193a52e643271bcfe8642e2210556456",
+  "adapterSha256": "a555838eab53e2d5e5c46d3e627b2f9577d66536355df77b8e08c82e8a6c6a08",
+  "fixturePath": "/private/tmp/edu-rpg-build83-paint-audit-20261005/native-whole-rock-20261008/crystal-position-sync-20261010/earned-transition-fixture.json",
+  "fixtureSha256": "eafb2810c51aaec4c7ceb299cbefe8897563b39e9e61ccc210c280051f0aceb0",
+  "fixtureProvenance": {
+    "changedPlayerFields": [
+      "position"
+    ],
+    "earnedFlagsPreserved": [
+      "boss.giantToad.encountered",
+      "boss.giantToad.defeated"
+    ],
+    "sourceBackup": "phone-qa-continue-20261009/backups/post-crystal-exit-south-step.sqlite3",
+    "sourceBackupSha256": "62ae9515e38bedc52493c2d675447b6134fbc2df25c0340721aaa7bc6f34ead4",
+    "sourcePosition": {
+      "floor": 1,
+      "mapId": "overworld",
+      "x": 149,
+      "y": 283
+    },
+    "sourceRawBytes": 1714,
+    "sourceRawSha256": "b5b8b2acc1dc7c96ef3127fff61836e7f3803cf09e31f47b541a4f5eaed044e1",
+    "sourceStorageKey": "edu-rpg-resume",
+    "sourceTimestamp": 1791560072425,
+    "testPosition": {
+      "floor": 1,
+      "mapId": "crystalCave",
+      "x": 76,
+      "y": 31
+    }
+  },
+  "checks": [
+    {
+      "name": "earned Crystal fixture reaches B1F through Continue",
+      "passed": true,
+      "detail": "{\"position\":{\"floor\":1,\"mapId\":\"crystalCave\",\"x\":76,\"y\":31},\"defeated\":true,\"encountered\":true}"
+    },
+    {
+      "name": "Crystal exit immediately synchronizes live position without another step",
+      "passed": true,
+      "detail": "{\"mapId\":\"overworld\",\"x\":149,\"y\":279,\"position\":{\"mapId\":\"overworld\",\"x\":149,\"y\":279,\"floor\":1},\"defeated\":true,\"encountered\":true}"
+    },
+    {
+      "name": "earned Toad flags survive Crystal exit",
+      "passed": true,
+      "detail": "{\"mapId\":\"overworld\",\"x\":149,\"y\":279,\"position\":{\"mapId\":\"overworld\",\"x\":149,\"y\":279,\"floor\":1},\"defeated\":true,\"encountered\":true}"
+    },
+    {
+      "name": "idle resume snapshot matches loaded overworld coordinates without another movement",
+      "passed": true,
+      "detail": "{\"live\":{\"mapId\":\"overworld\",\"x\":149,\"y\":279,\"floor\":1},\"resume\":{\"mapId\":\"overworld\",\"x\":149,\"y\":279,\"floor\":1},\"idleWrites\":4,\"defeated\":true}"
+    },
+    {
+      "name": "real-control re-entry from the Crystal exit synchronizes the cave map ID",
+      "passed": true,
+      "detail": "{\"mapId\":\"crystalCave\",\"position\":{\"mapId\":\"crystalCave\",\"x\":76,\"y\":31,\"floor\":1},\"defeated\":true,\"encountered\":true}"
+    },
+    {
+      "name": "legacy Continue preserves its loaded map and coordinates",
+      "passed": true,
+      "detail": "{\"mapId\":\"overworld\",\"position\":{\"mapId\":\"overworld\",\"x\":69,\"y\":256,\"floor\":1},\"defeated\":true}"
+    },
+    {
+      "name": "actual New Game keeps its Elder opening",
+      "passed": true,
+      "detail": "{\"mapId\":\"greenhollow\",\"showingMessage\":true,\"townSrc\":\"http://127.0.0.1:57669/act1-hifi/town.html?town=greenhollow&first=1&facing=up\"}"
+    },
+    {
+      "name": "failed frozen load leaves player position unchanged",
+      "passed": true,
+      "detail": "{\"threw\":true,\"before\":{\"floor\":1,\"mapId\":\"crystalCave\",\"x\":76,\"y\":31},\"after\":{\"floor\":1,\"mapId\":\"crystalCave\",\"x\":76,\"y\":31}}"
+    }
+  ],
+  "pageErrors": [
+    "failed-load: Cannot read properties of undefined (reading 'type')"
+  ],
+  "diagnostics": [],
+  "error": "AssertionError [ERR_ASSERTION]: browser page errors: failed-load: Cannot read properties of undefined (reading 'type')\n+ actual - expected\n\n+ [\n+   \"failed-load: Cannot read properties of undefined (reading 'type')\"\n+ ]\n- []\n\n    at runBrowserChecks (/private/tmp/edu-rpg-build83-paint-audit-20261005/native-whole-rock-20261008/crystal-position-sync-20261010/browser-evidence/independent-run-07/test_worldmap_transition_position_sync_independent.cjs:411:12)\n    at async /private/tmp/edu-rpg-build83-paint-audit-20261005/native-whole-rock-20261008/crystal-position-sync-20261010/browser-evidence/independent-run-07/test_worldmap_transition_position_sync_independent.cjs:427:20"
+}

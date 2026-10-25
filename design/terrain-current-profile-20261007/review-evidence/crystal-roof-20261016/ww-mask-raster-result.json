@@ -1,0 +1,10 @@
+{
+  "alphaThreshold": 128,
+  "dqTilesSha256": "a7e267a5c2d2d1061af7f66956d82853b42f00c82c1f63baf043defbeb1b2a43",
+  "independentRasterMatchesEmbeddedMask": true,
+  "outsideAlphaSetPixels": 0,
+  "packedMaskBytes": 2592,
+  "pinnedArtSha256": "a06eea6ab98c7c630119db1488dfea912a40bc69150ac16e387b4e696aa5f047",
+  "schema": "independent-cave-contact-mask-raster-check-v1",
+  "setPixels": 4808
+}

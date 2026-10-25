@@ -1,0 +1,871 @@
+{
+  "schema": "bounded-combined-runtime-side-egress-v1",
+  "status": "DIAGNOSTIC_PENDING_REVIEW",
+  "candidate": {
+    "baseAppPublic": "/private/tmp/edu-rpg-build84-feedback-20261013/native-cave-reentry-20261015/DerivedData/Build/Products/Release-iphonesimulator/App.app/public",
+    "baseAppSha256": "499e6ed3f0b5724851a61b2b822b9be8ab8f1b198d24f9ba81a62bff62883cf4",
+    "baseDQSha256": "6a605a8f0d7d2513871c9b8e5a18f30fa7a403ee2ec0e42a4f1646d2e4d5da1d",
+    "currentDQOverridePath": "/Users/chris/.codex/workspaces/edu-rpg-forward-20261007/public/dq-tiles.js",
+    "currentDQOverrideSha256": "b12d7eedea5420d18605633d66ee698fda24a538e1b026e9e7a092b3a1ddcb0a",
+    "replacementScope": "in-memory response override for only /dq-tiles.js; all other paths served from immutable prior App.app/public"
+  },
+  "fixture": {
+    "inputPath": "/private/tmp/edu-rpg-build84-feedback-20261013/native-remaining-gate-20261016/save-recovery/fixtures/P1-blocked/after-all-keys.json",
+    "inputSha256": "477907d19190f75279079ffb716e21ba7345e4b5def5ca557bec77a8b21dba6d",
+    "manifestPath": "/private/tmp/edu-rpg-build84-feedback-20261013/native-remaining-gate-20261016/save-recovery/fixtures/P1-blocked/manifest.json",
+    "manifestSha256": "7be3a87900da0a27216bd6e46b2843397f0fd7004ac2bb5b5d255fec32c4bedb",
+    "manualBefore": {
+      "position": {
+        "mapId": "overworld",
+        "x": 101,
+        "y": 226,
+        "floor": 1
+      },
+      "hp": 40
+    },
+    "resumeBefore": {
+      "position": {
+        "mapId": "overworld",
+        "x": 101,
+        "y": 226,
+        "floor": 1
+      },
+      "hp": 40
+    },
+    "seededKeys": [
+      "edu-rpg-save",
+      "edu-rpg-resume"
+    ]
+  },
+  "browser": {
+    "url": "http://127.0.0.1:49603/",
+    "loopbackOnly": true,
+    "viewport": {
+      "width": 393,
+      "height": 852,
+      "dpr": 3
+    },
+    "headless": true
+  },
+  "actions": [
+    {
+      "type": "actual visible Continue click",
+      "label": "つづきから",
+      "at": "2026-10-15T19:44:16.363Z"
+    },
+    {
+      "type": "ArrowDown",
+      "plannedMs": 600,
+      "actualHeldMs": 600,
+      "startedAt": "2026-10-15T19:44:19.642Z",
+      "samples": [
+        {
+          "ms": 100,
+          "mapId": "overworld",
+          "x": 101,
+          "y": 228,
+          "spriteX": 3421.3331365254735,
+          "spriteY": 7667.331544188136,
+          "combined": {
+            "status": "ready",
+            "free": true
+          }
+        },
+        {
+          "ms": 200,
+          "mapId": "overworld",
+          "x": 101,
+          "y": 228,
+          "spriteX": 3421.3331365254735,
+          "spriteY": 7667.331544188136,
+          "combined": {
+            "status": "ready",
+            "free": true
+          }
+        },
+        {
+          "ms": 300,
+          "mapId": "overworld",
+          "x": 101,
+          "y": 228,
+          "spriteX": 3421.3331365254735,
+          "spriteY": 7667.331544188136,
+          "combined": {
+            "status": "ready",
+            "free": true
+          }
+        },
+        {
+          "ms": 400,
+          "mapId": "overworld",
+          "x": 101,
+          "y": 228,
+          "spriteX": 3421.3331365254735,
+          "spriteY": 7667.331544188136,
+          "combined": {
+            "status": "ready",
+            "free": true
+          }
+        },
+        {
+          "ms": 500,
+          "mapId": "overworld",
+          "x": 101,
+          "y": 228,
+          "spriteX": 3421.3331365254735,
+          "spriteY": 7667.331544188136,
+          "combined": {
+            "status": "ready",
+            "free": true
+          }
+        },
+        {
+          "ms": 600,
+          "mapId": "overworld",
+          "x": 101,
+          "y": 228,
+          "spriteX": 3421.3331365254735,
+          "spriteY": 7667.331544188136,
+          "combined": {
+            "status": "ready",
+            "free": true
+          }
+        }
+      ],
+      "completedAt": "2026-10-15T19:44:21.229Z",
+      "screen": "/private/tmp/edu-rpg-build84-feedback-20261013/native-remaining-gate-20261016/cave-roof-fix-independent/projection-record-staging/runtime-egress/run2/step-01-down.png",
+      "before": {
+        "mapId": "overworld",
+        "tileX": 101,
+        "tileY": 227,
+        "spriteX": 3421.3331365254735,
+        "spriteY": 7659.527384188137,
+        "combined": {
+          "status": "ready",
+          "free": true
+        }
+      },
+      "after": {
+        "mapId": "overworld",
+        "tileX": 101,
+        "tileY": 228,
+        "spriteX": 3421.3331365254735,
+        "spriteY": 7667.331544188136,
+        "combined": {
+          "status": "ready",
+          "free": true
+        }
+      },
+      "deltaSprite": {
+        "x": 0,
+        "y": 7.804159999998774
+      },
+      "movedPhysical": true
+    },
+    {
+      "type": "ArrowRight",
+      "plannedMs": 1500,
+      "actualHeldMs": 1500,
+      "startedAt": "2026-10-15T19:44:21.234Z",
+      "samples": [
+        {
+          "ms": 100,
+          "mapId": "overworld",
+          "x": 103,
+          "y": 228,
+          "spriteX": 3473.3279365254734,
+          "spriteY": 7667.331544188136,
+          "combined": {
+            "status": "ready",
+            "free": true
+          }
+        },
+        {
+          "ms": 200,
+          "mapId": "overworld",
+          "x": 105,
+          "y": 228,
+          "spriteX": 3549.164736525466,
+          "spriteY": 7667.331544188136,
+          "combined": {
+            "status": "ready",
+            "free": true
+          }
+        },
+        {
+          "ms": 300,
+          "mapId": "overworld",
+          "x": 106,
+          "y": 228,
+          "spriteX": 3592.922736525477,
+          "spriteY": 7667.331544188136,
+          "combined": {
+            "status": "ready",
+            "free": true
+          }
+        },
+        {
+          "ms": 400,
+          "mapId": "overworld",
+          "x": 107,
+          "y": 228,
+          "spriteX": 3606.7880165254796,
+          "spriteY": 7667.331544188136,
+          "combined": {
+            "status": "ready",
+            "free": true
+          }
+        },
+        {
+          "ms": 500,
+          "mapId": "overworld",
+          "x": 107,
+          "y": 228,
+          "spriteX": 3606.7880165254796,
+          "spriteY": 7667.331544188136,
+          "combined": {
+            "status": "ready",
+            "free": true
+          }
+        },
+        {
+          "ms": 600,
+          "mapId": "overworld",
+          "x": 107,
+          "y": 228,
+          "spriteX": 3606.7880165254796,
+          "spriteY": 7667.331544188136,
+          "combined": {
+            "status": "ready",
+            "free": true
+          }
+        },
+        {
+          "ms": 700,
+          "mapId": "overworld",
+          "x": 107,
+          "y": 228,
+          "spriteX": 3606.7880165254796,
+          "spriteY": 7667.331544188136,
+          "combined": {
+            "status": "ready",
+            "free": true
+          }
+        },
+        {
+          "ms": 800,
+          "mapId": "overworld",
+          "x": 107,
+          "y": 228,
+          "spriteX": 3606.7880165254796,
+          "spriteY": 7667.331544188136,
+          "combined": {
+            "status": "ready",
+            "free": true
+          }
+        },
+        {
+          "ms": 900,
+          "mapId": "overworld",
+          "x": 107,
+          "y": 228,
+          "spriteX": 3606.7880165254796,
+          "spriteY": 7667.331544188136,
+          "combined": {
+            "status": "ready",
+            "free": true
+          }
+        },
+        {
+          "ms": 1000,
+          "mapId": "overworld",
+          "x": 107,
+          "y": 228,
+          "spriteX": 3606.7880165254796,
+          "spriteY": 7667.331544188136,
+          "combined": {
+            "status": "ready",
+            "free": true
+          }
+        },
+        {
+          "ms": 1100,
+          "mapId": "overworld",
+          "x": 107,
+          "y": 228,
+          "spriteX": 3606.7880165254796,
+          "spriteY": 7667.331544188136,
+          "combined": {
+            "status": "ready",
+            "free": true
+          }
+        },
+        {
+          "ms": 1200,
+          "mapId": "overworld",
+          "x": 107,
+          "y": 228,
+          "spriteX": 3606.7880165254796,
+          "spriteY": 7667.331544188136,
+          "combined": {
+            "status": "ready",
+            "free": true
+          }
+        },
+        {
+          "ms": 1300,
+          "mapId": "overworld",
+          "x": 107,
+          "y": 228,
+          "spriteX": 3606.7880165254796,
+          "spriteY": 7667.331544188136,
+          "combined": {
+            "status": "ready",
+            "free": true
+          }
+        },
+        {
+          "ms": 1400,
+          "mapId": "overworld",
+          "x": 107,
+          "y": 228,
+          "spriteX": 3606.7880165254796,
+          "spriteY": 7667.331544188136,
+          "combined": {
+            "status": "ready",
+            "free": true
+          }
+        },
+        {
+          "ms": 1500,
+          "mapId": "overworld",
+          "x": 107,
+          "y": 228,
+          "spriteX": 3606.7880165254796,
+          "spriteY": 7667.331544188136,
+          "combined": {
+            "status": "ready",
+            "free": true
+          }
+        }
+      ],
+      "completedAt": "2026-10-15T19:44:23.761Z",
+      "screen": "/private/tmp/edu-rpg-build84-feedback-20261013/native-remaining-gate-20261016/cave-roof-fix-independent/projection-record-staging/runtime-egress/run2/step-02-right.png",
+      "before": {
+        "mapId": "overworld",
+        "tileX": 101,
+        "tileY": 228,
+        "spriteX": 3421.3331365254735,
+        "spriteY": 7667.331544188136,
+        "combined": {
+          "status": "ready",
+          "free": true
+        }
+      },
+      "after": {
+        "mapId": "overworld",
+        "tileX": 107,
+        "tileY": 228,
+        "spriteX": 3606.7880165254796,
+        "spriteY": 7667.331544188136,
+        "combined": {
+          "status": "ready",
+          "free": true
+        }
+      },
+      "deltaSprite": {
+        "x": 185.45488000000614,
+        "y": 0
+      },
+      "movedPhysical": true
+    },
+    {
+      "type": "ArrowDown",
+      "plannedMs": 1500,
+      "actualHeldMs": 1500,
+      "startedAt": "2026-10-15T19:44:23.763Z",
+      "samples": [
+        {
+          "ms": 100,
+          "mapId": "overworld",
+          "x": 107,
+          "y": 228,
+          "spriteX": 3606.7880165254796,
+          "spriteY": 7693.349744188132,
+          "combined": {
+            "status": "ready",
+            "free": true
+          }
+        },
+        {
+          "ms": 200,
+          "mapId": "overworld",
+          "x": 107,
+          "y": 229,
+          "spriteX": 3606.7880165254796,
+          "spriteY": 7723.686544188135,
+          "combined": {
+            "status": "ready",
+            "free": true
+          }
+        },
+        {
+          "ms": 300,
+          "mapId": "overworld",
+          "x": 107,
+          "y": 230,
+          "spriteX": 3606.7880165254796,
+          "spriteY": 7749.6787441881415,
+          "combined": {
+            "status": "ready",
+            "free": true
+          }
+        },
+        {
+          "ms": 400,
+          "mapId": "overworld",
+          "x": 107,
+          "y": 231,
+          "spriteX": 3606.7880165254796,
+          "spriteY": 7780.015544188144,
+          "combined": {
+            "status": "ready",
+            "free": true
+          }
+        },
+        {
+          "ms": 500,
+          "mapId": "overworld",
+          "x": 107,
+          "y": 232,
+          "spriteX": 3606.7880165254796,
+          "spriteY": 7806.015544188148,
+          "combined": {
+            "status": "ready",
+            "free": true
+          }
+        },
+        {
+          "ms": 600,
+          "mapId": "overworld",
+          "x": 107,
+          "y": 233,
+          "spriteX": 3606.7880165254796,
+          "spriteY": 7832.0181441881505,
+          "combined": {
+            "status": "ready",
+            "free": true
+          }
+        },
+        {
+          "ms": 700,
+          "mapId": "overworld",
+          "x": 107,
+          "y": 233,
+          "spriteX": 3606.7880165254796,
+          "spriteY": 7862.3497441881555,
+          "combined": {
+            "status": "ready",
+            "free": true
+          }
+        },
+        {
+          "ms": 800,
+          "mapId": "overworld",
+          "x": 107,
+          "y": 234,
+          "spriteX": 3606.7880165254796,
+          "spriteY": 7888.349744188159,
+          "combined": {
+            "status": "ready",
+            "free": true
+          }
+        },
+        {
+          "ms": 900,
+          "mapId": "overworld",
+          "x": 107,
+          "y": 235,
+          "spriteX": 3606.7880165254796,
+          "spriteY": 7914.347144188164,
+          "combined": {
+            "status": "ready",
+            "free": true
+          }
+        },
+        {
+          "ms": 1000,
+          "mapId": "overworld",
+          "x": 107,
+          "y": 236,
+          "spriteX": 3606.7880165254796,
+          "spriteY": 7940.344544188169,
+          "combined": {
+            "status": "ready",
+            "free": true
+          }
+        },
+        {
+          "ms": 1100,
+          "mapId": "overworld",
+          "x": 107,
+          "y": 237,
+          "spriteX": 3606.7880165254796,
+          "spriteY": 7970.676144188174,
+          "combined": {
+            "status": "ready",
+            "free": true
+          }
+        },
+        {
+          "ms": 1200,
+          "mapId": "overworld",
+          "x": 107,
+          "y": 237,
+          "spriteX": 3606.7880165254796,
+          "spriteY": 7996.676144188177,
+          "combined": {
+            "status": "ready",
+            "free": true
+          }
+        },
+        {
+          "ms": 1300,
+          "mapId": "overworld",
+          "x": 107,
+          "y": 238,
+          "spriteX": 3606.7880165254796,
+          "spriteY": 8022.673544188182,
+          "combined": {
+            "status": "ready",
+            "free": true
+          }
+        },
+        {
+          "ms": 1400,
+          "mapId": "overworld",
+          "x": 107,
+          "y": 239,
+          "spriteX": 3606.7880165254796,
+          "spriteY": 8053.010344188185,
+          "combined": {
+            "status": "ready",
+            "free": true
+          }
+        },
+        {
+          "ms": 1500,
+          "mapId": "overworld",
+          "x": 107,
+          "y": 240,
+          "spriteX": 3606.7880165254796,
+          "spriteY": 8079.012944188187,
+          "combined": {
+            "status": "ready",
+            "free": true
+          }
+        }
+      ],
+      "completedAt": "2026-10-15T19:44:26.087Z",
+      "screen": "/private/tmp/edu-rpg-build84-feedback-20261013/native-remaining-gate-20261016/cave-roof-fix-independent/projection-record-staging/runtime-egress/run2/step-03-down.png",
+      "before": {
+        "mapId": "overworld",
+        "tileX": 107,
+        "tileY": 228,
+        "spriteX": 3606.7880165254796,
+        "spriteY": 7667.331544188136,
+        "combined": {
+          "status": "ready",
+          "free": true
+        }
+      },
+      "after": {
+        "mapId": "overworld",
+        "tileX": 107,
+        "tileY": 240,
+        "spriteX": 3606.7880165254796,
+        "spriteY": 8079.012944188187,
+        "combined": {
+          "status": "ready",
+          "free": true
+        }
+      },
+      "deltaSprite": {
+        "x": 0,
+        "y": 411.6814000000513
+      },
+      "movedPhysical": true
+    }
+  ],
+  "directionalHolds": 3,
+  "inputMs": 3600,
+  "console": [
+    {
+      "type": "log",
+      "text": "%c * Tone.js v15.1.22 *  background: #000; color: #fff"
+    },
+    {
+      "type": "warning",
+      "text": "The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio"
+    },
+    {
+      "type": "warning",
+      "text": "The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio"
+    },
+    {
+      "type": "log",
+      "text": "%c %c %c %c %c Phaser v3.90.0 (WebGL | Web Audio) %c https://phaser.io/v390 background: #ff0000 background: #ffff00 background: #00ff00 background: #00ffff color: #ffffff; background: #000000 background: transparent"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    }
+  ],
+  "requestFailures": [],
+  "continueGrounding": {
+    "label": "つづきから",
+    "boundingBox": {
+      "x": 24,
+      "y": 696,
+      "width": 345,
+      "height": 55
+    }
+  },
+  "afterContinue": {
+    "title": "Quest of Knowledge",
+    "live": {
+      "mapId": "overworld",
+      "x": 101,
+      "y": 227,
+      "spriteX": 3421.3331365254735,
+      "spriteY": 7659.527384188137
+    },
+    "activeScenes": [
+      {
+        "key": "WorldMapScene",
+        "mapId": "overworld",
+        "active": true
+      }
+    ],
+    "combined": {
+      "status": "ready",
+      "free": true
+    },
+    "check": "read-only current DQ checkOverworldSpawn on actual live scene/sprite",
+    "relocation": {
+      "status": "cancelled-position-changed"
+    },
+    "pending": null,
+    "slots": {
+      "edu-rpg-save": {
+        "position": {
+          "mapId": "overworld",
+          "x": 101,
+          "y": 226,
+          "floor": 1
+        },
+        "hp": 40
+      },
+      "edu-rpg-resume": {
+        "position": {
+          "mapId": "overworld",
+          "x": 101,
+          "y": 227,
+          "floor": 1
+        },
+        "hp": 40
+      }
+    },
+    "canvas": [
+      {
+        "width": 393,
+        "height": 790,
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 393,
+          "h": 790
+        }
+      },
+      {
+        "width": 438,
+        "height": 438,
+        "rect": {
+          "x": 11,
+          "y": 59,
+          "w": 146,
+          "h": 146
+        }
+      }
+    ]
+  },
+  "steps": [
+    {
+      "direction": "Down",
+      "mapId": "overworld",
+      "x": 101,
+      "y": 228,
+      "spriteX": 3421.3331365254735,
+      "spriteY": 7667.331544188136,
+      "delta": {
+        "x": 0,
+        "y": 7.804159999998774
+      },
+      "gate": {
+        "status": "ready",
+        "free": true
+      },
+      "screen": "/private/tmp/edu-rpg-build84-feedback-20261013/native-remaining-gate-20261016/cave-roof-fix-independent/projection-record-staging/runtime-egress/run2/step-01-down.png",
+      "stopReason": null
+    },
+    {
+      "direction": "Right",
+      "mapId": "overworld",
+      "x": 107,
+      "y": 228,
+      "spriteX": 3606.7880165254796,
+      "spriteY": 7667.331544188136,
+      "delta": {
+        "x": 185.45488000000614,
+        "y": 0
+      },
+      "gate": {
+        "status": "ready",
+        "free": true
+      },
+      "screen": "/private/tmp/edu-rpg-build84-feedback-20261013/native-remaining-gate-20261016/cave-roof-fix-independent/projection-record-staging/runtime-egress/run2/step-02-right.png",
+      "stopReason": null
+    },
+    {
+      "direction": "Down",
+      "mapId": "overworld",
+      "x": 107,
+      "y": 240,
+      "spriteX": 3606.7880165254796,
+      "spriteY": 8079.012944188187,
+      "delta": {
+        "x": 0,
+        "y": 411.6814000000513
+      },
+      "gate": {
+        "status": "ready",
+        "free": true
+      },
+      "screen": "/private/tmp/edu-rpg-build84-feedback-20261013/native-remaining-gate-20261016/cave-roof-fix-independent/projection-record-staging/runtime-egress/run2/step-03-down.png",
+      "stopReason": null
+    }
+  ],
+  "halfWidthTarget": {
+    "worldPx": 50.4,
+    "actualDxFromContinue": 185.45488000000614,
+    "met": true
+  },
+  "finalState": {
+    "title": "Quest of Knowledge",
+    "live": {
+      "mapId": "overworld",
+      "x": 107,
+      "y": 240,
+      "spriteX": 3606.7880165254796,
+      "spriteY": 8079.012944188187
+    },
+    "activeScenes": [
+      {
+        "key": "WorldMapScene",
+        "mapId": "overworld",
+        "active": true
+      }
+    ],
+    "combined": {
+      "status": "ready",
+      "free": true
+    },
+    "check": "read-only current DQ checkOverworldSpawn on actual live scene/sprite",
+    "relocation": {
+      "status": "cancelled-position-changed"
+    },
+    "pending": null,
+    "slots": {
+      "edu-rpg-save": {
+        "position": {
+          "mapId": "overworld",
+          "x": 101,
+          "y": 226,
+          "floor": 1
+        },
+        "hp": 40
+      },
+      "edu-rpg-resume": {
+        "position": {
+          "mapId": "overworld",
+          "x": 107,
+          "y": 240,
+          "floor": 1
+        },
+        "hp": 40
+      }
+    },
+    "canvas": [
+      {
+        "width": 393,
+        "height": 790,
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 393,
+          "h": 790
+        }
+      },
+      {
+        "width": 438,
+        "height": 438,
+        "rect": {
+          "x": 11,
+          "y": 59,
+          "w": 146,
+          "h": 146
+        }
+      }
+    ]
+  },
+  "egress": {
+    "sameOverworld": true,
+    "start": {
+      "mapId": "overworld",
+      "x": 101,
+      "y": 227,
+      "spriteX": 3421.3331365254735,
+      "spriteY": 7659.527384188137
+    },
+    "finish": {
+      "mapId": "overworld",
+      "x": 107,
+      "y": 240,
+      "spriteX": 3606.7880165254796,
+      "spriteY": 8079.012944188187
+    },
+    "actualDxFromContinue": 185.45488000000614,
+    "halfWidthTargetWorldPx": 50.4,
+    "halfWidthMet": true,
+    "finalGate": {
+      "status": "ready",
+      "free": true
+    },
+    "manualSavePreserved": true,
+    "resumeAfter": {
+      "position": {
+        "mapId": "overworld",
+        "x": 107,
+        "y": 240,
+        "floor": 1
+      },
+      "hp": 40
+    },
+    "fullHeroVisual": "screenshots require independent visual inspection"
+  },
+  "completedAt": "2026-10-15T19:44:26.088Z"
+}

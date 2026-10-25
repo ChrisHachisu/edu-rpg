@@ -29,6 +29,7 @@ from __future__ import annotations
 import argparse
 import importlib.util
 import json
+import hashlib
 import os
 
 import numpy as np
@@ -40,6 +41,15 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OWNER = os.path.join(ROOT, "design/continent-terrain-class-method/owner-terrain")
 MAT = os.path.join(OWNER, "materials")
 MASK = os.path.join(OWNER, "art-tiles/act1-smoothed-semantic.png")
+# New Act 1 raster paint sources are configured independently of the older
+# procedural Terrain-F material path below.
+PAINT_SOURCE = os.path.join(OWNER, "paint-20260926-corrected")
+PAINT_CONFIG = os.path.join(PAINT_SOURCE, "paint-source.json")
+ACT1_MANIFEST = os.path.join(ROOT, "public/act1-hifi/manifest.json")
+ACT1_R26_MANIFEST = os.path.join(
+    ROOT, "design/review/overworld-art-blueprint/act-by-act/act1/runtime-v2/"
+    "act1-final-art-geometry-r26/runtime/manifest.json")
+ACT1_PAINT_SEED = 20260925
 # FOUR classes, and there is deliberately NO road/path class. Roads were removed from Act 1 on
 # purpose -- the roadless base (docs/handoffs/2026-07-19-act1-polygon-conformance-roadless-base-g2.md)
 # and then ADR-0069's polygon-first ground authority. Unpainted ground is walkable, so THE OPEN
@@ -611,6 +621,342 @@ def render_window(x0, y0, w, h, mats, sem, occlusion=False):
     rgba[..., :3] = rgb
     rgba[..., 3] = np.where(canopy, CANOPY_ALPHA, 0).astype(np.uint8)
     return rgba
+
+
+def _sha256_file(path):
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        for b in iter(lambda: f.read(1024 * 1024), b""):
+            h.update(b)
+    return h.hexdigest()
+
+
+def _crop_grid(path, cols, rows, inset=1):
+    src = Image.open(path).convert("RGBA")
+    cw, ch = src.width // cols, src.height // rows
+    cells = []
+    for row in range(rows):
+        for col in range(cols):
+            x0, y0 = col * cw + inset, row * ch + inset
+            x1 = min(src.width, (col + 1) * cw - inset)
+            y1 = min(src.height, (row + 1) * ch - inset)
+            cells.append(src.crop((x0, y0, x1, y1)))
+    return cells
+
+
+def _trim_sprite(image):
+    rgba = np.asarray(image.convert("RGBA"))
+    ys, xs = np.where(rgba[..., 3] > 16)
+    if not len(xs):
+        raise ValueError("generated sprite cell contains no opaque pixels")
+    pad = 2
+    return image.crop((max(0, xs.min() - pad), max(0, ys.min() - pad),
+                       min(image.width, xs.max() + 1 + pad), min(image.height, ys.max() + 1 + pad)))
+
+
+def _load_paint_art(config_path=PAINT_CONFIG):
+    cfg = json.load(open(config_path, encoding="utf-8"))
+    base = os.path.dirname(config_path)
+    paths = {k: os.path.join(base, cfg[k]) for k in ("surfaceAtlas", "canopyAtlas", "rockAtlas")}
+    for key, path in paths.items():
+        if _sha256_file(path) != cfg["sha256"][key]:
+            raise ValueError(f"generated paint source hash mismatch: {key}")
+    bg = {"meadow": (92, 139, 49), "forest": (34, 77, 41), "rock": (100, 102, 99),
+          "sand": (192, 165, 103), "water": (22, 74, 94), "trail": (154, 117, 67)}
+    crops = _crop_grid(paths["surfaceAtlas"], 3, 3)
+    surface_insets = cfg["materialSampling"]["surfaceAtlasGridInsetPxByMaterial"]
+    if surface_insets != {"default": 1, "meadow": 5}:
+        raise ValueError(f"unexpected surface-atlas crop inset settings: {surface_insets}")
+    meadow_cells = _crop_grid(paths["surfaceAtlas"], 3, 3, inset=5)
+    crops[0], crops[1] = meadow_cells[0], meadow_cells[1]
+    spec = {"meadow_a": (0, "meadow"), "meadow_b": (1, "meadow"),
+            "forest_a": (2, "forest"), "forest_b": (3, "forest"),
+            "rock_a": (4, "rock"), "rock_b": (5, "rock"),
+            "sand": (6, "sand"), "water": (7, "water"), "trail": (8, "trail")}
+    textures = {}
+    for name, (index, material) in spec.items():
+        rgba = np.asarray(crops[index], np.float32)
+        alpha = rgba[..., 3:4] / 255.0
+        rgb = rgba[..., :3] * alpha + np.asarray(bg[material], np.float32) * (1.0 - alpha)
+        textures[name] = np.clip(rgb, 0, 255).astype(np.uint8)
+    canopy_grid = cfg["canopyGrid"]
+    all_crown_cells = _crop_grid(paths["canopyAtlas"], canopy_grid["columns"], canopy_grid["rows"])
+    margin_fraction = float(canopy_grid["minimumTransparentMarginFraction"])
+    alpha_threshold = int(canopy_grid["validationAlphaThreshold"])
+    selected = canopy_grid["selectedSafeAlphaMarginCells"]
+    crowns = []
+    for cell_index in selected:
+        cell = all_crown_cells[int(cell_index)].convert("RGBA")
+        alpha = np.asarray(cell)[..., 3]
+        margin = int(round(min(cell.size) * margin_fraction))
+        edge = np.concatenate((alpha[:margin, :].ravel(), alpha[-margin:, :].ravel(),
+                               alpha[:, :margin].ravel(), alpha[:, -margin:].ravel()))
+        if np.any(edge > alpha_threshold):
+            raise ValueError(f"canopy cell {cell_index} violates {margin_fraction:.0%} transparent margin")
+        # Generated atlases may carry alpha 1-2 anti-alias dust in otherwise transparent cells.
+        # Sanitize only values at or below the explicit, recorded cutoff before any composition.
+        clean_alpha = alpha.copy()
+        clean_alpha[clean_alpha <= alpha_threshold] = 0
+        clean_edge = np.concatenate((clean_alpha[:margin, :].ravel(),
+                                     clean_alpha[-margin:, :].ravel(),
+                                     clean_alpha[:, :margin].ravel(),
+                                     clean_alpha[:, -margin:].ravel()))
+        if np.any(clean_edge):
+            raise ValueError(f"canopy cell {cell_index} margin is not clear after alpha sanitation")
+        cell.putalpha(Image.fromarray(clean_alpha, "L"))
+        crowns.append(_trim_sprite(cell))
+    if not crowns:
+        raise ValueError("paint configuration selected no alpha-safe crown cells")
+    rocks = [_trim_sprite(x) for x in _crop_grid(paths["rockAtlas"], 4, 3)]
+    return cfg, textures, crowns, rocks
+
+
+def _reflected_indices(coords, size):
+    """Mirror-address a raster tile so the source's opposite edges never form a hard wrap."""
+    if size <= 1:
+        return np.zeros_like(coords, dtype=np.int64)
+    period = 2 * (size - 1)
+    phase = np.mod(coords, period)
+    return np.where(phase < size, phase, period - phase).astype(np.int64)
+
+
+def _sample_reflected(tile, gx, gy):
+    return tile[_reflected_indices(gy, tile.shape[0]),
+                _reflected_indices(gx, tile.shape[1])]
+
+
+def _paste_alpha_union(canvas, source, x, y):
+    """Paste a source alpha mask with clipping and max/union semantics."""
+    h, w = canvas.shape
+    sh, sw = source.shape
+    x0, y0 = max(0, x), max(0, y)
+    x1, y1 = min(w, x + sw), min(h, y + sh)
+    if x1 <= x0 or y1 <= y0:
+        return
+    sx0, sy0 = x0 - x, y0 - y
+    sx1, sy1 = sx0 + x1 - x0, sy0 + y1 - y0
+    canvas[y0:y1, x0:x1] = np.maximum(canvas[y0:y1, x0:x1], source[sy0:sy1, sx0:sx1])
+
+
+class Act1PaintRenderer:
+    """Compose imagegen raster materials against the exact shipped Act 1 geography."""
+    MASK_COLORS = {"meadow": (226, 210, 156), "forest": (26, 82, 46),
+                   "rock": (128, 126, 122), "water": (30, 82, 170)}
+
+    def __init__(self, manifest_path=ACT1_MANIFEST, config_path=PAINT_CONFIG, old_root=None):
+        self.manifest_path = manifest_path
+        self.manifest = json.load(open(manifest_path, encoding="utf-8"))
+        r26 = json.load(open(ACT1_R26_MANIFEST, encoding="utf-8"))
+        for key in ("semanticBounds", "semanticRows", "safeCells", "chunks", "pathConstraints", "designLocks"):
+            if self.manifest.get(key) != r26.get(key):
+                raise ValueError(f"shipped manifest differs from r26 authority for {key}")
+        self.bounds = self.manifest["semanticBounds"]
+        self.bx0, self.by0, self.bx1, self.by1 = self.bounds
+        self.cells_w, self.cells_h = self.bx1 - self.bx0 + 1, self.by1 - self.by0 + 1
+        self.grid_w = max(c["x"] + c["width"] for c in self.manifest["chunks"]) // 16
+        self.grid_h = max(c["y"] + c["height"] for c in self.manifest["chunks"]) // 16
+        self.mask_path = os.path.join(ROOT, self.manifest["source"]["mask"])
+        self.mask_hash = _sha256_file(self.mask_path)
+        mask = np.asarray(Image.open(self.mask_path).convert("RGB"))
+        if mask.shape[:2] != (self.cells_h * 16, self.cells_w * 16):
+            raise ValueError(f"manifest-referenced mask dimensions are misaligned: {mask.shape[:2]}")
+        samples = mask[8::16, 8::16]
+        self.classgrid = np.full((self.grid_h, self.grid_w), "water", dtype="U7")
+        map_classes = np.full((self.cells_h, self.cells_w), "?", dtype="U7")
+        for label, rgb in self.MASK_COLORS.items():
+            map_classes[np.all(samples == rgb, axis=2)] = label
+        if np.any(map_classes == "?"):
+            raise ValueError("unknown material label in the manifest-referenced mask")
+        self.classgrid[:self.cells_h, :self.cells_w] = map_classes
+        self.cfg, self.textures, self.crowns, self.rocks = _load_paint_art(config_path)
+        self.old_root = old_root or os.path.dirname(manifest_path)
+        self.old_canopy = self._old_canopy_guide()
+        self.route_segments = []
+        for corridor in self.manifest["pathConstraints"]["corridors"]:
+            for a, b in zip(corridor.get("points", []), corridor.get("points", [])[1:]):
+                self.route_segments.append((a["x"], a["y"], b["x"], b["y"],
+                    (a.get("halfWidth", 10) + b.get("halfWidth", 10)) * 0.55))
+        self.trees, self.rock_motifs = self._motif_placements()
+
+    def _old_canopy_guide(self):
+        # Existing alpha is used only to place new crowns where trees already stood.
+        # The candidate canopy output is generated from new sprite alpha below.
+        guide = np.zeros((self.grid_h, self.grid_w), np.float32)
+        for c in self.manifest["chunks"]:
+            rel = c.get("canopy")
+            if not rel:
+                continue
+            path = os.path.join(self.old_root, rel)
+            if not os.path.exists(path):
+                continue
+            a = np.asarray(Image.open(path).convert("RGBA"))[..., 3]
+            x, y = c["x"] // 16, c["y"] // 16
+            cw, ch = c["width"] // 16, c["height"] // 16
+            if a.shape[1] % cw or a.shape[0] % ch:
+                raise ValueError(f"{c['id']}: old canopy is not cell aligned")
+            a = a.reshape(ch, a.shape[0] // ch, cw, a.shape[1] // cw).mean(axis=(1, 3)) / 242.0
+            guide[y:y + ch, x:x + cw] = a
+        return guide
+
+    @staticmethod
+    def _hashf(x, y, seed):
+        n = (int(x) * 374761393 + int(y) * 668265263 + int(seed) * 1442695041) & 0x7fffffff
+        n = ((n ^ (n >> 13)) * 1274126177) & 0x7fffffff
+        return ((n ^ (n >> 16)) & 0xffffff) / float(0xffffff)
+
+    def _sprite(self, sprites, index, side):
+        im = sprites[index % len(sprites)].convert("RGBA")
+        factor = side / max(im.size)
+        return np.asarray(im.resize((max(1, round(im.width * factor)), max(1, round(im.height * factor))),
+                                    Image.Resampling.LANCZOS))
+
+    def _motif_placements(self):
+        trees, rocks = [], []
+        seed = int(self.cfg.get("seed", ACT1_PAINT_SEED))
+        for gy in range(-8, self.grid_h + 9, 3):
+            for gx in range(-8, self.grid_w + 9, 3):
+                cx = gx + (self._hashf(gx, gy, seed) - .5) * 2.2
+                cy = gy + (self._hashf(gx, gy, seed + 1) - .5) * 2.2
+                ix, iy = int(np.floor(cx + .5)), int(np.floor(cy + .5))
+                if not (0 <= ix < self.grid_w and 0 <= iy < self.grid_h):
+                    continue
+                wx, wy = cx * 16, cy * 16
+                def footprint_cover(label, side_world):
+                    half = int(np.ceil(side_world / 32.0)) + 1
+                    x0, x1 = max(0, ix - half), min(self.grid_w, ix + half + 1)
+                    y0, y1 = max(0, iy - half), min(self.grid_h, iy + half + 1)
+                    patch = self.classgrid[y0:y1, x0:x1]
+                    return float(np.mean(patch == label)) if patch.size else 0.0
+
+                def route_clear(halfspan):
+                    for x0, y0, x1, y1, radius in self.route_segments:
+                        dx, dy = x1 - x0, y1 - y0
+                        t = np.clip(((wx - x0) * dx + (wy - y0) * dy) /
+                                    max(dx * dx + dy * dy, 1e-6), 0, 1)
+                        if (wx - (x0 + t * dx)) ** 2 + (wy - (y0 + t * dy)) ** 2 < \
+                                (radius + halfspan + 8) ** 2:
+                            return False
+                    return True
+
+                if self.classgrid[iy, ix] == "forest" and self._hashf(gx, gy, seed + 2) > .24:
+                    # Dense interiors use large connected crown clusters. Near the semantic edge,
+                    # use smaller sprites so the forest tapers naturally rather than ending in stamps.
+                    interior = footprint_cover("forest", 112) >= .78
+                    side = 128 if interior and self._hashf(gx, gy, seed + 4) > .45 \
+                        else (108 if interior else 68)
+                    if footprint_cover("forest", side) >= .52 and route_clear(side * .5):
+                        idx = int(self._hashf(gx, gy, seed + 3) * len(self.crowns))
+                        sprite = self._sprite(self.crowns, idx, side)
+                        if self._hashf(gx, gy, seed + 5) > .5:
+                            sprite = np.ascontiguousarray(sprite[:, ::-1])
+                        trees.append((wx, wy, sprite))
+
+                if self.classgrid[iy, ix] == "rock" and self._hashf(gx, gy, seed + 8) > .28:
+                    interior = footprint_cover("rock", 128) >= .86
+                    side = 136 if interior and self._hashf(gx, gy, seed + 10) > .42 \
+                        else (112 if interior else 78)
+                    if footprint_cover("rock", side) >= .72 and route_clear(side * .5):
+                        idx = int(self._hashf(gx, gy, seed + 9) * len(self.rocks))
+                        rocks.append((wx, wy, self._sprite(self.rocks, idx, side)))
+        return trees, rocks
+
+    def _weights(self, x_cell, y_cell, width_px, height_px, ppc):
+        pad = 2
+        lx0, ly0 = max(0, x_cell - pad), max(0, y_cell - pad)
+        lx1 = min(self.grid_w, x_cell + int(np.ceil(width_px / ppc)) + pad)
+        ly1 = min(self.grid_h, y_cell + int(np.ceil(height_px / ppc)) + pad)
+        ox, oy = (x_cell - lx0) * ppc, (y_cell - ly0) * ppc
+        ww, hh = (lx1 - lx0) * ppc, (ly1 - ly0) * ppc
+        out = {}
+        for name in self.MASK_COLORS:
+            binary = (self.classgrid[ly0:ly1, lx0:lx1] == name).astype(np.uint8) * 255
+            im = Image.fromarray(binary, "L").resize((ww, hh), Image.Resampling.BILINEAR)
+            blur = max(1, round({"water": 2, "forest": 5, "rock": 4, "meadow": 5}[name] * ppc / 32.0))
+            im = im.filter(ImageFilter.GaussianBlur(blur))
+            out[name] = np.asarray(im, np.float32)[oy:oy + height_px, ox:ox + width_px] / 255.0
+        total = sum(out.values())
+        return {k: v / np.maximum(total, 1e-6) for k, v in out.items()}
+
+    def _route_weight(self, wx, wy, ppc):
+        out = np.zeros(wx.shape, np.float32)
+        scale = ppc / 16.0
+        minx, maxx = float(wx.min()) / scale, float(wx.max()) / scale
+        miny, maxy = float(wy.min()) / scale, float(wy.max()) / scale
+        for x0, y0, x1, y1, radius in self.route_segments:
+            if max(x0, x1) + radius < minx or min(x0, x1) - radius > maxx \
+                    or max(y0, y1) + radius < miny or min(y0, y1) - radius > maxy:
+                continue
+            dx, dy = x1 - x0, y1 - y0
+            den = max(dx * dx + dy * dy, 1e-6)
+            t = np.clip(((wx / scale - x0) * dx + (wy / scale - y0) * dy) / den, 0, 1)
+            dist = np.sqrt((wx / scale - (x0 + t * dx)) ** 2 + (wy / scale - (y0 + t * dy)) ** 2)
+            out = np.maximum(out, np.clip((radius - dist) / 5.0 + .5, 0, 1))
+        return out
+
+    def render_window(self, world_x, world_y, width_world, height_world, ppc=32):
+        if any(v % 16 for v in (world_x, world_y, width_world, height_world)):
+            raise ValueError("windows must align to semantic-cell edges")
+        w, h = width_world // 16 * ppc, height_world // 16 * ppc
+        x_cell, y_cell = world_x // 16, world_y // 16
+        gx = (np.arange(w, dtype=np.int32) + x_cell * ppc)[None, :].repeat(h, 0)
+        gy = (np.arange(h, dtype=np.int32) + y_cell * ppc)[:, None].repeat(w, 1)
+        weights = self._weights(x_cell, y_cell, w, h, ppc)
+        base = np.zeros((h, w, 3), np.float32)
+        sampling = self.cfg["materialSampling"]
+        rates = (sampling["underpaintTexelsPerCellByMaterial"] if ppc == 6 else
+                 sampling["texelsPerCellByMaterial"])
+        samples = (("meadow", "meadow_a", "meadow_b"), ("forest", "forest_a", "forest_b"),
+                   ("rock", "rock_a", "rock_b"), ("water", "water", "water"))
+        for cls, va, vb in samples:
+            # The atlas cells are subdued fields, sampled in globally aligned world-cell units.
+            # Reflection at their edge removes the hard repeat seam and doubles the repeat period.
+            # The full-size chunk render uses the configured material rate.
+            # The 6px/cell backing plate retains its explicit coarse legacy rates.
+            rate = int(rates[cls])
+            tx = np.floor(gx * (rate / ppc)).astype(np.int32)
+            ty = np.floor(gy * (rate / ppc)).astype(np.int32)
+            a, b = _sample_reflected(self.textures[va], tx, ty), _sample_reflected(self.textures[vb], tx, ty)
+            mix = vnoise(gx.astype(np.float32), gy.astype(np.float32), 23 * ppc, ACT1_PAINT_SEED + len(cls)) * .42 + .29
+            color = a * (1.0 - mix[..., None]) + b * mix[..., None]
+            base += color * weights[cls][..., None]
+        trail_rate = int(rates["trail"])
+        trail_tx = np.floor(gx * (trail_rate / ppc)).astype(np.int32)
+        trail_ty = np.floor(gy * (trail_rate / ppc)).astype(np.int32)
+        trail = _sample_reflected(self.textures["trail"], trail_tx, trail_ty)
+        route = self._route_weight(gx, gy, ppc) * weights["meadow"]
+        base = base * (1.0 - route[..., None] * .82) + trail * route[..., None] * .82
+        base_rgba = Image.fromarray(np.clip(base, 0, 255).astype(np.uint8), "RGB").convert("RGBA")
+        over = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+        canopy = np.zeros((h, w), np.uint8)
+        factor = ppc / 16.0
+        x0, y0 = x_cell * ppc, y_cell * ppc
+        for cx, cy, sprite in self.trees:
+            rgba = Image.fromarray(sprite, "RGBA")
+            sw, sh = max(1, round(rgba.width * factor)), max(1, round(rgba.height * factor))
+            rgba = rgba.resize((sw, sh), Image.Resampling.LANCZOS)
+            px, py = round(cx * factor - x0 - sw / 2), round(cy * factor - y0 - sh / 2)
+            if px + sw <= 0 or py + sh <= 0 or px >= w or py >= h:
+                continue
+            dx0, dy0 = max(0, px), max(0, py)
+            dx1, dy1 = min(w, px + sw), min(h, py + sh)
+            sx0, sy0 = dx0 - px, dy0 - py
+            sx1, sy1 = sx0 + dx1 - dx0, sy0 + dy1 - dy0
+            clipped = rgba.crop((sx0, sy0, sx1, sy1))
+            over.alpha_composite(clipped, (dx0, dy0))
+            _paste_alpha_union(canopy, np.asarray(rgba.getchannel("A")), px, py)
+        for cx, cy, sprite in self.rock_motifs:
+            rgba = Image.fromarray(sprite, "RGBA")
+            sw, sh = max(1, round(rgba.width * factor)), max(1, round(rgba.height * factor))
+            rgba = rgba.resize((sw, sh), Image.Resampling.LANCZOS)
+            px, py = round(cx * factor - x0 - sw / 2), round(cy * factor - y0 - sh / 2)
+            if px + sw <= 0 or py + sh <= 0 or px >= w or py >= h:
+                continue
+            dx0, dy0 = max(0, px), max(0, py)
+            dx1, dy1 = min(w, px + sw), min(h, py + sh)
+            sx0, sy0 = dx0 - px, dy0 - py
+            sx1, sy1 = sx0 + dx1 - dx0, sy0 + dy1 - dy0
+            over.alpha_composite(rgba.crop((sx0, sy0, sx1, sy1)), (dx0, dy0))
+        return np.asarray(Image.alpha_composite(base_rgba, over).convert("RGB")), canopy
 
 
 def main() -> None:

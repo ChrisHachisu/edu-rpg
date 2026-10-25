@@ -1,0 +1,117 @@
+{
+  "consumerIntegration": {
+    "consumerFunction": "verified_a1ow_v2_source_overlay",
+    "consumerPath": "/Users/chris/.codex/workspaces/edu-rpg-forward-20261007/design/terrain-current-profile-20261007/generate_forward_profile.py",
+    "currentPinnedReviewSha256": "0226b32538ae8aff716ca1294cb398cdff4aed7ae5fc4c66a7a85165c2d11297",
+    "currentProofPath": "/Users/chris/.codex/workspaces/edu-rpg-forward-20261007/design/terrain-current-profile-20261007/evidence/a1ow-v2-independent-review/independent-a1ow-v2-recomputation.json",
+    "currentProofSha256": "0226b32538ae8aff716ca1294cb398cdff4aed7ae5fc4c66a7a85165c2d11297",
+    "integrationStatus": "REVIEW_ARTIFACT_ONLY; strict generator remains fail-closed until owner-authorized consumer pin update",
+    "newProofIsNotConsumerPinned": true
+  },
+  "independentDqSourceEquivalence": {
+    "allChangedDiffHunksBeforeCollisionRuntimeAnchor": true,
+    "baselinePath": "/private/tmp/edu-rpg-build83-paint-audit-20261005/native-whole-rock-20261008/derived-release84-continue/Build/Products/Release-iphonesimulator/App.app/public/dq-tiles.js",
+    "baselineSha256": "c18ce18e2f25ef6779165389d86163cea64136711f8999c4fd843154e6799c7a",
+    "baselineTailByteOffset": 305485,
+    "changedDiffHunks": [
+      "@@ -1205 +1205,4 @@\n",
+      "@@ -1774,2 +1777,11 @@\n",
+      "@@ -1781 +1793 @@\n",
+      "@@ -1971 +1983,5 @@\n",
+      "@@ -1989 +2005,4 @@\n",
+      "@@ -1991,3 +2010,7 @@\n",
+      "@@ -2018,0 +2042,7 @@\n",
+      "@@ -2032,0 +2063,2 @@\n",
+      "@@ -2168 +2200 @@\n",
+      "@@ -2380 +2412,2 @@\n",
+      "@@ -2713 +2746 @@\n",
+      "@@ -2812 +2845,4 @@\n",
+      "@@ -2816,2 +2852,2 @@\n",
+      "@@ -2820,0 +2857 @@\n",
+      "@@ -2844 +2881 @@\n"
+    ],
+    "checks": {
+      "a1owBinarySha256MatchesContract": true,
+      "allChangedDiffHunksBeforeCollisionRuntimeAnchor": true,
+      "bakerShaMatchesContract": true,
+      "collisionTailExact": true,
+      "currentSourceMatchesUpdatedProof": true,
+      "dqHashMatchesFinalSource": true,
+      "mapProofShaMatches": true,
+      "originalA1owBodyReviewPass": true
+    },
+    "collisionRuntimeTailAnchor": "var A1M_FOOT=12;",
+    "collisionRuntimeTailAnchorLine": 4280,
+    "collisionRuntimeTailBytes": 252252,
+    "collisionRuntimeTailSha256": "f542b7570cec71c7e347090d2cdab2a7cf8c844c5d8fd781bac12dbec5ceed44",
+    "identicalCollisionRuntimeTail": true,
+    "interpretation": "DQ edits add/change only A1A streamed-art residency and rendering before the A1M_FOOT anchor; the A1M/A1F/OWM runtime implementation tail, including A1OW decode/assembly, collision, and movement functions, is byte-identical.",
+    "lastChangedOldSourceLine": 2844,
+    "schema": "a1ow-dq-source-equivalence-v1",
+    "updatedPath": "/Users/chris/.codex/workspaces/edu-rpg-forward-20261007/public/dq-tiles.js",
+    "updatedSha256": "c3c231cb4634039aa838e70c728b2e6922645ce9a40b86705d6a48d4f5f40c1a",
+    "updatedTailByteOffset": 307731
+  },
+  "inputs": {
+    "bakerPath": "scripts/bake_act1_overworld_walk.mjs",
+    "bakerSha256": "8f172f77de9ccddebafd0d742a13fdc22d5258c652eacf5df5b0ba5d25c9eb2b",
+    "candidateRoot": "/Users/chris/.codex/workspaces/edu-rpg-forward-20261007",
+    "dqTilesSha256": "c3c231cb4634039aa838e70c728b2e6922645ce9a40b86705d6a48d4f5f40c1a",
+    "frozenV1Sha256": "d87c6572cbf3012180a289196cfe5e7eee7c50dc86beb06a999fa491eeacfdf3",
+    "mapProofSha256": "a9fecf54db9de1f18a1f26c3f74b1bab9be230a247076e10580859e7074ab212",
+    "v2Path": "public/act1-overworld-walk.bin",
+    "v2Sha256": "00a520ae09089547ca4af4ef1077b84acdad98d4989de238f3ee30e28ad092c6"
+  },
+  "payload": {
+    "byteIdentical": true,
+    "bytes": 9688576,
+    "frozenV1BodySha256": "05be9638d04a692668c3a1c8b4bd3d809216bcede2e090a74a0712cb5467498c",
+    "v2BodySha256": "05be9638d04a692668c3a1c8b4bd3d809216bcede2e090a74a0712cb5467498c"
+  },
+  "schema": "independent-a1ow-v2-integration-review-v1",
+  "semantics": {
+    "sha256": "a6e6e7f228d040381539618d99f03e774a16dd7cadbaf8cc76a115934d324f67",
+    "sourceFunctionNames": [
+      "_h",
+      "vnoise",
+      "et",
+      "fieldAt",
+      "waterField",
+      "mountainField",
+      "buildMutedWater",
+      "owmSupportBounds",
+      "owmSupportEt",
+      "owmSupportInputBytes"
+    ],
+    "sourceSha256": "4ed7c44a096169e9f9354c4a568ffa3dab4ebfe9fb2fd5339ae8b31dce2bacdb"
+  },
+  "status": "PASS_A1OW_V2_IDENTITY_AND_BODY",
+  "support": {
+    "bounds": {
+      "x0": 0,
+      "x1": 208,
+      "y0": 173,
+      "y1": 399
+    },
+    "classByteCount": 47443,
+    "effectiveClassBytesSha256": "63d55c8dd75d6d946f5b56e3f58ce6a4ec287e6ccccddebed61329a70fb972d3",
+    "fnv32": 4271507709,
+    "mutedWater": "4-connected global components <= 12 suppressed",
+    "schema": "a1ow-effective-support-v1",
+    "sha256": "eeaf65c08cda239ea8755a3af0026ed0ca61e19a2683cafc10610b5c4027914a"
+  },
+  "v2Header": {
+    "blocks": 4094,
+    "exactLength": 9688672,
+    "far": 255,
+    "headerBytes": 96,
+    "magic": "A1OW",
+    "mapCells": [
+      320,
+      400
+    ],
+    "pixelsPerCell": 48,
+    "reservedBytesZero": true,
+    "version": 2
+  }
+}

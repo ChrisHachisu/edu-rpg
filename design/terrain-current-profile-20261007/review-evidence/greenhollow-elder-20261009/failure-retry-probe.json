@@ -1,0 +1,29 @@
+{
+  "failure": {
+    "phase": "error",
+    "map": "greenhollow",
+    "menu": false,
+    "cover": "auto",
+    "coverZ": "9999",
+    "button": "もういちど"
+  },
+  "afterEscape": {
+    "menu": false,
+    "phase": "error"
+  },
+  "recovered": {
+    "phase": "world",
+    "src": "http://127.0.0.1:5174/act1-hifi/town.html?town=greenhollow&first=1&facing=up",
+    "cell": [
+      32.19,
+      23.61
+    ],
+    "townOpenFlag": true,
+    "name": "Retry Op"
+  },
+  "events": [
+    "injected first iframe failure",
+    "pageerror:Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+    "error:[act1-hifi-town] SecurityError: Failed to read a named property '__ACT1_TOWN__' from 'Window': Blocked a frame with origin \"http://127.0.0.1:5174\" from accessing a cross-origin fra"
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "status": "PASS",
+  "profileId": "act1-forward-20261007-v1",
+  "generationAReceiptSha256": "32769af3bececee5423d77e2314c61edee59ae2fa43593e9eee972a396477599",
+  "generationBReceiptSha256": "d99dbfa3800b6a707bb31a0a41cae2208269e84d620c718218238ecb343012f2",
+  "pathSetMatches": true,
+  "outputInventoryMismatches": [],
+  "cleanDeterministicRegeneration": true,
+  "fullWorldComplete": true,
+  "gateReady": false,
+  "generationA": "/private/tmp/edu-rpg-build83-paint-audit-20261005/native-whole-rock-20261008/north-perimeter-repair-20261010/generation-enclosed-gap-v1/clean-generation-a",
+  "generationB": "/private/tmp/edu-rpg-build83-paint-audit-20261005/native-whole-rock-20261008/north-perimeter-repair-20261010/generation-enclosed-gap-v1/clean-generation-b",
+  "generatedAtFixed": "deterministic"
+}

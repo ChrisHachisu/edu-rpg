@@ -1,0 +1,578 @@
+{
+  "status": "PASS",
+  "scope": "Attribution of difference between full staged alpha crop and frozen nine-object preview; tests whether difference is exactly the separately approved 40 boundary-crown union.",
+  "generatorSha256": "571f8f1a8bb803aea8dd2d5ab1ef34c3bfde2162c6a42b9d86f8ed3d69e383d4",
+  "recipeSha256": "e84409c166b6754d59d02cb5fcf8c8b54acf524e61b615dc1c996e783b99b007",
+  "fullAlphaSha256": "944062209c3ee9392c4a971fa5b792e19bdcec83ec2b08dbfd24155680a52fdd",
+  "referencePreviewAlphaSha256": "80723f662ed8694794d4b89582a836f352178dd269a4f793369c6c00050eb338",
+  "globalCropLocalXYWH": [
+    1984,
+    0,
+    1600,
+    768
+  ],
+  "cropSize": [
+    1600,
+    768
+  ],
+  "stageOnlyAgainstPreviewPixels": 19619,
+  "previewPixelsMissingFromStage": 0,
+  "approvedBoundaryCrowns": 40,
+  "addedUnionAlphaPixels": 39688,
+  "stageOnlyNotExplainedByBoundaryCrowns": 0,
+  "crownPixelsAlreadyCoveredByPreview": 20069,
+  "stageAlphaVsPreviewUnionApprovedCrownsXorPixels": 0,
+  "extraBoundsCropXYXY": [
+    1268,
+    571,
+    1600,
+    758
+  ],
+  "previewMissingBounds": null,
+  "selectedBoundaryRecords": [
+    {
+      "id": "forest-edge-r15-121.490",
+      "eventId": "tree:forest-edge-r15-121.490",
+      "center": [
+        121.49,
+        239.355
+      ],
+      "sourceIndex": 5,
+      "flipX": false,
+      "alphaSupportPixels": 10741,
+      "boundsCropXYXY": [
+        1325,
+        617,
+        1458,
+        749
+      ]
+    },
+    {
+      "id": "forest-edge-r15-126.655",
+      "eventId": "tree:forest-edge-r15-126.655",
+      "center": [
+        126.655,
+        239.355
+      ],
+      "sourceIndex": 3,
+      "flipX": true,
+      "alphaSupportPixels": 8334,
+      "boundsCropXYXY": [
+        1491,
+        623,
+        1600,
+        744
+      ]
+    },
+    {
+      "id": "forest-edge-r15-130.265",
+      "eventId": "tree:forest-edge-r15-130.265",
+      "center": [
+        130.265,
+        239.355
+      ],
+      "sourceIndex": 3,
+      "flipX": false,
+      "alphaSupportPixels": 0,
+      "boundsCropXYXY": null
+    },
+    {
+      "id": "forest-edge-r16-132.830",
+      "eventId": "tree:forest-edge-r16-132.830",
+      "center": [
+        132.83,
+        240.56
+      ],
+      "sourceIndex": 4,
+      "flipX": false,
+      "alphaSupportPixels": 0,
+      "boundsCropXYXY": null
+    },
+    {
+      "id": "forest-edge-r16-124.055",
+      "eventId": "tree:forest-edge-r16-124.055",
+      "center": [
+        124.055,
+        240.56
+      ],
+      "sourceIndex": 3,
+      "flipX": false,
+      "alphaSupportPixels": 8549,
+      "boundsCropXYXY": [
+        1408,
+        661,
+        1540,
+        768
+      ]
+    },
+    {
+      "id": "forest-edge-r16-128.760",
+      "eventId": "tree:forest-edge-r16-128.760",
+      "center": [
+        128.76,
+        240.56
+      ],
+      "sourceIndex": 1,
+      "flipX": false,
+      "alphaSupportPixels": 2232,
+      "boundsCropXYXY": [
+        1557,
+        688,
+        1600,
+        768
+      ]
+    },
+    {
+      "id": "forest-edge-r15-120.215",
+      "eventId": "tree:forest-edge-r15-120.215",
+      "center": [
+        120.215,
+        239.355
+      ],
+      "sourceIndex": 0,
+      "flipX": false,
+      "alphaSupportPixels": 9271,
+      "boundsCropXYXY": [
+        1291,
+        617,
+        1410,
+        749
+      ]
+    },
+    {
+      "id": "forest-edge-r16-123.205",
+      "eventId": "tree:forest-edge-r16-123.205",
+      "center": [
+        123.205,
+        240.56
+      ],
+      "sourceIndex": 6,
+      "flipX": true,
+      "alphaSupportPixels": 8177,
+      "boundsCropXYXY": [
+        1380,
+        673,
+        1514,
+        768
+      ]
+    },
+    {
+      "id": "forest-edge-r16-127.700",
+      "eventId": "tree:forest-edge-r16-127.700",
+      "center": [
+        127.7,
+        240.56
+      ],
+      "sourceIndex": 3,
+      "flipX": true,
+      "alphaSupportPixels": 5742,
+      "boundsCropXYXY": [
+        1524,
+        661,
+        1600,
+        768
+      ]
+    },
+    {
+      "id": "forest-edge-r15-126.230",
+      "eventId": "tree:forest-edge-r15-126.230",
+      "center": [
+        126.23,
+        239.355
+      ],
+      "sourceIndex": 2,
+      "flipX": false,
+      "alphaSupportPixels": 8080,
+      "boundsCropXYXY": [
+        1476,
+        631,
+        1600,
+        736
+      ]
+    },
+    {
+      "id": "forest-edge-r16-132.405",
+      "eventId": "tree:forest-edge-r16-132.405",
+      "center": [
+        132.405,
+        240.56
+      ],
+      "sourceIndex": 1,
+      "flipX": true,
+      "alphaSupportPixels": 0,
+      "boundsCropXYXY": null
+    },
+    {
+      "id": "forest-edge-r16-136.900",
+      "eventId": "tree:forest-edge-r16-136.900",
+      "center": [
+        136.9,
+        240.56
+      ],
+      "sourceIndex": 5,
+      "flipX": true,
+      "alphaSupportPixels": 0,
+      "boundsCropXYXY": null
+    },
+    {
+      "id": "forest-edge-r35-141.765",
+      "eventId": "tree:forest-edge-r35-141.765",
+      "center": [
+        141.765,
+        266.815
+      ],
+      "sourceIndex": 3,
+      "flipX": true,
+      "alphaSupportPixels": 0,
+      "boundsCropXYXY": null
+    },
+    {
+      "id": "forest-edge-r31-143.535",
+      "eventId": "tree:forest-edge-r31-143.535",
+      "center": [
+        143.535,
+        261.225
+      ],
+      "sourceIndex": 5,
+      "flipX": true,
+      "alphaSupportPixels": 0,
+      "boundsCropXYXY": null
+    },
+    {
+      "id": "forest-edge-r39-141.695",
+      "eventId": "tree:forest-edge-r39-141.695",
+      "center": [
+        141.695,
+        272.405
+      ],
+      "sourceIndex": 3,
+      "flipX": true,
+      "alphaSupportPixels": 0,
+      "boundsCropXYXY": null
+    },
+    {
+      "id": "forest-edge-r24-146.240",
+      "eventId": "tree:forest-edge-r24-146.240",
+      "center": [
+        146.24,
+        251.74
+      ],
+      "sourceIndex": 1,
+      "flipX": true,
+      "alphaSupportPixels": 0,
+      "boundsCropXYXY": null
+    },
+    {
+      "id": "forest-edge-r27-142.755",
+      "eventId": "tree:forest-edge-r27-142.755",
+      "center": [
+        142.755,
+        255.88
+      ],
+      "sourceIndex": 4,
+      "flipX": false,
+      "alphaSupportPixels": 0,
+      "boundsCropXYXY": null
+    },
+    {
+      "id": "forest-edge-r21-146.930",
+      "eventId": "tree:forest-edge-r21-146.930",
+      "center": [
+        146.93,
+        247.635
+      ],
+      "sourceIndex": 0,
+      "flipX": true,
+      "alphaSupportPixels": 0,
+      "boundsCropXYXY": null
+    },
+    {
+      "id": "forest-edge-r37-142.155",
+      "eventId": "tree:forest-edge-r37-142.155",
+      "center": [
+        142.155,
+        269.715
+      ],
+      "sourceIndex": 5,
+      "flipX": true,
+      "alphaSupportPixels": 0,
+      "boundsCropXYXY": null
+    },
+    {
+      "id": "forest-edge-r17-139.890",
+      "eventId": "tree:forest-edge-r17-139.890",
+      "center": [
+        139.89,
+        242.045
+      ],
+      "sourceIndex": 1,
+      "flipX": false,
+      "alphaSupportPixels": 0,
+      "boundsCropXYXY": null
+    },
+    {
+      "id": "forest-edge-r19-144.595",
+      "eventId": "tree:forest-edge-r19-144.595",
+      "center": [
+        144.595,
+        244.7
+      ],
+      "sourceIndex": 0,
+      "flipX": false,
+      "alphaSupportPixels": 0,
+      "boundsCropXYXY": null
+    },
+    {
+      "id": "forest-edge-r34-142.845",
+      "eventId": "tree:forest-edge-r34-142.845",
+      "center": [
+        142.845,
+        265.575
+      ],
+      "sourceIndex": 5,
+      "flipX": true,
+      "alphaSupportPixels": 0,
+      "boundsCropXYXY": null
+    },
+    {
+      "id": "forest-edge-r38-141.075",
+      "eventId": "tree:forest-edge-r38-141.075",
+      "center": [
+        141.075,
+        270.92
+      ],
+      "sourceIndex": 3,
+      "flipX": true,
+      "alphaSupportPixels": 0,
+      "boundsCropXYXY": null
+    },
+    {
+      "id": "forest-edge-r28-142.525",
+      "eventId": "tree:forest-edge-r28-142.525",
+      "center": [
+        142.525,
+        257.085
+      ],
+      "sourceIndex": 3,
+      "flipX": false,
+      "alphaSupportPixels": 0,
+      "boundsCropXYXY": null
+    },
+    {
+      "id": "forest-edge-r23-147.320",
+      "eventId": "tree:forest-edge-r23-147.320",
+      "center": [
+        147.32,
+        250.29
+      ],
+      "sourceIndex": 6,
+      "flipX": false,
+      "alphaSupportPixels": 0,
+      "boundsCropXYXY": null
+    },
+    {
+      "id": "forest-edge-r30-142.915",
+      "eventId": "tree:forest-edge-r30-142.915",
+      "center": [
+        142.915,
+        260.02
+      ],
+      "sourceIndex": 5,
+      "flipX": true,
+      "alphaSupportPixels": 0,
+      "boundsCropXYXY": null
+    },
+    {
+      "id": "forest-edge-r20-146.065",
+      "eventId": "tree:forest-edge-r20-146.065",
+      "center": [
+        146.065,
+        246.15
+      ],
+      "sourceIndex": 1,
+      "flipX": true,
+      "alphaSupportPixels": 0,
+      "boundsCropXYXY": null
+    },
+    {
+      "id": "forest-edge-r39-140.420",
+      "eventId": "tree:forest-edge-r39-140.420",
+      "center": [
+        140.42,
+        272.405
+      ],
+      "sourceIndex": 5,
+      "flipX": true,
+      "alphaSupportPixels": 0,
+      "boundsCropXYXY": null
+    },
+    {
+      "id": "forest-edge-r33-141.800",
+      "eventId": "tree:forest-edge-r33-141.800",
+      "center": [
+        141.8,
+        264.125
+      ],
+      "sourceIndex": 5,
+      "flipX": true,
+      "alphaSupportPixels": 0,
+      "boundsCropXYXY": null
+    },
+    {
+      "id": "forest-edge-r21-148.630",
+      "eventId": "tree:forest-edge-r21-148.630",
+      "center": [
+        148.63,
+        247.635
+      ],
+      "sourceIndex": 6,
+      "flipX": false,
+      "alphaSupportPixels": 0,
+      "boundsCropXYXY": null
+    },
+    {
+      "id": "forest-edge-r39-141.270",
+      "eventId": "tree:forest-edge-r39-141.270",
+      "center": [
+        141.27,
+        272.405
+      ],
+      "sourceIndex": 2,
+      "flipX": false,
+      "alphaSupportPixels": 0,
+      "boundsCropXYXY": null
+    },
+    {
+      "id": "forest-edge-r39-139.995",
+      "eventId": "tree:forest-edge-r39-139.995",
+      "center": [
+        139.995,
+        272.405
+      ],
+      "sourceIndex": 4,
+      "flipX": false,
+      "alphaSupportPixels": 0,
+      "boundsCropXYXY": null
+    },
+    {
+      "id": "forest-edge-r26-144.685",
+      "eventId": "tree:forest-edge-r26-144.685",
+      "center": [
+        144.685,
+        254.43
+      ],
+      "sourceIndex": 1,
+      "flipX": true,
+      "alphaSupportPixels": 0,
+      "boundsCropXYXY": null
+    },
+    {
+      "id": "forest-edge-r39-140.845",
+      "eventId": "tree:forest-edge-r39-140.845",
+      "center": [
+        140.845,
+        272.405
+      ],
+      "sourceIndex": 6,
+      "flipX": true,
+      "alphaSupportPixels": 0,
+      "boundsCropXYXY": null
+    },
+    {
+      "id": "forest-edge-r14-118.925",
+      "eventId": "tree:forest-edge-r14-118.925",
+      "center": [
+        118.925,
+        237.905
+      ],
+      "sourceIndex": 0,
+      "flipX": false,
+      "alphaSupportPixels": 9271,
+      "boundsCropXYXY": [
+        1250,
+        571,
+        1369,
+        703
+      ]
+    },
+    {
+      "id": "forest-edge-r16-135.625",
+      "eventId": "tree:forest-edge-r16-135.625",
+      "center": [
+        135.625,
+        240.56
+      ],
+      "sourceIndex": 1,
+      "flipX": true,
+      "alphaSupportPixels": 0,
+      "boundsCropXYXY": null
+    },
+    {
+      "id": "forest-edge-sub-r40-x141110-y273750-dx+0-dy-20",
+      "eventId": "tree:forest-edge-sub-r40-x141110-y273750-dx+0-dy-20",
+      "center": [
+        141.04,
+        273.23
+      ],
+      "sourceIndex": 5,
+      "flipX": true,
+      "alphaSupportPixels": 0,
+      "boundsCropXYXY": null
+    },
+    {
+      "id": "forest-edge-sub-r28-x144330-y257190-dx+0-dy-12",
+      "eventId": "tree:forest-edge-sub-r28-x144330-y257190-dx+0-dy-12",
+      "center": [
+        144.225,
+        256.71
+      ],
+      "sourceIndex": 5,
+      "flipX": true,
+      "alphaSupportPixels": 0,
+      "boundsCropXYXY": null
+    },
+    {
+      "id": "forest-edge-sub-r24-x144790-y251670-dx+8-dy+20",
+      "eventId": "tree:forest-edge-sub-r24-x144790-y251670-dx+8-dy+20",
+      "center": [
+        144.97,
+        252.365
+      ],
+      "sourceIndex": 2,
+      "flipX": true,
+      "alphaSupportPixels": 0,
+      "boundsCropXYXY": null
+    },
+    {
+      "id": "forest-edge-sub-r32-x141570-y262710-dx+8-dy+20",
+      "eventId": "tree:forest-edge-sub-r32-x141570-y262710-dx+8-dy+20",
+      "center": [
+        141.855,
+        263.3
+      ],
+      "sourceIndex": 2,
+      "flipX": true,
+      "alphaSupportPixels": 0,
+      "boundsCropXYXY": null
+    }
+  ],
+  "acceptedLayoutRecipeSha256": "4405f222f027d61f1e96e4d4f6a7d8a15e4b1826bec3622ad6f3f3e5d6e4b93f",
+  "acceptedLayoutRecordIdentityAndTransformsExact": true,
+  "acceptedLayoutIdsOrderIndependentExact": true,
+  "approvedCrownIdsIntersectingCrop": [
+    "forest-edge-r15-121.490",
+    "forest-edge-r15-126.655",
+    "forest-edge-r16-124.055",
+    "forest-edge-r16-128.760",
+    "forest-edge-r15-120.215",
+    "forest-edge-r16-123.205",
+    "forest-edge-r16-127.700",
+    "forest-edge-r15-126.230",
+    "forest-edge-r14-118.925"
+  ],
+  "previewSceneSha256": "619c80c3084dda5acafc63ecc7a11b022398d07c24c205d6506a066a96393d63",
+  "reconstructedPreviewRgbDifferentPixels": 0,
+  "fullSceneGlobalContactOrder": "generate_forward_profile.event_sort_key = (contactY, sourceOriginX, sourceOriginY, sourceName/asset/id, eventId)",
+  "fullSceneCompositeSha256": "f5a212be3491f20ac13786705eec2f4ec1baf46f4e0f19f14637da1805f5cb68",
+  "interpretation": "The isolated B preview includes the nine north pieces and prior baseline trees/cliffs but not the separately approved 40 whole-layout F/M boundary crowns. Full output crop is exactly the alpha union of that reviewed B preview and the pinned 40 selected crowns; crown pixels overlapping preview alpha are expected and counted separately. RGB reconstruction first matches the frozen B scene, then composites all current objects using the actual shared contactY/source-origin sort."
+}

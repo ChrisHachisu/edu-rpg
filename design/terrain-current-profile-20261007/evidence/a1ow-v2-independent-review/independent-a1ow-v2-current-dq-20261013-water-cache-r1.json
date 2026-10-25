@@ -1,0 +1,257 @@
+{
+  "consumerIntegration": {
+    "consumerFunction": "verified_a1ow_v2_source_overlay",
+    "consumerPath": "/Users/chris/.codex/workspaces/edu-rpg-forward-20261007/design/terrain-current-profile-20261007/generate_forward_profile.py",
+    "currentPinnedReviewSha256": "64133089266cb06f9a58b663d67de61e55c68f4d2ef9074741296d7e083d204e",
+    "currentProofPath": "design/terrain-current-profile-20261007/evidence/a1ow-v2-independent-review/independent-a1ow-v2-current-dq-20261013-overlay18-source-review.json",
+    "currentProofSha256": "62d069ca3c46522bd28b51d33c2f5efc397ad800aa431f136b14cc7884dfd6d0",
+    "integrationStatus": "PRE-REBIND: generator still pins the earlier overlay18 source review; this water-cache source record is not yet referenced.",
+    "newProofTargetPath": "design/terrain-current-profile-20261007/evidence/a1ow-v2-independent-review/independent-a1ow-v2-current-dq-20261013-water-cache-r1.json",
+    "newProofIsNotConsumerPinned": true
+  },
+  "independentDqSourceEquivalence": {
+    "schema": "a1ow-dq-source-equivalence-v1",
+    "baselinePath": "/private/tmp/edu-rpg-build83-paint-audit-20261005/native-whole-rock-20261008/derived-release84-north/Build/Products/Release-iphonesimulator/App.app/public/dq-tiles.js",
+    "baselineSha256": "c3c231cb4634039aa838e70c728b2e6922645ce9a40b86705d6a48d4f5f40c1a",
+    "baselineTailByteOffset": 307731,
+    "updatedPath": "/Users/chris/.codex/workspaces/edu-rpg-forward-20261007/public/dq-tiles.js",
+    "updatedSha256": "dd5a654db7a2f630204725a4a218eceb7531912eb5d564e1a717d2cc15d1e32b",
+    "updatedTailByteOffset": 325541,
+    "changedDiffHunks": [
+      "@@ -763,0 +764,7 @@\n",
+      "@@ -783,2 +790,11 @@\n",
+      "@@ -856,0 +873,52 @@\n",
+      "@@ -1090 +1158,2 @@\n",
+      "@@ -1467 +1536,2 @@\n",
+      "@@ -1469 +1539 @@\n",
+      "@@ -1472 +1542 @@\n",
+      "@@ -1508,0 +1579,47 @@\n",
+      "@@ -1790,0 +1908,23 @@\n",
+      "@@ -1793 +1933 @@\n",
+      "@@ -2878,2 +3017,0 @@\n",
+      "@@ -2881,3 +3019,7 @@\n",
+      "@@ -2895,0 +3038,8 @@\n",
+      "@@ -2970,0 +3121,21 @@\n",
+      "@@ -2989,0 +3161,110 @@\n",
+      "@@ -2997,0 +3279 @@\n",
+      "@@ -3014 +3296 @@\n",
+      "@@ -3031,0 +3314 @@\n",
+      "@@ -3049 +3332,4 @@\n",
+      "@@ -3050,0 +3337 @@\n",
+      "@@ -3071,0 +3359 @@\n",
+      "@@ -7140 +7428 @@\n",
+      "@@ -7542 +7830 @@\n"
+    ],
+    "allChangedDiffHunksBeforeCollisionRuntimeAnchor": false,
+    "collisionRuntimeTailAnchor": "var A1M_FOOT=12;",
+    "collisionRuntimeTailAnchorLine": 4605,
+    "lastChangedOldSourceLine": null,
+    "collisionRuntimeTailBytes": 252252,
+    "collisionRuntimeTailSha256": "f542b7570cec71c7e347090d2cdab2a7cf8c844c5d8fd781bac12dbec5ceed44",
+    "currentCollisionRuntimeTailBytes": 252344,
+    "currentCollisionRuntimeTailSha256": "7974f54097586584fb1d3a7fd2d3a483055ec52d4e2f2699581f46ec15256be9",
+    "identicalCollisionRuntimeTail": false,
+    "postAnchorDelta": {
+      "exactAddedBytes": "a1aDropPlateWaterBacking(terrainState,scene); ",
+      "occurrences": 2,
+      "ownerFunctions": [
+        "terrain/map replacement cleanup",
+        "terrain exit cleanup"
+      ],
+      "normalizedTailByteIdenticalToBaseline": true,
+      "normalization": "remove only the two exact water-backing cleanup call strings plus their preceding added spaces from current tail"
+    },
+    "interpretation": "Perf candidate changes since the prior current-DQ proof are before the A1M_FOOT byte anchor: its post-anchor tail exactly matches the prior DQ. The current tail differs from the historical baseline only by the two previously reviewed water-backing cleanup calls; removing those exact calls restores byte identity. A1OW binary/header/body/support and baker/map proof identities remain pinned and decode successfully.",
+    "checks": {
+      "a1owBinarySha256MatchesContract": true,
+      "bakerShaMatchesContract": true,
+      "collisionTailExact": false,
+      "collisionRuntimeExactAfterWaterCleanupProjection": true,
+      "currentSourceMatchesUpdatedProof": true,
+      "dqHashMatchesFinalSource": true,
+      "mapProofShaMatches": true,
+      "originalA1owBodyReviewPass": true,
+      "decodedHeaderAndSupportMatchCurrentRecomputation": true,
+      "currentConsumerPinStateVerified": false,
+      "allChangedDiffHunksBeforeCollisionRuntimeAnchor": false
+    },
+    "perfDeltaSincePriorCurrentProof": {
+      "priorSha256": "04cb7bc6caae81a2e6cc61dbbf004a0876b5b9cd686f6f05ac16fd01b98e2c27",
+      "currentSha256": "11e5fd1eb1369544a779422aad607bdbdfbb7af3f2f708b7f0fc030f4929fbad",
+      "priorAnchorByteOffset": 321631,
+      "currentAnchorByteOffset": 325541,
+      "priorTailSha256": "7974f54097586584fb1d3a7fd2d3a483055ec52d4e2f2699581f46ec15256be9",
+      "currentTailSha256": "7974f54097586584fb1d3a7fd2d3a483055ec52d4e2f2699581f46ec15256be9",
+      "tailByteIdentical": true,
+      "lastChangedCurrentLine": 924,
+      "anchorCurrentLine": 4605,
+      "allChangesBeforeAnchor": true,
+      "interpretation": "Direct prior-current-to-current diff: renderer changes precede the A1M_FOOT anchor and post-anchor tails are byte-identical. The baseline-to-current hunks above additionally include the two already reviewed cleanup calls after the anchor."
+    },
+    "changedDiffHunksComparedAgainst": "Historical baseline DQ -> prior reviewed DQ SHA-256 11e5fd1e...; these are retained historical hunks and do not describe the current dd5a source delta.",
+    "currentConsumerPinStateMeaning": "The generator still pins the earlier overlay18 record before rebind. This new water-cache source record is not referenced by the generator.",
+    "historicalBaselineReview": {
+      "baselinePath": "/private/tmp/edu-rpg-build83-paint-audit-20261005/native-whole-rock-20261008/derived-release84-north/Build/Products/Release-iphonesimulator/App.app/public/dq-tiles.js",
+      "baselineSha256": "c3c231cb4634039aa838e70c728b2e6922645ce9a40b86705d6a48d4f5f40c1a",
+      "reviewedPriorCurrentSha256": "11e5fd1eb1369544a779422aad607bdbdfbb7af3f2f708b7f0fc030f4929fbad",
+      "retainedHunksDescribe": "historical baseline-to-11e5 source review only",
+      "currentCollisionTailSha256": "7974f54097586584fb1d3a7fd2d3a483055ec52d4e2f2699581f46ec15256be9",
+      "tailSameAsImmediatelyPriorReviewedDq": true,
+      "projectionToHistoricalBaseline": "removing the exact two a1aDropPlateWaterBacking cleanup call strings plus preceding added spaces restores historical baseline tail byte-for-byte"
+    },
+    "currentDqRecheck": {
+      "priorReviewedDqSha256": "11e5fd1eb1369544a779422aad607bdbdfbb7af3f2f708b7f0fc030f4929fbad",
+      "currentDqSha256": "dd5a654db7a2f630204725a4a218eceb7531912eb5d564e1a717d2cc15d1e32b",
+      "currentCollisionRuntimeTailAnchor": "var A1M_FOOT=12;",
+      "currentTailByteOffset": 337192,
+      "currentTailBytes": 252344,
+      "currentTailSha256": "7974f54097586584fb1d3a7fd2d3a483055ec52d4e2f2699581f46ec15256be9",
+      "priorTailSha256": "7974f54097586584fb1d3a7fd2d3a483055ec52d4e2f2699581f46ec15256be9",
+      "tailByteIdenticalToPriorReviewedDq": true,
+      "changedRegions": "Current loader/backing changes are before the A1M_FOOT collision-runtime anchor; the post-anchor tail is unchanged from the prior reviewed DQ.",
+      "note": "No generated terrain output, collision runtime, native run, or rendered-game acceptance is asserted."
+    }
+  },
+  "inputs": {
+    "bakerPath": "scripts/bake_act1_overworld_walk.mjs",
+    "bakerSha256": "8f172f77de9ccddebafd0d742a13fdc22d5258c652eacf5df5b0ba5d25c9eb2b",
+    "candidateRoot": "/Users/chris/.codex/workspaces/edu-rpg-forward-20261007",
+    "dqTilesSha256": "dd5a654db7a2f630204725a4a218eceb7531912eb5d564e1a717d2cc15d1e32b",
+    "frozenV1Sha256": "d87c6572cbf3012180a289196cfe5e7eee7c50dc86beb06a999fa491eeacfdf3",
+    "mapProofSha256": "a9fecf54db9de1f18a1f26c3f74b1bab9be230a247076e10580859e7074ab212",
+    "v2Path": "public/act1-overworld-walk.bin",
+    "v2Sha256": "00a520ae09089547ca4af4ef1077b84acdad98d4989de238f3ee30e28ad092c6"
+  },
+  "payload": {
+    "byteIdentical": true,
+    "bytes": 9688576,
+    "frozenV1BodySha256": "05be9638d04a692668c3a1c8b4bd3d809216bcede2e090a74a0712cb5467498c",
+    "v2BodySha256": "05be9638d04a692668c3a1c8b4bd3d809216bcede2e090a74a0712cb5467498c"
+  },
+  "schema": "independent-a1ow-v2-integration-review-v1",
+  "semantics": {
+    "sha256": "a6e6e7f228d040381539618d99f03e774a16dd7cadbaf8cc76a115934d324f67",
+    "sourceFunctionNames": [
+      "_h",
+      "vnoise",
+      "et",
+      "fieldAt",
+      "waterField",
+      "mountainField",
+      "buildMutedWater",
+      "owmSupportBounds",
+      "owmSupportEt",
+      "owmSupportInputBytes"
+    ],
+    "sourceSha256": "4ed7c44a096169e9f9354c4a568ffa3dab4ebfe9fb2fd5339ae8b31dce2bacdb"
+  },
+  "status": "PASS_A1OW_V2_IDENTITY_AND_BODY",
+  "support": {
+    "bounds": {
+      "x0": 0,
+      "x1": 208,
+      "y0": 173,
+      "y1": 399
+    },
+    "classByteCount": 47443,
+    "effectiveClassBytesSha256": "63d55c8dd75d6d946f5b56e3f58ce6a4ec287e6ccccddebed61329a70fb972d3",
+    "fnv32": 4271507709,
+    "mutedWater": "4-connected global components <= 12 suppressed",
+    "schema": "a1ow-effective-support-v1",
+    "sha256": "eeaf65c08cda239ea8755a3af0026ed0ca61e19a2683cafc10610b5c4027914a"
+  },
+  "v2Header": {
+    "blocks": 4094,
+    "exactLength": 9688672,
+    "far": 255,
+    "headerBytes": 96,
+    "magic": "A1OW",
+    "mapCells": [
+      320,
+      400
+    ],
+    "pixelsPerCell": 48,
+    "reservedBytesZero": true,
+    "version": 2
+  },
+  "reissueProvenance": {
+    "priorReviewPath": "design/terrain-current-profile-20261007/evidence/a1ow-v2-independent-review/independent-a1ow-v2-current-dq-20261013-overlay18-source-review.json",
+    "priorReviewSha256": "64133089266cb06f9a58b663d67de61e55c68f4d2ef9074741296d7e083d204e",
+    "retainedHistoricalGenerationProof": true,
+    "newFullGenerationPerformed": false,
+    "currentConsumerReviewPath": "NOT YET REBOUND: this record is evidence for root-controlled source copy/pin update.",
+    "currentConsumerPrePinState": "Generator still pins the prior overlay18 source review SHA 64133089266cb06f9a58b663d67de61e55c68f4d2ef9074741296d7e083d204e; no gate or hook was bypassed.",
+    "currentInputValidation": "Rehashed current public/dist/iOS DQ twins, A1OW v2 binary, baker, and baked-final-map proof. Rechecked strict A1OW decoder/header/body/support identities and semantic function identity. No generated output or native acceptance is asserted."
+  },
+  "metadataRebindContext": {
+    "sourceOutputReceiptPath": "/Users/chris/.codex/workspaces/edu-rpg-forward-20261007/design/terrain-current-profile-20261007/evidence/output-receipt.json",
+    "sourceOutputReceiptSha256": "32769af3bececee5423d77e2314c61edee59ae2fa43593e9eee972a396477599",
+    "sourceGeneratedOutputInventoryRows": 493,
+    "sourceGeneratorSha256": "95187a9c632e0b6678c04e75614b28f1268dbed9f79f4dfcb4944351767e8af1",
+    "rebindState": "PRE-REBIND; review artifact is not referenced by final metadata/descriptor."
+  },
+  "scopeLimitations": {
+    "overlayAcceptance": "The current source overlay test/guard covers all 18 authored removals, including the three east-edge fins, plus the exact whole-main addition. The three new source omissions are identity-bound here; output validation for this overlay must be reviewed separately.",
+    "renderedOrNativeAcceptance": "NOT ESTABLISHED by this source/A1OW identity review. No generated-output or native/game runtime acceptance is claimed.",
+    "generation": "This record rechecks current DQ source identity, water loader fallback/recovery behavior, and unchanged A1OW body/support semantics only. It does not validate output for the water/terrain changes or establish native collision/rendering."
+  },
+  "reviewedCombinedInputs": {
+    "generatorSha256": "a8498e945043c6c0d314cc660092f880826fb92d0406a5c88ec3bd4919b33297",
+    "generatorSha256Meaning": "Current source snapshot before root-controlled review-path/hash rebind; that pin update changes the generator hash.",
+    "overlaySha256": "ddcd827c2343772ea2b2b7391ea123acd16153ee45dfde5ca87a3d28a93b104d",
+    "focusedTestSha256": "cc5113ec9f8e507e205340fbb03b660594ecaddc1dbb995c5e077a84af0615c5",
+    "focusedTestResult": "PASS: 169 canonical placements; all 18 removals are covered by the exact authored source guard; current route/hero guards and cache-mask checks pass; the whole-main addition remains exact.",
+    "staticScopeOnly": true,
+    "dqTilesSha256": "dd5a654db7a2f630204725a4a218eceb7531912eb5d564e1a717d2cc15d1e32b",
+    "waterLoaderTestPath": "scripts/test_act1_water_r2_loader.cjs",
+    "waterLoaderTestSha256": "24584b54f49778f0edd8a547cd6f2bb5f228bfbd4ef9974246d71c7e01b16e3d",
+    "waterLoaderTestResult": "PASS: production 32ppc backing begins with analytic pixels while loading, then rerasterizes with R2 pixels after onload; stale callbacks ignored; retries bounded to 3 with 1s/2s backoff; asset SHA identity, texture replacement and cleanup verified.",
+    "combinedFocusedTests": "PASS: 19/19 across water loader, terrain field cache, and opaque terrain skip suites; node --check passes for all three DQ twins and loader test harness."
+  },
+  "overlayDeltaReview": {
+    "priorOverlaySha256": "01d136f847244663079bc01641b76f91c377c6f3699bf60f5dbbb9b286aa1ce2",
+    "currentOverlaySha256": "ddcd827c2343772ea2b2b7391ea123acd16153ee45dfde5ca87a3d28a93b104d",
+    "currentOverlayPath": "design/terrain-current-profile-20261007/placements/cliff-current-feedback-overlay-v1.json",
+    "priorReviewedRemovalCount": 15,
+    "currentRemovalCount": 18,
+    "addedRemovalIdentities": [
+      "companion|companion-tall-fin|163,297",
+      "companion|companion-tall-fin|163,357",
+      "companion|companion-tall-fin|163,361"
+    ],
+    "otherOverlayContract": "Existing 15 removal identities, source pins, composition policy, and exact whole-main addition remain as previously reviewed; current focused guard test passes for the complete 18-removal set.",
+    "unchangedA1owInputs": {
+      "dqTilesSha256": "11e5fd1eb1369544a779422aad607bdbdfbb7af3f2f708b7f0fc030f4929fbad",
+      "v2Sha256": "00a520ae09089547ca4af4ef1077b84acdad98d4989de238f3ee30e28ad092c6",
+      "bakerSha256": "8f172f77de9ccddebafd0d742a13fdc22d5258c652eacf5df5b0ba5d25c9eb2b",
+      "mapProofSha256": "a9fecf54db9de1f18a1f26c3f74b1bab9be230a247076e10580859e7074ab212",
+      "allMatchPriorRecord": true,
+      "decodedA1owHeaderBodyAndSupportMatchPriorRecord": true
+    },
+    "conclusion": "The three added art omissions change the cliff overlay only. Current DQ bytes, A1OW v2 binary, baker, and baked-map proof equal the previously reviewed identities; the prior exact A1OW body/support and DQ-tail proof therefore remains applicable by identity.",
+    "newOverlayGenerationReviewed": false,
+    "nativeOrRenderedAcceptance": false
+  },
+  "recordProvenance": {
+    "reissueKind": "source-only overlay identity refresh; preserve rather than rewrite prior A1OW body/DQ proof",
+    "basisRecordPath": "/Users/chris/.codex/workspaces/edu-rpg-forward-20261007/design/terrain-current-profile-20261007/evidence/a1ow-v2-independent-review/independent-a1ow-v2-current-dq-20261013-final-r2.json",
+    "basisRecordSha256": "62d069ca3c46522bd28b51d33c2f5efc397ad800aa431f136b14cc7884dfd6d0",
+    "reviewerScope": "independently check exact three-removal delta, focused guard result, and unchanged DQ/A1OW/baker/map-proof identities",
+    "outputsAndNative": "not reviewed by this record"
+  },
+  "currentSourceReview": {
+    "sourceSha256": "dd5a654db7a2f630204725a4a218eceb7531912eb5d564e1a717d2cc15d1e32b",
+    "twins": [
+      "public/dq-tiles.js",
+      "dist/dq-tiles.js",
+      "ios/App/App/public/dq-tiles.js"
+    ],
+    "twinsByteIdentical": true,
+    "waterR2ProductionPpc": 32,
+    "productionCallerFallbackAfterLoadTest": "scripts/test_act1_water_r2_loader.cjs",
+    "loaderAndCacheTests": "node --test scripts/test_act1_water_r2_loader.cjs scripts/test_terrain_opaque_skip.cjs scripts/test_terrain_field_cache.cjs",
+    "testResult": "19/19 passed",
+    "syntax": "node --check passed for all three DQ twins and the water-loader test harness",
+    "reviewScope": "loader identity/readiness, retry/error/loading fallbacks, stale callback rejection, texture replacement cleanup, production 32ppc analytic-to-R2 backing refresh, and unchanged A1OW semantics/post-anchor collision tail"
+  }
+}

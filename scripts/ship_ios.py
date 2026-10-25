@@ -11,32 +11,47 @@ import sys
 
 
 def _ship_support(root: Path) -> Path:
-    """Where the push-to-testflight support scripts live, repo copy FIRST.
+    """Resolve the required installed push-to-testflight toolkit.
 
-    They used to be read only from ~/.agents/skills/push-to-testflight, which is not in any repo
-    and not covered by the ~/.claude sync whitelist. Migrating to a second Mac on 2026-08-24 found
-    both consequences at once: `verify-delivery.py` did not exist there at all, and -- worse --
-    ~/.agents and ~/.claude/skills had silently DIVERGED on the original machine, with ~/.agents
-    holding a newer `assign-beta-group.py` (5114 B, 2026-08-22) than ~/.claude/skills (4211 B,
-    2026-06-09). Anything that "helpfully" pointed ~/.agents at the ~/.claude copy therefore wired
-    up the STALE assigner -- precisely the component whose 2026-08-22 fix exists because builds 56
-    and 57 shipped undeliverable.
-
-    Keeping the scripts in the repo makes the ship path travel with the checkout, so a fresh clone
-    plus the (correctly gitignored) signing key is enough. The ~/.agents location is still honoured
-    as a fallback so the original machine keeps working unchanged.
+    The checkout-local copy is not authoritative for delivery verification or group
+    assignment. Fail before entering the release lane if the installed toolkit is
+    incomplete; never fall back to a potentially stale repo copy.
     """
-    repo = root / "scripts/ship-support"
-    home = Path.home() / ".agents/skills/push-to-testflight"
-    return repo if (repo / "verify-delivery.py").is_file() else home
+    support = Path.home() / ".agents/skills/push-to-testflight"
+    required = ("SKILL.md", "verify-delivery.py", "assign-beta-group.py")
+    missing = [name for name in required if not (support / name).is_file()]
+    if missing:
+        raise SystemExit(
+            f"required push-to-testflight toolkit is missing {', '.join(missing)}: {support}"
+        )
+    return support
 
 
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--app-dir", required=True)
+    parser.add_argument("--terrain-profile", choices=("historical", "act1-forward-20261007-v1"), default="historical")
+    parser.add_argument("--release-identity")
+    parser.add_argument("--identity-sha256")
+    parser.add_argument("--terrain-evidence")
+    parser.add_argument("--terrain-evidence-sha256")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--resume", action="store_true")
     args = parser.parse_args()
+
+    if bool(args.release_identity) != bool(args.identity_sha256):
+        raise SystemExit("--release-identity and --identity-sha256 must be supplied together")
+    if bool(args.terrain_evidence) != bool(args.terrain_evidence_sha256):
+        raise SystemExit("--terrain-evidence and --terrain-evidence-sha256 must be supplied together")
+    if args.terrain_profile == "act1-forward-20261007-v1":
+        if not args.release_identity or not args.terrain_evidence:
+            raise SystemExit("forward shipping requires a sealed candidate identity and externally pinned terrain evidence")
+    elif args.terrain_evidence:
+        raise SystemExit("--terrain-evidence is only valid for the forward terrain profile")
+    if args.release_identity and not Path(args.release_identity).is_file():
+        raise SystemExit("reviewed release identity file does not exist")
+    if not args.dry_run and not args.release_identity:
+        raise SystemExit("TestFlight upload requires --release-identity and its pinned --identity-sha256")
 
     root = Path(args.app_dir).resolve()
     owner = Path(__file__).resolve().parent.parent
@@ -55,10 +70,21 @@ def main() -> int:
     dirty = bool(subprocess.check_output(["git", "status", "--porcelain"], cwd=root, text=True).strip())
     bundle = root / "dist/assets/index-BhoGQRaA.js"
     artifact_sha256 = hashlib.sha256(bundle.read_bytes()).hexdigest()
-    source_record = f"tree={root}\nbranch={branch}\nhead={head}\ndirty={str(dirty).lower()}\nartifact_sha256={artifact_sha256}\n"
+    identity_sha = args.identity_sha256 or "(dry-run-no-identity)"
+    source_record = (f"tree={root}\nbranch={branch}\nhead={head}\ndirty={str(dirty).lower()}\n"
+                     f"terrain_profile={args.terrain_profile}\nreviewed_identity_sha256={identity_sha}\n"
+                     f"artifact_sha256={artifact_sha256}\n")
     print(source_record, end="")
 
-    subprocess.run(["bash", str(root / "scripts/ship-gate.sh"), str(root)], check=True)
+    gate_command = ["bash", str(root / "scripts/ship-gate.sh"), str(root),
+                    "--terrain-profile", args.terrain_profile]
+    if args.release_identity:
+        gate_command += ["--release-identity", str(Path(args.release_identity).resolve()),
+                         "--identity-sha256", args.identity_sha256]
+    if args.terrain_evidence:
+        gate_command += ["--terrain-evidence", str(Path(args.terrain_evidence).resolve()),
+                         "--terrain-evidence-sha256", args.terrain_evidence_sha256]
+    subprocess.run(gate_command, check=True)
     print(f"SHIP_TREE={root}")
     print(f"SHIP_SKILL={skill}")
     if args.dry_run:
@@ -72,6 +98,7 @@ def main() -> int:
     env = os.environ.copy()
     env.update({
         "SHIP_APP_DIR": str(root),
+        "QOK_TERRAIN_PROFILE": args.terrain_profile,
         "LANG": "en_US.UTF-8",
         "LC_ALL": "en_US.UTF-8",
         "SHIP_IOS_NO_SLACK": env.get("SHIP_IOS_NO_SLACK", "1"),
@@ -84,6 +111,12 @@ def main() -> int:
         "FASTLANE_XCODEBUILD_SETTINGS_TIMEOUT": env.get("FASTLANE_XCODEBUILD_SETTINGS_TIMEOUT", "180"),
         "FASTLANE_XCODEBUILD_SETTINGS_RETRIES": env.get("FASTLANE_XCODEBUILD_SETTINGS_RETRIES", "6"),
     })
+    if args.release_identity:
+        env["EDURPG_REVIEWED_CANDIDATE_IDENTITY"] = str(Path(args.release_identity).resolve())
+        env["EDURPG_REVIEWED_CANDIDATE_IDENTITY_SHA256"] = args.identity_sha256
+    if args.terrain_evidence:
+        env["EDURPG_REVIEWED_TERRAIN_EVIDENCE"] = str(Path(args.terrain_evidence).resolve())
+        env["EDURPG_REVIEWED_TERRAIN_EVIDENCE_SHA256"] = args.terrain_evidence_sha256
     subprocess.run(["fastlane", "beta"], cwd=root / "ios/App", env=env, check=True)
     build_file = root / "ios/build/last-testflight-build.txt"
     if not build_file.is_file():

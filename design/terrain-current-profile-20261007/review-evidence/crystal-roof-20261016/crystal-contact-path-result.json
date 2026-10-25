@@ -1,0 +1,13 @@
+{
+  "bothHeroSoleRows": "pass",
+  "bothSides": "blocked",
+  "continuousSouthSweep": "clear",
+  "continuousSouthSweepSamples": 101,
+  "doorAdapter": "149,279\u2192149,278\u2192crystalCave",
+  "entryCell149x278": "free",
+  "exitCell149x279": "free",
+  "exteriorGrass": "free",
+  "productionGate": "a1mFree",
+  "roofPose": "blocked",
+  "southApproach": "free"
+}

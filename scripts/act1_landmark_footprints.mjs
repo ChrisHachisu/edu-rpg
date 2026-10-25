@@ -90,8 +90,31 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const MANIFEST = resolve(ROOT, 'public/act1-hifi/landmarks/landmarks.json');
-const SPRITE_DIR = resolve(ROOT, 'public/act1-hifi/landmarks');
+// Collision geometry is intentionally derived from the immutable r1 artwork authority. Decorative
+// r2 alpha/matte cleanup changes how landmarks render but must not silently open or block movement
+// cells. The current public/r2 sprites remain visual-only; the original, hash-pinned r1 sprites are
+// used only to reproduce the already-shipped collision footprint.
+export const COLLISION_RUNTIME = resolve(ROOT,
+  'design/review/overworld-art-blueprint/act-by-act/act1/runtime-v3/'
+  + 'act1-painted-overworld-r1/runtime');
+export const COLLISION_RUNTIME_MANIFEST_SHA256 =
+  '69e9d1a8fb2b948bf13a740b7f974675f6722d41cd85a2d77d9dff25c28773c6';
+export const COLLISION_LANDMARK_MANIFEST_SHA256 =
+  '0b7e43f7ba532dd7079c2d90a1203bb7c9341a43b041993a3d9a0bcf24bc9437';
+export const COLLISION_SPRITE_SHA256 = Object.freeze({
+  'coastal-reef.png': 'a96daa94ee31de8ec605c90f671c76db33366d648469fb46314542bed7d9ade3',
+  'crystal-cave.png': '7a31cd824b71c2b1911a06c7cc71b9982182a2661c6d14ee596472d79b28e76b',
+  'darkfang.png': '69ddb0f09c8021f9e81215bf6e100c9e287a007941926195e6973024322d4c76',
+  'greenhollow.png': 'f619d3166d68edbc9fdb55e735e767abde444b6d055b1ba60612d6a075e4997b',
+  'millbrook.png': '04e2c443be7d49b31ee02b38381f96aad90a29684e027252e9c02a16cb9b3406',
+  'misty-grotto.png': 'db70e0cb5ab15e88ced85a1979e72fbbb1a61f7f13386b3cc40e6555f618140e',
+  'port-sapphire.png': '9708ba46eb3f3e065cae1ea2d044ece8e07d23e84531b441747da69b55eb8799',
+  'sunken-cellar.png': '863d32de365c3cc078392d878fb6d4c1efe4a77b126b0f72a21365ed14883507',
+  'whispering-woods.png': 'a06eea6ab98c7c630119db1488dfea912a40bc69150ac16e387b4e696aa5f047',
+});
+const MANIFEST = resolve(COLLISION_RUNTIME, 'landmarks/landmarks.json');
+const SPRITE_DIR = resolve(COLLISION_RUNTIME, 'landmarks');
+const sha256File = path => createHash('sha256').update(readFileSync(path)).digest('hex');
 
 // public/dq-tiles.js:3161 -- "world px the hero's GROUND CONTACT POINT keeps clear of rock".
 export const HERO_FOOT_PX = 12;
@@ -218,6 +241,14 @@ function erodeByHeroFoot(sprite) {
 }
 
 export function loadLandmarkManifest() {
+  assert(sha256File(resolve(COLLISION_RUNTIME, 'manifest.json')) === COLLISION_RUNTIME_MANIFEST_SHA256,
+    'collision-only r1 runtime manifest identity changed');
+  assert(sha256File(MANIFEST) === COLLISION_LANDMARK_MANIFEST_SHA256,
+    'collision-only r1 landmark manifest identity changed');
+  for (const [filename, expected] of Object.entries(COLLISION_SPRITE_SHA256)) {
+    assert(sha256File(resolve(SPRITE_DIR, filename)) === expected,
+      `collision-only r1 sprite identity changed: ${filename}`);
+  }
   const manifest = JSON.parse(readFileSync(MANIFEST, 'utf8'));
   assert(Array.isArray(manifest.landmarks) && manifest.landmarks.length > 0,
     'landmarks.json carries no landmarks');

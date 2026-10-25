@@ -1,0 +1,2230 @@
+{
+  "kind": "act1-mountain-full-resolution-stage-v1",
+  "candidateReadOnly": "/private/tmp/edu-rpg-terrain-r9-20261001",
+  "authorities": {
+    "composerScriptSha256": "667817e6043d2f74c15dd97bca0931c14316a02c269f8707f4d44af8f78df23d",
+    "activeManifestSha256": "3b932bdcd019b36ef16318333537c3f5553754a1cfded4ad33149269b5a49e3a",
+    "ownerTerrainSha256": "14ace76ef6d8051e711e770a55b1e85219ceacacc998b486d0bff7cbae145e8a",
+    "r6SolidMaskSha256": "f9f4407187cd003668da4df9b823c01bb96369f2cfe20b252ebb7dd6ab31b9e5",
+    "forestStageManifestSha256": "ef294637dfbbc5e8d7b6aa28e03d7845a18aa3ba29802c3f5ed68f4d34c35ae5",
+    "mainAtlasSha256": "4ad26ea3e7d38f4a768dd869a9a3c1db86812891c5911b461ac573af72684b1e",
+    "companionAtlasSha256": "b2701dd847e7d1df26c8488aa95877b57682be732a7bdc10d00fa12363613a04",
+    "selectedLayoutSha256": "8f5f0ece745dc4d9378c24e21c1fc2992d8ca03cee842aeeac444daf5eda0fa7",
+    "authoredKeepoutMetadata": {
+      "kind": "act1-current-runtime-start-exit-approach-whole-hero-keepout-v2",
+      "boundsInclusive": [
+        16,
+        218,
+        163,
+        399
+      ],
+      "pixelsPerCell": 32,
+      "liveApiRevision": 7,
+      "liveAuthorityPath": "/private/tmp/edu-rpg-terrain-r9-20261001/public/act1-world-map.js",
+      "liveAuthoritySha256": "f1ea99546b799b50cec7d6fd40b1fae2ad53669fae22afaebe3760f225d12cad",
+      "spawnPolicyAuthorityPath": "/private/tmp/edu-rpg-terrain-r9-20261001/public/dq-tiles.js",
+      "spawnPolicyAuthoritySha256": "286b5b527a5aac1a89b5da532bc703969249cfbc6c80a226f8d9683ba4a300c8",
+      "activeManifestSha256": "3b932bdcd019b36ef16318333537c3f5553754a1cfded4ad33149269b5a49e3a",
+      "heroSourceSha256": {
+        "g3": "070a8a452c3dda775bd6c8593a66d57a5a13d97b9fb33378ea5b2bb0e1fded3c",
+        "male": "88cbed8f9d707b216ada01e108eedd5822c6bcfc69c8dd22af2457f231dc0976"
+      },
+      "runtimeLandmarkCount": 8,
+      "liveExits": [
+        {
+          "mapId": "greenhollow",
+          "x": 69,
+          "y": 256
+        },
+        {
+          "mapId": "millbrook",
+          "x": 39,
+          "y": 345
+        },
+        {
+          "mapId": "portSapphire",
+          "x": 133,
+          "y": 348
+        },
+        {
+          "mapId": "sunkenCellar",
+          "x": 30,
+          "y": 275
+        },
+        {
+          "mapId": "whisperingWoodsCave",
+          "x": 101,
+          "y": 232
+        },
+        {
+          "mapId": "coastalReef",
+          "x": 145,
+          "y": 372
+        },
+        {
+          "mapId": "mistyGrotto",
+          "x": 96,
+          "y": 360
+        },
+        {
+          "mapId": "crystalCave",
+          "x": 149,
+          "y": 279
+        }
+      ],
+      "validWalkableDoorNeighborApproaches": [
+        {
+          "mapId": "greenhollow",
+          "x": 69,
+          "y": 256
+        },
+        {
+          "mapId": "millbrook",
+          "x": 39,
+          "y": 345
+        },
+        {
+          "mapId": "portSapphire",
+          "x": 133,
+          "y": 348
+        },
+        {
+          "mapId": "sunkenCellar",
+          "x": 30,
+          "y": 275
+        },
+        {
+          "mapId": "whisperingWoodsCave",
+          "x": 101,
+          "y": 232
+        },
+        {
+          "mapId": "coastalReef",
+          "x": 145,
+          "y": 372
+        },
+        {
+          "mapId": "mistyGrotto",
+          "x": 96,
+          "y": 360
+        },
+        {
+          "mapId": "crystalCave",
+          "x": 149,
+          "y": 277
+        },
+        {
+          "mapId": "crystalCave",
+          "x": 150,
+          "y": 278
+        },
+        {
+          "mapId": "crystalCave",
+          "x": 149,
+          "y": 279
+        },
+        {
+          "mapId": "crystalCave",
+          "x": 148,
+          "y": 278
+        }
+      ],
+      "newGameStart": {
+        "source": "current Greenhollow live exit",
+        "cell": [
+          69,
+          256
+        ]
+      },
+      "manifestLastResortFallback": {
+        "cell": [
+          130,
+          290
+        ],
+        "status": "guarded only because dq-tiles.js explicitly uses manifest startCell when live landmark table is unavailable"
+      },
+      "savedOverworldResumePolicy": "Saved overworld positions are dynamic resume candidates, not permanent map-wide exclusions; final full-hero collision clearance must validate each candidate.",
+      "routePolicy": "No permanent road/route cutouts. Current manifest art-space points and semanticCells are obsolete fixtures; any BFS witness is verification evidence only.",
+      "sampling": "All alpha>8 frames from both selectable 64x64 hero sheets, mapped at source-approved world scale, stamped at each current live exit, each seedWalkableAt-valid cardinal neighbor of a live door, current new-game exit, and actual manifest last-resort fallback; includes one art-pixel cardinal movement margin.",
+      "counts": {
+        "protectedPixels": 26996,
+        "newGameStartPixels": 2317,
+        "fallbackPixels": 2317,
+        "exitPixels": 18536,
+        "validApproachPixels": 24679,
+        "obsoleteRoutePixels": 0,
+        "validApproachCount": 11
+      },
+      "genericRecoveryCandidatesExcluded": 299
+    }
+  },
+  "coordinateContract": {
+    "boundsInclusive": [
+      16,
+      218,
+      163,
+      399
+    ],
+    "pixelsPerCell": 32,
+    "worldRasterPx": [
+      4736,
+      5824
+    ],
+    "atlasNormalization": {
+      "main": 0.5,
+      "companion": 0.125
+    },
+    "alphaThreshold": 128,
+    "placements": 194,
+    "placementTransform": "whole source crop at fixed atlas group normalization; one global binary-alpha threshold of >=128 per normalized source object; no rotation/mirror/instance scale; chunks are only adjacent delivery crops",
+    "assetComponents": [
+      {
+        "name": "narrow-notch-buttress",
+        "group": "main",
+        "sourcePath": "/Users/chris/.codex/artifacts/edu-rpg-r9-implementation-20261001/world-integration-20261003/mountain-assets/act1-cliff-kit-imagegen-v1.png",
+        "sourceCrop": [
+          156,
+          19,
+          441,
+          581
+        ],
+        "sourceSizePx": [
+          285,
+          562
+        ],
+        "normalizedSizePx": [
+          142,
+          281
+        ],
+        "normalizedCellFootprint": [
+          5,
+          9
+        ],
+        "fixedGroupNormalization": 0.5,
+        "alphaOccupiedCells": 35,
+        "requestedNominalSourceSizePx": [
+          285,
+          562
+        ],
+        "actualToRequestedScaleRatio": [
+          1.0,
+          1.0
+        ],
+        "legalWholePlacementsWithCombinedKit": 2624
+      },
+      {
+        "name": "broad-joining-mass-A",
+        "group": "main",
+        "sourcePath": "/Users/chris/.codex/artifacts/edu-rpg-r9-implementation-20261001/world-integration-20261003/mountain-assets/act1-cliff-kit-imagegen-v1.png",
+        "sourceCrop": [
+          565,
+          7,
+          1236,
+          623
+        ],
+        "sourceSizePx": [
+          671,
+          616
+        ],
+        "normalizedSizePx": [
+          336,
+          308
+        ],
+        "normalizedCellFootprint": [
+          11,
+          10
+        ],
+        "fixedGroupNormalization": 0.5,
+        "alphaOccupiedCells": 83,
+        "requestedNominalSourceSizePx": [
+          671,
+          616
+        ],
+        "actualToRequestedScaleRatio": [
+          1.0,
+          1.0
+        ],
+        "legalWholePlacementsWithCombinedKit": 1578
+      },
+      {
+        "name": "broad-joining-mass-B",
+        "group": "main",
+        "sourcePath": "/Users/chris/.codex/artifacts/edu-rpg-r9-implementation-20261001/world-integration-20261003/mountain-assets/act1-cliff-kit-imagegen-v1.png",
+        "sourceCrop": [
+          15,
+          600,
+          583,
+          1218
+        ],
+        "sourceSizePx": [
+          568,
+          618
+        ],
+        "normalizedSizePx": [
+          284,
+          309
+        ],
+        "normalizedCellFootprint": [
+          9,
+          10
+        ],
+        "fixedGroupNormalization": 0.5,
+        "alphaOccupiedCells": 78,
+        "requestedNominalSourceSizePx": [
+          568,
+          618
+        ],
+        "actualToRequestedScaleRatio": [
+          1.0,
+          1.0
+        ],
+        "legalWholePlacementsWithCombinedKit": 1882
+      },
+      {
+        "name": "interior-rock-panel",
+        "group": "main",
+        "sourcePath": "/Users/chris/.codex/artifacts/edu-rpg-r9-implementation-20261001/world-integration-20261003/mountain-assets/act1-cliff-kit-imagegen-v1.png",
+        "sourceCrop": [
+          597,
+          651,
+          1241,
+          1207
+        ],
+        "sourceSizePx": [
+          644,
+          556
+        ],
+        "normalizedSizePx": [
+          322,
+          278
+        ],
+        "normalizedCellFootprint": [
+          11,
+          9
+        ],
+        "fixedGroupNormalization": 0.5,
+        "alphaOccupiedCells": 93,
+        "requestedNominalSourceSizePx": [
+          644,
+          556
+        ],
+        "actualToRequestedScaleRatio": [
+          1.0,
+          1.0
+        ],
+        "legalWholePlacementsWithCombinedKit": 1532
+      },
+      {
+        "name": "companion-tall-fin",
+        "group": "companion",
+        "sourcePath": "/Users/chris/.codex/artifacts/edu-rpg-r9-implementation-20261001/world-integration-20261003/mountain/companion-cliff-kit-imagegen-v2.png",
+        "sourceCrop": [
+          17,
+          219,
+          258,
+          1103
+        ],
+        "sourceSizePx": [
+          241,
+          884
+        ],
+        "normalizedSizePx": [
+          30,
+          110
+        ],
+        "normalizedCellFootprint": [
+          1,
+          4
+        ],
+        "fixedGroupNormalization": 0.125,
+        "alphaOccupiedCells": 4,
+        "requestedNominalSourceSizePx": [
+          64,
+          256
+        ],
+        "actualToRequestedScaleRatio": [
+          3.77,
+          3.45
+        ],
+        "legalWholePlacementsWithCombinedKit": 4020
+      },
+      {
+        "name": "companion-narrow-buttress",
+        "group": "companion",
+        "sourcePath": "/Users/chris/.codex/artifacts/edu-rpg-r9-implementation-20261001/world-integration-20261003/mountain/companion-cliff-kit-imagegen-v2.png",
+        "sourceCrop": [
+          292,
+          137,
+          648,
+          1110
+        ],
+        "sourceSizePx": [
+          356,
+          973
+        ],
+        "normalizedSizePx": [
+          44,
+          122
+        ],
+        "normalizedCellFootprint": [
+          2,
+          4
+        ],
+        "fixedGroupNormalization": 0.125,
+        "alphaOccupiedCells": 8,
+        "requestedNominalSourceSizePx": [
+          160,
+          384
+        ],
+        "actualToRequestedScaleRatio": [
+          2.23,
+          2.53
+        ],
+        "legalWholePlacementsWithCombinedKit": 3811
+      },
+      {
+        "name": "companion-low-shoulder",
+        "group": "companion",
+        "sourcePath": "/Users/chris/.codex/artifacts/edu-rpg-r9-implementation-20261001/world-integration-20261003/mountain/companion-cliff-kit-imagegen-v2.png",
+        "sourceCrop": [
+          670,
+          645,
+          1239,
+          1071
+        ],
+        "sourceSizePx": [
+          569,
+          426
+        ],
+        "normalizedSizePx": [
+          71,
+          53
+        ],
+        "normalizedCellFootprint": [
+          3,
+          2
+        ],
+        "fixedGroupNormalization": 0.125,
+        "alphaOccupiedCells": 6,
+        "requestedNominalSourceSizePx": [
+          320,
+          192
+        ],
+        "actualToRequestedScaleRatio": [
+          1.78,
+          2.22
+        ],
+        "legalWholePlacementsWithCombinedKit": 3920
+      }
+    ]
+  },
+  "stageComposition": {
+    "affectedChunkCount": 41,
+    "chunks": [
+      {
+        "id": "c1-r0",
+        "baseReplacementPixelCount": 1142,
+        "baseReplacementPatch": "patches/base-replacement/c1-r0.png",
+        "baseReplacementMask": "patches/base-replacement-mask/c1-r0.png",
+        "footGroundPairPixelCount": 958,
+        "exposedEdgeGroundPixelCount": 958,
+        "canopyCoveredForestEdgePixelCount": 0,
+        "footGroundPairPatch": "patches/foot-ground-pair/c1-r0.png",
+        "footGroundPairMask": "patches/foot-ground-pair-mask/c1-r0.png",
+        "liveGuardGroundPixelCount": 0,
+        "protectedGrayLiveGuardCandidatePixels": 0,
+        "protectedGrayLiveGuardCandidateMask": "patches/protected-gray-live-guard-mask/c1-r0.png",
+        "cleanBase": "chunks/base/c1-r0.png",
+        "mountainOverlay": "chunks/mountain-alpha/c1-r0.png",
+        "inputLatestForestBaseSha256": "464f52c3c41905c634be4af0ade0c5644a1e1be5a1aaef242589019cbf99f49a",
+        "inputLatestForestLayerSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+        "cleanBaseSha256": "33e63bdc85373319695c330088b850b2c5db7aacb830f5db619d7780df94b999",
+        "mountainOverlaySha256": "7e9350c8eca69b206590c655cc425c14518b8038c4f319a4cebee02301d76e1c"
+      },
+      {
+        "id": "c2-r0",
+        "baseReplacementPixelCount": 65990,
+        "baseReplacementPatch": "patches/base-replacement/c2-r0.png",
+        "baseReplacementMask": "patches/base-replacement-mask/c2-r0.png",
+        "footGroundPairPixelCount": 7450,
+        "exposedEdgeGroundPixelCount": 7450,
+        "canopyCoveredForestEdgePixelCount": 0,
+        "footGroundPairPatch": "patches/foot-ground-pair/c2-r0.png",
+        "footGroundPairMask": "patches/foot-ground-pair-mask/c2-r0.png",
+        "liveGuardGroundPixelCount": 0,
+        "protectedGrayLiveGuardCandidatePixels": 0,
+        "protectedGrayLiveGuardCandidateMask": "patches/protected-gray-live-guard-mask/c2-r0.png",
+        "cleanBase": "chunks/base/c2-r0.png",
+        "mountainOverlay": "chunks/mountain-alpha/c2-r0.png",
+        "inputLatestForestBaseSha256": "e95d4b7865a8c12d0c0aba04196432f476c473ab1f29d8197343bb5c046bf22a",
+        "inputLatestForestLayerSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+        "cleanBaseSha256": "634fa08ee4b3f75abb2fc4c9de2327e783bcf0b357fbcae7cb72f9ca06a6efd3",
+        "mountainOverlaySha256": "e3e99a3cc5ef150eeb7099f557674d44871d9b250427cb63b94b22519a8b0a6d"
+      },
+      {
+        "id": "c3-r0",
+        "baseReplacementPixelCount": 175955,
+        "baseReplacementPatch": "patches/base-replacement/c3-r0.png",
+        "baseReplacementMask": "patches/base-replacement-mask/c3-r0.png",
+        "footGroundPairPixelCount": 17770,
+        "exposedEdgeGroundPixelCount": 17770,
+        "canopyCoveredForestEdgePixelCount": 0,
+        "footGroundPairPatch": "patches/foot-ground-pair/c3-r0.png",
+        "footGroundPairMask": "patches/foot-ground-pair-mask/c3-r0.png",
+        "liveGuardGroundPixelCount": 0,
+        "protectedGrayLiveGuardCandidatePixels": 0,
+        "protectedGrayLiveGuardCandidateMask": "patches/protected-gray-live-guard-mask/c3-r0.png",
+        "cleanBase": "chunks/base/c3-r0.png",
+        "mountainOverlay": "chunks/mountain-alpha/c3-r0.png",
+        "inputLatestForestBaseSha256": "6dca032f56749cf4a78da26695fe811506f09217304cfd8f5cc5d3a2ef11b6ad",
+        "inputLatestForestLayerSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+        "cleanBaseSha256": "6e58aab54e323700d13704dc8bbd3e40d1fe726a37e7706fdce397f3a7fea5db",
+        "mountainOverlaySha256": "c89da06cb3a0165115ed2f515f763bfd8b86c92b1be931416f0dba53f045bd53"
+      },
+      {
+        "id": "c4-r0",
+        "baseReplacementPixelCount": 157545,
+        "baseReplacementPatch": "patches/base-replacement/c4-r0.png",
+        "baseReplacementMask": "patches/base-replacement-mask/c4-r0.png",
+        "footGroundPairPixelCount": 13584,
+        "exposedEdgeGroundPixelCount": 13584,
+        "canopyCoveredForestEdgePixelCount": 0,
+        "footGroundPairPatch": "patches/foot-ground-pair/c4-r0.png",
+        "footGroundPairMask": "patches/foot-ground-pair-mask/c4-r0.png",
+        "liveGuardGroundPixelCount": 0,
+        "protectedGrayLiveGuardCandidatePixels": 0,
+        "protectedGrayLiveGuardCandidateMask": "patches/protected-gray-live-guard-mask/c4-r0.png",
+        "cleanBase": "chunks/base/c4-r0.png",
+        "mountainOverlay": "chunks/mountain-alpha/c4-r0.png",
+        "inputLatestForestBaseSha256": "e34b7571515ebb96350b4208468a5364ff296a06000d80fb980e8d6491cd7b90",
+        "inputLatestForestLayerSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+        "cleanBaseSha256": "f7bed851c4d4aa141211cae2d6566798eee86194db09ce97436513cd9a6833cf",
+        "mountainOverlaySha256": "fc84c3553c262cded367e96525efe7e5a5df5f7a7b68870cddd79752d566ae85"
+      },
+      {
+        "id": "c5-r0",
+        "baseReplacementPixelCount": 108078,
+        "baseReplacementPatch": "patches/base-replacement/c5-r0.png",
+        "baseReplacementMask": "patches/base-replacement-mask/c5-r0.png",
+        "footGroundPairPixelCount": 16222,
+        "exposedEdgeGroundPixelCount": 16222,
+        "canopyCoveredForestEdgePixelCount": 0,
+        "footGroundPairPatch": "patches/foot-ground-pair/c5-r0.png",
+        "footGroundPairMask": "patches/foot-ground-pair-mask/c5-r0.png",
+        "liveGuardGroundPixelCount": 0,
+        "protectedGrayLiveGuardCandidatePixels": 0,
+        "protectedGrayLiveGuardCandidateMask": "patches/protected-gray-live-guard-mask/c5-r0.png",
+        "cleanBase": "chunks/base/c5-r0.png",
+        "mountainOverlay": "chunks/mountain-alpha/c5-r0.png",
+        "inputLatestForestBaseSha256": "c2179a537ba303c3bc988bddd0f84792e0b55ae53fd4d388e3c49ad674cc4105",
+        "inputLatestForestLayerSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+        "cleanBaseSha256": "4b0c936a224109d20929075bab21bb8ff52d5ebb90c671c2466ddd360f602e78",
+        "mountainOverlaySha256": "5bc4f18a8f35957dd5037d30d5aeac369989ca6aee3f8dbd60b9083a09ed253e"
+      },
+      {
+        "id": "c6-r0",
+        "baseReplacementPixelCount": 238202,
+        "baseReplacementPatch": "patches/base-replacement/c6-r0.png",
+        "baseReplacementMask": "patches/base-replacement-mask/c6-r0.png",
+        "footGroundPairPixelCount": 7912,
+        "exposedEdgeGroundPixelCount": 7912,
+        "canopyCoveredForestEdgePixelCount": 0,
+        "footGroundPairPatch": "patches/foot-ground-pair/c6-r0.png",
+        "footGroundPairMask": "patches/foot-ground-pair-mask/c6-r0.png",
+        "liveGuardGroundPixelCount": 0,
+        "protectedGrayLiveGuardCandidatePixels": 0,
+        "protectedGrayLiveGuardCandidateMask": "patches/protected-gray-live-guard-mask/c6-r0.png",
+        "cleanBase": "chunks/base/c6-r0.png",
+        "mountainOverlay": "chunks/mountain-alpha/c6-r0.png",
+        "inputLatestForestBaseSha256": "2d974c27ee6d78cb2b0f200a5c9357b99f418b3c3ff236591a2ce919feb96183",
+        "inputLatestForestLayerSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+        "cleanBaseSha256": "2e9a1a4416a64ca8242d3937a3c54f645f2ee544d5b4351e281f4c60c97a1ea0",
+        "mountainOverlaySha256": "22690f8bbb9f9c96db04578774c8ed05871231de3dd00cadb6d292ccded117e1"
+      },
+      {
+        "id": "c7-r0",
+        "baseReplacementPixelCount": 262144,
+        "baseReplacementPatch": "patches/base-replacement/c7-r0.png",
+        "baseReplacementMask": "patches/base-replacement-mask/c7-r0.png",
+        "footGroundPairPixelCount": 0,
+        "exposedEdgeGroundPixelCount": 0,
+        "canopyCoveredForestEdgePixelCount": 0,
+        "footGroundPairPatch": "patches/foot-ground-pair/c7-r0.png",
+        "footGroundPairMask": "patches/foot-ground-pair-mask/c7-r0.png",
+        "liveGuardGroundPixelCount": 0,
+        "protectedGrayLiveGuardCandidatePixels": 0,
+        "protectedGrayLiveGuardCandidateMask": "patches/protected-gray-live-guard-mask/c7-r0.png",
+        "cleanBase": "chunks/base/c7-r0.png",
+        "mountainOverlay": "chunks/mountain-alpha/c7-r0.png",
+        "inputLatestForestBaseSha256": "e765efcdc15f90af28596740e2c28d7ab9c9635ce08bada18c7ecea843b6f9c1",
+        "inputLatestForestLayerSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+        "cleanBaseSha256": "2dd064c8510159fda0b0a46029219a8b318f9bf02a1a00bc8c65ec6b342e7674",
+        "mountainOverlaySha256": "dd3378f6777edfe0c2666de0a403152efa2c2b0a479b81abbcd385e32d155360"
+      },
+      {
+        "id": "c8-r0",
+        "baseReplacementPixelCount": 262144,
+        "baseReplacementPatch": "patches/base-replacement/c8-r0.png",
+        "baseReplacementMask": "patches/base-replacement-mask/c8-r0.png",
+        "footGroundPairPixelCount": 709,
+        "exposedEdgeGroundPixelCount": 709,
+        "canopyCoveredForestEdgePixelCount": 0,
+        "footGroundPairPatch": "patches/foot-ground-pair/c8-r0.png",
+        "footGroundPairMask": "patches/foot-ground-pair-mask/c8-r0.png",
+        "liveGuardGroundPixelCount": 0,
+        "protectedGrayLiveGuardCandidatePixels": 0,
+        "protectedGrayLiveGuardCandidateMask": "patches/protected-gray-live-guard-mask/c8-r0.png",
+        "cleanBase": "chunks/base/c8-r0.png",
+        "mountainOverlay": "chunks/mountain-alpha/c8-r0.png",
+        "inputLatestForestBaseSha256": "a9940c55f22e28bd4643b08528e63556199596bf44719a8d80850ded650feba4",
+        "inputLatestForestLayerSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+        "cleanBaseSha256": "18b15a26caf27effa840a6ec6e717238cb073170a2b92cbb4fd9df1d778f0c15",
+        "mountainOverlaySha256": "294b381a767464f9637504f67683b2362cc829b677f344aa41129932c96a3c3f"
+      },
+      {
+        "id": "c9-r0",
+        "baseReplacementPixelCount": 41681,
+        "baseReplacementPatch": "patches/base-replacement/c9-r0.png",
+        "baseReplacementMask": "patches/base-replacement-mask/c9-r0.png",
+        "footGroundPairPixelCount": 9013,
+        "exposedEdgeGroundPixelCount": 9013,
+        "canopyCoveredForestEdgePixelCount": 0,
+        "footGroundPairPatch": "patches/foot-ground-pair/c9-r0.png",
+        "footGroundPairMask": "patches/foot-ground-pair-mask/c9-r0.png",
+        "liveGuardGroundPixelCount": 0,
+        "protectedGrayLiveGuardCandidatePixels": 0,
+        "protectedGrayLiveGuardCandidateMask": "patches/protected-gray-live-guard-mask/c9-r0.png",
+        "cleanBase": "chunks/base/c9-r0.png",
+        "mountainOverlay": "chunks/mountain-alpha/c9-r0.png",
+        "inputLatestForestBaseSha256": "e1d1ab688c3b89d9f2b63106ee8293c7ad8e6c72cc523e7ba251bb8835e4acb3",
+        "inputLatestForestLayerSha256": "47583f26d679ac48c830afc0fce8ffd86a8bc344db79ba2c1e6b0112686e2e07",
+        "cleanBaseSha256": "fb9edfe326ca53a29a79333540471b1979e0c1945fc2ecdb9472cf6ecaabe462",
+        "mountainOverlaySha256": "4ae8f9aaa9e87a8389e2496b33ffedab5814792bc85d384d16d2372c30ba92f9"
+      },
+      {
+        "id": "c0-r1",
+        "baseReplacementPixelCount": 13637,
+        "baseReplacementPatch": "patches/base-replacement/c0-r1.png",
+        "baseReplacementMask": "patches/base-replacement-mask/c0-r1.png",
+        "footGroundPairPixelCount": 5345,
+        "exposedEdgeGroundPixelCount": 5345,
+        "canopyCoveredForestEdgePixelCount": 0,
+        "footGroundPairPatch": "patches/foot-ground-pair/c0-r1.png",
+        "footGroundPairMask": "patches/foot-ground-pair-mask/c0-r1.png",
+        "liveGuardGroundPixelCount": 0,
+        "protectedGrayLiveGuardCandidatePixels": 0,
+        "protectedGrayLiveGuardCandidateMask": "patches/protected-gray-live-guard-mask/c0-r1.png",
+        "cleanBase": "chunks/base/c0-r1.png",
+        "mountainOverlay": "chunks/mountain-alpha/c0-r1.png",
+        "inputLatestForestBaseSha256": "81e5e85136d95fdc557827689265423a346e2c59363e68afb4b3d737257d04d2",
+        "inputLatestForestLayerSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+        "cleanBaseSha256": "556758d4a84e4ad69d3f47a16f9c4a283d598e5b5ca0e7130bb0099808e14bd2",
+        "mountainOverlaySha256": "b97ebe8541c9ff3d358739059829a2e60853db9468bc6d214bcee8e78e899cdf"
+      },
+      {
+        "id": "c1-r1",
+        "baseReplacementPixelCount": 193251,
+        "baseReplacementPatch": "patches/base-replacement/c1-r1.png",
+        "baseReplacementMask": "patches/base-replacement-mask/c1-r1.png",
+        "footGroundPairPixelCount": 10810,
+        "exposedEdgeGroundPixelCount": 10810,
+        "canopyCoveredForestEdgePixelCount": 0,
+        "footGroundPairPatch": "patches/foot-ground-pair/c1-r1.png",
+        "footGroundPairMask": "patches/foot-ground-pair-mask/c1-r1.png",
+        "liveGuardGroundPixelCount": 0,
+        "protectedGrayLiveGuardCandidatePixels": 0,
+        "protectedGrayLiveGuardCandidateMask": "patches/protected-gray-live-guard-mask/c1-r1.png",
+        "cleanBase": "chunks/base/c1-r1.png",
+        "mountainOverlay": "chunks/mountain-alpha/c1-r1.png",
+        "inputLatestForestBaseSha256": "d14da458b73d2398130cf203257e67c61df9de98bf6993c50b3b6cf4de474ef3",
+        "inputLatestForestLayerSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+        "cleanBaseSha256": "213e24ed62442c47f8d14fb4e5b677e7035c6f2db6b51f386dd143920b405878",
+        "mountainOverlaySha256": "3bf585eed42af92151332ef918a58eba4271c028169ced8575fe79bc16214e3b"
+      },
+      {
+        "id": "c2-r1",
+        "baseReplacementPixelCount": 238220,
+        "baseReplacementPatch": "patches/base-replacement/c2-r1.png",
+        "baseReplacementMask": "patches/base-replacement-mask/c2-r1.png",
+        "footGroundPairPixelCount": 7925,
+        "exposedEdgeGroundPixelCount": 7925,
+        "canopyCoveredForestEdgePixelCount": 0,
+        "footGroundPairPatch": "patches/foot-ground-pair/c2-r1.png",
+        "footGroundPairMask": "patches/foot-ground-pair-mask/c2-r1.png",
+        "liveGuardGroundPixelCount": 0,
+        "protectedGrayLiveGuardCandidatePixels": 0,
+        "protectedGrayLiveGuardCandidateMask": "patches/protected-gray-live-guard-mask/c2-r1.png",
+        "cleanBase": "chunks/base/c2-r1.png",
+        "mountainOverlay": "chunks/mountain-alpha/c2-r1.png",
+        "inputLatestForestBaseSha256": "8d6423a770b5ad6f8f281b6ff03e2ff2c667a64b027ff2f93659a4ad37693836",
+        "inputLatestForestLayerSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+        "cleanBaseSha256": "6550bfc3f3ab6f99f95713f70c427f656dfcaba79842c5cfba964db4a823caab",
+        "mountainOverlaySha256": "0e23b45eb3f958919cbef75645c5c23c6327e4d70a45363241be192afbb856da"
+      },
+      {
+        "id": "c3-r1",
+        "baseReplacementPixelCount": 31527,
+        "baseReplacementPatch": "patches/base-replacement/c3-r1.png",
+        "baseReplacementMask": "patches/base-replacement-mask/c3-r1.png",
+        "footGroundPairPixelCount": 7351,
+        "exposedEdgeGroundPixelCount": 7351,
+        "canopyCoveredForestEdgePixelCount": 0,
+        "footGroundPairPatch": "patches/foot-ground-pair/c3-r1.png",
+        "footGroundPairMask": "patches/foot-ground-pair-mask/c3-r1.png",
+        "liveGuardGroundPixelCount": 0,
+        "protectedGrayLiveGuardCandidatePixels": 0,
+        "protectedGrayLiveGuardCandidateMask": "patches/protected-gray-live-guard-mask/c3-r1.png",
+        "cleanBase": "chunks/base/c3-r1.png",
+        "mountainOverlay": "chunks/mountain-alpha/c3-r1.png",
+        "inputLatestForestBaseSha256": "eb8f84731bea9d88b122da307fe5c8f293260dbe89b60586cc822ba8b8d8d8c3",
+        "inputLatestForestLayerSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+        "cleanBaseSha256": "c420752dd83b2e85748c54d87d8a2ba3e289487477f6f52f80fdce49dbed9e83",
+        "mountainOverlaySha256": "6420169aeedcba6e09cd52f31459efe00d5c92cb1aff5eea1642098c988262e1"
+      },
+      {
+        "id": "c6-r1",
+        "baseReplacementPixelCount": 53750,
+        "baseReplacementPatch": "patches/base-replacement/c6-r1.png",
+        "baseReplacementMask": "patches/base-replacement-mask/c6-r1.png",
+        "footGroundPairPixelCount": 9628,
+        "exposedEdgeGroundPixelCount": 9628,
+        "canopyCoveredForestEdgePixelCount": 0,
+        "footGroundPairPatch": "patches/foot-ground-pair/c6-r1.png",
+        "footGroundPairMask": "patches/foot-ground-pair-mask/c6-r1.png",
+        "liveGuardGroundPixelCount": 0,
+        "protectedGrayLiveGuardCandidatePixels": 0,
+        "protectedGrayLiveGuardCandidateMask": "patches/protected-gray-live-guard-mask/c6-r1.png",
+        "cleanBase": "chunks/base/c6-r1.png",
+        "mountainOverlay": "chunks/mountain-alpha/c6-r1.png",
+        "inputLatestForestBaseSha256": "30bc8d7f673bcf3bd411d40392bd54dac0fb797cb41f8bae742a722685c601a1",
+        "inputLatestForestLayerSha256": "b583f25b84c58a2ab0d013ce6476f2b90b95018d78efe118cd9d62ccde56ed36",
+        "cleanBaseSha256": "929314150aaec26fde2ded258bc84f0a2bf2c3a9858d07dca16036a2eb8a0d97",
+        "mountainOverlaySha256": "3a5059ac1566102e3b3ef7990ca972572fd99e6176a6df087974509a698a2ba5"
+      },
+      {
+        "id": "c7-r1",
+        "baseReplacementPixelCount": 119396,
+        "baseReplacementPatch": "patches/base-replacement/c7-r1.png",
+        "baseReplacementMask": "patches/base-replacement-mask/c7-r1.png",
+        "footGroundPairPixelCount": 10638,
+        "exposedEdgeGroundPixelCount": 10638,
+        "canopyCoveredForestEdgePixelCount": 0,
+        "footGroundPairPatch": "patches/foot-ground-pair/c7-r1.png",
+        "footGroundPairMask": "patches/foot-ground-pair-mask/c7-r1.png",
+        "liveGuardGroundPixelCount": 0,
+        "protectedGrayLiveGuardCandidatePixels": 0,
+        "protectedGrayLiveGuardCandidateMask": "patches/protected-gray-live-guard-mask/c7-r1.png",
+        "cleanBase": "chunks/base/c7-r1.png",
+        "mountainOverlay": "chunks/mountain-alpha/c7-r1.png",
+        "inputLatestForestBaseSha256": "382b70b15e3248a9e5e1b9710cf57e2a91295cfe64bb7dda2d8e64990611e7cf",
+        "inputLatestForestLayerSha256": "ee5d4759f374723365e4cab19f87a66be14f95fc08cea79c8fb2f407551962e8",
+        "cleanBaseSha256": "ac804fbeab36f978c26cbad005f56e440ab1bc67f8a4af2393ca8c15d5c94407",
+        "mountainOverlaySha256": "ac3d30791d8d95bd70bcb2bbbad056b6902dc8594ce153487c84670862178393"
+      },
+      {
+        "id": "c8-r1",
+        "baseReplacementPixelCount": 242139,
+        "baseReplacementPatch": "patches/base-replacement/c8-r1.png",
+        "baseReplacementMask": "patches/base-replacement-mask/c8-r1.png",
+        "footGroundPairPixelCount": 4261,
+        "exposedEdgeGroundPixelCount": 4261,
+        "canopyCoveredForestEdgePixelCount": 0,
+        "footGroundPairPatch": "patches/foot-ground-pair/c8-r1.png",
+        "footGroundPairMask": "patches/foot-ground-pair-mask/c8-r1.png",
+        "liveGuardGroundPixelCount": 0,
+        "protectedGrayLiveGuardCandidatePixels": 0,
+        "protectedGrayLiveGuardCandidateMask": "patches/protected-gray-live-guard-mask/c8-r1.png",
+        "cleanBase": "chunks/base/c8-r1.png",
+        "mountainOverlay": "chunks/mountain-alpha/c8-r1.png",
+        "inputLatestForestBaseSha256": "91e60946311e6d3c46f105889a2563d9cbadfb8f99f657845fd36a36be22647b",
+        "inputLatestForestLayerSha256": "5f1e35e98ed8737e8ac863f8e2c6614dd29bbffa93f0e017c968cf67615104c0",
+        "cleanBaseSha256": "767b953a2416b00bbc0cc4de98571cc48cb320ba19ca301605ef342877494da3",
+        "mountainOverlaySha256": "e3d0baad00de3cdb4ad8210e73ecd5f09f8df85a04ee4f29e17be85bb45667b6"
+      },
+      {
+        "id": "c9-r1",
+        "baseReplacementPixelCount": 65536,
+        "baseReplacementPatch": "patches/base-replacement/c9-r1.png",
+        "baseReplacementMask": "patches/base-replacement-mask/c9-r1.png",
+        "footGroundPairPixelCount": 0,
+        "exposedEdgeGroundPixelCount": 0,
+        "canopyCoveredForestEdgePixelCount": 0,
+        "footGroundPairPatch": "patches/foot-ground-pair/c9-r1.png",
+        "footGroundPairMask": "patches/foot-ground-pair-mask/c9-r1.png",
+        "liveGuardGroundPixelCount": 0,
+        "protectedGrayLiveGuardCandidatePixels": 0,
+        "protectedGrayLiveGuardCandidateMask": "patches/protected-gray-live-guard-mask/c9-r1.png",
+        "cleanBase": "chunks/base/c9-r1.png",
+        "mountainOverlay": "chunks/mountain-alpha/c9-r1.png",
+        "inputLatestForestBaseSha256": "85d2c99707d4d12e5f2eb70a0641365d9c8a1e954bd64b32d32e56026dd6d50b",
+        "inputLatestForestLayerSha256": "47583f26d679ac48c830afc0fce8ffd86a8bc344db79ba2c1e6b0112686e2e07",
+        "cleanBaseSha256": "0b07a8aab2b9bbdb79fa3d2d6bf121b815cd6869bfa119a5da4e12a28aca951e",
+        "mountainOverlaySha256": "2a911a74653d2509f79ddc2bfeba083c492db9fae795edefef62011d339da714"
+      },
+      {
+        "id": "c0-r2",
+        "baseReplacementPixelCount": 19921,
+        "baseReplacementPatch": "patches/base-replacement/c0-r2.png",
+        "baseReplacementMask": "patches/base-replacement-mask/c0-r2.png",
+        "footGroundPairPixelCount": 4226,
+        "exposedEdgeGroundPixelCount": 4226,
+        "canopyCoveredForestEdgePixelCount": 0,
+        "footGroundPairPatch": "patches/foot-ground-pair/c0-r2.png",
+        "footGroundPairMask": "patches/foot-ground-pair-mask/c0-r2.png",
+        "liveGuardGroundPixelCount": 0,
+        "protectedGrayLiveGuardCandidatePixels": 0,
+        "protectedGrayLiveGuardCandidateMask": "patches/protected-gray-live-guard-mask/c0-r2.png",
+        "cleanBase": "chunks/base/c0-r2.png",
+        "mountainOverlay": "chunks/mountain-alpha/c0-r2.png",
+        "inputLatestForestBaseSha256": "f7729fbbbb5212b78f3774a7acc61e7b4e0ce00d156be1f9a36c3511faed1e4c",
+        "inputLatestForestLayerSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+        "cleanBaseSha256": "30634fb874c6931ee519d53d4395b1d837090da445e19863d6f0efb5bce5dd6a",
+        "mountainOverlaySha256": "6c0a514e586a50c6c9955b514009250de4e6322a4b4702fa0618322bb4b15a58"
+      },
+      {
+        "id": "c1-r2",
+        "baseReplacementPixelCount": 105014,
+        "baseReplacementPatch": "patches/base-replacement/c1-r2.png",
+        "baseReplacementMask": "patches/base-replacement-mask/c1-r2.png",
+        "footGroundPairPixelCount": 13222,
+        "exposedEdgeGroundPixelCount": 13222,
+        "canopyCoveredForestEdgePixelCount": 0,
+        "footGroundPairPatch": "patches/foot-ground-pair/c1-r2.png",
+        "footGroundPairMask": "patches/foot-ground-pair-mask/c1-r2.png",
+        "liveGuardGroundPixelCount": 0,
+        "protectedGrayLiveGuardCandidatePixels": 0,
+        "protectedGrayLiveGuardCandidateMask": "patches/protected-gray-live-guard-mask/c1-r2.png",
+        "cleanBase": "chunks/base/c1-r2.png",
+        "mountainOverlay": "chunks/mountain-alpha/c1-r2.png",
+        "inputLatestForestBaseSha256": "a5376d52f6b1816cbfc2e1564adc8314d9064e90445da17ff07d94623f2fc9dd",
+        "inputLatestForestLayerSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+        "cleanBaseSha256": "6344918dcb5daf3d74e7dfb2ff2d362143d940cb095d08b0aff35dfad4c8fd37",
+        "mountainOverlaySha256": "1c56579eb955fe986bfa8e863342beee43b53f6491ab24f71f0aa88a1553581b"
+      },
+      {
+        "id": "c2-r2",
+        "baseReplacementPixelCount": 17031,
+        "baseReplacementPatch": "patches/base-replacement/c2-r2.png",
+        "baseReplacementMask": "patches/base-replacement-mask/c2-r2.png",
+        "footGroundPairPixelCount": 5683,
+        "exposedEdgeGroundPixelCount": 5683,
+        "canopyCoveredForestEdgePixelCount": 0,
+        "footGroundPairPatch": "patches/foot-ground-pair/c2-r2.png",
+        "footGroundPairMask": "patches/foot-ground-pair-mask/c2-r2.png",
+        "liveGuardGroundPixelCount": 0,
+        "protectedGrayLiveGuardCandidatePixels": 0,
+        "protectedGrayLiveGuardCandidateMask": "patches/protected-gray-live-guard-mask/c2-r2.png",
+        "cleanBase": "chunks/base/c2-r2.png",
+        "mountainOverlay": "chunks/mountain-alpha/c2-r2.png",
+        "inputLatestForestBaseSha256": "1395e70f9acd5bc956a37e538a28b4aea439f13687fadab4f5e6ad633c916681",
+        "inputLatestForestLayerSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+        "cleanBaseSha256": "3d16e4bffa95bfedd0a2ea7aec7a26ff1566d67c2d4fb026f8a8bfb69d3010c1",
+        "mountainOverlaySha256": "2a1f5abe66a377172c07cc9593b8d9c89b15c272d2d7d4f82e8cb48b8c7f7c07"
+      },
+      {
+        "id": "c7-r2",
+        "baseReplacementPixelCount": 8513,
+        "baseReplacementPatch": "patches/base-replacement/c7-r2.png",
+        "baseReplacementMask": "patches/base-replacement-mask/c7-r2.png",
+        "footGroundPairPixelCount": 5115,
+        "exposedEdgeGroundPixelCount": 5115,
+        "canopyCoveredForestEdgePixelCount": 0,
+        "footGroundPairPatch": "patches/foot-ground-pair/c7-r2.png",
+        "footGroundPairMask": "patches/foot-ground-pair-mask/c7-r2.png",
+        "liveGuardGroundPixelCount": 0,
+        "protectedGrayLiveGuardCandidatePixels": 0,
+        "protectedGrayLiveGuardCandidateMask": "patches/protected-gray-live-guard-mask/c7-r2.png",
+        "cleanBase": "chunks/base/c7-r2.png",
+        "mountainOverlay": "chunks/mountain-alpha/c7-r2.png",
+        "inputLatestForestBaseSha256": "7c7a5957e7eaa61ae5d5d32ecb71ed51aaa9b401d1a67f2cf9fbd8f7a57fe856",
+        "inputLatestForestLayerSha256": "c1f315d79e13d1a7fee9dc3c29acc7e4b6c9024658c274944695d565cffbbfa6",
+        "cleanBaseSha256": "fc3414ff44b509359ad5a40dbf1e4ab00a801ba50bb09a1690209df44fbc67b0",
+        "mountainOverlaySha256": "a7c71b8045d4117942da22cf43793e37f2456f527da98bb7acd2b38f57b0f518"
+      },
+      {
+        "id": "c8-r2",
+        "baseReplacementPixelCount": 250220,
+        "baseReplacementPatch": "patches/base-replacement/c8-r2.png",
+        "baseReplacementMask": "patches/base-replacement-mask/c8-r2.png",
+        "footGroundPairPixelCount": 6546,
+        "exposedEdgeGroundPixelCount": 6546,
+        "canopyCoveredForestEdgePixelCount": 0,
+        "footGroundPairPatch": "patches/foot-ground-pair/c8-r2.png",
+        "footGroundPairMask": "patches/foot-ground-pair-mask/c8-r2.png",
+        "liveGuardGroundPixelCount": 0,
+        "protectedGrayLiveGuardCandidatePixels": 0,
+        "protectedGrayLiveGuardCandidateMask": "patches/protected-gray-live-guard-mask/c8-r2.png",
+        "cleanBase": "chunks/base/c8-r2.png",
+        "mountainOverlay": "chunks/mountain-alpha/c8-r2.png",
+        "inputLatestForestBaseSha256": "00f25e0adb602ccfcfd7acb9a60a956ed624d20a1480b083ed276000c5d27a0f",
+        "inputLatestForestLayerSha256": "f80af0070810623059bc6af4b8453005aab38e9b12d1beccc2b6836d2af029c3",
+        "cleanBaseSha256": "58cf7a4119f48ea43a20af5c0bd1b11c39d8f85f4382ff0646d33a5f0e2e1adf",
+        "mountainOverlaySha256": "6013ceb4a4332ef700c75afd9ec0770549502ae5c89f6518ae2a6a6b0087bfa8"
+      },
+      {
+        "id": "c9-r2",
+        "baseReplacementPixelCount": 65536,
+        "baseReplacementPatch": "patches/base-replacement/c9-r2.png",
+        "baseReplacementMask": "patches/base-replacement-mask/c9-r2.png",
+        "footGroundPairPixelCount": 0,
+        "exposedEdgeGroundPixelCount": 0,
+        "canopyCoveredForestEdgePixelCount": 0,
+        "footGroundPairPatch": "patches/foot-ground-pair/c9-r2.png",
+        "footGroundPairMask": "patches/foot-ground-pair-mask/c9-r2.png",
+        "liveGuardGroundPixelCount": 0,
+        "protectedGrayLiveGuardCandidatePixels": 0,
+        "protectedGrayLiveGuardCandidateMask": "patches/protected-gray-live-guard-mask/c9-r2.png",
+        "cleanBase": "chunks/base/c9-r2.png",
+        "mountainOverlay": "chunks/mountain-alpha/c9-r2.png",
+        "inputLatestForestBaseSha256": "dbb8ce61bc426440d2d0a22aa07b20110d4438e77f190bed20b118500c3a078b",
+        "inputLatestForestLayerSha256": "47583f26d679ac48c830afc0fce8ffd86a8bc344db79ba2c1e6b0112686e2e07",
+        "cleanBaseSha256": "6d173450fb646e1030e01487d67f3116d4733cb9d7d00559f67694fca49a3542",
+        "mountainOverlaySha256": "7f14b1f319ef6754b01fa6b7f07ec001af3fb86732feddc4b1355eb064f72be6"
+      },
+      {
+        "id": "c7-r3",
+        "baseReplacementPixelCount": 19709,
+        "baseReplacementPatch": "patches/base-replacement/c7-r3.png",
+        "baseReplacementMask": "patches/base-replacement-mask/c7-r3.png",
+        "footGroundPairPixelCount": 6103,
+        "exposedEdgeGroundPixelCount": 6103,
+        "canopyCoveredForestEdgePixelCount": 0,
+        "footGroundPairPatch": "patches/foot-ground-pair/c7-r3.png",
+        "footGroundPairMask": "patches/foot-ground-pair-mask/c7-r3.png",
+        "liveGuardGroundPixelCount": 0,
+        "protectedGrayLiveGuardCandidatePixels": 0,
+        "protectedGrayLiveGuardCandidateMask": "patches/protected-gray-live-guard-mask/c7-r3.png",
+        "cleanBase": "chunks/base/c7-r3.png",
+        "mountainOverlay": "chunks/mountain-alpha/c7-r3.png",
+        "inputLatestForestBaseSha256": "0e87c89c0fbd864099ec864710f7bf967f1d48e6d96edf9077c2313e4b686a19",
+        "inputLatestForestLayerSha256": "5f6ee8eb5c3ec1e38ebe1c9c99a2def7f099e2fd1be24dd2a8b5ea07ad3dcaae",
+        "cleanBaseSha256": "093543c3a910c91ad768b67ecd3139803adfde6a639631a4cd24ed7cbd59bbf1",
+        "mountainOverlaySha256": "2817ad51bf14e29e77796bb398674c5cd86be379cc7f5e6e4cc84301197dd5d5"
+      },
+      {
+        "id": "c8-r3",
+        "baseReplacementPixelCount": 218583,
+        "baseReplacementPatch": "patches/base-replacement/c8-r3.png",
+        "baseReplacementMask": "patches/base-replacement-mask/c8-r3.png",
+        "footGroundPairPixelCount": 12497,
+        "exposedEdgeGroundPixelCount": 12287,
+        "canopyCoveredForestEdgePixelCount": 0,
+        "footGroundPairPatch": "patches/foot-ground-pair/c8-r3.png",
+        "footGroundPairMask": "patches/foot-ground-pair-mask/c8-r3.png",
+        "liveGuardGroundPixelCount": 210,
+        "protectedGrayLiveGuardCandidatePixels": 1,
+        "protectedGrayLiveGuardCandidateMask": "patches/protected-gray-live-guard-mask/c8-r3.png",
+        "cleanBase": "chunks/base/c8-r3.png",
+        "mountainOverlay": "chunks/mountain-alpha/c8-r3.png",
+        "inputLatestForestBaseSha256": "172d7b88fb6c62e2b42ae6da052a81ea9ca635437c08f7bdda9f37ac422d762c",
+        "inputLatestForestLayerSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+        "cleanBaseSha256": "e028dca551034b5f051cbde75b0c9fc96fe184235b8d323c522df93e624924d7",
+        "mountainOverlaySha256": "16ac093d2e85e105b021282bcf325278c71f2520512a7e5c4d4e4c856edb2d7e"
+      },
+      {
+        "id": "c9-r3",
+        "baseReplacementPixelCount": 65536,
+        "baseReplacementPatch": "patches/base-replacement/c9-r3.png",
+        "baseReplacementMask": "patches/base-replacement-mask/c9-r3.png",
+        "footGroundPairPixelCount": 0,
+        "exposedEdgeGroundPixelCount": 0,
+        "canopyCoveredForestEdgePixelCount": 0,
+        "footGroundPairPatch": "patches/foot-ground-pair/c9-r3.png",
+        "footGroundPairMask": "patches/foot-ground-pair-mask/c9-r3.png",
+        "liveGuardGroundPixelCount": 0,
+        "protectedGrayLiveGuardCandidatePixels": 0,
+        "protectedGrayLiveGuardCandidateMask": "patches/protected-gray-live-guard-mask/c9-r3.png",
+        "cleanBase": "chunks/base/c9-r3.png",
+        "mountainOverlay": "chunks/mountain-alpha/c9-r3.png",
+        "inputLatestForestBaseSha256": "e8870f7a9856259b5272692ae9697738e0e05bdda89dc5db7652a90df3ab97a4",
+        "inputLatestForestLayerSha256": "47583f26d679ac48c830afc0fce8ffd86a8bc344db79ba2c1e6b0112686e2e07",
+        "cleanBaseSha256": "f7ec20a1192e1dfaaafd6123ac5f5ca9c78b206d6d64446f5c8850b8e9258f90",
+        "mountainOverlaySha256": "70857213f758c7afebb7d065d0910c6506a66ae2a887edb9b944d6f539ea3221"
+      },
+      {
+        "id": "c7-r4",
+        "baseReplacementPixelCount": 4404,
+        "baseReplacementPatch": "patches/base-replacement/c7-r4.png",
+        "baseReplacementMask": "patches/base-replacement-mask/c7-r4.png",
+        "footGroundPairPixelCount": 1331,
+        "exposedEdgeGroundPixelCount": 1331,
+        "canopyCoveredForestEdgePixelCount": 0,
+        "footGroundPairPatch": "patches/foot-ground-pair/c7-r4.png",
+        "footGroundPairMask": "patches/foot-ground-pair-mask/c7-r4.png",
+        "liveGuardGroundPixelCount": 0,
+        "protectedGrayLiveGuardCandidatePixels": 0,
+        "protectedGrayLiveGuardCandidateMask": "patches/protected-gray-live-guard-mask/c7-r4.png",
+        "cleanBase": "chunks/base/c7-r4.png",
+        "mountainOverlay": "chunks/mountain-alpha/c7-r4.png",
+        "inputLatestForestBaseSha256": "d0f8dd1fa8fcc715ae23b87ad5478c5c68dfdd31fc83148b5b58aa9507c05831",
+        "inputLatestForestLayerSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+        "cleanBaseSha256": "4496a8fad262fd4de01358104b78f3fd7a8bfc26757a161b047b3c80a165d740",
+        "mountainOverlaySha256": "0848174ce289c03c046e9eacf2b1660f2c5a7faa4497510e10f365aaec279f72"
+      },
+      {
+        "id": "c8-r4",
+        "baseReplacementPixelCount": 223024,
+        "baseReplacementPatch": "patches/base-replacement/c8-r4.png",
+        "baseReplacementMask": "patches/base-replacement-mask/c8-r4.png",
+        "footGroundPairPixelCount": 10742,
+        "exposedEdgeGroundPixelCount": 10742,
+        "canopyCoveredForestEdgePixelCount": 0,
+        "footGroundPairPatch": "patches/foot-ground-pair/c8-r4.png",
+        "footGroundPairMask": "patches/foot-ground-pair-mask/c8-r4.png",
+        "liveGuardGroundPixelCount": 0,
+        "protectedGrayLiveGuardCandidatePixels": 0,
+        "protectedGrayLiveGuardCandidateMask": "patches/protected-gray-live-guard-mask/c8-r4.png",
+        "cleanBase": "chunks/base/c8-r4.png",
+        "mountainOverlay": "chunks/mountain-alpha/c8-r4.png",
+        "inputLatestForestBaseSha256": "8ccb95fc64ba2c1d34933c0c9ca5061cd4bc4df4b0848a9ac5863033bfabcbcf",
+        "inputLatestForestLayerSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+        "cleanBaseSha256": "e6bdefb3ce4852b2f65fcbfc903e2456d0547aa9d5d5f0b0a9d37f0527bc87ab",
+        "mountainOverlaySha256": "e486d95c0e54760d0b6fff2a8091a8943a34a7736600fae00c266637041661a2"
+      },
+      {
+        "id": "c9-r4",
+        "baseReplacementPixelCount": 65536,
+        "baseReplacementPatch": "patches/base-replacement/c9-r4.png",
+        "baseReplacementMask": "patches/base-replacement-mask/c9-r4.png",
+        "footGroundPairPixelCount": 0,
+        "exposedEdgeGroundPixelCount": 0,
+        "canopyCoveredForestEdgePixelCount": 0,
+        "footGroundPairPatch": "patches/foot-ground-pair/c9-r4.png",
+        "footGroundPairMask": "patches/foot-ground-pair-mask/c9-r4.png",
+        "liveGuardGroundPixelCount": 0,
+        "protectedGrayLiveGuardCandidatePixels": 0,
+        "protectedGrayLiveGuardCandidateMask": "patches/protected-gray-live-guard-mask/c9-r4.png",
+        "cleanBase": "chunks/base/c9-r4.png",
+        "mountainOverlay": "chunks/mountain-alpha/c9-r4.png",
+        "inputLatestForestBaseSha256": "e1bf40e009b2536c2e1baeea75c78979f59536e1d7e0f094c1a500ab4ff65959",
+        "inputLatestForestLayerSha256": "47583f26d679ac48c830afc0fce8ffd86a8bc344db79ba2c1e6b0112686e2e07",
+        "cleanBaseSha256": "83cde4c481b5ee8b3e57e080170c4d54c4a95c7c07404527aaaa0aefcd725b17",
+        "mountainOverlaySha256": "e90133db42304acd287074e9b7167d939b9af851d48856da98893639c1558284"
+      },
+      {
+        "id": "c7-r5",
+        "baseReplacementPixelCount": 67128,
+        "baseReplacementPatch": "patches/base-replacement/c7-r5.png",
+        "baseReplacementMask": "patches/base-replacement-mask/c7-r5.png",
+        "footGroundPairPixelCount": 9620,
+        "exposedEdgeGroundPixelCount": 9620,
+        "canopyCoveredForestEdgePixelCount": 0,
+        "footGroundPairPatch": "patches/foot-ground-pair/c7-r5.png",
+        "footGroundPairMask": "patches/foot-ground-pair-mask/c7-r5.png",
+        "liveGuardGroundPixelCount": 0,
+        "protectedGrayLiveGuardCandidatePixels": 0,
+        "protectedGrayLiveGuardCandidateMask": "patches/protected-gray-live-guard-mask/c7-r5.png",
+        "cleanBase": "chunks/base/c7-r5.png",
+        "mountainOverlay": "chunks/mountain-alpha/c7-r5.png",
+        "inputLatestForestBaseSha256": "264dc27af7f807d7a7b1888fc90af2c2e4ab19d298d7373c10adf19f6719e217",
+        "inputLatestForestLayerSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+        "cleanBaseSha256": "edeb74620810c27c59ad3895fd2b59f8074a092111cdd5a39ddaa76d9b128e11",
+        "mountainOverlaySha256": "1ad62f4751580b9ceaee57d4f0418da62d6dc3ee72bd7a7ed5f47b9a95cf98f2"
+      },
+      {
+        "id": "c8-r5",
+        "baseReplacementPixelCount": 262144,
+        "baseReplacementPatch": "patches/base-replacement/c8-r5.png",
+        "baseReplacementMask": "patches/base-replacement-mask/c8-r5.png",
+        "footGroundPairPixelCount": 0,
+        "exposedEdgeGroundPixelCount": 0,
+        "canopyCoveredForestEdgePixelCount": 0,
+        "footGroundPairPatch": "patches/foot-ground-pair/c8-r5.png",
+        "footGroundPairMask": "patches/foot-ground-pair-mask/c8-r5.png",
+        "liveGuardGroundPixelCount": 0,
+        "protectedGrayLiveGuardCandidatePixels": 0,
+        "protectedGrayLiveGuardCandidateMask": "patches/protected-gray-live-guard-mask/c8-r5.png",
+        "cleanBase": "chunks/base/c8-r5.png",
+        "mountainOverlay": "chunks/mountain-alpha/c8-r5.png",
+        "inputLatestForestBaseSha256": "775bf226031dd03caed3097d2fcdcd9cc3a455af41e87f07579f4b096c1036e5",
+        "inputLatestForestLayerSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+        "cleanBaseSha256": "1b7b93d2dcee0b09426c39d9c2e8a3bb7d2cecea85f71a0c1e9c8f69179a74ce",
+        "mountainOverlaySha256": "0080c9273aa55a355c53a04a086aa435ed2a1048a3894193daf9419cc02ba66a"
+      },
+      {
+        "id": "c9-r5",
+        "baseReplacementPixelCount": 65536,
+        "baseReplacementPatch": "patches/base-replacement/c9-r5.png",
+        "baseReplacementMask": "patches/base-replacement-mask/c9-r5.png",
+        "footGroundPairPixelCount": 0,
+        "exposedEdgeGroundPixelCount": 0,
+        "canopyCoveredForestEdgePixelCount": 0,
+        "footGroundPairPatch": "patches/foot-ground-pair/c9-r5.png",
+        "footGroundPairMask": "patches/foot-ground-pair-mask/c9-r5.png",
+        "liveGuardGroundPixelCount": 0,
+        "protectedGrayLiveGuardCandidatePixels": 0,
+        "protectedGrayLiveGuardCandidateMask": "patches/protected-gray-live-guard-mask/c9-r5.png",
+        "cleanBase": "chunks/base/c9-r5.png",
+        "mountainOverlay": "chunks/mountain-alpha/c9-r5.png",
+        "inputLatestForestBaseSha256": "5d77fbb34f699c8f6e57a942fe8fd1949fa4213b211d288d22b6c3732ad7559f",
+        "inputLatestForestLayerSha256": "47583f26d679ac48c830afc0fce8ffd86a8bc344db79ba2c1e6b0112686e2e07",
+        "cleanBaseSha256": "b315e465b02399effc1665788c41e1bf8b4b69269ffaa484003fd808b67db790",
+        "mountainOverlaySha256": "b5ffb079b04d23c4f66fdf79ad1b56c92eec42da72c346c771b5375ad85a3092"
+      },
+      {
+        "id": "c7-r6",
+        "baseReplacementPixelCount": 50705,
+        "baseReplacementPatch": "patches/base-replacement/c7-r6.png",
+        "baseReplacementMask": "patches/base-replacement-mask/c7-r6.png",
+        "footGroundPairPixelCount": 7548,
+        "exposedEdgeGroundPixelCount": 7548,
+        "canopyCoveredForestEdgePixelCount": 0,
+        "footGroundPairPatch": "patches/foot-ground-pair/c7-r6.png",
+        "footGroundPairMask": "patches/foot-ground-pair-mask/c7-r6.png",
+        "liveGuardGroundPixelCount": 0,
+        "protectedGrayLiveGuardCandidatePixels": 0,
+        "protectedGrayLiveGuardCandidateMask": "patches/protected-gray-live-guard-mask/c7-r6.png",
+        "cleanBase": "chunks/base/c7-r6.png",
+        "mountainOverlay": "chunks/mountain-alpha/c7-r6.png",
+        "inputLatestForestBaseSha256": "d3e9daecddc96d7b2e73011cf2bb23ed5a5fd7c99eb3f703a3018f9afce9b079",
+        "inputLatestForestLayerSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+        "cleanBaseSha256": "f064b3607f856a448d0c025f55b0cfaf6a5893f1c2b8a91c9e72df7075dba064",
+        "mountainOverlaySha256": "14a926fb5d68674ee5c391e9662f32f5bdb62b46b9218c1618796856ad80821a"
+      },
+      {
+        "id": "c8-r6",
+        "baseReplacementPixelCount": 261203,
+        "baseReplacementPatch": "patches/base-replacement/c8-r6.png",
+        "baseReplacementMask": "patches/base-replacement-mask/c8-r6.png",
+        "footGroundPairPixelCount": 1183,
+        "exposedEdgeGroundPixelCount": 1183,
+        "canopyCoveredForestEdgePixelCount": 0,
+        "footGroundPairPatch": "patches/foot-ground-pair/c8-r6.png",
+        "footGroundPairMask": "patches/foot-ground-pair-mask/c8-r6.png",
+        "liveGuardGroundPixelCount": 0,
+        "protectedGrayLiveGuardCandidatePixels": 0,
+        "protectedGrayLiveGuardCandidateMask": "patches/protected-gray-live-guard-mask/c8-r6.png",
+        "cleanBase": "chunks/base/c8-r6.png",
+        "mountainOverlay": "chunks/mountain-alpha/c8-r6.png",
+        "inputLatestForestBaseSha256": "895e79fc06f867d95a0eb5333933c0e9cb3165912443fd79bf9843e88dd7f7fb",
+        "inputLatestForestLayerSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+        "cleanBaseSha256": "5702bf65cc7dee895f1a14a7d9ada30fc62441ec381c74c76ec0bcf3ea3259db",
+        "mountainOverlaySha256": "bb92d3b8e624ac16196d1ec03dad331d98e25dbf0682a8a57ad7f11d06ea50d6"
+      },
+      {
+        "id": "c9-r6",
+        "baseReplacementPixelCount": 65536,
+        "baseReplacementPatch": "patches/base-replacement/c9-r6.png",
+        "baseReplacementMask": "patches/base-replacement-mask/c9-r6.png",
+        "footGroundPairPixelCount": 0,
+        "exposedEdgeGroundPixelCount": 0,
+        "canopyCoveredForestEdgePixelCount": 0,
+        "footGroundPairPatch": "patches/foot-ground-pair/c9-r6.png",
+        "footGroundPairMask": "patches/foot-ground-pair-mask/c9-r6.png",
+        "liveGuardGroundPixelCount": 0,
+        "protectedGrayLiveGuardCandidatePixels": 0,
+        "protectedGrayLiveGuardCandidateMask": "patches/protected-gray-live-guard-mask/c9-r6.png",
+        "cleanBase": "chunks/base/c9-r6.png",
+        "mountainOverlay": "chunks/mountain-alpha/c9-r6.png",
+        "inputLatestForestBaseSha256": "463a8adf994c160f73a4bc1fb728587f53fca36c46e633b4680d8b17c1713c1a",
+        "inputLatestForestLayerSha256": "47583f26d679ac48c830afc0fce8ffd86a8bc344db79ba2c1e6b0112686e2e07",
+        "cleanBaseSha256": "71695137af8a156ee73e324bd6c8f91f1d757b041c5d49718952e8207aca0a2f",
+        "mountainOverlaySha256": "74b164674249f9225ff53e9d857df5049bf6d6e8afc7bdfa6b658665fffc51fd"
+      },
+      {
+        "id": "c8-r7",
+        "baseReplacementPixelCount": 218557,
+        "baseReplacementPatch": "patches/base-replacement/c8-r7.png",
+        "baseReplacementMask": "patches/base-replacement-mask/c8-r7.png",
+        "footGroundPairPixelCount": 8443,
+        "exposedEdgeGroundPixelCount": 8443,
+        "canopyCoveredForestEdgePixelCount": 0,
+        "footGroundPairPatch": "patches/foot-ground-pair/c8-r7.png",
+        "footGroundPairMask": "patches/foot-ground-pair-mask/c8-r7.png",
+        "liveGuardGroundPixelCount": 0,
+        "protectedGrayLiveGuardCandidatePixels": 0,
+        "protectedGrayLiveGuardCandidateMask": "patches/protected-gray-live-guard-mask/c8-r7.png",
+        "cleanBase": "chunks/base/c8-r7.png",
+        "mountainOverlay": "chunks/mountain-alpha/c8-r7.png",
+        "inputLatestForestBaseSha256": "4d2b1c5540ae6c5f79f2b435fe8adc20018f981fb4806ed2db0e14db36e219ae",
+        "inputLatestForestLayerSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+        "cleanBaseSha256": "eb9ce00b9d254ead78a02e81956cde39dfb71d743603aac2ce95f7fffe89ebda",
+        "mountainOverlaySha256": "c7a826a24fbd6d226d2c428f340f3f83ca9053bc3994789019ff63e3064816d4"
+      },
+      {
+        "id": "c9-r7",
+        "baseReplacementPixelCount": 65536,
+        "baseReplacementPatch": "patches/base-replacement/c9-r7.png",
+        "baseReplacementMask": "patches/base-replacement-mask/c9-r7.png",
+        "footGroundPairPixelCount": 0,
+        "exposedEdgeGroundPixelCount": 0,
+        "canopyCoveredForestEdgePixelCount": 0,
+        "footGroundPairPatch": "patches/foot-ground-pair/c9-r7.png",
+        "footGroundPairMask": "patches/foot-ground-pair-mask/c9-r7.png",
+        "liveGuardGroundPixelCount": 0,
+        "protectedGrayLiveGuardCandidatePixels": 0,
+        "protectedGrayLiveGuardCandidateMask": "patches/protected-gray-live-guard-mask/c9-r7.png",
+        "cleanBase": "chunks/base/c9-r7.png",
+        "mountainOverlay": "chunks/mountain-alpha/c9-r7.png",
+        "inputLatestForestBaseSha256": "2b7ac7c5b62304b32269180964a848f5ff3a1899d6e78411107d8c6dcbb1e660",
+        "inputLatestForestLayerSha256": "47583f26d679ac48c830afc0fce8ffd86a8bc344db79ba2c1e6b0112686e2e07",
+        "cleanBaseSha256": "1318ae8b21f67bcf19e39b6ad86f4f061f86323fd1ade6e2bf524c3687d4e60f",
+        "mountainOverlaySha256": "f796d1faf3f6668957b01fc9b98ac2bc90d27540e43b5b3dbe1dbcf1f1a61655"
+      },
+      {
+        "id": "c8-r8",
+        "baseReplacementPixelCount": 161176,
+        "baseReplacementPatch": "patches/base-replacement/c8-r8.png",
+        "baseReplacementMask": "patches/base-replacement-mask/c8-r8.png",
+        "footGroundPairPixelCount": 8987,
+        "exposedEdgeGroundPixelCount": 8987,
+        "canopyCoveredForestEdgePixelCount": 0,
+        "footGroundPairPatch": "patches/foot-ground-pair/c8-r8.png",
+        "footGroundPairMask": "patches/foot-ground-pair-mask/c8-r8.png",
+        "liveGuardGroundPixelCount": 0,
+        "protectedGrayLiveGuardCandidatePixels": 0,
+        "protectedGrayLiveGuardCandidateMask": "patches/protected-gray-live-guard-mask/c8-r8.png",
+        "cleanBase": "chunks/base/c8-r8.png",
+        "mountainOverlay": "chunks/mountain-alpha/c8-r8.png",
+        "inputLatestForestBaseSha256": "2b572b71773d1bcf5b66e62b85952f410e37bec8d07fc6b2b18b3ac2fdf3cb1b",
+        "inputLatestForestLayerSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+        "cleanBaseSha256": "20d466e20ede818056f6a08230ceb7f0d3de1d466c0e1d143f64ce8d9ff0f0c2",
+        "mountainOverlaySha256": "42b7ecd7fd617a87d2c4fc1567c2ec55716970101b977244cfc0d00b1c74a976"
+      },
+      {
+        "id": "c9-r8",
+        "baseReplacementPixelCount": 65536,
+        "baseReplacementPatch": "patches/base-replacement/c9-r8.png",
+        "baseReplacementMask": "patches/base-replacement-mask/c9-r8.png",
+        "footGroundPairPixelCount": 0,
+        "exposedEdgeGroundPixelCount": 0,
+        "canopyCoveredForestEdgePixelCount": 0,
+        "footGroundPairPatch": "patches/foot-ground-pair/c9-r8.png",
+        "footGroundPairMask": "patches/foot-ground-pair-mask/c9-r8.png",
+        "liveGuardGroundPixelCount": 0,
+        "protectedGrayLiveGuardCandidatePixels": 0,
+        "protectedGrayLiveGuardCandidateMask": "patches/protected-gray-live-guard-mask/c9-r8.png",
+        "cleanBase": "chunks/base/c9-r8.png",
+        "mountainOverlay": "chunks/mountain-alpha/c9-r8.png",
+        "inputLatestForestBaseSha256": "ea70a33e96246799821cf464ab3fa65f2728e182f2b5f8ce8bb9fe4a9bd56250",
+        "inputLatestForestLayerSha256": "47583f26d679ac48c830afc0fce8ffd86a8bc344db79ba2c1e6b0112686e2e07",
+        "cleanBaseSha256": "a309cd60b3387c1774eae759157719ede7744b7d4bb5a55074d289df0ab8f680",
+        "mountainOverlaySha256": "1576de451f4128709f635eb6d4138b12129da40bcb79ef1ba21e17aedf0d8d5d"
+      },
+      {
+        "id": "c8-r9",
+        "baseReplacementPixelCount": 73627,
+        "baseReplacementPatch": "patches/base-replacement/c8-r9.png",
+        "baseReplacementMask": "patches/base-replacement-mask/c8-r9.png",
+        "footGroundPairPixelCount": 7364,
+        "exposedEdgeGroundPixelCount": 7364,
+        "canopyCoveredForestEdgePixelCount": 0,
+        "footGroundPairPatch": "patches/foot-ground-pair/c8-r9.png",
+        "footGroundPairMask": "patches/foot-ground-pair-mask/c8-r9.png",
+        "liveGuardGroundPixelCount": 0,
+        "protectedGrayLiveGuardCandidatePixels": 0,
+        "protectedGrayLiveGuardCandidateMask": "patches/protected-gray-live-guard-mask/c8-r9.png",
+        "cleanBase": "chunks/base/c8-r9.png",
+        "mountainOverlay": "chunks/mountain-alpha/c8-r9.png",
+        "inputLatestForestBaseSha256": "cfd8a9cec872e62eaae09d8253e4433655541a763bf7a0fdb60a02e93efc98a6",
+        "inputLatestForestLayerSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+        "cleanBaseSha256": "19752bee9f7693ef188e2fb98bff9ef3eee51378d004928f7a85756da6731f8a",
+        "mountainOverlaySha256": "e8387f19ea16216ebb68f7220d9810cf7804cadc83761511b07df79824811c4e"
+      },
+      {
+        "id": "c9-r9",
+        "baseReplacementPixelCount": 58449,
+        "baseReplacementPatch": "patches/base-replacement/c9-r9.png",
+        "baseReplacementMask": "patches/base-replacement-mask/c9-r9.png",
+        "footGroundPairPixelCount": 3333,
+        "exposedEdgeGroundPixelCount": 3333,
+        "canopyCoveredForestEdgePixelCount": 0,
+        "footGroundPairPatch": "patches/foot-ground-pair/c9-r9.png",
+        "footGroundPairMask": "patches/foot-ground-pair-mask/c9-r9.png",
+        "liveGuardGroundPixelCount": 0,
+        "protectedGrayLiveGuardCandidatePixels": 0,
+        "protectedGrayLiveGuardCandidateMask": "patches/protected-gray-live-guard-mask/c9-r9.png",
+        "cleanBase": "chunks/base/c9-r9.png",
+        "mountainOverlay": "chunks/mountain-alpha/c9-r9.png",
+        "inputLatestForestBaseSha256": "7e4e6ebf317124fa89c575fdf3cc0a840ee183642d883aa92cb42b4c3ca49884",
+        "inputLatestForestLayerSha256": "47583f26d679ac48c830afc0fce8ffd86a8bc344db79ba2c1e6b0112686e2e07",
+        "cleanBaseSha256": "ec1ff7157b591128052acb8c0ada0566906af3a42c6edf8096e8537a40930555",
+        "mountainOverlaySha256": "ec45c883805e98b455c24ee2baffce11b9ee3f46934b591faf10ed188086889e"
+      }
+    ],
+    "baseReplacementRule": "Latest forest-stage base is the merge base. Within exact owner M plus existing R6 solid-rock support outside M, excluding only current-runtime live start/exits/valid approaches and the dq-tiles.js manifest last-resort fallback, replace base pixels with clean canonical R4 render_window material output. Then apply same-phase meadow RGB only at alpha-zero, forest-alpha<=16 pixels in the two-cell owner-M edge band, plus exact owner-M portions of live-guard stencils with alpha zero and forest-alpha<=16. Actual visible forest canopy retains its latest base underneath; exposed gaps use meadow floor. Outside these exact masks the latest forest base remains source input. No stale manifest route cutouts, no old R4 art-space route strokes, and no old mountain paint_contact.",
+    "pairedFootGround": {
+      "groundMaskVersion": "actual-alpha-interface-v2",
+      "ownerMFPixels": 479217,
+      "oldV1GroundPixelsRemoved": 241519,
+      "finalGroundPixels": 479217,
+      "basePixelsChangedByV2": 273142,
+      "groundMaskPath": "/Users/chris/.codex/artifacts/edu-rpg-r9-implementation-20261001/world-integration-20261003/mountain/diagnostics/foot-ground-v2-candidate-mask.png",
+      "groundMaskSha256": "b206ced6add0615a69f7ce0d1bc1e5e26ba6b3b655ef625cb44b692847418140",
+      "alphaHashUnchanged": true,
+      "collisionBitsetSha256Unchanged": true,
+      "maskSourceBasis": {
+        "terrainRows": "candidate owner-terrain.json ACT1 owner classes M/F only",
+        "visibleRockAlphaSha256": "e6b63340bad9ed4c9a46248245af2ebf344f76049dabc2e0eb7d4ccecc923998",
+        "latestForestManifestSha256": "ef294637dfbbc5e8d7b6aa28e03d7845a18aa3ba29802c3f5ed68f4d34c35ae5",
+        "visibleForestAlphaRule": "forest alpha <= 16",
+        "replacementGroundRendererSha256": "8a2f8f7d9cd3a24c8a20e45630e8a181c820082bcdb2b5b3876d15429cbb98a2",
+        "materialConfigSha256": "e98f6dc03f98ff9f13b1b32d1df2e5017b88a7a71319c364b9807481ee09399f"
+      },
+      "selectionRule": "Actual alpha-derived exposed surfaces only: alpha-zero, canopy-alpha<=16 owner M/F pixels in exact-support transparent components that touch both outside-support and visible-rock boundaries, plus alpha-zero/canopy-free owner M/F components touching both visible-rock and actual-canopy boundaries. No cell-distance cutoff. Water and solid-object layers are untouched; closed interior component 36 at world cell (151,246) is explicitly excluded.",
+      "closedInteriorConcavity": {
+        "worldCell": [
+          151,
+          246
+        ],
+        "componentId": 36,
+        "supportConnectivity": "closed; not connected to outside support",
+        "action": "excluded"
+      },
+      "artAuthorityChecks": {
+        "groundMaskVsVisibleCliffAlphaPixels": 0,
+        "groundMaskVsForestAlphaGt16Pixels": 0,
+        "forestLayerAndCliffAlphaByteUnchanged": true,
+        "collisionBitmapByteUnchanged": true
+      },
+      "chunks": {
+        "c1-r0": {
+          "v2FootGroundPixels": 958,
+          "finalBaseSha256": "33e63bdc85373319695c330088b850b2c5db7aacb830f5db619d7780df94b999",
+          "v2FootGroundPatchSha256": "a8cf64588d7653335fc0332e477a2955d91855335e51c0bd2886a069bee2bb82",
+          "v2FootGroundMaskSha256": "e48e150ad197f4aa16a85fbb1a9ad70ed43cd47c6b106e5fd125854709f22112"
+        },
+        "c2-r0": {
+          "v2FootGroundPixels": 5902,
+          "finalBaseSha256": "fadbb9444d460389e7be5bf49901bb72b5a88d9a19ad631a59088cd8faf7de09",
+          "v2FootGroundPatchSha256": "a809e06c430f52e604a9d303cbd1a476d442c75bfaebdef8027e13722b61610c",
+          "v2FootGroundMaskSha256": "5c856d20d1ef8646b8fce634f1af736a832e0ef38c56116c6110bd4d92ea5c37"
+        },
+        "c3-r0": {
+          "v2FootGroundPixels": 18467,
+          "finalBaseSha256": "5a966170da56ce2c88354c1b47d3ab1769081bc04a0e99387f19172649c2ac23",
+          "v2FootGroundPatchSha256": "775653aaeeac9f21c545f90cb4bad06368d7416a7bcc4bd25dbb34bc9a458923",
+          "v2FootGroundMaskSha256": "37bfc49118d7cb996ded94635c8d7effbd299b1ea10539d8064ca69f2880c0ce"
+        },
+        "c4-r0": {
+          "v2FootGroundPixels": 35476,
+          "finalBaseSha256": "b74a6367ce04278fbbe363408eb9330c9a555244ffd69f38e85ad17c1c4fa9d4",
+          "v2FootGroundPatchSha256": "facd3395cdab1eb5596d7384fee5ca935673a3a70a43053430420c65b77f2951",
+          "v2FootGroundMaskSha256": "f344e5b1532cddceacde710333f3507743cade9d1cd7fc37916c7b86df4ef7c7"
+        },
+        "c5-r0": {
+          "v2FootGroundPixels": 59785,
+          "finalBaseSha256": "af1082a24433bcab1ca6eeaf1c263a29bd222cf37c4419d471339a7a92ca7f54",
+          "v2FootGroundPatchSha256": "ee5ff286770688cbfc74bb475b2ffa26d87b17686add6f5cd7e607ed8d4382a2",
+          "v2FootGroundMaskSha256": "74b53f6f82a8f1c4fdf959dfd90940af682ff677eb3058ce2145db6874314afb"
+        },
+        "c6-r0": {
+          "v2FootGroundPixels": 16143,
+          "finalBaseSha256": "1f75b56cfadccb13b4c1db4ba37fb69028a4bef2a580f98d85e62b4102f73233",
+          "v2FootGroundPatchSha256": "75fa62ede2b494f33b1d5db0d78bbd13d34482575aef0132ecde0b3754747b01",
+          "v2FootGroundMaskSha256": "6709563b79810c9be0bc81cb8a429d454abc3d35521f8efbaabdabe35eb5d4aa"
+        },
+        "c7-r0": {
+          "v2FootGroundPixels": 0,
+          "finalBaseSha256": "2dd064c8510159fda0b0a46029219a8b318f9bf02a1a00bc8c65ec6b342e7674",
+          "v2FootGroundPatchSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+          "v2FootGroundMaskSha256": "f5df0628643ba99754cee39c30291c6fca5a9fe242838fbbb57dc7926aec76de"
+        },
+        "c8-r0": {
+          "v2FootGroundPixels": 3340,
+          "finalBaseSha256": "3970c3e85e7ae6d46205b10bbe9bf28034287ed23dac69cd7032c54e2711523a",
+          "v2FootGroundPatchSha256": "58314ab77e7f252082bb9370fb073cbf2a6f43645a0b57d423cb54c629b4c66f",
+          "v2FootGroundMaskSha256": "06fb46c1418a6097cbc9326aff20aa9065c58c939adff07830c079669f487439"
+        },
+        "c9-r0": {
+          "v2FootGroundPixels": 10180,
+          "finalBaseSha256": "0d2dcd080f767bfb6ee472f39f1a8987eae57961aa20831020c03e41bc17ca57",
+          "v2FootGroundPatchSha256": "94f78ac7cfc519bcd9388b99b1c4e0d0b91d2dcde6677667d69a4b94b2db7032",
+          "v2FootGroundMaskSha256": "5d23c8f85e1f41b10791d15a17dfa418abdfc890d88c1fdff9ffe5a4a48d4693"
+        },
+        "c0-r1": {
+          "v2FootGroundPixels": 5458,
+          "finalBaseSha256": "1f49a9d21fb1c173524edf63ff3f1cf4014aea33ad4ce8d519c6500a4b662533",
+          "v2FootGroundPatchSha256": "9fce9cf15d39dab3dd38e389bc87ca72dcc4303e9f5dd1c6492cb6018cf9849b",
+          "v2FootGroundMaskSha256": "a93f121bd7a0855b0f21f13aac2a318a1450818c173908bc6171ab3c7a256323"
+        },
+        "c1-r1": {
+          "v2FootGroundPixels": 11209,
+          "finalBaseSha256": "23bea5db380d0cb26af754676259eba7fbf76f4c0493c91f7a697fb3390e43d6",
+          "v2FootGroundPatchSha256": "60967c42be691b2df00a58ce3973a5e30815f92a23250372bbec610225a35308",
+          "v2FootGroundMaskSha256": "f1775c5a7169d83ad4e00a4311eb65ed84628ab3ae30464acc11c0950a717a10"
+        },
+        "c2-r1": {
+          "v2FootGroundPixels": 8085,
+          "finalBaseSha256": "6d3aab8ba0373b88152f2dcbfb2688f572dc7dbacff32c851ab75ab49f82e478",
+          "v2FootGroundPatchSha256": "77f3f01c95a859cb21e30ac71ed1c3bc506a42d46e618604ac9b84fd26f95a0d",
+          "v2FootGroundMaskSha256": "70db1b2cf08ed5a67c90c178709a722f5ac0b76518f09b6df12f180ba450c0cf"
+        },
+        "c3-r1": {
+          "v2FootGroundPixels": 7415,
+          "finalBaseSha256": "5018d8850377df460d20e70a69f2187bac0cf9fd2b95677455be373527848d3d",
+          "v2FootGroundPatchSha256": "7e896e182181527b2c1b5ac9e4a372d25888b0d85e5d3441345b68ed286e80a2",
+          "v2FootGroundMaskSha256": "ae53313ccf2744b28b94505788f362e1f92538866ba65d05dac67ec67f2bac33"
+        },
+        "c6-r1": {
+          "v2FootGroundPixels": 27692,
+          "finalBaseSha256": "bf1c86faf2daa8a464ff79a1ef29af98a2c39aa78ce07b008c74f9e39085190c",
+          "v2FootGroundPatchSha256": "5f5644780d1a8ad0c51de8c42c697e3382950ae5ed629333da410d08b25622dc",
+          "v2FootGroundMaskSha256": "c2aa715fd375afac55b785f54fc232f543c1b9d619ef0916a10c1dc86a879554"
+        },
+        "c7-r1": {
+          "v2FootGroundPixels": 27469,
+          "finalBaseSha256": "7930366624015ce8b37f21dd2b00392b2a917d4d7d6bcc2b165980910c29d51b",
+          "v2FootGroundPatchSha256": "29d5db24e54599d5269777dd568908f38fd23b2cba8e98499fcf7a71c855ac93",
+          "v2FootGroundMaskSha256": "7f16d01a7002d07891aebff8751fb01bfe541b0bbea2f1e070607d63de2ac6a4"
+        },
+        "c8-r1": {
+          "v2FootGroundPixels": 11705,
+          "finalBaseSha256": "3a73c27a9ca1226b3c1c1f4a54f905517b43dcfc97390e2dc1365739ab5872c5",
+          "v2FootGroundPatchSha256": "c4bf56a43310911b0c4eb20ae505679a246a3f737825854e8d423309713b4315",
+          "v2FootGroundMaskSha256": "263a03c0ca7c10ebca3612384efe5675651d3815adfa7162f62b083d13a5ae74"
+        },
+        "c9-r1": {
+          "v2FootGroundPixels": 10944,
+          "finalBaseSha256": "bc88592692e3af8e100dfe2b56d879d28ef713f1fa2ea271cd71332328511483",
+          "v2FootGroundPatchSha256": "ad6b6382545aa6034f1f6fadf523b5bc9d2c3d9a9a44d5232e1979bfa267ab5e",
+          "v2FootGroundMaskSha256": "90fcc7c4988caf984c69fb6ebb5aa8cd684509463c5183c4d7b29976bfa0f47e"
+        },
+        "c0-r2": {
+          "v2FootGroundPixels": 4467,
+          "finalBaseSha256": "41300f2c013df2d8ca10ec904afca84358ab93adb6b60a131a1a2ecb527816f0",
+          "v2FootGroundPatchSha256": "e65c592af0e7efcc75e4cbd4b2679b212c0e3de8183ead4ab0fd7e23551dbe29",
+          "v2FootGroundMaskSha256": "11ba37e8c0d4ebea322aa4bfb93b95c28ac3b783ed778a1f70785b99d273f1e5"
+        },
+        "c1-r2": {
+          "v2FootGroundPixels": 13461,
+          "finalBaseSha256": "f1fd1dcc89474c1c6fe9cd156d3f7fd883e7a7f33cfa9372ea0bca872f826733",
+          "v2FootGroundPatchSha256": "777a2ceb34965e68b96482dba2f7af14b712b04f4d4fa7ea2fa1233e836e4e7a",
+          "v2FootGroundMaskSha256": "f3baeb7b3ca84e9d344a172e1fd0f810a787e16b8818cc2412cd0a5181902931"
+        },
+        "c2-r2": {
+          "v2FootGroundPixels": 5790,
+          "finalBaseSha256": "9a7d8ff934847dc5eee0827764da1acee30228d8a7932c81ab62ea7cac07f4fb",
+          "v2FootGroundPatchSha256": "d63ae7099ffa6776a46a0e6e6d4a133b0a68385590b0187bb84c1d7aa76c86d2",
+          "v2FootGroundMaskSha256": "e263a0584f84f7fa1aa63a12e2ae87d37eb669dfa001a130f33e5f2c50b2ebd1"
+        },
+        "c7-r2": {
+          "v2FootGroundPixels": 16141,
+          "finalBaseSha256": "7da3c68f0b8f4d35548fc0c24f34eca8357f29eb440ac8184d5b2ff9f82064de",
+          "v2FootGroundPatchSha256": "7835b2310fabe02c292c7ef6103be0a2708810f8178a0d7c40a597c672957c59",
+          "v2FootGroundMaskSha256": "6eab1a1b9a1cc5ee7806f31d4a8fe2b11b78a276548660edfc7b5f7fedfc1672"
+        },
+        "c8-r2": {
+          "v2FootGroundPixels": 12921,
+          "finalBaseSha256": "211e52171b3cfa30a4164c0b08c765559eb50d7316f6abe2729b6380bddd738f",
+          "v2FootGroundPatchSha256": "f1c5c29f4662252182c2ca874e0c3cd9d2b2cdbe76dc0336b9eb3d841ce87f7a",
+          "v2FootGroundMaskSha256": "1c98d466771c59aeb2ecc51e5971c1797d817ba3eb7bc1dc966fab0b9a35e411"
+        },
+        "c9-r2": {
+          "v2FootGroundPixels": 10944,
+          "finalBaseSha256": "b2b032439ef00cf82a1af6016bd175f24db0796a99029b0cbe64e27e876a4d2d",
+          "v2FootGroundPatchSha256": "ed31cfd3aa5e76fc5d8c93e8df967d21b4dd1f5921f5003f9278cddbde6fe6ad",
+          "v2FootGroundMaskSha256": "80058f85be3d416ad7679ec0f4682d7688814e02af8247ffe31c914b300b067b"
+        },
+        "c7-r3": {
+          "v2FootGroundPixels": 13782,
+          "finalBaseSha256": "c49baaa63b129bed2422cb6fb4167f5eb05b717f27b8ed69eedc1959ed3fe7dd",
+          "v2FootGroundPatchSha256": "7ccd2c192c84237e37371aceea180e701515bfac4d6c8d5b10df574419630b95",
+          "v2FootGroundMaskSha256": "da6811b7d0a752d012c231aba89e104db27c1b783423c13f98f628bc71709f51"
+        },
+        "c8-r3": {
+          "v2FootGroundPixels": 10412,
+          "finalBaseSha256": "546fe7b297446f5b158cf2a54e24f669d86b0969c04e72085216478289550da1",
+          "v2FootGroundPatchSha256": "ca80adc9989e94b1bda56efc11206c9885a36e64bb905281137349100e22265d",
+          "v2FootGroundMaskSha256": "5bdf5e9200b8619c1a1efc4e95632aaa85352e6d2302067e85cfccff2fd61bc5"
+        },
+        "c9-r3": {
+          "v2FootGroundPixels": 12582,
+          "finalBaseSha256": "3ce98c82981aef316d5171ab454346e45f74a9d6bfa892130a6c35d9b4d8935e",
+          "v2FootGroundPatchSha256": "d7b4a1e1d4419f8283cf25b30fc47794fa18764d763c71490e5fb9717e279407",
+          "v2FootGroundMaskSha256": "1211a2a29cbffbb84671b78e984c0bcc714092d526dea91533310f293de64692"
+        },
+        "c7-r4": {
+          "v2FootGroundPixels": 733,
+          "finalBaseSha256": "0e1b3cd25b9c9f5d92e8d878951bfda5740317a2d2142a0d8e999fc3bdef1dcb",
+          "v2FootGroundPatchSha256": "988ba75ed9130f7f7a001f5dab41da57f9cfa19fd40e2d47c6c55f60c4a57fb9",
+          "v2FootGroundMaskSha256": "4b81a1d5238b527cea03fce1eacefdeab711619662e84f4a5b6e09fdc1cde721"
+        },
+        "c8-r4": {
+          "v2FootGroundPixels": 10872,
+          "finalBaseSha256": "f37f8d4fff7e68ddebf91e791cdd4c5f6f79b2ae2cf7480eece9d9bd1425ea6c",
+          "v2FootGroundPatchSha256": "6f9b35a57a95d6831d98b8b917ac6a83193992670cf20152addb1cf1cc0d03fc",
+          "v2FootGroundMaskSha256": "4ee55668c07046d56d518813647c8bec1943d5fc94efc64ead5b177b6488744e"
+        },
+        "c9-r4": {
+          "v2FootGroundPixels": 11476,
+          "finalBaseSha256": "ddc0a4246f4318930f6eeea41bd425eafd64a121bd7be3a63f050da175889b42",
+          "v2FootGroundPatchSha256": "83669bba981b0b3a36b89f4161f6c9c08e6b00704a9e803c4c04621d3759ad66",
+          "v2FootGroundMaskSha256": "5762bdd0d4c118d0904913848efadc108811bf79ae5ad61f3ebb586c7522c5e1"
+        },
+        "c7-r5": {
+          "v2FootGroundPixels": 5588,
+          "finalBaseSha256": "a5e3270632a8b2d018f2b987efd3ca2eab861736715bdae14f86e13b857f4a3d",
+          "v2FootGroundPatchSha256": "2b379ac5f9a1393c9c75089b588007ded8047e05357f2077a6298e54a645a576",
+          "v2FootGroundMaskSha256": "16da0085b7b599b34757fad2c419e95f274722f58d63b18336c981678f3c406d"
+        },
+        "c8-r5": {
+          "v2FootGroundPixels": 0,
+          "finalBaseSha256": "1b7b93d2dcee0b09426c39d9c2e8a3bb7d2cecea85f71a0c1e9c8f69179a74ce",
+          "v2FootGroundPatchSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
+          "v2FootGroundMaskSha256": "f5df0628643ba99754cee39c30291c6fca5a9fe242838fbbb57dc7926aec76de"
+        },
+        "c9-r5": {
+          "v2FootGroundPixels": 10287,
+          "finalBaseSha256": "8ca5158f12fcef50b1e4d69dd87bc4e88306c7baa494dc902ebc3056b6af7bf6",
+          "v2FootGroundPatchSha256": "6b2a86e8dbe88ba6a3a7fbdb19a0cc3062cd54b457786d0f1c22a89def8e4a06",
+          "v2FootGroundMaskSha256": "24a681a22536b3fbb5929a71527f7c636976aee05d7b0ffb46678e7c3b19384b"
+        },
+        "c7-r6": {
+          "v2FootGroundPixels": 5441,
+          "finalBaseSha256": "84981f28ee0c43094f9593591178bdd21a4631d680e8edea894c20d973c108e5",
+          "v2FootGroundPatchSha256": "fe46238a878e84921ffb9b6b13b712021356a403e5f0df456498e44df2caf7a9",
+          "v2FootGroundMaskSha256": "4385a6bede7483e2fa53856560926ed7700548b9411758b6611fddeb8b647c0e"
+        },
+        "c8-r6": {
+          "v2FootGroundPixels": 1183,
+          "finalBaseSha256": "5702bf65cc7dee895f1a14a7d9ada30fc62441ec381c74c76ec0bcf3ea3259db",
+          "v2FootGroundPatchSha256": "17bf41fb2f0e62437c997e253b7dd1a0a7f1106b9d342286788a1de8063fa34c",
+          "v2FootGroundMaskSha256": "e780b518fa524ef7124556e92bd74c9cb059eebda2418be9cac4e2ff0c070e40"
+        },
+        "c9-r6": {
+          "v2FootGroundPixels": 13178,
+          "finalBaseSha256": "3a0823d167aa90152a790ce7756d6c40991afa010e9d54eace6270d46f0fcb8d",
+          "v2FootGroundPatchSha256": "8ae2e52b7b2f4de931d2a624b79a449ee112d518fc645e3181cce900d1012eda",
+          "v2FootGroundMaskSha256": "ad8a32cebce609394d6d0f7d265bc60723ce4d4eff1b92b26f720cc5b29cccce"
+        },
+        "c8-r7": {
+          "v2FootGroundPixels": 10257,
+          "finalBaseSha256": "1a9047fe79b82186be677c0ef416418dd036fd02cfef93638a57ff7a045bf942",
+          "v2FootGroundPatchSha256": "98238272b5f5863aadf5f8ee003787ab088cf51086c22684c6c98be33a31d98b",
+          "v2FootGroundMaskSha256": "b32e50cb7b9c4a37046bc5b80647262e7c07a87c9dc939698c5ccfe3d33e857b"
+        },
+        "c9-r7": {
+          "v2FootGroundPixels": 11445,
+          "finalBaseSha256": "a7126e77ed2b866ecf085d04dedc04dac05fe066200f54426fb158ec9fc64032",
+          "v2FootGroundPatchSha256": "b819532a700cfb3cce4764a137ae2fd5114225f7cbe2ddf8c657d09fec0105bd",
+          "v2FootGroundMaskSha256": "daa550460ae7662cce5e80c37cd76237c4e46dcee9f787805e744b00e4b6e1da"
+        },
+        "c8-r8": {
+          "v2FootGroundPixels": 8987,
+          "finalBaseSha256": "20d466e20ede818056f6a08230ceb7f0d3de1d466c0e1d143f64ce8d9ff0f0c2",
+          "v2FootGroundPatchSha256": "dacf5d72f1dc69ab9ce6be9b80b3cfd623095ed7f5ca29cb63c6c38f0e0a8f52",
+          "v2FootGroundMaskSha256": "79a2f8c64c62dcbba0416bc23fc975a3e3d6d608c8ea97f339d8f69e2522aea6"
+        },
+        "c9-r8": {
+          "v2FootGroundPixels": 9902,
+          "finalBaseSha256": "557fdce72e3b9831be70c5e7fa0c340cca0b6a44fdfb5af0b948d6fc64cadeed",
+          "v2FootGroundPatchSha256": "ea2e8ee536bb6b5cad0827a9bec1d132d609f7ece913eee765dbda4fb053de41",
+          "v2FootGroundMaskSha256": "b5f5a97034a95246db3f42072676b0682e15585f7aef80268b30aaca347a439a"
+        },
+        "c8-r9": {
+          "v2FootGroundPixels": 7377,
+          "finalBaseSha256": "e398b5b6ab1c94030aaf81a7dca89c862062a127871d9710996734297afc759f",
+          "v2FootGroundPatchSha256": "67e84622c9e9bd0da04e64237e6fb76484229de8a31005f774e4c7dd28fd5f75",
+          "v2FootGroundMaskSha256": "cdd7e292277f56272b7f8791d463ccab75b6341f997813a311ee4089a191f424"
+        },
+        "c9-r9": {
+          "v2FootGroundPixels": 11763,
+          "finalBaseSha256": "0c383fdad364565cf55c687cc54c51b50ceb358de5833bb55f99ee11c81fd521",
+          "v2FootGroundPatchSha256": "152837dd7984c933070e69d18c0cfa0621fb7ace95b68b436e334584b774627e",
+          "v2FootGroundMaskSha256": "f0b4298b2b3b6bd0524895ac708678bafa1c079768527d5a0283f659d93bb93c"
+        }
+      }
+    },
+    "protectedLiveGuardGroundAudit": {
+      "neutralGrayCandidatePixelsBeforeCorrection": 1,
+      "candidateCriterion": "Current runtime protected full-hero start/exit/valid-approach/fallback stencil AND owner-M AND alpha-zero, RGB spread <=20 and mean 40..175 in latest forest-stage base.",
+      "masks": "Per-chunk exact diagnostic masks at patches/protected-gray-live-guard-mask; these describe latest-base pixels before the paired underpaint correction."
+    },
+    "keepoutExclusion": "Current executed live API start, eight exits, 11 seedWalkableAt-valid door neighbors, and dq-tiles.js manifest last-resort fallback. No permanent mask is generated from stale manifest route paths or generic recovery candidates."
+  },
+  "pixelAudit": {
+    "visibleRockPixels": 4179621,
+    "alphaNonzeroVisualPixelsOutsideExactSupport": 0,
+    "alphaNonzeroVisualPixelsInsideProtectedHero": 0,
+    "visibleAlphaOutsideExactSupportPixels": 0,
+    "visibleAlphaInsideProtectedHeroPixels": 0,
+    "actualLiveGuardCollisionPixels": 0,
+    "uncoveredTargetCells": 240,
+    "uncoveredTargetComponents": [
+      {
+        "cells": 2,
+        "worldBoundsInclusive": [
+          71,
+          218,
+          72,
+          219
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 3,
+        "worldBoundsInclusive": [
+          163,
+          218,
+          163,
+          220
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 1,
+        "worldBoundsInclusive": [
+          70,
+          221,
+          70,
+          221
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 2,
+        "worldBoundsInclusive": [
+          160,
+          221,
+          161,
+          222
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 1,
+        "worldBoundsInclusive": [
+          69,
+          223,
+          69,
+          223
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 8,
+        "worldBoundsInclusive": [
+          95,
+          224,
+          102,
+          225
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 2,
+        "worldBoundsInclusive": [
+          105,
+          224,
+          106,
+          224
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 3,
+        "worldBoundsInclusive": [
+          69,
+          225,
+          69,
+          227
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 15,
+        "worldBoundsInclusive": [
+          108,
+          225,
+          118,
+          236
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 3,
+        "worldBoundsInclusive": [
+          91,
+          226,
+          93,
+          226
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 4,
+        "worldBoundsInclusive": [
+          64,
+          227,
+          67,
+          227
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 5,
+        "worldBoundsInclusive": [
+          84,
+          227,
+          88,
+          229
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 1,
+        "worldBoundsInclusive": [
+          58,
+          228,
+          58,
+          228
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 2,
+        "worldBoundsInclusive": [
+          61,
+          228,
+          62,
+          228
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 1,
+        "worldBoundsInclusive": [
+          54,
+          229,
+          54,
+          229
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 6,
+        "worldBoundsInclusive": [
+          77,
+          230,
+          82,
+          231
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 1,
+        "worldBoundsInclusive": [
+          50,
+          231,
+          50,
+          231
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 5,
+        "worldBoundsInclusive": [
+          70,
+          232,
+          74,
+          235
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 1,
+        "worldBoundsInclusive": [
+          46,
+          233,
+          46,
+          233
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 1,
+        "worldBoundsInclusive": [
+          44,
+          234,
+          44,
+          234
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 2,
+        "worldBoundsInclusive": [
+          41,
+          235,
+          42,
+          236
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 2,
+        "worldBoundsInclusive": [
+          38,
+          237,
+          39,
+          238
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 4,
+        "worldBoundsInclusive": [
+          66,
+          237,
+          68,
+          240
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 2,
+        "worldBoundsInclusive": [
+          119,
+          238,
+          120,
+          239
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 1,
+        "worldBoundsInclusive": [
+          122,
+          240,
+          122,
+          240
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 4,
+        "worldBoundsInclusive": [
+          125,
+          240,
+          128,
+          240
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 1,
+        "worldBoundsInclusive": [
+          131,
+          240,
+          131,
+          240
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 6,
+        "worldBoundsInclusive": [
+          29,
+          241,
+          34,
+          246
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 4,
+        "worldBoundsInclusive": [
+          133,
+          241,
+          136,
+          241
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 2,
+        "worldBoundsInclusive": [
+          64,
+          242,
+          64,
+          243
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 2,
+        "worldBoundsInclusive": [
+          138,
+          242,
+          139,
+          242
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 3,
+        "worldBoundsInclusive": [
+          142,
+          243,
+          144,
+          244
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 4,
+        "worldBoundsInclusive": [
+          59,
+          245,
+          62,
+          247
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 1,
+        "worldBoundsInclusive": [
+          146,
+          245,
+          146,
+          245
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 1,
+        "worldBoundsInclusive": [
+          147,
+          247,
+          147,
+          247
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 1,
+        "worldBoundsInclusive": [
+          28,
+          248,
+          28,
+          248
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 2,
+        "worldBoundsInclusive": [
+          56,
+          249,
+          57,
+          250
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 5,
+        "worldBoundsInclusive": [
+          145,
+          249,
+          147,
+          253
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 3,
+        "worldBoundsInclusive": [
+          27,
+          250,
+          27,
+          252
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 2,
+        "worldBoundsInclusive": [
+          52,
+          251,
+          53,
+          252
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 9,
+        "worldBoundsInclusive": [
+          42,
+          253,
+          50,
+          257
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 4,
+        "worldBoundsInclusive": [
+          29,
+          254,
+          32,
+          256
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 1,
+        "worldBoundsInclusive": [
+          144,
+          255,
+          144,
+          255
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 1,
+        "worldBoundsInclusive": [
+          34,
+          257,
+          34,
+          257
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 5,
+        "worldBoundsInclusive": [
+          36,
+          257,
+          40,
+          257
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 8,
+        "worldBoundsInclusive": [
+          142,
+          257,
+          143,
+          264
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 3,
+        "worldBoundsInclusive": [
+          141,
+          266,
+          141,
+          268
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 12,
+        "worldBoundsInclusive": [
+          141,
+          270,
+          148,
+          276
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 6,
+        "worldBoundsInclusive": [
+          147,
+          281,
+          150,
+          286
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 2,
+        "worldBoundsInclusive": [
+          146,
+          288,
+          146,
+          289
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 2,
+        "worldBoundsInclusive": [
+          144,
+          291,
+          145,
+          292
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 1,
+        "worldBoundsInclusive": [
+          142,
+          295,
+          142,
+          295
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 2,
+        "worldBoundsInclusive": [
+          141,
+          297,
+          141,
+          298
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 3,
+        "worldBoundsInclusive": [
+          139,
+          300,
+          140,
+          302
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 9,
+        "worldBoundsInclusive": [
+          138,
+          304,
+          139,
+          312
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 2,
+        "worldBoundsInclusive": [
+          138,
+          315,
+          138,
+          316
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 1,
+        "worldBoundsInclusive": [
+          139,
+          319,
+          139,
+          319
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 9,
+        "worldBoundsInclusive": [
+          139,
+          321,
+          144,
+          329
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 20,
+        "worldBoundsInclusive": [
+          144,
+          331,
+          149,
+          350
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 3,
+        "worldBoundsInclusive": [
+          149,
+          352,
+          149,
+          354
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 1,
+        "worldBoundsInclusive": [
+          150,
+          356,
+          150,
+          356
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 4,
+        "worldBoundsInclusive": [
+          150,
+          358,
+          150,
+          361
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 5,
+        "worldBoundsInclusive": [
+          151,
+          363,
+          153,
+          367
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 3,
+        "worldBoundsInclusive": [
+          154,
+          369,
+          156,
+          371
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 1,
+        "worldBoundsInclusive": [
+          157,
+          373,
+          157,
+          373
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 4,
+        "worldBoundsInclusive": [
+          159,
+          375,
+          162,
+          376
+        ],
+        "touchesSupportOuterBoundary": true
+      }
+    ],
+    "fullyInteriorUncoveredCells": 0,
+    "targetRockComponents8Way": 1,
+    "visibleRockComponents8Way": 1,
+    "baselineWalkableComponents4Way": 2,
+    "newWalkableComponents4Way": 2,
+    "newWalkableComponentMerges": [],
+    "maskPurpose": "Visible alpha>=128 only; no invisible/barrier geometry is emitted."
+  },
+  "runtimeCollisionMapping": {
+    "currentAuthority": "candidate public/act1-overworld-walk.bin; A1OW v1, 48 game pixels per map cell, 320x400 sparse cells with 48x48 block bytes, baked by scripts/bake_act1_overworld_walk.mjs. public/dq-tiles.js::owmBuild/owmTileBlock currently combines water and tile4 mountainField; public/act1-hifi/manifest.json collision points to QOK forest-collision.bin, which is forest-only.",
+    "proposedReplacement": "Within active ACT1 plate only, preserve existing water and bridge bits. Remove tile4-generated mountain obstacle contribution only inside the active mountain-painted bounds, then derive the replacement mountain-solid contribution from this stage visible-alpha bitmap (threshold 128) mapped from 32 art px/cell to the A1OW 48 px/cell occupancy grid. Recompute full-hero clearance/distance while retaining water and protected route/cave/landmark behavior. Keep Acts 2\u20135, non-ACT1 tile4 handling, and dungeon collision unchanged. Treat QOK forest collision as an independent layer; do not mistake it for mountain/A1OW replacement.",
+    "stagedBitset": "/Users/chris/.codex/artifacts/edu-rpg-r9-implementation-20261001/world-integration-20261003/mountain/stage/collision/mountain-alpha-visible.bin",
+    "runtimeProducerEdit": null
+  },
+  "evidence": {
+    "overview": "stage/evidence/act1-mountain-all-affected-overview.png",
+    "nativeHeroMeadowMountain": "stage/evidence/native-hero-meadow-mountain-junction.png",
+    "nativeHeroForestMountain": "stage/evidence/native-hero-forest-mountain-junction.png",
+    "nativeHeroCaveApproach": "stage/evidence/native-hero-crystal-cave-approach.png"
+  },
+  "limitations": [
+    "This is a staged artifact and collision-source proposal, not candidate/runtime integration.",
+    "The 32px/cell visible-alpha fit is audited against exact support and authored hero guards; final A1OW whole-hero movement re-bake and active gameplay remain integration-owner checks."
+  ]
+}

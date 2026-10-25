@@ -1,0 +1,7 @@
+  PASS New Game town start reaches the visible retry after the simulated first-frame failure — townAttempts=1
+  PASS actual New Game still starts the Elder opening — {"src":"http://127.0.0.1:5174/act1-hifi/town.html?town=greenhollow&first=1&facing=up","cell":[32.19,23.61],"flag":true,"intro":true}
+  PASS actual New Game uses the Elder opening — http://127.0.0.1:5174/act1-hifi/town.html?town=greenhollow&first=1&facing=up
+  PASS New Game enters at the authored Elder cell — cell 32.19,23.61
+  PASS successful opening writes the existing town-opened flag — true
+  PASS retry consumed the original New Game intent only after the town became ready — attempts=2; http://127.0.0.1:5174/act1-hifi/town.html?town=greenhollow&first=1&facing=up
+PASS 6 checks

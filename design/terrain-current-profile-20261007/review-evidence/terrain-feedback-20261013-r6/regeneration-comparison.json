@@ -1,0 +1,14 @@
+{
+  "status": "PASS",
+  "profileId": "act1-forward-20261007-v1",
+  "generationAReceiptSha256": "5b318fed7e0365e7ccfb20f3615eb78119809e71176446104d06c50e157e8b55",
+  "generationBReceiptSha256": "5eee17fc4c4cfd5d7b36b5bae744c340f739e06e011e4b0d3b8e91e442e026b7",
+  "pathSetMatches": true,
+  "outputInventoryMismatches": [],
+  "cleanDeterministicRegeneration": true,
+  "fullWorldComplete": true,
+  "gateReady": false,
+  "generationA": "/private/tmp/edu-rpg-build84-feedback-20261013/terrain-implementation-plan/generation-overlay-a-root-r6/generation-a",
+  "generationB": "/private/tmp/edu-rpg-build84-feedback-20261013/terrain-implementation-plan/generation-overlay-a-root-r6/generation-b",
+  "generatedAtFixed": "deterministic"
+}

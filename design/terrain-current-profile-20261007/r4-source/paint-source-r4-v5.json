@@ -1,0 +1,123 @@
+{
+  "schema": "act1-raster-paint-source-v1",
+  "seed": 20260925,
+  "surfaceAtlas": "surface-atlas-r4-crisp.png",
+  "canopyAtlas": "canopy-atlas-r4-hybrid.png",
+  "rockAtlas": "rock-motif-atlas-r2.png",
+  "sha256": {
+    "surfaceAtlas": "1a085362bd7c2a3fd912ed07c5931b2e2945b83bcd1b1a71ada8abf923c3fd19",
+    "canopyAtlas": "7eef91d2fa4749e059d3c73be79624551d9ef9be2c179a6b4bc5b99a0fb7a984",
+    "rockAtlas": "568fffcf1c61fbe7ff9d10ebd9bab24a6be88252be6d9a8af566d917d2e2c4c2",
+    "mountainCutoutAtlas": "7842a067007234bf43f00c8b835be9abc458ec54c4a47cea06369428da754965",
+    "meadowAtlas": "7a6befc783e66bc58f091e9dec05c9ac9e6059a4df560d12f4f0b4fdf9b9a350"
+  },
+  "authoritativeShippedManifest": "design/review/overworld-art-blueprint/act-by-act/act1/runtime-v3/act1-painted-overworld-r3/runtime/manifest.json",
+  "authoritativeR26Manifest": "design/review/overworld-art-blueprint/act-by-act/act1/runtime-v2/act1-final-art-geometry-r26/runtime/manifest.json",
+  "authoritativePolygonAuthority": "design/review/overworld-art-blueprint/act-by-act/act1/runtime-v2/act1-final-art-geometry-r26/polygon-authority.json",
+  "mask": "design/continent-terrain-class-method/owner-terrain/paint-20260926-corrected/act1-smoothed-semantic.png",
+  "sha256Lineage": {
+    "shippedManifest": "366b4c85120140910f2bc16a541c5699b732cfd6cb749509d6f46ed6f15b7e9a",
+    "r26Manifest": "7306e81411a230d3d83d8c179c9a55de5d0a234f26757654872b1b2c264210a4",
+    "polygonAuthority": "4010715a99926260a9d4e842cc97e0e6e04df93bffbc69b4ccf4ef4baf086834",
+    "mask": "97f1a64fe6bfec7b40af16fef05f70caa80bdd076a8c4c3806474b848c975068"
+  },
+  "anchors": {
+    "meadow": {
+      "path": "design/continent-terrain-class-method/owner-terrain/paint-20260926-corrected/anchors/overworld-c4-r2-grass-painted-sample.png",
+      "sha256": "4a5b06d4c8dacb4f22583efc4c71d542828199b81f0585cce4598c125a40fbef"
+    },
+    "forest": {
+      "path": "design/continent-terrain-class-method/owner-terrain/paint-20260926-corrected/anchors/overworld-c4-r6-painted-sample.png",
+      "sha256": "7ff62b63ebad266073fee9e164f02bbbf2811089ecff8b7ad327c96538f2f2a6"
+    },
+    "forestGrass": {
+      "path": "design/continent-terrain-class-method/owner-terrain/paint-20260926-corrected/anchors/forest-grass-transition-c4-r2.png",
+      "sha256": "3943bbc94c62094b07b0422139b14a594a2e5539643962747884ca5ce3a7e7c2"
+    },
+    "mountainGrass": {
+      "path": "design/continent-terrain-class-method/owner-terrain/paint-20260926-corrected/anchors/mountain-grass-transition-c8-r3.png",
+      "sha256": "b51e60c9d4161455c7c008457d685a105571df3a7276e3441230162cae106bee"
+    }
+  },
+  "surfaceGrid": {
+    "columns": 3,
+    "rows": 3,
+    "rowMajor": [
+      "meadow-a",
+      "meadow-b",
+      "forest-a",
+      "forest-b",
+      "rock-a",
+      "rock-b",
+      "sand",
+      "water",
+      "trail"
+    ]
+  },
+  "materialSampling": {
+    "defaultTexelsPerCell": 16,
+    "surfaceAtlasGridInsetPxByMaterial": {
+      "default": 2,
+      "meadow": 2
+    },
+    "texelsPerCellByMaterial": {
+      "meadow": 96,
+      "forest": 32,
+      "rock": 16,
+      "water": 16,
+      "trail": 16
+    },
+    "underpaintTexelsPerCellByMaterial": {
+      "meadow": 16,
+      "forest": 16,
+      "rock": 16,
+      "water": 16,
+      "trail": 16
+    },
+    "maxSourceTexelsPerOutputPixel": 3
+  },
+  "canopyGrid": {
+    "columns": 4,
+    "rows": 3,
+    "count": 12,
+    "selectedSafeAlphaMarginCells": [
+      4,
+      5,
+      6,
+      7,
+      9,
+      10,
+      11
+    ],
+    "minimumTransparentMarginFraction": 0.08,
+    "validationAlphaThreshold": 16,
+    "alphaSanitizeAtOrBelow": 16
+  },
+  "rockGrid": {
+    "columns": 4,
+    "rows": 3,
+    "count": 12
+  },
+  "provenance": {
+    "generator": "built-in image_gen",
+    "discardedDrafts": [
+      "exec-fe4794f4-ee95-4bc0-ad54-7de03581d479.png",
+      "exec-a889e072-4d6a-4421-b1b5-3efcc66a14f3.png",
+      "exec-77eb36cf-9136-4e65-9414-0840c0c32a99.png",
+      "exec-2329113d-ff47-4f2e-a709-8749a6da786e.png"
+    ],
+    "acceptedSourceOutputs": [
+      "exec-9bd3edec-3e76-485f-9a2b-58406255ba08.png",
+      "exec-8a81dd8e-c9ae-4465-a2e7-d151eb414aa1.png",
+      "exec-92838a4c-d984-4042-a4fe-4e7fb19d6828.png",
+      "exec-78708244-a9b7-487e-974f-c2a697cd2fa5.png",
+      "exec-8713e438-351b-41fb-a0b3-5f9f45690f08.png"
+    ],
+    "meadowDensityVariant": "96 texels per semantic cell selected after c3-r6 density comparison; world-phased periodic sampling",
+    "mountainTreatment": "field-driven facets v4, integrated into all 120 bases; mountain geometry and protected routes unchanged",
+    "canopySampler": "single direct nearest RGB resample at final size; original two-Lanczos alpha chain retained"
+  },
+  "authoringRevision": "2026-09-27-crisp-r4-v7-reviewed-full120",
+  "mountainCutoutAtlas": "mountain-cutout-atlas-r2.png",
+  "meadowAtlas": "meadow-atlas-r4-v5-periodic.png"
+}

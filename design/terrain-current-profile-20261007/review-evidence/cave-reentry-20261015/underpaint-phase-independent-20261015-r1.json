@@ -1,0 +1,59 @@
+{
+  "allOtherOutputBytesUnchanged": true,
+  "baselineReceiptSha256": "a567b7bb838853cee973fb7186c4c5dcd5e50a43692c93a1bfaeff79f2b7cb27",
+  "changedOutputPaths": [
+    "act1-hifi/manifest.json"
+  ],
+  "currentDqTilesSha256": "6a605a8f0d7d2513871c9b8e5a18f30fa7a403ee2ec0e42a4f1646d2e4d5da1d",
+  "currentManifestSha256": "931240cf16decc0ad17f225b0baeabbf2ca8dcecd0b9342056fc1b76a0d69707",
+  "currentMetadataComparison": {
+    "bytes": 2443,
+    "path": "/private/tmp/edu-rpg-build84-feedback-20261013/native-remaining-gate-20261015/cave-reentry-fix/metadata-plan/rebind-run/metadata-only-rebind-comparison.json",
+    "sha256": "5ac149f7b9040c6e82edb651efc99082d48632c93a06a80ee97818b15d201cfb"
+  },
+  "currentOutputReceiptSha256": "f3c7ebb1cd3471480e7564584dcb0a36812b4654a67ae86bea1e4ec76a3aa0df",
+  "limitations": [
+    "Metadata-only phase identity refresh. No new render, native phase validation, or release claim."
+  ],
+  "phaseValues": {
+    "activeDqTilesSha256": "6a605a8f0d7d2513871c9b8e5a18f30fa7a403ee2ec0e42a4f1646d2e4d5da1d",
+    "basePixelsPerCell": 32,
+    "chunksIntersectingSemanticBounds": 120,
+    "dimensionsPx6": [
+      888,
+      1092
+    ],
+    "manifestSha256": "931240cf16decc0ad17f225b0baeabbf2ca8dcecd0b9342056fc1b76a0d69707",
+    "originCell": [
+      16,
+      218
+    ],
+    "phaseMismatches": 0,
+    "pixelsPerCell": 6,
+    "sameOwTileWorldGrid": true,
+    "scope": "declared-origin-and-scale-phase-v1",
+    "semanticBounds": [
+      16,
+      218,
+      163,
+      399
+    ],
+    "semanticCellsCoveredExactlyOnce": true
+  },
+  "priorMetadataBridge": {
+    "bytes": 2447,
+    "path": "design/terrain-current-profile-20261007/review-evidence/water-r2-runtime-rebind-20261013/metadata-only-rebind-comparison-water-r2-runtime-r1.json",
+    "sha256": "d7752c1ae67c7559afc3e84ee910d0865626702c110220d167d9ae021f94c1e8"
+  },
+  "reviewedAt": "2026-10-15",
+  "reviewerRole": "independent",
+  "schema": "qok-forward-underpaint-phase-metadata-bridge-v1",
+  "scope": "The earlier independently reviewed underpaint phase proof is retained because all 493 non-manifest output paths, including every underpaint/chunk payload, are unchanged across baseline and both rebinds. Only manifest identity is rebound to current DQ/A1OW provenance.",
+  "sourceProof": {
+    "bytes": 1762,
+    "path": "design/terrain-current-profile-20261007/review-evidence/water-r2-runtime-rebind-20261013/underpaint-phase-preservation-water-r2-runtime-r1.json",
+    "sha256": "b3c7ccb923c551820a3a9f8467bfa2992f64e4f90bbad83fe3a7482730fa8e37"
+  },
+  "status": "PASS_CURRENT_MANIFEST_PHASE_PRESERVED",
+  "unchangedOutputCount": 493
+}

@@ -1,0 +1,93 @@
+{
+  "alphaThreshold": 128,
+  "channelPolygon": [
+    [
+      53,
+      75
+    ],
+    [
+      52,
+      65
+    ],
+    [
+      57,
+      55
+    ],
+    [
+      64,
+      49
+    ],
+    [
+      72,
+      48
+    ],
+    [
+      78,
+      54
+    ],
+    [
+      81,
+      64
+    ],
+    [
+      82,
+      73
+    ],
+    [
+      86,
+      83
+    ],
+    [
+      91,
+      92
+    ],
+    [
+      93,
+      103
+    ],
+    [
+      94,
+      114
+    ],
+    [
+      96,
+      125
+    ],
+    [
+      96,
+      134
+    ],
+    [
+      55,
+      134
+    ],
+    [
+      54,
+      125
+    ],
+    [
+      55,
+      115
+    ],
+    [
+      56,
+      105
+    ],
+    [
+      54,
+      95
+    ],
+    [
+      52,
+      85
+    ]
+  ],
+  "dqTilesSha256": "a7e267a5c2d2d1061af7f66956d82853b42f00c82c1f63baf043defbeb1b2a43",
+  "opaquePixels": 8347,
+  "outsideAlphaPixels": 0,
+  "packedMaskBytes": 2592,
+  "packedMaskSha256": "1ae835b2124a690df1a0c7136259722a9d013a5497ac6d05d6e921e110a9c884",
+  "pinnedArtSha256": "45fb2c0b7cf1ad2e63ee9a28bbf0ad66e3d4d9ca9258beaf7a68566e04692b55",
+  "schema": "crystal-contact-mask-raster-v1",
+  "solidPixels": 5802
+}

@@ -260,8 +260,24 @@ export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '
 // 2026-09-02 SIGN-OFF: dd64be9a... -> 987ded74... -- index.html's diagnostic panel gains a rolling
 // 30 s summary line and a device line (owner reports lag on his phone that the Mac bench cannot
 // reproduce; Settings now has a switch for the panel so he can screenshot real numbers).
+// 2026-09-06: reviewed relocation of existing field-tabs styles outside touch media;
+// desktop town navigation now receives the same styles, with mobile rules unchanged.
+// 2026-09-07: QOK recovery town checkpoint authority preserves a validated live town
+// position across restart and periodic stale-engine snapshot ticks.
+// 2026-09-16: reviewed saved-surface loading cover and localized retry recovery.
+// Town readiness requires its current iframe; dungeon release requires its applied/blitted map.
+// 2026-09-21: the additive battle recovery hook is loaded from the canonical shell after the
+// frozen module declaration and sibling runtime overrides.
+// 2026-09-23 owner-approved startup WebGL retry: authored index.html changed from
+// 5156ba054806578d670dfcf8303957e770ac3e7458c50f73154d8ab6590b686a to
+// 656eeacf9d29d7c9d350e16b390f8f96cac3f8a039c96b78e87c5cdea35a16bd. The exact derived static
+// shell changed from 52a058593efb1b901a42203bfd7ad591024946eb9f6db513a86c3a9babe69e25 to
+// 3de643bdde7c7dc15ce602d4a3e0529e74df54db21899269a4b1a385d48fc0fe; the startup cover handles
+// pre-Title Link Shader failures, localized from the persisted setting before game APIs are ready.
+// 2026-09-26: the existing outer area Retry also retries a terminal Act-1 underpaint load, and
+// terminal backing failure routes to that cover so its reachable control owns the recovery path.
 export const EXPECTED_STATIC_INDEX_SHA =
-  '987ded74911dca6f834c3b41f828d2b7b8cb2442e07a3a74d090cc4af3632b87';
+  '735d33eebc2bbff798262c5800bd410f83b747cf936ff2e33c18a3b8e1ee099e';
 
 /**
  * The authored shell loads its scripts by ABSOLUTE path so the Vite dev server resolves them;
@@ -276,6 +292,7 @@ export const REWRITES = [
   ['src="/act1-world-map.js"', 'src="act1-world-map.js"'],
   ['src="/dq-tiles.js"', 'src="dq-tiles.js"'],
   ['src="/hero-override.js"', 'src="hero-override.js"'],
+  ['src="/battle-recovery.js"', 'src="battle-recovery.js"'],
   ['src="/act1-hifi/adapter.js"', 'src="act1-hifi/adapter.js"'],
   // 2026-08-26: the BGM override. It was added to index.html on 2026-08-25 and NOT added here,
   // so the shipped shell kept `src="/music-override.js"` while every sibling was rewritten

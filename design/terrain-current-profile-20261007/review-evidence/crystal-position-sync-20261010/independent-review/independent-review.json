@@ -1,0 +1,86 @@
+{
+  "schema": "qok-independent-rendered-review-v1",
+  "reviewerRole": "independent",
+  "result": "SCOPED_PASS_WITH_TEST_LIMITATION",
+  "reviewedAt": "2026-10-10",
+  "scope": "Adapter post-load player-position synchronization and relevant legacy Continue/New Game regression paths in exact frozen Release84 browser runtime.",
+  "source": {
+    "workspace": "/Users/chris/.codex/workspaces/edu-rpg-forward-20261007",
+    "adapterPath": "public/act1-hifi/adapter.js",
+    "adapterSha256": "a555838eab53e2d5e5c46d3e627b2f9577d66536355df77b8e08c82e8a6c6a08",
+    "focusedTestPath": "scripts/test_worldmap_transition_position_sync.cjs",
+    "focusedTestSha256": "76c0a68342515f39cd6ee6d582482ece56f5c54b2bf336b000c00b337919d0af",
+    "focusedTestResult": "6/6 passed independently"
+  },
+  "runtime": {
+    "candidateApp": "/private/tmp/edu-rpg-build83-paint-audit-20261005/native-whole-rock-20261008/derived-release84-continue/Build/Products/Release-iphonesimulator/App.app",
+    "appSha256": "854ab7a800451540fde6ab72ff24bed1402bac0db7852eca699589698eb45655",
+    "servedPublic": "/private/tmp/edu-rpg-build83-paint-audit-20261005/native-whole-rock-20261008/derived-release84-continue/Build/Products/Release-iphonesimulator/App.app/public",
+    "frozenBundleSha256": "ab4fc9ad1204f23b4ea55dbae2d72bdf193a52e643271bcfe8642e2210556456",
+    "adapterLoading": "Only /act1-hifi/adapter.js was intercepted to reviewed workspace source; all other requests came from exact App.app/public.",
+    "fixture": "/private/tmp/edu-rpg-build83-paint-audit-20261005/native-whole-rock-20261008/crystal-position-sync-20261010/earned-transition-fixture.json",
+    "fixtureSha256": "eafb2810c51aaec4c7ceb299cbefe8897563b39e9e61ccc210c280051f0aceb0",
+    "fixtureBoundary": "Only player.position was adjusted to Crystal B1F; Giant Toad encountered/defeated flags came from a hashed, actually earned resume snapshot."
+  },
+  "browserEvidence": {
+    "path": "/private/tmp/edu-rpg-build83-paint-audit-20261005/native-whole-rock-20261008/crystal-position-sync-20261010/browser-evidence/independent-run-07/browser-report.json",
+    "sha256": "69b7983e62d8489df2825fcf972d93e48d51680c8313e346137e008e3c60f323",
+    "harness": "/private/tmp/edu-rpg-build83-paint-audit-20261005/native-whole-rock-20261008/crystal-position-sync-20261010/browser-evidence/independent-run-07/test_worldmap_transition_position_sync_independent.cjs",
+    "harnessSha256": "0543e32c9800a5c3eccd75e68d37df22ea871b769f02ac482e6fd2442f51aeeb",
+    "checks": [
+      {
+        "name": "Continue from actual earned Crystal fixture enters B1F",
+        "result": "PASS"
+      },
+      {
+        "name": "Actual ArrowDown cave exit repairs live overworld player position immediately without another movement",
+        "result": "PASS"
+      },
+      {
+        "name": "Genuinely earned Toad encounter/defeat flags survive exit",
+        "result": "PASS"
+      },
+      {
+        "name": "Idle recovery snapshot adopts synchronized overworld map/coordinates without further movement",
+        "result": "PASS"
+      },
+      {
+        "name": "Actual ArrowUp re-entry synchronizes Crystal map ID and position",
+        "result": "PASS"
+      },
+      {
+        "name": "Legacy Continue preserves overworld map and (69,256)",
+        "result": "PASS"
+      },
+      {
+        "name": "Actual New Game starts Greenhollow Elder opening",
+        "result": "PASS",
+        "observed": "mapId=greenhollow, showingMessage=true, iframe query first=1"
+      },
+      {
+        "name": "Deliberately injected unknown-map load throws and leaves player.position unchanged",
+        "result": "PASS",
+        "limitation": "Synthetic invalid map call also triggered one later pageerror on only the failed-load page; not a supported user navigation. Do not interpret as a zero-page-error clean run or as app-level recovery from corrupted scene state."
+      }
+    ],
+    "pageErrors": [
+      "failed-load: Cannot read properties of undefined (reading type)"
+    ],
+    "screenshots": [
+      {
+        "path": "/private/tmp/edu-rpg-build83-paint-audit-20261005/native-whole-rock-20261008/crystal-position-sync-20261010/browser-evidence/independent-run-07/crystal-exit-immediate.png",
+        "sha256": "33bdc5810f5e1d81ce8b7867a7e7c663fe1c0930b0574394609519dbea6f97c9"
+      },
+      {
+        "path": "/private/tmp/edu-rpg-build83-paint-audit-20261005/native-whole-rock-20261008/crystal-position-sync-20261010/browser-evidence/independent-run-07/crystal-exit-idle-resume.png",
+        "sha256": "ba692b02d27fe21d35c7584eb8cb328bd120a063cc4cfacfab38cae56ffef7dc"
+      },
+      {
+        "path": "/private/tmp/edu-rpg-build83-paint-audit-20261005/native-whole-rock-20261008/crystal-position-sync-20261010/browser-evidence/independent-run-07/crystal-reentry.png",
+        "sha256": "34406982f508e42e62def24be26dba565dced9f158647a2dd32c889fbc089473"
+      }
+    ]
+  },
+  "conclusion": "The successful cross-map synchronization path and targeted legacy/New Game flows pass in the exact frozen Release84 browser runtime. Synchronous failure, rejected promise, invalid coordinates, initial loads, and same-map loads also pass deterministic tests. Acceptance is scoped to these checks; the intentionally corrupted unknown-map fault is not treated as a production route.",
+  "native": "This record is browser evidence, not native Release acceptance. Native work on the earlier Release84 candidate stopped before complete phone groups; no tablet or release-eligibility claim is made."
+}

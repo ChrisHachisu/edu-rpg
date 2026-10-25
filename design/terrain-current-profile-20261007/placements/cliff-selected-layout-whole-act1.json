@@ -1,0 +1,3456 @@
+{
+  "audit": {
+    "kind": "act1-mountain-selected-whole-object-layout-screen-v1",
+    "candidateManifestSha256": "3b932bdcd019b36ef16318333537c3f5553754a1cfded4ad33149269b5a49e3a",
+    "fixedAtlasNormalizations": {
+      "mainKit": 0.5,
+      "companionKit": 0.125
+    },
+    "sourceSupportCells": 4891,
+    "unprotectedTargetCells": 4884,
+    "coveredCells": 4644,
+    "uncoveredTargetCells": 240,
+    "uncoveredComponents": [
+      {
+        "cells": 20,
+        "worldBoundsInclusive": [
+          144,
+          331,
+          149,
+          350
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 15,
+        "worldBoundsInclusive": [
+          108,
+          225,
+          118,
+          236
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 12,
+        "worldBoundsInclusive": [
+          141,
+          270,
+          148,
+          276
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 9,
+        "worldBoundsInclusive": [
+          42,
+          253,
+          50,
+          257
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 9,
+        "worldBoundsInclusive": [
+          138,
+          304,
+          139,
+          312
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 9,
+        "worldBoundsInclusive": [
+          139,
+          321,
+          144,
+          329
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 8,
+        "worldBoundsInclusive": [
+          95,
+          224,
+          102,
+          225
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 8,
+        "worldBoundsInclusive": [
+          142,
+          257,
+          143,
+          264
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 6,
+        "worldBoundsInclusive": [
+          29,
+          241,
+          34,
+          246
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 6,
+        "worldBoundsInclusive": [
+          77,
+          230,
+          82,
+          231
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 6,
+        "worldBoundsInclusive": [
+          147,
+          281,
+          150,
+          286
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 5,
+        "worldBoundsInclusive": [
+          36,
+          257,
+          40,
+          257
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 5,
+        "worldBoundsInclusive": [
+          70,
+          232,
+          74,
+          235
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 5,
+        "worldBoundsInclusive": [
+          84,
+          227,
+          88,
+          229
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 5,
+        "worldBoundsInclusive": [
+          145,
+          249,
+          147,
+          253
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 5,
+        "worldBoundsInclusive": [
+          151,
+          363,
+          153,
+          367
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 4,
+        "worldBoundsInclusive": [
+          29,
+          254,
+          32,
+          256
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 4,
+        "worldBoundsInclusive": [
+          59,
+          245,
+          62,
+          247
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 4,
+        "worldBoundsInclusive": [
+          64,
+          227,
+          67,
+          227
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 4,
+        "worldBoundsInclusive": [
+          66,
+          237,
+          68,
+          240
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 4,
+        "worldBoundsInclusive": [
+          125,
+          240,
+          128,
+          240
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 4,
+        "worldBoundsInclusive": [
+          133,
+          241,
+          136,
+          241
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 4,
+        "worldBoundsInclusive": [
+          150,
+          358,
+          150,
+          361
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 4,
+        "worldBoundsInclusive": [
+          159,
+          375,
+          162,
+          376
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 3,
+        "worldBoundsInclusive": [
+          27,
+          250,
+          27,
+          252
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 3,
+        "worldBoundsInclusive": [
+          69,
+          225,
+          69,
+          227
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 3,
+        "worldBoundsInclusive": [
+          91,
+          226,
+          93,
+          226
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 3,
+        "worldBoundsInclusive": [
+          139,
+          300,
+          140,
+          302
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 3,
+        "worldBoundsInclusive": [
+          141,
+          266,
+          141,
+          268
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 3,
+        "worldBoundsInclusive": [
+          142,
+          243,
+          144,
+          244
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 3,
+        "worldBoundsInclusive": [
+          149,
+          352,
+          149,
+          354
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 3,
+        "worldBoundsInclusive": [
+          154,
+          369,
+          156,
+          371
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 3,
+        "worldBoundsInclusive": [
+          163,
+          218,
+          163,
+          220
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 2,
+        "worldBoundsInclusive": [
+          38,
+          237,
+          39,
+          238
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 2,
+        "worldBoundsInclusive": [
+          41,
+          235,
+          42,
+          236
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 2,
+        "worldBoundsInclusive": [
+          52,
+          251,
+          53,
+          252
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 2,
+        "worldBoundsInclusive": [
+          56,
+          249,
+          57,
+          250
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 2,
+        "worldBoundsInclusive": [
+          61,
+          228,
+          62,
+          228
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 2,
+        "worldBoundsInclusive": [
+          64,
+          242,
+          64,
+          243
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 2,
+        "worldBoundsInclusive": [
+          71,
+          218,
+          72,
+          219
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 2,
+        "worldBoundsInclusive": [
+          105,
+          224,
+          106,
+          224
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 2,
+        "worldBoundsInclusive": [
+          119,
+          238,
+          120,
+          239
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 2,
+        "worldBoundsInclusive": [
+          138,
+          242,
+          139,
+          242
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 2,
+        "worldBoundsInclusive": [
+          138,
+          315,
+          138,
+          316
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 2,
+        "worldBoundsInclusive": [
+          141,
+          297,
+          141,
+          298
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 2,
+        "worldBoundsInclusive": [
+          144,
+          291,
+          145,
+          292
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 2,
+        "worldBoundsInclusive": [
+          146,
+          288,
+          146,
+          289
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 2,
+        "worldBoundsInclusive": [
+          160,
+          221,
+          161,
+          222
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 1,
+        "worldBoundsInclusive": [
+          28,
+          248,
+          28,
+          248
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 1,
+        "worldBoundsInclusive": [
+          34,
+          257,
+          34,
+          257
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 1,
+        "worldBoundsInclusive": [
+          44,
+          234,
+          44,
+          234
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 1,
+        "worldBoundsInclusive": [
+          46,
+          233,
+          46,
+          233
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 1,
+        "worldBoundsInclusive": [
+          50,
+          231,
+          50,
+          231
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 1,
+        "worldBoundsInclusive": [
+          54,
+          229,
+          54,
+          229
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 1,
+        "worldBoundsInclusive": [
+          58,
+          228,
+          58,
+          228
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 1,
+        "worldBoundsInclusive": [
+          69,
+          223,
+          69,
+          223
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 1,
+        "worldBoundsInclusive": [
+          70,
+          221,
+          70,
+          221
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 1,
+        "worldBoundsInclusive": [
+          122,
+          240,
+          122,
+          240
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 1,
+        "worldBoundsInclusive": [
+          131,
+          240,
+          131,
+          240
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 1,
+        "worldBoundsInclusive": [
+          139,
+          319,
+          139,
+          319
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 1,
+        "worldBoundsInclusive": [
+          142,
+          295,
+          142,
+          295
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 1,
+        "worldBoundsInclusive": [
+          144,
+          255,
+          144,
+          255
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 1,
+        "worldBoundsInclusive": [
+          146,
+          245,
+          146,
+          245
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 1,
+        "worldBoundsInclusive": [
+          147,
+          247,
+          147,
+          247
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 1,
+        "worldBoundsInclusive": [
+          150,
+          356,
+          150,
+          356
+        ],
+        "touchesSupportOuterBoundary": true
+      },
+      {
+        "cells": 1,
+        "worldBoundsInclusive": [
+          157,
+          373,
+          157,
+          373
+        ],
+        "touchesSupportOuterBoundary": true
+      }
+    ],
+    "selectedObjectCounts": {
+      "main": {
+        "interior-rock-panel": 39,
+        "broad-joining-mass-B": 34,
+        "broad-joining-mass-A": 27,
+        "narrow-notch-buttress": 31
+      },
+      "companion": {
+        "companion-narrow-buttress": 21,
+        "companion-low-shoulder": 21,
+        "companion-tall-fin": 21
+      }
+    },
+    "paintedRockConnectedComponents8Way": 1,
+    "paintedRockComponents": [
+      {
+        "cells": 4644,
+        "worldBoundsInclusive": [
+          28,
+          218,
+          163,
+          376
+        ]
+      }
+    ],
+    "targetRockConnectedComponents8Way": 1,
+    "baselineWalkableComponents4Way": 2,
+    "newWalkableComponents4Way": 2,
+    "newWalkableComponentMerges": [],
+    "interiorGapRepairPlacements": [
+      {
+        "asset": "narrow-notch-buttress",
+        "group": "main",
+        "originWorldCell": [
+          143,
+          220
+        ],
+        "interiorGapCellsCovered": 2
+      },
+      {
+        "asset": "narrow-notch-buttress",
+        "group": "main",
+        "originWorldCell": [
+          147,
+          304
+        ],
+        "interiorGapCellsCovered": 2
+      },
+      {
+        "asset": "narrow-notch-buttress",
+        "group": "main",
+        "originWorldCell": [
+          127,
+          221
+        ],
+        "interiorGapCellsCovered": 1
+      }
+    ],
+    "liveStartExitApproachProtectedCells": 83,
+    "protectedCellsPainted": 0,
+    "legalOriginRule": "Every normalized >=128-alpha pixel lies inside exact owner M or exact R6 transition support and outside the executed-runtime full-hero start/exit/valid-approach/fallback guard.",
+    "screenLimit": "Cell-grid layout proposal only; optimistic alpha occupancy, no raster bake, draw-order seam review, or full-resolution rendered proof. Walkability compares complement of allowed support versus complement of selected visible-alpha cells, with protected hero corridors open. A selected-layout uncovered interior component or disconnected barrier blocks promotion."
+  },
+  "placements": [
+    {
+      "asset": "interior-rock-panel",
+      "group": "main",
+      "originWorldCell": [
+        73,
+        220
+      ],
+      "freshTargetCells": 93,
+      "freshEdgeCells": 0,
+      "templateFootprintCells": [
+        11,
+        9
+      ]
+    },
+    {
+      "asset": "interior-rock-panel",
+      "group": "main",
+      "originWorldCell": [
+        115,
+        220
+      ],
+      "freshTargetCells": 93,
+      "freshEdgeCells": 0,
+      "templateFootprintCells": [
+        11,
+        9
+      ]
+    },
+    {
+      "asset": "interior-rock-panel",
+      "group": "main",
+      "originWorldCell": [
+        126,
+        220
+      ],
+      "freshTargetCells": 93,
+      "freshEdgeCells": 0,
+      "templateFootprintCells": [
+        11,
+        9
+      ]
+    },
+    {
+      "asset": "interior-rock-panel",
+      "group": "main",
+      "originWorldCell": [
+        137,
+        220
+      ],
+      "freshTargetCells": 93,
+      "freshEdgeCells": 0,
+      "templateFootprintCells": [
+        11,
+        9
+      ]
+    },
+    {
+      "asset": "interior-rock-panel",
+      "group": "main",
+      "originWorldCell": [
+        148,
+        220
+      ],
+      "freshTargetCells": 93,
+      "freshEdgeCells": 0,
+      "templateFootprintCells": [
+        11,
+        9
+      ]
+    },
+    {
+      "asset": "interior-rock-panel",
+      "group": "main",
+      "originWorldCell": [
+        121,
+        229
+      ],
+      "freshTargetCells": 93,
+      "freshEdgeCells": 0,
+      "templateFootprintCells": [
+        11,
+        9
+      ]
+    },
+    {
+      "asset": "interior-rock-panel",
+      "group": "main",
+      "originWorldCell": [
+        132,
+        229
+      ],
+      "freshTargetCells": 93,
+      "freshEdgeCells": 0,
+      "templateFootprintCells": [
+        11,
+        9
+      ]
+    },
+    {
+      "asset": "interior-rock-panel",
+      "group": "main",
+      "originWorldCell": [
+        143,
+        229
+      ],
+      "freshTargetCells": 93,
+      "freshEdgeCells": 0,
+      "templateFootprintCells": [
+        11,
+        9
+      ]
+    },
+    {
+      "asset": "interior-rock-panel",
+      "group": "main",
+      "originWorldCell": [
+        54,
+        231
+      ],
+      "freshTargetCells": 93,
+      "freshEdgeCells": 0,
+      "templateFootprintCells": [
+        11,
+        9
+      ]
+    },
+    {
+      "asset": "interior-rock-panel",
+      "group": "main",
+      "originWorldCell": [
+        42,
+        237
+      ],
+      "freshTargetCells": 93,
+      "freshEdgeCells": 0,
+      "templateFootprintCells": [
+        11,
+        9
+      ]
+    },
+    {
+      "asset": "interior-rock-panel",
+      "group": "main",
+      "originWorldCell": [
+        149,
+        238
+      ],
+      "freshTargetCells": 93,
+      "freshEdgeCells": 0,
+      "templateFootprintCells": [
+        11,
+        9
+      ]
+    },
+    {
+      "asset": "interior-rock-panel",
+      "group": "main",
+      "originWorldCell": [
+        32,
+        245
+      ],
+      "freshTargetCells": 93,
+      "freshEdgeCells": 0,
+      "templateFootprintCells": [
+        11,
+        9
+      ]
+    },
+    {
+      "asset": "interior-rock-panel",
+      "group": "main",
+      "originWorldCell": [
+        150,
+        247
+      ],
+      "freshTargetCells": 93,
+      "freshEdgeCells": 0,
+      "templateFootprintCells": [
+        11,
+        9
+      ]
+    },
+    {
+      "asset": "interior-rock-panel",
+      "group": "main",
+      "originWorldCell": [
+        146,
+        256
+      ],
+      "freshTargetCells": 93,
+      "freshEdgeCells": 0,
+      "templateFootprintCells": [
+        11,
+        9
+      ]
+    },
+    {
+      "asset": "interior-rock-panel",
+      "group": "main",
+      "originWorldCell": [
+        144,
+        265
+      ],
+      "freshTargetCells": 93,
+      "freshEdgeCells": 0,
+      "templateFootprintCells": [
+        11,
+        9
+      ]
+    },
+    {
+      "asset": "interior-rock-panel",
+      "group": "main",
+      "originWorldCell": [
+        151,
+        282
+      ],
+      "freshTargetCells": 93,
+      "freshEdgeCells": 0,
+      "templateFootprintCells": [
+        11,
+        9
+      ]
+    },
+    {
+      "asset": "interior-rock-panel",
+      "group": "main",
+      "originWorldCell": [
+        147,
+        291
+      ],
+      "freshTargetCells": 93,
+      "freshEdgeCells": 0,
+      "templateFootprintCells": [
+        11,
+        9
+      ]
+    },
+    {
+      "asset": "interior-rock-panel",
+      "group": "main",
+      "originWorldCell": [
+        142,
+        300
+      ],
+      "freshTargetCells": 93,
+      "freshEdgeCells": 0,
+      "templateFootprintCells": [
+        11,
+        9
+      ]
+    },
+    {
+      "asset": "interior-rock-panel",
+      "group": "main",
+      "originWorldCell": [
+        141,
+        309
+      ],
+      "freshTargetCells": 93,
+      "freshEdgeCells": 0,
+      "templateFootprintCells": [
+        11,
+        9
+      ]
+    },
+    {
+      "asset": "interior-rock-panel",
+      "group": "main",
+      "originWorldCell": [
+        151,
+        315
+      ],
+      "freshTargetCells": 93,
+      "freshEdgeCells": 0,
+      "templateFootprintCells": [
+        11,
+        9
+      ]
+    },
+    {
+      "asset": "interior-rock-panel",
+      "group": "main",
+      "originWorldCell": [
+        147,
+        324
+      ],
+      "freshTargetCells": 93,
+      "freshEdgeCells": 0,
+      "templateFootprintCells": [
+        11,
+        9
+      ]
+    },
+    {
+      "asset": "interior-rock-panel",
+      "group": "main",
+      "originWorldCell": [
+        149,
+        333
+      ],
+      "freshTargetCells": 93,
+      "freshEdgeCells": 0,
+      "templateFootprintCells": [
+        11,
+        9
+      ]
+    },
+    {
+      "asset": "interior-rock-panel",
+      "group": "main",
+      "originWorldCell": [
+        151,
+        342
+      ],
+      "freshTargetCells": 93,
+      "freshEdgeCells": 0,
+      "templateFootprintCells": [
+        11,
+        9
+      ]
+    },
+    {
+      "asset": "interior-rock-panel",
+      "group": "main",
+      "originWorldCell": [
+        152,
+        306
+      ],
+      "freshTargetCells": 93,
+      "freshEdgeCells": 3,
+      "templateFootprintCells": [
+        11,
+        9
+      ]
+    },
+    {
+      "asset": "interior-rock-panel",
+      "group": "main",
+      "originWorldCell": [
+        152,
+        351
+      ],
+      "freshTargetCells": 93,
+      "freshEdgeCells": 4,
+      "templateFootprintCells": [
+        11,
+        9
+      ]
+    },
+    {
+      "asset": "interior-rock-panel",
+      "group": "main",
+      "originWorldCell": [
+        153,
+        273
+      ],
+      "freshTargetCells": 92,
+      "freshEdgeCells": 12,
+      "templateFootprintCells": [
+        11,
+        9
+      ]
+    },
+    {
+      "asset": "interior-rock-panel",
+      "group": "main",
+      "originWorldCell": [
+        153,
+        229
+      ],
+      "freshTargetCells": 90,
+      "freshEdgeCells": 12,
+      "templateFootprintCells": [
+        11,
+        9
+      ]
+    },
+    {
+      "asset": "interior-rock-panel",
+      "group": "main",
+      "originWorldCell": [
+        153,
+        297
+      ],
+      "freshTargetCells": 81,
+      "freshEdgeCells": 12,
+      "templateFootprintCells": [
+        11,
+        9
+      ]
+    },
+    {
+      "asset": "broad-joining-mass-B",
+      "group": "main",
+      "originWorldCell": [
+        154,
+        360
+      ],
+      "freshTargetCells": 78,
+      "freshEdgeCells": 10,
+      "templateFootprintCells": [
+        9,
+        10
+      ]
+    },
+    {
+      "asset": "broad-joining-mass-B",
+      "group": "main",
+      "originWorldCell": [
+        155,
+        262
+      ],
+      "freshTargetCells": 78,
+      "freshEdgeCells": 15,
+      "templateFootprintCells": [
+        9,
+        10
+      ]
+    },
+    {
+      "asset": "interior-rock-panel",
+      "group": "main",
+      "originWorldCell": [
+        51,
+        238
+      ],
+      "freshTargetCells": 68,
+      "freshEdgeCells": 2,
+      "templateFootprintCells": [
+        11,
+        9
+      ]
+    },
+    {
+      "asset": "interior-rock-panel",
+      "group": "main",
+      "originWorldCell": [
+        80,
+        218
+      ],
+      "freshTargetCells": 69,
+      "freshEdgeCells": 24,
+      "templateFootprintCells": [
+        11,
+        9
+      ]
+    },
+    {
+      "asset": "broad-joining-mass-A",
+      "group": "main",
+      "originWorldCell": [
+        42,
+        243
+      ],
+      "freshTargetCells": 64,
+      "freshEdgeCells": 5,
+      "templateFootprintCells": [
+        11,
+        10
+      ]
+    },
+    {
+      "asset": "interior-rock-panel",
+      "group": "main",
+      "originWorldCell": [
+        142,
+        317
+      ],
+      "freshTargetCells": 64,
+      "freshEdgeCells": 2,
+      "templateFootprintCells": [
+        11,
+        9
+      ]
+    },
+    {
+      "asset": "broad-joining-mass-B",
+      "group": "main",
+      "originWorldCell": [
+        155,
+        324
+      ],
+      "freshTargetCells": 59,
+      "freshEdgeCells": 15,
+      "templateFootprintCells": [
+        9,
+        10
+      ]
+    },
+    {
+      "asset": "broad-joining-mass-B",
+      "group": "main",
+      "originWorldCell": [
+        155,
+        253
+      ],
+      "freshTargetCells": 55,
+      "freshEdgeCells": 15,
+      "templateFootprintCells": [
+        9,
+        10
+      ]
+    },
+    {
+      "asset": "broad-joining-mass-A",
+      "group": "main",
+      "originWorldCell": [
+        139,
+        233
+      ],
+      "freshTargetCells": 50,
+      "freshEdgeCells": 6,
+      "templateFootprintCells": [
+        11,
+        10
+      ]
+    },
+    {
+      "asset": "interior-rock-panel",
+      "group": "main",
+      "originWorldCell": [
+        58,
+        229
+      ],
+      "freshTargetCells": 48,
+      "freshEdgeCells": 9,
+      "templateFootprintCells": [
+        11,
+        9
+      ]
+    },
+    {
+      "asset": "broad-joining-mass-B",
+      "group": "main",
+      "originWorldCell": [
+        155,
+        288
+      ],
+      "freshTargetCells": 44,
+      "freshEdgeCells": 14,
+      "templateFootprintCells": [
+        9,
+        10
+      ]
+    },
+    {
+      "asset": "broad-joining-mass-B",
+      "group": "main",
+      "originWorldCell": [
+        155,
+        238
+      ],
+      "freshTargetCells": 41,
+      "freshEdgeCells": 15,
+      "templateFootprintCells": [
+        9,
+        10
+      ]
+    },
+    {
+      "asset": "broad-joining-mass-B",
+      "group": "main",
+      "originWorldCell": [
+        35,
+        239
+      ],
+      "freshTargetCells": 39,
+      "freshEdgeCells": 6,
+      "templateFootprintCells": [
+        9,
+        10
+      ]
+    },
+    {
+      "asset": "interior-rock-panel",
+      "group": "main",
+      "originWorldCell": [
+        70,
+        222
+      ],
+      "freshTargetCells": 41,
+      "freshEdgeCells": 13,
+      "templateFootprintCells": [
+        11,
+        9
+      ]
+    },
+    {
+      "asset": "broad-joining-mass-B",
+      "group": "main",
+      "originWorldCell": [
+        155,
+        333
+      ],
+      "freshTargetCells": 38,
+      "freshEdgeCells": 15,
+      "templateFootprintCells": [
+        9,
+        10
+      ]
+    },
+    {
+      "asset": "broad-joining-mass-B",
+      "group": "main",
+      "originWorldCell": [
+        46,
+        232
+      ],
+      "freshTargetCells": 37,
+      "freshEdgeCells": 8,
+      "templateFootprintCells": [
+        9,
+        10
+      ]
+    },
+    {
+      "asset": "broad-joining-mass-A",
+      "group": "main",
+      "originWorldCell": [
+        34,
+        247
+      ],
+      "freshTargetCells": 32,
+      "freshEdgeCells": 10,
+      "templateFootprintCells": [
+        11,
+        10
+      ]
+    },
+    {
+      "asset": "interior-rock-panel",
+      "group": "main",
+      "originWorldCell": [
+        113,
+        218
+      ],
+      "freshTargetCells": 34,
+      "freshEdgeCells": 20,
+      "templateFootprintCells": [
+        11,
+        9
+      ]
+    },
+    {
+      "asset": "broad-joining-mass-B",
+      "group": "main",
+      "originWorldCell": [
+        142,
+        293
+      ],
+      "freshTargetCells": 31,
+      "freshEdgeCells": 10,
+      "templateFootprintCells": [
+        9,
+        10
+      ]
+    },
+    {
+      "asset": "broad-joining-mass-A",
+      "group": "main",
+      "originWorldCell": [
+        143,
+        254
+      ],
+      "freshTargetCells": 29,
+      "freshEdgeCells": 11,
+      "templateFootprintCells": [
+        11,
+        10
+      ]
+    },
+    {
+      "asset": "broad-joining-mass-A",
+      "group": "main",
+      "originWorldCell": [
+        142,
+        266
+      ],
+      "freshTargetCells": 27,
+      "freshEdgeCells": 9,
+      "templateFootprintCells": [
+        11,
+        10
+      ]
+    },
+    {
+      "asset": "broad-joining-mass-A",
+      "group": "main",
+      "originWorldCell": [
+        146,
+        285
+      ],
+      "freshTargetCells": 25,
+      "freshEdgeCells": 9,
+      "templateFootprintCells": [
+        11,
+        10
+      ]
+    },
+    {
+      "asset": "broad-joining-mass-A",
+      "group": "main",
+      "originWorldCell": [
+        117,
+        225
+      ],
+      "freshTargetCells": 24,
+      "freshEdgeCells": 2,
+      "templateFootprintCells": [
+        11,
+        10
+      ]
+    },
+    {
+      "asset": "broad-joining-mass-B",
+      "group": "main",
+      "originWorldCell": [
+        29,
+        245
+      ],
+      "freshTargetCells": 25,
+      "freshEdgeCells": 8,
+      "templateFootprintCells": [
+        9,
+        10
+      ]
+    },
+    {
+      "asset": "broad-joining-mass-A",
+      "group": "main",
+      "originWorldCell": [
+        151,
+        219
+      ],
+      "freshTargetCells": 25,
+      "freshEdgeCells": 13,
+      "templateFootprintCells": [
+        11,
+        10
+      ]
+    },
+    {
+      "asset": "narrow-notch-buttress",
+      "group": "main",
+      "originWorldCell": [
+        158,
+        366
+      ],
+      "freshTargetCells": 23,
+      "freshEdgeCells": 8,
+      "templateFootprintCells": [
+        5,
+        9
+      ]
+    },
+    {
+      "asset": "broad-joining-mass-A",
+      "group": "main",
+      "originWorldCell": [
+        127,
+        230
+      ],
+      "freshTargetCells": 23,
+      "freshEdgeCells": 5,
+      "templateFootprintCells": [
+        11,
+        10
+      ]
+    },
+    {
+      "asset": "interior-rock-panel",
+      "group": "main",
+      "originWorldCell": [
+        123,
+        218
+      ],
+      "freshTargetCells": 24,
+      "freshEdgeCells": 20,
+      "templateFootprintCells": [
+        11,
+        9
+      ]
+    },
+    {
+      "asset": "narrow-notch-buttress",
+      "group": "main",
+      "originWorldCell": [
+        147,
+        245
+      ],
+      "freshTargetCells": 20,
+      "freshEdgeCells": 7,
+      "templateFootprintCells": [
+        5,
+        9
+      ]
+    },
+    {
+      "asset": "interior-rock-panel",
+      "group": "main",
+      "originWorldCell": [
+        133,
+        218
+      ],
+      "freshTargetCells": 24,
+      "freshEdgeCells": 20,
+      "templateFootprintCells": [
+        11,
+        9
+      ]
+    },
+    {
+      "asset": "interior-rock-panel",
+      "group": "main",
+      "originWorldCell": [
+        143,
+        218
+      ],
+      "freshTargetCells": 24,
+      "freshEdgeCells": 20,
+      "templateFootprintCells": [
+        11,
+        9
+      ]
+    },
+    {
+      "asset": "interior-rock-panel",
+      "group": "main",
+      "originWorldCell": [
+        145,
+        326
+      ],
+      "freshTargetCells": 22,
+      "freshEdgeCells": 7,
+      "templateFootprintCells": [
+        11,
+        9
+      ]
+    },
+    {
+      "asset": "broad-joining-mass-B",
+      "group": "main",
+      "originWorldCell": [
+        155,
+        314
+      ],
+      "freshTargetCells": 21,
+      "freshEdgeCells": 15,
+      "templateFootprintCells": [
+        9,
+        10
+      ]
+    },
+    {
+      "asset": "broad-joining-mass-B",
+      "group": "main",
+      "originWorldCell": [
+        155,
+        342
+      ],
+      "freshTargetCells": 20,
+      "freshEdgeCells": 15,
+      "templateFootprintCells": [
+        9,
+        10
+      ]
+    },
+    {
+      "asset": "interior-rock-panel",
+      "group": "main",
+      "originWorldCell": [
+        153,
+        357
+      ],
+      "freshTargetCells": 21,
+      "freshEdgeCells": 10,
+      "templateFootprintCells": [
+        11,
+        9
+      ]
+    },
+    {
+      "asset": "narrow-notch-buttress",
+      "group": "main",
+      "originWorldCell": [
+        139,
+        304
+      ],
+      "freshTargetCells": 18,
+      "freshEdgeCells": 9,
+      "templateFootprintCells": [
+        5,
+        9
+      ]
+    },
+    {
+      "asset": "broad-joining-mass-B",
+      "group": "main",
+      "originWorldCell": [
+        155,
+        244
+      ],
+      "freshTargetCells": 19,
+      "freshEdgeCells": 12,
+      "templateFootprintCells": [
+        9,
+        10
+      ]
+    },
+    {
+      "asset": "broad-joining-mass-A",
+      "group": "main",
+      "originWorldCell": [
+        46,
+        241
+      ],
+      "freshTargetCells": 17,
+      "freshEdgeCells": 6,
+      "templateFootprintCells": [
+        11,
+        10
+      ]
+    },
+    {
+      "asset": "broad-joining-mass-A",
+      "group": "main",
+      "originWorldCell": [
+        151,
+        268
+      ],
+      "freshTargetCells": 16,
+      "freshEdgeCells": 0,
+      "templateFootprintCells": [
+        11,
+        10
+      ]
+    },
+    {
+      "asset": "broad-joining-mass-B",
+      "group": "main",
+      "originWorldCell": [
+        155,
+        279
+      ],
+      "freshTargetCells": 16,
+      "freshEdgeCells": 13,
+      "templateFootprintCells": [
+        9,
+        10
+      ]
+    },
+    {
+      "asset": "broad-joining-mass-A",
+      "group": "main",
+      "originWorldCell": [
+        120,
+        230
+      ],
+      "freshTargetCells": 15,
+      "freshEdgeCells": 10,
+      "templateFootprintCells": [
+        11,
+        10
+      ]
+    },
+    {
+      "asset": "broad-joining-mass-B",
+      "group": "main",
+      "originWorldCell": [
+        139,
+        310
+      ],
+      "freshTargetCells": 15,
+      "freshEdgeCells": 11,
+      "templateFootprintCells": [
+        9,
+        10
+      ]
+    },
+    {
+      "asset": "narrow-notch-buttress",
+      "group": "main",
+      "originWorldCell": [
+        61,
+        233
+      ],
+      "freshTargetCells": 13,
+      "freshEdgeCells": 4,
+      "templateFootprintCells": [
+        5,
+        9
+      ]
+    },
+    {
+      "asset": "broad-joining-mass-B",
+      "group": "main",
+      "originWorldCell": [
+        71,
+        218
+      ],
+      "freshTargetCells": 15,
+      "freshEdgeCells": 14,
+      "templateFootprintCells": [
+        9,
+        10
+      ]
+    },
+    {
+      "asset": "broad-joining-mass-B",
+      "group": "main",
+      "originWorldCell": [
+        149,
+        340
+      ],
+      "freshTargetCells": 14,
+      "freshEdgeCells": 7,
+      "templateFootprintCells": [
+        9,
+        10
+      ]
+    },
+    {
+      "asset": "narrow-notch-buttress",
+      "group": "main",
+      "originWorldCell": [
+        69,
+        224
+      ],
+      "freshTargetCells": 12,
+      "freshEdgeCells": 2,
+      "templateFootprintCells": [
+        5,
+        9
+      ]
+    },
+    {
+      "asset": "broad-joining-mass-B",
+      "group": "main",
+      "originWorldCell": [
+        147,
+        332
+      ],
+      "freshTargetCells": 13,
+      "freshEdgeCells": 4,
+      "templateFootprintCells": [
+        9,
+        10
+      ]
+    },
+    {
+      "asset": "narrow-notch-buttress",
+      "group": "main",
+      "originWorldCell": [
+        65,
+        228
+      ],
+      "freshTargetCells": 12,
+      "freshEdgeCells": 7,
+      "templateFootprintCells": [
+        5,
+        9
+      ]
+    },
+    {
+      "asset": "broad-joining-mass-B",
+      "group": "main",
+      "originWorldCell": [
+        142,
+        262
+      ],
+      "freshTargetCells": 13,
+      "freshEdgeCells": 9,
+      "templateFootprintCells": [
+        9,
+        10
+      ]
+    },
+    {
+      "asset": "broad-joining-mass-B",
+      "group": "main",
+      "originWorldCell": [
+        150,
+        347
+      ],
+      "freshTargetCells": 12,
+      "freshEdgeCells": 9,
+      "templateFootprintCells": [
+        9,
+        10
+      ]
+    },
+    {
+      "asset": "broad-joining-mass-B",
+      "group": "main",
+      "originWorldCell": [
+        155,
+        305
+      ],
+      "freshTargetCells": 12,
+      "freshEdgeCells": 12,
+      "templateFootprintCells": [
+        9,
+        10
+      ]
+    },
+    {
+      "asset": "broad-joining-mass-B",
+      "group": "main",
+      "originWorldCell": [
+        155,
+        361
+      ],
+      "freshTargetCells": 11,
+      "freshEdgeCells": 8,
+      "templateFootprintCells": [
+        9,
+        10
+      ]
+    },
+    {
+      "asset": "broad-joining-mass-A",
+      "group": "main",
+      "originWorldCell": [
+        131,
+        231
+      ],
+      "freshTargetCells": 10,
+      "freshEdgeCells": 6,
+      "templateFootprintCells": [
+        11,
+        10
+      ]
+    },
+    {
+      "asset": "broad-joining-mass-A",
+      "group": "main",
+      "originWorldCell": [
+        144,
+        235
+      ],
+      "freshTargetCells": 9,
+      "freshEdgeCells": 4,
+      "templateFootprintCells": [
+        11,
+        10
+      ]
+    },
+    {
+      "asset": "broad-joining-mass-B",
+      "group": "main",
+      "originWorldCell": [
+        151,
+        354
+      ],
+      "freshTargetCells": 10,
+      "freshEdgeCells": 8,
+      "templateFootprintCells": [
+        9,
+        10
+      ]
+    },
+    {
+      "asset": "narrow-notch-buttress",
+      "group": "main",
+      "originWorldCell": [
+        156,
+        218
+      ],
+      "freshTargetCells": 8,
+      "freshEdgeCells": 6,
+      "templateFootprintCells": [
+        5,
+        9
+      ]
+    },
+    {
+      "asset": "broad-joining-mass-A",
+      "group": "main",
+      "originWorldCell": [
+        74,
+        220
+      ],
+      "freshTargetCells": 8,
+      "freshEdgeCells": 5,
+      "templateFootprintCells": [
+        11,
+        10
+      ]
+    },
+    {
+      "asset": "broad-joining-mass-B",
+      "group": "main",
+      "originWorldCell": [
+        50,
+        230
+      ],
+      "freshTargetCells": 9,
+      "freshEdgeCells": 8,
+      "templateFootprintCells": [
+        9,
+        10
+      ]
+    },
+    {
+      "asset": "broad-joining-mass-A",
+      "group": "main",
+      "originWorldCell": [
+        32,
+        247
+      ],
+      "freshTargetCells": 8,
+      "freshEdgeCells": 6,
+      "templateFootprintCells": [
+        11,
+        10
+      ]
+    },
+    {
+      "asset": "narrow-notch-buttress",
+      "group": "main",
+      "originWorldCell": [
+        44,
+        245
+      ],
+      "freshTargetCells": 7,
+      "freshEdgeCells": 3,
+      "templateFootprintCells": [
+        5,
+        9
+      ]
+    },
+    {
+      "asset": "narrow-notch-buttress",
+      "group": "main",
+      "originWorldCell": [
+        59,
+        236
+      ],
+      "freshTargetCells": 7,
+      "freshEdgeCells": 4,
+      "templateFootprintCells": [
+        5,
+        9
+      ]
+    },
+    {
+      "asset": "broad-joining-mass-B",
+      "group": "main",
+      "originWorldCell": [
+        41,
+        235
+      ],
+      "freshTargetCells": 8,
+      "freshEdgeCells": 5,
+      "templateFootprintCells": [
+        9,
+        10
+      ]
+    },
+    {
+      "asset": "broad-joining-mass-B",
+      "group": "main",
+      "originWorldCell": [
+        150,
+        279
+      ],
+      "freshTargetCells": 8,
+      "freshEdgeCells": 6,
+      "templateFootprintCells": [
+        9,
+        10
+      ]
+    },
+    {
+      "asset": "broad-joining-mass-B",
+      "group": "main",
+      "originWorldCell": [
+        140,
+        298
+      ],
+      "freshTargetCells": 8,
+      "freshEdgeCells": 6,
+      "templateFootprintCells": [
+        9,
+        10
+      ]
+    },
+    {
+      "asset": "broad-joining-mass-B",
+      "group": "main",
+      "originWorldCell": [
+        155,
+        348
+      ],
+      "freshTargetCells": 8,
+      "freshEdgeCells": 8,
+      "templateFootprintCells": [
+        9,
+        10
+      ]
+    },
+    {
+      "asset": "broad-joining-mass-B",
+      "group": "main",
+      "originWorldCell": [
+        155,
+        231
+      ],
+      "freshTargetCells": 7,
+      "freshEdgeCells": 7,
+      "templateFootprintCells": [
+        9,
+        10
+      ]
+    },
+    {
+      "asset": "narrow-notch-buttress",
+      "group": "main",
+      "originWorldCell": [
+        116,
+        224
+      ],
+      "freshTargetCells": 5,
+      "freshEdgeCells": 3,
+      "templateFootprintCells": [
+        5,
+        9
+      ]
+    },
+    {
+      "asset": "narrow-notch-buttress",
+      "group": "main",
+      "originWorldCell": [
+        54,
+        240
+      ],
+      "freshTargetCells": 5,
+      "freshEdgeCells": 3,
+      "templateFootprintCells": [
+        5,
+        9
+      ]
+    },
+    {
+      "asset": "broad-joining-mass-A",
+      "group": "main",
+      "originWorldCell": [
+        133,
+        223
+      ],
+      "freshTargetCells": 5,
+      "freshEdgeCells": 0,
+      "templateFootprintCells": [
+        11,
+        10
+      ]
+    },
+    {
+      "asset": "narrow-notch-buttress",
+      "group": "main",
+      "originWorldCell": [
+        159,
+        266
+      ],
+      "freshTargetCells": 5,
+      "freshEdgeCells": 4,
+      "templateFootprintCells": [
+        5,
+        9
+      ]
+    },
+    {
+      "asset": "narrow-notch-buttress",
+      "group": "main",
+      "originWorldCell": [
+        159,
+        319
+      ],
+      "freshTargetCells": 5,
+      "freshEdgeCells": 5,
+      "templateFootprintCells": [
+        5,
+        9
+      ]
+    },
+    {
+      "asset": "broad-joining-mass-A",
+      "group": "main",
+      "originWorldCell": [
+        143,
+        319
+      ],
+      "freshTargetCells": 5,
+      "freshEdgeCells": 3,
+      "templateFootprintCells": [
+        11,
+        10
+      ]
+    },
+    {
+      "asset": "broad-joining-mass-A",
+      "group": "main",
+      "originWorldCell": [
+        140,
+        313
+      ],
+      "freshTargetCells": 5,
+      "freshEdgeCells": 4,
+      "templateFootprintCells": [
+        11,
+        10
+      ]
+    },
+    {
+      "asset": "broad-joining-mass-B",
+      "group": "main",
+      "originWorldCell": [
+        155,
+        299
+      ],
+      "freshTargetCells": 6,
+      "freshEdgeCells": 6,
+      "templateFootprintCells": [
+        9,
+        10
+      ]
+    },
+    {
+      "asset": "narrow-notch-buttress",
+      "group": "main",
+      "originWorldCell": [
+        32,
+        243
+      ],
+      "freshTargetCells": 4,
+      "freshEdgeCells": 1,
+      "templateFootprintCells": [
+        5,
+        9
+      ]
+    },
+    {
+      "asset": "broad-joining-mass-A",
+      "group": "main",
+      "originWorldCell": [
+        148,
+        300
+      ],
+      "freshTargetCells": 4,
+      "freshEdgeCells": 0,
+      "templateFootprintCells": [
+        11,
+        10
+      ]
+    },
+    {
+      "asset": "narrow-notch-buttress",
+      "group": "main",
+      "originWorldCell": [
+        159,
+        227
+      ],
+      "freshTargetCells": 4,
+      "freshEdgeCells": 3,
+      "templateFootprintCells": [
+        5,
+        9
+      ]
+    },
+    {
+      "asset": "narrow-notch-buttress",
+      "group": "main",
+      "originWorldCell": [
+        159,
+        274
+      ],
+      "freshTargetCells": 4,
+      "freshEdgeCells": 4,
+      "templateFootprintCells": [
+        5,
+        9
+      ]
+    },
+    {
+      "asset": "narrow-notch-buttress",
+      "group": "main",
+      "originWorldCell": [
+        159,
+        366
+      ],
+      "freshTargetCells": 4,
+      "freshEdgeCells": 4,
+      "templateFootprintCells": [
+        5,
+        9
+      ]
+    },
+    {
+      "asset": "broad-joining-mass-A",
+      "group": "main",
+      "originWorldCell": [
+        153,
+        257
+      ],
+      "freshTargetCells": 4,
+      "freshEdgeCells": 2,
+      "templateFootprintCells": [
+        11,
+        10
+      ]
+    },
+    {
+      "asset": "broad-joining-mass-A",
+      "group": "main",
+      "originWorldCell": [
+        76,
+        218
+      ],
+      "freshTargetCells": 4,
+      "freshEdgeCells": 4,
+      "templateFootprintCells": [
+        11,
+        10
+      ]
+    },
+    {
+      "asset": "narrow-notch-buttress",
+      "group": "main",
+      "originWorldCell": [
+        86,
+        218
+      ],
+      "freshTargetCells": 3,
+      "freshEdgeCells": 2,
+      "templateFootprintCells": [
+        5,
+        9
+      ]
+    },
+    {
+      "asset": "narrow-notch-buttress",
+      "group": "main",
+      "originWorldCell": [
+        147,
+        238
+      ],
+      "freshTargetCells": 3,
+      "freshEdgeCells": 2,
+      "templateFootprintCells": [
+        5,
+        9
+      ]
+    },
+    {
+      "asset": "narrow-notch-buttress",
+      "group": "main",
+      "originWorldCell": [
+        157,
+        364
+      ],
+      "freshTargetCells": 3,
+      "freshEdgeCells": 2,
+      "templateFootprintCells": [
+        5,
+        9
+      ]
+    },
+    {
+      "asset": "broad-joining-mass-B",
+      "group": "main",
+      "originWorldCell": [
+        150,
+        218
+      ],
+      "freshTargetCells": 4,
+      "freshEdgeCells": 4,
+      "templateFootprintCells": [
+        9,
+        10
+      ]
+    },
+    {
+      "asset": "broad-joining-mass-B",
+      "group": "main",
+      "originWorldCell": [
+        53,
+        229
+      ],
+      "freshTargetCells": 4,
+      "freshEdgeCells": 4,
+      "templateFootprintCells": [
+        9,
+        10
+      ]
+    },
+    {
+      "asset": "narrow-notch-buttress",
+      "group": "main",
+      "originWorldCell": [
+        72,
+        223
+      ],
+      "freshTargetCells": 3,
+      "freshEdgeCells": 3,
+      "templateFootprintCells": [
+        5,
+        9
+      ]
+    },
+    {
+      "asset": "broad-joining-mass-A",
+      "group": "main",
+      "originWorldCell": [
+        113,
+        219
+      ],
+      "freshTargetCells": 3,
+      "freshEdgeCells": 2,
+      "templateFootprintCells": [
+        11,
+        10
+      ]
+    },
+    {
+      "asset": "broad-joining-mass-B",
+      "group": "main",
+      "originWorldCell": [
+        38,
+        237
+      ],
+      "freshTargetCells": 4,
+      "freshEdgeCells": 4,
+      "templateFootprintCells": [
+        9,
+        10
+      ]
+    },
+    {
+      "asset": "narrow-notch-buttress",
+      "group": "main",
+      "originWorldCell": [
+        62,
+        228
+      ],
+      "freshTargetCells": 3,
+      "freshEdgeCells": 3,
+      "templateFootprintCells": [
+        5,
+        9
+      ]
+    },
+    {
+      "asset": "broad-joining-mass-A",
+      "group": "main",
+      "originWorldCell": [
+        145,
+        250
+      ],
+      "freshTargetCells": 3,
+      "freshEdgeCells": 2,
+      "templateFootprintCells": [
+        11,
+        10
+      ]
+    },
+    {
+      "asset": "narrow-notch-buttress",
+      "group": "main",
+      "originWorldCell": [
+        119,
+        229
+      ],
+      "freshTargetCells": 3,
+      "freshEdgeCells": 3,
+      "templateFootprintCells": [
+        5,
+        9
+      ]
+    },
+    {
+      "asset": "narrow-notch-buttress",
+      "group": "main",
+      "originWorldCell": [
+        159,
+        248
+      ],
+      "freshTargetCells": 3,
+      "freshEdgeCells": 3,
+      "templateFootprintCells": [
+        5,
+        9
+      ]
+    },
+    {
+      "asset": "narrow-notch-buttress",
+      "group": "main",
+      "originWorldCell": [
+        159,
+        283
+      ],
+      "freshTargetCells": 3,
+      "freshEdgeCells": 3,
+      "templateFootprintCells": [
+        5,
+        9
+      ]
+    },
+    {
+      "asset": "broad-joining-mass-A",
+      "group": "main",
+      "originWorldCell": [
+        136,
+        232
+      ],
+      "freshTargetCells": 3,
+      "freshEdgeCells": 3,
+      "templateFootprintCells": [
+        11,
+        10
+      ]
+    },
+    {
+      "asset": "narrow-notch-buttress",
+      "group": "main",
+      "originWorldCell": [
+        159,
+        309
+      ],
+      "freshTargetCells": 3,
+      "freshEdgeCells": 3,
+      "templateFootprintCells": [
+        5,
+        9
+      ]
+    },
+    {
+      "asset": "broad-joining-mass-A",
+      "group": "main",
+      "originWorldCell": [
+        146,
+        329
+      ],
+      "freshTargetCells": 3,
+      "freshEdgeCells": 3,
+      "templateFootprintCells": [
+        11,
+        10
+      ]
+    },
+    {
+      "asset": "narrow-notch-buttress",
+      "group": "main",
+      "originWorldCell": [
+        159,
+        328
+      ],
+      "freshTargetCells": 3,
+      "freshEdgeCells": 3,
+      "templateFootprintCells": [
+        5,
+        9
+      ]
+    },
+    {
+      "asset": "broad-joining-mass-A",
+      "group": "main",
+      "originWorldCell": [
+        152,
+        357
+      ],
+      "freshTargetCells": 3,
+      "freshEdgeCells": 3,
+      "templateFootprintCells": [
+        11,
+        10
+      ]
+    },
+    {
+      "asset": "narrow-notch-buttress",
+      "group": "main",
+      "originWorldCell": [
+        159,
+        337
+      ],
+      "freshTargetCells": 3,
+      "freshEdgeCells": 3,
+      "templateFootprintCells": [
+        5,
+        9
+      ]
+    },
+    {
+      "asset": "companion-narrow-buttress",
+      "group": "companion",
+      "originWorldCell": [
+        91,
+        218
+      ],
+      "freshTargetCells": 8,
+      "freshEdgeCells": 4,
+      "templateFootprintCells": [
+        2,
+        4
+      ]
+    },
+    {
+      "asset": "companion-narrow-buttress",
+      "group": "companion",
+      "originWorldCell": [
+        93,
+        218
+      ],
+      "freshTargetCells": 8,
+      "freshEdgeCells": 4,
+      "templateFootprintCells": [
+        2,
+        4
+      ]
+    },
+    {
+      "asset": "companion-narrow-buttress",
+      "group": "companion",
+      "originWorldCell": [
+        95,
+        218
+      ],
+      "freshTargetCells": 8,
+      "freshEdgeCells": 4,
+      "templateFootprintCells": [
+        2,
+        4
+      ]
+    },
+    {
+      "asset": "companion-narrow-buttress",
+      "group": "companion",
+      "originWorldCell": [
+        97,
+        218
+      ],
+      "freshTargetCells": 8,
+      "freshEdgeCells": 4,
+      "templateFootprintCells": [
+        2,
+        4
+      ]
+    },
+    {
+      "asset": "companion-narrow-buttress",
+      "group": "companion",
+      "originWorldCell": [
+        99,
+        218
+      ],
+      "freshTargetCells": 8,
+      "freshEdgeCells": 4,
+      "templateFootprintCells": [
+        2,
+        4
+      ]
+    },
+    {
+      "asset": "companion-narrow-buttress",
+      "group": "companion",
+      "originWorldCell": [
+        101,
+        218
+      ],
+      "freshTargetCells": 8,
+      "freshEdgeCells": 4,
+      "templateFootprintCells": [
+        2,
+        4
+      ]
+    },
+    {
+      "asset": "companion-narrow-buttress",
+      "group": "companion",
+      "originWorldCell": [
+        103,
+        218
+      ],
+      "freshTargetCells": 8,
+      "freshEdgeCells": 4,
+      "templateFootprintCells": [
+        2,
+        4
+      ]
+    },
+    {
+      "asset": "companion-narrow-buttress",
+      "group": "companion",
+      "originWorldCell": [
+        105,
+        218
+      ],
+      "freshTargetCells": 8,
+      "freshEdgeCells": 4,
+      "templateFootprintCells": [
+        2,
+        4
+      ]
+    },
+    {
+      "asset": "companion-narrow-buttress",
+      "group": "companion",
+      "originWorldCell": [
+        107,
+        218
+      ],
+      "freshTargetCells": 8,
+      "freshEdgeCells": 4,
+      "templateFootprintCells": [
+        2,
+        4
+      ]
+    },
+    {
+      "asset": "companion-narrow-buttress",
+      "group": "companion",
+      "originWorldCell": [
+        109,
+        218
+      ],
+      "freshTargetCells": 8,
+      "freshEdgeCells": 4,
+      "templateFootprintCells": [
+        2,
+        4
+      ]
+    },
+    {
+      "asset": "companion-narrow-buttress",
+      "group": "companion",
+      "originWorldCell": [
+        111,
+        218
+      ],
+      "freshTargetCells": 8,
+      "freshEdgeCells": 4,
+      "templateFootprintCells": [
+        2,
+        4
+      ]
+    },
+    {
+      "asset": "companion-narrow-buttress",
+      "group": "companion",
+      "originWorldCell": [
+        93,
+        222
+      ],
+      "freshTargetCells": 8,
+      "freshEdgeCells": 3,
+      "templateFootprintCells": [
+        2,
+        4
+      ]
+    },
+    {
+      "asset": "companion-narrow-buttress",
+      "group": "companion",
+      "originWorldCell": [
+        91,
+        222
+      ],
+      "freshTargetCells": 8,
+      "freshEdgeCells": 2,
+      "templateFootprintCells": [
+        2,
+        4
+      ]
+    },
+    {
+      "asset": "companion-low-shoulder",
+      "group": "companion",
+      "originWorldCell": [
+        160,
+        218
+      ],
+      "freshTargetCells": 6,
+      "freshEdgeCells": 6,
+      "templateFootprintCells": [
+        3,
+        2
+      ]
+    },
+    {
+      "asset": "companion-narrow-buttress",
+      "group": "companion",
+      "originWorldCell": [
+        111,
+        222
+      ],
+      "freshTargetCells": 8,
+      "freshEdgeCells": 1,
+      "templateFootprintCells": [
+        2,
+        4
+      ]
+    },
+    {
+      "asset": "companion-low-shoulder",
+      "group": "companion",
+      "originWorldCell": [
+        102,
+        222
+      ],
+      "freshTargetCells": 6,
+      "freshEdgeCells": 5,
+      "templateFootprintCells": [
+        3,
+        2
+      ]
+    },
+    {
+      "asset": "companion-low-shoulder",
+      "group": "companion",
+      "originWorldCell": [
+        107,
+        223
+      ],
+      "freshTargetCells": 6,
+      "freshEdgeCells": 4,
+      "templateFootprintCells": [
+        3,
+        2
+      ]
+    },
+    {
+      "asset": "companion-low-shoulder",
+      "group": "companion",
+      "originWorldCell": [
+        99,
+        222
+      ],
+      "freshTargetCells": 6,
+      "freshEdgeCells": 3,
+      "templateFootprintCells": [
+        3,
+        2
+      ]
+    },
+    {
+      "asset": "companion-low-shoulder",
+      "group": "companion",
+      "originWorldCell": [
+        95,
+        223
+      ],
+      "freshTargetCells": 6,
+      "freshEdgeCells": 3,
+      "templateFootprintCells": [
+        3,
+        2
+      ]
+    },
+    {
+      "asset": "companion-low-shoulder",
+      "group": "companion",
+      "originWorldCell": [
+        105,
+        222
+      ],
+      "freshTargetCells": 5,
+      "freshEdgeCells": 2,
+      "templateFootprintCells": [
+        3,
+        2
+      ]
+    },
+    {
+      "asset": "companion-tall-fin",
+      "group": "companion",
+      "originWorldCell": [
+        28,
+        249
+      ],
+      "freshTargetCells": 4,
+      "freshEdgeCells": 4,
+      "templateFootprintCells": [
+        1,
+        4
+      ]
+    },
+    {
+      "asset": "companion-tall-fin",
+      "group": "companion",
+      "originWorldCell": [
+        90,
+        218
+      ],
+      "freshTargetCells": 3,
+      "freshEdgeCells": 2,
+      "templateFootprintCells": [
+        1,
+        4
+      ]
+    },
+    {
+      "asset": "companion-low-shoulder",
+      "group": "companion",
+      "originWorldCell": [
+        160,
+        374
+      ],
+      "freshTargetCells": 3,
+      "freshEdgeCells": 3,
+      "templateFootprintCells": [
+        3,
+        2
+      ]
+    },
+    {
+      "asset": "companion-narrow-buttress",
+      "group": "companion",
+      "originWorldCell": [
+        97,
+        221
+      ],
+      "freshTargetCells": 4,
+      "freshEdgeCells": 1,
+      "templateFootprintCells": [
+        2,
+        4
+      ]
+    },
+    {
+      "asset": "companion-tall-fin",
+      "group": "companion",
+      "originWorldCell": [
+        110,
+        221
+      ],
+      "freshTargetCells": 3,
+      "freshEdgeCells": 1,
+      "templateFootprintCells": [
+        1,
+        4
+      ]
+    },
+    {
+      "asset": "companion-low-shoulder",
+      "group": "companion",
+      "originWorldCell": [
+        160,
+        219
+      ],
+      "freshTargetCells": 3,
+      "freshEdgeCells": 2,
+      "templateFootprintCells": [
+        3,
+        2
+      ]
+    },
+    {
+      "asset": "companion-narrow-buttress",
+      "group": "companion",
+      "originWorldCell": [
+        162,
+        228
+      ],
+      "freshTargetCells": 3,
+      "freshEdgeCells": 3,
+      "templateFootprintCells": [
+        2,
+        4
+      ]
+    },
+    {
+      "asset": "companion-tall-fin",
+      "group": "companion",
+      "originWorldCell": [
+        163,
+        297
+      ],
+      "freshTargetCells": 2,
+      "freshEdgeCells": 2,
+      "templateFootprintCells": [
+        1,
+        4
+      ]
+    },
+    {
+      "asset": "companion-tall-fin",
+      "group": "companion",
+      "originWorldCell": [
+        163,
+        357
+      ],
+      "freshTargetCells": 2,
+      "freshEdgeCells": 2,
+      "templateFootprintCells": [
+        1,
+        4
+      ]
+    },
+    {
+      "asset": "companion-tall-fin",
+      "group": "companion",
+      "originWorldCell": [
+        163,
+        361
+      ],
+      "freshTargetCells": 2,
+      "freshEdgeCells": 2,
+      "templateFootprintCells": [
+        1,
+        4
+      ]
+    },
+    {
+      "asset": "companion-tall-fin",
+      "group": "companion",
+      "originWorldCell": [
+        163,
+        373
+      ],
+      "freshTargetCells": 2,
+      "freshEdgeCells": 2,
+      "templateFootprintCells": [
+        1,
+        4
+      ]
+    },
+    {
+      "asset": "companion-low-shoulder",
+      "group": "companion",
+      "originWorldCell": [
+        45,
+        234
+      ],
+      "freshTargetCells": 2,
+      "freshEdgeCells": 2,
+      "templateFootprintCells": [
+        3,
+        2
+      ]
+    },
+    {
+      "asset": "companion-low-shoulder",
+      "group": "companion",
+      "originWorldCell": [
+        123,
+        238
+      ],
+      "freshTargetCells": 2,
+      "freshEdgeCells": 2,
+      "templateFootprintCells": [
+        3,
+        2
+      ]
+    },
+    {
+      "asset": "companion-tall-fin",
+      "group": "companion",
+      "originWorldCell": [
+        70,
+        231
+      ],
+      "freshTargetCells": 2,
+      "freshEdgeCells": 1,
+      "templateFootprintCells": [
+        1,
+        4
+      ]
+    },
+    {
+      "asset": "companion-low-shoulder",
+      "group": "companion",
+      "originWorldCell": [
+        145,
+        274
+      ],
+      "freshTargetCells": 2,
+      "freshEdgeCells": 2,
+      "templateFootprintCells": [
+        3,
+        2
+      ]
+    },
+    {
+      "asset": "companion-low-shoulder",
+      "group": "companion",
+      "originWorldCell": [
+        148,
+        341
+      ],
+      "freshTargetCells": 2,
+      "freshEdgeCells": 1,
+      "templateFootprintCells": [
+        3,
+        2
+      ]
+    },
+    {
+      "asset": "companion-low-shoulder",
+      "group": "companion",
+      "originWorldCell": [
+        107,
+        222
+      ],
+      "freshTargetCells": 2,
+      "freshEdgeCells": 0,
+      "templateFootprintCells": [
+        3,
+        2
+      ]
+    },
+    {
+      "asset": "companion-narrow-buttress",
+      "group": "companion",
+      "originWorldCell": [
+        95,
+        219
+      ],
+      "freshTargetCells": 2,
+      "freshEdgeCells": 0,
+      "templateFootprintCells": [
+        2,
+        4
+      ]
+    },
+    {
+      "asset": "companion-tall-fin",
+      "group": "companion",
+      "originWorldCell": [
+        160,
+        218
+      ],
+      "freshTargetCells": 1,
+      "freshEdgeCells": 1,
+      "templateFootprintCells": [
+        1,
+        4
+      ]
+    },
+    {
+      "asset": "companion-tall-fin",
+      "group": "companion",
+      "originWorldCell": [
+        71,
+        220
+      ],
+      "freshTargetCells": 1,
+      "freshEdgeCells": 1,
+      "templateFootprintCells": [
+        1,
+        4
+      ]
+    },
+    {
+      "asset": "companion-tall-fin",
+      "group": "companion",
+      "originWorldCell": [
+        86,
+        224
+      ],
+      "freshTargetCells": 1,
+      "freshEdgeCells": 1,
+      "templateFootprintCells": [
+        1,
+        4
+      ]
+    },
+    {
+      "asset": "companion-tall-fin",
+      "group": "companion",
+      "originWorldCell": [
+        115,
+        226
+      ],
+      "freshTargetCells": 1,
+      "freshEdgeCells": 1,
+      "templateFootprintCells": [
+        1,
+        4
+      ]
+    },
+    {
+      "asset": "companion-tall-fin",
+      "group": "companion",
+      "originWorldCell": [
+        80,
+        227
+      ],
+      "freshTargetCells": 1,
+      "freshEdgeCells": 1,
+      "templateFootprintCells": [
+        1,
+        4
+      ]
+    },
+    {
+      "asset": "companion-tall-fin",
+      "group": "companion",
+      "originWorldCell": [
+        69,
+        228
+      ],
+      "freshTargetCells": 1,
+      "freshEdgeCells": 1,
+      "templateFootprintCells": [
+        1,
+        4
+      ]
+    },
+    {
+      "asset": "companion-low-shoulder",
+      "group": "companion",
+      "originWorldCell": [
+        159,
+        225
+      ],
+      "freshTargetCells": 1,
+      "freshEdgeCells": 1,
+      "templateFootprintCells": [
+        3,
+        2
+      ]
+    },
+    {
+      "asset": "companion-tall-fin",
+      "group": "companion",
+      "originWorldCell": [
+        71,
+        230
+      ],
+      "freshTargetCells": 1,
+      "freshEdgeCells": 1,
+      "templateFootprintCells": [
+        1,
+        4
+      ]
+    },
+    {
+      "asset": "companion-low-shoulder",
+      "group": "companion",
+      "originWorldCell": [
+        64,
+        237
+      ],
+      "freshTargetCells": 1,
+      "freshEdgeCells": 1,
+      "templateFootprintCells": [
+        3,
+        2
+      ]
+    },
+    {
+      "asset": "companion-tall-fin",
+      "group": "companion",
+      "originWorldCell": [
+        135,
+        237
+      ],
+      "freshTargetCells": 1,
+      "freshEdgeCells": 1,
+      "templateFootprintCells": [
+        1,
+        4
+      ]
+    },
+    {
+      "asset": "companion-low-shoulder",
+      "group": "companion",
+      "originWorldCell": [
+        161,
+        240
+      ],
+      "freshTargetCells": 1,
+      "freshEdgeCells": 1,
+      "templateFootprintCells": [
+        3,
+        2
+      ]
+    },
+    {
+      "asset": "companion-tall-fin",
+      "group": "companion",
+      "originWorldCell": [
+        143,
+        239
+      ],
+      "freshTargetCells": 1,
+      "freshEdgeCells": 1,
+      "templateFootprintCells": [
+        1,
+        4
+      ]
+    },
+    {
+      "asset": "companion-low-shoulder",
+      "group": "companion",
+      "originWorldCell": [
+        35,
+        241
+      ],
+      "freshTargetCells": 1,
+      "freshEdgeCells": 1,
+      "templateFootprintCells": [
+        3,
+        2
+      ]
+    },
+    {
+      "asset": "companion-tall-fin",
+      "group": "companion",
+      "originWorldCell": [
+        34,
+        242
+      ],
+      "freshTargetCells": 1,
+      "freshEdgeCells": 1,
+      "templateFootprintCells": [
+        1,
+        4
+      ]
+    },
+    {
+      "asset": "companion-narrow-buttress",
+      "group": "companion",
+      "originWorldCell": [
+        60,
+        242
+      ],
+      "freshTargetCells": 1,
+      "freshEdgeCells": 1,
+      "templateFootprintCells": [
+        2,
+        4
+      ]
+    },
+    {
+      "asset": "companion-low-shoulder",
+      "group": "companion",
+      "originWorldCell": [
+        32,
+        244
+      ],
+      "freshTargetCells": 1,
+      "freshEdgeCells": 1,
+      "templateFootprintCells": [
+        3,
+        2
+      ]
+    },
+    {
+      "asset": "companion-tall-fin",
+      "group": "companion",
+      "originWorldCell": [
+        29,
+        247
+      ],
+      "freshTargetCells": 1,
+      "freshEdgeCells": 1,
+      "templateFootprintCells": [
+        1,
+        4
+      ]
+    },
+    {
+      "asset": "companion-narrow-buttress",
+      "group": "companion",
+      "originWorldCell": [
+        28,
+        250
+      ],
+      "freshTargetCells": 1,
+      "freshEdgeCells": 1,
+      "templateFootprintCells": [
+        2,
+        4
+      ]
+    },
+    {
+      "asset": "companion-low-shoulder",
+      "group": "companion",
+      "originWorldCell": [
+        43,
+        253
+      ],
+      "freshTargetCells": 1,
+      "freshEdgeCells": 1,
+      "templateFootprintCells": [
+        3,
+        2
+      ]
+    },
+    {
+      "asset": "companion-tall-fin",
+      "group": "companion",
+      "originWorldCell": [
+        163,
+        260
+      ],
+      "freshTargetCells": 1,
+      "freshEdgeCells": 1,
+      "templateFootprintCells": [
+        1,
+        4
+      ]
+    },
+    {
+      "asset": "companion-narrow-buttress",
+      "group": "companion",
+      "originWorldCell": [
+        162,
+        273
+      ],
+      "freshTargetCells": 1,
+      "freshEdgeCells": 1,
+      "templateFootprintCells": [
+        2,
+        4
+      ]
+    },
+    {
+      "asset": "companion-low-shoulder",
+      "group": "companion",
+      "originWorldCell": [
+        152,
+        277
+      ],
+      "freshTargetCells": 1,
+      "freshEdgeCells": 1,
+      "templateFootprintCells": [
+        3,
+        2
+      ]
+    },
+    {
+      "asset": "companion-tall-fin",
+      "group": "companion",
+      "originWorldCell": [
+        149,
+        284
+      ],
+      "freshTargetCells": 1,
+      "freshEdgeCells": 1,
+      "templateFootprintCells": [
+        1,
+        4
+      ]
+    },
+    {
+      "asset": "companion-narrow-buttress",
+      "group": "companion",
+      "originWorldCell": [
+        145,
+        292
+      ],
+      "freshTargetCells": 1,
+      "freshEdgeCells": 1,
+      "templateFootprintCells": [
+        2,
+        4
+      ]
+    },
+    {
+      "asset": "companion-low-shoulder",
+      "group": "companion",
+      "originWorldCell": [
+        141,
+        322
+      ],
+      "freshTargetCells": 1,
+      "freshEdgeCells": 1,
+      "templateFootprintCells": [
+        3,
+        2
+      ]
+    },
+    {
+      "asset": "narrow-notch-buttress",
+      "group": "main",
+      "originWorldCell": [
+        143,
+        220
+      ],
+      "freshTargetCells": 2,
+      "repairForInteriorGap": true,
+      "templateFootprintCells": [
+        5,
+        9
+      ]
+    },
+    {
+      "asset": "narrow-notch-buttress",
+      "group": "main",
+      "originWorldCell": [
+        147,
+        304
+      ],
+      "freshTargetCells": 2,
+      "repairForInteriorGap": true,
+      "templateFootprintCells": [
+        5,
+        9
+      ]
+    },
+    {
+      "asset": "narrow-notch-buttress",
+      "group": "main",
+      "originWorldCell": [
+        127,
+        221
+      ],
+      "freshTargetCells": 1,
+      "repairForInteriorGap": true,
+      "templateFootprintCells": [
+        5,
+        9
+      ]
+    }
+  ]
+}

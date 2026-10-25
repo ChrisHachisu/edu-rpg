@@ -11,6 +11,7 @@ import argparse
 import hashlib
 import json
 import shutil
+import struct
 import sys
 from pathlib import Path
 
@@ -42,6 +43,10 @@ EXPECTED_FILE_COUNT = 257
 # move together -- they are one identity chain, not independent numbers.
 EXPECTED_TOTAL_BYTES = 42_683_079
 ACT1_OVERLAY_FILES = {
+    # 2026-09-21: additive loss/retry guard. It restores the live player after
+    # defeat without changing the frozen bundle and polls until its hooks exist.
+    "battle-recovery.js": (
+        7024, "b653552259676ee4061bb2c10663e88c799ea6f150290fd59108d00f2b4a6c4e"),
     # 2026-08-03, owner: "make the game controllable with the keypad ... use the joy stick type
     # keypad on the port sapphire screen". The 4-way d-pad held exactly ONE arrow key at a time
     # (setDir released the previous), so a diagonal was impossible and a corner boundary could
@@ -59,7 +64,13 @@ ACT1_OVERLAY_FILES = {
     # 2026-08-17: the panel gains the RENDER CHAIN and the debug default is ON for this build only,
     # so the owner's phone can answer whether the fuzziness is a global upscale. Same sign-off:
     # EXPECTED_STATIC_INDEX_SHA in scripts/build_static_index.mjs.
-    "index.html": (118443, "987ded74911dca6f834c3b41f828d2b7b8cb2442e07a3a74d090cc4af3632b87"),
+    # 2026-09-23 owner-approved startup WebGL retry: exact derived shell only; authored root
+    # index.html SHA 5156ba054806578d670dfcf8303957e770ac3e7458c50f73154d8ab6590b686a ->
+    # 656eeacf9d29d7c9d350e16b390f8f96cac3f8a039c96b78e87c5cdea35a16bd. Shell 125052 B /
+    # 52a058593efb1b901a42203bfd7ad591024946eb9f6db513a86c3a9babe69e25 -> 129636 B /
+    # 3de643bdde7c7dc15ce602d4a3e0529e74df54db21899269a4b1a385d48fc0fe. Frozen game bundle,
+    # art, source maps and all other pinned runtime entries remain unchanged.
+    "index.html": (130411, "735d33eebc2bbff798262c5800bd410f83b747cf936ff2e33c18a3b8e1ee099e"),
     # 2026-08-01, owner-authorised: dq-tiles.js now splats AI-generated terrain MATERIALS through
     # its existing continuous-world-pixel drawTerrain, plus a ridged mountain height field,
     # varied shore character and landmark sites derived from mapData. Fallback-safe -- until the
@@ -108,8 +119,9 @@ ACT1_OVERLAY_FILES = {
     # speed are unchanged, and heroTileX/heroTileY still come from the sprite centre so the CELL
     # save format round-trips to itself (measured: 742 of 754 reportable cells reload unchanged, the
     # other 12 settle one cell north once; largest rescue nudge 28 px against a 96 px bound).
+    # Updated 2026-10-03 for the approved scoped forest+mountain visible-terrain union.
     "dq-tiles.js": (
-        474675, "cc09262abe48a22de5603b131691c12ccfdeb1aaf00d3e076b75afe643ff01dd"),
+        573975, "04cb7bc6caae81a2e6cc61dbbf004a0876b5b9cd686f6f05ac16fd01b98e2c27"),
     # 2026-08-07: THE OVERWORLD'S COLLISION SHAPE, baked -- the overworld's answer to the dungeons'
     # `<floor>-walk.png` above, and as much a shipped authority as they are. Deriving it at runtime
     # was correct and unaffordable: owmBuild() evaluated waterField/mountainField per pixel over a
@@ -127,7 +139,7 @@ ACT1_OVERLAY_FILES = {
     # three inputs (the frozen bundle's generator, dq-tiles.js's consolidator, dq-tiles.js's own
     # field functions, which the bake SLICES rather than re-implements so the two cannot drift).
     "act1-overworld-walk.bin": (
-        10803776, "3005bdf9a9a61d6a24b003f70c24e4ae80dd0dc1059fb67285a240aa52fc1453"),
+        9688672, "00a520ae09089547ca4af4ef1077b84acdad98d4989de238f3ee30e28ad092c6"),
     # 2026-08-03, owner direction ("please redo the collision setting based on what i created (my
     # paint)"): the Act-1 collision plate is now generated from the OWNER'S PAINTED TERRAIN
     # (owner-terrain.json acts.1 + continent-macro-g3/land-mask.npy) instead of the generated
@@ -160,7 +172,7 @@ ACT1_OVERLAY_FILES = {
     # still green, because staging and git are two different lists.
     "assets/hero/hero-male-walk.png": (59032, "88cbed8f9d707b216ada01e108eedd5822c6bcfc69c8dd22af2457f231dc0976"),
     "act1-world-map.js": (
-        48915, "20d8156e129032ba5dc36520d29c4d8190eddc2af1773b85da5bee6c929f27d5"),
+        55792, "fb466fc6dbe7e05ccbb209c70867cacf4f903d55837ea69ca716e81f7196c96f"),
     # 2026-08-06, from device: the Port Sapphire movement stick was anchored bottom-LEFT and its
     # lower half sat behind the field tab bar, where the overworld and every dungeon put the same
     # control bottom-right and fully visible. The town runs in a same-origin IFRAME
@@ -171,7 +183,7 @@ ACT1_OVERLAY_FILES = {
     # the control-orientation setting, into the frame. First override of this file since the
     # v1.17.1 baseline was frozen, which is why it had no entry before.
     "ui-overhaul.js": (
-        178580, "01e56d136dea5f95ab3a3a5de27ce50569dc1eec28ad436f3588463f4297c68c"),
+        202286, "569336baf507260efd4abbd27176d215d3c7d8644a7280fd0e250300eef4d05d"),
     # 2026-08-06, owner pick: "Charcoal & Gold Leaf" (direction 4 of
     # design/ui-overhaul/chic-style-board.html). The same gold as before -- the pixel art, the
     # dungeon plates and the town screens were all approved against it -- spent differently:
@@ -181,7 +193,7 @@ ACT1_OVERLAY_FILES = {
     # bundled rather than fetched; the short version is that it never reached the phone at all.
     # Like ui-overhaul.js above, first override of this file since the baseline was frozen.
     "ui-overhaul.css": (
-        52466, "8f767e73aafbd9e7c89ff7a2294cc4c6e9c3b5892a76ba6197a889ec71bbed70"),
+        58872, "a4cfcf4b1ccee6b8a30562a3f2aeb5e861376ea72d461b1eaffb9412c0d51939"),
 }
 # 2026-08-06, owner-picked ("Charcoal & Gold Leaf", direction 4 of
 # design/ui-overhaul/chic-style-board.html): the chrome the theme needs on disk rather than
@@ -267,7 +279,7 @@ UI_ASSET_FILES = {
     # Pinned by hash like every other shipped asset: a silent swap of a music file is exactly as
     # invisible as a silent swap of art, and the override FAILS SOFT (it keeps the chiptune) so a
     # missing or corrupt track would not announce itself at runtime.
-    "music-override.js": (11469, "0c63cded00bdc63d7d36cebbd8d02573b628bf93f60c3c0c64d180aeaa1a1ca3"),
+    "music-override.js": (23398, "c2caf8474172b280bd0a3264e49f529b8c053c69a9025cb8a62b044125df5476"),
     "audio/battle.m4a": (366808, "ec61f086099d4c9ea687563597198bdf17a9360e9861eb64d02ee9dbb6b8aa00"),
     "audio/bossBattle.m4a": (366492, "4fe64bc355274c1193a695c343a5cb39152e3d62709ecf26cb1bf71cfeaee254"),
     "audio/dungeon.m4a": (366236, "6ae4b9707338920f2c3bf410495217db9985ed65f55a1dd623aea091ee6ed029"),
@@ -454,12 +466,16 @@ ACT1_DUNGEON_FILES = {
 # has no other way to seed; on iOS use scripts/seed_ios_save.py instead (the in-app WebView has
 # no URL bar). Pinned so it cannot quietly grow into something that mutates real save data.
 ACT1_TOWN_FILES = {
+    "act1-hifi/town/greenhollow-foreground.png": (17426, "871ebe24b325a11fb0ba5be0343d8474194c558de06bbb556e294c056badb743"),
+    "act1-hifi/town/greenhollow-foreground.json": (67, "d41d39ced921a0034c10222028397e42eb7eebd503f23b8be7f40a7530632aca"),
+    # Selected male town protagonist, using the existing approved sheet.
+    "act1-hifi/hero-g3/hero-act1-male-walk-8x3-64-g3.png": (124618, "b1e03de47337d8d2aca8d89e80c1c524c95ac2cc2cf88ed1ebd2b37b86424b2e"),
     "act1-hifi/town.html": (
-        50640, "0cbb8dfe24399bc37bf3be7741558567c11857d4c651ce8b1b654029c4324dd2"),
+        55388, "8a3ccc2400c6ce701e4720a47c5bd7fc4d41d56cc2d55e3be36238c17614434e"),
     "act1-hifi/town/portSapphire-town.json": (
         11831, "28373d5e26fd19990b7f3acd6cc77559e0c279aa73b65b2c0bcfc2985d69b33a"),
     "act1-hifi/town/portSapphire-walkable.json": (
-        25513, "dc6f8e6299508e9417e32a0be93a1e75b3541ee32275d3a49a99384b32f76893"),
+        26439, "5bffa523782a65736de9ac4ce70a6047385f9ce69f10c48e175ecba5593bf590"),
     "act1-hifi/town/portSapphire-screen.png": (
         8721920, "d883904e7cd7301af82099dc04cb968bf6e30017948f8f62de04902bbe91e4f9"),
     # 2026-08-14, owner-authorised ("draw over the hero AND be passable"): the overhead-prop
@@ -501,9 +517,9 @@ ACT1_TOWN_FILES = {
     # can see: it reports "0 updated", leaves the zeros in place, and the very next step fails with
     # "Act 1 town identity mismatch" pointing at the file you just added. Cost 2026-08-21.
     "act1-hifi/town/greenhollow-town.json": (
-        14731, "de834ba1db412c386853adda26fd66dca787acecf5fc5864f42882b6d86d5c22"),
+        14994, "528d6685fc8737b55386d6c2377d8dbd8c296313411dc678ce87d406052cbc61"),
     "act1-hifi/town/greenhollow-walkable.json": (
-        36447, "4b4a9126d7759ebfd0a4dad1ab61da74f7a7028ed37950c0e0c529f4b720d61c"),
+        37034, "2a5fcb42919627e99d1de21972c895452584b4181b781398d300822c6a4a16cb"),
     "act1-hifi/town/npc/greenhollow-elder-4x3-64.png": (
         83896, "93b763cebc3c419e5ef7d8e3368507bf604445133e4bcd37b6106881561293f7"),
     "act1-hifi/town/npc/greenhollow-fisherman-4x3-64.png": (
@@ -536,11 +552,11 @@ ACT1_TOWN_FILES = {
     "act1-hifi/town/npc/millbrook-sage-4x3-64.png": (
         75065, "84d718b211333b17a09859dcace6c58d8ae4b7645a4c0504e4ab3c34066b49d8"),
     "act1-hifi/town/greenhollow-walkable.json": (
-        36447, "4b4a9126d7759ebfd0a4dad1ab61da74f7a7028ed37950c0e0c529f4b720d61c"),
+        37034, "2a5fcb42919627e99d1de21972c895452584b4181b781398d300822c6a4a16cb"),
     "act1-hifi/town/millbrook-walkable.json": (
-        36534, "15b692b6f6776bda711476219fb88d8811e17910e5e95cf90ba1aab3376952f3"),
+        39256, "7e43d448441c4d19fe36eed22d55970f65a29a9a98f51237812e9623473aab53"),
     "act1-hifi/town/millbrook-town.json": (
-        12077, "7c595c2b67c4ea6abf5af413a4a46bd76f30e429e75dea2183a8082abad80ef8"),
+        11645, "b9e15c20b3f3b1ced504175f0e83179b6c8421a0105da07c3db1bddedac65238"),
     # 2026-08-21: the two plates the note above was waiting for. Both are the four-tile bake,
     # exposure-matched per tile and quilted on a minimum-error cut by scripts/stitch_plate.py.
     # Placeholder zeros; `npm run repin` fills the real size/hash in -- and the FILES ARE ON DISK
@@ -569,21 +585,21 @@ ACT1_LANDMARK_FILES = {
     "act1-hifi/landmarks/coastal-reef.png": (
         42673, "a96daa94ee31de8ec605c90f671c76db33366d648469fb46314542bed7d9ade3"),
     "act1-hifi/landmarks/crystal-cave.png": (
-        30305, "7a31cd824b71c2b1911a06c7cc71b9982182a2661c6d14ee596472d79b28e76b"),
+        30289, "45fb2c0b7cf1ad2e63ee9a28bbf0ad66e3d4d9ca9258beaf7a68566e04692b55"),
     "act1-hifi/landmarks/darkfang.png": (
         42937, "69ddb0f09c8021f9e81215bf6e100c9e287a007941926195e6973024322d4c76"),
     "act1-hifi/landmarks/greenhollow.png": (
-        73196, "501a99cd97d946052b2c3fb3679c10a3883d3056ca3fc5464a1891df5c118c96"),
+        73527, "f619d3166d68edbc9fdb55e735e767abde444b6d055b1ba60612d6a075e4997b"),
     "act1-hifi/landmarks/landmarks.json": (
         3138, "0b7e43f7ba532dd7079c2d90a1203bb7c9341a43b041993a3d9a0bcf24bc9437"),
     "act1-hifi/landmarks/millbrook.png": (
-        70227, "04e2c443be7d49b31ee02b38381f96aad90a29684e027252e9c02a16cb9b3406"),
+        67703, "38a1fc9e28477909c71cd3c20df6f8f80c81a8b2eb55befbfc426f17e2dab1ca"),
     "act1-hifi/landmarks/misty-grotto.png": (
         25411, "db70e0cb5ab15e88ced85a1979e72fbbb1a61f7f13386b3cc40e6555f618140e"),
     "act1-hifi/landmarks/port-sapphire.png": (
-        69754, "8e113c150740477393cefcfc2901a8e74b40624e552975162d131fbd2d73d55a"),
+        70695, "9708ba46eb3f3e065cae1ea2d044ece8e07d23e84531b441747da69b55eb8799"),
     "act1-hifi/landmarks/sunken-cellar.png": (
-        30048, "863d32de365c3cc078392d878fb6d4c1efe4a77b126b0f72a21365ed14883507"),
+        23994, "b3edec4762e910c249a8d6b6a7d8d6072186422e4f03e826208584ca9dab4f2a"),
     "act1-hifi/landmarks/whispering-woods.png": (
         34534, "a06eea6ab98c7c630119db1488dfea912a40bc69150ac16e387b4e696aa5f047"),
 }
@@ -591,6 +607,10 @@ ACT1_HIFI_RUNTIME = (
     ROOT / "design" / "review" / "overworld-art-blueprint" / "act-by-act" / "act1" / "runtime-v2"
 )
 ACT1_R26_RUNTIME = ACT1_HIFI_RUNTIME / "act1-final-art-geometry-r26" / "runtime"
+ACT1_PAINT_RUNTIME = (
+    ROOT / "design" / "review" / "overworld-art-blueprint" / "act-by-act" / "act1"
+    / "runtime-v9" / "act1-painted-overworld-r9" / "runtime"
+)
 # 2026-08-03, owner-authorised ("bank the art now"): the r26 chunk art was re-baked at 48 px/tile
 # from the MATERIAL renderer -- i.e. from the owner's painted terrain -- replacing the 16 px/tile
 # chunks derived from candidate-art.png, the painterly plate the owner rejected on 29 Jul. Three
@@ -616,11 +636,68 @@ ACT1_R26_RUNTIME = ACT1_HIFI_RUNTIME / "act1-final-art-geometry-r26" / "runtime"
 # softness was the paint, not the drawing. A re-bake from the material renderer was not possible on
 # this machine (its materials are gitignored design files), so this is a post-process of the locked
 # bake. manifest.source.sharpen records the parameters; the script refuses to run twice.
-ACT1_HIFI_MANIFEST_SHA256 = "7306e81411a230d3d83d8c179c9a55de5d0a234f26757654872b1b2c264210a4"
+# 2026-09-27: reviewed r3 selected-source-core mountain correction. It keeps the r2
+# runtime immutable, changes only 41 declared base files in a new r3 mirror, and records
+# the frozen layer, private integration, and independent-review identities in manifest.source.
+# 2026-09-16: owner-approved bright/natural frontend repaint; 120 fixed base footprints.
+# Independent decoded review and full bake prove unchanged geometry and 289 preserved files.
+# Exact replay/encoding; all 218 edges and 99 corners meet the declared one-level tolerance.
+ACT1_R26_MANIFEST_SHA256 = "7306e81411a230d3d83d8c179c9a55de5d0a234f26757654872b1b2c264210a4"
+ACT1_PAINT_MANIFEST_SHA256 = "83fd77795f670ca6fa5911c87c05f57f67f651dbc516dadbd8c7b8139c97f0de"
+ACT1_PAINT_UNDERPAINT = {
+    "src": "underpaint/act1-plate.png",
+    "pixelWidth": 888,
+    "pixelHeight": 1092,
+    "pixelsPerCell": 6,
+    "sha256": "e80bdea1d4fbd338a142795c20b12bb8f8da2bc2a1694d0cd5e4b4f1faa1e312",
+}
+ACT1_PAINT_UNDERPAINT_SHA256 = "e80bdea1d4fbd338a142795c20b12bb8f8da2bc2a1694d0cd5e4b4f1faa1e312"
+ACT1_PAINT_FOREST_UNDERPAINT = {
+    "src": "underpaint/forest-rgba.png",
+    "width": 888,
+    "height": 1092,
+    "pixelsPerCell": 6,
+    "bounds": [16, 218, 163, 399],
+}
+ACT1_PAINT_FOREST_UNDERPAINT_SHA256 = "d19e2fc42288c6b898b9e9b94553329c33a665e02dc38c0ffb49bfab2d2b5799"
+ACT1_PAINT_COLLISION = {'artifact': 'forest-collision.bin',
+ 'dimensionsPx32': [4736, 5824],
+ 'sha256': '766c0deb37abc682c8a18ef0f5e087b8ef9bfa76ba7dbce3b074bea002d16f53',
+ 'sourceArtifact': 'ACT1 forest QOK OR corrected visible whole-mountain alpha',
+ 'sourceSha256': '42097dbf9e271caa0bbf9c8c69a58e97e6ad41b4311b35c13425ffcdb493de67',
+ 'format': 'qok-forest-bitset-v1',
+ 'version': 1,
+ 'bounds': [16, 218, 163, 399],
+ 'pixelsPerCell': 32,
+ 'alphaThreshold': 16,
+ 'bytes': 3447872,
+ 'treeDilationSourcePixels': 0,
+ 'geometryManifestSha256': '3b932bdcd019b36ef16318333537c3f5553754a1cfded4ad33149269b5a49e3a',
+ 'sourceInputs': [{'label': 'forest-filled-collision',
+                   'sha256': '59b021239c220a094bb0bd87c5af6d76b78c693e3fe197b394fd8471b30ae34d',
+                   'threshold': 16,
+                   'bitOrder': 'little-within-byte'},
+                  {'label': 'mountain-visible-alpha',
+                   'sha256': '19b821e5813bfdf74e42cb0237fe97b18e07799300db97bcefdea9cf4341a51c',
+                   'threshold': 128,
+                   'bitOrder': 'little-within-byte'}],
+ 'composition': 'bytewise OR of unchanged forest QOK bits and staged visible approved mountain '
+                'alpha; little-within-byte',
+ 'compositionDigest': 'sha256(UTF8("edu-rpg-act1-visible-terrain-union-v1\\0") || '
+                      'rawSHA256(forest-filled-collision) || rawSHA256(mountain-visible-alpha))'}
+ACT1_BUILD83_SOURCE_MANIFEST_SHA256 = "26c756464730885d0ea766330edcde43e875a2a5887df1ef403b435040626e78"
+ACT1_BUILD83_SOURCE_COLLISION_SHA256 = "2b541cecb97712a6f18c6ae19bfabf519255999f2165d7d8ec4edea6cb9e4644"
+ACT1_BUILD83_OCT4_RECEIPT_SHA256 = "472dbc0688fe338e1e5db22e33dec55229c7021977c2c189f30f53932308dfeb"
+ACT1_BUILD83_OCT4_STAGE_SHA256 = "cb135794567cca47e4262ec7abea0349201664de86b7535bbb3b50c66c9737cd"
+ACT1_BUILD83_CORRECTION_RECEIPT_SHA256 = "5639b38e26c5e7a4d2a222828fd4cdcb5c3b33475a483177afde5cd0d637ad91"
+ACT1_BUILD83_CORRECTION_RECEIPT_PATH = "source/build83-paint-correction-v1/correction-receipt.json"
+ACT1_BUILD83_CORRECTION_AFFECTED_CHUNKS = frozenset(('c0-r2', 'c0-r3', 'c0-r4', 'c0-r7', 'c0-r8', 'c1-r0', 'c1-r2', 'c1-r3', 'c1-r4', 'c1-r6', 'c1-r8', 'c2-r1', 'c2-r2', 'c2-r3', 'c2-r6', 'c2-r8', 'c2-r9', 'c3-r0', 'c3-r1', 'c3-r10', 'c3-r3', 'c3-r4', 'c3-r5', 'c3-r6', 'c3-r7', 'c3-r8', 'c3-r9', 'c4-r0', 'c4-r10', 'c4-r2', 'c4-r3', 'c4-r4', 'c4-r5', 'c4-r6', 'c4-r8', 'c5-r0', 'c5-r1', 'c5-r10', 'c5-r4', 'c5-r7', 'c5-r8', 'c6-r0', 'c6-r1', 'c6-r10', 'c6-r3', 'c6-r4', 'c6-r5', 'c6-r6', 'c6-r7', 'c6-r8', 'c6-r9', 'c7-r3', 'c7-r4', 'c7-r5', 'c7-r6', 'c7-r8', 'c7-r9', 'c8-r3', 'c8-r4', 'c8-r6', 'c8-r7', 'c8-r8', 'c8-r9'))
+ACT1_R9_SOURCE_COLLISION_SHA256 = "def3a8acc8a80aaf55816ed464b1f2b49b90cfd0865f0e5cdbe95db14383ad54"
+ACT1_R9_SOURCE_ALPHA_SHA256 = "2cab1366c803a315d5e12f005b43d7d54740524a9a88c426dbc69e2118a967f0"
 # The chunk layers the shipped tree must carry, read out of the locked manifest above. `occlusion`
 # was retired with the 48 px bake; a stale entry here would make the gate demand a file that no
 # longer exists and reject the one that replaced it.
-ACT1_HIFI_CHUNK_LAYERS = ("base", "water", "canopy")
+ACT1_HIFI_CHUNK_LAYERS = ("base", "water", "canopy", "forest")
 
 BACKGROUND_KEYS = {
     "boss_celestial_guardian",
@@ -673,6 +750,7 @@ REQUIRED_ROOT_FILES = {
     "index.html",
     "dq-tiles.js",
     "hero-override.js",
+    "battle-recovery.js",
     "ui-overhaul.js",
     "ui-overhaul.css",
     # 2026-08-25, owner-authorised: the orchestral BGM. Swaps the procedural Tone.js composer for
@@ -857,21 +935,480 @@ def verify(root: Path, allowed_extra: frozenset[str] = frozenset()) -> None:
     semantic_checks(root, found)
 
 
+
+def validate_build83_correction_record(receipt: dict, actual_receipt_sha256: str,
+        paint_source: dict, paint_manifest: dict, expected_source_base_hashes: dict, expected_source_authorities: dict,
+        expected_receipt_sha256: str, expected_affected_chunks: frozenset[str],
+        expected_predecessor_manifest_sha256: str, expected_predecessor_collision_sha256: str,
+        expected_oct4_receipt_sha256: str, expected_oct4_stage_sha256: str,
+        expected_underpaint_sha256: str, expected_collision_sha256: str,
+        expected_collision_source_sha256: str) -> dict[str, str]:
+    """Fail closed on any Build 83 correction provenance, allowlist, or output drift."""
+    if actual_receipt_sha256 != expected_receipt_sha256:
+        raise BaselineError("Build 83 correction receipt hash mismatch")
+    if receipt.get("kind") != "act1-build83-paint-correction-receipt-v1" or receipt.get("revision") != 1:
+        raise BaselineError("Build 83 correction receipt schema mismatch")
+    pred=receipt.get("predecessor", {})
+    if (pred.get("candidateManifestSha256") != expected_predecessor_manifest_sha256
+            or pred.get("candidateCombinedCollisionSha256") != expected_predecessor_collision_sha256
+            or pred.get("oct4PromotionReceiptSha256") != expected_oct4_receipt_sha256
+            or pred.get("oct4ProductionStageSha256") != expected_oct4_stage_sha256
+            or pred.get("oct4BaseChunkCount") != 41):
+        raise BaselineError("Build 83 correction predecessor identity mismatch")
+    declared=set(paint_source.get("build83PaintCorrectionAffectedChunks", []))
+    records=receipt.get("correctedBaseChunks")
+    if not isinstance(records,list) or len(records)!=63:
+        raise BaselineError("Build 83 correction receipt must contain exactly 63 base outputs")
+    ids=[x.get("id") for x in records]
+    if (len(set(ids))!=63 or set(ids)!=set(expected_affected_chunks)
+            or declared!=set(expected_affected_chunks)
+            or paint_source.get("build83PaintCorrectionRevision")!=1
+            or paint_source.get("build83PaintCorrectionReceiptPath")!=ACT1_BUILD83_CORRECTION_RECEIPT_PATH
+            or paint_source.get("build83PaintCorrectionReceiptSha256")!=expected_receipt_sha256):
+        raise BaselineError("Build 83 correction affected-chunk allowlist drift")
+    correction=receipt.get("correction", {})
+    if paint_source.get("build83PaintCorrection") != correction.get("manifestSourceRecord"):
+        raise BaselineError("Build 83 correction manifest source record differs from its receipt")
+    under=receipt.get("underpaint", {})
+    coll=receipt.get("combinedCollision", {})
+    if (under.get("sha256")!=expected_underpaint_sha256
+            or paint_manifest.get("underpaint", {}).get("sha256")!=expected_underpaint_sha256):
+        raise BaselineError("Build 83 correction underpaint pin drift")
+    if (coll.get("sha256")!=expected_collision_sha256
+            or coll.get("sourceSha256")!=expected_collision_source_sha256
+            or paint_manifest.get("collision", {}).get("sha256")!=expected_collision_sha256
+            or paint_manifest.get("collision", {}).get("sourceSha256")!=expected_collision_source_sha256
+            or coll.get("exactForestOrMountain") is not True):
+        raise BaselineError("Build 83 correction combined-collision pin drift")
+    chunks={c.get("id"):c for c in paint_manifest.get("chunks", [])}
+    outputs={}
+    for item in records:
+        cid=item["id"]
+        if (cid not in expected_source_base_hashes
+                or item.get("sourceBaseSha256")!=expected_source_base_hashes[cid]
+                or item.get("sourceBaseAuthority")!=expected_source_authorities.get(cid)):
+            raise BaselineError(f"Build 83 {cid} predecessor base authority/hash mismatch")
+        if item.get("basePath")!=chunks.get(cid, {}).get("base"):
+            raise BaselineError(f"Build 83 {cid} base path differs from pinned manifest")
+        output=item.get("correctedBaseSha256")
+        if (not isinstance(output,str) or len(output)!=64
+                or chunks.get(cid, {}).get("baseSha256")!=output):
+            raise BaselineError(f"Build 83 {cid} corrected base output hash mismatch")
+        outputs[cid]=output
+    return outputs
+
 def verify_act1_overlay(root: Path, allowed_extra: frozenset[str] = frozenset()) -> None:
-    """Verify the immutable runtime plus the three reviewed Act 1 additive changes."""
+    """Verify the immutable runtime plus the reviewed Act 1 paint overlay."""
     manifest = load_manifest()
     expected_entries = {entry["path"]: entry for entry in manifest["files"]}
     all_found = files_under(root)
-    hifi_manifest_path = ACT1_R26_RUNTIME / "manifest.json"
-    if sha256(hifi_manifest_path) != ACT1_HIFI_MANIFEST_SHA256:
-        raise BaselineError("locked Act 1 high-fidelity manifest identity changed")
-    hifi_manifest = json.loads(hifi_manifest_path.read_text(encoding="utf-8"))
-    # revision 12 = the 2026-08-14 re-tile (512 -> 256). Same pixels, new grid; see the sign-off above.
-    if hifi_manifest.get("revision") != 12:
-        raise BaselineError("locked Act 1 high-fidelity manifest revision changed")
+    geometry_manifest_path = ACT1_R26_RUNTIME / "manifest.json"
+    # The R9 directory remains the immutable provenance source. This candidate's explicitly
+    # approved terrain-union overlay is the active paint authority until it is promoted into a
+    # versioned runtime after review.
+    paint_manifest_path = ROOT / "public" / "act1-hifi" / "manifest.json"
+    if sha256(geometry_manifest_path) != ACT1_R26_MANIFEST_SHA256:
+        raise BaselineError("historical Act 1 r26 geometry manifest identity changed")
+    if sha256(paint_manifest_path) != ACT1_PAINT_MANIFEST_SHA256:
+        raise BaselineError("approved Act 1 paint manifest identity changed")
+    geometry_manifest = json.loads(geometry_manifest_path.read_text(encoding="utf-8"))
+    paint_manifest = json.loads(paint_manifest_path.read_text(encoding="utf-8"))
+    if geometry_manifest.get("revision") != 12 or paint_manifest.get("revision") != 12:
+        raise BaselineError("Act 1 geometry/paint manifest revision mismatch")
+    if paint_manifest.get("underpaint") != ACT1_PAINT_UNDERPAINT:
+        raise BaselineError("approved Act 1 manifest must declare the required underpaint")
+
+    # The new manifest is an art profile layered over r26 geometry. Keep every top-level field
+    # byte-for-value equal except the explicit provenance, status, chunk raster declarations and
+    # required underpaint. This makes new/changed navigation fields fail closed.
+    art_fields = {"source", "status", "chunks", "underpaint", "forestMode", "forestUnderpaint", "collision"}
+    live_authority_fields = {"safeCells", "startCell", "legacyFallback", "liveLandmarkExits", "liveValidApproaches", "pathConstraints"}
+    expected_paint_fields = ((set(geometry_manifest) - {"pathConstraints"})
+                             | {"underpaint", "forestMode", "forestUnderpaint", "collision", "legacyFallback", "liveLandmarkExits", "liveValidApproaches"})
+    if expected_paint_fields != set(paint_manifest) or "pathConstraints" in paint_manifest:
+        raise BaselineError("Act 1 paint manifest added or removed an unreviewed top-level field")
+    for key in set(geometry_manifest) - art_fields - live_authority_fields:
+        if paint_manifest.get(key) != geometry_manifest.get(key):
+            raise BaselineError(f"Act 1 paint manifest changed locked geometry field: {key}")
+    if geometry_manifest.get("source", {}).get("mask") != paint_manifest.get("source", {}).get("mask"):
+        raise BaselineError("Act 1 paint manifest changed the semantic source mask")
+    geometry_source = geometry_manifest.get("source", {})
+    paint_source = paint_manifest.get("source", {})
+    paint_source_additions = {
+        "maskSha256", "paintSource", "paintSourceSha256", "paintSeed",
+        "pilotPixelsPerCell", "pilotChunks", "stage",
+        # Reviewed r3 selected-source-core mountain compositor provenance. The
+        # manifest itself is pinned above; these explicit keys prevent arbitrary
+        # source metadata from entering a shipped art revision.
+        "mountainLayerRevision", "mountainLayerProofSha256",
+        "mountainIntegrationProofSha256", "mountainIndependentReviewSha256",
+        "mountainLayerAffectedChunks",
+        # R5 wrap-safe native-detail material, bound to the exact reviewed source
+        # asset and its focused field/protected-pixel evidence.
+        "mountainNativeDetailComposerSha256", "mountainNativeDetailSourcePath",
+        "mountainNativeDetailSourceSha256", "mountainNativeDetailStaticGuardSha256",
+        "mountainNativeDetailFocusedProofSha256", "mountainNativeDetailPhoneProxySha256",
+        "mountainNativeDetailSampling",
+        # Reviewed R8 forest closures and full-range R8/R03 mountain transition.
+        "forestAssemblyScriptSha256", "forestAssemblySourcePath",
+        "forestGlobalRendererSha256", "forestLayerRevision",
+        "forestPlacementManifestSha256", "forestR8AssemblyScriptSha256",
+        "forestR8InputStageInventorySha256", "forestR8PlacementManifestSha256",
+        "forestR8PlanSha256", "forestR8RendererSourceSha256",
+        "forestR8SpriteHelperSha256", "forestSourceScriptSha256", "forestSourceSha256",
+        "privateMountainTransition",
+        "forestOriginalPlacementManifestSha256", "forestFinalPlacementManifestSha256",
+        "forestPlacementDeltaSha256", "forestRouteClearanceProofSha256",
+        "forestOriginalPlacementManifestPath", "forestFinalPlacementManifestPath",
+        "forestPlacementDeltaPath", "forestRouteClearanceProofPath",
+        "forestVisibleAlphaSourcePath", "forestVisibleAlphaSourceSha256",
+        "forestImmutableR6SourceClosureSha256", "forestPortableRouteSourceClosurePath",
+        "forestPortableRouteSourceClosureSha256", "forestPortableRouteSourceInventorySha256",
+        "forestPortableReplayScriptSha256", "forestPortableEmitterScriptSha256",
+        # R9 terrain-specific immutable generator, emission, source-closure and lossless WebP identities.
+        "forestR9SourceClosurePath", "forestR9SourceClosureSha256",
+        "forestR9TerrainManifestPath", "forestR9TerrainManifestSha256",
+        "forestR9WebpConversionPath", "forestR9WebpConversionSha256",
+        "forestR9EmissionManifestSha256", "forestR9GeneratorSha256",
+        "forestR9AlphaRule", "forestR9SizeBand",
+        "forestR9VersionedClosurePath", "forestR9VersionedClosureSha256",
+        # Approved ACT1 visible-terrain union and scoped underpainted distance field.
+        "act1TerrainUnionRevision", "act1TerrainUnionForestManifestSha256",
+        "act1TerrainUnionMountainReportSha256", "act1TerrainUnionSourceSha256",
+        "act1TerrainUnionA1OWScope", "act1TerrainUnionBaseUnderpaintSha256",
+        "act1TerrainUnionMountainGroundMaskSha256", "act1TerrainUnionEvidence",
+        "act1TerrainUnionA1OWSha256", "act1TerrainUnionA1OWVersion",
+        "act1TerrainUnionA1OWHeaderBytes", "act1TerrainUnionA1OWProfileId",
+        "act1TerrainUnionA1OWSupportSchema", "act1TerrainUnionA1OWSupportFNV32",
+        "act1TerrainUnionA1OWSemanticsSha256", "act1TerrainUnionA1OWSupportSha256",
+        "act1TerrainUnionA1OWPayloadSha256", "act1TerrainUnionA1OWBlockCount",
+        "act1TerrainUnionA1OWBakerPath", "act1TerrainUnionA1OWBakerSha256",
+        "act1TerrainUnionLiveWorldRevision", "act1TerrainUnionLiveWorldSourceSha256",
+        "act1TerrainUnionSafeCellCount",
+        "build83PaintCorrection", "build83PaintCorrectionRevision",
+        "build83PaintCorrectionReceiptPath", "build83PaintCorrectionReceiptSha256",
+        "build83PaintCorrectionAffectedChunks",
+    }
+    if set(paint_source) != set(geometry_source) | paint_source_additions:
+        raise BaselineError("Act 1 paint manifest changed unreviewed source metadata fields")
+    if paint_source.get("renderer") != "scripts/act1-paint-r4/render_material_map_r4.py::Act1PaintRenderer":
+        raise BaselineError("Act 1 paint manifest renderer provenance changed")
+    for key, value in geometry_source.items():
+        if key != "renderer" and paint_source.get(key) != value:
+            raise BaselineError(f"Act 1 paint manifest changed locked source field: {key}")
+    if paint_manifest.get("forestMode") != "whole-object-v8":
+        raise BaselineError("Act 1 paint manifest must opt in to whole-object V8 forest layers")
+    if paint_manifest.get("forestUnderpaint") != ACT1_PAINT_FOREST_UNDERPAINT:
+        raise BaselineError("Act 1 V8 forest underpaint path/dimensions/bounds changed")
+    if paint_manifest.get("collision") != ACT1_PAINT_COLLISION:
+        raise BaselineError("Act 1 V8 forest collision authority changed from the reviewed pack")
+    expected_start = {"x": 69, "y": 256}
+    expected_fallback = {"x": 130, "y": 290}
+    expected_exits = [
+        ("greenhollow", 69, 256), ("millbrook", 39, 345), ("portSapphire", 133, 348),
+        ("sunkenCellar", 30, 275), ("whisperingWoodsCave", 101, 232),
+        ("coastalReef", 145, 372), ("mistyGrotto", 96, 360), ("crystalCave", 149, 279),
+    ]
+    expected_approaches = [
+        ("whisperingWoodsCave", 101, 232), ("greenhollow", 69, 256), ("sunkenCellar", 30, 275),
+        ("crystalCave", 149, 277), ("crystalCave", 148, 278), ("crystalCave", 150, 278),
+        ("crystalCave", 149, 279), ("millbrook", 39, 345), ("portSapphire", 133, 348),
+        ("mistyGrotto", 96, 360), ("coastalReef", 145, 372),
+    ]
+    exits = [(x.get("id"), x.get("x"), x.get("y")) for x in paint_manifest.get("liveLandmarkExits", [])]
+    approaches = [(x.get("landmarkId"), x.get("x"), x.get("y")) for x in paint_manifest.get("liveValidApproaches", [])]
+    if (paint_manifest.get("startCell") != expected_start
+            or paint_manifest.get("legacyFallback") != expected_fallback
+            or exits != expected_exits or approaches != expected_approaches
+            or len(paint_manifest.get("safeCells", [])) != 149
+            or paint_source.get("act1TerrainUnionLiveWorldRevision") != 7
+            or paint_source.get("act1TerrainUnionLiveWorldSourceSha256") != "f1ea99546b799b50cec7d6fd40b1fae2ad53669fae22afaebe3760f225d12cad"
+            or paint_source.get("act1TerrainUnionSafeCellCount") != 149):
+        raise BaselineError("Act 1 recovery/start/landmark authority differs from the frozen live world map")
+    a1ow_path = ROOT / "public" / "act1-overworld-walk.bin"
+    a1ow_data = a1ow_path.read_bytes()
+    if len(a1ow_data) < 96 or a1ow_data[:4] != b"A1OW":
+        raise BaselineError("Act 1 A1OW v2 magic/header is invalid")
+    (a1ow_version, a1ow_ppc, a1ow_width, a1ow_height, a1ow_far,
+     a1ow_header_bytes, a1ow_blocks, a1ow_support_fnv) = struct.unpack_from("<HHHHHHII", a1ow_data, 4)
+    a1ow_reserved = struct.unpack_from("<II", a1ow_data, 24)
+    a1ow_semantics = a1ow_data[32:64].hex()
+    a1ow_support = a1ow_data[64:96].hex()
+    a1ow_payload = hashlib.sha256(a1ow_data[96:]).hexdigest()
+    a1ow_scope = "water only inside semantic bounds [16,218,163,399]; mountain remains analytic outside and in the 40-cell bake padding"
+    if (len(a1ow_data) != 9688672 or sha256(a1ow_path) != paint_source.get("act1TerrainUnionA1OWSha256")
+            or (a1ow_version, a1ow_ppc, a1ow_width, a1ow_height, a1ow_far, a1ow_header_bytes)
+               != (2, 48, 320, 400, 255, 96)
+            or (a1ow_blocks, a1ow_support_fnv, *a1ow_reserved) != (4094, 4271507709, 0, 0)
+            or a1ow_semantics != "a6e6e7f228d040381539618d99f03e774a16dd7cadbaf8cc76a115934d324f67"
+            or a1ow_support != "eeaf65c08cda239ea8755a3af0026ed0ca61e19a2683cafc10610b5c4027914a"
+            or a1ow_payload != "05be9638d04a692668c3a1c8b4bd3d809216bcede2e090a74a0712cb5467498c"
+            or paint_source.get("act1TerrainUnionA1OWVersion") != a1ow_version
+            or paint_source.get("act1TerrainUnionA1OWHeaderBytes") != a1ow_header_bytes
+            or paint_source.get("act1TerrainUnionA1OWProfileId") != "act1-forward-20261007-v1"
+            or paint_source.get("act1TerrainUnionA1OWBakerPath") != "scripts/bake_act1_overworld_walk.mjs"
+            or paint_source.get("act1TerrainUnionA1OWBakerSha256") != "8f172f77de9ccddebafd0d742a13fdc22d5258c652eacf5df5b0ba5d25c9eb2b"
+            or paint_source.get("act1TerrainUnionA1OWSupportSchema") != "a1ow-effective-support-v1"
+            or paint_source.get("act1TerrainUnionA1OWSupportFNV32") != a1ow_support_fnv
+            or paint_source.get("act1TerrainUnionA1OWSemanticsSha256") != a1ow_semantics
+            or paint_source.get("act1TerrainUnionA1OWSupportSha256") != a1ow_support
+            or paint_source.get("act1TerrainUnionA1OWPayloadSha256") != a1ow_payload
+            or paint_source.get("act1TerrainUnionA1OWBlockCount") != a1ow_blocks
+            or paint_source.get("act1TerrainUnionA1OWScope") != a1ow_scope):
+        raise BaselineError("Act 1 A1OW v2 support identity, unchanged payload, or mountain-preserving scope differs from the reviewed contract")
+
+    # Preserve and verify the copied R8 route source as historical lineage. Its proof remains
+    # bound to the R8 collision pack; it must not be presented as evidence for the R9 pack.
+    route_source = ACT1_PAINT_RUNTIME.parent / "source" / "route-clearance-v2"
+    closure_path = route_source / "SOURCE-CLOSURE-MANIFEST.json"
+    closure = json.loads(closure_path.read_text(encoding="utf-8"))
+    closure_files = closure.get("files")
+    if not isinstance(closure_files, list) or closure.get("kind") != "act1-r8-route-clearance-v2-source-closure":
+        raise BaselineError("R8 route-clearance source closure schema is invalid")
+    listed = set()
+    inventory_lines = []
+    for entry in closure_files:
+        rel = entry.get("path")
+        if not isinstance(rel, str) or rel in listed or Path(rel).is_absolute() or ".." in Path(rel).parts:
+            raise BaselineError("R8 route source closure has unsafe/duplicate paths")
+        listed.add(rel)
+        source_file = route_source / rel
+        if not source_file.is_file() or source_file.stat().st_size != entry.get("size") or sha256(source_file) != entry.get("sha256"):
+            raise BaselineError(f"R8 route source closure identity mismatch: {rel}")
+        if b"/private/tmp" in source_file.read_bytes():
+            raise BaselineError(f"R8 route source contains an ephemeral path: {rel}")
+        inventory_lines.append(f"{rel}\t{entry['sha256']}\n")
+    actual = {p.relative_to(route_source).as_posix() for p in route_source.rglob("*") if p.is_file() and p != closure_path}
+    if actual != listed:
+        raise BaselineError("R8 route source closure does not cover the exact candidate file set")
+    inventory = hashlib.sha256("".join(sorted(inventory_lines)).encode("utf-8")).hexdigest()
+    if inventory != closure.get("inventorySha256"):
+        raise BaselineError("R8 route source closure inventory digest mismatch")
+    r8_audit = json.loads((route_source / "actual-production-stencil-route-audit-v2.json").read_text(encoding="utf-8"))
+    if (not r8_audit.get("allClear")
+            or r8_audit.get("heroSha256") != "070a8a452c3dda775bd6c8593a66d57a5a13d97b9fb33378ea5b2bb0e1fded3c"
+            or r8_audit.get("heroDisplayPx") != 64.8 or r8_audit.get("heroScale") != 1.0125
+            or r8_audit.get("packSha256") != "daff54b3f517fda53374f7d02d10a53e34738c48a80394914e744512515be173"):
+        raise BaselineError("preserved R8 route proof no longer matches its historical collision pack")
+    r8_delta = json.loads((route_source / "placement-delta-v2.json").read_text(encoding="utf-8"))
+    r8_final = json.loads((route_source / "final-placement-authority-v2.json").read_text(encoding="utf-8"))
+    if r8_delta.get("immutableInputSha256") != "926c7c10f663f9a62aefbbb0f56ab9cc8553f9905e7637c47f3ce2893f210f55" or len(r8_final.get("placements", [])) != 611:
+        raise BaselineError("preserved R8 placement authority lineage changed")
+    original_path = ROOT / "design/review/overworld-art-blueprint/act-by-act/act1/runtime-v6/act1-painted-overworld-r6/source/original/forest-assembly-r8/mountain-handoff/R8-CLEAN-OVERLAY-PLACEMENTS-614.json"
+    if sha256(original_path) != r8_delta["immutableInputSha256"]:
+        raise BaselineError("R6 immutable forest placement input hash changed")
+
+    # R9's own complete source bundle and route audit are the active authority for this profile.
+    r9_source = ACT1_PAINT_RUNTIME.parent / "source" / "terrain-r9"
+    r9_closure_path = r9_source / "SOURCE-CLOSURE-MANIFEST.json"
+    r9_closure = json.loads(r9_closure_path.read_text(encoding="utf-8"))
+    if r9_closure.get("kind") != "act1-r9-versioned-source-closure-v1":
+        raise BaselineError("R9 versioned source closure schema is invalid")
+    r9_files = r9_closure.get("files")
+    if not isinstance(r9_files, list):
+        raise BaselineError("R9 versioned source closure file list is missing")
+    r9_listed = set()
+    r9_inventory_lines = []
+    for entry in r9_files:
+        rel = entry.get("path")
+        if not isinstance(rel, str) or rel in r9_listed or Path(rel).is_absolute() or ".." in Path(rel).parts:
+            raise BaselineError("R9 source closure has unsafe/duplicate paths")
+        r9_listed.add(rel)
+        source_file = r9_source / rel
+        if not source_file.is_file() or source_file.stat().st_size != entry.get("size") or sha256(source_file) != entry.get("sha256"):
+            raise BaselineError(f"R9 source closure identity mismatch: {rel}")
+        if b"/private/tmp" in source_file.read_bytes():
+            raise BaselineError(f"R9 source closure contains an ephemeral path: {rel}")
+        r9_inventory_lines.append(f"{rel}\t{entry['sha256']}\n")
+    r9_actual = {p.relative_to(r9_source).as_posix() for p in r9_source.rglob("*") if p.is_file() and p != r9_closure_path}
+    if r9_actual != r9_listed:
+        raise BaselineError("R9 source closure does not cover the exact versioned source file set")
+    r9_inventory = hashlib.sha256("".join(sorted(r9_inventory_lines)).encode("utf-8")).hexdigest()
+    if r9_inventory != r9_closure.get("inventorySha256"):
+        raise BaselineError("R9 source closure inventory digest mismatch")
+
+    def checked_r9_source_path(value: object, label: str) -> Path:
+        if not isinstance(value, str) or Path(value).is_absolute() or ".." in Path(value).parts:
+            raise BaselineError(f"R9 {label} path is unsafe")
+        path = r9_source / value
+        if not path.is_file():
+            raise BaselineError(f"R9 {label} is missing: {value}")
+        return path
+
+    r9_manifest_path = checked_r9_source_path("act1-r9-terrain-manifest.json", "terrain manifest")
+    r9_source_closure_path = checked_r9_source_path("manifest/source-closure-r9.json", "input closure")
+    r9_conversion_path = checked_r9_source_path("manifest/base-webp-conversion-r9.json", "WebP conversion map")
+    r9_emission_path = checked_r9_source_path("evidence/emission-manifest-r9.json", "emission manifest")
+    r9_route_path = checked_r9_source_path("evidence/actual-production-stencil-route-audit-v2.json", "route audit")
+    if (sha256(r9_closure_path) != paint_source.get("forestR9VersionedClosureSha256")
+            or paint_source.get("forestR9VersionedClosurePath") != "source/terrain-r9/SOURCE-CLOSURE-MANIFEST.json"
+            or sha256(r9_manifest_path) != paint_source.get("forestR9TerrainManifestSha256")
+            or sha256(r9_source_closure_path) != paint_source.get("forestR9SourceClosureSha256")
+            or sha256(r9_conversion_path) != paint_source.get("forestR9WebpConversionSha256")
+            or sha256(r9_emission_path) != paint_source.get("forestR9EmissionManifestSha256")
+            or sha256(r9_route_path) != paint_source.get("forestRouteClearanceProofSha256")):
+        raise BaselineError("R9 manifest source provenance hashes do not match the versioned source bundle")
+    r9_manifest = json.loads(r9_manifest_path.read_text(encoding="utf-8"))
+    r9_input_closure = json.loads(r9_source_closure_path.read_text(encoding="utf-8"))
+    r9_conversion = json.loads(r9_conversion_path.read_text(encoding="utf-8"))
+    path_relocation_path = checked_r9_source_path("path-relocation-receipt.json", "source path relocation receipt")
+    path_relocation = json.loads(path_relocation_path.read_text(encoding="utf-8"))
+    r9_route = json.loads(r9_route_path.read_text(encoding="utf-8"))
+    if (r9_closure.get("terrainManifestSha256") != sha256(r9_manifest_path)
+            or r9_closure.get("generatorOriginalSha256") != paint_source.get("forestR9GeneratorSha256")
+            or r9_closure.get("generatorPath") != "build_r9_terrain.py"
+            or r9_closure.get("generatorPortableSha256") != sha256(r9_source / "build_r9_terrain.py")
+            or r9_closure.get("generatorPortableSha256") != next((x.get("sha256") for x in r9_files if x.get("path") == "build_r9_terrain.py"), None)
+            or r9_closure.get("generatorOriginalSha256") != r9_input_closure.get("generatorSha256")
+            or r9_closure.get("payloadEmissionSha256") != sha256(r9_emission_path)
+            or r9_closure.get("pathRelocationReceiptSha256") != sha256(path_relocation_path)
+            or path_relocation.get("kind") != "r9-source-path-relocation-v1"
+            or r9_closure.get("routeProofSha256") != sha256(r9_route_path)
+            or r9_closure.get("webpConversionSha256") != sha256(r9_conversion_path)
+            or r9_closure.get("collisionPackSha256") != ACT1_R9_SOURCE_COLLISION_SHA256
+            or r9_closure.get("visibleAlphaSha256") != ACT1_R9_SOURCE_ALPHA_SHA256):
+        raise BaselineError("R9 source closure summary identities disagree with its payload")
+    if (r9_input_closure.get("kind") != "r9-terrain-source-closure-v1"
+            or r9_input_closure.get("generatorPath") != "build_r9_terrain.py"
+            or r9_input_closure.get("generatorSha256") != paint_source.get("forestR9GeneratorSha256")
+            or r9_input_closure.get("sourceCommit") != "246dfd1d6000b6f84ac80639698b15bc14185622"
+            or r9_input_closure.get("sourceManifestSha256") != "0a595440eb501d952623645171c5ba183d742e188e78d0216de850003d7213be"
+            or r9_input_closure.get("r3ManifestSha256") != "366b4c85120140910f2bc16a541c5699b732cfd6cb749509d6f46ed6f15b7e9a"
+            or r9_input_closure.get("r26ManifestSha256") != ACT1_R26_MANIFEST_SHA256):
+        raise BaselineError("R9 input closure is not bound to the reviewed source commit/R3/R26 inputs")
+    relocation_files = path_relocation.get("files")
+    if not isinstance(relocation_files, list) or len(relocation_files) != 6:
+        raise BaselineError("R9 portable source relocation receipt is incomplete")
+    for relocation in relocation_files:
+        rel = relocation.get("path")
+        if (not isinstance(rel, str) or Path(rel).is_absolute() or ".." in Path(rel).parts
+                or not (r9_source / rel).is_file()
+                or sha256(r9_source / rel) != relocation.get("versionedPortableSha256")):
+            raise BaselineError(f"R9 portable source relocation hash mismatch: {rel}")
+    generator_relocation = next((x for x in relocation_files if x.get("path") == "build_r9_terrain.py"), None)
+    if (not generator_relocation or generator_relocation.get("sourceArtifactSha256") != r9_input_closure.get("generatorSha256")
+            or generator_relocation.get("versionedPortableSha256") != r9_closure.get("generatorPortableSha256")):
+        raise BaselineError("R9 executed generator and versioned portable generator identities disagree")
+    r9_source_chunks = r9_input_closure.get("sourceChunks")
+    r8_paint_root = ROOT / "design/review/overworld-art-blueprint/act-by-act/act1/runtime-v8/act1-painted-overworld-r8/runtime"
+    r8_chunks = {c.get("id"): c for c in json.loads((r8_paint_root / "manifest.json").read_text(encoding="utf-8")).get("chunks", [])}
+    if not isinstance(r9_source_chunks, list) or len(r9_source_chunks) != 120:
+        raise BaselineError("R9 source closure must cover all 120 original terrain chunks")
+    for item in r9_source_chunks:
+        cid = item.get("id")
+        original = r8_chunks.get(cid)
+        if (not original or item.get("base") != original.get("base") or item.get("forest") != original.get("forest")
+                or item.get("baseSha256") != original.get("baseSha256") or item.get("forestSha256") != original.get("forestSha256")
+                or sha256(r8_paint_root / item["base"]) != item.get("baseSha256")
+                or sha256(r8_paint_root / item["forest"]) != item.get("forestSha256")):
+            raise BaselineError(f"R9 source closure original chunk input changed: {cid}")
+    for field, expected_sha in (("r3Manifest", "366b4c85120140910f2bc16a541c5699b732cfd6cb749509d6f46ed6f15b7e9a"),
+                                ("r26Manifest", ACT1_R26_MANIFEST_SHA256),
+                                ("renderer", "8a2f8f7d9cd3a24c8a20e45630e8a181c820082bcdb2b5b3876d15429cbb98a2"),
+                                ("paintConfig", "e98f6dc03f98ff9f13b1b32d1df2e5017b88a7a71319c364b9807481ee09399f"),
+                                ("semanticMask", "97f1a64fe6bfec7b40af16fef05f70caa80bdd076a8c4c3806474b848c975068")):
+        rel = r9_input_closure.get(field)
+        path = ROOT / rel if isinstance(rel, str) and not Path(rel).is_absolute() and ".." not in Path(rel).parts else None
+        if path is None or not path.is_file() or sha256(path) != expected_sha:
+            raise BaselineError(f"R9 source closure {field} input identity mismatch")
+    r9_final_path = checked_r9_source_path("manifest/final-placement-authority-r9.json", "final placement authority")
+    r9_delta_path = checked_r9_source_path("manifest/placement-delta-r9.json", "placement delta")
+    if (sha256(r9_final_path) != paint_source.get("forestFinalPlacementManifestSha256")
+            or sha256(r9_delta_path) != paint_source.get("forestPlacementDeltaSha256")
+            or r9_manifest.get("source", {}).get("forestFinalPlacementManifestSha256") != sha256(r9_final_path)
+            or r9_manifest.get("source", {}).get("forestPlacementDeltaSha256") != sha256(r9_delta_path)):
+        raise BaselineError("R9 final placement authority/delta identity mismatch")
+    r9_placements = json.loads(r9_final_path.read_text(encoding="utf-8"))
+    if len(r9_placements.get("placements", [])) != r9_manifest.get("source", {}).get("placementCount"):
+        raise BaselineError("R9 final placement authority count does not match its manifest")
+    # The bundled R9 route report is retained only as historical source lineage. Its generic SAFE
+    # probes and old COMPASS corridors are not active terrain keepouts or current acceptance proof.
+    if (r9_conversion.get("kind") != "act1-r9-lossless-base-webp-conversion"
+            or r9_conversion.get("sourceManifestSha256") != sha256(r9_manifest_path)
+            or r9_conversion.get("collisionPackSha256") != ACT1_R9_SOURCE_COLLISION_SHA256
+            or r9_conversion.get("chunkCount") != 120):
+        raise BaselineError("R9 lossless base WebP conversion provenance mismatch")
+    converted = {x.get("id"): x for x in r9_conversion.get("chunks", [])}
+    r9_chunks = {x.get("id"): x for x in r9_manifest.get("chunks", [])}
+    if set(converted) != set(r9_chunks):
+        raise BaselineError("R9 lossless base WebP map does not cover exactly the 120 chunks")
+    mountain_affected = set(paint_source.get("mountainLayerAffectedChunks", []))
+    if len(mountain_affected) != 41:
+        raise BaselineError("approved mountain junction overlay must affect exactly its 41 declared base chunks")
+    correction_root = ACT1_PAINT_RUNTIME.parent / "source" / "build83-paint-correction-v1"
+    correction_path = correction_root / "correction-receipt.json"
+    oct4_receipt_path = correction_root / "oct4-promotion-receipt.json"
+    oct4_stage_path = correction_root / "oct4-production-stage.json"
+    if (not correction_path.is_file() or not oct4_receipt_path.is_file() or not oct4_stage_path.is_file()
+            or sha256(oct4_receipt_path) != ACT1_BUILD83_OCT4_RECEIPT_SHA256
+            or sha256(oct4_stage_path) != ACT1_BUILD83_OCT4_STAGE_SHA256):
+        raise BaselineError("Build 83 correction predecessor receipts are missing or changed")
+    oct4_receipt = json.loads(oct4_receipt_path.read_text(encoding="utf-8"))
+    oct4_stage = json.loads(oct4_stage_path.read_text(encoding="utf-8"))
+    if (oct4_receipt.get("candidateManifestSha256") != ACT1_BUILD83_SOURCE_MANIFEST_SHA256
+            or oct4_receipt.get("combinedCollisionSha256") != ACT1_BUILD83_SOURCE_COLLISION_SHA256
+            or set(oct4_stage.get("baseChunkHashes", {})) != mountain_affected
+            or oct4_receipt.get("baseChunkCount") != 41):
+        raise BaselineError("Build 83 correction no longer follows the reviewed Oct 4 41-chunk stage")
+    expected_source_bases = {cid: digest["webpSha256"] for cid, digest in converted.items()}
+    expected_source_bases.update(oct4_stage.get("baseChunkHashes", {}))
+    expected_source_authorities = {cid: "r9-lossless-webp-conversion" for cid in converted}
+    expected_source_authorities.update({cid: "oct4-final-stage" for cid in oct4_stage.get("baseChunkHashes", {})})
+    correction_receipt = json.loads(correction_path.read_text(encoding="utf-8"))
+    correction_outputs = validate_build83_correction_record(
+        correction_receipt, sha256(correction_path), paint_source, paint_manifest, expected_source_bases, expected_source_authorities,
+        ACT1_BUILD83_CORRECTION_RECEIPT_SHA256, ACT1_BUILD83_CORRECTION_AFFECTED_CHUNKS,
+        ACT1_BUILD83_SOURCE_MANIFEST_SHA256, ACT1_BUILD83_SOURCE_COLLISION_SHA256,
+        ACT1_BUILD83_OCT4_RECEIPT_SHA256, ACT1_BUILD83_OCT4_STAGE_SHA256,
+        ACT1_PAINT_UNDERPAINT_SHA256, ACT1_PAINT_COLLISION["sha256"], ACT1_PAINT_COLLISION["sourceSha256"])
+    for chunk in paint_manifest.get("chunks", []):
+        cid = chunk["id"]
+        rec = converted[cid]
+        generated = r9_chunks[cid]
+        png_path = checked_r9_source_path(rec.get("sourcePng"), f"{cid} generated base PNG")
+        webp_path = checked_r9_source_path(rec.get("webp"), f"{cid} converted base WebP")
+        forest_path = checked_r9_source_path(generated.get("forest"), f"{cid} generated forest layer")
+        if (rec.get("pixelIdentical") is not True or sha256(png_path) != rec.get("sourcePngSha256")
+                or sha256(webp_path) != rec.get("webpSha256") or sha256(forest_path) != generated.get("forestSha256")
+                or (cid not in mountain_affected and cid not in correction_outputs
+                    and chunk.get("baseSha256") != rec.get("webpSha256"))
+                or (cid in correction_outputs and chunk.get("baseSha256") != correction_outputs[cid])):
+            raise BaselineError(f"R9 {cid} base/forest manifest hash or lossless conversion proof mismatch")
+    if (r9_manifest.get("forestMode") != "whole-object-v8"
+            or r9_manifest.get("collision", {}).get("sha256") != ACT1_R9_SOURCE_COLLISION_SHA256
+            or sha256(checked_r9_source_path("collision/forest-alpha-visible.bin", "visible alpha source")) != ACT1_R9_SOURCE_ALPHA_SHA256
+            or sha256(checked_r9_source_path("collision/forest-collision.bin", "collision pack")) != ACT1_R9_SOURCE_COLLISION_SHA256):
+        raise BaselineError("R9 forest mode/collision source identity mismatch")
+
+    geometry_chunks = geometry_manifest.get("chunks")
+    paint_chunks = paint_manifest.get("chunks")
+    if not isinstance(geometry_chunks, list) or not isinstance(paint_chunks, list):
+        raise BaselineError("Act 1 geometry/paint chunk declarations are missing")
+    if len(geometry_chunks) != 120 or len(paint_chunks) != len(geometry_chunks):
+        raise BaselineError("Act 1 paint manifest must preserve all 120 r26 chunks")
+    for geometry_chunk, paint_chunk in zip(geometry_chunks, paint_chunks):
+        if geometry_chunk.get("id") != paint_chunk.get("id"):
+            raise BaselineError("Act 1 paint manifest changed chunk ordering or IDs")
+        for key in ("id", "x", "y", "width", "height"):
+            if geometry_chunk.get(key) != paint_chunk.get(key):
+                raise BaselineError(
+                    f"Act 1 paint manifest changed {geometry_chunk.get('id')} geometry at {key}")
+        if set(paint_chunk) != set(geometry_chunk) | {"basePixelsPerCell", "forest", "forestSha256"}:
+            raise BaselineError(f"{paint_chunk['id']}: unexpected paint chunk metadata")
+        if paint_chunk.get("basePixelsPerCell") != 32:
+            raise BaselineError(f"{paint_chunk['id']}: painted base must declare 32 pixels per cell")
+        for layer in ACT1_HIFI_CHUNK_LAYERS:
+            if layer != "forest" and paint_chunk.get(layer) != geometry_chunk.get(layer):
+                raise BaselineError(f"{paint_chunk['id']}: paint profile changed {layer} resource path")
+            extension = "png" if layer in {"water", "forest"} else "webp"
+            if paint_chunk[layer] != f"chunks/{layer}/{paint_chunk['id']}.{extension}":
+                raise BaselineError(f"{paint_chunk['id']}: unexpected {layer} resource path")
+        for layer in ("water",):
+            if paint_chunk.get(f"{layer}Sha256") != geometry_chunk.get(f"{layer}Sha256"):
+                raise BaselineError(f"{paint_chunk['id']}: paint profile changed locked {layer} hash")
+
     hifi_files = {
         "index.html": "runtime.html",
-        "manifest.json": "manifest.json",
         "walkable-regions-r26.json": "walkable-regions-v1.json",
         "walkable-polygons.js": "walkable-polygons.js",
         "walkable-route-state.js": "walkable-route-state.js",
@@ -879,9 +1416,38 @@ def verify_act1_overlay(root: Path, allowed_extra: frozenset[str] = frozenset())
         "hero-g3/hero-act1-female-walk-8x3-64-g3.png":
             "hero-g3/hero-act1-female-walk-8x3-64-g3.png",
     }
-    for chunk in hifi_manifest["chunks"]:
-        for key in ACT1_HIFI_CHUNK_LAYERS:
-            hifi_files[chunk[key]] = chunk[key]
+    hifi_files["manifest.json"] = "manifest.json"
+    hifi_files[ACT1_PAINT_FOREST_UNDERPAINT["src"]] = ACT1_PAINT_FOREST_UNDERPAINT["src"]
+    hifi_files[ACT1_PAINT_COLLISION["artifact"]] = ACT1_PAINT_COLLISION["artifact"]
+    paint_resources: dict[str, str] = {}
+    for chunk in paint_chunks:
+        for layer in ACT1_HIFI_CHUNK_LAYERS:
+            resource = chunk.get(layer)
+            declared_hash = chunk.get(f"{layer}Sha256")
+            if (not isinstance(resource, str) or not resource or Path(resource).is_absolute()
+                    or ".." in Path(resource).parts or not isinstance(declared_hash, str)
+                    or len(declared_hash) != 64):
+                raise BaselineError(f"{chunk['id']}: invalid {layer} resource declaration")
+            paint_resources[resource] = declared_hash
+            hifi_files[resource] = resource
+    underpaint_path = ACT1_PAINT_UNDERPAINT["src"]
+    paint_resources[underpaint_path] = ACT1_PAINT_UNDERPAINT_SHA256
+    hifi_files[underpaint_path] = underpaint_path
+    paint_resources[ACT1_PAINT_FOREST_UNDERPAINT["src"]] = ACT1_PAINT_FOREST_UNDERPAINT_SHA256
+    paint_resources[ACT1_PAINT_COLLISION["artifact"]] = ACT1_PAINT_COLLISION["sha256"]
+    if len(paint_resources) != 483:
+        raise BaselineError("Act 1 R7 resource closure must contain 480 chunk files, two underpaints, and collision authority")
+    bounds = paint_manifest["semanticBounds"]
+    expected_underpaint_size = ((bounds[2] - bounds[0] + 1) * ACT1_PAINT_UNDERPAINT["pixelsPerCell"],
+                                (bounds[3] - bounds[1] + 1) * ACT1_PAINT_UNDERPAINT["pixelsPerCell"])
+    if expected_underpaint_size != (ACT1_PAINT_UNDERPAINT["pixelWidth"],
+                                    ACT1_PAINT_UNDERPAINT["pixelHeight"]):
+        raise BaselineError("Act 1 underpaint dimensions do not match inclusive semantic bounds")
+    forest_bounds = ACT1_PAINT_FOREST_UNDERPAINT["bounds"]
+    forest_size = ((forest_bounds[2] - forest_bounds[0] + 1) * ACT1_PAINT_FOREST_UNDERPAINT["pixelsPerCell"],
+                   (forest_bounds[3] - forest_bounds[1] + 1) * ACT1_PAINT_FOREST_UNDERPAINT["pixelsPerCell"])
+    if forest_size != (ACT1_PAINT_FOREST_UNDERPAINT["width"], ACT1_PAINT_FOREST_UNDERPAINT["height"]):
+        raise BaselineError("Act 1 forest underpaint dimensions do not match inclusive semantic bounds")
     expected_hifi_paths = {f"act1-hifi/{target}" for target in hifi_files.values()}
     expected_hifi_paths.add("act1-hifi/adapter.js")
     expected_paths = (set(expected_entries) | {"act1-world-map.js"} | expected_hifi_paths
@@ -892,6 +1458,45 @@ def verify_act1_overlay(root: Path, allowed_extra: frozenset[str] = frozenset())
                       # now also ADD a runtime file (hero-g3-walk.png), which the manifest by
                       # definition does not know about, so it has to be unioned in too.
                       | set(ACT1_OVERLAY_FILES))
+    # Active terrain-union assets are pinned above and validated against the active public
+    # manifest. The adjacent R9 runtime remains immutable historical lineage, not a second
+    # collision authority for this candidate.
+    public_hifi_files = files_under(ROOT / "public" / "act1-hifi")
+    # This historical walkable JSON is a source-only input used by a town asset
+    # derivation script. The served town uses town/portSapphire-walkable.json;
+    # keep the source input accounted for without promoting it into runtime closure.
+    source_only_town_input = "portSapphire-walkable-v1.json"
+    source_only_path = ROOT / "public" / "act1-hifi" / source_only_town_input
+    if (not source_only_path.is_file() or source_only_path.stat().st_size != 30318
+            or sha256(source_only_path) != "87e7ff272a4da3304ed798584a69077ffdf0c0c1d4481758cfb7d623a55b5eaf"):
+        raise BaselineError("source-only Port Sapphire walkable input identity changed")
+    public_hifi_files.pop(source_only_town_input, None)
+    expected_public_hifi_paths = {
+        path.removeprefix("act1-hifi/")
+        for path in expected_paths
+        if path.startswith("act1-hifi/")
+    }
+    if set(public_hifi_files) != expected_public_hifi_paths:
+        raise BaselineError("active Act 1 public file inventory differs from its pinned manifest closure")
+    if not (expected_paths - set(all_found)):
+        dist_hifi_files = {
+            path.removeprefix("act1-hifi/"): file_path
+            for path, file_path in all_found.items()
+            if path.startswith("act1-hifi/")
+        }
+        shipped_hifi_paths = {
+            path.removeprefix("act1-hifi/")
+            for path in expected_paths
+            if path.startswith("act1-hifi/")
+        }
+        if shipped_hifi_paths != set(dist_hifi_files):
+            raise BaselineError(
+                "Act 1 shipped source/dist runtime file sets differ; "
+                f"missing={sorted(shipped_hifi_paths - set(dist_hifi_files))}, "
+                f"extra={sorted(set(dist_hifi_files) - shipped_hifi_paths)}")
+        if any(public_hifi_files[path].read_bytes() != dist_hifi_files[path].read_bytes()
+               for path in shipped_hifi_paths):
+            raise BaselineError("versioned Act 1 paint source/dist runtime bytes differ")
     extra_paths = set(all_found) - expected_paths
     if expected_paths - set(all_found) or not extra_paths.issubset(allowed_extra):
         missing = sorted(expected_paths - set(all_found))
@@ -970,14 +1575,28 @@ def verify_act1_overlay(root: Path, allowed_extra: frozenset[str] = frozenset())
         raise BaselineError("Act 1 runtime identity mismatch: act1-world-map.js")
 
     for source_relative, target_relative in hifi_files.items():
-        source_root = ACT1_R26_RUNTIME if (
-            source_relative in {"manifest.json", "walkable-regions-r26.json"}
-            or source_relative.startswith("chunks/")
-        ) else ACT1_HIFI_RUNTIME
+        if source_relative == "manifest.json":
+            source_root = ROOT / "public" / "act1-hifi"
+        elif source_relative in {"walkable-regions-r26.json"}:
+            source_root = ACT1_R26_RUNTIME
+        elif source_relative.startswith("chunks/") or source_relative.startswith("underpaint/") or source_relative == ACT1_PAINT_COLLISION["artifact"]:
+            source_root = ACT1_R26_RUNTIME if "/water/" in source_relative else ROOT / "public" / "act1-hifi"
+        else:
+            source_root = ACT1_HIFI_RUNTIME
         source = source_root / source_relative
         target = all_found[f"act1-hifi/{target_relative}"]
         if source.read_bytes() != target.read_bytes():
             raise BaselineError(f"Act 1 high-fidelity runtime identity mismatch: {target_relative}")
+        public_source = ROOT / "public" / "act1-hifi" / target_relative
+        if not public_source.is_file() or public_source.read_bytes() != source.read_bytes():
+            raise BaselineError(f"public/source Act 1 high-fidelity twins differ: {target_relative}")
+        if source_relative in paint_resources and sha256(source) != paint_resources[source_relative]:
+            raise BaselineError(f"Act 1 paint resource hash mismatch: {source_relative}")
+        if source_relative == underpaint_path:
+            header = source.read_bytes()[:24]
+            if (len(header) != 24 or header[:8] != b"\x89PNG\r\n\x1a\n"
+                    or struct.unpack(">II", header[16:24]) != expected_underpaint_size):
+                raise BaselineError("Act 1 underpaint PNG dimensions/signature do not match its manifest")
     public_adapter = ROOT / "public" / "act1-hifi" / "adapter.js"
     dist_adapter = all_found["act1-hifi/adapter.js"]
     if not public_adapter.is_file() or public_adapter.read_bytes() != dist_adapter.read_bytes():
@@ -987,6 +1606,10 @@ def verify_act1_overlay(root: Path, allowed_extra: frozenset[str] = frozenset())
     html = all_found["index.html"].read_text(encoding="utf-8")
     if "act1-world-map.js" not in html or html.index("act1-world-map.js") > html.index("dq-tiles.js"):
         raise BaselineError("Act 1 override must load before dq-tiles.js")
+    if ("battle-recovery.js" not in html
+            or html.index("battle-recovery.js") < html.index("assets/index-BhoGQRaA.js")
+            or html.index("battle-recovery.js") < html.index("hero-override.js")):
+        raise BaselineError("battle recovery must load after the frozen module declaration and sibling overrides")
     if "act1-hifi/adapter.js" not in html or html.index("act1-hifi/adapter.js") < html.index("hero-override.js"):
         raise BaselineError("Act 1 high-fidelity adapter must load after preserved overrides")
     public_overlay = ROOT / "public" / "act1-world-map.js"
@@ -1100,6 +1723,17 @@ def main() -> int:
         action="store_true",
         help="allow only Capacitor's generated cordova.js and cordova_plugins.js extras",
     )
+    verify_act1_parser.add_argument(
+        "--terrain-profile",
+        choices=("historical", "act1-forward-20261007-v1"),
+        default="historical",
+        help="explicitly select the forward terrain profile; the historical profile remains default",
+    )
+    verify_act1_parser.add_argument(
+        "--qa-preparation",
+        action="store_true",
+        help="validate static closure for a nonshippable QA candidate; never proves release eligibility",
+    )
     manifest_parser = subparsers.add_parser("write-manifest", help="lead-only explicit baseline promotion")
     manifest_parser.add_argument("--confirm-profile", required=True)
     subparsers.add_parser("verify-candidates", help="verify the preserved unapproved monster candidates")
@@ -1107,6 +1741,14 @@ def main() -> int:
         "write-candidate-manifest", help="lead-only candidate snapshot refresh"
     )
     candidate_parser.add_argument("--confirm", required=True)
+    subparsers.add_parser(
+        "verify-forward-terrain-source",
+        help="validate independently pinned forward-profile inputs/proofs before build mutation",
+    )
+    subparsers.add_parser(
+        "verify-forward-terrain-preparation",
+        help="validate static closure for the explicit nonshippable QA-preparation stage",
+    )
     subparsers.add_parser("blocked-build", help="explain why the stale build is disabled")
     args = parser.parse_args()
 
@@ -1123,8 +1765,23 @@ def main() -> int:
             print(f"VERIFY PASS: {args.input.resolve()}")
         elif args.command == "verify-act1":
             allowed_extra = frozenset({"cordova.js", "cordova_plugins.js"}) if args.allow_capacitor_glue else frozenset()
-            verify_act1_overlay(args.input.resolve(), allowed_extra)
-            print(f"ACT 1 OVERLAY VERIFY PASS: {args.input.resolve()}")
+            if args.qa_preparation and args.terrain_profile != "act1-forward-20261007-v1":
+                raise BaselineError("--qa-preparation is only valid with the explicit forward terrain profile")
+            if args.terrain_profile == "historical":
+                verify_act1_overlay(args.input.resolve(), allowed_extra)
+                print(f"ACT 1 OVERLAY VERIFY PASS [historical]: {args.input.resolve()}")
+            else:
+                from terrain_current_profile import ProfileError, validate_runtime
+                try:
+                    stage = "preparation" if args.qa_preparation else "release"
+                    descriptor_digest, output_digest = validate_runtime(ROOT, args.input.resolve(), allowed_extra, sys.modules[__name__], stage=stage)
+                except ProfileError as error:
+                    raise BaselineError(str(error)) from error
+                if args.qa_preparation:
+                    from terrain_current_profile import PENDING_DYNAMIC_CHECKS, PENDING_PROOF_ASSERTIONS
+                    print(f"QA_PREPARATION_PASS releaseEligible=false [{args.terrain_profile}]: {args.input.resolve()} descriptor={descriptor_digest} outputs={output_digest} pendingGroups={','.join(PENDING_DYNAMIC_CHECKS)} pendingAssertions={','.join(PENDING_PROOF_ASSERTIONS)}")
+                else:
+                    print(f"ACT 1 OVERLAY VERIFY PASS [{args.terrain_profile}]: {args.input.resolve()} descriptor={descriptor_digest} outputs={output_digest}")
         elif args.command == "write-manifest":
             write_manifest(args.confirm_profile)
         elif args.command == "verify-candidates":
@@ -1132,6 +1789,20 @@ def main() -> int:
             print(f"CANDIDATE VERIFY PASS: {CANDIDATE_MANIFEST}")
         elif args.command == "write-candidate-manifest":
             write_candidate_manifest(args.confirm)
+        elif args.command == "verify-forward-terrain-source":
+            from terrain_current_profile import ProfileError, validate_source_inventory
+            try:
+                validate_source_inventory(ROOT)
+            except ProfileError as error:
+                raise BaselineError(str(error)) from error
+            print("FORWARD TERRAIN SOURCE PASS: independently pinned full-world descriptor validated")
+        elif args.command == "verify-forward-terrain-preparation":
+            from terrain_current_profile import ProfileError, PENDING_DYNAMIC_CHECKS, PENDING_PROOF_ASSERTIONS, validate_source_inventory
+            try:
+                descriptor_digest, output_digest = validate_source_inventory(ROOT, stage="preparation")
+            except ProfileError as error:
+                raise BaselineError(str(error)) from error
+            print(f"QA_PREPARATION_PASS releaseEligible=false descriptor={descriptor_digest} outputs={output_digest} pendingGroups={','.join(PENDING_DYNAMIC_CHECKS)} pendingAssertions={','.join(PENDING_PROOF_ASSERTIONS)}")
         else:
             raise BaselineError(
                 "The stale Vite/TypeScript build is quarantined because it does not reproduce "

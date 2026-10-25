@@ -1,0 +1,48 @@
+{
+  "schema": "qok-forward-underpaint-phase-metadata-bridge-v1",
+  "status": "DRAFT_PENDING_INDEPENDENT_REVIEW",
+  "scope": "Draft identity refresh only: original generated pixel payloads remain byte-identical; no fresh render or runtime result is claimed.",
+  "sourceProof": {
+    "path": "design/terrain-current-profile-20261007/review-evidence/water-r2-final-20261013/independent-final-r2-output-review.md",
+    "sha256": "edf7ef282db1405ea31c77f831c63c5acdb2b7f9d9358fa9fc13d6e3e4743b4e"
+  },
+  "metadataRebind": {
+    "path": "design/terrain-current-profile-20261007/review-evidence/cave-reentry-20261015/output-equivalence-draft.json",
+    "sha256": "5ac149f7b9040c6e82edb651efc99082d48632c93a06a80ee97818b15d201cfb"
+  },
+  "sourceManifestSha256": "fbad11cf27c35be30e0fed8cade9a68019bee7a3b368e4cf67d8dd3dcaa2ad88",
+  "currentManifestSha256": "931240cf16decc0ad17f225b0baeabbf2ca8dcecd0b9342056fc1b76a0d69707",
+  "currentDqTilesSha256": "6a605a8f0d7d2513871c9b8e5a18f30fa7a403ee2ec0e42a4f1646d2e4d5da1d",
+  "unchangedOutputCount": 493,
+  "changedOutputPaths": [
+    "act1-hifi/manifest.json"
+  ],
+  "allOtherOutputBytesUnchanged": true,
+  "phaseValues": {
+    "scope": "declared-origin-and-scale-phase-v1",
+    "originCell": [
+      16,
+      218
+    ],
+    "dimensionsPx6": [
+      888,
+      1092
+    ],
+    "pixelsPerCell": 6,
+    "basePixelsPerCell": 32,
+    "semanticBounds": [
+      16,
+      218,
+      163,
+      399
+    ],
+    "chunksIntersectingSemanticBounds": 120,
+    "phaseMismatches": 0,
+    "semanticCellsCoveredExactlyOnce": true,
+    "sameOwTileWorldGrid": true
+  },
+  "limitations": [
+    "Draft derived from the prior reviewed phase measurements plus the exact 493-path unchanged-output comparison. Independent verification remains pending.",
+    "No new terrain render, native runtime behavior, or release readiness is asserted."
+  ]
+}

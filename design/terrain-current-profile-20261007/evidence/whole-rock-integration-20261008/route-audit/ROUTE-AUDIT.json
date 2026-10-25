@@ -1,0 +1,1290 @@
+{
+  "authority": {
+    "baseCanMoveBranchSha256": "63f05a2bbc3a7221e707e2242e5cec7240f10562fca208b0b80a82d22b041bf4",
+    "baseCanMoveSource": "dist/assets/index-BhoGQRaA.js: WorldMapScene.canMove overworld branch (hash pinned); default empty new-game inventory, so conditional tile-13/tile-21 item exceptions do not apply",
+    "closedCrystalCaveGate": "boss.giantToad.defeated",
+    "collisionAuthorities": [
+      "QOKF8COL visible-alpha stencil",
+      "unchanged A1OW water field",
+      "current map canMove/OW_BLOCK/gate"
+    ],
+    "currentGateState": "closed/default story flag absent",
+    "dqOwBlock": [
+      2,
+      4,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      19,
+      20,
+      21
+    ],
+    "edgeSamplesMaxGapCanonicalPx": 1.2,
+    "edgeSampling": "inclusive endpoints at <= 1.2 canonical px; runtime maximum is 1/0.7 = 1.4286",
+    "fieldTest": "production a1mFootDy plus chamfer-3/4 clearance and current A1OW sampled at every continuous substep",
+    "heroScale": 1.0125,
+    "mapSource": "public/act1-world-map.js: BOUNDS/ROWS/LANDMARKS/GATE/seedWalkableAt/canMove wrapper",
+    "movementStepMaxCanonicalPx": 1.4285714285714286,
+    "overworldScale": 0.7,
+    "qokTest": "all alpha>8 pixels across all 12 sheet frames, transformed with runtime scale/origin; center plus cardinal one-pixel padding",
+    "regionBoundsInclusive": [
+      16,
+      218,
+      163,
+      399
+    ],
+    "routeGraphStepCanonicalPx": 6,
+    "routeStartAnchor": "tile center (x*48+24,y*48+24)",
+    "routeStartCell": [
+      69,
+      256
+    ],
+    "runtimeSource": "public/dq-tiles.js: a1fBuildStencil/a1fHeroFree/a1fRequiredAt/a1mFootDy/a1mNeed/a1mFree/a1mStep/owmBakeParse/owmAssemble"
+  },
+  "firstFailureContextImage": "/private/tmp/edu-rpg-build83-paint-audit-20261005/whole-rock-integration-20261008/route-audit/first-failure-g3-approach-crystalCave-148-278.png",
+  "heroResults": {
+    "g3": {
+      "approach:coastalReef:145,372": {
+        "cell": [
+          145,
+          372
+        ],
+        "failure": {
+          "footPx": [
+            6984,
+            17924.116
+          ],
+          "gateClosed": false,
+          "rule": "current map canMove/OW_BLOCK",
+          "source": "act1-world-map.js + dq-tiles.js",
+          "tile": 21,
+          "tileCell": [
+            145,
+            373
+          ],
+          "worldPx": [
+            6984,
+            17880
+          ]
+        },
+        "kind": "approach",
+        "mapId": "coastalReef",
+        "status": "blocked-at-target",
+        "target": [
+          6984,
+          17880
+        ],
+        "targetId": "approach:coastalReef:145,372"
+      },
+      "approach:crystalCave:148,278": {
+        "cell": [
+          148,
+          278
+        ],
+        "expanded": 200000,
+        "firstRejectedEdge": {
+          "collisionPx": [
+            1691,
+            1785
+          ],
+          "from": [
+            3336,
+            13092
+          ],
+          "padding": [
+            0,
+            1
+          ],
+          "rule": "QOK visible-alpha stencil",
+          "source": "forest-collision.bin",
+          "stencilOffset": [
+            -21,
+            29
+          ],
+          "to": [
+            3336,
+            13098
+          ],
+          "worldPx": [
+            3336.0,
+            13096.8
+          ]
+        },
+        "kind": "approach",
+        "limitation": "No route found within the painted Act 1 bounds and configured expansion cap.",
+        "mapId": "crystalCave",
+        "start": [
+          3336,
+          12312
+        ],
+        "status": "expansion-cap",
+        "target": [
+          7128,
+          13368
+        ],
+        "targetId": "approach:crystalCave:148,278"
+      },
+      "approach:crystalCave:149,277": {
+        "cell": [
+          149,
+          277
+        ],
+        "failure": {
+          "footPx": [
+            7176,
+            13364.116
+          ],
+          "gateClosed": true,
+          "rule": "current map canMove/OW_BLOCK",
+          "source": "act1-world-map.js + dq-tiles.js",
+          "tile": 15,
+          "tileCell": [
+            149,
+            278
+          ],
+          "worldPx": [
+            7176,
+            13320
+          ]
+        },
+        "kind": "approach",
+        "mapId": "crystalCave",
+        "status": "blocked-at-target",
+        "target": [
+          7176,
+          13320
+        ],
+        "targetId": "approach:crystalCave:149,277"
+      },
+      "approach:crystalCave:149,279": {
+        "cell": [
+          149,
+          279
+        ],
+        "expanded": 200000,
+        "firstRejectedEdge": {
+          "collisionPx": [
+            1691,
+            1785
+          ],
+          "from": [
+            3336,
+            13092
+          ],
+          "padding": [
+            0,
+            1
+          ],
+          "rule": "QOK visible-alpha stencil",
+          "source": "forest-collision.bin",
+          "stencilOffset": [
+            -21,
+            29
+          ],
+          "to": [
+            3336,
+            13098
+          ],
+          "worldPx": [
+            3336.0,
+            13096.8
+          ]
+        },
+        "kind": "approach",
+        "limitation": "No route found within the painted Act 1 bounds and configured expansion cap.",
+        "mapId": "crystalCave",
+        "start": [
+          3336,
+          12312
+        ],
+        "status": "expansion-cap",
+        "target": [
+          7176,
+          13416
+        ],
+        "targetId": "approach:crystalCave:149,279"
+      },
+      "approach:crystalCave:150,278": {
+        "cell": [
+          150,
+          278
+        ],
+        "expanded": 200000,
+        "firstRejectedEdge": {
+          "collisionPx": [
+            1691,
+            1785
+          ],
+          "from": [
+            3336,
+            13092
+          ],
+          "padding": [
+            0,
+            1
+          ],
+          "rule": "QOK visible-alpha stencil",
+          "source": "forest-collision.bin",
+          "stencilOffset": [
+            -21,
+            29
+          ],
+          "to": [
+            3336,
+            13098
+          ],
+          "worldPx": [
+            3336.0,
+            13096.8
+          ]
+        },
+        "kind": "approach",
+        "limitation": "No route found within the painted Act 1 bounds and configured expansion cap.",
+        "mapId": "crystalCave",
+        "start": [
+          3336,
+          12312
+        ],
+        "status": "expansion-cap",
+        "target": [
+          7224,
+          13368
+        ],
+        "targetId": "approach:crystalCave:150,278"
+      },
+      "approach:greenhollow:69,256": {
+        "cell": [
+          69,
+          256
+        ],
+        "distanceCanonicalPx": 0,
+        "kind": "approach",
+        "mapId": "greenhollow",
+        "nodes": 1,
+        "start": [
+          3336,
+          12312
+        ],
+        "status": "pass",
+        "target": [
+          3336,
+          12312
+        ],
+        "targetId": "approach:greenhollow:69,256"
+      },
+      "approach:millbrook:39,345": {
+        "cell": [
+          39,
+          345
+        ],
+        "distanceCanonicalPx": 6228,
+        "kind": "approach",
+        "mapId": "millbrook",
+        "nodes": 1039,
+        "start": [
+          3336,
+          12312
+        ],
+        "status": "pass",
+        "target": [
+          1896,
+          16584
+        ],
+        "targetId": "approach:millbrook:39,345"
+      },
+      "approach:mistyGrotto:96,360": {
+        "cell": [
+          96,
+          360
+        ],
+        "distanceCanonicalPx": 6960,
+        "kind": "approach",
+        "mapId": "mistyGrotto",
+        "nodes": 1161,
+        "start": [
+          3336,
+          12312
+        ],
+        "status": "pass",
+        "target": [
+          4632,
+          17304
+        ],
+        "targetId": "approach:mistyGrotto:96,360"
+      },
+      "approach:portSapphire:133,348": {
+        "cell": [
+          133,
+          348
+        ],
+        "failure": {
+          "distanceThirds": 51,
+          "fieldPixel": [
+            6408,
+            16772
+          ],
+          "footPx": [
+            6408,
+            16772.116
+          ],
+          "requiredThirds": 53.9391,
+          "rule": "A1OW water-distance clearance",
+          "source": "act1-overworld-walk.bin",
+          "tile": 6,
+          "worldPx": [
+            6408,
+            16728
+          ]
+        },
+        "kind": "approach",
+        "mapId": "portSapphire",
+        "status": "blocked-at-target",
+        "target": [
+          6408,
+          16728
+        ],
+        "targetId": "approach:portSapphire:133,348"
+      },
+      "approach:sunkenCellar:30,275": {
+        "cell": [
+          30,
+          275
+        ],
+        "distanceCanonicalPx": 2784,
+        "kind": "approach",
+        "mapId": "sunkenCellar",
+        "nodes": 465,
+        "start": [
+          3336,
+          12312
+        ],
+        "status": "pass",
+        "target": [
+          1464,
+          13224
+        ],
+        "targetId": "approach:sunkenCellar:30,275"
+      },
+      "approach:whisperingWoodsCave:101,232": {
+        "cell": [
+          101,
+          232
+        ],
+        "distanceCanonicalPx": 2688,
+        "kind": "approach",
+        "mapId": "whisperingWoodsCave",
+        "nodes": 449,
+        "start": [
+          3336,
+          12312
+        ],
+        "status": "pass",
+        "target": [
+          4872,
+          11160
+        ],
+        "targetId": "approach:whisperingWoodsCave:101,232"
+      },
+      "exit:coastalReef": {
+        "cell": [
+          145,
+          372
+        ],
+        "failure": {
+          "footPx": [
+            6984,
+            17924.116
+          ],
+          "gateClosed": false,
+          "rule": "current map canMove/OW_BLOCK",
+          "source": "act1-world-map.js + dq-tiles.js",
+          "tile": 21,
+          "tileCell": [
+            145,
+            373
+          ],
+          "worldPx": [
+            6984,
+            17880
+          ]
+        },
+        "kind": "exit",
+        "mapId": "coastalReef",
+        "status": "blocked-at-target",
+        "target": [
+          6984,
+          17880
+        ],
+        "targetId": "exit:coastalReef"
+      },
+      "exit:crystalCave": {
+        "cell": [
+          149,
+          279
+        ],
+        "expanded": 200000,
+        "firstRejectedEdge": {
+          "collisionPx": [
+            1691,
+            1785
+          ],
+          "from": [
+            3336,
+            13092
+          ],
+          "padding": [
+            0,
+            1
+          ],
+          "rule": "QOK visible-alpha stencil",
+          "source": "forest-collision.bin",
+          "stencilOffset": [
+            -21,
+            29
+          ],
+          "to": [
+            3336,
+            13098
+          ],
+          "worldPx": [
+            3336.0,
+            13096.8
+          ]
+        },
+        "kind": "exit",
+        "limitation": "No route found within the painted Act 1 bounds and configured expansion cap.",
+        "mapId": "crystalCave",
+        "start": [
+          3336,
+          12312
+        ],
+        "status": "expansion-cap",
+        "target": [
+          7176,
+          13416
+        ],
+        "targetId": "exit:crystalCave"
+      },
+      "exit:greenhollow": {
+        "cell": [
+          69,
+          256
+        ],
+        "distanceCanonicalPx": 0,
+        "kind": "exit",
+        "mapId": "greenhollow",
+        "nodes": 1,
+        "start": [
+          3336,
+          12312
+        ],
+        "status": "pass",
+        "target": [
+          3336,
+          12312
+        ],
+        "targetId": "exit:greenhollow"
+      },
+      "exit:millbrook": {
+        "cell": [
+          39,
+          345
+        ],
+        "distanceCanonicalPx": 6228,
+        "kind": "exit",
+        "mapId": "millbrook",
+        "nodes": 1039,
+        "start": [
+          3336,
+          12312
+        ],
+        "status": "pass",
+        "target": [
+          1896,
+          16584
+        ],
+        "targetId": "exit:millbrook"
+      },
+      "exit:mistyGrotto": {
+        "cell": [
+          96,
+          360
+        ],
+        "distanceCanonicalPx": 6960,
+        "kind": "exit",
+        "mapId": "mistyGrotto",
+        "nodes": 1161,
+        "start": [
+          3336,
+          12312
+        ],
+        "status": "pass",
+        "target": [
+          4632,
+          17304
+        ],
+        "targetId": "exit:mistyGrotto"
+      },
+      "exit:portSapphire": {
+        "cell": [
+          133,
+          348
+        ],
+        "failure": {
+          "distanceThirds": 51,
+          "fieldPixel": [
+            6408,
+            16772
+          ],
+          "footPx": [
+            6408,
+            16772.116
+          ],
+          "requiredThirds": 53.9391,
+          "rule": "A1OW water-distance clearance",
+          "source": "act1-overworld-walk.bin",
+          "tile": 6,
+          "worldPx": [
+            6408,
+            16728
+          ]
+        },
+        "kind": "exit",
+        "mapId": "portSapphire",
+        "status": "blocked-at-target",
+        "target": [
+          6408,
+          16728
+        ],
+        "targetId": "exit:portSapphire"
+      },
+      "exit:sunkenCellar": {
+        "cell": [
+          30,
+          275
+        ],
+        "distanceCanonicalPx": 2784,
+        "kind": "exit",
+        "mapId": "sunkenCellar",
+        "nodes": 465,
+        "start": [
+          3336,
+          12312
+        ],
+        "status": "pass",
+        "target": [
+          1464,
+          13224
+        ],
+        "targetId": "exit:sunkenCellar"
+      },
+      "exit:whisperingWoodsCave": {
+        "cell": [
+          101,
+          232
+        ],
+        "distanceCanonicalPx": 2688,
+        "kind": "exit",
+        "mapId": "whisperingWoodsCave",
+        "nodes": 449,
+        "start": [
+          3336,
+          12312
+        ],
+        "status": "pass",
+        "target": [
+          4872,
+          11160
+        ],
+        "targetId": "exit:whisperingWoodsCave"
+      },
+      "new-game-start:greenhollow": {
+        "cell": [
+          69,
+          256
+        ],
+        "distanceCanonicalPx": 0,
+        "kind": "start",
+        "mapId": "greenhollow",
+        "nodes": 1,
+        "start": [
+          3336,
+          12312
+        ],
+        "status": "pass",
+        "target": [
+          3336,
+          12312
+        ],
+        "targetId": "new-game-start:greenhollow"
+      }
+    },
+    "male": {
+      "approach:coastalReef:145,372": {
+        "cell": [
+          145,
+          372
+        ],
+        "failure": {
+          "footPx": [
+            6984,
+            17924.116
+          ],
+          "gateClosed": false,
+          "rule": "current map canMove/OW_BLOCK",
+          "source": "act1-world-map.js + dq-tiles.js",
+          "tile": 21,
+          "tileCell": [
+            145,
+            373
+          ],
+          "worldPx": [
+            6984,
+            17880
+          ]
+        },
+        "kind": "approach",
+        "mapId": "coastalReef",
+        "status": "blocked-at-target",
+        "target": [
+          6984,
+          17880
+        ],
+        "targetId": "approach:coastalReef:145,372"
+      },
+      "approach:crystalCave:148,278": {
+        "cell": [
+          148,
+          278
+        ],
+        "expanded": 200000,
+        "firstRejectedEdge": {
+          "collisionPx": [
+            1691,
+            1785
+          ],
+          "from": [
+            3336,
+            13092
+          ],
+          "padding": [
+            0,
+            1
+          ],
+          "rule": "QOK visible-alpha stencil",
+          "source": "forest-collision.bin",
+          "stencilOffset": [
+            -21,
+            28
+          ],
+          "to": [
+            3336,
+            13098
+          ],
+          "worldPx": [
+            3336.0,
+            13098.0
+          ]
+        },
+        "kind": "approach",
+        "limitation": "No route found within the painted Act 1 bounds and configured expansion cap.",
+        "mapId": "crystalCave",
+        "start": [
+          3336,
+          12312
+        ],
+        "status": "expansion-cap",
+        "target": [
+          7128,
+          13368
+        ],
+        "targetId": "approach:crystalCave:148,278"
+      },
+      "approach:crystalCave:149,277": {
+        "cell": [
+          149,
+          277
+        ],
+        "failure": {
+          "footPx": [
+            7176,
+            13364.116
+          ],
+          "gateClosed": true,
+          "rule": "current map canMove/OW_BLOCK",
+          "source": "act1-world-map.js + dq-tiles.js",
+          "tile": 15,
+          "tileCell": [
+            149,
+            278
+          ],
+          "worldPx": [
+            7176,
+            13320
+          ]
+        },
+        "kind": "approach",
+        "mapId": "crystalCave",
+        "status": "blocked-at-target",
+        "target": [
+          7176,
+          13320
+        ],
+        "targetId": "approach:crystalCave:149,277"
+      },
+      "approach:crystalCave:149,279": {
+        "cell": [
+          149,
+          279
+        ],
+        "expanded": 200000,
+        "firstRejectedEdge": {
+          "collisionPx": [
+            1691,
+            1785
+          ],
+          "from": [
+            3336,
+            13092
+          ],
+          "padding": [
+            0,
+            1
+          ],
+          "rule": "QOK visible-alpha stencil",
+          "source": "forest-collision.bin",
+          "stencilOffset": [
+            -21,
+            28
+          ],
+          "to": [
+            3336,
+            13098
+          ],
+          "worldPx": [
+            3336.0,
+            13098.0
+          ]
+        },
+        "kind": "approach",
+        "limitation": "No route found within the painted Act 1 bounds and configured expansion cap.",
+        "mapId": "crystalCave",
+        "start": [
+          3336,
+          12312
+        ],
+        "status": "expansion-cap",
+        "target": [
+          7176,
+          13416
+        ],
+        "targetId": "approach:crystalCave:149,279"
+      },
+      "approach:crystalCave:150,278": {
+        "cell": [
+          150,
+          278
+        ],
+        "expanded": 200000,
+        "firstRejectedEdge": {
+          "collisionPx": [
+            1691,
+            1785
+          ],
+          "from": [
+            3336,
+            13092
+          ],
+          "padding": [
+            0,
+            1
+          ],
+          "rule": "QOK visible-alpha stencil",
+          "source": "forest-collision.bin",
+          "stencilOffset": [
+            -21,
+            28
+          ],
+          "to": [
+            3336,
+            13098
+          ],
+          "worldPx": [
+            3336.0,
+            13098.0
+          ]
+        },
+        "kind": "approach",
+        "limitation": "No route found within the painted Act 1 bounds and configured expansion cap.",
+        "mapId": "crystalCave",
+        "start": [
+          3336,
+          12312
+        ],
+        "status": "expansion-cap",
+        "target": [
+          7224,
+          13368
+        ],
+        "targetId": "approach:crystalCave:150,278"
+      },
+      "approach:greenhollow:69,256": {
+        "cell": [
+          69,
+          256
+        ],
+        "distanceCanonicalPx": 0,
+        "kind": "approach",
+        "mapId": "greenhollow",
+        "nodes": 1,
+        "start": [
+          3336,
+          12312
+        ],
+        "status": "pass",
+        "target": [
+          3336,
+          12312
+        ],
+        "targetId": "approach:greenhollow:69,256"
+      },
+      "approach:millbrook:39,345": {
+        "cell": [
+          39,
+          345
+        ],
+        "distanceCanonicalPx": 6228,
+        "kind": "approach",
+        "mapId": "millbrook",
+        "nodes": 1039,
+        "start": [
+          3336,
+          12312
+        ],
+        "status": "pass",
+        "target": [
+          1896,
+          16584
+        ],
+        "targetId": "approach:millbrook:39,345"
+      },
+      "approach:mistyGrotto:96,360": {
+        "cell": [
+          96,
+          360
+        ],
+        "distanceCanonicalPx": 6960,
+        "kind": "approach",
+        "mapId": "mistyGrotto",
+        "nodes": 1161,
+        "start": [
+          3336,
+          12312
+        ],
+        "status": "pass",
+        "target": [
+          4632,
+          17304
+        ],
+        "targetId": "approach:mistyGrotto:96,360"
+      },
+      "approach:portSapphire:133,348": {
+        "cell": [
+          133,
+          348
+        ],
+        "failure": {
+          "distanceThirds": 51,
+          "fieldPixel": [
+            6408,
+            16772
+          ],
+          "footPx": [
+            6408,
+            16772.116
+          ],
+          "requiredThirds": 53.9391,
+          "rule": "A1OW water-distance clearance",
+          "source": "act1-overworld-walk.bin",
+          "tile": 6,
+          "worldPx": [
+            6408,
+            16728
+          ]
+        },
+        "kind": "approach",
+        "mapId": "portSapphire",
+        "status": "blocked-at-target",
+        "target": [
+          6408,
+          16728
+        ],
+        "targetId": "approach:portSapphire:133,348"
+      },
+      "approach:sunkenCellar:30,275": {
+        "cell": [
+          30,
+          275
+        ],
+        "distanceCanonicalPx": 2784,
+        "kind": "approach",
+        "mapId": "sunkenCellar",
+        "nodes": 465,
+        "start": [
+          3336,
+          12312
+        ],
+        "status": "pass",
+        "target": [
+          1464,
+          13224
+        ],
+        "targetId": "approach:sunkenCellar:30,275"
+      },
+      "approach:whisperingWoodsCave:101,232": {
+        "cell": [
+          101,
+          232
+        ],
+        "distanceCanonicalPx": 2688,
+        "kind": "approach",
+        "mapId": "whisperingWoodsCave",
+        "nodes": 449,
+        "start": [
+          3336,
+          12312
+        ],
+        "status": "pass",
+        "target": [
+          4872,
+          11160
+        ],
+        "targetId": "approach:whisperingWoodsCave:101,232"
+      },
+      "exit:coastalReef": {
+        "cell": [
+          145,
+          372
+        ],
+        "failure": {
+          "footPx": [
+            6984,
+            17924.116
+          ],
+          "gateClosed": false,
+          "rule": "current map canMove/OW_BLOCK",
+          "source": "act1-world-map.js + dq-tiles.js",
+          "tile": 21,
+          "tileCell": [
+            145,
+            373
+          ],
+          "worldPx": [
+            6984,
+            17880
+          ]
+        },
+        "kind": "exit",
+        "mapId": "coastalReef",
+        "status": "blocked-at-target",
+        "target": [
+          6984,
+          17880
+        ],
+        "targetId": "exit:coastalReef"
+      },
+      "exit:crystalCave": {
+        "cell": [
+          149,
+          279
+        ],
+        "expanded": 200000,
+        "firstRejectedEdge": {
+          "collisionPx": [
+            1691,
+            1785
+          ],
+          "from": [
+            3336,
+            13092
+          ],
+          "padding": [
+            0,
+            1
+          ],
+          "rule": "QOK visible-alpha stencil",
+          "source": "forest-collision.bin",
+          "stencilOffset": [
+            -21,
+            28
+          ],
+          "to": [
+            3336,
+            13098
+          ],
+          "worldPx": [
+            3336.0,
+            13098.0
+          ]
+        },
+        "kind": "exit",
+        "limitation": "No route found within the painted Act 1 bounds and configured expansion cap.",
+        "mapId": "crystalCave",
+        "start": [
+          3336,
+          12312
+        ],
+        "status": "expansion-cap",
+        "target": [
+          7176,
+          13416
+        ],
+        "targetId": "exit:crystalCave"
+      },
+      "exit:greenhollow": {
+        "cell": [
+          69,
+          256
+        ],
+        "distanceCanonicalPx": 0,
+        "kind": "exit",
+        "mapId": "greenhollow",
+        "nodes": 1,
+        "start": [
+          3336,
+          12312
+        ],
+        "status": "pass",
+        "target": [
+          3336,
+          12312
+        ],
+        "targetId": "exit:greenhollow"
+      },
+      "exit:millbrook": {
+        "cell": [
+          39,
+          345
+        ],
+        "distanceCanonicalPx": 6228,
+        "kind": "exit",
+        "mapId": "millbrook",
+        "nodes": 1039,
+        "start": [
+          3336,
+          12312
+        ],
+        "status": "pass",
+        "target": [
+          1896,
+          16584
+        ],
+        "targetId": "exit:millbrook"
+      },
+      "exit:mistyGrotto": {
+        "cell": [
+          96,
+          360
+        ],
+        "distanceCanonicalPx": 6960,
+        "kind": "exit",
+        "mapId": "mistyGrotto",
+        "nodes": 1161,
+        "start": [
+          3336,
+          12312
+        ],
+        "status": "pass",
+        "target": [
+          4632,
+          17304
+        ],
+        "targetId": "exit:mistyGrotto"
+      },
+      "exit:portSapphire": {
+        "cell": [
+          133,
+          348
+        ],
+        "failure": {
+          "distanceThirds": 51,
+          "fieldPixel": [
+            6408,
+            16772
+          ],
+          "footPx": [
+            6408,
+            16772.116
+          ],
+          "requiredThirds": 53.9391,
+          "rule": "A1OW water-distance clearance",
+          "source": "act1-overworld-walk.bin",
+          "tile": 6,
+          "worldPx": [
+            6408,
+            16728
+          ]
+        },
+        "kind": "exit",
+        "mapId": "portSapphire",
+        "status": "blocked-at-target",
+        "target": [
+          6408,
+          16728
+        ],
+        "targetId": "exit:portSapphire"
+      },
+      "exit:sunkenCellar": {
+        "cell": [
+          30,
+          275
+        ],
+        "distanceCanonicalPx": 2784,
+        "kind": "exit",
+        "mapId": "sunkenCellar",
+        "nodes": 465,
+        "start": [
+          3336,
+          12312
+        ],
+        "status": "pass",
+        "target": [
+          1464,
+          13224
+        ],
+        "targetId": "exit:sunkenCellar"
+      },
+      "exit:whisperingWoodsCave": {
+        "cell": [
+          101,
+          232
+        ],
+        "distanceCanonicalPx": 2688,
+        "kind": "exit",
+        "mapId": "whisperingWoodsCave",
+        "nodes": 449,
+        "start": [
+          3336,
+          12312
+        ],
+        "status": "pass",
+        "target": [
+          4872,
+          11160
+        ],
+        "targetId": "exit:whisperingWoodsCave"
+      },
+      "new-game-start:greenhollow": {
+        "cell": [
+          69,
+          256
+        ],
+        "distanceCanonicalPx": 0,
+        "kind": "start",
+        "mapId": "greenhollow",
+        "nodes": 1,
+        "start": [
+          3336,
+          12312
+        ],
+        "status": "pass",
+        "target": [
+          3336,
+          12312
+        ],
+        "targetId": "new-game-start:greenhollow"
+      }
+    }
+  },
+  "limitations": [
+    "Static source translation only; it does not invoke Phaser or prove frame-by-frame movement, input, transitions, streaming, or native behavior.",
+    "Search is bounded to the current painted Act 1 rectangle; a route that would have to leave that rectangle is reported as not found within scope.",
+    "Route starts and targets use tile-center anchors because live route/start authorities provide cells, not persisted subcell coordinates.",
+    "Production's axis and tangent-slide fallbacks can follow paths outside this cardinal search graph; the audit does not assume those fallback moves.",
+    "The current guard's stale historical proof is not used; current exits/approaches are derived from current map source and validated against actual emitted collision artifacts.",
+    "The current map declares Crystal Cave gate flag boss.giantToad.defeated, but wrapCheckTransition returns its ENTRY unconditionally and a1mDoor calls checkTransition directly after a blocked movement; the flag's actual entry-gating behavior is unresolved, so no Crystal Cave progression/locked-state claim is made.",
+    "New-game default assumes no inventory items; base WorldMapScene.canMove has conditional tile 13/21 item exceptions, which are not used to claim later-state reachability."
+  ],
+  "pathDataSha256": "85b94da010dceccfb34ef7bdc44dac4b637468c656c605323660f3be944b2f0d",
+  "profileId": "act1-forward-20261007-v1",
+  "schema": 1,
+  "solverCounts": {
+    "g3": {
+      "edgeChecks": 491341,
+      "expandedNodes": 886997,
+      "positionChecks": 2204960
+    },
+    "male": {
+      "edgeChecks": 492011,
+      "expandedNodes": 887266,
+      "positionChecks": 2207989
+    }
+  },
+  "sourceInputs": {
+    "a1ow": {
+      "path": "/Users/chris/.codex/workspaces/edu-rpg-forward-20261007/public/act1-overworld-walk.bin",
+      "sha256": "00a520ae09089547ca4af4ef1077b84acdad98d4989de238f3ee30e28ad092c6"
+    },
+    "a1owV2IndependentProof": {
+      "path": "/Users/chris/.codex/workspaces/edu-rpg-forward-20261007/design/terrain-current-profile-20261007/evidence/a1ow-v2-independent-review/independent-a1ow-v2-recomputation.json",
+      "sha256": "0226b32538ae8aff716ca1294cb398cdff4aed7ae5fc4c66a7a85165c2d11297"
+    },
+    "a1owV2MapProof": {
+      "path": "/Users/chris/.codex/workspaces/edu-rpg-forward-20261007/design/terrain-current-profile-20261007/evidence/a1ow-v2-independent-review/baked-final-map.json",
+      "sha256": "a9fecf54db9de1f18a1f26c3f74b1bab9be230a247076e10580859e7074ab212"
+    },
+    "activeOutputManifest": {
+      "path": "/private/tmp/edu-rpg-build83-paint-audit-20261005/current-terrain-generation-20261007/full-world/north-contact-y-20261007/generation-whole-rock-a-review/public/act1-hifi/manifest.json",
+      "sha256": "24f3de319530c68a15a6097b20e14f4567d6bfe63d5dfff895a4883ecef35c5b"
+    },
+    "currentWorldMap": {
+      "path": "/Users/chris/.codex/workspaces/edu-rpg-forward-20261007/public/act1-world-map.js",
+      "sha256": "fb466fc6dbe7e05ccbb209c70867cacf4f903d55837ea69ca716e81f7196c96f"
+    },
+    "dqTiles": {
+      "path": "/Users/chris/.codex/workspaces/edu-rpg-forward-20261007/public/dq-tiles.js",
+      "sha256": "c18ce18e2f25ef6779165389d86163cea64136711f8999c4fd843154e6799c7a"
+    },
+    "finalAlpha": {
+      "path": "/private/tmp/edu-rpg-build83-paint-audit-20261005/current-terrain-generation-20261007/full-world/north-contact-y-20261007/generation-whole-rock-a-review/evidence/final-visible-raised-alpha.png",
+      "sha256": "944062209c3ee9392c4a971fa5b792e19bdcec83ec2b08dbfd24155680a52fdd"
+    },
+    "heroes": {
+      "g3": {
+        "path": "/Users/chris/.codex/workspaces/edu-rpg-forward-20261007/public/assets/hero/hero-g3-walk.png",
+        "sha256": "070a8a452c3dda775bd6c8593a66d57a5a13d97b9fb33378ea5b2bb0e1fded3c"
+      },
+      "male": {
+        "path": "/Users/chris/.codex/workspaces/edu-rpg-forward-20261007/public/assets/hero/hero-male-walk.png",
+        "sha256": "88cbed8f9d707b216ada01e108eedd5822c6bcfc69c8dd22af2457f231dc0976"
+      }
+    },
+    "outputReceipt": {
+      "path": "/private/tmp/edu-rpg-build83-paint-audit-20261005/current-terrain-generation-20261007/full-world/north-contact-y-20261007/generation-whole-rock-a-review/output-receipt.json",
+      "sha256": "caa119e842428ce77db226f25828b1412403609e26353c8e9d5284bb854ac3e5"
+    },
+    "platedMap": {
+      "path": "/private/tmp/edu-rpg-build83-paint-audit-20261005/current-terrain-generation-20261007/route-audit/plated-map.json",
+      "sha256": "9d380c41ae38795320bedf6dff8be90ef019ad4e2db59c12cd7b24a9f3823ccf"
+    },
+    "preservedBaseBundle": {
+      "path": "/Users/chris/.codex/workspaces/edu-rpg-forward-20261007/dist/assets/index-BhoGQRaA.js",
+      "sha256": "ab4fc9ad1204f23b4ea55dbae2d72bdf193a52e643271bcfe8642e2210556456"
+    },
+    "qok": {
+      "path": "/private/tmp/edu-rpg-build83-paint-audit-20261005/current-terrain-generation-20261007/full-world/north-contact-y-20261007/generation-whole-rock-a-review/public/act1-hifi/forest-collision.bin",
+      "sha256": "05c4a76f914d9f20c82bf42d1eb574d774f15bd924dbee708aca09d260c97346"
+    }
+  },
+  "status": "inconclusive",
+  "statusMeaning": "Expansion/search caps are inconclusive; blocked-at-target means only the tested tile-center anchor failed the static collision predicate, not that transition interaction is impossible.",
+  "targetCount": 20
+}

@@ -26,6 +26,30 @@ set -eu
 
 cd "$(dirname "$0")/.."
 ROOT=$(pwd -P)
+TERRAIN_PROFILE=historical
+QA_PREPARATION=0
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --terrain-profile) [ "$#" -ge 2 ] || { echo "--terrain-profile needs a value" >&2; exit 2; }; TERRAIN_PROFILE=$2; shift 2 ;;
+    --qa-preparation) QA_PREPARATION=1; shift ;;
+    *) echo "usage: $0 [--terrain-profile historical|act1-forward-20261007-v1] [--qa-preparation]" >&2; exit 2 ;;
+  esac
+done
+case "$TERRAIN_PROFILE" in
+  historical|act1-forward-20261007-v1) ;;
+  *) echo "unknown terrain profile: $TERRAIN_PROFILE" >&2; exit 2 ;;
+esac
+if [ "$QA_PREPARATION" -eq 1 ] && [ "$TERRAIN_PROFILE" != "act1-forward-20261007-v1" ]; then
+  echo "--qa-preparation requires --terrain-profile act1-forward-20261007-v1" >&2; exit 2
+fi
+if [ "$TERRAIN_PROFILE" = "act1-forward-20261007-v1" ]; then
+  # Validate declared source closure before the destructive dist/ refresh.
+  if [ "$QA_PREPARATION" -eq 1 ]; then
+    python3 scripts/runtime_baseline.py verify-forward-terrain-preparation
+  else
+    python3 scripts/runtime_baseline.py verify-forward-terrain-source
+  fi
+fi
 
 # ---------------------------------------------------------------------------------------------
 # 1. Preserved runtime baseline.
@@ -49,12 +73,16 @@ python3 scripts/runtime_baseline.py hydrate --output dist
 #    ast.literal_eval rather than scraping it with a regex over paths.
 # ---------------------------------------------------------------------------------------------
 echo "==> [2/5] copying the Act 1 overlay files enumerated by the gate"
-python3 - "$ROOT" <<'PY'
+QOK_TERRAIN_PROFILE="$TERRAIN_PROFILE" QOK_QA_PREPARATION="$QA_PREPARATION" python3 - "$ROOT" <<'PY'
 import ast, os, re, shutil, subprocess, sys
 
 root = sys.argv[1]
+verify_args = [sys.executable, "scripts/runtime_baseline.py", "verify-act1", "--input", "dist",
+               "--terrain-profile", os.environ.get("QOK_TERRAIN_PROFILE", "historical")]
+if os.environ.get("QOK_QA_PREPARATION") == "1":
+    verify_args.append("--qa-preparation")
 proc = subprocess.run(
-    [sys.executable, "scripts/runtime_baseline.py", "verify-act1", "--input", "dist"],
+    verify_args,
     cwd=root, capture_output=True, text=True,
 )
 if proc.returncode == 0:
@@ -109,6 +137,13 @@ done
 echo "==> [4/5] deriving the static shell from the tracked index.html"
 node scripts/build_static_index.mjs
 
+# The build cannot report success merely because files were copied and mirrored.
+if [ "$QA_PREPARATION" -eq 1 ]; then
+  python3 scripts/runtime_baseline.py verify-act1 --input dist --terrain-profile "$TERRAIN_PROFILE" --qa-preparation
+else
+  python3 scripts/runtime_baseline.py verify-act1 --input dist --terrain-profile "$TERRAIN_PROFILE"
+fi
+
 # ---------------------------------------------------------------------------------------------
 # 5. iOS payload.
 #    ship-gate.sh verifies ios/App/App/public too, and it is gitignored as well (ios/.gitignore:4),
@@ -141,8 +176,16 @@ mkdir -p ios/App/App/public
 for GLUE in cordova.js cordova_plugins.js; do
   [ -f "ios/App/App/public/$GLUE" ] || : > "ios/App/App/public/$GLUE"
 done
-sh scripts/sync-ios.sh
+if [ "$QA_PREPARATION" -eq 1 ]; then
+  sh scripts/sync-ios.sh --terrain-profile "$TERRAIN_PROFILE" --qa-preparation
+else
+  sh scripts/sync-ios.sh --terrain-profile "$TERRAIN_PROFILE"
+fi
 
 echo
-echo "BUILD DIST OK: dist/ and ios/App/App/public assembled from tracked sources"
+if [ "$QA_PREPARATION" -eq 1 ]; then
+  echo "QA_PREPARATION_PASS: static closure assembled; releaseEligible=false; no shipping authorization"
+else
+  echo "BUILD DIST OK: dist/ and ios/App/App/public assembled from tracked sources"
+fi
 echo "Next: ./scripts/ship-gate.sh ."

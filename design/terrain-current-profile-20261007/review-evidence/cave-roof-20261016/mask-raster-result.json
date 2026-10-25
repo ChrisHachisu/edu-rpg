@@ -1,0 +1,11 @@
+{
+  "schema": "independent-cave-contact-mask-raster-check-v1",
+  "dqTilesSha256": "b12d7eedea5420d18605633d66ee698fda24a538e1b026e9e7a092b3a1ddcb0a",
+  "pinnedArtSha256": "a06eea6ab98c7c630119db1488dfea912a40bc69150ac16e387b4e696aa5f047",
+  "packedMaskBytes": 2592,
+  "setPixels": 4808,
+  "outsideAlphaSetPixels": 0,
+  "alphaThreshold": 128,
+  "independentRasterMatchesEmbeddedMask": true,
+  "method": "Decode the exact embedded 144x144 bitset, rasterize the source rock contour excluding its doorway channel, intersect with pinned PNG alpha >=128, and compare every bit."
+}

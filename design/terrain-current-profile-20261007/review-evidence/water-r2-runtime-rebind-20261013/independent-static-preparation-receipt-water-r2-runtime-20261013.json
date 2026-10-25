@@ -1,0 +1,129 @@
+{
+  "authoringInputInventorySha256": "0da3411c90066cd888178b365ec5cb65a49c9c046e56a21798c8ed4ec9afc5a5",
+  "checks": {
+    "a1owDecode": {
+      "proofPath": "design/terrain-current-profile-20261007/evidence/a1ow-v2-independent-review/independent-a1ow-v2-current-dq-20261013-water-r2-runtime-source-review-r1.json",
+      "proofSha256": "108742acf7da29409a2f4abdf14cb485a90a29a4b9e88c8d21dde2e3eba3a4bd",
+      "result": "PASS"
+    },
+    "chunkBoundaries": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/water-r2-final-20261013/independent-final-r2-output-review.md",
+      "proofSha256": "edf7ef282db1405ea31c77f831c63c5acdb2b7f9d9358fa9fc13d6e3e4743b4e",
+      "result": "PASS"
+    },
+    "cleanRegeneration": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/water-r2-final-20261013/regeneration-comparison.json",
+      "proofSha256": "a8e3c11e959bd8d03a1952ca8fa27b2364e9a9938266055de8dcfa41b6f246f2",
+      "result": "PASS"
+    },
+    "collisionDecode": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/water-r2-final-20261013/final-r2-safe-cell-clearance-review.json",
+      "proofSha256": "a8b5ed56b328d37cdee8ba46e8738015f8e3e6d9ece5ece2466c3ee8ffbe5693",
+      "result": "PASS"
+    },
+    "currentGuard": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/water-r2-runtime-repair-20261013/independent-partial-water-r2-runtime-review-20261013.md",
+      "proofSha256": "584834de2e286386a38bf996fc738cce1140482385a01d48bfe29684ebe9212d",
+      "result": "PASS"
+    },
+    "decodedPixels": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/water-r2-final-20261013/independent-final-r2-output-review.md",
+      "proofSha256": "edf7ef282db1405ea31c77f831c63c5acdb2b7f9d9358fa9fc13d6e3e4743b4e",
+      "result": "PASS"
+    },
+    "globalCropReconstruction": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/water-r2-final-20261013/independent-final-r2-output-review.md",
+      "proofSha256": "edf7ef282db1405ea31c77f831c63c5acdb2b7f9d9358fa9fc13d6e3e4743b4e",
+      "result": "PASS"
+    },
+    "heroFrameClearance": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/water-r2-final-20261013/final-r2-safe-cell-clearance-review.json",
+      "proofSha256": "a8b5ed56b328d37cdee8ba46e8738015f8e3e6d9ece5ece2466c3ee8ffbe5693",
+      "result": "PASS"
+    },
+    "renderedReview": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/water-r2-final-20261013/independent-final-r2-output-review.md",
+      "proofSha256": "edf7ef282db1405ea31c77f831c63c5acdb2b7f9d9358fa9fc13d6e3e4743b4e",
+      "result": "PASS"
+    },
+    "runtimeInvariants": {
+      "proofPath": "design/terrain-current-profile-20261007/evidence/runtime-invariants-static-water-r2-runtime-r1.json",
+      "proofSha256": "5586906e021e1938cfaf77de9eb955bead32ee5eebd3cd19d1c4f08bd0cc3037",
+      "result": "PASS"
+    },
+    "safeCells": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/water-r2-final-20261013/final-r2-safe-cell-clearance-review.json",
+      "proofSha256": "a8b5ed56b328d37cdee8ba46e8738015f8e3e6d9ece5ece2466c3ee8ffbe5693",
+      "result": "PASS"
+    },
+    "sourceResourceClosure": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/water-r2-final-20261013/independent-final-r2-output-review.md",
+      "proofSha256": "edf7ef282db1405ea31c77f831c63c5acdb2b7f9d9358fa9fc13d6e3e4743b4e",
+      "result": "PASS"
+    },
+    "underpaintPhase": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/water-r2-runtime-rebind-20261013/underpaint-phase-preservation-water-r2-runtime-r1.json",
+      "proofSha256": "b3c7ccb923c551820a3a9f8467bfa2992f64e4f90bbad83fe3a7482730fa8e37",
+      "result": "PASS"
+    },
+    "visibleAlpha": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/water-r2-final-20261013/north-qok-final18-union-review.json",
+      "proofSha256": "3090babc684217ebecd145888be2b7df5c99f1c5d92c505b62acb3f13d5d1de7",
+      "result": "PASS"
+    }
+  },
+  "claim": "Independent static QA-preparation review of the metadata-only runtime rebind for the approved final-r2 terrain output. Verified the current DQ/A1OW source identity, exact authoring and generated-output inventories, and the two clean rebind outputs: 494 paths in each run, 493 unchanged payload files, and only the profile manifest changed. The bound final-r2 art, water/contact alpha, collision/QOK, crop review, and safe-cell proofs remain byte-identical to the previously reviewed source/output evidence. This is preparation only.",
+  "generatedOutputInventorySha256": "a7bca0bf81558f2c2ebbae565eafff7f1bcbd8b71f030496db3c88573c8486d9",
+  "integrationRecheck": {
+    "a1owSourceIdentitySha256": "108742acf7da29409a2f4abdf14cb485a90a29a4b9e88c8d21dde2e3eba3a4bd",
+    "allAandBInventoryBytesAndPathsEqual": true,
+    "allOtherOutputBytesUnchanged": true,
+    "changedOutputPaths": [
+      "act1-hifi/manifest.json"
+    ],
+    "collisionUnionAlphaSha256": "0baf807bfd429b8ae945439c62c23610fcf62ae0fa6eeae01dcbf5c7d468fae7",
+    "currentDqSha256": "ca2447a5e816455e1f2441687d01839e1cce8192df9f116f486de0aff98fc5df",
+    "emittedOutputInventorySha256": "a7bca0bf81558f2c2ebbae565eafff7f1bcbd8b71f030496db3c88573c8486d9",
+    "finalR2CollisionSha256": "a0d08d9d1bae329355f9c44b60d6b3484f5e00717386d7d99cd4a8f309d6307e",
+    "generatorSha256": "bb2a8fa9f00b5ea69603132bfb72d6d3032e21e778be747710552e8c543be911",
+    "manifestSha256": "b13ba107d926ff924d45a59f3b5d6dd1ec14234249dabfb64655ce6f6fc1ac0a",
+    "metadataOnlyComparisonPath": "design/terrain-current-profile-20261007/review-evidence/water-r2-runtime-rebind-20261013/metadata-only-rebind-comparison-water-r2-runtime-r1.json",
+    "metadataOnlyComparisonSha256": "d7752c1ae67c7559afc3e84ee910d0865626702c110220d167d9ae021f94c1e8",
+    "metadataOnlyComparisonStatus": "PASS",
+    "outputPathCountPerRun": 494,
+    "outputReceiptSha256": "a567b7bb838853cee973fb7186c4c5dcd5e50a43692c93a1bfaeff79f2b7cb27",
+    "safeCellCount": 149,
+    "safeCellQokHits": {
+      "g3": 0,
+      "male": 0
+    },
+    "staticOnly": true,
+    "unchangedOutputCount": 493,
+    "unchangedOutputInventorySha256": "a85a3d48b21cff83f949e98d1b51ef76d958bf7da0955a1c759e98aeac215776",
+    "unionPackedBitsSha256": "72558e1a7605850a657d32b52c5c49ad7d07a6f83ec3069bdfeaba1956e43b3d"
+  },
+  "limitations": [
+    "QA preparation only: gateReady and releaseEligible remain false.",
+    "No app runtime, native collision/movement, simulator, device, route, TestFlight, or release acceptance is established.",
+    "Generated terrain payloads and static rendered-output evidence are reused from the reviewed final-r2 proof because the metadata-only rebind changed only manifest.json; no new terrain render or crop review is claimed.",
+    "Profile test outcome is author-reported and not represented as reviewer-run."
+  ],
+  "profileId": "act1-forward-20261007-v1",
+  "result": "QA_PREPARATION_PASS",
+  "reviewerRole": "independent",
+  "runner": {
+    "path": "design/terrain-current-profile-20261007/review-tools/recompute_forward_outputs.py",
+    "sha256": "2017b4a00aeb7cc82054c8afa56b731c58d2a57578b27d5f55894c05f076e0eb",
+    "version": "pinned-forward-output-recomputation-v1"
+  },
+  "schema": "qok-forward-preparation-receipt-v1",
+  "toolingReview": {
+    "independentA1owSourceIdentityPath": "design/terrain-current-profile-20261007/evidence/a1ow-v2-independent-review/independent-a1ow-v2-current-dq-20261013-water-r2-runtime-source-review-r1.json",
+    "independentA1owSourceIdentitySha256": "108742acf7da29409a2f4abdf14cb485a90a29a4b9e88c8d21dde2e3eba3a4bd",
+    "independentOutputReviewPath": "design/terrain-current-profile-20261007/review-evidence/water-r2-final-20261013/independent-final-r2-output-review.md",
+    "independentOutputReviewSha256": "edf7ef282db1405ea31c77f831c63c5acdb2b7f9d9358fa9fc13d6e3e4743b4e",
+    "independentRuntimeSourceReviewPath": "design/terrain-current-profile-20261007/review-evidence/water-r2-runtime-repair-20261013/independent-partial-water-r2-runtime-review-20261013.md",
+    "independentRuntimeSourceReviewSha256": "584834de2e286386a38bf996fc738cce1140482385a01d48bfe29684ebe9212d",
+    "profileTests": "author-reported 34 passed; not rerun by reviewer"
+  }
+}

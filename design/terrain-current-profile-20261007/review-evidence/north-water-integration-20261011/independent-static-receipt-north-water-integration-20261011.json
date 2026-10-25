@@ -1,0 +1,118 @@
+{
+  "schema": "qok-forward-preparation-receipt-v1",
+  "profileId": "act1-forward-20261007-v1",
+  "result": "QA_PREPARATION_PASS",
+  "reviewerRole": "independent",
+  "authoringInputInventorySha256": "61e85e0758b392e31da340291602daba6ceb686242dfcac0b33a49c9557591a9",
+  "generatedOutputInventorySha256": "a8ce343569702f1ecadeb49595b478dba406a3c0a6ccf4ff30c7fb0bb013629a",
+  "checks": {
+    "a1owDecode": {
+      "proofPath": "design/terrain-current-profile-20261007/evidence/a1ow-v2-independent-review/independent-a1ow-v2-integration-review-20261011.json",
+      "proofSha256": "da89d9f50d78beb45555f299eb83ce11516ad627052480a111eb0b35fc36cef1",
+      "result": "PASS"
+    },
+    "chunkBoundaries": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/north-perimeter-repair-20261010/independent-full-generation-output-review-20261010.md",
+      "proofSha256": "efdeaf0227fa2d2fc5a701bc1cf3b87b1938212bb43f8f597446165f07dbe701",
+      "result": "PASS"
+    },
+    "cleanRegeneration": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/north-perimeter-repair-20261010/regeneration-comparison.json",
+      "proofSha256": "36648d40429a70e9c74eb899c7de46b3b6463b9a1df05dd32b86dde307342a40",
+      "result": "PASS"
+    },
+    "collisionDecode": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/north-perimeter-repair-20261010/independent-final-review.md",
+      "proofSha256": "04695c926adbf1c0135ac5c87e28815bc7e27c953e89fa85f1e5f4383b670ffa",
+      "result": "PASS"
+    },
+    "currentGuard": {
+      "proofPath": "design/terrain-current-profile-20261007/evidence/runtime-invariants-static.json",
+      "proofSha256": "19f7311cc229f99b2c1fd7be4eb548cf38593580bddce82a36c84a970e21d293",
+      "result": "PASS"
+    },
+    "decodedPixels": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/north-perimeter-repair-20261010/generated-output-audit.json",
+      "proofSha256": "80f825c0730771605bef9b3fd61c381d24a56404941c570274dc2e9ca6aefb68",
+      "result": "PASS"
+    },
+    "globalCropReconstruction": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/north-perimeter-repair-20261010/independent-full-generation-output-review-20261010.md",
+      "proofSha256": "efdeaf0227fa2d2fc5a701bc1cf3b87b1938212bb43f8f597446165f07dbe701",
+      "result": "PASS"
+    },
+    "heroFrameClearance": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/north-perimeter-repair-20261010/independent-clearance-result.json",
+      "proofSha256": "eaead2c2d1d04b127379e26d04e40a6d8de7d9dc09da679dd50edde1fb4e7db6",
+      "result": "PASS"
+    },
+    "renderedReview": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/north-perimeter-repair-20261010/independent-full-generation-output-review-20261010.md",
+      "proofSha256": "efdeaf0227fa2d2fc5a701bc1cf3b87b1938212bb43f8f597446165f07dbe701",
+      "result": "PASS"
+    },
+    "runtimeInvariants": {
+      "proofPath": "design/terrain-current-profile-20261007/evidence/runtime-invariants-static.json",
+      "proofSha256": "19f7311cc229f99b2c1fd7be4eb548cf38593580bddce82a36c84a970e21d293",
+      "result": "PASS"
+    },
+    "safeCells": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/north-perimeter-repair-20261010/independent-final-review.md",
+      "proofSha256": "04695c926adbf1c0135ac5c87e28815bc7e27c953e89fa85f1e5f4383b670ffa",
+      "result": "PASS"
+    },
+    "sourceResourceClosure": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/north-perimeter-repair-20261010/independent-full-generation-output-review-20261010.md",
+      "proofSha256": "efdeaf0227fa2d2fc5a701bc1cf3b87b1938212bb43f8f597446165f07dbe701",
+      "result": "PASS"
+    },
+    "underpaintPhase": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/north-perimeter-repair-20261010/independent-full-generation-output-review-20261010.md",
+      "proofSha256": "efdeaf0227fa2d2fc5a701bc1cf3b87b1938212bb43f8f597446165f07dbe701",
+      "result": "PASS"
+    },
+    "visibleAlpha": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/north-perimeter-repair-20261010/independent-final-review.md",
+      "proofSha256": "04695c926adbf1c0135ac5c87e28815bc7e27c953e89fa85f1e5f4383b670ffa",
+      "result": "PASS"
+    }
+  },
+  "claim": "Independent static QA-preparation review only. Current water-backing DQ source, full-schema A1OW-v2 integration proof, metadata-only rebind, current guard and runtime invariants are bound below. Six native groups and eleven dynamic assertions remain pending; releaseEligible=false.",
+  "runner": {
+    "path": "design/terrain-current-profile-20261007/review-tools/recompute_forward_outputs.py",
+    "sha256": "2017b4a00aeb7cc82054c8afa56b731c58d2a57578b27d5f55894c05f076e0eb",
+    "version": "forward-static-recompute-review-v4-whole-rock-a1ow-v2"
+  },
+  "integrationRecheck": {
+    "schema": "north-water-static-closure-review-v1",
+    "currentDqSha256": "04cb7bc6caae81a2e6cc61dbbf004a0876b5b9cd686f6f05ac16fd01b98e2c27",
+    "a1owIntegrationProofPath": "design/terrain-current-profile-20261007/evidence/a1ow-v2-independent-review/independent-a1ow-v2-integration-review-20261011.json",
+    "a1owIntegrationProofSha256": "da89d9f50d78beb45555f299eb83ce11516ad627052480a111eb0b35fc36cef1",
+    "a1owBinarySha256": "00a520ae09089547ca4af4ef1077b84acdad98d4989de238f3ee30e28ad092c6",
+    "a1owHeaderBytes": 96,
+    "a1owBodySha256": "05be9638d04a692668c3a1c8b4bd3d809216bcede2e090a74a0712cb5467498c",
+    "a1owSupportSha256": "eeaf65c08cda239ea8755a3af0026ed0ca61e19a2683cafc10610b5c4027914a",
+    "a1owSupportFNV32": 4271507709,
+    "bakerSha256": "8f172f77de9ccddebafd0d742a13fdc22d5258c652eacf5df5b0ba5d25c9eb2b",
+    "mapProofSha256": "a9fecf54db9de1f18a1f26c3f74b1bab9be230a247076e10580859e7074ab212",
+    "metadataRebindComparisonPath": "/private/tmp/edu-rpg-build83-paint-audit-20261005/native-whole-rock-20261008/north-water-integration-20261011/metadata-only-rebind-comparison.json",
+    "metadataRebindComparisonSha256": "155423dd88c391697caf4b2f2447069d4755539791cd5cbd3c36a63697dc6bc9",
+    "outputReceiptSha256": "13a7bbcd04cb4e257feb8c4575bcb90defef43a8137bbd9a150c5ea2b976218a",
+    "manifestSha256": "761f954f194b71478ec74c820b76e7fc51cb290d37d5df57d47e631a3ed61fac",
+    "generatedOutputRows": 493,
+    "changedOutputPaths": [
+      "public/act1-hifi/manifest.json"
+    ],
+    "unchangedOutputRows": 492,
+    "allABBytesEqual": true,
+    "currentGuardAndRuntimeInvariantsSha256": "19f7311cc229f99b2c1fd7be4eb548cf38593580bddce82a36c84a970e21d293",
+    "sourceGeneratedOutputInventorySha256": "a8ce343569702f1ecadeb49595b478dba406a3c0a6ccf4ff30c7fb0bb013629a",
+    "descriptorSha256": "9b31585141533d9fc3a2c49e8fbd17a3da52b381ecd75d293d8b0f2a78e44750",
+    "generatorSha256": "d27419c3acd12b29978edbb1ff66fc9e5fdaab0387e046ab96e5ad636085c52b",
+    "approvedLegacyPlateTestSha256": "ee4fa6c2988a1b54e0671f4cc7498cd3251c22b8c7ec5678f59e0e9c6b819a55"
+  },
+  "limitations": [
+    "Static source and output only; no native runtime, phone/tablet, TestFlight, or gameplay movement claim.",
+    "Route audit remains inconclusive; prior static route evidence does not establish all-route connectivity."
+  ]
+}

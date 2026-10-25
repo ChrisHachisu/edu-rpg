@@ -1,0 +1,52 @@
+{
+  "a1owBytesUnchanged": true,
+  "a1owSha256": "00a520ae09089547ca4af4ef1077b84acdad98d4989de238f3ee30e28ad092c6",
+  "all493UnchangedRowsMatchPriorPinnedReceipt": true,
+  "allAandBInventoryBytesAndPathsEqual": true,
+  "allAandBOutputFilesMatchTheirReceipts": true,
+  "allCurrentGeneratedOutputFilesMatchCurrentReceipt": true,
+  "changedOutputPaths": [
+    "act1-hifi/manifest.json"
+  ],
+  "collisionBytesUnchanged": true,
+  "collisionSha256": "a0d08d9d1bae329355f9c44b60d6b3484f5e00717386d7d99cd4a8f309d6307e",
+  "currentDqTilesSha256": "6a605a8f0d7d2513871c9b8e5a18f30fa7a403ee2ec0e42a4f1646d2e4d5da1d",
+  "currentManifestSha256": "931240cf16decc0ad17f225b0baeabbf2ca8dcecd0b9342056fc1b76a0d69707",
+  "currentReceipt": {
+    "bytes": 182569,
+    "path": "design/terrain-current-profile-20261007/evidence/output-receipt.json",
+    "sha256": "f3c7ebb1cd3471480e7564584dcb0a36812b4654a67ae86bea1e4ec76a3aa0df"
+  },
+  "gateReady": false,
+  "generationAReceipt": {
+    "bytes": 182569,
+    "path": "/private/tmp/edu-rpg-build84-feedback-20261013/native-remaining-gate-20261015/cave-reentry-fix/metadata-plan/rebind-run/generation-a-output-receipt.json",
+    "sha256": "f3c7ebb1cd3471480e7564584dcb0a36812b4654a67ae86bea1e4ec76a3aa0df"
+  },
+  "generationBReceipt": {
+    "bytes": 182569,
+    "path": "/private/tmp/edu-rpg-build84-feedback-20261013/native-remaining-gate-20261015/cave-reentry-fix/metadata-plan/rebind-run/generation-b-output-receipt.json",
+    "sha256": "f3c7ebb1cd3471480e7564584dcb0a36812b4654a67ae86bea1e4ec76a3aa0df"
+  },
+  "generatorSha256": "831d69a18ec3504578a380c322117baeca853c79538ca290d2471f2471c11705",
+  "metadataComparison": {
+    "bytes": 2443,
+    "path": "/private/tmp/edu-rpg-build84-feedback-20261013/native-remaining-gate-20261015/cave-reentry-fix/metadata-plan/rebind-run/metadata-only-rebind-comparison.json",
+    "sha256": "5ac149f7b9040c6e82edb651efc99082d48632c93a06a80ee97818b15d201cfb"
+  },
+  "nativeVerified": false,
+  "outputCountPerRun": 494,
+  "priorReceipt": {
+    "bytes": 182617,
+    "path": "/private/tmp/edu-rpg-build84-feedback-20261013/native-remaining-gate-20261015/cave-reentry-fix/metadata-plan/baseline-snapshots/output-receipt.json",
+    "sha256": "a567b7bb838853cee973fb7186c4c5dcd5e50a43692c93a1bfaeff79f2b7cb27"
+  },
+  "releaseEligible": false,
+  "reviewedAt": "2026-10-15",
+  "reviewerRole": "independent",
+  "schema": "independent-forward-source-resource-closure-v1",
+  "scope": "Source and output artifact closure for QA preparation. The current DQ/generator provenance changed the single generated manifest; geometry/art/collision/A1OW output payloads remain bound by exact receipts. No installed-app or native behavior claim.",
+  "semanticManifestUnchangedSha256": "c6d69d659ea4e82b09feabae624c2cbd4406627405bb389a36547bd44cc4183f",
+  "status": "PASS_METADATA_ONLY_STATIC_OUTPUT_CLOSURE",
+  "unchangedOutputCount": 493
+}

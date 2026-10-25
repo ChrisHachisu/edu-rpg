@@ -166,6 +166,7 @@ const townId = search.get('town') || 'portSapphire';
 // Parent chrome (control orientation + the REAL safe-area insets). See adapter.js
 // postTownChrome(): env() cannot be trusted inside this iframe, so the parent measures and
 // posts. Registered before the awaits below so nothing is missed while the town loads.
+let townInputReady = false;
 addEventListener('message', event => {
   const d = event.data;
   if (!d || d.type !== 'act1-town-chrome' || event.source !== parent) return;
@@ -180,7 +181,10 @@ addEventListener('message', event => {
   // button sitting on top of it (OWNER, build 67: "the joy stick and the interaction button needs
   // to be hidden whenever a text box shows up (this does not happen with key npcs)"). The parent
   // already knows; it just never said so.
+  const wasBlocked = document.body.dataset.parentDialogue === 'true' || document.body.dataset.parentInputBlocked === 'true';
   document.body.dataset.parentDialogue = d.dialogue ? 'true' : 'false';
+  document.body.dataset.parentInputBlocked = d.inputBlocked ? 'true' : 'false';
+  if (wasBlocked || d.dialogue || d.inputBlocked) resetTownInput();
 });
 
 const [locks, town] = await Promise.all([
@@ -223,10 +227,26 @@ const loadImage = src => new Promise((resolve, reject) => {
 // tall/overhead props (mast, demijohn, rooftop chimney) so they can draw AFTER the hero/NPC sort
 // below and occlude her -- see scripts/derive_town_foreground.py and OWNER 2026-08-13/14,
 // "draw over the hero AND be passable".
+// Match hero-override.js selection precedence in the parent game. The adapter's iframe
+// URL carries town/facing, not the parent's hero query or game state. Read the same-origin
+// parent explicitly; standalone review pages use themselves. Retired variants stay rejected.
+function selectedTownHeroVariant() {
+  let host = window;
+  try { if (window.parent !== window && window.parent.location.origin === location.origin) host = window.parent; } catch (e) {}
+  const accepted = v => v === 'g3' || v === 'male';
+  try { const forced = new URLSearchParams(host.location.search).get('hero'); if (accepted(forced)) return forced; } catch (e) {}
+  try { const saved = host.localStorage.getItem('edu-rpg-hero-variant'); if (accepted(saved)) return saved; } catch (e) {}
+  try { const saved = host.__GAME_STATE__?.player?.heroVariant; if (accepted(saved)) return saved; } catch (e) {}
+  return 'g3';
+}
+const heroVariant = selectedTownHeroVariant();
+const heroSource = heroVariant === 'male'
+  ? './hero-g3/hero-act1-male-walk-8x3-64-g3.png'
+  : './hero-g3/hero-act1-female-walk-8x3-64-g3.png';
 const [screenArt, foregroundArt, heroSheet, ...npcSheets] = await Promise.all([
   loadImage(`./${town.screen}`),
   town.foreground ? loadImage(`./${town.foreground}`).catch(() => null) : Promise.resolve(null),
-  loadImage('./hero-g3/hero-act1-female-walk-8x3-64-g3.png'),
+  loadImage(heroSource),
   ...town.npcs.map(n => loadImage(`./${n.sheet}`)),
 ]);
 // Where that cropped foreground sits on the plate. Absent or unreadable -> the layer is skipped
@@ -253,6 +273,11 @@ const WORLD = town.cells * CELL_W;                     // 1040 world px square
 const HERO_H = locks.heroWorldHeight;                  // 36
 const VIEW_W = locks.cameraWorldWidth;                 // 208
 const SPEED = walkable.movement?.movementSpeed ?? 52;  // world px / second
+// Collision is owned by the foot disc, but the painted actor is wider than that disc. At a real
+// horizontal map edge, let the camera reveal only the difference so the actor stays visible while
+// her feet can still reach the geometry boundary. This exposes the existing map-end background;
+// it does not translate the hero or add a second collision wall inside the painting.
+const HERO_EDGE_REVEAL_X = Math.max(0, HERO_H / 2 - (walkable.actorFootRadius ?? 0));
 const cellToWorld = c => ({ x: c[0] * CELL_W, y: c[1] * CELL_W });
 
 // NPC sheets are 3 cols x 4 rows of 64. The owner made these stationary, so only column 0 /
@@ -317,6 +342,16 @@ addEventListener('resize', () => { resize(); Object.assign(camera, cameraTarget(
 resize();
 
 // ---- input ------------------------------------------------------------------------------------
+function movementBlocked() {
+  return Boolean(talking) || document.body.dataset.parentDialogue === 'true'
+    || document.body.dataset.parentInputBlocked === 'true';
+}
+function resetTownInput() {
+  if (!townInputReady) return;
+  held.clear(); touchVec = { x: 0, y: 0 };
+  if (padId !== null && pad.hasPointerCapture?.(padId)) pad.releasePointerCapture(padId);
+  padId = null; knob.style.transform = '';
+}
 const held = new Set();
 const KEY = { ArrowLeft:'left', a:'left', A:'left', ArrowRight:'right', d:'right', D:'right',
               ArrowUp:'up', w:'up', W:'up', ArrowDown:'down', s:'down', S:'down' };
@@ -324,7 +359,7 @@ let touchVec = { x: 0, y: 0 };
 addEventListener('keydown', e => {
   if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); interact(); return; }
   const dir = KEY[e.key];
-  if (dir) { held.add(dir); e.preventDefault(); }
+  if (dir) { if (!e.repeat && !movementBlocked()) held.add(dir); e.preventDefault(); }
 });
 addEventListener('keyup', e => { const d = KEY[e.key]; if (d) held.delete(d); });
 // Touch route into interact(). `pointerdown` rather than `click` so it answers on contact like
@@ -348,7 +383,9 @@ addEventListener('pointerdown', e => {
   dialogueEl.dataset.open = 'false';
 }, true);
 let padId = null;
+townInputReady = true;
 pad.addEventListener('pointerdown', e => {
+  if (movementBlocked()) return;
   padId = e.pointerId; pad.setPointerCapture(e.pointerId); movePad(e);
 });
 pad.addEventListener('pointermove', e => { if (e.pointerId === padId) movePad(e); });
@@ -359,6 +396,7 @@ const endPad = e => {
 pad.addEventListener('pointerup', endPad);
 pad.addEventListener('pointercancel', endPad);
 function movePad(e) {
+  if (movementBlocked()) { resetTownInput(); return; }
   const r = pad.getBoundingClientRect();
   const dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2);
   // -22 rather than -12: same knob travel as the parent stick, which is now the same size.
@@ -403,9 +441,12 @@ const startCell = atParam.length === 2 && atParam.every(Number.isFinite)
   ? atParam : (firstEntry ? town.firstEntryCell : town.startCell);
 let position = cellToWorld(startCell);
 if (!isInsideWalkable(position, walkable)) {
-  // Never start outside the collision authority: constrainWalkableMovement throws if you do,
-  // and a town that boots into an exception is worse than one that boots a few cells north.
-  const probe = [...Array(80)].map((_, i) => ({ x: position.x, y: position.y - i * 4 }));
+  // A malformed, stale, or blocked saved `?at=` must not make the town fail to boot. First return
+  // to the authored spawn for this kind of entry, then use the old northward probe as its final
+  // guard. Never start outside the full-foot collision authority: constrainWalkableMovement throws
+  // if it receives such a point.
+  const authoredStart = cellToWorld(firstEntry ? town.firstEntryCell : town.startCell);
+  const probe = [authoredStart, ...[...Array(80)].map((_, i) => ({ x: authoredStart.x, y: authoredStart.y - i * 4 }))];
   const found = probe.find(p => isInsideWalkable(p, walkable));
   if (!found) throw new Error('start cell is outside the walkable geometry and no fallback found');
   position = found;
@@ -458,6 +499,14 @@ const exitCell = town.exit?.cell ?? town.startCell;
 // does not read pixels), so a player who somehow stopped inside the void is not stuck.
 const EDGE_MARGIN = 1.0;
 const FADE_CELLS = 1.5;
+// Horizontal camera overscan keeps the hero's full sprite visible at a legal map-edge foot
+// position. Fade the final painted strip into the same void colour already used beyond town
+// mouths, so revealing that overscan never exposes a hard artwork-to-background seam. This is
+// painted before actors: the map ends softly while the hero remains fully legible on top.
+function horizontalEdgeFadeBounds(world = WORLD, fadeCells = FADE_CELLS, cellWidth = CELL_W) {
+  const span = Math.max(0, Math.min(world / 2, fadeCells * cellWidth));
+  return { leftEnd: span, rightStart: world - span };
+}
 // SCREEN FADE ON EXIT. The screen.transition token in design/GAME-FEEL.md is 300ms ease-in-out --
 // the same timing every other map/dungeon/battle transition in this game already uses -- so a town
 // exit now reads as the same KIND of event as any other map change, not a one-off cut. See #exitFade
@@ -521,6 +570,10 @@ function localised(key, fallback) {
 addEventListener('message', event => {
   const data = event.data;
   if (!data) return;
+  if (data.type === 'act1-town-parent-dialogue' && event.source === parent) {
+    if (talking?.id === data.npc) { resetTownInput(); talking = null; dialogueEl.dataset.open = 'false'; }
+    return;
+  }
   if (data.type === 'act1-town-strings' && data.strings) {
     for (const [k, v] of Object.entries(data.strings)) strings.set(k, v);
     if (talking) showDialogue(localised(talking.nameKey, talking.name || talking.id),
@@ -566,11 +619,8 @@ function interact() {
   }
   if (!npc) return;
   talking = npc;
-  // Paint the bundled English immediately so there is never an empty box, then ask the parent
-  // for the real localised strings. The shipped bundle owns i18n (`window.__QOK.Z`); this frame
-  // must not carry a second, drifting copy of the translations.
-  showDialogue(localised(npc.nameKey, npc.name || npc.id),
-               localised(npc.dialogueKey, npc.text || `(${npc.dialogueKey})`));
+  // Wait for the parent to choose engine dialogue or the legacy text fallback. Painting a
+  // greeting here would briefly stack it with the quest dialogue opened by the parent.
   parent.postMessage({ type: 'act1-town-interact', town: town.id, npc: npc.id,
                        dialogueKey: npc.dialogueKey, nameKey: npc.nameKey }, '*');
 }
@@ -631,6 +681,25 @@ function draw(time) {
     ctx.fillStyle = '#02060a';
     ctx.fillRect(0, 0, WORLD, Math.max(0, Math.min(voidStart, fadeEnd)));
   }
+  // ---- horizontal map-edge fade ---------------------------------------------------------------
+  // The painting has no pixels outside [0,WORLD]. The camera may reveal HERO_EDGE_REVEAL_X world
+  // units beyond either side solely to keep the actor sprite visible, so blend the existing edge
+  // pixels to the already-painted void rather than stretching or inventing terrain.
+  const { leftEnd, rightStart } = horizontalEdgeFadeBounds();
+  if (leftEnd > 0) {
+    const leftGrad = ctx.createLinearGradient(0, 0, leftEnd, 0);
+    leftGrad.addColorStop(0, '#02060a');
+    leftGrad.addColorStop(1, 'rgba(2,6,10,0)');
+    ctx.fillStyle = leftGrad;
+    ctx.fillRect(0, 0, leftEnd, WORLD);
+  }
+  if (rightStart < WORLD) {
+    const rightGrad = ctx.createLinearGradient(rightStart, 0, WORLD, 0);
+    rightGrad.addColorStop(0, 'rgba(2,6,10,0)');
+    rightGrad.addColorStop(1, '#02060a');
+    ctx.fillStyle = rightGrad;
+    ctx.fillRect(rightStart, 0, WORLD - rightStart, WORLD);
+  }
   // Painter's order by foot Y, so a character in front of a building overlaps correctly.
   const actors = [...npcs.map(n => ({ y: n.point.y, draw: () =>
       drawActor(n.sheet, n.point, 0, 0, NPC_FRAME, time, false) })),
@@ -668,11 +737,15 @@ function draw(time) {
 // on the first frame is wrong twice: the player would see the town pan in from its corner, and
 // a paused rAF (a backgrounded tab, which is exactly how the verification harness loads this)
 // leaves the view stuck wherever the ease got to.
+function cameraAxisTarget(center, viewport, zoom, world, edgeReveal = 0) {
+  const view = viewport / zoom;
+  return Math.max(-edgeReveal, Math.min(world + edgeReveal - view, center - view / 2));
+}
 function cameraTarget() {
   const width = canvas.clientWidth, height = canvas.clientHeight;
   return {
-    x: Math.max(0, Math.min(WORLD - width / camera.zoom, position.x - width / (2 * camera.zoom))),
-    y: Math.max(0, Math.min(WORLD - height / camera.zoom, position.y - height / (2 * camera.zoom))),
+    x: cameraAxisTarget(position.x, width, camera.zoom, WORLD, HERO_EDGE_REVEAL_X),
+    y: cameraAxisTarget(position.y, height, camera.zoom, WORLD),
   };
 }
 Object.assign(camera, cameraTarget());
@@ -688,7 +761,7 @@ function frame(now) {
   // `{x:0, y:EXIT_SIGN}` is exactly "more outward", the same sign convention the crossing test
   // itself uses. constrainWalkableMovement still runs on this input below, same as any other step,
   // so she cannot be walked off the walkable authority even while forced.
-  const input = talking ? { x: 0, y: 0 } : exiting ? { x: 0, y: EXIT_SIGN } : inputVector();
+  const input = movementBlocked() ? { x: 0, y: 0 } : exiting ? { x: 0, y: EXIT_SIGN } : inputVector();
   state.moving = Boolean(input.x || input.y);
   if (state.moving) {
     state.facing = Math.abs(input.x) > Math.abs(input.y)
@@ -770,7 +843,13 @@ function frame(now) {
 document.body.dataset.ready = 'true';
 document.body.dataset.town = town.id;
 document.body.dataset.heroSheet = `${heroSheet.naturalWidth}x${heroSheet.naturalHeight}`;
+document.body.dataset.heroVariant = heroVariant;
+document.body.dataset.heroSource = heroSource;
 window.__ACT1_TOWN__ = { town, walkable, npcs, state, interact, nearestNpc, nearestService,
+  // The parent reads this at the native save boundary. It is deliberately the same polygon
+  // authority used by constrainWalkableMovement, so a stale or forged service message cannot
+  // persist a point outside the town's legal hero region.
+  isInsideWalkable: point => isInsideWalkable(point, walkable),
   exitState: () => ({ armed: exitArmed, exiting }),
   position: () => position, camera, locks };
 parent.postMessage({ type: 'act1-town-ready', town: town.id }, '*');

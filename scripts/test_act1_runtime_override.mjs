@@ -13,8 +13,28 @@ import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
 
 const assert = (condition, message) => { if (!condition) throw new Error(message); };
+const same = (actual, expected, message) => assert(
+  JSON.stringify(actual) === JSON.stringify(expected), message,
+);
+const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 const source = readFileSync(new URL('../public/act1-world-map.js', import.meta.url), 'utf8');
-const window = { __GAME_STATE__: { player: { state: { storyFlags: {} } } } };
+const window = {
+  __GAME_STATE__: { player: { state: { storyFlags: {} } } },
+  __DQ_TILES__: {
+    overworldSpace: {
+      cellCenter: x => (x + 0.5) * 48 * 0.7,
+      toCanonical: x => x / 0.7,
+    },
+    checkOverworldSpawn(scene, px, py) {
+      if (scene.spawnPending) return { status: 'pending', reason: 'fixture-pending' };
+      if (scene.spawnError) return { status: 'error', reason: 'fixture-error' };
+      const x = Math.floor(px / (48 * 0.7));
+      const y = Math.floor(py / (48 * 0.7));
+      if (typeof scene.spawnDecision === 'function') return scene.spawnDecision(x, y, px, py);
+      return { status: 'ready', free: scene.canMove(x, y) };
+    },
+  },
+};
 vm.runInNewContext(source, { window, Error, Math, parseInt, Object, JSON });
 const runtime = window.__ACT1_WORLD_MAP__;
 assert(runtime?.revision === 7, 'runtime override revision must be 7');
@@ -65,7 +85,7 @@ function makeScene(mapData, heroTileX = 69, heroTileY = 256) {
     tileGrid: [[{ displayWidth: 48 }]],
     heroTileX,
     heroTileY,
-    hero: { x: 0, y: 0 },
+    hero: { x: (heroTileX + 0.5) * 48 * 0.7, y: (heroTileY + 0.5) * 48 * 0.7 },
     transitionCooldown: 0,
     compassTarget: null,
     canMove(x, y) {
@@ -344,21 +364,27 @@ delete window.__GAME_STATE__.player.state.storyFlags['boss.giantToad.defeated'];
 
 assert(scene.minimapCalls === 0, 'DQ integration must remain the sole minimap-redraw owner');
 
-// A save stranded on what the paint turned into terrain must relocate onto walkable ground.
+// A save whose exact current collision authority rejects its sprite position must relocate to a
+// nearby candidate accepted by that same authority.
 const relocationMap = blankMap();
-const relocationScene = makeScene(
-  relocationMap, SHIPPED_DOORS.mistyGrotto.x, SHIPPED_DOORS.mistyGrotto.y);
+const relocationScene = makeScene(relocationMap, 117, 234);
+relocationScene.spawnDecision = (x, y) => x === 117 && y === 234
+  ? { status: 'ready', free: false }
+  : { status: 'ready', free: relocationScene.canMove(x, y) };
 assert(runtime.apply(relocationScene), 'new overworld map identity must receive the Act 1 plate');
 present(relocationScene);
-assert(relocationScene.heroTileX !== SHIPPED_DOORS.mistyGrotto.x
-  || relocationScene.heroTileY !== SHIPPED_DOORS.mistyGrotto.y, 'blocked old save must relocate');
+same([relocationScene.heroTileX, relocationScene.heroTileY], [112, 234],
+  'the rejected point must relocate to the nearest validated SAFE cell');
 assert(relocationScene.canMove(relocationScene.heroTileX, relocationScene.heroTileY),
   'relocated save must land on a walkable cell');
 assert(relocationMap[relocationScene.heroTileY][relocationScene.heroTileX] !== 3,
   'relocated save must not land inside forest');
+assert(Math.abs(relocationScene.hero.x - (112.5 * 48 * 0.7)) < 1e-6
+  && Math.abs(relocationScene.hero.y - (234.5 * 48 * 0.7)) < 1e-6,
+  'relocation must use the current physical overworld scale, not canonical 48px placement');
 assert(relocationScene.updatePositionCalls === 1 && relocationScene.updateCameraCalls === 1,
   'relocation must sync retained position and camera');
-assert(runtime.state.relocation?.from.x === SHIPPED_DOORS.mistyGrotto.x,
+assert(runtime.state.relocation?.from.x === 117,
   'relocation evidence must retain the invalid source coordinate');
 
 // Every relocation candidate has to be somewhere the hero can legally stand.
@@ -369,10 +395,98 @@ for (const candidate of [relocationScene.heroTileX, relocationScene.heroTileY]) 
 // A save already on walkable ground is left alone.
 const keptMap = blankMap();
 const keptScene = makeScene(keptMap, 69, 256);
+keptScene.hero.x += 0.25; // saved/continuous sub-tile positions must remain exact when legal
 assert(runtime.apply(keptScene), 'third map identity must receive the plate');
 present(keptScene);
 assert(keptScene.heroTileX === 69 && keptScene.heroTileY === 256,
   'a save already on walkable ground must not be moved');
+assert(Math.abs(keptScene.hero.x - ((69.5 * 48 * 0.7) + 0.25)) < 1e-6,
+  'a legal sub-tile sprite position must not be snapped to the cell center');
+
+// Both selected hero variants use the exact current hero stencil before a saved point is retained.
+for (const variant of ['g3', 'male']) {
+  const m = blankMap(), s = makeScene(m, 117, 234);
+  s.hero.variant = variant;
+  s.spawnDecision = (x, y) => ({ status: 'ready', free: x === 117 && y === 234 });
+  const before = { x: s.hero.x, y: s.hero.y };
+  runtime.apply(s);
+  same([s.heroTileX, s.heroTileY], [117, 234], `${variant} legal forest ground must be retained`);
+  assert(s.hero.x === before.x, `${variant} saved sprite X must be retained exactly`);
+  assert(s.hero.y === before.y, `${variant} saved sprite Y must be retained exactly`);
+  assert(runtime.state.relocation?.status === 'kept', `${variant} should finish a ready legal spawn check`);
+}
+
+// If a nearer SAFE point is still outside the collision authority's ready set, do not select a
+// farther legal-looking point. Re-evaluate after readiness and then use the first legal candidate.
+{
+  const m = blankMap(), s = makeScene(m, 104, 230), checks = [];
+  let candidateReady = false;
+  s.spawnDecision = (x, y) => {
+    checks.push([x, y]);
+    if (x === 104 && y === 230) return { status: 'ready', free: false };
+    if (x === 104 && y === 226) return candidateReady
+      ? { status: 'ready', free: false } : { status: 'pending', reason: 'nearer-candidate-not-ready' };
+    if (x === 104 && y === 234) return { status: 'ready', free: true };
+    return { status: 'ready', free: s.canMove(x, y) };
+  };
+  runtime.apply(s);
+  assert(runtime.state.relocation?.status === 'pending', 'unevaluable nearest candidate must defer relocation');
+  same([s.heroTileX, s.heroTileY], [104, 230], 'pending validation must not move the saved point');
+  same(checks.slice(0, 2), [[104, 230], [104, 226]], 'candidate evaluation must stop at the nearer unknown point');
+  await wait(410);
+  candidateReady = true;
+  runtime.ensurePlate(s, true);
+  same([s.heroTileX, s.heroTileY], [104, 234], 'after readiness, choose the first actually legal candidate');
+}
+
+// Missing authority defers; a terminal authority failure preserves the live point without a
+// coarse-tile fallback. Readiness retries are bound to the same scene/map and original position.
+{
+  const m = blankMap(), s = makeScene(m, 117, 234);
+  s.spawnDecision = (x, y) => ({ status: 'ready', free: x === 117 && y === 234 });
+  const check = window.__DQ_TILES__.checkOverworldSpawn;
+  window.__DQ_TILES__.checkOverworldSpawn = undefined;
+  const before = { x: s.hero.x, y: s.hero.y };
+  runtime.apply(s);
+  assert(runtime.state.relocation?.status === 'pending', 'missing DQ authority must remain pending');
+  assert(s.hero.x === before.x, 'missing authority must not cause a coarse relocation');
+  window.__DQ_TILES__.checkOverworldSpawn = check;
+  await wait(410);
+  runtime.ensurePlate(s, true);
+  same([s.heroTileX, s.heroTileY], [117, 234], 'ready legal position should be retained on retry');
+
+  const failedMap = blankMap(), failed = makeScene(failedMap, 117, 234);
+  failed.spawnError = true;
+  const failedBefore = { x: failed.hero.x, y: failed.hero.y };
+  runtime.apply(failed);
+  assert(runtime.state.relocation?.status === 'error', 'terminal readiness failure must be reported');
+  assert(failed.hero.x === failedBefore.x, 'terminal readiness failure must not teleport');
+  assert(failed.hero.y === failedBefore.y, 'terminal readiness failure must preserve Y');
+}
+
+// A pending result is cancelled if either the live sprite moves or its scene/map is replaced;
+// it can never apply the stale saved point after a later readiness event.
+{
+  const m = blankMap(), s = makeScene(m, 117, 234);
+  s.spawnPending = true;
+  runtime.apply(s);
+  const before = { x: s.hero.x, y: s.hero.y };
+  s.hero.x += 1;
+  await wait(410);
+  runtime.ensurePlate(s, true);
+  assert(runtime.state.pendingRelocation === null, 'position change must cancel stale pending relocation');
+  assert(runtime.state.relocation?.status === 'cancelled-position-changed');
+  assert(s.hero.x === before.x + 1, 'cancelled relocation must preserve the current live position');
+
+  const shared = blankMap(), oldScene = makeScene(shared, 117, 234), newScene = makeScene(shared, 69, 256);
+  oldScene.spawnPending = true;
+  runtime.apply(oldScene);
+  oldScene.spawnPending = false;
+  newScene.spawnPending = true;
+  runtime.apply(newScene);
+  assert(runtime.state.pendingRelocation?.scene === newScene, 'same mapData in a new scene must bind a fresh check');
+  same([newScene.heroTileX, newScene.heroTileY], [69, 256], 'scene replacement must not teleport from stale coordinates');
+}
 
 // ---------------------------------------------------------------------------------------------
 // Re-entry. Leaving a town gives the overworld a NEW mapData array under the SAME map id and

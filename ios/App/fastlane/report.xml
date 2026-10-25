@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="fastlane.lanes">
+    
+    
+    
+      
+      <testcase classname="fastlane.lanes" name="00: default_platform" time="0.00023">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="01: bash /Users/chris/.codex/workspaces/edu-rpg-forward-20261007/scripts/ship-gate.sh /Users/chris/.codex/workspaces/edu-rpg-forward-20261007 --terrain-profile act1-forward-20261007-v1 --release-identity /private/tmp/edu-rpg-build83-paint-audit-20261005/native-whole-rock-20261008/release-identity-water-signing-fix-20261012.json --identity-sha256 81f89c74a2423b7af46bc465f42315f730b7e3c84ed48fc680a91820996c1465 --terrain-evidence /private/tmp/edu-rpg-build83-paint-audit-20261005/native-whole-rock-20261008/release-evidence-water-signing-fix-20261012/release-evidence-envelope-signing-fix-20261012.json --terrain-evidence-sha256 1c3e201c8fb71aadcf7cd4ace5b87ed497c94ad5102623b5aad1587ce99873ea" time="12.339694">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="02: python3 /Users/chris/.codex/workspaces/edu-rpg-forward-20261007/scripts/verify_edu_rpg_release_identity.py candidate --root /Users/chris/.codex/workspaces/edu-rpg-forward-20261007 --identity /private/tmp/edu-rpg-build83-paint-audit-20261005/native-whole-rock-20261008/release-identity-water-signing-fix-20261012.json --identity-sha256 81f89c74a2423b7af46bc465f42315f730b7e3c84ed48fc680a91820996c1465 --terrain-profile act1-forward-20261007-v1 --terrain-evidence /private/tmp/edu-rpg-build83-paint-audit-20261005/native-whole-rock-20261008/release-evidence-water-signing-fix-20261012/release-evidence-envelope-signing-fix-20261012.json --terrain-evidence-sha256 1c3e201c8fb71aadcf7cd4ace5b87ed497c94ad5102623b5aad1587ce99873ea" time="3.201948">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="03: app_store_connect_api_key" time="0.024447">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="04: unlock_keychain" time="0.11854">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="05: cert" time="1.209927">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="06: security find-identity -v -p codesigning /Users/chris/Library/Keychains/cmbuild.keychain-db | grep &apos;Apple Distribution&apos; | head -1 | awk &apos;{print $2}&apos;" time="0.034885">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="07: security list-keychains -d user -s &apos;/Users/chris/Library/Keychains/cmbuild.keychain-db&apos; &apos;/Users/chris/Library/Keychains/login.keychain-db&apos;" time="0.014404">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="08: security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k &apos;cmbuild-local-throwaway&apos; &apos;/Users/chris/Library/Keychains/cmbuild.keychain-db&apos; &gt;/dev/null 2&gt;&amp;1; true" time="0.045804">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="09: sigh" time="4.73825">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="10: latest_testflight_build_number" time="1.344455">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="11: python3 /Users/chris/.codex/workspaces/edu-rpg-forward-20261007/scripts/verify_edu_rpg_release_identity.py candidate --root /Users/chris/.codex/workspaces/edu-rpg-forward-20261007 --identity /private/tmp/edu-rpg-build83-paint-audit-20261005/native-whole-rock-20261008/release-identity-water-signing-fix-20261012.json --identity-sha256 81f89c74a2423b7af46bc465f42315f730b7e3c84ed48fc680a91820996c1465 --terrain-profile act1-forward-20261007-v1 --terrain-evidence /private/tmp/edu-rpg-build83-paint-audit-20261005/native-whole-rock-20261008/release-evidence-water-signing-fix-20261012/release-evidence-envelope-signing-fix-20261012.json --terrain-evidence-sha256 1c3e201c8fb71aadcf7cd4ace5b87ed497c94ad5102623b5aad1587ce99873ea --expected-build 84" time="3.205244">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="12: update_code_signing_settings" time="0.080773">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="13: build_app" time="42.292455">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="14: python3 /Users/chris/.codex/workspaces/edu-rpg-forward-20261007/scripts/verify_edu_rpg_release_identity.py ipa --root /Users/chris/.codex/workspaces/edu-rpg-forward-20261007 --identity /private/tmp/edu-rpg-build83-paint-audit-20261005/native-whole-rock-20261008/release-identity-water-signing-fix-20261012.json --identity-sha256 81f89c74a2423b7af46bc465f42315f730b7e3c84ed48fc680a91820996c1465 --terrain-profile act1-forward-20261007-v1 --terrain-evidence /private/tmp/edu-rpg-build83-paint-audit-20261005/native-whole-rock-20261008/release-evidence-water-signing-fix-20261012/release-evidence-envelope-signing-fix-20261012.json --terrain-evidence-sha256 1c3e201c8fb71aadcf7cd4ace5b87ed497c94ad5102623b5aad1587ce99873ea --expected-team M969PWP3PU --expected-signing-identity D382B7935F12A79584A024F44AC8ABA413AB1FE9 --expected-profile app.chalkmap.questofknowledge\ AppStore\ 1791792783 --ipa /Users/chris/.codex/workspaces/edu-rpg-forward-20261007/ios/build/questofknowledge.ipa" time="6.311803">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="15: latest_testflight_build_number" time="1.38057">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="16: python3 /Users/chris/.codex/workspaces/edu-rpg-forward-20261007/scripts/verify_edu_rpg_release_identity.py ipa --root /Users/chris/.codex/workspaces/edu-rpg-forward-20261007 --identity /private/tmp/edu-rpg-build83-paint-audit-20261005/native-whole-rock-20261008/release-identity-water-signing-fix-20261012.json --identity-sha256 81f89c74a2423b7af46bc465f42315f730b7e3c84ed48fc680a91820996c1465 --terrain-profile act1-forward-20261007-v1 --terrain-evidence /private/tmp/edu-rpg-build83-paint-audit-20261005/native-whole-rock-20261008/release-evidence-water-signing-fix-20261012/release-evidence-envelope-signing-fix-20261012.json --terrain-evidence-sha256 1c3e201c8fb71aadcf7cd4ace5b87ed497c94ad5102623b5aad1587ce99873ea --expected-team M969PWP3PU --expected-signing-identity D382B7935F12A79584A024F44AC8ABA413AB1FE9 --expected-profile app.chalkmap.questofknowledge\ AppStore\ 1791792783 --ipa /Users/chris/.codex/workspaces/edu-rpg-forward-20261007/ios/build/questofknowledge.ipa" time="4.724821">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="17: upload_to_testflight" time="205.336594">
+        
+      </testcase>
+    
+  </testsuite>
+</testsuites>

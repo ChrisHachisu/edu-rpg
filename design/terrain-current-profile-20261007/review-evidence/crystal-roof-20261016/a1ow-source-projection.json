@@ -1,0 +1,216 @@
+{
+  "baselineSource": {
+    "bytes": 591893,
+    "path": "public/dq-tiles.js",
+    "sha256": "6a605a8f0d7d2513871c9b8e5a18f30fa7a403ee2ec0e42a4f1646d2e4d5da1d"
+  },
+  "baselineTail": {
+    "legacyReviewPath": "design/terrain-current-profile-20261007/review-evidence/cave-reentry-20261015/a1ow-source-equivalence.json",
+    "legacyReviewSha256": "a9e7ca02240613adf34d864016ef9f6083cd913a6b89eba54d22ade35aee2c55",
+    "scope": "normalized semantic tail of baseline DQ 6a605a8 only; not a current-tail identity",
+    "sha256": "7974f54097586584fb1d3a7fd2d3a483055ec52d4e2f2699581f46ec15256be9",
+    "sourceSchema": "a1ow-dq-source-equivalence-v1",
+    "waterNormalization": {
+      "exactAddedBytes": "a1aDropPlateWaterBacking(terrainState,scene); ",
+      "occurrences": 2,
+      "rule": "remove only the two exact water-backing cleanup call strings plus their preceding added spaces from current tail"
+    }
+  },
+  "claims": {
+    "nativeOrRenderedPassClaimed": false,
+    "wholeCollisionRuntimeTailIdentical": false
+  },
+  "currentSource": {
+    "bytes": 602923,
+    "distPath": "dist/dq-tiles.js",
+    "publicPath": "public/dq-tiles.js",
+    "sha256": "a7e267a5c2d2d1061af7f66956d82853b42f00c82c1f63baf043defbeb1b2a43",
+    "twinsByteIdentical": true
+  },
+  "functionProjections": {
+    "a1mFree": {
+      "baselineSha256": "c1bf0f36277a2d607254477ea4c9bf8519e8bd2ca1618641aa8a9d56e146345d",
+      "currentAfterCallRemovalSha256": "c1bf0f36277a2d607254477ea4c9bf8519e8bd2ca1618641aa8a9d56e146345d",
+      "equal": true,
+      "normalization": "remove only exact one-line cave call bytes from extracted a1mFree function"
+    },
+    "unchangedFunctions": {
+      "a1fBuildStencil": {
+        "baselineSha256": "4d5dbdab4b20bf77a60135c30c2fbc16e7c0d0eabe76846ef6f83717edb2e79d",
+        "byteIdentical": true,
+        "currentSha256": "4d5dbdab4b20bf77a60135c30c2fbc16e7c0d0eabe76846ef6f83717edb2e79d"
+      },
+      "a1fHeroFree": {
+        "baselineSha256": "ac1caf8af4baa51faea770760888f3d349216d804bacb49c5eef671de2d3ba80",
+        "byteIdentical": true,
+        "currentSha256": "ac1caf8af4baa51faea770760888f3d349216d804bacb49c5eef671de2d3ba80"
+      },
+      "a1mFootDy": {
+        "baselineSha256": "416739f80a17924abe44da0e8d5c3ec44504a10980a187b0451874a4355b8bb1",
+        "byteIdentical": true,
+        "currentSha256": "416739f80a17924abe44da0e8d5c3ec44504a10980a187b0451874a4355b8bb1"
+      },
+      "owmAssemble": {
+        "baselineSha256": "acbac9d7385ee28c90a10458692338dd0555795c7df12b8f97e81617c95f1a5d",
+        "byteIdentical": true,
+        "currentSha256": "acbac9d7385ee28c90a10458692338dd0555795c7df12b8f97e81617c95f1a5d"
+      },
+      "owmBakeParse": {
+        "baselineSha256": "1dc1634017dcb91be462f9be20bdcb2e828d30961ec99174d7f9e8b88df01174",
+        "byteIdentical": true,
+        "currentSha256": "1dc1634017dcb91be462f9be20bdcb2e828d30961ec99174d7f9e8b88df01174"
+      },
+      "owmInvalidateSupport": {
+        "baselineSha256": "5d8d176996fb5350959ae7e3a6d140af927c04b3c3a3ef6c18890ab056af2552",
+        "byteIdentical": true,
+        "currentSha256": "5d8d176996fb5350959ae7e3a6d140af927c04b3c3a3ef6c18890ab056af2552"
+      },
+      "owmSupportBounds": {
+        "baselineSha256": "51fef291a7960999b9ad05201918906783cc08eb88c00ec9e80d8826e9647f95",
+        "byteIdentical": true,
+        "currentSha256": "51fef291a7960999b9ad05201918906783cc08eb88c00ec9e80d8826e9647f95"
+      },
+      "owmSupportEt": {
+        "baselineSha256": "05a36638d93f2d1e0809ea9c1ec753021f30e872fa888c2ab60abc98d02237c6",
+        "byteIdentical": true,
+        "currentSha256": "05a36638d93f2d1e0809ea9c1ec753021f30e872fa888c2ab60abc98d02237c6"
+      },
+      "owmSupportFor": {
+        "baselineSha256": "350f52c4b7acd672c2bd3cc669cb458357223816b7ad456b56e310f951ed6006",
+        "byteIdentical": true,
+        "currentSha256": "350f52c4b7acd672c2bd3cc669cb458357223816b7ad456b56e310f951ed6006"
+      },
+      "owmSupportHex": {
+        "baselineSha256": "f57f73ac4d11acd600fcea10cf8865bb9c34ef2647f1aec88efabe93bcf8200f",
+        "byteIdentical": true,
+        "currentSha256": "f57f73ac4d11acd600fcea10cf8865bb9c34ef2647f1aec88efabe93bcf8200f"
+      },
+      "owmSupportInputBytes": {
+        "baselineSha256": "48c909ffc5b6d1c206e7b2a538afc10fea3edb7137ffbd665d905bb2fd3ca480",
+        "byteIdentical": true,
+        "currentSha256": "48c909ffc5b6d1c206e7b2a538afc10fea3edb7137ffbd665d905bb2fd3ca480"
+      },
+      "owmSupportMatches": {
+        "baselineSha256": "ee31635230ec29213e8a6abf3e2109b025daf1f5c6d0bccf65d41ab9ff20f097",
+        "byteIdentical": true,
+        "currentSha256": "ee31635230ec29213e8a6abf3e2109b025daf1f5c6d0bccf65d41ab9ff20f097"
+      }
+    }
+  },
+  "immutableInputs": {
+    "a1ow": {
+      "bytes": 9688672,
+      "path": "public/act1-overworld-walk.bin",
+      "sha256": "00a520ae09089547ca4af4ef1077b84acdad98d4989de238f3ee30e28ad092c6"
+    },
+    "baker": {
+      "bytes": 30624,
+      "path": "scripts/bake_act1_overworld_walk.mjs",
+      "sha256": "8f172f77de9ccddebafd0d742a13fdc22d5258c652eacf5df5b0ba5d25c9eb2b"
+    },
+    "caveArt": {
+      "bytes": 34534,
+      "path": "public/act1-hifi/landmarks/whispering-woods.png",
+      "sha256": "a06eea6ab98c7c630119db1488dfea912a40bc69150ac16e387b4e696aa5f047"
+    },
+    "crystalCaveArt": {
+      "bytes": 30289,
+      "path": "public/act1-hifi/landmarks/crystal-cave.png",
+      "sha256": "45fb2c0b7cf1ad2e63ee9a28bbf0ad66e3d4d9ca9258beaf7a68566e04692b55"
+    },
+    "landmarks": {
+      "bytes": 3138,
+      "path": "public/act1-hifi/landmarks/landmarks.json",
+      "sha256": "0b7e43f7ba532dd7079c2d90a1203bb7c9341a43b041993a3d9a0bcf24bc9437"
+    },
+    "manifests": {
+      "current": {
+        "bytes": 138266,
+        "path": "design/terrain-current-profile-20261007/current/act1-hifi-manifest.json",
+        "sha256": "c6d69d659ea4e82b09feabae624c2cbd4406627405bb389a36547bd44cc4183f"
+      },
+      "generationInput": {
+        "bytes": 25916,
+        "path": "design/terrain-current-profile-20261007/input-manifest.json",
+        "sha256": "091df7c664cfbe73b3b75f1359639c1f646bf3fd80eb7f698678e695b65430ea"
+      }
+    },
+    "mapProof": {
+      "bytes": 262999,
+      "path": "design/terrain-current-profile-20261007/evidence/a1ow-v2-independent-review/baked-final-map.json",
+      "sha256": "a9fecf54db9de1f18a1f26c3f74b1bab9be230a247076e10580859e7074ab212"
+    },
+    "qok": {
+      "bytes": 3447872,
+      "path": "public/act1-hifi/forest-collision.bin",
+      "sha256": "a0d08d9d1bae329355f9c44b60d6b3484f5e00717386d7d99cd4a8f309d6307e"
+    },
+    "terrainFixture": {
+      "bytes": 16956,
+      "path": "scripts/test_act1_terrain_collision_integration.cjs",
+      "sha256": "b62906ac51c60353e951674af0e35df060f68be0fa5881c1e8e54e6ae67e184f"
+    }
+  },
+  "normalizedSourceSha256": "6a605a8f0d7d2513871c9b8e5a18f30fa7a403ee2ec0e42a4f1646d2e4d5da1d",
+  "schema": "a1ow-dq-source-projection-v2-cave-local-delta",
+  "sourceDelta": {
+    "callsite": {
+      "anchor": "inside function a1mFree(scene,m,x,y)",
+      "bytes": 53,
+      "occurrences": 1,
+      "sha256": "3bc0cf4dc07804c8025f4db4a4bb71b699be8b0386746bc80dfe9955cd9538e0"
+    },
+    "helper": {
+      "anchor": "single cave-contact helper span beginning at the reviewed Whispering Woods comment and ending immediately before `  // (x,y) is the SPRITE position`; includes the exact pinned Crystal branch",
+      "bytes": 10977,
+      "occurrences": 1,
+      "sha256": "5855a9746b66a8f73efea1066a2a37cb0f93a7df579539e735a7f15abc96f457"
+    }
+  },
+  "staticProof": {
+    "contactPathCheck": {
+      "path": "design/terrain-current-profile-20261007/review-evidence/crystal-roof-20261016/ww-contact-path-check.cjs",
+      "resultPath": "design/terrain-current-profile-20261007/review-evidence/crystal-roof-20261016/ww-contact-path-result.json",
+      "resultSha256": "6fcd7324c646e158ecde599d4c98795b891ff66002a92c7135f1b90a9380564a",
+      "sha256": "9476ed7a2b99c2a132106717baee00dfd186cb24877b1db81d555a8477df60f8"
+    },
+    "crystalContactPathCheck": {
+      "path": "design/terrain-current-profile-20261007/review-evidence/crystal-roof-20261016/crystal-contact-path-check.cjs",
+      "resultPath": "design/terrain-current-profile-20261007/review-evidence/crystal-roof-20261016/crystal-contact-path-result.json",
+      "resultSha256": "a42ea1bfc501080cb5827173c8d3c8c5aa2bd237836075ddc39c4c10bb1ca97e",
+      "sha256": "58e6b723b16b5fd4108c853efe70e2495b22de9c90262b20dd535f64e48b26a4"
+    },
+    "crystalMaskRaster": {
+      "alphaThreshold": 128,
+      "outsideAlphaPixels": 0,
+      "packedBitsetSha256": "1ae835b2124a690df1a0c7136259722a9d013a5497ac6d05d6e921e110a9c884",
+      "packedBytes": 2592,
+      "path": "design/terrain-current-profile-20261007/review-evidence/crystal-roof-20261016/crystal-mask-raster-result.json",
+      "sha256": "28cd39dd7cc8bc2766fc9d68745d11fafba440ab2801c6c132b25cbe289d856f",
+      "solidPixels": 5802
+    },
+    "maskRaster": {
+      "alphaThreshold": 128,
+      "outsideAlphaPixels": 0,
+      "packedBitsetSha256": "85bd96745aed97c2a5a73c8ca8b52f24bd9c729d59acaa0b3e6941a861b27519",
+      "packedBytes": 2592,
+      "path": "design/terrain-current-profile-20261007/review-evidence/crystal-roof-20261016/ww-mask-raster-result.json",
+      "sha256": "a442ca569ec1996010ad3e76f9793826ae64fc3579a6cc9dee62f9f64070ed5f",
+      "solidPixels": 4808
+    },
+    "preview": {
+      "path": "design/terrain-current-profile-20261007/review-evidence/crystal-roof-20261016/preview.png",
+      "sha256": "354321af2165ad3ded6cbb6e1c900c16f8cded0826e3c81668b1acd7103256b2"
+    },
+    "review": {
+      "path": "design/terrain-current-profile-20261007/review-evidence/crystal-roof-20261016/review.md",
+      "sha256": "fed50b316a2b8b76f087b66e4199e88a56510cbf88dc6969f462a8e521c81d25"
+    },
+    "testRuns": {
+      "allPassed": true,
+      "path": "design/terrain-current-profile-20261007/review-evidence/crystal-roof-20261016/static-test-runs.json",
+      "sha256": "b0e1a3a08c66f1496c48dee936788f6ff365acd76afb35c1b3cb04450eb433aa"
+    }
+  },
+  "status": "PASS"
+}

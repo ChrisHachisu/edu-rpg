@@ -1,0 +1,198 @@
+{
+  "status": "PASS_BOUNDED_STATIC_OUTPUT_RECOMPUTATION",
+  "source": {
+    "path": "/Users/chris/Documents/Codex/2026-09-15/edu-rpg-act1-feedback/taskwork/20261007-build84-source-recovery/recovered-candidate/design/terrain-current-profile-20261007/generate_forward_profile.py",
+    "sha256": "2bd8c853cfa15fbdcd32d5771d33efc48707c4f269f03f74e5fa1f0f4ff14b1f"
+  },
+  "portableReceiptSha256": "3d51f2c74d22cdcd3aed0d5913fbfa6fdaa4e28ef297243832211b8b700b7e95",
+  "outputInventory": {
+    "fileCount": 488,
+    "AInventoryErrors": 0,
+    "BInventoryErrors": 0,
+    "portableInventoryErrors": 0,
+    "AandBIdentical": true,
+    "finalCandidateEqualsAandB": true,
+    "portableVsAOnlyExpectedDifferences": {}
+  },
+  "outputAlpha": {
+    "sha256": "9354cdd077b9f8f5f157834634485a052d4485fac04009f66739f2a52472a723",
+    "pixels": 10034569,
+    "shape": [
+      4736,
+      5824
+    ],
+    "chunkReconstructionXorPixels": 0,
+    "thresholdValues": [
+      0,
+      255
+    ]
+  },
+  "qok": {
+    "magic": "QOKF8COL",
+    "version": 1,
+    "headerBytes": 64,
+    "width": 4736,
+    "height": 5824,
+    "pixelsPerCell": 32,
+    "sourceSha256Matches": true,
+    "xorPixels": 0
+  },
+  "underpaintPhase": {
+    "manifestSha256": "0ee38ee74cb8faff4c07ba78c040548cf41bbaa974234855d8faa81591593155",
+    "baseUnderpaintSha256": "2c67b478cb9ebfb1da86601a6911ffc6c7888e056c06baedd808c32fe0129f05",
+    "forestUnderpaintSha256": "cb0b81d4768a7b07607364da6577ca8125dbb3d31c368e0c840c795bd5072ed2",
+    "dimensionsPx6": [
+      888,
+      1092
+    ],
+    "pixelsPerCell": 6,
+    "semanticBounds": [
+      16,
+      218,
+      163,
+      399
+    ],
+    "activeDqTilesSha256": "80b1fcaf6d593bd704f720239c2f9fd533e7b49ca1af7c8d6401901b9d876090",
+    "runtimeDepths": {
+      "substrate": 0.7,
+      "base": 1.1,
+      "forestStencil": 9.5
+    },
+    "recomputedChunkOriginAndEdgeAlignment": {
+      "chunksIntersectingSemanticBounds": 120,
+      "mismatches": 0,
+      "semanticCellsCoveredExactlyOnce": true,
+      "sameOwTileWorldGrid": true
+    },
+    "staticSourceAndVisualEvidenceOnly": true
+  },
+  "a1owDecode": {
+    "sha256": "d87c6572cbf3012180a289196cfe5e7eee7c50dc86beb06a999fa491eeacfdf3",
+    "bytes": 9688640,
+    "format": "A1OW-v1",
+    "pixelsPerCell": 48,
+    "mapCells": [
+      320,
+      400
+    ],
+    "far": 255,
+    "reserved": 0,
+    "blocks": 4094,
+    "mapHash32": 3096430556,
+    "provenanceSha256": "4b8458ac31765694b98743aed9db728a6fb4a3057535edf9c4fc0ac68c7f915d",
+    "productionParserSourceSha256": "80b1fcaf6d593bd704f720239c2f9fd533e7b49ca1af7c8d6401901b9d876090",
+    "scope": "water only inside semantic bounds [16,218,163,399]; mountain remains analytic outside and in the 40-cell bake padding",
+    "mountainsRemainAnalytic": true,
+    "fullRuntimeMovementUnproven": true
+  },
+  "safeCellsQok": {
+    "count": 149,
+    "collisionSha256": "cfb22774fac5315d3cef2c4b4cdde29ebb5324a054fe0bc3c07e56886cbaab16",
+    "heroChecks": {
+      "g3": {
+        "sourceSha256": "070a8a452c3dda775bd6c8593a66d57a5a13d97b9fb33378ea5b2bb0e1fded3c",
+        "unionStencilPoints": 2051,
+        "safeCellCentersChecked": 149,
+        "substepSamplesPerCell": 5,
+        "qokHits": 0
+      },
+      "male": {
+        "sourceSha256": "88cbed8f9d707b216ada01e108eedd5822c6bcfc69c8dd22af2457f231dc0976",
+        "unionStencilPoints": 1941,
+        "safeCellCentersChecked": 149,
+        "substepSamplesPerCell": 5,
+        "qokHits": 0
+      }
+    }
+  },
+  "geometryAndCopies": {
+    "chunkCount": 120,
+    "sourceGeometryExact": true,
+    "allWaterAndCanopyHashesMatchFrozenCurrentManifest": true,
+    "A1OWSourcePinPreserved": true,
+    "r26LockedFieldsExact": [
+      "designLocks",
+      "semanticBounds",
+      "semanticRows",
+      "chunkSize",
+      "streaming",
+      "detailRegions",
+      "pathConstraints"
+    ],
+    "r26AuthoritySha256": "7306e81411a230d3d83d8c179c9a55de5d0a234f26757654872b1b2c264210a4",
+    "pathConstraintsSha256": "e169f2e853c1ae7cc4a677ab9462ad1403f36d4ccccc040312f343d7bcd002f4",
+    "designLocksSha256": "dfe7050920603031afb79445eabc1ee974c6038466142add38c5b54bd23c2656"
+  },
+  "northRecipe": {
+    "objects": 9,
+    "recomputedAlphaUnionPixels": 290662,
+    "expectedAlphaUnionPixels": 290662,
+    "contactRowsMatchApprovedRecipe": true,
+    "ownerApprovedNorthPlainPixels": {
+      "ridge": 75173,
+      "fill": 74155
+    }
+  },
+  "boundary": {
+    "FMEdges": 78,
+    "placements": 40,
+    "immutablePilotSeeds": 11,
+    "flank118925": true,
+    "flank135625": true,
+    "rejected136050Absent": true,
+    "targetBefore": 36421,
+    "targetAfter": 6,
+    "newPPixelsBoundaryOnly": 0,
+    "currentGuardHits": 0,
+    "retainedResidual": {
+      "pixelCount": 6,
+      "components": [
+        {
+          "pixels": 2,
+          "bounds": [
+            4016,
+            1809,
+            4018,
+            1810
+          ]
+        },
+        {
+          "pixels": 1,
+          "bounds": [
+            4049,
+            1809,
+            4050,
+            1810
+          ]
+        },
+        {
+          "pixels": 3,
+          "bounds": [
+            4060,
+            1809,
+            4063,
+            1810
+          ]
+        }
+      ],
+      "selectableHeroAlphaUnionBoundsPx": [
+        50,
+        54
+      ],
+      "classification": "three disconnected single-row exposed F/M pinholes (2, 1, and 3 pixels); not a continuous wedge; retained unfilled for visual/native collision review",
+      "guardOverlapPixels": 0
+    }
+  },
+  "routeEvidence": {
+    "semanticGraphExits": 8,
+    "semanticGraphApproaches": 11,
+    "mapRevision": 7,
+    "semanticGraphIncludesCave": true,
+    "collisionAwareAllRoutesProven": false,
+    "reason": "The separate frozen collision-aware audit has blocked center anchors and capped searches; semantic-graph endpoints do not prove all routes."
+  },
+  "limitations": [
+    "Route numbers derive from current bundled world-map seedWalkableAt graph plus hero-envelope guards at start/exits/approaches; no post-collision connected-path/static route sweep is recorded.",
+    "Static output only; native runtime streaming, lowres fallback parity, device behavior, and runtime route/movement acceptance remain unverified."
+  ]
+}

@@ -1,0 +1,8 @@
+PASS Crystal exit repairs only the successful cross-map position and retains other player data
+PASS cross-map reentry writes the loaded destination map and its floor
+PASS initial scene creation and already-consistent Continue leave position alone
+PASS same-map floor loads and failed or partial destination loads are nonmutating
+PASS invalid/uninitialized coordinates and out-of-bounds destination do not mutate saves
+PASS wrapped load syncs only after success, waits for fulfillment, and preserves throws/rejections
+
+6/6 focused checks passed.

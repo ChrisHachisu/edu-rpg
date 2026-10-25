@@ -1,0 +1,313 @@
+{
+  "schema": "north-enclosed-gap-full-generation-audit-v1",
+  "status": "PASS",
+  "generatorSha256": "95187a9c632e0b6678c04e75614b28f1268dbed9f79f4dfcb4944351767e8af1",
+  "generationA": "/private/tmp/edu-rpg-build83-paint-audit-20261005/native-whole-rock-20261008/north-perimeter-repair-20261010/generation-enclosed-gap-v1/clean-generation-a",
+  "generationB": "/private/tmp/edu-rpg-build83-paint-audit-20261005/native-whole-rock-20261008/north-perimeter-repair-20261010/generation-enclosed-gap-v1/clean-generation-b",
+  "generationAReceiptSha256": "32769af3bececee5423d77e2314c61edee59ae2fa43593e9eee972a396477599",
+  "generationBReceiptSha256": "d99dbfa3800b6a707bb31a0a41cae2208269e84d620c718218238ecb343012f2",
+  "inventoryRows": 493,
+  "inventoryCanonicalSha256": "b405f355ab52312c0042aa1082d12f6eb7dd65ed649f69b947719c6807b4dffb",
+  "inventoryRehashErrors": 0,
+  "generationInventoriesEqual": true,
+  "receiptDifferencesOnly": [
+    "generationLabel"
+  ],
+  "generationAandBLabels": [
+    "A",
+    "B"
+  ],
+  "baselineRuntimeRoot": "/Users/chris/.codex/workspaces/edu-rpg-forward-20261007/design/terrain-current-profile-20261007/generated-output/act1-hifi",
+  "runtimeFileCount": 487,
+  "runtimePathSetIdentical": true,
+  "changedRuntimeFiles": [
+    {
+      "path": "chunks/base/c3-r0.webp",
+      "oldBytes": 405102,
+      "newBytes": 400988,
+      "oldSha256": "9df45a676c22f24fa41386c158b461a1ceecc528d7c1f2d0f70cf976aa554dc4",
+      "newSha256": "ded0a1cd19bf51336c445a1366456677ed6d0819fcf102ff09991174028f1cf8"
+    },
+    {
+      "path": "chunks/base/c4-r0.webp",
+      "oldBytes": 394504,
+      "newBytes": 393570,
+      "oldSha256": "5344b2a37de8491858be13c021d47400b356a1ae7f9ac015146cd3ae93ef5824",
+      "newSha256": "81db4da3cafa1ff4c477ee9345aebb2626a5376ded84596e6325bbaf6118c9bf"
+    },
+    {
+      "path": "chunks/base/c5-r0.webp",
+      "oldBytes": 397250,
+      "newBytes": 397340,
+      "oldSha256": "c34945870a5efda7ec7d05a8655ea3bcc5a7f41760da350fcbe38a0a7060770e",
+      "newSha256": "a487dd5f5644970eb8a844301d8f4b54c2321f19e5f7123e4ff0c6fb5c049eb9"
+    },
+    {
+      "path": "chunks/base/c6-r0.webp",
+      "oldBytes": 396248,
+      "newBytes": 396248,
+      "oldSha256": "6038c8c0b3bc3eb831e4ba3e83fc98d27d9290e8b1f47ff23902673564148b1b",
+      "newSha256": "8c2bc7b9b2d24911c63dee554d99ce619ef83da36e623f899390323144875ec4"
+    },
+    {
+      "path": "chunks/base/c7-r0.webp",
+      "oldBytes": 397186,
+      "newBytes": 396294,
+      "oldSha256": "1fb6075b4415033ac6fec95724a8812b459181467d4a78b016db26e20fe62152",
+      "newSha256": "5a1a3b3de39a9140a19940967f8233fe36ad9ec5549fcf85196f1a4241e45b95"
+    },
+    {
+      "path": "chunks/base/c8-r0.webp",
+      "oldBytes": 400044,
+      "newBytes": 399986,
+      "oldSha256": "433b2c87dc048f1c009f75b238608014298a7b45541329095285243d1f54d252",
+      "newSha256": "effceeb81c997b0f199091181ad3e5a1d243eb987e124ff0bba96864d9b5dfa0"
+    },
+    {
+      "path": "chunks/base/c9-r0.webp",
+      "oldBytes": 104340,
+      "newBytes": 101692,
+      "oldSha256": "73b1d9eb84035ddcb9ba30f1e43764cd490748a51331742f946e4f8fbdc75e43",
+      "newSha256": "5a56660352afe7aedf3928cfb8721dfa4f9a5797087048764a340793e1a6337b"
+    },
+    {
+      "path": "manifest.json",
+      "oldBytes": 292299,
+      "newBytes": 294689,
+      "oldSha256": "93dc61a75f9085d91994a2286d2e44f4661d75ed1a3fe9e4db2120f6bbe496a1",
+      "newSha256": "2f9e3fa11a3efb011e058bc0e3c490977f18bc1f32fe1290031e15a8094433a2"
+    },
+    {
+      "path": "underpaint/act1-plate.png",
+      "oldBytes": 2124650,
+      "newBytes": 2124657,
+      "oldSha256": "96ec473b22d8e96d73be1c3a3fc04ac9e34def2b7f167e228bceb225b7f1b373",
+      "newSha256": "cd831ed98c6d3e5d1108b37dc486b90532798fab2bb4a977e874f569e93274d3"
+    }
+  ],
+  "manifestChangedLeaves": [
+    "chunks.[3].baseSha256",
+    "chunks.[4].baseSha256",
+    "chunks.[5].baseSha256",
+    "chunks.[6].baseSha256",
+    "chunks.[7].baseSha256",
+    "chunks.[8].baseSha256",
+    "chunks.[9].baseSha256",
+    "forwardTerrainProfile.generatorSha256",
+    "northSupport.northEnclosedWaterGapMask",
+    "northSupport.prefixChunkProof.[0].combinedBaseCutPixels",
+    "northSupport.prefixChunkProof.[0].existingPrefixCutPixels",
+    "northSupport.prefixChunkProof.[0].northConnectedCutPixels",
+    "northSupport.prefixChunkProof.[0].northConnectedNewlyClearedBasePixels",
+    "northSupport.prefixChunkProof.[1].combinedBaseCutPixels",
+    "northSupport.prefixChunkProof.[1].existingPrefixCutPixels",
+    "northSupport.prefixChunkProof.[1].northConnectedCutPixels",
+    "northSupport.prefixChunkProof.[1].northConnectedNewlyClearedBasePixels",
+    "northSupport.prefixChunkProof.[2].combinedBaseCutPixels",
+    "northSupport.prefixChunkProof.[2].existingPrefixCutPixels",
+    "northSupport.prefixChunkProof.[2].northConnectedCutPixels",
+    "northSupport.prefixChunkProof.[2].northConnectedNewlyClearedBasePixels",
+    "northSupport.prefixChunkProof.[3].combinedBaseCutPixels",
+    "northSupport.prefixChunkProof.[3].existingPrefixCutPixels",
+    "northSupport.prefixChunkProof.[3].northConnectedCutPixels",
+    "northSupport.prefixChunkProof.[3].northConnectedNewlyClearedBasePixels",
+    "northSupport.prefixChunkProof.[4].combinedBaseCutPixels",
+    "northSupport.prefixChunkProof.[4].existingPrefixCutPixels",
+    "northSupport.prefixChunkProof.[4].northConnectedCutPixels",
+    "northSupport.prefixChunkProof.[4].northConnectedNewlyClearedBasePixels",
+    "northSupport.prefixChunkProof.[5].combinedBaseCutPixels",
+    "northSupport.prefixChunkProof.[5].existingPrefixCutPixels",
+    "northSupport.prefixChunkProof.[5].northConnectedCutPixels",
+    "northSupport.prefixChunkProof.[5].northConnectedNewlyClearedBasePixels",
+    "northSupport.prefixChunkProof.[6].combinedBaseCutPixels",
+    "northSupport.prefixChunkProof.[6].existingPrefixCutPixels",
+    "northSupport.prefixChunkProof.[6].northConnectedCutPixels",
+    "northSupport.prefixChunkProof.[6].northConnectedNewlyClearedBasePixels",
+    "northSupport.prefixChunkProof.[7].combinedBaseCutPixels",
+    "northSupport.prefixChunkProof.[7].existingPrefixCutPixels",
+    "northSupport.prefixChunkProof.[7].northConnectedCutPixels",
+    "northSupport.prefixChunkProof.[7].northConnectedNewlyClearedBasePixels",
+    "northSupport.prefixChunkProof.[8].combinedBaseCutPixels",
+    "northSupport.prefixChunkProof.[8].existingPrefixCutPixels",
+    "northSupport.prefixChunkProof.[8].northConnectedCutPixels",
+    "northSupport.prefixChunkProof.[8].northConnectedNewlyClearedBasePixels",
+    "northSupport.prefixChunkProof.[9].combinedBaseCutPixels",
+    "northSupport.prefixChunkProof.[9].existingPrefixCutPixels",
+    "northSupport.prefixChunkProof.[9].northConnectedCutPixels",
+    "northSupport.prefixChunkProof.[9].northConnectedNewlyClearedBasePixels",
+    "underpaint.sha256"
+  ],
+  "basePixelAudit": {
+    "files": 120,
+    "addedAlphaCuts": 4026,
+    "restoredAlphaPixels": 0,
+    "unexpectedAlphaCuts": 0,
+    "visibleRgbMismatchPixels": 0,
+    "hiddenRgbCanonicalizedPixels": 4025,
+    "changedPaths": [
+      "chunks/base/c3-r0.webp",
+      "chunks/base/c4-r0.webp",
+      "chunks/base/c5-r0.webp",
+      "chunks/base/c6-r0.webp",
+      "chunks/base/c7-r0.webp",
+      "chunks/base/c8-r0.webp",
+      "chunks/base/c9-r0.webp"
+    ]
+  },
+  "underpaint": {
+    "rgbByteIdentity": true,
+    "alphaRemovedPixels": 132,
+    "alphaRestoredPixels": 0,
+    "matchesExactProjectedAcceptedMask": true,
+    "projectionRows": 48
+  },
+  "immutableLayerByteIdentity": {
+    "forestChunks": true,
+    "collision": true,
+    "waterChunks": true,
+    "canopyChunks": true,
+    "northSupportChunks": true,
+    "forestUnderpaint": true,
+    "A1OWSourceEqualsPriorApp": true,
+    "A1OWSha256": "00a520ae09089547ca4af4ef1077b84acdad98d4989de238f3ee30e28ad092c6"
+  },
+  "c5TargetCleared": true,
+  "c9BottomDecodedPixelIdentity": true,
+  "renderedChangedRegionEvidence": {
+    "path": "/private/tmp/edu-rpg-build83-paint-audit-20261005/native-whole-rock-20261008/north-perimeter-repair-20261010/bounded-branch-all-components-c3-c9.png",
+    "sha256": "d2c51fac908b5e476f37884e67fad0ee51935691666b82013bbf6eeec9e8c2a8",
+    "inventoryPath": "/private/tmp/edu-rpg-build83-paint-audit-20261005/native-whole-rock-20261008/north-perimeter-repair-20261010/bounded-branch-all-components-c3-c9.json",
+    "inventorySha256": "a5c5d992163bb55635a1ca293d02b4c1e25df8e9cf095d3678b1ecd11bd31e75",
+    "renderSource": "before=accepted metadata-rebound output; after=actual clean-generation-A output"
+  },
+  "fullOutputInventoryComparison": {
+    "baselineReceiptPath": "/Users/chris/.codex/workspaces/edu-rpg-forward-20261007/design/terrain-current-profile-20261007/evidence/output-receipt.json",
+    "baselineReceiptSha256": "900f1842a53c77def9ccac771f02e8d3316115f02a68cc5555d347bb2b648e81",
+    "pathSetIdentical": true,
+    "rowCount": 493,
+    "changedRows": [
+      {
+        "path": "evidence/fm-contacts-overview.png",
+        "old": {
+          "bytes": 1914561,
+          "sha256": "fb68a15eb3ae8fce639655cc89be479ca6318b75802187aaef0189a75cdc323c"
+        },
+        "new": {
+          "bytes": 1914597,
+          "sha256": "7a1d87d945bd8a75c8a738c882e4f5486bab6c70ae638a3a346443985b6d98e3"
+        }
+      },
+      {
+        "path": "public/act1-hifi/chunks/base/c3-r0.webp",
+        "old": {
+          "bytes": 405102,
+          "sha256": "9df45a676c22f24fa41386c158b461a1ceecc528d7c1f2d0f70cf976aa554dc4"
+        },
+        "new": {
+          "bytes": 400988,
+          "sha256": "ded0a1cd19bf51336c445a1366456677ed6d0819fcf102ff09991174028f1cf8"
+        }
+      },
+      {
+        "path": "public/act1-hifi/chunks/base/c4-r0.webp",
+        "old": {
+          "bytes": 394504,
+          "sha256": "5344b2a37de8491858be13c021d47400b356a1ae7f9ac015146cd3ae93ef5824"
+        },
+        "new": {
+          "bytes": 393570,
+          "sha256": "81db4da3cafa1ff4c477ee9345aebb2626a5376ded84596e6325bbaf6118c9bf"
+        }
+      },
+      {
+        "path": "public/act1-hifi/chunks/base/c5-r0.webp",
+        "old": {
+          "bytes": 397250,
+          "sha256": "c34945870a5efda7ec7d05a8655ea3bcc5a7f41760da350fcbe38a0a7060770e"
+        },
+        "new": {
+          "bytes": 397340,
+          "sha256": "a487dd5f5644970eb8a844301d8f4b54c2321f19e5f7123e4ff0c6fb5c049eb9"
+        }
+      },
+      {
+        "path": "public/act1-hifi/chunks/base/c6-r0.webp",
+        "old": {
+          "bytes": 396248,
+          "sha256": "6038c8c0b3bc3eb831e4ba3e83fc98d27d9290e8b1f47ff23902673564148b1b"
+        },
+        "new": {
+          "bytes": 396248,
+          "sha256": "8c2bc7b9b2d24911c63dee554d99ce619ef83da36e623f899390323144875ec4"
+        }
+      },
+      {
+        "path": "public/act1-hifi/chunks/base/c7-r0.webp",
+        "old": {
+          "bytes": 397186,
+          "sha256": "1fb6075b4415033ac6fec95724a8812b459181467d4a78b016db26e20fe62152"
+        },
+        "new": {
+          "bytes": 396294,
+          "sha256": "5a1a3b3de39a9140a19940967f8233fe36ad9ec5549fcf85196f1a4241e45b95"
+        }
+      },
+      {
+        "path": "public/act1-hifi/chunks/base/c8-r0.webp",
+        "old": {
+          "bytes": 400044,
+          "sha256": "433b2c87dc048f1c009f75b238608014298a7b45541329095285243d1f54d252"
+        },
+        "new": {
+          "bytes": 399986,
+          "sha256": "effceeb81c997b0f199091181ad3e5a1d243eb987e124ff0bba96864d9b5dfa0"
+        }
+      },
+      {
+        "path": "public/act1-hifi/chunks/base/c9-r0.webp",
+        "old": {
+          "bytes": 104340,
+          "sha256": "73b1d9eb84035ddcb9ba30f1e43764cd490748a51331742f946e4f8fbdc75e43"
+        },
+        "new": {
+          "bytes": 101692,
+          "sha256": "5a56660352afe7aedf3928cfb8721dfa4f9a5797087048764a340793e1a6337b"
+        }
+      },
+      {
+        "path": "public/act1-hifi/manifest.json",
+        "old": {
+          "bytes": 292299,
+          "sha256": "93dc61a75f9085d91994a2286d2e44f4661d75ed1a3fe9e4db2120f6bbe496a1"
+        },
+        "new": {
+          "bytes": 294689,
+          "sha256": "2f9e3fa11a3efb011e058bc0e3c490977f18bc1f32fe1290031e15a8094433a2"
+        }
+      },
+      {
+        "path": "public/act1-hifi/underpaint/act1-plate.png",
+        "old": {
+          "bytes": 2124650,
+          "sha256": "96ec473b22d8e96d73be1c3a3fc04ac9e34def2b7f167e228bceb225b7f1b373"
+        },
+        "new": {
+          "bytes": 2124657,
+          "sha256": "cd831ed98c6d3e5d1108b37dc486b90532798fab2bb4a977e874f569e93274d3"
+        }
+      }
+    ],
+    "changedRowPaths": [
+      "evidence/fm-contacts-overview.png",
+      "public/act1-hifi/chunks/base/c3-r0.webp",
+      "public/act1-hifi/chunks/base/c4-r0.webp",
+      "public/act1-hifi/chunks/base/c5-r0.webp",
+      "public/act1-hifi/chunks/base/c6-r0.webp",
+      "public/act1-hifi/chunks/base/c7-r0.webp",
+      "public/act1-hifi/chunks/base/c8-r0.webp",
+      "public/act1-hifi/chunks/base/c9-r0.webp",
+      "public/act1-hifi/manifest.json",
+      "public/act1-hifi/underpaint/act1-plate.png"
+    ]
+  }
+}

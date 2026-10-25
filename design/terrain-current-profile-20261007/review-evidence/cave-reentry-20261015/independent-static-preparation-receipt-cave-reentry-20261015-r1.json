@@ -1,0 +1,107 @@
+{
+  "authoringInputInventorySha256": "e47962c1d6d0e4b42d15b15743cfd5cdae8cf056f4f769c4031ccb16de90cfa9",
+  "checks": {
+    "a1owDecode": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/cave-reentry-20261015/a1ow-source-equivalence.json",
+      "proofSha256": "a9e7ca02240613adf34d864016ef9f6083cd913a6b89eba54d22ade35aee2c55",
+      "result": "PASS"
+    },
+    "chunkBoundaries": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/water-r2-final-20261013/independent-final-r2-output-review.md",
+      "proofSha256": "edf7ef282db1405ea31c77f831c63c5acdb2b7f9d9358fa9fc13d6e3e4743b4e",
+      "result": "PASS"
+    },
+    "cleanRegeneration": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/water-r2-final-20261013/regeneration-comparison.json",
+      "proofSha256": "a8e3c11e959bd8d03a1952ca8fa27b2364e9a9938266055de8dcfa41b6f246f2",
+      "result": "PASS"
+    },
+    "collisionDecode": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/water-r2-final-20261013/final-r2-safe-cell-clearance-review.json",
+      "proofSha256": "a8b5ed56b328d37cdee8ba46e8738015f8e3e6d9ece5ece2466c3ee8ffbe5693",
+      "result": "PASS"
+    },
+    "currentGuard": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/cave-reentry-20261015/current-guard-independent-20261015-r1.json",
+      "proofSha256": "8dcb1712558a85079183cdfeff26ba39778fc843d5854bf3b60af074c19ff06b",
+      "result": "PASS"
+    },
+    "decodedPixels": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/water-r2-final-20261013/independent-final-r2-output-review.md",
+      "proofSha256": "edf7ef282db1405ea31c77f831c63c5acdb2b7f9d9358fa9fc13d6e3e4743b4e",
+      "result": "PASS"
+    },
+    "globalCropReconstruction": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/water-r2-final-20261013/independent-final-r2-output-review.md",
+      "proofSha256": "edf7ef282db1405ea31c77f831c63c5acdb2b7f9d9358fa9fc13d6e3e4743b4e",
+      "result": "PASS"
+    },
+    "heroFrameClearance": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/water-r2-final-20261013/final-r2-safe-cell-clearance-review.json",
+      "proofSha256": "a8b5ed56b328d37cdee8ba46e8738015f8e3e6d9ece5ece2466c3ee8ffbe5693",
+      "result": "PASS"
+    },
+    "renderedReview": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/water-r2-final-20261013/independent-final-r2-output-review.md",
+      "proofSha256": "edf7ef282db1405ea31c77f831c63c5acdb2b7f9d9358fa9fc13d6e3e4743b4e",
+      "result": "PASS"
+    },
+    "runtimeInvariants": {
+      "proofPath": "design/terrain-current-profile-20261007/evidence/runtime-invariants-static-water-r2-runtime-r1.json",
+      "proofSha256": "5586906e021e1938cfaf77de9eb955bead32ee5eebd3cd19d1c4f08bd0cc3037",
+      "result": "PASS"
+    },
+    "safeCells": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/water-r2-final-20261013/final-r2-safe-cell-clearance-review.json",
+      "proofSha256": "a8b5ed56b328d37cdee8ba46e8738015f8e3e6d9ece5ece2466c3ee8ffbe5693",
+      "result": "PASS"
+    },
+    "sourceResourceClosure": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/cave-reentry-20261015/source-resource-closure-independent-20261015-r1.json",
+      "proofSha256": "7ec18170c0c157446ab14f83047e7fdd09f3c6c5f7608d0e1f0de51233d166ab",
+      "result": "PASS"
+    },
+    "underpaintPhase": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/cave-reentry-20261015/underpaint-phase-independent-20261015-r1.json",
+      "proofSha256": "d5ae6038613d8ab30085e823b37c94c46ffedb30be4d5c46c52d2b0baee162ab",
+      "result": "PASS"
+    },
+    "visibleAlpha": {
+      "proofPath": "design/terrain-current-profile-20261007/review-evidence/water-r2-final-20261013/north-qok-final18-union-review.json",
+      "proofSha256": "3090babc684217ebecd145888be2b7df5c99f1c5d92c505b62acb3f13d5d1de7",
+      "result": "PASS"
+    }
+  },
+  "claim": "Independent static QA-preparation review of the cave-reentry source identity refresh and metadata-only output rebind. Current public/dist DQ guards, A1OW equivalence, output inventories, unchanged 493 payloads, underpaint phase, QOK/collision, source closure, and retained reviewed static evidence were checked. No installed-app, native route/movement, release, or ship claim is made.",
+  "generatedOutputInventorySha256": "7b90b7d7a1dfb2b60d6d15e925c51c1aabd8147eb0ed03d47ac27e4f391a008a",
+  "limitations": [
+    "Preparation evidence only. No fresh image rendering, native build, Simulator interaction, route proof, device proof, TestFlight, or release claim."
+  ],
+  "profileId": "act1-forward-20261007-v1",
+  "result": "QA_PREPARATION_PASS",
+  "review": {
+    "a1owSourceEquivalencePath": "design/terrain-current-profile-20261007/review-evidence/cave-reentry-20261015/a1ow-source-equivalence.json",
+    "a1owSourceEquivalenceSha256": "a9e7ca02240613adf34d864016ef9f6083cd913a6b89eba54d22ade35aee2c55",
+    "changedPaths": [
+      "act1-hifi/manifest.json"
+    ],
+    "currentDqSha256": "6a605a8f0d7d2513871c9b8e5a18f30fa7a403ee2ec0e42a4f1646d2e4d5da1d",
+    "currentOutputReceiptSha256": "f3c7ebb1cd3471480e7564584dcb0a36812b4654a67ae86bea1e4ec76a3aa0df",
+    "gateReady": false,
+    "generatorSha256": "831d69a18ec3504578a380c322117baeca853c79538ca290d2471f2471c11705",
+    "manifestSha256": "931240cf16decc0ad17f225b0baeabbf2ca8dcecd0b9342056fc1b76a0d69707",
+    "metadataComparisonSha256": "5ac149f7b9040c6e82edb651efc99082d48632c93a06a80ee97818b15d201cfb",
+    "nativeOrRenderedAcceptance": false,
+    "outputsPerRun": 494,
+    "priorOutputReceiptSha256": "a567b7bb838853cee973fb7186c4c5dcd5e50a43692c93a1bfaeff79f2b7cb27",
+    "releaseEligible": false,
+    "unchangedPriorOutputs": 493
+  },
+  "reviewerRole": "independent",
+  "runner": {
+    "path": "design/terrain-current-profile-20261007/review-evidence/water-r2-final-20261013/validator-root-pin-normalized-source.txt",
+    "sha256": "9bd35847c1fc37cd2aa242ae682bacfaadf4bfc29a5470aec886948d46d25d4d",
+    "version": "qok-forward-preparation-static-contract-review-v1"
+  },
+  "schema": "qok-forward-preparation-receipt-v1"
+}
