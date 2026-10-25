@@ -3141,7 +3141,13 @@
     var seamBleed=0.5/Math.max(1e-6,zoom), live={}, anyCanopy=false, i;
     for(i=0;i<rs.length;i++){
       var r=rs[i], c=r.c, rec=r.rec;
-      var wx=owPhysical(ox+c.x*S), wy=owPhysical(oy+c.y*S);
+      // WHOLE-PIXEL CHUNK EDGES (build 86). A 16-cell chunk is 537.6 world px, so its raw edges land
+      // on fractional pixels; under roundPixels the two sprites meeting at an edge could each claim
+      // (or both miss) the boundary row. On the translucent layers (water R2, forest, north) a doubled
+      // row reads as the 1-px line across cliffs and sea the owner reported on build 85. Each edge is
+      // rounded once, the same way for both neighbours, so adjacent chunks tile with no gap or overlap.
+      var rawX=owPhysical(ox+c.x*S), rawY=owPhysical(oy+c.y*S),
+          wx=Math.round(rawX), wy=Math.round(rawY);
       // THE HERO IS NEVER HIDDEN BY THE TREELINE -- canopy 11 -> 9.5, below the hero at 10.
       // Owner, build 32, with a screenshot in which she is a single visible sliver inside the
       // forest: "the player hides under the forrest (they should be on top of the forrest) some
@@ -3153,7 +3159,7 @@
       // playability failure, not a stylistic trade. This is the same call he made on the town's
       // chimneys the same day: where "walk under" is ambiguous, remove the ambiguity rather than
       // keep tuning the boundary.
-      var bw=c.width*S*OW_SCALE, bh=c.height*S*OW_SCALE,
+      var bw=Math.round(rawX+c.width*S*OW_SCALE)-wx, bh=Math.round(rawY+c.height*S*OW_SCALE)-wy,
           baseScaleX=bw/Math.max(1,rec.base&&rec.base.width||c.width*S),
           baseScaleY=bh/Math.max(1,rec.base&&rec.base.height||c.height*S),
           waterScaleX=bw/Math.max(1,rec.water&&rec.water.width||c.width*S),
