@@ -116,7 +116,7 @@ const FINAL_MAP_SHA256 = '2d82e050b51095280b74395db8656aed52ae919206385827502265
 // "coastal reef is facing an odd way. Which way is the entrance in the dungeon facing? That's
 // the way the overworld entrance needs to face." Every dungeon drops the player at (50,0) and
 // all four authored interior arches are drawn face-on, so every mouth faces the viewer. 49 -> 50.
-const PLATED_MAP_SHA256 = 'c0c37f167682abeea679b65488e225cd351de5bdc0895aa478504bf7c2d0f9a4';
+const PLATED_MAP_SHA256 = '01337b61c117ecbfd6fa7704fdcf7cbf0c90b4eba56d726fea93dd21c959e453';
 const MAP_WIDTH = 320, MAP_HEIGHT = 400;
 const ACT1_START = [60, 341];
 const ACT1_BOUNDS = [16, 218, 163, 399];

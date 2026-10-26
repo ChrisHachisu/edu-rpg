@@ -135,6 +135,11 @@ export const PIXEL_MASK_CAVES = new Map([
   ['sunkenCellar', 'pixel base-band mask owns its collision'],
   ['mistyGrotto', 'pixel base-band mask owns its collision (Darkfang sprite)'],
   ['coastalReef', 'pixel base-band mask owns its collision'],
+  // Build 89 (owner): the three towns' cell blockers made their outlines an invisible wall too. Their
+  // collision is the sprite-outline mask in dq-tiles.js (A1M_TOWN_MASKS, scripts/b89/town-masks.json).
+  ['greenhollow', 'pixel outline mask owns its collision'],
+  ['millbrook', 'pixel outline mask owns its collision'],
+  ['portSapphire', 'pixel outline mask owns its collision'],
 ]);
 
 // The plate's own blocked set (act1_owner_paint_plate.mjs OVERWORLD_BLOCKED), restated here

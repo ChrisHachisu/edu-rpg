@@ -230,8 +230,8 @@ assert(leaks.length === 0, `Act 1 boundary is walkable at ${leaks.join(' ')}`);
 // Asserted against the SHIPPED artefact's own map, not against the generator: the property is
 // "how many cells can the player stand on next to this door", which is a question about mapData.
 
-assert(Array.isArray(runtime.landmarkBlockers) && runtime.landmarkBlockers.length > 0,
-  'the override must publish its landmark blocker cells');
+// Build 89: every landmark's collision is now a pixel mask in dq-tiles.js, so the list may be empty.
+assert(Array.isArray(runtime.landmarkBlockers), 'the override must publish its landmark blocker cells');
 
 const GATE_EXEMPT = new Set(['crystalCave']);   // the act-connecting gate, owner-exempt
 for (const landmark of runtime.landmarks) {
@@ -244,7 +244,7 @@ for (const landmark of runtime.landmarks) {
   }
   // Build 87: the four caves have no whole-cell blockers; their pixel base bands own collision and
   // dq-tiles' a1mCaveDoorRefused admits a hero only from the exit cell. Require that exit to be walkable.
-  if (['whisperingWoodsCave', 'sunkenCellar', 'mistyGrotto', 'coastalReef'].includes(landmark.mapId)) {
+  if (['whisperingWoodsCave', 'sunkenCellar', 'mistyGrotto', 'coastalReef', 'greenhollow', 'millbrook', 'portSapphire'].includes(landmark.mapId)) {
     assert(ways.some(p => p.x === landmark.exit.x && p.y === landmark.exit.y),
       `${landmark.mapId} exit ${landmark.exit.x},${landmark.exit.y} must stay walkable`);
     continue;
@@ -533,7 +533,9 @@ for (const variant of ['g3', 'male']) {
   afterTown[255][69] = 0;
   present(reentryScene);
   assert(runtime.state.repairs === repairsBefore + 1, 'the deep sweep must record one repair');
-  assert(afterTown[256][70] === 21 && afterTown[255][69] === 6,
+  // Build 89: (70,256) is plain ground again (Greenhollow's outline mask owns its collision); the
+  // sweep must still restore the plate value rather than keep the corrupted 4.
+  assert(afterTown[256][70] === 0 && afterTown[255][69] === 6,
     'the deep sweep must restore the plate, blockers included');
   assert(reentryScene.heroTileX === 69 && reentryScene.heroTileY === 256,
     'repairing the plate must not move the hero');

@@ -12,6 +12,13 @@ for c in m['chunks']:
     foam = f"chunks/foam/{c['id']}.png"
     if (H / foam).exists():
         c['foam'] = foam; c['foamSha256'] = sha(foam)
+    # Build 89: forest/front art changed too, and each water chunk gains 4 moving-water crest frames.
+    for k in ('forest', 'front'):
+        if c.get(k): c[k + 'Sha256'] = sha(c[k])
+    for i in range(4):
+        crest = f"chunks/crest/{c['id']}-{i}.png"
+        if (H / crest).exists():
+            c[f'crest{i}'] = crest; c[f'crest{i}Sha256'] = sha(crest)
 m['collision']['sha256'] = sha(m['collision']['artifact'])
 open(H / 'manifest.json', 'w').write(json.dumps(m, indent=2, ensure_ascii=False) + '\n')
 print('chunks', len(m['chunks']), 'collision', m['collision']['sha256'][:16])

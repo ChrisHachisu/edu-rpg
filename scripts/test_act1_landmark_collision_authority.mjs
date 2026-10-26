@@ -18,7 +18,7 @@ import {
 
 const ROOT = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const EXPECTED_LIVE_MAP_SHA256 =
-  'ac9b4278c84a2a53eecff8542ed2c2024980c4b4a624a8c937392f5f676be55d';
+  'c43e15f879096782f2de7d93a4c9fee9dc92f6072b8ee5d38aec0cd087ce09ec';
 const assert = (condition, message) => {
   if (!condition) throw new Error(`Act 1 collision/art separation: ${message}`);
 };
