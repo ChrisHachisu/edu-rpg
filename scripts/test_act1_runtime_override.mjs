@@ -242,12 +242,11 @@ for (const landmark of runtime.landmarks) {
     assert(ways.length > 0, `${landmark.mapId} must stay enterable`);
     continue;
   }
-  // Build 86: Whispering Woods' pixel rock mask owns its collision, so the cell north of its door is
-  // open ground; dq-tiles' a1mNorthOfSouthDoor refuses entry from there. Count only non-north sides.
-  if (landmark.mapId === 'whisperingWoodsCave') {
-    const entries = ways.filter(p => p.y >= landmark.at.y);
-    assert(entries.length === 1 && entries[0].y === landmark.at.y + 1,
-      `${landmark.mapId} must have exactly its south entrance (got ${entries.map(p => `${p.x},${p.y}`).join(' ')})`);
+  // Build 87: the four caves have no whole-cell blockers; their pixel base bands own collision and
+  // dq-tiles' a1mCaveDoorRefused admits a hero only from the exit cell. Require that exit to be walkable.
+  if (['whisperingWoodsCave', 'sunkenCellar', 'mistyGrotto', 'coastalReef'].includes(landmark.mapId)) {
+    assert(ways.some(p => p.x === landmark.exit.x && p.y === landmark.exit.y),
+      `${landmark.mapId} exit ${landmark.exit.x},${landmark.exit.y} must stay walkable`);
     continue;
   }
   assert(ways.length === 1,
