@@ -3708,16 +3708,27 @@
   var A1A_WB={raf:0};
   function a1aWalkBehindTick(){
     A1A_WB.raf=requestAnimationFrame(a1aWalkBehindTick);
-    var sc=A1A.spriteScene, hero=sc&&sc.hero; if(!hero||!owScene(sc)) return;
+    var sc=A1A.spriteScene, hero=sc&&sc.hero;
+    if(!hero||!owScene(sc)){ if(A1A_WB.rip) for(var hk in A1A_WB.rip){ var hv=A1A_WB.rip[hk]; if(hv&&hv.scene&&hv.visible) hv.setVisible(false); } return; }
     var sole=hero.y+hero.displayHeight*(1-(hero.originY===undefined?0.5:hero.originY))-2, top=sole-25;
-    var fa=0.775+0.225*Math.sin(Date.now()*2*Math.PI/3300), ks=Object.keys(A1A.imgs);
+    var now=Date.now(), fa=0.65+0.35*Math.sin(now*2*Math.PI/2600), ks=Object.keys(A1A.imgs);
+    // Build 88 (owner: "the moving water needs to be a little more noticeable"): each visible water
+    // chunk gets a twin of the SAME texture at 40% alpha, drifting on a slow Lissajous path a few px
+    // away, so the wave pattern shimmers against itself. Land pixels are transparent in water-r2, so
+    // the twin only moves water. No new textures or canvases; one extra sprite per visible chunk.
+    var rdx=3*Math.sin(now*2*Math.PI/4200), rdy=2*Math.cos(now*2*Math.PI/5600), rw=A1A_WB.rip||(A1A_WB.rip={}), rl={};
     for(var i=0;i<ks.length;i++){ var k=ks[i], im=A1A.imgs[k]; if(!im||!im.visible) continue;
       if(k.indexOf('a1a_foam_')===0){ im.setAlpha(fa); continue; }
+      if(k.indexOf('a1a_water_')===0){ var tw=rw[k];
+        if(!tw||!tw.scene||tw.scene!==sc){ try{ tw=rw[k]=sc.add.image(0,0,im.texture.key).setOrigin(0,0).setDepth(1.21).setAlpha(0.4); try{tw.texture.setFilter(NEAREST);}catch(e){} }catch(e){ continue; } }
+        if(tw.texture.key!==im.texture.key) tw.setTexture(im.texture.key);
+        tw.setPosition(im.x+rdx,im.y+rdy).setScale(im.scaleX,im.scaleY); if(!tw.visible) tw.setVisible(true); rl[k]=1; continue; }
       if(k.indexOf('a1a_front_')!==0) continue;
       var fh=im.frame&&im.frame.realHeight||im.height, fw=im.frame&&im.frame.realWidth||im.width;
       var ty=Math.max(0,Math.min(fh,Math.floor((top-im.y)/(im.scaleY||1))));
       im.setCrop(0,ty,fw,fh-ty);
     }
+    for(var rk in rw){ if(!rl[rk]&&rw[rk]&&rw[rk].scene&&rw[rk].visible) rw[rk].setVisible(false); }
     for(var j=0;j<A1M_CAVE_BANDS.length;j++){ var cb=A1M_CAVE_BANDS[j], lm=owImgs['a1alm_'+cb.slug];
       if(!lm||!lm.scene||!lm.visible) continue;
       var baseY=owCellCenter(cb.cell[1])+18;
