@@ -15,7 +15,9 @@ for c in m['chunks']:
     # Build 89: forest/front art changed too, and each water chunk gains 4 moving-water crest frames.
     for k in ('forest', 'front'):
         if c.get(k): c[k + 'Sha256'] = sha(c[k])
-    for i in range(4):
+    # Build 90: 3 half-res crest frames; drop any stale crest keys first (build 89 had 4).
+    for k in [k for k in c if k.startswith('crest')]: del c[k]
+    for i in range(3):
         crest = f"chunks/crest/{c['id']}-{i}.png"
         if (H / crest).exists():
             c[f'crest{i}'] = crest; c[f'crest{i}Sha256'] = sha(crest)
