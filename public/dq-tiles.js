@@ -2067,7 +2067,7 @@
      failure, back off, and let the next window rebuild ask again. Bounded so a genuinely absent file
      cannot spin -- a 404 will exhaust its tries and go quiet, which is the old "degrades" behaviour
      preserved for the case it was actually written for. */
-  var A1A_LAYERS=['base','canopy','water','forest','north','foam','front','crest0','crest1','crest2','crest3'];   // one list, so the loader and the retry cannot diverge
+  var A1A_LAYERS=['base','canopy','water','forest','north','foam','front','crest0','crest1','crest2'];   // one list, so the loader and the retry cannot diverge
   function a1aNorthHeight(c){
     var n=A1A.manifest&&A1A.manifest.northSupport;
     if(!c||!c.north||!n||n.schema!=='north-cliff-overhang-v1'||!(n.heightPixels>0)||!(n.pixelsPerCell>0)) return 0;
@@ -2518,7 +2518,7 @@
       if(j.c.id!==id) return true;
       delete A1A.texQd['a1a_'+j.layer+'_'+id]; return false;
     });
-    ['base','water','canopy','forest','north','foam','front','crest0','crest1','crest2','crest3'].forEach(function(layer){
+    ['base','water','canopy','forest','north','foam','front','crest0','crest1','crest2'].forEach(function(layer){
       if(!a1aLayerEnabled(layer)) return;
       var key='a1a_'+layer+'_'+id, im=A1A.imgs[key];
       if(im){ try{ im.destroy(); }catch(e){} delete A1A.imgs[key]; }
@@ -3064,7 +3064,7 @@
   }
   function a1aEnqueueTex(c,rec){
     if(!A1A_SPRITES&&!A1A_FOREST.mode) return;
-    ['base','water','canopy','forest','north','foam','front','crest0','crest1','crest2','crest3'].forEach(function(layer){
+    ['base','water','canopy','forest','north','foam','front','crest0','crest1','crest2'].forEach(function(layer){
       if(!a1aLayerEnabled(layer)) return;
       if(!rec[layer]) return;
       if(layer==='canopy'&&!rec.base) return;                     // the composite needs both
@@ -3172,6 +3172,8 @@
           forestScaleY=bh/Math.max(1,rec.forest&&rec.forest.height||c.height*S),
           foamScaleX=bw/Math.max(1,rec.foam&&rec.foam.width||c.width*S),foamScaleY=bh/Math.max(1,rec.foam&&rec.foam.height||c.height*S),
           frontScaleX=bw/Math.max(1,rec.front&&rec.front.width||c.width*S),frontScaleY=bh/Math.max(1,rec.front&&rec.front.height||c.height*S),
+          // build 90: crest frames are HALF resolution, so they scale from their own size like every other layer
+          crestScaleX=bw/Math.max(1,rec.crest0&&rec.crest0.width||c.width*S),crestScaleY=bh/Math.max(1,rec.crest0&&rec.crest0.height||c.height*S),
           northHeight=a1aNorthHeight(c),
           northScaleX=rec.north?bw/Math.max(1,rec.north.width):baseScaleX,
           northScaleY=rec.north?northHeight*OW_SCALE/Math.max(1,rec.north.height):baseScaleY;
@@ -3180,8 +3182,9 @@
         var waterR2=!!a1aWaterR2Spec();
         var layers=A1A_FOREST.mode
         ? [['base',1.1,baseScaleX,baseScaleY,1],['water',1.2,waterScaleX,waterScaleY,waterR2?1:0.28],
-           // Build 89 moving water: 4 crest frames between water and forest; a1aWalkBehindTick cross-fades their alpha.
-           ['crest0',1.21,waterScaleX,waterScaleY,0],['crest1',1.211,waterScaleX,waterScaleY,0],['crest2',1.212,waterScaleX,waterScaleY,0],['crest3',1.213,waterScaleX,waterScaleY,0],
+           // Moving water: 3 half-res crest frames between water and forest; a1aWalkBehindTick cross-fades their alpha.
+           // Build 89 shipped 4 FULL-res frames (+~8 MB a chunk, kept through battles) and froze black on the owner's phone.
+           ['crest0',1.21,crestScaleX,crestScaleY,0],['crest1',1.211,crestScaleX,crestScaleY,0],['crest2',1.212,crestScaleX,crestScaleY,0],
            ['north',A1A_CANOPY_DEPTH,northScaleX,northScaleY,1],['forest',A1A_CANOPY_DEPTH,forestScaleX,forestScaleY,1],['foam',1.25,foamScaleX,foamScaleY,1],['front',A1A_FRONT_DEPTH,frontScaleX,frontScaleY,1]]
         : [['base',1.1,baseScaleX,baseScaleY,1],['water',1.2,waterScaleX,waterScaleY,waterR2?1:0.28],['north',A1A_CANOPY_DEPTH,northScaleX,northScaleY,1],['canopy',A1A_CANOPY_DEPTH,baseScaleX,baseScaleY,1]];
       for(var L=0;L<layers.length;L++){
@@ -3709,7 +3712,7 @@
   //  feet stop against its untrimmed base), so it stays behind her; a rock SOUTH of her covers her legs.
   //  Caves: the whole sprite draws over her while her soles are north of its base row.
   //  foam: alpha pulses 0.55-1.0 on a 3.3 s period. Only setAlpha/setCrop -- no textures, no canvases.
-  //  crest (build 89): 4 water frames cycle every 2.4 s; frame i fades out (1-f) while i+1 fades in (f).
+  //  crest (build 90): 3 half-res water frames cycle every 2.4 s; frame i fades out (1-f) while i+1 fades in (f).
   //  Alpha 0 frames are skipped by Phaser's renderer, so at most two crest sprites per chunk draw.
   var A1A_WB={raf:0};
   function a1aWalkBehindTick(){
@@ -3717,7 +3720,7 @@
     var sc=A1A.spriteScene, hero=sc&&sc.hero; if(!hero||!owScene(sc)) return;
     var sole=hero.y+hero.displayHeight*(1-(hero.originY===undefined?0.5:hero.originY))-2, top=sole-25;
     var now=Date.now(), fa=0.775+0.225*Math.sin(now*2*Math.PI/3300), ks=Object.keys(A1A.imgs);
-    var cp=(now/2400*4)%4, ci=Math.floor(cp), cf=cp-ci, cn=(ci+1)%4;
+    var cp=(now/2400*3)%3, ci=Math.floor(cp), cf=cp-ci, cn=(ci+1)%3;
     for(var i=0;i<ks.length;i++){ var k=ks[i], im=A1A.imgs[k]; if(!im||!im.visible) continue;
       if(k.indexOf('a1a_foam_')===0){ im.setAlpha(fa); continue; }
       if(k.indexOf('a1a_crest')===0){ var cfr=+k.charAt(9); im.setAlpha(cfr===ci?1-cf:cfr===cn?cf:0); continue; }
@@ -8190,6 +8193,8 @@
       // chunk off the encounter peak, ~95 MB across a departure window.
       try{
         a1aDropLayerGpu('canopy'); a1aDropLayerGpu('water'); a1aDropLayerGpu('base');
+        // Build 90: the build 87/89 overlays were never added here, so a battle kept them all resident.
+        ['foam','front','crest0','crest1','crest2'].forEach(a1aDropLayerGpu);
         Object.keys(A1A.chunks).forEach(function(id){ a1aFreeComposite(A1A.chunks[id]); });
         A1A.drew=false;                                  // the sprites are gone; force a rebuild on return
       }
