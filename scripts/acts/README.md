@@ -79,9 +79,16 @@ Biome transitions come from per-cell act labels, blurred with σ 3 cells and per
 - Landmark art scale is 32/33.6, since the runtime draws a landmark `size` world px wide and one overworld cell is 48×0.7 = 33.6 px. A town is therefore 183 art px (5.7 cells), as in Act 1.
 - Act 3/4 options: `ACTS_VARIANT=A|B ACTS_OUT=<dir> render_act.py --act 3/4 --no-chunks`, then `previews.py act34` and `check_act34.py`.
 
+## Round 3
+
+- `ow_crowns.py` draws Act 3 palm clumps and Act 5 leafless dead-tree clumps with the towns method (`towns/procprops.py`: half-res drawing, Act 1 leaf skin, outline, 2× nearest). There are 7 variants each, with longer side 136 px, reusing the same placements and density.
+- Tree collision uses each clump's closed, hole-filled silhouette, so the gaps between fronds and branches are not walkable.
+- Dead-forest floor is shaded under the clumps.
+- The crest split query point is jittered by ±6 cells, so the x≈160 kit border wanders.
+- The main outputs use `ACTS_VARIANT=C`. Set it for every render; placements are cached per `ACTS_OUT`.
+
 ## Known gaps
 
-- The trees are recoloured Act 1 conifer clusters. Palms (oasis) and truly leafless trees (Act 5) would need new kit art.
 - The Act 3/4 overlap rows (y 88–128) use Act 4's terrain. This puts Act 3's Desert Tomb (270,112) and Magma Tunnels Act 3 side (192,93) north of Act 4's border range, which is unreachable from Act 3 (see the report).
 - Collision is art data (PNG), not the QOKF8COL `.bin`. Wiring and conversion are left to the runtime.
 - The Act 1/Act 2 seam (x 161–164) relies on the runtime drawing Act 1 last. The previews feather the last 3 overlap cells.

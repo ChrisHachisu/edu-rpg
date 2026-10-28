@@ -195,9 +195,27 @@ def crown_sources():
         out.append(np.dstack([rgb, np.where(al >= 128, 255, 0).astype(np.uint8)]))
     return out
 
+DEAD_RAMP = [(0, (34, 26, 38)), (0.35, (100, 88, 106)), (0.7, (152, 140, 158)), (1, (198, 188, 204))]
+
 @functools.lru_cache(None)
+def crown_kit_solid(biome):
+    """-> list of 7 (rgba, solid-mask). Act 3 sand = procedural palm clumps, Act 5 dark = leafless dead-tree
+    clumps (ow_crowns.py, towns-agent method); other biomes = recoloured Act 1 crowns (solid = alpha)."""
+    if biome in ('sand', 'dark'):
+        import ow_crowns
+        out = []
+        for rgba, solid in ow_crowns.crowns('palm' if biome == 'sand' else 'dead'):
+            a = rgba.copy()
+            if biome == 'dark':
+                m = a[..., 3] > 0; L = lum(a[..., :3]); Ln = norm(L, m, 1, 99)
+                a[..., :3] = np.clip(ramp(Ln, DEAD_RAMP), 0, 255).astype(np.uint8)
+                a[np.all(rgba[..., :3] == (34, 30, 18), -1) & m, :3] = (20, 16, 24)   # keep the dark outline
+            out.append((a, solid))
+        return out
+    return [(c, c[..., 3] > 0) for c in (recolor_crown(c, biome, seed=i + 11) for i, c in enumerate(crown_sources()))]
+
 def crown_kit(biome):
-    return [recolor_crown(c, biome, seed=i + 11) for i, c in enumerate(crown_sources())]
+    return [c for c, _ in crown_kit_solid(biome)]
 
 # ---------------------------------------------------------------- sprites (towns / dungeons)
 SPRITE_GROUND = {'snow': 'snow', 'haunt': 'haunt', 'sand': 'sand', 'ash': 'ash', 'dark': 'dark'}

@@ -116,6 +116,7 @@ def draw_objects(win, doc, bw_cell, lab_full, near=None):
     biome per object = biome label at its contact cell, dithered by a hash across boundaries."""
     cx0, cy0, cx1, cy1 = win; W, H = (cx1 - cx0) * P, (cy1 - cy0) * P
     layer = np.zeros((H, W, 4), np.uint8); rockm = np.zeros((H, W), bool); treem = np.zeros((H, W), bool)
+    solidm = np.zeros((H, W), bool)   # feet collision of trees: closed silhouettes (palms / dead trees have gaps)
     events = []
     rk = K.act1_rock_sources(); crs = K.crown_sources()
     for i, r in enumerate(doc['rocks']):
@@ -137,7 +138,11 @@ def draw_objects(win, doc, bw_cell, lab_full, near=None):
         if kind == 'rock' and near is not None:
             # a cliff takes the kit of the open ground its face looks onto (nearest non-mountain land cell),
             # so a range on an act border splits along its crest instead of into colour columns
-            iy, ix = near[0][iy, ix], near[1][iy, ix]
+            # query point jittered by a smooth noise vector (+-6 cells, ~10-cell features) so the crest
+            # split between two kits wanders instead of running straight along a straight range
+            jx = int(round((near[2][iy, ix] - 0.5) * 12)); jy = int(round((near[3][iy, ix] - 0.5) * 8))
+            qy = int(np.clip(iy + jy, 0, A.GH - 1)); qx = int(np.clip(ix + jx, 0, A.GW - 1))
+            iy, ix = near[0][qy, qx], near[1][qy, qx]
         bi = int(np.argmax(bw_cell[:, iy, ix])); b = K.BIOMES[bi]
         if kind == 'rock':
             key = ('r', rec['asset'], b)
@@ -145,17 +150,24 @@ def draw_objects(win, doc, bw_cell, lab_full, near=None):
         else:
             key = ('t', rec['sourceIndex'], b, rec['flipX'])
             if key not in cache:
-                c = K.crown_kit(b)[rec['sourceIndex']]; cache[key] = c[:, ::-1] if rec['flipX'] else c
-        im = cache[key]; h, w = im.shape[:2]
+                c, sd = K.crown_kit_solid(b)[rec['sourceIndex']]
+                cache[key] = (c[:, ::-1], sd[:, ::-1]) if rec['flipX'] else (c, sd)
+        if kind == 'tree':
+            im, sd = cache[key]; h, w = im.shape[:2]
+            cx_, cy_ = rec['center']; x = round((cx_ - cx0) * P - w / 2); y = round((cy_ - cy0) * P - h / 2)
+        else:
+            im = cache[key]; h, w = im.shape[:2]
         X0, Y0 = max(0, x), max(0, y); X1, Y1 = min(W, x + w), min(H, y + h)
         if X1 <= X0 or Y1 <= Y0: continue
         s = im[Y0 - y:Y1 - y, X0 - x:X1 - x]; m = s[..., 3] > 0
         layer[Y0:Y1, X0:X1][m] = s[m]
         (rockm if kind == 'rock' else treem)[Y0:Y1, X0:X1] |= m
+        if kind == 'tree': solidm[Y0:Y1, X0:X1] |= sd[Y0 - y:Y1 - y, X0 - x:X1 - x]
+        else: solidm[Y0:Y1, X0:X1] &= ~m
         # a tree drawn over rock hides it -> the pixel is no longer rock
         if kind == 'tree': rockm[Y0:Y1, X0:X1] &= ~m
         else: treem[Y0:Y1, X0:X1] &= ~m
-    return layer, rockm, treem
+    return layer, rockm, treem, solidm
 
 # ------------------------------------------------------------------ coast (b89/b91 method)
 def edt(m):
@@ -427,7 +439,8 @@ def render(act, out_dir, chunks=True):
     # ---- objects
     gnd = (cls != A.MOUNT) & (cls != A.SEA)
     _, near = ndi.distance_transform_edt(~gnd, return_indices=True)
-    fo, rockm, treem = draw_objects((cx0, cy0, cx1, cy1), doc, bw_cell, lab_full, near)
+    near = (near[0], near[1], vnoise(0, 0, A.GW, A.GH, 10, SEED + 90), vnoise(0, 0, A.GW, A.GH, 10, SEED + 91))
+    fo, rockm, treem, solidm = draw_objects((cx0, cy0, cx1, cy1), doc, bw_cell, lab_full, near)
     a1 = None
     if act == 5:
         # Act 1's own cliffs (forest layer rows >= 218, and its north overhang above 218) stand in front of
@@ -469,10 +482,16 @@ def render(act, out_dir, chunks=True):
     tw = treem & water & ~ndi.binary_dilation(~water, iterations=6)
     if tw.any():
         fo[tw] = 0; treem &= ~tw
+    solidm &= ~(water & ~ndi.binary_dilation(~water, iterations=6))
     # ---- layers
     wa = ndi.gaussian_filter(water.astype(np.float32), 0.6); wa[water] = np.maximum(wa[water], 0.5)
     wa = np.clip((wa - 0.25) * 2, 0, 1)
     base_u8 = np.clip(sandimg, 0, 255).astype(np.uint8); del sandimg, out
+    if 'dark' in bw:
+        # dead forest floor: the ground under leafless clumps is shaded so the wood reads as a mass
+        sh = ndi.gaussian_filter((solidm & ~water).astype(np.float32), 6) * bw['dark']
+        base_u8[:] = np.clip(base_u8 * (1 - 0.45 * sh[..., None]), 0, 255).astype(np.uint8)
+        del sh
     wl = np.dstack([base_u8, (wa * 255).astype(np.uint8)])
     rsm = E['rs']; wl[rsm, :3] = (wl[rsm, :3].astype(np.float32) * 0.62).astype(np.uint8)
     foam = np.zeros((H, W, 4), np.uint8)
@@ -483,7 +502,7 @@ def render(act, out_dir, chunks=True):
     foam[lake & water] = 0
     log('layers')
     # ---- collision (feet-only px mask) and walk-behind
-    raised = fo[..., 3] >= 128
+    raised = (fo[..., 3] >= 128) | solidm
     coll = raised | (wl[..., 3] >= 128)
     # walk-behind: top 24 px of each raised run (with open ground to its north) are walkable but draw over the hero
     b_ = raised
