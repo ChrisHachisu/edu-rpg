@@ -27,6 +27,65 @@
 > materials. They return through the Codex material sheets (dressed masonry, tree walls), the
 > `skyWindow` decals, and the maze autotile sheets.
 
+## Pilot 3: real Codex materials, a built Storm Nest (current direction)
+
+Iron Mine F1 and Haunted Forest F1 keep their pilot2 layouts; Storm Nest is redrawn as a building.
+
+```
+python3 material_pack.py import && python3 material_pack.py pack   # 20 Codex sheets -> design/materials/
+python3 pilot3.py                                                  # built tower F1/F2 + validate; copies mine/forest
+python3 pilot3_render.py ironMine-f1,hauntedForest-f1 --fast       # one floor per process, about 4.5 GB peak
+python3 pilot3_render.py stormNest-f1,stormNest-f2 --fast
+python3 pilot3_preview.py                                          # -> acts-preview/dungeons/pilot3/*.jpg
+```
+
+- `material_pack.py`: `CODEX` now finds `<scratch>/acts/codex-dungeons/out` (or `$CODEX_DUNGEON_OUT`).
+- `pilot3_render.py`: the Act 1 renderer, unchanged, with two swaps that apply only inside this
+  process:
+  - the standing-water mask is off, because these accents are planks, undergrowth and wet flags,
+    not water;
+  - built floors use `built_field()`: the same pipeline without the organic warp, with straight
+    worn faces and an analytic round outer wall. `walkable_mask()` still derives collision from it.
+- `pilot3.py`: the tower plan is a stair core, a ring corridor in two halves, four quadrant rooms
+  on jittered axis spokes, and stub alcoves. Walls are 2+ cells thick, so the renderer prunes
+  nothing. Stair sprites go through `spriteFor`, and the F1 door is an opening, not a cave mouth.
+- `pilot3_preview.py`: overlays from the Codex `mech-tiles` sheets (keyed): windows `a[0,2]`,
+  wind gust `a[0,0]` on 19, mine timber set `b[2,1]` on N-S shafts.
+
+## Pilot 2: new organic layouts with the mechanic designed in (current direction)
+
+Owner, 2026-10-28: "The game needs to make the dungeons much more organic like the stage 1
+dungeons, but at the same time it needs to take into account the new dungeons mechanic and create
+the dungeon so it functions accordingly. We cannot reuse the previous versions dungeon design for
+any of the dungeons." Ap() layouts and every earlier design are out.
+
+| script | what |
+|---|---|
+| `pilot2.py author` | writes `<scratch>/pilot2/<floor>.json` (A1D format plus `tiles`, `mechanics`, `decals`, `decorRows`) and validates it |
+| `pilot2_render.py <floor>` | the SHIPPED Act 1 renderer, unchanged, on that layout. Placeholder materials are swapped at the input only: a procedural tree-canopy wall for the forest, and dressed-stone blocks and flags for the tower |
+| `pilot2_preview.py` | JPGs (under 3 MB) in `acts-preview/dungeons/pilot2/`, with decals placed against the rendered edge: sky, window slits, wind draught, timber sets, exits |
+
+The pilot floors:
+
+- **Iron Mine F1.** Act 1's own `generate_floor` with a `skel_mine` skeleton passed in through
+  the pattern hook: a straight adit, cross-cut drifts 2 cells wide at near right angles, and stopes
+  at the drift faces. It passes Act 1's `validate()`, and the renderer's thin-wall prune is applied
+  to the rows so the art and the collision agree. Timber sets are decals on the narrow drifts.
+- **Haunted Forest F1.** A perfect maze on a jittered grid with 2–3 cell tree walls (Act 1's
+  renderer keeps them), bent with smooth row and column offsets so the corridors wander.
+  - The way in is from the south.
+  - Three exits leave through the east edge. `correctExitY` follows the engine's forest-maze rule:
+    walking off the east edge on that row advances the floor, and loadMap marks that row tile 2.
+  - No save tile is placed, as in the bundle.
+- **Storm Nest F1/F2.** A round tower: a 3-cell outer wall, a stair core, jittered radial walls and
+  an arc wall that make hand-built rooms, and one solid radial wall that forces the long way round.
+  The stairs climb (`ascending`). F2 adds the wind mechanic:
+  - The smallest set of 19 cells that cuts the route, which the engine's open rule opens whole.
+  - A windbreaker key chest on the arrival side (`keyChests`).
+  - The validator proves the stairs cannot be reached without the key.
+- **Every floor passes** the reachability and mechanic checks, and the renderer would prune
+  0 wall cells, so the picture and the game's walls cannot disagree.
+
 ## Option (a) mockups: authored floors for the five themes the generator cannot carry
 
 The owner has not approved these yet; they are mockups only. They cover stormNest, stormreachSpire,

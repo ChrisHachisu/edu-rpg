@@ -121,7 +121,7 @@ def draw_objects(win, doc, bw_cell, lab_full, near=None):
     rk = K.act1_rock_sources(); crs = K.crown_sources(); geo = K.cliff_geometry()
     for i, r in enumerate(doc['rocks']):
         im = rk[r['asset']] if not geo else geo[r['asset']]['union'][..., None].repeat(4, -1).astype(np.uint8); ox, oy = r['originWorldCell']
-        x = (ox - cx0) * P; y = (oy - cy0) * P; h, w = im.shape[:2]
+        x = int(round((ox - cx0) * P)); y = int(round((oy - cy0) * P)); h, w = im.shape[:2]
         if x > W or y > H or x + w < 0 or y + h < 0: continue
         a = im[..., 3]; by = h - 1; cols = np.flatnonzero(a[by]); ax = int(np.median(cols))
         events.append((y + by, 'rock', r, x, y, (ox + ax / P, oy + by / P), i))
@@ -227,6 +227,27 @@ def coast(base, water0, rockm, ground_ok, keep, shore_rgb, speck_rgb, wetmul, gx
     fill = clo & water & (dg < dr2) & (dr2 < JOIN * 2.5)
     water = water & ~fill
     del D, clo, dg, dr2
+    # fix2 (owner 2026-10-28): cliffs meet the sea the Act 1 way -- no walkable strip or patch between a
+    # cliff and the water. Ground whose rock->water gap is under 3.5 cells becomes water, then any small
+    # ground pocket left touching both rock and water goes too (landmark pads are kept below).
+    if os.environ.get('ACTS_FIX2', '1') == '1':
+        g_ = ~water & ~rock
+        thin = g_ & (edt(~rock) + edt(~water) < 3.5 * P)
+        lt, nt = ndi.label(thin)
+        if nt:
+            tw = set(np.unique(lt[ndi.binary_dilation(water, iterations=2) & thin])) - {0}
+            water = water | np.isin(lt, list(tw))
+        water = ndi.binary_opening(water, iterations=2) | (water & ndi.binary_dilation(rock, iterations=2))
+        lg3, ng3 = ndi.label(~water & ~rock)
+        if ng3:
+            gs3 = ndi.sum(np.ones_like(lg3), lg3, range(1, ng3 + 1))
+            tw3 = set(np.unique(lg3[ndi.binary_dilation(water, iterations=2)]))
+            tr3 = set(np.unique(lg3[ndi.binary_dilation(rock, iterations=2)]))
+            kp = set(np.unique(lg3[keep])) if keep is not None else set()
+            water = water | np.isin(lg3, [i + 1 for i, v in enumerate(gs3)
+                                         if v < 40000 and (i + 1) in tw3 and (i + 1) in tr3 and (i + 1) not in kp])
+            del lg3
+        del g_, thin, lt
     if keep is not None: water = water & ~keep
     land = ~water
     del lab, labw, lg, lg2, lc
@@ -505,14 +526,33 @@ def render(act, out_dir, chunks=True):
         sg = -1 if (sw.size and sw.mean() > 0.5) else 1
         y0_, y1_ = (py, py + 8 * P) if sg > 0 else (py - 8 * P, py)
         lane[max(0, y0_):max(0, y1_), max(0, px - 74):max(0, px + 74)] = True
-    floorm = hull & ~rk_ & ~water & ~keep & ~lane
+    # fix2: connecting dungeons sit in their range -- the stamped flank (acts_common.flank_mask) that no
+    # panel covers is rock floor (or blocked forest floor), so rock/trees touch the mouth on both sides
+    flankM = np.zeros((H, W), bool); flankF = np.zeros((H, W), bool); mouthzone = np.zeros((H, W), bool)
+    for lm in lms:
+        if lm['name'] not in A.CONNECTING or lm['name'] in A.FLANK_SKIPPED: continue
+        x, y = lm['cell']; sz = A.FLANK_USED.get(lm['name'], A.FLANK); nw, nd = A.NOTCH; fm = np.zeros((H, W), bool)
+        hl, hr, dp = sz if len(sz) == 3 else (sz[0], sz[0], sz[1])
+        def rect(x0_, y0_, x1_, y1_, v):   # cell rect [x0,x1) x [y0,y1) -> window px, clipped
+            X0, Y0 = max(0, (x0_ - cx0) * P), max(0, (y0_ - cy0) * P)
+            X1, Y1 = min(W, (x1_ - cx0) * P), min(H, (y1_ - cy0) * P)
+            if X1 > X0 and Y1 > Y0: fm[Y0:Y1, X0:X1] = v
+        fc = A.flank_mask(lm['name'], x, y)   # same organic outline as the class stamp, in window px
+        ys_, xs_ = np.nonzero(fc[max(0, cy0):cy1, max(0, cx0):cx1])
+        for yc, xc in zip(ys_ + max(0, cy0), xs_ + max(0, cx0)): rect(xc, yc, xc + 1, yc + 1, True)
+        yy_, xx_ = np.ogrid[:H, :W]; mx_, my_ = (x - cx0) * P + 16, (y - cy0) * P + 16
+        mouthzone |= (xx_ - mx_) ** 2 + (yy_ - my_) ** 2 < (3.2 * P) ** 2
+        if A.CONNECTING[lm['name']] == A.MOUNT: flankM |= fm
+        else: flankF |= fm
+    # fix3: no flat floor around connecting mouths -- panels cover the flank; the hull floor is also kept
+    # out of a 7-cell radius round each connecting mouth (any gap there shows painted rock from the panels)
+    floorm = hull & ~rk_ & ~water & ~keep & ~lane & ~mouthzone
     if floorm.any():
         fy, fx = np.nonzero(floorm)
-        Lg = K.lum(base_u8[fy, fx]) / 255.0
         fc = np.zeros((len(fy), 3), np.float32)
-        for b, w in bw.items():
-            rr = K.ROCK_RAMP.get(b) or [(0, (52, 46, 40)), (0.5, (98, 88, 74)), (1, (140, 128, 108))]
-            fc += K.ramp(0.08 + 0.42 * Lg, rr) * w[fy, fx][:, None]
+        for b, w in bw.items():   # fix3: tiled panel texture of the local kit (world-phased), not a flat ramp
+            t = K.rock_floor_tile(b); ts = t.shape[0]
+            fc += t[(fy + gy0) % ts, (fx + gx0) % ts] * w[fy, fx][:, None]
         base_u8[fy, fx] = np.clip(fc, 0, 255).astype(np.uint8)
     if 'dark' in bw:
         # dead forest floor: the ground under leafless clumps is shaded so the wood reads as a mass
@@ -544,6 +584,7 @@ def render(act, out_dir, chunks=True):
     wb &= raised
     coll &= ~wb
     coll |= floorm & ~wb
+    # (forest flanks: the stamped F cells get real trees from placements; no invisible blocking)
     del rb, L
     front = np.zeros_like(fo); fm = ndi.binary_dilation(wb, np.ones((3, 3), bool)) & (fo[..., 3] > 0)
     front[fm] = fo[fm]
@@ -558,6 +599,9 @@ def render(act, out_dir, chunks=True):
         m, gate = landmark_mask(lm, south.size and south.mean() > 0.5)
         Y0, X0 = max(0, sy), max(0, sx); Y1, X1 = min(H, sy + S), min(W, sx + S)
         coll[Y0:Y1, X0:X1] |= m[Y0 - sy:Y1 - sy, X0 - sx:X1 - sx]
+        if A.CONNECTING.get(lm['name']) == A.MOUNT and lm['name'] not in A.FLANK_SKIPPED:
+            # fix3: the backing panel's foot runs under the sprite; keep the mouth channel walkable
+            coll[max(0, py - GATE_DEPTH):max(0, py + 16), max(0, px - GATE_HALF):max(0, px + GATE_HALF)] = False
         # the gate/mouth approach and the 1-cell ring around the door cell stay walkable
         Image.fromarray(lm['rgba']).save(out_dir + f"/landmarks/{lm['slug']}.png", optimize=True)
         lmjson.append({k: lm[k] for k in ('name', 'slug', 'cell', 'size', 'anchor', 'kind', 'biome')} |

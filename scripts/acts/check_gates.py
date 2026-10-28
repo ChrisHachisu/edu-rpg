@@ -36,6 +36,16 @@ for act in [int(x) for x in sys.argv[1:]] or [2, 3, 4, 5]:
         while L > 0 and row[L - 1]: L -= 1
         while R < len(row) - 1 and row[R + 1]: R += 1
         w = (R - L + 1) / 32 if row[c] else 0
-        bad += not ok
-        print(f'  act{act} {l["kind"]:8s} {l["name"][:28]:28s} {l["gate"]:5s} channel {w:5.2f} cells  door reachable: {"yes" if ok else "NO"}')
+        bad += not ok; seal = ''
+        if l['name'] in A.CONNECTING:
+            # sealed: from the front, the feet cannot walk round the sprite to the cells behind the mouth
+            # beside the sprite (1 row above the door, 2.5-4.5 cells left and right) must be blocked: the
+            # feet from the front cannot stand there, so the mouth is the only way into the range
+            fl = set(np.unique(front)) - {0}; by = py - y0 - sgn * 32
+            cx_ = px - x0
+            side = np.concatenate([lab[by - 8:by + 8, max(0, cx_ - 144):max(0, cx_ - 80)].ravel(),
+                                   lab[by - 8:by + 8, cx_ + 80:cx_ + 144].ravel()])
+            sealed = not (fl & (set(np.unique(side)) - {0}))
+            seal = '  sealed: ' + ('yes' if sealed else 'NO'); bad += not sealed
+        print(f'  act{act} {l["kind"]:8s} {l["name"][:28]:28s} {l["gate"]:5s} channel {w:5.2f} cells  door reachable: {"yes" if ok else "NO"}{seal}')
 print('FAIL' if bad else 'all doors reachable', bad)

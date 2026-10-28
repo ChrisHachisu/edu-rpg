@@ -46,7 +46,10 @@ def place_rocks(cls, act, lms):
     wet = (cls == A.SEA) | (cls == A.WATER)
     clear = np.zeros_like(M)
     for l in lms:
-        x, y = l['cell']; clear[max(0, y - 3):y + 3, max(0, x - 3):x + 4] = True
+        x, y = l['cell']
+        if l['name'] in A.CONNECTING:   # fix2: rock right up to the sprite's sides (notch only)
+            nw, nd = A.NOTCH; clear[max(0, y - nd):y + 1, max(0, x - nw):x + nw + 1] = True
+        else: clear[max(0, y - 3):y + 3, max(0, x - 3):x + 4] = True
         if gate_sgn(cls, l) > 0: clear[y + 1:y + 9, max(0, x - 2):x + 3] = True
         else: clear[max(0, y - 8):y, max(0, x - 2):x + 3] = True
     # ridges too thin for a panel widen into ground (up to 4 cells; that ground becomes blocked mountain);
@@ -70,6 +73,17 @@ def place_rocks(cls, act, lms):
     stand[222:, 152:161] |= (cls[222:, 152:161] == A.MOUNT)
     uncovered = M & ~clear
     placed = []; temps = {}
+    # fix3: a backing panel under every connecting mouth (Act 1's Crystal Cave sits against painted cliff):
+    # the wide interior panel, centred on the mouth, its foot 12 px below the door-cell centre; the sprite
+    # hides its middle and its ragged sides wrap the mouth. render_act opens the mouth channel in collision.
+    for l in lms:
+        if A.CONNECTING.get(l['name']) != A.MOUNT or l['name'] in A.FLANK_SKIPPED: continue
+        slot = 'interior-rock-panel'; Hc, Wc = (geo[slot]['canvas'] if geo else kit[slot].shape[:2])
+        x, y = l['cell']; ox = (x * 32 + 16 - Wc / 2) / 32; oy = (y * 32 + 16 + 12 - Hc) / 32
+        placed.append({'asset': slot, 'group': 'main', 'originWorldCell': [round(ox, 4), round(oy, 4)],
+                       'gainCells': 0, 'backing': l['name']})
+        x0c, y0c = int(np.floor(ox)), int(np.floor(oy)); x1c, y1c = int(np.ceil(ox + Wc / 32)), y
+        uncovered[y0c:y1c, x0c:x1c] = False
     for name, grp in order:
         if geo:   # Codex per-act panels share one canvas per slot: union must fit, intersection covers
             fpa = footprint(geo[name]['union'][..., None].repeat(4, -1), 0, 0, thr=0.04)

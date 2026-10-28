@@ -95,3 +95,21 @@ Biome transitions come from per-cell act labels, blurred with σ 3 cells and per
 - The Act 3/4 overlap rows (y 88–128) use Act 4's terrain. This puts Act 3's Desert Tomb (270,112) and Magma Tunnels Act 3 side (192,93) north of Act 4's border range, which is unreachable from Act 3 (see the report).
 - Collision is art data (PNG), not the QOKF8COL `.bin`. Wiring and conversion are left to the runtime.
 - The Act 1/Act 2 seam (x 161–164) relies on the runtime drawing Act 1 last. The previews feather the last 3 overlap cells.
+
+## Fix 2 (owner comments, 2026-10-28)
+
+`acts_common.fix2` runs inside `world()` for variants A and C. Set `ACTS_FIX2=0` to turn it off.
+- **Cliffs meet the sea (the Act 1 way).** In `render_act.coast`, ground whose cliff-to-water gap is under 3.5 cells becomes water, and so does any small ground pocket touching both rock and water. Landmark pads are kept. At the class level, walkable cells whose mountain-to-water gap is 4 cells or less become mountain.
+- **Connecting dungeons sit in their range** (`CONNECTING`), like Act 1's Crystal Cave. A blocker is stamped behind the mouth and on both sides of it, leaving a notch that holds the sprite (`FLANK_TRY`, `NOTCH`). Panels may stand right up to the notch, and any flank area no panel covers is rock floor. A flank size is used only if every landmark's walkable component stays the same under the conservative model `walkable()` (open ground minus 2-cell panel spill). An asymmetric flank leaves one side open as the approach.
+- `Shadow Cave (Act 3 side)` moved from (198, 213) to (219, 194), the nearest Act 3 inner corner of a south-facing cliff (`VARIANT_MOVES`).
+- `Magma Tunnels (Act 4 side)` gets a front plaza dug into the range at rows 61–66 (`PLAZA`).
+- The Haunted Forest pair is already sealed by its trees. Its stamped forest cells get real trees, and there is no invisible blocking.
+- `check_gates.py` also reports `sealed` for connecting gates: the feet cannot stand 3–6 cells beside the sprite, one row above the door.
+
+## Fix 3 (connecting mouths, 2026-10-28)
+
+- Only the mouth cells stay open (`NOTCH = (1, 1)`). Each mountain mouth gets a forced wide backing panel (`interior-rock-panel`), centred on it with its foot 12 px below the door-cell centre. The sprite hides the panel's middle, and the panel's ragged sides wrap the mouth. `render_act` re-opens the mouth channel (`GATE_HALF` × `GATE_DEPTH` .. +16 px) in collision.
+- The flank stamp has an organic foot. It is full depth beside the mouth (|dx| ≤ 4) and recedes 1–3 rows further out, with hash jitter. There is no flank rock floor any more, and the hull floor stays out of 3.2 cells round each mouth.
+- Rock floor anywhere (gaps inside a range hull) is now a world-phased tile of the local kit's wide panel texture, ×0.8 (`biome_kits.rock_floor_tile`). It used to be a flat ramp.
+- `check_gates` sealed test: feet cannot stand 2.5–4.5 cells beside the door, one row above it.
+- On the Act 4 side of Magma Tunnels, the dug plaza plus an east approach (x 200–206, rows 50–66) leave room for a full panel east of the mouth (`FLANK_FORCE` (13, 12, 10)).

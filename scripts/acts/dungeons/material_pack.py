@@ -20,7 +20,11 @@ from specs import SPECS
 from previews import save_small, font
 from write_codex_briefs import MATERIAL_FOR
 
-CODEX = "/mnt/project-files/edu-rpg/codex-gen/dungeons/out"
+CODEX = os.environ.get("CODEX_DUNGEON_OUT") or next(
+    (d for d in (os.path.join(common.SCRATCH, "..", "codex-dungeons", "out"),
+                 "/mnt/project-files/edu-rpg/codex-gen/dungeons/out") if os.path.isdir(d)),
+    "/mnt/project-files/edu-rpg/codex-gen/dungeons/out")
+CODEX = os.path.normpath(CODEX)
 TILES = ("floor", "wall", "rubble", "accent")
 SIZE = 531                     # Act 1 tile size; the budget's 8.1 MB assumes it
 

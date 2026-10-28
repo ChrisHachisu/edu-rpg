@@ -411,3 +411,16 @@ if __name__ == '__main__':
     os.makedirs(A.PREVIEW, exist_ok=True)
     for act in (2, 3, 4, 5):
         p = A.PREVIEW + f'/kits-act{act}.png'; contact_sheet(act).save(p, optimize=True); print('wrote', p)
+
+
+@functools.lru_cache(None)
+def rock_floor_tile(biome):
+    """fix3: textured rock floor -- the largest fully opaque square of the biome's wide interior panel,
+    darkened a little so a gap between panels reads as recessed painted rock instead of a flat fill"""
+    a = rock_kit(biome)['interior-rock-panel']; m = a[..., 3] > 0; H, W = m.shape
+    for sz in range(200, 40, -8):
+        for y in range(0, H - sz, 8):
+            for x in range(0, W - sz, 8):
+                if m[y:y + sz, x:x + sz].all():
+                    return (a[y:y + sz, x:x + sz, :3].astype(np.float32) * 0.8)
+    return np.full((64, 64, 3), 60, np.float32)
