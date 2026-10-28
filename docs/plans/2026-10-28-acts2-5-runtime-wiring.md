@@ -332,3 +332,12 @@ Verified headless (Chromium, 393×852):
   shallow apply, and the once-a-second rewrite is gone.
   `__QOK_MULTIACT__.plateDrift()` stayed at 0 cells across walking, the seam, and an Ironkeep
   round trip.
+
+### 11.2 Acts 3-5 and the other towns (2026-10-28, scratch dist only)
+
+- Manifest is variant C (`ACTS_VARIANT=C python3 scripts/build_acts_hifi_manifest.py`): composite order 1,2,4,5,3; Magma Tunnels Act-4 mouth at (187,60), exit (187,61).
+- `build_act_plate.py` stamps each door into the plate of the act that owns its cell (fixes Ember's Rest drifting 2 cells when Act 3 owns the overlap).
+- Ground layers sort by `drawRank`, so the owner act draws on top in overlaps.
+- Towns: the manifest `towns` list (ironkeep, frostwatch, hauntedVillage, ruinsCamp, oasisHaven, embersRest, havensEdge, lastBastion) fills `window.__QOK_ACTS_TOWN_IDS__` before the adapter runs; `adapter.js` shares that Set (a fresh Set without the flag). Town files go in `act1-hifi/town/`, using Act 1 NPC sheets as placeholders. Cinderwatch stays scenery only.
+- Round trips proven: Ironkeep, Oasis Haven, Frostwatch. Art issues found: Haven's Edge (tombstone) and Ruins Camp (palm) block the walk south from the start cell; the Last Bastion gate channel is narrower than the feet stencil; Ember's Rest entry from the south slid to (199,98) without triggering.
+- Flag OFF: Act 1 is still pixel-identical (0 px at 69,257 and 133,347, 2 runs each) with the new adapter, dq-tiles and index.

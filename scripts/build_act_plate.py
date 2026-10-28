@@ -40,11 +40,15 @@ def main(runtime_dir, out, solid=0.5):
     ys, xs = np.mgrid[y0:y1 + 1, x0:x1 + 1]
     tiles[(xs >= 16) & (xs <= 163) & (ys >= 218) & (ys <= 399)] = -1
     index = json.load(open(os.path.join(ROOT, 'public/acts-hifi/manifest.json')))
-    doors = [L for L in index['landmarks'] if L['act'] == act]
+    # A door belongs to the plate that OWNS its cell, whichever act's roster names it: under variant
+    # C, Ember's Rest (an Act 4 town) sits in rows Act 3 wins, and two plates stamping it disagreed.
+    def owned(c):
+        return x0 <= c[0] <= x1 and y0 <= c[1] <= y1 and tiles[c[1] - y0, c[0] - x0] != -1
+    doors = [L for L in index['landmarks'] if owned(L['at'])]
     for L in doors:
         tiles[L['at'][1] - y0, L['at'][0] - x0] = L['tile']
         ex = L.get('exit')
-        if ex and tiles[ex[1] - y0, ex[0] - x0] not in (0,):
+        if ex and owned(ex):
             tiles[ex[1] - y0, ex[0] - x0] = 0        # the exit cell must stand, as in Act 1's SAFE
     rows = [''.join('.' if t < 0 else np.base_repr(int(t), 36).lower() for t in r) for r in tiles]
     json.dump({'act': act, 'bounds': m['bounds'], 'legend': "'.' = not this act, else base-36 tile",

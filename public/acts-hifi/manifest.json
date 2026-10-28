@@ -8,10 +8,11 @@
  "compositeOrder": [
   "1",
   "2",
-  "3",
+  "4",
   "5",
-  "4"
+  "3"
  ],
+ "variant": "C",
  "streaming": {
   "preloadCells": 4,
   "maxResident": 12
@@ -49,7 +50,7 @@
    ],
    "cols": 10,
    "rows": 9,
-   "drawRank": 2,
+   "drawRank": 4,
    "tint": "#d9b878",
    "runtime": null
   },
@@ -67,7 +68,7 @@
    ],
    "cols": 10,
    "rows": 8,
-   "drawRank": 4,
+   "drawRank": 2,
    "tint": "#8a3b2a",
    "runtime": null
   },
@@ -532,12 +533,12 @@
    "mapId": "magmaTunnels",
    "tile": 7,
    "at": [
-    183,
-    117
+    187,
+    60
    ],
    "exit": [
-    183,
-    118
+    187,
+    61
    ],
    "toX": 50,
    "toY": 1,
@@ -586,7 +587,7 @@
    ],
    "exit": [
     273,
-    116
+    118
    ],
    "toX": 50,
    "toY": 1,
@@ -898,5 +899,6 @@
     42
    ]
   }
- ]
+ ],
+ "towns": []
 }

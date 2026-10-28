@@ -19,6 +19,9 @@
   try { flag = localStorage.getItem('qok-multiact-hifi') === '1' || /[?&]multiact=1\b/.test(location.search); } catch (e) {}
   if (!flag) return;
 
+  // Hi-fi towns of Acts 2-5. act1-hifi/adapter.js adopts this Set as its TOWN_IDS (it is a module,
+  // so it evaluates after this classic script); the index's `towns` list fills it once loaded.
+  var TOWNS = window.__QOK_ACTS_TOWN_IDS__ = new Set();
   var CHUNK_DEPTH = 1.05;               // above the legacy terrain canvas (1), below Act 1 base (1.1)
   var M = null, req = false, fail = 0;
   var res = {}, lru = [], stats = { created: 0, destroyed: 0, wrapped: 0, entries: 0, exits: 0, suppressed: 0, compass: 0 };
@@ -34,6 +37,7 @@
         var m = JSON.parse(r.responseText);
         if (!m || m.schema !== 'qok-acts-hifi-v1' || !m.acts) throw new Error('schema');
         index(m); M = m;
+        (m.towns || []).forEach(function (id) { TOWNS.add(id); });
       } catch (e) { fail++; }
     };
     r.onerror = r.ontimeout = function () { req = false; fail++; };
@@ -206,7 +210,7 @@
         e.objs.push(img);
       });
     }
-    add('ground', c.ground, CHUNK_DEPTH + 0.04, 1);   // 1.09: under Act 1's base (1.1) in the x161-163 overlap
+    add('ground', c.ground, CHUNK_DEPTH + 0.04 + a.drawRank * 0.0001, 1);   // ~1.09: under Act 1's base (1.1); overlaps by composite order
     if (c.front) add('front', c.front, FRONT_DEPTH, 1);
     for (var i = 0; i < 3; i++) if (c['crest' + i]) add('crest' + i, c['crest' + i], CREST_DEPTH + i * 0.001, 0);
   }
