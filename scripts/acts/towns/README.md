@@ -117,3 +117,19 @@ numpy, scipy, Pillow and node (node runs the walkable validator).
   16.53/18.1, Frostwatch 14.88/16.2, Ravenhollow 15.37/18.6, Oasis 16.62/20.6, Ruins 15.71/18.8,
   Ember's Rest 15.21/20.9, Cinderwatch 15.39/20.9, Last Bastion 14.64/19.7, Haven's Edge
   12.96/16.4 (19% of that plate is night sky). All are under the gate's 17/22% floor, as Millbrook is.
+
+## Round 3: back to the Act 1 method (Codex plates)
+
+The owner rejected the kitbash ("buildings do not match the terrain"). These scripts prepare the
+Codex image-generation package; generation itself runs only on the Mac.
+
+- `plan_images.py <dir>`: flat colour-key layout guides from the round-2 compositions (shop roof
+  red, healer roof green, pale lanes).
+- `codex_briefs.py [dest]`: writes `/mnt/project-files/edu-rpg/codex-gen/`: `briefs/` (9 town
+  plates, 9 NPC rosters, palm and dead-tree crown sheets, 4 cliff kits), `anchors/` (65-cell
+  overworld crops around each town, layout guides, icons, Act 1 style/NPC/canopy/cliff anchors)
+  and `run.sh` (sequential `codex exec -m gpt-5.6-sol --skip-git-repo-check -i ...` with the brief on
+  stdin; best-of 8 per town, logged to `out/run.log`).
+- `check_feet.py [ids]`: sweeps the hero's real feet stencil (dq-tiles `a1fBuildStencil`, scaled to
+  the town lattice) from startCell to every NPC, the save point, the shop counter and the exit, at
+  stencil width and at stencil + 1 cell. `OW_DIST=<dist>` also checks the overworld town doors.

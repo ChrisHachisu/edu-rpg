@@ -8492,6 +8492,10 @@
   window.__A1A_PH__=A1A_PH;                                     // verification only: placeholder registry
   window.__DQ_TILES__={ reskin:reskin, ready:terrainReady, dungeonSurfaceReady:dungeonSurfaceReady, retryDungeonSurface:retryDungeonSurface, readyWhy:terrainReadyWhy, cost:terrainCost,
     checkOverworldSpawn:a1mOverworldSpawnCheck,
+    // Acts 2-5 prototype (acts-hifi/acts-runtime.js, flag OFF by default) writes its plates into
+    // mapData after load; the overworld field built before that would keep the frozen terrain.
+    // Nothing calls this unless the flag loaded the runtime.
+    refreshMovementField:function(){ owmState=null; },
     retryUnderpaint:function(){ return a1aUnderpaintRequired()&&a1aUnderpaintRetry(); },
     overworldSpace:{ scale:OW_SCALE, pitch:OW_TILE, cellCenter:owCellCenter,
       toCanonical:owCanonical, toPhysical:owPhysical,

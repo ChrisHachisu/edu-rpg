@@ -71,9 +71,26 @@ def exit_cell(cls, x, y):
     return None
 
 
+def owner_rle(act_of):
+    """The act-ownership raster (which act's art owns each cell, 0 = none), one run-length
+    string per row: 'act:len,act:len'. acts-runtime.js picks the collision pack from it."""
+    rows = []
+    for r in act_of:
+        runs, cur, n = [], int(r[0]), 0
+        for v in r:
+            v = int(v)
+            if v == cur:
+                n += 1
+            else:
+                runs.append(f'{cur}:{n}'); cur, n = v, 1
+        runs.append(f'{cur}:{n}')
+        rows.append(','.join(runs))
+    return {'width': int(act_of.shape[1]), 'height': int(act_of.shape[0]), 'rows': rows}
+
+
 def main():
     owner = A.owner()
-    cls, _act, _land = A.world()
+    cls, act_of, _land = A.world()
     # ACTS_VARIANT=C (the current art): Act 3's rows win the Act 3/4 overlap, and the Act 4 Magma
     # mouth moves to (187,60) -- acts_common.world()/landmarks() apply both; the draw order follows.
     variant = os.environ.get('ACTS_VARIANT', '')
@@ -106,6 +123,7 @@ def main():
                 'pixelsPerCell': A.P, 'chunkCells': CHUNK_CELLS, 'compositeOrder': order, 'variant': variant or None,
                 'streaming': {'preloadCells': 4, 'maxResident': 12},
                 'acts': acts, 'landmarks': landmarks, 'unmapped': unmapped,
+                'owner': owner_rle(act_of),
                 'towns': []}   # hi-fi town ids whose plates are installed under act1-hifi/town/
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     with open(OUT, 'w') as f:

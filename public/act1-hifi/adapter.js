@@ -185,6 +185,10 @@ function townSavePosition(entry) {
 
 function townResumeAt(saved, mapId, firstEntry) {
   if (firstEntry || saved?.position?.mapId !== mapId) return '';
+  // Acts 2-5 prototype (acts-hifi/acts-runtime.js, flag OFF by default): a walk-in through one of
+  // its doors leaves the bundle's interior cell (8,14) in the save, which is not a resume point.
+  // The marker is only ever set by that runtime, so without the flag this line never fires.
+  if (window.__QOK_ACTS_WALKIN__ === mapId) { window.__QOK_ACTS_WALKIN__ = null; return ''; }
   const x = Number(saved.position.x), y = Number(saved.position.y);
   if (!Number.isFinite(x) || !Number.isFinite(y)) return '';
   return `&at=${encodeURIComponent(`${x},${y}`)}`;

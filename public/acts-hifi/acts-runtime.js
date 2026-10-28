@@ -44,7 +44,41 @@
     try { r.send(); } catch (e) { req = false; fail++; }
   }
   function key(t, x, y, f) { return t + '|' + x + '|' + y + '|' + (f || 0); }
+  // Act-ownership raster (manifest `owner`, one RLE row per cell row): the act whose art owns
+  // each cell. Overlapping act rectangles (variant C: Act 3 wins y 88-128 over Act 4) mean the
+  // bounds alone cannot pick the collision pack.
+  var OWN = null, OWN_W = 0, OWN_H = 0;
+  function ownerRaster(o) {
+    if (!o || !o.rows) return;
+    OWN_W = o.width; OWN_H = o.height; OWN = new Int8Array(OWN_W * OWN_H);
+    for (var y = 0; y < o.rows.length && y < OWN_H; y++) {
+      var x = 0, runs = o.rows[y].split(',');
+      for (var k = 0; k < runs.length; k++) {
+        var p = runs[k].split(':'), v = +p[0], n = +p[1];
+        for (var j = 0; j < n && x < OWN_W; j++) OWN[y * OWN_W + x++] = v;
+      }
+    }
+  }
+  function ownerAct(tx, ty) {
+    if (!OWN || tx < 0 || ty < 0 || tx >= OWN_W || ty >= OWN_H) return 0;
+    return OWN[ty * OWN_W + tx];
+  }
+  // A landmark's footprint answers to the act that drew it, even where another act owns the
+  // ground (variant C: Ember's Rest is Act 4 art on rows Act 3 wins). Its walls and gate live in
+  // that act's collision pack, not the owner's. Box = sprite mask, art px at 32 per cell.
+  function landmarkAct(px, py) {
+    for (var i = 0; i < M.acts.length; i++) {
+      var a = M.acts[i], m = a.rt && a.rt.manifest; if (!m || !m.landmarks || !(a.rt.bits)) continue;
+      for (var j = 0; j < m.landmarks.length; j++) {
+        var L = m.landmarks[j], an = L.maskAnchor || L.anchor, sz = L.maskSize || [L.size, L.size];
+        var x0 = (L.cell[0] + 0.5) * 32 - an[0], y0 = (L.cell[1] + 0.5) * 32 - an[1];
+        if (px >= x0 && py >= y0 && px < x0 + sz[0] && py < y0 + sz[1]) return a.act;
+      }
+    }
+    return 0;
+  }
   function index(m) {
+    ownerRaster(m.owner);
     (m.landmarks || []).forEach(function (L) {
       ENTRY[L.at[0] + ',' + L.at[1]] = L;
       ARRIVAL[key(L.mapId, L.toX, L.toY, L.toFloor)] = L;
@@ -77,6 +111,7 @@
         if (L) {
           if (this.transitionCooldown > 0) { this.transitionCooldown--; return null; }
           stats.entries++;
+          if (TOWNS.has(L.mapId)) window.__QOK_ACTS_WALKIN__ = L.mapId;   // adapter: spawn at the gate, not a resume cell
           var hit = { targetMap: L.mapId, toX: L.toX, toY: L.toY };
           if (L.toFloor) hit.toFloor = L.toFloor;
           return hit;
@@ -113,7 +148,28 @@
           try { var p = window.__GAME_STATE__.player.state.position; if (p) { p.x = back.exit[0]; p.y = back.exit[1]; } } catch (e) {}
         }
       }
-      return loadMap.apply(this, arguments);
+      var want = mapId === 'overworld' ? [this.heroTileX, this.heroTileY] : null;
+      var r = loadMap.apply(this, arguments);
+      // The frozen engine nudges an arrival off any cell its OWN terrain calls blocked, and it
+      // judges that before this runtime has plated the new mapData (a town exit swaps the array).
+      // Plate now, and put the hero back on the intended cell when the act art says it is free.
+      // Plate at once: dq-tiles' per-frame unstick judges the arrival against the movement field,
+      // and before this the field is built from the bare new array.
+      if (want && M) { try { plate(this); } catch (e) {} }
+      if (want && M && !act1Inside(want[0], want[1]) && (this.heroTileX !== want[0] || this.heroTileY !== want[1])) {
+        try {
+          var sp = space(), hx = sp.cellCenter(want[0]), hy = sp.cellCenter(want[1]);
+          var chk = window.__DQ_TILES__.checkOverworldSpawn(this, hx, hy);
+          if (chk && chk.status === 'ready' && chk.free) {
+            stats.unnudged = (stats.unnudged || 0) + 1;
+            this.heroTileX = want[0]; this.heroTileY = want[1];
+            if (this.hero) { this.hero.x = hx; this.hero.y = hy; }
+            if (typeof this.updatePosition === 'function') this.updatePosition();
+            if (typeof this.updateCamera === 'function') this.updateCamera();
+          }
+        } catch (e) {}
+      }
+      return r;
     };
     s.__actsHifiWrapped = true; stats.wrapped++;
   }
@@ -156,9 +212,11 @@
     if (!M || !pts) return true;
     var tx = Math.floor(x / 48), ty = Math.floor(y / 48);
     if (act1Inside(tx, ty)) return true;                // Act 1 keeps its own pack
+    var own = landmarkAct(x * 32 / 48, y * 32 / 48) || ownerAct(tx, ty);
     for (var i = 0; i < M.acts.length; i++) {
       var a = M.acts[i], B = a.rt && a.rt.bits, b = a.bounds;
       if (!B || tx < b[0] || tx > b[2] || ty < b[1] || ty > b[3]) continue;
+      if (OWN && own !== a.act) continue;                 // another act's art owns this cell
       var cx = Math.round((x - B.ox * 48) * 32 / 48), cy = Math.round((y - B.oy * 48) * 32 / 48), mg = 1;
       for (var k = 0; k < pts.length; k++) {
         var px = cx + pts[k][0], py = cy + pts[k][1];
@@ -321,7 +379,10 @@
       eachPlateCell(a, function (x, y, t) { s.mapData[y][x] = t; });
       a.rt.appliedTo = s.mapData; wrote = true; stats.plateWrites = (stats.plateWrites || 0) + 1;
     });
-    if (wrote) { try { window.__DQ_TILES__.redraw(); } catch (x) {} }
+    if (wrote) {
+      try { window.__DQ_TILES__.refreshMovementField(); } catch (x) {}   // field was built from pre-plate mapData
+      try { window.__DQ_TILES__.redraw(); } catch (x) {}
+    }
   }
   // Cells where mapData no longer matches an act plate (verification only; should stay 0).
   function plateDrift() {
