@@ -33,11 +33,7 @@
    "rows": 12,
    "drawRank": 1,
    "tint": "#cfe3f2",
-   "chunkPath": null,
-   "layers": [
-    "base"
-   ],
-   "collision": null
+   "runtime": null
   },
   {
    "act": 3,
@@ -55,11 +51,7 @@
    "rows": 9,
    "drawRank": 2,
    "tint": "#d9b878",
-   "chunkPath": null,
-   "layers": [
-    "base"
-   ],
-   "collision": null
+   "runtime": null
   },
   {
    "act": 4,
@@ -77,11 +69,7 @@
    "rows": 8,
    "drawRank": 4,
    "tint": "#8a3b2a",
-   "chunkPath": null,
-   "layers": [
-    "base"
-   ],
-   "collision": null
+   "runtime": null
   },
   {
    "act": 5,
@@ -99,11 +87,7 @@
    "rows": 14,
    "drawRank": 3,
    "tint": "#3b3740",
-   "chunkPath": null,
-   "layers": [
-    "base"
-   ],
-   "collision": null
+   "runtime": null
   }
  ],
  "landmarks": [

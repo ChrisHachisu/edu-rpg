@@ -101,6 +101,24 @@
   }
 
   // ---- 1: chunk streaming -------------------------------------------------------------------
+  // An act whose index entry names a `runtime` folder streams its real export (format
+  // flattened-ground-v0: opaque ground, sparse front, sparse half-res premultiplied crest0-2);
+  // any other act draws a tinted placeholder so the wiring stays testable without art.
+  var FRONT_DEPTH = 10.5, LANDMARK_DEPTH = 9.6, CREST_DEPTH = 1.091;     // hero is 10 (dq-tiles.js)
+  function loadRuntime(a) {
+    if (!a.runtime || a.rt) return;
+    a.rt = { manifest: null, plate: null, byId: {} };
+    get(a.runtime + 'manifest.json', function (m) {
+      a.rt.manifest = m; (m.chunks || []).forEach(function (c) { a.rt.byId[c.id] = c; });
+    });
+    get(a.runtime + 'plate.json', function (p) { a.rt.plate = p; });
+  }
+  function get(url, done) {
+    var r = new XMLHttpRequest(); r.open('GET', url, true); r.timeout = 8000;
+    r.onload = function () { try { done(JSON.parse(r.responseText)); } catch (e) { fail++; } };
+    r.onerror = r.ontimeout = function () { fail++; };
+    try { r.send(); } catch (e) { fail++; }
+  }
   function placeholderKey(s, a, id) {
     var k = 'acts_ph_' + a.act + '_' + id;
     if (s.textures.exists(k)) return k;
@@ -108,10 +126,34 @@
     var g = c.getContext('2d');
     g.fillStyle = a.tint; g.fillRect(0, 0, n, n);
     g.strokeStyle = 'rgba(0,0,0,0.35)'; g.lineWidth = 2; g.strokeRect(1, 1, n - 2, n - 2);
-    g.fillStyle = 'rgba(0,0,0,0.55)'; g.font = '9px sans-serif';
-    g.fillText('A' + a.act + ' ' + id, 4, 12);
     s.textures.addCanvas(k, c);
     return k;
+  }
+  // One image file -> one texture, loaded off the Phaser loader so a slow chunk never blocks it.
+  function texture(s, e, k, url, then) {
+    if (s.textures.exists(k)) { e.texs.push(k); then(k); return; }
+    var im = new Image();
+    im.onload = function () {
+      if (e.dead) return;
+      try { if (!s.textures.exists(k)) s.textures.addImage(k, im); e.texs.push(k); then(k); } catch (x) {}
+    };
+    im.onerror = function () { fail++; };
+    im.src = url;
+  }
+  function chunkObjects(s, e, w, x, y, pitch) {
+    var a = w.a, c = a.rt.byId[w.id], cc = M.chunkCells, base = a.runtime, pfx = 'acts_' + a.act + '_' + w.id + '_';
+    if (!c) return;                                    // sea / unowned chunk: no file, nothing drawn
+    function add(layer, url, depth, alpha) {
+      texture(s, e, pfx + layer, base + url, function (k) {
+        var img = s.add.image(x, y, k).setOrigin(0, 0).setDepth(depth).setAlpha(alpha);
+        img.setScale(cc * pitch / img.width);
+        if (layer.indexOf('crest') === 0) img.__crest = +layer.charAt(5);
+        e.objs.push(img);
+      });
+    }
+    add('ground', c.ground, CHUNK_DEPTH + 0.04, 1);   // 1.09: under Act 1's base (1.1) in the x161-163 overlap
+    if (c.front) add('front', c.front, FRONT_DEPTH, 1);
+    for (var i = 0; i < 3; i++) if (c['crest' + i]) add('crest' + i, c['crest' + i], CREST_DEPTH + i * 0.001, 0);
   }
   function wanted(s) {
     var sp = space(), cam = s.cameras && s.cameras.main, v = cam && cam.worldView, out = [];
@@ -121,6 +163,7 @@
     var cc = M.chunkCells, pm = (M.streaming && M.streaming.preloadCells) || 0;
     var cx0 = sp.cellAt(v.x) - pm, cy0 = sp.cellAt(v.y) - pm, cx1 = sp.cellAt(v.x + v.width) + pm, cy1 = sp.cellAt(v.y + v.height) + pm;
     M.acts.forEach(function (a) {
+      if (a.runtime && !(a.rt && a.rt.manifest)) return;          // real art still loading
       var o = a.origin;
       var c0 = Math.max(0, Math.floor((cx0 - o[0]) / cc)), c1 = Math.min(a.cols - 1, Math.floor((cx1 - o[0]) / cc));
       var r0 = Math.max(0, Math.floor((cy0 - o[1]) / cc)), r1 = Math.min(a.rows - 1, Math.floor((cy1 - o[1]) / cc));
@@ -130,11 +173,12 @@
   }
   function drop(id) {
     var e = res[id]; if (!e) return;
-    try { e.img.destroy(); } catch (x) {}
-    try { if (e.scene.textures.exists(e.tex)) e.scene.textures.remove(e.tex); } catch (x) {}
+    e.dead = true;
+    e.objs.forEach(function (o) { try { o.destroy(); } catch (x) {} });
+    e.texs.forEach(function (k) { try { if (e.scene.textures.exists(k)) e.scene.textures.remove(k); } catch (x) {} });
     delete res[id]; var i = lru.indexOf(id); if (i >= 0) lru.splice(i, 1); stats.destroyed++;
   }
-  function dropAll() { Object.keys(res).forEach(drop); }
+  function dropAll() { Object.keys(res).forEach(drop); hideLandmarks(); }
   function stream(s) {
     var sp = space(); if (!sp) return;
     var cap = (M.streaming && M.streaming.maxResident) || 12, pitch = sp.pitch, cc = M.chunkCells, want = {};
@@ -143,27 +187,126 @@
       want[id] = 1;
       if (e && e.scene !== s) { drop(id); e = null; }
       if (!e) {
-        // Real art: w.a.chunkPath is a template like "act2/chunks/{layer}/{id}.webp". Not wired in
-        // the prototype (no art yet); the design doc specifies the loader it reuses from dq-tiles.
-        var tex = placeholderKey(s, w.a, w.id);
-        var img = s.add.image((w.a.origin[0] + w.col * cc) * pitch, (w.a.origin[1] + w.row * cc) * pitch, tex)
-          .setOrigin(0, 0).setDepth(CHUNK_DEPTH + w.a.drawRank * 0.001);
-        img.setScale(cc * pitch / 64);
-        e = res[id] = { img: img, scene: s, tex: tex }; stats.created++;
+        var x = (w.a.origin[0] + w.col * cc) * pitch, y = (w.a.origin[1] + w.row * cc) * pitch;
+        e = res[id] = { objs: [], texs: [], scene: s }; stats.created++;
+        if (w.a.runtime) chunkObjects(s, e, w, x, y, pitch);
+        else {
+          var img = s.add.image(x, y, placeholderKey(s, w.a, w.id)).setOrigin(0, 0)
+            .setDepth(CHUNK_DEPTH + w.a.drawRank * 0.001).setScale(cc * pitch / 64);
+          e.objs.push(img);
+        }
       }
       var i = lru.indexOf(id); if (i >= 0) lru.splice(i, 1); lru.push(id);
     });
     // The cap evicts only what this tick did not ask for: the visible window is never thrashed.
     for (var i = 0; i < lru.length && lru.length > cap;) { if (want[lru[i]]) i++; else drop(lru[i]); }
   }
+  // Crest: three premultiplied frames cross-faded on a 1.2 s loop (dq-tiles a1aWalkBehindTick's job for Act 1).
+  function animateCrest() {
+    var t = (Date.now() % 1200) / 400;
+    Object.keys(res).forEach(function (id) {
+      res[id].objs.forEach(function (o) {
+        if (o.__crest === undefined) return;
+        var d = Math.abs(((t - o.__crest + 4.5) % 3) - 1.5);   // 0 at its own phase, 1.5 opposite
+        o.setAlpha(Math.max(0, 1 - d));
+      });
+    });
+  }
+
+  // ---- landmarks: the act's own sprites, walk-behind by contact row like Act 1 ------------------
+  var lmImgs = {};
+  function hideLandmarks() { Object.keys(lmImgs).forEach(function (k) { try { lmImgs[k].destroy(); } catch (x) {} delete lmImgs[k]; }); }
+  function landmarks(s) {
+    var sp = space(), hero = s.hero; if (!sp) return;
+    M.acts.forEach(function (a) {
+      var m = a.rt && a.rt.manifest; if (!m || !m.landmarks) return;
+      m.landmarks.forEach(function (L) {
+        var k = 'acts_lm_' + a.act + '_' + L.slug, img = lmImgs[k];
+        if (img && img.scene !== s) { try { img.destroy(); } catch (x) {} img = null; delete lmImgs[k]; }
+        if (!img) {
+          if (!s.textures.exists(k)) {
+            if (!lmImgs['load:' + k]) {
+              lmImgs['load:' + k] = { destroy: function () {} };
+              var im = new Image(); im.onload = function () { try { s.textures.addImage(k, im); } catch (x) {} delete lmImgs['load:' + k]; };
+              im.src = a.runtime + 'landmarks/' + L.slug + '.png';
+            }
+            return;
+          }
+          img = lmImgs[k] = s.add.image(0, 0, k).setOrigin(L.anchor[0] / L.size, L.anchor[1] / L.size)
+            .setPosition(sp.cellCenter(L.cell[0]), sp.cellCenter(L.cell[1])).setDisplaySize(L.size, L.size);
+        }
+        var behind = hero && hero.y < sp.cellCenter(L.cell[1]);
+        img.setDepth(behind ? FRONT_DEPTH : LANDMARK_DEPTH);
+      });
+    });
+  }
+
+  // ---- collision: write the act's plate into mapData (act1-world-map.js writePlate) ----------
+  var applied = null, lastDeep = 0;
+  function plate(s) {
+    if (!s.mapData || s.mapData.length !== 400) return;
+    var now = Date.now(), changed = applied !== s.mapData;
+    if (!changed && now - lastDeep < 1000) return;    // deep pass: reskin consolidates in place
+    lastDeep = now;
+    M.acts.forEach(function (a) {
+      var p = a.rt && a.rt.plate; if (!p) return;
+      for (var ry = 0; ry < p.rows.length; ry++) {
+        var row = p.rows[ry], target = s.mapData[p.bounds[1] + ry];
+        for (var rx = 0; rx < row.length; rx++) {
+          var ch = row.charAt(rx); if (ch === '.') continue;
+          var t = parseInt(ch, 36), x = p.bounds[0] + rx;
+          if (target[x] !== t) { target[x] = t; if (!changed) stats.repairs = (stats.repairs || 0) + 1; }
+        }
+      }
+    });
+    if (changed) { applied = s.mapData; try { window.__DQ_TILES__.redraw(); } catch (x) {} }
+  }
+  // The legacy procedural props (trees, mountains, old landmark sprites, depth 2-9.9) still draw
+  // from the plate's tiles. Inside an act that has real art they are hidden every frame, the
+  // same suppression dq-tiles applies inside Act 1's plate (a1aPlateCell).
+  function realArtCell(x, y) {
+    if (act1Inside(x, y)) return false;
+    for (var i = 0; i < M.acts.length; i++) {
+      var a = M.acts[i], b = a.bounds;
+      if (a.rt && a.rt.manifest && x >= b[0] && x <= b[2] && y >= b[1] && y <= b[3]) return true;
+    }
+    return false;
+  }
+  var mine = null;
+  function suppressLegacy() {
+    var s = scene(), sp = space();
+    if (!M || !s || !sp || s.currentMapId !== 'overworld' || !s.children) return;
+    if (!mine || mine.frame !== s.game.loop.frame) {
+      mine = { frame: s.game.loop.frame, set: new Set() };
+      Object.keys(res).forEach(function (id) { res[id].objs.forEach(function (o) { mine.set.add(o); }); });
+      Object.keys(lmImgs).forEach(function (k) { mine.set.add(lmImgs[k]); });
+    }
+    var list = s.children.list;
+    for (var i = 0; i < list.length; i++) {
+      var o = list[i];
+      if (!o.visible || o === s.hero || o.scrollFactorX === 0 || mine.set.has(o)) continue;
+      if (!(o.depth >= 1.5 && o.depth < 10)) continue;
+      if (o.type === 'Container') {                    // dq's prop layer: one container, children in its own (scaled) space
+        for (var j = 0; j < o.list.length; j++) {
+          var ch = o.list[j]; if (!ch.visible) continue;
+          if (realArtCell(sp.cellAt(o.x + ch.x * o.scaleX), sp.cellAt(o.y + ch.y * o.scaleY))) { ch.setVisible(false); stats.hidden = (stats.hidden || 0) + 1; }
+        }
+        continue;
+      }
+      if (realArtCell(sp.cellAt(o.x), sp.cellAt(o.y))) { o.setVisible(false); stats.hidden = (stats.hidden || 0) + 1; }
+    }
+  }
 
   function tick() {
     load();
     var s = scene();
     if (!M || !s) return;
+    M.acts.forEach(loadRuntime);
     wrap(s);
-    if (s.currentMapId === 'overworld' && s.sys && s.sys.isActive()) stream(s);
-    else if (lru.length) dropAll();                    // town, dungeon, battle: hold nothing
+    if (s.currentMapId === 'overworld' && s.sys && s.sys.isActive()) {
+      plate(s); stream(s); landmarks(s);
+      if (!s.game.__actsPrerender) { s.game.__actsPrerender = true; s.game.events.on('prerender', suppressLegacy); s.game.events.on('prerender', animateCrest); }
+    } else if (lru.length) dropAll();                  // town, dungeon, battle: hold nothing
   }
   setInterval(tick, 120);
 

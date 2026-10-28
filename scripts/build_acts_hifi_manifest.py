@@ -82,7 +82,7 @@ def main():
         rows = -(-(y1 - y0 + 1) // CHUNK_CELLS)
         acts.append({'act': n, 'bounds': a['bounds'], 'origin': [x0, y0], 'cols': cols, 'rows': rows,
                      'drawRank': A.ORDER.index(str(n)), 'tint': TINT[n],
-                     'chunkPath': None, 'layers': ['base'], 'collision': None})
+                     'runtime': None})   # e.g. 'act2-hifi/' once an export (flattened-ground-v0) is installed
         for name, (x, y) in a['landmarks'].items():
             if name not in BUNDLE:
                 unmapped.append({'act': n, 'name': name, 'at': [x, y]})

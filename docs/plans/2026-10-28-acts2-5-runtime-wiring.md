@@ -251,3 +251,43 @@ Verified headless (Chromium, 393×852):
    at once?
 7. **Gate repin.** Authorise repinning the stale `ACT1_PAINT_MANIFEST_SHA256` and underpaint
    literals, so `build-dist.sh` works from a fresh checkout again.
+
+## 11. Real Act 2 export in the game (2026-10-28, scratch dist only)
+
+* **How the export was wired.** `acts-runtime.js` streams an act whose index entry sets
+  `runtime: 'act2-hifi/'`. The export format is `flattened-ground-v0` (43 MB on disk).
+  * Layers: ground at depth 1.09, crest0–2 at 1.091 cross-faded, front at 10.5.
+  * The act's landmark sprites draw at depth 9.6 or 10.5, depending on the hero's row.
+  * `plate.json` comes from `scripts/build_act_plate.py`: a cell counts as blocked when more than
+    half of its `collision.png` pixels are blocked. It is written into mapData the
+    act1-world-map way.
+  * The legacy dq props inside the act (including props in its prop container) are hidden every
+    frame, on the `prerender` event.
+* **Screenshots** are in `/mnt/project-files/edu-rpg/acts-preview/ingame/`: snow near Ironkeep,
+  two mountain/forest-meets-sea shots, the Act 1/2 seam in both draw orders (they come out almost
+  identical), and the Ironkeep town plate.
+* **Metrics** (Chromium with SwiftShader, so CPU-bound at about 4 fps; compare the two only
+  relative to each other):
+
+  | | mean frame time | textures | texture size | JS heap |
+  |---|---|---|---|---|
+  | Act 2 | 233–239 ms | 803 | 85.6 MB | 180–190 MB |
+  | Act 1 | 210–281 ms | 354 | 105–109 MB | 125–133 MB |
+
+* **Flag OFF:** Act 1 is still pixel-identical to the build 91 shell (Greenhollow and Port
+  Sapphire, 2 runs per arm, 0 differing pixels).
+* **Parts of the export that do not fit the runtime:**
+  1. `collision.png` is not a QOKF8COL `.bin`. Decoding it in the browser would cost about 110 MB
+     of RGBA. With only the cell-level plate, the hero can overlap rock and tree pixels, so
+     dq-tiles needs a per-act `a1fHeroFree` reading a `.bin`.
+  2. The town json `exit.toX/toY` uses maps.ts (200,321). `handleTownExit` bypasses
+     `checkTransition`, so the town json must carry the owner exit (209,321). This was patched in
+     scratch only.
+  3. The `town/npc/ironkeep-*.png` sheets are missing. Without them the town shows "could not
+     finish loading". Act 1 sheets were substituted in scratch.
+  4. The README contradicts itself on seam draw order: the Act 2 section says Act 2 goes on top,
+     and "Known gaps" says Act 1 goes last.
+  5. The legacy dq prop textures are still generated for the plate's tiles (803 textures
+     against 354). The proper fix is for dq-tiles to skip prop generation inside a real-art act,
+     the way `a1aPlateCell` does for Act 1.
+  6. The `TOWN_IDS` patch was applied to the scratch dist only. `adapter.js` is a pinned file.
