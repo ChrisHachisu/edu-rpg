@@ -133,3 +133,11 @@ Codex image-generation package; generation itself runs only on the Mac.
 - `check_feet.py [ids]`: sweeps the hero's real feet stencil (dq-tiles `a1fBuildStencil`, scaled to
   the town lattice) from startCell to every NPC, the save point, the shop counter and the exit, at
   stencil width and at stencil + 1 cell. `OW_DIST=<dist>` also checks the overworld town doors.
+
+### Round 3b: finishing the Codex town plates
+- `author_codex_bands.py`: hand-authored footprints, lanes, exemptions, well/monument obstacles, shop counter, healer porch, and optional save/gate overrides, all in cells. Writes `<id>-authored-obstacles.json` (Act 1 format).
+- `codex_finish.py build [ids]`: takes the pick, upscales 1254 to 1950 with LANCZOS and applies UnsharpMask(1.0, 220, 1). Walkable = lanes minus bands. Actors snap onto ground where the feet stencil fits; the save point gets a cell of extra room. Writes `runtime-codex/town/<id>-{screen,collision,walkable,town}` and the plate and overlay previews.
+- `codex_sheets.py`: act contact sheets and the 3-try comparison per town.
+- No foreground or roof layer: Act 1 retired it, and the briefs forbid overhangs.
+- Lanes approximate the painted paths. NPC sheet paths are placeholders.
+- Round 3c (open ground): walkable = floor-like painted ground (kNN on 10 px block texture features, trained on the authored lanes vs footprints and the plate rim, plus a calm-texture test inside the lanes' hull) minus hard bands (walls, towers, water, lava, voids, pits), minus building cores (rect eroded 2 cells), minus non-floor blobs, all with a 1-cell margin; plus the authored lanes; south of the gate row only the street; one component from the gate. Actors more than 3 cells off their maps.ts spot snap to the nearest walkable cell to that spot unless it lies in a footprint.

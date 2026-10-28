@@ -25,7 +25,7 @@ from scipy import ndimage as ndi
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from kitlib import APC, PLATE, ROOT, SCRATCH  # noqa: E402
 
-RUNTIME = os.path.join(SCRATCH, "runtime", "town")
+RUNTIME = os.environ.get("FEET_RUNTIME", os.path.join(SCRATCH, "runtime", "town"))
 OUT = os.path.join(SCRATCH, "feet")
 HERO_SHEET = os.path.join(ROOT, "public/act1-hifi/hero-g3/hero-act1-female-walk-8x3-64-g3.png")
 FEET_PX = 10            # dq-tiles A1F_FEET_PX (collision px at 32/cell ~ sheet px at 64/1.93 cells)
