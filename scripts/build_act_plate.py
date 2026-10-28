@@ -2,7 +2,10 @@
 """Cell-level collision plate for one Acts 2-5 runtime export (prototype, see
 docs/plans/2026-10-28-acts2-5-runtime-wiring.md section 4).
 
-    python3 scripts/build_act_plate.py <actN/runtime dir> <out plate.json>
+    python3 scripts/build_act_plate.py <actN/runtime dir> <out plate.json> [solid fraction, default 0.5]
+
+With the act's QOKF8COL pack wired (scripts/acts/export_collision_bin.py), pass 1.0: only cells
+that are blocked edge to edge become tiles, and the feet stencil decides every partial cell.
 
 The export's collision.png is feet-only at 32 px/cell (1 = blocked). The engine's movement field
 (dq-tiles.js a1mFree -> owm field + canMove) is built from mapData TILES, so until dq-tiles grows a
@@ -20,7 +23,7 @@ sys.path.insert(0, os.path.join(ROOT, 'scripts/acts'))
 import acts_common as A  # noqa: E402
 
 
-def main(runtime_dir, out):
+def main(runtime_dir, out, solid=0.5):
     m = json.load(open(os.path.join(runtime_dir, 'manifest.json')))
     act, (x0, y0, x1, y1) = m['act'], m['bounds']
     ppc = m['collision']['pixelsPerCell']
@@ -29,7 +32,7 @@ def main(runtime_dir, out):
     frac = bits[:h * ppc, :w * ppc].reshape(h, ppc, w, ppc).mean(axis=(1, 3))
     cls, owner, _land = A.world()
     sub_cls, sub_owner = cls[y0:y1 + 1, x0:x1 + 1], owner[y0:y1 + 1, x0:x1 + 1]
-    tiles = np.where(frac > 0.5, np.where(np.isin(sub_cls, (A.WATER, A.SEA)), 2, 4), 0).astype(np.int64)
+    tiles = np.where(frac >= solid if solid >= 1 else frac > solid, np.where(np.isin(sub_cls, (A.WATER, A.SEA)), 2, 4), 0).astype(np.int64)
     tiles[sub_owner != act] = -1                     # not this act's cell: leave mapData alone
     index = json.load(open(os.path.join(ROOT, 'public/acts-hifi/manifest.json')))
     doors = [L for L in index['landmarks'] if L['act'] == act]
@@ -45,4 +48,4 @@ def main(runtime_dir, out):
 
 
 if __name__ == '__main__':
-    main(sys.argv[1], sys.argv[2])
+    main(sys.argv[1], sys.argv[2], float(sys.argv[3]) if len(sys.argv) > 3 else 0.5)

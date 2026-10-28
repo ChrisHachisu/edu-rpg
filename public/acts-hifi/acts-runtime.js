@@ -22,7 +22,7 @@
   var CHUNK_DEPTH = 1.05;               // above the legacy terrain canvas (1), below Act 1 base (1.1)
   var M = null, req = false, fail = 0;
   var res = {}, lru = [], stats = { created: 0, destroyed: 0, wrapped: 0, entries: 0, exits: 0, suppressed: 0, compass: 0 };
-  var ENTRY = {}, ARRIVAL = {}, RETURN = {}, COMPASS = {};
+  var ENTRY = {}, ARRIVAL = {}, RETURN = {}, ENTRY_EXIT = {}, COMPASS = {};
 
   function load() {
     if (M || req || fail >= 6) return;
@@ -44,7 +44,7 @@
     (m.landmarks || []).forEach(function (L) {
       ENTRY[L.at[0] + ',' + L.at[1]] = L;
       ARRIVAL[key(L.mapId, L.toX, L.toY, L.toFloor)] = L;
-      if (L.exit) RETURN[L.oldReturn[0] + ',' + L.oldReturn[1]] = L;
+      if (L.exit) { RETURN[L.oldReturn[0] + ',' + L.oldReturn[1]] = L; ENTRY_EXIT[L.exit[0] + ',' + L.exit[1]] = L; }
       if (!COMPASS[L.oldFrom[0] + ',' + L.oldFrom[1]]) COMPASS[L.oldFrom[0] + ',' + L.oldFrom[1]] = L;
     });
     // The bundle's compass chain disagrees with its own connection table for one map.
@@ -97,6 +97,20 @@
       var copy = {}; for (var k in t) if (Object.prototype.hasOwnProperty.call(t, k)) copy[k] = t[k];
       copy.ox = L.at[0]; copy.oy = L.at[1]; stats.compass++; return copy;
     };
+    // The hi-fi town overlay (act1-hifi/adapter.js handleTownExit) never calls checkTransition: it
+    // sets heroTileX/Y from the town json's frozen exit and calls loadMap('overworld'). Remap that
+    // cell here, so a town's exit follows the door table instead of its own json.
+    var loadMap = s.loadMap;
+    s.loadMap = function (mapId) {
+      if (mapId === 'overworld') {
+        var back = RETURN[this.heroTileX + ',' + this.heroTileY];
+        if (back && !ENTRY_EXIT[this.heroTileX + ',' + this.heroTileY]) {
+          this.heroTileX = back.exit[0]; this.heroTileY = back.exit[1]; stats.exits++;
+          try { var p = window.__GAME_STATE__.player.state.position; if (p) { p.x = back.exit[0]; p.y = back.exit[1]; } } catch (e) {}
+        }
+      }
+      return loadMap.apply(this, arguments);
+    };
     s.__actsHifiWrapped = true; stats.wrapped++;
   }
 
@@ -112,6 +126,47 @@
       a.rt.manifest = m; (m.chunks || []).forEach(function (c) { a.rt.byId[c.id] = c; });
     });
     get(a.runtime + 'plate.json', function (p) { a.rt.plate = p; });
+    get(a.runtime + 'collision.json', function (c) { a.rt.coll = c; loadBits(a); });
+  }
+  // The act's feet-only pack: the QOKF8COL bitset Act 1 ships as forest-collision.bin
+  // (scripts/acts/export_collision_bin.py). 1 bit per art px, 32 px per cell, act-local origin.
+  function loadBits(a) {
+    var c = a.rt.coll && a.rt.coll.bin; if (!c) return;
+    var r = new XMLHttpRequest(); r.open('GET', a.runtime + c.artifact, true); r.responseType = 'arraybuffer'; r.timeout = 15000;
+    r.onload = function () {
+      var buf = r.response, b = buf && new Uint8Array(buf), v = buf && new DataView(buf), magic = 'QOKF8COL';
+      try {
+        for (var i = 0; i < 8; i++) if (b[i] !== magic.charCodeAt(i)) throw 0;
+        var w = v.getUint32(12, true), h = v.getUint32(16, true), ppc = v.getUint32(20, true);
+        if (v.getUint16(8, true) !== 1 || v.getUint16(10, true) !== 64 || w !== c.dimensionsPx32[0] || h !== c.dimensionsPx32[1]
+            || ppc !== 32 || b.length !== 64 + Math.ceil(w * h / 8)) throw 0;
+        a.rt.bits = { data: new Uint8Array(buf, 64), w: w, h: h, ox: a.rt.coll.origin[0], oy: a.rt.coll.origin[1] };
+      } catch (e) { fail++; }
+    };
+    r.onerror = r.ontimeout = function () { fail++; };
+    try { r.send(); } catch (e) { fail++; }
+  }
+  // dq-tiles.js a1mFree calls this with canonical solver px (48 per cell) and its feet stencil
+  // (a1fBuildStencil, collision px relative to the hero) -- a1fHeroFree with a per-act origin.
+  function actsFree(s, x, y, pts) {
+    if (!M || !pts) return true;
+    var tx = Math.floor(x / 48), ty = Math.floor(y / 48);
+    if (act1Inside(tx, ty)) return true;                // Act 1 keeps its own pack
+    for (var i = 0; i < M.acts.length; i++) {
+      var a = M.acts[i], B = a.rt && a.rt.bits, b = a.bounds;
+      if (!B || tx < b[0] || tx > b[2] || ty < b[1] || ty > b[3]) continue;
+      var cx = Math.round((x - B.ox * 48) * 32 / 48), cy = Math.round((y - B.oy * 48) * 32 / 48), mg = 1;
+      for (var k = 0; k < pts.length; k++) {
+        var px = cx + pts[k][0], py = cy + pts[k][1];
+        if (bit(B, px, py) || bit(B, px - mg, py) || bit(B, px + mg, py) || bit(B, px, py - mg) || bit(B, px, py + mg)) { stats.blockedSteps = (stats.blockedSteps || 0) + 1; return false; }
+      }
+      return true;
+    }
+    return true;
+  }
+  function bit(B, px, py) {
+    if (px < 0 || py < 0 || px >= B.w || py >= B.h) return 0;
+    var i = py * B.w + px; return B.data[i >> 3] & (1 << (i & 7));
   }
   function get(url, done) {
     var r = new XMLHttpRequest(); r.open('GET', url, true); r.timeout = 8000;
@@ -302,6 +357,8 @@
     var s = scene();
     if (!M || !s) return;
     M.acts.forEach(loadRuntime);
+    window.__QOK_ACTS_FREE__ = actsFree;              // dq-tiles a1mFree feet test (see there)
+    window.__QOK_ACTS_ART_CELL__ = realArtCell;       // dq-tiles rebuildOverlay: no props under act art
     wrap(s);
     if (s.currentMapId === 'overworld' && s.sys && s.sys.isActive()) {
       plate(s); stream(s); landmarks(s);

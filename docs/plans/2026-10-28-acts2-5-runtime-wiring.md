@@ -291,3 +291,30 @@ Verified headless (Chromium, 393×852):
      against 354). The proper fix is for dq-tiles to skip prop generation inside a real-art act,
      the way `a1aPlateCell` does for Act 1.
   6. The `TOWN_IDS` patch was applied to the scratch dist only. `adapter.js` is a pinned file.
+
+### 11.1 Follow-up: feet-precise collision, no hidden props, town exit (2026-10-28)
+
+* **Collision pack.** `scripts/acts/export_collision_bin.py` packs `collision.png` and
+  `walkbehind.png` into the QOKF8COL format. The output is `collision.bin`, `walkbehind.bin` and
+  a `collision.json` sidecar.
+  * Each act is 3.46 MB raw.
+  * The round trip back to the PNG matches bit for bit.
+  * Re-run it after every `export_runtime.py`, because that script wipes `runtime/`.
+* **Feet-only test.** `acts-runtime.js` loads the pack and sets `window.__QOK_ACTS_FREE__`.
+  * dq-tiles `a1mFree` calls this hook with `a1fBuildStencil`. It is the same test as
+    `a1fHeroFree`, but with each act's own origin.
+  * `build_act_plate.py …/plate.json 1.0` now writes only fully blocked cells as tiles.
+  * The re-shot `act2-mountain-sea-a/b` show the hero stopping at the rock base.
+* **No procedural props under act art.** dq-tiles `rebuildOverlay` skips cells where
+  `window.__QOK_ACTS_ART_CELL__` returns true. Act 2 now uses 357–361 textures, down from 803.
+* **Town exit.** `acts-runtime.js` wraps `scene.loadMap('overworld')` and maps the old exit cell
+  through the door table. Ironkeep's json still says 200,321, and the hero comes out at 209,321.
+* **Flag OFF.** Both hooks are `undefined` when the flag is off, and Act 1 is pixel-identical to
+  build 91: Greenhollow and Port Sapphire, old and new shell plus old and new dq-tiles, 2 runs
+  each, 0 px difference.
+* **Re-stamps.** The dq-tiles SHA was re-stamped (`extract_act1_runtime_snapshot.mjs`,
+  `shippedOverworldBaselineDqReplay.mjs`, the `runtime_baseline.py` pin, and the regenerated
+  `act1RuntimeSnapshot.ts`). Run `npm run repin` on the Mac to confirm.
+* **Still open.** The plate's "repairs" counter keeps climbing: something rewrites the plate
+  cells in place, and `plate()` puts them back once a second. Find the writer (probably the
+  reskin consolidating mountains) before shipping.

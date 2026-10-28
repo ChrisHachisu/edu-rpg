@@ -3620,10 +3620,14 @@
     // a1aPlateCell, NOT a1aArtAt: residency is not the question, the owner's bounds are. Asking
     // whether the chunk is decoded RIGHT NOW put procedural pines and mountains over his art at
     // depth 5 every time the LRU evicted one — a second way the same load thrash became visible.
-    for (var ty=y0;ty<=y1;ty++) for (var tx=x0;tx<=x1;tx++){ if(a1aPlateCell(tx,ty)) continue;
+    // Acts 2-5 prototype: an act with installed art claims its cells the same way (hook undefined
+    // unless acts-runtime.js is loaded by its flag), so no procedural prop texture is built under it.
+    var actsArt=window.__QOK_ACTS_ART_CELL__;
+    for (var ty=y0;ty<=y1;ty++) for (var tx=x0;tx<=x1;tx++){ if(a1aPlateCell(tx,ty)||(actsArt&&actsArt(tx,ty))) continue;
       var co=cellObjects(map,tx,ty); for(var i=0;i<co.length;i++) objs.push(co[i]); }
     var fl=buildFlowers(map,x0,x1,y0,y1);
-    for(var f=0;f<fl.length;f++){ if(a1aPlateCell(Math.floor(fl[f].x/TILE),Math.floor(fl[f].y/TILE))) continue; objs.push(fl[f]); }
+    for(var f=0;f<fl.length;f++){ var fx=Math.floor(fl[f].x/TILE),fy=Math.floor(fl[f].y/TILE);
+      if(a1aPlateCell(fx,fy)||(actsArt&&actsArt(fx,fy))) continue; objs.push(fl[f]); }
     objs.sort(function(a,b){ return a.y-b.y; });
     for (var k=0;k<objs.length;k++){ var o=objs[k];
       if (o.kind==='pine'){
@@ -5323,6 +5327,10 @@
     var terrainRequired=m.ow&&a1fRequiredAt(scene,x,y);
     if(terrainRequired&&(!A1A_FOREST.mode||!a1fReady(scene))) return false;
     if(m.ow&&terrainRequired&&!a1fHeroFree(scene,x,y)) return false;
+    // Acts 2-5 prototype (acts-hifi/acts-runtime.js, flag OFF by default): the same feet stencil
+    // against that act's own QOKF8COL pack. Undefined unless the flag loaded the runtime.
+    var actsFree=window.__QOK_ACTS_FREE__;
+    if(m.ow&&actsFree&&!actsFree(scene,x,y,a1fBuildStencil(scene.hero))) return false;
     if(!a1mWwContactFree(scene,m,x,y)) return false;
     var wx=x, wy=y+a1mFootDy(scene,m);                                       // solver-space px: canonical on overworld
     var fx=wx-m.ox, fy=wy-m.oy;                                              // FIELD px: 0 offset for a dungeon mask
