@@ -119,6 +119,7 @@ def act34_variant(v):
     s = 1400 / can.height; sm = can.resize((round(can.width * s), 1400), Image.LANCZOS); dr = ImageDraw.Draw(sm)
     for k in ('3', '4'):
         for name, (x, y) in d['acts'][k]['landmarks'].items():
+            x, y = A.VARIANT_MOVES.get(v, {}).get(name, (x, y))
             if 88 <= y <= 128 or 'Magma' in name or 'Desert' in name:
                 px, py = (x - 163 + .5) * P * s, (y - 3 + .5) * P * s
                 dr.ellipse((px - 14, py - 14, px + 14, py + 14), outline=(255, 40, 200), width=3)
@@ -127,7 +128,7 @@ def act34_variant(v):
 
 if __name__ == '__main__':
     if 'act34' in sys.argv:
-        for v in ('A', 'B'): act34_variant(v)
+        for v in (sys.argv[2:] or ['A', 'B']): act34_variant(v)
         sys.exit()
     os.makedirs(A.PREVIEW, exist_ok=True)
     acts = [int(a) for a in sys.argv[1:] if a.isdigit()] or [2, 3, 4, 5]

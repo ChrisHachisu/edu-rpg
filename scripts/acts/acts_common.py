@@ -28,7 +28,7 @@ def world(order=ORDER):
     land = np.load(LANDMASK).astype(bool)
     cls = np.where(land, cls, SEA).astype(np.uint8)
     v = os.environ.get('ACTS_VARIANT', '')
-    if v == 'A' and order is ORDER:
+    if v in ('A', 'C') and order is ORDER:
         # candidate A: Act 3's painted rows win in the Act 3/4 overlap (y 88-128)
         return world(['1', '2', '4', '5', '3'])
     if v == 'B' and order is ORDER:
@@ -40,9 +40,13 @@ def world(order=ORDER):
                     if cls[y, x] == MOUNT: cls[y, x] = OPEN
     return cls, act, land
 
+# candidate C (Act 3 rows win + Magma Tunnels mouths moved); env ACTS_VARIANT=C
+VARIANT_MOVES = {'C': {'Magma Tunnels (Act 4 side)': [187, 60]}}
+
 def landmarks():
-    d = owner(); out = []
+    d = owner(); out = []; mv = VARIANT_MOVES.get(os.environ.get('ACTS_VARIANT', ''), {})
     for k in ['1', '2', '3', '4', '5']:
         for name, (x, y) in d['acts'][k]['landmarks'].items():
+            x, y = mv.get(name, (x, y))
             out.append({'act': int(k), 'name': name, 'cell': [x, y]})
     return out
