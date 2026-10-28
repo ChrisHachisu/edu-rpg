@@ -297,24 +297,36 @@
   }
 
   // ---- collision: write the act's plate into mapData (act1-world-map.js writePlate) ----------
-  var applied = null, lastDeep = 0;
+  // Written once per mapData array, like act1-world-map.js's shallow apply. There is no periodic
+  // repair: the only other writer was act1-world-map's own plate in the x 161-163 strip both acts
+  // claim, and scripts/build_act_plate.py now leaves Act 1's rectangle out of every act plate.
+  function eachPlateCell(a, fn) {
+    var p = a.rt && a.rt.plate; if (!p) return;
+    for (var ry = 0; ry < p.rows.length; ry++) {
+      var row = p.rows[ry];
+      for (var rx = 0; rx < row.length; rx++) {
+        var ch = row.charAt(rx); if (ch !== '.') fn(p.bounds[0] + rx, p.bounds[1] + ry, parseInt(ch, 36));
+      }
+    }
+  }
   function plate(s) {
     if (!s.mapData || s.mapData.length !== 400) return;
-    var now = Date.now(), changed = applied !== s.mapData;
-    if (!changed && now - lastDeep < 1000) return;    // deep pass: reskin consolidates in place
-    lastDeep = now;
+    var wrote = false;
     M.acts.forEach(function (a) {
-      var p = a.rt && a.rt.plate; if (!p) return;
-      for (var ry = 0; ry < p.rows.length; ry++) {
-        var row = p.rows[ry], target = s.mapData[p.bounds[1] + ry];
-        for (var rx = 0; rx < row.length; rx++) {
-          var ch = row.charAt(rx); if (ch === '.') continue;
-          var t = parseInt(ch, 36), x = p.bounds[0] + rx;
-          if (target[x] !== t) { target[x] = t; if (!changed) stats.repairs = (stats.repairs || 0) + 1; }
-        }
-      }
+      if (!a.rt || !a.rt.plate || a.rt.appliedTo === s.mapData) return;
+      eachPlateCell(a, function (x, y, t) { s.mapData[y][x] = t; });
+      a.rt.appliedTo = s.mapData; wrote = true; stats.plateWrites = (stats.plateWrites || 0) + 1;
     });
-    if (changed) { applied = s.mapData; try { window.__DQ_TILES__.redraw(); } catch (x) {} }
+    if (wrote) { try { window.__DQ_TILES__.redraw(); } catch (x) {} }
+  }
+  // Cells where mapData no longer matches an act plate (verification only; should stay 0).
+  function plateDrift() {
+    var s = scene(), n = 0, first = null;
+    if (!M || !s || !s.mapData) return null;
+    M.acts.forEach(function (a) {
+      if (a.rt && a.rt.appliedTo === s.mapData) eachPlateCell(a, function (x, y, t) { if (s.mapData[y][x] !== t) { n++; first = first || [x, y, s.mapData[y][x], t]; } });
+    });
+    return { cells: n, first: first };
   }
   // The legacy procedural props (trees, mountains, old landmark sprites, depth 2-9.9) still draw
   // from the plate's tiles. Inside an act that has real art they are hidden every frame, the
@@ -372,5 +384,6 @@
       return { manifest: !!M, fail: fail, resident: lru.slice(), stats: JSON.parse(JSON.stringify(stats)) };
     },
     entryFor: function (x, y) { return ENTRY[x + ',' + y] || null; },
+    plateDrift: plateDrift,
   };
 })();

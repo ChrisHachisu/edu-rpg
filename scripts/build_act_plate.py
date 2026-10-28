@@ -34,6 +34,11 @@ def main(runtime_dir, out, solid=0.5):
     sub_cls, sub_owner = cls[y0:y1 + 1, x0:x1 + 1], owner[y0:y1 + 1, x0:x1 + 1]
     tiles = np.where(frac >= solid if solid >= 1 else frac > solid, np.where(np.isin(sub_cls, (A.WATER, A.SEA)), 2, 4), 0).astype(np.int64)
     tiles[sub_owner != act] = -1                     # not this act's cell: leave mapData alone
+    # Act 1's shipped plate (act1-world-map.js, bounds 16,218-163,399) owns its whole rectangle,
+    # including the x 161-163 strip the owner composite gives to Act 2. Writing there made the two
+    # plates overwrite each other forever (act1 ensurePlate deep repair vs this one).
+    ys, xs = np.mgrid[y0:y1 + 1, x0:x1 + 1]
+    tiles[(xs >= 16) & (xs <= 163) & (ys >= 218) & (ys <= 399)] = -1
     index = json.load(open(os.path.join(ROOT, 'public/acts-hifi/manifest.json')))
     doors = [L for L in index['landmarks'] if L['act'] == act]
     for L in doors:

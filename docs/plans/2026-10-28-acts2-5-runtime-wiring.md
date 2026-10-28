@@ -24,7 +24,7 @@ covers the prototype that is already on the branch and how it was verified.
      required underpaint` (the `ACT1_PAINT_UNDERPAINT` literal is also stale).
 
   The Mac shipped anyway, presumably from a `dist/` that was already populated. **Lead action:**
-  run `npm run repin` on the Mac, or hand-update both constants, before the next `build-dist.sh`.
+  hand-update both constants on the Mac before the next `build-dist.sh`. **Never run `npm run repin`**: it rebuilds dist with the old terrain.
 * **Playable dist in the cloud, without the gate.** The following produces a dist whose bundle
   md5 matches `FROZEN`:
   1. `python3 scripts/runtime_baseline.py hydrate --output <scratch>/dist`
@@ -208,7 +208,7 @@ Proposed budget:
 | Step | Where |
 |---|---|
 | Art generation, manifest generation, `build_acts_hifi_manifest.py`, plate export, collision packing, webp encode, `update_manifest.py` / `build_front_layer.py` / `water_to_collision.py`, sed re-stamp of the dq-tiles SHAs, connectivity linter, headless Chromium smoke + screenshots | Cloud |
-| `npm run repin` (regenerate_pins + the double build-dist), `ship-gate.sh`, map-engine tests that fail in the cloud, iPhone simulator pass (memory: Xcode gauges with 12 resident chunks), real-device thermal/OOM check, `fastlane` upload | Mac |
+| Hand-confirming the sha pins listed in §11.1 (never `npm run repin`), `ship-gate.sh`, map-engine tests that fail in the cloud, iPhone simulator pass (memory: Xcode gauges with 12 resident chunks), real-device thermal/OOM check, `fastlane` upload | Mac |
 
 ## 9. Prototype on the branch (flag OFF by default)
 
@@ -314,7 +314,21 @@ Verified headless (Chromium, 393×852):
   each, 0 px difference.
 * **Re-stamps.** The dq-tiles SHA was re-stamped (`extract_act1_runtime_snapshot.mjs`,
   `shippedOverworldBaselineDqReplay.mjs`, the `runtime_baseline.py` pin, and the regenerated
-  `act1RuntimeSnapshot.ts`). Run `npm run repin` on the Mac to confirm.
-* **Still open.** The plate's "repairs" counter keeps climbing: something rewrites the plate
-  cells in place, and `plate()` puts them back once a second. Find the writer (probably the
-  reskin consolidating mountains) before shipping.
+  `act1RuntimeSnapshot.ts`). Do not run `npm run repin` (it rebuilds dist with the old terrain).
+  Confirm these by hand on the Mac instead:
+  * `public/dq-tiles.js` hashes to `02115187e1d95f74d91f25a0226ca7d879c89ec4ba742ef94f34709d6e268bf9`,
+    size 645,946 B. The four places carrying that value: the `runtime_baseline.py` `"dq-tiles.js"` tuple,
+    `extract_act1_runtime_snapshot.mjs` `DQ_TILES_SHA256`, `shippedOverworldBaselineDqReplay.mjs`
+    `DQ_SHA`, and `act1RuntimeSnapshot.ts` `ACT1_RUNTIME_SNAPSHOT_DQ_TILES_SHA256`.
+  * The derived shell is `0da0fdbea82e5bd04fbd91da589777afe4ab764c2df9eb9119c12fb466b43708`, 130,785 B.
+    It is pinned in `build_static_index.mjs` `EXPECTED_STATIC_INDEX_SHA` and in the
+    `runtime_baseline.py` `"index.html"` tuple.
+  * Still stale from before this work: `ACT1_PAINT_MANIFEST_SHA256` should be `b86e749a…` (the
+    build 91 manifest), and `ACT1_PAINT_UNDERPAINT` needs updating too.
+* **Plate overwrites (fixed).** A write trap on mapData found the writer: `act1-world-map.js`
+  `ensurePlate` deep repair, fighting over the x 161–163 strip that both Act 1's rectangle and the
+  owner composite's Act 2 claim. `build_act_plate.py` now leaves Act 1's whole rectangle out of
+  every act plate. `acts-runtime.js` writes each plate once per mapData array, like Act 1's
+  shallow apply, and the once-a-second rewrite is gone.
+  `__QOK_MULTIACT__.plateDrift()` stayed at 0 cells across walking, the seam, and an Ironkeep
+  round trip.
