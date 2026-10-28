@@ -118,9 +118,9 @@ def draw_objects(win, doc, bw_cell, lab_full, near=None):
     layer = np.zeros((H, W, 4), np.uint8); rockm = np.zeros((H, W), bool); treem = np.zeros((H, W), bool)
     solidm = np.zeros((H, W), bool)   # feet collision of trees: closed silhouettes (palms / dead trees have gaps)
     events = []
-    rk = K.act1_rock_sources(); crs = K.crown_sources()
+    rk = K.act1_rock_sources(); crs = K.crown_sources(); geo = K.cliff_geometry()
     for i, r in enumerate(doc['rocks']):
-        im = rk[r['asset']]; ox, oy = r['originWorldCell']
+        im = rk[r['asset']] if not geo else geo[r['asset']]['union'][..., None].repeat(4, -1).astype(np.uint8); ox, oy = r['originWorldCell']
         x = (ox - cx0) * P; y = (oy - cy0) * P; h, w = im.shape[:2]
         if x > W or y > H or x + w < 0 or y + h < 0: continue
         a = im[..., 3]; by = h - 1; cols = np.flatnonzero(a[by]); ax = int(np.median(cols))
@@ -346,6 +346,10 @@ def landmark_sprites(act, lab_full):
                         biome=b, rgba=rgba, art=art, artAnchor=art_anchor))
     return out
 
+# gate / mouth channel: hero feet stencil is ~1.75 cells wide (dq-tiles a1fBuildStencil); channel =
+# stencil + 0.75 cell = 2.5 cells (80 px), reaching 20 px past the anchor into the door cell
+GATE_HALF, GATE_DEPTH = 40, 20
+
 def landmark_mask(lm, water_near_south):
     """Feet-only blocking mask in sprite px. Towns: closed outline with a 31 px gate channel.
     Dungeons/castles: closed outline; only a front (south) mouth channel above the anchor is open."""
@@ -353,11 +357,12 @@ def landmark_mask(lm, water_near_south):
     m = ndi.binary_closing(np.pad(a, 6), iterations=4)[6:-6, 6:-6] | a
     if lm['kind'] == 'town':
         gate = 'north' if water_near_south else 'south'
-        if gate == 'south': m[max(0, ay - 8):, ax - 10:ax + 11] = False
-        else: m[:ay + 9, ax - 10:ax + 11] = False
+        if gate == 'south': m[max(0, ay - GATE_DEPTH):, ax - GATE_HALF:ax + GATE_HALF] = False
+        else: m[:ay + GATE_DEPTH, ax - GATE_HALF:ax + GATE_HALF] = False
     else:
         gate = 'south'
-        m[ay - 10:, ax - 9:ax + 10] = False   # mouth: enterable only from the front
+        # mouth: enterable only from the front (sides and back of the outline stay blocked)
+        m[max(0, ay - GATE_DEPTH):, ax - GATE_HALF:ax + GATE_HALF] = False
     return m, gate
 
 # ------------------------------------------------------------------ Act 1 shipped art (read-only)
@@ -487,6 +492,26 @@ def render(act, out_dir, chunks=True):
     wa = ndi.gaussian_filter(water.astype(np.float32), 0.6); wa[water] = np.maximum(wa[water], 0.5)
     wa = np.clip((wa - 0.25) * 2, 0, 1)
     base_u8 = np.clip(sandimg, 0, 255).astype(np.uint8); del sandimg, out
+    # rock floor: any ground showing through gaps INSIDE a range (between whole panels) is painted as
+    # dark rock of the local kit and blocked, so a range reads as one solid mass
+    rk_ = rockm & ~water
+    hull = ndi.binary_fill_holes(ndi.binary_closing(np.pad(rk_, 24), structure=np.ones((3, 3), bool), iterations=20))[24:-24, 24:-24]
+    lane = np.zeros((H, W), bool)   # gate / mouth approach lanes (placements.in_approach) stay open ground
+    for lm in lms:
+        x, y = lm['cell']; px, py = (x - cx0) * P + 16, (y - cy0) * P + 16
+        sw = water[min(H - 1, py + 3 * P):min(H, py + 4 * P), max(0, px - 16):px + 16]
+        sg = -1 if (sw.size and sw.mean() > 0.5) else 1
+        y0_, y1_ = (py, py + 8 * P) if sg > 0 else (py - 8 * P, py)
+        lane[max(0, y0_):max(0, y1_), max(0, px - 74):max(0, px + 74)] = True
+    floorm = hull & ~rk_ & ~water & ~keep & ~lane
+    if floorm.any():
+        fy, fx = np.nonzero(floorm)
+        Lg = K.lum(base_u8[fy, fx]) / 255.0
+        fc = np.zeros((len(fy), 3), np.float32)
+        for b, w in bw.items():
+            rr = K.ROCK_RAMP.get(b) or [(0, (52, 46, 40)), (0.5, (98, 88, 74)), (1, (140, 128, 108))]
+            fc += K.ramp(0.08 + 0.42 * Lg, rr) * w[fy, fx][:, None]
+        base_u8[fy, fx] = np.clip(fc, 0, 255).astype(np.uint8)
     if 'dark' in bw:
         # dead forest floor: the ground under leafless clumps is shaded so the wood reads as a mass
         sh = ndi.gaussian_filter((solidm & ~water).astype(np.float32), 6) * bw['dark']
@@ -516,6 +541,7 @@ def render(act, out_dir, chunks=True):
     for k in range(TRIM_T): wb[np.minimum(ys_ + k, H - 1), xs_] = True
     wb &= raised
     coll &= ~wb
+    coll |= floorm & ~wb
     del rb, L
     front = np.zeros_like(fo); fm = ndi.binary_dilation(wb, np.ones((3, 3), bool)) & (fo[..., 3] > 0)
     front[fm] = fo[fm]

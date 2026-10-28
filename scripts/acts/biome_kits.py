@@ -137,8 +137,103 @@ def recolor_rock(rgba, biome, seed=7):
     a[..., :3] = np.clip(rgb, 0, 255).astype(np.uint8)
     return a
 
+# ---------------------------------------------------------------- Codex cliff kits (lead 2026-10-28)
+# kit-actN-cliffs-tryK.png: 1254x1254, 2x2 panels on pure magenta, same construction as Act 1's main kit.
+# Keyed (magenta -> alpha, hard cut, edge despill), sliced, x0.5 nearest like Act 1's main kit, and padded
+# bottom-centre onto one canvas per slot so a placement (top-left origin) fits every act's panel.
+CODEX_PICK = {2: 'try1', 3: 'try1', 4: 'try1', 5: 'try1'}
+SLOT_QUAD = {'broad-joining-mass-A': (0, 0), 'narrow-notch-buttress': (0, 1),
+             'broad-joining-mass-B': (1, 0), 'interior-rock-panel': (1, 1)}
+CODEX_ACT = {'snow': 2, 'haunt': 2, 'grass': 2, 'sand': 3, 'ash': 4, 'dark': 5}
+
+def _codex_dir():
+    import acts_common as A
+    return os.environ.get('CODEX_KITS', os.path.join(os.path.dirname(A.SCRATCH), 'codex-kits'))
+
+def key_magenta(rgb):
+    """-> RGBA: background where min(R,B)-G > 120 (pure magenta 255,0,255), hard alpha, holes < 400 px
+    filled, specks dropped, and a 3 px despill band that removes the magenta excess from edge pixels."""
+    x = rgb.astype(np.int32); mg = np.minimum(x[..., 0], x[..., 2]) - x[..., 1]
+    fg = mg <= 120
+    lab, n = ndi.label(fg)
+    if n:
+        sz = ndi.sum(fg, lab, range(1, n + 1)); fg = np.isin(lab, 1 + np.flatnonzero(sz >= 600))
+    holes = ndi.binary_fill_holes(fg) & ~fg
+    hl, hn = ndi.label(holes)
+    if hn:
+        hs = ndi.sum(holes, hl, range(1, hn + 1)); small = np.isin(hl, 1 + np.flatnonzero(hs < 400))
+    else: small = np.zeros_like(fg)
+    band = ndi.binary_dilation(~fg, iterations=3) & fg
+    exc = np.clip(mg - 30, 0, None) * band
+    x[..., 0] -= exc; x[..., 2] -= exc
+    if small.any():
+        dark = np.percentile(x[fg][:, :3].sum(1), 8); sel = fg & (x[..., :3].sum(-1) <= dark)
+        x[small] = x[sel].mean(0).astype(np.int32) if sel.any() else 40
+        fg = fg | small
+    out = np.zeros(rgb.shape[:2] + (4,), np.uint8)
+    out[..., :3] = np.clip(x, 0, 255); out[..., 3] = fg * 255
+    return out
+
+@functools.lru_cache(None)
+def codex_panels(act):
+    """slot -> RGBA panel at Act 1 main-kit scale (x0.5), trimmed to its alpha; None if the sheet is missing."""
+    f = f"{_codex_dir()}/kit-act{act}-cliffs/kit-act{act}-cliffs-{CODEX_PICK[act]}.png"
+    if not os.path.exists(f): return None
+    rgba = key_magenta(np.asarray(Image.open(f).convert('RGB')))
+    H, W = rgba.shape[:2]; h2, w2 = H // 2, W // 2; out = {}
+    # slice by connected component (a peak may cross the quadrant line), assigned by centroid quadrant
+    lab, n = ndi.label(rgba[..., 3] > 0); cm = ndi.center_of_mass(rgba[..., 3] > 0, lab, range(1, n + 1))
+    quad = {i + 1: (int(cy >= h2), int(cx >= w2)) for i, (cy, cx) in enumerate(cm)}
+    for slot, rc in SLOT_QUAD.items():
+        sel = np.isin(lab, [i for i, q_ in quad.items() if q_ == rc])
+        q = rgba.copy(); q[~sel] = 0
+        ys, xs = np.nonzero(sel); q = q[ys.min():ys.max() + 1, xs.min():xs.max() + 1]
+        im = Image.fromarray(q).resize((round(q.shape[1] * 0.5), round(q.shape[0] * 0.5)), Image.NEAREST)
+        a = np.asarray(im).copy(); a[..., 3] = np.where(a[..., 3] >= 128, 255, 0)
+        ys, xs = np.nonzero(a[..., 3]); out[slot] = a[ys.min():ys.max() + 1, xs.min():xs.max() + 1]
+    return out
+
+@functools.lru_cache(None)
+def cliff_geometry():
+    """slot -> {'canvas': (H, W), 'acts': {act: padded RGBA}, 'union': alpha, 'inter': alpha}; every
+    available act's panel padded bottom-centre onto the slot's common canvas."""
+    have = {a: codex_panels(a) for a in (2, 3, 4, 5)}; have = {a: p for a, p in have.items() if p}
+    geo = {}
+    if 2 not in have: return geo
+    for slot in SLOT_QUAD:
+        ps = {a: p[slot] for a, p in have.items()}
+        Hc = max(p.shape[0] for p in ps.values()); Wc = max(p.shape[1] for p in ps.values())
+        acts = {}
+        for a, p in ps.items():
+            c = np.zeros((Hc, Wc, 4), np.uint8); h, w = p.shape[:2]; x0 = (Wc - w) // 2
+            c[Hc - h:, x0:x0 + w] = p; acts[a] = c
+        al = np.stack([c[..., 3] > 0 for c in acts.values()])
+        geo[slot] = {'canvas': (Hc, Wc), 'acts': acts, 'union': al.any(0), 'inter': al.all(0)}
+    return geo
+
+@functools.lru_cache(None)
+def _act1_rock_tones(bins=24):
+    px = np.concatenate([v[v[..., 3] > 0][:, :3] for k, v in act1_rock_sources().items()
+                         if not k.startswith('companion')]).astype(np.float32)
+    L = lum(px); o = np.argsort(L); ch = np.array_split(px[o], bins)
+    return [(i / (bins - 1), tuple(c.mean(0))) for i, c in enumerate(ch)]
+
+def codex_rock(slot, biome, seed=7):
+    geo = cliff_geometry()[slot]; acts = geo['acts']; want = CODEX_ACT[biome]
+    if biome == 'grass':          # Act 1's rock tones on the Act 2 panel (snowline fade at the Act 1 seam)
+        a = acts[2].copy(); m = a[..., 3] > 0
+        a[..., :3] = np.clip(ramp(norm(lum(a[..., :3]), m, 1, 99), _act1_rock_tones()), 0, 255).astype(np.uint8)
+        return a
+    if biome == 'haunt':          # Ravenhollow: the Act 2 panel in dusk light
+        a = acts[2].copy(); a[..., :3] = np.clip(a[..., :3] * np.array([0.72, 0.72, 0.82]), 0, 255).astype(np.uint8)
+        return a
+    if want in acts: return acts[want].copy()
+    return recolor_rock(acts[2], biome, seed)   # fallback until the act's own sheet lands (Act 5)
+
 @functools.lru_cache(None)
 def rock_kit(biome):
+    if cliff_geometry():
+        return {k: codex_rock(k, biome, seed=hash(k) & 0xffff) for k in SLOT_QUAD}
     return {k: recolor_rock(v, biome, seed=hash(k) & 0xffff) for k, v in act1_rock_sources().items()}
 
 # ---------------------------------------------------------------- crowns

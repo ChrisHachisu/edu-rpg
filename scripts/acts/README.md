@@ -43,13 +43,15 @@ The chunk origin is the act's owner-terrain bounds `[x0,y0]`. Chunks are 16 cell
 - `collision.png`: 1 bit at 32 px/cell; 1 means blocked, feet-only. It covers raised art alpha ≥128, water ≥128 and landmark masks. It excludes the top 24 px of every raised run longer than 40 px that has open ground to its north.
 - `walkbehind.png`: those trimmed pixels.
 - `landmarks/*.png`: recoloured sprites at Act 1 native size (towns 192, dungeons 144, Demon Castle 192). They are authored at 48 sprite px per cell, like Act 1.
-- In `manifest.json`, `landmarks[]` gives each landmark's cell, anchor, kind and gate, plus `maskB64`. The mask is a packbits little-endian blocking mask at 32 px/cell (`maskSize`, `maskAnchor`). Towns are blocked along their closed outline except a gate channel (south, or north when the sea lies south). Dungeons and castles are open only at a front mouth channel.
+- In `manifest.json`, `landmarks[]` gives each landmark's cell, anchor, kind and gate, plus `maskB64`. The mask is a packbits little-endian blocking mask at 32 px/cell (`maskSize`, `maskAnchor`). Towns are blocked along their closed outline except a gate channel (south, or north when the sea lies south). Dungeons and castles are open only at a front mouth channel. Gate and mouth channels are 80 px (2.5 cells = feet stencil 1.75 + 0.75) wide and 20 px deep (`GATE_HALF`, `GATE_DEPTH` in render_act.py), and an approach lane 4.6 cells wide and 8 cells deep in front of each gate has no tree, rock or rock floor (`placements.in_approach`). Check with `python3 scripts/acts/check_gates.py 2 3 4 5`.
 
 ## Constants (from Act 1)
 
 - 32 px/cell.
 - Meadow tile: 96 texels/cell, world phase taken from the Act 1 origin (16,218), so it continues Act 1's grass exactly.
-- Cliff kit: main ×0.5, companion ×0.125, alpha hard cut at 128.
+- Cliff kit: Codex per-act sheets `codex-kits/kit-actN-cliffs/kit-actN-cliffs-try1.png` (2×2 panels on pure magenta, same construction as Act 1's main kit). `biome_kits.codex_panels` keys magenta out (hard alpha, 3 px despill band), slices by connected component, and scales ×0.5 nearest (Act 1 main-kit scale). `cliff_geometry` pads every act's panel bottom-centre onto one canvas per slot, and placements use the union to fit and the intersection to count coverage. Biomes: snow = Act 2, haunt = Act 2 in dusk light, grass (Act 1 seam) = Act 2 panel in Act 1 rock tones, sand = Act 3, ash = Act 4, dark = Act 5 (falls back to the recoloured Act 2 panel until that sheet exists). Override the folder with `CODEX_KITS`. The owner ruled out small companion spires (2026-10-28).
+- Act 2's divider strip (x 161–170) is narrower than a panel, so panels there may reach into Act 1's mountain columns and end at the act seam. Act 1's range top (rows 218–221) widens up to 9 rows into Act 5 ground.
+- Rock floor: ground inside a range's closed hull that no panel covers is painted dark rock in the local kit and blocked, so a gap shows rock, not snow, sand or ash.
 - Crowns: side 68 (136 px), 7 crowns, density ≈0.35 per F cell (Act 1: 0.37).
 - Coast: `scripts/b89/coast.py` with CORRIDOR 160, FRONT 200, JOIN 48 and ROCKFILL off. The rock mask comes from placed objects.
 - Sand band: 11+6·noise px.
@@ -75,7 +77,7 @@ Biome transitions come from per-cell act labels, blurred with σ 3 cells and per
 - Ground biome labels are domain-warped by up to ±15 cells within 12 cells of any biome border. Ground then blends over a noise-displaced band (σ 4.5 cells plus two noise octaves). No act rectangle edge survives.
 - A cliff object takes the kit of the open ground its face looks onto: the nearest non-mountain land cell to its contact, via a low-frequency noisy kit field. A border range therefore splits along its crest, not into colour columns or stairs.
 - Act 5's output runs to y 221 and repaints Act 1's top rows 218–221 over x 80–161. Act 1's own forest and north overhang are composited back on top, and Act 1 pixels are kept exactly outside that stretch. The runtime must draw Act 5's last chunk row after Act 1 there.
-- Thin ridges (≤4 cells) may widen by 2 cells onto open ground, so main and companion objects fit and there are fewer lone spires.
+- Ridges too thin for a main panel widen by up to 4 cells onto open ground, and that ground is blocked. Panels may also spill 1 cell past the painted range edge or out over water.
 - Landmark art scale is 32/33.6, since the runtime draws a landmark `size` world px wide and one overworld cell is 48×0.7 = 33.6 px. A town is therefore 183 art px (5.7 cells), as in Act 1.
 - Act 3/4 options: `ACTS_VARIANT=A|B ACTS_OUT=<dir> render_act.py --act 3/4 --no-chunks`, then `previews.py act34` and `check_act34.py`.
 
