@@ -16,7 +16,7 @@ from PIL import Image, ImageDraw, ImageFilter
 import common
 from common import SCRATCH
 from previews import font
-from pilot2_preview import sky_layer, _run, forest, labels, CAPTION
+from pilot2_preview import sky_layer, _run, forest
 
 P3 = os.path.join(SCRATCH, "pilot3")
 ART = os.path.join(P3, "art")
@@ -63,7 +63,7 @@ def tower(img, o, walk):
         yb = y * PX
         while yb < min(H - 1, y * PX + 3 * PX) and not walk[yb, col]:
             yb += 1                                                   # the rendered floor edge
-        w = int(PX * 0.62); h = int(win.height * w / win.width)
+        w = int(PX * 0.85); h = int(win.height * w / win.width)
         s = win.resize((w, h), Image.LANCZOS)
         top = yb - h + 4
         if top > 0:
@@ -76,8 +76,16 @@ def tower(img, o, walk):
     sat = ga[..., :3].max(-1) - ga[..., :3].min(-1)
     al = np.clip((lum - 150) / 55, 0, 1) * np.clip(1 - (sat - 40) / 40, 0, 1) * (ga[..., 3] / 255)
     gust = Image.fromarray(np.dstack([ga[..., :3], al * 255]).astype(np.uint8), "RGBA")
-    for y, x in np.argwhere(g == 19):
-        s = gust.resize((int(PX * 1.5), int(gust.height * PX * 1.5 / gust.width)), Image.LANCZOS)
+    cells = np.argwhere(g == 19)
+    if len(cells):
+        haze = Image.new("RGBA", out.size, (0, 0, 0, 0)); hd = ImageDraw.Draw(haze)
+        for y, x in cells:
+            hd.ellipse((x * PX - 30, y * PX - 24, x * PX + PX + 30, y * PX + PX + 24), fill=(190, 225, 255, 120))
+        out.alpha_composite(haze.filter(ImageFilter.GaussianBlur(14)))
+    for y, x in cells:
+        s = gust.resize((int(PX * 1.9), int(gust.height * PX * 1.9 / gust.width)), Image.LANCZOS)
+        sa = np.asarray(s, np.float32).copy(); sa[..., 3] = np.clip(sa[..., 3] * 1.8, 0, 255)
+        s = Image.fromarray(sa.astype(np.uint8), "RGBA")
         out.alpha_composite(s, (x * PX + PX // 2 - s.width // 2, y * PX + PX // 2 - s.height // 2))
     return out.convert("RGB")
 
@@ -102,6 +110,98 @@ def timber(img, o, walk):
         n += 1
     print(f"  {n} timber sets")
     return out.convert("RGB")
+
+
+def labels(img, o):
+    """pilot2's labels, stroked so they read on a light floor."""
+    d = ImageDraw.Draw(img)
+    f = font(16)
+    kw = dict(font=f, stroke_width=3, stroke_fill=(10, 10, 14))
+    for k in o.get("mechanics", {}).get("keyChests", []):
+        x, y = k["x"] * PX, k["y"] * PX
+        d.rectangle((x - 2, y - 2, x + PX + 2, y + PX + 2), outline=(255, 215, 0), width=3)
+        d.text((x - 40, y - 24), "KEY (windbreaker)", fill=(255, 225, 90), **kw)
+    gs = np.argwhere(np.array(o["tiles"]) == 19)
+    if len(gs):
+        y, x = gs.min(0)
+        d.text((x * PX - 60, y * PX - 30), "WIND BARRIER (19)", fill=(225, 245, 255), **kw)
+    for e in o.get("decals", {}).get("exits", []):
+        d.text((img.width - 160, e["y"] * PX - 22), "TRUE EXIT" if e["correct"] else "exit (loops)",
+               fill=(200, 255, 190) if e["correct"] else (230, 230, 230), **kw)
+    return img
+
+
+def agreement(o, walk):
+    """Cell centres where the pixel collision mask (walkable_mask, what the game would block on)
+    disagrees with the authored grid: floor drawn as wall, or wall drawn as floor. The organic
+    renderer may move an edge off a cell centre by design; a built floor should show none."""
+    g = np.array(o["tiles"]); H, W = g.shape
+    fl_wall = wall_fl = 0
+    for y in range(H):
+        for x in range(W):
+            v = walk[y * PX + PX // 2, x * PX + PX // 2]
+            if g[y, x] == 1 and v:
+                wall_fl += 1
+            elif g[y, x] in (0, 6, 9, 19, 25) and not v:
+                fl_wall += 1
+    return fl_wall, wall_fl
+
+
+def pixel_checks(o, walk):
+    """The same questions the grid validator asks, asked of the COLLISION MASK the art produces
+    (walkable_mask), sampled at cell centres:
+      reach   every chest / stairs / exit reachable from the arrival
+      leak    no wall the grid has is opened in the art into a shortcut: any connected run of
+              grid-wall cells drawn as floor must join floor cells whose grid route differs by
+              <= 8 steps (a rounded-off wall end, not a hole through a wall)
+      gate    with the 19 cells blocked at full-cell size, the stairs cannot be reached"""
+    from collections import deque
+    from scipy import ndimage
+    g = np.array(o["tiles"]); H, W = g.shape
+    mw = lambda x, y: bool(walk[y * PX + PX // 2, x * PX + PX // 2])
+    arr = next(a for a in o["assets"] if a["kind"] in ("mouth", "stairsUp"))
+    s0 = (arr["x"], arr["y"])
+    def bfs(ok):
+        d = {s0: 0}; q = deque([s0])
+        while q:
+            x, y = q.popleft()
+            for dx, dy in N4:
+                n = (x + dx, y + dy)
+                if 0 <= n[0] < W and 0 <= n[1] < H and n not in d and ok(*n):
+                    d[n] = d[(x, y)] + 1; q.append(n)
+        return d
+    pm = bfs(mw)
+    gd = bfs(lambda x, y: g[y, x] != 1)
+    near = lambda d, x, y: any((x + a, y + b) in d for a, b in N4 + ((0, 0),))
+    miss = [a["kind"] for a in o["assets"] if a["kind"] in ("chest", "stairsDown", "save", "boss") and not near(pm, a["x"], a["y"])]
+    miss += [f"exit{e['y']}" for e in o.get("decals", {}).get("exits", []) if (W - 1, e["y"]) not in pm]
+    m = np.array([[g[y, x] == 1 and mw(x, y) for x in range(W)] for y in range(H)])
+    lab, n = ndimage.label(m)
+    leaks = 0
+    for k in range(1, n + 1):
+        ds = {gd[(x + a, y + b)] for y, x in np.argwhere(lab == k) for a, b in N4
+              if (x + a, y + b) in gd and mw(x + a, y + b)}
+        leaks += bool(ds) and max(ds) - min(ds) > 8
+    out = [f"pixel reach {'ok' if not miss else 'MISSING ' + ','.join(miss)}", f"wall leaks {leaks}"]
+    if (g == 19).any():
+        blk = walk.copy()
+        for y, x in np.argwhere(g == 19):
+            blk[y * PX:(y + 1) * PX, x * PX:(x + 1) * PX] = False
+        # the hero's feet box is ~24 px wide, so a sliver under 12 px where a rounded wall corner
+        # meets the square 19 cell is not a way through: erode by the half-width before asking
+        blk = ndimage.binary_erosion(blk, iterations=6)
+        lab2, _ = ndimage.label(blk)
+        st = next(a for a in o["assets"] if a["kind"] == "stairsDown")
+        root = lab2[s0[1] * PX + 24, s0[0] * PX + 24]
+        through = root and any(lab2[(st["y"] + b) * PX + 24, (st["x"] + a) * PX + 24] == root for a, b in N4)
+        k = o["mechanics"]["keyChests"][0]
+        keyok = any(lab2[(k["y"] + b) * PX + 24, (k["x"] + a) * PX + 24] == root for a, b in N4)
+        out.append("key chest reachable" if keyok else "KEY CHEST UNREACHABLE")
+        out.append("gate holds in art" if not through else "GATE BYPASSABLE IN ART")
+    return ", ".join(out)
+
+
+N4 = ((1, 0), (-1, 0), (0, 1), (0, -1))
 
 
 def one(fid):
@@ -139,10 +239,24 @@ def one(fid):
     }[did].format(f=o["floor"])
     if did == "stormNest" and o["floor"] >= 2:
         cap += "; WIND gate (19, mech-tiles wind) + windbreaker key chest"
-    cap += f". {o['width']}x{o['height']} cells. Validator: {'; '.join(o['validation'])}"
-    out = Image.new("RGB", (img.width, img.height + 36), (16, 16, 20))
-    out.paste(img, (0, 36))
-    ImageDraw.Draw(out).text((10, 9), cap, font=font(16), fill=(236, 236, 236))
+    fw_, wf_ = agreement(o, walk)
+    pc = pixel_checks(o, walk)
+    print(f"  {fid}: art vs grid at cell centres: {fw_} floor cells drawn as wall, {wf_} wall cells drawn as floor; {pc}")
+    cap += f". {o['width']}x{o['height']} cells. Validator: {'; '.join(o['validation'])}; collision mask: {pc}"
+    f16 = font(16)
+    lines, cur = [], ""
+    for word in cap.split(" "):
+        t = (cur + " " + word).strip()
+        if f16.getlength(t) > img.width - 20 and cur:
+            lines.append(cur); cur = word
+        else:
+            cur = t
+    lines.append(cur)
+    top = 14 + 22 * len(lines)
+    out = Image.new("RGB", (img.width, img.height + top), (16, 16, 20))
+    out.paste(img, (0, top))
+    for i, ln in enumerate(lines):
+        ImageDraw.Draw(out).text((10, 8 + 22 * i), ln, font=f16, fill=(236, 236, 236))
     os.makedirs(DEST, exist_ok=True)
     p = os.path.join(DEST, f"{fid}-pilot3.jpg")
     for q in (90, 85, 80, 72):

@@ -197,12 +197,12 @@ def timber_sets(rows, every=4):
 
 
 # ── haunted forest maze ──────────────────────────────────────────────────────────────────────────
-def forest_f1(nx=8, ny=7, seed=11):
+def forest_f1(nx=8, ny=7, seed=11, walls=(2, 3, 3)):
     rng = random.Random(seed)
     pw = [rng.choice((2, 2, 3)) for _ in range(nx)]               # path widths per column
     ph = [rng.choice((2, 2, 3)) for _ in range(ny)]
-    ww = [rng.choice((2, 3, 3)) for _ in range(nx + 1)]            # tree-wall widths
-    wh = [rng.choice((2, 3, 3)) for _ in range(ny + 1)]
+    ww = [rng.choice(walls) for _ in range(nx + 1)]                # tree-wall widths
+    wh = [rng.choice(walls) for _ in range(ny + 1)]
     ww[-1] = 2                                                      # thin east wall: exits are short
     xs, x = [], FRAME
     for i in range(nx):

@@ -50,7 +50,15 @@ python3 pilot3_preview.py                                          # -> acts-pre
   on jittered axis spokes, and stub alcoves. Walls are 2+ cells thick, so the renderer prunes
   nothing. Stair sprites go through `spriteFor`, and the F1 door is an opening, not a cave mouth.
 - `pilot3_preview.py`: overlays from the Codex `mech-tiles` sheets (keyed): windows `a[0,2]`,
-  wind gust `a[0,0]` on 19, mine timber set `b[2,1]` on N-S shafts.
+  wind gust `a[0,0]` on 19, mine timber set `b[2,1]` on N-S shafts, forest entry arch `b[1,2]`.
+  `pixel_checks()` repeats the validator on the collision mask the art produces:
+  - reach;
+  - wall leaks: a grid wall opened into a shortcut;
+  - the wind gate at hero-feet clearance.
+- The pilot2 forest failed the leak check. Its bent 2-cell tree walls opened a shortcut of about
+  160 steps in the art. pilot3 `forest_thick()` rebuilds it with 3-cell walls, then `thicken()`
+  covers every thin wall cell with a 2x2 block. The tower's wind gate now sits inside a doorway
+  (`door_gate`), because one placed in front of the door was bypassable round a rounded corner.
 
 ## Pilot 2: new organic layouts with the mechanic designed in (current direction)
 

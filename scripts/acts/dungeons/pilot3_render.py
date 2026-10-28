@@ -62,9 +62,20 @@ def built_field(rows, scale=1, assets=None):
         # the cells. Floor cells beyond innerRadius (the F1 doorway) stay cut through.
         c, rin = TOWER["centre"], TOWER["innerRadius"]
         rc = np.hypot(np.arange(cw)[None, :] - c, np.arange(ch)[:, None] - c)
-        ring = (rc > rin - 1.6).astype(np.float32)                        # cells near/beyond the face
-        inner_up = np.where(ring[cy, cx] > 0, 1.0, up)                    # interior walls only
-        door_up = np.where(ring[cy, cx] > 0, up, 0.0)                     # floor cut through the ring
+        ring = rc >= rin                                                  # cells the circle owns
+        # interior walls keep every cell inside the circle; a wall that meets the outer wall is
+        # carried one cell on into the ring so it reaches the curved face with no sliver gap
+        cell_up = 1.0 - solid
+        inner_cells = np.where(ring, 1.0, cell_up)
+        for y, x in np.argwhere(ring):
+            dx_, dy_ = x - c, y - c
+            ix = x - int(np.sign(dx_)) if abs(dx_) >= abs(dy_) else x
+            iy = y - int(np.sign(dy_)) if abs(dy_) >= abs(dx_) else y
+            if not ring[iy, ix] and solid[iy, ix] and solid[y, x]:
+                inner_cells[y, x] = 0.0
+        door_cells = np.where(ring, cell_up, 0.0)                         # floor cut through the ring
+        inner_up = inner_cells[cy, cx]
+        door_up = door_cells[cy, cx]
         r = np.hypot(xx / px - (c + 0.5), yy / px - (c + 0.5))
         circ = np.clip((rin + 0.5 - r) * px / (px * 0.10 * 2.5) + 0.5, 0, 1)
         f = np.minimum(R.blur(inner_up, px * 0.09), circ)
@@ -111,7 +122,7 @@ def render_one(fid):
     if o.get("built"):
         TOWER = o.get("tower")
         # a lit stone building, not a blue-black cave: floor down, walls up (less cave contrast)
-        R.TARGET[o["theme"]] = {"floor": (104, 104, 108), "wall": (58, 60, 70)}
+        R.TARGET[o["theme"]] = {"floor": (100, 100, 104), "wall": (34, 38, 50)}
         R.floor_field = built_field
     else:
         TOWER = None
@@ -120,7 +131,13 @@ def render_one(fid):
     os.makedirs(ART, exist_ok=True)
     t0 = time.time()
     R.walkable_mask(o["rows"], assets).save(os.path.join(ART, f"{fid}-walk.png"), optimize=True)
-    img = R.render(o["rows"], R.load_materials(mdir), o["theme"], 1, assets, True, None, ())
+    mats = R.load_materials(mdir)
+    if o.get("built"):
+        # the Codex flags are busy at full contrast and fight the walls for attention: calm the
+        # floor so the masonry masses read as the solid thing in the room
+        fm = mats["floor"].astype(np.float32)
+        mats["floor"] = (fm.mean((0, 1)) + 0.55 * (fm - fm.mean((0, 1)))).astype(mats["floor"].dtype)
+    img = R.render(o["rows"], mats, o["theme"], 1, assets, True, None, ())
     img.save(os.path.join(ART, f"{fid}-props.png"))
     mb = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024
     print(f"{fid} {o['width']}x{o['height']} -> {img.size} in {time.time() - t0:.0f}s, peak {mb:.0f} MB", flush=True)

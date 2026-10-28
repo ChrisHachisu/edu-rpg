@@ -128,6 +128,29 @@ def built_tower(f, seed):
     return g, sky, arrival, exit_, (c, Rout, Rin)
 
 
+def door_gate(g, arrival, exit_):
+    """The wind barrier goes IN a doorway: two cells across a 2-wide opening, flanked by wall on
+    both ends, so the drawn wall faces close it at pixel level too (find_gate's in-front-of-door
+    pick left a corner the art rounds off). Near the middle of the route."""
+    path = shortest(g, arrival, exit_)
+    best = None
+    for i, (x, y) in enumerate(path):
+        for cells, flank in ((((x, y), (x, y + 1)), ((x, y - 1), (x, y + 2))),
+                             (((x, y), (x + 1, y)), ((x - 1, y), (x + 2, y)))):
+            if any(g[cy, cx] != 0 for cx, cy in cells) or any(g[cy, cx] != 1 for cx, cy in flank):
+                continue
+            h = g.copy()
+            for cx, cy in cells:
+                h[cy, cx] = 1
+            r = bfs(h, arrival, WALK)
+            if any((exit_[0] + a, exit_[1] + b) in r for a, b in N4):
+                continue
+            score = abs(i - len(path) * 0.5)
+            if best is None or score < best[0]:
+                best = (score, list(cells))
+    return best[1] if best else None
+
+
 def tower_floor(f):
     for seed in range(400):
         g, sky, arrival, exit_, geo = built_tower(f, 7000 * f + seed)
@@ -152,7 +175,7 @@ def tower_floor(f):
     mech = {"keyChests": []}
     gate = None
     if f >= 2:
-        gate = find_gate(g, arrival, exit_)
+        gate = door_gate(g, arrival, exit_) or find_gate(g, arrival, exit_)
         for x, y in gate:
             g[y, x] = 19
     for x, y in place_chests(g, arrival, exit_, 3, gate, mech if f >= 2 else None):
@@ -181,11 +204,83 @@ def tower_floor(f):
     return g, meta
 
 
+def thin_wall_cells(g):
+    """Wall cells not covered by any 2x2 all-wall block: the organic renderer's blur and warp can
+    open such a wall in the art while the grid still blocks, and that makes a shortcut."""
+    w = g == 1
+    blk = w[:-1, :-1] & w[1:, :-1] & w[:-1, 1:] & w[1:, 1:]
+    cov = np.zeros_like(w)
+    cov[:-1, :-1] |= blk; cov[1:, :-1] |= blk; cov[:-1, 1:] |= blk; cov[1:, 1:] |= blk
+    return [(int(x), int(y)) for y, x in np.argwhere(w & ~cov)]
+
+
+def thicken(g, mouth, keep):
+    """Cover every thin wall cell with a 2x2 wall block, converting the fewest floor cells, and
+    never cutting anything in `keep` (chests, exits, the way in) off from the mouth."""
+    H, W = g.shape
+    need = bfs(g, mouth, WALK) | set()
+    changed = 0
+    for x, y in thin_wall_cells(g):
+        if g[y, x] != 1:
+            continue
+        best = None
+        for ox in (-1, 0):
+            for oy in (-1, 0):
+                cells = [(x + ox + a, y + oy + b) for a in (0, 1) for b in (0, 1)]
+                if any(not (1 <= cx < W - 1 and 1 <= cy < H - 1) for cx, cy in cells):
+                    continue
+                conv = [(cx, cy) for cx, cy in cells if g[cy, cx] != 1]
+                if any(g[cy, cx] != 0 or (cx, cy) in keep for cx, cy in conv):
+                    continue
+                h = g.copy()
+                for cx, cy in conv:
+                    h[cy, cx] = 1
+                r = bfs(h, mouth, WALK)
+                if not all(k in r or any((k[0] + a, k[1] + b) in r for a, b in N4) for k in keep):
+                    continue
+                if len(r) < len(need) - len(conv) - 2:                 # stranded a pocket
+                    continue
+                if best is None or len(conv) < len(best):
+                    best = conv
+        if best is not None:
+            for cx, cy in best:
+                g[cy, cx] = 1
+            changed += len(best)
+            need = bfs(g, mouth, WALK)
+    return changed
+
+
+def forest_thick():
+    """pilot2's forest maze, re-made with 3-cell tree walls and thin walls thickened, because the
+    pilot2 walls (2 cells, then bent) opened a 160-step shortcut through the maze in the art."""
+    import pilot2
+    g, meta = pilot2.forest_f1(nx=8, ny=7, seed=11, walls=(3,))
+    H, W = g.shape
+    mouth = tuple(int(v) for v in np.argwhere(g == 6)[0][::-1])
+    keep = {(int(x), int(y)) for y, x in np.argwhere(g == 4)}
+    keep |= {(x, e["y"]) for e in meta["decals"]["exits"] for x in range(W - FRAME - 4, W)}
+    keep |= {(mouth[0] + a, mouth[1] - b) for a in (0, 1) for b in range(0, 4)}
+    n = thicken(g, mouth, keep)
+    meta["thickened"] = n
+    meta["thinWallCellsLeft"] = len(thin_wall_cells(g))
+    return g, meta
+
+
 def author():
     os.makedirs(P3, exist_ok=True)
     bad = 0
-    for fid in ("ironMine-f1", "hauntedForest-f1"):
-        shutil.copyfile(os.path.join(P2, f"{fid}.json"), os.path.join(P3, f"{fid}.json"))
+    shutil.copyfile(os.path.join(P2, "ironMine-f1.json"), os.path.join(P3, "ironMine-f1.json"))
+    g, meta = forest_thick()
+    o = tiles_to_floor("hauntedForest", 1, 5, "haunted forest maze", g, meta)
+    o["source"] = "pilot3.py forest_thick (pilot2 maze method, 3-cell tree walls, thin walls thickened)"
+    errs, st = check(o)
+    o["validation"] = errs or ["ok"]
+    json.dump(o, open(os.path.join(P3, "hauntedForest-f1.json"), "w"))
+    print(f"{'OK  ' if not errs else 'FAIL'} hauntedForest-f1 {o['width']}x{o['height']} {st} "
+          f"thickened {meta['thickened']}, thin left {meta['thinWallCellsLeft']}")
+    for e in errs:
+        print("      -", e)
+    bad += bool(errs)
     for f in (1, 2):
         g, meta = tower_floor(f)
         o = tiles_to_floor("stormNest", f, 5, "storm-battered stone tower", g, meta)
