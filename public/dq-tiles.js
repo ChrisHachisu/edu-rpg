@@ -2505,7 +2505,10 @@
     var im=rec[layer]; if(!im) return null;
     if(scene.textures.exists(key)) scene.textures.remove(key);
     costTime('addImg:'+layer,function(){ scene.textures.addImage(key,im); });
-    try{ scene.textures.get(key).setFilter(NEAREST); }catch(e){}
+    // Crest frames are half-res and scaled up, so they sample LINEAR (0); NEAREST made them blocky.
+    // They ship with RGB premultiplied by alpha because the bitmap is decoded straight-alpha and
+    // Phaser blends premultiplied (build 90's white sea).
+    try{ scene.textures.get(key).setFilter(layer.indexOf('crest')===0?0:NEAREST); }catch(e){}
     A1A.tex[key]=1; return key;
   }
   // Everything this chunk owns on the GPU, dropped together. Called from the same two places that

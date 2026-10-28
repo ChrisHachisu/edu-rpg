@@ -1387,11 +1387,11 @@
       "foam": "chunks/foam/c0-r0.png",
       "foamSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
       "crest0": "chunks/crest/c0-r0-0.png",
-      "crest0Sha256": "faf44dc5bbf9aed4c799d4203eaa2e3d6fc7427048a17ff74750c8736010e820",
+      "crest0Sha256": "b1003663e6a3ce9d0276d3538e31d096fe31e4647d0e881b74d8e88bda366ad6",
       "crest1": "chunks/crest/c0-r0-1.png",
-      "crest1Sha256": "3c1f9027b6a9ad3ce06b6d9b2c4295af03e17cf4c4b7323b9f4979755128501a",
+      "crest1Sha256": "2088354abbf25dcbc15ef6340ec6954615a0b8fbfa15a5eed3a0312ae9886b54",
       "crest2": "chunks/crest/c0-r0-2.png",
-      "crest2Sha256": "1f8df758d0529b48a4eba93685e66aba62484788fb988259ba3b664acd1121b8"
+      "crest2Sha256": "e5e94c08ecf34b1bc8468677c880f3a8a4239463024d914d2c8aea52889d28c0"
     },
     {
       "id": "c1-r0",
@@ -1414,11 +1414,11 @@
       "front": "chunks/front/c1-r0.png",
       "frontSha256": "7e9350c8eca69b206590c655cc425c14518b8038c4f319a4cebee02301d76e1c",
       "crest0": "chunks/crest/c1-r0-0.png",
-      "crest0Sha256": "88712729dc0cfe61719f23beae0669cb30388cd459e352fbc4b4bff23fd60ee2",
+      "crest0Sha256": "9818fef0750c9fd6b1fb1082f4b1ae11959ab02388b1fd30ebe238f554bce201",
       "crest1": "chunks/crest/c1-r0-1.png",
-      "crest1Sha256": "c7d9bf79d035a2d6b5eece6d6304b27c8f427ac968c3a5fac5ceddddada1d068",
+      "crest1Sha256": "b6b3749f3f6f41c9f4c223cde047bd62d4fb0b2399fdeb85375de798fcfe60b4",
       "crest2": "chunks/crest/c1-r0-2.png",
-      "crest2Sha256": "2a1707b7d08ba8dbb0435d79563c556d9d60357e8230c08600b216187454de41"
+      "crest2Sha256": "fb32fefcb546364237253d928ef1d85307da943202943010e74a681d731694b9"
     },
     {
       "id": "c2-r0",
@@ -1441,11 +1441,11 @@
       "front": "chunks/front/c2-r0.png",
       "frontSha256": "ce381c9006ea88dff549a2d20e18a1b4fe3554397276c15d58fba8d9b9205337",
       "crest0": "chunks/crest/c2-r0-0.png",
-      "crest0Sha256": "5d6defc49d0e0c6f6197f840e494075a29ed83ca47c9198526ecccd9e1ac1ffc",
+      "crest0Sha256": "2a862f02afc2f334d564f4a1ebd06440c35052cc735712d53ac4b5ed3de811d3",
       "crest1": "chunks/crest/c2-r0-1.png",
-      "crest1Sha256": "4211ea016aa0689f6cc0a99b92d5c74c1b376269949956b1e4544cb47a6977bf",
+      "crest1Sha256": "01a174f9da63c9ed575af4308197dc0a94c2211d6c6c98ff3d9632df161a884b",
       "crest2": "chunks/crest/c2-r0-2.png",
-      "crest2Sha256": "194622de2a6843ff6ac685ae4b0f42b10e0a5136c3ce053fce871fe0a1f692ea"
+      "crest2Sha256": "40e4fe0b2ac744a2b58b0313c5914ce12edf5cb3ca5a6481c4074e36744016b7"
     },
     {
       "id": "c3-r0",
@@ -1468,11 +1468,11 @@
       "front": "chunks/front/c3-r0.png",
       "frontSha256": "08a9a117578f3bfe065ed3f1dcfd6253ea7ffb65009677e6fe010b86e01118b2",
       "crest0": "chunks/crest/c3-r0-0.png",
-      "crest0Sha256": "e0f40ca0d3bb5489ffac852b119289d1cf85894ae0dba6af3dbac79959b88a40",
+      "crest0Sha256": "89ee316cca44008c3637a0778ccdf32fe2dea3618d8bb1ca58009c42858aa2e9",
       "crest1": "chunks/crest/c3-r0-1.png",
-      "crest1Sha256": "b6ce8d23796a610b31c4192a0b9e80939033e6f8f3c335079abc0d8e09612a59",
+      "crest1Sha256": "17ef9131871edf6b48d39f3d204a5e6bb081d32f90d99e9ae83c5f218e5d44a4",
       "crest2": "chunks/crest/c3-r0-2.png",
-      "crest2Sha256": "87e808a04fd3d33a859ecd6c85d5838828900656faf1ff6ea5ea80cf8f836cd7"
+      "crest2Sha256": "3235155c47b7dfacf6478e0cc8e392f8a14f272f7195072d331f31db2833ecee"
     },
     {
       "id": "c4-r0",
@@ -1497,11 +1497,11 @@
       "front": "chunks/front/c4-r0.png",
       "frontSha256": "a7daca858b56a22dff62d2824bcc7ee0d398753d3e415ec420af9e826fd85759",
       "crest0": "chunks/crest/c4-r0-0.png",
-      "crest0Sha256": "4ab95443fa7f0c9c88c49727b435a312149046c4460c6accb0bfb1a769216294",
+      "crest0Sha256": "93f5832476bc438c19b228e9ef94bc3b429fccf372425948e9ce95824e7cc78c",
       "crest1": "chunks/crest/c4-r0-1.png",
-      "crest1Sha256": "09e57b986f3186831809efa3e1c74fc983e5b3721ae57ac446854900e11a2f5d",
+      "crest1Sha256": "2fd57a665edafa3259d751bf07fff60f84e637bf9c47557d991cd0ba4ddd4d25",
       "crest2": "chunks/crest/c4-r0-2.png",
-      "crest2Sha256": "bfb948be6cdd134c102a75dd5f3907d558ad7733158199edc3d83b70d54fa368"
+      "crest2Sha256": "0439deea18e00adeb9e628bd39665cfcffce92b95ef466efa0319e9d38e0bea5"
     },
     {
       "id": "c5-r0",
@@ -1526,11 +1526,11 @@
       "front": "chunks/front/c5-r0.png",
       "frontSha256": "fa4ba4311ff685f22200cacf6a8c0bd3be28fad7251c26d3bbb9bad63aefa753",
       "crest0": "chunks/crest/c5-r0-0.png",
-      "crest0Sha256": "0319fca959ea0d635ce0405e38818116d6d9c1f10aad22b4cd446b9fb2e15a07",
+      "crest0Sha256": "06ce271c95690573b2263451adabfbd4de4ee558d21a03cb0dfafea059910116",
       "crest1": "chunks/crest/c5-r0-1.png",
-      "crest1Sha256": "fad477e6533575c51b72c2af8bd16730aadbc3aa9c47e9c0e3b7250d307c5280",
+      "crest1Sha256": "8fd9028de76fcbd31ea0775432851081cafc6774afb31f7a19c2ecbe625faa91",
       "crest2": "chunks/crest/c5-r0-2.png",
-      "crest2Sha256": "70f6613fbc2a7fb7744197b4f702ae6a5cce48a6a45ce24e3fd77dc8d62b96e8"
+      "crest2Sha256": "d493e2643af9ac45c5caf4834c42a9f9052924f67ed21310273b13516ccc19bc"
     },
     {
       "id": "c6-r0",
@@ -1555,11 +1555,11 @@
       "front": "chunks/front/c6-r0.png",
       "frontSha256": "07f15fb4fa4d6f332e91c427400b106806c4cd4afa0f0292d9a6b3e25b7c03d8",
       "crest0": "chunks/crest/c6-r0-0.png",
-      "crest0Sha256": "a324f03a4258bc63e4a89ed27064169569f51808ee6dc63ce212096b6965b25e",
+      "crest0Sha256": "bc2b61531ef10d56bfebfe6b2d6e7600a2bbf5d58a3024c1451ef3e56c841c8e",
       "crest1": "chunks/crest/c6-r0-1.png",
-      "crest1Sha256": "36972fb5909e2d8ecc8b2db5047cc7722a4a72bbe4d7b750f0611c301f81b2ed",
+      "crest1Sha256": "814ebb659a7e98fc483baa3b8eb63331f7bb5122f3899634b5a4fc14fa558465",
       "crest2": "chunks/crest/c6-r0-2.png",
-      "crest2Sha256": "d66fdd8ed48dd6de250c32ba0ee50ec3a1feb77652831ce5730d5e9ad111fba2"
+      "crest2Sha256": "681575a4e4a09bc5a48adb1aa0d23061f566c4f6f1a8179b3a6b9f2ebbbd6a5c"
     },
     {
       "id": "c7-r0",
@@ -1582,11 +1582,11 @@
       "front": "chunks/front/c7-r0.png",
       "frontSha256": "f1d7b5fb8c68772971f6a9c14ae83a8ce93355766a5e370eb81ea849c9569e7b",
       "crest0": "chunks/crest/c7-r0-0.png",
-      "crest0Sha256": "0c570b183325267f62338e955a6263807495ebdba18bf41b79a0fd26cd900c53",
+      "crest0Sha256": "e4d86beac20e7481f3dd9351f901529b430e1486954da3e4f84493ec4a62bc20",
       "crest1": "chunks/crest/c7-r0-1.png",
-      "crest1Sha256": "cd7a0ac35f83f7d7c359152157ee839ea26775c05a833daa8f46ea6c58cd71ad",
+      "crest1Sha256": "7e6b7efac9491e03be344d9eb9aa6a21a3fc87c25c9388a4cdc8f6de7183c64a",
       "crest2": "chunks/crest/c7-r0-2.png",
-      "crest2Sha256": "e5dcb2b184da548c7701acfb125e27ce30663d6a65f748b337191761d40aaf2c"
+      "crest2Sha256": "416e57ed3f74fb7cc8a7247223a64cd3c3165768967bc416cca8dfc3f1e0377b"
     },
     {
       "id": "c8-r0",
@@ -1609,11 +1609,11 @@
       "front": "chunks/front/c8-r0.png",
       "frontSha256": "3fc2c41666c0cf2b17fa68ec5d0b1a96af9c6dfdf0114ce6c8030bea3d0094e2",
       "crest0": "chunks/crest/c8-r0-0.png",
-      "crest0Sha256": "1e8e38e5720b9ab6a69672ef54506917be4e0969a7dd902f13c73274ce85f389",
+      "crest0Sha256": "7f5edd584535bdc73a0df09549c3ba8d0ae398360cc99ce96e9580dc5a977a94",
       "crest1": "chunks/crest/c8-r0-1.png",
-      "crest1Sha256": "66278cd6c1e335bfbf5283918bc51677e007b99596ebd7ed03ff927d33d8f955",
+      "crest1Sha256": "27e372627c50b308599b8a224c19603b5205fdfb35f94f8c5fadb0d0fd76d079",
       "crest2": "chunks/crest/c8-r0-2.png",
-      "crest2Sha256": "ba2b204f86922e9103ea8babf5cbb6aadedc1dead30f732e9dc2731b702680c2"
+      "crest2Sha256": "d4caa2f0b7002d359bfc3496652922c37314c59eb23077a540f31440bb8ae79e"
     },
     {
       "id": "c9-r0",
@@ -1622,25 +1622,25 @@
       "width": 64,
       "height": 256,
       "base": "chunks/base/c9-r0.webp",
-      "baseSha256": "14cf5ba8843168c91858997ed93ac92cc11366e195a699d038a05897b9f8d4a4",
+      "baseSha256": "01ef8ac9361d893cb437e261c448950337cdc152b8c71fbee5ad80822b17061b",
       "canopy": "chunks/canopy/c9-r0.webp",
       "canopySha256": "371a4a0894957e68c4e5f3b62989172d462645be77d52797d88e5bc535cc54af",
       "water": "chunks/water-r2/c9-r0.png",
-      "waterSha256": "8e541345ac7e816744c84cd416d2a22bc72b8aaeef723770e5036cf217622feb",
+      "waterSha256": "0660e89a8bcb92062f4cbe818c5febd4b63458907b822b2e764d8984b09159f9",
       "basePixelsPerCell": 32,
       "forest": "chunks/forest/c9-r0.png",
-      "forestSha256": "b2a14a6dbfab46a98bd346da989d3df74a0680c3d9f645e507c46be88d53ad79",
+      "forestSha256": "ea89da3fa66d06d39510fcd1697e16107d79841454bd37a5ad4d59d3f6014546",
       "waterPixelsPerCell": 32,
       "foam": "chunks/foam/c9-r0.png",
-      "foamSha256": "e7a617e17dffbcd0593d91d198626a79b01421a35a2f59115ae909aa564b08af",
+      "foamSha256": "63bc4239087d03f9d9daf06bf6d2c15841b3b331d08134f4182f565b2f76f93c",
       "front": "chunks/front/c9-r0.png",
-      "frontSha256": "f1f0aab44c48275cbb2f8a3efb93b7893c09e81f0db043c52bee283f7742e5fd",
+      "frontSha256": "c66a2570e53073370b7f609aad3f72e43e1be3e4aec83a3da0d35b759fd9a7a4",
       "crest0": "chunks/crest/c9-r0-0.png",
-      "crest0Sha256": "e64be064c9eb5698a6e22d6c858446420243a40540442f27d316316d602f6f13",
+      "crest0Sha256": "cfea247d8726d266ec56649ddba01abb02d88d0113672ced44014bc6c1a5cd89",
       "crest1": "chunks/crest/c9-r0-1.png",
-      "crest1Sha256": "1ed475355502130af82afe531b812c331931b521601e7d4b27083c2bad97c6a2",
+      "crest1Sha256": "ff07c506557882affa2d6063c08f1d06bbde7b0071546c382eb8a5ebc0bb406a",
       "crest2": "chunks/crest/c9-r0-2.png",
-      "crest2Sha256": "3ce645d33d07a560b8a9bd1e72e1bdc057be783a3326997073e6c5959b6f0bee"
+      "crest2Sha256": "932830c98559954c62e964047563a9ca229e1a72e97937eaccee0c6686d91857"
     },
     {
       "id": "c0-r1",
@@ -1649,25 +1649,25 @@
       "width": 256,
       "height": 256,
       "base": "chunks/base/c0-r1.webp",
-      "baseSha256": "827400bacfdab612fe3c7df24e305264a5440f44dd5c02e2ec4884604e49da20",
+      "baseSha256": "a39720e0604541131ce647b9bcc4375597cc91561f1bd5f7465a160f3cd6822e",
       "canopy": "chunks/canopy/c0-r1.webp",
       "canopySha256": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af",
       "water": "chunks/water-r2/c0-r1.png",
-      "waterSha256": "61278335f264162f520b107683d2013c64c305198e42acfe774c24e2cf5e6982",
+      "waterSha256": "9b870045c5d2871f2d9ee869597c1ccc9e586a73ec412491542a1ffc36f89b4d",
       "basePixelsPerCell": 32,
       "forest": "chunks/forest/c0-r1.png",
-      "forestSha256": "862724113fd6f79358f48aab7246f6191541d9561de82e48cebc94d2ea3b20e4",
+      "forestSha256": "ccd2b49717842d1d71f4f53045890d5adb7ceeb44553d18b4db68c85b69280d6",
       "waterPixelsPerCell": 32,
       "foam": "chunks/foam/c0-r1.png",
-      "foamSha256": "09bc8f0ca7cfa8275bd783b1842cf0bfed7d8078e587cef490549f56d0df64bd",
+      "foamSha256": "b150fb23a13473614147e788010c9faaa4f2785322e0e2f36e3cdede0220bb43",
       "front": "chunks/front/c0-r1.png",
-      "frontSha256": "ddfebb0a1308620786e4a018f910ee981481677877bfc0fbd4c01622e1b03ef7",
+      "frontSha256": "2949ec3bcbe7aa6bd13b43366b69184e3a3763c07f78dfe0d3b005b241ec6f47",
       "crest0": "chunks/crest/c0-r1-0.png",
-      "crest0Sha256": "fb8811bdf885e454ec9d21e01996bd919dbbf36a3bd26e8b848ad18e3d57540b",
+      "crest0Sha256": "8011273f8bcd63da5ba535d5b11e59e9a295fc5cbc9e43eb4f868d3b342a7fe3",
       "crest1": "chunks/crest/c0-r1-1.png",
-      "crest1Sha256": "1bdb80959c75afeecec3a61eb8d0ea754b89f584c4c43d925b34179b9b961f36",
+      "crest1Sha256": "d279627528a45a57dde7ae66cbd5461c538ff262bc0d7211b086e42347dbf89a",
       "crest2": "chunks/crest/c0-r1-2.png",
-      "crest2Sha256": "2563e38a67ce3227366eead0634bcd1684028efbd96f81f9e1b299b62701450d"
+      "crest2Sha256": "ebecf5f20f1c0e88a8fea5d3b2aa7765d0bbba9542a4ce185b4bff116ba990fd"
     },
     {
       "id": "c1-r1",
@@ -1676,25 +1676,25 @@
       "width": 256,
       "height": 256,
       "base": "chunks/base/c1-r1.webp",
-      "baseSha256": "a88fcee1b79db99a039edd94d7d0aa61c666c1a118ea2d9775a67edadc3efe74",
+      "baseSha256": "ef3c6f6e232b5da08e4693727aa44925c00f2c7d37925c1e1ba376db0d5f4b19",
       "canopy": "chunks/canopy/c1-r1.webp",
       "canopySha256": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af",
       "water": "chunks/water-r2/c1-r1.png",
-      "waterSha256": "453d59a1819773bd0a4d0c200a2b57bb8008e122894ef5648334747493ab0a7b",
+      "waterSha256": "ca213996010e65aaf97f645d1d5e9b30067a379992881eee895ff740023ddb98",
       "basePixelsPerCell": 32,
       "forest": "chunks/forest/c1-r1.png",
-      "forestSha256": "538212b5bbacae33c3a87f43000b017236775879e26fe7345ddf602a57e09e56",
+      "forestSha256": "7e090c2cac5381ebf7132ed53901353b7cc3ab7997b06b01611d46fa94525063",
       "waterPixelsPerCell": 32,
       "foam": "chunks/foam/c1-r1.png",
-      "foamSha256": "c0e3a1bfda1a749598256bb3d43dc675ab7eb4993d38b40b4477d13a1b6db506",
+      "foamSha256": "e644114d174ae2802e8a7191bf5db6ef277d5bb636e5c84610b247fce3cf56c7",
       "front": "chunks/front/c1-r1.png",
-      "frontSha256": "0d8196c5a72bb1e6d2031748755792db3b5a1dec39824ac5f861d91783fb18c2",
+      "frontSha256": "8efaf9e8a4d5b6e292beaae6d4004ceced3297fd62823c9960bf604ce54bb2f1",
       "crest0": "chunks/crest/c1-r1-0.png",
-      "crest0Sha256": "ba62f17bb2b774abe086452434a0ceb2012d5bb9fd51048a91d7b2c82a33a10c",
+      "crest0Sha256": "07db2a617247359016e113fcb4273e28d216a671db3eab352a67d5d018eca25f",
       "crest1": "chunks/crest/c1-r1-1.png",
-      "crest1Sha256": "7a2599385867ffb8f7155e49c77ae5d5442d19ff91a0800c31baf82e3615addf",
+      "crest1Sha256": "1790dd75905e822032770c9043335d4e770e20519513bdf55010057b84943a7e",
       "crest2": "chunks/crest/c1-r1-2.png",
-      "crest2Sha256": "f6c80d66eca57210b5117e77b89c554b3d2f095c14153bc5302b5265f68e40c9"
+      "crest2Sha256": "f745a9a4e868e786bcf2038b85292d6cfbe6c04c69f94dbc8f1cc938f1852813"
     },
     {
       "id": "c2-r1",
@@ -1717,11 +1717,11 @@
       "front": "chunks/front/c2-r1.png",
       "frontSha256": "1655e67001f314e4a3eac1c2e97e49f582b8cf3f669eb7588ae2993831daf4f8",
       "crest0": "chunks/crest/c2-r1-0.png",
-      "crest0Sha256": "20033afbfbe69bd5f05399cb6ea622951593e673ed85b5ce75491e392ed05ac7",
+      "crest0Sha256": "dff5e05db25375380a135e5809095e5c1579b308e1218f3b64c94d85fb0d64eb",
       "crest1": "chunks/crest/c2-r1-1.png",
-      "crest1Sha256": "4aa029ba47754f047637b595f1ac55940323d6567678318ac27cbdfcc2cb237f",
+      "crest1Sha256": "71f90b9e63b1e82cc39dd32bfd9940a299d93e6375bc0f6625c99af5d7cc07eb",
       "crest2": "chunks/crest/c2-r1-2.png",
-      "crest2Sha256": "1a2e6d751c043c9de0b0e39a1f44eef48106d84be09fcc131de0ffafc29ebf3a"
+      "crest2Sha256": "14859f09e701458ebd3f7d9ef91ee3dcea085ff9c346a0e5160af3e0aa65d406"
     },
     {
       "id": "c3-r1",
@@ -1854,25 +1854,25 @@
       "width": 64,
       "height": 256,
       "base": "chunks/base/c9-r1.webp",
-      "baseSha256": "9c30e2ced16673d7676327eb22a1c3b465308999f030cdb46eaddd06d257e1c5",
+      "baseSha256": "b52223d1bfe52b78e9310b4bd2680fa231e8efb1c3969f9b4de8478b9912a7d0",
       "canopy": "chunks/canopy/c9-r1.webp",
       "canopySha256": "371a4a0894957e68c4e5f3b62989172d462645be77d52797d88e5bc535cc54af",
       "water": "chunks/water-r2/c9-r1.png",
-      "waterSha256": "ccdc537932ffce109227d1ba32c7a0cbbdc5c0b604223b3bc2f4fb2367ecd146",
+      "waterSha256": "24de41682637d667581a5a2a28048bb06119d0835cd1618ff56cfdd58de93461",
       "basePixelsPerCell": 32,
       "forest": "chunks/forest/c9-r1.png",
-      "forestSha256": "c77afe2bda89f98ae124ed89f5b88e9f6b521c3379f816228ba5c60f381126b0",
+      "forestSha256": "9e6a6bde80eafdd8bd353007363a75fec443a21a0687ebc43857d15925341d63",
       "waterPixelsPerCell": 32,
       "foam": "chunks/foam/c9-r1.png",
-      "foamSha256": "993527f6c4e9f0cb58dcd9443ca5c436f46f0c3553eebbdb489be8255f033264",
+      "foamSha256": "b8cf27a0a42c76f2ed351ebdef8e161b929379bf9f87f6c456fbe9502074c444",
       "front": "chunks/front/c9-r1.png",
-      "frontSha256": "8de849c6a32c356eec8d0a0c858e9343af2a0cff2f37388b1b7bf9ba19871775",
+      "frontSha256": "4d5608f1ca4ea1b23a55ca5636e568f042ea7efe07340d0c091a91015568a82d",
       "crest0": "chunks/crest/c9-r1-0.png",
-      "crest0Sha256": "dc734e85587b58fe353e64e878df7bbdc9d139404936568c8fea3c6e6f81c3d5",
+      "crest0Sha256": "ad4f5114ae70c156a6b87c9d929035e018972ca62fc1b2b882e292b9f0af060e",
       "crest1": "chunks/crest/c9-r1-1.png",
-      "crest1Sha256": "42283073c8c1a730019c3ae3c7ed2a990d438158106f941a1536615afb6b19bd",
+      "crest1Sha256": "7e912a67378f8f70564ab2b112e2d96640929a4a70bb2cf111629ae06775090d",
       "crest2": "chunks/crest/c9-r1-2.png",
-      "crest2Sha256": "62cb21480f9932a99cd4db478451bb2ed902af28f00388c72ebce3c4391b1732"
+      "crest2Sha256": "f3d5013943ef96ec46850a0b5205c59684854f5c3f106973b0d99515563ebb83"
     },
     {
       "id": "c0-r2",
@@ -1881,25 +1881,25 @@
       "width": 256,
       "height": 256,
       "base": "chunks/base/c0-r2.webp",
-      "baseSha256": "ba7b953353c24516d25272103eb3a206af9c7c9743b2e8bc181164a4fc25d6a4",
+      "baseSha256": "30fa71e69196c8ff2e05def2b8f4f79a0cc658e6bfaf38aa4f32a49ff2311709",
       "canopy": "chunks/canopy/c0-r2.webp",
       "canopySha256": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af",
       "water": "chunks/water-r2/c0-r2.png",
-      "waterSha256": "43451de167f11441c948ddaff6a479bba81fafa3e7deee067bf04e321ea1a2bf",
+      "waterSha256": "5b8411df92ad7b100ac7e90a09481ffe610a696ab5c090ae7c9576c8259cffa1",
       "basePixelsPerCell": 32,
       "forest": "chunks/forest/c0-r2.png",
-      "forestSha256": "66705bcb33898a711b357f5185ea029ddebf2c40c281afa1c55c519a6523956d",
+      "forestSha256": "622366a85b7c25cedbe1bfa86723f415605f780e44b17cce16d89feeaf686ed5",
       "waterPixelsPerCell": 32,
       "foam": "chunks/foam/c0-r2.png",
-      "foamSha256": "0bee613d469f5195cb5cf634a9062fdcb34732b8dfc6ed53eadd3ceb9fcd255c",
+      "foamSha256": "720fce597983af01bc25b11c3bb2ee3eb3456731b434170bf0b234483ffc0cd1",
       "front": "chunks/front/c0-r2.png",
-      "frontSha256": "e53f16001877591b14c518bd5d0e6a781fbdf2daa455030bcf1b9b412003d010",
+      "frontSha256": "484d856d1eacced389ee6cbcfe2be361c90958e789e7baa406b90daedc6d4f6e",
       "crest0": "chunks/crest/c0-r2-0.png",
-      "crest0Sha256": "ded8928a494b9082ef96fdc073c532b7f68f4a13f15f8606be84490a8d1f1659",
+      "crest0Sha256": "3841d0ccc1c822eef68bc4cb9af1c40ab627c8fa6bbf05da4105763aa9d6aef7",
       "crest1": "chunks/crest/c0-r2-1.png",
-      "crest1Sha256": "049780642f43af7a08806b83f9c9af78f1f1884cd9c0492efe3e3b66ed6070d9",
+      "crest1Sha256": "d479f69e1dd6e21899b443e242a1fec8e0f3c5a5b76c900d314fbb33044b8c21",
       "crest2": "chunks/crest/c0-r2-2.png",
-      "crest2Sha256": "b748ae42cfd34249084ec9d39b780b38b55b41ed3a8fc96110513f449a13ffc6"
+      "crest2Sha256": "9defeb67e73ede5c0ecde52984e3d6482c08ba369b180a2e7cafeb1d5395f4ad"
     },
     {
       "id": "c1-r2",
@@ -2107,11 +2107,11 @@
       "foam": "chunks/foam/c0-r3.png",
       "foamSha256": "52bc1c2e4c3c82e836b6bcf6cdfea0b9317de697f0812cfb59f9a66ea859846a",
       "crest0": "chunks/crest/c0-r3-0.png",
-      "crest0Sha256": "b9464743febc9edb283bee6b1d5352da59e2c9f7b4f1327e23758bb0d01c96e3",
+      "crest0Sha256": "8b3467317d25e20e8dc24fc6c941a5e8511a3ee520b9ca72d2056bc28ad0e555",
       "crest1": "chunks/crest/c0-r3-1.png",
-      "crest1Sha256": "b883ee0e8c5cc9389ed164cd62dc0f61bb1855554e0a258fe7137ac1b168fe4c",
+      "crest1Sha256": "e540bf57cf19703673af0b964de82996574c90611dd62ed735b5f087907c28cb",
       "crest2": "chunks/crest/c0-r3-2.png",
-      "crest2Sha256": "6b47e69a28d4a8f7d970f1c1677eb02aa7899168aafa043556c0239acfdef78e"
+      "crest2Sha256": "60c36afcf3627d53b0fec23116c8ccc7216af076ae0b48f54262a35dfc202afc"
     },
     {
       "id": "c1-r3",
@@ -2197,11 +2197,11 @@
       "front": "chunks/front/c4-r3.png",
       "frontSha256": "4dda3d00bafec0b6c5fa5b8f0f7e5b8e2c67851f4913ed276e63131cccc7b5c4",
       "crest0": "chunks/crest/c4-r3-0.png",
-      "crest0Sha256": "aa7e18d7821e0e5ee1d187a902e30bde8b617fcc3eefc463da6e6a757b6bdea8",
+      "crest0Sha256": "c3d5df29f5e4debd4991dba42cc5469a4a376b00ff6f54b5d0554e7682e31435",
       "crest1": "chunks/crest/c4-r3-1.png",
-      "crest1Sha256": "f4a38c6ef03288762d571c5f9cfee1a48086fbda8dd38c60c6a6166249f4e724",
+      "crest1Sha256": "cd74c2b7fd3c4ea42b2b8f4a1b4f3b42947ca75a3eb342a2062c40c9b0666ae1",
       "crest2": "chunks/crest/c4-r3-2.png",
-      "crest2Sha256": "db0078a34815698623b883fd3c58ed61a6cb43b6a1743f7e1567647cf9f96ccf"
+      "crest2Sha256": "cc76f87315ee5fc02c0f690358b322e1dba01036bcf807700ca7d4381447dfdf"
     },
     {
       "id": "c5-r3",
@@ -2224,11 +2224,11 @@
       "front": "chunks/front/c5-r3.png",
       "frontSha256": "73c20edabca13660585fd83ea6aca20f5d40ff5955667dbd509d7fb5678ea11e",
       "crest0": "chunks/crest/c5-r3-0.png",
-      "crest0Sha256": "2d03e8a012c96dc53ea16e40ced73e61cafcb1b5683184d7747c429b07106720",
+      "crest0Sha256": "0e4731dc10bda85677025aae4abed3ef8ce783c9c8dc5ad0ca801476c45f0a0d",
       "crest1": "chunks/crest/c5-r3-1.png",
-      "crest1Sha256": "0e483d67c515639ab77e52ad60a4c3509c63701bda501933e1e165229495a82c",
+      "crest1Sha256": "f66b52822e32b1e8350c0ab89cc587674c543c178a23c34fcec952cf1d30ebd6",
       "crest2": "chunks/crest/c5-r3-2.png",
-      "crest2Sha256": "34730625e7c02dd11570e7f5502256eb0a00e0baacf2d95d5cd6bd9115d99df8"
+      "crest2Sha256": "e5f6dbcf704a71542f41ab0d6507ba72008212958055937742f38ad4bc05379b"
     },
     {
       "id": "c6-r3",
@@ -2335,11 +2335,11 @@
       "front": "chunks/front/c0-r4.png",
       "frontSha256": "599dbd542314b86fc018d92fbca89444b0e4f32c6e40abf6b1976772924f3131",
       "crest0": "chunks/crest/c0-r4-0.png",
-      "crest0Sha256": "b89f0c4d79576194c4255744f777783aa01874192ac3e0c633b84c24742cbeec",
+      "crest0Sha256": "0b8a346b9fefc0d5ef10b3992c478713e0b3310d2f36907c12134c31c25d27db",
       "crest1": "chunks/crest/c0-r4-1.png",
-      "crest1Sha256": "e1d5d1a7deae64aa0cf3500875a60d9e2d096fc3c7c9fe74ad50d7bee418488b",
+      "crest1Sha256": "92ac246544941f298b0c340f98ca506cf14500a74f8bc32a7de06d3237ab724c",
       "crest2": "chunks/crest/c0-r4-2.png",
-      "crest2Sha256": "0610809ddd6639eb9030590a98abf47a056821571f05f1fc377b304951429db5"
+      "crest2Sha256": "447ea4b7e3e617a570d873b430acc93c023a4558d3d15ce483de140a29e2bf78"
     },
     {
       "id": "c1-r4",
@@ -2362,11 +2362,11 @@
       "front": "chunks/front/c1-r4.png",
       "frontSha256": "150755b4b4fdeb6eb1e82c42db403a401073eaddc1a7df70f54fdcdc51245bdd",
       "crest0": "chunks/crest/c1-r4-0.png",
-      "crest0Sha256": "f6d757208f62d293fc795db2c8c4965d733067bbca8682230b0d08bdbb447493",
+      "crest0Sha256": "aac5b2f674eca055a06b1b4ba56770b6f6f0cc19cb4d14306d313d61e942f283",
       "crest1": "chunks/crest/c1-r4-1.png",
-      "crest1Sha256": "03b8e285b6a5bdba536bdc7eb3ddd6f9e1b69224f51a65dc536e701b2924b8f2",
+      "crest1Sha256": "c03572de72e3092d50b870f37fda51a4f43adc09468597c0457eabbe1f6afff7",
       "crest2": "chunks/crest/c1-r4-2.png",
-      "crest2Sha256": "ecfc67b68ff521537d941306a4c0b19e7c2772566ee4fe6d0892afe36f77ea9c"
+      "crest2Sha256": "11ece4e257322fffc395c59bfc9e74551abd37f92b29988c57429968ee2d4e5f"
     },
     {
       "id": "c2-r4",
@@ -2429,11 +2429,11 @@
       "foam": "chunks/foam/c4-r4.png",
       "foamSha256": "f5d3fc2ce6b5281446e9dc5091ca35b2f88befb854f7a67c8f75890a35f4ba96",
       "crest0": "chunks/crest/c4-r4-0.png",
-      "crest0Sha256": "15a05f055bb1f5506c08824a74d9ff2a8456072a754635e66c18df9454f057b2",
+      "crest0Sha256": "b9dbb400ecd6f6fbfb939f91ab88aafbff8a2bc5a3d47a61eccf315290c358c8",
       "crest1": "chunks/crest/c4-r4-1.png",
-      "crest1Sha256": "33b7cc0739c50a2b8181db3ed9a0408e55aa6b99555c28d7f25530609b35a9ba",
+      "crest1Sha256": "ff536ed9c206d025e750b6f3b7e61a8e54b693242f73364972ed6828d9b003ed",
       "crest2": "chunks/crest/c4-r4-2.png",
-      "crest2Sha256": "d255822acadc308417a9b97f20ea7aec982b4c5544fc90fb3183e5e7a6fb2e7a"
+      "crest2Sha256": "1423f05acfc89cc7c735fc9cb8163cd6d13972504e94d6d4d140aa187a3b0527"
     },
     {
       "id": "c5-r4",
@@ -2456,11 +2456,11 @@
       "front": "chunks/front/c5-r4.png",
       "frontSha256": "0682c122e57346bbaf55458e3c3a0e96a7d19f40f068ab5049c8e69bb2006355",
       "crest0": "chunks/crest/c5-r4-0.png",
-      "crest0Sha256": "c4b6e6e6afc615ffdfbeadb3eaabb1df44a3ab286edf34d50ee08da8105bbcd3",
+      "crest0Sha256": "8a40be5e74095b9427dd8e58d995f479a04334b0a91966462cef5c280b3a241f",
       "crest1": "chunks/crest/c5-r4-1.png",
-      "crest1Sha256": "d0afae36423fcd646eef921da9b6acc9e4982d440373c8d206cc50ae1ad905c6",
+      "crest1Sha256": "e1c6e0fdaf2a96ad0c084a9c2ede7105d32daf978c55d3aab3684efb1e348c08",
       "crest2": "chunks/crest/c5-r4-2.png",
-      "crest2Sha256": "dc5eeb039e284160037075053e40dbedd469a55856148cc4ffe872fcc2d8edf2"
+      "crest2Sha256": "c9cf6b41506dc5e80ca83b6b9fb54db9c89e8cd291ef9bbb9f9200702870c989"
     },
     {
       "id": "c6-r4",
@@ -2567,11 +2567,11 @@
       "front": "chunks/front/c0-r5.png",
       "frontSha256": "bccfbc2d6af13cc074b770b94d6777632a86a596b0889388fb95d1dd2e36150c",
       "crest0": "chunks/crest/c0-r5-0.png",
-      "crest0Sha256": "238f0591cceaa160bf598109f0fa5b18aed4d59202dd667d955d1bc7f2733c05",
+      "crest0Sha256": "2f6dba237751e32db65b8e0edaf2c348c659cf8758fc94c47b3dfb9b789896d7",
       "crest1": "chunks/crest/c0-r5-1.png",
-      "crest1Sha256": "c3d7712fdf91de708547b16f0df698a291e555f750351faf86bcdbb86fbe8dcf",
+      "crest1Sha256": "8496463c1d98a17b1e038cc87965693d1f2d119d02be6f4cba28d718ad3553fc",
       "crest2": "chunks/crest/c0-r5-2.png",
-      "crest2Sha256": "456499c1278de7fcdc30789aedbb6f290da2c88ec6f103f6cb73433c0379a0f0"
+      "crest2Sha256": "b312703f9497b618c4b42b3f1df9539b83746db0d4a1e182b9f9b9920c1b6086"
     },
     {
       "id": "c1-r5",
@@ -2657,11 +2657,11 @@
       "front": "chunks/front/c4-r5.png",
       "frontSha256": "ad26c2d157e654aa4ac1c317402f35a50dacd0c88642fac1f534007708784af7",
       "crest0": "chunks/crest/c4-r5-0.png",
-      "crest0Sha256": "00442b9ede434eb1a10049c873ea91998de13b47e748cc2d263a3e72e549abbd",
+      "crest0Sha256": "00058f4b72a5469afba54cea8d1cf80c0a4f388e41e3d57da0645441afea600e",
       "crest1": "chunks/crest/c4-r5-1.png",
-      "crest1Sha256": "3c124a6c9a25e4d148366ca63c01589fa6f64f8ee85f0cf3b1c3d4ed2a1205a0",
+      "crest1Sha256": "48a6f1b74fef0ccb561fa42ac1a02543f02f3b0d4e09fe60304d8c27ba96ffbb",
       "crest2": "chunks/crest/c4-r5-2.png",
-      "crest2Sha256": "427afffbf56e417e6c9a7cc07321f648028ec33187669086eaafdbf614ee69fc"
+      "crest2Sha256": "5b6eda6157188451829ab7271b5f6c6e109c06c861c24e70b5b7598a6bbb5b97"
     },
     {
       "id": "c5-r5",
@@ -2684,11 +2684,11 @@
       "front": "chunks/front/c5-r5.png",
       "frontSha256": "94509a527e7562594acb0fe9e1d5ca8321b7673e74194f77bf8a781679119563",
       "crest0": "chunks/crest/c5-r5-0.png",
-      "crest0Sha256": "3466901ed1a3c29eaf34dd74f4d9efb8015f9ae81ae8ceb120517ef68517555c",
+      "crest0Sha256": "fc0fa9a6fea122fde481348661321dd1da3c4629ec6065153925044019a317a2",
       "crest1": "chunks/crest/c5-r5-1.png",
-      "crest1Sha256": "e51e863206d7c80718798c96c552715bcbad8584b1f54230c55750b5ef942c33",
+      "crest1Sha256": "bd30d7f07239d641553085851137c13f3258bf9d3d9a9a2f1081ed21cec6f6e2",
       "crest2": "chunks/crest/c5-r5-2.png",
-      "crest2Sha256": "04c8e614251e68a7d81ecb155ba211f32d25988aab7e5c30fa405814b1811617"
+      "crest2Sha256": "05e391c44e715ecdcaffd7252d87861e2a5fa268b95152f57a6cdbbfa530a947"
     },
     {
       "id": "c6-r5",
@@ -2795,11 +2795,11 @@
       "front": "chunks/front/c0-r6.png",
       "frontSha256": "f96fba9968e21337636507b43f7278d54458bcb1812c4c7259e3ec17f3123962",
       "crest0": "chunks/crest/c0-r6-0.png",
-      "crest0Sha256": "a6b604dbd8a6bd0b60656fb01e64b3f8e487c1b564da8ca0d92c0d40e8d5b4bf",
+      "crest0Sha256": "89fefe73769ad0c15d7465705ab01cbee2075f5f214e117926e3ae9fe9a1abe4",
       "crest1": "chunks/crest/c0-r6-1.png",
-      "crest1Sha256": "27044da679c4e662029f25ff6d0a7aa1f9b96fff6062517682fa6d421b923200",
+      "crest1Sha256": "8445e089e0d091e5b796bc40443ce505064fd0ac79a3387ab7ec41407098ed83",
       "crest2": "chunks/crest/c0-r6-2.png",
-      "crest2Sha256": "c379d95c1ac5b7e1caab990942ed3afca37d5fbc0fb28c83d23584615c2fa599"
+      "crest2Sha256": "b0d73dce3ccc17eb68e92fc549e69d9878c49d3905b96a8c37a00e8b9d356ae2"
     },
     {
       "id": "c1-r6",
@@ -2885,11 +2885,11 @@
       "front": "chunks/front/c4-r6.png",
       "frontSha256": "afcd3da1da7849ccb86ecd05c0bf39b42ca9bb00542c532de3685e45ba8f8579",
       "crest0": "chunks/crest/c4-r6-0.png",
-      "crest0Sha256": "89e62fbb0e718680b58a3e7c9035b562988f84061be419c7972e87f263092791",
+      "crest0Sha256": "56d5c8080af97da0b6c6ff8ccf73eedb312e6f5c1d38f562d53217f4b67f1d2f",
       "crest1": "chunks/crest/c4-r6-1.png",
-      "crest1Sha256": "b02f56ad1dd9ee174e72e54bd4bc601a2ae135c757642fea0213671e9319e881",
+      "crest1Sha256": "bbbff8427b892d070c76194e302e1c3d12ed7b34aa9f9bdd49f0c6c4ce97dbfd",
       "crest2": "chunks/crest/c4-r6-2.png",
-      "crest2Sha256": "933133cf03b9994961b9ba9290662050ac5f33b2db79ea6211cb991fd6333dc4"
+      "crest2Sha256": "f932e02a4e3f0e8816b73daa4ca12d6b9f25282fbf2c9934a2839d3c4e821d43"
     },
     {
       "id": "c5-r6",
@@ -2912,11 +2912,11 @@
       "front": "chunks/front/c5-r6.png",
       "frontSha256": "f5f8c17890e14013d70402d4d9574d25fe7574a94035a719c00b28e855641511",
       "crest0": "chunks/crest/c5-r6-0.png",
-      "crest0Sha256": "448308de93505f541524fad94f529c266eb628d49f180a5e123d28dd63f54761",
+      "crest0Sha256": "0c8731100a674afd24ea5c42512e71823af422dee8904f9d1419b1e4e6a4970d",
       "crest1": "chunks/crest/c5-r6-1.png",
-      "crest1Sha256": "c344d1b62ab8435df0f12149b824290f63b8e0a52102c7c7c86121a8bef94425",
+      "crest1Sha256": "968b17bd6f056cffc0239062279ca7d1012dc3af437199cd3f7bcde7d42f1c74",
       "crest2": "chunks/crest/c5-r6-2.png",
-      "crest2Sha256": "673b98ae11cbec817c48e0a318260f389514b149ee2f583ef9fc8ca21e31efad"
+      "crest2Sha256": "3e60fb4b9f5105c3daf6a962d071ea46f464f1331d1c278ec1bb64c7edadeb13"
     },
     {
       "id": "c6-r6",
@@ -3023,11 +3023,11 @@
       "front": "chunks/front/c0-r7.png",
       "frontSha256": "6c571fb27054eae4aef97ea851ef34749522f0e49b4c2cb2ec8bc9cc0ab521ba",
       "crest0": "chunks/crest/c0-r7-0.png",
-      "crest0Sha256": "cfe4cfbfeea780bedb34fd69aae57d73f3a9a23b96e7c47c94c391e49691fefd",
+      "crest0Sha256": "6a47b62eb85ae84a9e5830a534e2851387dab8c85a8a57b106bc7cd74f80f335",
       "crest1": "chunks/crest/c0-r7-1.png",
-      "crest1Sha256": "56e85b8cc8fa8e0a738fe1c31f7f5268d6144bf34b6024949ea7c9d420ae3250",
+      "crest1Sha256": "2759d669f27a8fcb269b64b6bdfcbae58d358601d287fa3ade409569d6198366",
       "crest2": "chunks/crest/c0-r7-2.png",
-      "crest2Sha256": "f99524220c212ebb6ae89410ab6d701e12248c49f34f2c9093985de286e22309"
+      "crest2Sha256": "2ca51262d48f7002034020a0644e2233586d3ccf2b71951a68f4f2d131071b89"
     },
     {
       "id": "c1-r7",
@@ -3109,11 +3109,11 @@
       "front": "chunks/front/c4-r7.png",
       "frontSha256": "45418e9b3ee1b07de2bebd8a22e8298b9cd738ef47434282a27382f0e5640af1",
       "crest0": "chunks/crest/c4-r7-0.png",
-      "crest0Sha256": "70cf9371920b1fc19751d4d4a615ead68c8f04dcabda7777aa9c0ef7e8e9d6c2",
+      "crest0Sha256": "ce10f382af91e010ac373abdca5efd099d1e8cd20c1fff46b80ee75cccfd6c39",
       "crest1": "chunks/crest/c4-r7-1.png",
-      "crest1Sha256": "50adaf445426e753b1ded02487d2ede8a737265d658715234163a949783410d5",
+      "crest1Sha256": "95cbc2c66c43d1209bb77b7604598c905258c3a279affd7b5b3556501f55d401",
       "crest2": "chunks/crest/c4-r7-2.png",
-      "crest2Sha256": "d578788a533218173dd9b7afcb233ffd1e5338b51035735766248621710b073e"
+      "crest2Sha256": "c1a91e4ed4e432ec2152820d330eb3091b4f2c41eba9917556d53bf50367b130"
     },
     {
       "id": "c5-r7",
@@ -3136,11 +3136,11 @@
       "front": "chunks/front/c5-r7.png",
       "frontSha256": "b567420ee6f1361e5c93ca853e83e7de53317933f28af7b84b3ac569a90b49a7",
       "crest0": "chunks/crest/c5-r7-0.png",
-      "crest0Sha256": "aab21f4b55f2d1b264b4abac55630c7451a1b6d0a41ada05fc130f389921e881",
+      "crest0Sha256": "01f9aa934199a17ce8df61810b02568dab3131ebed46d9a44bd71ea575808900",
       "crest1": "chunks/crest/c5-r7-1.png",
-      "crest1Sha256": "2d3b91f49a1d73905345c1a74ce2a74dcbf6d197fd7f18e194b58f14322aa4ee",
+      "crest1Sha256": "a38e64fc7dcac1f80269366b940b7f4b4e5f302b1a6590538f7d18d897382836",
       "crest2": "chunks/crest/c5-r7-2.png",
-      "crest2Sha256": "b83c73aeced9058b4f33b32cb415062d243b4fd5eafed65df8f0025403fc5727"
+      "crest2Sha256": "2d4853fbfccc1e3e4fefd3dace37e32aaf87a650f493f440bfef9c14b9624a7f"
     },
     {
       "id": "c6-r7",
@@ -3243,11 +3243,11 @@
       "foam": "chunks/foam/c0-r8.png",
       "foamSha256": "8348a72936f4e96722ad14d0353c0933a78cdd0ac767d66449fa1c987deefec1",
       "crest0": "chunks/crest/c0-r8-0.png",
-      "crest0Sha256": "e9f31864609c4773de443088583b9baaed0a43cc39682d766ca37d4efb6ee71a",
+      "crest0Sha256": "85c7bce2b0595adb70896c315afd5fcd241d65d33d7f2af1b628bf4191bcdd90",
       "crest1": "chunks/crest/c0-r8-1.png",
-      "crest1Sha256": "f278423e8bef87d1faf27d57a4219487b424332b87eb6b09d4b37508e7f89c41",
+      "crest1Sha256": "f3d1e1c5fb1d7a99cc928ca6f1aff2d90d7d1e9b0d852cb4b6252a5b5bdf4afc",
       "crest2": "chunks/crest/c0-r8-2.png",
-      "crest2Sha256": "4e7dc799c27cdb7223e5787310699abdf1416476bee792e913b7f538f46f7ba7"
+      "crest2Sha256": "ebf476529fdc7e60721365b99c4f90f3e8c77e009aca64bf564c615c6bf5dfdf"
     },
     {
       "id": "c1-r8",
@@ -3268,11 +3268,11 @@
       "foam": "chunks/foam/c1-r8.png",
       "foamSha256": "546df84c518013666767912ef5983659b51e156a5362056aaa03e5c8a3e75663",
       "crest0": "chunks/crest/c1-r8-0.png",
-      "crest0Sha256": "9cb3636611ddc411790de5f7f3f3b76c330ab592eb4a7faff5179495e91d1486",
+      "crest0Sha256": "e4df517eba5c1f4f8ce9dda4ecb75d254a87c532928a5205b708a4bb81addcdc",
       "crest1": "chunks/crest/c1-r8-1.png",
-      "crest1Sha256": "a1923a57218e0b1ec92c6ce14c2aa0495a4e0fe8454b165c2b99ab4363461f20",
+      "crest1Sha256": "522cdd2f7f9580ae997a1b58e512e013ba3f0e2d9ab893d1db17a124bb773084",
       "crest2": "chunks/crest/c1-r8-2.png",
-      "crest2Sha256": "bc27c66306503815298f7143e457a6707d1c82c584e859dea659af07837089c0"
+      "crest2Sha256": "616075d8550f3a97d834df2518992972cffe4e40df98eaafdb05d2464418b564"
     },
     {
       "id": "c2-r8",
@@ -3293,11 +3293,11 @@
       "foam": "chunks/foam/c2-r8.png",
       "foamSha256": "a27d54b6e067cabfa815b647542f47593e06f7bff90cdc8922f8cd5cd0b74e9a",
       "crest0": "chunks/crest/c2-r8-0.png",
-      "crest0Sha256": "8e50f5f5bb67a0ebf9a717136da4536af0f28e903adf5567560b01acccab4b0d",
+      "crest0Sha256": "831b57f80f4f3d5448adf7813f87e543f2d18cff5b733bd6d8190aca0ae583d6",
       "crest1": "chunks/crest/c2-r8-1.png",
-      "crest1Sha256": "30b848c1805f16a674d0e80f824d9441231c6ec30ae5a42a9bda395e23b89b59",
+      "crest1Sha256": "823809476d290a5cb6c2fda800052fffff563f92217c8e9c444006928199814b",
       "crest2": "chunks/crest/c2-r8-2.png",
-      "crest2Sha256": "84fe64916480923104ceef728a601f19bee4d57bcebb0e7499a310bb1195a187"
+      "crest2Sha256": "c7212f7342d62612447152ebf76f858601920d1f5f65dae30e9ed44f16d31378"
     },
     {
       "id": "c3-r8",
@@ -3381,11 +3381,11 @@
       "foam": "chunks/foam/c6-r8.png",
       "foamSha256": "36083b5a54d9bd9bbb867bb8d9bb7f5ac43a690b297c252d153eb0d50570cd1b",
       "crest0": "chunks/crest/c6-r8-0.png",
-      "crest0Sha256": "3ee0a0a296f1ff6deadc190f8ee582ee965109ca3c71bfc75e802c4585c71eb2",
+      "crest0Sha256": "1b54453947d66513912155b17f8516d3438c2c82181b04faf8f880294603bfe0",
       "crest1": "chunks/crest/c6-r8-1.png",
-      "crest1Sha256": "05b28adba26b16422ed36a58116d0ec7d8df998b2e49d6cf16b7f0fd65d8afa8",
+      "crest1Sha256": "fd0f686e7b30c976d018707d06d4e37e413a997667fa504f7d1dace71f6c9a83",
       "crest2": "chunks/crest/c6-r8-2.png",
-      "crest2Sha256": "525215a536e99fbd9628d08dfbafa444f785e4f76072e9af192bb7c1f52f03da"
+      "crest2Sha256": "2afc8c2f51af2496babd484e878e65d1901d13a8a65f5931c96ab9504ca87eb2"
     },
     {
       "id": "c7-r8",
@@ -3406,11 +3406,11 @@
       "foam": "chunks/foam/c7-r8.png",
       "foamSha256": "913ecd817ce154c0b3ef0b2441461aac6ac1b70e04c0d70466548591d4755da3",
       "crest0": "chunks/crest/c7-r8-0.png",
-      "crest0Sha256": "b4e9fa47f0de446c2c447b9e062ce1f2a179936b0691358b7834f0fcc452bfdf",
+      "crest0Sha256": "d829bfb6196365b425135ede9e64ec64be82cef08289ce31910ad55847567b09",
       "crest1": "chunks/crest/c7-r8-1.png",
-      "crest1Sha256": "487c32aa6c452f1bdcce1f8cb306ee812627d1161becdb46f034d6c6878a3dd0",
+      "crest1Sha256": "fdcdc7f8327add278e88693f8ce437040e9eeed4f61b08df1aaa40d5ad74f7a7",
       "crest2": "chunks/crest/c7-r8-2.png",
-      "crest2Sha256": "0df180a39c05ef52012748322d553f92171a8e0d338ce6c03838f6a6df7fea92"
+      "crest2Sha256": "48abc1ba05abe032115cd00590b850675de378cccbf5d162d13090ccdd72ca9c"
     },
     {
       "id": "c8-r8",
@@ -3440,25 +3440,25 @@
       "width": 64,
       "height": 256,
       "base": "chunks/base/c9-r8.webp",
-      "baseSha256": "76298afca49c5c855985b53f434997351b9a1115a2dd75450ee5dd4e034745aa",
+      "baseSha256": "7dd72b630c3452c4fd780500c6b7018de734db5751f9c0c27e0f6f89f4c02da5",
       "canopy": "chunks/canopy/c9-r8.webp",
       "canopySha256": "371a4a0894957e68c4e5f3b62989172d462645be77d52797d88e5bc535cc54af",
       "water": "chunks/water-r2/c9-r8.png",
-      "waterSha256": "4f2e574c2c4d14a8908ca5bcfbadf71ae5d24848db5180520b00bea180ff5a8d",
+      "waterSha256": "1786c6d7587974eaa025dd40f642b8b13a5f7e803f84ff777183604eba7c5afd",
       "basePixelsPerCell": 32,
       "forest": "chunks/forest/c9-r8.png",
-      "forestSha256": "2c30995d997ead60c4783de8eb33e3a5d1caf5d220c0659eeb615c78603fff7b",
+      "forestSha256": "9bf5f53dc8c4602dd58f3bbeddfa7bc27c492c90ff00e65ee536f61713505417",
       "waterPixelsPerCell": 32,
       "foam": "chunks/foam/c9-r8.png",
-      "foamSha256": "6ba46b69310c117a9a4a25684413cf52ab1dca652a9123f3b2f958cecd542190",
+      "foamSha256": "8ae1fb0ab98b3a1f20a3f073e6f1b0eac9bf1f2eeb33e4791c688e3e9582118b",
       "front": "chunks/front/c9-r8.png",
-      "frontSha256": "92e0ed435a1d472507d1cc3f23a09240a0654aaa2c99dbed32f13ae6ac9b3a6d",
+      "frontSha256": "3ae3ff2ea490c1961052fca69cb3861b826f91e61abd265472b68e6274a35e0a",
       "crest0": "chunks/crest/c9-r8-0.png",
-      "crest0Sha256": "b35a58320eff580b2daa4f105c3d88e8645e23b8053c3e95a7a105f215e02c39",
+      "crest0Sha256": "4d8958d16d08b49526aac17ef9d376c3caa11e9a8c89a28c43515f2e75acf31d",
       "crest1": "chunks/crest/c9-r8-1.png",
-      "crest1Sha256": "5f187255ba1352274d87ddca065dc74771b02e109534fadf067cbf18a7556e27",
+      "crest1Sha256": "e0224d9256e12dbd3718497a2555c0890e49b3de1724a1c91ddb6d06f6715878",
       "crest2": "chunks/crest/c9-r8-2.png",
-      "crest2Sha256": "1d08fee96d4f94580d8d545c98ca175c3409e603f48ff26f8aa3bef509b6e3a1"
+      "crest2Sha256": "9ae4e79a48e492d4ab2824a4c3604ccbde5ffecf621b9d19d3956c8ba39bc33f"
     },
     {
       "id": "c0-r9",
@@ -3479,11 +3479,11 @@
       "foam": "chunks/foam/c0-r9.png",
       "foamSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
       "crest0": "chunks/crest/c0-r9-0.png",
-      "crest0Sha256": "1aa59c24987cd9e73cd39d1b4d7db24daf099bf0aad6809c4e8a8962e5569f37",
+      "crest0Sha256": "1972dbdd97265e675919f9eedb5107c2ce01555fc3d384897dd720ba4cbfc8a6",
       "crest1": "chunks/crest/c0-r9-1.png",
-      "crest1Sha256": "316de2b9f5e4767fdd7594183fcb87bb93d537da015b0887604652b2b4f85a0e",
+      "crest1Sha256": "5cd15aa5956cf29b25fb1d1ab9df45175fe842621530775a35c3f62da5b71636",
       "crest2": "chunks/crest/c0-r9-2.png",
-      "crest2Sha256": "a0aa606cc76c3cb81c33f2d568df73b122a69f67113b5439124a99f4ba5014da"
+      "crest2Sha256": "d29284dca0ea096ab998ba67ae28874b51c333fcedd2984d8788fdcafd95e991"
     },
     {
       "id": "c1-r9",
@@ -3504,11 +3504,11 @@
       "foam": "chunks/foam/c1-r9.png",
       "foamSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
       "crest0": "chunks/crest/c1-r9-0.png",
-      "crest0Sha256": "9bbf3e80aa390121b8ac94f46270179cddc41aacabfa825b682853c0d9c748b5",
+      "crest0Sha256": "ecd633f6d25817ba500c93a7cbdf0c44b757a22a54b30648ae98cf747c6a55df",
       "crest1": "chunks/crest/c1-r9-1.png",
-      "crest1Sha256": "f74613b1c7ba86ed76a3e9e3c620f0e5741b71bf072c63867941787b3db59f4b",
+      "crest1Sha256": "f3799bd601296c2ac07cf3253d0a600b905839e17af2d91470f3830071f81d80",
       "crest2": "chunks/crest/c1-r9-2.png",
-      "crest2Sha256": "bc847ba5cba89ef7c04ee4de4417f68c91fedfda1642c8dbd63932a3a47bfb02"
+      "crest2Sha256": "a2c1865218bd9ed7d06ec029c86b5df3d3fa115bcd0381d6ede2b8fee3bfb862"
     },
     {
       "id": "c2-r9",
@@ -3529,11 +3529,11 @@
       "foam": "chunks/foam/c2-r9.png",
       "foamSha256": "be4545a26db39db9225d0e1e2246386f38193f4c937f3b085d949e10a94330fe",
       "crest0": "chunks/crest/c2-r9-0.png",
-      "crest0Sha256": "bb7e73672749a91bce63506bc158165f72bdb4a3156caffb0ed317c8b14ea769",
+      "crest0Sha256": "713f6c5a3319a8a524c3030822dc73b31e1398d7f6de5923d6e389fa00322cdb",
       "crest1": "chunks/crest/c2-r9-1.png",
-      "crest1Sha256": "b9f57667dae1a74d01706acc9f672d0eb994861e612e787125c0989496eeebc2",
+      "crest1Sha256": "d8ea095f22780362174c9eeb72b17dc413e121386b8c59022a99d5f66ae957cf",
       "crest2": "chunks/crest/c2-r9-2.png",
-      "crest2Sha256": "2d2a5127610dd38a42ecedfd56240400b3b9f50a040c2f7bcefaafa9255eff92"
+      "crest2Sha256": "e72c22bab0fea7a283b004f91ada086e6949731a1705ac50f6d90fdee077f822"
     },
     {
       "id": "c3-r9",
@@ -3554,11 +3554,11 @@
       "foam": "chunks/foam/c3-r9.png",
       "foamSha256": "de37d79196846d3ca4654fd395f65fb3e2ffc3aed079ee9be5006b8c1f83f5dc",
       "crest0": "chunks/crest/c3-r9-0.png",
-      "crest0Sha256": "0c8007dc28777b218c7ab309fa72d78d84770cd7e073a71edd7b8d7927dd8bf5",
+      "crest0Sha256": "c7123781806b155480c5faf5b696c1972888f069b03b36878ec35059b64f2692",
       "crest1": "chunks/crest/c3-r9-1.png",
-      "crest1Sha256": "bca7c1fad0d69474e0c3eebc0eb126e0c4acbdeb3bc16f72874acf7a9a3f1b52",
+      "crest1Sha256": "c026dadd1514d58172e4fbf055acc5a78c480515ee3e48a744d9d6c757aebd6e",
       "crest2": "chunks/crest/c3-r9-2.png",
-      "crest2Sha256": "7d5890e5e076c31e9493baa3eab44a4bafbb27d5acba4f3863112f226363a298"
+      "crest2Sha256": "e2cb01e8a825d61bb82112654a106d9ac1775f94325d9db3ce801c96aa68d6d9"
     },
     {
       "id": "c4-r9",
@@ -3617,11 +3617,11 @@
       "foam": "chunks/foam/c6-r9.png",
       "foamSha256": "f646f80873e49c0e2208400db090e8422794e9738d56b8441a30f43ad8979e49",
       "crest0": "chunks/crest/c6-r9-0.png",
-      "crest0Sha256": "30513ad8dcb0902094f8b35c5cc9eedd64aeafc5d1f631cd3b25fcfb7eeec6f0",
+      "crest0Sha256": "c1d5d5789b81a88a38e2c258088427b7bb3365f14bb9e8a17d328088eed5577c",
       "crest1": "chunks/crest/c6-r9-1.png",
-      "crest1Sha256": "b5a5417584f7f579980252e7d4b534962944629bfe7ce241d778b0a03f48e313",
+      "crest1Sha256": "936e6c5579ffe628507a2f8fce1a3fa110d2690b4f7e131435c6282b909975ec",
       "crest2": "chunks/crest/c6-r9-2.png",
-      "crest2Sha256": "5dccd8b2926edf8b4a3ea0350b2639cd4b43e7c4b997f6e5711822a095769b5a"
+      "crest2Sha256": "35feef4a4b5b3efaeae845ec09a5aca99a9f76ee2eb761ad827e7c9f1a59759c"
     },
     {
       "id": "c7-r9",
@@ -3642,11 +3642,11 @@
       "foam": "chunks/foam/c7-r9.png",
       "foamSha256": "c0ae33f90f7da82c8c32fa4cfdc51b359b1f22c6bfb3d96536c00f49c32338bb",
       "crest0": "chunks/crest/c7-r9-0.png",
-      "crest0Sha256": "090d83ff62147ae69872e2ac4b9702fc6623ac76718df073191dd32e8b7244a4",
+      "crest0Sha256": "7d79860422afc1d359004f50625c4b335bd64037f4125e376fd4ddbde2f7f509",
       "crest1": "chunks/crest/c7-r9-1.png",
-      "crest1Sha256": "ba4c14653c32c4e8df3cfb93907a9c6386f812fd6314bcb32e831d00d3b095e4",
+      "crest1Sha256": "6af80f98335693b207093fdf7cbf67350baf2ffcaa6c2164763f2cd384eb0d34",
       "crest2": "chunks/crest/c7-r9-2.png",
-      "crest2Sha256": "36a604a58a6644b6ba1fe4bb67f705a59a35ac455bd044d519472e0908492f6c"
+      "crest2Sha256": "ea90f94652f3e2337f2227dd6ba25dc6622103a3c38277930ec290ab76862fa3"
     },
     {
       "id": "c8-r9",
@@ -3655,25 +3655,25 @@
       "width": 256,
       "height": 256,
       "base": "chunks/base/c8-r9.webp",
-      "baseSha256": "130307dbc17b33357f375fc83cd920180f32ae19afbd206b698537ea01cf71ce",
+      "baseSha256": "98e8c9c4e24513eb74ed1ebf018ed6b65fd5b7e50ccc8baf32d217798bd0b593",
       "canopy": "chunks/canopy/c8-r9.webp",
       "canopySha256": "e11263e01a109975ae10bdc4a3a8d28c162d07eecb327b442f278f66562ee9af",
       "water": "chunks/water-r2/c8-r9.png",
-      "waterSha256": "ac852afc23fecc16ef459a8aed104c6945b0b31af979d087f21d67247c64eeaa",
+      "waterSha256": "7b8dc91a264fb0a26e51453b07f0260f772606ce815386674bca06d6fd914e38",
       "basePixelsPerCell": 32,
       "forest": "chunks/forest/c8-r9.png",
-      "forestSha256": "653e994a3335af9374bd626952b3b2fe4a34411f77c6cecc42228e93b1d9ed0a",
+      "forestSha256": "7368c266a9fef2b6c82fca4c63c7a9db84992ffc61f322fefbff6bc96fba22bd",
       "waterPixelsPerCell": 32,
       "foam": "chunks/foam/c8-r9.png",
-      "foamSha256": "474c5c5c92b1e62d6d230d38b674c2c609bd1026067e4649057036c19ea9fa82",
+      "foamSha256": "04062f7398432b3b36c3e2a3cdf5b5a1772f590e63393e15f10039f0f691eaf4",
       "front": "chunks/front/c8-r9.png",
-      "frontSha256": "a76c6297543f0c46ddd91a54116d9589f14a8891ffde494f6b07ac3b2285dc79",
+      "frontSha256": "340ea41128ed06de20bf89bf3a896ba9f4ba3908051809d29b4aaad61b91c0af",
       "crest0": "chunks/crest/c8-r9-0.png",
-      "crest0Sha256": "5903474039d93691bd1f928f541912e96519c937ca5cf8b47c30c1f675330e8f",
+      "crest0Sha256": "b579d50f94e5f06927a0d91931ed03dd73e40d1eef9563e9d1ec07e5cf0ef2e5",
       "crest1": "chunks/crest/c8-r9-1.png",
-      "crest1Sha256": "ef228f0811ebea6250e80090b8f3bace7e93fdbd7f4dadcbc97adf53c53891ce",
+      "crest1Sha256": "654a28e4ec2b5b53d666a07c5f74f42742288e234e206a43088cad2722a5b01c",
       "crest2": "chunks/crest/c8-r9-2.png",
-      "crest2Sha256": "bdc30af0e79dc347c2c60571f8d9835c11d5de139079042784d8054f0ec293e3"
+      "crest2Sha256": "ea4afb90e25da27bd379ca9fa273053b94f7fde14710b761faa4c067b038c387"
     },
     {
       "id": "c9-r9",
@@ -3682,25 +3682,25 @@
       "width": 64,
       "height": 256,
       "base": "chunks/base/c9-r9.webp",
-      "baseSha256": "2c3fe27148e6124d818c457737d2b9e81cdb9764a84c83048ffc7d31b62749fb",
+      "baseSha256": "2529d780876c232319d651838992f7ce9538fe385e5605af79dc277e5de0b45d",
       "canopy": "chunks/canopy/c9-r9.webp",
       "canopySha256": "371a4a0894957e68c4e5f3b62989172d462645be77d52797d88e5bc535cc54af",
       "water": "chunks/water-r2/c9-r9.png",
-      "waterSha256": "2ddfb10ad58b31d021a10d8e1e3d4a53f7964865605907e443a7d08ebf81b839",
+      "waterSha256": "6db3e23b3ee69731155a9604484c5c2be2afceb7354a79fa0fd435fdd6930cb3",
       "basePixelsPerCell": 32,
       "forest": "chunks/forest/c9-r9.png",
-      "forestSha256": "d6553456967e2fc29222dc7fc5c58cbd889b141b2ef8d60a333717236898d2a7",
+      "forestSha256": "633b6fda4988d30dc44f6e4c7b406d4173a5ba4c8f5b3cc6e75a2a419a6a7eea",
       "waterPixelsPerCell": 32,
       "foam": "chunks/foam/c9-r9.png",
-      "foamSha256": "bf559de705b1924e46eb1c676a3dc13407dae679c7ede0757e8f6602ade14506",
+      "foamSha256": "f605fd90a71f63e85e9cf539e1512ce6f0e55ee5791cf352ee7c30a5336e69e2",
       "front": "chunks/front/c9-r9.png",
-      "frontSha256": "c438be6268fcd67b104e7a6f6eb3ff78cade1ffca14373f4c4ac4bbf5b0c8c92",
+      "frontSha256": "5dabc0b091729687455f3d49208d5fdefe4fcd559fdc1c03fbce4c2c84cc8e51",
       "crest0": "chunks/crest/c9-r9-0.png",
-      "crest0Sha256": "68a3af3d9851f76860911b6c39161e1b502011c02011bcfa0f88f0546608c68f",
+      "crest0Sha256": "27dcce7be72b82d2acfd37a53a2bdc75edbd2fd4e91c79ff3637f1b1ed9657ba",
       "crest1": "chunks/crest/c9-r9-1.png",
-      "crest1Sha256": "dd8e94763b150e1c0d427012252841e35f6a4f8c76e52fd36dabdec587f2bb81",
+      "crest1Sha256": "1b42a805204956b37ccd550e1d1afe8265c5f75921cb0b542208f01b901e1226",
       "crest2": "chunks/crest/c9-r9-2.png",
-      "crest2Sha256": "829a69890c373f6d5b79d3d3a13ca63dbb5d8b64682de83d80350fb7762a7a2c"
+      "crest2Sha256": "c1d0cd3acf225ff9a5a789b6c303cc127551d30f8edcc663e134c3740a57a91c"
     },
     {
       "id": "c0-r10",
@@ -3721,11 +3721,11 @@
       "foam": "chunks/foam/c0-r10.png",
       "foamSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
       "crest0": "chunks/crest/c0-r10-0.png",
-      "crest0Sha256": "387a1673ca215625e03f5fffeb3d4e00a55a3df38f74ffe6cd86dfc5d1beefc9",
+      "crest0Sha256": "326eb3eb1b63bbf3779b0a9c7cb94da95e3899eba5e14360fe81512fb74aea38",
       "crest1": "chunks/crest/c0-r10-1.png",
-      "crest1Sha256": "f617acb5c759ced27be855a277a0bbb8e15972342daec8506f70a9d097f01913",
+      "crest1Sha256": "d462e411428f5385d46a8ab37051b5b945ba130300d90d6a345601bba23cc87d",
       "crest2": "chunks/crest/c0-r10-2.png",
-      "crest2Sha256": "95fc37c1111b5bceaea94abb648e5528dc283ebed192cffa14a279102d7bc7c4"
+      "crest2Sha256": "9f0456e3c21b5dbc19f6becb82bec058bd31a471484119eed16c887f305fcfab"
     },
     {
       "id": "c1-r10",
@@ -3746,11 +3746,11 @@
       "foam": "chunks/foam/c1-r10.png",
       "foamSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
       "crest0": "chunks/crest/c1-r10-0.png",
-      "crest0Sha256": "9ec24a708217d140b3e0587c598cb46fa8d225c129879132ee5b97b0a21f284b",
+      "crest0Sha256": "470ff0686ab0e8c54d04fc1180a941eb3af21bc7da4dbf98276da42aea8b08d9",
       "crest1": "chunks/crest/c1-r10-1.png",
-      "crest1Sha256": "4e6ccdbc9b9ed04410ad177e9c8cf58d53896af3b4fc922234733c482de715e7",
+      "crest1Sha256": "700c78ebfdcfcf0abc94d03ae509db346410aed2f6e76d4dac3ae72ae897ba70",
       "crest2": "chunks/crest/c1-r10-2.png",
-      "crest2Sha256": "715005f727f4d74e0ea0b2e66b226e77c410cc6c67b2cbabe7f94e3a59566a88"
+      "crest2Sha256": "e8ac5967f50acede9798893fd9f288a02aa4855a695599c49d6f8fb11ecf7866"
     },
     {
       "id": "c2-r10",
@@ -3771,11 +3771,11 @@
       "foam": "chunks/foam/c2-r10.png",
       "foamSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
       "crest0": "chunks/crest/c2-r10-0.png",
-      "crest0Sha256": "83ea0fc1f9ca5dc0b8c0f91a5cb39aba692ee19b018202a5fffe21f36163940b",
+      "crest0Sha256": "8847bb9adeea4751de8cf964a1b48b6c08bd2a1f8b87db52f533759164c40a37",
       "crest1": "chunks/crest/c2-r10-1.png",
-      "crest1Sha256": "3894cb37f5c37d6b456930abcf4036066b198a00fcc0226eae768e6851b82cd1",
+      "crest1Sha256": "fa1929d8347d6a6ff8f8bbfa4497ecf83d86e54a066fdcee428d07d5c5f25697",
       "crest2": "chunks/crest/c2-r10-2.png",
-      "crest2Sha256": "ae3a43bc71dc928fe7feff585cc603ecb83d5c7e87b20c9ff538a072bcb3add2"
+      "crest2Sha256": "de727f9588d8c9c697caddc12f48183840ff7ed69502661662a1d611ab9a47f7"
     },
     {
       "id": "c3-r10",
@@ -3796,11 +3796,11 @@
       "foam": "chunks/foam/c3-r10.png",
       "foamSha256": "b294dce816a3ff7a58fc451545082017543a5d2aea1e0fdc3c647d8b87661416",
       "crest0": "chunks/crest/c3-r10-0.png",
-      "crest0Sha256": "c8d22ad382338cd83453dc8f031cfa6a4cedc8b84034272d4a418009d9ca8a2a",
+      "crest0Sha256": "f80e4ec8b2c856bde723b9ef699cc1efe402bee2a23ba76c26c26d19bdcc9fc3",
       "crest1": "chunks/crest/c3-r10-1.png",
-      "crest1Sha256": "d0cd1211b83169b6dfbb373def075b79a5df231ced0aead6437994e1385ea5fe",
+      "crest1Sha256": "afa1aace9db13863e7ec9d58b7b21876f60ed3f2bde5a6c7124e23de5e0fe7e7",
       "crest2": "chunks/crest/c3-r10-2.png",
-      "crest2Sha256": "6af784e33331b056c73fba4570c6baa31820f67c739622fb54e2559c7fded90e"
+      "crest2Sha256": "9d6de88ac9c2cf663e2d5ff0db7b6f37a1a7d9f01977ec02ece6c91ca39d759a"
     },
     {
       "id": "c4-r10",
@@ -3821,11 +3821,11 @@
       "foam": "chunks/foam/c4-r10.png",
       "foamSha256": "bbfcb34f7f0dc71ce7c3d92fde95d5ae7bbc58a72791dea7db82f1f61a159799",
       "crest0": "chunks/crest/c4-r10-0.png",
-      "crest0Sha256": "669758a2bd4ce6fedcfc2a1467ea2a2464c9668bdee36abf967893b15124318c",
+      "crest0Sha256": "bec948a86c8be0576f42400f090966c685b80c2ea3cbeb78d933ae23a6ba8be1",
       "crest1": "chunks/crest/c4-r10-1.png",
-      "crest1Sha256": "f735c1a34bdfef3a15641eb190700dc7bff2f6752648d437f66c8950f95873b6",
+      "crest1Sha256": "17fc0895b6fac47e450730d822795c6cf22eb6fdc19f7a692f30bf4250412402",
       "crest2": "chunks/crest/c4-r10-2.png",
-      "crest2Sha256": "4fd54c29fd2d97d9e952a0631ea078155c8b0e92fb7a2e92fd643e095dc627ff"
+      "crest2Sha256": "b227ef58efa6700be945488d2bbe28758df92ea395033655eb8f1825e855ebd1"
     },
     {
       "id": "c5-r10",
@@ -3846,11 +3846,11 @@
       "foam": "chunks/foam/c5-r10.png",
       "foamSha256": "ac3bb70a7a6361c648504556c75811612f084e84b322819264fc4fc4ed70bf86",
       "crest0": "chunks/crest/c5-r10-0.png",
-      "crest0Sha256": "d13225c040e30d120da9f9308603286f3302ada140afb2766aed6500a6dd706c",
+      "crest0Sha256": "d50d239eed67ef4670bedaa7dae6bd0da5f35c06c6f5b317f299ce935d5d8d1a",
       "crest1": "chunks/crest/c5-r10-1.png",
-      "crest1Sha256": "afbe08e9172cb9eebef27f07aa1b04cab4c827c9e75e13accdfdd1ae766b6d5c",
+      "crest1Sha256": "dca2251bf642bf2fb8a245f4ee107780d19adbf0c8268831310cbde2155f5d3a",
       "crest2": "chunks/crest/c5-r10-2.png",
-      "crest2Sha256": "10c70e02f404d40f440ed86263a10557f1020f1e80df26b99d2293b586ee5f08"
+      "crest2Sha256": "f60e2085be27479e1c3a9f53fe12cd14a46b9fdec8ed03b9d07a9d60f1ecec35"
     },
     {
       "id": "c6-r10",
@@ -3871,11 +3871,11 @@
       "foam": "chunks/foam/c6-r10.png",
       "foamSha256": "3a837f60f3a379250ede2c35e12386d8a507c8f5f6fceed870bb86f91ada6f36",
       "crest0": "chunks/crest/c6-r10-0.png",
-      "crest0Sha256": "09fa64aeddf12209aaa9945830446aff8ceb036ea675f8f313bb22209bba806c",
+      "crest0Sha256": "cca443a97780aa702615dd53fd9eb85cbe324b425f70f5268423cbc8efe41ae1",
       "crest1": "chunks/crest/c6-r10-1.png",
-      "crest1Sha256": "c5543097b319572fb06ea9f55f37863c1242a96af0c0754a24a615c444ad61c9",
+      "crest1Sha256": "f3ac81e52c8b4588634108fcdb98dbf6f7bb89a30885e2d0a704319ae02b35fd",
       "crest2": "chunks/crest/c6-r10-2.png",
-      "crest2Sha256": "59f1d3e97a389676669961e88d95a935c9dca27302764c5082ee9ee70fe77f39"
+      "crest2Sha256": "a958388df0700143910b0e7f7c11b3b7fc1d4855c0ed3963e8335d8e4390ee8e"
     },
     {
       "id": "c7-r10",
@@ -3896,11 +3896,11 @@
       "foam": "chunks/foam/c7-r10.png",
       "foamSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
       "crest0": "chunks/crest/c7-r10-0.png",
-      "crest0Sha256": "291e7adcfb4d74d7f404aadd719d27b280ad991c82a6a4260e8d835e7e5d6ad1",
+      "crest0Sha256": "9d75b30b3ad4be314806ca7b800b9be810f139cb90b0c11c00e85858041ac201",
       "crest1": "chunks/crest/c7-r10-1.png",
-      "crest1Sha256": "e91450da413658d3725bfb2c48e88094f70562c0c55b20ad1c646d9c92533696",
+      "crest1Sha256": "13049b477452c562f1e49c08a9e984d2362eff5363cad952982b9489e489b65d",
       "crest2": "chunks/crest/c7-r10-2.png",
-      "crest2Sha256": "20ac9a85a5e2b294305f041eec506d1302e09ca5b1cd1668a57f723ff394a635"
+      "crest2Sha256": "5c938ebbe189ba25ebfe16c9ee0aa1d19989b8b1531850ae9bbd4184c7645e4d"
     },
     {
       "id": "c8-r10",
@@ -3921,11 +3921,11 @@
       "foam": "chunks/foam/c8-r10.png",
       "foamSha256": "9b04f10d403456a5dc17495d1e558b3c412862e34be805faae06e263a2668920",
       "crest0": "chunks/crest/c8-r10-0.png",
-      "crest0Sha256": "154e9c00f84445efe7f08b64d257d55eb7af9f3bab4882333d8ba692b41713ef",
+      "crest0Sha256": "8029f2e9bb725cd3217694519a4974733023bbef179462ab95022f08bee1ffca",
       "crest1": "chunks/crest/c8-r10-1.png",
-      "crest1Sha256": "2cd0735103ed61a6dd4835a2a33183c788d3bd38e93c57660262ff506d6e0b6b",
+      "crest1Sha256": "a4ca049d00d5375c11aae26d168cc32cfef95430a35cd972c0ccde2cb99f7ae2",
       "crest2": "chunks/crest/c8-r10-2.png",
-      "crest2Sha256": "23f0f4787f6f247e1cf7e00caa93a2d50b5908427bcaeef12d615326ed30c1b5"
+      "crest2Sha256": "dddb86cc01b3e99c59bb0a3fa23a7366fada2288ed9f6b23342611d954b7b563"
     },
     {
       "id": "c9-r10",
@@ -3946,11 +3946,11 @@
       "foam": "chunks/foam/c9-r10.png",
       "foamSha256": "47583f26d679ac48c830afc0fce8ffd86a8bc344db79ba2c1e6b0112686e2e07",
       "crest0": "chunks/crest/c9-r10-0.png",
-      "crest0Sha256": "dba9988842f7622801661b4bff98d1c364f3ce8eaa226931f74193ec61fa4d63",
+      "crest0Sha256": "81a36e0b88951153173bc40d9f181af75f3eaaaab5998469ccad20b20c494486",
       "crest1": "chunks/crest/c9-r10-1.png",
-      "crest1Sha256": "0555cefc6cc9318686751b1daea3a4d242c4aaa762051781e8415f824aea7cd3",
+      "crest1Sha256": "0a732b2157b1928eb79c6bd98f3feb4056d295cb2c9b8a2feb94226cc1ad2cfc",
       "crest2": "chunks/crest/c9-r10-2.png",
-      "crest2Sha256": "c66567c0508e595d8ef82083e2d91c3da7718300094ba20e62fb087d71cc70a6"
+      "crest2Sha256": "b56de89b86a1c597cccd7a20816fcc4b8219c8dd81a93bf8ef58f941d0daa9b3"
     },
     {
       "id": "c0-r11",
@@ -3971,11 +3971,11 @@
       "foam": "chunks/foam/c0-r11.png",
       "foamSha256": "5f0efb9ed03b94d86feab74d61dd715d2c457c0eff3eaf7129b17c611656cfdc",
       "crest0": "chunks/crest/c0-r11-0.png",
-      "crest0Sha256": "248a4d7b3355d598a0f6ddc2d96fcde98a2f47d5d64131e8d1d5fd14296dd83d",
+      "crest0Sha256": "ed73ff28039f98e626111dd907b94a9a7942c906d5526a6a087b5dfe0d9d1631",
       "crest1": "chunks/crest/c0-r11-1.png",
-      "crest1Sha256": "2c3417de63e755a768d8ad5bfec0f26fedcfa3806f73fef8de74f83d383c18ff",
+      "crest1Sha256": "2b75b3034e445077c8495802eaf9b74e723d573ac8e0139a93f20dc13a9d071b",
       "crest2": "chunks/crest/c0-r11-2.png",
-      "crest2Sha256": "faf30489d0b285751acc615bc444a3f73dd83f90d0e6f1ca8dd4d22641959540"
+      "crest2Sha256": "d1c0bd7a60924a4fdbcc1fa4b98fa938a5564a6ac0b3501000b9913a1886a465"
     },
     {
       "id": "c1-r11",
@@ -3996,11 +3996,11 @@
       "foam": "chunks/foam/c1-r11.png",
       "foamSha256": "5f0efb9ed03b94d86feab74d61dd715d2c457c0eff3eaf7129b17c611656cfdc",
       "crest0": "chunks/crest/c1-r11-0.png",
-      "crest0Sha256": "e2991cb80358350f4c2f4120b8298b09ff9d7020246e8176480d801cae891cab",
+      "crest0Sha256": "fc58e4073d9f1632629fde6600c449db242ebdf57ab0885b948df317bd1fc827",
       "crest1": "chunks/crest/c1-r11-1.png",
-      "crest1Sha256": "dacefc00e9bb0cfe7b713d25962a5dd7f40dfd9a3cadc395280f5ba88564ddb0",
+      "crest1Sha256": "d7fe125d75b92d4c97512f5baa9c2799d444f89f2a578c0becc1b6e7507e6e40",
       "crest2": "chunks/crest/c1-r11-2.png",
-      "crest2Sha256": "59971f0c6d7799c1829ec7b05fa13281c36fedddc2b5c112aeff9c0a6a6a740e"
+      "crest2Sha256": "d5e78ef35e8f0f4ed57c9b99f5a3a5dcb59b9cb3864f9484e9116a2a1cf00cf4"
     },
     {
       "id": "c2-r11",
@@ -4021,11 +4021,11 @@
       "foam": "chunks/foam/c2-r11.png",
       "foamSha256": "5f0efb9ed03b94d86feab74d61dd715d2c457c0eff3eaf7129b17c611656cfdc",
       "crest0": "chunks/crest/c2-r11-0.png",
-      "crest0Sha256": "4e8e0bff29be470065699f241f9c02da0d1960945c0325dc606dfefcc1bd465d",
+      "crest0Sha256": "e221bfb41dbd69cbea7884bfc4eba64a03f28cc154b981c65d48d7982930ed30",
       "crest1": "chunks/crest/c2-r11-1.png",
-      "crest1Sha256": "0ffacaa5c5d1543cd222c92a51967d5715b4fcd959d8c6ad1a418316cf9604f6",
+      "crest1Sha256": "fe1d4d82dccc86614872281be316700d13963743e3e3612538cbf58d1138efea",
       "crest2": "chunks/crest/c2-r11-2.png",
-      "crest2Sha256": "8a41c40954e89ce36fb3dbf4341efe5ebf49ffb9687eeebb7d947711f33fb999"
+      "crest2Sha256": "9234ef2c67f06b09afa8e0ad3fc14ea531322d77af97c2f2147da0c9b475dfe0"
     },
     {
       "id": "c3-r11",
@@ -4046,11 +4046,11 @@
       "foam": "chunks/foam/c3-r11.png",
       "foamSha256": "5f0efb9ed03b94d86feab74d61dd715d2c457c0eff3eaf7129b17c611656cfdc",
       "crest0": "chunks/crest/c3-r11-0.png",
-      "crest0Sha256": "04d33a5010af6663dd5f2387b84924b1138d50358b45ca9e8a76cd61a4fbf88c",
+      "crest0Sha256": "3cbc47368ab965be5f4954adf47d0a2660ecf672318635345b005fc96bc15686",
       "crest1": "chunks/crest/c3-r11-1.png",
-      "crest1Sha256": "1c474bfe2846d3275d24e5286b1f8e4b783fb483405143416c82e27de2c1daa8",
+      "crest1Sha256": "b030382a2563338c25aa6259b8751afac49020f62587f91b7dc614609faaa22c",
       "crest2": "chunks/crest/c3-r11-2.png",
-      "crest2Sha256": "7c34c79402b4b495efa9c11aeb88eabbbd84a0f66efeae7ea2bf8ed4a85f4218"
+      "crest2Sha256": "3384ad7d09085f1149509d57676af83e7b9e31773de709ff88b2e9c13f364d08"
     },
     {
       "id": "c4-r11",
@@ -4071,11 +4071,11 @@
       "foam": "chunks/foam/c4-r11.png",
       "foamSha256": "b20aef5f7c40796be86d1c5bc1c9c5f9cdbd290f0709b46c138a85abd8dedc67",
       "crest0": "chunks/crest/c4-r11-0.png",
-      "crest0Sha256": "49eb24926686c7c945b2aa32b7641d3185d867ab9993bf9118633ed7f44b7901",
+      "crest0Sha256": "48a00aad538845e320bd4b1710c77f529c58970680f07e3ee458335feb205f2b",
       "crest1": "chunks/crest/c4-r11-1.png",
-      "crest1Sha256": "f34d068a46da8af9e0d7ab2534b729af564d6e4b266abc655442170b15f2b099",
+      "crest1Sha256": "c530c5e87827cf5f5ced793de9ce68cd4e1db907cd1f6e4eccde6aef579da3b4",
       "crest2": "chunks/crest/c4-r11-2.png",
-      "crest2Sha256": "6915e1c3035b29649ac415756ef93ca74a9004373cc852c3d6fde8825bb6fcd3"
+      "crest2Sha256": "463f2a125ed28da25e6d98e2a391245f09203a740025338beafa607e25dd87a8"
     },
     {
       "id": "c5-r11",
@@ -4096,11 +4096,11 @@
       "foam": "chunks/foam/c5-r11.png",
       "foamSha256": "5f0efb9ed03b94d86feab74d61dd715d2c457c0eff3eaf7129b17c611656cfdc",
       "crest0": "chunks/crest/c5-r11-0.png",
-      "crest0Sha256": "cae4fe7c4ed2f72a37b6b23dc70409c69912f0a3cee472bba9fd3ad02e091a2c",
+      "crest0Sha256": "44ebd83567269e4f088156a5e2f76c73accb7820b6b241ec05da5a4ef852d6e1",
       "crest1": "chunks/crest/c5-r11-1.png",
-      "crest1Sha256": "283414f653195162046e411febaaa0a527309d36915dca278fc3c2320955f57d",
+      "crest1Sha256": "10eeb25797e44e2b12fd8210df767f7c62c119ac40a00544f95d72a67fea86b4",
       "crest2": "chunks/crest/c5-r11-2.png",
-      "crest2Sha256": "d5542a78df7fb49c3306149bea3704897ed012a49ec057d084f1566c475c6871"
+      "crest2Sha256": "a49cbc6118caa8eacb8ad2be73692e56a83144ce12dd7a7d66b462e49c408288"
     },
     {
       "id": "c6-r11",
@@ -4121,11 +4121,11 @@
       "foam": "chunks/foam/c6-r11.png",
       "foamSha256": "5f0efb9ed03b94d86feab74d61dd715d2c457c0eff3eaf7129b17c611656cfdc",
       "crest0": "chunks/crest/c6-r11-0.png",
-      "crest0Sha256": "9462206f608d844e1099fdfed4f96e0014768f2ac1945434bd30840e5f3588db",
+      "crest0Sha256": "6037b6f5abf2a459a93aa9c893f626bc3db0ba0d684c07d2b1b02105ebf172a2",
       "crest1": "chunks/crest/c6-r11-1.png",
-      "crest1Sha256": "0c8284126fe392d75ba1afdf9bb5f0bcd596b510148ffc10f0fa010223b5de22",
+      "crest1Sha256": "1756d2c31ae5f438269f7a66746e9f9205173226dfd464ead867a34071ebdca7",
       "crest2": "chunks/crest/c6-r11-2.png",
-      "crest2Sha256": "f23f47f2f6c17ddc697f2b1b1b3c7f9094914b6227e29349c77bc4314e37dddb"
+      "crest2Sha256": "6a4a0337329fd75fd70d284a6fcb7f27b95bacbc5bc85c82b5df399a1db84209"
     },
     {
       "id": "c7-r11",
@@ -4146,11 +4146,11 @@
       "foam": "chunks/foam/c7-r11.png",
       "foamSha256": "5f0efb9ed03b94d86feab74d61dd715d2c457c0eff3eaf7129b17c611656cfdc",
       "crest0": "chunks/crest/c7-r11-0.png",
-      "crest0Sha256": "4870fba03a00f6ccba3c238244311319e10ffe557d772e7e1d9bb0465ed122f7",
+      "crest0Sha256": "04eefe99bf4f24eb7f4b21e4125f5c757531b75796d48cdc534a55900037fd50",
       "crest1": "chunks/crest/c7-r11-1.png",
-      "crest1Sha256": "f3a14c667c0b1d61799a176c428ab7595bcae4506533a338ea2cfd59722cb93b",
+      "crest1Sha256": "5f9f3990e63285ffe025ba329775c6200e132eaa2a457eb85f9a1913096c1488",
       "crest2": "chunks/crest/c7-r11-2.png",
-      "crest2Sha256": "40b5c4c12d67293f0dbd67c0aa2504d8adcd58ea557655324e691fd33be094b0"
+      "crest2Sha256": "0d0abb8b072c12cbbba688e813c2db8d82124d0c7f07c1a6507add11e80f661c"
     },
     {
       "id": "c8-r11",
@@ -4171,11 +4171,11 @@
       "foam": "chunks/foam/c8-r11.png",
       "foamSha256": "5f0efb9ed03b94d86feab74d61dd715d2c457c0eff3eaf7129b17c611656cfdc",
       "crest0": "chunks/crest/c8-r11-0.png",
-      "crest0Sha256": "db5c29b3b391b39de877cc5ad0fe94bb9306b52e32e4f00af6d80ab5c9b3472f",
+      "crest0Sha256": "9bbb748f106abfd800f3f41250a4739183d58e2f8b7f344e914f8593bb6b62c7",
       "crest1": "chunks/crest/c8-r11-1.png",
-      "crest1Sha256": "0639c205f2f73f87a424d875564b6d29b15e8cd95495d932e38fc65a6b6e7293",
+      "crest1Sha256": "93de9286567d3758565385854d9d19b27c18ea1c29e94ce91d1f186214f356d6",
       "crest2": "chunks/crest/c8-r11-2.png",
-      "crest2Sha256": "a6bdecc7559e1655bbe230220c3e72c9e2e60fad87dd905e7e6e4896d57dfbfe"
+      "crest2Sha256": "e82acb9c06bb50546d58510a36c518777803c0f9c021ffbbea081a907ef32e76"
     },
     {
       "id": "c9-r11",
@@ -4196,11 +4196,11 @@
       "foam": "chunks/foam/c9-r11.png",
       "foamSha256": "09a0bdd40458aafd01fcbeb8c8d5bfe094ae26d0cd2599a8c9aa5cdb26f85dd6",
       "crest0": "chunks/crest/c9-r11-0.png",
-      "crest0Sha256": "be65e8c382eba369f10422293540d5cf2208ba897d0057edfc87db2f910a8e01",
+      "crest0Sha256": "2196ff281e72b5c9e04446e0045deac751e50924b3efc94542fa85262a264621",
       "crest1": "chunks/crest/c9-r11-1.png",
-      "crest1Sha256": "4f70fa630697fb3f431622f3a66eae487dafceca284b8ea9ebb3ef1c10c934a8",
+      "crest1Sha256": "dbfc60eb994243243ec9a553410807972c798be1ab72b16ee4af6c02e70efa59",
       "crest2": "chunks/crest/c9-r11-2.png",
-      "crest2Sha256": "e376512b9677a6b4ec1942dd6c54320b7b120229c1cfcba3ece49cab46917c8f"
+      "crest2Sha256": "dadc7110a8377a6133f44d0125d79f693d9fef257d7ae231c0f43acec64df6ea"
     }
   ],
   "startCell": {
@@ -4315,7 +4315,7 @@
       4736,
       5824
     ],
-    "sha256": "b560f164c00492e450b89eaf13cc08b43497b6187e5170f31609b1d6ebf516cf",
+    "sha256": "5c830d298174299cb0e2001775fcd1c968ce2bb69a847224c1c6ed0b85ee935f",
     "sourceArtifact": "../evidence/final-visible-plus-north-support-collision-alpha.png",
     "sourceSha256": "0baf807bfd429b8ae945439c62c23610fcf62ae0fa6eeae01dcbf5c7d468fae7",
     "format": "qok-forest-bitset-v1",

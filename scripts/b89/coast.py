@@ -66,6 +66,9 @@ EXTRA={}
 CORRIDOR=0
 ROCKFILL=False
 MILD=0
+JOIN=0
+FRONT=0
+FORCE=[]
 APRON=0
 PLATE=None
 def build(cx0,cy0,cx1,cy1,seed=1,keep=None):
@@ -74,6 +77,13 @@ def build(cx0,cy0,cx1,cy1,seed=1,keep=None):
     fo=layer_region('forest',cx0,cy0,cx1,cy1)
     H,W=base.shape[:2]
     wa=wat[...,3]/255.0
+    gx,gy=(cx0-16)*32,(cy0-218)*32
+    for (x0,y0,x1,y1) in FORCE:
+        # build 91: rock paint removed by hand; the sea takes its place
+        X0,Y0,X1,Y1=max(0,x0-gx),max(0,y0-gy),min(wa.shape[1],x1-gx),min(wa.shape[0],y1-gy)
+        if X1>X0 and Y1>Y0:
+            fa_=np.array(fo)[Y0:Y1,X0:X1,3]
+            wa[Y0:Y1,X0:X1]=np.where(fa_<=40,1.0,wa[Y0:Y1,X0:X1])
     if PLATE:
         pw,ph=PLATE
         for a_ in (wa,):
@@ -132,6 +142,11 @@ def build(cx0,cy0,cx1,cy1,seed=1,keep=None):
                 fo=Image.fromarray(fa_); rock=rock|done; EXTRA['rockfill']=done
                 water=water|(corr&~done)
             else:
+                if FRONT:
+                    # build 91: grass in FRONT of a mountain (rock above it in the same column) is the
+                    # land the base stands on, so it stays; only grass BESIDE the range turns to sea.
+                    above=ndi.maximum_filter1d(rock,size=2*FRONT+1,axis=0,origin=FRONT)
+                    corr=corr&~above
                 water=water|corr
         water=ndi.binary_opening(water,iterations=2)|(water&ndi.binary_dilation(rock,iterations=2))
         lg2,ng2=ndi.label(~water&~rock)
@@ -139,6 +154,18 @@ def build(cx0,cy0,cx1,cy1,seed=1,keep=None):
             gs2=ndi.sum(np.ones_like(lg2),lg2,range(1,ng2+1))
             tl2=set(np.unique(lg2[ndi.binary_dilation(water,iterations=2)]))
             water=water|np.isin(lg2,[i+1 for i,v in enumerate(gs2) if v<8000 and (i+1) in tl2])
+    if JOIN:
+        # build 91: where the coast meets a mountain's base, fill the notch so the land outline runs
+        # smoothly into the base corner. Only water nearer to grass than to rock is filled, so the
+        # sea still touches the mountain's sides and the mountain paint is never changed.
+        A=~water
+        D=ndi.distance_transform_edt(~A)<=JOIN
+        clo=ndi.distance_transform_edt(D)>JOIN
+        land=A&~rock
+        dg=ndi.distance_transform_edt(~land); dr2=ndi.distance_transform_edt(~rock)
+        fill=clo&water&(dg<dr2)&(dr2<JOIN*2.5)
+        EXTRA['join']=fill
+        water=water&~fill
     apron=np.zeros_like(water)
     if APRON:
         # the mountain's foot follows the island outline: smooth the land+rock silhouette near rock
