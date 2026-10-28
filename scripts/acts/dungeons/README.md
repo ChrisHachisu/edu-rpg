@@ -27,6 +27,46 @@
 > materials. They return through the Codex material sheets (dressed masonry, tree walls), the
 > `skyWindow` decals, and the maze autotile sheets.
 
+## Option (a) mockups: authored floors for the five themes the generator cannot carry
+
+The owner has not approved these yet; they are mockups only. They cover stormNest, stormreachSpire,
+scorchedRuins, volcanicForge and demonBarracks. Floor counts, bosses, chest counts, key, mimic and
+save floors all follow the bundle.
+
+| script | what |
+|---|---|
+| `authored_floors.py [ids]` | `<scratch>/authored/<floor>.json` in the A1D floor format (`rows`, `assets`, …) plus `tiles` (the engine ints), `mechanics` (Ap side channels: `keyChests`, `mimicChests`, `hiddenRoomChests`, `windCorridorDir`), `decorRows` (`s` sky, `w` tower outer wall, `l` lava channel, all rock), `decals.skyWindow`, `ascending` |
+| `validate_authored.py` | the engine's movement rules: reachability with key pickup; gates must fit the engine's open-cross; mechanic tile counts; hidden chests only via 17; lava course must be on the route (goal unreachable with lavaPhase off); chest counts as in the bundle. Exit 1 on failure |
+| `authored_previews.py` | F1 and the top floor of each dungeon, per-cell renderer, to `acts-preview/dungeons/authored/` |
+
+The layouts:
+
+- **Towers** are octagonal rings around a stair core, narrowing as they rise. They have sky outside
+  and window slits on the outer wall only. Radial partitions force the long way round. stormNest
+  puts a 2-cell 19 gate on the route from F2, with its windbreaker key chest on the arrival side.
+  stormreachSpire runs the bundle's burst rule for the 25 lane along the main path. The top floor is
+  a roof with the boss arena.
+- **Ruin:** a 3×3 grid of rooms with 2-thick walls, collapsed wide gaps and rubble pillars. The
+  last room is behind a 15 gate.
+- **Forge:** three stacked halls on a switchback route. Each hall has a wall-to-wall lava channel
+  crossed only by tile-5 bridges, which are passable in lavaPhase.
+- **Barracks:** a 3-wide corridor lined with dorms, a 2-wide gatehouse (15) and the end hall.
+- **Hidden closets** (17×2 passage and a 3×3 room with a chest) sit below the bottom rooms.
+
+What the adapter would need (lead):
+
+- An `A1D_TILE` entry for each new asset kind: `windBarrier:19`, `lockedDoor:15`, `hiddenDoor:17`,
+  `windLane:25`, `lava:5`.
+- Copy `mechanics` onto the scene after the swap: `keyChestPositions`, `mimicChestPositions`,
+  `hiddenRoomChestPositions`, `windTowerDir`. loadMap set these from Ap's own coordinates, so they
+  are stale after the swap.
+- Draw `ascending` stairs climbing.
+
+Not reproduced:
+
+- The bundle's tile 2 cells (1–3 per floor; their role on non-forest floors is unverified).
+- volcanicForge's second overworld connection (conns 2).
+
 ## Current path: real layouts
 
 | step | script | what |

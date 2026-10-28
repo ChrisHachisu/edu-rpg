@@ -31,10 +31,10 @@ OUT = os.environ.get("BUNDLE_ART_OUT", os.path.join(SCRATCH, "bundle-art"))
 BG = os.path.join(SCRATCH, "bundle-gen")
 PX = 48
 MARGIN = 3
-MECH = {19: ("wind", (190, 230, 255)), 25: ("ice/wind lane", (120, 200, 255)), 28: ("ice stop", (255, 255, 255)),
+MECH = {19: ("wind barrier (windbreaker stone)", (190, 230, 255)), 25: ("ice/wind lane", (120, 200, 255)), 28: ("ice stop", (255, 255, 255)),
         5: ("lava", (255, 90, 20)), 26: ("quicksand", (150, 90, 30)), 27: ("sinking sand", (220, 170, 90)),
         29: ("portal", (200, 80, 255)), 30: ("tripwire", (255, 60, 60)), 31: ("tripwire", (255, 60, 60)),
-        17: ("hidden door", (255, 0, 200)), 2: ("exit (tile 2; the true exit in the forest)", (120, 255, 140)), 24: ("torch", (255, 170, 60))}
+        17: ("hidden door", (255, 0, 200)), 2: ("exit (tile 2; the true exit in the forest)", (120, 255, 140)), 15: ("locked door (key)", (255, 215, 0)), 24: ("torch", (255, 170, 60))}
 MAZE_MECH = {"forest-maze", "maze-hunter"}
 # Per-cell renderer style. "tower" adds sky window slits on wall faces, which is the one structural
 # cue of a tower that art can add without changing the layout.
