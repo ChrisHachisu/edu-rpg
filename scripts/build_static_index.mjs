@@ -276,8 +276,11 @@ export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '
 // pre-Title Link Shader failures, localized from the persisted setting before game APIs are ready.
 // 2026-09-26: the existing outer area Retry also retries a terminal Act-1 underpaint load, and
 // terminal backing failure routes to that cover so its reachable control owns the recovery path.
+// 2026-10-28: flag-gated Acts 2-5 runtime prototype loader (OFF by default; the file is never
+// requested without localStorage qok-multiact-hifi=1 or ?multiact=1). Shell 735d33ee... -> 0da0fdbe...
+// See docs/plans/2026-10-28-acts2-5-runtime-wiring.md.
 export const EXPECTED_STATIC_INDEX_SHA =
-  '735d33eebc2bbff798262c5800bd410f83b747cf936ff2e33c18a3b8e1ee099e';
+  '0da0fdbea82e5bd04fbd91da589777afe4ab764c2df9eb9119c12fb466b43708';
 
 /**
  * The authored shell loads its scripts by ABSOLUTE path so the Vite dev server resolves them;
