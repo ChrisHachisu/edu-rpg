@@ -49,7 +49,8 @@ The chunk origin is the act's owner-terrain bounds `[x0,y0]`. Chunks are 16 cell
 
 - 32 px/cell.
 - Meadow tile: 96 texels/cell, world phase taken from the Act 1 origin (16,218), so it continues Act 1's grass exactly.
-- Cliff kit: Codex per-act sheets `codex-kits/kit-actN-cliffs/kit-actN-cliffs-try1.png` (2×2 panels on pure magenta, same construction as Act 1's main kit). `biome_kits.codex_panels` keys magenta out (hard alpha, 3 px despill band), slices by connected component, and scales ×0.5 nearest (Act 1 main-kit scale). `cliff_geometry` pads every act's panel bottom-centre onto one canvas per slot, and placements use the union to fit and the intersection to count coverage. Biomes: snow = Act 2, haunt = Act 2 in dusk light, grass (Act 1 seam) = Act 2 panel in Act 1 rock tones, sand = Act 3, ash = Act 4, dark = Act 5 (falls back to the recoloured Act 2 panel until that sheet exists). Override the folder with `CODEX_KITS`. The owner ruled out small companion spires (2026-10-28).
+- Cliff kit: Codex per-act sheets `codex-kits/kit-actN-cliffs/kit-actN-cliffs-try1.png` (2×2 panels on pure magenta, same construction as Act 1's main kit). `biome_kits.codex_panels` keys magenta out (hard alpha, 3 px despill band), slices by connected component, and scales ×0.5 nearest (Act 1 main-kit scale). `cliff_geometry` pads every act's panel bottom-centre onto one canvas per slot, and placements use the union to fit and the intersection to count coverage. Biomes: snow = Act 2, haunt = Act 2 in dusk light, grass (Act 1 seam) = Act 2 panel in Act 1 rock tones, sand = Act 3, ash = Act 4, dark = Act 5. A missing sheet falls back to the recoloured Act 2 panel.
+- Crowns: Act 3 palms (`kit-act3-palms-try1`, 4×3 grid) and Act 5 dead trees (`kit-act5-deadtrees-try1`) come from Codex sheets via `biome_kits.codex_crowns`: keyed with full despill and gaps kept, sliced by component per grid cell, longer side scaled to 136 px (the Act 1 crown side 68), hard alpha. Feet collision uses the closed silhouette. The 12 clumps spread over the 7 placement indices. To read at continent scale, dead wood is lifted ×1.18 and the floor under the dead forest is shaded 80 %. Override the folder with `CODEX_KITS`. The owner ruled out small companion spires (2026-10-28).
 - Act 2's divider strip (x 161–170) is narrower than a panel, so panels there may reach into Act 1's mountain columns and end at the act seam. Act 1's range top (rows 218–221) widens up to 9 rows into Act 5 ground.
 - Rock floor: ground inside a range's closed hull that no panel covers is painted dark rock in the local kit and blocked, so a gap shows rock, not snow, sand or ash.
 - Crowns: side 68 (136 px), 7 crowns, density ≈0.35 per F cell (Act 1: 0.37).
@@ -83,7 +84,7 @@ Biome transitions come from per-cell act labels, blurred with σ 3 cells and per
 
 ## Round 3
 
-- `ow_crowns.py` draws Act 3 palm clumps and Act 5 leafless dead-tree clumps with the towns method (`towns/procprops.py`: half-res drawing, Act 1 leaf skin, outline, 2× nearest). There are 7 variants each, with longer side 136 px, reusing the same placements and density.
+- `ow_crowns.py` (procedural palm and dead-tree clumps, towns method) is now only the fallback when a Codex crown sheet is missing.
 - Tree collision uses each clump's closed, hole-filled silhouette, so the gaps between fronds and branches are not walkable.
 - Dead-forest floor is shaded under the clumps.
 - The crest split query point is jittered by ±6 cells, so the x≈160 kit border wanders.

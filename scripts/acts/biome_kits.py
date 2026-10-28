@@ -150,21 +150,23 @@ def _codex_dir():
     import acts_common as A
     return os.environ.get('CODEX_KITS', os.path.join(os.path.dirname(A.SCRATCH), 'codex-kits'))
 
-def key_magenta(rgb):
+def key_magenta(rgb, min_size=600, despill_all=None, fill_holes=True):
     """-> RGBA: background where min(R,B)-G > 120 (pure magenta 255,0,255), hard alpha, holes < 400 px
     filled, specks dropped, and a 3 px despill band that removes the magenta excess from edge pixels."""
     x = rgb.astype(np.int32); mg = np.minimum(x[..., 0], x[..., 2]) - x[..., 1]
     fg = mg <= 120
     lab, n = ndi.label(fg)
     if n:
-        sz = ndi.sum(fg, lab, range(1, n + 1)); fg = np.isin(lab, 1 + np.flatnonzero(sz >= 600))
+        sz = ndi.sum(fg, lab, range(1, n + 1)); fg = np.isin(lab, 1 + np.flatnonzero(sz >= min_size))
     holes = ndi.binary_fill_holes(fg) & ~fg
     hl, hn = ndi.label(holes)
-    if hn:
+    if hn and fill_holes:
         hs = ndi.sum(holes, hl, range(1, hn + 1)); small = np.isin(hl, 1 + np.flatnonzero(hs < 400))
     else: small = np.zeros_like(fg)
     band = ndi.binary_dilation(~fg, iterations=3) & fg
     exc = np.clip(mg - 30, 0, None) * band
+    if despill_all is not None:   # foliage / wood sheets: any magenta excess over the tolerance is spill
+        exc = np.maximum(exc, np.clip(mg - despill_all, 0, None) * fg)
     x[..., 0] -= exc; x[..., 2] -= exc
     if small.any():
         dark = np.percentile(x[fg][:, :3].sum(1), 8); sel = fg & (x[..., :3].sum(-1) <= dark)
@@ -296,6 +298,8 @@ DEAD_RAMP = [(0, (34, 26, 38)), (0.35, (100, 88, 106)), (0.7, (152, 140, 158)), 
 def crown_kit_solid(biome):
     """-> list of 7 (rgba, solid-mask). Act 3 sand = procedural palm clumps, Act 5 dark = leafless dead-tree
     clumps (ow_crowns.py, towns-agent method); other biomes = recoloured Act 1 crowns (solid = alpha)."""
+    cx = codex_crowns('palms' if biome == 'sand' else 'deadtrees') if biome in ('sand', 'dark') else None
+    if cx: return cx
     if biome in ('sand', 'dark'):
         import ow_crowns
         out = []
@@ -308,6 +312,51 @@ def crown_kit_solid(biome):
             out.append((a, solid))
         return out
     return [(c, c[..., 3] > 0) for c in (recolor_crown(c, biome, seed=i + 11) for i, c in enumerate(crown_sources()))]
+
+CROWN_PICK = {'palms': (3, 'try1'), 'deadtrees': (5, 'try1')}
+@functools.lru_cache(None)
+def codex_crowns(kind):
+    """Codex clump sheet (grid on magenta) -> list of (rgba, solid) at the Act 1 crown size (longer side
+    136 px = side 68 world px). Keyed + despilled, sliced by connected components assigned to grid cells by
+    centroid, premultiplied LANCZOS down, hard alpha. solid = closed silhouette (feet collision)."""
+    act, tr = CROWN_PICK[kind]
+    f = f"{_codex_dir()}/kit-act{act}-{kind}/kit-act{act}-{kind}-{tr}.png"
+    if not os.path.exists(f): return None
+    rgba = key_magenta(np.asarray(Image.open(f).convert('RGB')), min_size=40, despill_all=4, fill_holes=False)
+    fg = rgba[..., 3] > 0; H, W = fg.shape
+    lab, n = ndi.label(fg, structure=np.ones((3, 3), bool))
+    cm = ndi.center_of_mass(fg, lab, range(1, n + 1))
+    # grid: columns / rows from the projection gaps of the alpha
+    def bands(prof):
+        on = prof > 0; out = []; i = 0
+        while i < len(on):
+            if on[i]:
+                j = i
+                while j < len(on) and on[j]: j += 1
+                if j - i > 40: out.append((i, j))
+                i = j
+            else: i += 1
+        return out
+    rows = bands(fg.sum(1)); cols = bands(fg.sum(0))
+    out = []
+    for (y0, y1) in rows:
+        for (x0, x1) in cols:
+            ids = [i + 1 for i, (cy, cx_) in enumerate(cm) if y0 <= cy < y1 and x0 <= cx_ < x1]
+            if not ids: continue
+            sel = np.isin(lab, ids); ys, xs = np.nonzero(sel)
+            q = rgba[ys.min():ys.max() + 1, xs.min():xs.max() + 1].copy(); q[~sel[ys.min():ys.max() + 1, xs.min():xs.max() + 1]] = 0
+            s_ = 136 / max(q.shape[:2]); size = (max(1, round(q.shape[1] * s_)), max(1, round(q.shape[0] * s_)))
+            pm = q.astype(np.float32); pm[..., :3] *= pm[..., 3:4] / 255
+            sm = np.dstack([np.asarray(Image.fromarray(pm[..., c].astype(np.float32), 'F').resize(size, Image.LANCZOS)) for c in range(4)])
+            al = sm[..., 3]; thr = 80 if kind == 'deadtrees' else 110
+            a = np.zeros(sm.shape, np.uint8); m = al >= thr
+            a[..., :3] = np.clip(sm[..., :3] * (255 / np.maximum(al, 1))[..., None], 0, 255)
+            a[..., 3] = m * 255; a[~m, :3] = 0
+            if kind == 'deadtrees':   # lift the wood a little so it reads against the dark Act 5 ground
+                a[m, :3] = np.clip(a[m, :3].astype(np.float32) * 1.18 + 10, 0, 255).astype(np.uint8)
+            solid = ndi.binary_fill_holes(ndi.binary_closing(np.pad(m, 12), iterations=10))[12:-12, 12:-12]
+            out.append((a, solid))
+    return out
 
 def crown_kit(biome):
     return [c for c, _ in crown_kit_solid(biome)]

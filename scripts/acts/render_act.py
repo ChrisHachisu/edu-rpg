@@ -148,9 +148,11 @@ def draw_objects(win, doc, bw_cell, lab_full, near=None):
             key = ('r', rec['asset'], b)
             if key not in cache: cache[key] = K.rock_kit(b)[rec['asset']]
         else:
-            key = ('t', rec['sourceIndex'], b, rec['flipX'])
+            lst = K.crown_kit_solid(b)   # Codex clump sheets have 12 entries: spread the 7 Act 1 indices
+            si = rec['sourceIndex'] if len(lst) == 7 else (rec['sourceIndex'] + 7 * int(rec['id'][-1])) % len(lst)
+            key = ('t', si, b, rec['flipX'])
             if key not in cache:
-                c, sd = K.crown_kit_solid(b)[rec['sourceIndex']]
+                c, sd = lst[si]
                 cache[key] = (c[:, ::-1], sd[:, ::-1]) if rec['flipX'] else (c, sd)
         if kind == 'tree':
             im, sd = cache[key]; h, w = im.shape[:2]
@@ -515,7 +517,7 @@ def render(act, out_dir, chunks=True):
     if 'dark' in bw:
         # dead forest floor: the ground under leafless clumps is shaded so the wood reads as a mass
         sh = ndi.gaussian_filter((solidm & ~water).astype(np.float32), 6) * bw['dark']
-        base_u8[:] = np.clip(base_u8 * (1 - 0.45 * sh[..., None]), 0, 255).astype(np.uint8)
+        base_u8[:] = np.clip(base_u8 * (1 - 0.8 * sh[..., None]), 0, 255).astype(np.uint8)
         del sh
     wl = np.dstack([base_u8, (wa * 255).astype(np.uint8)])
     rsm = E['rs']; wl[rsm, :3] = (wl[rsm, :3].astype(np.float32) * 0.62).astype(np.uint8)
