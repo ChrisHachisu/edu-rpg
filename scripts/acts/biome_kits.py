@@ -414,15 +414,39 @@ if __name__ == '__main__':
 
 
 @functools.lru_cache(None)
+@functools.lru_cache(maxsize=None)
 def rock_floor_tile(biome):
-    """fix3: textured rock floor -- the largest fully opaque square of the biome's wide interior panel,
-    darkened a little so a gap between panels reads as recessed painted rock instead of a flat fill"""
+    """fix3/fix5: textured rock floor -- the largest fully opaque square of the biome's wide interior panel,
+    darkened a little so a gap between panels reads as recessed painted rock instead of a flat fill.
+    fix5: made tileable by Efros-Freeman WRAP QUILTING (make_materials.wrap_axis, the Act 1 material method),
+    not by a mirrored 2x2 -- mirroring printed kaleidoscope diamonds/crosses across large rock areas."""
     a = rock_kit(biome)['interior-rock-panel']; m = a[..., 3] > 0; H, W = m.shape
-    for sz in range(200, 40, -8):
+    for sz in range(256, 40, -8):
         for y in range(0, H - sz, 8):
             for x in range(0, W - sz, 8):
                 if m[y:y + sz, x:x + sz].all():
-                    t = a[y:y + sz, x:x + sz, :3].astype(np.float32) * 0.8
-                    # mirrored 2x2 tile: seamless when tiled (no grid of straight tile edges)
-                    return np.vstack([np.hstack([t, t[:, ::-1]]), np.hstack([t[::-1], t[::-1, ::-1]])])
+                    t = np.ascontiguousarray(a[y:y + sz, x:x + sz, :3])
+                    ov = max(16, sz // 5)
+                    t = _MM().wrap_axis(_MM().wrap_axis(t, ov, 0), ov, 1)
+                    return t.astype(np.float32) * 0.8
     return np.full((64, 64, 3), 60, np.float32)
+
+
+@functools.lru_cache(maxsize=None)
+def _MM():
+    import importlib.util
+    sp = importlib.util.spec_from_file_location('make_materials', A.ROOT + '/scripts/make_materials.py')
+    mm = importlib.util.module_from_spec(sp); sp.loader.exec_module(mm); return mm
+
+
+def rock_floor_sample(biome, wy, wx):
+    """fix5: sample the wrap-tiled floor at world px (wy, wx) the way Act 1's materials are sampled
+    (render_material_map.render_window): a second and third tap at irrational offsets, mixed by continuous
+    value noise, so the repeat never prints as a grid and no orientation is flipped (light stays top-left)."""
+    sys.path.insert(0, A.ROOT + "/scripts"); import render_material_map as RM
+    t = rock_floor_tile(biome); T = t.shape[0]
+    def smp(dx, dy): return t[np.mod(wy + dy, T), np.mod(wx + dx, T)]
+    k1 = RM.smoothstep(0.40, 0.60, RM.vnoise(wx, wy, T * 0.85, 311))[:, None]
+    k2 = RM.smoothstep(0.40, 0.60, RM.vnoise(wx + 977, wy + 431, T * 1.30, 523))[:, None]
+    c = smp(0, 0) * (1 - k1) + smp(T // 3, 2 * T // 5) * k1
+    return c * (1 - k2) + smp(3 * T // 5 + 7, T // 7) * k2

@@ -127,7 +127,7 @@ Biome transitions come from per-cell act labels, blurred with σ 3 cells and per
   blending, so no grass, Act 1 meadow or Act 1-toned rock is used outside Act 1.
 - Owner mountain cells that no whole panel could cover are blocked rock floor with a smoothed outline.
   An example is Act 2's 7-cell divider strip beside the plate.
-- Rock floor is a mirrored 2×2 tile, so it tiles seamlessly.
+- Rock floor was a mirrored 2×2 tile (replaced in Fix 5).
 - Act 5 bounds end at y 217 again.
 - Crops: `acts-preview/overworld/fix4/*-{before,after}.jpg`. Each crop shows the act output on the left
   and, on the right, a runtime view with Act 1's shipped base pasted over its plate.
@@ -138,3 +138,29 @@ Biome transitions come from per-cell act labels, blurred with σ 3 cells and per
 set in rock or forest, with anchors (actual paint crop, guide, kit), `jobs.json` and `run.sh`. The
 composite, cut and collision plan, and the Act 1 Crystal Cave override plan, are in that folder's
 README.md.
+
+## Fix 5 (floor, lane, Act 1 north seam, 2026-10-29)
+
+- **Rock floor.** The mirrored tile printed diamond and cross shapes on large rock areas. The tile
+  (`biome_kits.rock_floor_tile`) is now made tileable by wrap quilting (`scripts/make_materials.wrap_axis`),
+  with no mirror. `rock_floor_sample` reads it the way Act 1 samples its materials: three taps at offsets,
+  mixed by continuous value noise, with no flips, so the light stays top-left.
+- **Approach lanes.** Lanes in `render_act.py` were a hard 148 × 256 px rectangle, which left a square
+  corner where a lane ran into a range (below Iron Mine). They now taper from a half-width of 74 to
+  58 px, with smooth jitter on each side and a rounded far end.
+- **Act 1 north-seam override** (`act1_seam_override.py`). It writes
+  `$ACTS_OUT/overrides/act1-north-seam/`: `base-k.png` and `front-k.png` tiles, 512 px wide and aligned
+  to Act 1's chunk columns, plus `override.json`. The art is two layered ridges:
+  - The back ridge uses Act 5's own kit, with tops at about y 215.6. It covers Act 5's straight bottom
+    edge and the water strip in build 91 rows 218–219.
+  - The front ridge uses Act 1's own untinted cliff kit, with tops at about 218.5. It is cut along dark
+    crevices at about 222–223.3, onto Act 1's existing cliff faces.
+  - Painting is limited to Act 1 ROWS `4` and `2` cells, or Act 5 mountain cells, so walkable cells
+    are never covered. Collision is unchanged.
+  - The columns under Act 1's north-overhang spires keep Act 1's own pixels.
+- **Shipping the override.** Copy the folder to `public/acts-hifi/overrides/act1-north-seam/`.
+  `build_acts_hifi_manifest.py` then lists it under `overrides`, and `acts-runtime.js` `overrides()`
+  draws `base` at 1.26 (over Act 1's base, water, crest and foam) and `front` at 10.51 (over Act 1's
+  front 10.5). No build 91 file changes, and removing the folder restores build 91.
+- Crops are in `acts-preview/overworld/fix5/`: `seam-act1-act5-{west,mid,east}` (runtime view with Act 1
+  layers in dq-tiles depth order) and `floor-*`.

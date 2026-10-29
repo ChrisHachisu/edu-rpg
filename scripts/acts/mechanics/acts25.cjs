@@ -38,19 +38,19 @@ const TESTS = {
       const [kx, ky] = keys[0];
       const kn = await S(APPROACH.replace('a.v)', 'a.v||x!==a.kx||y!==a.ky)'), { v: 4, kx, ky });
       // door first, without the key
-      await L.teleport(page, doors[0].fx, doors[0].fy);
+      await L.teleportIdle(page, doors[0].fx, doors[0].fy);
       const noKey = await L.step(page, doors[0].dir);
       const blocked = noKey.after[0] === noKey.before[0] && noKey.after[1] === noKey.before[1];
       const msg1 = await S('return w.__msgs.slice(-1)[0]');
       check(`${id}-f${f}: locked door (15) blocks without the key`, blocked, `msg "${msg1}"`);
       await L.clearMsg(page);
-      await L.teleport(page, kn[0].fx, kn[0].fy);
+      await L.teleportIdle(page, kn[0].fx, kn[0].fy);
       await L.step(page, kn[0].dir);
       await page.waitForTimeout(900);
       const items = await inv();
       check(`${id}-f${f}: key chest at (${kx},${ky}) gives dungeonKey_${id}`, items.includes(`dungeonKey_${id}`), JSON.stringify(items));
       await L.clearMsg(page);
-      await L.teleport(page, doors[0].fx, doors[0].fy);
+      await L.teleportIdle(page, doors[0].fx, doors[0].fy);
       const st = await L.step(page, doors[0].dir);
       const after = await tile(doors[0].x, doors[0].y);
       check(`${id}-f${f}: key opens the locked door`, after === 0 && !(await inv()).includes(`dungeonKey_${id}`),
@@ -68,7 +68,7 @@ const TESTS = {
       if (!w19.length) continue;
       res.notes[`stormNest-f${f}`] = { wind19: w19.length, keys, overlays: await S('return (w._windTileOverlays||[]).length') };
       await shot(`stormNest-f${f}-wind`);
-      await L.teleport(page, w19[0].fx, w19[0].fy);
+      await L.teleportIdle(page, w19[0].fx, w19[0].fy);
       const s1 = await L.step(page, w19[0].dir);
       const msg = await S('return w.__msgs.slice(-1)[0]');
       check(`stormNest-f${f}: wind gust (19) refuses entry without the stone`, (await tile(w19[0].x, w19[0].y)) === 19 && !(s1.after[0] === w19[0].x && s1.after[1] === w19[0].y),
@@ -76,11 +76,11 @@ const TESTS = {
       await L.clearMsg(page);
       if (keys.length) {
         const kn = await S(APPROACH.replace('a.v)', 'a.v||x!==a.kx||y!==a.ky)'), { v: 4, kx: keys[0][0], ky: keys[0][1] });
-        await L.teleport(page, kn[0].fx, kn[0].fy); await L.step(page, kn[0].dir); await page.waitForTimeout(900);
+        await L.teleportIdle(page, kn[0].fx, kn[0].fy); await L.step(page, kn[0].dir); await page.waitForTimeout(900);
         const items = await inv();
         check(`stormNest-f${f}: key chest gives windbreakerStone_stormNest`, items.includes('windbreakerStone_stormNest'), JSON.stringify(items));
         await L.clearMsg(page);
-        await L.teleport(page, w19[0].fx, w19[0].fy);
+        await L.teleportIdle(page, w19[0].fx, w19[0].fy);
         await L.step(page, w19[0].dir);
         check(`stormNest-f${f}: the stone calms the gust (19 -> 0)`, (await tile(w19[0].x, w19[0].y)) === 0, `tile ${await tile(w19[0].x, w19[0].y)}`);
       } else check(`stormNest-f${f}: has a key chest for the stone`, false, 'no keyChestPositions');
@@ -94,13 +94,13 @@ const TESTS = {
     await shot('hauntedForest-f2');
     const wrong = st.exits.find(e => e[0] !== st.cy && e[1] === 0);
     if (wrong) {
-      await L.teleport(page, st.W - 1, wrong[0]);
+      await L.teleportIdle(page, st.W - 1, wrong[0]);
       await L.hold(page, 'right', 300); await page.waitForTimeout(2500);
       const r = await S('return {f:w.currentFloor, hero:[w.heroTileX,w.heroTileY], msgs:w.__msgs.slice(-2)}');
       check('hauntedForest-f2: a wrong east exit loops you back (floor unchanged, hero reset)', r.f === 2 && r.hero[0] === 1, JSON.stringify(r));
       await L.clearMsg(page);
     } else check('hauntedForest-f2: has wrong exits', false, JSON.stringify(st.exits));
-    await L.teleport(page, st.W - 1, st.cy);
+    await L.teleportIdle(page, st.W - 1, st.cy);
     await L.hold(page, 'right', 300); await page.waitForTimeout(3000);
     const r2 = await S('return {f:w.currentFloor, hero:[w.heroTileX,w.heroTileY], msgs:w.__msgs.slice(-2)}');
     check(`hauntedForest-f2: the correct exit (y=${st.cy}, tile ${st.exits.find(e => e[0] === st.cy)?.[1]}) leads to floor 3`, r2.f === 3, JSON.stringify(r2));
@@ -115,7 +115,7 @@ const TESTS = {
             if(md[y+dy][x+dx]===25 && md[y+2*dy]?.[x+2*dx]===25 && md[y+3*dy]?.[x+3*dx]===25) return {x,y,d};}
         return null`);
       if (!c) { check(`${id}-f1: has an ice run`, false, ''); continue; }
-      await L.teleport(page, c.x, c.y);
+      await L.teleportIdle(page, c.x, c.y);
       const s = await L.step(page, c.d, { after: 1500 });
       const dist = Math.abs(s.after[0] - c.x) + Math.abs(s.after[1] - c.y);
       const stopTile = await tile(s.after[0], s.after[1]);
@@ -133,7 +133,7 @@ const TESTS = {
     if (st.patrols.length) {
       const wp = st.patrols[0];
       // wait for the dark phase, then stand on the patrol's route end and let it walk into us
-      await L.teleport(page, wp[wp.length - 1][0], wp[wp.length - 1][1]);
+      await L.teleportIdle(page, wp[wp.length - 1][0], wp[wp.length - 1][1]);
       let caught = false;
       for (let i = 0; i < 40 && !caught; i++) { await page.waitForTimeout(400); caught = (await S('return w.__battles.length')) > 0; }
       check('shadowCave-f2: a shadow patrol that reaches the hero in the dark starts a battle', caught, `patrols ${st.patrols.length}, route ${JSON.stringify(wp)}, battles ${JSON.stringify(await S('return w.__battles'))}`);
@@ -151,7 +151,7 @@ const TESTS = {
       let pulled = 0, tries = 0;
       for (const r of ring.slice(0, 12)) {
         for (let k = 0; k < 3; k++) {
-          await L.teleport(page, r.fx, r.fy); tries++;
+          await L.teleportIdle(page, r.fx, r.fy); tries++;
           const s = await L.step(page, r.dir, { after: 700 });
           if (s.after[0] !== r.x || s.after[1] !== r.y) { pulled++; }
           await L.clearMsg(page);
@@ -160,7 +160,7 @@ const TESTS = {
       check('desertTomb-f1: sinking sand (27) sometimes pulls the hero toward the pit', pulled > 0, `${pulled} pull(s) in ${tries} steps onto 27 (30% each)`);
     } else check('desertTomb-f1: has sinking sand', false, '');
     if (pit.length) {
-      await L.teleport(page, pit[0].fx, pit[0].fy);
+      await L.teleportIdle(page, pit[0].fx, pit[0].fy);
       await L.step(page, pit[0].dir, { after: 2200 });
       const m = await S('return {msgs:w.__msgs.slice(-3), hero:[w.heroTileX,w.heroTileY], battles:w.__battles}');
       check('desertTomb-f1: stepping into the pit (26) triggers the pit fall', m.msgs.some(s => /pit/i.test(s)), JSON.stringify(m));
@@ -168,7 +168,7 @@ const TESTS = {
     if (g.active) {
       const bad = await S('const p=w.glyphPlates.find(p=>!p.safe && p.row===0); return p?[p.x,p.y]:null');
       if (bad) {
-        await L.teleport(page, bad[0], bad[1] - 1);
+        await L.teleportIdle(page, bad[0], bad[1] - 1);
         await L.step(page, 'down', { after: 2500 });
         const r = await S('return {hero:[w.heroTileX,w.heroTileY], msgs:w.__msgs.slice(-2)}');
         check('desertTomb-f1: a wrong glyph plate throws you back (sandstorm)', !(r.hero[0] === bad[0] && r.hero[1] === bad[1]), JSON.stringify(r));
@@ -182,13 +182,13 @@ const TESTS = {
     await shot('banditHideout-f3');
     if (spikes.length) {
       const hp0 = await S('return gs.player.state.hp');
-      await L.teleport(page, spikes[0].fx, spikes[0].fy); await L.step(page, spikes[0].dir);
+      await L.teleportIdle(page, spikes[0].fx, spikes[0].fy); await L.step(page, spikes[0].dir);
       const hp1 = await S('return gs.player.state.hp');
       check('banditHideout-f3: spike trap (30) damages and becomes sprung (32)', hp1 < hp0 && (await tile(spikes[0].x, spikes[0].y)) === 32, `hp ${hp0}->${hp1}, tile ${await tile(spikes[0].x, spikes[0].y)}`);
       await L.clearMsg(page);
     } else check('banditHideout-f3: has spike traps', false, '');
     if (wires.length) {
-      await L.teleport(page, wires[0].fx, wires[0].fy); await L.step(page, wires[0].dir);
+      await L.teleportIdle(page, wires[0].fx, wires[0].fy); await L.step(page, wires[0].dir);
       const p = await S('return {poison:gs.player.state.poisonedUntil>Date.now(), tile:w.mapData[a[1]][a[0]]}', [wires[0].x, wires[0].y]);
       check('banditHideout-f3: tripwire (31) poisons and is cleared', p.poison && p.tile === 0, JSON.stringify(p));
     } else check('banditHideout-f3: has tripwires', false, '');
@@ -199,11 +199,11 @@ const TESTS = {
     if (!lv.length) { check('magmaTunnels-f1: has lava', false, ''); return; }
     // wait for the crusted (passable) phase
     const waitPhase = async (want) => { for (let i = 0; i < 50; i++) { if ((await S('return !!w.lavaPhase')) === want) return true; await page.waitForTimeout(200); } return false; };
-    await L.teleport(page, lv[0].fx, lv[0].fy);
+    await L.teleportIdle(page, lv[0].fx, lv[0].fy);
     await waitPhase(false); await page.waitForTimeout(200);
     const s0 = await L.step(page, lv[0].dir, { timeout: 500 });
     check('magmaTunnels-f1: molten lava (5) blocks while lavaPhase=false', s0.after[0] === s0.before[0] && s0.after[1] === s0.before[1], JSON.stringify(s0));
-    await L.teleport(page, lv[0].fx, lv[0].fy);
+    await L.teleportIdle(page, lv[0].fx, lv[0].fy);
     await waitPhase(true); await page.waitForTimeout(100);
     const s1 = await L.step(page, lv[0].dir, { timeout: 800 });
     check('magmaTunnels-f1: crusted lava is walkable while lavaPhase=true', s1.after[0] === lv[0].x && s1.after[1] === lv[0].y, JSON.stringify(s1));
@@ -221,7 +221,7 @@ const TESTS = {
     // a floor cell inside the first room with free cells left and right
     const c = await S(`for(const b of a) for(let y=b.y;y<b.y+b.h;y++) for(let x=b.x+1;x<b.x+b.w-1;x++){const r=w.mapData[y]; if(r[x]===0&&r[x-1]===0&&r[x+1]===0) return [x,y];} return null`, rooms);
     if (!c) { check('demonCastle-f2: mirror room has a 3-wide floor run', false, JSON.stringify(rooms)); return; }
-    await L.teleport(page, c[0], c[1]);
+    await L.teleportIdle(page, c[0], c[1]);
     await S('w.updateMirrorState()');
     const s = await L.step(page, 'right');
     const act = await S('return w.mirrorActive');
@@ -233,7 +233,7 @@ const TESTS = {
     const st = await S('return {en:w.windTowerEnabled, dir:w.windTowerDir}');
     const cells = await S(`const md=w.mapData,d=w.windTowerDir,o=[]; for(let y=1;y<md.length-1;y++) for(let x=1;x<md[0].length-1;x++) if(md[y][x]===25){const n=md[y+d.dy]?.[x+d.dx]; if(n===25||n===0) o.push([x,y]);} return o.slice(0,5)`);
     if (!cells.length) { check('stormreachSpire-f1: has wind corridor tiles', false, JSON.stringify(st)); return; }
-    await L.teleport(page, cells[0][0], cells[0][1]);
+    await L.teleportIdle(page, cells[0][0], cells[0][1]);
     let moved = null;
     for (let i = 0; i < 40; i++) { await page.waitForTimeout(250); const h = await S('return [w.heroTileX,w.heroTileY,w.windTowerPhase]'); if (h[0] !== cells[0][0] || h[1] !== cells[0][1]) { moved = h; break; } }
     check('stormreachSpire-f1: a wind gust pushes the hero along windCorridorDir', !!moved, `dir ${JSON.stringify(st.dir)} from ${JSON.stringify(cells[0])} -> ${JSON.stringify(moved)}`);
@@ -244,7 +244,7 @@ const TESTS = {
     const st = await S('return {en:w.mazeHunterEnabled, W:w.mapData[0].length}');
     // walk around until 5 steps are counted
     const free = await S(`const md=w.mapData,o=[]; for(let y=1;y<md.length-1;y++) for(let x=1;x<md[0].length-2;x++) if(md[y][x]===0&&md[y][x+1]===0) o.push([x,y]); return o[Math.floor(o.length/2)]`);
-    await L.teleport(page, free[0], free[1]);
+    await L.teleportIdle(page, free[0], free[1]);
     for (let i = 0; i < 6; i++) await L.step(page, i % 2 ? 'left' : 'right', { after: 200 });
     await page.waitForTimeout(1500);
     const r = await S('return {steps:w.mazeHunterStepCount, active:w.mazeHunterActive, boss:[w.mazeHunterBossTileX,w.mazeHunterBossTileY], sprite:!!w.mazeHunterBossSprite}');
@@ -254,7 +254,7 @@ const TESTS = {
     const gc = await S('return w.goldenChestPos?[w.goldenChestPos.x,w.goldenChestPos.y,w.mapData[w.goldenChestPos.y][w.goldenChestPos.x]]:null');
     if (gc) {
       const kn = await S(APPROACH.replace('a.v)', 'a.v||x!==a.kx||y!==a.ky)'), { v: 4, kx: gc[0], ky: gc[1] });
-      await L.teleport(page, kn[0].fx, kn[0].fy); await L.step(page, kn[0].dir); await page.waitForTimeout(800);
+      await L.teleportIdle(page, kn[0].fx, kn[0].fy); await L.step(page, kn[0].dir); await page.waitForTimeout(800);
       check('sunkenTempleDungeon-f6: the golden chest gives the Holy Amulet', (await inv()).includes('holyAmulet'), JSON.stringify(await inv()));
     } else check('sunkenTempleDungeon-f6: golden chest placed', false, '');
   },
@@ -265,7 +265,7 @@ const TESTS = {
     if (!pp.pairs.length) { check('twilightDungeon-f3: portal pairs', false, JSON.stringify(pp)); return; }
     const [a, b] = pp.pairs[0];
     const nb = await S(`for(const [dx,dy,d] of [[0,1,'up'],[0,-1,'down'],[1,0,'left'],[-1,0,'right']]){const v=w.mapData[a[1]+dy]?.[a[0]+dx]; if(v===0) return [a[0]+dx,a[1]+dy,d];} return null`, a);
-    await L.teleport(page, nb[0], nb[1]);
+    await L.teleportIdle(page, nb[0], nb[1]);
     await L.step(page, nb[2], { after: 1500 });
     const h = await S('return [w.heroTileX,w.heroTileY]');
     check('twilightDungeon-f3: a shadow portal (29) teleports to its pair', h[0] === b[0] && h[1] === b[1], `entered (${a[0]},${a[1]}) -> ${JSON.stringify(h)}, pair (${b[0]},${b[1]})`);
@@ -280,7 +280,7 @@ const TESTS = {
       const h17 = await approach(17);
       const mim = await S('return [...w.mimicChestPositions].map(k=>k.split(",").map(Number)).filter(([x,y])=>w.mapData[y][x]===4)');
       if (!didHidden && h17.length) {
-        await L.teleport(page, h17[0].fx, h17[0].fy); await L.step(page, h17[0].dir);
+        await L.teleportIdle(page, h17[0].fx, h17[0].fy); await L.step(page, h17[0].dir);
         const r = await S('return {flag:!!gs.player.state.storyFlags[`hidden.${w.currentMapId}.f${w.currentFloor}.${a[0]}.${a[1]}`], hero:[w.heroTileX,w.heroTileY], msgs:w.__msgs.slice(-1)}', [h17[0].x, h17[0].y]);
         check(`${id}-f${f}: walking into a hidden wall (17) reveals the hidden room`, r.flag, JSON.stringify(r));
         await shot(`${id}-f${f}-hidden`);
@@ -289,7 +289,7 @@ const TESTS = {
       if (!didMimic && mim.length) {
         const kn = await S(APPROACH.replace('a.v)', 'a.v||x!==a.kx||y!==a.ky)'), { v: 4, kx: mim[0][0], ky: mim[0][1], from: [0, 2, 17] });
         if (kn.length) {
-          await L.teleport(page, kn[0].fx, kn[0].fy); await L.step(page, kn[0].dir); await page.waitForTimeout(1200);
+          await L.teleportIdle(page, kn[0].fx, kn[0].fy); await L.step(page, kn[0].dir); await page.waitForTimeout(1200);
           const b = await S('return {battles:w.__battles, msgs:w.__msgs.slice(-1)}');
           check(`${id}-f${f}: opening a mimic chest starts the mimic battle`, b.battles.length > 0, JSON.stringify(b));
           didMimic = true;

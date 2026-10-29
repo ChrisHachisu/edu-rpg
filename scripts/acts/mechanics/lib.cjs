@@ -84,6 +84,7 @@ async function enter(page, mapId, floor, opts = {}) {
   });
   await page.waitForFunction(() => window.__PHASER_GAME__.scene.isActive('WorldMapScene'), undefined, { timeout: 120_000 });
   await page.waitForTimeout(opts.settle ?? 3000);
+  await idle(page);
   // No random battles while probing; mechanic-triggered battles use startBattle directly and are
   // recorded by wrapping it.
   await page.evaluate(() => {
@@ -114,15 +115,37 @@ async function teleport(page, x, y) {
     w.heroTileX=a[0]; w.heroTileY=a[1]; w.hero.x=a[0]*48+24; w.hero.y=a[1]*48+24;
     w.updatePosition(); w.updateCamera(); return [w.heroTileX,w.heroTileY];`, [x, y]);
 }
+async function teleportIdle(page, x, y) { const r = await teleport(page, x, y); await page.waitForTimeout(200); await idle(page); return r; }
 
+// Engine-generated 100x100 floors make dq-tiles redraw a whole camera window procedurally, which
+// blocks the main thread for seconds under swiftshader (no frames, no tweens, no input). Wait until
+// the game loop is ticking again before driving input, or steps are silently dropped.
+async function idle(page, maxMs = 90_000) {
+  const t0 = Date.now();
+  while (Date.now() - t0 < maxMs) {
+    const f = await page.evaluate(() => new Promise(r => { const g = window.__PHASER_GAME__, f0 = g.loop.frame;
+      setTimeout(() => r(g.loop.frame - f0), 500); }));
+    if (f >= 3) return Date.now() - t0;
+  }
+  return -1;
+}
 async function clearMsg(page) {
   await scene(page, `w.showingMessage=false; try{w.hideMessage()}catch(e){} w.dialogQueue=[];`);
 }
 
 const KEY = { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'ArrowRight' };
-async function hold(page, dir, ms) {
+// Hold a key for at least `ms` of wall time AND at least `frames` game-loop frames, so a
+// main-thread stall cannot swallow both the keydown and the keyup inside one frame.
+async function hold(page, dir, ms, frames = 6) {
+  const f0 = await page.evaluate(() => window.__PHASER_GAME__.loop.frame);
   await page.keyboard.down(KEY[dir]);
+  const t0 = Date.now();
   await page.waitForTimeout(ms);
+  while (Date.now() - t0 < 60_000) {
+    const f = await page.evaluate(() => window.__PHASER_GAME__.loop.frame);
+    if (f - f0 >= frames) break;
+    await page.waitForTimeout(100);
+  }
   await page.keyboard.up(KEY[dir]);
 }
 // One engine step on an engine-stepped floor: hold until the tile changes or timeout.
@@ -131,13 +154,14 @@ async function step(page, dir, opts = {}) {
   await page.keyboard.down(KEY[dir]);
   const t0 = Date.now();
   let now = before;
-  while (Date.now() - t0 < (opts.timeout ?? 1500)) {
+  while (Date.now() - t0 < (opts.timeout ?? 4000)) {
     await page.waitForTimeout(30);
     now = await scene(page, 'return [w.heroTileX,w.heroTileY]');
     if (now[0] !== before[0] || now[1] !== before[1]) break;
   }
   await page.keyboard.up(KEY[dir]);
   await page.waitForTimeout(opts.after ?? 450);
+  await idle(page);
   return { before, after: await scene(page, 'return [w.heroTileX,w.heroTileY]') };
 }
 
@@ -151,4 +175,4 @@ function findTiles(md, v) {
   return out;
 }
 
-module.exports = { shot, URL_, save, launch, fresh, newPage, enter, scene, teleport, clearMsg, hold, step, findTiles, KEY };
+module.exports = { idle, teleportIdle, shot, URL_, save, launch, fresh, newPage, enter, scene, teleport, clearMsg, hold, step, findTiles, KEY };

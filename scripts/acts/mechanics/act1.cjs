@@ -19,7 +19,7 @@ async function bumpOpen(page, id, f, cx, cy) {
   for (const [dir, sx, sy] of sides) {
     const free = await L.scene(page, `const r=w.mapData[a[1]]; return !!r && r[a[0]]===0;`, [sx, sy]);
     if (!free) continue;
-    await L.teleport(page, sx, sy);
+    await L.teleportIdle(page, sx, sy);
     await page.waitForTimeout(150);
     await L.hold(page, dir, 1100);
     await page.waitForTimeout(250);
@@ -85,7 +85,7 @@ async function bumpOpen(page, id, f, cx, cy) {
       const [tx, ty] = st.torches[0];
       const nb = await L.scene(page, `for(const [dx,dy,d] of [[0,1,'up'],[0,-1,'down'],[1,0,'left'],[-1,0,'right']]){const r=w.mapData[a[1]+dy]; if(r&&r[a[0]+dx]===0) return [a[0]+dx,a[1]+dy,d];} return null`, [tx, ty]);
       if (nb) {
-        await L.teleport(page, nb[0], nb[1]);
+        await L.teleportIdle(page, nb[0], nb[1]);
         const before = await L.scene(page, 'return [w.fogTorchCount,w.fogTorchBonus,w.fogRadius]');
         await L.step(page, nb[2], { timeout: 6000, after: 2000 });
         const after = await L.scene(page, 'return [w.fogTorchCount,w.fogTorchBonus,w.fogRadius,w.mapData[a[1]][a[0]], w.__msgs.slice(-2)]', [tx, ty]);
@@ -107,10 +107,10 @@ async function bumpOpen(page, id, f, cx, cy) {
       const p = st.pillars[idx];
       const nb = await L.scene(page, `for(const [dx,dy,d] of [[0,1,'up'],[0,-1,'down'],[1,0,'left'],[-1,0,'right']]){const r=w.mapData[a[1]+dy]; const v=r&&r[a[0]+dx]; if(v===0||v===2||v===8) return [a[0]+dx,a[1]+dy,d];} return null`, [p[0], p[1]]);
       if (!nb) return 'no-access';
-      await L.teleport(page, nb[0], nb[1]);
+      await L.teleportIdle(page, nb[0], nb[1]);
       await L.clearMsg(page);
-      await L.hold(page, nb[2], 220);
-      await page.waitForTimeout(900);
+      await L.hold(page, nb[2], 500);
+      await page.waitForTimeout(900); await L.idle(page);
       return L.scene(page, 'return {act:[...w.crystalActivated], msg:w.__msgs.slice(-1)[0]}');
     };
     if (st.pillars.length >= 2) {

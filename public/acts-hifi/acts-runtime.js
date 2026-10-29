@@ -295,7 +295,48 @@
     e.texs.forEach(function (k) { try { if (e.scene.textures.exists(k)) e.scene.textures.remove(k); } catch (x) {} });
     delete res[id]; var i = lru.indexOf(id); if (i >= 0) lru.splice(i, 1); stats.destroyed++;
   }
-  function dropAll() { Object.keys(res).forEach(drop); hideLandmarks(); }
+  function dropAll() { Object.keys(res).forEach(drop); hideLandmarks(); hideOverrides(); }
+  // ---- art overrides (manifest `overrides`, fix5): release-side repaints that sit over Act 1's build 91
+  // layers without touching its files, e.g. act1-north-seam (the island edge where Act 1 meets Act 5).
+  // Each tile: `base` at depths.base (1.26: over Act 1 base/water/crest/foam, under its forest 9.5) and
+  // `front` at depths.front (10.51: over Act 1's front 10.5). Collision is unchanged by these overrides.
+  var ovImgs = {};
+  function hideOverrides() { Object.keys(ovImgs).forEach(function (k) { try { ovImgs[k].destroy(); } catch (x) {} delete ovImgs[k]; }); }
+  function overrides(s) {
+    var sp = space(), cam = s.cameras && s.cameras.main, v = cam && cam.worldView;
+    if (!M || !M.overrides || !sp || !v || !(v.width > 0)) return;
+    var pm = ((M.streaming && M.streaming.preloadCells) || 0) + 2, want = {};
+    var cx0 = sp.cellAt(v.x) - pm, cy0 = sp.cellAt(v.y) - pm, cx1 = sp.cellAt(v.x + v.width) + pm, cy1 = sp.cellAt(v.y + v.height) + pm;
+    M.overrides.forEach(function (o) {
+      var oy = o.origin[1];
+      if (oy > cy1 || oy + o.rows < cy0) return;
+      (o.tiles || []).forEach(function (t) {
+        if (t.x > cx1 || t.x + t.cols < cx0) return;
+        ['base', 'front'].forEach(function (layer) {
+          if (!t[layer]) return;
+          var k = 'acts_ov_' + o.id + '_' + layer + '_' + t.x; want[k] = 1;
+          if (ovImgs[k]) return;
+          ovImgs[k] = { destroy: function () {} };          // loading
+          var im = new Image();
+          im.onload = function () {
+            if (!ovImgs[k] || !want[k]) return;
+            try {
+              if (!s.textures.exists(k)) s.textures.addImage(k, im);
+              var img = s.add.image(t.x * sp.pitch, oy * sp.pitch, k).setOrigin(0, 0).setDepth(o.depths[layer]);
+              img.setScale(sp.pitch / (o.pixelsPerCell || 32)); ovImgs[k] = img;
+            } catch (x) {}
+          };
+          im.onerror = function () { fail++; };
+          im.src = o.path + t[layer];
+        });
+      });
+    });
+    Object.keys(ovImgs).forEach(function (k) {
+      if (want[k]) return;
+      try { ovImgs[k].destroy(); if (s.textures.exists(k)) s.textures.remove(k); } catch (x) {}
+      delete ovImgs[k];
+    });
+  }
   function stream(s) {
     var sp = space(); if (!sp) return;
     var cap = (M.streaming && M.streaming.maxResident) || 12, pitch = sp.pitch, cc = M.chunkCells, want = {};
@@ -412,6 +453,7 @@
       mine = { frame: s.game.loop.frame, set: new Set() };
       Object.keys(res).forEach(function (id) { res[id].objs.forEach(function (o) { mine.set.add(o); }); });
       Object.keys(lmImgs).forEach(function (k) { mine.set.add(lmImgs[k]); });
+      Object.keys(ovImgs).forEach(function (k) { mine.set.add(ovImgs[k]); });
     }
     var list = s.children.list;
     for (var i = 0; i < list.length; i++) {
@@ -438,7 +480,7 @@
     window.__QOK_ACTS_ART_CELL__ = realArtCell;       // dq-tiles rebuildOverlay: no props under act art
     wrap(s);
     if (s.currentMapId === 'overworld' && s.sys && s.sys.isActive()) {
-      plate(s); stream(s); landmarks(s);
+      plate(s); stream(s); landmarks(s); overrides(s);
       if (!s.game.__actsPrerender) { s.game.__actsPrerender = true; s.game.events.on('prerender', suppressLegacy); s.game.events.on('prerender', animateCrest); }
     } else if (lru.length) dropAll();                  // town, dungeon, battle: hold nothing
   }

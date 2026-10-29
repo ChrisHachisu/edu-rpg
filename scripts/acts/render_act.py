@@ -529,7 +529,21 @@ def render(act, out_dir, chunks=True):
         sw = water[min(H - 1, py + 3 * P):min(H, py + 4 * P), max(0, px - 16):px + 16]
         sg = -1 if (sw.size and sw.mean() > 0.5) else 1
         y0_, y1_ = (py, py + 8 * P) if sg > 0 else (py - 8 * P, py)
-        lane[max(0, y0_):max(0, y1_), max(0, px - 74):max(0, px + 74)] = True
+        # fix5: organic lane (was a hard 148 x 256 px rectangle that printed a square corner where it ran
+        # out into a range, e.g. below Iron Mine): half-width tapers 74 -> 58 px with smooth per-row jitter
+        # (independent per side), and the far end is rounded
+        rng_ = np.random.default_rng(x * 7919 + y * 104729)
+        kn = rng_.normal(0, 1, (2, 12)); dd = np.arange(8 * P)
+        jit = [np.interp(dd, np.linspace(0, 8 * P, 12), ndi.gaussian_filter1d(kn[i], 1.2)) * 7 for i in (0, 1)]
+        hw = 74 - 16 * dd / (8 * P)
+        for k in range(8 * P):
+            ry = py + k if sg > 0 else py - k
+            if ry < 0 or ry >= H: continue
+            r = 8 * P - k   # distance to the far end
+            sh = np.sqrt(max(0.0, 1 - (max(0, 50 - r) / 50.0) ** 2))   # rounded cap over the last 50 px
+            l_, r_ = int(px - hw[k] * sh + jit[0][k]), int(px + hw[k] * sh + jit[1][k])
+            l_, r_ = max(0, l_), min(W, r_)
+            if r_ > l_: lane[ry, l_:r_] = True
     # fix2: connecting dungeons sit in their range -- the stamped flank (acts_common.flank_mask) that no
     # panel covers is rock floor (or blocked forest floor), so rock/trees touch the mouth on both sides
     flankM = np.zeros((H, W), bool); flankF = np.zeros((H, W), bool); mouthzone = np.zeros((H, W), bool)
@@ -559,8 +573,8 @@ def render(act, out_dir, chunks=True):
         fy, fx = np.nonzero(floorm)
         fc = np.zeros((len(fy), 3), np.float32)
         for b, w in bw.items():   # fix3: tiled panel texture of the local kit (world-phased), not a flat ramp
-            t = K.rock_floor_tile(b); ts = t.shape[0]
-            fc += t[(fy + gy0) % ts, (fx + gx0) % ts] * w[fy, fx][:, None]
+            if w[fy, fx].max() <= 1e-3: continue
+            fc += K.rock_floor_sample(b, (fy + gy0).astype(np.int64), (fx + gx0).astype(np.int64)) * w[fy, fx][:, None]
         base_u8[fy, fx] = np.clip(fc, 0, 255).astype(np.uint8)
     if 'dark' in bw:
         # dead forest floor: the ground under leafless clumps is shaded so the wood reads as a mass
