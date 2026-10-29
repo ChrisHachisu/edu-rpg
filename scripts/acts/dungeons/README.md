@@ -27,6 +27,25 @@
 > materials. They return through the Codex material sheets (dressed masonry, tree walls), the
 > `skyWindow` decals, and the maze autotile sheets.
 
+## Pilot 4: Storm Nest windows as masonry
+
+The owner found the pasted window tiles unnatural. `pilot4.py` keeps the pilot3 layouts and puts
+7–8 EMBRASURES in the outer wall instead:
+- Each embrasure is a slightly splayed radial slot cut through the wall's thickness.
+  `pilot3_render.embrasure_field` cuts it into the floor field for the picture only, so the
+  Act 1 renderer gives its cheeks real face, outline and AO. The walk mask is built without it,
+  so a window is not walkable.
+- `pilot3_preview.py` adds:
+  - sky in each slot's mouth, a lit sill and a daylight pool on the floor in front;
+  - `outer_wall()`, which lifts the renderer's deep-rock darkening off the outer ring so it reads
+    as a lit 3-cell wall top, with a coping course along the outer lip.
+
+```
+python3 pilot4.py
+PILOT_DIR=pilot4 python3 pilot3_render.py stormNest-f1 --fast    # f2 in a second process
+PILOT_DIR=pilot4 python3 pilot3_preview.py stormNest-f1,stormNest-f2
+```
+
 ## Pilot 3: real Codex materials, a built Storm Nest (current direction)
 
 Iron Mine F1 and Haunted Forest F1 keep their pilot2 layouts; Storm Nest is redrawn as a building.

@@ -9,7 +9,7 @@ For each town it reports, from startCell:
   strict   -- every NPC (talk range), the save point, the shop counter and the exit line are reachable
               with the stencil fully inside the walkable polygons;
   comfort  -- the same with one extra cell of clearance (stencil + 1 cell), the bar for gates and
-              main lanes. The southward walk from startCell to the exit line must pass this one.
+              main lanes, the save point and the doors listed in town.json "doors" (healer, shop). The southward walk from startCell to the exit line must pass this one.
 Writes $SCRATCH/feet/<id>-feet.png (cyan = stencil-free, white = free with one cell to spare).
 
   python3 check_feet.py [ids]
@@ -88,8 +88,12 @@ def check(tid, pts):
         if town.get("shopCounter"):
             sc = town["shopCounter"]
             targets.append(("shopCounter", sc.get("cell", sc) if isinstance(sc, dict) else sc, TALK))
+        # round 3: the healer's door and the shop's door (town.json "doors": [{id, cell}], the paving
+        # cell just below each door) must be reached, and with a cell to spare
+        for dr in town.get("doors", []):
+            targets.append(("door:" + dr["id"], dr["cell"], 1.0))
         for nm, c, r in targets:
-            if pad and nm not in ("savePoint",):      # comfort is the bar for lanes and gate, not
+            if pad and nm not in ("savePoint",) and not nm.startswith("door:"):      # comfort is the bar for lanes and gate, not
                 continue                              # for every doorstep an NPC stands on
             if not near(c, r):
                 fails.append(nm)

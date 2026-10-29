@@ -141,3 +141,10 @@ Codex image-generation package; generation itself runs only on the Mac.
 - No foreground or roof layer: Act 1 retired it, and the briefs forbid overhangs.
 - Lanes approximate the painted paths. NPC sheet paths are placeholders.
 - Round 3c (open ground): walkable = floor-like painted ground (kNN on 10 px block texture features, trained on the authored lanes vs footprints and the plate rim, plus a calm-texture test inside the lanes' hull) minus hard bands (walls, towers, water, lava, voids, pits), minus building cores (rect eroded 2 cells), minus non-floor blobs, all with a 1-cell margin; plus the authored lanes; south of the gate row only the street; one component from the gate. Actors more than 3 cells off their maps.ts spot snap to the nearest walkable cell to that spot unless it lies in a footprint.
+
+### Round 3 (towns-r3): authored plans before generation
+- `r3_plans.py <dest>`: the authored plan for each town, in cells, keeping each town's r2 character. Walkable ground is cobbled paving plus open yards (snow, sand, ash, grass) with low decoration only; healer, shop and NPC spots are placed per town. Each building blocks its full silhouette and has a door on its south face. Trees and fences stay in the border band.
+  - Checks, using the hero's feet stencil from the gate: every NPC spot, the save point (+1 cell clearance), every door landing, and the healer and shop landings (+1 cell). Walkable ground may touch the frame only at the gate, and must form a single component.
+  - Writes `anchors/<id>-layout-guide-r3.png`, `plans/<id>-plan.json`, `review/` and `npc-spots-r3.json` (the maps.ts spots, including the moved ones).
+- `r3_package.py <dest>`: the briefs (the r2 template plus the NO TALL OBJECTS rules, scrubbed identity and lighting text), `run.sh` (3 tries per town) and `jobs.json`.
+- `check_feet.py` now also checks the town.json `"doors"` (healer, shop) in both strict and comfort modes; `pilot2.py` writes them.

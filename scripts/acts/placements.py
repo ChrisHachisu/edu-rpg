@@ -42,7 +42,7 @@ def place_rocks(cls, act, lms):
              ('narrow-notch-buttress', 'main')]
     M = (cls == A.MOUNT) & (act >= 2)
     # Act 5's art also covers the top 4 rows of Act 1's range (y 218-221, x 80-160) so the seam strip disappears
-    M[218:222, 80:161] |= (cls[218:222, 80:161] == A.MOUNT)
+    # fix4: no Acts 2-5 object reaches into Act 1's plate (x 16-163, y 218-399)
     wet = (cls == A.SEA) | (cls == A.WATER)
     clear = np.zeros_like(M)
     for l in lms:
@@ -58,19 +58,10 @@ def place_rocks(cls, act, lms):
     thin = M & ~ndi.binary_dilation(core, iterations=3)
     opn = (cls == A.OPEN) & (act >= 2)
     widen = (ndi.binary_dilation(thin, iterations=4) | ndi.binary_dilation(M, iterations=2)) & ~M & opn
-    # Act 1's range top (rows 218-221, under Act 5's art) is only 4 rows deep: widen it up to 9 rows into
-    # Act 5 ground so a whole panel stands there
-    top = np.zeros_like(M); colm = M[218:222, :161].any(0)
-    top[209:218, :161] = colm[None, :] & opn[209:218, :161]
-    widen |= top
     allowed = (M | wet | widen) & ~clear
     stand = (M | widen) & ~clear
     # keep whole objects inside the art of their own act (never into Act 1's shipped raster)
-    allowed[222:, :161] = False; allowed[218:222, :80] = False
-    # Act 2's divider strip (x 161-170) is narrower than a panel: panels may reach 9 cells into Act 1's
-    # mountain columns; Act 1's shipped raster is pasted back over x < 161, so they end at the act seam
-    allowed[222:, 152:161] |= (cls[222:, 152:161] == A.MOUNT)
-    stand[222:, 152:161] |= (cls[222:, 152:161] == A.MOUNT)
+    allowed[218:, :164] = False
     uncovered = M & ~clear
     placed = []; temps = {}
     # fix3: a backing panel under every connecting mouth (Act 1's Crystal Cave sits against painted cliff):
@@ -134,7 +125,7 @@ def place_trees(cls, act, lms, seed=20261028):
         while x < A.GW:
             cx, cy = x, y + (K._hash01(int(x * 100), ri, seed + 1) - 0.5) * 0.3
             ix, iy = int(cx), int(cy)
-            ok_seam = not ((cy >= 216 and cx < 163.3) or (cx < 164 and 215.8 < cy < 218))
+            ok_seam = not (cx - 2.2 < 164 and cy + 2.2 >= 218)   # fix4: crowns stay out of Act 1's plate
             if 0 <= iy < A.GH and F[iy, ix] and ok_seam:
                 if all((cx - l['cell'][0] - .5) ** 2 + (cy - l['cell'][1] - .5) ** 2 > LANDMARK_CLEAR ** 2 and not in_approach(cls, l, cx, cy) for l in lms):
                     h = K._hash01(ix * 7 + ri, iy * 13, seed + 2)

@@ -67,8 +67,7 @@ def biome_cells(cls, act):
     wob = 3.0 * np.sin(xx / 7.0) + 2.0 * np.cos(yy / 5.0 + xx / 11.0)
     lab[(dist < 8 + wob) & (act == 2)] = K.BIOMES.index('haunt')
     # snowline fades toward Act 1: Act 2's first 6 columns of the divider range keep Act 1's rock colour
-    seam = np.zeros(lab.shape, bool); seam[218:, 161:167] = True
-    lab[seam & (act == 2)] = K.BIOMES.index('grass')
+    # fix4 (owner 2026-10-28): no Act 1 paint inside Acts 2-5 -- the old 'grass' seam columns are gone
     # Act 3/4 overlap (y 88-128): Act 4's rows win for terrain; the ash->sand change sits at y~110
     ov = np.zeros(lab.shape, bool); ov[110:129, 163:315] = True
     lab[ov & (act == 4)] = K.BIOMES.index('sand')
@@ -92,8 +91,13 @@ def biome_cells(cls, act):
     lab = np.where(dedge <= band, warped, lab)
     # Act 1 owns its shipped art: grass stays grass inside Act 1's bounds, and the first columns of
     # Act 2's divider range keep Act 1's rock colour so the snowline fades in east of the seam
-    lab[act == 1] = K.BIOMES.index('grass')
-    lab[218:, 161:169][act[218:, 161:169] == 2] = K.BIOMES.index('grass')
+    # fix4: Act 1's cells are never painted by Acts 2-5 (Act 1's plate covers them at runtime), so they take
+    # the nearest Acts 2-5 biome -- no grass ever blends into an act's own ground, rocks or trees
+    g = K.BIOMES.index('grass')
+    lab[act == 1] = g
+    m_ = lab == g
+    if m_.any():
+        _, (iy, ix) = ndi.distance_transform_edt(m_, return_indices=True); lab = lab[iy, ix]
     return lab
 
 def biome_weights(lab_win, gx0, gy0):
@@ -389,6 +393,7 @@ def landmark_mask(lm, water_near_south):
     return m, gate
 
 # ------------------------------------------------------------------ Act 1 shipped art (read-only)
+A1_PLATE = (16, 218, 163, 399)   # public/act1-world-map.js BOUNDS (x0, y0, x1, y1), inclusive
 A1_OVERLAP_Y1 = 221          # Act 5 output runs to this row (inclusive)
 A1_OVERLAP_X = (80, 161)     # stretch of Act 1's top rows that Act 5 repaints under Act 1's cliffs
 def act1_window(gx0, gy0, W, H):
@@ -429,7 +434,7 @@ def render(act, out_dir, chunks=True):
     t0 = time.time()
     d = A.owner(); bx0, by0, bx1, by1 = d['acts'][str(act)]['bounds']
     owner_bounds = [bx0, by0, bx1, by1]
-    if act == 5: by1 = A1_OVERLAP_Y1     # Act 5's art runs 4 rows into Act 1 to cover its top-edge strip
+    # fix4: Act 5 no longer repaints Act 1's top rows (218-221); every act stops at its own bounds
     cx0, cy0 = max(0, bx0 - MARGIN), max(0, by0 - MARGIN)
     cx1, cy1 = min(A.GW, bx1 + 1 + MARGIN), min(A.GH, by1 + 1 + MARGIN)
     Wc, Hc = cx1 - cx0, cy1 - cy0; W, H = Wc * P, Hc * P
@@ -446,7 +451,6 @@ def render(act, out_dir, chunks=True):
     bw_cell = np.stack([ndi.gaussian_filter((lab_full == i).astype(np.float32), 4.0)
                         + 0.35 * (vnoise(0, 0, A.GW, A.GH, 14, SEED + 60 + i) - 0.5)
                         for i, b in enumerate(K.BIOMES)])
-    bw_cell[K.BIOMES.index('grass')][actmap == 1] += 5   # inside Act 1 only Act 1's own kit
     # ---- ground
     ys = (np.arange(H) + gy0 - ACT1_ORIGIN[1] * P) * 3; xs = (np.arange(W) + gx0 - ACT1_ORIGIN[0] * P) * 3
     base = np.zeros((H, W, 3), np.float32)
@@ -470,7 +474,7 @@ def render(act, out_dir, chunks=True):
     near = (near[0], near[1], vnoise(0, 0, A.GW, A.GH, 10, SEED + 90), vnoise(0, 0, A.GW, A.GH, 10, SEED + 91))
     fo, rockm, treem, solidm = draw_objects((cx0, cy0, cx1, cy1), doc, bw_cell, lab_full, near)
     a1 = None
-    if act == 5:
+    if False:   # fix4: Act 1's shipped cliffs are no longer composited into Act 5's output
         # Act 1's own cliffs (forest layer rows >= 218, and its north overhang above 218) stand in front of
         # every Act 5 object: draw them on top so the seam keeps Act 1's paint exactly
         a1 = act1_window(gx0, gy0, W, H)
@@ -547,6 +551,10 @@ def render(act, out_dir, chunks=True):
     # fix3: no flat floor around connecting mouths -- panels cover the flank; the hull floor is also kept
     # out of a 7-cell radius round each connecting mouth (any gap there shows painted rock from the panels)
     floorm = hull & ~rk_ & ~water & ~keep & ~lane & ~mouthzone
+    # fix4: owner mountain cells no whole panel could cover (e.g. Act 2's 7-cell divider strip beside Act 1's
+    # plate) are textured rock floor and blocked, with a smoothed outline -- never walkable ground
+    mc = ((cls == A.MOUNT) & (actmap >= 2))[cy0:cy1, cx0:cx1]
+    floorm |= (up(mc.astype(np.float32), 0.9) > 0.5) & ~rk_ & ~water & ~keep & ~lane & ~mouthzone
     if floorm.any():
         fy, fx = np.nonzero(floorm)
         fc = np.zeros((len(fy), 3), np.float32)
@@ -618,6 +626,14 @@ def render(act, out_dir, chunks=True):
         base_u8[keep1] = a1['flat'][keep1]
         for arr in (wl, foam, fo, front): arr[keep1] = 0
         coll[keep1] = a1['coll'][keep1]; wb[keep1] = False
+    # fix4: nothing of Acts 2-5 draws over Act 1's plate (x 16-163, y 218-399; act1-world-map.js BOUNDS):
+    # Act 1's base covers act ground there at runtime, and the act's raised layers (forest/front/crest
+    # source) are emptied so no act paint sits on top of Act 1's shipped paint
+    r1 = np.zeros((H, W), bool)
+    X1_, Y1_ = (A1_PLATE[2] + 1) * P - gx0, A1_PLATE[1] * P - gy0
+    if X1_ > 0 and Y1_ < H: r1[max(0, Y1_):, max(0, A1_PLATE[0] * P - gx0):max(0, X1_)] = True
+    for arr in (wl, foam, fo, front): arr[r1] = 0
+    wb[r1] = False; water[r1] = False; lake[r1] = False
     base_c = Image.fromarray(base_u8[S_]).filter(ImageFilter.UnsharpMask(radius=0.9, percent=130, threshold=2))
     base_c = np.asarray(base_c)
     res = dict(base=base_c, water=wl[S_], foam=foam[S_], forest=fo[S_], front=front[S_],

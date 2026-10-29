@@ -28,7 +28,7 @@ import render_floors
 import render_dungeon_material_map as R
 import pilot2_render                     # noqa: F401  installs the TARGET/WATER entries for the themes
 
-P3 = os.path.join(SCRATCH, "pilot3")
+P3 = os.path.join(SCRATCH, os.environ.get("PILOT_DIR", "pilot3"))
 ART = os.path.join(P3, "art")
 
 _fbm = R.fbm
@@ -41,6 +41,28 @@ def _fbm_dry(wx, wy, scale, seed, octaves=3):
 
 
 TOWER = None                             # {"centre", "innerRadius"} while rendering a built floor
+SLOTS = None                             # embrasures cut while drawing (never in the walk mask)
+
+
+def embrasure_field(xx, yy, px, c, rin, rout, slots):
+    """Window embrasures cut through the outer wall's thickness: a radial slot, splayed (wide at
+    the room face, narrow at the outer face) and open to the sky. Added to the floor weight only
+    for the PICTURE, so the renderer gives the slot its own walls, outline, AO and face band; the
+    collision mask is built without it (a window is not a place to walk)."""
+    out = np.zeros_like(xx)
+    X = xx / px - (c + 0.5); Y = yy / px - (c + 0.5)
+    soft = 0.10 * 2.5
+    for e in slots:
+        t = np.radians(e["angle"])
+        ux, uy = np.cos(t), np.sin(t)
+        along = X * ux + Y * uy
+        across = np.abs(-X * uy + Y * ux)
+        k = np.clip((along - rin) / max(rout - rin, 1e-3), 0, 1)
+        hw = e.get("inner", 0.62) * (1 - k) + e.get("outer", 0.26) * k
+        side = np.clip((hw - across) / soft + 0.5, 0, 1)
+        ends = np.clip((along - (rin - 0.6)) / soft + 0.5, 0, 1) * np.clip((rout + 0.9 - along) / soft + 0.5, 0, 1)
+        out = np.maximum(out, side * ends)
+    return out
 
 
 def built_field(rows, scale=1, assets=None):
@@ -80,6 +102,8 @@ def built_field(rows, scale=1, assets=None):
         circ = np.clip((rin + 0.5 - r) * px / (px * 0.10 * 2.5) + 0.5, 0, 1)
         f = np.minimum(R.blur(inner_up, px * 0.09), circ)
         f = np.maximum(f, R.blur(door_up, px * 0.09))
+        if SLOTS:
+            f = np.maximum(f, embrasure_field(xx, yy, px, c, rin, TOWER["outerRadius"], SLOTS))
         del r, circ, inner_up, door_up
     else:
         f = R.blur(up, px * 0.09)
@@ -112,7 +136,7 @@ _organic = R.floor_field
 
 
 def render_one(fid):
-    global TOWER
+    global TOWER, SLOTS
     o = json.load(open(os.path.join(P3, f"{fid}.json")))
     did = o["dungeonId"]
     mdir = os.path.join(MATROOT, did)
@@ -130,6 +154,7 @@ def render_one(fid):
     R.fbm = _fbm_dry
     os.makedirs(ART, exist_ok=True)
     t0 = time.time()
+    SLOTS = None
     R.walkable_mask(o["rows"], assets).save(os.path.join(ART, f"{fid}-walk.png"), optimize=True)
     mats = R.load_materials(mdir)
     if o.get("built"):
@@ -137,7 +162,9 @@ def render_one(fid):
         # floor so the masonry masses read as the solid thing in the room
         fm = mats["floor"].astype(np.float32)
         mats["floor"] = (fm.mean((0, 1)) + 0.55 * (fm - fm.mean((0, 1)))).astype(mats["floor"].dtype)
+    SLOTS = o.get("decals", {}).get("embrasures") if o.get("built") else None
     img = R.render(o["rows"], mats, o["theme"], 1, assets, True, None, ())
+    SLOTS = None
     img.save(os.path.join(ART, f"{fid}-props.png"))
     mb = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024
     print(f"{fid} {o['width']}x{o['height']} -> {img.size} in {time.time() - t0:.0f}s, peak {mb:.0f} MB", flush=True)

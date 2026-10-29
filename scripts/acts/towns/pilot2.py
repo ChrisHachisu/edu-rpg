@@ -180,6 +180,7 @@ def build(tid):
         "cells": 65, "artPxPerCell": 30, "worldPxPerCell": 16, "startCell": list(start), "savePoint": list(save),
         "exit": {"cell": exit_cell, "targetMapId": conn["targetMap"], "toX": conn["toX"], "toY": conn["toY"], "axis": "south"},
         "shopId": data.get("shopId", tid), "shopCounter": list(counter), "npcs": npcs,
+        "doors": [{"id": k, "cell": list(v)} for k, v in T.get("doors", {}).items()],
         "_placementReport": [{"id": a, "mapsTsCell": b, "placed": list(c), "moved": round(d, 2), "spotInBuilding": e}
                              for a, b, c, d, e in report],
     }

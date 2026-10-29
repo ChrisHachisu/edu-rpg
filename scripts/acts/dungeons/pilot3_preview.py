@@ -18,10 +18,10 @@ from common import SCRATCH
 from previews import font
 from pilot2_preview import sky_layer, _run, forest
 
-P3 = os.path.join(SCRATCH, "pilot3")
+P3 = os.path.join(SCRATCH, os.environ.get("PILOT_DIR", "pilot3"))
 ART = os.path.join(P3, "art")
 SHEETS = os.path.normpath(os.path.join(SCRATCH, "..", "codex-dungeons", "out"))
-DEST = "/mnt/project-files/edu-rpg/acts-preview/dungeons/pilot3"
+DEST = "/mnt/project-files/edu-rpg/acts-preview/dungeons/" + os.environ.get("PILOT_DIR", "pilot3")
 PX = 48
 
 
@@ -41,6 +41,73 @@ def sprite(sheet, row, col):
     return out.crop(out.getbbox())
 
 
+def _smooth(e0, e1, v):
+    t = np.clip((v - e0) / (e1 - e0), 0, 1)
+    return t * t * (3 - 2 * t)
+
+
+def outer_wall(a, o, X, Y, r):
+    """The outer wall as a lit wall TOP seen from above. The Act 1 renderer darkens rock the
+    farther it lies from any floor (a cave convention: deep rock is unlit mass), which turned a
+    3-cell wall top into a dark band. Lift it back to an even lit top: the gain is measured per
+    angle and radius, so the masonry texture is kept. It starts past the face band, so the inner
+    face's shading stays. A dressed coping course runs along the outer lip."""
+    t = o["tower"]
+    rin, rout = t["innerRadius"], t["outerRadius"]
+    lum = a.mean(-1)
+    ring = (r > rin + 1.1) & (r < rout + 0.4)
+    ang = (np.degrees(np.arctan2(Y, X)) + 360) % 360
+    ai = (ang // 15).astype(int) % 24
+    ri = np.clip(((r - rin) / 0.25).astype(int), 0, 40)
+    prof = np.ones((24, 41), np.float32)
+    for i in range(24):
+        for j in range(41):
+            m = ring & (ai == i) & (ri == j)
+            if m.sum() > 40:
+                prof[i, j] = lum[m].mean()
+    from scipy.ndimage import uniform_filter
+    prof = uniform_filter(prof, size=(3, 3), mode=("wrap", "nearest"))
+    target = np.percentile(lum[ring], 80)
+    gain = np.clip(target / np.maximum(prof[ai, ri], 1.0), 1.0, 2.4)
+    w = _smooth(rin + 0.9, rin + 1.8, r) * (r < rout + 0.6)
+    a = a * (1 + (gain - 1) * w)[..., None]
+    lip = np.exp(-((r - (rout + 0.22)) / 0.10) ** 2)              # coping course: lit, then a joint
+    joint = np.exp(-((r - (rout - 0.02)) / 0.035) ** 2)
+    a = a * (1 + 0.22 * lip - 0.35 * joint)[..., None]
+    return a
+
+
+def embrasure_overlay(a, o, X, Y, H, W):
+    """Sky in each embrasure's mouth, depth shading down its throat, a lit sill where the throat
+    meets the opening, and a pool of daylight thrown onto the floor in front."""
+    t = o["tower"]
+    rin, rout = t["innerRadius"], t["outerRadius"]
+    sky = sky_layer(H, W)
+    pool = np.zeros((H, W), np.float32)
+    for e in o["decals"]["embrasures"]:
+        tr = np.radians(e["angle"])
+        ux, uy = np.cos(tr), np.sin(tr)
+        along = X * ux + Y * uy
+        across = np.abs(-X * uy + Y * ux)
+        k = np.clip((along - rin) / (rout - rin), 0, 1)
+        hw = e["inner"] * (1 - k) + e["outer"] * k
+        slot = np.clip((hw - 0.06 - across) / 0.12, 0, 1) * (along > rin - 0.6)
+        throat = slot * _smooth(rin + 0.2, rout - 0.9, along)
+        a = a * (1 - 0.42 * throat)[..., None]                       # deeper = darker
+        mouth = slot * _smooth(rout - 1.0, rout - 0.75, along)
+        a = a * (1 - mouth[..., None]) + sky * mouth[..., None]
+        sill = slot * np.exp(-((along - (rout - 1.02)) / 0.06) ** 2)
+        a = a + (sill * 70)[..., None]
+        inside = rin - along
+        spread = 0.55 + 0.32 * np.clip(inside, 0, None)
+        pool = np.maximum(pool, np.clip((spread - across) / 0.4, 0, 1) * _smooth(-0.6, 0.2, inside)
+                          * (1 - _smooth(0.5, 3.4, inside)))
+    pool = np.asarray(Image.fromarray((pool * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(9)),
+                      np.float32) / 255
+    a = a * (1 + 0.26 * pool)[..., None] + (pool * 34)[..., None] * np.array([1.0, 0.97, 0.88])
+    return a
+
+
 def tower(img, o, walk):
     a = np.asarray(img, np.float32).copy()
     H, W = a.shape[:2]
@@ -52,6 +119,10 @@ def tower(img, o, walk):
     m = np.clip((r - edge) / 6.0, 0, 1)[..., None]
     shadow = np.clip(1 - (r - edge) / 70.0, 0, 1)[..., None] * (m > 0)
     rim = np.clip(1 - np.abs(r - edge) / 5.0, 0, 1)[..., None] * (yy[..., None] < cy)  # lit parapet edge
+    if o["decals"].get("embrasures"):
+        X = xx / PX - (t["centre"] + 0.5); Y = yy / PX - (t["centre"] + 0.5)
+        a = outer_wall(a, o, X, Y, r / PX)
+        a = embrasure_overlay(a, o, X, Y, H, W)
     sky = sky_layer(H, W) * (1 - 0.35 * shadow)
     a = a * (1 - m) + sky * m
     a = a * (1 + 0.25 * rim)
@@ -258,7 +329,7 @@ def one(fid):
     for i, ln in enumerate(lines):
         ImageDraw.Draw(out).text((10, 8 + 22 * i), ln, font=f16, fill=(236, 236, 236))
     os.makedirs(DEST, exist_ok=True)
-    p = os.path.join(DEST, f"{fid}-pilot3.jpg")
+    p = os.path.join(DEST, f"{fid}-{os.path.basename(DEST)}.jpg")
     for q in (90, 85, 80, 72):
         out.save(p, quality=q, optimize=True)
         if os.path.getsize(p) < 2.9e6:
