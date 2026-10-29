@@ -422,5 +422,7 @@ def rock_floor_tile(biome):
         for y in range(0, H - sz, 8):
             for x in range(0, W - sz, 8):
                 if m[y:y + sz, x:x + sz].all():
-                    return (a[y:y + sz, x:x + sz, :3].astype(np.float32) * 0.8)
+                    t = a[y:y + sz, x:x + sz, :3].astype(np.float32) * 0.8
+                    # mirrored 2x2 tile: seamless when tiled (no grid of straight tile edges)
+                    return np.vstack([np.hstack([t, t[:, ::-1]]), np.hstack([t[::-1], t[::-1, ::-1]])])
     return np.full((64, 64, 3), 60, np.float32)

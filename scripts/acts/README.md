@@ -113,3 +113,28 @@ Biome transitions come from per-cell act labels, blurred with σ 3 cells and per
 - Rock floor anywhere (gaps inside a range hull) is now a world-phased tile of the local kit's wide panel texture, ×0.8 (`biome_kits.rock_floor_tile`). It used to be a flat ramp.
 - `check_gates` sealed test: feet cannot stand 2.5–4.5 cells beside the door, one row above it.
 - On the Act 4 side of Magma Tunnels, the dug plaza plus an east approach (x 200–206, rows 50–66) leave room for a full panel east of the mouth (`FLANK_FORCE` (13, 12, 10)).
+
+## Fix 4 (no Act 1 paint inside Acts 2–5, 2026-10-29)
+
+- Act 1's plate is x 16–163, y 218–399 (`public/act1-world-map.js` BOUNDS; `A1_PLATE` in render_act.py).
+  At runtime its base (depth 1.1) draws above act ground (1.09), and act front layers (10.5) would draw
+  over it. So inside that rectangle every act output now has empty `forest`, `front`, `water-r2` and
+  `foam` layers, no water or crest, and no walk-behind.
+- No Acts 2–5 object reaches into the plate: `placements.allowed[218:, :164] = False`, and tree crowns
+  must clear it.
+- Gone: the Act 2 "snowline fade" (grass biome forced in cols 161–168), Act 5's repaint of Act 1's top
+  rows 218–221, and the Act 1 cliff composite in Act 5. Act 1 cells take the nearest Acts 2–5 biome for
+  blending, so no grass, Act 1 meadow or Act 1-toned rock is used outside Act 1.
+- Owner mountain cells that no whole panel could cover are blocked rock floor with a smoothed outline.
+  An example is Act 2's 7-cell divider strip beside the plate.
+- Rock floor is a mirrored 2×2 tile, so it tiles seamlessly.
+- Act 5 bounds end at y 217 again.
+- Crops: `acts-preview/overworld/fix4/*-{before,after}.jpg`. Each crop shows the act output on the left
+  and, on the right, a runtime view with Act 1's shipped base pasted over its plate.
+
+## Terrain-carved entrances (Codex package)
+
+`entrances_pkg.py` writes `/mnt/project-files/edu-rpg/codex-gen/entrances/`: one brief per dungeon mouth
+set in rock or forest, with anchors (actual paint crop, guide, kit), `jobs.json` and `run.sh`. The
+composite, cut and collision plan, and the Act 1 Crystal Cave override plan, are in that folder's
+README.md.

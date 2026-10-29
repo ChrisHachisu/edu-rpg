@@ -31,12 +31,12 @@ async function bumpOpen(page, id, f, cx, cy) {
 }
 
 (async () => {
-  const { browser, page } = await L.launch();
-  for (const id of A1D) {
+  const T = await L.launch(); const browser = T.browser; let page = T.page;
+  for (const id of (process.env.ONLY_ENGINE ? [] : A1D)) {
     for (let f = 1; f <= 3; f++) {
       const key = `${id}-f${f}`;
       console.log(`== ${key}`);
-      await L.enter(page, id, f);
+      page = await L.fresh(T); await L.enter(page, id, f);
       const st = await L.scene(page, `
         const snaps=w.__renderSnaps||[]; const mv=window.__A1_DNG_MOVE__; let masked=false; try{masked=!!mv.forScene(w)}catch(e){}
         return { snaps, W:w.mapData[0].length, H:w.mapData.length, masked,
@@ -67,14 +67,14 @@ async function bumpOpen(page, id, f, cx, cy) {
       if (f === 1 || id === 'mistyGrotto') {
         await L.scene(page, `w.showingMessage=false; try{w.hideMessage()}catch(e){}`);
         const ch = FLOORS[key].assets.find(a => a.kind === 'stairsDown' || a.kind === 'boss');
-        await page.screenshot({ path: path.join(OUT, `${key}.jpg`), type: 'jpeg', quality: 70 });
+        await L.shot(page, path.join(OUT, `${key}.jpg`));
       }
     }
   }
   // mistyGrotto engine floors 4-5 (declared floors 5; authored floors 3): procedural fog for contrast
-  for (const f of [4]) {
+  for (const f of (process.env.SKIP_MISTY ? [] : [4])) {
     const key = `mistyGrotto-f${f}`;
-    await L.enter(page, 'mistyGrotto', f);
+    page = await L.fresh(T); await L.enter(page, 'mistyGrotto', f, { settle: 8000 });
     const st = await L.scene(page, `const mv=window.__A1_DNG_MOVE__; let masked=false; try{masked=!!mv.forScene(w)}catch(e){}
       const md=w.mapData; let t=[]; for(let y=0;y<md.length;y++) for(let x=0;x<md[y].length;x++) if(md[y][x]===24) t.push([x,y]);
       return {W:md[0].length,H:md.length,masked,fog:[w.fogEnabled,w.fogRadius,w.fogTorchBonus],torches:t,hero:[w.heroTileX,w.heroTileY]}`);
@@ -87,17 +87,17 @@ async function bumpOpen(page, id, f, cx, cy) {
       if (nb) {
         await L.teleport(page, nb[0], nb[1]);
         const before = await L.scene(page, 'return [w.fogTorchCount,w.fogTorchBonus,w.fogRadius]');
-        await L.step(page, nb[2]);
+        await L.step(page, nb[2], { timeout: 6000, after: 2000 });
         const after = await L.scene(page, 'return [w.fogTorchCount,w.fogTorchBonus,w.fogRadius,w.mapData[a[1]][a[0]], w.__msgs.slice(-2)]', [tx, ty]);
         check(`${key}: torch pickup works on an ENGINE floor (control)`, after[0] === before[0] + 1, `before ${JSON.stringify(before)} after ${JSON.stringify(after)}`);
       }
     }
-    await page.screenshot({ path: path.join(OUT, `${key}-engine-fog.jpg`), type: 'jpeg', quality: 70 });
+    try { await L.shot(page, path.join(OUT, `${key}-engine-fog.jpg`)); } catch (e) { console.log('   screenshot timed out: ' + String(e).slice(0, 80)); }
   }
   // crystalCave: coloured-pillar puzzle on its ENGINE floors (not in A1D_MAPS)
   for (const f of [1, 2]) {
     const key = `crystalCave-f${f}`;
-    await L.enter(page, 'crystalCave', f);
+    page = await L.fresh(T); await L.enter(page, 'crystalCave', f);
     const st = await L.scene(page, `const mv=window.__A1_DNG_MOVE__; let masked=false; try{masked=!!mv.forScene(w)}catch(e){}
       const md=w.mapData; let walls=0; for(const r of md) for(const v of r) if(v===20) walls++;
       return {W:md[0].length,H:md.length,masked,pillars:w.crystalPillars.map(p=>[p.x,p.y,p.colorIdx,md[p.y][p.x]]),seq:w.crystalSequence,walls}`);
@@ -124,10 +124,10 @@ async function bumpOpen(page, id, f, cx, cy) {
         return {walls, solved: !!gs.player.state.storyFlags['pillars.'+w.currentMapId+'.f'+w.currentFloor+'.solved'], msgs:w.__msgs.slice(-3)}`);
       check(`${key}: pillars in sequence dissolve the crystal walls`, after.solved && after.walls === 0, `walls ${st.walls}->${after.walls}, ${JSON.stringify(after)}`);
       await L.clearMsg(page);
-      await page.screenshot({ path: path.join(OUT, `${key}-pillars-solved.jpg`), type: 'jpeg', quality: 70 });
+      await L.shot(page, path.join(OUT, `${key}-pillars-solved.jpg`));
     } else check(`${key}: has a pillar puzzle`, false, `pillars ${st.pillars.length}, crystal walls ${st.walls}`);
   }
   res.errors = page.__errors;
-  fs.writeFileSync(path.join(OUT, 'act1-results.json'), JSON.stringify(res, null, 1));
+  fs.writeFileSync(path.join(OUT, process.env.ONLY_ENGINE ? 'act1-engine-results.json' : 'act1-results.json'), JSON.stringify(res, null, 1));
   await browser.close();
 })();

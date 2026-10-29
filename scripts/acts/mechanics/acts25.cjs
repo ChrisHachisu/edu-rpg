@@ -24,7 +24,7 @@ const APPROACH = `
     if(out.length>=(a.max||50)) break; }
   return out;`;
 async function approach(v, opts = {}) { return S(APPROACH, Object.assign({ v }, opts)); }
-async function shot(name) { await L.clearMsg(page); await page.screenshot({ path: path.join(OUT, name + '.jpg'), type: 'jpeg', quality: 70 }); }
+async function shot(name) { await L.clearMsg(page); await L.shot(page, path.join(OUT, name + '.jpg')); }
 const tile = (x, y) => S('return w.mapData[a[1]]?.[a[0]]', [x, y]);
 const inv = () => S('return gs.player.state.inventory.filter(i=>i.quantity>0).map(i=>i.itemId)');
 

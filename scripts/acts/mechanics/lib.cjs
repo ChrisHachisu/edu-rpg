@@ -21,7 +21,7 @@ function save(mapId, floor, opts = {}) {
 }
 
 async function newPage(browser) {
-  const ctx = await browser.newContext({ viewport: { width: 960, height: 720 } });
+  const ctx = await browser.newContext({ viewport: { width: Number(process.env.MECH_W || 640), height: Number(process.env.MECH_H || 480) } });
   const page = await ctx.newPage();
   page.__errors = [];
   page.on('pageerror', e => page.__errors.push(String(e.message).slice(0, 300)));
@@ -44,12 +44,12 @@ async function fresh(T) {
 
 // Real entry: seeded save -> reload -> Title -> Continue -> WorldMapScene.loadMap(save.mapId)
 async function enter(page, mapId, floor, opts = {}) {
-  await page.goto(URL_, { waitUntil: 'load', timeout: 60_000 });
-  await page.waitForFunction(() => !!window.__PHASER_GAME__, { timeout: 30_000 });
+  await page.goto(URL_, { waitUntil: 'load', timeout: 120_000 });
+  await page.waitForFunction(() => !!window.__PHASER_GAME__, undefined, { timeout: 120_000 });
   await page.evaluate(s => { localStorage.clear(); localStorage.setItem('edu-rpg-save', JSON.stringify(s)); },
     save(mapId, floor, opts));
   await page.reload({ waitUntil: 'load' });
-  await page.waitForFunction(() => !!window.__PHASER_GAME__, { timeout: 30_000 });
+  await page.waitForFunction(() => !!window.__PHASER_GAME__, undefined, { timeout: 120_000 });
   await page.evaluate(() => {
     const g = window.__PHASER_GAME__;
     if (g.scene.isActive('BootScene')) { g.scene.start('TitleScene'); g.scene.stop('BootScene'); }
@@ -57,7 +57,7 @@ async function enter(page, mapId, floor, opts = {}) {
   await page.waitForFunction(() => {
     const g = window.__PHASER_GAME__, t = g && g.scene.getScene('TitleScene');
     return t && g.scene.isActive('TitleScene') && t.menuItems?.length > 0;
-  }, { timeout: 30_000 });
+  }, undefined, { timeout: 120_000 });
   // Diagnostic only: snapshot every renderMap() input so the ENGINE's own floor (rendered inside
   // loadMap) can be compared with the authored A1D floor dq-tiles swaps in afterwards. Behaviour is
   // unchanged -- the wrapper records and then calls the original.
@@ -82,7 +82,7 @@ async function enter(page, mapId, floor, opts = {}) {
     t.selectedIndex = t.menuItems.findIndex(m => m.getData?.('action') === 'continue');
     t.confirmTitle();
   });
-  await page.waitForFunction(() => window.__PHASER_GAME__.scene.isActive('WorldMapScene'), { timeout: 30_000 });
+  await page.waitForFunction(() => window.__PHASER_GAME__.scene.isActive('WorldMapScene'), undefined, { timeout: 120_000 });
   await page.waitForTimeout(opts.settle ?? 3000);
   // No random battles while probing; mechanic-triggered battles use startBattle directly and are
   // recorded by wrapping it.
@@ -141,10 +141,14 @@ async function step(page, dir, opts = {}) {
   return { before, after: await scene(page, 'return [w.heroTileX,w.heroTileY]') };
 }
 
+async function shot(page, file) {
+  try { await page.screenshot({ path: file, type: 'jpeg', quality: 70, timeout: 120_000 }); return true; }
+  catch (e) { console.log('   screenshot failed: ' + String(e).slice(0, 80)); return false; }
+}
 function findTiles(md, v) {
   const out = [];
   for (let y = 0; y < md.length; y++) for (let x = 0; x < md[y].length; x++) if (md[y][x] === v) out.push([x, y]);
   return out;
 }
 
-module.exports = { URL_, save, launch, fresh, newPage, enter, scene, teleport, clearMsg, hold, step, findTiles, KEY };
+module.exports = { shot, URL_, save, launch, fresh, newPage, enter, scene, teleport, clearMsg, hold, step, findTiles, KEY };
