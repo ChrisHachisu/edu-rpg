@@ -211,7 +211,7 @@
   function actsFree(s, x, y, pts) {
     if (!M || !pts) return true;
     var tx = Math.floor(x / 48), ty = Math.floor(y / 48);
-    if (act1Inside(tx, ty)) return true;                // Act 1 keeps its own pack
+    if (act1Inside(tx, ty)) return ovFree(x, y, pts);  // Act 1 keeps its own pack (+ override block bits)
     var own = landmarkAct(x * 32 / 48, y * 32 / 48) || ownerAct(tx, ty);
     for (var i = 0; i < M.acts.length; i++) {
       var a = M.acts[i], B = a.rt && a.rt.bits, b = a.bounds;
@@ -223,6 +223,31 @@
         if (bit(B, px, py) || bit(B, px - mg, py) || bit(B, px + mg, py) || bit(B, px, py - mg) || bit(B, px, py + mg)) { stats.blockedSteps = (stats.blockedSteps || 0) + 1; return false; }
       }
       return true;
+    }
+    return true;
+  }
+  // override `block` (e.g. act1-crystal-cave): carved-entrance rock that Act 1's pack does not know about.
+  // Only adds blocking -- dq-tiles ANDs this with a1fHeroFree on Act 1's own pack.
+  function ovBits(o) {
+    var b = o.block; if (!b) return null;
+    if (!b.rt) {
+      try {
+        var raw = atob(b.b64), d = new Uint8Array(raw.length);
+        for (var i = 0; i < raw.length; i++) d[i] = raw.charCodeAt(i);
+        b.rt = { w: b.w, h: b.h, ox: b.origin[0], oy: b.origin[1], data: d };
+      } catch (e) { b.rt = { w: 0, h: 0, ox: 0, oy: 0, data: new Uint8Array(0) }; fail++; }
+    }
+    return b.rt;
+  }
+  function ovFree(x, y, pts) {
+    if (!M.overrides) return true;
+    for (var j = 0; j < M.overrides.length; j++) {
+      var B = ovBits(M.overrides[j]); if (!B || !B.w) continue;
+      var cx = Math.round((x - B.ox * 48) * 32 / 48), cy = Math.round((y - B.oy * 48) * 32 / 48);
+      if (cx < -64 || cy < -64 || cx > B.w + 64 || cy > B.h + 64) continue;
+      for (var k = 0; k < pts.length; k++) {
+        if (bit(B, cx + pts[k][0], cy + pts[k][1])) { stats.blockedSteps = (stats.blockedSteps || 0) + 1; return false; }
+      }
     }
     return true;
   }
@@ -447,6 +472,13 @@
     return false;
   }
   var mine = null;
+  var hideKeys = null;
+  function hiddenAct1Landmarks() {
+    if (hideKeys || !M || !M.overrides) return hideKeys;
+    var h = null;
+    M.overrides.forEach(function (o) { (o.hideAct1Landmarks || []).forEach(function (sl) { (h = h || {})['a1alm_' + sl] = 1; }); });
+    return (hideKeys = h);
+  }
   function suppressLegacy() {
     var s = scene(), sp = space();
     if (!M || !s || !sp || s.currentMapId !== 'overworld' || !s.children) return;
@@ -456,10 +488,13 @@
       Object.keys(lmImgs).forEach(function (k) { mine.set.add(lmImgs[k]); });
       Object.keys(ovImgs).forEach(function (k) { mine.set.add(ovImgs[k]); });
     }
-    var list = s.children.list;
+    var list = s.children.list, hide = hiddenAct1Landmarks();
     for (var i = 0; i < list.length; i++) {
       var o = list[i];
       if (!o.visible || o === s.hero || o.scrollFactorX === 0 || mine.set.has(o)) continue;
+      // override `hideAct1Landmarks`: the build 91 sprite an override replaces (alpha, so dq's per-tick
+      // setVisible(true) does not bring it back)
+      if (hide && o.texture && hide[o.texture.key]) { if (o.alpha !== 0) o.setAlpha(0); continue; }
       if (!(o.depth >= 1.5 && o.depth < 10)) continue;
       if (o.type === 'Container') {                    // dq's prop layer: one container, children in its own (scaled) space
         for (var j = 0; j < o.list.length; j++) {
