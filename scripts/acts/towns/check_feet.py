@@ -83,7 +83,8 @@ def check(tid, pts):
         def near(c, r):
             m = (xx - c[0] * cellpx) ** 2 + (yy - c[1] * cellpx) ** 2 <= (r * cellpx) ** 2
             return bool((reach & m).any())
-        targets = [(n["id"], n["cell"], TALK) for n in town["npcs"]]
+        # the shopkeeper stands behind the painted counter; the hero is served at shopCounter (checked below)
+        targets = [(n["id"], n["cell"], TALK) for n in town["npcs"] if n["id"] != "shopkeeper"]
         targets.append(("savePoint", town["savePoint"], 0.5))
         if town.get("shopCounter"):
             sc = town["shopCounter"]

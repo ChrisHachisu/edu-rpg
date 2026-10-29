@@ -148,3 +148,4 @@ Codex image-generation package; generation itself runs only on the Mac.
   - Writes `anchors/<id>-layout-guide-r3.png`, `plans/<id>-plan.json`, `review/` and `npc-spots-r3.json` (the maps.ts spots, including the moved ones).
 - `r3_package.py <dest>`: the briefs (the r2 template plus the NO TALL OBJECTS rules, scrubbed identity and lighting text), `run.sh` (3 tries per town) and `jobs.json`.
 - `check_feet.py` now also checks the town.json `"doors"` (healer, shop) in both strict and comfort modes; `pilot2.py` writes them.
+- Round 3 finish: `r3_finish.py` with `r3_shapes.py`. Collision is hand-traced per object against each picked painting; tall rims and spires are blocked far enough north that the hero cannot stand behind them; paint-outs copy nearby plate pixels. Each town.json carries a `doors` list; `check_feet.py` skips the shopkeeper, who stands behind the counter, and checks the shop counter instead.
