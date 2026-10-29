@@ -379,6 +379,7 @@
     M.acts.forEach(function (a) {
       var m = a.rt && a.rt.manifest; if (!m || !m.landmarks) return;
       m.landmarks.forEach(function (L) {
+        if (L.carved) return;                          // terrain-carved mouth: painted into the ground chunks, door still fires
         var k = 'acts_lm_' + a.act + '_' + L.slug, img = lmImgs[k];
         if (img && img.scene !== s) { try { img.destroy(); } catch (x) {} img = null; delete lmImgs[k]; }
         if (!img) {

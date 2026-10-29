@@ -66,6 +66,58 @@ def font(n):
     return ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", n)
 
 
+
+NOSNAP = ("x-", "wall-", "edge", "strip", "cliff", "bank", "post-", "fence", "rail")
+GROW = ("pond", "reed", "bed", "garden", "graveyard", "graves", "pit", "void", "planter", "shrub", "bush")
+
+
+def snap_block(pl, shapes):
+    """Seed polygons -> object masks snapped to the painted pixels (GrabCut per object).
+    sure FG = the seed's core; probable FG = the seed; probable BG = a 1.2-cell ring outside it
+    (so an object may grow out to its real painted edge, e.g. reeds round a pond); sure BG beyond.
+    Lines (walls, fences) and edge strips keep their authored shape so they stay continuous."""
+    import cv2
+    img = np.ascontiguousarray(pl[..., ::-1])
+    out = np.zeros((P, P), bool)
+    ring = int(1.2 * APC)
+    for name, sh in shapes:
+        seed = pdraw([sh])
+        if sh[0] == "line" or name.startswith(NOSNAP) or not seed.any():
+            out |= seed
+            continue
+        ys, xs = np.nonzero(seed)
+        y0, y1 = max(0, ys.min() - ring - 4), min(P, ys.max() + ring + 5)
+        x0, x1 = max(0, xs.min() - ring - 4), min(P, xs.max() + ring + 5)
+        sd = seed[y0:y1, x0:x1]
+        h, w = ys.max() - ys.min() + 1, xs.max() - xs.min() + 1
+        er = int(max(0.25 * APC, 0.3 * min(h, w)))
+        core = ndi.binary_erosion(sd, iterations=er)
+        if core.sum() < 20:
+            out |= seed
+            continue
+        dil = ndi.binary_dilation(sd, iterations=ring)
+        m = np.full(sd.shape, cv2.GC_BGD, np.uint8)
+        m[dil] = cv2.GC_PR_BGD
+        m[sd] = cv2.GC_PR_FGD
+        m[core] = cv2.GC_FGD
+        bg, fg = np.zeros((1, 65), np.float64), np.zeros((1, 65), np.float64)
+        try:
+            cv2.grabCut(np.ascontiguousarray(img[y0:y1, x0:x1]), m, None, bg, fg, 5, cv2.GC_INIT_WITH_MASK)
+        except cv2.error:
+            out[y0:y1, x0:x1] |= sd
+            continue
+        res = (m == cv2.GC_FGD) | (m == cv2.GC_PR_FGD)
+        res = ndi.binary_opening(res, iterations=2)
+        lb, k = ndi.label(res)
+        keep = np.unique(lb[core & (lb > 0)])
+        res = np.isin(lb, keep) | core
+        res = ndi.binary_fill_holes(res)
+        if name.startswith(GROW):          # water, lava, reeds, gardens: never smaller than the seed
+            res |= sd
+        out[y0:y1, x0:x1] |= res
+    # drop blocked specks under 0.2 cell^2 that are not authored lines
+    return out
+
 def build(tid):
     from r3_shapes import TOWNS
     T = TOWNS[tid]
@@ -73,8 +125,13 @@ def build(tid):
     if T.get("paint"):
         pl = paint_out(pl, T["paint"])
     ground = pdraw([s for _, s in T["ground"]])
-    block = pdraw([s for _, s in T["block"]])
+    block = snap_block(pl, T["block"])
     walk = ground & ~block
+    # light clean: walkable specks / slivers under 0.2 cell^2 go (the feet stencil closes thin gaps)
+    lab, k = ndi.label(~walk & ground)
+    if k:
+        sz = ndi.sum(np.ones_like(walk), lab, index=np.arange(1, k + 1))
+        walk |= np.isin(lab, 1 + np.nonzero(sz < 0.2 * APC * APC)[0])
     lab, _ = ndi.label(walk)
     gx = int(32.5 * APC)
     g = lab[P - 20, gx - 60:gx + 60]
@@ -175,11 +232,100 @@ def build(tid):
     town["_onlyExit"] = bool(not away and len(bx) and bx.min() > 26 * APC and bx.max() < 39 * APC)
     write_json(os.path.join(RT, f"{tid}-town.json"), town)
     previews(tid, pl, poly_walk, town, T)
+    inside = pdraw([s for _, s in T["ground"]])
+    town["_qa"] = dict(zip(("blockedLooksGroundPx", "walkableLooksObjectPx"), qa(tid, pl, poly_walk, inside)))
+    write_json(os.path.join(RT, f"{tid}-town.json"), town)
     bad = [r["id"] for r in report if not r["onGround"]]
-    print(f"{tid:15s} walk {poly_walk.mean() * 100:4.1f}% {town['_validator']} onlyExit={town['_onlyExit']} "
+    print(f"{tid:15s} walk {poly_walk.mean() * 100:4.1f}% {town['_validator']} onlyExit={town['_onlyExit']} QA={town['_qa']} "
           f"spots-off-ground={bad} moved={[(r['id'], r['mapsTs'], r['new']) for r in report if r['moved']]}")
     return tid, report
 
+
+
+def qa(tid, pl, walk, inside):
+    """QA ONLY (never sets a boundary): a per-town 'looks like open ground' map from texture and
+    colour (kNN on 6 px blocks, trained on the CORES of the authored walkable and blocked areas),
+    then flags, inside the town edge: blocked pixels that look like ground, and walkable pixels that
+    look like an object (water, reeds, plants, rock, props). Specks under 0.15 cell^2 are texture
+    noise. Returns (looks-ground-but-blocked px, looks-object-but-walkable px)."""
+    B = 6
+    n = P // B
+    a = pl[:n * B, :n * B].astype(np.float32) / 255.0
+    Lm = a.mean(2)
+    gy, gx = np.gradient(Lm)
+    g = np.hypot(gx, gy)
+
+    def bm(x):
+        return x.reshape(n, B, n, B).mean((1, 3))
+    mx, mn = a.max(2), a.min(2)
+    Lb = bm(Lm)
+    f = np.stack([bm(a[..., 0]), bm(a[..., 1]), bm(a[..., 2]), Lb, np.sqrt(np.maximum(bm(Lm * Lm) - Lb ** 2, 0)),
+                  bm(g), bm((mx - mn) / (mx + 1e-3)), bm(a[..., 1] - a[..., 0]), bm(a[..., 2] - a[..., 0])], -1)
+    f = np.concatenate([f, ndi.uniform_filter(f, size=(3, 3, 1)), ndi.uniform_filter(f, size=(7, 7, 1))], -1)
+    F = f.reshape(-1, f.shape[-1])
+    F = (F - F.mean(0)) / (F.std(0) + 1e-6)
+
+    def blk(m):
+        return m[:n * B, :n * B].reshape(n, B, n, B).mean((1, 3))
+    ins = blk(inside) > 0.99
+    wk = blk(walk)
+    core_w = ndi.binary_erosion(wk > 0.99, iterations=3)
+    core_b = ndi.binary_erosion((wk < 0.01) & ins, iterations=3)
+    # the training sample is frozen per town (first run, or QA_RETRAIN=1) so counts compare across edits
+    tp = os.path.join(RT, f"{tid}-qatrain.npz")
+    if os.path.exists(tp) and not os.environ.get("QA_RETRAIN"):
+        z = np.load(tp)
+        pi, ni = z["pi"], z["ni"]
+    else:
+        rng = np.random.default_rng(0)
+        pi = np.nonzero(core_w.ravel())[0]
+        ni = np.nonzero(core_b.ravel())[0]
+        pi = rng.choice(pi, min(len(pi), 6000), replace=False)
+        ni = rng.choice(ni, min(len(ni), 6000), replace=False)
+        np.savez(tp, pi=pi, ni=ni)
+    X = np.concatenate([F[pi], F[ni]])
+    y = np.concatenate([np.ones(len(pi)), np.zeros(len(ni))])
+    X2 = (X * X).sum(1)
+    prob = np.empty(len(F), np.float32)
+    for i in range(0, len(F), 4000):
+        Q = F[i:i + 4000]
+        d = (Q * Q).sum(1)[:, None] + X2[None] - 2.0 * Q @ X.T
+        idx = np.argpartition(d, 15, axis=1)[:, :15]
+        prob[i:i + 4000] = y[idx].mean(1)
+    pg = prob.reshape(n, n)
+    ground_blocked = ins & (wk < 0.5) & (pg > 0.85)
+    object_walk = ins & (wk > 0.5) & (pg < 0.15)
+    out = []
+    # a blocked ground-look patch only counts when it touches the walkable area (an over-wide blocker);
+    # snow lying on a roof, enclosed by the roof, is not open ground
+    lb, k = ndi.label(ground_blocked)
+    if k:
+        touch = np.unique(lb[ndi.binary_dilation(wk > 0.5, iterations=1) & (lb > 0)])
+        ground_blocked = np.isin(lb, touch)
+    for m in (ground_blocked, object_walk):
+        lb, k = ndi.label(m)
+        if k:
+            sz = ndi.sum(np.ones_like(m), lb, index=np.arange(1, k + 1))
+            m = np.isin(lb, 1 + np.nonzero(sz * B * B >= 0.15 * APC * APC)[0])
+        full = np.zeros((P, P), bool)
+        full[:n * B, :n * B] = np.repeat(np.repeat(m, B, 0), B, 1)
+        out.append(full)
+    gb, ow = out
+    Image.fromarray((np.dstack([gb, np.zeros_like(gb), ow]) * 255).astype(np.uint8)).save(os.path.join(RT, f"{tid}-qaflags.png"))  # R = blocked-looks-ground, B = walkable-looks-object
+    v = pl.astype(np.float32) * 0.55
+    v[walk] = v[walk] * 0.8 + np.array([40, 200, 90]) * 0.2 / 0.55 * 0.55
+    v[gb] = (255, 0, 255)
+    v[ow] = (255, 0, 255)
+    e = walk ^ ndi.binary_erosion(walk, iterations=2)
+    v[e] = (255, 255, 255)
+    im = Image.fromarray(np.clip(v, 0, 255).astype(np.uint8)).resize((1300, 1300), Image.LANCZOS)
+    dr = ImageDraw.Draw(im)
+    dr.text((14, 10), f"{tid} QA: magenta = blocked-but-looks-ground {int(gb.sum())} px, "
+                      f"walkable-but-looks-object {int(ow.sum())} px", font=font(24), fill=(255, 255, 0),
+            stroke_width=3, stroke_fill=(0, 0, 0))
+    os.makedirs(PREV, exist_ok=True)
+    im.save(os.path.join(PREV, f"{tid}-qa.jpg"), quality=88)
+    return int(gb.sum()), int(ow.sum())
 
 def overlay(pl, walk, town):
     ov = pl.astype(np.float32).copy()

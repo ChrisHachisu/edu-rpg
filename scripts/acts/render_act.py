@@ -610,6 +610,33 @@ def render(act, out_dir, chunks=True):
     del rb, L
     front = np.zeros_like(fo); fm = ndi.binary_dilation(wb, np.ones((3, 3), bool)) & (fo[..., 3] > 0)
     front[fm] = fo[fm]
+    # terrain-carved entrances (entrances_apply.py patches): painted into the forest/objects layer (premultiplied,
+    # as export_runtime.over_game composites it), lintel to front, collision from the patch's block mask;
+    # the landmark sprite is not drawn (manifest "carved": true) and its sprite mask is not used
+    carved = {}
+    if os.environ.get('ACTS_ENTRANCES', '1') != '0' and os.path.isdir(A.SCRATCH + '/entrances'):
+        for jd in sorted(os.listdir(A.SCRATCH + '/entrances')):
+            pj = f'{A.SCRATCH}/entrances/{jd}/patch.json'
+            if not os.path.isfile(pj): continue
+            meta = json.load(open(pj))
+            if meta['act'] != act: continue
+            pr = np.asarray(Image.open(f'{A.SCRATCH}/entrances/{jd}/patch.png').convert('RGBA')).astype(np.float32)
+            bk = np.asarray(Image.open(f'{A.SCRATCH}/entrances/{jd}/block.png'))
+            fr = np.asarray(Image.open(f'{A.SCRATCH}/entrances/{jd}/front.png').convert('RGBA'))
+            ox_, oy_ = (meta['origin_cells'][0] - cx0) * P, (meta['origin_cells'][1] - cy0) * P
+            ph, pw = pr.shape[:2]
+            ya, xa, yb, xb = max(0, oy_), max(0, ox_), min(H, oy_ + ph), min(W, ox_ + pw)
+            if yb <= ya or xb <= xa: continue
+            sl = (slice(ya, yb), slice(xa, xb)); ps = (slice(ya - oy_, yb - oy_), slice(xa - ox_, xb - ox_))
+            pa = pr[ps][..., 3:4] / 255; a0 = fo[sl][..., 3:4].astype(np.float32) / 255
+            frgb = fo[sl][..., :3].astype(np.float32) * (a0 > 0)
+            fo[sl] = np.dstack([np.clip(pa * pr[ps][..., :3] + (1 - pa) * frgb, 0, 255),
+                                np.clip(255 * (pa + a0 * (1 - pa)), 0, 255)]).astype(np.uint8)
+            on = pa[..., 0] >= 0.5
+            front[sl][on] = 0; wb[sl][on] = False; foam[sl][on] = 0
+            fm_ = fr[ps][..., 3] > 0; front[sl][fm_] = fr[ps][fm_]
+            carved[meta['name']] = (sl, bk[ps])
+            log(f"carved entrance {meta['name']} ({meta['job']}), patch px {int(on.sum())}")
     # landmarks into collision
     lmjson = []
     os.makedirs(out_dir + '/landmarks', exist_ok=True)
@@ -620,14 +647,20 @@ def render(act, out_dir, chunks=True):
         south = water[min(H - 1, py + 3 * P):min(H, py + 4 * P), max(0, px - 16):px + 16]
         m, gate = landmark_mask(lm, south.size and south.mean() > 0.5)
         Y0, X0 = max(0, sy), max(0, sx); Y1, X1 = min(H, sy + S), min(W, sx + S)
-        coll[Y0:Y1, X0:X1] |= m[Y0 - sy:Y1 - sy, X0 - sx:X1 - sx]
+        if lm['name'] not in carved: coll[Y0:Y1, X0:X1] |= m[Y0 - sy:Y1 - sy, X0 - sx:X1 - sx]
         if A.CONNECTING.get(lm['name']) == A.MOUNT and lm['name'] not in A.FLANK_SKIPPED:
             # fix3: the backing panel's foot runs under the sprite; keep the mouth channel walkable
             coll[max(0, py - GATE_DEPTH):max(0, py + 16), max(0, px - GATE_HALF):max(0, px + GATE_HALF)] = False
         # the gate/mouth approach and the 1-cell ring around the door cell stay walkable
         Image.fromarray(lm['rgba']).save(out_dir + f"/landmarks/{lm['slug']}.png", optimize=True)
-        lmjson.append({k: lm[k] for k in ('name', 'slug', 'cell', 'size', 'anchor', 'kind', 'biome')} |
+        extra = {'carved': True} if lm['name'] in carved else {}
+        lmjson.append(extra | {k: lm[k] for k in ('name', 'slug', 'cell', 'size', 'anchor', 'kind', 'biome')} |
                       {'gate': gate, 'worldPxPerCell': 33.6, 'maskPixelsPerCell': P, 'maskSize': list(m.shape), 'maskAnchor': lm['artAnchor'], 'maskB64': base64.b64encode(np.packbits(m.ravel(), bitorder='little').tobytes()).decode()})
+    for e_ in lmjson:
+        if e_.get('carved'):   # collision is in collision.png from the patch; no sprite mask
+            for k_ in ('maskB64', 'maskSize', 'maskAnchor', 'maskPixelsPerCell'): e_.pop(k_, None)
+    for nm_, (sl, bk) in carved.items():   # carved mouths: the patch's own feet-only collision wins in its region
+        cs = coll[sl]; cs[bk == 255] = True; cs[bk == 0] = False
     log('collision')
     # ---- crop to act bounds and write chunks
     ox, oy = (bx0 - cx0) * P, (by0 - cy0) * P; AW, AH = (bx1 - bx0 + 1) * P, (by1 - by0 + 1) * P
@@ -693,11 +726,15 @@ def composite(res, with_landmarks=True):
     """Flattened preview RGB of a render result (cropped act raster)."""
     out = res['base'].astype(np.float32)
     for k in ('water', 'foam', 'forest'):
-        a = res[k][..., 3:4].astype(np.float32) / 255; out = out * (1 - a) + res[k][..., :3] * a
+        a = res[k][..., 3:4].astype(np.float32) / 255
+        # forest is stored premultiplied where it is not hard (carved-entrance feather): export_runtime.over_game
+        out = out * (1 - a) + (res[k][..., :3] if k == 'forest' else res[k][..., :3] * a)
     im = Image.fromarray(np.clip(out, 0, 255).astype(np.uint8)).convert('RGBA')
     if with_landmarks:
         bx0, by0 = res['manifest']['bounds'][:2]
+        carved_ = {e['name'] for e in res['manifest']['landmarks'] if e.get('carved')}
         for lm in res['landmarks']:
+            if lm['name'] in carved_: continue   # carved mouth: no sprite at runtime
             x, y = lm['cell']; px, py = (x - bx0) * P + 16, (y - by0) * P + 16
             qx, qy = px - lm['artAnchor'][0], py - lm['artAnchor'][1]
             if qx >= 0 and qy >= 0: im.alpha_composite(Image.fromarray(lm['art']), (qx, qy))
