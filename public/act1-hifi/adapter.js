@@ -18,7 +18,10 @@ const TOWN_URL = new URL('./town.html', import.meta.url);
 // roof, and nothing caught either because no player could reach them. OPENED 2026-08-22, on
 // the owner's ask for a play test, now all three have a finished plate, collision derived
 // from that plate, and every actor verified standable and reachable from startCell.
-const TOWN_IDS = new Set(['portSapphire', 'millbrook', 'greenhollow']);
+// Acts 2-5 prototype: acts-hifi/acts-runtime.js (loaded only behind its flag, default OFF) shares
+// its Set here so its towns join once its index loads. Without the flag this is a fresh Set.
+const TOWN_IDS = window.__QOK_ACTS_TOWN_IDS__ || new Set();
+['portSapphire', 'millbrook', 'greenhollow'].forEach(id => TOWN_IDS.add(id));
 const MANIFEST_URL = new URL('./manifest.json', import.meta.url);
 const SEARCH = new URLSearchParams(location.search);
 const VERIFY = SEARCH.has('act1Verification');
@@ -182,6 +185,10 @@ function townSavePosition(entry) {
 
 function townResumeAt(saved, mapId, firstEntry) {
   if (firstEntry || saved?.position?.mapId !== mapId) return '';
+  // Acts 2-5 prototype (acts-hifi/acts-runtime.js, flag OFF by default): a walk-in through one of
+  // its doors leaves the bundle's interior cell (8,14) in the save, which is not a resume point.
+  // The marker is only ever set by that runtime, so without the flag this line never fires.
+  if (window.__QOK_ACTS_WALKIN__ === mapId) { window.__QOK_ACTS_WALKIN__ = null; return ''; }
   const x = Number(saved.position.x), y = Number(saved.position.y);
   if (!Number.isFinite(x) || !Number.isFinite(y)) return '';
   return `&at=${encodeURIComponent(`${x},${y}`)}`;
