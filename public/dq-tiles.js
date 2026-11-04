@@ -1722,8 +1722,10 @@
   // the exact scaled edge endpoints (rather than independently rounding each width) prevents 1px
   // gaps/overlaps at partial edge chunks.
   function a1aForestLiveChunkKeys(live){
+    // Flat ground carries the forest crowns inside the base, so a live base is a live forest.
+    var pre=a1aGroundBaked()?'a1a_base_':'a1a_forest_';
     var keys=[];Object.keys(live||{}).forEach(function(k){
-      if(k.indexOf('a1a_forest_')===0&&live[k])keys.push(k.slice('a1a_forest_'.length));
+      if(k.indexOf(pre)===0&&live[k])keys.push(k.slice(pre.length));
     });
     keys.sort();return keys;
   }
@@ -2073,8 +2075,26 @@
     if(!c||!c.north||!n||n.schema!=='north-cliff-overhang-v1'||!(n.heightPixels>0)||!(n.pixelsPerCell>0)) return 0;
     return n.heightPixels*TILE/n.pixelsPerCell;                // canonical pixels above this top-row chunk
   }
+  /* ---- BUILD 92: FLAT GROUND, THE TOWN RECIPE APPLIED TO THE OVERWORLD ------------------------
+     Owner, 2026-11-04: "i think the flattening works. keep going with it" (after a side-by-side
+     video of build 91 against a flattened prototype). Towns and dungeons were never laggy because
+     each is ONE pre-composited picture; the overworld streamed base + water + foam + forest as four
+     full-size layers per chunk, all below the hero, and drew three full-screen backing layers
+     under them. Measured in the cloud (software GPU, ratios only): ~7 screens of fill per frame
+     against ~2 in a town, 12-15 fps against 23-29 flattened.
+
+     scripts/b92/flatten_ground.py bakes those four layers into chunks/base and stamps
+     manifest.groundBaked. With it present: water/foam/forest are not streamed, the base is known
+     opaque (no alpha readback), a live base also counts as live forest for the forest fallback
+     mask, and a1aGroundBackingCull hides the backing layers while the camera is fully covered.
+     Without it every path below is exactly build 91. */
+  function a1aGroundBaked(){
+    var g=A1A.manifest&&A1A.manifest.groundBaked;
+    return !!(g&&g.schema==='act1-flat-ground-v1');
+  }
   function a1aLayerEnabled(k){
     var m=A1A.manifest;
+    if(a1aGroundBaked()&&(k==='water'||k==='foam'||k==='forest')) return false;
     return !(A1A_FOREST.mode&&k==='canopy')&&!!(m&&m.chunks)
       &&(k!=='north'||!!(m.northSupport&&m.northSupport.schema==='north-cliff-overhang-v1'));
   }
@@ -2083,6 +2103,7 @@
   function a1aLd(rec){ return rec.ld||(rec.ld={pend:{},fail:{},next:{}}); }
   function a1aBaseHasAlpha(c,src){
     if(!c||!src)return true;
+    if(a1aGroundBaked())return false;                  // baked ground is opaque by construction: skip the readback
     if(Object.prototype.hasOwnProperty.call(A1A.baseAlpha,c.id))return A1A.baseAlpha[c.id];
     var w=src.naturalWidth||src.width,h=src.naturalHeight||src.height,found=true;
     try{
@@ -3340,6 +3361,34 @@
     if(!ctx||!rect) return false;
     ctx.clearRect(rect.x,rect.y,rect.width,rect.height);
     return true;
+  }
+  // BUILD 92. The sea quad (0.5), the plate water backing (0.6), the coarse underpaint (0.7) and the
+  // coarse forest fallback (9.5) exist to cover chunks that have not landed yet. Once every chunk
+  // under the camera has its opaque flat ground on screen they are invisible behind it and only
+  // cost fill, so they are hidden. Runs at the END of the overworld tick: the per-tick code above it
+  // re-shows all four, so any frame where a chunk is missing or the view leaves the plate keeps the
+  // build 91 fallback exactly. Conservative on every unknown: no manifest, no flag, view outside
+  // the plate, or a camera window at the residency cap all leave the backing alone.
+  function a1aGroundCovered(scene){
+    var m=A1A.manifest;
+    if(!a1aGroundBaked()||!a1aSpriteMode()||!a1aPlateOwns(scene)||!m.semanticBounds||!(A1A.S>0)) return false;
+    var v=scene.cameras&&scene.cameras.main&&scene.cameras.main.worldView; if(!v||!(v.width>0&&v.height>0)) return false;
+    var B=m.semanticBounds,S=A1A.S,maxX=0,maxY=0,i;
+    for(i=0;i<m.chunks.length;i++){ var q=m.chunks[i]; maxX=Math.max(maxX,q.x+q.width); maxY=Math.max(maxY,q.y+q.height); }
+    var ox=B[0]*TILE,oy=B[1]*TILE;
+    if(owCanonical(v.x)<ox||owCanonical(v.y)<oy||owCanonical(v.x+v.width)>ox+maxX*S||owCanonical(v.y+v.height)>oy+maxY*S) return false;
+    var cs=a1aCameraChunks(scene); if(!cs.length||cs.length>=A1A_MAX_CHUNKS) return false;
+    for(i=0;i<cs.length;i++){ var im=A1A.imgs['a1a_base_'+cs[i].id]; if(!im||!im.scene||im.scene!==scene||!im.visible) return false; }
+    return true;
+  }
+  function a1aGroundBackingCull(scene){
+    if(!a1aGroundCovered(scene)) return;
+    if(seaState&&seaState.img&&seaState.img.visible) seaState.img.setVisible(false);
+    var seg=terrainState&&terrainState.waterSegments;
+    if(seg) for(var id in seg) if(Object.prototype.hasOwnProperty.call(seg,id)&&seg[id].image&&seg[id].image.visible) seg[id].image.setVisible(false);
+    var up=A1A.underpaint;
+    if(up&&up.sprite&&up.sprite.visible) up.sprite.setVisible(false);
+    if(up&&up.forest&&up.forest.sprite&&up.forest.sprite.visible) up.forest.sprite.setVisible(false);
   }
   function a1aSea(scene,on){
     if(!on){ if(seaState&&seaState.img){ try{ seaState.img.setVisible(false); }catch(e){} } return; }
@@ -8289,6 +8338,7 @@
       // AFTER the rebuild, so a window that legitimately just changed is judged on its result and
       // not mid-flight. See a1aSpriteWatchdog: this is what stops the blue screen being permanent.
       try{ a1aSpriteWatchdog(scene); }catch(e){ if(window.__DQ_DEBUG__) console.log('dq watchdog '+e); }
+      try{ a1aGroundBackingCull(scene); }catch(e){ if(window.__DQ_DEBUG__) console.log('dq backing cull '+e); } // last: see a1aGroundCovered
     } else if (kind==='dng'){
       // Act-1 semantic floors. The loadMap wrapper is the normal path; the key check below is the
       // safety net for the two cases it cannot reach — the very first loadMap (fired in create()
