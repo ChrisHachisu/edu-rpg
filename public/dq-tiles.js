@@ -6715,6 +6715,19 @@
       }
     }catch(e){ if(window.__DQ_DEBUG__) console.log('a1 crystal choose '+e); }
   }
+  /* SAVE SLOTS (owner-locked 2026-11-04): crystals no longer save. The 'save' action keeps its
+     heal and its warp/activation flags (ui-overhaul.js turns the save into an auto save outside a
+     town), so only the button's words change. */
+  function a1mCrystalTouchLabel(){
+    var Q=window.__QOK, ja=false, kj=false;
+    try{ ja=Q&&Q.loc&&Q.loc()==='ja'; var t=Q&&Q.state&&Q.state(); kj=!!(t&&t.player&&t.player.state&&t.player.state.kanjiMode); }catch(e){}
+    return ja ? (kj?'触る':'さわる') : 'Touch';
+  }
+  function a1mCrystalRestLabel(){
+    var Q=window.__QOK, ja=false, kj=false;
+    try{ ja=Q&&Q.loc&&Q.loc()==='ja'; var t=Q&&Q.state&&Q.state(); kj=!!(t&&t.player&&t.player.state&&t.player.state.kanjiMode); }catch(e){}
+    return ja ? (kj?'HPを 回復する':'HPを かいふくする') : 'Restore HP';
+  }
   function a1mCrystalShow(scene,tx,ty,dx,dy){
     if(A1M_CRYSTAL.open) return;
     a1mCrystalEnsureStyle();
@@ -6732,7 +6745,7 @@
       // Generic floor-1 crystal in a dungeon OUTSIDE A1D_MAPS. No such dungeon ships today
       // (crystalCave, the only other one with crystals, carries its single crystal on f6), so this
       // is the untouched original path kept for anything added later -- not dead code by accident.
-      opts.push({label:Z2('menu.save')||'Save', action:'save'});
+      opts.push({label:a1mCrystalRestLabel(), action:'save'});
       var targets=a1mCrystalWarpTargets(scene);
       for(var i=0;i<targets.length;i++){
         var f=targets[i];
@@ -6740,7 +6753,7 @@
                    action:'warp', payload:{floors:targets,index:i}});
       }
     } else {
-      opts.push({label:Z2('menu.save')||'Save', action:'save'});
+      opts.push({label:a1mCrystalRestLabel(), action:'save'});
       opts.push({label:Z2('dungeon.warpToEntrance'), action:'entrance'});
     }
     var el=document.createElement('div'); el.id='a1mCrystal';
@@ -6799,7 +6812,7 @@
     // effect is the warp, so the button says so.
     var Qp=window.__QOK, Zp=(Qp&&Qp.Z)||function(k){return k;}, verb=a1mVerbTable();
     el.textContent=(target.t===14 && a1mCrystalIsEntrance(scene)) ? verb.warp
-                 : (target.t===14) ? (Zp('menu.save')||'Save')
+                 : (target.t===14) ? a1mCrystalTouchLabel()   // crystals no longer save (2026-11-04)
                  : (verb[target.t]||verb.any);
     el.classList.add('a1m-show');
   }

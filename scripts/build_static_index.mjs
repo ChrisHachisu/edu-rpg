@@ -277,7 +277,7 @@ export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '
 // 2026-09-26: the existing outer area Retry also retries a terminal Act-1 underpaint load, and
 // terminal backing failure routes to that cover so its reachable control owns the recovery path.
 export const EXPECTED_STATIC_INDEX_SHA =
-  '735d33eebc2bbff798262c5800bd410f83b747cf936ff2e33c18a3b8e1ee099e';
+  '60fdca74225527a39695e9cd2351342d334ff84c596bde9ec1ab3bae3fe5382b';
 
 /**
  * The authored shell loads its scripts by ABSOLUTE path so the Vite dev server resolves them;

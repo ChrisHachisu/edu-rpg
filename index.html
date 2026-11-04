@@ -817,14 +817,14 @@
        shipped payload in Mobile Safari on the matching simulator, docs/FEEDBACK-BUILD-38.md), so
        nothing is owed to that flip. Do not flip it again to save a round trip: the simulator route
        answers the same question without putting a debug box on his screen. */
+    /* 2026-11-04, owner: the box showed up on his iPhone after an accidental tap on the Settings
+       "Performance readout" switch, and he asked for it gone. The switch is removed from
+       ui-overhaul.js and the stored flag is no longer honoured, so a phone that already has it set
+       goes back to normal on the next launch. Recording still runs; only the on-screen box is off. */
     var DEFAULT_ON = false;                         // owner's decision — see above, do not flip
     var DEBUG_UI = (function () {
-      try {
-        var v = localStorage.getItem('edu-rpg-debug');
-        if (v === '1') return true;
-        if (v === '0') return false;
-        return DEFAULT_ON;
-      } catch (e) { return DEFAULT_ON; }
+      try { localStorage.removeItem('edu-rpg-debug'); } catch (e) {}
+      return DEFAULT_ON;
     })();
 
     (function () {

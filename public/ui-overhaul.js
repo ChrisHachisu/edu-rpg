@@ -9,6 +9,429 @@
    ADDITIVE: only shows while a recognized scene is active; the live
    game is untouched on any screen not yet implemented here.
    ============================================================ */
+/* ============================================================
+   SAVE SLOTS, AUTO SAVE AND DEFEAT  (owner-locked 2026-11-04)
+   ------------------------------------------------------------
+   Design page: https://claude.ai/artifact/F4XsasiKzd81SYHnW6MzBM. Owner picks:
+     1. FIVE save slots per device, chosen on the title screen. Each slot keeps BOTH its newest
+        auto save and its last manual save, and the player picks which one to load.
+     2. Auto save at checkpoints only: arriving on any map or dungeon floor (towns in and out),
+        right before every boss fight, after a boss win, after a level up or finished quest, when
+        the app is backgrounded, and before returning to the title. Never during a battle.
+     3. Manual save from the menu, and only inside a town.
+     4. Dungeon crystals no longer save. They still heal and warp (their save calls become auto
+        saves, so floor-warp flags still persist).
+     5. Defeat: wake up in the last town visited with full HP, keep everything, lose half the gold.
+     6. Boss defeat adds "Try the boss again": the fight restarts with HP and items EXACTLY as they
+        were when it began (option 5B), no gold lost.
+
+   HOW SLOTS WORK WITHOUT TOUCHING THE FROZEN BUNDLE. The bundle's save class reads and writes two
+   fixed keys, `edu-rpg-save` and `edu-rpg-autosave`, through closure constants this layer cannot
+   reach. So those two keys stay the bundle's WORKING COPY of the active slot:
+     - Storage.prototype.setItem/removeItem are wrapped so every write to a working key is mirrored
+       into `qok-slot-<n>-save` / `qok-slot-<n>-auto` for the active slot `qok-active-slot`.
+     - Choosing a slot on the title copies that slot back into the working keys (mirroring is
+       suspended while we do, so a swap can never leak into another slot).
+     - Loading the AUTO save goes through the bundle's own Continue path: the auto record is laid
+       into `edu-rpg-save` for the one synchronous loadGame() call and the manual record is put
+       straight back afterwards.
+   The existing single save migrates into slot 1 on first boot of this build (`qok-slots-v1`).
+   ============================================================ */
+(function () {
+  'use strict';
+  var CANON_SAVE = 'edu-rpg-save', CANON_AUTO = 'edu-rpg-autosave';
+  var ACTIVE = 'qok-active-slot', MARK = 'qok-slots-v1', SLOTS = 5;
+  // Every map whose bundle type is "town" (Xt[*].type), plus Cinderwatch, which the Acts 2-5 world
+  // build turns into a real town. A map not listed here is not a town for saving or for waking up.
+  var TOWNS = { greenhollow: 1, millbrook: 1, portSapphire: 1, ironkeep: 1, frostwatch: 1,
+    hauntedVillage: 1, oasisHaven: 1, ruinsCamp: 1, embersRest: 1, lastBastion: 1, havensEdge: 1,
+    stormreachVillage: 1, frostfallVillage: 1, sunkenTempleVillage: 1, twilightVillage: 1, cinderwatch: 1 };
+
+  var LS = null;
+  try { LS = window.localStorage; } catch (e) {}
+  if (!LS) return;
+  var proto = Object.getPrototypeOf(LS);
+  var rawSet = proto.setItem, rawGet = proto.getItem, rawRemove = proto.removeItem;
+  function get(k) { try { return rawGet.call(LS, k); } catch (e) { return null; } }
+  function set(k, v) { try { rawSet.call(LS, k, v); return true; } catch (e) { return false; } }
+  function del(k) { try { rawRemove.call(LS, k); } catch (e) {} }
+  function slotKey(n, kind) { return 'qok-slot-' + n + '-' + kind; }   // kind: save | auto | town
+  function activeSlot() { var n = parseInt(get(ACTIVE), 10); return n >= 1 && n <= SLOTS ? n : 0; }
+  var suspend = 0;
+
+  proto.setItem = function (k, v) {
+    var r = rawSet.apply(this, arguments);
+    if (this === LS && !suspend && (k === CANON_SAVE || k === CANON_AUTO)) {
+      var n = activeSlot();
+      if (n) set(slotKey(n, k === CANON_SAVE ? 'save' : 'auto'), String(v));
+    }
+    return r;
+  };
+  proto.removeItem = function (k) {
+    var r = rawRemove.apply(this, arguments);
+    if (this === LS && !suspend && (k === CANON_SAVE || k === CANON_AUTO)) {
+      var n = activeSlot();
+      if (n) del(slotKey(n, k === CANON_SAVE ? 'save' : 'auto'));
+    }
+    return r;
+  };
+
+  // ---- one-time migration of the pre-slot save into slot 1 ----
+  if (!get(MARK)) {
+    var s0 = get(CANON_SAVE), a0 = get(CANON_AUTO);
+    if (s0 || a0) {
+      if (s0) set(slotKey(1, 'save'), s0);
+      if (a0) set(slotKey(1, 'auto'), a0);
+      set(ACTIVE, '1');
+    }
+    set(MARK, '1');
+  }
+
+  function parse(raw) { if (!raw) return null; try { var d = JSON.parse(raw); return d && d.player ? d : null; } catch (e) { return null; } }
+  function swapWorking(saveRaw, autoRaw) {
+    suspend++;
+    try {
+      if (saveRaw) set(CANON_SAVE, saveRaw); else del(CANON_SAVE);
+      if (autoRaw) set(CANON_AUTO, autoRaw); else del(CANON_AUTO);
+    } finally { suspend--; }
+  }
+  function activate(n) {
+    set(ACTIVE, String(n));
+    swapWorking(get(slotKey(n, 'save')), get(slotKey(n, 'auto')));
+  }
+  function slotInfo(n) {
+    var s = parse(get(slotKey(n, 'save'))), a = parse(get(slotKey(n, 'auto')));
+    var newest = s && a ? ((a.timestamp || 0) >= (s.timestamp || 0) ? a : s) : (s || a);
+    return { n: n, save: s, auto: a, newest: newest, empty: !s && !a };
+  }
+  function deleteSlot(n) {
+    ['save', 'auto', 'town'].forEach(function (k) { del(slotKey(n, k)); });
+    if (activeSlot() === n) { del(ACTIVE); swapWorking(null, null); }
+  }
+
+  // ---- game bridges ----
+  function G() { return window.__PHASER_GAME__; }
+  function GS() { return window.__GAME_STATE__; }
+  function Z(k, p) { var q = window.__QOK; return q && q.Z ? q.Z(k, p) : k; }
+  function isJa() { var q = window.__QOK; try { return !!(q && q.loc && q.loc() === 'ja'); } catch (e) { return false; } }
+  function kanji() { var t = GS(); return !!(t && t.player && t.player.state && t.player.state.kanjiMode); }
+  function T3(en, kana, kj) { return isJa() ? (kanji() && kj ? kj : kana) : en; }
+  function act(k) { var g = G(); try { return !!(g && g.scene && g.scene.isActive(k)); } catch (e) { return false; } }
+  function scene(k) { var g = G(); try { return g && g.scene && g.scene.getScene(k); } catch (e) { return null; } }
+  function alive() { var t = GS(); return !!(t && t.player && t.player.state && t.player.state.hp > 0); }
+  function coverActive() { var c = window.__QOK_COVER__; try { return !c || !c.phase || c.phase() === 'active'; } catch (e) { return true; } }
+  function curMapId() {
+    var wm = scene('WorldMapScene'), t = GS();
+    return (wm && wm.currentMapId) || (t && t.player && t.player.state && t.player.state.position && t.player.state.position.mapId) || '';
+  }
+  function inTown() { return !!TOWNS[curMapId()]; }
+  function placeName(pos) {
+    if (!pos || !pos.mapId) return '';
+    var n = Z('map.' + pos.mapId);
+    if (!n || n.charAt(0) === '[') n = pos.mapId;
+    if (!TOWNS[pos.mapId] && pos.mapId !== 'overworld' && pos.floor && pos.floor > 1) n += ' B' + pos.floor + 'F';
+    return n;
+  }
+  function clone(v) { try { return JSON.parse(JSON.stringify(v)); } catch (e) { return null; } }
+  function record() {
+    // The same shape the bundle's own save writes (version 4), built from the live state.
+    var t = GS(); if (!t || !t.player) return null;
+    var pt = (t.playtime || 0) + (Date.now() - (t.startTime || Date.now())) / 1000;
+    var qs = null; try { qs = t.quizManager && t.quizManager.getStats ? t.quizManager.getStats() : null; } catch (e) {}
+    return { version: 4, timestamp: Date.now(), player: clone(t.player.state), playtime: pt, quizStats: clone(qs) };
+  }
+
+  // ---- "Saved" indicator ----
+  var badge = null, badgeT = 0;
+  function flashSaved() {
+    try {
+      if (!badge) {
+        badge = document.createElement('div');
+        badge.id = 'qok-saved-badge';
+        badge.style.cssText = 'position:fixed;z-index:80;pointer-events:none;top:calc(env(safe-area-inset-top,0px) + 10px);' +
+          'right:calc(env(safe-area-inset-right,0px) + 12px);padding:4px 11px 4px 9px;border-radius:14px;' +
+          'background:rgba(21,22,28,.82);color:#e8e2d4;font:700 12px "Zen Maru Gothic",system-ui,sans-serif;' +
+          'border:1px solid rgba(201,169,97,.40);opacity:0;transition:opacity .25s;';
+        document.body.appendChild(badge);
+      }
+      badge.innerHTML = '<span style="color:#6f9e7e">●</span> ' + T3('Saved', 'セーブ', 'セーブ');
+      badge.style.opacity = '1';
+      clearTimeout(badgeT);
+      badgeT = setTimeout(function () { if (badge) badge.style.opacity = '0'; }, 1800);
+    } catch (e) {}
+  }
+
+  // ---- auto save ----
+  function autoSaveNow(force) {
+    var t = GS(), wm = scene('WorldMapScene');
+    if (!t || !t.player || !alive() || !wm || !wm.hero) return false;
+    if (act('BattleScene') || act('GameOverScene') || act('TitleScene')) return false;
+    if (!force && (!act('WorldMapScene') || !coverActive())) return false;
+    try { if (wm.updatePosition) wm.updatePosition(); } catch (e) {}
+    try { t.autoSave(); } catch (e) { return false; }
+    var pos = t.player.state.position;
+    if (pos && TOWNS[pos.mapId] && activeSlot() && townArrival) {
+      set(slotKey(activeSlot(), 'town'), JSON.stringify({ mapId: pos.mapId, x: pos.x, y: pos.y }));
+    }
+    if (!force) flashSaved();
+    return true;
+  }
+  var townArrival = false;
+
+  // ---- watcher: map/floor arrival, level, quests, battle edges ----
+  var lastKey = null, pendingAt = 0, pendingReason = null, lastLevel = -1, lastQuests = -1, wasBattle = false;
+  var bossFight = null;      // set by the startBattle hook; survives into GameOverScene for the retry
+  function watch() {
+    var t = GS(), wm = scene('WorldMapScene');
+    hookScene(wm); hookState(t);
+    var battle = act('BattleScene');
+    if (wasBattle && !battle) {
+      if (alive() && !act('GameOverScene')) {
+        if (bossFight) { pendingReason = 'boss-won'; pendingAt = Date.now() + 900; }
+        bossFight = null;
+      }
+    }
+    wasBattle = battle;
+    if (!t || !t.player || !t.player.state || !wm || !act('WorldMapScene')) return;
+    var st = t.player.state;
+    var key = wm.currentMapId + '|' + (wm.currentFloor || 1);
+    if (key !== lastKey) {
+      lastKey = key; pendingReason = 'map'; pendingAt = Date.now() + 900;
+      townArrival = !!TOWNS[wm.currentMapId];
+    }
+    var q = (st.completedQuests || []).length;
+    if (lastLevel >= 0 && (st.level > lastLevel || q > lastQuests) && !pendingReason) { pendingReason = 'progress'; pendingAt = Date.now() + 600; }
+    lastLevel = st.level; lastQuests = q;
+    if (pendingReason && Date.now() >= pendingAt && coverActive()) {
+      var cam = wm.cameras && wm.cameras.main;
+      var fading = !!(cam && ((cam.fadeEffect && cam.fadeEffect.isRunning)));
+      if (!fading) {
+        var isArrival = pendingReason === 'map';
+        if (!isArrival) townArrival = false;
+        if (autoSaveNow(false)) pendingReason = null;
+        townArrival = false;
+      }
+    }
+  }
+  function resetWatch() { lastKey = null; pendingReason = null; lastLevel = -1; lastQuests = -1; }
+
+  // GameState hooks: saveGame outside a town becomes an auto save (crystals and any other in-dungeon
+  // save point), so the manual record only ever holds a town.
+  function hookState(t) {
+    if (!t || t.__qokSlots) return;
+    if (typeof t.saveGame !== 'function') return;
+    var origSave = t.saveGame;
+    t.saveGame = function () {
+      if (inTown()) return origSave.apply(t, arguments);
+      return t.autoSave();
+    };
+    t.__qokSlots = true;
+  }
+
+  // WorldMapScene hooks: capture every boss fight's starting record, and reword crystal messages.
+  var CRYSTAL_KEYS = ['dungeon.crystalSave', 'dungeon.crystalSaveEntrance', 'npc.savePoint'];
+  function crystalText() {
+    return T3('The crystal restores your strength! HP fully restored!',
+      'クリスタルの ちからで HPが かんぜんに かいふくした！',
+      'クリスタルの 力で HPが 完全に 回復した！');
+  }
+  function rewordCrystal(txt) {
+    if (inTown() || typeof txt !== 'string') return txt;
+    for (var i = 0; i < CRYSTAL_KEYS.length; i++) if (txt === Z(CRYSTAL_KEYS[i])) return crystalText();
+    return txt;
+  }
+  function hookScene(wm) {
+    if (!wm || wm.__qokSlots) return;
+    if (typeof wm.startBattle !== 'function' || typeof wm.showMessage !== 'function') return;
+    var origStart = wm.startBattle;
+    wm.startBattle = function (monster, isBoss) {
+      try {
+        if (alive() && monster && (isBoss || monster.aiPattern === 'boss')) {
+          try { if (wm.updatePosition) wm.updatePosition(); } catch (e) {}
+          bossFight = { monster: monster, bossId: wm.pendingBossId, zone: wm.currentEncounterZone, record: record() };
+          try { GS().autoSave(); flashSaved(); } catch (e) {}       // "right before a boss fight"
+        }
+      } catch (e) {}
+      return origStart.apply(this, arguments);
+    };
+    var origMsg = wm.showMessage;
+    wm.showMessage = function (txt) {
+      var args = Array.prototype.slice.call(arguments);
+      try { args[0] = rewordCrystal(txt); } catch (e) {}
+      return origMsg.apply(this, args);
+    };
+    if (typeof wm.showMidFloorCrystalMenu === 'function') {
+      var origMid = wm.showMidFloorCrystalMenu;
+      wm.showMidFloorCrystalMenu = function () {
+        var r = origMid.apply(this, arguments);
+        try {
+          var old = Z('dungeon.crystalSave');
+          (wm.children && wm.children.list || []).forEach(function (o) { if (o && o.type === 'Text' && o.text === old) o.setText(crystalText()); });
+        } catch (e) {}
+        return r;
+      };
+    }
+    wm.__qokSlots = true;
+  }
+
+  // ---- defeat ----
+  function lastTown() {
+    var n = activeSlot(), t = parse(null);
+    try { t = JSON.parse(get(slotKey(n, 'town')) || 'null'); } catch (e) { t = null; }
+    if (t && TOWNS[t.mapId]) return t;
+    var recs = [parse(get(CANON_AUTO)), parse(get(CANON_SAVE))];
+    for (var i = 0; i < recs.length; i++) {
+      var p = recs[i] && recs[i].player && recs[i].player.position;
+      if (p && TOWNS[p.mapId]) return { mapId: p.mapId, x: p.x, y: p.y };
+    }
+    return null;
+  }
+  function defeatInfo() {
+    var t = GS(), st = t && t.player && t.player.state;
+    var town = lastTown();
+    return {
+      boss: !!(bossFight && bossFight.record),
+      town: town, townName: town ? placeName(town) : '',
+      goldLost: st ? Math.floor((st.gold || 0) / 2) : 0
+    };
+  }
+  function beginLoad(why) { try { if (window.__QOK_COVER__ && window.__QOK_COVER__.beginWorldLoad) window.__QOK_COVER__.beginWorldLoad(why); } catch (e) {} }
+  function returnToTown() {
+    var go = scene('GameOverScene'), t = GS();
+    if (!go || !t || !t.player) return false;
+    var town = lastTown(), st = t.player.state;
+    try { go.input.keyboard && go.input.keyboard.removeAllListeners(); } catch (e) {}
+    if (!town) {
+      // No town on record (should not happen once the first town is reached): fall back to the
+      // newest record of this slot, which is what the old "Try Again" did.
+      beginLoad('gameover-fallback');
+      var ok = false; try { ok = t.loadAutoSave() || t.loadGame(); } catch (e) {}
+      go.scene.start(ok ? 'WorldMapScene' : 'TitleScene');
+      return true;
+    }
+    st.gold = (st.gold || 0) - Math.floor((st.gold || 0) / 2);
+    try { t.player.fullHeal(); } catch (e) { st.hp = st.maxHp; }
+    st.poisonedUntil = 0;
+    st.position = { mapId: town.mapId, x: town.x, y: town.y, floor: 1 };
+    bossFight = null; resetWatch();
+    beginLoad('gameover-town');
+    go.scene.start('WorldMapScene');
+    return true;
+  }
+  function retryBoss() {
+    var go = scene('GameOverScene'), t = GS(), bf = bossFight;
+    if (!go || !t || !bf || !bf.record) return false;
+    try { go.input.keyboard && go.input.keyboard.removeAllListeners(); } catch (e) {}
+    // Load the fight's starting record through the bundle's own loader, via the auto key, then put
+    // the real auto save back. Nothing is written to the slot.
+    var ok = false, prev = get(CANON_AUTO);
+    suspend++;
+    try {
+      set(CANON_AUTO, JSON.stringify(bf.record));
+      ok = !!t.loadAutoSave();
+    } catch (e) { ok = false; }
+    finally { if (prev == null) del(CANON_AUTO); else set(CANON_AUTO, prev); suspend--; }
+    if (!ok) return false;
+    resetWatch();
+    beginLoad('gameover-boss-retry');
+    go.scene.start('WorldMapScene');
+    var mapId = bf.record.player.position && bf.record.player.position.mapId, t0 = Date.now(), readyAt = 0;
+    (function waitThenFight() {
+      var wm = scene('WorldMapScene');
+      if (Date.now() - t0 > 20000) return;
+      if (wm && act('WorldMapScene') && wm.hero && wm.currentMapId === mapId && coverActive()) {
+        if (!readyAt) readyAt = Date.now() + 500;
+        if (Date.now() >= readyAt) {
+          try {
+            wm.pendingBossId = bf.bossId; wm.currentEncounterZone = bf.zone;
+            wm.startBattle(bf.monster, true);
+          } catch (e) {}
+          return;
+        }
+      }
+      setTimeout(waitThenFight, 100);
+    })();
+    return true;
+  }
+  function toTitle() {
+    var go = scene('GameOverScene'); if (!go) return false;
+    try { go.input.keyboard && go.input.keyboard.removeAllListeners(); } catch (e) {}
+    bossFight = null;
+    go.scene.start('TitleScene');
+    return true;
+  }
+
+  // ---- manual save (menu, towns only) ----
+  function manualSave() {
+    var t = GS(), wm = scene('WorldMapScene');
+    if (!t || !alive() || !inTown()) return false;
+    try { if (wm && wm.updatePosition) wm.updatePosition(); } catch (e) {}
+    try { t.saveGame(); } catch (e) { return false; }
+    return true;
+  }
+
+  // ---- title-screen actions ----
+  function titleScene() { return scene('TitleScene'); }
+  function rebuildTitleMenu(ts) {
+    try { ts.mode = 'title'; if (typeof ts.draw === 'function') ts.draw(); else if (typeof ts.drawTitleScreen === 'function') ts.drawTitleScreen(); } catch (e) {}
+  }
+  function pickTitleAction(ts, action) {
+    var items = ts.menuItems || [];
+    var idx = items.findIndex(function (m) { return m.getData && m.getData('action') === action; });
+    if (idx < 0) return false;
+    ts.selectedIndex = idx;
+    try { if (ts.updateSelection) ts.updateSelection(); } catch (e) {}
+    ts.confirm();
+    return true;
+  }
+  function continueSlot(n, kind) {
+    var ts = titleScene(); if (!ts) return false;
+    var info = slotInfo(n);
+    var useRaw = kind === 'auto' ? get(slotKey(n, 'auto')) : get(slotKey(n, 'save'));
+    if (!useRaw) return false;
+    activate(n);
+    resetWatch(); bossFight = null;
+    // Lay the chosen record into the key Continue reads, run the bundle's Continue, restore.
+    suspend++;
+    try { set(CANON_SAVE, useRaw); } finally { suspend--; }
+    rebuildTitleMenu(ts);
+    beginLoad('title-continue');
+    var ok = false;
+    try { ok = pickTitleAction(ts, 'continue'); }
+    finally { swapWorking(get(slotKey(n, 'save')), get(slotKey(n, 'auto'))); }
+    return ok;
+  }
+  function newInSlot(n) {
+    var ts = titleScene(); if (!ts) return false;
+    if (!slotInfo(n).empty) return false;     // the UI only offers New on an empty slot
+    set(ACTIVE, String(n));
+    swapWorking(null, null);
+    del(slotKey(n, 'town'));
+    resetWatch(); bossFight = null;
+    rebuildTitleMenu(ts);
+    return pickTitleAction(ts, 'new');
+  }
+
+  // ---- install ----
+  function tick() { try { watch(); } catch (e) {} }
+  setInterval(tick, 250);
+  function onHide() { if (document.hidden || document.visibilityState === 'hidden') { try { autoSaveNow(true); } catch (e) {} } }
+  document.addEventListener('visibilitychange', onHide);
+  window.addEventListener('pagehide', function () { try { autoSaveNow(true); } catch (e) {} });
+
+  window.__QOK_SAVES__ = {
+    SLOTS: SLOTS, TOWNS: TOWNS,
+    slots: function () { var a = []; for (var i = 1; i <= SLOTS; i++) a.push(slotInfo(i)); return a; },
+    slotInfo: slotInfo, activeSlot: activeSlot, deleteSlot: deleteSlot,
+    continueSlot: continueSlot, newInSlot: newInSlot,
+    placeName: placeName, inTown: inTown, manualSave: manualSave,
+    autoSaveNow: autoSaveNow, flashSaved: flashSaved,
+    defeatInfo: defeatInfo, returnToTown: returnToTown, retryBoss: retryBoss, toTitle: toTitle,
+    crystalText: crystalText,
+    _debug: function () { return { active: activeSlot(), bossFight: !!bossFight, lastKey: lastKey, pending: pendingReason }; }
+  };
+})();
+
 (function () {
   'use strict';
 
@@ -502,8 +925,15 @@
       '<div class="who"><div class="nm">' + esc(st.name) + '</div>' +
         '<div class="who-meta"><span class="lv">' + esc(Z('menu.level')) + ' ' + st.level + '</span><span class="top-hp-num">' + esc(Z('menu.hp')) + ' ' + st.hp + '/' + maxHp + '</span></div>' +
         '<div class="top-hp" role="meter" aria-label="' + esc(Z('menu.hp')) + '" aria-valuemin="0" aria-valuemax="' + maxHp + '" aria-valuenow="' + st.hp + '"><i class="' + hpTone + '" style="width:' + Math.round(hpRatio * 100) + '%"></i></div></div>' +
-      '<div class="headtools"><div class="coins">◎ ' + st.gold + '</div>' +
+      '<div class="headtools">' + menuSaveBtn() + '<div class="coins">◎ ' + st.gold + '</div>' +
       '<button class="xbtn" data-act="close" aria-label="Close">✕</button></div></div>';
+  }
+  // Save from the menu, towns only (owner-locked 2026-11-04). Outside a town the button stays
+  // visible but dimmed, and a tap explains where saving works.
+  function menuSaveBtn() {
+    var SV = window.__QOK_SAVES__; if (!SV) return '';
+    var ok = SV.inTown();
+    return '<button class="savebtn' + (ok ? '' : ' off') + '" data-act="menuSave">' + esc(Z('menu.save')) + '</button>';
   }
   function tabbar(cur) {
     var h = '<div class="tabbar">';
@@ -641,9 +1071,10 @@
   var settingsQuitConfirm = false;
   function settingsQuitConfirmBody() {
     var heading = isJa() ? 'タイトルへもどりますか？' : 'Return to Title?';
+    // Returning to the title auto saves first (save slots, 2026-11-04), so nothing is lost.
     var warn = isJa()
-      ? '前回のセーブ地点からの進行状況は 失われます。'
-      : 'Progress since your last save point will be lost.';
+      ? 'ぼうけんは オートセーブされます。'
+      : 'Your adventure will be auto saved.';
     return '<div class="body"><div class="zc pad stack g10" style="padding-top:14px;">' +
       '<div class="scene-h">' + esc(heading) + '</div>' +
       '<div class="panel" style="padding:16px;text-align:center;font-weight:700;color:var(--ink-soft);font-size:14px;line-height:1.5;">' + esc(warn) + '</div>' +
@@ -682,19 +1113,13 @@
     }
     return h + '</div>' +
       '<div class="zc pad" style="padding-top:0;">' +
-        // PERFORMANCE READOUT. index.html carries a diagnostic panel (fps, worst frame, freezes, a
-        // rolling 30 s summary and the device line) that is OFF by default at the owner's request
-        // (2026-08-17). His phone is the only place the lag reproduces and the Mac bench cannot, so
-        // this row lets him switch the panel on for one walk and screenshot it, then off again.
-        // DOM-only, like the return-to-title row: the flag lives in localStorage and is read once
-        // at boot, hence the reload. Local literals, no bundle key exists for it.
-        '<div class="setrow span2" data-act="perfToggle"><span class="lab">' + use('gauge') + esc(isJa() ? 'パフォーマンスひょうじ' : 'Performance readout') + '</span>' +
-          '<div class="switch ' + (perfReadoutOn() ? 'on' : '') + '" style="pointer-events:none;"></div></div>' +
+        // The "Performance readout" switch that used to sit here is gone (owner, 2026-11-04: the
+        // debug box appeared on his phone after an accidental tap). index.html no longer honours the
+        // flag at all, so the box cannot come back from an old setting either.
         '<button class="btn btn-slate" data-act="quitAsk" style="width:100%;font-weight:800;margin-top:8px;">' + esc(Z('gameover.title_screen')) + '</button>' +
       '</div>' +
     '</div>';
   }
-  function perfReadoutOn() { try { return localStorage.getItem('edu-rpg-debug') === '1'; } catch (e) { return false; } }
 
   // ---- item-use toast ----
   // MenuScene.useItem() DOES work (applies the effect + decrements), but its feedback
@@ -1669,6 +2094,8 @@
   function renderTitle() {
     var ts = getScene('TitleScene');
     if (!ts) return;
+    var SV = window.__QOK_SAVES__;
+    if (SV && titleView !== 'landing') return renderTitleSlots(ts, SV);
     var hasSave = false; try { hasSave = !!(window.localStorage && localStorage.getItem('edu-rpg-save')); } catch (e) {}
     var ja = isJa();
     var heroColor = (ts.colorOptions && ts.colorOptions[ts.colorIndex || 0]) || 'gray';
@@ -1681,8 +2108,9 @@
         '</div>' +
         '<div class="t-hero">' + heroImg(160, heroColor) + '</div>' +
         '<div class="t-actions">' +
+          (SV ? '<button class="btn btn-gold" data-act="titleSlots" style="width:100%;font-size:18px;">' + use('arrow', 'ic') + esc(ja ? 'はじめる' : 'Start') + '</button>' :
           '<button class="btn btn-gold" data-act="titleNew" style="width:100%;font-size:18px;">' + use('arrow', 'ic') + esc(Z('title.newGame')) + '</button>' +
-          (hasSave ? '<button class="btn btn-slate" data-act="titleContinue" style="width:100%;font-size:17px;">' + use('arrow', 'ic') + esc(Z('title.continue')) + '</button>' : '') +
+          (hasSave ? '<button class="btn btn-slate" data-act="titleContinue" style="width:100%;font-size:17px;">' + use('arrow', 'ic') + esc(Z('title.continue')) + '</button>' : '')) +
           '<div class="toggle" data-act="titleLang" style="margin-top:4px;"><span class="' + (!ja ? 'on' : '') + '">English</span><span class="' + (ja ? 'on' : '') + '">日本語</span></div>' +
         '</div>' +
       '</div>';
@@ -1708,6 +2136,68 @@
         '</div></div></div>';
     }
     var sig = 'title|' + ja + '|' + hasSave + '|' + heroColor + '|' + (ts.ngPlus ? 1 : 0) + '|c' + (titleConfirm ? 1 : 0);
+    activate('title', false);
+    paint(h, sig);
+  }
+
+  // ============================================================
+  //  SAVE SLOTS on the title (owner-locked 2026-11-04; see __QOK_SAVES__ at the top of this file)
+  //  landing -> 'slots' (five cards) -> 'slot' (load auto / load last save / delete) -> 'del'
+  // ============================================================
+  var titleView = 'landing', titleSlotN = 0;
+  function fmtWhen(ts) {
+    if (!ts) return '';
+    var d = new Date(ts), now = new Date(), ja = isJa();
+    var hm = d.getHours() + ':' + ('0' + d.getMinutes()).slice(-2);
+    var same = d.toDateString() === now.toDateString();
+    if (same) return (ja ? 'きょう ' : 'today ') + hm;
+    return (d.getMonth() + 1) + '/' + d.getDate() + ' ' + hm;
+  }
+  function fmtPlay(sec) {
+    var m = Math.floor((sec || 0) / 60), h = Math.floor(m / 60); m = m % 60;
+    return h + ':' + ('0' + m).slice(-2);
+  }
+  function slotCard(SV, info, sel) {
+    var ja = isJa();
+    if (info.empty) {
+      return '<button class="slotcard empty" data-act="slotPick" data-i="' + info.n + '"><span class="sn">' + (ja ? 'きろく ' : 'Slot ') + info.n + '</span>' +
+        '<span class="se">＋ ' + esc(ja ? 'あたらしい ぼうけん' : 'New adventure') + '</span></button>';
+    }
+    var r = info.newest, p = r.player || {};
+    return '<button class="slotcard' + (sel ? ' sel' : '') + '" data-act="slotPick" data-i="' + info.n + '">' +
+      '<span class="sn">' + (ja ? 'きろく ' : 'Slot ') + info.n + '</span>' +
+      '<span class="sr1"><b>' + esc(p.name || '?') + '</b><i>' + esc(Z('menu.level')) + ' ' + (p.level || 1) + '</i></span>' +
+      '<span class="sr2">' + esc(SV.placeName(p.position)) + '</span>' +
+      '<span class="sr2">' + (ja ? 'プレイ ' : 'Play ') + fmtPlay(r.playtime) + ' · ' + esc(fmtWhen(r.timestamp)) + '</span></button>';
+  }
+  function renderTitleSlots(ts, SV) {
+    var ja = isJa(), h;
+    if (titleView === 'slots') {
+      var list = SV.slots();
+      h = '<div class="t-screen slots"><div class="scene-h">' + esc(ja ? 'ぼうけんを えらぶ' : 'Choose your adventure') + '</div><div class="slotlist">';
+      for (var i = 0; i < list.length; i++) h += slotCard(SV, list[i], list[i].n === SV.activeSlot());
+      h += '</div><button class="btn btn-slate" data-act="slotBack" style="width:100%;max-width:380px;">' + esc(ja ? 'もどる' : 'Back') + '</button></div>';
+    } else {
+      var info = SV.slotInfo(titleSlotN);
+      if (info.empty) { titleView = 'slots'; return renderTitleSlots(ts, SV); }
+      var p = info.newest.player || {};
+      h = '<div class="t-screen slots"><div class="scene-h">' + esc(p.name || '') + ' · ' + esc(Z('menu.level')) + ' ' + (p.level || 1) + '</div>' +
+        '<div class="slotlist">';
+      if (info.auto) h += '<button class="slotcard sel" data-act="slotLoad" data-i="0"><span class="sn">' + esc(ja ? 'オートセーブ' : 'Auto save') + '</span>' +
+        '<span class="sr1"><b>' + esc(SV.placeName(info.auto.player.position)) + '</b></span><span class="sr2">' + esc(fmtWhen(info.auto.timestamp)) + ' · ' + esc(Z('menu.level')) + ' ' + (info.auto.player.level || 1) + '</span></button>';
+      if (info.save) h += '<button class="slotcard" data-act="slotLoad" data-i="1"><span class="sn">' + esc(ja ? 'さいごの セーブ' : 'Last save') + '</span>' +
+        '<span class="sr1"><b>' + esc(SV.placeName(info.save.player.position)) + '</b></span><span class="sr2">' + esc(fmtWhen(info.save.timestamp)) + ' · ' + esc(Z('menu.level')) + ' ' + (info.save.player.level || 1) + '</span></button>';
+      h += '</div><div class="slotbtns"><button class="btn btn-slate" data-act="slotDelAsk">' + esc(ja ? 'けす' : 'Delete') + '</button>' +
+        '<button class="btn btn-slate" data-act="slotBack">' + esc(ja ? 'もどる' : 'Back') + '</button></div></div>';
+      if (titleView === 'del') {
+        h += '<div class="shopconf" data-act="slotDelCancel"><div class="card2" data-act="titleNoop">' +
+          '<div class="scene-h">' + esc(ja ? (p.name + 'の ぼうけんを けしますか？') : ('Delete ' + p.name + '’s adventure?')) + '</div>' +
+          '<div class="d" style="text-align:center;margin-top:6px;">' + esc(ja ? 'もとに もどせません。' : 'This cannot be undone.') + '</div>' +
+          '<div class="btnrow"><button class="btn btn-ruby" data-act="slotDelConfirm">' + esc(ja ? 'けす' : 'Delete') + '</button>' +
+          '<button class="btn btn-slate" data-act="slotDelCancel">' + esc(ja ? 'やめる' : 'Cancel') + '</button></div></div></div>';
+      }
+    }
+    var sig = 'title-slots|' + titleView + '|' + titleSlotN + '|' + ja + '|' + h.length + '|' + SV.activeSlot();
     activate('title', false);
     paint(h, sig);
   }
@@ -1864,6 +2354,10 @@
 
   function routeGameOver(act, i) {
     var go = getScene('GameOverScene'); if (!go) return;
+    var SV = window.__QOK_SAVES__;
+    if (SV && act === 'defeatBoss') { if (!SV.retryBoss()) SV.returnToTown(); return; }
+    if (SV && act === 'defeatTown') { SV.returnToTown(); return; }
+    if (SV && act === 'defeatTitle') { SV.toTitle(); return; }
     if (act !== 'gameOverOpt') return;
     go.menuIndex = i;
     if (go.updateMenuHighlight) { try { go.updateMenuHighlight(); } catch (e) {} }
@@ -1908,6 +2402,20 @@
     if (act === 'titleLang') { ts.toggleLanguage(); return; }
     if (act === 'titleNoop') return;                                   // a tap on the confirm card itself
     if (act === 'titleNewCancel') { titleConfirm = false; lastSig = null; return; }
+    var SV = window.__QOK_SAVES__;
+    if (SV) {
+      if (act === 'titleSlots') { titleView = 'slots'; lastSig = null; return; }
+      if (act === 'slotBack') { titleView = titleView === 'slots' ? 'landing' : 'slots'; lastSig = null; return; }
+      if (act === 'slotPick') {
+        var info = SV.slotInfo(i);
+        if (info.empty) { titleView = 'landing'; lastSig = null; SV.newInSlot(i); return; }
+        titleSlotN = i; titleView = 'slot'; lastSig = null; return;
+      }
+      if (act === 'slotLoad') { var nn = titleSlotN; titleView = 'landing'; lastSig = null; SV.continueSlot(nn, i === 0 ? 'auto' : 'save'); return; }
+      if (act === 'slotDelAsk') { titleView = 'del'; lastSig = null; return; }
+      if (act === 'slotDelCancel') { titleView = 'slot'; lastSig = null; return; }
+      if (act === 'slotDelConfirm') { SV.deleteSlot(titleSlotN); titleView = 'slots'; lastSig = null; return; }
+    }
     var action = act === 'titleNew' ? 'new' : act === 'titleContinue' ? 'continue' : act === 'titleNewConfirm' ? 'new' : null;
     if (!action) return;
     if (act === 'titleNew') {
@@ -2157,10 +2665,13 @@
       ms.listIndex = i; ms.handleSettingToggle(1);
     } else if (act === 'quitAsk') {
       settingsQuitConfirm = true;
-    } else if (act === 'perfToggle') {
-      // See settingsBody(): the panel reads the flag at boot, so flip it and reload.
-      try { localStorage.setItem('edu-rpg-debug', perfReadoutOn() ? '0' : '1'); } catch (e) {}
-      try { location.reload(); } catch (e2) {}
+    } else if (act === 'menuSave') {
+      var SV = window.__QOK_SAVES__, kj = !!(pstate() && pstate().kanjiMode), ja = isJa();
+      if (SV && SV.inTown() && SV.manualSave()) {
+        showToast(ja ? 'セーブしました！' : 'Saved!');
+      } else {
+        showToast(ja ? (kj ? '町の 中で セーブできます。' : 'まちの なかで セーブできます。') : 'You can save in a town.');
+      }
     } else if (act === 'quitCancel') {
       settingsQuitConfirm = false;
     } else if (act === 'quitConfirm') {
@@ -2169,6 +2680,7 @@
       // scene.launch("MenuScene")), so stop the paused WorldMapScene explicitly first -- otherwise
       // it would sit paused-but-alive forever instead of being torn down like a real return-to-title.
       settingsQuitConfirm = false;
+      try { if (window.__QOK_SAVES__) window.__QOK_SAVES__.autoSaveNow(true); } catch (e) {}
       ms.scene.stop('WorldMapScene');
       ms.scene.start('TitleScene');
     } else if (act === 'close') {
@@ -2846,6 +3358,8 @@
   // ============================================================
   function renderGameOver() {
     var go = getScene('GameOverScene'); if (!go) return;
+    var SV = window.__QOK_SAVES__;
+    if (SV) return renderDefeat(go, SV);
     var OPTS = [
       { a: 'retry', k: 'gameover.retry', cls: 'btn-gold' },
       { a: 'restart_save', k: 'gameover.restart_save', cls: 'btn-slate' },
@@ -2865,6 +3379,31 @@
     var sig = 'gameover|' + saveDisabled + '|' + locale();
     activate('gameover', false);
     paint(h, sig);
+  }
+
+  /* DEFEAT (owner-locked 2026-11-04). Replaces the bundle's Try Again / Restart from Save Point:
+     every defeat offers "Return to <last town>" (full HP, keep everything, lose half the gold);
+     a BOSS defeat also offers "Try the boss again" first, which restarts that fight with HP and
+     items exactly as they were when it began and costs nothing. */
+  function renderDefeat(go, SV) {
+    var d = SV.defeatInfo(), ja = isJa(), kj = !!(pstate() && pstate().kanjiMode);
+    function t3(en, kana, kanji) { return ja ? (kj ? kanji : kana) : en; }
+    var town = d.townName || t3('town', 'まち', '町');
+    var h = '<div class="go-screen"><div class="go-head"><div class="go-skull">☠</div>' +
+      '<div class="go-title">' + esc(Z('gameover.title')) + '</div></div><div class="go-actions">';
+    if (d.boss) {
+      h += '<button class="btn btn-gold" data-act="defeatBoss" style="width:100%;font-size:18px;">' + esc(t3('Try the boss again', 'もういちど ボスに いどむ', 'もう一度 ボスに 挑む')) + '</button>' +
+        '<div class="go-note">' + esc(t3('The fight starts over as it began. No gold is lost.', 'たたかいの はじめから。ゴールドは へらない。', '戦いの 始めから。ゴールドは 減らない。')) + '</div>';
+    }
+    h += '<button class="btn ' + (d.boss ? 'btn-slate' : 'btn-gold') + '" data-act="defeatTown" style="width:100%;font-size:18px;">' +
+      esc(ja ? (town + (kj ? 'に 戻る' : 'に もどる')) : ('Return to ' + town)) + '</button>' +
+      '<div class="go-note">' + esc(t3('Full HP. You keep everything except half your gold (' + d.goldLost + ' G).',
+        'HPは ぜんかい。ゴールドが はんぶんに なる（' + d.goldLost + ' G）。ほかは そのまま。',
+        'HPは 全快。ゴールドが 半分に なる（' + d.goldLost + ' G）。ほかは そのまま。')) + '</div>' +
+      '<button class="btn btn-slate" data-act="defeatTitle" style="width:100%;font-size:18px;">' + esc(Z('gameover.title_screen')) + '</button>';
+    h += '</div></div>';
+    activate('gameover', false);
+    paint(h, 'defeat|' + d.boss + '|' + town + '|' + d.goldLost + '|' + locale() + '|' + kj);
   }
 
   // Overworld dialogue (WorldMapScene.showMessage) advances on a scene tap, but the DOM d-pad +
