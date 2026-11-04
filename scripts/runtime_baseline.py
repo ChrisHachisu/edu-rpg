@@ -70,7 +70,7 @@ ACT1_OVERLAY_FILES = {
     # 52a058593efb1b901a42203bfd7ad591024946eb9f6db513a86c3a9babe69e25 -> 129636 B /
     # 3de643bdde7c7dc15ce602d4a3e0529e74df54db21899269a4b1a385d48fc0fe. Frozen game bundle,
     # art, source maps and all other pinned runtime entries remain unchanged.
-    "index.html": (130411, "735d33eebc2bbff798262c5800bd410f83b747cf936ff2e33c18a3b8e1ee099e"),
+    "index.html": (130688, "60fdca74225527a39695e9cd2351342d334ff84c596bde9ec1ab3bae3fe5382b"),
     # 2026-08-01, owner-authorised: dq-tiles.js now splats AI-generated terrain MATERIALS through
     # its existing continuous-world-pixel drawTerrain, plus a ridged mountain height field,
     # varied shore character and landmark sites derived from mapData. Fallback-safe -- until the
@@ -121,7 +121,7 @@ ACT1_OVERLAY_FILES = {
     # other 12 settle one cell north once; largest rescue nudge 28 px against a 96 px bound).
     # Updated 2026-10-03 for the approved scoped forest+mountain visible-terrain union.
     "dq-tiles.js": (
-        649136, "4372018dbb6a82762e289247acb8217c025772f77cca1a671328738b5c5b93a5"),
+        650001, "008108eb23cd7b7ffd9e9137de1ec91b4e6624d6a473adec38ce202f57958e5a"),
     # 2026-08-07: THE OVERWORLD'S COLLISION SHAPE, baked -- the overworld's answer to the dungeons'
     # `<floor>-walk.png` above, and as much a shipped authority as they are. Deriving it at runtime
     # was correct and unaffordable: owmBuild() evaluated waterField/mountainField per pixel over a
@@ -183,7 +183,7 @@ ACT1_OVERLAY_FILES = {
     # the control-orientation setting, into the frame. First override of this file since the
     # v1.17.1 baseline was frozen, which is why it had no entry before.
     "ui-overhaul.js": (
-        202286, "569336baf507260efd4abbd27176d215d3c7d8644a7280fd0e250300eef4d05d"),
+        230953, "4a9b66736ede4998bbecf3c0b123d313392c0f499f12492e60f36cabe873fd4d"),
     # 2026-08-06, owner pick: "Charcoal & Gold Leaf" (direction 4 of
     # design/ui-overhaul/chic-style-board.html). The same gold as before -- the pixel art, the
     # dungeon plates and the town screens were all approved against it -- spent differently:
@@ -193,7 +193,7 @@ ACT1_OVERLAY_FILES = {
     # bundled rather than fetched; the short version is that it never reached the phone at all.
     # Like ui-overhaul.js above, first override of this file since the baseline was frozen.
     "ui-overhaul.css": (
-        58872, "a4cfcf4b1ccee6b8a30562a3f2aeb5e861376ea72d461b1eaffb9412c0d51939"),
+        60702, "4a23621a84e0dd78700835e73d4b53f18d071d1d6f288c97020cfc61c68e9910"),
 }
 # 2026-08-06, owner-picked ("Charcoal & Gold Leaf", direction 4 of
 # design/ui-overhaul/chic-style-board.html): the chrome the theme needs on disk rather than

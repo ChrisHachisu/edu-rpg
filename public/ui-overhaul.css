@@ -654,3 +654,22 @@ body.qok-dialogue #qok-field-hud #qfh-dialog{bottom:calc(env(safe-area-inset-bot
 
 /* Town feedback sits above the preserved iframe; input always passes through. */
 #qok-town-quest-toast { z-index:151; }
+
+/* ---- SAVE SLOTS (owner-locked 2026-11-04): title slot list, menu Save, defeat notes ---- */
+#qok-ui .t-screen.slots{ justify-content:flex-start; gap:14px; padding-top:calc(env(safe-area-inset-top,0px) + 18px); }
+#qok-ui .slotlist{ width:100%; max-width:380px; display:flex; flex-direction:column; gap:9px; flex:0 1 auto; overflow-y:auto; }
+#qok-ui .slotcard{ display:flex; flex-direction:column; align-items:flex-start; gap:2px; width:100%; text-align:left;
+  padding:10px 14px; border-radius:12px; background:var(--panel); border:1px solid var(--gold-line); color:var(--ink); font:inherit; cursor:pointer; }
+#qok-ui .slotcard.sel{ border-color:var(--gold); box-shadow:inset 0 0 0 1px var(--gold); }
+#qok-ui .slotcard.empty{ border-style:dashed; background:transparent; color:var(--ink-soft); }
+#qok-ui .slotcard .sn{ font-size:11px; letter-spacing:.08em; color:var(--gold); font-weight:700; }
+#qok-ui .slotcard .se{ font-size:15px; font-weight:700; }
+#qok-ui .slotcard .sr1{ display:flex; width:100%; justify-content:space-between; font-size:16px; }
+#qok-ui .slotcard .sr1 i{ font-style:normal; color:var(--gold); font-weight:700; font-size:14px; }
+#qok-ui .slotcard .sr2{ font-size:12.5px; color:var(--ink-soft); font-variant-numeric:tabular-nums; }
+#qok-ui .slotbtns{ width:100%; max-width:380px; display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+#qok-ui .btn-ruby{ background:var(--ruby2); border-color:var(--ruby); color:#f6ecea; }
+#qok-ui .savebtn{ font:inherit; font-size:13px; font-weight:700; padding:5px 12px; border-radius:14px;
+  background:var(--emerald2); border:1px solid var(--emerald); color:#f2f6f3; cursor:pointer; }
+#qok-ui .savebtn.off{ background:transparent; border-color:#ffffff22; color:#77736b; }
+#qok-ui .go-note{ font-size:12.5px; color:var(--ink-soft); margin-top:-6px; line-height:1.45; }
