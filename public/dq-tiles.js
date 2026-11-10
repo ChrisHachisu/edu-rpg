@@ -7123,6 +7123,7 @@
         // (see a1mOwGlide), and its 'tangent' was often open but pointed back out of the wall, so
         // she took it, pushed in again next substep, and netted nothing.
         var slid=false, gl=m.ow?a1mOwGlide(scene,m,x,y,sx,sy):null, tg=gl?null:a1mSlide(scene,m,x,y,sx,sy);
+        var px0=x, py0=y, mv0=moved;
         if(gl){
           x+=gl.x; y+=gl.y; moved+=gl.len; slid=true;
         } else if(tg && a1mFree(scene,m,x+tg.x,y+tg.y)){
@@ -7130,6 +7131,16 @@
         } else {
           if(sx && a1mFree(scene,m,nx,y)){ x=nx; moved+=Math.abs(sx); slid=true; }
           if(sy && a1mFree(scene,m,x,ny)){ y=ny; moved+=Math.abs(sy); slid=true; }
+        }
+        // NO PING-PONG (2026-11-10). Pushed into a concave corner the slide can pick one wall this
+        // substep and the other the next, so she shivered about half a pixel each way while
+        // standing still. A slide that reverses the previous slide, under the same push, is a
+        // stop, not a move.
+        if(slid && m.ow && window.__A1_OW_NOPING__!==false){
+          var ddx=x-px0, ddy=y-py0, sl=Math.sqrt(sx*sx+sy*sy)||1, ls=a1mState.lastSlide, nowT=Date.now();
+          if(ls && nowT-ls.t<300 && (ls.ux*sx+ls.uy*sy)/sl>0.95 && (ls.x*ddx+ls.y*ddy)<0){
+            x=px0; y=py0; moved=mv0; slid=false; ls.t=nowT;
+          } else a1mState.lastSlide={ x:ddx, y:ddy, ux:sx/sl, uy:sy/sl, t:nowT };
         }
         if(!slid){ a1mBump(scene,m,x,y,sx,sy); break; }
       }

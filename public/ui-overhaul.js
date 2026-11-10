@@ -115,6 +115,8 @@
   function Z(k, p) { var q = window.__QOK; return q && q.Z ? q.Z(k, p) : k; }
   function isJa() { var q = window.__QOK; try { return !!(q && q.loc && q.loc() === 'ja'); } catch (e) { return false; } }
   function kanji() { var t = GS(); return !!(t && t.player && t.player.state && t.player.state.kanjiMode); }
+  // Kana by default (house style for ages 6-8); the kanji spelling when the player chose kanji mode.
+  function J(kana, kj) { return kanji() ? kj : kana; }
   function T3(en, kana, kj) { return isJa() ? (kanji() && kj ? kj : kana) : en; }
   function act(k) { var g = G(); try { return !!(g && g.scene && g.scene.isActive(k)); } catch (e) { return false; } }
   function scene(k) { var g = G(); try { return g && g.scene && g.scene.getScene(k); } catch (e) { return null; } }
@@ -1070,10 +1072,10 @@
   // accurate loss, not a blanket "your data will not be saved".
   var settingsQuitConfirm = false;
   function settingsQuitConfirmBody() {
-    var heading = isJa() ? 'タイトルへもどりますか？' : 'Return to Title?';
+    var heading = isJa() ? J('タイトルへもどりますか？', 'タイトルへ戻りますか？') : 'Return to Title?';
     // Returning to the title auto saves first (save slots, 2026-11-04), so nothing is lost.
     var warn = isJa()
-      ? 'ぼうけんは オートセーブされます。'
+      ? (kanji() ? '冒険は オートセーブされます。' : 'ぼうけんは オートセーブされます。')
       : 'Your adventure will be auto saved.';
     return '<div class="body"><div class="zc pad stack g10" style="padding-top:14px;">' +
       '<div class="scene-h">' + esc(heading) + '</div>' +
@@ -1095,7 +1097,7 @@
         lab = Z('settings.language');
         ctrl = '<div class="toggle" style="pointer-events:none;"><span class="' + (!isJa() ? 'on' : '') + '">English</span><span class="' + (isJa() ? 'on' : '') + '">日本語</span></div>';
       } else if (key === 'kanji') {
-        lab = 'もじ'; ctrl = '<span class="val">' + (st.kanjiMode ? 'むずかしい' : 'かんたん') + '</span>';
+        lab = st.kanjiMode ? '文字' : 'もじ'; ctrl = '<span class="val">' + (st.kanjiMode ? '難しい' : 'かんたん') + '</span>';
       } else if (key === 'timer') {
         lab = Z('settings.timer'); ctrl = '<div class="switch ' + (st.timerEnabled ? 'on' : '') + '" style="pointer-events:none;"></div>';
       } else if (key === 'sound') {
@@ -1104,7 +1106,7 @@
         lab = Z('settings.volume'); var v = Math.round((st.masterVolume || 0) * 100);
         ctrl = '<input id="qok-volume" data-native="1" type="range" min="0" max="100" step="1" value="' + v + '" aria-label="' + esc(lab) + '"><span id="qok-volume-value" class="val" style="min-width:42px;text-align:right;">' + v + '%</span>';
       } else if (key === 'controlOrientation') {
-        lab = isJa() ? 'そうさボタン' : 'Controls';
+        lab = isJa() ? (st.kanjiMode ? '操作ボタン' : 'そうさボタン') : 'Controls';
         var ori = (window.localStorage && localStorage.getItem('eduControlOrientation')) || 'right';
         ctrl = '<div class="seg" style="pointer-events:none;flex:1;max-width:230px;"><b class="' + (ori === 'left' ? 'on' : '') + '">◀</b><b class="' + (ori === 'center' ? 'on' : '') + '">●</b><b class="' + (ori === 'right' ? 'on' : '') + '">▶</b></div>';
       }
@@ -1328,9 +1330,9 @@
       '<div class="scene-h">' + esc(Z(it.nameKey)) + '</div>' +
       '<div class="d" style="text-align:center;margin-top:2px;">' + esc(it.buyPrice + ' G' + (isEq ? '' : ' ' + (ja ? 'ずつ' : 'each'))) + '</div>' +
       qtyBlock +
-      '<div class="totrow"><span>' + esc(ja ? 'ごうけい' : 'Total') + '</span>' +
+      '<div class="totrow"><span>' + esc(ja ? J('ごうけい', '合計') : 'Total') + '</span>' +
         '<span class="tot' + (over ? ' over' : '') + '">' + total + ' G</span></div>' +
-      '<div class="totrow" style="font-size:12px;opacity:.8;"><span>' + esc(ja ? 'しょじきん' : 'Wallet') + '</span>' +
+      '<div class="totrow" style="font-size:12px;opacity:.8;"><span>' + esc(ja ? J('しょじきん', '所持金') : 'Wallet') + '</span>' +
         '<span>' + st.gold + ' G</span></div>' +
       '<div class="btnrow">' +
         '<button class="btn btn-em" data-act="shopConfirmBuy"' + (over ? ' disabled' : '') + '>' + use('check', 'ic') + esc(Z('shop.buy')) + '</button>' +
@@ -1607,7 +1609,7 @@
     }
     chips += '<div class="gwheel-pad"></div></div>';
     var langCtrl = '<div class="toggle" data-act="introLang"><span class="' + (!ja ? 'on' : '') + '">English</span><span class="' + (ja ? 'on' : '') + '">日本語</span></div>';
-    var kanjiRow = ja ? ('<div class="panel" style="padding:9px 13px;display:flex;justify-content:space-between;align-items:center;gap:10px;"><span style="font-weight:800;color:var(--ink-soft);font-size:13px;">もじ</span><div class="toggle" data-act="introKanji"><span class="' + (!pstate() || !pstate().kanjiMode ? 'on' : '') + '">かんたん</span><span class="' + (pstate() && pstate().kanjiMode ? 'on' : '') + '">むずかしい</span></div></div>') : '';
+    var kanjiRow = ja ? ('<div class="panel" style="padding:9px 13px;display:flex;justify-content:space-between;align-items:center;gap:10px;"><span style="font-weight:800;color:var(--ink-soft);font-size:13px;">' + J('もじ', '文字') + '</span><div class="toggle" data-act="introKanji"><span class="' + (!pstate() || !pstate().kanjiMode ? 'on' : '') + '">かんたん</span><span class="' + (pstate() && pstate().kanjiMode ? 'on' : '') + '">むずかしい</span></div></div>') : '';
 
     var h = '<div class="body"><div class="zc stack pad g8 grid2" style="padding-top:10px;padding-bottom:12px;">' +
       '<div class="span2" style="display:flex;justify-content:flex-start;"><button data-act="introBack" style="background:#2a2c4d;border:1.5px solid #9a7a36;color:#f3ead2;font-weight:800;font-size:14px;cursor:pointer;padding:6px 14px;border-radius:10px;display:inline-flex;align-items:center;gap:5px;">‹ ' + esc(Z('settings.back')) + '</button></div>' +
@@ -1630,7 +1632,7 @@
         '<div id="qok-name-err" class="name-err' + (nameErrShown ? ' on' : '') + '">' +
           (nameErrShown ? esc(Z('create.nameRequired')) : '') + '</div>' +
       '</div>' +
-      '<div class="panel" style="padding:9px 13px;"><div style="font-weight:800;color:var(--ink-soft);font-size:12px;margin-bottom:6px;">' + (ja ? 'みため' : 'Look') + '</div><div style="display:flex;gap:10px;">' + variantOpts + '</div></div>' +
+      '<div class="panel" style="padding:9px 13px;"><div style="font-weight:800;color:var(--ink-soft);font-size:12px;margin-bottom:6px;">' + (ja ? J('みため', '見た目') : 'Look') + '</div><div style="display:flex;gap:10px;">' + variantOpts + '</div></div>' +
       '<div class="panel" style="padding:9px 13px;"><div style="font-weight:800;color:var(--ink-soft);font-size:12px;margin-bottom:6px;">' + esc(Z('settings.difficulty')) + '</div><div class="gwheel-wrap"><div class="gwheel-band"></div><div class="gwheel" id="qok-gwheel">' + chips + '</div></div></div>' +
       '<div class="panel" style="padding:9px 13px;display:flex;justify-content:space-between;align-items:center;gap:10px;"><span style="font-weight:800;color:var(--ink-soft);font-size:13px;">' + esc(Z('settings.language')) + '</span>' + langCtrl + '</div>' +
       kanjiRow +
@@ -2111,7 +2113,7 @@
         '</div>' +
         '<div class="t-hero">' + heroImg(160, heroColor) + '</div>' +
         '<div class="t-actions">' +
-          (SV ? '<button class="btn btn-gold" data-act="titleSlots" style="width:100%;font-size:18px;">' + use('arrow', 'ic') + esc(ja ? 'はじめる' : 'Start') + '</button>' :
+          (SV ? '<button class="btn btn-gold" data-act="titleSlots" style="width:100%;font-size:18px;">' + use('arrow', 'ic') + esc(ja ? J('はじめる', '始める') : 'Start') + '</button>' :
           '<button class="btn btn-gold" data-act="titleNew" style="width:100%;font-size:18px;">' + use('arrow', 'ic') + esc(Z('title.newGame')) + '</button>' +
           (hasSave ? '<button class="btn btn-slate" data-act="titleContinue" style="width:100%;font-size:17px;">' + use('arrow', 'ic') + esc(Z('title.continue')) + '</button>' : '')) +
           '<div class="toggle" data-act="titleLang" style="margin-top:4px;"><span class="' + (!ja ? 'on' : '') + '">English</span><span class="' + (ja ? 'on' : '') + '">日本語</span></div>' +
@@ -2153,7 +2155,7 @@
     var d = new Date(ts), now = new Date(), ja = isJa();
     var hm = d.getHours() + ':' + ('0' + d.getMinutes()).slice(-2);
     var same = d.toDateString() === now.toDateString();
-    if (same) return (ja ? 'きょう ' : 'today ') + hm;
+    if (same) return (ja ? J('きょう ', '今日 ') : 'today ') + hm;
     return (d.getMonth() + 1) + '/' + d.getDate() + ' ' + hm;
   }
   function fmtPlay(sec) {
@@ -2163,12 +2165,12 @@
   function slotCard(SV, info, sel) {
     var ja = isJa();
     if (info.empty) {
-      return '<button class="slotcard empty" data-act="slotPick" data-i="' + info.n + '"><span class="sn">' + (ja ? 'きろく ' : 'Slot ') + info.n + '</span>' +
-        '<span class="se">＋ ' + esc(ja ? 'あたらしい ぼうけん' : 'New adventure') + '</span></button>';
+      return '<button class="slotcard empty" data-act="slotPick" data-i="' + info.n + '"><span class="sn">' + (ja ? (kanji() ? '記録 ' : 'きろく ') : 'Slot ') + info.n + '</span>' +
+        '<span class="se">＋ ' + esc(ja ? (kanji() ? '新しい 冒険' : 'あたらしい ぼうけん') : 'New adventure') + '</span></button>';
     }
     var r = info.newest, p = r.player || {};
     return '<button class="slotcard' + (sel ? ' sel' : '') + '" data-act="slotPick" data-i="' + info.n + '">' +
-      '<span class="sn">' + (ja ? 'きろく ' : 'Slot ') + info.n + '</span>' +
+      '<span class="sn">' + (ja ? (kanji() ? '記録 ' : 'きろく ') : 'Slot ') + info.n + '</span>' +
       '<span class="sr1"><b>' + esc(p.name || '?') + '</b><i>' + esc(Z('menu.level')) + ' ' + (p.level || 1) + '</i></span>' +
       '<span class="sr2">' + esc(SV.placeName(p.position)) + '</span>' +
       '<span class="sr2">' + (ja ? 'プレイ ' : 'Play ') + fmtPlay(r.playtime) + ' · ' + esc(fmtWhen(r.timestamp)) + '</span></button>';
@@ -2177,9 +2179,9 @@
     var ja = isJa(), h;
     if (titleView === 'slots') {
       var list = SV.slots();
-      h = '<div class="t-screen slots"><div class="scene-h">' + esc(ja ? 'ぼうけんを えらぶ' : 'Choose your adventure') + '</div><div class="slotlist">';
+      h = '<div class="t-screen slots"><div class="scene-h">' + esc(ja ? J('ぼうけんを えらぶ', '冒険を 選ぶ') : 'Choose your adventure') + '</div><div class="slotlist">';
       for (var i = 0; i < list.length; i++) h += slotCard(SV, list[i], list[i].n === SV.activeSlot());
-      h += '</div><button class="btn btn-slate" data-act="slotBack" style="width:100%;max-width:380px;">' + esc(ja ? 'もどる' : 'Back') + '</button></div>';
+      h += '</div><button class="btn btn-slate" data-act="slotBack" style="width:100%;max-width:380px;">' + esc(ja ? J('もどる', '戻る') : 'Back') + '</button></div>';
     } else {
       var info = SV.slotInfo(titleSlotN);
       if (info.empty) { titleView = 'slots'; return renderTitleSlots(ts, SV); }
@@ -2188,15 +2190,15 @@
         '<div class="slotlist">';
       if (info.auto) h += '<button class="slotcard sel" data-act="slotLoad" data-i="0"><span class="sn">' + esc(ja ? 'オートセーブ' : 'Auto save') + '</span>' +
         '<span class="sr1"><b>' + esc(SV.placeName(info.auto.player.position)) + '</b></span><span class="sr2">' + esc(fmtWhen(info.auto.timestamp)) + ' · ' + esc(Z('menu.level')) + ' ' + (info.auto.player.level || 1) + '</span></button>';
-      if (info.save) h += '<button class="slotcard" data-act="slotLoad" data-i="1"><span class="sn">' + esc(ja ? 'さいごの セーブ' : 'Last save') + '</span>' +
+      if (info.save) h += '<button class="slotcard" data-act="slotLoad" data-i="1"><span class="sn">' + esc(ja ? J('さいごの セーブ', '最後の セーブ') : 'Last save') + '</span>' +
         '<span class="sr1"><b>' + esc(SV.placeName(info.save.player.position)) + '</b></span><span class="sr2">' + esc(fmtWhen(info.save.timestamp)) + ' · ' + esc(Z('menu.level')) + ' ' + (info.save.player.level || 1) + '</span></button>';
-      h += '</div><div class="slotbtns"><button class="btn btn-slate" data-act="slotDelAsk">' + esc(ja ? 'けす' : 'Delete') + '</button>' +
-        '<button class="btn btn-slate" data-act="slotBack">' + esc(ja ? 'もどる' : 'Back') + '</button></div></div>';
+      h += '</div><div class="slotbtns"><button class="btn btn-slate" data-act="slotDelAsk">' + esc(ja ? J('けす', '消す') : 'Delete') + '</button>' +
+        '<button class="btn btn-slate" data-act="slotBack">' + esc(ja ? J('もどる', '戻る') : 'Back') + '</button></div></div>';
       if (titleView === 'del') {
         h += '<div class="shopconf" data-act="slotDelCancel"><div class="card2" data-act="titleNoop">' +
-          '<div class="scene-h">' + esc(ja ? (p.name + 'の ぼうけんを けしますか？') : ('Delete ' + p.name + '’s adventure?')) + '</div>' +
-          '<div class="d" style="text-align:center;margin-top:6px;">' + esc(ja ? 'もとに もどせません。' : 'This cannot be undone.') + '</div>' +
-          '<div class="btnrow"><button class="btn btn-ruby" data-act="slotDelConfirm">' + esc(ja ? 'けす' : 'Delete') + '</button>' +
+          '<div class="scene-h">' + esc(ja ? (p.name + J('の ぼうけんを けしますか？', 'の 冒険を 消しますか？')) : ('Delete ' + p.name + '’s adventure?')) + '</div>' +
+          '<div class="d" style="text-align:center;margin-top:6px;">' + esc(ja ? J('もとに もどせません。', '元に 戻せません。') : 'This cannot be undone.') + '</div>' +
+          '<div class="btnrow"><button class="btn btn-ruby" data-act="slotDelConfirm">' + esc(ja ? J('けす', '消す') : 'Delete') + '</button>' +
           '<button class="btn btn-slate" data-act="slotDelCancel">' + esc(ja ? 'やめる' : 'Cancel') + '</button></div></div></div>';
       }
     }
