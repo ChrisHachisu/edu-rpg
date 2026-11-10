@@ -46,7 +46,7 @@ ACT1_OVERLAY_FILES = {
     # 2026-09-21: additive loss/retry guard. It restores the live player after
     # defeat without changing the frozen bundle and polls until its hooks exist.
     "battle-recovery.js": (
-        7024, "b653552259676ee4061bb2c10663e88c799ea6f150290fd59108d00f2b4a6c4e"),
+        10357, "6616dff0762f7a62964c3f154503d8923a23822202cb3345c1be2cf85ed8ccec"),
     # 2026-08-03, owner: "make the game controllable with the keypad ... use the joy stick type
     # keypad on the port sapphire screen". The 4-way d-pad held exactly ONE arrow key at a time
     # (setDir released the previous), so a diagonal was impossible and a corner boundary could
@@ -121,7 +121,7 @@ ACT1_OVERLAY_FILES = {
     # other 12 settle one cell north once; largest rescue nudge 28 px against a 96 px bound).
     # Updated 2026-10-03 for the approved scoped forest+mountain visible-terrain union.
     "dq-tiles.js": (
-        650001, "008108eb23cd7b7ffd9e9137de1ec91b4e6624d6a473adec38ce202f57958e5a"),
+        662055, "f1b221cff9957760b97f524e11cb7de57ae60519c33fe904eeff755d493bc1f1"),
     # 2026-08-07: THE OVERWORLD'S COLLISION SHAPE, baked -- the overworld's answer to the dungeons'
     # `<floor>-walk.png` above, and as much a shipped authority as they are. Deriving it at runtime
     # was correct and unaffordable: owmBuild() evaluated waterField/mountainField per pixel over a
@@ -183,7 +183,7 @@ ACT1_OVERLAY_FILES = {
     # the control-orientation setting, into the frame. First override of this file since the
     # v1.17.1 baseline was frozen, which is why it had no entry before.
     "ui-overhaul.js": (
-        230953, "4a9b66736ede4998bbecf3c0b123d313392c0f499f12492e60f36cabe873fd4d"),
+        231584, "bc874fd7f15ad614c0ec52b3a7c6cb121448ee47cf189fd3b8c5174044c5a1e1"),
     # 2026-08-06, owner pick: "Charcoal & Gold Leaf" (direction 4 of
     # design/ui-overhaul/chic-style-board.html). The same gold as before -- the pixel art, the
     # dungeon plates and the town screens were all approved against it -- spent differently:
