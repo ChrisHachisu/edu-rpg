@@ -7154,7 +7154,32 @@
     if(Math.abs(tx-s.x)<0.05) s.x=tx;                                        // settle exactly, not asymptotically
     if(Math.abs(ty-s.y)<0.05) s.y=ty;
     cam.scrollX=s.wx=Math.round(s.x); cam.scrollY=s.wy=Math.round(s.y);      // whole pixels to the screen
+    a1mFine(scene, s.x-s.wx, s.y-s.wy);
   }
+  // TEMPORARY owner test (2026-11-10): "fine scrolling". The canvas is 1 game px = 1 CSS px = 3
+  // device px on his phone, so whole-pixel scroll moves the world in 3-device-px steps. In 'fine'
+  // mode the canvas element is shifted by the scroll remainder (+-0.5 CSS px, snapped to device
+  // pixels), which the compositor does for free. Settings switch -> localStorage 'qok-scroll-mode'.
+  var a1mFineOn=null, a1mFineCv=null, a1mFineT='';
+  function a1mFineMode(){
+    if(a1mFineOn===null){ try{ a1mFineOn=(localStorage.getItem('qok-scroll-mode')==='fine'); }catch(e){ a1mFineOn=false; } }
+    return a1mFineOn;
+  }
+  function a1mFine(scene,fx,fy){
+    var cv=scene&&scene.game&&scene.game.canvas; if(!cv) return;
+    var t='';
+    if(a1mFineMode() && (fx||fy)){
+      var d=window.devicePixelRatio||1;
+      var ox=Math.round(-fx*d)/d, oy=Math.round(-fy*d)/d;
+      if(ox||oy) t='translate3d('+ox+'px,'+oy+'px,0)';
+    }
+    if(cv!==a1mFineCv||t!==a1mFineT){ cv.style.transform=t; a1mFineCv=cv; a1mFineT=t; }
+  }
+  window.__A1_SCROLL_MODE__=function(v){
+    if(v==='fine'||v==='step'){ a1mFineOn=(v==='fine'); try{ localStorage.setItem('qok-scroll-mode',v); }catch(e){}
+      if(!a1mFineOn&&a1mFineCv){ a1mFineCv.style.transform=''; a1mFineT=''; } }
+    return a1mFineMode()?'fine':'step';
+  };
   // WRAP sys.sceneUpdate, NOT scene.update. Phaser captures the scene's update method ONCE, in
   // bootScene/create (`y.sceneUpdate = v.update`), and calls `this.sceneUpdate.call(this.scene)`
   // from Systems.step forever after -- so a wrapper installed on `scene.update` after create()

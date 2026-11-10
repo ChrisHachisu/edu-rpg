@@ -1116,6 +1116,9 @@
         // The "Performance readout" switch that used to sit here is gone (owner, 2026-11-04: the
         // debug box appeared on his phone after an accidental tap). index.html no longer honours the
         // flag at all, so the box cannot come back from an old setting either.
+        // TEMPORARY owner test (2026-11-10): pick the overworld scrolling he prefers, then remove.
+        (typeof window.__A1_SCROLL_MODE__ === 'function' ?
+          '<div class="setrow" data-act="scrollTest" style="margin-top:8px;"><span class="lab">' + use('gear') + esc(isJa() ? 'スクロール テスト' : 'Scrolling test') + '</span><span class="val">' + (window.__A1_SCROLL_MODE__() === 'fine' ? 'B' : 'A') + ' ›</span></div>' : '') +
         '<button class="btn btn-slate" data-act="quitAsk" style="width:100%;font-weight:800;margin-top:8px;">' + esc(Z('gameover.title_screen')) + '</button>' +
       '</div>' +
     '</div>';
@@ -2663,6 +2666,8 @@
       ms.equipTypeFilter = el.getAttribute('data-type'); ms.equipInventoryIndex = 0; ms.equipScrollOffset = 0; ms.equipMode = 'equipped';
     } else if (act === 'setting') {
       ms.listIndex = i; ms.handleSettingToggle(1);
+    } else if (act === 'scrollTest') {
+      if (typeof window.__A1_SCROLL_MODE__ === 'function') window.__A1_SCROLL_MODE__(window.__A1_SCROLL_MODE__() === 'fine' ? 'step' : 'fine');
     } else if (act === 'quitAsk') {
       settingsQuitConfirm = true;
     } else if (act === 'menuSave') {
