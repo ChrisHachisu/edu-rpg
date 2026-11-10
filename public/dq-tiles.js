@@ -7248,13 +7248,15 @@
     cam.scrollX=s.wx=Math.round(s.x); cam.scrollY=s.wy=Math.round(s.y);      // whole pixels to the screen
     a1mFine(scene, s.x-s.wx, s.y-s.wy);
   }
-  // TEMPORARY owner test (2026-11-10): "fine scrolling". The canvas is 1 game px = 1 CSS px = 3
+  // Owner test (build 94, 2026-11-10): "fine scrolling". He chose whole-pixel; kept for review only. The canvas is 1 game px = 1 CSS px = 3
   // device px on his phone, so whole-pixel scroll moves the world in 3-device-px steps. In 'fine'
   // mode the canvas element is shifted by the scroll remainder (+-0.5 CSS px, snapped to device
   // pixels), which the compositor does for free. Settings switch -> localStorage 'qok-scroll-mode'.
   var a1mFineOn=null, a1mFineCv=null, a1mFineT='';
   function a1mFineMode(){
-    if(a1mFineOn===null){ try{ a1mFineOn=(localStorage.getItem('qok-scroll-mode')==='fine'); }catch(e){ a1mFineOn=false; } }
+    // Owner picked A (whole-pixel) on build 94, so the Settings switch is gone and a 'fine' value
+    // left in localStorage by that test is ignored. __A1_SCROLL_MODE__('fine') still works for review.
+    if(a1mFineOn===null) a1mFineOn=false;
     return a1mFineOn;
   }
   function a1mFine(scene,fx,fy){
