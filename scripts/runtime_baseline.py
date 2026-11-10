@@ -121,7 +121,7 @@ ACT1_OVERLAY_FILES = {
     # other 12 settle one cell north once; largest rescue nudge 28 px against a 96 px bound).
     # Updated 2026-10-03 for the approved scoped forest+mountain visible-terrain union.
     "dq-tiles.js": (
-        662055, "f1b221cff9957760b97f524e11cb7de57ae60519c33fe904eeff755d493bc1f1"),
+        662436, "8e5d9b743d106e83d2dfbab068c78741182d28121e19a42c0779514902733dc3"),
     # 2026-08-07: THE OVERWORLD'S COLLISION SHAPE, baked -- the overworld's answer to the dungeons'
     # `<floor>-walk.png` above, and as much a shipped authority as they are. Deriving it at runtime
     # was correct and unaffordable: owmBuild() evaluated waterField/mountainField per pixel over a
@@ -170,7 +170,7 @@ ACT1_OVERLAY_FILES = {
     # baseline. IT MUST BE PINNED HERE OR IT NEVER REACHES dist/ -- a tracked-but-unstaged asset
     # has silently killed a boss animation and the town foreground layer before, with every gate
     # still green, because staging and git are two different lists.
-    "assets/hero/hero-male-walk.png": (59032, "88cbed8f9d707b216ada01e108eedd5822c6bcfc69c8dd22af2457f231dc0976"),
+    "assets/hero/hero-male-walk.png": (60643, "86aafcab82888b32d187b7f440c3d74cc5b5e570f07d56307e4a72beff03c3ff"),
     "act1-world-map.js": (
         54927, "c43e15f879096782f2de7d93a4c9fee9dc92f6072b8ee5d38aec0cd087ce09ec"),
     # 2026-08-06, from device: the Port Sapphire movement stick was anchored bottom-LEFT and its
@@ -469,7 +469,7 @@ ACT1_TOWN_FILES = {
     "act1-hifi/town/greenhollow-foreground.png": (17426, "871ebe24b325a11fb0ba5be0343d8474194c558de06bbb556e294c056badb743"),
     "act1-hifi/town/greenhollow-foreground.json": (67, "d41d39ced921a0034c10222028397e42eb7eebd503f23b8be7f40a7530632aca"),
     # Selected male town protagonist, using the existing approved sheet.
-    "act1-hifi/hero-g3/hero-act1-male-walk-8x3-64-g3.png": (124618, "b1e03de47337d8d2aca8d89e80c1c524c95ac2cc2cf88ed1ebd2b37b86424b2e"),
+    "act1-hifi/hero-g3/hero-act1-male-walk-8x3-64-g3.png": (125699, "02162ba11fec942c3524fd0c528f66be8ee86e7bb574c196dbeb93b99f37b90b"),
     "act1-hifi/town.html": (
         55388, "8a3ccc2400c6ce701e4720a47c5bd7fc4d41d56cc2d55e3be36238c17614434e"),
     "act1-hifi/town/portSapphire-town.json": (
