@@ -448,6 +448,9 @@
   // true global locale (vi()) — matches what Z() renders; falls back to player state.
   function locale() { var q = QOK(); if (q && q.loc) { try { return q.loc(); } catch (e) {} } var s = pstate(); return (s && s.locale) || 'en'; }
   function isJa()   { return locale() === 'ja'; }
+  function kanji() { var s = pstate(); return !!(s && s.kanjiMode); }
+  function J(kana, kj) { return kanji() ? kj : kana; }
+  function T3(en, kana, kj) { return isJa() ? (kanji() && kj ? kj : kana) : en; }
 
   function sceneActive(key) { var g = G(); try { return !!(g && g.scene && g.scene.isActive(key)); } catch (e) { return false; } }
   function getScene(key)    { var g = G(); try { return g && g.scene && g.scene.getScene(key); } catch (e) { return null; } }
@@ -2352,6 +2355,7 @@
     if (curScreen === 'battle') return routeBattle(act, i, el);
     if (curScreen === 'title') return routeTitle(act, i, el);
     if (curScreen === 'gameover') return routeGameOver(act, i, el);
+    if (curScreen === 'victory') return routeVictory(act);
   }
 
   function routeGameOver(act, i) {
@@ -3383,6 +3387,46 @@
     paint(h, sig);
   }
 
+  /* ENDING (VictoryScene). The bundle draws it as 8-9 px canvas text with the hero sprite on top
+     of "Thank you for playing!" (round 1 census, M2). Owner on the first mockup: "better but the
+     screen is way too cluttered" -- so this is deliberately sparse: title, hero, one line, one
+     small results line, two buttons. The scene's own confirmChoice() still does the work. */
+  var victoryStats = null;
+  function renderVictory() {
+    var vs = getScene('VictoryScene'); if (!vs) return;
+    if (!victoryStats || victoryStats.scene !== vs || victoryStats.started !== vs.sys.settings.startTime) {
+      var t = GS() || {}, st = pstate() || {}, secs = 0, pct = null;
+      try { secs = Math.floor((t.playtime || 0) + (Date.now() - (t.startTime || Date.now())) / 1000); } catch (e) {}
+      try { var q = t.quizManager.getStats(); if (q.totalAsked > 0) pct = Math.round(q.totalCorrect / q.totalAsked * 100); } catch (e2) {}
+      var hh = Math.floor(secs / 3600), mm = Math.floor(secs % 3600 / 60), ss = secs % 60;
+      function p2(n) { return (n < 10 ? '0' : '') + n; }
+      victoryStats = { scene: vs, started: vs.sys.settings.startTime, time: hh > 0 ? (hh + ':' + p2(mm) + ':' + p2(ss)) : (mm + ':' + p2(ss)),
+        pct: pct, grade: st.quizDifficulty, color: st.heroColor || 'gray' };
+    }
+    var v = victoryStats;
+    var line = '<span>' + esc(T3('Time', 'じかん', '時間')) + ' <b>' + esc(v.time) + '</b></span>' +
+      (v.pct === null ? '' : '<i>·</i><span>' + esc(T3('Quiz', 'クイズ', 'クイズ')) + ' <b>' + v.pct + '%</b></span>') +
+      (v.grade ? '<i>·</i><span><b>' + esc(Z('grade.' + v.grade)) + '</b></span>' : '');
+    var h = '<div class="t-screen vic">' +
+      '<div class="t-head"><div class="title-kicker">✦ &nbsp;' + esc(T3('Quest complete', 'クエスト クリア', 'クエスト クリア')) + '&nbsp; ✦</div>' +
+        '<div class="title-name">' + esc(Z('victory.title')) + '</div></div>' +
+      '<div class="vic-mid"><div class="t-hero">' + heroImg(160, v.color) + '</div>' +
+        '<div class="vic-msg">' + esc(T3('You restored the Crystal of Math Knowledge!', 'さんすうの クリスタルを とりもどした！', '算数の クリスタルを 取り戻した！')) + '</div>' +
+        '<div class="vic-line">' + line + '</div></div>' +
+      '<div class="t-actions">' +
+        '<button class="btn btn-gold" data-act="victoryNgPlus" style="width:100%;font-size:18px;">' + esc(Z('victory.ngplus')) + '</button>' +
+        '<button class="btn btn-slate" data-act="victoryTitle" style="width:100%;font-size:17px;">' + esc(Z('victory.titleScreen')) + '</button>' +
+      '</div></div>';
+    activate('victory', false);
+    paint(h, 'victory|' + locale() + '|' + kanji() + '|' + v.time + '|' + v.pct + '|' + v.grade + '|' + (getHeroSrc(v.color) ? 1 : 0));
+  }
+  function routeVictory(act) {
+    var vs = getScene('VictoryScene'); if (!vs || !sceneActive('VictoryScene')) return;
+    if (act !== 'victoryNgPlus' && act !== 'victoryTitle') return;
+    vs.menuIndex = (act === 'victoryNgPlus') ? 0 : 1;
+    try { vs.confirmChoice(); } catch (e) { if (window.console) console.error('[ui] victory ' + e); }
+  }
+
   /* DEFEAT (owner-locked 2026-11-04). Replaces the bundle's Try Again / Restart from Save Point:
      every defeat offers "Return to <last town>" (full HP, keep everything, lose half the gold);
      a BOSS defeat also offers "Try the boss again" first, which restarts that fight with HP and
@@ -3468,6 +3512,7 @@
     if (sceneActive('ShopScene')) { renderShop(); return; }
     if (sceneActive('BattleScene')) { renderBattle(); return; }
     if (sceneActive('GameOverScene')) { renderGameOver(); return; }
+    if (sceneActive('VictoryScene')) { renderVictory(); return; }
     var ts = getScene('TitleScene');
     if (ts && sceneActive('TitleScene')) {
       // The New-Game confirm card belongs to the title screen only: whatever moved the scene on

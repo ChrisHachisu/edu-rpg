@@ -183,7 +183,7 @@ ACT1_OVERLAY_FILES = {
     # the control-orientation setting, into the frame. First override of this file since the
     # v1.17.1 baseline was frozen, which is why it had no entry before.
     "ui-overhaul.js": (
-        231618, "5e5803786be63f822f84f836c2a3f717dbbdff4dbf40359ad05f537fd8ed9895"),
+        235121, "a70a7762ae3b3808e9c291b7b22dd01581acb27e5a7904bb885c48eed131cbff"),
     # 2026-08-06, owner pick: "Charcoal & Gold Leaf" (direction 4 of
     # design/ui-overhaul/chic-style-board.html). The same gold as before -- the pixel art, the
     # dungeon plates and the town screens were all approved against it -- spent differently:
@@ -193,7 +193,7 @@ ACT1_OVERLAY_FILES = {
     # bundled rather than fetched; the short version is that it never reached the phone at all.
     # Like ui-overhaul.js above, first override of this file since the baseline was frozen.
     "ui-overhaul.css": (
-        60702, "4a23621a84e0dd78700835e73d4b53f18d071d1d6f288c97020cfc61c68e9910"),
+        61458, "5971d77ec6edbf7833a571fbcfba686f499ae542cee2c724cf7ce160490c3280"),
 }
 # 2026-08-06, owner-picked ("Charcoal & Gold Leaf", direction 4 of
 # design/ui-overhaul/chic-style-board.html): the chrome the theme needs on disk rather than
