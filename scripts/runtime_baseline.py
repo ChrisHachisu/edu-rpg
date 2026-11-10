@@ -121,7 +121,7 @@ ACT1_OVERLAY_FILES = {
     # other 12 settle one cell north once; largest rescue nudge 28 px against a 96 px bound).
     # Updated 2026-10-03 for the approved scoped forest+mountain visible-terrain union.
     "dq-tiles.js": (
-        662436, "8e5d9b743d106e83d2dfbab068c78741182d28121e19a42c0779514902733dc3"),
+        667236, "15b2702bd15eb95f35a3795e7634e0f9144b93bac7f0107929ea49de85b68539"),
     # 2026-08-07: THE OVERWORLD'S COLLISION SHAPE, baked -- the overworld's answer to the dungeons'
     # `<floor>-walk.png` above, and as much a shipped authority as they are. Deriving it at runtime
     # was correct and unaffordable: owmBuild() evaluated waterField/mountainField per pixel over a
