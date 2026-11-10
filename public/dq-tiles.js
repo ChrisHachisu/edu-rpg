@@ -6147,6 +6147,20 @@
     var row=scene.mapData[ty], t=row?row[tx]:undefined;
     if(t===undefined || !(m.prop||A1M_PROP)[t]) return;
     var now=Date.now(); if(now-a1mState.bump<700) return; a1mState.bump=now;
+    // STORY BARRIERS MUST SAY WHY (2026-11-10, round 1 census P1). The magma field (21) and the wind
+    // canyon (13) explain themselves only in the engine's tile-step branch, which this mover replaced,
+    // and there only once per save -- so on the stick she met a silent wall. Say it on every bump
+    // (the 700 ms debounce above and the open box, which halts her, keep it from repeating).
+    if(m.ow && (t===21||t===13)){
+      try{
+        var need=(t===21)?'flameCloak':'windbreakerStone', inv=(window.__GAME_STATE__.player.state.inventory)||[], has=false;
+        for(var gi=0;gi<inv.length;gi++) if(inv[gi].itemId===need&&inv[gi].quantity>0) has=true;
+        var gq=window.__QOK, gz=gq&&gq.Z, gk=(t===21)?'overworld.magmaBlocked':'overworld.canyonBlocked';
+        var gtxt=gz?gz(gk):null;
+        if(!has && gtxt && gtxt.charAt(0)!=='[' && !scene.showingMessage) scene.showMessage(gtxt);
+      }catch(e){ if(window.__DQ_DEBUG__) console.log('a1 gate '+e); }
+      return;
+    }
     var ddx=tx-scene.heroTileX, ddy=ty-scene.heroTileY;                      // face it, like a step would
     if(Math.abs(ddx)+Math.abs(ddy)===1) scene.heroDir=ddx?(ddx>0?2:1):(ddy>0?0:3);
     try{
