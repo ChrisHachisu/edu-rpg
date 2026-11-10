@@ -7015,7 +7015,12 @@
       }
     }
     if(inp){
-      scene.heroDir = Math.abs(inp.x)>Math.abs(inp.y) ? (inp.x>0?2:1) : (inp.y>0?0:3);
+      // Facing dead band: near a 45-degree push |x| and |y| trade places with every thumb tremor and
+      // she flickered between two facings. Keep the axis she already faces until the other one
+      // leads by 20% (about 6 degrees past the diagonal).
+      var _ax=Math.abs(inp.x), _ay=Math.abs(inp.y), _hz=(scene.heroDir===1||scene.heroDir===2);
+      var _useX=_hz ? (_ax*1.2>=_ay) : (_ax>_ay*1.2);
+      scene.heroDir = _useX ? (inp.x>0?2:1) : (inp.y>0?0:3);
       var speed=a1mSpeed();
       // The frame-delta cap has to be bigger than one frame of a SLOW device, not of a fast one.
       // At 0.05 s it silently became a speed limit: measured on the iPhone 17 Pro sim, a straight
