@@ -1022,7 +1022,7 @@
       if(uncertainReadyBase) return [];
       liveIds.sort();
       var signature=liveIds.join('|');
-      if(underpaint.maskScene!==scene||underpaint.maskKey!==signature||!underpaint.maskTexture||!textures.exists('a1a_underpaint_mask')) return [];
+      if(underpaint.maskScene!==scene||underpaint.maskKey!==signature||!(underpaint.gpuHoles||(underpaint.maskTexture&&textures.exists('a1a_underpaint_mask')))) return [];
     }
     return opaque;
   }
@@ -1761,9 +1761,57 @@
     if(scene&&scene.textures&&scene.textures.exists(key))try{scene.textures.remove(key);}catch(e){}
     if(up){up.maskTexture=null;up.maskScene=null;up.maskKey=null;up.maskLiveKey='';}
   }
+  // GPU HOLES (2026-11-10). The two coarse fallback layers used to be "erased" under live chunks by
+  // redrawing an 888x1092 canvas and re-uploading it as a texture every time the set of live
+  // chunks changed -- several times per window step, two canvases each time. The owner's phone
+  // reports "brief pauses when walking in the overworld"; a canvas->texture upload is exactly
+  // that kind of main-thread stall. The same picture is produced with no upload at all by an
+  // geometry mask: the raw image stays on the GPU untouched and only the rects of chunks that
+  // are not live are stencilled in. window.__A1_UP_GPU_MASK__=false restores the canvas path.
+  function a1aGpuHolesOn(){ return window.__A1_UP_GPU_MASK__!==false; }
+  function a1aGpuHoles(scene,o,ids,s,signature){
+    if(!scene||!scene.make||!scene.make.graphics) return false;
+    // The mask is drawn as the COMPLEMENT (every chunk rect that is NOT live), so it does not
+    // depend on inverted-stencil support.
+    var liveSet={},rest=[],mc=A1A.manifest.chunks,ci;
+    for(ci=0;ci<ids.length;ci++) liveSet[ids[ci]]=1;
+    for(ci=0;ci<mc.length;ci++) if(!liveSet[mc[ci].id]) rest.push(mc[ci].id);
+    if(rest.length+ids.length!==mc.length) return false;
+    var rects=a1aForestMaskRects(A1A.manifest,s,rest);
+    if(rects.length!==rest.length) return false;
+    if(o.holeScene!==scene||!o.holeG||!o.holeG.scene){
+      if(o.holeG){ try{o.holeG.destroy();}catch(e){} }
+      o.holeG=scene.make.graphics({x:0,y:0,add:false});
+      o.holeMask=o.holeG.createGeometryMask();
+      o.holeScene=scene; o.holeKey=null;
+    }
+    if(o.holeKey!==signature){
+      var b=A1A.manifest.semanticBounds,ox=b[0]*OW_TILE,oy=b[1]*OW_TILE,sc=OW_TILE/s.pixelsPerCell,g=o.holeG;
+      g.clear(); g.fillStyle(0xffffff,1);
+      for(var i=0;i<rects.length;i++){var r=rects[i];g.fillRect(ox+r.x*sc,oy+r.y*sc,r.width*sc,r.height*sc);}
+      o.holeKey=signature;
+    }
+    a1aGpuHolesApply(o);
+    return true;
+  }
+  function a1aGpuHolesApply(o){
+    if(!o||!o.sprite||!o.sprite.scene) return;
+    if(o.holeMask&&o.holeScene===o.sprite.scene&&a1aGpuHolesOn()){ if(o.sprite.mask!==o.holeMask) o.sprite.setMask(o.holeMask); }
+    else if(o.sprite.mask&&o.sprite.mask===o.holeMask){ try{o.sprite.clearMask();}catch(e){} }
+  }
   function a1aUnderpaintBaseMask(scene,up,live){
     if(!up||!up.spec||!up.image||!scene||!scene.textures||!scene.add)return false;
     var ids=a1aUnderpaintBaseKeys(live),signature=ids.join('|'),key='a1a_underpaint_mask';
+    if(a1aGpuHolesOn()){
+      try{
+        if(a1aGpuHoles(scene,up,ids,{width:up.spec.pixelWidth,height:up.spec.pixelHeight,pixelsPerCell:up.spec.pixelsPerCell},signature)){
+          if(up.maskTexture) a1aUnderpaintBaseMaskDispose(scene,up);
+          up.gpuHoles=true; up.maskScene=scene; up.maskKey=signature; up.maskLiveKey=signature;
+          return true;
+        }
+      }catch(e){ if(window.__DQ_DEBUG__) console.log('a1a gpu holes '+e); }
+    }
+    up.gpuHoles=false; a1aGpuHolesApply(up);
     if(up.maskScene===scene&&up.maskKey===signature&&up.maskTexture&&scene.textures.exists(key))return true;
     if(!ids.length){
       a1aUnderpaintBaseMaskDispose(scene,up);up.maskScene=scene;up.maskKey='';
@@ -1819,6 +1867,19 @@
   function a1aForestFallbackTexture(scene,f,s,readyKeys){
     var ids=(readyKeys||[]).slice().sort(),signature=ids.join('|'),key='a1a_forest_underpaint';
     if(f.maskScene&&f.maskScene!==scene) a1aForestMaskDispose(f,false);
+    if(a1aGpuHolesOn()){
+      try{
+        if(!(f.gpuHoles&&f.maskScene===scene&&f.maskTexture&&scene.textures.exists(key))){
+          if(scene.textures.exists(key)) scene.textures.remove(key);
+          f.maskTexture=scene.textures.addImage(key,f.image);
+          if(f.maskTexture&&f.maskTexture.setFilter) f.maskTexture.setFilter(NEAREST);
+        }
+        if(f.maskTexture&&a1aGpuHoles(scene,f,ids,s,signature)){
+          f.gpuHoles=true;f.maskScene=scene;f.maskKey=signature;f.rawFallback=false;f.rawFallbackKey=null;f.rawFallbackNext=0;f.rawFallbackFailures=0;return true;
+        }
+      }catch(e){ if(window.__DQ_DEBUG__) console.log('a1a gpu forest holes '+e); }
+      if(f.gpuHoles){ f.gpuHoles=false; a1aForestMaskDispose(f,false); }
+    }
     if(f.maskScene===scene&&f.maskKey===signature&&f.maskTexture
        &&scene.textures.exists(key)) return true;
     // When canvas masking is temporarily unavailable, keep the raw coarse layer visible and retry
@@ -3282,6 +3343,7 @@
         anyCanopy=false;
       }
     }
+    if(A1A.underpaint){ a1aGpuHolesApply(A1A.underpaint); a1aGpuHolesApply(A1A.underpaint.forest); }
     return anyCanopy;
   }
 
@@ -3595,6 +3657,20 @@
     }
     var key=X0+'_'+Y0;
     var fullPlateWindow=a1aPlateOwns(scene)&&a1aPlateWindow(X0,Y0,winW,winH);
+    // VIEW-INSIDE SHORTCUT (2026-11-10). The window carries a 12-cell off-screen border, so it pokes
+    // outside the plate whenever the hero is within ~18-24 cells of the plate's edge -- a wide band
+    // of Act 1 -- and every window step there re-splatted and re-uploaded the whole window canvas
+    // (36x48 cells) although the plate part of that canvas is cleared and the rest is off screen.
+    // That upload is one of the owner's "brief pauses when walking". While the CAMERA view (plus a
+    // 3-cell guard) is still inside the plate nothing of the canvas can be seen, so treat the window
+    // as a full-plate one. The key carries the mode, so the tick the view comes within the guard of
+    // the edge the canvas is drawn exactly as before. window.__A1_VIEW_INSIDE__=false disables.
+    if(!fullPlateWindow&&window.__A1_VIEW_INSIDE__!==false&&a1aPlateOwns(scene)&&a1aSpriteMode()){
+      var _pb=a1aPlateBounds(),_g=3;
+      if(_pb&&wv.x/OW_TILE-_g>=_pb[0]&&wv.y/OW_TILE-_g>=_pb[1]
+         &&(wv.x+wv.width)/OW_TILE+_g<=_pb[2]+1&&(wv.y+wv.height)/OW_TILE+_g<=_pb[3]+1) fullPlateWindow=true;
+      else key+='_edge';
+    }
     var legacyPlateClip=fullPlateWindow?null:a1aLegacyPlateClip(scene,X0,Y0,winW,winH);
     var r2TextureKey=legacyPlateClip?a1aWaterR2Texture(scene):null;
     var useR2Sea=!!(r2TextureKey&&seaState&&seaState.scene===scene&&seaState.key===r2TextureKey
