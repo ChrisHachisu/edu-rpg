@@ -3407,10 +3407,22 @@
     var line = '<span>' + esc(T3('Time', 'じかん', '時間')) + ' <b>' + esc(v.time) + '</b></span>' +
       (v.pct === null ? '' : '<i>·</i><span>' + esc(T3('Quiz', 'クイズ', 'クイズ')) + ' <b>' + v.pct + '%</b></span>') +
       (v.grade ? '<i>·</i><span><b>' + esc(Z('grade.' + v.grade)) + '</b></span>' : '');
-    var h = '<div class="t-screen vic">' +
-      '<div class="t-head"><div class="title-kicker">✦ &nbsp;' + esc(T3('Quest complete', 'クエスト クリア', 'クエスト クリア')) + '&nbsp; ✦</div>' +
+    // Celebration dressing: deterministic confetti so the paint key stays stable between ticks.
+    var fx = '', cols = ['#f0cd78', '#fff6d8', '#c9a961', '#6fd3c0', '#e8788a', '#a99cf0'];
+    for (var ci = 0; ci < 34; ci++) {
+      var cx = (ci * 37 + 11) % 100, cd = 5 + (ci * 7 % 6), cdl = -((ci * 13) % 90) / 10, cw = 5 + (ci % 3) * 2;
+      fx += '<span style="left:' + cx + '%;width:' + cw + 'px;height:' + Math.round(cw * 1.6) + 'px;background:' + cols[ci % cols.length] +
+        ';animation-duration:' + cd + 's;animation-delay:' + cdl + 's;"></span>';
+    }
+    for (var ti = 0; ti < 9; ti++) {
+      fx += '<em style="left:' + ((ti * 23 + 8) % 92) + '%;top:' + ((ti * 31 + 6) % 78) + '%;font-size:' + (10 + (ti % 3) * 6) +
+        'px;animation-delay:' + (-(ti * 0.37)).toFixed(2) + 's;">✦</em>';
+    }
+    var h = '<div class="t-screen vic"><div class="vic-fx">' + fx + '</div>' +
+      '<div class="t-head"><div class="vic-stars"><b>★</b><b>★</b><b>★</b></div>' +
+        '<div class="title-kicker"><i></i>' + esc(T3('Quest complete', 'クエスト クリア', 'クエスト クリア')) + '<i></i></div>' +
         '<div class="title-name">' + esc(Z('victory.title')) + '</div></div>' +
-      '<div class="vic-mid"><div class="t-hero">' + heroImg(160, v.color) + '</div>' +
+      '<div class="vic-mid"><div class="vic-stage">' + heroImg(160, v.color) + '</div>' +
         '<div class="vic-msg">' + esc(T3('You restored the Crystal of Math Knowledge!', 'さんすうの クリスタルを とりもどした！', '算数の クリスタルを 取り戻した！')) + '</div>' +
         '<div class="vic-line">' + line + '</div></div>' +
       '<div class="t-actions">' +
