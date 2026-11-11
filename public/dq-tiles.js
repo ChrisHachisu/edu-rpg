@@ -3845,7 +3845,7 @@
   var A1A_WB={raf:0};
   function a1aWalkBehindTick(){
     A1A_WB.raf=requestAnimationFrame(a1aWalkBehindTick);
-    var sc=A1A.spriteScene, hero=sc&&sc.hero; if(!hero||!owScene(sc)) return;
+    var sc=A1A.spriteScene, hero=sc&&sc.hero; if(!hero||!hero.frame||!hero.frame.data||!owScene(sc)) return;   // the hero texture is rebuilt on New Game/Continue; for a moment her frame is a destroyed one
     var sole=hero.y+hero.displayHeight*(1-(hero.originY===undefined?0.5:hero.originY))-2, top=sole-25;
     var now=Date.now(), fa=0.775+0.225*Math.sin(now*2*Math.PI/3300), ks=Object.keys(A1A.imgs);
     var cp=(now/2400*3)%3, ci=Math.floor(cp), cf=cp-ci, cn=(ci+1)%3;
