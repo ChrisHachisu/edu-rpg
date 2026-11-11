@@ -3404,9 +3404,10 @@
         pct: pct, grade: st.quizDifficulty, color: st.heroColor || 'gray' };
     }
     var v = victoryStats;
-    var line = '<span>' + esc(T3('Time', 'じかん', '時間')) + ' <b>' + esc(v.time) + '</b></span>' +
-      (v.pct === null ? '' : '<i>·</i><span>' + esc(T3('Quiz', 'クイズ', 'クイズ')) + ' <b>' + v.pct + '%</b></span>') +
-      (v.grade ? '<i>·</i><span><b>' + esc(Z('grade.' + v.grade)) + '</b></span>' : '');
+    function tile(lab, val) { return '<div class="vic-stat"><b>' + esc(val) + '</b><span>' + esc(lab) + '</span></div>'; }
+    var line = tile(T3('Time', 'じかん', '時間'), v.time) +
+      tile(T3('Correct', 'せいかい', '正解'), v.pct === null ? '–' : (v.pct + '%')) +
+      (v.grade ? tile(T3('Grade', 'がくねん', '学年'), String(Z('grade.' + v.grade)).replace(/\s*Grade$/, '').replace(/年生$/, '年').replace(/ねんせい$/, 'ねん')) : '');
     // Celebration dressing: deterministic confetti so the paint key stays stable between ticks.
     var fx = '', cols = ['#f0cd78', '#fff6d8', '#c9a961', '#6fd3c0', '#e8788a', '#a99cf0'];
     for (var ci = 0; ci < 34; ci++) {
@@ -3423,7 +3424,7 @@
         '<div class="title-kicker"><i></i>' + esc(T3('Quest complete', 'クエスト クリア', 'クエスト クリア')) + '<i></i></div>' +
         '<div class="title-name">' + esc(Z('victory.title')) + '</div></div>' +
       '<div class="vic-mid"><div class="vic-stage">' + heroImg(160, v.color) + '</div>' +
-        '<div class="vic-msg">' + esc(T3('You restored the Crystal of Math Knowledge!', 'さんすうの クリスタルを とりもどした！', '算数の クリスタルを 取り戻した！')) + '</div>' +
+        '<div class="vic-msg">' + esc(T3('You restored the Crystal of Math Knowledge!', 'さんすうの クリスタルを|とりもどした！', '算数の クリスタルを|取り戻した！')).replace('|', '<br>') + '</div>' +
         '<div class="vic-line">' + line + '</div></div>' +
       '<div class="t-actions">' +
         '<button class="btn btn-gold" data-act="victoryNgPlus" style="width:100%;font-size:18px;">' + esc(Z('victory.ngplus')) + '</button>' +
