@@ -275,6 +275,40 @@
 #qok-ui .t-actions{ flex:0 0 auto; width:100%; max-width:380px; display:flex; flex-direction:column; gap:13px; align-items:center; }
 #qok-ui .t-actions .toggle{ font-size:14px; }
 /* game over (Storybook) */
+/* Ending screen (VictoryScene overlay). Sparse on purpose: owner asked for an uncluttered screen. */
+#qok-ui .t-screen.vic{ position:relative; overflow:hidden; max-width:none; padding:calc(env(safe-area-inset-top,0px) + 44px) 26px calc(env(safe-area-inset-bottom,0px) + 30px);
+  background:radial-gradient(95% 52% at 50% 47%, #5a4313 0%, #33270f 34%, rgba(26,22,16,.0) 72%), linear-gradient(180deg,#191512,#12131a 70%); }
+#qok-ui .t-screen.vic > *{ position:relative; z-index:1; } #qok-ui .t-screen.vic .t-actions{ max-width:520px; }
+#qok-ui .vic-fx{ position:absolute!important; inset:0; z-index:0!important; pointer-events:none; overflow:hidden; }
+#qok-ui .vic-fx span{ position:absolute; top:-6%; border-radius:2px; opacity:.9; animation:qok-vicfall 7s linear infinite; }
+#qok-ui .vic-fx em{ position:absolute; font-style:normal; color:#ffe9a8; text-shadow:0 0 10px #f0cd78; animation:qok-victwinkle 2.6s ease-in-out infinite; }
+#qok-ui .vic-stars{ display:flex; justify-content:center; align-items:flex-end; gap:10px; margin-bottom:10px; }
+#qok-ui .vic-stars b{ font-size:30px; line-height:1; color:#f0cd78; text-shadow:0 0 14px rgba(240,205,120,.8),0 2px 0 #7a5a17; animation:qok-vicpop .6s cubic-bezier(.2,1.6,.4,1) both; }
+#qok-ui .vic-stars b:nth-child(2){ font-size:46px; animation-delay:.18s; } #qok-ui .vic-stars b:nth-child(3){ animation-delay:.36s; }
+#qok-ui .t-screen.vic .title-kicker{ display:flex; align-items:center; justify-content:center; gap:12px; font-size:13px; color:#f0cd78; }
+#qok-ui .t-screen.vic .title-kicker i{ width:42px; height:1px; background:linear-gradient(90deg,transparent,#f0cd78); } #qok-ui .t-screen.vic .title-kicker i:last-child{ transform:scaleX(-1); }
+#qok-ui .t-screen.vic .title-name{ font-size:clamp(40px,12vw,64px); font-weight:800; margin-top:6px; line-height:1.3; padding:0 4px 6px; color:#f0cd78;
+  background:linear-gradient(180deg,#fffbe6 8%,#f6d47c 48%,#b88628 92%); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+  text-shadow:none; filter:drop-shadow(0 3px 0 rgba(60,40,5,.9)) drop-shadow(0 0 22px rgba(240,205,120,.55)); animation:qok-vicpop .7s cubic-bezier(.2,1.5,.4,1) .3s both; }
+#qok-ui .vic-mid{ width:100%; display:flex; flex-direction:column; align-items:center; gap:18px; }
+#qok-ui .vic-stage{ position:relative; width:min(54vw,220px); aspect-ratio:1; display:grid; place-items:center; }
+#qok-ui .vic-stage::before{ content:""; position:absolute; inset:-55%; border-radius:50%;
+  background:repeating-conic-gradient(from 0deg, rgba(255,222,140,.30) 0 6deg, rgba(255,222,140,0) 6deg 18deg);
+  -webkit-mask:radial-gradient(closest-side,#000 18%,transparent 82%); mask:radial-gradient(closest-side,#000 18%,transparent 82%); animation:qok-vicspin 36s linear infinite; }
+#qok-ui .vic-stage::after{ content:""; position:absolute; inset:4%; border-radius:50%;
+  background:radial-gradient(closest-side, rgba(255,236,170,.70), rgba(240,205,120,.28) 52%, rgba(240,205,120,0) 74%); }
+#qok-ui .vic-stage img, #qok-ui .vic-stage svg{ position:relative; z-index:1; width:70%; height:70%; image-rendering:pixelated; filter:drop-shadow(0 6px 10px rgba(40,25,0,.55)); animation:qok-vicbob 2.4s ease-in-out infinite; }
+#qok-ui .vic-msg{ font-size:clamp(20px,5.9vw,26px); line-height:1.4; font-weight:800; color:#fff3c9; max-width:340px; text-wrap:balance; word-break:keep-all; text-shadow:0 2px 0 rgba(60,40,5,.9),0 0 18px rgba(240,205,120,.45); }
+#qok-ui .vic-line{ display:flex; justify-content:center; gap:10px; width:100%; max-width:360px; }
+#qok-ui .vic-stat{ flex:1 1 0; min-width:0; padding:12px 6px 10px; border-radius:16px; background:linear-gradient(180deg,rgba(60,44,12,.85),rgba(20,17,12,.85)); border:1px solid rgba(240,205,120,.55); box-shadow:0 6px 18px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,236,170,.25); }
+#qok-ui .vic-stat b{ display:block; font-size:clamp(22px,6.6vw,28px); line-height:1.15; font-weight:800; color:#f6d98c; white-space:nowrap; }
+#qok-ui .vic-stat span{ display:block; margin-top:4px; font-size:12px; letter-spacing:.14em; text-transform:uppercase; font-weight:700; color:#e9dcb8; }
+#qok-ui .t-screen.vic .btn-gold{ background:linear-gradient(180deg,#f6d98c,#c9a14a); box-shadow:0 0 0 1px #fff3c4 inset,0 8px 26px rgba(240,205,120,.35); }
+@keyframes qok-vicfall{ 0%{ transform:translate3d(0,-10vh,0) rotate(0deg); } 100%{ transform:translate3d(24px,112vh,0) rotate(620deg); } }
+@keyframes qok-victwinkle{ 0%,100%{ opacity:.15; transform:scale(.6); } 50%{ opacity:1; transform:scale(1.15); } }
+@keyframes qok-vicspin{ to{ transform:rotate(360deg); } }
+@keyframes qok-vicbob{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-6px); } }
+@keyframes qok-vicpop{ 0%{ opacity:0; transform:scale(.3); } 100%{ opacity:1; transform:scale(1); } }
 #qok-ui .go-screen{ flex:1; width:100%; max-width:560px; margin:0 auto; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:44px; padding:40px 24px; text-align:center; }
 #qok-ui .go-head{ display:flex; flex-direction:column; align-items:center; gap:12px; }
 #qok-ui .go-skull{ font-size:56px; line-height:1; filter:drop-shadow(0 0 14px rgba(168,86,78,.5)); }
@@ -667,6 +701,9 @@ body.qok-dialogue #qok-field-hud #qfh-dialog{bottom:calc(env(safe-area-inset-bot
 #qok-ui .slotcard .sr1{ display:flex; width:100%; justify-content:space-between; font-size:16px; }
 #qok-ui .slotcard .sr1 i{ font-style:normal; color:var(--gold); font-weight:700; font-size:14px; }
 #qok-ui .slotcard .sr2{ font-size:12.5px; color:var(--ink-soft); font-variant-numeric:tabular-nums; }
+#qok-ui .slotcard .sclear{ font-style:normal; margin-left:10px; color:#f0cd78; letter-spacing:.04em; }
+#qok-ui .slotng{ width:100%; max-width:380px; font-size:17px; background:linear-gradient(180deg,#f6d98c,#c9a14a); }
+#qok-ui .slotnote{ font-size:12.5px; color:var(--ink-soft); margin:-4px 0 6px; }
 #qok-ui .slotbtns{ width:100%; max-width:380px; display:grid; grid-template-columns:1fr 1fr; gap:10px; }
 #qok-ui .btn-ruby{ background:var(--ruby2); border-color:var(--ruby); color:#f6ecea; }
 #qok-ui .savebtn{ font:inherit; font-size:13px; font-weight:700; padding:5px 12px; border-radius:14px;

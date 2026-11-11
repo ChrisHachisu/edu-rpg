@@ -102,10 +102,11 @@
   function slotInfo(n) {
     var s = parse(get(slotKey(n, 'save'))), a = parse(get(slotKey(n, 'auto')));
     var newest = s && a ? ((a.timestamp || 0) >= (s.timestamp || 0) ? a : s) : (s || a);
-    return { n: n, save: s, auto: a, newest: newest, empty: !s && !a };
+    var c = null; try { c = JSON.parse(get(slotKey(n, 'clear')) || 'null'); } catch (e) { c = null; }
+    return { n: n, save: s, auto: a, newest: newest, empty: !s && !a, clear: (c && c.ng) ? c : null };
   }
   function deleteSlot(n) {
-    ['save', 'auto', 'town'].forEach(function (k) { del(slotKey(n, k)); });
+    ['save', 'auto', 'town', 'clear'].forEach(function (k) { del(slotKey(n, k)); });
     if (activeSlot() === n) { del(ACTIVE); swapWorking(null, null); }
   }
 
@@ -115,6 +116,8 @@
   function Z(k, p) { var q = window.__QOK; return q && q.Z ? q.Z(k, p) : k; }
   function isJa() { var q = window.__QOK; try { return !!(q && q.loc && q.loc() === 'ja'); } catch (e) { return false; } }
   function kanji() { var t = GS(); return !!(t && t.player && t.player.state && t.player.state.kanjiMode); }
+  // Kana by default (house style for ages 6-8); the kanji spelling when the player chose kanji mode.
+  function J(kana, kj) { return kanji() ? kj : kana; }
   function T3(en, kana, kj) { return isJa() ? (kanji() && kj ? kj : kana) : en; }
   function act(k) { var g = G(); try { return !!(g && g.scene && g.scene.isActive(k)); } catch (e) { return false; } }
   function scene(k) { var g = G(); try { return g && g.scene && g.scene.getScene(k); } catch (e) { return null; } }
@@ -412,6 +415,29 @@
     return pickTitleAction(ts, 'new');
   }
 
+  // ---- New Game+ ----
+  // The bundle keeps what New Game+ carries over (items, gear, gold, name, look) only in memory,
+  // and only if the player picks it on the ending screen. recordClear() stores the same data on the
+  // slot when the ending is reached, so a cleared slot can start New Game+ later from the title.
+  function recordClear() {
+    var t = GS(), n = activeSlot(), st = t && t.player && t.player.state;
+    if (!st || !n) return false;
+    var prev = slotInfo(n).clear;
+    return set(slotKey(n, 'clear'), JSON.stringify({ t: Date.now(), count: ((prev && prev.count) || 0) + 1, ng: {
+      inventory: (st.inventory || []).map(function (x) { return { itemId: x.itemId, quantity: x.quantity }; }),
+      equipment: clone(st.equipment) || {}, gold: st.gold || 0, heroName: st.name, heroColor: st.heroColor } }));
+  }
+  function ngPlusSlot(n) {
+    var ts = titleScene(), t = GS(), info = slotInfo(n);
+    if (!ts || !t || !info.clear) return false;
+    activate(n);
+    resetWatch(); bossFight = null;
+    t.ngPlusData = clone(info.clear.ng);
+    try { if (ts.removeNameInput) ts.removeNameInput(); } catch (e) {}
+    ts.scene.start('TitleScene', { ngPlus: true });
+    return true;
+  }
+
   // ---- install ----
   function tick() { try { watch(); } catch (e) {} }
   setInterval(tick, 250);
@@ -423,7 +449,7 @@
     SLOTS: SLOTS, TOWNS: TOWNS,
     slots: function () { var a = []; for (var i = 1; i <= SLOTS; i++) a.push(slotInfo(i)); return a; },
     slotInfo: slotInfo, activeSlot: activeSlot, deleteSlot: deleteSlot,
-    continueSlot: continueSlot, newInSlot: newInSlot,
+    continueSlot: continueSlot, newInSlot: newInSlot, recordClear: recordClear, ngPlusSlot: ngPlusSlot,
     placeName: placeName, inTown: inTown, manualSave: manualSave,
     autoSaveNow: autoSaveNow, flashSaved: flashSaved,
     defeatInfo: defeatInfo, returnToTown: returnToTown, retryBoss: retryBoss, toTitle: toTitle,
@@ -446,6 +472,9 @@
   // true global locale (vi()) — matches what Z() renders; falls back to player state.
   function locale() { var q = QOK(); if (q && q.loc) { try { return q.loc(); } catch (e) {} } var s = pstate(); return (s && s.locale) || 'en'; }
   function isJa()   { return locale() === 'ja'; }
+  function kanji() { var s = pstate(); return !!(s && s.kanjiMode); }
+  function J(kana, kj) { return kanji() ? kj : kana; }
+  function T3(en, kana, kj) { return isJa() ? (kanji() && kj ? kj : kana) : en; }
 
   function sceneActive(key) { var g = G(); try { return !!(g && g.scene && g.scene.isActive(key)); } catch (e) { return false; } }
   function getScene(key)    { var g = G(); try { return g && g.scene && g.scene.getScene(key); } catch (e) { return null; } }
@@ -1070,10 +1099,10 @@
   // accurate loss, not a blanket "your data will not be saved".
   var settingsQuitConfirm = false;
   function settingsQuitConfirmBody() {
-    var heading = isJa() ? 'タイトルへもどりますか？' : 'Return to Title?';
+    var heading = isJa() ? J('タイトルへもどりますか？', 'タイトルへ戻りますか？') : 'Return to Title?';
     // Returning to the title auto saves first (save slots, 2026-11-04), so nothing is lost.
     var warn = isJa()
-      ? 'ぼうけんは オートセーブされます。'
+      ? (kanji() ? '冒険は オートセーブされます。' : 'ぼうけんは オートセーブされます。')
       : 'Your adventure will be auto saved.';
     return '<div class="body"><div class="zc pad stack g10" style="padding-top:14px;">' +
       '<div class="scene-h">' + esc(heading) + '</div>' +
@@ -1095,7 +1124,7 @@
         lab = Z('settings.language');
         ctrl = '<div class="toggle" style="pointer-events:none;"><span class="' + (!isJa() ? 'on' : '') + '">English</span><span class="' + (isJa() ? 'on' : '') + '">日本語</span></div>';
       } else if (key === 'kanji') {
-        lab = 'もじ'; ctrl = '<span class="val">' + (st.kanjiMode ? 'むずかしい' : 'かんたん') + '</span>';
+        lab = st.kanjiMode ? '文字' : 'もじ'; ctrl = '<span class="val">' + (st.kanjiMode ? '難しい' : 'かんたん') + '</span>';
       } else if (key === 'timer') {
         lab = Z('settings.timer'); ctrl = '<div class="switch ' + (st.timerEnabled ? 'on' : '') + '" style="pointer-events:none;"></div>';
       } else if (key === 'sound') {
@@ -1104,7 +1133,7 @@
         lab = Z('settings.volume'); var v = Math.round((st.masterVolume || 0) * 100);
         ctrl = '<input id="qok-volume" data-native="1" type="range" min="0" max="100" step="1" value="' + v + '" aria-label="' + esc(lab) + '"><span id="qok-volume-value" class="val" style="min-width:42px;text-align:right;">' + v + '%</span>';
       } else if (key === 'controlOrientation') {
-        lab = isJa() ? 'そうさボタン' : 'Controls';
+        lab = isJa() ? (st.kanjiMode ? '操作ボタン' : 'そうさボタン') : 'Controls';
         var ori = (window.localStorage && localStorage.getItem('eduControlOrientation')) || 'right';
         ctrl = '<div class="seg" style="pointer-events:none;flex:1;max-width:230px;"><b class="' + (ori === 'left' ? 'on' : '') + '">◀</b><b class="' + (ori === 'center' ? 'on' : '') + '">●</b><b class="' + (ori === 'right' ? 'on' : '') + '">▶</b></div>';
       }
@@ -1325,9 +1354,9 @@
       '<div class="scene-h">' + esc(Z(it.nameKey)) + '</div>' +
       '<div class="d" style="text-align:center;margin-top:2px;">' + esc(it.buyPrice + ' G' + (isEq ? '' : ' ' + (ja ? 'ずつ' : 'each'))) + '</div>' +
       qtyBlock +
-      '<div class="totrow"><span>' + esc(ja ? 'ごうけい' : 'Total') + '</span>' +
+      '<div class="totrow"><span>' + esc(ja ? J('ごうけい', '合計') : 'Total') + '</span>' +
         '<span class="tot' + (over ? ' over' : '') + '">' + total + ' G</span></div>' +
-      '<div class="totrow" style="font-size:12px;opacity:.8;"><span>' + esc(ja ? 'しょじきん' : 'Wallet') + '</span>' +
+      '<div class="totrow" style="font-size:12px;opacity:.8;"><span>' + esc(ja ? J('しょじきん', '所持金') : 'Wallet') + '</span>' +
         '<span>' + st.gold + ' G</span></div>' +
       '<div class="btnrow">' +
         '<button class="btn btn-em" data-act="shopConfirmBuy"' + (over ? ' disabled' : '') + '>' + use('check', 'ic') + esc(Z('shop.buy')) + '</button>' +
@@ -1604,7 +1633,7 @@
     }
     chips += '<div class="gwheel-pad"></div></div>';
     var langCtrl = '<div class="toggle" data-act="introLang"><span class="' + (!ja ? 'on' : '') + '">English</span><span class="' + (ja ? 'on' : '') + '">日本語</span></div>';
-    var kanjiRow = ja ? ('<div class="panel" style="padding:9px 13px;display:flex;justify-content:space-between;align-items:center;gap:10px;"><span style="font-weight:800;color:var(--ink-soft);font-size:13px;">もじ</span><div class="toggle" data-act="introKanji"><span class="' + (!pstate() || !pstate().kanjiMode ? 'on' : '') + '">かんたん</span><span class="' + (pstate() && pstate().kanjiMode ? 'on' : '') + '">むずかしい</span></div></div>') : '';
+    var kanjiRow = ja ? ('<div class="panel" style="padding:9px 13px;display:flex;justify-content:space-between;align-items:center;gap:10px;"><span style="font-weight:800;color:var(--ink-soft);font-size:13px;">' + J('もじ', '文字') + '</span><div class="toggle" data-act="introKanji"><span class="' + (!pstate() || !pstate().kanjiMode ? 'on' : '') + '">かんたん</span><span class="' + (pstate() && pstate().kanjiMode ? 'on' : '') + '">むずかしい</span></div></div>') : '';
 
     var h = '<div class="body"><div class="zc stack pad g8 grid2" style="padding-top:10px;padding-bottom:12px;">' +
       '<div class="span2" style="display:flex;justify-content:flex-start;"><button data-act="introBack" style="background:#2a2c4d;border:1.5px solid #9a7a36;color:#f3ead2;font-weight:800;font-size:14px;cursor:pointer;padding:6px 14px;border-radius:10px;display:inline-flex;align-items:center;gap:5px;">‹ ' + esc(Z('settings.back')) + '</button></div>' +
@@ -1627,7 +1656,7 @@
         '<div id="qok-name-err" class="name-err' + (nameErrShown ? ' on' : '') + '">' +
           (nameErrShown ? esc(Z('create.nameRequired')) : '') + '</div>' +
       '</div>' +
-      '<div class="panel" style="padding:9px 13px;"><div style="font-weight:800;color:var(--ink-soft);font-size:12px;margin-bottom:6px;">' + (ja ? 'みため' : 'Look') + '</div><div style="display:flex;gap:10px;">' + variantOpts + '</div></div>' +
+      '<div class="panel" style="padding:9px 13px;"><div style="font-weight:800;color:var(--ink-soft);font-size:12px;margin-bottom:6px;">' + (ja ? J('みため', '見た目') : 'Look') + '</div><div style="display:flex;gap:10px;">' + variantOpts + '</div></div>' +
       '<div class="panel" style="padding:9px 13px;"><div style="font-weight:800;color:var(--ink-soft);font-size:12px;margin-bottom:6px;">' + esc(Z('settings.difficulty')) + '</div><div class="gwheel-wrap"><div class="gwheel-band"></div><div class="gwheel" id="qok-gwheel">' + chips + '</div></div></div>' +
       '<div class="panel" style="padding:9px 13px;display:flex;justify-content:space-between;align-items:center;gap:10px;"><span style="font-weight:800;color:var(--ink-soft);font-size:13px;">' + esc(Z('settings.language')) + '</span>' + langCtrl + '</div>' +
       kanjiRow +
@@ -2108,7 +2137,7 @@
         '</div>' +
         '<div class="t-hero">' + heroImg(160, heroColor) + '</div>' +
         '<div class="t-actions">' +
-          (SV ? '<button class="btn btn-gold" data-act="titleSlots" style="width:100%;font-size:18px;">' + use('arrow', 'ic') + esc(ja ? 'はじめる' : 'Start') + '</button>' :
+          (SV ? '<button class="btn btn-gold" data-act="titleSlots" style="width:100%;font-size:18px;">' + use('arrow', 'ic') + esc(ja ? J('はじめる', '始める') : 'Start') + '</button>' :
           '<button class="btn btn-gold" data-act="titleNew" style="width:100%;font-size:18px;">' + use('arrow', 'ic') + esc(Z('title.newGame')) + '</button>' +
           (hasSave ? '<button class="btn btn-slate" data-act="titleContinue" style="width:100%;font-size:17px;">' + use('arrow', 'ic') + esc(Z('title.continue')) + '</button>' : '')) +
           '<div class="toggle" data-act="titleLang" style="margin-top:4px;"><span class="' + (!ja ? 'on' : '') + '">English</span><span class="' + (ja ? 'on' : '') + '">日本語</span></div>' +
@@ -2150,7 +2179,7 @@
     var d = new Date(ts), now = new Date(), ja = isJa();
     var hm = d.getHours() + ':' + ('0' + d.getMinutes()).slice(-2);
     var same = d.toDateString() === now.toDateString();
-    if (same) return (ja ? 'きょう ' : 'today ') + hm;
+    if (same) return (ja ? J('きょう ', '今日 ') : 'today ') + hm;
     return (d.getMonth() + 1) + '/' + d.getDate() + ' ' + hm;
   }
   function fmtPlay(sec) {
@@ -2160,12 +2189,12 @@
   function slotCard(SV, info, sel) {
     var ja = isJa();
     if (info.empty) {
-      return '<button class="slotcard empty" data-act="slotPick" data-i="' + info.n + '"><span class="sn">' + (ja ? 'きろく ' : 'Slot ') + info.n + '</span>' +
-        '<span class="se">＋ ' + esc(ja ? 'あたらしい ぼうけん' : 'New adventure') + '</span></button>';
+      return '<button class="slotcard empty" data-act="slotPick" data-i="' + info.n + '"><span class="sn">' + (ja ? (kanji() ? '記録 ' : 'きろく ') : 'Slot ') + info.n + '</span>' +
+        '<span class="se">＋ ' + esc(ja ? (kanji() ? '新しい 冒険' : 'あたらしい ぼうけん') : 'New adventure') + '</span></button>';
     }
     var r = info.newest, p = r.player || {};
     return '<button class="slotcard' + (sel ? ' sel' : '') + '" data-act="slotPick" data-i="' + info.n + '">' +
-      '<span class="sn">' + (ja ? 'きろく ' : 'Slot ') + info.n + '</span>' +
+      '<span class="sn">' + (ja ? (kanji() ? '記録 ' : 'きろく ') : 'Slot ') + info.n + (info.clear ? '<em class="sclear">★ ' + (ja ? 'クリア' : 'Cleared') + '</em>' : '') + '</span>' +
       '<span class="sr1"><b>' + esc(p.name || '?') + '</b><i>' + esc(Z('menu.level')) + ' ' + (p.level || 1) + '</i></span>' +
       '<span class="sr2">' + esc(SV.placeName(p.position)) + '</span>' +
       '<span class="sr2">' + (ja ? 'プレイ ' : 'Play ') + fmtPlay(r.playtime) + ' · ' + esc(fmtWhen(r.timestamp)) + '</span></button>';
@@ -2174,9 +2203,9 @@
     var ja = isJa(), h;
     if (titleView === 'slots') {
       var list = SV.slots();
-      h = '<div class="t-screen slots"><div class="scene-h">' + esc(ja ? 'ぼうけんを えらぶ' : 'Choose your adventure') + '</div><div class="slotlist">';
+      h = '<div class="t-screen slots"><div class="scene-h">' + esc(ja ? J('ぼうけんを えらぶ', '冒険を 選ぶ') : 'Choose your adventure') + '</div><div class="slotlist">';
       for (var i = 0; i < list.length; i++) h += slotCard(SV, list[i], list[i].n === SV.activeSlot());
-      h += '</div><button class="btn btn-slate" data-act="slotBack" style="width:100%;max-width:380px;">' + esc(ja ? 'もどる' : 'Back') + '</button></div>';
+      h += '</div><button class="btn btn-slate" data-act="slotBack" style="width:100%;max-width:380px;">' + esc(ja ? J('もどる', '戻る') : 'Back') + '</button></div>';
     } else {
       var info = SV.slotInfo(titleSlotN);
       if (info.empty) { titleView = 'slots'; return renderTitleSlots(ts, SV); }
@@ -2185,15 +2214,18 @@
         '<div class="slotlist">';
       if (info.auto) h += '<button class="slotcard sel" data-act="slotLoad" data-i="0"><span class="sn">' + esc(ja ? 'オートセーブ' : 'Auto save') + '</span>' +
         '<span class="sr1"><b>' + esc(SV.placeName(info.auto.player.position)) + '</b></span><span class="sr2">' + esc(fmtWhen(info.auto.timestamp)) + ' · ' + esc(Z('menu.level')) + ' ' + (info.auto.player.level || 1) + '</span></button>';
-      if (info.save) h += '<button class="slotcard" data-act="slotLoad" data-i="1"><span class="sn">' + esc(ja ? 'さいごの セーブ' : 'Last save') + '</span>' +
+      if (info.save) h += '<button class="slotcard" data-act="slotLoad" data-i="1"><span class="sn">' + esc(ja ? J('さいごの セーブ', '最後の セーブ') : 'Last save') + '</span>' +
         '<span class="sr1"><b>' + esc(SV.placeName(info.save.player.position)) + '</b></span><span class="sr2">' + esc(fmtWhen(info.save.timestamp)) + ' · ' + esc(Z('menu.level')) + ' ' + (info.save.player.level || 1) + '</span></button>';
-      h += '</div><div class="slotbtns"><button class="btn btn-slate" data-act="slotDelAsk">' + esc(ja ? 'けす' : 'Delete') + '</button>' +
-        '<button class="btn btn-slate" data-act="slotBack">' + esc(ja ? 'もどる' : 'Back') + '</button></div></div>';
+      h += '</div>';
+      if (info.clear) h += '<button class="btn btn-gold slotng" data-act="slotNgPlus">★ ' + esc(Z('victory.ngplus')) + '</button>' +
+        '<div class="slotnote">' + esc(ja ? J('アイテム・そうび・ゴールドを もって さいしょから', 'アイテム・装備・ゴールドを 持って 最初から') : 'Start over and keep your items, gear and gold') + '</div>';
+      h += '<div class="slotbtns"><button class="btn btn-slate" data-act="slotDelAsk">' + esc(ja ? J('けす', '消す') : 'Delete') + '</button>' +
+        '<button class="btn btn-slate" data-act="slotBack">' + esc(ja ? J('もどる', '戻る') : 'Back') + '</button></div></div>';
       if (titleView === 'del') {
         h += '<div class="shopconf" data-act="slotDelCancel"><div class="card2" data-act="titleNoop">' +
-          '<div class="scene-h">' + esc(ja ? (p.name + 'の ぼうけんを けしますか？') : ('Delete ' + p.name + '’s adventure?')) + '</div>' +
-          '<div class="d" style="text-align:center;margin-top:6px;">' + esc(ja ? 'もとに もどせません。' : 'This cannot be undone.') + '</div>' +
-          '<div class="btnrow"><button class="btn btn-ruby" data-act="slotDelConfirm">' + esc(ja ? 'けす' : 'Delete') + '</button>' +
+          '<div class="scene-h">' + esc(ja ? (p.name + J('の ぼうけんを けしますか？', 'の 冒険を 消しますか？')) : ('Delete ' + p.name + '’s adventure?')) + '</div>' +
+          '<div class="d" style="text-align:center;margin-top:6px;">' + esc(ja ? J('もとに もどせません。', '元に 戻せません。') : 'This cannot be undone.') + '</div>' +
+          '<div class="btnrow"><button class="btn btn-ruby" data-act="slotDelConfirm">' + esc(ja ? J('けす', '消す') : 'Delete') + '</button>' +
           '<button class="btn btn-slate" data-act="slotDelCancel">' + esc(ja ? 'やめる' : 'Cancel') + '</button></div></div></div>';
       }
     }
@@ -2350,6 +2382,7 @@
     if (curScreen === 'battle') return routeBattle(act, i, el);
     if (curScreen === 'title') return routeTitle(act, i, el);
     if (curScreen === 'gameover') return routeGameOver(act, i, el);
+    if (curScreen === 'victory') return routeVictory(act);
   }
 
   function routeGameOver(act, i) {
@@ -2412,6 +2445,7 @@
         titleSlotN = i; titleView = 'slot'; lastSig = null; return;
       }
       if (act === 'slotLoad') { var nn = titleSlotN; titleView = 'landing'; lastSig = null; SV.continueSlot(nn, i === 0 ? 'auto' : 'save'); return; }
+      if (act === 'slotNgPlus') { var ng = titleSlotN; titleView = 'landing'; lastSig = null; SV.ngPlusSlot(ng); return; }
       if (act === 'slotDelAsk') { titleView = 'del'; lastSig = null; return; }
       if (act === 'slotDelCancel') { titleView = 'slot'; lastSig = null; return; }
       if (act === 'slotDelConfirm') { SV.deleteSlot(titleSlotN); titleView = 'slots'; lastSig = null; return; }
@@ -2513,6 +2547,7 @@
     else if (act === 'introBack') {
       // return to the title screen (overlay auto-switches to renderTitle when mode==='title')
       ts.mode = 'title';
+      if (ts.ngPlus) { ts.ngPlus = false; try { GS().ngPlusData = null; } catch (e0) {} }   // backing out cancels New Game+
       try { if (ts.removeNameInput) ts.removeNameInput(); } catch (e) {}
       // ~~ts.drawTitle()~~ DOES NOT EXIST -- the scene's method is drawTitleScreen, and the guard
       // `if (ts.drawTitle)` meant this line had been quietly doing nothing since it was written.
@@ -3381,6 +3416,60 @@
     paint(h, sig);
   }
 
+  /* ENDING (VictoryScene). The bundle draws it as 8-9 px canvas text with the hero sprite on top
+     of "Thank you for playing!" (round 1 census, M2). Owner on the first mockup: "better but the
+     screen is way too cluttered" -- so this is deliberately sparse: title, hero, one line, one
+     small results line, two buttons. The scene's own confirmChoice() still does the work. */
+  var victoryStats = null;
+  function renderVictory() {
+    var vs = getScene('VictoryScene'); if (!vs) return;
+    if (!victoryStats || victoryStats.scene !== vs || victoryStats.started !== vs.sys.settings.startTime) {
+      var t = GS() || {}, st = pstate() || {}, secs = 0, pct = null;
+      try { secs = Math.floor((t.playtime || 0) + (Date.now() - (t.startTime || Date.now())) / 1000); } catch (e) {}
+      try { var q = t.quizManager.getStats(); if (q.totalAsked > 0) pct = Math.round(q.totalCorrect / q.totalAsked * 100); } catch (e2) {}
+      var hh = Math.floor(secs / 3600), mm = Math.floor(secs % 3600 / 60), ss = secs % 60;
+      function p2(n) { return (n < 10 ? '0' : '') + n; }
+      victoryStats = { scene: vs, started: vs.sys.settings.startTime, time: hh > 0 ? (hh + ':' + p2(mm) + ':' + p2(ss)) : (mm + ':' + p2(ss)),
+        pct: pct, grade: st.quizDifficulty, color: st.heroColor || 'gray' };
+      try { if (window.__QOK_SAVES__) window.__QOK_SAVES__.recordClear(); } catch (e3) {}
+    }
+    var v = victoryStats;
+    function tile(lab, val) { return '<div class="vic-stat"><b>' + esc(val) + '</b><span>' + esc(lab) + '</span></div>'; }
+    var line = tile(T3('Time', 'じかん', '時間'), v.time) +
+      tile(T3('Correct', 'せいかい', '正解'), v.pct === null ? '–' : (v.pct + '%')) +
+      (v.grade ? tile(T3('Grade', 'がくねん', '学年'), String(Z('grade.' + v.grade)).replace(/\s*Grade$/, '').replace(/年生$/, '年').replace(/ねんせい$/, 'ねん')) : '');
+    // Celebration dressing: deterministic confetti so the paint key stays stable between ticks.
+    var fx = '', cols = ['#f0cd78', '#fff6d8', '#c9a961', '#6fd3c0', '#e8788a', '#a99cf0'];
+    for (var ci = 0; ci < 34; ci++) {
+      var cx = (ci * 37 + 11) % 100, cd = 5 + (ci * 7 % 6), cdl = -((ci * 13) % 90) / 10, cw = 5 + (ci % 3) * 2;
+      fx += '<span style="left:' + cx + '%;width:' + cw + 'px;height:' + Math.round(cw * 1.6) + 'px;background:' + cols[ci % cols.length] +
+        ';animation-duration:' + cd + 's;animation-delay:' + cdl + 's;"></span>';
+    }
+    for (var ti = 0; ti < 9; ti++) {
+      fx += '<em style="left:' + ((ti * 23 + 8) % 92) + '%;top:' + ((ti * 31 + 6) % 78) + '%;font-size:' + (10 + (ti % 3) * 6) +
+        'px;animation-delay:' + (-(ti * 0.37)).toFixed(2) + 's;">✦</em>';
+    }
+    var h = '<div class="t-screen vic"><div class="vic-fx">' + fx + '</div>' +
+      '<div class="t-head"><div class="vic-stars"><b>★</b><b>★</b><b>★</b></div>' +
+        '<div class="title-kicker"><i></i>' + esc(T3('Quest complete', 'クエスト クリア', 'クエスト クリア')) + '<i></i></div>' +
+        '<div class="title-name">' + esc(Z('victory.title')) + '</div></div>' +
+      '<div class="vic-mid"><div class="vic-stage">' + heroImg(160, v.color) + '</div>' +
+        '<div class="vic-msg">' + esc(T3('You restored the Crystal of Math Knowledge!', 'さんすうの クリスタルを|とりもどした！', '算数の クリスタルを|取り戻した！')).replace('|', '<br>') + '</div>' +
+        '<div class="vic-line">' + line + '</div></div>' +
+      '<div class="t-actions">' +
+        '<button class="btn btn-gold" data-act="victoryNgPlus" style="width:100%;font-size:18px;">' + esc(Z('victory.ngplus')) + '</button>' +
+        '<button class="btn btn-slate" data-act="victoryTitle" style="width:100%;font-size:17px;">' + esc(Z('victory.titleScreen')) + '</button>' +
+      '</div></div>';
+    activate('victory', false);
+    paint(h, 'victory|' + locale() + '|' + kanji() + '|' + v.time + '|' + v.pct + '|' + v.grade + '|' + (getHeroSrc(v.color) ? 1 : 0));
+  }
+  function routeVictory(act) {
+    var vs = getScene('VictoryScene'); if (!vs || !sceneActive('VictoryScene')) return;
+    if (act !== 'victoryNgPlus' && act !== 'victoryTitle') return;
+    vs.menuIndex = (act === 'victoryNgPlus') ? 0 : 1;
+    try { vs.confirmChoice(); } catch (e) { if (window.console) console.error('[ui] victory ' + e); }
+  }
+
   /* DEFEAT (owner-locked 2026-11-04). Replaces the bundle's Try Again / Restart from Save Point:
      every defeat offers "Return to <last town>" (full HP, keep everything, lose half the gold);
      a BOSS defeat also offers "Try the boss again" first, which restarts that fight with HP and
@@ -3466,6 +3555,7 @@
     if (sceneActive('ShopScene')) { renderShop(); return; }
     if (sceneActive('BattleScene')) { renderBattle(); return; }
     if (sceneActive('GameOverScene')) { renderGameOver(); return; }
+    if (sceneActive('VictoryScene')) { renderVictory(); return; }
     var ts = getScene('TitleScene');
     if (ts && sceneActive('TitleScene')) {
       // The New-Game confirm card belongs to the title screen only: whatever moved the scene on

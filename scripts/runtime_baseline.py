@@ -46,7 +46,7 @@ ACT1_OVERLAY_FILES = {
     # 2026-09-21: additive loss/retry guard. It restores the live player after
     # defeat without changing the frozen bundle and polls until its hooks exist.
     "battle-recovery.js": (
-        7024, "b653552259676ee4061bb2c10663e88c799ea6f150290fd59108d00f2b4a6c4e"),
+        10357, "6616dff0762f7a62964c3f154503d8923a23822202cb3345c1be2cf85ed8ccec"),
     # 2026-08-03, owner: "make the game controllable with the keypad ... use the joy stick type
     # keypad on the port sapphire screen". The 4-way d-pad held exactly ONE arrow key at a time
     # (setDir released the previous), so a diagonal was impossible and a corner boundary could
@@ -121,7 +121,7 @@ ACT1_OVERLAY_FILES = {
     # other 12 settle one cell north once; largest rescue nudge 28 px against a 96 px bound).
     # Updated 2026-10-03 for the approved scoped forest+mountain visible-terrain union.
     "dq-tiles.js": (
-        650001, "008108eb23cd7b7ffd9e9137de1ec91b4e6624d6a473adec38ce202f57958e5a"),
+        668292, "22905355f9786bf4fc66cc0c23aa8cc65b5f72be4cb0c2afb50c8edd97093fc5"),
     # 2026-08-07: THE OVERWORLD'S COLLISION SHAPE, baked -- the overworld's answer to the dungeons'
     # `<floor>-walk.png` above, and as much a shipped authority as they are. Deriving it at runtime
     # was correct and unaffordable: owmBuild() evaluated waterField/mountainField per pixel over a
@@ -170,7 +170,7 @@ ACT1_OVERLAY_FILES = {
     # baseline. IT MUST BE PINNED HERE OR IT NEVER REACHES dist/ -- a tracked-but-unstaged asset
     # has silently killed a boss animation and the town foreground layer before, with every gate
     # still green, because staging and git are two different lists.
-    "assets/hero/hero-male-walk.png": (59032, "88cbed8f9d707b216ada01e108eedd5822c6bcfc69c8dd22af2457f231dc0976"),
+    "assets/hero/hero-male-walk.png": (60643, "86aafcab82888b32d187b7f440c3d74cc5b5e570f07d56307e4a72beff03c3ff"),
     "act1-world-map.js": (
         54927, "c43e15f879096782f2de7d93a4c9fee9dc92f6072b8ee5d38aec0cd087ce09ec"),
     # 2026-08-06, from device: the Port Sapphire movement stick was anchored bottom-LEFT and its
@@ -183,7 +183,7 @@ ACT1_OVERLAY_FILES = {
     # the control-orientation setting, into the frame. First override of this file since the
     # v1.17.1 baseline was frozen, which is why it had no entry before.
     "ui-overhaul.js": (
-        230953, "4a9b66736ede4998bbecf3c0b123d313392c0f499f12492e60f36cabe873fd4d"),
+        238432, "6955aeee662d51ad9fdfe249748fad0077e30a178b05c67f06f80baefe6bf715"),
     # 2026-08-06, owner pick: "Charcoal & Gold Leaf" (direction 4 of
     # design/ui-overhaul/chic-style-board.html). The same gold as before -- the pixel art, the
     # dungeon plates and the town screens were all approved against it -- spent differently:
@@ -193,7 +193,7 @@ ACT1_OVERLAY_FILES = {
     # bundled rather than fetched; the short version is that it never reached the phone at all.
     # Like ui-overhaul.js above, first override of this file since the baseline was frozen.
     "ui-overhaul.css": (
-        60702, "4a23621a84e0dd78700835e73d4b53f18d071d1d6f288c97020cfc61c68e9910"),
+        65781, "1c34b1c6dfa2fea8effdb792fd909dfc2ecc22e1bbe4da545db088c6d47543a1"),
 }
 # 2026-08-06, owner-picked ("Charcoal & Gold Leaf", direction 4 of
 # design/ui-overhaul/chic-style-board.html): the chrome the theme needs on disk rather than
@@ -469,7 +469,7 @@ ACT1_TOWN_FILES = {
     "act1-hifi/town/greenhollow-foreground.png": (17426, "871ebe24b325a11fb0ba5be0343d8474194c558de06bbb556e294c056badb743"),
     "act1-hifi/town/greenhollow-foreground.json": (67, "d41d39ced921a0034c10222028397e42eb7eebd503f23b8be7f40a7530632aca"),
     # Selected male town protagonist, using the existing approved sheet.
-    "act1-hifi/hero-g3/hero-act1-male-walk-8x3-64-g3.png": (124618, "b1e03de47337d8d2aca8d89e80c1c524c95ac2cc2cf88ed1ebd2b37b86424b2e"),
+    "act1-hifi/hero-g3/hero-act1-male-walk-8x3-64-g3.png": (125699, "02162ba11fec942c3524fd0c528f66be8ee86e7bb574c196dbeb93b99f37b90b"),
     "act1-hifi/town.html": (
         55388, "8a3ccc2400c6ce701e4720a47c5bd7fc4d41d56cc2d55e3be36238c17614434e"),
     "act1-hifi/town/portSapphire-town.json": (

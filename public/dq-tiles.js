@@ -1022,7 +1022,7 @@
       if(uncertainReadyBase) return [];
       liveIds.sort();
       var signature=liveIds.join('|');
-      if(underpaint.maskScene!==scene||underpaint.maskKey!==signature||!underpaint.maskTexture||!textures.exists('a1a_underpaint_mask')) return [];
+      if(underpaint.maskScene!==scene||underpaint.maskKey!==signature||!(underpaint.gpuHoles||(underpaint.maskTexture&&textures.exists('a1a_underpaint_mask')))) return [];
     }
     return opaque;
   }
@@ -1761,9 +1761,57 @@
     if(scene&&scene.textures&&scene.textures.exists(key))try{scene.textures.remove(key);}catch(e){}
     if(up){up.maskTexture=null;up.maskScene=null;up.maskKey=null;up.maskLiveKey='';}
   }
+  // GPU HOLES (2026-11-10). The two coarse fallback layers used to be "erased" under live chunks by
+  // redrawing an 888x1092 canvas and re-uploading it as a texture every time the set of live
+  // chunks changed -- several times per window step, two canvases each time. The owner's phone
+  // reports "brief pauses when walking in the overworld"; a canvas->texture upload is exactly
+  // that kind of main-thread stall. The same picture is produced with no upload at all by an
+  // geometry mask: the raw image stays on the GPU untouched and only the rects of chunks that
+  // are not live are stencilled in. window.__A1_UP_GPU_MASK__=false restores the canvas path.
+  function a1aGpuHolesOn(){ return window.__A1_UP_GPU_MASK__!==false; }
+  function a1aGpuHoles(scene,o,ids,s,signature){
+    if(!scene||!scene.make||!scene.make.graphics) return false;
+    // The mask is drawn as the COMPLEMENT (every chunk rect that is NOT live), so it does not
+    // depend on inverted-stencil support.
+    var liveSet={},rest=[],mc=A1A.manifest.chunks,ci;
+    for(ci=0;ci<ids.length;ci++) liveSet[ids[ci]]=1;
+    for(ci=0;ci<mc.length;ci++) if(!liveSet[mc[ci].id]) rest.push(mc[ci].id);
+    if(rest.length+ids.length!==mc.length) return false;
+    var rects=a1aForestMaskRects(A1A.manifest,s,rest);
+    if(rects.length!==rest.length) return false;
+    if(o.holeScene!==scene||!o.holeG||!o.holeG.scene){
+      if(o.holeG){ try{o.holeG.destroy();}catch(e){} }
+      o.holeG=scene.make.graphics({x:0,y:0,add:false});
+      o.holeMask=o.holeG.createGeometryMask();
+      o.holeScene=scene; o.holeKey=null;
+    }
+    if(o.holeKey!==signature){
+      var b=A1A.manifest.semanticBounds,ox=b[0]*OW_TILE,oy=b[1]*OW_TILE,sc=OW_TILE/s.pixelsPerCell,g=o.holeG;
+      g.clear(); g.fillStyle(0xffffff,1);
+      for(var i=0;i<rects.length;i++){var r=rects[i];g.fillRect(ox+r.x*sc,oy+r.y*sc,r.width*sc,r.height*sc);}
+      o.holeKey=signature;
+    }
+    a1aGpuHolesApply(o);
+    return true;
+  }
+  function a1aGpuHolesApply(o){
+    if(!o||!o.sprite||!o.sprite.scene) return;
+    if(o.holeMask&&o.holeScene===o.sprite.scene&&a1aGpuHolesOn()){ if(o.sprite.mask!==o.holeMask) o.sprite.setMask(o.holeMask); }
+    else if(o.sprite.mask&&o.sprite.mask===o.holeMask){ try{o.sprite.clearMask();}catch(e){} }
+  }
   function a1aUnderpaintBaseMask(scene,up,live){
     if(!up||!up.spec||!up.image||!scene||!scene.textures||!scene.add)return false;
     var ids=a1aUnderpaintBaseKeys(live),signature=ids.join('|'),key='a1a_underpaint_mask';
+    if(a1aGpuHolesOn()){
+      try{
+        if(a1aGpuHoles(scene,up,ids,{width:up.spec.pixelWidth,height:up.spec.pixelHeight,pixelsPerCell:up.spec.pixelsPerCell},signature)){
+          if(up.maskTexture) a1aUnderpaintBaseMaskDispose(scene,up);
+          up.gpuHoles=true; up.maskScene=scene; up.maskKey=signature; up.maskLiveKey=signature;
+          return true;
+        }
+      }catch(e){ if(window.__DQ_DEBUG__) console.log('a1a gpu holes '+e); }
+    }
+    up.gpuHoles=false; a1aGpuHolesApply(up);
     if(up.maskScene===scene&&up.maskKey===signature&&up.maskTexture&&scene.textures.exists(key))return true;
     if(!ids.length){
       a1aUnderpaintBaseMaskDispose(scene,up);up.maskScene=scene;up.maskKey='';
@@ -1819,6 +1867,19 @@
   function a1aForestFallbackTexture(scene,f,s,readyKeys){
     var ids=(readyKeys||[]).slice().sort(),signature=ids.join('|'),key='a1a_forest_underpaint';
     if(f.maskScene&&f.maskScene!==scene) a1aForestMaskDispose(f,false);
+    if(a1aGpuHolesOn()){
+      try{
+        if(!(f.gpuHoles&&f.maskScene===scene&&f.maskTexture&&scene.textures.exists(key))){
+          if(scene.textures.exists(key)) scene.textures.remove(key);
+          f.maskTexture=scene.textures.addImage(key,f.image);
+          if(f.maskTexture&&f.maskTexture.setFilter) f.maskTexture.setFilter(NEAREST);
+        }
+        if(f.maskTexture&&a1aGpuHoles(scene,f,ids,s,signature)){
+          f.gpuHoles=true;f.maskScene=scene;f.maskKey=signature;f.rawFallback=false;f.rawFallbackKey=null;f.rawFallbackNext=0;f.rawFallbackFailures=0;return true;
+        }
+      }catch(e){ if(window.__DQ_DEBUG__) console.log('a1a gpu forest holes '+e); }
+      if(f.gpuHoles){ f.gpuHoles=false; a1aForestMaskDispose(f,false); }
+    }
     if(f.maskScene===scene&&f.maskKey===signature&&f.maskTexture
        &&scene.textures.exists(key)) return true;
     // When canvas masking is temporarily unavailable, keep the raw coarse layer visible and retry
@@ -3282,6 +3343,7 @@
         anyCanopy=false;
       }
     }
+    if(A1A.underpaint){ a1aGpuHolesApply(A1A.underpaint); a1aGpuHolesApply(A1A.underpaint.forest); }
     return anyCanopy;
   }
 
@@ -3595,6 +3657,20 @@
     }
     var key=X0+'_'+Y0;
     var fullPlateWindow=a1aPlateOwns(scene)&&a1aPlateWindow(X0,Y0,winW,winH);
+    // VIEW-INSIDE SHORTCUT (2026-11-10). The window carries a 12-cell off-screen border, so it pokes
+    // outside the plate whenever the hero is within ~18-24 cells of the plate's edge -- a wide band
+    // of Act 1 -- and every window step there re-splatted and re-uploaded the whole window canvas
+    // (36x48 cells) although the plate part of that canvas is cleared and the rest is off screen.
+    // That upload is one of the owner's "brief pauses when walking". While the CAMERA view (plus a
+    // 3-cell guard) is still inside the plate nothing of the canvas can be seen, so treat the window
+    // as a full-plate one. The key carries the mode, so the tick the view comes within the guard of
+    // the edge the canvas is drawn exactly as before. window.__A1_VIEW_INSIDE__=false disables.
+    if(!fullPlateWindow&&window.__A1_VIEW_INSIDE__!==false&&a1aPlateOwns(scene)&&a1aSpriteMode()){
+      var _pb=a1aPlateBounds(),_g=3;
+      if(_pb&&wv.x/OW_TILE-_g>=_pb[0]&&wv.y/OW_TILE-_g>=_pb[1]
+         &&(wv.x+wv.width)/OW_TILE+_g<=_pb[2]+1&&(wv.y+wv.height)/OW_TILE+_g<=_pb[3]+1) fullPlateWindow=true;
+      else key+='_edge';
+    }
     var legacyPlateClip=fullPlateWindow?null:a1aLegacyPlateClip(scene,X0,Y0,winW,winH);
     var r2TextureKey=legacyPlateClip?a1aWaterR2Texture(scene):null;
     var useR2Sea=!!(r2TextureKey&&seaState&&seaState.scene===scene&&seaState.key===r2TextureKey
@@ -3769,7 +3845,7 @@
   var A1A_WB={raf:0};
   function a1aWalkBehindTick(){
     A1A_WB.raf=requestAnimationFrame(a1aWalkBehindTick);
-    var sc=A1A.spriteScene, hero=sc&&sc.hero; if(!hero||!owScene(sc)) return;
+    var sc=A1A.spriteScene, hero=sc&&sc.hero; if(!hero||!hero.frame||!hero.frame.data||!owScene(sc)) return;   // the hero texture is rebuilt on New Game/Continue; for a moment her frame is a destroyed one
     var sole=hero.y+hero.displayHeight*(1-(hero.originY===undefined?0.5:hero.originY))-2, top=sole-25;
     var now=Date.now(), fa=0.775+0.225*Math.sin(now*2*Math.PI/3300), ks=Object.keys(A1A.imgs);
     var cp=(now/2400*3)%3, ci=Math.floor(cp), cf=cp-ci, cn=(ci+1)%3;
@@ -5254,8 +5330,76 @@
     var up=A1A.underpaint&&A1A.underpaint.forest;
     return A1A_FOREST.status==='ready'&&A1A_FOREST.bits&&up&&up.status==='ready'&&!!a1fBuildStencil(scene.hero);
   }
+  /* THE SOLE IS A DISC, NOT A BAR (2026-11-09). Build 87 cut the whole-body stencil down to its
+     lowest A1F_FEET_PX rows, but those rows are the union of all twelve walk frames, and the sword
+     tip and cape hem live down there too: measured on build 93 the "feet" were a bar 50 collision px
+     wide by 11 tall (479 points) -- 1.5 cells across, three times her boots. A wide flat bar against
+     a ragged canopy line is blocked by ANY leaf under either end of it, so she wedged into every
+     notch and stopped dead walking parallel to a tree line (89 of 176 half-second pushes at an edge
+     travelled under 25 px). Caves and towns already collide with a 9 world-px sole disc
+     (A1M_CAVE_SOLE_R); forest, cliff and shore now use the same disc at the same sole point, so the
+     overworld has one foot shape. A disc also has a real tangent everywhere, which is what lets
+     a1fGlide slide. The stencil is still built: its bounds place the soles and gate the plate edge.
+     window.__A1_OW_SOLE_BAR__=true restores the bar for an A/B. */
+  /* AND THE EDGE SHE MEETS IS THE CANOPY'S OUTLINE, NOT EVERY GAP BETWEEN ITS LEAVES. The packed
+     bits are the visible alpha, so the tree line is full of trunk slits and leaf inlets a few
+     pixels wide. The old 50 px bar could never enter them; a 17 px disc can, and each one is a
+     dead-end pocket she slides into and stops in. So the disc collides with the bits CLOSED by
+     A1F_CLOSE_R: every gap narrower than 2*A1F_CLOSE_R (24 collision px, three quarters of a cell)
+     is filled, and nothing else moves -- closing never grows a wall outward and never opens one.
+     24 px is under half the old bar's width, so no passage that was walkable before is shut.
+     Built lazily per 128 px tile from the same bits (chamfer 3-4, dilate then erode), ~0.3 ms a
+     tile, cached; no asset changes and the bar path below still reads the raw bits. */
+  var A1F_CLOSE_R=20, A1F_CT=128, A1F_CT_MAX=96, a1fClosed=new Map(), a1fClosedFor=null;
+  function a1fChamfer(d,S){
+    var x,y,i,v;
+    for(y=0;y<S;y++) for(x=0;x<S;x++){ i=y*S+x; v=d[i]; if(!v) continue;
+      if(y>0){ if(d[i-S]+3<v)v=d[i-S]+3; if(x>0&&d[i-S-1]+4<v)v=d[i-S-1]+4; if(x<S-1&&d[i-S+1]+4<v)v=d[i-S+1]+4; }
+      if(x>0&&d[i-1]+3<v)v=d[i-1]+3; d[i]=v; }
+    for(y=S-1;y>=0;y--) for(x=S-1;x>=0;x--){ i=y*S+x; v=d[i]; if(!v) continue;
+      if(y<S-1){ if(d[i+S]+3<v)v=d[i+S]+3; if(x<S-1&&d[i+S+1]+4<v)v=d[i+S+1]+4; if(x>0&&d[i+S-1]+4<v)v=d[i+S-1]+4; }
+      if(x<S-1&&d[i+1]+3<v)v=d[i+1]+3; d[i]=v; }
+  }
+  function a1fClosedTile(tx,ty){
+    if(a1fClosedFor!==A1A_FOREST.bits){ a1fClosed.clear(); a1fClosedFor=A1A_FOREST.bits; }
+    var key=ty*4096+tx, t=a1fClosed.get(key); if(t) return t;
+    var R=A1F_CLOSE_R, A=2*R+2, S=A1F_CT+2*A, n=S*S, d=new Uint16Array(n), x0=tx*A1F_CT-A, y0=ty*A1F_CT-A, x, y, i, any=0;
+    for(y=0;y<S;y++) for(x=0;x<S;x++){ if(a1fBit(x0+x,y0+y)){ d[y*S+x]=0; any=1; } else d[y*S+x]=60000; }
+    t=new Uint8Array(A1F_CT*A1F_CT);
+    if(any){
+      a1fChamfer(d,S);
+      for(i=0;i<n;i++) d[i]=(d[i]<=3*R)?60000:0;                             // dilated -> far from its own complement
+      a1fChamfer(d,S);
+      for(y=0;y<A1F_CT;y++) for(x=0;x<A1F_CT;x++) if(d[(y+A)*S+x+A]>3*R) t[y*A1F_CT+x]=1;
+    }
+    if(a1fClosed.size>=A1F_CT_MAX) a1fClosed.delete(a1fClosed.keys().next().value);
+    a1fClosed.set(key,t); return t;
+  }
+  function a1fBitC(px,py){
+    if(px<0||py<0||px>=4736||py>=5824) return 0;
+    if(a1fBit(px,py)) return 1;                                              // closing only ever adds
+    return a1fClosedTile(px>>7,py>>7)[(py&127)*A1F_CT+(px&127)];
+  }
+  var A1F_DISC=null, A1F_DISC_R=A1M_CAVE_SOLE_R_EARLY();
+  function A1M_CAVE_SOLE_R_EARLY(){ return 9/OW_SCALE*32/48; }               // 9 world px in 32/cell collision px
+  var A1F_DISC_UP=4;          // collision px the disc sits above the sole line, so her boots stay drawn in front
+  function a1fDisc(){
+    if(A1F_DISC) return A1F_DISC;
+    var R=A1F_DISC_R, n=Math.ceil(R), out=[], dx, dy;
+    for(dy=-n;dy<=n;dy++) for(dx=-n;dx<=n;dx++) if(dx*dx+dy*dy<=R*R) out.push(dx,dy);
+    return (A1F_DISC=out);
+  }
+  function a1fSole(x,y){
+    var b=A1A_FOREST.stencilBounds; if(!b) return null;
+    return { x:Math.round((x-16*TILE)*32/48+(b.minX+b.maxX)/2), y:Math.round((y-218*TILE)*32/48+b.maxY-A1F_DISC_UP) };
+  }
   function a1fHeroFree(scene,x,y){
     var pts=a1fBuildStencil(scene.hero); if(!pts) return false;
+    if(window.__A1_OW_SOLE_BAR__!==true){
+      var c=a1fSole(x,y), d=a1fDisc(); if(!c) return false;
+      for(var j=0;j<d.length;j+=2) if(a1fBitC(c.x+d[j],c.y+d[j+1])) return false;
+      return true;
+    }
     // x/y are canonical 48px solver coordinates. One physical-pixel clearance is expressed in
     // collision source pixels; no forest dilation is added to the pack.
     var cx=Math.round((x-16*TILE)*32/48),cy=Math.round((y-218*TILE)*32/48), margin=Math.ceil(32/(48*OW_SCALE));
@@ -6079,6 +6223,20 @@
     var row=scene.mapData[ty], t=row?row[tx]:undefined;
     if(t===undefined || !(m.prop||A1M_PROP)[t]) return;
     var now=Date.now(); if(now-a1mState.bump<700) return; a1mState.bump=now;
+    // STORY BARRIERS MUST SAY WHY (2026-11-10, round 1 census P1). The magma field (21) and the wind
+    // canyon (13) explain themselves only in the engine's tile-step branch, which this mover replaced,
+    // and there only once per save -- so on the stick she met a silent wall. Say it on every bump
+    // (the 700 ms debounce above and the open box, which halts her, keep it from repeating).
+    if(m.ow && (t===21||t===13)){
+      try{
+        var need=(t===21)?'flameCloak':'windbreakerStone', inv=(window.__GAME_STATE__.player.state.inventory)||[], has=false;
+        for(var gi=0;gi<inv.length;gi++) if(inv[gi].itemId===need&&inv[gi].quantity>0) has=true;
+        var gq=window.__QOK, gz=gq&&gq.Z, gk=(t===21)?'overworld.magmaBlocked':'overworld.canyonBlocked';
+        var gtxt=gz?gz(gk):null;
+        if(!has && gtxt && gtxt.charAt(0)!=='[' && !scene.showingMessage) scene.showMessage(gtxt);
+      }catch(e){ if(window.__DQ_DEBUG__) console.log('a1 gate '+e); }
+      return;
+    }
     var ddx=tx-scene.heroTileX, ddy=ty-scene.heroTileY;                      // face it, like a step would
     if(Math.abs(ddx)+Math.abs(ddy)===1) scene.heroDir=ddx?(ddx>0?2:1):(ddy>0?0:3);
     try{
@@ -6824,6 +6982,76 @@
       || scene.questOverlayOpen || A1M_CRYSTAL.open
       || (scene.tweens && scene.hero && scene.tweens.isTweening(scene.hero)));
   }
+  /* ---- OVERWORLD GLIDE: SLIDE ALONG WHAT IS PAINTED, WHATEVER PAINTED IT (2026-11-09) ----------
+     Owner on build 93: "movement is still a bit clunky". Measured on that build: at 11 forest/cliff
+     contacts x 16 stick headings, 89 of 176 half-second pushes travelled under 25 px against ~135 px
+     in the open -- walking PARALLEL to a tree line one pixel too close froze her outright.
+     a1mSlide reads the wall normal from m.dist, but on the overworld the wall is usually not in
+     m.dist at all: forest, cliff and shore come from the packed alpha bits (a1fHeroFree) and caves
+     and towns from their sprite masks, so the "tangent" pointed nowhere useful and only the two
+     axis retries were left. This asks the one authority every blocker already answers to, a1mFree:
+     fan the refused step out to either side in 15 degree stages and take the smallest turn that is
+     open. Travel is step*cos(turn) -- exactly the along-the-wall component, so a glide costs the
+     speed she was spending pushing in, as in the dungeons. The probe looks A1M_GLIDE_LOOK ahead
+     rather than one sub-pixel step, so the rounded collision lattice cannot report a wall as open
+     just because the step was too short to leave its pixel. Both sides open at a wide turn means
+     she is pushing square into a flat wall: that stays a stop. Both open at a narrow turn is a
+     bump or a tip: keep the side she was already gliding on so she cannot dither around it. */
+  /* THE FOREST/CLIFF EDGE HAS A DIRECTION EVEN WHERE ITS PIXELS DO NOT. The packed alpha bits meet
+     her sole band as a staircase of one-pixel facets and notches, so the facet she is touching says
+     "wall due east" on a tree line that really runs north-west to south-east -- which is why the fan
+     alone only crept (cos 88 of a step) out of every notch. The mass of blocked pixels around her
+     soles does know the line: their centroid lies INTO the wall, so soles-minus-centroid is the
+     outward normal at the scale she is actually walking at. The glide is then the dungeon's own:
+     the step minus its into-the-wall component, with a small capped lift along that normal to get
+     over the single-pixel steps. a1mFree still decides every position; nothing here moves a wall. */
+  var A1F_NORMAL_PAD=5;       // collision px beyond the sole disc that vote on the wall direction
+  function a1fNormal(scene,x,y){
+    if(!A1A_FOREST.bits) return null;
+    var c=a1fSole(x,y); if(!c) return null;
+    var R=Math.ceil(A1F_DISC_R)+A1F_NORMAL_PAD, R2=R*R, sx=0, sy=0, n=0, dx, dy;
+    for(dy=-R;dy<=R;dy++) for(dx=-R;dx<=R;dx++){
+      if(dx*dx+dy*dy>R2 || !a1fBitC(c.x+dx,c.y+dy)) continue;
+      sx+=dx; sy+=dy; n++; }
+    if(!n) return null;
+    var l=Math.sqrt(sx*sx+sy*sy); if(l<n*0.5) return null;                   // surrounded or balanced: no one direction
+    return { x:-sx/l, y:-sy/l };
+  }
+  var A1F_LIFTS=[0,0.75,1.5,3];                                              // canonical px tried along the normal
+  function a1fGlide(scene,m,x,y,sx,sy){
+    var nrm=a1fNormal(scene,x,y); if(!nrm) return null;
+    var d=sx*nrm.x+sy*nrm.y, tx=sx, ty=sy;
+    if(d<0){ tx=sx-d*nrm.x; ty=sy-d*nrm.y; }
+    var len=Math.sqrt(tx*tx+ty*ty), l=Math.sqrt(sx*sx+sy*sy);
+    if(len<l*0.2) return null;                                               // square into the wall: a stop is correct
+    for(var i=0;i<A1F_LIFTS.length;i++){
+      var gx=tx+nrm.x*A1F_LIFTS[i], gy=ty+nrm.y*A1F_LIFTS[i];
+      if(a1mFree(scene,m,x+gx,y+gy)) return { x:gx, y:gy, len:len };
+    }
+    return null;
+  }
+  var A1M_GLIDE_TURN=[15,30,45,60,75,88].map(function(d){ var r=d*Math.PI/180; return {c:Math.cos(r),s:Math.sin(r),d:d}; });
+  var A1M_GLIDE_LOOK=2.2;     // canonical px of look-ahead (> one 32/cell collision px)
+  function a1mOwGlide(scene,m,x,y,sx,sy){
+    if(window.__A1_OW_GLIDE__===false) return null;                          // review escape hatch
+    var l=Math.sqrt(sx*sx+sy*sy); if(l<1e-6) return null;
+    var fg=a1fRequiredAt(scene,x,y)?a1fGlide(scene,m,x,y,sx,sy):null; if(fg) return fg;
+    var ux=sx/l, uy=sy/l, look=Math.max(l,A1M_GLIDE_LOOK), pref=(a1mState&&a1mState.glide)||1;
+    for(var i=0;i<A1M_GLIDE_TURN.length;i++){
+      var t=A1M_GLIDE_TURN[i], ok=[false,false], vx=[0,0], vy=[0,0];
+      for(var j=0;j<2;j++){
+        var sg=j?-1:1, rx=ux*t.c-uy*t.s*sg, ry=uy*t.c+ux*t.s*sg, len=l*t.c;
+        vx[j]=rx*len; vy[j]=ry*len;
+        ok[j]=a1mFree(scene,m,x+rx*look,y+ry*look) && a1mFree(scene,m,x+vx[j],y+vy[j]);
+      }
+      if(!ok[0]&&!ok[1]) continue;
+      if(ok[0]&&ok[1]){ if(t.d>=75) return null; j=(pref>0)?0:1; }
+      else j=ok[0]?0:1;
+      if(a1mState) a1mState.glide=j?-1:1;
+      return { x:vx[j], y:vy[j], len:l*t.c };
+    }
+    return null;
+  }
   function a1mStep(scene,dtms){
     var m=a1mAnyFor(scene); if(!m) return;
     var hero=scene.hero; if(!hero||!hero.scene) return;
@@ -6863,7 +7091,12 @@
       }
     }
     if(inp){
-      scene.heroDir = Math.abs(inp.x)>Math.abs(inp.y) ? (inp.x>0?2:1) : (inp.y>0?0:3);
+      // Facing dead band: near a 45-degree push |x| and |y| trade places with every thumb tremor and
+      // she flickered between two facings. Keep the axis she already faces until the other one
+      // leads by 20% (about 6 degrees past the diagonal).
+      var _ax=Math.abs(inp.x), _ay=Math.abs(inp.y), _hz=(scene.heroDir===1||scene.heroDir===2);
+      var _useX=_hz ? (_ax*1.2>=_ay) : (_ax>_ay*1.2);
+      scene.heroDir = _useX ? (inp.x>0?2:1) : (inp.y>0?0:3);
       var speed=a1mSpeed();
       // The frame-delta cap has to be bigger than one frame of a SLOW device, not of a fast one.
       // At 0.05 s it silently became a speed limit: measured on the iPhone 17 Pro sim, a straight
@@ -6886,12 +7119,28 @@
         // Slide rather than stick: give up only what the rock actually took away -- which is the
         // component INTO the wall, not a whole axis. See a1mSlide. The axis retries stay as the
         // fallback for what the tangent cannot serve; they are what used to run alone.
-        var slid=false, tg=a1mSlide(scene,m,x,y,sx,sy);
-        if(tg && a1mFree(scene,m,x+tg.x,y+tg.y)){
+        // Overworld: the fan glide goes FIRST. a1mSlide's m.dist gradient is not the wall there
+        // (see a1mOwGlide), and its 'tangent' was often open but pointed back out of the wall, so
+        // she took it, pushed in again next substep, and netted nothing.
+        var slid=false, gl=m.ow?a1mOwGlide(scene,m,x,y,sx,sy):null, tg=gl?null:a1mSlide(scene,m,x,y,sx,sy);
+        var px0=x, py0=y, mv0=moved;
+        if(gl){
+          x+=gl.x; y+=gl.y; moved+=gl.len; slid=true;
+        } else if(tg && a1mFree(scene,m,x+tg.x,y+tg.y)){
           x+=tg.x; y+=tg.y; moved+=tg.len; slid=true;
         } else {
           if(sx && a1mFree(scene,m,nx,y)){ x=nx; moved+=Math.abs(sx); slid=true; }
           if(sy && a1mFree(scene,m,x,ny)){ y=ny; moved+=Math.abs(sy); slid=true; }
+        }
+        // NO PING-PONG (2026-11-10). Pushed into a concave corner the slide can pick one wall this
+        // substep and the other the next, so she shivered about half a pixel each way while
+        // standing still. A slide that reverses the previous slide, under the same push, is a
+        // stop, not a move.
+        if(slid && m.ow && window.__A1_OW_NOPING__!==false){
+          var ddx=x-px0, ddy=y-py0, sl=Math.sqrt(sx*sx+sy*sy)||1, ls=a1mState.lastSlide, nowT=Date.now();
+          if(ls && nowT-ls.t<300 && (ls.ux*sx+ls.uy*sy)/sl>0.95 && (ls.x*ddx+ls.y*ddy)<0){
+            x=px0; y=py0; moved=mv0; slid=false; ls.t=nowT;
+          } else a1mState.lastSlide={ x:ddx, y:ddy, ux:sx/sl, uy:sy/sl, t:nowT };
         }
         if(!slid){ a1mBump(scene,m,x,y,sx,sy); break; }
       }
@@ -6997,7 +7246,34 @@
     if(Math.abs(tx-s.x)<0.05) s.x=tx;                                        // settle exactly, not asymptotically
     if(Math.abs(ty-s.y)<0.05) s.y=ty;
     cam.scrollX=s.wx=Math.round(s.x); cam.scrollY=s.wy=Math.round(s.y);      // whole pixels to the screen
+    a1mFine(scene, s.x-s.wx, s.y-s.wy);
   }
+  // Owner test (build 94, 2026-11-10): "fine scrolling". He chose whole-pixel; kept for review only. The canvas is 1 game px = 1 CSS px = 3
+  // device px on his phone, so whole-pixel scroll moves the world in 3-device-px steps. In 'fine'
+  // mode the canvas element is shifted by the scroll remainder (+-0.5 CSS px, snapped to device
+  // pixels), which the compositor does for free. Settings switch -> localStorage 'qok-scroll-mode'.
+  var a1mFineOn=null, a1mFineCv=null, a1mFineT='';
+  function a1mFineMode(){
+    // Owner picked A (whole-pixel) on build 94, so the Settings switch is gone and a 'fine' value
+    // left in localStorage by that test is ignored. __A1_SCROLL_MODE__('fine') still works for review.
+    if(a1mFineOn===null) a1mFineOn=false;
+    return a1mFineOn;
+  }
+  function a1mFine(scene,fx,fy){
+    var cv=scene&&scene.game&&scene.game.canvas; if(!cv) return;
+    var t='';
+    if(a1mFineMode() && (fx||fy)){
+      var d=window.devicePixelRatio||1;
+      var ox=Math.round(-fx*d)/d, oy=Math.round(-fy*d)/d;
+      if(ox||oy) t='translate3d('+ox+'px,'+oy+'px,0)';
+    }
+    if(cv!==a1mFineCv||t!==a1mFineT){ cv.style.transform=t; a1mFineCv=cv; a1mFineT=t; }
+  }
+  window.__A1_SCROLL_MODE__=function(v){
+    if(v==='fine'||v==='step'){ a1mFineOn=(v==='fine'); try{ localStorage.setItem('qok-scroll-mode',v); }catch(e){}
+      if(!a1mFineOn&&a1mFineCv){ a1mFineCv.style.transform=''; a1mFineT=''; } }
+    return a1mFineMode()?'fine':'step';
+  };
   // WRAP sys.sceneUpdate, NOT scene.update. Phaser captures the scene's update method ONCE, in
   // bootScene/create (`y.sceneUpdate = v.update`), and calls `this.sceneUpdate.call(this.scene)`
   // from Systems.step forever after -- so a wrapper installed on `scene.update` after create()

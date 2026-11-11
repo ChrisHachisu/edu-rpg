@@ -175,3 +175,71 @@
   poll.count = 0;
   poll();
 })(typeof window !== 'undefined' ? window : globalThis);
+
+/*
+ * Sword Wraith hunter fights must not count as the boss kill (2026-11-10).
+ *
+ * BattleScene.showVictory sets `boss.<id>.defeated` for every monster with the
+ * boss AI pattern.  The Sunken Temple's Sword Wraith also hunts the player on
+ * the floors BEFORE the last one (triggerMazeHunterBattle, non-final branch),
+ * and winning one of those set `boss.swordWraith.defeated`.  The next floor
+ * read that flag, never spawned the Wraith again, the final fight never ran,
+ * Excalibur was never granted and the Demon Castle seal could never open: a
+ * permanent soft-lock found by the round 1 playthrough census.
+ *
+ * Only the final-floor fight sets WorldMapScene.pendingBossId, and that is the
+ * fight whose return grants Excalibur, so that is the test: a Sword Wraith win
+ * without it is a hunter win and leaves the story flag as it was.
+ */
+(function installHunterVictoryFix(global) {
+  'use strict';
+  var tries = 0;
+  function install() {
+    var g = global.__PHASER_GAME__, b = null;
+    try { b = g && g.scene && g.scene.getScene('BattleScene'); } catch (_) { b = null; }
+    var proto = b && Object.getPrototypeOf(b);
+    if (!proto || typeof proto.showVictory !== 'function') {
+      if (++tries < 400) global.setTimeout(install, 50);
+      return;
+    }
+    if (proto.showVictory.__hunterFix) return;
+    var orig = proto.showVictory;
+    var patched = function () {
+      var id = this.monster && this.monster.id, flags = null, key = 'boss.' + id + '.defeated', had = true, hunter = false;
+      try {
+        flags = global.__GAME_STATE__.player.state.storyFlags;
+        had = !!flags[key];
+        var w = global.__PHASER_GAME__.scene.getScene('WorldMapScene');
+        hunter = id === 'swordWraith' && !!w && w.pendingBossId !== 'swordWraith';
+      } catch (_) { hunter = false; }
+      var result = orig.apply(this, arguments);
+      if (hunter && !had && flags) { try { delete flags[key]; } catch (_) {} }
+      return result;
+    };
+    patched.__hunterFix = true;
+    proto.showVictory = patched;
+    /*
+     * And the final-floor fight could never START.  The hunter's update calls
+     * triggerMazeHunterBattle on every tick it is next to the hero, and the
+     * final-floor branch answers with showDialogSequence each time -- which
+     * resets the three-line dialog to line one and restamps msgShownAt, so
+     * advanceDialog's 300 ms guard refuses every tap.  Measured 2026-11-10 on
+     * floor 6: dialogQueue stuck at 2 under taps, clicks and every confirm key.
+     * One trigger per encounter: ignore re-triggers while its own message or
+     * dialog is still up, or while a hunter battle is already pending.
+     */
+    try {
+      var w0 = global.__PHASER_GAME__.scene.getScene('WorldMapScene'), wp = w0 && Object.getPrototypeOf(w0);
+      if (wp && typeof wp.triggerMazeHunterBattle === 'function' && !wp.triggerMazeHunterBattle.__hunterFix) {
+        var trig = wp.triggerMazeHunterBattle;
+        var guarded = function () {
+          if (this.showingMessage || this._pendingMazeHunterBattle || this.dialogCallback) return;
+          return trig.apply(this, arguments);
+        };
+        guarded.__hunterFix = true;
+        wp.triggerMazeHunterBattle = guarded;
+      }
+    } catch (_) {}
+  }
+  if (global.setTimeout) install();
+})(typeof window !== 'undefined' ? window : globalThis);
