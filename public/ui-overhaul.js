@@ -102,10 +102,11 @@
   function slotInfo(n) {
     var s = parse(get(slotKey(n, 'save'))), a = parse(get(slotKey(n, 'auto')));
     var newest = s && a ? ((a.timestamp || 0) >= (s.timestamp || 0) ? a : s) : (s || a);
-    return { n: n, save: s, auto: a, newest: newest, empty: !s && !a };
+    var c = null; try { c = JSON.parse(get(slotKey(n, 'clear')) || 'null'); } catch (e) { c = null; }
+    return { n: n, save: s, auto: a, newest: newest, empty: !s && !a, clear: (c && c.ng) ? c : null };
   }
   function deleteSlot(n) {
-    ['save', 'auto', 'town'].forEach(function (k) { del(slotKey(n, k)); });
+    ['save', 'auto', 'town', 'clear'].forEach(function (k) { del(slotKey(n, k)); });
     if (activeSlot() === n) { del(ACTIVE); swapWorking(null, null); }
   }
 
@@ -414,6 +415,29 @@
     return pickTitleAction(ts, 'new');
   }
 
+  // ---- New Game+ ----
+  // The bundle keeps what New Game+ carries over (items, gear, gold, name, look) only in memory,
+  // and only if the player picks it on the ending screen. recordClear() stores the same data on the
+  // slot when the ending is reached, so a cleared slot can start New Game+ later from the title.
+  function recordClear() {
+    var t = GS(), n = activeSlot(), st = t && t.player && t.player.state;
+    if (!st || !n) return false;
+    var prev = slotInfo(n).clear;
+    return set(slotKey(n, 'clear'), JSON.stringify({ t: Date.now(), count: ((prev && prev.count) || 0) + 1, ng: {
+      inventory: (st.inventory || []).map(function (x) { return { itemId: x.itemId, quantity: x.quantity }; }),
+      equipment: clone(st.equipment) || {}, gold: st.gold || 0, heroName: st.name, heroColor: st.heroColor } }));
+  }
+  function ngPlusSlot(n) {
+    var ts = titleScene(), t = GS(), info = slotInfo(n);
+    if (!ts || !t || !info.clear) return false;
+    activate(n);
+    resetWatch(); bossFight = null;
+    t.ngPlusData = clone(info.clear.ng);
+    try { if (ts.removeNameInput) ts.removeNameInput(); } catch (e) {}
+    ts.scene.start('TitleScene', { ngPlus: true });
+    return true;
+  }
+
   // ---- install ----
   function tick() { try { watch(); } catch (e) {} }
   setInterval(tick, 250);
@@ -425,7 +449,7 @@
     SLOTS: SLOTS, TOWNS: TOWNS,
     slots: function () { var a = []; for (var i = 1; i <= SLOTS; i++) a.push(slotInfo(i)); return a; },
     slotInfo: slotInfo, activeSlot: activeSlot, deleteSlot: deleteSlot,
-    continueSlot: continueSlot, newInSlot: newInSlot,
+    continueSlot: continueSlot, newInSlot: newInSlot, recordClear: recordClear, ngPlusSlot: ngPlusSlot,
     placeName: placeName, inTown: inTown, manualSave: manualSave,
     autoSaveNow: autoSaveNow, flashSaved: flashSaved,
     defeatInfo: defeatInfo, returnToTown: returnToTown, retryBoss: retryBoss, toTitle: toTitle,
@@ -2170,7 +2194,7 @@
     }
     var r = info.newest, p = r.player || {};
     return '<button class="slotcard' + (sel ? ' sel' : '') + '" data-act="slotPick" data-i="' + info.n + '">' +
-      '<span class="sn">' + (ja ? (kanji() ? '記録 ' : 'きろく ') : 'Slot ') + info.n + '</span>' +
+      '<span class="sn">' + (ja ? (kanji() ? '記録 ' : 'きろく ') : 'Slot ') + info.n + (info.clear ? '<em class="sclear">★ ' + (ja ? 'クリア' : 'Cleared') + '</em>' : '') + '</span>' +
       '<span class="sr1"><b>' + esc(p.name || '?') + '</b><i>' + esc(Z('menu.level')) + ' ' + (p.level || 1) + '</i></span>' +
       '<span class="sr2">' + esc(SV.placeName(p.position)) + '</span>' +
       '<span class="sr2">' + (ja ? 'プレイ ' : 'Play ') + fmtPlay(r.playtime) + ' · ' + esc(fmtWhen(r.timestamp)) + '</span></button>';
@@ -2192,7 +2216,10 @@
         '<span class="sr1"><b>' + esc(SV.placeName(info.auto.player.position)) + '</b></span><span class="sr2">' + esc(fmtWhen(info.auto.timestamp)) + ' · ' + esc(Z('menu.level')) + ' ' + (info.auto.player.level || 1) + '</span></button>';
       if (info.save) h += '<button class="slotcard" data-act="slotLoad" data-i="1"><span class="sn">' + esc(ja ? J('さいごの セーブ', '最後の セーブ') : 'Last save') + '</span>' +
         '<span class="sr1"><b>' + esc(SV.placeName(info.save.player.position)) + '</b></span><span class="sr2">' + esc(fmtWhen(info.save.timestamp)) + ' · ' + esc(Z('menu.level')) + ' ' + (info.save.player.level || 1) + '</span></button>';
-      h += '</div><div class="slotbtns"><button class="btn btn-slate" data-act="slotDelAsk">' + esc(ja ? J('けす', '消す') : 'Delete') + '</button>' +
+      h += '</div>';
+      if (info.clear) h += '<button class="btn btn-gold slotng" data-act="slotNgPlus">★ ' + esc(Z('victory.ngplus')) + '</button>' +
+        '<div class="slotnote">' + esc(ja ? J('アイテム・そうび・ゴールドを もって さいしょから', 'アイテム・装備・ゴールドを 持って 最初から') : 'Start over and keep your items, gear and gold') + '</div>';
+      h += '<div class="slotbtns"><button class="btn btn-slate" data-act="slotDelAsk">' + esc(ja ? J('けす', '消す') : 'Delete') + '</button>' +
         '<button class="btn btn-slate" data-act="slotBack">' + esc(ja ? J('もどる', '戻る') : 'Back') + '</button></div></div>';
       if (titleView === 'del') {
         h += '<div class="shopconf" data-act="slotDelCancel"><div class="card2" data-act="titleNoop">' +
@@ -2418,6 +2445,7 @@
         titleSlotN = i; titleView = 'slot'; lastSig = null; return;
       }
       if (act === 'slotLoad') { var nn = titleSlotN; titleView = 'landing'; lastSig = null; SV.continueSlot(nn, i === 0 ? 'auto' : 'save'); return; }
+      if (act === 'slotNgPlus') { var ng = titleSlotN; titleView = 'landing'; lastSig = null; SV.ngPlusSlot(ng); return; }
       if (act === 'slotDelAsk') { titleView = 'del'; lastSig = null; return; }
       if (act === 'slotDelCancel') { titleView = 'slot'; lastSig = null; return; }
       if (act === 'slotDelConfirm') { SV.deleteSlot(titleSlotN); titleView = 'slots'; lastSig = null; return; }
@@ -2519,6 +2547,7 @@
     else if (act === 'introBack') {
       // return to the title screen (overlay auto-switches to renderTitle when mode==='title')
       ts.mode = 'title';
+      if (ts.ngPlus) { ts.ngPlus = false; try { GS().ngPlusData = null; } catch (e0) {} }   // backing out cancels New Game+
       try { if (ts.removeNameInput) ts.removeNameInput(); } catch (e) {}
       // ~~ts.drawTitle()~~ DOES NOT EXIST -- the scene's method is drawTitleScreen, and the guard
       // `if (ts.drawTitle)` meant this line had been quietly doing nothing since it was written.
@@ -3402,6 +3431,7 @@
       function p2(n) { return (n < 10 ? '0' : '') + n; }
       victoryStats = { scene: vs, started: vs.sys.settings.startTime, time: hh > 0 ? (hh + ':' + p2(mm) + ':' + p2(ss)) : (mm + ':' + p2(ss)),
         pct: pct, grade: st.quizDifficulty, color: st.heroColor || 'gray' };
+      try { if (window.__QOK_SAVES__) window.__QOK_SAVES__.recordClear(); } catch (e3) {}
     }
     var v = victoryStats;
     function tile(lab, val) { return '<div class="vic-stat"><b>' + esc(val) + '</b><span>' + esc(lab) + '</span></div>'; }

@@ -701,6 +701,9 @@ body.qok-dialogue #qok-field-hud #qfh-dialog{bottom:calc(env(safe-area-inset-bot
 #qok-ui .slotcard .sr1{ display:flex; width:100%; justify-content:space-between; font-size:16px; }
 #qok-ui .slotcard .sr1 i{ font-style:normal; color:var(--gold); font-weight:700; font-size:14px; }
 #qok-ui .slotcard .sr2{ font-size:12.5px; color:var(--ink-soft); font-variant-numeric:tabular-nums; }
+#qok-ui .slotcard .sclear{ font-style:normal; margin-left:10px; color:#f0cd78; letter-spacing:.04em; }
+#qok-ui .slotng{ width:100%; max-width:380px; font-size:17px; background:linear-gradient(180deg,#f6d98c,#c9a14a); }
+#qok-ui .slotnote{ font-size:12.5px; color:var(--ink-soft); margin:-4px 0 6px; }
 #qok-ui .slotbtns{ width:100%; max-width:380px; display:grid; grid-template-columns:1fr 1fr; gap:10px; }
 #qok-ui .btn-ruby{ background:var(--ruby2); border-color:var(--ruby); color:#f6ecea; }
 #qok-ui .savebtn{ font:inherit; font-size:13px; font-weight:700; padding:5px 12px; border-radius:14px;
