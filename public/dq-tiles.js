@@ -6102,6 +6102,10 @@
     if(!owmState || owmState.map!==map || owmState.key!==key){
       var pf=(window.performance&&performance.now)?performance:null, t0=pf?pf.now():0;
       var b=owmBakeFor(map);
+      // Acts 2-5 runtime: the bake reaches 45 cells past Act 1's rectangle and describes the
+      // generator's terrain there, which that runtime has replaced with painted acts. Off the plate
+      // the analytic field (act art suppressed, see owmBuild) is the answer; on it nothing changes.
+      if(!plate&&window.__QOK_ACTS__) b=null;
       var supportStatus=b?owmSupportFor(scene,map,b):'invalid';
       if(supportStatus!=='ready'&&plate) return null;             // a support mismatch never falls back on the owned plate
       if(supportStatus!=='ready') b=null;                        // outside the plate keeps its existing analytic path

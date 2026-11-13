@@ -60,6 +60,17 @@ game is the build 96 game with the bundle's old geography.
 * **Memory.** One budget of 12 resident chunks for the whole world, shared with Act 1: act chunks
   not asked for go first, then Act 1 hands back chunks its window does not touch. Prefetch
   margin 4 cells. Off the overworld (town, dungeon, battle) every act layer leaves the GPU.
+* **Act 1 keeps its baked movement field.** `dq-tiles.js` checks `act1-overworld-walk.bin` against
+  the map tiles it was baked over, 45 cells past Act 1's rectangle and with a whole-map muted-water
+  rule. So the act plates are written only after dq-tiles has consolidated a new overworld array
+  and given it Act 1's plate (`__DQ_TILES__.overworldSetupDone`), the array is copied once before
+  the first plate, and the bake check reads that copy outside Act 1's rectangle
+  (`__QOK_ACTS__.legacyMap`). Without this Act 1 had no movement field whenever a plate landed
+  first. A sweep (one act per tick) also puts back any plate cell something else rewrote.
+* **Overrides over Act 1** (`public/acts-hifi/overrides/<id>/`, listed in the index):
+  `act1-crystal-cave` (carved mouth art, extra rock bits, hides the old sprite) and
+  `act1-north-seam` (rock over the canal and cut cliff tops where Act 1 meets Act 5; collision
+  unchanged). Both are drawn over Act 1's layers; Act 1's files are not touched.
 * **Encounter zones** follow the owner raster: Act 2 `iron-mountains`, Acts 3–4
   `scorched-wastes`, Act 5 `demons-threshold`. Act 1's rectangle keeps the bundle's rule.
 
@@ -71,6 +82,11 @@ sh scripts/acts/rebuild_world.sh <export root> [<towns root>]   # install, index
 python3 scripts/acts/write_gate_manifest.py                     # re-pin the files for the ship gate
 sh scripts/acts/build_cloud_dist.sh /home/user/work/dist        # playable cloud dist (never the repo dist/)
 ```
+
+`rebuild_world.sh` also installs `<export root>/overrides/*/`. The north seam is built with the
+prototype branch's `scripts/acts/act1_seam_override.py` (needs the Codex kits and the Act 5
+render; run it from a tree whose `public/` is this repository's, so it reads this build's Act 1
+files) and its `override.json` + PNG tiles are copied to `public/acts-hifi/overrides/act1-north-seam/`.
 
 `scripts/acts/check_world.py` is the gate (plan §5 of the prototype study). It must print PASS:
 every door answers from a standable place, every exit is standable, each segment is one walkable
@@ -108,3 +124,8 @@ continues from the title, drives real input and writes JSON plus screenshots to 
   on entering Magma Tunnels still applies. The canyon needs an owner decision on where it sits.
 * The six overworld signposts (tiles 11/20) are gone with the old geography.
 * Entering Cinderwatch marks Ember's Rest visited, because the engine map is shared.
+* The bundle plays a one-time wind effect and sets `canyon.windCleared` when she carries the
+  Windbreaker Stone over the OLD canyon cells (x 221-222, y 275-298), now ordinary Act 2 ground.
+* At the Act 1 / Act 2 seam Act 1 holds its own ring of chunks, so the shared count can reach 14
+  (8 Act 1 + 6 on screen); the runtime then holds on-screen chunks only.
+* `act1-north-seam` leaves a few straight panel edges (seen at x 102 and x 111, rows 216-218).
