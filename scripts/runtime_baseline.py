@@ -70,7 +70,7 @@ ACT1_OVERLAY_FILES = {
     # 52a058593efb1b901a42203bfd7ad591024946eb9f6db513a86c3a9babe69e25 -> 129636 B /
     # 3de643bdde7c7dc15ce602d4a3e0529e74df54db21899269a4b1a385d48fc0fe. Frozen game bundle,
     # art, source maps and all other pinned runtime entries remain unchanged.
-    "index.html": (130688, "60fdca74225527a39695e9cd2351342d334ff84c596bde9ec1ab3bae3fe5382b"),
+    "index.html": (131023, "0ce112082482b81874e634033c64b7ec69ce7a60d03803f7511fc16ab24b85b3"),
     # 2026-08-01, owner-authorised: dq-tiles.js now splats AI-generated terrain MATERIALS through
     # its existing continuous-world-pixel drawTerrain, plus a ridged mountain height field,
     # varied shore character and landmark sites derived from mapData. Fallback-safe -- until the
@@ -121,7 +121,7 @@ ACT1_OVERLAY_FILES = {
     # other 12 settle one cell north once; largest rescue nudge 28 px against a 96 px bound).
     # Updated 2026-10-03 for the approved scoped forest+mountain visible-terrain union.
     "dq-tiles.js": (
-        668292, "22905355f9786bf4fc66cc0c23aa8cc65b5f72be4cb0c2afb50c8edd97093fc5"),
+        674272, "d8b8c0098442014b869dec37a9ade479d5d1a6a76043c98ad1e53d6c34711daa"),
     # 2026-08-07: THE OVERWORLD'S COLLISION SHAPE, baked -- the overworld's answer to the dungeons'
     # `<floor>-walk.png` above, and as much a shipped authority as they are. Deriving it at runtime
     # was correct and unaffordable: owmBuild() evaluated waterField/mountainField per pixel over a
@@ -183,7 +183,7 @@ ACT1_OVERLAY_FILES = {
     # the control-orientation setting, into the frame. First override of this file since the
     # v1.17.1 baseline was frozen, which is why it had no entry before.
     "ui-overhaul.js": (
-        238432, "6955aeee662d51ad9fdfe249748fad0077e30a178b05c67f06f80baefe6bf715"),
+        239012, "45082e8acd2eb121be0e01ab50c244955e740fd8116d0be3fd05872afe9b8c73"),
     # 2026-08-06, owner pick: "Charcoal & Gold Leaf" (direction 4 of
     # design/ui-overhaul/chic-style-board.html). The same gold as before -- the pixel art, the
     # dungeon plates and the town screens were all approved against it -- spent differently:

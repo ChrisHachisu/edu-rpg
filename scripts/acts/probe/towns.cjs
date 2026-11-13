@@ -33,6 +33,7 @@ const FR = '#act1-hifi-preserved-root iframe';
       await page.waitForTimeout(3500);
       const t = await town();
       row.entered = t.map === d.mapId && t.art === id; row.inTown = t; row.walk = walk.why;
+      row.hudName = await page.evaluate(() => { const w = window.__PHASER_GAME__.scene.getScene('WorldMapScene'); return w.floorText && w.floorText.text; });
       row.walkIn = !!(t.cell && t.start && Math.hypot(t.cell[0] - t.start[0], t.cell[1] - t.start[1]) < 1.5);
       row.shotIn = path.basename(await L.shot(page, 'town-' + id + '-in'));
       if (row.entered) {
