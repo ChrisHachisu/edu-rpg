@@ -7,7 +7,7 @@
 const fs = require('fs'), path = require('path');
 const L = require('./lib.cjs');
 const LEGS = [
-  { id: 'act2', from: 'Ironkeep', to: 'Iron Mine' },
+  { id: 'act2', from: 'Ironkeep', to: 'Iron Mine', stopShort: 2 },   // the mine's mouth answers a hero pushed along its cliff: stop before it
   { id: 'act2-north', from: 'Ravenhollow', to: 'Shadow Cave' },
   { id: 'act3', from: 'Oasis Haven', to: 'Oasis Depths' },
   { id: 'act3-4-overlap', from: "Ember's Rest", to: 'Magma Tunnels' },
@@ -45,7 +45,7 @@ const metricsStop = page => page.evaluate(() => { const P = window.__PERF; P.on 
         if (goal < 0 && toward) goal = best;
         if (goal < 0) return null; const cells = []; for (let c = goal; c !== -1; c = prev[c]) cells.unshift([c % W, (c / W) | 0]); return cells; }, { s: a.exit, t: b && b.exit, toward: leg.toward });
       if (!plan) { row.error = 'no route on the reach raster'; rows.push(row); console.log(JSON.stringify(row)); continue; }
-      const cells = plan.slice(0, MAX_CELLS + 1); row.planned = plan.length - 1; row.walkCells = cells.length - 1; row.end = cells[cells.length - 1];
+      const cells = plan.slice(0, Math.min(MAX_CELLS + 1, plan.length - (leg.stopShort || 0))); row.planned = plan.length - 1; row.walkCells = cells.length - 1; row.end = cells[cells.length - 1];
       row.shotStart = path.basename(await L.shot(page, 'walk-' + leg.id + '-start'));
       await metricsStart(page);
       const half = Math.floor(cells.length / 2);

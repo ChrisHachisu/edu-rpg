@@ -449,6 +449,14 @@
     f.__acts = true; q.Z = f;
   }
 
+  // The bundle writes the place name on its HUD with its own i18n function (not window.__QOK.Z), and
+  // ui-overhaul.js copies that text into its chip. Inside a hosted town it must read the town's name.
+  function nameHosted(s) {
+    var v = currentVirtual(); if (!v || !VIRTUAL[v] || s.currentMapId !== VIRTUAL[v].mapId) return;
+    var ft = s.floorText, own = text('map.' + v);
+    if (ft && ft.active !== false && own && ft.text !== own && typeof ft.setText === 'function') { try { ft.setText(own); } catch (e) {} }
+  }
+
   // ---------------------------------------------------------------- plates (mapData)
   // Written once per mapData array, like act1-world-map.js's shallow apply. Plates never touch
   // Act 1's rectangle (scripts/build_act_plate.py leaves it out), so the two never fight.
@@ -829,6 +837,7 @@
       if (g && !g.__actsPrerender) { g.__actsPrerender = true; g.events.on('prerender', animateCrest); }
     } else {
       if (wasOn) park();
+      nameHosted(s);
       if (s.sys && s.sys.isActive() && s.currentMapId && s.currentMapId !== 'overworld') markMigrated();
     }
     wasOn = on;
