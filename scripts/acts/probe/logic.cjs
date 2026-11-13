@@ -8,13 +8,14 @@ const L = require('./lib.cjs');
 (async () => {
   const { browser, page, errors, requests } = await L.launch();
   const rows = [];
-  const rec = (id, pass, detail) => { const r = { id, pass: !!pass, detail }; rows.push(r); console.log(JSON.stringify(r).slice(0, 900)); };
+  const rec = (id, pass, detail) => { const r = { id, pass: !!pass, errorsSoFar: errors.length, detail }; rows.push(r); console.log(JSON.stringify(r).slice(0, 900)); };
   await L.bootSave(page, L.save({ x: 80, y: 262, flags: L.allFlags() }));
   const idx = await page.evaluate(() => window.__QOK_MULTIACT__.index());
   const doors = idx.landmarks;
 
   // 1. the hero model scripts/acts/world_lib.py uses is the live one
-  const spec = await page.evaluate(() => window.__DQ_TILES__.soleSpec());
+  let spec = null;                                             // (the movement state exists once she has moved)
+  for (let i = 0; i < 6 && !(spec && spec.footDy); i++) { await L.stick(page, i % 2 ? -1 : 1, 0, 500); spec = await page.evaluate(() => window.__DQ_TILES__.soleSpec()); }
   const close = (a, b) => Math.abs(a - b) < 0.01;
   rec('sole-spec', spec && spec.sole && close(spec.sole.dy, idx.sole.dy) && close(spec.sole.r, idx.sole.r) && close(spec.sole.closeR, idx.sole.closeR) && close(spec.footDy * 32 / 48, idx.sole.footDy),
     { live: spec, index: idx.sole });
@@ -43,7 +44,7 @@ const L = require('./lib.cjs');
 
   // 5. save migration (no acts.geo2 flag): old-geography positions go to the new exit of the old door they were nearest
   const D = n => doors.find(d => d.name === n);
-  for (const [label, at, want] of [['old Ironkeep doorstep', [200, 322], 'Ironkeep'], ['old Ruins Camp', [270, 122], 'Ruins Camp'], ['old Demon Castle', [85, 32], 'Demon Castle'],
+  for (const [label, at, want] of [['old Ironkeep doorstep', [200, 322], 'Ironkeep'], ['old Ruins Camp', [270, 122], 'Ruins Camp'], ['old Demon Castle', [86, 34], 'Demon Castle'],
     ["old Ember's Rest", [195, 82], "Ember's Rest"], ['old Frostwatch', [222, 264], 'Frostwatch']]) {
     await L.bootSave(page, L.save({ x: at[0], y: at[1], flags: { ...L.allFlags(), 'acts.geo2': undefined } }));
     await page.waitForTimeout(1500);
@@ -67,7 +68,8 @@ const L = require('./lib.cjs');
   const before = await L.multi(page);
   await page.evaluate(() => { const em = window.__GAME_STATE__.encounterManager; delete em.onStep; window.__RND = Math.random; Math.random = () => 0.001; });
   let inBattle = false;
-  for (let i = 0; i < 30 && !inBattle; i++) { await L.stick(page, i % 2 ? -1 : 1, 0, 500); inBattle = await page.evaluate(() => window.__PHASER_GAME__.scene.isActive('BattleScene')); }
+  const DIRS = [[0, 1], [1, 0], [0, -1], [-1, 0]];              // a step is a tile change: keep one heading for a while
+  for (let i = 0; i < 40 && !inBattle; i++) { await page.evaluate(() => { window.__GAME_STATE__.encounterManager.stepsSinceLastEncounter = 999; }); const d = DIRS[(i >> 3) % 4]; await L.stick(page, d[0], d[1], 800); inBattle = await page.evaluate(() => window.__PHASER_GAME__.scene.isActive('BattleScene')); }
   await page.evaluate(() => { Math.random = window.__RND; });
   await page.waitForTimeout(1500);
   const during = await L.multi(page);
@@ -76,7 +78,7 @@ const L = require('./lib.cjs');
 
   // 8. kill switch: the runtime is not there, nothing of it is fetched, the bundle's own door answers
   const n0 = requests.length;
-  await L.bootSave(page, L.save({ x: 200, y: 322, flags: L.allFlags() }), { extra: { 'qok-multiact-hifi': '0' } });
+  await L.bootSave(page, L.save({ x: 200, y: 322, flags: L.allFlags() }), { url: L.URL_ + '?multiact=0', extra: { 'qok-multiact-hifi': '0' } });
   const off = await page.evaluate(() => { const w = window.__PHASER_GAME__.scene.getScene('WorldMapScene'); w.transitionCooldown = 0; let t = null; try { t = w.checkTransition(200, 320); } catch (e) {}
     return { multi: typeof window.__QOK_MULTIACT__, hooks: typeof window.__QOK_ACTS__, towns: typeof window.__QOK_ACTS_TOWN_IDS__, door: t && t.targetMap, at: [w.heroTileX, w.heroTileY] }; });
   const fetched = requests.slice(n0).filter(u => /acts-hifi\/(manifest|minimap|towns)|act[2-5]-hifi\//.test(u));

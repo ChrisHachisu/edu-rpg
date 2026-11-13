@@ -427,12 +427,12 @@
   // Act 1's rectangle (scripts/build_act_plate.py leaves it out), so the two never fight.
   function eachPlateCell(a, fn) {
     var p = a.rt && a.rt.plate; if (!p) return;
-    for (var ry = 0; ry < p.rows.length; ry++) {
-      var row = p.rows[ry];
-      for (var rx = 0; rx < row.length; rx++) {
-        var ch = row.charAt(rx); if (ch !== '.') fn(p.bounds[0] + rx, p.bounds[1] + ry, parseInt(ch, 36));
-      }
+    var w = p.rows[0].length, h = p.rows.length, t = p.tiles, i, rx, ry;
+    if (!t) {                                                      // decoded once: -1 = not this act's cell
+      t = p.tiles = new Int8Array(w * h);
+      for (ry = 0, i = 0; ry < h; ry++) for (rx = 0; rx < w; rx++, i++) { var ch = p.rows[ry].charAt(rx); t[i] = ch === '.' ? -1 : parseInt(ch, 36); }
     }
+    for (ry = 0, i = 0; ry < h; ry++) for (rx = 0; rx < w; rx++, i++) if (t[i] >= 0) fn(p.bounds[0] + rx, p.bounds[1] + ry, t[i]);
   }
   var rimFor = null;
   function plate(s, fromExit) {
@@ -451,6 +451,19 @@
     }
     if (wrote) { changed(); if (!fromExit) relocate(s, s.heroTileX, s.heroTileY); }
     else if (!fromExit && !migrated()) relocate(s, s.heroTileX, s.heroTileY);
+    if (!wrote) keepPlate(md);
+  }
+  // INTEGRITY. dq-tiles.js conditions the overworld once per map load (consolidateMapData: stray
+  // mountain cells pruned, hollows in a range filled) and may do so AFTER a plate went in, because
+  // the packs arrive when they arrive. A filled hollow would make the engine refuse a cell the
+  // pixel pack lets her into. One act per tick is compared with its plate and put back, as
+  // act1-world-map.js keeps its own rectangle.
+  var keepAt = 0;
+  function keepPlate(md) {
+    var a = ACTS[keepAt++ % ACTS.length], n = 0;
+    if (!a || !a.rt || a.rt.appliedTo !== md) return;
+    eachPlateCell(a, function (x, y, t) { var row = md[y]; if (row[x] !== t) { row[x] = t; n++; } });
+    if (n) { stats.plateRepairs = (stats.plateRepairs || 0) + n; changed(); }
   }
   // Cells where mapData no longer matches an act plate (verification only; should stay 0).
   function plateDrift() {

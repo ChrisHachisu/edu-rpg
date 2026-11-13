@@ -59,6 +59,8 @@ const QUESTS = ['owlsLesson', 'drakeCargo', 'lunasMap', 'ancientRelic', 'flameCl
           // step clear of the exit first: the engine ignores a transition on the step right after arriving
           await page.evaluate(([E, kind]) => window.__P.walk((a, b) => Math.abs(a - E[0]) + Math.abs(b - E[1]) >= 3, kind, { enter: false, maxMs: 15000 }), [E, kind]).catch(() => null);
           r = await page.evaluate(([E, kind]) => window.__P.walk((a, b) => a === E[0] && b === E[1], kind, { enter: true, maxMs: 45000 }), [E, kind]).catch(e => ({ ok: false, why: 'threw ' + String(e).slice(0, 120) }));
+          if (!r.ok && r.why === 'nopath')                        // a floor whose way out crosses lava or a key door
+            r = await page.evaluate(([E, kind]) => window.__P.walk((a, b) => a === E[0] && b === E[1], kind, { enter: true, maxMs: 90000, passOpts: { lava: true, keyDoors: true } }), [E, kind]).catch(e => ({ ok: false, why: 'threw ' + String(e).slice(0, 120) }));
         }
         row.outWalk = { ok: r.ok, why: r.why, steps: r.steps };
         await page.waitForTimeout(3500);
