@@ -120,12 +120,27 @@ def exit_for(at, gate):
     return [at[0], at[1] + 1] if gate != 'north' else [at[0], at[1] - 2]
 
 
-def fire_px(at, gate):
-    """Disc-centre px at the moment the door answers: her centre crossing into the door cell from
-    the south, or her tile-test point touching the door cell from the north."""
+def answer_region(at, gate):
+    """Disc-centre px (x0, x1, y0, y1, inclusive) from which a door answers (dq-tiles.js a1mStep /
+    a1mDoor). South gate: her sprite centre is in the cell below the door, where a refused step
+    north asks about the door cell, down to the row where her centre crosses into the door cell.
+    North gate: her centre is in the cell above the door and her tile-test point (FOOT_DY under her
+    centre) is inside the door cell, which is what refuses the step there."""
     x, y = at
-    if gate != 'north': return x * P + 16, (y + 1) * P - 1 + SOLE_DY
-    return x * P + 16, int(y * P - 1 - FOOT_DY + SOLE_DY)
+    if gate != 'north':
+        return x * P, x * P + P - 1, (y + 1) * P - 1 + SOLE_DY, (y + 1) * P + P - 1 + SOLE_DY
+    return x * P, x * P + P - 1, int(np.ceil(y * P - FOOT_DY + SOLE_DY)), y * P - 1 + SOLE_DY
+
+
+def answer_px(F, at, gate):
+    """A free disc-centre px the door answers from (the one nearest the door), or None."""
+    x0, x1, y0, y1 = answer_region(at, gate)
+    y0, y1 = max(0, y0), min(F.shape[0] - 1, y1)
+    ys, xs = np.nonzero(F[y0:y1 + 1, x0:x1 + 1])
+    if not len(ys): return None
+    cx = (x1 - x0) / 2
+    k = np.argmin(ys * 4 + np.abs(xs - cx)) if gate != 'north' else np.argmin((y1 - y0 - ys) * 4 + np.abs(xs - cx))
+    return int(x0 + xs[k]), int(y0 + ys[k])
 
 
 def rle(a):

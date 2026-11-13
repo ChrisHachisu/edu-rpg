@@ -83,8 +83,8 @@ def main():
         del B
         key = 'tight' if tight else 'loose'
         for n, L in doors.items():
-            fx, fy = W.fire_px(L['at'], L['gate'])
-            comp.setdefault(n, {})[key] = int(lab[fy, fx]) if F[fy, fx] else 0
+            ap = W.answer_px(F, L['at'], L['gate'])
+            comp.setdefault(n, {})[key] = int(lab[ap[1], ap[0]]) if ap else 0
             if tight:
                 ex = L.get('exit'); ok_exit = False
                 if ex:

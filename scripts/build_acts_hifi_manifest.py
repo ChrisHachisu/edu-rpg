@@ -106,18 +106,18 @@ def doors_from_art(manifests):
 
 
 def pick_exit(F, lab, L):
-    """The cell an interior puts the hero back on: W.exit_for(), or the nearest cell whose standing
-    point is free and in the same walkable component as the point where the door answers."""
-    fx, fy = W.fire_px(L['at'], L['gate'])
-    comp = int(lab[fy, fx]) if F[fy, fx] else 0
+    """The cell an interior puts the hero back on: the nearest cell in front of the gate whose
+    standing point is free and in the same walkable component as a place the door answers from."""
+    ap = W.answer_px(F, L['at'], L['gate'])
+    comp = int(lab[ap[1], ap[0]]) if ap else 0
     want = W.exit_for(L['at'], L['gate'])
     sgn = 1 if L['gate'] != 'north' else -1
     cands = [want] + [[L['at'][0] + dx, L['at'][1] + sgn * dy] for dy in (1, 2, 3, 4) for dx in (0, -1, 1, -2, 2)]
     for c in cands:
         if not (0 <= c[0] < W.GW and 0 <= c[1] < W.GH): continue
         sx, sy = W.stand(*c)
-        if F[sy, sx] and (comp == 0 or int(lab[sy, sx]) == comp):
-            return c, (comp or int(lab[sy, sx]))
+        if F[sy, sx] and comp and int(lab[sy, sx]) == comp:
+            return c, comp
     return None, comp
 
 
