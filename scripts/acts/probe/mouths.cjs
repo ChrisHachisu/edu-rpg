@@ -19,6 +19,9 @@ const QUESTS = ['owlsLesson', 'drakeCargo', 'lunasMap', 'ancientRelic', 'flameCl
   const rows = [];
   await L.bootSave(page, L.save({ x: 80, y: 262, flags: flags() }));
   const doors = (await page.evaluate(() => window.__QOK_MULTIACT__.index().landmarks.filter(d => d.tile !== 6))).slice(from, to);
+  // Act 1's own Crystal Cave mouth, which the release repaints (acts-hifi/overrides/act1-crystal-cave:
+  // carved entrance art plus added rock bits): she must still walk in and come back out on Act 1's exit.
+  if (to >= 99) doors.push({ name: 'Crystal Cave (Act 1 side, override art)', mapId: 'crystalCave', at: [149, 278], exit: [149, 279], toX: 50, toY: 99, tile: 15 });
   const state = () => page.evaluate(() => { const w = window.__PHASER_GAME__.scene.getScene('WorldMapScene'); return { map: w.currentMapId, floor: w.currentFloor, x: w.heroTileX, y: w.heroTileY, msg: w.showingMessage ? ((window.__P && window.__P.lastMsg && window.__P.lastMsg()) || true) : null }; });
   for (const d of doors) {
     const row = { name: d.name, map: d.mapId, door: d.at, exit: d.exit, wantFloor: d.toFloor || 1, wantAt: [d.toX, d.toY] };

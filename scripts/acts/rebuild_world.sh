@@ -10,6 +10,16 @@ set -eu
 cd "$(dirname "$0")/../.."
 SRC=${1:?usage: rebuild_world.sh <export root> [<towns root>]}
 python3 scripts/acts/install_runtime.py "$SRC"
+# Art overrides over Act 1 (carved Crystal Cave mouth, north seam): <export root>/overrides/<id>/
+# holds override.json and its PNG tiles; the index builder lists whatever is installed.
+if [ -d "$SRC/overrides" ]; then
+  for O in "$SRC"/overrides/*/; do
+    [ -f "$O/override.json" ] || continue
+    ID=$(basename "$O"); mkdir -p "public/acts-hifi/overrides/$ID"
+    cp "$O"/override.json "$O"/*.png "public/acts-hifi/overrides/$ID/"
+    echo "override $ID installed"
+  done
+fi
 if [ -n "${2:-}" ]; then python3 scripts/acts/install_towns.py "$2"; fi
 python3 scripts/build_acts_hifi_manifest.py
 python3 scripts/acts/bake_acts_minimap.py | tail -1
