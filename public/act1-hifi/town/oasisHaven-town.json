@@ -1,0 +1,223 @@
+{
+ "_comment": "oasisHaven round-3 runtime config (Codex try 2); collision hand-traced per object, no foreground layer.",
+ "id": "oasisHaven",
+ "nameKey": "map.oasisHaven",
+ "screen": "town/oasisHaven-screen.png",
+ "walkable": "town/oasisHaven-walkable.json",
+ "cells": 65,
+ "artPxPerCell": 30,
+ "worldPxPerCell": 16,
+ "startCell": [
+  32.5,
+  56.0
+ ],
+ "savePoint": [
+  34.53,
+  42.66
+ ],
+ "exit": {
+  "cell": [
+   32.5,
+   58.0
+  ],
+  "targetMapId": "overworld",
+  "toX": 270,
+  "toY": 155,
+  "axis": "south",
+  "note": "toX/toY = overworld exit cell from exits.json (tools/apply_exits.py), not maps.ts."
+ },
+ "shopId": "oasisHaven",
+ "shopCounter": [
+  55.0,
+  31.6
+ ],
+ "npcs": [
+  {
+   "id": "healer",
+   "dialogueKey": "npc.healer",
+   "nameKey": "npc.healer.name",
+   "sheet": "town/npc/oasisHaven-healer-4x3-64.png",
+   "cell": [
+    14.22,
+    14.22
+   ],
+   "mapsTs": [
+    3,
+    3
+   ],
+   "name": "Healer",
+   "text": "Welcome to the clinic! I can heal your wounds."
+  },
+  {
+   "id": "oasisElder",
+   "dialogueKey": "npc.oasisElder",
+   "nameKey": "npc.oasisElder.name",
+   "sheet": "town/npc/oasisHaven-oasisElder-4x3-64.png",
+   "cell": [
+    26.41,
+    38.59
+   ],
+   "mapsTs": [
+    6,
+    9
+   ],
+   "name": "Oasis Elder",
+   "text": "The Desert Tomb to the east holds an ancient guardian. Defeat it, and the way to the volcanic region will open!"
+  },
+  {
+   "id": "archaeologist",
+   "dialogueKey": "npc.archaeologist.greeting",
+   "nameKey": "npc.archaeologist.name",
+   "sheet": "town/npc/oasisHaven-archaeologist-4x3-64.png",
+   "cell": [
+    46.72,
+    14.22
+   ],
+   "mapsTs": [
+    11,
+    3
+   ],
+   "name": "Archaeologist",
+   "text": "These ruins are full of secrets... I've been excavating here for months. The Scorched Ruins to the north seem promising."
+  },
+  {
+   "id": "luna",
+   "dialogueKey": "npc.luna.greeting",
+   "nameKey": "npc.luna.name",
+   "sheet": "town/npc/oasisHaven-luna-4x3-64.png",
+   "cell": [
+    26.41,
+    14.22
+   ],
+   "mapsTs": [
+    6,
+    3
+   ],
+   "name": "Luna",
+   "text": "I've been expecting you... I am Luna, reader of the stars. The heavens have shown me many things about you and the journey ahead."
+  },
+  {
+   "id": "shopkeeper",
+   "dialogueKey": "npc.shopkeeper",
+   "nameKey": "npc.shopkeeper.name",
+   "sheet": "town/npc/oasisHaven-shopkeeper-4x3-64.png",
+   "cell": [
+    55.0,
+    28.6
+   ],
+   "_note": "behind the painted counter; the hero talks across it from shopCounter",
+   "name": "Shopkeeper",
+   "text": "Welcome to my shop! Take a look around."
+  }
+ ],
+ "doors": [
+  {
+   "id": "healer",
+   "cell": [
+    13.6,
+    14.3
+   ]
+  },
+  {
+   "id": "shop",
+   "cell": [
+    55.0,
+    31.6
+   ]
+  }
+ ],
+ "_spots": [
+  {
+   "id": "healer",
+   "mapsTs": [
+    3,
+    12
+   ],
+   "new": [
+    3,
+    3
+   ],
+   "moved": true,
+   "cell": [
+    14.22,
+    14.22
+   ],
+   "onGround": true
+  },
+  {
+   "id": "oasisElder",
+   "mapsTs": [
+    3,
+    5
+   ],
+   "new": [
+    6,
+    9
+   ],
+   "moved": true,
+   "cell": [
+    26.41,
+    38.59
+   ],
+   "onGround": true
+  },
+  {
+   "id": "archaeologist",
+   "mapsTs": [
+    12,
+    3
+   ],
+   "new": [
+    11,
+    3
+   ],
+   "moved": true,
+   "cell": [
+    46.72,
+    14.22
+   ],
+   "onGround": true
+  },
+  {
+   "id": "luna",
+   "mapsTs": [
+    8,
+    3
+   ],
+   "new": [
+    6,
+    3
+   ],
+   "moved": true,
+   "cell": [
+    26.41,
+    14.22
+   ],
+   "onGround": true
+  },
+  {
+   "id": "savePoint",
+   "mapsTs": [
+    8,
+    10
+   ],
+   "new": [
+    8,
+    10
+   ],
+   "moved": false,
+   "cell": [
+    34.53,
+    42.66
+   ],
+   "onGround": true
+  }
+ ],
+ "_paintedOut": [],
+ "_validator": "VALID",
+ "_onlyExit": true,
+ "_qa": {
+  "blockedLooksGroundPx": 18468,
+  "walkableLooksObjectPx": 47412
+ }
+}

@@ -3074,6 +3074,15 @@
   // relief is 130 KB and this script runs long before the overworld exists, so by the time the HUD
   // is first shown the image is already decoded and the fallback is never reached.
   try { mmImage(); } catch (e) {}
+  // ACTS 2-5 (acts-hifi/acts-runtime.js): outside Act 1 that runtime owns the geography, so it
+  // hands over its own bake of this relief (same palette, same 6 px per cell, Act 1's rectangle
+  // copied pixel for pixel) and its own pin table. Swapped only once the new image has decoded.
+  // Nothing calls this when that runtime is switched off.
+  window.__QOK_MINIMAP__ = { set: function (src, marks) {
+    var i = new Image();
+    i.onload = function () { mmImg = i; mmImgState = 2; if (marks && marks.length) MM_MARKS = marks; fieldMapDrawAt = 0; };
+    i.src = src;
+  } };
   // Landmark positions come from the GRID'S OWN landmark tiles, not from
   // semantic-maps/landmark-roster.json -- that roster puts every Act 1 landmark on plain grass
   // (Greenhollow is 85.7 cells out, Whispering Woods 80.1, Millbrook 65.4, Port Sapphire 56.8).

@@ -1,0 +1,224 @@
+{
+ "_comment": "cinderwatch round-3 runtime config (Codex try 2); collision hand-traced per object, no foreground layer.",
+ "id": "cinderwatch",
+ "nameKey": "map.cinderwatch",
+ "screen": "town/cinderwatch-screen.png",
+ "walkable": "town/cinderwatch-walkable.json",
+ "cells": 65,
+ "artPxPerCell": 30,
+ "worldPxPerCell": 16,
+ "startCell": [
+  32.5,
+  59.0
+ ],
+ "savePoint": [
+  34.53,
+  42.66
+ ],
+ "exit": {
+  "cell": [
+   32.5,
+   61.0
+  ],
+  "targetMapId": "overworld",
+  "toX": 257,
+  "toY": 43,
+  "axis": "south",
+  "note": "toX/toY = the door's exit cell in public/acts-hifi/manifest.json (scripts/build_acts_hifi_manifest.py), not maps.ts."
+ },
+ "shopId": "embersRest",
+ "shopCounter": [
+  18.0,
+  35.0
+ ],
+ "npcs": [
+  {
+   "id": "healer",
+   "dialogueKey": "npc.healer",
+   "nameKey": "npc.healer.name",
+   "sheet": "town/npc/cinderwatch-healer-4x3-64.png",
+   "cell": [
+    46.72,
+    22.34
+   ],
+   "mapsTs": [
+    11,
+    5
+   ],
+   "name": "Healer",
+   "text": "Welcome to the clinic! I can heal your wounds."
+  },
+  {
+   "id": "watchCaptain",
+   "dialogueKey": "npc.watchCaptain",
+   "nameKey": "npc.watchCaptain.name",
+   "sheet": "town/npc/cinderwatch-watchCaptain-4x3-64.png",
+   "cell": [
+    34.53,
+    14.22
+   ],
+   "mapsTs": [
+    8,
+    3
+   ],
+   "name": "Watch Captain",
+   "text": "This watchtower keeps an eye on the fire mountain. The Volcanic Forge lies far to the west. Rest here before you go."
+  },
+  {
+   "id": "ashScout",
+   "dialogueKey": "npc.ashScout",
+   "nameKey": "npc.ashScout.name",
+   "sheet": "town/npc/cinderwatch-ashScout-4x3-64.png",
+   "cell": [
+    42.66,
+    38.59
+   ],
+   "mapsTs": [
+    10,
+    9
+   ],
+   "name": "Ash Scout",
+   "text": "I scout the ash fields. The Ember Mines are to the east. The monsters there are tough, so stock up first!"
+  },
+  {
+   "id": "cinderVillager",
+   "dialogueKey": "npc.cinderVillager",
+   "nameKey": "npc.cinderVillager.name",
+   "sheet": "town/npc/cinderwatch-cinderVillager-4x3-64.png",
+   "cell": [
+    26.41,
+    46.72
+   ],
+   "mapsTs": [
+    6,
+    11
+   ],
+   "name": "Villager",
+   "text": "Ash falls here like snow. We sweep it every morning, and by night it is back!"
+  },
+  {
+   "id": "shopkeeper",
+   "dialogueKey": "npc.shopkeeper",
+   "nameKey": "npc.shopkeeper.name",
+   "sheet": "town/npc/cinderwatch-shopkeeper-4x3-64.png",
+   "cell": [
+    18.0,
+    32.6
+   ],
+   "_note": "behind the painted counter; the hero talks across it from shopCounter",
+   "name": "Shopkeeper",
+   "text": "Welcome to my shop! Take a look around."
+  }
+ ],
+ "doors": [
+  {
+   "id": "healer",
+   "cell": [
+    46.5,
+    19.8
+   ]
+  },
+  {
+   "id": "shop",
+   "cell": [
+    18.0,
+    35.0
+   ]
+  }
+ ],
+ "_spots": [
+  {
+   "id": "healer",
+   "mapsTs": [
+    3,
+    12
+   ],
+   "new": [
+    11,
+    5
+   ],
+   "moved": true,
+   "cell": [
+    46.72,
+    22.34
+   ],
+   "onGround": true
+  },
+  {
+   "id": "watchCaptain",
+   "mapsTs": [
+    3,
+    5
+   ],
+   "new": [
+    8,
+    3
+   ],
+   "moved": true,
+   "cell": [
+    34.53,
+    14.22
+   ],
+   "onGround": true
+  },
+  {
+   "id": "ashScout",
+   "mapsTs": [
+    12,
+    5
+   ],
+   "new": [
+    10,
+    9
+   ],
+   "moved": true,
+   "cell": [
+    42.66,
+    38.59
+   ],
+   "onGround": true
+  },
+  {
+   "id": "cinderVillager",
+   "mapsTs": [
+    8,
+    8
+   ],
+   "new": [
+    6,
+    11
+   ],
+   "moved": true,
+   "cell": [
+    26.41,
+    46.72
+   ],
+   "onGround": true
+  },
+  {
+   "id": "savePoint",
+   "mapsTs": [
+    8,
+    10
+   ],
+   "new": [
+    8,
+    10
+   ],
+   "moved": false,
+   "cell": [
+    34.53,
+    42.66
+   ],
+   "onGround": true
+  }
+ ],
+ "_paintedOut": [],
+ "_validator": "VALID",
+ "_onlyExit": true,
+ "_qa": {
+  "blockedLooksGroundPx": 14400,
+  "walkableLooksObjectPx": 31464
+ },
+ "_hostNote": "No map in the frozen bundle: entered as the engine map embersRest (acts-hifi/acts-runtime.js, index `virtual`); shopId is the host's. Texts: acts-hifi/manifest.json `strings`."
+}

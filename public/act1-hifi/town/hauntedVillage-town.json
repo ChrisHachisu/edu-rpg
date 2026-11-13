@@ -1,0 +1,223 @@
+{
+ "_comment": "hauntedVillage round-3 runtime config (Codex try 3); collision hand-traced per object, no foreground layer.",
+ "id": "hauntedVillage",
+ "nameKey": "map.hauntedVillage",
+ "screen": "town/hauntedVillage-screen.png",
+ "walkable": "town/hauntedVillage-walkable.json",
+ "cells": 65,
+ "artPxPerCell": 30,
+ "worldPxPerCell": 16,
+ "startCell": [
+  32.5,
+  56.5
+ ],
+ "savePoint": [
+  34.53,
+  42.66
+ ],
+ "exit": {
+  "cell": [
+   32.5,
+   58.5
+  ],
+  "targetMapId": "overworld",
+  "toX": 249,
+  "toY": 247,
+  "axis": "south",
+  "note": "toX/toY = overworld exit cell from exits.json (tools/apply_exits.py), not maps.ts."
+ },
+ "shopId": "hauntedVillage",
+ "shopCounter": [
+  52.5,
+  19.8
+ ],
+ "npcs": [
+  {
+   "id": "healer",
+   "dialogueKey": "npc.healer",
+   "nameKey": "npc.healer.name",
+   "sheet": "town/npc/hauntedVillage-healer-4x3-64.png",
+   "cell": [
+    10.16,
+    34.53
+   ],
+   "mapsTs": [
+    2,
+    8
+   ],
+   "name": "Healer",
+   "text": "Welcome to the clinic! I can heal your wounds."
+  },
+  {
+   "id": "hauntedElder",
+   "dialogueKey": "npc.hauntedElder",
+   "nameKey": "npc.hauntedElder.name",
+   "sheet": "town/npc/hauntedVillage-hauntedElder-4x3-64.png",
+   "cell": [
+    22.34,
+    18.28
+   ],
+   "mapsTs": [
+    5,
+    4
+   ],
+   "name": "Elder Thorne",
+   "text": "Welcome to Ravenhollow... We live in the shadow of the haunted forest. The Shadow Cave lies just north — only the brave dare enter."
+  },
+  {
+   "id": "hauntedGuard",
+   "dialogueKey": "npc.hauntedGuard",
+   "nameKey": "npc.hauntedGuard.name",
+   "sheet": "town/npc/hauntedVillage-hauntedGuard-4x3-64.png",
+   "cell": [
+    34.53,
+    54.84
+   ],
+   "mapsTs": [
+    8,
+    13
+   ],
+   "name": "Guard",
+   "text": "Dark creatures roam the forest at night. Stay close to the village if you value your safety."
+  },
+  {
+   "id": "hauntedVillager",
+   "dialogueKey": "npc.hauntedVillager",
+   "nameKey": "npc.hauntedVillager.name",
+   "sheet": "town/npc/hauntedVillage-hauntedVillager-4x3-64.png",
+   "cell": [
+    38.59,
+    38.59
+   ],
+   "mapsTs": [
+    9,
+    9
+   ],
+   "name": "Villager",
+   "text": "The haunted forest stretches to the west — twisted trees and fell creatures. But coming out this side means you made it through!"
+  },
+  {
+   "id": "shopkeeper",
+   "dialogueKey": "npc.shopkeeper",
+   "nameKey": "npc.shopkeeper.name",
+   "sheet": "town/npc/hauntedVillage-shopkeeper-4x3-64.png",
+   "cell": [
+    50.0,
+    17.3
+   ],
+   "_note": "behind the painted counter; the hero talks across it from shopCounter",
+   "name": "Shopkeeper",
+   "text": "Welcome to my shop! Take a look around."
+  }
+ ],
+ "doors": [
+  {
+   "id": "healer",
+   "cell": [
+    11.0,
+    34.3
+   ]
+  },
+  {
+   "id": "shop",
+   "cell": [
+    52.5,
+    19.8
+   ]
+  }
+ ],
+ "_spots": [
+  {
+   "id": "healer",
+   "mapsTs": [
+    3,
+    12
+   ],
+   "new": [
+    2,
+    8
+   ],
+   "moved": true,
+   "cell": [
+    10.16,
+    34.53
+   ],
+   "onGround": true
+  },
+  {
+   "id": "hauntedElder",
+   "mapsTs": [
+    3,
+    5
+   ],
+   "new": [
+    5,
+    4
+   ],
+   "moved": true,
+   "cell": [
+    22.34,
+    18.28
+   ],
+   "onGround": true
+  },
+  {
+   "id": "hauntedGuard",
+   "mapsTs": [
+    10,
+    13
+   ],
+   "new": [
+    8,
+    13
+   ],
+   "moved": true,
+   "cell": [
+    34.53,
+    54.84
+   ],
+   "onGround": true
+  },
+  {
+   "id": "hauntedVillager",
+   "mapsTs": [
+    8,
+    8
+   ],
+   "new": [
+    9,
+    9
+   ],
+   "moved": true,
+   "cell": [
+    38.59,
+    38.59
+   ],
+   "onGround": true
+  },
+  {
+   "id": "savePoint",
+   "mapsTs": [
+    8,
+    10
+   ],
+   "new": [
+    8,
+    10
+   ],
+   "moved": false,
+   "cell": [
+    34.53,
+    42.66
+   ],
+   "onGround": true
+  }
+ ],
+ "_paintedOut": [],
+ "_validator": "VALID",
+ "_onlyExit": true,
+ "_qa": {
+  "blockedLooksGroundPx": 36432,
+  "walkableLooksObjectPx": 18756
+ }
+}

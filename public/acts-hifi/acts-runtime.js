@@ -385,6 +385,25 @@
   }
   // adapter.js bundlePredates() falls back to this for keys the bundle's i18n does not know.
   window.__QOK_ACTS_TEXT__ = text;
+  // The DOM UI (ui-overhaul.js: location chip, shop title, save-slot place name) asks the bundle's
+  // translate function for 'map.<engine map id>'. Inside a hosted town that is the HOST's name, so
+  // the exposed function is wrapped: the hosted town's own name while she is in it, and the index's
+  // text for any key the bundle does not know. The bundle's own closure is not touched.
+  function wrapText() {
+    var q = window.__QOK;
+    if (!q || typeof q.Z !== 'function' || q.Z.__acts) return;
+    var base = q.Z;
+    var f = function (k) {
+      if (typeof k === 'string' && k.indexOf('map.') === 0) {
+        var v = currentVirtual();
+        if (v && VIRTUAL[v] && k === 'map.' + VIRTUAL[v].mapId) { var own = text('map.' + v); if (own) return own; }
+      }
+      var r = base.apply(this, arguments);
+      if (M.strings && M.strings[k] && (r === k || (typeof r === 'string' && r.charAt(0) === '['))) { var t = text(k); if (t) return t; }
+      return r;
+    };
+    f.__acts = true; q.Z = f;
+  }
 
   // ---------------------------------------------------------------- plates (mapData)
   // Written once per mapData array, like act1-world-map.js's shallow apply. Plates never touch
@@ -704,6 +723,22 @@
     }
   }
 
+  // ---------------------------------------------------------------- minimap
+  // ui-overhaul.js draws one baked relief of the world plus a pin table. Both describe the bundle's
+  // old geography outside Act 1; scripts/acts/bake_acts_minimap.py bakes this world's.
+  var mmState = 0;                                             // 0 idle, 1 fetching, 2 fetched, 3 handed over / given up
+  var mmData = null;
+  function minimap() {
+    if (mmState === 0) {
+      mmState = 1;
+      xhr('acts-hifi/minimap.json', 'json', function (d) { mmData = d; mmState = 2; }, function () { mmState = 3; stats.loadErrors++; });
+    }
+    if (mmState === 2 && window.__QOK_MINIMAP__ && typeof window.__QOK_MINIMAP__.set === 'function') {
+      try { window.__QOK_MINIMAP__.set(mmData.src, mmData.marks); } catch (e) {}
+      mmState = 3;
+    }
+  }
+
   // ---------------------------------------------------------------- tick
   var ovReady = false;
   function tick() {
@@ -711,7 +746,7 @@
     var s = scene(), g = game();
     if (!M || !s) return;
     if (!ovReady) { ovReady = true; ovInit(); }
-    wrap(s); wrapZone();
+    wrap(s); wrapZone(); wrapText(); minimap();
     var on = s.currentMapId === 'overworld' && s.sys && s.sys.isActive() && !!s.mapData && s.mapData.length === GH;
     if (on) {
       if (!wasOn) burstUntil = Date.now() + 900;

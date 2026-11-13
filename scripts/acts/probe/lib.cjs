@@ -11,12 +11,12 @@ const OUT = process.env.PROBE_OUT || path.resolve('probe-out');
 fs.mkdirSync(OUT, { recursive: true });
 
 function save(o = {}) {
-  const { mapId = 'overworld', x = 80, y = 262, floor = 1, flags = {}, inventory = [{ itemId: 'herb', quantity: 5 }] } = o;
+  const { mapId = 'overworld', x = 80, y = 262, floor = 1, flags = {}, inventory = [{ itemId: 'herb', quantity: 5 }], activeQuests = [], completedQuests = [], locale = 'en', kanjiMode = false } = o;
   return { version: 4, timestamp: Date.now(), player: { name: 'Probe', heroColor: 'gray', level: 50, exp: 0, expToNext: 100,
     hp: 9999, maxHp: 9999, atk: 9999, def: 9999, spd: 999,
     equipment: { weapon: null, armor: null, shield: null, helmet: null, accessory: null }, inventory, gold: 5000,
-    position: { mapId, x, y, floor }, storyFlags: { 'intro.done': true, 'acts.geo2': true, ...flags }, activeQuests: [], completedQuests: [], questProgress: {},
-    timerEnabled: false, quizDifficulty: '3', locale: 'en', soundEnabled: false, masterVolume: 0, kanjiMode: false }, playtime: 0, quizStats: {} };
+    position: { mapId, x, y, floor }, storyFlags: { 'intro.done': true, 'acts.geo2': true, ...flags }, activeQuests, completedQuests, questProgress: {},
+    timerEnabled: false, quizDifficulty: '3', locale, soundEnabled: false, masterVolume: 0, kanjiMode }, playtime: 0, quizStats: {} };
 }
 const BOSSES = ['giantToad', 'serpent', 'stormHarpy', 'phantomStag', 'dragon', 'sandWyrm', 'banditKing', 'pharaoh', 'magmaGolem',
   'obsidianKnight', 'forgeTitan', 'demonGeneral', 'voidHerald'];
@@ -85,5 +85,21 @@ async function walkCells(page, cells, { tol = 0.3, maxMs = 20000 } = {}) {
     } finally { window.__DQ_STICK__ = { x: 0, y: 0, m: 0 }; }
   }, { cells, tol, maxMs });
 }
+// Minimal PNG decode (8-bit RGB/RGBA, non-interlaced: what Chromium screenshots are), so screens
+// can be compared pixel for pixel without a dependency. Returns { w, h, bpp, data }.
+function decodePng(buf) {
+  const zlib = require('zlib'); let o = 8, w = 0, h = 0, ct = 0; const idat = [];
+  while (o < buf.length) { const len = buf.readUInt32BE(o), type = buf.toString('latin1', o + 4, o + 8), d = buf.subarray(o + 8, o + 8 + len);
+    if (type === 'IHDR') { w = d.readUInt32BE(0); h = d.readUInt32BE(4); ct = d[9]; if (d[8] !== 8 || d[12] !== 0 || (ct !== 2 && ct !== 6)) throw new Error('png format'); }
+    else if (type === 'IDAT') idat.push(d); o += 12 + len; }
+  const bpp = ct === 6 ? 4 : 3, raw = zlib.inflateSync(Buffer.concat(idat)), st = w * bpp, out = Buffer.alloc(st * h);
+  for (let y = 0; y < h; y++) { const f = raw[y * (st + 1)], r = y * (st + 1) + 1, q = y * st;
+    for (let x = 0; x < st; x++) { const a = x >= bpp ? out[q + x - bpp] : 0, b = y ? out[q + x - st] : 0, c = (x >= bpp && y) ? out[q + x - st - bpp] : 0; let v = raw[r + x];
+      if (f === 1) v += a; else if (f === 2) v += b; else if (f === 3) v += (a + b) >> 1; else if (f === 4) { const pa = Math.abs(b - c), pb = Math.abs(a - c), pc = Math.abs(a + b - 2 * c); v += (pa <= pb && pa <= pc) ? a : (pb <= pc ? b : c); }
+      out[q + x] = v & 255; } }
+  return { w, h, bpp, data: out };
+}
+function pngDiff(a, b) { const A = decodePng(a), B = decodePng(b); if (A.w !== B.w || A.h !== B.h || A.bpp !== B.bpp) return -1; let n = 0;
+  for (let i = 0; i < A.data.length; i += A.bpp) if (A.data[i] !== B.data[i] || A.data[i + 1] !== B.data[i + 1] || A.data[i + 2] !== B.data[i + 2]) n++; return n; }
 const multi = page => page.evaluate(() => (window.__QOK_MULTIACT__ ? window.__QOK_MULTIACT__.status() : null));
-module.exports = { chromium, URL_, OUT, save, allFlags, BOSSES, launch, toTitle, bootSave, noEncounters, pos, shot, stick, walkCells, multi };
+module.exports = { chromium, URL_, OUT, save, allFlags, BOSSES, launch, toTitle, bootSave, noEncounters, pos, shot, stick, walkCells, multi, decodePng, pngDiff };

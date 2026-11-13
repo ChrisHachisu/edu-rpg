@@ -10,9 +10,7 @@ set -eu
 cd "$(dirname "$0")/../.."
 SRC=${1:?usage: rebuild_world.sh <export root> [<towns root>]}
 python3 scripts/acts/install_runtime.py "$SRC"
+if [ -n "${2:-}" ]; then python3 scripts/acts/install_towns.py "$2"; fi
 python3 scripts/build_acts_hifi_manifest.py
-if [ -n "${2:-}" ]; then
-  python3 scripts/acts/install_towns.py "$2"
-  python3 scripts/build_acts_hifi_manifest.py
-fi
+python3 scripts/acts/bake_acts_minimap.py | tail -1
 python3 scripts/acts/check_world.py

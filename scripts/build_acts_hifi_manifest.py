@@ -35,17 +35,20 @@ OUT = os.path.join(ROOT, 'public/acts-hifi/manifest.json')
 TOWNS = os.path.join(ROOT, 'public/acts-hifi/towns.json')
 CHUNK_CELLS = 16          # 512 px chunks at 32 px/cell, the Act 1 base grid
 
+# The door tile is the one the bundle's own overworld carries for that map (census of mapData on the
+# unmodified build: 6 town, 7 cave, 8 Demon Castle, 9 portal, 10 Haunted Forest, 12 Storm Nest,
+# 15 Crystal Cave, 16 Frozen Lake, 19 Desert Tomb), so every tile-keyed rule keeps applying.
 # owner landmark name -> (mapId, door tile, old overworld door (bundle fromX,fromY), arrival inside
 # (toX,toY,toFloor), old overworld return cell (bundle interior->overworld toX,toY))
 BUNDLE = {
     'Crystal Cave (Act 2 side)': ('crystalCave', 15, (172, 305), (50, 99, 5), (172, 306)),
     'Ironkeep': ('ironkeep', 6, (200, 320), (8, 14, None), (200, 321)),
     'Iron Mine': ('ironMine', 7, (185, 335), (50, 1, None), (185, 336)),
-    'Storm Nest': ('stormNest', 7, (280, 295), (50, 99, None), (280, 296)),
+    'Storm Nest': ('stormNest', 12, (280, 295), (50, 99, None), (280, 296)),
     'Frostwatch': ('frostwatch', 6, (222, 262), (8, 14, None), (222, 263)),
-    'Frozen Lake': ('frozenLake', 7, (200, 265), (50, 1, None), (200, 266)),
-    'Haunted Forest': ('hauntedForest', 7, (238, 248), (12, 24, None), (238, 249)),
-    'Haunted Forest (second entrance)': ('hauntedForest', 7, (242, 248), (12, 24, 5), (242, 249)),
+    'Frozen Lake': ('frozenLake', 16, (200, 265), (50, 1, None), (200, 266)),
+    'Haunted Forest': ('hauntedForest', 10, (238, 248), (12, 24, None), (238, 249)),
+    'Haunted Forest (second entrance)': ('hauntedForest', 10, (242, 248), (12, 24, 5), (242, 249)),
     'Ravenhollow': ('hauntedVillage', 6, (252, 242), (8, 14, None), (252, 243)),
     'Shadow Cave': ('shadowCave', 7, (260, 234), (50, 1, None), (260, 235)),
     'Shadow Cave (Act 3 side)': ('shadowCave', 7, (260, 198), (50, 66, 5), (260, 197)),
@@ -53,7 +56,7 @@ BUNDLE = {
     'Bandit Hideout': ('banditHideout', 7, (298, 130), (50, 1, None), (298, 131)),
     'Oasis Haven': ('oasisHaven', 6, (220, 150), (8, 14, None), (220, 151)),
     'Oasis Depths': ('oasisDepths', 7, (225, 160), (50, 1, None), (225, 161)),
-    'Desert Tomb': ('desertTomb', 7, (250, 140), (50, 1, None), (250, 141)),
+    'Desert Tomb': ('desertTomb', 19, (250, 140), (50, 1, None), (250, 141)),
     'Scorched Ruins': ('scorchedRuins', 7, (208, 120), (50, 1, None), (208, 121)),
     'Magma Tunnels': ('magmaTunnels', 7, (242, 93), (50, 1, None), (242, 94)),
     'Magma Tunnels (Act 4 side)': ('magmaTunnels', 7, (242, 81), (50, 1, 5), (242, 80)),
@@ -66,11 +69,11 @@ BUNDLE = {
     "Haven's Edge": ('havensEdge', 6, (70, 100), (8, 14, None), (70, 101)),
     'Demon Barracks': ('demonBarracks', 7, (80, 60), (50, 1, None), (80, 61)),
     'Void Rift': ('voidRift', 7, (120, 70), (50, 1, None), (120, 71)),
-    'Demon Castle': ('demonCastle', 7, (85, 30), (50, 99, None), (85, 31)),
-    'Portal - Stormreach Isles': ('stormreachIsles', 7, (40, 50), (20, 38, None), (40, 50)),
-    'Portal - Frostfall Peaks': ('frostfallPeaks', 7, (130, 40), (20, 38, None), (130, 40)),
-    'Portal - Sunken Temple': ('sunkenTempleIsle', 7, (50, 130), (20, 38, None), (50, 130)),
-    'Portal - Twilight Realm': ('twilightRealm', 7, (120, 140), (20, 38, None), (120, 140)),
+    'Demon Castle': ('demonCastle', 8, (85, 30), (50, 99, None), (85, 31)),
+    'Portal - Stormreach Isles': ('stormreachIsles', 9, (40, 50), (20, 38, None), (40, 50)),
+    'Portal - Frostfall Peaks': ('frostfallPeaks', 9, (130, 40), (20, 38, None), (130, 40)),
+    'Portal - Sunken Temple': ('sunkenTempleIsle', 9, (50, 130), (20, 38, None), (50, 130)),
+    'Portal - Twilight Realm': ('twilightRealm', 9, (120, 140), (20, 38, None), (120, 140)),
 }
 
 
@@ -184,8 +187,18 @@ def main():
                 'towns': [t for t in towns.get('towns', []) if t not in [h[0] for h in HOSTED.values()]],
                 'hosted': [t for t in towns.get('towns', []) if t in [h[0] for h in HOSTED.values()]],
                 'strings': towns.get('strings', {})}
-    if not manifest['hosted']:                                   # its plate is not installed: no door
-        manifest['landmarks'] = [L for L in doors if not L.get('virtual')]
+    manifest['landmarks'] = [L for L in doors if not L.get('virtual') or L['virtual'] in manifest['hosted']]   # no plate: no door
+    # The overworld half of every installed hi-fi town's exit: the adapter uses it raw.
+    for L in manifest['landmarks']:
+        tid = L.get('virtual') or L['mapId']
+        tp = os.path.join(ROOT, f'public/act1-hifi/town/{tid}-town.json')
+        if tid not in towns.get('towns', []) or not os.path.isfile(tp) or not L['exit']: continue
+        t = json.load(open(tp))
+        if [t['exit'].get('toX'), t['exit'].get('toY')] != L['exit']:
+            t['exit']['toX'], t['exit']['toY'] = L['exit']
+            t['exit']['note'] = 'toX/toY = the door\'s exit cell in public/acts-hifi/manifest.json (scripts/build_acts_hifi_manifest.py), not maps.ts.'
+            json.dump(t, open(tp, 'w'), indent=1, ensure_ascii=False)
+            print(f'  town {tid}: exit -> {L["exit"]}')
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     with open(OUT, 'w') as f:
         json.dump(manifest, f, separators=(',', ':'))

@@ -1,0 +1,223 @@
+{
+ "_comment": "ironkeep round-3 runtime config (Codex try 1); collision hand-traced per object, no foreground layer.",
+ "id": "ironkeep",
+ "nameKey": "map.ironkeep",
+ "screen": "town/ironkeep-screen.png",
+ "walkable": "town/ironkeep-walkable.json",
+ "cells": 65,
+ "artPxPerCell": 30,
+ "worldPxPerCell": 16,
+ "startCell": [
+  32.5,
+  56.5
+ ],
+ "savePoint": [
+  30.47,
+  50.78
+ ],
+ "exit": {
+  "cell": [
+   32.5,
+   58.5
+  ],
+  "targetMapId": "overworld",
+  "toX": 209,
+  "toY": 321,
+  "axis": "south",
+  "note": "toX/toY = overworld exit cell from exits.json (tools/apply_exits.py), not maps.ts."
+ },
+ "shopId": "ironkeep",
+ "shopCounter": [
+  43.0,
+  54.3
+ ],
+ "npcs": [
+  {
+   "id": "healer",
+   "dialogueKey": "npc.healer",
+   "nameKey": "npc.healer.name",
+   "sheet": "town/npc/ironkeep-healer-4x3-64.png",
+   "cell": [
+    14.22,
+    54.84
+   ],
+   "mapsTs": [
+    3,
+    13
+   ],
+   "name": "Healer",
+   "text": "Welcome to the clinic! I can heal your wounds."
+  },
+  {
+   "id": "soldier",
+   "dialogueKey": "npc.soldier",
+   "nameKey": "npc.soldier.name",
+   "sheet": "town/npc/ironkeep-soldier-4x3-64.png",
+   "cell": [
+    34.53,
+    30.47
+   ],
+   "mapsTs": [
+    8,
+    7
+   ],
+   "name": "Soldier",
+   "text": "Fierce winds howl through the mountain pass to the north. No one can get through! Maybe if someone stopped whatever is causing those storms..."
+  },
+  {
+   "id": "blacksmith",
+   "dialogueKey": "npc.blacksmith",
+   "nameKey": "npc.blacksmith.name",
+   "sheet": "town/npc/ironkeep-blacksmith-4x3-64.png",
+   "cell": [
+    18.28,
+    18.28
+   ],
+   "mapsTs": [
+    4,
+    4
+   ],
+   "name": "Blacksmith",
+   "text": "The Iron Mine is southwest of town. And that Storm Nest to the east? The harpy there controls the winds blocking the mountain pass."
+  },
+  {
+   "id": "gordo",
+   "dialogueKey": "npc.gordo.greeting",
+   "nameKey": "npc.gordo.name",
+   "sheet": "town/npc/ironkeep-gordo-4x3-64.png",
+   "cell": [
+    34.53,
+    50.78
+   ],
+   "mapsTs": [
+    8,
+    12
+   ],
+   "name": "Gordo",
+   "text": "Welcome to my forge! I'm Gordo, the finest blacksmith in all four lands. If you need weapons or armor, you've come to the right place!"
+  },
+  {
+   "id": "shopkeeper",
+   "dialogueKey": "npc.shopkeeper",
+   "nameKey": "npc.shopkeeper.name",
+   "sheet": "town/npc/ironkeep-shopkeeper-4x3-64.png",
+   "cell": [
+    43.0,
+    51.2
+   ],
+   "_note": "behind the painted counter; the hero talks across it from shopCounter",
+   "name": "Shopkeeper",
+   "text": "Welcome to my shop! Take a look around."
+  }
+ ],
+ "doors": [
+  {
+   "id": "healer",
+   "cell": [
+    15.0,
+    54.2
+   ]
+  },
+  {
+   "id": "shop",
+   "cell": [
+    43.0,
+    54.3
+   ]
+  }
+ ],
+ "_spots": [
+  {
+   "id": "healer",
+   "mapsTs": [
+    3,
+    12
+   ],
+   "new": [
+    3,
+    13
+   ],
+   "moved": true,
+   "cell": [
+    14.22,
+    54.84
+   ],
+   "onGround": true
+  },
+  {
+   "id": "soldier",
+   "mapsTs": [
+    7,
+    10
+   ],
+   "new": [
+    8,
+    7
+   ],
+   "moved": true,
+   "cell": [
+    34.53,
+    30.47
+   ],
+   "onGround": true
+  },
+  {
+   "id": "blacksmith",
+   "mapsTs": [
+    3,
+    5
+   ],
+   "new": [
+    4,
+    4
+   ],
+   "moved": true,
+   "cell": [
+    18.28,
+    18.28
+   ],
+   "onGround": true
+  },
+  {
+   "id": "gordo",
+   "mapsTs": [
+    12,
+    5
+   ],
+   "new": [
+    8,
+    12
+   ],
+   "moved": true,
+   "cell": [
+    34.53,
+    50.78
+   ],
+   "onGround": true
+  },
+  {
+   "id": "savePoint",
+   "mapsTs": [
+    8,
+    10
+   ],
+   "new": [
+    7,
+    12
+   ],
+   "moved": true,
+   "cell": [
+    30.47,
+    50.78
+   ],
+   "onGround": true
+  }
+ ],
+ "_paintedOut": [],
+ "_validator": "VALID",
+ "_onlyExit": true,
+ "_qa": {
+  "blockedLooksGroundPx": 32832,
+  "walkableLooksObjectPx": 19728
+ }
+}

@@ -1,0 +1,256 @@
+{
+ "_comment": "frostwatch round-3 runtime config (Codex try 1); collision hand-traced per object, no foreground layer.",
+ "id": "frostwatch",
+ "nameKey": "map.frostwatch",
+ "screen": "town/frostwatch-screen.png",
+ "walkable": "town/frostwatch-walkable.json",
+ "cells": 65,
+ "artPxPerCell": 30,
+ "worldPxPerCell": 16,
+ "startCell": [
+  32.5,
+  53.0
+ ],
+ "savePoint": [
+  34.53,
+  42.66
+ ],
+ "exit": {
+  "cell": [
+   32.5,
+   55.0
+  ],
+  "targetMapId": "overworld",
+  "toX": 262,
+  "toY": 323,
+  "axis": "south",
+  "note": "toX/toY = overworld exit cell from exits.json (tools/apply_exits.py), not maps.ts."
+ },
+ "shopId": "frostwatch",
+ "shopCounter": [
+  48.2,
+  20.9
+ ],
+ "npcs": [
+  {
+   "id": "healer",
+   "dialogueKey": "npc.healer",
+   "nameKey": "npc.healer.name",
+   "sheet": "town/npc/frostwatch-healer-4x3-64.png",
+   "cell": [
+    46.72,
+    50.78
+   ],
+   "mapsTs": [
+    11,
+    12
+   ],
+   "name": "Healer",
+   "text": "Welcome to the clinic! I can heal your wounds."
+  },
+  {
+   "id": "frostElder",
+   "dialogueKey": "npc.frostElder",
+   "nameKey": "npc.frostElder.name",
+   "sheet": "town/npc/frostwatch-frostElder-4x3-64.png",
+   "cell": [
+    14.22,
+    22.34
+   ],
+   "mapsTs": [
+    3,
+    5
+   ],
+   "name": "Frost Elder",
+   "text": "The frozen lake lies just east of here. Be careful — the ice can be treacherous. The haunted forest to the southeast is thick and dark."
+  },
+  {
+   "id": "frostGuard",
+   "dialogueKey": "npc.frostGuard",
+   "nameKey": "npc.frostGuard.name",
+   "sheet": "town/npc/frostwatch-frostGuard-4x3-64.png",
+   "cell": [
+    30.47,
+    50.78
+   ],
+   "mapsTs": [
+    7,
+    12
+   ],
+   "name": "Guard",
+   "text": "The frozen lake to the west is treacherous. Watch your step on the ice — once you start sliding, you can't stop!"
+  },
+  {
+   "id": "mountaineer",
+   "dialogueKey": "npc.mountaineer",
+   "nameKey": "npc.mountaineer.name",
+   "sheet": "town/npc/frostwatch-mountaineer-4x3-64.png",
+   "cell": [
+    34.53,
+    34.53
+   ],
+   "mapsTs": [
+    8,
+    8
+   ],
+   "name": "Mountaineer",
+   "text": "Enter the haunted forest from the west side and find your way through. Ravenhollow awaits on the other side, and beyond it, the Shadow Cave."
+  },
+  {
+   "id": "frostVillager",
+   "dialogueKey": "npc.frostVillager",
+   "nameKey": "npc.frostVillager.name",
+   "sheet": "town/npc/frostwatch-frostVillager-4x3-64.png",
+   "cell": [
+    26.41,
+    22.34
+   ],
+   "mapsTs": [
+    6,
+    5
+   ],
+   "name": "Villager",
+   "text": "The Haunted Forest lies to the north. They say a spectral stag roams there at night..."
+  },
+  {
+   "id": "shopkeeper",
+   "dialogueKey": "npc.shopkeeper",
+   "nameKey": "npc.shopkeeper.name",
+   "sheet": "town/npc/frostwatch-shopkeeper-4x3-64.png",
+   "cell": [
+    48.2,
+    18.6
+   ],
+   "_note": "behind the painted counter; the hero talks across it from shopCounter",
+   "name": "Shopkeeper",
+   "text": "Welcome to my shop! Take a look around."
+  }
+ ],
+ "doors": [
+  {
+   "id": "healer",
+   "cell": [
+    45.9,
+    51.4
+   ]
+  },
+  {
+   "id": "shop",
+   "cell": [
+    48.2,
+    20.9
+   ]
+  }
+ ],
+ "_spots": [
+  {
+   "id": "healer",
+   "mapsTs": [
+    3,
+    12
+   ],
+   "new": [
+    11,
+    12
+   ],
+   "moved": true,
+   "cell": [
+    46.72,
+    50.78
+   ],
+   "onGround": true
+  },
+  {
+   "id": "frostElder",
+   "mapsTs": [
+    3,
+    5
+   ],
+   "new": [
+    3,
+    5
+   ],
+   "moved": false,
+   "cell": [
+    14.22,
+    22.34
+   ],
+   "onGround": true
+  },
+  {
+   "id": "frostGuard",
+   "mapsTs": [
+    10,
+    13
+   ],
+   "new": [
+    7,
+    12
+   ],
+   "moved": true,
+   "cell": [
+    30.47,
+    50.78
+   ],
+   "onGround": true
+  },
+  {
+   "id": "mountaineer",
+   "mapsTs": [
+    8,
+    8
+   ],
+   "new": [
+    8,
+    8
+   ],
+   "moved": false,
+   "cell": [
+    34.53,
+    34.53
+   ],
+   "onGround": true
+  },
+  {
+   "id": "frostVillager",
+   "mapsTs": [
+    6,
+    12
+   ],
+   "new": [
+    6,
+    5
+   ],
+   "moved": true,
+   "cell": [
+    26.41,
+    22.34
+   ],
+   "onGround": true
+  },
+  {
+   "id": "savePoint",
+   "mapsTs": [
+    8,
+    10
+   ],
+   "new": [
+    8,
+    10
+   ],
+   "moved": false,
+   "cell": [
+    34.53,
+    42.66
+   ],
+   "onGround": true
+  }
+ ],
+ "_paintedOut": [],
+ "_validator": "VALID",
+ "_onlyExit": true,
+ "_qa": {
+  "blockedLooksGroundPx": 17676,
+  "walkableLooksObjectPx": 15624
+ }
+}
