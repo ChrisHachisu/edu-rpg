@@ -5891,13 +5891,6 @@
   }
   function owmSupportInputBytes(map){
     var bounds=owmSupportBounds(map); if(!bounds) return null;
-    // Acts 2-5 runtime (window.__QOK_ACTS__, undefined when it is off): outside Act 1's rectangle it
-    // replaces the generator's tiles with its own plates, but act1-overworld-walk.bin was baked over
-    // the generator's (this support reaches 45 cells past the rectangle, and muted water is a
-    // whole-map rule). It hands back the tiles it replaced, so the bake is authenticated against
-    // the map it was baked over and Act 1's field stays the baked one.
-    var actsS=window.__QOK_ACTS__, legacyS=(actsS&&typeof actsS.legacyMap==='function')?actsS.legacyMap(map):null;
-    if(legacyS) map=legacyS;
     var W=map[0].length,H=map.length;
     for(var y=0;y<H;y++) if(!map[y]||map[y].length!==W) return null;
     var muted=buildMutedWater(map,OWM_SUPPORT_THRESHOLD);
@@ -5915,6 +5908,16 @@
     for(i=0;i<values.length;i++) bytes[domain.length+1+i]=values[i];
     for(i=0;i<bytes.length;i++){ h=(h^bytes[i])>>>0; h=Math.imul(h,0x01000193)>>>0; }
     return {bounds:bounds,bytes:bytes,fnv32:h>>>0};
+  }
+  // Acts 2-5 runtime (window.__QOK_ACTS__, undefined when it is off): outside Act 1's rectangle it
+  // replaces the generator's tiles with its own plates, but act1-overworld-walk.bin was baked over
+  // the generator's (the support reaches 45 cells past the rectangle, and muted water is a
+  // whole-map rule). It hands back the tiles it replaced, so the bake is authenticated against
+  // the map it was baked over and Act 1's field stays the baked one. Kept OUT of
+  // owmSupportInputBytes: that function's text is pinned by the baker's semantics digest.
+  function owmSupportMap(map){
+    var actsS=window.__QOK_ACTS__, legacyS=(actsS&&typeof actsS.legacyMap==='function')?actsS.legacyMap(map):null;
+    return legacyS||map;
   }
   var owmSupportEpoch=0, owmSupportPending=null, owmSupportVerified=null, owmSupportFailure=null;
   var owmObservedPlateMap=null, owmObservedPlateRepairs=null;
@@ -5958,7 +5961,7 @@
       if(scene.currentMapId==='overworld'&&scene.mapData===map) return 'ready';
       owmSupportVerified=null; owmState=null;
     }
-    var input=owmSupportInputBytes(map); if(!input) return 'invalid';
+    var input=owmSupportInputBytes(owmSupportMap(map)); if(!input) return 'invalid';
     if(input.fnv32!==b.hash){ owmSupportFailure={map:map,epoch:owmSupportEpoch,reason:'support-fnv'}; return 'invalid'; }
     if(owmSupportVerified&&owmSupportVerified.map===map&&owmSupportVerified.epoch===owmSupportEpoch){
       // FNV is only a fast header prefilter. Even on the first lookup after async SHA completion,
@@ -5978,7 +5981,7 @@
         if(scene.currentMapId!=='overworld'||scene.mapData!==map||owmSupportEpoch!==work.epoch){
           owmSupportPending=null; owmSupportFailure={map:map,epoch:work.epoch,reason:'stale-scene-map'}; return;
         }
-        var current=owmSupportInputBytes(scene.mapData);
+        var current=owmSupportInputBytes(owmSupportMap(scene.mapData));
         if(!current||!owmSupportMatches(work.bytes,current.bytes)||current.fnv32!==b.hash
           ||owmSupportHex(digest)!==b.support){
           owmSupportPending=null; owmSupportFailure={map:map,epoch:work.epoch,reason:'changed-or-mismatched-support'}; return;
