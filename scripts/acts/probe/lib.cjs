@@ -22,9 +22,10 @@ const BOSSES = ['giantToad', 'serpent', 'stormHarpy', 'phantomStag', 'dragon', '
   'obsidianKnight', 'forgeTitan', 'demonGeneral', 'voidHerald'];
 const allFlags = () => Object.fromEntries(BOSSES.map(b => [`boss.${b}.defeated`, true]));
 
-async function launch({ dpr = 1, storage = {} } = {}) {
+async function launch({ dpr = 1, storage = {}, video = null } = {}) {   // video: a directory to record the page into (WebM, on ctx.close())
   const browser = await chromium.launch({ headless: true, args: ['--enable-webgl', '--ignore-gpu-blocklist', '--mute-audio'] });
-  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: dpr, hasTouch: true, isMobile: true });
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: dpr, hasTouch: true, isMobile: true,
+    ...(video ? { recordVideo: { dir: video, size: { width: 390, height: 844 } } } : {}) });
   await ctx.addInitScript(() => { window.Capacitor = { isNativePlatform: () => true }; });
   ctx.setDefaultTimeout(60000);
   const page = await ctx.newPage(); const errors = [], requests = [];

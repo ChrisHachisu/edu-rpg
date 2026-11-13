@@ -20,6 +20,8 @@
 //               exit cells; the compass points at the owner's cells; encounter zones follow the
 //               act that owns the ground; a saved position in the old geography is moved to a
 //               door of the same act.
+//   4. GATES    The index's story gates (the Act 2 wind canyon): tile 13 and a walled cell until
+//               she holds the item, a drawn gust while it blows, the bundle's clearing moment once.
 // The frozen bundle is not edited. Act 1 keeps act1-hifi/ and act1-world-map.js unchanged.
 (function () {
   'use strict';
@@ -181,6 +183,7 @@
   // (index `pack` raster: the owner act, except that a landmark's mask box answers to the act
   // that drew it, and Act 1's rectangle answers to Act 1's own pack in dq-tiles).
   function blocked(px, py, R) {
+    if (SHUT && px >= 0 && py >= 0 && px < GW * 32 && py < GH * 32 && SHUT[(py >> 5) * GW + (px >> 5)]) return 1;   // a closed story gate
     var a = cellAct(px >> 5, py >> 5);
     if (a < 2) return a === 1 ? ovBit(px, py) : 0;
     var A = BY[a], P = A && A.rt && A.rt.bits;
@@ -275,6 +278,194 @@
     if (!OV_BITS) return 0;
     for (var j = 0; j < OV_BITS.length; j++) if (raw(OV_BITS[j], px, py)) return 1;
     return 0;
+  }
+
+  // ---------------------------------------------------------------- story gates
+  // Index `gates` (scripts/build_acts_hifi_manifest.py WIND_GATE, placement switched there). The
+  // bundle's wind canyon, put back where the painted Act 2 needs it: Storm Harpy -> Windbreaker
+  // Stone -> the pass east of Ironkeep -> Frostwatch, the Frozen Lake and the Haunted Forest.
+  //   SHUT     while she lacks the item, each gate cell carries the gate tile (13) in mapData, so the
+  //            engine's own rules answer it (canMove refuses 13 without the stone; dq-tiles a1mBump
+  //            says overworld.canyonBlocked on a bump), and blocked() walls the whole cell for the
+  //            sole disc. With the item the plate's own tile goes back, as the bundle's loadMap
+  //            rewrites 13 -> 1, on the next tick: no reload.
+  //   GUST     a drawn gust of wind and snow drifts out of the pass until the moment it clears.
+  //   CLEARED  the first time she walks through holding the item, the bundle's one-time moment
+  //            plays here (clearedFlag, openedKey) and the gust dies down. The bundle's own trigger
+  //            sits on old cells (`oldTrigger`) that are not standable in this world
+  //            (check_world.py), and only fires from the engine's step tween, which the mover replaced.
+  var GATES = [], SHUT = null, GATE_AT = {}, GUST_DEPTH = 9.65;
+  function gatesInit() {
+    (M.gates || []).forEach(function (g) {
+      if (!g || !g.cells || !g.cells.length) return;
+      var b = [1e9, 1e9, -1, -1];
+      g.cells.forEach(function (c) {
+        GATE_AT[c[0] + ',' + c[1]] = g;
+        b[0] = Math.min(b[0], c[0]); b[1] = Math.min(b[1], c[1]); b[2] = Math.max(b[2], c[0]); b[3] = Math.max(b[3], c[1]);
+      });
+      g.box = b; g.shut = false; g.gust = false; g.applied = null; g.fadeAt = 0; g.plays = 0; g.prev = null; g.gfx = null;
+      g.fx = gustField(g);
+      GATES.push(g);
+    });
+    if (GATES.length) SHUT = new Uint8Array(GW * GH);
+  }
+  function hasItem(id) {
+    try { var inv = window.__GAME_STATE__.player.state.inventory || []; for (var i = 0; i < inv.length; i++) if (inv[i].itemId === id && inv[i].quantity > 0) return true; } catch (e) {}
+    return false;
+  }
+  function flag(k) { var p = pstate(); return !!(k && p && p.storyFlags && p.storyFlags[k]); }
+  function setFlag(k) { var p = pstate(); if (k && p && p.storyFlags) p.storyFlags[k] = true; }
+  function gateTile(x, y, t) { if (!SHUT || !SHUT[y * GW + x]) return t; var g = GATE_AT[x + ',' + y]; return g ? g.tile : t; }
+  function plateTileAt(a, x, y) {
+    var p = a && a.rt && a.rt.plate; if (!p) return null;
+    if (!p.tiles) eachPlateCell(a, function () {});
+    var w = p.rows[0].length, rx = x - p.bounds[0], ry = y - p.bounds[1];
+    if (rx < 0 || ry < 0 || rx >= w || ry >= p.rows.length) return null;
+    var t = p.tiles[ry * w + rx]; return t >= 0 ? t : null;
+  }
+  // Once per tick, before plate(): the item decides, and mapData follows when it changes.
+  function gateState(s) {
+    GATES.forEach(function (g) {
+      var shut = !hasItem(g.item), cleared = flag(g.clearedFlag);
+      g.shut = shut;
+      if (g.gust && !shut && cleared && !g.fadeAt) g.fadeAt = Date.now();      // cleared elsewhere (another device's save): fade
+      g.gust = shut || !cleared;
+      if (g.applied === shut) return;
+      g.cells.forEach(function (c) { SHUT[c[1] * GW + c[0]] = shut ? 1 : 0; });
+      var A = BY[g.act], md = s.mapData, n = 0;
+      if (A && A.rt && A.rt.appliedTo === md) {
+        g.cells.forEach(function (c) {
+          var t = shut ? g.tile : plateTileAt(A, c[0], c[1]);
+          if (t !== null && md[c[1]][c[0]] !== t) { md[c[1]][c[0]] = t; n++; }
+        });
+      }
+      g.applied = shut; stats.gateSwitches = (stats.gateSwitches || 0) + 1;
+      changed();
+    });
+  }
+  function gateTick(s) {
+    if (!GATES.length) return;
+    // The bundle draws its own teal streaks over every tile-13 cell its generator left at loadMap
+    // time: the OLD canyon, under this act's art. The gust below is the cue now.
+    var wo = s._windTileOverlays;
+    if (wo && wo.length) for (var i = 0; i < wo.length; i++) { try { if (wo[i].visible) wo[i].setVisible(false); } catch (e) {} }
+    var hx = s.heroTileX, hy = s.heroTileY;
+    GATES.forEach(function (g) {
+      var b = g.box, near = hx >= b[0] - 2 && hx <= b[2] + 2 && hy >= b[1] - 1 && hy <= b[3] + 1;
+      if (g.shut && near && s.showingMessage && g.seenFlag) setFlag(g.seenFlag);   // the bundle's first-refusal flag
+      if (!g.shut && !flag(g.clearedFlag)) {
+        var p = g.prev, inside = hx >= b[0] && hx <= b[2] && hy >= b[1] && hy <= b[3];
+        var across = p && Math.abs(hx - p[0]) <= 4 && Math.abs(hy - p[1]) <= 4 && hy >= b[1] && hy <= b[3]
+          && ((p[0] < b[0] && hx > b[2]) || (p[0] > b[2] && hx < b[0]) || (p[1] < b[1] && hy > b[3]) || (p[1] > b[3] && hy < b[1]));
+        if (inside || across) playClear(s, g);
+      }
+      g.prev = [hx, hy];
+    });
+  }
+  function zText(k) {
+    try { var q = window.__QOK, z = q && q.Z, t = z ? z(k) : null; return t && t.charAt(0) !== '[' && t !== k ? t : null; } catch (e) { return null; }
+  }
+  // The bundle's wind-clearing moment (streaks flung on the wind, a pale flash, the message 180 ms
+  // later), played at the gate, and the gust dies down behind it.
+  function playClear(s, g) {
+    setFlag(g.clearedFlag); g.plays++; g.fadeAt = Date.now(); g.gust = false; stats.gateClears = (stats.gateClears || 0) + 1;
+    var sp = space(); if (!sp || !s.add || !s.tweens) return;
+    var P = sp.pitch, d = g.wind || [-1, 0], b = g.box, cx = (b[0] + b[2] + 1) / 2 * P, cy = (b[1] + b[3] + 1) / 2 * P;
+    var hx = s.hero ? s.hero.x : cx, hy = s.hero ? s.hero.y : cy, span = (Math.abs(d[0]) ? (b[3] - b[1] + 1) : (b[2] - b[0] + 1)) * P;
+    try {
+      for (var i = 0; i < 26; i++) {
+        var o = (Math.random() - 0.5) * span, x0 = d[0] ? cx + (Math.random() - 0.5) * P : cx + o, y0 = d[0] ? cy + o : cy + (Math.random() - 0.5) * P;
+        var len = P * (0.45 + Math.random() * 0.5), th = 2 + Math.random() * 1.5, run = P * (2.4 + Math.random() * 2.4);
+        var dur = 520 + Math.random() * 300, dl = Math.random() * 160;
+        [[th * 2.6, 0x8CC8F0, 0.5], [th, 0xF8FCFF, 0.95]].forEach(function (k) {     // blue halo under a white core, so it reads on snow
+          var r = s.add.rectangle(x0, y0, d[0] ? len : k[0], d[0] ? k[0] : len, k[1], k[2]).setDepth(96);
+          s.tweens.add({ targets: r, x: x0 + d[0] * run, y: y0 + d[1] * run, alpha: 0, scaleX: d[0] ? 0.3 : 1, scaleY: d[0] ? 1 : 0.3,
+            duration: dur, delay: dl, ease: 'Sine.easeOut', onComplete: function () { r.destroy(); } });
+        });
+      }
+      var f = s.add.ellipse(hx, hy, P * 2.5, P * 2.5, 0x9FD8FA, 0.45).setDepth(95);
+      s.tweens.add({ targets: f, alpha: 0, scaleX: 1.9, scaleY: 1.9, duration: 480, ease: 'Power2', onComplete: function () { f.destroy(); } });
+      var msg = zText(g.openedKey);
+      if (msg && s.time) s.time.delayedCall(180, function () { try { s.showMessage(msg); } catch (e) {} });
+    } catch (e) { stats.loadErrors++; }
+  }
+  // THE GUST. Soft white-blue wind ribbons and snow motes drifting out of the pass, across a band
+  // a couple of cells either side of the gate, fading in and out at its ends: a cue, not a wall.
+  // Seeded once per gate; drawn on one Graphics, redrawn each frame while the gate is on screen.
+  function gustField(g) {
+    var seed = 0; g.cells.forEach(function (c) { seed = (seed * 31 + c[0] * 7 + c[1]) >>> 0; });
+    function rnd() { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; }
+    var d = g.wind || [-1, 0], b = g.box, across = d[0] ? (b[3] - b[1] + 1) : (b[2] - b[0] + 1), along = d[0] ? (b[2] - b[0] + 1) : (b[3] - b[1] + 1);
+    var fx = { d: d, n: [-d[1], d[0]], across: across, half: along / 2 + 2.4, ribbons: [], motes: [] };
+    for (var i = 0; i < Math.round(across * 4); i++) fx.ribbons.push({ v: rnd(), per: 1.4 + rnd() * 1.1, ph: rnd(), len: 1.0 + rnd() * 1.0,
+      amp: 0.05 + rnd() * 0.1, wl: 0.9 + rnd() * 0.8, w: 0.065 + rnd() * 0.055, wph: rnd() * 6.28 });
+    for (i = 0; i < Math.round(across * 4.5); i++) fx.motes.push({ v: rnd(), per: 1.1 + rnd() * 1.1, ph: rnd(), r: 0.035 + rnd() * 0.03,
+      amp: 0.08 + rnd() * 0.18, wob: 1.5 + rnd() * 2.5, wph: rnd() * 6.28 });
+    return fx;
+  }
+  function hideGates() { GATES.forEach(function (g) { if (g.gfx) { try { g.gfx.destroy(); } catch (e) {} g.gfx = null; } }); }
+  function animateGates() {
+    if (!GATES.length || stats.gateDrawErrors > 5) return;
+    try { drawGates(); } catch (e) { stats.gateDrawErrors = (stats.gateDrawErrors || 0) + 1; hideGates(); }   // never take the frame down with it
+  }
+  function drawGates() {
+    var s = scene(), sp = space();
+    if (!s || !sp || !wasOn || s.currentMapId !== 'overworld') return;
+    var cam = s.cameras && s.cameras.main, v = cam && cam.worldView, now = Date.now(), t = now / 1000, P = sp.pitch;
+    GATES.forEach(function (g) {
+      var k = g.gust ? 1 : (g.fadeAt ? 1 - (now - g.fadeAt) / 1400 : 0);
+      var A = BY[g.act];
+      if (k <= 0 || !A || READY[g.act] !== 1) { if (g.gfx) { try { g.gfx.destroy(); } catch (e) {} g.gfx = null; } return; }
+      var b = g.box, fx = g.fx, cx = (b[0] + b[2] + 1) / 2, cy = (b[1] + b[3] + 1) / 2, m = fx.half + 1;
+      if (v && ((cx + m) * P < v.x || (cx - m) * P > v.x + v.width || (cy + m) * P < v.y || (cy - m) * P > v.y + v.height)) { if (g.gfx) g.gfx.clear(); return; }
+      if (!g.gfx || g.gfx.scene !== s) { try { g.gfx = s.add.graphics().setDepth(GUST_DEPTH); } catch (e) { return; } }
+      if (!fx.lanes) {           // across the cells she could walk (plate tile 0), not over the cliff ends
+        var lo = 1e9, hi = -1e9;
+        g.cells.forEach(function (c) { if (plateTileAt(A, c[0], c[1]) === 0) { var w = (c[0] + 0.5 - cx) * fx.n[0] + (c[1] + 0.5 - cy) * fx.n[1]; lo = Math.min(lo, w - 0.5); hi = Math.max(hi, w + 0.5); } });
+        fx.lanes = lo < hi ? [lo + 0.1, hi - 0.1] : [-fx.across / 2 + 0.1, fx.across / 2 - 0.1];
+      }
+      var G = g.gfx, d = fx.d, n = fx.n, H = fx.half, ac = fx.across, lane = function (v) { return fx.lanes[0] + v * (fx.lanes[1] - fx.lanes[0]); };
+      G.clear();
+      var puff = k * (0.8 + 0.2 * Math.sin(t * 2.1) * Math.sin(t * 0.73 + 1.1));          // gusting, never still
+      // where a point at along-offset u (cells from the gate centre, + = downwind) and across-offset w sits
+      function X(u, w) { return (cx + d[0] * u + n[0] * w) * P; }
+      function Y(u, w) { return (cy + d[1] * u + n[1] * w) * P; }
+      function edge(u) { var e = Math.min(1, (H - Math.abs(u)) / 1.6); return e > 0 ? e * e * (3 - 2 * e) : 0; }
+      // a breath of cold air over the mouth itself
+      for (var h = 0; h < 3; h++) {
+        var hw = 0.35 + h * 0.4;
+        G.fillStyle(0xBFDFF7, 0.06 * puff);
+        var l0 = fx.lanes[0], l1 = fx.lanes[1];
+        G.fillRect(Math.min(X(-hw, l0), X(hw, l1)), Math.min(Y(-hw, l0), Y(hw, l1)), Math.abs(X(hw, l1) - X(-hw, l0)) || 1, Math.abs(Y(hw, l1) - Y(-hw, l0)) || 1);
+      }
+      var SEG = 9;
+      fx.ribbons.forEach(function (r) {
+        var u0 = ((t / r.per + r.ph) % 1), head = -H + u0 * (2 * H + r.len), life = Math.sin(Math.PI * u0);
+        var w0 = lane(r.v), px = null, py = null;
+        for (var j = 0; j <= SEG; j++) {
+          var f = j / SEG, u = head - r.len * (1 - f);
+          var w = w0 + r.amp * Math.sin((u / r.wl) * 6.28 + r.wph + t * 1.7);
+          var x = X(u, w), y = Y(u, w);
+          if (j) {
+            var a = puff * life * edge(u) * (0.2 + 0.8 * f);
+            if (a > 0.01) {
+              var th = r.w * P * (0.45 + 0.55 * Math.sin(Math.PI * Math.min(1, f * 1.15)));
+              G.lineStyle(th * 1.2, 0x56799E, 0.4 * a); G.lineBetween(px, py + th * 1.4, x, y + th * 1.4);   // a cool shadow, so it reads on snow
+              G.lineStyle(th * 3, 0x8EC3EF, 0.62 * a); G.lineBetween(px, py, x, y);                          // soft blue halo
+              G.lineStyle(th, 0xF8FCFF, 0.97 * a); G.lineBetween(px, py, x, y);                              // white core
+            }
+          }
+          px = x; py = y;
+        }
+      });
+      fx.motes.forEach(function (o) {
+        var u0 = ((t / o.per + o.ph) % 1), u = -H + u0 * 2 * H, a = puff * Math.sin(Math.PI * u0) * edge(u);
+        if (a < 0.02) return;
+        var w = lane(o.v) + o.amp * Math.sin(t * o.wob + o.wph), x = X(u, w), y = Y(u, w), r = o.r * P;
+        G.fillStyle(0x6F98C2, 0.55 * a); G.fillCircle(x, y + r * 0.35, r * 1.4);
+        G.fillStyle(0xFFFFFF, 0.92 * a); G.fillCircle(x, y, r);
+      });
+    });
   }
 
   // ---------------------------------------------------------------- scene access
@@ -517,7 +708,7 @@
     if (legacy.map !== md) keepLegacy(md);
     ACTS.forEach(function (a) {
       if (!a.rt || READY[a.act] !== 1 || a.rt.appliedTo === md) return;
-      eachPlateCell(a, function (x, y, t) { md[y][x] = t; });
+      eachPlateCell(a, function (x, y, t) { md[y][x] = gateTile(x, y, t); });
       a.rt.appliedTo = md; wrote = true; stats.plateWrites++;
     });
     // Cells no act owns are open sea in the owner's world; the bundle's old geography must not
@@ -539,7 +730,7 @@
   function keepPlate(md) {
     var a = ACTS[keepAt++ % ACTS.length], n = 0;
     if (!a || !a.rt || a.rt.appliedTo !== md) return;
-    eachPlateCell(a, function (x, y, t) { var row = md[y]; if (row[x] !== t) { row[x] = t; n++; } });
+    eachPlateCell(a, function (x, y, t) { var row = md[y]; t = gateTile(x, y, t); if (row[x] !== t) { row[x] = t; n++; } });
     if (n) { stats.plateRepairs = (stats.plateRepairs || 0) + n; changed(); }
   }
   // Cells where mapData no longer matches an act plate (verification only; should stay 0).
@@ -547,7 +738,7 @@
     var s = scene(), n = 0, first = null;
     if (!M || !s || !s.mapData) return null;
     ACTS.forEach(function (a) {
-      if (a.rt && a.rt.appliedTo === s.mapData) eachPlateCell(a, function (x, y, t) { if (s.mapData[y][x] !== t) { n++; first = first || [x, y, s.mapData[y][x], t]; } });
+      if (a.rt && a.rt.appliedTo === s.mapData) eachPlateCell(a, function (x, y, t) { t = gateTile(x, y, t); if (s.mapData[y][x] !== t) { n++; first = first || [x, y, s.mapData[y][x], t]; } });
     });
     return { cells: n, first: first };
   }
@@ -882,17 +1073,19 @@
     loadIndex();
     var s = scene(), g = game();
     if (!M || !s) return;
-    if (!ovReady) { ovReady = true; ovInit(); }
+    if (!ovReady) { ovReady = true; ovInit(); gatesInit(); }
     wrap(s); wrapZone(); wrapText(); wrapCoverage(); minimap();
     var on = s.currentMapId === 'overworld' && s.sys && s.sys.isActive() && !!s.mapData && s.mapData.length === GH;
     if (on) {
       if (!wasOn) burstUntil = Date.now() + 900;
+      gateState(s);
       plate(s, false);
+      gateTick(s);
       var list = wanted(s);
       underpaint(s, list); stream(s, list); landmarks(s); overrides(s);
-      if (g && !g.__actsPrerender) { g.__actsPrerender = true; g.events.on('prerender', animateCrest); }
+      if (g && !g.__actsPrerender) { g.__actsPrerender = true; g.events.on('prerender', animateCrest); g.events.on('prerender', animateGates); }
     } else {
-      if (wasOn) park();
+      if (wasOn) { park(); hideGates(); }
       nameHosted(s);
       if (s.sys && s.sys.isActive() && s.currentMapId && s.currentMapId !== 'overworld') markMigrated();
     }
@@ -912,6 +1105,10 @@
     index: function () { return M; },
     cellAct: cellAct, reach: function (x, y) { return REACH ? REACH[y * GW + x] : null; },
     blocked: function (px, py) { return blocked(px, py, 20) ? 1 : 0; },
-    plateDrift: plateDrift
+    plateDrift: plateDrift,
+    gates: function () {
+      return GATES.map(function (g) { return { id: g.id, placement: g.placement, cells: g.cells, shut: !!g.shut, gust: !!g.gust,
+        drawn: !!(g.gfx && g.gfx.scene), cleared: !!flag(g.clearedFlag), plays: g.plays || 0 }; });
+    }
   };
 })();

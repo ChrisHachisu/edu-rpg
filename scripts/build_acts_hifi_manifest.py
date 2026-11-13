@@ -82,6 +82,29 @@ BUNDLE = {
 HOSTED = {'Cinderwatch': ('cinderwatch', 'embersRest', 6, (8, 14, None))}
 TILE_OPEN, TILE_WATER, TILE_RAISED = 0, 2, 4
 
+# STORY GATES ON THE OVERWORLD. The bundle's wind canyon (tile 13: passable only with the
+# Windbreaker Stone, which the Storm Harpy drops with the Shadow Crystal) kept Frostwatch, the
+# Frozen Lake and the Haunted Forest behind the Storm Nest. The painted Act 2 has no tile 13, so
+# acts-runtime.js writes it into these cells while she lacks the item (and draws the gust there),
+# and scripts/acts/check_world.py models the cells as a wall until then.
+# Placement (owner's choice; the cells are a column across the pass east of Ironkeep, and any
+# column x 226-238 also separates the two halves):
+#   B  x 224, y 328-334   the west mouth of the pass, seen from Ironkeep (recommended)
+#   A  x 231, y 329-334   inside the pass
+WIND_GATE = 'B'                                     # <- the one-line switch: 'A' or 'B'
+WIND_GATE_CELLS = {'A': (231, 329, 334), 'B': (224, 328, 334)}
+
+
+def story_gates():
+    x, ya, yb = WIND_GATE_CELLS[WIND_GATE]
+    return [{'id': 'wind-canyon', 'placement': WIND_GATE, 'act': 2, 'tile': 13, 'item': 'windbreakerStone',
+             'cells': [[x, y] for y in range(ya, yb + 1)], 'wind': [-1, 0],   # gusts blow west, out of the pass
+             'seenFlag': 'canyon.blocked.seen', 'clearedFlag': 'canyon.windCleared',
+             'blockedKey': 'overworld.canyonBlocked', 'openedKey': 'overworld.canyonOpened',
+             # the bundle's own one-time wind-clearing trigger sits on these OLD cells (x0, y0, x1, y1);
+             # check_world.py asserts none of them is standable in this world
+             'oldTrigger': [221, 275, 222, 298]}]
+
 
 def doors_from_art(manifests):
     rows, missing = [], []
@@ -184,6 +207,7 @@ def main():
                 'acts': acts, 'landmarks': doors, 'unmapped': missing,
                 'owner': W.rle(act_of), 'pack': W.rle(cell), 'reach': W.rle(reach.astype(np.uint8)),
                 'overrides': overrides,
+                'gates': story_gates(),
                 'towns': [t for t in towns.get('towns', []) if t not in [h[0] for h in HOSTED.values()]],
                 'hosted': [t for t in towns.get('towns', []) if t in [h[0] for h in HOSTED.values()]],
                 'strings': towns.get('strings', {})}
