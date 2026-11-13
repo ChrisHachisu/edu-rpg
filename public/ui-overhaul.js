@@ -128,9 +128,14 @@
     return (wm && wm.currentMapId) || (t && t.player && t.player.state && t.player.state.position && t.player.state.position.mapId) || '';
   }
   function inTown() { return !!TOWNS[curMapId()]; }
-  function placeName(pos) {
+  // Acts 2-5 hosted towns (acts-runtime.js): Cinderwatch runs on engine map embersRest, and only the
+  // record's story flags say which town it was. `flags` is the record's own storyFlags.
+  function hosted() { var h = window.__QOK_ACTS_HOSTED__; return h && typeof h.name === 'function' ? h : null; }
+  function placeName(pos, flags) {
     if (!pos || !pos.mapId) return '';
-    var n = Z('map.' + pos.mapId);
+    var h = hosted(), n = null;
+    if (h) { try { n = h.name(pos.mapId, flags || null); } catch (e) { n = null; } }
+    if (!n) n = Z('map.' + pos.mapId);
     if (!n || n.charAt(0) === '[') n = pos.mapId;
     if (!TOWNS[pos.mapId] && pos.mapId !== 'overworld' && pos.floor && pos.floor > 1) n += ' B' + pos.floor + 'F';
     return n;
@@ -174,7 +179,9 @@
     try { t.autoSave(); } catch (e) { return false; }
     var pos = t.player.state.position;
     if (pos && TOWNS[pos.mapId] && activeSlot() && townArrival) {
-      set(slotKey(activeSlot(), 'town'), JSON.stringify({ mapId: pos.mapId, x: pos.x, y: pos.y }));
+      var hv = null, h = hosted(); try { hv = h && h.of(pos.mapId, t.player.state.storyFlags); } catch (e) { hv = null; }
+      var tr = { mapId: pos.mapId, x: pos.x, y: pos.y }; if (hv) tr.hosted = hv;
+      set(slotKey(activeSlot(), 'town'), JSON.stringify(tr));
     }
     if (!force) flashSaved();
     return true;
@@ -285,16 +292,22 @@
     var recs = [parse(get(CANON_AUTO)), parse(get(CANON_SAVE))];
     for (var i = 0; i < recs.length; i++) {
       var p = recs[i] && recs[i].player && recs[i].player.position;
-      if (p && TOWNS[p.mapId]) return { mapId: p.mapId, x: p.x, y: p.y };
+      if (p && TOWNS[p.mapId]) {
+        var h = hosted(), hv = null; try { hv = h && h.of(p.mapId, recs[i].player.storyFlags); } catch (e) { hv = null; }
+        return hv ? { mapId: p.mapId, x: p.x, y: p.y, hosted: hv } : { mapId: p.mapId, x: p.x, y: p.y };
+      }
     }
     return null;
+  }
+  function townFlags(town) {
+    var f = {}; if (town && town.hosted) f['acts.town.' + town.hosted] = true; return f;
   }
   function defeatInfo() {
     var t = GS(), st = t && t.player && t.player.state;
     var town = lastTown();
     return {
       boss: !!(bossFight && bossFight.record),
-      town: town, townName: town ? placeName(town) : '',
+      town: town, townName: town ? placeName(town, townFlags(town)) : '',
       goldLost: st ? Math.floor((st.gold || 0) / 2) : 0
     };
   }
@@ -316,6 +329,7 @@
     try { t.player.fullHeal(); } catch (e) { st.hp = st.maxHp; }
     st.poisonedUntil = 0;
     st.position = { mapId: town.mapId, x: town.x, y: town.y, floor: 1 };
+    var hh = hosted(); if (hh && hh.enter) { try { hh.enter(town.hosted || null, st); } catch (e) {} }
     bossFight = null; resetWatch();
     beginLoad('gameover-town');
     go.scene.start('WorldMapScene');
@@ -2196,7 +2210,7 @@
     return '<button class="slotcard' + (sel ? ' sel' : '') + '" data-act="slotPick" data-i="' + info.n + '">' +
       '<span class="sn">' + (ja ? (kanji() ? '記録 ' : 'きろく ') : 'Slot ') + info.n + (info.clear ? '<em class="sclear">★ ' + (ja ? 'クリア' : 'Cleared') + '</em>' : '') + '</span>' +
       '<span class="sr1"><b>' + esc(p.name || '?') + '</b><i>' + esc(Z('menu.level')) + ' ' + (p.level || 1) + '</i></span>' +
-      '<span class="sr2">' + esc(SV.placeName(p.position)) + '</span>' +
+      '<span class="sr2">' + esc(SV.placeName(p.position, p.storyFlags)) + '</span>' +
       '<span class="sr2">' + (ja ? 'プレイ ' : 'Play ') + fmtPlay(r.playtime) + ' · ' + esc(fmtWhen(r.timestamp)) + '</span></button>';
   }
   function renderTitleSlots(ts, SV) {
@@ -2213,9 +2227,9 @@
       h = '<div class="t-screen slots"><div class="scene-h">' + esc(p.name || '') + ' · ' + esc(Z('menu.level')) + ' ' + (p.level || 1) + '</div>' +
         '<div class="slotlist">';
       if (info.auto) h += '<button class="slotcard sel" data-act="slotLoad" data-i="0"><span class="sn">' + esc(ja ? 'オートセーブ' : 'Auto save') + '</span>' +
-        '<span class="sr1"><b>' + esc(SV.placeName(info.auto.player.position)) + '</b></span><span class="sr2">' + esc(fmtWhen(info.auto.timestamp)) + ' · ' + esc(Z('menu.level')) + ' ' + (info.auto.player.level || 1) + '</span></button>';
+        '<span class="sr1"><b>' + esc(SV.placeName(info.auto.player.position, info.auto.player.storyFlags)) + '</b></span><span class="sr2">' + esc(fmtWhen(info.auto.timestamp)) + ' · ' + esc(Z('menu.level')) + ' ' + (info.auto.player.level || 1) + '</span></button>';
       if (info.save) h += '<button class="slotcard" data-act="slotLoad" data-i="1"><span class="sn">' + esc(ja ? J('さいごの セーブ', '最後の セーブ') : 'Last save') + '</span>' +
-        '<span class="sr1"><b>' + esc(SV.placeName(info.save.player.position)) + '</b></span><span class="sr2">' + esc(fmtWhen(info.save.timestamp)) + ' · ' + esc(Z('menu.level')) + ' ' + (info.save.player.level || 1) + '</span></button>';
+        '<span class="sr1"><b>' + esc(SV.placeName(info.save.player.position, info.save.player.storyFlags)) + '</b></span><span class="sr2">' + esc(fmtWhen(info.save.timestamp)) + ' · ' + esc(Z('menu.level')) + ' ' + (info.save.player.level || 1) + '</span></button>';
       h += '</div>';
       if (info.clear) h += '<button class="btn btn-gold slotng" data-act="slotNgPlus">★ ' + esc(Z('victory.ngplus')) + '</button>' +
         '<div class="slotnote">' + esc(ja ? J('アイテム・そうび・ゴールドを もって さいしょから', 'アイテム・装備・ゴールドを 持って 最初から') : 'Start over and keep your items, gear and gold') + '</div>';

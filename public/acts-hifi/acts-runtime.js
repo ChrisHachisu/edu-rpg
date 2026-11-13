@@ -384,6 +384,16 @@
         return talk.apply(this, arguments);
       };
     }
+    // The bundle marks the engine map visited (compass.visited.<mapId>) on every town entry. Inside a
+    // hosted town that would tick the HOST off the compass chain, so the hosted town is marked instead.
+    if (typeof s.markTownVisited === 'function') {
+      var visit = s.markTownVisited;
+      s.markTownVisited = function (id) {
+        var v = currentVirtual();
+        if (v && VIRTUAL[v] && VIRTUAL[v].mapId === id) { var p = pstate(); if (p && p.storyFlags) p.storyFlags['compass.visited.' + v] = true; return; }
+        return visit.apply(this, arguments);
+      };
+    }
     s.__actsHifiWrapped = true; stats.wrapped++;
   }
   // Encounter zones. The bundle picks the overworld zone from fixed coordinate rectangles
@@ -411,11 +421,38 @@
     var p = pstate(); if (!p || !p.storyFlags) return;
     Object.keys(VIRTUAL).forEach(function (v) { if (v === id) p.storyFlags[vflag(v)] = true; else delete p.storyFlags[vflag(v)]; });
   }
-  function currentVirtual() {
-    var p = pstate(); if (!p || !p.storyFlags) return null;
-    for (var v in VIRTUAL) if (p.storyFlags[vflag(v)]) return v;
+  function virtualIn(flags, mapId) {
+    if (!flags) return null;
+    for (var v in VIRTUAL) if (flags[vflag(v)] && (!mapId || VIRTUAL[v].mapId === mapId)) return v;
     return null;
   }
+  function currentVirtual() {
+    var p = pstate(); return p ? virtualIn(p.storyFlags) : null;
+  }
+  // ui-overhaul.js names a SAVED place from the record's own flags (a slot written in Cinderwatch
+  // lists as Cinderwatch whatever the live game is doing), and keeps the hosted town with the
+  // defeat-respawn record so "return to the last town" goes back to the town she was really in.
+  window.__QOK_ACTS_HOSTED__ = {
+    current: function () { return currentVirtual(); },
+    of: function (mapId, flags) { return virtualIn(flags, mapId); },
+    name: function (mapId, flags) {
+      var v = virtualIn(flags, mapId);
+      if (v) {
+        // in the bundle's CURRENT language (the title has no player locale of its own yet)
+        var row = M && M.strings && M.strings['map.' + v], q0 = window.__QOK, ja = false, p0 = pstate();
+        if (!row) return null;
+        try { ja = q0 && typeof q0.loc === 'function' ? q0.loc() === 'ja' : !!(p0 && p0.locale === 'ja'); } catch (e) { ja = false; }
+        return ja ? ((p0 && p0.kanjiMode) ? row.jaKanji : row.ja) : row.en;
+      }
+      var q = window.__QOK, z = q && q.Z && (q.Z.__base || q.Z);
+      return z ? z('map.' + mapId) : null;
+    },
+    enter: function (v, state) {
+      var p = state || pstate(); if (!p) return;
+      if (!p.storyFlags) p.storyFlags = {};
+      Object.keys(VIRTUAL).forEach(function (k) { if (k === v) p.storyFlags[vflag(k)] = true; else delete p.storyFlags[vflag(k)]; });
+    }
+  };
   // adapter.js asks which town plate to show for an engine map id.
   window.__QOK_ACTS_TOWN_ART__ = function (mapId) {
     var v = currentVirtual();
@@ -446,7 +483,7 @@
       if (M.strings && M.strings[k] && (r === k || (typeof r === 'string' && r.charAt(0) === '['))) { var t = text(k); if (t) return t; }
       return r;
     };
-    f.__acts = true; q.Z = f;
+    f.__acts = true; f.__base = base; q.Z = f;
   }
 
   // The bundle writes the place name on its HUD with its own i18n function (not window.__QOK.Z), and
