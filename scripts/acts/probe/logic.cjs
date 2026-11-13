@@ -66,11 +66,11 @@ const L = require('./lib.cjs');
   const ik = D('Ironkeep');
   await L.bootSave(page, L.save({ x: ik.exit[0], y: ik.exit[1] + 1, flags: L.allFlags() }));
   const before = await L.multi(page);
-  await page.evaluate(() => { const em = window.__GAME_STATE__.encounterManager; delete em.onStep; window.__RND = Math.random; Math.random = () => 0.001; });
+  // her next real step meets a monster of the zone she stands in (the engine's own startBattle path)
+  await page.evaluate(() => { const em = window.__GAME_STATE__.encounterManager; em.onStep = function (zone) { delete this.onStep; return this.forceEncounter(zone); }; });
   let inBattle = false;
   const DIRS = [[0, 1], [1, 0], [0, -1], [-1, 0]];              // a step is a tile change: keep one heading for a while
-  for (let i = 0; i < 40 && !inBattle; i++) { await page.evaluate(() => { window.__GAME_STATE__.encounterManager.stepsSinceLastEncounter = 999; }); const d = DIRS[(i >> 3) % 4]; await L.stick(page, d[0], d[1], 800); inBattle = await page.evaluate(() => window.__PHASER_GAME__.scene.isActive('BattleScene')); }
-  await page.evaluate(() => { Math.random = window.__RND; });
+  for (let i = 0; i < 40 && !inBattle; i++) { const d = DIRS[(i >> 3) % 4]; await L.stick(page, d[0], d[1], 800); inBattle = await page.evaluate(() => window.__PHASER_GAME__.scene.isActive('BattleScene')); }
   await page.waitForTimeout(1500);
   const during = await L.multi(page);
   rec('battle-drop', inBattle ? (during.objects === 0 && during.textures === 0 && before.objects > 0) : false, { inBattle, before: { objects: before.objects, act1: before.act1 }, during: { objects: during.objects, textures: during.textures, act1: during.act1 } });

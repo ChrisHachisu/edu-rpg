@@ -5891,6 +5891,13 @@
   }
   function owmSupportInputBytes(map){
     var bounds=owmSupportBounds(map); if(!bounds) return null;
+    // Acts 2-5 runtime (window.__QOK_ACTS__, undefined when it is off): outside Act 1's rectangle it
+    // replaces the generator's tiles with its own plates, but act1-overworld-walk.bin was baked over
+    // the generator's (this support reaches 45 cells past the rectangle, and muted water is a
+    // whole-map rule). It hands back the tiles it replaced, so the bake is authenticated against
+    // the map it was baked over and Act 1's field stays the baked one.
+    var actsS=window.__QOK_ACTS__, legacyS=(actsS&&typeof actsS.legacyMap==='function')?actsS.legacyMap(map):null;
+    if(legacyS) map=legacyS;
     var W=map[0].length,H=map.length;
     for(var y=0;y<H;y++) if(!map[y]||map[y].length!==W) return null;
     var muted=buildMutedWater(map,OWM_SUPPORT_THRESHOLD);
@@ -8870,6 +8877,10 @@
     // ACTS 2-5 (acts-runtime.js; nothing else calls these three). The runtime writes its plates into
     // mapData after load, and the overworld field built before that would keep the old terrain.
     refreshMovementField:function(){ owmState=null; },
+    // True once this overworld array has been consolidated and given Act 1's plate (owEnsureMapSetup).
+    // The Acts 2-5 runtime writes its own plates only after that, so the consolidation always runs
+    // over the generator's map, as it does without that runtime.
+    overworldSetupDone:function(map){ return !!map&&owMapRef===map; },
     // One chunk budget for the whole world: how many Act 1 chunks are resident, and a trim that
     // evicts the oldest ones the current window does not touch, so walking away from Act 1 hands its
     // memory to the act she is in instead of holding both windows.

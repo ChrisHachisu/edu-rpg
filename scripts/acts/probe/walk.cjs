@@ -58,7 +58,8 @@ const metricsStop = page => page.evaluate(() => { const P = window.__PERF; P.on 
       row.arrived = r2.ok && r2.why === 'arrived' && Math.abs(p.x - row.end[0]) <= 1 && Math.abs(p.y - row.end[1]) <= 1;
       row.status = m && { resident: m.resident.length, act1: m.act1, objects: m.objects, relocated: m.stats.relocated, blockedSteps: m.stats.blockedSteps || 0, loadErrors: m.stats.loadErrors };
       row.plateDrift = await page.evaluate(() => { const d = window.__QOK_MULTIACT__.plateDrift(); return d && d.cells; });
-      row.withinCap = !!m && m.resident.length + (m.act1 || 0) <= 12;
+      // one budget of 12 with Act 1; past it (Act 1's ring at the seam) only what is on screen may be held
+      row.withinCap = !!m && (m.resident.length + (m.act1 || 0) <= 12 || m.resident.length === m.onScreen);
       await page.waitForTimeout(800);
       row.shotEnd = path.basename(await L.shot(page, 'walk-' + leg.id + '-end'));
     } catch (e) { row.error = String(e).slice(0, 300); }

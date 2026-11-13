@@ -137,8 +137,14 @@
       var hx = Math.floor(x / 48), hy = Math.floor(y / 48);
       return !(hx >= 16 && hx <= 163 && hy >= 218) && fail < 6 && Date.now() - bootAt < 15000;
     }
-    return PENDING[cellAct(Math.floor(x / 48), Math.floor(y / 48))] === 1;
+    var a = cellAct(Math.floor(x / 48), Math.floor(y / 48));
+    if (PENDING[a] === 1) return true;
+    // her act is in but its plate is not on this map array yet (it waits for dq-tiles' own map setup)
+    var s = scene(), A = a > 1 && READY[a] === 1 ? BY[a] : null;
+    return !!(A && A.rt && s && s.mapData && s.mapData.length === GH && A.rt.appliedTo !== s.mapData && holdSince(s.mapData) < 3000);
   }
+  var holdMap = null, holdAt = 0;
+  function holdSince(md) { if (holdMap !== md) { holdMap = md; holdAt = Date.now(); } return Date.now() - holdAt; }
   function raw(P, px, py) {                                       // px,py in WORLD collision px
     px -= P.x0; py -= P.y0;
     if (px < 0 || py < 0 || px >= P.w || py >= P.h) return 0;
@@ -228,7 +234,28 @@
     }
     return true;
   }
-  window.__QOK_ACTS__ = { artCell: artCell, free: free, normal: normal, hold: hold, viewCovered: viewCovered };
+  // THE GENERATOR'S TILES, KEPT FOR ACT 1. dq-tiles authenticates Act 1's baked movement field
+  // (act1-overworld-walk.bin) against the map tiles it was baked over, and that support reaches 45
+  // cells past Act 1's rectangle, into ground this runtime replaces. plate() copies the array once,
+  // after dq-tiles has consolidated it and before the first act plate goes in; dq-tiles asks for
+  // that copy (Act 1's own rectangle is always read live) when it checks the bake.
+  var legacy = { map: null, rows: null };
+  function keepLegacy(md) {
+    var rows = new Array(GH);
+    for (var y = 0; y < GH; y++) rows[y] = Uint8Array.from(md[y]);
+    legacy.map = md; legacy.rows = rows;
+  }
+  function legacyMap(md) {
+    if (legacy.map !== md || !legacy.rows || !CELL) return null;
+    var out = new Array(GH);
+    for (var y = 0, i = 0; y < GH; y++) {
+      var src = legacy.rows[y], row = null, live = md[y];
+      for (var x = 0; x < GW; x++, i++) if (CELL[i] === 1 && src[x] !== live[x]) { row = row || src.slice(); row[x] = live[x]; }
+      out[y] = row || src;
+    }
+    return out;
+  }
+  window.__QOK_ACTS__ = { artCell: artCell, free: free, normal: normal, hold: hold, viewCovered: viewCovered, legacyMap: legacyMap };
 
   // override `block` (e.g. act1-crystal-cave): carved-entrance rock that Act 1's own pack does not
   // know about. It only ever ADDS blocking inside Act 1's rectangle (dq-tiles ANDs it with a1fHeroFree).
@@ -437,7 +464,12 @@
   var rimFor = null;
   function plate(s, fromExit) {
     if (!s.mapData || s.mapData.length !== GH || !CELL) return;
-    var wrote = false, md = s.mapData;
+    var wrote = false, md = s.mapData, dq = window.__DQ_TILES__;
+    // ORDER. dq-tiles consolidates a new overworld array and gives it Act 1's plate on its own
+    // clock (owEnsureMapSetup). Nothing is written here before that: the consolidation must run
+    // over the generator's map, and the copy Act 1's bake is checked against is taken right after.
+    if (!dq || typeof dq.overworldSetupDone !== 'function' || !dq.overworldSetupDone(md)) return;
+    if (legacy.map !== md) keepLegacy(md);
     ACTS.forEach(function (a) {
       if (!a.rt || READY[a.act] !== 1 || a.rt.appliedTo === md) return;
       eachPlateCell(a, function (x, y, t) { md[y][x] = t; });
@@ -595,11 +627,14 @@
     e.dead = true; gpuDrop(e); e.imgs = {};
     delete res[id]; var i = lru.indexOf(id); if (i >= 0) lru.splice(i, 1); stats.destroyed++;
   }
+  var onScreen = {};
   function stream(s, list) {
     var dq = window.__DQ_TILES__, cap = (M.streaming && M.streaming.maxResident) || 12, want = {};
     var a1 = 0; try { a1 = dq.act1Resident(); } catch (e) {}
+    onScreen = {};
     list.forEach(function (w) {
       var id = 'a' + w.a.act + '_' + w.c.id, e = res[id];
+      if (w.vis) onScreen[id] = 1;
       // Over budget (a seam, an overlap): a chunk that is only in the prefetch margin waits. What
       // is on screen is always opened; the underpaint covers the margin meanwhile.
       if (!e && !w.vis && lru.length + a1 >= cap) return;
@@ -803,7 +838,7 @@
   window.__QOK_MULTIACT__ = {
     status: function () {
       var objs = 0, texs = 0; Object.keys(res).forEach(function (id) { objs += res[id].objs.length; texs += res[id].texs.length; });
-      return { manifest: !!M, fail: fail, ready: READY.slice(), pending: PENDING.slice(), resident: lru.slice(), objects: objs, textures: texs,
+      return { manifest: !!M, fail: fail, ready: READY.slice(), pending: PENDING.slice(), resident: lru.slice(), onScreen: lru.filter(function (id) { return onScreen[id]; }).length, objects: objs, textures: texs,
         queue: queue.length, landmarks: Object.keys(lmImgs).length, closedTiles: closed.size, virtual: currentVirtual(),
         act1: (function () { try { return window.__DQ_TILES__.act1Resident(); } catch (e) { return null; } })(),
         stats: JSON.parse(JSON.stringify(stats)) };
