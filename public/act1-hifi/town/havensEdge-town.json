@@ -217,7 +217,7 @@
  "_validator": "VALID",
  "_onlyExit": true,
  "_qa": {
-  "blockedLooksGroundPx": 16848,
-  "walkableLooksObjectPx": 15372
+  "blockedLooksGroundPx": 22212,
+  "walkableLooksObjectPx": 15480
  }
 }

@@ -217,7 +217,7 @@
  "_validator": "VALID",
  "_onlyExit": true,
  "_qa": {
-  "blockedLooksGroundPx": 14400,
+  "blockedLooksGroundPx": 18720,
   "walkableLooksObjectPx": 31464
  },
  "_hostNote": "No map in the frozen bundle: entered as the engine map embersRest (acts-hifi/acts-runtime.js, index `virtual`); shopId is the host's. Texts: acts-hifi/manifest.json `strings`."

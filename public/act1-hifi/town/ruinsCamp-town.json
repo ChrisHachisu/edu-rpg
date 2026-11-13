@@ -89,7 +89,8 @@
     47.5,
     33.5
    ],
-   "_note": "behind the painted counter; the hero talks across it from shopCounter",
+   "_note": "fixed: behind the painted counter, deeper than the talk band; the hero is served at shopCounter on the ground at the counter front",
+   "fixed": true,
    "name": "Shopkeeper",
    "text": "Welcome to my shop! Take a look around."
   }
@@ -184,7 +185,7 @@
  "_validator": "VALID",
  "_onlyExit": true,
  "_qa": {
-  "blockedLooksGroundPx": 15336,
-  "walkableLooksObjectPx": 59256
+  "blockedLooksGroundPx": 19188,
+  "walkableLooksObjectPx": 56772
  }
 }
