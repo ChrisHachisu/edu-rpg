@@ -18,7 +18,11 @@ const TOWN_URL = new URL('./town.html', import.meta.url);
 // roof, and nothing caught either because no player could reach them. OPENED 2026-08-22, on
 // the owner's ask for a play test, now all three have a finished plate, collision derived
 // from that plate, and every actor verified standable and reachable from startCell.
-const TOWN_IDS = new Set(['portSapphire', 'millbrook', 'greenhollow']);
+// ACTS 2-5: acts-hifi/acts-runtime.js (a classic script, so it runs before this module) shares its
+// Set here and fills it from its index, so the nine later towns join once their plates are listed.
+// With that runtime switched off (its kill switch) the global is undefined and this is a fresh Set.
+const TOWN_IDS = window.__QOK_ACTS_TOWN_IDS__ || new Set();
+['portSapphire', 'millbrook', 'greenhollow'].forEach(id => TOWN_IDS.add(id));
 const MANIFEST_URL = new URL('./manifest.json', import.meta.url);
 const SEARCH = new URLSearchParams(location.search);
 const VERIFY = SEARCH.has('act1Verification');
@@ -173,15 +177,18 @@ function townSavePosition(entry) {
   const point = entry?.runtime?.position?.();
   const cellPx = Number(town?.worldPxPerCell);
   const cells = Number(town?.cells);
-  if (!town || town.id !== entry.mapId || !(cellPx > 0) || !(cells > 0)
+  if (!town || town.id !== (entry.artId || entry.mapId) || !(cellPx > 0) || !(cells > 0)
       || !Number.isFinite(point?.x) || !Number.isFinite(point?.y)) return null;
   if (point.x < 0 || point.y < 0 || point.x > cells * cellPx || point.y > cells * cellPx) return null;
   if (typeof entry.runtime.isInsideWalkable === 'function' && !entry.runtime.isInsideWalkable(point)) return null;
-  return { mapId: town.id, x: point.x / cellPx, y: point.y / cellPx, floor: 1 };
+  return { mapId: entry.mapId, x: point.x / cellPx, y: point.y / cellPx, floor: 1 };
 }
 
 function townResumeAt(saved, mapId, firstEntry) {
   if (firstEntry || saved?.position?.mapId !== mapId) return '';
+  // ACTS 2-5: a walk-in through one of that runtime's doors leaves the bundle's interior cell
+  // (8,14) in the save, which is not a resume point. Only that runtime ever sets the marker.
+  if (window.__QOK_ACTS_WALKIN__ === mapId) { window.__QOK_ACTS_WALKIN__ = null; return ''; }
   const x = Number(saved.position.x), y = Number(saved.position.y);
   if (!Number.isFinite(x) || !Number.isFinite(y)) return '';
   return `&at=${encodeURIComponent(`${x},${y}`)}`;
@@ -189,6 +196,13 @@ function townResumeAt(saved, mapId, firstEntry) {
 
 function activeMapId(scene) {
   return scene?.currentMapId || playerState()?.position?.mapId || null;
+}
+// ACTS 2-5: which town PLATE an engine map id shows. Identity for every bundle town. A town the
+// frozen bundle has no map for (Cinderwatch) is hosted on another town's engine map by
+// acts-hifi/acts-runtime.js, which then answers here with the plate's own id. Without that
+// runtime the hook is undefined and this is the identity.
+function townArtId(mapId) {
+  return window.__QOK_ACTS_TOWN_ART__?.(mapId) || mapId;
 }
 
 // Exact shell-cover contract. null means the scene is not one of this adapter's towns; false means
@@ -612,8 +626,8 @@ addEventListener('message', event => {
     const scene = townEntry.scene;
     const town = townEntry.runtime?.town;
     const npc = town?.npcs?.find(candidate => candidate.id === data.npc);
-    if (!townEntry.ready || townEntry.mapId !== data.town || town?.id !== data.town
-        || activeMapId(scene) !== data.town || !npc) return;
+    if (!townEntry.ready || townEntry.artId !== data.town || town?.id !== data.town
+        || activeMapId(scene) !== townEntry.mapId || !npc) return;
     if (typeof scene.handleNpcInteraction === 'function') {
       // The frozen engine owns quest offers/progress/rewards and progressive dialogue.
       // Acknowledge ownership even when busy, so the frame never leaves a second box pending.
@@ -661,8 +675,8 @@ addEventListener('message', event => {
     const scene = townEntry.scene;
     const translate = window.__QOK?.Z;
     const state = window.__QOK?.state?.();
-    if (!townEntry.ready || townEntry.mapId !== data.town
-        || townEntry.runtime?.town?.id !== data.town || activeMapId(scene) !== data.town
+    if (!townEntry.ready || townEntry.artId !== data.town
+        || townEntry.runtime?.town?.id !== data.town || activeMapId(scene) !== townEntry.mapId
         || !['shop', 'healer', 'save'].includes(data.kind)) return;
     suspendTownOverlay();
     try {
@@ -847,7 +861,8 @@ function untranslated(key, value) {
 }
 function bundlePredates(key) {
   const row = BUNDLE_PREDATES[key];
-  if (!row) return null;
+  // ACTS 2-5: texts of a hosted town (acts-hifi manifest `strings`, EN / kana / kanji).
+  if (!row) return window.__QOK_ACTS_TEXT__?.(key) ?? null;
   const st = playerState();
   if (st?.locale !== 'ja') return row.en;
   return st?.kanjiMode ? row.jaKanji : row.ja;
@@ -1098,7 +1113,8 @@ async function enterTown(scene, mapId) {
   const facingWord = HERO_DIR_TO_FACING[scene.heroDir] || 'down';
   const resumeAt = townResumeAt(state, mapId, first);
   const loaded = waitForTownNavigation(token);
-  frame.src = `${TOWN_URL.href}?town=${encodeURIComponent(mapId)}${first ? '&first=1' : ''}${resumeAt}`
+  const artId = townArtId(mapId);
+  frame.src = `${TOWN_URL.href}?town=${encodeURIComponent(artId)}${first ? '&first=1' : ''}${resumeAt}`
     + `&facing=${facingWord}`;
   await loaded;
   // The town runtime has no corridor to align to and no semantic route to commit, so there is
@@ -1111,7 +1127,7 @@ async function enterTown(scene, mapId) {
   }
   if (token !== generation || activeMapId(scene) !== mapId) return;
   if (!win.__ACT1_TOWN__) throw new Error(`town runtime ${mapId} did not become ready`);
-  townEntry = { scene, mapId, runtime: win.__ACT1_TOWN__, ready: true };
+  townEntry = { scene, mapId, artId, runtime: win.__ACT1_TOWN__, ready: true };
   if (first) {
     markTownOpened(mapId);             // only now: the opening was actually rendered
     freshGreenhollowOpeningPending = false;

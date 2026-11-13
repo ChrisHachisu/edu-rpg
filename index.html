@@ -248,6 +248,10 @@
        additive override polls for its runtime hooks and is safe to load here. -->
   <script src="/battle-recovery.js"></script>
   <script type="module" src="/act1-hifi/adapter.js"></script>
+  <!-- Acts 2-5 overworld and towns (docs/plans/2026-11-13-acts2-5-runtime.md). ON by default. Debug
+       kill switch: localStorage 'qok-multiact-hifi' = '0' (or ?multiact=0) makes the script return at
+       its first line, which leaves every hook it would install undefined. -->
+  <script src="/acts-hifi/acts-runtime.js"></script>
   <!-- Orchestral BGM. ADDITIVE: swaps the procedural Tone.js composer for the .m4a loops via
        __QOK.audio, and no-ops if the files or the hook are missing (docs/MUSIC-INTEGRATION-READY.md).
        Loaded AFTER the bundle so window.__QOK exists when it runs. -->

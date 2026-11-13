@@ -301,6 +301,8 @@ export const REWRITES = [
   // the override silently never loading. The assertRewrites() guard below now makes a missed
   // entry impossible rather than merely documented.
   ['src="/music-override.js"', 'src="music-override.js"'],
+  // 2026-11-13: the Acts 2-5 overworld/town runtime (ON by default, kill switch inside the file).
+  ['src="/acts-hifi/acts-runtime.js"', 'src="acts-hifi/acts-runtime.js"'],
 ];
 
 export const sha256 = bytes => createHash('sha256').update(bytes).digest('hex');

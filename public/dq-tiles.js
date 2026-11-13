@@ -3671,6 +3671,14 @@
          &&(wv.x+wv.width)/OW_TILE+_g<=_pb[2]+1&&(wv.y+wv.height)/OW_TILE+_g<=_pb[3]+1) fullPlateWindow=true;
       else key+='_edge';
     }
+    // ACTS 2-5: the same shortcut when the camera view (plus the 3-cell guard) lies wholly on cells
+    // that Act 1's plate, an act's installed art or the open sea owns. Nothing of the window canvas
+    // can be seen there, and outside Act 1 it used to be re-splatted and re-uploaded on every step.
+    var actsHv=window.__QOK_ACTS__;
+    if(!fullPlateWindow&&actsHv&&a1aPlateOwns(scene)&&a1aSpriteMode()
+       &&actsHv.viewCovered(wv.x/OW_TILE-3,wv.y/OW_TILE-3,(wv.x+wv.width)/OW_TILE+3,(wv.y+wv.height)/OW_TILE+3)){
+      fullPlateWindow=true; key+='_acts';
+    }
     var legacyPlateClip=fullPlateWindow?null:a1aLegacyPlateClip(scene,X0,Y0,winW,winH);
     var r2TextureKey=legacyPlateClip?a1aWaterR2Texture(scene):null;
     var useR2Sea=!!(r2TextureKey&&seaState&&seaState.scene===scene&&seaState.key===r2TextureKey
@@ -3745,10 +3753,15 @@
     // a1aPlateCell, NOT a1aArtAt: residency is not the question, the owner's bounds are. Asking
     // whether the chunk is decoded RIGHT NOW put procedural pines and mountains over his art at
     // depth 5 every time the LRU evicted one — a second way the same load thrash became visible.
-    for (var ty=y0;ty<=y1;ty++) for (var tx=x0;tx<=x1;tx++){ if(a1aPlateCell(tx,ty)) continue;
+    // ACTS 2-5 (acts-hifi/acts-runtime.js): an act with installed art claims its cells the same
+    // way. window.__QOK_ACTS__ is undefined when that runtime is switched off, and every use of it
+    // in this file is guarded like this one, so the kill switch restores this file's own behaviour.
+    var actsH=window.__QOK_ACTS__;
+    for (var ty=y0;ty<=y1;ty++) for (var tx=x0;tx<=x1;tx++){ if(a1aPlateCell(tx,ty)||(actsH&&actsH.artCell(tx,ty))) continue;
       var co=cellObjects(map,tx,ty); for(var i=0;i<co.length;i++) objs.push(co[i]); }
     var fl=buildFlowers(map,x0,x1,y0,y1);
-    for(var f=0;f<fl.length;f++){ if(a1aPlateCell(Math.floor(fl[f].x/TILE),Math.floor(fl[f].y/TILE))) continue; objs.push(fl[f]); }
+    for(var f=0;f<fl.length;f++){ var flx=Math.floor(fl[f].x/TILE), fly=Math.floor(fl[f].y/TILE);
+      if(a1aPlateCell(flx,fly)||(actsH&&actsH.artCell(flx,fly))) continue; objs.push(fl[f]); }
     objs.sort(function(a,b){ return a.y-b.y; });
     for (var k=0;k<objs.length;k++){ var o=objs[k];
       if (o.kind==='pine'){
@@ -3911,6 +3924,7 @@
       if(window.__OW_DBG__)window.__OW_DBG__.land++;
       var es=tg[ty]&&tg[ty][tx]; if(es&&es.alpha!==0)es.setAlpha(0);                 // hide engine landmark (alpha, not visible -> survives per-frame culling)
       if(a1aInBounds(tx,ty)) continue;                                                // Act 1 plate: the hi-fi sprite below owns this cell, not the old flat prop
+      if(window.__QOK_ACTS__&&window.__QOK_ACTS__.artCell(tx,ty)) continue;           // Acts 2-5 art: that act's own landmark sprite or carved mouth owns it
       var tk=ensureOwPropTex(scene,name); if(!tk)continue;                            // PNG still loading -> next tick
       if(window.__OW_DBG__)window.__OW_DBG__.tex++;
       var key=tx+'_'+ty, img=owPropImage(scene,key,tk,6);
@@ -5393,6 +5407,18 @@
     var b=A1A_FOREST.stencilBounds; if(!b) return null;
     return { x:Math.round((x-16*TILE)*32/48+(b.minX+b.maxX)/2), y:Math.round((y-218*TILE)*32/48+b.maxY-A1F_DISC_UP) };
   }
+  // The sole disc as numbers, for the Acts 2-5 packs (acts-runtime.js): where it sits relative to
+  // the sprite in 32 px-per-cell collision px, its radius, and the closing and normal radii the
+  // Act 1 test above uses. One source for both, so the two can not drift apart.
+  function a1fSoleSpec(scene){
+    var b=A1A_FOREST.stencilBounds;
+    if(!b&&scene&&scene.hero){ a1fBuildStencil(scene.hero); b=A1A_FOREST.stencilBounds; }
+    if(!b) return null;
+    return b.spec||(b.spec={ dx:(b.minX+b.maxX)/2, dy:b.maxY-A1F_DISC_UP, r:A1F_DISC_R, closeR:A1F_CLOSE_R, normalPad:A1F_NORMAL_PAD });
+  }
+  function a1fActsPixel(x,y){
+    var h=window.__QOK_ACTS__; return !!(h&&h.artCell(Math.floor(x/TILE),Math.floor(y/TILE)));
+  }
   function a1fHeroFree(scene,x,y){
     var pts=a1fBuildStencil(scene.hero); if(!pts) return false;
     if(window.__A1_OW_SOLE_BAR__!==true){
@@ -5516,6 +5542,9 @@
     var terrainRequired=m.ow&&a1fRequiredAt(scene,x,y);
     if(terrainRequired&&(!A1A_FOREST.mode||!a1fReady(scene))) return false;
     if(m.ow&&terrainRequired&&!a1fHeroFree(scene,x,y)) return false;
+    // ACTS 2-5: the same sole disc against that act's own QOKF8COL pack (acts-runtime.js `free`).
+    var actsH=m.ow&&window.__QOK_ACTS__;
+    if(actsH&&!actsH.free(scene,x,y,a1fSoleSpec(scene))) return false;
     if(!a1mWwContactFree(scene,m,x,y)) return false;
     var wx=x, wy=y+a1mFootDy(scene,m);                                       // solver-space px: canonical on overworld
     var fx=wx-m.ox, fy=wy-m.oy;                                              // FIELD px: 0 offset for a dungeon mask
@@ -5734,9 +5763,19 @@
     if(!(n>0)) return null;
     var pres=owmPresence(map,X0,Y0,winW,winH), hasW=!!(pres&1), hasM=!!(pres&2), bounds=act1Paint&&a1aPlateBounds();
     var dist=new Uint16Array(n), INF=60000, i,x,y,v;
+    // ACTS 2-5: under an act's installed art its pixel pack is the terrain authority (a1mFree ->
+    // acts-runtime.js `free`), exactly as the alpha pack is inside Act 1. Its plate tiles 2 and 4
+    // stay in mapData for the engine, but they must not add a second, rounder wall here.
+    var actsH=window.__QOK_ACTS__, actsArt=null, actsAll=0;
+    if(actsH&&(hasW||hasM)){
+      actsArt=new Uint8Array(winW*winH);
+      for(y=0;y<winH;y++) for(x=0;x<winW;x++) if(actsH.artCell(X0+x,Y0+y)){ actsArt[y*winW+x]=1; actsAll++; }
+      if(!actsAll) actsArt=null; else if(actsAll===winW*winH){ hasW=false; hasM=false; }
+    }
     if(!hasW && !hasM){ for(i=0;i<n;i++) dist[i]=INF; }          // open ground: nothing to collide with
     else for(y=0;y<ch;y++){ var wy=woy+y, row=y*cw, ty=(wy/N)|0;
       for(x=0;x<cw;x++){ var wx=wox+x, b=0;
+        if(actsArt&&actsArt[(ty-Y0)*winW+(((wx/N)|0)-X0)]){ dist[row+x]=INF; continue; }
         if(hasW && waterField(map,wx,wy)>=0.50) b=1;             // the SAME 0.50 drawTerrain paints with
         var inAct1=!!(bounds&&(wx/N|0)>=bounds[0]&&(wx/N|0)<=bounds[2]&&(wy/N|0)>=bounds[1]&&(wy/N|0)<=bounds[3]);
         if(!b && hasM && !(act1Paint&&inAct1) && mountainField(map,wx,wy)>=0.50) b=1;
@@ -7018,8 +7057,8 @@
     return { x:-sx/l, y:-sy/l };
   }
   var A1F_LIFTS=[0,0.75,1.5,3];                                              // canonical px tried along the normal
-  function a1fGlide(scene,m,x,y,sx,sy){
-    var nrm=a1fNormal(scene,x,y); if(!nrm) return null;
+  function a1fGlide(scene,m,x,y,sx,sy,nrm0){
+    var nrm=nrm0||a1fNormal(scene,x,y); if(!nrm) return null;
     var d=sx*nrm.x+sy*nrm.y, tx=sx, ty=sy;
     if(d<0){ tx=sx-d*nrm.x; ty=sy-d*nrm.y; }
     var len=Math.sqrt(tx*tx+ty*ty), l=Math.sqrt(sx*sx+sy*sy);
@@ -7036,6 +7075,9 @@
     if(window.__A1_OW_GLIDE__===false) return null;                          // review escape hatch
     var l=Math.sqrt(sx*sx+sy*sy); if(l<1e-6) return null;
     var fg=a1fRequiredAt(scene,x,y)?a1fGlide(scene,m,x,y,sx,sy):null; if(fg) return fg;
+    // ACTS 2-5: the wall normal read from that act's pack, fed to the same glide.
+    var actsH=window.__QOK_ACTS__, an=actsH?actsH.normal(scene,x,y,a1fSoleSpec(scene)):null;
+    if(an){ fg=a1fGlide(scene,m,x,y,sx,sy,an); if(fg) return fg; }
     var ux=sx/l, uy=sy/l, look=Math.max(l,A1M_GLIDE_LOOK), pref=(a1mState&&a1mState.glide)||1;
     for(var i=0;i<A1M_GLIDE_TURN.length;i++){
       var t=A1M_GLIDE_TURN[i], ok=[false,false], vx=[0,0], vy=[0,0];
@@ -7058,6 +7100,8 @@
     // Explicit V8 readiness is a movement gate, not a degraded tile fallback.
     var hxReady=m.ow?owCanonical(hero.x):hero.x, hyReady=m.ow?owCanonical(hero.y):hero.y;
     if(m.ow&&a1fRequiredAt(scene,hxReady,hyReady)&&(!A1A_FOREST.mode||!a1fReady(scene))) return;
+    // ACTS 2-5: hold, exactly like the line above, while the act she stands in is still loading its pack.
+    if(m.ow&&window.__QOK_ACTS__&&window.__QOK_ACTS__.hold(hxReady,hyReady)) return;
     var key=a1mStateKey(scene);
     if(!a1mState || a1mState.scene!==scene || a1mState.key!==key)
       a1mState={ scene:scene, key:key, phase:0, bump:0 };
@@ -7108,7 +7152,7 @@
       // overworld displacement by P preserves the existing physical px/s.
       var total=speed*(0.45+0.55*inp.m)*Math.min(0.12,dtms/1000)/(scaled?OW_SCALE:1);
       // Whole-forest sweeps at one physical pixel or less; old authorities retain their established step.
-      var maxStep=(m.ow&&a1fRequiredAt(scene,x,y))?(1/OW_SCALE):a1mMetric(m,A1M_STEP);
+      var maxStep=(m.ow&&(a1fRequiredAt(scene,x,y)||a1fActsPixel(x,y)))?(1/OW_SCALE):a1mMetric(m,A1M_STEP);
       var n=Math.max(1,Math.ceil(total/maxStep)), sx=inp.x*total/n, sy=inp.y*total/n, k;
       for(k=0;k<n;k++){
         var nx=x+sx, ny=y+sy;
@@ -8823,6 +8867,23 @@
   window.__A1A_PH__=A1A_PH;                                     // verification only: placeholder registry
   window.__DQ_TILES__={ reskin:reskin, ready:terrainReady, dungeonSurfaceReady:dungeonSurfaceReady, retryDungeonSurface:retryDungeonSurface, readyWhy:terrainReadyWhy, cost:terrainCost,
     checkOverworldSpawn:a1mOverworldSpawnCheck,
+    // ACTS 2-5 (acts-runtime.js; nothing else calls these three). The runtime writes its plates into
+    // mapData after load, and the overworld field built before that would keep the old terrain.
+    refreshMovementField:function(){ owmState=null; },
+    // One chunk budget for the whole world: how many Act 1 chunks are resident, and a trim that
+    // evicts the oldest ones the current window does not touch, so walking away from Act 1 hands its
+    // memory to the act she is in instead of holding both windows.
+    act1Resident:function(){ return A1A.lru.length; },
+    // The numbers scripts/acts/check_world.py models the hero with (asserted by the headless probe).
+    soleSpec:function(){ var sc=worldScene(), m=sc&&a1mAnyFor(sc); return sc?{ sole:a1fSoleSpec(sc), footDy:m?a1mFootDy(sc,m):null }:null; },
+    trimAct1Chunks:function(maxKeep){
+      var keep=Object.create(null), out=[], i, drop=A1A.lru.length-Math.max(0,maxKeep|0);
+      if(!(drop>0)) return A1A.lru.length;
+      for(i=0;i<(A1A.win||[]).length;i++) keep[A1A.win[i]]=1;
+      for(i=0;i<A1A.lru.length;i++){ var id=A1A.lru[i];
+        if(drop>0&&!keep[id]){ delete A1A.chunks[id]; a1aDropChunkGpu(id); drop--; } else out.push(id); }
+      A1A.lru=out; return out.length;
+    },
     retryUnderpaint:function(){ return a1aUnderpaintRequired()&&a1aUnderpaintRetry(); },
     overworldSpace:{ scale:OW_SCALE, pitch:OW_TILE, cellCenter:owCellCenter,
       toCanonical:owCanonical, toPhysical:owPhysical,
