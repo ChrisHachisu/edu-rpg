@@ -64,6 +64,17 @@ const QUESTS = ['owlsLesson', 'drakeCargo', 'lunasMap', 'ancientRelic', 'flameCl
           r = await page.evaluate(([E, kind]) => window.__P.walk((a, b) => a === E[0] && b === E[1], kind, { enter: true, maxMs: 45000 }), [E, kind]).catch(e => ({ ok: false, why: 'threw ' + String(e).slice(0, 120) }));
           if (!r.ok && r.why === 'nopath')                        // a floor whose way out crosses lava or a key door
             r = await page.evaluate(([E, kind]) => window.__P.walk((a, b) => a === E[0] && b === E[1], kind, { enter: true, maxMs: 90000, passOpts: { lava: true, keyDoors: true } }), [E, kind]).catch(e => ({ ok: false, why: 'threw ' + String(e).slice(0, 120) }));
+          if (!r.ok && r.why === 'nopath') {                      // the floor is a course of its own (Magma Tunnels' lava course): the way
+            // across is the dungeon's business, not this probe's. Stand her on the cell beside the exit and take the last step for real.
+            // (the engine's arrival cooldown swallows the first transition asked for after a floor loads; her walk would have spent it)
+            const beside = await page.evaluate(([E]) => { const w = window.__PHASER_GAME__.scene.getScene('WorldMapScene');
+              for (const [dx, dy] of [[0, -1], [1, 0], [-1, 0], [0, 1]]) { const x = E[0] + dx, y = E[1] + dy; let ok = false; try { ok = !!w.canMove(x, y); } catch (e) {}
+                if (ok) { w.transitionCooldown = 0; w.heroTileX = x; w.heroTileY = y; w.hero.x = x * 48 + 24; w.hero.y = y * 48 + 24; if (typeof w.updatePosition === 'function') w.updatePosition(); return [x, y]; } }
+              return null; }, [E]);
+            row.placedBesideExit = beside;
+            if (beside) { await page.waitForTimeout(600);
+              r = await page.evaluate(([E, kind]) => window.__P.walk((a, b) => a === E[0] && b === E[1], kind, { enter: true, maxMs: 30000, passOpts: { lava: true, keyDoors: true } }), [E, kind]).catch(e => ({ ok: false, why: 'threw ' + String(e).slice(0, 120) })); }
+          }
         }
         row.outWalk = { ok: r.ok, why: r.why, steps: r.steps };
         await page.waitForTimeout(3500);

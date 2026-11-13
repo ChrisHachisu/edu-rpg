@@ -612,6 +612,7 @@
       img.setDisplaySize(c.width / 16 * sp.pitch, c.height / 16 * sp.pitch);
       if (job.layer.indexOf('crest') === 0) { img.__crest = +job.layer.charAt(5); img.setAlpha(0); crests.push(img); }
       e.objs.push(img); stats.uploads++;
+      if (job.layer === 'ground') e.ground = true;
     } catch (x) { stats.loadErrors++; }
     e.pending--;
   }
@@ -628,7 +629,7 @@
   function gpuDrop(e) {
     e.objs.forEach(function (o) { var i = crests.indexOf(o); if (i >= 0) crests.splice(i, 1); try { o.destroy(); } catch (x) {} });
     e.texs.forEach(function (k) { try { if (e.scene.textures.exists(k)) e.scene.textures.remove(k); } catch (x) {} });
-    e.objs = []; e.texs = [];
+    e.objs = []; e.texs = []; e.ground = false;
   }
   function drop(id) {
     var e = res[id]; if (!e) return;
@@ -670,6 +671,24 @@
     queue.sort(function (p, q) { return (p.layer === 'ground' ? 0 : 1) - (q.layer === 'ground' ? 0 : 1); });
     var n = Date.now() < burstUntil ? 8 : 2;
     while (n-- > 0 && queue.length) upload(s, queue.shift());
+  }
+  // LEAVING A TOWN. The adapter keeps the screen black until Act 1's base chunks under the camera
+  // are on the GPU, and gives up after 5 s. Outside Act 1 there are none to wait for, so every town
+  // of Acts 2-5 would open on five seconds of "Loading...". The same question is answered here for
+  // the act chunks on screen: ready when each has its ground layer up (Act 1's answer still counts
+  // where its chunks are in view too, at a seam).
+  function wrapCoverage() {
+    var orig = window.__A1_VISIBLE_BASE_COVERAGE__;
+    if (typeof orig !== 'function' || orig.__acts) return;
+    function coverage(s) {
+      var r = orig(s), ids = Object.keys(onScreen);
+      if (!r || !ids.length || !s || s.currentMapId !== 'overworld' || (r.visible > 0 && r.missing.length)) return r;
+      var missing = ids.filter(function (id) { var e = res[id]; return !(e && !e.parked && e.ground); });
+      return { ready: !missing.length, visible: r.visible + ids.length, missing: r.missing.concat(missing),
+        reason: missing.length ? 'missing-visible-base' : 'ready', acts: ids.length };
+    }
+    coverage.__acts = true;
+    window.__A1_VISIBLE_BASE_COVERAGE__ = coverage;
   }
   // Off the overworld (town, dungeon, battle) nothing stays on the GPU: every act layer is
   // dropped, as Act 1 drops its own at battle start. The decoded images of the window she left
@@ -827,7 +846,7 @@
     var s = scene(), g = game();
     if (!M || !s) return;
     if (!ovReady) { ovReady = true; ovInit(); }
-    wrap(s); wrapZone(); wrapText(); minimap();
+    wrap(s); wrapZone(); wrapText(); wrapCoverage(); minimap();
     var on = s.currentMapId === 'overworld' && s.sys && s.sys.isActive() && !!s.mapData && s.mapData.length === GH;
     if (on) {
       if (!wasOn) burstUntil = Date.now() + 900;

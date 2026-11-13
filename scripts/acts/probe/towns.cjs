@@ -45,7 +45,11 @@ const FR = '#act1-hifi-preserved-root iframe';
           while (Date.now() < dl) { await page.waitForTimeout(250); gone = await page.evaluate(sel => { const f = document.querySelector(sel); return !(f && f.contentWindow && f.contentWindow.__ACT1_TOWN__); }, FR); if (gone) break; }
           await page.keyboard.up(key);
         }
-        await page.waitForTimeout(3000);
+        // the adapter holds the screen black until the ground under the camera is drawn (5 s limit)
+        let art = null;
+        for (let i = 0; i < 40; i++) { await page.waitForTimeout(250); art = await page.evaluate(() => { const a = window.__ACT1_EXIT_ART__; return a && { status: a.status, reason: a.reason, ms: Math.round(a.elapsedMs || 0) }; }); if (art && art.status !== 'WAITING') break; }
+        row.exitArt = art;
+        await page.waitForTimeout(1500);
         const p = await L.pos(page);
         row.out = { map: p.map, x: p.x, y: p.y, cx: p.cx && +p.cx.toFixed(2), cy: p.cy && +p.cy.toFixed(2) };
         row.exitOnCell = gone && p.map === 'overworld' && p.x === d.exit[0] && p.y === d.exit[1]
@@ -54,7 +58,7 @@ const FR = '#act1-hifi-preserved-root iframe';
         const m = await L.multi(page); row.stats = m && { exits: m.stats.exits, relocated: m.stats.relocated, virtual: m.virtual };
       }
     } catch (e) { row.error = String(e).slice(0, 300); }
-    row.pass = !!(row.entered && row.walkIn && row.exitOnCell);
+    row.pass = !!(row.entered && row.walkIn && row.exitOnCell && row.exitArt && row.exitArt.status === 'READY');
     rows.push(row); console.log(JSON.stringify(row));
   }
   fs.writeFileSync(path.join(L.OUT, 'towns.json'), JSON.stringify({ rows, errors: errors.slice(0, 20) }, null, 1));

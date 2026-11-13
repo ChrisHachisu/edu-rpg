@@ -67,6 +67,10 @@ game is the build 96 game with the bundle's old geography.
   the first plate, and the bake check reads that copy outside Act 1's rectangle
   (`__QOK_ACTS__.legacyMap`). Without this Act 1 had no movement field whenever a plate landed
   first. A sweep (one act per tick) also puts back any plate cell something else rewrote.
+* **Leaving a town.** The adapter holds the screen black until Act 1's base chunks under the
+  camera are drawn, for at most 5 s. Outside Act 1 there are none, so the runtime answers the same
+  question (`__A1_VISIBLE_BASE_COVERAGE__`, wrapped) for the act chunks on screen: ready when
+  each has its ground layer up. Without the wrap every Acts 2-5 town opened on 5 s of "Loading".
 * **Overrides over Act 1** (`public/acts-hifi/overrides/<id>/`, listed in the index):
   `act1-crystal-cave` (carved mouth art, extra rock bits, hides the old sprite) and
   `act1-north-seam` (rock over the canal and cut cliff tops where Act 1 meets Act 5; collision
