@@ -15,7 +15,7 @@ function save(o = {}) {
   return { version: 4, timestamp: Date.now(), player: { name: 'Probe', heroColor: 'gray', level: 50, exp: 0, expToNext: 100,
     hp: 9999, maxHp: 9999, atk: 9999, def: 9999, spd: 999,
     equipment: { weapon: null, armor: null, shield: null, helmet: null, accessory: null }, inventory, gold: 5000,
-    position: { mapId, x, y, floor }, storyFlags: { 'intro.done': true, ...flags }, activeQuests: [], completedQuests: [], questProgress: {},
+    position: { mapId, x, y, floor }, storyFlags: { 'intro.done': true, 'acts.geo2': true, ...flags }, activeQuests: [], completedQuests: [], questProgress: {},
     timerEnabled: false, quizDifficulty: '3', locale: 'en', soundEnabled: false, masterVolume: 0, kanjiMode: false }, playtime: 0, quizStats: {} };
 }
 const BOSSES = ['giantToad', 'serpent', 'stormHarpy', 'phantomStag', 'dragon', 'sandWyrm', 'banditKing', 'pharaoh', 'magmaGolem',

@@ -1,27 +1,39 @@
 #!/usr/bin/env python3
-"""Write public/acts-hifi/manifest.json -- the Acts 2-5 runtime index read by public/acts-hifi/acts-runtime.js.
+"""Write public/acts-hifi/manifest.json (the index public/acts-hifi/acts-runtime.js reads) and each
+installed act's public/act{N}-hifi/plate.json.
 
-PROTOTYPE (2026-10-28, docs/plans/2026-10-28-acts2-5-runtime-wiring.md). Placeholder-only: no
-art is referenced until an act's chunks exist, and the runtime is behind a flag that defaults OFF.
+    python3 scripts/acts/install_runtime.py <export root>     # first: the art and the packs
+    python3 scripts/build_acts_hifi_manifest.py               # then: this
+    python3 scripts/acts/check_world.py                       # then: the gate (must print PASS)
 
-Inputs (all tracked):
-  owner-terrain.json   acts.N.bounds / landmarks   -- the owner's cells, the art's coordinates
-  land-mask.npy        through scripts/acts/acts_common.world() -- composite used for door exits
-  BUNDLE_*  below      -- lifted from the frozen bundle (Xt.overworld.connections and every
-                          interior's targetMap:"overworld" row). maps.ts is NOT the authority:
-                          it disagrees with the bundle for scorchedRuins, shadowCave and magmaTunnels.
+Inputs (all tracked or installed):
+  owner-terrain.json + land-mask.npy   through scripts/acts/acts_common.world(): which act owns a cell
+  public/act{N}-hifi/manifest.json     the landmark cells and gate sides AS PAINTED (the art is the
+                                       authority for where a door is, not the owner's table)
+  public/act{N}-hifi/collision.bin     the pixel pack the hero's soles are tested against
+  BUNDLE below                         lifted from the frozen bundle (Xt.overworld.connections and
+                                       every interior's targetMap:"overworld" row). maps.ts is NOT
+                                       the authority: it disagrees with the bundle for
+                                       scorchedRuins, shadowCave and magmaTunnels.
+  public/acts-hifi/towns.json          hi-fi towns installed under act1-hifi/town/ and the texts of
+                                       a town the bundle has no map for (scripts/acts/install_towns.py)
 
 Only the OVERWORLD side of a connection moves (the Act 1 rule): interiors keep their toX/toY.
+Every exit cell, the `reach` raster and the plates are decided with the TIGHT model of
+scripts/acts/world_lib.py, which blocks at least what the game blocks.
 """
 import json, os, sys
+import numpy as np
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.insert(0, os.path.join(ROOT, 'scripts/acts'))
+os.environ.setdefault('ACTS_VARIANT', 'C')     # the painted world: Act 3's rows win the Act 3/4 overlap
 import acts_common as A  # noqa: E402
+import world_lib as W    # noqa: E402
 
 OUT = os.path.join(ROOT, 'public/acts-hifi/manifest.json')
+TOWNS = os.path.join(ROOT, 'public/acts-hifi/towns.json')
 CHUNK_CELLS = 16          # 512 px chunks at 32 px/cell, the Act 1 base grid
-TINT = {2: '#cfe3f2', 3: '#d9b878', 4: '#8a3b2a', 5: '#3b3740'}
 
 # owner landmark name -> (mapId, door tile, old overworld door (bundle fromX,fromY), arrival inside
 # (toX,toY,toFloor), old overworld return cell (bundle interior->overworld toX,toY))
@@ -62,83 +74,128 @@ BUNDLE = {
 }
 
 
-def exit_cell(cls, x, y):
-    """First walkable cell next to the door, south first (the Act 1 convention), then ring search."""
-    for r in range(1, 4):
-        for dx, dy in ((0, r), (0, -r), (r, 0), (-r, 0), (r, r), (-r, r), (r, -r), (-r, -r)):
-            if 0 <= x + dx < A.GW and 0 <= y + dy < A.GH and cls[y + dy, x + dx] == A.OPEN:
-                return [x + dx, y + dy]
-    return None
+# A town the frozen bundle has no map for is entered as its HOST's engine map (shop stock, healer
+# price and save semantics are the host's) while the adapter shows its own plate, people and exit.
+HOSTED = {'Cinderwatch': ('cinderwatch', 'embersRest', 6, (8, 14, None))}
+TILE_OPEN, TILE_WATER, TILE_RAISED = 0, 2, 4
 
 
-def owner_rle(act_of):
-    """The act-ownership raster (which act's art owns each cell, 0 = none), one run-length
-    string per row: 'act:len,act:len'. acts-runtime.js picks the collision pack from it."""
-    rows = []
-    for r in act_of:
-        runs, cur, n = [], int(r[0]), 0
-        for v in r:
-            v = int(v)
-            if v == cur:
-                n += 1
+def doors_from_art(manifests):
+    rows, missing = [], []
+    for n in (2, 3, 4, 5):
+        m = manifests[n]
+        if not m: continue
+        for L in m.get('landmarks', []):
+            name, at, gate = L['name'], list(L['cell']), L.get('gate', 'south')
+            if name in BUNDLE:
+                map_id, tile, old_from, (tx, ty, tf), old_ret = BUNDLE[name]
+                row = {'act': n, 'name': name, 'mapId': map_id, 'tile': tile, 'at': at, 'gate': gate,
+                       'toX': tx, 'toY': ty, 'oldFrom': list(old_from), 'oldReturn': list(old_ret)}
+            elif name in HOSTED:
+                vid, host, tile, (tx, ty, tf) = HOSTED[name]
+                row = {'act': n, 'name': name, 'mapId': host, 'virtual': vid, 'tile': tile, 'at': at, 'gate': gate,
+                       'toX': tx, 'toY': ty}
             else:
-                runs.append(f'{cur}:{n}'); cur, n = v, 1
-        runs.append(f'{cur}:{n}')
-        rows.append(','.join(runs))
-    return {'width': int(act_of.shape[1]), 'height': int(act_of.shape[0]), 'rows': rows}
+                missing.append(name); continue
+            if tf is not None: row['toFloor'] = tf
+            rows.append(row)
+    return rows, missing
+
+
+def pick_exit(F, lab, L):
+    """The cell an interior puts the hero back on: W.exit_for(), or the nearest cell whose standing
+    point is free and in the same walkable component as the point where the door answers."""
+    fx, fy = W.fire_px(L['at'], L['gate'])
+    comp = int(lab[fy, fx]) if F[fy, fx] else 0
+    want = W.exit_for(L['at'], L['gate'])
+    sgn = 1 if L['gate'] != 'north' else -1
+    cands = [want] + [[L['at'][0] + dx, L['at'][1] + sgn * dy] for dy in (1, 2, 3, 4) for dx in (0, -1, 1, -2, 2)]
+    for c in cands:
+        if not (0 <= c[0] < W.GW and 0 <= c[1] < W.GH): continue
+        sx, sy = W.stand(*c)
+        if F[sy, sx] and (comp == 0 or int(lab[sy, sx]) == comp):
+            return c, (comp or int(lab[sy, sx]))
+    return None, comp
+
+
+def plate_for(n, m, cell, cls, bits, doors):
+    x0, y0, x1, y1 = m['bounds']
+    w, h = x1 - x0 + 1, y1 - y0 + 1
+    frac = bits[:h * W.P, :w * W.P].reshape(h, W.P, w, W.P).mean(axis=(1, 3))
+    wet = np.isin(cls[y0:y1 + 1, x0:x1 + 1], (A.WATER, A.SEA))
+    tiles = np.where(frac >= 1.0, np.where(wet, TILE_WATER, TILE_RAISED), TILE_OPEN).astype(np.int64)
+    tiles[cell[y0:y1 + 1, x0:x1 + 1] != n] = -1                  # another pack answers there (Act 1's rectangle included)
+    for L in doors:
+        for c, t in ((L['at'], L['tile']), (L.get('exit'), TILE_OPEN)):
+            if c and x0 <= c[0] <= x1 and y0 <= c[1] <= y1 and tiles[c[1] - y0, c[0] - x0] != -1:
+                tiles[c[1] - y0, c[0] - x0] = t
+    rows = [''.join('.' if t < 0 else np.base_repr(int(t), 36).lower() for t in r) for r in tiles]
+    return {'act': n, 'bounds': m['bounds'], 'legend': "'.' = not this act's cell, else base-36 engine tile", 'rows': rows}
 
 
 def main():
-    owner = A.owner()
     cls, act_of, _land = A.world()
-    # ACTS_VARIANT=C (the current art): Act 3's rows win the Act 3/4 overlap, and the Act 4 Magma
-    # mouth moves to (187,60) -- acts_common.world()/landmarks() apply both; the draw order follows.
-    variant = os.environ.get('ACTS_VARIANT', '')
-    order = ['1', '2', '4', '5', '3'] if variant in ('A', 'C') else A.ORDER
-    cells = {(L['act'], L['name']): L['cell'] for L in A.landmarks()}
-    acts, landmarks, unmapped = [], [], []
+    order = ['1', '2', '4', '5', '3'] if os.environ['ACTS_VARIANT'] in ('A', 'C') else A.ORDER
+    manifests = {n: W.act_manifest(n) for n in (2, 3, 4, 5)}
+    cell = W.cell_raster(act_of, manifests)
+    doors, missing = doors_from_art(manifests)
+    B = W.stitch(cell, True)
+    F = W.free_space(B, True)
+    lab = W.label(F, True)
+    bad = []
+    for L in doors:
+        L['exit'], L['_comp'] = pick_exit(F, lab, L)
+        if not L['exit']: bad.append(L['name'])
+    door_comps = sorted({L['_comp'] for L in doors if L['_comp']})
+    ys, xs = np.mgrid[0:W.GH, 0:W.GW]
+    sy, sx = np.minimum(ys * W.P + 16 + W.SOLE_DY, W.GH * W.P - 1), xs * W.P + 16
+    reach = (F[sy, sx] > 0) & np.isin(lab[sy, sx], door_comps)
+    reach[cell == 1] = 0                                         # Act 1 relocates its own (act1-world-map.js)
+    acts = []
     for n in (2, 3, 4, 5):
-        a = owner['acts'][str(n)]
-        x0, y0, x1, y1 = a['bounds']
-        cols = -(-(x1 - x0 + 1) // CHUNK_CELLS)
-        rows = -(-(y1 - y0 + 1) // CHUNK_CELLS)
-        acts.append({'act': n, 'bounds': a['bounds'], 'origin': [x0, y0], 'cols': cols, 'rows': rows,
-                     'drawRank': order.index(str(n)), 'tint': TINT[n],
-                     'runtime': None})   # e.g. 'act2-hifi/' once an export (flattened-ground-v0) is installed
-        for name in a['landmarks']:
-            x, y = cells[(n, name)]
-            if name not in BUNDLE:
-                unmapped.append({'act': n, 'name': name, 'at': [x, y]})
-                continue
-            map_id, tile, old_from, (tx, ty, tf), old_ret = BUNDLE[name]
-            row = {'act': n, 'name': name, 'mapId': map_id, 'tile': tile, 'at': [x, y],
-                   'exit': exit_cell(cls, x, y), 'toX': tx, 'toY': ty,
-                   'oldFrom': list(old_from), 'oldReturn': list(old_ret)}
-            if tf is not None:
-                row['toFloor'] = tf
-            landmarks.append(row)
-    # fix5: installed art overrides (e.g. overrides/act1-north-seam/, built by scripts/acts/act1_seam_override.py
-    # and copied in by the lead). Each drawn by acts-runtime.js overrides(); none listed -> nothing drawn.
+        m = manifests[n]
+        if not m: continue
+        x0, y0, x1, y1 = m['bounds']
+        bits = W.read_bin(os.path.join(W.act_dir(n), 'collision.bin'))
+        plate = plate_for(n, m, cell, cls, bits, doors)
+        json.dump(plate, open(os.path.join(W.act_dir(n), 'plate.json'), 'w'), separators=(',', ':'))
+        acts.append({'act': n, 'bounds': m['bounds'], 'origin': [x0, y0],
+                     'cols': -(-(x1 - x0 + 1) // CHUNK_CELLS), 'rows': -(-(y1 - y0 + 1) // CHUNK_CELLS),
+                     'drawRank': order.index(str(n)), 'runtime': f'act{n}-hifi/',
+                     'underpaint': m.get('underpaint'), 'placeholder': bool(m.get('placeholder'))})
+    for L in doors: L.pop('_comp', None)
+    towns = json.load(open(TOWNS)) if os.path.isfile(TOWNS) else {'towns': [], 'strings': {}}
     overrides = []
     odir = os.path.join(ROOT, 'public/acts-hifi/overrides')
     for oid in sorted(os.listdir(odir)) if os.path.isdir(odir) else []:
         meta_p = os.path.join(odir, oid, 'override.json')
         if os.path.isfile(meta_p):
             meta = json.load(open(meta_p)); meta['path'] = f'acts-hifi/overrides/{oid}/'; overrides.append(meta)
-    manifest = {'schema': 'qok-acts-hifi-v1', 'revision': 1, 'placeholder': True,
+    manifest = {'schema': 'qok-acts-hifi-v2', 'revision': 2,
+                'placeholder': any(a['placeholder'] for a in acts),
                 'note': 'Generated by scripts/build_acts_hifi_manifest.py. Act 1 is NOT listed: '
                         'act1-hifi/ + act1-world-map.js own it unchanged.',
-                'pixelsPerCell': A.P, 'chunkCells': CHUNK_CELLS, 'compositeOrder': order, 'variant': variant or None,
+                'pixelsPerCell': W.P, 'chunkCells': CHUNK_CELLS, 'compositeOrder': order, 'variant': os.environ['ACTS_VARIANT'],
+                'sole': {'dy': W.SOLE_DY, 'r': W.DISC_R, 'closeR': W.CLOSE_R, 'footDy': W.FOOT_DY},
                 'streaming': {'preloadCells': 4, 'maxResident': 12},
-                'acts': acts, 'landmarks': landmarks, 'unmapped': unmapped,
-                'owner': owner_rle(act_of),
+                'acts': acts, 'landmarks': doors, 'unmapped': missing,
+                'owner': W.rle(act_of), 'pack': W.rle(cell), 'reach': W.rle(reach.astype(np.uint8)),
                 'overrides': overrides,
-                'towns': []}   # hi-fi town ids whose plates are installed under act1-hifi/town/
+                'towns': [t for t in towns.get('towns', []) if t not in [h[0] for h in HOSTED.values()]],
+                'hosted': [t for t in towns.get('towns', []) if t in [h[0] for h in HOSTED.values()]],
+                'strings': towns.get('strings', {})}
+    if not manifest['hosted']:                                   # its plate is not installed: no door
+        manifest['landmarks'] = [L for L in doors if not L.get('virtual')]
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     with open(OUT, 'w') as f:
-        json.dump(manifest, f, indent=1)
+        json.dump(manifest, f, separators=(',', ':'))
         f.write('\n')
-    print(f'wrote {OUT}: {len(acts)} acts, {len(landmarks)} doors, unmapped={[u["name"] for u in unmapped]}')
+    print(f'wrote {OUT}: {len(acts)} acts, {len(manifest["landmarks"])} doors, unmapped={missing}, '
+          f'reach cells {int(reach.sum())}, walkable components holding a door: {len(door_comps)}')
+    for L in manifest['landmarks']:
+        print(f"  act{L['act']} {L['name'][:34]:34s} {L['mapId']:16s} at {L['at']} {L['gate']:5s} exit {L['exit']}")
+    if bad:
+        print('NO STANDABLE EXIT:', bad); sys.exit(1)
 
 
 if __name__ == '__main__':

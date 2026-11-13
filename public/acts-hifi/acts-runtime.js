@@ -19,7 +19,7 @@
 //               doors for those destinations are switched off; interiors return to the owner's
 //               exit cells; the compass points at the owner's cells; encounter zones follow the
 //               act that owns the ground; a saved position in the old geography is moved to a
-//               safe cell of the same act.
+//               door of the same act.
 // The frozen bundle is not edited. Act 1 keeps act1-hifi/ and act1-world-map.js unchanged.
 (function () {
   'use strict';
@@ -321,15 +321,14 @@
       var r = loadMap.apply(this, arguments);
       // The frozen engine nudges an arrival off any cell its OWN terrain calls blocked, and it
       // judges that before this runtime has plated the new mapData (a town exit swaps the array).
-      // Plate now. A cell the index calls reachable (every door's exit cell is) gets the hero back
-      // on it; any other cell is a position saved in the old geography and is relocated.
+      // Plate now, and put the hero back on a cell the index calls reachable (every exit cell is).
       if (want && M && want[0] >= 0 && want[1] >= 0 && want[0] < GW && want[1] < GH && cellAct(want[0], want[1]) !== 1) {
         try { plate(this, true); } catch (e) {}
-        var wa = cellAct(want[0], want[1]);
-        if (wa > 1 && READY[wa] === 1) {
-          if (!REACH[want[1] * GW + want[0]]) relocate(this, want[0], want[1]);
-          else if (this.heroTileX !== want[0] || this.heroTileY !== want[1]) { place(this, want[0], want[1]); stats.unnudged = (stats.unnudged || 0) + 1; }
-        }
+        var wa = cellAct(want[0], want[1]), n0 = stats.relocated;
+        if (ENTRY_EXIT[want[0] + ',' + want[1]]) markMigrated();   // came out of a door: a position in the new geography
+        else relocate(this, want[0], want[1]);                    // Continue: migrate or repair (see relocate)
+        if (stats.relocated === n0 && wa > 1 && READY[wa] === 1 && REACH[want[1] * GW + want[0]]
+            && (this.heroTileX !== want[0] || this.heroTileY !== want[1])) { place(this, want[0], want[1]); stats.unnudged = (stats.unnudged || 0) + 1; }
       }
       return r;
     };
@@ -415,6 +414,7 @@
       rimFor = md; wrote = true;
     }
     if (wrote) { changed(); if (!fromExit) relocate(s, s.heroTileX, s.heroTileY); }
+    else if (!fromExit && !migrated()) relocate(s, s.heroTileX, s.heroTileY);
   }
   // Cells where mapData no longer matches an act plate (verification only; should stay 0).
   function plateDrift() {
@@ -425,9 +425,16 @@
     });
     return { cells: n, first: first };
   }
-  // SAVE RELOCATION. A position saved in the bundle's old geography can be inside the new sea, a
-  // range or a sealed pocket. The index's `reach` raster marks every cell whose standing point
-  // connects to a door of its act; anything else is moved to the nearest SAFE cell of the same act.
+  // SAVE RELOCATION. Two cases, both answered with a door's exit cell (always standable and
+  // joined to its door: scripts/acts/check_world.py).
+  //   MIGRATION  A save made before this runtime shipped holds an overworld position in the bundle's
+  //              old geography. Wherever that cell falls in the new world, she belongs at the door
+  //              she was nearest to THEN: the nearest old door of her old zone, at its new exit.
+  //              Done once per save; the story flag GEO travels with every later save.
+  //   REPAIR     Any later position the index's `reach` raster does not mark (sea, a range, a sealed
+  //              pocket) goes to the nearest exit of the act that owns the ground.
+  // Act 1's rectangle is never touched: act1-world-map.js relocates its own.
+  var GEO = 'acts.geo2';
   function place(s, x, y) {
     var sp = space(); if (!sp) return;
     s.heroTileX = x; s.heroTileY = y;
@@ -435,20 +442,35 @@
     var p = pstate(); if (p && p.position && p.position.mapId === 'overworld') { p.position.x = x; p.position.y = y; }
     try { if (typeof s.updatePosition === 'function') s.updatePosition(); if (typeof s.updateCamera === 'function') s.updateCamera(); } catch (e) {}
   }
+  function oldZone(x, y) { return x < 160 ? (y > 200 ? 1 : 5) : (y > 200 ? 2 : 3); }   // the bundle's getOverworldZone split
+  function nearestExit(x, y, migrate) {
+    var c = CELL[y * GW + x], act = c > 1 ? c : OWN[y * GW + x], best = null, bd = 1e9;
+    for (var pass = 0; pass < 2 && !best; pass++) {
+      M.landmarks.forEach(function (L) {
+        var ref = migrate ? L.oldFrom : L.exit;
+        if (!L.exit || !ref || (BY[L.act] && BY[L.act].rt && BY[L.act].rt.failed)) return;
+        if (pass === 0 && (migrate ? oldZone(ref[0], ref[1]) !== oldZone(x, y) : L.act !== act)) return;
+        var d = Math.abs(ref[0] - x) + Math.abs(ref[1] - y); if (d < bd) { bd = d; best = L; }
+      });
+    }
+    return best;
+  }
+  function migrated() { var p = pstate(); return !p || !p.storyFlags || !!p.storyFlags[GEO]; }
+  function markMigrated() { var p = pstate(); if (p && p.storyFlags && !p.storyFlags[GEO]) p.storyFlags[GEO] = true; }
   function relocate(s, x, y) {
-    if (!REACH || !M.safe || s.currentMapId !== 'overworld') return;
+    if (!REACH || s.currentMapId !== 'overworld') return;
     if (!(x >= 0 && y >= 0 && x < GW && y < GH)) return;
     var c = CELL[y * GW + x];
-    if (c === 1 || REACH[y * GW + x]) return;                    // Act 1 relocates its own; reachable: keep
-    var act = c > 1 ? c : OWN[y * GW + x], best = null, bd = 1e9;
-    if (act > 1 && READY[act] !== 1) return;
-    Object.keys(M.safe).forEach(function (k) {
-      if (act > 1 && +k !== act) return;
-      M.safe[k].forEach(function (p) { var d = Math.abs(p[0] - x) + Math.abs(p[1] - y); if (d < bd) { bd = d; best = p; } });
-    });
-    if (!best) return;
-    place(s, best[0], best[1]);
-    stats.relocated++; stats.relocatedFrom = [x, y]; stats.relocatedTo = best.slice();
+    if (c === 1) { markMigrated(); return; }
+    var mig = !migrated();
+    if (!mig && REACH[y * GW + x]) return;
+    var act = c > 1 ? c : OWN[y * GW + x];
+    if (!mig && act > 1 && READY[act] !== 1) return;              // her act is not in yet (or fell back to the legacy terrain)
+    var L = nearestExit(x, y, mig);
+    markMigrated();
+    if (!L) return;
+    place(s, L.exit[0], L.exit[1]);
+    stats.relocated++; stats.relocatedFrom = [x, y]; stats.relocatedTo = L.exit.slice(); stats.relocatedHow = mig ? 'migration' : 'repair';
   }
 
   // ---------------------------------------------------------------- art streaming
@@ -697,7 +719,10 @@
       var list = wanted(s);
       underpaint(s, list); stream(s, list); landmarks(s); overrides(s);
       if (g && !g.__actsPrerender) { g.__actsPrerender = true; g.events.on('prerender', animateCrest); }
-    } else if (wasOn) park();
+    } else {
+      if (wasOn) park();
+      if (s.sys && s.sys.isActive() && s.currentMapId && s.currentMapId !== 'overworld') markMigrated();
+    }
     wasOn = on;
   }
   setInterval(tick, 100);

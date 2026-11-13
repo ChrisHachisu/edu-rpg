@@ -8,7 +8,7 @@ Writes <dir>/actN/runtime/ in the layout of scripts/acts/export_runtime.py (form
 flattened-ground-v0), from the owner's class raster alone (acts_common.world()):
   chunks/ground/cK-rJ.webp  64 px flat class colours (the runtime scales any chunk to 16 cells)
   collision.png             32 px per cell, 1 = blocked: every cell that is not open ground,
-                            with each landmark's door cell and the cell at its gate side opened
+                            with each landmark's door cell and a 3 x 3 cell apron at its gate side opened
   manifest.json             bounds, chunks, landmarks (all `carved`: no sprite file needed)
 Nothing here is art. scripts/acts/install_runtime.py installs either this or the real export.
 """
@@ -38,8 +38,10 @@ def export(act, cls, lms):
         x, y = L['cell']
         if not (x0 <= x <= x1 and y0 <= y <= y1): continue
         g = gate_side(cls, x, y); dy = 1 if g == 'south' else -1
-        for yy in (y, y + dy):
-            if y0 <= yy <= y1: blocked[yy - y0, x - x0] = False
+        if y0 <= y <= y1: blocked[y - y0, x - x0] = False
+        for yy in (y + dy, y + 2 * dy, y + 3 * dy):               # an apron wide enough for the sole disc's closing
+            for xx in (x - 1, x, x + 1):
+                if y0 <= yy <= y1 and x0 <= xx <= x1 and cls[yy, xx] != A.SEA: blocked[yy - y0, xx - x0] = False
         if L['act'] == act:
             kind = 'town' if L['name'] in TOWNS else 'dungeon'
             marks.append({'carved': True, 'name': L['name'], 'slug': L['name'].lower().replace(' ', '-').replace("'", ''),
