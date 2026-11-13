@@ -266,6 +266,13 @@
     if (hx === L.at[0] && hy === L.at[1] && p) { hx = p[0]; hy = p[1]; }
     return L.gate === 'north' ? hy <= L.at[1] : hy >= L.at[1];
   }
+  var lastMap = null;
+  function settle(s) {
+    if (s.currentMapId !== 'overworld') return;
+    var at = s.heroTileX + ',' + s.heroTileY, back = RETURN[at];
+    if (back && back.exit) { place(s, back.exit[0], back.exit[1]); stats.exits++; stats.lateExits = (stats.lateExits || 0) + 1; markMigrated(); }
+    else if (cellAct(s.heroTileX, s.heroTileY) !== 1) relocate(s, s.heroTileX, s.heroTileY);
+  }
   function wrap(s) {
     if (!M || !s || s.__actsHifiWrapped) return;
     if (typeof s.checkTransition !== 'function' || typeof s.getCompassTarget !== 'function' || typeof s.loadMap !== 'function') return;
@@ -307,22 +314,32 @@
     // sets heroTileX/Y from the town json's exit and calls loadMap('overworld'). A json that still
     // carries the bundle's frozen exit is remapped here through the door table.
     s.loadMap = function (mapId) {
-      var want = null;
+      var want = null, late = false;
       if (mapId === 'overworld') {
         var at = this.heroTileX + ',' + this.heroTileY, back = RETURN[at], v = currentVirtual();
+        if (!back && ENTRY[at]) back = ENTRY[at];                       // escape crystal used after entering from the door cell itself
         if (v && VIRTUAL[v] && !ENTRY_EXIT[at]) back = VIRTUAL[v];      // a hosted town leaves by its own door
         if (back && back.exit && !ENTRY_EXIT[at]) {
           this.heroTileX = back.exit[0]; this.heroTileY = back.exit[1]; stats.exits++;
           var p = pstate(); if (p && p.position) { p.position.x = back.exit[0]; p.position.y = back.exit[1]; }
         }
+        // The bundle's Haunted Forest maze exits call loadMap FIRST and set the hero's overworld
+        // cell AFTER it, so at this point her cell is still an interior one. settle() below runs
+        // as a microtask, i.e. right after that synchronous code and before the next frame.
+        else if (!back && !ENTRY_EXIT[at] && lastMap && lastMap !== 'overworld') late = true;
         setVirtual(null);
         want = [this.heroTileX, this.heroTileY];
       }
+      lastMap = mapId;
       var r = loadMap.apply(this, arguments);
       // The frozen engine nudges an arrival off any cell its OWN terrain calls blocked, and it
       // judges that before this runtime has plated the new mapData (a town exit swaps the array).
       // Plate now, and put the hero back on a cell the index calls reachable (every exit cell is).
-      if (want && M && want[0] >= 0 && want[1] >= 0 && want[0] < GW && want[1] < GH && cellAct(want[0], want[1]) !== 1) {
+      if (late) {
+        var self = this;
+        try { plate(this, true); } catch (e) {}
+        Promise.resolve().then(function () { settle(self); });
+      } else if (want && M && want[0] >= 0 && want[1] >= 0 && want[0] < GW && want[1] < GH && cellAct(want[0], want[1]) !== 1) {
         try { plate(this, true); } catch (e) {}
         var wa = cellAct(want[0], want[1]), n0 = stats.relocated;
         if (ENTRY_EXIT[want[0] + ',' + want[1]]) markMigrated();   // came out of a door: a position in the new geography
@@ -510,7 +527,9 @@
       for (var row = r0; row <= r1; row++) for (var col = c0; col <= c1; col++) {
         var c = a.rt.byId['c' + col + '-r' + row]; if (!c) continue;         // no file: sea or unowned
         var dx = o[0] + col * cc + cc / 2 - mx, dy = o[1] + row * cc + cc / 2 - my;
-        out.push({ a: a, c: c, col: col, row: row, d: dx * dx + dy * dy });
+        var x0 = o[0] + col * cc, y0 = o[1] + row * cc;               // on screen now, or only inside the prefetch margin?
+        var vis = x0 <= cx1 - pm && x0 + cc >= cx0 + pm && y0 <= cy1 - pm && y0 + cc >= cy0 + pm;
+        out.push({ a: a, c: c, col: col, row: row, d: dx * dx + dy * dy, vis: vis });
       }
     });
     out.sort(function (p, q) { return p.d - q.d; });
@@ -565,8 +584,12 @@
   }
   function stream(s, list) {
     var dq = window.__DQ_TILES__, cap = (M.streaming && M.streaming.maxResident) || 12, want = {};
+    var a1 = 0; try { a1 = dq.act1Resident(); } catch (e) {}
     list.forEach(function (w) {
       var id = 'a' + w.a.act + '_' + w.c.id, e = res[id];
+      // Over budget (a seam, an overlap): a chunk that is only in the prefetch margin waits. What
+      // is on screen is always opened; the underpaint covers the margin meanwhile.
+      if (!e && !w.vis && lru.length + a1 >= cap) return;
       want[id] = 1;
       if (e && e.scene !== s) { drop(id); e = null; }
       if (!e) e = open(s, w);
@@ -581,9 +604,11 @@
     });
     // ONE BUDGET FOR THE WORLD. Act 1's resident chunks and these share `cap`. What this tick did
     // not ask for goes first; then Act 1 is asked to hand back chunks its own window does not touch.
-    var a1 = 0; try { a1 = dq.act1Resident(); } catch (e) {}
     for (var i = 0; i < lru.length && lru.length + a1 > cap;) { if (want[lru[i]]) i++; else drop(lru[i]); }
-    if (lru.length + a1 > cap) { try { dq.trimAct1Chunks(Math.max(0, cap - lru.length)); } catch (e) {} }
+    if (lru.length + a1 > cap) { try { a1 = dq.trimAct1Chunks(Math.max(0, cap - lru.length)); } catch (e) {} }
+    for (var j = list.length - 1; j >= 0 && lru.length + a1 > cap; j--) {      // still over: margin chunks, farthest first
+      if (!list[j].vis) drop('a' + list[j].a.act + '_' + list[j].c.id);
+    }
     // Uploads are metered like Act 1's (one texture upload can cost a frame): ground first and
     // nearest first; a burst only while arriving, when the player is watching a fade anyway.
     queue.sort(function (p, q) { return (p.layer === 'ground' ? 0 : 1) - (q.layer === 'ground' ? 0 : 1); });

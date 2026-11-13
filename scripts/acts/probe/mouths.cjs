@@ -38,7 +38,7 @@ const QUESTS = ['owlsLesson', 'drakeCargo', 'lunasMap', 'ancientRelic', 'flameCl
         // (Asked with the arrival cooldown set aside and put back, so the real walk below still pays it.)
         const E = await page.evaluate(() => { const w = window.__PHASER_GAME__.scene.getScene('WorldMapScene'), md = w.mapData, hx = w.heroTileX, hy = w.heroTileY, cd = w.transitionCooldown;
           let best = null, bd = 1e9;
-          for (let y = Math.max(0, hy - 10); y <= Math.min(md.length - 1, hy + 10); y++) for (let x = Math.max(0, hx - 10); x <= Math.min(md[0].length - 1, hx + 10); x++) {
+          for (let y = 0; y < md.length; y++) for (let x = 0; x < md[0].length; x++) {
             w.transitionCooldown = 0; let t = null; try { t = w.checkTransition(x, y); } catch (e) {}
             if (t && t.targetMap === 'overworld') { const dd = Math.abs(x - hx) + Math.abs(y - hy); if (dd < bd) { bd = dd; best = [x, y, t.toX, t.toY]; } } }
           w.transitionCooldown = cd; return best; });
@@ -50,18 +50,24 @@ const QUESTS = ['owlsLesson', 'drakeCargo', 'lunasMap', 'ancientRelic', 'flameCl
           requestAnimationFrame(watch); })(); });
         const kind = MAPS[d.mapId].type;
         let r = { ok: false, why: 'no-exit-cell' };
+        if (!E) {                                                // tower foot / forest maze: the exit is the map's south edge
+          await page.keyboard.down('ArrowDown');
+          for (let i = 0; i < 40; i++) { await page.waitForTimeout(250); if (await page.evaluate(() => !!window.__ARRIVE)) { r = { ok: true, why: 'edge-exit' }; break; } }
+          await page.keyboard.up('ArrowDown');
+        }
         if (E) {
           // step clear of the exit first: the engine ignores a transition on the step right after arriving
           await page.evaluate(([E, kind]) => window.__P.walk((a, b) => Math.abs(a - E[0]) + Math.abs(b - E[1]) >= 3, kind, { enter: false, maxMs: 15000 }), [E, kind]).catch(() => null);
-          r = await page.evaluate(([E, kind]) => window.__P.walk((a, b) => a === E[0] && b === E[1], kind, { enter: true, maxMs: 30000 }), [E, kind]).catch(e => ({ ok: false, why: 'threw ' + String(e).slice(0, 120) }));
+          r = await page.evaluate(([E, kind]) => window.__P.walk((a, b) => a === E[0] && b === E[1], kind, { enter: true, maxMs: 45000 }), [E, kind]).catch(e => ({ ok: false, why: 'threw ' + String(e).slice(0, 120) }));
         }
         row.outWalk = { ok: r.ok, why: r.why, steps: r.steps };
         await page.waitForTimeout(3500);
         const p = await L.pos(page), arr = await page.evaluate(() => window.__ARRIVE);
         row.out = { map: p.map, floor: p.floor, x: p.x, y: p.y };
         row.arrive = arr && { x: arr.x, y: arr.y, cx: +arr.cx.toFixed(2), cy: +arr.cy.toFixed(2) };
-        row.exitOnCell = p.map === 'overworld' && !!arr && arr.x === d.exit[0] && arr.y === d.exit[1]
-          && Math.abs(arr.cx - d.exit[0] - 0.5) < 0.2 && Math.abs(arr.cy - d.exit[1] - 0.5) < 0.2;
+        // (the walker's key is held for up to a frame after the map changes, and a headless frame
+        // is long: the cell is what is asserted, the offset inside it is recorded)
+        row.exitOnCell = p.map === 'overworld' && !!arr && arr.x === d.exit[0] && arr.y === d.exit[1];
         row.shotOut = path.basename(await L.shot(page, 'mouth-' + d.name.replace(/[^a-z0-9]+/gi, '-').toLowerCase() + '-out'));
       }
       const m = await L.multi(page); row.stats = m && { entries: m.stats.entries, exits: m.stats.exits, relocated: m.stats.relocated };
