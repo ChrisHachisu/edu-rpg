@@ -75,6 +75,25 @@ game is the build 96 game with the bundle's old geography.
   `act1-crystal-cave` (carved mouth art, extra rock bits, hides the old sprite) and
   `act1-north-seam` (rock over the canal and cut cliff tops where Act 1 meets Act 5; collision
   unchanged). Both are drawn over Act 1's layers; Act 1's files are not touched.
+* **Loading order (build 97).** Act 1 never waits on Acts 2-5. The index (80 KB) is asked for at
+  script start. An act's own files (chunk manifest, plate, a 2.4-4.2 MB collision pack) are asked
+  for at once only when she stands in it, when one of its cells is within 40 cells of her on the
+  overworld, or when she is in a town or dungeon whose door leaves her in it. The other acts follow
+  one at a time, nearest first, once the loading cover has lifted and the ground under the camera
+  is drawn. An act that is not in yet still holds a hero who stands in it. While every cell within
+  40 of her is Act 1's, or she is off the overworld, an act arriving rebuilds nothing.
+* **Slow is not failed (build 97).** The first build 97 candidate failed its simulator pass on a
+  Mac at load average 300-430: the failure screen, then ground that never arrived. Four things
+  treated a slow device as a broken one, three of them older than this runtime:
+  the shell cover's 20 s wall-clock cap (`index.html`: now spent in frames, scaled by how long the
+  boot took to reach the title, 180 s hard cap, and the failure is taken down if the world turns
+  out ready, and never while a town entry or the Act 1 underpaint is still inside its own
+  attempts); town entry's single 12 s / 5 s attempt (`adapter.js`: three attempts, the budget
+  doubling); Act 1's loaders, which cancelled a request at its budget and counted that towards
+  giving up, so a chunk that needed 16 s was cancelled and restarted for ever (`dq-tiles.js`
+  `a1aBudget`: a timeout doubles the budget and never counts; an exhausted chunk layer is asked
+  again every 30 s); and this runtime's own requests (a timeout is asked again with a longer
+  budget, a failed chunk image three more times).
 * **Encounter zones** follow the owner raster: Act 2 `iron-mountains`, Acts 3–4
   `scorched-wastes`, Act 5 `demons-threshold`. Act 1's rectangle keeps the bundle's rule.
 
@@ -119,6 +138,15 @@ anything `scripts/regenerate_pins.py` derives from a Mac `dist/`. Never `npm run
 
 `towns.cjs`, `mouths.cjs`, `walk.cjs`, `logic.cjs`, `act1_identity.cjs`. Each seeds a v4 save,
 continues from the title, drives real input and writes JSON plus screenshots to `PROBE_OUT`.
+`resume.cjs` is the build 97 regression probe: Act 1 saves (overworld, inside each town by auto
+save and by a save-point save, inside three dungeons, and a pre-slot single save) continued through
+the real five-slot title; she must resume on the map and cell the record holds, and identically on
+`BASE_URL` when one is given. `THROTTLE=<rate>` runs it with the CPU slowed (no failure screen
+allowed), `SLOW_CHUNKS=<ms>` delays every Act 1 chunk file (the ground must still arrive).
+It also continues a save inside five Acts 2-5 towns (one per act, and hosted Cinderwatch): the
+cover now waits for that town's own plate, as it always has for the three Act 1 towns. The cover's
+state machine has its own unit test, `node --test scripts/boot-cover-world-readiness.test.cjs`
+(frame budget, boot scaling, hard cap, a loader still inside its attempts, self-lifting failure).
 `NODE_PATH=/opt/node-tools/node_modules PROBE_URL=http://127.0.0.1:5182/ node scripts/acts/probe/<probe>.cjs`.
 
 ## 9. Known gaps

@@ -296,12 +296,30 @@
        terrain contract above.
 
        Both caps are safety valves, not tuning: a boot that fails for any reason must end up
-       showing the game's own failure, never a cover that hides it forever. */
+       showing the game's own failure, never a cover that hides it forever.
+
+       SLOW IS NOT FAILED (build 97, the simulator on a Mac at load average 300-430: "The area could
+       not finish loading." over a world that was still arriving). WORLD_CAP was 20 s of wall clock,
+       and a starved device spends that before the first chunk has decoded. Three changes:
+         1. The 20 s are spent in FRAMES. Each animation frame spends at most FRAME_CREDIT of the
+            budget, so a page that is being given two frames a second gets ten times the wall clock
+            and a page running normally gets exactly the 20 s it always had.
+         2. The budget is scaled by how long this boot took to reach the title (titleMs / 4 s, never
+            under 1): a device that needed 40 s to show the title is not going to load a world in 20.
+         3. A loader that is still inside its own bounded attempts and has reported no error (a town
+            entry being tried again, the Act 1 underpaint on a longer budget) is not timed out from
+            here: it either lands or reports the failure itself.
+         4. If the world turns out ready while the failure is showing, the failure is taken down. It
+            was only slow, and nobody should have to press Retry to find that out.
+       WORLD_HARD_CAP still bounds the wait in wall clock whatever the frame rate, and a loader that
+       reports a real error (underpaint, town entry) still fails at once. */
     (function () {
       var cover = document.getElementById('boot-cover');
       if (!cover) return;
-      var TITLE_CAP = 10000, WORLD_CAP = 20000;
+      var TITLE_CAP = 10000, WORLD_CAP = 20000, WORLD_HARD_CAP = 180000, FRAME_CREDIT = 50, TITLE_NORMAL = 4000;
       var phase = 'boot', frames = 0, t0 = Date.now(), worldT0 = 0, reason = 'boot';
+      var worldSpent = 0, lastTickAt = 0, titleMs = 0, slowLifts = 0;
+      function worldCap() { return Math.min(WORLD_HARD_CAP, WORLD_CAP * Math.max(1, titleMs / TITLE_NORMAL)); }
       var STARTUP_RETRY_KEY = 'qok-startup-webgl-retry-v1';
       var startupRetryStorageAvailable = false, startupRetryUsed = false, firstTitleReady = false, titleFrames = 0;
       try {
@@ -336,6 +354,10 @@
         var townIds = {greenhollow:1,millbrook:1,portSapphire:1};
         var town = window.__ACT1_PRESERVED_CUTOVER__;
         if (townIds[wm.currentMapId]) return !!(town && town.townSurfaceReady && town.townSurfaceReady(wm) === true);
+        // The nine later towns are hi-fi towns too once the Acts 2-5 index has listed them (null: not
+        // one of the overlay's towns, so the generic contract below still answers).
+        var later = null; try { later = town && town.townSurfaceReady ? town.townSurfaceReady(wm) : null; } catch (e) { later = null; }
+        if (later === true || later === false) return later;
         if (!dq) return false;
         var authoredDungeons = {coastalReef:1,sunkenCellar:1,whisperingWoodsCave:1,mistyGrotto:1};
         var floor = wm.currentFloor || 1;
@@ -348,6 +370,18 @@
       function worldActive() {
         var g = window.__PHASER_GAME__;
         return !!(g && g.scene && g.scene.isActive && g.scene.isActive('WorldMapScene'));
+      }
+      // A loader still inside its own bounded attempts, with no error reported (SLOW IS NOT FAILED, 3).
+      function stillLoading() {
+        try {
+          var g = window.__PHASER_GAME__, wm = g && g.scene && g.scene.getScene && g.scene.getScene('WorldMapScene');
+          if (!wm || !worldActive()) return false;
+          var town = window.__ACT1_PRESERVED_CUTOVER__, t = town && town.townSurfaceLoading ? town.townSurfaceLoading(wm) : null;
+          if (t === true || t === false) return t;
+          var dq = window.__DQ_TILES__, why = dq && dq.readyWhy ? dq.readyWhy() : null;
+          return !!(why && why.kind === 'ow' && why.inBounds && why.underpaintRequired
+            && (why.underpaint === 'waiting' || why.underpaint === 'loading' || why.underpaint === 'decoded'));
+        } catch (e) { return false; }
       }
       function underpaintFailed() {
         var dq = window.__DQ_TILES__, why;
@@ -362,7 +396,7 @@
       function show() { cover.classList.remove('gone'); }
       function hide() { cover.classList.add('gone'); cover.classList.remove('error'); }
       function beginWorldLoad(why) {
-        reason = why || 'world-load'; frames = 0; worldT0 = Date.now();
+        reason = why || 'world-load'; frames = 0; worldT0 = Date.now(); worldSpent = 0;
         cover.classList.remove('error'); show(); phase = 'world';
       }
       function finishWorld() {
@@ -451,13 +485,14 @@
         if (typeof message === 'string' && message.indexOf('Link Shader failed') !== -1) showStartupShaderError();
       }, true);
       function tick() {
+        var tickAt = Date.now(), dt = lastTickAt ? tickAt - lastTickAt : 0; lastTickAt = tickAt;
         // Observe the first actually ready Title independently of the boot-cover safety cap.
         // TITLE_CAP may lift the cover before a slow Title appears; that does not mean startup
         // succeeded and must not clear the one-retry session marker or admit later shader errors.
         if (!firstTitleReady) {
           titleFrames = titlePainted() ? titleFrames + 1 : 0;
           if (titleFrames >= 3) {
-            firstTitleReady = true;
+            firstTitleReady = true; titleMs = tickAt - t0;
             if (startupRetryUsed) {
               try { sessionStorage.removeItem(STARTUP_RETRY_KEY); startupRetryUsed = false; } catch (e) {}
             }
@@ -480,12 +515,19 @@
         } else if (phase === 'world') {
           var ready = worldReady();
           frames = ready ? frames + 1 : 0;
+          worldSpent += Math.min(dt, FRAME_CREDIT);
           if (underpaintFailed()) failWorld('underpaint');
           else if (frames >= 3) finishWorld();
           // The deadline bounds time spent waiting for readiness. Once every gate is ready,
           // allow the existing three-frame stability check to complete, even if that check
           // starts just after the deadline. A false sample after the deadline still fails now.
-          else if (!ready && Date.now() - worldT0 > WORLD_CAP) failWorld();
+          // Spent in frames and scaled by this boot's own speed: see SLOW IS NOT FAILED above.
+          else if (!ready && ((worldSpent > worldCap() && !stillLoading()) || tickAt - worldT0 > WORLD_HARD_CAP)) failWorld();
+        } else if (phase === 'error') {
+          // It was only slow. The loaders keep asking after the cover gave up on them; when the
+          // world is whole after all, show it. A reported underpaint error is not slowness.
+          frames = (!underpaintFailed() && worldReady()) ? frames + 1 : 0;
+          if (frames >= 3) { slowLifts++; finishWorld(); }
         } else if (phase === 'active') {
           // Battle, menu, shop and dialogue pause the world too. Only title/game-over are save
           // gateways; waiting on every ordinary pause would compete with the battle-return cover.
@@ -494,7 +536,8 @@
         requestAnimationFrame(tick);
       }
       requestAnimationFrame(tick);
-      window.__QOK_COVER__ = { phase: function () { return phase; }, reason: function () { return reason; }, beginWorldLoad: beginWorldLoad, showError: failWorld, ready: worldReady };
+      window.__QOK_COVER__ = { phase: function () { return phase; }, reason: function () { return reason; }, beginWorldLoad: beginWorldLoad, showError: failWorld, ready: worldReady,
+        info: function () { return { titleMs: titleMs, cap: worldCap(), spent: worldSpent, waited: worldT0 ? Date.now() - worldT0 : 0, slowLifts: slowLifts }; } };
     })();
 
     /* ---- The black box -------------------------------------------------------------------------

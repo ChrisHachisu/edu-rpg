@@ -40,15 +40,21 @@
   var ZONE = { 2: 'iron-mountains', 3: 'scorched-wastes', 4: 'scorched-wastes', 5: 'demons-threshold' };
 
   // ---------------------------------------------------------------- loading
-  function xhr(url, type, done, bad) {
-    var r = new XMLHttpRequest(); r.open('GET', url, true); r.timeout = 20000;
+  // SLOW IS NOT BROKEN. A timeout only says the device is busy (a starved simulator, a phone under
+  // memory pressure): bad(true), and the caller asks again with a longer budget, for as long as it
+  // takes. An HTTP error, a network error or a file that does not parse is bad(false) and counts
+  // towards giving up. `slow` is how many times this file has already timed out.
+  function budget(slow) { return Math.min(120000, 20000 * Math.pow(2, Math.min(slow | 0, 3))); }
+  function xhr(url, type, done, bad, slow) {
+    var r = new XMLHttpRequest(); r.open('GET', url, true); r.timeout = budget(slow);
     if (type === 'bin') r.responseType = 'arraybuffer';
     r.onload = function () {
-      if (r.status && r.status >= 400) { bad(); return; }
-      try { done(type === 'bin' ? r.response : JSON.parse(r.responseText)); } catch (e) { bad(); }
+      if (r.status && r.status >= 400) { bad(false); return; }
+      try { done(type === 'bin' ? r.response : JSON.parse(r.responseText)); } catch (e) { bad(false); }
     };
-    r.onerror = r.ontimeout = bad;
-    try { r.send(); } catch (e) { bad(); }
+    r.onerror = function () { bad(false); };
+    r.ontimeout = function () { bad(true); };
+    try { r.send(); } catch (e) { bad(false); }
   }
   function rle(o, Type) {
     var out = new Type(GW * GH);
@@ -63,6 +69,7 @@
     return out;
   }
   function key(t, x, y, f) { return t + '|' + x + '|' + y + '|' + (f || 0); }
+  var idxSlow = 0;
   function loadIndex() {
     var now = Date.now();
     if (M || req || now < nextTry) return;
@@ -85,26 +92,36 @@
       var sr = (m.landmarks || []).filter(function (L) { return L.mapId === 'scorchedRuins'; })[0];
       if (sr) COMPASS['278,95'] = sr;
       (m.towns || []).forEach(function (id) { TOWNS.add(id); });
-      ACTS = m.acts; ACTS.forEach(function (a) { BY[a.act] = a; });
+      // PENDING from here on: an act that is not in yet holds a hero who stands in it (hold(), free()),
+      // whether its files have been asked for or not. schedule() decides when they are.
+      ACTS = m.acts; ACTS.forEach(function (a) { BY[a.act] = a; if (a.runtime) PENDING[a.act] = 1; });
       M = m;
-      ACTS.forEach(loadAct);
-    }, function () { req = false; fail++; nextTry = Date.now() + Math.min(8000, 500 * fail); });
+    }, function (slow) {
+      req = false;
+      if (slow) { idxSlow++; nextTry = Date.now() + 250; stats.slowLoads = (stats.slowLoads || 0) + 1; }
+      else { fail++; nextTry = Date.now() + Math.min(8000, 500 * fail); }
+    }, idxSlow);
   }
   // An act is READY when its chunk manifest, its plate and its collision pack are all in. Until
   // then the hero is held inside it (hold(), like Act 1's own readiness gate); if a file fails for
   // good the act falls back to the legacy terrain and the engine's tile rules instead of hanging.
   function loadAct(a) {
-    if (!a.runtime) return;
+    if (!a.runtime || a.rt) return;
     a.rt = { manifest: null, plate: null, bits: null, byId: {}, tries: 0, failed: false, appliedTo: null };
-    PENDING[a.act] = 1;
+    PENDING[a.act] = 1; stats.actLoads = (stats.actLoads || 0) + 1;
     var left = 3;
     function part(url, type, set) {
-      (function go(n) {
+      (function go(n, slow) {
         xhr(a.runtime + url, type, function (v) {
           try { set(v); } catch (e) { giveUp(); return; }
           if (--left === 0) ready(a);
-        }, function () { stats.loadErrors++; if (n < 4) setTimeout(function () { go(n + 1); }, 400 * (n + 1)); else giveUp(); });
-      })(0);
+        }, function (timedOut) {
+          if (a.rt.failed) return;
+          // a timeout is asked again with a longer budget and never counts; five real errors give up
+          if (timedOut) { stats.slowLoads = (stats.slowLoads || 0) + 1; setTimeout(function () { go(n, slow + 1); }, 250); return; }
+          stats.loadErrors++; if (n < 4) setTimeout(function () { go(n + 1, slow); }, 400 * (n + 1)); else giveUp();
+        }, slow);
+      })(0, 0);
     }
     function giveUp() { if (a.rt.failed) return; a.rt.failed = true; PENDING[a.act] = 0; changed(); }
     part('manifest.json', 'json', function (m) {
@@ -122,12 +139,88 @@
     if (v.getUint16(8, true) !== 1 || v.getUint16(10, true) !== 64 || ppc !== 32 || b.length !== 64 + Math.ceil(w * h / 8)) throw new Error('header');
     return { data: new Uint8Array(buf, 64), w: w, h: h, x0: a.origin[0] * 32, y0: a.origin[1] * 32, act: a.act };
   }
-  function ready(a) { READY[a.act] = 1; PENDING[a.act] = 0; changed(); }
+  function ready(a) { READY[a.act] = 1; PENDING[a.act] = 0; a.rt.readyAt = Date.now(); changed(); }
   // The answer to artCell() just changed: the movement field and the prop overlay were built on the old one.
+  // Both are built per terrain WINDOW (the camera plus a 12-cell border) and only on the overworld.
+  // So nothing is rebuilt while she is off the overworld (loadMap builds them afresh on the way
+  // back, and plate() runs again on that array), nor while every cell within NEAR of her is Act 1's:
+  // no cell this runtime answers for is in her window, and the window she walks into next is built
+  // with the new answers. Deep inside Act 1 an act arriving late costs her nothing, not a hitch.
   function changed() {
-    var dq = window.__DQ_TILES__;
+    var dq = window.__DQ_TILES__, s = scene();
+    if (!s || s.currentMapId !== 'overworld' || !s.mapData || s.mapData.length !== GH) { stats.changedSkipped = (stats.changedSkipped || 0) + 1; return; }
+    if (deepAct1(s)) { stats.changedSkipped = (stats.changedSkipped || 0) + 1; return; }
+    stats.changed = (stats.changed || 0) + 1;
     try { dq.refreshMovementField(); } catch (e) {}
     try { dq.redraw(); } catch (e) {}
+  }
+
+  // ---------------------------------------------------------------- what to load, and when
+  // ACT 1 NEVER WAITS ON ACTS 2-5. The index (80 KB: doors, towns, compass, minimap) is asked for at
+  // once. An act's own files (chunk manifest, plate, a 2.4-4.2 MB collision pack) are asked for
+  //   NOW    when she stands in it, when any of its cells is within NEAR of her on the overworld, or
+  //          when she is inside a town or dungeon whose door leaves her in it;
+  //   LATER  otherwise: one act at a time, nearest first, and only once the world she is in is
+  //          presentable (the shell's loading cover has lifted and the ground under the camera is
+  //          drawn). Build 97's first candidate asked for all four packs at script parse, on top of
+  //          Act 1's own start-up loads; on a starved device that is the last thing it needs.
+  // NEAR is wider than the terrain window's reach (camera half + 12-cell border, about 24 cells).
+  var NEAR = 40, nearKey = null, nearSet = {}, nearDeep = true, quietSince = 0, lastLoadAt = 0;
+  function nearScan(s) {
+    var hx = Math.floor(+s.heroTileX), hy = Math.floor(+s.heroTileY), k = hx + ',' + hy;
+    if (k === nearKey || !CELL) return;
+    nearKey = k; nearSet = {}; nearDeep = true;
+    for (var y = Math.max(0, hy - NEAR), y1 = Math.min(GH - 1, hy + NEAR); y <= y1; y++) {
+      for (var x = Math.max(0, hx - NEAR), x1 = Math.min(GW - 1, hx + NEAR), i = y * GW + x; x <= x1; x++, i++) {
+        var c = CELL[i], o = OWN[i];
+        if (c !== 1) nearDeep = false;
+        if (c > 1) nearSet[c] = 1;
+        if (o > 1) nearSet[o] = 1;
+      }
+    }
+    if (hy - NEAR < 0 || hx - NEAR < 0 || hy + NEAR >= GH || hx + NEAR >= GW) nearDeep = false;
+  }
+  function onOverworld(s) { return !!(s && s.currentMapId === 'overworld' && s.mapData && s.mapData.length === GH); }
+  function deepAct1(s) { if (!CELL || !onOverworld(s)) return false; nearScan(s); return nearDeep; }
+  function needed(s) {
+    var out = {}, g = game();
+    if (!s || !s.currentMapId || !g || !g.scene || !g.scene.isActive) return out;
+    if (!(g.scene.isActive('WorldMapScene') || (g.scene.isPaused && g.scene.isPaused('WorldMapScene')))) return out;   // paused: a battle or a menu over the world
+    if (onOverworld(s)) { nearScan(s); for (var k in nearSet) out[k] = 1; return out; }
+    var v = currentVirtual();
+    (M.landmarks || []).forEach(function (L) { if (L.mapId === s.currentMapId && (!L.virtual || L.virtual === v)) out[L.act] = 1; });
+    return out;
+  }
+  function quiet(s) {
+    var c = window.__QOK_COVER__, g = game(), now = Date.now(), ok = true;
+    try { if (c && c.phase && c.phase() !== 'active') ok = false; } catch (e) {}
+    if (ok && !(g && g.scene && g.scene.isActive && g.scene.isActive('WorldMapScene'))) ok = false;
+    if (!ok) { quietSince = 0; return false; }
+    if (!quietSince) quietSince = now;
+    if (onOverworld(s) && now - quietSince < 20000) {          // (20 s: a chunk that never lands must not hold the rest back for good)
+      var cov = null; try { cov = window.__A1_VISIBLE_BASE_COVERAGE__ ? window.__A1_VISIBLE_BASE_COVERAGE__(s) : null; } catch (e) {}
+      if (cov && cov.visible > 0 && !cov.ready) return false;
+      if (queue.length) return false;
+    }
+    return now - quietSince >= 1000 && now - lastLoadAt >= 400;
+  }
+  function schedule(s) {
+    var todo = ACTS.filter(function (a) { return a.runtime && !a.rt; });
+    if (!todo.length) return;
+    var need = needed(s);
+    todo.forEach(function (a) { if (need[a.act]) loadAct(a); });
+    todo = todo.filter(function (a) { return !a.rt; });
+    if (!todo.length) return;
+    var busy = ACTS.some(function (a) { return a.rt && PENDING[a.act] === 1; });
+    if (busy) { lastLoadAt = Date.now(); return; }
+    if (!quiet(s)) return;
+    var hx = +s.heroTileX || 0, hy = +s.heroTileY || 0, ow = onOverworld(s), cc = M.chunkCells;
+    todo.sort(function (p, q) {                                // nearest rectangle first (off the overworld: index order)
+      function d(a) { if (!ow) return 0; var x0 = a.origin[0], y0 = a.origin[1], x1 = x0 + a.cols * cc, y1 = y0 + a.rows * cc;
+        var dx = hx < x0 ? x0 - hx : hx > x1 ? hx - x1 : 0, dy = hy < y0 ? y0 - hy : hy > y1 ? hy - y1 : 0; return dx + dy; }
+      return d(p) - d(q);
+    });
+    loadAct(todo[0]); lastLoadAt = Date.now();
   }
 
   // ---------------------------------------------------------------- hooks for dq-tiles.js
@@ -143,10 +236,16 @@
     if (PENDING[a] === 1) return true;
     // her act is in but its plate is not on this map array yet (it waits for dq-tiles' own map setup)
     var s = scene(), A = a > 1 && READY[a] === 1 ? BY[a] : null;
-    return !!(A && A.rt && s && s.mapData && s.mapData.length === GH && A.rt.appliedTo !== s.mapData && holdSince(s.mapData) < 3000);
+    return !!(A && A.rt && s && s.mapData && s.mapData.length === GH && A.rt.appliedTo !== s.mapData && holding(s.mapData));
   }
-  var holdMap = null, holdAt = 0;
-  function holdSince(md) { if (holdMap !== md) { holdMap = md; holdAt = Date.now(); } return Date.now() - holdAt; }
+  // Released after 3 s AND 30 of this runtime's own ticks (100 ms each when the device keeps up): on
+  // a starved device three seconds can pass before dq-tiles has even set the new array up, and
+  // letting her walk the unplated array then puts her inside the painted cliffs.
+  var holdMap = null, holdAt = 0, holdTicks = 0, ticks = 0;
+  function holding(md) {
+    if (holdMap !== md) { holdMap = md; holdAt = Date.now(); holdTicks = ticks; }
+    return Date.now() - holdAt < 3000 || ticks - holdTicks < 30;
+  }
   function raw(P, px, py) {                                       // px,py in WORLD collision px
     px -= P.x0; py -= P.y0;
     if (px < 0 || py < 0 || px >= P.w || py >= P.h) return 0;
@@ -817,9 +916,11 @@
     return out;
   }
   // One image file -> decoded off the main thread where the browser can -> queued for upload.
-  function fetchLayer(e, layer, url, depth) {
+  // A failed file is asked for again (three more times, backing off) while its chunk is still wanted:
+  // one error under memory pressure used to leave that chunk on the underpaint until she walked away.
+  function fetchLayer(e, layer, url, depth, n) {
     var im = new Image();
-    e.pending++;
+    if (!n) e.pending++;
     function done() {
       if (e.dead) return;
       e.imgs[layer] = im;
@@ -827,7 +928,11 @@
       queue.push({ e: e, layer: layer, im: im, depth: depth });
     }
     im.onload = function () { if (im.decode) im.decode().then(done, done); else done(); };
-    im.onerror = function () { e.pending--; stats.loadErrors++; };
+    im.onerror = function () {
+      stats.loadErrors++;
+      if (e.dead || (n | 0) >= 3) { e.pending--; return; }
+      setTimeout(function () { if (e.dead) { e.pending--; return; } fetchLayer(e, layer, url, depth, (n | 0) + 1); }, 800 * ((n | 0) + 1));
+    };
     im.src = url;
   }
   function upload(s, job) {
@@ -937,7 +1042,7 @@
   }
   // Underpaint: one coarse image of the whole act under its chunks, so a chunk that has not
   // landed shows blurred ground instead of the sea backing. Loaded for the act she is near only.
-  var under = {};
+  var under = {}, underTries = {};
   function hideUnder() { Object.keys(under).forEach(function (k) { var u = under[k]; if (u.img) { try { u.img.destroy(); } catch (x) {} u.img = null; } }); }
   function underpaint(s, list) {
     var near = {}, sp = space();
@@ -946,7 +1051,10 @@
       var a = near[k], up = a.underpaint, u = under[k]; if (!up) return;
       if (!u) {
         u = under[k] = { im: null, img: null };
-        var im = new Image(); im.onload = function () { u.im = im; }; im.onerror = function () { stats.loadErrors++; }; im.src = a.runtime + up.file;
+        var tries = underTries[k] = (underTries[k] | 0) + 1;
+        var im = new Image(); im.onload = function () { u.im = im; underTries[k] = 0; };
+        im.onerror = function () { stats.loadErrors++; if (tries < 4) setTimeout(function () { if (under[k] === u && !u.im) delete under[k]; }, 1500 * tries); };   // asked again on a later tick
+        im.src = a.runtime + up.file;
       }
       if (u.im && (!u.img || u.img.scene !== s)) {
         var tk = 'acts_under_' + k;
@@ -1073,8 +1181,10 @@
     loadIndex();
     var s = scene(), g = game();
     if (!M || !s) return;
+    ticks++;
     if (!ovReady) { ovReady = true; ovInit(); gatesInit(); }
     wrap(s); wrapZone(); wrapText(); wrapCoverage(); minimap();
+    schedule(s);
     var on = s.currentMapId === 'overworld' && s.sys && s.sys.isActive() && !!s.mapData && s.mapData.length === GH;
     if (on) {
       if (!wasOn) burstUntil = Date.now() + 900;
@@ -1096,7 +1206,7 @@
   window.__QOK_MULTIACT__ = {
     status: function () {
       var objs = 0, texs = 0; Object.keys(res).forEach(function (id) { objs += res[id].objs.length; texs += res[id].texs.length; });
-      return { manifest: !!M, fail: fail, ready: READY.slice(), pending: PENDING.slice(), resident: lru.slice(), onScreen: lru.filter(function (id) { return onScreen[id]; }).length, objects: objs, textures: texs,
+      return { manifest: !!M, fail: fail, ready: READY.slice(), pending: PENDING.slice(), asked: ACTS.map(function (a) { return a.rt ? a.act : 0; }), resident: lru.slice(), onScreen: lru.filter(function (id) { return onScreen[id]; }).length, objects: objs, textures: texs,
         queue: queue.length, landmarks: Object.keys(lmImgs).length, closedTiles: closed.size, virtual: currentVirtual(),
         act1: (function () { try { return window.__DQ_TILES__.act1Resident(); } catch (e) { return null; } })(),
         stats: JSON.parse(JSON.stringify(stats)) };

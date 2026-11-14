@@ -1506,6 +1506,16 @@
      this. The DENSITY GUARD is deliberately NOT retryable: an unexpected density is a decision to
      leave the art off, not a failure, and re-fetching cannot change it. */
   var A1A_REQ_TRIES=6, A1A_REQ_BACKOFF=1500, A1A_REQ_TIMEOUT=5000;
+  // SLOW IS NOT BROKEN (build 97, a simulator on a Mac at load average 300-430: the failure screen,
+  // then ground that stayed black for good). Every loader below gives a request a wall-clock budget
+  // and counts each miss towards "exhausted: quiet". That is right for a file that is not there and
+  // wrong for a device that is merely starved: six timeouts in a row is all it takes there, and
+  // then nothing asks again until the app is relaunched. So a TIMEOUT no longer counts. The same
+  // file is asked for again at once with the budget doubled (x16 at most, never over two minutes),
+  // for as long as it takes. An HTTP error, a decode error or a wrong file still counts, exactly
+  // as before, so a genuinely absent file still goes quiet after its tries.
+  function a1aBudget(base,slow){ return Math.min(120000,base*Math.pow(2,Math.min(slow|0,4))); }
+  function a1aReqSlow(){ A1A.req=false; A1A.reqSlow=(A1A.reqSlow|0)+1; A1A.reqNext=Date.now()+250; }
   function a1aReqFailed(){
     A1A.req=false;                                               // let the next tick re-issue
     A1A.reqFail=(A1A.reqFail|0)+1;
@@ -1567,6 +1577,11 @@
     f.status=f.fail>=A1A_FOREST_TRIES?'error':'waiting';
     f.next=Date.now()+A1A_FOREST_BACKOFF*f.fail; A1A.dirty=true;
   }
+  function a1aForestSlow(){                                      // a timeout: ask again with a longer budget, never 'error'
+    var f=A1A_FOREST;
+    if(f.timer){clearTimeout(f.timer);f.timer=0;}
+    f.request=null; f.bits=null; f.slow=(f.slow|0)+1; f.status='waiting'; f.next=Date.now()+250; A1A.dirty=true;
+  }
   function a1aForestHash(buf){
     if(!window.crypto||!window.crypto.subtle) return Promise.reject(new Error('sha256-unavailable'));
     return window.crypto.subtle.digest('SHA-256',buf).then(function(d){
@@ -1588,7 +1603,7 @@
     var f=A1A_FOREST,s=f.spec;
     if(!f.mode||!s||f.status==='loading'||f.status==='ready'||f.status==='error'||Date.now()<f.next) return;
     var xhr=new XMLHttpRequest(); f.request=xhr; f.status='loading';
-    xhr.open('GET','act1-hifi/'+s.artifact,true); xhr.responseType='arraybuffer'; xhr.timeout=A1A_FOREST_TIMEOUT;
+    xhr.open('GET','act1-hifi/'+s.artifact,true); xhr.responseType='arraybuffer'; xhr.timeout=a1aBudget(A1A_FOREST_TIMEOUT,f.slow);
     xhr.onload=function(){
       if(f.request!==xhr) return;
       if(xhr.status&&(xhr.status<200||xhr.status>=300)){a1aForestFail('collision-http');return;}
@@ -1601,7 +1616,8 @@
         f.bits=bits; f.request=null; f.status='ready'; f.fail=0; f.error=''; A1A.dirty=true;
       }).catch(function(e){ if(f.request===xhr) a1aForestFail(String(e&&e.message||'collision-invalid')); });
     };
-    xhr.onerror=xhr.ontimeout=function(){if(f.request===xhr)a1aForestFail('collision-network');};
+    xhr.onerror=function(){if(f.request===xhr)a1aForestFail('collision-network');};
+    xhr.ontimeout=function(){if(f.request===xhr)a1aForestSlow();};
     try{xhr.send();}catch(e){a1aForestFail('collision-request');}
   }
   function a1aForestRetry(){
@@ -1619,6 +1635,12 @@
     up.request=null; up.image=null; up.fail=(up.fail|0)+1;
     up.status=up.fail>=A1A_UNDERPAINT_TRIES?'error':'waiting';
     up.next=Date.now()+A1A_UNDERPAINT_BACKOFF*up.fail; A1A.dirty=true;
+    return true;
+  }
+  function a1aUnderpaintSlow(up,im){                              // a timeout: ask again with a longer budget, never 'error'
+    if(up.request!==im) return false;
+    if(up.requestTimer){ clearTimeout(up.requestTimer); up.requestTimer=null; }
+    up.request=null; up.image=null; up.slow=(up.slow|0)+1; up.status='waiting'; up.next=Date.now()+250; A1A.dirty=true;
     return true;
   }
   function a1aUnderpaintRequest(){
@@ -1643,9 +1665,9 @@
       // Invalidate before aborting: WebKit may still deliver an event for a request
       // whose source was cleared, and that stale callback must not affect a later retry.
       im.onload=null; im.onerror=null;
-      if(!a1aUnderpaintFail(up,im)) return;
+      if(!a1aUnderpaintSlow(up,im)) return;
       try{ im.src=''; }catch(e){}
-    },A1A_UNDERPAINT_TIMEOUT);
+    },a1aBudget(A1A_UNDERPAINT_TIMEOUT,up.slow));
     try{ im.src='act1-hifi/'+up.spec.src; }
     catch(e){ a1aUnderpaintFail(up,im); }
   }
@@ -1662,9 +1684,9 @@
     im.onerror=function(){if(f.request!==im)return;f.request=null;f.fail=(f.fail|0)+1;
       f.status=f.fail>=6?'error':'waiting';f.next=Date.now()+1200*f.fail;A1A.dirty=true;};
     f.timer=setTimeout(function(){
-      if(f.request!==im)return;im.onload=null;im.onerror=null;f.request=null;f.fail=(f.fail|0)+1;
-      f.status=f.fail>=6?'error':'waiting';f.next=Date.now()+1200*f.fail;A1A.dirty=true;try{im.src='';}catch(e){}
-    },15000);
+      if(f.request!==im)return;im.onload=null;im.onerror=null;f.request=null;f.slow=(f.slow|0)+1;
+      f.status='waiting';f.next=Date.now()+250;A1A.dirty=true;try{im.src='';}catch(e){}   // slow, not broken: see a1aBudget
+    },a1aBudget(15000,f.slow));
     try{im.src='act1-hifi/'+s.src;}catch(e){im.onerror();}
   }
   // V8 movement is authoritative only when the collision pack, matching visible fallback and
@@ -1985,7 +2007,7 @@
     if((A1A.reqFail|0)>=A1A_REQ_TRIES) return;                   // exhausted: quiet, as a 404 should be
     if(Date.now()<(A1A.reqNext||0)) return;                       // backing off
     A1A.req=true;
-    var r=new XMLHttpRequest(); r.open('GET','act1-hifi/manifest.json',true); r.timeout=A1A_REQ_TIMEOUT;
+    var r=new XMLHttpRequest(); r.open('GET','act1-hifi/manifest.json',true); r.timeout=a1aBudget(A1A_REQ_TIMEOUT,A1A.reqSlow);
     r.onload=function(){
       if(r.status&&(r.status<200||r.status>=300)){ a1aReqFailed(); return; }
       try{
@@ -2027,7 +2049,7 @@
       }catch(e){ a1aReqFailed(); }
     };
     r.onerror=function(){ a1aReqFailed(); };
-    r.ontimeout=function(){ a1aReqFailed(); };
+    r.ontimeout=function(){ a1aReqSlow(); };                     // slow, not broken: see a1aBudget
     try{ r.send(); }catch(e){ a1aReqFailed(); }
   }
   // Separate flag from the manifest's: a missing landmark table must not keep the terrain off, and a
@@ -2039,7 +2061,7 @@
     A1A.lmReq=true;
     var fail=function(){ A1A.lmReq=false; A1A.lmFail=(A1A.lmFail|0)+1;
                          A1A.lmNext=Date.now()+A1A_REQ_BACKOFF*A1A.lmFail; };
-    var l=new XMLHttpRequest(); l.open('GET','act1-hifi/landmarks/landmarks.json',true); l.timeout=A1A_REQ_TIMEOUT;
+    var l=new XMLHttpRequest(); l.open('GET','act1-hifi/landmarks/landmarks.json',true); l.timeout=a1aBudget(A1A_REQ_TIMEOUT,A1A.lmSlow);
     l.onload=function(){
       if(l.status&&(l.status<200||l.status>=300)){ fail(); return; }
       try{ var d=JSON.parse(l.responseText);
@@ -2048,7 +2070,7 @@
       }catch(e){ fail(); }
     };
     l.onerror=function(){ fail(); };
-    l.ontimeout=function(){ fail(); };
+    l.ontimeout=function(){ A1A.lmReq=false; A1A.lmSlow=(A1A.lmSlow|0)+1; A1A.lmNext=Date.now()+250; };   // slow, not broken
     try{ l.send(); }catch(e){ fail(); }
   }
   // Where the hero will be standing the first time an overworld window is built, in overworld cells.
@@ -2193,7 +2215,19 @@
   function a1aLayerFailed(rec,k){
     var ld=a1aLd(rec); delete ld.pend[k];
     ld.fail[k]=(ld.fail[k]|0)+1;
-    ld.next[k]=Date.now()+A1A_LOAD_BACKOFF*ld.fail[k];         // linear back-off, not a tight spin
+    // linear back-off, not a tight spin. Once its tries are spent the layer is not abandoned for the
+    // rest of this residency any more: it is asked for every A1A_LOAD_REARM, which a missing file
+    // can not turn into a spin and which lets a chunk that failed under pressure come back.
+    ld.next[k]=Date.now()+(ld.fail[k]>=A1A_LOAD_TRIES?A1A_LOAD_REARM:A1A_LOAD_BACKOFF*ld.fail[k]);
+  }
+  var A1A_LOAD_REARM=30000;
+  function a1aLayerSlow(rec,k){                                  // the budget ran out: slow, not broken (a1aBudget)
+    var ld=a1aLd(rec); delete ld.pend[k];
+    (ld.slow||(ld.slow={}))[k]=((ld.slow&&ld.slow[k])|0)+1;
+    ld.next[k]=Date.now()+250;
+    // The device is slow, not this one file: chunks asked for from now on start with the longer
+    // budget too, instead of each spending 15 s finding that out. Comes back down as loads land fast.
+    A1A.loadSlow=Math.max(A1A.loadSlow|0,Math.min(4,ld.slow[k]));
   }
   var A1A_LOAD_TIMEOUT=15000; // total fetch/decode/fallback budget; a hung load must release its pending flag
   function a1aLoadLayerImg(c,rec,k,job){
@@ -2206,7 +2240,8 @@
   function a1aLoadLayer(c,rec,k){
     var ld=a1aLd(rec), jobs=ld.jobs||(ld.jobs={});
     if(ld.pend[k]) return;
-    var job={timer:0,image:null,controller:null,deadline:Date.now()+A1A_LOAD_TIMEOUT}; jobs[k]=job;
+    var budget=a1aBudget(A1A_LOAD_TIMEOUT,Math.max((ld.slow&&ld.slow[k])|0,A1A.loadSlow|0));
+    var job={timer:0,image:null,controller:null,t0:Date.now(),deadline:Date.now()+budget}; jobs[k]=job;
     ld.pend[k]=true;
     job.active=function(){ return jobs[k]===job&&A1A.chunks[c.id]===rec; };
     function finish(cancel){
@@ -2227,9 +2262,13 @@
         if(src&&typeof src.close==='function') try{ src.close(); }catch(e){}
         return;
       }
+      if((A1A.loadSlow|0)>0&&Date.now()-job.t0<A1A_LOAD_TIMEOUT/3) A1A.loadSlow--;
       finish(false); a1aLayerLanded(c,rec,k,src);
     };
-    job.timer=setTimeout(job.failed,A1A_LOAD_TIMEOUT);
+    job.timer=setTimeout(function(){
+      var current=job.active(); finish(true);
+      if(current) a1aLayerSlow(rec,k);
+    },budget);
     if(!(A1A_SPRITES&&window.createImageBitmap&&window.fetch)){ a1aLoadLayerImg(c,rec,k,job); return; }
     try{
       if(typeof AbortController!=='undefined') job.controller=new AbortController();
@@ -2257,8 +2296,7 @@
     for(var i=0;i<A1A_LAYERS.length;i++){ var k=A1A_LAYERS[i];
       if(!a1aLayerEnabled(k)) continue;
       if(!c[k]||rec[k]||ld.pend[k]) continue;                   // absent from the manifest, landed, or pending
-      if((ld.fail[k]|0)>=A1A_LOAD_TRIES) continue;              // exhausted: stay quiet
-      if(now<(ld.next[k]||0)) continue;                          // still backing off
+      if(now<(ld.next[k]||0)) continue;                          // still backing off (exhausted: A1A_LOAD_REARM apart)
       A1A.reloads=(A1A.reloads|0)+1;                            // surfaced in dq.cost() for the panel
       a1aLoadLayer(c,rec,k);
     }
@@ -2845,6 +2883,12 @@
       finish(false);
       try{ pim.src=''; }catch(e){}                           // abandon a timed-out request after detaching callbacks
     }
+    function slow(){                                         // the budget ran out: slow, not broken (a1aBudget)
+      if(A1A_PH.load!==job) return;
+      clearTimeout(job.timer); pim.onload=null; pim.onerror=null;
+      A1A_PH.load=null; A1A_PH.req=false; A1A_PH.slow=(A1A_PH.slow|0)+1; A1A_PH.next=Date.now()+250;
+      try{ pim.src=''; }catch(e){}
+    }
     pim.onload=function(){
       if(A1A_PH.load!==job) return;                          // an expired attempt cannot install late art
       try{
@@ -2859,7 +2903,7 @@
       }
     };
     pim.onerror=fail;
-    job.timer=setTimeout(fail,A1A_PH_TIMEOUT);
+    job.timer=setTimeout(slow,a1aBudget(A1A_PH_TIMEOUT,A1A_PH.slow));
     try{ pim.src='ui-map/overworld-relief.png'; }catch(e){ fail(); }
   }
   function a1aPlaceholderTick(scene,vis){

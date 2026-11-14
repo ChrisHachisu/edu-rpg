@@ -70,7 +70,7 @@ ACT1_OVERLAY_FILES = {
     # 52a058593efb1b901a42203bfd7ad591024946eb9f6db513a86c3a9babe69e25 -> 129636 B /
     # 3de643bdde7c7dc15ce602d4a3e0529e74df54db21899269a4b1a385d48fc0fe. Frozen game bundle,
     # art, source maps and all other pinned runtime entries remain unchanged.
-    "index.html": (131023, "0ce112082482b81874e634033c64b7ec69ce7a60d03803f7511fc16ab24b85b3"),
+    "index.html": (134747, "43be4727573b9df199dc2a00d135527878783052711a05c7d0988969e1a7f852"),
     # 2026-08-01, owner-authorised: dq-tiles.js now splats AI-generated terrain MATERIALS through
     # its existing continuous-world-pixel drawTerrain, plus a ridged mountain height field,
     # varied shore character and landmark sites derived from mapData. Fallback-safe -- until the
@@ -121,7 +121,7 @@ ACT1_OVERLAY_FILES = {
     # other 12 settle one cell north once; largest rescue nudge 28 px against a 96 px bound).
     # Updated 2026-10-03 for the approved scoped forest+mountain visible-terrain union.
     "dq-tiles.js": (
-        674272, "d8b8c0098442014b869dec37a9ade479d5d1a6a76043c98ad1e53d6c34711daa"),
+        677673, "4cfa266729d74f60d1630e6c7a70d53e5a157bdb1484577dd91e7c65562e4250"),
     # 2026-08-07: THE OVERWORLD'S COLLISION SHAPE, baked -- the overworld's answer to the dungeons'
     # `<floor>-walk.png` above, and as much a shipped authority as they are. Deriving it at runtime
     # was correct and unaffordable: owmBuild() evaluated waterField/mountainField per pixel over a

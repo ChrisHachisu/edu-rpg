@@ -220,6 +220,15 @@ function townSurfaceReady(scene) {
     && suppressedScene === scene);
 }
 
+// For the shell cover's own deadline: true while this town's surface is still being brought up
+// (an attempt is running, or one failed and is about to be tried again) and no failure has been
+// shown. Every wait in enterTown() is bounded, so this ends in `ready` or in `lastError`.
+function townSurfaceLoading(scene) {
+  const mapId = activeMapId(scene);
+  if (!TOWN_IDS.has(mapId)) return null;
+  return !lastError && townSurfaceReady(scene) !== true;
+}
+
 function retryTownSurface(scene) {
   const mapId = activeMapId(scene);
   if (!TOWN_IDS.has(mapId)) return false;
@@ -283,6 +292,7 @@ function releaseRoot() {
   lastError = null;
   townSuspended = false;
   pendingTownExit = null;
+  townEntryFailures = 0;
   window.__ACT1_TOWN_VIEW__ = null;
   root.hidden = true;
   root.dataset.ready = 'false';
@@ -1069,7 +1079,16 @@ function markTownOpened(mapId) {
 // reaches the visible Retry state. Generation polling also settles a superseded navigation; the
 // identity checks in finish() keep its cleanup from removing a newer attempt's handlers.
 const TOWN_NAV_TIMEOUT_MS = 12_000;
-function waitForTownNavigation(token) {
+// SLOW IS NOT FAILED (build 97, a simulator on a Mac at load average 300-430). One missed 12 s
+// navigation, or a town runtime that needed more than its 5 s to come up, went straight to "The area
+// could not finish loading." A failed attempt is now tried again by itself, each time with twice
+// the budget (12 s, 24 s, 48 s; 5 s, 10 s, 20 s), and only the third failure in a row is shown. The
+// count is kept through the player's own Retry, so a device that is slow today is not put back on
+// the short budget, and it is cleared when a town opens or she leaves.
+const TOWN_ENTRY_ATTEMPTS = 3;
+let townEntryFailures = 0;
+function townEntryScale() { return 2 ** Math.min(townEntryFailures, 3); }
+function waitForTownNavigation(token, timeoutMs = TOWN_NAV_TIMEOUT_MS) {
   return new Promise((resolve, reject) => {
     let settled = false;
     const finish = (complete, value) => {
@@ -1092,7 +1111,7 @@ function waitForTownNavigation(token) {
     };
     const timer = setTimeout(() => {
       finish(reject, new Error('town runtime iframe load timed out'));
-    }, TOWN_NAV_TIMEOUT_MS);
+    }, timeoutMs);
     frame.onload = loaded;
     frame.onerror = failed;
     requestAnimationFrame(checkOwner);
@@ -1112,7 +1131,8 @@ async function enterTown(scene, mapId) {
   // the opening (town.html's own precedence), so this is a no-op there.
   const facingWord = HERO_DIR_TO_FACING[scene.heroDir] || 'down';
   const resumeAt = townResumeAt(state, mapId, first);
-  const loaded = waitForTownNavigation(token);
+  const scale = townEntryScale();
+  const loaded = waitForTownNavigation(token, TOWN_NAV_TIMEOUT_MS * scale);
   const artId = townArtId(mapId);
   frame.src = `${TOWN_URL.href}?town=${encodeURIComponent(artId)}${first ? '&first=1' : ''}${resumeAt}`
     + `&facing=${facingWord}`;
@@ -1120,7 +1140,7 @@ async function enterTown(scene, mapId) {
   // The town runtime has no corridor to align to and no semantic route to commit, so there is
   // nothing to wait for beyond its own readiness flag.
   const win = frame.contentWindow;
-  for (let attempt = 0; attempt < 200; attempt += 1) {
+  for (let attempt = 0; attempt < 200 * scale; attempt += 1) {
     if (token !== generation) return;
     if (win.__ACT1_TOWN__) break;
     await new Promise(resolve => setTimeout(resolve, 25));
@@ -1128,6 +1148,7 @@ async function enterTown(scene, mapId) {
   if (token !== generation || activeMapId(scene) !== mapId) return;
   if (!win.__ACT1_TOWN__) throw new Error(`town runtime ${mapId} did not become ready`);
   townEntry = { scene, mapId, artId, runtime: win.__ACT1_TOWN__, ready: true };
+  townEntryFailures = 0;
   if (first) {
     markTownOpened(mapId);             // only now: the opening was actually rendered
     freshGreenhollowOpeningPending = false;
@@ -1235,6 +1256,7 @@ window.__ACT1_PRESERVED_CUTOVER__ = {
   get ready() { return Boolean(entry?.ready); },
   get frame() { return frame; },
   townSurfaceReady,
+  townSurfaceLoading,
   retryTownSurface,
   flushSemanticState() {
     if (entry?.ready) syncSemanticState(entry);
@@ -1284,6 +1306,16 @@ async function tick() {
         // releaseRoot(), Retry, or another town visit owns the frame now. A stale failure must not
         // poison that visit or summon a cover over its current scene.
         if (generation !== attemptGeneration || worldScene() !== scene || activeMapId(scene) !== mapId) return;
+        townEntryFailures += 1;
+        if (townEntryFailures < TOWN_ENTRY_ATTEMPTS) {
+          // Try again with twice the budget (see TOWN_ENTRY_ATTEMPTS). Blank the frame so a hung
+          // navigation settles; tick starts the next attempt once this promise has cleared.
+          console.warn('[act1-hifi-town] entry attempt failed, trying again', error?.message);
+          generation += 1;
+          root.dataset.ready = 'false';
+          frame.src = 'about:blank';
+          return;
+        }
         lastError = error.stack || error.message;
         window.__QOK_COVER__?.showError?.('town-entry');
         console.error('[act1-hifi-town]', error);
