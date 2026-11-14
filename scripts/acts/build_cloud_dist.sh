@@ -8,7 +8,7 @@
 # repository's own dist/ (scripts/build-dist.sh owns that one and needs the Mac's pins).
 #   1. hydrate the frozen runtime baseline (257 files, bundle md5 f7095264...)
 #   2. copy the tracked public/ overrides over it, including the Acts 2-5 folders
-#      (acts-hifi/, act2-hifi/ ... act5-hifi/)
+#      (acts-hifi/, act2-hifi/ ... act5-hifi/, acts-dungeons/)
 #   3. derive the static shell from the tracked index.html (same transform as
 #      scripts/build_static_index.mjs, written to the chosen output instead of ./dist)
 # Serve with: python3 -m http.server 5174 --directory <out>
@@ -22,7 +22,7 @@ python3 scripts/runtime_baseline.py hydrate --output "$OUT"
 for ITEM in act1-dungeon-art act1-dungeon-floors.json act1-hifi act1-overworld-walk.bin act1-world-map.js \
             audio battle-recovery.js fonts materials music-override.js owprops props ui-icons ui-map \
             ui-overhaul.css ui-overhaul.js dq-tiles.js hero-override.js \
-            acts-hifi act2-hifi act3-hifi act4-hifi act5-hifi; do
+            acts-hifi act2-hifi act3-hifi act4-hifi act5-hifi acts-dungeons; do
   [ -e "public/$ITEM" ] || continue
   if [ -d "public/$ITEM" ]; then mkdir -p "$OUT/$ITEM"; cp -R "public/$ITEM/." "$OUT/$ITEM/"; else cp "public/$ITEM" "$OUT/$ITEM"; fi
 done

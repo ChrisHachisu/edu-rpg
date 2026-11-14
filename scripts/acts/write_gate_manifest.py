@@ -9,6 +9,7 @@ name fails the gate as `extra`, and scripts/build-dist.sh copies into dist/ exac
 gate reports as `missing`. So this manifest is both the allowlist and the copy list for:
   public/acts-hifi/**                 index, runtime script, minimap relief, towns table, overrides
   public/act{2,3,4,5}-hifi/**         chunks, plate, collision pack, underpaint, landmark sprites
+  public/acts-dungeons/**             authored Acts 2-5 dungeon floors: manifest, floor pictures, walk masks
   public/act1-hifi/town/**            only the towns listed in public/acts-hifi/towns.json
 runtime_baseline.py loads it (ACTS_HIFI_FILES) and checks size, sha256 and the public/dist twin
 of each entry. Re-run this after any change to those folders; it never touches dist/.
@@ -17,7 +18,7 @@ import hashlib, json, os, sys
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 OUT = os.path.join(ROOT, 'runtime/manifests/acts-hifi-files.json')
-FOLDERS = ['acts-hifi', 'act2-hifi', 'act3-hifi', 'act4-hifi', 'act5-hifi']
+FOLDERS = ['acts-hifi', 'act2-hifi', 'act3-hifi', 'act4-hifi', 'act5-hifi', 'acts-dungeons']
 
 
 def entry(rel):
