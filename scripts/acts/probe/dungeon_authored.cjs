@@ -123,6 +123,20 @@ class Run {
     return x >= cx * CELL - grow && x <= (cx + 1) * CELL + grow && y >= cy * CELL - grow && y <= (cy + 1) * CELL + grow; }; }
   centreIn(N, cx, cy) { const c = N.cell; const fn = (gx, gy) => { const x = (gx + .5) * c, y = (gy + .5) * c - N.footDy;      // her CENTRE in the cell fires stairs and mouths
     return x >= cx * CELL + 6 && x <= (cx + 1) * CELL - 6 && y >= cy * CELL + 4 && y <= (cy + 1) * CELL - 4; }; fn.way = cx + ',' + cy; return fn; }
+  // Walk up to an object the way a player does: stand square on one of its four sides, then push straight at it.
+  // Ends in contact (the prompt pill is up, or the bump already opened / started it).
+  async approach(N, cx, cy, pushMs = 700) {
+    const c = N.cell, sides = [[(cx + .5) * CELL, (cy + 1) * CELL + 8, 0, -1], [cx * CELL - 8, (cy + .5) * CELL, 1, 0], [(cx + 1) * CELL + 8, (cy + .5) * CELL, -1, 0], [(cx + .5) * CELL, cy * CELL - 8, 0, 1]];
+    let last = { ok: false, why: 'no-side' };
+    for (const [px, py, dx, dy] of sides) {
+      const gx = Math.floor(px / c), gy = Math.floor(py / c); if (!N.rows[gy] || N.rows[gy][gx] !== '1') continue;
+      const g = await this.go(N, (x, y) => x === gx && y === gy, { tol: 4 }); last = g;
+      if (!g.ok || g.why !== 'arrived') { if (g.why === 'message' || g.why === 'scene') return g; continue; }
+      await this.ev(([dx, dy, ms]) => window.__D2P.push(dx, dy, ms, () => !!window.__D2P.prompt()), [dx, dy, pushMs]); await this.page.waitForTimeout(250);
+      return { ok: true, why: 'contact', side: [dx, dy] };
+    }
+    return last;
+  }
   async bump(cx, cy, ms = 1500) {                                   // push her soles at the cell's centre
     const s = await this.st(); const vx = (cx + .5) * CELL - s.hx, vy = (cy + .5) * CELL - (s.hy + 31);
     return this.ev(([vx, vy, ms]) => window.__D2P.push(vx, vy, ms), [vx, vy, ms]);
@@ -242,13 +256,12 @@ async function runDungeon(spec) {
       const chests = FL.assets.filter(a => a.kind === 'chest');
       for (const c of chests) {
         await R.ev(() => window.__D2P.clearMsgs());
-        const g = await R.go(N, R.nearCell(N, c.x, c.y, 16));
+        const g = await R.approach(N, c.x, c.y);
         const prompt = await R.ev(() => window.__D2P.prompt());
-        let opened = false, how = [];                               // the prompt pill when it is up (the phone's way), else a bump
-        for (let k = 0; k < 5 && !opened; k++) { const up = await R.ev(() => window.__D2P.prompt());
-          if (up && k % 2 === 0) { await R.tapPrompt(); how.push('tap'); } else { await R.bump(c.x, c.y, 800); how.push('bump'); } await page.waitForTimeout(350);
-          opened = await R.ev(([x, y]) => window.__D2P.tile(x, y) === 8, [c.x, c.y]);
-          if (!opened && k >= 2) await R.go(N, R.nearCell(N, c.x, c.y, 16)); }
+        let opened = await R.ev(([x, y]) => window.__D2P.tile(x, y) === 8, [c.x, c.y]); const how = opened ? ['walked into it'] : [];
+        for (let k = 0; k < 3 && !opened; k++) { const up = await R.ev(() => window.__D2P.prompt());   // the prompt pill (the phone's way), else walk into it
+          if (up) { await R.tapPrompt(); how.push('tap'); } else { await R.approach(N, c.x, c.y, 900); how.push('push'); } await page.waitForTimeout(350);
+          opened = await R.ev(([x, y]) => window.__D2P.tile(x, y) === 8, [c.x, c.y]); }
         const msg = await R.ev(() => window.__D2P.msgs().slice(-1)[0] || '');
         const flag = await R.ev(k => !!window.__D2P.flags()[k], `chest.${id}.f${f}.${c.x}.${c.y}`);
         rec(id, `f${f}: chest (${c.x},${c.y}) opens`, opened && flag, { g: g.why, prompt, how, msg: msg.replace(/\n/g, ' | '), st: opened ? undefined : await R.st() });
@@ -257,7 +270,7 @@ async function runDungeon(spec) {
       }
       // crystals
       for (const c of FL.assets.filter(a => a.kind === 'save')) {
-        const g = await R.go(N, R.nearCell(N, c.x, c.y, 14)); await page.waitForTimeout(400);
+        const g = await R.approach(N, c.x, c.y); await page.waitForTimeout(400);
         const prompt = await R.ev(() => window.__D2P.prompt());
         if (f === 1) { const act = await R.ev(k => !!window.__D2P.flags()[k], `entrance.crystal.${id}.activated`);
           rec(id, 'f1: the entrance crystal is dormant until a deeper one is touched (no prompt)', act ? 'SKIP' : (g.ok && prompt === null), { g: g.why, prompt }); await R.shot('f1-crystal'); continue; }
@@ -270,12 +283,12 @@ async function runDungeon(spec) {
         rec(id, `f${f}: crystal heals and becomes a warp target (no manual save)`, tapped && picked && after.hp === after.max && !!fl[`warp.${id}.f${f}`] && !!fl[`entrance.crystal.${id}.activated`],
           { prompt, menu, after, warp: !!fl[`warp.${id}.f${f}`] });
         if (!hpTest && f === floors[floors.length - 1]) { hpTest = true;      // warp to the entrance and back
-          await R.go(N, R.nearCell(N, c.x, c.y, 14)); await page.waitForTimeout(300); await R.tapPrompt(); await R.tapCrystal(1); await page.waitForTimeout(2600); await page.evaluate(PILOT); await R.settle();
+          await R.approach(N, c.x, c.y); await page.waitForTimeout(300); await R.tapPrompt(); await R.tapCrystal(1); await page.waitForTimeout(2600); await page.evaluate(PILOT); await R.settle();
           let w1 = await R.st(); const want = F1.land.entrance;
           rec(id, `f${f}: "warp to entrance" lands beside the entrance crystal on floor 1`, w1.map === id && w1.floor === 1 && want && Math.abs(w1.x - want.x) <= 1 && Math.abs(w1.y - want.y) <= 1, { at: [w1.x, w1.y, w1.floor], want });
           await R.shot('f1-warped-entrance');
           const ec = F1.assets.find(a => a.kind === 'save');
-          if (ec) { await R.go(N1, R.nearCell(N1, ec.x, ec.y, 14)); await page.waitForTimeout(400); const pr = await R.ev(() => window.__D2P.prompt()); await R.tapPrompt(); const menu1 = await R.ev(() => window.__D2P.crystal()); await R.shot('f1-entrance-crystal-menu');
+          if (ec) { await R.approach(N1, ec.x, ec.y); await page.waitForTimeout(400); const pr = await R.ev(() => window.__D2P.prompt()); await R.tapPrompt(); const menu1 = await R.ev(() => window.__D2P.crystal()); await R.shot('f1-entrance-crystal-menu');
             const n = menu1 ? menu1.length - 2 : -1;                                 // last warp option = the deepest crystal
             if (n >= 0) await R.tapCrystal(n); await page.waitForTimeout(2600); await page.evaluate(PILOT); await R.settle();
             w1 = await R.st();
@@ -307,10 +320,13 @@ async function runDungeon(spec) {
         }
       } else {
         const b = FL.assets.find(a => a.kind === 'boss');
-        await R.go(N, R.nearCell(N, b.x, b.y, 20)); await page.waitForTimeout(500); await R.shot(`f${f}-boss`);
+        await R.go(N, R.nearCell(N, b.x, b.y, 40)); await page.waitForTimeout(500); await R.shot(`f${f}-boss`);
+        const ap = await R.approach(N, b.x, b.y);
         const pr = await R.ev(() => window.__D2P.prompt());
         let started = false;
-        for (let k = 0; k < 4 && !started; k++) { if (k % 2) await R.tapPrompt(); else await R.bump(b.x, b.y, 900);
+        for (let k = 0; k < 4 && !started; k++) {                  // first by walking into it (the engine's bump, and the module's bump hook), then by the prompt pill
+          if (k === 0 && ap.side) await R.ev(([dx, dy]) => window.__D2P.push(dx, dy, 900), ap.side);
+          else if (await R.ev(() => window.__D2P.prompt())) await R.tapPrompt(); else if (!(await R.st()).msg) await R.approach(N, b.x, b.y, 900);
           for (let j = 0; j < 12 && !started; j++) { await R.ev(() => window.__D2P.tapKey('z')); await page.waitForTimeout(300); started = await page.evaluate(() => window.__PHASER_GAME__.scene.isActive('BattleScene')); } }
         const fr = started ? await R.fight() : { entered: false };
         await page.waitForTimeout(2500); await R.ev(() => window.__D2P.dismiss(20));
@@ -320,7 +336,9 @@ async function runDungeon(spec) {
         await page.waitForTimeout(1500); await R.shot(`f${f}-after-boss`);
         // the way out: the boss's own cell becomes the exit; if this visit still holds the marker, leave by the crystal and the mouth
         s = await R.st(); let t = await R.ev(([x, y]) => window.__D2P.tile(x, y), [b.x, b.y]); let how = 'boss-cell tile ' + t;
-        if (t === 10 || t === 12) { await R.go(N, R.centreIn(N, b.x, b.y), { hold: 900 }); }
+        if (t === 10 || t === 12) {                                  // the way out opened where she stands: let go, then push into it
+          await page.waitForTimeout(400); await R.bump(b.x, b.y, 1500); how += ' -> pushed into it';
+          if ((await L.pos(page)).map === id) await R.go(N, R.centreIn(N, b.x, b.y), { hold: 900 }); }
         else { const g = await R.bump(b.x, b.y, 2500); how += ' -> pushed'; await page.waitForTimeout(800); }
         await page.waitForTimeout(2000); p = await L.pos(page);
         if (p.map !== 'overworld') { how += ' -> walk out by the stairs';
@@ -332,7 +350,7 @@ async function runDungeon(spec) {
       }
     }
     const hk = await page.evaluate(() => window.__d2hook);
-    rec(id, 'mechanic module API: load/unload/tick/input/free/step/interact hooks all fired' + (smoke ? '' : ', bump too'),
+    rec(id, 'mechanic module API: load/unload/tick/input/free/step/interact hooks all fired' + (smoke ? '' : ', bump too (walking into the boss)'),
       !!hk && hk.load > 0 && hk.unload > 0 && hk.tick > 30 && hk.input > 30 && hk.free > 100 && hk.step > 3 && hk.interact > 30 && (smoke || hk.bump > 0) && hk.mech && hk.mech.id === D.mechanic, hk);
     const bad = errors.filter(e => !/favicon|audio|\.mp3|\.ogg/.test(e.m));
     rec(id, 'no page errors or failed requests', bad.length === 0, bad.slice(0, 5));

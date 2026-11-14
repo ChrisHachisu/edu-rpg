@@ -160,7 +160,25 @@ edit the plan, re-render that floor, re-export, re-pin.
 
 ## 7. Sizes
 
-@@SIZES@@
+Shipped in `public/acts-dungeons/` (floor pictures WebP, 48 px per cell; cap 1.6 MB per floor):
+
+| Dungeon | Floors | Floor pictures (MB) | Masks + over atlas | Total |
+|---|---|---|---|---|
+| Ember Mines | 5 | 1.37 · 1.46 · 1.37 (q80) · 1.42 (q80) · 0.98 | 0.08 MB | **6.67 MB** |
+| Obsidian Cavern | 5 | 1.10 · 1.18 · 1.37 (q80) · 1.56 (q80) · 0.80 | 0.14 MB | **6.15 MB** |
+| Iron Mine (floor 1 only, disabled) | 1 of 4 | 1.03 | 0.01 MB | 1.04 MB |
+| `manifest.json` | | | | 0.04 MB |
+
+Unmarked floors are q85. Four of the ten floors met the cap only at q80.
+
+**Estimate for all 18 dungeons (93 floors, 215,199 cells):** the eleven floors above cost
+515 bytes per cell. At that rate, with the 1.6 MB cap holding the 15 largest floors (they will step
+down to roughly q70-q75), the whole set is **about 105-110 MB** (per dungeon: 3.4 MB for Sunken
+Temple up to about 9 MB for Demon Barracks and Void Rift). If that is too much for the app, the lever is the cap
+(`CAP_MB` in `render_plan.py`): 1.2 MB per floor gives about 96 MB, 1.0 MB about 87 MB, at a
+visibly lower quality on the large floors. A smaller render scale would save more but needs the
+runtime to blit at a scale other than 48 px per cell; that is not built.
+Render time for the remaining 82 floors: about 9 hours of one 4-core machine (two at a time).
 
 ## 8. Proof
 

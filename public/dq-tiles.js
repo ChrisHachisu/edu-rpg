@@ -4655,6 +4655,27 @@
     var r=scene.mapData&&scene.mapData[ty], t=r?r[tx]:undefined;
     return t===6||t===9||t===10||t===12;
   }
+  // The boss falls and its cell becomes the way out (tile 10) while her centre is already inside
+  // it: she fought it from the cell below, and the mover only asks for a transition when her
+  // centre ENTERS a cell. So a way cell that opened under her is asked again once she lets go of
+  // the stick (or 0.8 s on the field have passed) and then pushes toward it.
+  var a2dUnder={k:null,t:0,was:null,open:false,armed:false,since:0};
+  function a2dOpenedUnder(scene,inp,sx,sy){
+    var tx=scene.heroTileX, ty=scene.heroTileY, r=scene.mapData&&scene.mapData[ty], t=r?r[tx]:undefined;
+    var k=scene.currentMapId+'-'+(scene.currentFloor||1)+'-'+tx+'-'+ty, u=a2dUnder, now=Date.now(), way=(t===10||t===12);
+    if(u.k!==k){ u.k=k; u.was=t; u.open=false; u.armed=false; return null; }   // she walked in: the mover's own query owns that
+    if(way && u.was!==undefined && u.was!==t && !u.open){ u.open=true; u.armed=false; u.since=now; }
+    u.was=t;
+    if(!u.open) return null;
+    if(!way){ u.open=false; return null; }
+    if(!u.armed){ if(!inp || now-u.since>800) u.armed=true; if(!inp) return null; }
+    if(!inp || scene.transitionCooldown>0 || scene.showingMessage) return null;
+    var vx=tx*TILE+TILE/2-sx, vy=ty*TILE+TILE/2-sy, l=Math.sqrt(vx*vx+vy*vy)||1;
+    if((inp.x*vx+inp.y*vy)/l<0.5) return null;                              // toward the opening, not past it
+    var tr=a1mAsk(scene,tx,ty);
+    if(tr){ u.open=false; }
+    return tr||null;
+  }
   function a2dEntranceSpot(id){
     var fl=a1dFloors&&a2dIs(id)&&a1dFloors[id+'-f1'];
     return (fl&&fl.land&&fl.land.entrance)||null;
@@ -7423,6 +7444,8 @@
         a1mExitRetry=null;
       }
     }
+    if(a2dCtx && !m.ow){ var a2w=a2dOpenedUnder(scene,inp,x,y+a1mFootDy(scene,m));   // authored: the boss's way out opens where she stands
+      if(a2w){ try{ scene.performTransition(a2w); }catch(e){ if(window.__DQ_DEBUG__) console.log('a2d way '+e); } return; } }
     if(inp){
       // Facing dead band: near a 45-degree push |x| and |y| trade places with every thumb tremor and
       // she flickered between two facings. Keep the axis she already faces until the other one
