@@ -4648,6 +4648,13 @@
     scene.__a1dEntryWaitFrames=0; scene.__a1dEntryError=null; scene.__a1dEntryDegraded=false;
     return true;
   }
+  // A staircase or mouth of an authored floor: the cell whose transition query the engine's
+  // one-step arrival cooldown may have eaten (she lands right beside it).
+  function a2dIsWayCell(scene,tx,ty){
+    if(!a2dIs(scene.currentMapId)) return false;
+    var r=scene.mapData&&scene.mapData[ty], t=r?r[tx]:undefined;
+    return t===6||t===9||t===10||t===12;
+  }
   function a2dEntranceSpot(id){
     var fl=a1dFloors&&a2dIs(id)&&a1dFloors[id+'-f1'];
     return (fl&&fl.land&&fl.land.entrance)||null;
@@ -7517,8 +7524,9 @@
     var tr=null; try{ tr=scene.checkTransition(tx,ty); }catch(e){}
     if(tr){ try{ scene.performTransition(tr); }catch(e){ if(window.__DQ_DEBUG__) console.log('a1 move tr '+e); } return; }
     if(!tr && cooldownBefore>0 && (scene.transitionCooldown===cooldownBefore-1)
-       && (scene.currentFloor||1)===1 && A1D_MAPS[scene.currentMapId]
-       && a1dIsMouthCell(scene,tx,ty) && Math.abs(tx-prevTx)+Math.abs(ty-prevTy)===1
+       && (((scene.currentFloor||1)===1 && A1D_MAPS[scene.currentMapId] && a1dIsMouthCell(scene,tx,ty))
+           || a2dIsWayCell(scene,tx,ty))                                   // authored: she lands beside the stairs, and may turn straight back
+       && Math.abs(tx-prevTx)+Math.abs(ty-prevTy)===1
        && a1mExitRetryOutward(inp,{dx:tx-prevTx,dy:ty-prevTy})){
       a1mExitRetry={scene:scene,mapId:scene.currentMapId,floor:scene.currentFloor||1,
                     x:tx,y:ty,dx:tx-prevTx,dy:ty-prevTy};

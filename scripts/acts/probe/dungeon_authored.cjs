@@ -47,19 +47,22 @@ const PILOT = () => {
   const dismiss = async (max = 14) => { let n = 0; const w = W(); while (onField() && w.showingMessage && n < max) { await tapKey('z'); await wait(260); n++; } return n; };
   // Steer the stick through sole-point waypoints (world px). Ends on arrival, a floor/map change,
   // a message, a battle, or no progress.
-  async function drive(pts, { tol = 7, maxMs = 60000, until = null } = {}) {
-    const w = W(), m0 = w.currentMapId, f0 = w.currentFloor || 1, t0 = performance.now(); let i = 0, stuck = 0, last = null, moved = 0;
+  async function drive(pts, { tol = 7, maxMs = 60000, until = null, hold = 0 } = {}) {
+    const w = W(), m0 = w.currentMapId, f0 = w.currentFloor || 1, t0 = performance.now(); let i = 0, stuck = 0, last = null, moved = 0, lastDir = null;
     try {
       for (;;) {
         if (w.currentMapId !== m0 || (w.currentFloor || 1) !== f0) return { ok: true, why: 'changed', moved };
         if (!onField()) return { ok: true, why: 'scene', moved };
         if (w.showingMessage) return { ok: true, why: 'message', moved };
         if (until && until()) return { ok: true, why: 'until', moved };
-        if (i >= pts.length) return { ok: true, why: 'arrived', moved };
+        if (i >= pts.length) {                                            // a player keeps pushing into a staircase: hold the last heading a moment
+          if (hold && lastDir) { const t1 = performance.now(); while (performance.now() - t1 < hold && w.currentMapId === m0 && (w.currentFloor || 1) === f0 && onField() && !w.showingMessage) {
+            window.__DQ_STICK__ = { x: lastDir[0], y: lastDir[1], m: 1 }; await new Promise(r => requestAnimationFrame(r)); } }
+          return { ok: true, why: (w.currentMapId !== m0 || (w.currentFloor || 1) !== f0) ? 'changed' : 'arrived', moved }; }
         if (performance.now() - t0 > maxMs) return { ok: false, why: 'timeout', i, n: pts.length, at: [w.hero.x, w.hero.y + footDy], moved };
         const sx = w.hero.x, sy = w.hero.y + footDy, dx = pts[i][0] - sx, dy = pts[i][1] - sy, d = Math.hypot(dx, dy);
         if (d < tol) { i++; continue; }
-        window.__DQ_STICK__ = { x: dx / d, y: dy / d, m: 1 };
+        window.__DQ_STICK__ = { x: dx / d, y: dy / d, m: 1 }; lastDir = Math.abs(dx) >= Math.abs(dy) ? [Math.sign(dx), 0] : [0, Math.sign(dy)];
         await new Promise(r => requestAnimationFrame(r));
         if (last) { const st = Math.hypot(w.hero.x - last[0], w.hero.y - last[1]); moved += st; stuck = st < 0.02 ? stuck + 1 : 0; }
         last = [w.hero.x, w.hero.y];
@@ -81,7 +84,11 @@ const PILOT = () => {
 
 // ---- navigation on the exported grid (node side) -----------------------------------------------
 function astar(N, from, goalFn) {                                   // from: nav cell [gx,gy]; returns list of nav cells or null
-  const H = N.rows.length, Wd = N.rows[0].length, ok = (x, y) => x >= 0 && y >= 0 && x < Wd && y < H && N.rows[y][x] === '1';
+  // A cell where her CENTRE would stand on a staircase or a mouth is a way off the floor: only a goal may be one.
+  const way = new Set((N.assets || []).filter(a => /^(stairsUp|stairsDown|mouth|mouth2)$/.test(a.kind)).map(a => a.x + ',' + a.y));
+  const tileOf = (x, y) => Math.floor((x + .5) * N.cell / CELL) + ',' + Math.floor(((y + .5) * N.cell - N.footDy) / CELL);
+  const onWay = (x, y) => { const k = tileOf(x, y); return way.has(k) && k !== goalFn.way; };
+  const H = N.rows.length, Wd = N.rows[0].length, ok = (x, y) => x >= 0 && y >= 0 && x < Wd && y < H && N.rows[y][x] === '1' && (!onWay(x, y) || (x === from[0] && y === from[1]));
   const key = (x, y) => y * Wd + x, prev = new Int32Array(Wd * H).fill(-2), q = [from]; prev[key(from[0], from[1])] = -1;
   const D = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]];
   for (let i = 0; i < q.length; i++) { const [x, y] = q[i];
@@ -110,12 +117,12 @@ class Run {
     const s = await this.st(); const from = nearestNav(N, s.hx, s.hy + N.footDy);
     if (!from) return { ok: false, why: 'off-grid', at: [s.hx, s.hy] };
     const p = astar(N, from, goalFn); if (!p) return { ok: false, why: 'no-path', from };
-    return this.ev(([pts, o]) => window.__D2P.drive(pts, o), [toPts(N, p), { maxMs: opts.maxMs || 90000, tol: opts.tol || 7 }]);
+    return this.ev(([pts, o]) => window.__D2P.drive(pts, o), [toPts(N, p), { maxMs: opts.maxMs || 90000, tol: opts.tol || 7, hold: opts.hold || 0 }]);
   }
   nearCell(N, cx, cy, grow = 16) { const c = N.cell; return (gx, gy) => { const x = (gx + .5) * c, y = (gy + .5) * c;
     return x >= cx * CELL - grow && x <= (cx + 1) * CELL + grow && y >= cy * CELL - grow && y <= (cy + 1) * CELL + grow; }; }
-  centreIn(N, cx, cy) { const c = N.cell; return (gx, gy) => { const x = (gx + .5) * c, y = (gy + .5) * c - N.footDy;      // her CENTRE in the cell fires stairs and mouths
-    return x >= cx * CELL + 6 && x <= (cx + 1) * CELL - 6 && y >= cy * CELL + 4 && y <= (cy + 1) * CELL - 4; }; }
+  centreIn(N, cx, cy) { const c = N.cell; const fn = (gx, gy) => { const x = (gx + .5) * c, y = (gy + .5) * c - N.footDy;      // her CENTRE in the cell fires stairs and mouths
+    return x >= cx * CELL + 6 && x <= (cx + 1) * CELL - 6 && y >= cy * CELL + 4 && y <= (cy + 1) * CELL - 4; }; fn.way = cx + ',' + cy; return fn; }
   async bump(cx, cy, ms = 1500) {                                   // push her soles at the cell's centre
     const s = await this.st(); const vx = (cx + .5) * CELL - s.hx, vy = (cy + .5) * CELL - (s.hy + 31);
     return this.ev(([vx, vy, ms]) => window.__D2P.push(vx, vy, ms), [vx, vy, ms]);
@@ -156,6 +163,12 @@ async function runDungeon(spec) {
     await page.evaluate(PILOT);
     let p = await L.pos(page);
     rec(id, 'seeded save loads on the overworld at the remapped exit', p.map === 'overworld' && p.x === LM.exit[0] && p.y === LM.exit[1], p);
+    // A do-nothing mechanic module under this dungeon's own mechanic id: proves every hook of the
+    // module API fires and is handed the plan's mechanic data, without changing how the floor plays.
+    const hookUp = () => page.evaluate(mid => { const h = window.__d2hook = window.__d2hook || { load: 0, unload: 0, tick: 0, input: 0, free: 0, bump: 0, step: 0, interact: 0, mech: null };
+      window.__QOK_DNG2__.register(mid, { load(c) { h.load++; h.mech = { id: c.mechanic.id, keys: Object.keys(c.mechanic), mechAssets: (c.plan.mech || []).map(a => a.kind), terrain: c.terrain(0, 0), flagKey: c.flagKey('x') }; },
+        unload() { h.unload++; }, tick() { h.tick++; }, input() { h.input++; }, free() { h.free++; }, bump() { h.bump++; }, step() { h.step++; }, interact() { h.interact++; } }); }, D.mechanic);
+    await hookUp();
     const enter = async () => { const r = await L.walkCells(page, [[LM.at[0], LM.at[1]]], { maxMs: 25000 }); await page.waitForTimeout(1200); await page.evaluate(PILOT); return r; };
     let r = await enter(); let s = await R.st();
     if (!rec(id, 'walking into the overworld mouth enters floor 1', s.map === id && s.floor === 1, { r, s })) return;
@@ -168,7 +181,7 @@ async function runDungeon(spec) {
 
     // out by the mouth, back in: the remapped overworld exit
     const mouth = F1.assets.find(a => a.kind === 'mouth' && !a.extra);
-    r = await R.go(N1, R.centreIn(N1, mouth.x, mouth.y)); await page.waitForTimeout(1500);
+    r = await R.go(N1, R.centreIn(N1, mouth.x, mouth.y), { hold: 900 }); await page.waitForTimeout(1500);
     p = await L.pos(page);
     rec(id, 'the mouth leads back to the remapped overworld exit', p.map === 'overworld' && p.x === LM.exit[0] && p.y === LM.exit[1], { r, p });
     await page.waitForTimeout(1500); await L.noEncounters(page);
@@ -195,14 +208,22 @@ async function runDungeon(spec) {
       if (!resumeTest && f === Math.min(2, floors[floors.length - 1])) { resumeTest = true;
         const mid = N.route[Math.min(8, N.route.length - 1)]; await R.go(N, R.nearCell(N, mid[0], mid[1], 0));
         const before = await R.st();
-        const saved = await page.evaluate(() => { const gs = window.__GAME_STATE__; gs.saveGame(); const sv = JSON.parse(localStorage.getItem('edu-rpg-save')); return sv.player.position; });
-        await page.reload({ waitUntil: 'load' }); await L.toTitle(page);
-        await page.evaluate(() => { const t = window.__PHASER_GAME__.scene.getScene('TitleScene'); const i = t.menuItems.findIndex(m => m.getData && m.getData('action') === 'continue'); t.selectedIndex = i; t.confirmTitle(); });
+        // Inside a dungeon the game's save is the AUTO save (ui-overhaul: crystals, boss fights and "return to title" all
+        // write it); Continue is the title's slot picker -> slot 1 -> "Auto save", the path a player takes.
+        const saved = await page.evaluate(() => { const gs = window.__GAME_STATE__; gs.saveGame(); const raw = localStorage.getItem('edu-rpg-autosave');
+          localStorage.setItem('qok-slots-v1', '1'); localStorage.setItem('qok-active-slot', '1'); localStorage.setItem('qok-slot-1-auto', raw);
+          return JSON.parse(raw).player.position; });
+        await page.reload({ waitUntil: 'load' });
+        await page.waitForSelector('[data-act="titleSlots"]', { state: 'visible', timeout: 90000 });
+        await page.waitForFunction(() => { const k = window.__QOK_COVER__; return !k || k.phase() === 'waiting'; }, { timeout: 30000 }).catch(() => {});
+        await page.waitForTimeout(300);
+        await page.click('[data-act="titleSlots"]'); await page.click('[data-act="slotPick"][data-i="1"]');
+        await page.waitForSelector('[data-act="slotLoad"][data-i="0"]', { state: 'visible', timeout: 15000 }); await page.click('[data-act="slotLoad"][data-i="0"]');
         await page.waitForFunction(() => { const g = window.__PHASER_GAME__, w = g.scene.getScene('WorldMapScene'); return w && g.scene.isActive('WorldMapScene') && w.hero && w.mapData; }, { timeout: 90000 });
-        await page.waitForTimeout(2500); await page.evaluate(PILOT); const okR = await R.settle(30000); await L.noEncounters(page);
+        await page.waitForTimeout(2500); await page.evaluate(PILOT); await hookUp(); const okR = await R.settle(30000); await L.noEncounters(page);
         const after = await R.st();
         rec(id, `f${f}: save inside the floor, Continue resumes on the same cell of the authored floor`,
-          okR && after.map === id && after.floor === f && after.w === FL.width && Math.abs(after.x - before.x) <= 1 && Math.abs(after.y - before.y) <= 1 && !after.degraded,
+          okR && saved.mapId === id && saved.floor === f && after.map === id && after.floor === f && after.w === FL.width && Math.abs(after.x - before.x) <= 1 && Math.abs(after.y - before.y) <= 1 && !after.degraded,
           { saved, before: [before.x, before.y], after: [after.x, after.y, after.w, after.h], d2: after.d2 });
         await R.shot(`f${f}-resumed`);
       }
@@ -223,12 +244,14 @@ async function runDungeon(spec) {
         await R.ev(() => window.__D2P.clearMsgs());
         const g = await R.go(N, R.nearCell(N, c.x, c.y, 16));
         const prompt = await R.ev(() => window.__D2P.prompt());
-        let opened = false;
-        for (let k = 0; k < 3 && !opened; k++) { if (k === 1) await R.tapPrompt(); else await R.bump(c.x, c.y, 900); await page.waitForTimeout(300);
-          opened = await R.ev(([x, y]) => window.__D2P.tile(x, y) === 8, [c.x, c.y]); }
+        let opened = false, how = [];                               // the prompt pill when it is up (the phone's way), else a bump
+        for (let k = 0; k < 5 && !opened; k++) { const up = await R.ev(() => window.__D2P.prompt());
+          if (up && k % 2 === 0) { await R.tapPrompt(); how.push('tap'); } else { await R.bump(c.x, c.y, 800); how.push('bump'); } await page.waitForTimeout(350);
+          opened = await R.ev(([x, y]) => window.__D2P.tile(x, y) === 8, [c.x, c.y]);
+          if (!opened && k >= 2) await R.go(N, R.nearCell(N, c.x, c.y, 16)); }
         const msg = await R.ev(() => window.__D2P.msgs().slice(-1)[0] || '');
         const flag = await R.ev(k => !!window.__D2P.flags()[k], `chest.${id}.f${f}.${c.x}.${c.y}`);
-        rec(id, `f${f}: chest (${c.x},${c.y}) opens`, opened && flag, { g: g.why, prompt, msg: msg.replace(/\n/g, ' | ') });
+        rec(id, `f${f}: chest (${c.x},${c.y}) opens`, opened && flag, { g: g.why, prompt, how, msg: msg.replace(/\n/g, ' | '), st: opened ? undefined : await R.st() });
         if (c === chests[0]) await R.shot(`f${f}-chest`);
         await R.ev(() => window.__D2P.dismiss());
       }
@@ -273,14 +296,14 @@ async function runDungeon(spec) {
       if (f < total) {
         const st = FL.assets.find(a => a.kind === 'stairsDown');
         await R.shot(`f${f}-stairs`);
-        const g = await R.go(N, R.centreIn(N, st.x, st.y)); await page.waitForTimeout(1500); await page.evaluate(PILOT); await R.settle();
+        const g = await R.go(N, R.centreIn(N, st.x, st.y), { hold: 900 }); await page.waitForTimeout(1500); await page.evaluate(PILOT); await R.settle();
         s = await R.st();
         if (!rec(id, `f${f}: the stairs lead to floor ${f + 1}`, s.map === id && s.floor === f + 1, { g, s: [s.x, s.y, s.floor] })) return;
         if (f === 1) {                                              // and back up: the other staircase's landing
           const F2 = man.floors[`${id}-f2`], N2 = nav(`${id}-f2`), up = F2.assets.find(a => a.kind === 'stairsUp');
-          await R.go(N2, R.centreIn(N2, up.x, up.y)); await page.waitForTimeout(1500); await page.evaluate(PILOT); await R.settle(); s = await R.st();
+          await R.go(N2, R.centreIn(N2, up.x, up.y), { hold: 900 }); await page.waitForTimeout(1500); await page.evaluate(PILOT); await R.settle(); s = await R.st();
           rec(id, 'f2: the stairs back lead to floor 1, beside its stairs', s.floor === 1 && s.x === FL.land.fromNext.x && s.y === FL.land.fromNext.y, { at: [s.x, s.y, s.floor], want: FL.land.fromNext });
-          await R.go(N, R.centreIn(N, st.x, st.y)); await page.waitForTimeout(1500); await page.evaluate(PILOT); await R.settle();
+          await R.go(N, R.centreIn(N, st.x, st.y), { hold: 900 }); await page.waitForTimeout(1500); await page.evaluate(PILOT); await R.settle();
         }
       } else {
         const b = FL.assets.find(a => a.kind === 'boss');
@@ -297,17 +320,20 @@ async function runDungeon(spec) {
         await page.waitForTimeout(1500); await R.shot(`f${f}-after-boss`);
         // the way out: the boss's own cell becomes the exit; if this visit still holds the marker, leave by the crystal and the mouth
         s = await R.st(); let t = await R.ev(([x, y]) => window.__D2P.tile(x, y), [b.x, b.y]); let how = 'boss-cell tile ' + t;
-        if (t === 10 || t === 12) { await R.go(N, R.centreIn(N, b.x, b.y)); }
+        if (t === 10 || t === 12) { await R.go(N, R.centreIn(N, b.x, b.y), { hold: 900 }); }
         else { const g = await R.bump(b.x, b.y, 2500); how += ' -> pushed'; await page.waitForTimeout(800); }
         await page.waitForTimeout(2000); p = await L.pos(page);
         if (p.map !== 'overworld') { how += ' -> walk out by the stairs';
           for (let ff = f; ff >= 1 && p.map === id; ff--) { const k2 = `${id}-f${ff}`, FF = man.floors[k2], NN = nav(k2); await page.evaluate(PILOT); await R.settle();
             const tgt = FF.assets.find(a => a.kind === (ff > 1 ? 'stairsUp' : 'mouth') && !a.extra); await R.ev(() => window.__D2P.dismiss());
-            await R.go(NN, R.centreIn(NN, tgt.x, tgt.y), { maxMs: 180000 }); await page.waitForTimeout(1800); p = await L.pos(page); } }
+            await R.go(NN, R.centreIn(NN, tgt.x, tgt.y), { maxMs: 180000, hold: 900 }); await page.waitForTimeout(1800); p = await L.pos(page); } }
         rec(id, 'leaving after the boss returns her to the remapped overworld exit', p.map === 'overworld' && p.x === LM.exit[0] && p.y === LM.exit[1], { how, p });
         await page.waitForTimeout(1500); await R.shot('exit-overworld');
       }
     }
+    const hk = await page.evaluate(() => window.__d2hook);
+    rec(id, 'mechanic module API: load/unload/tick/input/free/step/interact hooks all fired' + (smoke ? '' : ', bump too'),
+      !!hk && hk.load > 0 && hk.unload > 0 && hk.tick > 30 && hk.input > 30 && hk.free > 100 && hk.step > 3 && hk.interact > 30 && (smoke || hk.bump > 0) && hk.mech && hk.mech.id === D.mechanic, hk);
     const bad = errors.filter(e => !/favicon|audio|\.mp3|\.ogg/.test(e.m));
     rec(id, 'no page errors or failed requests', bad.length === 0, bad.slice(0, 5));
   } catch (e) { rec(id, 'probe crashed', false, String(e && e.stack || e).slice(0, 600)); await R.shot('crash').catch(() => {}); }

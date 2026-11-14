@@ -119,6 +119,10 @@ def paint(plan, mats, cfg):
     if sg > 0:
         fm = np.dstack([ndimage.gaussian_filter(fm[..., c], sg, mode="wrap") for c in range(3)])
     fmean = fm.reshape(-1, 3).mean(axis=0)[None, None, :]
+    sat = float(cfg.get("floor_sat", 1.0))                       # <1: pull stray hues (ember specks) toward the floor's own colour
+    if sat < 1.0:
+        lum = fm.mean(axis=2, keepdims=True) / max(1.0, float(fmean.mean()))
+        fm = (fmean * lum) * (1.0 - sat) + fm * sat
     fm = np.clip(fmean + float(cfg.get("floor_calm", 0.55)) * (fm - fmean), 0, 255)
     floor_m = R.grade(fm, tgt["floor"])
     del fm

@@ -228,7 +228,7 @@ def main():
         jobs.append((did, [f"{did}-f{n}" for n in fl.split(",")], False))
     man_p = os.path.join(C.PUBLIC, "manifest.json")
     man = {"schema": "qok-dungeons2-v1", "cellPx": C.CELL, "modules": [], "dungeons": {}, "floors": {}}
-    problems, report = [], []
+    problems, notes, report = [], [], []
     os.makedirs(os.path.join(C.WORK, "nav"), exist_ok=True)
     for did, fids, enabled in jobs:
         p1 = C.load_plan(f"{did}-f1")
@@ -239,7 +239,8 @@ def main():
                     boss = x.get("id")
         files, total = {}, 0
         for fid in fids:
-            res, st = build(fid, problems)
+            # a floor that ships disabled and waits for its mechanic may be unfinishable on foot: notes, not failures
+            res, st = build(fid, problems if (enabled or (p1.get("mechanic") or {}).get("id", "none") == "none") else notes)
             if not res:
                 continue
             fl, nav = res
@@ -269,6 +270,8 @@ def main():
     for did, d in man["dungeons"].items():
         print(f"{did}: {d['bytes'] / 1e6:.2f} MB, floors {d['authoredFloors']} of {d['floors']}, boss {d['bossId']}, "
               f"mechanic {d['mechanic']}, enabled {d['enabled']}")
+    if notes:
+        print("NOTE (disabled mechanic floors; expected until the mechanic module exists)"); [print("  " + x) for x in notes]
     if problems:
         print("FAIL"); [print("  " + x) for x in problems]; sys.exit(1)
     if not a.check_only:

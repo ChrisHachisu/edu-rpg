@@ -34,7 +34,7 @@ DUNGEONS = {
     "emberMines": dict(
         act=4, sheet="mat-ember-mine", theme="ember mine",
         target={"floor": (122, 88, 70), "wall": (44, 28, 26)},
-        hazards={"l": "lava"}, glow=(255, 120, 36), top_accent=0.0, floor_calm=0.38, floor_soft=1.15),
+        hazards={"l": "lava"}, glow=(255, 120, 36), top_accent=0.0, floor_calm=0.38, floor_soft=1.15, floor_sat=0.45),
     "obsidianCavern": dict(
         act=4, sheet="mat-obsidian", theme="obsidian cavern",
         target={"floor": (108, 104, 122), "wall": (34, 28, 50)},
