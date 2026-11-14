@@ -1,0 +1,190 @@
+{
+ "_comment": "embersRest round-3 runtime config (Codex try 3); collision hand-traced per object, no foreground layer.",
+ "id": "embersRest",
+ "nameKey": "map.embersRest",
+ "screen": "town/embersRest-screen.png",
+ "walkable": "town/embersRest-walkable.json",
+ "cells": 65,
+ "artPxPerCell": 30,
+ "worldPxPerCell": 16,
+ "startCell": [
+  32.5,
+  57.5
+ ],
+ "savePoint": [
+  34.53,
+  42.66
+ ],
+ "exit": {
+  "cell": [
+   32.5,
+   59.5
+  ],
+  "targetMapId": "overworld",
+  "toX": 200,
+  "toY": 99,
+  "axis": "south",
+  "note": "toX/toY = overworld exit cell from exits.json (tools/apply_exits.py), not maps.ts."
+ },
+ "shopId": "embersRest",
+ "shopCounter": [
+  47.0,
+  39.3
+ ],
+ "npcs": [
+  {
+   "id": "healer",
+   "dialogueKey": "npc.healer",
+   "nameKey": "npc.healer.name",
+   "sheet": "town/npc/embersRest-healer-4x3-64.png",
+   "cell": [
+    34.53,
+    54.84
+   ],
+   "mapsTs": [
+    8,
+    13
+   ],
+   "name": "Healer",
+   "text": "Welcome to the clinic! I can heal your wounds."
+  },
+  {
+   "id": "forgemaster",
+   "dialogueKey": "npc.forgemaster",
+   "nameKey": "npc.forgemaster.name",
+   "sheet": "town/npc/embersRest-forgemaster-4x3-64.png",
+   "cell": [
+    38.59,
+    18.28
+   ],
+   "mapsTs": [
+    9,
+    4
+   ],
+   "name": "Forgemaster",
+   "text": "The magma tunnels beneath us lead to the Volcanic Forge. But first, you must defeat the guardian of the Desert Tomb!"
+  },
+  {
+   "id": "lavaMiner",
+   "dialogueKey": "npc.lavaMiner",
+   "nameKey": "npc.lavaMiner.name",
+   "sheet": "town/npc/embersRest-lavaMiner-4x3-64.png",
+   "cell": [
+    30.47,
+    30.47
+   ],
+   "mapsTs": [
+    7,
+    7
+   ],
+   "name": "Lava Miner",
+   "text": "I used to mine in the tunnels below, but a Lava Wyrm drove us out. It breathes fire hotter than the forge itself!"
+  },
+  {
+   "id": "shopkeeper",
+   "dialogueKey": "npc.shopkeeper",
+   "nameKey": "npc.shopkeeper.name",
+   "sheet": "town/npc/embersRest-shopkeeper-4x3-64.png",
+   "cell": [
+    47.0,
+    35.8
+   ],
+   "_note": "behind the painted counter; the hero talks across it from shopCounter",
+   "name": "Shopkeeper",
+   "text": "Welcome to my shop! Take a look around."
+  }
+ ],
+ "doors": [
+  {
+   "id": "healer",
+   "cell": [
+    44.7,
+    56.5
+   ]
+  },
+  {
+   "id": "shop",
+   "cell": [
+    47.0,
+    39.3
+   ]
+  }
+ ],
+ "_spots": [
+  {
+   "id": "healer",
+   "mapsTs": [
+    3,
+    12
+   ],
+   "new": [
+    8,
+    13
+   ],
+   "moved": true,
+   "cell": [
+    34.53,
+    54.84
+   ],
+   "onGround": true
+  },
+  {
+   "id": "forgemaster",
+   "mapsTs": [
+    3,
+    5
+   ],
+   "new": [
+    9,
+    4
+   ],
+   "moved": true,
+   "cell": [
+    38.59,
+    18.28
+   ],
+   "onGround": true
+  },
+  {
+   "id": "lavaMiner",
+   "mapsTs": [
+    12,
+    5
+   ],
+   "new": [
+    7,
+    7
+   ],
+   "moved": true,
+   "cell": [
+    30.47,
+    30.47
+   ],
+   "onGround": true
+  },
+  {
+   "id": "savePoint",
+   "mapsTs": [
+    8,
+    10
+   ],
+   "new": [
+    8,
+    10
+   ],
+   "moved": false,
+   "cell": [
+    34.53,
+    42.66
+   ],
+   "onGround": true
+  }
+ ],
+ "_paintedOut": [],
+ "_validator": "VALID",
+ "_onlyExit": true,
+ "_qa": {
+  "blockedLooksGroundPx": 32436,
+  "walkableLooksObjectPx": 50616
+ }
+}

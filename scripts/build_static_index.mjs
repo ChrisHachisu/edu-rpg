@@ -277,7 +277,7 @@ export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '
 // 2026-09-26: the existing outer area Retry also retries a terminal Act-1 underpaint load, and
 // terminal backing failure routes to that cover so its reachable control owns the recovery path.
 export const EXPECTED_STATIC_INDEX_SHA =
-  '60fdca74225527a39695e9cd2351342d334ff84c596bde9ec1ab3bae3fe5382b';
+  '43be4727573b9df199dc2a00d135527878783052711a05c7d0988969e1a7f852';
 
 /**
  * The authored shell loads its scripts by ABSOLUTE path so the Vite dev server resolves them;
@@ -301,6 +301,8 @@ export const REWRITES = [
   // the override silently never loading. The assertRewrites() guard below now makes a missed
   // entry impossible rather than merely documented.
   ['src="/music-override.js"', 'src="music-override.js"'],
+  // 2026-11-13: the Acts 2-5 overworld/town runtime (ON by default, kill switch inside the file).
+  ['src="/acts-hifi/acts-runtime.js"', 'src="acts-hifi/acts-runtime.js"'],
 ];
 
 export const sha256 = bytes => createHash('sha256').update(bytes).digest('hex');

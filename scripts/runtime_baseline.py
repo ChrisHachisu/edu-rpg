@@ -70,7 +70,7 @@ ACT1_OVERLAY_FILES = {
     # 52a058593efb1b901a42203bfd7ad591024946eb9f6db513a86c3a9babe69e25 -> 129636 B /
     # 3de643bdde7c7dc15ce602d4a3e0529e74df54db21899269a4b1a385d48fc0fe. Frozen game bundle,
     # art, source maps and all other pinned runtime entries remain unchanged.
-    "index.html": (130688, "60fdca74225527a39695e9cd2351342d334ff84c596bde9ec1ab3bae3fe5382b"),
+    "index.html": (134747, "43be4727573b9df199dc2a00d135527878783052711a05c7d0988969e1a7f852"),
     # 2026-08-01, owner-authorised: dq-tiles.js now splats AI-generated terrain MATERIALS through
     # its existing continuous-world-pixel drawTerrain, plus a ridged mountain height field,
     # varied shore character and landmark sites derived from mapData. Fallback-safe -- until the
@@ -121,7 +121,7 @@ ACT1_OVERLAY_FILES = {
     # other 12 settle one cell north once; largest rescue nudge 28 px against a 96 px bound).
     # Updated 2026-10-03 for the approved scoped forest+mountain visible-terrain union.
     "dq-tiles.js": (
-        668292, "22905355f9786bf4fc66cc0c23aa8cc65b5f72be4cb0c2afb50c8edd97093fc5"),
+        677673, "4cfa266729d74f60d1630e6c7a70d53e5a157bdb1484577dd91e7c65562e4250"),
     # 2026-08-07: THE OVERWORLD'S COLLISION SHAPE, baked -- the overworld's answer to the dungeons'
     # `<floor>-walk.png` above, and as much a shipped authority as they are. Deriving it at runtime
     # was correct and unaffordable: owmBuild() evaluated waterField/mountainField per pixel over a
@@ -183,7 +183,7 @@ ACT1_OVERLAY_FILES = {
     # the control-orientation setting, into the frame. First override of this file since the
     # v1.17.1 baseline was frozen, which is why it had no entry before.
     "ui-overhaul.js": (
-        238432, "6955aeee662d51ad9fdfe249748fad0077e30a178b05c67f06f80baefe6bf715"),
+        240117, "310ecbbc4a9b619b781ca2d9ccc62bb66fb4ded2fd744642970a8901f4130752"),
     # 2026-08-06, owner pick: "Charcoal & Gold Leaf" (direction 4 of
     # design/ui-overhaul/chic-style-board.html). The same gold as before -- the pixel art, the
     # dungeon plates and the town screens were all approved against it -- spent differently:
@@ -845,6 +845,36 @@ def manifest_for(source: Path) -> dict[str, object]:
     }
 
 
+# ACTS 2-5 OVERWORLD AND TOWNS (2026-11-13, docs/plans/2026-11-13-acts2-5-runtime.md).
+# The files under public/acts-hifi/, public/act{2..5}-hifi/ and the nine later towns under
+# public/act1-hifi/town/ are pinned in ONE generated manifest instead of ~500 literals here:
+#   python3 scripts/acts/write_gate_manifest.py          (rewrite after any change to those folders)
+#   python3 scripts/acts/write_gate_manifest.py --check  (public/ against the pins)
+# verify_act1_overlay() unions these paths into its closed path set (so build-dist.sh copies them
+# and nothing else new), and checks size, sha256 and the public/dist twin of every one.
+# A checkout without the manifest has no Acts 2-5 files and the gate is exactly what it was.
+ACTS_HIFI_MANIFEST = ROOT / "runtime" / "manifests" / "acts-hifi-files.json"
+ACTS_HIFI_PREFIXES = ("acts-hifi/", "act2-hifi/", "act3-hifi/", "act4-hifi/", "act5-hifi/", "act1-hifi/town/")
+
+
+def load_acts_hifi_files() -> dict[str, tuple[int, str]]:
+    if not ACTS_HIFI_MANIFEST.is_file():
+        return {}
+    doc = json.loads(ACTS_HIFI_MANIFEST.read_text(encoding="utf-8"))
+    if doc.get("schema") != "qok-acts-hifi-gate-v1" or not isinstance(doc.get("files"), dict):
+        raise BaselineError("Acts 2-5 file manifest schema mismatch")
+    files: dict[str, tuple[int, str]] = {}
+    for relative_path, pin in doc["files"].items():
+        if (not relative_path.startswith(ACTS_HIFI_PREFIXES) or ".." in relative_path
+                or not (isinstance(pin, list) and len(pin) == 2 and isinstance(pin[0], int)
+                        and isinstance(pin[1], str) and len(pin[1]) == 64)):
+            raise BaselineError(f"Acts 2-5 file manifest carries an invalid entry: {relative_path}")
+        files[relative_path] = (pin[0], pin[1])
+    if doc.get("count") != len(files):
+        raise BaselineError("Acts 2-5 file manifest count does not match its entries")
+    return files
+
+
 def load_manifest() -> dict[str, object]:
     if not MANIFEST.is_file():
         raise BaselineError(f"manifest does not exist: {MANIFEST}")
@@ -1458,6 +1488,11 @@ def verify_act1_overlay(root: Path, allowed_extra: frozenset[str] = frozenset())
                       # now also ADD a runtime file (hero-g3-walk.png), which the manifest by
                       # definition does not know about, so it has to be unioned in too.
                       | set(ACT1_OVERLAY_FILES))
+    # Acts 2-5 overworld, index and towns: one generated manifest (see load_acts_hifi_files).
+    acts_hifi_files = load_acts_hifi_files()
+    if set(acts_hifi_files) & expected_paths:
+        raise BaselineError("Acts 2-5 file manifest re-pins a path another table already owns")
+    expected_paths |= set(acts_hifi_files)
     # Active terrain-union assets are pinned above and validated against the active public
     # manifest. The adjacent R9 runtime remains immutable historical lineage, not a second
     # collision authority for this candidate.
@@ -1548,6 +1583,16 @@ def verify_act1_overlay(root: Path, allowed_extra: frozenset[str] = frozenset())
         public_town = ROOT / "public" / relative_path
         if not public_town.is_file() or public_town.read_bytes() != town.read_bytes():
             raise BaselineError(f"public/dist town twins differ: {relative_path}")
+
+    for relative_path, (acts_size, acts_hash) in acts_hifi_files.items():
+        acts_file = all_found[relative_path]
+        if acts_file.stat().st_size != acts_size or sha256(acts_file) != acts_hash:
+            raise BaselineError(
+                f"Acts 2-5 runtime identity mismatch: {relative_path}\n"
+                f"  If you changed it on purpose: python3 scripts/acts/write_gate_manifest.py")
+        public_acts = ROOT / "public" / relative_path
+        if not public_acts.is_file() or public_acts.read_bytes() != acts_file.read_bytes():
+            raise BaselineError(f"public/dist Acts 2-5 twins differ: {relative_path}")
 
     # Overlay files the baseline manifest does NOT carry are additions, so the manifest loop
     # above never checked them. Verify their identity here or they would ship unpinned.

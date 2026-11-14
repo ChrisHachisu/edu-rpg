@@ -1,0 +1,53 @@
+{
+ "towns": [
+  "cinderwatch",
+  "embersRest",
+  "frostwatch",
+  "hauntedVillage",
+  "havensEdge",
+  "ironkeep",
+  "lastBastion",
+  "oasisHaven",
+  "ruinsCamp"
+ ],
+ "hosts": {
+  "cinderwatch": "embersRest"
+ },
+ "strings": {
+  "map.cinderwatch": {
+   "en": "Cinderwatch",
+   "ja": "シンダーウォッチ",
+   "jaKanji": "シンダーウォッチ"
+  },
+  "npc.watchCaptain.name": {
+   "en": "Watch Captain",
+   "ja": "みはりたいちょう",
+   "jaKanji": "見張り隊長"
+  },
+  "npc.watchCaptain": {
+   "en": "This watchtower keeps an eye on the fire mountain. The Volcanic Forge lies far to the west. Rest here before you go.",
+   "ja": "この みはりだいは ひのやまを みはっている。かざんのかじばは はるか にしだ。たびだつ まえに ここで やすんでいけ。",
+   "jaKanji": "この 見張り台は 火の山を 見張っている。火山の鍛冶場は はるか 西だ。旅立つ 前に ここで 休んでいけ。"
+  },
+  "npc.ashScout.name": {
+   "en": "Ash Scout",
+   "ja": "はいのせっこう",
+   "jaKanji": "灰の斥候"
+  },
+  "npc.ashScout": {
+   "en": "I scout the ash fields. The Ember Mines are to the east. The monsters there are tough, so stock up first!",
+   "ja": "はいの げんやを ていさつ しているんだ。ひのこのこうざんは ひがしに ある。まものが てごわいから、じゅんびを わすれるなよ！",
+   "jaKanji": "灰の 原野を 偵察しているんだ。火の粉の鉱山は 東に ある。魔物が 手ごわいから、準備を 忘れるなよ！"
+  },
+  "npc.cinderVillager.name": {
+   "en": "Villager",
+   "ja": "むらびと",
+   "jaKanji": "村人"
+  },
+  "npc.cinderVillager": {
+   "en": "Ash falls here like snow. We sweep it every morning, and by night it is back!",
+   "ja": "ここでは はいが ゆきみたいに ふるの。まいあさ はいても、よるには もとどおりよ！",
+   "jaKanji": "ここでは 灰が 雪みたいに 降るの。毎朝 掃いても、夜には 元どおりよ！"
+  }
+ }
+}
