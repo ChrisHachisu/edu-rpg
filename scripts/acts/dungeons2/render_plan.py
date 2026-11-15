@@ -42,6 +42,26 @@ def _vnoise_table(wx, wy, scale, seed):
     """R.vnoise with the four corner hashes read from one small table of the lattice points the
     floor touches, instead of hashing every pixel four times. Same numbers bit for bit (the hash
     is a function of the integer lattice point only); about half of a floor's render time."""
+    if (getattr(wx, "ndim", 0) == 2 and getattr(wy, "shape", None) == wx.shape and wx.shape[0] > 1
+            and wx.shape[1] > 1 and not os.environ.get("D2_SLOW_NOISE2")
+            and (wx == wx[:1]).all() and (wy == wy[:, :1]).all()):
+        # x depends on the column only and y on the row only (the usual pixel grid): blend along x
+        # once per lattice row, then along y. The same float32 operations on the same values in
+        # the same order as the per-pixel form, so the same numbers bit for bit; ~6x faster.
+        fx, fy = wx[0] / scale, wy[:, 0] / scale
+        ix, iy = np.floor(fx).astype(np.int64), np.floor(fy).astype(np.int64)
+        rx, ry = (fx - ix).astype(np.float32), (fy - iy).astype(np.float32)
+        sx, sy = rx * rx * (3 - 2 * rx), ry * ry * (3 - 2 * ry)
+        x0, y0 = int(ix.min()), int(iy.min())
+        nx, ny = int(ix.max()) - x0 + 2, int(iy.max()) - y0 + 2
+        gy, gx = np.mgrid[y0:y0 + ny, x0:x0 + nx]
+        T = _h32(gx, gy, seed)
+        jx, jy = (ix - x0).astype(np.intp), (iy - y0).astype(np.intp)
+        P = T[:, jx] * (1 - sx) + T[:, jx + 1] * sx
+        out = P[jy]
+        out *= (1 - sy)[:, None]
+        out += P[jy + 1] * sy[:, None]
+        return out
     fx, fy = wx / scale, wy / scale
     ix, iy = np.floor(fx).astype(np.int64), np.floor(fy).astype(np.int64)
     rx, ry = (fx - ix).astype(np.float32), (fy - iy).astype(np.float32)
@@ -580,11 +600,17 @@ def paint(plan, mats, cfg):
             z[y, x] = True
         soft = R.blur(z.astype(np.float32)[cyi, cxi], px * 0.55)
         reach = 2.6 * px
-        edge = float(plan.get("_pad", 0)) * px                    # the picture's real edge inside a padded render
-        if dy > 0:   t = (yy - (H - edge - reach)) / reach
-        elif dy < 0: t = (edge + reach - yy) / reach
-        elif dx > 0: t = (xx - (W - edge - reach)) / reach
-        else:        t = (edge + reach - xx) / reach
+        pad = float(plan.get("_pad", 0)) * px                     # the picture's real edge inside a padded render
+        xs_, ys_ = [c[0] for c in cells + run], [c[1] for c in cells + run]
+        # where the light comes from: the far end of the run (the map edge, or the back of a bay)
+        if dy > 0:
+            end = (max(ys_) + 1) * px; end -= pad if end >= H - 1 else 0.0; t = (yy - (end - reach)) / reach
+        elif dy < 0:
+            end = min(ys_) * px; end += pad if end <= 0 else 0.0; t = (end + reach - yy) / reach
+        elif dx > 0:
+            end = (max(xs_) + 1) * px; end -= pad if end >= W - 1 else 0.0; t = (xx - (end - reach)) / reach
+        else:
+            end = min(xs_) * px; end += pad if end <= 0 else 0.0; t = (end + reach - xx) / reach
         L = np.clip(t, 0.0, 1.0) ** 1.3 * np.clip(soft * 1.6, 0.0, 1.0) * (0.25 + 0.75 * a)
         img = img * (1.0 + 0.7 * L[..., None]) + (L ** 1.5)[..., None] * np.array([235.0, 226.0, 198.0], np.float32) * 0.80
         del soft, t, L
@@ -762,11 +788,13 @@ def paint(plan, mats, cfg):
             y0 = max(0, min(c[1] for c in allc) * C.CELL - 40); y1 = min(Hw, (max(c[1] for c in allc) + 1) * C.CELL + 30)
             Y, X = np.mgrid[y0:y1, x0:x1].astype(np.float32)
             reg = base[y0:y1, x0:x1].copy()
-            # the passage beyond the fall goes dark: rock, not daylight
-            cm = np.zeros((y1 - y0, x1 - x0), np.float32)
+            # the passage beyond the fall goes dark: rock, not daylight. Only where the picture
+            # is open ground (plus a few px of its rim), so the plug's rock meets the wall's own.
+            cm = np.zeros((y1 - y0, x1 - x0), bool)
             for (cx_, cy_) in run:
-                cm[max(0, cy_ * C.CELL - y0):max(0, (cy_ + 1) * C.CELL - y0), max(0, cx_ * C.CELL - x0):max(0, (cx_ + 1) * C.CELL - x0)] = 1.0
-            veil = np.clip(ndimage.gaussian_filter(cm, 9.0) * 1.35, 0.0, 1.0)
+                cm[max(0, cy_ * C.CELL - y0 - 30):max(0, (cy_ + 1) * C.CELL - y0 + 30), max(0, cx_ * C.CELL - x0 - 30):max(0, (cx_ + 1) * C.CELL - x0 + 30)] = True
+            opn = ndimage.binary_dilation(walk[y0:y1, x0:x1], iterations=7) & cm
+            veil = np.clip(ndimage.gaussian_filter(opn.astype(np.float32), 2.5) * 1.5, 0.0, 1.0)
             rock = R.sample(wall_m, X * K + 211.0, Y * K + 97.0).astype(np.float32) * 0.42
             reg = reg * (1 - veil[..., None]) + rock * veil[..., None]
             alpha = veil.copy()
@@ -834,7 +862,7 @@ def save_webp(im, path, q, cap_mb=CAP_MB):
     while True:
         im.save(path, "WEBP", quality=q, method=6)
         mb = os.path.getsize(path) / 1e6
-        if mb <= cap_mb or q <= 60:
+        if mb <= cap_mb or q <= 40:
             return q, mb
         q -= 5
 
