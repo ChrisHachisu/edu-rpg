@@ -4704,7 +4704,8 @@
       // battle: the bundle's own encounter start (white flash, fade, BattleScene) with a named monster of its table.
       // Returns false when a battle cannot start now (a box is open, one is already starting).
       battle:function(monsterId,after){ return a2dBattle(scene,monsterId,after); },
-      busy:function(){ return a1mHalted(scene) || !!scene.__a1dEntryWaiting; },
+      busy:function(){ return a1mHalted(scene) || !!scene.__a1dEntryWaiting || a2dInBattle(scene); },
+      inBattle:function(){ return a2dInBattle(scene); },                   // from ctx.battle() until the field is back
       // toFloor: a fall or a lift to the floor above/below through the engine's own floor change (black cover, loadMap,
       // encounter reset); she arrives on `spot` {x,y,dir} (a cell: her SOLES are put on its centre) instead of beside the stairs.
       toFloor:function(floor,spot){ return a2dToFloor(scene,floor,spot); },
@@ -4751,11 +4752,21 @@
       if(!mon) return false;
       if(em&&em.reset) em.reset();
       if(scene.__a2dDef&&scene.__a2dDef.encounterZone) scene.currentEncounterZone=scene.__a2dDef.encounterZone;   // the dungeon's own zone, as a step would set it
-      if(typeof after==='function'){                                        // once, when the field is back (won, fled or lost)
-        var ev=scene.events, fn=function(){ ev.off('resume',fn); try{ after(); }catch(e){} }; ev.on('resume',fn); }
+      // once, when the field is back (won, fled or lost). Until then the dungeon counts as in a battle: startBattle()
+      // clears isMoving in the same frame it queues the BattleScene, so for one update the field looked free and a
+      // module's trigger (she still stands on the wrong plate, in the shadow's cell) fired a second time.
+      var ev=scene.events, fn=function(){ ev.off('resume',fn); a2dBattleAt=0; if(typeof after==='function'){ try{ after(); }catch(e){} } }; ev.on('resume',fn);
+      a2dBattleAt=Date.now();
       scene.startBattle(mon,false);
       return true;
-    }catch(e){ if(window.__DQ_DEBUG__) console.log('a2d battle '+e); return false; }
+    }catch(e){ a2dBattleAt=0; if(window.__DQ_DEBUG__) console.log('a2d battle '+e); return false; }
+  }
+  var a2dBattleAt=0;
+  function a2dInBattle(scene){
+    if(!a2dBattleAt) return false;
+    try{ if(scene.isMoving || scene.scene.isActive('BattleScene') || scene.scene.isPaused('WorldMapScene')) return true; }catch(e){}
+    if(Date.now()-a2dBattleAt>4000){ a2dBattleAt=0; return false; }         // it never started, or ended without a resume
+    return true;
   }
   function a2dToFloor(scene,floor,spot){
     try{
@@ -4861,7 +4872,7 @@
       else if(via.to===id && via.from!==id) spot=((f>1 || (via.floor>1 && land.mouth2)) ? (land.mouth2||land.fromPrev) : land.mouth)||null;   // E2: a second entrance of a one-floor dungeon (Haunted Forest's north door) lands inside ITS mouth
       if(scene.__a2dFall && scene.__a2dFall.floor===f && (via.to==='__floor_down__'||via.to==='__floor_up__')) spot=scene.__a2dFall.spot;   // a module's own floor change
     }
-    scene.__a2dFall=null;
+    scene.__a2dFall=null; a2dBattleAt=0;
     scene.__a2dLanding=spot?{key:key,spot:spot}:null;
     a2dLegacyOff(scene,fl);
     a2dSealSetup(scene,fl,key);

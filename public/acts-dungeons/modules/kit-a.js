@@ -175,7 +175,7 @@
     }catch(e){ return 0; }
   }
   function sfx(name){ try{ var a=window.__QOK&&window.__QOK.audio; if(a&&a.playSfx) a.playSfx(name); }catch(e){} }
-  function onField(ctx){ var sc=ctx.scene; try{ return sc.scene.isActive('WorldMapScene') && !sc.scene.isPaused('WorldMapScene') && !sc.scene.isActive('BattleScene'); }catch(e){ return true; } }
+  function onField(ctx){ var sc=ctx.scene; try{ return sc.scene.isActive('WorldMapScene') && !sc.scene.isPaused('WorldMapScene') && !sc.scene.isActive('BattleScene') && !(ctx.inBattle && ctx.inBattle()); }catch(e){ return true; } }
   var waiting=[];
   function ready(fn){ if(window.__QOK_DNG2__) { try{ fn(K,window.__QOK_DNG2__); }catch(e){ if(window.__DQ_DEBUG__) console.log('kit-a '+e); } } else waiting.push(fn); }
   function pump(){ if(!waiting.length) return; if(!window.__QOK_DNG2__){ setTimeout(pump,50); return; }
