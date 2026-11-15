@@ -4626,7 +4626,7 @@
     if(!scene || scene.__a2dPT || typeof scene.performTransition!=='function') return;
     var orig=scene.performTransition; scene.__a2dPT=true;
     scene.performTransition=function(x){
-      try{ a2dVia={to:x&&x.targetMap, from:this.currentMapId, t:Date.now()}; }catch(e){}
+      try{ a2dVia={to:x&&x.targetMap, from:this.currentMapId, floor:(x&&x.toFloor)||1, t:Date.now()}; }catch(e){}
       return orig.apply(this,arguments);
     };
   }
@@ -4858,7 +4858,7 @@
     if(via && Date.now()-via.t<4000){
       if(via.to==='__floor_down__') spot=land.fromPrev;
       else if(via.to==='__floor_up__') spot=land.fromNext;
-      else if(via.to===id && via.from!==id) spot=(f>1 ? (land.mouth2||land.fromPrev) : land.mouth)||null;
+      else if(via.to===id && via.from!==id) spot=((f>1 || (via.floor>1 && land.mouth2)) ? (land.mouth2||land.fromPrev) : land.mouth)||null;   // E2: a second entrance of a one-floor dungeon (Haunted Forest's north door) lands inside ITS mouth
       if(scene.__a2dFall && scene.__a2dFall.floor===f && (via.to==='__floor_down__'||via.to==='__floor_up__')) spot=scene.__a2dFall.spot;   // a module's own floor change
     }
     scene.__a2dFall=null;

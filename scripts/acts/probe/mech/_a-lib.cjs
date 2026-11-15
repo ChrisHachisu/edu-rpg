@@ -18,7 +18,7 @@ const QUESTS = ['owlsLesson', 'drakeCargo', 'lunasMap', 'ancientRelic', 'flameCl
 const CELL = 48;
 
 class Run {
-  constructor(id, { bossId, flags = {}, name = id } = {}) { this.id = id; this.bossId = bossId; this.seedFlags = flags; this.rows = []; this.n = 0; this.name = name;
+  constructor(id, { bossId, flags = {}, name = id, grade = null } = {}) { this.grade = grade; this.id = id; this.bossId = bossId; this.seedFlags = flags; this.rows = []; this.n = 0; this.name = name;
     this.dir = path.join(SHOTS, id) + '/'; fs.mkdirSync(this.dir, { recursive: true }); }
   rec(check, ok, note) { const r = { dungeon: this.id, check, status: ok === true ? 'PASS' : ok === false ? 'FAIL' : String(ok), note: note === undefined ? '' : (typeof note === 'string' ? note : JSON.stringify(note)).slice(0, 700) };
     this.rows.push(r); console.log(`[${r.status}] ${this.id}: ${check}${r.note ? ' -- ' + r.note : ''}`);
@@ -36,11 +36,19 @@ class Run {
     const LM = acts.landmarks.find(l => l.mapId === this.id && !l.toFloor && !l.virtual); this.LM = LM;
     const flags = { ...L.allFlags(), ...this.seedFlags }; if (this.bossId) delete flags[`boss.${this.bossId}.defeated`];
     const o = await L.launch(); this.browser = o.browser; this.page = o.page; this.errors = o.errors;
-    await L.bootSave(this.page, L.save({ mapId: 'overworld', x: LM.exit[0], y: LM.exit[1], flags, inventory: INV, completedQuests: QUESTS }), { extra: { 'qok-dungeons2-smoke': '1' } });
+    const sv = L.save({ mapId: 'overworld', x: LM.exit[0], y: LM.exit[1], flags, inventory: INV, completedQuests: QUESTS }); if (this.grade) sv.player.quizDifficulty = String(this.grade);   // the school grade the quiz is set to
+    await L.bootSave(this.page, sv, { extra: { 'qok-dungeons2-smoke': '1' } });
     await this.pilot();
     const p = await L.pos(this.page);
     this.rec('seeded save loads on the overworld at the remapped exit', p.map === 'overworld' && p.x === LM.exit[0] && p.y === LM.exit[1], p);
     return this.enter();
+  }
+  // A second visit in the same browser: a fresh seeded save at another landmark of this dungeon (its second entrance), walked in.
+  async restart(LM, flags) {
+    await L.bootSave(this.page, L.save({ mapId: 'overworld', x: LM.exit[0], y: LM.exit[1], flags: { ...L.allFlags(), ...(flags || {}) }, inventory: INV, completedQuests: QUESTS }), { extra: { 'qok-dungeons2-smoke': '1' } });
+    await this.pilot(); const p = await L.pos(this.page);
+    const r = await L.walkCells(this.page, [[LM.at[0], LM.at[1]]], { maxMs: 25000 }); await this.page.waitForTimeout(1200); await this.pilot();
+    const okS = await this.settle(); await L.noEncounters(this.page); return { ok: okS, from: p, walk: r.why, s: await this.st() };
   }
   async enter() {
     const r = await L.walkCells(this.page, [[this.LM.at[0], this.LM.at[1]]], { maxMs: 25000 }); await this.page.waitForTimeout(1200); await this.pilot();
