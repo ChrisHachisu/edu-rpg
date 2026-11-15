@@ -20,7 +20,7 @@
    speed), ignores the mirror, and touching it starts a battle with a Dark Knight; afterwards it
    is half a loop away (the plan's solver model). The Demon King's fight is the bundle's own.
 
-   What is drawn: at each doorway an ornate mirror on the wall end beside it, two bronze posts and
+   What is drawn: at each doorway an ornate mirror on the wall end beside it, a bronze post and
    a shimmering film across the opening; while she is inside, a slow sheen over the room's floor
    and, while her controls are really swapped, a small left-right badge over her head.
 
