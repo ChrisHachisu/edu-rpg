@@ -356,6 +356,74 @@ T['matching-portals'] = () => {
   }
 };
 
+
+// ---- drifting-blocks ----------------------------------------------------------------------------
+T['drifting-blocks'] = () => {
+  const gcd = (a, b) => (b ? gcd(b, a % b) : a);
+  for (const fid of U.floorsOf('voidRift')) {
+    const H = U.load('drifting-blocks'), c = H.ctxFor(fid), M = H.mod, Lg = M.logic, P = c.mechanic.params;
+    M.load(c); const S = c.state, plan = c.rawPlan, blocks = plan.assets.filter(a => a.kind === 'block');
+    let lcm = 1, worst = 0, lanesN = 0;
+    for (const g of c.mechanic.gates) for (const [j, l] of g.lanes.entries()) { lanesN++;
+      const a = blocks.find(b => b.gate === g.id && b.lane === j);
+      ok(`${fid} gate ${g.id} lane ${j}: block starts on the plan's cell; period ${l.periodTicks}`, a && a.x === l.x && a.y === l.yCentre - 1 + Lg.offs(l, 0) && Lg.per(l) === l.periodTicks);
+      lcm = lcm * l.periodTicks / gcd(lcm, l.periodTicks);
+      let okLane = true, lo = 9, hi = -9;
+      for (let t = 0; t < l.periodTicks; t++) { const o = Lg.offs(l, t); lo = Math.min(lo, o); hi = Math.max(hi, o);
+        if (Math.abs(o - Lg.offs(l, t + 1)) > 1) okLane = false;
+        for (let f = 0; f < 1; f += 0.125) worst = Math.max(worst, Math.abs(Lg.glide(l, t + f) - o)); }
+      ok(`${fid} gate ${g.id} lane ${j}: drifts ${l.amplitude} tiles either way, one tile at a time, inside its lane of 'v' cells`, okLane && lo === -l.amplitude && hi === l.amplitude
+        && [-l.amplitude - 1, l.amplitude + 1].every(o => [0, 1, 2].every(k => c.terrain(l.x + k, l.yCentre + o) === 'v')));
+    }
+    ok(`${fid}: system period is the plan's ${P.systemPeriodTicks} ticks; the drawn block is never more than half a tile from its counted place`, lcm === P.systemPeriodTicks && S.period === lcm && worst <= 0.5 + 1e-9, { lcm, worst });
+    // a patient player crosses every rift from several moments of the cycle; she can never stand where there is no ground
+    const sim = (G, t0, wantIslet) => {
+      const first = G.lanes[0], last = G.lanes[G.lanes.length - 1], yc = G.cy * 48 + 24;
+      const allowed = (x, y) => { const f = M.free(c, x, y); if (f !== undefined) return f; return c.terrain(Math.floor(x / 48), Math.floor(y / 48)) === '.' && (x <= first.x0 - 17 || x >= last.x1 + 17 || (G.islet && (y <= first.top - 17 || y >= first.bot + 17))); };
+      S.clk = t0 * S.ms; H.stand(c, first.x0 - 40, yc); M.tick(c, 0);
+      let ms = 0, fell = null, rode = 0, visited = false;
+      const limit = S.period * S.ms * 4;
+      while (ms < limit) {
+        const y0 = H.kit.soles(c).y; M.tick(c, 16); ms += 16; let s = H.kit.soles(c);
+        if (s.y !== y0) rode += Math.abs(s.y - y0);
+        if (!allowed(s.x, s.y)) { let fix = null;                      // the engine's unstick: nearest ground within a few px
+          for (let r = 2; r <= 14 && !fix; r += 2) for (let a = 0; a < 16 && !fix; a++) { const px = s.x + Math.cos(a * Math.PI / 8) * r, py = s.y + Math.sin(a * Math.PI / 8) * r; if (allowed(px, py)) fix = [px, py]; }
+          if (!fix) { fell = { at: [s.x, s.y], ms }; break; } H.stand(c, fix[0], fix[1]); s = H.kit.soles(c); }
+        if (!wantIslet && s.x >= last.x1 + 17 && !Lg.blockUnder([G], s.x, s.y)) return { ok: true, ms, rode };
+        // where next?
+        const on = Lg.blockUnder([G], s.x, s.y), j = on ? G.lanes.indexOf(on) : (s.x < first.x0 ? -1 : G.lanes.length);
+        let tgt = null;
+        if (wantIslet && !on && s.x >= first.x0 && s.x < last.x1) { visited = true; }             // standing on the islet
+        if (wantIslet && visited) return { ok: true, ms, rode, islet: true };
+        const goIslet = wantIslet && on && j === G.islet.lane;
+        const jn = G.joins.find(q => goIslet ? q.kind === 'islet' : (j === -1 ? q.kind === 'ledgeL' : (j === G.lanes.length - 1 && !wantIslet ? q.kind === 'ledgeR' : (q.kind === 'block' && q.lane === j))));
+        if (jn && goIslet) tgt = [(jn.rect[0] + jn.rect[2]) / 2, G.islet.side === 'top' ? jn.rect[1] - 14 : jn.rect[3] + 14];
+        else if (jn) tgt = [jn.rect[2] + 14, (jn.rect[1] + jn.rect[3]) / 2];
+        else if (on) tgt = [(on.x0 + on.x1) / 2, (on.y0 + on.y1) / 2];
+        if (!tgt) continue;
+        const dx = tgt[0] - s.x, dy = tgt[1] - s.y, d = Math.hypot(dx, dy), st = Math.min(d, 260 * 0.016);
+        if (d < 0.5) continue;
+        const cand = [[s.x + dx / d * st, s.y + dy / d * st], [s.x, s.y + Math.sign(dy) * Math.min(Math.abs(dy), st)], [s.x + Math.sign(dx) * Math.min(Math.abs(dx), st), s.y]];
+        for (const q of cand) if (allowed(q[0], q[1])) { H.stand(c, q[0], q[1]); break; }
+      }
+      return { ok: false, ms, fell, at: H.kit.soles(c) };
+    };
+    for (const G of S.gates) {
+      const res = []; for (let t0 = 0; t0 < S.period; t0 += Math.max(1, Math.floor(S.period / 8))) res.push(sim(G, t0, false));
+      ok(`${fid} gate ${G.id}: a patient player crosses from every phase tried, riding the blocks, and never falls`, res.every(r => r.ok && r.rode > 0), res.filter(r => !r.ok).slice(0, 2));
+      if (G.islet) { const r = sim(G, 3, true); ok(`${fid} gate ${G.id}: the islet is reached from the block that rests against it`, r.ok && r.islet, r); }
+      // no join is open in the picture with less than a tile and a half of shared edge; the void beside a block is never ground
+      let thin = 1e9, thinBB = 1e9, leak = 0;
+      for (let t = 0; t < S.period; t += 0.25) { S.clk = t * S.ms; M.tick(c, 0);
+        for (const q of G.joins) { if (q.kind === 'block') thinBB = Math.min(thinBB, q.rect[3] - q.rect[1] + 18); else if (q.kind !== 'islet') thin = Math.min(thin, q.rect[3] - q.rect[1] + 18); }
+        for (const L of G.lanes) { if (M.free(c, L.x0 + 72, L.y0 - 12) === true && !G.joins.some(q => q.kind === 'islet')) leak++; if (M.free(c, L.x0 + 72, L.y1 + 12) === true && !G.joins.some(q => q.kind === 'islet')) leak++; } }
+      ok(`${fid} gate ${G.id}: an open join to a ledge always shows 1.5+ tiles of shared edge, between two blocks 1+ tile; lane void is never ground`, thin >= 72 - 1e-6 && thinBB >= 48 - 1e-6 && leak === 0, { thin, thinBB, leak });
+    }
+    H.standCell(c, S.gates[0].lanes[0].l.x + 1, S.gates[0].lanes[0].l.yCentre + Lg.offs(S.gates[0].lanes[0].l, 0)); S.clk = 0; M.tick(c, 0);
+    ok(`${fid}: no encounter roll on a block; clock phase in the flags; nothing said, no damage`, M.step(c, 0, 0, 0, 0) === false && typeof H.state.storyFlags[c.flagKey('clk')] === 'number' && H.said.length === 0 && H.state.hp === 100);
+  }
+};
+
 // ---- RUN ----
 const want = process.argv.slice(2), names = want.length ? want : Object.keys(T);
 for (const n of names) { const f0 = fail, p0 = pass; try { T[n](); } catch (e) { fail++; console.log(`[FAIL] ${n}: threw ${e && e.stack || e}`); }
