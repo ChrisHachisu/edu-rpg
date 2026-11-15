@@ -127,6 +127,46 @@ T['lava-channels'] = () => {
   console.log(`  lava-channels: ${hallsN} halls, ${mirrored} mirrored (clockwise on screen = the plan's counter-clockwise)`);
 };
 
+
+// ---- guard-lanterns -----------------------------------------------------------------------------
+T['guard-lanterns'] = () => {
+  for (const fid of U.floorsOf('demonBarracks')) {
+    const H = U.load('guard-lanterns'), c = H.ctxFor(fid), M = H.mod, Lg = M.logic;
+    M.load(c); const S = c.state, md = S.M, P = c.mechanic.params.periodTicks;
+    const assets = c.plan.mech.filter(a => a.kind === 'guard');
+    ok(`${fid}: every guard modelled, period ${P}`, md.guards.length === assets.length && md.guards.length > 0 && md.period === P);
+    for (const g of md.guards) {
+      const a = g.asset, s0 = g.seq[0];
+      ok(`${fid} guard ${g.id}: beat is ${P} ticks and starts on the plan's cell and facing`, g.seq.length === P && s0[0] === a.x && s0[1] === a.y && s0[2] === a.facing[0] && s0[3] === a.facing[1], { s0, a: [a.x, a.y, a.facing] });
+      ok(`${fid} guard ${g.id}: never steps more than one tile a tick, only on floor, and the beat closes`, g.seq.every((p, i) => { const q = g.seq[(i + 1) % P]; return Math.abs(p[0] - q[0]) + Math.abs(p[1] - q[1]) <= 1 && c.terrain(p[0], p[1]) === '.'; }));
+      ok(`${fid} guard ${g.id}: visits every waypoint`, a.waypoints.every(w => g.seq.some(p => p[0] === w[0] && p[1] === w[1])));
+    }
+    const ever = new Set();
+    for (let t = 0; t < P; t++) for (const g of md.guards) for (const k in Lg.litBy(c, md, g, t)) ever.add(k);
+    const zone = new Set(c.plan.zones.find(z => z.kind === 'everLit').cells.map(q => q.join(',')));
+    const miss = [...zone].filter(k => !ever.has(k)), extra = [...ever].filter(k => !zone.has(k));
+    ok(`${fid}: the cells ever lit are exactly the plan's everLit zone (${zone.size} cells)`, miss.length === 0 && extra.length === 0, { miss: miss.slice(0, 5), extra: extra.slice(0, 5) });
+    // a dark cell is never seen; a lit one starts a battle and removes that guard for good
+    const dark = c.rawPlan.route.find(q => !zone.has(q.join(',')));
+    let seenDark = false; for (let t = 0; t < P; t++) if (Lg.seenBy(c, md, t, dark[0], dark[1]).length) seenDark = true;
+    ok(`${fid}: a cell outside the light is never seen`, !seenDark);
+    const g0 = md.guards[0], cell = Object.keys(Lg.litBy(c, md, g0, 7)).find(k => { const q = k.split(',').map(Number); return Math.max(Math.abs(q[0] - g0.seq[7][0]), Math.abs(q[1] - g0.seq[7][1])) >= 3; }).split(',').map(Number);
+    c.state.clk = 7 * c.state.ms + 1; H.standCell(c, dark[0], dark[1]); c.state.grace = 0; M.tick(c, 0);
+    ok(`${fid}: standing in the dark starts nothing`, H.battles.length === 0 && H.said.length === 0);
+    H.standCell(c, cell[0], cell[1]); M.tick(c, 0);
+    ok(`${fid}: standing in a lantern cone: she is held and told`, H.scene.isMoving === true && H.said.length === 1 && H.battles.length === 0, H.said);
+    M.tick(c, 16); H.runTimers(700);
+    ok(`${fid}: ... then the battle starts through the game's own startBattle, against a demon of this zone`, H.battles.length === 1 && H.battles[0].id === 'demon' && H.scene.currentEncounterZone === 'demons-threshold', H.battles);
+    ok(`${fid}: that guard is gone afterwards (flag)`, g0.gone && H.state.storyFlags[c.flagKey('gone.' + g0.id)] === true);
+    H.scene.isMoving = false; c.state.grace = 0; c.state.clk = 7 * c.state.ms + 1;
+    const others = Lg.seenBy(c, md, 7, cell[0], cell[1]);
+    M.tick(c, 0);
+    ok(`${fid}: its light is out: the same cell at the same tick is safe (unless another guard lights it)`, others.length > 0 || H.battles.length === 1);
+    const c2 = H.ctxFor(fid); M.load(c2);
+    ok(`${fid}: the guard stays gone on a new visit`, c2.state.M.guards[0].gone === true && c2.state.M.guards.filter(g => g.gone).length === md.guards.filter(g => g.gone).length);
+  }
+};
+
 // ---- RUN ----
 const want = process.argv.slice(2), names = want.length ? want : Object.keys(T);
 for (const n of names) { const f0 = fail, p0 = pass; try { T[n](); } catch (e) { fail++; console.log(`[FAIL] ${n}: threw ${e && e.stack || e}`); }
