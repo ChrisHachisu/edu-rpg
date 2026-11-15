@@ -229,6 +229,47 @@ T['push-ice'] = () => {
   }
 };
 
+
+// ---- storm-terrace ------------------------------------------------------------------------------
+T['storm-terrace'] = () => {
+  for (const fid of U.floorsOf('stormreachSpire')) {
+    const H = U.load('storm-terrace'), c = H.ctxFor(fid), M = H.mod, Lg = M.logic, P = c.mechanic.params;
+    M.load(c); const S = c.state, md = S.M;
+    ok(`${fid}: the bundle's wind is off`, H.scene.windTowerEnabled === false);
+    const zones = c.plan.zones.filter(z => z.kind === 'strikeGroup');
+    ok(`${fid}: ${P.groups} groups, period ${P.periodTicks}`, md.G === P.groups && md.period === P.periodTicks && zones.length === P.groups);
+    let terrace = 0, bad = 0;
+    for (const z of zones) {
+      const mine = new Set(md.cells[z.group].map(q => q.join(','))); terrace += mine.size;
+      ok(`${fid} group ${z.group}: cells are the plan's zone, struck at tick ${z.strikeAtTick}`, mine.size === z.cells.length && z.cells.every(q => mine.has(q.join(','))) && Lg.striking(md, z.group, z.strikeAtTick) && !Lg.striking(md, z.group, z.strikeAtTick - 1));
+      let st = 0, gl = 0; for (let t = 0; t < md.period; t++) { if (Lg.striking(md, z.group, t)) st++; if (Lg.glowing(md, z.group, t)) gl++;
+        if (Lg.striking(md, z.group, t) !== (((t - z.group * P.ticksBetweenGroups) % md.period + md.period) % md.period < P.strikeTicks)) bad++; }
+      ok(`${fid} group ${z.group}: deadly ${P.strikeTicks} ticks a period, glows the ${P.glowTicks} ticks before`, st === P.strikeTicks && gl === P.glowTicks && Lg.glowing(md, z.group, z.strikeAtTick - 1) && Lg.glowing(md, z.group, z.strikeAtTick - P.glowTicks) && !Lg.glowing(md, z.group, z.strikeAtTick - P.glowTicks - 1), { st, gl });
+    }
+    ok(`${fid}: the solver's danger rule, tick for tick`, bad === 0);
+    let zc = 0, ledge = null; c.rawPlan.rows.forEach((r, y) => [...r].forEach((ch, x) => { if (ch === 'z') { zc++; if (Lg.groupAt(md, x, y) < 0) bad++; } else { if (Lg.groupAt(md, x, y) >= 0) bad++; if (ch === '.' && !ledge) ledge = [x, y]; } }));
+    ok(`${fid}: every terrace cell has a group and nothing else has (${zc} cells)`, bad === 0 && zc === terrace);
+    // a ledge is never struck
+    H.standCell(c, ledge[0], ledge[1]); S.grace = 0;
+    for (let t = 0; t < md.period; t++) { S.clk = t * S.ms + 1; M.tick(c, 0); }
+    ok(`${fid}: a roofed ledge is never struck`, H.state.hp === 100 && H.said.length === 0);
+    // walk three tiles onto group-0 stone while it is safe, wait for its strike
+    const z0 = zones[0], cell = z0.cells.find(q => Lg.groupAt(md, q[0] - 1, q[1]) >= 0 || c.terrain(q[0] - 1, q[1]) === '.') || z0.cells[0];
+    S.clk = ((z0.strikeAtTick + P.strikeTicks + 1) % md.period) * S.ms + 1; S.grace = 0; S.trail = [];
+    for (let i = 60; i >= 0; i -= 6) { H.stand(c, cell[0] * 48 + 24 - i, cell[1] * 48 + 24); M.tick(c, 0); }
+    ok(`${fid}: stone that is not being struck is safe`, H.state.hp === 100);
+    S.clk = ((z0.strikeAtTick - 1 + md.period) % md.period) * S.ms + 1; M.tick(c, 0);
+    ok(`${fid}: glowing stone is still safe`, H.state.hp === 100 && Lg.glowing(md, 0, S.tick));
+    S.clk = (z0.strikeAtTick % md.period) * S.ms + 1; M.tick(c, 0);
+    const s1 = H.kit.soles(c);
+    ok(`${fid}: struck -> small damage, a message, knocked back one tile along her own path`, H.state.hp === 90 && H.said.length === 1 && Math.abs(Math.hypot(s1.x - (cell[0] * 48 + 24), s1.y - (cell[1] * 48 + 24)) - 48) <= 6, { hp: H.state.hp, s1 });
+    H.stand(c, cell[0] * 48 + 24, cell[1] * 48 + 24); M.tick(c, 30);
+    ok(`${fid}: one strike never hits twice`, H.state.hp === 90);
+    let waited = 0; while (H.state.hp === 90 && waited < md.period * S.ms * 1.5) { M.tick(c, 50); waited += 50; }
+    ok(`${fid}: ... but a later strike does, as a float text`, H.state.hp === 80 && H.said.length === 1, { waited });
+  }
+};
+
 // ---- RUN ----
 const want = process.argv.slice(2), names = want.length ? want : Object.keys(T);
 for (const n of names) { const f0 = fail, p0 = pass; try { T[n](); } catch (e) { fail++; console.log(`[FAIL] ${n}: threw ${e && e.stack || e}`); }
