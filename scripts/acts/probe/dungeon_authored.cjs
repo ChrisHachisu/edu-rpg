@@ -15,6 +15,7 @@
 // `<id>:off` checks the kill switch (localStorage['qok-dungeons2']='0'): the bundle's generated floor.
 const fs = require('fs'), path = require('path');
 const L = require('./lib.cjs');
+const PT = require('./playthrough/ptio.cjs');
 const ROOT = path.resolve(__dirname, '../../..');
 const NAVDIR = process.env.D2_NAV || '/home/user/work/e1/nav';
 const acts = JSON.parse(fs.readFileSync(path.join(ROOT, 'public/acts-hifi/manifest.json'), 'utf8'));
@@ -166,26 +167,41 @@ class Run {
 }
 
 async function runDungeon(spec) {
-  const [id, mode] = spec.split(':'); const smoke = mode === 'smoke';
+  let [id, mode] = spec.split(':');
+  // A mechanic dungeon is played end to end by its own probe (mech/<mechanic>.cjs): here it gets the
+  // layout checks of floor 1 (entry, landing, mouth, re-entry, the first stretch, a chest) with its
+  // REAL module running, and the module API counted on that module ("layout", the default for them).
+  const D0 = man.dungeons[id]; if (!mode && D0 && D0.mechanic && D0.mechanic !== 'none') mode = 'layout';
+  const layout = mode === 'layout', smoke = mode === 'smoke' || layout;
   const D = man.dungeons[id]; if (!D) { rec(id, 'in the manifest', false); return; }
   const LM = acts.landmarks.find(l => l.mapId === id && !l.toFloor && !l.virtual);
   const { browser, page, errors } = await L.launch();
   const R = new Run(page, id);
   try {
-    const seed = { mapId: 'overworld', x: LM.exit[0], y: LM.exit[1], activeQuests: QUESTS[id] || [], flags: {} };
-    const extra = smoke ? { 'qok-dungeons2-smoke': '1' } : mode === 'off' ? { 'qok-dungeons2': '0' } : {};
-    await L.bootSave(page, L.save(seed), { extra });
+    if (!LM) { rec(id, 'an overworld mouth (a portal-isle dungeon is entered from its isle: see its mech/ probe)', 'SKIP'); return; }
+    // layout mode: the entrance locks of the bundle (Shadow Cave, Volcanic Forge, Magma Tunnels) are passed as a player who got there would
+    const seed = { mapId: 'overworld', x: LM.exit[0], y: LM.exit[1], activeQuests: QUESTS[id] || [], flags: layout ? { ...L.allFlags(), 'boss.sandGolem.defeated': true } : {},
+      ...(layout ? { inventory: [{ itemId: 'herb', quantity: 5 }, { itemId: 'flameCloak', quantity: 1 }, { itemId: 'windbreakerStone', quantity: 1 }] } : {}) };
+    const extra = mode === 'smoke' ? { 'qok-dungeons2-smoke': '1' } : mode === 'off' ? { 'qok-dungeons2': '0' } : {};
+    await L.bootSave(page, PT.seed() || L.save(seed), { extra });   // PT_SAVE: the story playthrough's own record
     await page.evaluate(PILOT);
     let p = await L.pos(page);
     rec(id, 'seeded save loads on the overworld at the remapped exit', p.map === 'overworld' && p.x === LM.exit[0] && p.y === LM.exit[1], p);
     // A do-nothing mechanic module under this dungeon's own mechanic id: proves every hook of the
     // module API fires and is handed the plan's mechanic data, without changing how the floor plays.
-    const hookUp = () => page.evaluate(mid => { const h = window.__d2hook = window.__d2hook || { load: 0, unload: 0, tick: 0, input: 0, free: 0, bump: 0, step: 0, interact: 0, mech: null };
+    const hookUp = () => layout ? wrapLive() : page.evaluate(mid => { const h = window.__d2hook = window.__d2hook || { load: 0, unload: 0, tick: 0, input: 0, free: 0, bump: 0, step: 0, interact: 0, mech: null };
       window.__QOK_DNG2__.register(mid, { load(c) { h.load++; h.mech = { id: c.mechanic.id, keys: Object.keys(c.mechanic), mechAssets: (c.plan.mech || []).map(a => a.kind), terrain: c.terrain(0, 0), flagKey: c.flagKey('x') }; },
         unload() { h.unload++; }, tick() { h.tick++; }, input() { h.input++; }, free() { h.free++; }, bump() { h.bump++; }, step() { h.step++; }, interact() { h.interact++; } }); }, D.mechanic);
+    // layout mode: count the hooks of the live module (each wrapper hands the call on unchanged)
+    const wrapLive = () => page.evaluate(() => { const h = window.__d2hook = window.__d2hook || { load: 0, unload: 0, tick: 0, input: 0, free: 0, bump: 0, step: 0, interact: 0, mech: null };
+      const c = window.__QOK_DNG2__.ctx(), m = c && c.mod; if (!m) return false; if (m.__d2w) return true; m.__d2w = true;
+      h.mech = { id: c.mechanic.id, keys: Object.keys(c.mechanic), mechAssets: (c.plan.mech || []).map(a => a.kind), terrain: c.terrain(0, 0), flagKey: c.flagKey('x'), real: true };
+      for (const k of ['load', 'unload', 'tick', 'input', 'free', 'bump', 'step', 'interact']) { const o = m[k]; m[k] = function () { h[k]++; return o ? o.apply(this, arguments) : undefined; }; }
+      return true; });
     await hookUp();
     const enter = async () => { const r = await L.walkCells(page, [[LM.at[0], LM.at[1]]], { maxMs: 25000 }); await page.waitForTimeout(1200); await page.evaluate(PILOT); return r; };
     let r = await enter(); let s = await R.st();
+    if (layout) { await R.settle(); rec(id, `the real ${D0.mechanic} module is running on floor 1`, await wrapLive(), await R.st().then(x => x.d2)); }
     if (!rec(id, 'walking into the overworld mouth enters floor 1', s.map === id && s.floor === 1, { r, s })) return;
     if (mode === 'off') {                                          // kill switch: nothing fetched, the bundle's generated floor, and she can walk on it
       await page.waitForTimeout(2500); s = await R.st(); const F = man.floors[`${id}-f1`];
@@ -220,7 +236,7 @@ async function runDungeon(spec) {
       g = await at(46); d = (await depths()).find(o => o[0] === ov.x && o[1] === ov.y);
       rec(id, 'f1: in front of the pillar she is drawn over it', g.ok && g.why === 'arrived' && !!d && d[2] < heroD, { g: g.why, sprite: d, heroDepth: heroD }); await R.shot('f1-pillar-front');
       const bad = errors.filter(e => !/favicon|audio|\.mp3|\.ogg/.test(e.m)); rec(id, 'no page errors or failed requests', bad.length === 0, bad.slice(0, 5)); return; }
-    const floors = D.authoredFloors, total = D.floors; let hpTest = false, resumeTest = false, encTest = false;
+    const floors = layout ? [1] : D.authoredFloors, total = D.floors; let hpTest = false, resumeTest = false, encTest = false;
     for (const f of floors) {
       const key = `${id}-f${f}`, FL = man.floors[key], N = nav(key);
       s = await R.st();
@@ -366,12 +382,12 @@ async function runDungeon(spec) {
       }
     }
     const hk = await page.evaluate(() => window.__d2hook);
-    rec(id, 'mechanic module API: load/unload/tick/input/free/step/interact hooks all fired' + (smoke ? '' : ', bump too (walking into the boss)'),
-      !!hk && hk.load > 0 && hk.unload > 0 && hk.tick > 30 && hk.input > 30 && hk.free > 100 && hk.step > 3 && hk.interact > 30 && (smoke || hk.bump > 0) && hk.mech && hk.mech.id === D.mechanic, hk);
+    rec(id, 'mechanic module API: load/unload/tick/input/free/step/interact hooks all fired' + (layout ? ' on the real module' : smoke ? '' : ', bump too (walking into the boss)'),
+      !!hk && hk.load > 0 && hk.unload > 0 && hk.tick > 30 && hk.input > 30 && (layout || hk.free > 100) && hk.step > 3 && hk.interact > 30 && (smoke || hk.bump > 0) && hk.mech && hk.mech.id === D.mechanic, hk);
     const bad = errors.filter(e => !/favicon|audio|\.mp3|\.ogg/.test(e.m));
     rec(id, 'no page errors or failed requests', bad.length === 0, bad.slice(0, 5));
   } catch (e) { rec(id, 'probe crashed', false, String(e && e.stack || e).slice(0, 600)); await R.shot('crash').catch(() => {}); }
-  finally { await browser.close(); }
+  finally { try { await PT.dump(page); } catch (e) {} await browser.close(); }
 }
 
 (async () => {

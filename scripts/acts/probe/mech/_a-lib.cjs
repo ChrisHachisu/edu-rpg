@@ -9,8 +9,11 @@
 // PROBE_SHOTS (default /mnt/project-files/edu-rpg/acts-integration/dungeons-e2) / <dungeon id> / NN-tag.jpg
 const fs = require('fs'), path = require('path');
 const L = require('../lib.cjs');
+const PT = require('../playthrough/ptio.cjs');
 const ROOT = path.resolve(__dirname, '../../../..');
 const PILOT = fs.readFileSync(path.join(__dirname, '_a-pilot.js'), 'utf8');
+// Every authored dungeon ships enabled since 06f799c: the smoke flag is opt-in (D2_SMOKE=1) for a disabled entry.
+const SMOKE_EXTRA = process.env.D2_SMOKE === '1' ? { 'qok-dungeons2-smoke': '1' } : {}, SMOKE_NOTE = process.env.D2_SMOKE === '1' ? ' (smoke flag on)' : '';
 const SHOTS = process.env.PROBE_SHOTS || '/mnt/project-files/edu-rpg/acts-integration/dungeons-e2';
 const acts = JSON.parse(fs.readFileSync(path.join(ROOT, 'public/acts-hifi/manifest.json'), 'utf8'));
 const INV = ['herb*5', 'flameCloak', 'windbreakerStone'].map(s => ({ itemId: s.split('*')[0], quantity: +(s.split('*')[1] || 1) }));
@@ -36,8 +39,8 @@ class Run {
     const LM = acts.landmarks.find(l => l.mapId === this.id && !l.toFloor && !l.virtual); this.LM = LM;
     const flags = { ...L.allFlags(), ...this.seedFlags }; if (this.bossId) delete flags[`boss.${this.bossId}.defeated`];
     const o = await L.launch(); this.browser = o.browser; this.page = o.page; this.errors = o.errors;
-    const sv = L.save({ mapId: 'overworld', x: LM.exit[0], y: LM.exit[1], flags, inventory: INV, completedQuests: QUESTS }); if (this.grade) sv.player.quizDifficulty = String(this.grade);   // the school grade the quiz is set to
-    await L.bootSave(this.page, sv, { extra: { 'qok-dungeons2-smoke': '1' } });
+    const sv = PT.seed() || L.save({ mapId: 'overworld', x: LM.exit[0], y: LM.exit[1], flags, inventory: INV, completedQuests: QUESTS }); if (this.grade && !PT.active()) sv.player.quizDifficulty = String(this.grade);   // PT_SAVE: the story playthrough's own record   // the school grade the quiz is set to
+    await L.bootSave(this.page, sv, { extra: SMOKE_EXTRA });
     await this.pilot();
     const p = await L.pos(this.page);
     this.rec('seeded save loads on the overworld at the remapped exit', p.map === 'overworld' && p.x === LM.exit[0] && p.y === LM.exit[1], p);
@@ -45,7 +48,9 @@ class Run {
   }
   // A second visit in the same browser: a fresh seeded save at another landmark of this dungeon (its second entrance), walked in.
   async restart(LM, flags) {
-    await L.bootSave(this.page, L.save({ mapId: 'overworld', x: LM.exit[0], y: LM.exit[1], flags: { ...L.allFlags(), ...(flags || {}) }, inventory: INV, completedQuests: QUESTS }), { extra: { 'qok-dungeons2-smoke': '1' } });
+    let sv = L.save({ mapId: 'overworld', x: LM.exit[0], y: LM.exit[1], flags: { ...L.allFlags(), ...(flags || {}) }, inventory: INV, completedQuests: QUESTS });
+    if (PT.active()) { sv = JSON.parse(await PT.capture(this.page)); sv.player.position = { mapId: 'overworld', x: LM.exit[0], y: LM.exit[1], floor: 1 }; }   // the playthrough walks round to the other mouth on its own record
+    await L.bootSave(this.page, sv, { extra: SMOKE_EXTRA });
     await this.pilot(); const p = await L.pos(this.page);
     const r = await L.walkCells(this.page, [[LM.at[0], LM.at[1]]], { maxMs: 25000 }); await this.page.waitForTimeout(1200); await this.pilot();
     const okS = await this.settle(); await L.noEncounters(this.page); return { ok: okS, from: p, walk: r.why, s: await this.st() };
@@ -53,7 +58,7 @@ class Run {
   async enter() {
     const r = await L.walkCells(this.page, [[this.LM.at[0], this.LM.at[1]]], { maxMs: 25000 }); await this.page.waitForTimeout(1200); await this.pilot();
     const okS = await this.settle(); const s = await this.st();
-    this.rec('walking into the overworld mouth enters floor 1 of the authored dungeon (smoke flag on)', s.map === this.id && s.floor === 1 && okS && (s.d2.mechanic !== null || !this.needModule), { r: r.why, s });
+    this.rec('walking into the overworld mouth enters floor 1 of the authored dungeon' + SMOKE_NOTE, s.map === this.id && s.floor === 1 && okS && (s.d2.mechanic !== null || !this.needModule), { r: r.why, s });
     await L.noEncounters(this.page);
     return s.map === this.id;
   }
@@ -144,6 +149,7 @@ class Run {
     return p.map === 'overworld';
   }
   async finish() {
+    try { await PT.dump(this.page); } catch (e) {}
     const bad = (this.errors || []).filter(e => !/favicon|audio|\.mp3|\.ogg/.test(e.m));
     this.rec('no page errors or failed requests', bad.length === 0, bad.slice(0, 5));
     try { await this.browser.close(); } catch (e) {}

@@ -12,6 +12,7 @@ const PILOT = fs.readFileSync(path.join(__dirname, 'pilot.js'), 'utf8');
 const flags = () => Object.fromEntries([...new Set(Object.values(MAPS).map(m => m.bossId).filter(Boolean))].map(b => [`boss.${b}.defeated`, true]));
 const INV = ['herb*5', 'flameCloak', 'windbreakerStone', 'excalibur', 'aegisOfDawn', 'galeShield', 'crownOfWisdom']
   .map(s => ({ itemId: s.split('*')[0], quantity: +(s.split('*')[1] || 1) }));
+const D2 = JSON.parse(fs.readFileSync(path.join(__dirname, '../../../public/acts-dungeons/manifest.json'), 'utf8'));
 const QUESTS = ['owlsLesson', 'drakeCargo', 'lunasMap', 'ancientRelic', 'flameCloak', 'lunasProphecy'];   // quest-gated mouths
 (async () => {
   const from = +(process.argv[2] || 0), to = +(process.argv[3] || 999);
@@ -24,7 +25,12 @@ const QUESTS = ['owlsLesson', 'drakeCargo', 'lunasMap', 'ancientRelic', 'flameCl
   if (to >= 99) doors.push({ name: 'Crystal Cave (Act 1 side, override art)', mapId: 'crystalCave', at: [149, 278], exit: [149, 279], toX: 50, toY: 99, tile: 15 });
   const state = () => page.evaluate(() => { const w = window.__PHASER_GAME__.scene.getScene('WorldMapScene'); return { map: w.currentMapId, floor: w.currentFloor, x: w.heroTileX, y: w.heroTileY, msg: w.showingMessage ? ((window.__P && window.__P.lastMsg && window.__P.lastMsg()) || true) : null }; });
   for (const d of doors) {
-    const row = { name: d.name, map: d.mapId, door: d.at, exit: d.exit, wantFloor: d.toFloor || 1, wantAt: [d.toX, d.toY] };
+    // An authored dungeon (acts-dungeons manifest) clamps a door's floor to the floors it has and lands on its baked
+    // landing (land.mouth2 for a second entrance); the bundle's own toX/toY are then not where she stands.
+    const A = D2.dungeons[d.mapId] && D2.dungeons[d.mapId].enabled ? D2.dungeons[d.mapId] : null;
+    const wantFloor = A ? Math.min(d.toFloor || 1, A.floors) : (d.toFloor || 1), FL = A && D2.floors[`${d.mapId}-f${wantFloor}`];
+    const land = FL && FL.land && ((d.toFloor || 1) > 1 ? FL.land.mouth2 : FL.land.mouth);
+    const row = { name: d.name, map: d.mapId, door: d.at, exit: d.exit, wantFloor, wantAt: land ? [land.x, land.y] : [d.toX, d.toY], authored: !!A };
     try {
       await L.bootSave(page, L.save({ x: d.exit[0], y: d.exit[1], flags: flags(), inventory: INV, completedQuests: QUESTS }));
       await page.evaluate(PILOT); await page.evaluate(() => window.__P.hookMsgs());
@@ -33,8 +39,8 @@ const QUESTS = ['owlsLesson', 'drakeCargo', 'lunasMap', 'ancientRelic', 'flameCl
       await page.evaluate(PILOT); await L.noEncounters(page);
       let st = await state();
       row.walk = walk.why; row.in = st;
-      row.entered = st.map === d.mapId && st.floor === (d.toFloor || 1);
-      row.arrivedAt = st.x === d.toX && st.y === d.toY;
+      row.entered = st.map === d.mapId && st.floor === wantFloor;
+      row.arrivedAt = st.x === row.wantAt[0] && st.y === row.wantAt[1];
       row.shotIn = path.basename(await L.shot(page, 'mouth-' + d.name.replace(/[^a-z0-9]+/gi, '-').toLowerCase() + '-in'));
       if (row.entered) {
         // The interior's own way back out: the nearest cell whose checkTransition answers "overworld".

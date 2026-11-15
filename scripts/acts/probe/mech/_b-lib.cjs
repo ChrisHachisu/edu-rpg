@@ -15,8 +15,11 @@
 // D2_PLANS (default /home/user/work/plans/out) holds the plan JSON each probe solves from.
 const fs = require('fs'), path = require('path');
 const L = require('../lib.cjs');
+const PT = require('../playthrough/ptio.cjs');
 const ROOT = path.resolve(__dirname, '../../../..');
 const PILOT = fs.readFileSync(path.join(__dirname, '_b-pilot.js'), 'utf8');
+// Every authored dungeon ships enabled since 06f799c: the smoke flag is opt-in (D2_SMOKE=1) for a disabled entry.
+const SMOKE_EXTRA = process.env.D2_SMOKE === '1' ? { 'qok-dungeons2-smoke': '1' } : {}, SMOKE_NOTE = process.env.D2_SMOKE === '1' ? ' (smoke flag on)' : '';
 const SHOTS = process.env.PROBE_SHOTS || '/mnt/project-files/edu-rpg/acts-integration/dungeons-e2';
 const PLANS = process.env.D2_PLANS || '/home/user/work/plans/out';
 const acts = JSON.parse(fs.readFileSync(path.join(ROOT, 'public/acts-hifi/manifest.json'), 'utf8'));
@@ -59,10 +62,10 @@ class Run {
     const o = await L.launch(); this.browser = o.browser; this.page = o.page; this.errors = o.errors;
     const at = LM ? { mapId: 'overworld', x: LM.exit[0], y: LM.exit[1] } : { mapId: this.isle, x: ISLE_BACK[0], y: ISLE_BACK[1] };
     this.back = at;
-    await L.bootSave(this.page, L.save({ ...at, flags, inventory: INV, completedQuests: QUESTS }), { extra: { 'qok-dungeons2-smoke': '1' } });
+    await L.bootSave(this.page, PT.seed() || L.save({ ...at, flags, inventory: INV, completedQuests: QUESTS }), { extra: SMOKE_EXTRA });   // PT_SAVE: the story playthrough's own record
     await this.pilot();
     if (LM) { const p = await L.pos(this.page); this.rec('seeded save loads on the overworld at the remapped exit', p.map === 'overworld' && p.x === LM.exit[0] && p.y === LM.exit[1], p); }
-    else { const s = await this.st(); this.rec(`seeded save loads on the portal isle ${this.isle} where the dungeon lets her out`, s.map === this.isle && s.x === ISLE_BACK[0] && s.y === ISLE_BACK[1], [s.map, s.x, s.y]); }
+    else { const s = await this.st(); this.rec(`seeded save loads on the portal isle ${this.isle}` + (PT.active() ? '' : ' where the dungeon lets her out'), s.map === this.isle && (PT.active() || (s.x === ISLE_BACK[0] && s.y === ISLE_BACK[1])), [s.map, s.x, s.y]); }
     return this.enter();
   }
   async enter() {
@@ -92,7 +95,7 @@ class Run {
       } }
     await this.page.waitForTimeout(1200); await this.pilot();
     const okS = await this.settle(); const s = await this.st();
-    this.rec(`walking into the ${this.LM ? 'overworld' : 'portal isle'} mouth enters floor 1 of the authored dungeon (smoke flag on)`, s.map === this.id && s.floor === 1 && okS && s.d2.mechanic !== null, { r, s });
+    this.rec(`walking into the ${this.LM ? 'overworld' : 'portal isle'} mouth enters floor 1 of the authored dungeon${SMOKE_NOTE}`, s.map === this.id && s.floor === 1 && okS && s.d2.mechanic !== null, { r, s });
     await L.noEncounters(this.page);
     return s.map === this.id;
   }
@@ -184,6 +187,7 @@ class Run {
     return ok;
   }
   async finish() {
+    try { await PT.dump(this.page); } catch (e) {}
     const bad = (this.errors || []).filter(e => !/favicon|audio|\.mp3|\.ogg/.test(e.m));
     this.rec('no page errors or failed requests', bad.length === 0, bad.slice(0, 5));
     try { await this.browser.close(); } catch (e) {}
