@@ -63,13 +63,28 @@ def floors_of(did):
     return [f"{did}-f{n}" for n in range(1, p1["totalFloors"] + 1)]
 
 
-SIDE = {"down": (0, 1), "up": (0, -1), "left": (-1, 0), "right": (1, 0)}
+SIDE = {"down": (0, 1), "up": (0, -1), "left": (-1, 0), "right": (1, 0),
+        "south": (0, 1), "north": (0, -1), "west": (-1, 0), "east": (1, 0)}
+
+
+def open_chars(did):
+    """Plan characters this dungeon's walk mask (and the engine's '.' rows) opens: the schema's
+    walkable set plus the dungeon table's `open` (ice she slides on, a crust she may cross)."""
+    return WALKABLE | set(DUNGEONS.get(did, {}).get("open", ""))
+
+
+def link_chars(did):
+    """Plan characters that are CLOSED in the mask but that the dungeon's mechanic carries her
+    across (a trestle the cart rides, a block lane, a mold that fills, a wall that breaks).
+    export_runtime.py joins the ground on either side of such cells instead of failing."""
+    return set(DUNGEONS.get(did, {}).get("links", ""))
 
 
 def mouth_cells(plan, m):
     """The cells a mouth owns: its own cell plus the walkable cells beside it across the corridor
     (so the whole corridor width leaves), and the art-only run from there to the map edge."""
     rows, W, H = plan["rows"], plan["width"], plan["height"]
+    WALKABLE = open_chars(plan["dungeonId"])
     dx, dy = SIDE.get(m.get("side", "down"), (0, 1))
     px, py = (1, 0) if dx == 0 else (0, 1)                    # across the corridor
     cells = [(m["x"], m["y"])]
