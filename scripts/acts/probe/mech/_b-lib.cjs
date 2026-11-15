@@ -33,7 +33,9 @@ const plan = (id, f) => JSON.parse(fs.readFileSync(path.join(PLANS, `${id}-f${f}
 class Run {
   // extra: in-page source of the probe's own helpers, injected after the pilot on every (re)load
   constructor(id, { bossId, flags = {}, name = id, extra = '' } = {}) { this.id = id; this.bossId = bossId; this.seedFlags = flags; this.rows = []; this.n = 0; this.name = name; this.extra = extra;
-    this.dir = path.join(SHOTS, id) + '/'; fs.mkdirSync(this.dir, { recursive: true }); fs.mkdirSync(L.OUT, { recursive: true }); }
+    this.dir = path.join(SHOTS, id) + '/'; fs.mkdirSync(this.dir, { recursive: true }); fs.mkdirSync(L.OUT, { recursive: true });
+    for (const f of fs.readdirSync(this.dir)) if (/^\d\d-.*\.jpg$/.test(f)) { try { fs.unlinkSync(path.join(this.dir, f)); } catch (e) {} }   // this run's shots only
+  }
   rec(check, ok, note) { const r = { dungeon: this.id, check, status: ok === true ? 'PASS' : ok === false ? 'FAIL' : String(ok), note: note === undefined ? '' : (typeof note === 'string' ? note : JSON.stringify(note)).slice(0, 700) };
     this.rows.push(r); console.log(`[${r.status}] ${this.id}: ${check}${r.note ? ' -- ' + r.note : ''}`);
     fs.writeFileSync(path.join(L.OUT, `${this.name}.json`), JSON.stringify(this.rows, null, 1)); return ok === true; }
