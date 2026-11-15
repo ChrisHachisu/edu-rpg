@@ -173,13 +173,14 @@
       else if(hintEl) hintDrop();
       if(st.flash){ st.flash.t-=dt; var g=st.fx; g.clear();
         if(st.flash.t>0){ var p=st.flash.p; g.fillStyle(st.flash.col,0.45*Math.min(1,st.flash.t/300)); g.fillRect(p.x0+3,p.y0+3,p.x1-p.x0-6,p.y1-p.y0-6); } else st.flash=null; }
+      if(st.note){ st.note.t-=dt; if(st.note.t<=0 && !ctx.busy()){ var nk=st.note.key; st.note=null; ctx.say(K.S(nk)); } return; }
       if(st.pending){                                       // wrong plate: the message is read, then the guardian
         st.pending.t-=dt;
         if(st.pending.t>0 || sc.showingMessage || sc.isMoving) return;
         var V=st.pending.V; st.pending.tries=(st.pending.tries||0)+1;
         var started=ctx.battle(GUARDIAN,function(){
           if(!st.alive || sc.currentMapId!==ctx.id || (sc.currentFloor||1)!==ctx.floor){ setProgress(ctx,V.R,0); return; }   // she lost and woke elsewhere
-          self._reset(ctx,V); st.grace=500; ctx.say(K.S('tomb.reset')); });
+          self._reset(ctx,V); st.grace=700; st.note={key:'tomb.reset',t:350}; });   // the line is said from the tick, once the field is live again
         if(started){ st.pending=null; st.battles=(st.battles||0)+1; }
         else if(st.pending.tries>90){ st.pending=null; self._reset(ctx,V); ctx.say(K.S('tomb.reset')); }   // the battle could not start: the reset still happens
         return; }
