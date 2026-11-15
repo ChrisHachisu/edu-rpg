@@ -19,6 +19,9 @@ const key = c => c.join(',');
   try {
     if (!(await R.start())) throw new Error('could not enter');
     const page = R.page;
+    // every battle start, with who asked for it (a wrong plate must cost exactly one)
+    await R.ev(() => { const w = window.__PHASER_GAME__.scene.getScene('WorldMapScene'), o = w.startBattle; window.__sb = [];
+      w.startBattle = function (m) { window.__sb.push({ m: m && (m.id || m.nameKey), t: Math.round(performance.now()), stack: String(new Error().stack).split('\n').slice(2, 7).map(x => x.trim().slice(0, 90)) }); return o.apply(this, arguments); }; });
     const room = name => R.ev(n => { const V = window.__A.mstate().rooms.find(v => v.R.room === n); return { n: V.n, steps: V.R.path.length, doors: V.door.length, entry: V.B.entry }; }, name);
     const strip = () => R.ev(() => { const e = document.getElementById('d2aGlyphHint'); if (!e) return null; const row = e.children[1]; return { text: e.children[0].textContent, open: row.style.display !== 'none', icons: row.querySelectorAll('canvas').length }; });
     const centre = (Rm, k) => { const cs = Rm.plateCells[k], xs = cs.map(c => c[0]), ys = cs.map(c => c[1]); return [(Math.min(...xs) + Math.max(...xs) + 1) * 24, (Math.min(...ys) + Math.max(...ys) + 1) * 24]; };
@@ -60,7 +63,8 @@ const key = c => c.join(',');
         await R.shot('f1-wrong-plate'); await R.dismiss(); const fr = await R.fight(); await page.waitForTimeout(900); await R.pilot(); const m2 = await R.ev(() => window.__A.msgs().slice(-1)[0] || ''); await R.shot('f1-back-at-the-door'); await R.dismiss();
         const st2 = await room('main'), s2 = await R.st();
         const sc = await R.ev(() => { const g = window.__PHASER_GAME__, w = g.scene.getScene('WorldMapScene'); return { active: g.scene.getScenes(true).map(x => x.scene.key), wPaused: g.scene.isPaused('WorldMapScene'), wActive: g.scene.isActive('WorldMapScene'), battle: g.scene.isActive('BattleScene'), msg: !!w.showingMessage, moving: !!w.isMoving, status: w.sys.settings.status }; });
-        R.rec('f1: after the guardian the field is live again (scene running, message read)', sc.wActive && !sc.wPaused && !sc.battle && !sc.msg, sc);
+        await page.waitForTimeout(1500); const sb = await R.ev(() => window.__sb), sc2 = await R.ev(() => ({ battle: window.__PHASER_GAME__.scene.isActive('BattleScene'), moving: !!window.__PHASER_GAME__.scene.getScene('WorldMapScene').isMoving }));
+        R.rec('f1: after the guardian the field is live again (scene running, message read, exactly one battle was started)', sc.wActive && !sc.wPaused && !sc.battle && !sc.msg && sb.length === 1 && !sc2.battle && !sc2.moving, { sc, sc2, sb });
         R.rec('f1: a wrong plate: the line, one Tomb Guardian battle, the plates dark again and she is back at the room door', st1.n === 1 && /Wrong plate/.test(m1) && fr.entered && fr.won && /back at the door/.test(m2) && st2.n === 0 && Math.floor(s2.sx / 48) === st2.entry[0] && Math.floor(s2.sy / 48) === st2.entry[1], { g, m1, fr, m2, st2, at: [s2.sx, s2.sy] }); }
       if (f === 3) { await R.ev(() => { window.__GAME_STATE__.player.state.quizDifficulty = '3'; }); await page.waitForTimeout(300); const o3 = await strip();
         R.rec('f3: with the quiz set to grade 3 there is no order strip', o3 === null, o3); await R.ev(() => { window.__GAME_STATE__.player.state.quizDifficulty = '1'; }); }

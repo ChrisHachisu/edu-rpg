@@ -78,7 +78,7 @@ const SH = `(() => { const A = window.__A, T = 48;
           await L.walkCells(page, [[LM2.at[0], LM2.at[1]]], { maxMs: 25000 }); await page.waitForTimeout(1200); await R.pilot(); const okS = await R.settle(); await inject(); const s3 = await R.st(), land = manifest().floors[`${ID}-f${N}`].land.mouth2;
           R.rec('walking back in from the Act 3 side lands her inside the second mouth on the top floor', okS && s3.map === ID && s3.floor === N && Math.abs(s3.x - land.x) <= 1 && Math.abs(s3.y - land.y) <= 2, { at: [s3.x, s3.y, s3.floor], land });
           await R.shot('back-in-second-mouth'); await L.noEncounters(page); if (s3.map === ID) await sgo({ beside: [bossAsset.x, bossAsset.y], reach: 40 }); } }
-      if ((await R.st()).map === ID) await R.exitByBossCell(bossAsset);
+      if ((await R.st()).map === ID) await R.exitByBossCell(bossAsset, m2 ? LM2 : R.LM, m2 ? 'the exit in the dragon\'s cell lets her out by the door she came in (the Act 3 side)' : undefined);
     }
   } catch (e) { R.rec('probe crashed', false, String(e && e.stack || e).slice(0, 600)); await R.shot('crash').catch(() => {}); }
   process.exit((await R.finish()) ? 1 : 0);

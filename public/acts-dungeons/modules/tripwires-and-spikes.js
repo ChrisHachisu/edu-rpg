@@ -100,11 +100,17 @@
       for(i=0;i<st.patches.length;i++){ var r=st.patches[i]; if(!inRect(r,so.x,so.y,-3)) continue;
         var dx=so.x-prev.x, dy=so.y-prev.y;
         if(Math.abs(dx)+Math.abs(dy)<0.5){ var f=[[0,1],[-1,0],[1,0],[0,-1]][so.dir||0]; dx=f[0]; dy=f[1]; }
-        var bx=0, by=0; if(Math.abs(dx)>=Math.abs(dy)) bx=dx>0?-1:1; else by=dy>0?-1:1;
-        // back out of the patch the way she came, then two tiles more, as far as the ground allows
-        var depth=bx<0?so.x-r.x0:bx>0?r.x1-so.x:by<0?so.y-r.y0:r.y1-so.y, want=depth+THROW, d=0, x=so.x, y=so.y, s;
-        for(s=4;s<=want;s+=4){ var nx=so.x+bx*s, ny=so.y+by*s; if(s>depth+2 && self._hazard(ctx,nx,ny,r)) break; if(s>depth+2 || s>=want){ x=nx; y=ny; d=s; } }
-        if(d<=depth){ x=so.x+bx*(depth+6); y=so.y+by*(depth+6); if(self._hazard(ctx,x,y,r)){ x=prev.x; y=prev.y; } }
+        // back out of the patch the way she came, then two tiles more. Tried in order: against her main heading,
+        // against her side heading (she came in on a slant), then the two ways left; the first that gives the full
+        // two tiles wins, else the one that carries her farthest (a wall behind her must not pin her on the spikes).
+        var ax=Math.abs(dx)>=Math.abs(dy), c1=ax?[dx>0?-1:1,0]:[0,dy>0?-1:1], c2=ax?[0,dy>0?-1:1]:[dx>0?-1:1,0];
+        var cands=[c1,c2,[-c2[0],-c2[1]],[-c1[0],-c1[1]]], best=null, ci;
+        for(ci=0;ci<cands.length;ci++){ var bx=cands[ci][0], by=cands[ci][1];
+          var depth=bx<0?so.x-r.x0:bx>0?r.x1-so.x:by<0?so.y-r.y0:r.y1-so.y, want=depth+THROW, d=0, s;
+          for(s=4;s<=want;s+=4){ if(s>depth+2 && self._hazard(ctx,so.x+bx*s,so.y+by*s,r)) break; if(s>depth+2) d=s; }
+          var gain=d-depth; if(!best || gain>best.gain+1){ best={gain:gain,x:so.x+bx*d,y:so.y+by*d}; }
+          if(gain>=THROW-6) break; }
+        var x=so.x, y=so.y; if(best && best.gain>0){ x=best.x; y=best.y; } else { x=prev.x; y=prev.y; }
         if(!r.up){ r.up=true; K.set(ctx,'spike'+r.id+'.sprung',true); r.img.setTexture(texSpikes(sc,true)); }
         st.hits=(st.hits||0)+1; K.hurt(ctx,SPIKE_HIT); K.sfx('hit');
         st.push={fx:so.x,fy:so.y,tx:x,ty:y,t:0,dir:so.dir}; return; }

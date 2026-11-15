@@ -39,10 +39,10 @@ const plan = f => JSON.parse(fs.readFileSync(path.join(PLANS, `${ID}-f${f}.json`
         const at = await cell(), st1 = await R.ev(() => window.__A.mstate().slides);
         const good = at[0] === m.to[0] && at[1] === m.to[1] && st1 - st0 >= (Math.abs(m.to[0] - m.from[0]) + Math.abs(m.to[1] - m.from[1]) <= 1 ? 0 : 1);   // one cell on (snow, or ice with a rock right behind it) is a step, not a slide
         if (!good) { ok = R.rec(`f${f}: push ${n} (${'DLRU'[m.d]} from ${m.from}) ends on ${m.to}`, false, { at, slides: st1 - st0 }); break; }
-        if (f === 2 && !saved && !m.snow && moves.length) { saved = true;      // resting on the ice, part way across
-          await R.shot('f2-on-the-ice'); const rc = await R.saveContinue(), a2 = await cell(), s2 = await R.st();
-          R.rec('f2: Save -> Continue while she rests on the ice puts her back on the same ice cell, still able to slide', rc.ok && s2.floor === 2 && a2[0] === at[0] && a2[1] === at[1], { saved: rc.saved.pos, at: a2, was: at });
-          await R.shot('f2-resumed'); moves = solve(P, a2, goal) || []; }
+        if (f >= 2 && !saved && !m.snow && moves.length && Math.abs(m.to[0] - m.from[0]) + Math.abs(m.to[1] - m.from[1]) > 1) { saved = true;      // resting against a rock out on the ice, part way across
+          await R.shot(`f${f}-on-the-ice`); const rc = await R.saveContinue(), a2 = await cell(), s2 = await R.st();
+          R.rec(`f${f}: Save -> Continue while she rests on the ice puts her back on the same ice cell, still able to slide`, rc.ok && s2.floor === f && a2[0] === at[0] && a2[1] === at[1], { saved: rc.saved.pos, at: a2, was: at });
+          await R.shot(`f${f}-resumed`); moves = solve(P, a2, goal) || []; }
       }
       if (!ok) break;
       R.rec(`f${f}: the lake is crossed in ${n} pushes, each ending where the rule says`, true);

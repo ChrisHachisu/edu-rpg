@@ -9110,6 +9110,10 @@
     // Guarded on a real kind, never a transient null, for the same reason destroyDng is.
     if (kind && kind!=='ow'){ a1aSea(null,false); a1aUnderpaintHide(); }
     if ((kind==='town'||kind==='dng') && owMap) destroyOwProps(); // entered a town/dungeon -> drop landmark prop images (NOT on a transient null kind)
+    // E2: the overworld's procedural overlay (pines, ridges: a container at depth 5) is empty wherever baked art
+    // owns the ground, so nothing showed that the dungeon branch never drops it. A portal isle has no baked art:
+    // its pines and mountains stayed drawn over an authored dungeon entered from it until the next fresh load.
+    if (kind==='dng' && a2dIs(scene.currentMapId) && overlayState && overlayState.container){ try{ overlayState.container.destroy(); }catch(e){} overlayState=null; }
     if (kind!=='ow' && !SHIP_TOWN_DNG_RESKIN){
       // Overworld-only ship: tear down any stale overworld terrain/overlay so it can't linger over the engine's
       // native town/dungeon art, then bail — towns + dungeons render exactly as the base game does (unchanged).

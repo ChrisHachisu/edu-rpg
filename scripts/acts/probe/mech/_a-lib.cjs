@@ -131,7 +131,7 @@ class Run {
     await page.waitForTimeout(1200); await this.shot(`f${f}-after-boss`);
     return !!(fr.entered && fr.won);
   }
-  async exitByBossCell(asset) {
+  async exitByBossCell(asset, LM = this.LM, what = 'leaving after the boss returns her to the remapped overworld exit') {
     const page = this.page; let how = '';
     const t = await this.ev(([x, y]) => window.__A.tile(x, y), [asset.x, asset.y]); how = 'boss-cell tile ' + t;
     await page.waitForTimeout(400);
@@ -139,7 +139,7 @@ class Run {
     await page.waitForTimeout(600);
     if ((await L.pos(page)).map === this.id) { how += ' -> walked into it'; await this.pilot(); await this.go({ centre: [asset.x, asset.y] }, { hold: 900 }); }
     await page.waitForTimeout(2500); const p = await L.pos(page);
-    this.rec('leaving after the boss returns her to the remapped overworld exit', p.map === 'overworld' && p.x === this.LM.exit[0] && p.y === this.LM.exit[1], { how, p });
+    this.rec(what, p.map === 'overworld' && p.x === LM.exit[0] && p.y === LM.exit[1], { how, p });
     await page.waitForTimeout(1200); await this.shot('exit-overworld');
     return p.map === 'overworld';
   }
