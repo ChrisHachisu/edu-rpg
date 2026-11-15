@@ -320,6 +320,42 @@ T['maze-hunter'] = () => {
   }
 };
 
+
+// ---- matching-portals ---------------------------------------------------------------------------
+T['matching-portals'] = () => {
+  for (const fid of U.floorsOf('twilightDungeon')) {
+    const H = U.load('matching-portals'), c = H.ctxFor(fid), M = H.mod, Lg = M.logic, P = c.mechanic.params;
+    M.load(c); const S = c.state, plan = c.rawPlan, assets = plan.assets.filter(a => a.kind === 'portal');
+    ok(`${fid}: the bundle's own portals are off`, H.scene.shadowPortalEnabled === false && H.scene.portalPairs.length === 0);
+    ok(`${fid}: ${P.pairs} pairs, a pad on each portal asset, on floor, each colour known and used once`, S.pads.length === 2 * P.pairs && assets.length === S.pads.length
+      && S.pads.every(p => assets.some(a => a.x === p.x && a.y === p.y && a.pair === p.pair && a.colour === p.colour) && c.terrain(p.x, p.y) === '.' && Lg.COL[p.colour] !== undefined && p.twin.twin === p && p.twin.pair === p.pair)
+      && new Set(S.pads.map(p => p.colour)).size === P.pairs);
+    const start = plan.route[0]; H.standCell(c, start[0], start[1]); M.tick(c, 16);
+    ok(`${fid}: nothing happens away from a pad`, S.hops === 0 && S.asleep === null);
+    for (const pr of c.mechanic.pairs) {
+      const a = S.pads.find(p => p.pair === pr.pair && p.x === pr.a[0] && p.y === pr.a[1]), b = a.twin;
+      H.stand(c, a.px - 100, a.py); M.tick(c, 16);
+      ok(`${fid} ${pr.colour}: near a portal its twin shines, others do not`, b.shine === true && S.pads.filter(p => p.shine).every(p => Math.hypot(p.twin.px - (a.px - 100), p.twin.py - a.py) <= 3.2 * 48 + 1));
+      H.stand(c, a.px - 30, a.py); M.tick(c, 16); const n0 = S.hops;
+      ok(`${fid} ${pr.colour}: beside the pad is not on it`, H.kit.soles(c).x === a.px - 30);
+      H.stand(c, a.px - 8, a.py + 6); M.tick(c, 16); let s = H.kit.soles(c);
+      ok(`${fid} ${pr.colour}: stepping on a takes her to b`, S.hops === n0 + 1 && s.x === b.px && s.y === b.py && S.asleep === b, { s, b: [b.px, b.py] });
+      for (let i = 0; i < 30; i++) M.tick(c, 16); s = H.kit.soles(c);
+      ok(`${fid} ${pr.colour}: the pad she arrived on sleeps while she stands on it (and no encounter roll there)`, S.hops === n0 + 1 && s.x === b.px && M.step(c, 0, 0, 0, 0) === false);
+      H.stand(c, b.px + 26, b.py); M.tick(c, 16); H.stand(c, b.px, b.py); M.tick(c, 16);
+      ok(`${fid} ${pr.colour}: a shuffle that stays on the pad does not re-arm it`, S.hops === n0 + 1);
+      H.stand(c, b.px + 50, b.py); M.tick(c, 16); ok(`${fid} ${pr.colour}: stepping off re-arms`, S.asleep === null && M.step(c, 0, 0, 0, 0) === undefined);
+      H.stand(c, b.px + 5, b.py); M.tick(c, 16); s = H.kit.soles(c);
+      ok(`${fid} ${pr.colour}: and on again goes back to a (two-way)`, S.hops === n0 + 2 && s.x === a.px && s.y === a.py);
+      H.stand(c, a.px - 100, a.py); M.tick(c, 16);
+    }
+    ok(`${fid}: no message boxes, no flags, no damage`, H.said.length === 0 && Object.keys(H.state.storyFlags).length === 0 && H.state.hp === 100);
+    // Continue while standing on a pad: it sleeps until she steps off
+    const c2 = H.ctxFor(fid); M.load(c2); const p0 = c2.state.pads[0]; H.stand(c2, p0.px, p0.py); M.tick(c2, 16); M.tick(c2, 16);
+    ok(`${fid}: loading on a pad does not throw her through it`, c2.state.hops === 0 && c2.state.asleep === p0);
+  }
+};
+
 // ---- RUN ----
 const want = process.argv.slice(2), names = want.length ? want : Object.keys(T);
 for (const n of names) { const f0 = fail, p0 = pass; try { T[n](); } catch (e) { fail++; console.log(`[FAIL] ${n}: threw ${e && e.stack || e}`); }
