@@ -28,7 +28,9 @@
 (function boot(){
   'use strict';
   var K=window.__QOK_D2KIT_A__; if(!K){ setTimeout(boot,40); return; }
-  var TILE=K.TILE, M=8;                                     // her soles stop M px short of flooded water
+  // M: her soles stop M px short of flooded water. FOG_R: the engine's lamp radius (dq-tiles.js updateFog, fog px).
+  var TILE=K.TILE, M=8, FOG_R=34, FOG_WIDE=150;
+  function fogRestore(st){ if(st.fogR===null||st.fogR===undefined) return; st.fogR=null; try{ if(st.fogOrig===null) delete window.__DQ_FOG_R__; else window.__DQ_FOG_R__=st.fogOrig; }catch(e){} }
   var COL={1:['#d65a3c','#8a2f1c','#f39a7a'], 2:['#46965a','#225a33','#8fd29c'], 3:['#965ac8','#55307a','#cfa4ef']};
   var STR={
     en:{ 'verb.wheel':'Turn wheel', 'verb.open':'Open',
@@ -201,7 +203,7 @@
   K.ready(function(K,D){ D.register('sluice-wheels',{
     load:function(ctx){
       var sc=ctx.scene, st=ctx.state, mech=ctx.mechanic||{}, i;
-      st.Md=model(ctx); st.ch=[]; st.wheels=[]; st.mimics=[]; st.sort=[]; st.seq=null; st.focus=null; st.age=0; st.checked=false; st.alive=true; st.wetPush=0;
+      st.fogOrig=(typeof window.__DQ_FOG_R__==='number')?window.__DQ_FOG_R__:null; st.fogR=null; st.Md=model(ctx); st.ch=[]; st.wheels=[]; st.mimics=[]; st.sort=[]; st.seq=null; st.focus=null; st.age=0; st.checked=false; st.alive=true; st.wetPush=0;
       texPattern(sc);
       var chans=mech.channels||[];
       for(i=0;i<chans.length;i++){ var C=build(ctx,chans[i],st.Md);
@@ -217,7 +219,7 @@
       for(i=0;i<mm.length;i++){ if(mm[i].kind!=='mimic') continue; var a=mm[i];
         st.mimics.push({x:a.x, y:a.y, sprung:K.get(ctx,'mimic.'+a.x+'.'+a.y), img:null, shade:null}); }
     },
-    unload:function(ctx){ ctx.state.alive=false; ctx.state.focus=null; },
+    unload:function(ctx){ ctx.state.alive=false; ctx.state.focus=null; fogRestore(ctx.state); },
     _apply:function(ctx,W,opts){                           // flip wheel W: flags now, pictures and camera by sequence
       var st=ctx.state, sc=ctx.scene, i, steps=[], so=K.soles(ctx), first=!st.turnedHere;
       K.set(ctx,'wheel'+W.id,!turned(ctx,W.id)); st.turnedHere=true;
@@ -253,8 +255,8 @@
         try{ W.img.setRotation(0); }catch(e){} }
       if(!any) return false;
       var all=[]; for(i=0;i<st.ch.length;i++){ var C2=st.ch[i], want=C2.c.floodedAtStart?1:0; if((C2.level>0.5?1:0)!==want) all.push({C:C2, fill:!!want}); }
-      steps.push({kind:'all', list:all, ms:1000});                // every channel at once, the camera stays on her
-      st.seq={steps:steps, i:0, t:0, line:'oasis.reset'}; K.sfx('door');
+      steps.push({kind:'all', list:all, ms:1200});                // every channel at once, the camera stays on her, the lamp opens
+      st.seq={steps:steps, i:0, t:0, line:'oasis.reset', wide:true}; K.sfx('door');
       return true;
     },
     tick:function(ctx,dt){
@@ -295,6 +297,11 @@
         st.reach=reach(st.Md,s,m);
         if(!st.reach){ st.didReset=this._reset(ctx); } }
       if(st.wetPush>0) st.wetPush=Math.max(0,st.wetPush-dt*0.5);
+      // the lamp: her light is a hole in the dark around HER, so while the camera visits a channel it
+      // opens wide (the water is seen changing), and closes again as the camera comes back
+      var base=st.fogOrig===null?FOG_R:st.fogOrig, wide=!!(st.seq&&(st.focus||st.seq.wide));
+      if(wide || st.fogR!==null){ var cur=st.fogR===null?base:st.fogR, tgt=wide?FOG_WIDE:base;
+        cur+=(tgt-cur)*Math.min(1,dt/220); if(!wide && Math.abs(cur-base)<0.6){ fogRestore(st); } else { st.fogR=cur; window.__DQ_FOG_R__=cur; } }
     },
     camera:function(ctx,tx,ty,cam){ var f=ctx.state.focus; if(!f) return null;
       var x=f[0]-cam.width*0.5, y=f[1]-cam.height*0.5;
