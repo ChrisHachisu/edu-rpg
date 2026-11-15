@@ -94,6 +94,22 @@
     return best||[cx,cy]; }
 
   // ---- art: painted by hand in the floor's palette (no Codex tile shows water or a wheel) --------
+  // The painted set (a-art/oasis.webp, cut from the dungeon's own material sheet by scripts/acts/mech-e4/make_art.py):
+  // water and its net of light, the pebble bed, a kerb for the sills, foam. Until it has loaded the drawn pictures stand in.
+  var ART='d2c_oasis_art', PT=192, PB=128;
+  function art(sc){
+    try{ if(sc.textures.exists('d2c_p_water')) return true;
+      if(sc.textures.exists(ART)){ var src=sc.textures.get(ART).getSourceImage();
+        var cut=function(key,x,y,w,h){ K.tex(sc,key,w,h,function(g){ g.drawImage(src,x,y,w,h,0,0,w,h); }); };
+        cut('d2c_p_caust',PT,0,PT,PT); cut('d2c_p_bed',0,PT,PB,PB); cut('d2c_p_sill',PT,PT,PT,10); cut('d2c_p_foam',PT,PT+16,PT,12); cut('d2c_p_water',0,0,PT,PT);
+        return true; }
+      if(art.req) return false; art.req=true;
+      var im=new Image(); im.onload=function(){ try{ if(!sc.textures.exists(ART)) sc.textures.addImage(ART,im); }catch(e){} };
+      im.onerror=function(){ setTimeout(function(){ art.req=false; },5000); }; im.src='acts-dungeons/modules/a-art/oasis.webp';
+    }catch(e){}
+    return false;
+  }
+  function pat(sc,g,key){ try{ return g.createPattern(sc.textures.get(key).getSourceImage(),'repeat'); }catch(e){ return null; } }
   function texPattern(sc){ return K.tex(sc,'d2c_wpat',64,64,function(g){
     g.fillStyle='#2a8aa6'; g.fillRect(0,0,64,64);
     K.speck(g,0,0,64,64,['#247c98','#3297b2','#1f7390','#38a1bb'],260,17);
@@ -145,7 +161,24 @@
     return {c:c, x0:x0, y0:y0, w:w, h:h, horiz:horiz, ends:ends, inletLow:inletLow, level:0, from:0, to:0, t:0, dur:0, mode:'fill', wet:0, off:0, redraw:0, img:null, bed:null, tk:null};
   }
   function bedTex(sc,ctx,C){                               // dry walkway: flagstones over the painted bed, sills at the open ends
-    var key='d2c_bed_'+ctx.key+'_'+C.c.id, col=COL[C.c.wheel]||COL[1];
+    var painted=art(sc), key='d2c_bed'+(painted?'p':'')+'_'+ctx.key+'_'+C.c.id, col=COL[C.c.wheel]||COL[1];
+    C.bedPainted=painted;
+    if(painted) return K.tex(sc,key,C.w,C.h,function(g,w,h){      // a sunk bed of pebbles and shells, shaded under its banks
+      var pb=pat(sc,g,'d2c_p_bed'), ps=pat(sc,g,'d2c_p_sill'), gr, i;
+      g.save(); g.translate(-(C.x0%PB),-(C.y0%PB)); g.fillStyle=pb||'#84623a'; g.fillRect(0,0,w+PB,h+PB); g.restore();
+      g.fillStyle='rgba(46,30,10,0.22)'; g.fillRect(0,0,w,h);
+      if(C.horiz){ gr=g.createLinearGradient(0,0,0,h); gr.addColorStop(0,'rgba(24,14,4,0.72)'); gr.addColorStop(Math.min(0.45,16/h),'rgba(24,14,4,0)'); gr.addColorStop(1-Math.min(0.3,7/h),'rgba(255,232,180,0)'); gr.addColorStop(1,'rgba(255,232,180,0.22)'); }
+      else { gr=g.createLinearGradient(0,0,w,0); gr.addColorStop(0,'rgba(24,14,4,0.62)'); gr.addColorStop(Math.min(0.45,14/w),'rgba(24,14,4,0)'); gr.addColorStop(1-Math.min(0.3,7/w),'rgba(255,232,180,0)'); gr.addColorStop(1,'rgba(255,232,180,0.20)'); }
+      g.fillStyle=gr; g.fillRect(0,0,w,h);
+      g.fillStyle='rgba(20,12,4,0.55)'; if(C.horiz){ g.fillRect(0,0,w,2); g.fillRect(0,h-1,w,1); } else { g.fillRect(0,0,2,h); g.fillRect(w-1,0,1,h); }
+      function kerb(x,y,len,vert){ g.save(); g.translate(x,y); if(vert){ g.translate(10,0); g.rotate(Math.PI/2); }
+        g.fillStyle=ps||'#c9a36b'; g.fillRect(0,0,len,10); g.fillStyle='rgba(20,12,4,0.35)'; g.fillRect(0,10,len,3); g.restore();
+        var n=Math.max(2,Math.round(len/48)); for(i=0;i<n;i++){ var t=(i+0.5)*len/n, cx=vert?x+5:x+t, cy=vert?y+t:y+5;
+          g.fillStyle=col[1]; g.beginPath(); g.moveTo(cx,cy-4); g.lineTo(cx+4,cy); g.lineTo(cx,cy+4); g.lineTo(cx-4,cy); g.closePath(); g.fill();
+          g.fillStyle=col[0]; g.beginPath(); g.moveTo(cx,cy-3); g.lineTo(cx+3,cy); g.lineTo(cx,cy+3); g.lineTo(cx-3,cy); g.closePath(); g.fill();
+          g.fillStyle='rgba(255,255,255,0.45)'; g.fillRect(cx-1,cy-2,1,1); } }
+      if(C.ends.l) kerb(0,0,h,true); if(C.ends.r) kerb(w-10,0,h,true); if(C.ends.t) kerb(0,0,w,false); if(C.ends.b) kerb(0,h-10,w,false);
+    });
     return K.tex(sc,key,C.w,C.h,function(g,w,h){
       var s=24, x, y, row=0, seed=C.c.id*7+3;
       g.fillStyle='rgba(70,58,30,0.16)'; g.fillRect(0,0,w,h);
@@ -172,7 +205,8 @@
     var g=t.getContext(), w=C.w, h=C.h, L=C.horiz?w:h, lv=Math.max(0,Math.min(1,C.level));
     try{
       g.clearRect(0,0,w,h);
-      if(C.wet>0.01){ g.fillStyle='rgba(38,46,24,'+(0.42*C.wet)+')'; g.fillRect(0,0,w,h); }
+      if(C.wet>0.01){ g.fillStyle=C.bedPainted?'rgba(40,26,10,'+(0.40*C.wet)+')':'rgba(38,46,24,'+(0.42*C.wet)+')'; g.fillRect(0,0,w,h); }
+      if(lv>0.001 && C.bedPainted){ paintLive(sc,C,g,w,h,L,lv); t.refresh(); return; }
       if(lv>0.001){
         // the water body covers [a,b) along the walkway: filling grows from the inlet, draining recedes toward the outlet
         var span=lv*L, a, b;
@@ -198,13 +232,41 @@
       t.refresh();
     }catch(e){}
   }
+  // The painted water: the sheet's water drifting with the flow, its net of light sliding across it the other way,
+  // shade under the bank it lies below, broken foam along the banks and on the edge that moves. Same body, same timing.
+  function paintLive(sc,C,g,w,h,L,lv){
+    var span=lv*L, a, b, o=C.off, P=C.pp||(C.pp={w:pat(sc,g,'d2c_p_water'), c:pat(sc,g,'d2c_p_caust'), f:pat(sc,g,'d2c_p_foam')});
+    if(C.mode==='fill') { a=C.inletLow?0:L-span; } else { a=C.inletLow?L-span:0; }
+    b=a+span;
+    var rx=C.horiz?a:0, ry=C.horiz?0:a, rw=C.horiz?span:w, rh=C.horiz?h:span, m=function(v){ return ((v%PT)+PT)%PT; };
+    g.save(); g.beginPath(); g.rect(rx,ry,rw,rh); g.clip();
+    g.fillStyle='#26809a'; g.fillRect(rx,ry,rw,rh);
+    if(P.w){ var ox=m((C.horiz?o:0)-C.x0), oy=m((C.horiz?0:o)-C.y0); g.save(); g.translate(ox-PT,oy-PT); g.fillStyle=P.w; g.fillRect(0,0,w+2*PT,h+2*PT); g.restore(); }
+    if(P.c){ var s2=Math.sin(o*0.021)*7, cx=m((C.horiz?-o*0.55:s2)+61), cy=m((C.horiz?s2:-o*0.55)+97);
+      g.save(); g.globalCompositeOperation='lighter'; g.globalAlpha=0.20+0.06*Math.sin(o*0.05); g.translate(cx-PT,cy-PT); g.fillStyle=P.c; g.fillRect(0,0,w+2*PT,h+2*PT); g.restore(); }
+    var gr=C.horiz?g.createLinearGradient(0,0,0,h):g.createLinearGradient(0,0,w,0);
+    gr.addColorStop(0,'rgba(4,26,44,0.70)'); gr.addColorStop(Math.min(0.5,22/(C.horiz?h:w)),'rgba(4,26,44,0.0)'); gr.addColorStop(0.8,'rgba(190,240,246,0.0)'); gr.addColorStop(1,'rgba(190,240,246,0.20)');
+    g.fillStyle=gr; g.fillRect(rx,ry,rw,rh);
+    if(P.f){ g.globalCompositeOperation='lighter'; g.fillStyle=P.f;
+      // strip(x,y,rot,len,drift): the foam strip laid with its thick side on the line through (x,y)
+      var strip=function(x,y,rot,len,dr,al){ g.save(); g.globalAlpha=al; g.translate(x,y); g.rotate(rot); g.translate(-m(dr),0); g.fillRect(0,0,len+PT,12); g.restore(); };
+      var d1=o*0.5, e, Q=Math.PI/2;
+      if(C.horiz){ strip(0,0,0,w,-d1,0.36); strip(w,h,Math.PI,w,d1+70,0.28);
+        if(C.ends.l&&a<1) strip(0,h,-Q,h,31,0.32); if(C.ends.r&&b>w-1) strip(w,0,Q,h,55,0.32);
+        if(lv<0.999){ e=(C.mode==='fill')===C.inletLow?b:a; if(e===b) strip(e,0,Q,h,o*0.3,0.8); else strip(e,h,-Q,h,o*0.3,0.8); } }
+      else { strip(0,h,-Q,h,d1,0.36); strip(w,0,Q,h,-d1+70,0.28);
+        if(C.ends.t&&a<1) strip(0,0,0,w,31,0.32); if(C.ends.b&&b>h-1) strip(w,h,Math.PI,w,55,0.32);
+        if(lv<0.999){ e=(C.mode==='fill')===C.inletLow?b:a; if(e===b) strip(w,e,Math.PI,w,o*0.3,0.8); else strip(0,e,0,w,o*0.3,0.8); } }
+      g.globalCompositeOperation='source-over'; }
+    g.restore();
+  }
   function visible(sc,C){ try{ var v=sc.cameras.main.worldView; return C.x0<v.x+v.width && C.x0+C.w>v.x && C.y0<v.y+v.height && C.y0+C.h>v.y; }catch(e){ return true; } }
 
   K.ready(function(K,D){ D.register('sluice-wheels',{
     load:function(ctx){
       var sc=ctx.scene, st=ctx.state, mech=ctx.mechanic||{}, i;
       st.fogOrig=(typeof window.__DQ_FOG_R__==='number')?window.__DQ_FOG_R__:null; st.fogR=null; st.Md=model(ctx); st.ch=[]; st.wheels=[]; st.mimics=[]; st.sort=[]; st.seq=null; st.focus=null; st.age=0; st.checked=false; st.alive=true; st.wetPush=0;
-      texPattern(sc);
+      texPattern(sc); st.painted=art(sc);
       var chans=mech.channels||[];
       for(i=0;i<chans.length;i++){ var C=build(ctx,chans[i],st.Md);
         C.bed=K.img(ctx,bedTex(sc,ctx,C),C.x0,C.y0,2.05); try{ C.bed.setOrigin(0,0); }catch(e){}
@@ -262,6 +324,8 @@
     tick:function(ctx,dt){
       var st=ctx.state, sc=ctx.scene, i; if(!st.ch) return;
       dt=Math.min(dt||16,100); st.age+=dt;
+      if(!st.painted && art(sc)){ st.painted=true;                 // the painted set has arrived: beds and water take it
+        for(i=0;i<st.ch.length;i++){ var Cp=st.ch[i]; try{ Cp.bed.setTexture(bedTex(sc,ctx,Cp)); Cp.bed.setOrigin(0,0); }catch(e){} Cp.pp=null; paintWater(sc,Cp); } }
       var h=ctx.hero(); if(h) K.ysort(st.sort,h.footY,10.2,9.4);
       // the mimics: the engine's own chest picture (shut until sprung, then open and empty)
       for(i=0;i<st.mimics.length;i++){ var Mi=st.mimics[i], nm=Mi.sprung?'chestOpen':'chest', tk=chestTex(sc,nm);

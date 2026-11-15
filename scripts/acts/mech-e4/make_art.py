@@ -351,20 +351,26 @@ def forge():
 # ── Oasis Depths ─────────────────────────────────────────────────────────────────────────────
 def oasis():
     """a-art/oasis.webp, 384x384: water (0,0) and its caustic light (192,0), 192 px tiles; the channel
-    bed (0,192); a sandstone sill strip (192,192, 192x10) and a foam strip, white on black (192,208, 192x12)."""
+    bed (0,192, a 128 px tile); a sandstone sill strip (192,192, 192x10) and a foam strip, white on black (192,208, 192x12)."""
     did = "oasisDepths"
     n = 192
     rng = np.random.default_rng(11)
     wat = mat(did, "accent", n)
     lum = wat.mean(-1)
-    water = grade(wat, (38, 128, 150), 0.62)
-    water = water * (0.90 + 0.20 * (lum[..., None] - lum.mean()) / max(1.0, lum.std()) * 0.5)
+    # the sheet sweeps from pale shallows (top) to deep water: tiled, that is a stripe every tile. Level
+    # each row's colour and contrast to the deep water's, then take out what slow drift is left.
+    rm = ndimage.gaussian_filter1d(wat.mean(1), 2.0, axis=0, mode="wrap")[:, None, :]
+    rs = ndimage.gaussian_filter1d(wat.std(1), 2.0, axis=0, mode="wrap")[:, None, :]
+    deep = wat[n // 2:]
+    wat = (wat - rm) / np.maximum(rs, 1.0) * deep.reshape(-1, 3).std(0) + deep.reshape(-1, 3).mean(0)
+    low = ndimage.gaussian_filter(wat, (20, 20, 0), mode="wrap")
+    water = grade(wat - low + low.reshape(-1, 3).mean(0), (34, 120, 142), 0.66)
+    lum = wat.mean(-1)
     # the light net: what is brighter than its surroundings, wrap-safe
-    t3 = np.tile(lum, (3, 3))
-    hp = (t3 - ndimage.gaussian_filter(t3, 7))[n:2 * n, n:2 * n]
+    hp = lum - ndimage.gaussian_filter(lum, 7, mode="wrap")
     net = np.clip((hp - 4.0) / 26.0, 0, 1) ** 1.3
     caust = net[..., None] * np.array([170, 232, 236], np.float32)
-    bed = grade(mat(did, "rubble", n), (132, 98, 56), 0.72)
+    bed = grade(mat(did, "rubble", 128), (132, 98, 56), 0.72)             # 128 px: its pebbles the size of the floor's
     wall = mat(did, "wall", n)
     # sill: a rounded kerb of sandstone blocks
     sh, sw = 10, n
@@ -392,7 +398,7 @@ def oasis():
     atlas = np.zeros((384, 384, 3), np.float32)
     atlas[0:n, 0:n] = water
     atlas[0:n, n:2 * n] = caust
-    atlas[n:2 * n, 0:n] = bed
+    atlas[n:n + 128, 0:128] = bed
     atlas[n:n + sh, n:2 * n] = sill
     atlas[n + 16:n + 16 + fh, n:2 * n] = foam
     im = Image.fromarray(np.clip(atlas, 0, 255).astype(np.uint8), "RGB")
