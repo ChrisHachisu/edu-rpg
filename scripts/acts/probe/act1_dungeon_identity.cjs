@@ -31,7 +31,11 @@ async function run(url, tag) {
     const ends = [], home = out.spots[key].info;
     for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {          // into the wall and held there: where she is stopped, not how fast she got there
       await page.evaluate(h => { const w = window.__PHASER_GAME__.scene.getScene('WorldMapScene'); w.hero.x = h.hx; w.hero.y = h.hy; w.heroTileX = h.x; w.heroTileY = h.y; }, home);
-      await L.stick(page, dx, dy, 2600); await page.waitForTimeout(250); const i = await info(page); ends.push(i.map === home.map && i.floor === home.floor ? [i.hx, i.hy] : [i.map, i.floor]);
+      await page.evaluate(async ([dx, dy]) => { const w = window.__PHASER_GAME__.scene.getScene('WorldMapScene'), m0 = w.currentMapId, f0 = w.currentFloor, t0 = performance.now(); let still = 0, lx = w.hero.x, ly = w.hero.y;
+        try { while (performance.now() - t0 < 9000 && still < 40 && w.currentMapId === m0 && w.currentFloor === f0) {      // held until she has come to rest, not for a fixed time
+          window.__DQ_STICK__ = { x: dx, y: dy, m: 1 }; await new Promise(r => requestAnimationFrame(r));
+          still = (Math.abs(w.hero.x - lx) + Math.abs(w.hero.y - ly) < 0.02) ? still + 1 : 0; lx = w.hero.x; ly = w.hero.y; } } finally { window.__DQ_STICK__ = { x: 0, y: 0, m: 0 }; } }, [dx, dy]);
+      await page.waitForTimeout(250); const i = await info(page); ends.push(i.map === home.map && i.floor === home.floor ? [i.hx, i.hy] : [i.map, i.floor]);
       if (i.map !== home.map || i.floor !== home.floor) break; }
     out.push[key] = ends; }
   // the real way in

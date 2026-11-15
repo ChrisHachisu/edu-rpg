@@ -6,12 +6,13 @@
 // every floor.
 //
 //   NODE_PATH=/opt/node-tools/node_modules PROBE_URL=http://127.0.0.1:5190/ PROBE_OUT=<dir> \
-//     node scripts/acts/probe/dungeon_authored.cjs emberMines obsidianCavern [ironMine:smoke]
+//     node scripts/acts/probe/dungeon_authored.cjs emberMines obsidianCavern [ironMine:smoke] [obsidianCavern:pillars]
 //
 // D2_NAV (default /home/user/work/e1/nav) holds the navigation grids export_runtime.py writes
 // beside the runtime files (12 px cells where her soles may stand, the plan's route, the landings).
 // `<id>:smoke` enables a manifest entry that ships disabled, and checks layout + art only on the
-// floors the manifest carries.
+// floors the manifest carries. `<id>:pillars` checks walk-behind on floor 1's first pillar only;
+// `<id>:off` checks the kill switch (localStorage['qok-dungeons2']='0'): the bundle's generated floor.
 const fs = require('fs'), path = require('path');
 const L = require('./lib.cjs');
 const ROOT = path.resolve(__dirname, '../../..');
@@ -172,7 +173,7 @@ async function runDungeon(spec) {
   const R = new Run(page, id);
   try {
     const seed = { mapId: 'overworld', x: LM.exit[0], y: LM.exit[1], activeQuests: QUESTS[id] || [], flags: {} };
-    const extra = smoke ? { 'qok-dungeons2-smoke': '1' } : {};
+    const extra = smoke ? { 'qok-dungeons2-smoke': '1' } : mode === 'off' ? { 'qok-dungeons2': '0' } : {};
     await L.bootSave(page, L.save(seed), { extra });
     await page.evaluate(PILOT);
     let p = await L.pos(page);
@@ -186,6 +187,12 @@ async function runDungeon(spec) {
     const enter = async () => { const r = await L.walkCells(page, [[LM.at[0], LM.at[1]]], { maxMs: 25000 }); await page.waitForTimeout(1200); await page.evaluate(PILOT); return r; };
     let r = await enter(); let s = await R.st();
     if (!rec(id, 'walking into the overworld mouth enters floor 1', s.map === id && s.floor === 1, { r, s })) return;
+    if (mode === 'off') {                                          // kill switch: nothing fetched, the bundle's generated floor, and she can walk on it
+      await page.waitForTimeout(2500); s = await R.st(); const F = man.floors[`${id}-f1`];
+      rec(id, 'kill switch: the manifest is not loaded and floor 1 is the generated floor', s.d2.off === true && s.d2.loaded === false && !(s.w === F.width && s.h === F.height), { w: s.w, h: s.h, d2: s.d2 });
+      const a = await L.pos(page); await page.keyboard.down('ArrowUp'); await page.waitForTimeout(900); await page.keyboard.up('ArrowUp'); await page.keyboard.down('ArrowDown'); await page.waitForTimeout(1500); await page.keyboard.up('ArrowDown'); await page.waitForTimeout(1500);
+      const b = await L.pos(page); rec(id, 'kill switch: she can move on the generated floor (or leaves by its exit)', b.map !== a.map || b.x !== a.x || b.y !== a.y || b.hy !== a.hy, { a: [a.map, a.x, a.y], b: [b.map, b.x, b.y] });
+      await R.shot('off-generated'); const bad = errors.filter(e => !/favicon|audio|\.mp3|\.ogg/.test(e.m)); rec(id, 'no page errors or failed requests', bad.length === 0, bad.slice(0, 5)); return; }
     let okS = await R.settle();
     const F1 = man.floors[`${id}-f1`], N1 = nav(`${id}-f1`);
     s = await R.st();
@@ -204,6 +211,15 @@ async function runDungeon(spec) {
     r = await enter(); await R.settle(); s = await R.st();
     if (!rec(id, 're-entry works', s.map === id && s.floor === 1, s)) return;
 
+    if (mode === 'pillars') {                                      // walk-behind: a pillar's top is drawn over her while her soles are north of its base
+      const ov = (F1.over || [])[0]; if (!ov) { rec(id, 'f1 has a pillar', false); return; }
+      const depths = () => page.evaluate(k => window.__PHASER_GAME__.scene.getScene('WorldMapScene').children.list.filter(o => o.texture && o.texture.key === 'a2dover_' + k).map(o => [Math.round(o.x), Math.round(o.y), o.depth]), `${id}-f1`);
+      const c = N1.cell, bx = ov.x + ov.w / 2, at = async (dy) => { const g = await R.go(N1, (gx, gy) => Math.abs((gx + .5) * c - bx) <= 10 && Math.abs((gy + .5) * c - (ov.by + dy)) <= 12, { tol: 4 }); await page.waitForTimeout(400); return g; };
+      let g = await at(-34); let d = (await depths()).find(o => o[0] === ov.x && o[1] === ov.y); const heroD = await page.evaluate(() => window.__PHASER_GAME__.scene.getScene('WorldMapScene').hero.depth);
+      rec(id, 'f1: behind a pillar its top is drawn over her', g.ok && g.why === 'arrived' && !!d && d[2] > heroD, { g: g.why, sprite: d, heroDepth: heroD }); await R.shot('f1-pillar-behind');
+      g = await at(46); d = (await depths()).find(o => o[0] === ov.x && o[1] === ov.y);
+      rec(id, 'f1: in front of the pillar she is drawn over it', g.ok && g.why === 'arrived' && !!d && d[2] < heroD, { g: g.why, sprite: d, heroDepth: heroD }); await R.shot('f1-pillar-front');
+      const bad = errors.filter(e => !/favicon|audio|\.mp3|\.ogg/.test(e.m)); rec(id, 'no page errors or failed requests', bad.length === 0, bad.slice(0, 5)); return; }
     const floors = D.authoredFloors, total = D.floors; let hpTest = false, resumeTest = false, encTest = false;
     for (const f of floors) {
       const key = `${id}-f${f}`, FL = man.floors[key], N = nav(key);

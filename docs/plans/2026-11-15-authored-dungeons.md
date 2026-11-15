@@ -11,8 +11,8 @@ on a phone by the owner. Layouts are data: plan JSON in, art and runtime data ou
   plan instead of the bundle's generated floor: hand-shaped rooms, painted organic walls from the
   Codex material sheets, chasms, lava and pillars, on the same continuous movement Act 1 dungeons
   use (the hero is stopped by the painted edge, not by a square).
-* Everything else is the bundle's own: chests and their loot, the crystals (heal and warp, no
-  save), the boss fight, its flags and rewards, random encounters from the dungeon's own zone,
+* Everything else is the bundle's own: chests and their loot, the crystals (heal and warp; what
+  they write is the auto save, as in every dungeon), the boss fight, its flags and rewards, random encounters from the dungeon's own zone,
   save and Continue. No story flag is added, removed or renamed.
 * A dungeon that is not in the manifest, or is `enabled:false`, or a floor the manifest does not
   carry, keeps the generated floor. The game stays finishable while dungeons move over one by one.
@@ -63,15 +63,21 @@ What an authored floor adds:
   against the mask when it is exported.
 * **Art.** One flattened picture per floor; stairs and mouths are painted in; chests, crystals,
   signs and the boss are live sprites (the Act 1 asset sprites) with baked contact shadows. The
-  picture is blitted window by window through a 2D canvas, so its size is not bound by the GPU
-  texture limit.
+  picture is blitted window by window through a 2D canvas (the Act 1 path), not uploaded whole
+  as one GPU texture.
 * **Walk-behind.** Wall tops overlap her through the mask alone (her soles stop at the painted
   foot of a wall, so her head overlaps the wall above, as in Act 1). Free-standing pillars are
   real walk-behind: each is a sprite from the `-over.webp` atlas at depth 10.6 while her soles are
   north of its base line, 9.4 otherwise.
 * **Crystals.** Floor 1's crystal is the entrance crystal: dormant (tinted, no prompt) until a
   deeper one is touched; afterwards it lists every floor whose crystal she has touched
-  (`warp.<id>.f<n>`). Deeper crystals heal and offer "warp to entrance". No crystal saves.
+  (`warp.<id>.f<n>`). Deeper crystals heal and offer "warp to entrance". The manual save stays a
+  town-only thing (`ui-overhaul.js` turns any dungeon save into the auto save).
+* **Stairs and the boss's exit.** The engine ignores the first door it is asked about after any
+  transition, and she lands right beside a staircase: a query eaten that way is asked again while
+  she keeps pushing into the stairs (`a2dIsWayCell`, the Act 1 mouth's retry widened). After the
+  boss falls, its cell becomes the exit (tile 10) while her centre already stands in it; pushing
+  toward it fires the exit (`a2dOpenedUnder`).
 * **Second mouths.** A mouth on a deeper floor (or with `sealedUntil:"bossDefeated"`) is tile 10
   and is rock until the boss flag is set. Entering from the overworld onto a floor above 1 lands
   on `land.mouth2`. If the bundle's door table names a floor the authored dungeon does not have,
@@ -115,9 +121,10 @@ floor of every dungeon with that id. All hooks are optional and are wrapped in t
 | `ctx.say(text, name)` | the game's message box (text must come from the string tables; keep EN/JA/kanji in sync) |
 | `ctx.scene`, `ctx.TILE` | the WorldMapScene and 48 |
 
-Walk mask and mechanics: the exporter leaves mechanic cells as the plan classes them (`=` rail and
-`+` junction are floor unless the dungeon table makes them a hazard). A module that needs a cell
-closed or opened at runtime answers `free()`; it does not edit the mask.
+Walk mask and mechanics: the mask opens the plan characters `. = g t z q h`; every other character
+is rock, or the hazard the dungeon table in `d2common.py` names for it (chasm, lava, pillar). A
+module that needs a cell closed or opened at runtime answers `free()`; it does not edit the mask.
+`bump` is reported only when she is fully stopped by a cell-shaped blocker (see open issue 5).
 
 `window.__QOK_DNG2__` also exposes `ctx()`, `manifest()`, `authored(id)` and `state()` (used by
 the probe). The probe registers a do-nothing module under each dungeon's mechanic id and asserts
@@ -182,8 +189,85 @@ Render time for the remaining 82 floors: about 9 hours of one 4-core machine (tw
 
 ## 8. Proof
 
-@@PROOF@@
+All headless (Playwright + Chromium, 390x844 phone viewport), against the cloud copy
+(`build_cloud_dist.sh`), never against a rebuilt bundle.
+
+`scripts/acts/probe/dungeon_authored.cjs emberMines obsidianCavern ironMine:smoke`:
+**112 checks, 0 FAIL** (2026-11-15). Per dungeon, by the real entry path (AGENTS.md rule 7: a v4
+save on the overworld at the remapped exit, Continue, a walk into the mouth):
+
+* floor 1 is the authored floor and she lands on the baked landing; the mouth leads back to the
+  owner's exit cell; re-entry works;
+* every floor: the plan's route is walkable start to exit; every chest opens by the prompt pill and
+  sets the bundle's `chest.<id>.f<n>.<x>.<y>` flag (14 chests in Ember Mines, 14 in Obsidian
+  Cavern); stairs down, and on floor 2 the stairs back, land beside the right staircase;
+* crystals: floor 1's is dormant with no prompt; deeper ones heal, set `warp.<id>.f<n>` and
+  `entrance.crystal.<id>.activated`; "warp to entrance" lands beside the entrance crystal, which
+  then lists the touched floors and warps back;
+* save inside floor 2 (the auto save, which is what the game writes in a dungeon), reload, the
+  title's slot picker, "Auto save": same cell of the same authored floor;
+* a random encounter on floor 2 from the dungeon's own zone (`magma-tunnels`, `volcanic-forge`),
+  fought and won;
+* the boss (`magmaBeetleKing`, `crystalHydra`) starts by walking into its marker, is won, sets the
+  bundle's `boss.<id>.defeated`; pushing into the exit that opens in its cell returns her to the
+  owner's exit cell;
+* a do-nothing mechanic module registered under the dungeon's mechanic id: every hook fired and
+  received the plan's mechanic data; no page error, no failed request;
+* Iron Mine floor 1 (smoke flag on): entry, landing, exit, re-entry, the first stretch of the route.
+
+Screenshots of every floor: `/mnt/project-files/edu-rpg/acts-integration/dungeons-e1/`.
+
+Also run on the same copy:
+
+| Check | Result |
+|---|---|
+| `dungeon_authored.cjs obsidianCavern:pillars` | 9 checks, 0 FAIL: the pillar's top sprite is at depth 10.6 (over her, 10) while she stands behind it and 9.4 in front |
+| `dungeon_authored.cjs emberMines:off` | 5 checks, 0 FAIL: with the kill switch the manifest is not loaded and floor 1 is the bundle's generated 100x100 floor |
+| `act1_dungeon_identity.cjs` (base: commit `dedec3b`, before this track) | 9 checks, 0 FAIL: Sunken Cellar f1 and f3, Coastal Reef f2, Misty Grotto f1 and a real walk into Sunken Cellar are pixel-identical (0 px differ); held into a wall she is stopped where the base stops her (within base-against-base noise) |
+| `act1_identity.cjs` | 4/4: 0 px, 0 of 25,921 field samples differ at each spot |
+| `towns.cjs` | 9/9 |
+| `mouths.cjs` | 26/26; the Ember Mines and Obsidian Cavern rows now land on the authored floor, Iron Mine stays generated |
+| `scripts/acts/check_world.py` | PASS: 34 doors, 11 segment checks, 1 story gate |
+| `write_gate_manifest.py --check`, `restamp_cloud_pins.py --check` | OK (1,232 files; `dq-tiles.js` 697,178 B) |
 
 ## 9. Open issues
 
-@@ISSUES@@
+1. **Not played on a phone.** Everything above is headless. Feel, readability and frame rate on
+   an iPhone are the owner's to judge on the TestFlight build.
+2. **Ember Mines floor is busy.** The Codex floor sheet is pebbles with glowing embers. It was
+   calmed three ways (`floor_calm`, `floor_soft`, `floor_sat` in `d2common.py`) and still reads
+   busier than an Act 1 floor. One more turn of those numbers and a re-render of five floors is
+   about 25 minutes.
+3. **Second mouths are unproven.** None of the three dungeons has one. The code exists (tile 10,
+   rock until the boss flag, `land.mouth2`, floor clamp for Haunted Forest) but has never run.
+   A sealed second mouth is also still painted open; it needs a sealed overlay.
+4. **Mechanic visuals are the module's job.** The renderer paints terrain only. Rails, carts,
+   levers, plates and the like are listed in `ctx.plan.mech` and must be drawn by the module.
+   Iron Mine floor 1 therefore shows bare floor where its rails run, and cannot be finished on
+   foot (its stairs need the cart); it ships `enabled:false`.
+5. **`bump` is reported only when she is fully stopped.** Against a painted wall she glides and no
+   bump fires; pushed diagonally at a cell-shaped blocker she slides along its face. A push-block
+   mechanic should use `interact`, or detect contact in `tick` / `free`.
+6. **A pillar hides her completely** while she stands exactly behind it (it is one cell wide and
+   1.5 cells tall). Correct walk-behind, but worth a look on the phone.
+7. **Stairs in a walking lane.** A staircase fires when her centre enters its cell. Where a plan
+   puts one in open floor beside the route (Ember Mines floor 2, stairs back), she can take it by
+   accident. A layout note, not an engine fault.
+8. **Arrival cooldown on the overworld side.** The engine ignores the first door it is asked about
+   after any transition. Inside authored floors this is now retried while she keeps pushing; on
+   the overworld a player who exits and walks straight back into the mouth must step off the cell
+   first. This is the bundle's behaviour for every door and was left alone.
+9. **Lava and chasm are still pictures.** No animation, no glow pulse, and lava is simply not
+   walkable (no damage rule).
+10. **Chest loot is the engine's roll** (`getTreasureReward()`); the plans carry no loot table.
+   Opened chests can be walked through, as in the bundle and Act 1.
+11. **The boss marker is Act 1's dark silhouette** at 2.2 cells, not the boss's own sprite; the
+    exit after the fight is the engine's portal prop in the boss's cell.
+12. **Size.** About 105-110 MB for all 18 dungeons at the current cap (section 7).
+13. **Slow network on Continue.** If a save inside an authored floor is continued before the
+    manifest arrives, the generated floor could show until the next tick re-applies. The resume
+    check passes on a local server; a throttled run was not made.
+14. **Mac-only pins.** `runtime_baseline.py verify-act1` still stops in the cloud on
+    `ACT1_PAINT_MANIFEST_SHA256` (stale since build 91, as before this track). The cloud-stampable
+    pins and the gate manifest (`runtime/manifests/acts-hifi-files.json`, now 1,232 files with
+    `acts-dungeons/**`) are re-stamped and pass their own `--check`.
