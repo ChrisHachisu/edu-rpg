@@ -142,7 +142,7 @@ characters are chasm / lava / pillar, floor calming).
 ```sh
 # 1. once per dungeon: quilt the Codex sheet into seamless material tiles
 python3 scripts/acts/dungeons2/import_materials.py emberMines obsidianCavern ironMine
-# 2. one floor per process (3.5-8 min, 2.2-3.8 GB each; two at a time on 4 cores / 15 GB)
+# 2. one floor per process (0.5-3 min on a free core since E2, 2-4.7 GB each)
 python3 scripts/acts/dungeons2/render_plan.py emberMines-f1 [--skip-existing] [--crop x0,y0,x1,y1] [--q 85]
 # 3. plan + art -> runtime data, with validation (exit 1 on any failure)
 python3 scripts/acts/dungeons2/export_runtime.py emberMines obsidianCavern --smoke ironMine:1
@@ -159,8 +159,28 @@ field, wall faces, tops, grading) and adds: floor calming, deep-rock darkening, 
 lip and a cliff face, lava with crust and glow, mouths carried to the map edge with daylight,
 pillars (painted, plus the over atlas), baked stairs, contact shadows under live props. The walk
 mask is cut from the same fields as the paint, so blockers follow the painted edge. Output is
-WebP q85, stepping down by 5 until the floor is under 1.6 MB; the mask is a 1-bit PNG; the over
-atlas is lossless WebP.
+WebP q85, stepping down by 5 (to q40 at the lowest) until the floor is under 1.6 MB; the mask is
+a 1-bit PNG; the over atlas is lossless WebP.
+
+Rules the E2 floors added to the renderer (all in `render_plan.py`, after Act 1's `floor_field`):
+
+- **Deep rock stays rock.** Act 1's passes remove rock too thin to carry a face; plan rock that
+  touches no open cell is put back, so nothing opens out to the picture's edge.
+- **A wall between two areas stays a wall.** Act 1's neck trimming removes walls about one cell
+  thick. Any wall cell that touches two areas the plan keeps apart (no open cell joins them, not
+  even corner to corner), and every `rock` character of the dungeon table (a cracked wall), is
+  forced to rock, about 1.2 cells thick.
+- **A route cell keeps its ground.** Where the organic wall edge swallows a route cell (no
+  standable ground that continues out of the cell), a lane 0.9 cell wide is cut through it along
+  the route. The render log names each such cell.
+- **Edge-hugging plans** (open cells on the border, or a border wall one cell thick) render with
+  two extra rock cells all round, cropped off again.
+- **Mouths deep inside the map** (more than 3 rock cells from the edge) get a lit bay two cells
+  deep instead of a corridor to the edge.
+- **Speed.** Disc morphology by distance transform and value noise blended per lattice row are
+  bit-identical to Act 1's and about 4x faster together; blurs of sigma >= 48 master px run on a
+  reduced copy (mask identical, picture within WebP noise). `D2_SLOW_MORPH`, `D2_SLOW_NOISE`,
+  `D2_SLOW_NOISE2`, `D2_EXACT_BLUR` switch each one off.
 
 ### 6a. What the picture holds, per mechanic (track E2)
 
@@ -200,7 +220,9 @@ printed as "via mechanic"; anything still cut off fails the export.
 
 `export_runtime.py` validates with the game's own sole model (foot offset 31 px, clearance 17 px):
 every landing standable, every chest / crystal / staircase / boss reachable from the landing,
-every route cell standable, no walkable pixel outside the plan's open cells. A layout tweak is:
+every route cell standable, no walkable pixel outside the plan's open cells (the corridor
+beyond a mouth excepted), and no standable area that spans two areas the plan keeps apart (a
+lost wall). A layout tweak is:
 edit the plan, re-render that floor, re-export, re-pin.
 
 ## 7. Sizes
