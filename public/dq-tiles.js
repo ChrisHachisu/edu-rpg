@@ -4705,6 +4705,9 @@
       // Returns false when a battle cannot start now (a box is open, one is already starting).
       battle:function(monsterId,after){ return a2dBattle(scene,monsterId,after); },
       busy:function(){ return a1mHalted(scene) || !!scene.__a1dEntryWaiting; },
+      // toFloor: a fall or a lift to the floor above/below through the engine's own floor change (black cover, loadMap,
+      // encounter reset); she arrives on `spot` {x,y,dir} (a cell: her SOLES are put on its centre) instead of beside the stairs.
+      toFloor:function(floor,spot){ return a2dToFloor(scene,floor,spot); },
       Z:function(key,vars){ var q=window.__QOK, z=q&&q.Z; try{ return z?z(key,vars):key; }catch(e){ return key; } },
       locale:function(){ var gs=window.__GAME_STATE__, st=gs&&gs.player&&gs.player.state; return (st&&st.locale==='ja') ? (st.kanjiMode?'jaKanji':'ja') : 'en'; }
     };
@@ -4745,11 +4748,22 @@
       if(!mon && em && em.forceEncounter && scene.currentEncounterZone) mon=em.forceEncounter(scene.currentEncounterZone);
       if(!mon) return false;
       if(em&&em.reset) em.reset();
+      if(scene.__a2dDef&&scene.__a2dDef.encounterZone) scene.currentEncounterZone=scene.__a2dDef.encounterZone;   // the dungeon's own zone, as a step would set it
       if(typeof after==='function'){                                        // once, when the field is back (won, fled or lost)
         var ev=scene.events, fn=function(){ ev.off('resume',fn); try{ after(); }catch(e){} }; ev.on('resume',fn); }
       scene.startBattle(mon,false);
       return true;
     }catch(e){ if(window.__DQ_DEBUG__) console.log('a2d battle '+e); return false; }
+  }
+  function a2dToFloor(scene,floor,spot){
+    try{
+      var cur=scene.currentFloor||1; if(floor!==cur-1 && floor!==cur+1) return false;
+      if(scene.isMoving || scene.showingMessage) return false;
+      var fd=a1mFootDy(scene), py=spot.y*TILE+TILE/2-fd;
+      scene.__a2dFall={floor:floor, spot:{x:spot.x, y:(py/TILE)|0, dir:spot.dir||0, px:spot.x*TILE+TILE/2, py:py}};
+      scene.performTransition({targetMap:(floor<cur)?'__floor_up__':'__floor_down__'});
+      return true;
+    }catch(e){ if(window.__DQ_DEBUG__) console.log('a2d toFloor '+e); return false; }
   }
   // ---- E2: a sealed second mouth ---------------------------------------------------------------
   // The floor picture shows the mouth OPEN (daylight). Until the boss is down a rock plug from
@@ -4843,7 +4857,9 @@
       if(via.to==='__floor_down__') spot=land.fromPrev;
       else if(via.to==='__floor_up__') spot=land.fromNext;
       else if(via.to===id && via.from!==id) spot=(f>1 ? (land.mouth2||land.fromPrev) : land.mouth)||null;
+      if(scene.__a2dFall && scene.__a2dFall.floor===f && (via.to==='__floor_down__'||via.to==='__floor_up__')) spot=scene.__a2dFall.spot;   // a module's own floor change
     }
+    scene.__a2dFall=null;
     scene.__a2dLanding=spot?{key:key,spot:spot}:null;
     a2dLegacyOff(scene,fl);
     a2dSealSetup(scene,fl,key);
@@ -7735,6 +7751,8 @@
     if(cam._follow){ try{ cam.stopFollow(); }catch(e){} }
     var tx=hero.x-cam.width*0.5, ty=hero.y-cam.height*0.5;                   // Phaser's own follow target
     if(cam.useBounds && cam.clampX){ tx=cam.clampX(tx); ty=cam.clampY(ty); }
+    if(a2dCtx && a2dCtx.scene===scene && a2dCtx.mod && a2dCtx.mod.camera){    // authored mechanic: its own framing ({x,y} = scroll target), e.g. one forest room at a time
+      try{ var a2c=a2dCtx.mod.camera(a2dCtx,tx,ty,cam,dtms); if(a2c){ tx=a2c.x; ty=a2c.y; } }catch(e){} }
     var s=a1mCamS;
     if(!s || s.cam!==cam || Math.abs(cam.scrollX-s.wx)>1.5 || Math.abs(cam.scrollY-s.wy)>1.5)
       s=a1mCamS={ cam:cam, x:cam.scrollX, y:cam.scrollY, wx:cam.scrollX, wy:cam.scrollY };

@@ -32,7 +32,7 @@ function world(id, floor, mechId, opts = {}) {
   const tiles = plan.rows.map(r => r.split('').map(c => open.has(c) ? 0 : 1));
   for (const a of assets) tiles[a.y][a.x] = TILEOF[a.kind];
   const flags = opts.flags || {};
-  const msgs = [], battles = [], sfx = [];
+  const msgs = [], battles = [], sfx = [], moves = [];
   const hero = { x: 0, y: 0, dir: 0 };
   const cam = { scrollX: 0, scrollY: 0, width: 390, height: 844, shake() {}, setBounds() {}, removeBounds() {}, pan() {}, stopFollow() {}, startFollow() {}, worldView: { x: 0, y: 0, width: 390, height: 844 }, zoom: 1 };
   const scene = { hero, mapData: tiles, currentMapId: id, currentFloor: floor, showingMessage: false, isMoving: false,
@@ -63,7 +63,8 @@ function world(id, floor, mechId, opts = {}) {
     hero: () => ({ x: hero.x, y: hero.y, footY: hero.y + FOOT, tx: Math.floor(hero.x / TILE), ty: Math.floor(hero.y / TILE), dir: hero.dir }),
     place: (px, py, dir) => { hero.x = px; hero.y = py; if (dir !== undefined) hero.dir = dir; },
     own: o => { owned.push(o); return o; }, say: (t) => { msgs.push(String(t)); scene.showingMessage = false; },
-    maskFree, battle: (mid, after) => { battles.push(mid); if (after) after(); return true; }, busy: () => false, Z: k => k, locale: () => 'en' };
+    maskFree, battle: (mid, after) => { battles.push(mid); if (after) after(); return true; }, busy: () => false, Z: k => k, locale: () => 'en',
+    toFloor: (fl2, spot) => { moves.push({ floor: fl2, spot }); return true; } };
   // can her soles be at (px,py)?
   const free = (px, py) => { const r = mod.free ? mod.free(ctx, px, py, Math.floor(px / TILE), Math.floor(py / TILE)) : undefined; return r === true ? true : r === false ? false : maskFree(px, py); };
   const soles = () => [hero.x, hero.y + FOOT];
@@ -112,7 +113,7 @@ function world(id, floor, mechId, opts = {}) {
   function prompt() { const [sx, sy] = soles(); return mod.interact ? mod.interact(ctx, sx, sy, null) : null; }
   function tap() { const p = prompt(); if (!p || !p.act) return null; p.act(); return p.verb; }
   mod.load && mod.load(ctx);
-  return { plan, ctx, mod, scene, flags, msgs, battles, sfx, hero, free, soles, setSoles, frame, walkTo, pushAt, use, idle, prompt, tap, tiles, reload() { ctx.state = {}; mod.load(ctx); lastCell = null; } };
+  return { plan, ctx, mod, scene, flags, msgs, battles, sfx, moves, hero, free, soles, setSoles, frame, walkTo, pushAt, use, idle, prompt, tap, tiles, reload() { ctx.state = {}; mod.load(ctx); lastCell = null; } };
 }
 let fails = 0;
 function check(name, ok, note) { if (!ok) fails++; console.log(`[${ok ? 'PASS' : 'FAIL'}] ${name}${note !== undefined ? ' -- ' + (typeof note === 'string' ? note : JSON.stringify(note)) : ''}`); return ok; }
