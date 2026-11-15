@@ -270,6 +270,56 @@ T['storm-terrace'] = () => {
   }
 };
 
+
+// ---- maze-hunter --------------------------------------------------------------------------------
+T['maze-hunter'] = () => {
+  for (const fid of U.floorsOf('sunkenTempleDungeon')) {
+    const H = U.load('maze-hunter'), c = H.ctxFor(fid), M = H.mod, Lg = M.logic, P = c.mechanic.params;
+    M.load(c); const S = c.state, md = S.M, plan = c.rawPlan;
+    ok(`${fid}: the bundle's own hunter is off`, H.scene.mazeHunterEnabled === false);
+    const keys = Object.keys(md.adj);
+    ok(`${fid}: ${P.mazeCells[0]}x${P.mazeCells[1]} halls, every doorway two-way and open floor between hall centres`, keys.length === P.mazeCells[0] * P.mazeCells[1] && keys.every(k => md.adj[k].every(q => {
+      const a = k.split(',').map(Number), back = md.adj[q.join(',')].some(r => r[0] === a[0] && r[1] === a[1]); let open = true;
+      const ca = Lg.centre(md, a), cb = Lg.centre(md, q); for (let i = 0; i <= 10; i++) if (c.terrain(Math.floor((ca[0] + (cb[0] - ca[0]) * i / 10) / 48), Math.floor((ca[1] + (cb[1] - ca[1]) * i / 10) / 48)) !== '.') open = false;
+      return back && open && Math.abs(a[0] - q[0]) + Math.abs(a[1] - q[1]) === 1; })));
+    const ha = plan.assets.find(a => a.kind === 'hunter'), hc = Lg.centre(md, md.home);
+    ok(`${fid}: the hunter sleeps on the plan's hunter cell, in a dead end`, Math.floor(hc[0] / 48) === ha.x && Math.floor(hc[1] / 48) === ha.y && md.adj[md.home.join(',')].length === 1 && S.h.awake === false && S.h.x === hc[0]);
+    const start = plan.assets.find(a => a.kind === 'mouth' || a.kind === 'stairsPrev'), goal = plan.assets.find(a => a.kind === 'stairsNext' || a.kind === 'boss');
+    ok(`${fid}: the arrival hall, the stairs hall and the boss chamber are out of bounds for it`, md.safe['0,' + (md.H - 1)] === 1 && md.safe[Lg.cellOfTile(md, goal.x, goal.y).join(',')] === 1 && !md.safe[md.home.join(',')], md.safe);
+    // the plan's straight route, walked at her own pace: no battle (the solver's battlesOnTheStraightRoute = 0)
+    const walk = (pts, speed, stopAt) => { let caughtAt = null, frames = 0;
+      for (let i = 0; i < pts.length && !caughtAt; i++) { const tx = pts[i][0] * 48 + 24, ty = pts[i][1] * 48 + 24;
+        for (;;) { const s = H.kit.soles(c), dx = tx - s.x, dy = ty - s.y, d = Math.hypot(dx, dy), st = speed * 16 / 1000;
+          if (d <= st) { H.stand(c, tx, ty); break; } H.stand(c, s.x + dx / d * st, s.y + dy / d * st); M.tick(c, 16); frames++;
+          if (H.scene.isMoving) { caughtAt = pts[i]; break; } if (stopAt && stopAt()) return { frames, caughtAt, stopped: true }; } }
+      return { frames, caughtAt }; };
+    H.stand(c, plan.route[0][0] * 48 + 24, plan.route[0][1] * 48 + 24); M.tick(c, 16);
+    const r1 = walk(plan.route.slice(0, -1), 260);
+    ok(`${fid}: walking the plan's route at her pace meets no battle (solver: ${plan.tests.solver.battlesOnTheStraightRoute})`, !r1.caughtAt && H.battles.length === 0, r1);
+    ok(`${fid}: it woke after ${P.wakesAfterCellsWalked} halls, said so once, and its state is in the flags`, S.h.awake === true && S.wakes === 1 && H.said.length === 1 && /^1\|\d+,\d+\|\d+$/.test(H.state.storyFlags[c.flagKey('hunter')] || ''), [S.h.awake, H.said, H.state.storyFlags[c.flagKey('hunter')]]);
+    // Save -> Continue: a new visit finds it awake in the hall it had reached
+    const at = S.h.at.join(','), c2 = H.ctxFor(fid); M.load(c2);
+    ok(`${fid}: Continue finds the hunter awake in the same hall`, c2.state.h.awake === true && c2.state.h.at.join(',') === at);
+    // in a safe hall it never moves; standing still outside one it comes and catches her
+    const last = plan.route[plan.route.length - 2]; H.stand(c, last[0] * 48 + 24, last[1] * 48 + 24);
+    const safeNow = !!md.safe[Lg.cellOfPx(md, last[0] * 48 + 24, last[1] * 48 + 24).join(',')];
+    const p0 = [S.h.x, S.h.y]; for (let i = 0; i < 300; i++) M.tick(c, 16);
+    ok(`${fid}: while she stands in the stairs hall (or boss chamber) it does not move`, !safeNow || (S.h.x === p0[0] && S.h.y === p0[1]));
+    // stand still in a hall two doors from where it is (one it can reach without crossing a stairs hall) and wait
+    const dh = Lg.dists(md, S.h.at), spot = Object.keys(dh).find(k => dh[k] === 2) || Object.keys(dh).find(k => dh[k] === 1), sc = Lg.centre(md, spot.split(',').map(Number));
+    H.stand(c, sc[0], sc[1]); let waited = 0;
+    while (!H.scene.isMoving && waited < 120000) { M.tick(c, 16); waited += 16; }
+    ok(`${fid}: standing still in the maze, it reaches her: she is held and told`, H.scene.isMoving === true && /caught/.test(H.said[H.said.length - 1]), { waited, h: S.h });
+    M.tick(c, 16); H.runTimers(700);
+    ok(`${fid}: ... the battle is a Temple Guard of this zone, and the hunter is home asleep again`, H.battles.length === 1 && H.battles[0].id === 'templeGuard' && S.h.awake === false && S.h.walked === 0 && S.h.x === hc[0] && S.h.y === hc[1] && H.state.storyFlags[c.flagKey('hunter')] === undefined, [H.battles, S.h]);
+    // speed: never faster than its share of her pace
+    H.scene.isMoving = false; S.h.awake = true; S.grace = 0; const q0 = [S.h.x, S.h.y]; let far = 0;
+    for (let i = 0; i < 60; i++) { M.tick(c, 16); far = Math.max(far, Math.hypot(S.h.x - q0[0], S.h.y - q0[1])); }
+    const sp = P.hunterMovesPerHeroCellMoves.split('/');
+    ok(`${fid}: it walks at ${P.hunterMovesPerHeroCellMoves} of her pace`, far <= 260 * (sp[0] / sp[1]) * 0.96 + 1 && far > 0, { far, max: 260 * (sp[0] / sp[1]) * 0.96 });
+  }
+};
+
 // ---- RUN ----
 const want = process.argv.slice(2), names = want.length ? want : Object.keys(T);
 for (const n of names) { const f0 = fail, p0 = pass; try { T[n](); } catch (e) { fail++; console.log(`[FAIL] ${n}: threw ${e && e.stack || e}`); }
