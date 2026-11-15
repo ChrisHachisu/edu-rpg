@@ -19,10 +19,13 @@ const EXTRA = `(() => { const B = window.__B, D = window.__QOK_DNG2__;
     cross: (goals, opts) => B.timedGo(env(goals, false), opts || {}),
     struck: () => B.mstate().struck || 0,
     // walk (blind) onto terrace cell c and stand there until the bolt comes
-    stand: async c => { const S = B.mstate(), n0 = S.struck || 0, hp0 = B.state().hp;
-      const g = await B.timedGo(env([c], true), { until: () => (S.struck || 0) > n0, maxMs: 30000 }); const at = B.state();
-      await B.waitFor(() => (S.struck || 0) > n0, 12000); await B.wait(350);
-      const s = B.state(); return { g: g.why, grp: group(), struck: (S.struck || 0) - n0, lost: hp0 - s.hp, max: s.maxHp, stood: [at.sx, at.sy], now: [s.sx, s.sy], moved: Math.round(Math.hypot(s.sx - at.sx, s.sy - at.sy)), msg: s.msg, said: B.msgs().slice(-1)[0] || null }; } };
+    // (the bolt may come while she is still walking: where she stood is her last place before it)
+    stand: async c => { const S = B.mstate(), n0 = S.struck || 0, hp0 = B.state().hp; let at = B.here(), on = true;
+      const hit = () => (S.struck || 0) > n0;
+      (async () => { while (on && !hit()) { at = B.here(); await B.raf(); } })();
+      const g = await B.timedGo(env([c], true), { until: hit, maxMs: 30000 });
+      await B.waitFor(hit, 12000); on = false; await B.wait(350);
+      const s = B.state(); return { g: g.why, grp: group(), struck: (S.struck || 0) - n0, lost: hp0 - s.hp, max: s.maxHp, stood: at, now: [s.sx, s.sy], moved: Math.round(Math.hypot(s.sx - at[0], s.sy - at[1])), msg: s.msg, said: B.msgs().slice(-1)[0] || null }; } };
 })()`;
 
 (async () => {
