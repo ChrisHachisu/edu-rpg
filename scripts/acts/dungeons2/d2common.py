@@ -70,7 +70,7 @@ DUNGEONS = {
     "hauntedForest": dict(
         act=2, sheet="mat-forest-maze", theme="haunted forest",
         target={"floor": (116, 92, 64), "wall": (30, 38, 26)},
-        top_accent=0.55, floor_calm=0.50, floor_soft=0.8),
+        top_accent=0.55, floor_calm=0.45, floor_soft=0.8, floor_sat=0.60, floor_coarse=0.70),
     # glyph-plates. Each plate zone is a blank stone slab let into the floor; glyphs are the module's.
     "desertTomb": dict(
         act=3, sheet="mat-tomb", theme="desert tomb",

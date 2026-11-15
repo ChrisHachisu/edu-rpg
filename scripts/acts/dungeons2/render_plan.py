@@ -69,8 +69,9 @@ def _fast_blur(a, sigma):
     """R.blur's separable kernel and edge padding in scipy's C loop (float diff <= 1.5e-6).
     A WIDE blur (sigma >= BIG_BLUR; only lighting uses those: depth, light pools, deep rock,
     glow) is taken on a 4x or 8x area-reduced copy and brought back bilinearly: the result is
-    band-limited far below that sampling, the difference is under 0.004 of the field's range, and
-    the kernel is 4-8x shorter on 16-64x fewer pixels. Every blur that decides WHERE a wall or a
+    band-limited far below that sampling, and the kernel is 4-8x shorter on 16-64x fewer pixels.
+    Measured on a floor against the exact blur: walk mask identical, picture within 0.2 levels on
+    average once smoothed (cel-step contours move by a pixel). Every blur that decides WHERE a wall or a
     hazard edge is (sigma under a cell) still runs exactly."""
     if sigma <= 0:
         return a.astype(np.float32)
@@ -333,7 +334,10 @@ def paint_plates(img, plan, cfg, a, px):
         if z.get("kind") not in kinds or "rect" not in z:
             continue
         x0, y0, x1, y1 = z["rect"]
-        xa, xb, ya, yb = int(x0 * px), int((x1 + 1) * px), int(y0 * px), int((y1 + 1) * px)
+        xa, xb = max(0, int(x0 * px)), min(img.shape[1], int((x1 + 1) * px))
+        ya, yb = max(0, int(y0 * px)), min(img.shape[0], int((y1 + 1) * px))
+        if xa >= xb or ya >= yb:
+            continue
         Y, X = np.mgrid[ya:yb, xa:xb].astype(np.float32)
         dl, dr, dt, db = (X - x0 * px) / px, ((x1 + 1) * px - X) / px, (Y - y0 * px) / px, ((y1 + 1) * px - Y) / px
         dmin = np.minimum(np.minimum(dl, dr), np.minimum(dt, db))
@@ -365,6 +369,15 @@ def paint(plan, mats, cfg):
     cw, ch = fld.cw, fld.ch
     cxi = np.minimum((xx / px).astype(np.int32), cw - 1)
     cyi = np.minimum((yy / px).astype(np.int32), ch - 1)
+    # Act 1's passes may REMOVE rock that is too thin to carry a face (a two-cell strip between a
+    # room and the map edge, the far side of a prop pocket). On an authored plan that opens ground
+    # the plan calls solid, right out to the picture's edge. Rock that touches no open cell at all
+    # stays rock; the organic edge still lives in the cells that do touch one.
+    deep = ~ndimage.binary_dilation(np.array([[c != "#" for c in r] for r in wrows], bool), np.ones((3, 3), bool))
+    if deep.any():
+        dm = R.blur(deep.astype(np.float32)[cyi, cxi], px * 0.10)
+        fw = np.minimum(fw, np.clip(1.0 - dm * 1.25, 0.0, 1.0)).astype(np.float32)
+        del dm
     a = np.clip((fw - 0.5) * 34.0 + 0.5, 0.0, 1.0)
 
     tgt = cfg["target"]
@@ -583,6 +596,63 @@ def paint(plan, mats, cfg):
         + [(x, y, "boulder") for y, r in enumerate(plan["rows"]) for x, c in enumerate(r) if c in kinds.get("boulder", ())]
     if stand:
         over_a = np.zeros((H, W), np.float32)
+        # a filled rectangle of such cells (a 2x2 pillar, a 2x2 stop crystal) is ONE object
+        blocks = []
+        for style in ("pillar", "boulder"):
+            cm = np.array([[c in kinds.get(style, ()) for c in r] for r in plan["rows"]], bool)
+            lab_, n_ = ndimage.label(cm)
+            for sl in ndimage.find_objects(lab_):
+                hh_, ww_ = sl[0].stop - sl[0].start, sl[1].stop - sl[1].start
+                if hh_ * ww_ > 1 and cm[sl].all():
+                    blocks.append((sl[1].start, sl[0].start, sl[1].stop - 1, sl[0].stop - 1, style))
+        taken = {(x, y) for (ax, ay, bx_, by_, _) in blocks for x in range(ax, bx_ + 1) for y in range(ay, by_ + 1)}
+        stand = [t for t in stand if (t[0], t[1]) not in taken]
+        for (ax, ay, bx_, by_, style) in sorted(blocks, key=lambda b: b[1]):
+            wc, hc = bx_ - ax + 1, by_ - ay + 1
+            cut = int(ay * px)
+            if style == "boulder":                                   # one big frosted rock filling the block
+                bx, by = (ax + wc / 2.0) * px, (ay + hc / 2.0 + 0.12) * px
+                rx, ry, hg = 0.49 * wc * px, 0.40 * hc * px, 0.26 * hc * px
+                x0, x1 = max(0, int(bx - rx * 1.6)), min(W, int(bx + rx * 1.6) + 1)
+                y0, y1 = max(0, int(by - hg - ry - 0.2 * px)), min(H, int(by + ry * 1.6) + 1)
+                X, Y = xx[y0:y1, x0:x1], yy[y0:y1, x0:x1]
+                reg = img[y0:y1, x0:x1]
+                tex = R.sample(wall_m, X + 137.0 + ax * 53.0, Y + 59.0 + ay * 29.0)
+                body = paint_rock(reg, X, Y, bx, by, rx, ry, hg, tex, px, 311 + ax * 7 + ay * 3,
+                                  frost=float(cfg.get("boulder_frost", 0.0)), tint=float(cfg.get("boulder_tint", 1.0)))
+                img[y0:y1, x0:x1] = reg
+                foot = ("ellipse", bx / px, by / px, 0.47 * wc, 0.38 * hc)
+            else:                                                    # a square stone pier: lit top, darker south face
+                ins, hg = 0.07 * px, 1.15 * px
+                fx0, fx1, fy0, fy1 = ax * px + ins, (bx_ + 1) * px - ins, ay * px + ins, (by_ + 1) * px - ins
+                x0, x1 = max(0, int(fx0 - 0.3 * px)), min(W, int(fx1 + 0.8 * px) + 1)
+                y0, y1 = max(0, int(fy0 - hg - 0.2 * px)), min(H, int(fy1 + 0.5 * px) + 1)
+                X, Y = xx[y0:y1, x0:x1], yy[y0:y1, x0:x1]
+                wob = (R.fbm(X, Y, px * 0.45, 301) - 0.5) * 0.10 * px
+                inx = (X + wob >= fx0) & (X + wob <= fx1)
+                topf = inx & (Y + wob >= fy0 - hg) & (Y + wob <= fy1 - hg)
+                front = inx & (Y > fy1 - hg) & (Y + wob <= fy1)
+                body = topf | front
+                reg = img[y0:y1, x0:x1]
+                shx = np.clip((fx1 + 0.55 * px - X) / (0.55 * px), 0.0, 1.0) * (X > fx0 + 0.2 * px) * (Y > fy0 - 0.2 * px) * (Y < fy1 + 0.30 * px)
+                shy = np.clip((fy1 + 0.30 * px - Y) / (0.30 * px), 0.0, 1.0)
+                reg *= (1.0 - 0.50 * np.clip(shx * shy, 0.0, 1.0) * (~body))[..., None]
+                tex = R.sample(wall_m, X + 137.0, Y + 59.0).astype(np.float32)
+                uu = (X - fx0) / max(1.0, fx1 - fx0)
+                lf = np.floor(np.clip(1.05 - 0.45 * uu, 0.3, 1.2) * 5.0) / 5.0 + 0.08
+                col = np.where(topf[..., None], tex * 2.35 + 10.0, tex * (lf * 1.45)[..., None])
+                col = np.clip(col, 0, 255)
+                er = ndimage.binary_erosion(body, iterations=max(2, int(px * 0.035)))
+                col[body & ~er] *= 0.30
+                edge = topf & ~ndimage.binary_erosion(topf, iterations=max(2, int(px * 0.03)))
+                col[edge & er] *= 0.62                               # the top's own rim, where it meets the face
+                reg[body] = col[body]
+                img[y0:y1, x0:x1] = reg
+                foot = ("rect", ax + 0.05, ay + 0.05, bx_ + 0.95, by_ + 0.95)
+            ov = over_a[y0:y1, x0:x1]
+            ov[body & (Y < cut)] = 1.0
+            pillars.append({"x": ax, "y": ay, "box": [x0, y0, x1, min(y1, cut)] if y0 < cut else None, "over": y0 < cut,
+                            "by_cells": ay + hc / 2.0, "foot": foot})
         for (cx_, cy_, style) in sorted(stand, key=lambda p: p[1]):
             bx, by = (cx_ + 0.5) * px, (cy_ + 0.60) * px
             if style == "boulder":
@@ -667,10 +737,14 @@ def paint(plan, mats, cfg):
     walk = (small(fw) >= 0.5) & (small(block) < 0.5)
     walk = walk.copy()
     for p in pillars:                                             # the base a hero cannot stand in
-        bx, by = (p["x"] + 0.5) * C.CELL, (p["y"] + 0.60) * C.CELL
-        ya, yb, xa, xb = max(0, int(by) - C.CELL), min(Hw, int(by) + C.CELL), max(0, int(bx) - C.CELL), min(Ww, int(bx) + C.CELL)
+        ft = p.get("foot") or ("ellipse", p["x"] + 0.5, p["y"] + 0.60, 0.44, 0.27)
+        if ft[0] == "rect":
+            walk[max(0, int(ft[2] * C.CELL)):int(np.ceil(ft[4] * C.CELL)), max(0, int(ft[1] * C.CELL)):int(np.ceil(ft[3] * C.CELL))] = False
+            continue
+        bx, by, rxc, ryc = ft[1] * C.CELL, ft[2] * C.CELL, ft[3] * C.CELL, ft[4] * C.CELL
+        ya, yb, xa, xb = max(0, int(by - ryc) - 2), min(Hw, int(by + ryc) + 3), max(0, int(bx - rxc) - 2), min(Ww, int(bx + rxc) + 3)
         yw, xw = np.mgrid[ya:yb, xa:xb]
-        walk[ya:yb, xa:xb] &= ~((((xw - bx) / (0.44 * C.CELL)) ** 2 + ((yw - by) / (0.27 * C.CELL)) ** 2) <= 1.0)
+        walk[ya:yb, xa:xb] &= ~((((xw - bx) / rxc) ** 2 + ((yw - by) / ryc) ** 2) <= 1.0)
 
     # ── sealed second mouths: the picture shows the mouth open; this is the rock fall the engine
     #    draws over it until the boss is beaten (floor.seal + <floor>-seal.webp) ───────────────
@@ -747,7 +821,7 @@ def paint(plan, mats, cfg):
             crop = Image.fromarray(rgba[b[1]:b[3], b[0]:b[2]], "RGBA")
             over.paste(crop, (sx, sy))
             entries.append({"x": b[0], "y": b[1], "w": b[2] - b[0], "h": b[3] - b[1], "sx": sx, "sy": sy,
-                            "by": int(round((p["y"] + 0.60) * C.CELL)), "cell": [p["x"], p["y"]]})
+                            "by": int(round(p.get("by_cells", p["y"] + 0.60) * C.CELL)), "cell": [p["x"], p["y"]]})
     info = {"floor": f"{plan['dungeonId']}-f{plan['floor']}", "size": [Ww, Hw], "cells": [cw, ch],
             "over": entries, "seal": seals, "seconds": round(time.time() - t0),
             "peakMB": round(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024)}
@@ -771,6 +845,8 @@ def crop_plan(plan, box):
     p["width"], p["height"] = x1 - x0, y1 - y0
     p["assets"] = [dict(a, x=a["x"] - x0, y=a["y"] - y0) for a in plan["assets"]
                    if x0 <= a["x"] < x1 and y0 <= a["y"] < y1 and a["kind"] != "mouth"]
+    p["zones"] = [dict(z, rect=[z["rect"][0] - x0, z["rect"][1] - y0, z["rect"][2] - x0, z["rect"][3] - y0])
+                  for z in plan.get("zones", []) if "rect" in z]
     return p
 
 
