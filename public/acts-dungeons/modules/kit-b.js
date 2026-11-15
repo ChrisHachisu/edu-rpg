@@ -96,7 +96,7 @@
   }
   function clock(ctx, dtMs, periodTicks, ms) {
     var S = ctx.state, per = Math.max(1, periodTicks || 1) * ms;
-    if (S.clk === undefined) { var v = +getFlag(ctx, 'clk'); S.clk = (v >= 0 && v < per) ? v : 0; }
+    if (S.clk === undefined) { var v = +getFlag(ctx, 'clk'); S.clk = (v >= 0 && v < per) ? v : 0; S.clk0 = S.clk; }   // clk0: where this visit's clock started (probes read it)
     if (dtMs > 0) S.clk = (S.clk + Math.min(dtMs, 100)) % per;
     setFlag(ctx, 'clk', Math.round(S.clk));
     return S.clk / ms;                                                       // ticks, fractional
