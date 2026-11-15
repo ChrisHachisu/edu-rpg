@@ -69,6 +69,7 @@ class Floor:
         self.linkc = np.array([[c in C.link_chars(did) for c in r] for r in p["rows"]], bool)
         self.pairs = {}                                          # (kind, pair id) -> cells
         self.assets, self.mech = [], []
+        self.mouth_run = set()
         self.special = {}                                        # cell -> kind (anything that is not plain floor)
         second = p["floor"] > 1
         for a in p["assets"]:
@@ -79,7 +80,8 @@ class Floor:
                 # the first mouth of floor 1 is THE mouth; any other (deeper, sealed, or a second
                 # one on the same floor) is a second mouth: tile 10, leaves by the last connection
                 kind = "mouth2" if (second or a.get("sealedUntil") or "mouth" in self.special.values()) else "mouth"
-                cells, _, d = C.mouth_cells(p, a)
+                cells, run, d = C.mouth_cells(p, a)
+                self.mouth_run.update(run)                       # the corridor beyond a mouth is painted open on purpose
                 for i, (x, y) in enumerate(cells):
                     e = dict(a, kind=kind, x=x, y=y)
                     if i:
@@ -250,6 +252,8 @@ def build(fid, problems):
     dcells[sy // C.CELL, sx // C.CELL] = True
     del sy, sx
     touch = ndimage.binary_dilation(F.walk, np.ones((3, 3), bool))
+    for (x, y) in F.mouth_run:
+        touch[max(0, y - 1):y + 2, max(0, x - 1):x + 2] = True
     leak = np.argwhere(cells & ~touch)
     if len(leak):
         problems.append(f"{fid}: {len(leak)} standable cell(s) inside solid ground, e.g. {leak[:4].tolist()}")
