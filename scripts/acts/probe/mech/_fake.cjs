@@ -64,7 +64,7 @@ function world(id, floor, mechId, opts = {}) {
     place: (px, py, dir) => { hero.x = px; hero.y = py; if (dir !== undefined) hero.dir = dir; },
     own: o => { owned.push(o); return o; }, say: (t) => { msgs.push(String(t)); scene.showingMessage = false; },
     maskFree, battle: (mid, after) => { battles.push(mid); if (after) after(); return true; }, busy: () => false, Z: k => k, locale: () => 'en',
-    toFloor: (fl2, spot) => { moves.push({ floor: fl2, spot }); return true; } };
+    bossDown: () => !!opts.bossDown, art: () => null, toFloor: (fl2, spot) => { moves.push({ floor: fl2, spot }); return true; } };
   // can her soles be at (px,py)?
   const free = (px, py) => { const r = mod.free ? mod.free(ctx, px, py, Math.floor(px / TILE), Math.floor(py / TILE)) : undefined; return r === true ? true : r === false ? false : maskFree(px, py); };
   const soles = () => [hero.x, hero.y + FOOT];

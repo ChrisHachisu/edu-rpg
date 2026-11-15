@@ -4708,6 +4708,8 @@
       // toFloor: a fall or a lift to the floor above/below through the engine's own floor change (black cover, loadMap,
       // encounter reset); she arrives on `spot` {x,y,dir} (a cell: her SOLES are put on its centre) instead of beside the stairs.
       toFloor:function(floor,spot){ return a2dToFloor(scene,floor,spot); },
+      bossDown:function(){ return a2dSealDead(scene); },                    // this dungeon's boss flag
+      art:function(){ var im=a1dArt[key]; return im||null; },               // the floor picture (an Image) once it is in, for a module that patches a piece of it
       Z:function(key,vars){ var q=window.__QOK, z=q&&q.Z; try{ return z?z(key,vars):key; }catch(e){ return key; } },
       locale:function(){ var gs=window.__GAME_STATE__, st=gs&&gs.player&&gs.player.state; return (st&&st.locale==='ja') ? (st.kanjiMode?'jaKanji':'ja') : 'en'; }
     };

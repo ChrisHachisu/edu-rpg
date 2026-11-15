@@ -32,7 +32,12 @@
       'bandit.spikes':'Spikes! You are thrown back.',
       'ruins.opens':'The cracked wall crumbles. A hidden room!',
       'ruins.hint':'Scorch marks on the floor point at the wall.',
-      'ruins.hintSign':'A scratched note: "The wall with the glowing crack is thin."'
+      'ruins.hintSign':'A scratched note: "The wall with the glowing crack is thin."',
+      'ruins.hint.ember':'Embers still glow here. Warm air drifts from the wall.',
+      'ruins.hint.soot':'A trail of soot leads up to the wall.',
+      'ruins.hint.draught':'The ash stirs. A draught blows from the wall.',
+      'ruins.hint.stones':'Loose stones have fallen from the wall.',
+      'ruins.sealed':'The crack is cold and still. It will not give yet.'
     },
     ja:{
       'verb.ride':'トロッコに のる', 'verb.lever':'レバーを ひく', 'verb.read':'よむ', 'verb.cut':'ワイヤを きる', 'verb.look':'しらべる',
@@ -54,7 +59,12 @@
       'bandit.spikes':'トゲだ！うしろに はじきとばされた。',
       'ruins.opens':'ひびの はいった かべが くずれた。かくしべやだ！',
       'ruins.hint':'ゆかの こげあとが かべの ほうを さしている。',
-      'ruins.hintSign':'かきつけが ある。「ひびが ひかる かべは うすい」'
+      'ruins.hintSign':'かきつけが ある。「ひびが ひかる かべは うすい」',
+      'ruins.hint.ember':'まだ ひのこが ひかっている。かべから あたたかい かぜが くる。',
+      'ruins.hint.soot':'すすの あとが かべまで つづいている。',
+      'ruins.hint.draught':'はいが ゆれている。かべから すきまかぜが ふいている。',
+      'ruins.hint.stones':'かべから くずれた いしが ころがっている。',
+      'ruins.sealed':'ひびは つめたく しずまっている。まだ びくとも しない。'
     },
     jaKanji:{
       'verb.ride':'トロッコに 乗る', 'verb.lever':'レバーを 引く', 'verb.read':'読む', 'verb.cut':'ワイヤを 切る', 'verb.look':'調べる',
@@ -76,7 +86,12 @@
       'bandit.spikes':'トゲだ！後ろに 弾き飛ばされた。',
       'ruins.opens':'ひびの 入った 壁が 崩れた。隠し部屋だ！',
       'ruins.hint':'床の 焦げ跡が 壁の 方を 指している。',
-      'ruins.hintSign':'書き付けが ある。「ひびが 光る 壁は 薄い」'
+      'ruins.hintSign':'書き付けが ある。「ひびが 光る 壁は 薄い」',
+      'ruins.hint.ember':'まだ 火の粉が 光っている。壁から 暖かい 風が 来る。',
+      'ruins.hint.soot':'すすの 跡が 壁まで 続いている。',
+      'ruins.hint.draught':'灰が 揺れている。壁から すきま風が 吹いている。',
+      'ruins.hint.stones':'壁から 崩れた 石が 転がっている。',
+      'ruins.sealed':'ひびは 冷たく 静まっている。まだ びくとも しない。'
     }
   };
   function loc(){

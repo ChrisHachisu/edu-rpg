@@ -68,7 +68,7 @@
     },
     tick:function(ctx,dt){
       var sc=ctx.scene, st=ctx.state, i; if(!st.P||!K.onField(ctx)) return;
-      if(st.pending){ st.pending.t-=dt; if(st.pending.t<=0 && !sc.isMoving){ var id=st.pending.id; st.pending=null;
+      if(st.pending){ st.pending.t-=dt; if(st.pending.t<=0 && !sc.isMoving && !sc.showingMessage){ /* the line is read, then the battle */ var id=st.pending.id; st.pending=null;
           if(!ctx.battle('shadow',function(){ st.grace=900; })) st.grace=600; } return; }
       if(sc.showingMessage) return;                         // the cave waits while she reads
       dt=Math.min(dt,100); st.t+=dt; if(st.grace>0) st.grace-=dt;
