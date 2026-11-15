@@ -18,7 +18,7 @@ const QUESTS = ['owlsLesson', 'drakeCargo', 'lunasMap', 'ancientRelic', 'flameCl
 const CELL = 48;
 
 class Run {
-  constructor(id, { bossId, flags = {}, name = id, grade = null } = {}) { this.grade = grade; this.id = id; this.bossId = bossId; this.seedFlags = flags; this.rows = []; this.n = 0; this.name = name;
+  constructor(id, { bossId, flags = {}, name = id, grade = null, needModule = true } = {}) { this.grade = grade; this.needModule = needModule; this.id = id; this.bossId = bossId; this.seedFlags = flags; this.rows = []; this.n = 0; this.name = name;
     this.dir = path.join(SHOTS, id) + '/'; fs.mkdirSync(this.dir, { recursive: true }); }
   rec(check, ok, note) { const r = { dungeon: this.id, check, status: ok === true ? 'PASS' : ok === false ? 'FAIL' : String(ok), note: note === undefined ? '' : (typeof note === 'string' ? note : JSON.stringify(note)).slice(0, 700) };
     this.rows.push(r); console.log(`[${r.status}] ${this.id}: ${check}${r.note ? ' -- ' + r.note : ''}`);
@@ -30,7 +30,7 @@ class Run {
     await this.page.screenshot({ path: f, type: 'jpeg', quality: 62 }).catch(e => console.log('shot fail', e.message)); return f; }
   async pilot() { await this.page.evaluate(PILOT); }
   async settle(ms = 30000) {
-    const ok = await this.page.waitForFunction(() => { const s = window.__A && window.__A.state(); return s && s.field && s.d2 && s.d2.art === 'ready' && s.d2.mask === 'ready' && s.d2.module && !s.waiting; }, { timeout: ms }).then(() => true).catch(() => false);
+    const ok = await this.page.waitForFunction((nm) => { const s = window.__A && window.__A.state(); return s && s.field && s.d2 && s.d2.art === 'ready' && s.d2.mask === 'ready' && (s.d2.module || !nm) && !s.waiting; }, this.needModule, { timeout: ms }).then(() => true).catch(() => false);
     await this.page.waitForTimeout(600); return ok; }
   async start() {
     const LM = acts.landmarks.find(l => l.mapId === this.id && !l.toFloor && !l.virtual); this.LM = LM;
@@ -53,7 +53,7 @@ class Run {
   async enter() {
     const r = await L.walkCells(this.page, [[this.LM.at[0], this.LM.at[1]]], { maxMs: 25000 }); await this.page.waitForTimeout(1200); await this.pilot();
     const okS = await this.settle(); const s = await this.st();
-    this.rec('walking into the overworld mouth enters floor 1 of the authored dungeon (smoke flag on)', s.map === this.id && s.floor === 1 && okS && s.d2.mechanic !== null, { r: r.why, s });
+    this.rec('walking into the overworld mouth enters floor 1 of the authored dungeon (smoke flag on)', s.map === this.id && s.floor === 1 && okS && (s.d2.mechanic !== null || !this.needModule), { r: r.why, s });
     await L.noEncounters(this.page);
     return s.map === this.id;
   }

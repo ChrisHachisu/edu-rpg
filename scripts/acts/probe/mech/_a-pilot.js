@@ -32,14 +32,14 @@
   function plan(goal, opts = {}) {
     const w = W(), d = D(), f = fdy(), x0 = w.hero.x, y0 = w.hero.y, Wd = w.mapData[0].length * T, Hd = w.mapData.length * T;
     const avoid = new Set(opts.avoid || []), avoidFn = opts.avoidFn || null;
-    const gc = goal.centre || null, wayOk = (x, y) => { const cx = Math.floor(x / T), cy = Math.floor(y / T); return !isWay(cx, cy) || (gc && gc[0] === cx && gc[1] === cy); };
+    const gc = goal.centre || null, wayOk = (x, y) => { for (const [ox, oy] of [[0, 0], [-9, -9], [9, -9], [-9, 9], [9, 9]]) { const cx = Math.floor((x + ox) / T), cy = Math.floor((y + oy) / T); if (isWay(cx, cy) && !(gc && gc[0] === cx && gc[1] === cy)) return false; } return true; };   // 9 px clear of every stair and mouth cell: her centre grazing one is enough to take it
     const isGoal = (x, y) => { const sx = x, sy = y + f;
       if (goal.cell) { const g = goal.grow || 0, [cx, cy] = goal.cell; return sx >= cx * T - g && sx < (cx + 1) * T + g && sy >= cy * T - g && sy < (cy + 1) * T + g; }
       if (goal.beside) { const [cx, cy] = goal.beside, ex = Math.max(Math.abs(sx - (cx * T + 24)) - 24, 0), ey = Math.max(Math.abs(sy - (cy * T + 24)) - 24, 0), dd = Math.hypot(ex, ey); return dd <= (goal.reach || 14) && (goal.side ? goal.side(sx, sy) : true); }
       if (goal.centre) { const [cx, cy] = goal.centre; return x >= cx * T + 5 && x <= (cx + 1) * T - 5 && y >= cy * T + 4 && y <= (cy + 1) * T - 4; }
       if (goal.soles) return Math.hypot(sx - goal.soles[0], sy - goal.soles[1]) <= (goal.r || 8);
       return false; };
-    const ok = (x, y) => x > 2 && y > 2 && x < Wd - 2 && y < Hd - 2 && d.free(x, y) && wayOk(x, y) && !avoid.has(Math.floor(x / T) + ',' + Math.floor((y + f) / T)) && !(avoidFn && avoidFn(x, y + f));
+    const ok = (x, y) => x > 2 && y > 2 && x < Wd - 2 && y < Hd - 2 && d.free(x, y) && (wayOk(x, y) || (x === x0 && y === y0)) && !avoid.has(Math.floor(x / T) + ',' + Math.floor((y + f) / T)) && !(avoidFn && avoidFn(x, y + f));
     const key = (i, j) => (i + 4096) * 8192 + (j + 4096), prev = new Map(), q = [[0, 0]]; prev.set(key(0, 0), null);
     const DD = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]];
     let end = null, n = 0;
