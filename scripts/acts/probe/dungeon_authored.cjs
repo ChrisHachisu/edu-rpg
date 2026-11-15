@@ -179,9 +179,11 @@ async function runDungeon(spec) {
   const R = new Run(page, id);
   try {
     if (!LM) { rec(id, 'an overworld mouth (a portal-isle dungeon is entered from its isle: see its mech/ probe)', 'SKIP'); return; }
-    // layout mode: the entrance locks of the bundle (Shadow Cave, Volcanic Forge, Magma Tunnels) are passed as a player who got there would
+    // layout mode: the entrance locks of the bundle (Shadow Cave, Volcanic Forge, Magma Tunnels, and the Demon Castle's
+    // four relics) are passed as a player who got there would
     const seed = { mapId: 'overworld', x: LM.exit[0], y: LM.exit[1], activeQuests: QUESTS[id] || [], flags: layout ? { ...L.allFlags(), 'boss.sandGolem.defeated': true } : {},
-      ...(layout ? { inventory: [{ itemId: 'herb', quantity: 5 }, { itemId: 'flameCloak', quantity: 1 }, { itemId: 'windbreakerStone', quantity: 1 }] } : {}) };
+      ...(layout ? { inventory: [{ itemId: 'herb', quantity: 5 }, { itemId: 'flameCloak', quantity: 1 }, { itemId: 'windbreakerStone', quantity: 1 },
+        ...['excalibur', 'aegisOfDawn', 'galeShield', 'crownOfWisdom'].map(itemId => ({ itemId, quantity: 1 }))] } : {}) };
     const extra = mode === 'smoke' ? { 'qok-dungeons2-smoke': '1' } : mode === 'off' ? { 'qok-dungeons2': '0' } : {};
     await L.bootSave(page, PT.seed() || L.save(seed), { extra });   // PT_SAVE: the story playthrough's own record
     await page.evaluate(PILOT);

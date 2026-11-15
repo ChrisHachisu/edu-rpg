@@ -356,6 +356,14 @@ Also run on the same copy:
     a table of which rooms each of the nine floors uses, and nothing else: no hall or corridor
     layout, no room positions, stairs, chests, crystals, throne or mouth. It was not invented;
     the castle still runs on the bundle's generated floors until someone lays it out.
+    **Closed in E4:** the owner approved nine laid-out floor plans (`demonCastle-f1..9`, generator
+    `plans/dungeons/demonCastle.py`). They are rendered (`d2common.py` entry `demonCastle`:
+    polished slab floors in the mirror rooms from the sheet's accent quadrant, pits, piers, and on
+    floor 9 a dais, carpet and throne), exported and enabled: 9 floors, 13.5 MB, which makes the
+    set 20 dungeons, 107 floors, 116.4 MB. The module is `mirror-rooms.js` (left-right swap only,
+    the bundle's both-axes flip switched off; pit falls go back to the doorway she came in by; a
+    Dark Knight walks the guarded halls); floor 9's boss tile is the bundle's own Demon King
+    fight and ending. Probe: `scripts/acts/probe/mech/mirror-rooms.cjs`.
 16. **Oasis Depths is recovered but assumed in one place.** The five floors come cell for cell
     from the planning page's pictures (a solver over the recovered plans gives the page's own
     wheel-turn counts), except floor 1's mouth: the page draws the start inside the room, so a
