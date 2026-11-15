@@ -130,25 +130,69 @@
       g.fillStyle = '#8c7e84'; [[14, 14], [80, 14], [14, 66], [80, 66]].forEach(function (p) { g.fillRect(p[0] - 2, p[1] - 2, 4, 4); });
     });
   }
+  // The painted set: one atlas, relief-lit out of the Forge's own material tiles by
+  // scripts/acts/mech-e4/make_art.py. Until it has loaded, the drawn pictures above stand in.
+  var ART = 'd2b_forge';
+  function atlas(sc, K) {
+    if (!K.tex(sc, ART, 'acts-dungeons/modules/b-art/forge.webp')) return null;
+    var t = sc.textures.get(ART), m;
+    if (!t.has('t1')) { for (m = 1; m < 16; m++) { t.add('t' + m, 0, m * 96, 0, 96, 96); t.add('r' + m, 0, m * 96, 96, 96, 96); t.add('i' + m, 0, m * 96, 192, 96, 96); }
+      t.add('furnace', 0, 0, 288, 96, 84); t.add('lever0', 0, 96, 288, 48, 60); t.add('lever1', 0, 144, 288, 48, 60); }
+    return t;
+  }
+  function moldTex(sc, K, w, h, cast) {                                       // a mold of any size: cast plates, or the nine-sliced frame
+    return K.canvasTex(sc, 'd2b_mold_' + w + 'x' + h + (cast ? 'c' : 'e'), w, h, function (g) {
+      var src = sc.textures.get(ART).getSourceImage(), x, y, B = 14, L = 68, n;
+      if (cast) {
+        for (y = 0; y < h; y += T) for (x = 0; x < w; x += T) g.drawImage(src, 192, 288, T, T, x, y, T, T);
+        g.fillStyle = 'rgba(255,255,255,0.16)'; g.fillRect(2, 2, w - 4, 1);
+        g.fillStyle = 'rgba(0,0,0,0.30)'; g.fillRect(0, h - 5, w, 5); g.fillRect(w - 3, 0, 3, h);
+        g.fillStyle = 'rgba(12,10,12,0.85)'; g.fillRect(0, 0, w, 2); g.fillRect(0, h - 2, w, 2); g.fillRect(0, 0, 2, h); g.fillRect(w - 2, 0, 2, h);
+        return; }
+      g.fillStyle = 'rgba(14,9,8,0.33)'; g.fillRect(B, B, w - 2 * B, h - 2 * B);
+      for (x = B; x < w - B; x += L) { n = Math.min(L, w - B - x); g.drawImage(src, 288 + B, 288, n, B, x, 0, n, B); g.drawImage(src, 288 + B, 288 + 96 - B, n, B, x, h - B, n, B); }
+      for (y = B; y < h - B; y += L) { n = Math.min(L, h - B - y); g.drawImage(src, 288, 288 + B, B, n, 0, y, B, n); g.drawImage(src, 288 + 96 - B, 288 + B, B, n, w - B, y, B, n); }
+      g.drawImage(src, 288, 288, B, B, 0, 0, B, B); g.drawImage(src, 288 + 96 - B, 288, B, B, w - B, 0, B, B);
+      g.drawImage(src, 288, 288 + 96 - B, B, B, 0, h - B, B, B); g.drawImage(src, 288 + 96 - B, 288 + 96 - B, B, B, w - B, h - B, B, B);
+    });
+  }
+  function skinTile(ctx, e) {                                                 // the picture of a tile as it stands now, lit from the upper left
+    var m = openOf(e.t); if (!m) return;
+    try { ctx.scene.tweens.killTweensOf([e.tile, e.iron]); } catch (x) {}
+    e.tile.setTexture(ART, (e.t.turntable ? 'r' : 't') + m).setAngle(0); e.iron.setTexture(ART, 'i' + m).setAngle(0); e.wait = 0;
+  }
+  function setLever(ctx, lv, on) { var S = ctx.state; lv.__on = !!on;
+    if (S.skinned) lv.setTexture(ART, 'lever' + (on ? 1 : 0)); else lv.setTexture(leverTex(ctx.scene, S.K, on)); }
+  function skin(ctx) {                                                        // swap the stand-ins for the painted set, once
+    var S = ctx.state, k; if (S.skinned || !S.spr || !atlas(ctx.scene, S.K)) return;
+    S.skinned = true;
+    for (k in S.spr.tiles) skinTile(ctx, S.spr.tiles[k]);
+    for (k in S.spr.molds) drawMold(ctx, S.spr.molds[k]);
+    for (k in S.spr.levers) setLever(ctx, S.spr.levers[k], S.spr.levers[k].__on);
+    for (k = 0; k < S.spr.furnaces.length; k++) S.spr.furnaces[k].setTexture(ART, 'furnace');
+  }
   function build(ctx) {
     var S = ctx.state, K = S.K, sc = ctx.scene, dg = ctx.depth.ground;
-    S.spr = { tiles: {}, molds: {}, levers: {} };
+    S.spr = { tiles: {}, molds: {}, levers: {}, furnaces: [] }; S.skinned = false;
     eachHall(S, function (H) {
       var i;
       for (i = 0; i < H.list.length; i++) { var t = H.list[i], cx = (t.x + 1) * T, cy = (t.y + 1) * T;
         var a = ctx.own(sc.add.image(cx, cy, tileTex(sc, K, t.open0, t.turntable)).setDepth(dg + 0.2).setAngle(t.rot * 90));
         var b = ctx.own(sc.add.image(cx, cy, ironTex(sc, K, t.open0)).setDepth(dg + 0.3).setAngle(t.rot * 90).setAlpha(0));
-        S.spr.tiles[t.key] = { tile: a, iron: b, ang: t.rot * 90 }; }
+        S.spr.tiles[t.key] = { tile: a, iron: b, ang: t.rot * 90, t: t, wait: 0 }; }
       for (i = 0; i < H.molds.length; i++) { var M = H.molds[i], p = M.px, g = ctx.own(sc.add.graphics().setDepth(dg + 0.25));
-        S.spr.molds[H.id + '.' + M.id] = { g: g, hot: ctx.own(sc.add.rectangle((p[0] + p[2]) / 2, (p[1] + p[3]) / 2, p[2] - p[0] - 8, p[3] - p[1] - 8, 0xffa02a).setDepth(dg + 0.35).setAlpha(0)) };
-        drawMold(g, M); }
-      if (H.furnace) ctx.own(sc.add.image((H.furnace.x + 1) * T, (H.furnace.y + 1) * T + 6, furnaceTex(sc, K)).setOrigin(0.5, 1).setDepth(dg + 0.4));
+        var mo = S.spr.molds[H.id + '.' + M.id] = { g: g, M: M, pic: ctx.own(sc.add.image(p[0], p[1], tileTex(sc, K, 0, false)).setOrigin(0, 0).setDepth(dg + 0.25).setVisible(false)),
+          hot: ctx.own(sc.add.rectangle((p[0] + p[2]) / 2, (p[1] + p[3]) / 2, p[2] - p[0] - 8, p[3] - p[1] - 8, 0xffa02a).setDepth(dg + 0.35).setAlpha(0)) };
+        drawMold(ctx, mo); }
+      if (H.furnace) S.spr.furnaces.push(ctx.own(sc.add.image((H.furnace.x + 1) * T, (H.furnace.y + 1) * T + 6, furnaceTex(sc, K)).setOrigin(0.5, 1).setDepth(dg + 0.4)));
       if (H.lever) S.spr.levers[H.id] = ctx.own(sc.add.image(H.lever.x * T + T / 2, H.lever.y * T + T - 4, leverTex(sc, K, false)).setOrigin(0.5, 1).setDepth(9.5));
     });
+    skin(ctx);
   }
-  function drawMold(g, M) {                                                   // an empty mold is a frame over the lava; a cast one is an iron deck
-    var p = M.px, w = p[2] - p[0], h = p[3] - p[1], x, y;
+  function drawMold(ctx, mo) {                                                // an empty mold is a frame over the lava; a cast one is an iron deck
+    var g = mo.g, M = mo.M, p = M.px, w = p[2] - p[0], h = p[3] - p[1], x, y;
     g.clear();
+    if (ctx.state.skinned) { var tk = moldTex(ctx.scene, ctx.state.K, w, h, !!M.cast); if (tk) { mo.pic.setTexture(tk).setVisible(true); return; } }
     if (!M.cast) { g.lineStyle(5, 0x2a2022, 0.95); g.strokeRect(p[0] + 4, p[1] + 4, w - 8, h - 8); g.lineStyle(2, 0x8a7a70, 0.9); g.strokeRect(p[0] + 7, p[1] + 7, w - 14, h - 14);
       g.fillStyle(0x15100f, 0.35); g.fillRect(p[0] + 9, p[1] + 9, w - 18, h - 18); return; }
     g.fillStyle(0x23262c, 1); g.fillRect(p[0] + 2, p[1] + 2, w - 4, h - 4);
@@ -170,7 +214,7 @@
     var deep = 0; for (i = 0; i < f.reach.length; i++) deep = Math.max(deep, f.depth[f.reach[i].key]);
     S.anim = { H: H, f: f, t: 0, deep: deep, fresh: fresh, end: (deep + 1) * STEP + HOLD + COOL, said: false };
     S.poured = (S.poured || 0) + 1;
-    var lv = S.spr && S.spr.levers[H.id]; if (lv) { lv.setTexture(leverTex(ctx.scene, K, true)); }
+    var lv = S.spr && S.spr.levers[H.id]; if (lv) setLever(ctx, lv, true);
     return { reached: f.reach.length, fed: f.molds.map(function (m) { return m.mold.id; }), cast: fresh.map(function (m) { return m.id; }) };
   }
   function animate(ctx, dt) {
@@ -181,20 +225,23 @@
         var a = A.t < at ? 0 : A.t < flowEnd + HOLD ? Math.min(1, (A.t - at) / STEP) : Math.max(0, 1 - (A.t - flowEnd - HOLD) / COOL);
         e.iron.setAlpha(a); }
       for (i = 0; i < A.fresh.length; i++) { var M = A.fresh[i], m = S.spr.molds[A.H.id + '.' + M.id];
-        if (A.t >= flowEnd && M.fresh) { M.fresh = false; drawMold(m.g, M); }
+        if (A.t >= flowEnd && M.fresh) { M.fresh = false; drawMold(ctx, m); }
         m.hot.setAlpha(A.t < flowEnd ? 0 : Math.max(0, 0.9 - (A.t - flowEnd) / (HOLD + COOL) * 0.9)); }
     }
     if (!A.said && A.t >= flowEnd + 200) { A.said = true;
       ctx.say(K.text(A.fresh.length ? 'd2.forge.filled' : (A.f.molds.length ? 'd2.forge.done' : 'd2.forge.pooled'))); }
-    if (A.t >= A.end) { var lv = S.spr && S.spr.levers[A.H.id]; if (lv) lv.setTexture(leverTex(ctx.scene, K, false));
-      for (i = 0; i < A.fresh.length; i++) if (A.fresh[i].fresh) { A.fresh[i].fresh = false; if (S.spr) drawMold(S.spr.molds[A.H.id + '.' + A.fresh[i].id].g, A.fresh[i]); }
+    if (A.t >= A.end) { var lv = S.spr && S.spr.levers[A.H.id]; if (lv) setLever(ctx, lv, false);
+      for (i = 0; i < A.fresh.length; i++) if (A.fresh[i].fresh) { A.fresh[i].fresh = false; if (S.spr) drawMold(ctx, S.spr.molds[A.H.id + '.' + A.fresh[i].id]); }
       S.anim = null; }
   }
   function turn(ctx, t) {
     var S = ctx.state, K = S.K; if (S.anim) return false;
-    t.rot = (t.rot + 1) & 3; K.setFlag(ctx, 'rot.' + t.key, t.rot || false);
     var e = S.spr && S.spr.tiles[t.key];
-    if (e) { e.ang += 90; try { ctx.scene.tweens.add({ targets: [e.tile, e.iron], angle: e.ang, duration: 170, ease: 'Sine.easeOut' }); } catch (x) { e.tile.setAngle(e.ang); e.iron.setAngle(e.ang); } }
+    if (e && S.skinned) skinTile(ctx, e);                                     // the picture as it stands, before the quarter turn
+    t.rot = (t.rot + 1) & 3; K.setFlag(ctx, 'rot.' + t.key, t.rot || false);
+    if (e && S.skinned) { e.wait = 190;                                       // turn the picture, then settle on the newly lit one
+      try { ctx.scene.tweens.add({ targets: [e.tile, e.iron], angle: 90, duration: 170, ease: 'Sine.easeOut' }); } catch (x) { skinTile(ctx, e); } }
+    else if (e) { e.ang += 90; try { ctx.scene.tweens.add({ targets: [e.tile, e.iron], angle: e.ang, duration: 170, ease: 'Sine.easeOut' }); } catch (x) { e.tile.setAngle(e.ang); e.iron.setAngle(e.ang); } }
     S.turned = (S.turned || 0) + 1;
     return true;
   }
@@ -206,6 +253,8 @@
       if (!ready(ctx)) return;
       var S = ctx.state; if (!S.spr) build(ctx);
       S.t += dt; animate(ctx, dt);
+      if (S.spr && !S.skinned) skin(ctx);
+      if (S.spr && S.skinned) for (var tk in S.spr.tiles) { var e = S.spr.tiles[tk]; if (e.wait > 0) { e.wait -= dt; if (e.wait <= 0) skinTile(ctx, e); } }
       if (S.spr) { var h = ctx.hero(); if (h) for (var k in S.spr.levers) { var lv = S.spr.levers[k], d = (h.footY < lv.y - 6) ? 10.5 : 9.5; if (lv.depth !== d) lv.setDepth(d); } }
     },
     free: function (ctx, wx, wy) {
