@@ -7752,6 +7752,12 @@
     if(!cam||!hero||!hero.scene||typeof cam.width!=='number') return;
     if(cam._follow){ try{ cam.stopFollow(); }catch(e){} }
     var tx=hero.x-cam.width*0.5, ty=hero.y-cam.height*0.5;                   // Phaser's own follow target
+    // E2: Continue INSIDE an authored dungeon starts the scene with the camera bounds of the bundle's own generated
+    // floor (often smaller than ours), which pinned the view to a corner of a larger authored floor. Entering from the
+    // overworld leaves the overworld's wide bounds, so the same is given here: never narrower than our floor plus a screen.
+    if(a2dCtx && a2dCtx.scene===scene && cam.useBounds && cam._bounds){
+      var a2w=a2dCtx.plan.width*TILE+cam.width, a2h=a2dCtx.plan.height*TILE+cam.height, a2b=cam._bounds;
+      if(a2b.width<a2w || a2b.height<a2h){ try{ cam.setBounds(0,0,Math.max(a2b.width,a2w),Math.max(a2b.height,a2h)); }catch(e){} } }
     if(cam.useBounds && cam.clampX){ tx=cam.clampX(tx); ty=cam.clampY(ty); }
     if(a2dCtx && a2dCtx.scene===scene && a2dCtx.mod && a2dCtx.mod.camera){    // authored mechanic: its own framing ({x,y} = scroll target), e.g. one forest room at a time
       try{ var a2c=a2dCtx.mod.camera(a2dCtx,tx,ty,cam,dtms); if(a2c){ tx=a2c.x; ty=a2c.y; } }catch(e){} }
@@ -8717,7 +8723,8 @@
   // ============================================================
   var kindCache={};
   function sceneKind(scene){
-    try { if(isOverworld(scene)) return 'ow';
+    try { if(typeof a2dIs==='function' && a2dIs(scene.currentMapId)) return 'dng';   // E2: an authored dungeon is never the overworld (see isOverworld)
+      if(isOverworld(scene)) return 'ow';
       var id=scene.currentMapId; if(kindCache[id]) return kindCache[id];
       var tg=scene.tileGrid, k=null;
       for(var y=0;y<tg.length&&!k;y++) for(var x=0;x<(tg[y]||[]).length;x++){ var s=tg[y][x]; if(s&&s.texture&&s.texture.key){ k=s.texture.key; break; } }
@@ -8727,7 +8734,11 @@
     } catch(e){ return null; }
   }
   function isOverworld(scene){
-    try { var id=scene.currentMapId; return scene.cullingEnabled===true || id==='overworld' || /[Oo]verworld|[Ii]sles|[Pp]eaks|Realm|Temple/.test(String(id||'')); }
+    // E2: an authored Acts 2-5 dungeon is never the overworld. Entered from a portal isle the scene still carries
+    // the isle's cullingEnabled, and an id such as sunkenTempleDungeon matches the name test below: either way the
+    // overworld reskin dressed the dungeon's floor with trees and mountains until the next fresh load.
+    try { var id=scene.currentMapId; if(typeof a2dIs==='function' && a2dIs(id)) return false;
+      return scene.cullingEnabled===true || id==='overworld' || /[Oo]verworld|[Ii]sles|[Pp]eaks|Realm|Temple/.test(String(id||'')); }
     catch(e){ return false; }
   }
   var lastReskinMapId=null;

@@ -37,7 +37,7 @@ const plan = f => JSON.parse(fs.readFileSync(path.join(PLANS, `${ID}-f${f}.json`
         if (!shotIce && (await R.ev(() => !!window.__A.mstate().slide))) { shotIce = true; await page.waitForTimeout(120); await R.shot(`f${f}-sliding`); }
         await page.waitForFunction(() => !window.__A.mstate().slide, { timeout: 15000 }).catch(() => {}); await page.waitForTimeout(250);
         const at = await cell(), st1 = await R.ev(() => window.__A.mstate().slides);
-        const good = at[0] === m.to[0] && at[1] === m.to[1] && st1 - st0 >= (m.snow && Math.abs(m.to[0] - m.from[0]) + Math.abs(m.to[1] - m.from[1]) <= 1 ? 0 : 1);
+        const good = at[0] === m.to[0] && at[1] === m.to[1] && st1 - st0 >= (Math.abs(m.to[0] - m.from[0]) + Math.abs(m.to[1] - m.from[1]) <= 1 ? 0 : 1);   // one cell on (snow, or ice with a rock right behind it) is a step, not a slide
         if (!good) { ok = R.rec(`f${f}: push ${n} (${'DLRU'[m.d]} from ${m.from}) ends on ${m.to}`, false, { at, slides: st1 - st0 }); break; }
         if (f === 2 && !saved && !m.snow && moves.length) { saved = true;      // resting on the ice, part way across
           await R.shot('f2-on-the-ice'); const rc = await R.saveContinue(), a2 = await cell(), s2 = await R.st();

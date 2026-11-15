@@ -29,7 +29,7 @@ const key = c => c.join(',');
         if (can) { const g = await R.go(goal, { avoid: av }); return { ok: g.ok, cut, g }; }
         const m = await ms(); let did = false;
         for (const w of m.wires.filter(x => x.live)) { const c = w.cells[w.cells.length >> 1];
-          const g = await R.go({ beside: c, reach: 80 }, { avoid: av }); if (!g.ok) continue;
+          const g = await R.go({ beside: c, reach: 56 }, { avoid: av }); if (!g.ok) continue;
           await page.waitForTimeout(250); if (!cut) await R.shot(`f${f}-cut-prompt`);
           const v = await R.tapPrompt('Cut trip wire'); await page.waitForTimeout(300); await R.dismiss(); const m2 = await ms(), fl = await R.ev(() => window.__A.flags());
           const ok = v === 'Cut trip wire' && !m2.wires.find(x => x.id === w.id).live && fl[`d2.${ID}.f${f}.wire${w.id}.cut`] === true;
@@ -65,7 +65,7 @@ const key = c => c.join(',');
       const stairs = P.assets.find(a => a.kind === 'stairsNext'), target = stairs || bossAsset, h0 = (await ms());
       if (f === 3 && !saved) { saved = true; const av = await hazards(P), w = (await ms()).wires.find(x => x.live);
         if (w) { const c = w.cells[w.cells.length >> 1]; let cutOk = false;
-          for (const w2 of (await ms()).wires.filter(x => x.live)) { const c2 = w2.cells[w2.cells.length >> 1], g = await R.go({ beside: c2, reach: 80 }, { avoid: av }); if (!g.ok) continue; await page.waitForTimeout(250); cutOk = (await R.tapPrompt('Cut trip wire')) === 'Cut trip wire'; await page.waitForTimeout(300); await R.dismiss(); if (cutOk) break; }
+          for (const w2 of (await ms()).wires.filter(x => x.live)) { const c2 = w2.cells[w2.cells.length >> 1], g = await R.go({ beside: c2, reach: 56 }, { avoid: av }); if (!g.ok) continue; await page.waitForTimeout(250); cutOk = (await R.tapPrompt('Cut trip wire')) === 'Cut trip wire'; await page.waitForTimeout(300); await R.dismiss(); if (cutOk) break; }
           const b = await ms(), s0 = await R.st(), rc = await R.saveContinue(), a = await ms(), s1 = await R.st();
           R.rec('f3: Save -> Continue with one wire cut keeps it cut, the others live, her cell the same', cutOk && rc.ok && s1.floor === 3 && JSON.stringify(a.wires.map(x => x.live)) === JSON.stringify(b.wires.map(x => x.live)) && a.wires.some(x => !x.live) && Math.abs(s1.x - s0.x) <= 1 && Math.abs(s1.y - s0.y) <= 1, { d2: rc.saved.d2, wires: a.wires.map(x => x.live) });
           await R.shot('f3-resumed'); } }

@@ -103,7 +103,7 @@
     var el=document.createElement('div'); el.id='d2aGlyphHint'; el.__id=id; el.setAttribute('role','button');
     el.style.cssText='position:fixed;right:10px;top:calc(10px + env(safe-area-inset-top,0px));padding:7px 12px;border-radius:14px;'+
       'background:rgba(21,22,28,.88);border:1px solid rgba(201,169,97,.55);color:#f0e6c8;font-size:14px;font-weight:500;'+
-      'box-shadow:0 0 10px rgba(0,0,0,.4);z-index:5;touch-action:manipulation;-webkit-user-select:none;user-select:none;'+
+      'box-shadow:0 0 10px rgba(0,0,0,.4);z-index:5;pointer-events:auto;touch-action:manipulation;-webkit-user-select:none;user-select:none;'+
       'display:flex;align-items:center;gap:6px;max-width:calc(100vw - 190px);flex-wrap:wrap;justify-content:flex-end;';
     var head=document.createElement('span'); el.appendChild(head);
     var row=document.createElement('span'); row.style.cssText='display:none;align-items:center;gap:3px;flex-wrap:wrap;'; el.appendChild(row);
