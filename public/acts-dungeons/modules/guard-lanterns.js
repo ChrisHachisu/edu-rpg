@@ -120,10 +120,11 @@
   function caught(ctx, list) {
     var S = ctx.state, K = S.K, sc = ctx.scene, i;
     S.busy = true; S.battles = (S.battles || 0) + 1;
-    for (i = 0; i < list.length; i++) { list[i].gone = true; K.setFlag(ctx, 'gone.' + list[i].id, true); }
-    S.drawn = -1;
+    for (i = 0; i < list.length; i++) K.setFlag(ctx, 'gone.' + list[i].id, true);     // gone for good from this moment (a save in the box keeps it)
     var m = S.monster || K.monsterFor(ctx, 'demon');
-    var go = function () { S.busy = false; S.grace = 1500; if (!K.battle(ctx, m)) { try { sc.isMoving = false; } catch (e) {} } };
+    var go = function () {                                                     // the guard stands in its light until the battle takes the screen
+      for (var j = 0; j < list.length; j++) list[j].gone = true;
+      S.drawn = -1; S.busy = false; S.grace = 1500; if (!K.battle(ctx, m)) { try { sc.isMoving = false; } catch (e) {} } };
     try { sc.isMoving = true; ctx.say(K.text('d2.guard.seen')); sc.time.delayedCall(650, go); } catch (e) { go(); }
   }
 

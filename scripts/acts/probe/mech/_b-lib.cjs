@@ -66,8 +66,28 @@ class Run {
   async enter() {
     let r;
     if (this.LM) r = await L.walkCells(this.page, [[this.LM.at[0], this.LM.at[1]]], { maxMs: 25000 });
-    else { const m = await this.ev(() => window.__B.findTile(7)); this.mouth = m[0];
-      r = m.length ? await this.ev(([x, y]) => window.__B.tileWalk(x, y), m[0]) : { ok: false, why: 'no dungeon tile on the isle' }; }
+    else {                                                                    // the isle is the bundle's own stepped map: arrow keys, a tile at a time
+      const m = await this.ev(() => window.__B.findTile(7)); this.mouth = m[0]; r = { ok: false, why: 'no dungeon tile on the isle' };
+      if (m.length) {
+        const [mx, my] = m[0], page = this.page;
+        const step = async (dx, dy) => { const key = dx > 0 ? 'ArrowRight' : dx < 0 ? 'ArrowLeft' : dy > 0 ? 'ArrowDown' : 'ArrowUp', s0 = await this.ev(() => { const w = window.__PHASER_GAME__.scene.getScene('WorldMapScene'); return [w.currentMapId, w.heroTileX, w.heroTileY]; });
+          await page.keyboard.down(key); let s1 = s0;
+          for (let k = 0; k < 40 && s1.join() === s0.join(); k++) { await page.waitForTimeout(50); s1 = await this.ev(() => { const w = window.__PHASER_GAME__.scene.getScene('WorldMapScene'); return [w.currentMapId, w.heroTileX, w.heroTileY]; }).catch(() => ['?', 0, 0]); }
+          await page.keyboard.up(key); await page.waitForTimeout(120); return s1; };
+        let s = await this.st(); const path = [];
+        if (s.x === mx && s.y === my) {                                         // the dungeon lets her out ON its own tile: a step off it and back on is the way in
+          const d = await this.ev(([x, y]) => { const B = window.__B, pass = t => [2, 4, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 19, 20, 21].indexOf(t) < 0;
+            return [[0, 1], [1, 0], [-1, 0], [0, -1]].find(d => pass(B.tile(x + d[0], y + d[1]))) || null; }, [mx, my]);
+          if (d) path.push(d, [-d[0], -d[1]]); }
+        else { const cells = await this.ev(([x, y]) => { const B = window.__B, w = window.__PHASER_GAME__.scene.getScene('WorldMapScene'), pass = t => [2, 4, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 19, 20, 21].indexOf(t) < 0;
+            const prev = new Map(), q = [[w.heroTileX, w.heroTileY]]; prev.set(q[0].join(), null);
+            for (let h = 0; h < q.length; h++) { const [cx, cy] = q[h]; if (cx === x && cy === y) { const out = []; let c = q[h]; while (c) { out.push(c); c = prev.get(c.join()); } return out.reverse(); }
+              for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const n = [cx + dx, cy + dy]; if (prev.has(n.join()) || B.tile(n[0], n[1]) === undefined) continue; if (!(n[0] === x && n[1] === y) && !pass(B.tile(n[0], n[1]))) continue; prev.set(n.join(), [cx, cy]); q.push(n); } }
+            return null; }, [mx, my]);
+          if (cells) for (let i = 1; i < cells.length; i++) path.push([cells[i][0] - cells[i - 1][0], cells[i][1] - cells[i - 1][1]]); }
+        let last = null; for (const d of path) { last = await step(d[0], d[1]); if (last[0] !== this.isle) break; await this.page.waitForTimeout(250); }
+        r = { ok: !!last && last[0] === this.id, steps: path.length, last, mouth: m[0] };
+      } }
     await this.page.waitForTimeout(1200); await this.pilot();
     const okS = await this.settle(); const s = await this.st();
     this.rec(`walking into the ${this.LM ? 'overworld' : 'portal isle'} mouth enters floor 1 of the authored dungeon (smoke flag on)`, s.map === this.id && s.floor === 1 && okS && s.d2.mechanic !== null, { r, s });
