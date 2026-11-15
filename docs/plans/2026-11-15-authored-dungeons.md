@@ -173,6 +173,8 @@ Rules the E2 floors added to the renderer (all in `render_plan.py`, after Act 1'
 - **A route cell keeps its ground.** Where the organic wall edge swallows a route cell (no
   standable ground that continues out of the cell), a lane 0.9 cell wide is cut through it along
   the route. The render log names each such cell.
+- **Posts.** Where the dungeon table names a `posts` character (Sunken Temple), a free-standing
+  rectangle of wall at least 2x2 that Act 1's rules would remove is painted as one pier.
 - **Edge-hugging plans** (open cells on the border, or a border wall one cell thick) render with
   two extra rock cells all round, cropped off again.
 - **Mouths deep inside the map** (more than 3 rock cells from the edge) get a lit bay two cells
@@ -200,7 +202,8 @@ blocks the solid ones through `free()`. Terrain is painted like this:
 | demonBarracks | `p` pillars (walk-behind) | closed at the base |
 | voidRift | `_` and `v` the same starry void | closed |
 | oasisDepths | every channel (`w` flooded at the start, `d` dry) as its dry stone bed | `w` `d` open |
-| shadowCave, hauntedForest, banditHideout, sunkenTempleDungeon, twilightDungeon | rock and floor only | |
+| sunkenTempleDungeon | the maze's free-standing 2x2 wall posts as square piers (walk-behind); Act 1's wall rules would have dropped them | closed at the base |
+| shadowCave, hauntedForest, banditHideout, twilightDungeon | rock and floor only | |
 
 A second mouth with `sealedUntil` is painted open. Its rock fall is a separate overlay,
 `<floor>-seal.webp` (lossless RGBA) with `floor.seal = [{x,y,w,h,sx,sy}]` (floor px rectangle and
@@ -294,17 +297,18 @@ Also run on the same copy:
 
 1. **Not played on a phone.** Everything above is headless. Feel, readability and frame rate on
    an iPhone are the owner's to judge on the TestFlight build.
-2. **Ember Mines floor is busy.** The Codex floor sheet is pebbles with glowing embers. It was
-   calmed three ways (`floor_calm`, `floor_soft`, `floor_sat` in `d2common.py`) and still reads
-   busier than an Act 1 floor. One more turn of those numbers and a re-render of five floors is
-   about 25 minutes.
-3. **Second mouths are unproven.** None of the three dungeons has one. The code exists (tile 10,
-   rock until the boss flag, `land.mouth2`, floor clamp for Haunted Forest) but has never run.
-   A sealed second mouth is also still painted open; it needs a sealed overlay.
-4. **Mechanic visuals are the module's job.** The renderer paints terrain only. Rails, carts,
-   levers, plates and the like are listed in `ctx.plan.mech` and must be drawn by the module.
-   Iron Mine floor 1 therefore shows bare floor where its rails run, and cannot be finished on
-   foot (its stairs need the cart); it ships `enabled:false`.
+2. **Ember Mines floor: calmed in E2.** What read as busy was colour, not grain: the floor's
+   luminance texture already matched Obsidian's, its hue spread was 2.6 times larger (ember
+   specks). `floor_sat` 0.10 and `floor_coarse` 0.42 pull the specks and the pebble blobs toward
+   the floor's own colour; all five floors were re-rendered (numbers in section 7).
+3. **Second mouths.** Shadow Cave f5, Magma Tunnels f5 and Volcanic Forge f7 have a sealed one,
+   Haunted Forest an open north one. The picture shows a sealed mouth open; `<floor>-seal.webp`
+   and `floor.seal` carry the rock fall (section 6a). The engine has to draw that overlay while
+   the boss flag is unset, and keep the mouth cells blocked under it.
+4. **Mechanic visuals are the module's job**, with the exceptions in section 6a (rails, trestles,
+   ice, rocks, lava, void, piers, blank plate slabs, channel beds are painted). Tripwires, spike
+   patches, portals, cooling crust, troughs, glyphs and every moving thing are not in the picture.
+   A cracked wall is painted as wall: the module draws the opening once it is broken.
 5. **`bump` is reported only when she is fully stopped.** Against a painted wall she glides and no
    bump fires; pushed diagonally at a cell-shaped blocker she slides along its face. A push-block
    mechanic should use `interact`, or detect contact in `tick` / `free`.
