@@ -377,6 +377,22 @@ def paint_plates(img, plan, cfg, a, px):
 
 def paint(plan, mats, cfg):
     t0 = time.time()
+    post = cfg.get("posts")
+    if post:
+        # A free-standing block of wall too small for Act 1's wall rules would simply be removed
+        # (a maze's 2x2 posts). Where the table names a `posts` character, such a block, if it is
+        # a filled rectangle at least 2x2, becomes one standing pier instead.
+        _, gone = R.prune_thin_walls(wall_rows(plan, cfg))
+        gm = np.zeros((plan["height"], plan["width"]), bool)
+        for (gy_, gx_) in gone:
+            gm[gy_, gx_] = True
+        prow = [list(r) for r in plan["rows"]]
+        for sl in ndimage.find_objects(ndimage.label(gm)[0]):
+            if gm[sl].all() and min(sl[0].stop - sl[0].start, sl[1].stop - sl[1].start) >= 2:
+                for gy_ in range(sl[0].start, sl[0].stop):
+                    for gx_ in range(sl[1].start, sl[1].stop):
+                        prow[gy_][gx_] = post
+        plan = dict(plan, rows=["".join(r) for r in prow])
     assets = norm_assets(plan)
     wrows = wall_rows(plan, cfg)
     known = set("#") | C.open_chars(plan["dungeonId"]) | set(cfg.get("rock", "")) | set(cfg.get("hazards", {})) | set(cfg.get("surfaces", {}))
