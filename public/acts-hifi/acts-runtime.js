@@ -674,6 +674,18 @@
         return talk.apply(this, arguments);
       };
     }
+    // Directions the bundle's text gives by the OLD map ("the Shadow Cave lies just north" of a town it
+    // is now west of): a message that is exactly the bundle's text for a key the index re-words
+    // (`strings` rows `geo.<bundle key>`, EN / kana / kanji), in the player's language, is shown as
+    // the index's row. Quest logic, speakers and every other message are untouched.
+    if (typeof s.showMessage === 'function') {
+      var say = s.showMessage;
+      s.showMessage = function (t) { var a = Array.prototype.slice.call(arguments); a[0] = geoText(t); return say.apply(this, a); };
+    }
+    if (typeof s.showDialogSequence === 'function') {
+      var seq = s.showDialogSequence;
+      s.showDialogSequence = function (lines) { var a = Array.prototype.slice.call(arguments); if (lines && typeof lines.map === 'function') a[0] = lines.map(geoText); return seq.apply(this, a); };
+    }
     // The bundle marks the engine map visited (compass.visited.<mapId>) on every town entry. Inside a
     // hosted town that would tick the HOST off the compass chain, so the hosted town is marked instead.
     if (typeof s.markTownVisited === 'function') {
@@ -753,6 +765,14 @@
     var p = pstate();
     if (!p || p.locale !== 'ja') return row.en;
     return p.kanjiMode ? row.jaKanji : row.ja;
+  }
+  var GEO_KEYS = null;   // not GEO: that name is the migration flag below
+  function geoText(t) {
+    if (typeof t !== 'string' || !M || !M.strings) return t;
+    var q = window.__QOK, z = q && q.Z && (q.Z.__base || q.Z); if (typeof z !== 'function') return t;
+    if (!GEO_KEYS) { GEO_KEYS = []; for (var k in M.strings) if (k.indexOf('geo.') === 0) GEO_KEYS.push(k); }
+    for (var i = 0; i < GEO_KEYS.length; i++) { var b = null; try { b = z(GEO_KEYS[i].slice(4)); } catch (e) {} if (b === t) { stats.geoText = (stats.geoText || 0) + 1; return text(GEO_KEYS[i]) || t; } }
+    return t;
   }
   // adapter.js bundlePredates() falls back to this for keys the bundle's i18n does not know.
   window.__QOK_ACTS_TEXT__ = text;
