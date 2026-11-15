@@ -118,7 +118,7 @@ DUNGEONS = {
     "sunkenTempleDungeon": dict(
         act=5, sheet="mat-sunken-temple", theme="sunken temple",
         target={"floor": (98, 114, 92), "wall": (32, 50, 46)},
-        top_accent=0.0, floor_calm=0.42, floor_soft=0.9),
+        top_accent=0.0, floor_calm=0.34, floor_soft=0.9, floor_sat=0.7, floor_coarse=0.75),
     # matching-portals. Portals are the module's sprites on plain floor; a pair is a declared link.
     "twilightDungeon": dict(
         act=5, sheet="mat-twilight", theme="twilight realm",
@@ -173,9 +173,17 @@ def link_chars(did):
     return set(DUNGEONS.get(did, {}).get("links", ""))
 
 
+MOUTH_THROUGH = 3      # rock cells between a mouth and the map edge that are still carved right through
+MOUTH_ALCOVE = 2       # otherwise: how deep the mouth's bay goes into the rock
+
+
 def mouth_cells(plan, m):
     """The cells a mouth owns: its own cell plus the walkable cells beside it across the corridor
-    (so the whole corridor width leaves), and the art-only run from there to the map edge."""
+    (so the whole corridor width leaves), and the art-only run beyond them. Near the map edge the
+    run goes to the edge (the corridor leaves the picture into daylight). A mouth deep inside the
+    map (the sealed second mouths of Shadow Cave, Magma Tunnels and Volcanic Forge sit in an end
+    room, up to 50 cells from the edge) gets a short lit bay into the rock instead: a run to the
+    edge would tunnel through whatever lies between."""
     rows, W, H = plan["rows"], plan["width"], plan["height"]
     WALKABLE = open_chars(plan["dungeonId"])
     dx, dy = SIDE.get(m.get("side", "down"), (0, 1))
@@ -185,9 +193,15 @@ def mouth_cells(plan, m):
         x, y = m["x"] + s * px, m["y"] + s * py
         while 0 <= x < W and 0 <= y < H and rows[y][x] in WALKABLE and len(cells) < 7:
             cells.append((x, y)); x += s * px; y += s * py
-    run = []
+    lines = []
     for (cx, cy) in cells:
-        x, y = cx + dx, cy + dy
+        x, y = cx + dx, cy + dy; line = []
         while 0 <= x < W and 0 <= y < H:
-            run.append((x, y)); x += dx; y += dy
+            line.append((x, y)); x += dx; y += dy
+        lines.append(line)
+    n = len(lines[0]) if lines else 0
+    first = max((next((i for i, (x, y) in enumerate(l) if rows[y][x] not in WALKABLE), len(l)) for l in lines), default=0)
+    if n - first > MOUTH_THROUGH + int(plan.get("_pad", 0)):
+        lines = [l[:first + MOUTH_ALCOVE] for l in lines]
+    run = [c for l in lines for c in l]
     return cells, run, (dx, dy)
