@@ -101,6 +101,13 @@ STRINGS.update({
 })
 
 
+# The package stands the Forgemaster (who gives flameCloak, the Ember Mines' story gate) on the
+# lava ledge: the ground south of him, where town.html's talk band is, is lava, leaving a strip
+# a few px tall to talk to him from. He stands on the paving just north of the ledge instead
+# (scripts/check_town_talkable.py: 114 -> 1258 reachable px).
+NPC_CELL = {('embersRest', 'forgemaster'): [38.59, 16.0]}
+
+
 def main(src_root):
     src = os.path.join(src_root, 'town')
     ids = sorted(os.path.basename(p)[:-len('-town.json')] for p in glob.glob(os.path.join(src, '*-town.json')))
@@ -120,6 +127,7 @@ def main(src_root):
                 s = STRINGS.get(n.get('nameKey'))
                 if s: n['name'] = s['en']
         for n in t['npcs']:
+            if (tid, n['id']) in NPC_CELL: n['cell'] = NPC_CELL[(tid, n['id'])]
             sheet = os.path.join(src_root, n['sheet'])
             assert os.path.isfile(sheet), sheet
             shutil.copy(sheet, os.path.join(DST, 'npc', os.path.basename(sheet))); files += 1
