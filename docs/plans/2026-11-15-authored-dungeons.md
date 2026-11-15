@@ -121,9 +121,11 @@ floor of every dungeon with that id. All hooks are optional and are wrapped in t
 | `ctx.say(text, name)` | the game's message box (text must come from the string tables; keep EN/JA/kanji in sync) |
 | `ctx.scene`, `ctx.TILE` | the WorldMapScene and 48 |
 
-Walk mask and mechanics: the mask opens the plan characters `. = g t z q h`; every other character
-is rock, or the hazard the dungeon table in `d2common.py` names for it (chasm, lava, pillar). A
+Walk mask and mechanics: the mask opens the plan characters `. = g t z q h`, plus the characters
+the dungeon table in `d2common.py` lists under `open` (the manifest floor repeats them as
+`open`, e.g. `"~"`); every other character is rock, or the hazard the table names for it. A
 module that needs a cell closed or opened at runtime answers `free()`; it does not edit the mask.
+What is painted and what is left to the module is in section 6a.
 `bump` is reported only when she is fully stopped by a cell-shaped blocker (see open issue 5).
 
 `window.__QOK_DNG2__` also exposes `ctx()`, `manifest()`, `authored(id)` and `state()` (used by
@@ -159,6 +161,42 @@ pillars (painted, plus the over atlas), baked stairs, contact shadows under live
 mask is cut from the same fields as the paint, so blockers follow the painted edge. Output is
 WebP q85, stepping down by 5 until the floor is under 1.6 MB; the mask is a 1-bit PNG; the over
 atlas is lossless WebP.
+
+### 6a. What the picture holds, per mechanic (track E2)
+
+No mechanic ASSET is painted or put in the mask (cart, buffer stop, lever, gust window, shadow,
+crystal light, tablet, door, tripwire, spike patch, hint, trough, turntable, furnace, guard, block,
+ice block, reset bell, hunter, portal, wheel): they arrive in `floor.mech`, the module draws them and
+blocks the solid ones through `free()`. Terrain is painted like this:
+
+| Dungeon | Painted | Mask |
+|---|---|---|
+| ironMine | `=` two rails and sleepers baked into the floor; `+` chasm with a timber trestle and the same rails; `_` chasm. Track runs through cell centres, rails 0.19 cell either side, quarter-circle turns, a junction carries every branch | `=` open, `+` `_` closed |
+| frozenLake, frostfallCavern | `~` ice from the sheet's ice quadrant; `o` frosted rocks standing on it (walk-behind tops in the over atlas); frostfall `w` dark water | `~` open, `o` `w` closed |
+| stormNest, stormreachSpire | `_` and `^` open air (sky / storm cloud) with the stone face of the walkway under each north lip; `q`, `z` plain floor | `q` `z` open, `_` `^` closed |
+| desertTomb | each glyph-plate zone is a blank stone slab let into the floor (no glyph); door cells are plain floor | `g` open |
+| scorchedRuins | `x` is ordinary wall, `h` ordinary floor | `x` closed, `h` open |
+| magmaTunnels, volcanicForge | `l`, `c`, `m` lava; `t` plain floor | `c` `m` `l` closed, `t` open |
+| demonBarracks | `p` pillars (walk-behind) | closed at the base |
+| voidRift | `_` and `v` the same starry void | closed |
+| oasisDepths | every channel (`w` flooded at the start, `d` dry) as its dry stone bed | `w` `d` open |
+| shadowCave, hauntedForest, banditHideout, sunkenTempleDungeon, twilightDungeon | rock and floor only | |
+
+A second mouth with `sealedUntil` is painted open. Its rock fall is a separate overlay,
+`<floor>-seal.webp` (lossless RGBA) with `floor.seal = [{x,y,w,h,sx,sy}]` (floor px rectangle and
+atlas origin): the engine draws it under the hero while the mouth is sealed and should block the
+mouth cells it covers. A second mouth on floor 1 (Haunted Forest's north mouth) is `mouth2`
+whether or not it is sealed.
+
+`export_runtime.py` keeps the manifest entries of dungeons it is not asked about, lists every
+`public/acts-dungeons/modules/*.js` in `modules` (sorted; the engine loads them async, so no
+order is promised), and exports a mechanic dungeon `enabled:false` until `--enable <id>` (a
+flipped entry stays flipped). Ground that she only reaches through the mechanic is declared in
+the dungeon table, not waived: `links` are plan characters that are closed in the mask but that
+the mechanic carries her across (trestle `+`, crust `c`, mold `m`, block lane `v`, cracked wall
+`x`, frostfall water `w`), `pair_links` are asset kinds that teleport (twilight portals by
+`pair`). The areas on either side of one link group are joined for every reachability check and
+printed as "via mechanic"; anything still cut off fails the export.
 
 `export_runtime.py` validates with the game's own sole model (foot offset 31 px, clearance 17 px):
 every landing standable, every chest / crystal / staircase / boss reachable from the landing,
