@@ -142,7 +142,7 @@ characters are chasm / lava / pillar, floor calming).
 ```sh
 # 1. once per dungeon: quilt the Codex sheet into seamless material tiles
 python3 scripts/acts/dungeons2/import_materials.py emberMines obsidianCavern ironMine
-# 2. one floor per process (3.5-8 min, 2.2-3.8 GB each; two at a time on 4 cores / 15 GB)
+# 2. one floor per process (0.5-3 min on a free core since E2, 2-4.7 GB each)
 python3 scripts/acts/dungeons2/render_plan.py emberMines-f1 [--skip-existing] [--crop x0,y0,x1,y1] [--q 85]
 # 3. plan + art -> runtime data, with validation (exit 1 on any failure)
 python3 scripts/acts/dungeons2/export_runtime.py emberMines obsidianCavern --smoke ironMine:1
@@ -159,8 +159,30 @@ field, wall faces, tops, grading) and adds: floor calming, deep-rock darkening, 
 lip and a cliff face, lava with crust and glow, mouths carried to the map edge with daylight,
 pillars (painted, plus the over atlas), baked stairs, contact shadows under live props. The walk
 mask is cut from the same fields as the paint, so blockers follow the painted edge. Output is
-WebP q85, stepping down by 5 until the floor is under 1.6 MB; the mask is a 1-bit PNG; the over
-atlas is lossless WebP.
+WebP q85, stepping down by 5 (to q40 at the lowest) until the floor is under 1.6 MB; the mask is
+a 1-bit PNG; the over atlas is lossless WebP.
+
+Rules the E2 floors added to the renderer (all in `render_plan.py`, after Act 1's `floor_field`):
+
+- **Deep rock stays rock.** Act 1's passes remove rock too thin to carry a face; plan rock that
+  touches no open cell is put back, so nothing opens out to the picture's edge.
+- **A wall between two areas stays a wall.** Act 1's neck trimming removes walls about one cell
+  thick. Any wall cell that touches two areas the plan keeps apart (no open cell joins them, not
+  even corner to corner), and every `rock` character of the dungeon table (a cracked wall), is
+  forced to rock, about 1.2 cells thick.
+- **A route cell keeps its ground.** Where the organic wall edge swallows a route cell (no
+  standable ground that continues out of the cell), a lane 0.9 cell wide is cut through it along
+  the route. The render log names each such cell.
+- **Posts.** Where the dungeon table names a `posts` character (Sunken Temple), a free-standing
+  rectangle of wall at least 2x2 that Act 1's rules would remove is painted as one pier.
+- **Edge-hugging plans** (open cells on the border, or a border wall one cell thick) render with
+  two extra rock cells all round, cropped off again.
+- **Mouths deep inside the map** (more than 3 rock cells from the edge) get a lit bay two cells
+  deep instead of a corridor to the edge.
+- **Speed.** Disc morphology by distance transform and value noise blended per lattice row are
+  bit-identical to Act 1's and about 4x faster together; blurs of sigma >= 48 master px run on a
+  reduced copy (mask identical, picture within WebP noise). `D2_SLOW_MORPH`, `D2_SLOW_NOISE`,
+  `D2_SLOW_NOISE2`, `D2_EXACT_BLUR` switch each one off.
 
 ### 6a. What the picture holds, per mechanic (track E2)
 
@@ -180,7 +202,8 @@ blocks the solid ones through `free()`. Terrain is painted like this:
 | demonBarracks | `p` pillars (walk-behind) | closed at the base |
 | voidRift | `_` and `v` the same starry void | closed |
 | oasisDepths | every channel (`w` flooded at the start, `d` dry) as its dry stone bed | `w` `d` open |
-| shadowCave, hauntedForest, banditHideout, sunkenTempleDungeon, twilightDungeon | rock and floor only | |
+| sunkenTempleDungeon | the maze's free-standing 2x2 wall posts as square piers (walk-behind); Act 1's wall rules would have dropped them | closed at the base |
+| shadowCave, hauntedForest, banditHideout, twilightDungeon | rock and floor only | |
 
 A second mouth with `sealedUntil` is painted open. Its rock fall is a separate overlay,
 `<floor>-seal.webp` (lossless RGBA) with `floor.seal = [{x,y,w,h,sx,sy}]` (floor px rectangle and
@@ -200,7 +223,9 @@ printed as "via mechanic"; anything still cut off fails the export.
 
 `export_runtime.py` validates with the game's own sole model (foot offset 31 px, clearance 17 px):
 every landing standable, every chest / crystal / staircase / boss reachable from the landing,
-every route cell standable, no walkable pixel outside the plan's open cells. A layout tweak is:
+every route cell standable, no walkable pixel outside the plan's open cells (the corridor
+beyond a mouth excepted), and no standable area that spans two areas the plan keeps apart (a
+lost wall). A layout tweak is:
 edit the plan, re-render that floor, re-export, re-pin.
 
 ## 7. Sizes
@@ -272,17 +297,18 @@ Also run on the same copy:
 
 1. **Not played on a phone.** Everything above is headless. Feel, readability and frame rate on
    an iPhone are the owner's to judge on the TestFlight build.
-2. **Ember Mines floor is busy.** The Codex floor sheet is pebbles with glowing embers. It was
-   calmed three ways (`floor_calm`, `floor_soft`, `floor_sat` in `d2common.py`) and still reads
-   busier than an Act 1 floor. One more turn of those numbers and a re-render of five floors is
-   about 25 minutes.
-3. **Second mouths are unproven.** None of the three dungeons has one. The code exists (tile 10,
-   rock until the boss flag, `land.mouth2`, floor clamp for Haunted Forest) but has never run.
-   A sealed second mouth is also still painted open; it needs a sealed overlay.
-4. **Mechanic visuals are the module's job.** The renderer paints terrain only. Rails, carts,
-   levers, plates and the like are listed in `ctx.plan.mech` and must be drawn by the module.
-   Iron Mine floor 1 therefore shows bare floor where its rails run, and cannot be finished on
-   foot (its stairs need the cart); it ships `enabled:false`.
+2. **Ember Mines floor: calmed in E2.** What read as busy was colour, not grain: the floor's
+   luminance texture already matched Obsidian's, its hue spread was 2.6 times larger (ember
+   specks). `floor_sat` 0.10 and `floor_coarse` 0.42 pull the specks and the pebble blobs toward
+   the floor's own colour; all five floors were re-rendered (numbers in section 7).
+3. **Second mouths.** Shadow Cave f5, Magma Tunnels f5 and Volcanic Forge f7 have a sealed one,
+   Haunted Forest an open north one. The picture shows a sealed mouth open; `<floor>-seal.webp`
+   and `floor.seal` carry the rock fall (section 6a). The engine has to draw that overlay while
+   the boss flag is unset, and keep the mouth cells blocked under it.
+4. **Mechanic visuals are the module's job**, with the exceptions in section 6a (rails, trestles,
+   ice, rocks, lava, void, piers, blank plate slabs, channel beds are painted). Tripwires, spike
+   patches, portals, cooling crust, troughs, glyphs and every moving thing are not in the picture.
+   A cracked wall is painted as wall: the module draws the opening once it is broken.
 5. **`bump` is reported only when she is fully stopped.** Against a painted wall she glides and no
    bump fires; pushed diagonally at a cell-shaped blocker she slides along its face. A push-block
    mechanic should use `interact`, or detect contact in `tick` / `free`.

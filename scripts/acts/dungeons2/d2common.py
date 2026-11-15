@@ -118,7 +118,8 @@ DUNGEONS = {
     "sunkenTempleDungeon": dict(
         act=5, sheet="mat-sunken-temple", theme="sunken temple",
         target={"floor": (98, 114, 92), "wall": (32, 50, 46)},
-        top_accent=0.0, floor_calm=0.34, floor_soft=0.9, floor_sat=0.7, floor_coarse=0.75),
+        top_accent=0.0, floor_calm=0.34, floor_soft=0.9, floor_sat=0.7, floor_coarse=0.75,
+        hazards={"P": "pillar"}, posts="P"),         # the maze's free-standing 2x2 wall posts stand as piers
     # matching-portals. Portals are the module's sprites on plain floor; a pair is a declared link.
     "twilightDungeon": dict(
         act=5, sheet="mat-twilight", theme="twilight realm",
