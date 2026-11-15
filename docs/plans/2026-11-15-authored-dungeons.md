@@ -230,25 +230,41 @@ edit the plan, re-render that floor, re-export, re-pin.
 
 ## 7. Sizes
 
-Shipped in `public/acts-dungeons/` (floor pictures WebP, 48 px per cell; cap 1.6 MB per floor):
+Shipped in `public/acts-dungeons/` after E2 (floor pictures WebP, 48 px per cell; cap 1.6 MB per
+floor picture). Unmarked floors are q85:
 
-| Dungeon | Floors | Floor pictures (MB) | Masks + over atlas | Total |
+| Dungeon | Floors | Floor pictures (MB) | Masks, over, seal | Total |
 |---|---|---|---|---|
-| Ember Mines | 5 | 1.37 · 1.46 · 1.37 (q80) · 1.42 (q80) · 0.98 | 0.08 MB | **6.67 MB** |
-| Obsidian Cavern | 5 | 1.10 · 1.18 · 1.37 (q80) · 1.56 (q80) · 0.80 | 0.14 MB | **6.15 MB** |
-| Iron Mine (floor 1 only, disabled) | 1 of 4 | 1.03 | 0.01 MB | 1.04 MB |
-| `manifest.json` | | | | 0.04 MB |
+| obsidianCavern | 5 of 5 | 1.10 · 1.18 · 1.36 (q80) · 1.56 (q80) · 0.80 | 0.14 MB | **6.15 MB** |
+| ironMine (disabled) | 4 of 4 | 0.88 · 1.46 · 1.23 · 1.56 | 0.05 MB | **5.18 MB** |
+| frozenLake (disabled) | 5 of 5 | 0.81 · 1.04 · 1.08 · 1.15 · 0.97 | 0.07 MB | **5.13 MB** |
+| stormNest (disabled) | 5 of 5 | 0.47 · 0.50 · 0.51 · 0.53 · 0.44 | 0.04 MB | **2.49 MB** |
+| shadowCave (disabled) | 5 of 5 | 0.74 · 0.98 · 1.25 · 1.34 (q80) · 1.15 | 0.20 MB | **5.66 MB** |
+| hauntedForest (disabled) | 1 of 1 | 1.58 (q45) | 0.02 MB | **1.60 MB** |
+| desertTomb (disabled) | 5 of 5 | 0.67 · 0.75 · 0.87 · 0.97 · 1.12 | 0.04 MB | **4.43 MB** |
+| banditHideout (disabled) | 5 of 5 | 0.69 · 0.88 · 1.35 · 1.40 · 0.83 | 0.06 MB | **5.21 MB** |
+| magmaTunnels (disabled) | 5 of 5 | 0.80 · 1.17 · 1.48 · 1.53 (q80) · 1.21 | 0.18 MB | **6.37 MB** |
+| scorchedRuins (disabled) | 5 of 5 | 0.93 · 1.14 · 1.34 · 1.41 · 1.23 | 0.05 MB | **6.09 MB** |
+| volcanicForge (disabled) | 7 of 7 | 0.66 · 0.67 · 0.72 · 0.87 · 0.93 · 1.15 · 0.92 | 0.19 MB | **6.09 MB** |
+| demonBarracks (disabled) | 6 of 6 | 0.88 · 1.23 · 1.38 · 1.48 · 1.59 · 1.14 | 0.44 MB | **8.13 MB** |
+| frostfallCavern (disabled) | 6 of 6 | 0.81 · 0.82 · 1.18 · 0.85 · 0.83 · 0.83 | 0.07 MB | **5.38 MB** |
+| stormreachSpire (disabled) | 6 of 6 | 0.78 · 0.84 · 0.82 · 0.77 · 0.77 · 0.66 | 0.03 MB | **4.67 MB** |
+| twilightDungeon (disabled) | 6 of 6 | 0.70 · 0.77 · 0.81 · 1.08 · 1.11 · 1.48 | 0.07 MB | **6.03 MB** |
+| sunkenTempleDungeon (disabled) | 6 of 6 | 0.64 · 0.85 · 0.98 · 1.19 · 1.34 · 1.57 | 0.32 MB | **6.89 MB** |
+| voidRift (disabled) | 6 of 6 | 0.91 · 0.88 · 1.27 · 1.31 · 1.48 · 1.18 | 0.07 MB | **7.10 MB** |
+| emberMines | 5 of 5 | 1.43 · 1.49 · 1.41 (q80) · 1.45 (q80) · 1.01 | 0.08 MB | **6.86 MB** |
+| oasisDepths (disabled) | 5 of 5 | 0.77 · 0.61 · 0.69 · 0.66 · 0.64 | 0.02 MB | **3.39 MB** |
+| `manifest.json` | | | | 0.67 MB |
 
-Unmarked floors are q85. Four of the ten floors met the cap only at q80.
+**19 dungeons, 98 floors, 219,267 cells: 102.9 MB of art plus a 0.67 MB manifest** (469 bytes
+per cell). Seven floors met the cap below q85: six at q80 and Haunted Forest's single 60x45 floor
+at q45 (leaf litter over the whole floor; it still reads cleanly at 48 px). Demon Castle (9
+floors) is not in the set: its layouts were never recovered (section 9).
 
-**Estimate for all 18 dungeons (93 floors, 215,199 cells):** the eleven floors above cost
-515 bytes per cell. At that rate, with the 1.6 MB cap holding the 15 largest floors (they will step
-down to roughly q70-q75), the whole set is **about 105-110 MB** (per dungeon: 3.4 MB for Sunken
-Temple up to about 9 MB for Demon Barracks and Void Rift). If that is too much for the app, the lever is the cap
-(`CAP_MB` in `render_plan.py`): 1.2 MB per floor gives about 96 MB, 1.0 MB about 87 MB, at a
-visibly lower quality on the large floors. A smaller render scale would save more but needs the
-runtime to blit at a scale other than 48 px per cell; that is not built.
-Render time for the remaining 82 floors: about 9 hours of one 4-core machine (two at a time).
+If the total is too much for the app, the lever is the cap (`CAP_MB` in `render_plan.py`) and a
+re-render: a full pass of all 98 floors is now about 2.5 hours of one core (it was 9 hours before
+the E2 speedups). A smaller render scale would save more but needs the runtime to blit at a scale
+other than 48 px per cell; that is not built.
 
 ## 8. Proof
 
@@ -327,7 +343,8 @@ Also run on the same copy:
    Opened chests can be walked through, as in the bundle and Act 1.
 11. **The boss marker is Act 1's dark silhouette** at 2.2 cells, not the boss's own sprite; the
     exit after the fight is the engine's portal prop in the boss's cell.
-12. **Size.** About 105-110 MB for all 18 dungeons at the current cap (section 7).
+12. **Size.** 102.9 MB of art for 19 dungeons (section 7). The manifest is 0.67 MB of JSON
+    (rows, terrain, mechanic data for 98 floors), fetched once at start.
 13. **Slow network on Continue.** If a save inside an authored floor is continued before the
     manifest arrives, the generated floor could show until the next tick re-applies. The resume
     check passes on a local server; a throttled run was not made.
@@ -335,3 +352,21 @@ Also run on the same copy:
     `ACT1_PAINT_MANIFEST_SHA256` (stale since build 91, as before this track). The cloud-stampable
     pins and the gate manifest (`runtime/manifests/acts-hifi-files.json`, now 1,232 files with
     `acts-dungeons/**`) are re-stamped and pass their own `--check`.
+15. **Demon Castle has no plans.** The planning page holds five mirror-room templates (A-E) and
+    a table of which rooms each of the nine floors uses, and nothing else: no hall or corridor
+    layout, no room positions, stairs, chests, crystals, throne or mouth. It was not invented;
+    the castle still runs on the bundle's generated floors until someone lays it out.
+16. **Oasis Depths is recovered but assumed in one place.** The five floors come cell for cell
+    from the planning page's pictures (a solver over the recovered plans gives the page's own
+    wheel-turn counts), except floor 1's mouth: the page draws the start inside the room, so a
+    3-cell corridor and a mouth were added under it (`assumed: true` in the plan). It ships
+    disabled: there is no `sluice-wheels` module. Channels are painted as flat stone beds;
+    water is the module's to draw. No crystals: the page shows none.
+17. **Re-rendered Ember Mines was validated by the exporter only.** `dungeon_authored.cjs
+    emberMines` should be run again on the new pictures before the next build (masks moved by
+    a few pixels).
+18. **Light band on flat ground.** The stepped lamp light shows as a pale ellipse on very even
+    floors (Desert Tomb plates, Oasis sand, Frostfall snow). Harmless, visible.
+19. **A lost wall is now an export failure**, not a warning: the first Scorched Ruins pictures
+    had no cracked walls at all (Act 1's thin-wall trimming) and passed every older check.
+
