@@ -9,7 +9,7 @@ const ROOT = path.resolve(__dirname, '../../../..');
 const PLANS = process.env.D2_PLANS || '/home/user/work/plans/out';
 const TILE = 48, FOOT = 31;
 const WALK = new Set('.=gtzqh'.split(''));
-const OPEN = { frozenLake: '~' };
+const OPEN = { frozenLake: '~', oasisDepths: 'wd' };
 const KIND = { stairsPrev: 'stairsUp', stairsNext: 'stairsDown' };
 const TILEOF = { mouth: 6, stairsUp: 6, stairsDown: 9, chest: 4, boss: 7, save: 14, sign: 18, mouth2: 10 };
 
