@@ -580,10 +580,11 @@ def paint(plan, mats, cfg):
             z[y, x] = True
         soft = R.blur(z.astype(np.float32)[cyi, cxi], px * 0.55)
         reach = 2.6 * px
-        if dy > 0:   t = (yy - (H - reach)) / reach
-        elif dy < 0: t = (reach - yy) / reach
-        elif dx > 0: t = (xx - (W - reach)) / reach
-        else:        t = (reach - xx) / reach
+        edge = float(plan.get("_pad", 0)) * px                    # the picture's real edge inside a padded render
+        if dy > 0:   t = (yy - (H - edge - reach)) / reach
+        elif dy < 0: t = (edge + reach - yy) / reach
+        elif dx > 0: t = (xx - (W - edge - reach)) / reach
+        else:        t = (edge + reach - xx) / reach
         L = np.clip(t, 0.0, 1.0) ** 1.3 * np.clip(soft * 1.6, 0.0, 1.0) * (0.25 + 0.75 * a)
         img = img * (1.0 + 0.7 * L[..., None]) + (L ** 1.5)[..., None] * np.array([235.0, 226.0, 198.0], np.float32) * 0.80
         del soft, t, L
@@ -838,6 +839,52 @@ def save_webp(im, path, q, cap_mb=CAP_MB):
         q -= 5
 
 
+PAD = 2
+
+
+def needs_pad(plan):
+    """A plan whose walkable ground comes within a cell of the map edge has a border wall one
+    cell thick. Act 1's wall rules call that too thin to carry a face and remove it, and the
+    floor then runs off the picture. Such a floor is painted with PAD extra cells of rock all
+    round (so the border wall is a real wall) and the extra is cut off again."""
+    opn = C.open_chars(plan["dungeonId"])
+    rows, W, H = plan["rows"], plan["width"], plan["height"]
+    mouth = set()
+    for m in plan["assets"]:
+        if m["kind"] == "mouth":
+            cells, run, _ = C.mouth_cells(plan, m)
+            mouth |= set(cells) | set(run)
+    for y in range(H):
+        for x in range(W):
+            if min(x, y, W - 1 - x, H - 1 - y) <= 1 and rows[y][x] in opn and (x, y) not in mouth:
+                return PAD
+    return 0
+
+
+def pad_plan(plan, n):
+    p = dict(plan)
+    W = plan["width"]
+    p["rows"] = ["#" * (W + 2 * n)] * n + ["#" * n + r + "#" * n for r in plan["rows"]] + ["#" * (W + 2 * n)] * n
+    p["width"], p["height"], p["_pad"] = W + 2 * n, plan["height"] + 2 * n, n
+    p["assets"] = [dict(a, x=a["x"] + n, y=a["y"] + n) for a in plan["assets"]]
+    p["zones"] = [dict(z, rect=[z["rect"][0] + n, z["rect"][1] + n, z["rect"][2] + n, z["rect"][3] + n]) if "rect" in z else z
+                  for z in plan.get("zones", [])]
+    return p
+
+
+def unpad(img, walk, over, info, seal, n):
+    k = n * C.CELL
+    W, H = img.size
+    img = img.crop((k, k, W - k, H - k)); walk = walk.crop((k, k, W - k, H - k))
+    info["size"] = [W - 2 * k, H - 2 * k]; info["cells"] = [info["cells"][0] - 2 * n, info["cells"][1] - 2 * n]
+    for e in info["over"]:
+        e["x"] -= k; e["y"] -= k; e["by"] -= k; e["cell"] = [e["cell"][0] - n, e["cell"][1] - n]
+    for e in info["seal"]:
+        e["x"] -= k; e["y"] -= k
+    info["pad"] = n
+    return img, walk, over, info, seal
+
+
 def crop_plan(plan, box):
     x0, y0, x1, y1 = box
     p = dict(plan)
@@ -869,7 +916,10 @@ def main():
         if a.crop:
             plan = crop_plan(plan, [int(v) for v in a.crop.split(",")])
         mats = R.load_materials(os.path.join(C.MATROOT, did))
-        img, walk, over, info, seal = paint(plan, mats, cfg)
+        pad = 0 if a.crop else needs_pad(plan)
+        img, walk, over, info, seal = paint(pad_plan(plan, pad) if pad else plan, mats, cfg)
+        if pad:
+            img, walk, over, info, seal = unpad(img, walk, over, info, seal, pad)
         q, mb = save_webp(img, dst, a.q)
         walk.save(os.path.join(a.out, f"{fid}-walk.png"), optimize=True)
         info.update(quality=q, materialMB=round(mb, 3),
