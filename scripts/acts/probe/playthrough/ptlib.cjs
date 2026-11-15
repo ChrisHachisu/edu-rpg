@@ -118,7 +118,9 @@ class Session {
   async shot(tag) { this.n++; const f = path.join(SHOTS, `${this.seg}-${String(this.n).padStart(2, '0')}-${tag}.jpg`);
     await this.page.screenshot({ path: f, type: 'jpeg', quality: 55 }).catch(e => console.log('shot fail', e.message)); return path.basename(f); }
   // every message box she gets, read and closed with the action key (the parent's box and the town's own)
-  async dismissAll(max = 40) { const lines = []; for (let i = 0; i < max; i++) { const s = await this.ev(() => { const w = window.__PHASER_GAME__.scene.getScene('WorldMapScene'); return { msg: !!w.showingMessage, t: w.messageText && w.messageText.text, ov: !!(w.healerOverlayOpen || w.questOverlayOpen || w.midCrystalOverlayOpen || w.warpOverlayOpen) }; });
+  async dismissAll(max = 40) { const lines = []; for (let i = 0; i < max; i++) { const s = await this.ev(() => { const w = window.__PHASER_GAME__.scene.getScene('WorldMapScene'), c = document.getElementById('qok-quest-completion'); return { msg: !!w.showingMessage, t: w.messageText && w.messageText.text, ov: !!(w.healerOverlayOpen || w.questOverlayOpen || w.midCrystalOverlayOpen || w.warpOverlayOpen), card: !!(c && !c.hidden) && ((c.querySelector('.qqc-title') || {}).textContent || '?') }; });
+      // The quest-complete card (ui-overhaul) takes the keyboard until its Continue button is tapped.
+      if (s.card) { lines.push('[quest complete] ' + s.card); await this.page.locator('#qok-quest-completion .qqc-dismiss').tap({ timeout: 4000 }).catch(() => {}); await this.page.waitForTimeout(400); continue; }
       if (!s.msg && !s.ov) break; if (s.t && lines[lines.length - 1] !== s.t) lines.push(s.t); await this.ev(() => window.__P.tapKey('z')); await this.page.waitForTimeout(320); }
     return lines; }
   // Lift level/stats once: the playthrough checks the story, not the grind (recorded in RESULTS).

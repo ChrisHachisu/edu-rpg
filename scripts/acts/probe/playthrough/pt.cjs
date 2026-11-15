@@ -112,7 +112,9 @@ async function encounters(n, { maxMs = 240000, until = null } = {}) {
 }
 async function walkGate() {                       // the Act 2 wind canyon, for real, with the stone she won
   await travelCell(221, 331, 'the west side of the wind canyon');
-  const r = await L.walkCells(S.page, [[228, 331]], { maxMs: 20000 }); await S.page.waitForTimeout(1500); await S.dismissAll();
+  let r = await L.walkCells(S.page, [[228, 331]], { maxMs: 20000 }); await S.page.waitForTimeout(1500); await S.dismissAll();
+  // The clearing plays as she steps in (message + wind fade); she then walks on, as a player would.
+  for (let k = 0; k < 2; k++) { if ((await L.pos(S.page)).x >= 227) break; await S.page.waitForTimeout(1500); r = await L.walkCells(S.page, [[228, 331]], { maxMs: 20000 }); await S.dismissAll(); }
   const p = await L.pos(S.page); const fl = await S.ev(() => ({ ...window.__GAME_STATE__.player.state.storyFlags }));
   await S.shot('wind-canyon-crossed');
   S.rec('carrying the Windbreaker Stone she walks through the wind canyon (story gate opens, clearing plays)', r.ok && p.x >= 227 && !!fl['canyon.windCleared'], { r: r.why, at: [p.x, p.y], cleared: !!fl['canyon.windCleared'] });
@@ -136,6 +138,9 @@ async function defeat(townName) {                // lose a battle on purpose: th
 // ---------------------------------------------------------------- Act 2
 SEGS.a2 = async () => {
   await S.open(load()); await S.buff();
+  await compassIs('Millbrook (the Sage is waiting for the Crystal Cave report)', 'millbrook');
+  await town('millbrook', async () => { await S.talk('sage', { want: s => has(s, 'crystalCaveGate') }); });
+  await compassIs('Ironkeep (first Act 2 stop)', 'Ironkeep');
   await town('Ironkeep', async () => { const bs = await S.talk('blacksmith');
     S.rec('Ironkeep blacksmith gives directions that fit the new map (Iron Mine west, Storm Nest south)', bs.lines.some(t => /Iron Mine is west of town/.test(t) && /Storm Nest to the south/.test(t)), bs.lines);
     await S.talk('gordo', { want: s => s.active.includes('gordosOre') }); await questLog('Gordo\'s ore listed', /Gordo|Ore/i); await S.heal(); await S.townSave(); });
@@ -156,7 +161,7 @@ SEGS.a2 = async () => {
   await town('Frostwatch', async () => { await S.talk('frostElder'); await S.heal(); });
   await compassIs('the Frozen Lake', 'Frozen Lake');
   await dungeonAuthored('frozenLake', 'Frozen Lake', 'mech/slide-ice.cjs');
-  await town('Ironkeep', async () => { await S.talk('soldier', { want: s => has(s, 'frozenSupplies') }); });
+  await town('Ironkeep', async () => { await S.talk('soldier', { want: s => has(s, 'frozenSupplies') || s.active.includes('frozenSupplies') }); });
   await S.shot('act2-mid');
 };
 SEGS.a2b = async () => {
@@ -226,16 +231,21 @@ SEGS.a5 = async () => {
   await town('Last Bastion', async () => { await S.talk('veteran'); await S.talk('priestess'); await S.heal(); await S.townSave(); });
   await continueHere('Last Bastion save point');
   await town("Haven's Edge", async () => { await S.talk('kiki'); await S.talk('prophetess'); await S.heal(); });
-  await compassIs('the next Act 5 goal', 'Demon Barracks').catch(() => {});
+  // the bundle skips Malachar / the Void Rift (quests nobody gives); the runtime points at the first portal
+  await compassIs('the first portal (Stormreach Isles) while the Demon Castle is sealed', 'Portal - Stormreach Isles');
   await dungeonAuthored('demonBarracks', 'Demon Barracks', 'mech/guard-lanterns.cjs');
   await dungeonAuthored('voidRift', 'Void Rift', 'mech/drifting-blocks.cjs');
   await S.shot('act5-mid');
 };
 SEGS.a5b = async () => {
   await S.open(load()); await S.buff();
+  await compassIs('the first portal (Stormreach Isles), after Continue', 'Portal - Stormreach Isles');
   await isle('stormreachSpire', 'Portal - Stormreach Isles', 'mech/storm-terrace.cjs');
+  await compassIs('the next portal (Frostfall Peaks)', 'Portal - Frostfall Peaks');
   await isle('frostfallCavern', 'Portal - Frostfall Peaks', 'mech/push-ice.cjs');
+  await compassIs('the next portal (Sunken Temple)', 'Portal - Sunken Temple');
   await isle('sunkenTempleDungeon', 'Portal - Sunken Temple', 'mech/maze-hunter.cjs');
+  await compassIs('the next portal (Twilight Realm)', 'Portal - Twilight Realm');
   await isle('twilightDungeon', 'Portal - Twilight Realm', 'mech/matching-portals.cjs');
   const s = await S.st(); const need = ['excalibur', 'aegisOfDawn', 'galeShield', 'crownOfWisdom'];
   const eq = await S.ev(() => ({ ...window.__GAME_STATE__.player.state.equipment }));
