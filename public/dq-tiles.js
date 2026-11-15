@@ -4626,7 +4626,7 @@
     if(!scene || scene.__a2dPT || typeof scene.performTransition!=='function') return;
     var orig=scene.performTransition; scene.__a2dPT=true;
     scene.performTransition=function(x){
-      try{ a2dVia={to:x&&x.targetMap, from:this.currentMapId, t:Date.now()}; }catch(e){}
+      try{ a2dVia={to:x&&x.targetMap, from:this.currentMapId, floor:(x&&x.toFloor)||1, t:Date.now()}; }catch(e){}
       return orig.apply(this,arguments);
     };
   }
@@ -4696,9 +4696,164 @@
         if(dir!==undefined){ scene.heroDir=dir; try{ h.setFrame(dir*3); }catch(e){} }
         try{ scene.updatePosition(); }catch(e){} },
       own:function(o){ owned.push(o); return o; },                          // destroyed for the module when the floor is left
-      say:function(text,name){ try{ scene.showMessage(text,name); }catch(e){} }
+      say:function(text,name){ try{ scene.showMessage(text,name); }catch(e){} },
+      // E2 additions. maskFree: what the painted mask alone says about a SOLE pixel (free() may ask it before overriding).
+      maskFree:function(px,py){ var m=null; try{ m=a1mFor(scene); }catch(e){} if(!m) return false;
+        var gx=(px-m.ox)|0, gy=(py-m.oy)|0; if(gx<1||gy<1||gx>=m.W-1||gy>=m.H-1) return false;
+        return m.dist[gy*m.W+gx] >= a1mNeed(m,gx,gy); },
+      // battle: the bundle's own encounter start (white flash, fade, BattleScene) with a named monster of its table.
+      // Returns false when a battle cannot start now (a box is open, one is already starting).
+      battle:function(monsterId,after){ return a2dBattle(scene,monsterId,after); },
+      busy:function(){ return a1mHalted(scene) || !!scene.__a1dEntryWaiting || a2dInBattle(scene); },
+      inBattle:function(){ return a2dInBattle(scene); },                   // from ctx.battle() until the field is back
+      // toFloor: a fall or a lift to the floor above/below through the engine's own floor change (black cover, loadMap,
+      // encounter reset); she arrives on `spot` {x,y,dir} (a cell: her SOLES are put on its centre) instead of beside the stairs.
+      toFloor:function(floor,spot){ return a2dToFloor(scene,floor,spot); },
+      bossDown:function(){ return a2dSealDead(scene); },                    // this dungeon's boss flag
+      art:function(){ var im=a1dArt[key]; return im||null; },               // the floor picture (an Image) once it is in, for a module that patches a piece of it
+      Z:function(key,vars){ var q=window.__QOK, z=q&&q.Z; try{ return z?z(key,vars):key; }catch(e){ return key; } },
+      locale:function(){ var gs=window.__GAME_STATE__, st=gs&&gs.player&&gs.player.state; return (st&&st.locale==='ja') ? (st.kanjiMode?'jaKanji':'ja') : 'en'; }
     };
     return ctx;
+  }
+  // ---- E2: the bundle's OWN mechanic must not run on an authored mechanic floor -----------------
+  // initMechanics(mapDef) builds the generated dungeon's mechanic from mapDef.mechanic (darkness
+  // pulse + patrol sprites, fog, wind, ice, lava course, maze hunter...). It runs INSIDE loadMap,
+  // before our floor is applied, so it is run once more with the mechanic struck out: every one of
+  // its switches is reset and its sprites destroyed, and the module is the only mechanic left.
+  // A dungeon whose manifest mechanic is 'none' (Ember Mines, Obsidian Cavern) is left alone.
+  function a2dWrapMechanics(scene){
+    if(!scene || scene.__a2dIM || typeof scene.initMechanics!=='function') return;
+    var orig=scene.initMechanics; scene.__a2dIM=orig;
+    scene.initMechanics=function(def){ try{ this.__a2dDef=def; }catch(e){} return orig.apply(this,arguments); };
+  }
+  function a2dLegacyOff(scene,fl){
+    if(!fl.mechanic || !fl.mechanic.id || fl.mechanic.id==='none') return;
+    try{ if(scene.__a2dIM && scene.__a2dDef && scene.__a2dDef.type==='dungeon'){
+           var d={}, k; for(k in scene.__a2dDef) d[k]=scene.__a2dDef[k]; d.mechanic=void 0;
+           scene.__a2dIM.call(scene,d); } }catch(e){ if(window.__DQ_DEBUG__) console.log('a2d legacy '+e); }
+    try{ if(typeof scene.cleanupGlyphTrial==='function') scene.cleanupGlyphTrial();
+         scene.glyphTrialActive=false; scene.glyphPlates=[]; scene.glyphStepOrder=[]; scene.glyphCorridor=null; scene.glyphDoorPos=null;
+         scene.fogEnabled=false; scene.darknessPulseEnabled=false; scene.windTowerEnabled=false; scene.mazeHunterEnabled=false;
+         scene.shadowPortalEnabled=false; scene.portalPairs=[]; scene._pendingPatrolWaypoints=void 0; scene.forestMazeCorrectExitY=-1;
+         if(scene._twLineGfx&&scene._twLineGfx.clear) scene._twLineGfx.clear();
+         if(scene._banditLordSprite&&scene._banditLordSprite.setVisible) scene._banditLordSprite.setVisible(false);   // the authored boss marker is a1dBossSort's
+    }catch(e){}
+  }
+  // A named monster through the bundle's own start (WorldMapScene.startBattle). The monster table
+  // is not exported; the encounter manager's rollEncounter() resolves an id against it.
+  function a2dBattle(scene,monsterId,after){
+    try{
+      if(scene.isMoving || !scene.scene.isActive('WorldMapScene') || scene.scene.isActive('BattleScene')) return false;
+      var gs=window.__GAME_STATE__, em=gs&&gs.encounterManager, mon=null;
+      if(em&&em.rollEncounter){ var w=console.warn; console.warn=function(){};
+        try{ mon=em.rollEncounter({monsters:[{monsterId:monsterId,weight:1}]}); }finally{ console.warn=w; } }
+      if(!mon && em && em.forceEncounter && scene.currentEncounterZone) mon=em.forceEncounter(scene.currentEncounterZone);
+      if(!mon) return false;
+      if(em&&em.reset) em.reset();
+      if(scene.__a2dDef&&scene.__a2dDef.encounterZone) scene.currentEncounterZone=scene.__a2dDef.encounterZone;   // the dungeon's own zone, as a step would set it
+      // once, when the field is back (won, fled or lost). Until then the dungeon counts as in a battle: startBattle()
+      // clears isMoving in the same frame it queues the BattleScene, so for one update the field looked free and a
+      // module's trigger (she still stands on the wrong plate, in the shadow's cell) fired a second time.
+      var ev=scene.events, fn=function(){ ev.off('resume',fn); a2dBattleAt=0; if(typeof after==='function'){ try{ after(); }catch(e){} } }; ev.on('resume',fn);
+      a2dBattleAt=Date.now();
+      scene.startBattle(mon,false);
+      return true;
+    }catch(e){ a2dBattleAt=0; if(window.__DQ_DEBUG__) console.log('a2d battle '+e); return false; }
+  }
+  var a2dBattleAt=0;
+  function a2dInBattle(scene){
+    if(!a2dBattleAt) return false;
+    try{ if(scene.isMoving || scene.scene.isActive('BattleScene') || scene.scene.isPaused('WorldMapScene')) return true; }catch(e){}
+    if(Date.now()-a2dBattleAt>4000){ a2dBattleAt=0; return false; }         // it never started, or ended without a resume
+    return true;
+  }
+  function a2dToFloor(scene,floor,spot){
+    try{
+      var cur=scene.currentFloor||1; if(floor!==cur-1 && floor!==cur+1) return false;
+      if(scene.isMoving || scene.showingMessage) return false;
+      var fd=a1mFootDy(scene), py=spot.y*TILE+TILE/2-fd;
+      scene.__a2dFall={floor:floor, spot:{x:spot.x, y:(py/TILE)|0, dir:spot.dir||0, px:spot.x*TILE+TILE/2, py:py}};
+      scene.performTransition({targetMap:(floor<cur)?'__floor_up__':'__floor_down__'});
+      return true;
+    }catch(e){ if(window.__DQ_DEBUG__) console.log('a2d toFloor '+e); return false; }
+  }
+  // ---- E2: a sealed second mouth ---------------------------------------------------------------
+  // The floor picture shows the mouth OPEN (daylight). Until the boss is down a rock plug from
+  // <floor>-seal.webp is drawn over it, her soles are refused in the mouth's cells and beyond, and
+  // the cells are plain floor (no way out). The moment the boss flag is set the plug goes, the
+  // cells become tile 10 and the mouth works, without leaving the floor.
+  var a2dSeal={key:null, imgs:[], req:{}, cells:null, box:null, on:false, list:null};
+  function a2dSealDrop(){
+    for(var i=0;i<a2dSeal.imgs.length;i++){ try{ a2dSeal.imgs[i].destroy(); }catch(e){} }
+    a2dSeal.imgs=[]; a2dSeal.key=null; a2dSeal.cells=null; a2dSeal.box=null; a2dSeal.on=false; a2dSeal.list=null;
+  }
+  function a2dSealDead(scene){
+    var gs=window.__GAME_STATE__, flags=gs&&gs.player&&gs.player.state&&gs.player.state.storyFlags;
+    var bossId=(typeof A1D_BOSS_ID!=='undefined')?A1D_BOSS_ID[scene.currentMapId]:null;
+    return !!(flags&&bossId&&flags['boss.'+bossId+'.defeated']);
+  }
+  function a2dSealSetup(scene,fl,key){
+    a2dSealDrop();
+    var a=fl.assets||[], i, cells=[], x0=1e9,y0=1e9,x1=-1e9,y1=-1e9, side=null;
+    for(i=0;i<a.length;i++) if(a[i].kind==='mouth2' && a[i].sealedUntil==='bossDefeated'){
+      cells.push([a[i].x,a[i].y]); side=side||a[i].side;
+      x0=Math.min(x0,a[i].x); y0=Math.min(y0,a[i].y); x1=Math.max(x1,a[i].x); y1=Math.max(y1,a[i].y); }
+    if(!cells.length) return;
+    // the mouth's cells and everything outward of them, to the edge of the map
+    var d={down:[0,1],south:[0,1],up:[0,-1],north:[0,-1],left:[-1,0],west:[-1,0],right:[1,0],east:[1,0]}[side]||[0,1];
+    if(d[0]>0) x1=fl.width; else if(d[0]<0) x0=-1; else if(d[1]>0) y1=fl.height; else y0=-1;
+    a2dSeal.key=key; a2dSeal.cells=cells; a2dSeal.list=fl.seal||null;
+    a2dSeal.box=[x0*TILE,y0*TILE,(x1+1)*TILE,(y1+1)*TILE];
+    a2dSeal.on=!a2dSealDead(scene);
+  }
+  function a2dSealBlocks(wx,wy){
+    var b=a2dSeal.box; return !!(a2dSeal.on && b && wx>=b[0] && wx<b[2] && wy>=b[1] && wy<b[3]);
+  }
+  function a2dSealTick(scene){
+    var S=a2dSeal, key=scene.currentMapId+'-f'+(scene.currentFloor||1), i;
+    if(!S.key || S.key!==key) return;
+    if(S.on && a2dSealDead(scene)){                                         // the boss fell while she is on this floor
+      S.on=false;
+      for(i=0;i<S.cells.length;i++){ var r=scene.mapData[S.cells[i][1]]; if(r&&r[S.cells[i][0]]===0){ r[S.cells[i][0]]=10; a1dChanged=true; } }
+    }
+    var list=S.list; if(!list||!list.length) return;
+    if(!S.on){ for(i=0;i<S.imgs.length;i++) if(S.imgs[i].visible) S.imgs[i].setVisible(false); return; }
+    var tk='a2dseal_'+key;
+    if(!scene.textures.exists(tk)){
+      if(!S.req[key]){ S.req[key]=true; var im=new Image();
+        im.onload=function(){ try{ if(scene.textures.exists(tk)) return; var t=scene.textures.addImage(tk,im);
+          for(var j=0;j<list.length;j++) t.add('s'+j,0,list[j].sx,list[j].sy,list[j].w,list[j].h); }catch(e){} };
+        im.onerror=function(){ setTimeout(function(){ S.req[key]=false; },5000); };
+        im.src=a2dUrl(key,'seal','webp'); }
+      return; }
+    if(!S.imgs.length || S.imgs[0].scene!==scene){
+      for(i=0;i<S.imgs.length;i++){ try{ S.imgs[i].destroy(); }catch(e){} } S.imgs=[];
+      for(i=0;i<list.length;i++) S.imgs.push(scene.add.image(list[i].x,list[i].y,tk,'s'+i).setOrigin(0,0).setDepth(1.5)); }
+  }
+  // ---- E2: what she pushes against --------------------------------------------------------------
+  // a1mBump fires only when she is fully stopped by a cell-shaped blocker; against a painted wall
+  // she glides and nothing is told. A module's `bump` is therefore ALSO told about every refused
+  // step: the cell A1M_BUMP_REACH past her soles along the push, and for a diagonal push the two
+  // cells along each axis as well (she slides along one face while leaning on it). At most once
+  // per cell per frame. info = {px,py (her soles), wall:true when the mover did not stop}.
+  var a2dPushSeen={f:-1,k:{}};
+  function a2dPush(scene,m,x,y,dx,dy,stopped){
+    var c=a2dCtx; if(!c||!c.mod||!c.mod.bump||c.scene!==scene) return false;
+    var l=Math.sqrt(dx*dx+dy*dy); if(!l) return false;
+    var fr=(scene.game&&scene.game.loop)?scene.game.loop.frame:0, S=a2dPushSeen;
+    if(S.f!==fr){ S.f=fr; S.k={}; }
+    var gy=y+a1mFootDy(scene,m), reach=a1mMetric(m,A1M_BUMP_REACH), ux=dx/l, uy=dy/l, any=false;
+    var pr=[[ux,uy]], i;
+    if(Math.abs(ux)>0.2 && Math.abs(uy)>0.2){ pr.push([ux>0?1:-1,0]); pr.push([0,uy>0?1:-1]); }
+    for(i=0;i<pr.length;i++){
+      var tx=((x+pr[i][0]*reach)/TILE)|0, ty=((gy+pr[i][1]*reach)/TILE)|0, k=tx+','+ty;
+      if(S.k[k]!==undefined){ if(i===0&&S.k[k]) any=true; continue; }
+      var row=scene.mapData[ty], t=row?row[tx]:undefined, r=false;
+      try{ r=c.mod.bump(c,tx,ty,pr[i][0],pr[i][1],t,{px:x,py:gy,wall:!stopped})===true; }catch(e){}
+      S.k[k]=r; if(i===0&&r) any=true;
+    }
+    return any;
   }
   function a2dOnApply(scene,fl,tiles){
     var id=scene.currentMapId; if(!a2dIs(id)) return;
@@ -4714,9 +4869,13 @@
     if(via && Date.now()-via.t<4000){
       if(via.to==='__floor_down__') spot=land.fromPrev;
       else if(via.to==='__floor_up__') spot=land.fromNext;
-      else if(via.to===id && via.from!==id) spot=(f>1 ? (land.mouth2||land.fromPrev) : land.mouth)||null;
+      else if(via.to===id && via.from!==id) spot=((f>1 || (via.floor>1 && land.mouth2)) ? (land.mouth2||land.fromPrev) : land.mouth)||null;   // E2: a second entrance of a one-floor dungeon (Haunted Forest's north door) lands inside ITS mouth
+      if(scene.__a2dFall && scene.__a2dFall.floor===f && (via.to==='__floor_down__'||via.to==='__floor_up__')) spot=scene.__a2dFall.spot;   // a module's own floor change
     }
+    scene.__a2dFall=null; a2dBattleAt=0;
     scene.__a2dLanding=spot?{key:key,spot:spot}:null;
+    a2dLegacyOff(scene,fl);
+    a2dSealSetup(scene,fl,key);
     a2dCtx=a2dMakeCtx(scene,fl,key);
     if(a2dCtx.mod && a2dCtx.mod.load) try{ a2dCtx.mod.load(a2dCtx); }catch(e){ if(window.__DQ_DEBUG__) console.log('a2d load '+e); }
   }
@@ -4727,12 +4886,13 @@
     if(!c) return;
     try{ if(c.mod&&c.mod.unload) c.mod.unload(c); }catch(e){}
     for(i=0;i<c._owned.length;i++){ try{ if(c._owned[i]&&c._owned[i].destroy) c._owned[i].destroy(); }catch(e){} }
-    a2dOverDrop();
+    a2dOverDrop(); a2dSealDrop();
     try{ for(var k in a1dBossSprites) a1dBossDrop(k); }catch(e){}           // a live boss sprite must not follow her out of the dungeon
   }
   function a2dFrame(scene,delta){
     var c=a2dCtx; if(!c || c.scene!==scene) return;
     if(scene.currentMapId!==c.id || (scene.currentFloor||1)!==c.floor) return;
+    if(a2dSeal.key) a2dSealTick(scene);
     if(!c.mod){ var m=a2dMods[c.mechanic.id]; if(!m) return;                // a module script that landed after the floor did
       c.mod=m; if(m.load) try{ m.load(c); }catch(e){} }
     if(c.mod.tick) c.mod.tick(c,delta);
@@ -4740,6 +4900,8 @@
   window.__QOK_DNG2__={ version:1,
     register:function(id,mod){ a2dMods[id]=mod; return mod; },
     ctx:function(){ return a2dCtx; }, manifest:function(){ return A2D; },
+    free:function(x,y){ var c=a2dCtx, m=null; try{ m=c&&a1mFor(c.scene); }catch(e){} return !!(m&&a1mFree(c.scene,m,x,y)); },   // may her sprite centre be at (x,y)? (probes)
+    footDy:function(){ var c=a2dCtx; return c?a1mFootDy(c.scene):31; },
     authored:function(id){ return a2dIs(id); },
     state:function(){ return { off:A2D_OFF, smoke:A2D_SMOKE, loaded:!!A2D, merged:!!(A2D&&A2D.merged), key:a1dKey,
       layer:a1dKey?a1dLayer[a1dKey]:null, art:a1dKey?(a1dArt[a1dKey]?'ready':(a1dArt[a1dKey]===null?'missing':'loading')):null,
@@ -4790,9 +4952,15 @@
     if(!a2dOver.imgs.length){
       for(i=0;i<list.length;i++){ var o=scene.add.image(list[i].x,list[i].y,tk,'o'+i).setOrigin(0,0); o.__by=list[i].by; a2dOver.imgs.push(o); } }
     var hero=dngHero(scene); if(!hero) return;
-    var foot=hero.y+a1mFootDy(scene), d;
-    for(i=0;i<a2dOver.imgs.length;i++){ d=(foot<a2dOver.imgs[i].__by)?10.6:9.4;
-      if(a2dOver.imgs[i].depth!==d) a2dOver.imgs[i].setDepth(d); }
+    var foot=hero.y+a1mFootDy(scene), d, o, want;
+    // E2: a pillar is one cell wide and taller than she is, so standing right behind it hid her
+    // whole. While it is in front of her AND its picture covers her body, it thins to 45 % (the
+    // floor picture underneath still shows the whole pillar), and comes back as she steps clear.
+    var hx0=hero.x-13, hx1=hero.x+13, hy0=hero.y-26, hy1=foot;
+    for(i=0;i<a2dOver.imgs.length;i++){ o=a2dOver.imgs[i]; d=(foot<o.__by)?10.6:9.4;
+      if(o.depth!==d) o.setDepth(d);
+      want=(d>10 && hx1>o.x && hx0<o.x+o.width && hy1>o.y && hy0<o.y+o.height)?0.45:1;
+      if(o.alpha!==want){ var na=o.alpha+(want-o.alpha)*0.25; if(Math.abs(na-want)<0.02) na=want; o.setAlpha(na); } }
   }
   function a1dFetch(){                                                      // one lazy request; silence is a valid outcome
     a2dFetch();
@@ -4869,7 +5037,7 @@
     if(a1dPatched || !scene || scene.__a1dPatched) return;
     if(typeof scene.loadMap!=='function') return; a1dPatched=true; scene.__a1dPatched=true;
     var orig=scene.loadMap;
-    a2dWrapTransition(scene);
+    a2dWrapTransition(scene); a2dWrapMechanics(scene);
     scene.loadMap=function(id){
       try{ a2dLeave(this,id); }catch(e){}
       // The frozen transition path sets currentMapId to the source map until this
@@ -5834,6 +6002,7 @@
     var gx=fx|0, gy=fy|0;
     var t=a1mTileAt(scene,wx,wy);
     if(t===undefined) return false;
+    if(a2dCtx && !m.ow && a2dSeal.on && a2dSealBlocks(wx,wy)) return false;   // authored: a sealed second mouth is rock
     if(a2dCtx && !m.ow && a2dCtx.mod && a2dCtx.mod.free){                    // authored mechanic: may veto (false) or open (true) a spot
       var a2r; try{ a2r=a2dCtx.mod.free(a2dCtx,wx,wy,(wx/TILE)|0,(wy/TILE)|0); }catch(e){}
       if(a2r===false) return false; if(a2r===true) return true; }
@@ -6559,8 +6728,7 @@
     var gy=y+a1mFootDy(scene,m), reach=a1mMetric(m,A1M_BUMP_REACH);
     var tx=(((x+dx/l*reach)/TILE)|0), ty=(((gy+dy/l*reach)/TILE)|0);
     var row=scene.mapData[ty], t=row?row[tx]:undefined;
-    if(a2dCtx && !m.ow && a2dCtx.mod && a2dCtx.mod.bump){                     // authored mechanic: pushed against (tx,ty)
-      var a2b=false; try{ a2b=a2dCtx.mod.bump(a2dCtx,tx,ty,dx/l,dy/l,t); }catch(e){} if(a2b===true) return; }
+    if(a2dCtx && !m.ow && a2dPush(scene,m,x,y,dx,dy,true)) return;            // authored mechanic: pushed against (tx,ty), handled
     if(t===undefined || !(m.prop||A1M_PROP)[t]) return;
     var now=Date.now(); if(now-a1mState.bump<700) return; a1mState.bump=now;
     // STORY BARRIERS MUST SAY WHY (2026-11-10, round 1 census P1). The magma field (21) and the wind
@@ -7469,6 +7637,7 @@
       for(k=0;k<n;k++){
         var nx=x+sx, ny=y+sy;
         if(a1mFree(scene,m,nx,ny)){ x=nx; y=ny; moved+=Math.sqrt(sx*sx+sy*sy); continue; }
+        if(a2dCtx && !m.ow) a2dPush(scene,m,x,y,sx,sy,false);               // authored mechanic: told of every refused step, glide or not
         // The step was refused: give the engine its ASK-FIRST chance before anything glides past
         // the thing she walked into. See a1mDoor -- this is where the town entrances live.
         if(a1mDoor(scene,m,x,y,sx,sy)){ hero.x=scaled?owPhysical(x):x; hero.y=scaled?owPhysical(y):y; return; }
@@ -7594,7 +7763,15 @@
     if(!cam||!hero||!hero.scene||typeof cam.width!=='number') return;
     if(cam._follow){ try{ cam.stopFollow(); }catch(e){} }
     var tx=hero.x-cam.width*0.5, ty=hero.y-cam.height*0.5;                   // Phaser's own follow target
+    // E2: Continue INSIDE an authored dungeon starts the scene with the camera bounds of the bundle's own generated
+    // floor (often smaller than ours), which pinned the view to a corner of a larger authored floor. Entering from the
+    // overworld leaves the overworld's wide bounds, so the same is given here: never narrower than our floor plus a screen.
+    if(a2dCtx && a2dCtx.scene===scene && cam.useBounds && cam._bounds){
+      var a2w=a2dCtx.plan.width*TILE+cam.width, a2h=a2dCtx.plan.height*TILE+cam.height, a2b=cam._bounds;
+      if(a2b.width<a2w || a2b.height<a2h){ try{ cam.setBounds(0,0,Math.max(a2b.width,a2w),Math.max(a2b.height,a2h)); }catch(e){} } }
     if(cam.useBounds && cam.clampX){ tx=cam.clampX(tx); ty=cam.clampY(ty); }
+    if(a2dCtx && a2dCtx.scene===scene && a2dCtx.mod && a2dCtx.mod.camera){    // authored mechanic: its own framing ({x,y} = scroll target), e.g. one forest room at a time
+      try{ var a2c=a2dCtx.mod.camera(a2dCtx,tx,ty,cam,dtms); if(a2c){ tx=a2c.x; ty=a2c.y; } }catch(e){} }
     var s=a1mCamS;
     if(!s || s.cam!==cam || Math.abs(cam.scrollX-s.wx)>1.5 || Math.abs(cam.scrollY-s.wy)>1.5)
       s=a1mCamS={ cam:cam, x:cam.scrollX, y:cam.scrollY, wx:cam.scrollX, wy:cam.scrollY };
@@ -8557,7 +8734,8 @@
   // ============================================================
   var kindCache={};
   function sceneKind(scene){
-    try { if(isOverworld(scene)) return 'ow';
+    try { if(typeof a2dIs==='function' && a2dIs(scene.currentMapId)) return 'dng';   // E2: an authored dungeon is never the overworld (see isOverworld)
+      if(isOverworld(scene)) return 'ow';
       var id=scene.currentMapId; if(kindCache[id]) return kindCache[id];
       var tg=scene.tileGrid, k=null;
       for(var y=0;y<tg.length&&!k;y++) for(var x=0;x<(tg[y]||[]).length;x++){ var s=tg[y][x]; if(s&&s.texture&&s.texture.key){ k=s.texture.key; break; } }
@@ -8567,7 +8745,11 @@
     } catch(e){ return null; }
   }
   function isOverworld(scene){
-    try { var id=scene.currentMapId; return scene.cullingEnabled===true || id==='overworld' || /[Oo]verworld|[Ii]sles|[Pp]eaks|Realm|Temple/.test(String(id||'')); }
+    // E2: an authored Acts 2-5 dungeon is never the overworld. Entered from a portal isle the scene still carries
+    // the isle's cullingEnabled, and an id such as sunkenTempleDungeon matches the name test below: either way the
+    // overworld reskin dressed the dungeon's floor with trees and mountains until the next fresh load.
+    try { var id=scene.currentMapId; if(typeof a2dIs==='function' && a2dIs(id)) return false;
+      return scene.cullingEnabled===true || id==='overworld' || /[Oo]verworld|[Ii]sles|[Pp]eaks|Realm|Temple/.test(String(id||'')); }
     catch(e){ return false; }
   }
   var lastReskinMapId=null;
@@ -8939,6 +9121,10 @@
     // Guarded on a real kind, never a transient null, for the same reason destroyDng is.
     if (kind && kind!=='ow'){ a1aSea(null,false); a1aUnderpaintHide(); }
     if ((kind==='town'||kind==='dng') && owMap) destroyOwProps(); // entered a town/dungeon -> drop landmark prop images (NOT on a transient null kind)
+    // E2: the overworld's procedural overlay (pines, ridges: a container at depth 5) is empty wherever baked art
+    // owns the ground, so nothing showed that the dungeon branch never drops it. A portal isle has no baked art:
+    // its pines and mountains stayed drawn over an authored dungeon entered from it until the next fresh load.
+    if (kind==='dng' && a2dIs(scene.currentMapId) && overlayState && overlayState.container){ try{ overlayState.container.destroy(); }catch(e){} overlayState=null; }
     if (kind!=='ow' && !SHIP_TOWN_DNG_RESKIN){
       // Overworld-only ship: tear down any stale overworld terrain/overlay so it can't linger over the engine's
       // native town/dungeon art, then bail — towns + dungeons render exactly as the base game does (unchanged).
