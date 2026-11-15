@@ -590,6 +590,7 @@
     if (back && back.exit) { place(s, back.exit[0], back.exit[1]); stats.exits++; stats.lateExits = (stats.lateExits || 0) + 1; markMigrated(); }
     else if (cellAct(s.heroTileX, s.heroTileY) !== 1) relocate(s, s.heroTileX, s.heroTileY);
   }
+  var PORTALS = [[40, 50, 'stormSentinel'], [130, 40, 'frostMonarch'], [50, 130, 'swordWraith'], [120, 140, 'celestialGuardian']];   // bundle chain (old cells)
   function wrap(s) {
     if (!M || !s || s.__actsHifiWrapped) return;
     if (typeof s.checkTransition !== 'function' || typeof s.getCompassTarget !== 'function' || typeof s.loadMap !== 'function') return;
@@ -622,6 +623,17 @@
     s.getCompassTarget = function () {
       var t = compass.call(this);
       if (!t) return t;
+      // The bundle gates the four portal bosses on quest portalRelics, which nobody gives, so its chain
+      // skips them and points at the sealed Demon Castle. While a portal boss stands, point at its portal
+      // (in the chain's order: Excalibur, from the Sunken Temple, comes before the Aegis it unseals).
+      if (t.ox === 85 && t.oy === 30) {
+        var pf = (pstate() || {}).storyFlags || {};
+        for (var pi = 0; pi < PORTALS.length; pi++) {
+          if (pf['boss.' + PORTALS[pi][2] + '.defeated']) continue;
+          var pt = {}; for (var pk in t) if (Object.prototype.hasOwnProperty.call(t, pk)) pt[pk] = t[pk];
+          pt.ox = PORTALS[pi][0]; pt.oy = PORTALS[pi][1]; t = pt; break;
+        }
+      }
       var L = COMPASS[t.ox + ',' + t.oy];
       if (!L) return t;
       var copy = {}; for (var k in t) if (Object.prototype.hasOwnProperty.call(t, k)) copy[k] = t[k];

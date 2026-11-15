@@ -14,10 +14,13 @@ const plan = f => JSON.parse(fs.readFileSync(path.join(PLANS, `${ID}-f${f}.json`
 const GUST = `(() => { const A = window.__A, T = 48;
   const lull = (L, need) => { const t = A.mstate().t / 185, pos = ((t - L.phase) % L.period + L.period) % L.period; return pos >= L.active + 0.5 && (L.period - pos) * 185 >= need; };
   window.__GUST = { lanes: () => A.mstate().lanes.map(L => ({ id: L.id, state: L.state, cells: L.cells, dir: L.dir })),
-    async go(goal, opts = {}) { const st = A.mstate(), f = A.fdy(), p = A.plan(goal, opts); if (!p) return { ok: false, why: 'no-path' };
-      const laneOf = pt => st.cell[Math.floor(pt[0] / T) + ',' + Math.floor((pt[1] + f) / T)] || null; let i = 0, crossed = 0; const falls0 = st.falls || 0;
+    async go(goal, opts = {}, again = 0, crossed0 = 0) { const st = A.mstate(), f = A.fdy(), p = A.plan(goal, opts); if (!p) return { ok: false, why: 'no-path' };
+      const laneOf = pt => st.cell[Math.floor(pt[0] / T) + ',' + Math.floor((pt[1] + f) / T)] || null; let i = 0, crossed = crossed0; const falls0 = st.falls || 0;
       while (i < p.length) { let j = i; while (j < p.length && !laneOf(p[j])) j++;
-        if (j > i + 1) { const r = await A.drive(p.slice(i, j - 1), { tol: 5 }); if (!r.ok || r.why !== 'arrived') return Object.assign(r, { seg: 'calm', crossed }); }
+        if (j > i + 1) { const r = await A.drive(p.slice(i, j - 1), { tol: 5 }); if (!r.ok || r.why !== 'arrived') {
+          // a calm (lane-free) leg that snags on a corner a few px short: plan again from where she stands (twice at most)
+          if (r.why === 'stuck' && again < 2) return this.go(goal, opts, again + 1, crossed);
+          return Object.assign(r, { seg: 'calm', crossed }); } }
         if (j >= p.length) { const r = await A.drive(p.slice(Math.max(i, j - 1)), { tol: 5 }); return Object.assign(r, { crossed }); }
         let k = j; const Ls = new Set(); while (k < p.length && laneOf(p[k])) { Ls.add(laneOf(p[k])); k++; }
         const need = (k - j + 3) * 12 / 260 * 1000 * 1.4 + 600, t0 = performance.now();

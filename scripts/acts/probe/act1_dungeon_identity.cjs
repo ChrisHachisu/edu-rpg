@@ -13,6 +13,7 @@
 const fs = require('fs'), path = require('path');
 const L = require('./lib.cjs');
 const BASE = process.env.BASE_URL || 'http://127.0.0.1:5191/';
+const REPS = +process.env.PUSH_REPS || 3;                  // pushes per direction and run (the glide along a curved wall is timing noise)
 const floors = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../../public/act1-dungeon-floors.json'), 'utf8')).floors;
 const spotNear = (key, kind) => { const fl = floors[key], a = fl.assets.find(x => x.kind === kind);
   for (const [dx, dy] of [[0, 1], [0, 2], [1, 0], [-1, 0], [1, 1], [-1, 1], [0, -1]]) { const x = a.x + dx, y = a.y + dy; if (fl.rows[y] && fl.rows[y][x] === '.' && !fl.assets.some(b => b.x === x && b.y === y)) return [x, y]; }
@@ -29,15 +30,18 @@ async function run(url, tag) {
     out.spots[key] = { info: await info(page), shot: await page.screenshot({ clip: CLIP }) };
     fs.writeFileSync(path.join(L.OUT, `a1d-${tag}-${key}.png`), await page.screenshot());
     const ends = [], home = out.spots[key].info;
-    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {          // into the wall and held there: where she is stopped, not how fast she got there
+    let fired = false;
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) for (let rep = 0; rep < REPS && !fired; rep++) {   // into the wall and held there: where she is stopped, not how fast she got there
       await page.evaluate(h => { const w = window.__PHASER_GAME__.scene.getScene('WorldMapScene'); w.hero.x = h.hx; w.hero.y = h.hy; w.heroTileX = h.x; w.heroTileY = h.y; }, home);
       await page.evaluate(async ([dx, dy]) => { const w = window.__PHASER_GAME__.scene.getScene('WorldMapScene'), m0 = w.currentMapId, f0 = w.currentFloor, t0 = performance.now(); let still = 0, lx = w.hero.x, ly = w.hero.y;
         try { while (performance.now() - t0 < 9000 && still < 40 && w.currentMapId === m0 && w.currentFloor === f0) {      // held until she has come to rest, not for a fixed time
           window.__DQ_STICK__ = { x: dx, y: dy, m: 1 }; await new Promise(r => requestAnimationFrame(r));
           still = (Math.abs(w.hero.x - lx) + Math.abs(w.hero.y - ly) < 0.02) ? still + 1 : 0; lx = w.hero.x; ly = w.hero.y; } } finally { window.__DQ_STICK__ = { x: 0, y: 0, m: 0 }; } }, [dx, dy]);
-      await page.waitForTimeout(250); const i = await info(page); ends.push(i.map === home.map && i.floor === home.floor ? [i.hx, i.hy] : [i.map, i.floor]);
-      if (i.map !== home.map || i.floor !== home.floor) break; }
-    out.push[key] = ends; }
+      await page.waitForTimeout(250); const i = await info(page); const e = i.map === home.map && i.floor === home.floor ? [i.hx, i.hy] : [i.map, i.floor];
+      (ends[ends.length - 1] && ends[ends.length - 1].dir === dx + ',' + dy ? ends[ends.length - 1] : (ends[ends.length] = Object.assign([], { dir: dx + ',' + dy }))).push(e);
+      if (i.map !== home.map || i.floor !== home.floor) fired = true; }
+    if (ends.length && typeof ends[ends.length - 1][0][0] === 'string') { /* a door fired: the walk stops here, as before */ }
+    out.push[key] = ends.map(d => d.slice()); }
   // the real way in
   await L.bootSave(page, L.save({ x: 80, y: 262 }), { url, settle: 3000 });
   const lm = await page.evaluate(() => { const wm = window.__ACT1_WORLD_MAP__, l = wm && wm.landmarks && wm.landmarks.find(a => a.mapId === 'sunkenCellar'); return l ? { at: [l.at.x, l.at.y], exit: [l.exit.x, l.exit.y] } : null; });
@@ -55,9 +59,23 @@ async function run(url, tag) {
     const ok = same && px <= noise; if (!ok) fail++; rows.push({ name, ok, info: z.info, baseInfo: same ? undefined : x.info, pixelsDiffer: px, baseAgainstBase: noise }); console.log(`[${ok ? 'PASS' : 'FAIL'}] ${name}: pixels differing ${px} (base/base ${noise}), state ${same ? 'same' : 'DIFFERENT ' + JSON.stringify(x.info) + ' vs ' + JSON.stringify(z.info)}`); };
   for (const k of Object.keys(a.spots)) cmp('spot ' + k, a.spots[k], a2.spots[k], b.spots[k]);
   if (a.entry && b.entry) cmp('real entry sunkenCellar', a.entry, a2.entry, b.entry); else { fail++; console.log('[FAIL] real entry: no landmark'); }
-  const far = (p, q) => p.length !== q.length ? 1e9 : Math.max(0, ...p.map((v, i) => typeof v[0] === 'string' || typeof q[i][0] === 'string' ? (JSON.stringify(v) === JSON.stringify(q[i]) ? 0 : 1e9) : Math.hypot(v[0] - q[i][0], v[1] - q[i][1])));
-  for (const k of Object.keys(a.push)) { const d = far(a.push[k], b.push[k]), noise = far(a.push[k], a2.push[k]); const ok = d <= Math.max(4, 2 * noise); if (!ok) fail++;
-    rows.push({ name: 'push ' + k, ok, px: d, baseAgainstBase: noise, base: a.push[k], now: b.push[k] }); console.log(`[${ok ? 'PASS' : 'FAIL'}] push ${k}: she is stopped within ${d.toFixed(1)} px of the base (base/base ${noise.toFixed(1)})`); }
+  // Per direction, every push of this build is compared with every push of the base (two base runs, REPS
+  // pushes each). Held into a straight wall she stops within a few px of the same place (frame timing
+  // moves the last step by up to ~5 px), so the tolerance there is 8 px, a sixth of a tile: a moved wall
+  // is a whole collision cell or more. Held along a curved wall she glides, and where the glide ends depends on frame timing: the base
+  // shows that by scattering its own stops, and a stop of this build inside that scatter is the base's
+  // behaviour. A door that fires must fire on both.
+  const dist = (u, v) => typeof u[0] === 'string' || typeof v[0] === 'string' ? (JSON.stringify(u) === JSON.stringify(v) ? 0 : 1e9) : Math.hypot(u[0] - v[0], u[1] - v[1]);
+  for (const k of Object.keys(a.push)) {
+    const dirs = []; let ok = a.push[k].length === b.push[k].length && a2.push[k].length === b.push[k].length;
+    for (let i = 0; ok && i < b.push[k].length; i++) {
+      const base = [...a.push[k][i], ...a2.push[k][i]], now = b.push[k][i];
+      const spread = Math.max(0, ...base.map(u => Math.max(...base.map(v => dist(u, v)))).filter(x => x < 1e9));
+      const off = Math.max(...now.map(u => Math.min(...base.map(v => dist(u, v)))));
+      const dOk = off <= Math.max(8, spread); dirs.push({ off: +off.toFixed(1), spread: +spread.toFixed(1), ok: dOk }); if (!dOk) ok = false; }
+    if (!ok) fail++;
+    rows.push({ name: 'push ' + k, ok, dirs, base: a.push[k], base2: a2.push[k], now: b.push[k] });
+    console.log(`[${ok ? 'PASS' : 'FAIL'}] push ${k}: per direction, her stops lie within the base's own scatter (${dirs.map(d => d.off + '/' + Math.max(8, d.spread)).join(', ')} px)`); }
   if (b.errors > a.errors) { fail++; console.log(`[FAIL] errors: ${b.errors} against base ${a.errors}`); }
   fs.writeFileSync(path.join(L.OUT, 'act1_dungeon_identity.json'), JSON.stringify(rows, null, 1));
   console.log(`act1_dungeon_identity: ${rows.length} checks, ${fail} FAIL`); process.exit(fail ? 1 : 0);

@@ -48,6 +48,13 @@ async function compassIs(what, mapIdOrDoor) {
   const s = await S.st(); const d = door(mapIdOrDoor);
   S.rec(`compass points at ${what}`, !!s.compass && s.compass.ox === d.at[0] && s.compass.oy === d.at[1], { compass: s.compass, door: d.at });
 }
+// The compass with one optional quest set aside (the bundle points at an active quest's target first).
+async function compassIsWithout(q, what, mapIdOrDoor) {
+  const d = door(mapIdOrDoor);
+  const c = await S.ev(q => { const s = window.__GAME_STATE__.player.state, w = window.__PHASER_GAME__.scene.getScene('WorldMapScene'), a = s.activeQuests.slice();
+    s.activeQuests = a.filter(x => x !== q); try { const t = w.getCompassTarget(); return t ? { ox: t.ox, oy: t.oy } : null; } finally { s.activeQuests = a; } }, q);
+  S.rec(`compass points at ${what} (optional ${q} set aside)`, !!c && c.ox === d.at[0] && c.oy === d.at[1], { compass: c, door: d.at });
+}
 async function questLog(what, re) { const q = await S.questLog(); S.rec(`quest log: ${what}`, re ? q.entries.some(e => re.test(e)) : true, q); return q; }
 async function continueHere(what) {                                   // the real title path: reload, Start -> slot -> newest record
   const page = S.page; const before = await S.st();
@@ -164,6 +171,12 @@ SEGS.a2 = async () => {
   await town('Ironkeep', async () => { await S.talk('soldier', { want: s => has(s, 'frozenSupplies') || s.active.includes('frozenSupplies') }); });
   await S.shot('act2-mid');
 };
+SEGS.a2s = async () => {                        // back to the Storm Nest (its first try was lost to a probe walker snag)
+  await S.open(load()); await S.buff();
+  await dungeonAuthored('stormNest', 'Storm Nest', 'mech/gust-walkways.cjs');
+  S.rec('the Storm Harpy left the Windbreaker Stone', (await S.st()).inv.includes('windbreakerStone'), (await S.st()).inv);
+  await walkGate();
+};
 SEGS.a2b = async () => {
   await S.open(load()); await S.buff();
   await compassIs('the Haunted Forest', 'Haunted Forest');
@@ -232,21 +245,40 @@ SEGS.a5 = async () => {
   await continueHere('Last Bastion save point');
   await town("Haven's Edge", async () => { await S.talk('kiki'); await S.talk('prophetess'); await S.heal(); });
   // the bundle skips Malachar / the Void Rift (quests nobody gives); the runtime points at the first portal
-  await compassIs('the first portal (Stormreach Isles) while the Demon Castle is sealed', 'Portal - Stormreach Isles');
+  await compassIsWithout('kikisChallenge', 'the first portal (Stormreach Isles) while the Demon Castle is sealed', 'Portal - Stormreach Isles');
   await dungeonAuthored('demonBarracks', 'Demon Barracks', 'mech/guard-lanterns.cjs');
   await dungeonAuthored('voidRift', 'Void Rift', 'mech/drifting-blocks.cjs');
   await S.shot('act5-mid');
 };
+SEGS.a5k = async () => {                        // re-check of a5's two misses on its own record: Last Bastion healer, portal compass
+  await S.open(load()); await S.buff();
+  await town('Last Bastion', async () => { await S.heal(); });
+  await compassIsWithout('kikisChallenge', 'the first portal (Stormreach Isles) while the Demon Castle is sealed', 'Portal - Stormreach Isles');
+  S.rec('(info) with kikisChallenge active the compass shows its target', true, { compass: (await S.st()).compass });
+  // frame time, standing and walking, on the Act 5 overworld and in a hi-fi town (headless, software GL: an upper bound)
+  const fsStand = await S.frameStats(4000);
+  const walkP = L.stick(S.page, 1, 0, 4000).catch(() => {}); const fsWalk = await S.frameStats(3500); await walkP;
+  let fsTown = null; await town('Last Bastion', async () => { fsTown = await S.frameStats(4000); });
+  S.rec('frame time is sane (mean under 50 ms, p95 under 100 ms; headless software rendering)', [fsStand, fsWalk, fsTown].every(f => f && f.mean < 50 && f.p95 < 100), { overworldStanding: fsStand, overworldWalking: fsWalk, town: fsTown });
+};
 SEGS.a5b = async () => {
   await S.open(load()); await S.buff();
-  await compassIs('the first portal (Stormreach Isles), after Continue', 'Portal - Stormreach Isles');
+  await compassIsWithout('kikisChallenge', 'the first portal (Stormreach Isles), after Continue', 'Portal - Stormreach Isles');
   await isle('stormreachSpire', 'Portal - Stormreach Isles', 'mech/storm-terrace.cjs');
-  await compassIs('the next portal (Frostfall Peaks)', 'Portal - Frostfall Peaks');
+  await compassIsWithout('kikisChallenge', 'the next portal (Frostfall Peaks)', 'Portal - Frostfall Peaks');
   await isle('frostfallCavern', 'Portal - Frostfall Peaks', 'mech/push-ice.cjs');
-  await compassIs('the next portal (Sunken Temple)', 'Portal - Sunken Temple');
+  await compassIsWithout('kikisChallenge', 'the next portal (Sunken Temple)', 'Portal - Sunken Temple');
   await isle('sunkenTempleDungeon', 'Portal - Sunken Temple', 'mech/maze-hunter.cjs');
-  await compassIs('the next portal (Twilight Realm)', 'Portal - Twilight Realm');
+  await compassIsWithout('kikisChallenge', 'the next portal (Twilight Realm)', 'Portal - Twilight Realm');
   await isle('twilightDungeon', 'Portal - Twilight Realm', 'mech/matching-portals.cjs');
+  const s = await S.st(); const need = ['excalibur', 'aegisOfDawn', 'galeShield', 'crownOfWisdom'];
+  const eq = await S.ev(() => ({ ...window.__GAME_STATE__.player.state.equipment }));
+  S.rec('the four portal guardians left the four relics the Demon Castle asks for', need.every(n => s.inv.includes(n) || Object.values(eq).includes(n)), { inv: s.inv, eq });
+};
+SEGS.a5s = async () => {                        // the Sunken Temple again (its first run was lost to a probe walker snag), then the relics
+  await S.open(load()); await S.buff();
+  await compassIsWithout('kikisChallenge', 'the Sunken Temple portal (its guardian still stands)', 'Portal - Sunken Temple');
+  await isle('sunkenTempleDungeon', 'Portal - Sunken Temple', 'mech/maze-hunter.cjs');
   const s = await S.st(); const need = ['excalibur', 'aegisOfDawn', 'galeShield', 'crownOfWisdom'];
   const eq = await S.ev(() => ({ ...window.__GAME_STATE__.player.state.equipment }));
   S.rec('the four portal guardians left the four relics the Demon Castle asks for', need.every(n => s.inv.includes(n) || Object.values(eq).includes(n)), { inv: s.inv, eq });
@@ -254,7 +286,7 @@ SEGS.a5b = async () => {
 SEGS.a5c = async () => {                         // the Demon Castle (the bundle's generated floors) and the Demon King
   await S.open(load()); await S.buff();
   await town('Last Bastion', async () => { await S.heal(); });
-  await compassIs('the Demon Castle', 'Demon Castle');
+  await compassIsWithout('kikisChallenge', 'the Demon Castle (all four relics in hand)', 'Demon Castle');
   const ok = await dungeonGenerated('demonCastle', 'Demon Castle', { want: s => s.bosses.includes('demonKing') });
   const sc = await S.ev(() => window.__PHASER_GAME__.scene.getScenes(true).map(s => s.scene.key)); await S.shot('ending');
   const s = await S.st().catch(() => null);

@@ -118,11 +118,15 @@ class Run {
     const page = this.page, t0 = Date.now(); let roundsN = 0, monster = null;
     const ok = await page.waitForFunction(() => window.__PHASER_GAME__.scene.isActive('BattleScene'), { timeout: 20000 }).then(() => true).catch(() => false);
     if (!ok) return { entered: false };
+    // what hurt her, for a lost fight's record
+    await page.evaluate(() => { const p = window.__GAME_STATE__.player; window.__DMG = []; if (p.__dmgHook) return; p.__dmgHook = true; const o = p.takeDamage;
+      p.takeDamage = function (m) { try { window.__DMG.push([m, this.state.hp, this.totalDef]); } catch (e) {} return o.apply(this, arguments); }; }).catch(() => {});
+    const dmg = () => page.evaluate(() => (window.__DMG || []).slice(-6)).catch(() => null);
     const tap = async (sel, timeout = 4000) => { const loc = page.locator(sel).first(); const dl = Date.now() + timeout; let box = null;
       while (Date.now() < dl) { box = await loc.boundingBox().catch(() => null); if (box && box.width >= 4) break; box = null; await page.waitForTimeout(150); } if (!box) return false; await loc.tap({ timeout: 4000 }).catch(() => {}); return true; };
     while (Date.now() - t0 < maxMs) {
       const s = await page.evaluate(() => { const g = window.__PHASER_GAME__, b = g.scene.getScene('BattleScene'); return { active: g.scene.isActive('BattleScene'), phase: b && b.phase, mon: b && b.monster && (b.monster.id || b.monster.nameKey), over: g.scene.isActive('GameOverScene') }; });
-      if (!s.active) { await page.waitForTimeout(900); return { entered: true, won: !s.over, rounds: roundsN, monster }; }
+      if (!s.active) { await page.waitForTimeout(900); return Object.assign({ entered: true, won: !s.over, rounds: roundsN, monster }, s.over ? { dmg: await dmg() } : {}); }
       monster = monster || s.mon;
       if (s.phase === 'playerMenu') { await tap('[data-act="battleMenu"][data-i="0"]'); await page.waitForTimeout(500); }
       else if (/quiz/i.test(String(s.phase)) || (await page.evaluate(() => { const e = document.querySelector('[data-act="quizAns"]'); return !!(e && e.offsetParent !== null); }))) {

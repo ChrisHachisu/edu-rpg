@@ -68,7 +68,10 @@ const HELP = () => {
   async function walkToNpc(id) {
     const f = frame(); if (!f) return { ok: false, why: 'no town' }; const t = f.contentWindow.__ACT1_TOWN__, n = t.npcs.find(n => n.id === id); if (!n) return { ok: false, why: 'no npc ' + id, npcs: t.npcs.map(n => n.id) };
     const C = t.town.worldPxPerCell;
-    return townWalk((x, y) => Math.abs(x - n.point.x) <= C * 0.6 && y - n.point.y >= C * 0.45 && y - n.point.y <= C * 1.6);
+    const r = await townWalk((x, y) => Math.abs(x - n.point.x) <= C * 0.6 && y - n.point.y >= C * 0.45 && y - n.point.y <= C * 1.6);
+    if (r.ok || r.why !== 'nopath') return r;
+    // nothing in the comfortable middle of the band: anywhere in town.html's own band (|dx| <= 1.1, dy -0.35..2.1 cells)
+    return townWalk((x, y) => Math.abs(x - n.point.x) <= C * 1.0 && y - n.point.y >= C * -0.25 && y - n.point.y <= C * 2.0);
   }
   async function walkToCell(cx, cy, r = 0.5) { const f = frame(); if (!f) return { ok: false, why: 'no town' }; const C = f.contentWindow.__ACT1_TOWN__.town.worldPxPerCell; return townWalk((x, y) => Math.hypot(x - cx * C, y - cy * C) <= r * C); }
   const pressTalk = () => { fkey('keydown', 'Enter'); fkey('keyup', 'Enter'); };

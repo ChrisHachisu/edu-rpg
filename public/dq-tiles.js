@@ -4861,6 +4861,10 @@
     // The engine's side channels name cells of ITS generated floor; none of them is on ours.
     try{ scene.keyChestPositions=new Set(); scene.mimicChestPositions=new Set();
          scene.hiddenRoomChestPositions=new Set(); scene.goldenChestPos=void 0; }catch(e){}
+    // ...except the maze hunter's golden chest. The engine's tryOpenTreasure gives the Holy Amulet (the
+    // ward without which the Sword Wraith turns 90% of every blow back on her) from the cell named in
+    // goldenChestPos, which its generator fills; on an authored floor that is the golden chest asset.
+    for(i=0;i<a.length;i++) if(a[i].kind==='chest' && a[i].loot==='holyAmulet'){ try{ scene.goldenChestPos={x:a[i].x,y:a[i].y}; }catch(e){} }
     // A second mouth stays shut from the inside until the boss is down (the overworld side is the bundle's own gate).
     var gs=window.__GAME_STATE__, flags=gs&&gs.player&&gs.player.state&&gs.player.state.storyFlags;
     var bossId=(typeof A1D_BOSS_ID!=='undefined')?A1D_BOSS_ID[id]:null, dead=!!(flags&&bossId&&flags['boss.'+bossId+'.defeated']);

@@ -25,8 +25,9 @@ const EXTRA = `(() => { const B = window.__B;
     const page = R.page;
     const hunter = () => R.ev(() => window.__BM.hunter());
     // walk to a goal; a message box (the guardian wakes) is read and closed; a battle is fought. Returns counts.
-    const walk = async (goal, opts = {}) => { const out = { msgs: [], battles: 0, g: null };
+    const walk = async (goal, opts = {}) => { const out = { msgs: [], battles: 0, g: null }; let snags = 0;
       for (let k = 0; k < 12; k++) { const g = await R.go(goal, opts); out.g = g;
+        if (g.why === 'stuck' && snags++ < 2) { out.snags = snags; continue; }   // a corner snag of the probe's walker: plan again from where she stands
         if (g.why === 'message') { out.msgs.push(await R.ev(() => window.__B.msgs().slice(-1)[0] || null)); if (opts.shotOnMsg) await R.shot(opts.shotOnMsg); await R.dismiss(); continue; }
         if (g.why === 'scene') { const fr = await R.fight(); out.battles++; out.fr = fr; await page.waitForTimeout(1200); await R.pilot(); await R.dismiss(); continue; }
         break; }
@@ -68,7 +69,14 @@ const EXTRA = `(() => { const B = window.__B;
       if (!R.rec(`f${f}: the straight route is walked with no battle (the guardian moves ${h4.ratio} of her pace)`, w.g.ok && w.battles === 0 && (f === 1 || f === 2 || w.msgs.length === 1), { g: w.g, battles: w.battles, msgs: w.msgs.length, hunter: h4 })) break;
       await R.shot(`f${f}-through`);
       if (f < FLOORS) { if (!(await R.stairs(goalA, f + 1))) break; }
-      else { if (await R.boss(goalA, f)) await R.exitByBossCell(goalA); }
+      else {
+        // The Sword Wraith turns 90% of every blow back on her unless she carries the Holy Amulet, which the
+        // golden chest on this floor holds: a player opens it first, so the probe does too.
+        const gold = P.assets.find(a => a.kind === 'chest' && a.loot === 'holyAmulet');
+        if (gold) { const has = () => R.ev(() => window.__GAME_STATE__.player.hasItem('holyAmulet'));
+          let t = null; if (!(await has())) { for (let k = 0; k < 3 && !(await has()); k++) { t = await R.use(gold.x, gold.y, null); await page.waitForTimeout(500); await R.dismiss(); } }
+          R.rec(`f${f}: the golden chest gives the Holy Amulet (the Sword Wraith's ward against its reflection)`, await has(), { tapped: t, chest: [gold.x, gold.y] }); }
+        if (await R.boss(goalA, f)) await R.exitByBossCell(goalA); }
     }
   } catch (e) { R.rec('probe crashed', false, String(e && e.stack || e).slice(0, 600)); await R.shot('crash').catch(() => {}); }
   process.exit((await R.finish()) ? 1 : 0);
