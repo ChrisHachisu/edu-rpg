@@ -4961,10 +4961,17 @@
     // whole. While it is in front of her AND its picture covers her body, it thins to 45 % (the
     // floor picture underneath still shows the whole pillar), and comes back as she steps clear.
     var hx0=hero.x-13, hx1=hero.x+13, hy0=hero.y-26, hy1=foot;
+    var FR=(typeof window.__DQ_FOG_R__==='number')?window.__DQ_FOG_R__:34, FS=16, FF=(dngState&&dngState.scene===scene)?dngState.FOGF:0, zz=1;
+    try{ zz=scene.cameras.main.zoom||1; }catch(e){}
     for(i=0;i<a2dOver.imgs.length;i++){ o=a2dOver.imgs[i]; d=(foot<o.__by)?10.6:9.4;
       if(o.depth!==d) o.setDepth(d);
       want=(d>10 && hx1>o.x && hx0<o.x+o.width && hy1>o.y && hy0<o.y+o.height)?0.45:1;
-      if(o.alpha!==want){ var na=o.alpha+(want-o.alpha)*0.25; if(Math.abs(na-want)<0.02) na=want; o.setAlpha(na); } }
+      if(o.alpha!==want){ var na=o.alpha+(want-o.alpha)*0.25; if(Math.abs(na-want)<0.02) na=want; o.setAlpha(na); }
+      // E4: her lamp's darkness is drawn at depth 8, under these pictures, so a pillar top far outside
+      // her light stood out at full brightness over a dark floor. Each corner takes updateFog's falloff.
+      if(FF){ var c0=fk(o.x,o.y), c1=fk(o.x+o.width,o.y), c2=fk(o.x,o.y+o.height), c3=fk(o.x+o.width,o.y+o.height), sig=c0+','+c1+','+c2+','+c3;
+        if(o.__fs!==sig){ o.__fs=sig; try{ o.setTint(c0*65793,c1*65793,c2*65793,c3*65793); }catch(e){} } } }
+    function fk(x,y){ var dx=(x-hero.x)*zz/FF, dy=(y-hero.y)*zz/FF, t=(Math.sqrt(dx*dx+dy*dy)-(FR-FS))/(2*FS); t=t<0?0:(t>1?1:t); return Math.round(255*(1-(t*t*(3-2*t))*0.98)); }
   }
   function a1dFetch(){                                                      // one lazy request; silence is a valid outcome
     a2dFetch();
