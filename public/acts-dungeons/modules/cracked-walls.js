@@ -34,14 +34,17 @@
                 : (py>=G.y0-THROUGH && py<G.y1+THROUGH && px>=G.x0+END && px<G.x1-END);
   }
   function texCrack(sc,G){ var w=G.x1-G.x0, h=G.y1-G.y0, horiz=!!G.dir[0];
-    return K.tex(sc,'d2a_crack_'+(horiz?'h':'v')+'_'+w+'x'+h,w,h,function(g){
+    return K.tex(sc,'d2a_crack2_'+(horiz?'h':'v')+'_'+w+'x'+h,w,h,function(g){
       var r=rnd(horiz?41:97), L=horiz?h:w, T=horiz?w:h, i, j;
       function P(a,t){ return horiz?[t,a]:[a,t]; }             // a = along the wall, t = through it
       g.lineCap='round'; g.lineJoin='round';
       for(j=0;j<3;j++){ var a=L*(0.2+0.3*j)+ (r()-0.5)*10, pts=[P(a,2)];
         for(i=1;i<=5;i++){ a+=(r()-0.5)*16; pts.push(P(a,2+(T-4)*i/5)); }
-        g.strokeStyle='rgba(255,120,30,0.22)'; g.lineWidth=5; g.beginPath(); g.moveTo(pts[0][0],pts[0][1]); for(i=1;i<pts.length;i++) g.lineTo(pts[i][0],pts[i][1]); g.stroke();
-        g.strokeStyle='rgba(12,7,5,0.78)'; g.lineWidth=j===1?2.4:1.6; g.beginPath(); g.moveTo(pts[0][0],pts[0][1]); for(i=1;i<pts.length;i++) g.lineTo(pts[i][0],pts[i][1]); g.stroke();
+        g.strokeStyle='rgba(255,130,40,0.34)'; g.lineWidth=6; g.beginPath(); g.moveTo(pts[0][0],pts[0][1]); for(i=1;i<pts.length;i++) g.lineTo(pts[i][0],pts[i][1]); g.stroke();
+        g.strokeStyle='rgba(8,5,4,0.92)'; g.lineWidth=j===1?3:2.2; g.beginPath(); g.moveTo(pts[0][0],pts[0][1]); for(i=1;i<pts.length;i++) g.lineTo(pts[i][0],pts[i][1]); g.stroke();
+        // a pale chipped edge beside the dark line: on the painted burnt rubble a dark crack alone did not read
+        g.strokeStyle='rgba(236,214,190,0.6)'; g.lineWidth=1; g.beginPath(); g.moveTo(pts[0][0]+1.6,pts[0][1]+1.2); for(i=1;i<pts.length;i++) g.lineTo(pts[i][0]+1.6,pts[i][1]+1.2); g.stroke();
+        g.strokeStyle='rgba(8,5,4,0.92)';
         var b=pts[2+j%2], e=P((horiz?b[1]:b[0])+(r()>0.5?13:-13),(horiz?b[0]:b[1])+7);
         g.lineWidth=1.2; g.beginPath(); g.moveTo(b[0],b[1]); g.lineTo(e[0],e[1]); g.stroke(); }
     }); }
@@ -81,7 +84,7 @@
       st.gfx=ctx.own(sc.add.graphics().setDepth(2.3));
       for(i=0;i<ss.length;i++){ var G=geom(ss[i]); G.open=K.get(ctx,'secret'+G.id+'.open'); G.acc=0; G.last=-1e9; G.em=[];
         var r=rnd(5+G.id*11); for(j=0;j<7;j++) G.em.push([G.x0+4+r()*(G.x1-G.x0-8), G.y0+4+r()*(G.y1-G.y0-8), r()*6.28, 1.2+r()*1.6]);
-        if(!G.open) G.crack=K.img(ctx,texCrack(sc,G),(G.x0+G.x1)/2,(G.y0+G.y1)/2,2.2).setAlpha(0.85);
+        if(!G.open) G.crack=K.img(ctx,texCrack(sc,G),(G.x0+G.x1)/2,(G.y0+G.y1)/2,2.2);
         st.secrets.push(G); }
       for(i=0;i<mech.length;i++){ if(mech[i].kind!=='hint') continue; var a=mech[i], S=null;
         for(j=0;j<st.secrets.length;j++) if(st.secrets[j].id===a.secret) S=st.secrets[j];

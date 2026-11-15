@@ -19,7 +19,7 @@ const SH = `(() => { const A = window.__A, T = 48;
     async go(goal) { const f = A.fdy(); let crossed = 0, waited = 0;
       for (let guard = 0; guard < 40; guard++) { const st = A.mstate(), mech = A.ctx().mechanic.shadows, danger = new Set();
         st.shadows.forEach(s => { const m = mech.find(x => x.id === s.id); (m.run || []).forEach(c => danger.add(c[0] + ',' + c[1])); });
-        const inD = pt => danger.has(Math.floor(pt[0] / T) + ',' + Math.floor((pt[1] + f) / T));
+        const inD = pt => [[0, 0], [-9, 0], [9, 0], [0, -9], [0, 9], [-9, -9], [9, -9], [-9, 9], [9, 9]].some(o => danger.has(Math.floor((pt[0] + o[0]) / T) + ',' + Math.floor((pt[1] + f + o[1]) / T)));   // 9 px of margin: the pilot rounds corners by up to its tolerance
         const p = A.plan(goal, { avoid: st.shadows.map(s => s.cx + ',' + s.cy) }); if (!p) return { ok: false, why: 'no-path', crossed };
         let j = 0; while (j < p.length && !inD(p[j])) j++;
         if (j >= p.length) { const r = await A.drive(p, { tol: 5 }); return Object.assign(r, { crossed, waited }); }
@@ -63,7 +63,7 @@ const SH = `(() => { const A = window.__A, T = 48;
       if (m2) { const q = await R.ev(([x, y]) => ({ tile: window.__A.tile(x, y), free: window.__QOK_DNG2__.free(x * 48 + 24, y * 48 + 24 - window.__A.fdy()), path: !!window.__A.plan({ centre: [x, y] }) }), [m2.x, m2.y]);
         R.rec(`f${f}: with the boss alive the second mouth is rock (no way-out tile, her soles refused, no path into it)`, q.tile !== 10 && q.free === false && q.path === false, q); }
       const b0 = await R.ev(() => window.__A.mstate().battles || 0), t0 = Date.now(), g = await sgo({ beside: [target.x, target.y], reach: 40 }), b1 = await R.ev(() => window.__A.mstate().battles || 0);
-      if (!R.rec(`f${f}: she passes ${g.crossed} run(s) in the crystal light without a battle (${((Date.now() - t0) / 1000).toFixed(1)} s, ${((g.waited || 0) / 1000).toFixed(1)} s waiting in the dark)`, g.ok && b1 === b0, g)) { await R.shot(`f${f}-fail`); break; }
+      if (!R.rec(`f${f}: she passes ${g.crossed} run(s) in the crystal light without a battle (${((Date.now() - t0) / 1000).toFixed(1)} s, ${((g.waited || 0) / 1000).toFixed(1)} s waiting in the dark)`, g.ok && b1 === b0, Object.assign(g, b1 === b0 && g.why === 'arrived' ? {} : { msg: await R.ev(() => window.__A.msgs().slice(-2)), at: await R.ev(() => { const s = window.__A.st(); return [s.sx, s.sy]; }).catch(() => null), battles: [b0, b1] }))) { await R.shot(`f${f}-fail`); break; }
       await page.waitForFunction(() => window.__SH.shineLeft() > 800, { timeout: 12000 }).catch(() => {}); await R.shot(`f${f}-shine`);
       if (stairs) { if (!(await R.stairs(stairs, f + 1))) break; continue; }
       if (!(await R.boss(bossAsset, f))) break;
