@@ -37,6 +37,7 @@ function load(mechId) {
     __QOK: { loc: () => state.locale, Z: k => k },
     Image: function () { this.onload = null; }, setTimeout: () => 0, console
   };
+  const wall = { now: 1000 }; win.Date = { now: () => wall.now };          // modules read wall time through Date.now()
   win.window = win;
   const sandbox = vm.createContext(win);
   for (const f of ['kit-b.js', mechId + '.js']) vm.runInContext(fs.readFileSync(path.join(MOD, f), 'utf8'), sandbox, { filename: f });
@@ -78,7 +79,7 @@ function load(mechId) {
   const standCell = (ctx, cx, cy) => stand(ctx, cx * 48 + 24, cy * 48 + 24);
   const flushTweens = () => { while (tweens.length) { const t = tweens.shift(); try { if (t.onUpdate) t.onUpdate({ progress: 1, getValue: () => 1 }, t.targets); if (t.onComplete) t.onComplete(); } catch (e) { console.log('tween', e); } } };
   const runTimers = ms => { scene.time.now += ms; for (const t of timers.splice(0)) { if (t.at <= scene.time.now) t.fn(); else timers.push(t); } };
-  return { win, mod, kit: win.__QOK_D2KIT_B__, scene, state, made, said, battles, tweens, ctxFor, stand, standCell, flushTweens, runTimers, hero };
+  return { wall, win, mod, kit: win.__QOK_D2KIT_B__, scene, state, made, said, battles, tweens, ctxFor, stand, standCell, flushTweens, runTimers, hero };
 }
 const floorsOf = id => { const p = JSON.parse(fs.readFileSync(path.join(PLANS, id + '-f1.json'), 'utf8')); return Array.from({ length: p.totalFloors }, (_, i) => `${id}-f${i + 1}`); };
 module.exports = { load, floorsOf, PLANS, MOD, ROOT, WALK };

@@ -167,6 +167,68 @@ T['guard-lanterns'] = () => {
   }
 };
 
+
+// ---- push-ice -----------------------------------------------------------------------------------
+T['push-ice'] = () => {
+  const DIR = { E: [1, 0], S: [0, 1], W: [-1, 0], N: [0, -1] };
+  for (const fid of U.floorsOf('frostfallCavern')) {
+    const H = U.load('push-ice'), c = H.ctxFor(fid), M = H.mod, Lg = M.logic;
+    M.load(c); const S = c.state;
+    ok(`${fid}: every chamber modelled`, S.rooms.length === c.mechanic.rooms.length && S.rooms.length > 0);
+    for (const rp of c.mechanic.rooms) {
+      const R = S.rooms.find(r => r.id === rp.room);
+      // the model sits on the plan's own tiles
+      const blocksA = c.plan.mech.filter(a => a.kind === 'iceBlock' && a.room === R.id), crystA = c.plan.mech.filter(a => a.kind === 'stopCrystal' && a.room === R.id);
+      ok(`${fid} ${R.id}: block and crystal cells land on the plan's assets`, blocksA.every(a => { const p = Lg.cellPx(R, R.start[a.id][0], R.start[a.id][1]); return p[0] === a.x * 48 && p[1] === a.y * 48; })
+        && crystA.every(a => rp.crystals.some(q => { const p = Lg.cellPx(R, q[0], q[1]); return p[0] === a.x * 48 && p[1] === a.y * 48; })) && crystA.length === rp.crystals.length);
+      ok(`${fid} ${R.id}: chamber floor is ice, crystals are 'o', the water cells are the plan's`, [...Array(R.gw * R.gh).keys()].every(n => { const i = n % R.gw, j = (n / R.gw) | 0, p = Lg.cellPx(R, i, j), ch = c.terrain(p[0] / 48, p[1] / 48); return R.crystal[i + ',' + j] ? ch === 'o' : ch === '~'; })
+        && [...Array(R.need).keys()].every(k => { const p = Lg.cellPx(R, R.gw + k, R.row); return c.terrain(p[0] / 48, p[1] / 48) === 'w' && rp.water.some(q => q[0] === p[0] / 48 && q[1] === p[1] / 48); }));
+      ok(`${fid} ${R.id}: the bell is a solid post on the door pad`, !!R.bell && c.terrain(R.bell.x, R.bell.y) === '.' && M.free(c, R.bell.x * 48 + 24, R.bell.y * 48 + 24) === false);
+      const far = Lg.cellPx(R, R.gw + R.need - 1, R.row), mid = [far[0] + 48, far[1] + 48];
+      ok(`${fid} ${R.id}: the water is not walkable before the bridge`, M.free(c, mid[0], mid[1]) === undefined);
+      // the plan's own solution, pushed the way a player pushes: stand against the far side, hold the stick
+      let good = true, n = 0;
+      for (const st of rp.solution) {
+        const m = /^push (\d+),(\d+) ([ESWN])$/.exec(st); if (!m) { good = false; break; }
+        const k = R.blocks.findIndex(b => b && b[0] === +m[1] && b[1] === +m[2]), d = DIR[m[3]], dxw = d[0] * R.sx, dyw = d[1];
+        if (k < 0) { good = false; break; }
+        const r = Lg.solidRect(R, R.blocks[k]);
+        const sx = dxw > 0 ? r[0] - 2 : dxw < 0 ? r[2] + 1 : (r[0] + r[2]) / 2, sy = dyw > 0 ? r[1] - 2 : dyw < 0 ? r[3] + 1 : (r[1] + r[3]) / 2;
+        const ch = c.terrain(Math.floor(sx / 48), Math.floor(sy / 48));
+        if (!'.~'.includes(ch) || M.free(c, sx, sy) === false) { ok(`${fid} ${R.id}: she can stand behind the block for "${st}"`, false, { ch, sx, sy }); good = false; break; }
+        H.stand(c, sx, sy); const before = Lg.pack(R);
+        M.input(c, { x: dxw, y: dyw, m: 1 }, H.hero.x, H.hero.y); H.wall.now += 120; M.input(c, { x: dxw, y: dyw, m: 1 }, H.hero.x, H.hero.y);
+        if (Lg.pack(R) !== before) { ok(`${fid} ${R.id}: a brush against a block does not push it`, false); good = false; break; }
+        H.wall.now += 200; M.input(c, { x: dxw, y: dyw, m: 1 }, H.hero.x, H.hero.y); H.flushTweens(); n++;
+        if (Lg.pack(R) === before && R.fill === 0 && !S.last.moved) { ok(`${fid} ${R.id}: "${st}" moves the block`, false, S.last); good = false; break; }
+        for (let i = 0; i < 60; i++) M.tick(c, 16);
+      }
+      ok(`${fid} ${R.id}: the plan's ${rp.solution.length} pushes, done by leaning on the blocks, fill the gap`, good && R.fill === R.need && n === rp.fewestPushes, { fill: R.fill, need: R.need, n });
+      ok(`${fid} ${R.id}: the bridge is walkable bank to bank and its flag is set`, M.free(c, mid[0], mid[1]) === true && H.state.storyFlags[c.flagKey('fill.' + R.id)] === R.need);
+      ok(`${fid} ${R.id}: the first bridge is announced once`, H.said.filter(t => /bridge/.test(t)).length === 1, H.said);
+      // blocks cannot leave the chamber: with the gap full, a block on the slipway row stops at the edge
+      const spare = R.blocks.findIndex(b => b);
+      if (spare >= 0) { const save = R.blocks[spare]; R.blocks[spare] = [R.gw - 1, R.row]; const r = Lg.push(R, spare, 1, 0);
+        ok(`${fid} ${R.id}: with the gap full a block stops at the chamber edge`, r.moved === false && R.fill === R.need); R.blocks[spare] = save; }
+      // never from the bridge
+      R.blocks[0] = [R.gw - 1, R.row]; ok(`${fid} ${R.id}: a block is never pushed from the bridge side`, Lg.push(R, 0, -1, 0).moved === false);
+      // the bell: every block forms again at its start, bridges stay
+      H.stand(c, R.bell.x * 48 + 24 + R.sx * 44, R.bell.y * 48 + 24); const it = M.interact(c, H.hero.x, H.hero.y + 31, null);
+      ok(`${fid} ${R.id}: beside the bell the pill says Ring`, !!it && it.verb === 'Ring'); it.act();
+      ok(`${fid} ${R.id}: the bell forms every block again at its start; the bridge stays`, Lg.pack(R) === R.start.map(b => b.join(',')).join('|') && R.fill === R.need && M.free(c, mid[0], mid[1]) === true && /bell/.test(H.said[H.said.length - 1]));
+      ok(`${fid} ${R.id}: a block is solid where it stands`, M.free(c, Lg.cellPx(R, R.start[0][0], R.start[0][1])[0] + 48, Lg.cellPx(R, R.start[0][0], R.start[0][1])[1] + 48) === false);
+    }
+    // Save -> Continue mid-puzzle: push once, new visit, same blocks
+    const H2 = U.load('push-ice'), d = H2.ctxFor(fid); H2.mod.load(d);
+    const R2 = d.state.rooms[0], rp2 = d.mechanic.rooms[0], m2 = /^push (\d+),(\d+) ([ESWN])$/.exec(rp2.solution[0]);
+    const k2 = R2.blocks.findIndex(b => b && b[0] === +m2[1] && b[1] === +m2[2]); H2.mod.logic.push(R2, k2, DIR[m2[3]][0], DIR[m2[3]][1]);
+    const L = { R: R2, k: k2 }; const packed = H2.mod.logic.pack(R2);
+    H2.kit.setFlag(d, 'blk.' + R2.id, packed); H2.kit.setFlag(d, 'fill.' + R2.id, R2.fill || false);
+    const d2 = H2.ctxFor(fid); H2.mod.load(d2);
+    ok(`${fid}: a half-solved chamber is restored from the flags`, H2.mod.logic.pack(d2.state.rooms[0]) === packed && d2.state.rooms[0].fill === R2.fill, { packed, got: H2.mod.logic.pack(d2.state.rooms[0]) });
+  }
+};
+
 // ---- RUN ----
 const want = process.argv.slice(2), names = want.length ? want : Object.keys(T);
 for (const n of names) { const f0 = fail, p0 = pass; try { T[n](); } catch (e) { fail++; console.log(`[FAIL] ${n}: threw ${e && e.stack || e}`); }
