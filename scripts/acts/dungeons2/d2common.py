@@ -131,6 +131,18 @@ DUNGEONS = {
         target={"floor": (134, 108, 172), "wall": (26, 21, 42)},
         hazards={"_": "chasm", "v": "chasm"}, void_style="tex", void_gain=0.85, cliff=1.0, links="v",
         top_accent=0.0, floor_calm=0.40, floor_soft=1.0),
+    # mirror-rooms. A built castle: slate flags, purple brick with iron bands. Each mirror room
+    # (zone `mirrorRoom`, `polishedFloor`) is floored with the sheet's polished black marble, cut to
+    # the cell grid; '_' pits are the drop the module lets her fall into (closed in the mask: the
+    # module opens them), 'p' 2x2 pillars are square piers with walk-behind tops; the boss cell of
+    # the last floor carries a painted dais and throne (asset `throne`).
+    "demonCastle": dict(
+        act=5, sheet="mat-demon-castle", theme="demon castle",
+        target={"floor": (80, 80, 104), "wall": (54, 34, 80)},
+        hazards={"_": "chasm", "p": "pillar"}, void=(7, 4, 14), cliff=1.15, cliff_gain=1.75, chasm_amp=0.18,
+        zone_surfaces={"mirrorRoom": dict(target=(50, 46, 84), calm=0.48, tile=2.0)},
+        throne=True, carpet=(92, 22, 40), dais=(76, 68, 114),
+        top_accent=0.0, floor_calm=0.36, floor_soft=0.8),
     # sluice-wheels (plans recovered from the review artifact; no module yet). Every channel is
     # painted as its dry stone bed and is open; a module draws the water and closes flooded ones.
     "oasisDepths": dict(

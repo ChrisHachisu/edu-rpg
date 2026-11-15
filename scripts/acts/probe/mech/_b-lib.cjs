@@ -35,7 +35,7 @@ const plan = (id, f) => JSON.parse(fs.readFileSync(path.join(PLANS, `${id}-f${f}
 
 class Run {
   // extra: in-page source of the probe's own helpers, injected after the pilot on every (re)load
-  constructor(id, { bossId, flags = {}, name = id, extra = '' } = {}) { this.id = id; this.bossId = bossId; this.seedFlags = flags; this.rows = []; this.n = 0; this.name = name; this.extra = extra;
+  constructor(id, { bossId, flags = {}, name = id, extra = '', inventory = [] } = {}) { this.id = id; this.bossId = bossId; this.seedFlags = flags; this.rows = []; this.n = 0; this.name = name; this.extra = extra; this.inventory = inventory;   // inventory: item ids the dungeon's own door asks for (the Demon Castle's four relics)
     this.dir = path.join(SHOTS, id) + '/'; fs.mkdirSync(this.dir, { recursive: true }); fs.mkdirSync(L.OUT, { recursive: true });
     for (const f of fs.readdirSync(this.dir)) if (/^\d\d-.*\.jpg$/.test(f)) { try { fs.unlinkSync(path.join(this.dir, f)); } catch (e) {} }   // this run's shots only
   }
@@ -62,7 +62,7 @@ class Run {
     const o = await L.launch(); this.browser = o.browser; this.page = o.page; this.errors = o.errors;
     const at = LM ? { mapId: 'overworld', x: LM.exit[0], y: LM.exit[1] } : { mapId: this.isle, x: ISLE_BACK[0], y: ISLE_BACK[1] };
     this.back = at;
-    await L.bootSave(this.page, PT.seed() || L.save({ ...at, flags, inventory: INV, completedQuests: QUESTS }), { extra: SMOKE_EXTRA });   // PT_SAVE: the story playthrough's own record
+    await L.bootSave(this.page, PT.seed() || L.save({ ...at, flags, inventory: INV.concat(this.inventory.map(itemId => ({ itemId, quantity: 1 }))), completedQuests: QUESTS }), { extra: SMOKE_EXTRA });   // PT_SAVE: the story playthrough's own record
     await this.pilot();
     if (LM) { const p = await L.pos(this.page); this.rec('seeded save loads on the overworld at the remapped exit', p.map === 'overworld' && p.x === LM.exit[0] && p.y === LM.exit[1], p); }
     else { const s = await this.st(); this.rec(`seeded save loads on the portal isle ${this.isle}` + (PT.active() ? '' : ' where the dungeon lets her out'), s.map === this.isle && (PT.active() || (s.x === ISLE_BACK[0] && s.y === ISLE_BACK[1])), [s.map, s.x, s.y]); }

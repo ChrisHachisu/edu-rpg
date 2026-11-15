@@ -375,6 +375,143 @@ def paint_plates(img, plan, cfg, a, px):
         np.clip(reg, 0, 255, out=reg)
 
 
+def sheet_tiles(did, grid=4, inset=7):
+    """The cut tiles of the sheet's accent quadrant (a polished floor drawn as a grid x grid of
+    slabs), each without its own joint. The quilted mat-accent.png no longer has them on a grid."""
+    sh = Image.open(os.path.join(C.MATROOT, did, f"{did}-materials-sheet.png")).convert("RGB")
+    w, h = sh.size
+    q = sh.crop((w // 2, h // 2, w, h))
+    pw, ph = q.size[0] / grid, q.size[1] / grid
+    return [q.crop((int(i * pw) + inset, int(j * ph) + inset, int((i + 1) * pw) - inset, int((j + 1) * ph) - inset))
+            for j in range(grid) for i in range(grid)]
+
+
+def slab_floor(tiles, w, h, tp, seed, target, calm):
+    """A w x h master-px piece of polished slab floor: one sheet tile per `tp` px square, each slab
+    turned or flipped by its own hash, a cut joint between slabs; graded as the floor material is."""
+    cv = Image.new("RGB", (w, h))
+    n = int(np.ceil(tp)) + 1
+    d = ImageDraw.Draw(cv)
+    for tj in range(int(np.ceil(h / tp))):
+        for ti in range(int(np.ceil(w / tp))):
+            hsh = (ti * 73856093 ^ tj * 19349663 ^ seed * 83492791) & 0x7FFFFFFF
+            t = tiles[hsh % len(tiles)]
+            if hsh & 16: t = t.transpose(Image.FLIP_LEFT_RIGHT)
+            if hsh & 32: t = t.transpose(Image.FLIP_TOP_BOTTOM)
+            x0, y0 = int(round(ti * tp)), int(round(tj * tp))
+            cv.paste(t.resize((n, n), Image.Resampling.LANCZOS), (x0, y0))
+    st = np.asarray(cv).astype(np.float32)
+    mean = st.reshape(-1, 3).mean(axis=0)[None, None, :]
+    st = mean + (st - mean) * calm
+    st = R.grade(st, target)
+    # the joints, after grading: a dark cut with a pale arris on the lit (upper, left) side
+    Y, X = np.mgrid[0:h, 0:w].astype(np.float32)
+    fx, fy = np.mod(X, tp), np.mod(Y, tp)
+    cut = np.clip(1.0 - np.minimum(np.minimum(fx, tp - fx), np.minimum(fy, tp - fy)) / (0.022 * tp), 0.0, 1.0)
+    lit = np.clip(1.0 - np.abs(np.minimum(fx, fy) - 0.045 * tp) / (0.014 * tp), 0.0, 1.0)
+    st *= ((1.0 - 0.72 * cut) * (1.0 + 0.20 * lit * (1.0 - cut)))[..., None]
+    return np.clip(st, 0, 255)
+
+
+STEP_D, STEP_H = 0.34, 0.17      # a dais step: tread depth and riser height, cells
+THRONE_K = 1.45                  # the throne is drawn for a king 2.2 cells tall
+
+
+def throne_layout(plan, cfg):
+    """Where the last floor's dais, carpet and throne go, in cells, from the boss asset alone:
+    the dais spans 4.5 cells either side of the boss, from the wall behind it to 1.6 cells in
+    front; the carpet runs down the plan's route for as long as that stays in the boss's column."""
+    if not cfg.get("throne"):
+        return None
+    b = next((a for a in plan["assets"] if a["kind"] == "boss" and a.get("throne")), None)
+    if not b:
+        return None
+    rows = plan["rows"]
+    opn = C.open_chars(plan["dungeonId"])
+    top = b["y"]
+    while top - 1 >= 0 and rows[top - 1][b["x"]] in opn:
+        top -= 1
+    rt = {tuple(c) for c in plan.get("route") or []}
+    south = b["y"]
+    while (b["x"], south + 1) in rt:
+        south += 1
+    cx = b["x"] + 0.5
+    return dict(cx=cx, top=float(top), dais=(cx - 4.5, float(top), cx + 4.5, b["y"] + 1.6),
+                carpet=(cx - 1.5, b["y"] + 0.4, cx + 1.5, south + 0.85),
+                chair=(cx - 0.86 * THRONE_K, float(top), cx + 0.86 * THRONE_K, top + 1.45))
+
+
+def paint_throne(img, L, px, light, wall_m):
+    """The Demon King's seat against the wall behind him: a tall spiked back, arm blocks, a
+    crimson cushion. Painted whole into the floor picture (nobody can stand behind it)."""
+    x0c, y0c, x1c, y1c = L["chair"]
+    cx = L["cx"] * px
+    base = y1c * px
+    seat_top = base - 0.62 * px * THRONE_K
+    back_top = (y0c - 1.25 * THRONE_K + 0.55) * px
+    xa, xb = int((x0c - 0.4) * px), int((x1c + 0.9) * px)
+    ya, yb = max(0, int(back_top - 0.4 * px)), int(base + 0.45 * px)
+    w, h = xb - xa, yb - ya
+    S = 2
+    lay = Image.new("RGBA", (w * S, h * S), (0, 0, 0, 0))
+    d = ImageDraw.Draw(lay)
+    P = lambda x, y: ((x - xa) * S, (y - ya) * S)
+    u = px * THRONE_K
+    ink = (14, 9, 22, 255)
+    lw = max(2, int(0.035 * u * S))
+    # floor shadow, thrown right and down
+    sh = Image.new("RGBA", lay.size, (0, 0, 0, 0))
+    ImageDraw.Draw(sh).ellipse([*P(cx - 0.80 * u, base - 0.30 * u), *P(cx + 1.25 * u, base + 0.30 * u)], fill=(0, 0, 0, 150))
+    lay.alpha_composite(sh.filter(ImageFilter.GaussianBlur(0.10 * u * S)))
+    d = ImageDraw.Draw(lay)
+    # the back: a pointed, three-spiked slab
+    bt = back_top
+    back = [(cx - 0.66 * u, seat_top + 0.1 * u), (cx - 0.74 * u, bt + 0.62 * u), (cx - 0.60 * u, bt + 0.20 * u), (cx - 0.40 * u, bt + 0.52 * u),
+            (cx - 0.22 * u, bt + 0.34 * u), (cx, bt - 0.02 * u), (cx + 0.22 * u, bt + 0.34 * u), (cx + 0.40 * u, bt + 0.52 * u),
+            (cx + 0.60 * u, bt + 0.20 * u), (cx + 0.74 * u, bt + 0.62 * u), (cx + 0.66 * u, seat_top + 0.1 * u)]
+    d.polygon([P(*q) for q in back], fill=(52, 40, 74, 255), outline=ink)
+    d.line([P(*q) for q in back] + [P(*back[0])], fill=ink, width=lw, joint="curve")
+    # lit left half of the back
+    d.polygon([P(*q) for q in back[:6]] + [P(cx, seat_top + 0.1 * u)], fill=(74, 58, 104, 255))
+    d.line([P(*q) for q in back], fill=ink, width=lw, joint="curve")
+    # the padded panel and its gold edge
+    pan = [(cx - 0.44 * u, seat_top + 0.02 * u), (cx - 0.48 * u, bt + 0.86 * u), (cx, bt + 0.42 * u), (cx + 0.48 * u, bt + 0.86 * u), (cx + 0.44 * u, seat_top + 0.02 * u)]
+    d.polygon([P(*q) for q in pan], fill=(112, 30, 54, 255))
+    d.polygon([P(*q) for q in pan[:3]] + [P(cx, seat_top + 0.02 * u)], fill=(140, 40, 66, 255))
+    d.line([P(*q) for q in pan] + [P(*pan[0])], fill=(196, 152, 70, 255), width=max(2, int(0.030 * u * S)), joint="curve")
+    for k in range(4):                                             # buttons
+        yy_ = bt + (0.98 + 0.26 * k) * u
+        for sx_ in (-0.20, 0.20):
+            d.ellipse([*P(cx + sx_ * u - 0.035 * u, yy_ - 0.035 * u), *P(cx + sx_ * u + 0.035 * u, yy_ + 0.035 * u)], fill=(70, 16, 34, 255))
+    # a pale gem at the crown of the back
+    d.ellipse([*P(cx - 0.085 * u, bt + 0.16 * u), *P(cx + 0.085 * u, bt + 0.33 * u)], fill=(170, 120, 255, 255), outline=ink, width=max(1, lw // 2))
+    d.ellipse([*P(cx - 0.05 * u, bt + 0.185 * u), *P(cx + 0.0 * u, bt + 0.24 * u)], fill=(236, 216, 255, 255))
+    # seat: cushion top and the dark front
+    d.rectangle([*P(cx - 0.62 * u, seat_top), *P(cx + 0.62 * u, base)], fill=(40, 30, 58, 255), outline=ink, width=lw)
+    d.rectangle([*P(cx - 0.56 * u, seat_top - 0.10 * u), *P(cx + 0.56 * u, seat_top + 0.26 * u)], fill=(128, 34, 58, 255), outline=ink, width=lw)
+    d.rectangle([*P(cx - 0.56 * u, seat_top - 0.10 * u), *P(cx + 0.0 * u, seat_top + 0.08 * u)], fill=(156, 48, 74, 255))
+    d.line([P(cx - 0.62 * u, seat_top + 0.30 * u), P(cx + 0.62 * u, seat_top + 0.30 * u)], fill=(196, 152, 70, 255), width=max(2, int(0.028 * u * S)))
+    # arms: two blocks with clawed fronts
+    for sgn in (-1, 1):
+        ax0, ax1 = cx + sgn * 0.58 * u, cx + sgn * 0.86 * u
+        l, r = min(ax0, ax1), max(ax0, ax1)
+        d.rectangle([*P(l, seat_top - 0.34 * u), *P(r, base)], fill=(46, 36, 66, 255) if sgn > 0 else (62, 48, 88, 255), outline=ink, width=lw)
+        d.rectangle([*P(l, seat_top - 0.46 * u), *P(r, seat_top - 0.20 * u)], fill=(86, 68, 120, 255) if sgn < 0 else (70, 54, 100, 255), outline=ink, width=lw)
+        d.ellipse([*P((l + r) / 2 - 0.07 * u, seat_top - 0.40 * u), *P((l + r) / 2 + 0.07 * u, seat_top - 0.26 * u)], fill=(196, 152, 70, 255), outline=ink, width=max(1, lw // 2))
+    lay = lay.resize((w, h), Image.Resampling.LANCZOS)
+    la = np.asarray(lay).astype(np.float32)
+    al = la[..., 3:4] / 255.0
+    Y, X = np.mgrid[ya:yb, xa:xb].astype(np.float32)
+    # painted, not flat: the wall stone's own grain and cracks in every surface, a broad fall of
+    # light from the upper left, and a darker foot where the chair meets the dais
+    st = R.sample(wall_m, X * 0.8 + 311.0, Y * 0.8 + 173.0).astype(np.float32).mean(axis=2)
+    st = st / max(1.0, float(st.mean()))
+    grain = (0.62 + 0.38 * st) * (0.92 + 0.20 * R.fbm(X, Y, px * 0.16, 733))
+    fall = 1.10 - 0.22 * np.clip((X - (cx - 0.9 * u)) / (1.8 * u), 0.0, 1.0) - 0.20 * np.clip((Y - (base - 0.5 * u)) / (0.5 * u), 0.0, 1.0)
+    lit = np.clip(0.55 + 0.60 * light[ya:yb, xa:xb], 0.75, 1.15)
+    reg = img[ya:yb, xa:xb]
+    reg[:] = reg * (1 - al) + np.clip(la[..., :3] * (grain * fall * lit * 1.12)[..., None], 0, 255) * al
+
 def paint(plan, mats, cfg):
     t0 = time.time()
     post = cfg.get("posts")
@@ -493,6 +630,51 @@ def paint(plan, mats, cfg):
     wall_m = R.grade(R.temper(mats["wall"]), tgt["wall"])
     ftex, fcrack = R.sample_patched(floor_m, xx, yy, px, 91, patch=5.0)
     wtex, wcrack = R.sample_patched(wall_m, xx, yy, px, 41, patch=4.0)
+    # ── floor that is not the floor material: polished slabs in a zone, a dais, a carpet ─────
+    smooth = None                                                  # where the floor is polished or woven: no pebbles, a sheen
+    gloss = None
+    thr = throne_layout(plan, cfg)
+    zs = cfg.get("zone_surfaces") or {}
+    zlist = [(z, zs[z["kind"]]) for z in plan.get("zones", []) if z.get("kind") in zs and "rect" in z]
+    if zlist or thr:
+        smooth = np.zeros((H, W), np.float32)
+        gloss = np.zeros((H, W), np.float32)
+        tiles = sheet_tiles(plan["dungeonId"])
+
+        def lay(rect, tex_fn, g):
+            xa, xb = max(0, int(round(rect[0] * px))), min(W, int(round(rect[2] * px)))
+            ya, yb = max(0, int(round(rect[1] * px))), min(H, int(round(rect[3] * px)))
+            if xa >= xb or ya >= yb:
+                return
+            tx = tex_fn(xb - xa, yb - ya, xa, ya)
+            ftex[ya:yb, xa:xb] = tx
+            fcrack[ya:yb, xa:xb] = 0.0
+            smooth[ya:yb, xa:xb] = 1.0
+            gloss[ya:yb, xa:xb] = g
+        for z, spec in zlist:
+            x0, y0, x1, y1 = z["rect"]
+            lay((x0, y0, x1 + 1, y1 + 1), lambda w_, h_, xa, ya, spec=spec, z=z: slab_floor(
+                tiles, w_, h_, float(spec.get("tile", 2.0)) * px, 17 + 31 * int(z.get("id", 0)), spec["target"], float(spec.get("calm", 0.6))), 1.0)
+        if thr:
+            ds = thr["dais"]                                          # the dais top, its lower tread (STEP wider all round) and both risers
+            lay((ds[0] - STEP_D, ds[1], ds[2] + STEP_D, ds[3] + STEP_D + 2 * STEP_H),
+                lambda w_, h_, xa, ya: slab_floor(tiles, w_, h_, 1.5 * px, 5, cfg.get("dais", (104, 96, 140)), 0.55), 0.7)
+
+            def carpet(w_, h_, xa, ya):
+                Y, X = np.mgrid[ya:ya + h_, xa:xa + w_].astype(np.float32)
+                col = np.array(cfg.get("carpet", (96, 24, 40)), np.float32) * R.MACRO_COMP
+                weave = 0.90 + 0.10 * np.sin(X * (2 * np.pi / (0.085 * px))) * np.sin(Y * (2 * np.pi / (0.085 * px))) \
+                    + 0.16 * (R.fbm(X, Y, px * 0.9, 811) - 0.5) + 0.10 * (R.fbm(X, Y, px * 0.12, 813) - 0.5)
+                tx = col[None, None, :] * weave[..., None]
+                e = np.minimum(X - xa, xa + w_ - 1 - X) / px          # cells from a long edge
+                band = np.clip(1.0 - np.abs(e - 0.24) / 0.055, 0.0, 1.0)
+                line = np.clip(1.0 - np.abs(e - 0.42) / 0.02, 0.0, 1.0)
+                gold = np.array((168, 132, 64), np.float32) * R.MACRO_COMP * (0.86 + 0.28 * R.fbm(X, Y, px * 0.2, 815))[..., None]
+                k = np.maximum(band, 0.8 * line)[..., None]
+                tx = tx * (1 - k) + gold * k
+                hem = np.clip(1.0 - e / 0.07, 0.0, 1.0)[..., None]    # the selvedge: darker
+                return np.clip(tx * (1.0 - 0.45 * hem), 0, 255)
+            lay(thr["carpet"], carpet, 0.0)                         # from the hall's door, up the steps, to his feet
     img = ftex * a[..., None] + wtex * (1 - a[..., None])
     del ftex
     joint = fcrack * a + wcrack * (1.0 - a)
@@ -553,6 +735,8 @@ def paint(plan, mats, cfg):
     spec = np.clip((R.fbm(xx, yy, px * 0.17, 67) - 0.64) * 3.4, 0.0, 1.0)
     spec *= np.clip((R.fbm(xx, yy, px * 1.9, 68) - 0.36) * 2.2, 0.0, 1.0)
     spec = spec * a * 0.60
+    if smooth is not None:
+        spec *= 1.0 - smooth
     img = img * (1 - spec[..., None]) + rtex * spec[..., None]
     del spec
 
@@ -563,6 +747,41 @@ def paint(plan, mats, cfg):
     img = img * (1 - deepk[..., None]) + flat[None, None, :] * deepk[..., None]
     del deepk
 
+    # ── a polished floor answers the light: long soft reflections, brightest away from the walls ─
+    if gloss is not None and gloss.any():
+        ys_, xs_ = np.nonzero(gloss.max(axis=1) > 0)[0], np.nonzero(gloss.max(axis=0) > 0)[0]
+        ya, yb, xa, xb = int(ys_.min()), int(ys_.max()) + 1, int(xs_.min()), int(xs_.max()) + 1
+        X, Y = xx[ya:yb, xa:xb], yy[ya:yb, xa:xb]
+        sh1 = np.clip((R.fbm(X * 0.55 + Y * 0.45, Y * 1.5 - X * 0.25, px * 1.5, 89) - 0.56) / 0.16, 0.0, 1.0)
+        sh2 = np.clip((R.fbm(X * 0.3, Y * 2.4, px * 2.4, 93) - 0.50) / 0.30, 0.0, 1.0)
+        g = gloss[ya:yb, xa:xb] * a[ya:yb, xa:xb] * np.clip(light[ya:yb, xa:xb] * 1.25 - 0.25, 0.0, 1.0)
+        img[ya:yb, xa:xb] += (g * (sh1 * 26.0 + sh2 * 9.0))[..., None] * np.array([0.80, 0.84, 1.0], np.float32)[None, None, :]
+        del sh1, sh2, g, X, Y
+    if thr:                                                         # the dais stands two steps proud of the hall
+        dx0, dy0, dx1, dy1 = (v * px for v in thr["dais"])
+        sd_, sh_ = STEP_D * px, STEP_H * px
+        xa, xb = max(0, int(dx0 - sd_ - 0.3 * px)), min(W, int(dx1 + sd_ + 0.3 * px))
+        ya, yb = max(0, int(dy0)), min(H, int(dy1 + sd_ + 2 * sh_ + 0.4 * px))
+        X, Y = xx[ya:yb, xa:xb], yy[ya:yb, xa:xb]
+        reg = img[ya:yb, xa:xb]
+        fa = a[ya:yb, xa:xb]
+        # (left, right, the top edge of its riser): the dais itself, then the lower tread
+        for (l_, r_, e_) in ((dx0, dx1, dy1), (dx0 - sd_, dx1 + sd_, dy1 + sh_ + sd_)):
+            ins = (X >= l_) & (X <= r_)
+            riser = ins & (Y > e_) & (Y <= e_ + sh_)
+            reg *= (1.0 - 0.58 * riser * fa)[..., None]
+            arris = ins & (np.abs(Y - e_) <= 0.035 * px)
+            reg *= (1.0 + 0.70 * arris * fa)[..., None]
+            ft = np.clip(1.0 - (Y - (e_ + sh_)) / (0.16 * px), 0.0, 1.0) * (ins & (Y > e_ + sh_))
+            reg *= (1.0 - 0.26 * ft * fa)[..., None]               # the riser's shadow on what lies below
+            for sx_, sg_ in ((l_, -1.0), (r_, 1.0)):                # the side edges
+                sd = (X - sx_) * sg_
+                rows_ = (Y >= dy0) & (Y <= e_)
+                reg *= (1.0 - 0.42 * (rows_ & (sd > 0) & (sd <= 0.045 * px)) * fa)[..., None]
+                reg *= (1.0 + 0.30 * (rows_ & (sd <= 0) & (sd > -0.024 * px)) * fa)[..., None]
+        np.clip(reg, 0, 255, out=reg)
+        del X, Y, reg, fa
+
     # ── terrain beyond rock and floor ─────────────────────────────────────────────────────────
     block = np.zeros((H, W), np.float32)             # painted blockers, for the walk mask
     kinds = {}
@@ -571,7 +790,7 @@ def paint(plan, mats, cfg):
     present = set("".join(plan["rows"]))
 
     if "chasm" in kinds and (kinds["chasm"] & present):
-        hz = organic(hazard_cells(plan, kinds["chasm"], wrows), cyi, cxi, xx, yy, px, 211)
+        hz = organic(hazard_cells(plan, kinds["chasm"], wrows), cyi, cxi, xx, yy, px, 211, amp=float(cfg.get("chasm_amp", 0.40)))
         ca = np.clip((hz - 0.5) * 34.0 + 0.5, 0.0, 1.0) * a
         vfill = void_fill(cfg, mats, xx, yy, px)
         cliff = int(px * float(cfg.get("cliff", 1.30)))
@@ -794,6 +1013,10 @@ def paint(plan, mats, cfg):
             ov[body & (Y < cut)] = 1.0
             pillars.append({"x": cx_, "y": cy_, "box": [x0, y0, x1, min(y1, cut)], "by": by, "over": True})
 
+    solid_rects = []                                               # painted furniture nobody can stand in (cells)
+    if thr:
+        paint_throne(img, thr, px, light, wall_m)
+        solid_rects.append(thr["chair"])
     master = Image.fromarray(np.clip(img, 0, 255).astype(np.uint8)).convert("RGBA")
     # contact shadows of the live props
     for it in assets:
@@ -828,6 +1051,8 @@ def paint(plan, mats, cfg):
         return np.asarray(Image.fromarray(f, "F").resize((Ww, Hw), Image.Resampling.BOX))
     walk = (small(fw) >= 0.5) & (small(block) < 0.5)
     walk = walk.copy()
+    for (rx0, ry0, rx1, ry1) in solid_rects:
+        walk[max(0, int(ry0 * C.CELL)):int(np.ceil(ry1 * C.CELL)), max(0, int(rx0 * C.CELL)):int(np.ceil(rx1 * C.CELL))] = False
     for p in pillars:                                             # the base a hero cannot stand in
         ft = p.get("foot") or ("ellipse", p["x"] + 0.5, p["y"] + 0.60, 0.44, 0.27)
         if ft[0] == "rect":
