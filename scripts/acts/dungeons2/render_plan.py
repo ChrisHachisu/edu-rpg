@@ -398,6 +398,55 @@ def paint(plan, mats, cfg):
         dm = R.blur(deep.astype(np.float32)[cyi, cxi], px * 0.10)
         fw = np.minimum(fw, np.clip(1.0 - dm * 1.25, 0.0, 1.0)).astype(np.float32)
         del dm
+    # A declared rock character (a cracked wall) is wall whatever its thickness: Act 1's neck
+    # trimming opens a wall one cell thick, and here that would show the secret room.
+    # The same holds for any wall cell that touches two areas the plan keeps apart (no open cell
+    # joins them, not even corner to corner): losing it would join them.
+    rk = set(cfg.get("rock", ""))
+    thin = np.array([[c in rk for c in r] for r in plan["rows"]], bool)
+    opn_ = np.array([[c in C.open_chars(plan["dungeonId"]) for c in r] for r in plan["rows"]], bool)
+    pl_, pn_ = ndimage.label(opn_, np.ones((3, 3), bool))
+    if pn_ > 1:
+        hi = ndimage.maximum_filter(pl_, 3, mode="constant", cval=0)
+        lo = ndimage.minimum_filter(np.where(pl_ > 0, pl_, pn_ + 1), 3, mode="constant", cval=pn_ + 1)
+        thin |= np.array([[c == "#" for c in r] for r in wrows], bool) & (hi > 0) & (lo <= pn_) & (hi != lo)
+    if thin.any():
+        tm = R.blur(thin.astype(np.float32)[cyi, cxi], px * 0.16)
+        fw = np.minimum(fw, np.clip(1.0 - tm * 1.8, 0.0, 1.0)).astype(np.float32)
+        del tm
+    # A route cell keeps standable ground she can walk on to. Where the organic wall edge has
+    # swallowed one (measured as the exporter does: soles need 17/48 cell of clearance, and the
+    # ground must continue out of the cell), a lane 0.9 cell wide is cut from the route cell
+    # before it, through its middle, to the one after. Every other route cell is left alone.
+    route = [tuple(c) for c in plan.get("route") or []]
+    need, rr, wn = 0.37 * px, 0.45 * px, int(1.6 * px)
+    for i_, (rx_, ry_) in enumerate(route):
+        if not (0 <= rx_ < cw and 0 <= ry_ < ch) or wrows[ry_][rx_] == "#":
+            continue
+        cxp, cyp = (rx_ + 0.5) * px, (ry_ + 0.5) * px
+        x0, x1 = max(0, int(cxp) - wn), min(W, int(cxp) + wn + 1)
+        y0, y1 = max(0, int(cyp) - wn), min(H, int(cyp) + wn + 1)
+        sub = fw[y0:y1, x0:x1]
+        X_, Y_ = xx[y0:y1, x0:x1], yy[y0:y1, x0:x1]
+        box = (np.abs(X_ - cxp) < 0.5 * px) & (np.abs(Y_ - cyp) < 0.5 * px)
+        st, _n = ndimage.label(ndimage.distance_transform_edt(sub >= 0.5) >= need)
+        ids = np.unique(st[box]); ids = ids[ids > 0]
+        if any((st[~box] == k).any() for k in ids):
+            continue
+        dd = np.full(sub.shape, 1e9, np.float32)
+        for j_ in (i_ - 1, i_ + 1):
+            if 0 <= j_ < len(route) and abs(route[j_][0] - rx_) + abs(route[j_][1] - ry_) == 1:
+                ex, ey = (route[j_][0] + 0.5) * px, (route[j_][1] + 0.5) * px
+                t = np.clip(((X_ - cxp) * (ex - cxp) + (Y_ - cyp) * (ey - cyp)) / (px * px), 0.0, 1.0)
+                dd = np.minimum(dd, np.sqrt((X_ - cxp - t * (ex - cxp)) ** 2 + (Y_ - cyp - t * (ey - cyp)) ** 2))
+        dd = np.minimum(dd, np.sqrt((X_ - cxp) ** 2 + (Y_ - cyp) ** 2))
+        sub[...] = np.maximum(sub, np.clip(0.5 + (rr - dd) / (0.12 * px), 0.0, 1.0))
+        rl, rn = ndimage.label(sub < 0.5)                         # crumbs the lane cut off: gone
+        edge = set(np.unique(np.concatenate([rl[0], rl[-1], rl[:, 0], rl[:, -1]])).tolist())
+        for k in range(1, rn + 1):
+            if k not in edge and (rl == k).sum() < 0.25 * px * px:
+                sub[rl == k] = 1.0
+        print(f"  route cell ({rx_ - int(plan.get('_pad', 0))},{ry_ - int(plan.get('_pad', 0))}): the wall had swallowed it; a lane is cut through")
     a = np.clip((fw - 0.5) * 34.0 + 0.5, 0.0, 1.0)
 
     tgt = cfg["target"]
@@ -897,6 +946,7 @@ def pad_plan(plan, n):
     p["assets"] = [dict(a, x=a["x"] + n, y=a["y"] + n) for a in plan["assets"]]
     p["zones"] = [dict(z, rect=[z["rect"][0] + n, z["rect"][1] + n, z["rect"][2] + n, z["rect"][3] + n]) if "rect" in z else z
                   for z in plan.get("zones", [])]
+    p["route"] = [[c[0] + n, c[1] + n] for c in plan.get("route") or []]
     return p
 
 
@@ -922,6 +972,7 @@ def crop_plan(plan, box):
                    if x0 <= a["x"] < x1 and y0 <= a["y"] < y1 and a["kind"] != "mouth"]
     p["zones"] = [dict(z, rect=[z["rect"][0] - x0, z["rect"][1] - y0, z["rect"][2] - x0, z["rect"][3] - y0])
                   for z in plan.get("zones", []) if "rect" in z]
+    p["route"] = [[c[0] - x0, c[1] - y0] for c in plan.get("route") or [] if x0 <= c[0] < x1 and y0 <= c[1] < y1]
     return p
 
 
