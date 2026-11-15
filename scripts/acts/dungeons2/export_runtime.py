@@ -129,6 +129,22 @@ class Floor:
                 par[find(c)] = find(comps[0])
             self.links.append((what, comps))
         self.cls = np.array([find(i) for i in range(self.ncomp + 1)], np.int32)
+        # breaches: ground of two areas the plan keeps apart (no open cell joins them, not even
+        # corner to corner) lying in ONE standable area: the picture lost the wall between them
+        pl, pn = ndimage.label(self.walk, np.ones((3, 3), bool))
+        self.breaches = []
+        if pn > 1:
+            ys, xs = np.nonzero(self.stand)
+            pc = pl[ys // C.CELL, xs // C.CELL]
+            k = pc > 0
+            pairs = np.unique(self.lab[ys[k], xs[k]].astype(np.int64) * (pn + 1) + pc[k])
+            seen = {}
+            for v in pairs.tolist():
+                seen.setdefault(v // (pn + 1), []).append(v % (pn + 1))
+            for comp, pcs in seen.items():
+                if len(pcs) > 1:
+                    where = [tuple(int(t) for t in np.argwhere(pl == c)[0][::-1]) for c in pcs[:4]]
+                    self.breaches.append(where)
         self.reach = self.direct = None
 
     def start_from(self, comp):
@@ -243,6 +259,8 @@ def build(fid, problems):
             below = (c[0], c[1] + 1)
             if not F.ok(below[0] * C.CELL + 24, below[1] * C.CELL + 24):
                 warn.append(f"crystal {c}: the cell south of it is not standable (a warp there is nudged by the rescue)")
+    for where in F.breaches:
+        problems.append(f"{fid}: the picture joins areas the plan keeps apart (a wall was lost): areas at cells {where}")
     # leaks and lost ground, cell by cell
     cells = np.zeros((F.H, F.W), bool)
     sy, sx = np.nonzero(F.reach)
