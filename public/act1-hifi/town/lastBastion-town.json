@@ -1,0 +1,191 @@
+{
+ "_comment": "lastBastion round-3 runtime config (Codex try 2); collision hand-traced per object, no foreground layer.",
+ "id": "lastBastion",
+ "nameKey": "map.lastBastion",
+ "screen": "town/lastBastion-screen.png",
+ "walkable": "town/lastBastion-walkable.json",
+ "cells": 65,
+ "artPxPerCell": 30,
+ "worldPxPerCell": 16,
+ "startCell": [
+  32.5,
+  58.0
+ ],
+ "savePoint": [
+  34.53,
+  42.66
+ ],
+ "exit": {
+  "cell": [
+   32.5,
+   60.0
+  ],
+  "targetMapId": "overworld",
+  "toX": 118,
+  "toY": 37,
+  "axis": "south",
+  "note": "toX/toY = overworld exit cell from exits.json (tools/apply_exits.py), not maps.ts."
+ },
+ "shopId": "lastBastion",
+ "shopCounter": [
+  18.0,
+  36.2
+ ],
+ "npcs": [
+  {
+   "id": "healer",
+   "dialogueKey": "npc.healer",
+   "nameKey": "npc.healer.name",
+   "sheet": "town/npc/lastBastion-healer-4x3-64.png",
+   "cell": [
+    46.72,
+    38.59
+   ],
+   "mapsTs": [
+    11,
+    9
+   ],
+   "name": "Healer",
+   "text": "Welcome to the clinic! I can heal your wounds."
+  },
+  {
+   "id": "veteran",
+   "dialogueKey": "npc.veteran",
+   "nameKey": "npc.veteran.name",
+   "sheet": "town/npc/lastBastion-veteran-4x3-64.png",
+   "cell": [
+    34.53,
+    14.22
+   ],
+   "mapsTs": [
+    8,
+    3
+   ],
+   "name": "Veteran",
+   "text": "Your grandmother used Excalibur and the Aegis of Dawn to seal Malachar. Find them before facing him! Excalibur is in a sanctum to the far west."
+  },
+  {
+   "id": "priestess",
+   "dialogueKey": "npc.priestess",
+   "nameKey": "npc.priestess.name",
+   "sheet": "town/npc/lastBastion-priestess-4x3-64.png",
+   "cell": [
+    26.41,
+    22.34
+   ],
+   "mapsTs": [
+    6,
+    5
+   ],
+   "name": "Priestess",
+   "text": "The Aegis of Dawn is in the Celestial Vault to the far east. But you need Excalibur first to break its seal!"
+  },
+  {
+   "id": "shopkeeper",
+   "dialogueKey": "npc.shopkeeper",
+   "nameKey": "npc.shopkeeper.name",
+   "sheet": "town/npc/lastBastion-shopkeeper-4x3-64.png",
+   "cell": [
+    18.0,
+    33.4
+   ],
+   "_note": "fixed: behind the painted counter, deeper than the talk band; the hero is served at shopCounter on the ground at the counter front",
+   "fixed": true,
+   "name": "Shopkeeper",
+   "text": "Welcome to my shop! Take a look around."
+  }
+ ],
+ "doors": [
+  {
+   "id": "healer",
+   "cell": [
+    43.7,
+    36.3
+   ]
+  },
+  {
+   "id": "shop",
+   "cell": [
+    18.0,
+    36.2
+   ]
+  }
+ ],
+ "_spots": [
+  {
+   "id": "healer",
+   "mapsTs": [
+    3,
+    12
+   ],
+   "new": [
+    11,
+    9
+   ],
+   "moved": true,
+   "cell": [
+    46.72,
+    38.59
+   ],
+   "onGround": true
+  },
+  {
+   "id": "veteran",
+   "mapsTs": [
+    3,
+    5
+   ],
+   "new": [
+    8,
+    3
+   ],
+   "moved": true,
+   "cell": [
+    34.53,
+    14.22
+   ],
+   "onGround": true
+  },
+  {
+   "id": "priestess",
+   "mapsTs": [
+    12,
+    5
+   ],
+   "new": [
+    6,
+    5
+   ],
+   "moved": true,
+   "cell": [
+    26.41,
+    22.34
+   ],
+   "onGround": true
+  },
+  {
+   "id": "savePoint",
+   "mapsTs": [
+    8,
+    10
+   ],
+   "new": [
+    8,
+    10
+   ],
+   "moved": false,
+   "cell": [
+    34.53,
+    42.66
+   ],
+   "onGround": true
+  }
+ ],
+ "_paintedOut": [],
+ "_validator": "VALID",
+ "_onlyExit": true,
+ "_qa": {
+  "blockedLooksGroundPx": 15228,
+  "walkableLooksObjectPx": 52416
+ }
+}

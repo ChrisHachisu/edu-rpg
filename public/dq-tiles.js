@@ -1506,6 +1506,16 @@
      this. The DENSITY GUARD is deliberately NOT retryable: an unexpected density is a decision to
      leave the art off, not a failure, and re-fetching cannot change it. */
   var A1A_REQ_TRIES=6, A1A_REQ_BACKOFF=1500, A1A_REQ_TIMEOUT=5000;
+  // SLOW IS NOT BROKEN (build 97, a simulator on a Mac at load average 300-430: the failure screen,
+  // then ground that stayed black for good). Every loader below gives a request a wall-clock budget
+  // and counts each miss towards "exhausted: quiet". That is right for a file that is not there and
+  // wrong for a device that is merely starved: six timeouts in a row is all it takes there, and
+  // then nothing asks again until the app is relaunched. So a TIMEOUT no longer counts. The same
+  // file is asked for again at once with the budget doubled (x16 at most, never over two minutes),
+  // for as long as it takes. An HTTP error, a decode error or a wrong file still counts, exactly
+  // as before, so a genuinely absent file still goes quiet after its tries.
+  function a1aBudget(base,slow){ return Math.min(120000,base*Math.pow(2,Math.min(slow|0,4))); }
+  function a1aReqSlow(){ A1A.req=false; A1A.reqSlow=(A1A.reqSlow|0)+1; A1A.reqNext=Date.now()+250; }
   function a1aReqFailed(){
     A1A.req=false;                                               // let the next tick re-issue
     A1A.reqFail=(A1A.reqFail|0)+1;
@@ -1567,6 +1577,11 @@
     f.status=f.fail>=A1A_FOREST_TRIES?'error':'waiting';
     f.next=Date.now()+A1A_FOREST_BACKOFF*f.fail; A1A.dirty=true;
   }
+  function a1aForestSlow(){                                      // a timeout: ask again with a longer budget, never 'error'
+    var f=A1A_FOREST;
+    if(f.timer){clearTimeout(f.timer);f.timer=0;}
+    f.request=null; f.bits=null; f.slow=(f.slow|0)+1; f.status='waiting'; f.next=Date.now()+250; A1A.dirty=true;
+  }
   function a1aForestHash(buf){
     if(!window.crypto||!window.crypto.subtle) return Promise.reject(new Error('sha256-unavailable'));
     return window.crypto.subtle.digest('SHA-256',buf).then(function(d){
@@ -1588,7 +1603,7 @@
     var f=A1A_FOREST,s=f.spec;
     if(!f.mode||!s||f.status==='loading'||f.status==='ready'||f.status==='error'||Date.now()<f.next) return;
     var xhr=new XMLHttpRequest(); f.request=xhr; f.status='loading';
-    xhr.open('GET','act1-hifi/'+s.artifact,true); xhr.responseType='arraybuffer'; xhr.timeout=A1A_FOREST_TIMEOUT;
+    xhr.open('GET','act1-hifi/'+s.artifact,true); xhr.responseType='arraybuffer'; xhr.timeout=a1aBudget(A1A_FOREST_TIMEOUT,f.slow);
     xhr.onload=function(){
       if(f.request!==xhr) return;
       if(xhr.status&&(xhr.status<200||xhr.status>=300)){a1aForestFail('collision-http');return;}
@@ -1601,7 +1616,8 @@
         f.bits=bits; f.request=null; f.status='ready'; f.fail=0; f.error=''; A1A.dirty=true;
       }).catch(function(e){ if(f.request===xhr) a1aForestFail(String(e&&e.message||'collision-invalid')); });
     };
-    xhr.onerror=xhr.ontimeout=function(){if(f.request===xhr)a1aForestFail('collision-network');};
+    xhr.onerror=function(){if(f.request===xhr)a1aForestFail('collision-network');};
+    xhr.ontimeout=function(){if(f.request===xhr)a1aForestSlow();};
     try{xhr.send();}catch(e){a1aForestFail('collision-request');}
   }
   function a1aForestRetry(){
@@ -1619,6 +1635,12 @@
     up.request=null; up.image=null; up.fail=(up.fail|0)+1;
     up.status=up.fail>=A1A_UNDERPAINT_TRIES?'error':'waiting';
     up.next=Date.now()+A1A_UNDERPAINT_BACKOFF*up.fail; A1A.dirty=true;
+    return true;
+  }
+  function a1aUnderpaintSlow(up,im){                              // a timeout: ask again with a longer budget, never 'error'
+    if(up.request!==im) return false;
+    if(up.requestTimer){ clearTimeout(up.requestTimer); up.requestTimer=null; }
+    up.request=null; up.image=null; up.slow=(up.slow|0)+1; up.status='waiting'; up.next=Date.now()+250; A1A.dirty=true;
     return true;
   }
   function a1aUnderpaintRequest(){
@@ -1643,9 +1665,9 @@
       // Invalidate before aborting: WebKit may still deliver an event for a request
       // whose source was cleared, and that stale callback must not affect a later retry.
       im.onload=null; im.onerror=null;
-      if(!a1aUnderpaintFail(up,im)) return;
+      if(!a1aUnderpaintSlow(up,im)) return;
       try{ im.src=''; }catch(e){}
-    },A1A_UNDERPAINT_TIMEOUT);
+    },a1aBudget(A1A_UNDERPAINT_TIMEOUT,up.slow));
     try{ im.src='act1-hifi/'+up.spec.src; }
     catch(e){ a1aUnderpaintFail(up,im); }
   }
@@ -1662,9 +1684,9 @@
     im.onerror=function(){if(f.request!==im)return;f.request=null;f.fail=(f.fail|0)+1;
       f.status=f.fail>=6?'error':'waiting';f.next=Date.now()+1200*f.fail;A1A.dirty=true;};
     f.timer=setTimeout(function(){
-      if(f.request!==im)return;im.onload=null;im.onerror=null;f.request=null;f.fail=(f.fail|0)+1;
-      f.status=f.fail>=6?'error':'waiting';f.next=Date.now()+1200*f.fail;A1A.dirty=true;try{im.src='';}catch(e){}
-    },15000);
+      if(f.request!==im)return;im.onload=null;im.onerror=null;f.request=null;f.slow=(f.slow|0)+1;
+      f.status='waiting';f.next=Date.now()+250;A1A.dirty=true;try{im.src='';}catch(e){}   // slow, not broken: see a1aBudget
+    },a1aBudget(15000,f.slow));
     try{im.src='act1-hifi/'+s.src;}catch(e){im.onerror();}
   }
   // V8 movement is authoritative only when the collision pack, matching visible fallback and
@@ -1985,7 +2007,7 @@
     if((A1A.reqFail|0)>=A1A_REQ_TRIES) return;                   // exhausted: quiet, as a 404 should be
     if(Date.now()<(A1A.reqNext||0)) return;                       // backing off
     A1A.req=true;
-    var r=new XMLHttpRequest(); r.open('GET','act1-hifi/manifest.json',true); r.timeout=A1A_REQ_TIMEOUT;
+    var r=new XMLHttpRequest(); r.open('GET','act1-hifi/manifest.json',true); r.timeout=a1aBudget(A1A_REQ_TIMEOUT,A1A.reqSlow);
     r.onload=function(){
       if(r.status&&(r.status<200||r.status>=300)){ a1aReqFailed(); return; }
       try{
@@ -2027,7 +2049,7 @@
       }catch(e){ a1aReqFailed(); }
     };
     r.onerror=function(){ a1aReqFailed(); };
-    r.ontimeout=function(){ a1aReqFailed(); };
+    r.ontimeout=function(){ a1aReqSlow(); };                     // slow, not broken: see a1aBudget
     try{ r.send(); }catch(e){ a1aReqFailed(); }
   }
   // Separate flag from the manifest's: a missing landmark table must not keep the terrain off, and a
@@ -2039,7 +2061,7 @@
     A1A.lmReq=true;
     var fail=function(){ A1A.lmReq=false; A1A.lmFail=(A1A.lmFail|0)+1;
                          A1A.lmNext=Date.now()+A1A_REQ_BACKOFF*A1A.lmFail; };
-    var l=new XMLHttpRequest(); l.open('GET','act1-hifi/landmarks/landmarks.json',true); l.timeout=A1A_REQ_TIMEOUT;
+    var l=new XMLHttpRequest(); l.open('GET','act1-hifi/landmarks/landmarks.json',true); l.timeout=a1aBudget(A1A_REQ_TIMEOUT,A1A.lmSlow);
     l.onload=function(){
       if(l.status&&(l.status<200||l.status>=300)){ fail(); return; }
       try{ var d=JSON.parse(l.responseText);
@@ -2048,7 +2070,7 @@
       }catch(e){ fail(); }
     };
     l.onerror=function(){ fail(); };
-    l.ontimeout=function(){ fail(); };
+    l.ontimeout=function(){ A1A.lmReq=false; A1A.lmSlow=(A1A.lmSlow|0)+1; A1A.lmNext=Date.now()+250; };   // slow, not broken
     try{ l.send(); }catch(e){ fail(); }
   }
   // Where the hero will be standing the first time an overworld window is built, in overworld cells.
@@ -2193,7 +2215,19 @@
   function a1aLayerFailed(rec,k){
     var ld=a1aLd(rec); delete ld.pend[k];
     ld.fail[k]=(ld.fail[k]|0)+1;
-    ld.next[k]=Date.now()+A1A_LOAD_BACKOFF*ld.fail[k];         // linear back-off, not a tight spin
+    // linear back-off, not a tight spin. Once its tries are spent the layer is not abandoned for the
+    // rest of this residency any more: it is asked for every A1A_LOAD_REARM, which a missing file
+    // can not turn into a spin and which lets a chunk that failed under pressure come back.
+    ld.next[k]=Date.now()+(ld.fail[k]>=A1A_LOAD_TRIES?A1A_LOAD_REARM:A1A_LOAD_BACKOFF*ld.fail[k]);
+  }
+  var A1A_LOAD_REARM=30000;
+  function a1aLayerSlow(rec,k){                                  // the budget ran out: slow, not broken (a1aBudget)
+    var ld=a1aLd(rec); delete ld.pend[k];
+    (ld.slow||(ld.slow={}))[k]=((ld.slow&&ld.slow[k])|0)+1;
+    ld.next[k]=Date.now()+250;
+    // The device is slow, not this one file: chunks asked for from now on start with the longer
+    // budget too, instead of each spending 15 s finding that out. Comes back down as loads land fast.
+    A1A.loadSlow=Math.max(A1A.loadSlow|0,Math.min(4,ld.slow[k]));
   }
   var A1A_LOAD_TIMEOUT=15000; // total fetch/decode/fallback budget; a hung load must release its pending flag
   function a1aLoadLayerImg(c,rec,k,job){
@@ -2206,7 +2240,8 @@
   function a1aLoadLayer(c,rec,k){
     var ld=a1aLd(rec), jobs=ld.jobs||(ld.jobs={});
     if(ld.pend[k]) return;
-    var job={timer:0,image:null,controller:null,deadline:Date.now()+A1A_LOAD_TIMEOUT}; jobs[k]=job;
+    var budget=a1aBudget(A1A_LOAD_TIMEOUT,Math.max((ld.slow&&ld.slow[k])|0,A1A.loadSlow|0));
+    var job={timer:0,image:null,controller:null,t0:Date.now(),deadline:Date.now()+budget}; jobs[k]=job;
     ld.pend[k]=true;
     job.active=function(){ return jobs[k]===job&&A1A.chunks[c.id]===rec; };
     function finish(cancel){
@@ -2227,9 +2262,13 @@
         if(src&&typeof src.close==='function') try{ src.close(); }catch(e){}
         return;
       }
+      if((A1A.loadSlow|0)>0&&Date.now()-job.t0<A1A_LOAD_TIMEOUT/3) A1A.loadSlow--;
       finish(false); a1aLayerLanded(c,rec,k,src);
     };
-    job.timer=setTimeout(job.failed,A1A_LOAD_TIMEOUT);
+    job.timer=setTimeout(function(){
+      var current=job.active(); finish(true);
+      if(current) a1aLayerSlow(rec,k);
+    },budget);
     if(!(A1A_SPRITES&&window.createImageBitmap&&window.fetch)){ a1aLoadLayerImg(c,rec,k,job); return; }
     try{
       if(typeof AbortController!=='undefined') job.controller=new AbortController();
@@ -2257,8 +2296,7 @@
     for(var i=0;i<A1A_LAYERS.length;i++){ var k=A1A_LAYERS[i];
       if(!a1aLayerEnabled(k)) continue;
       if(!c[k]||rec[k]||ld.pend[k]) continue;                   // absent from the manifest, landed, or pending
-      if((ld.fail[k]|0)>=A1A_LOAD_TRIES) continue;              // exhausted: stay quiet
-      if(now<(ld.next[k]||0)) continue;                          // still backing off
+      if(now<(ld.next[k]||0)) continue;                          // still backing off (exhausted: A1A_LOAD_REARM apart)
       A1A.reloads=(A1A.reloads|0)+1;                            // surfaced in dq.cost() for the panel
       a1aLoadLayer(c,rec,k);
     }
@@ -2845,6 +2883,12 @@
       finish(false);
       try{ pim.src=''; }catch(e){}                           // abandon a timed-out request after detaching callbacks
     }
+    function slow(){                                         // the budget ran out: slow, not broken (a1aBudget)
+      if(A1A_PH.load!==job) return;
+      clearTimeout(job.timer); pim.onload=null; pim.onerror=null;
+      A1A_PH.load=null; A1A_PH.req=false; A1A_PH.slow=(A1A_PH.slow|0)+1; A1A_PH.next=Date.now()+250;
+      try{ pim.src=''; }catch(e){}
+    }
     pim.onload=function(){
       if(A1A_PH.load!==job) return;                          // an expired attempt cannot install late art
       try{
@@ -2859,7 +2903,7 @@
       }
     };
     pim.onerror=fail;
-    job.timer=setTimeout(fail,A1A_PH_TIMEOUT);
+    job.timer=setTimeout(slow,a1aBudget(A1A_PH_TIMEOUT,A1A_PH.slow));
     try{ pim.src='ui-map/overworld-relief.png'; }catch(e){ fail(); }
   }
   function a1aPlaceholderTick(scene,vis){
@@ -3671,6 +3715,14 @@
          &&(wv.x+wv.width)/OW_TILE+_g<=_pb[2]+1&&(wv.y+wv.height)/OW_TILE+_g<=_pb[3]+1) fullPlateWindow=true;
       else key+='_edge';
     }
+    // ACTS 2-5: the same shortcut when the camera view (plus the 3-cell guard) lies wholly on cells
+    // that Act 1's plate, an act's installed art or the open sea owns. Nothing of the window canvas
+    // can be seen there, and outside Act 1 it used to be re-splatted and re-uploaded on every step.
+    var actsHv=window.__QOK_ACTS__;
+    if(!fullPlateWindow&&actsHv&&a1aPlateOwns(scene)&&a1aSpriteMode()
+       &&actsHv.viewCovered(wv.x/OW_TILE-3,wv.y/OW_TILE-3,(wv.x+wv.width)/OW_TILE+3,(wv.y+wv.height)/OW_TILE+3)){
+      fullPlateWindow=true; key+='_acts';
+    }
     var legacyPlateClip=fullPlateWindow?null:a1aLegacyPlateClip(scene,X0,Y0,winW,winH);
     var r2TextureKey=legacyPlateClip?a1aWaterR2Texture(scene):null;
     var useR2Sea=!!(r2TextureKey&&seaState&&seaState.scene===scene&&seaState.key===r2TextureKey
@@ -3745,10 +3797,15 @@
     // a1aPlateCell, NOT a1aArtAt: residency is not the question, the owner's bounds are. Asking
     // whether the chunk is decoded RIGHT NOW put procedural pines and mountains over his art at
     // depth 5 every time the LRU evicted one — a second way the same load thrash became visible.
-    for (var ty=y0;ty<=y1;ty++) for (var tx=x0;tx<=x1;tx++){ if(a1aPlateCell(tx,ty)) continue;
+    // ACTS 2-5 (acts-hifi/acts-runtime.js): an act with installed art claims its cells the same
+    // way. window.__QOK_ACTS__ is undefined when that runtime is switched off, and every use of it
+    // in this file is guarded like this one, so the kill switch restores this file's own behaviour.
+    var actsH=window.__QOK_ACTS__;
+    for (var ty=y0;ty<=y1;ty++) for (var tx=x0;tx<=x1;tx++){ if(a1aPlateCell(tx,ty)||(actsH&&actsH.artCell(tx,ty))) continue;
       var co=cellObjects(map,tx,ty); for(var i=0;i<co.length;i++) objs.push(co[i]); }
     var fl=buildFlowers(map,x0,x1,y0,y1);
-    for(var f=0;f<fl.length;f++){ if(a1aPlateCell(Math.floor(fl[f].x/TILE),Math.floor(fl[f].y/TILE))) continue; objs.push(fl[f]); }
+    for(var f=0;f<fl.length;f++){ var flx=Math.floor(fl[f].x/TILE), fly=Math.floor(fl[f].y/TILE);
+      if(a1aPlateCell(flx,fly)||(actsH&&actsH.artCell(flx,fly))) continue; objs.push(fl[f]); }
     objs.sort(function(a,b){ return a.y-b.y; });
     for (var k=0;k<objs.length;k++){ var o=objs[k];
       if (o.kind==='pine'){
@@ -3911,6 +3968,7 @@
       if(window.__OW_DBG__)window.__OW_DBG__.land++;
       var es=tg[ty]&&tg[ty][tx]; if(es&&es.alpha!==0)es.setAlpha(0);                 // hide engine landmark (alpha, not visible -> survives per-frame culling)
       if(a1aInBounds(tx,ty)) continue;                                                // Act 1 plate: the hi-fi sprite below owns this cell, not the old flat prop
+      if(window.__QOK_ACTS__&&window.__QOK_ACTS__.artCell(tx,ty)) continue;           // Acts 2-5 art: that act's own landmark sprite or carved mouth owns it
       var tk=ensureOwPropTex(scene,name); if(!tk)continue;                            // PNG still loading -> next tick
       if(window.__OW_DBG__)window.__OW_DBG__.tex++;
       var key=tx+'_'+ty, img=owPropImage(scene,key,tk,6);
@@ -4501,14 +4559,426 @@
   var A1D_MAPS={coastalReef:1,sunkenCellar:1,whisperingWoodsCave:1,mistyGrotto:1};
   // generated asset kind -> engine tile id. Blocking-by-design in the engine's dungeon
   // branch: 4 chest, 7 boss, 14 save, 18 sign/plaque. Walkable: 0 floor, 6 up/exit, 9 down.
-  var A1D_TILE={mouth:6,stairsUp:6,stairsDown:9,chest:4,boss:7,save:14,sign:18,torch:0};
+  var A1D_TILE={mouth:6,stairsUp:6,stairsDown:9,chest:4,boss:7,save:14,sign:18,torch:0,mouth2:10};   // mouth2: authored Acts 2-5 only
   var A1D_BLOCK={1:1,4:1,5:1,7:1,14:1,18:1,23:1,28:1};                      // mirrors canMove()'s dungeon branch
   var a1dFloors=null, a1dAsked=false, a1dPatched=false, a1dKey=null, a1dChanged=false;
   var a1dApplied=null, a1dBlitted=null;
+  /* ================================================================================
+     AUTHORED ACTS 2-5 DUNGEONS (track E1, docs/plans/2026-11-15-authored-dungeons.md)
+
+     The owner-approved floor plans replace an Acts 2-5 dungeon's generated floors by JOINING the
+     Act 1 path above rather than copying it: a dungeon listed in `acts-dungeons/manifest.json`
+     gets A1D_MAPS[id]=2 and its floors are merged into a1dFloors, so the mapData swap, the walk
+     mask, the continuous mover, the prompts, the boss sprite and the crystal menu are the same
+     code Act 1 runs. `A1D_MAPS[id]===1` is still "an Act 1 dungeon" wherever a rule is Act 1's
+     alone (the wall-embedded entrance crystal, the baked mouth arch, the three-floor limit).
+
+     What an authored floor adds:
+       * art and mask under acts-dungeons/<id>/ (<floor>-material.webp, -walk.png, -over.webp);
+         props are LIVE sprites on the `material` layer, stairs and mouths are painted;
+       * arrivals from the floor's own `land` table (mouth, second mouth, either staircase), each
+         checked against the mask when it was baked;
+       * a mechanic module per dungeon (window.__QOK_DNG2__.register(id, hooks)) fed the plan's
+         `mechanic` block: load / unload / tick / input / free / bump / step / interact.
+     A dungeon that is not in the manifest, or is `enabled:false`, or any floor the manifest
+     does not carry, keeps the bundle's generated floor: the game stays finishable mid-migration.
+     Kill switch: localStorage['qok-dungeons2']='0' or ?dungeons2=0 (nothing is fetched).
+     ================================================================================ */
+  var A2D=null, a2dAsked=false, a2dMods={}, a2dCtx=null, a2dVia=null;
+  var A2D_OFF=(function(){ try{ return localStorage.getItem('qok-dungeons2')==='0' || /[?&]dungeons2=0/.test(location.search); }catch(e){ return false; } })();
+  var A2D_SMOKE=(function(){ try{ return localStorage.getItem('qok-dungeons2-smoke')==='1' || /[?&]d2smoke=1/.test(location.search); }catch(e){ return false; } })();
+  var A2D_ASC={save:1.3,chest:1.12,chestOpen:1.12,sign:1.1};               // live prop size, in authored cells (as the Act 1 bake seats them)
+  function a2dIs(id){ return A1D_MAPS[id]===2; }
+  function a2dUrl(key,name,ext){
+    var id=String(key).replace(/-f\d+$/,'');
+    return a2dIs(id) ? 'acts-dungeons/'+id+'/'+key+'-'+name+'.'+ext : null;
+  }
+  function a2dMerge(force){
+    if(!A2D || (A2D.merged&&!force)) return;
+    var ds=A2D.dungeons||{}, fs=A2D.floors||{}, id, k, d;
+    if(!a1dFloors) a1dFloors={};
+    for(id in ds){ d=ds[id];
+      if(!d || A1D_MAPS[id]===1 || (d.enabled===false && !A2D_SMOKE)) continue;   // never an Act 1 dungeon; a smoke entry needs the debug flag
+      A1D_MAPS[id]=2;
+      if(d.bossId && typeof A1D_BOSS_ID!=='undefined') A1D_BOSS_ID[id]=d.bossId; }
+    for(k in fs){ if(a2dIs(k.replace(/-f\d+$/,''))) a1dFloors[k]=fs[k]; }
+    A2D.merged=true;
+    try{ var sv=JSON.parse(localStorage.getItem('edu-rpg-save')||'null'), p=sv&&sv.player&&sv.player.position;   // same early ask as Act 1's, below
+         if(p&&a2dIs(p.mapId)){ var pk=p.mapId+'-f'+(p.floor||1); a1dArtFor(pk); a1mMaskFor(pk); } }catch(e){}
+  }
+  function a2dFetch(){
+    if(a2dAsked||A2D_OFF) return; a2dAsked=true;
+    try{ var r=new XMLHttpRequest(); r.open('GET','acts-dungeons/manifest.json',true);
+      r.onload=function(){ try{ if(r.status>=200&&r.status<300){ var m=JSON.parse(r.responseText);
+        if(m&&m.schema==='qok-dungeons2-v1'){ A2D=m; a2dMerge(true);
+          (m.modules||[]).forEach(function(u){ if(typeof u!=='string'||/^[a-z]+:|^\/\//i.test(u)) return;   // same-origin files only
+            var sc=document.createElement('script'); sc.src=u; sc.async=true; document.head.appendChild(sc); }); } } }catch(e){} };
+      r.onerror=function(){ setTimeout(function(){ a2dAsked=false; },3000); };
+      r.send();
+    }catch(e){}
+  }
+  // ---- arrivals -----------------------------------------------------------------------------
+  // The engine places the hero AFTER loadMap returns, from a scan of the map for tile 6/9/10/12.
+  // On an authored floor that scan can name the wrong object (a second mouth, a dead boss's exit,
+  // the cell above a staircase that is rock), so the way she came in is recorded here and the
+  // floor's own baked landing is applied on the next dungeon tick, under the transition's black.
+  function a2dWrapTransition(scene){
+    if(!scene || scene.__a2dPT || typeof scene.performTransition!=='function') return;
+    var orig=scene.performTransition; scene.__a2dPT=true;
+    scene.performTransition=function(x){
+      try{ a2dVia={to:x&&x.targetMap, from:this.currentMapId, floor:(x&&x.toFloor)||1, t:Date.now()}; }catch(e){}
+      return orig.apply(this,arguments);
+    };
+  }
+  function a2dArrive(scene,keyNow){
+    var L=scene.__a2dLanding; if(!L) return false;
+    if(L.key!==keyNow){ scene.__a2dLanding=null; return false; }
+    if(!scene.hero) return false;                                           // createHero has not run yet: next tick
+    scene.__a2dLanding=null;
+    var s=L.spot;
+    scene.heroTileX=s.x; scene.heroTileY=s.y; scene.heroDir=s.dir||0;
+    try{ scene.hero.x=(s.px!==undefined)?s.px:s.x*TILE+TILE/2; scene.hero.y=(s.py!==undefined)?s.py:s.y*TILE+TILE/2;
+         if(typeof scene.hero.setFrame==='function') scene.hero.setFrame((s.dir||0)*3);
+         if(typeof scene.updatePosition==='function') scene.updatePosition();
+         if(typeof scene.updateCamera==='function') scene.updateCamera();
+         if(scene.fogEnabled&&typeof scene.updateFogVisibility==='function') scene.updateFogVisibility();
+    }catch(e){ if(window.__DQ_DEBUG__) console.log('a2d arrive '+e); }
+    scene.__a1dFreshEntryKey=null; a1dRescueKey=keyNow; a1dArriving=false;
+    scene.__a1dEntryWaiting=a1mPending(scene);                              // hold only while the mask is still on its way
+    scene.__a1dEntryWaitFrames=0; scene.__a1dEntryError=null; scene.__a1dEntryDegraded=false;
+    return true;
+  }
+  // A staircase or mouth of an authored floor: the cell whose transition query the engine's
+  // one-step arrival cooldown may have eaten (she lands right beside it).
+  function a2dIsWayCell(scene,tx,ty){
+    if(!a2dIs(scene.currentMapId)) return false;
+    var r=scene.mapData&&scene.mapData[ty], t=r?r[tx]:undefined;
+    return t===6||t===9||t===10||t===12;
+  }
+  // The boss falls and its cell becomes the way out (tile 10) while her centre is already inside
+  // it: she fought it from the cell below, and the mover only asks for a transition when her
+  // centre ENTERS a cell. So a way cell that opened under her is asked again once she lets go of
+  // the stick (or 0.8 s on the field have passed) and then pushes toward it.
+  var a2dUnder={k:null,t:0,was:null,open:false,armed:false,since:0};
+  function a2dOpenedUnder(scene,inp,sx,sy){
+    var tx=scene.heroTileX, ty=scene.heroTileY, r=scene.mapData&&scene.mapData[ty], t=r?r[tx]:undefined;
+    var k=scene.currentMapId+'-'+(scene.currentFloor||1)+'-'+tx+'-'+ty, u=a2dUnder, now=Date.now(), way=(t===10||t===12);
+    if(u.k!==k){ u.k=k; u.was=t; u.open=false; u.armed=false; return null; }   // she walked in: the mover's own query owns that
+    if(way && u.was!==undefined && u.was!==t && !u.open){ u.open=true; u.armed=false; u.since=now; }
+    u.was=t;
+    if(!u.open) return null;
+    if(!way){ u.open=false; return null; }
+    if(!u.armed){ if(!inp || now-u.since>800) u.armed=true; if(!inp) return null; }
+    if(!inp || scene.transitionCooldown>0 || scene.showingMessage) return null;
+    var vx=tx*TILE+TILE/2-sx, vy=ty*TILE+TILE/2-sy, l=Math.sqrt(vx*vx+vy*vy)||1;
+    if((inp.x*vx+inp.y*vy)/l<0.5) return null;                              // toward the opening, not past it
+    var tr=a1mAsk(scene,tx,ty);
+    if(tr){ u.open=false; }
+    return tr||null;
+  }
+  function a2dEntranceSpot(id){
+    var fl=a1dFloors&&a2dIs(id)&&a1dFloors[id+'-f1'];
+    return (fl&&fl.land&&fl.land.entrance)||null;
+  }
+  // ---- mechanic modules ----------------------------------------------------------------------
+  function a2dMakeCtx(scene,fl,key){
+    var id=scene.currentMapId, mech=fl.mechanic||{id:'none'}, owned=[];
+    var ctx={ scene:scene, id:id, floor:scene.currentFloor||1, key:key, plan:fl, mechanic:mech, TILE:TILE,
+      mod:a2dMods[mech.id]||null, state:{}, _owned:owned,
+      depth:{ground:2,object:3,hero:10,over:10.6},
+      flags:function(){ var gs=window.__GAME_STATE__; return (gs&&gs.player&&gs.player.state&&gs.player.state.storyFlags)||{}; },
+      flagKey:function(n){ return 'd2.'+id+'.f'+ctx.floor+'.'+n; },         // persistent per-floor state lives in the story flags, under this prefix
+      tile:function(x,y){ var r=scene.mapData[y]; return r?r[x]:undefined; },
+      setTile:function(x,y,t){ var r=scene.mapData[y]; if(r&&r[x]!==undefined){ r[x]=t; a1dChanged=true; } },
+      terrain:function(x,y){ var r=(fl.terrain||fl.rows)[y]; return r?r.charAt(x):'#'; },
+      hero:function(){ var h=scene.hero; return h?{x:h.x,y:h.y,footY:h.y+a1mFootDy(scene),tx:scene.heroTileX,ty:scene.heroTileY,dir:scene.heroDir}:null; },
+      place:function(px,py,dir){ var h=scene.hero; if(!h) return; h.x=px; h.y=py; scene.heroTileX=(px/TILE)|0; scene.heroTileY=(py/TILE)|0;
+        if(dir!==undefined){ scene.heroDir=dir; try{ h.setFrame(dir*3); }catch(e){} }
+        try{ scene.updatePosition(); }catch(e){} },
+      own:function(o){ owned.push(o); return o; },                          // destroyed for the module when the floor is left
+      say:function(text,name){ try{ scene.showMessage(text,name); }catch(e){} },
+      // E2 additions. maskFree: what the painted mask alone says about a SOLE pixel (free() may ask it before overriding).
+      maskFree:function(px,py){ var m=null; try{ m=a1mFor(scene); }catch(e){} if(!m) return false;
+        var gx=(px-m.ox)|0, gy=(py-m.oy)|0; if(gx<1||gy<1||gx>=m.W-1||gy>=m.H-1) return false;
+        return m.dist[gy*m.W+gx] >= a1mNeed(m,gx,gy); },
+      // battle: the bundle's own encounter start (white flash, fade, BattleScene) with a named monster of its table.
+      // Returns false when a battle cannot start now (a box is open, one is already starting).
+      battle:function(monsterId,after){ return a2dBattle(scene,monsterId,after); },
+      busy:function(){ return a1mHalted(scene) || !!scene.__a1dEntryWaiting || a2dInBattle(scene); },
+      inBattle:function(){ return a2dInBattle(scene); },                   // from ctx.battle() until the field is back
+      // toFloor: a fall or a lift to the floor above/below through the engine's own floor change (black cover, loadMap,
+      // encounter reset); she arrives on `spot` {x,y,dir} (a cell: her SOLES are put on its centre) instead of beside the stairs.
+      toFloor:function(floor,spot){ return a2dToFloor(scene,floor,spot); },
+      bossDown:function(){ return a2dSealDead(scene); },                    // this dungeon's boss flag
+      art:function(){ var im=a1dArt[key]; return im||null; },               // the floor picture (an Image) once it is in, for a module that patches a piece of it
+      Z:function(key,vars){ var q=window.__QOK, z=q&&q.Z; try{ return z?z(key,vars):key; }catch(e){ return key; } },
+      locale:function(){ var gs=window.__GAME_STATE__, st=gs&&gs.player&&gs.player.state; return (st&&st.locale==='ja') ? (st.kanjiMode?'jaKanji':'ja') : 'en'; }
+    };
+    return ctx;
+  }
+  // ---- E2: the bundle's OWN mechanic must not run on an authored mechanic floor -----------------
+  // initMechanics(mapDef) builds the generated dungeon's mechanic from mapDef.mechanic (darkness
+  // pulse + patrol sprites, fog, wind, ice, lava course, maze hunter...). It runs INSIDE loadMap,
+  // before our floor is applied, so it is run once more with the mechanic struck out: every one of
+  // its switches is reset and its sprites destroyed, and the module is the only mechanic left.
+  // A dungeon whose manifest mechanic is 'none' (Ember Mines, Obsidian Cavern) is left alone.
+  function a2dWrapMechanics(scene){
+    if(!scene || scene.__a2dIM || typeof scene.initMechanics!=='function') return;
+    var orig=scene.initMechanics; scene.__a2dIM=orig;
+    scene.initMechanics=function(def){ try{ this.__a2dDef=def; }catch(e){} return orig.apply(this,arguments); };
+  }
+  function a2dLegacyOff(scene,fl){
+    if(!fl.mechanic || !fl.mechanic.id || fl.mechanic.id==='none') return;
+    try{ if(scene.__a2dIM && scene.__a2dDef && scene.__a2dDef.type==='dungeon'){
+           var d={}, k; for(k in scene.__a2dDef) d[k]=scene.__a2dDef[k]; d.mechanic=void 0;
+           scene.__a2dIM.call(scene,d); } }catch(e){ if(window.__DQ_DEBUG__) console.log('a2d legacy '+e); }
+    try{ if(typeof scene.cleanupGlyphTrial==='function') scene.cleanupGlyphTrial();
+         scene.glyphTrialActive=false; scene.glyphPlates=[]; scene.glyphStepOrder=[]; scene.glyphCorridor=null; scene.glyphDoorPos=null;
+         scene.fogEnabled=false; scene.darknessPulseEnabled=false; scene.windTowerEnabled=false; scene.mazeHunterEnabled=false;
+         scene.shadowPortalEnabled=false; scene.portalPairs=[]; scene._pendingPatrolWaypoints=void 0; scene.forestMazeCorrectExitY=-1;
+         if(scene._twLineGfx&&scene._twLineGfx.clear) scene._twLineGfx.clear();
+         if(scene._banditLordSprite&&scene._banditLordSprite.setVisible) scene._banditLordSprite.setVisible(false);   // the authored boss marker is a1dBossSort's
+    }catch(e){}
+  }
+  // A named monster through the bundle's own start (WorldMapScene.startBattle). The monster table
+  // is not exported; the encounter manager's rollEncounter() resolves an id against it.
+  function a2dBattle(scene,monsterId,after){
+    try{
+      if(scene.isMoving || !scene.scene.isActive('WorldMapScene') || scene.scene.isActive('BattleScene')) return false;
+      var gs=window.__GAME_STATE__, em=gs&&gs.encounterManager, mon=null;
+      if(em&&em.rollEncounter){ var w=console.warn; console.warn=function(){};
+        try{ mon=em.rollEncounter({monsters:[{monsterId:monsterId,weight:1}]}); }finally{ console.warn=w; } }
+      if(!mon && em && em.forceEncounter && scene.currentEncounterZone) mon=em.forceEncounter(scene.currentEncounterZone);
+      if(!mon) return false;
+      if(em&&em.reset) em.reset();
+      if(scene.__a2dDef&&scene.__a2dDef.encounterZone) scene.currentEncounterZone=scene.__a2dDef.encounterZone;   // the dungeon's own zone, as a step would set it
+      // once, when the field is back (won, fled or lost). Until then the dungeon counts as in a battle: startBattle()
+      // clears isMoving in the same frame it queues the BattleScene, so for one update the field looked free and a
+      // module's trigger (she still stands on the wrong plate, in the shadow's cell) fired a second time.
+      var ev=scene.events, fn=function(){ ev.off('resume',fn); a2dBattleAt=0; if(typeof after==='function'){ try{ after(); }catch(e){} } }; ev.on('resume',fn);
+      a2dBattleAt=Date.now();
+      scene.startBattle(mon,false);
+      return true;
+    }catch(e){ a2dBattleAt=0; if(window.__DQ_DEBUG__) console.log('a2d battle '+e); return false; }
+  }
+  var a2dBattleAt=0;
+  function a2dInBattle(scene){
+    if(!a2dBattleAt) return false;
+    try{ if(scene.isMoving || scene.scene.isActive('BattleScene') || scene.scene.isPaused('WorldMapScene')) return true; }catch(e){}
+    if(Date.now()-a2dBattleAt>4000){ a2dBattleAt=0; return false; }         // it never started, or ended without a resume
+    return true;
+  }
+  function a2dToFloor(scene,floor,spot){
+    try{
+      var cur=scene.currentFloor||1; if(floor!==cur-1 && floor!==cur+1) return false;
+      if(scene.isMoving || scene.showingMessage) return false;
+      var fd=a1mFootDy(scene), py=spot.y*TILE+TILE/2-fd;
+      scene.__a2dFall={floor:floor, spot:{x:spot.x, y:(py/TILE)|0, dir:spot.dir||0, px:spot.x*TILE+TILE/2, py:py}};
+      scene.performTransition({targetMap:(floor<cur)?'__floor_up__':'__floor_down__'});
+      return true;
+    }catch(e){ if(window.__DQ_DEBUG__) console.log('a2d toFloor '+e); return false; }
+  }
+  // ---- E2: a sealed second mouth ---------------------------------------------------------------
+  // The floor picture shows the mouth OPEN (daylight). Until the boss is down a rock plug from
+  // <floor>-seal.webp is drawn over it, her soles are refused in the mouth's cells and beyond, and
+  // the cells are plain floor (no way out). The moment the boss flag is set the plug goes, the
+  // cells become tile 10 and the mouth works, without leaving the floor.
+  var a2dSeal={key:null, imgs:[], req:{}, cells:null, box:null, on:false, list:null};
+  function a2dSealDrop(){
+    for(var i=0;i<a2dSeal.imgs.length;i++){ try{ a2dSeal.imgs[i].destroy(); }catch(e){} }
+    a2dSeal.imgs=[]; a2dSeal.key=null; a2dSeal.cells=null; a2dSeal.box=null; a2dSeal.on=false; a2dSeal.list=null;
+  }
+  function a2dSealDead(scene){
+    var gs=window.__GAME_STATE__, flags=gs&&gs.player&&gs.player.state&&gs.player.state.storyFlags;
+    var bossId=(typeof A1D_BOSS_ID!=='undefined')?A1D_BOSS_ID[scene.currentMapId]:null;
+    return !!(flags&&bossId&&flags['boss.'+bossId+'.defeated']);
+  }
+  function a2dSealSetup(scene,fl,key){
+    a2dSealDrop();
+    var a=fl.assets||[], i, cells=[], x0=1e9,y0=1e9,x1=-1e9,y1=-1e9, side=null;
+    for(i=0;i<a.length;i++) if(a[i].kind==='mouth2' && a[i].sealedUntil==='bossDefeated'){
+      cells.push([a[i].x,a[i].y]); side=side||a[i].side;
+      x0=Math.min(x0,a[i].x); y0=Math.min(y0,a[i].y); x1=Math.max(x1,a[i].x); y1=Math.max(y1,a[i].y); }
+    if(!cells.length) return;
+    // the mouth's cells and everything outward of them, to the edge of the map
+    var d={down:[0,1],south:[0,1],up:[0,-1],north:[0,-1],left:[-1,0],west:[-1,0],right:[1,0],east:[1,0]}[side]||[0,1];
+    if(d[0]>0) x1=fl.width; else if(d[0]<0) x0=-1; else if(d[1]>0) y1=fl.height; else y0=-1;
+    a2dSeal.key=key; a2dSeal.cells=cells; a2dSeal.list=fl.seal||null;
+    a2dSeal.box=[x0*TILE,y0*TILE,(x1+1)*TILE,(y1+1)*TILE];
+    a2dSeal.on=!a2dSealDead(scene);
+  }
+  function a2dSealBlocks(wx,wy){
+    var b=a2dSeal.box; return !!(a2dSeal.on && b && wx>=b[0] && wx<b[2] && wy>=b[1] && wy<b[3]);
+  }
+  function a2dSealTick(scene){
+    var S=a2dSeal, key=scene.currentMapId+'-f'+(scene.currentFloor||1), i;
+    if(!S.key || S.key!==key) return;
+    if(S.on && a2dSealDead(scene)){                                         // the boss fell while she is on this floor
+      S.on=false;
+      for(i=0;i<S.cells.length;i++){ var r=scene.mapData[S.cells[i][1]]; if(r&&r[S.cells[i][0]]===0){ r[S.cells[i][0]]=10; a1dChanged=true; } }
+    }
+    var list=S.list; if(!list||!list.length) return;
+    if(!S.on){ for(i=0;i<S.imgs.length;i++) if(S.imgs[i].visible) S.imgs[i].setVisible(false); return; }
+    var tk='a2dseal_'+key;
+    if(!scene.textures.exists(tk)){
+      if(!S.req[key]){ S.req[key]=true; var im=new Image();
+        im.onload=function(){ try{ if(scene.textures.exists(tk)) return; var t=scene.textures.addImage(tk,im);
+          for(var j=0;j<list.length;j++) t.add('s'+j,0,list[j].sx,list[j].sy,list[j].w,list[j].h); }catch(e){} };
+        im.onerror=function(){ setTimeout(function(){ S.req[key]=false; },5000); };
+        im.src=a2dUrl(key,'seal','webp'); }
+      return; }
+    if(!S.imgs.length || S.imgs[0].scene!==scene){
+      for(i=0;i<S.imgs.length;i++){ try{ S.imgs[i].destroy(); }catch(e){} } S.imgs=[];
+      for(i=0;i<list.length;i++) S.imgs.push(scene.add.image(list[i].x,list[i].y,tk,'s'+i).setOrigin(0,0).setDepth(1.5)); }
+  }
+  // ---- E2: what she pushes against --------------------------------------------------------------
+  // a1mBump fires only when she is fully stopped by a cell-shaped blocker; against a painted wall
+  // she glides and nothing is told. A module's `bump` is therefore ALSO told about every refused
+  // step: the cell A1M_BUMP_REACH past her soles along the push, and for a diagonal push the two
+  // cells along each axis as well (she slides along one face while leaning on it). At most once
+  // per cell per frame. info = {px,py (her soles), wall:true when the mover did not stop}.
+  var a2dPushSeen={f:-1,k:{}};
+  function a2dPush(scene,m,x,y,dx,dy,stopped){
+    var c=a2dCtx; if(!c||!c.mod||!c.mod.bump||c.scene!==scene) return false;
+    var l=Math.sqrt(dx*dx+dy*dy); if(!l) return false;
+    var fr=(scene.game&&scene.game.loop)?scene.game.loop.frame:0, S=a2dPushSeen;
+    if(S.f!==fr){ S.f=fr; S.k={}; }
+    var gy=y+a1mFootDy(scene,m), reach=a1mMetric(m,A1M_BUMP_REACH), ux=dx/l, uy=dy/l, any=false;
+    var pr=[[ux,uy]], i;
+    if(Math.abs(ux)>0.2 && Math.abs(uy)>0.2){ pr.push([ux>0?1:-1,0]); pr.push([0,uy>0?1:-1]); }
+    for(i=0;i<pr.length;i++){
+      var tx=((x+pr[i][0]*reach)/TILE)|0, ty=((gy+pr[i][1]*reach)/TILE)|0, k=tx+','+ty;
+      if(S.k[k]!==undefined){ if(i===0&&S.k[k]) any=true; continue; }
+      var row=scene.mapData[ty], t=row?row[tx]:undefined, r=false;
+      try{ r=c.mod.bump(c,tx,ty,pr[i][0],pr[i][1],t,{px:x,py:gy,wall:!stopped})===true; }catch(e){}
+      S.k[k]=r; if(i===0&&r) any=true;
+    }
+    return any;
+  }
+  function a2dOnApply(scene,fl,tiles){
+    var id=scene.currentMapId; if(!a2dIs(id)) return;
+    var f=scene.currentFloor||1, key=id+'-f'+f, a=fl.assets||[], i;
+    // The engine's side channels name cells of ITS generated floor; none of them is on ours.
+    try{ scene.keyChestPositions=new Set(); scene.mimicChestPositions=new Set();
+         scene.hiddenRoomChestPositions=new Set(); scene.goldenChestPos=void 0; }catch(e){}
+    // ...except the maze hunter's golden chest. The engine's tryOpenTreasure gives the Holy Amulet (the
+    // ward without which the Sword Wraith turns 90% of every blow back on her) from the cell named in
+    // goldenChestPos, which its generator fills; on an authored floor that is the golden chest asset.
+    for(i=0;i<a.length;i++) if(a[i].kind==='chest' && a[i].loot==='holyAmulet'){ try{ scene.goldenChestPos={x:a[i].x,y:a[i].y}; }catch(e){} }
+    // A second mouth stays shut from the inside until the boss is down (the overworld side is the bundle's own gate).
+    var gs=window.__GAME_STATE__, flags=gs&&gs.player&&gs.player.state&&gs.player.state.storyFlags;
+    var bossId=(typeof A1D_BOSS_ID!=='undefined')?A1D_BOSS_ID[id]:null, dead=!!(flags&&bossId&&flags['boss.'+bossId+'.defeated']);
+    for(i=0;i<a.length;i++) if(a[i].kind==='mouth2' && a[i].sealedUntil==='bossDefeated' && !dead && tiles[a[i].y]) tiles[a[i].y][a[i].x]=0;
+    var via=a2dVia, land=fl.land||{}, spot=null; a2dVia=null;
+    if(via && Date.now()-via.t<4000){
+      if(via.to==='__floor_down__') spot=land.fromPrev;
+      else if(via.to==='__floor_up__') spot=land.fromNext;
+      else if(via.to===id && via.from!==id) spot=((f>1 || (via.floor>1 && land.mouth2)) ? (land.mouth2||land.fromPrev) : land.mouth)||null;   // E2: a second entrance of a one-floor dungeon (Haunted Forest's north door) lands inside ITS mouth
+      if(scene.__a2dFall && scene.__a2dFall.floor===f && (via.to==='__floor_down__'||via.to==='__floor_up__')) spot=scene.__a2dFall.spot;   // a module's own floor change
+    }
+    scene.__a2dFall=null; a2dBattleAt=0;
+    scene.__a2dLanding=spot?{key:key,spot:spot}:null;
+    a2dLegacyOff(scene,fl);
+    a2dSealSetup(scene,fl,key);
+    a2dCtx=a2dMakeCtx(scene,fl,key);
+    if(a2dCtx.mod && a2dCtx.mod.load) try{ a2dCtx.mod.load(a2dCtx); }catch(e){ if(window.__DQ_DEBUG__) console.log('a2d load '+e); }
+  }
+  function a2dLeave(scene,nextId){
+    var c=a2dCtx, i; a2dCtx=null;
+    try{ var d=A2D&&A2D.dungeons&&A2D.dungeons[nextId];                     // an authored dungeon may have fewer floors than the bundle's door table names
+         if(d&&a2dIs(nextId)&&d.floors&&scene.currentFloor>d.floors) scene.currentFloor=d.floors; }catch(e){}
+    if(!c) return;
+    try{ if(c.mod&&c.mod.unload) c.mod.unload(c); }catch(e){}
+    for(i=0;i<c._owned.length;i++){ try{ if(c._owned[i]&&c._owned[i].destroy) c._owned[i].destroy(); }catch(e){} }
+    a2dOverDrop(); a2dSealDrop();
+    try{ for(var k in a1dBossSprites) a1dBossDrop(k); }catch(e){}           // a live boss sprite must not follow her out of the dungeon
+  }
+  function a2dFrame(scene,delta){
+    var c=a2dCtx; if(!c || c.scene!==scene) return;
+    if(scene.currentMapId!==c.id || (scene.currentFloor||1)!==c.floor) return;
+    if(a2dSeal.key) a2dSealTick(scene);
+    if(!c.mod){ var m=a2dMods[c.mechanic.id]; if(!m) return;                // a module script that landed after the floor did
+      c.mod=m; if(m.load) try{ m.load(c); }catch(e){} }
+    if(c.mod.tick) c.mod.tick(c,delta);
+  }
+  window.__QOK_DNG2__={ version:1,
+    register:function(id,mod){ a2dMods[id]=mod; return mod; },
+    ctx:function(){ return a2dCtx; }, manifest:function(){ return A2D; },
+    free:function(x,y){ var c=a2dCtx, m=null; try{ m=c&&a1mFor(c.scene); }catch(e){} return !!(m&&a1mFree(c.scene,m,x,y)); },   // may her sprite centre be at (x,y)? (probes)
+    footDy:function(){ var c=a2dCtx; return c?a1mFootDy(c.scene):31; },
+    authored:function(id){ return a2dIs(id); },
+    state:function(){ return { off:A2D_OFF, smoke:A2D_SMOKE, loaded:!!A2D, merged:!!(A2D&&A2D.merged), key:a1dKey,
+      layer:a1dKey?a1dLayer[a1dKey]:null, art:a1dKey?(a1dArt[a1dKey]?'ready':(a1dArt[a1dKey]===null?'missing':'loading')):null,
+      mask:a1dKey?(a1mMasks[a1dKey]?'ready':(a1mMasks[a1dKey]===null?'missing':'loading')):null,
+      mechanic:a2dCtx?a2dCtx.mechanic.id:null, module:!!(a2dCtx&&a2dCtx.mod), over:a2dOver.imgs.length }; } };
+  // ---- live props ----------------------------------------------------------------------------
+  function a2dAssetName(t,scene,tx,ty){
+    if(t===6||t===9||t===7) return '';                                      // mouth and stairs are painted into the floor; the boss is a1dBossSort's sprite
+    if(t===10||t===12){ var fl=a1dFloorFor(scene), a=(fl&&fl.assets)||[], i;
+      for(i=0;i<a.length;i++) if(a[i].kind==='mouth2'&&a[i].x===tx&&a[i].y===ty) return '';   // a second mouth is painted too
+      return null; }                                                        // a dead boss's way out keeps the engine's portal prop
+    return A1D_ASSET[t]||null;
+  }
+  function a2dAssetScale(scene,an){ return a2dIs(scene.currentMapId) ? (A2D_ASC[an]||1.0) : 1.0; }
+  function a2dAssetTint(scene,img,t){
+    if(!a2dIs(scene.currentMapId)) return;
+    if(t===14 && a1mCrystalDormant(scene)){ if(!img.isTinted) img.setTint(0x5a6680); }   // the entrance crystal sleeps until a deeper one is touched
+    else if(img.isTinted) img.clearTint();
+  }
+  // The entrance crystal of an authored dungeon lists every deeper crystal she has touched
+  // (Act 1's has exactly one, beside the boss). Same rule otherwise: no heal, no save, warp only.
+  function a2dCrystalOptions(scene,opts,Z2){
+    var tg=a1mCrystalWarpTargets(scene), i;
+    for(i=0;i<tg.length;i++){ if(tg[i]===-1) continue;
+      opts.push({label:Z2('dungeon.warpFloor',{floor:tg[i]}), action:'warp', payload:{floors:tg,index:i}}); }
+  }
+  // ---- the OVER layer: what stands taller than its own cell (a pillar) ------------------------
+  // A small atlas, one sprite per object, depth-sorted against her soles: in front of her while
+  // she stands behind it, under her otherwise (the floor picture already shows the whole object).
+  var a2dOver={key:null, imgs:[], req:{}};
+  function a2dOverDrop(){
+    for(var i=0;i<a2dOver.imgs.length;i++){ try{ a2dOver.imgs[i].destroy(); }catch(e){} }
+    a2dOver.imgs=[]; a2dOver.key=null;
+  }
+  function a2dOverTick(scene){
+    var id=scene.currentMapId, key=id+'-f'+(scene.currentFloor||1);
+    var fl=a2dIs(id)?a1dFloorFor(scene):null, list=fl&&fl.over, i;
+    if(!list||!list.length){ if(a2dOver.key) a2dOverDrop(); return; }
+    if(a2dOver.key!==key || (a2dOver.imgs[0]&&a2dOver.imgs[0].scene!==scene)){ a2dOverDrop(); a2dOver.key=key; }
+    var tk='a2dover_'+key;
+    if(!scene.textures.exists(tk)){
+      if(!a2dOver.req[key]){ a2dOver.req[key]=true; var im=new Image();
+        im.onload=function(){ try{ if(scene.textures.exists(tk)) return; var t=scene.textures.addImage(tk,im);
+          for(var j=0;j<list.length;j++) t.add('o'+j,0,list[j].sx,list[j].sy,list[j].w,list[j].h); }catch(e){} };
+        im.onerror=function(){ setTimeout(function(){ a2dOver.req[key]=false; },5000); };
+        im.src=a2dUrl(key,'over','webp'); }
+      return; }
+    if(!a2dOver.imgs.length){
+      for(i=0;i<list.length;i++){ var o=scene.add.image(list[i].x,list[i].y,tk,'o'+i).setOrigin(0,0); o.__by=list[i].by; a2dOver.imgs.push(o); } }
+    var hero=dngHero(scene); if(!hero) return;
+    var foot=hero.y+a1mFootDy(scene), d, o, want;
+    // E2: a pillar is one cell wide and taller than she is, so standing right behind it hid her
+    // whole. While it is in front of her AND its picture covers her body, it thins to 45 % (the
+    // floor picture underneath still shows the whole pillar), and comes back as she steps clear.
+    var hx0=hero.x-13, hx1=hero.x+13, hy0=hero.y-26, hy1=foot;
+    var FR=(typeof window.__DQ_FOG_R__==='number')?window.__DQ_FOG_R__:34, FS=16, FF=(dngState&&dngState.scene===scene)?dngState.FOGF:0, zz=1;
+    try{ zz=scene.cameras.main.zoom||1; }catch(e){}
+    for(i=0;i<a2dOver.imgs.length;i++){ o=a2dOver.imgs[i]; d=(foot<o.__by)?10.6:9.4;
+      if(o.depth!==d) o.setDepth(d);
+      want=(d>10 && hx1>o.x && hx0<o.x+o.width && hy1>o.y && hy0<o.y+o.height)?0.45:1;
+      if(o.alpha!==want){ var na=o.alpha+(want-o.alpha)*0.25; if(Math.abs(na-want)<0.02) na=want; o.setAlpha(na); }
+      // E4: her lamp's darkness is drawn at depth 8, under these pictures, so a pillar top far outside
+      // her light stood out at full brightness over a dark floor. Each corner takes updateFog's falloff.
+      if(FF){ var c0=fk(o.x,o.y), c1=fk(o.x+o.width,o.y), c2=fk(o.x,o.y+o.height), c3=fk(o.x+o.width,o.y+o.height), sig=c0+','+c1+','+c2+','+c3;
+        if(o.__fs!==sig){ o.__fs=sig; try{ o.setTint(c0*65793,c1*65793,c2*65793,c3*65793); }catch(e){} } } }
+    function fk(x,y){ var dx=(x-hero.x)*zz/FF, dy=(y-hero.y)*zz/FF, t=(Math.sqrt(dx*dx+dy*dy)-(FR-FS))/(2*FS); t=t<0?0:(t>1?1:t); return Math.round(255*(1-(t*t*(3-2*t))*0.98)); }
+  }
   function a1dFetch(){                                                      // one lazy request; silence is a valid outcome
+    a2dFetch();
     if (a1dAsked) return; a1dAsked=true;
     try{ var r=new XMLHttpRequest(); r.open('GET','act1-dungeon-floors.json',true);
-      r.onload=function(){ try{ if(r.status>=200&&r.status<300) a1dFloors=(JSON.parse(r.responseText)||{}).floors||null; }catch(e){} };
+      r.onload=function(){ try{ if(r.status>=200&&r.status<300) a1dFloors=(JSON.parse(r.responseText)||{}).floors||null; }catch(e){}
+                            a2dMerge(true); };
       r.send();
     }catch(e){}
   }
@@ -4562,6 +5032,7 @@
     a1dKey=scene.currentMapId+'-f'+(scene.currentFloor||1);
     a1dApplied={scene:scene,key:a1dKey,mapData:tiles};
     a1dChanged=true;                                                        // force updateDng past its window-key cache
+    try{ a2dOnApply(scene,fl,tiles); }catch(e){ if(window.__DQ_DEBUG__) console.log('a2d apply '+e+(e&&e.stack||'')); }
     return true;
   }
   // Wrap loadMap once, on the SCENE INSTANCE -- not on the prototype.
@@ -4577,7 +5048,9 @@
     if(a1dPatched || !scene || scene.__a1dPatched) return;
     if(typeof scene.loadMap!=='function') return; a1dPatched=true; scene.__a1dPatched=true;
     var orig=scene.loadMap;
+    a2dWrapTransition(scene); a2dWrapMechanics(scene);
     scene.loadMap=function(id){
+      try{ a2dLeave(this,id); }catch(e){}
       // The frozen transition path sets currentMapId to the source map until this
       // call. A save restore loads a map whose id is already current, so this is a
       // reliable fresh-entry marker rather than a guess from the saved coordinates.
@@ -4750,6 +5223,7 @@
   }
   function a1dEntryLanding(scene,fl,md,mm){
     var a=fl&&fl.assets||[], mouth=null, i;
+    if(fl&&fl.land&&fl.land.mouth&&a2dIs(scene.currentMapId)) return fl.land.mouth;   // authored: the baked, mask-checked landing
     for(i=0;i<a.length;i++) if(a[i].kind==='mouth'){ mouth=a[i]; break; }
     if(!mouth) return null;
     // The authored rows identify the inward side. Do not infer it from a nearest
@@ -4796,6 +5270,7 @@
       scene.__a1dEntryError=null;
       a1dArriving=false;
     }
+    if(a2dArrive(scene,a1dKeyNow)) return;
     var strictRetry=scene.__a1dStrictRetryKey===a1dKeyNow;
     var fresh=scene.__a1dFreshEntryKey===a1dKeyNow;
     if(fresh) scene.__a1dFreshEntryKey=null;
@@ -5077,7 +5552,7 @@
       im.onload=function(){ try{ a1mMasks[key]=a1mBuild(im)||null; }catch(e){ a1mMasks[key]=null;
         if(window.__DQ_DEBUG__) console.log('a1 mask build '+e); } };
       im.onerror=function(){ a1mMasks[key]=null; };                          // no mask -> engine steps
-      im.src='act1-dungeon-art/'+key+'-walk.png';
+      im.src=a2dUrl(key,'walk','png')||('act1-dungeon-art/'+key+'-walk.png');
     }
     return undefined;                                                        // still loading
   }
@@ -5393,6 +5868,18 @@
     var b=A1A_FOREST.stencilBounds; if(!b) return null;
     return { x:Math.round((x-16*TILE)*32/48+(b.minX+b.maxX)/2), y:Math.round((y-218*TILE)*32/48+b.maxY-A1F_DISC_UP) };
   }
+  // The sole disc as numbers, for the Acts 2-5 packs (acts-runtime.js): where it sits relative to
+  // the sprite in 32 px-per-cell collision px, its radius, and the closing and normal radii the
+  // Act 1 test above uses. One source for both, so the two can not drift apart.
+  function a1fSoleSpec(scene){
+    var b=A1A_FOREST.stencilBounds;
+    if(!b&&scene&&scene.hero){ a1fBuildStencil(scene.hero); b=A1A_FOREST.stencilBounds; }
+    if(!b) return null;
+    return b.spec||(b.spec={ dx:(b.minX+b.maxX)/2, dy:b.maxY-A1F_DISC_UP, r:A1F_DISC_R, closeR:A1F_CLOSE_R, normalPad:A1F_NORMAL_PAD });
+  }
+  function a1fActsPixel(x,y){
+    var h=window.__QOK_ACTS__; return !!(h&&h.artCell(Math.floor(x/TILE),Math.floor(y/TILE)));
+  }
   function a1fHeroFree(scene,x,y){
     var pts=a1fBuildStencil(scene.hero); if(!pts) return false;
     if(window.__A1_OW_SOLE_BAR__!==true){
@@ -5516,6 +6003,9 @@
     var terrainRequired=m.ow&&a1fRequiredAt(scene,x,y);
     if(terrainRequired&&(!A1A_FOREST.mode||!a1fReady(scene))) return false;
     if(m.ow&&terrainRequired&&!a1fHeroFree(scene,x,y)) return false;
+    // ACTS 2-5: the same sole disc against that act's own QOKF8COL pack (acts-runtime.js `free`).
+    var actsH=m.ow&&window.__QOK_ACTS__;
+    if(actsH&&!actsH.free(scene,x,y,a1fSoleSpec(scene))) return false;
     if(!a1mWwContactFree(scene,m,x,y)) return false;
     var wx=x, wy=y+a1mFootDy(scene,m);                                       // solver-space px: canonical on overworld
     var fx=wx-m.ox, fy=wy-m.oy;                                              // FIELD px: 0 offset for a dungeon mask
@@ -5523,6 +6013,10 @@
     var gx=fx|0, gy=fy|0;
     var t=a1mTileAt(scene,wx,wy);
     if(t===undefined) return false;
+    if(a2dCtx && !m.ow && a2dSeal.on && a2dSealBlocks(wx,wy)) return false;   // authored: a sealed second mouth is rock
+    if(a2dCtx && !m.ow && a2dCtx.mod && a2dCtx.mod.free){                    // authored mechanic: may veto (false) or open (true) a spot
+      var a2r; try{ a2r=a2dCtx.mod.free(a2dCtx,wx,wy,(wx/TILE)|0,(wy/TILE)|0); }catch(e){}
+      if(a2r===false) return false; if(a2r===true) return true; }
     if(m.dist[(gy*m.W)+gx] < a1mNeed(m,gx,gy) &&
        !(t===6 && a1dIsMouthCell(scene,(wx/TILE)|0,(wy/TILE)|0))) return false; // authored door enters masked arch
     if(m.ow && !OWM_FIELD_OWNED[t]){
@@ -5558,7 +6052,7 @@
       var mapId=scene.currentMapId, floor=scene.currentFloor||1, key=mapId+'-f'+floor;
       if(a1dEcKey!==key){
         a1dEcKey=key; a1dEcCell=null;
-        if(A1D_MAPS[mapId] && floor===1){
+        if(A1D_MAPS[mapId]===1 && floor===1){                               // Act 1 only: an authored Acts 2-5 crystal stands on the floor, blocked
           var fl=a1dFloorFor(scene), a=(fl&&fl.assets)||[];
           for(var i=0;i<a.length;i++) if(a[i].kind==='save'){ a1dEcCell=[a[i].x,a[i].y]; break; }
         }
@@ -5734,9 +6228,19 @@
     if(!(n>0)) return null;
     var pres=owmPresence(map,X0,Y0,winW,winH), hasW=!!(pres&1), hasM=!!(pres&2), bounds=act1Paint&&a1aPlateBounds();
     var dist=new Uint16Array(n), INF=60000, i,x,y,v;
+    // ACTS 2-5: under an act's installed art its pixel pack is the terrain authority (a1mFree ->
+    // acts-runtime.js `free`), exactly as the alpha pack is inside Act 1. Its plate tiles 2 and 4
+    // stay in mapData for the engine, but they must not add a second, rounder wall here.
+    var actsH=window.__QOK_ACTS__, actsArt=null, actsAll=0;
+    if(actsH&&(hasW||hasM)){
+      actsArt=new Uint8Array(winW*winH);
+      for(y=0;y<winH;y++) for(x=0;x<winW;x++) if(actsH.artCell(X0+x,Y0+y)){ actsArt[y*winW+x]=1; actsAll++; }
+      if(!actsAll) actsArt=null; else if(actsAll===winW*winH){ hasW=false; hasM=false; }
+    }
     if(!hasW && !hasM){ for(i=0;i<n;i++) dist[i]=INF; }          // open ground: nothing to collide with
     else for(y=0;y<ch;y++){ var wy=woy+y, row=y*cw, ty=(wy/N)|0;
       for(x=0;x<cw;x++){ var wx=wox+x, b=0;
+        if(actsArt&&actsArt[(ty-Y0)*winW+(((wx/N)|0)-X0)]){ dist[row+x]=INF; continue; }
         if(hasW && waterField(map,wx,wy)>=0.50) b=1;             // the SAME 0.50 drawTerrain paints with
         var inAct1=!!(bounds&&(wx/N|0)>=bounds[0]&&(wx/N|0)<=bounds[2]&&(wy/N|0)>=bounds[1]&&(wy/N|0)<=bounds[3]);
         if(!b && hasM && !(act1Paint&&inAct1) && mountainField(map,wx,wy)>=0.50) b=1;
@@ -5870,6 +6374,16 @@
     for(i=0;i<bytes.length;i++){ h=(h^bytes[i])>>>0; h=Math.imul(h,0x01000193)>>>0; }
     return {bounds:bounds,bytes:bytes,fnv32:h>>>0};
   }
+  // Acts 2-5 runtime (window.__QOK_ACTS__, undefined when it is off): outside Act 1's rectangle it
+  // replaces the generator's tiles with its own plates, but act1-overworld-walk.bin was baked over
+  // the generator's (the support reaches 45 cells past the rectangle, and muted water is a
+  // whole-map rule). It hands back the tiles it replaced, so the bake is authenticated against
+  // the map it was baked over and Act 1's field stays the baked one. Kept OUT of
+  // owmSupportInputBytes: that function's text is pinned by the baker's semantics digest.
+  function owmSupportMap(map){
+    var actsS=window.__QOK_ACTS__, legacyS=(actsS&&typeof actsS.legacyMap==='function')?actsS.legacyMap(map):null;
+    return legacyS||map;
+  }
   var owmSupportEpoch=0, owmSupportPending=null, owmSupportVerified=null, owmSupportFailure=null;
   var owmObservedPlateMap=null, owmObservedPlateRepairs=null;
   function owmInvalidateSupport(){
@@ -5912,7 +6426,7 @@
       if(scene.currentMapId==='overworld'&&scene.mapData===map) return 'ready';
       owmSupportVerified=null; owmState=null;
     }
-    var input=owmSupportInputBytes(map); if(!input) return 'invalid';
+    var input=owmSupportInputBytes(owmSupportMap(map)); if(!input) return 'invalid';
     if(input.fnv32!==b.hash){ owmSupportFailure={map:map,epoch:owmSupportEpoch,reason:'support-fnv'}; return 'invalid'; }
     if(owmSupportVerified&&owmSupportVerified.map===map&&owmSupportVerified.epoch===owmSupportEpoch){
       // FNV is only a fast header prefilter. Even on the first lookup after async SHA completion,
@@ -5932,7 +6446,7 @@
         if(scene.currentMapId!=='overworld'||scene.mapData!==map||owmSupportEpoch!==work.epoch){
           owmSupportPending=null; owmSupportFailure={map:map,epoch:work.epoch,reason:'stale-scene-map'}; return;
         }
-        var current=owmSupportInputBytes(scene.mapData);
+        var current=owmSupportInputBytes(owmSupportMap(scene.mapData));
         if(!current||!owmSupportMatches(work.bytes,current.bytes)||current.fnv32!==b.hash
           ||owmSupportHex(digest)!==b.support){
           owmSupportPending=null; owmSupportFailure={map:map,epoch:work.epoch,reason:'changed-or-mismatched-support'}; return;
@@ -6056,6 +6570,10 @@
     if(!owmState || owmState.map!==map || owmState.key!==key){
       var pf=(window.performance&&performance.now)?performance:null, t0=pf?pf.now():0;
       var b=owmBakeFor(map);
+      // Acts 2-5 runtime: the bake reaches 45 cells past Act 1's rectangle and describes the
+      // generator's terrain there, which that runtime has replaced with painted acts. Off the plate
+      // the analytic field (act art suppressed, see owmBuild) is the answer; on it nothing changes.
+      if(!plate&&window.__QOK_ACTS__) b=null;
       var supportStatus=b?owmSupportFor(scene,map,b):'invalid';
       if(supportStatus!=='ready'&&plate) return null;             // a support mismatch never falls back on the owned plate
       if(supportStatus!=='ready') b=null;                        // outside the plate keeps its existing analytic path
@@ -6221,6 +6739,7 @@
     var gy=y+a1mFootDy(scene,m), reach=a1mMetric(m,A1M_BUMP_REACH);
     var tx=(((x+dx/l*reach)/TILE)|0), ty=(((gy+dy/l*reach)/TILE)|0);
     var row=scene.mapData[ty], t=row?row[tx]:undefined;
+    if(a2dCtx && !m.ow && a2dPush(scene,m,x,y,dx,dy,true)) return;            // authored mechanic: pushed against (tx,ty), handled
     if(t===undefined || !(m.prop||A1M_PROP)[t]) return;
     var now=Date.now(); if(now-a1mState.bump<700) return; a1mState.bump=now;
     // STORY BARRIERS MUST SAY WHY (2026-11-10, round 1 census P1). The magma field (21) and the wind
@@ -6621,6 +7140,8 @@
         bestDist=dist; best={tx:tx,ty:ty,t:t,dx:dx,dy:dy};
       }
     }
+    if(a2dCtx && a2dCtx.scene===scene && a2dCtx.mod && a2dCtx.mod.interact){   // authored mechanic: its own objects ({tx,ty,dx,dy,verb,act})
+      try{ var a2n=a2dCtx.mod.interact(a2dCtx,x,gy,best); if(a2n) best=a2n; }catch(e){} }
     return best;
   }
   function a1mDispatchInteract(scene,target){
@@ -6628,6 +7149,7 @@
     var tx=target.tx, ty=target.ty, t=target.t, dx=target.dx, dy=target.dy;
     if(dx||dy) scene.heroDir=dx?(dx>0?2:1):(dy>0?0:3);                     // face it, like a step would
     try{
+      if(typeof target.act==='function'){ target.act(); return; }           // authored mechanic object
       if(t===4){ scene.tryOpenTreasure(tx,ty); return; }
       if(t===7){ scene.tryBossInteract(tx,ty); return; }
       if(t===18){ scene.tryReadPlaque(tx,ty); return; }
@@ -6773,6 +7295,7 @@
       if((scene.currentFloor||1)>1 && A1D_MAPS[scene.currentMapId]){
         var Q1=window.__QOK, tt1=Q1&&Q1.state&&Q1.state();
         var flags1=tt1&&tt1.player&&tt1.player.state&&tt1.player.state.storyFlags;
+        if(flags1 && a2dIs(scene.currentMapId)) flags1['warp.'+scene.currentMapId+'.f'+(scene.currentFloor||1)]=true;   // authored: this crystal becomes a warp target
         if(flags1){
           var fkey='entrance.crystal.'+scene.currentMapId+'.activated';
           if(!flags1[fkey]){ flags1[fkey]=true; try{ tt1.saveGame(); }catch(e){} }
@@ -6854,7 +7377,7 @@
              before the fade-in's first rendered frame -- to overwrite the wrong position with the
              entrance crystal's own landing tile. The player never sees the wrong placement; the
              screen is still opaque black at that point. */
-          var landing=A1M_ENTRANCE_LANDING[scene.currentMapId];
+          var landing=A1M_ENTRANCE_LANDING[scene.currentMapId]||a2dEntranceSpot(scene.currentMapId);
           if(landing && scene.cameras && scene.cameras.main){
             scene.cameras.main.once('camerafadeoutcomplete', function(){
               try{
@@ -6891,7 +7414,9 @@
     a1mCrystalEnsureStyle();
     var Q=window.__QOK, Z2=(Q&&Q.Z)||function(k){return k;};
     var floor=scene.currentFloor||1, opts=[];
-    if(a1mCrystalIsEntrance(scene)){
+    if(a1mCrystalIsEntrance(scene) && a2dIs(scene.currentMapId)){
+      a2dCrystalOptions(scene,opts,Z2);
+    } else if(a1mCrystalIsEntrance(scene)){
       /* ONE OPTION, AND SAVE IS NOT AMONG THEM. Owner, build 36: the entrance crystal "has no saving
          ability and only sends the player to the crystal near the boss (no healing ability as well)".
          a1mCrystalDormant has already refused this menu entirely while the crystal is un-activated,
@@ -6969,7 +7494,8 @@
     // (a1mCrystalDormant's header). It is only ever reachable here once activated, and its whole
     // effect is the warp, so the button says so.
     var Qp=window.__QOK, Zp=(Qp&&Qp.Z)||function(k){return k;}, verb=a1mVerbTable();
-    el.textContent=(target.t===14 && a1mCrystalIsEntrance(scene)) ? verb.warp
+    el.textContent=target.verb ? target.verb
+                 : (target.t===14 && a1mCrystalIsEntrance(scene)) ? verb.warp
                  : (target.t===14) ? a1mCrystalTouchLabel()   // crystals no longer save (2026-11-04)
                  : (verb[target.t]||verb.any);
     el.classList.add('a1m-show');
@@ -7018,8 +7544,8 @@
     return { x:-sx/l, y:-sy/l };
   }
   var A1F_LIFTS=[0,0.75,1.5,3];                                              // canonical px tried along the normal
-  function a1fGlide(scene,m,x,y,sx,sy){
-    var nrm=a1fNormal(scene,x,y); if(!nrm) return null;
+  function a1fGlide(scene,m,x,y,sx,sy,nrm0){
+    var nrm=nrm0||a1fNormal(scene,x,y); if(!nrm) return null;
     var d=sx*nrm.x+sy*nrm.y, tx=sx, ty=sy;
     if(d<0){ tx=sx-d*nrm.x; ty=sy-d*nrm.y; }
     var len=Math.sqrt(tx*tx+ty*ty), l=Math.sqrt(sx*sx+sy*sy);
@@ -7036,6 +7562,9 @@
     if(window.__A1_OW_GLIDE__===false) return null;                          // review escape hatch
     var l=Math.sqrt(sx*sx+sy*sy); if(l<1e-6) return null;
     var fg=a1fRequiredAt(scene,x,y)?a1fGlide(scene,m,x,y,sx,sy):null; if(fg) return fg;
+    // ACTS 2-5: the wall normal read from that act's pack, fed to the same glide.
+    var actsH=window.__QOK_ACTS__, an=actsH?actsH.normal(scene,x,y,a1fSoleSpec(scene)):null;
+    if(an){ fg=a1fGlide(scene,m,x,y,sx,sy,an); if(fg) return fg; }
     var ux=sx/l, uy=sy/l, look=Math.max(l,A1M_GLIDE_LOOK), pref=(a1mState&&a1mState.glide)||1;
     for(var i=0;i<A1M_GLIDE_TURN.length;i++){
       var t=A1M_GLIDE_TURN[i], ok=[false,false], vx=[0,0], vy=[0,0];
@@ -7058,6 +7587,8 @@
     // Explicit V8 readiness is a movement gate, not a degraded tile fallback.
     var hxReady=m.ow?owCanonical(hero.x):hero.x, hyReady=m.ow?owCanonical(hero.y):hero.y;
     if(m.ow&&a1fRequiredAt(scene,hxReady,hyReady)&&(!A1A_FOREST.mode||!a1fReady(scene))) return;
+    // ACTS 2-5: hold, exactly like the line above, while the act she stands in is still loading its pack.
+    if(m.ow&&window.__QOK_ACTS__&&window.__QOK_ACTS__.hold(hxReady,hyReady)) return;
     var key=a1mStateKey(scene);
     if(!a1mState || a1mState.scene!==scene || a1mState.key!==key)
       a1mState={ scene:scene, key:key, phase:0, bump:0 };
@@ -7074,6 +7605,8 @@
     }
 
     var inp=a1mInput(scene), moved=0;
+    if(a2dCtx && !m.ow && a2dCtx.mod && a2dCtx.mod.input){                    // authored mechanic: may bend or hold the stick
+      try{ var a2i=a2dCtx.mod.input(a2dCtx,inp,x,y); if(a2i!==undefined) inp=a2i; }catch(e){} }
     // A transition query consumes the frozen scene's one-frame cooldown even
     // when it returns null. Preserve that authored F1 mouth query while the
     // player remains on the same cell, but require current outward input before
@@ -7090,6 +7623,8 @@
         a1mExitRetry=null;
       }
     }
+    if(a2dCtx && !m.ow){ var a2w=a2dOpenedUnder(scene,inp,x,y+a1mFootDy(scene,m));   // authored: the boss's way out opens where she stands
+      if(a2w){ try{ scene.performTransition(a2w); }catch(e){ if(window.__DQ_DEBUG__) console.log('a2d way '+e); } return; } }
     if(inp){
       // Facing dead band: near a 45-degree push |x| and |y| trade places with every thumb tremor and
       // she flickered between two facings. Keep the axis she already faces until the other one
@@ -7108,11 +7643,12 @@
       // overworld displacement by P preserves the existing physical px/s.
       var total=speed*(0.45+0.55*inp.m)*Math.min(0.12,dtms/1000)/(scaled?OW_SCALE:1);
       // Whole-forest sweeps at one physical pixel or less; old authorities retain their established step.
-      var maxStep=(m.ow&&a1fRequiredAt(scene,x,y))?(1/OW_SCALE):a1mMetric(m,A1M_STEP);
+      var maxStep=(m.ow&&(a1fRequiredAt(scene,x,y)||a1fActsPixel(x,y)))?(1/OW_SCALE):a1mMetric(m,A1M_STEP);
       var n=Math.max(1,Math.ceil(total/maxStep)), sx=inp.x*total/n, sy=inp.y*total/n, k;
       for(k=0;k<n;k++){
         var nx=x+sx, ny=y+sy;
         if(a1mFree(scene,m,nx,ny)){ x=nx; y=ny; moved+=Math.sqrt(sx*sx+sy*sy); continue; }
+        if(a2dCtx && !m.ow) a2dPush(scene,m,x,y,sx,sy,false);               // authored mechanic: told of every refused step, glide or not
         // The step was refused: give the engine its ASK-FIRST chance before anything glides past
         // the thing she walked into. See a1mDoor -- this is where the town entrances live.
         if(a1mDoor(scene,m,x,y,sx,sy)){ hero.x=scaled?owPhysical(x):x; hero.y=scaled?owPhysical(y):y; return; }
@@ -7191,13 +7727,16 @@
     var tr=null; try{ tr=scene.checkTransition(tx,ty); }catch(e){}
     if(tr){ try{ scene.performTransition(tr); }catch(e){ if(window.__DQ_DEBUG__) console.log('a1 move tr '+e); } return; }
     if(!tr && cooldownBefore>0 && (scene.transitionCooldown===cooldownBefore-1)
-       && (scene.currentFloor||1)===1 && A1D_MAPS[scene.currentMapId]
-       && a1dIsMouthCell(scene,tx,ty) && Math.abs(tx-prevTx)+Math.abs(ty-prevTy)===1
+       && (((scene.currentFloor||1)===1 && A1D_MAPS[scene.currentMapId] && a1dIsMouthCell(scene,tx,ty))
+           || a2dIsWayCell(scene,tx,ty))                                   // authored: she lands beside the stairs, and may turn straight back
+       && Math.abs(tx-prevTx)+Math.abs(ty-prevTy)===1
        && a1mExitRetryOutward(inp,{dx:tx-prevTx,dy:ty-prevTy})){
       a1mExitRetry={scene:scene,mapId:scene.currentMapId,floor:scene.currentFloor||1,
                     x:tx,y:ty,dx:tx-prevTx,dy:ty-prevTy};
     }
-    try{ scene.onStep(); }catch(e){ if(window.__DQ_DEBUG__) console.log('a1 move step '+e); }
+    var a2s; if(a2dCtx && !m.ow && a2dCtx.mod && a2dCtx.mod.step){            // authored mechanic: entered a cell; false = no encounter roll
+      try{ a2s=a2dCtx.mod.step(a2dCtx,tx,ty,prevTx,prevTy); }catch(e){} }
+    if(a2s!==false) try{ scene.onStep(); }catch(e){ if(window.__DQ_DEBUG__) console.log('a1 move step '+e); }
     try{ scene.updatePosition(); }catch(e){}
     try{ if(scene.fogEnabled && scene.updateFogVisibility) scene.updateFogVisibility(); }catch(e){}
     try{ if(scene.handleTorchPickup) scene.handleTorchPickup(); }catch(e){}
@@ -7235,7 +7774,15 @@
     if(!cam||!hero||!hero.scene||typeof cam.width!=='number') return;
     if(cam._follow){ try{ cam.stopFollow(); }catch(e){} }
     var tx=hero.x-cam.width*0.5, ty=hero.y-cam.height*0.5;                   // Phaser's own follow target
+    // E2: Continue INSIDE an authored dungeon starts the scene with the camera bounds of the bundle's own generated
+    // floor (often smaller than ours), which pinned the view to a corner of a larger authored floor. Entering from the
+    // overworld leaves the overworld's wide bounds, so the same is given here: never narrower than our floor plus a screen.
+    if(a2dCtx && a2dCtx.scene===scene && cam.useBounds && cam._bounds){
+      var a2w=a2dCtx.plan.width*TILE+cam.width, a2h=a2dCtx.plan.height*TILE+cam.height, a2b=cam._bounds;
+      if(a2b.width<a2w || a2b.height<a2h){ try{ cam.setBounds(0,0,Math.max(a2b.width,a2w),Math.max(a2b.height,a2h)); }catch(e){} } }
     if(cam.useBounds && cam.clampX){ tx=cam.clampX(tx); ty=cam.clampY(ty); }
+    if(a2dCtx && a2dCtx.scene===scene && a2dCtx.mod && a2dCtx.mod.camera){    // authored mechanic: its own framing ({x,y} = scroll target), e.g. one forest room at a time
+      try{ var a2c=a2dCtx.mod.camera(a2dCtx,tx,ty,cam,dtms); if(a2c){ tx=a2c.x; ty=a2c.y; } }catch(e){} }
     var s=a1mCamS;
     if(!s || s.cam!==cam || Math.abs(cam.scrollX-s.wx)>1.5 || Math.abs(cam.scrollY-s.wy)>1.5)
       s=a1mCamS={ cam:cam, x:cam.scrollX, y:cam.scrollY, wx:cam.scrollX, wy:cam.scrollY };
@@ -7317,6 +7864,7 @@
       var was=this.isMoving; this.isMoving=true;
       try{ orig.call(this,time,delta); } finally { this.isMoving=was; }
       if(on&&!entryWaiting) try{ a1mStep(this,delta); }catch(e){ if(window.__DQ_DEBUG__) console.log('a1 move '+e+(e&&e.stack||'')); }
+      if(a2dCtx) try{ a2dFrame(this,delta); }catch(e){ if(window.__DQ_DEBUG__) console.log('a2d frame '+e+(e&&e.stack||'')); }
       if(owScene(this)) try{ owSyncPhysicalFrame(this); }catch(e){}
       // after the hero has moved, and before Phaser's preRender reads the scroll for this frame
       try{ a1mCam(this,delta); }catch(e){ if(window.__DQ_DEBUG__) console.log('a1 cam '+e); }
@@ -7346,9 +7894,9 @@
         var im=new Image();
         im.onload=function(){ a1dArt[key]=im; a1dLayer[key]=names[0]; a1dChanged=true; };
         im.onerror=function(){ tryLayer(names.slice(1)); };
-        im.src='act1-dungeon-art/'+key+'-'+names[0]+'.png';
+        im.src=a2dUrl(key,names[0],'webp')||('act1-dungeon-art/'+key+'-'+names[0]+'.png');
       };
-      tryLayer(window.__A1_DNG_LAYER__==='material'?['material','props']:['props','material']);
+      tryLayer(a2dUrl(key,'material','webp')?['material']:(window.__A1_DNG_LAYER__==='material'?['material','props']:['props','material']));
     }
     return undefined;                                                       // still loading
   }
@@ -7405,7 +7953,8 @@
   // Act-1 dungeon asset library (the art the floors were composed from), drawn live over the
   // material layer. Torches carry no engine tile, but no in-scope dungeon uses them.
   var A1D_ASSET={6:'stairsUp',9:'stairsDown',4:'chest',8:'chestOpen',7:'boss',14:'save',18:'sign'};
-  function a1dAssetName(t,scene){
+  function a1dAssetName(t,scene,tx,ty){
+    if(a2dIs(scene.currentMapId)) return a2dAssetName(t,scene,tx,ty);
     if(t===6 && (scene.currentFloor||1)===1) return 'mouth';               // tile 6 is the cave mouth on floor 1
     return A1D_ASSET[t]||null;
   }
@@ -7557,14 +8106,16 @@
     for (var ty=Y0;ty<=Y1;ty++){ var mrow=map[ty]; if(!mrow)continue; for (var tx=X0;tx<=X1;tx++){ var t=mrow[tx]; if(!RESKIN_SPECIAL[t])continue;
       var es=tg&&tg[ty]&&tg[ty][tx]; if(es&&es.visible)es.setVisible(false);                    // hide engine sprite (under our base)
       var key=tx+'_'+ty; seen[key]=1;
-      var an=(a1layer==='material')?a1dAssetName(t,scene):null;             // material layer: the floor's own asset art, live
+      var an=(a1layer==='material')?a1dAssetName(t,scene,tx,ty):null;       // material layer: the floor's own asset art, live
+      if(an===''){ var hid=specImgs[key]; if(hid&&hid.visible) hid.setVisible(false); continue; }   // authored: painted into the floor, or another layer's sprite
       var pn=an?null:propNameFor(t,map,tx,ty);
       var tk = an ? a1dAssetTex(scene,an) : (pn ? ensurePropTex(scene,pn) : ensureSpecialTex(scene,t)); // Codex PNG prop, else code-drawn (lava/spike)
       if(!tk) continue;                                                                                    // PNG still loading → place next tick
       var img=specImgs[key]; if(!img){ img=scene.add.image(0,0,tk).setDepth(3); specImgs[key]=img; }
       if(img.texture.key!==tk) img.setTexture(tk);
-      if(an){ var asc=(an==='boss')?2.2:1.0;                                // boss is 2.2 cells (locked); the rest sit at authored size
-        img.setOrigin(0.5,1).setPosition(tx*TILE+TILE/2,ty*TILE+TILE).setDisplaySize(img.width*asc,img.height*asc); }
+      if(an){ var asc=(an==='boss')?2.2:a2dAssetScale(scene,an);            // boss is 2.2 cells (locked); the rest sit at authored size
+        img.setOrigin(0.5,1).setPosition(tx*TILE+TILE/2,ty*TILE+TILE).setDisplaySize(img.width*asc,img.height*asc);
+        a2dAssetTint(scene,img,t); }
       else if(!pn || pn.indexOf('door')>=0){ img.setOrigin(0,0).setPosition(tx*TILE,ty*TILE).setDisplaySize(TILE,TILE); }  // code-drawn (lava/spike) + doors: fill the tile
       else { var sc=PROP_SCALE[pn]||1.4; img.setOrigin(0.5,1).setPosition(tx*TILE+TILE/2,ty*TILE+TILE).setDisplaySize(TILE*sc,TILE*sc); } // objects: bigger, sit on the floor tile & rise up
       if(!img.visible)img.setVisible(true); } }
@@ -7784,7 +8335,7 @@
     if(!A1D_OVERHEAD_ON){ for(var kk in a1dOverSprites) a1dOverDrop(kk); return; }
     var mapId=scene.currentMapId, key=mapId+'-f'+(scene.currentFloor||1);
     for(var k in a1dOverSprites){ if(k!==key) a1dOverDrop(k); }              // never leak a sprite across floors
-    if(!A1D_MAPS[mapId] || (scene.currentFloor||1)!==1) return;              // only floor 1 carries a cave mouth
+    if(A1D_MAPS[mapId]!==1 || (scene.currentFloor||1)!==1) return;           // only floor 1 carries a cave mouth (Act 1; authored floors use a2dOverTick)
     if(a1dOverSprites[key]) return;                                          // already placed; nothing per-tick to do
     var tk='a1dover_'+key;
     if(scene.textures.exists(tk)){
@@ -7856,7 +8407,7 @@
   }
   function a1dEntranceCrystalTick(scene){
     var mapId=scene.currentMapId, floor=scene.currentFloor||1, key=mapId+'-f'+floor;
-    if(!A1D_MAPS[mapId] || floor!==1){                                       // wrong floor/map -> nothing to show; drop any stale sprite
+    if(A1D_MAPS[mapId]!==1 || floor!==1){                                    // wrong floor/map -> nothing to show; drop any stale sprite
       if(a1dEntranceKey && a1dEntranceSpr[a1dEntranceKey]){ try{ a1dEntranceSpr[a1dEntranceKey].destroy(); }catch(e){} delete a1dEntranceSpr[a1dEntranceKey]; }
       a1dEntranceKey=null;
       return;
@@ -7902,6 +8453,7 @@
     try{ a1dBossSort(scene); }catch(e){ if(window.__DQ_DEBUG__) console.log('a1 boss sort tick '+e); }
     try{ a1dOverheadTick(scene); }catch(e){ if(window.__DQ_DEBUG__) console.log("a1 overhead tick "+e); }
     try{ a1dEntranceCrystalTick(scene); }catch(e){ if(window.__DQ_DEBUG__) console.log('a1 entrance crystal tick '+e); }
+    try{ a2dOverTick(scene); }catch(e){ if(window.__DQ_DEBUG__) console.log('a2d over tick '+e); }
   }
   function dngHero(scene){ if(scene.hero&&scene.hero.x!=null) return scene.hero; if(scene.player&&scene.player.x!=null) return scene.player; var l=scene.children.list; for(var i=0;i<l.length;i++){ if(l[i].depth===10&&l[i].x!=null) return l[i]; } return null; }
   // which THEME this dungeon uses, from the engine tile prefix (our base canvas never changes those)
@@ -8193,7 +8745,8 @@
   // ============================================================
   var kindCache={};
   function sceneKind(scene){
-    try { if(isOverworld(scene)) return 'ow';
+    try { if(typeof a2dIs==='function' && a2dIs(scene.currentMapId)) return 'dng';   // E2: an authored dungeon is never the overworld (see isOverworld)
+      if(isOverworld(scene)) return 'ow';
       var id=scene.currentMapId; if(kindCache[id]) return kindCache[id];
       var tg=scene.tileGrid, k=null;
       for(var y=0;y<tg.length&&!k;y++) for(var x=0;x<(tg[y]||[]).length;x++){ var s=tg[y][x]; if(s&&s.texture&&s.texture.key){ k=s.texture.key; break; } }
@@ -8203,7 +8756,11 @@
     } catch(e){ return null; }
   }
   function isOverworld(scene){
-    try { var id=scene.currentMapId; return scene.cullingEnabled===true || id==='overworld' || /[Oo]verworld|[Ii]sles|[Pp]eaks|Realm|Temple/.test(String(id||'')); }
+    // E2: an authored Acts 2-5 dungeon is never the overworld. Entered from a portal isle the scene still carries
+    // the isle's cullingEnabled, and an id such as sunkenTempleDungeon matches the name test below: either way the
+    // overworld reskin dressed the dungeon's floor with trees and mountains until the next fresh load.
+    try { var id=scene.currentMapId; if(typeof a2dIs==='function' && a2dIs(id)) return false;
+      return scene.cullingEnabled===true || id==='overworld' || /[Oo]verworld|[Ii]sles|[Pp]eaks|Realm|Temple/.test(String(id||'')); }
     catch(e){ return false; }
   }
   var lastReskinMapId=null;
@@ -8575,6 +9132,10 @@
     // Guarded on a real kind, never a transient null, for the same reason destroyDng is.
     if (kind && kind!=='ow'){ a1aSea(null,false); a1aUnderpaintHide(); }
     if ((kind==='town'||kind==='dng') && owMap) destroyOwProps(); // entered a town/dungeon -> drop landmark prop images (NOT on a transient null kind)
+    // E2: the overworld's procedural overlay (pines, ridges: a container at depth 5) is empty wherever baked art
+    // owns the ground, so nothing showed that the dungeon branch never drops it. A portal isle has no baked art:
+    // its pines and mountains stayed drawn over an authored dungeon entered from it until the next fresh load.
+    if (kind==='dng' && a2dIs(scene.currentMapId) && overlayState && overlayState.container){ try{ overlayState.container.destroy(); }catch(e){} overlayState=null; }
     if (kind!=='ow' && !SHIP_TOWN_DNG_RESKIN){
       // Overworld-only ship: tear down any stale overworld terrain/overlay so it can't linger over the engine's
       // native town/dungeon art, then bail — towns + dungeons render exactly as the base game does (unchanged).
@@ -8759,7 +9320,7 @@
   function dungeonSurfaceReady(scene){
     if(!scene||!A1D_MAPS[scene.currentMapId]) return null;
     var floor=scene.currentFloor||1;
-    if(floor<1||floor>3) return null;
+    if(floor<1||(floor>3&&!a2dIs(scene.currentMapId))) return null;
     var key=scene.currentMapId+'-f'+floor, fl=a1dFloors&&a1dFloors[key], md=scene.mapData;
     if(!fl||!md||md.length!==fl.height||(md[0]||[]).length!==fl.width) return false;
     if(a1dKey!==key||!a1dApplied||a1dApplied.scene!==scene||a1dApplied.key!==key||a1dApplied.mapData!==md) return false;
@@ -8772,7 +9333,7 @@
     var live=typeof worldScene==='function'?worldScene():null;
     if(live&&live!==scene) return false; // a delayed Retry must not mutate a replaced scene instance
     var floor=scene.currentFloor||1;
-    if(floor<1||floor>3) return false;
+    if(floor<1||(floor>3&&!a2dIs(scene.currentMapId))) return false;
     var key=scene.currentMapId+'-f'+floor;
     // A strict entry failure deliberately leaves movement held in a degraded fallback. Reloading
     // the mask alone cannot escape that state: a1dRescueHero returns early while the latch remains.
@@ -8823,6 +9384,27 @@
   window.__A1A_PH__=A1A_PH;                                     // verification only: placeholder registry
   window.__DQ_TILES__={ reskin:reskin, ready:terrainReady, dungeonSurfaceReady:dungeonSurfaceReady, retryDungeonSurface:retryDungeonSurface, readyWhy:terrainReadyWhy, cost:terrainCost,
     checkOverworldSpawn:a1mOverworldSpawnCheck,
+    // ACTS 2-5 (acts-runtime.js; nothing else calls these three). The runtime writes its plates into
+    // mapData after load, and the overworld field built before that would keep the old terrain.
+    refreshMovementField:function(){ owmState=null; },
+    // True once this overworld array has been consolidated and given Act 1's plate (owEnsureMapSetup).
+    // The Acts 2-5 runtime writes its own plates only after that, so the consolidation always runs
+    // over the generator's map, as it does without that runtime.
+    overworldSetupDone:function(map){ return !!map&&owMapRef===map; },
+    // One chunk budget for the whole world: how many Act 1 chunks are resident, and a trim that
+    // evicts the oldest ones the current window does not touch, so walking away from Act 1 hands its
+    // memory to the act she is in instead of holding both windows.
+    act1Resident:function(){ return A1A.lru.length; },
+    // The numbers scripts/acts/check_world.py models the hero with (asserted by the headless probe).
+    soleSpec:function(){ var sc=worldScene(), m=sc&&a1mAnyFor(sc); return sc?{ sole:a1fSoleSpec(sc), footDy:m?a1mFootDy(sc,m):null }:null; },
+    trimAct1Chunks:function(maxKeep){
+      var keep=Object.create(null), out=[], i, drop=A1A.lru.length-Math.max(0,maxKeep|0);
+      if(!(drop>0)) return A1A.lru.length;
+      for(i=0;i<(A1A.win||[]).length;i++) keep[A1A.win[i]]=1;
+      for(i=0;i<A1A.lru.length;i++){ var id=A1A.lru[i];
+        if(drop>0&&!keep[id]){ delete A1A.chunks[id]; a1aDropChunkGpu(id); drop--; } else out.push(id); }
+      A1A.lru=out; return out.length;
+    },
     retryUnderpaint:function(){ return a1aUnderpaintRequired()&&a1aUnderpaintRetry(); },
     overworldSpace:{ scale:OW_SCALE, pitch:OW_TILE, cellCenter:owCellCenter,
       toCanonical:owCanonical, toPhysical:owPhysical,

@@ -1,0 +1,58 @@
+{
+ "id": "act1-north-seam",
+ "origin": [
+  16,
+  213
+ ],
+ "rows": 12,
+ "pixelsPerCell": 32,
+ "depths": {
+  "base": 1.26,
+  "front": 10.51
+ },
+ "tiles": [
+  {
+   "x": 64,
+   "cols": 16,
+   "base": "base-3.png",
+   "front": "front-3.png"
+  },
+  {
+   "x": 80,
+   "cols": 16,
+   "base": "base-4.png",
+   "front": "front-4.png"
+  },
+  {
+   "x": 96,
+   "cols": 16,
+   "base": "base-5.png",
+   "front": "front-5.png"
+  },
+  {
+   "x": 112,
+   "cols": 16,
+   "base": "base-6.png",
+   "front": "front-6.png"
+  },
+  {
+   "x": 128,
+   "cols": 16,
+   "base": "base-7.png",
+   "front": "front-7.png"
+  },
+  {
+   "x": 144,
+   "cols": 16,
+   "base": "base-8.png",
+   "front": "front-8.png"
+  },
+  {
+   "x": 160,
+   "cols": 4,
+   "base": "base-9.png"
+  }
+ ],
+ "collision": "unchanged",
+ "note": "fix5: replaces the build 91 island edge (water strip + cut tops) where Act 1 meets Act 5"
+}

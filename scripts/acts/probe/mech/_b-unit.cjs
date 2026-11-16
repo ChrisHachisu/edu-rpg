@@ -1,0 +1,433 @@
+'use strict';
+// Unit tests of the MECH-B mechanic modules against every floor's plan JSON (no browser).
+//   node scripts/acts/probe/mech/_b-unit.cjs [mechanic-id ...]      exit 1 on any FAIL
+const fs = require('fs'), path = require('path');
+const U = require('./_b-unit-lib.cjs');
+let pass = 0, fail = 0;
+const ok = (name, cond, note) => { if (cond) pass++; else { fail++; console.log(`[FAIL] ${name}${note !== undefined ? ' -- ' + (typeof note === 'string' ? note : JSON.stringify(note)).slice(0, 500) : ''}`); } return !!cond; };
+const T = {};
+
+// ---- kit: the string table --------------------------------------------------------------------
+T['kit'] = () => {
+  const H = U.load('crust-bridges'), S = H.kit.STR;
+  const kanji = /[一-鿿]/, kana = /[぀-ヿ]/;
+  for (const k in S) {
+    const r = S[k];
+    ok(`string ${k}: en, ja, jaKanji all present`, !!(r.en && r.ja && r.jaKanji), r);
+    ok(`string ${k}: ja is kana only`, !kanji.test(r.ja), r.ja);
+    ok(`string ${k}: en has no kana`, !kana.test(r.en) && !kanji.test(r.en));
+    const vars = s => (s.match(/\{\w+\}/g) || []).sort().join();
+    ok(`string ${k}: same placeholders in all three`, vars(r.en) === vars(r.ja) && vars(r.en) === vars(r.jaKanji));
+    ok(`string ${k}: same number of lines in ja and jaKanji`, r.ja.split('\n').length === r.jaKanji.split('\n').length);
+  }
+  H.state.locale = 'ja'; ok('text(): kana by default in Japanese', H.kit.text('d2.forge.verb.turn') === 'まわす');
+  H.state.kanjiMode = true; ok('text(): kanji in kanji mode', H.kit.text('d2.forge.verb.turn') === '回す');
+  H.state.locale = 'en'; ok('text(): placeholder filled', H.kit.text('d2.hp.lost', { n: 7 }) === '-7 HP');
+  const c = H.ctxFor('magmaTunnels-f1'); H.kit.quiet(H.scene);
+  ok('quiet(): the bundle hunter, portals and wind are off', !H.scene.mazeHunterEnabled && !H.scene.shadowPortalEnabled && !H.scene.windTowerEnabled && H.scene.portalPairs.length === 0);
+  H.state.hp = 100; const d = H.kit.hurt(c, 0.1); ok('hurt(): a tenth of full HP', d === 10 && H.state.hp === 90);
+  H.state.hp = 3; H.kit.hurt(c, 0.1); ok('hurt(): never below 1 HP', H.state.hp === 1);
+  let t = H.kit.clock(c, 0, 32, 185); ok('clock starts at 0', t === 0);
+  for (let i = 0; i < 100; i++) t = H.kit.clock(c, 37, 32, 185);
+  ok('clock advances in plan ticks', Math.abs(t - 20) < 0.01, t);
+  const c2 = H.ctxFor('magmaTunnels-f1'); ok('clock phase survives a new visit (flag)', Math.abs(H.kit.clock(c2, 0, 32, 185) - 20) < 0.01);
+};
+
+// ---- crust-bridges ------------------------------------------------------------------------------
+T['crust-bridges'] = () => {
+  for (const fid of U.floorsOf('magmaTunnels')) {
+    const H = U.load('crust-bridges'), c = H.ctxFor(fid), M = H.mod, P = c.mechanic.params, bs = c.mechanic.bridges;
+    M.load(c); const L = M.logic.layout(c);
+    ok(`${fid}: every bridge laid out`, L.length === bs.length && L.length > 0);
+    for (const l of L) {
+      const b = l.b; let crust = 0, warn = 0, molten = 0;
+      for (let t = 0; t < b.period; t++) { const p = M.logic.phaseOf(b, t); if (p === 'crust') crust++; else if (p === 'warn') warn++; else molten++;
+        if ((p === 'molten') !== (((t - b.phase) % b.period + b.period) % b.period >= b.crust)) fail++; }
+      ok(`${fid} bridge ${b.id}: crust/warn/molten ticks as planned`, crust + warn === b.crust && warn === b.warn && molten === b.period - b.crust, { crust, warn, molten });
+      ok(`${fid} bridge ${b.id}: both banks are floor`, l.ends.every(e => U.WALK.includes(c.terrain(Math.floor(e[0] / 48), Math.floor(e[1] / 48)))), l.ends);
+      // walk the middle line bank to bank at every tick: open exactly while not molten
+      const mid = b.cells[Math.floor(b.cells.length / 2)];
+      for (let t = 0; t < b.period; t++) {
+        c.state.clk = t * c.state.ms + 1; H.standCell(c, mid[0] + 40, mid[1] + 40); M.tick(c, 0);
+        const fr = M.free(c, mid[0] * 48 + 24, mid[1] * 48 + 24, mid[0], mid[1]), want = M.logic.phaseOf(b, t) !== 'molten';
+        if (fr !== want) { ok(`${fid} bridge ${b.id}: free() follows the beat at tick ${t}`, false, { fr, want }); break; }
+      }
+      // the rim of the strip is never open; the bank reach is open only while crusted
+      const side = l.horiz ? [l.px[0] + 24, l.px[1] + 3] : [l.px[0] + 3, l.px[1] + 24];
+      c.state.clk = (b.phase % b.period) * c.state.ms + 1; M.tick(c, 0);
+      ok(`${fid} bridge ${b.id}: rim closed while crusted`, M.free(c, side[0], side[1]) === false);
+      const reach = l.horiz ? [l.px[0] - 10, (l.px[1] + l.px[3]) / 2] : [(l.px[0] + l.px[2]) / 2, l.px[1] - 10];
+      ok(`${fid} bridge ${b.id}: bank reach open while crusted`, M.free(c, reach[0], reach[1]) === true);
+      c.state.clk = ((b.phase + b.crust) % b.period) * c.state.ms + 1; M.tick(c, 0);
+      ok(`${fid} bridge ${b.id}: bank reach left to the mask while molten`, M.free(c, reach[0], reach[1]) === undefined);
+    }
+    // caught: stand on the bank, walk on while crusted, stay until it melts
+    const l = L[0], b = l.b, bank = l.ends[0], mid = [(l.px[0] + l.px[2]) / 2, (l.px[1] + l.px[3]) / 2];
+    c.state.clk = (b.phase % b.period) * c.state.ms + 1; H.stand(c, bank[0], bank[1]); M.tick(c, 0);
+    H.stand(c, mid[0], mid[1]); M.tick(c, 0); const hp0 = H.state.hp;
+    ok(`${fid}: standing on crust costs nothing`, H.state.hp === hp0 && H.said.length === 0);
+    ok(`${fid}: no encounter roll on a crossing`, M.step(c, 0, 0, 0, 0) === false);
+    c.state.clk = ((b.phase + b.crust) % b.period) * c.state.ms + 1; M.tick(c, 0);
+    const s = H.kit.soles(c);
+    ok(`${fid}: caught when it melts -> small damage and back on the bank she came from`, H.state.hp === hp0 - 10 && Math.abs(s.x - bank[0]) < 1 && Math.abs(s.y - bank[1]) < 1 && H.said.length === 1, { hp: H.state.hp, s, bank });
+    H.stand(c, mid[0], mid[1]); M.tick(c, 0);
+    ok(`${fid}: second burn is a float text, not another message box`, H.said.length === 1 && H.state.hp === hp0 - 20);
+    ok(`${fid}: clock phase is in the flags`, typeof H.state.storyFlags[c.flagKey('clk')] === 'number');
+  }
+};
+
+
+// ---- lava-channels ------------------------------------------------------------------------------
+T['lava-channels'] = () => {
+  let mirrored = 0, hallsN = 0;
+  for (const fid of U.floorsOf('volcanicForge')) {
+    const H = U.load('lava-channels'), c = H.ctxFor(fid), M = H.mod, Lg = M.logic;
+    M.load(c); const S = c.state, md = S.M;
+    ok(`${fid}: every plan hall modelled`, md.order.length === c.mechanic.halls.length && md.order.length > 0);
+    for (const hp of c.mechanic.halls) {
+      const h = md.halls[hp.hall]; hallsN++;
+      ok(`${fid} ${hp.hall}: tiles, turntables, molds, lever and furnace as planned`, h.list.length === hp.tiles.length && h.turn.length === hp.turntables && h.molds.length === hp.molds.length && !!h.lever && !!h.furnace && !!h.source, { tiles: h.list.length, turn: h.turn.length });
+      ok(`${fid} ${hp.hall}: the lever stands on floor, the furnace in the wall above the first trough`, c.terrain(h.lever.x, h.lever.y) === '.' && c.terrain(h.furnace.x, h.furnace.y) === '#' && h.source.y === h.furnace.y + 1);
+      const f0 = Lg.flow(h);
+      ok(`${fid} ${hp.hall}: as found, the iron does not reach the exit mold`, !f0.molds.some(m => m.mold.id === 'exit'));
+      const mask = l => l.reduce((a, d) => a | (1 << 'NESW'.indexOf(d)), 0);
+      // the plan's solved rotation: turnsClockwise in the hall's own frame (a mirrored hall turns the other way round on screen)
+      const need = [t => t.asset.turnsClockwise, t => (4 - t.asset.turnsClockwise) % 4].map(fn => h.turn.every(t => { const r = t.rot; t.rot = fn(t); const k = Lg.openOf(t) === mask(t.asset.solvedOpen); t.rot = r; return k; }));
+      ok(`${fid} ${hp.hall}: the plan's solved openings are reachable by clockwise taps`, need[0] || need[1], h.turn.map(t => [t.asset.open, t.asset.solvedOpen, t.asset.turnsClockwise]));
+      if (!need[0]) mirrored++;
+      const ex = Lg.solve(h, ['exit']), ids = h.molds.map(m => m.id), all = Lg.solve(h, ids);
+      ok(`${fid} ${hp.hall}: exit mold solvable, every mold solvable`, !!ex && !!all && ex.taps >= 1, { ex, all });
+      if (need[0]) ok(`${fid} ${hp.hall}: fewest taps equal the plan's turnsToExit`, ex.taps === hp.turnsToExit, { mine: ex.taps, plan: hp.turnsToExit });
+      // play it: walk onto each turntable of the plan, tap Turn, then the lever
+      const mold = h.molds.find(m => m.id === 'exit'), zc = [(mold.zone[0] + mold.zone[2]) / 2, (mold.zone[1] + mold.zone[3]) / 2];
+      ok(`${fid} ${hp.hall}: the mold is not walkable before the pour`, M.free(c, zc[0], zc[1]) === undefined);
+      H.stand(c, h.lever.x * 48 + 24 + 40, h.lever.y * 48 + 24);
+      let it = M.interact(c, H.hero.x, H.hero.y + 31, null);
+      ok(`${fid} ${hp.hall}: beside the lever the pill says Pull`, !!it && it.verb === 'Pull', it && it.verb);
+      it.act(); for (let i = 0; i < 400; i++) M.tick(c, 16);
+      ok(`${fid} ${hp.hall}: a pour before the turntables are set leaves the exit mold empty: no bridge, no flag, no penalty`, !mold.cast && !H.state.storyFlags[c.flagKey('mold.' + h.id + '.exit')] && c.state.anim === null && H.state.hp === 100);
+      ok(`${fid} ${hp.hall}: ... and says so (pooled, or the treasure mold it did reach)`, (f0.molds.length ? /bridge/ : /pools/).test(H.said[H.said.length - 1]), H.said.slice(-1));
+      for (const st of all.plan) { const t = h.turn[st.i];
+        H.stand(c, (t.x + 1) * 48, (t.y + 1) * 48);
+        for (let k = 0; k < st.taps; k++) { it = M.interact(c, H.hero.x, H.hero.y + 31, null); if (!it || it.verb !== 'Turn') { ok(`${fid} ${hp.hall}: on a turntable the pill says Turn`, false, it); break; } it.act(); H.flushTweens(); } }
+      ok(`${fid} ${hp.hall}: lever is solid`, M.free(c, h.lever.x * 48 + 24, h.lever.y * 48 + 24) === false);
+      H.stand(c, h.lever.x * 48 + 24, h.lever.y * 48 + 24 + 44); it = M.interact(c, H.hero.x, H.hero.y + 31, null); it.act();
+      ok(`${fid} ${hp.hall}: no turning during a pour`, M.interact(c, H.hero.x, H.hero.y + 31, null) === undefined);
+      for (let i = 0; i < 400; i++) M.tick(c, 16);
+      ok(`${fid} ${hp.hall}: joined troughs fill every mold: bridges cast, flags set, walkable`, h.molds.every(m => m.cast && H.state.storyFlags[c.flagKey('mold.' + h.id + '.' + m.id)] === true) && M.free(c, zc[0], zc[1]) === true && /bridge/.test(H.said[H.said.length - 1]), H.said);
+      ok(`${fid} ${hp.hall}: the bridge's rim stays closed to the mask`, M.free(c, mold.horiz ? zc[0] : mold.px[0] + 3, mold.horiz ? mold.px[1] + 3 : zc[1]) === undefined);
+    }
+    // Save -> Continue: a new visit reads rotations and bridges back from the flags
+    const c2 = H.ctxFor(fid); M.load(c2);
+    ok(`${fid}: rotations and bridges survive a new visit`, c2.state.M.order.every(k => { const a = c2.state.M.halls[k], b = md.halls[k]; return a.turn.every((t, i) => t.rot === b.turn[i].rot) && a.molds.every(m => m.cast); }));
+    const anyHall = c2.state.M.halls[c2.state.M.order[0]];
+    H.stand(c2, anyHall.lever.x * 48 + 24 + 40, anyHall.lever.y * 48 + 24); M.interact(c2, H.hero.x, H.hero.y + 31, null).act(); for (let i = 0; i < 400; i++) M.tick(c2, 16);
+    ok(`${fid}: pouring again into cast bridges changes nothing`, /already/.test(H.said[H.said.length - 1]));
+  }
+  console.log(`  lava-channels: ${hallsN} halls, ${mirrored} mirrored (clockwise on screen = the plan's counter-clockwise)`);
+};
+
+
+// ---- guard-lanterns -----------------------------------------------------------------------------
+T['guard-lanterns'] = () => {
+  for (const fid of U.floorsOf('demonBarracks')) {
+    const H = U.load('guard-lanterns'), c = H.ctxFor(fid), M = H.mod, Lg = M.logic;
+    M.load(c); const S = c.state, md = S.M, P = c.mechanic.params.periodTicks;
+    const assets = c.plan.mech.filter(a => a.kind === 'guard');
+    ok(`${fid}: every guard modelled, period ${P}`, md.guards.length === assets.length && md.guards.length > 0 && md.period === P);
+    for (const g of md.guards) {
+      const a = g.asset, s0 = g.seq[0];
+      ok(`${fid} guard ${g.id}: beat is ${P} ticks and starts on the plan's cell and facing`, g.seq.length === P && s0[0] === a.x && s0[1] === a.y && s0[2] === a.facing[0] && s0[3] === a.facing[1], { s0, a: [a.x, a.y, a.facing] });
+      ok(`${fid} guard ${g.id}: never steps more than one tile a tick, only on floor, and the beat closes`, g.seq.every((p, i) => { const q = g.seq[(i + 1) % P]; return Math.abs(p[0] - q[0]) + Math.abs(p[1] - q[1]) <= 1 && c.terrain(p[0], p[1]) === '.'; }));
+      ok(`${fid} guard ${g.id}: visits every waypoint`, a.waypoints.every(w => g.seq.some(p => p[0] === w[0] && p[1] === w[1])));
+    }
+    const ever = new Set();
+    for (let t = 0; t < P; t++) for (const g of md.guards) for (const k in Lg.litBy(c, md, g, t)) ever.add(k);
+    const zone = new Set(c.plan.zones.find(z => z.kind === 'everLit').cells.map(q => q.join(',')));
+    const miss = [...zone].filter(k => !ever.has(k)), extra = [...ever].filter(k => !zone.has(k));
+    ok(`${fid}: the cells ever lit are exactly the plan's everLit zone (${zone.size} cells)`, miss.length === 0 && extra.length === 0, { miss: miss.slice(0, 5), extra: extra.slice(0, 5) });
+    // a dark cell is never seen; a lit one starts a battle and removes that guard for good
+    const dark = c.rawPlan.route.find(q => !zone.has(q.join(',')));
+    let seenDark = false; for (let t = 0; t < P; t++) if (Lg.seenBy(c, md, t, dark[0], dark[1]).length) seenDark = true;
+    ok(`${fid}: a cell outside the light is never seen`, !seenDark);
+    const g0 = md.guards[0], cell = Object.keys(Lg.litBy(c, md, g0, 7)).find(k => { const q = k.split(',').map(Number); return Math.max(Math.abs(q[0] - g0.seq[7][0]), Math.abs(q[1] - g0.seq[7][1])) >= 3; }).split(',').map(Number);
+    c.state.clk = 7 * c.state.ms + 1; H.standCell(c, dark[0], dark[1]); c.state.grace = 0; M.tick(c, 0);
+    ok(`${fid}: standing in the dark starts nothing`, H.battles.length === 0 && H.said.length === 0);
+    H.standCell(c, cell[0], cell[1]); M.tick(c, 0);
+    ok(`${fid}: standing in a lantern cone: she is held and told`, H.scene.isMoving === true && H.said.length === 1 && H.battles.length === 0, H.said);
+    M.tick(c, 16); H.runTimers(700);
+    ok(`${fid}: ... then the battle starts through the game's own startBattle, against a demon of this zone`, H.battles.length === 1 && H.battles[0].id === 'demon' && H.scene.currentEncounterZone === 'demons-threshold', H.battles);
+    ok(`${fid}: that guard is gone afterwards (flag)`, g0.gone && H.state.storyFlags[c.flagKey('gone.' + g0.id)] === true);
+    H.scene.isMoving = false; c.state.grace = 0; c.state.clk = 7 * c.state.ms + 1;
+    const others = Lg.seenBy(c, md, 7, cell[0], cell[1]);
+    M.tick(c, 0);
+    ok(`${fid}: its light is out: the same cell at the same tick is safe (unless another guard lights it)`, others.length > 0 || H.battles.length === 1);
+    const c2 = H.ctxFor(fid); M.load(c2);
+    ok(`${fid}: the guard stays gone on a new visit`, c2.state.M.guards[0].gone === true && c2.state.M.guards.filter(g => g.gone).length === md.guards.filter(g => g.gone).length);
+  }
+};
+
+
+// ---- push-ice -----------------------------------------------------------------------------------
+T['push-ice'] = () => {
+  const DIR = { E: [1, 0], S: [0, 1], W: [-1, 0], N: [0, -1] };
+  for (const fid of U.floorsOf('frostfallCavern')) {
+    const H = U.load('push-ice'), c = H.ctxFor(fid), M = H.mod, Lg = M.logic;
+    M.load(c); const S = c.state;
+    ok(`${fid}: every chamber modelled`, S.rooms.length === c.mechanic.rooms.length && S.rooms.length > 0);
+    for (const rp of c.mechanic.rooms) {
+      const R = S.rooms.find(r => r.id === rp.room);
+      // the model sits on the plan's own tiles
+      const blocksA = c.plan.mech.filter(a => a.kind === 'iceBlock' && a.room === R.id), crystA = c.plan.mech.filter(a => a.kind === 'stopCrystal' && a.room === R.id);
+      ok(`${fid} ${R.id}: block and crystal cells land on the plan's assets`, blocksA.every(a => { const p = Lg.cellPx(R, R.start[a.id][0], R.start[a.id][1]); return p[0] === a.x * 48 && p[1] === a.y * 48; })
+        && crystA.every(a => rp.crystals.some(q => { const p = Lg.cellPx(R, q[0], q[1]); return p[0] === a.x * 48 && p[1] === a.y * 48; })) && crystA.length === rp.crystals.length);
+      ok(`${fid} ${R.id}: chamber floor is ice, crystals are 'o', the water cells are the plan's`, [...Array(R.gw * R.gh).keys()].every(n => { const i = n % R.gw, j = (n / R.gw) | 0, p = Lg.cellPx(R, i, j), ch = c.terrain(p[0] / 48, p[1] / 48); return R.crystal[i + ',' + j] ? ch === 'o' : ch === '~'; })
+        && [...Array(R.need).keys()].every(k => { const p = Lg.cellPx(R, R.gw + k, R.row); return c.terrain(p[0] / 48, p[1] / 48) === 'w' && rp.water.some(q => q[0] === p[0] / 48 && q[1] === p[1] / 48); }));
+      ok(`${fid} ${R.id}: the bell is a solid post on the door pad`, !!R.bell && c.terrain(R.bell.x, R.bell.y) === '.' && M.free(c, R.bell.x * 48 + 24, R.bell.y * 48 + 24) === false);
+      const far = Lg.cellPx(R, R.gw + R.need - 1, R.row), mid = [far[0] + 48, far[1] + 48];
+      ok(`${fid} ${R.id}: the water is not walkable before the bridge`, M.free(c, mid[0], mid[1]) === undefined);
+      // the plan's own solution, pushed the way a player pushes: stand against the far side, hold the stick
+      let good = true, n = 0;
+      for (const st of rp.solution) {
+        const m = /^push (\d+),(\d+) ([ESWN])$/.exec(st); if (!m) { good = false; break; }
+        const k = R.blocks.findIndex(b => b && b[0] === +m[1] && b[1] === +m[2]), d = DIR[m[3]], dxw = d[0] * R.sx, dyw = d[1];
+        if (k < 0) { good = false; break; }
+        const r = Lg.solidRect(R, R.blocks[k]);
+        const sx = dxw > 0 ? r[0] - 2 : dxw < 0 ? r[2] + 1 : (r[0] + r[2]) / 2, sy = dyw > 0 ? r[1] - 2 : dyw < 0 ? r[3] + 1 : (r[1] + r[3]) / 2;
+        const ch = c.terrain(Math.floor(sx / 48), Math.floor(sy / 48));
+        if (!'.~'.includes(ch) || M.free(c, sx, sy) === false) { ok(`${fid} ${R.id}: she can stand behind the block for "${st}"`, false, { ch, sx, sy }); good = false; break; }
+        H.stand(c, sx, sy); const before = Lg.pack(R);
+        M.input(c, { x: dxw, y: dyw, m: 1 }, H.hero.x, H.hero.y); H.wall.now += 120; M.input(c, { x: dxw, y: dyw, m: 1 }, H.hero.x, H.hero.y);
+        if (Lg.pack(R) !== before) { ok(`${fid} ${R.id}: a brush against a block does not push it`, false); good = false; break; }
+        H.wall.now += 200; M.input(c, { x: dxw, y: dyw, m: 1 }, H.hero.x, H.hero.y); H.flushTweens(); n++;
+        if (Lg.pack(R) === before && R.fill === 0 && !S.last.moved) { ok(`${fid} ${R.id}: "${st}" moves the block`, false, S.last); good = false; break; }
+        for (let i = 0; i < 60; i++) M.tick(c, 16);
+      }
+      ok(`${fid} ${R.id}: the plan's ${rp.solution.length} pushes, done by leaning on the blocks, fill the gap`, good && R.fill === R.need && n === rp.fewestPushes, { fill: R.fill, need: R.need, n });
+      ok(`${fid} ${R.id}: the bridge is walkable bank to bank and its flag is set`, M.free(c, mid[0], mid[1]) === true && H.state.storyFlags[c.flagKey('fill.' + R.id)] === R.need);
+      ok(`${fid} ${R.id}: the first bridge is announced once`, H.said.filter(t => /bridge/.test(t)).length === 1, H.said);
+      // blocks cannot leave the chamber: with the gap full, a block on the slipway row stops at the edge
+      const spare = R.blocks.findIndex(b => b);
+      if (spare >= 0) { const save = R.blocks[spare]; R.blocks[spare] = [R.gw - 1, R.row]; const r = Lg.push(R, spare, 1, 0);
+        ok(`${fid} ${R.id}: with the gap full a block stops at the chamber edge`, r.moved === false && R.fill === R.need); R.blocks[spare] = save; }
+      // never from the bridge
+      R.blocks[0] = [R.gw - 1, R.row]; ok(`${fid} ${R.id}: a block is never pushed from the bridge side`, Lg.push(R, 0, -1, 0).moved === false);
+      // the bell: every block forms again at its start, bridges stay
+      H.stand(c, R.bell.x * 48 + 24 + R.sx * 44, R.bell.y * 48 + 24); const it = M.interact(c, H.hero.x, H.hero.y + 31, null);
+      ok(`${fid} ${R.id}: beside the bell the pill says Ring`, !!it && it.verb === 'Ring'); it.act();
+      ok(`${fid} ${R.id}: the bell forms every block again at its start; the bridge stays`, Lg.pack(R) === R.start.map(b => b.join(',')).join('|') && R.fill === R.need && M.free(c, mid[0], mid[1]) === true && /bell/.test(H.said[H.said.length - 1]));
+      ok(`${fid} ${R.id}: a block is solid where it stands`, M.free(c, Lg.cellPx(R, R.start[0][0], R.start[0][1])[0] + 48, Lg.cellPx(R, R.start[0][0], R.start[0][1])[1] + 48) === false);
+    }
+    // Save -> Continue mid-puzzle: push once, new visit, same blocks
+    const H2 = U.load('push-ice'), d = H2.ctxFor(fid); H2.mod.load(d);
+    const R2 = d.state.rooms[0], rp2 = d.mechanic.rooms[0], m2 = /^push (\d+),(\d+) ([ESWN])$/.exec(rp2.solution[0]);
+    const k2 = R2.blocks.findIndex(b => b && b[0] === +m2[1] && b[1] === +m2[2]); H2.mod.logic.push(R2, k2, DIR[m2[3]][0], DIR[m2[3]][1]);
+    const L = { R: R2, k: k2 }; const packed = H2.mod.logic.pack(R2);
+    H2.kit.setFlag(d, 'blk.' + R2.id, packed); H2.kit.setFlag(d, 'fill.' + R2.id, R2.fill || false);
+    const d2 = H2.ctxFor(fid); H2.mod.load(d2);
+    ok(`${fid}: a half-solved chamber is restored from the flags`, H2.mod.logic.pack(d2.state.rooms[0]) === packed && d2.state.rooms[0].fill === R2.fill, { packed, got: H2.mod.logic.pack(d2.state.rooms[0]) });
+  }
+};
+
+
+// ---- storm-terrace ------------------------------------------------------------------------------
+T['storm-terrace'] = () => {
+  for (const fid of U.floorsOf('stormreachSpire')) {
+    const H = U.load('storm-terrace'), c = H.ctxFor(fid), M = H.mod, Lg = M.logic, P = c.mechanic.params;
+    M.load(c); const S = c.state, md = S.M;
+    ok(`${fid}: the bundle's wind is off`, H.scene.windTowerEnabled === false);
+    const zones = c.plan.zones.filter(z => z.kind === 'strikeGroup');
+    ok(`${fid}: ${P.groups} groups, period ${P.periodTicks}`, md.G === P.groups && md.period === P.periodTicks && zones.length === P.groups);
+    let terrace = 0, bad = 0;
+    for (const z of zones) {
+      const mine = new Set(md.cells[z.group].map(q => q.join(','))); terrace += mine.size;
+      ok(`${fid} group ${z.group}: cells are the plan's zone, struck at tick ${z.strikeAtTick}`, mine.size === z.cells.length && z.cells.every(q => mine.has(q.join(','))) && Lg.striking(md, z.group, z.strikeAtTick) && !Lg.striking(md, z.group, z.strikeAtTick - 1));
+      let st = 0, gl = 0; for (let t = 0; t < md.period; t++) { if (Lg.striking(md, z.group, t)) st++; if (Lg.glowing(md, z.group, t)) gl++;
+        if (Lg.striking(md, z.group, t) !== (((t - z.group * P.ticksBetweenGroups) % md.period + md.period) % md.period < P.strikeTicks)) bad++; }
+      ok(`${fid} group ${z.group}: deadly ${P.strikeTicks} ticks a period, glows the ${P.glowTicks} ticks before`, st === P.strikeTicks && gl === P.glowTicks && Lg.glowing(md, z.group, z.strikeAtTick - 1) && Lg.glowing(md, z.group, z.strikeAtTick - P.glowTicks) && !Lg.glowing(md, z.group, z.strikeAtTick - P.glowTicks - 1), { st, gl });
+    }
+    ok(`${fid}: the solver's danger rule, tick for tick`, bad === 0);
+    let zc = 0, ledge = null; c.rawPlan.rows.forEach((r, y) => [...r].forEach((ch, x) => { if (ch === 'z') { zc++; if (Lg.groupAt(md, x, y) < 0) bad++; } else { if (Lg.groupAt(md, x, y) >= 0) bad++; if (ch === '.' && !ledge) ledge = [x, y]; } }));
+    ok(`${fid}: every terrace cell has a group and nothing else has (${zc} cells)`, bad === 0 && zc === terrace);
+    // a ledge is never struck
+    H.standCell(c, ledge[0], ledge[1]); S.grace = 0;
+    for (let t = 0; t < md.period; t++) { S.clk = t * S.ms + 1; M.tick(c, 0); }
+    ok(`${fid}: a roofed ledge is never struck`, H.state.hp === 100 && H.said.length === 0);
+    // walk three tiles onto group-0 stone while it is safe, wait for its strike
+    const z0 = zones[0], cell = z0.cells.find(q => Lg.groupAt(md, q[0] - 1, q[1]) >= 0 || c.terrain(q[0] - 1, q[1]) === '.') || z0.cells[0];
+    S.clk = ((z0.strikeAtTick + P.strikeTicks + 1) % md.period) * S.ms + 1; S.grace = 0; S.trail = [];
+    for (let i = 60; i >= 0; i -= 6) { H.stand(c, cell[0] * 48 + 24 - i, cell[1] * 48 + 24); M.tick(c, 0); }
+    ok(`${fid}: stone that is not being struck is safe`, H.state.hp === 100);
+    S.clk = ((z0.strikeAtTick - 1 + md.period) % md.period) * S.ms + 1; M.tick(c, 0);
+    ok(`${fid}: glowing stone is still safe`, H.state.hp === 100 && Lg.glowing(md, 0, S.tick));
+    S.clk = (z0.strikeAtTick % md.period) * S.ms + 1; M.tick(c, 0);
+    const s1 = H.kit.soles(c);
+    ok(`${fid}: struck -> small damage, a message, knocked back one tile along her own path`, H.state.hp === 90 && H.said.length === 1 && Math.abs(Math.hypot(s1.x - (cell[0] * 48 + 24), s1.y - (cell[1] * 48 + 24)) - 48) <= 6, { hp: H.state.hp, s1 });
+    H.stand(c, cell[0] * 48 + 24, cell[1] * 48 + 24); M.tick(c, 30);
+    ok(`${fid}: one strike never hits twice`, H.state.hp === 90);
+    let waited = 0; while (H.state.hp === 90 && waited < md.period * S.ms * 1.5) { M.tick(c, 50); waited += 50; }
+    ok(`${fid}: ... but a later strike does, as a float text`, H.state.hp === 80 && H.said.length === 1, { waited });
+  }
+};
+
+
+// ---- maze-hunter --------------------------------------------------------------------------------
+T['maze-hunter'] = () => {
+  for (const fid of U.floorsOf('sunkenTempleDungeon')) {
+    const H = U.load('maze-hunter'), c = H.ctxFor(fid), M = H.mod, Lg = M.logic, P = c.mechanic.params;
+    M.load(c); const S = c.state, md = S.M, plan = c.rawPlan;
+    ok(`${fid}: the bundle's own hunter is off`, H.scene.mazeHunterEnabled === false);
+    const keys = Object.keys(md.adj);
+    ok(`${fid}: ${P.mazeCells[0]}x${P.mazeCells[1]} halls, every doorway two-way and open floor between hall centres`, keys.length === P.mazeCells[0] * P.mazeCells[1] && keys.every(k => md.adj[k].every(q => {
+      const a = k.split(',').map(Number), back = md.adj[q.join(',')].some(r => r[0] === a[0] && r[1] === a[1]); let open = true;
+      const ca = Lg.centre(md, a), cb = Lg.centre(md, q); for (let i = 0; i <= 10; i++) if (c.terrain(Math.floor((ca[0] + (cb[0] - ca[0]) * i / 10) / 48), Math.floor((ca[1] + (cb[1] - ca[1]) * i / 10) / 48)) !== '.') open = false;
+      return back && open && Math.abs(a[0] - q[0]) + Math.abs(a[1] - q[1]) === 1; })));
+    const ha = plan.assets.find(a => a.kind === 'hunter'), hc = Lg.centre(md, md.home);
+    ok(`${fid}: the hunter sleeps on the plan's hunter cell, in a dead end`, Math.floor(hc[0] / 48) === ha.x && Math.floor(hc[1] / 48) === ha.y && md.adj[md.home.join(',')].length === 1 && S.h.awake === false && S.h.x === hc[0]);
+    const start = plan.assets.find(a => a.kind === 'mouth' || a.kind === 'stairsPrev'), goal = plan.assets.find(a => a.kind === 'stairsNext' || a.kind === 'boss');
+    ok(`${fid}: the arrival hall, the stairs hall and the boss chamber are out of bounds for it`, md.safe['0,' + (md.H - 1)] === 1 && md.safe[Lg.cellOfTile(md, goal.x, goal.y).join(',')] === 1 && !md.safe[md.home.join(',')], md.safe);
+    // the plan's straight route, walked at her own pace: no battle (the solver's battlesOnTheStraightRoute = 0)
+    const walk = (pts, speed, stopAt) => { let caughtAt = null, frames = 0;
+      for (let i = 0; i < pts.length && !caughtAt; i++) { const tx = pts[i][0] * 48 + 24, ty = pts[i][1] * 48 + 24;
+        for (;;) { const s = H.kit.soles(c), dx = tx - s.x, dy = ty - s.y, d = Math.hypot(dx, dy), st = speed * 16 / 1000;
+          if (d <= st) { H.stand(c, tx, ty); break; } H.stand(c, s.x + dx / d * st, s.y + dy / d * st); M.tick(c, 16); frames++;
+          if (H.scene.isMoving) { caughtAt = pts[i]; break; } if (stopAt && stopAt()) return { frames, caughtAt, stopped: true }; } }
+      return { frames, caughtAt }; };
+    H.stand(c, plan.route[0][0] * 48 + 24, plan.route[0][1] * 48 + 24); M.tick(c, 16);
+    const r1 = walk(plan.route.slice(0, -1), 260);
+    ok(`${fid}: walking the plan's route at her pace meets no battle (solver: ${plan.tests.solver.battlesOnTheStraightRoute})`, !r1.caughtAt && H.battles.length === 0, r1);
+    ok(`${fid}: it woke after ${P.wakesAfterCellsWalked} halls, said so once, and its state is in the flags`, S.h.awake === true && S.wakes === 1 && H.said.length === 1 && /^1\|\d+,\d+\|\d+$/.test(H.state.storyFlags[c.flagKey('hunter')] || ''), [S.h.awake, H.said, H.state.storyFlags[c.flagKey('hunter')]]);
+    // Save -> Continue: a new visit finds it awake in the hall it had reached
+    const at = S.h.at.join(','), c2 = H.ctxFor(fid); M.load(c2);
+    ok(`${fid}: Continue finds the hunter awake in the same hall`, c2.state.h.awake === true && c2.state.h.at.join(',') === at);
+    // in a safe hall it never moves; standing still outside one it comes and catches her
+    const last = plan.route[plan.route.length - 2]; H.stand(c, last[0] * 48 + 24, last[1] * 48 + 24);
+    const safeNow = !!md.safe[Lg.cellOfPx(md, last[0] * 48 + 24, last[1] * 48 + 24).join(',')];
+    const p0 = [S.h.x, S.h.y]; for (let i = 0; i < 300; i++) M.tick(c, 16);
+    ok(`${fid}: while she stands in the stairs hall (or boss chamber) it does not move`, !safeNow || (S.h.x === p0[0] && S.h.y === p0[1]));
+    // stand still in a hall two doors from where it is (one it can reach without crossing a stairs hall) and wait
+    const dh = Lg.dists(md, S.h.at), spot = Object.keys(dh).find(k => dh[k] === 2) || Object.keys(dh).find(k => dh[k] === 1), sc = Lg.centre(md, spot.split(',').map(Number));
+    H.stand(c, sc[0], sc[1]); let waited = 0;
+    while (!H.scene.isMoving && waited < 120000) { M.tick(c, 16); waited += 16; }
+    ok(`${fid}: standing still in the maze, it reaches her: she is held and told`, H.scene.isMoving === true && /caught/.test(H.said[H.said.length - 1]), { waited, h: S.h });
+    M.tick(c, 16); H.runTimers(700);
+    ok(`${fid}: ... the battle is a Temple Guard of this zone, and the hunter is home asleep again`, H.battles.length === 1 && H.battles[0].id === 'templeGuard' && S.h.awake === false && S.h.walked === 0 && S.h.x === hc[0] && S.h.y === hc[1] && H.state.storyFlags[c.flagKey('hunter')] === undefined, [H.battles, S.h]);
+    // speed: never faster than its share of her pace
+    H.scene.isMoving = false; S.h.awake = true; S.grace = 0; const q0 = [S.h.x, S.h.y]; let far = 0;
+    for (let i = 0; i < 60; i++) { M.tick(c, 16); far = Math.max(far, Math.hypot(S.h.x - q0[0], S.h.y - q0[1])); }
+    const sp = P.hunterMovesPerHeroCellMoves.split('/');
+    ok(`${fid}: it walks at ${P.hunterMovesPerHeroCellMoves} of her pace`, far <= 260 * (sp[0] / sp[1]) * 0.96 + 1 && far > 0, { far, max: 260 * (sp[0] / sp[1]) * 0.96 });
+  }
+};
+
+
+// ---- matching-portals ---------------------------------------------------------------------------
+T['matching-portals'] = () => {
+  for (const fid of U.floorsOf('twilightDungeon')) {
+    const H = U.load('matching-portals'), c = H.ctxFor(fid), M = H.mod, Lg = M.logic, P = c.mechanic.params;
+    M.load(c); const S = c.state, plan = c.rawPlan, assets = plan.assets.filter(a => a.kind === 'portal');
+    ok(`${fid}: the bundle's own portals are off`, H.scene.shadowPortalEnabled === false && H.scene.portalPairs.length === 0);
+    ok(`${fid}: ${P.pairs} pairs, a pad on each portal asset, on floor, each colour known and used once`, S.pads.length === 2 * P.pairs && assets.length === S.pads.length
+      && S.pads.every(p => assets.some(a => a.x === p.x && a.y === p.y && a.pair === p.pair && a.colour === p.colour) && c.terrain(p.x, p.y) === '.' && Lg.COL[p.colour] !== undefined && p.twin.twin === p && p.twin.pair === p.pair)
+      && new Set(S.pads.map(p => p.colour)).size === P.pairs);
+    const start = plan.route[0]; H.standCell(c, start[0], start[1]); M.tick(c, 16);
+    ok(`${fid}: nothing happens away from a pad`, S.hops === 0 && S.asleep === null);
+    for (const pr of c.mechanic.pairs) {
+      const a = S.pads.find(p => p.pair === pr.pair && p.x === pr.a[0] && p.y === pr.a[1]), b = a.twin;
+      H.stand(c, a.px - 100, a.py); M.tick(c, 16);
+      ok(`${fid} ${pr.colour}: near a portal its twin shines, others do not`, b.shine === true && S.pads.filter(p => p.shine).every(p => Math.hypot(p.twin.px - (a.px - 100), p.twin.py - a.py) <= 3.2 * 48 + 1));
+      H.stand(c, a.px - 30, a.py); M.tick(c, 16); const n0 = S.hops;
+      ok(`${fid} ${pr.colour}: beside the pad is not on it`, H.kit.soles(c).x === a.px - 30);
+      H.stand(c, a.px - 8, a.py + 6); M.tick(c, 16); let s = H.kit.soles(c);
+      ok(`${fid} ${pr.colour}: stepping on a takes her to b`, S.hops === n0 + 1 && s.x === b.px && s.y === b.py && S.asleep === b, { s, b: [b.px, b.py] });
+      for (let i = 0; i < 30; i++) M.tick(c, 16); s = H.kit.soles(c);
+      ok(`${fid} ${pr.colour}: the pad she arrived on sleeps while she stands on it (and no encounter roll there)`, S.hops === n0 + 1 && s.x === b.px && M.step(c, 0, 0, 0, 0) === false);
+      H.stand(c, b.px + 26, b.py); M.tick(c, 16); H.stand(c, b.px, b.py); M.tick(c, 16);
+      ok(`${fid} ${pr.colour}: a shuffle that stays on the pad does not re-arm it`, S.hops === n0 + 1);
+      H.stand(c, b.px + 50, b.py); M.tick(c, 16); ok(`${fid} ${pr.colour}: stepping off re-arms`, S.asleep === null && M.step(c, 0, 0, 0, 0) === undefined);
+      H.stand(c, b.px + 5, b.py); M.tick(c, 16); s = H.kit.soles(c);
+      ok(`${fid} ${pr.colour}: and on again goes back to a (two-way)`, S.hops === n0 + 2 && s.x === a.px && s.y === a.py);
+      H.stand(c, a.px - 100, a.py); M.tick(c, 16);
+    }
+    ok(`${fid}: no message boxes, no flags, no damage`, H.said.length === 0 && Object.keys(H.state.storyFlags).length === 0 && H.state.hp === 100);
+    // Continue while standing on a pad: it sleeps until she steps off
+    const c2 = H.ctxFor(fid); M.load(c2); const p0 = c2.state.pads[0]; H.stand(c2, p0.px, p0.py); M.tick(c2, 16); M.tick(c2, 16);
+    ok(`${fid}: loading on a pad does not throw her through it`, c2.state.hops === 0 && c2.state.asleep === p0);
+  }
+};
+
+
+// ---- drifting-blocks ----------------------------------------------------------------------------
+T['drifting-blocks'] = () => {
+  const gcd = (a, b) => (b ? gcd(b, a % b) : a);
+  for (const fid of U.floorsOf('voidRift')) {
+    const H = U.load('drifting-blocks'), c = H.ctxFor(fid), M = H.mod, Lg = M.logic, P = c.mechanic.params;
+    M.load(c); const S = c.state, plan = c.rawPlan, blocks = plan.assets.filter(a => a.kind === 'block');
+    let lcm = 1, worst = 0, lanesN = 0;
+    for (const g of c.mechanic.gates) for (const [j, l] of g.lanes.entries()) { lanesN++;
+      const a = blocks.find(b => b.gate === g.id && b.lane === j);
+      ok(`${fid} gate ${g.id} lane ${j}: block starts on the plan's cell; period ${l.periodTicks}`, a && a.x === l.x && a.y === l.yCentre - 1 + Lg.offs(l, 0) && Lg.per(l) === l.periodTicks);
+      lcm = lcm * l.periodTicks / gcd(lcm, l.periodTicks);
+      let okLane = true, lo = 9, hi = -9;
+      for (let t = 0; t < l.periodTicks; t++) { const o = Lg.offs(l, t); lo = Math.min(lo, o); hi = Math.max(hi, o);
+        if (Math.abs(o - Lg.offs(l, t + 1)) > 1) okLane = false;
+        for (let f = 0; f < 1; f += 0.125) worst = Math.max(worst, Math.abs(Lg.glide(l, t + f) - o)); }
+      ok(`${fid} gate ${g.id} lane ${j}: drifts ${l.amplitude} tiles either way, one tile at a time, inside its lane of 'v' cells`, okLane && lo === -l.amplitude && hi === l.amplitude
+        && [-l.amplitude - 1, l.amplitude + 1].every(o => [0, 1, 2].every(k => c.terrain(l.x + k, l.yCentre + o) === 'v')));
+    }
+    ok(`${fid}: system period is the plan's ${P.systemPeriodTicks} ticks; the drawn block is never more than half a tile from its counted place`, lcm === P.systemPeriodTicks && S.period === lcm && worst <= 0.5 + 1e-9, { lcm, worst });
+    // a patient player crosses every rift from several moments of the cycle; she can never stand where there is no ground
+    const sim = (G, t0, wantIslet) => {
+      const first = G.lanes[0], last = G.lanes[G.lanes.length - 1], yc = G.cy * 48 + 24;
+      const allowed = (x, y) => { const f = M.free(c, x, y); if (f !== undefined) return f; return c.terrain(Math.floor(x / 48), Math.floor(y / 48)) === '.' && (x <= first.x0 - 17 || x >= last.x1 + 17 || (G.islet && (y <= first.top - 17 || y >= first.bot + 17))); };
+      S.clk = t0 * S.ms; H.stand(c, first.x0 - 40, yc); M.tick(c, 0);
+      let ms = 0, fell = null, rode = 0, visited = false;
+      const limit = S.period * S.ms * 4;
+      while (ms < limit) {
+        const y0 = H.kit.soles(c).y; M.tick(c, 16); ms += 16; let s = H.kit.soles(c);
+        if (s.y !== y0) rode += Math.abs(s.y - y0);
+        if (!allowed(s.x, s.y)) { let fix = null;                      // the engine's unstick: nearest ground within a few px
+          for (let r = 2; r <= 14 && !fix; r += 2) for (let a = 0; a < 16 && !fix; a++) { const px = s.x + Math.cos(a * Math.PI / 8) * r, py = s.y + Math.sin(a * Math.PI / 8) * r; if (allowed(px, py)) fix = [px, py]; }
+          if (!fix) { fell = { at: [s.x, s.y], ms }; break; } H.stand(c, fix[0], fix[1]); s = H.kit.soles(c); }
+        if (!wantIslet && s.x >= last.x1 + 17 && !Lg.blockUnder([G], s.x, s.y)) return { ok: true, ms, rode };
+        // where next?
+        const on = Lg.blockUnder([G], s.x, s.y), j = on ? G.lanes.indexOf(on) : (s.x < first.x0 ? -1 : G.lanes.length);
+        let tgt = null;
+        if (wantIslet && !on && s.x >= first.x0 && s.x < last.x1) { visited = true; }             // standing on the islet
+        if (wantIslet && visited) return { ok: true, ms, rode, islet: true };
+        const goIslet = wantIslet && on && j === G.islet.lane;
+        const jn = G.joins.find(q => goIslet ? q.kind === 'islet' : (j === -1 ? q.kind === 'ledgeL' : (j === G.lanes.length - 1 && !wantIslet ? q.kind === 'ledgeR' : (q.kind === 'block' && q.lane === j))));
+        if (jn && goIslet) tgt = [(jn.rect[0] + jn.rect[2]) / 2, G.islet.side === 'top' ? jn.rect[1] - 14 : jn.rect[3] + 14];
+        else if (jn) tgt = [jn.rect[2] + 14, (jn.rect[1] + jn.rect[3]) / 2];
+        else if (on) tgt = [(on.x0 + on.x1) / 2, (on.y0 + on.y1) / 2];
+        if (!tgt) continue;
+        const dx = tgt[0] - s.x, dy = tgt[1] - s.y, d = Math.hypot(dx, dy), st = Math.min(d, 260 * 0.016);
+        if (d < 0.5) continue;
+        const cand = [[s.x + dx / d * st, s.y + dy / d * st], [s.x, s.y + Math.sign(dy) * Math.min(Math.abs(dy), st)], [s.x + Math.sign(dx) * Math.min(Math.abs(dx), st), s.y]];
+        for (const q of cand) if (allowed(q[0], q[1])) { H.stand(c, q[0], q[1]); break; }
+      }
+      return { ok: false, ms, fell, at: H.kit.soles(c) };
+    };
+    for (const G of S.gates) {
+      const res = []; for (let t0 = 0; t0 < S.period; t0 += Math.max(1, Math.floor(S.period / 8))) res.push(sim(G, t0, false));
+      ok(`${fid} gate ${G.id}: a patient player crosses from every phase tried, riding the blocks, and never falls`, res.every(r => r.ok && r.rode > 0), res.filter(r => !r.ok).slice(0, 2));
+      if (G.islet) { const r = sim(G, 3, true); ok(`${fid} gate ${G.id}: the islet is reached from the block that rests against it`, r.ok && r.islet, r); }
+      // no join is open in the picture with less than a tile and a half of shared edge; the void beside a block is never ground
+      let thin = 1e9, thinBB = 1e9, leak = 0;
+      for (let t = 0; t < S.period; t += 0.25) { S.clk = t * S.ms; M.tick(c, 0);
+        for (const q of G.joins) { if (q.kind === 'block') thinBB = Math.min(thinBB, q.rect[3] - q.rect[1] + 18); else if (q.kind !== 'islet') thin = Math.min(thin, q.rect[3] - q.rect[1] + 18); }
+        for (const L of G.lanes) { if (M.free(c, L.x0 + 72, L.y0 - 12) === true && !G.joins.some(q => q.kind === 'islet')) leak++; if (M.free(c, L.x0 + 72, L.y1 + 12) === true && !G.joins.some(q => q.kind === 'islet')) leak++; } }
+      ok(`${fid} gate ${G.id}: an open join to a ledge always shows 1.5+ tiles of shared edge, between two blocks 1+ tile; lane void is never ground`, thin >= 72 - 1e-6 && thinBB >= 48 - 1e-6 && leak === 0, { thin, thinBB, leak });
+    }
+    H.standCell(c, S.gates[0].lanes[0].l.x + 1, S.gates[0].lanes[0].l.yCentre + Lg.offs(S.gates[0].lanes[0].l, 0)); S.clk = 0; M.tick(c, 0);
+    ok(`${fid}: no encounter roll on a block; clock phase in the flags; nothing said, no damage`, M.step(c, 0, 0, 0, 0) === false && typeof H.state.storyFlags[c.flagKey('clk')] === 'number' && H.said.length === 0 && H.state.hp === 100);
+  }
+};
+
+// ---- RUN ----
+const want = process.argv.slice(2), names = want.length ? want : Object.keys(T);
+for (const n of names) { const f0 = fail, p0 = pass; try { T[n](); } catch (e) { fail++; console.log(`[FAIL] ${n}: threw ${e && e.stack || e}`); }
+  console.log(`${n}: ${pass - p0} pass, ${fail - f0} fail`); }
+console.log(`_b-unit: ${pass} checks passed, ${fail} FAIL`);
+process.exit(fail ? 1 : 0);
+module.exports = { T, ok };

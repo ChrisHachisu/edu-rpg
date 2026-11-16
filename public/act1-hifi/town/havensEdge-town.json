@@ -1,0 +1,223 @@
+{
+ "_comment": "havensEdge round-3 runtime config (Codex try 2); collision hand-traced per object, no foreground layer.",
+ "id": "havensEdge",
+ "nameKey": "map.havensEdge",
+ "screen": "town/havensEdge-screen.png",
+ "walkable": "town/havensEdge-walkable.json",
+ "cells": 65,
+ "artPxPerCell": 30,
+ "worldPxPerCell": 16,
+ "startCell": [
+  32.5,
+  56.0
+ ],
+ "savePoint": [
+  34.53,
+  42.66
+ ],
+ "exit": {
+  "cell": [
+   32.5,
+   58.0
+  ],
+  "targetMapId": "overworld",
+  "toX": 76,
+  "toY": 87,
+  "axis": "south",
+  "note": "toX/toY = overworld exit cell from exits.json (tools/apply_exits.py), not maps.ts."
+ },
+ "shopId": "havensEdge",
+ "shopCounter": [
+  45.5,
+  35.6
+ ],
+ "npcs": [
+  {
+   "id": "healer",
+   "dialogueKey": "npc.healer",
+   "nameKey": "npc.healer.name",
+   "sheet": "town/npc/havensEdge-healer-4x3-64.png",
+   "cell": [
+    26.41,
+    14.22
+   ],
+   "mapsTs": [
+    6,
+    3
+   ],
+   "name": "Healer",
+   "text": "Welcome to the clinic! I can heal your wounds."
+  },
+  {
+   "id": "grizzledKnight",
+   "dialogueKey": "npc.grizzledKnight",
+   "nameKey": "npc.grizzledKnight.name",
+   "sheet": "town/npc/havensEdge-grizzledKnight-4x3-64.png",
+   "cell": [
+    30.47,
+    50.78
+   ],
+   "mapsTs": [
+    7,
+    12
+   ],
+   "name": "Knight",
+   "text": "The Demon Castle lies beyond the maze to the north. Make sure you're fully prepared before you go... there's no turning back!"
+  },
+  {
+   "id": "prophetess",
+   "dialogueKey": "npc.prophetess",
+   "nameKey": "npc.prophetess.name",
+   "sheet": "town/npc/havensEdge-prophetess-4x3-64.png",
+   "cell": [
+    38.59,
+    18.28
+   ],
+   "mapsTs": [
+    9,
+    4
+   ],
+   "name": "Prophetess",
+   "text": "I sense great power in you, hero. Seek the legendary relics hidden in the far corners of this dark land before facing the Demon King."
+  },
+  {
+   "id": "kiki",
+   "dialogueKey": "npc.kiki.greeting",
+   "nameKey": "npc.kiki.name",
+   "sheet": "town/npc/havensEdge-kiki-4x3-64.png",
+   "cell": [
+    22.34,
+    18.28
+   ],
+   "mapsTs": [
+    5,
+    4
+   ],
+   "name": "Kiki",
+   "text": "Hey hey! The name's Kiki! I'm an adventurer too — well, I'm TRYING to be. This whole Demon King thing is really messing up my training!"
+  },
+  {
+   "id": "shopkeeper",
+   "dialogueKey": "npc.shopkeeper",
+   "nameKey": "npc.shopkeeper.name",
+   "sheet": "town/npc/havensEdge-shopkeeper-4x3-64.png",
+   "cell": [
+    45.5,
+    32.6
+   ],
+   "_note": "behind the painted counter; the hero talks across it from shopCounter",
+   "name": "Shopkeeper",
+   "text": "Welcome to my shop! Take a look around."
+  }
+ ],
+ "doors": [
+  {
+   "id": "healer",
+   "cell": [
+    25.8,
+    14.0
+   ]
+  },
+  {
+   "id": "shop",
+   "cell": [
+    45.5,
+    35.6
+   ]
+  }
+ ],
+ "_spots": [
+  {
+   "id": "healer",
+   "mapsTs": [
+    3,
+    12
+   ],
+   "new": [
+    6,
+    3
+   ],
+   "moved": true,
+   "cell": [
+    26.41,
+    14.22
+   ],
+   "onGround": true
+  },
+  {
+   "id": "grizzledKnight",
+   "mapsTs": [
+    3,
+    5
+   ],
+   "new": [
+    7,
+    12
+   ],
+   "moved": true,
+   "cell": [
+    30.47,
+    50.78
+   ],
+   "onGround": true
+  },
+  {
+   "id": "prophetess",
+   "mapsTs": [
+    12,
+    5
+   ],
+   "new": [
+    9,
+    4
+   ],
+   "moved": true,
+   "cell": [
+    38.59,
+    18.28
+   ],
+   "onGround": true
+  },
+  {
+   "id": "kiki",
+   "mapsTs": [
+    8,
+    3
+   ],
+   "new": [
+    5,
+    4
+   ],
+   "moved": true,
+   "cell": [
+    22.34,
+    18.28
+   ],
+   "onGround": true
+  },
+  {
+   "id": "savePoint",
+   "mapsTs": [
+    8,
+    10
+   ],
+   "new": [
+    8,
+    10
+   ],
+   "moved": false,
+   "cell": [
+    34.53,
+    42.66
+   ],
+   "onGround": true
+  }
+ ],
+ "_paintedOut": [],
+ "_validator": "VALID",
+ "_onlyExit": true,
+ "_qa": {
+  "blockedLooksGroundPx": 22212,
+  "walkableLooksObjectPx": 15480
+ }
+}

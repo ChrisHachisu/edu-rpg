@@ -41,7 +41,17 @@ def landmark_exits() -> dict[str, tuple[int, int]]:
     m = re.search(r"var LANDMARKS = (\[.*?\]);", src, re.S)
     if not m:
         raise SystemExit("check_town_transitions: no LANDMARKS array in public/act1-world-map.js")
-    return {l["mapId"]: (l["exit"]["x"], l["exit"]["y"]) for l in json.loads(m.group(1))}
+    exits = {l["mapId"]: (l["exit"]["x"], l["exit"]["y"]) for l in json.loads(m.group(1))}
+    # ACTS 2-5 (2026-11-13): the later towns' doors live in public/acts-hifi/manifest.json, written by
+    # scripts/build_acts_hifi_manifest.py from the installed art. Same rule, second authority: a
+    # town's json must carry its door's exit cell. A hosted town (`virtual`, e.g. Cinderwatch) is
+    # keyed by its own plate id, not by the engine map that hosts it.
+    index_path = os.path.join(ROOT, "public/acts-hifi/manifest.json")
+    if os.path.isfile(index_path):
+        for l in json.load(open(index_path)).get("landmarks", []):
+            if l.get("tile") == 6 and l.get("exit"):
+                exits.setdefault(l.get("virtual") or l["mapId"], (l["exit"][0], l["exit"][1]))
+    return exits
 
 
 def main() -> int:
@@ -54,7 +64,8 @@ def main() -> int:
         ex = (json.load(open(os.path.join(TOWN_DIR, f))).get("exit") or {})
         got = (ex.get("toX"), ex.get("toY"))
         if town not in want:
-            bad.append(f"  {town}: no LANDMARKS entry in public/act1-world-map.js")
+            bad.append(f"  {town}: no LANDMARKS entry in public/act1-world-map.js and no door in "
+                       f"public/acts-hifi/manifest.json")
             continue
         checked += 1
         if got != want[town]:
@@ -65,7 +76,7 @@ def main() -> int:
         print("\n".join(bad))
         return 1
     print(f"TOWN TRANSITION CHECK PASS: {checked} hi-fi town exits match their landmark exit cell "
-          f"in public/act1-world-map.js")
+          f"(public/act1-world-map.js, public/acts-hifi/manifest.json)")
     return 0
 
 

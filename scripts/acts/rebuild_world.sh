@@ -1,0 +1,26 @@
+#!/bin/sh
+# Install an Acts 2-5 export and rebuild everything derived from it, then run the world gate.
+#
+#   sh scripts/acts/rebuild_world.sh <export root> [<towns root>]
+#
+# <export root>/actN/runtime/ = scripts/acts/export_runtime.py + export_collision_bin.py output
+# (or scripts/acts/placeholder_runtime.py). <towns root> = the towns package (town/, exits.json);
+# omit it to keep the towns already installed. Nothing here touches dist/ or runs Vite.
+set -eu
+cd "$(dirname "$0")/../.."
+SRC=${1:?usage: rebuild_world.sh <export root> [<towns root>]}
+python3 scripts/acts/install_runtime.py "$SRC"
+# Art overrides over Act 1 (carved Crystal Cave mouth, north seam): <export root>/overrides/<id>/
+# holds override.json and its PNG tiles; the index builder lists whatever is installed.
+if [ -d "$SRC/overrides" ]; then
+  for O in "$SRC"/overrides/*/; do
+    [ -f "$O/override.json" ] || continue
+    ID=$(basename "$O"); mkdir -p "public/acts-hifi/overrides/$ID"
+    cp "$O"/override.json "$O"/*.png "public/acts-hifi/overrides/$ID/"
+    echo "override $ID installed"
+  done
+fi
+if [ -n "${2:-}" ]; then python3 scripts/acts/install_towns.py "$2"; fi
+python3 scripts/build_acts_hifi_manifest.py
+python3 scripts/acts/bake_acts_minimap.py | tail -1
+python3 scripts/acts/check_world.py
