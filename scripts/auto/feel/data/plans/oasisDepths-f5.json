@@ -1,0 +1,394 @@
+{
+ "schema": "qok-floorplan-v1",
+ "dungeonId": "oasisDepths",
+ "name": "Oasis Depths",
+ "act": 3,
+ "floor": 5,
+ "totalFloors": 5,
+ "width": 36,
+ "height": 22,
+ "cellPx": 48,
+ "title": "The Sand Serpent Queen",
+ "description": "A short approach. One wheel drains the moat in front of the boss lair. No puzzle here, just a dramatic opening: the water drains and the queen rises.",
+ "source": {
+  "artifact": "https://claude.ai/artifact/GbRmVWqp7TrgbnUii9sSdp",
+  "picture": "img/oasis-f5.png",
+  "recoveredBy": "plans/dungeons/oasisDepths_recover.py",
+  "assumed": [
+   "no checkpoint crystals are drawn on the page; none added",
+   "wheel timings"
+  ]
+ },
+ "legend": {
+  "#": "solid rock or wall",
+  ".": "floor",
+  "w": "channel, flooded at the start (blocked until its wheel drains it)",
+  "d": "channel, dry at the start (a stone walkway until its wheel floods it)"
+ },
+ "rows": [
+  "####################################",
+  "####################################",
+  "################...................#",
+  "################...................#",
+  "################...................#",
+  "################...................#",
+  "#.........######...................#",
+  "#.........######...................#",
+  "#.........######...................#",
+  "#.........wwwwww...................#",
+  "#.........wwwwww...................#",
+  "#.........wwwwww...................#",
+  "#.........wwwwww...................#",
+  "#.........######...................#",
+  "#.........######...................#",
+  "#.........######...................#",
+  "#.........######...................#",
+  "################...................#",
+  "################...................#",
+  "################...................#",
+  "################...................#",
+  "####################################"
+ ],
+ "assets": [
+  {
+   "kind": "wheel",
+   "x": 6,
+   "y": 8,
+   "id": 1,
+   "channels": [
+    0
+   ]
+  },
+  {
+   "kind": "boss",
+   "x": 27,
+   "y": 11,
+   "id": "sandSerpentQueen"
+  },
+  {
+   "kind": "stairsPrev",
+   "x": 3,
+   "y": 14
+  }
+ ],
+ "zones": [
+  {
+   "kind": "channel",
+   "id": 0,
+   "wheel": 1,
+   "floodedAtStart": true,
+   "rect": [
+    10,
+    9,
+    15,
+    12
+   ],
+   "cells": [
+    [
+     10,
+     9
+    ],
+    [
+     11,
+     9
+    ],
+    [
+     12,
+     9
+    ],
+    [
+     13,
+     9
+    ],
+    [
+     14,
+     9
+    ],
+    [
+     15,
+     9
+    ],
+    [
+     10,
+     10
+    ],
+    [
+     11,
+     10
+    ],
+    [
+     12,
+     10
+    ],
+    [
+     13,
+     10
+    ],
+    [
+     14,
+     10
+    ],
+    [
+     15,
+     10
+    ],
+    [
+     10,
+     11
+    ],
+    [
+     11,
+     11
+    ],
+    [
+     12,
+     11
+    ],
+    [
+     13,
+     11
+    ],
+    [
+     14,
+     11
+    ],
+    [
+     15,
+     11
+    ],
+    [
+     10,
+     12
+    ],
+    [
+     11,
+     12
+    ],
+    [
+     12,
+     12
+    ],
+    [
+     13,
+     12
+    ],
+    [
+     14,
+     12
+    ],
+    [
+     15,
+     12
+    ]
+   ],
+   "color": [
+    64,
+    140,
+    200
+   ],
+   "alpha": 90,
+   "fill": true
+  }
+ ],
+ "mechanic": {
+  "id": "sluice-wheels",
+  "params": {
+   "rule": "each wheel works its channels together: a turn drains the flooded ones and floods the dry ones",
+   "turnFrom": "a cell beside the wheel",
+   "walkwayWidth": 3,
+   "timings": "not in the artifact"
+  },
+  "wheels": [
+   {
+    "id": 1,
+    "at": [
+     6,
+     8
+    ],
+    "channels": [
+     0
+    ]
+   }
+  ],
+  "channels": [
+   {
+    "id": 0,
+    "wheel": 1,
+    "floodedAtStart": true,
+    "rect": [
+     10,
+     9,
+     15,
+     12
+    ]
+   }
+  ],
+  "arrival": [
+   3,
+   14
+  ]
+ },
+ "route": [
+  [
+   3,
+   15
+  ],
+  [
+   4,
+   15
+  ],
+  [
+   4,
+   14
+  ],
+  [
+   4,
+   13
+  ],
+  [
+   4,
+   12
+  ],
+  [
+   4,
+   11
+  ],
+  [
+   4,
+   10
+  ],
+  [
+   4,
+   9
+  ],
+  [
+   5,
+   9
+  ],
+  [
+   6,
+   9
+  ],
+  [
+   6,
+   10
+  ],
+  [
+   6,
+   11
+  ],
+  [
+   7,
+   11
+  ],
+  [
+   8,
+   11
+  ],
+  [
+   9,
+   11
+  ],
+  [
+   10,
+   11
+  ],
+  [
+   11,
+   11
+  ],
+  [
+   12,
+   11
+  ],
+  [
+   13,
+   11
+  ],
+  [
+   14,
+   11
+  ],
+  [
+   15,
+   11
+  ],
+  [
+   16,
+   11
+  ],
+  [
+   17,
+   11
+  ],
+  [
+   18,
+   11
+  ],
+  [
+   19,
+   11
+  ],
+  [
+   20,
+   11
+  ],
+  [
+   21,
+   11
+  ],
+  [
+   22,
+   11
+  ],
+  [
+   23,
+   11
+  ],
+  [
+   24,
+   11
+  ],
+  [
+   25,
+   11
+  ],
+  [
+   26,
+   11
+  ]
+ ],
+ "tests": {
+  "pass": true,
+  "summary": "1 turn(s) to the exit; 2 wheel states, 0 soft-locks",
+  "exitReachable": true,
+  "routeSteps": 31,
+  "chests": 0,
+  "chestsReachable": 0,
+  "crystals": 0,
+  "crystalsReachable": 0,
+  "minWidth2": true,
+  "narrowCells": 0,
+  "solver": {
+   "states": 2,
+   "wheelMasks": 2,
+   "stairsTurns": 1,
+   "treasureTurns": [],
+   "shortestSteps": 31,
+   "softLocks": 0,
+   "pageSays": {
+    "stairs": 1,
+    "treasure": null,
+    "states": 2,
+    "steps": 32
+   },
+   "matchesPage": {
+    "stairsTurns": true,
+    "treasureTurns": true,
+    "wheelStates": true,
+    "softLocks": true
+   },
+   "note": "shortestSteps counts 4-neighbour cells from the arrival cell to a cell beside the exit; the page's figure is given for comparison only"
+  }
+ }
+}

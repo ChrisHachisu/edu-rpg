@@ -1,0 +1,1088 @@
+{
+ "schema": "qok-floorplan-v1",
+ "dungeonId": "oasisDepths",
+ "name": "Oasis Depths",
+ "act": 3,
+ "floor": 4,
+ "totalFloors": 5,
+ "width": 36,
+ "height": 22,
+ "cellPx": 48,
+ "title": "Three wheels",
+ "description": "Three wheels in three rooms. Each wheel opens one walkway and closes another somewhere else, so the order matters. The shortest way to the stairs takes four turns, and the treasure takes four by a different order.",
+ "source": {
+  "artifact": "https://claude.ai/artifact/GbRmVWqp7TrgbnUii9sSdp",
+  "picture": "img/oasis-f4.png",
+  "recoveredBy": "plans/dungeons/oasisDepths_recover.py",
+  "assumed": [
+   "no checkpoint crystals are drawn on the page; none added",
+   "wheel timings"
+  ]
+ },
+ "legend": {
+  "#": "solid rock or wall",
+  ".": "floor",
+  "w": "channel, flooded at the start (blocked until its wheel drains it)",
+  "d": "channel, dry at the start (a stone walkway until its wheel floods it)"
+ },
+ "rows": [
+  "####################################",
+  "###..................###############",
+  "###..................###############",
+  "###..................###############",
+  "###wwwww####.........###############",
+  "###wwwww####.........ddddd##########",
+  "###wwwww####.........ddddd.........#",
+  "###wwwww####.........ddddd.........#",
+  "#.......####.........#####.........#",
+  "#.......########www#######.........#",
+  "#.......########www#######.........#",
+  "#.......########www#######.........#",
+  "#.......########www#######.........#",
+  "#.......########www#######.........#",
+  "#.......####.........#####.........#",
+  "#.......wwww.........########ddd####",
+  "#.......wwww.........dddddd##ddd####",
+  "#.......wwww.........dddddd##ddd####",
+  "#.......####.........dddddd........#",
+  "#.......####.........######........#",
+  "#.......####.........######........#",
+  "####################################"
+ ],
+ "assets": [
+  {
+   "kind": "wheel",
+   "x": 16,
+   "y": 4,
+   "id": 3,
+   "channels": [
+    3,
+    5
+   ]
+  },
+  {
+   "kind": "stairsNext",
+   "x": 33,
+   "y": 7
+  },
+  {
+   "kind": "wheel",
+   "x": 5,
+   "y": 12,
+   "id": 1,
+   "channels": [
+    0,
+    1
+   ]
+  },
+  {
+   "kind": "wheel",
+   "x": 16,
+   "y": 17,
+   "id": 2,
+   "channels": [
+    2,
+    4
+   ]
+  },
+  {
+   "kind": "stairsPrev",
+   "x": 3,
+   "y": 18
+  },
+  {
+   "kind": "chest",
+   "x": 31,
+   "y": 19
+  }
+ ],
+ "zones": [
+  {
+   "kind": "channel",
+   "id": 0,
+   "wheel": 1,
+   "floodedAtStart": true,
+   "rect": [
+    3,
+    4,
+    7,
+    7
+   ],
+   "cells": [
+    [
+     3,
+     4
+    ],
+    [
+     4,
+     4
+    ],
+    [
+     5,
+     4
+    ],
+    [
+     6,
+     4
+    ],
+    [
+     7,
+     4
+    ],
+    [
+     3,
+     5
+    ],
+    [
+     4,
+     5
+    ],
+    [
+     5,
+     5
+    ],
+    [
+     6,
+     5
+    ],
+    [
+     7,
+     5
+    ],
+    [
+     3,
+     6
+    ],
+    [
+     4,
+     6
+    ],
+    [
+     5,
+     6
+    ],
+    [
+     6,
+     6
+    ],
+    [
+     7,
+     6
+    ],
+    [
+     3,
+     7
+    ],
+    [
+     4,
+     7
+    ],
+    [
+     5,
+     7
+    ],
+    [
+     6,
+     7
+    ],
+    [
+     7,
+     7
+    ]
+   ],
+   "color": [
+    64,
+    140,
+    200
+   ],
+   "alpha": 90,
+   "fill": true
+  },
+  {
+   "kind": "channel",
+   "id": 1,
+   "wheel": 1,
+   "floodedAtStart": false,
+   "rect": [
+    21,
+    5,
+    25,
+    7
+   ],
+   "cells": [
+    [
+     21,
+     5
+    ],
+    [
+     22,
+     5
+    ],
+    [
+     23,
+     5
+    ],
+    [
+     24,
+     5
+    ],
+    [
+     25,
+     5
+    ],
+    [
+     21,
+     6
+    ],
+    [
+     22,
+     6
+    ],
+    [
+     23,
+     6
+    ],
+    [
+     24,
+     6
+    ],
+    [
+     25,
+     6
+    ],
+    [
+     21,
+     7
+    ],
+    [
+     22,
+     7
+    ],
+    [
+     23,
+     7
+    ],
+    [
+     24,
+     7
+    ],
+    [
+     25,
+     7
+    ]
+   ],
+   "color": [
+    190,
+    170,
+    130
+   ],
+   "alpha": 90,
+   "fill": true
+  },
+  {
+   "kind": "channel",
+   "id": 2,
+   "wheel": 2,
+   "floodedAtStart": true,
+   "rect": [
+    16,
+    9,
+    18,
+    13
+   ],
+   "cells": [
+    [
+     16,
+     9
+    ],
+    [
+     17,
+     9
+    ],
+    [
+     18,
+     9
+    ],
+    [
+     16,
+     10
+    ],
+    [
+     17,
+     10
+    ],
+    [
+     18,
+     10
+    ],
+    [
+     16,
+     11
+    ],
+    [
+     17,
+     11
+    ],
+    [
+     18,
+     11
+    ],
+    [
+     16,
+     12
+    ],
+    [
+     17,
+     12
+    ],
+    [
+     18,
+     12
+    ],
+    [
+     16,
+     13
+    ],
+    [
+     17,
+     13
+    ],
+    [
+     18,
+     13
+    ]
+   ],
+   "color": [
+    64,
+    140,
+    200
+   ],
+   "alpha": 90,
+   "fill": true
+  },
+  {
+   "kind": "channel",
+   "id": 3,
+   "wheel": 3,
+   "floodedAtStart": true,
+   "rect": [
+    8,
+    15,
+    11,
+    17
+   ],
+   "cells": [
+    [
+     8,
+     15
+    ],
+    [
+     9,
+     15
+    ],
+    [
+     10,
+     15
+    ],
+    [
+     11,
+     15
+    ],
+    [
+     8,
+     16
+    ],
+    [
+     9,
+     16
+    ],
+    [
+     10,
+     16
+    ],
+    [
+     11,
+     16
+    ],
+    [
+     8,
+     17
+    ],
+    [
+     9,
+     17
+    ],
+    [
+     10,
+     17
+    ],
+    [
+     11,
+     17
+    ]
+   ],
+   "color": [
+    64,
+    140,
+    200
+   ],
+   "alpha": 90,
+   "fill": true
+  },
+  {
+   "kind": "channel",
+   "id": 4,
+   "wheel": 2,
+   "floodedAtStart": false,
+   "rect": [
+    29,
+    15,
+    31,
+    17
+   ],
+   "cells": [
+    [
+     29,
+     15
+    ],
+    [
+     30,
+     15
+    ],
+    [
+     31,
+     15
+    ],
+    [
+     29,
+     16
+    ],
+    [
+     30,
+     16
+    ],
+    [
+     31,
+     16
+    ],
+    [
+     29,
+     17
+    ],
+    [
+     30,
+     17
+    ],
+    [
+     31,
+     17
+    ]
+   ],
+   "color": [
+    190,
+    170,
+    130
+   ],
+   "alpha": 90,
+   "fill": true
+  },
+  {
+   "kind": "channel",
+   "id": 5,
+   "wheel": 3,
+   "floodedAtStart": false,
+   "rect": [
+    21,
+    16,
+    26,
+    18
+   ],
+   "cells": [
+    [
+     21,
+     16
+    ],
+    [
+     22,
+     16
+    ],
+    [
+     23,
+     16
+    ],
+    [
+     24,
+     16
+    ],
+    [
+     25,
+     16
+    ],
+    [
+     26,
+     16
+    ],
+    [
+     21,
+     17
+    ],
+    [
+     22,
+     17
+    ],
+    [
+     23,
+     17
+    ],
+    [
+     24,
+     17
+    ],
+    [
+     25,
+     17
+    ],
+    [
+     26,
+     17
+    ],
+    [
+     21,
+     18
+    ],
+    [
+     22,
+     18
+    ],
+    [
+     23,
+     18
+    ],
+    [
+     24,
+     18
+    ],
+    [
+     25,
+     18
+    ],
+    [
+     26,
+     18
+    ]
+   ],
+   "color": [
+    190,
+    170,
+    130
+   ],
+   "alpha": 90,
+   "fill": true
+  }
+ ],
+ "mechanic": {
+  "id": "sluice-wheels",
+  "params": {
+   "rule": "each wheel works its channels together: a turn drains the flooded ones and floods the dry ones",
+   "turnFrom": "a cell beside the wheel",
+   "walkwayWidth": 3,
+   "timings": "not in the artifact"
+  },
+  "wheels": [
+   {
+    "id": 3,
+    "at": [
+     16,
+     4
+    ],
+    "channels": [
+     3,
+     5
+    ]
+   },
+   {
+    "id": 1,
+    "at": [
+     5,
+     12
+    ],
+    "channels": [
+     0,
+     1
+    ]
+   },
+   {
+    "id": 2,
+    "at": [
+     16,
+     17
+    ],
+    "channels": [
+     2,
+     4
+    ]
+   }
+  ],
+  "channels": [
+   {
+    "id": 0,
+    "wheel": 1,
+    "floodedAtStart": true,
+    "rect": [
+     3,
+     4,
+     7,
+     7
+    ]
+   },
+   {
+    "id": 1,
+    "wheel": 1,
+    "floodedAtStart": false,
+    "rect": [
+     21,
+     5,
+     25,
+     7
+    ]
+   },
+   {
+    "id": 2,
+    "wheel": 2,
+    "floodedAtStart": true,
+    "rect": [
+     16,
+     9,
+     18,
+     13
+    ]
+   },
+   {
+    "id": 3,
+    "wheel": 3,
+    "floodedAtStart": true,
+    "rect": [
+     8,
+     15,
+     11,
+     17
+    ]
+   },
+   {
+    "id": 4,
+    "wheel": 2,
+    "floodedAtStart": false,
+    "rect": [
+     29,
+     15,
+     31,
+     17
+    ]
+   },
+   {
+    "id": 5,
+    "wheel": 3,
+    "floodedAtStart": false,
+    "rect": [
+     21,
+     16,
+     26,
+     18
+    ]
+   }
+  ],
+  "arrival": [
+   3,
+   18
+  ]
+ },
+ "route": [
+  [
+   3,
+   19
+  ],
+  [
+   4,
+   19
+  ],
+  [
+   4,
+   18
+  ],
+  [
+   4,
+   17
+  ],
+  [
+   4,
+   16
+  ],
+  [
+   4,
+   15
+  ],
+  [
+   4,
+   14
+  ],
+  [
+   4,
+   13
+  ],
+  [
+   4,
+   12
+  ],
+  [
+   4,
+   11
+  ],
+  [
+   4,
+   10
+  ],
+  [
+   4,
+   9
+  ],
+  [
+   4,
+   8
+  ],
+  [
+   4,
+   7
+  ],
+  [
+   4,
+   6
+  ],
+  [
+   4,
+   5
+  ],
+  [
+   4,
+   4
+  ],
+  [
+   4,
+   3
+  ],
+  [
+   5,
+   3
+  ],
+  [
+   6,
+   3
+  ],
+  [
+   7,
+   3
+  ],
+  [
+   8,
+   3
+  ],
+  [
+   9,
+   3
+  ],
+  [
+   10,
+   3
+  ],
+  [
+   11,
+   3
+  ],
+  [
+   12,
+   3
+  ],
+  [
+   13,
+   3
+  ],
+  [
+   14,
+   3
+  ],
+  [
+   15,
+   3
+  ],
+  [
+   16,
+   3
+  ],
+  [
+   15,
+   3
+  ],
+  [
+   14,
+   3
+  ],
+  [
+   13,
+   3
+  ],
+  [
+   12,
+   3
+  ],
+  [
+   11,
+   3
+  ],
+  [
+   10,
+   3
+  ],
+  [
+   9,
+   3
+  ],
+  [
+   8,
+   3
+  ],
+  [
+   7,
+   3
+  ],
+  [
+   7,
+   4
+  ],
+  [
+   7,
+   5
+  ],
+  [
+   7,
+   6
+  ],
+  [
+   7,
+   7
+  ],
+  [
+   7,
+   8
+  ],
+  [
+   7,
+   9
+  ],
+  [
+   7,
+   10
+  ],
+  [
+   7,
+   11
+  ],
+  [
+   7,
+   12
+  ],
+  [
+   6,
+   12
+  ],
+  [
+   6,
+   13
+  ],
+  [
+   6,
+   14
+  ],
+  [
+   6,
+   15
+  ],
+  [
+   6,
+   16
+  ],
+  [
+   7,
+   16
+  ],
+  [
+   8,
+   16
+  ],
+  [
+   9,
+   16
+  ],
+  [
+   10,
+   16
+  ],
+  [
+   11,
+   16
+  ],
+  [
+   12,
+   16
+  ],
+  [
+   13,
+   16
+  ],
+  [
+   14,
+   16
+  ],
+  [
+   15,
+   16
+  ],
+  [
+   16,
+   16
+  ],
+  [
+   16,
+   15
+  ],
+  [
+   16,
+   14
+  ],
+  [
+   16,
+   13
+  ],
+  [
+   16,
+   12
+  ],
+  [
+   16,
+   11
+  ],
+  [
+   16,
+   10
+  ],
+  [
+   16,
+   9
+  ],
+  [
+   16,
+   8
+  ],
+  [
+   16,
+   7
+  ],
+  [
+   17,
+   7
+  ],
+  [
+   18,
+   7
+  ],
+  [
+   19,
+   7
+  ],
+  [
+   20,
+   7
+  ],
+  [
+   21,
+   7
+  ],
+  [
+   22,
+   7
+  ],
+  [
+   23,
+   7
+  ],
+  [
+   24,
+   7
+  ],
+  [
+   25,
+   7
+  ],
+  [
+   26,
+   7
+  ],
+  [
+   27,
+   7
+  ],
+  [
+   28,
+   7
+  ],
+  [
+   29,
+   7
+  ],
+  [
+   30,
+   7
+  ],
+  [
+   31,
+   7
+  ],
+  [
+   32,
+   7
+  ]
+ ],
+ "tests": {
+  "pass": true,
+  "summary": "4 turn(s) to the exit; 12 wheel states, 0 soft-locks",
+  "exitReachable": true,
+  "routeSteps": 87,
+  "chests": 1,
+  "chestsReachable": 1,
+  "crystals": 0,
+  "crystalsReachable": 0,
+  "minWidth2": true,
+  "narrowCells": 0,
+  "solver": {
+   "states": 12,
+   "wheelMasks": 8,
+   "stairsTurns": 4,
+   "treasureTurns": [
+    4
+   ],
+   "shortestSteps": 87,
+   "softLocks": 0,
+   "pageSays": {
+    "stairs": 4,
+    "treasure": 4,
+    "states": 12,
+    "steps": 91
+   },
+   "matchesPage": {
+    "stairsTurns": true,
+    "treasureTurns": true,
+    "wheelStates": true,
+    "softLocks": true
+   },
+   "note": "shortestSteps counts 4-neighbour cells from the arrival cell to a cell beside the exit; the page's figure is given for comparison only"
+  }
+ }
+}

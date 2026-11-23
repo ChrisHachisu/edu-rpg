@@ -1,0 +1,533 @@
+{
+ "schema": "qok-floorplan-v1",
+ "dungeonId": "oasisDepths",
+ "name": "Oasis Depths",
+ "act": 3,
+ "floor": 1,
+ "totalFloors": 5,
+ "width": 36,
+ "height": 25,
+ "cellPx": 48,
+ "title": "One wheel, two walkways",
+ "description": "Teaches the wheel. The lower walkway is dry at the start and leads to a treasure pocket. The upper walkway to the stairs is flooded. Turn the wheel: the upper one drains and the lower one floods. The wheel stands on the start bank, so you can always turn it back.",
+ "source": {
+  "artifact": "https://claude.ai/artifact/GbRmVWqp7TrgbnUii9sSdp",
+  "picture": "img/oasis-f1.png",
+  "recoveredBy": "plans/dungeons/oasisDepths_recover.py",
+  "assumed": [
+   "floor 1 mouth and its 3x3 entry corridor (rows 22-24)",
+   "no checkpoint crystals are drawn on the page; none added",
+   "wheel timings"
+  ]
+ },
+ "legend": {
+  "#": "solid rock or wall",
+  ".": "floor",
+  "w": "channel, flooded at the start (blocked until its wheel drains it)",
+  "d": "channel, dry at the start (a stone walkway until its wheel floods it)"
+ },
+ "rows": [
+  "####################################",
+  "#..........######..................#",
+  "#..........######..................#",
+  "#..........######..................#",
+  "#..........wwwwww..................#",
+  "#..........wwwwww..................#",
+  "#..........wwwwww..................#",
+  "#..........######..................#",
+  "#..........######..................#",
+  "#..........######..................#",
+  "#..........#########################",
+  "#..........#########################",
+  "#..........#########################",
+  "#..........######..................#",
+  "#..........######..................#",
+  "#..........dddddd..................#",
+  "#..........dddddd..................#",
+  "#..........dddddd..................#",
+  "#..........######..................#",
+  "#..........######..................#",
+  "#..........######..................#",
+  "##...###############################",
+  "##...###############################",
+  "##...###############################",
+  "##...###############################"
+ ],
+ "assets": [
+  {
+   "kind": "mouth",
+   "x": 3,
+   "y": 24,
+   "side": "down",
+   "assumed": true,
+   "note": "not in the artifact: the page draws only S inside the room; corridor added under S"
+  },
+  {
+   "kind": "stairsNext",
+   "x": 31,
+   "y": 3
+  },
+  {
+   "kind": "wheel",
+   "x": 8,
+   "y": 10,
+   "id": 1,
+   "channels": [
+    0,
+    1
+   ]
+  },
+  {
+   "kind": "chest",
+   "x": 31,
+   "y": 17
+  }
+ ],
+ "zones": [
+  {
+   "kind": "channel",
+   "id": 0,
+   "wheel": 1,
+   "floodedAtStart": true,
+   "rect": [
+    11,
+    4,
+    16,
+    6
+   ],
+   "cells": [
+    [
+     11,
+     4
+    ],
+    [
+     12,
+     4
+    ],
+    [
+     13,
+     4
+    ],
+    [
+     14,
+     4
+    ],
+    [
+     15,
+     4
+    ],
+    [
+     16,
+     4
+    ],
+    [
+     11,
+     5
+    ],
+    [
+     12,
+     5
+    ],
+    [
+     13,
+     5
+    ],
+    [
+     14,
+     5
+    ],
+    [
+     15,
+     5
+    ],
+    [
+     16,
+     5
+    ],
+    [
+     11,
+     6
+    ],
+    [
+     12,
+     6
+    ],
+    [
+     13,
+     6
+    ],
+    [
+     14,
+     6
+    ],
+    [
+     15,
+     6
+    ],
+    [
+     16,
+     6
+    ]
+   ],
+   "color": [
+    64,
+    140,
+    200
+   ],
+   "alpha": 90,
+   "fill": true
+  },
+  {
+   "kind": "channel",
+   "id": 1,
+   "wheel": 1,
+   "floodedAtStart": false,
+   "rect": [
+    11,
+    15,
+    16,
+    17
+   ],
+   "cells": [
+    [
+     11,
+     15
+    ],
+    [
+     12,
+     15
+    ],
+    [
+     13,
+     15
+    ],
+    [
+     14,
+     15
+    ],
+    [
+     15,
+     15
+    ],
+    [
+     16,
+     15
+    ],
+    [
+     11,
+     16
+    ],
+    [
+     12,
+     16
+    ],
+    [
+     13,
+     16
+    ],
+    [
+     14,
+     16
+    ],
+    [
+     15,
+     16
+    ],
+    [
+     16,
+     16
+    ],
+    [
+     11,
+     17
+    ],
+    [
+     12,
+     17
+    ],
+    [
+     13,
+     17
+    ],
+    [
+     14,
+     17
+    ],
+    [
+     15,
+     17
+    ],
+    [
+     16,
+     17
+    ]
+   ],
+   "color": [
+    190,
+    170,
+    130
+   ],
+   "alpha": 90,
+   "fill": true
+  }
+ ],
+ "mechanic": {
+  "id": "sluice-wheels",
+  "params": {
+   "rule": "each wheel works its channels together: a turn drains the flooded ones and floods the dry ones",
+   "turnFrom": "a cell beside the wheel",
+   "walkwayWidth": 3,
+   "timings": "not in the artifact"
+  },
+  "wheels": [
+   {
+    "id": 1,
+    "at": [
+     8,
+     10
+    ],
+    "channels": [
+     0,
+     1
+    ]
+   }
+  ],
+  "channels": [
+   {
+    "id": 0,
+    "wheel": 1,
+    "floodedAtStart": true,
+    "rect": [
+     11,
+     4,
+     16,
+     6
+    ]
+   },
+   {
+    "id": 1,
+    "wheel": 1,
+    "floodedAtStart": false,
+    "rect": [
+     11,
+     15,
+     16,
+     17
+    ]
+   }
+  ],
+  "arrival": [
+   3,
+   18
+  ]
+ },
+ "route": [
+  [
+   3,
+   18
+  ],
+  [
+   3,
+   17
+  ],
+  [
+   3,
+   16
+  ],
+  [
+   3,
+   15
+  ],
+  [
+   3,
+   14
+  ],
+  [
+   3,
+   13
+  ],
+  [
+   3,
+   12
+  ],
+  [
+   3,
+   11
+  ],
+  [
+   3,
+   10
+  ],
+  [
+   4,
+   10
+  ],
+  [
+   5,
+   10
+  ],
+  [
+   6,
+   10
+  ],
+  [
+   7,
+   10
+  ],
+  [
+   7,
+   9
+  ],
+  [
+   7,
+   8
+  ],
+  [
+   7,
+   7
+  ],
+  [
+   7,
+   6
+  ],
+  [
+   7,
+   5
+  ],
+  [
+   7,
+   4
+  ],
+  [
+   8,
+   4
+  ],
+  [
+   9,
+   4
+  ],
+  [
+   10,
+   4
+  ],
+  [
+   11,
+   4
+  ],
+  [
+   12,
+   4
+  ],
+  [
+   13,
+   4
+  ],
+  [
+   14,
+   4
+  ],
+  [
+   15,
+   4
+  ],
+  [
+   16,
+   4
+  ],
+  [
+   17,
+   4
+  ],
+  [
+   17,
+   3
+  ],
+  [
+   18,
+   3
+  ],
+  [
+   19,
+   3
+  ],
+  [
+   20,
+   3
+  ],
+  [
+   21,
+   3
+  ],
+  [
+   22,
+   3
+  ],
+  [
+   23,
+   3
+  ],
+  [
+   24,
+   3
+  ],
+  [
+   25,
+   3
+  ],
+  [
+   26,
+   3
+  ],
+  [
+   27,
+   3
+  ],
+  [
+   28,
+   3
+  ],
+  [
+   29,
+   3
+  ],
+  [
+   30,
+   3
+  ]
+ ],
+ "tests": {
+  "pass": true,
+  "summary": "1 turn(s) to the exit; 2 wheel states, 0 soft-locks",
+  "exitReachable": true,
+  "routeSteps": 42,
+  "chests": 1,
+  "chestsReachable": 1,
+  "crystals": 0,
+  "crystalsReachable": 0,
+  "minWidth2": true,
+  "narrowCells": 0,
+  "solver": {
+   "states": 2,
+   "wheelMasks": 2,
+   "stairsTurns": 1,
+   "treasureTurns": [
+    0
+   ],
+   "shortestSteps": 42,
+   "softLocks": 0,
+   "pageSays": {
+    "stairs": 1,
+    "treasure": 0,
+    "states": 2,
+    "steps": 44
+   },
+   "matchesPage": {
+    "stairsTurns": true,
+    "treasureTurns": true,
+    "wheelStates": true,
+    "softLocks": true
+   },
+   "note": "shortestSteps counts 4-neighbour cells from the arrival cell to a cell beside the exit; the page's figure is given for comparison only"
+  }
+ }
+}

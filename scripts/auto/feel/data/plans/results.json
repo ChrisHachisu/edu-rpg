@@ -1,0 +1,1552 @@
+{
+ "ironMine": {
+  "id": "ironMine",
+  "name": "Iron Mine",
+  "act": 2,
+  "floors": 4,
+  "boss": "oreColossus",
+  "mouths": 1,
+  "mechanic": "Mine carts and switch levers",
+  "rule": "A chasm cuts the mine and only the rails cross it. A lever beside each junction picks the line. A cart rides from its buffer stop to the next buffer stop, and always rides back the same way.",
+  "floorsBuilt": [
+   {
+    "floor": 1,
+    "title": "One lever, one cart",
+    "desc": "The demo floor. The cart waits at the east buffer stop. The switch starts on the west siding, a short dead end with a chest, so a wrong ride costs nothing. Pull the lever beside the junction and the cart goes north over the chasm to the stairs.",
+    "ok": true,
+    "line": "1 rides, 1 lever pulls; 5 cart/switch states, 0 soft-locks; careless player 4.1 rides on average",
+    "w": 52,
+    "h": 34,
+    "img": [
+     624,
+     408
+    ],
+    "steps": 62
+   },
+   {
+    "floor": 2,
+    "title": "Two lines, two chasms",
+    "desc": "Two cart lines in a row. On each one the switch starts toward a treasure pocket across its own chasm, and the lever sends the cart on toward the stairs instead. Both pockets are optional.",
+    "ok": true,
+    "line": "2 rides, 2 lever pulls; 10 cart/switch states, 0 soft-locks; careless player 22.7 rides on average",
+    "w": 64,
+    "h": 44,
+    "img": [
+     768,
+     528
+    ],
+    "steps": 113
+   },
+   {
+    "floor": 3,
+    "title": "The second lever is across the chasm",
+    "desc": "One line, two junctions. The first ride ends on the middle ledge, where the second lever stands. Pull it, ride back to the start, then ride again: now the cart runs through both switches and over the second chasm to the stairs.",
+    "ok": true,
+    "line": "3 rides, 2 lever pulls; 11 cart/switch states, 0 soft-locks; careless player 14.4 rides on average",
+    "w": 64,
+    "h": 34,
+    "img": [
+     768,
+     408
+    ],
+    "steps": 96
+   },
+   {
+    "floor": 4,
+    "title": "Ore Colossus",
+    "desc": "The floor 3 trick again (ride, pull the far lever, ride back, ride again) to reach the middle cavern with the checkpoint crystal. A second line there goes either to a treasure vault or over the last chasm to the Ore Colossus.",
+    "ok": true,
+    "line": "4 rides, 3 lever pulls; 18 cart/switch states, 0 soft-locks; careless player 31.2 rides on average",
+    "w": 64,
+    "h": 44,
+    "img": [
+     768,
+     528
+    ],
+    "steps": 133
+   }
+  ]
+ },
+ "stormNest": {
+  "id": "stormNest",
+  "name": "Storm Nest",
+  "act": 2,
+  "floors": 5,
+  "boss": "stormHarpy",
+  "mouths": 1,
+  "mechanic": "Gusts over the gaps",
+  "rule": "A tower that climbs. Each floor is 3-tile walkways over open gaps. A window glows, then a gust blows across its lane. Caught in a lane, you are blown off and land on the floor below (on floor 1, back at the door). All five floors share one footprint so a fall lands under you.",
+  "floorsBuilt": [
+   {
+    "floor": 1,
+    "title": "One window",
+    "desc": "Teaches the gust. One window on the west wall blows slowly across the first walkway. Wait at the edge of the lane, cross in the lull. A fall here only puts you back at the door.",
+    "ok": true,
+    "line": "1 windows (1 at once), gust 1.7 s every 5.9 s; 1 lane crossings on the route; dry route exists from every safe tile at every moment (12510 states); falls per climb here: careful 0.0, careless 0.17",
+    "w": 48,
+    "h": 38,
+    "img": [
+     576,
+     456
+    ],
+    "steps": 47
+   },
+   {
+    "floor": 2,
+    "title": "Two windows, taking turns",
+    "desc": "Two windows gust one after the other. Two ways round the floor both cross both lanes, and the platforms between them are safe places to wait.",
+    "ok": true,
+    "line": "2 windows (1 at once), gust 1.8 s every 5.5 s; 2 lane crossings on the route; dry route exists from every safe tile at every moment (12780 states); falls per climb here: careful 0.03, careless 1.22",
+    "w": 48,
+    "h": 38,
+    "img": [
+     576,
+     456
+    ],
+    "steps": 50
+   },
+   {
+    "floor": 3,
+    "title": "Three windows, two together",
+    "desc": "Two windows now gust at the same moment, and a third guards the treasure walkway. A checkpoint crystal waits on the first platform.",
+    "ok": true,
+    "line": "3 windows (2 at once), gust 1.8 s every 5.2 s; 2 lane crossings on the route; dry route exists from every safe tile at every moment (11696 states); falls per climb here: careful 0.01, careless 3.81",
+    "w": 48,
+    "h": 38,
+    "img": [
+     576,
+     456
+    ],
+    "steps": 40
+   },
+   {
+    "floor": 4,
+    "title": "Four windows",
+    "desc": "Three lanes in a row on the long top walkway, two gusting together and one off-beat, so you cross one lane, wait on the next platform, and cross again. Both treasures sit behind lanes.",
+    "ok": true,
+    "line": "4 windows (2 at once), gust 1.8 s every 4.8 s; 3 lane crossings on the route; dry route exists from every safe tile at every moment (11438 states); falls per climb here: careful 0.06, careless 4.08",
+    "w": 48,
+    "h": 38,
+    "img": [
+     576,
+     456
+    ],
+    "steps": 40
+   },
+   {
+    "floor": 5,
+    "title": "Storm Harpy",
+    "desc": "The top. Five windows: three gust together, then the other two. A crystal sits on the first platform, and the Storm Harpy waits on the last one.",
+    "ok": true,
+    "line": "5 windows (3 at once), gust 1.8 s every 4.4 s; 5 lane crossings on the route; dry route exists from every safe tile at every moment (7632 states); falls per climb here: careful 0.12, careless 3.98",
+    "w": 48,
+    "h": 38,
+    "img": [
+     576,
+     456
+    ],
+    "steps": 49
+   }
+  ],
+  "dungeonTests": {
+   "climb": {
+    "careful": {
+     "runs": 200,
+     "finished": 200,
+     "fallsMean": 0.2,
+     "fallsWorst1in10": 1,
+     "minutesMean": 0.8,
+     "fallsPerFloor": [
+      0.0,
+      0.03,
+      0.01,
+      0.06,
+      0.12
+     ]
+    },
+    "careless": {
+     "runs": 200,
+     "finished": 200,
+     "fallsMean": 13.3,
+     "fallsWorst1in10": 29,
+     "minutesMean": 3.2,
+     "fallsPerFloor": [
+      0.17,
+      1.22,
+      3.81,
+      4.08,
+      3.98
+     ]
+    }
+   }
+  }
+ },
+ "hauntedForest": {
+  "id": "hauntedForest",
+  "name": "Haunted Forest",
+  "act": 2,
+  "floors": 1,
+  "boss": "phantomStag",
+  "mouths": 2,
+  "mechanic": "A simple maze of rooms",
+  "rule": "One level, no stairs, no lights. Nine rooms of tree walls. Walk through a gap on any edge of a room and the view slides to the next room. The south mouth is the Act 2 road; the north mouth leads on to Ravenhollow and Shadow Cave.",
+  "floorsBuilt": [
+   {
+    "floor": 1,
+    "title": "The whole forest",
+    "desc": "Nine rooms, each a small maze with 3-tile paths. The short way is five rooms: South gate, Crossroads, West thicket, Crystal glade (checkpoint), then the open Stag clearing with the Phantom Stag and the north mouth. The east side is a three-room loop with treasure, and the Mossy nook by the gate holds two more chests.",
+    "ok": true,
+    "line": "all 9 rooms, 6 chests and both mouths reachable; south mouth to the stag 75 steps; 18 dead ends, none harmful; a wandering player walks about 91 maze cells to find the stag (careless 312, shortest 15)",
+    "w": 60,
+    "h": 45,
+    "img": [
+     720,
+     540
+    ],
+    "steps": 75
+   }
+  ]
+ },
+ "frozenLake": {
+  "id": "frozenLake",
+  "name": "Frozen Lake",
+  "act": 2,
+  "floors": 5,
+  "boss": "iceWyrm",
+  "mouths": 1,
+  "mechanic": "Slide on the ice",
+  "rule": "Snow caves are ordinary paths. On the lake you slide in a straight line until a frosted rock or the rim stops you, or you reach snow. The stairs ledge and the treasure alcove can only be reached by the right chain of slides. Every stopping point can still reach the stairs and the shore.",
+  "floorsBuilt": [
+   {
+    "floor": 1,
+    "title": "The lake from the demo",
+    "desc": "The approved layout and four rocks, plus one proposed fifth rock. The stairs ledge (top right) still takes five slides and the treasure alcove (left) four. The fifth rock is there because the solver found that with four rocks you can never slide back from the stairs ledge to the entrance.",
+    "ok": true,
+    "line": "exit 5 slides, alcove 4; 337 stopping points, 0 soft-locks, all can return to shore; slides used: careful 5.8, careless 9.2",
+    "w": 40,
+    "h": 30,
+    "img": [
+     480,
+     360
+    ],
+    "steps": 65
+   },
+   {
+    "floor": 2,
+    "title": "A wider lake",
+    "desc": "The lake is wider and the stairs ledge is in the far corner. Six slides at best. A treasure alcove opens off the east rim, and the snow caves below hold three more chests.",
+    "ok": true,
+    "line": "exit 6 slides, alcove 4; 410 stopping points, 0 soft-locks, all can return to shore; slides used: careful 6.8, careless 13.8",
+    "w": 48,
+    "h": 36,
+    "img": [
+     576,
+     432
+    ],
+    "steps": 96
+   },
+   {
+    "floor": 3,
+    "title": "Across and back",
+    "desc": "You enter at the west end and the stairs are on the east rim, with rocks set so you have to work back and forth. A checkpoint crystal sits in the snow caves.",
+    "ok": true,
+    "line": "exit 7 slides, alcove 5; 449 stopping points, 0 soft-locks, all can return to shore; slides used: careful 8.7, careless 18.1",
+    "w": 48,
+    "h": 36,
+    "img": [
+     576,
+     432
+    ],
+    "steps": 96
+   },
+   {
+    "floor": 4,
+    "title": "Two alcoves",
+    "desc": "The biggest lake. Two treasure alcoves and the stairs ledge all need different chains of slides from the same shore.",
+    "ok": true,
+    "line": "exit 9 slides, alcove 6, 8; 491 stopping points, 0 soft-locks, all can return to shore; slides used: careful 10.8, careless 23.1",
+    "w": 48,
+    "h": 36,
+    "img": [
+     576,
+     432
+    ],
+    "steps": 125
+   },
+   {
+    "floor": 5,
+    "title": "Ice Wyrm",
+    "desc": "A smaller lake guards the Ice Wyrm's ledge. The checkpoint crystal is on the shore side, so a lost fight never costs you the slides.",
+    "ok": true,
+    "line": "exit 5 slides, alcove 4; 421 stopping points, 0 soft-locks, all can return to shore; slides used: careful 6.2, careless 13.3",
+    "w": 48,
+    "h": 36,
+    "img": [
+     576,
+     432
+    ],
+    "steps": 67
+   }
+  ]
+ },
+ "emberMines": {
+  "id": "emberMines",
+  "name": "Ember Mines",
+  "act": 4,
+  "floors": 5,
+  "boss": "magmaBeetleKing",
+  "mouths": 1,
+  "mechanic": "None: plain exploration",
+  "rule": "No puzzle here by design. Winding galleries with loops, dead-end treasure pockets and glowing lava pools you walk around. The lava is scenery: it blocks, it never hurts.",
+  "floorsBuilt": [
+   {
+    "floor": 1,
+    "title": "The upper galleries",
+    "desc": "A loop of galleries with the stairs in the far corner: go round either way. Two short dead ends hold treasure. Lava pools glow in two of the caves.",
+    "ok": true,
+    "line": "12 caves, 1 loops, 2 chests, all reachable; stairs 71 steps by the short way; a first-time player walks about 107 tiles (careless 129); nothing can trap you",
+    "w": 54,
+    "h": 39,
+    "img": [
+     648,
+     468
+    ],
+    "steps": 71
+   },
+   {
+    "floor": 2,
+    "title": "The cross-cut",
+    "desc": "Two galleries joined by two cross-cuts, so there is a short way and a long way to the stairs. Three treasure pockets.",
+    "ok": true,
+    "line": "12 caves, 1 loops, 3 chests, all reachable; stairs 67 steps by the short way; a first-time player walks about 213 tiles (careless 410); nothing can trap you",
+    "w": 54,
+    "h": 39,
+    "img": [
+     648,
+     468
+    ],
+    "steps": 67
+   },
+   {
+    "floor": 3,
+    "title": "The ore hall",
+    "desc": "A straight main gallery with a checkpoint crystal in the middle, ringed by an upper and a lower loop. The loops hold all three chests.",
+    "ok": true,
+    "line": "14 caves, 2 loops, 3 chests, all reachable; stairs 50 steps by the short way; a first-time player walks about 240 tiles (careless 475); nothing can trap you",
+    "w": 66,
+    "h": 39,
+    "img": [
+     792,
+     468
+    ],
+    "steps": 50
+   },
+   {
+    "floor": 4,
+    "title": "The deep workings",
+    "desc": "The largest floor. The way down runs east along the middle gallery; a lower loop and three spurs hold four chests for players who explore.",
+    "ok": true,
+    "line": "15 caves, 1 loops, 4 chests, all reachable; stairs 73 steps by the short way; a first-time player walks about 166 tiles (careless 278); nothing can trap you",
+    "w": 66,
+    "h": 50,
+    "img": [
+     792,
+     600
+    ],
+    "steps": 73
+   },
+   {
+    "floor": 5,
+    "title": "Magma Beetle King",
+    "desc": "A short floor. A crystal waits in the last cave before the Magma Beetle King, with two chests on a side loop.",
+    "ok": true,
+    "line": "8 caves, 1 loops, 2 chests, all reachable; stairs 42 steps by the short way; a first-time player walks about 81 tiles (careless 89); nothing can trap you",
+    "w": 54,
+    "h": 28,
+    "img": [
+     648,
+     336
+    ],
+    "steps": 42
+   }
+  ]
+ },
+ "obsidianCavern": {
+  "id": "obsidianCavern",
+  "name": "Obsidian Cavern",
+  "act": 4,
+  "floors": 5,
+  "boss": "crystalHydra",
+  "mouths": 1,
+  "mechanic": "None: plain exploration",
+  "rule": "No puzzle here by design. Wide caverns studded with obsidian pillars, split by a ravine that natural rock bridges cross. The bridges are three tiles wide and you cannot fall.",
+  "floorsBuilt": [
+   {
+    "floor": 1,
+    "title": "The first ravine",
+    "desc": "A ravine runs down the middle with two rock bridges over it, so there are two ways across. A chest sits at each far end.",
+    "ok": true,
+    "line": "8 caverns, 2 bridges, 1 loops, 2 chests, all reachable; stairs 68 steps; a first-time player walks about 85 tiles (careless 94); nothing can trap you",
+    "w": 66,
+    "h": 30,
+    "img": [
+     792,
+     360
+    ],
+    "steps": 68
+   },
+   {
+    "floor": 2,
+    "title": "Pillar halls",
+    "desc": "The ravine now runs east to west. Cross by the near bridge and loop back along the top, or take the lower hall straight to the stairs. Three chests.",
+    "ok": true,
+    "line": "9 caverns, 2 bridges, 1 loops, 3 chests, all reachable; stairs 47 steps; a first-time player walks about 180 tiles (careless 267); nothing can trap you",
+    "w": 66,
+    "h": 42,
+    "img": [
+     792,
+     504
+    ],
+    "steps": 47
+   },
+   {
+    "floor": 3,
+    "title": "Three bridges",
+    "desc": "The cavern steps down in three ledges, each reached by a bridge. A checkpoint crystal sits on the middle ledge. Chests on every ledge.",
+    "ok": true,
+    "line": "13 caverns, 3 bridges, 1 loops, 3 chests, all reachable; stairs 87 steps; a first-time player walks about 182 tiles (careless 258); nothing can trap you",
+    "w": 81,
+    "h": 42,
+    "img": [
+     972,
+     504
+    ],
+    "steps": 87
+   },
+   {
+    "floor": 4,
+    "title": "The ring",
+    "desc": "A ring of four pillar caverns around a block of solid obsidian, with the ravine cutting it twice. Either half of the ring reaches the stairs. Four chests in the corners.",
+    "ok": true,
+    "line": "14 caverns, 2 bridges, 1 loops, 4 chests, all reachable; stairs 85 steps; a first-time player walks about 282 tiles (careless 438); nothing can trap you",
+    "w": 81,
+    "h": 42,
+    "img": [
+     972,
+     504
+    ],
+    "steps": 85
+   },
+   {
+    "floor": 5,
+    "title": "Crystal Hydra",
+    "desc": "One last bridge to the crystal ledge, then the Crystal Hydra. Two chests on the near side.",
+    "ok": true,
+    "line": "6 caverns, 1 bridges, 0 loops, 2 chests, all reachable; stairs 40 steps; a first-time player walks about 92 tiles (careless 128); nothing can trap you",
+    "w": 66,
+    "h": 30,
+    "img": [
+     792,
+     360
+    ],
+    "steps": 40
+   }
+  ]
+ },
+ "scorchedRuins": {
+  "id": "scorchedRuins",
+  "name": "Scorched Ruins",
+  "act": 3,
+  "floors": 5,
+  "boss": "ashenGuardian",
+  "mouths": 1,
+  "mechanic": "Cracked walls hide rooms",
+  "rule": "Burnt halls and rooms. Here and there a stretch of wall is cracked, with embers glowing in the cracks, and a small hint nearby (soot, a draught, loose stones). Walk up and push: it crumbles for good and a hidden treasure room opens. Secrets are always optional. The way to the stairs never needs one.",
+  "floorsBuilt": [
+   {
+    "floor": 1,
+    "title": "The first cracked wall",
+    "desc": "One secret, right beside the first hall, with a sign that tells you to look closely at the wall. Push the cracked stretch and a treasure room opens. Two ordinary chests as well.",
+    "ok": true,
+    "line": "1 cracked walls, all can be pushed open and every hidden chest reached; stairs reachable with no secret found (50 steps); 2 ordinary chests; secrets found by a first-time player: careful 1.0 of 1, careless 1.0",
+    "w": 54,
+    "h": 36,
+    "img": [
+     648,
+     432
+    ],
+    "steps": 50
+   },
+   {
+    "floor": 2,
+    "title": "Two secrets, no sign",
+    "desc": "Two hidden rooms, one off each hall. No sign this time: embers glow in one crack, a soot trail leads to the other. The halls form a loop, so every wall gets walked past.",
+    "ok": true,
+    "line": "2 cracked walls, all can be pushed open and every hidden chest reached; stairs reachable with no secret found (56 steps); 1 ordinary chests; secrets found by a first-time player: careful 1.3 of 2, careless 0.9",
+    "w": 54,
+    "h": 36,
+    "img": [
+     648,
+     432
+    ],
+    "steps": 56
+   },
+   {
+    "floor": 3,
+    "title": "Both ends of the middle hall",
+    "desc": "A hidden room at each end of the middle hall, where the checkpoint crystal stands. The hints are quieter: ash stirring in a draught, loose stones at the foot of the wall.",
+    "ok": true,
+    "line": "2 cracked walls, all can be pushed open and every hidden chest reached; stairs reachable with no secret found (56 steps); 2 ordinary chests; secrets found by a first-time player: careful 1.5 of 2, careless 1.0",
+    "w": 66,
+    "h": 36,
+    "img": [
+     792,
+     432
+    ],
+    "steps": 56
+   },
+   {
+    "floor": 4,
+    "title": "A secret inside a secret",
+    "desc": "Three secrets. One hidden room has a second cracked wall in its far side, with the best chest of the dungeon behind it. The third hides beside the last hall before the stairs.",
+    "ok": true,
+    "line": "3 cracked walls, all can be pushed open and every hidden chest reached; stairs reachable with no secret found (68 steps); 2 ordinary chests; secrets found by a first-time player: careful 2.4 of 3, careless 1.0",
+    "w": 66,
+    "h": 36,
+    "img": [
+     792,
+     432
+    ],
+    "steps": 68
+   },
+   {
+    "floor": 5,
+    "title": "Ashen Guardian",
+    "desc": "Two hidden rooms off the side halls, and a third behind the Ashen Guardian itself: its vault, which you can only search once it is beaten. A crystal stands before the fight.",
+    "ok": true,
+    "line": "3 cracked walls, all can be pushed open and every hidden chest reached; stairs reachable with no secret found (35 steps); 2 ordinary chests; secrets found by a first-time player: careful 1.8 of 3, careless 1.1",
+    "w": 66,
+    "h": 36,
+    "img": [
+     792,
+     432
+    ],
+    "steps": 35
+   }
+  ]
+ },
+ "twilightDungeon": {
+  "id": "twilightDungeon",
+  "name": "Twilight Realm",
+  "act": 5,
+  "floors": 6,
+  "boss": "celestialGuardian",
+  "mouths": 1,
+  "mechanic": "Matching portals",
+  "rule": "Thick walls split each floor into islands with no doors between them. Portals come in pairs, one colour per pair. Step on one and you come out of its twin. Every portal works both ways, so you can always go back the way you came.",
+  "floorsBuilt": [
+   {
+    "floor": 1,
+    "title": "One pair",
+    "desc": "Two islands and one cyan pair. There is no other way across, so the first portal you meet teaches the rule. A chest on each island.",
+    "ok": true,
+    "line": "1 pairs, 2 islands, all reachable; stairs in 1 hops (cyan); 0 soft-locks (every portal is two-way); hops used: careful 1.0, careless 1.0",
+    "w": 69,
+    "h": 28,
+    "img": [
+     828,
+     336
+    ],
+    "steps": 46
+   },
+   {
+    "floor": 2,
+    "title": "Two hops",
+    "desc": "Three islands in a chain: cyan takes you to the middle island, pink takes you on to the stairs. The chest is on the middle island.",
+    "ok": true,
+    "line": "2 pairs, 3 islands, all reachable; stairs in 2 hops (cyan then pink); 0 soft-locks (every portal is two-way); hops used: careful 2.0, careless 4.0",
+    "w": 69,
+    "h": 28,
+    "img": [
+     828,
+     336
+    ],
+    "steps": 63
+   },
+   {
+    "floor": 3,
+    "title": "A side trip",
+    "desc": "Two portals on the first island. Cyan and then pink lead to the stairs. Gold goes to a small island with treasure and nothing else, so you come back the same way.",
+    "ok": true,
+    "line": "3 pairs, 4 islands, all reachable; stairs in 2 hops (cyan then pink); 0 soft-locks (every portal is two-way); hops used: careful 2.9, careless 7.7",
+    "w": 69,
+    "h": 28,
+    "img": [
+     828,
+     336
+    ],
+    "steps": 49
+   },
+   {
+    "floor": 4,
+    "title": "Two ways off the first island",
+    "desc": "Cyan then gold reaches the stairs, past a checkpoint crystal. Pink starts a second chain of two hops that ends at a treasure island.",
+    "ok": true,
+    "line": "4 pairs, 5 islands, all reachable; stairs in 2 hops (cyan then gold); 0 soft-locks (every portal is two-way); hops used: careful 4.0, careless 12.4",
+    "w": 69,
+    "h": 39,
+    "img": [
+     828,
+     468
+    ],
+    "steps": 51
+   },
+   {
+    "floor": 5,
+    "title": "A loop",
+    "desc": "Three hops to the stairs. A fourth pair leads off the second island to treasure, and a fifth pair on the treasure island drops you back at the start: a loop, and a quick way home.",
+    "ok": true,
+    "line": "5 pairs, 5 islands, all reachable; stairs in 3 hops (cyan then pink then gold); 0 soft-locks (every portal is two-way); hops used: careful 5.1, careless 17.3",
+    "w": 69,
+    "h": 39,
+    "img": [
+     828,
+     468
+    ],
+    "steps": 63
+   },
+   {
+    "floor": 6,
+    "title": "Celestial Guardian",
+    "desc": "All six colours. Pink, green, orange is the way to the Celestial Guardian, with a crystal on the island before it. Cyan, gold and violet link two treasure islands into a loop.",
+    "ok": true,
+    "line": "6 pairs, 6 islands, all reachable; stairs in 3 hops (pink then green then orange); 0 soft-locks (every portal is two-way); hops used: careful 5.8, careless 22.2",
+    "w": 69,
+    "h": 50,
+    "img": [
+     828,
+     600
+    ],
+    "steps": 72
+   }
+  ]
+ },
+ "magmaTunnels": {
+  "id": "magmaTunnels",
+  "name": "Magma Tunnels",
+  "act": 4,
+  "floors": 5,
+  "boss": "lavaWyrm",
+  "mouths": 2,
+  "mechanic": "Crust bridges",
+  "rule": "Lava rivers cut the tunnels. Each crossing crusts over and melts on a steady beat, and the cracks glow before it melts. Cross while it is dark. Caught on it when it melts: a little damage, and you are put back on the bank you came from. Banks and rock islands are always safe.",
+  "floorsBuilt": [
+   {
+    "floor": 1,
+    "title": "One slow crossing",
+    "desc": "Teaches the beat. One short crossing, crusted for more than half of every cycle, so there is plenty of time. Two chests need no crossing at all.",
+    "ok": true,
+    "line": "1 crossings (1 on the route), crusted 3.3 s of every 5.9 s; a burn-free route exists from every bank at every moment (11490 states); burns per floor: careful 0.01, careless 0.41",
+    "w": 62,
+    "h": 32,
+    "img": [
+     744,
+     384
+    ],
+    "steps": 49
+   },
+   {
+    "floor": 2,
+    "title": "Two rivers",
+    "desc": "Two crossings on the way to the stairs, on opposite beats: when the first melts the second is crusting. A third crossing guards a chest.",
+    "ok": true,
+    "line": "3 crossings (2 on the route), crusted 2.8 s of every 5.5 s; a burn-free route exists from every bank at every moment (13470 states); burns per floor: careful 0.12, careless 1.42",
+    "w": 62,
+    "h": 32,
+    "img": [
+     744,
+     384
+    ],
+    "steps": 55
+   },
+   {
+    "floor": 3,
+    "title": "The island",
+    "desc": "A wide river with a rock island in the middle: cross, wait on the island, cross again. A checkpoint crystal waits on the far bank.",
+    "ok": true,
+    "line": "4 crossings (3 on the route), crusted 2.4 s of every 5.2 s; a burn-free route exists from every bank at every moment (15156 states); burns per floor: careful 0.01, careless 2.64",
+    "w": 76,
+    "h": 45,
+    "img": [
+     912,
+     540
+    ],
+    "steps": 82
+   },
+   {
+    "floor": 4,
+    "title": "Two ways through",
+    "desc": "Longer crossings on a shorter beat. The top way has two crossings; the low way has three with an island but passes two chests.",
+    "ok": true,
+    "line": "5 crossings (2 on the route), crusted 2.2 s of every 4.8 s; a burn-free route exists from every bank at every moment (19304 states); burns per floor: careful 0.03, careless 0.9",
+    "w": 76,
+    "h": 45,
+    "img": [
+     912,
+     540
+    ],
+    "steps": 82
+   },
+   {
+    "floor": 5,
+    "title": "Lava Wyrm",
+    "desc": "An island crossing, a crystal, then one last crossing to the Lava Wyrm. Behind the Wyrm is the second mouth, which opens once it is beaten.",
+    "ok": true,
+    "line": "3 crossings (3 on the route), crusted 2.0 s of every 4.4 s; a burn-free route exists from every bank at every moment (10086 states); burns per floor: careful 0.05, careless 1.51",
+    "w": 76,
+    "h": 32,
+    "img": [
+     912,
+     384
+    ],
+    "steps": 68
+   }
+  ]
+ },
+ "shadowCave": {
+  "id": "shadowCave",
+  "name": "Shadow Cave",
+  "act": 2,
+  "floors": 5,
+  "boss": "dragon",
+  "mouths": 2,
+  "mechanic": "Shadows freeze when the crystals shine",
+  "rule": "The wall crystals pulse on a steady beat. While they are dim, each shadow prowls up and down its own stretch of tunnel and catches you if it comes within a tile. While they shine, the shadows freeze where they stand: you can walk round one, but bumping it still starts the battle. A beaten shadow is gone.",
+  "floorsBuilt": [
+   {
+    "floor": 1,
+    "title": "One shadow",
+    "desc": "One shadow on the way to the stairs, and the crystals shine for half of every beat. Wait at the mouth of its tunnel, walk past while it is frozen. Two chests are in the open.",
+    "ok": true,
+    "line": "1 shadows (1 on the route), dim 4.4 s then shining 4.4 s; a battle-free route exists from every safe tile at every moment (36384 states); shadow battles per floor: careful 0.15, careless 0.39",
+    "w": 70,
+    "h": 32,
+    "img": [
+     840,
+     384
+    ],
+    "steps": 53
+   },
+   {
+    "floor": 2,
+    "title": "Three tunnels",
+    "desc": "Two shadows on the way to the stairs and a third guarding a chest. They all freeze together, so one good look tells you when to go.",
+    "ok": true,
+    "line": "3 shadows (2 on the route), dim 4.4 s then shining 4.1 s; a battle-free route exists from every safe tile at every moment (44848 states); shadow battles per floor: careful 0.43, careless 0.95",
+    "w": 70,
+    "h": 32,
+    "img": [
+     840,
+     384
+    ],
+    "steps": 61
+   },
+   {
+    "floor": 3,
+    "title": "Short tunnels",
+    "desc": "Some shadows now prowl short up-and-down tunnels, so they turn round more often. A checkpoint crystal sits between the first and second.",
+    "ok": true,
+    "line": "3 shadows (3 on the route), dim 4.4 s then shining 3.7 s; a battle-free route exists from every safe tile at every moment (56928 states); shadow battles per floor: careful 0.51, careless 1.59",
+    "w": 86,
+    "h": 45,
+    "img": [
+     1032,
+     540
+    ],
+    "steps": 88
+   },
+   {
+    "floor": 4,
+    "title": "Shorter light",
+    "desc": "The crystals shine for less of each beat. Two ways lead on: the top way meets two shadows, the low way one, and two more guard chests.",
+    "ok": true,
+    "line": "4 shadows (1 on the route), dim 4.4 s then shining 3.3 s; a battle-free route exists from every safe tile at every moment (74568 states); shadow battles per floor: careful 0.21, careless 0.55",
+    "w": 86,
+    "h": 45,
+    "img": [
+     1032,
+     540
+    ],
+    "steps": 90
+   },
+   {
+    "floor": 5,
+    "title": "The Dragon",
+    "desc": "Two shadows, a crystal, then the Dragon that guards the way out of Act 2. The second mouth behind it opens once the Dragon is beaten.",
+    "ok": true,
+    "line": "3 shadows (2 on the route), dim 4.4 s then shining 3.0 s; a battle-free route exists from every safe tile at every moment (23144 states); shadow battles per floor: careful 0.5, careless 1.23",
+    "w": 86,
+    "h": 32,
+    "img": [
+     1032,
+     384
+    ],
+    "steps": 60
+   }
+  ]
+ },
+ "banditHideout": {
+  "id": "banditHideout",
+  "name": "Bandit Hideout",
+  "act": 3,
+  "floors": 5,
+  "boss": "banditLord",
+  "mouths": 1,
+  "mechanic": "Hidden tripwires and spike traps",
+  "rule": "No timing here, just looking. A tripwire is almost invisible and glints now and then. Walk near it and a \"Cut trip wire\" button appears: tap it and the wire is gone for good. Spikes hide under square floor patches a shade off the rest: step on one for a little damage and a push back, then walk round it.",
+  "floorsBuilt": [
+   {
+    "floor": 1,
+    "title": "One wire, one patch",
+    "desc": "A sign at the door warns of traps. One spike patch in the first room, with plenty of space round it, and one wire on the way to the stairs.",
+    "ok": true,
+    "line": "1 wires (1 on the route), 1 spike patches (0 on the straight line); a 2-tile-wide way exists round every patch to the stairs and every chest; nothing can trap you; per floor: careful 0.0 spike hits, 0.15 wires tripped; careless 0.0 and 0.67",
+    "w": 58,
+    "h": 39,
+    "img": [
+     696,
+     468
+    ],
+    "steps": 55
+   },
+   {
+    "floor": 2,
+    "title": "Either way has a wire",
+    "desc": "Two ways round to the stairs and each has one wire. The chest room on the left has a spike patch right where you would walk in.",
+    "ok": true,
+    "line": "2 wires (1 on the route), 2 spike patches (1 on the straight line); a 2-tile-wide way exists round every patch to the stairs and every chest; nothing can trap you; per floor: careful 0.29 spike hits, 0.15 wires tripped; careless 0.77 and 0.64",
+    "w": 58,
+    "h": 28,
+    "img": [
+     696,
+     336
+    ],
+    "steps": 50
+   },
+   {
+    "floor": 3,
+    "title": "The store rooms",
+    "desc": "Three wires and four spike patches, two of them side by side in the big store room. A checkpoint crystal in the middle.",
+    "ok": true,
+    "line": "3 wires (2 on the route), 4 spike patches (2 on the straight line); a 2-tile-wide way exists round every patch to the stairs and every chest; nothing can trap you; per floor: careful 0.56 spike hits, 0.31 wires tripped; careless 1.57 and 1.29",
+    "w": 71,
+    "h": 39,
+    "img": [
+     852,
+     468
+    ],
+    "steps": 91
+   },
+   {
+    "floor": 4,
+    "title": "Wires before chests",
+    "desc": "Four wires. Two guard the way on, one guards a chest room that also has a patch inside it, and the last sits right before the stairs.",
+    "ok": true,
+    "line": "4 wires (2 on the route), 8 spike patches (2 on the straight line); a 2-tile-wide way exists round every patch to the stairs and every chest; nothing can trap you; per floor: careful 0.56 spike hits, 0.31 wires tripped; careless 1.57 and 1.29",
+    "w": 71,
+    "h": 39,
+    "img": [
+     852,
+     468
+    ],
+    "steps": 61
+   },
+   {
+    "floor": 5,
+    "title": "Bandit Lord",
+    "desc": "A double-patch room, a wire, the crystal, and one last wire in front of the Bandit Lord. A side passage has a patch, a wire and two chests.",
+    "ok": true,
+    "line": "3 wires (2 on the route), 4 spike patches (1 on the straight line); a 2-tile-wide way exists round every patch to the stairs and every chest; nothing can trap you; per floor: careful 0.27 spike hits, 0.3 wires tripped; careless 0.81 and 1.29",
+    "w": 58,
+    "h": 28,
+    "img": [
+     696,
+     336
+    ],
+    "steps": 41
+   }
+  ]
+ },
+ "desertTomb": {
+  "id": "desertTomb",
+  "name": "Desert Tomb",
+  "act": 3,
+  "floors": 5,
+  "boss": "sandGolem",
+  "mouths": 1,
+  "mechanic": "Glyph plate rooms",
+  "rule": "A stone tablet in the entrance chamber shows a row of glyphs. Further in, a room is floored wall to wall with big glyph plates. Step on the plates in the tablet's order, moving only up, down, left or right. Each right plate lights. A wrong plate wakes a Tomb Guardian: after the battle you are back at the room's door and the plates are dark again. The far door opens when every glyph is lit, and stays open.",
+  "floorsBuilt": [
+   {
+    "floor": 1,
+    "title": "Two glyphs",
+    "desc": "The tablet chamber is the first room. The plate room has four plates and the order is just two of them, side by side: step on one, then the next, and the far door opens.",
+    "ok": true,
+    "line": "plate room 2x2, 2 glyphs, orthogonal steps only; tablet 9 tiles from the nearest plate, in its own chamber; 0 soft-locks (7 room states); Tomb Guardian battles: read the tablet 0.09, never read it 1.05",
+    "w": 66,
+    "h": 42,
+    "img": [
+     792,
+     504
+    ],
+    "steps": 61
+   },
+   {
+    "floor": 2,
+    "title": "Three glyphs with a turn",
+    "desc": "Four plates again, three in the order, so the path turns a corner. The one plate left over is the wrong one.",
+    "ok": true,
+    "line": "plate room 2x2, 3 glyphs, orthogonal steps only; tablet 11 tiles from the nearest plate, in its own chamber; 0 soft-locks (11 room states); Tomb Guardian battles: read the tablet 0.07, never read it 1.15",
+    "w": 66,
+    "h": 30,
+    "img": [
+     792,
+     360
+    ],
+    "steps": 70
+   },
+   {
+    "floor": 3,
+    "title": "Nine plates, five glyphs",
+    "desc": "The first big room: nine plates, five in the order. Four plates are wrong. A checkpoint crystal waits past the far door.",
+    "ok": true,
+    "line": "plate room 3x3, 5 glyphs, orthogonal steps only; tablet 10 tiles from the nearest plate, in its own chamber; 0 soft-locks (22 room states); Tomb Guardian battles: read the tablet 0.22, never read it 4.34",
+    "w": 81,
+    "h": 42,
+    "img": [
+     972,
+     504
+    ],
+    "steps": 85
+   },
+   {
+    "floor": 4,
+    "title": "Seven glyphs, and a second tablet",
+    "desc": "Seven of nine plates on the way to the stairs. A second tablet in a side chamber gives the order for a small plate room that guards a treasure vault.",
+    "ok": true,
+    "line": "plate room 3x3, 7 glyphs, orthogonal steps only; tablet 23 tiles from the nearest plate, in its own chamber; vault room 2x2, 3 glyphs; 0 soft-locks (37 room states); Tomb Guardian battles: read the tablet 0.25, never read it 4.2",
+    "w": 81,
+    "h": 30,
+    "img": [
+     972,
+     360
+    ],
+    "steps": 72
+   },
+   {
+    "floor": 5,
+    "title": "Sand Golem",
+    "desc": "All nine plates, each stepped on once. Past the far door are the crystal and the Sand Golem. A five-glyph room guards the best treasure.",
+    "ok": true,
+    "line": "plate room 3x3, 9 glyphs, orthogonal steps only; tablet 29 tiles from the nearest plate, in its own chamber; vault room 3x3, 5 glyphs; 0 soft-locks (56 room states); Tomb Guardian battles: read the tablet 0.28, never read it 4.35",
+    "w": 81,
+    "h": 42,
+    "img": [
+     972,
+     504
+    ],
+    "steps": 71
+   }
+  ]
+ },
+ "demonBarracks": {
+  "id": "demonBarracks",
+  "name": "Demon Barracks",
+  "act": 4,
+  "floors": 6,
+  "boss": "warGeneralMalachar",
+  "mouths": 1,
+  "mechanic": "Sneak past the guards",
+  "rule": "Guard halls have demon guards walking a fixed beat, each throwing a cone of lantern light ahead of it. Pillars block the light. Stand in the light, or within a tile of a guard, and a battle starts; win it and that guard is gone. Halls on the way down can be sneaked or fought through. Vault halls hold bonus chests.",
+  "floorsBuilt": [
+   {
+    "floor": 1,
+    "title": "One guard",
+    "desc": "One guard hall on the way to the stairs. The guard walks across the hall and back; slip past behind it, or wait behind a pillar. Two chests need no sneaking.",
+    "ok": true,
+    "line": "halls: A; 1 guards; an unseen route to the stairs exists (10.5 s) and from every dark tile at every moment (23176 states); 0 of 0 vault chests can be taken unseen; guard battles per floor on the way down: careful 0.0, careless 0.55",
+    "w": 74,
+    "h": 32,
+    "img": [
+     888,
+     384
+    ],
+    "steps": 55
+   },
+   {
+    "floor": 2,
+    "title": "The first vault",
+    "desc": "The same kind of hall on the way down, and a vault hall off to the side: go in past its guard, open the chest at the far wall, and come back out.",
+    "ok": true,
+    "line": "halls: A, A (vault); 2 guards; an unseen route to the stairs exists (12.7 s) and from every dark tile at every moment (33476 states); 1 of 1 vault chests can be taken unseen; guard battles per floor on the way down: careful 0.01, careless 0.57",
+    "w": 91,
+    "h": 32,
+    "img": [
+     1092,
+     384
+    ],
+    "steps": 64
+   },
+   {
+    "floor": 3,
+    "title": "Two guards",
+    "desc": "Two guards cross the main hall on opposite beats, with a pillar block between them to wait behind. A checkpoint crystal follows. One vault.",
+    "ok": true,
+    "line": "halls: B, A (vault); 3 guards; an unseen route to the stairs exists (15.5 s) and from every dark tile at every moment (35520 states); 1 of 1 vault chests can be taken unseen; guard battles per floor on the way down: careful 0.04, careless 1.17",
+    "w": 91,
+    "h": 45,
+    "img": [
+     1092,
+     540
+    ],
+    "steps": 81
+   },
+   {
+    "floor": 4,
+    "title": "A guard who walks toward you",
+    "desc": "Two halls on the way down. In the second the guard walks the length of the hall, straight at you, so you duck into the pillar bays along the walls. The vault has two guards.",
+    "ok": true,
+    "line": "halls: A, B (vault), C; 4 guards; an unseen route to the stairs exists (18.6 s) and from every dark tile at every moment (37948 states); 1 of 1 vault chests can be taken unseen; guard battles per floor on the way down: careful 0.12, careless 1.51",
+    "w": 91,
+    "h": 32,
+    "img": [
+     1092,
+     384
+    ],
+    "steps": 81
+   },
+   {
+    "floor": 5,
+    "title": "Round the block",
+    "desc": "The second hall has two guards circling a block of pillars: follow one round, half a lap behind the other. A crystal sits between the two halls.",
+    "ok": true,
+    "line": "halls: C (vault), B, D; 5 guards; an unseen route to the stairs exists (26.0 s) and from every dark tile at every moment (39054 states); 1 of 1 vault chests can be taken unseen; guard battles per floor on the way down: careful 0.06, careless 2.05",
+    "w": 91,
+    "h": 45,
+    "img": [
+     1092,
+     540
+    ],
+    "steps": 115
+   },
+   {
+    "floor": 6,
+    "title": "War General Malachar",
+    "desc": "One last circling hall, a crystal, then War General Malachar. A two-guard vault is off the first room.",
+    "ok": true,
+    "line": "halls: D, B (vault); 4 guards; an unseen route to the stairs exists (14.8 s) and from every dark tile at every moment (27836 states); 1 of 1 vault chests can be taken unseen; guard battles per floor on the way down: careful 0.01, careless 1.19",
+    "w": 91,
+    "h": 32,
+    "img": [
+     1092,
+     384
+    ],
+    "steps": 71
+   }
+  ]
+ },
+ "stormreachSpire": {
+  "id": "stormreachSpire",
+  "name": "Stormreach Spire",
+  "act": 5,
+  "floors": 6,
+  "boss": "stormSentinel",
+  "mouths": 1,
+  "mechanic": "Storm terrace",
+  "rule": "A sky tower of open terraces, five tiles wide. Every terrace tile belongs to a group, and the groups are struck by lightning in turn, so no terrace tile is safe forever. Stone glows before it is struck. Step onto stone that is not glowing and keep moving with the safe stone. A strike costs a little HP and knocks you back a tile. Roofed ledges (stairs, chests, crystals, rest spots) are never struck.",
+  "floorsBuilt": [
+   {
+    "floor": 1,
+    "title": "Big slow patches",
+    "desc": "The terrace is struck in big 3 by 3 patches, four groups, one group every second and a half. A long glow before each strike. Watch one round from the door, then walk.",
+    "ok": true,
+    "line": "patches, 4 groups, a strike every 1.5 s, glow 1.11 s; 331 terrace tiles, all struck in turn; an unstruck route exists from every ledge at every moment and from every terrace tile when its glow starts (14890 states); strikes per floor: careful 0.03, careless 2.79",
+    "w": 48,
+    "h": 38,
+    "img": [
+     576,
+     456
+    ],
+    "steps": 47
+   },
+   {
+    "floor": 2,
+    "title": "Bands that sweep",
+    "desc": "Strikes sweep across the floor in bands two tiles wide, like a wave. Walk with the wave, or let it pass over a roofed ledge and follow it.",
+    "ok": true,
+    "line": "bands across, 4 groups, a strike every 1.1 s, glow 0.92 s; 425 terrace tiles, all struck in turn; an unstruck route exists from every ledge at every moment and from every terrace tile when its glow starts (12302 states); strikes per floor: careful 0.07, careless 1.72",
+    "w": 48,
+    "h": 38,
+    "img": [
+     576,
+     456
+    ],
+    "steps": 50
+   },
+   {
+    "floor": 3,
+    "title": "Diagonal sweep",
+    "desc": "The bands now run corner to corner, so the safe stone slides sideways as you walk. A checkpoint crystal on the first ledge.",
+    "ok": true,
+    "line": "diagonal, 4 groups, a strike every 0.9 s, glow 0.92 s; 375 terrace tiles, all struck in turn; an unstruck route exists from every ledge at every moment and from every terrace tile when its glow starts (9670 states); strikes per floor: careful 0.1, careless 6.3",
+    "w": 48,
+    "h": 38,
+    "img": [
+     576,
+     456
+    ],
+    "steps": 56
+   },
+   {
+    "floor": 4,
+    "title": "Three groups",
+    "desc": "Patches again but only three groups and a quicker beat, so each tile is struck more often and the glow is shorter.",
+    "ok": true,
+    "line": "patches, 3 groups, a strike every 1.1 s, glow 0.92 s; 325 terrace tiles, all struck in turn; an unstruck route exists from every ledge at every moment and from every terrace tile when its glow starts (7846 states); strikes per floor: careful 0.07, careless 1.44",
+    "w": 48,
+    "h": 38,
+    "img": [
+     576,
+     456
+    ],
+    "steps": 40
+   },
+   {
+    "floor": 5,
+    "title": "Fast bands",
+    "desc": "Fast bands sweeping down the floor. The crystal ledge in the middle is the place to wait and read the beat.",
+    "ok": true,
+    "line": "bands down, 3 groups, a strike every 0.9 s, glow 0.92 s; 325 terrace tiles, all struck in turn; an unstruck route exists from every ledge at every moment and from every terrace tile when its glow starts (6415 states); strikes per floor: careful 0.06, careless 1.68",
+    "w": 48,
+    "h": 38,
+    "img": [
+     576,
+     456
+    ],
+    "steps": 50
+   },
+   {
+    "floor": 6,
+    "title": "Storm Sentinel",
+    "desc": "Small 2 by 2 patches on the fastest beat. One long climb to the crystal ledge, then the Storm Sentinel.",
+    "ok": true,
+    "line": "small patches, 3 groups, a strike every 0.9 s, glow 0.74 s; 245 terrace tiles, all struck in turn; an unstruck route exists from every ledge at every moment and from every terrace tile when its glow starts (5150 states); strikes per floor: careful 0.09, careless 4.16",
+    "w": 48,
+    "h": 38,
+    "img": [
+     576,
+     456
+    ],
+    "steps": 49
+   }
+  ]
+ },
+ "voidRift": {
+  "id": "voidRift",
+  "name": "Void Rift",
+  "act": 5,
+  "floors": 6,
+  "boss": "nullDevourer",
+  "mouths": 1,
+  "mechanic": "Drifting blocks",
+  "rule": "Rifts of open void cut the rock. Square stone blocks, three tiles a side, drift up and down in the rift, each in its own lane. When a block lines up with the ledge or with the next block, the edges touch and glow and you simply walk across. No jumping, and block edges stop you, so you cannot fall. A block that reaches the end of its lane rests there a moment; some lane ends touch a treasure islet.",
+  "floorsBuilt": [
+   {
+    "floor": 1,
+    "title": "One block",
+    "desc": "One rift, one block. Wait on the ledge until the block lines up, walk on, ride it until it lines up with the far ledge, walk off. A chest on each side.",
+    "ok": true,
+    "line": "1 rifts, 1 blocks; from every block and ledge at every moment of the 8.9 s cycle the stairs can still be reached (144 states, 0 soft-locks); you cannot fall; time spent crossing rifts: patient player 2.6 s (worst 1 in 10: 4.1 s), restless player 8.4 s",
+    "w": 78,
+    "h": 36,
+    "img": [
+     936,
+     432
+    ],
+    "steps": 65
+   },
+   {
+    "floor": 2,
+    "title": "Block to block",
+    "desc": "Two blocks side by side on different beats: step from one to the other when they pass. The second block rests at the top of its lane against a small islet with a chest.",
+    "ok": true,
+    "line": "1 rifts, 2 blocks; from every block and ledge at every moment of the 8.9 s cycle the stairs can still be reached (240 states, 0 soft-locks); you cannot fall; time spent crossing rifts: patient player 3.4 s (worst 1 in 10: 5.2 s), restless player 17.1 s",
+    "w": 78,
+    "h": 36,
+    "img": [
+     936,
+     432
+    ],
+    "steps": 51
+   },
+   {
+    "floor": 3,
+    "title": "Two rifts",
+    "desc": "Two rifts, two blocks each, with a checkpoint crystal between them. One block in the first rift moves faster.",
+    "ok": true,
+    "line": "2 rifts, 4 blocks; from every block and ledge at every moment of the 8.9 s cycle the stairs can still be reached (384 states, 0 soft-locks); you cannot fall; time spent crossing rifts: patient player 12.0 s (worst 1 in 10: 13.8 s), restless player 51.0 s",
+    "w": 78,
+    "h": 36,
+    "img": [
+     936,
+     432
+    ],
+    "steps": 119
+   },
+   {
+    "floor": 4,
+    "title": "Three in a row",
+    "desc": "The main rift takes three blocks. A second, narrow rift with one quick block leads to a treasure ledge.",
+    "ok": true,
+    "line": "2 rifts, 4 blocks; from every block and ledge at every moment of the 26.6 s cycle the stairs can still be reached (1008 states, 0 soft-locks); you cannot fall; time spent crossing rifts: patient player 4.2 s (worst 1 in 10: 5.9 s), restless player 118.5 s",
+    "w": 96,
+    "h": 51,
+    "img": [
+     1152,
+     612
+    ],
+    "steps": 87
+   },
+   {
+    "floor": 5,
+    "title": "Slow and fast",
+    "desc": "Two three-block rifts. The middle block of the first is big and slow and touches an islet with a chest at the top of its lane. The second rift mixes fast and slow blocks.",
+    "ok": true,
+    "line": "2 rifts, 6 blocks; from every block and ledge at every moment of the 26.6 s cycle the stairs can still be reached (1440 states, 0 soft-locks); you cannot fall; time spent crossing rifts: patient player 14.7 s (worst 1 in 10: 19.4 s), restless player 153.8 s",
+    "w": 96,
+    "h": 36,
+    "img": [
+     1152,
+     432
+    ],
+    "steps": 105
+   },
+   {
+    "floor": 6,
+    "title": "Null Devourer",
+    "desc": "A two-block rift with a treasure islet, the crystal, then a last three-block rift to the Null Devourer.",
+    "ok": true,
+    "line": "2 rifts, 5 blocks; from every block and ledge at every moment of the 26.6 s cycle the stairs can still be reached (1296 states, 0 soft-locks); you cannot fall; time spent crossing rifts: patient player 15.9 s (worst 1 in 10: 19.6 s), restless player 100.7 s",
+    "w": 96,
+    "h": 36,
+    "img": [
+     1152,
+     432
+    ],
+    "steps": 86
+   }
+  ]
+ },
+ "volcanicForge": {
+  "id": "volcanicForge",
+  "name": "Volcanic Forge",
+  "act": 4,
+  "floors": 7,
+  "boss": "flameTitan",
+  "mouths": 2,
+  "mechanic": "Lava channels",
+  "rule": "Each forge hall has a furnace, a floor of stone trough tiles and a lava channel across the way on. Some tiles sit on turntables: walk up and tap Turn. Join the troughs from the furnace to the bridge mold, pull the lever, and iron runs down, fills the mold and cools into a bridge. A broken path just lets the iron pool and cool: turn and pour again, as often as you like. Bridges are permanent.",
+  "floorsBuilt": [
+   {
+    "floor": 1,
+    "title": "One turntable",
+    "desc": "A short channel with one tile turned the wrong way. Turn it, pull the lever, cross the new bridge. The lever and the furnace are right by the door.",
+    "ok": true,
+    "line": "hall 1: 1 turntables, 0 decoys, best 1 turns, 8 states; 0 soft-locks: every turntable and the lever stay in reach and nothing is used up; turns and pours used: careful 2.5, careless 4.3",
+    "w": 51,
+    "h": 34,
+    "img": [
+     612,
+     408
+    ],
+    "steps": 41
+   },
+   {
+    "floor": 2,
+    "title": "Two turntables",
+    "desc": "A longer channel with two turntables. Pour too early and the iron stops at the first gap, which shows you which tile to turn next.",
+    "ok": true,
+    "line": "hall 1: 2 turntables, 0 decoys, best 3 turns, 32 states; 0 soft-locks: every turntable and the lever stay in reach and nothing is used up; turns and pours used: careful 5.2, careless 11.3",
+    "w": 51,
+    "h": 34,
+    "img": [
+     612,
+     408
+    ],
+    "steps": 44
+   },
+   {
+    "floor": 3,
+    "title": "A second mold",
+    "desc": "The channel forks. One branch feeds the bridge to the stairs, the other a mold over a side channel with a treasure ledge beyond. Pour once for each.",
+    "ok": true,
+    "line": "hall 1: 2 turntables, 0 decoys, best 4 turns (treasure mold 0), 48 states; 0 soft-locks: every turntable and the lever stay in reach and nothing is used up; turns and pours used: careful 6.1, careless 12.4",
+    "w": 51,
+    "h": 34,
+    "img": [
+     612,
+     408
+    ],
+    "steps": 44
+   },
+   {
+    "floor": 4,
+    "title": "A decoy branch",
+    "desc": "Three turntables, two molds, and a stub of trough that leads nowhere. A turntable pointed at the stub wastes the pour.",
+    "ok": true,
+    "line": "hall 1: 3 turntables, 1 decoys, best 3 turns (treasure mold 1), 256 states; 0 soft-locks: every turntable and the lever stay in reach and nothing is used up; turns and pours used: careful 5.2, careless 13.4",
+    "w": 51,
+    "h": 34,
+    "img": [
+     612,
+     408
+    ],
+    "steps": 44
+   },
+   {
+    "floor": 5,
+    "title": "Two forge halls",
+    "desc": "Two halls in a row, each with its own furnace and bridge, and a checkpoint crystal between them. The second hall has a treasure mold.",
+    "ok": true,
+    "line": "hall 1: 3 turntables, 1 decoys, best 6 turns, 128 states; hall 2: 3 turntables, 0 decoys, best 7 turns (treasure mold 2), 192 states; 0 soft-locks: every turntable and the lever stay in reach and nothing is used up; turns and pours used: careful 20.0, careless 52.4",
+    "w": 51,
+    "h": 34,
+    "img": [
+     612,
+     408
+    ],
+    "steps": 74
+   },
+   {
+    "floor": 6,
+    "title": "Long channels",
+    "desc": "Two big halls with four turntables each and decoy stubs. The second has a treasure mold.",
+    "ok": true,
+    "line": "hall 1: 4 turntables, 1 decoys, best 10 turns, 512 states; hall 2: 4 turntables, 2 decoys, best 7 turns (treasure mold 4), 768 states; 0 soft-locks: every turntable and the lever stay in reach and nothing is used up; turns and pours used: careful 25.7, careless 78.4",
+    "w": 51,
+    "h": 48,
+    "img": [
+     612,
+     576
+    ],
+    "steps": 72
+   },
+   {
+    "floor": 7,
+    "title": "Flame Titan",
+    "desc": "The great forge: five turntables, two decoys, both molds. Then the crystal and the Flame Titan. The second mouth behind the Titan opens once it is beaten.",
+    "ok": true,
+    "line": "hall 1: 5 turntables, 2 decoys, best 10 turns (treasure mold 3), 4096 states; 0 soft-locks: every turntable and the lever stay in reach and nothing is used up; turns and pours used: careful 14.3, careless 46.2",
+    "w": 51,
+    "h": 34,
+    "img": [
+     612,
+     408
+    ],
+    "steps": 58
+   }
+  ]
+ },
+ "frostfallCavern": {
+  "id": "frostfallCavern",
+  "name": "Frostfall Cavern",
+  "act": 5,
+  "floors": 6,
+  "boss": "frostMonarch",
+  "mouths": 1,
+  "mechanic": "Push the ice blocks",
+  "rule": "Each puzzle chamber is cut off from the way on by icy water in a gap in the far wall. Ice blocks, two tiles a side, sit on the chamber floor. Push one and it slides until a crystal, a wall or another block stops it. Slide a block into the water and it freezes into a bridge for good. A frost bell by the door puts every loose block back where it started, as often as you like, so a bad push is never final.",
+  "floorsBuilt": [
+   {
+    "floor": 1,
+    "title": "One block, one crystal",
+    "desc": "The demo puzzle: push the block down the chamber until the crystal stops it, walk round, and push it sideways into the water. Two pushes.",
+    "ok": true,
+    "line": "chamber 1: 1 block, 2 crystals, fewest pushes 2, 10 positions checked; 0 soft-locks: from every position the bell or the bridge can still be reached; pushes and bell rings used by a player who slips now and then: careful 2.5, careless 4.0",
+    "w": 57,
+    "h": 32,
+    "img": [
+     684,
+     384
+    ],
+    "steps": 46
+   },
+   {
+    "floor": 2,
+    "title": "Three pushes",
+    "desc": "A bigger chamber and more crystals. The block has to be walked through two stops before it lines up with the water.",
+    "ok": true,
+    "line": "chamber 1: 1 block, 3 crystals, fewest pushes 3, 21 positions checked; 0 soft-locks: from every position the bell or the bridge can still be reached; pushes and bell rings used by a player who slips now and then: careful 4.0, careless 7.6",
+    "w": 57,
+    "h": 32,
+    "img": [
+     684,
+     384
+    ],
+    "steps": 49
+   },
+   {
+    "floor": 3,
+    "title": "A treasure chamber",
+    "desc": "Four pushes in the main chamber, then a checkpoint crystal. A second, smaller chamber off the next cave guards a treasure ledge.",
+    "ok": true,
+    "line": "chamber 1: 1 block, 5 crystals, fewest pushes 4, 15 positions checked; chamber 2: 1 block, 3 crystals, fewest pushes 2, 14 positions checked; 0 soft-locks: from every position the bell or the bridge can still be reached; pushes and bell rings used by a player who slips now and then: careful 7.9, careless 15.6",
+    "w": 57,
+    "h": 45,
+    "img": [
+     684,
+     540
+    ],
+    "steps": 66
+   },
+   {
+    "floor": 4,
+    "title": "Two blocks, one in the way",
+    "desc": "Two blocks. Only one needs to reach the water, but the other one is part of the puzzle: it is a stop you can move.",
+    "ok": true,
+    "line": "chamber 1: 2 blocks, 3 crystals, fewest pushes 5, 33 positions checked; 0 soft-locks: from every position the bell or the bridge can still be reached; pushes and bell rings used by a player who slips now and then: careful 6.8, careless 18.9",
+    "w": 57,
+    "h": 32,
+    "img": [
+     684,
+     384
+    ],
+    "steps": 49
+   },
+   {
+    "floor": 5,
+    "title": "A wider gap",
+    "desc": "The water is two blocks wide, so both blocks have to go in, one after the other along the same row. The second slides over the first.",
+    "ok": true,
+    "line": "chamber 1: 2 blocks, 3 crystals, fewest pushes 5, 106 positions checked; 0 soft-locks: from every position the bell or the bridge can still be reached; pushes and bell rings used by a player who slips now and then: careful 6.0, careless 9.3",
+    "w": 57,
+    "h": 32,
+    "img": [
+     684,
+     384
+    ],
+    "steps": 51
+   },
+   {
+    "floor": 6,
+    "title": "Frost Monarch",
+    "desc": "One last four-push chamber, the crystal, then the Frost Monarch.",
+    "ok": true,
+    "line": "chamber 1: 1 block, 3 crystals, fewest pushes 4, 23 positions checked; 0 soft-locks: from every position the bell or the bridge can still be reached; pushes and bell rings used by a player who slips now and then: careful 5.5, careless 11.7",
+    "w": 57,
+    "h": 32,
+    "img": [
+     684,
+     384
+    ],
+    "steps": 48
+   }
+  ]
+ },
+ "sunkenTempleDungeon": {
+  "id": "sunkenTempleDungeon",
+  "name": "Sunken Temple",
+  "act": 5,
+  "floors": 6,
+  "boss": "swordWraith",
+  "mouths": 1,
+  "mechanic": "The hunter",
+  "rule": "Each floor is a maze of drowned halls, three tiles wide, with loops so there is always another way round. A stone guardian sleeps in a side room. After you have walked a little way it wakes and hunts you by the shortest path, slower than you walk; its eyes glow so you can see it coming. If it catches you a battle starts, and afterwards it goes back to its room to sleep.",
+  "floorsBuilt": [
+   {
+    "floor": 1,
+    "title": "A slow guardian",
+    "desc": "A small maze. The guardian wakes after three halls and walks at half your pace, so you can simply keep going. Two chests in dead ends.",
+    "ok": true,
+    "line": "24 halls, 3 loops, 4 dead ends; guardian speed 1/2 of yours, wakes after 3 halls; a route with no battle exists (10 halls; the straight route meets it 0 times); 2 of 2 chests can be taken with no battle; first-time players: careful 0.17 battles, careless 2.37",
+    "w": 30,
+    "h": 22,
+    "img": [
+     360,
+     264
+    ],
+    "steps": 50
+   },
+   {
+    "floor": 2,
+    "title": "A bigger maze",
+    "desc": "More halls and more dead ends, same slow guardian. A dead end with a chest costs you your lead.",
+    "ok": true,
+    "line": "35 halls, 4 loops, 5 dead ends; guardian speed 1/2 of yours, wakes after 3 halls; a route with no battle exists (12 halls; the straight route meets it 0 times); 2 of 3 chests can be taken with no battle; first-time players: careful 0.14 battles, careless 2.1",
+    "w": 35,
+    "h": 25,
+    "img": [
+     420,
+     300
+    ],
+    "steps": 56
+   },
+   {
+    "floor": 3,
+    "title": "It keeps up",
+    "desc": "The guardian now moves at two thirds of your pace. Loops let you lead it round and double back. A checkpoint crystal near the stairs.",
+    "ok": true,
+    "line": "40 halls, 6 loops, 4 dead ends; guardian speed 2/3 of yours, wakes after 3 halls; a route with no battle exists (11 halls; the straight route meets it 0 times); 3 of 3 chests can be taken with no battle; first-time players: careful 0.35 battles, careless 4.18",
+    "w": 40,
+    "h": 25,
+    "img": [
+     480,
+     300
+    ],
+    "steps": 55
+   },
+   {
+    "floor": 4,
+    "title": "Fewer loops",
+    "desc": "It wakes sooner and the maze has fewer loops, so the chests in the far dead ends are a real risk.",
+    "ok": true,
+    "line": "48 halls, 7 loops, 6 dead ends; guardian speed 2/3 of yours, wakes after 2 halls; a route with no battle exists (14 halls; the straight route meets it 0 times); 4 of 4 chests can be taken with no battle; first-time players: careful 0.19 battles, careless 3.31",
+    "w": 40,
+    "h": 30,
+    "img": [
+     480,
+     360
+    ],
+    "steps": 66
+   },
+   {
+    "floor": 5,
+    "title": "The long halls",
+    "desc": "The largest maze before the last floor, with the stairs at the far corner from the entrance.",
+    "ok": true,
+    "line": "54 halls, 8 loops, 5 dead ends; guardian speed 2/3 of yours, wakes after 2 halls; a route with no battle exists (13 halls; the straight route meets it 0 times); 4 of 4 chests can be taken with no battle; first-time players: careful 0.33 battles, careless 2.75",
+    "w": 45,
+    "h": 30,
+    "img": [
+     540,
+     360
+    ],
+    "steps": 65
+   },
+   {
+    "floor": 6,
+    "title": "Sword Wraith",
+    "desc": "The guardian is almost as fast as you. A golden chest (the Holy Amulet) sits in the deepest dead end. A crystal waits outside the Sword Wraith's chamber, which the guardian does not enter.",
+    "ok": true,
+    "line": "63 halls, 10 loops, 5 dead ends; guardian speed 3/4 of yours, wakes after 2 halls; a route with no battle exists (16 halls; the straight route meets it 0 times); 4 of 4 chests can be taken with no battle; first-time players: careful 0.57 battles, careless 4.72",
+    "w": 45,
+    "h": 35,
+    "img": [
+     540,
+     420
+    ],
+    "steps": 77
+   }
+  ]
+ }
+}
