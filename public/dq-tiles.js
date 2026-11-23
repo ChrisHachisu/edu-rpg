@@ -1234,6 +1234,19 @@
   // "linear" comment, so the 6 px/cell substrate was magnified 5.6x nearest-neighbour: while a hi-res
   // chunk streamed in, its coast showed as ~11 px stair steps with a foam band (owner, build 85).
   var LINEAR=(window.Phaser&&Phaser.Textures&&Phaser.Textures.FilterMode)?Phaser.Textures.FilterMode.LINEAR:0;
+  // Field-runtime fixes of 2026-11-23 (census findings m1, m9, M10, M14, desert tomb intro) each keep
+  // the old behaviour behind one switch, for side-by-side review:
+  //   localStorage['qok-f2-old'] = 'all' | a comma list of: label, fog, glare, gust, tombintro
+  //   or ?f2old=<same> on the URL.
+  function f2Old(name){
+    var v='';
+    try{ v=localStorage.getItem('qok-f2-old')||''; }catch(e){}
+    try{ var m=/[?&]f2old=([^&]*)/.exec(location.search); if(m) v=v+','+decodeURIComponent(m[1]); }catch(e){}
+    if(!v) return false;
+    var a=v.split(','); for(var i=0;i<a.length;i++){ var s=a[i].trim(); if(s==='all'||s===name) return true; }
+    return false;
+  }
+  window.__QOK_F2OLD__=f2Old;
 
   // Keep a generous off-screen tile margin and move the render window in chunks. The old window
   // followed the camera one tile at a time, repainting millions of pixels and rebuilding every tree
@@ -4214,8 +4227,12 @@
     var img=scene.add.image(0,0,key).setOrigin(0,0).setDepth(1).setScale(SC); try{img.texture.setFilter(NEAREST);}catch(e){}
     var FOGF=6, fw=Math.ceil(cam.width/FOGF)+1, fh=Math.ceil(cam.height/FOGF)+1, fkey='dqdngfog';
     if (scene.textures.exists(fkey)) scene.textures.remove(fkey);
-    var fct=scene.textures.createCanvas(fkey, fw, fh); try{fct.setFilter(NEAREST);}catch(e){}
-    var fog=scene.add.image(0,0,fkey).setOrigin(0,0).setScrollFactor(0).setDepth(8).setScale(FOGF); try{fog.texture.setFilter(NEAREST);}catch(e){}
+    // m9 (census 2026-11-23): the fog is a 1/6-resolution canvas scaled up 6x; sampled NEAREST its
+    // radial falloff showed as visible 6-px steps. It is a soft light, not pixel art: sample LINEAR.
+    // The old stepped look: localStorage['qok-f2-old']='fog' (or 'all').
+    var fogFilt=f2Old('fog')?NEAREST:LINEAR;
+    var fct=scene.textures.createCanvas(fkey, fw, fh); try{fct.setFilter(fogFilt);}catch(e){}
+    var fog=scene.add.image(0,0,fkey).setOrigin(0,0).setScrollFactor(0).setDepth(8).setScale(FOGF); try{fog.texture.setFilter(fogFilt);}catch(e){}
     dngState={ scene:scene, winW:winW, winH:winH, ct:ct, image:img, fog:fog, fogCt:fct, fw:fw, fh:fh, FOGF:FOGF, lastWin:'' };
   }
   // lit NW edges of a wall TOP (catches the upper-left light) + a SLIGHT corner bevel (edge-smoothing)
@@ -4727,6 +4744,120 @@
     var orig=scene.initMechanics; scene.__a2dIM=orig;
     scene.initMechanics=function(def){ try{ this.__a2dDef=def; }catch(e){} return orig.apply(this,arguments); };
   }
+  // ---- m1: the HUD floor label counts the way the floors run ---------------------------------
+  // The bundle's updateHUD labels a dungeon with TWO connections as a pass-through cave: past the
+  // middle floor it counts back up (floor 4 of 5 = "B2F"), so Shadow Cave and Magma Tunnels read
+  // B1F B2F B3F B2F B1F and Volcanic Forge 5F-7F read B3F B2F B1F although every floor is reached
+  // by going further in, by the same kind of stairs. Every dungeon now counts its floors in order:
+  // caves and mines B1F, B2F, ... ; towers and the castle 1F, 2F, ... (the bundle's own "wind"
+  // and castle rule, plus Stormreach Spire, whose mechanic id `wind-tower` the bundle's test for
+  // "wind" missed). Only the number and the B prefix of the label are touched.
+  var A2D_TOWERS={stormNest:1,stormreachSpire:1,demonCastle:1};
+  function a2dFloorLabel(id,floor,text){
+    var m=/^([\s\S]*\S)\s+B?\d+F$/.exec(String(text||'')); if(!m) return null;
+    return m[1]+' '+(A2D_TOWERS[id]?'':'B')+(floor||1)+'F';
+  }
+  function a2dFixFloorLabel(scene){
+    var ft=scene&&scene.floorText; if(!ft||ft.active===false||typeof ft.text!=='string'||typeof ft.setText!=='function') return;
+    var want=a2dFloorLabel(scene.currentMapId,scene.currentFloor,ft.text);
+    if(want&&want!==ft.text){ try{ ft.setText(want); }catch(e){} }
+  }
+  function a2dWrapHud(scene){
+    if(!scene || scene.__a2dHud || typeof scene.updateHUD!=='function' || f2Old('label')) return;
+    var orig=scene.updateHUD; scene.__a2dHud=true;
+    scene.updateHUD=function(){ var r=orig.apply(this,arguments); try{ a2dFixFloorLabel(this); }catch(e){} return r; };
+  }
+  // ---- Desert Tomb: no arrival banner from the old glyph trial --------------------------------
+  // The bundle's renderGlyphPlates (run from renderMap whenever its generator armed the old
+  // "tread only the <glyph> glyph" trial) queues a one-time arrival message 250 ms later and draws a
+  // dark rule plaque. On an authored Desert Tomb floor that trial is switched off afterwards
+  // (a2dLegacyOff), but the queued banner still fired: it named the OLD rule, while the floor is the
+  // glyph-ORDER puzzle whose order is on the tablet in the entrance chamber (glyph-plates.js).
+  // On an authored floor the old trial is never drawn at all now.
+  function a2dWrapGlyphIntro(scene){
+    if(!scene || scene.__a2dGlyph || typeof scene.renderGlyphPlates!=='function' || f2Old('tombintro')) return;
+    var orig=scene.renderGlyphPlates; scene.__a2dGlyph=true;
+    scene.renderGlyphPlates=function(){
+      try{ var id=this.currentMapId; if(a2dIs(id) && a1dFloors[id+'-f'+(this.currentFloor||1)]){ this.glyphTrialActive=false; return; } }catch(e){}
+      return orig.apply(this,arguments);
+    };
+  }
+  // ---- M10: daylight at the mouth, not a white block --------------------------------------------
+  // Acts 2-5 floor pictures paint the way out as near-white daylight right up to the map's edge,
+  // and past the edge the camera shows black: a flat white glare ending in a hard straight line.
+  // Act 1 bakes a stone arch there; Acts 2-5 have no arch art. Code-only fix: one canvas sprite per
+  // mouth, built in the "mouth faces down" frame and rotated to the mouth's side, that
+  //   * warms the painted glare (an amber wash, strongest at the edge, feathered to nothing inward),
+  //     so the brightest pixels read as warm daylight rather than pure white, and
+  //   * spills that light past the edge onto the black, fading out over ~3 cells and to the sides,
+  //     so the map's edge is a glow and not a rectangle.
+  // A painted arch would be the full-quality answer (ART follow-up). Old look: qok-f2-old=glare.
+  var a2dGlareImgs=[];
+  function a2dGlareDrop(){ for(var i=0;i<a2dGlareImgs.length;i++){ try{ a2dGlareImgs[i].destroy(); }catch(e){} } a2dGlareImgs=[]; }
+  function a2dGlareTex(scene,cells,part){
+    var key='a2dglare_'+part+'_w'+cells; if(scene.textures.exists(key)) return key;
+    var IN=2.5, OUT=3.2, PADX=2.2, W=Math.round((cells+2*PADX)*TILE), H=Math.round((IN+OUT)*TILE), eY=Math.round(IN*TILE), cx=W/2;
+    var ct=scene.textures.createCanvas(key,W,H); if(!ct) return null;
+    var g=ct.context; g.clearRect(0,0,W,H);
+    var half=cells*TILE/2;
+    var ell=function(rx,ry,cy,stops){ g.save(); g.translate(cx,cy); g.scale(rx/ry,1);
+      var gr=g.createRadialGradient(0,0,0,0,0,ry); for(var i=0;i<stops.length;i++) gr.addColorStop(stops[i][0],stops[i][1]);
+      g.fillStyle=gr; g.beginPath(); g.arc(0,0,ry,0,Math.PI*2); g.fill(); g.restore(); };
+    if(part==='wash'){                     // inside: amber wash over the painted glare, strongest at the edge
+      g.save(); g.beginPath(); g.rect(0,0,W,eY); g.clip();
+      ell(half+TILE*1.2, IN*TILE, eY, [[0,'rgba(228,178,114,0.40)'],[0.5,'rgba(228,178,114,0.20)'],[1,'rgba(228,178,114,0)']]);
+      g.restore();
+    } else {                               // outside: daylight spilling past the edge, feathered across it
+      var top=eY-Math.round(0.45*TILE);
+      g.save(); g.beginPath(); g.rect(0,top,W,H-top); g.clip();
+      ell(half+TILE*1.5, OUT*TILE, eY, [[0,'rgba(246,226,190,0.96)'],[0.16,'rgba(236,204,150,0.80)'],[0.45,'rgba(200,150,92,0.36)'],[0.8,'rgba(150,104,62,0.10)'],[1,'rgba(120,80,50,0)']]);
+      g.restore();
+      g.save(); g.globalCompositeOperation='destination-in';
+      var vg=g.createLinearGradient(0,top,0,eY+2); vg.addColorStop(0,'rgba(0,0,0,0)'); vg.addColorStop(1,'rgba(0,0,0,1)');
+      g.fillStyle=vg; g.fillRect(0,0,W,H); g.restore();   // the gradient holds 1 past eY
+    }
+    ct.refresh(); try{ ct.setFilter(LINEAR); }catch(e){}
+    return key;
+  }
+  function a2dGlareSetup(scene,fl){
+    a2dGlareDrop(); if(f2Old('glare')) return;
+    var a=fl.assets||[], by={}, i, k;
+    for(i=0;i<a.length;i++) if(a[i].kind==='mouth'){ k=a[i].side||'down'; (by[k]=by[k]||[]).push(a[i]); }
+    for(k in by){
+      var c=by[k], x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;
+      for(i=0;i<c.length;i++){ x0=Math.min(x0,c[i].x); x1=Math.max(x1,c[i].x); y0=Math.min(y0,c[i].y); y1=Math.max(y1,c[i].y); }
+      var vert=(k==='down'||k==='south'||k==='up'||k==='north'), n=vert?(x1-x0+1):(y1-y0+1);
+      var W=fl.width*TILE, H=fl.height*TILE, px, py, rot;
+      if(k==='down'||k==='south'){ px=(x0+x1+1)/2*TILE; py=H; rot=0; }
+      else if(k==='up'||k==='north'){ px=(x0+x1+1)/2*TILE; py=0; rot=Math.PI; }
+      else if(k==='left'||k==='west'){ px=0; py=(y0+y1+1)/2*TILE; rot=Math.PI/2; }
+      else { px=W; py=(y0+y1+1)/2*TILE; rot=-Math.PI/2; }
+      // the map's edge along this side: the paint is cut straight there, so it fades into the dark
+      // over the last cell, except in the mouth itself where the daylight carries on
+      try{
+        var Lw=vert?W:H, mc=vert?px:py, BAND=Math.round(1.1*TILE), ek='a2dglare_edge_'+Lw+'_'+Math.round(mc)+'_'+n;
+        if(!scene.textures.exists(ek)){
+          var et=scene.textures.createCanvas(ek,Lw,BAND), eg=et.context;
+          var lg=eg.createLinearGradient(0,0,0,BAND); lg.addColorStop(0,'rgba(4,4,8,0)'); lg.addColorStop(0.55,'rgba(4,4,8,0.55)'); lg.addColorStop(1,'rgba(4,4,8,0.94)');
+          eg.fillStyle=lg; eg.fillRect(0,0,Lw,BAND);
+          eg.save(); eg.globalCompositeOperation='destination-out';
+          var hw=(n/2+0.9)*TILE, hg=eg.createLinearGradient(mc-hw-TILE,0,mc+hw+TILE,0), f0=TILE/(2*hw+2*TILE), f1=1-f0;
+          hg.addColorStop(0,'rgba(0,0,0,0)'); hg.addColorStop(f0,'rgba(0,0,0,1)'); hg.addColorStop(f1,'rgba(0,0,0,1)'); hg.addColorStop(1,'rgba(0,0,0,0)');
+          eg.fillStyle=hg; eg.fillRect(mc-hw-TILE,0,2*hw+2*TILE,BAND); eg.restore();
+          et.refresh(); try{ et.setFilter(LINEAR); }catch(e){}
+        }
+        var ei=scene.add.image(px,py,ek).setOrigin(mc/Lw,1).setRotation(rot).setDepth(2.45);
+        ei.__a2dGlare=k+':edge'; a2dGlareImgs.push(ei);
+      }catch(e){}
+      // the wash lies on the floor (under the fog); the spill is light from outside (over the fog)
+      [['wash',2.4],['spill',8.2]].forEach(function(pd){
+        var tk=a2dGlareTex(scene,n,pd[0]); if(!tk) return;
+        var tex=scene.textures.get(tk), src=tex&&tex.getSourceImage(), oy=src?(Math.round(2.5*TILE))/src.height:0.5;
+        var im=scene.add.image(px,py,tk).setOrigin(0.5,oy).setRotation(rot).setDepth(pd[1]);
+        im.__a2dGlare=k+':'+pd[0]; a2dGlareImgs.push(im);
+      });
+    }
+  }
   function a2dLegacyOff(scene,fl){
     if(!fl.mechanic || !fl.mechanic.id || fl.mechanic.id==='none') return;
     try{ if(scene.__a2dIM && scene.__a2dDef && scene.__a2dDef.type==='dungeon'){
@@ -4880,6 +5011,7 @@
     scene.__a2dLanding=spot?{key:key,spot:spot}:null;
     a2dLegacyOff(scene,fl);
     a2dSealSetup(scene,fl,key);
+    try{ a2dGlareSetup(scene,fl); }catch(e){ if(window.__DQ_DEBUG__) console.log('a2d glare '+e); }
     a2dCtx=a2dMakeCtx(scene,fl,key);
     if(a2dCtx.mod && a2dCtx.mod.load) try{ a2dCtx.mod.load(a2dCtx); }catch(e){ if(window.__DQ_DEBUG__) console.log('a2d load '+e); }
   }
@@ -4887,10 +5019,11 @@
     var c=a2dCtx, i; a2dCtx=null;
     try{ var d=A2D&&A2D.dungeons&&A2D.dungeons[nextId];                     // an authored dungeon may have fewer floors than the bundle's door table names
          if(d&&a2dIs(nextId)&&d.floors&&scene.currentFloor>d.floors) scene.currentFloor=d.floors; }catch(e){}
+    a2dGlareDrop();
     if(!c) return;
     try{ if(c.mod&&c.mod.unload) c.mod.unload(c); }catch(e){}
     for(i=0;i<c._owned.length;i++){ try{ if(c._owned[i]&&c._owned[i].destroy) c._owned[i].destroy(); }catch(e){} }
-    a2dOverDrop(); a2dSealDrop();
+    a2dOverDrop(); a2dSealDrop(); a2dGlareDrop();
     try{ for(var k in a1dBossSprites) a1dBossDrop(k); }catch(e){}           // a live boss sprite must not follow her out of the dungeon
   }
   function a2dFrame(scene,delta){
@@ -5048,7 +5181,7 @@
     if(a1dPatched || !scene || scene.__a1dPatched) return;
     if(typeof scene.loadMap!=='function') return; a1dPatched=true; scene.__a1dPatched=true;
     var orig=scene.loadMap;
-    a2dWrapTransition(scene); a2dWrapMechanics(scene);
+    a2dWrapTransition(scene); a2dWrapMechanics(scene); a2dWrapHud(scene); a2dWrapGlyphIntro(scene);
     scene.loadMap=function(id){
       try{ a2dLeave(this,id); }catch(e){}
       // The frozen transition path sets currentMapId to the source map until this
@@ -8482,6 +8615,9 @@
       var i=(y*fw+x)*4; d[i]=5; d[i+1]=5; d[i+2]=9; d[i+3]=Math.round((t*t*(3-2*t))*250); // smooth radial darkness
     }
     ctx.putImageData(img,0,0); dngState.fogCt.refresh();
+    // m9: refresh() re-uploads through the renderer, which applies the game's pixel-art (NEAREST)
+    // filter again; put the soft filter back after every upload.
+    if(!f2Old('fog')){ try{ dngState.fogCt.setFilter(LINEAR); }catch(e){} }
   }
 
   // ============================================================

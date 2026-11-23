@@ -206,12 +206,25 @@ const walkable = await fetch(`./${town.walkable}`).then(r => r.json());
 // Computed from `town.worldPxPerCell` inline rather than through cellToWorld(): validation has to
 // run before the renderer's own constants exist, so that helper is not defined yet at this point in
 // the file and calling it here would throw on its temporal dead zone.
-const NPC_BLOCK_RADIUS = 7, NPC_CELL_W = town.worldPxPerCell;
+// M16 (census 2026-11-23): with the 7 px disc her feet stopped 11 px from an NPC's, so walking up
+// to talk stacked the two sprites (36 world px tall). The NPC's body is now a short capsule running
+// from her feet 7 px SOUTH, 10 px half-width: the hero (foot radius 4) stops 21 px south of the
+// NPC's feet (inside the 33.6 px talk band, her head just reaching the NPC's feet), 14 px to either
+// side (still inside the 17.6 px band), and 14 px north. Reachability of every NPC band, service
+// spot and the exit is guarded by scripts/auto/checks/field-town-reach.cjs. An NPC standing in a
+// passage too narrow for that body carries `body: [halfWidth, south]` in her town json (with a
+// `bodyNote`), so she never closes the way past her. Old disc everywhere: qok-f2-old=npcbody.
+const F2_OLD = (() => { let v = ''; try { v = localStorage.getItem('qok-f2-old') || ''; } catch (e) {}
+  try { v += ',' + (new URLSearchParams(location.search).get('f2old') || ''); } catch (e) {}
+  return name => v.split(',').some(s => s.trim() === 'all' || s.trim() === name); })();
+const NPC_BLOCK_RADIUS = F2_OLD('npcbody') ? 7 : 10, NPC_BODY_SOUTH = F2_OLD('npcbody') ? 0 : 7, NPC_CELL_W = town.worldPxPerCell;
 walkable.dynamicBlockers = [
   ...(walkable.dynamicBlockers || []),
   ...town.npcs.map(n => {
     const point = { x: n.cell[0] * NPC_CELL_W, y: n.cell[1] * NPC_CELL_W };
-    return { id: `npc-${n.id}`, from: point, to: point, halfWidth: NPC_BLOCK_RADIUS };
+    const own = !F2_OLD('npcbody') && Array.isArray(n.body) ? n.body : null;
+    const half = own ? own[0] : NPC_BLOCK_RADIUS, south = own ? own[1] : NPC_BODY_SOUTH;
+    return { id: `npc-${n.id}`, from: point, to: { x: point.x, y: point.y + south }, halfWidth: half };
   }),
 ];
 validateWalkableGeometry(walkable);
@@ -537,7 +550,9 @@ function nearestNpc() {
   for (const npc of npcs) {
     // Approach is from the SOUTH by owner rule, so the band that counts is below the NPC.
     const dx = position.x - npc.point.x, dy = position.y - npc.point.y;
-    if (Math.abs(dx) > CELL_W * 1.1 || dy < -CELL_W * 0.35 || dy > CELL_W * 2.1) continue;
+    // `talkReach` (cells, town json): a person standing BEHIND a painted counter is talked to across
+    // it, from the counter's front (explorer X04: Ruins Camp, Oasis Haven, Last Bastion shopkeepers).
+    if (Math.abs(dx) > CELL_W * 1.1 || dy < -CELL_W * 0.35 || dy > CELL_W * (npc.talkReach ?? 2.1)) continue;
     const d = Math.hypot(dx, dy);
     if (!best || d < best.d) best = { npc, d };
   }
@@ -741,11 +756,50 @@ function cameraAxisTarget(center, viewport, zoom, world, edgeReveal = 0) {
   const view = viewport / zoom;
   return Math.max(-edgeReveal, Math.min(world + edgeReveal - view, center - view / 2));
 }
+// m2 (census 2026-11-23): the world clamp above lets the view run down to the bottom of the
+// 65-cell plate, and past a SOUTH mouth that is the painted map-end void (draw(), EDGE_MARGIN), so
+// every town opened with 8-15% of the screen black above the tab bar. Past a NORTH mouth (Port
+// Sapphire) the same clamp put her at the very top, beside the HUD panels. The vertical target now
+//   * treats the void past the mouth as the end of the map: the view's visible bottom (the parent's
+//     tab bar top) stops half-way into the void's fade, except that
+//   * she is never pushed lower than VIEW_CLEAR_BOTTOM above the tab bar (joystick height), and
+//   * past a north mouth she is never higher than VIEW_CLEAR_TOP below the top (under the HUD
+//     panels the view may then show the void, which is where those panels sit).
+// The plate is not rescaled; only where the camera rests changes. Old camera: qok-f2-old=towncam.
+const VIEW_CLEAR_BOTTOM = 130, VIEW_CLEAR_TOP = 212;   // CSS px, measured on a 390x844 phone
+let tabTopCache = { t: -1, v: 0 };
+function visibleBottom(height) {
+  const now = performance.now();
+  if (now - tabTopCache.t < 400) return tabTopCache.v || height;
+  let v = height;
+  try {
+    const el = parent !== window && parent.document.getElementById('fieldTabs');
+    if (el) { const r = el.getBoundingClientRect(); if (r.height > 0 && r.top > height * 0.5 && r.top < height) v = r.top; }
+  } catch (e) {}
+  tabTopCache = { t: now, v };
+  return v;
+}
+function cameraYTarget(height) {
+  const z = camera.zoom, worldClamped = cameraAxisTarget(position.y, height, z, WORLD);
+  if (F2_OLD('towncam')) return worldClamped;
+  let y = worldClamped;
+  if (EXIT_SIGN === 1) {
+    const voidLine = (exitCell[1] + EDGE_MARGIN + FADE_CELLS * 0.5) * CELL_W;
+    const bottom = visibleBottom(height) / z;                  // world px from the view top to the tab bar
+    if (y + bottom > voidLine) y = Math.max(voidLine - bottom, position.y - (bottom - VIEW_CLEAR_BOTTOM / z));
+    y = Math.max(y, Math.min(worldClamped, 0));                // never above the plate's top on a south-mouth town
+  } else {
+    const voidLine = (exitCell[1] - EDGE_MARGIN - FADE_CELLS * 0.5) * CELL_W;
+    y = Math.min(Math.max(y, voidLine), WORLD - height / z);   // not into the void, not past the plate's bottom
+    y = Math.min(y, position.y - VIEW_CLEAR_TOP / z);
+  }
+  return y;
+}
 function cameraTarget() {
   const width = canvas.clientWidth, height = canvas.clientHeight;
   return {
     x: cameraAxisTarget(position.x, width, camera.zoom, WORLD, HERO_EDGE_REVEAL_X),
-    y: cameraAxisTarget(position.y, height, camera.zoom, WORLD),
+    y: cameraYTarget(height),
   };
 }
 Object.assign(camera, cameraTarget());
@@ -817,7 +871,10 @@ function frame(now) {
       // facing back into the door.
       parent.postMessage({ type: 'act1-town-exit', town: town.id,
                            targetMapId: town.exit?.targetMapId ?? 'overworld',
-                           toX: town.exit?.toX, toY: town.exit?.toY, facing: state.facing }, '*');
+                           // `exit.land` (Port Sapphire): where she lands, when the door's front
+                           // cell toX/toY lies under the town's own icon (see the town json's landNote)
+                           toX: town.exit?.land?.[0] ?? town.exit?.toX, toY: town.exit?.land?.[1] ?? town.exit?.toY,
+                           facing: state.facing }, '*');
     }, EXIT_FADE_MS);
   }
 
@@ -828,9 +885,11 @@ function frame(now) {
   draw(now);
   const nearNpc = talking ? null : nearestNpc();
   const nearSvc = talking ? null : (nearNpc?.id === 'healer' ? null : nearestService());
-  const label = nearSvc ? nearSvc.label
-    : nearNpc ? (nearNpc.id === 'healer' ? `Talk to ${nearNpc.name || nearNpc.id}`
-                                         : `Talk to ${nearNpc.name || nearNpc.id}`)
+  // The words come from the parent (it owns i18n; census M12: this was English in Japanese too).
+  let tl = null; try { tl = parent.__QOK_TOWN_LABEL__; } catch (e) { tl = null; }
+  const npcName = nearNpc ? (nearNpc.name || nearNpc.id) : '';
+  const label = nearSvc ? ((typeof tl === 'function' && tl(nearSvc.kind)) || nearSvc.label)
+    : nearNpc ? ((typeof tl === 'function' && tl('talk', npcName, nearNpc.nameKey)) || `Talk to ${npcName}`)
     : null;
   promptEl.dataset.show = label ? 'true' : 'false';
   if (label) promptEl.textContent = label;

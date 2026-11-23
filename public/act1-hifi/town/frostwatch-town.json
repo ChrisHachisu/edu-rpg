@@ -34,6 +34,8 @@
  "npcs": [
   {
    "id": "healer",
+      "body": [10, 0],
+      "bodyNote": "2026-11-23 (census M16): every town NPC now has a body that stops the hero beside her (town.html: 10 px half-width, 7 px south). The healer stands in the 1.5-cell lane in front of the clinic, and that body would close the lane east of her (field-town-reach.cjs). Here the body is a 10 px disc: the lane stays open and the hero stops 14 px to either side of her.",
    "dialogueKey": "npc.healer",
    "nameKey": "npc.healer.name",
    "sheet": "town/npc/frostwatch-healer-4x3-64.png",
