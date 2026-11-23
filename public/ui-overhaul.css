@@ -425,7 +425,8 @@
 #qok-ui .itemrow{ display:flex; flex-direction:column; gap:8px; }
 /* quiz — a parchment card in the bottom HUD so the enemy + monster stay visible above it */
 #qok-ui .qcard{ padding:13px 14px; display:flex; flex-direction:column; gap:9px; }
-#qok-ui .qprompt{ text-align:center; font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--ink-soft); font-weight:700; }
+/* census m4: was 11px spaced all-caps, unreadable at 6-8; sentence case at a reading size. */
+#qok-ui .qprompt{ text-align:center; font-size:15px; line-height:1.3; letter-spacing:0; text-transform:none; color:var(--ink-soft); font-weight:700; }
 #qok-ui .qtimer{ height:7px; border-radius:99px; background:#ffffff14; overflow:hidden; } #qok-ui .qtimer i{ display:block; height:100%; border-radius:99px; background:var(--gold); transition:width .1s linear; }
 #qok-ui .qq{ text-align:center; font-weight:700; font-size:22px; color:var(--ink); padding:2px 0 4px; }
 #qok-ui .qans{ display:grid; grid-template-columns:1fr 1fr; gap:9px; }
@@ -710,3 +711,11 @@ body.qok-dialogue #qok-field-hud #qfh-dialog{bottom:calc(env(safe-area-inset-bot
   background:var(--emerald2); border:1px solid var(--emerald); color:#f2f6f3; cursor:pointer; }
 #qok-ui .savebtn.off{ background:transparent; border-color:#ffffff22; color:#77736b; }
 #qok-ui .go-note{ font-size:12.5px; color:var(--ink-soft); margin-top:-6px; line-height:1.45; }
+
+/* JAPANESE LINE BREAKS (census m6, 2026-11-23). The browser may break Japanese between any two
+   characters, so boxes split words: "き/ょうい", "脅/威", "26/の ダメージ". The game's Japanese is
+   written with spaces between phrases (both kana and kanji mode), so break only at those spaces and
+   after punctuation (keep-all), never before a small kana or a long-vowel mark (line-break:strict).
+   overflow-wrap:break-word is the last resort for a phrase longer than the whole line; unlike
+   `anywhere` it does not change min-content sizing, so no layout moves. English is unaffected. */
+#qok-ui, #qok-field-hud, #qok-quest-completion { word-break:keep-all; line-break:strict; overflow-wrap:break-word; }

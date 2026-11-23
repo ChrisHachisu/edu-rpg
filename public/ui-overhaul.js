@@ -115,7 +115,7 @@
   function GS() { return window.__GAME_STATE__; }
   function Z(k, p) { var q = window.__QOK; return q && q.Z ? q.Z(k, p) : k; }
   function isJa() { var q = window.__QOK; try { return !!(q && q.loc && q.loc() === 'ja'); } catch (e) { return false; } }
-  function kanji() { var t = GS(); return !!(t && t.player && t.player.state && t.player.state.kanjiMode); }
+  function kanji() { var t = GS(); if (t && t.player && t.player.state) return !!t.player.state.kanjiMode; var h = window.__QOK_KANJI_HINT__; try { return !!(h && h()); } catch (e) { return false; } }   // no player yet: the title's slot hint (census m7)
   // Kana by default (house style for ages 6-8); the kanji spelling when the player chose kanji mode.
   function J(kana, kj) { return kanji() ? kj : kana; }
   function T3(en, kana, kj) { return isJa() ? (kanji() && kj ? kj : kana) : en; }
@@ -156,7 +156,8 @@
       if (!badge) {
         badge = document.createElement('div');
         badge.id = 'qok-saved-badge';
-        badge.style.cssText = 'position:fixed;z-index:80;pointer-events:none;top:calc(env(safe-area-inset-top,0px) + 10px);' +
+        // Below the compass (68px dial at top+7, right 10), never on it or on the HP bar (census m18).
+        badge.style.cssText = 'position:fixed;z-index:80;pointer-events:none;top:calc(env(safe-area-inset-top,0px) + 84px);' +
           'right:calc(env(safe-area-inset-right,0px) + 12px);padding:4px 11px 4px 9px;border-radius:14px;' +
           'background:rgba(21,22,28,.82);color:#e8e2d4;font:700 12px "Zen Maru Gothic",system-ui,sans-serif;' +
           'border:1px solid rgba(201,169,97,.40);opacity:0;transition:opacity .25s;';
@@ -486,7 +487,25 @@
   // true global locale (vi()) — matches what Z() renders; falls back to player state.
   function locale() { var q = QOK(); if (q && q.loc) { try { return q.loc(); } catch (e) {} } var s = pstate(); return (s && s.locale) || 'en'; }
   function isJa()   { return locale() === 'ja'; }
-  function kanji() { var s = pstate(); return !!(s && s.kanjiMode); }
+  function kanji() { var s = pstate(); return s ? !!s.kanjiMode : titleKanji(); }
+  /* KANJI MODE ON THE TITLE, BEFORE ANY GAME IS LOADED (census m7, 2026-11-23). On a cold launch
+     there is no player yet, so kanji() read false and a kanji-mode player's slot screens came up in
+     kana (さいごの セーブ, きょう, つよくてニューゲーム). Kanji mode lives in each save, so the slot
+     screens follow the save they show: the opened slot, else the active slot. Title mode only (the
+     create screen keeps its own toggle, which drives the bundle's flag). Cached briefly because the
+     title re-renders every frame and this parses a save. */
+  var _tkAt = 0, _tkKey = '', _tkVal = false;
+  function titleKanji() {
+    var ts = getScene('TitleScene'), SV = window.__QOK_SAVES__;
+    if (!SV || !ts || !sceneActive('TitleScene') || ts.mode !== 'title') return false;
+    var n = (titleView === 'slot' || titleView === 'del') && titleSlotN ? titleSlotN : SV.activeSlot();
+    var key = titleView + '|' + n, now = Date.now();
+    if (key === _tkKey && now - _tkAt < 400) return _tkVal;
+    var v = false;
+    try { var info = n ? SV.slotInfo(n) : null; v = !!(info && info.newest && info.newest.player && info.newest.player.kanjiMode); } catch (e) { v = false; }
+    _tkKey = key; _tkAt = now; _tkVal = v; return v;
+  }
+  window.__QOK_KANJI_HINT__ = titleKanji;   // the save-slot helpers at the top of this file read it too
   function J(kana, kj) { return kanji() ? kj : kana; }
   function T3(en, kana, kj) { return isJa() ? (kanji() && kj ? kj : kana) : en; }
 
@@ -751,6 +770,7 @@
   }
   // category icon by equip slot/type (reuses the locked artwork to signify each category)
   var CAT_SYM = { weapon: 'swordf', armor: 'armorf', shield: 'shield', helmet: 'helmf', accessory: 'ringf' };
+  function statLabel(k) { var v = Z('menu.' + k); return (!v || v.charAt(0) === '[' || v === 'menu.' + k) ? String(k).toUpperCase() : v; }
   function catIcon(type, size) { var s = size || 16; return '<svg width="' + s + '" height="' + s + '" style="flex:none;"><use href="#qok-' + (CAT_SYM[type] || 'shield') + '"/></svg>'; }
   function esc(s) { return ('' + (s == null ? '' : s)).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
 
@@ -1025,7 +1045,7 @@
       '</div>' +
       '<div class="panel" style="padding:14px;display:flex;flex-direction:column;gap:6px;">' +
         '<div class="eyebrow" style="color:var(--ink-soft);padding-left:0;">' + esc(Z('menu.equip')) + '</div>' + eq +
-        '<div class="row" style="justify-content:space-between;border-top:1px solid #00000018;padding-top:7px;margin-top:auto;"><span style="color:var(--ink-soft);font-weight:700;font-size:12px;">' + esc(Z('menu.accuracy')) + '</span><span style="font-weight:800;font-size:13px;color:var(--ink);">' + qs.totalCorrect + '/' + qs.totalAsked + ' (' + acc + '%)</span></div>' +
+        '<div class="row" style="justify-content:space-between;border-top:1px solid #00000018;padding-top:7px;margin-top:auto;"><span style="color:var(--ink-soft);font-weight:700;font-size:12px;">' + esc(Z('menu.accuracy')) + '</span><span style="font-weight:800;font-size:13px;color:var(--ink);">' + (qs.totalAsked ? qs.totalCorrect + '/' + qs.totalAsked + ' (' + acc + '%)' : '—') + '</span></div>' +
       '</div>' +
     '</div></div>';
   }
@@ -1062,7 +1082,7 @@
         if (dat.stats.def) statStr += ' +' + dat.stats.def + Z('menu.def');
       }
       h += '<div class="row" data-act="equipSlot" data-i="' + s + '" style="justify-content:space-between;padding:5px 6px;border-radius:8px;cursor:pointer;' + (sel ? 'background:var(--gold-glow);outline:2px solid var(--gold);' : '') + '">' +
-        '<span class="row" style="gap:7px;font-weight:800;font-size:13px;color:' + (sel ? '#43340f' : 'var(--ink-soft)') + ';">' + catIcon(slot, 18) + esc(Z(SLOT_KEY[slot])) + '</span>' +
+        '<span class="row" style="gap:7px;font-weight:800;font-size:13px;color:' + (sel ? 'var(--ink)' : 'var(--ink-soft)') + ';">' + catIcon(slot, 18) + esc(Z(SLOT_KEY[slot])) + '</span>' +
         '<span style="font-weight:800;font-size:13px;color:' + (id ? 'var(--ink)' : 'var(--ink-soft)') + ';">' + esc(nm) + '<span style="color:#1f8a44;font-weight:800;">' + esc(statStr) + '</span></span></div>';
     }
     h += '</div>';
@@ -1304,7 +1324,7 @@
         var blocked = isEq && owned > 0;
         var afford = st.gold >= it.buyPrice;
         var statStr = '';
-        if (it.stats) { for (var k in it.stats) statStr += '+' + it.stats[k] + k.toUpperCase() + ' '; }
+        if (it.stats) { for (var k in it.stats) statStr += '+' + it.stats[k] + statLabel(k) + ' '; }   // census m7: was k.toUpperCase(), English ATK/DEF in Japanese
         var cnt = '';
         if (!isEq && owned > 0) cnt = '<div class="cnt">' + Z('shop.ownedEquip') + ' ×' + owned + '</div>';
         var price = blocked ? '<div class="pill" style="background:#00000014;color:var(--ink-soft);">' + esc(Z('shop.ownedEquip')) + '</div>' : '<div class="pill" style="background:#e0b75726;color:' + (afford ? '#8a6a26' : '#bb3a32') + ';">' + it.buyPrice + ' G</div>';
@@ -1396,7 +1416,7 @@
       '<div class="panel" style="padding:16px;">' +
         '<div class="row" style="justify-content:space-between;font-size:14px;font-weight:800;color:var(--ink-soft);margin-bottom:8px;"><span>' + esc(Z('menu.hp')) + '</span><span>' + st.hp + ' → <b style="color:#1f8a44;">' + max + '</b></span></div>' +
         '<div class="hp" style="height:14px;"><i style="width:' + (hpR * 100) + '%;"></i></div>' +
-        '<div style="text-align:center;margin-top:14px;font-size:15px;font-weight:800;color:var(--ink);">' + esc(Z('menu.gold')) + ': <span style="color:#8a6a26;">' + price + ' G</span></div>' +
+        '<div style="text-align:center;margin-top:14px;font-size:15px;font-weight:800;color:var(--ink);">' + esc(T3('Price', 'ねだん', '値段')) + ': <span style="color:#8a6a26;">' + price + ' G</span></div>' +
       '</div>' +
       '<div style="display:grid;grid-template-columns:1.4fr 1fr;gap:10px;">' +
         '<button class="btn btn-em' + (wm.healerOverlayIndex === 0 ? ' sel' : '') + '" data-act="healConfirm">' + use('check', 'ic') + esc(Z('npc.healer.healOption')) + '</button>' +
@@ -2178,7 +2198,7 @@
           '<button class="btn btn-slate" data-act="titleNewCancel">' + esc(tNo) + '</button>' +
         '</div></div></div>';
     }
-    var sig = 'title|' + ja + '|' + hasSave + '|' + heroColor + '|' + (ts.ngPlus ? 1 : 0) + '|c' + (titleConfirm ? 1 : 0);
+    var sig = 'title|' + ja + '|k' + kanji() + '|' + hasSave + '|' + heroColor + '|' + (ts.ngPlus ? 1 : 0) + '|c' + (titleConfirm ? 1 : 0);
     activate('title', false);
     paint(h, sig);
   }
@@ -2231,7 +2251,7 @@
       if (info.save) h += '<button class="slotcard" data-act="slotLoad" data-i="1"><span class="sn">' + esc(ja ? J('さいごの セーブ', '最後の セーブ') : 'Last save') + '</span>' +
         '<span class="sr1"><b>' + esc(SV.placeName(info.save.player.position, info.save.player.storyFlags)) + '</b></span><span class="sr2">' + esc(fmtWhen(info.save.timestamp)) + ' · ' + esc(Z('menu.level')) + ' ' + (info.save.player.level || 1) + '</span></button>';
       h += '</div>';
-      if (info.clear) h += '<button class="btn btn-gold slotng" data-act="slotNgPlus">★ ' + esc(Z('victory.ngplus')) + '</button>' +
+      if (info.clear) h += '<button class="btn btn-gold slotng" data-act="slotNgPlus">★ ' + esc(T3('New Game+', 'つよくてニューゲーム', '強くてニューゲーム')) + '</button>' +
         '<div class="slotnote">' + esc(ja ? J('アイテム・そうび・ゴールドを もって さいしょから', 'アイテム・装備・ゴールドを 持って 最初から') : 'Start over and keep your items, gear and gold') + '</div>';
       h += '<div class="slotbtns"><button class="btn btn-slate" data-act="slotDelAsk">' + esc(ja ? J('けす', '消す') : 'Delete') + '</button>' +
         '<button class="btn btn-slate" data-act="slotBack">' + esc(ja ? J('もどる', '戻る') : 'Back') + '</button></div></div>';
@@ -2243,7 +2263,7 @@
           '<button class="btn btn-slate" data-act="slotDelCancel">' + esc(ja ? 'やめる' : 'Cancel') + '</button></div></div></div>';
       }
     }
-    var sig = 'title-slots|' + titleView + '|' + titleSlotN + '|' + ja + '|' + h.length + '|' + SV.activeSlot();
+    var sig = 'title-slots|' + titleView + '|' + titleSlotN + '|' + ja + '|k' + kanji() + '|' + h.length + '|' + SV.activeSlot();
     activate('title', false);
     paint(h, sig);
   }
@@ -2912,6 +2932,23 @@
     var collapsed = !!wm.questTrackerCollapsed || !!wm.showingMessage, copy = questUiCopy();
     return { collapsed:collapsed, expanded:!collapsed, label:collapsed ? copy.expand : copy.collapse };
   }
+  /* AN EMPTY QUEST PANEL FOLDS TO ITS ICON (census M15, 2026-11-23). "No active quests" sat open
+     over the top-left of every field screen, beside the HP bar and minimap. With no active quest
+     the panel now starts collapsed; the moment a quest becomes active it opens; after that the
+     player's own tap on the header wins (wm.__qokQuestManual) until the next new quest arrives.
+     A quest set that only shrinks never re-opens it. localStorage['qok-quests-autocollapse']='0'
+     restores the old always-as-left behaviour. */
+  function questAutoCollapse(wm, quests) {
+    if (!wm) return;
+    try { if (localStorage.getItem('qok-quests-autocollapse') === '0') return; } catch (e) {}
+    var ids = quests.map(function (q) { return q.id; }), key = ids.join(',');
+    if (wm.__qokQuestIds === key) return;
+    var prev = wm.__qokQuestIds == null ? null : (wm.__qokQuestIds ? wm.__qokQuestIds.split(',') : []);
+    wm.__qokQuestIds = key;
+    var added = prev !== null && ids.some(function (id) { return prev.indexOf(id) < 0; });
+    if (added) { wm.questTrackerCollapsed = false; wm.__qokQuestManual = false; }
+    else if (!ids.length && !wm.__qokQuestManual) wm.questTrackerCollapsed = true;
+  }
   function renderFieldQuests(wm) {
     if (!fieldQuest || !fieldQuestContent) return;
     var gs = GS(), st = pstate(), qm = gs && gs.questManager, quests = [], state = 'ready';
@@ -2937,6 +2974,7 @@
         }
       }
     }
+    if (state === 'ready') questAutoCollapse(wm, quests);
     // Dialogue temporarily compacts the visible tracker without changing the player's logical
     // questTrackerCollapsed choice. When the message closes, the prior selection returns.
     var disclosure = questDisclosureState(wm);
@@ -3008,7 +3046,7 @@
         if (!questTapWithinSlop(fieldQuestToggle.__qokDown, e)) return;
       }
       var wm = getScene('WorldMapScene'); if (!wm) return;
-      wm.questTrackerCollapsed = !wm.questTrackerCollapsed; wm.questDotActive = false; renderFieldQuests(wm);
+      wm.questTrackerCollapsed = !wm.questTrackerCollapsed; wm.__qokQuestManual = true; wm.questDotActive = false; renderFieldQuests(wm);
     }
     fieldQuestToggle.addEventListener('pointerup', toggleQuestPanel);
     fieldQuestToggle.addEventListener('click', toggleQuestPanel);
@@ -3092,6 +3130,19 @@
   // hands over its own bake of this relief (same palette, same 6 px per cell, Act 1's rectangle
   // copied pixel for pixel) and its own pin table. Swapped only once the new image has decoded.
   // Nothing calls this when that runtime is switched off.
+  /* THE TOWN'S TALK PILL IN THE PLAYER'S LANGUAGE (census M12, 2026-11-23). act1-hifi/town.html
+     owns no translations; it built "Talk to Elder Rowan" / "Shop" / "Save" in English in every
+     language. It now asks here for the words (the NPC's name arrives already localised from the
+     frame's string table) and keeps its English only if this layer is missing. */
+  window.__QOK_TOWN_LABEL__ = function (kind, name, nameKey) {
+    try {
+      if (kind === 'shop') return T3('Shop', 'おみせ', 'お店');
+      if (kind === 'save') return T3('Save', 'セーブ', 'セーブ');
+      // English keeps the town's own full name ("Elder Rowan"); Japanese uses the locale table's.
+      if (isJa() && nameKey) { var jn = Z(nameKey); if (jn && jn !== nameKey && jn.charAt(0) !== '[') name = jn; }
+      return T3('Talk to ' + name, name + 'と はなす', name + 'と 話す');
+    } catch (e) { return null; }
+  };
   window.__QOK_MINIMAP__ = { set: function (src, marks) {
     var i = new Image();
     i.onload = function () { mmImg = i; mmImgState = 2; if (marks && marks.length) MM_MARKS = marks; fieldMapDrawAt = 0; };
@@ -3344,7 +3395,10 @@
     // The dot has to be part of the signature or the bar would never redraw to show it: this
     // function is a no-op whenever the signature matches, and locale alone almost never changes.
     var newEq = hasEquipUpgrade();
-    var sig = 'fn|' + locale() + '|' + (newEq ? 'new' : '-');
+    // The LABELS are the signature, not locale/kanji flags: the bar is first drawn on the title,
+    // before the save's kanji mode reaches the bundle, and a flag-keyed signature then froze it in
+    // kana for the whole session (census m7: 道具/装備/設定 vs どうぐ/そうび/せってい between shots).
+    var sig = 'fn|' + Z(TAB_KEY.status) + '|' + Z(TAB_KEY.items) + '|' + Z(TAB_KEY.equip) + '|' + Z(TAB_KEY.settings) + '|' + (newEq ? 'new' : '-');
     if (sig !== _fieldNavSig) {
       _fieldNavSig = sig;
       var tabs = ['status', 'items', 'equip', 'settings'], h = '';
@@ -3474,7 +3528,7 @@
     }
     var h = '<div class="t-screen vic"><div class="vic-fx">' + fx + '</div>' +
       '<div class="t-head"><div class="vic-stars"><b>★</b><b>★</b><b>★</b></div>' +
-        '<div class="title-kicker"><i></i>' + esc(T3('Quest complete', 'クエスト クリア', 'クエスト クリア')) + '<i></i></div>' +
+        '<div class="title-kicker"><i></i>' + esc(T3('Quest complete', 'クエスト クリア', 'クエスト 達成')) + '<i></i></div>' +
         '<div class="title-name">' + esc(Z('victory.title')) + '</div></div>' +
       '<div class="vic-mid"><div class="vic-stage">' + heroImg(160, v.color) + '</div>' +
         '<div class="vic-msg">' + esc(T3('You restored the Crystal of Math Knowledge!', 'さんすうの クリスタルを|とりもどした！', '算数の クリスタルを|取り戻した！')).replace('|', '<br>') + '</div>' +
