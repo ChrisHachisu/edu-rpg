@@ -22,6 +22,10 @@
 //               door of the same act.
 //   4. GATES    The index's story gates (the Act 2 wind canyon): tile 13 and a walled cell until
 //               she holds the item, a drawn gust while it blows, the bundle's clearing moment once.
+//   5. QUESTS   Repairs to the bundle's quest table, which was never finished: quests nobody gives
+//               start and end by themselves, a boss beaten early still counts, a one-of-a-kind reward
+//               is handed over once, Kiki offers each quest in its own town, and the compass does
+//               not point back at an older act. See "quests" below.
 // The frozen bundle is not edited. Act 1 keeps act1-hifi/ and act1-world-map.js unchanged.
 (function () {
   'use strict';
@@ -36,7 +40,7 @@
   var req = false, fail = 0, nextTry = 0, bootAt = Date.now();
   var stats = { created: 0, destroyed: 0, wrapped: 0, entries: 0, exits: 0, suppressed: 0, compass: 0, uploads: 0,
     plateWrites: 0, relocated: 0, zone: 0, loadErrors: 0 };
-  var ENTRY = {}, ARRIVAL = {}, RETURN = {}, ENTRY_EXIT = {}, COMPASS = {}, VIRTUAL = {}, HOSTED = {};
+  var ENTRY = {}, ARRIVAL = {}, RETURN = {}, ENTRY_EXIT = {}, COMPASS = {}, VIRTUAL = {}, HOSTED = {}, DOOR = {};
   var ZONE = { 2: 'iron-mountains', 3: 'scorched-wastes', 4: 'scorched-wastes', 5: 'demons-threshold' };
 
   // ---------------------------------------------------------------- loading
@@ -87,6 +91,7 @@
         }
         if (L.exit) ENTRY_EXIT[L.exit[0] + ',' + L.exit[1]] = L;
         if (L.virtual) { VIRTUAL[L.virtual] = L; HOSTED[L.mapId] = L.virtual; }
+        else if (!L.toFloor && !DOOR[L.mapId]) DOOR[L.mapId] = L;          // a map's front door
       });
       // The bundle's compass chain disagrees with its own connection table for one map.
       var sr = (m.landmarks || []).filter(function (L) { return L.mapId === 'scorchedRuins'; })[0];
@@ -621,8 +626,8 @@
       return r;
     };
     s.getCompassTarget = function () {
-      var t = compass.call(this);
-      if (!t) return t;
+      var t = QR_ON ? qCompass(this, compass) : compass.call(this);
+      if (!t || t.__acts) return t;                 // __acts: already a cell of this world
       // The bundle gates the four portal bosses on quest portalRelics, which nobody gives, so its chain
       // skips them and points at the sealed Demon Castle. While a portal boss stands, point at its portal
       // (in the chain's order: Excalibur, from the Sunken Temple, comes before the Aegis it unseals).
@@ -636,6 +641,7 @@
       }
       var L = COMPASS[t.ox + ',' + t.oy];
       if (!L) return t;
+      if (QR_ON) L = qVia(L);
       var copy = {}; for (var k in t) if (Object.prototype.hasOwnProperty.call(t, k)) copy[k] = t[k];
       copy.ox = L.at[0]; copy.oy = L.at[1]; stats.compass++; return copy;
     };
@@ -683,7 +689,27 @@
       s.handleNpcInteraction = function (npc) {
         var st = npc && M.strings && M.strings[npc.dialogueKey];
         if (st && typeof this.showMessage === 'function') { this.showMessage(text(npc.dialogueKey), text(npc.nameKey) || undefined); return; }
-        return talk.apply(this, arguments);
+        var p = QR_ON && npc ? pstate() : null;
+        if (!p || !p.activeQuests) return talk.apply(this, arguments);
+        // quests (HERE, WORDS): what this person may see and say for the length of this one call
+        var keep = p.activeQuests.slice(), hid = qHide(this, p, npc);
+        TALK = qTalk(this, p, npc);
+        try { return talk.apply(this, arguments); }
+        finally { TALK = null; if (hid.length) qUnhide(p, keep, hid); }
+      };
+    }
+    // quests (ONCE): the Storm Sentinel hands over the Gale Shield, and so does Kiki.
+    if (QR_ON && typeof s.wake === 'function') {
+      var wake = s.wake;
+      s.wake = function () {
+        var p = pstate(), n0 = {}, r;
+        ONCE_DROPS.forEach(function (id) { n0[id] = p ? ownCount(p, id) : 0; });
+        r = wake.apply(this, arguments);
+        try {
+          var p2 = pstate(), pl = window.__GAME_STATE__.player;
+          ONCE_DROPS.forEach(function (id) { var n1 = p2 ? ownCount(p2, id) : 0; if (n0[id] >= 1 && n1 > n0[id]) { pl.removeItem(id, n1 - n0[id]); stats.questOnce = (stats.questOnce || 0) + 1; } });
+        } catch (e) {}
+        return r;
       };
     }
     // Directions the bundle's text gives by the OLD map ("the Shadow Cave lies just north" of a town it
@@ -692,11 +718,11 @@
     // the index's row. Quest logic, speakers and every other message are untouched.
     if (typeof s.showMessage === 'function') {
       var say = s.showMessage;
-      s.showMessage = function (t) { var a = Array.prototype.slice.call(arguments); a[0] = geoText(t); return say.apply(this, a); };
+      s.showMessage = function (t) { var a = Array.prototype.slice.call(arguments); a[0] = geoText(qLine(t, this)); return say.apply(this, a); };
     }
     if (typeof s.showDialogSequence === 'function') {
       var seq = s.showDialogSequence;
-      s.showDialogSequence = function (lines) { var a = Array.prototype.slice.call(arguments); if (lines && typeof lines.map === 'function') a[0] = lines.map(geoText); return seq.apply(this, a); };
+      s.showDialogSequence = function (lines) { var a = Array.prototype.slice.call(arguments); if (lines && typeof lines.map === 'function') a[0] = qLines(lines, this).map(geoText); return seq.apply(this, a); };
     }
     // The bundle marks the engine map visited (compass.visited.<mapId>) on every town entry. Inside a
     // hosted town that would tick the HOST off the compass chain, so the hosted town is marked instead.
@@ -723,6 +749,250 @@
       return base.apply(this, arguments);
     };
     gs.__actsZone = true;
+  }
+
+  // ---------------------------------------------------------------- quests (story-data repairs)
+  // The bundle's quest table was written for the old map and never finished. Nothing here adds
+  // story: each rule lets the table's own quests start, finish and pay out once in this world.
+  // Audit, with every quest and gate: /mnt/project-files/edu-rpg/autoloop/quests/AUDIT.md.
+  // Probe: scripts/auto/checks/quests.cjs.   Debug switch: localStorage['qok-quest-repairs'] = '0'.
+  //   AUTO     Eight quests have nobody to give them (seven name no person at all, and the table
+  //            makes Kiki the giver of the one about finding Kiki). Each starts by itself when the
+  //            quests before it are done, or at the latest when its own boss has fallen. The seven
+  //            boss quests also end by themselves, because nobody takes their report either.
+  //   CREDIT   A boss already beaten counts for a quest taken afterwards (the Ice Wyrm before the
+  //            soldier asks), and so does a dungeon already cleared for a "visit" step. The Sword
+  //            Wraith's hunter fights do not count (battle-recovery.js keeps its flag honest).
+  //   ONCE     A one-of-a-kind reward she already owns is not handed over twice: Frostbrand, the Magma
+  //            Blade, the Magma Cloak, the Gale Shield. A spare the shops would buy is paid in gold.
+  //   HERE     A quest is offered only in the town it is reported in. Kiki lives in two towns: Haven's
+  //            Edge Kiki no longer offers the Act 1 crab hunt, and an unfinished crab hunt does not
+  //            stop her offering her own quest.
+  //   WORDS    A person with two quests has one set of quest lines, written for the first. The second
+  //            quest is asked for in its own line (index `strings` row `quest.<id>.ask`, or a line of
+  //            the bundle that fits). A person with no quest lines keeps their own line beside the
+  //            quest text. Kanji mode gets the four reminder lines its table lacks (it showed kana).
+  //   COMPASS  Gordo's ore points at the Iron Mine (the bundle falls back to Ironkeep). An unfinished
+  //            quest of an earlier act does not pull her back. Kiki's Shadow points at the Kiki of the
+  //            act she is in (Haven's Edge in Act 5, Greenhollow in Act 1; the bundle always names
+  //            Greenhollow) and leaves Acts 2-4 to the story chain. The north of Act 4 is reached
+  //            through the Magma Tunnels, which the bundle's story chain does not name.
+  var QR_ON = true; try { QR_ON = localStorage.getItem('qok-quest-repairs') !== '0'; } catch (e) {}
+  var AUTO = ['stormPass', 'kikisRescue', 'shadowGate', 'desertGate', 'magmaPath', 'volcanicGate', 'portalRelics', 'finalBattle'];
+  var AUTO_END = { stormPass: 1, shadowGate: 1, desertGate: 1, magmaPath: 1, volcanicGate: 1, portalRelics: 1, finalBattle: 1 };
+  var VISIT_BOSS = { hauntedForest: 'phantomStag', voidRift: 'nullDevourer' };    // dungeons no quest gates: cleared = visited
+  var QASK = { crystalCaveGate: 'npc.sage.postQuest' };                             // a bundle line that fits
+  var ONCE_DROPS = ['galeShield', 'frostbrand', 'magmaBlade', 'flameCloak'];
+  var ACT1_TOWNS = { greenhollow: 1, millbrook: 1, portSapphire: 1 };
+  var QDEF = {}, TALK = null, calmTicks = 0;
+  function qm() { var gs = window.__GAME_STATE__; return gs && gs.questManager; }
+  // The table itself is not exported; getActiveQuests hands out its rows (as act1-world-map.js uses it).
+  function qdef(id) {
+    if (QDEF[id]) return QDEF[id];
+    try { var d = qm().getActiveQuests({ activeQuests: [id] })[0]; if (d) QDEF[id] = d; return d || null; } catch (e) { return null; }
+  }
+  function bossDown(id) { return flag('boss.' + id + '.defeated'); }
+  function zB(k, a) {                                              // the bundle's text for a key, or null
+    try { var q = window.__QOK, z = q && q.Z && (q.Z.__base || q.Z), t = z ? z(k, a) : null; return (typeof t === 'string' && t !== k && t.charAt(0) !== '[') ? t : null; } catch (e) { return null; }
+  }
+  function ownCount(p, id) {
+    var inv = p.inventory || [], eq = p.equipment || {}, n = 0, k;
+    for (var i = 0; i < inv.length; i++) if (inv[i].itemId === id && inv[i].quantity > 0) n += inv[i].quantity;
+    for (k in eq) if (eq[k] === id) n++;
+    return n;
+  }
+  function onceRewards(r, p) {
+    if (!r || !r.items || !r.items.length || !p) return r;
+    var db = (window.__QOK || {}).db || {}, out = { items: [] }, gold = 0, cut = 0, k;
+    for (k in r) if (k !== 'items') out[k] = r[k];
+    r.items.forEach(function (it) {
+      var d = db[it.itemId];
+      if (d && d.type !== 'consumable' && !d.buyPrice && ownCount(p, it.itemId) > 0) { gold += (d.sellPrice || 0) * (it.quantity || 1); cut++; }
+      else out.items.push(it);
+    });
+    if (!cut) return r;
+    if (gold) out.gold = (out.gold || 0) + gold;
+    if (!out.items.length) delete out.items;
+    stats.questOnce = (stats.questOnce || 0) + cut;
+    return out;
+  }
+  function wrapQuests() {
+    var m = qm(), d; if (!m || m.__actsQuests || typeof m.getAvailableQuests !== 'function' || typeof m.completeQuest !== 'function') return;
+    // Two report towns the table has swapped (the Sage lives in Millbrook, Kiki does not).
+    d = qdef('crystalCaveGate'); if (d && d.turnInMapId === 'greenhollow') d.turnInMapId = 'millbrook';
+    d = qdef('kikisRescue'); if (d && d.turnInMapId === 'millbrook') d.turnInMapId = 'havensEdge';
+    var avail = m.getAvailableQuests, complete = m.completeQuest;
+    m.getAvailableQuests = function (st, npc) {
+      var list = avail.apply(this, arguments), s = scene(), here = s && s.currentMapId;
+      if (npc === undefined) return list;
+      return list.filter(function (q) { return AUTO.indexOf(q.id) < 0 && (!q.turnInMapId || !here || q.turnInMapId === here); });
+    };
+    m.completeQuest = function (id, st) { return onceRewards(complete.apply(this, arguments), st); };
+    m.__actsQuests = true;
+  }
+  // CREDIT. Returns how many counters moved.
+  function qCredit(p) {
+    var list = p.activeQuests || [], n = 0;
+    if (!p.questProgress) p.questProgress = {};
+    for (var i = 0; i < list.length; i++) {
+      var d = qdef(list[i]); if (!d) continue;
+      var pr = p.questProgress[d.id] || (p.questProgress[d.id] = {}), auto = AUTO.indexOf(d.id) >= 0;
+      for (var j = 0; j < d.objectives.length; j++) {
+        var o = d.objectives[j], need = o.count || 1, have = pr[o.targetId] || 0, want = have;
+        if (o.type === 'defeat' && need === 1) { var dn = bossDown(o.targetId); if (dn && have < 1) want = 1; else if (!dn && auto && have > 0) want = 0; }
+        else if (o.type === 'visit' && VISIT_BOSS[o.targetId] && bossDown(VISIT_BOSS[o.targetId]) && have < need) want = need;
+        if (want !== have) { pr[o.targetId] = want; n++; }
+      }
+    }
+    return n;
+  }
+  function qWants(p, d) {
+    if (p.activeQuests.indexOf(d.id) >= 0 || p.completedQuests.indexOf(d.id) >= 0) return false;
+    var pre = d.prerequisites || [], ok = true;
+    for (var i = 0; i < pre.length; i++) if (p.completedQuests.indexOf(pre[i]) < 0 && !p.storyFlags[pre[i]]) ok = false;
+    return ok || d.objectives.some(function (o) { return o.type === 'defeat' && bossDown(o.targetId); });
+  }
+  function qFinish(s, p, d, show) {
+    var r = qm().completeQuest(d.id, p) || {};
+    try { s.applyQuestRewards(r); } catch (e) {}
+    try { s.updateHUD(); } catch (e) {}
+    stats.questEnds = (stats.questEnds || 0) + 1;
+    if (!show || !(r.exp || r.gold || (r.items && r.items.length))) return;
+    // In a dungeon the bundle's own message box (the floor's hazards wait for it, as they do for the
+    // boss's last words); in a town or on the overworld the card every other quest ends with.
+    var id = s.currentMapId, field = id === 'overworld' || TOWNS.has(id) || ACT1_TOWNS[id];
+    var fn = field ? s.showQuestCompleteNotification : (s.__qokQuestCompleteOriginal || s.showQuestCompleteNotification);
+    try { fn.call(s, zB(d.titleKey) || d.id, r); } catch (e) {}
+  }
+  // AUTO: one step at a time, and only while nothing else is on screen.
+  function qStep(s, p) {
+    var m = qm();
+    for (var i = 0; i < AUTO.length; i++) {
+      var d = qdef(AUTO[i]); if (!d) continue;
+      if (p.activeQuests.indexOf(d.id) >= 0) {
+        if (AUTO_END[d.id] && m.isQuestReady(d.id, p)) { qFinish(s, p, d, true); return true; }
+        continue;
+      }
+      if (!qWants(p, d)) continue;
+      m.startQuest(d.id, p); qCredit(p); stats.questStarts = (stats.questStarts || 0) + 1;
+      if (AUTO_END[d.id] && m.isQuestReady(d.id, p)) { qFinish(s, p, d, true); return true; }   // its boss fell earlier: the reward, no "new quest"
+      try { s.showQuestNotification(zB('quest.newQuest', { title: zB(d.titleKey) || d.id }) || ''); } catch (e) {}
+      return true;
+    }
+    return false;
+  }
+  function qCalm(s) {
+    var g = game(), ok = false;
+    try {
+      ok = g.scene.isActive('WorldMapScene') && !s.showingMessage && !(s.dialogQueue && s.dialogQueue.length) && !s.dialogCallback
+        && !s.pendingBossId && !s._pendingMazeHunterBattle && !s.questOverlayOpen && !s.healerOverlayOpen && !s.warpOverlayOpen
+        && !s.midCrystalOverlayOpen && !s.itemOverlayOpen;
+      var c = window.__QOK_COVER__; if (ok && c && c.phase && c.phase() !== 'active') ok = false;
+      var card = document.getElementById('qok-quest-completion'); if (card && !card.hidden) ok = false;
+    } catch (e) { ok = false; }
+    calmTicks = ok ? calmTicks + 1 : 0;
+    return calmTicks >= 8;
+  }
+  function questTick(s) {
+    wrapQuests();
+    var p = pstate(), m = qm(), g = game();
+    if (!p || !m || !m.__actsQuests || !p.activeQuests || !p.completedQuests || !p.storyFlags) return;
+    if (!g || !g.scene || g.scene.isActive('TitleScene')) return;   // no game on yet
+    qCredit(p);
+    // The Demon King's fall ends in the ending, not back on the map: The Final Battle is closed without a card.
+    var fb = qdef('finalBattle');
+    if (fb && bossDown('demonKing') && p.completedQuests.indexOf('finalBattle') < 0) {
+      if (p.activeQuests.indexOf('finalBattle') < 0 && qWants(p, fb)) { m.startQuest('finalBattle', p); qCredit(p); }
+      if (m.isQuestReady('finalBattle', p)) qFinish(s, p, fb, false);
+    }
+    if (qCalm(s) && qStep(s, p)) calmTicks = 0;
+  }
+  // HERE. Quests of this person that belong to another town, and are neither ready to report nor
+  // waiting for a word with them, are set aside while the bundle's talk handler runs.
+  function qHide(s, p, npc) {
+    var m = qm(), out = [], here = s.currentMapId;
+    if (!m || !npc) return out;
+    p.activeQuests.forEach(function (id) {
+      var d = qdef(id); if (!d || (d.giverNpcId || d.turnInNpcId) !== npc.id) return;
+      var pr = (p.questProgress || {})[id] || {};
+      if (id === 'kikisRescue') { if ((pr.hauntedForest || 0) < 1) out.push(id); return; }         // she has not looked for Kiki yet
+      if (!d.turnInMapId || d.turnInMapId === here || m.isQuestReady(id, p)) return;
+      if (d.objectives.some(function (o) { return o.type === 'talk' && o.targetId === npc.id && (pr[o.targetId] || 0) < (o.count || 1); })) return;
+      out.push(id);
+    });
+    if (out.length) { var rest = p.activeQuests.filter(function (id) { return out.indexOf(id) < 0; }); p.activeQuests.splice.apply(p.activeQuests, [0, p.activeQuests.length].concat(rest)); }
+    return out;
+  }
+  function qUnhide(p, keep, hid) {
+    var now = p.activeQuests.slice();
+    var all = keep.filter(function (id) { return hid.indexOf(id) >= 0 || now.indexOf(id) >= 0; }).concat(now.filter(function (id) { return keep.indexOf(id) < 0; }));
+    p.activeQuests.splice.apply(p.activeQuests, [0, p.activeQuests.length].concat(all));
+  }
+  // WORDS. Which quest the bundle is about to offer, and which it is about to remind her of.
+  function qTalk(s, p, npc) {
+    var m = qm(), T = { npc: npc, base: String(npc.dialogueKey || '').replace('.greeting', ''), offer: null, remind: null };
+    try {
+      T.offer = m.getAvailableQuests(p, npc.id)[0] || null;
+      T.remind = m.getActiveQuests(p).filter(function (q) { return (q.giverNpcId || q.turnInNpcId) === npc.id; })[0] || null;
+    } catch (e) {}
+    return T;
+  }
+  function qAsk(q) { return QASK[q.id] ? zB(QASK[q.id]) : text('quest.' + q.id + '.ask'); }
+  function qOwn(s, T) { try { var t = s.getProgressiveDialogue(T.npc); return typeof t === 'string' && t.charAt(0) !== '[' ? t : null; } catch (e) { return null; } }
+  function qLine(t, s) {
+    var T = TALK, r = null; if (!T || typeof t !== 'string') return t;
+    if (T.remind) {
+      var rem = zB(T.base + '.questReminder'), row = M.strings && M.strings[T.base + '.questReminder'], pp = pstate();
+      if (t === rem || (!rem && t === zB(T.remind.descriptionKey))) r = qAsk(T.remind);
+      // kanji mode: the bundle's kanji table lacks four reminder lines and falls back to the kana ones
+      if (!r && row && pp && pp.locale === 'ja' && pp.kanjiMode && t === row.ja) r = row.jaKanji;
+    }
+    if (!r && !zB(T.base + '.postQuest') && t === zB('npc.postQuestGeneric')) r = qOwn(s, T);   // the bundle's stock thanks, for good
+    if (r) stats.questWords = (stats.questWords || 0) + 1;
+    return r || t;
+  }
+  function qLines(lines, s) {
+    var T = TALK; if (!T || !T.offer || !lines.length) return lines;
+    var off = zB(T.base + '.questOffer'), ask = qAsk(T.offer), own;
+    if (off && ask && lines.indexOf(off) >= 0) { stats.questWords = (stats.questWords || 0) + 1; return lines.map(function (l) { return l === off ? ask : l; }); }
+    if (!off && lines.length === 1 && lines[0] === zB(T.offer.descriptionKey) && (own = qOwn(s, T)) && own !== lines[0]) { stats.questWords = (stats.questWords || 0) + 1; return [own, lines[0]]; }
+    return lines;
+  }
+  // COMPASS. The bundle asks its active quests in order and then its story chain. The same order is
+  // kept, one quest at a time, so a quest can be passed over or re-aimed.
+  function hereAct(s) {
+    if (!s || s.currentMapId !== 'overworld' || !OWN) return 0;
+    var x = Math.floor(+s.heroTileX), y = Math.floor(+s.heroTileY);
+    if (!(x >= 0 && y >= 0 && x < GW && y < GH)) return 0;
+    return cellAct(x, y) === 1 ? 1 : OWN[y * GW + x];
+  }
+  function doorAt(mapId) { var L = DOOR[mapId]; return L ? { ox: L.at[0], oy: L.at[1], __acts: true } : null; }
+  function qCompass(s, orig) {
+    var p = pstate(), m = qm();
+    if (!p || !m || !p.activeQuests || !p.activeQuests.length) return orig.call(s);
+    var all = p.activeQuests, act = hereAct(s);
+    function only(list) { p.activeQuests = list; try { return orig.call(s); } finally { p.activeQuests = all; } }
+    for (var i = 0; i < all.length; i++) {
+      var d = qdef(all[i]); if (!d) continue;
+      var pr = (p.questProgress || {})[d.id] || {}, ready = m.isQuestReady(d.id, p), t;
+      if (d.id === 'kikisRescue') {                       // Kiki is at Haven's Edge and in Greenhollow; in between the story chain leads on
+        if (act === 5 && (pr.hauntedForest || 0) >= 1 && (t = doorAt('havensEdge'))) return t;
+        if (act === 1 && (pr.hauntedForest || 0) >= 1) return only([d.id]);     // the bundle's answer: the Greenhollow Kiki
+        continue;
+      }
+      if (!ready && act > 0 && d.act < act) continue;     // an unfinished errand of an earlier act
+      if (d.id === 'kikisChallenge' && ready && act > 1) { if (act === 5 && (t = doorAt('havensEdge'))) return t; continue; }
+      if (d.id === 'gordosOre' && !ready && (pr.ironOre || 0) < 3 && (t = doorAt('ironMine'))) return t;
+      return only([d.id]);
+    }
+    return only([]);
+  }
+  // The north of Act 4 (Ember Mines, Volcanic Forge) lies behind the Magma Tunnels, and the tunnels
+  // behind the Magma Cloak the Sand Golem drops. The bundle's chain names neither step.
+  function qVia(L) {
+    if (L.act === 4 && (L.mapId === 'emberMines' || L.mapId === 'volcanicForge') && !bossDown('lavaWyrm') && DOOR.magmaTunnels) L = DOOR.magmaTunnels;
+    if (L.mapId === 'magmaTunnels' && !bossDown('lavaWyrm') && !hasItem('flameCloak') && !bossDown('sandGolem') && DOOR.desertTomb) L = DOOR.desertTomb;
+    return L;
   }
 
   // ---------------------------------------------------------------- hosted ("virtual") towns
@@ -1216,6 +1486,7 @@
     ticks++;
     if (!ovReady) { ovReady = true; ovInit(); gatesInit(); }
     wrap(s); wrapZone(); wrapText(); wrapCoverage(); minimap();
+    if (QR_ON) { try { questTick(s); } catch (e) { stats.questErrors = (stats.questErrors || 0) + 1; } }
     schedule(s);
     var on = s.currentMapId === 'overworld' && s.sys && s.sys.isActive() && !!s.mapData && s.mapData.length === GH;
     if (on) {
@@ -1248,6 +1519,7 @@
     cellAct: cellAct, reach: function (x, y) { return REACH ? REACH[y * GW + x] : null; },
     blocked: function (px, py) { return blocked(px, py, 20) ? 1 : 0; },
     plateDrift: plateDrift,
+    quests: function () { return { on: QR_ON, auto: AUTO.slice(), calm: calmTicks, wrapped: !!(qm() && qm().__actsQuests) }; },
     gates: function () {
       return GATES.map(function (g) { return { id: g.id, placement: g.placement, cells: g.cells, shut: !!g.shut, gust: !!g.gust,
         drawn: !!(g.gfx && g.gfx.scene), cleared: !!flag(g.clearedFlag), plays: g.plays || 0 }; });
