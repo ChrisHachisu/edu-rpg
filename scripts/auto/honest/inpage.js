@@ -122,6 +122,7 @@
     for (let i = 0; i < o.steps; i++) { out.steps++;
       let zone = o.zone; if (!zone && o.cells) { const c = o.cells[Math.min(o.cells.length - 1, Math.floor(i * (o.cells.length - 1) / Math.max(1, o.steps - 1)))]; zone = gs.getOverworldZone(c[0], c[1]); }
       if (!zone) continue; em.isDungeon = !!o.dungeon;
+      if (o.map && window.__QOK_BALANCE__) zone = window.__QOK_BALANCE__.zoneFor(o.map, zone);     // the fixed game's dungeon zone table (battle-recovery.js)
       const mon = em.onStep(zone); if (!mon) continue;
       const f = await fight(mon, zone); f.step = i; out.fights.push(f);
       if (f.res === 'loss') { out.died = true; out.goldLost = defeatRule(); break; }
@@ -132,11 +133,13 @@
   }
   function chest(dungeonId, golden) {
     if (golden) { const ok = P().addItem('holyAmulet', 1); return { itemId: 'holyAmulet', gold: 0, lost: !ok }; }     // dq-tiles.js a2dOnApply names it as the bundle's goldenChestPos; tryOpenTreasure ignores addItem's answer
-    const r = WM().getTreasureReward.call({ currentMapId: dungeonId }); ST().gold += r.gold; if (r.itemId) { if (!P().addItem(r.itemId, 1)) r.lost = true; GS().questManager.updateProgress(ST(), 'collect', r.itemId, 1); } return r;
+    const r = WM().getTreasureReward.call({ currentMapId: dungeonId });
+    if (r.itemId && window.__QOK_BALANCE__ && !window.__QOK_BALANCE__.canAdd(r.itemId)) return { itemId: r.itemId, gold: 0, closed: true };     // the fixed game leaves such a chest shut (battle-recovery.js)
+    ST().gold += r.gold; if (r.itemId) { if (!P().addItem(r.itemId, 1)) r.lost = true; GS().questManager.updateProgress(ST(), 'collect', r.itemId, 1); } return r;
   }
   function crystal() { const h = ST().hp; P().fullHeal(); return P().totalMaxHp - h; }
   function equipBest(log) { const s = ST(), db = DB(); for (const it of s.inventory.slice()) { const d = db[it.itemId]; if (!d || !['weapon', 'armor', 'shield', 'helmet', 'accessory'].includes(d.type) || !d.stats) continue; const cur = s.equipment[d.type], cs = cur && db[cur] && db[cur].stats ? (db[cur].stats.atk || 0) + (db[cur].stats.def || 0) : 0, ns = (d.stats.atk || 0) + (d.stats.def || 0); if (ns > cs) { P().equip(it.itemId); if (log) log.push(it.itemId); } } }
-  function applyRewards(r) { const lost = []; if (!r) return lost; if (r.exp) P().addExp(r.exp); if (r.gold) ST().gold += r.gold; for (const it of r.items || []) if (!P().addItem(it.itemId, it.quantity)) lost.push(it.itemId); return lost; }   // WorldMapScene.applyQuestRewards
+  function applyRewards(r) { const lost = []; if (!r) return lost; const p = P(), n0 = (r.items || []).map(it => p.getItemCount(it.itemId)); WM().applyQuestRewards(r); (r.items || []).forEach((it, i) => { if (p.getItemCount(it.itemId) <= n0[i]) lost.push(it.itemId); }); return lost; }   // WorldMapScene.applyQuestRewards
   function quest(q, quests, log) {
     const qm = GS().questManager, s = ST();
     const talk = id => { for (const ob of quests[id].objectives) if (ob.type === 'talk') qm.updateProgress(s, 'talk', ob.targetId, 1); };

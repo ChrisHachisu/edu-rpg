@@ -11,7 +11,16 @@ const OUT = process.env.PROBE_OUT || path.resolve('probe-out');
 fs.mkdirSync(OUT, { recursive: true });
 
 function save(o = {}) {
-  const { mapId = 'overworld', x = 80, y = 262, floor = 1, flags = {}, inventory = [{ itemId: 'herb', quantity: 5 }], activeQuests = [], completedQuests = [], locale = 'en', kanjiMode = false } = o;
+  const { mapId = 'overworld', x = 80, y = 262, floor = 1, flags = {}, inventory: inv0 = [{ itemId: 'herb', quantity: 5 }], activeQuests = [], completedQuests = [], locale = 'en', kanjiMode = false } = o;
+  const inventory = inv0.map(i => ({ ...i }));
+  // A seeded save must be one the game could have written: a beaten boss's story item is in the bag.
+  // Otherwise the old-save repair in battle-recovery.js hands the items over with message boxes on load.
+  const F = { 'intro.done': true, 'acts.geo2': true, ...flags }, has = id => inventory.some(i => i.itemId === id), eq = o.equipment || {};
+  const need = (id, n = 1) => { if (!has(id) && !Object.values(eq).includes(id)) inventory.push({ itemId: id, quantity: n }); };
+  if (F['boss.sandGolem.defeated'] && !F['boss.lavaWyrm.defeated']) need('flameCloak');
+  if (F['boss.stormHarpy.defeated'] && !F['canyon.windCleared']) need('windbreakerStone');
+  for (const [b, id] of [['swordWraith', 'excalibur'], ['celestialGuardian', 'aegisOfDawn'], ['stormSentinel', 'galeShield'], ['frostMonarch', 'crownOfWisdom']]) if (F[`boss.${b}.defeated`]) need(id);
+  if (!F['boss.demonKing.defeated'] && !has('crystalOfKnowledge')) { const n = ['serpent', 'stormHarpy', 'dragon', 'sandGolem', 'flameTitan'].filter(b => F[`boss.${b}.defeated`]).length; if (n) need('shadowCrystal', n); }
   return { version: 4, timestamp: Date.now(), player: { name: 'Probe', heroColor: 'gray', level: 50, exp: 0, expToNext: 100,
     hp: 9999, maxHp: 9999, atk: 9999, def: 9999, spd: 999,
     equipment: { weapon: null, armor: null, shield: null, helmet: null, accessory: null }, inventory, gold: 5000,

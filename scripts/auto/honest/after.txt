@@ -1,0 +1,122 @@
+# Honest player: after the fixes (track H, phase 2)
+
+Status: **DONE** for items A, B and C; item D needed no change (the quest is optional). Before = build 98 as shipped (port 5500, report `REPORT.md` next to this file). After = the same build with one block appended to `public/battle-recovery.js` (markers `// ==== QOK balance + bag (autoloop 2026-11-23) ====`). No other game file was changed.
+
+All nine reference playthroughs (three per grade) now reach the end of the story with no boss and no gate passed by force; before, none of fifteen did. Boss win rates with the reference policy, 60 tries per boss per grade (grade 1 / 3 / 6): Mosswarden 100% / 95% / 100% (before 99 / 71 / 12), Demon King 73% / 67% / 68% (before 0 / 0 / 0), every other boss 82-100%. The lowest is Storm Harpy at grade 6 (82%), a boss whose numbers were not touched. In the never-sells variant every boss reward and key item now arrives and no gate closes.
+
+**One result the lead should read before shipping the table.** The Demon King band holds for the reference policy (attack every turn, heal under 35% HP). With the savvy policy (defend every announced charge, heal under 50% HP) one playthrough per grade gave 17/20, 9/20 and 1/20: at grades 3-6 careful play still loses the race, because every defend or heal turn is a free turn of poison (5% of her max HP) and of the boss's hits. This was true before (0/20 everywhere) and is better now at grades 1-3, but it was not tuned today: the brief's target is the reference policy, and the budget note ruled out further sweeps. See section 5 for the suggested next step.
+
+## 1. What was changed, item by item
+
+### A. A full bag destroyed rewards: FIXED (always on, not part of the balance switch)
+
+Check: `scripts/auto/checks/bag.cjs`. Build 98 (5500): 8 pass, 28 fail. Fixed build (5504): 36 pass, 0 fail.
+
+1. Key items and gear that no shop sells (every boss reward and quest reward) no longer take one of the 20 bag slots and are never refused. The cap still holds for what a shop sells: a 21st kind of ordinary item is refused as before.
+2. A chest whose item will not fit stays shut and shows the shop's own line ("Inventory is full!" / 「もちものが いっぱいだ！」 / 「持ち物が いっぱいだ！」). Nothing is taken and the chest can be opened later. Gold chests, key chests, the golden chest and mimics open as before.
+3. Taking gear off with a full bag is refused with the same line; the piece stays on.
+4. Putting gear on can never delete the piece it replaces, the legendary auto-equip included.
+5. Old saves are repaired once after loading, each with the game's own "You found ...!" line: Flame Cloak (Sand Golem beaten, Lava Wyrm not, no cloak), Windbreaker Stone (Storm Harpy beaten, canyon still shut, no stone), the four legendary pieces (boss beaten, piece neither worn nor in the bag), and one crystal shard per shard boss beaten (until the Demon King falls or the Crystal of Knowledge is held). The Holy Amulet repair is track Q's and is not duplicated; it relies on point 1 when the bag is full (its `addItem('holyAmulet')` can no longer be refused).
+
+No new text was written: both lines are the game's own, in English, kana and kanji.
+
+### B. Boss numbers: TUNED to the targets, in one table, switchable
+
+`localStorage['qok-balance']='0'` restores every shipped number (boss table and monster tables; the bag fix stays). The table is `BALANCE` at the top of the block; `window.__QOK_BALANCE__.table` shows it in the running game. Every changed value is in the generated table "Every changed number" below (10 bosses). No boss was made harder; Storm Harpy and the twelve other bosses are untouched.
+
+How each number was chosen (reference policy: never defends, heals under 35% HP, sells outgrown gear):
+
+- **Mosswarden.** Regen 7% → 3% per turn brings grade 3 from 71% to 95% (57/60). Grade 6 needed more than that: perfect answers could not win (0/40 before). For grades 5 and 6 this one boss is scaled x0.77, which cancels the x1.3 grade scale (it fights with the grade 3 numbers: 92 HP / 20 ATK / 12 DEF instead of 120 / 26 / 16).
+- **Charge bosses (Magma Beetle King, Flame Titan, War General Malachar, Storm Sentinel, Sword Wraith).** Only the charge multiplier was lowered (1.8-2 → 1.3-1.5), until the worst possible hit (wrong defence answer, top damage roll, rage and charge together) is at most 78% of the grade 6 hero's max HP at the level she arrives with. Rage, HP and ordinary hits are as shipped, so the fights keep their shape; the charge is still the biggest hit of the fight and defending it still pays.
+- **Null Devourer.** Rage x1.8 → x1.5: grade 6 was at 67% against a floor of 65%.
+- **Frost Monarch, Celestial Guardian.** Regen 6% → 3% per turn. Damage untouched. Median fight in the check: Frost Monarch 9 / 9 / 10 rounds (build 98: 13 at grade 3, 14 at grade 6), Celestial Guardian 10 / 9.5 / 11.5 rounds (build 98: 13 / 13 / 17). Both are still won 100%..
+- **Demon King.** Regen 3% → 1% and HP 1875 → 1500 make the fight finite (it used to heal 48-73 HP on every turn, also on her heal turns). Charge x2 → x1.6 and rage x1.6 → x1.5 bring the worst hit under her max HP. One set of numbers cannot put three grades in the same band, because the grade scale (x0.85 / x1 / x1.3) is applied on top: grades K-2 keep the shipped rage x1.6, grades 5-6 get 1400 HP, rage x1.3 and charge x1.35. The boss's second rage step (x2 under 15% HP) is in the data but the engine never reads it; it was left alone.
+
+Tuning samples (hero records from the boss door of honest playthroughs; 40-240 tries per setting) are in `/home/user/work/honest/tune1/`.
+
+### C. Wrong monster tables: FIXED (same switch)
+
+Ten dungeons rolled a neighbour's monster table although the bundle holds a table written for each of them, and Greenhollow's doorstep rolled the forest table. Both are corrected in the block (the generated table "Monster tables" lists zone and monsters before and after). The dungeon's battle background and music still follow the old zone id; only the table that is rolled changes. Check: the `zones` group of `scripts/auto/checks/balance.cjs` walks the scene's own step in every one of the ten dungeons and at Greenhollow's door, and checks the switch.
+
+Effect on difficulty, measured in the after runs: see "Reference variant, act by act" (column "monster table"). Deaths to random fights in the ten dungeons: 0 in 9 runs (before: 3 in 15, all at grade 6 in the first cave). What moved:
+- Haunted Forest now pays 14-21 XP per fight instead of 4 and still costs under 1.5% of max HP per fight.
+- Demon Barracks and Void Rift are no longer free: 1.9-5.4% of max HP lost per fight (before 0.6-1.3%), biggest hit 8-11% of max HP, 48-57 XP per fight instead of 42. She arrives about one level higher at the Act 5 bosses (grade 3: level 21 instead of 20 at Void Rift).
+- Iron Mine pays 13-14 XP per fight instead of 19, and Oasis Depths 14 instead of 33 at grades 3 and 6 (grade 1 measured 35 over very few fights): their own tables hold weaker monsters than the neighbour's.
+- Whispering Woods Cave at grade 6: 14.8% of max HP per fight (before 9.7%), biggest hit 29% (before 21%), but she arrives at level 3 instead of 4 because the fields at Greenhollow's door now roll slimes instead of wolves. With the eased Mosswarden she wins 60/60.
+This is a side effect of item C on random-encounter difficulty in those dungeons only; nothing else about random encounters was touched.
+
+The clean home for the overworld half of this fix is the zone function that `public/acts-hifi/acts-runtime.js` already wraps (not my file): the Act 1 rule in the bundle is still the old map's rectangles. The block corrects only the rectangle around Greenhollow (x < 85, 240 < y <= 330 → `greenhollow-plains`).
+
+### D. Gordo's Ore: NOT CHANGED, the quest is optional
+
+Gordo's Ore pays a Steel Sword and gates nothing: no map transition, no later quest and no story flag reads it (checked in the bundle's quest and map tables; the compass only points at it). The drop rate was left alone. With the bag fix iron ore (a key item) can no longer be refused by a full bag. Ready on leaving Iron Mine: grade 1 in 0 of 3 runs (1 of 3 after Storm Nest), grade 3 in 3 of 3, grade 6 in 2 of 3 (3 of 3 after Storm Nest). Before: 1 of 5, 3 of 5, 5 of 5. If the owner wants it reliable, the smallest change is the quest asking for 1 ore at grades K-2 or the drop at 30%; not done..
+
+## 2. Did the story become finishable?
+
+Yes, for the reference child at every grade: 9 of 9 playthroughs finish, nothing forced (before: the Demon King forced in 15 of 15, Mosswarden forced at grade 6 in 4 of 5). The table "Boss win rates at a glance: before and after" has every boss; the three that were walls or coin flips:
+
+| boss | grade 1 | grade 3 | grade 6 |
+|---|---|---|---|
+| Mosswarden | 99% → 100% | 71% → 95% | 12% → 100% |
+| Storm Sentinel | 75% → 100% | 67% → 95% | 26% → 92% |
+| Demon King | 0% → 73% | 0% → 67% | 0% → 68% |
+
+Demon King fight, reference policy (mean of all tries in the after runs): 17-19 attack rounds, 4.7 / 4.8 / 5.8 heal items, 348 / 271 / 248 s of play (before: 594-915 s and 11-13 items at grades 1 and 3, dead after 101 s at grade 6). The worst hit any boss can land is now 82% of max HP (Storm Harpy at grade 6, unchanged); among the changed bosses 78%.
+
+Deaths to random fights over all reference runs: grade 6 one death in three runs (on the walk to Millbrook), grades 1 and 3 none. Before: grade 6 nine deaths in five runs, grade 3 one.
+
+Never-sells variant (one playthrough per grade): Flame Cloak, Holy Amulet and every boss reward arrive, Magma Tunnels opens, Sword Wraith is won 100% / 90% / 75% (before 0/120 without the amulet), the Demon King 60% / 70% / 80%. What is left of the old problem is by design of the cap: with 20 kinds of sellable items in the bag the shops still answer "Inventory is full!" to a new kind of item (flagged at grades 3 and 6 from Last Bastion on), and a chest holding a new kind of item stays shut until she makes room.
+
+## 3. Options for the four open design questions (nothing below was changed)
+
+Numbers are from the reference runs (grade 1 / grade 3 / grade 6 where three are given).
+
+**Random-encounter difficulty (M3 in the first report).** From Misty Grotto to Void Rift a random fight costs 0.1-2.9% of max HP, because monster ATK is far below half the hero's DEF and every hit is the engine's floor (25% of monster ATK: 3-9 HP against 77-207 max HP). That stretch holds most of the 500-870 random fights and 3.3-4 hours of quiz time per playthrough.
+1. Fewer, not harder: encounter rate x0.6 everywhere after the first dungeon, XP and gold per fight x1.6. 500 / 676 / 870 fights per playthrough become about 320 / 430 / 550 (roughly 1.2-1.5 hours less quiz time), with the same levels and gold at each boss. Safest; changes pacing only.
+2. Give them teeth: raise monster ATK per zone so that a wrong defence answer costs about 6% of max HP (the level of the four isles, the only late dungeons that felt dangerous: 4.7-7% per fight). Grade 3 numbers, mean monster ATK now → needed: Misty Grotto 11 → 16, Iron Mine 21 → 29, Frozen Lake 20 → 35, Desert Tomb 25 → 47, Magma Tunnels 30 → 60, Void Rift 35 → 69, Demon Castle 35 → 94 (x1.4 in Act 1 rising to x2 in Acts 3-4, x2.7 in Demon Castle). She would then need heal items in every dungeon (today: none between Misty Grotto and Void Rift), so shop stock and chest loot have to be checked with it.
+3. One constant instead of 60 monsters: raise the damage floor from 25% to 50% of monster ATK. Doubles the loss per fight in Acts 1-4 (to 0.5-6%) but also on the isles (to 9-14%), which would then need their ATK cut by about a quarter. Bosses hit above the floor, so their numbers do not move.
+
+**Grade multipliers (M2).** Monster HP/ATK/DEF x0.85 / x1 / x1.3, encounter rate x0.6 / x0.8 / x1, while the hero's numbers do not change. After today's table every boss is inside its band at every grade, but only because Mosswarden cancels the scale for grades 5-6 and the Demon King has three rows.
+1. Narrow the scale to x0.9 / x1 / x1.15. Grade 6 boss ATK falls by 11.5%, which removes about 14-20 points (of max HP) from the worst hit of a charge boss; the Mosswarden exception and probably the Demon King's grade rows could then go (to be re-measured with `balance.cjs`, 12 minutes).
+2. Scale HP only (x0.85 / x1 / x1.3) and leave ATK and DEF at x1 for every grade. Older children get longer fights (more questions) instead of deadlier ones; grade 1 stops being trivial on the defence side. The table's per-grade rows would be re-tuned once.
+3. Keep the scale and equalise the rest: the same encounter rate for every grade (x0.8) and a starting kit for grades 5-6 (6 herbs instead of 3). Grade 6 then fights about 700 battles instead of 870 and reaches the first boss with items in the bag; the early deaths (9 in 5 runs before or inside the first cave) are what this targets.
+
+**Gold and shop prices (M4).** Port Sapphire: she arrives with 41-65 gold and the four upgrades cost 80-200 (none affordable in 14 of 15 runs); Crystal Cave then pays 640-740 gold in chests at once. From Haven's Edge on no shop sells an upgrade and the playthrough ends with 15,100 / 18,200 / 21,400 unspent gold.
+1. Act 1 pocket money: Owl's Lesson pays +100 gold (or Act 1 monsters pay 4 gold per fight instead of about 2). One Port Sapphire upgrade becomes affordable on arrival.
+2. Move, do not add: take about 300 of Crystal Cave's 640-740 chest gold and put it in Whispering Woods Cave and Misty Grotto chests (3 and 4 route chests). Same total, earlier.
+3. A late sink: one more gear tier at Last Bastion / Haven's Edge at 4,000-6,000 gold a piece (four pieces use the 15,000-21,000 surplus), or cut chest gold in Acts 4-5 by about 70% so the surplus never builds. The first needs new items and names in three scripts; the second is numbers only.
+
+**XP curve (P3).** One level per dungeon up to Act 5, then it flattens: a level needs 1,150-2,800 XP at 42-63 XP per fight, Demon Castle pays less per fight (42) than the isles before it (54-63), and the story ends at level 23 / 25 / 26 of 30.
+1. Leave it. With today's table the Demon King is beaten at levels 23-26; level 30 is not needed for anything.
+2. Lift only the last dungeon: Demon Castle monster XP 42 → about 65 per fight (29 / 39 / 51 fights there). Grade 6 gains one more level before the final boss, grade 3 about half a level, grade 1 none; the grade 5-6 row of the Demon King would have to be re-measured.
+3. Flatten the top: cut each XP step from level 23 up by 40% (level 30 at 38,360 total XP instead of 52,000). The same playthroughs would end near level 24 / 27 / 28 instead of 23 / 25 / 26; the Act 5 boss rows and the Demon King would have to be re-measured.
+
+## 4. Checks added (permanent)
+
+```
+# bag: about 1.5 minutes, one Chromium. Fails on build 98, passes on the fixed build.
+NODE_PATH=/opt/node-tools/node_modules PROBE_URL=http://127.0.0.1:5504/ node scripts/auto/checks/bag.cjs
+# balance: g1, g3, g6 (reduced boss sampler) and zones, each its own process; about 12-15 minutes in all.
+NODE_PATH=/opt/node-tools/node_modules PROBE_URL=http://127.0.0.1:5504/ node scripts/auto/checks/balance.cjs
+# one group, or fewer tries, or one boss
+NODE_PATH=/opt/node-tools/node_modules PROBE_URL=http://127.0.0.1:5504/ BALANCE_BOSSES=demonKing node scripts/auto/checks/balance.cjs g6
+```
+
+`balance.cjs` fights every boss 40 times per profile (the Demon King 100 times) with the hero an honest playthrough brought to that boss's door (`scripts/auto/checks/balance-doors.json`, made by `scripts/auto/honest/mkdoors.cjs` from the first after run of each profile). 40 tries are enough to tell the bands apart from the shipped numbers (12%, 26%, 46%, 0%) but not to measure a rate to the point: a row passes when the 95% interval of the measured rate overlaps the band, so a ">= 85%" boss fails at 29/40 or fewer, a ">= 65%" boss at 20/40 or fewer, and the Demon King at 45/100 or fewer and at 88/100 or more. The worst-hit limit (85% of max HP), the round limits (12 for the two patience bosses, 25 for the Demon King), 6.5 minutes and 8 heal items for the Demon King are exact.
+
+Result on the fixed build (5504): 84 pass, 0 fail in 10.5 minutes. Demon King 66/100, 65/100, 62/100; median 18 / 16 / 17 rounds, 364 / 268 / 252 s, 5 / 5 / 6 heal items. Highest worst hit: Storm Harpy 82% at grade 6 (unchanged boss), then 78%. On build 98 (5500): 50 pass, 23 fail (run with 20 tries per boss to keep the shipped Demon King fights inside the time limit): Demon King 0/20 at every grade, Mosswarden 0/20 at grade 6, Storm Sentinel 4/20 at grade 6, worst hits of 86-160% on six bosses, 13-17 median rounds on the two patience bosses, and all four zone rows.
+
+After a change to the table: run `balance.cjs`; if arrival levels may have moved (XP, gold, zones), re-make the door records first (`sh scripts/auto/honest/chain.sh "g1 g3 g6" "1"` with `PROBE_URL` and `HONEST_DIR` set, then `node scripts/auto/honest/mkdoors.cjs <that dir>`).
+
+## 5. Limits and what is UNVERIFIED
+
+- **Demon King against careful play: NOT TUNED.** Savvy policy, one playthrough per grade, 20 tries: 85% / 45% / 5%. On a loss the boss keeps 5-19% of its HP, so she dies in the rage phase after spending 8-11 turns defending and 6-16 turns healing. Suggested next step (about 15 minutes of machine time, not done for budget): lower the Demon King's poison 5% → 2% for all grades and re-measure both policies with `balance.cjs` and `sampler.cjs --policy savvy`; if the reference rate then leaves the band upward, give some of the HP back.
+- The Demon King at grade 1 takes a median 364 s in the check (348 s mean in the playthroughs): at the edge of "about 6 minutes". The check's limit is 6.5 minutes. Grade 1 answers take 6 s each; shortening the fight further means less boss HP for grades K-2.
+- Storm Harpy at grade 6 sits at 82% worst hit and 82% wins. Inside the targets, so left alone, but it has the least margin of any boss.
+- Only the three profiles were played (grade settings 1, 3, 6). The table's rows for K, 2 and 5 are the same rows as 1 and 6; grade 4 uses the grade 3 numbers. Not run separately.
+- After numbers rest on 3 playthroughs per grade (60 tries per boss) plus the check (40 tries, 100 for the Demon King); before numbers on 5 playthroughs (100 tries). Variants: 1 playthrough each after, 2 each before. A rate near 65% carries about +/-12 points at 60 tries.
+- Bag fix: checked through the game's own handlers (addItem, equip, unequip, the menu's unequip action, applyQuestRewards, the scene's wake() on a boss floor, tryOpenTreasure, Continue). The boss fights in `bag.cjs` are not played (the flag a victory sets is written into the save). Old-save repair was exercised for the Flame Cloak, the Windbreaker Stone, the Gale Shield and the shards; Excalibur, Aegis of Dawn and the Crown of Wisdom go through the same code and were not run. The Japanese lines were compared in a running game for the unequip refusal and the repair line (kana and kanji); the chest refusal uses the same string and was run in English only. No screenshots were taken: lines were read from the scene's message object and the toast element.
+- Monster tables: battle background and music in the ten dungeons still follow the old zone id (not looked at on screen).
+- Skipped for budget: tuning against the savvy policy, a second seed for the unchanged bosses, any playthrough by real touch input, and re-running `whatif.cjs` on the new numbers.
+- Everything in section 3 of the first report (limits of the method) still applies: the walk is a model, the child never defends in the reference policy, time per fight is an estimate.
+- Nothing was committed or pushed. No pin was restamped. The only game file changed is `public/battle-recovery.js`.

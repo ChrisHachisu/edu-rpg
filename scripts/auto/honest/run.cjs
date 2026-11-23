@@ -72,7 +72,7 @@ const slim = f => { const o = {}; for (const k of ['m', 'boss', 'res', 'lvl0', '
         for (const fl of D.floors) {
           const f0 = acc.fights.length; let first = true;
           for (const lgF of fl.legs) {
-            const r = await walk({ zone: D.zone, steps: lgF.steps, dungeon: true, reset: first }, acc); first = false;
+            const r = await walk({ zone: D.zone, map: D.id, steps: lgF.steps, dungeon: true, reset: first }, acc); first = false;
             if (r.died) {
               if (acc.deaths >= DEATH_CAP) { forced = true; break attempt; }
               // back from the last town to the door (the same walk as before), then floor 1 again
@@ -80,7 +80,7 @@ const slim = f => { const o = {}; for (const k of ['m', 'boss', 'res', 'lvl0', '
               if (acc.deaths >= DEATH_CAP) { forced = true; break attempt; }
               acc.attempts++; continue attempt;
             }
-            if (lgF.then === 'chest') { const key = `${fl.key}:${lgF.id}`; if (!ck.meta.chests[key]) { ck.meta.chests[key] = 1; const c = await ev(a => window.__HON.chest(a[0], a[1]), [D.id, !!lgF.golden]); acc.chests++; acc.chestGold += c.gold || 0; if (c.itemId) acc.chestItems.push(c.itemId); if (c.lost) (acc.lostItems = acc.lostItems || []).push(c.itemId); } }
+            if (lgF.then === 'chest') { const key = `${fl.key}:${lgF.id}`; if (!ck.meta.chests[key]) { ck.meta.chests[key] = 1; const c = await ev(a => window.__HON.chest(a[0], a[1]), [D.id, !!lgF.golden]); if (c.closed) { acc.closedChests = (acc.closedChests || 0) + 1; } else { acc.chests++; acc.chestGold += c.gold || 0; if (c.itemId) acc.chestItems.push(c.itemId); } if (c.lost) (acc.lostItems = acc.lostItems || []).push(c.itemId); } }
             else if (lgF.then === 'crystal') { await ev(() => window.__HON.crystal()); acc.crystals++; }
             else if (lgF.then === 'boss') {
               const atBoss = await status();
@@ -112,7 +112,7 @@ const slim = f => { const o = {}; for (const k of ['m', 'boss', 'res', 'lvl0', '
       for (const gid of gates) { const why = await ev(g => window.__HON.gate(g), gid); if (why) { (e.gateBlocked = e.gateBlocked || []).push(gid + ': ' + why); if (!s.optional) ck.meta.forced.push(`gate ${gid} (${why})`); } }
       if (s.leg) { const before = await status(); const a = await leg(s.leg, s.id); e.leg = { raw: s.leg.raw, noPath: s.leg.noPath ? 1 : undefined, lvl: before.level, hp: before.hp, maxHp: before.maxHp, def: before.def, ...a }; }
       if (s.t === 'town') { e.town = await ev(a => window.__HON.town(a[0], a[1]), [{ id: s.id, shop: s.shop, healer: s.healer, quest: s.quest, sell: SELL }, quests]); e.after = await status(); }
-      else if (s.t === 'visit') { const acc = newAcc(); await ev(id => window.__HON.visit(id), s.id); const r = await walk({ zone: s.zone, steps: s.steps, dungeon: true, reset: true }, acc); e.visit = acc; e.after = await status(); }
+      else if (s.t === 'visit') { const acc = newAcc(); await ev(id => window.__HON.visit(id), s.id); const r = await walk({ zone: s.zone, map: s.id, steps: s.steps, dungeon: true, reset: true }, acc); e.visit = acc; e.after = await status(); }
       else if (s.t === 'dungeon') { e.dungeon = await dungeon(s, W.dungeons[s.id], s.backLeg); e.after = e.dungeon.leave; }
       else if (s.t === 'isle') {
         const z = s.isleZone, l1 = { steps: s.legToVillage }, l2 = { steps: s.legToDungeon };
