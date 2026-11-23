@@ -297,7 +297,7 @@
     if (lx < 0 || ly < 0 || lx >= P.w || ly >= P.h) return 0;
     return closedTile(P, px >> 7, py >> 7, R)[(py & 127) * CT + (px & 127)];
   }
-  var DISC = null, DISC_R = 0;
+  var DISC = null, DISC_R = 0, lastSole = null;
   function disc(r) {
     if (DISC && DISC_R === r) return DISC;
     var n = Math.ceil(r), out = [], dx, dy;
@@ -305,6 +305,7 @@
     DISC_R = r; return (DISC = out);
   }
   function free(s, x, y, sole) {
+    if (sole) lastSole = sole;                                   // relocate() judges her standing at these soles
     if (!M) return true;
     var tx = Math.floor(x / 48), ty = Math.floor(y / 48), a = cellAct(tx, ty);
     if (PENDING[a] === 1) return false;
@@ -678,7 +679,7 @@
         try { plate(this, true); } catch (e) {}
         var wa = cellAct(want[0], want[1]), n0 = stats.relocated;
         if (ENTRY_EXIT[want[0] + ',' + want[1]]) markMigrated();   // came out of a door: a position in the new geography
-        else relocate(this, want[0], want[1]);                    // Continue: migrate or repair (see relocate)
+        else relocate(this, want[0], want[1], [want[0] * 48 + 24, want[1] * 48 + 24]);   // Continue: migrate or repair (see relocate); the engine stands her at the cell's centre
         if (stats.relocated === n0 && wa > 1 && READY[wa] === 1 && REACH[want[1] * GW + want[0]]
             && (this.heroTileX !== want[0] || this.heroTileY !== want[1])) { place(this, want[0], want[1]); stats.unnudged = (stats.unnudged || 0) + 1; }
       }
@@ -1118,8 +1119,10 @@
       for (var y = 0; y < GH; y++) { var row = md[y]; for (var x = 0, i = y * GW; x < GW; x++, i++) if (CELL[i] === 0 && OWN[i] === 0) row[x] = 2; }
       rimFor = md; wrote = true;
     }
-    if (wrote) { changed(); if (!fromExit) relocate(s, s.heroTileX, s.heroTileY); }
-    else if (!fromExit && !migrated()) relocate(s, s.heroTileX, s.heroTileY);
+    // (her sprite, not her cell: an act's plate can land at any moment, e.g. seconds after Continue
+    // while she walks along a coast with her soles on the sand and her centre over the sea row)
+    if (wrote) { changed(); if (!fromExit) relocate(s, s.heroTileX, s.heroTileY, heroPx(s)); }
+    else if (!fromExit && !migrated()) relocate(s, s.heroTileX, s.heroTileY, heroPx(s));
     if (!wrote) keepPlate(md);
   }
   // INTEGRITY. dq-tiles.js conditions the overworld once per map load (consolidateMapData: stray
@@ -1175,13 +1178,29 @@
   }
   function migrated() { var p = pstate(); return !p || !p.storyFlags || !!p.storyFlags[GEO]; }
   function markMigrated() { var p = pstate(); if (p && p.storyFlags && !p.storyFlags[GEO]) p.storyFlags[GEO] = true; }
-  function relocate(s, x, y) {
+  // REPAIR judges where she STANDS. Collision is at her soles (dq-tiles a1fSoleSpec, handed to free()
+  // above), about 0.9 cell below the sprite centre her cell is taken from: on a north shore her centre
+  // is over the first sea row (reach 0) while her soles are on the sand. `at` is her sprite position
+  // (canonical px) or, on Continue, the centre of the saved cell where the engine stands her.
+  function heroPx(s) {
+    var sp = space(); if (!sp || !s.hero || typeof sp.toCanonical !== 'function') return null;
+    var x = sp.toCanonical(s.hero.x), y = sp.toCanonical(s.hero.y);
+    return (isFinite(x) && isFinite(y)) ? [x, y] : null;
+  }
+  function solesReach(at) {
+    if (!at) return false;
+    var S0 = lastSole || (M && M.sole) || {}, dy = isFinite(S0.dy) ? S0.dy : 25, dx = isFinite(S0.dx) ? S0.dx : 0;   // pack px (32 per cell); the index's `sole` before her first step
+    var gx = Math.floor((at[0] * 32 / 48 + dx) / 32), gy = Math.floor((at[1] * 32 / 48 + dy) / 32);
+    return gx >= 0 && gy >= 0 && gx < GW && gy < GH && !!REACH[gy * GW + gx];
+  }
+  function relocate(s, x, y, at) {
     if (!REACH || s.currentMapId !== 'overworld') return;
     if (!(x >= 0 && y >= 0 && x < GW && y < GH)) return;
     var c = CELL[y * GW + x];
     if (c === 1) { markMigrated(); return; }
     var mig = !migrated();
     if (!mig && REACH[y * GW + x]) return;
+    if (!mig && solesReach(at)) { stats.soleKept = (stats.soleKept || 0) + 1; return; }
     var act = c > 1 ? c : OWN[y * GW + x];
     if (!mig && act > 1 && READY[act] !== 1) return;              // her act is not in yet (or fell back to the legacy terrain)
     var L = nearestExit(x, y, mig);
@@ -1478,12 +1497,53 @@
   }
 
   // ---------------------------------------------------------------- tick
+  // ---------------------------------------------------------------- resume snapshot (F4, X03)
+  // The shell's crash net (index.html, key `edu-rpg-resume`) restores its OWN snapshot over the save
+  // it loads whenever a new page finds a fresh foreground beacon: an iOS kill, but also any reload
+  // after the page was shown again. It refreshes that snapshot at walk-stop, at pause/resume, on
+  // WorldMapScene 'create' and every 10 s of standing. Its header counts 'create' as "a map or
+  // dungeon-floor change", but stairs, warps and door transitions only call loadMap: no 'create'.
+  // So after a floor change (or a slide, a cart, a warp: moves with no walk-stop) the snapshot can
+  // hold the floor above while the auto save written on hide holds the floor she is on, and the
+  // net hands her back the older one (explorer X03: Sunken Cellar 2F -> 1F). Here the snapshot is
+  // brought up to date, in the shell's own shape, at the two edges it misses: a map/floor change
+  // (once she is placed) and the page being hidden (after ui-overhaul's auto save). Never in a
+  // town (the adapter owns that position), never while the net itself is restoring.
+  var SNAP_KEY = 'edu-rpg-resume', snapKey = null, snapDue = [];
+  function snapWrite(why) {
+    try {
+      var g = game(), gs = window.__GAME_STATE__, R = window.__QOK_RECOVERY__, s = scene();
+      if (!g || !gs || !gs.player || !gs.player.state || !gs.quizManager || !s || !R || window.__QOK_RECOVERING__) return false;
+      if (!localStorage.getItem(SNAP_KEY)) return false;                          // the net is not armed: nothing to keep fresh
+      if (g.scene.isActive('TitleScene') || g.scene.isActive('GameOverScene') || g.scene.isActive('BattleScene')) return false;
+      if (!s.mapData || !s.mapData.length || !s.currentMapId || TOWNS.has(s.currentMapId) || currentVirtual() || s.__a1dEntryWaiting) return false;
+      var st = gs.player.state; if (!(st.hp > 0)) return false;
+      try { if (typeof s.updatePosition === 'function') s.updatePosition(); } catch (e) {}
+      var p = st.position;
+      if (!p || p.mapId !== s.currentMapId || (p.floor || 1) !== (s.currentFloor || 1)) return false;
+      localStorage.setItem(SNAP_KEY, JSON.stringify({ version: 4, timestamp: Date.now(), player: st,
+        playtime: gs.playtime + (Date.now() - gs.startTime) / 1000, quizStats: gs.quizManager.getStats() }));
+      stats.snapWrites = (stats.snapWrites || 0) + 1; stats.snapWhy = why;
+      return true;
+    } catch (e) { return false; }
+  }
+  function snapTick(s) {
+    if (!s || !s.currentMapId) return;
+    var k = s.currentMapId + '|' + (s.currentFloor || 1), now = Date.now();
+    if (k !== snapKey) { var first = snapKey === null; snapKey = k; snapDue = first ? [] : [now + 600, now + 1600]; }
+    if (snapDue.length && now >= snapDue[0]) { snapDue.shift(); snapWrite('map'); }
+  }
+  function snapOnHide() { if (document.hidden || document.visibilityState === 'hidden') snapWrite('hide'); }
+  document.addEventListener('visibilitychange', snapOnHide);
+  window.addEventListener('pagehide', function () { snapWrite('pagehide'); });
+
   var ovReady = false;
   function tick() {
     loadIndex();
     var s = scene(), g = game();
     if (!M || !s) return;
     ticks++;
+    try { snapTick(s); } catch (e) {}
     if (!ovReady) { ovReady = true; ovInit(); gatesInit(); }
     wrap(s); wrapZone(); wrapText(); wrapCoverage(); minimap();
     if (QR_ON) { try { questTick(s); } catch (e) { stats.questErrors = (stats.questErrors || 0) + 1; } }
