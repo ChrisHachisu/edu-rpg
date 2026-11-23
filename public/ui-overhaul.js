@@ -37,6 +37,11 @@
        straight back afterwards.
    The existing single save migrates into slot 1 on first boot of this build (`qok-slots-v1`).
    ============================================================ */
+/* TESTERS-ONLY "JUMP TO" MENU (Settings > "Testers: Jump to…", see TESTERS JUMP below). The public
+   release flips the ONE line below to false: the row, the list and the fetch of
+   acts-hifi/jump-points.json all disappear. localStorage['qok-testers'] = '1' turns it on anyway
+   (cloud probes). */
+window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public App Store release
 (function () {
   'use strict';
   var CANON_SAVE = 'edu-rpg-save', CANON_AUTO = 'edu-rpg-autosave';
@@ -137,7 +142,7 @@
     if (h) { try { n = h.name(pos.mapId, flags || null); } catch (e) { n = null; } }
     if (!n) n = Z('map.' + pos.mapId);
     if (!n || n.charAt(0) === '[') n = pos.mapId;
-    if (!TOWNS[pos.mapId] && pos.mapId !== 'overworld' && pos.floor && pos.floor > 1) n += ' B' + pos.floor + 'F';
+    if (!TOWNS[pos.mapId] && pos.mapId !== 'overworld' && pos.floor && pos.floor > 1) n += ' ' + (/^(stormNest|stormreachSpire|demonCastle)$/.test(pos.mapId) ? '' : 'B') + pos.floor + 'F';   // towers count up, as the HUD does
     return n;
   }
   function clone(v) { try { return JSON.parse(JSON.stringify(v)); } catch (e) { return null; } }
@@ -429,6 +434,18 @@
     rebuildTitleMenu(ts);
     return pickTitleAction(ts, 'new');
   }
+  // TESTERS JUMP: Continue into a prepared record (Settings > "Testers: Jump to…"). No slot is
+  // active afterwards, so the jump's own auto saves stay in the two working keys and never reach
+  // slots 1-5; choosing a slot on the title swaps that slot back in, as it always does.
+  function testerContinue(raw) {
+    var ts = titleScene(); if (!ts || !parse(raw)) return false;
+    del(ACTIVE);
+    resetWatch(); bossFight = null;
+    swapWorking(raw, null);
+    rebuildTitleMenu(ts);
+    beginLoad('tester-jump');
+    return pickTitleAction(ts, 'continue');
+  }
 
   // ---- New Game+ ----
   // The bundle keeps what New Game+ carries over (items, gear, gold, name, look) only in memory,
@@ -464,7 +481,7 @@
     SLOTS: SLOTS, TOWNS: TOWNS,
     slots: function () { var a = []; for (var i = 1; i <= SLOTS; i++) a.push(slotInfo(i)); return a; },
     slotInfo: slotInfo, activeSlot: activeSlot, deleteSlot: deleteSlot,
-    continueSlot: continueSlot, newInSlot: newInSlot, recordClear: recordClear, ngPlusSlot: ngPlusSlot,
+    continueSlot: continueSlot, newInSlot: newInSlot, recordClear: recordClear, ngPlusSlot: ngPlusSlot, testerContinue: testerContinue,
     placeName: placeName, inTown: inTown, manualSave: manualSave,
     autoSaveNow: autoSaveNow, flashSaved: flashSaved,
     defeatInfo: defeatInfo, returnToTown: returnToTown, retryBoss: retryBoss, toTitle: toTitle,
@@ -1147,7 +1164,107 @@
       '</div>' +
     '</div></div>';
   }
+  // ---- TESTERS JUMP (testers only; window.__QOK_TESTERS__ at the top of this file) ----
+  // Settings > "Testers: Jump to…" > act > place > point. A point is a hero record from the honest
+  // grade-3 player at that spot of the story (acts-hifi/jump-points.json, written by
+  // scripts/auto/jump/build.cjs). Picking one auto saves the current adventure, goes to the title and
+  // Continues into the record (__QOK_SAVES__.testerContinue): the player's own slots are not written.
+  var jumpView = null, jumpData = null, jumpLoad = 0;      // jumpLoad: 0 never, 1 loading, 2 ready, 3 failed
+  function testersOn() {
+    if (window.__QOK_TESTERS__ === true) return true;
+    try { return window.localStorage.getItem('qok-testers') === '1'; } catch (e) { return false; }
+  }
+  function jumpFetch() {
+    if (jumpLoad === 1 || jumpLoad === 2 || !testersOn()) return;
+    jumpLoad = 1;
+    try {      // XHR as acts-runtime.js loads its manifest (the same file:// / capacitor:// paths)
+      var x = new XMLHttpRequest();
+      x.open('GET', 'acts-hifi/jump-points.json', true);
+      x.onload = function () { var d = null; try { d = JSON.parse(x.responseText); } catch (e) {} if (d && d.acts && d.records) { jumpData = d; jumpLoad = 2; } else jumpLoad = 3; lastSig = null; };
+      x.onerror = function () { jumpLoad = 3; lastSig = null; };
+      x.send();
+    } catch (e) { jumpLoad = 3; }
+  }
+  function jumpActName(a) { return T3('Act ' + a.act, 'だい' + a.act + 'しょう', '第' + a.act + '章'); }
+  function jumpPlaceName(pl) {
+    var SV = window.__QOK_SAVES__, f = {}, n = '';
+    if (pl.hosted) f['acts.town.' + pl.hosted] = true;
+    try { n = SV ? SV.placeName({ mapId: pl.map, floor: 1 }, f) : ''; } catch (e) { n = ''; }
+    return n || pl.id;
+  }
+  function jumpPointLabel(pl, pt) {
+    var n = jumpPlaceName(pl);
+    if (pt.kind === 'gate') return n;
+    if (pt.kind === 'entrance') return n + ' ' + T3('Entrance', 'いりぐち', '入口');
+    if (pt.kind === 'boss') return n + ' ' + T3('Boss door', 'ボスの まえ', 'ボスの 前');
+    return pt.single ? n : n + ' ' + (pt.tower ? '' : 'B') + pt.floor + 'F';
+  }
+  function jumpRow(act, i, label, val) {
+    return '<div class="setrow" data-act="' + act + '" data-i="' + i + '"><span class="lab">' + esc(label) + '</span><span class="val">' + esc(val || '›') + '</span></div>';
+  }
+  function jumpBody() {
+    var v = jumpView, h = '<div class="body"><div class="zc pad stack g8"><div class="eyebrow">' + esc(T3('Testers', 'テスター', 'テスター')) + '</div>', i;
+    var acts = jumpData && jumpData.acts || [], a = v.act != null ? acts[v.act] : null, pl = a && v.place != null ? a.places[v.place] : null;
+    if (jumpLoad !== 2) {
+      h += '<div class="scene-h">' + esc(T3('Jump to', 'ジャンプさき', 'ジャンプ先')) + '</div>' +
+        '<div class="scene-s">' + esc(jumpLoad === 3 ? T3('Could not load the list.', 'リストを よみこめません。', 'リストを 読み込めません。') : '…') + '</div>';
+    } else if (v.lvl === 'points' && pl) {
+      h += '<div class="scene-h">' + esc(jumpPlaceName(pl)) + '</div>';
+      for (i = 0; i < pl.points.length; i++) h += jumpRow('jumpPoint', i, jumpPointLabel(pl, pl.points[i]));
+    } else if (v.lvl === 'places' && a) {
+      h += '<div class="scene-h">' + esc(jumpActName(a)) + '</div>';
+      for (i = 0; i < a.places.length; i++) h += jumpRow('jumpPlace', i, jumpPlaceName(a.places[i]), a.places[i].kind === 'town' ? T3('Gate', 'もん', '門') : '›');
+    } else {
+      h += '<div class="scene-h">' + esc(T3('Jump to', 'ジャンプさき', 'ジャンプ先')) + '</div>' +
+        '<div class="scene-s">' + esc(T3('Your own saves stay as they are.', 'じぶんの セーブは そのまま です。', '自分の セーブは そのまま です。')) + '</div>';
+      for (i = 0; i < acts.length; i++) h += jumpRow('jumpAct', i, jumpActName(acts[i]));
+    }
+    return h + '<button class="btn btn-slate" data-act="jumpBack" style="width:100%;font-weight:800;margin-top:8px;">' + esc(T3('Back', 'もどる', '戻る')) + '</button></div></div>';
+  }
+  function jumpSig() { return jumpView ? (jumpView.lvl + ':' + jumpView.act + ':' + jumpView.place + ':' + jumpLoad) : '-'; }
+  function jumpGo(pt) {
+    var SV = window.__QOK_SAVES__, ms = getScene('MenuScene'), st = pstate();
+    if (!SV || !SV.testerContinue || !ms || !jumpData || !pt) return;
+    var p = JSON.parse(JSON.stringify(jumpData.records[pt.r])), k;
+    if (st) {        // the tester's own name, look, language and sound come along; the rest is the record's
+      p.name = st.name || p.name; p.heroColor = st.heroColor || p.heroColor; p.locale = st.locale || p.locale;
+      p.kanjiMode = !!st.kanjiMode; p.soundEnabled = st.soundEnabled !== false; if (typeof st.masterVolume === 'number') p.masterVolume = st.masterVolume;
+    }
+    p.position = { mapId: pt.pos.mapId, x: pt.pos.x, y: pt.pos.y, floor: pt.pos.floor || 1 };
+    for (k in (pt.flags || {})) p.storyFlags[k] = pt.flags[k];
+    var raw = JSON.stringify({ version: 4, timestamp: Date.now(), player: p, playtime: 0, quizStats: {} });
+    jumpView = null; settingsQuitConfirm = false; titleView = 'landing';
+    try { SV.autoSaveNow(true); } catch (e) {}
+    window.__QOK_JUMP_LAST__ = { id: pt.id, pos: p.position, at: Date.now() };
+    ms.scene.stop('WorldMapScene');
+    ms.scene.start('TitleScene');
+    var t0 = Date.now();
+    (function wait() {
+      if (Date.now() - t0 > 30000) return;
+      var ts = getScene('TitleScene'), c = window.__QOK_COVER__, boot = false;
+      try { boot = !!(c && c.phase && c.phase() === 'boot'); } catch (e) {}
+      if (ts && sceneActive('TitleScene') && ts.menuItems && ts.menuItems.length && !boot) { SV.testerContinue(raw); return; }
+      setTimeout(wait, 100);
+    })();
+  }
+  function routeJump(act, i) {
+    var v = jumpView, acts = jumpData && jumpData.acts || [];
+    if (act === 'jumpOpen') { jumpView = { lvl: 'acts' }; jumpFetch(); return true; }
+    if (!v) return false;
+    if (act === 'jumpBack') { jumpView = v.lvl === 'points' ? { lvl: 'places', act: v.act } : v.lvl === 'places' ? { lvl: 'acts' } : null; return true; }
+    if (act === 'jumpAct' && acts[i]) { jumpView = { lvl: 'places', act: i }; return true; }
+    var a = acts[v.act];
+    if (act === 'jumpPlace' && a && a.places[i]) {
+      var pl = a.places[i];
+      if (pl.kind === 'town') jumpGo(pl.points[0]); else jumpView = { lvl: 'points', act: v.act, place: i };
+      return true;
+    }
+    if (act === 'jumpPoint' && a && a.places[v.place] && a.places[v.place].points[i]) { jumpGo(a.places[v.place].points[i]); return true; }
+    return false;
+  }
+
   function settingsBody(ms, st) {
+    if (jumpView && testersOn()) return jumpBody();
     if (settingsQuitConfirm) return settingsQuitConfirmBody();
     var listArr = ms.settingsList;
     var h = '<div class="body"><div class="zc pad stack g8 grid2"><div class="eyebrow">' + esc(Z('menu.settings')) + '</div>';
@@ -1174,6 +1291,7 @@
       var sp = (key === 'volume' || key === 'controlOrientation') ? ' span2' : '';
       h += '<div class="setrow' + (sel ? ' sel' : '') + sp + '" data-act="setting" data-i="' + i + '"><span class="lab">' + use(SETTING_ICON[key] || 'gear') + esc(lab) + '</span>' + ctrl + '</div>';
     }
+    if (testersOn()) h += '<div class="setrow span2" data-act="jumpOpen"><span class="lab">' + use('arrow') + esc(T3('Testers: Jump to…', 'テスター：ジャンプ…', 'テスター：ジャンプ…')) + '</span><span class="val">›</span></div>';
     return h + '</div>' +
       '<div class="zc pad" style="padding-top:0;">' +
         // The "Performance readout" switch that used to sit here is gone (owner, 2026-11-04: the
@@ -1240,7 +1358,7 @@
     var ms = getScene('MenuScene'), p = player(), st = pstate();
     if (!ms || !p || !st) return;
     // a field tab was tapped → open the menu directly on that tab
-    if (pendingTab != null && ms.tabs && ms.tabs[pendingTab]) { ms.tabIndex = pendingTab; ms.currentTab = ms.tabs[pendingTab]; ms.listIndex = 0; pendingTab = null; }
+    if (pendingTab != null && ms.tabs && ms.tabs[pendingTab]) { jumpView = null; ms.tabIndex = pendingTab; ms.currentTab = ms.tabs[pendingTab]; ms.listIndex = 0; pendingTab = null; }
     var tab = ms.currentTab || 'status';
     var body;
     if (tab === 'items') body = itemsBody(ms, st);
@@ -1257,7 +1375,7 @@
       '|' + st.hp + '/' + p.totalMaxHp + '|atk' + p.totalAtk + '|def' + p.totalDef + '|spd' + st.spd + '|g' + st.gold + '|lv' + st.level + '|xp' + st.exp +
       '|' + invSig + '|' + eqSig + '|up' + upgradeSig + '|' + locale() + '|t' + st.timerEnabled + '|s' + st.soundEnabled + '|v' + (draggingVolume ? 'drag' : st.masterVolume) + '|k' + st.kanjiMode + '|d' + st.quizDifficulty +
       '|q' + qs.totalCorrect + '/' + qs.totalAsked + '|o' + ((window.localStorage && localStorage.getItem('eduControlOrientation')) || 'right') +
-      '|psn' + (st.poisonedUntil && st.poisonedUntil > Date.now() ? 1 : 0) + '|qc' + (settingsQuitConfirm ? 1 : 0);
+      '|psn' + (st.poisonedUntil && st.poisonedUntil > Date.now() ? 1 : 0) + '|qc' + (settingsQuitConfirm ? 1 : 0) + '|jv' + jumpSig();
 
     activate('menu', false);
     paint(topbar(p, st) + body + tabbar(tab), sig);
@@ -2718,6 +2836,8 @@
   function routeMenu(act, i, el) {
     var ms = getScene('MenuScene');
     if (!ms) return;
+    if (act !== 'tab' && act !== 'close' && act.indexOf('jump') === 0) { if (testersOn()) routeJump(act, i); return; }
+    if (act === 'tab' || act === 'close') jumpView = null;
     if (act === 'tab') {
       ms.tabIndex = i; ms.currentTab = ms.tabs[i]; ms.listIndex = 0;
       ms.equipMode = 'equipped'; ms.equipSlotIndex = 0; ms.equipInventoryIndex = 0; ms.equipTypeFilter = 'weapon'; ms.equipScrollOffset = 0;
