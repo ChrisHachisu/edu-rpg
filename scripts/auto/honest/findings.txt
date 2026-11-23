@@ -1,0 +1,147 @@
+# Honest player: difficulty report (track H)
+
+Status: **DONE** for all five acts. Three child profiles, five full playthroughs each (48 story stops, 23 bosses, 20 tries per boss per run = 100 tries per boss per profile), plus two policy variants (two playthroughs each) and what-if runs on the two walls. Every fight ran in the game's real BattleScene with the hero record the game itself had built up to that point. Nothing in the game was changed.
+
+The story as shipped cannot be finished by any of the three children: the last boss was never beaten (0 of 300 tries). A grade 6 child is also stopped at the very first boss in four runs of five. Between those two walls most of the game is too easy to matter: from the second dungeon to the end of Act 4 a random fight costs 0.1–3% of the hero's HP.
+
+## 1. Ranked problems
+
+Numbers are from the reference policy ("main": the brief's policy, plus selling outgrown gear) unless a variant is named. "L" is the mean hero level at the boss door. Re-run commands are in section 4.
+
+### Blockers
+
+**B1. The Demon King (final boss, Demon Castle) cannot be beaten.**
+0/100 wins for each profile (grade 1 at L23, grade 3 at L25, grade 6 at L26; the level cap is 30). When she loses, the boss still has 27% (grade 1), 32% (grade 3), 86% (grade 6) of its HP. One try lasts 594–915 s of play (10–15 minutes) and eats 11–13 heal items for grades 1 and 3; grade 6 is dead after 101 s.
+Why, from the bundle's monster table and the fight logs: the boss has 1875 HP (x0.85 / x1 / x1.3 by grade = 1594 / 1875 / 2438) and heals 3% of that every turn (48 / 56 / 73 HP), also on the turns she spends healing herself. A grade 1 child deals about 89 HP per attack turn on average (116 on a right answer, 24 on a wrong one), so every heal turn gives the boss half an attack back; in the logged tries she dealt 3000–4250 damage to a 1594 HP boss and still lost. Below 30% HP the boss's attack is x1.6, below 15% x2, and every fourth turn is a charged x2 hit: the largest hits recorded were 197 of 197 max HP (grade 1) and 216 of 216 (grade 3), a kill from full health. Poison takes another 5% of her max HP per turn.
+What it would take (20 tries each, from the same record, rested to full HP; files `evidence/whatif-g?-r1-demonCastle.json` next to this report):
+
+| scenario | grade 1 (L23) | grade 3 (L25) | grade 6 (L26) |
+|---|---|---|---|
+| as played (heal under 35% HP, never defends) | 0/20 | 0/20 | 0/20 |
+| heals under 50% HP | 0/20 | 0/20 | 0/20 |
+| defends on every announced charge | 0/20, boss ends at 88% HP | 0/20, 68% | 0/20, 99% |
+| defends the charge and heals under 50% | 0/20, boss ends at 100% HP after 48 heal items | 0/20, 100% | 0/20, 100% |
+| every answer right within 2 s, otherwise as played | 4/20 | 2/20 | 0/20 |
+| NOT honest: level 30 (the cap), as played | 6/20 | 4/20 | 0/20 |
+| NOT honest: level 30, defends the charge, heals under 50% | 8/20 | 2/20 | 0/20 |
+
+Playing carefully makes it worse, because every defend or heal turn is 48–73 HP back to the boss. Even a perfect child at the level cap does not reach 50%.
+Repro: `NODE_PATH=/opt/node-tools/node_modules node scripts/auto/honest/whatif.cjs --run g3-r1 --dungeon demonCastle` (3–4 minutes; uses the stored record at the boss door). By hand: load any late save, enter Demon Castle floor 6, fight.
+
+**B2. A full bag (20 stacks) silently destroys boss rewards, quest rewards and chest items, and can close the story.**
+`Player.addItem` returns false when the bag holds 20 different items; the boss reward code, `applyQuestRewards` and the chest code ignore that answer and still show the reward. Verified in the running game by `bagcap.cjs`: with 20 stacks, `addItem('flameCloak')` returns false, the game's own `applyQuestRewards` pays the gold and drops the item, the golden-chest Holy Amulet is refused, a legendary reward is equipped but the weapon it replaces is deleted, and taking a piece of armour off deletes it.
+In the `nosell` variant (the brief's policy to the letter: she buys the best gear and never sells; 6 playthroughs) the bag is full after stop 17–25, the end of Act 2 or early Act 3: about ten stacks of potions, crystals and key items plus one stack per outgrown piece of gear. From then on, in 6 of 6 runs:
+- the Flame Cloak (Sand Golem's reward) vanishes and Magma Tunnels, the only way into Act 4, stays closed ("no Flame Cloak in the bag"). The boss cannot be fought again, so the save is stuck for good;
+- the golden chest's Holy Amulet vanishes (the chest is spent). Without it the Sword Wraith takes one tenth of the damage: 0/120 wins. No Excalibur means Demon Castle stays sealed;
+- boss gear vanishes (Magma Blade, Molten Greaves and Bandit Dagger in 6/6, Sandstorm Cloak in 5/6) and the Ancient Relic quest's amulet in 5/6;
+- every shop from Ruins Camp or Oasis Haven on answers "Inventory is full!" to every purchase, so she plays Acts 3 to 5 in the gear she wore when the bag filled (until the four legendary pieces equip themselves) and ends with 15,000–20,000 gold in her pocket (grade 6 then wins Malachar 2/40 and Storm Sentinel 1/40); chests drop 37 elixirs, 34 potions and 21 escape crystals on the floor over the 6 runs.
+The runs were carried past the gate to measure the rest; see the `nosell` tables. Children hoard: this is the likeliest way a real save dies.
+Repro: `NODE_PATH=/opt/node-tools/node_modules node scripts/auto/honest/bagcap.cjs` (prints what was refused; last output in `evidence/bagcap.json`). By hand: carry 20 different items (old gear counts, each piece is one stack), then beat a boss or turn in a quest that gives an item, and look in the bag.
+
+**B3. Grade 6: the first story boss (Mosswarden, Whispering Woods Cave) stops the run.**
+Grade 6 wins 12/100 (one run 12/20, four runs 0/20) at L4.8; grade 3 wins 71/100 (worst run 5/20) at L3.4; grade 1 wins 99/100 at L3. The boss has 120 HP / 26 ATK / 16 DEF at grade 6 (92 / 20 / 12 at grade 3, 78 / 17 / 10 at grade 1) and heals 7% per turn; the hero has 56–63 HP, deals about 20 on a right answer, takes up to 39% of her HP in one hit, and walks in with 0–4 heal items (mean 1.8): Millbrook's shop left her 6 gold, and the 80–118 gold she carries at the boss door came out of the cave's chests, after the last shop. The number of heal items decides it: the one grade 6 run that won (12/20) carried 2 potions and a herb, the others 0–4 herbs (0/20 each); at grade 3, 5 herbs gave 18–19/20, 2 herbs 13/20, 1 herb 5/20.
+The road there is the other half of the problem: grade 6 died 9 times to random fights in 5 runs before or inside this first dungeon (4 on the walk Millbrook to the cave, 2 on the walk back, 3 inside), grade 3 once, grade 1 never. The walk Millbrook to the cave is 228 steps with 9 / 12 / 14 fights (grade 1 / 3 / 6), each costing 6% / 9% / 13% of max HP, and there is no place to rest on the way.
+What it would take at grade 6 (40 tries each, from the record at the boss door of a fresh run: L4, 56 HP, 1 herb; `evidence/whatif-g6-door-whisperingWoodsCave.json`):
+
+| scenario | grade 6 wins |
+|---|---|
+| as played | 0/40 |
+| heals under 50% HP | 0/40 |
+| every answer right within 2 s | 0/40 (boss ends at 15% HP) |
+| NOT honest: six more herbs | 4/40 |
+| NOT honest: two more levels (L6) | 33/40 |
+| NOT honest: four more levels (L8) | 40/40 |
+
+Grade 3 from its own door record (L4, 6 herbs) wins 40/40. So at grade 6 the route delivers the child two levels short of a boss that perfect answers cannot beat.
+Repro: `sh scripts/auto/honest/chain.sh "g6" "1"` and read the first lines of `/home/user/work/honest/runs/chain.log` (20 s to the first boss), or by hand: New Game at grade 6, Greenhollow, Millbrook, take Owl's Lesson, walk to the cave.
+
+### Major
+
+**M1. Charge bosses in Acts 4–5 are decided by one hit the child is never taught to answer.**
+Win rates, grade 1 / grade 3 / grade 6: Storm Sentinel 75% / 67% / **26%**, War General Malachar 82% / 83% / **46%**, Sword Wraith 81% / 66% / 62%, Null Devourer 97% / 92% / 67%, Magma Beetle King 100% / 97% / 84%, Flame Titan 98% / 97% / 85%. The largest single hit was 64–100% of the hero's max HP for the five that charge (charge x1.8–2 on top of rage x1.4–1.6; Null Devourer rages x1.8 and poisons: 35–65%), against 10–14% for Frost Monarch and Celestial Guardian, which every profile beat 100/100. Neighbours on the story line swing between 26% and 100% for the same child (flagged as cliffs: Null Devourer 67% to Storm Sentinel 26%, Flame Titan 85% to Malachar 46% at grade 6).
+With `savvy` play (defend on the turn after "is gathering power", heal under 50% HP; 2 playthroughs, 40 tries per boss) grades 1 and 3 win 93–100% of every one of these fights. Grade 6 improves to Storm Sentinel 63%, Malachar 53%, Sword Wraith 83%, Null Devourer 85%, Flame Titan 88%, Magma Beetle King 98%: still two bosses near a coin flip. One boss in detail, grade 6 at Storm Sentinel's door (L23, 20 tries each): as played 4/20, every answer right within 2 s 10/20, defends the charge 14/20, defends and heals under 70% HP 19/20. The fights are fair once the child knows the answer to the charge, and nothing in the fight teaches it. The same play does nothing for Mosswarden at grade 6 (0/40) and makes the Demon King worse (B1).
+Repro: the Act 5 boss rows below; or `HONEST_DIR=/home/user/work/honest/runs NODE_PATH=/opt/node-tools/node_modules node scripts/auto/honest/whatif.cjs --run g6-savvy-r1 --dungeon stormreachSpire --set final` (the record at that boss's door from a finished run; `defend-charge` against `as-played`).
+
+**M2. The grade setting makes the game harder for the older child three times over, and trivial for the younger one.**
+The grade picked at New Game scales every monster's HP, ATK and DEF (x0.85 for grades K–2, x1 for 3–4, x1.3 for 5–6), the encounter rate (x0.6 for K–1, x0.8 for 2–3, x1 above) and the answer time (25 s / 18 s / 14 s base for grades 1 / 3 / 6). The hero's own numbers do not change. Result: grade 6 fights 870 random battles per playthrough against 501 at grade 1 (676 at grade 3), dies 9 times in the first hour, and loses to bosses that grade 1 never loses to; grade 1 wins 19 of 23 bosses at 97% or better while answering 70% right.
+
+**M3. Random encounters stop mattering after the first dungeon.**
+From Misty Grotto (stop 7) to Void Rift (stop 40) a random fight costs 0.1–2.9% of max HP for every profile, heal items used in those dungeons round to zero, and nobody died (0 deaths in 15 runs after stop 3). That stretch holds most of a playthrough's 500–870 random fights and 3.3–4 hours of random-battle quiz time, with nothing at stake. The four portal isles are the only late dungeons with teeth (4.7–7% per fight); Demon Castle after them drops back to 0.4–1.1% per fight and pays less XP (42 per fight, against 54–63 on the isles).
+
+**M4. Gold: nothing to spend it on from Act 3, nothing in the pocket in Act 1.**
+At Port Sapphire the child arrives with 41–65 gold and can pay for none of the four upgrades on sale (80–200 gold) in 14 of 15 runs. Crystal Cave then hands out 21 route chests worth 640–740 gold at once (900–1060 gold on leaving). From Haven's Edge on (stop 41) no shop sells anything better than what she wears, in 15 of 15 runs; the playthrough ends with 15,100 / 18,200 / 21,400 unspent gold (grade 1 / 3 / 6) and 52–60 heal items that came out of chests. Nine heal items were bought in 15 playthroughs, all in Act 1; only the Demon King uses more than three per fight.
+
+**M5. Boss fights that only test patience.**
+Celestial Guardian takes 15–19 attack rounds (211–270 s), Frost Monarch 12–14 (167–227 s): both heal themselves, hit for 10–14% of max HP, and were never lost. One Demon King try ran 78 attack rounds.
+
+### Polish
+
+**P1. Haunted Forest (Act 2) uses Act 1's monster table.** Its zone is `whispering-woods`: 4.2–4.5 XP per fight for a level 12–14 hero who needs 234–545 XP for the next level, and 0.1–0.3% HP lost per fight. Other dungeons borrowing a neighbour's table: Iron Mine (`iron-mountains`), Oasis Depths and Scorched Ruins (`scorched-wastes`), Ember Mines (`magma-tunnels`), Obsidian Cavern (`volcanic-forge`), Demon Barracks and Void Rift (`demons-threshold`).
+
+**P2. Starter zones are the old map's rectangles.** Greenhollow's door stands in zone `whispering-woods` (wolf, mushroom, bandit, bat) and Millbrook in `greenhollow-plains` (slime, bug, rabbit): a level 1 child meets wolves on her first walk (one hit 10–15 HP of 40–45, the hardest random hit in the whole game: 25–33% of max HP in the reference runs, 40% once in a variant run).
+
+**P3. XP curve.** One level per dungeon up to Act 5, then it flattens: on the isles and in Demon Castle a level needs 1150–2800 XP at 42–63 XP per fight, so at grade 1 Frostfall Cavern and Demon Castle give no level at all. Final level 23 / 25 / 26 of 30.
+
+**P4. Gordo's Ore depends on a 10–15% drop.** The quest needs 3 iron ore; at grade 1 (fewer fights) it was not ready after Iron Mine in 4 of 5 runs and still not ready after Storm Nest in 2 of 5.
+
+**P5. What was looked for and not found.** No random encounter can kill from full HP in two enemy turns (worst case in P2), no fight failed to end, no page error was raised in any playthrough. Answer timers never ran out for these profiles (0 timeouts in 20,360 random-fight answers, 2 in about 97,000 boss answers).
+
+**P6. Seen in the data or the code, not verified in play:** the Haunted Forest's second exit (overworld cell 283,258) has no walkable neighbour in the Act 2 reach raster; tapping a grade row on the New Game wheel did not move the wheel in the harness (the grade was set through the scene's own `difficultyIndex` before `confirmCreate()`).
+
+## 2. How it was measured
+
+1. `world.cjs` reads the shipped bundle (`dist/assets/index-BhoGQRaA.js`: zones, monsters, items, shops, quests, maps) and the authored floor data, and builds the story line: 48 stops in order, for each dungeon floor the shortest walk door, route chests, stairs, crystal, boss (breadth-first over the floor grid), for each overworld leg the shortest walk over the game's own walkable raster. Steps = shortest route x 1.3 (wander).
+2. `run.cjs` boots the game's own New Game record for the grade (captured through the real title screen: level 1, 40 HP, ATK 15, DEF 5, 3 herbs, 50 gold) and walks the stops. Each step calls the game's `EncounterManager.onStep` for the zone under her; each encounter is fought in the real BattleScene by `inpage.js`, which presses the scene's own menu, item and answer handlers. XP, gold, drops and level-ups are whatever the game awards; the record carries forward.
+3. At each boss door the record is snapshotted and the boss is fought 20 times from it; she goes on with the first winning try (or is carried past a boss she never beat, which is listed as "forced").
+4. Towns: quests through the game's QuestManager, healer at the town's price, best affordable weapon / armour / shield / helmet from that town's shop table, heal items up to a stock of 6 with at most half the remaining gold. Chests through the game's `getTreasureReward`; boss rewards as the game's wake handler gives them.
+5. `report.cjs` aggregates the event logs into the tables below and `results.json`.
+
+**Profiles (exact):**
+
+| profile | quizDifficulty | right answers | answer time | monster scale | encounter rate | base timer |
+|---|---|---|---|---|---|---|
+| grade 1 | '1' | 70% | mean 6 s | x0.85 | x0.6 | 25 s |
+| grade 3 | '3' | 80% | mean 4 s | x1.0 | x0.8 | 18 s |
+| grade 6 | '6' | 90% | mean 3 s | x1.3 | x1.0 | 14 s |
+
+Answer time is log-normal around the mean (sigma 0.35, floor 0.8 s). A wrong answer picks one of the wrong choices at random. Measured share of right answers in random fights over all runs: 70.8% / 79.5% / 89.8%.
+
+**How the quiz setting and the timer work (checked in the bundle and in play):** the grade sets question content, the monster scale and encounter rate above, and the timer: base seconds by grade (K 30, 1: 25, 2: 22, 3: 18, 4: 16, 5: 16, 6: 14) x enemy tier (weak 1.5, normal 1, strong 0.85, mid-boss 0.9, boss 0.85, late boss 0.8, final boss 0.75), plus up to 3 s for a streak, never under 5 s. A right attack answer does x1.5 if given within 3 s, else x1.2 if at least half the timer is left, else x1; a wrong one does 25% (and, by `ui-overhaul.js`, cannot finish the monster). On defence a right answer with half the timer left cuts the hit to 60%, a slower right answer to 80%. Running out of time counts as wrong. With these profiles the 3-second bonus is what separates the grades: 2% of grade 1's attack turns get x1.5 (67% get x1.2), 20% of grade 3's (58% x1.2), 50% of grade 6's (39% x1.2).
+
+**Policy (exact):** attack every turn; use a heal item when HP is under 35% (the smallest one that restores at least 70% of what is missing); flee only from a random fight, under 20% HP, with no heal item left; never flee a boss; never defend. Between fights she tops up with items under 35% HP. A crystal on floor 2 or deeper restores HP (the game's "Restore HP"). Route chests are opened when they cost at most 20 extra steps; the golden chest always. A death to a random fight applies the game's rule (back to the last town, half the gold, full HP) and she walks back in from floor 1; after 6 deaths in one place she is carried on and the place is listed as forced. A boss loss is a free retry from the door, as in the game.
+Variants: `main` sells gear she has outgrown (the reference: without it the bag fills, see B2); `nosell` is the brief's policy to the letter; `savvy` also heals under 50% HP against a boss and defends on the turn after "is gathering power".
+
+**Speed-up, and why it is safe:** no time scale is changed. Scene methods are called directly instead of waiting for tweens; the scene clock is stepped by hand over the game's one-second pause after an answer; the timer bar is set to where the game's linear tween would stand after her thinking time, and a thinking time longer than the timer calls the scene's own timeout. One fight takes 130–250 ms, a playthrough about 2.5 minutes. Check against real play (`validate.cjs`): the same fight driven by real screen taps at 4 s per answer gave the engine a timer ratio of 0.773–0.774 and 4.07–4.08 s elapsed; the fast driver gives 0.778 and 4.0, the same sequence of engine calls, and damage inside the bundle's formula. Encounter rolls: exactly one per cell walked (6/6, 6/6, 12/12 in `calib.cjs`).
+
+## 3. Limits of the method
+
+- The walk is a model: shortest route x 1.3. Dungeon puzzles, keys, traps, the maze hunter and lost time are not played; real children wander more, which means more fights, more XP and more gold than measured here. Act 1 overworld legs and two legs without a path in the raster use straight-line distance x 1.2.
+- The child never defends in `main`. That is the brief's policy and it is what decides M1; the `savvy` columns show the other end.
+- Bosses she could not beat are passed by force so that the rest of the story can be measured. Everything after stop 2 at grade 6 assumes she somehow got past Mosswarden.
+- Her answers are drawn from a seeded generator; the game's own dice (`Math.random`: damage roll, encounters, drops, chests) are not seeded, so two runs with the same seed differ. Boss rates rest on 100 tries (about +/-10 points at 95% around 50%), variants on 40.
+- Quests: only the ones on the story line and those with a giver in the shipped game are taken. Luna's Prophecy (Obsidian Cavern) is not taken; the cavern is measured as an optional side trip on a copy of the record.
+- Sunken Cellar and other side dungeons are not on the route. Chests further than 20 steps off the route are left closed. Mimic chests are not played: every chest pays the game's treasure table.
+- Gear is compared by ATK + DEF only.
+- Time per fight is an estimate (thinking time + 2.8 s of the game's own pauses per answer + a few seconds per fight).
+
+## 4. How to re-run
+
+All from `/home/user/edu-rpg`, game served at `http://127.0.0.1:5500/` from `/home/user/work/dist`. One Chromium at a time; each process stops itself after 5.5 minutes and the chain continues it.
+
+```
+# the reference batch (about 2.5 minutes per playthrough); logs in /home/user/work/honest/runs/chain.log
+HONEST_DIR=/home/user/work/honest/runs nohup sh scripts/auto/honest/chain.sh "g1 g3 g6" "1 2 3 4 5" > /home/user/work/honest/chain-main.out 2>&1 &
+# variants
+HONEST_DIR=/home/user/work/honest/runs nohup sh scripts/auto/honest/chain.sh "g1 g3 g6" "1 2" savvy  > /dev/null 2>&1 &
+HONEST_DIR=/home/user/work/honest/runs nohup sh scripts/auto/honest/chain.sh "g1 g3 g6" "1 2" nosell > /dev/null 2>&1 &
+# one playthrough, or only its first stops (delete the run's folder to start it again)
+NODE_PATH=/opt/node-tools/node_modules node scripts/auto/honest/run.cjs --profile g6 --rep 1 --to 2
+# one boss under changed play or level, from a run's record at that boss's door
+NODE_PATH=/opt/node-tools/node_modules node scripts/auto/honest/whatif.cjs --run g3-r1 --dungeon demonCastle
+# the bag-cap repro
+NODE_PATH=/opt/node-tools/node_modules node scripts/auto/honest/bagcap.cjs
+# this report and results.json
+node scripts/auto/honest/report.cjs /home/user/work/honest/runs /mnt/project-files/edu-rpg/autoloop/honest/
+```
+
+After a balance change in `dist`, the quickest checks are the two what-if commands (Demon King: 3–4 minutes; Mosswarden: under a minute) and one `chain.sh "g6" "1"`.
