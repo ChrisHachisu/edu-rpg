@@ -21,7 +21,11 @@
     hx: w.hero ? w.hero.x : null, hy: w.hero ? w.hero.y : null, sx: w.hero ? w.hero.x : null, sy: w.hero ? w.hero.y + fdy() : null,
     w: w.mapData[0].length, h: w.mapData.length, msg: !!w.showingMessage, field: onField(), battle: G().scene.isActive('BattleScene'),
     waiting: !!w.__a1dEntryWaiting, d2: d ? d.state() : null, hp: window.__GAME_STATE__.player.state.hp, moving: !!w.isMoving }; };
-  const dismiss = async (max = 14) => { let n = 0; const w = W(); while (onField() && w.showingMessage && n < max) { await tapKey('z'); await wait(260); n++; } return n; };
+  // A Quest Complete card (ui-overhaul.js) holds her as a message box does: tap its button, as a player does.
+  const card=()=>{const c=document.getElementById('qok-quest-completion');if(c&&!c.hidden){const b=c.querySelector('button');if(b){b.click();return true;}}return false;};
+  const dismiss = async (max = 14) => { let n = 0; const w = W(); if (card()) await wait(400); while (onField() && w.showingMessage && n < max) { await tapKey('z'); await wait(260); n++; } if (card()) await wait(400); return n; };
+  // After a boss the game may say several things in a row (the boss's words, a quest that ends by itself): wait until it has been quiet for `quiet` ms.
+  const settle = async (quiet = 1500, max = 15000) => { const t0 = performance.now(); let q = 0; while (performance.now() - t0 < max && q < quiet) { const c = document.getElementById('qok-quest-completion'); if ((c && !c.hidden) || (onField() && W().showingMessage)) { await dismiss(); q = 0; } else { await wait(150); q += 150; } } };
   const tile = (x, y) => { const r = W().mapData[y]; return r ? r[x] : undefined; };
   const isWay = (x, y) => { const t = tile(x, y); return t === 6 || t === 9 || t === 10 || t === 12; };
   // goal: {cell:[cx,cy],grow}  soles inside the cell box grown by `grow` px (default 0)
@@ -96,7 +100,7 @@
   async function lean(cx, cy, ms = 900, want = null) { const w = W(); const vx = cx * T + 24 - w.hero.x, vy = cy * T + 24 - (w.hero.y + fdy());
     return push(vx, vy, ms, () => { const p = prompt(); return !!p && (!want || p === want); }); }
   const waitFor = async (fn, ms = 10000) => { const t0 = performance.now(); while (performance.now() - t0 < ms) { if (fn()) return true; await raf(); } return false; };
-  window.__A = { state, dismiss, plan, drive, go, push, lean, wait, raf, waitFor, tapKey, onField, hook, tile, prompt, fdy,
+  window.__A = { state, dismiss, settle, plan, drive, go, push, lean, wait, raf, waitFor, tapKey, onField, hook, tile, prompt, fdy,
     msgs: () => msgs, clearMsgs: () => { msgs = []; }, flags: () => ({ ...window.__GAME_STATE__.player.state.storyFlags }),
     mstate: () => { const c = D() && D().ctx(); return c ? c.state : null; }, ctx: () => D() && D().ctx() };
   hook();

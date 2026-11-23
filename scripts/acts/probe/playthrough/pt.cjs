@@ -98,7 +98,7 @@ SEGS.a1b = async () => {                       // Crystal Cave: the way from Act
   const ok = await dungeonGenerated('crystalCave', 'crystalCave', { want: s => s.bosses.includes('serpent') });
   const s = await S.st(); await S.shot('act2-arrival');
   S.rec('Crystal Cave lets her out on the Act 2 side', s.map === 'overworld' && s.x === door('Crystal Cave (Act 2 side)').exit[0] && s.y === door('Crystal Cave (Act 2 side)').exit[1], [s.map, s.x, s.y]);
-  await compassIs('Ironkeep (first Act 2 stop)', 'Ironkeep');
+  await compassIs('Millbrook (the Sage is waiting for the Crystal Cave report; Ironkeep comes after it, see a2)', 'millbrook');
 };
 
 // ---------------------------------------------------------------- helpers for the later acts
@@ -283,14 +283,15 @@ SEGS.a5s = async () => {                        // the Sunken Temple again (its 
   const eq = await S.ev(() => ({ ...window.__GAME_STATE__.player.state.equipment }));
   S.rec('the four portal guardians left the four relics the Demon Castle asks for', need.every(n => s.inv.includes(n) || Object.values(eq).includes(n)), { inv: s.inv, eq });
 };
-SEGS.a5c = async () => {                         // the Demon Castle (the bundle's generated floors) and the Demon King
+SEGS.a5c = async () => {                         // the Demon Castle (authored mirror rooms since build 98) and the Demon King
   await S.open(load()); await S.buff();
   await town('Last Bastion', async () => { await S.heal(); });
   await compassIsWithout('kikisChallenge', 'the Demon Castle (all four relics in hand)', 'Demon Castle');
-  const ok = await dungeonGenerated('demonCastle', 'Demon Castle', { want: s => s.bosses.includes('demonKing') });
-  const sc = await S.ev(() => window.__PHASER_GAME__.scene.getScenes(true).map(s => s.scene.key)); await S.shot('ending');
-  const s = await S.st().catch(() => null);
-  S.rec('the Demon King is defeated (boss.demonKing.defeated) and the ending plays', !!(s && s.bosses.includes('demonKing')) || sc.includes('VictoryScene'), { scenes: sc, bosses: s && s.bosses });
+  // The castle is an authored dungeon now: its own end-to-end probe plays it on the story record, fights the
+  // Demon King and checks that the ending (VictoryScene) starts. The generated-floor solver loops on its stairs.
+  let sv = null; try { sv = await dungeonAuthored('demonCastle', 'Demon Castle', 'mech/mirror-rooms.cjs'); } catch (e) { S.rec('demonCastle: a record comes back from the castle', false, String(e).slice(0, 300)); }
+  const f = sv ? sv.player.storyFlags : {};
+  S.rec('the Demon King is defeated (boss.demonKing.defeated) on the story record', !!f['boss.demonKing.defeated'], { flag: !!f['boss.demonKing.defeated'] });
 };
 
 (async () => {

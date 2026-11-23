@@ -46,7 +46,7 @@ ACT1_OVERLAY_FILES = {
     # 2026-09-21: additive loss/retry guard. It restores the live player after
     # defeat without changing the frozen bundle and polls until its hooks exist.
     "battle-recovery.js": (
-        10357, "6616dff0762f7a62964c3f154503d8923a23822202cb3345c1be2cf85ed8ccec"),
+        27497, "696df6be27a98e113ee7639098d7bcd48d448afb56da88dcb56aa6b7f7a71a89"),
     # 2026-08-03, owner: "make the game controllable with the keypad ... use the joy stick type
     # keypad on the port sapphire screen". The 4-way d-pad held exactly ONE arrow key at a time
     # (setDir released the previous), so a diagonal was impossible and a corner boundary could
@@ -121,7 +121,7 @@ ACT1_OVERLAY_FILES = {
     # other 12 settle one cell north once; largest rescue nudge 28 px against a 96 px bound).
     # Updated 2026-10-03 for the approved scoped forest+mountain visible-terrain union.
     "dq-tiles.js": (
-        713309, "2751f762bf7f85b7563a73cd02863c5750acd927cd0fbc15320e89058c5e4e1f"),
+        723051, "5bbd6665c70013f74ef350e0f56a842e410dc4fa4ee31771907051978d0b8b41"),
     # 2026-08-07: THE OVERWORLD'S COLLISION SHAPE, baked -- the overworld's answer to the dungeons'
     # `<floor>-walk.png` above, and as much a shipped authority as they are. Deriving it at runtime
     # was correct and unaffordable: owmBuild() evaluated waterField/mountainField per pixel over a
@@ -183,7 +183,7 @@ ACT1_OVERLAY_FILES = {
     # the control-orientation setting, into the frame. First override of this file since the
     # v1.17.1 baseline was frozen, which is why it had no entry before.
     "ui-overhaul.js": (
-        240117, "310ecbbc4a9b619b781ca2d9ccc62bb66fb4ded2fd744642970a8901f4130752"),
+        253013, "7eb49a6faf6a50e102533cca397cdac9413c695454f45ee881a6bc472f84ac92"),
     # 2026-08-06, owner pick: "Charcoal & Gold Leaf" (direction 4 of
     # design/ui-overhaul/chic-style-board.html). The same gold as before -- the pixel art, the
     # dungeon plates and the town screens were all approved against it -- spent differently:
@@ -193,7 +193,7 @@ ACT1_OVERLAY_FILES = {
     # bundled rather than fetched; the short version is that it never reached the phone at all.
     # Like ui-overhaul.js above, first override of this file since the baseline was frozen.
     "ui-overhaul.css": (
-        65781, "1c34b1c6dfa2fea8effdb792fd909dfc2ecc22e1bbe4da545db088c6d47543a1"),
+        66605, "b68abb49b0f95e55596a3275c5c81d0e90ec9437a3e49053cf04acd030bd6903"),
 }
 # 2026-08-06, owner-picked ("Charcoal & Gold Leaf", direction 4 of
 # design/ui-overhaul/chic-style-board.html): the chrome the theme needs on disk rather than
@@ -471,9 +471,9 @@ ACT1_TOWN_FILES = {
     # Selected male town protagonist, using the existing approved sheet.
     "act1-hifi/hero-g3/hero-act1-male-walk-8x3-64-g3.png": (125699, "02162ba11fec942c3524fd0c528f66be8ee86e7bb574c196dbeb93b99f37b90b"),
     "act1-hifi/town.html": (
-        55388, "8a3ccc2400c6ce701e4720a47c5bd7fc4d41d56cc2d55e3be36238c17614434e"),
+        59801, "440c5285e9a3037b7acbc147187fdaa234c4ac322e15d3fceca74ef341f4b3bd"),
     "act1-hifi/town/portSapphire-town.json": (
-        11831, "28373d5e26fd19990b7f3acd6cc77559e0c279aa73b65b2c0bcfc2985d69b33a"),
+        12958, "794e6e9bffc03a3d7f69cb28a55a3ad87c9b7029dceba20115e21c2cc3aa8e01"),
     "act1-hifi/town/portSapphire-walkable.json": (
         26439, "5bffa523782a65736de9ac4ce70a6047385f9ce69f10c48e175ecba5593bf590"),
     "act1-hifi/town/portSapphire-screen.png": (

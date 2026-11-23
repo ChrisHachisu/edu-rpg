@@ -139,7 +139,7 @@ class Run {
   async exitByBossCell(asset, LM = this.LM, what = 'leaving after the boss returns her to the remapped overworld exit') {
     const page = this.page; let how = '';
     const t = await this.ev(([x, y]) => window.__A.tile(x, y), [asset.x, asset.y]); how = 'boss-cell tile ' + t;
-    await page.waitForTimeout(400);
+    await this.ev(() => window.__A.settle());   // a quest that ends with the boss says so first
     const s = await this.st(); await this.ev(([vx, vy]) => window.__A.push(vx, vy, 1500), [(asset.x + .5) * CELL - s.hx, (asset.y + .5) * CELL - s.hy]);
     await page.waitForTimeout(600);
     if ((await L.pos(page)).map === this.id) { how += ' -> walked into it'; await this.pilot(); await this.go({ centre: [asset.x, asset.y] }, { hold: 900 }); }

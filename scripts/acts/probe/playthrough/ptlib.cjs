@@ -39,8 +39,11 @@ const HELP = () => {
   function plan(goal, step = 4, clear = 6) {
     const f = frame(); const t = f.contentWindow.__ACT1_TOWN__, p = t.position(), Wd = Math.ceil(t.town.cells * t.town.worldPxPerCell / step);
     const inside = (x, y) => t.isInsideWalkable({ x, y }), memo = new Map();
+    // Right beside the goal (a person's body, a counter) there is no room to keep: the clearance is waived within 16 px of
+    // it, and kept everywhere else, so one tight spot at the end does not send the whole route along the walls.
+    const nearGoal = (x, y) => { for (const d of [0, 8, 16]) for (const [a, b] of [[d, 0], [-d, 0], [0, d], [0, -d], [d, d], [d, -d], [-d, d], [-d, -d]]) if (goal(x + a, y + b)) return true; return false; };
     const ok = (gx, gy) => { if (gx < 0 || gy < 0 || gx >= Wd || gy >= Wd) return false; const k = gx * 100000 + gy; let v = memo.get(k); if (v !== undefined) return v; const x = gx * step, y = gy * step;
-      v = inside(x, y) && (!clear || (inside(x + clear, y) && inside(x - clear, y) && inside(x, y + clear) && inside(x, y - clear))); memo.set(k, v); return v; };
+      v = inside(x, y) && (!clear || (inside(x + clear, y) && inside(x - clear, y) && inside(x, y + clear) && inside(x, y - clear)) || nearGoal(x, y)); memo.set(k, v); return v; };
     const sx = Math.round(p.x / step), sy = Math.round(p.y / step), prev = new Map(), q = [[sx, sy]]; prev.set(sx + ',' + sy, null);
     for (let i = 0; i < q.length && i < 200000; i++) { const [x, y] = q[i];
       if (goal(x * step, y * step)) { const out = []; let k = x + ',' + y; while (k) { const [a, b] = k.split(',').map(Number); out.push([a * step, b * step]); k = prev.get(k); } return out.reverse(); }
@@ -134,7 +137,8 @@ class Session {
   async travel(doorName, { s = null } = {}) { const d = door(doorName); const sv = s || await this.capture(); sv.player.position = { mapId: 'overworld', x: d.exit[0], y: d.exit[1], floor: 1 };
     await this.boot(sv); await L.noEncounters(this.page); const p = await L.pos(this.page);
     this.rec(`fast travel to ${d.name}: Continue lands on its exit cell`, p.map === 'overworld' && p.x === d.exit[0] && p.y === d.exit[1], [p.map, p.x, p.y]); return d; }
-  async walkInto(doorName, { maxMs = 25000 } = {}) { const d = door(doorName); const r = await L.walkCells(this.page, [d.at], { maxMs }); await this.page.waitForTimeout(1500); return r; }
+  async walkInto(doorName, { maxMs = 25000 } = {}) { const d = door(doorName); if ((await this.st()).msg) await this.dismissAll();   // a line left open (a save repair, a quest) holds her
+    const r = await L.walkCells(this.page, [d.at], { maxMs }); await this.page.waitForTimeout(1500); return r; }
   async enterTown(doorName) {
     const d = door(doorName), id = d.virtual || d.mapId;
     const r = await this.walkInto(doorName);

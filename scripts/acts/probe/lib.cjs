@@ -53,6 +53,7 @@ async function toTitle(page) {
 }
 // Seed a v4 save (plus any extra localStorage keys, e.g. the kill switch) and Continue into it.
 async function bootSave(page, s, { url = URL_, extra = {}, settle = 2500, ready = true } = {}) {
+  if (process.env.PROBE_LS) extra = { ...JSON.parse(process.env.PROBE_LS), ...extra };   // e.g. PROBE_LS='{"qok-quest-repairs":"0"}' to bisect a switch
   await page.goto(url, { waitUntil: 'domcontentloaded' });
   await page.evaluate(([s, extra]) => { localStorage.clear(); localStorage.setItem('edu-rpg-save', JSON.stringify(s)); for (const k in extra) localStorage.setItem(k, extra[k]); }, [s, extra]);
   await page.reload({ waitUntil: 'load' });
