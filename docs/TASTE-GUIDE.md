@@ -2,7 +2,7 @@
 
 Purpose: let an agent predict the owner's call on look and feel before asking him.
 Source: his recorded rulings, 2026-08 to 2026-11 (project memory, review threads, artifact comments).
-Status: v1, written from the record. Not yet backtested. Images (approved / rejected pairs) still to be attached per rule.
+Status: v1, written from the record. A first backtest (docs/taste/backtest-2026-11-23.json) scored 30/30, but a predictor with no guide scored 29/30 on the same cases, so the test leaks and proves nothing. A valid backtest is still owed. Images (approved / rejected pairs) still to be attached per rule.
 
 How to use it
 - A change that a rule here covers: do it, and log it for the weekly packet under "decided for you" with before/after images.
