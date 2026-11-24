@@ -25,6 +25,13 @@
 //                  every boss            the worst single hit (wrong defence answer, top damage
 //                                        roll, rage and charge together) <= 85 % of her max HP
 //                  Celestial Guardian, Frost Monarch   median <= 12 rounds
+//                Careful play (rows "careful"): the Demon King again, BALANCE_TRIES_CAREFUL tries (default
+//                40), with the hero exactly as the careful ("savvy") playthrough brought her to its door
+//                (balance-doors.json savvyDoors: that run drank more on the way, so fewer potions) and the
+//                careful policy: heals under 50 % HP against a boss, defends the turn after a charge is
+//                announced. Target (owner rule P8, 2026-11-24): >= 55 % at every grade (fails on the
+//                2026-11-23d table: about 13 % at grade 6, where defend and heal turns still took 5 %
+//                poison); the soft ceiling of about 90 % is reported as [INFO], not failed.
 //                A win rate is a sample, so a row PASSES when the 95 % Wilson interval of the
 //                measured rate overlaps the target band, and FAILS only when the whole interval
 //                lies outside it. With 40 tries that fails a ">= 85 %" boss at 29/40 or fewer and
@@ -40,7 +47,7 @@ process.env.PROBE_OUT = process.env.PROBE_OUT || path.join(OUT, 'probe-out');
 process.env.PROBE_URL = process.env.PROBE_URL || 'http://127.0.0.1:5504/';
 const GROUPS = ['g1', 'g3', 'g6', 'zones'];
 const GROUP_MS = 470000;
-const TRIES = +(process.env.BALANCE_TRIES || 40), TRIES_DK = +(process.env.BALANCE_TRIES_DK || 100);
+const TRIES = +(process.env.BALANCE_TRIES || 40), TRIES_DK = +(process.env.BALANCE_TRIES_DK || 100), TRIES_CAREFUL = +(process.env.BALANCE_TRIES_CAREFUL || 40);
 const DOORS = path.join(__dirname, 'balance-doors.json');
 
 // ---------------------------------------------------------------- runner (no group named)
@@ -85,16 +92,29 @@ async function bosses(profile) {
   const rows = await S.sample({ profile, doors, balanceOff: process.env.BALANCE_OFF === '1', seed: +(process.env.BALANCE_SEED || 20261123) });
   fs.writeFileSync(path.join(OUT, `rows-${profile}.json`), JSON.stringify(rows, null, 1));
   if (rows[0]) info(`balance table ${rows[0].balance.balance ? (rows[0].balance.on ? 'on, version ' + rows[0].balance.version : 'present, switched off') : 'absent (unfixed build)'}`);
+  judge(rows, profile, false);
+  // careful play against the Demon King, from the careful playthrough's own door record
+  const sd = fx.savvyDoors && fx.savvyDoors[profile] && fx.savvyDoors[profile].demonKing;
+  if (only && !only.includes('demonKing')) return;
+  if (!sd) { rec(false, 'careful door record for ' + profile, DOORS + ' savvyDoors'); return; }
+  info(`careful policy (heal under 50%, defend the charge): Demon King ${TRIES_CAREFUL} tries, hero as in ${sd.from}`);
+  const crow = await S.sample({ profile, doors: [{ boss: 'demonKing', zone: sd.zone, record: sd.record, from: sd.from, tries: TRIES_CAREFUL }], policy: 'savvy', balanceOff: process.env.BALANCE_OFF === '1', seed: +(process.env.BALANCE_SEED || 20261123) + 500 });
+  fs.writeFileSync(path.join(OUT, `rows-${profile}-careful.json`), JSON.stringify(crow, null, 1));
+  judge(crow, profile, true);
+}
+function judge(rows, profile, careful) {
   for (const r of rows) {
-    const [lo, hi] = band(r.boss, profile), [wl, wh] = wilson(r.wins, r.n), rate = r.wins / r.n, bad = [];
+    const [lo, hi] = careful ? [0.55, 1] : band(r.boss, profile), [wl, wh] = wilson(r.wins, r.n), rate = r.wins / r.n, bad = [];
     if (wh < lo) bad.push(`win rate below ${pct(lo)}`);
     if (wl > hi) bad.push(`win rate above ${pct(hi)}`);
     if (r.worstPct > HIT_CAP) bad.push(`worst hit ${pct(r.worstPct)} of max HP (limit ${pct(HIT_CAP)})`);
     if (ROUND_CAP[r.boss] && r.roundsMedian > ROUND_CAP[r.boss]) bad.push(`median ${r.roundsMedian} rounds (limit ${ROUND_CAP[r.boss]})`);
-    if (r.boss === 'demonKing' && r.secMedian > DK_SEC) bad.push(`median ${Math.round(r.secMedian)} s (limit ${DK_SEC})`);
-    if (r.boss === 'demonKing' && r.itemsMedian > DK_ITEMS) bad.push(`median ${r.itemsMedian} heal items (limit ${DK_ITEMS})`);
+    if (!careful && r.boss === 'demonKing' && r.secMedian > DK_SEC) bad.push(`median ${Math.round(r.secMedian)} s (limit ${DK_SEC})`);
+    if (!careful && r.boss === 'demonKing' && r.itemsMedian > DK_ITEMS) bad.push(`median ${r.itemsMedian} heal items (limit ${DK_ITEMS})`);
     if (r.stuck) bad.push(`${r.stuck} fights did not end`);
-    rec(!bad.length, `${r.boss.padEnd(19)} L${r.level} | wins ${String(r.wins).padStart(3)}/${r.n} ${pct(rate).padStart(4)} (95% ${pct(wl)}-${pct(wh)}; band ${pct(lo)}${hi < 1 ? '-' + pct(hi) : '+'}) | rounds ${r.roundsMedian} | ${Math.round(r.secMedian)} s | items ${r.itemsMedian} | worst hit ${pct(r.worstPct)}`, bad.join('; '));
+    if (careful && r.secMedian > DK_SEC) info(`careful ${r.boss}: median ${Math.round(r.secMedian)} s, longer than the reference limit ${DK_SEC} s (not failed: defend and heal turns are turns)`);
+    if (careful) { const hi2 = 0.90; if (wl > hi2) info(`careful ${r.boss}: win rate ${pct(rate)} (95% ${pct(wl)}-${pct(wh)}) lies above the soft ceiling ${pct(hi2)}`); }
+    rec(!bad.length, `${careful ? 'careful ' : ''}${r.boss.padEnd(19)} L${r.level} | wins ${String(r.wins).padStart(3)}/${r.n} ${pct(rate).padStart(4)} (95% ${pct(wl)}-${pct(wh)}; band ${pct(lo)}${hi < 1 ? '-' + pct(hi) : '+'}) | rounds ${r.roundsMedian} | ${Math.round(r.secMedian)} s | items ${r.itemsMedian} | worst hit ${pct(r.worstPct)}`, bad.join('; '));
   }
 }
 

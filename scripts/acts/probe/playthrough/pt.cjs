@@ -106,11 +106,11 @@ const load = () => JSON.parse(fs.readFileSync(IN, 'utf8'));
 async function travelCell(x, y, what) { const sv = await S.capture(); sv.player.position = { mapId: 'overworld', x, y, floor: 1 }; await S.boot(sv); await L.noEncounters(S.page);
   const p = await L.pos(S.page); S.rec(`fast travel to ${what}`, p.map === 'overworld' && p.x === x && p.y === y, [p.map, p.x, p.y]); }
 // Real random encounters on the floor she stands on: pace back and forth until `n` battles are won (or time runs out).
-async function encounters(n, { maxMs = 240000, until = null } = {}) {
+async function encounters(n, { maxMs = 240000, until = null, sideways = false } = {}) {   // sideways: pace left-right (a door above or below her)
   const page = S.page, t0 = Date.now(); let won = 0, met = []; await page.evaluate(() => { try { delete window.__GAME_STATE__.encounterManager.onStep; } catch (e) {} });
   let dir = 1;
   while (won < n && Date.now() - t0 < maxMs && !(until && await until())) {
-    await L.stick(page, 0, dir, 700); dir = -dir;
+    if (sideways) await L.stick(page, dir, 0, 700); else await L.stick(page, 0, dir, 700); dir = -dir;
     if (await page.evaluate(() => window.__PHASER_GAME__.scene.isActive('BattleScene'))) { const fr = await S.fight(); met.push(fr.monster); if (fr.won) won++; await page.waitForTimeout(1500); await S.dismissAll(); await S.inject(); }
     else { const m = await S.ev(() => window.__PHASER_GAME__.scene.getScene('WorldMapScene').showingMessage); if (m) await S.dismissAll(); }
     const s = await S.st(); if (s.map === 'overworld' && n && !met.length && Date.now() - t0 > maxMs / 2) break;
@@ -239,15 +239,38 @@ async function isle(id, portal, script) {          // a portal on the overworld,
   if (!sv) throw new Error('no record back from ' + script);
   await S.open(sv); await S.inject(); await L.noEncounters(S.page); return true;
 }
+// A quest step with a person: talk (twice if the first line was another one), and check the quest moved.
+async function questTalk(npc, kind, q, label) {
+  let r = await S.talk(npc, { label: `${label} (${kind} ${q})` });
+  if (!r[kind].includes(q)) { const r2 = await S.talk(npc, { label: `${label} again (${kind} ${q})` }); r2.lines = r.lines.concat(r2.lines); r2.started = r.started.concat(r2.started); r2.finished = r.finished.concat(r2.finished); r = r2; }
+  S.rec(`${label}: ${q} ${kind}`, r[kind].includes(q), { started: r.started, finished: r.finished, shown: r.lines.map(t => t.slice(0, 160)) });
+  return r;
+}
+const qprog = (q, k) => S.ev(([q, k]) => ((window.__GAME_STATE__.player.state.questProgress || {})[q] || {})[k] || 0, [q, k]);
 SEGS.a5 = async () => {
   await S.open(load()); await S.buff();
-  await town('Last Bastion', async () => { await S.talk('veteran'); await S.talk('priestess'); await S.heal(); await S.townSave(); });
+  await town('Last Bastion', async () => { await questTalk('veteran', 'started', 'demonBarracksQuest', 'the Last Bastion veteran gives Thin the Ranks'); await S.talk('priestess'); await S.heal(); await S.townSave(); });
   await continueHere('Last Bastion save point');
   await town("Haven's Edge", async () => { await S.talk('kiki'); await S.talk('prophetess'); await S.heal(); });
-  // the bundle skips Malachar / the Void Rift (quests nobody gives); the runtime points at the first portal
-  await compassIsWithout('kikisChallenge', 'the first portal (Stormreach Isles) while the Demon Castle is sealed', 'Portal - Stormreach Isles');
+  // The game's own Act 5 chain (quests AUDIT rows 18, 19, G12): Thin the Ranks -> Kiki's Resolve -> the four portals.
+  await compassIsWithout('kikisChallenge', 'the Demon Barracks (Thin the Ranks active)', 'Demon Barracks');
   await dungeonAuthored('demonBarracks', 'Demon Barracks', 'mech/guard-lanterns.cjs');
+  // Ten demons: real random encounters on the Demon's Threshold fields at the barracks door (the zone rolls `demon` 4 in 10).
+  const d0 = await qprog('demonBarracksQuest', 'demon'); const t0 = Date.now();
+  const e = await encounters(40, { maxMs: 600000, sideways: true, until: async () => (await qprog('demonBarracksQuest', 'demon')) >= 10 });
+  const d1 = await qprog('demonBarracksQuest', 'demon'); await S.shot('ten-demons');
+  S.rec('Thin the Ranks: 10 demons beaten in real random encounters (not simulated)', d1 >= 10, { before: d0, after: d1, won: e.won, met: e.met, secs: Math.round((Date.now() - t0) / 1000) });
+  await compassIsWithout('kikisChallenge', 'Last Bastion (10 demons beaten: report to the veteran)', 'Last Bastion');
+  await town('Last Bastion', async () => { await questTalk('veteran', 'finished', 'demonBarracksQuest', 'the veteran takes the report'); await S.dismissAll(); });
+  const hb = await S.st(); S.rec('the veteran\'s reward, the Holy Blade, is in her bag', hb.inv.some(i => /^holyBlade/.test(i)), { inv: hb.inv });
+  await town("Haven's Edge", async () => { await questTalk('kiki', 'started', 'kikisResolve', 'Haven\'s Edge Kiki gives Kiki\'s Resolve'); });
+  await compassIsWithout('kikisChallenge', 'the Void Rift (Kiki\'s Resolve active)', 'Void Rift');
   await dungeonAuthored('voidRift', 'Void Rift', 'mech/drifting-blocks.cjs');
+  S.rec('Kiki\'s Resolve: the Void Rift visit counted by the game on the real walk in', (await qprog('kikisResolve', 'voidRift')) >= 1, await S.ev(() => window.__GAME_STATE__.player.state.questProgress.kikisResolve));
+  await compassIsWithout('kikisChallenge', 'Haven\'s Edge (Void Rift visited: report to Kiki)', "Haven's Edge");
+  await town("Haven's Edge", async () => { await questTalk('kiki', 'finished', 'kikisResolve', 'Kiki takes the report'); await S.dismissAll(); });
+  const q = await S.st(); S.rec('The Four Relics starts after Kiki\'s Resolve', q.active.includes('portalRelics') || q.done.includes('portalRelics'), { active: q.active });
+  await compassIsWithout('kikisChallenge', 'the first portal (Stormreach Isles) while the Demon Castle is sealed', 'Portal - Stormreach Isles');
   await S.shot('act5-mid');
 };
 SEGS.a5k = async () => {                        // re-check of a5's two misses on its own record: Last Bastion healer, portal compass

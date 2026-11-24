@@ -304,7 +304,7 @@
   'use strict';
   var CAP = 20;
   var BALANCE = {
-    version: '2026-11-23d',
+    version: '2026-11-24a',
     bosses: {
       // regen 0.07 -> 0.03; grades 5-6: hp/atk/def x0.77 (cancels the x1.3 grade scale for the first boss only)
       mosswarden:         { regen: 0.03, grade: { '5': { scale: 0.77 }, '6': { scale: 0.77 } } },
@@ -317,10 +317,12 @@
       swordWraith:        { charge: 1.5 },    // charge 2 -> 1.5
       celestialGuardian:  { regen: 0.03 },    // regen 0.06 -> 0.03
       // hp 1875 -> 1500 (1400 grades 5-6); regen 0.03 -> 0.01;
-      // rage 1.6 -> 1.5 (1.6 kept grades K-2, 1.3 grades 5-6); charge 2 -> 1.6 (1.35 grades 5-6)
-      demonKing:          { hp: 1500, regen: 0.01, rage: 1.5, charge: 1.6, grade: {
-        'k': { rage: 1.6 }, '1': { rage: 1.6 }, '2': { rage: 1.6 },
-        '5': { hp: 1400, rage: 1.3, charge: 1.35 }, '6': { hp: 1400, rage: 1.3, charge: 1.35 } } }
+      // rage 1.6 -> 1.5 (1.6 kept grades K-2, 1.3 grades 5-6); charge 2 -> 1.6 (1.5 grades K-2, 1.45 grades 5-6);
+      // poison 0.05 -> 0.02 (a turn spent defending or healing no longer costs a twentieth of her HP);
+      // 2026-11-24 with the lower poison: charge grades K-2 1.6 -> 1.5, grades 5-6 1.35 -> 1.45
+      demonKing:          { hp: 1500, regen: 0.01, poison: 0.02, rage: 1.5, charge: 1.6, grade: {
+        'k': { rage: 1.6, charge: 1.5 }, '1': { rage: 1.6, charge: 1.5 }, '2': { rage: 1.6, charge: 1.5 },
+        '5': { hp: 1400, rage: 1.3, charge: 1.45 }, '6': { hp: 1400, rage: 1.3, charge: 1.45 } } }
     },
     // Ten dungeons roll a neighbour's monster table although the zone table holds one written for them.
     dungeonZones: {
