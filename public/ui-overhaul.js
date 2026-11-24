@@ -2128,6 +2128,9 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
     engine.__qokWrongFinishPatched = true;
     engine.resolvePlayerAttack = function (correct, timeRatio, elapsed3s) {
       if (correct || !(this.monsterHp > 0)) {
+        // Keypad: the frozen 3 s critical-hit window grows with the 1.5x quiz time (4.5 s). Typing an
+        // answer costs about a second, so at 3 s a child who knows the answer could hardly ever land one.
+        if (correct && kpOn() && typeof elapsed3s === 'number') return originalResolvePlayerAttack.call(this, correct, timeRatio, elapsed3s / 1.5);
         return originalResolvePlayerAttack.apply(this, arguments);
       }
       return qokResolveWrongAnswer(this, Z);

@@ -12,6 +12,7 @@
 //   k9  a hardware keyboard types digits, Backspace deletes, Return submits (and never the hidden choice)
 //   k10 the ± key shows for grade 6 only, and a negative answer can be entered
 //   k11 localStorage qok-keypad=0 restores the four choice buttons
+//   k12 the critical-hit window is 1.5x too (4.5 s; the frozen 3 s with the switch off)
 //
 //   NODE_PATH=/opt/node-tools/node_modules PROBE_URL=http://127.0.0.1:5502/ node scripts/auto/checks/keypad.cjs [group ...]
 // groups: flow g6 g1 off. UI_SHOTS=<dir> writes JPEG screenshots.
@@ -66,6 +67,11 @@ async function flow(page) {
   const frozen = await page.evaluate(() => { const q = window.__GAME_STATE__.quizManager; return q.__qokKpTimer ? null : 'unpatched'; });
   const base = await page.evaluate(() => { const b = window.__PHASER_GAME__.scene.getScene('BattleScene'), q = window.__GAME_STATE__.quizManager; localStorage.setItem('qok-keypad', '0'); const v = q.getTimerSeconds(b.getEnemyTier()); localStorage.removeItem('qok-keypad'); return v; });
   rec('k6 quiz time is 1.5x the frozen timer', !frozen && s.secs === Math.round(base * 1.5), { secs: s.secs, base });
+  // k12 the critical window grows with the time: a right answer after 4 s is critical on the keypad, not after 5 s, and not on the four buttons
+  const crit = await page.evaluate(() => { const b = window.__PHASER_GAME__.scene.getScene('BattleScene');
+    const hit = el => { const e = Object.create(b.engine); e.monsterHp = 1e9; const r = e.resolvePlayerAttack(true, 0.2, el); return !!(r && r.critical); };   // a copy: the real fight is untouched
+    const on4 = hit(4), on5 = hit(5); localStorage.setItem('qok-keypad', '0'); const off4 = hit(4), off2 = hit(2); localStorage.removeItem('qok-keypad'); return { on4, on5, off4, off2 }; });
+  rec('k12 the critical window is 4.5 s on the keypad (3 s on the four buttons)', crit.on4 && !crit.on5 && !crit.off4 && crit.off2, crit);
   // k8 notepad
   await tap(page, '[data-act="kpKey"][data-k="note"]', 2000); await page.waitForTimeout(300);
   const np = await page.evaluate(() => { const e = document.getElementById('qok-notepad'); if (!e || e.style.display === 'none') return null; const r = e.getBoundingClientRect(); return { x: r.left, y: r.top, w: r.width, h: r.height }; });

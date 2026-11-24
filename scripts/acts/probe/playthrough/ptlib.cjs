@@ -232,7 +232,12 @@ class Session {
       const r = await this.ev(() => window.__P.solveFloor({ free: true, lava: true })).catch(e => ({ ok: false, why: 'threw ' + String(e).slice(0, 200) }));
       log.push(`f${f0}:` + r.why + (r.notes ? ' ' + r.notes.slice(-3).join(';').slice(0, 200) : ''));
       await page.waitForTimeout(1500); await this.inject();
-      if (!r.ok && r.why !== 'scene') { const s2 = await this.st(); if (s2.map === id && s2.floor === f0 && !s2.scenes.includes('BattleScene') && !s2.msg) { log.push('STUCK ' + JSON.stringify(r).slice(0, 400)); break; } }
+      if (!r.ok && r.why !== 'scene') { const s2 = await this.st(); if (s2.map === id && s2.floor === f0 && !s2.scenes.includes('BattleScene') && !s2.msg) {
+        // she can end up standing on the boss without the bump having started the fight: the game then offers its Battle pill
+        const pill = page.locator('#a1mInteract.a1m-show').first();
+        if (!this._pills) this._pills = 0;
+        if (this._pills < 6 && (await pill.boundingBox().catch(() => null))) { this._pills++; const txt = await pill.textContent().catch(() => ''); await pill.tap({ timeout: 3000 }).catch(() => {}); await page.waitForTimeout(1200); log.push('pill:' + txt); continue; }
+        log.push('STUCK ' + JSON.stringify(r).slice(0, 400)); break; } }
     }
     const end = await this.st();
     return { end: { map: end.map, floor: end.floor, x: end.x, y: end.y }, boss, log };

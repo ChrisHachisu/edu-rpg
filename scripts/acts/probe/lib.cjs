@@ -24,7 +24,7 @@ function save(o = {}) {
   // ...and the story quests that end by themselves with a boss (acts-runtime.js AUTO_END) are done, or they end one
   // after another in message boxes while a probe is trying to test something else.
   const done = completedQuests.slice(), q = id => { if (!done.includes(id) && !activeQuests.includes(id)) done.push(id); };
-  if (Object.keys(F).some(k => /^boss\..*\.defeated$/.test(k) && F[k])) {
+  if (o.autoQuests !== false && Object.keys(F).some(k => /^boss\..*\.defeated$/.test(k) && F[k])) {   // autoQuests: false leaves them open (the quest check's own subject)
     for (const [b, id] of [['serpent', 'crystalCaveGate'], ['stormHarpy', 'stormPass'], ['dragon', 'shadowGate'], ['sandGolem', 'desertGate'], ['lavaWyrm', 'magmaPath'], ['flameTitan', 'volcanicGate']]) if (F[`boss.${b}.defeated`]) q(id);
     if (['swordWraith', 'celestialGuardian', 'stormSentinel', 'frostMonarch'].every(b => F[`boss.${b}.defeated`])) q('portalRelics');
   }

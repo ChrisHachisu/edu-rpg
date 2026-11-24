@@ -112,7 +112,7 @@ class QS extends Session {
   }
 }
 const S = new QS(GROUP);
-const base = o => { const sv = L.save(o); sv.player.level = 20; sv.player.expToNext = 1e6;   // below the level cap (30), so quest experience shows
+const base = o => { const sv = L.save({ autoQuests: false, ...o }); sv.player.level = 20; sv.player.expToNext = 1e6;   // below the level cap (30), so quest experience shows
   if (o.progress) sv.player.questProgress = o.progress; if (o.gold !== undefined) sv.player.gold = o.gold; return sv; };
 const exitOf = name => { const d = door(name); return { mapId: 'overworld', x: d.exit[0], y: d.exit[1] }; };
 const flagsOf = (...ids) => Object.fromEntries(ids.map(b => [`boss.${b}.defeated`, true]));

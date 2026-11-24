@@ -58,7 +58,7 @@
     const rp = eng.resolvePlayerAttack, re = eng.resolveEnemyAttack, pt = eng.processTurnAbilities; let hpBefore = s.hp;
     const tr = o.trace ? (L.trace = []) : null, r3 = v => typeof v === 'number' ? Math.round(v * 1000) / 1000 : v;
     eng.resolvePlayerAttack = function (c, ratio, el) { const m0 = this.monsterHp, r = rp.apply(this, arguments); L.dealt += Math.max(0, m0 - this.monsterHp);
-      if (c && el !== void 0 && el <= 3) L.crit++; else if (c && ratio !== void 0 && ratio >= 0.5) L.fast++;          // the bundle's own two thresholds
+      if (c && el !== void 0 && el <= (window.__QOK_KEYPAD__ && window.__QOK_KEYPAD__.on() ? 4.5 : 3)) L.crit++; else if (c && ratio !== void 0 && ratio >= 0.5) L.fast++;          // the bundle's own two thresholds
       if (tr) tr.push(['P', !!c, r3(ratio), r3(el), m0 - this.monsterHp, r && r.state]); return r; };
     eng.resolveEnemyAttack = function (c, ratio) { const h0 = ST().hp, r = re.apply(this, arguments), d = h0 - ST().hp; L.taken += d; L.hits++; if (d > L.maxHit) L.maxHit = d; if (tr) tr.push(['E', !!c, r3(ratio), d, r && r.state]); return r; };
     eng.processTurnAbilities = function () { const h0 = ST().hp, m0 = this.monsterHp, r = pt.apply(this, arguments); L.taken += h0 - ST().hp; if (tr) tr.push(['T', h0 - ST().hp, this.monsterHp - m0, r.length]); return r; };
