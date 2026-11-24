@@ -243,12 +243,18 @@ class Session {
         const bossAt = await this.ev(() => { const w = window.__PHASER_GAME__.scene.getScene('WorldMapScene'), md = w.mapData; for (let y = 0; y < md.length; y++) for (let x = 0; x < md[y].length; x++) if (md[y][x] === 7) return [x, y]; return null; });
         const kS = id + f0; this._sides[kS] = this._sides[kS] || 0;
         if (bossAt && this._sides[kS] < 2) { this._sides[kS]++; let started = false;
-          for (const [dx, dy] of [[0, 1], [1, 0], [-1, 0], [0, -1]]) {
-            const w1 = await this.ev(([x, y]) => window.__P.fineWalk(x, y, { bump: false, maxMs: 30000 }).catch(e => ({ ok: false, why: String(e).slice(0, 80) })), [bossAt[0] + dx, bossAt[1] + dy]);
-            await L.stick(page, -dx, -dy, 900); await page.waitForTimeout(300);
+          // the game's bump looks 24 px ahead of her SOLES (about 31 px under the sprite centre): lean from the soles toward the boss tile
+          const lean = () => this.ev(async ([bx, by]) => { const w = window.__PHASER_GAME__.scene.getScene('WorldMapScene'), t0 = performance.now();
+            while (performance.now() - t0 < 900 && !w.showingMessage && window.__PHASER_GAME__.scene.isActive('WorldMapScene')) { const vx = bx * 48 + 24 - w.hero.x, vy = by * 48 + 24 - (w.hero.y + 31), l = Math.hypot(vx, vy) || 1;
+              window.__DQ_STICK__ = { x: vx / l, y: vy / l, m: 1 }; await new Promise(r => requestAnimationFrame(r)); }
+            window.__DQ_STICK__ = { x: 0, y: 0, m: 0 }; }, bossAt);
+          const tryNow = async tag => { await lean(); await page.waitForTimeout(300);
             if (await pill.boundingBox().catch(() => null)) { await pill.tap({ timeout: 3000 }).catch(() => {}); await page.waitForTimeout(800); }
-            const s3 = await this.st(); log.push(`side:${dx},${dy}:${w1 && w1.why}:${s3.msg ? 'msg' : s3.scenes.includes('BattleScene') ? 'battle' : '-'}`);
-            if (s3.msg || s3.scenes.includes('BattleScene') || s3.map !== id) { started = true; break; } }
+            const s3 = await this.st(), on = s3.msg || s3.scenes.includes('BattleScene') || s3.map !== id; log.push(`${tag}:${on ? 'started' : '-'}`); return on; };
+          for (let j = 0; j < 2 && !started; j++) started = await tryNow('lean');
+          for (const [dx, dy] of [[0, 1], [1, 0], [-1, 0], [0, -1]]) { if (started) break;
+            await this.ev(([x, y]) => window.__P.fineWalk(x, y, { bump: false, maxMs: 30000 }).catch(e => ({ ok: false, why: String(e).slice(0, 80) })), [bossAt[0] + dx, bossAt[1] + dy]);
+            started = await tryNow(`side:${dx},${dy}`); }
           if (started) continue; }
         log.push('STUCK ' + JSON.stringify(r).slice(0, 400)); break; } }
     }

@@ -29,7 +29,7 @@ const plan = f => JSON.parse(fs.readFileSync(path.join(PLANS, `${ID}-f${f}.json`
       // (the pill can take a few frames to show: the tap is retried)
       if (hint) { const g = await R.go({ cell: [hint.x, hint.y], grow: -14 }); await page.waitForTimeout(300); await R.ev(() => window.__A.clearMsgs());
         let v = null; for (let k = 0; k < 4 && !v; k++) { v = await R.tapPrompt(); if (!v) await page.waitForTimeout(350); } await page.waitForTimeout(300); const msg = await R.ev(() => window.__A.msgs().slice(-1)[0] || ''); await R.shot(`f${f}-s${S.id}-hint`); await R.dismiss();
-        R.rec(`${tag}: the floor hint (${hint.type}) can be looked at`, g.ok && v === (hint.type === 'sign' ? 'Read' : 'Look') && msg.length > 10, { v, msg }); }
+        R.rec(`${tag}: the floor hint (${hint.type}) can be looked at`, g.ok && v === (hint.type === 'sign' ? 'Read' : 'Look') && msg.length > 10, { v, msg, g, hint: [hint.x, hint.y], at: await R.ev(() => { const w = window.__PHASER_GAME__.scene.getScene('WorldMapScene'); return { hero: [Math.round(w.hero.x), Math.round(w.hero.y)], msgUp: !!w.showingMessage, pill: (document.getElementById('a1mInteract') || {}).className || null, pillText: (document.getElementById('a1mInteract') || {}).textContent || null }; }) }); }
       // the sound wall two cells along from the crack holds
       const off = [S.front[0] + (d[0] ? 0 : 3), S.front[1] + (d[1] ? 0 : 3)]; let held = 'n/a';
       if (await canReach(off)) { await R.go({ cell: off, grow: -10 }); await lean(d, 900, S.id); held = !(await isOpen(S.id)); }
