@@ -210,9 +210,9 @@ class Session {
       if (!s.active) { await page.waitForTimeout(900); const over = await page.evaluate(() => window.__PHASER_GAME__.scene.isActive('GameOverScene')); return { entered: true, won: !over, lost: over, rounds, monster }; }
       monster = monster || s.mon;
       if (s.phase === 'playerMenu') { await tap('[data-act="battleMenu"][data-i="0"]'); await page.waitForTimeout(500); }
-      else if (/quiz/i.test(String(s.phase)) || (await page.evaluate(() => { const e = document.querySelector('[data-act="quizAns"]'); return !!(e && e.offsetParent !== null); }))) {
+      else if (/quiz/i.test(String(s.phase)) || (await page.evaluate(() => { const e = document.querySelector('#qok-ui .kpad, [data-act="quizAns"]'); return !!(e && e.offsetParent !== null); }))) {
         const idx = await page.evaluate(lose => { const b = window.__PHASER_GAME__.scene.getScene('BattleScene'); const a = (b.quizQuestion && b.quizQuestion.answers) || []; return lose ? a.findIndex(x => !x.isCorrect) : a.findIndex(x => !!x.isCorrect); }, lose); rounds++;
-        if (idx < 0) await page.waitForTimeout(500); else { await tap(`[data-act="quizAns"][data-i="${idx}"]`); await page.waitForTimeout(800); } }
+        if (idx < 0) await page.waitForTimeout(500); else { for (const qs of await L.quizTaps(page, idx)) await tap(qs); await page.waitForTimeout(800); } }
       else if (s.phase === 'message') { const t = await tap('[data-act="battleAdvance"]', 1500); if (!t) await page.mouse.click(195, 600).catch(() => {}); await page.waitForTimeout(450); }
       else { await page.waitForTimeout(300); await tap('[data-act="battleAdvance"]', 400); }
     }

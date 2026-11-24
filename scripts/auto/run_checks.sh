@@ -18,7 +18,7 @@ if [ -z "${D2_NAV:-}" ]; then
   [ -d "$LOG/d2nav/nav" ] || python3 scripts/auto/explore/make_nav.py --work "$LOG/d2nav" > "$LOG/make_nav.log" 2>&1
   export D2_NAV=$LOG/d2nav/nav
 fi
-ALL=("check bag" "check quests" "check ui-hud" "check ui-japanese" "check ui-screens" "check field-floor-label"
+ALL=("check bag" "check quests" "check keypad" "check ui-hud" "check ui-japanese" "check ui-screens" "check field-floor-label"
   "check field-arrival-messages" "check field-gust" "check field-glare" "check field-fog" "check field-town-reach"
   "check field-towns" "check ow-resume-teleport" "check dungeon-resume-floor" "check balance" "jump"
   "probe logic" "probe towns" "probe hosted" "probe wind_gate" "probe mouths" "probe walk" "probe resume")

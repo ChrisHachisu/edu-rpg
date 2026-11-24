@@ -26,20 +26,21 @@ async function battle(page) {
   await page.waitForTimeout(2000);
   let quizSeen = 0, bad = [], multi = 0, msgs = 0; const t0 = Date.now();
   while (Date.now() - t0 < 100000) {
-    const s = await page.evaluate(() => { const g = window.__PHASER_GAME__, b = g.scene.getScene('BattleScene'); return { on: g.scene.isActive('BattleScene'), phase: b && b.phase, q: !!document.querySelector('[data-act="quizAns"]') }; });
+    const s = await page.evaluate(() => { const g = window.__PHASER_GAME__, b = g.scene.getScene('BattleScene'); return { on: g.scene.isActive('BattleScene'), phase: b && b.phase, q: !!document.querySelector('#qok-ui .kpad, [data-act="quizAns"]') }; });
     if (!s.on) break;
     if (s.phase === 'playerMenu') { await tap(page, '[data-act="battleMenu"][data-i="0"]', 2000); await page.waitForTimeout(600); continue; }
     if (s.q) {
       await page.waitForTimeout(400);
       if (!quizSeen) {
-        const m = await page.evaluate(() => { const p = document.querySelector('#qok-ui .qprompt'), q = document.querySelector('#qok-ui .qq'), b = document.querySelector('#qok-ui .qbtn'); const cs = getComputedStyle(p);
+        const m = await page.evaluate(() => { const p = document.querySelector('#qok-ui .qprompt'), q = document.querySelector('#qok-ui .qq'), b = document.querySelector('#qok-ui .kpk, #qok-ui .qbtn'); const cs = getComputedStyle(p);
           return { size: parseFloat(cs.fontSize), transform: cs.textTransform, spacing: cs.letterSpacing, text: p.textContent, pBottom: p.getBoundingClientRect().bottom, qTop: q.getBoundingClientRect().top, btn: parseFloat(getComputedStyle(b).fontSize) }; });
         await shot(page, 'm4-quiz-ja-kana');
         rec('m4 quiz header: sentence case, >= 15 px, clear of the question', m.size >= 15 && m.transform === 'none' && m.pBottom <= m.qTop + 1, m);
       }
       quizSeen++;
       const idx = await page.evaluate(() => { const b = window.__PHASER_GAME__.scene.getScene('BattleScene'); return ((b.quizQuestion && b.quizQuestion.answers) || []).findIndex(x => x.isCorrect); });
-      await tap(page, `[data-act="quizAns"][data-i="${Math.max(0, idx)}"]`, 2000); await page.waitForTimeout(600); continue;
+      for (const sel of await U.quizTaps(page, idx)) await tap(page, sel, 2000);
+      await page.waitForTimeout(600); continue;
     }
     if (s.phase === 'message') {
       const r = await breaks(page, '#qok-ui .msg');

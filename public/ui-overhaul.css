@@ -719,3 +719,44 @@ body.qok-dialogue #qok-field-hud #qfh-dialog{bottom:calc(env(safe-area-inset-bot
    overflow-wrap:break-word is the last resort for a phrase longer than the whole line; unlike
    `anywhere` it does not change min-content sizing, so no layout moves. English is unaffected. */
 #qok-ui, #qok-field-hud, #qok-quest-completion { word-break:keep-all; line-break:strict; overflow-wrap:break-word; }
+
+/* ============================================================
+   Battle number keypad + notepad (owner 2026-11-24, mockup WuEy19D5wsAHKaKW9sqrKD).
+   Replaces .qans when localStorage['qok-keypad'] !== '0'. Icons only on the function keys;
+   Enter keeps its word because it IS the action (Attack red / Defend blue, the menu's tints).
+   ============================================================ */
+#qok-ui .qcard.kp{ gap:8px; padding:11px 12px 12px; }
+#qok-ui .qcard.kp .qq{ font-size:24px; font-weight:800; padding:0; }
+/* The keypad card is taller than the four answers: let the monster stage give up the height instead of
+   pushing the enemy card off the top of the screen. */
+#qok-ui .col:has(.qcard.kp) .bstage{ flex:1 1 auto; height:auto; min-height:140px; }
+#qok-ui .kpad{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); grid-auto-rows:48px; gap:7px; }
+#qok-ui .kpdisp{ grid-column:1/-1; height:48px; display:flex; align-items:center; justify-content:center; gap:10px;
+  background:#0b0c10; border:1.5px solid #343744; border-radius:12px; font-size:30px; font-weight:800; letter-spacing:1px; color:var(--ink); }
+#qok-ui .kpph{ font-size:14px; font-weight:700; color:#6b675f; letter-spacing:0; }
+#qok-ui .kpad.miss .kpdisp{ border-color:var(--ruby); }
+#qok-ui .kpbad{ color:#ef6a60; text-decoration:line-through; text-decoration-thickness:3px; }
+#qok-ui .kpgood{ color:#5fd089; }
+#qok-ui .kparrow{ color:var(--ink-soft); font-size:22px; }
+#qok-ui .kpres{ font-size:30px; display:flex; gap:10px; justify-content:center; align-items:center; margin-bottom:4px; }
+#qok-ui .kpk{ appearance:none; font:inherit; font-size:24px; font-weight:800; color:var(--ink); background:var(--panel2);
+  border:1px solid #3a3d4a; border-bottom-width:3px; border-radius:12px; cursor:pointer; padding:0;
+  display:flex; align-items:center; justify-content:center; gap:7px; touch-action:manipulation; }
+#qok-ui .kpk:active{ transform:translateY(2px); border-bottom-width:1px; }
+#qok-ui .kpk.fn{ background:#191a21; color:var(--ink-soft); font-size:22px; }
+#qok-ui .kpk.fn.on{ color:var(--gold); border-color:var(--gold); }
+#qok-ui .kpk.go{ grid-column:span 2; color:#fff; font-size:19px; border-color:rgba(0,0,0,.35); }
+#qok-ui .kpk.go .battleic{ width:22px; height:22px; background-color:#fff; }
+#qok-ui .kpk.go.atk{ background:var(--ruby); } #qok-ui .kpk.go.def{ background:var(--sky); }
+#qok-ui .kpk.go[disabled]{ opacity:.4; cursor:default; }
+#qok-notepad{ position:fixed; z-index:55; border-radius:16px; border:1.5px solid var(--gold-line); overflow:hidden;
+  box-shadow:0 12px 30px rgba(0,0,0,.55); background-color:#1b2521;
+  background-image:linear-gradient(rgba(255,255,255,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.06) 1px,transparent 1px);
+  background-size:22px 22px; }
+#qok-notepad canvas{ position:absolute; inset:0; width:100%; height:100%; touch-action:none; }
+#qok-notepad .npq{ position:absolute; left:14px; top:10px; font-size:19px; font-weight:800; color:rgba(232,226,212,.75); pointer-events:none; }
+#qok-notepad .nptools{ position:absolute; right:8px; top:8px; bottom:8px; display:flex; flex-direction:column; gap:8px; }
+#qok-notepad .nptools button{ width:44px; height:44px; border-radius:12px; display:grid; place-items:center; padding:0; cursor:pointer;
+  color:var(--ink); background:rgba(20,22,28,.88); border:1px solid #3a3d4a; }
+#qok-notepad .nptools button.on{ color:#15161c; background:var(--gold); border-color:var(--gold); }
+#qok-notepad .nptools .npx{ margin-top:auto; }

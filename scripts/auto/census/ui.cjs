@@ -150,14 +150,14 @@ async function battleShots(prefix, { lose = false, grade = null, maxQuiz = 3 } =
   await snap(`${prefix}-start`, 'battle opening', 'random encounter / boss contact');
   let quiz = 0, t0 = Date.now(), menuShot = false, msgShot = false;
   while (Date.now() - t0 < 120000) {
-    const s = await page.evaluate(() => { const g = window.__PHASER_GAME__, b = g.scene.getScene('BattleScene'); return { on: g.scene.isActive('BattleScene'), phase: b && b.phase, over: g.scene.isActive('GameOverScene'), q: !!document.querySelector('[data-act="quizAns"]') }; });
+    const s = await page.evaluate(() => { const g = window.__PHASER_GAME__, b = g.scene.getScene('BattleScene'); return { on: g.scene.isActive('BattleScene'), phase: b && b.phase, over: g.scene.isActive('GameOverScene'), q: !!document.querySelector('#qok-ui .kpad, [data-act="quizAns"]') }; });
     if (s.over || !s.on) break;
     if (s.phase === 'playerMenu') { if (!menuShot) { menuShot = true; await snap(`${prefix}-menu`, 'battle command menu', 'battle'); } await tap('[data-act="battleMenu"][data-i="0"]', 2000); await page.waitForTimeout(700); continue; }
     if (s.q) {
       await page.waitForTimeout(500);
       if (quiz < maxQuiz) await snap(`${prefix}-quiz${quiz + 1}`, `quiz question ${quiz + 1}${grade ? ' (grade ' + grade + ')' : ''}`, 'Fight > quiz');
       const idx = await page.evaluate(lose => { const b = window.__PHASER_GAME__.scene.getScene('BattleScene'); const a = (b.quizQuestion && b.quizQuestion.answers) || []; return lose ? a.findIndex(x => !x.isCorrect) : a.findIndex(x => !!x.isCorrect); }, lose);
-      await tap(`[data-act="quizAns"][data-i="${Math.max(0, idx)}"]`, 2000); await page.waitForTimeout(500);
+      for (const qs of await C.L.quizTaps(page, idx)) await tap(qs, 2000); await page.waitForTimeout(500);
       if (quiz < 1) await snap(`${prefix}-answer`, lose ? 'right after a wrong answer' : 'right after a correct answer', 'tap an answer');
       quiz++; await page.waitForTimeout(500); continue;
     }
@@ -178,11 +178,11 @@ async function partBattle() {
     await snap(`battle-g${grade}-start`, `normal battle opening (grade ${grade})`, 'random encounter on the overworld');
     let n = 0; const t0 = Date.now(); let menu = false, msg = 0;
     while (Date.now() - t0 < 90000) {
-      const s = await page.evaluate(() => { const g = window.__PHASER_GAME__, b = g.scene.getScene('BattleScene'); const tx = document.querySelector('#qok-ui') ? document.querySelector('#qok-ui').innerText.slice(0, 200) : ''; return { on: g.scene.isActive('BattleScene'), phase: b && b.phase, q: !!document.querySelector('[data-act="quizAns"]'), tx }; });
+      const s = await page.evaluate(() => { const g = window.__PHASER_GAME__, b = g.scene.getScene('BattleScene'); const tx = document.querySelector('#qok-ui') ? document.querySelector('#qok-ui').innerText.slice(0, 200) : ''; return { on: g.scene.isActive('BattleScene'), phase: b && b.phase, q: !!document.querySelector('#qok-ui .kpad, [data-act="quizAns"]'), tx }; });
       if (!s.on) break;
       if (s.phase === 'playerMenu') { if (!menu) { menu = true; await snap(`battle-g${grade}-menu`, 'battle command menu', 'battle'); } await tap('[data-act="battleMenu"][data-i="0"]', 2000); await page.waitForTimeout(700); continue; }
       if (s.q) { await page.waitForTimeout(500); if (n < 2) await snap(`quiz-g${grade}-${n + 1}`, `quiz question (grade ${grade})`, 'Fight > quiz'); const idx = await page.evaluate(() => { const b = window.__PHASER_GAME__.scene.getScene('BattleScene'); return ((b.quizQuestion && b.quizQuestion.answers) || []).findIndex(x => x.isCorrect); });
-        await tap(`[data-act="quizAns"][data-i="${Math.max(0, idx)}"]`, 2000); await page.waitForTimeout(700); if (n === 0) await snap(`quiz-g${grade}-correct`, 'feedback right after a correct answer', 'tap the right answer'); n++; continue; }
+        for (const qs of await C.L.quizTaps(page, idx)) await tap(qs, 2000); await page.waitForTimeout(700); if (n === 0) await snap(`quiz-g${grade}-correct`, 'feedback right after a correct answer', 'tap the right answer'); n++; continue; }
       if (s.phase === 'message') { if (msg < 4 && n > 0) { msg++; await snap(`battle-g${grade}-msg${msg}`, `battle message ${msg} after the answer (victory / exp / level up)`, 'battle'); } const ok2 = await tap('[data-act="battleAdvance"]', 1200); if (!ok2) await page.mouse.click(195, 600).catch(() => {}); await page.waitForTimeout(500); continue; }
       await page.waitForTimeout(300); await tap('[data-act="battleAdvance"]', 300);
     }
