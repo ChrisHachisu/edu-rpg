@@ -233,6 +233,8 @@ class Session {
       log.push(`f${f0}:` + r.why + (r.notes ? ' ' + r.notes.slice(-3).join(';').slice(0, 200) : ''));
       await page.waitForTimeout(1500); await this.inject();
       if (!r.ok && r.why !== 'scene') { const s2 = await this.st(); if (s2.map === id && s2.floor === f0 && !s2.scenes.includes('BattleScene') && !s2.msg) {
+        // no path right after arriving: the floor's walk mask may still be loading on a busy machine; wait and look again
+        if (r.why === 'nopath') { if (!this._nopath) this._nopath = {}; const kN = id + f0; this._nopath[kN] = (this._nopath[kN] || 0) + 1; if (this._nopath[kN] <= 3) { log.push('nopath-wait'); await page.waitForTimeout(4000); await this.inject(); continue; } }
         // she can end up standing on the boss without the bump having started the fight: the game then offers its Battle pill
         const pill = page.locator('#a1mInteract.a1m-show').first();
         if (!this._pills) this._pills = 0;
