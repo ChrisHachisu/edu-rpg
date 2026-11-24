@@ -147,7 +147,7 @@ SC['battle'] = async c => {
   // play it out: tap answers until the battle ends
   let end = false; const tb = Date.now();
   while (Date.now() - tb < 90000) { if (!(await c.page.evaluate(() => window.__PHASER_GAME__.scene.isActive('BattleScene')))) { end = true; break; }
-    if (!(await tapAct(c.page, '[data-act="quizAns"]')) && !(await tapAct(c.page, '[data-act="battleAdvance"]'))) await keyZ(c.page);
+    if (!(await tapAct(c.page, '[data-act="kpKey"], [data-act="quizAns"]')) && !(await tapAct(c.page, '[data-act="battleAdvance"]'))) await keyZ(c.page);
     await c.page.waitForTimeout(400); }
   await c.page.waitForTimeout(1500); await dismiss(c.page); await L.noEncounters(c.page);
   s = await st(c.page); const mv = await canMove(c.page);

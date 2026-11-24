@@ -826,6 +826,7 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
       document.addEventListener('keydown', railKbWatch, true);  // last-input-device: keys raise the rail cursor
       document.addEventListener('keydown', nameKeyGuard, true); // Return in the name field must MEAN something
       document.addEventListener('keydown', titleKeyGuard, true); // Enter on New Game with a save asks first
+      document.addEventListener('keydown', kpKeyGuard, true);    // battle keypad: digits/Backspace/Esc/Enter, and keep Enter off the hidden choices
       root.addEventListener('input', onInput, true);
       root.addEventListener('change', onInput, true);
       attached = true;
@@ -883,6 +884,7 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
     try { wasUp = !!((root && root.classList.contains('active')) || document.body.classList.contains('qok-overlay')); } catch (e) {}
     if (root && root.classList.contains('active')) { root.classList.remove('active', 'battle'); stage.innerHTML = ''; }
     clearBattleBg();
+    npClose(true);
     try { document.body.classList.remove('qok-overlay'); } catch (e) {} // show the canvas again (field/dungeon, or a non-overlaid Phaser scene)
     curScreen = null; lastSig = null;
     if (!wasUp) return;
@@ -1893,6 +1895,157 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
   // the DOM against the real `.bmon` element instead of touching the frozen bundle.
   var _defeatSeq = 0, _defeatShown = 0;
   var _resolveBaseline = null; // messageText captured at answer-time; resolve feedback shows only until it changes
+  /* ---- NUMBER KEYPAD ANSWERS (owner, 2026-11-24; mockup https://claude.ai/artifact/WuEy19D5wsAHKaKW9sqrKD) ----
+     The four answer buttons are replaced by a number pad. Enter IS the action: it reads Attack on the
+     player's quiz and Defend on the enemy's (dodge) quiz; the battle engine and balance are unchanged.
+     The typed value is mapped back onto the frozen bundle's answer list (the matching choice, or a
+     wrong one) and goes through the same quizAns route, so stats, crits and the wrong-answer cap are
+     exactly as before. Locked with it: ± only for grade 6 (the only grade with negative answers), no
+     decimal key, 1.5x quiz time, a miss shows the typed answer and the right one before resolving,
+     a notepad overlay to work sums out, and the menu's brace action relabelled Guard.
+     Switch: localStorage['qok-keypad'] = '0' restores the four buttons. */
+  function kpOn() { try { return window.localStorage.getItem('qok-keypad') !== '0'; } catch (e) { return true; } }
+  var _kp = { q: null, v: '', miss: null, busy: false, typed: null };
+  var KP_MISS_MS = 900;
+  function kpRight(q) { var a = (q && q.answers) || []; for (var i = 0; i < a.length; i++) if (a[i].isCorrect) return String(a[i].text && a[i].text.en); return ''; }
+  function kpSigned(q) { return !!q && (q.gradeLevel === '6' || kpRight(q).charAt(0) === '-'); }
+  function kpSync(bs) {
+    if (bs.quizQuestion !== _kp.q) { _kp = { q: bs.quizQuestion, v: '', miss: null, busy: false, typed: null }; npClose(true); }
+  }
+  function kpIcon(name) {
+    var P = {
+      del: '<path d="M9 5h11v14H9l-6-7z"/><path d="M12 9l5 6M17 9l-5 6"/>',
+      note: '<rect x="4" y="3" width="13" height="18" rx="2"/><path d="M8 8h5M8 12h3"/><path d="M14 17l6-6 1.5 1.5-6 6H14z"/>',
+      pen: '<path d="M4 20l4-1 11-11-3-3L5 16z"/><path d="M14 7l3 3"/>',
+      eraser: '<path d="M8 20h12"/><path d="M4 15l9-9 6 6-7 7H8z"/><path d="M9 10l6 6"/>',
+      wipe: '<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>',
+      close: '<path d="M6 6l12 12M18 6L6 18"/>'
+    };
+    return '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + P[name] + '</svg>';
+  }
+  function kpHtml(bs) {
+    var q = bs.quizQuestion, atk = !!bs.quizForPlayer;
+    var disp = _kp.miss
+      ? '<span class="kpbad">' + esc(_kp.miss.typed) + '</span><span class="kparrow">→</span><span class="kpgood">' + esc(_kp.miss.right) + '</span>'
+      : (_kp.v ? esc(_kp.v) : '<span class="kpph">' + esc(T3('Type your answer', 'こたえを いれてね', '答えを 入れてね')) + '</span>');
+    var k = function (d, lab, cls, aria) { return '<button class="kpk' + (cls ? ' ' + cls : '') + '" data-act="kpKey" data-k="' + d + '"' + (aria ? ' aria-label="' + esc(aria) + '"' : '') + '>' + lab + '</button>'; };
+    var h = '<div class="kpad' + (_kp.miss ? ' miss' : '') + '"><div class="kpdisp" id="qok-kpdisp">' + disp + '</div>';
+    var side = [k('del', kpIcon('del'), 'fn', T3('Delete', 'けす', '消す')), k('clr', 'C', 'fn', T3('Clear', 'ぜんぶ けす', '全部 消す')), k('note', kpIcon('note'), 'fn' + (npIsOpen() ? ' on' : ''), T3('Notepad', 'メモ', 'メモ'))];
+    [[7, 8, 9], [4, 5, 6], [1, 2, 3]].forEach(function (r, i) { h += k(r[0], r[0]) + k(r[1], r[1]) + k(r[2], r[2]) + side[i]; });
+    var go = atk ? { lab: Z('battle.attack'), bi: 0, cls: 'atk' } : { lab: Z('battle.defend'), bi: 1, cls: 'def' };
+    h += (kpSigned(q) ? k('pm', '±', '', T3('Plus or minus', 'プラス マイナス', 'プラス マイナス')) : '<span></span>') + k(0, 0) +
+      '<button class="kpk go ' + go.cls + '" data-act="kpKey" data-k="go"' + ((!_kp.v || _kp.v === '-' || _kp.busy) ? ' disabled' : '') + '>' + battleIcon(go.bi) + '<span>' + esc(go.lab) + '</span></button>';
+    return h + '</div>';
+  }
+  function kpPress(bs, key) {
+    if (!bs || !bs.quizQuestion || (bs.phase !== 'playerQuiz' && bs.phase !== 'enemyQuiz') || _kp.busy) return;
+    kpSync(bs);
+    var v = _kp.v, digits = v.replace('-', '');
+    if (/^[0-9]$/.test(key)) { if (digits.length < 4) v = (v === '0' ? '' : v === '-0' ? '-' : v) + key; }
+    else if (key === 'del') v = v.slice(0, -1);
+    else if (key === 'clr') v = '';
+    else if (key === 'pm') { if (kpSigned(bs.quizQuestion)) v = v.charAt(0) === '-' ? v.slice(1) : '-' + v; }
+    else if (key === 'note') { npToggle(); return; }
+    else if (key === 'go') { kpSubmit(bs); return; }
+    _kp.v = v;
+  }
+  function kpSubmit(bs) {
+    var q = bs.quizQuestion, v = _kp.v;
+    if (!v || v === '-' || _kp.busy) return;
+    var right = kpRight(q), ok = Number(v) === Number(right), ans = q.answers || [], idx = -1;
+    for (var i = 0; i < ans.length; i++) if (String(ans[i].text && ans[i].text.en) === String(Number(v))) { idx = i; break; }
+    if (ok) { for (var j = 0; j < ans.length; j++) if (ans[j].isCorrect) { idx = j; break; } }
+    if (idx < 0 || (!ok && ans[idx] && ans[idx].isCorrect)) { for (var w = 0; w < ans.length; w++) if (!ans[w].isCorrect) { idx = w; break; } }
+    if (idx < 0) return;
+    _kp.typed = v;
+    var fire = function () {
+      if (bs.quizQuestion !== q || (bs.phase !== 'playerQuiz' && bs.phase !== 'enemyQuiz')) return;
+      npClose(false);
+      routeBattle('quizAns', idx);
+      lastSig = null; try { tick(); } catch (e) {}
+    };
+    if (ok) { fire(); return; }
+    // A miss: freeze the clock, show what they typed against the right answer, then resolve.
+    _kp.busy = true; _kp.miss = { typed: v, right: right };
+    try { if (bs.stopQuizTimer) bs.stopQuizTimer(); } catch (e) {}
+    setTimeout(fire, KP_MISS_MS);
+  }
+  function kpKeyGuard(e) {
+    if (!e || curScreen !== 'battle' || !kpOn()) return;
+    var bs = getScene('BattleScene');
+    if (!bs || !bs.quizQuestion || (bs.phase !== 'playerQuiz' && bs.phase !== 'enemyQuiz')) return;
+    var key = e.key, m = null;
+    if (/^[0-9]$/.test(key)) m = key;
+    else if (key === 'Backspace' || key === 'Delete') m = 'del';
+    else if (key === 'Escape') m = 'clr';
+    else if (key === '-' || key === '_') m = 'pm';
+    else if (key === 'Enter') m = 'go';
+    else if (key === ' ' || key === 'z' || key === 'Z' || key === 'ArrowUp' || key === 'ArrowDown') m = '';
+    if (m === null) return;
+    // The frozen scene confirms its (now hidden) highlighted choice on Enter/Space/Z: never let it.
+    e.stopPropagation(); e.preventDefault();
+    if (m) { kpPress(bs, m); lastSig = null; try { tick(); } catch (err) {} }
+  }
+  /* ---- notepad: a scratch slate over the monster. It lives OUTSIDE #qok-stage (paint() rebuilds the
+     stage every repaint) and is passed through pointerGuard like the grade wheel, so its own pointer
+     listeners draw; inputShield still keeps the strokes away from the Phaser scene. ---- */
+  var _np = null, _npEraser = false;
+  function npIsOpen() { return !!(_np && _np.el.style.display !== 'none'); }
+  function npBuild() {
+    if (_np || !root) return _np;
+    var el = document.createElement('div');
+    el.id = 'qok-notepad'; el.style.display = 'none';
+    el.innerHTML = '<canvas></canvas><div class="npq"></div><div class="nptools">' +
+      '<button type="button" data-np="pen" class="on" aria-label="Pen">' + kpIcon('pen') + '</button>' +
+      '<button type="button" data-np="eraser" aria-label="Eraser">' + kpIcon('eraser') + '</button>' +
+      '<button type="button" data-np="wipe" aria-label="Wipe">' + kpIcon('wipe') + '</button>' +
+      '<button type="button" data-np="close" class="npx" aria-label="Close">' + kpIcon('close') + '</button></div>';
+    root.appendChild(el);
+    var cv = el.querySelector('canvas'), cx = cv.getContext('2d'), drawing = false, last = null;
+    var pt = function (e) { var r = cv.getBoundingClientRect(), k = cv.width / (r.width || 1); return [(e.clientX - r.left) * k, (e.clientY - r.top) * k]; };
+    cv.addEventListener('pointerdown', function (e) { drawing = true; last = pt(e); try { cv.setPointerCapture(e.pointerId); } catch (er) {} e.preventDefault(); });
+    cv.addEventListener('pointermove', function (e) {
+      if (!drawing) return;
+      var p2 = pt(e), k = cv.width / (cv.getBoundingClientRect().width || 1);
+      cx.globalCompositeOperation = _npEraser ? 'destination-out' : 'source-over';
+      cx.strokeStyle = '#f1ecdc'; cx.lineWidth = (_npEraser ? 22 : 3.5) * k; cx.lineCap = 'round'; cx.lineJoin = 'round';
+      cx.beginPath(); cx.moveTo(last[0], last[1]); cx.lineTo(p2[0], p2[1]); cx.stroke(); last = p2;
+    });
+    ['pointerup', 'pointercancel'].forEach(function (t) { cv.addEventListener(t, function () { drawing = false; }); });
+    var setTool = function (er) { _npEraser = er; el.querySelector('[data-np="pen"]').classList.toggle('on', !er); el.querySelector('[data-np="eraser"]').classList.toggle('on', er); };
+    el.querySelector('.nptools').addEventListener('click', function (e) {
+      var b = e.target.closest && e.target.closest('[data-np]'); if (!b) return;
+      var a = b.getAttribute('data-np');
+      if (a === 'pen') setTool(false); else if (a === 'eraser') setTool(true);
+      else if (a === 'wipe') cx.clearRect(0, 0, cv.width, cv.height);
+      else if (a === 'close') { npClose(false); lastSig = null; try { tick(); } catch (er) {} }
+    });
+    _np = { el: el, cv: cv, cx: cx, setTool: setTool };
+    return _np;
+  }
+  function npPlace() {
+    if (!npIsOpen()) return;
+    var ec = stage && stage.querySelector('.enemy-card'), qc = stage && stage.querySelector('.qcard');
+    var top = ec ? ec.getBoundingClientRect().bottom + 6 : 60;
+    var bottom = qc ? qc.getBoundingClientRect().top - 8 : window.innerHeight * 0.5;
+    var w = Math.min(window.innerWidth - 20, 560), left = (window.innerWidth - w) / 2, h = Math.max(160, bottom - top);
+    var s = _np.el.style; s.left = left + 'px'; s.top = top + 'px'; s.width = w + 'px'; s.height = h + 'px';
+    var dpr = window.devicePixelRatio || 1, cw = Math.round(w * dpr), ch = Math.round(h * dpr);
+    if (_np.cv.width !== cw || _np.cv.height !== ch) { _np.cv.width = cw; _np.cv.height = ch; }
+  }
+  function npToggle() {
+    if (npIsOpen()) { npClose(false); return; }
+    if (!npBuild()) return;
+    var bs = getScene('BattleScene'), q = bs && bs.quizQuestion, loc = locale();
+    _np.el.querySelector('.npq').textContent = (q && q.questionText && (q.questionText[loc] || q.questionText.en)) || '';
+    _np.el.style.display = 'block'; _np.setTool(false); npPlace();
+  }
+  function npClose(wipe) {
+    if (!_np) return;
+    _np.el.style.display = 'none';
+    if (wipe) _np.cx.clearRect(0, 0, _np.cv.width, _np.cv.height);
+  }
+  window.__QOK_KEYPAD__ = { on: kpOn, state: function () { return { v: _kp.v, miss: _kp.miss, busy: _kp.busy, notepad: npIsOpen() }; } };
   function qokResolveWrongAnswer(engine, translate) {
     // Mirror the delivered wrong-answer branch before applying the narrow finish cap.
     var player = engine.player, monster = engine.monster;
@@ -1938,6 +2091,14 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
 
   function patchBattle(bs) {
     if (!bs) return;
+    // Typing takes longer than tapping one of four answers: keypad quizzes get 1.5x the time.
+    var qm = GS() && GS().quizManager;
+    if (qm && !qm.__qokKpTimer && typeof qm.getTimerSeconds === 'function') {
+      var origTimer = qm.getTimerSeconds;
+      qm.__qokKpTimer = true;
+      qm.getTimerSeconds = function () { var sec = origTimer.apply(this, arguments); return kpOn() ? Math.round(sec * 1.5) : sec; };
+    }
+    if (npIsOpen() && !((bs.phase === 'playerQuiz' || bs.phase === 'enemyQuiz') && bs.quizQuestion === _kp.q)) npClose(true);
     if (!bs.__qokHitPatched) {
       var orig = bs.handleCombatResult;
       if (typeof orig === 'function') {
@@ -2170,7 +2331,18 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
     var monImg = msrc ? '<img class="bmon' + bossCls + hdCls + '" src="' + msrc + '" alt="" />' : (sprite ? '<div class="bmon' + bossCls + '" style="display:flex;"></div>' : '');
 
     var content = '', dyn = '', showPlayerBar = true;
-    if (isQuiz) {
+    if (isQuiz && kpOn()) {
+      var kq = bs.quizQuestion;
+      kpSync(bs);
+      var kqtext = (kq.questionText && (kq.questionText[loc] || kq.questionText.en)) || '';
+      var ktimer = st.timerEnabled ? '<div class="qtimer" id="qok-qtimer"><i style="width:100%;"></i></div>' : '';
+      var kPromptKey = bs.quizForPlayer ? 'quiz.answerToAttack' : 'quiz.answerToDefend';
+      content = '<div class="qcard panel kp">' + ktimer +
+        '<div class="qprompt">' + esc(Z(kPromptKey)) + '</div>' +
+        '<div class="qq">' + esc(kqtext) + '</div>' + kpHtml(bs) + '</div>';
+      dyn = 'kp|' + kPromptKey + '|' + kqtext + '|' + _kp.v + '|' + (_kp.miss ? 'm' : '') + '|' + (_kp.busy ? 'b' : '') + '|' + (npIsOpen() ? 'n' : '');
+      showPlayerBar = false;
+    } else if (isQuiz) {
       var q = bs.quizQuestion;
       var qtext = (q.questionText && (q.questionText[loc] || q.questionText.en)) || '';
       var ans = q.answers || [];
@@ -2208,7 +2380,7 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
       // put a resting selection on screen for one paint, which is the thing being removed.
       var ag = '<div class="rail"><div class="railplate" style="transform:translateX(' + (bs.menuIndex * 100) + '%);"></div>';
       for (var m = 0; m < BATTLE_ACT.length; m++) {
-        var act = BATTLE_ACT[m], lab = esc(Z(act.key));
+        var act = BATTLE_ACT[m], lab = esc((act.key === 'battle.defend' && kpOn()) ? T3('Guard', 'みがまえる', '身構える') : Z(act.key));
         ag += '<button class="railcmd" style="--tint:' + act.col + ';"' +
           ' data-act="battleMenu" data-i="' + m + '" aria-label="' + lab + '">' +
           battleIcon(act.bi) + '<span class="lab">' + lab + '</span></button>';
@@ -2229,8 +2401,13 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
       if (bs.quizContainer && bs.quizQuestion && bs.quizQuestion.answers && mt === _resolveBaseline) {
         var _a = bs.quizQuestion.answers[bs.quizSelectedIndex];
         var _ok = !!(_a && _a.isCorrect);
-        content = '<div class="msg" style="text-align:center;font-weight:900;color:' + (_ok ? '#5fd089' : '#ef6a60') + ';">' + esc(Z(_ok ? 'quiz.correct' : 'quiz.incorrect')) + '</div>';
-        dyn = 'resolve' + _ok;
+        var _kpLine = '';
+        if (kpOn() && _kp.q === bs.quizQuestion && _kp.typed != null) {
+          _kpLine = _ok ? '<div class="kpres"><span class="kpgood">' + esc(_kp.typed) + '</span></div>'
+            : '<div class="kpres"><span class="kpbad">' + esc(_kp.typed) + '</span><span class="kparrow">→</span><span class="kpgood">' + esc(kpRight(bs.quizQuestion)) + '</span></div>';
+        }
+        content = '<div class="msg" style="text-align:center;font-weight:900;color:' + (_ok ? '#5fd089' : '#ef6a60') + ';">' + _kpLine + esc(Z(_ok ? 'quiz.correct' : 'quiz.incorrect')) + '</div>';
+        dyn = 'resolve' + _ok + '|' + _kpLine;
       } else {
         content = '<div class="msg" data-act="battleAdvance" style="cursor:pointer;text-align:center;white-space:pre-line;">' + esc(mt) + '</div>';
         dyn = 'msg' + mt;
@@ -2255,7 +2432,7 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
     setBattleBg(bs); // biome/boss background behind the battle (cover-fit, full-bleed)
     paint(hud, sig);
     if (phase === 'playerMenu') paintRailSelection(bs.menuIndex);
-    if (isQuiz) updateQuizTimer(bs);
+    if (isQuiz) { updateQuizTimer(bs); npPlace(); }
     runBattleFx(bs); // spawn damage number / hit-flash / crit / shake (after paint, into the FX layer)
   }
   function updateQuizTimer(bs) {
@@ -2472,6 +2649,7 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
        the live Phaser scene underneath by inputShield() on the bubble phase, and it routes its own
        taps (see syncGradeWheel), so nothing this guard was protecting is given up. */
     if (t.closest && t.closest('#qok-gwheel')) return;
+    if (t.closest && t.closest('#qok-notepad')) return;     // the notepad draws with its own listeners (see npBuild)
     e.stopPropagation();                                     // keep the tap away from the live Phaser scene
     var actEl = t.closest ? t.closest('[data-act]') : null;
     var ty = e.type;
@@ -2640,6 +2818,8 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
       // to the result (damage / "Victory! +EXP! Level up!" / etc.), which then displays instead.
       _resolveBaseline = (bs.messageText && bs.messageText.text) || '';
       bs.quizSelectedIndex = i; if (bs.updateQuizSelection) bs.updateQuizSelection(); bs.confirmQuizAnswer();
+    } else if (act === 'kpKey') {
+      kpPress(bs, el ? el.getAttribute('data-k') : '');
     } else if (act === 'battleAdvance') {
       bs.advanceMessage();
     }

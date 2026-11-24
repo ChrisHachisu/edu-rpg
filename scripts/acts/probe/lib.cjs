@@ -113,4 +113,18 @@ function decodePng(buf) {
 function pngDiff(a, b) { const A = decodePng(a), B = decodePng(b); if (A.w !== B.w || A.h !== B.h || A.bpp !== B.bpp) return -1; let n = 0;
   for (let i = 0; i < A.data.length; i += A.bpp) if (A.data[i] !== B.data[i] || A.data[i + 1] !== B.data[i + 1] || A.data[i + 2] !== B.data[i + 2]) n++; return n; }
 const multi = page => page.evaluate(() => (window.__QOK_MULTIACT__ ? window.__QOK_MULTIACT__.status() : null));
-module.exports = { chromium, URL_, OUT, save, allFlags, BOSSES, launch, toTitle, bootSave, noEncounters, pos, shot, stick, walkCells, multi, decodePng, pngDiff };
+// Selectors to tap to answer the live battle quiz with choice idx. Since 2026-11-24 the quiz is a
+// number keypad (digits, ± for a negative, then Enter = Attack/Defend); localStorage qok-keypad=0
+// brings back the four [data-act="quizAns"] buttons. Usage: for (const s of await quizTaps(page, i)) await tap(s);
+const QUIZ_UP = '#qok-ui .kpad, [data-act="quizAns"]';
+const quizTaps = (page, idx) => page.evaluate(i => {
+  i = Math.max(0, i);
+  if (!document.querySelector('#qok-ui .kpad')) return [`[data-act="quizAns"][data-i="${i}"]`];
+  const b = window.__PHASER_GAME__.scene.getScene('BattleScene'), a = ((b && b.quizQuestion && b.quizQuestion.answers) || [])[i];
+  const v = String((a && a.text && a.text.en) || '0'), out = [];
+  for (const c of v.replace('-', '')) out.push(`[data-act="kpKey"][data-k="${c}"]`);
+  if (v.startsWith('-')) out.push('[data-act="kpKey"][data-k="pm"]');
+  out.push('[data-act="kpKey"][data-k="go"]');
+  return out;
+}, idx);
+module.exports = { chromium, URL_, OUT, save, allFlags, BOSSES, launch, toTitle, bootSave, noEncounters, pos, shot, stick, walkCells, multi, decodePng, pngDiff, QUIZ_UP, quizTaps };

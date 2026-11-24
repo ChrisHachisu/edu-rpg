@@ -110,4 +110,7 @@ function runGroups(file, groups, label) {
   console.log(`${label}: ${p + f} checks, ${f} FAIL -- ${list.length} group(s) against ${L.URL_}`);
   process.exit(f ? 1 : 0);
 }
-module.exports = { L, ROOT, OUT, rec, finish, shot, tap, active, breaks, hOverflow, seed, boot, LANGS, runGroups };
+const quizTaps = (page, idx) => L.quizTaps(page, idx);   // see scripts/acts/probe/lib.cjs
+// True while a quiz is waiting for an answer (keypad or choices).
+const quizUp = page => page.evaluate(sel => !!document.querySelector(sel), L.QUIZ_UP).catch(() => false);
+module.exports = { L, ROOT, OUT, rec, finish, shot, tap, active, breaks, hOverflow, seed, boot, LANGS, runGroups, quizTaps, quizUp };
