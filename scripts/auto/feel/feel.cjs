@@ -22,9 +22,9 @@ const OUT = process.env.FEEL_OUT || '/home/user/work/feel/out';
 const BUDGET = (+process.env.FEEL_BUDGET_S || 450) * 1000;
 const KID = fs.readFileSync(path.join(__dirname, 'kid.js'), 'utf8'), ADA = fs.readFileSync(path.join(__dirname, 'adapters.js'), 'utf8');
 const PROFILES = {
-  g1: { name: 'grade 1', rt: 700, sd: 150, noiseDeg: 20, overshoot: 200, replan: 1500 },
-  g3: { name: 'grade 3', rt: 500, sd: 120, noiseDeg: 14, overshoot: 150, replan: 1000 },
-  g6: { name: 'grade 6', rt: 350, sd: 80, noiseDeg: 8, overshoot: 100, replan: 600 },
+  g1: { name: 'grade 1', grade: '1', rt: 700, sd: 150, noiseDeg: 20, overshoot: 200, replan: 1500 },
+  g3: { name: 'grade 3', grade: '3', rt: 500, sd: 120, noiseDeg: 14, overshoot: 150, replan: 1000 },
+  g6: { name: 'grade 6', grade: '6', rt: 350, sd: 80, noiseDeg: 8, overshoot: 100, replan: 600 },
 };
 const FAIR_P95 = 50;   // ms: a trial whose p95 frame time is above this is marked 'coarse' and left out of the rates
 const MARGIN = [24, 72]; // px from her soles to the hazard cell where the child decides to stop (uniform per approach)
@@ -41,9 +41,10 @@ function segWindow(P, route) { const m = P.mechanic; let idx = [];
 const plan = (id, f) => JSON.parse(fs.readFileSync(path.join(PLANS, `${id}-f${f}.json`), 'utf8'));
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-async function enterFloor(page, id, f, cell) {
+async function enterFloor(page, id, f, cell, grade) {
   const flags = { ...L.allFlags(), ...Object.fromEntries(BUNDLE_BOSSES.map(b => [`boss.${b}.defeated`, true])) };
   const sv = L.save({ mapId: id, x: cell[0], y: cell[1], floor: f, flags, inventory: INV, completedQuests: QUESTS });
+  if (grade) sv.player.quizDifficulty = String(grade);   // the profile's school grade is the save's quiz setting (modules read it)
   sv.player.hp = sv.player.maxHp = 1000; sv.player.def = 100;   // a fraction-of-max hurt reads as % directly
   await L.bootSave(page, sv, { settle: 1500 });
   const ok = await page.waitForFunction(([id, f]) => { const g = window.__PHASER_GAME__, w = g.scene.getScene('WorldMapScene'), d = window.__QOK_DNG2__;
@@ -96,7 +97,7 @@ async function fight(page, maxMs = 120000) {
     const outF = path.join(OUT, `${id}-f${f}-${profKey}.json`);
     const rec = { segment: SEGMENT.has(mech), dungeon: id, floor: f, mechanic: mech, profile: { key: profKey, ...prof }, fairP95: FAIR_P95, stopMarginPx: MARGIN, url: L.URL_, started: new Date().toISOString(), route: cells, trials: [], notes: [] };
     const save = () => fs.writeFileSync(outF, JSON.stringify(rec, null, 1));
-    const ok = await enterFloor(page, id, f, cells[0]);
+    const ok = await enterFloor(page, id, f, cells[0], prof.grade);
     if (!ok) { rec.notes.push('could not enter the floor through a seeded save'); rec.entryFailed = true; save(); console.log(`[${id} f${f}] entry failed`); await L.shot(page, `${id}-f${f}-entryfail`); continue; }
     await inject(page);
     const has = await page.evaluate(m => window.__KIDA.has(m), mech);
@@ -110,7 +111,7 @@ async function fight(page, maxMs = 120000) {
       if (Date.now() - wall0 > BUDGET) { rec.notes.push(`wall budget hit after ${t} trials`); break; }
       // put her back on the route start (scaffolding), let the world run a random while (decorrelate from the beat)
       let s = await st(page);
-      if (s.floor !== f || s.map !== id) { rec.notes.push(`trial ${t}: not on the floor (${s.map} f${s.floor}); re-entering`); if (!(await enterFloor(page, id, f, cells[0]))) break; await setup(); }
+      if (s.floor !== f || s.map !== id) { rec.notes.push(`trial ${t}: not on the floor (${s.map} f${s.floor}); re-entering`); if (!(await enterFloor(page, id, f, cells[0], prof.grade))) break; await setup(); }
       let placed = false;
       for (let k = 0; k < 3 && !placed; k++) {
         placed = await page.evaluate(c => { const x = window.__QOK_DNG2__.ctx(); const fd = window.__QOK_DNG2__.footDy(); x.place(c[0] * 48 + 24, c[1] * 48 + 24 - fd, 0);

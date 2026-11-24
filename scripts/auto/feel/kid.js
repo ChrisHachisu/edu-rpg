@@ -81,6 +81,11 @@
         if (w.showingMessage) { stick(0, 0);   // a box: she reads it (1.5 s) and taps it away, then walks on
           this.read = (this.read || 0) + dt; this.reads = this.reads || 0;
           if (this.read > 1500) { this.read = 0; this.reads++; tapZ(); if (this.reads > 12) return { why: 'message', i: this.i, ms: K.t - this.t0 }; } return; }
+        // day 2: a Z tap that closed a box next to a warp crystal can open the crystal's menu (a DOM card that
+        // stops her); she taps its Cancel button like a child would and walks on (was: 60 s timeouts on Spire 5F)
+        const cm = document.getElementById('a1mCrystal');
+        if (cm) { stick(0, 0); this.crys = (this.crys || 0) + dt; if (this.crys > 1000) { this.crys = 0; this.crystals = (this.crystals || 0) + 1;
+            const b = cm.querySelector('.cancel'); if (b) { b.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true })); b.dispatchEvent(new PointerEvent('pointerup', { bubbles: true })); } } return; }
         this.read = 0;
         if (K.t - this.t0 > (opts.maxMs || 120000)) { stick(0, 0); return { why: 'timeout', i: this.i, ms: K.t - this.t0 }; }
         // overshoot: she is still pushing after deciding to stop

@@ -14,6 +14,32 @@
   'use strict';
   var K=window.__QOK_D2KIT_A__; if(!K){ setTimeout(boot,40); return; }
   var TILE=K.TILE, TICK=K.TICK, pendingNote=null;
+  // Kid timing (owner P9; day-2 kid-timing pass, 2026-11-24). Shared by storm-terrace.js and
+  // gust-walkways.js (whichever loads first defines it; both copies are identical). For quiz grades
+  // K, 1 and 2 the warning before a strike / gust lasts about 1.5 s (twice a grade-1 reaction) and the
+  // cycle grows with it (the calm stretches grow so a child who stops 200 ms late is rarely caught);
+  // grades 3+ keep the plan's numbers. localStorage 'qok-kid-timing' = '0' restores the plan's timing for every grade.
+  var KT = window.__QOK_KIDTIME__ || (window.__QOK_KIDTIME__ = {
+    warnMs: 1500,      // the warning: about twice a grade-1 reaction (0.7 s)
+    calmMs: 1000,      // Stormreach: after a group's strike the whole terrace is calm this long before the next glow
+    gustShare: 6,      // Storm Nest: a lane blows for at most 1/6 of its cycle (a 200 ms late stop rarely meets a gust)
+    young: function () {
+      try { if (window.localStorage && window.localStorage.getItem('qok-kid-timing') === '0') return false; } catch (e) {}
+      var q; try { q = String(window.__GAME_STATE__.player.state.quizDifficulty).toLowerCase(); } catch (e) { return false; }
+      return q === 'k' || q === '0' || q === '1' || q === '2';
+    },
+    warnTicks: function (planTicks, ms) { return Math.max(planTicks, Math.round(this.warnMs / ms)); },
+    calmTicks: function (ms) { return Math.round(this.calmMs / ms); }
+  });
+  // grades K-2: the lane warns for about 1.5 s and the lull grows until the gust is at most 1/gustShare
+  // of the cycle; the gust itself is the plan's length. The lanes' phases scale with the period, so
+  // they still blow in the same turn.
+  function kidLane(L,young){
+    L.plan={period:L.period,warn:L.warn,phase:L.phase}; L.kid=false;
+    if(!young) return L;
+    var w=KT.warnTicks(L.warn,TICK), d=w-L.warn, per=Math.max(L.period+d, L.active*KT.gustShare); if(d<=0 && per===L.period) return L;
+    L.phase=Math.round(L.phase*per/L.period); L.period=per; L.warn=w; L.kid=true; return L;
+  }
   function phaseOf(L,t){                                    // t in ticks -> {on, warn, pos, left}
     var pos=((t-L.phase)%L.period+L.period)%L.period;
     return { pos:pos, on:pos<L.active, warn:pos>=L.period-L.warn, toGust:(pos<L.active)?0:(L.period-pos), left:(pos<L.active)?(L.active-pos):0 };
@@ -60,9 +86,9 @@
       // the joystick and read as a glitch. Now (unless qok-f2-old=gust) they sit under the fog
       // (depth 7.9: only the lit play field around her shows them), fade out with distance from
       // her, and are soft tapered pale-blue wisps. The window glow and the chevrons are unchanged.
-      st.old=OLD(); st.lanes=[]; st.cell={}; st.t=0; st.blown=null; st.grace=0; st.fx=ctx.own(sc.add.graphics().setDepth(st.old?10.8:7.9)); st.tint=ctx.own(sc.add.graphics().setDepth(2.5));
+      st.old=OLD(); st.kid=KT.young(); st.lanes=[]; st.cell={}; st.t=0; st.blown=null; st.grace=0; st.fx=ctx.own(sc.add.graphics().setDepth(st.old?10.8:7.9)); st.tint=ctx.own(sc.add.graphics().setDepth(2.5));
       for(i=0;i<z.length;i++){ if(z[i].kind!=='gustLane') continue;
-        var L={id:z[i].id,rect:z[i].rect,dir:z[i].dir,cells:z[i].cells,period:z[i].period,active:z[i].active,warn:z[i].warn,phase:z[i].phase||0,chev:[],win:null};
+        var L={id:z[i].id,rect:z[i].rect,dir:z[i].dir,cells:z[i].cells,period:z[i].period,active:z[i].active,warn:z[i].warn,phase:z[i].phase||0,chev:[],win:null}; kidLane(L,st.kid);
         for(j=0;j<L.cells.length;j++){ st.cell[L.cells[j][0]+','+L.cells[j][1]]=L;
           var c=K.img(ctx,texChevron(sc),L.cells[j][0]*TILE+TILE/2,L.cells[j][1]*TILE+TILE/2,2.6); c.setRotation(Math.atan2(L.dir[1],L.dir[0])); c.setAlpha(0.12); L.chev.push(c); }
         st.lanes.push(L); }
@@ -138,6 +164,6 @@
     input:function(ctx){ if(ctx.state.blown) return null; },
     free:function(ctx){ if(ctx.state.blown) return true; },
     step:function(ctx){ if(ctx.state.blown) return false; },
-    _debug:{ phaseOf:phaseOf, nearestLanding:nearestLanding }
+    _debug:{ kidLane:kidLane, phaseOf:phaseOf, nearestLanding:nearestLanding }
   }); });
 })();

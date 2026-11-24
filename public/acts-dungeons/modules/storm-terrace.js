@@ -11,6 +11,23 @@
   var D = window.__QOK_DNG2__; if (!D || !D.register) return;
   var T = 48;
   function kit() { return window.__QOK_D2KIT_B__; }
+  // Kid timing (owner P9; day-2 kid-timing pass, 2026-11-24). Shared by storm-terrace.js and
+  // gust-walkways.js (whichever loads first defines it; both copies are identical). For quiz grades
+  // K, 1 and 2 the warning before a strike / gust lasts about 1.5 s (twice a grade-1 reaction) and the
+  // cycle grows with it (the calm stretches grow so a child who stops 200 ms late is rarely caught);
+  // grades 3+ keep the plan's numbers. localStorage 'qok-kid-timing' = '0' restores the plan's timing for every grade.
+  var KT = window.__QOK_KIDTIME__ || (window.__QOK_KIDTIME__ = {
+    warnMs: 1500,      // the warning: about twice a grade-1 reaction (0.7 s)
+    calmMs: 1000,      // Stormreach: after a group's strike the whole terrace is calm this long before the next glow
+    gustShare: 6,      // Storm Nest: a lane blows for at most 1/6 of its cycle (a 200 ms late stop rarely meets a gust)
+    young: function () {
+      try { if (window.localStorage && window.localStorage.getItem('qok-kid-timing') === '0') return false; } catch (e) {}
+      var q; try { q = String(window.__GAME_STATE__.player.state.quizDifficulty).toLowerCase(); } catch (e) { return false; }
+      return q === 'k' || q === '0' || q === '1' || q === '2';
+    },
+    warnTicks: function (planTicks, ms) { return Math.max(planTicks, Math.round(this.warnMs / ms)); },
+    calmTicks: function (ms) { return Math.round(this.calmMs / ms); }
+  });
 
   // ---- pure logic ---------------------------------------------------------------------------------
   function model(ctx) {
@@ -18,6 +35,16 @@
     for (var g = 0; g < G; g++) cells.push([]);
     for (y = 0; y < rows.length; y++) for (x = 0; x < rows[y].length; x++) { var ch = rows[y].charCodeAt(x) - 48; if (ch >= 0 && ch < G) cells[ch].push([x, y]); }
     return { G: G, gap: gap, period: P.periodTicks || G * gap, strike: P.strikeTicks || 2, glow: P.glowTicks || 5, rows: rows, cells: cells };
+  }
+  // grades K-2: a longer glow, the same strike, the same order; each group's slot grows so that after a
+  // strike the terrace stays calm for calmMs before the next group starts to glow (the plan's slots have
+  // no such gap: the next glow starts as a strike lands). M.plan keeps the plan's numbers.
+  function kidScale(M, ms) {
+    M.plan = { glow: M.glow, gap: M.gap, period: M.period }; M.kid = false;
+    if (!KT.young()) return M;
+    var glow = KT.warnTicks(M.glow, ms), gap = Math.max(M.gap + glow - M.glow, glow + M.strike + KT.calmTicks(ms));
+    if (glow === M.glow && gap === M.gap) return M;
+    M.period = M.period / M.gap * gap; M.glow = glow; M.gap = gap; M.kid = true; return M;
   }
   function groupAt(M, cx, cy) { var r = M.rows[cy]; if (!r) return -1; var ch = r.charCodeAt(cx) - 48; return (ch >= 0 && ch < M.G) ? ch : -1; }
   function mod(a, n) { return ((a % n) + n) % n; }
@@ -28,7 +55,7 @@
   function ready(ctx) {
     var S = ctx.state; if (S.ok) return true;
     var K = kit(); if (!K) return false;
-    S.K = K; S.M = model(ctx); S.ms = K.tickMs(ctx.mechanic.params); S.grace = 4; S.spr = null; S.was = {};
+    S.K = K; S.ms = K.tickMs(ctx.mechanic.params); S.M = kidScale(model(ctx), S.ms); S.grace = 4; S.spr = null; S.was = {};
     S.tick = K.clock(ctx, 0, S.M.period, S.ms); K.quiet(ctx.scene);
     S.ok = true; return true;
   }
@@ -59,7 +86,8 @@
     var t = S.tick, g, i;
     for (g = 0; g < M.G; g++) {
       var st = striking(M, g, t), u = mod(t - g * M.gap, M.period);
-      var ga = st ? 0 : glowAmount(M, g, t), pulse = ga > 0 ? ga * (0.30 + 0.10 * Math.sin(t * (3 + 5 * ga))) + 0.05 : 0;
+      var ga = st ? 0 : glowAmount(M, g, t); if (M.kid && ga > 0) ga = 0.2 + 0.8 * ga;   // the longer glow is visible from its first moment
+      var pulse = ga > 0 ? ga * (0.30 + 0.10 * Math.sin(t * (3 + 5 * ga))) + 0.05 : 0;
       S.spr.glow[g].setAlpha(Math.max(0, Math.min(0.5, pulse)));
       S.spr.hit[g].setAlpha(st ? Math.max(0.15, 0.75 - 0.6 * (u / M.strike)) : 0);
       if (st && !S.was[g]) {                                                 // a new strike: bolts on the stones of this group nearest her
@@ -85,7 +113,7 @@
   }
 
   D.register('storm-terrace', {
-    logic: { model: model, groupAt: groupAt, striking: striking, glowing: glowing },
+    logic: { model: model, kidScale: kidScale, groupAt: groupAt, striking: striking, glowing: glowing },
     load: function (ctx) { ready(ctx); },
     tick: function (ctx, dt) {
       if (!ready(ctx)) return;
