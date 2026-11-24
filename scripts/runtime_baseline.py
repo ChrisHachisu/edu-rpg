@@ -46,7 +46,7 @@ ACT1_OVERLAY_FILES = {
     # 2026-09-21: additive loss/retry guard. It restores the live player after
     # defeat without changing the frozen bundle and polls until its hooks exist.
     "battle-recovery.js": (
-        27497, "696df6be27a98e113ee7639098d7bcd48d448afb56da88dcb56aa6b7f7a71a89"),
+        27768, "ba954235ef4edbb52e08d48513177536cd385c8fb3fdcff375555e589a0f565e"),
     # 2026-08-03, owner: "make the game controllable with the keypad ... use the joy stick type
     # keypad on the port sapphire screen". The 4-way d-pad held exactly ONE arrow key at a time
     # (setDir released the previous), so a diagonal was impossible and a corner boundary could
@@ -193,7 +193,7 @@ ACT1_OVERLAY_FILES = {
     # bundled rather than fetched; the short version is that it never reached the phone at all.
     # Like ui-overhaul.js above, first override of this file since the baseline was frozen.
     "ui-overhaul.css": (
-        66605, "b68abb49b0f95e55596a3275c5c81d0e90ec9437a3e49053cf04acd030bd6903"),
+        70137, "dea296c7ed1ef1b66bd1077eb4bc3180eb603fc6c247b50aa104a7b891ebecdb"),
 }
 # 2026-08-06, owner-picked ("Charcoal & Gold Leaf", direction 4 of
 # design/ui-overhaul/chic-style-board.html): the chrome the theme needs on disk rather than

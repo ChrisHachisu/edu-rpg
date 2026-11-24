@@ -55,7 +55,7 @@
   function ready(ctx) {
     var S = ctx.state; if (S.ok) return true;
     var K = kit(); if (!K) return false;
-    S.K = K; S.ms = K.tickMs(ctx.mechanic.params); S.M = kidScale(model(ctx), S.ms); S.grace = 4; S.spr = null; S.was = {};
+    S.K = K; S.ms = K.tickMs(ctx.mechanic.params); S.M = kidScale(model(ctx), S.ms); S.grace = Math.max(4, Math.round(2500 / S.ms)); S.spr = null; S.was = {};   // no bolt can hurt her in the first 2.5 s on a floor (arrival, or Continue out on a terrace)
     S.tick = K.clock(ctx, 0, S.M.period, S.ms); K.quiet(ctx.scene);
     S.ok = true; return true;
   }

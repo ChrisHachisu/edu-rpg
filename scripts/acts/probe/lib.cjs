@@ -21,10 +21,17 @@ function save(o = {}) {
   if (F['boss.stormHarpy.defeated'] && !F['canyon.windCleared']) need('windbreakerStone');
   for (const [b, id] of [['swordWraith', 'excalibur'], ['celestialGuardian', 'aegisOfDawn'], ['stormSentinel', 'galeShield'], ['frostMonarch', 'crownOfWisdom']]) if (F[`boss.${b}.defeated`]) need(id);
   if (!F['boss.demonKing.defeated'] && !has('crystalOfKnowledge')) { const n = ['serpent', 'stormHarpy', 'dragon', 'sandGolem', 'flameTitan'].filter(b => F[`boss.${b}.defeated`]).length; if (n) need('shadowCrystal', n); }
+  // ...and the story quests that end by themselves with a boss (acts-runtime.js AUTO_END) are done, or they end one
+  // after another in message boxes while a probe is trying to test something else.
+  const done = completedQuests.slice(), q = id => { if (!done.includes(id) && !activeQuests.includes(id)) done.push(id); };
+  if (Object.keys(F).some(k => /^boss\..*\.defeated$/.test(k) && F[k])) {
+    for (const [b, id] of [['serpent', 'crystalCaveGate'], ['stormHarpy', 'stormPass'], ['dragon', 'shadowGate'], ['sandGolem', 'desertGate'], ['lavaWyrm', 'magmaPath'], ['flameTitan', 'volcanicGate']]) if (F[`boss.${b}.defeated`]) q(id);
+    if (['swordWraith', 'celestialGuardian', 'stormSentinel', 'frostMonarch'].every(b => F[`boss.${b}.defeated`])) q('portalRelics');
+  }
   return { version: 4, timestamp: Date.now(), player: { name: 'Probe', heroColor: 'gray', level: 50, exp: 0, expToNext: 100,
     hp: 9999, maxHp: 9999, atk: 9999, def: 9999, spd: 999,
     equipment: { weapon: null, armor: null, shield: null, helmet: null, accessory: null }, inventory, gold: 5000,
-    position: { mapId, x, y, floor }, storyFlags: { 'intro.done': true, 'acts.geo2': true, ...flags }, activeQuests, completedQuests, questProgress: {},
+    position: { mapId, x, y, floor }, storyFlags: { 'intro.done': true, 'acts.geo2': true, ...flags }, activeQuests, completedQuests: done, questProgress: {},
     timerEnabled: false, quizDifficulty: '3', locale, soundEnabled: false, masterVolume: 0, kanjiMode }, playtime: 0, quizStats: {} };
 }
 const BOSSES = ['giantToad', 'serpent', 'stormHarpy', 'phantomStag', 'dragon', 'sandWyrm', 'banditKing', 'pharaoh', 'magmaGolem',

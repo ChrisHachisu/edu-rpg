@@ -32,7 +32,7 @@ const INPAGE = fs.readFileSync(path.join(__dirname, 'inpage.js'), 'utf8');
         // wait until the game's own timer bar says THINK seconds have passed, then tap (right, wrong, right, ...)
         await page.waitForFunction(th => { const b = window.__PHASER_GAME__.scene.getScene('BattleScene'); return b.quizTimerBar && (1 - b.quizTimerBar.displayWidth / b.quizTimerBarFullWidth) * b.quizTimerSeconds >= th; }, THINK, { timeout: 30000, polling: 20 });
         const idx = await page.evaluate(wrong => { const a = window.__PHASER_GAME__.scene.getScene('BattleScene').quizQuestion.answers; return a.findIndex(x => wrong ? !x.isCorrect : !!x.isCorrect); }, k % 3 === 1); k++;
-        await tap(`[data-act="quizAns"][data-i="${idx}"]`); await page.waitForTimeout(500); }
+        for (const sel of await L.quizTaps(page, idx)) await tap(sel); await page.waitForTimeout(500); }   // keypad or the four buttons
       else { await tap('[data-act="battleAdvance"]'); await page.waitForTimeout(250); }
     }
     await page.waitForTimeout(1500);

@@ -75,8 +75,8 @@ async function fight(page, maxMs = 120000) {
     if (!s.active) { await sleep(900); return { rounds, over: s.over }; }
     const tap = async sel => { const loc = page.locator(sel).first(); const box = await loc.boundingBox().catch(() => null); if (box && box.width > 3) { await loc.tap({ timeout: 3000 }).catch(() => {}); return true; } return false; };
     if (s.phase === 'playerMenu') { await tap('[data-act="battleMenu"][data-i="0"]'); await sleep(450); }
-    else { const idx = await page.evaluate(() => { const e = document.querySelector('[data-act="quizAns"]'); if (!e || e.offsetParent === null) return -2; const b = window.__PHASER_GAME__.scene.getScene('BattleScene'); return ((b.quizQuestion && b.quizQuestion.answers) || []).findIndex(x => !!x.isCorrect); });
-      if (idx >= 0) { rounds++; await tap(`[data-act="quizAns"][data-i="${idx}"]`); await sleep(700); }
+    else { const idx = await page.evaluate(up => { const e = document.querySelector(up); if (!e || e.offsetParent === null) return -2; const b = window.__PHASER_GAME__.scene.getScene('BattleScene'); return ((b.quizQuestion && b.quizQuestion.answers) || []).findIndex(x => !!x.isCorrect); }, L.QUIZ_UP);
+      if (idx >= 0) { rounds++; for (const sel of await L.quizTaps(page, idx)) await tap(sel); await sleep(700); }   // keypad or the four buttons
       else { if (!(await tap('[data-act="battleAdvance"]'))) await page.mouse.click(195, 600).catch(() => {}); await sleep(400); } }
   }
   return { rounds, timeout: true };

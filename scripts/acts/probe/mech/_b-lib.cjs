@@ -90,6 +90,7 @@ class Run {
               for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const n = [cx + dx, cy + dy]; if (prev.has(n.join()) || B.tile(n[0], n[1]) === undefined) continue; if (!(n[0] === x && n[1] === y) && !pass(B.tile(n[0], n[1]))) continue; prev.set(n.join(), [cx, cy]); q.push(n); } }
             return null; }, [mx, my]);
           if (cells) for (let i = 1; i < cells.length; i++) path.push([cells[i][0] - cells[i - 1][0], cells[i][1] - cells[i - 1][1]]); }
+        await this.ev(() => window.__B.settle(600, 8000));   // a line left open on the isle (a save repair, a quest card) holds her
         let last = null; for (const d of path) { last = await step(d[0], d[1]); if (last[0] !== this.isle) break; await this.page.waitForTimeout(250); }
         r = { ok: !!last && last[0] === this.id, steps: path.length, last, mouth: m[0] };
       } }

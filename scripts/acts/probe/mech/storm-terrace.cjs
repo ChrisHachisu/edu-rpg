@@ -56,13 +56,13 @@ const EXTRA = `(() => { const B = window.__B, D = window.__QOK_DNG2__;
         R.rec('f2: Save -> Continue out on a terrace puts her back on her tile with the storm\'s beat where it was',
           g1.ok && rc.ok && after.floor === 2 && Math.abs(after.cx - before.cx) <= 1 && Math.abs(after.cy - before.cy) <= 1 && typeof savedClk === 'number' && Math.abs(clk0 - savedClk) <= 300 && Math.abs(savedClk / (P.mechanic.params.periodSec * 1000 / P.mechanic.params.periodTicks) - t0) < 3,
           { g1, was: [before.cx, before.cy], at: [after.cx, after.cy], savedClk, clk0, tickAtSave: t0 });
-        await R.shot('f2-resumed');
+        await R.shot('f2-resumed'); await R.dismiss();                              // the probe idles on the terrace while the page settles: a bolt there is fair, and its box is not the crossing's
       }
       const hp0 = (await R.st()).hp, n0 = await R.ev(() => window.__BM.struck());
       const run = R.ev(g => window.__BM.cross(g), lastGoal);
       const g = await R.watch(run, [{ tag: `f${f}-on-the-terrace`, when: () => window.__BM.group() >= 0 }]);
       s = await R.st(); const n1 = await R.ev(() => window.__BM.struck());
-      if (!R.rec(`f${f}: the terraces are crossed between the strikes without a hit (${P.tests.terraceTilesOnRoute} terrace tiles on the route)`, g.ok && g.why === 'arrived' && s.hp === hp0 && n1 === n0, { g, hp: [hp0, s.hp], struck: n1 - n0 })) break;
+      if (!R.rec(`f${f}: the terraces are crossed between the strikes without a hit (${P.tests.terraceTilesOnRoute} terrace tiles on the route)`, g.ok && g.why === 'arrived' && s.hp === hp0 && n1 === n0, { g, hp: [hp0, s.hp], struck: n1 - n0, said: await R.ev(() => window.__B.msgs().slice(-2)) })) break;
       await R.shot(`f${f}-across`);
       if (f < FLOORS) { if (!(await R.stairs(P.assets.find(a => a.kind === 'stairsNext'), f + 1))) break; }
       else { const b = P.assets.find(a => a.kind === 'boss'); if (await R.boss(b, f)) await R.exitByBossCell(b); }

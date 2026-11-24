@@ -84,7 +84,14 @@
         bs.menuIndex = 0; bs.confirmMenuAction(); L.rounds++; continue;
       }
       if (ph === 'playerQuiz' || ph === 'enemyQuiz') { idle = 0;
-        const T = bs.quizTimerSeconds, timed = !!(s.timerEnabled && bs.quizTimerBar && bs.quizTimerBarFullWidth), t = think(), right = rnd() < prof.p; L.q++;
+        // Keypad answers (ui-overhaul.js, on unless qok-keypad=0): she types the number, so each key costs time (prof.keypad.first
+        // for the first key, .key for every further digit and for Enter), a slip can spoil a sum she knew (.slip), and with
+        // .noGuess the one-in-four lucky pick of the four buttons is gone: p becomes (p - 0.25) / 0.75. The game's own timer is
+        // already 1.5x (quizTimerSeconds comes from the patched getTimerSeconds).
+        const kp = prof.keypad && window.__QOK_KEYPAD__ && window.__QOK_KEYPAD__.on() ? prof.keypad : null;
+        const keys = kp ? String((((bs.quizQuestion.answers.find(x => !!x.isCorrect) || {}).text || {}).en) || '0').length : 0;
+        const pEff = kp ? (kp.noGuess ? Math.max(0, (prof.p - 0.25) / 0.75) : prof.p) * (1 - (kp.slip || 0)) : prof.p;
+        const T = bs.quizTimerSeconds, timed = !!(s.timerEnabled && bs.quizTimerBar && bs.quizTimerBarFullWidth), t = think() + (kp ? kp.first + kp.key * keys : 0), right = rnd() < pEff; L.q++;
         if (timed && t >= T) { L.to++; L.sec += T + 2.8; bs.onQuizTimeout(); continue; }
         if (timed) bs.quizTimerBar.displayWidth = bs.quizTimerBarFullWidth * (1 - t / T);      // where the bundle's linear tween stands after t seconds
         const a = bs.quizQuestion.answers, good = a.findIndex(x => !!x.isCorrect), bad = a.map((x, i) => i).filter(i => i !== good);
