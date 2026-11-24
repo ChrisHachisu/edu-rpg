@@ -237,6 +237,19 @@ class Session {
         const pill = page.locator('#a1mInteract.a1m-show').first();
         if (!this._pills) this._pills = 0;
         if (this._pills < 6 && (await pill.boundingBox().catch(() => null))) { this._pills++; const txt = await pill.textContent().catch(() => ''); await pill.tap({ timeout: 3000 }).catch(() => {}); await page.waitForTimeout(1200); log.push('pill:' + txt); continue; }
+        // the solver's bump on a boss is marginal (it pushes from one side only): walk to each open side of the boss in turn,
+        // lean on it, and take the game's Battle pill if the lean alone did not start the fight
+        if (!this._sides) this._sides = {};
+        const bossAt = await this.ev(() => { const w = window.__PHASER_GAME__.scene.getScene('WorldMapScene'), md = w.mapData; for (let y = 0; y < md.length; y++) for (let x = 0; x < md[y].length; x++) if (md[y][x] === 7) return [x, y]; return null; });
+        const kS = id + f0; this._sides[kS] = this._sides[kS] || 0;
+        if (bossAt && this._sides[kS] < 2) { this._sides[kS]++; let started = false;
+          for (const [dx, dy] of [[0, 1], [1, 0], [-1, 0], [0, -1]]) {
+            const w1 = await this.ev(([x, y]) => window.__P.fineWalk(x, y, { bump: false, maxMs: 30000 }).catch(e => ({ ok: false, why: String(e).slice(0, 80) })), [bossAt[0] + dx, bossAt[1] + dy]);
+            await L.stick(page, -dx, -dy, 900); await page.waitForTimeout(300);
+            if (await pill.boundingBox().catch(() => null)) { await pill.tap({ timeout: 3000 }).catch(() => {}); await page.waitForTimeout(800); }
+            const s3 = await this.st(); log.push(`side:${dx},${dy}:${w1 && w1.why}:${s3.msg ? 'msg' : s3.scenes.includes('BattleScene') ? 'battle' : '-'}`);
+            if (s3.msg || s3.scenes.includes('BattleScene') || s3.map !== id) { started = true; break; } }
+          if (started) continue; }
         log.push('STUCK ' + JSON.stringify(r).slice(0, 400)); break; } }
     }
     const end = await this.st();
