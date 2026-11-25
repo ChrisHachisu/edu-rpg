@@ -1,0 +1,1207 @@
+{
+ "cut": "2026-11-03",
+ "seeds": {
+  "A": 11,
+  "B": 22
+ },
+ "n_test": 11,
+ "n_train": 23,
+ "model": "haiku via `claude -p --tools ''` (Agent tool unavailable to worker)",
+ "questions": {
+  "A": [
+   {
+    "qid": "Q01",
+    "row": "G24",
+    "perm": [
+     1,
+     0
+    ],
+    "q": "How many save slots per device? (A written proposal recommended 3.)",
+    "opts": [
+     "5 slots",
+     "3 slots"
+    ]
+   },
+   {
+    "qid": "Q02",
+    "row": "G27",
+    "perm": [
+     0,
+     1
+    ],
+    "q": "Dungeon crystals:",
+    "opts": [
+     "Save, heal and warp",
+     "Heal and warp only; saving is automatic at checkpoints and manual only in towns"
+    ]
+   },
+   {
+    "qid": "Q03",
+    "row": "G26",
+    "perm": [
+     0,
+     1
+    ],
+    "q": "Boss retry: what state does the fight restart in? (A written proposal recommended full HP, no gold loss.)",
+    "opts": [
+     "Full HP, no gold loss",
+     "HP and items exactly as they were when the fight began"
+    ]
+   },
+   {
+    "qid": "Q04",
+    "row": "G29",
+    "perm": [
+     1,
+     0
+    ],
+    "q": "Overworld scrolling test on device: which mode?",
+    "opts": [
+     "B: the canvas shifts by the sub-pixel scroll remainder",
+     "A: the camera steps in whole game pixels"
+    ]
+   },
+   {
+    "qid": "Q05",
+    "row": "G25",
+    "perm": [
+     1,
+     0
+    ],
+    "q": "What happens when the party is defeated?",
+    "opts": [
+     "The player wakes in the last town with full HP, keeps all items and loses half their gold",
+     "No penalty; the player reloads where they were (build 93)"
+    ]
+   },
+   {
+    "qid": "Q06",
+    "row": "G30",
+    "perm": [
+     0,
+     1,
+     2
+    ],
+    "q": "The male hero's right-facing walk frames are drawn at about 81% of the size of his left-facing frames. Fix by:",
+    "opts": [
+     "Mirroring the left-facing frames",
+     "Enlarging the existing frames 1.227x",
+     "Redrawing the frames"
+    ]
+   },
+   {
+    "qid": "Q07",
+    "row": "G28",
+    "perm": [
+     1,
+     2,
+     0
+    ],
+    "q": "Scope of the public release:",
+    "opts": [
+     "Act 1 first, later acts as updates",
+     "All five acts, keeping the old Acts 2-5 layouts",
+     "All five acts with the new rebuilt worlds"
+    ]
+   },
+   {
+    "qid": "Q08",
+    "row": "G33",
+    "perm": [
+     1,
+     0
+    ],
+    "q": "Ending screen styling, same layout A and same text:",
+    "opts": [
+     "Restyled: gold sunburst rays behind the hero, three stars, gold title, confetti and twinkles",
+     "The first build: plain style"
+    ]
+   },
+   {
+    "qid": "Q09",
+    "row": "G34",
+    "perm": [
+     1,
+     0
+    ],
+    "q": "Overworld walking, builds compared on device:",
+    "opts": [
+     "Build 96: no pause over 100 ms on the standard routes",
+     "Build 95: brief pauses while walking"
+    ]
+   },
+   {
+    "qid": "Q10",
+    "row": "G32",
+    "perm": [
+     1,
+     0
+    ],
+    "q": "Ending screen layout:",
+    "opts": [
+     "B: two steps, a celebration screen and then a results screen",
+     "A: one screen with title, hero, one line, a small results line and two buttons"
+    ]
+   },
+   {
+    "qid": "Q11",
+    "row": "G31",
+    "perm": [
+     0,
+     1
+    ],
+    "q": "Hero collision against obstacle edges on the overworld: which behaviour?",
+    "opts": [
+     "Build 93: a 50x11 px bar at the feet; in the test, 51% of pushes into edges were dead stops",
+     "Build 94: a 9 px disc at the feet plus gliding along edges; in the same test, 26% were dead stops"
+    ]
+   }
+  ],
+  "B": [
+   {
+    "qid": "Q01",
+    "row": "G26",
+    "perm": [
+     1,
+     0
+    ],
+    "q": "Boss retry: what state does the fight restart in? (A written proposal recommended full HP, no gold loss.)",
+    "opts": [
+     "HP and items exactly as they were when the fight began",
+     "Full HP, no gold loss"
+    ]
+   },
+   {
+    "qid": "Q02",
+    "row": "G27",
+    "perm": [
+     1,
+     0
+    ],
+    "q": "Dungeon crystals:",
+    "opts": [
+     "Heal and warp only; saving is automatic at checkpoints and manual only in towns",
+     "Save, heal and warp"
+    ]
+   },
+   {
+    "qid": "Q03",
+    "row": "G24",
+    "perm": [
+     0,
+     1
+    ],
+    "q": "How many save slots per device? (A written proposal recommended 3.)",
+    "opts": [
+     "3 slots",
+     "5 slots"
+    ]
+   },
+   {
+    "qid": "Q04",
+    "row": "G31",
+    "perm": [
+     1,
+     0
+    ],
+    "q": "Hero collision against obstacle edges on the overworld: which behaviour?",
+    "opts": [
+     "Build 94: a 9 px disc at the feet plus gliding along edges; in the same test, 26% were dead stops",
+     "Build 93: a 50x11 px bar at the feet; in the test, 51% of pushes into edges were dead stops"
+    ]
+   },
+   {
+    "qid": "Q05",
+    "row": "G25",
+    "perm": [
+     0,
+     1
+    ],
+    "q": "What happens when the party is defeated?",
+    "opts": [
+     "No penalty; the player reloads where they were (build 93)",
+     "The player wakes in the last town with full HP, keeps all items and loses half their gold"
+    ]
+   },
+   {
+    "qid": "Q06",
+    "row": "G29",
+    "perm": [
+     0,
+     1
+    ],
+    "q": "Overworld scrolling test on device: which mode?",
+    "opts": [
+     "A: the camera steps in whole game pixels",
+     "B: the canvas shifts by the sub-pixel scroll remainder"
+    ]
+   },
+   {
+    "qid": "Q07",
+    "row": "G32",
+    "perm": [
+     0,
+     1
+    ],
+    "q": "Ending screen layout:",
+    "opts": [
+     "A: one screen with title, hero, one line, a small results line and two buttons",
+     "B: two steps, a celebration screen and then a results screen"
+    ]
+   },
+   {
+    "qid": "Q08",
+    "row": "G34",
+    "perm": [
+     0,
+     1
+    ],
+    "q": "Overworld walking, builds compared on device:",
+    "opts": [
+     "Build 95: brief pauses while walking",
+     "Build 96: no pause over 100 ms on the standard routes"
+    ]
+   },
+   {
+    "qid": "Q09",
+    "row": "G28",
+    "perm": [
+     0,
+     2,
+     1
+    ],
+    "q": "Scope of the public release:",
+    "opts": [
+     "All five acts with the new rebuilt worlds",
+     "All five acts, keeping the old Acts 2-5 layouts",
+     "Act 1 first, later acts as updates"
+    ]
+   },
+   {
+    "qid": "Q10",
+    "row": "G33",
+    "perm": [
+     0,
+     1
+    ],
+    "q": "Ending screen styling, same layout A and same text:",
+    "opts": [
+     "The first build: plain style",
+     "Restyled: gold sunburst rays behind the hero, three stars, gold title, confetti and twinkles"
+    ]
+   },
+   {
+    "qid": "Q11",
+    "row": "G30",
+    "perm": [
+     2,
+     1,
+     0
+    ],
+    "q": "The male hero's right-facing walk frames are drawn at about 81% of the size of his left-facing frames. Fix by:",
+    "opts": [
+     "Redrawing the frames",
+     "Enlarging the existing frames 1.227x",
+     "Mirroring the left-facing frames"
+    ]
+   }
+  ]
+ },
+ "runs": [
+  {
+   "predictor": "a_none",
+   "order": "A",
+   "raw": "{\"qid\":\"Q01\",\"pick\":\"A\",\"confidence\":0.95}\n{\"qid\":\"Q02\",\"pick\":\"B\",\"confidence\":0.9}\n{\"qid\":\"Q03\",\"pick\":\"B\",\"confidence\":0.9}\n{\"qid\":\"Q04\",\"pick\":\"A\",\"confidence\":0.6}\n{\"qid\":\"Q05\",\"pick\":\"A\",\"confidence\":0.85}\n{\"qid\":\"Q06\",\"pick\":\"A\",\"confidence\":0.4}\n{\"qid\":\"Q07\",\"pick\":\"C\",\"confidence\":0.9}\n{\"qid\":\"Q08\",\"pick\":\"A\",\"confidence\":0.6}\n{\"qid\":\"Q09\",\"pick\":\"A\",\"confidence\":0.7}\n{\"qid\":\"Q10\",\"pick\":\"B\",\"confidence\":0.5}\n{\"qid\":\"Q11\",\"pick\":\"B\",\"confidence\":0.8}\n",
+   "preds": {
+    "Q01": [
+     "A",
+     0.95
+    ],
+    "Q02": [
+     "B",
+     0.9
+    ],
+    "Q03": [
+     "B",
+     0.9
+    ],
+    "Q04": [
+     "A",
+     0.6
+    ],
+    "Q05": [
+     "A",
+     0.85
+    ],
+    "Q06": [
+     "A",
+     0.4
+    ],
+    "Q07": [
+     "C",
+     0.9
+    ],
+    "Q08": [
+     "A",
+     0.6
+    ],
+    "Q09": [
+     "A",
+     0.7
+    ],
+    "Q10": [
+     "B",
+     0.5
+    ],
+    "Q11": [
+     "B",
+     0.8
+    ]
+   },
+   "scored": [
+    {
+     "row": "G24",
+     "qid": "Q01",
+     "pick_letter": "A",
+     "pick_option": 1,
+     "correct": true,
+     "conf": 0.95
+    },
+    {
+     "row": "G27",
+     "qid": "Q02",
+     "pick_letter": "B",
+     "pick_option": 1,
+     "correct": true,
+     "conf": 0.9
+    },
+    {
+     "row": "G26",
+     "qid": "Q03",
+     "pick_letter": "B",
+     "pick_option": 1,
+     "correct": true,
+     "conf": 0.9
+    },
+    {
+     "row": "G29",
+     "qid": "Q04",
+     "pick_letter": "A",
+     "pick_option": 1,
+     "correct": false,
+     "conf": 0.6
+    },
+    {
+     "row": "G25",
+     "qid": "Q05",
+     "pick_letter": "A",
+     "pick_option": 1,
+     "correct": true,
+     "conf": 0.85
+    },
+    {
+     "row": "G30",
+     "qid": "Q06",
+     "pick_letter": "A",
+     "pick_option": 0,
+     "correct": false,
+     "conf": 0.4
+    },
+    {
+     "row": "G28",
+     "qid": "Q07",
+     "pick_letter": "C",
+     "pick_option": 0,
+     "correct": true,
+     "conf": 0.9
+    },
+    {
+     "row": "G33",
+     "qid": "Q08",
+     "pick_letter": "A",
+     "pick_option": 1,
+     "correct": true,
+     "conf": 0.6
+    },
+    {
+     "row": "G34",
+     "qid": "Q09",
+     "pick_letter": "A",
+     "pick_option": 1,
+     "correct": true,
+     "conf": 0.7
+    },
+    {
+     "row": "G32",
+     "qid": "Q10",
+     "pick_letter": "B",
+     "pick_option": 0,
+     "correct": true,
+     "conf": 0.5
+    },
+    {
+     "row": "G31",
+     "qid": "Q11",
+     "pick_letter": "B",
+     "pick_option": 1,
+     "correct": true,
+     "conf": 0.8
+    }
+   ]
+  },
+  {
+   "predictor": "a_none",
+   "order": "B",
+   "raw": "{\"qid\":\"Q01\",\"pick\":\"A\",\"confidence\":0.9}\n{\"qid\":\"Q02\",\"pick\":\"A\",\"confidence\":0.85}\n{\"qid\":\"Q03\",\"pick\":\"B\",\"confidence\":0.8}\n{\"qid\":\"Q04\",\"pick\":\"A\",\"confidence\":0.6}\n{\"qid\":\"Q05\",\"pick\":\"B\",\"confidence\":0.85}\n{\"qid\":\"Q06\",\"pick\":\"B\",\"confidence\":0.5}\n{\"qid\":\"Q07\",\"pick\":\"A\",\"confidence\":0.45}\n{\"qid\":\"Q08\",\"pick\":\"B\",\"confidence\":0.7}\n{\"qid\":\"Q09\",\"pick\":\"A\",\"confidence\":0.9}\n{\"qid\":\"Q10\",\"pick\":\"B\",\"confidence\":0.5}\n{\"qid\":\"Q11\",\"pick\":\"A\",\"confidence\":0.5}\n",
+   "preds": {
+    "Q01": [
+     "A",
+     0.9
+    ],
+    "Q02": [
+     "A",
+     0.85
+    ],
+    "Q03": [
+     "B",
+     0.8
+    ],
+    "Q04": [
+     "A",
+     0.6
+    ],
+    "Q05": [
+     "B",
+     0.85
+    ],
+    "Q06": [
+     "B",
+     0.5
+    ],
+    "Q07": [
+     "A",
+     0.45
+    ],
+    "Q08": [
+     "B",
+     0.7
+    ],
+    "Q09": [
+     "A",
+     0.9
+    ],
+    "Q10": [
+     "B",
+     0.5
+    ],
+    "Q11": [
+     "A",
+     0.5
+    ]
+   },
+   "scored": [
+    {
+     "row": "G26",
+     "qid": "Q01",
+     "pick_letter": "A",
+     "pick_option": 1,
+     "correct": true,
+     "conf": 0.9
+    },
+    {
+     "row": "G27",
+     "qid": "Q02",
+     "pick_letter": "A",
+     "pick_option": 1,
+     "correct": true,
+     "conf": 0.85
+    },
+    {
+     "row": "G24",
+     "qid": "Q03",
+     "pick_letter": "B",
+     "pick_option": 1,
+     "correct": true,
+     "conf": 0.8
+    },
+    {
+     "row": "G31",
+     "qid": "Q04",
+     "pick_letter": "A",
+     "pick_option": 1,
+     "correct": true,
+     "conf": 0.6
+    },
+    {
+     "row": "G25",
+     "qid": "Q05",
+     "pick_letter": "B",
+     "pick_option": 1,
+     "correct": true,
+     "conf": 0.85
+    },
+    {
+     "row": "G29",
+     "qid": "Q06",
+     "pick_letter": "B",
+     "pick_option": 1,
+     "correct": false,
+     "conf": 0.5
+    },
+    {
+     "row": "G32",
+     "qid": "Q07",
+     "pick_letter": "A",
+     "pick_option": 0,
+     "correct": true,
+     "conf": 0.45
+    },
+    {
+     "row": "G34",
+     "qid": "Q08",
+     "pick_letter": "B",
+     "pick_option": 1,
+     "correct": true,
+     "conf": 0.7
+    },
+    {
+     "row": "G28",
+     "qid": "Q09",
+     "pick_letter": "A",
+     "pick_option": 0,
+     "correct": true,
+     "conf": 0.9
+    },
+    {
+     "row": "G33",
+     "qid": "Q10",
+     "pick_letter": "B",
+     "pick_option": 1,
+     "correct": true,
+     "conf": 0.5
+    },
+    {
+     "row": "G30",
+     "qid": "Q11",
+     "pick_letter": "A",
+     "pick_option": 2,
+     "correct": true,
+     "conf": 0.5
+    }
+   ]
+  },
+  {
+   "predictor": "b_train",
+   "order": "A",
+   "raw": "{\"qid\":\"Q01\",\"pick\":\"A\",\"confidence\":0.95}\n{\"qid\":\"Q02\",\"pick\":\"B\",\"confidence\":0.85}\n{\"qid\":\"Q03\",\"pick\":\"B\",\"confidence\":0.9}\n{\"qid\":\"Q04\",\"pick\":\"B\",\"confidence\":0.8}\n{\"qid\":\"Q05\",\"pick\":\"A\",\"confidence\":0.9}\n{\"qid\":\"Q06\",\"pick\":\"C\",\"confidence\":0.8}\n{\"qid\":\"Q07\",\"pick\":\"C\",\"confidence\":0.8}\n{\"qid\":\"Q08\",\"pick\":\"A\",\"confidence\":0.85}\n{\"qid\":\"Q09\",\"pick\":\"A\",\"confidence\":0.9}\n{\"qid\":\"Q10\",\"pick\":\"B\",\"confidence\":0.8}\n{\"qid\":\"Q11\",\"pick\":\"B\",\"confidence\":0.9}\n",
+   "preds": {
+    "Q01": [
+     "A",
+     0.95
+    ],
+    "Q02": [
+     "B",
+     0.85
+    ],
+    "Q03": [
+     "B",
+     0.9
+    ],
+    "Q04": [
+     "B",
+     0.8
+    ],
+    "Q05": [
+     "A",
+     0.9
+    ],
+    "Q06": [
+     "C",
+     0.8
+    ],
+    "Q07": [
+     "C",
+     0.8
+    ],
+    "Q08": [
+     "A",
+     0.85
+    ],
+    "Q09": [
+     "A",
+     0.9
+    ],
+    "Q10": [
+     "B",
+     0.8
+    ],
+    "Q11": [
+     "B",
+     0.9
+    ]
+   },
+   "scored": [
+    {
+     "row": "G24",
+     "qid": "Q01",
+     "pick_letter": "A",
+     "pick_option": 1,
+     "correct": true,
+     "conf": 0.95
+    },
+    {
+     "row": "G27",
+     "qid": "Q02",
+     "pick_letter": "B",
+     "pick_option": 1,
+     "correct": true,
+     "conf": 0.85
+    },
+    {
+     "row": "G26",
+     "qid": "Q03",
+     "pick_letter": "B",
+     "pick_option": 1,
+     "correct": true,
+     "conf": 0.9
+    },
+    {
+     "row": "G29",
+     "qid": "Q04",
+     "pick_letter": "B",
+     "pick_option": 0,
+     "correct": true,
+     "conf": 0.8
+    },
+    {
+     "row": "G25",
+     "qid": "Q05",
+     "pick_letter": "A",
+     "pick_option": 1,
+     "correct": true,
+     "conf": 0.9
+    },
+    {
+     "row": "G30",
+     "qid": "Q06",
+     "pick_letter": "C",
+     "pick_option": 2,
+     "correct": true,
+     "conf": 0.8
+    },
+    {
+     "row": "G28",
+     "qid": "Q07",
+     "pick_letter": "C",
+     "pick_option": 0,
+     "correct": true,
+     "conf": 0.8
+    },
+    {
+     "row": "G33",
+     "qid": "Q08",
+     "pick_letter": "A",
+     "pick_option": 1,
+     "correct": true,
+     "conf": 0.85
+    },
+    {
+     "row": "G34",
+     "qid": "Q09",
+     "pick_letter": "A",
+     "pick_option": 1,
+     "correct": true,
+     "conf": 0.9
+    },
+    {
+     "row": "G32",
+     "qid": "Q10",
+     "pick_letter": "B",
+     "pick_option": 0,
+     "correct": true,
+     "conf": 0.8
+    },
+    {
+     "row": "G31",
+     "qid": "Q11",
+     "pick_letter": "B",
+     "pick_option": 1,
+     "correct": true,
+     "conf": 0.9
+    }
+   ]
+  },
+  {
+   "predictor": "b_train",
+   "order": "B",
+   "raw": "{\"qid\":\"Q01\",\"pick\":\"A\",\"confidence\":0.95}\n{\"qid\":\"Q02\",\"pick\":\"A\",\"confidence\":0.95}\n{\"qid\":\"Q03\",\"pick\":\"B\",\"confidence\":0.95}\n{\"qid\":\"Q04\",\"pick\":\"A\",\"confidence\":0.75}\n{\"qid\":\"Q05\",\"pick\":\"B\",\"confidence\":0.9}\n{\"qid\":\"Q06\",\"pick\":\"A\",\"confidence\":0.8}\n{\"qid\":\"Q07\",\"pick\":\"A\",\"confidence\":0.7}\n{\"qid\":\"Q08\",\"pick\":\"B\",\"confidence\":0.9}\n{\"qid\":\"Q09\",\"pick\":\"A\",\"confidence\":0.9}\n{\"qid\":\"Q10\",\"pick\":\"B\",\"confidence\":0.6}\n{\"qid\":\"Q11\",\"pick\":\"A\",\"confidence\":0.8}\n",
+   "preds": {
+    "Q01": [
+     "A",
+     0.95
+    ],
+    "Q02": [
+     "A",
+     0.95
+    ],
+    "Q03": [
+     "B",
+     0.95
+    ],
+    "Q04": [
+     "A",
+     0.75
+    ],
+    "Q05": [
+     "B",
+     0.9
+    ],
+    "Q06": [
+     "A",
+     0.8
+    ],
+    "Q07": [
+     "A",
+     0.7
+    ],
+    "Q08": [
+     "B",
+     0.9
+    ],
+    "Q09": [
+     "A",
+     0.9
+    ],
+    "Q10": [
+     "B",
+     0.6
+    ],
+    "Q11": [
+     "A",
+     0.8
+    ]
+   },
+   "scored": [
+    {
+     "row": "G26",
+     "qid": "Q01",
+     "pick_letter": "A",
+     "pick_option": 1,
+     "correct": true,
+     "conf": 0.95
+    },
+    {
+     "row": "G27",
+     "qid": "Q02",
+     "pick_letter": "A",
+     "pick_option": 1,
+     "correct": true,
+     "conf": 0.95
+    },
+    {
+     "row": "G24",
+     "qid": "Q03",
+     "pick_letter": "B",
+     "pick_option": 1,
+     "correct": true,
+     "conf": 0.95
+    },
+    {
+     "row": "G31",
+     "qid": "Q04",
+     "pick_letter": "A",
+     "pick_option": 1,
+     "correct": true,
+     "conf": 0.75
+    },
+    {
+     "row": "G25",
+     "qid": "Q05",
+     "pick_letter": "B",
+     "pick_option": 1,
+     "correct": true,
+     "conf": 0.9
+    },
+    {
+     "row": "G29",
+     "qid": "Q06",
+     "pick_letter": "A",
+     "pick_option": 0,
+     "correct": true,
+     "conf": 0.8
+    },
+    {
+     "row": "G32",
+     "qid": "Q07",
+     "pick_letter": "A",
+     "pick_option": 0,
+     "correct": true,
+     "conf": 0.7
+    },
+    {
+     "row": "G34",
+     "qid": "Q08",
+     "pick_letter": "B",
+     "pick_option": 1,
+     "correct": true,
+     "conf": 0.9
+    },
+    {
+     "row": "G28",
+     "qid": "Q09",
+     "pick_letter": "A",
+     "pick_option": 0,
+     "correct": true,
+     "conf": 0.9
+    },
+    {
+     "row": "G33",
+     "qid": "Q10",
+     "pick_letter": "B",
+     "pick_option": 1,
+     "correct": true,
+     "conf": 0.6
+    },
+    {
+     "row": "G30",
+     "qid": "Q11",
+     "pick_letter": "A",
+     "pick_option": 2,
+     "correct": true,
+     "conf": 0.8
+    }
+   ]
+  },
+  {
+   "predictor": "c_full",
+   "order": "A",
+   "raw": "{\"qid\":\"Q01\",\"pick\":\"A\",\"confidence\":0.95}\n{\"qid\":\"Q02\",\"pick\":\"B\",\"confidence\":0.9}\n{\"qid\":\"Q03\",\"pick\":\"B\",\"confidence\":0.9}\n{\"qid\":\"Q04\",\"pick\":\"B\",\"confidence\":0.9}\n{\"qid\":\"Q05\",\"pick\":\"A\",\"confidence\":0.9}\n{\"qid\":\"Q06\",\"pick\":\"C\",\"confidence\":0.95}\n{\"qid\":\"Q07\",\"pick\":\"C\",\"confidence\":0.9}\n{\"qid\":\"Q08\",\"pick\":\"A\",\"confidence\":0.85}\n{\"qid\":\"Q09\",\"pick\":\"A\",\"confidence\":0.9}\n{\"qid\":\"Q10\",\"pick\":\"B\",\"confidence\":0.85}\n{\"qid\":\"Q11\",\"pick\":\"B\",\"confidence\":0.9}\n",
+   "preds": {
+    "Q01": [
+     "A",
+     0.95
+    ],
+    "Q02": [
+     "B",
+     0.9
+    ],
+    "Q03": [
+     "B",
+     0.9
+    ],
+    "Q04": [
+     "B",
+     0.9
+    ],
+    "Q05": [
+     "A",
+     0.9
+    ],
+    "Q06": [
+     "C",
+     0.95
+    ],
+    "Q07": [
+     "C",
+     0.9
+    ],
+    "Q08": [
+     "A",
+     0.85
+    ],
+    "Q09": [
+     "A",
+     0.9
+    ],
+    "Q10": [
+     "B",
+     0.85
+    ],
+    "Q11": [
+     "B",
+     0.9
+    ]
+   },
+   "scored": [
+    {
+     "row": "G24",
+     "qid": "Q01",
+     "pick_letter": "A",
+     "pick_option": 1,
+     "correct": true,
+     "conf": 0.95
+    },
+    {
+     "row": "G27",
+     "qid": "Q02",
+     "pick_letter": "B",
+     "pick_option": 1,
+     "correct": true,
+     "conf": 0.9
+    },
+    {
+     "row": "G26",
+     "qid": "Q03",
+     "pick_letter": "B",
+     "pick_option": 1,
+     "correct": true,
+     "conf": 0.9
+    },
+    {
+     "row": "G29",
+     "qid": "Q04",
+     "pick_letter": "B",
+     "pick_option": 0,
+     "correct": true,
+     "conf": 0.9
+    },
+    {
+     "row": "G25",
+     "qid": "Q05",
+     "pick_letter": "A",
+     "pick_option": 1,
+     "correct": true,
+     "conf": 0.9
+    },
+    {
+     "row": "G30",
+     "qid": "Q06",
+     "pick_letter": "C",
+     "pick_option": 2,
+     "correct": true,
+     "conf": 0.95
+    },
+    {
+     "row": "G28",
+     "qid": "Q07",
+     "pick_letter": "C",
+     "pick_option": 0,
+     "correct": true,
+     "conf": 0.9
+    },
+    {
+     "row": "G33",
+     "qid": "Q08",
+     "pick_letter": "A",
+     "pick_option": 1,
+     "correct": true,
+     "conf": 0.85
+    },
+    {
+     "row": "G34",
+     "qid": "Q09",
+     "pick_letter": "A",
+     "pick_option": 1,
+     "correct": true,
+     "conf": 0.9
+    },
+    {
+     "row": "G32",
+     "qid": "Q10",
+     "pick_letter": "B",
+     "pick_option": 0,
+     "correct": true,
+     "conf": 0.85
+    },
+    {
+     "row": "G31",
+     "qid": "Q11",
+     "pick_letter": "B",
+     "pick_option": 1,
+     "correct": true,
+     "conf": 0.9
+    }
+   ]
+  },
+  {
+   "predictor": "c_full",
+   "order": "B",
+   "raw": "{\"qid\":\"Q01\",\"pick\":\"A\",\"confidence\":0.95}\n{\"qid\":\"Q02\",\"pick\":\"A\",\"confidence\":0.95}\n{\"qid\":\"Q03\",\"pick\":\"B\",\"confidence\":0.97}\n{\"qid\":\"Q04\",\"pick\":\"A\",\"confidence\":0.85}\n{\"qid\":\"Q05\",\"pick\":\"B\",\"confidence\":0.95}\n{\"qid\":\"Q06\",\"pick\":\"A\",\"confidence\":0.95}\n{\"qid\":\"Q07\",\"pick\":\"A\",\"confidence\":0.92}\n{\"qid\":\"Q08\",\"pick\":\"B\",\"confidence\":0.95}\n{\"qid\":\"Q09\",\"pick\":\"A\",\"confidence\":0.97}\n{\"qid\":\"Q10\",\"pick\":\"B\",\"confidence\":0.8}\n{\"qid\":\"Q11\",\"pick\":\"A\",\"confidence\":0.95}\n",
+   "preds": {
+    "Q01": [
+     "A",
+     0.95
+    ],
+    "Q02": [
+     "A",
+     0.95
+    ],
+    "Q03": [
+     "B",
+     0.97
+    ],
+    "Q04": [
+     "A",
+     0.85
+    ],
+    "Q05": [
+     "B",
+     0.95
+    ],
+    "Q06": [
+     "A",
+     0.95
+    ],
+    "Q07": [
+     "A",
+     0.92
+    ],
+    "Q08": [
+     "B",
+     0.95
+    ],
+    "Q09": [
+     "A",
+     0.97
+    ],
+    "Q10": [
+     "B",
+     0.8
+    ],
+    "Q11": [
+     "A",
+     0.95
+    ]
+   },
+   "scored": [
+    {
+     "row": "G26",
+     "qid": "Q01",
+     "pick_letter": "A",
+     "pick_option": 1,
+     "correct": true,
+     "conf": 0.95
+    },
+    {
+     "row": "G27",
+     "qid": "Q02",
+     "pick_letter": "A",
+     "pick_option": 1,
+     "correct": true,
+     "conf": 0.95
+    },
+    {
+     "row": "G24",
+     "qid": "Q03",
+     "pick_letter": "B",
+     "pick_option": 1,
+     "correct": true,
+     "conf": 0.97
+    },
+    {
+     "row": "G31",
+     "qid": "Q04",
+     "pick_letter": "A",
+     "pick_option": 1,
+     "correct": true,
+     "conf": 0.85
+    },
+    {
+     "row": "G25",
+     "qid": "Q05",
+     "pick_letter": "B",
+     "pick_option": 1,
+     "correct": true,
+     "conf": 0.95
+    },
+    {
+     "row": "G29",
+     "qid": "Q06",
+     "pick_letter": "A",
+     "pick_option": 0,
+     "correct": true,
+     "conf": 0.95
+    },
+    {
+     "row": "G32",
+     "qid": "Q07",
+     "pick_letter": "A",
+     "pick_option": 0,
+     "correct": true,
+     "conf": 0.92
+    },
+    {
+     "row": "G34",
+     "qid": "Q08",
+     "pick_letter": "B",
+     "pick_option": 1,
+     "correct": true,
+     "conf": 0.95
+    },
+    {
+     "row": "G28",
+     "qid": "Q09",
+     "pick_letter": "A",
+     "pick_option": 0,
+     "correct": true,
+     "conf": 0.97
+    },
+    {
+     "row": "G33",
+     "qid": "Q10",
+     "pick_letter": "B",
+     "pick_option": 1,
+     "correct": true,
+     "conf": 0.8
+    },
+    {
+     "row": "G30",
+     "qid": "Q11",
+     "pick_letter": "A",
+     "pick_option": 2,
+     "correct": true,
+     "conf": 0.95
+    }
+   ]
+  }
+ ],
+ "summary": {
+  "cut": "2026-11-03",
+  "usable_total": 34,
+  "usable_train": 23,
+  "usable_test": 11,
+  "unusable": 19,
+  "usable_by_area": {
+   "overworld-art": 12,
+   "dungeon-mechanic": 7,
+   "screens": 4,
+   "towns": 3,
+   "puzzle-feel": 3,
+   "dungeon-layout": 2,
+   "difficulty": 2,
+   "direction": 1
+  },
+  "heldout_by_area": {
+   "screens": 4,
+   "puzzle-feel": 3,
+   "difficulty": 2,
+   "direction": 1,
+   "overworld-art": 1
+  },
+  "accuracy_all_heldout_runs": {
+   "a_none": "19/22",
+   "b_train": "22/22",
+   "c_full_upper_bound": "22/22"
+  },
+  "accuracy_all_heldout_rows_run_A": {
+   "a_none": "9/11",
+   "b_train": "11/11",
+   "c_full": "11/11"
+  },
+  "accuracy_all_heldout_rows_run_B": {
+   "a_none": "10/11",
+   "b_train": "11/11",
+   "c_full": "11/11"
+  },
+  "hard_rows_no_guide_wrong_or_split": [
+   "G29",
+   "G30"
+  ],
+  "accuracy_hard_rows_runs": {
+   "a_none": "1/4",
+   "b_train": "4/4",
+   "c_full": "4/4"
+  },
+  "note": "n=11 held-out rows, 2 hard rows; the lift is within noise. No area has 10+ held-out answers."
+ }
+}

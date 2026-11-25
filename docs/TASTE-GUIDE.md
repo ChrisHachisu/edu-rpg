@@ -2,7 +2,7 @@
 
 Purpose: let an agent predict the owner's call on look and feel before asking him.
 Source: his recorded rulings, 2026-08 to 2026-11 (project memory, review threads, artifact comments).
-Status: v1, written from the record. A first backtest (docs/taste/backtest-2026-11-23.json) scored 30/30, but a predictor with no guide scored 29/30 on the same cases, so the test leaks and proves nothing. A valid backtest is still owed. Images (approved / rejected pairs) still to be attached per rule.
+Status: v1, written from the record. Valid backtest 2026-11-26 (docs/taste/BACKTEST.md): 34 usable recorded decisions, cut 2026-11-03, 11 held out. Time-split guide 22/22, no guide 19/22, full guide 22/22 (upper bound); only 2 rows separate them, so the lift is within noise and no area has 10 held-out answers yet. Nothing graduates. Images (approved / rejected pairs) still to be attached per rule.
 
 How to use it
 - A change that a rule here covers: do it, and log it for the weekly packet under "decided for you" with before/after images.
@@ -96,6 +96,8 @@ One row per recorded decision, kept in `docs/taste/decisions.jsonl` (to be fille
 ## 6. Predict, then check
 
 For every question sent to Chris, append to `docs/taste/predictions.jsonl` BEFORE he answers: `{date, area, question, options[], predicted, confidence, rule}`; add `chosen` when he answers. Areas: overworld-art, towns, dungeon-layout, dungeon-mechanic, screens, puzzle-feel, difficulty, audio. An area graduates (its calls go to "decided for you" instead of questions) at 85% agreement over at least 10 answers. A veto sends it back. Every miss becomes a rule or an example here.
+
+Backtest status (2026-11-26): the recorded history is exhausted as a test (no more rows with a real alternative), and a guide-less predictor already scores 86% on it. Graduation therefore has to come from live predictions logged here. Held-out counts today: screens 4, puzzle-feel 3, difficulty 2, overworld-art 1, every other area 0; an area needs 10 answers at 85% or better, so no area graduates yet. Prefer questions where both options are live, not old-versus-new, and do not put the proposal's recommendation in the question.
 
 ## 7. Thin spots (no rulings yet)
 
