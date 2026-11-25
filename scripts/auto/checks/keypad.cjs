@@ -13,6 +13,7 @@
 //   k10 the ± key shows for grade 6 only, and a negative answer can be entered
 //   k11 localStorage qok-keypad=0 restores the four choice buttons
 //   k12 the critical-hit window is 1.5x too (4.5 s; the frozen 3 s with the switch off)
+//   k13 the typed answer sits on its own line above the result text
 //
 //   NODE_PATH=/opt/node-tools/node_modules PROBE_URL=http://127.0.0.1:5502/ node scripts/auto/checks/keypad.cjs [group ...]
 // groups: flow g6 g1 off. UI_SHOTS=<dir> writes JPEG screenshots.
@@ -90,7 +91,15 @@ async function flow(page) {
   const asked0 = await page.evaluate(() => window.__GAME_STATE__.quizManager.getStats());
   await typeTaps(page, s.right);
   const typed = (await st(page)).disp;
-  await tap(page, '[data-act="kpKey"][data-k="go"]', 2000); await page.waitForTimeout(250);
+  await tap(page, '[data-act="kpKey"][data-k="go"]', 2000);
+  // k13 the typed answer sits on its own line above "Correct!" (build 99 showed "4Correct!")
+  const lay = await page.evaluate(async () => { const t0 = performance.now(); let el = null;
+    while (performance.now() - t0 < 1500 && !(el = document.querySelector('#qok-ui .msg .kpres'))) await new Promise(r => setTimeout(r, 30));
+    if (!el) return null; const m = el.parentElement, tn = [...m.childNodes].filter(n => n.nodeType === 3 && n.textContent.trim())[0]; if (!tn) return { text: null };
+    const r = document.createRange(); r.selectNodeContents(tn); const a = el.getBoundingClientRect(), b = r.getBoundingClientRect();
+    return { typed: el.textContent, text: tn.textContent, kpBottom: Math.round(a.bottom), textTop: Math.round(b.top), dx: Math.round(Math.abs((a.left + a.right) / 2 - (b.left + b.right) / 2)) }; });
+  rec('k13 the typed answer is on its own line above the result text', !!lay && !!lay.text && lay.kpBottom <= lay.textTop + 1 && lay.dx <= 4, lay);
+  await page.waitForTimeout(250);
   const asked1 = await page.evaluate(() => window.__GAME_STATE__.quizManager.getStats());
   rec('k3 typing the right answer + Attack counts as correct', typed === s.right && asked1.totalCorrect === asked0.totalCorrect + 1 && asked1.totalAsked === asked0.totalAsked + 1, { right: s.right, typed, asked0, asked1 });
   // k4 enemy quiz
@@ -125,14 +134,15 @@ async function flow(page) {
 async function g6(page) {
   if (!(await start(page, '6'))) return;
   let s = await until(page, ['playerQuiz']);
-  let tries = 0;
+  let tries = 0, seen6 = 0, bad6 = 0;                                   // a grade 6 hero also meets grade 5 questions: judge only the grade 6 ones
+  const look = async () => { if (s.grade === '6' && (s.phase === 'playerQuiz' || s.phase === 'enemyQuiz')) { seen6++; if (!(await page.evaluate(() => !!document.querySelector('[data-k="pm"]')))) bad6++; } };
   while ((s.phase === 'playerQuiz' || s.phase === 'enemyQuiz') && !s.right.startsWith('-') && tries++ < 12) {
-    if (s.grade === '6') { const pm = await page.evaluate(() => !!document.querySelector('[data-k="pm"]')); if (!pm) break; }
+    await look(); if (bad6) break;
     for (const sel of await U.quizTaps(page, 0)) await tap(page, sel, 2000);
     await page.waitForTimeout(1300); s = await until(page, ['playerQuiz', 'enemyQuiz']);
   }
-  const pm6 = await page.evaluate(() => !!document.querySelector('[data-k="pm"]'));
-  rec('k10 grade 6 shows the ± key', s.grade === '6' && pm6, { grade: s.grade, pm6 });
+  await look();
+  rec('k10 grade 6 shows the ± key', seen6 > 0 && bad6 === 0, { grade6Questions: seen6, withoutKey: bad6, last: s.grade });
   if (s.right && s.right.startsWith('-')) {
     const c0 = await page.evaluate(() => window.__GAME_STATE__.quizManager.getStats());
     await typeTaps(page, s.right); const d = (await st(page)).disp;

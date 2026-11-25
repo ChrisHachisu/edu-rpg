@@ -2409,7 +2409,7 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
           _kpLine = _ok ? '<div class="kpres"><span class="kpgood">' + esc(_kp.typed) + '</span></div>'
             : '<div class="kpres"><span class="kpbad">' + esc(_kp.typed) + '</span><span class="kparrow">→</span><span class="kpgood">' + esc(kpRight(bs.quizQuestion)) + '</span></div>';
         }
-        content = '<div class="msg" style="text-align:center;font-weight:900;color:' + (_ok ? '#5fd089' : '#ef6a60') + ';">' + _kpLine + esc(Z(_ok ? 'quiz.correct' : 'quiz.incorrect')) + '</div>';
+        content = '<div class="msg" style="text-align:center;font-weight:900;' + (_kpLine ? 'flex-direction:column;' : '') + 'color:' + (_ok ? '#5fd089' : '#ef6a60') + ';">' + _kpLine + esc(Z(_ok ? 'quiz.correct' : 'quiz.incorrect')) + '</div>';
         dyn = 'resolve' + _ok + '|' + _kpLine;
       } else {
         content = '<div class="msg" data-act="battleAdvance" style="cursor:pointer;text-align:center;white-space:pre-line;">' + esc(mt) + '</div>';

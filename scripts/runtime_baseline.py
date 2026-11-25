@@ -183,7 +183,7 @@ ACT1_OVERLAY_FILES = {
     # the control-orientation setting, into the frame. First override of this file since the
     # v1.17.1 baseline was frozen, which is why it had no entry before.
     "ui-overhaul.js": (
-        266319, "ec277c12485d482e08857cd09ffc77987b0b671a9eef6fa49f46745d39bff555"),
+        266368, "7b840b6d50ce7b310b172af5f2292500065b1e5e635744f7033105135ccd510c"),
     # 2026-08-06, owner pick: "Charcoal & Gold Leaf" (direction 4 of
     # design/ui-overhaul/chic-style-board.html). The same gold as before -- the pixel art, the
     # dungeon plates and the town screens were all approved against it -- spent differently:
