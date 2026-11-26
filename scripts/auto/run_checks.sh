@@ -20,7 +20,7 @@ if [ -z "${D2_NAV:-}" ]; then
 fi
 ALL=("check bag" "check quests" "check keypad" "check ui-hud" "check ui-japanese" "check ui-screens" "check field-floor-label"
   "check field-arrival-messages" "check field-gust" "check field-glare" "check field-fog" "check field-town-reach"
-  "check field-towns" "check ow-resume-teleport" "check dungeon-resume-floor" "check kid-timing" "check balance" "jump"
+  "check field-towns" "check ow-resume-teleport" "check dungeon-resume-floor" "check kid-timing" "check door-lips" "check balance" "jump"
   "probe logic" "probe towns" "probe hosted" "probe wind_gate" "probe mouths" "probe walk" "probe resume")
 [ $# -gt 0 ] || set -- "${ALL[@]}"
 RC=0

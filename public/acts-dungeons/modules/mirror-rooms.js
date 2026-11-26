@@ -92,6 +92,30 @@
       if (c === '#' || c === 'p') return false; if (c === '_') pit = true; }
     return pit;
   }
+  // A doorway lip: the painted post at a doorway ends in a point that the mask draws up to ~22 px INTO the
+  // doorway's cells, so a hero walking straight through along either wall stopped dead although the opening
+  // beside the point is clear. The spot is a lip when it lies in a doorway's own cells (the first LIPD px from
+  // the opening's top or bottom edge, within LIPX px of the doorway's column) and the mask is free again within
+  // LIPW px on BOTH sides of it along the row: a point standing in the doorway, not a wall. Rows outside the
+  // opening, and everything deeper than LIPD, stay as the mask has them. qok-door-lips = '0' turns this off.
+  var LIPD = 28, LIPW = 64, LIPX = 72;
+  function zones(M) {
+    var out = [], i, j;
+    for (i = 0; i < M.rooms.length; i++) for (j = 0; j < M.rooms[i].doors.length; j++) { var d = M.rooms[i].doors[j];
+      out.push({ x0: d.x * T - LIPX, x1: (d.x + 1) * T + LIPX, top: d.y0 * T, bot: (d.y1 + 1) * T }); }
+    return out;
+  }
+  function doorLip(ctx, wx, wy) {
+    var Z = ctx.state.zones, i, k, l, r;
+    for (i = 0; i < Z.length; i++) { var z = Z[i];
+      if (wx < z.x0 || wx >= z.x1) continue;
+      if (!((wy >= z.top && wy < z.top + LIPD) || (wy >= z.bot - LIPD && wy < z.bot))) continue;
+      l = false; r = false;
+      for (k = 2; k <= LIPW; k += 2) { if (!l && ctx.maskFree(wx - k, wy)) l = true; if (!r && ctx.maskFree(wx + k, wy)) r = true; if (l && r) return true; }
+    }
+    return false;
+  }
+  function lipsOn() { try { return window.localStorage.getItem('qok-door-lips') !== '0'; } catch (e) { return true; } }
   function overPit(ctx, sx, sy) {                                             // her soles are INTO px inside pit cells on every side
     var P = [[0, 0], [INTO, 0], [-INTO, 0], [0, INTO], [0, -INTO]], i;
     for (i = 0; i < P.length; i++) if (ctx.terrain(Math.floor((sx + P[i][0]) / T), Math.floor((sy + P[i][1]) / T)) !== '_') return false;
@@ -105,7 +129,7 @@
   function ready(ctx) {
     var S = ctx.state; if (S.ok) return true;
     var K = kit(); if (!K) return false;
-    S.K = K; S.M = model(ctx); S.ms = K.tickMs(ctx.mechanic.params); S.room = undefined; S.door = null; S.swap = false; S.latch = null;
+    S.K = K; S.M = model(ctx); S.zones = zones(S.M); S.lips = lipsOn(); S.ms = K.tickMs(ctx.mechanic.params); S.room = undefined; S.door = null; S.swap = false; S.latch = null;
     S.fall = null; S.hold = 0; S.grace = 800; S.busy = false; S.spr = null; S.t = 0; S.falls = 0; S.battles = 0; S.tick = 0;
     if (S.M.knights.length) S.tick = K.clock(ctx, 0, S.M.period, S.ms);
     legacyOff(ctx.scene);
@@ -268,7 +292,7 @@
   }
 
   D.register('mirror-rooms', {
-    logic: { model: model, ring: ring, roomAt: roomAt, knightAt: knightAt, mirrored: mirrored, atLip: atLip, overPit: overPit, STR: STR },
+    logic: { model: model, ring: ring, roomAt: roomAt, knightAt: knightAt, mirrored: mirrored, atLip: atLip, doorLip: doorLip, overPit: overPit, STR: STR },
     load: function (ctx) { ready(ctx); },
     unload: function (ctx) { var S = ctx.state, hero = ctx.scene && ctx.scene.hero;      // never leave her faded or small
       if (S.fall && hero) { try { hero.setAlpha(1); hero.setScale(S.fall.sx, S.fall.sy); } catch (e) {} } S.fall = null; },
@@ -282,7 +306,8 @@
     free: function (ctx, wx, wy) {
       if (!ready(ctx)) return undefined;
       if (ctx.maskFree(wx, wy)) return undefined;
-      return atLip(ctx, wx, wy) ? true : undefined;                           // the lip of a pit is hers to step off
+      if (atLip(ctx, wx, wy)) return true;                                    // the lip of a pit is hers to step off
+      return (ctx.state.lips && doorLip(ctx, wx, wy)) ? true : undefined;     // the point of a doorway's post is not a wall
     },
     step: function (ctx) { if (!ready(ctx)) return undefined; var S = ctx.state; return (S.fall || S.busy) ? false : undefined; },
     tick: function (ctx, dt) {
