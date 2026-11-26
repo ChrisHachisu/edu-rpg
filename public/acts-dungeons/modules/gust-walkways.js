@@ -14,22 +14,30 @@
   'use strict';
   var K=window.__QOK_D2KIT_A__; if(!K){ setTimeout(boot,40); return; }
   var TILE=K.TILE, TICK=K.TICK, pendingNote=null;
-  // Kid timing (owner P9; day-2 kid-timing pass, 2026-11-24). Shared by storm-terrace.js and
-  // gust-walkways.js (whichever loads first defines it; both copies are identical). For quiz grades
-  // K, 1 and 2 the warning before a strike / gust lasts about 1.5 s (twice a grade-1 reaction) and the
-  // cycle grows with it (the calm stretches grow so a child who stops 200 ms late is rarely caught);
-  // grades 3+ keep the plan's numbers. localStorage 'qok-kid-timing' = '0' restores the plan's timing for every grade.
+  // Kid timing (owner P9; day-2 kid-timing pass, 2026-11-24; day-3 grades 3-4, 2026-11-26). Shared by storm-terrace.js and
+  // gust-walkways.js (whichever loads first defines it; both copies are identical). The warning before a strike / gust
+  // lasts about twice the age group's reaction time and the cycle grows with it (the calm stretches grow so a child who
+  // stops late is rarely caught). Quiz grades K, 1, 2: 1.5 s. Grades 3 and 4: 1.25 s warning (2.5x a 0.5 s reaction; 1.0 s measured worse), 1.6 s calm. Grades 5 and 6: the plan's glow plus a 0.6 s calm stretch (Stormreach only).
+  // localStorage 'qok-kid-timing' = '0' restores the plan's timing for every grade.
   var KT = window.__QOK_KIDTIME__ || (window.__QOK_KIDTIME__ = {
     warnMs: 1500,      // the warning: about twice a grade-1 reaction (0.7 s)
     calmMs: 1000,      // Stormreach: after a group's strike the whole terrace is calm this long before the next glow
     gustShare: 6,      // Storm Nest: a lane blows for at most 1/6 of its cycle (a 200 ms late stop rarely meets a gust)
-    young: function () {
-      try { if (window.localStorage && window.localStorage.getItem('qok-kid-timing') === '0') return false; } catch (e) {}
-      var q; try { q = String(window.__GAME_STATE__.player.state.quizDifficulty).toLowerCase(); } catch (e) { return false; }
-      return q === 'k' || q === '0' || q === '1' || q === '2';
+    mid: { warnMs: 1250, calmMs: 1600, gustShare: 5, gustWarnMs: 1000 },   // grades 3 and 4: 2.5x a 0.5 s reaction (Storm Nest: 2x, measured better)
+    high: { warnMs: 700, calmMs: 600, gustShare: 0 },    // grades 5 and 6: the plan's glow (at least twice a 0.35 s reaction) plus a short calm stretch; gust lanes keep the plan
+    tier: function () {
+      try { if (window.localStorage && window.localStorage.getItem('qok-kid-timing') === '0') return null; } catch (e) {}
+      var q; try { q = String(window.__GAME_STATE__.player.state.quizDifficulty).toLowerCase(); } catch (e) { return null; }
+      if (q === 'k' || q === '0' || q === '1' || q === '2') return 'young';
+      if (q === '3' || q === '4') return 'mid';
+      if (q === '5' || q === '6') return 'high';
+      return null;
     },
-    warnTicks: function (planTicks, ms) { return Math.max(planTicks, Math.round(this.warnMs / ms)); },
-    calmTicks: function (ms) { return Math.round(this.calmMs / ms); }
+    young: function () { return this.tier() !== null; },
+    cfg: function () { var t = this.tier(); return t === 'mid' ? this.mid : (t === 'high' ? this.high : this); },
+    warnTicks: function (planTicks, ms, kind) { var c = this.cfg(); return Math.max(planTicks, Math.round(((kind === 'gust' && c.gustWarnMs) || c.warnMs) / ms)); },
+    calmTicks: function (ms) { return Math.round(this.cfg().calmMs / ms); },
+    share: function () { return this.cfg().gustShare; }
   });
   // grades K-2: the lane warns for about 1.5 s and the lull grows until the gust is at most 1/gustShare
   // of the cycle; the gust itself is the plan's length. The lanes' phases scale with the period, so
@@ -37,7 +45,7 @@
   function kidLane(L,young){
     L.plan={period:L.period,warn:L.warn,phase:L.phase}; L.kid=false;
     if(!young) return L;
-    var w=KT.warnTicks(L.warn,TICK), d=w-L.warn, per=Math.max(L.period+d, L.active*KT.gustShare); if(d<=0 && per===L.period) return L;
+    var w=KT.warnTicks(L.warn,TICK,'gust'), d=w-L.warn, per=Math.max(L.period+d, L.active*KT.share()); if(d<=0 && per===L.period) return L;
     L.phase=Math.round(L.phase*per/L.period); L.period=per; L.warn=w; L.kid=true; return L;
   }
   function phaseOf(L,t){                                    // t in ticks -> {on, warn, pos, left}
