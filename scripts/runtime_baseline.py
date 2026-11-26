@@ -471,7 +471,7 @@ ACT1_TOWN_FILES = {
     # Selected male town protagonist, using the existing approved sheet.
     "act1-hifi/hero-g3/hero-act1-male-walk-8x3-64-g3.png": (125699, "02162ba11fec942c3524fd0c528f66be8ee86e7bb574c196dbeb93b99f37b90b"),
     "act1-hifi/town.html": (
-        59801, "440c5285e9a3037b7acbc147187fdaa234c4ac322e15d3fceca74ef341f4b3bd"),
+        60608, "ddfbab3dc195aa509636f6ba9806250c6530f15abd3f3275756b1ba5d2a5c93e"),
     "act1-hifi/town/portSapphire-town.json": (
         12958, "794e6e9bffc03a3d7f69cb28a55a3ad87c9b7029dceba20115e21c2cc3aa8e01"),
     "act1-hifi/town/portSapphire-walkable.json": (

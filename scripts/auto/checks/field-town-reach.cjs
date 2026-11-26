@@ -10,6 +10,7 @@
 //   all  every NPC (shopkeepers too: explorer X04) can be talked to (a reachable point where the town's nearestNpc() names her and,
 //        unless she IS a service, no service spot outranks her); the save point and the shop
 //        counter can be used; the exit line can be crossed.
+//   heal the healer's talk spot is at least 300 px2 of reachable ground (not a pixel-exact sliver beside a stall)
 //   m3   Port Sapphire's wise woman is one of those NPCs (unfixed: the save point lay under her feet,
 //        so the Save pill outranked her from every spot she could be talked to).
 // The served files are fetched from PROBE_URL so the same check runs against any build.
@@ -26,7 +27,8 @@ const get = async p => { const r = await fetch(new URL(p, URL_)); if (!r.ok) thr
 function bodyFrom(html) {
   const r = /NPC_BLOCK_RADIUS = (?:F2_OLD\('npcbody'\) \? [\d.]+ : )?([\d.]+)/.exec(html);
   const s = /NPC_BODY_SOUTH = (?:F2_OLD\('npcbody'\) \? [\d.]+ : )?([\d.]+)/.exec(html);
-  return { r: r ? +r[1] : NaN, south: s ? +s[1] : 0, own: /Array\.isArray\(n\.body\)/.test(html), reach: /npc\.talkReach/.test(html) };
+  const t = /NPC_TALK_SIDE = (?:F2_OLD\('npcbody'\) \? [\d.]+ : )?([\d.]+)/.exec(html);
+  return { r: r ? +r[1] : NaN, south: s ? +s[1] : 0, side: t ? +t[1] : 1.1, sideDy: (/NPC_TALK_SIDE_DY = ([\d.]+)/.exec(html) || [0, 99])[1] * 1, own: /Array\.isArray\(n\.body\)/.test(html), reach: /npc\.talkReach/.test(html) };
 }
 (async () => {
   const W = await import(path.join(ROOT, 'public/act1-hifi/walkable-polygons.js'));
@@ -53,9 +55,9 @@ function bodyFrom(html) {
     const cur = flood(withBodies(body.r, body.south, true)), old = flood(withBodies(7, 0, false));
     // town.html's own prompt rules, replicated (nearestNpc / nearestService)
     const services = [['shop', T.shopCounter], ['save', T.savePoint]].filter(s => Array.isArray(s[1]));
-    const nearestNpc = (x, y) => { let b = null; for (const n of npcs) { const dx = x - n.x, dy = y - n.y; if (Math.abs(dx) > C * 1.1 || dy < -C * 0.35 || dy > C * n.reach) continue; const d = Math.hypot(dx, dy); if (!b || d < b.d) b = { n, d }; } return b ? b.n : null; };
+    const nearestNpc = (x, y) => { let b = null; for (const n of npcs) { const dx = x - n.x, dy = y - n.y; if (Math.abs(dx) > C * (dy <= C * body.sideDy ? body.side : 1.1) || dy < -C * 0.35 || dy > C * n.reach) continue; const d = Math.hypot(dx, dy); if (!b || d < b.d) b = { n, d }; } return b ? b.n : null; };
     const nearestService = (x, y) => { let b = null; for (const [kind, c] of services) { const dx = x / C - c[0], dy = y / C - c[1]; if (Math.abs(dx) > 1.2 || Math.abs(dy) > 1.2) continue; const d = Math.hypot(dx, dy); if (!b || d < b.d) b = { kind, d }; } return b ? b.kind : null; };
-    const talk = {}, svc = {}, minS = {}, minSide = {}, nearAt = {}, nearD = {}; let crossExit = false, lost = 0, lostAt = null;
+    const talk = {}, talkN = {}, svc = {}, minS = {}, minSide = {}, nearAt = {}, nearD = {}; let crossExit = false, lost = 0, lostAt = null;
     const exitY = (T.exit && T.exit.cell ? T.exit.cell[1] : T.startCell[1]) * C, north = T.exit && T.exit.axis ? T.exit.axis === 'north' : (T.exit && T.exit.cell && T.exit.cell[1] < T.cells / 2);
     for (let k = 0; k < N * N; k++) {
       const x = (k % N) * STEP, y = Math.floor(k / N) * STEP;
@@ -63,16 +65,20 @@ function bodyFrom(html) {
       if (!cur[k]) continue;
       if (north ? y < exitY : y > exitY) crossExit = true;
       const n = nearestNpc(x, y), s = nearestService(x, y);
-      if (n) { const isSvc = n.id === 'healer' || n.id === 'shopkeeper'; if (isSvc || !s) talk[n.id] = true; }
+      if (n) { const isSvc = n.id === 'healer' || n.id === 'shopkeeper'; if (isSvc || !s) { talk[n.id] = true; talkN[n.id] = (talkN[n.id] || 0) + 1; } }
       if (s && !(n && (n.id === 'healer' || n.id === 'shopkeeper'))) svc[s] = true;
       for (const m of npcs) { const dx = x - m.x, dy = y - m.y;
         if (dy > 0 && Math.abs(dx) < 6) minS[m.id] = Math.min(minS[m.id] ?? 1e9, Math.hypot(dx, dy));
-        if (Math.abs(dx) <= C * 1.1 && dy >= -C * 0.35 && dy <= C * m.reach && Math.hypot(dx, dy) < (nearD[m.id] ?? 1e9)) { nearD[m.id] = Math.hypot(dx, dy); nearAt[m.id] = [x, y]; }
+        if (Math.abs(dx) <= C * (dy <= C * body.sideDy ? body.side : 1.1) && dy >= -C * 0.35 && dy <= C * m.reach && Math.hypot(dx, dy) < (nearD[m.id] ?? 1e9)) { nearD[m.id] = Math.hypot(dx, dy); nearAt[m.id] = [x, y]; }
         if (Math.abs(dy) < 4) minSide[m.id] = Math.min(minSide[m.id] ?? 1e9, Math.abs(dx)); }
     }
     for (const n of npcs) {
       const isSvc = n.id === 'healer' || n.id === 'shopkeeper';
       // every person, shopkeepers included (explorer X04), must have a reachable spot where the prompt names them
+      // the healer has no other spot (a shop has its counter): where she can be talked to must be roomy, not a sliver. Last Bastion and
+      // Cinderwatch, whose healers stand behind their stalls, had 156 and 192 px2 with the 1.1 cell side band (2026-11-26).
+      if (n.id === 'healer') ok((talkN[n.id] || 0) * STEP * STEP >= 300, `${id}: the healer's talk spot is roomy`, `${(talkN[n.id] || 0) * STEP * STEP} px2 of reachable ground where Talk names her (need 300)`);
+      else console.log(`[INFO] ${id}: ${n.id} talk spot ${(talkN[n.id] || 0) * STEP * STEP} px2`);
       ok(talk[n.id], `${id}: ${n.id} can be talked to`, talk[n.id] ? (n.reach !== 2.1 ? `talk band ${n.reach} cells (across a counter)` : '') : 'no reachable spot where the talk prompt names her');
       const s = minS[n.id], d = minSide[n.id], needS = n.body ? 13 : 20;
       if (n.body) console.log(`[INFO] ${id}: ${n.id} has her own body ${JSON.stringify(n.body)}: ${String(n.note || '').slice(0, 120)}`);

@@ -218,6 +218,12 @@ const F2_OLD = (() => { let v = ''; try { v = localStorage.getItem('qok-f2-old')
   try { v += ',' + (new URLSearchParams(location.search).get('f2old') || ''); } catch (e) {}
   return name => v.split(',').some(s => s.trim() === 'all' || s.trim() === name); })();
 const NPC_BLOCK_RADIUS = F2_OLD('npcbody') ? 7 : 10, NPC_BODY_SOUTH = F2_OLD('npcbody') ? 0 : 7, NPC_CELL_W = town.worldPxPerCell;
+// Sideways talk reach in cells. With the 10 px body she stops 14.5 px beside a person, and the old 1.1 cells (14.5 px) put that
+// spot exactly on the edge of the band: where the south side is closed (the Last Bastion and Cinderwatch healers stand behind
+// their stalls) a hero half a pixel off pressed Talk and nothing happened (2026-11-26). 1.5 cells leaves about 5 px of room.
+// The wider reach holds only while she stands level with the person (no more than one cell south of her feet; beside her body she stands 0.6 to 0.7 cells south): further south
+// the band stays 1.1 cells, or a shopkeeper behind a counter would take the prompt from the shop spot in front of it.
+const NPC_TALK_SIDE = F2_OLD('npcbody') ? 1.1 : 1.5, NPC_TALK_SIDE_DY = 1.0;
 walkable.dynamicBlockers = [
   ...(walkable.dynamicBlockers || []),
   ...town.npcs.map(n => {
@@ -552,7 +558,7 @@ function nearestNpc() {
     const dx = position.x - npc.point.x, dy = position.y - npc.point.y;
     // `talkReach` (cells, town json): a person standing BEHIND a painted counter is talked to across
     // it, from the counter's front (explorer X04: Ruins Camp, Oasis Haven, Last Bastion shopkeepers).
-    if (Math.abs(dx) > CELL_W * 1.1 || dy < -CELL_W * 0.35 || dy > CELL_W * (npc.talkReach ?? 2.1)) continue;
+    if (Math.abs(dx) > CELL_W * (dy <= CELL_W * NPC_TALK_SIDE_DY ? NPC_TALK_SIDE : 1.1) || dy < -CELL_W * 0.35 || dy > CELL_W * (npc.talkReach ?? 2.1)) continue;
     const d = Math.hypot(dx, dy);
     if (!best || d < best.d) best = { npc, d };
   }

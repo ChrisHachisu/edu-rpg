@@ -31,7 +31,7 @@ for job in "$@"; do
     probe) cmd="node scripts/acts/probe/$1.cjs"; name="probe-$1"; shift;;
     da) cmd="node scripts/acts/probe/dungeon_authored.cjs"; name="da-$1";;
     jump) cmd="sh scripts/auto/jump/check_all.sh 8 $LOG/jump"; name="jump";;
-    *) echo "unknown job: $job" >&2; continue;;
+    *) echo "unknown job: $job" >&2; echo "unknown-job($job) rc=2" >> "$LOG/summary.txt"; RC=1; continue;;
   esac
   out=$LOG/out/$name; mkdir -p "$out"; t0=$(date +%s)
   PROBE_OUT=$out PT_DIR=$out PT_SHOTS=$out/shots/ timeout ${TMO:-3000} $cmd "$@" > "$LOG/$name.log" 2>&1; rc=$?
