@@ -98,6 +98,7 @@ async function flow(page) {
     if (!el) return null; const m = el.parentElement, tn = [...m.childNodes].filter(n => n.nodeType === 3 && n.textContent.trim())[0]; if (!tn) return { text: null };
     const r = document.createRange(); r.selectNodeContents(tn); const a = el.getBoundingClientRect(), b = r.getBoundingClientRect();
     return { typed: el.textContent, text: tn.textContent, kpBottom: Math.round(a.bottom), textTop: Math.round(b.top), dx: Math.round(Math.abs((a.left + a.right) / 2 - (b.left + b.right) / 2)) }; });
+  await shot(page, 'k13-typed-answer');
   rec('k13 the typed answer is on its own line above the result text', !!lay && !!lay.text && lay.kpBottom <= lay.textTop + 1 && lay.dx <= 4, lay);
   await page.waitForTimeout(250);
   const asked1 = await page.evaluate(() => window.__GAME_STATE__.quizManager.getStats());

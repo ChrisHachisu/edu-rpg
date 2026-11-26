@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>__TITLE__</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: one phone-width column read top to bottom in ten minutes; a sticky strip counts answers;
+   every card that takes a tap looks like a control, every card that only informs is flat. */
+:root {
+  --bg: #f1f3ee;
+  --surface: #ffffff;
+  --ink: #16202c;
+  --muted: #586472;
+  --line: #d6dbd0;
+  --accent: #8a5f00;
+  --accent-soft: #f7ecc9;
+  --good: #2a7a4b;
+  --warn: #a8501c;
+  --font-display: "Bricolage Grotesque", "Hiragino Sans", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Atkinson Hyperlegible", "Hiragino Sans", "Yu Gothic", "Segoe UI", system-ui, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1520; --surface: #172131; --ink: #eef0e8; --muted: #9ba7b6; --line: #2a374c;
+    --accent: #e4b84e; --accent-soft: #332c14; --good: #72cc97; --warn: #f09a62;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1520; --surface: #172131; --ink: #eef0e8; --muted: #9ba7b6; --line: #2a374c;
+  --accent: #e4b84e; --accent-soft: #332c14; --good: #72cc97; --warn: #f09a62;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 400 17px/1.5 var(--font-body); }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; line-height: 1.15; }
+h1 { font-size: 30px; font-weight: 700; letter-spacing: -0.01em; }
+h2 { font-size: 22px; font-weight: 700; }
+h3 { font-size: 19px; font-weight: 600; line-height: 1.25; }
+p { margin: 0; }
+img { max-width: 100%; display: block; }
+button, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.wrap { max-width: 640px; margin: 0 auto; padding: 0 16px 72px; display: flex; flex-direction: column; gap: 36px; }
+.muted { color: var(--muted); }
+.small { font-size: 15px; line-height: 1.45; }
+.num { font-variant-numeric: tabular-nums; }
+
+.bar { position: sticky; top: 0; z-index: 5; background: var(--bg); border-bottom: 1px solid var(--line); }
+.bar-in { max-width: 640px; margin: 0 auto; padding: 10px 16px; display: flex; align-items: center; gap: 12px; }
+.bar-name { font-family: var(--font-display); font-weight: 700; font-size: 15px; white-space: nowrap; }
+.meter { flex: 1; height: 8px; border-radius: 4px; background: var(--line); overflow: hidden; min-width: 40px; }
+.meter i { display: block; height: 100%; width: 0; background: var(--accent); transition: width .25s; }
+.bar-count { font-size: 14px; white-space: nowrap; }
+.save { font-size: 13px; white-space: nowrap; color: var(--muted); }
+.save.ok { color: var(--good); } .save.bad { color: var(--warn); font-weight: 700; }
+
+header.top { padding-top: 28px; display: flex; flex-direction: column; gap: 10px; }
+.eyebrow { font-size: 14px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--accent); }
+.notice { border: 1px solid var(--warn); color: var(--warn); border-radius: 10px; padding: 10px 12px; font-size: 15px; }
+.notice[hidden] { display: none; }
+
+section { display: flex; flex-direction: column; gap: 14px; }
+.sec-head { display: flex; flex-direction: column; gap: 4px; }
+
+.stages { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; list-style: none; margin: 0; padding: 0; }
+.stages li { font-size: 12px; line-height: 1.25; color: var(--muted); padding-top: 8px; border-top: 4px solid var(--line); }
+.stages li.done { border-color: var(--good); }
+.stages li.now { border-color: var(--accent); color: var(--ink); font-weight: 700; }
+.tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.tile { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 2px; }
+.tile b { font-family: var(--font-display); font-size: 24px; line-height: 1.1; }
+.tile span { font-size: 14px; color: var(--muted); line-height: 1.35; }
+ul.plain { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; }
+
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.card-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.tag { font-size: 13px; font-weight: 700; color: var(--muted); letter-spacing: .04em; text-transform: uppercase; }
+.state { font-size: 13px; color: var(--muted); white-space: nowrap; }
+.state.ok { color: var(--good); font-weight: 700; }
+.opts { display: flex; flex-direction: column; gap: 8px; }
+.opt { text-align: left; background: var(--bg); border: 2px solid var(--line); border-radius: 12px; padding: 12px 12px 12px 44px; position: relative; display: flex; flex-direction: column; gap: 2px; min-height: 52px; }
+.opt::before { content: ""; position: absolute; left: 13px; top: 14px; width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--muted); background: var(--surface); }
+.opt b { font-weight: 700; }
+.opt span { font-size: 15px; color: var(--muted); line-height: 1.4; }
+.opt[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
+.opt[aria-pressed="true"]::before { border-color: var(--accent); background: radial-gradient(var(--accent) 0 45%, var(--surface) 50%); }
+.opt[disabled] { cursor: default; opacity: .75; }
+.keeps { font-size: 14px; color: var(--muted); }
+.note-btn { align-self: flex-start; background: none; border: 0; padding: 4px 0; color: var(--accent); font-weight: 700; font-size: 15px; text-decoration: underline; text-underline-offset: 3px; }
+textarea { width: 100%; min-height: 76px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); padding: 10px; resize: vertical; }
+
+.shots { display: grid; gap: 8px; }
+.shots.pair { grid-template-columns: 1fr 1fr; }
+.shot { margin: 0; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.shot button { padding: 0; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: none; }
+.shot figcaption { font-size: 13px; color: var(--muted); }
+
+.veto { align-self: flex-start; background: var(--bg); border: 2px solid var(--line); border-radius: 999px; padding: 7px 14px; font-size: 15px; font-weight: 700; }
+.veto[aria-pressed="true"] { border-color: var(--warn); color: var(--warn); }
+.where { font-size: 13px; font-weight: 700; color: var(--good); white-space: nowrap; }
+.where.next { color: var(--accent); }
+
+.feel { display: flex; flex-wrap: wrap; gap: 6px; }
+.feel button { background: var(--bg); border: 2px solid var(--line); border-radius: 999px; padding: 7px 12px; font-size: 15px; }
+.feel button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); font-weight: 700; }
+.jump { font-size: 14px; font-weight: 700; color: var(--accent); }
+
+.zoom { position: fixed; inset: 0; z-index: 20; background: rgba(8, 12, 18, .92); display: flex; align-items: center; justify-content: center; padding: 12px; border: 0; width: 100%; }
+.zoom[hidden] { display: none; }
+.zoom img { max-height: 100%; max-width: 100%; border-radius: 8px; }
+footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 16px; }
+@media (max-width: 360px) { .tiles { grid-template-columns: 1fr; } .stages li { font-size: 11px; } }
+@media (prefers-reduced-motion: reduce) { .meter i { transition: none; } }
+</style>
+</head>
+<body>
+<div class="bar"><div class="bar-in">
+  <span class="bar-name" id="barName"></span>
+  <span class="meter" aria-hidden="true"><i id="meter"></i></span>
+  <span class="bar-count num" id="barCount"></span>
+  <span class="save" id="saveState" role="status"></span>
+</div></div>
+<div class="wrap" id="app"></div>
+<button class="zoom" id="zoom" hidden aria-label="Close picture"><img id="zoomImg" alt=""></button>
+<script id="packet" type="application/json">__DATA__</script>
+<script>
+(function () {
+  'use strict';
+  var P = JSON.parse(document.getElementById('packet').textContent);
+  var state = {};            // item id -> { pick, note, veto, feel, at }
+  var chain = {}, busy = {}, failed = {}, noteTimer = {};
+  var col = null, canSave = false, loadTimer = null, loaded = false;
+  var app = document.getElementById('app');
+
+  function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  function add(parent) { for (var i = 1; i < arguments.length; i++) if (arguments[i]) parent.appendChild(arguments[i]); return parent; }
+  function st(id) { return state[id] || (state[id] = {}); }
+
+  // ---- saving ----------------------------------------------------------------------------------
+  function setSave(kind, text) { var s = document.getElementById('saveState'); s.className = 'save' + (kind ? ' ' + kind : ''); s.textContent = text; }
+  function refreshSave() {
+    if (!canSave) return;
+    var b = Object.keys(busy).some(function (k) { return busy[k] > 0; }), f = Object.keys(failed).some(function (k) { return failed[k]; });
+    if (f) setSave('bad', 'Not saved'); else if (b) setSave('', 'Saving'); else setSave('ok', loaded ? 'Saved' : '');
+  }
+  function save(id) {
+    if (!canSave) return;
+    var body = JSON.parse(JSON.stringify(st(id))); body.at = new Date().toISOString(); state[id].at = body.at;
+    busy[id] = (busy[id] || 0) + 1; failed[id] = false; refreshSave();
+    chain[id] = (chain[id] || Promise.resolve()).then(function () { return col.doc(id).set(body); })
+      .then(function () { busy[id]--; refreshSave(); }, function () { busy[id]--; failed[id] = true; refreshSave(); paint(); });
+  }
+  function start() {
+    var use = window.claude && window.claude.use;
+    if (!use) return noDb();
+    loadTimer = setTimeout(function () { if (!loaded) setSave('bad', 'Answers not loaded yet'); }, 10000);
+    use('db').then(function (db) {
+      if (!db) return noDb();
+      col = db.collection(P.id);
+      col.onSnapshot(function (snap) {
+        canSave = true;                       // taps are enabled once her earlier answers are on screen
+        snap.docs.forEach(function (d) { if (busy[d.id] > 0) return; var v = d.data(); if (v) state[d.id] = JSON.parse(JSON.stringify(v)); });
+        if (!snap.metadata || !snap.metadata.fromCache) { loaded = true; clearTimeout(loadTimer); }
+        refreshSave(); paint();
+      }, function () { clearTimeout(loadTimer); canSave = false; noDb(); });
+    }, noDb);
+  }
+  function noDb() {
+    clearTimeout(loadTimer); canSave = false; setSave('', '');
+    var n = document.getElementById('notice'); if (n) n.hidden = false;
+    paint();
+  }
+
+  // ---- building blocks ---------------------------------------------------------------------------
+  function shots(list, layout) {
+    if (!list || !list.length) return null;
+    var g = el('div', 'shots' + (layout === 'pair' ? ' pair' : ''));
+    list.forEach(function (s) {
+      var f = el('figure', 'shot'), b = el('button'), i = el('img');
+      b.type = 'button'; b.setAttribute('aria-label', 'Enlarge picture: ' + s.cap); i.src = s.src; i.alt = s.alt || s.cap; i.loading = 'lazy';
+      if (s.w && s.h) { i.width = s.w; i.height = s.h; i.style.height = 'auto'; }
+      b.onclick = function () { var z = document.getElementById('zoom'); document.getElementById('zoomImg').src = s.full || s.src; z.hidden = false; z.focus(); };
+      add(f, add(b, i), el('figcaption', null, s.cap)); g.appendChild(f);
+    });
+    return g;
+  }
+  function noteBox(id, label) {
+    var box = el('div'), btn = el('button', 'note-btn', label || 'Add a note'), ta = el('textarea');
+    btn.type = 'button'; ta.id = 'note-' + id; ta.hidden = true; ta.setAttribute('aria-label', 'Note');
+    btn.onclick = function () { ta.hidden = false; btn.hidden = true; ta.focus(); };
+    function push() { clearTimeout(noteTimer[id]); if ((st(id).note || '') === ta.value) return; st(id).note = ta.value; save(id); }
+    ta.oninput = function () { clearTimeout(noteTimer[id]); noteTimer[id] = setTimeout(push, 1200); };
+    ta.onblur = push;
+    box.dataset.note = id; add(box, btn, ta); return box;
+  }
+
+  // ---- sections ------------------------------------------------------------------------------------
+  function build() {
+    document.getElementById('barName').textContent = P.short;
+    var top = el('header', 'top');
+    add(top, el('div', 'eyebrow', P.eyebrow), el('h1', null, P.title), el('p', 'muted', P.lede));
+    var n = el('div', 'notice', 'Your taps cannot be saved in this view. Open the packet from its link in Claude, or reply in the thread with your picks (for example "1a 2b 4b").'); n.id = 'notice'; n.hidden = true;
+    add(app, add(top, n));
+
+    // status
+    var s = el('section'); add(s, add(el('div', 'sec-head'), el('h2', null, 'Where the game is'), el('p', 'muted small', P.status.headline)));
+    var stages = el('ol', 'stages'); P.status.stages.forEach(function (x) { var li = el('li', x.state, x.name); stages.appendChild(li); }); s.appendChild(stages);
+    var tiles = el('div', 'tiles'); P.status.tiles.forEach(function (t) { add(tiles, add(el('div', 'tile'), el('b', 'num', t.v), el('span', null, t.k))); }); s.appendChild(tiles);
+    P.status.blocks.forEach(function (b) { var u = el('ul', 'plain small'); b.lines.forEach(function (l) { u.appendChild(el('li', null, l)); }); add(s, el('h3', null, b.title), u); });
+    app.appendChild(s);
+
+    // choices
+    s = el('section'); add(s, add(el('div', 'sec-head'), el('h2', null, 'Your ' + P.choices.length + ' choices'), el('p', 'muted small', P.choicesIntro)));
+    P.choices.forEach(function (c, i) {
+      var card = el('article', 'card'); card.dataset.choice = c.id;
+      var topRow = add(el('div', 'card-top'), el('span', 'tag', (i + 1) + ' of ' + P.choices.length + ' · ' + c.area), el('span', 'state'));
+      var opts = el('div', 'opts');
+      c.options.forEach(function (o) {
+        var b = el('button', 'opt'); b.type = 'button'; b.dataset.opt = o.id; b.setAttribute('aria-pressed', 'false');
+        add(b, el('b', null, o.label), el('span', null, o.detail));
+        b.onclick = function () { var v = st(c.id); v.pick = v.pick === o.id ? null : o.id; save(c.id); paint(); };
+        opts.appendChild(b);
+      });
+      var keep = c.options.filter(function (o) { return o.id === c.keeps; })[0];
+      add(card, topRow, el('h3', null, c.q), el('p', 'small', c.why), shots(c.images, c.layout), opts,
+        el('p', 'keeps', 'No answer by ' + P.deadline + ': ' + c.keepsVerb + ' "' + keep.label + '".'), noteBox(c.id));
+      s.appendChild(card);
+    });
+    app.appendChild(s);
+
+    // decided for you
+    s = el('section'); add(s, add(el('div', 'sec-head'), el('h2', null, 'Decided for you'), el('p', 'muted small', P.decidedIntro)));
+    P.decided.forEach(function (d) {
+      var card = el('article', 'card'); card.dataset.decided = d.id;
+      add(card, add(el('div', 'card-top'), el('h3', null, d.title), el('span', 'where' + (d.next ? ' next' : ''), d.where)), el('p', 'small', d.text), shots(d.images, d.layout));
+      var v = el('button', 'veto', 'Undo this'); v.type = 'button'; v.setAttribute('aria-pressed', 'false');
+      v.onclick = function () { var x = st(d.id); x.veto = !x.veto; save(d.id); paint(); };
+      add(card, v, noteBox(d.id, 'Say what to change')); s.appendChild(card);
+    });
+    app.appendChild(s);
+
+    // play
+    s = el('section'); add(s, add(el('div', 'sec-head'), el('h2', null, P.play.title), el('p', 'muted small', P.play.intro)));
+    P.play.stops.forEach(function (p) {
+      var card = el('article', 'card'); card.dataset.play = p.id;
+      add(card, el('div', 'jump', p.jump), el('h3', null, p.title), el('p', 'small', p.look));
+      var f = el('div', 'feel');
+      P.play.verdicts.forEach(function (lab) {
+        var b = el('button', null, lab); b.type = 'button'; b.dataset.feel = lab; b.setAttribute('aria-pressed', 'false');
+        b.onclick = function () { var x = st(p.id); x.feel = x.feel === lab ? null : lab; save(p.id); paint(); };
+        f.appendChild(b);
+      });
+      add(card, f, noteBox(p.id)); s.appendChild(card);
+    });
+    app.appendChild(s);
+
+    // next + anything else
+    s = el('section'); add(s, add(el('div', 'sec-head'), el('h2', null, 'Next week')));
+    var u = el('ul', 'plain small'); P.next.forEach(function (l) { u.appendChild(el('li', null, l)); }); s.appendChild(u);
+    var card = el('article', 'card'); card.dataset.general = 'general';
+    add(card, el('h3', null, 'Anything else?'), el('p', 'small muted', 'One line is enough. It is read before the next run.'));
+    var nb = noteBox('general'); nb.firstChild.hidden = true; nb.lastChild.hidden = false; add(card, nb); s.appendChild(card);
+    app.appendChild(s);
+    app.appendChild(el('footer', null, P.footer));
+
+    var z = document.getElementById('zoom'); z.onclick = function () { z.hidden = true; };
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') z.hidden = true; });
+  }
+
+  // ---- reflect state --------------------------------------------------------------------------------
+  function paint() {
+    var answered = 0;
+    P.choices.forEach(function (c) {
+      var card = app.querySelector('[data-choice="' + c.id + '"]'), v = state[c.id] || {};
+      if (v.pick) answered++;
+      card.querySelectorAll('.opt').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.opt === v.pick)); b.disabled = !canSave; });
+      var s = card.querySelector('.state'); s.className = 'state' + (v.pick && !failed[c.id] ? ' ok' : ''); s.textContent = failed[c.id] ? 'Not saved, tap again' : (v.pick ? 'Answered' : '');
+    });
+    P.decided.forEach(function (d) {
+      var b = app.querySelector('[data-decided="' + d.id + '"] .veto'), v = state[d.id] || {};
+      b.setAttribute('aria-pressed', String(!!v.veto)); b.textContent = v.veto ? 'Marked to undo' : 'Undo this'; b.disabled = !canSave;
+    });
+    P.play.stops.forEach(function (p) {
+      var v = state[p.id] || {};
+      app.querySelectorAll('[data-play="' + p.id + '"] .feel button').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.feel === v.feel)); b.disabled = !canSave; });
+    });
+    app.querySelectorAll('[data-note]').forEach(function (box) {
+      var id = box.dataset.note, ta = box.lastChild, btn = box.firstChild, v = state[id] || {};
+      ta.disabled = !canSave;
+      if (document.activeElement !== ta && v.note != null && ta.value !== v.note) ta.value = v.note;
+      if (v.note && ta.hidden) { ta.hidden = false; btn.hidden = true; }
+    });
+    document.getElementById('meter').style.width = (100 * answered / P.choices.length) + '%';
+    document.getElementById('barCount').textContent = answered + ' of ' + P.choices.length + ' answered';
+  }
+
+  build(); paint(); start();
+})();
+</script>
+</body>
+</html>
