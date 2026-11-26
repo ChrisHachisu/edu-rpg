@@ -31,7 +31,7 @@
         "Longer lightning and gust warnings for grades K to 2."
       ] },
       { "title": "Done since, waiting for build 100", "lines": [
-        "All checks and the full story run are being repeated on these changes.",
+        "All checks pass on these changes, and the robot again played from the title to the ending (248 steps). It needed a second try in three dungeons where the robot itself stumbled.",
         "Lightning, gust and magma warnings by grade, now for grades 3 to 6 too.",
         "The typed answer sits on its own line above Correct!"
       ] },
