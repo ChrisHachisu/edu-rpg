@@ -31,9 +31,11 @@
         "Longer lightning and gust warnings for grades K to 2."
       ] },
       { "title": "Done since, waiting for build 100", "lines": [
-        "All checks pass on these changes, and the robot again played from the title to the ending (248 steps). It needed a second try in three dungeons where the robot itself stumbled.",
+        "All checks pass on these changes, and the robot again played from the title to the ending (248 steps), this time with no second tries.",
         "Lightning, gust and magma warnings by grade, now for grades 3 to 6 too.",
-        "The typed answer sits on its own line above Correct!"
+        "The typed answer sits on its own line above Correct!",
+        "Demon Castle: hugging the wall, she stopped dead on the base of a mirror frame at 31 of 32 doorways. She now walks through.",
+        "The healers at Last Bastion and Cinderwatch stand behind a stall, and Talk only showed from one exact spot beside them. The spot is now more than twice as big."
       ] },
       { "title": "Not there yet", "lines": [
         "Acts 2 to 5 art is behind Act 1: coasts without sand, nine towns sharing two map icons, every field boss the same smoke ball. These need painted art from the Mac.",
@@ -210,7 +212,7 @@
     "Build 100, Tuesday 1 December at the earliest, with this week's fixes and your picks.",
     "The guard lantern swing and the trip wire glint behind a switch, with pictures in packet 2.",
     "A grander victory and level-up box behind a switch, for you to compare with the plain one.",
-    "Demon Castle doorways: hugging the wall, she stops dead on the base of a mirror frame at the first mirror room. Fix it, then check every doorway on all nine floors.",
+    "Find out why the robot stumbled once each in the Shadow Cave and the Sunken Temple. The last two stumbles like that were real snags in the game.",
     "Timing measured in the Demon Castle and the Sunken Temple.",
     "A reviewer that looks at screenshots against your rulings, starting with the Acts 2 to 5 art list.",
     "One command to build on the Mac."

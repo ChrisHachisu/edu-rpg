@@ -5,6 +5,8 @@
 //   NODE_PATH=/opt/node-tools/node_modules PROBE_URL=http://127.0.0.1:5503/ node scripts/auto/checks/field-<x>.cjs
 // Output convention: [PASS]/[FAIL]/[INFO] lines, a summary line, exit 1 on any FAIL.
 // FIELD_OUT (default <tmp>/qok-field): screenshots and logs.
+// FIELD_LS=key=value[,key=value]: extra localStorage switches set with the seeded save (to see a check FAIL on an old look,
+//   for example FIELD_LS=qok-f2-old=gust).
 const fs = require('fs'), path = require('path'), os = require('os');
 const OUT = process.env.FIELD_OUT || path.join(os.tmpdir(), 'qok-field');
 fs.mkdirSync(OUT, { recursive: true });
@@ -83,7 +85,8 @@ async function seedDungeon(page, id, floor, xy, { flags = {}, url } = {}) {
   const s = L.save({ mapId: id, floor, x: xy[0], y: xy[1], flags: { ...L.allFlags(), ...ALLB, ...flags }, inventory: INV, completedQuests: QUESTS });
   s.player.name = 'Mika';
   await page.goto(url || URL_, { waitUntil: 'domcontentloaded' });
-  await page.evaluate(s => { localStorage.clear(); localStorage.setItem('edu-rpg-save', JSON.stringify(s)); }, s);
+  await page.evaluate(([s, ls]) => { localStorage.clear(); localStorage.setItem('edu-rpg-save', JSON.stringify(s));
+    for (const kv of ls) { const i = kv.indexOf('='); if (i > 0) localStorage.setItem(kv.slice(0, i), kv.slice(i + 1)); } }, [s, (process.env.FIELD_LS || '').split(',').filter(Boolean)]);
   await page.reload({ waitUntil: 'load' });
   await L.toTitle(page);
   await hookMessages(page);
