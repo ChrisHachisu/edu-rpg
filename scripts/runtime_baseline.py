@@ -854,7 +854,7 @@ def manifest_for(source: Path) -> dict[str, object]:
 # and nothing else new), and checks size, sha256 and the public/dist twin of every one.
 # A checkout without the manifest has no Acts 2-5 files and the gate is exactly what it was.
 ACTS_HIFI_MANIFEST = ROOT / "runtime" / "manifests" / "acts-hifi-files.json"
-ACTS_HIFI_PREFIXES = ("acts-hifi/", "act2-hifi/", "act3-hifi/", "act4-hifi/", "act5-hifi/", "act1-hifi/town/")
+ACTS_HIFI_PREFIXES = ("acts-hifi/", "act2-hifi/", "act3-hifi/", "act4-hifi/", "act5-hifi/", "act1-hifi/town/", "acts-dungeons/")
 
 
 def load_acts_hifi_files() -> dict[str, tuple[int, str]]:

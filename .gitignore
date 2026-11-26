@@ -95,3 +95,5 @@ scripts/__pycache__/
 scratchpad/
 scripts/device-motion/framedump
 probe-out/
+dist.new/
+dist.old/
