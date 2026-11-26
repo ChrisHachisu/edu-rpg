@@ -25,7 +25,18 @@ async function dungeonGenerated(id, doorName, { want } = {}) {
 function mechProbe(script, args = [], { name = script } = {}) {     // a mechanic probe run on the playthrough's own record
   const { spawnSync } = require('child_process');
   const inF = path.join(OUTD, '_mech-in.json'), outF = path.join(OUTD, `_mech-out-${name}.json`);
-  return { inF, outF, run: () => spawnSync('node', [path.join(__dirname, '..', script), ...args], { env: { ...process.env, PT_SAVE: inF, PT_SAVE_OUT: outF, PROBE_OUT: path.join(OUTD, 'mech-' + name), PROBE_SHOTS: path.join(OUTD, 'mech-shots') }, encoding: 'utf8', timeout: 2400000, maxBuffer: 64 << 20 }) };
+  const once = () => spawnSync('node', [path.join(__dirname, '..', script), ...args], { env: { ...process.env, PT_SAVE: inF, PT_SAVE_OUT: outF, PROBE_OUT: path.join(OUTD, 'mech-' + name), PROBE_SHOTS: path.join(OUTD, 'mech-shots') }, encoding: 'utf8', timeout: 2400000, maxBuffer: 64 << 20 });
+  // One second try from the same record when the probe's robot misses (a snagged walk, a late release): on the cloud box
+  // a few dungeon probes per story run fail once and pass on replay (2026-11-26: 3 of about 43, three different dungeons). The miss is printed as a [RETRY] line and its log kept
+  // (mech-<id>.try1.log), and story_run.sh counts the retries, so a dungeon that needs them often is seen.
+  const run = () => {
+    let r = once(); const out = (r.stdout || '') + (r.stderr || ''), fails = out.split('\n').filter(l => l.startsWith('[FAIL]'));
+    if (process.env.PT_MECH_RETRY === '0' || (r.status === 0 && !fails.length && fs.existsSync(outF))) return r;
+    fs.writeFileSync(path.join(OUTD, `mech-${name}.try1.log`), out); try { fs.unlinkSync(outF); } catch (e) {}
+    console.log(`[RETRY] ${name}: the mechanic probe failed once (${(fails[0] || 'exit ' + r.status).slice(0, 220)}); second try from the same record`);
+    return once();
+  };
+  return { inF, outF, run };
 }
 // Run a dungeon's own end-to-end probe from the playthrough's record (she stands at the mouth's exit)
 // and continue from the record it leaves.
