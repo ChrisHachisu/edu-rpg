@@ -57,12 +57,14 @@ const BREAKS_FN = (el) => {
       if (/\s/.test(c)) { space = true; continue; }
       const r = document.createRange(); r.setStart(n, i); r.setEnd(n, i + 1); const rs = r.getClientRects();
       if (!rs.length) continue; const b = rs[rs.length - 1];
-      chars.push({ c, top: b.top, h: b.height, space }); space = false;
+      chars.push({ c, top: b.top, h: b.height, space, par: n.parentElement, blk: !/^inline/.test(getComputedStyle(n.parentElement).display) }); space = false;
     }
   }
   const out = [];
   for (let i = 1; i < chars.length; i++) {
     const a = chars[i - 1], b = chars[i];
+    // a new line that starts a new block (the keypad's typed answer above the result text) is layout, not a wrapped line
+    if (a.par !== b.par && (a.blk || b.blk)) continue;
     if (b.top > a.top + Math.max(4, a.h * 0.5)) {
       const ctx = chars.slice(Math.max(0, i - 4), i).map(x => x.c).join('') + '/' + chars.slice(i, i + 4).map(x => x.c).join('');
       const ja = /[぀-ヿ一-鿿]/.test(ctx);

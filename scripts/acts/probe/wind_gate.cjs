@@ -9,6 +9,9 @@ const fs = require('fs'), path = require('path');
 const L = require('./lib.cjs');
 const PILOT = fs.readFileSync(path.join(__dirname, 'pilot.js'), 'utf8');
 const STONE = { itemId: 'windbreakerStone', quantity: 1 };
+// "No stone" must be a save the game could have written: the Storm Harpy is not beaten yet. Since 2026-11-23 lib.save() puts the
+// stone in the bag of any save whose Harpy is beaten and whose gale is not cleared, so allFlags() alone is no longer a closed gate.
+const NO_STONE = () => { const f = L.allFlags(); delete f['boss.stormHarpy.defeated']; return f; };
 (async () => {
   const vdir = path.join(L.OUT, 'video'); fs.rmSync(vdir, { recursive: true, force: true });
   const { browser, ctx, page, errors } = await L.launch({ video: vdir });
@@ -21,7 +24,7 @@ const STONE = { itemId: 'windbreakerStone', quantity: 1 };
   const msgs = () => page.evaluate(() => window.__P.msgs().map(m => m.t));
   try {
     // ---- 1. closed: no stone
-    await L.bootSave(page, L.save({ x: 221, y: 331, flags: L.allFlags() }), { settle: 4000 });
+    await L.bootSave(page, L.save({ x: 221, y: 331, flags: NO_STONE() }), { settle: 4000 });
     await page.evaluate(PILOT); await page.evaluate(() => window.__P.hookMsgs());
     out.closed = { gate: await G(), at: await L.pos(page) };
     await L.shot(page, 'wind-closed');
@@ -58,7 +61,7 @@ const STONE = { itemId: 'windbreakerStone', quantity: 1 };
     out.clearedSave.after = await L.pos(page); out.clearedSave.msgs = await msgs(); out.clearedSave.gateAfter = await G();
     // ---- 4. Japanese: the blocked line in kana and in kanji
     for (const kanji of [false, true]) {
-      await L.bootSave(page, L.save({ x: 221, y: 331, flags: L.allFlags(), locale: 'ja', kanjiMode: kanji }), { settle: 3000 });
+      await L.bootSave(page, L.save({ x: 221, y: 331, flags: NO_STONE(), locale: 'ja', kanjiMode: kanji }), { settle: 3000 });
       await page.evaluate(PILOT); await page.evaluate(() => window.__P.hookMsgs());
       await L.walkCells(page, [[228, 331]], { maxMs: 5000 }); await L.stick(page, 1, 0, 1500); await page.waitForTimeout(300);
       out[kanji ? 'jaKanji' : 'jaKana'] = await msgs();
@@ -82,6 +85,7 @@ const STONE = { itemId: 'windbreakerStone', quantity: 1 };
   fs.writeFileSync(path.join(L.OUT, 'wind-gate.json'), JSON.stringify(out, null, 1));
   console.log(JSON.stringify(out.verdict), out.pass ? 'PASS' : 'FAIL', out.error || '');
   await ctx.close(); await browser.close();
+  if (!out.pass) process.exitCode = 1;
   const vid = fs.existsSync(vdir) ? fs.readdirSync(vdir).filter(f => f.endsWith('.webm')) : [];
   if (vid.length) fs.renameSync(path.join(vdir, vid[0]), path.join(vdir, 'wind-gate.webm'));
 })();

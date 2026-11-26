@@ -35,6 +35,16 @@ for job in "$@"; do
   esac
   out=$LOG/out/$name; mkdir -p "$out"; t0=$(date +%s)
   PROBE_OUT=$out PT_DIR=$out PT_SHOTS=$out/shots/ timeout ${TMO:-3000} $cmd "$@" > "$LOG/$name.log" 2>&1; rc=$?
+  # The older probes exit 0 whatever they found: their last line is "NAME n/m ..." or "{verdict} PASS|FAIL". Read it.
+  if [ $kind = probe ] && [ $rc -eq 0 ]; then
+    last=$(grep -v '^$' "$LOG/$name.log" | tail -1)
+    case "$last" in
+      *" FAIL"*) rc=9;;
+      [A-Z]*" "[0-9]*/[0-9]*) set -- $last; [ "${2%/*}" = "${2#*/}" ] || rc=9;;
+      *" PASS"*) ;;
+      *) rc=8;;
+    esac
+  fi
   [ $rc -eq 0 ] || RC=1
   echo "$name rc=$rc pass=$(grep -c '\[PASS\]' "$LOG/$name.log") fail=$(grep -c '\[FAIL\]' "$LOG/$name.log") secs=$(( $(date +%s) - t0 ))" >> "$LOG/summary.txt"
 done
