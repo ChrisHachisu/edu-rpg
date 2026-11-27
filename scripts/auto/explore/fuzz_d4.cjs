@@ -379,6 +379,97 @@ SC['kill-warp'] = async c => {
   await killAndCheck(c, 'crystal warp overlay open', pre, mid, { expect: (p, m, post) => sameOrMid(p, m, post) });
 };
 
+// ---- day-4 second pass: new quiz bank, keypad, timer ------------------------------------------------
+SC['quiz-grades'] = async c => {
+  for (const [g, pt] of [['k', 'ironkeep:gate'], ['3', 'ironkeep:gate'], ['6', 'stormreachSpire:entrance']]) {
+    await bootSlot(c, recSave(pt, s => { s.player.quizDifficulty = g; s.player.timerEnabled = true; s.player.hp = 9999; s.player.maxHp = 9999; s.player.def = 9999; if (pt === 'ironkeep:gate') s.player.position = { mapId: 'overworld', x: 172, y: 335, floor: 1 }; }));
+    await c.page.evaluate(g => { window.__GAME_STATE__.quizManager.difficulty = g; window.__GAME_STATE__.player.state.quizDifficulty = g; }, g);
+    const seen = [], bad = []; let neg = null, timedOut = 0, rounds = 0, wrongOk = 0, rightOk = 0;
+    await D.startFight(c.page, 'bandit'); await D.untilPhase(c.page, ['playerMenu'], 20000);
+    for (let i = 0; i < 40 && rounds < 14; i++) {
+      const s = await D.bst(c.page); if (!s.on) { await D.startFight(c.page, 'bandit'); await D.untilPhase(c.page, ['playerMenu'], 20000); continue; }
+      if (s.phase === 'playerMenu') { await tap(c.page, '[data-act="battleMenu"][data-i="0"]', 3000); await D.untilPhase(c.page, ['playerQuiz'], 15000); continue; }
+      if (s.phase === 'message') { await c.page.evaluate(() => { try { window.__PHASER_GAME__.scene.getScene('BattleScene').advanceMessage(); } catch (e) {} }); await c.page.waitForTimeout(250); continue; }
+      if (!/Quiz/.test(s.phase) || !s.kp) { await c.page.waitForTimeout(250); continue; }
+      const q = await c.page.evaluate(() => { const b = window.__PHASER_GAME__.scene.getScene('BattleScene'), q = b.quizQuestion; return { text: (document.querySelector('#qok-ui').innerText.match(/[^\n]*[=?][^\n]*/) || [''])[0], right: String(((q.answers.find(a => a.isCorrect) || {}).text || {}).en), n: q.answers.length, secs: b.quizTimerSeconds, grade: q.gradeLevel, uniq: new Set(q.answers.map(a => a.text.en)).size }; });
+      rounds++; seen.push(q);
+      if (!/^-?\d+$/.test(q.right)) bad.push({ why: 'keypad cannot type', ...q });
+      if (q.uniq < q.n) bad.push({ why: 'duplicate choices', ...q });
+      if (!(q.secs > 0)) bad.push({ why: 'no timer with timerEnabled', ...q });
+      const wrong = rounds % 3 === 1, tmo = rounds === 5;
+      if (tmo) { await c.page.evaluate(() => window.__PHASER_GAME__.scene.getScene('BattleScene').onQuizTimeout()); timedOut++; await c.page.waitForTimeout(600); continue; }
+      let val = q.right; if (wrong) val = String(Math.abs(+q.right) + 7);
+      if (q.right.startsWith('-') && !wrong) neg = neg || q;
+      for (const sel of await L.quizTaps(c.page, 0).then(() => [])) {}
+      const taps = []; for (const ch of val.replace('-', '')) taps.push(`[data-act="kpKey"][data-k="${ch}"]`); if (val.startsWith('-')) taps.push('[data-act="kpKey"][data-k="pm"]'); taps.push('[data-act="kpKey"][data-k="go"]');
+      for (const t of taps) await tap(c.page, t, 2000);
+      await c.page.waitForTimeout(500);
+      const res = await c.page.evaluate(() => document.querySelector('#qok-ui').innerText.replace(/\s+/g, ' ').slice(0, 160));
+      const ok = wrong ? !/Correct|Great|Nice/i.test(res) || /Wrong|not|Incorrect/i.test(res) : /Correct|Great|Nice|damage|Victory|!/i.test(res);
+      if (wrong) wrongOk += ok ? 1 : 0; else rightOk += ok ? 1 : 0; if (!ok) bad.push({ why: (wrong ? 'wrong answer treated as ok' : 'right typed answer not accepted') + ': ' + res, ...q });
+    }
+    c.R.check(c.n, `grade ${g}: ${rounds} questions on the keypad: every right answer is a typeable integer, choices distinct, timer present, typed right/wrong answers judged right`, bad.length === 0 && rounds >= 6, { g, rounds, bad: bad.slice(0, 4), sample: seen.slice(0, 5).map(q => q.text + ' = ' + q.right), grades: [...new Set(seen.map(q => q.grade))], neg, timedOut });
+    if (g === '6') c.R.check(c.n, 'grade 6 Act 5: the ± key is present', await c.page.evaluate(() => !!document.querySelector('[data-k="pm"]')), null);
+    await shot(c, 'quiz-g' + g);
+  }
+  // grade 6: hunt a negative answer through the real engine's questions and enter it with ±
+  await bootSlot(c, recSave('stormreachSpire:entrance', s => { s.player.quizDifficulty = '6'; s.player.hp = 9999; s.player.maxHp = 9999; s.player.def = 9999; }));
+  await c.page.evaluate(() => { window.__GAME_STATE__.quizManager.difficulty = '6'; });
+  let found = null; await D.startFight(c.page, 'bandit'); await D.untilPhase(c.page, ['playerMenu'], 20000);
+  for (let i = 0; i < 90 && !found; i++) {
+    const s = await D.bst(c.page); if (!s.on) { await D.startFight(c.page, 'bandit'); await D.untilPhase(c.page, ['playerMenu'], 20000); continue; }
+    if (s.phase === 'playerMenu') { await tap(c.page, '[data-act="battleMenu"][data-i="0"]', 3000); await D.untilPhase(c.page, ['playerQuiz'], 15000); continue; }
+    if (s.phase === 'message') { await c.page.evaluate(() => { try { window.__PHASER_GAME__.scene.getScene('BattleScene').advanceMessage(); } catch (e) {} }); await c.page.waitForTimeout(200); continue; }
+    if (!/Quiz/.test(s.phase) || !s.kp) { await c.page.waitForTimeout(200); continue; }
+    const right = s.right;
+    if (right && right.startsWith('-')) { found = right; await tap(c.page, '[data-act="kpKey"][data-k="pm"]'); for (const ch of right.replace('-', '')) await tap(c.page, `[data-act="kpKey"][data-k="${ch}"]`); const disp = await c.page.evaluate(() => (document.querySelector('#qok-kpdisp') || {}).textContent); await tap(c.page, '[data-act="kpKey"][data-k="go"]'); await c.page.waitForTimeout(700);
+      const res = await c.page.evaluate(() => document.querySelector('#qok-ui').innerText.replace(/\s+/g, ' ').slice(0, 140)); c.R.check(c.n, 'grade 6 negative answer typed with ± is accepted as correct', /Correct|damage|!/i.test(res) && !/Wrong/i.test(res), { right, disp, res }); }
+    else await D.answer(c.page, true);
+    await c.page.waitForTimeout(300);
+  }
+  if (!found) c.R.check(c.n, 'grade 6: a negative-answer question came up in 90 questions', 'UNVERIFIED', null);
+};
+SC['kill-quiz-bank'] = async c => {
+  for (const g of ['k', '3', '6']) {
+    await bootSlot(c, recSave('ironkeep:gate', s => { s.player.quizDifficulty = g; s.player.timerEnabled = true; s.player.position = { mapId: 'overworld', x: 172, y: 335, floor: 1 }; }));
+    await c.page.evaluate(g => { window.__GAME_STATE__.quizManager.difficulty = g; }, g);
+    const pre = await dig(c.page); await D.startFight(c.page, 'bandit'); await D.untilPhase(c.page, ['playerMenu'], 20000);
+    await tap(c.page, '[data-act="battleMenu"][data-i="0"]', 3000); await D.untilPhase(c.page, ['playerQuiz'], 15000);
+    await tap(c.page, '[data-act="kpKey"][data-k="1"]'); await c.page.waitForTimeout(1500);
+    await killAndCheck(c, `grade ${g}: timer running, "1" typed`, pre, null, { expect: () => [] });
+    await D.startFight(c.page, 'bandit'); await D.untilPhase(c.page, ['playerMenu'], 20000); await tap(c.page, '[data-act="battleMenu"][data-i="0"]', 3000); await D.untilPhase(c.page, ['playerQuiz'], 15000);
+    const q = await c.page.evaluate(() => ({ disp: (document.querySelector('#qok-kpdisp') || {}).textContent, secs: window.__PHASER_GAME__.scene.getScene('BattleScene').quizTimerSeconds, grade: window.__GAME_STATE__.player.state.quizDifficulty }));
+    c.R.check(c.n, `grade ${g}: after the kill the next quiz is fresh (empty display, timer set, grade kept)`, !/1/.test(String(q.disp || '')) && q.secs > 0 && String(q.grade).toLowerCase() === g, q);
+  }
+};
+SC['resume-f3'] = async c => {
+  for (let k = 0; k < 2; k++) {
+    const pt = man.floors['emberMines-f3'].land.fromPrev;
+    await bootSlot(c, recSave('emberMines:f3', s => { s.player.position = { mapId: 'emberMines', x: pt.x, y: pt.y, floor: 3 }; }));
+    for (let i = 0; i < 4; i++) { const a = i * 1.7; await L.stick(c.page, Math.cos(a), Math.sin(a), 250); }
+    const before = await dig(c.page); await X.hide(c.page, true); await c.page.waitForTimeout(800); await X.hide(c.page, false);
+    await D.kill(c.page); const how = await D.afterKill(c.page, 0, 1); const after = await dig(c.page).catch(e => ({ error: String(e) })); const mv = after.error ? null : await D.canMove(c.page);
+    const ok = !after.error && after.map === before.map && after.floor === before.floor && Math.abs(after.cell[0] - before.cell[0]) + Math.abs(after.cell[1] - before.cell[1]) <= 1 && mv && mv.ok;
+    c.R.check(c.n, `try ${k + 1}: hide then reload on Ember Mines f${before.floor}: same floor/cell, can move`, !!ok, { how, before: brief(before), after: brief(after), mv });
+  }
+};
+SC['kill-town-dialog'] = async c => {
+  await bootSlot(c, recSave('ironkeep:gate')); await c.page.waitForTimeout(3500);
+  const pre = await dig(c.page);
+  const talk = await c.page.evaluate(() => { const f = document.querySelector('#act1-hifi-preserved-root iframe'); const w = f && f.contentWindow; if (!w || !w.__ACT1_TOWN__) return 'no town'; const t = w.__ACT1_TOWN__; try { return Object.keys(t).slice(0, 25).join(','); } catch (e) { return String(e); } });
+  c.note = talk; await c.page.evaluate(() => { const w = window.__PHASER_GAME__.scene.getScene('WorldMapScene'); w.showMessage('Welcome to Ironkeep, traveller. The smith is to the east.'); });
+  await c.page.waitForTimeout(800); const mid = await dig(c.page);
+  await killAndCheck(c, 'town dialog box open inside Ironkeep', pre, mid, { expect: (p, m, post) => { const o = sameOrMid(p, m, post); if (post.map !== 'ironkeep') o.push('left the town: ' + post.map); return o; } });
+};
+SC['kill-fall'] = async c => {
+  // Storm Nest walkway: put her on a lane edge in a gust and kill the page while she is blown off
+  await bootSlot(c, recSave('stormNest:f2'));
+  await c.page.waitForFunction(() => { const d = window.__QOK_DNG2__, st = d && d.state(); return !st || !st.key || (st.mask !== 'loading' && st.art !== 'loading'); }, null, { timeout: 40000 }).catch(() => {});
+  const pre = await dig(c.page);
+  const got = await c.page.evaluate(async () => { const A = window.__QOK_D2KIT_A__; return !!A; });
+  c.R.check(c.n, 'gust fall kill: needs the probe injection harness (mech/gust-walkways.cjs inject)', 'UNVERIFIED', { kitPresent: got, pre: brief(pre) });
+};
+
 // ---- old saves ---------------------------------------------------------------------------------------
 SC['oldsave'] = async c => {
   const base = () => recSave('ironMine:f2');
