@@ -80,7 +80,7 @@
   // ---- the look (day 4, DB-15): the draught in the ash --------------------------------------------
   // The draught was a still picture whose alpha breathed: a few hundred px changed in four seconds. Now ash moves:
   // every 2.6 s a breath comes out of the crack (the game's own line: "A draught blows from the wall") and carries
-  // a handful of pale puffs and motes along the floor, from the foot of the cracked stretch out past the ash
+  // a handful of grey ash puffs and soot flecks along the floor, from the foot of the cracked stretch out past the ash
   // patch, about a cell and a half; a mote now and then in between. It is ash on the floor, not a marker: no
   // arrow, no glow, and it stops for good once the wall is open. localStorage 'qok-d4-looks' = '0': the old picture only.
   var LOOKS=(function(){ try{ return window.localStorage.getItem('qok-d4-looks')!=='0'; }catch(e){ return true; } })();
@@ -101,10 +101,10 @@
     if(h.S.open){ if(!D.off){ D.off=true; for(i=0;i<D.motes.length;i++) D.motes[i].img.setVisible(false); } return; }
     if(t>=D.next){ D.next=t+(gust?62:520);                                     // a breath, then a mote now and then
       for(i=0;i<D.motes.length;i++){ var m=D.motes[i]; if(t-m.t0<m.life) continue;
-        var puff=gust&&Math.random()<0.45, a=(Math.random()-0.5)*2*D.span, sp=(gust?58:34)+Math.random()*26;
+        var puff=gust&&Math.random()<0.55, a=(Math.random()-0.5)*2*D.span, sp=(gust?58:34)+Math.random()*26;
         m.t0=t; m.life=(puff?1500:1150)+Math.random()*500; m.x=D.fx+D.along[0]*a-D.ux*2; m.y=D.fy+D.along[1]*a-D.uy*2;
-        m.vx=D.ux*sp; m.vy=D.uy*sp; m.ph=Math.random()*6.28; m.size=puff?0.55+Math.random()*0.3:0.16+Math.random()*0.12; m.peak=puff?0.34:0.8; m.wob=puff?3:6;
-        m.img.setTint(puff?0xd9d2c8:0xf2ece2).setVisible(true); break; } }
+        m.vx=D.ux*sp; m.vy=D.uy*sp; m.ph=Math.random()*6.28; m.size=puff?0.9+Math.random()*0.5:0.24+Math.random()*0.14; m.peak=puff?0.36:0.95; m.wob=puff?3:6;
+        m.img.setTint(puff?0x4c4641:(Math.random()<0.65?0x2c2723:0xeae4da)).setVisible(true); break; } }   // grey ash and dark soot flecks (they show on the pale flagstones), a pale one now and then
     for(i=0;i<D.motes.length;i++){ var q=D.motes[i], age=t-q.t0; if(age>=q.life){ if(q.img.visible) q.img.setVisible(false); continue; }
       var k=age/q.life, s=age/1000, w=Math.sin(age/240+q.ph)*q.wob*k;
       q.img.setPosition(q.x+q.vx*s*(1-0.32*k)-D.uy*w, q.y+q.vy*s*(1-0.32*k)+D.ux*w).setScale(q.size*(0.7+1.0*k)).setAlpha(q.peak*Math.pow(Math.sin(Math.PI*Math.min(1,k*1.15)),0.7)); }

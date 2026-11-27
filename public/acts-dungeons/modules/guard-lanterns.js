@@ -138,7 +138,7 @@
   // soft(pos): the soft picture of the cells a guard at `pos` lights: {x, y (world px of its corner), w (px, square), a}
   function soft(ctx, M, pos) {
     var key = pos.join(','), hit = M.soft[key]; if (hit) return hit;
-    if ((M.softN = (M.softN || 0) + 1) > 24) { M.soft = {}; M.softN = 1; }      // a guard's beat revisits the same few cells: keep the latest
+    if ((M.softN = (M.softN || 0) + 1) > 96) { M.soft = {}; M.softN = 1; }      // a guard's beat revisits the same few cells: keep the latest (three per guard are live each frame)
     var lit = litCells(ctx, pos, M.R, M.cosHalf, M.cache), n = M.R + 1 + PAD, x0 = pos[0] - n, y0 = pos[1] - n, W = (2 * n + 1) * RES, A = new Float32Array(W * W), k, x, y;
     for (k in lit) { var c = k.split(','), cx = +c[0], cy = +c[1], d = Math.max(Math.abs(cx - pos[0]), Math.abs(cy - pos[1])), v = (d <= 1 ? 0.30 : Math.max(0.12, 0.28 - d * 0.022)) / LIGHT;   // the old cells' own alpha
       var px = (cx - x0) * RES, py = (cy - y0) * RES; if (px < 0 || py < 0 || px + RES > W || py + RES > W) continue;

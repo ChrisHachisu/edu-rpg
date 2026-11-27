@@ -66,8 +66,9 @@
     {
       "id": "shopkeeper",
       "space": [14, 27, 14],
-      "spaceMax": 18,
-      "spaceNote": "2026-11-27 (design review T4): he stands at the north edge of a street 20 px deep, with the chimney of the house below 25 px to his west. A full body's space (20 px each side, 27 px south) closed the street to the whole west of the town, so his space ends 14 px south and 14 px to each side: the street keeps a 10 px way past him, and while she passes or talks from there her sprite still overlaps his by up to `spaceMax` px (it was the same before). Beside him to the east she stops clear.",
+      "spaceMax": 15,
+      "spaceNote": "2026-11-27 (design review T4): he stands at the north edge of a street 20 px deep, with the chimney of the house below 25 px to his west. A full body's space (20 px each side, 27 px south) closed the street to the whole west of the town, so his `space` ends 14 px south and 14 px to each side, and `spaceAlso` is the body he had before (10 px round, 7 px south): the hero comes no nearer than she did, the street keeps its way past him, and passing or talking from below her sprite still overlaps his by up to `spaceMax` px. An owner call could stand him behind his stall like the Act 2-5 keepers (T3).",
+      "spaceAlso": [10, 10, 17, 10],
       "dialogueKey": "npc.shopkeeper",
       "nameKey": "npc.shopkeeper.name",
       "sheet": "town/npc/millbrook-shopkeeper-4x3-64.png",

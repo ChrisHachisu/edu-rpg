@@ -60,6 +60,9 @@ async function shadow(page) {
   const f = fl('shadowCave', 5), cr = f.mech.filter(m => m.kind === 'crystalLight')[0];
   await seed(page, 'shadowCave', 5, F.nearestWalk(f, cr.x, cr.y));
   F.ok(await waitSt(page, 'S && S.dim === true && S.shadows && S.shadows.length'), 'Shadow Cave B5F: a dim phase with shadows prowling was reached');
+  await page.evaluate(() => { const S = window.__QOK_DNG2__.ctx().state; S.grace = 1e9; });   // not caught while the looks are read (catching is the probe's business)
+  // she arrives late in a dim phase: read the looks early in the NEXT dim phase (a slow box would otherwise miss it)
+  await waitSt(page, 'S && S.dim === false', 20000); await waitSt(page, 'S && S.dim === true', 20000);
   await sleep(page, 250);
   const r = await page.evaluate(() => {
     const c = window.__QOK_DNG2__.ctx(), S = c.state, sc = c.scene, cb = S.ring.commandBuffer || [];
@@ -87,10 +90,12 @@ async function shadow(page) {
   // the reach is shown for exactly the dim phase: sample every frame over one full cycle on the module's clock
   const cyc = await page.evaluate(() => new Promise(res => {
     const c = window.__QOK_DNG2__.ctx(), S = c.state, sc = c.scene; let dimFrames = 0, dimShown = 0, shineFrames = 0, shineLate = 0, t0 = S.t, lastDim = S.dim, shineStart = null;
+    S.grace = 1e9;   // standing still, she would be caught and the cave clock would stop for the battle: the sample needs a full cycle
+
     function step() { if (!S.shadows.length) return fin(); const s = S.shadows[0], a = s.pool ? s.pool.alpha : -1;
       if (S.dim) { dimFrames++; if (a >= 0.99) dimShown++; } else { if (lastDim) shineStart = S.t; shineFrames++; if (shineStart !== null && S.t - shineStart > 260 && a > 0.01) shineLate++; }
       lastDim = S.dim; if (S.t - t0 > (S.P.dimTicks + S.P.shineTicks) * 185 + 300) fin(); }
-    function fin() { sc.events.off('postupdate', step); res({ dimFrames, dimShown, shineFrames, shineLate, dimMs: S.P.dimTicks * 185 }); }
+    function fin() { sc.events.off('postupdate', step); S.grace = 0; res({ dimFrames, dimShown, shineFrames, shineLate, dimMs: S.P.dimTicks * 185, clockMs: Math.round(S.t - t0), pending: !!S.pending }); }
     sc.events.on('postupdate', step); setTimeout(fin, 25000);
   }));
   F.ok(cyc.dimFrames > 10 && cyc.dimShown === cyc.dimFrames, 'Shadow Cave: the reach is shown on every frame of the dim phase (as long as the square was)', JSON.stringify(cyc));
@@ -153,11 +158,13 @@ async function mouth(page) {
     const at = (a, b) => { const X = (ex + ac[0] * a + out[0] * b - cam.x) * k, Y = (ey + ac[1] * a + out[1] * b - cam.y) * k; if (X < 2 || Y < 2 || X >= img.w - 2 || Y >= img.h - 2) return null;
       let s2 = 0; for (const [dx, dy] of [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]]) s2 += lum(F.px(img, X + dx, Y + dy)); return s2 / 5; };
     let worst = 0, n = 0, centreOut = null;
-    for (let a = -span / 2 + 6; a <= span / 2 - 6; a += 6) { const i = at(a, -5), o = at(a, 5); if (i === null || o === null) continue; n++; worst = Math.max(worst, Math.abs(i - o)); }
+    // a ruled line is a step across the edge far bigger than the light's own slope just inside it (same 10 px stride)
+    for (let a = -span / 2 + 6; a <= span / 2 - 6; a += 6) { const i = at(a, -5), o = at(a, 5), i2 = at(a, -15); if (i === null || o === null || i2 === null) continue; n++;
+      worst = Math.max(worst, Math.abs(i - o) - Math.max(0, 1.5 * Math.abs(i2 - i))); }
     centreOut = at(0, 4); const farOut = at(0, 1.6 * T), sideOut = at(span / 2 + 1.2 * T, 0.6 * T);
     if (!n) F.info(`${id}: the mouth's edge is off screen`, 'pixel lines skipped');
     else {
-      F.ok(worst <= 30, `${id}: across the mouth, the light is the same on both sides of the map's edge (no ruled line)`, `largest brightness step across the edge ${worst.toFixed(0)} of 255 over ${n} points`);
+      F.ok(worst <= 20, `${id}: across the mouth the light carries over the map's edge (no ruled line: no step bigger than the glow's own slope)`, `largest brightness step across the edge beyond the glow's own slope ${worst.toFixed(0)} of 255 over ${n} points`);
       F.ok(centreOut !== null && centreOut >= 90 && farOut !== null && farOut <= 24, `${id}: the glow is brightest at the mouth and gone 1.6 cells out (it fades into the dark)`, `${centreOut && centreOut.toFixed(0)} at the edge, ${farOut && farOut.toFixed(0)} at 1.6 cells`);
       F.ok(sideOut === null || sideOut <= 30, `${id}: beside the mouth the void stays dark (no block of light over it)`, `${sideOut && sideOut.toFixed(0)}`);
     }
@@ -180,7 +187,8 @@ async function edge(page) {
     // no fade over a walkable cell: read the fade's own alpha at the centre (and the edge-side rim) of every open cell near the edge
     const r = await page.evaluate(([key, rows, W, H]) => { try {
       const sc = window.__PHASER_GAME__.scene.getScene('WorldMapScene'), S4 = 4, MAXD = 1.6 * 48, out = { cells: 0, worst: 0, rockMax: 0 };
-      for (const side of ['down', 'up', 'left', 'right']) { const t = sc.textures.get('d4edge_' + key + '_' + side); if (!t || t.key === '__MISSING') return { missing: side };
+      for (const side of ['down', 'up', 'left', 'right']) { let t = sc.textures.get('d4edge_' + key + '_' + side); if (!t || t.key === '__MISSING') t = sc.textures.get('d4edge_' + key + 'b_' + side);   // 'b': built with the floor's boss down
+        if (!t || t.key === '__MISSING') return { missing: side };
         const c = t.getSourceImage(), g = c.getContext('2d'), d = g.getImageData(0, 0, c.width, c.height).data;
         const alpha = (wx, wy) => { let dist, along; if (side === 'down') { dist = H * 48 - wy; along = wx; } else if (side === 'up') { dist = wy; along = wx; } else if (side === 'left') { dist = wx; along = wy; } else { dist = W * 48 - wx; along = wy; }
           if (dist >= MAXD || dist < 0) return 0; const q = Math.floor(dist / S4), a = Math.floor(along / S4); let x, y; const ld = Math.ceil(MAXD / S4);

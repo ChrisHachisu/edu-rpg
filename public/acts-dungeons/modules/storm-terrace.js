@@ -183,8 +183,8 @@
       for (i = 0; i <= n; i++) { var y = h * i / n, k = i === n ? 0 : (r() - 0.5) * (i % 2 ? 22 : 12) * (1 - i / (n + 2)); pts.push([i === n ? w / 2 : Math.max(14, Math.min(w - 14, x + k)), y - (i === n ? 2 : 0)]); x += (w / 2 - x) * 0.35 + k * 0.4; }
       function line(P, lw, col) { g.strokeStyle = col; g.lineWidth = lw; g.lineJoin = 'round'; g.lineCap = 'round'; g.beginPath(); g.moveTo(P[0][0], P[0][1]); for (var j = 1; j < P.length; j++) g.lineTo(P[j][0], P[j][1]); g.stroke(); }
       var b0 = pts[4], fork = [b0, [b0[0] + (v ? -11 : 12), b0[1] + 16], [b0[0] + (v ? -8 : 9), b0[1] + 30], [b0[0] + (v ? -19 : 20), b0[1] + 46]];
-      line(pts, 18, 'rgba(96,150,255,0.16)'); line(pts, 10, 'rgba(130,185,255,0.34)'); line(fork, 7, 'rgba(130,185,255,0.26)');
-      line(pts, 5, '#cfe6ff'); line(fork, 2.6, '#cfe6ff'); line(pts, 2.2, '#ffffff'); line(fork, 1.1, '#ffffff');
+      line(pts, 18, 'rgba(60,110,255,0.22)'); line(pts, 10, 'rgba(70,125,255,0.5)'); line(fork, 7, 'rgba(70,125,255,0.4)');   // a blue halo: it reads on lit stone too
+      line(pts, 5.5, '#a9d0ff'); line(fork, 3, '#a9d0ff'); line(pts, 2.6, '#ffffff'); line(fork, 1.3, '#ffffff');
       var f = g.createLinearGradient(0, 0, 0, h * 0.42); f.addColorStop(0, 'rgba(0,0,0,1)'); f.addColorStop(1, 'rgba(0,0,0,0)');
       g.globalCompositeOperation = 'destination-out'; g.fillStyle = f; g.fillRect(0, 0, w, h * 0.42); g.globalCompositeOperation = 'source-over';
     });
@@ -233,7 +233,7 @@
       if (!key) { S.spr = null; return buildOld(ctx); }                    // no canvas: the square cells are still a warning
       var w = ctx.own(sc.add.image(m.x, m.y, key).setOrigin(0, 0).setScale(sx).setDepth(dg + 0.2).setAlpha(0).setTint(0x2f6fe0));
       var a = ctx.own(sc.add.image(m.x, m.y, key).setOrigin(0, 0).setScale(sx).setDepth(dg + 0.25).setAlpha(0).setTint(S.spr.lit === 1 ? 0x8fc4ff : 0xa8d8ff));
-      var b = ctx.own(sc.add.image(m.x, m.y, key).setOrigin(0, 0).setScale(sx).setDepth(dg + 0.3).setAlpha(0));
+      var b = ctx.own(sc.add.image(m.x, m.y, key).setOrigin(0, 0).setScale(sx).setDepth(dg + 0.3).setAlpha(0).setTint(0xe2f0ff));
       try { a.setBlendMode(S.spr.lit); b.setBlendMode(1); } catch (e) {}
       S.spr.wash.push(w); S.spr.glow.push(a); S.spr.hit.push(b); S.spr.masks.push(m);
     }
@@ -252,9 +252,13 @@
       var st = striking(M, g, t), u = mod(t - g * M.gap, M.period);
       var ga = st ? 0 : glowAmount(M, g, t); if (M.kid && ga > 0) ga = 0.2 + 0.8 * ga;   // the longer glow is visible from its first moment
       var pulse = ga > 0 ? ga * (0.30 + 0.10 * Math.sin(t * (3 + 5 * ga))) + 0.05 : 0, a = Math.max(0, Math.min(0.5, pulse));   // the old cells' own alpha: 0 exactly when they were dark
-      S.spr.glow[g].setAlpha(a > 0 ? Math.min(1, (S.spr.lit === 1 ? 0.06 : 0.16) + a * (S.spr.lit === 1 ? 1.1 : 1.7)) : 0);
-      S.spr.wash[g].setAlpha(a * 0.62);
-      S.spr.hit[g].setAlpha(st ? Math.max(0.15, 0.75 - 0.6 * (u / M.strike)) : 0);
+      var hk = st ? Math.max(0.15, 0.75 - 0.6 * (u / M.strike)) : 0;           // the old white cells' alpha through the strike
+      // the strike: the stone itself stays lit at full, blue, for the whole strike, under a pale flash that lasts its
+      // first tick (a lightning flash, not a white sheet: the stones show through it)
+      if (S.spr.lit !== 1 && st) hk = u < 1 ? 0.06 + 0.2 * (1 - u) : 0.06;
+      S.spr.glow[g].setAlpha(st ? 0.75 : a > 0 ? Math.min(1, (S.spr.lit === 1 ? 0.06 : 0.16) + a * (S.spr.lit === 1 ? 1.1 : 1.2)) : 0);
+      S.spr.wash[g].setAlpha(st ? 0.6 : a * 0.62);
+      S.spr.hit[g].setAlpha(hk);
       if (st && !S.was[g]) {                                                 // a new strike: bolts on stones of this group
         var L = landings(ctx, g, S.spr.bolts.length);
         for (i = 0; i < S.spr.bolts.length; i++) { var bo = S.spr.bolts[i], fl = S.spr.flash[i], p = L[i];
