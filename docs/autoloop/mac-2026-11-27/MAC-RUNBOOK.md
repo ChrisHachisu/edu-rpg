@@ -88,3 +88,13 @@ Put them on a new branch `art-sources-2026-11-27` of the repo under design/acts2
 
 ## Added 2026-11-27: first art batches (after the build and simulator steps)
 Queue: day4/art/ART-QUEUE.md. Tonight: A1 (three cut enemy sprites), A2 (nine town map icons), A3 (Demon King field sprite), each as its own fresh worker task per docs/AGENT-WORKFLOW.md section 4, launched with nohup + caffeinate. Outputs stay in ~/Documents/claudecode/acts2-5-codex-gen/day4/<family>/ and are pushed on the same art branch for review in the cloud. Nothing is installed into the game on the Mac.
+
+## Added 2026-11-27 19:20 JST: results of the first Mac run (rel/b100 at b454173, local commit 0900757c)
+Passed on the Mac: sections 1 to 5 (digest 62bb0190... on both runs; both negative checks; privacy manifest added to the target by script with the xcodeproj gem, project.pbxproj +4 lines) and the section 6 build. Not done: section 6 launch and play (simctl launch hung twice, Mac swapping: load 750 to 1000, swap 11 of 12 GB), sections 7 to 9, art batches.
+Corrections to the steps above:
+- Section 1: the forward checkout's origin is a local clone without today's commits. Use ~/Documents/claudecode/edu-rpg (GitHub remote) and worktrees of it; the rel/b100 worktree is ~/Documents/claudecode/edu-rpg-rc-20261127.
+- Section 6: Xcode 27.1 rejects the Pods' 14.0 deployment target. Add `IPHONEOS_DEPLOYMENT_TARGET=16.4` to the xcodebuild line (the Fastfile lanes already pass it).
+- Section 6: codesign fails on "resource fork ... detritus" when DerivedData is under ~/Documents. Use `-derivedDataPath /tmp/edu-rpg-rc-<date>-dd`. The 27 Nov build is kept at /tmp/edu-rpg-rc-20261127-dd (gone after a Mac restart).
+- Section 6: on this 8 GB Mac boot ONE simulator at a time and check load and swap first (`sysctl vm.swapusage`, `uptime`); do not launch while swap is over about 6 GB.
+- Art sources on the Mac sit at acts2-5-codex-gen/codex-gen/out/kit-*/ (not out/).
+- Disk on 27 Nov: about 16 GB free (97% full): ~/.codex 45 GB, ~/Documents/claudecode 33 GB, CoreSimulator 6.5 GB, ~/Library/Caches 4.6 GB. Deleting any of it is the owner's call.

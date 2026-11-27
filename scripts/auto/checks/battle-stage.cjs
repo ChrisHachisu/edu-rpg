@@ -27,7 +27,8 @@ const B = require('../battle/blib.cjs');
 const { U, L } = B;
 const { rec, shot } = U;
 const FIT_GROUPS = []; for (const lay of ['kp', '4b']) for (const vp of ['844', '667']) for (const half of ['a', 'b']) FIT_GROUPS.push(`fit-${lay}-${vp}${half}`);
-const GROUP = U.runGroups(__filename, ['table', 'bg1', 'bg2', 'bg3', 'zone', ...FIT_GROUPS, 'vic', 'vic-ja', 'quiz', 'hud', 'ja'], 'battle-stage');
+// U2 groups (follow-ups from the review of the day 4 changes): kpq d4off tablet-p tablet-l u2
+const GROUP = U.runGroups(__filename, ['table', 'bg1', 'bg2', 'bg3', 'zone', ...FIT_GROUPS, 'vic', 'vic-ja', 'quiz', 'hud', 'ja', 'kpq', 'd4off', 'tablet-p', 'tablet-l', 'u2'], 'battle-stage');
 
 // dungeon -> [its backdrop, one regular enemy of its table, its boss]
 const DUNGEON = {
@@ -344,6 +345,147 @@ async function ja(page) {
   }
 }
 
+// ---------------------------------------------------------------- U2: follow-ups from the review of the day 4 battle changes
+// kpq: the question size steps of UE-12 hold on the keypad card (the default layout); a later rule of the same weight overrode them.
+async function kpq(page) {
+  for (const [w, h] of [[390, 844], [375, 667]]) {
+    await page.setViewportSize({ width: w, height: h });
+    await B.boot(page, { mapId: 'overworld', x: 72, y: 270, player: { atk: 1, def: 0, quizDifficulty: '2', timerEnabled: false } });
+    await B.launch(page, 'wolf'); await B.toQuiz(page); await B.sleep(400);
+    // the question on screen is replaced by a text of a known length (direct: BattleScene.quizQuestion.questionText); the card repaints by itself
+    const ask = async text => {
+      await page.evaluate(t => { const b = window.__PHASER_GAME__.scene.getScene('BattleScene'); b.quizQuestion.questionText = { en: t, ja: t }; }, text); await B.sleep(600);
+      return page.evaluate(() => { const q = document.querySelector('#qok-ui .qcard.kp .qq'), c = document.querySelector('#qok-ui .qcard.kp'); if (!q || !c) return null;
+        const cs = getComputedStyle(q), cr = c.getBoundingClientRect(), g = document.createRange(); g.selectNodeContents(q); const ink = g.getBoundingClientRect();
+        const en = document.querySelector('#qok-ui .bfit') || document.querySelector('#qok-ui .bmon'), nb = document.querySelector('#qok-ui .enemy-card');
+        return { text: q.textContent, size: parseFloat(cs.fontSize), rows: new Set([...g.getClientRects()].map(x => Math.round(x.top))).size, inside: ink.left >= cr.left + 8 && ink.right <= cr.right - 8 && q.scrollWidth <= q.clientWidth + 1,
+          cardBottom: Math.round(cr.bottom), vh: innerHeight, clear: en && nb ? Math.round(en.getBoundingClientRect().top - nb.getBoundingClientRect().bottom) : null }; });
+    };
+    const s = await ask('7 + 8 = ?') || {}; await shot(page, `kpq-short-${w}x${h}`);
+    const m = await ask('25 + 17 + 8 = ?') || {};
+    const l = await ask('What is 3 hundreds, 4 tens and 5 ones?') || {}; await shot(page, `kpq-long-${w}x${h}`);
+    rec(`kpq ${w}x${h}: on the keypad card a short question keeps the large size (32 px, one line), a mid one is 28 px, a long one takes the smaller step (24 px, at most two lines), all inside the card`,
+      s.size === 32 && s.rows === 1 && s.inside === true && m.size === 28 && m.rows === 1 && m.inside === true && l.size === 24 && l.rows >= 1 && l.rows <= 2 && l.inside === true,
+      { short: [s.size, s.rows, s.inside], mid: [m.size, m.rows, m.inside], long: [l.size, l.rows, l.inside] });
+    rec(`kpq ${w}x${h}: with either question the keypad card ends on the screen and the enemy is clear of the name bar`, s.cardBottom <= s.vh && l.cardBottom <= l.vh && s.clear >= 0 && l.clear >= 0, { short: [s.cardBottom, s.vh, s.clear], long: [l.cardBottom, l.vh, l.clear] });
+    await B.leave(page);
+  }
+}
+
+// d4off: localStorage qok-d4-ui=0 gives the battle looks of the tree before day 4 for the changes that had no switch (U2-2).
+async function d4off(page) {
+  await B.boot(page, { mapId: 'overworld', x: 72, y: 270, ls: { 'qok-d4-ui': '0', 'qok-keypad': '0' }, player: { atk: 12, def: 0, level: 4, quizDifficulty: '1', timerEnabled: false } });
+  const root = await page.evaluate(() => ({ cls: document.documentElement.classList.contains('qok-d4off'), flag: window.__QOK_D4_UI__ }));
+  rec('d4off: qok-d4-ui=0 puts the root class on <html> and turns the JS flag off', root.cls === true && root.flag === false, root);
+  await B.launch(page, 'wolf'); await B.toMenu(page); await B.sleep(500); await shot(page, 'd4off-menu');
+  const m = await page.evaluate(() => { const q = s => document.querySelector('#qok-ui ' + s), fs = e => e ? parseFloat(getComputedStyle(e).fontSize) : 0, rail = q('.rail');
+    return { hair: rail ? getComputedStyle(rail, '::after').display : null, lab: fs(q('.railcmd .lab')), cmdH: Math.round((q('.railcmd') || document.body).getBoundingClientRect().height), icon: Math.round((q('.railcmd .ic') || document.body).getBoundingClientRect().width),
+      hp: fs(q('.pbar .bhp')), pname: fs(q('.pbar .bpname')), ename: fs(q('.enemy-card div div')), cmds: [...document.querySelectorAll('#qok-ui .railcmd .lab')].map(e => e.textContent), fit: !!q('.bfit') }; });
+  rec('d4off command bar: the hairline is back, labels at most 12.5 px, glyphs 22 px (the bar before day 4)', m.hair !== 'none' && m.lab > 0 && m.lab <= 12.5 && m.icon === 22, { after: m.hair, label: m.lab, icon: m.icon, h: m.cmdH });
+  rec('d4off hud: the HP figure is 11 px, the hero line 12 px, the enemy name 14 px', m.hp === 11 && m.pname === 12 && m.ename === 14, { hp: m.hp, hero: m.pname, enemy: m.ename });
+  rec('d4off Guard label: with qok-keypad=0 as well the second command reads "Defend" again', m.cmds[1] === 'Defend', m.cmds);
+  rec('d4off: a switch with its own key is untouched (qok-enemy-fit still on: the enemy is in its fitted box)', m.fit === true, { bfit: m.fit });
+  await B.toQuiz(page); await B.sleep(400);
+  const a = await page.evaluate(() => ({ tag: !!document.querySelector('#qok-ui .qtag'), answers: [...document.querySelectorAll('#qok-ui .qbtn')].map(b => ({ t: b.textContent, s: parseFloat(getComputedStyle(b).fontSize), cls: b.className, pad: getComputedStyle(b).paddingTop })) }));
+  await shot(page, 'd4off-quiz-buttons');
+  rec('d4off answer sizes: the four answers are 17 px with 13 px padding, no size class', a.answers.length === 4 && a.answers.every(x => x.s === 17 && x.pad === '13px' && !/\ba[123]\b/.test(x.cls)), a.answers);
+  rec('d4off: qok-quiz-tag keeps working on its own (the mode tag is still there)', a.tag === true, { tag: a.tag });
+  await B.answer(page, true);
+  let num = null; const t0 = Date.now();
+  while (Date.now() - t0 < 6000 && !num) { num = await page.evaluate(() => { const d = document.querySelector('#qok-ui .dmgnum'); if (!d) return null; const cs = getComputedStyle(d);
+    return { t: d.textContent, top: Math.round(parseFloat(d.style.top)), size: parseFloat(cs.fontSize), anim: cs.animationName, outline: (cs.textShadow.match(/px/g) || []).length }; }); if (!num) await B.sleep(40); }
+  const during = await drawn(page); await shot(page, 'd4off-number');
+  rec('d4off floating number: 32 px, the old float and shadow, anchored ON the sprite (below its top edge) as before day 4', !!(num && during && num.size === 32 && num.anim !== 'qok-dmgfloat2' && num.outline < 16 && num.top > during.y + 8), { num, spriteTop: during && Math.round(during.y) });
+  await B.leave(page);
+  await page.evaluate(() => { window.__GAME_STATE__.player.state.atk = 9999; });
+  await B.launch(page, 'slime'); await B.toQuiz(page); await B.sleep(250); await B.answer(page, true);
+  const t2 = Date.now(), seen = [];
+  while (Date.now() - t2 < 7000) { const s = await page.evaluate(() => { const mo = document.querySelector('#qok-ui .bmon.qok-defeated'); if (!mo) return null; const k = /matrix\(([^)]+)\)/.exec(getComputedStyle(mo).transform); if (!k) return 0; const p = k[1].split(',').map(Number); return Math.abs(p[1]) + Math.abs(p[2]); });
+    if (s !== null) { seen.push(s); if (seen.length >= 6) break; } await B.sleep(50); }
+  rec('d4off defeat fall: the beaten sprite rotates while it falls, as before day 4', seen.length >= 2 && Math.max(...seen) > 0.02, { samples: seen.length, skew: seen.length ? Math.max(...seen) : null });
+  await B.leave(page);
+  // the keypad on: Guard stays (it was the keypad's label before day 4 too)
+  await B.boot(page, { mapId: 'overworld', x: 72, y: 270, ls: { 'qok-d4-ui': '0' }, player: { atk: 12, def: 0, level: 4, quizDifficulty: '1', timerEnabled: false } });
+  await B.launch(page, 'wolf'); await B.toMenu(page); await B.sleep(400);
+  const g = await page.evaluate(() => [...document.querySelectorAll('#qok-ui .railcmd .lab')].map(e => e.textContent));
+  rec('d4off Guard label: with the keypad on it still reads "Guard"', g[1] === 'Guard', g);
+  await B.leave(page);
+}
+
+// tablet: on an iPad size the name bar and the HUD carry CSS zoom, and engines disagree on getBoundingClientRect() there (viewport px, or the
+// element's own zoomed px). The enemy fit and the number anchors must come out the same under both; the second model is laid over this
+// Chromium by replacing getBoundingClientRect for elements under zoom (U2-5).
+const ZMODEL = model => {
+  const E = Element.prototype; if (!window.__u2Orig) window.__u2Orig = E.getBoundingClientRect; const orig = window.__u2Orig;
+  const eff = el => { let z = 1; for (let n = el; n && n.nodeType === 1; n = n.parentElement) { const v = parseFloat(getComputedStyle(n).zoom); if (v > 0) z *= v; } return z; };
+  if (window.__u2K === undefined) { const p = document.createElement('div'); p.style.cssText = 'position:fixed;left:0;top:0;width:100px;height:100px;visibility:hidden;zoom:2'; document.body.appendChild(p); window.__u2K = orig.call(p).height / 200; p.remove(); }
+  const ownPx = Math.abs(window.__u2K - 1) > 0.01;   // what this browser itself answers under zoom
+  window.__u2True = el => { const r = orig.call(el), z = eff(el), k = (z !== 1 && ownPx) ? 1 / z : 1; return { left: r.left / k, top: r.top / k, right: r.right / k, bottom: r.bottom / k, width: r.width / k, height: r.height / k }; };
+  E.getBoundingClientRect = model === 'native' ? orig : function () { const t = window.__u2True(this), z = eff(this), k = model === 'own-px' ? 1 / z : 1; return new DOMRect(t.left * k, t.top * k, t.width * k, t.height * k); };
+  const a = window.__QOK_BATTLE_STAGE__; if (a && a.zoomReset) a.zoomReset();
+  window.dispatchEvent(new Event('resize'));
+  return { native: ownPx ? 'own-px' : 'viewport-px', model };
+};
+const zmeasure = page => page.evaluate(() => { const T = window.__u2True, q = s => document.querySelector('#qok-ui ' + s), f = q('.bfit'), c = q('.enemy-card'), st = q('.bstage'); if (!f || !c || !st) return null;
+  const fr = T(f), cr = T(c), sr = T(st); return { h: Math.round(fr.height), w: Math.round(fr.width), top: Math.round(fr.top), cx: Math.round(fr.left + fr.width / 2), cardBottom: Math.round(cr.bottom), clear: Math.round(fr.top - cr.bottom), feet: Math.round(sr.bottom - fr.bottom), zoom: getComputedStyle(c).zoom }; });
+async function tablet(page, w, h) {
+  await page.setViewportSize({ width: w, height: h });
+  await B.boot(page, { mapId: 'overworld', x: 72, y: 270, player: { atk: 12, def: 0, level: 30, quizDifficulty: '1', timerEnabled: false } });
+  const out = {}; let nat = null;
+  for (const model of ['native', 'own-px', 'viewport-px']) {
+    const info = await page.evaluate(`(${ZMODEL})(${JSON.stringify(model)})`); nat = info.native;
+    await B.launch(page, 'frostMonarch'); await B.toMenu(page); await B.sleep(500); await page.evaluate(() => window.dispatchEvent(new Event('resize'))); await B.sleep(250);
+    const o = out[model] = { menu: await zmeasure(page) }; if (model === 'native') await shot(page, `tablet-${w}x${h}-menu`);
+    await B.toQuiz(page); await B.sleep(500); await page.evaluate(() => window.dispatchEvent(new Event('resize'))); await B.sleep(250);
+    o.quiz = await zmeasure(page); if (model === 'native') await shot(page, `tablet-${w}x${h}-quiz`);
+    await B.answer(page, true);
+    const t0 = Date.now();
+    while (Date.now() - t0 < 6000 && !o.num) { o.num = await page.evaluate(() => { const d = document.querySelector('#qok-ui .dmgnum'); if (!d) return null; const T = window.__u2True, f = document.querySelector('#qok-ui .bfit'), c = document.querySelector('#qok-ui .enemy-card'); if (!f || !c) return null; const fr = T(f), cr = T(c);
+      return { x: Math.round(parseFloat(d.style.left)), y: Math.round(parseFloat(d.style.top)), fitCx: Math.round(fr.left + fr.width / 2), fitTop: Math.round(fr.top), cardBottom: Math.round(cr.bottom) }; }); if (!o.num) await B.sleep(40); }
+    if (model === 'native') await shot(page, `tablet-${w}x${h}-number`);
+    await B.until(page, s => s.phase === 'enemyQuiz' && (s.kp || s.choices > 0)); await B.sleep(300); await B.answer(page, false);
+    const t1 = Date.now();
+    while (Date.now() - t1 < 9000 && !o.pn) { o.pn = await page.evaluate(() => { const d = document.querySelector('#qok-ui .dmgnum.playerhit, #qok-ui .dmgnum.miss'), hp = document.querySelector('#qok-ui .pbar .bhp'), pb = document.querySelector('#qok-ui .pbar'); if (!d || !hp || !pb) return null; const T = window.__u2True, a = T(hp), p = T(pb);
+      return { x: Math.round(parseFloat(d.style.left)), y: Math.round(parseFloat(d.style.top)), hpX: Math.round(a.left + a.width / 2), barTop: Math.round(p.top), vw: innerWidth }; }); if (!o.pn) await B.sleep(40); }
+    await B.leave(page);
+  }
+  await page.evaluate(`(${ZMODEL})("native")`);
+  const M = ['native', 'own-px', 'viewport-px'], ok = k => M.every(m => out[m] && out[m][k]), all = (k, fn) => ok(k) && M.every(m => fn(out[m][k], out.native[k]));
+  const brief = k => M.map(m => out[m] && out[m][k]);
+  rec(`tablet ${w}x${h}: the name bar is under CSS zoom here (so the two rect models differ); this browser's own model is "${nat}"`, ok('menu') && parseFloat(out.native.menu.zoom) > 1, { zoom: out.native.menu && out.native.menu.zoom });
+  rec(`tablet ${w}x${h} menu: a tall boss (frostMonarch) is the same size under both rect models and stays below the name bar`, all('menu', (a, n) => Math.abs(a.h - n.h) <= 1 && a.clear >= 8 && a.feet >= -1 && a.h > 100), brief('menu'));
+  rec(`tablet ${w}x${h} quiz (the stage is short, so the name bar decides the size): the same size under both rect models, below the name bar, feet on the line`, all('quiz', (a, n) => Math.abs(a.h - n.h) <= 1 && a.clear >= 8 && a.feet >= -1 && a.h > 60), brief('quiz'));
+  rec(`tablet ${w}x${h} number: a hit on the enemy starts over the enemy's centre, at least 60 px below the name bar, under both rect models`, all('num', (a, n) => Math.abs(a.x - a.fitCx) <= 2 && a.y >= a.cardBottom + 60 && Math.abs(a.y - n.y) <= 2 && Math.abs(a.x - n.x) <= 2), brief('num'));
+  rec(`tablet ${w}x${h} number: a hit on the player starts over the HP figure, above the player bar, under both rect models`, all('pn', (a, n) => Math.abs(a.x - Math.min(a.vw - 44, a.hpX)) <= 2 && a.y < a.barTop && Math.abs(a.y - n.y) <= 2), brief('pn'));
+}
+
+// u2: Japanese victory labels without the English tracking (U2-6), the victory dim layer is one screen (U2-7), and the Safari 16.4
+// fallback of text-wrap:balance, plain wrapping, cannot overflow the message box in kanji mode (U2-8).
+async function u2(page) {
+  await B.boot(page, { ...U.LANGS['ja-kanji'], mapId: 'overworld', x: 72, y: 270, player: { atk: 2, def: 0, level: 4, quizDifficulty: '1' } });
+  await page.addStyleTag({ content: '#qok-ui .msg .ml{ text-wrap:wrap !important; }' });
+  await B.launch(page, 'demonKing');
+  const d = await findMsg(page, /ダメージが/, { ms: 60000 }); await shot(page, 'u2-wrap-off-enemy-attack-kanji');
+  const tw = await page.evaluate(() => { const e = document.querySelector('#qok-ui .msg .ml'); if (!e) return null; const c = getComputedStyle(e); return c.textWrapStyle || c.textWrap || '?'; });
+  const k = await findMsg(page, /きりを|霧を|はなった|放った/, { ms: 45000 }); await shot(page, 'u2-wrap-off-boss-skill-kanji'); await B.leave(page);
+  const box = x => !!(x && x.over.length === 0 && x.rows.length >= 1 && x.rows.every(r => r.pad >= 14));
+  rec('u2 wrap fallback (kanji, text-wrap:balance switched off): the long enemy-attack message of the last boss stays inside the box padding, no phrase split', box(d) && tw !== 'balance', d ? { textWrap: tw, rows: d.rows, over: d.over } : 'message not reached');
+  rec('u2 wrap fallback (kanji, text-wrap:balance switched off): the boss skill line with no phrase spaces stays inside the box padding', box(k) && k.size >= 15, k ? { size: k.size, rows: k.rows, over: k.over } : 'message not reached');
+  for (const lang of ['ja-kana', 'en']) {
+    await B.boot(page, { ...U.LANGS[lang], mapId: 'overworld', x: 72, y: 270, player: { atk: 9999, level: 4, quizDifficulty: '1' } });
+    await B.launch(page, 'stormHarpy'); await B.toQuiz(page); await B.sleep(250); await B.answer(page, true);
+    await page.waitForSelector('#qok-ui .bvic .bvkick', { timeout: 12000 }).catch(() => {}); await B.sleep(450);
+    const v = await page.evaluate(() => { const q = s => document.querySelector('#qok-ui ' + s), ls = e => e ? getComputedStyle(e).letterSpacing : null, sc = q('.bvscrim'), r = sc && sc.getBoundingClientRect();
+      return { kick: (q('.bvkick span') || {}).textContent || null, kickLs: ls(q('.bvkick')), tile: (q('.bvtile span') || {}).textContent || null, tileLs: ls(q('.bvtile span')), ja: document.getElementById('qok-ui').classList.contains('ja'),
+        scrim: r ? { x: Math.round(r.left), y: Math.round(r.top), w: Math.round(r.width), h: Math.round(r.height), pos: getComputedStyle(sc).position } : null, vw: innerWidth, vh: innerHeight }; });
+    await shot(page, `u2-bosswin-${lang}`); await B.leave(page);
+    const s = v.scrim;
+    if (lang === 'ja-kana') rec('u2 ja-kana boss win: the boss-name kicker and the tile labels have normal letter spacing (no English tracking on Japanese)', v.ja && !!v.kick && /[぀-ヿ]/.test(v.kick) && (v.kickLs === 'normal' || v.kickLs === '0px') && (v.tileLs === 'normal' || v.tileLs === '0px'), { kick: v.kick, kickLs: v.kickLs, tile: v.tile, tileLs: v.tileLs });
+    else rec('u2 en boss win: English keeps its wide tracking on the kicker and the tile labels', !v.ja && parseFloat(v.kickLs) >= 2 && parseFloat(v.tileLs) >= 1, { kick: v.kick, kickLs: v.kickLs, tileLs: v.tileLs });
+    rec(`u2 ${lang} victory dim layer: one screen (covers the viewport, at most 64 px beyond it on each side)`, !!s && s.x <= 0 && s.y <= 0 && s.x + s.w >= v.vw && s.y + s.h >= v.vh && s.w <= v.vw + 130 && s.h <= v.vh + 130, { scrim: s, vw: v.vw, vh: v.vh });
+  }
+}
+
 (async () => {
   if (GROUP === 'table') { await table(); return U.finish('battle-stage table'); }
   const { browser, page, errors } = await L.launch({});
@@ -359,6 +501,11 @@ async function ja(page) {
     else if (GROUP === 'quiz') await quiz(page);
     else if (GROUP === 'hud') await hud(page);
     else if (GROUP === 'ja') await ja(page);
+    else if (GROUP === 'kpq') await kpq(page);
+    else if (GROUP === 'd4off') await d4off(page);
+    else if (GROUP === 'tablet-p') await tablet(page, 1024, 1366);
+    else if (GROUP === 'tablet-l') await tablet(page, 1366, 1024);
+    else if (GROUP === 'u2') await u2(page);
     else rec('unknown group ' + GROUP, false);
     const bad = errors.filter(e => e.t === 'pageerror');
     rec(`${GROUP}: no script errors on the page`, bad.length === 0, bad.slice(0, 3));

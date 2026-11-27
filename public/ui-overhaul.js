@@ -61,6 +61,21 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
     window.__QOK_FIRST_LANG__ = lang;
   } catch (e) {}
 })();
+/* ONE SWITCH FOR THE DAY 4 LOOKS THAT HAD NONE (U2-2, day 4 review). localStorage['qok-d4-ui'] = '0'
+   gives the look and behaviour of the tree before day 4 for: the floating numbers and their anchor,
+   the four-button answer sizes, the command bar and the battle HUD sizes, the fall without rotation,
+   the Guard label under qok-keypad=0, the field quest banner as a DOM toast, the grade row as
+   information, the joystick word buttons, the quit dialog colours, Create Your Hero, the price pills,
+   the field tab bar font, the 48 px targets (the town pill keeps its own qok-town-pill48), the Volume
+   icon and dimming, the "Lv 50" chip and the new-gear dots. It is read ONCE, here, before the first
+   paint: the class `qok-d4off` on <html> gates the CSS (rules that start with
+   `:where(html:not(.qok-d4off))` in ui-overhaul.css) and window.__QOK_D4_UI__ gates the JS branches
+   (d4On()), so the two cannot disagree; a change takes effect on the next launch. The ten day 4
+   switches that already existed are untouched and work with it on or off. */
+window.__QOK_D4_UI__ = true;
+(function () {
+  try { if (window.localStorage.getItem('qok-d4-ui') === '0') { window.__QOK_D4_UI__ = false; document.documentElement.classList.add('qok-d4off'); } } catch (e) {}
+})();
 (function () {
   'use strict';
   var CANON_SAVE = 'edu-rpg-save', CANON_AUTO = 'edu-rpg-autosave';
@@ -344,9 +359,22 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
     };
   }
   function beginLoad(why) { try { if (window.__QOK_COVER__ && window.__QOK_COVER__.beginWorldLoad) window.__QOK_COVER__.beginWorldLoad(why); } catch (e) {} }
+  /* ONE DEFEAT PAYS ONCE (U2-9, day 4 review). returnToTown() halves the gold and then only QUEUES the
+     scene change, so a second call in the same defeat (a double tap, or a tap that lands after the
+     scene has been left but before the screen is repainted) halved it again and restarted the world.
+     Two guards: the scene must still be the live defeat screen (not shut down, asleep or never started),
+     and one call per run of it: the mark is cleared when that run shuts down, and it also expires by
+     itself after RETURN_GUARD_MS so a lost event can never lock the button. */
+  var returnMark = 0, RETURN_GUARD_MS = 5000;
   function returnToTown() {
     var go = scene('GameOverScene'), t = GS();
     if (!go || !t || !t.player) return false;
+    var status = 5; try { status = go.sys.settings.status; } catch (e0) { status = 5; }
+    if (typeof status === 'number' && (status < 2 || status > 6)) return false;   // Phaser: 2 START .. 6 PAUSED are the live states
+    var now = Date.now();
+    if (returnMark && now - returnMark < RETURN_GUARD_MS) return false;
+    returnMark = now;
+    try { go.events.once('shutdown', function () { returnMark = 0; }); } catch (e1) {}
     var town = defeatTownRecord(), st = t.player.state;
     try { go.input.keyboard && go.input.keyboard.removeAllListeners(); } catch (e) {}
     if (!town) {
@@ -1120,7 +1148,8 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
     // equipped slots panel
     // UE-06 (day 4): the five slot rows were 29 px tall with a 33 px pitch. `.eqslot` makes each a
     // 48 px target (ui-overhaul.css); the panel gives up its row gap and most of its padding for it.
-    h += '<div class="panel span2" style="padding:5px 6px;display:flex;flex-direction:column;gap:0;">';
+    var d4eq = d4On();   // qok-d4-ui=0: the rows as they were (29 px, 13 px text)
+    h += d4eq ? '<div class="panel span2" style="padding:5px 6px;display:flex;flex-direction:column;gap:0;">' : '<div class="panel span2" style="padding:11px 13px;display:flex;flex-direction:column;gap:4px;">';
     for (var s = 0; s < SLOTS.length; s++) {
       var slot = SLOTS[s], id = st.equipment[slot];
       var sel = (ms.equipMode === 'equipped' && s === ms.equipSlotIndex);
@@ -1130,6 +1159,12 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
       if (dat && dat.stats) {
         if (dat.stats.atk) statStr += ' +' + dat.stats.atk + Z('menu.atk');
         if (dat.stats.def) statStr += ' +' + dat.stats.def + Z('menu.def');
+      }
+      if (!d4eq) {
+        h += '<div class="row" data-act="equipSlot" data-i="' + s + '" style="justify-content:space-between;padding:5px 6px;border-radius:8px;cursor:pointer;' + (sel ? 'background:var(--gold-glow);outline:2px solid var(--gold);' : '') + '">' +
+          '<span class="row" style="gap:7px;font-weight:800;font-size:13px;color:' + (sel ? 'var(--ink)' : 'var(--ink-soft)') + ';">' + catIcon(slot, 18) + esc(Z(SLOT_KEY[slot])) + '</span>' +
+          '<span style="font-weight:800;font-size:13px;color:' + (id ? 'var(--ink)' : 'var(--ink-soft)') + ';">' + esc(nm) + '<span style="color:#1f8a44;font-weight:800;">' + esc(statStr) + '</span></span></div>';
+        continue;
       }
       h += '<div class="row eqslot" data-act="equipSlot" data-i="' + s + '" style="' + (sel ? 'background:var(--gold-glow);outline:2px solid var(--gold);outline-offset:-2px;' : '') + '">' +
         '<span class="row" style="gap:9px;font-weight:800;font-size:15px;color:' + (sel ? 'var(--ink)' : 'var(--ink-soft)') + ';">' + catIcon(slot, 22) + esc(Z(SLOT_KEY[slot])) + '</span>' +
@@ -1197,8 +1232,9 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
       '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px;">' +
         // UE-21 (day 4), one colour rule on every dialog: gold = the action asked for, green = confirm
         // and spend (Buy, Heal), outline = cancel. Back was green here, as if it spent something.
-        '<button class="btn btn-slate" data-act="quitCancel">' + esc(Z('settings.back')) + '</button>' +
-        '<button class="btn btn-gold" data-act="quitConfirm">' + esc(Z('gameover.title_screen')) + '</button>' +
+        // qok-d4-ui=0: the colours before day 4 (Back green, Title Screen outlined).
+        '<button class="btn ' + (d4On() ? 'btn-slate' : 'btn-em') + '" data-act="quitCancel">' + esc(Z('settings.back')) + '</button>' +
+        '<button class="btn ' + (d4On() ? 'btn-gold' : 'btn-slate') + '" data-act="quitConfirm">' + esc(Z('gameover.title_screen')) + '</button>' +
       '</div>' +
     '</div></div>';
   }
@@ -1334,10 +1370,15 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
           '<b class="' + (ori === 'center' ? 'on' : '') + '" data-act="ctrlSide" data-side="center">' + esc(T3('Middle', 'まんなか', '真ん中')) + '</b>' +
           '<b class="' + (ori === 'right' ? 'on' : '') + '" data-act="ctrlSide" data-side="right">' + esc(T3('Right', 'みぎ', '右')) + '</b></div>';
       }
+      var d4s = d4On();
+      if (!d4s) {   // qok-d4-ui=0: the rows before day 4 (grade row with its chevron and its tap, the glyph segment, one speaker icon, no dimming)
+        if (key === 'difficulty') ctrl = '<span class="val">' + esc(Z('grade.' + st.quizDifficulty)) + ' ›</span>';
+        else if (key === 'controlOrientation') ctrl = '<div class="seg" style="pointer-events:none;flex:1;max-width:230px;"><b class="' + (ori === 'left' ? 'on' : '') + '">◀</b><b class="' + (ori === 'center' ? 'on' : '') + '">●</b><b class="' + (ori === 'right' ? 'on' : '') + '">▶</b></div>';
+      }
       var sp = (key === 'volume' || key === 'controlOrientation') ? ' span2' : '';
-      var icon = (key === 'sound' && !st.soundEnabled) ? 'speakeroff' : (SETTING_ICON[key] || 'gear');
-      var dim = (key === 'volume' && !st.soundEnabled) ? ' dim' : '';
-      var info = key === 'difficulty';
+      var icon = (d4s && key === 'sound' && !st.soundEnabled) ? 'speakeroff' : ((!d4s && key === 'volume') ? 'speaker' : (SETTING_ICON[key] || 'gear'));
+      var dim = (d4s && key === 'volume' && !st.soundEnabled) ? ' dim' : '';
+      var info = d4s && key === 'difficulty';
       h += '<div class="setrow' + (sel ? ' sel' : '') + sp + dim + (info ? ' info"' : '" data-act="setting" data-i="' + i + '"') + '><span class="lab">' + use(icon) + esc(lab) + '</span>' + ctrl + '</div>';
     }
     if (testersOn()) h += '<div class="setrow span2" data-act="jumpOpen"><span class="lab">' + use('arrow') + esc(T3('Testers: Jump to…', 'テスター：ジャンプ…', 'テスター：ジャンプ…')) + '</span><span class="val">›</span></div>';
@@ -1379,7 +1420,7 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
     // the top of the view, so the DOM HUD drew over it: the HP chip and minimap hid its first
     // characters and the compass its end. While the DOM HUD is up the canvas banner is hidden and
     // its words are shown the way a town already shows them.
-    var fieldHud = !!(fieldRoot && fieldRoot.classList.contains('active'));
+    var fieldHud = d4On() && !!(fieldRoot && fieldRoot.classList.contains('active'));   // qok-d4-ui=0: the canvas banner stays, towns only get the toast
     var active = (fieldHud || document.body.classList.contains('act1-hifi-active')) && sceneActive('WorldMapScene');
     var source = wm && wm.questNotifText;
     if (fieldHud && source && source.scene) {
@@ -1507,7 +1548,7 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
         h += '<div class="card' + (ssel ? ' sel' : '') + '" data-act="shopSell" data-i="' + s + '">' +
           '<div class="ic">' + itemIcon(sit) + '</div>' +
           '<div class="t"><div class="n">' + esc(Z(sit.nameKey)) + ' ×' + sl[s].quantity + '</div><div class="d">' + esc(Z(sit.descriptionKey)) + '</div></div>' +
-          '<div class="pill price">' + sit.sellPrice + ' G</div></div>';
+          (d4On() ? '<div class="pill price">' : '<div class="pill" style="background:#e0b75726;color:#8a6a26;">') + sit.sellPrice + ' G</div></div>';   // qok-d4-ui=0: the old wash
       }
     } else {
       // buy (default)
@@ -1527,6 +1568,7 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
         // UE-14 / UJ-12 (day 4): the price was dim gold on a 15% gold wash (#8a6a26 on charcoal, about
         // 3:1), the lowest-contrast text on the screen. `.pill.price` is the Items tab's solid count pill.
         var price = blocked ? '<div class="pill" style="background:#ffffff0f;color:var(--ink-soft);">' + esc(Z('shop.ownedEquip')) + '</div>' : '<div class="pill price' + (afford ? '' : ' no') + '">' + it.buyPrice + ' G</div>';
+        if (!d4On()) price = blocked ? '<div class="pill" style="background:#00000014;color:var(--ink-soft);">' + esc(Z('shop.ownedEquip')) + '</div>' : '<div class="pill" style="background:#e0b75726;color:' + (afford ? '#8a6a26' : '#bb3a32') + ';">' + it.buyPrice + ' G</div>';   // qok-d4-ui=0: the pills before day 4
         h += '<div class="card' + (sel ? ' sel' : '') + '" data-act="shopBuy" data-i="' + i + '" style="' + (blocked ? 'opacity:.72;' : '') + '">' +
           '<div class="ic">' + itemIcon(it) + '</div>' +
           '<div class="t"><div class="n">' + esc(Z(it.nameKey)) + '</div>' + cnt + '<div class="d">' + esc(statStr || Z(it.descriptionKey)) + '</div></div>' + price + '</div>';
@@ -1615,7 +1657,7 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
       '<div class="panel" style="padding:16px;">' +
         '<div class="row" style="justify-content:space-between;font-size:14px;font-weight:800;color:var(--ink-soft);margin-bottom:8px;"><span>' + esc(Z('menu.hp')) + '</span><span>' + st.hp + ' → <b style="color:#1f8a44;">' + max + '</b></span></div>' +
         '<div class="hp" style="height:14px;"><i style="width:' + (hpR * 100) + '%;"></i></div>' +
-        '<div style="text-align:center;margin-top:14px;font-size:15px;font-weight:800;color:var(--ink);">' + esc(T3('Price', 'ねだん', '値段')) + ': <span style="color:var(--gold);">' + price + ' G</span></div>' +   // UJ-12: was #8a6a26, dim on charcoal
+        '<div style="text-align:center;margin-top:14px;font-size:15px;font-weight:800;color:var(--ink);">' + esc(T3('Price', 'ねだん', '値段')) + ': <span style="color:' + (d4On() ? 'var(--gold)' : '#8a6a26') + ';">' + price + ' G</span></div>' +   // UJ-12: was #8a6a26, dim on charcoal
       '</div>' +
       '<div style="display:grid;grid-template-columns:1.4fr 1fr;gap:10px;">' +
         '<button class="btn btn-em' + (wm.healerOverlayIndex === 0 ? ' sel' : '') + '" data-act="healConfirm">' + use('check', 'ic') + esc(Z('npc.healer.healOption')) + '</button>' +
@@ -1854,6 +1896,10 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
       // UE-16 (day 4): the choices were 48 px sprites whose unselected frame (bright cream, 2 px)
       // read as strongly as the selected gold one. Twice the size; the look is `.variant-opt` in
       // ui-overhaul.css: thin grey when not chosen, gold frame, wash and tick when chosen.
+      if (!d4On()) {   // qok-d4-ui=0: the 48 px choices with their inline frame, as before day 4
+        variantOpts += '<button class="variant-opt' + (vv === variant ? ' sel' : '') + '" data-act="introVariant" data-variant="' + vv + '" style="flex:1;min-width:0;display:flex;align-items:center;justify-content:center;background:' + (vv === variant ? 'rgba(201,168,76,.22)' : 'transparent') + ';border:2px solid ' + (vv === variant ? '#c9a84c' : '#d8c9a0') + ';border-radius:12px;padding:8px;cursor:pointer;">' + variantImg(48, vv) + '</button>';
+        continue;
+      }
       variantOpts += '<button class="variant-opt' + (vv === variant ? ' sel' : '') + '" data-act="introVariant" data-variant="' + vv + '" aria-pressed="' + (vv === variant) + '">' + variantImg(88, vv) + '</button>';
     }
     /* DIFFICULTY WHEEL, not chips. Owner, build 38: "the quiz difficulty selector needs to be a
@@ -1874,9 +1920,9 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
     var h = '<div class="body"><div class="zc stack pad g8 grid2" style="padding-top:10px;padding-bottom:12px;">' +
       // UE-06 / UE-16 (day 4): Back was a 70 x 34 navy chip that matched no other Back button. It is
       // the standard outlined button at 48 px; and the New Game+ path says so under the heading.
-      '<div class="span2" style="display:flex;justify-content:flex-start;"><button class="btn btn-slate backbtn" data-act="introBack">‹ ' + esc(Z('settings.back')) + '</button></div>' +
+      '<div class="span2" style="display:flex;justify-content:flex-start;">' + (d4On() ? '<button class="btn btn-slate backbtn" data-act="introBack">' : '<button data-act="introBack" style="background:#2a2c4d;border:1.5px solid #9a7a36;color:#f3ead2;font-weight:800;font-size:14px;cursor:pointer;padding:6px 14px;border-radius:10px;display:inline-flex;align-items:center;gap:5px;">') + '‹ ' + esc(Z('settings.back')) + '</button></div>' +   // qok-d4-ui=0: the old navy chip
       '<div class="span2" style="text-align:center;"><div class="scene-h">✦ ' + esc(Z('create.title')) + ' ✦</div>' +
-        (ts.ngPlus ? '<span class="ngtag">★ ' + esc(T3('New Game+', 'つよくてニューゲーム', '強くてニューゲーム')) + '</span>' : '') + '</div>' +
+        (ts.ngPlus && d4On() ? '<span class="ngtag">★ ' + esc(T3('New Game+', 'つよくてニューゲーム', '強くてニューゲーム')) + '</span>' : '') + '</div>' +
       '<div class="span2" style="display:grid;place-items:center;margin:0;">' +
         '<div class="intro-hero">' + variantImg(88, variant) + '</div>' +
       '</div>' +
@@ -1886,7 +1932,7 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
          message telling the player that they need to enter the name when they are blocked from
          continuing. i want the screen to snap up as well." Both halves are one fix: put the message
          where the problem is, and bring that place into view. */
-      '<div class="panel" id="qok-name-panel" style="padding:0 13px;">' +
+      '<div class="panel" id="qok-name-panel" style="padding:' + (d4On() ? '0' : '9px') + ' 13px;">' +
         '<div style="display:flex;align-items:center;gap:10px;">' +
           '<div style="font-weight:800;color:var(--ink-soft);font-size:13px;">' + esc(Z('create.name')) + '</div>' +
           '<input id="qok-name" data-act="name" type="text" maxlength="8" placeholder="' + esc(Z('create.namePlaceholder')) + '" style="flex:1;min-width:0;border:none;background:transparent;font-weight:900;font-size:18px;color:var(--ink);outline:none;" />' +
@@ -1961,9 +2007,9 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
   function battlePlayerBar(p, st) {
     var max = p.totalMaxHp, r = Math.max(0, Math.min(1, max ? st.hp / max : 0));
     return '<div class="pbar"><div class="av" style="width:36px;height:36px;">' + heroImg(22, st.heroColor) + '</div>' +
-      '<div style="flex:1;min-width:0;"><div class="bpname" style="font-weight:800;color:var(--ink);font-size:15px;margin-bottom:5px;">' + esc(st.name) + ' · ' + esc(Z('menu.level')) + ' ' + st.level + '</div>' +
+      '<div style="flex:1;min-width:0;"><div class="bpname" style="font-weight:800;color:var(--ink);font-size:' + (d4On() ? 15 : 12) + 'px;margin-bottom:5px;">' + esc(st.name) + ' · ' + esc(Z('menu.level')) + ' ' + st.level + '</div>' +
       '<div class="hp dark"><i style="width:' + (r * 100) + '%;"></i></div></div>' +
-      '<div class="bhp" style="font-size:15px;font-weight:800;color:#f0cd78;">' + st.hp + '/' + max + '</div></div>';   // B14: was 12 / 11 px, small for readers aged 6 to 8
+      '<div class="bhp" style="' + (d4On() ? 'font-size:15px;font-weight:800;color:#f0cd78;' : 'font-size:11px;font-weight:800;color:var(--gold);') + '">' + st.hp + '/' + max + '</div></div>';   // B14: was 12 / 11 px, small for readers aged 6 to 8
   }
   // ---- battle damage FX ----
   // The Phaser BattleScene plays hit-flash / crit / camera-shake on the CANVAS (and on
@@ -2234,7 +2280,7 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
   function spawnFx(hit) {
     if (!fx || !root) return;
     var crit = hit.crit, dmg = hit.dmg, toEnemy = (hit.who === 'enemy'), miss = !(dmg > 0);
-    var el = root.querySelector(toEnemy ? '.bmon' : '.pbar'), rect = el ? el.getBoundingClientRect() : null;
+    var el = root.querySelector(toEnemy ? '.bmon' : '.pbar'), rect = el ? btRect(el) : null;   // btRect: .pbar is under the HUD's tablet zoom (U2-5)
     if (toEnemy && el) {
       var hc = crit ? 'qok-crithit' : 'qok-hit';
       el.classList.remove('qok-hit', 'qok-crithit'); void el.offsetWidth; el.classList.add(hc);
@@ -2260,7 +2306,7 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
     if (crit) {
       var critTxt = Z('battle.critical'); if (critTxt === 'battle.critical') critTxt = 'Critical!';
       var cl = document.createElement('div'); cl.className = 'critlabel'; cl.textContent = critTxt;
-      cl.style.left = cx + 'px'; cl.style.top = (cy - 52) + 'px';
+      cl.style.left = cx + 'px'; cl.style.top = (cy - (d4On() ? 52 : 40)) + 'px';
       fx.appendChild(cl);
       setTimeout(function () { try { cl.remove(); } catch (e) {} }, 1100);
     }
@@ -2363,7 +2409,7 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
     var labs = rail.querySelectorAll('.railcmd .lab');
     rail.classList.add('fitting');
     for (var i = 0; i < labs.length; i++) {
-      var el = labs[i], size = 15;   // B14 / UE-18: was 12.5
+      var el = labs[i], size = d4On() ? 15 : 12.5;   // B14 / UE-18: was 12.5 (and is again under qok-d4-ui=0)
       el.style.fontSize = '';
       for (var g = 0; g < 10 && el.scrollWidth > el.clientWidth; g++) {
         size -= 0.5;
@@ -2434,6 +2480,8 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
   //  Check: scripts/auto/checks/battle-stage.cjs.
   // ============================================================
   function btOn(k) { try { return window.localStorage.getItem(k) !== '0'; } catch (e) { return true; } }
+  // The day 4 looks that have no switch of their own: one switch, qok-d4-ui=0, read once at the top of this file (U2-2).
+  function d4On() { return window.__QOK_D4_UI__ !== false; }
   // Painted bounds of every HD sprite: [canvasW, canvasH, left, top, right, bottom] in source pixels.
   // GENERATED by scripts/auto/battle/monster_bounds.py (--check fails when a sprite changes); never
   // measured at run time. All 75 files are 1024 px wide but the figure fills 487 to 923 px of that,
@@ -2487,13 +2535,48 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
       '<i class="bshadow"></i><div class="bfloat"' + (fly ? ' style="transform:translateY(-' + BT_FLY_LIFT + 'px);"' : '') + '>' +
       '<img class="bmon hd' + down.cls + '" src="' + src + '" alt="" style="width:' + btPct(b[0] / pw) + ';left:' + btPct(-b[2] / pw) + ';top:' + btPct(-b[3] / ph) + ';' + anim + '" /></div></div>';
   }
+  /* RECTS UNDER CSS ZOOM (U2-5, day 4 review). On tablets the name bar (.enemy-card) and the HUD
+     (.hudwrap) carry CSS `zoom` (ui-overhaul.css, the two tablet media blocks). Engines disagree on
+     getBoundingClientRect() there: one answers in viewport px, another in the element's own zoomed
+     px (the whole rect divided by its effective zoom), so "the bottom of the name bar" was a
+     different number in WebKit and in Chromium and the enemy was fitted against the wrong line.
+     btRect() always answers in viewport px. It does not guess the engine: for each effective zoom it
+     measures once what this engine reports for a hidden 100 px box under that zoom, and divides by
+     that factor (1, or 1/zoom). With no zoom on the element or its ancestors it is the plain rect. */
+  var _btZoomK = {};
+  function btEffZoom(el) {
+    var z = 1;
+    try { for (var n = el; n && n.nodeType === 1; n = n.parentElement) { var v = parseFloat(window.getComputedStyle(n).zoom); if (v > 0) z *= v; } } catch (e) { z = 1; }
+    return z;
+  }
+  function btRectK(z) {
+    if (!(z > 0) || Math.abs(z - 1) < 0.001) return 1;
+    var key = z.toFixed(4);
+    if (_btZoomK[key] == null) {
+      var k = 1;
+      try {
+        var p = document.createElement('div');
+        p.style.cssText = 'position:fixed;left:0;top:0;width:100px;height:100px;margin:0;padding:0;border:0;visibility:hidden;pointer-events:none;zoom:' + z + ';';
+        document.body.appendChild(p);
+        var h = p.getBoundingClientRect().height; document.body.removeChild(p);
+        if (h > 0) k = h / (100 * z);
+      } catch (e) { k = 1; }
+      _btZoomK[key] = (k > 0.05 && k < 20) ? k : 1;
+    }
+    return _btZoomK[key];
+  }
+  function btRect(el) {
+    var r = el.getBoundingClientRect(), k = btRectK(btEffZoom(el));
+    if (k === 1) return r;
+    return { left: r.left / k, top: r.top / k, right: r.right / k, bottom: r.bottom / k, width: r.width / k, height: r.height / k };
+  }
   // The painted box in CSS px: as large as its band allows between the name bar and the feet line,
   // so it can never reach the name bar, and the HUD below starts under the feet line.
   function btFitEnemy() {
     if (!stage) return;
     var box = stage.querySelector('.bfit'), st = stage.querySelector('.bstage');
     if (!box || !st) return;
-    var card = stage.querySelector('.enemy-card'), sr = st.getBoundingClientRect(), cr = card ? card.getBoundingClientRect() : null;
+    var card = stage.querySelector('.enemy-card'), sr = btRect(st), cr = card ? btRect(card) : null;   // btRect: the name bar carries CSS zoom on tablets (U2-5)
     var band = BT_BAND[box.getAttribute('data-k')] || BT_BAND.reg, pw = +box.getAttribute('data-pw') || 1, ph = +box.getAttribute('data-ph') || 1;
     var availH = sr.bottom - (cr ? cr.bottom : sr.top) - 10 - (+box.getAttribute('data-lift') || 0), availW = sr.width - 28;
     var unit = Math.min(BT_UNIT * Math.max(1, Math.min(1.7, sr.width / 390)), availH / BT_BAND.boss[0], availW / BT_BAND.boss[1]);
@@ -2572,21 +2655,23 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
   // so only a question short enough to stay on its lines is drawn larger.
   function btQSize(text) { if (!btOn('qok-quiz-tag')) return ''; var u = btUnits(text); return u <= 14 ? ' q1' : (u <= 18 ? ' q2' : ' q3'); }
   // Answer size in the four-button quiz (UE-13): digits at least as large as the question; a long word answer steps down to fit its button.
-  function btASize(text) { var u = btUnits(text); return u <= 5 ? ' a1' : (u <= 8 ? ' a2' : (u <= 11 ? ' a3' : '')); }
+  function btASize(text) { if (!d4On()) return ''; var u = btUnits(text); return u <= 5 ? ' a1' : (u <= 8 ? ' a2' : (u <= 11 ? ' a3' : '')); }
   // ---- floating numbers (UE-15) ----
   // A hit on the enemy starts just ABOVE the painted sprite (never on it, never under the name bar);
   // a hit on the player starts above the HP figure at the right end of the player bar.
   function btFxAnchor(toEnemy, rect) {
     var W = window.innerWidth, H = window.innerHeight;
+    // qok-d4-ui=0: the anchor before day 4 (on the sprite, on the player bar)
+    if (!d4On()) return [rect ? rect.left + rect.width / 2 : W / 2, rect ? rect.top + rect.height * (toEnemy ? 0.42 : 0.3) : H * (toEnemy ? 0.36 : 0.7)];
     try {
       if (toEnemy) {
-        var f = root.querySelector('.bfit'), r = f ? f.getBoundingClientRect() : rect, card = root.querySelector('.enemy-card');
+        var f = root.querySelector('.bfit'), r = f ? btRect(f) : rect, card = root.querySelector('.enemy-card');
         if (!r) return [W / 2, H * 0.3];
-        var lift = f ? (+f.getAttribute('data-lift') || 0) : 0, floor = card ? card.getBoundingClientRect().bottom + 62 : 110;
+        var lift = f ? (+f.getAttribute('data-lift') || 0) : 0, floor = card ? btRect(card).bottom + 62 : 110;   // btRect: viewport px under the tablet zoom, in every engine (U2-5)
         return [r.left + r.width / 2, Math.max(floor, r.top - lift - (f ? 20 : -14))];
       }
       var hp = root.querySelector('.pbar .bhp'), pb = root.querySelector('.pbar');
-      if (hp && pb) { var a = hp.getBoundingClientRect(); return [Math.min(W - 44, a.left + a.width / 2), pb.getBoundingClientRect().top - 18]; }
+      if (hp && pb) { var a = btRect(hp); return [Math.min(W - 44, a.left + a.width / 2), btRect(pb).top - 18]; }
     } catch (e) {}
     return rect ? [rect.left + rect.width / 2, rect.top] : [W / 2, H * (toEnemy ? 0.36 : 0.7)];
   }
@@ -2641,7 +2726,7 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
     for (i = 0; i < notes.length; i++) if (notes[i]) hudHtml += '<div class="bvnote">' + esc(notes[i]) + '</div>';
     return { stage: stageHtml, hud: hudHtml + '</div>', dyn: 'vic|' + (lvl ? 'L' : 'W') + '|' + mt + '|' + (lvl && getHeroSrc(st.heroColor) ? 1 : 0) };
   }
-  window.__QOK_BATTLE_STAGE__ = { box: MON_BOX, band: BT_BAND, small: MON_SMALL, fly: MON_FLY, bgKey: function () { return _curBg; }, victory: function () { return _btVic ? { exp: _btVic.exp, gold: _btVic.gold, level: _btVic.level, boss: _btVic.boss, beat: _btVic.beat } : null; } };
+  window.__QOK_BATTLE_STAGE__ = { box: MON_BOX, band: BT_BAND, small: MON_SMALL, fly: MON_FLY, rect: btRect, zoomReset: function () { _btZoomK = {}; }, refit: function () { btAfterPaint(true); }, bgKey: function () { return _curBg; }, victory: function () { return _btVic ? { exp: _btVic.exp, gold: _btVic.gold, level: _btVic.level, boss: _btVic.boss, beat: _btVic.beat } : null; } };
 
   function renderBattle() {
     var bs = getScene('BattleScene'), p = player(), st = pstate();
@@ -2655,7 +2740,7 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
     var ename = bs.monster ? Z(bs.monster.nameKey) : '';
     var sprite = (bs.monster && bs.monster.spriteKey) ? bs.monster.spriteKey : '';
     var bossCls = isBossMonster(bs.monster) ? ' boss' : ''; // bosses render larger than regular monsters
-    var enemyCard = '<div class="enemy-card"><div style="flex:1;"><div style="font-weight:800;color:var(--ink);font-size:16px;">' + esc(ename) + '</div>' +
+    var enemyCard = '<div class="enemy-card"><div style="flex:1;"><div style="font-weight:800;color:var(--ink);font-size:' + (d4On() ? 16 : 14) + 'px;">' + esc(ename) + '</div>' +
       '<div class="hp dark mt6"><i style="width:' + (eR * 100) + '%;background:var(--ruby);"></i></div></div></div>';
     var msrc = getMonsterSrc(sprite);
     var hdCls = isMonsterHd(sprite) ? ' hd' : '';
@@ -2715,7 +2800,7 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
       // put a resting selection on screen for one paint, which is the thing being removed.
       var ag = '<div class="rail"><div class="railplate" style="transform:translateX(' + (bs.menuIndex * 100) + '%);"></div>';
       for (var m = 0; m < BATTLE_ACT.length; m++) {
-        var act = BATTLE_ACT[m], lab = esc((act.key === 'battle.defend') ? T3('Guard', 'みがまえる', '身構える') : Z(act.key));
+        var act = BATTLE_ACT[m], lab = esc((act.key === 'battle.defend' && (d4On() || kpOn())) ? T3('Guard', 'みがまえる', '身構える') : Z(act.key));   // qok-d4-ui=0: Guard only with the keypad, as before day 4
         ag += '<button class="railcmd" style="--tint:' + act.col + ';"' +
           ' data-act="battleMenu" data-i="' + m + '" aria-label="' + lab + '">' +
           battleIcon(act.bi) + '<span class="lab">' + lab + '</span></button>';
@@ -3624,7 +3709,9 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
         var ended = prev !== null && ids.length > 0 && prev.some(function (id) { return ids.indexOf(id) < 0; });
         if (added || ended) {
           // the new quest, and only it, shows its objective (the list is repainted on the next tick)
-          if (added) { ids.forEach(function (id) { fieldQuestOpen[id] = prev.indexOf(id) < 0; }); fieldQuestSig = null; }
+          // U2-3: only when the panel is folded. With the panel open the player may have opened a quest's
+          // details; rewriting every entry's state there closed them under the reader's eyes.
+          if (added && wm.questTrackerCollapsed) { ids.forEach(function (id) { fieldQuestOpen[id] = prev.indexOf(id) < 0; }); fieldQuestSig = null; }
           if (wm.questTrackerCollapsed) { wm.questTrackerCollapsed = false; wm.__qokQuestManual = false; wm.__qokQuestPeekUntil = now + QUEST_PEEK_MS; }
           else if (wm.__qokQuestPeekUntil) wm.__qokQuestPeekUntil = now + QUEST_PEEK_MS;   // more news during a peek: start the clock again
         }
@@ -3967,7 +4054,7 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
     if (p && st) {
       var max = Math.max(1, p.totalMaxHp || st.maxHp || 1), ratio = Math.max(0, Math.min(1, st.hp / max));
       // "Lv 50", as the menu top bar and the save slots write it (UE-21, day 4: the chip said "Lv50").
-      fieldHpText.textContent = Z('menu.level') + ' ' + st.level + '  ' + Z('menu.hp') + ' ' + st.hp + '/' + max;
+      fieldHpText.textContent = Z('menu.level') + (d4On() ? ' ' : '') + st.level + '  ' + Z('menu.hp') + ' ' + st.hp + '/' + max;
       fieldHpFill.style.width = Math.round(ratio * 100) + '%'; fieldHpFill.className = ratio <= .2 ? 'danger' : (ratio <= .5 ? 'warn' : '');
     }
     // MINIMAP AND COMPASS ARE OVERWORLD-ONLY. Owner 2026-08-07: "there should be no compass or
@@ -4001,7 +4088,7 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
       fieldMapCollapsed = !!wm.minimapCollapsed; fieldMap.classList.toggle('collapsed', fieldMapCollapsed); fieldMapIcon.style.display = fieldMapCollapsed ? 'block' : 'none';
       if (!fieldMapCollapsed) drawFieldMap(wm);
     }
-    var questTop = hasMap ? (fieldMapCollapsed ? 110 : 216) : 53;   // 110 = the folded map icon is 50 px now (a 48 px button in its frame, UE-06)
+    var questTop = hasMap ? (fieldMapCollapsed ? (d4On() ? 110 : 100) : 216) : 53;   // 110 = the folded map icon is 50 px now (a 48 px button in its frame, UE-06)
     if (!hasMap && floorText) questTop += Math.max(34, Math.ceil(fieldFloor.getBoundingClientRect().height)) + 6;
     fieldQuest.style.setProperty('--qfh-quest-top', 'calc(env(safe-area-inset-top,0px) + ' + questTop + 'px)');
     fieldQuestToggle.querySelector('span').textContent = Z('quest.tracker.title'); renderFieldQuests(wm);

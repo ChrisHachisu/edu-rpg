@@ -33,7 +33,7 @@
 // ended with questManager / the save's own list, and the viewport is resized to 375x667 in place.
 const U = require('./_uilib.cjs');
 const { L, rec, tap, shot } = U;
-const GROUP = U.runGroups(__filename, ['title', 'menu', 'shop', 'quests', 'quests-old', 'defeat', 'town', 'dungeon', 'words', 'firstlang'], 'ui-polish');
+const GROUP = U.runGroups(__filename, ['title', 'menu', 'shop', 'quests', 'quests-old', 'defeat', 'town', 'dungeon', 'words', 'firstlang', 'd4off', 'u2'], 'ui-polish');   // d4off, u2: the review follow-ups (U2)
 const MIN = 48;
 
 // Every tappable thing on screen: the overlay's routed elements ([data-act], which the tap router
@@ -535,6 +535,103 @@ async function firstLang(browser) {
   await off.ctx.close();
 }
 
+// ---------------------------------------------------------------- U2: the day 4 switch and follow-ups from the review
+// d4off: localStorage qok-d4-ui=0 gives the look and behaviour of the tree before day 4 for the menu and HUD changes that had no
+// switch of their own (U2-2). The battle half of the same switch is the d4off group of battle-stage.cjs.
+async function d4off(page) {
+  await U.boot(page, { locale: 'en', all: false, mapId: 'overworld', x: 69, y: 258, activeQuests: ['kikisChallenge'],
+    inventory: [{ itemId: 'herb', quantity: 5 }, { itemId: 'ironSword', quantity: 1 }] }, { extra: { 'qok-d4-ui': '0' } });
+  await page.waitForTimeout(1200);
+  const root = await page.evaluate(() => ({ cls: document.documentElement.classList.contains('qok-d4off'), flag: window.__QOK_D4_UI__ }));
+  rec('d4off: qok-d4-ui=0 puts the root class on <html> and turns the JS flag off', root.cls === true && root.flag === false, root);
+  const fb = await barStyle(page, '#fieldTabs .ft');
+  const hud = await page.evaluate(() => { const q = document.getElementById('qfh-quest'), r = q && q.getBoundingClientRect(); return { chip: document.getElementById('qfhp-text').textContent, quest: r ? [Math.round(r.width), Math.round(r.height)] : null, collapsed: !!q && q.classList.contains('collapsed') }; });
+  await shot(page, 'd4off-field');
+  rec('d4off tab-bar font: the field tab bar is in the system face again, not the game font', !!fb && !/Zen Maru Gothic/.test(fb.font), fb);
+  rec('d4off field HUD: the chip reads "Lv5" with no space, and the folded quest icon is 44 px (48 px targets off)', /^Lv\d/.test(hud.chip) && hud.collapsed && !!hud.quest && hud.quest[0] === 44 && hud.quest[1] === 44, hud);
+  await page.evaluate(() => window.__PHASER_GAME__.scene.getScene('WorldMapScene').showQuestNotification('New quest: polish check')); await page.waitForTimeout(400);
+  const ban = await page.evaluate(() => { const w = window.__PHASER_GAME__.scene.getScene('WorldMapScene'), t = document.getElementById('qok-town-quest-toast');
+    return { canvasVisible: !!(w.questNotifText && w.questNotifText.scene && w.questNotifText.visible), toast: t ? t.textContent : null }; });
+  rec('d4off quest banner: on the field it is the canvas banner again, with no DOM toast', ban.canvasVisible === true && ban.toast === null, ban);
+  await page.waitForTimeout(3200);
+  await openTab(page, 2);
+  const eq = await page.evaluate(() => ({ rows: [...document.querySelectorAll('#qok-ui [data-act="equipSlot"]')].map(r => Math.round(r.getBoundingClientRect().height)), eqslot: document.querySelectorAll('#qok-ui .eqslot').length,
+    close: Math.round((document.querySelector('#qok-ui [data-act="close"]') || document.body).getBoundingClientRect().width) }));
+  await shot(page, 'd4off-equip');
+  rec('d4off 48 px targets: the five equip slot rows are under 36 px again and the close button is 40 px', eq.rows.length === 5 && eq.rows.every(h => h < 36) && eq.eqslot === 0 && eq.close === 40, eq);
+  await closeMenu(page); await openTab(page, 3);
+  const st = await page.evaluate(() => { const rows = [...document.querySelectorAll('#qok-ui .setrow')], g = rows.find(x => /Quiz Difficulty/.test(x.textContent)), c = rows.find(x => /Controls/.test(x.textContent)), v = rows.find(x => x.querySelector('#qok-volume'));
+    return { grade: g ? { text: g.textContent.trim(), act: g.getAttribute('data-act'), info: g.classList.contains('info') } : null,
+      ctrl: c ? { words: c.querySelectorAll('[data-act="ctrlSide"]').length, glyphs: [...c.querySelectorAll('.seg b')].map(b => b.textContent).join('') } : null, volume: v ? (v.querySelector('.lab use') || { getAttribute: () => null }).getAttribute('href') : null }; });
+  await shot(page, 'd4off-settings');
+  rec('d4off grade row: it is a tappable row with its chevron again', !!st.grade && st.grade.act === 'setting' && /›/.test(st.grade.text) && !st.grade.info, st.grade);
+  rec('d4off joystick: the three glyphs again, no word buttons, and Volume carries the speaker', !!st.ctrl && st.ctrl.words === 0 && st.ctrl.glyphs === '◀●▶' && /speaker$/.test(st.volume || ''), { ctrl: st.ctrl, volume: st.volume });
+  await tap(page, '[data-act="quitAsk"]'); await page.waitForTimeout(500);
+  const quit = await page.evaluate(() => { const c = a => (document.querySelector(`#qok-ui [data-act="${a}"]`) || {}).className || ''; return { back: c('quitCancel'), go: c('quitConfirm') }; });
+  await shot(page, 'd4off-quit');
+  rec('d4off quit dialog colours: Back is the green button and Title Screen the outlined one, as before day 4', /btn-em/.test(quit.back) && /btn-slate/.test(quit.go) && !/btn-gold/.test(quit.go), quit);
+  await tap(page, '[data-act="quitCancel"]'); await page.waitForTimeout(300);
+  await closeMenu(page);
+  await openShop(page);
+  const pr = await page.evaluate(() => [...document.querySelectorAll('#qok-ui [data-act="shopBuy"] .pill')].filter(e => /\d+ G/.test(e.textContent)).slice(0, 3).map(e => ({ t: e.textContent, cls: e.className, color: getComputedStyle(e).color })));
+  await shot(page, 'd4off-shop');
+  rec('d4off price pills: the dim gold on its wash again (no .price class)', pr.length > 0 && pr.every(x => !/price/.test(x.cls) && /rgb\((138, 106, 38|187, 58, 50)\)/.test(x.color)), pr);
+  // Create Your Hero: a fresh device with only the switch stored
+  await page.goto(L.URL_, { waitUntil: 'domcontentloaded' }); await page.evaluate(() => { localStorage.clear(); localStorage.setItem('qok-d4-ui', '0'); }); await page.reload({ waitUntil: 'load' });
+  await L.toTitle(page); await page.waitForTimeout(1200);
+  await tap(page, '[data-act="titleSlots"]'); await page.waitForTimeout(600);
+  await tap(page, '[data-act="slotPick"][data-i="1"]'); await page.waitForTimeout(1500);
+  await page.waitForSelector('[data-act="introStart"]', { timeout: 15000 }).catch(() => {}); await page.waitForTimeout(600);
+  const a = await introState(page); await shot(page, 'd4off-create-hero');
+  rec('d4off Create Your Hero: 48 px look choices in 2 px frames and the old Back chip (not the standard button, under 48 px)', a.opts.length === 2 && a.opts.every(o => o.img === 48 && o.bw === 2) && !!a.back && !/btn/.test(a.back.cls) && a.back.h < 48, { opts: a.opts, back: a.back });
+  await setVp(page, 375, 667); const pv = await page.evaluate(() => { const e = document.querySelector('#qok-ui .intro-hero'); return e ? Math.round(e.getBoundingClientRect().height) : 0; }); await shot(page, 'd4off-create-hero-375x667'); await setVp(page, 390, 844);
+  rec('d4off Create Your Hero at 375x667: the large preview above the name is shown again', pv > 40, { previewHeight: pv });
+}
+
+// u2: a new quest leaves opened details alone in an open panel (U2-3); the defeat notes cannot overflow when text-wrap:balance is
+// not supported (U2-8); one defeat halves the gold once however often returnToTown is called (U2-9).
+async function u2(page) {
+  await U.boot(page, { locale: 'en', all: false, mapId: 'overworld', x: 69, y: 258, activeQuests: ['kikisChallenge', 'owlsLesson'] }); await page.waitForTimeout(1200);
+  const entries = () => page.evaluate(() => [...document.querySelectorAll('#qfh-quest-content .qfq-entry')].map(e => ({ id: e.getAttribute('data-quest-id'), open: e.classList.contains('open') })));
+  await page.locator('#qfh-quest-toggle').tap(); await page.waitForTimeout(600);
+  const e0 = await entries(), shut = e0.find(e => !e.open);
+  if (shut) { await page.locator(`#qfh-quest-content .qfq-entry[data-quest-id="${shut.id}"] .qfq-title`).tap(); await page.waitForTimeout(500); }
+  const e1 = await entries();
+  await startQuest(page, 'gordosOre'); await page.waitForTimeout(1500);
+  const e2 = await entries(), p2 = await panel(page); await shot(page, 'U2-3-open-panel-new-quest');
+  const was = shut && e1.find(e => e.id === shut.id), now = shut && e2.find(e => e.id === shut.id);
+  rec('U2-3 a quest is added while the panel is open: the details the player opened with a tap stay open', !!shut && !!was && was.open && !!now && now.open && e2.some(e => e.id === 'gordosOre') && !!p2 && !p2.collapsed, { tapped: shut && shut.id, before: e1, after: e2 });
+  await page.locator('#qfh-quest-toggle').tap(); await page.waitForTimeout(500);
+  await startQuest(page, 'lunasMap'); const o3 = await until(page, false, 2500); await page.waitForTimeout(400);
+  const e3 = await entries();
+  rec('U2-3 guard: added while the panel is folded, the new quest and only it shows its objective (as before)', o3 !== null && e3.length >= 4 && e3.every(e => e.open === (e.id === 'lunasMap')), e3);
+  // the defeat screen in kanji
+  await U.boot(page, { ...U.LANGS['ja-kanji'], all: false, mapId: 'overworld', x: 69, y: 258 });
+  await page.evaluate(() => { const st = window.__GAME_STATE__.player.state; st.hp = 1; st.gold = 1001; });
+  await lose(page);
+  if (!(await U.active(page, 'GameOverScene'))) { rec('U2: the defeat screen opens (direct: scene.start GameOverScene)', false); return; }
+  await page.addStyleTag({ content: '#qok-ui .go-note{ text-wrap:wrap !important; }' }); await page.waitForTimeout(300);
+  const fits = [];
+  for (const [w, h] of VPS) { await setVp(page, w, h); const d = await defeatState(page);
+    const notes = await page.evaluate(() => [...document.querySelectorAll('#qok-ui .go-note')].map(e => { const c = getComputedStyle(e); return { t: e.textContent.slice(0, 14), over: e.scrollWidth > e.clientWidth + 1, wrap: c.textWrapStyle || c.textWrap || '?' }; }));
+    fits.push({ vp: w + 'x' + h, wide: d.wide, top: d.top, bottom: d.bottom, vh: d.vh, notes }); }
+  await shot(page, 'U2-8-defeat-notes-wrap-off-kanji'); await setVp(page, 390, 844);
+  rec('U2-8 defeat notes in kanji with text-wrap:balance switched off (the Safari 16.4 fallback): nothing is wider than the screen and the block stays on it',
+    fits.every(f => f.wide === 0 && f.notes.length >= 1 && f.notes.every(n => !n.over && n.wrap !== 'balance') && f.top >= 0 && f.bottom <= f.vh), fits);
+  const r = await page.evaluate(() => { const SV = window.__QOK_SAVES__, st = window.__GAME_STATE__.player.state, g0 = st.gold; const a = SV.returnToTown(), g1 = st.gold, b = SV.returnToTown(), g2 = st.gold; return { g0, a, g1, b, g2 }; });
+  rec('U2-9 returnToTown called twice in the same defeat (direct: __QOK_SAVES__.returnToTown): the gold is halved once', r.a === true && r.g1 === r.g0 - Math.floor(r.g0 / 2) && r.b === false && r.g2 === r.g1, r);
+  await page.waitForFunction(() => !window.__PHASER_GAME__.scene.isActive('GameOverScene'), null, { timeout: 20000 }).catch(() => {}); await page.waitForTimeout(300);
+  const late = await page.evaluate(() => { const SV = window.__QOK_SAVES__, st = window.__GAME_STATE__.player.state; const c = SV.returnToTown(); return { c, gold: st.gold }; });
+  rec('U2-9 ...and a call after the defeat screen has been left changes nothing either', late.c === false && late.gold === r.g1, late);
+  // the guard is per defeat: the next one pays again
+  await page.waitForFunction(() => window.__PHASER_GAME__.scene.isActive('WorldMapScene'), null, { timeout: 40000 }).catch(() => {});
+  await page.waitForFunction(() => { const c = window.__QOK_COVER__; return !c || !c.phase || c.phase() === 'active'; }, null, { timeout: 60000 }).catch(() => {}); await page.waitForTimeout(800);
+  await page.evaluate(() => { const st = window.__GAME_STATE__.player.state; st.hp = 1; st.gold = 500; });
+  await lose(page);
+  const again = await page.evaluate(() => { const SV = window.__QOK_SAVES__, st = window.__GAME_STATE__.player.state, on = window.__PHASER_GAME__.scene.isActive('GameOverScene'); const a = SV.returnToTown(); return { on, a, gold: st.gold }; });
+  rec('U2-9 guard: the next defeat pays again (500 G becomes 250 G)', again.on === true && again.a === true && again.gold === 250, again);
+}
+
 (async () => {
   const o = await L.launch({ dpr: 2 }); const page = o.page;
   try {
@@ -548,6 +645,8 @@ async function firstLang(browser) {
     else if (GROUP === 'dungeon') await dungeon(page);
     else if (GROUP === 'words') await words(page);
     else if (GROUP === 'firstlang') await firstLang(o.browser);
+    else if (GROUP === 'd4off') await d4off(page);
+    else if (GROUP === 'u2') await u2(page);
     else rec('group ' + GROUP, false, 'unknown');
   } catch (e) { rec(`${GROUP}: ran to the end`, false, String(e && e.stack || e).slice(0, 400)); }
   await o.browser.close();
