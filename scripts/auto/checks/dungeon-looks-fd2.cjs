@@ -139,7 +139,7 @@ async function storm(page) {
       const now = await grabCells(); await thaw(page); let d = 0; for (let i = 0; i < Math.min(base.length, now.length); i++) d += (Math.abs(now[i][0] - base[i][0]) + Math.abs(now[i][1] - base[i][1]) + Math.abs(now[i][2] - base[i][2])) / 3;
       vis[k] = base.length ? +(d / base.length).toFixed(1) : null; } }
   F.info('stormreach warning visibility: mean colour change on the warned cells at 95 %, 66 %, 33 % of the warning time left', JSON.stringify(vis));
-  const OLD = { 0.95: 25.4, 0.66: 35.6, 0.33: 41.8 };                       // measured the same way on the old square cells (37de040, 2026-11-27)
+  const OLD = { 0.95: 24.8, 0.66: 29.9, 0.33: 46.0 };                       // the old square cells measured the same way (37de040, mean of two runs: the pulse makes a single frame vary by +-6)
   F.ok(Object.keys(OLD).every(k => vis[k] !== undefined && vis[k] !== null && vis[k] >= OLD[k] * 0.95), 'Stormreach: the warning is at least as visible as the old square cells at every stage', JSON.stringify({ now: vis, old: OLD }));
   // pictures: a late moment of a warning, and a strike
   if (SHOTS) {
