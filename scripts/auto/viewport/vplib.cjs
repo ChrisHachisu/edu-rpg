@@ -49,6 +49,14 @@ async function launch(size) {
   return { browser, ctx, page, errors, safe: safeSim ? safe : { top: 0, bottom: 0, left: 0, right: 0 }, safeSim };
 }
 
+// Mean brightness (max of R, G, B, 0 to 255) of a ring around the hero, 0.9 to 1.6 hero heights from her centre, in a 1x screenshot.
+function ringLum(png, hb) {
+  const P = L.decodePng(png), { w, h, bpp, data } = P, cx = hb[0] + hb[2] / 2, cy = hb[1] + hb[3] / 2, H = hb[3];
+  let sum = 0, n = 0;
+  for (let k = 0; k < 64; k++) for (const f of [0.9, 1.25, 1.6]) { const a = k * Math.PI / 32, x = Math.round(cx + Math.cos(a) * f * H), y = Math.round(cy + Math.sin(a) * f * H);
+    if (x < 0 || y < 0 || x >= w || y >= h) continue; const o = (y * w + x) * bpp; sum += Math.max(data[o], data[o + 1], data[o + 2]); n++; }
+  return n ? Math.round(sum / n) : 255;
+}
 // Flat bands at the four edges of a 1x screenshot: how many rows/columns from the edge share one colour.
 function edges(png, safe) {
   const P = L.decodePng(png), { w, h, bpp, data } = P;
@@ -84,7 +92,12 @@ class Session {
         if (this.safe.bottom && Math.abs(E.bottom.px - this.safe.bottom) <= 2 && E.bottomSeam > 8) m.issues.push({ rule: 'inset-band', sig: 'edge-bottom', n: { px: E.bottom.px, rgb: E.bottom.rgb, step: E.bottomSeam } });
         for (const k of ['top', 'bottom', 'left', 'right']) { const lim = k === 'top' || k === 'bottom' ? this.size.h : this.size.w;
           const bg = (m.metrics && m.metrics.pageBg) || [0, 0, 0], same = c => Math.max(Math.abs(c[0] - E[k].rgb[0]), Math.abs(c[1] - E[k].rgb[1]), Math.abs(c[2] - E[k].rgb[2])) <= 2;
-          if (E[k].px < lim && E[k].px > (this.safe[k] || 0) + 6 && (same(bg) || same([0, 0, 0]))) m.issues.push({ rule: 'black-bar', sig: 'edge-' + k, n: { px: E[k].px, inset: this.safe[k] || 0, rgb: E[k].rgb } }); } } catch (e) { this.notes.push(name + ': edge scan failed ' + String(e).slice(0, 80)); }
+          if (E[k].px < lim && E[k].px > (this.safe[k] || 0) + 6 && (same(bg) || same([0, 0, 0]))) m.issues.push({ rule: 'black-bar', sig: 'edge-' + k, n: { px: E[k].px, inset: this.safe[k] || 0, rgb: E[k].rgb } }); }
+        // the floor around the hero in a dungeon: the light around her should show the floor (VP-19: at camera zoom 2 the fog's hole is drawn off screen)
+        const cam = m.metrics && m.metrics.camera, hb = m.groups && m.groups.hero;
+        if (cam && hb && cam.map && cam.map !== 'overworld' && !(m.metrics.heroDbg && m.metrics.heroDbg.inTown)) { const lum = ringLum(png, hb); m.metrics.heroRingLum = lum;
+          if (lum < 40) m.issues.push({ rule: 'hero-dark', sig: 'dungeon', n: { lum, zoom: cam.zoom, map: cam.map } }); }
+      } catch (e) { this.notes.push(name + ': edge scan failed ' + String(e).slice(0, 80)); }
       if (this.shots) { fs.mkdirSync(this.shots, { recursive: true }); await page.screenshot({ path: path.join(this.shots, `${this.size.id}-${this.lang}-${name}.jpg`), type: 'jpeg', quality: 80 }).catch(e => this.notes.push(name + ': shot failed')); }
       this.screens[name] = m; this.order.push(name);
       log('screen', name, 'issues', m.issues.length);
