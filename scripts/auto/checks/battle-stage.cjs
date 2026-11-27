@@ -72,7 +72,7 @@ const rnd = o => o && Object.fromEntries(Object.entries(o).map(([k, v]) => [k, t
 
 async function table() {
   // the size table in the served ui-overhaul.js is the one scripts/auto/battle/monster_bounds.py measures from the sprite files
-  const js = await (await fetch(L.URL_ + 'ui-overhaul.js')).text();
+  const js = await (await fetch(String(L.URL_).replace(/\/*$/, '/') + 'ui-overhaul.js')).text();   // run_checks passes the URL with no trailing slash
   const m = /  var MON_BOX = \{\n[\s\S]*?\n  \};/.exec(js);
   const py = spawnSync('python3', [path.join(U.ROOT, 'scripts/auto/battle/monster_bounds.py')], { encoding: 'utf8' });
   if (py.status !== 0) return rec('table: monster_bounds.py runs (python3 + Pillow)', false, (py.stderr || '').slice(-200));
