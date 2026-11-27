@@ -9067,6 +9067,13 @@
     if(!qm||typeof qm.getQuestion!=='function'||qm.__qzWrapped) return;
     var original=qm.getQuestion.bind(qm);
     qm.getQuestion=function(zone,isBoss){
+      // Quiz bank v2 (above) answers first; qok-quiz2=0, or anything it cannot answer, falls through
+      // to the bundle's bank behind the old sampler, untouched.
+      if(QZ2.on()){
+        var q2=null;
+        try{ q2=QZ2.question(qm,zone,isBoss); }catch(e){ if(window.__DQ_DEBUG__) console.log('dq quiz2 '+e); }
+        if(q2) return q2;
+      }
       var best=null, bestScore=Infinity, i, j;
       for(i=0;i<QZ_DRAWS;i++){
         var q=original(zone,isBoss), a=qzAnswerOf(q);
@@ -9083,6 +9090,520 @@
     };
     qm.__qzWrapped=true; QZ.wired=true;
   }
+
+  // ============================================================
+  //  QUIZ BANK v2 (2026-11-27, day 4 track Q) -- school level for each grade
+  // ============================================================
+  //  The owner chose "School level for each grade" on the quiz card (2026-11-27). The audit
+  //  (autoloop/day4/quiz/REPORT.md) found the bundle's bank about a year under grade in grades 2-5,
+  //  grade 6 acts 2/4/5 and grade 5 act 4 100% "x% of y", kindergarten 19 questions in total, and
+  //  ramps that fall in the middle acts. The generators are frozen in the bundle, so this is a second
+  //  bank out here, asked for through the same getQuestion(zone, isBoss) call and returned in the
+  //  same object shape. The owner's table is autoloop/day4/quiz/CURRICULUM.md; the permanent check
+  //  is scripts/auto/checks/quiz-content.cjs.
+  //
+  //  SWITCH: localStorage['qok-quiz2'] = '0' gives today's bank back exactly (the wrapper below then
+  //  runs only the old recent-answer sampler around the bundle's own generator).
+  //  localStorage['qok-quiz2-neg'] = '0' removes the grade 6 Act 5 look-ahead at negative numbers.
+  //
+  //  RULES THE BANK KEEPS (each one is asserted by the check):
+  //    - arithmetic and number sense only, every answer a whole number of at most 4 digits, so it can
+  //      be typed on the keypad; four distinct choices with exactly one right for the qok-keypad=0 mode
+  //    - no negative number before grade 6; in grade 6 only in Act 5 and only QZ2 NEG_SHARE of it
+  //    - kana mode has no kanji; kanji mode uses only kanji taught by that grade (so kindergarten and
+  //      grade 1 read the same in both)
+  //    - the zone-to-act table, the zone tier table and the boss bump are the bundle's, copied below
+  //    - the same exact question does not come back within WIN[grade] questions, and the old
+  //      sampler's intent is kept: of several candidates, prefer an answer not seen lately
+  //    - the minus sign in a question is U+2212; a negative ANSWER keeps the ASCII hyphen because the
+  //      keypad compares Number(typed) with Number(answer text)
+  //    - inside a sum the blank is "?" in English and the school's box in Japanese
+  var QZ2=(function(){
+    // ---- copied verbatim from the bundle (Eh, Rh, Ch): zone -> act, zone -> tier, boss bump ----
+    var ACT1=['greenhollow-plains','whispering-woods','crystal-coast','misty-grotto','crystal-cave','sunken-cellar','whispering-woods-cave','coastal-reef'];
+    var ACT2=['coral-tunnels','iron-mountains','shadow-cave','storm-nest','frozen-lake','frostpeak-cavern','iron-mine','haunted-forest'];
+    var ACT3=['scorched-wastes','desert-tomb','bandit-hideout','oasis-depths','scorched-ruins'];
+    var ACT4=['magma-tunnels','sunken-ruins','volcanic-forge','ember-mines','obsidian-cavern'];
+    var TIER={'greenhollow-plains':'easy','whispering-woods':'easy','crystal-coast':'easy','misty-grotto':'easy','crystal-cave':'easy','sunken-cellar':'easy','storm-nest':'easy',
+      'coral-tunnels':'medium','iron-mountains':'medium','shadow-cave':'medium','frostpeak-cavern':'medium','frozen-lake':'medium','desert-tomb':'medium','bandit-hideout':'medium',
+      'scorched-wastes':'hard','sunken-ruins':'hard','magma-tunnels':'hard','volcanic-forge':'hard','demons-threshold':'hard','demon-castle':'hard','stormreach-isles':'hard',
+      'frostfall-peaks':'hard','sunken-temple':'hard','twilight-realm':'hard'};
+    var BOSS={easy:'medium',medium:'hard',hard:'hard'};
+    function actOf(z){ return ACT1.indexOf(z)>=0?1:ACT2.indexOf(z)>=0?2:ACT3.indexOf(z)>=0?3:ACT4.indexOf(z)>=0?4:5; }
+    // No exact repeat inside this many questions, per grade (kindergarten has the smallest pools).
+    var WIN={k:40,'1':60,'2':100,'3':100,'4':100,'5':100,'6':100};
+    var ANS_WINDOW=20, DRAWS=12, NEG_SHARE=0.10;
+
+    // ---- small tools ----
+    function R(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
+    function P(a){ return a[R(0,a.length-1)]; }
+    function coin(){ return Math.random()<0.5; }
+    function gcd(a,b){ while(b){ var t=a%b; a=b; b=t; } return a; }
+    // no carry in any column / no borrow in any column
+    function nc(a,b){ for(;a>0&&b>0;a=Math.floor(a/10),b=Math.floor(b/10)) if(a%10+b%10>9) return false; return true; }
+    function nb(a,b){ for(;b>0;a=Math.floor(a/10),b=Math.floor(b/10)) if(a%10<b%10) return false; return true; }
+    // a pair drawn evenly from a box of operands, keeping those the rule accepts (the bundle drew the
+    // second operand from a range that shrank with the first, which is what piled answers onto 5)
+    function pr(aLo,aHi,bLo,bHi,ok){ for(var i=0;i<600;i++){ var a=R(aLo,aHi), b=R(bLo,bHi); if(!ok||ok(a,b)) return [a,b]; } throw new Error('qz2 empty range'); }
+    function D(n,den){ return String(n/den); }
+
+    // ---- question records: en / kana / kanji text, answer, category ----
+    // "~" in a text is a tie: a no-break space, so a number stays with its unit and the last two
+    // words of a question stay together when the battle box wraps it onto a second line
+    function tie(t){ return t.replace(/~/g,'\u00A0'); }
+    function Q(en,ja,kj,a,c){ return {en:tie(en),ja:tie(ja),kj:tie(kj||ja),a:a,c:c}; }
+    // the same in every mode: "7 + 8 = ?"
+    function S(x,a,c){ x=x+' = ?'; return Q(x,x,x,a,c); }
+    // a sum with a blank in it (@): "7 + ? = 15" / "7 + □ = 15"
+    function H(x,a,c){ return Q(x.replace('@','?'),x.replace('@','□'),null,a,c); }
+    // a line with fractions in it, written {n/d}: "3/4" in English, "4ぶんの3" / "4分の3" in Japanese
+    function FX(x,a,c){
+      var en=x.replace(/\{([^\/}]+)\/([^}]+)\}/g,'$1/$2').replace(/@/g,'?');
+      var ja=x.replace(/\{([^\/}]+)\/([^}]+)\}/g,'$2ぶんの$1').replace(/@/g,'□');
+      var kj=x.replace(/\{([^\/}]+)\/([^}]+)\}/g,'$2分の$1').replace(/@/g,'□');
+      return Q(en,ja,kj,a,c);
+    }
+
+    // ---- families of plain sums ----
+    function add(aLo,aHi,bLo,bHi,ok,k){ k=k||1; return function(){ var p=pr(aLo,aHi,bLo,bHi,ok); return S(p[0]*k+' + '+p[1]*k,(p[0]+p[1])*k,'addition'); }; }
+    function sub(aLo,aHi,bLo,bHi,ok,k){ k=k||1; return function(){ var p=pr(aLo,aHi,bLo,bHi,ok); return S(p[0]*k+' − '+p[1]*k,(p[0]-p[1])*k,'subtraction'); }; }
+    function mul(aLo,aHi,bLo,bHi,ok,ka,kb,swap){ ka=ka||1; kb=kb||1; return function(){ var p=pr(aLo,aHi,bLo,bHi,ok), a=p[0]*ka, b=p[1]*kb, t; if(swap&&coin()){ t=a; a=b; b=t; } return S(a+' × '+b,a*b,'multiplication'); }; }
+    // (divisor x quotient) / divisor = quotient
+    function dvd(dLo,dHi,qLo,qHi,ok,kd,kq){ kd=kd||1; kq=kq||1; return function(){ var p=pr(dLo,dHi,qLo,qHi,ok), d=p[0]*kd, q=p[1]*kq; return S(d*q+' ÷ '+d,q,'division'); }; }
+    // a blank inside the sum; ops is a string of the forms allowed
+    function holeAdd(aLo,aHi,bLo,bHi,ok){ return function(){ var p=pr(aLo,aHi,bLo,bHi,ok), a=p[0], b=p[1]; return coin()?H(a+' + @ = '+(a+b),b,'missing_number'):H('@ + '+b+' = '+(a+b),a,'missing_number'); }; }
+    function holeSub(aLo,aHi,bLo,bHi,ok){ return function(){ var p=pr(aLo,aHi,bLo,bHi,ok), a=p[0], b=p[1]; return coin()?H(a+' − @ = '+(a-b),b,'missing_number'):H('@ − '+b+' = '+(a-b),a,'missing_number'); }; }
+    function holeMul(aLo,aHi,bLo,bHi,ok){ return function(){ var p=pr(aLo,aHi,bLo,bHi,ok), a=p[0], b=p[1]; return coin()?H(a+' × @ = '+a*b,b,'missing_number'):H('@ × '+b+' = '+a*b,a,'missing_number'); }; }
+    function holeDiv(dLo,dHi,qLo,qHi,ok){ return function(){ var p=pr(dLo,dHi,qLo,qHi,ok), d=p[0], q=p[1]; return coin()?H(d*q+' ÷ @ = '+q,d,'missing_number'):H('@ ÷ '+d+' = '+q,d*q,'missing_number'); }; }
+    // division with a remainder: ask for the remainder or for the quotient
+    function rem(dLo,dHi,qLo,qHi,ok){ return function(){
+      var p=pr(dLo,dHi,qLo,qHi,ok), d=p[0], q=p[1], r=R(1,d-1), n=d*q+r;
+      return coin()?Q(n+' ÷ '+d+' = '+q+' remainder~?',n+' ÷ '+d+' = '+q+' あまり~□',null,r,'division')
+                   :Q(n+' ÷ '+d+' = ? remainder~'+r,n+' ÷ '+d+' = □ あまり~'+r,null,q,'division'); }; }
+    // three numbers with + and −, every step staying between lo and hi; need(...) can ask for more
+    function three(aLo,aHi,bLo,bHi,lo,hi,need){ return function(){
+      for(var i=0;i<600;i++){
+        var a=R(aLo,aHi), b=R(bLo,bHi), c=R(bLo,bHi), o1=coin(), o2=coin(), m=o1?a+b:a-b, v=o2?m+c:m-c;
+        if(m<lo||m>hi||v<lo||v>hi||m===0||a===b||b===c) continue;
+        if(need&&!need(a,b,c,o1,o2,m,v)) continue;
+        return S(a+(o1?' + ':' − ')+b+(o2?' + ':' − ')+c,v,'mixed');
+      }
+      throw new Error('qz2 three');
+    }; }
+
+    // ---- kindergarten ----
+    var SHAPES=[['●','dots','まる'],['★','stars','ほし'],['♥','hearts','ハート'],['■','squares','しかく'],['▲','triangles','さんかく']];
+    function kCount(lo,hi){ return function(){
+      var n=R(lo,hi), s=P(SHAPES), d='', i;
+      for(i=0;i<n;i++){ if(i&&i%5===0) d+='~'; d+=s[0]; }
+      return Q('How many '+s[1]+'? '+d,s[2]+'は いくつ？ '+d,null,n,'counting'); }; }
+    function kNext(lo,hi){ return function(){
+      var n=R(lo,hi);
+      if(coin()) return Q('What comes after '+n+'?',n+'の つぎの かずは？',null,n+1,'counting');
+      n=n+1; return Q('What comes before '+n+'?',n+'の 1つ まえの かずは？',null,n-1,'counting'); }; }
+    function kCmp(lo,hi){ return function(){
+      var p=pr(lo,hi,lo,hi,function(a,b){ return a!==b; }), a=p[0], b=p[1], q;
+      if(coin()){ q=Q('Which is bigger: '+a+' or '+b+'?',a+'と '+b+'、おおきいのは？',null,Math.max(a,b),'counting'); q.d=[Math.min(a,b)]; }
+      else { q=Q('Which is smaller: '+a+' or '+b+'?',a+'と '+b+'、ちいさいのは？',null,Math.min(a,b),'counting'); q.d=[Math.max(a,b)]; }
+      return q; }; }
+
+    // ---- words that several grades share ----
+    function tens(lo,hi,unit){ return function(){ var n=R(lo,hi); return Q(n+(unit===100?' hundreds = ?':' tens = ?'),unit+'が '+n+'こで いくつ？',null,n*unit,'place_value'); }; }
+    // "24 is how many times 6?"  (grade 3 up: 何 is a grade 2 kanji, 倍 grade 3)
+    function timesAs(dLo,dHi,qLo,qHi,k){ k=k||1; return function(){ var d=R(dLo,dHi)*k, q=R(qLo,qHi); return Q(d*q+' is how many times '+d+'?',d*q+'は '+d+'の なんばい？',d*q+'は '+d+'の 何倍？',q,'division'); }; }
+    // minutes are read ふん or ぷん by their last digit
+    function fun(n){ return [1,3,4,6,8,0].indexOf(n%10)>=0?'ぷん':'ふん'; }
+    function timeHM(){ var h=R(1,3), m=R(1,11)*5; return Q(h+(h>1?'~hours ':'~hour ')+m+'~min = ?~min',h+'じかん '+m+fun(m)+'は なんぷん？',h+'時間 '+m+'分は 何分？',h*60+m,'units'); }
+    function timeMS(){ var m=R(1,5), s=R(1,11)*5; return Q(m+'~min '+s+'~s = ?~s',m+fun(m)+' '+s+'びょうは なんびょう？',m+'分 '+s+'秒は 何秒？',m*60+s,'units'); }
+    // "1 m 20 cm = ? cm" / "1 m 20 cmは 何cm？"
+    function unit2(big,small,per,bLo,bHi,sLo,sHi,sStep){ return function(){
+      var b=R(bLo,bHi), s=R(sLo,sHi)*sStep, t=b+'~'+big+' '+s+'~'+small;
+      return Q(t+' = ?~'+small,t+'は なん'+small+'？',t+'は 何'+small+'？',b*per+s,'units'); }; }
+
+    // ---- grade 3 and 4: decimals, fractions, order of operations, rounding, area ----
+    // tenths (den 10) or hundredths (den 100) that add up, or take away, to a whole number
+    function decAdd(den,maxWhole){ return function(){
+      var f=den===100?R(1,19)*5:R(1,den-1), a=R(0,maxWhole)*den+f, b=R(0,maxWhole)*den+(den-f);
+      return S(D(a,den)+' + '+D(b,den),(a+b)/den,'decimals'); }; }
+    function decSub(den,maxWhole){ return function(){
+      var f=den===100?R(1,19)*5:R(1,den-1), w=R(1,maxWhole), b=R(0,maxWhole-1)*den+f, a=b+w*den;
+      return S(D(a,den)+' − '+D(b,den),w,'decimals'); }; }
+    // a decimal times a whole number that comes out whole: 1.5 x 4, 0.25 x 8
+    var DM=[[2,[5,15,25,35,45],10,6],[5,[2,4,6,8,12,14,16,18],10,4],[4,[25,75,125],100,5]];
+    function decMulInt(both){ return function(){
+      var g=P(DM), x=P(g[1]), n=g[0]*R(1,g[3]), a=D(x,g[2]), v=x*n/g[2];
+      return (both&&coin())?S(n+' × '+a,v,'decimals'):S(a+' × '+n,v,'decimals'); }; }
+    // same denominator: the numerator of the sum or difference, a sum that is a whole number, a mixed number
+    function frSame(maxDen,improper){ return function(){
+      var d=R(3,maxDen), k=R(0,improper?5:3), n1, n2;
+      if(k===0){
+        // comes out as a whole number
+        var w=improper?R(1,3):1; n1=R(1,d*w-1); n2=d*w-n1; if(!improper&&(n1>=d||n2>=d)){ n1=1; n2=d-1; }
+        if(n1%d===0){ n1+=1; n2-=1; }
+        return FX('{'+n1+'/'+d+'} + {'+n2+'/'+d+'} = ?',w,'fractions');
+      }
+      if(improper&&k===5){
+        // 1 3/4 = ?/4
+        var whole=R(1,3); n1=R(1,d-1);
+        return Q(whole+' '+n1+'/'+d+' = ?/'+d,whole+'と '+d+'ぶんの'+n1+' = '+d+'ぶんの□',whole+'と '+d+'分の'+n1+' = '+d+'分の□',whole*d+n1,'fractions');
+      }
+      var top=improper?2*d-1:d-1;
+      if(k%2){ n1=R(1,top-1); n2=R(1,top-n1); return FX('{'+n1+'/'+d+'} + {'+n2+'/'+d+'} = {@/'+d+'}',n1+n2,'fractions'); }
+      n1=R(2,top); n2=R(1,n1-1); return FX('{'+n1+'/'+d+'} − {'+n2+'/'+d+'} = {@/'+d+'}',n1-n2,'fractions');
+    }; }
+    // "What is 1/4 of 24?"; unit fractions only unless any is set
+    function frOf(any){ return function(){
+      var d=R(2,9), n=1, k=R(2,9);
+      if(any){ d=R(3,9); do{ n=R(2,d-1); }while(gcd(n,d)!==1); }
+      return Q('What is '+n+'/'+d+' of '+d*k+'?',d*k+'の '+d+'ぶんの'+n+'は？',d*k+'の '+d+'分の'+n+'は？',n*k,'fractions'); }; }
+    // order of operations; lvl 1 = two operations, lvl 2 adds longer forms
+    function ooo(lvl){ return function(){
+      var a=R(2,9), b=R(2,9), c=R(2,9), d=R(2,9), q=R(2,9), big=R(11,40), f=R(0,lvl>1?13:9);
+      switch(f){
+        case 0: return S(big+' + '+a+' × '+b,big+a*b,'order_of_operations');
+        case 1: return S((a*b+big)+' − '+a+' × '+b,big,'order_of_operations');
+        case 2: return S(a+' × '+b+' + '+big,a*b+big,'order_of_operations');
+        case 3: return S(a+' × '+b+' − '+c,a*b-c,'order_of_operations');
+        case 4: return S(big+' + '+c*q+' ÷ '+c,big+q,'order_of_operations');
+        case 5: return S(big+' − '+c*q+' ÷ '+c,big-q,'order_of_operations');
+        case 6: return S('('+a+' + '+b+') × '+c,(a+b)*c,'order_of_operations');
+        case 7: return S('('+(a+b)+' − '+a+') × '+c,b*c,'order_of_operations');
+        case 8: return S(a+' × ('+b+' + '+c+')',a*(b+c),'order_of_operations');
+        case 9: return S('('+(c*q-a>0?c*q-a:c*q+a)+(c*q-a>0?' + ':' − ')+a+') ÷ '+c,q,'order_of_operations');
+        case 10: return S(a+' × '+b+' + '+c+' × '+d,a*b+c*d,'order_of_operations');
+        case 11: return S('('+big+' + '+a+') × ('+(b+c)+' − '+b+')',(big+a)*c,'order_of_operations');
+        case 12: return S(a+' × '+(b+10)+' − '+c*q+' ÷ '+c,a*(b+10)-q,'order_of_operations');
+        default: return S(big*c+' ÷ ('+(c+a)+' − '+a+') + '+d,big+d,'order_of_operations');
+      }
+    }; }
+    // three factors where two of them make 10, 100 or 1000 (the school's "work it out the easy way")
+    var KF=[[2,5],[4,25],[5,20],[2,50],[8,125]];
+    function kufuu(){ var p=P(KF), k=R(3,9), o=[p[0],p[1],k], i=R(0,2), t=o[2]; o[2]=o[i]; o[i]=t; if(coin()){ t=o[0]; o[0]=o[1]; o[1]=t; } return S(o[0]+' × '+o[1]+' × '+o[2],p[0]*p[1]*k,'multiplication'); }
+    function round4(){
+      var p=P([10,100,1000]), n, name={10:['じゅう','十'],100:['ひゃく','百'],1000:['せん','千']}[p];
+      do{ n=p===1000?R(1001,9499):p===100?R(101,9949):R(11,9994); }while(n%p===0);
+      return Q('Round '+n+' to the nearest '+p+'.',n+'を '+name[0]+'の くらいまでの がいすうに~すると？',n+'を '+name[1]+'の位までの がい数に~すると？',Math.round(n/p)*p,'rounding'); }
+    function area4(){
+      if(R(0,3)===0){ var s=P([2,3,4,5,6,7,8,9,10,11,12,15,20]); return Q('Area of a square with side '+s+'?','1ぺん '+s+'~cmの せいほうけいの めんせきは？','1辺 '+s+'~cmの 正方形の 面積は？',s*s,'area'); }
+      var p=pr(2,12,3,15,function(a,b){ return a!==b; });
+      return Q('Area of '+(p[0]===8||p[0]===11?'an ':'a ')+p[0]+' by '+p[1]+' rectangle?','たて '+p[0]+'~cm、よこ '+p[1]+'~cmの めんせきは？','たて '+p[0]+'~cm、よこ '+p[1]+'~cmの 面積は？',p[0]*p[1],'area'); }
+
+    // ---- grade 5 ----
+    function decShift(){
+      var den=P([10,10,100]), n, k=den===10?P([10,100]):P([100,1000]);
+      do{ n=R(1,den===10?99:999); }while(n%10===0);
+      return S(D(n,den)+' × '+k,n*k/den,'decimals'); }
+    // 2.5 x 0.4: both in tenths, product whole
+    function decMulDec(){ var a=P([25,75]), b=P([4,8,12,16]), x=D(a,10), y=D(b,10); return coin()?S(x+' × '+y,a*b/100,'decimals'):S(y+' × '+x,a*b/100,'decimals'); }
+    // 3.6 / 0.4 = 9, 0.72 / 0.08 = 9, 6 / 0.5 = 12
+    function decDivDec(){
+      var q=R(2,12), d, den=10;
+      if(R(0,4)===0){ den=100; d=R(2,9); } else d=P([2,3,4,5,6,7,8,9,12,15,16,18,24,25,35,45]);
+      return S(D(d*q,den)+' ÷ '+D(d,den),q,'decimals'); }
+    function lcmQ(){
+      var p=pr(2,15,3,16,function(a,b){ return a<b&&a*b/gcd(a,b)<=99&&b%a!==0; }), l=p[0]*p[1]/gcd(p[0],p[1]);
+      return Q('Least common multiple of '+p[0]+'~and~'+p[1]+'?',p[0]+'と '+p[1]+'の さいしょうこうばいすうは？',p[0]+'と '+p[1]+'の 最小公倍数は？',l,'multiples'); }
+    function gcdQ(){
+      var g=R(2,12), p=pr(1,6,2,7,function(m,n){ return m<n&&gcd(m,n)===1&&g*n<=96; });
+      return Q('Greatest common factor of '+g*p[0]+'~and~'+g*p[1]+'?',g*p[0]+'と '+g*p[1]+'の さいだいこうやくすうは？',g*p[0]+'と '+g*p[1]+'の 最大公約数は？',g,'multiples'); }
+    // the mean of three (or four) numbers; lo..hi is where the mean sits
+    function avg(lo,hi,four,spread){ return function(){
+      for(var i=0;i<600;i++){
+        var m=R(lo,hi), n=four?4:3, v=[], s=0, j, ok=true;
+        for(j=0;j<n-1;j++){ v.push(m+R(-spread,spread)); s+=v[j]; }
+        v.push(m*n-s);
+        for(j=0;j<n;j++) if(v[j]<1||Math.abs(v[j]-m)>spread+2) ok=false;
+        if(!ok||(v[0]===v[1]&&v[1]===v[2])) continue;
+        var en=v.slice(0,n-1).join(', ')+' and '+v[n-1], ja=v.join('、');
+        return Q('Average of '+en+'?',ja+'の へいきんは？',ja+'の 平均は？',m,'averages');
+      }
+      throw new Error('qz2 avg');
+    }; }
+    // speed, distance, time in km and hours
+    function speedKm(){
+      var v=P([4,5,12,15,20,30,40,45,50,60,70,80,90]), t=R(2,6), d=v*t, f=R(0,2);
+      if(f===0) return Q(v+'~km/h for '+t+'~hours = ?~km','じそく '+v+'~kmで '+t+'じかん すすむと~なんkm？','時速 '+v+'~kmで '+t+'時間 進むと~何km？',d,'speed');
+      if(f===1) return Q(d+'~km in '+t+'~hours = ?~km/h',t+'じかんで '+d+'~km すすむと じそく~なんkm？',t+'時間で '+d+'~km 進むと 時速~何km？',v,'speed');
+      return Q(d+'~km at '+v+'~km/h = ?~hours','じそく '+v+'~kmで '+d+'~km すすむのに~なんじかん？','時速 '+v+'~kmで '+d+'~km 進むのに~何時間？',t,'speed'); }
+    // metres and minutes
+    function speedM(){
+      var v=P([50,60,70,80,90,150,200,250]), t=R(3,15), d=v*t;
+      if(coin()) return Q(v+'~m/min for '+t+'~min = ?~m','ふんそく '+v+'~mで '+t+fun(t)+' すすむと~なんm？','分速 '+v+'~mで '+t+'分 進むと~何m？',d,'speed');
+      return Q(d+'~m in '+t+'~min = ?~m/min',t+fun(t)+'で '+d+'~m すすむと ふんそく~なんm？',t+'分で '+d+'~m 進むと 分速~何m？',v,'speed'); }
+    // changing the unit of a speed
+    function speedUnit(){
+      var f=R(0,2), a;
+      if(f===0){ a=R(1,5); return Q(a*60+'~km/h = ?~km/min','じそく '+a*60+'~kmは ふんそく~なんkm？','時速 '+a*60+'~kmは 分速~何km？',a,'speed'); }
+      if(f===1){ a=P([3,6,9,12,15,18,24,30,36,42,48,54,60,72,90]); return Q(a+'~km/h = ?~m/min','じそく '+a+'~kmは ふんそく~なんm？','時速 '+a+'~kmは 分速~何m？',a*50/3,'speed'); }
+      a=P([50,100,150,200,250,300,400,500]); return Q(a+'~m/min = ?~km/h','ふんそく '+a+'~mは じそく~なんkm？','分速 '+a+'~mは 時速~何km？',a*3/50,'speed'); }
+    function triArea(){
+      var p=pr(4,20,3,12,function(b,h){ return b*h%2===0&&b!==h; });
+      return Q('Triangle: base '+p[0]+', height~'+p[1]+'.~Area?','ていへん '+p[0]+'、たかさ '+p[1]+'の さんかくけいの めんせきは？','底辺 '+p[0]+'~cm、高さ '+p[1]+'~cmの 三角形の 面積は？',p[0]*p[1]/2,'area'); }
+    function mul3(){ var p; do{ p=[R(2,9),R(2,9),R(2,9)]; }while(p[0]*p[1]*p[2]>400); return S(p.join(' × '),p[0]*p[1]*p[2],'multiplication'); }
+    // percentages; the lists are the percents a level may use
+    var PCT1=[10,20,25,50,75,30,40,60,80], PCT2=[5,15,35,45,70,90,120,125,150], PCT3=[10,20,25,40,50,60,75,80,5,125,150];
+    function pctN(p,maxK){ var base=100/gcd(p,100), lo=Math.ceil(20/base); return base*R(lo,Math.max(lo,Math.min(lo+maxK-1,Math.floor(600/base)))); }
+    function pctOf(list){ return function(){ var p=P(list), n=pctN(p,12); return Q('What is '+p+'% of '+n+'?',n+'の '+p+'%は？',null,n*p/100,'percentages'); }; }
+    function pctRev(list){ return function(){ var p=P(list), n=pctN(p,8), a=n*p/100; return Q(a+' is what percent of '+n+'?',a+'は '+n+'の なん%？',a+'は '+n+'の 何%？',p,'percentages'); }; }
+    function pctBase(){ var p=P([10,20,25,40,50,75]), n=pctN(p,10), a=n*p/100; return Q(p+'% of ? = '+a,'□の '+p+'%は '+a,null,n,'percentages'); }
+    function pctChange(){
+      var p=P([10,20,25,50,75]), n=pctN(p,10), up=coin(), v=up?n+n*p/100:n-n*p/100;
+      return up?Q('Increase '+n+' by '+p+'%.',n+'を '+p+'% ふやすと？',n+'を '+p+'% 増やすと？',v,'percentages')
+               :Q('Decrease '+n+' by '+p+'%.',n+'を '+p+'% へらすと？',n+'を '+p+'% 減らすと？',v,'percentages'); }
+    // equal fractions: the missing numerator or denominator
+    function frEq(){
+      var d=R(2,9), n, k=R(2,6), f=R(0,3);
+      do{ n=R(1,d-1); }while(gcd(n,d)!==1);
+      if(f===0) return FX('{'+n+'/'+d+'} = {@/'+d*k+'}',n*k,'fractions');
+      if(f===1) return FX('{'+n+'/'+d+'} = {'+n*k+'/@}',d*k,'fractions');
+      if(f===2) return FX('{'+n*k+'/'+d*k+'} = {@/'+d+'}',n,'fractions');
+      return FX('{'+n*k+'/'+d*k+'} = {'+n+'/@}',d,'fractions'); }
+    // different denominators: the numerator over the common denominator
+    function frUnlike(){
+      for(var i=0;i<600;i++){
+        var b=R(2,9), d=R(2,9), a=R(1,b-1), c=R(1,d-1), L=b*d/gcd(b,d), plus=coin(), top;
+        if(b===d||L>24||gcd(a,b)!==1||gcd(c,d)!==1) continue;
+        top=plus?a*(L/b)+c*(L/d):a*(L/b)-c*(L/d);
+        if(top<1||gcd(top,L)!==1) continue;
+        return FX('{'+a+'/'+b+'}'+(plus?' + ':' − ')+'{'+c+'/'+d+'} = {@/'+L+'}',top,'fractions');
+      }
+      throw new Error('qz2 frUnlike');
+    }
+
+    // ---- grade 6 ----
+    function frMulInt(){ var d=R(2,9), n, k=R(2,9); do{ n=R(1,d-1); }while(gcd(n,d)!==1); return coin()?FX('{'+n+'/'+d+'} × '+d*k+' = ?',n*k,'fractions'):FX(d*k+' × {'+n+'/'+d+'} = ?',n*k,'fractions'); }
+    // a/b x c/d and a/b / c/d that come out whole
+    function frMulFr(){
+      for(var i=0;i<600;i++){
+        var a=R(2,9), b=R(2,9), w=R(1,6), c=w*b, d=a, g;
+        if(gcd(a,b)!==1) continue;
+        g=gcd(c,d); c/=g; d/=g;
+        if(d===1||c>30) continue;
+        return FX('{'+a+'/'+b+'} × {'+c+'/'+d+'} = ?',w,'fractions');
+      }
+      throw new Error('qz2 frMulFr');
+    }
+    function frDivFr(){
+      for(var i=0;i<600;i++){
+        var d=R(2,9), c=R(1,d-1), w=R(2,9), a=w*c, b=d, g;
+        if(gcd(c,d)!==1) continue;
+        g=gcd(a,b); a/=g; b/=g;
+        if(a>20) continue;
+        return FX((b===1?String(a):'{'+a+'/'+b+'}')+' ÷ {'+c+'/'+d+'} = ?',w,'fractions');
+      }
+      throw new Error('qz2 frDivFr');
+    }
+    function frHour(){
+      var d=P([2,3,4,5,6,10,12]), n; do{ n=R(1,d-1); }while(gcd(n,d)!==1);
+      return Q(n+'/'+d+' hour = ? minutes',d+'ぶんの'+n+'じかんは なんぷん？',d+'分の'+n+'時間は 何分？',60*n/d,'fractions'); }
+    function eq1(){
+      var f=R(0,7), a, x, tail=['. What is x?','。xは？'], e, v;
+      if(f<4){ a=R(12,68); x=R(7,60); }
+      if(f===0){ e='x + '+a+' = '+(x+a); v=x; }
+      else if(f===1){ e=a+' + x = '+(x+a); v=x; }
+      else if(f===2){ e='x − '+a+' = '+x; v=x+a; }
+      else if(f===3){ e=(x+a)+' − x = '+a; v=x; }
+      else { a=R(3,12); x=R(3,15);
+        if(f===4){ e='x × '+a+' = '+a*x; v=x; }
+        else if(f===5){ e=a+' × x = '+a*x; v=x; }
+        else if(f===6){ e='x ÷ '+a+' = '+x; v=a*x; }
+        else { e=a*x+' ÷ x = '+a; v=x; } }
+      return Q(e+tail[0],e+tail[1],null,v,'algebra'); }
+    function eq2(){
+      var a=R(2,9), x=R(2,12), b=R(1,20), f=R(0,2), e, v=x;
+      if(f===0) e=a+' × x + '+b+' = '+(a*x+b);
+      else if(f===1){ b=R(1,Math.min(20,a*x-1)); e=a+' × x − '+b+' = '+(a*x-b); }
+      else { v=a*x; e='x ÷ '+a+' + '+b+' = '+(x+b); }
+      return Q(e+'. What is x?',e+'。xは？',null,v,'algebra'); }
+    function ratio(){
+      var p=pr(1,9,1,9,function(a,b){ return a!==b&&gcd(a,b)===1; }), a=p[0], b=p[1], k=R(2,9), f=R(0,3);
+      if(f===0) return H(a+' : '+b+' = '+a*k+' : @',b*k,'ratios');
+      if(f===1) return H(a+' : '+b+' = @ : '+b*k,a*k,'ratios');
+      if(f===2) return H(a*k+' : '+b*k+' = '+a+' : @',b,'ratios');
+      return H(a*k+' : '+b*k+' = @ : '+b,a,'ratios'); }
+    function prop(){
+      if(coin()){ var k=R(2,12), x=R(2,12); return Q('y = '+k+' × x. If x = '+x+', y = ?','y = '+k+' × x で x~=~'+x+'~のとき、yは？',null,k*x,'ratios'); }
+      var K=P([12,18,20,24,30,36,40,48,60,72,84,96]), ds=[], i; for(i=2;i<=12;i++) if(K%i===0&&K/i!==i) ds.push(i);
+      var xv=P(ds); return Q('x × y = '+K+'. If x = '+xv+', y = ?','x × y = '+K+' で x~=~'+xv+'~のとき、yは？',null,K/xv,'ratios'); }
+    function split(){
+      var p=pr(1,6,2,7,function(a,b){ return a<b&&gcd(a,b)===1; }), k=R(2,12), n=(p[0]+p[1])*k, r=p[0]+'~:~'+p[1];
+      return coin()?Q('Share '+n+' in ratio '+r+'. Larger~share?',n+'を '+r+'に わけると おおきい~ほうは？',n+'を '+r+'に 分けると 大きい~ほうは？',p[1]*k,'ratios')
+                   :Q('Share '+n+' in ratio '+r+'. Smaller~share?',n+'を '+r+'に わけると ちいさい~ほうは？',n+'を '+r+'に 分けると 小さい~ほうは？',p[0]*k,'ratios'); }
+    // look-ahead (junior high year 1 in Japan): one negative operand or a negative answer, always
+    function neg(){
+      var a=R(1,9), b=R(1,9), f=R(0,3), q;
+      if(f===0){ while(a>=b){ a=R(1,8); b=R(2,9); } q=S(a+' − '+b,a-b,'negative_numbers'); }
+      else if(f===1) q=S('(−'+a+') + '+b,b-a,'negative_numbers');
+      else if(f===2) q=S(a+' + (−'+b+')',a-b,'negative_numbers');
+      else q=S('(−'+a+') + (−'+b+')',-a-b,'negative_numbers');
+      q.neg=true; return q; }
+
+    // ---- the plan: grade -> act -> [share, generator, flag]. Flag 1 = stretch (more of it in hard
+    //      zones and on bosses, less in easy zones), -1 = review (the other way round). ----
+    function not0(a,b){ return a%10!==0&&b%10!==0; }
+    var g1add=add(1,9,1,9,function(a,b){ return a+b<=10; }), g1sub=sub(2,10,1,10,function(a,b){ return b<=a; });
+    var carry=add(2,9,2,9,function(a,b){ return a+b>=11; }), borrow=sub(11,18,2,9,function(a,b){ return a%10<b; });
+    var teenAdd=add(10,18,1,9,function(a,b){ return a%10+b<=9; }), teenSub=sub(11,19,1,10,function(a,b){ return b===10||a%10>=b; });
+    var add2d1c=add(13,89,3,9,function(a,b){ return a%10+b>=10&&a%10!==0; }), sub2d1b=sub(21,98,2,9,function(a,b){ return a%10<b; });
+    var add2dnc=add(11,88,11,88,function(a,b){ return nc(a,b)&&not0(a,b)&&a+b<=99; }), sub2dnb=sub(22,99,11,88,function(a,b){ return nb(a,b)&&not0(a,b)&&a-b>=11; });
+    var add2dc=add(13,79,13,79,function(a,b){ return !nc(a,b)&&a+b<=99; }), sub2db=sub(31,98,13,89,function(a,b){ return a%10<b%10&&a-b>=3; });
+    var add2dBig=add(25,95,25,95,function(a,b){ return a+b>=101&&not0(a,b)&&!nc(a%10,b%10); }), sub1xx=sub(101,160,13,95,function(a,b){ return a-b>=15&&a-b<=99&&a%10<b%10; });
+    var hund2d=sub(100,100,11,99,function(a,b){ return b%10!==0; });
+    var facts25=mul(2,5,1,9,null,1,1,true), facts69=mul(6,9,2,9), factsAll=mul(2,9,2,9), divF=dvd(2,9,2,9), remF=rem(2,9,2,9);
+    var m2d1d=mul(12,49,2,9,function(a){ return a%10!==0; },1,1,false), m2d1dBig=mul(12,99,2,9,function(a){ return a%10!==0; },1,1,true);
+    var m2dTens=mul(11,49,2,5,function(a){ return a%10!==0; },1,10,true), m2d11=mul(12,49,11,11,function(a){ return a%10!==0; },1,1,true);
+    var m2d2d=mul(11,25,11,15,function(a,b){ return a%10!==0&&a!==b; },1,1,true), m2d2dBig=mul(11,35,11,25,function(a,b){ return a%10!==0&&b%10!==0; },1,1,true);
+    function m3d1d(){ var b=R(2,3), t=Math.floor(9/b), n=R(1,t)*100+R(0,t)*10+R(1,t); return S(n+' × '+b,n*b,'multiplication'); }
+    function m3d1dBig(){ var b=R(2,5), n; do{ n=R(101,399); }while(n%10===0); return S(n+' × '+b,n*b,'multiplication'); }
+    // 84 / 4 = 21: every digit divides on its own
+    function d2dEasy(){ var d=R(2,4), t=Math.floor(9/d), q=R(1,t)*10+R(0,t); return S(d*q+' ÷ '+d,q,'division'); }
+    var d2d1d=dvd(2,9,11,49,function(d,q){ return d*q<=99; });
+    // 126 / 6 = 21: the hundreds and tens divide together, then the ones
+    function d3dEasy(){ for(var i=0;i<600;i++){ var d=R(2,9), t=R(2,9), o=R(0,Math.floor(9/d)); if(d*t<10) continue; return S(d*(t*10+o)+' ÷ '+d,t*10+o,'division'); } throw new Error('qz2 d3d'); }
+    var dTens=function(){ var d=R(2,9), q=R(2,9), k=P([10,10,100]); return S(d*q*k+' ÷ '+d,q*k,'division'); };
+    var dByTens=function(){ var d=R(2,9), q=R(2,9); return S(d*q*10+' ÷ '+d*10,q,'division'); };
+    var remBig=rem(2,9,11,49,function(d,q){ return d*q+d-1<=99; });
+    var d2d=dvd(11,25,2,9,function(d){ return d%10!==0; }), d3d2d=dvd(12,35,3,12,function(d,q){ return d%10!==0&&d*q>=100; });
+    var holeFact=function(){ return coin()?holeMul(2,9,2,9)():holeDiv(2,9,2,9)(); };
+    var holeAS2=function(){ return coin()?holeAdd(12,60,12,39,function(a,b){ return a+b<=99; })():holeSub(30,99,12,60,function(a,b){ return a-b>=11; })(); };
+    function zeroTen(){ var a=R(1,9), f=R(0,3); return f===0?S(a+' × 0',0,'multiplication'):f===1?S('0 × '+a,0,'multiplication'):f===2?S(a+' × 10',a*10,'multiplication'):S('10 × '+a,a*10,'multiplication'); }
+    function g1zero(){ var a=R(1,9), f=R(0,3); return f===0?S(a+' + 0',a,'addition'):f===1?S('0 + '+a,a,'addition'):f===2?S(a+' − 0',a,'subtraction'):S(a+' − '+a,0,'subtraction'); }
+    function mkTen(){ var a=R(1,9), c=R(2,9); return coin()?S(a+' + '+(10-a)+' + '+c,10+c,'mixed'):S(c+' + '+a+' + '+(10-a),10+c,'mixed'); }
+    function g1add2dTens(){ var a, b=R(1,7)*10, plus=coin(); do{ a=R(11,89); }while(a%10===0||(plus?a+b>99:a-b<1)); return plus?S(a+' + '+b,a+b,'addition'):S(a+' − '+b,a-b,'subtraction'); }
+    function round3(){ return coin()?add(12,88,12,88,function(a,b){ return not0(a,b)&&a+b<=99; },10)():sub(21,99,12,88,function(a,b){ return not0(a,b)&&a-b>=3; },10)(); }
+    function full3(){
+      return coin()?add(110,880,105,499,function(a,b){ return a+b<=999&&(a%10+b%10>9)!==((a%100-a%10+b%100-b%10)>90)&&not0(a,b); })()
+                   :sub(210,999,105,699,function(a,b){ return a-b>=100&&((a%10<b%10)!==(Math.floor(a/10)%10<Math.floor(b/10)%10))&&not0(a,b); })(); }
+    var holeCarry=holeAdd(2,9,2,9,function(a,b){ return a+b>=11; });
+    var holeRegroup=function(){ return coin()?holeCarry():holeSub(11,18,2,9,function(a,b){ return a%10<b; })(); };
+    var three20=three(6,18,2,9,1,20,function(a,b,c,o1,o2,m,v){ return Math.floor(a/10)!==Math.floor(m/10)||Math.floor(m/10)!==Math.floor(v/10); });
+    function ext12(){ var a=R(2,9), b=R(10,12); return coin()?S(a+' × '+b,a*b,'multiplication'):S(b+' × '+a,a*b,'multiplication'); }
+
+    var PLAN={
+      k:{
+        1:[[50,kCount(1,5),0],[15,kNext(1,5),0],[25,kCmp(1,5),0],[10,kCount(6,7),1]],
+        2:[[40,kCount(4,10),0],[20,kNext(3,10),0],[25,kCmp(1,10),0],[15,add(1,4,1,4,function(a,b){ return a+b<=5; }),1]],
+        3:[[45,add(1,5,1,5,function(a,b){ return a+b<=6; }),0],[13,kCount(6,10),-1],[12,kNext(6,15),0],[18,kCmp(3,12),0],[12,holeAdd(1,4,1,4,function(a,b){ return a+b<=5; }),1]],
+        4:[[40,add(1,9,1,9,function(a,b){ return a+b<=10&&a+b>=4; }),0],[25,sub(2,6,1,5,function(a,b){ return b<a; }),0],[11,kNext(9,19),-1],[11,kCmp(6,20),-1],[13,holeAdd(1,5,1,5,function(a,b){ return a+b<=6; }),1]],
+        5:[[30,add(1,9,1,9,function(a,b){ return a+b<=10&&a+b>=5; }),0],[30,sub(3,10,1,9,function(a,b){ return b<a; }),0],[18,holeAdd(1,9,1,9,function(a,b){ return a+b<=10&&a+b>=4; }),1],[11,kNext(10,19),-1],[11,kCmp(8,20),-1]]
+      },
+      '1':{
+        1:[[35,g1add,0],[35,g1sub,0],[20,holeAdd(1,9,1,9,function(a,b){ return a+b<=10&&a+b>=3; }),1],[10,g1zero,-1]],
+        2:[[25,teenAdd,0],[25,teenSub,0],[25,three(1,9,1,8,0,10),0],[10,holeAdd(1,9,1,9,function(a,b){ return a+b<=10&&a+b>=5; }),-1],[8,tens(2,10,10),-1],[7,g1sub,-1]],
+        3:[[50,carry,0],[15,mkTen,0],[15,three(2,10,1,9,0,10),0],[10,teenSub,-1],[10,holeCarry,1]],
+        4:[[40,borrow,0],[20,carry,0],[20,three20,0],[20,holeRegroup,1]],
+        5:[[35,three20,0],[22,holeRegroup,0],[10,borrow,0],[6,carry,0],
+           [9,function(){ return coin()?add(2,9,1,9,function(a,b){ return a+b<=10; },10)():sub(2,10,1,9,function(a,b){ return b<a; },10)(); },0],
+           [11,function(){ return coin()?add(21,98,1,8,function(a,b){ return a%10+b<=9&&a%10!==0; })():sub(22,99,1,8,function(a,b){ return a%10>b; })(); },0],
+           [7,g1add2dTens,0]]
+      },
+      '2':{
+        1:[[28,add2d1c,0],[27,sub2d1b,0],[12,add2dnc,0],[13,sub2dnb,0],[20,function(){ return coin()?add(2,9,2,9,function(a,b){ return a+b>=11; },10)():sub(11,18,2,9,function(a,b){ return a%10<b; },10)(); },1]],
+        2:[[26,add2dc,0],[20,sub2db,0],[14,add2dnc,-1],[13,sub2dnb,-1],[14,add2d1c,-1],[13,sub2d1b,-1]],
+        3:[[35,facts25,0],[27,add2dc,0],[23,sub2db,0],[15,hund2d,1]],
+        4:[[32,facts69,0],[8,factsAll,0],[22,add2dBig,0],[22,sub1xx,0],[16,timeHM,1]],
+        5:[[15,factsAll,0],[10,ext12,1],[26,add2dBig,0],[26,sub1xx,0],[8,unit2('m','cm',100,1,5,1,19,5),0],[5,unit2('cm','mm',10,1,9,1,9,1),0],[4,tens(11,99,10),-1],[6,timeHM,0]]
+      },
+      '3':{
+        1:[[38,factsAll,0],[5,zeroTen,-1],[13,add2dc,0],[13,sub2db,0],[21,round3,0],[10,holeAS2,1]],
+        2:[[33,divF,0],[20,holeFact,0],[10,factsAll,-1],[22,full3,0],[15,holeAS2,0]],
+        3:[[40,remF,0],[15,mul(2,9,2,9,null,10,1,true),0],[5,mul(2,9,2,9,null,100,1,true),0],[15,timesAs(2,9,2,9),0],[10,divF,-1],[15,full3,1]],
+        4:[[35,m2d1d,0],[10,m3d1d,1],[15,d2dEasy,0],[15,remF,0],[10,unit2('km','m',1000,1,9,1,19,50),0],[5,unit2('kg','g',1000,1,9,1,19,50),0],[5,timeMS,0],[5,full3,0]],
+        5:[[18,m2d1d,0],[10,m2dTens,0],[8,m2d11,1],[10,remF,0],[15,function(){ return coin()?decAdd(10,4)():decSub(10,5)(); },0],[12,frSame(10,false),0],[7,frOf(false),0],[13,full3,0],[7,m3d1d,1]]
+      },
+      '4':{
+        1:[[20,m2d1d,0],[8,m3d1d,0],[22,remF,-1],[22,dTens,0],[18,timesAs(3,9,3,9),0],[10,m2dTens,1]],
+        2:[[30,d2d1d,0],[15,d3dEasy,0],[8,dByTens,0],[17,remBig,0],[18,round4,0],[12,m2d1dBig,1]],
+        3:[[35,d2d,0],[15,d3d2d,1],[10,m2d2d,0],[20,round4,0],[20,remBig,0]],
+        4:[[46,ooo(1),0],[10,kufuu,0],[24,area4,0],[10,d2d,-1],[10,m2d2d,0]],
+        5:[[30,ooo(2),0],[14,d3d2d,0],[16,decMulInt(false),0],[7,decAdd(100,2),0],[5,decSub(100,3),0],[8,frSame(12,true),0],[5,area4,0],[15,m2d2d,1]]
+      },
+      '5':{
+        1:[[25,decShift,0],[30,decMulInt(true),0],[15,d2d,0],[12,ooo(1),0],[18,m2d1dBig,0]],
+        2:[[28,decDivDec,0],[10,decMulDec,1],[20,lcmQ,0],[20,gcdQ,0],[22,d3d2d,0]],
+        3:[[15,frEq,0],[25,frUnlike,0],[20,avg(8,40,false,5),0],[15,decDivDec,0],[10,lcmQ,-1],[15,m2d2d,1]],
+        4:[[25,speedKm,0],[20,pctOf(PCT1),0],[15,avg(8,40,false,5),0],[15,triArea,0],[10,frUnlike,0],[15,m2d2dBig,1]],
+        5:[[20,pctOf(PCT2),0],[20,pctRev(PCT3),0],[15,speedM,0],[15,avg(40,90,false,8),0],[10,frUnlike,0],[10,decDivDec,0],[10,m2d2dBig,1]]
+      },
+      '6':{
+        1:[[45,eq1,0],[30,frMulInt,0],[25,pctOf(PCT1),0]],
+        2:[[25,frMulFr,0],[20,frDivFr,0],[22,frOf(true),0],[15,frHour,0],[8,frMulInt,-1],[10,eq1,-1]],
+        3:[[25,ratio,0],[15,prop,0],[22,split,0],[23,eq2,0],[15,frDivFr,0]],
+        4:[[22,speedM,0],[10,speedUnit,1],[16,pctBase,0],[17,pctChange,0],[17,eq2,0],[18,frDivFr,0]],
+        5:[[15,split,0],[15,frDivFr,0],[10,frMulFr,0],[12,pctBase,0],[10,pctChange,0],[13,speedUnit,0],[15,eq2,0],[10,avg(60,90,false,8),0]]
+      }
+    };
+    var FLAGW={easy:{'1':0.4,'-1':1.6,'0':1},medium:{'1':1,'-1':1,'0':1},hard:{'1':1.8,'-1':0.5,'0':1}};
+
+    function negOn(){ try{ return window.localStorage.getItem('qok-quiz2-neg')!=='0'; }catch(e){ return true; } }
+    // the kind of question for grade, act and tier: one row of the plan, by its share. skip[i] leaves
+    // row i out (a kind with nothing fresh left); -1 when every row is left out
+    function pick(grade,act,tier,skip){
+      var rows=PLAN[grade]&&PLAN[grade][act]; if(!rows) return -1;
+      var w=FLAGW[tier]||FLAGW.medium, total=0, i, x, last=-1;
+      for(i=0;i<rows.length;i++) if(!skip||!skip[i]){ total+=rows[i][0]*w[String(rows[i][2])]; last=i; }
+      x=Math.random()*total;
+      for(i=0;i<rows.length;i++) if(!skip||!skip[i]){ x-=rows[i][0]*w[String(rows[i][2])]; if(x<0) return i; }
+      return last;
+    }
+    function wantNeg(grade,act){ return grade==='6'&&act===5&&negOn()&&Math.random()<NEG_SHARE; }
+    // one question record (en / kana / kanji / answer / category), with no memory of earlier ones
+    function draw(grade,act,tier){ if(wantNeg(grade,act)) return neg(); var i=pick(grade,act,tier); return i<0?null:PLAN[grade][act][i][1](); }
+    function shuffle(a){ for(var i=a.length-1;i>0;i--){ var j=R(0,i), t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+    // four distinct choices, one right: the bundle's own recipe (near misses first, then place-value
+    // and doubling slips), with negatives offered only where the question itself has one
+    function choices(n,withNeg,first){
+      var seen=[n], i, v, a=n<0?-n:n;
+      function ok(x){ return seen.indexOf(x)<0&&(withNeg||x>=0)&&x<=9999; }
+      function take(list,cap){ list=shuffle(list); for(var k=0;k<list.length&&seen.length<cap;k++) if(ok(list[k])) seen.push(list[k]); }
+      if(first) take(first.slice(),4);
+      take([n+1,n-1,n+2,n-2],3);
+      take((a>=100?[n+10,n-10,n+100,n-100,n+20,n-20]:a>=10?[n+10,n-10,n+11,n-9,n+20,n-20]:[n+3,n-3,n+4,n-4]).concat([n*2,a>=4?Math.round(n/2):n+5,n+5,n-5]),4);
+      for(i=1;seen.length<4&&i<80;i++){ v=n+(coin()?i:-i); if(ok(v)) seen.push(v); }
+      for(i=1;seen.length<4;i++){ v=n>5000?n-i:n+i; if(seen.indexOf(v)<0) seen.push(v); }
+      return shuffle(seen).map(function(m){ return {text:{en:String(m),ja:String(m)},isCorrect:m===n}; });
+    }
+    function kanjiMode(){ try{ var gs=window.__GAME_STATE__; return !!(gs&&gs.player&&gs.player.state&&gs.player.state.kanjiMode); }catch(e){ return false; } }
+    function build(c,grade,tier,act){
+      return { questionText:{en:c.en,ja:kanjiMode()?c.kj:c.ja}, answers:choices(c.a,!!c.neg,c.d), category:c.c, gradeLevel:grade, difficultyTier:tier,
+               qz2:{act:act,kana:c.ja,kanji:c.kj} };
+    }
+    var texts=[], answers=[];
+    function count(list,v,window){ var n=0; for(var i=Math.max(0,list.length-window);i<list.length;i++) if(list[i]===v) n++; return n; }
+    function sound(c){ return !!c&&typeof c.a==='number'&&c.a===Math.floor(c.a)&&Math.abs(c.a)<=9999&&(c.a>=0||!!c.neg); }
+    // The question the game asks. The kind is chosen first, by its share in the plan; then, of
+    // several candidates of that kind, the one whose answer has come up least in the last ANS_WINDOW
+    // (the old sampler's intent). A question asked within the last WIN[grade] is never a candidate;
+    // a kind with nothing fresh left gives way to the other kinds of the act.
+    function question(qm,zone,isBoss){
+      var grade=String(typeof qm.getEffectiveGrade==='function'?qm.getEffectiveGrade():qm.difficulty);
+      if(!PLAN[grade]) return null;
+      var tier='medium', act=5, best=null, bestScore=Infinity, spare=null, skip={}, round, row, i, c, gen, score;
+      if(zone){ tier=TIER[zone]||'medium'; if(isBoss) tier=BOSS[tier]; act=actOf(zone); }
+      for(round=0;!best;round++){
+        if(round===0&&wantNeg(grade,act)) gen=neg;
+        else { row=pick(grade,act,tier,skip); if(row<0) break; skip[row]=true; gen=PLAN[grade][act][row][1]; }
+        for(i=0;i<DRAWS;i++){
+          try{ c=gen(); }catch(e){ c=null; }
+          if(!sound(c)) continue;
+          if(count(texts,c.en,WIN[grade])){ spare=spare||c; continue; }
+          score=count(answers,c.a,ANS_WINDOW);
+          if(score<bestScore){ bestScore=score; best=c; }
+          if(score===0) break;
+        }
+      }
+      best=best||spare;
+      if(!best) return null;
+      texts.push(best.en); answers.push(best.a);
+      while(texts.length>120) texts.shift();
+      while(answers.length>ANS_WINDOW) answers.shift();
+      return build(best,grade,tier,act);
+    }
+    function on(){ try{ return window.localStorage.getItem('qok-quiz2')!=='0'; }catch(e){ return true; } }
+    return { on:on, question:question, draw:draw, actOf:actOf, WIN:WIN, NEG_SHARE:NEG_SHARE, version:'2026-11-27' };
+  })();
+  // For the content check and the balance model: window.__QOK_QUIZ2__.on() says which bank is live.
+  try{ window.__QOK_QUIZ2__=QZ2; }catch(e){}
 
   // 2026-09-08: restoring visibility on RESUME was earlier than restoring the base textures. A
   // deliberately delayed visible chunk proved the battle cover could clear ~1.65 s before the
