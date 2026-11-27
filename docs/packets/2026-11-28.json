@@ -1,221 +1,529 @@
 {
-  "id": "p1",
-  "pageTitle": "Edu-RPG packet 1",
-  "short": "Packet 1",
-  "eyebrow": "Saturday 28 November · about 10 minutes",
-  "title": "Edu-RPG weekly packet 1",
-  "lede": "Eight choices only you can make, what was decided for you this week, and four things to try if you have ten spare minutes. Tap an option and it is saved.",
-  "deadline": "Sat 5 Dec",
-  "status": {
-    "headline": "Build 99 plays from the title to the ending at every grade. The blockers are fixed. What is left is feel, balance and art.",
-    "stages": [
-      { "name": "Set up", "state": "done" },
-      { "name": "Finishable and clean", "state": "done" },
-      { "name": "Feel and balance", "state": "now" },
-      { "name": "Release candidate", "state": "" },
-      { "name": "Submit", "state": "" }
-    ],
-    "tiles": [
-      { "v": "99", "k": "Build on TestFlight since Tue 24 Nov" },
-      { "v": "239 / 239", "k": "Story steps passed by the robot, title to ending" },
-      { "v": "87 / 87", "k": "Boss and zone numbers inside their targets at grades 1, 3 and 6" },
-      { "v": "1,620", "k": "Jump checks passed across every town and dungeon floor" }
-    ],
-    "blocks": [
-      { "title": "New in build 99", "lines": [
-        "Number keypad and notepad for quiz answers.",
-        "The Demon King can be beaten. In build 98 the robot lost 300 fights out of 300.",
-        "21 quests that could not start, finish or pay now work.",
-        "Boss and quest rewards are no longer lost when the bag is full.",
-        "Continue no longer moves her on the world map or forgets her dungeon floor.",
-        "Longer lightning and gust warnings for grades K to 2."
-      ] },
-      { "title": "Done since, waiting for build 100", "lines": [
-        "All checks pass on these changes, and the robot again played from the title to the ending (248 steps), this time with no second tries.",
-        "Lightning, gust and magma warnings by grade, now for grades 3 to 6 too.",
-        "The typed answer sits on its own line above Correct!",
-        "Demon Castle: hugging the wall, she stopped dead on the base of a mirror frame at 31 of 32 doorways. She now walks through.",
-        "The healers at Last Bastion and Cinderwatch stand behind a stall, and Talk only showed from one exact spot beside them. The spot is now more than twice as big."
-      ] },
-      { "title": "Not there yet", "lines": [
-        "Acts 2 to 5 art is behind Act 1: coasts without sand, nine towns sharing two map icons, every field boss the same smoke ball. These need painted art from the Mac.",
-        "The robot measures timing and numbers. It does not yet judge whether a screen looks good.",
-        "How fast a child types on the keypad is my assumption, not a measurement.",
-        "Mac builds are still put together by hand."
-      ] }
+ "id": "p1",
+ "pageTitle": "Edu-RPG packet 1",
+ "short": "Packet 1",
+ "eyebrow": "Saturday 28 November · about 10 minutes",
+ "title": "Edu-RPG weekly packet 1",
+ "lede": "Eight choices only you can make, what was decided for you this week, and four things to try if you have ten spare minutes. Tap an option and it is saved.",
+ "deadline": "Sat 5 Dec",
+ "status": {
+  "headline": "Build 99 plays from the title to the ending at every grade. The blockers are fixed. What is left is feel, balance and art.",
+  "stages": [
+   {
+    "name": "Set up",
+    "state": "done"
+   },
+   {
+    "name": "Finishable and clean",
+    "state": "done"
+   },
+   {
+    "name": "Feel and balance",
+    "state": "now"
+   },
+   {
+    "name": "Release candidate",
+    "state": ""
+   },
+   {
+    "name": "Submit",
+    "state": ""
+   }
+  ],
+  "tiles": [
+   {
+    "v": "99",
+    "k": "Build on TestFlight since Tue 24 Nov"
+   },
+   {
+    "v": "239 / 239",
+    "k": "Story steps passed by the robot, title to ending"
+   },
+   {
+    "v": "87 / 87",
+    "k": "Boss and zone numbers inside their targets at grades 1, 3 and 6"
+   },
+   {
+    "v": "1,620",
+    "k": "Jump checks passed across every town and dungeon floor"
+   }
+  ],
+  "blocks": [
+   {
+    "title": "New in build 99",
+    "lines": [
+     "Number keypad and notepad for quiz answers.",
+     "The Demon King can be beaten. In build 98 the robot lost 300 fights out of 300.",
+     "21 quests that could not start, finish or pay now work.",
+     "Boss and quest rewards are no longer lost when the bag is full.",
+     "Continue no longer moves her on the world map or forgets her dungeon floor.",
+     "Longer lightning and gust warnings for grades K to 2."
     ]
-  },
-  "choicesIntro": "Nothing here has a ruling from you yet. Skip any you like: the line under each says what happens with no answer.",
-  "choices": [
-    {
-      "id": "c1", "area": "Story", "taste": "story-guidance",
-      "q": "Act 5: where does the compass send her after Last Bastion?",
-      "why": "Build 98 could not reach the Barracks quests at all. Build 99 follows the quest chain as written, which puts two six-floor dungeons and a hunt for 10 demons before the first portal.",
-      "options": [
-        { "id": "a", "label": "Demon Barracks, Void Rift, then the portals", "detail": "The quest chain as written. In build 99." },
-        { "id": "b", "label": "Straight to the four portals", "detail": "Barracks and Rift stay open as optional side dungeons." }
-      ],
-      "keeps": "a", "keepsVerb": "the game keeps"
-    },
-    {
-      "id": "c2", "area": "Story", "taste": "story-guidance",
-      "q": "After the Crystal Cave boss, where does the compass point?",
-      "why": "The Sage in Millbrook gave the quest and pays 100 gold for the report. Ironkeep is the next town in the story.",
-      "options": [
-        { "id": "a", "label": "Back to the Sage, then Ironkeep", "detail": "She reports in person and gets her 100 gold. In build 99." },
-        { "id": "b", "label": "On to Ironkeep", "detail": "The report waits in the quest log for a player who walks back." }
-      ],
-      "keeps": "a", "keepsVerb": "the game keeps"
-    },
-    {
-      "id": "c3", "area": "Quests", "taste": "story-guidance",
-      "q": "Seven story quests have nobody who gives them. How should they work?",
-      "why": "The Mountain Pass, Into the Shadow, The Desert Tomb, The Magma Path, The Volcanic Forge, The Four Relics and The Final Battle. In build 98 none of them could start.",
-      "options": [
-        { "id": "a", "label": "They start and end by themselves", "detail": "A New Quest notice when the quest before is done, a reward card when the boss falls. In build 99." },
-        { "id": "b", "label": "Townspeople give them", "detail": "The Ironkeep blacksmith, the Oasis elder, the Forgemaster and others ask and thank. New lines in three languages, and a walk back to report after each boss." },
-        { "id": "c", "label": "Take them out of the quest log", "detail": "The bosses still gate the story. The log lists only quests a person gave." }
-      ],
-      "keeps": "a", "keepsVerb": "the game keeps"
-    },
-    {
-      "id": "c4", "area": "Difficulty", "taste": "difficulty",
-      "q": "Random fights from the second dungeon to Act 4 barely hurt. What should change?",
-      "why": "A fight there costs 0.1 to 3% of her HP, yet these fights are most of the play time: 500 to 870 fights and 3 to 4 hours of quiz questions in one playthrough.",
-      "options": [
-        { "id": "a", "label": "Leave them", "detail": "Easy fights are quiz practice. In build 99." },
-        { "id": "b", "label": "Fewer fights, same rewards", "detail": "About 40% fewer fights, each paying more XP and gold. Same level at every boss, 1 to 1.5 hours shorter." },
-        { "id": "c", "label": "Same number, more dangerous", "detail": "A wrong defence answer costs about 6% of her HP. She will need heal items in every dungeon." }
-      ],
-      "keeps": "a", "keepsVerb": "the game keeps"
-    },
-    {
-      "id": "c5", "area": "Difficulty", "taste": "difficulty",
-      "q": "She reaches the first big shop nearly broke. Change it?",
-      "why": "At Port Sapphire she has 41 to 65 gold and the four upgrades cost 80 to 200. In 14 of 15 test runs she could buy none. The Crystal Cave then pays 640 to 740 gold at once.",
-      "options": [
-        { "id": "a", "label": "Leave it", "detail": "Wanting something she cannot afford yet is part of an RPG. In build 99." },
-        { "id": "b", "label": "Pocket money in Act 1", "detail": "The Owl's Lesson quest pays 100 gold more, so one upgrade is affordable when she arrives." },
-        { "id": "c", "label": "Move chest gold earlier", "detail": "About 300 of the Crystal Cave's chest gold moves into the Whispering Woods Cave and Misty Grotto chests. Same total." }
-      ],
-      "keeps": "a", "keepsVerb": "the game keeps"
-    },
-    {
-      "id": "c6", "area": "Difficulty", "taste": "difficulty",
-      "q": "How often should a child beat the Demon King on the first try?",
-      "why": "Build 98: never. Build 99: about two tries in three. A loss restarts the fight with her HP and items as they were at its start.",
-      "options": [
-        { "id": "a", "label": "About 2 in 3", "detail": "Build 99, typing on the keypad. Grade 1 wins about 69%, grade 3 about 53%, grade 6 about 69% of 100 fights each." },
-        { "id": "b", "label": "About 4 in 5", "detail": "Gentler. Most children win the first time." },
-        { "id": "c", "label": "About 1 in 2", "detail": "A real final boss. Half the children need a second try." }
-      ],
-      "keeps": "a", "keepsVerb": "the game keeps"
-    },
-    {
-      "id": "c7", "area": "Dungeon feel", "taste": "puzzle-feel",
-      "q": "Guards and trip wires catch the test child every time. Make the tells clearer?",
-      "why": "Demon Barracks 4F and 6F: a guard pauses 0.55 s, then turns his lantern. Bandit Hideout 4F: a trip wire shows from 2 tiles away, about 0.4 s at walking speed. The robot's grade 1 and grade 3 child was caught on 12 tries out of 12 on each floor. Being caught costs one battle.",
-      "options": [
-        { "id": "a", "label": "Leave them", "detail": "Getting caught is cheap and part of the dungeon. In build 99." },
-        { "id": "b", "label": "Clearer tells", "detail": "A guard swings his lantern before he turns, longer for younger grades. A wire glints from 4 tiles away." }
-      ],
-      "keeps": "b", "keepsVerb": "the robot builds, behind a switch, and shows you"
-    },
-    {
-      "id": "c8", "area": "Dungeon feel", "taste": "puzzle-feel",
-      "q": "Stormreach Spire's narrow floors still strike her on most crossings. Ease them?",
-      "why": "With this week's longer warnings a floor costs her about a tenth of her HP instead of more than half. On 3F, 4F and 6F fewer than half of the crossings are clean at any grade. A strike is a little damage and one step back.",
-      "options": [
-        { "id": "a", "label": "Leave them", "detail": "Being struck now and then is what the Spire is." },
-        { "id": "b", "label": "Shorter bolts", "detail": "A bolt is dangerous for half as long. Same glow, same rhythm." },
-        { "id": "c", "label": "Fewer bolts on those floors", "detail": "Fewer stones strike at the same time." }
-      ],
-      "keeps": "a", "keepsVerb": "the game keeps"
-    }
-  ],
-  "decidedIntro": "Changes the taste guide or a plain defect covered, so they went in without asking. Each has a switch. Tap Undo this and it comes out in the next build.",
-  "decided": [
-    {
-      "id": "d1", "title": "Towns fill the screen when she walks in", "where": "Build 99",
-      "text": "Coming in by a south gate she now stands low on screen, so the black strip under the town is gone.",
-      "layout": "pair",
-      "images": [
-        { "from": "/mnt/project-files/edu-rpg/autoloop/fixes/f2/m2-greenhollow-before.jpg", "cap": "Build 98", "alt": "Greenhollow gate with a black strip under the town", "crop": [0, 0.4, 1, 1] },
-        { "from": "/mnt/project-files/edu-rpg/autoloop/fixes/f2/m2-greenhollow-after.jpg", "cap": "Build 99", "alt": "Greenhollow gate, the town reaches the tab bar", "crop": [0, 0.4, 1, 1] }
-      ]
-    },
-    {
-      "id": "d2", "title": "Dungeon mouths glow warm", "where": "Build 99",
-      "text": "The way out of an Acts 2 to 5 dungeon was a hard white edge. It is now a soft warm light. A painted arch like Act 1's is the proper version and is on the art list; the warm tint looks a little odd in ice caves.",
-      "layout": "pair",
-      "images": [
-        { "from": "/mnt/project-files/edu-rpg/autoloop/fixes/f2/M10-before.jpg", "cap": "Build 98", "alt": "Iron Mine exit with a hard white edge", "crop": [0, 0.3, 1, 0.86] },
-        { "from": "/mnt/project-files/edu-rpg/autoloop/fixes/f2/M10-after.jpg", "cap": "Build 99", "alt": "Iron Mine exit with a soft warm glow", "crop": [0, 0.3, 1, 0.86] }
-      ]
-    },
-    {
-      "id": "d3", "title": "The Quests panel folds when it is empty", "where": "Build 99",
-      "text": "With no active quest the panel is one small button. The Saved pill moved under the compass.",
-      "layout": "pair",
-      "images": [
-        { "from": "/mnt/project-files/edu-rpg/autoloop/fixes/f2/m2-greenhollow-before.jpg", "cap": "Build 98", "alt": "Open Quests panel reading No active quests", "crop": [0, 0, 0.7, 0.22] },
-        { "from": "/mnt/project-files/edu-rpg/autoloop/fixes/f2/m2-greenhollow-after.jpg", "cap": "Build 99", "alt": "Quests panel folded to a small button", "crop": [0, 0, 0.7, 0.22] }
-      ]
-    },
-    {
-      "id": "d4", "title": "Japanese on the talk, shop and save buttons", "where": "Build 99",
-      "text": "In Japanese mode these buttons were still English.",
-      "layout": "pair",
-      "images": [
-        { "from": "/mnt/project-files/edu-rpg/autoloop/fixes/f1/M12-before.jpg", "cap": "Build 98", "alt": "Button reading Talk to Elder Rowan in Japanese mode", "crop": [0.1, 0.6, 0.9, 0.78] },
-        { "from": "/mnt/project-files/edu-rpg/autoloop/fixes/f1/M12-after.jpg", "cap": "Build 99", "alt": "Button reading 長老と 話す", "crop": [0.1, 0.6, 0.9, 0.78] }
-      ]
-    },
-    {
-      "id": "d5", "title": "Warnings last longer for younger grades", "where": "K to 2 in build 99, 3 to 6 in build 100", "next": true,
-      "text": "Your rule: built for small hands. The lightning glow and the magma cracks now last 1.5 s for grades K to 2 and 1.25 s for grades 3 and 4, the terrace stays calm for a moment after each strike, and Storm Nest gusts blow less often. Grade 3 clean crossings of Spire 5F went from 2 in 20 to 15 in 20; grade 1 on Magma Tunnels 5F from 3 in 12 to 12 in 12. She also cannot be struck in her first 2.5 s on a Spire floor."
-    },
-    {
-      "id": "d6", "title": "The Demon King is beatable, and fast answers still crit", "where": "Build 99",
-      "text": "His HP went from 1,875 to 1,500, his poison from 5% to 2% a turn, and his charged hit is weaker. With the keypad, a right answer inside 4.5 s is a critical hit (it was 3 s, which typing made almost impossible for a grade 6 child)."
-    },
-    {
-      "id": "d7", "title": "The typed answer gets its own line", "where": "Build 100", "next": true,
-      "text": "Build 99 runs the number into the message.",
-      "layout": "pair",
-      "images": [
-        { "from": "/mnt/project-files/edu-rpg/autoloop/fixes/f5/typed-answer-before.jpg", "cap": "Build 99", "alt": "Message reading 9Correct! Knowledge restored!", "crop": [0, 0.76, 1, 0.92] },
-        { "from": "/mnt/project-files/edu-rpg/autoloop/fixes/f5/typed-answer-after.jpg", "cap": "Build 100", "alt": "The number 10 on its own line above Correct! Knowledge restored!", "crop": [0, 0.76, 1, 0.92] }
-      ]
-    },
-    {
-      "id": "d8", "title": "Small ones", "where": "Build 99",
-      "text": "Tower floors count up (1F, 2F) and caves count down (B1F, B2F). People block like a body, not a square. Three shopkeepers can be talked to across the counter. A quest that ends by itself after a boss shows a Quest Complete card with a Continue adventure button."
-    }
-  ],
-  "play": {
-    "title": "If you have ten minutes",
-    "intro": "In build 99 open Settings, then Testers: Jump to. Each stop takes two or three minutes. The jump hero is a grade 3 child. Your own adventure is auto saved first.",
-    "verdicts": ["Feels right", "Needs work", "Did not try"],
-    "stops": [
-      { "id": "s1", "jump": "Act 5 › Stormreach Spire › 5F", "title": "Lightning at grade 3, before this week's fix",
-        "look": "Build 99 still has the old grade 3 timing here: the stone glows for under a second before the bolt. The robot's grade 3 child crossed clean 2 times in 20. Build 100 glows for 1.25 s. Does the old timing feel unfair to you too?" },
-      { "id": "s2", "jump": "Act 2 › Storm Nest › 4F", "title": "Do the gusts still read?",
-        "look": "The streaks are now soft and pale blue, near her and under the fog, instead of white dashes over the HUD. Nobody has watched them in motion. Is the gust still a clear cue to stop?" },
-      { "id": "s3", "jump": "Any fight", "title": "Keypad answers",
-        "look": "Type the answer and press Attack. Try the notepad key. Known flaw in build 99: the typed number runs into Correct!" },
-      { "id": "s4", "jump": "Act 5 › Demon Castle › Boss", "title": "The Demon King",
-        "look": "One fight. Plain play takes 4 to 6 minutes and wins about two in three. Careful defend-and-heal play almost always wins at grade 1 but takes about 9 minutes. Is that the right length for the last boss?" }
+   },
+   {
+    "title": "Done since, waiting for build 100",
+    "lines": [
+     "All checks pass on these changes, and the robot again played from the title to the ending (248 steps), this time with no second tries.",
+     "Lightning, gust and magma warnings by grade, now for grades 3 to 6 too.",
+     "The typed answer sits on its own line above Correct!",
+     "Demon Castle: hugging the wall, she stopped dead on the base of a mirror frame at 31 of 32 doorways. She now walks through.",
+     "The healers at Last Bastion and Cinderwatch stand behind a stall, and Talk only showed from one exact spot beside them. The spot is now more than twice as big."
     ]
+   },
+   {
+    "title": "Pushed on Friday, not in any build yet",
+    "lines": [
+     "Every change below is behind a switch and checked by a second reader. None of it has been put together into one build or run through the full checks yet. That is this weekend's job.",
+     "Battle screen and menus: nine small fixes after review, Japanese marked as a supported language for the App Store.",
+     "Dungeon looks: the way out shows in the dark again, the swap mark shows without touch controls, lantern and wind drawing cost cut.",
+     "Towns: Greenhollow's direct way to the healer is open again (two villagers moved to the well); a walking-distance check now covers all 12 towns.",
+     "Wall glide: she slips past small wall corners instead of stopping dead, at most 28 px sideways per press, never onto a trap or into guard light.",
+     "Kid timing: Shadow Cave crystals flicker longer before the light changes for younger grades. Young child clean runs on 3F went from 25% to 100%.",
+     "Balance: timers can only get longer than in build 99, never shorter; the kindergarten and grade 1 Demon King hits softer again."
+    ]
+   },
+   {
+    "title": "Found on Friday, already in build 99",
+    "lines": [
+     "On iPad sizes (not the mini) every dungeon looks pitch dark apart from the hero and the buttons. Measured in a desktop browser; a look on a real iPad would confirm it. Fix goes in build 100.",
+     "In Japanese the Start button on Create Your Hero is cut off on iPhone SE, iPhone 13 and iPad. On iPad held sideways the town is zoomed far too close and Start is cut off in English too."
+    ]
+   },
+   {
+    "title": "Waiting for you, beyond the eight choices",
+    "lines": [
+     "The one thing I cannot measure: how fast a real child answers. Grades 3 to 6 Demon King swings from about 0% to 60% wins on a factor of three in answer speed. If you can, time a grade 5 or 6 child on twelve questions with a stopwatch (page in the balance review); under 8 s a question and today's tuning holds.",
+     "World maps for Acts 2 to 5 re-exported from the real art: cut cliff edges repaired, better shores. It changes 865 wall cells, so it is not installed; it is being tested in a separate copy now and comes to you with in-game pictures.",
+     "Stormreach Spire: two gentler lightning patterns are built and switched off (they change which stones glow together, which your ruling locked). With them a young child crosses clean 58% to 75% of the time instead of under 10%.",
+     "Also open: Act 4 shore colour, two versions of the Act 1 borders, the Demon Barracks guard pause, the Bandit Hideout trip wire button, the Storm Nest 4F gust cue."
+    ]
+   },
+   {
+    "title": "Not there yet",
+    "lines": [
+     "Acts 2 to 5 art is behind Act 1: coasts without sand, nine towns sharing two map icons, every field boss the same smoke ball. These need painted art from the Mac.",
+     "The robot measures timing and numbers. It does not yet judge whether a screen looks good.",
+     "How fast a child types on the keypad is my assumption, not a measurement.",
+     "Mac builds are still put together by hand."
+    ]
+   }
+  ]
+ },
+ "choicesIntro": "Nothing here has a ruling from you yet. Skip any you like: the line under each says what happens with no answer.",
+ "choices": [
+  {
+   "id": "c1",
+   "area": "Story",
+   "taste": "story-guidance",
+   "q": "Act 5: where does the compass send her after Last Bastion?",
+   "why": "Build 98 could not reach the Barracks quests at all. Build 99 follows the quest chain as written, which puts two six-floor dungeons and a hunt for 10 demons before the first portal.",
+   "options": [
+    {
+     "id": "a",
+     "label": "Demon Barracks, Void Rift, then the portals",
+     "detail": "The quest chain as written. In build 99."
+    },
+    {
+     "id": "b",
+     "label": "Straight to the four portals",
+     "detail": "Barracks and Rift stay open as optional side dungeons."
+    }
+   ],
+   "keeps": "a",
+   "keepsVerb": "the game keeps"
   },
-  "next": [
-    "Build 100, Tuesday 1 December at the earliest, with this week's fixes and your picks.",
-    "The guard lantern swing and the trip wire glint behind a switch, with pictures in packet 2.",
-    "A grander victory and level-up box behind a switch, for you to compare with the plain one.",
-    "Find out why the robot stumbled once each in the Shadow Cave and the Sunken Temple. The last two stumbles like that were real snags in the game.",
-    "Timing measured in the Demon Castle and the Sunken Temple.",
-    "A reviewer that looks at screenshots against your rulings, starting with the Acts 2 to 5 art list.",
-    "One command to build on the Mac."
+  {
+   "id": "c2",
+   "area": "Story",
+   "taste": "story-guidance",
+   "q": "After the Crystal Cave boss, where does the compass point?",
+   "why": "The Sage in Millbrook gave the quest and pays 100 gold for the report. Ironkeep is the next town in the story.",
+   "options": [
+    {
+     "id": "a",
+     "label": "Back to the Sage, then Ironkeep",
+     "detail": "She reports in person and gets her 100 gold. In build 99."
+    },
+    {
+     "id": "b",
+     "label": "On to Ironkeep",
+     "detail": "The report waits in the quest log for a player who walks back."
+    }
+   ],
+   "keeps": "a",
+   "keepsVerb": "the game keeps"
+  },
+  {
+   "id": "c3",
+   "area": "Quests",
+   "taste": "story-guidance",
+   "q": "Seven story quests have nobody who gives them. How should they work?",
+   "why": "The Mountain Pass, Into the Shadow, The Desert Tomb, The Magma Path, The Volcanic Forge, The Four Relics and The Final Battle. In build 98 none of them could start.",
+   "options": [
+    {
+     "id": "a",
+     "label": "They start and end by themselves",
+     "detail": "A New Quest notice when the quest before is done, a reward card when the boss falls. In build 99."
+    },
+    {
+     "id": "b",
+     "label": "Townspeople give them",
+     "detail": "The Ironkeep blacksmith, the Oasis elder, the Forgemaster and others ask and thank. New lines in three languages, and a walk back to report after each boss."
+    },
+    {
+     "id": "c",
+     "label": "Take them out of the quest log",
+     "detail": "The bosses still gate the story. The log lists only quests a person gave."
+    }
+   ],
+   "keeps": "a",
+   "keepsVerb": "the game keeps"
+  },
+  {
+   "id": "c4",
+   "area": "Difficulty",
+   "taste": "difficulty",
+   "q": "Random fights from the second dungeon to Act 4 barely hurt. What should change?",
+   "why": "A fight there costs 0.1 to 3% of her HP, yet these fights are most of the play time: 500 to 870 fights and 3 to 4 hours of quiz questions in one playthrough.",
+   "options": [
+    {
+     "id": "a",
+     "label": "Leave them",
+     "detail": "Easy fights are quiz practice. In build 99."
+    },
+    {
+     "id": "b",
+     "label": "Fewer fights, same rewards",
+     "detail": "About 40% fewer fights, each paying more XP and gold. Same level at every boss, 1 to 1.5 hours shorter."
+    },
+    {
+     "id": "c",
+     "label": "Same number, more dangerous",
+     "detail": "A wrong defence answer costs about 6% of her HP. She will need heal items in every dungeon."
+    }
+   ],
+   "keeps": "a",
+   "keepsVerb": "the game keeps"
+  },
+  {
+   "id": "c5",
+   "area": "Difficulty",
+   "taste": "difficulty",
+   "q": "She reaches the first big shop nearly broke. Change it?",
+   "why": "At Port Sapphire she has 41 to 65 gold and the four upgrades cost 80 to 200. In 14 of 15 test runs she could buy none. The Crystal Cave then pays 640 to 740 gold at once.",
+   "options": [
+    {
+     "id": "a",
+     "label": "Leave it",
+     "detail": "Wanting something she cannot afford yet is part of an RPG. In build 99."
+    },
+    {
+     "id": "b",
+     "label": "Pocket money in Act 1",
+     "detail": "The Owl's Lesson quest pays 100 gold more, so one upgrade is affordable when she arrives."
+    },
+    {
+     "id": "c",
+     "label": "Move chest gold earlier",
+     "detail": "About 300 of the Crystal Cave's chest gold moves into the Whispering Woods Cave and Misty Grotto chests. Same total."
+    }
+   ],
+   "keeps": "a",
+   "keepsVerb": "the game keeps"
+  },
+  {
+   "id": "c6",
+   "area": "Difficulty",
+   "taste": "difficulty",
+   "q": "How often should a child beat the Demon King on the first try?",
+   "why": "Build 98: never. Build 99: about two tries in three. A loss restarts the fight with her HP and items as they were at its start.",
+   "options": [
+    {
+     "id": "a",
+     "label": "About 2 in 3",
+     "detail": "Build 99, typing on the keypad. Grade 1 wins about 69%, grade 3 about 53%, grade 6 about 69% of 100 fights each."
+    },
+    {
+     "id": "b",
+     "label": "About 4 in 5",
+     "detail": "Gentler. Most children win the first time."
+    },
+    {
+     "id": "c",
+     "label": "About 1 in 2",
+     "detail": "A real final boss. Half the children need a second try."
+    }
+   ],
+   "keeps": "a",
+   "keepsVerb": "the game keeps"
+  },
+  {
+   "id": "c7",
+   "area": "Dungeon feel",
+   "taste": "puzzle-feel",
+   "q": "Guards and trip wires catch the test child every time. Make the tells clearer?",
+   "why": "Demon Barracks 4F and 6F: a guard pauses 0.55 s, then turns his lantern. Bandit Hideout 4F: a trip wire shows from 2 tiles away, about 0.4 s at walking speed. The robot's grade 1 and grade 3 child was caught on 12 tries out of 12 on each floor. Being caught costs one battle.",
+   "options": [
+    {
+     "id": "a",
+     "label": "Leave them",
+     "detail": "Getting caught is cheap and part of the dungeon. In build 99."
+    },
+    {
+     "id": "b",
+     "label": "Clearer tells",
+     "detail": "A guard swings his lantern before he turns, longer for younger grades. A wire glints from 4 tiles away."
+    }
+   ],
+   "keeps": "b",
+   "keepsVerb": "the robot builds, behind a switch, and shows you"
+  },
+  {
+   "id": "c8",
+   "area": "Dungeon feel",
+   "taste": "puzzle-feel",
+   "q": "Stormreach Spire's narrow floors still strike her on most crossings. Ease them?",
+   "why": "With this week's longer warnings a floor costs her about a tenth of her HP instead of more than half. On 3F, 4F and 6F fewer than half of the crossings are clean at any grade. A strike is a little damage and one step back.",
+   "options": [
+    {
+     "id": "a",
+     "label": "Leave them",
+     "detail": "Being struck now and then is what the Spire is."
+    },
+    {
+     "id": "b",
+     "label": "Shorter bolts",
+     "detail": "A bolt is dangerous for half as long. Same glow, same rhythm."
+    },
+    {
+     "id": "c",
+     "label": "Fewer bolts on those floors",
+     "detail": "Fewer stones strike at the same time."
+    }
+   ],
+   "keeps": "a",
+   "keepsVerb": "the game keeps"
+  }
+ ],
+ "decidedIntro": "Changes the taste guide or a plain defect covered, so they went in without asking. Each has a switch. Tap Undo this and it comes out in the next build.",
+ "decided": [
+  {
+   "id": "d1",
+   "title": "Towns fill the screen when she walks in",
+   "where": "Build 99",
+   "text": "Coming in by a south gate she now stands low on screen, so the black strip under the town is gone.",
+   "layout": "pair",
+   "images": [
+    {
+     "from": "/mnt/project-files/edu-rpg/autoloop/fixes/f2/m2-greenhollow-before.jpg",
+     "cap": "Build 98",
+     "alt": "Greenhollow gate with a black strip under the town",
+     "crop": [
+      0,
+      0.4,
+      1,
+      1
+     ]
+    },
+    {
+     "from": "/mnt/project-files/edu-rpg/autoloop/fixes/f2/m2-greenhollow-after.jpg",
+     "cap": "Build 99",
+     "alt": "Greenhollow gate, the town reaches the tab bar",
+     "crop": [
+      0,
+      0.4,
+      1,
+      1
+     ]
+    }
+   ]
+  },
+  {
+   "id": "d2",
+   "title": "Dungeon mouths glow warm",
+   "where": "Build 99",
+   "text": "The way out of an Acts 2 to 5 dungeon was a hard white edge. It is now a soft warm light. A painted arch like Act 1's is the proper version and is on the art list; the warm tint looks a little odd in ice caves.",
+   "layout": "pair",
+   "images": [
+    {
+     "from": "/mnt/project-files/edu-rpg/autoloop/fixes/f2/M10-before.jpg",
+     "cap": "Build 98",
+     "alt": "Iron Mine exit with a hard white edge",
+     "crop": [
+      0,
+      0.3,
+      1,
+      0.86
+     ]
+    },
+    {
+     "from": "/mnt/project-files/edu-rpg/autoloop/fixes/f2/M10-after.jpg",
+     "cap": "Build 99",
+     "alt": "Iron Mine exit with a soft warm glow",
+     "crop": [
+      0,
+      0.3,
+      1,
+      0.86
+     ]
+    }
+   ]
+  },
+  {
+   "id": "d3",
+   "title": "The Quests panel folds when it is empty",
+   "where": "Build 99",
+   "text": "With no active quest the panel is one small button. The Saved pill moved under the compass.",
+   "layout": "pair",
+   "images": [
+    {
+     "from": "/mnt/project-files/edu-rpg/autoloop/fixes/f2/m2-greenhollow-before.jpg",
+     "cap": "Build 98",
+     "alt": "Open Quests panel reading No active quests",
+     "crop": [
+      0,
+      0,
+      0.7,
+      0.22
+     ]
+    },
+    {
+     "from": "/mnt/project-files/edu-rpg/autoloop/fixes/f2/m2-greenhollow-after.jpg",
+     "cap": "Build 99",
+     "alt": "Quests panel folded to a small button",
+     "crop": [
+      0,
+      0,
+      0.7,
+      0.22
+     ]
+    }
+   ]
+  },
+  {
+   "id": "d4",
+   "title": "Japanese on the talk, shop and save buttons",
+   "where": "Build 99",
+   "text": "In Japanese mode these buttons were still English.",
+   "layout": "pair",
+   "images": [
+    {
+     "from": "/mnt/project-files/edu-rpg/autoloop/fixes/f1/M12-before.jpg",
+     "cap": "Build 98",
+     "alt": "Button reading Talk to Elder Rowan in Japanese mode",
+     "crop": [
+      0.1,
+      0.6,
+      0.9,
+      0.78
+     ]
+    },
+    {
+     "from": "/mnt/project-files/edu-rpg/autoloop/fixes/f1/M12-after.jpg",
+     "cap": "Build 99",
+     "alt": "Button reading 長老と 話す",
+     "crop": [
+      0.1,
+      0.6,
+      0.9,
+      0.78
+     ]
+    }
+   ]
+  },
+  {
+   "id": "d5",
+   "title": "Warnings last longer for younger grades",
+   "where": "K to 2 in build 99, 3 to 6 in build 100",
+   "next": true,
+   "text": "Your rule: built for small hands. The lightning glow and the magma cracks now last 1.5 s for grades K to 2 and 1.25 s for grades 3 and 4, the terrace stays calm for a moment after each strike, and Storm Nest gusts blow less often. Grade 3 clean crossings of Spire 5F went from 2 in 20 to 15 in 20; grade 1 on Magma Tunnels 5F from 3 in 12 to 12 in 12. She also cannot be struck in her first 2.5 s on a Spire floor."
+  },
+  {
+   "id": "d6",
+   "title": "The Demon King is beatable, and fast answers still crit",
+   "where": "Build 99",
+   "text": "His HP went from 1,875 to 1,500, his poison from 5% to 2% a turn, and his charged hit is weaker. With the keypad, a right answer inside 4.5 s is a critical hit (it was 3 s, which typing made almost impossible for a grade 6 child)."
+  },
+  {
+   "id": "d7",
+   "title": "The typed answer gets its own line",
+   "where": "Build 100",
+   "next": true,
+   "text": "Build 99 runs the number into the message.",
+   "layout": "pair",
+   "images": [
+    {
+     "from": "/mnt/project-files/edu-rpg/autoloop/fixes/f5/typed-answer-before.jpg",
+     "cap": "Build 99",
+     "alt": "Message reading 9Correct! Knowledge restored!",
+     "crop": [
+      0,
+      0.76,
+      1,
+      0.92
+     ]
+    },
+    {
+     "from": "/mnt/project-files/edu-rpg/autoloop/fixes/f5/typed-answer-after.jpg",
+     "cap": "Build 100",
+     "alt": "The number 10 on its own line above Correct! Knowledge restored!",
+     "crop": [
+      0,
+      0.76,
+      1,
+      0.92
+     ]
+    }
+   ]
+  },
+  {
+   "id": "d8",
+   "title": "Small ones",
+   "where": "Build 99",
+   "text": "Tower floors count up (1F, 2F) and caves count down (B1F, B2F). People block like a body, not a square. Three shopkeepers can be talked to across the counter. A quest that ends by itself after a boss shows a Quest Complete card with a Continue adventure button."
+  }
+ ],
+ "play": {
+  "title": "If you have ten minutes",
+  "intro": "In build 99 open Settings, then Testers: Jump to. Each stop takes two or three minutes. The jump hero is a grade 3 child. Your own adventure is auto saved first.",
+  "verdicts": [
+   "Feels right",
+   "Needs work",
+   "Did not try"
   ],
-  "footer": "Taps and notes save by themselves and can be changed until packet 2 arrives on Saturday 5 December."
+  "stops": [
+   {
+    "id": "s1",
+    "jump": "Act 5 › Stormreach Spire › 5F",
+    "title": "Lightning at grade 3, before this week's fix",
+    "look": "Build 99 still has the old grade 3 timing here: the stone glows for under a second before the bolt. The robot's grade 3 child crossed clean 2 times in 20. Build 100 glows for 1.25 s. Does the old timing feel unfair to you too?"
+   },
+   {
+    "id": "s2",
+    "jump": "Act 2 › Storm Nest › 4F",
+    "title": "Do the gusts still read?",
+    "look": "The streaks are now soft and pale blue, near her and under the fog, instead of white dashes over the HUD. Nobody has watched them in motion. Is the gust still a clear cue to stop?"
+   },
+   {
+    "id": "s3",
+    "jump": "Any fight",
+    "title": "Keypad answers",
+    "look": "Type the answer and press Attack. Try the notepad key. Known flaw in build 99: the typed number runs into Correct!"
+   },
+   {
+    "id": "s4",
+    "jump": "Act 5 › Demon Castle › Boss",
+    "title": "The Demon King",
+    "look": "One fight. Plain play takes 4 to 6 minutes and wins about two in three. Careful defend-and-heal play almost always wins at grade 1 but takes about 9 minutes. Is that the right length for the last boss?"
+   }
+  ]
+ },
+ "next": [
+  "Put Friday's fixes together into one tested build, with the dark iPad dungeons and the Japanese Start button fixed.",
+  "Build 100, Tuesday 1 December at the earliest, after a simulator pass on iPhone and iPad.",
+  "The re-exported Acts 2 to 5 world maps, with in-game before and after pictures, for your yes or no.",
+  "Back to the normal pace from Sunday.",
+  "A reviewer that looks at screenshots against your rulings, starting with the Acts 2 to 5 art list."
+ ],
+ "footer": "Taps and notes save by themselves and can be changed until packet 2 arrives on Saturday 5 December."
 }
