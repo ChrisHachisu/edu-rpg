@@ -100,6 +100,46 @@ STRINGS.update({
         'jaKanji': '昔 ばあさんが エクスカリバーと 暁のイージスで 魔王を 封印したぞ。南西の 聖域に エクスカリバーが 眠っている。'},
 })
 
+# Quest repair text (autoloop 2026-11-23, track Q): asking lines for second quests and kanji reminder rows.
+STRINGS.update({
+    "quest.drakesCargo2.ask": {
+        "en": "Bandits stole my supplies! Their hideout is far to the east, in the desert. Beat their boss and bring my goods back!",
+        "ja": "さんぞくに にもつを うばわれちまった！やつらの アジトは はるか ひがしの さばくだ。おやぶんを たおして とりもどしてくれ！",
+        "jaKanji": "山賊に 荷物を 奪われちまった！奴らの アジトは はるか 東の 砂漠だ。親分を 倒して 取り戻してくれ！"
+    },
+    "quest.lunasProphecy.ask": {
+        "en": "The stars are speaking again... To read the prophecy, I need the light crystals of the Obsidian Cavern, north of here. Will you find them for me?",
+        "ja": "ほしたちが また かたりはじめたわ…。よげんを よむには きたの こくようせきのどうくつに ある ひかりのクリスタルが いるの。さがしてきてくれる？",
+        "jaKanji": "星たちが また 語り始めたわ…。予言を 読むには 北の 黒曜石の洞窟に ある 光のクリスタルが いるの。探してきてくれる？"
+    },
+    "quest.kikisResolve.ask": {
+        "en": "The Void Rift to the south scares me... but I'm done running away! Come with me, okay?",
+        "ja": "みなみの きょむのさけめ…ほんとうは こわいの。でも もう にげない！あんたも いっしょに きてよ！",
+        "jaKanji": "南の 虚無の裂け目…本当は 怖いの。でも もう 逃げない！あんたも 一緒に 来てよ！"
+    },
+    "npc.sage.questReminder": {
+        "en": "Have you found my book in the Whispering Woods Cave yet? I can't continue my research without it!",
+        "ja": "ささやきのもりの どうくつで ほんは みつかったかのう？あれが ないと けんきゅうが すすまんのじゃ！",
+        "jaKanji": "ささやきの森の 洞窟で 本は 見つかったかのう？あれが ないと 研究が 進まんのじゃ！"
+    },
+    "npc.kiki.questReminder": {
+        "en": "Those 5 crabs in the cellar aren't going to defeat themselves! Get down there already!",
+        "ja": "ちかしつの カニ 5ひき、まだ たおしてないの？はやく いってきてよ！",
+        "jaKanji": "地下室の カニ 5匹、まだ 倒してないの？早く 行ってきてよ！"
+    },
+    "npc.drake.questReminder": {
+        "en": "I need that cargo from the Coastal Reef. Don't forget! My livelihood depends on it.",
+        "ja": "さんごのいわばの にもつ、わすれてないだろうな？おれの せいかつが かかってんだ！",
+        "jaKanji": "珊瑚の岩場の 荷物、忘れてないだろうな？俺の 生活が かかってんだ！"
+    },
+    "npc.luna.questReminder": {
+        "en": "The star map fragment awaits in the Oasis Depths... the stars will guide you if you listen.",
+        "ja": "ほしの ちずの かけらは オアシスの おくふかくに…ほしの みちびきを しんじて。",
+        "jaKanji": "星の 地図の 欠片は オアシスの 奥深くに…星の 導きを 信じて。"
+    }
+})
+
+
 
 # The package stands the Forgemaster (who gives flameCloak, the Ember Mines' story gate) on the
 # lava ledge: the ground south of him, where town.html's talk band is, is lava, leaving a strip

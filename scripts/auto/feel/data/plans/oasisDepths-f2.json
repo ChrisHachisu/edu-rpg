@@ -1,0 +1,590 @@
+{
+ "schema": "qok-floorplan-v1",
+ "dungeonId": "oasisDepths",
+ "name": "Oasis Depths",
+ "act": 3,
+ "floor": 2,
+ "totalFloors": 5,
+ "width": 36,
+ "height": 22,
+ "cellPx": 48,
+ "title": "The wheel floods your way back",
+ "description": "The walkway to the middle island is dry. The wheel is on the island. Turning it drains both far walkways (stairs and treasure) but floods the one behind you. A mimic chest sits on the start bank as a trap.",
+ "source": {
+  "artifact": "https://claude.ai/artifact/GbRmVWqp7TrgbnUii9sSdp",
+  "picture": "img/oasis-f2.png",
+  "recoveredBy": "plans/dungeons/oasisDepths_recover.py",
+  "assumed": [
+   "no checkpoint crystals are drawn on the page; none added",
+   "wheel timings"
+  ]
+ },
+ "legend": {
+  "#": "solid rock or wall",
+  ".": "floor",
+  "w": "channel, flooded at the start (blocked until its wheel drains it)",
+  "d": "channel, dry at the start (a stone walkway until its wheel floods it)"
+ },
+ "rows": [
+  "####################################",
+  "####################################",
+  "############################.......#",
+  "###############........#####.......#",
+  "###############........wwwww.......#",
+  "###############........wwwww.......#",
+  "#.........#####........wwwww.......#",
+  "#.........#####........#####.......#",
+  "#.........#####........#####.......#",
+  "#.........#####........#####.......#",
+  "#.........ddddd........#############",
+  "#.........ddddd........#############",
+  "#.........ddddd........#############",
+  "#.........#####........#############",
+  "#.........#####........#####.......#",
+  "#.........#####........#####.......#",
+  "#.........#####........wwwww.......#",
+  "###############........wwwww.......#",
+  "###############........wwwww.......#",
+  "###############........#####.......#",
+  "############################.......#",
+  "####################################"
+ ],
+ "assets": [
+  {
+   "kind": "stairsNext",
+   "x": 32,
+   "y": 4
+  },
+  {
+   "kind": "mimic",
+   "x": 2,
+   "y": 7,
+   "note": "mimic chest: a trap, not a treasure"
+  },
+  {
+   "kind": "wheel",
+   "x": 18,
+   "y": 11,
+   "id": 1,
+   "channels": [
+    0,
+    1,
+    2
+   ]
+  },
+  {
+   "kind": "stairsPrev",
+   "x": 3,
+   "y": 14
+  },
+  {
+   "kind": "chest",
+   "x": 32,
+   "y": 18
+  }
+ ],
+ "zones": [
+  {
+   "kind": "channel",
+   "id": 0,
+   "wheel": 1,
+   "floodedAtStart": true,
+   "rect": [
+    23,
+    4,
+    27,
+    6
+   ],
+   "cells": [
+    [
+     23,
+     4
+    ],
+    [
+     24,
+     4
+    ],
+    [
+     25,
+     4
+    ],
+    [
+     26,
+     4
+    ],
+    [
+     27,
+     4
+    ],
+    [
+     23,
+     5
+    ],
+    [
+     24,
+     5
+    ],
+    [
+     25,
+     5
+    ],
+    [
+     26,
+     5
+    ],
+    [
+     27,
+     5
+    ],
+    [
+     23,
+     6
+    ],
+    [
+     24,
+     6
+    ],
+    [
+     25,
+     6
+    ],
+    [
+     26,
+     6
+    ],
+    [
+     27,
+     6
+    ]
+   ],
+   "color": [
+    64,
+    140,
+    200
+   ],
+   "alpha": 90,
+   "fill": true
+  },
+  {
+   "kind": "channel",
+   "id": 1,
+   "wheel": 1,
+   "floodedAtStart": false,
+   "rect": [
+    10,
+    10,
+    14,
+    12
+   ],
+   "cells": [
+    [
+     10,
+     10
+    ],
+    [
+     11,
+     10
+    ],
+    [
+     12,
+     10
+    ],
+    [
+     13,
+     10
+    ],
+    [
+     14,
+     10
+    ],
+    [
+     10,
+     11
+    ],
+    [
+     11,
+     11
+    ],
+    [
+     12,
+     11
+    ],
+    [
+     13,
+     11
+    ],
+    [
+     14,
+     11
+    ],
+    [
+     10,
+     12
+    ],
+    [
+     11,
+     12
+    ],
+    [
+     12,
+     12
+    ],
+    [
+     13,
+     12
+    ],
+    [
+     14,
+     12
+    ]
+   ],
+   "color": [
+    190,
+    170,
+    130
+   ],
+   "alpha": 90,
+   "fill": true
+  },
+  {
+   "kind": "channel",
+   "id": 2,
+   "wheel": 1,
+   "floodedAtStart": true,
+   "rect": [
+    23,
+    16,
+    27,
+    18
+   ],
+   "cells": [
+    [
+     23,
+     16
+    ],
+    [
+     24,
+     16
+    ],
+    [
+     25,
+     16
+    ],
+    [
+     26,
+     16
+    ],
+    [
+     27,
+     16
+    ],
+    [
+     23,
+     17
+    ],
+    [
+     24,
+     17
+    ],
+    [
+     25,
+     17
+    ],
+    [
+     26,
+     17
+    ],
+    [
+     27,
+     17
+    ],
+    [
+     23,
+     18
+    ],
+    [
+     24,
+     18
+    ],
+    [
+     25,
+     18
+    ],
+    [
+     26,
+     18
+    ],
+    [
+     27,
+     18
+    ]
+   ],
+   "color": [
+    64,
+    140,
+    200
+   ],
+   "alpha": 90,
+   "fill": true
+  }
+ ],
+ "mechanic": {
+  "id": "sluice-wheels",
+  "params": {
+   "rule": "each wheel works its channels together: a turn drains the flooded ones and floods the dry ones",
+   "turnFrom": "a cell beside the wheel",
+   "walkwayWidth": 3,
+   "timings": "not in the artifact"
+  },
+  "wheels": [
+   {
+    "id": 1,
+    "at": [
+     18,
+     11
+    ],
+    "channels": [
+     0,
+     1,
+     2
+    ]
+   }
+  ],
+  "channels": [
+   {
+    "id": 0,
+    "wheel": 1,
+    "floodedAtStart": true,
+    "rect": [
+     23,
+     4,
+     27,
+     6
+    ]
+   },
+   {
+    "id": 1,
+    "wheel": 1,
+    "floodedAtStart": false,
+    "rect": [
+     10,
+     10,
+     14,
+     12
+    ]
+   },
+   {
+    "id": 2,
+    "wheel": 1,
+    "floodedAtStart": true,
+    "rect": [
+     23,
+     16,
+     27,
+     18
+    ]
+   }
+  ],
+  "arrival": [
+   3,
+   14
+  ]
+ },
+ "route": [
+  [
+   3,
+   15
+  ],
+  [
+   4,
+   15
+  ],
+  [
+   4,
+   14
+  ],
+  [
+   4,
+   13
+  ],
+  [
+   4,
+   12
+  ],
+  [
+   4,
+   11
+  ],
+  [
+   5,
+   11
+  ],
+  [
+   6,
+   11
+  ],
+  [
+   7,
+   11
+  ],
+  [
+   8,
+   11
+  ],
+  [
+   9,
+   11
+  ],
+  [
+   10,
+   11
+  ],
+  [
+   11,
+   11
+  ],
+  [
+   12,
+   11
+  ],
+  [
+   13,
+   11
+  ],
+  [
+   14,
+   11
+  ],
+  [
+   15,
+   11
+  ],
+  [
+   16,
+   11
+  ],
+  [
+   17,
+   11
+  ],
+  [
+   17,
+   10
+  ],
+  [
+   17,
+   9
+  ],
+  [
+   17,
+   8
+  ],
+  [
+   17,
+   7
+  ],
+  [
+   17,
+   6
+  ],
+  [
+   17,
+   5
+  ],
+  [
+   17,
+   4
+  ],
+  [
+   18,
+   4
+  ],
+  [
+   19,
+   4
+  ],
+  [
+   20,
+   4
+  ],
+  [
+   21,
+   4
+  ],
+  [
+   22,
+   4
+  ],
+  [
+   23,
+   4
+  ],
+  [
+   24,
+   4
+  ],
+  [
+   25,
+   4
+  ],
+  [
+   26,
+   4
+  ],
+  [
+   27,
+   4
+  ],
+  [
+   28,
+   4
+  ],
+  [
+   29,
+   4
+  ],
+  [
+   30,
+   4
+  ],
+  [
+   31,
+   4
+  ]
+ ],
+ "tests": {
+  "pass": true,
+  "summary": "1 turn(s) to the exit; 2 wheel states, 0 soft-locks",
+  "exitReachable": true,
+  "routeSteps": 39,
+  "chests": 1,
+  "chestsReachable": 1,
+  "crystals": 0,
+  "crystalsReachable": 0,
+  "minWidth2": true,
+  "narrowCells": 0,
+  "solver": {
+   "states": 2,
+   "wheelMasks": 2,
+   "stairsTurns": 1,
+   "treasureTurns": [
+    1
+   ],
+   "shortestSteps": 39,
+   "softLocks": 0,
+   "pageSays": {
+    "stairs": 1,
+    "treasure": 1,
+    "states": 2,
+    "steps": 40
+   },
+   "matchesPage": {
+    "stairsTurns": true,
+    "treasureTurns": true,
+    "wheelStates": true,
+    "softLocks": true
+   },
+   "note": "shortestSteps counts 4-neighbour cells from the arrival cell to a cell beside the exit; the page's figure is given for comparison only"
+  }
+ }
+}

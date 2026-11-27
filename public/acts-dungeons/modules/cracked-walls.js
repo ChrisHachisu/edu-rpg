@@ -77,6 +77,47 @@
     else { for(i=0;i<8;i++){ var x4=8+r()*30, y4=16+r()*20, s4=3+r()*6; K.shadow(g,x4+s4/2,y4+s4,s4*0.7,1.8,0.3);
         g.fillStyle='#1a1410'; g.fillRect(x4-1,y4-1,s4+2,s4+1); g.fillStyle=['#7a6857','#655647','#8c7966'][i%3]; g.fillRect(x4,y4,s4,s4-1); g.fillStyle='rgba(255,255,255,0.18)'; g.fillRect(x4,y4,s4,1); } }
   }); }
+  // ---- the look (day 4, DB-15): the draught in the ash --------------------------------------------
+  // The draught was a still picture whose alpha breathed: a few hundred px changed in four seconds. Now ash moves:
+  // every 2.6 s a breath stirs the ash patch (the hint's own cell) and carries a handful of grey ash puffs and soot
+  // flecks along the floor TOWARD the crack; a mote now and then in between. The ash starts at the hint, not at the
+  // wall: motes rising from the foot of the cracked stretch marked the secret wall itself (owner: "neither too hard
+  // nor too obvious: a faint crack plus a small hint"). Every mote fades out before it comes within half a cell of
+  // the wall face (WALL_CLEAR, its whole puff counted), so nothing is ever drawn at the wall. It is ash on the floor,
+  // not a marker: no arrow, no glow, and it stops for good once the wall is open.
+  // localStorage 'qok-d4-looks' = '0': the old picture only.
+  var LOOKS=(function(){ try{ return window.localStorage.getItem('qok-d4-looks')!=='0'; }catch(e){ return true; } })();
+  var GUST_MS=2600, GUST_ON=760;
+  function texAsh(sc){ return K.tex(sc,'d2a_ashpuff',24,24,function(g){      // a soft round blot: dense in the middle, feathered to nothing at its rim
+    var f=g.createRadialGradient(12,12,0.5,12,12,12); f.addColorStop(0,'rgba(255,255,255,1)'); f.addColorStop(0.5,'rgba(255,255,255,0.78)'); f.addColorStop(0.8,'rgba(255,255,255,0.3)'); f.addColorStop(1,'rgba(255,255,255,0)');
+    g.fillStyle=f; g.fillRect(0,0,24,24); }); }
+  var WALL_CLEAR=TILE/2, ASH_R=12;                                           // px of floor before the wall face that no mote enters; the puff picture's radius at scale 1
+  function draughtMake(ctx,h){
+    var sc=ctx.scene, G=h.S, d=G.dir, i, key=texAsh(sc);
+    // the foot of the cracked stretch on her side (the wall face), the hint's cell, and the way the ash goes: from the hint toward the crack
+    var fx=d[0]?(d[0]>0?G.x0:G.x1):(G.x0+G.x1)/2, fy=d[1]?(d[1]>0?G.y0:G.y1):(G.y0+G.y1)/2;
+    var hx=h.x*TILE+TILE/2, hy=h.y*TILE+TILE/2, tx=fx-hx, ty=fy-hy, tl=Math.sqrt(tx*tx+ty*ty)||1;
+    h.dr={fx:fx, fy:fy, hx:hx, hy:hy, ux:tx/tl, uy:ty/tl, nx:-d[0], ny:-d[1], next:0, motes:[]};   // n: straight out from the wall face, into the room
+    for(i=0;i<24;i++){ var o=K.img(ctx,key,hx,hy,2.26).setVisible(false); h.dr.motes.push({img:o, t0:-1e9, life:1}); }
+  }
+  function draughtTick(st,h){
+    var D=h.dr, t=st.t, i, ph=t%GUST_MS, gust=ph<GUST_ON;
+    if(h.S.open){ if(!D.off){ D.off=true; for(i=0;i<D.motes.length;i++) D.motes[i].img.setVisible(false); } return; }
+    if(t>=D.next){ D.next=t+(gust?45:520);                                     // a breath, then a mote now and then
+      for(i=0;i<D.motes.length;i++){ var m=D.motes[i]; if(t-m.t0<m.life) continue;
+        var puff=gust&&Math.random()<0.55, sp=(gust?58:34)+Math.random()*26;
+        m.t0=t; m.life=(puff?1500:1150)+Math.random()*500; m.ph=Math.random()*6.28; m.size=puff?1.1+Math.random()*0.6:0.26+Math.random()*0.14; m.peak=puff?0.5:0.9; m.wob=puff?3:6;
+        // it rises in the hint's cell, on the half away from the wall, and goes toward the crack only as far as leaves
+        // WALL_CLEAR of floor between its whole puff (at its largest) and the wall face
+        var away=2+Math.random()*22, side=(Math.random()-0.5)*TILE; m.x=D.hx+D.nx*away-D.ny*side; m.y=D.hy+D.ny*away+D.nx*side;
+        var room=(m.x-D.fx)*D.nx+(m.y-D.fy)*D.ny-WALL_CLEAR-ASH_R*m.size*1.7-m.wob-2, toward=Math.max(0.2,-(D.ux*D.nx+D.uy*D.ny)), nat=sp*m.life/1000*0.68;
+        if(room<0){ m.x-=D.nx*room; m.y-=D.ny*room; room=0; }                    // (a hint that lies nearer the wall than that: the puff stands back)
+        var f=Math.min(1,room/toward/nat); m.vx=D.ux*sp*f; m.vy=D.uy*sp*f;
+        m.img.setTint(puff?0x3e3833:(Math.random()<0.65?0x2c2723:0xeae4da)).setVisible(true); break; } }   // grey ash and dark soot flecks (they show on the pale flagstones), a pale one now and then
+    for(i=0;i<D.motes.length;i++){ var q=D.motes[i], age=t-q.t0; if(age>=q.life){ if(q.img.visible) q.img.setVisible(false); continue; }
+      var k=age/q.life, s=age/1000, w=Math.sin(age/240+q.ph)*q.wob*k;
+      q.img.setPosition(q.x+q.vx*s*(1-0.32*k)-D.uy*w, q.y+q.vy*s*(1-0.32*k)+D.ux*w).setScale(q.size*(0.7+1.0*k)).setAlpha(q.peak*Math.pow(Math.sin(Math.PI*Math.min(1,k*1.15)),0.7)); }
+  }
   K.ready(function(K,D){ D.register('cracked-walls',{
     load:function(ctx){
       var sc=ctx.scene, st=ctx.state, ss=(ctx.mechanic&&ctx.mechanic.secrets)||[], mech=ctx.plan.mech||[], i, j;
@@ -90,7 +131,8 @@
         for(j=0;j<st.secrets.length;j++) if(st.secrets[j].id===a.secret) S=st.secrets[j];
         var o=K.img(ctx,texHint(sc,a.type),a.x*TILE+TILE/2,a.y*TILE+TILE/2,2.2);
         if(S && a.type!=='sign' && a.type!=='ember glow' && a.type!=='loose stones') o.setRotation(Math.atan2((S.y0+S.y1)/2-o.y,(S.x0+S.x1)/2-o.x));   // trails and draughts point at the crack
-        st.hints.push({x:a.x,y:a.y,type:a.type,img:o,S:S}); }
+        var hh={x:a.x,y:a.y,type:a.type,img:o,S:S}; st.hints.push(hh);
+        if(LOOKS && S && a.type==='draught in the ash'){ try{ draughtMake(ctx,hh); }catch(e){} } }
     },
     _breach:function(ctx,G,quiet){
       var sc=ctx.scene;
@@ -114,7 +156,7 @@
           if(a<=0.02) continue; g.fillStyle(0xff7a1a,Math.min(1,a)*0.35); g.fillCircle(e[0],e[1],e[3]+2.5); g.fillStyle(0xffc060,Math.min(1,a)); g.fillCircle(e[0],e[1],e[3]*0.7); }
         if(G.crack){ G.crack.setAlpha(live?0.85:0.6); G.crack.setPosition((G.x0+G.x1)/2+(lean>0?Math.sin(st.t/18)*1.5*lean:0),(G.y0+G.y1)/2); }
         if(st.t-G.last>160) G.acc=Math.max(0,G.acc-dt*2); }
-      for(i=0;i<st.hints.length;i++){ var h=st.hints[i]; if(h.type==='ember glow') h.img.setAlpha(0.75+0.25*Math.sin(st.t/210+i)); else if(h.type==='draught in the ash') h.img.setAlpha(0.6+0.3*Math.sin(st.t/340+i)); }
+      for(i=0;i<st.hints.length;i++){ var h=st.hints[i]; if(h.type==='ember glow') h.img.setAlpha(0.75+0.25*Math.sin(st.t/210+i)); else if(h.type==='draught in the ash'){ h.img.setAlpha(0.6+0.3*Math.sin(st.t/340+i)); if(h.dr) draughtTick(st,h); } }
     },
     bump:function(ctx,tx,ty,ux,uy,tile,info){
       var st=ctx.state, i; if(!st.secrets||!info) return;

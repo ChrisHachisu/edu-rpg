@@ -1,0 +1,182 @@
+{
+ "normal": {
+  "questionText": {
+   "en": "98 − ? = 49",
+   "ja": "98 − □ = 49"
+  },
+  "answers": [
+   {
+    "text": {
+     "en": "50",
+     "ja": "50"
+    },
+    "isCorrect": false
+   },
+   {
+    "text": {
+     "en": "54",
+     "ja": "54"
+    },
+    "isCorrect": false
+   },
+   {
+    "text": {
+     "en": "51",
+     "ja": "51"
+    },
+    "isCorrect": false
+   },
+   {
+    "text": {
+     "en": "49",
+     "ja": "49"
+    },
+    "isCorrect": true
+   }
+  ],
+  "category": "missing_number",
+  "gradeLevel": "3",
+  "difficultyTier": "hard",
+  "qz2": {
+   "act": 2,
+   "row": 4,
+   "kana": "98 − □ = 49",
+   "kanji": "98 − □ = 49"
+  }
+ },
+ "longEn": {
+  "questionText": {
+   "en": "Share 110 in ratio 4 : 7. Smaller share?",
+   "ja": "110を 4 : 7に わけると ちいさい ほうは？"
+  },
+  "answers": [
+   {
+    "text": {
+     "en": "40",
+     "ja": "40"
+    },
+    "isCorrect": true
+   },
+   {
+    "text": {
+     "en": "41",
+     "ja": "41"
+    },
+    "isCorrect": false
+   },
+   {
+    "text": {
+     "en": "60",
+     "ja": "60"
+    },
+    "isCorrect": false
+   },
+   {
+    "text": {
+     "en": "38",
+     "ja": "38"
+    },
+    "isCorrect": false
+   }
+  ],
+  "category": "ratios",
+  "gradeLevel": "6",
+  "difficultyTier": "hard",
+  "qz2": {
+   "act": 3,
+   "row": 2,
+   "kana": "110を 4 : 7に わけると ちいさい ほうは？",
+   "kanji": "110を 4 : 7に 分けると 小さい ほうは？"
+  }
+ },
+ "longJa": {
+  "questionText": {
+   "en": "270 km at 90 km/h = ? hours",
+   "ja": "じそく 90 kmで 270 km すすむのに なんじかん？"
+  },
+  "answers": [
+   {
+    "text": {
+     "en": "4",
+     "ja": "4"
+    },
+    "isCorrect": false
+   },
+   {
+    "text": {
+     "en": "3",
+     "ja": "3"
+    },
+    "isCorrect": true
+   },
+   {
+    "text": {
+     "en": "2",
+     "ja": "2"
+    },
+    "isCorrect": false
+   },
+   {
+    "text": {
+     "en": "8",
+     "ja": "8"
+    },
+    "isCorrect": false
+   }
+  ],
+  "category": "speed",
+  "gradeLevel": "5",
+  "difficultyTier": "hard",
+  "qz2": {
+   "act": 4,
+   "row": 0,
+   "kana": "じそく 90 kmで 270 km すすむのに なんじかん？",
+   "kanji": "時速 90 kmで 270 km 進むのに 何時間？"
+  }
+ },
+ "shapes": {
+  "questionText": {
+   "en": "How many triangles? ▲▲▲▲▲ ▲▲▲▲▲",
+   "ja": "さんかくは いくつ？ ▲▲▲▲▲ ▲▲▲▲▲"
+  },
+  "answers": [
+   {
+    "text": {
+     "en": "10",
+     "ja": "10"
+    },
+    "isCorrect": true
+   },
+   {
+    "text": {
+     "en": "12",
+     "ja": "12"
+    },
+    "isCorrect": false
+   },
+   {
+    "text": {
+     "en": "9",
+     "ja": "9"
+    },
+    "isCorrect": false
+   },
+   {
+    "text": {
+     "en": "5",
+     "ja": "5"
+    },
+    "isCorrect": false
+   }
+  ],
+  "category": "counting",
+  "gradeLevel": "k",
+  "difficultyTier": "hard",
+  "qz2": {
+   "act": 2,
+   "row": 0,
+   "kana": "さんかくは いくつ？ ▲▲▲▲▲ ▲▲▲▲▲",
+   "kanji": "さんかくは いくつ？ ▲▲▲▲▲ ▲▲▲▲▲"
+  }
+ }
+}

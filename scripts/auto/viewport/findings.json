@@ -1,0 +1,390 @@
+{
+ "date": "2026-11-27",
+ "built": "a44108f",
+ "note": "Findings of the screen size matrix (track VP, day 4). mkknown.cjs gives every measured failure the id of the first finding below whose match fits; REPORT.md (autoloop/day4/viewport) explains each. Findings with \"eye\" were judged from the pictures and have no rule.",
+ "findings": [
+  {
+   "id": "VP-19",
+   "rank": "P1",
+   "title": "iPads: every dungeon is pitch dark; only the hero, the lever and the HUD show, at any time",
+   "pictures": "sheets/dungeon-prompt-en.jpg, sheets/dungeon-en.jpg, sheets/dungeon-act1-en.jpg, sheets/boss-room-en.jpg; shots/ipad-en-dungeon-prompt.jpg against shots/mini-en-dungeon-prompt.jpg; shots/ipad-en-boss-room.jpg against shots/i13-en-boss-room.jpg",
+   "numbers": "Mean brightness (0 to 255) of a ring 0.9 to 1.6 hero heights around the hero: 61 to 239 on every size with overworld camera zoom 1 (all phones and the iPad mini), 10 to 13 on every size with zoom 2 or 3 (iPad 820x1180 and 1180x820, iPad Pro 1024x1366 and 1366x1024, iPad in kana and kanji), 30 to 33 with the crystal menu open. Same at 2.5 s and 12 s after arrival. A probe at iPad size with deviceScaleFactor 1 (zoom 1) shows the lit floor; with 2 (zoom 2) it is dark: the fault follows the camera zoom, not the screen. iPad mini landscape (1133x744, zoom 2, not run) will have it too.",
+   "cause": "public/dq-tiles.js updateFog() (about line 4250): the hero's place on the fog canvas is `(hero.x - cam.scrollX) * cam.zoom / F`. In Phaser, `scrollX` is not the left edge of the view when the zoom is above 1 (the view is zoomed about its centre: left edge = scrollX + width * (1 - 1/zoom) / 2), and the fog image (ensureDng, `setScrollFactor(0).setScale(FOGF)`) is itself zoomed again by the camera. At zoom 2 the light hole lands off the screen, so the whole view gets the full 250/255 darkness.",
+   "fix": "Draw the fog in screen space whatever the zoom: in ensureDng `fog.setScale(FOGF / cam.zoom).setPosition(cam.width * (1 - 1 / cam.zoom) / 2, cam.height * (1 - 1 / cam.zoom) / 2)` and in updateFog `hx = (hero.x - cam.worldView.x) * z / F` (same for y). Then confirm on an iPad that the light circle sits on the hero, and re-run this check (the hero-dark entries must go).",
+   "how": "Seen by eye in the iPad pictures in this takeover (the earlier rules did not catch it); a rule `hero-dark` was then added to scripts/auto/viewport/vplib.cjs and applied to these runs from the shots (ringpost.py in the scratch folder), and the live rule was run again on the iPad and SE groups.",
+   "match": [
+    {
+     "rule": "hero-dark"
+    }
+   ]
+  },
+  {
+   "id": "VP-20",
+   "rank": "P1",
+   "title": "Japanese, every size tested: Create Your Hero does not fit; the start button (ぼうけんに でる) is cut off at the bottom",
+   "pictures": "sheets/newgame-ja.jpg; shots/se-ja-kana-newgame.jpg, shots/i13-ja-kanji-newgame.jpg, shots/ipad-ja-kana-newgame.jpg against shots/i13-en-newgame.jpg",
+   "numbers": "Form content against its box: iPhone SE 706 in 647 (59 px over), iPhone 13 864 in 797 (67 px over), iPad 820x1180 1201 in 1156 (45 px over), the same in kana and kanji. At rest only the top edge of the start button shows on the phones; on iPad half of it shows and it reaches 20 px into the home-indicator inset. English fits on all three (it has no もじ row). It is the first screen of a new game in Japanese: a child who does not scroll sees no way to start.",
+   "cause": "public/ui-overhaul.js renderIntro (about line 1920): Japanese adds the もじ (かんたん / むずかしい) row, one 60 to 70 px panel more than English; the short-screen rule that hides the hero preview, public/ui-overhaul.css:941 `@media (max-height:720px)`, does not reach the 844 px iPhone 13 or the iPad.",
+   "fix": "Fold もじ into the ことば row (three choices: English / ひらがな / 漢字) so Japanese has the same rows as English; or hide the hero preview whenever the もじ row is shown (`#qok-ui .span2:has(> .intro-hero)` off when the screen holds `[data-act=introKanji]`) up to 900 px of height.",
+   "match": [
+    {
+     "rule": "scrolls",
+     "screen": "newgame",
+     "lang": "ja-kana|ja-kanji"
+    },
+    {
+     "rule": "safe-bottom",
+     "screen": "newgame",
+     "lang": "ja-kana|ja-kanji"
+    }
+   ]
+  },
+  {
+   "id": "VP-2",
+   "rank": "P1",
+   "title": "iPad landscape 1180x820: Create Your Hero does not fit; the Start Game button is cut off by the bottom edge and the form has to be scrolled",
+   "pictures": "sheets/newgame-en.jpg; shots/ipadL-en-newgame.jpg",
+   "numbers": "Form content 882 px in a 796 px box: 86 px too tall. At rest only the top edge of Start Game shows at the bottom of the screen. iPad Pro landscape 1366x1024 fits. This is the first screen of a new game: a child who does not think to scroll sees no way to start. iPad mini landscape (1133x744, not in the size list, not run) is 76 px shorter again, so it will be worse there.",
+   "cause": "public/ui-overhaul.css tablet landscape block (`@media (min-width:700px) and (orientation:landscape) and (min-height:560px)`, about line 472): `--z:1.32` and the two-column `.grid2`. Hero preview, two rows of cards and the button come to 882 px at zoom 1.32. The rule that hides the hero preview on short screens (`@media (max-height:720px)`, line 941) does not reach 820.",
+   "fix": "In the landscape block hide (or halve) the hero preview up to 900 px of height: `@media (orientation:landscape) and (max-height:900px) { #qok-ui .span2:has(> .intro-hero){ display:none } }`. The Look card already shows the hero.",
+   "match": [
+    {
+     "rule": "scrolls",
+     "screen": "newgame",
+     "size": "ipadL|proL"
+    }
+   ]
+  },
+  {
+   "id": "VP-1",
+   "rank": "P1",
+   "title": "iPad landscape: the town is drawn 5.6 to 6.6 times its size; the hero is a quarter of the screen high and only three rows of the town are in view",
+   "pictures": "sheets/town-arrive-en.jpg, sheets/first-arrival-en.jpg, sheets/dialog-1-en.jpg; shots/ipadL-en-town-arrive.jpg, shots/proL-en-town-arrive.jpg",
+   "numbers": "iPad 1180x820: town zoom 5.625, hero 202 px high = 25% of the screen height, 210 x 146 town px in view. iPad Pro 1366x1024: zoom 6.563, hero 236 px = 23%, 208 x 156 in view. For comparison iPad portrait: zoom 3.75, hero 135 px = 11%, 219 x 315 in view; phones: zoom 1.875, hero 68 px = 7 to 10%, 200 to 229 x 356 to 497 in view. The hero is 36 town px tall, so landscape shows about four hero heights of town.",
+   "cause": "public/act1-hifi/town.html:378 `camera.zoom = width / VIEW_W` (VIEW_W = 208, line 351): the zoom follows the width only, so a wide and short screen loses its height. The art is also magnified past what its pixels carry (blocky paving and props in the pictures).",
+   "fix": "Bound the zoom by the height as well: `camera.zoom = Math.min(width / VIEW_W, height / 300)` (300 town px is about what iPad portrait shows), then the existing whole-pixel snap. iPad landscape then shows about 430 x 300 town px at zoom about 2.7, hero about 98 px. Greenhollow is 768 px wide, so the wider view still fits inside the map.",
+   "match": [
+    {
+     "rule": "hero-scale",
+     "sig": "^large$"
+    }
+   ]
+  },
+  {
+   "id": "VP-16",
+   "rank": "P2",
+   "eye": true,
+   "eyeSizes": [
+    "ipadL/en",
+    "proL/en"
+   ],
+   "eyeScreens": [
+    "quiz-keypad",
+    "quiz-notepad",
+    "quiz-wrong",
+    "quiz-long",
+    "quiz-shapes",
+    "quiz4",
+    "quiz4-long"
+   ],
+   "title": "iPad landscape battle (by eye): the quiz card is the phone card stretched wide, and the enemy is squeezed between the name bar and the card",
+   "pictures": "sheets/quiz-keypad-en.jpg, sheets/quiz4-en.jpg; shots/ipadL-en-quiz-keypad.jpg, shots/proL-en-quiz-keypad.jpg",
+   "numbers": "iPad 1180x820: keypad card 846 x 268, keys 206 x 48 (iPad portrait: 468 x 375, keys 110 x 67; phones 75 to 89 x 48); four-button answers 416 x 56; the slime is 249 x 165, 29% of the 865 px name bar (58% in portrait, 68 to 71% on phones). Text in the card is phone size (the card is not zoomed in landscape). Every rule passes: nothing is clipped and the keys are large enough. In the keypad picture the card also covers the lower third of the slime (the enemy sits behind the card), so the child answers next to half an enemy.",
+   "cause": "public/ui-overhaul.css tablet landscape block: `#qok-ui.battle .hudwrap{ margin-top:0; zoom:1; width:100% }` (un-zoomed so that it fits the short height) and `.bstage{ height:52% }`.",
+   "fix": "Two panes in landscape: enemy and name bar on the left half, quiz card on the right at 520 px wide and zoom 1.3. Smaller step: cap `.hudwrap` at 560 px wide so the keys keep their phone proportions.",
+   "match": []
+  },
+  {
+   "id": "VP-9",
+   "rank": "P2",
+   "title": "iPhone SE: the notepad's four tool buttons are squeezed to 44 x 34",
+   "pictures": "sheets/quiz-notepad-en.jpg; shots/se-en-quiz-notepad.jpg",
+   "numbers": "Pen, Eraser, Clear and Close measure 44 x 34 px (hittable 45 x 41) in a slate 178 px high; 44 x 44 on every other size (slate 292 px or more).",
+   "cause": "public/ui-overhaul.js `npPlace()` (about line 2171) gives the slate the room between the name bar and the quiz card, 178 px on SE; public/ui-overhaul.css:1010 `.nptools` is a column with 8 px gaps, and four 44 px buttons need 216 px, so they shrink.",
+   "fix": "`flex-shrink:0` on the buttons and two columns of two when the slate is under 220 px high, or move Close to the top left corner.",
+   "match": [
+    {
+     "rule": "tap-small",
+     "sig": "nptools"
+    }
+   ]
+  },
+  {
+   "id": "VP-13",
+   "rank": "P2",
+   "title": "Settings shows the row \"Testers: Jump to...\" on every size",
+   "pictures": "sheets/menu-settings-en.jpg",
+   "numbers": "One row, every size and language. It is there on purpose for testers; the taste guide says no debug UI in the shipped game, so it is a release gate, not a layout fault.",
+   "cause": "public/ui-overhaul.js:44 `window.__QOK_TESTERS__ = true` (its comment: set to false for the public App Store release).",
+   "fix": "Set the flag to false in the release build; this check then reports the entry as fixed and it has to be removed from the list.",
+   "match": [
+    {
+     "rule": "debug-ui"
+    }
+   ]
+  },
+  {
+   "id": "VP-7",
+   "rank": "P2",
+   "title": "Phones: small print in the menus is 10 to 11.5 px",
+   "pictures": "sheets/menu-status-en.jpg, sheets/menu-equip-en.jpg, sheets/shop-en.jpg, sheets/slots-en.jpg",
+   "numbers": "Top bar Lv and HP 10 px (11 px on Pro Max); section headings (Status, Equip) 11 px; equip filter labels (Weapon, Armor ...) 10 px; New pill 10 px; Owned heading 11 px; item and shop descriptions 11.5 px; save slot label (Slot 1) 11 px on every size. On iPads the menu zoom of 1.4 lifts all but the slot label over 12 px.",
+   "cause": "public/ui-overhaul.css: `@media (max-width:420px)` sets `.who-meta, .top-hp-num, .who .lv` to 10 px (lines 448 to 456); `.eyebrow` 11 px (line 110); `.segcat b` 10 px (line 252); `.newpill` (line 794); `.slotcard .sn` 11 px (line 835).",
+   "fix": "Raise each to 12 px.",
+   "match": [
+    {
+     "rule": "text-small",
+     "sig": "who-meta|eyebrow|segcat|newpill|ownedhd|div\\.d < div\\.t|span\\.sn|slotcard"
+    }
+   ]
+  },
+  {
+   "id": "VP-6",
+   "rank": "P2",
+   "title": "Tab bar labels are 11 px on every size, and do not grow on iPad",
+   "pictures": "sheets/overworld-en.jpg, sheets/menu-status-en.jpg; shots/pro-en-overworld.jpg",
+   "numbers": "Field tabs (Status, Items, Equip, Settings) 11 px; menu tabs 11 px. Same 11 px on a 1024 px wide iPad Pro, where the menu body is zoomed 1.4.",
+   "cause": "index.html `.field-tabs .ft span` (lines 64 to 80) and public/ui-overhaul.css:135 `.tab` set 11 px; line 446 keeps `.tabbar` out of the tablet zoom.",
+   "fix": "12 px on phones; 14 px and a 24 px icon from 700 px of width.",
+   "match": [
+    {
+     "rule": "text-small",
+     "sig": "fieldTabs|button\\.tab < div\\.tabbar"
+    }
+   ]
+  },
+  {
+   "id": "VP-4",
+   "rank": "P2",
+   "title": "iPhone SE: Settings does not fit; Title Screen lies under the tab bar until the list is scrolled",
+   "pictures": "sheets/menu-settings-en.jpg; shots/se-en-menu-settings.jpg",
+   "numbers": "Settings list 573 px in a 514 px box (59 px over). The centre of the Title Screen button (187, 627) is under the tab bar at rest; it can be reached by scrolling. The other seven sizes fit.",
+   "cause": "public/ui-overhaul.css settings rows (`.setrow`) keep their full height on a 667 px screen: seven rows plus the Title Screen button. The Testers row (VP-13) is one of the seven; with it off the list is one row shorter and may just fit: measure again then.",
+   "fix": "Under `@media (max-height:700px)` cut the vertical padding of `#qok-ui .setrow` by 4 px a row, or leave it as it is once the Testers row is gone and the check shows it fits.",
+   "match": [
+    {
+     "rule": "scrolls",
+     "screen": "menu-settings"
+    },
+    {
+     "rule": "tap-covered",
+     "screen": "menu-settings"
+    },
+    {
+     "rule": "tap-unreachable",
+     "screen": "menu-settings"
+    }
+   ]
+  },
+  {
+   "id": "VP-15",
+   "rank": "P2",
+   "title": "iPad mini: the overworld and dungeons are drawn at half the scale of the other iPads",
+   "pictures": "sheets/overworld-en.jpg, sheets/dungeon-en.jpg; shots/mini-en-overworld.jpg against shots/ipad-en-overworld.jpg",
+   "numbers": "iPad mini 744x1133: camera zoom 1, hero 65 px = 8.7% of the width, 15.5 map cells across. iPad 820x1180: zoom 2, hero 130 px = 16%, 8.5 cells. Phones: zoom 1, hero 65 px = 15 to 17%, 7.8 to 9 cells. In the town both iPads use zoom 3.75 (hero 135 px), so on the mini the hero halves when she leaves town. In mm the mini's hero is about as large as a phone's (a CSS px is about 0.18 mm there): whether it reads as too small needs the device.",
+   "cause": "src/utils/constants.ts:16 `ZOOM = max(1, floor(min(innerWidth * dpr / GAME_WIDTH, ...)))`: 744 x 2 = 1488 falls just under twice the 768 px game width, so the mini stays at 1 where the 820 px iPad gets 2. public/dq-tiles.js:2369 already notes the mini as the one exception.",
+   "fix": "Pick the zoom from the CSS width (2 from 700 px) rather than from physical pixels. Going by the same note, zoom 2 would also bring the mini back to the 9-chunk ring of the other devices (it notes 12 chunks and about 228 MB at zoom 1 against 190 MB); confirm on the device.",
+   "match": [
+    {
+     "rule": "hero-scale",
+     "sig": "^small$"
+    }
+   ]
+  },
+  {
+   "id": "VP-17",
+   "rank": "P2",
+   "eye": true,
+   "eyeSizes": [
+    "mini/en",
+    "ipad/en",
+    "ipadL/en",
+    "pro/en",
+    "proL/en",
+    "ipad/ja-kana",
+    "ipad/ja-kanji"
+   ],
+   "eyeScreens": [
+    "first-arrival",
+    "overworld",
+    "town-arrive",
+    "town-talk",
+    "dialog-1",
+    "dialog-2",
+    "dungeon-prompt",
+    "dungeon"
+   ],
+   "title": "iPads (by eye): the field HUD, the prompt pill and the town dialogue stay phone size while menus and battle are scaled 1.4",
+   "pictures": "sheets/overworld-en.jpg, sheets/dialog-1-en.jpg, sheets/dungeon-prompt-en.jpg; shots/pro-en-dialog-1.jpg",
+   "numbers": "Same CSS px on every size: HP chip 158 x 42, minimap 156 x 156, compass 68, joystick 172, prompt pill 109 x 48, tab labels 11 px. Town dialogue: 15 px text in a box 804 px (iPad), 1008 px (Pro) or 1164 px (iPad landscape) wide and 104 px high, so a line runs to about 95 to 165 characters; on phones the same text is 5 lines in a 175 px box. In mm these pieces are no smaller than on a phone; against the large screen they look lost, and the dialogue is hard to read as one long line.",
+   "cause": "public/ui-overhaul.css tablet blocks zoom only `#qok-ui` parts (`--z`, `.hudwrap`, `.enemy-card`); `#qok-field-hud`, index.html `#fieldTabs` and `#dpad`, and public/act1-hifi/town.html `#dialogue` (line 76, 15 px) and `#prompt` (line 59) have no tablet rule.",
+   "fix": "From 700 px of width: `zoom:1.3` on `#qok-field-hud`, `#fieldTabs` and the joystick; town dialogue `max-width:640px; margin:0 auto; font-size:19px`.",
+   "match": []
+  },
+  {
+   "id": "VP-18",
+   "rank": "P2",
+   "eye": true,
+   "eyeSizes": [
+    "mini/en",
+    "ipad/en",
+    "ipadL/en",
+    "pro/en",
+    "proL/en",
+    "ipad/ja-kana",
+    "ipad/ja-kanji"
+   ],
+   "eyeScreens": [
+    "title"
+   ],
+   "title": "iPads (by eye): the title screen is the phone layout, not scaled",
+   "pictures": "sheets/title-en.jpg; shots/pro-en-title.jpg, shots/ipadL-en-title.jpg",
+   "numbers": "From the pictures, iPad Pro 1024x1366: title lettering about 410 px wide (40% of the width; 70% on a phone), hero card about 235 px, Start button about 380 x 56, language switch about 150 px wide; the rest of the screen is empty dark. Create Your Hero, the next screen, is scaled 1.4.",
+   "cause": "public/ui-overhaul.css: the title column is not inside a `.zc` box, so the tablet `--z` zoom does not apply to it.",
+   "fix": "Wrap the title stack in `.zc` (or `zoom:var(--z)` on it) so it gets the same 1.4 as the next screen.",
+   "match": []
+  },
+  {
+   "id": "VP-5",
+   "rank": "P3",
+   "title": "iPad landscape: bosses reach up behind the enemy name bar",
+   "pictures": "sheets/boss-start-en.jpg, sheets/final-start-en.jpg; shots/ipadL-en-boss-start.jpg, shots/proL-en-boss-start.jpg",
+   "numbers": "iPad 1180x820: boss picture box starts at y 78, the name bar ends at y 104 (26 px under it, 10,381 px2). iPad Pro 1366x1024: y 66 against 104 (38 px, 20,032 px2). Portrait sizes and regular enemies: no overlap. In the picture only the wing tips touch the bar's lower edge; the name stays readable, so P3.",
+   "cause": "public/ui-overhaul.css tablet landscape block: `#qok-ui.battle .bstage{ height:52% }` with the boss fit box at `max-height:74%`, and the name bar zoomed 1.25 on top of the same stage. The stage does not leave room for the bar.",
+   "fix": "In the landscape block give the stage a top padding of the name bar's height (about 96 px) or cap `.bfit.boss` at 62% of the stage.",
+   "match": [
+    {
+     "rule": "overlap",
+     "sig": "^enemy\\+enemyCard$"
+    }
+   ]
+  },
+  {
+   "id": "VP-3",
+   "rank": "P3",
+   "title": "Overworld and dungeons: a dark band under the status bar, where town and battle paint to the top edge",
+   "pictures": "sheets/overworld-en.jpg against sheets/town-arrive-en.jpg and sheets/battle-start-en.jpg; shots/i13-en-overworld.jpg, shots/promax-en-overworld.jpg",
+   "numbers": "Band of the page colour rgb(10,10,20) as high as the top inset: 20 px on SE, 47 on iPhone 13, 59 on Pro Max, 24 on the iPads. Colour step against the map 136 to 162 on the overworld (out of 255), 9 to 11 in dark dungeons. The game canvas starts at y = inset (overworld canvas 0,47 390x701 on iPhone 13); the town frame and the battle backdrop start at y = 0. Ranked P3: on the device the status bar sits in this band, and the game is fully playable; it is a visible seam when screens change, not a block.",
+   "cause": "index.html:90 `#game-container { top: env(safe-area-inset-top) }`: the Phaser canvas stops below the inset and the page background shows above it. Town (iframe) and battle (`#qok-ui` backdrop) cover the whole screen, so the game changes its top edge between screens.",
+   "fix": "Let the canvas fill the screen (`top:0; height:100%`) and keep the inset only on the HUD, which already adds it (HP chip at inset + 6 px). Then re-check the hero against the joystick, because the camera centre moves up by half the inset.",
+   "match": [
+    {
+     "rule": "inset-band",
+     "screen": "overworld|quest-open|minimap-folded|dungeon.*|crystal-menu|boss-room|boss-after"
+    },
+    {
+     "rule": "black-bar",
+     "screen": "overworld|quest-open|minimap-folded|dungeon.*|crystal-menu|boss-room|boss-after"
+    }
+   ]
+  },
+  {
+   "id": "VP-21",
+   "rank": "P3",
+   "eye": true,
+   "eyeSizes": [
+    "se/ja-kanji",
+    "i13/ja-kanji",
+    "ipad/ja-kanji"
+   ],
+   "eyeScreens": [
+    "newgame"
+   ],
+   "title": "Japanese, kanji: on Create Your Hero the もじ switch shows かんたん lit while the screen is already in kanji (not a size fault; seen while checking)",
+   "pictures": "shots/i13-ja-kanji-newgame.jpg (名前, 問題の 難しさ in kanji; the switch lights かんたん)",
+   "numbers": "On every size. A parent who set kanji on the title sees the switch say the opposite; tapping it flips the text to kana.",
+   "cause": "public/ui-overhaul.js:1920 lights the halves from `pstate().kanjiMode`, and there is no player yet on this screen, so it always lights かんたん; the labels use kanji(), which falls back to the title's choice.",
+   "fix": "Light the halves from kanji() instead of pstate().",
+   "match": []
+  },
+  {
+   "id": "VP-10",
+   "rank": "P3",
+   "title": "Phones: rows of the grade wheel on Create Your Hero are 32 px high",
+   "pictures": "sheets/newgame-en.jpg",
+   "numbers": "Each grade row 31.7 px high (hittable 33 px) on SE, iPhone 13 and Pro Max. The wheel can also be dragged, so a row tap is not the only way.",
+   "cause": "public/ui-overhaul.css:234 `.gopt{ height:34px }`.",
+   "fix": "44 px rows (the wheel then shows three rows in 132 px).",
+   "match": [
+    {
+     "rule": "tap-small",
+     "sig": "gopt|gwheel"
+    }
+   ]
+  },
+  {
+   "id": "VP-11",
+   "rank": "P3",
+   "title": "iPhone SE: the opened Quests panel covers the hero's left edge",
+   "pictures": "sheets/quest-open-en.jpg; shots/se-en-quest-open.jpg",
+   "numbers": "Panel right edge at x 163, hero from x 155: 8 px over, 531 px2. Other sizes clear. The panel is open only when asked for (and for 4 s when a quest is added).",
+   "cause": "public/ui-overhaul.css quest panel width 156 px at left 7 px on a 375 px screen whose centre is 187.",
+   "fix": "Cap the open panel at 140 px wide below 380 px of width.",
+   "match": [
+    {
+     "rule": "overlap",
+     "sig": "quests\\+hero|hero\\+quests"
+    }
+   ]
+  },
+  {
+   "id": "VP-12",
+   "rank": "P3",
+   "title": "Phones: on entering a town the hero stands under the joystick ring",
+   "pictures": "sheets/town-arrive-en.jpg; shots/se-en-town-arrive.jpg",
+   "numbers": "Overlap of the hero and the 172 px joystick ring just inside the south gate: 2,346 px2 on SE, 1,886 on iPhone 13, 659 on Pro Max. It ends after a few steps north, when the camera starts to follow.",
+   "cause": "public/act1-hifi/town.html `#pad` (line 109) sits at right 20 px, bottom 76 px + inset; at the gate the camera is held at the map's south edge, so the hero stands two thirds of the way down the screen, and on a 375 px screen the 172 px ring reaches the centre column.",
+   "fix": "None needed if the ring stays see-through; otherwise let the town camera show 40 px beyond the south edge at the gate.",
+   "match": [
+    {
+     "rule": "overlap",
+     "sig": "stick\\+hero|hero\\+stick"
+    }
+   ]
+  },
+  {
+   "id": "VP-8",
+   "rank": "P3",
+   "title": "Compass letters are 8.5 and 10 px",
+   "pictures": "sheets/overworld-en.jpg",
+   "numbers": "E, S, W 8.5 px, N 10 px, on every size (the compass is 68 px on phones and tablets).",
+   "cause": "public/ui-overhaul.css:742 `.qfc-c`.",
+   "fix": "Keep only N at 12 px, or grow the compass with the screen (VP-17).",
+   "match": [
+    {
+     "rule": "text-small",
+     "sig": "qfc-c"
+    }
+   ]
+  },
+  {
+   "id": "VP-14",
+   "rank": "P3",
+   "title": "Menus, title, shop and ending: the strip under the status bar is a slightly different dark",
+   "pictures": "shots/promax-en-menu-status.jpg (top 59 px)",
+   "numbers": "Strip as high as the top inset in rgb(21,22,28) against the screen's own dark below it, colour step 9 to 13 out of 255: hard to see on dark, behind the notch on phones.",
+   "cause": "public/ui-overhaul.css: the `#qok-ui` column starts below `env(safe-area-inset-top)` and the strip above shows the layer behind it.",
+   "fix": "Give `#qok-ui .col` the inset as padding-top, not as an offset, so its own background runs to the top.",
+   "match": [
+    {
+     "rule": "inset-band"
+    }
+   ]
+  },
+  {
+   "id": "VP-22",
+   "rank": "P3",
+   "title": "iPhone SE, kana: the shop list scrolls by 12 px",
+   "pictures": "shots/se-ja-kana-shop.jpg",
+   "numbers": "Shop list 577 px in a 565 px box (12 px over) in kana on SE; the last item and the もどる button are visible and reachable. English and kanji fit.",
+   "cause": "The kana shop header (いらっしゃい！なにを おもとめですか？) wraps to two lines on 375 px.",
+   "fix": "None needed; or shorten the kana greeting to one line.",
+   "match": [
+    {
+     "rule": "scrolls",
+     "screen": "shop|shop-confirm"
+    }
+   ]
+  }
+ ]
+}

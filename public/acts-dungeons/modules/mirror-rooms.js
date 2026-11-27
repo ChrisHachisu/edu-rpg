@@ -92,6 +92,30 @@
       if (c === '#' || c === 'p') return false; if (c === '_') pit = true; }
     return pit;
   }
+  // A doorway lip: the painted post at a doorway ends in a point that the mask draws up to ~22 px INTO the
+  // doorway's cells, so a hero walking straight through along either wall stopped dead although the opening
+  // beside the point is clear. The spot is a lip when it lies in a doorway's own cells (the first LIPD px from
+  // the opening's top or bottom edge, within LIPX px of the doorway's column) and the mask is free again within
+  // LIPW px on BOTH sides of it along the row: a point standing in the doorway, not a wall. Rows outside the
+  // opening, and everything deeper than LIPD, stay as the mask has them. qok-door-lips = '0' turns this off.
+  var LIPD = 28, LIPW = 64, LIPX = 72;
+  function zones(M) {
+    var out = [], i, j;
+    for (i = 0; i < M.rooms.length; i++) for (j = 0; j < M.rooms[i].doors.length; j++) { var d = M.rooms[i].doors[j];
+      out.push({ x0: d.x * T - LIPX, x1: (d.x + 1) * T + LIPX, top: d.y0 * T, bot: (d.y1 + 1) * T }); }
+    return out;
+  }
+  function doorLip(ctx, wx, wy) {
+    var Z = ctx.state.zones, i, k, l, r;
+    for (i = 0; i < Z.length; i++) { var z = Z[i];
+      if (wx < z.x0 || wx >= z.x1) continue;
+      if (!((wy >= z.top && wy < z.top + LIPD) || (wy >= z.bot - LIPD && wy < z.bot))) continue;
+      l = false; r = false;
+      for (k = 2; k <= LIPW; k += 2) { if (!l && ctx.maskFree(wx - k, wy)) l = true; if (!r && ctx.maskFree(wx + k, wy)) r = true; if (l && r) return true; }
+    }
+    return false;
+  }
+  function lipsOn() { try { return window.localStorage.getItem('qok-door-lips') !== '0'; } catch (e) { return true; } }
   function overPit(ctx, sx, sy) {                                             // her soles are INTO px inside pit cells on every side
     var P = [[0, 0], [INTO, 0], [-INTO, 0], [0, INTO], [0, -INTO]], i;
     for (i = 0; i < P.length; i++) if (ctx.terrain(Math.floor((sx + P[i][0]) / T), Math.floor((sy + P[i][1]) / T)) !== '_') return false;
@@ -105,7 +129,7 @@
   function ready(ctx) {
     var S = ctx.state; if (S.ok) return true;
     var K = kit(); if (!K) return false;
-    S.K = K; S.M = model(ctx); S.ms = K.tickMs(ctx.mechanic.params); S.room = undefined; S.door = null; S.swap = false; S.latch = null;
+    S.K = K; S.M = model(ctx); S.zones = zones(S.M); S.lips = lipsOn(); S.ms = K.tickMs(ctx.mechanic.params); S.room = undefined; S.door = null; S.swap = false; S.latch = null;
     S.fall = null; S.hold = 0; S.grace = 800; S.busy = false; S.spr = null; S.t = 0; S.falls = 0; S.battles = 0; S.tick = 0;
     if (S.M.knights.length) S.tick = K.clock(ctx, 0, S.M.period, S.ms);
     legacyOff(ctx.scene);
@@ -163,6 +187,37 @@
       g.beginPath(); g.moveTo(32, 14); g.lineTo(13, 14); g.stroke(); g.beginPath(); g.moveTo(10, 14); g.lineTo(16, 10.2); g.lineTo(16, 17.8); g.closePath(); g.fill();
     });
   }
+  // Day 4 (DC-05): the swap badge is a status of her CONTROLS, so it sits with the controls, beside the stick (the
+  // outer end of the stick's top edge, level with the prompt pill and clear of it), and no longer floats over her
+  // head where it covered what stood behind it (a chest, on 4F). Same picture, same fade, shown exactly while the
+  // old badge was (its alpha is still kept on spr.badge, which is not drawn). 'qok-d4-looks' = '0': over her head.
+  // The stick is not always there: #touch-controls is display:none outside the touch media query (a mouse and
+  // keyboard, index.html) and while a message box is open. So the old badge is hidden ONLY while the stick has a
+  // rendered box (asked each time the chip is placed, at most every 0.4 s); otherwise the mark stays over her head.
+  var LOOKS = (function () { try { return window.localStorage.getItem('qok-d4-looks') !== '0'; } catch (e) { return true; } })();
+  var chipEl = null;
+  function chipDrop() { if (chipEl) { try { chipEl.parentNode.removeChild(chipEl); } catch (e) {} chipEl = null; } }
+  function chipMake(sc, K) {
+    if (typeof document === 'undefined') return null;
+    chipDrop();
+    try {
+      var src = sc.textures.get(badgeTex(sc, K)).getSourceImage(), c = document.createElement('canvas'); c.id = 'd2mSwapChip'; c.width = 132; c.height = 66;
+      var g = c.getContext('2d'); g.imageSmoothingEnabled = true; g.drawImage(src, 0, 0, 44, 22, 0, 0, 132, 66);
+      c.style.cssText = 'position:fixed;left:0;top:0;width:60px;height:30px;opacity:0;pointer-events:none;z-index:5;filter:drop-shadow(0 0 5px rgba(0,0,0,.55));';
+      c.setAttribute('aria-hidden', 'true');
+      (document.getElementById('touch-controls') || document.body).appendChild(c); chipEl = c;
+    } catch (e) { chipEl = null; }
+    return chipEl;
+  }
+  function chipPlace() {                                                      // above the stick, at the end of it that is nearer the screen's edge; true = the stick is on screen (the chip can be seen)
+    if (!chipEl) return false;
+    var shown = false;
+    try { var d = document.getElementById('dpad'), r = d && d.getBoundingClientRect(), vw = window.innerWidth || 390, x, y;
+      if (r && r.width > 20 && r.height > 20) { x = (r.left + r.width / 2 > vw / 2) ? r.right - 60 : r.left; y = r.top - 30 - 10; shown = true; }
+      else { x = vw - 60 - 20; y = (window.innerHeight || 844) - 300; }
+      chipEl.style.left = Math.round(x) + 'px'; chipEl.style.top = Math.round(y) + 'px'; } catch (e) { shown = false; }
+    return shown;
+  }
   function fallbackKnight(sc, K) {                                            // only if the Dark Knight's picture cannot be had
     return K.canvasTex(sc, 'd2m_knight', 40, 56, function (g) {
       g.fillStyle = '#16121e'; g.fillRect(8, 14, 24, 34); g.fillStyle = '#4a4660'; g.fillRect(10, 16, 20, 30);
@@ -200,6 +255,7 @@
     for (i = 0; i < M.knights.length; i++) { var body = ctx.own(sc.add.image(0, 0, kk).setOrigin(0.5, 0.92)), s0 = 66 / Math.max(1, body.height || 66); body.setScale(s0);
       spr.knights[M.knights[i].id] = { body: body, scale: s0, shadow: ctx.own(sc.add.ellipse(0, 0, 36, 12, 0x000000, 0.32).setDepth(ctx.depth.object)) }; }
     spr.badge = ctx.own(sc.add.image(0, 0, badgeTex(sc, K)).setOrigin(0.5, 1).setDepth(60).setAlpha(0));
+    if (LOOKS && chipMake(sc, K)) { spr.chip = chipEl; S.chipAt = -1e9; S.chipOn = false; }   // the badge stays (alpha 0) until the stick is seen on screen
     S.spr = spr;
   }
   function paint(ctx, dt) {
@@ -218,7 +274,10 @@
       o.body.setPosition(q.x, q.y + 17 - bob); o.shadow.setPosition(q.x, q.y + 16); o.body.setDepth(K.sortDepth(ctx, q.y + 17));
       if (q.dx) o.body.setFlipX(q.dx < 0); }
     if (sp.badge) { var on = S.swap && !S.fall && h, a = sp.badge.alpha + ((on ? 1 : 0) - sp.badge.alpha) * Math.min(1, dt / 140);
-      sp.badge.setAlpha(a < 0.01 ? 0 : a); if (h) sp.badge.setPosition(h.x, h.y - 34 - 2 * Math.sin(w * 4)); }
+      sp.badge.setAlpha(a < 0.01 ? 0 : a); if (h) sp.badge.setPosition(h.x, h.y - 34 - 2 * Math.sin(w * 4));
+      if (sp.chip && sp.chip === chipEl) { if (a >= 0.01 && S.t - S.chipAt > 400) { S.chipAt = S.t; S.chipOn = chipPlace(); }
+        if (sp.badge.visible === !!S.chipOn) sp.badge.setVisible(!S.chipOn);   // over her head wherever the stick is not on screen
+        var op = (a < 0.01 || !S.chipOn ? 0 : a).toFixed(2); if (chipEl.__op !== op) { chipEl.__op = op; chipEl.style.opacity = op; } } }
   }
 
   // ---- the fall -------------------------------------------------------------------------------------
@@ -268,10 +327,10 @@
   }
 
   D.register('mirror-rooms', {
-    logic: { model: model, ring: ring, roomAt: roomAt, knightAt: knightAt, mirrored: mirrored, atLip: atLip, overPit: overPit, STR: STR },
+    logic: { model: model, ring: ring, roomAt: roomAt, knightAt: knightAt, mirrored: mirrored, atLip: atLip, doorLip: doorLip, overPit: overPit, STR: STR },
     load: function (ctx) { ready(ctx); },
     unload: function (ctx) { var S = ctx.state, hero = ctx.scene && ctx.scene.hero;      // never leave her faded or small
-      if (S.fall && hero) { try { hero.setAlpha(1); hero.setScale(S.fall.sx, S.fall.sy); } catch (e) {} } S.fall = null; },
+      if (S.fall && hero) { try { hero.setAlpha(1); hero.setScale(S.fall.sx, S.fall.sy); } catch (e) {} } S.fall = null; chipDrop(); },
     input: function (ctx, stick, px, py) {
       if (!ready(ctx)) return undefined;
       var S = ctx.state;
@@ -282,7 +341,8 @@
     free: function (ctx, wx, wy) {
       if (!ready(ctx)) return undefined;
       if (ctx.maskFree(wx, wy)) return undefined;
-      return atLip(ctx, wx, wy) ? true : undefined;                           // the lip of a pit is hers to step off
+      if (atLip(ctx, wx, wy)) return true;                                    // the lip of a pit is hers to step off
+      return (ctx.state.lips && doorLip(ctx, wx, wy)) ? true : undefined;     // the point of a doorway's post is not a wall
     },
     step: function (ctx) { if (!ready(ctx)) return undefined; var S = ctx.state; return (S.fall || S.busy) ? false : undefined; },
     tick: function (ctx, dt) {

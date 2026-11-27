@@ -425,7 +425,8 @@
 #qok-ui .itemrow{ display:flex; flex-direction:column; gap:8px; }
 /* quiz — a parchment card in the bottom HUD so the enemy + monster stay visible above it */
 #qok-ui .qcard{ padding:13px 14px; display:flex; flex-direction:column; gap:9px; }
-#qok-ui .qprompt{ text-align:center; font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--ink-soft); font-weight:700; }
+/* census m4: was 11px spaced all-caps, unreadable at 6-8; sentence case at a reading size. */
+#qok-ui .qprompt{ text-align:center; font-size:15px; line-height:1.3; letter-spacing:0; text-transform:none; color:var(--ink-soft); font-weight:700; }
 #qok-ui .qtimer{ height:7px; border-radius:99px; background:#ffffff14; overflow:hidden; } #qok-ui .qtimer i{ display:block; height:100%; border-radius:99px; background:var(--gold); transition:width .1s linear; }
 #qok-ui .qq{ text-align:center; font-weight:700; font-size:22px; color:var(--ink); padding:2px 0 4px; }
 #qok-ui .qans{ display:grid; grid-template-columns:1fr 1fr; gap:9px; }
@@ -525,8 +526,143 @@
   58%  { transform:translateY(9px) scale(.8) rotate(-4deg); filter:brightness(.75) saturate(0); opacity:.65; }
   100% { transform:translateY(26px) scale(.3) rotate(6deg); filter:brightness(.5) saturate(0); opacity:0; }
 }
+/* DAY 4 SWITCH (U2-2). localStorage['qok-d4-ui']='0' puts the class `qok-d4off` on <html> (top of
+   ui-overhaul.js) and every day 4 look that had no switch of its own goes back to the tree before
+   day 4. Such a rule starts with `:where(html:not(.qok-d4off))`: :where() weighs nothing, so with
+   the switch on the cascade is exactly what it was. The fall above is the old one; the fall without
+   rotation (UE-19) is the second set, used while the switch is on (reduced motion keeps its fade). */
+@media (prefers-reduced-motion: no-preference){ :where(html:not(.qok-d4off)) #qok-ui .bmon.qok-defeated{ animation-name:qok-enemydefeat2; } }
+@keyframes qok-enemydefeat2{
+  /* UE-19 (day 4): no rotation. A sprite whose art ends in a flat base (the slime) showed that base as
+     a slanted edge floating over the ground while it tilted; it now flashes, sinks straight down and fades. */
+  0%   { transform:translateY(0) scale(1); filter:brightness(1) saturate(1); opacity:1; }
+  14%  { transform:translateY(-5px) scale(1.08); filter:brightness(2.3) saturate(0); opacity:1; }
+  32%  { transform:translateY(2px) scale(.95); filter:brightness(1.2) saturate(.25); opacity:1; }
+  58%  { transform:translateY(6px) scale(.8); filter:brightness(.75) saturate(0); opacity:.65; }
+  100% { transform:translateY(10px) scale(.3); filter:brightness(.5) saturate(0); opacity:0; }
+}
 @media (prefers-reduced-motion: reduce){ #qok-ui .dmgnum, #qok-ui .critlabel{ animation-duration:.6s; } #qok-stage.qok-shake, #qok-ui .bmon.qok-hit, #qok-ui .bmon.qok-crithit{ animation:none; } #qok-ui .bmon.qok-defeated{ animation-duration:.01s; animation-name:qok-defeatfadeonly; } }
 @keyframes qok-defeatfadeonly{ 0%{opacity:1;} 100%{opacity:0;} }
+
+/* ============================================================
+   BATTLE STAGE, day 4 design review (battles B7 B9 B14; ui-en UE-01 UE-12 UE-13 UE-15 UE-18;
+   ui-ja UJ-03 UJ-05 UJ-06). One block on purpose: rules here have the same weight as the ones
+   they follow and win by coming later. JS side and the switches: "BATTLE STAGE" in ui-overhaul.js.
+   Check: scripts/auto/checks/battle-stage.cjs.
+   ============================================================ */
+/* B7: the enemy is drawn from its PAINTED box. .bfit is that box (its px size is set by btFitEnemy());
+   the <img> inside is offset so the painted figure fills it exactly. The stage may now give height
+   back to a tall HUD (flex-shrink), so on a short phone the quiz box can never climb over the feet line. */
+#qok-ui.btfit .bstage{ flex:0 1 auto; min-height:140px; }
+#qok-ui .bfit{ position:relative; z-index:1; flex:none; height:38%; }
+#qok-ui .bfit .bfloat{ position:absolute; inset:0; }
+#qok-ui .bfit .bmon{ position:absolute; max-width:none; max-height:none; height:auto; object-fit:fill; filter:none; }
+/* B9: no sticker glow round the outline; a soft shadow on the ground at the feet instead. Flyers are
+   lifted (transform on .bfloat) and get a smaller, fainter one, so they read as hovering. */
+#qok-ui .bshadow{ position:absolute; left:50%; bottom:0; width:74%; aspect-ratio:5/1; transform:translate(-50%,46%); border-radius:50%; pointer-events:none;
+  background:radial-gradient(closest-side, rgba(0,0,0,.50), rgba(0,0,0,.30) 52%, rgba(0,0,0,0) 100%); }
+#qok-ui .bfit.fly .bshadow{ width:46%; opacity:.55; }
+#qok-ui .bfit.down .bshadow{ opacity:0; transition:opacity .4s ease-out; }
+#qok-ui .bfit.gone{ visibility:hidden; }
+
+/* B14 / UE-18: command bar. The hairline under the commands read as an empty row; it stays only as the
+   rail the keyboard cursor runs on. Labels and glyphs at a size and brightness a 6 to 8 year old can read.
+   Still one framed strip with no button blocks (Gilded Rail, owner-locked 2026-08-07) and the red sword. */
+:where(html:not(.qok-d4off)) #qok-ui .rail::after{ display:none; }
+:where(html:not(.qok-d4off)) #qok-ui .rail.kb::after{ display:block; }
+:where(html:not(.qok-d4off)) #qok-ui .railcmd{ min-height:68px; gap:4px; color:var(--ink); }
+:where(html:not(.qok-d4off)) #qok-ui .railcmd .ic{ width:28px; height:28px; }
+:where(html:not(.qok-d4off)) #qok-ui .railcmd .lab{ font-size:15px; }
+
+/* UE-12: mode tag above the question (the command's own icon and word), question largest. */
+#qok-ui .qtag{ align-self:center; display:inline-flex; align-items:center; gap:6px; padding:3px 13px 3px 10px; border-radius:99px;
+  font-size:15px; font-weight:800; line-height:1.25; color:var(--ink); background:#ffffff0d; border:1px solid var(--gold-line); }
+#qok-ui .qtag .battleic{ width:18px; height:18px; }
+#qok-ui .qtag.atk .battleic{ color:#e3594f; } #qok-ui .qtag.atk{ border-color:rgba(227,89,79,.55); }
+#qok-ui .qtag.def .battleic{ color:#6fb6ea; } #qok-ui .qtag.def{ border-color:rgba(111,182,234,.55); }
+#qok-ui .qcard .qq.q3{ font-size:24px; font-weight:800; line-height:1.25; }
+#qok-ui .qcard .qq.q2{ font-size:28px; font-weight:800; line-height:1.2; }
+#qok-ui .qcard .qq.q1{ font-size:32px; font-weight:800; line-height:1.2; }
+/* UE-13: answers in the four-button quiz as large as the question (was 17 px in a 52 px button). */
+:where(html:not(.qok-d4off)) #qok-ui .qbtn{ padding:8px 10px; line-height:1.2; }
+#qok-ui .qbtn.a1{ font-size:32px; font-weight:800; } #qok-ui .qbtn.a2{ font-size:26px; font-weight:800; } #qok-ui .qbtn.a3{ font-size:21px; }
+
+/* UJ-03 / UJ-05 / UJ-06: Japanese battle text, one sentence per line, phrases never split. */
+#qok-ui .msg.mls{ flex-direction:column; }
+#qok-ui .msg .ml{ display:block; max-width:100%; text-wrap:balance; }
+#qok-ui .mls .mw{ display:inline-block; white-space:nowrap; }
+#qok-ui .qprompt .ml{ display:inline-block; }
+
+/* UE-15: floating numbers with a dark outline all round, so they read on any sprite or backdrop. */
+/* The old float began to fade at once (about half gone after a third of a second); this one stays solid for two thirds of the same 0.9 s. */
+@keyframes qok-dmgfloat2{ 0%{opacity:0; transform:translate(-50%,-25%) scale(.5);} 18%{opacity:1; transform:translate(-50%,-58%) scale(1.18);} 40%{opacity:1; transform:translate(-50%,-74%) scale(1);} 70%{opacity:1; transform:translate(-50%,-104%) scale(1);} 100%{opacity:0; transform:translate(-50%,-150%) scale(1);} }
+:where(html:not(.qok-d4off)) #qok-ui .dmgnum{ font-size:38px; color:#fff; animation-name:qok-dmgfloat2; animation-timing-function:ease-out;
+  text-shadow:-2px -2px 0 #1b1206, 2px -2px 0 #1b1206, -2px 2px 0 #1b1206, 2px 2px 0 #1b1206, 0 -2px 0 #1b1206, 0 2px 0 #1b1206, -2px 0 0 #1b1206, 2px 0 0 #1b1206, 0 5px 0 rgba(0,0,0,.55); }
+:where(html:not(.qok-d4off)) #qok-ui .dmgnum.enemyhit{ color:#fff3c4; }
+:where(html:not(.qok-d4off)) #qok-ui .dmgnum.playerhit{ color:#ffb3a6; font-size:34px; }
+:where(html:not(.qok-d4off)) #qok-ui .dmgnum.crit{ color:#ffd84a; font-size:54px;
+  text-shadow:-3px -3px 0 #5c1d00, 3px -3px 0 #5c1d00, -3px 3px 0 #5c1d00, 3px 3px 0 #5c1d00, 0 -3px 0 #5c1d00, 0 3px 0 #5c1d00, -3px 0 0 #5c1d00, 3px 0 0 #5c1d00, 0 6px 0 rgba(0,0,0,.55), 0 0 18px #ff9a3c; }
+:where(html:not(.qok-d4off)) #qok-ui .dmgnum.miss{ color:#ece5d2; font-size:28px; }
+:where(html:not(.qok-d4off)) #qok-ui .critlabel{ font-size:34px; color:#fff1b0;
+  text-shadow:-2px -2px 0 #5c1d00, 2px -2px 0 #5c1d00, -2px 2px 0 #5c1d00, 2px 2px 0 #5c1d00, 0 -2px 0 #5c1d00, 0 2px 0 #5c1d00, -2px 0 0 #5c1d00, 2px 0 0 #5c1d00, 0 0 14px #ff9a3c; }
+:where(html:not(.qok-d4off)) #qok-ui .critlabel::before{ content:""; position:absolute; left:50%; top:50%; width:200px; height:200px; margin:-100px 0 0 -100px; z-index:-1; border-radius:50%;
+  background:repeating-conic-gradient(from 0deg, rgba(255,214,110,.75) 0 7deg, rgba(255,214,110,0) 7deg 20deg);
+  -webkit-mask:radial-gradient(closest-side,#000 12%,transparent 78%); mask:radial-gradient(closest-side,#000 12%,transparent 78%); animation:qok-critburst .5s ease-out both; }
+@keyframes qok-critburst{ 0%{ opacity:0; transform:scale(.2) rotate(0deg); } 30%{ opacity:1; } 100%{ opacity:0; transform:scale(1.25) rotate(24deg); } }
+
+/* UE-01: victory, level up and boss win in the ending card's vocabulary (stars, gold headline, rays,
+   result tiles). .bvic lies over the stage; .bvres takes the place of the message box. Decoration only:
+   the tap target and the scene's own timing are untouched. */
+#qok-ui .bvic{ position:absolute; inset:0; z-index:3; pointer-events:none; display:flex; flex-direction:column; align-items:center; text-align:center; padding:92px 14px 0; }
+/* The whole scene dims to a warm dusk behind the gold (the ending card is gold on dark); without it the
+   headline is lost on the bright backdrops (meadow sky, ice, the celestial arena). The HUD stays above it. */
+/* U2-7: the layer was about two screens wide and more than two high (left/right -50vw, top -40vh, bottom
+   -90vh) under an opacity animation. It is one screen now: fixed to the viewport, with a 64 px overdraw
+   so the safe-area strips stay covered while #qok-stage shakes (a transform makes it the containing
+   block for that moment). The gradient is the same shape and place, restated for the smaller box. */
+#qok-ui .bvscrim{ position:fixed; inset:-64px; background:radial-gradient(105% 55% at 50% 45%, rgba(70,48,10,.34), rgba(14,11,8,.50) 78%); animation:qok-bvfade .28s ease-out both; }
+#qok-ui .bvic.boss .bvscrim{ background:radial-gradient(105% 55% at 50% 45%, rgba(84,58,10,.40), rgba(12,10,8,.64) 78%); }
+#qok-ui .bvic.lvl .bvscrim{ animation:none; }
+@keyframes qok-bvfade{ from{ opacity:0; } to{ opacity:1; } }
+#qok-ui.battle .hudwrap{ position:relative; z-index:5; }
+#qok-ui .bvtop{ position:relative; display:flex; flex-direction:column; align-items:center; width:100%; }
+#qok-ui .bvtop > *{ position:relative; }
+#qok-ui .bvrays{ position:absolute!important; left:50%; top:58%; width:340px; height:340px; margin:-170px 0 0 -170px; border-radius:50%;
+  background:repeating-conic-gradient(from 0deg, rgba(255,222,140,.26) 0 6deg, rgba(255,222,140,0) 6deg 18deg);
+  -webkit-mask:radial-gradient(closest-side,#000 16%,transparent 80%); mask:radial-gradient(closest-side,#000 16%,transparent 80%); animation:qok-vicspin 36s linear infinite; }
+#qok-ui .bvic.boss .bvrays{ width:620px; height:620px; margin:-310px 0 0 -310px; background:repeating-conic-gradient(from 0deg, rgba(255,222,140,.36) 0 6deg, rgba(255,222,140,0) 6deg 18deg); }
+#qok-ui .bvstars{ display:flex; justify-content:center; align-items:flex-end; gap:8px; margin-bottom:4px; }
+#qok-ui .bvstars b{ font-size:22px; line-height:1; color:#f0cd78; text-shadow:0 0 12px rgba(240,205,120,.8),0 2px 0 #7a5a17; animation:qok-vicpop .5s cubic-bezier(.2,1.6,.4,1) both; }
+#qok-ui .bvstars b:nth-child(2){ font-size:34px; animation-delay:.1s; } #qok-ui .bvstars b:nth-child(3){ animation-delay:.2s; }
+#qok-ui .bvic.boss .bvstars b{ font-size:32px; } #qok-ui .bvic.boss .bvstars b:nth-child(2){ font-size:50px; }
+#qok-ui .bvkick{ display:flex; align-items:center; justify-content:center; gap:12px; margin:6px 0 0; font-size:15px; font-weight:800; letter-spacing:.22em; text-transform:uppercase; color:#ffe9a8; text-shadow:0 1px 0 rgba(40,25,0,.95), 0 0 8px rgba(20,12,0,.9); }
+#qok-ui .bvkick i{ width:38px; height:1px; background:linear-gradient(90deg,transparent,#f0cd78); } #qok-ui .bvkick i:last-child{ transform:scaleX(-1); }
+#qok-ui .bvhead{ --fs:46px; font-size:min(var(--fs), calc((min(100vw, 600px) - 40px) / var(--em, 6))); font-weight:800; line-height:1.25; white-space:nowrap; padding:0 4px 4px; color:#f0cd78;
+  background:linear-gradient(180deg,#fffbe6 8%,#f6d47c 48%,#b88628 92%); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+  filter:drop-shadow(0 3px 0 rgba(60,40,5,.95)) drop-shadow(0 0 18px rgba(240,205,120,.5)); animation:qok-vicpop .45s cubic-bezier(.2,1.5,.4,1) .05s both; }
+#qok-ui .bvic.boss .bvhead{ --fs:62px; white-space:normal; line-height:1.15; }
+#qok-ui .bvic.lvl .bvhead{ --fs:52px; } #qok-ui .bvic.boss.lvl .bvhead{ --fs:62px; }
+#qok-ui .bvhero{ position:relative; width:170px; height:170px; margin-top:14px; display:grid; place-items:center; }
+#qok-ui .bvhero::before{ content:""; position:absolute; inset:-62%; border-radius:50%;
+  background:repeating-conic-gradient(from 0deg, rgba(255,222,140,.34) 0 6deg, rgba(255,222,140,0) 6deg 18deg);
+  -webkit-mask:radial-gradient(closest-side,#000 18%,transparent 82%); mask:radial-gradient(closest-side,#000 18%,transparent 82%); animation:qok-vicspin 36s linear infinite; }
+#qok-ui .bvhero::after{ content:""; position:absolute; inset:2%; border-radius:50%; background:radial-gradient(closest-side, rgba(255,236,170,.72), rgba(240,205,120,.30) 52%, rgba(240,205,120,0) 74%); }
+#qok-ui .bvhero img, #qok-ui .bvhero .qok-spin{ position:relative; z-index:1; image-rendering:pixelated; filter:drop-shadow(0 6px 10px rgba(40,25,0,.55)); animation:qok-vicpop .45s cubic-bezier(.2,1.5,.4,1) .1s both; }
+#qok-ui .bvfx{ position:absolute; inset:0; overflow:hidden; }
+#qok-ui .bvfx span{ position:absolute; top:-6%; border-radius:2px; opacity:.9; animation:qok-vicfall 5s linear infinite; }
+#qok-ui .bvfx em{ position:absolute; font-style:normal; color:#ffe9a8; text-shadow:0 0 10px #f0cd78; animation:qok-victwinkle 2.6s ease-in-out infinite; }
+#qok-ui .bvres{ display:flex; flex-direction:column; gap:8px; cursor:pointer; }
+#qok-ui .bvtiles{ display:flex; justify-content:center; gap:10px; }
+#qok-ui .bvtile{ flex:1 1 0; min-width:0; max-width:180px; padding:12px 6px 10px; border-radius:16px; text-align:center; background:linear-gradient(180deg,rgba(60,44,12,.94),rgba(20,17,12,.94)); border:1px solid rgba(240,205,120,.6);
+  box-shadow:0 6px 18px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,236,170,.25); animation:qok-vicpop .4s cubic-bezier(.2,1.4,.4,1) .12s both; }
+#qok-ui .bvtile:nth-child(2){ animation-delay:.22s; } #qok-ui .bvres.still .bvtile{ animation:none; }
+#qok-ui .bvtile b{ display:block; font-size:30px; line-height:1.15; font-weight:800; color:#f6d98c; white-space:nowrap; }
+#qok-ui .bvtile span{ display:block; margin-top:3px; font-size:13px; letter-spacing:.14em; text-transform:uppercase; font-weight:700; color:#e9dcb8; }
+/* U2-6: the wide tracking is for English capitals; on Japanese it reads as a space after every character
+   (the boss name kicker, the EXP and gold labels). Same rule as UJ-11, on the root's language class. */
+#qok-ui.ja .bvkick, #qok-ui.ja .bvtile span{ letter-spacing:normal; }
+#qok-ui .bvnote{ text-align:center; font-size:16px; font-weight:700; line-height:1.35; color:#fff3c9; background:#15161ce6; border:1px solid var(--gold-line); border-radius:12px; padding:8px 12px; }
+@media (prefers-reduced-motion: reduce){ #qok-ui .bvrays, #qok-ui .bvhero::before, #qok-ui .bvfx span, #qok-ui .bvfx em{ animation:none; } #qok-ui .bvstars b, #qok-ui .bvhead, #qok-ui .bvtile, #qok-ui .bvhero img{ animation-duration:.01ms; animation-delay:0s; } #qok-ui .critlabel::before{ display:none; } }
 
 /* item-use toast (surfaces the hidden showItemMessage feedback) */
 #qok-ui .qok-toast, #qok-town-quest-toast{ position:fixed; left:50%; bottom:17%; transform:translateX(-50%); z-index:70; pointer-events:none;
@@ -710,3 +846,169 @@ body.qok-dialogue #qok-field-hud #qfh-dialog{bottom:calc(env(safe-area-inset-bot
   background:var(--emerald2); border:1px solid var(--emerald); color:#f2f6f3; cursor:pointer; }
 #qok-ui .savebtn.off{ background:transparent; border-color:#ffffff22; color:#77736b; }
 #qok-ui .go-note{ font-size:12.5px; color:var(--ink-soft); margin-top:-6px; line-height:1.45; }
+
+/* ============================================================
+   MENU AND FIELD HUD POLISH (day 4, design review UE-03..UE-21 and UJ-04..UJ-12).
+   One block, placed after the rules it overrides, so those rules stay readable as history.
+   Permanent check: scripts/auto/checks/ui-polish.cjs.
+   ============================================================ */
+/* UE-04 CLIPPED NAMES. `.nm` is a one-line ellipsis box (overflow:hidden) with line-height 1.05:
+   the line box was 15.75 px for glyphs 21 px tall, so the tails of g, y and p were cut flat
+   ("Greenhollow Village" in the shop, any hero name with a descender in the menu). */
+#qok-ui .who .nm{ line-height:1.45; }
+#qok-ui .who .shop-greet{ font-size:13px; line-height:1.35; margin-top:3px; white-space:normal; color:var(--ink-soft);
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+
+/* UE-06 SMALL HANDS (P9). Every tappable row and button is at least 48 px on its short side. */
+:where(html:not(.qok-d4off)) #qok-ui .xbtn{ width:48px; height:48px; }
+:where(html:not(.qok-d4off)) #qok-ui .savebtn{ min-height:48px; padding:0 14px; font-size:14px; }
+:where(html:not(.qok-d4off)) #qok-ui .toggle[data-act] span{ padding:12px 17px; }
+:where(html:not(.qok-d4off)) #qok-ui .shopseg b{ min-height:48px; display:flex; align-items:center; justify-content:center; font-size:15px; }
+:where(html:not(.qok-d4off)) #qok-ui .shopconf .qtybtn{ width:48px; height:48px; border-radius:12px; font-size:26px; line-height:1; padding:0;
+  display:grid; place-items:center; cursor:pointer; background:#ffffff1a; }
+:where(html:not(.qok-d4off)) #qok-ui .shopconf .qtybtn[disabled]{ opacity:.4; cursor:default; }
+:where(html:not(.qok-d4off)) #qok-ui .eqslot{ min-height:48px; padding:0 10px; border-radius:10px; cursor:pointer; justify-content:space-between; }
+:where(html:not(.qok-d4off)) #qok-ui .backbtn{ min-height:48px; padding:0 18px 0 14px; font-size:15px; }
+:where(html:not(.qok-d4off)) #qok-ui #qok-name{ height:48px; }
+:where(html:not(.qok-d4off)) #qok-ui #qok-name-panel .name-err.on{ margin-top:0; padding-bottom:9px; max-height:44px; }
+:where(html:not(.qok-d4off)) #qok-ui #qok-volume{ height:48px; }
+:where(html:not(.qok-d4off)) #qok-ui .setrow:has(#qok-volume){ padding-top:2px; padding-bottom:2px; }
+:where(html:not(.qok-d4off)) #qok-field-hud #qfh-quest-toggle{ min-height:48px; }
+:where(html:not(.qok-d4off)) #qok-field-hud #qfh-quest.collapsed, :where(html:not(.qok-d4off)) body.qok-dialogue #qok-field-hud #qfh-quest{ width:50px; height:50px; }   /* 48 px button inside the 1 px frame */
+:where(html:not(.qok-d4off)) #qok-field-hud .qfq-title{ min-height:48px; }
+:where(html:not(.qok-d4off)) #qok-field-hud #qfh-map.collapsed{ width:50px; height:50px; }
+:where(html:not(.qok-d4off)) #qok-field-hud #qfh-map-icon{ width:48px; height:48px; padding:12px; }
+:where(html:not(.qok-d4off)) #qok-quest-completion .qqc-dismiss{ min-height:48px; }
+/* The dungeon's interact pill ("Open", "Pull") is drawn by dq-tiles.js at 10 px padding (about
+   40 px tall). `body` in the selector outranks that script's own rule, whichever loads last. The
+   town's Talk pill lives in the town frame: see syncTownPill() in ui-overhaul.js. */
+:where(html:not(.qok-d4off)) body #a1mInteract{ min-height:48px; box-sizing:border-box; display:flex; align-items:center; justify-content:center; padding-top:0; padding-bottom:0; }
+
+/* UE-05 ONE TAB BAR. The field bar is a <button> row in index.html: a button does not inherit the
+   page font, so it drew in the system face beside the menu bar's game font, with its own greys.
+   Same face, size, weight, colours and corner as `#qok-ui .tab` above. */
+:where(html:not(.qok-d4off)) #fieldTabs .ft{ font-family:'Zen Maru Gothic',system-ui,sans-serif; font-size:11px; font-weight:500; line-height:normal;
+  letter-spacing:normal; color:#a49e91; padding:0 3px; gap:3px; border-radius:12px; }
+:where(html:not(.qok-d4off)) #fieldTabs .ft.pressed{ color:#e8e2d4; }
+/* UE-05 / UE-21 ONE "NEW GEAR" DOT. Inside #qok-ui var(--emerald) is the palette's sage; in the
+   field bar the variable does not exist and the fallback was a bright green. One literal colour. */
+:where(html:not(.qok-d4off)) #qok-ui .newdot, :where(html:not(.qok-d4off)) #fieldTabs .newdot{ background:#6f9e7e; box-shadow:0 0 0 2px #101116, 0 0 6px rgba(111,158,126,.9); }
+/* ...and the dot on an equipment filter chip sits on the corner of its ICON. It used to sit in the
+   chip's own corner, which (the unselected chips have no outline) read as floating between two chips. */
+:where(html:not(.qok-d4off)) #qok-ui .segcat .filterdot{ top:5px; right:calc(50% - 14px); width:7px; height:7px; box-shadow:0 0 0 1px #1d1f27, 0 0 5px rgba(111,158,126,.85); }
+
+/* UE-07 A GENTLE DEFEAT (P14). The hero with a small heart, in a warm glow; warm title; notes at a
+   reading size. localStorage['qok-defeat-gentle']='0' brings back the skull and the red title. */
+#qok-ui .go-screen{ justify-content:safe center; overflow-y:auto; }
+#qok-ui .go-screen.gentle{ gap:30px; }
+#qok-ui .go-rest{ position:relative; width:132px; height:132px; border-radius:50%; display:grid; place-items:center; flex:none;
+  background:radial-gradient(closest-side, rgba(240,205,120,.32), rgba(240,205,120,.12) 62%, rgba(240,205,120,0) 100%);
+  box-shadow:inset 0 0 0 1px rgba(240,205,120,.32); }
+#qok-ui .go-rest img{ width:92px; height:92px; image-rendering:pixelated; animation:qok-gobreathe 3.2s ease-in-out infinite; }
+#qok-ui .go-heart{ position:absolute; top:8px; right:6px; width:34px; height:34px; filter:drop-shadow(0 2px 6px rgba(240,138,128,.45));
+  animation:qok-goheart 1.8s ease-in-out infinite; }
+#qok-ui .go-screen.gentle .go-title{ font-size:clamp(30px,8vw,44px); color:#f2d9a0; text-shadow:0 0 26px rgba(240,205,120,.35); }
+#qok-ui .go-screen.gentle .go-note{ font-size:16px; line-height:1.45; color:#d8d2c4; margin-top:-5px; text-wrap:balance; }
+@keyframes qok-gobreathe{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-3px); } }
+@keyframes qok-goheart{ 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.14); } }
+@media (max-height:720px){
+  #qok-ui .go-screen.gentle{ gap:18px; padding:18px 22px; }
+  #qok-ui .go-rest{ width:100px; height:100px; } #qok-ui .go-rest img{ width:70px; height:70px; }
+  #qok-ui .go-heart{ width:28px; height:28px; top:4px; right:2px; }
+}
+@media (prefers-reduced-motion:reduce){ #qok-ui .go-rest img, #qok-ui .go-heart{ animation:none; } }
+
+/* UE-14 / UJ-12 PRICES READ (P9). The price was #8a6a26 on a 15% gold wash, about 3:1 on charcoal.
+   It is the wallet chip's own look now (`.coins`: bright gold, gold hairline), so a price and the
+   purse it is paid from read as the same thing. Not a solid gold fill: this palette keeps the fill
+   for the one selected element on a screen (see the header of this file), and six filled pills
+   beside the gold Buy tab and Done button broke that. A price the player cannot pay turns red. */
+#qok-ui .pill.price{ background:#ffffff0a; color:var(--gold); border:1px solid var(--gold-line); font-size:14px; padding:6px 12px; min-width:58px; text-align:center; }
+#qok-ui .pill.price.no{ color:#e8958a; border-color:#a8564e; }
+
+/* UE-16 CREATE YOUR HERO. Look choices at twice the size, one clear selected state. */
+:where(html:not(.qok-d4off)) #qok-ui .variant-opt{ flex:1; min-width:0; min-height:104px; position:relative; display:flex; align-items:center; justify-content:center;
+  padding:6px; border-radius:14px; cursor:pointer; background:transparent; border:1px solid rgba(232,226,212,.18); }
+:where(html:not(.qok-d4off)) #qok-ui .variant-opt img{ width:88px; height:88px; }
+:where(html:not(.qok-d4off)) #qok-ui .variant-opt.sel{ background:rgba(201,169,97,.18); border:2px solid var(--gold); box-shadow:0 0 0 3px var(--gold-glow); }
+:where(html:not(.qok-d4off)) #qok-ui .variant-opt.sel::after{ content:"✓"; position:absolute; top:7px; right:8px; width:22px; height:22px; border-radius:50%;
+  display:grid; place-items:center; background:var(--gold); color:var(--bg3); font-size:14px; font-weight:700; line-height:1; }
+#qok-ui .ngtag{ display:inline-flex; align-items:center; gap:6px; margin-top:6px; padding:4px 12px; border-radius:99px;
+  font-size:13px; font-weight:700; color:var(--gold); background:rgba(201,169,97,.1); border:1px solid var(--gold-line); }   /* a label, not a button: outline, no fill */
+/* On a short phone the large preview above the name goes: the two choices are now big enough to be
+   the preview, and without it Start stays on the first screen (owner, build 38: "everything should
+   fit in one screen"). */
+@media (max-height:720px){ :where(html:not(.qok-d4off)) #qok-ui .span2:has(> .intro-hero){ display:none !important; } }
+
+/* UE-17 SETTINGS. The three joystick positions are words, and each one is its own button. */
+#qok-ui .ctrlseg{ flex:1; max-width:250px; }
+#qok-ui .ctrlseg b{ min-height:48px; display:flex; align-items:center; justify-content:center; padding:0 4px; font-size:13px; }
+#qok-ui .setrow.dim .lab, #qok-ui .setrow.dim #qok-volume, #qok-ui .setrow.dim .val{ opacity:.45; }
+/* D01 the grade row is information (fixed after New Game): no card fill, no pointer, quiet value. */
+#qok-ui .setrow.info{ cursor:default; background:transparent; border-color:rgba(232,226,212,.10); }
+#qok-ui .setrow.info .val{ color:var(--ink-soft); }
+
+/* UE-21 "Lv 50 HP 9999/9999" is one character longer than "Lv50 ...": the chip may grow, never clip. */
+:where(html:not(.qok-d4off)) #qok-field-hud .qfhp{ width:auto; min-width:158px; }
+/* UJ-10 Japanese compass, no Latin letters: kanji mode 北 南 東 西, kana mode きた alone (the other three are empty). */
+#qok-field-hud #qfh-compass.ja .qfc-c{ letter-spacing:0; }
+#qok-field-hud #qfh-compass.kana .qfc-n{ font-size:9px; }
+
+/* UJ-11 Japanese headings: the wide tracking made for English capitals reads as word spaces. */
+#qok-ui .ownedhd{ letter-spacing:.1em; }
+#qok-ui.ja .eyebrow{ letter-spacing:.06em; }
+#qok-ui.ja .ownedhd{ letter-spacing:.04em; }
+
+/* JAPANESE LINE BREAKS (census m6, 2026-11-23). The browser may break Japanese between any two
+   characters, so boxes split words: "き/ょうい", "脅/威", "26/の ダメージ". The game's Japanese is
+   written with spaces between phrases (both kana and kanji mode), so break only at those spaces and
+   after punctuation (keep-all), never before a small kana or a long-vowel mark (line-break:strict).
+   overflow-wrap:break-word is the last resort for a phrase longer than the whole line; unlike
+   `anywhere` it does not change min-content sizing, so no layout moves. English is unaffected. */
+#qok-ui, #qok-field-hud, #qok-quest-completion { word-break:keep-all; line-break:strict; overflow-wrap:break-word; }
+
+/* ============================================================
+   Battle number keypad + notepad (owner 2026-11-24, mockup WuEy19D5wsAHKaKW9sqrKD).
+   Replaces .qans when localStorage['qok-keypad'] !== '0'. Icons only on the function keys;
+   Enter keeps its word because it IS the action (Attack red / Defend blue, the menu's tints).
+   ============================================================ */
+#qok-ui .qcard.kp{ gap:8px; padding:11px 12px 12px; }
+#qok-ui .qcard.kp .qq{ font-size:24px; font-weight:800; padding:0; }
+/* U2-1 (day 4 review): the rule above weighs the same as `.qcard .qq.q1/.q2` (UE-12) and comes later, so in
+   keypad mode, the default, every question was drawn at 24 px. The same steps, on the keypad card
+   (.q3 is 24 px already; the classes are only there while qok-quiz-tag is on). */
+#qok-ui .qcard.kp .qq.q2{ font-size:28px; line-height:1.2; }
+#qok-ui .qcard.kp .qq.q1{ font-size:32px; line-height:1.2; }
+/* The keypad card is taller than the four answers: let the monster stage give up the height instead of
+   pushing the enemy card off the top of the screen. */
+#qok-ui .col:has(.qcard.kp) .bstage{ flex:1 1 auto; height:auto; min-height:140px; }
+#qok-ui .kpad{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); grid-auto-rows:48px; gap:7px; }
+#qok-ui .kpdisp{ grid-column:1/-1; height:48px; display:flex; align-items:center; justify-content:center; gap:10px;
+  background:#0b0c10; border:1.5px solid #343744; border-radius:12px; font-size:30px; font-weight:800; letter-spacing:1px; color:var(--ink); }
+#qok-ui .kpph{ font-size:14px; font-weight:700; color:#6b675f; letter-spacing:0; }
+#qok-ui .kpad.miss .kpdisp{ border-color:var(--ruby); }
+#qok-ui .kpbad{ color:#ef6a60; text-decoration:line-through; text-decoration-thickness:3px; }
+#qok-ui .kpgood{ color:#5fd089; }
+#qok-ui .kparrow{ color:var(--ink-soft); font-size:22px; }
+#qok-ui .kpres{ font-size:30px; display:flex; gap:10px; justify-content:center; align-items:center; margin-bottom:4px; }
+#qok-ui .kpk{ appearance:none; font:inherit; font-size:24px; font-weight:800; color:var(--ink); background:var(--panel2);
+  border:1px solid #3a3d4a; border-bottom-width:3px; border-radius:12px; cursor:pointer; padding:0;
+  display:flex; align-items:center; justify-content:center; gap:7px; touch-action:manipulation; }
+#qok-ui .kpk:active{ transform:translateY(2px); border-bottom-width:1px; }
+#qok-ui .kpk.fn{ background:#191a21; color:var(--ink-soft); font-size:22px; }
+#qok-ui .kpk.fn.on{ color:var(--gold); border-color:var(--gold); }
+#qok-ui .kpk.go{ grid-column:span 2; color:#fff; font-size:19px; border-color:rgba(0,0,0,.35); }
+#qok-ui .kpk.go .battleic{ width:22px; height:22px; background-color:#fff; }
+#qok-ui .kpk.go.atk{ background:var(--ruby); } #qok-ui .kpk.go.def{ background:var(--sky); }
+#qok-ui .kpk.go[disabled]{ opacity:.4; cursor:default; }
+#qok-notepad{ position:fixed; z-index:55; border-radius:16px; border:1.5px solid var(--gold-line); overflow:hidden;
+  box-shadow:0 12px 30px rgba(0,0,0,.55); background-color:#1b2521;
+  background-image:linear-gradient(rgba(255,255,255,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.06) 1px,transparent 1px);
+  background-size:22px 22px; }
+#qok-notepad canvas{ position:absolute; inset:0; width:100%; height:100%; touch-action:none; }
+#qok-notepad .npq{ position:absolute; left:14px; top:10px; font-size:19px; font-weight:800; color:rgba(232,226,212,.75); pointer-events:none; }
+#qok-notepad .nptools{ position:absolute; right:8px; top:8px; bottom:8px; display:flex; flex-direction:column; gap:8px; }
+#qok-notepad .nptools button{ width:44px; height:44px; border-radius:12px; display:grid; place-items:center; padding:0; cursor:pointer;
+  color:var(--ink); background:rgba(20,22,28,.88); border:1px solid #3a3d4a; }
+#qok-notepad .nptools button.on{ color:#15161c; background:var(--gold); border-color:var(--gold); }
+#qok-notepad .nptools .npx{ margin-top:auto; }

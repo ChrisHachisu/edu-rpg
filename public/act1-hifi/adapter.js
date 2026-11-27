@@ -406,7 +406,7 @@ function installTownLoadingHold(scene) {
 const ELDER_DIRECTION_TEXT = new Map([
   [
     "Head east to the Darkfang Grotto first. Buy supplies at the shop before you leave. The fate of all knowledge rests with you!",
-    "Head south to the Darkfang Grotto first. Buy supplies at the shop before you leave. The fate of all knowledge rests with you!"
+    "Head south to the Misty Grotto first. Buy supplies at the shop before you leave. The fate of all knowledge rests with you!"
   ],
   [
     "まずは ひがしの きりのどうくつへ むかえ。おみせで じゅんびしてから でかけるのじゃぞ。ちしきの うんめいは おまえに かかっておる！",
@@ -418,7 +418,7 @@ const ELDER_DIRECTION_TEXT = new Map([
   ],
   [
     "Be safe, hero. Head east toward the Darkfang Grotto. Defeat its guardian to prove your worth and open the path to the Crystal Cave!",
-    "Be safe, hero. Head south toward the Darkfang Grotto. Defeat its guardian to prove your worth and open the path to the Crystal Cave!"
+    "Be safe, hero. Head south toward the Misty Grotto. Defeat its guardian to prove your worth and open the path to the Crystal Cave!"
   ],
   [
     "きをつけるのじゃ ゆうしゃよ。ひがしの きりのどうくつへ むかうのじゃ。ボスを たおせば すいしょうのどうくつへの みちが ひらくぞ！",

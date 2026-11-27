@@ -14,6 +14,21 @@
   'use strict';
   var K=window.__QOK_D2KIT_A__; if(!K){ setTimeout(boot,40); return; }
   var TILE=K.TILE, D4=[[0,-1,'n'],[1,0,'e'],[0,1,'s'],[-1,0,'w']];
+  // Day-4 look (census DA-04; owner 2026-11-03: "lever beside the junction, subtle track change, no
+  // arrow"): the arrow badge over each lever is gone and the point blades carry the cue alone (a
+  // little bolder, with a short glint when the lever is pulled). Levers, buffer stops and parked
+  // carts stand above her lamp's darkness, so one outside her light shone at full brightness in
+  // the black: they now take the lamp's own falloff. localStorage 'qok-d4-looks'='0' = the old look.
+  var LOOKS=(function(){ try{ return window.localStorage.getItem('qok-d4-looks')!=='0'; }catch(e){ return true; } })();
+  function lampDim(sc,o){                                                       // dq-tiles.js updateFog's falloff (6 screen px per fog px, radius +-16)
+    try{
+      var h=sc.hero; if(!h||!o||!o.setTint) return;
+      var z=sc.cameras.main.zoom||1, R=(typeof window.__DQ_FOG_R__==='number')?window.__DQ_FOG_R__:34;
+      var dx=(o.x-h.x)*z/6, dy=(o.y-h.y)*z/6, t=(Math.sqrt(dx*dx+dy*dy)-(R-16))/32; t=t<0?0:(t>1?1:t);
+      var v=Math.round(255*(1-(t*t*(3-2*t))*0.98));
+      if(o.__lampV!==v){ o.__lampV=v; o.setTint(v*65793); }
+    }catch(e){}
+  }
   function rail(ctx,x,y){ var c=ctx.terrain(x,y); return c==='='||c==='+'; }
   function arms(ctx,x,y){ var a=[]; for(var i=0;i<4;i++) if(rail(ctx,x+D4[i][0],y+D4[i][1])) a.push(i); return a; }
 
@@ -139,12 +154,20 @@
     g.fillStyle='#2b6b3a'; g.beginPath(); g.moveTo(11,2); g.lineTo(19,11); g.lineTo(14,11); g.lineTo(14,19); g.lineTo(8,19); g.lineTo(8,11); g.lineTo(3,11); g.closePath(); g.fill();
   }); }
   var ROT=[0,Math.PI/2,Math.PI,-Math.PI/2];                                     // arm index n,e,s,w -> rotation of an up arrow
+  var GLINT_MS=420;
 
   function drawBlade(ctx,J){                                                    // the switch blade: bright steel toward the open branch
     var st=ctx.state, g=st.blades[J.name]; if(!g) return;
     var cx=J.x*TILE+TILE/2, cy=J.y*TILE+TILE/2, d=J.arm[branchOf(ctx,st.N,J)];
     g.clear(); if(d===undefined) return;
     var dx=D4[d][0], dy=D4[d][1], ox=-dy*9, oy=dx*9;
+    if(LOOKS){                                                                  // bolder, a little longer; `glint` (1..0) for a moment after the lever moves
+      var gl=st.glint&&st.glint[J.name]>0?st.glint[J.name]/GLINT_MS:0, len=26;
+      if(gl>0){ g.lineStyle(9,0xfff1c4,0.38*gl); g.beginPath(); g.moveTo(cx+ox,cy+oy); g.lineTo(cx+ox+dx*len,cy+oy+dy*len); g.moveTo(cx-ox,cy-oy); g.lineTo(cx-ox+dx*len,cy-oy+dy*len); g.strokePath(); }
+      g.lineStyle(6,0x14100c,0.92); g.beginPath(); g.moveTo(cx+ox,cy+oy); g.lineTo(cx+ox+dx*len,cy+oy+dy*len); g.moveTo(cx-ox,cy-oy); g.lineTo(cx-ox+dx*len,cy-oy+dy*len); g.strokePath();
+      g.lineStyle(3,gl>0.5?0xfffbe6:0xffe9a8,1); g.beginPath(); g.moveTo(cx+ox,cy+oy); g.lineTo(cx+ox+dx*len,cy+oy+dy*len); g.moveTo(cx-ox,cy-oy); g.lineTo(cx-ox+dx*len,cy-oy+dy*len); g.strokePath();
+      return;
+    }
     g.lineStyle(4,0x14100c,0.9); g.beginPath(); g.moveTo(cx+ox,cy+oy); g.lineTo(cx+ox+dx*22,cy+oy+dy*22); g.moveTo(cx-ox,cy-oy); g.lineTo(cx-ox+dx*22,cy-oy+dy*22); g.strokePath();
     g.lineStyle(2,0xffe9a8,1); g.beginPath(); g.moveTo(cx+ox,cy+oy); g.lineTo(cx+ox+dx*22,cy+oy+dy*22); g.moveTo(cx-ox,cy-oy); g.lineTo(cx-ox+dx*22,cy-oy+dy*22); g.strokePath();
   }
@@ -196,13 +219,13 @@
   K.ready(function(K,D){ D.register('mine-carts',{
     load:function(ctx){
       var sc=ctx.scene, st=ctx.state, N=build(ctx), i;
-      st.N=N; st.solid=[]; st.sort=[]; st.carts=[]; st.blades={}; st.leverImg={}; st.arrowImg={}; st.ride=null; st.ride_cart=null; st.fix=null;
+      st.N=N; st.solid=[]; st.sort=[]; st.carts=[]; st.blades={}; st.leverImg={}; st.arrowImg={}; st.glint={}; st.looks=LOOKS; st.ride=null; st.ride_cart=null; st.fix=null;
       for(i=0;i<N.buffers.length;i++){ var b=N.buffers[i], o=K.img(ctx,texBuffer(sc),b.x*TILE+TILE/2,b.y*TILE+TILE/2-4,9.4);
         o.__by=b.y*TILE+TILE-6; st.sort.push(o); st.solid.push({x:b.x,y:b.y}); }
       for(var jn in N.junc){ var J=N.junc[jn], L=J.lever;
         st.blades[jn]=ctx.own(sc.add.graphics().setDepth(2.4));
         var lo=K.img(ctx,texLever(sc,0),L.x*TILE+TILE/2,L.y*TILE+TILE/2-4,9.4); lo.__by=L.y*TILE+TILE-8; st.sort.push(lo); st.leverImg[jn]=lo;
-        st.arrowImg[jn]=K.img(ctx,texArrow(sc),L.x*TILE+TILE/2,L.y*TILE-10,10.7);
+        if(!LOOKS) st.arrowImg[jn]=K.img(ctx,texArrow(sc),L.x*TILE+TILE/2,L.y*TILE-10,10.7);
         st.solid.push({x:L.x,y:L.y,junction:jn}); leverLook(ctx,J); }
       for(i=0;i<N.carts.length;i++){ var c={id:N.carts[i].id,start:N.carts[i].start};
         c.at=cartStop(ctx,N,c); c.img=K.img(ctx,texCartSide(sc),0,0,9.4); st.sort.push(c.img); st.carts.push(c); parkCart(ctx,c);
@@ -227,6 +250,10 @@
       }
       K.ysort(st.sort,h.footY);
       if(st.ride) st.ride.cart.img.setDepth(10.2);
+      if(LOOKS){
+        for(var si=0;si<st.sort.length;si++) lampDim(ctx.scene,st.sort[si]);
+        for(var gj in st.glint) if(st.glint[gj]>0){ st.glint[gj]-=Math.min(dt,100); drawBlade(ctx,st.N.junc[gj]); }
+      }
     },
     input:function(ctx,stick){ if(ctx.state.ride||ctx.state.fix) return null; },
     free:function(ctx,px,py){
@@ -242,7 +269,7 @@
       var levers=[]; for(var i=0;i<st.solid.length;i++) if(st.solid[i].junction) levers.push(st.solid[i]);
       var l=K.nearest(px,py,levers,14);
       if(l) return K.pill(px,py,l,K.S('verb.lever'),function(){
-        K.set(ctx,'sw.'+l.junction,!K.get(ctx,'sw.'+l.junction)); leverLook(ctx,st.N.junc[l.junction]); K.sfx('menu_select');
+        K.set(ctx,'sw.'+l.junction,!K.get(ctx,'sw.'+l.junction)); if(st.glint) st.glint[l.junction]=GLINT_MS; leverLook(ctx,st.N.junc[l.junction]); K.sfx('menu_select');
         try{ ctx.scene.cameras.main.shake(60,0.003); }catch(e){} });
       return null;
     },

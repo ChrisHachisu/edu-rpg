@@ -26,6 +26,8 @@
   "axis": "south",
   "note": "toX/toY = overworld exit cell from exits.json (tools/apply_exits.py), not maps.ts."
  },
+ "occluders": [{"id": "shop-counter", "baseY": 28.7, "polygon": [[53.4, 28.04], [55.7, 28.04], [55.7, 29.45], [53.4, 29.45]]}],
+ "_occludersNote": "2026-11-27 (design review T3): the shopkeeper was drawn standing on her stall. She now stands at the counter (`cell`; the cell of before is `cellOld`) and `occluders` names the counter's front, traced along its painted top edge: town.html draws that piece of the same plate again, at the same place, right after her (`baseY` is her feet plus 0.05 cells: the painter's line) and before anyone standing south of her, so the counter covers her legs and she shows from the waist up, and it can never cover the hero, who has no ground north of that line near the counter (scripts/auto/checks/field-town-reach.cjs proves it for every reachable point). No new art; nothing in the plate is cut or moved. Old look: qok-f2-old=shopband.",
  "shopId": "oasisHaven",
  "shopCounter": [
   55.0,
@@ -82,12 +84,14 @@
   },
   {
    "id": "luna",
+   "cellOld": [26.41, 14.22],
+   "cellNote": "2026-11-27 (FT2, review of the town changes): she stood in the middle of the street, and her space left 4 px between it and the jars north of her (20 px with the body of before). She now stands 0.7 cells south, at the street's edge by the reeds of the pool: 14 px stay open north of her, and she is talked to from her west side as before (the reeds are south of her either way).",
    "dialogueKey": "npc.luna.greeting",
    "nameKey": "npc.luna.name",
    "sheet": "town/npc/oasisHaven-luna-4x3-64.png",
    "cell": [
-    26.41,
-    14.22
+    26.44,
+    14.94
    ],
    "mapsTs": [
     6,
@@ -98,12 +102,19 @@
   },
   {
    "id": "shopkeeper",
+   "fixed": true,
+   "_fixedNote": "2026-11-27 (design review T3): she now stands behind the painted counter, deeper than the south talk band scripts/check_town_talkable.py measures; like the Last Bastion and Ruins Camp keepers she is `fixed` (the hero is served at shopCounter, on the ground at the counter front; town.html's own band still reaches her from there).",
+   "cellOld": [55.0, 28.6],
+   "space": [6, 6, 6],
+   "spaceNote": "behind the painted counter: a small body that stays inside the counter (the counter itself keeps the hero a body away)",
+      "talkReachOld": 4.2,
+      "talkReachNote": "2026-11-23 (explorer X04): she stands behind the painted counter, deeper than the default 2.1-cell talk band, so no standable point could talk to her (the shop still opened from shopCounter). town.html now lets a person carry a longer band: 4.2 cells (the counter's distance plus the 1.2-cell shop-spot radius) covers every spot in front of the counter where the Shop prompt shows. The counter stays solid.",
    "dialogueKey": "npc.shopkeeper",
    "nameKey": "npc.shopkeeper.name",
    "sheet": "town/npc/oasisHaven-shopkeeper-4x3-64.png",
    "cell": [
-    55.0,
-    28.6
+    54.55,
+    28.65
    ],
    "_note": "behind the painted counter; the hero talks across it from shopCounter",
    "name": "Shopkeeper",

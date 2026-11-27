@@ -143,11 +143,17 @@
       .then(function (ab) { return self.ctx.decodeAudioData(ab); })
       .then(function (raw) {
         var want = Math.round(LOOP_SECONDS[track] * raw.sampleRate);
-        var n = Math.min(want, raw.length - PRIMING);
+        // qok-sound-fix-2026-11-27: drop the encoder priming ONLY when the decoder left it in.
+        // Chromium already removes it (it decodes exactly `want` samples), and trimming a second
+        // time wraps the loop from the last sample to sample 1024: a 23 ms skip and a click on
+        // town and victory. A decoder that keeps the priming returns about want + 1024 samples.
+        // WebKit/iOS length is UNVERIFIED on a device; this rule handles either answer.
+        var skip = raw.length >= want + PRIMING ? PRIMING : 0;
+        var n = Math.min(want, raw.length - skip);
         if (!(n > 0)) throw new Error('decoded too short');
         var buf = self.ctx.createBuffer(raw.numberOfChannels, n, raw.sampleRate);
         for (var c = 0; c < raw.numberOfChannels; c++) {
-          buf.copyToChannel(raw.getChannelData(c).subarray(PRIMING, PRIMING + n), c);
+          buf.copyToChannel(raw.getChannelData(c).subarray(skip, skip + n), c);
         }
         return buf;
       });
@@ -458,6 +464,90 @@
     window.addEventListener('focus', function () { wake('focus'); });
   }
 
+
+  // ---- qok-sound-fix-2026-11-27 ---------------------------------------------------------------
+  // (a) effect-name aliases, (b) title music on every return to the Title, (d) audio state follows
+  // a new player, (e) quiet overlay UI sounds. All additive: the bundle, ui-overhaul.js and the
+  // dungeon modules are untouched.
+  //
+  // (a) The dungeon modules ask for names the bundle's effect table has never had; they played
+  // nothing. Every call passes through am.playSfx, so the aliases live there.
+  var SFX_ALIAS = {
+    door: 'treasure_open', door_open: 'treasure_open', confirm: 'menu_select',
+    error: 'attack_miss', hit: 'damage_taken', menu_move: 'menu_select'
+  };
+  window.__QOK_SFX_ALIAS__ = SFX_ALIAS;
+
+  function uiSfxOn() {
+    try { return window.localStorage.getItem('qok-ui-sfx') !== '0'; } catch (e) { return true; }
+  }
+
+  function installSoundFixes(am) {
+    if (am.__soundFixes) return;
+    am.__soundFixes = true;
+
+    var origPlaySfx = typeof am.playSfx === 'function' ? am.playSfx.bind(am) : null;
+    if (origPlaySfx) am.playSfx = function (name) {
+      return origPlaySfx(SFX_ALIAS.hasOwnProperty(name) ? SFX_ALIAS[name] : name);
+    };
+
+    // (e) Overlay taps never reach the bundle's audio. Delegate from window in the capture phase
+    // (it runs before ui-overhaul's document-level guards). Existing effects only, all short and
+    // quiet (menu_select peaks about -20 dBFS). Off with localStorage['qok-ui-sfx'] = '0'.
+    var lastUi = 0;
+    function uiSfx(e) {
+      try {
+        if (!uiSfxOn() || !am.initialized || !am.soundEnabled) return;
+        var t = e.target; if (!t || !t.closest) return;
+        var el = t.closest('#qok-ui [data-act], #fieldTabs [data-fi]'); if (!el) return;
+        if (el.disabled || el.getAttribute('aria-disabled') === 'true') return;
+        if (t.closest('[data-native]')) return;       // the volume slider drags silently
+        var act = el.getAttribute('data-act'), name = null;
+        if (act === 'kpKey') name = el.getAttribute('data-k') === 'go' ? 'equip' : 'menu_select';
+        else if (act === 'tab' || el.hasAttribute('data-fi')) name = 'menu_select';
+        else if (act === 'setting' || act === 'shopBuy' || act === 'shopMode') name = 'menu_select';
+        if (!name) return;
+        var now = Date.now(); if (now - lastUi < 120) return;   // pointerup and click are one tap
+        lastUi = now;
+        am.playSfx(name);
+      } catch (x) { /* never break input */ }
+    }
+    window.addEventListener('pointerup', uiSfx, true);
+    window.addEventListener('click', uiSfx, true);
+
+    // (b), (d), and the quest-complete card, on a light poll: the three returns to Title are plain
+    // scene starts that the bundle does not announce.
+    var lastPlayer = null, lastQuestCard = false;
+    setInterval(function () {
+      try {
+        var g = window.__PHASER_GAME__;
+        // (b) The bundle's TitleScene plays the title track on re-entry only after a Phaser canvas
+        // tap, which the DOM overlay never delivers, so Quit to Title, Game Over and the ending kept
+        // the old loop. Ask for the title track whenever the Title is up and something else is wanted.
+        if (g && g.scene && g.scene.isActive('TitleScene') && am.initialized && am.soundEnabled &&
+            !lifecycle.hidden && lifecycle.desired !== 'title') am.playBgm('title');
+        // (d) newGame() never calls loadSettings, so a muted session leaked into the next game while
+        // the new player says Sound ON. When a different player object appears, make the audio
+        // manager match it (a loaded game already matches: loadSettings ran in the same call).
+        var q = window.__QOK, tt = q && typeof q.state === 'function' ? q.state() : null;
+        var pl = tt && tt.player;
+        if (pl && pl !== lastPlayer) {
+          lastPlayer = pl;
+          var st = pl.state;
+          if (st && am.initialized) {
+            var wantOn = st.soundEnabled !== false;
+            if (am.soundEnabled !== wantOn) am.setMuted(!wantOn);
+            if (typeof st.masterVolume === 'number' && am.masterVolume !== st.masterVolume) am.setVolume(st.masterVolume);
+          }
+        }
+        // (e) the quest-complete card announces itself by a class on <body>
+        var qc = !!(document.body && document.body.classList.contains('qok-quest-complete'));
+        if (qc && !lastQuestCard && uiSfxOn() && am.initialized && am.soundEnabled) am.playSfx('treasure_open');
+        lastQuestCard = qc;
+      } catch (x) { /* ignore */ }
+    }, 200);
+  }
+
   function install() {
     var am = window.__QOK && window.__QOK.audio;
     if (!am || typeof am.init !== 'function') return false;
@@ -529,6 +619,7 @@
       } else resumeDesired(am, 'load-settings');
       return result;
     };
+    installSoundFixes(am);
     installLifecycle(am);
     if (am.initialized) swapWhenProven(am);
     return true;

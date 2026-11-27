@@ -14,9 +14,10 @@ roofs removed roughly a cell of margin around every building, and an NPC standin
 lose her whole approach band to that without any other check noticing. `place_town_actors.py` still
 passes in that case, because the NPC's own cell is still reachable.
 
-A `fixed` NPC (the shopkeeper, behind his counter inside the stall) is exempt by design: he is
-deliberately not on walkable ground and the player reaches his shop through `shopCounter`, which
-`place_town_actors.py` already proves reachable.
+A `fixed` NPC (a shopkeeper behind her counter) is deliberately not on walkable ground and the
+player reaches her shop through `shopCounter`, which `place_town_actors.py` already proves
+reachable. Until 2026-11-27 she was skipped here; she is now held to the band town.html really
+gives her (see `dy_max` below), so a keeper nobody can talk to fails this gate too.
 """
 from __future__ import annotations
 import glob, importlib.util, json, os, sys
@@ -32,6 +33,7 @@ _spec.loader.exec_module(_pta)
 
 NPC_BLOCK_RADIUS = 7.0          # world px, town.html's NPC_BLOCK_RADIUS
 DX_MAX, DY_MIN, DY_MAX = 1.1, -0.35, 2.1     # town.html's nearestNpc() band, in cells
+TALK_SOUTH = 2.7              # town.html's NPC_TALK_SOUTH (cells): how far south a person is talked to since 2026-11-27
 
 
 def main() -> int:
@@ -60,12 +62,16 @@ def main() -> int:
         seen = _pta.reach(free, (s[0], s[1]))
 
         for n in npcs:
-            if n.get("fixed"):
-                continue
+            # A `fixed` person (a keeper behind a painted counter) used to be skipped here, so nothing in
+            # this gate said she could be talked to at all (FT2 review, 2026-11-27: the Haunted Village and
+            # Oasis Haven keepers became `fixed` that day). She is measured now, with the band town.html
+            # really gives her: the same width, and south as far as her own `talkReach`, or town.html's
+            # NPC_TALK_SOUTH when she has none. Everyone else keeps the narrower band of before.
+            dy_max = float(n.get("talkReach", TALK_SOUTH)) if n.get("fixed") else DY_MAX
             checked += 1
             cx, cy = n["cell"][0] * cell, n["cell"][1] * cell
             band = ((np.abs(xx - cx) <= DX_MAX * cell)
-                    & ((yy - cy) >= DY_MIN * cell) & ((yy - cy) <= DY_MAX * cell))
+                    & ((yy - cy) >= DY_MIN * cell) & ((yy - cy) <= dy_max * cell))
             ok = int((band & seen).sum())
             if not ok:
                 loose = int((band & free).sum())

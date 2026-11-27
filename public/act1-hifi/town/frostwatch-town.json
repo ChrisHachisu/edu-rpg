@@ -34,12 +34,19 @@
  "npcs": [
   {
    "id": "healer",
+   "cellOld": [46.72, 50.78],
+   "space": [20, 27, 10],
+   "spaceMax": 20,
+   "spaceNote": "2026-11-27 (design review T4): she stands on her doorstep at the north edge of a street 20 px deep (see bodyNote). A full body's space closed it, so her space ends 10 px south of her feet, as her body did; passing under her the hero's sprite still overlaps hers by up to `spaceMax` px. From either side she stops a body away.",
+   "cellNote": "2026-11-27 (FT2, review of the town changes): 2 px (0.12 cells) back on her doorstep: the street under her space was 7 px wide for the hero's 8 px feet; it is 9 px now.",
+      "body": [10, 0],
+      "bodyNote": "2026-11-23 (census M16): every town NPC now has a body that stops the hero beside her (town.html: 10 px half-width, 7 px south). The healer stands in the 1.5-cell lane in front of the clinic, and that body would close the lane east of her (field-town-reach.cjs). Here the body is a 10 px disc: the lane stays open and the hero stops 14 px to either side of her.",
    "dialogueKey": "npc.healer",
    "nameKey": "npc.healer.name",
    "sheet": "town/npc/frostwatch-healer-4x3-64.png",
    "cell": [
     46.72,
-    50.78
+    50.66
    ],
    "mapsTs": [
     11,
@@ -50,6 +57,8 @@
   },
   {
    "id": "frostElder",
+   "spacePlug": [[26, -26, -8, 1]],
+   "spacePlugNote": "2026-11-27 (FT2, review of the town changes): his space ended 2 to 3 px short of the rock east of him; the way round the rock is open. Closed.",
    "dialogueKey": "npc.frostElder",
    "nameKey": "npc.frostElder.name",
    "sheet": "town/npc/frostwatch-frostElder-4x3-64.png",
@@ -98,6 +107,8 @@
   },
   {
    "id": "frostVillager",
+   "spacePlug": [[-27, 22, 31, 2]],
+   "spacePlugNote": "2026-11-27 (FT2, review of the town changes): his space ended 6 px short of the wall at his south-west corner; the way round is open. Closed.",
    "dialogueKey": "npc.frostVillager",
    "nameKey": "npc.frostVillager.name",
    "sheet": "town/npc/frostwatch-frostVillager-4x3-64.png",

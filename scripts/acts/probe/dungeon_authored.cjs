@@ -116,7 +116,10 @@ class Run {
   }
   // Walk her soles to a nav cell chosen by goalFn(gx,gy).
   async go(N, goalFn, opts = {}) {
-    const s = await this.st(); const from = nearestNav(N, s.hx, s.hy + N.footDy);
+    // A message box left open (an arrival line, a sign) holds her: tap it away first, as a player does.
+    // The text is kept in the log (window.__D2P.msgs()), so a wrong message is still visible to a check that reads it.
+    let s = await this.st(); if (s.msg && s.field) { await this.ev(() => window.__D2P.dismiss()); s = await this.st(); }
+    const from = nearestNav(N, s.hx, s.hy + N.footDy);
     if (!from) return { ok: false, why: 'off-grid', at: [s.hx, s.hy] };
     const p = astar(N, from, goalFn); if (!p) return { ok: false, why: 'no-path', from };
     return this.ev(([pts, o]) => window.__D2P.drive(pts, o), [toPts(N, p), { maxMs: opts.maxMs || 90000, tol: opts.tol || 7, hold: opts.hold || 0 }]);
@@ -156,9 +159,9 @@ class Run {
       if (!s.active) return { entered: true, won: !s.over, rounds: roundsN, monster };
       monster = monster || s.mon;
       if (s.phase === 'playerMenu') { await tap('[data-act="battleMenu"][data-i="0"]'); await page.waitForTimeout(500); }
-      else if (/quiz/i.test(String(s.phase)) || (await page.evaluate(() => { const e = document.querySelector('[data-act="quizAns"]'); return !!(e && e.offsetParent !== null); }))) {
+      else if (/quiz/i.test(String(s.phase)) || (await page.evaluate(() => { const e = document.querySelector('#qok-ui .kpad, [data-act="quizAns"]'); return !!(e && e.offsetParent !== null); }))) {
         const idx = await page.evaluate(() => { const b = window.__PHASER_GAME__.scene.getScene('BattleScene'); const a = (b.quizQuestion && b.quizQuestion.answers) || []; return a.findIndex(x => !!x.isCorrect); }); roundsN++;
-        if (idx < 0) await page.waitForTimeout(500); else { await tap(`[data-act="quizAns"][data-i="${idx}"]`); await page.waitForTimeout(800); } }
+        if (idx < 0) await page.waitForTimeout(500); else { for (const qs of await L.quizTaps(page, idx)) await tap(qs); await page.waitForTimeout(800); } }
       else if (s.phase === 'message') { const t = await tap('[data-act="battleAdvance"]', 1500); if (!t) await page.mouse.click(195, 600).catch(() => {}); await page.waitForTimeout(450); }
       else { await page.waitForTimeout(300); await tap('[data-act="battleAdvance"]', 400); }
     }
@@ -201,7 +204,8 @@ async function runDungeon(spec) {
       for (const k of ['load', 'unload', 'tick', 'input', 'free', 'bump', 'step', 'interact']) { const o = m[k]; m[k] = function () { h[k]++; return o ? o.apply(this, arguments) : undefined; }; }
       return true; });
     await hookUp();
-    const enter = async () => { const r = await L.walkCells(page, [[LM.at[0], LM.at[1]]], { maxMs: 25000 }); await page.waitForTimeout(1200); await page.evaluate(PILOT); return r; };
+    const enter = async () => { await page.evaluate(() => window.__D2P && window.__D2P.dismiss());   // an open message box (a save repair, a quest line) holds her
+      const r = await L.walkCells(page, [[LM.at[0], LM.at[1]]], { maxMs: 25000 }); await page.waitForTimeout(1200); await page.evaluate(PILOT); return r; };
     let r = await enter(); let s = await R.st();
     if (layout) { await R.settle(); rec(id, `the real ${D0.mechanic} module is running on floor 1`, await wrapLive(), await R.st().then(x => x.d2)); }
     if (!rec(id, 'walking into the overworld mouth enters floor 1', s.map === id && s.floor === 1, { r, s })) return;
@@ -245,8 +249,16 @@ async function runDungeon(spec) {
       if (!rec(id, `f${f}: on the authored floor`, s.map === id && s.floor === f && s.w === FL.width && s.h === FL.height && s.d2.art === 'ready' && s.d2.mask === 'ready', s)) return;
       if (f > 1) { const want = FL.land.fromPrev; rec(id, `f${f}: arrives beside the stairs back`, want && s.x === want.x && s.y === want.y, { at: [s.x, s.y], want }); await R.shot(`f${f}-arrive`); }
       if (smoke) { await R.ev(() => window.__D2P.clearMsgs());
-        const pts = N.route.filter((_, i) => i % 4 === 0).slice(0, 8); let reached = 0;
-        for (const c of pts) { const g = await R.go(N, R.nearCell(N, c[0], c[1], 0), { maxMs: 30000 }); if (g.ok && g.why === 'arrived') reached++; else break; }
+        // The plan's route begins ON the mouth tile (2 cells outside the landing). For a south-facing mouth her centre stays
+        // a row above it, but for a west/east-facing one walking there walks her out of the dungeon: start at the landing,
+        // and never aim at a staircase or mouth tile.
+        const land = f === 1 ? FL.land.mouth : FL.land.fromPrev, way = new Set(FL.assets.filter(a => /^(stairsUp|stairsDown|mouth|mouth2)$/.test(a.kind)).map(a => a.x + ',' + a.y));
+        const dl = c => Math.abs(c[0] - land.x) + Math.abs(c[1] - land.y);
+        const k0 = land ? N.route.reduce((b, c, i) => (dl(c) < dl(N.route[b]) ? i : b), 0) : 0;   // the route point nearest the landing
+        const pts = N.route.slice(k0).filter((c, i) => i % 4 === 0 && !way.has(c[0] + ',' + c[1])).slice(0, 8); let reached = 0;
+        for (const c of pts) { let g = await R.go(N, R.nearCell(N, c[0], c[1], 0), { maxMs: 30000 });
+          if (g.why === 'message') g = await R.go(N, R.nearCell(N, c[0], c[1], 0), { maxMs: 30000 });
+          if (g.ok && g.why === 'arrived') reached++; else break; }
         rec(id, `f${f} (smoke): the first stretch of the route is walkable on the painted floor`, reached >= Math.min(3, pts.length), { reached, of: pts.length });
         await R.shot(`f${f}-smoke`);
         for (const c of FL.assets.filter(a => a.kind === 'chest').slice(0, 1)) { const g = await R.go(N, R.nearCell(N, c.x, c.y, 16), { maxMs: 60000 }); if (g.ok) await R.shot(`f${f}-smoke-chest`); }

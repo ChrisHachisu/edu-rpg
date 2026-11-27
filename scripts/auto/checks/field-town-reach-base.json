@@ -1,0 +1,295 @@
+{
+ "rev": "37de040",
+ "what": "shortest walks in world px on a 2 px grid (field-town-reach.cjs measure()) on the files of this revision: its ground, its people at their places and its talk bands. From the gate (arrival cell), the opening spot and the save spot to every person, the shop, the save spot and the exit line. She starts from TODAY's save cell (`saveFrom`, read from the working tree when this file was written), so a save spot that was moved on purpose is compared like for like: Port Sapphire's moved 2.4 cells on 2026-11-27 (T10); from its old cell the walks to the Wise Woman and the shop were 22 and 83 px.",
+ "saveFrom": {
+  "greenhollow": [
+   37,
+   34
+  ],
+  "millbrook": [
+   32.62,
+   32.5
+  ],
+  "portSapphire": [
+   34.9,
+   32
+  ],
+  "ironkeep": [
+   30.47,
+   50.78
+  ],
+  "frostwatch": [
+   34.53,
+   42.66
+  ],
+  "hauntedVillage": [
+   34.53,
+   42.66
+  ],
+  "ruinsCamp": [
+   34.53,
+   42.66
+  ],
+  "oasisHaven": [
+   34.53,
+   42.66
+  ],
+  "embersRest": [
+   34.53,
+   42.66
+  ],
+  "cinderwatch": [
+   34.53,
+   42.66
+  ],
+  "lastBastion": [
+   34.53,
+   42.66
+  ],
+  "havensEdge": [
+   34.53,
+   42.66
+  ]
+ },
+ "towns": {
+  "greenhollow": {
+   "gate": {
+    "elder": 506,
+    "kiki": 514,
+    "save": 350,
+    "healer": 465.1,
+    "shop": 441.4,
+    "villager1": 344.9,
+    "villager2": 350.9,
+    "fisherman": 374.7,
+    "exit": 24
+   },
+   "save": {
+    "elder": 186.9,
+    "kiki": 201.5,
+    "healer": 200.1,
+    "shop": 312.5,
+    "villager1": 203.6,
+    "villager2": 67.1,
+    "fisherman": 120.5,
+    "exit": 387.9
+   },
+   "opening": {
+    "elder": 0,
+    "kiki": 52,
+    "save": 172,
+    "healer": 397.6,
+    "shop": 358,
+    "villager1": 242,
+    "villager2": 264.5,
+    "fisherman": 318,
+    "exit": 534
+   }
+  },
+  "millbrook": {
+   "gate": {
+    "miller": 614.9,
+    "sage": 577.2,
+    "herbalist": 483.3,
+    "save": 391.1,
+    "shop": 404.1,
+    "healer": 296.2,
+    "exit": 24
+   },
+   "save": {
+    "miller": 199.5,
+    "sage": 203.4,
+    "herbalist": 117.1,
+    "shop": 277.1,
+    "healer": 484.4,
+    "exit": 435.6
+   }
+  },
+  "portSapphire": {
+   "gate": {
+    "exit": 24,
+    "wisewoman": 366,
+    "healer": 475.3,
+    "save": 396,
+    "shop": 476.9,
+    "drake": 574.8,
+    "sailor": 791.7
+   },
+   "save": {
+    "exit": 461.3,
+    "wisewoman": 52.1,
+    "healer": 96.6,
+    "shop": 121.3,
+    "drake": 149.9,
+    "sailor": 361.1
+   }
+  },
+  "ironkeep": {
+   "gate": {
+    "blacksmith": 784.7,
+    "soldier": 394.8,
+    "save": 79.8,
+    "gordo": 64.6,
+    "shop": 157.5,
+    "healer": 275,
+    "exit": 32
+   },
+   "save": {
+    "blacksmith": 679.4,
+    "soldier": 316,
+    "gordo": 42,
+    "shop": 200.2,
+    "healer": 262.9,
+    "exit": 124
+   }
+  },
+  "frostwatch": {
+   "gate": {
+    "shop": 615.2,
+    "frostElder": 604,
+    "frostVillager": 491.1,
+    "mountaineer": 268.6,
+    "save": 153.8,
+    "frostGuard": 16.8,
+    "healer": 212.3,
+    "exit": 32
+   },
+   "save": {
+    "shop": 435.9,
+    "frostElder": 489.9,
+    "frostVillager": 338.4,
+    "mountaineer": 96,
+    "frostGuard": 143.4,
+    "healer": 266.2,
+    "exit": 198.8
+   }
+  },
+  "hauntedVillage": {
+   "gate": {
+    "hauntedElder": 638.5,
+    "shop": 744.4,
+    "healer": 537.3,
+    "hauntedVillager": 287.1,
+    "save": 209.8,
+    "hauntedGuard": 16,
+    "exit": 32
+   },
+   "save": {
+    "hauntedElder": 429.7,
+    "shop": 509.1,
+    "healer": 411.8,
+    "hauntedVillager": 61.3,
+    "hauntedGuard": 195.8,
+    "exit": 259.8
+   }
+  },
+  "ruinsCamp": {
+   "gate": {
+    "mercenary": 685.1,
+    "healer": 723.4,
+    "explorer": 462.6,
+    "shop": 410.6,
+    "save": 217.8,
+    "exit": 32
+   },
+   "save": {
+    "mercenary": 441.9,
+    "healer": 480.1,
+    "explorer": 226,
+    "shop": 228.1,
+    "exit": 262
+   }
+  },
+  "oasisHaven": {
+   "gate": {
+    "healer": 750.3,
+    "luna": 744.6,
+    "archaeologist": 724.6,
+    "shop": 613.2,
+    "oasisElder": 294.7,
+    "save": 201.8,
+    "exit": 32
+   },
+   "save": {
+    "healer": 549.6,
+    "luna": 543.9,
+    "archaeologist": 497.4,
+    "shop": 386,
+    "oasisElder": 126.7,
+    "exit": 246
+   }
+  },
+  "embersRest": {
+   "gate": {
+    "forgemaster": 804.6,
+    "lavaMiner": 416.6,
+    "shop": 415.4,
+    "save": 225.8,
+    "healer": 20.1,
+    "exit": 32
+   },
+   "save": {
+    "forgemaster": 553.4,
+    "lavaMiner": 183.5,
+    "shop": 196.9,
+    "healer": 195.8,
+    "exit": 275.8
+   }
+  },
+  "cinderwatch": {
+   "gate": {
+    "watchCaptain": 700.6,
+    "healer": 715.8,
+    "shop": 472.2,
+    "ashScout": 363.5,
+    "save": 249.8,
+    "cinderVillager": 224.4,
+    "exit": 32
+   },
+   "save": {
+    "watchCaptain": 425.3,
+    "healer": 440.6,
+    "shop": 289.1,
+    "ashScout": 128.1,
+    "cinderVillager": 130.9,
+    "exit": 294
+   }
+  },
+  "lastBastion": {
+   "gate": {
+    "veteran": 674.6,
+    "priestess": 571.1,
+    "shop": 457.3,
+    "healer": 427,
+    "save": 233.8,
+    "exit": 32
+   },
+   "save": {
+    "veteran": 422,
+    "priestess": 338.4,
+    "shop": 280.8,
+    "healer": 193.5,
+    "exit": 278
+   }
+  },
+  "havensEdge": {
+   "gate": {
+    "healer": 669.1,
+    "kiki": 655.1,
+    "prophetess": 603.1,
+    "shop": 389,
+    "save": 201.8,
+    "grizzledKnight": 56.6,
+    "exit": 32
+   },
+   "save": {
+    "healer": 468.4,
+    "kiki": 454.3,
+    "prophetess": 375.9,
+    "shop": 196.9,
+    "grizzledKnight": 143.4,
+    "exit": 246
+   }
+  }
+ }
+}

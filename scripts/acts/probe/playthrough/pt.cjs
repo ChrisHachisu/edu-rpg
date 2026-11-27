@@ -25,7 +25,18 @@ async function dungeonGenerated(id, doorName, { want } = {}) {
 function mechProbe(script, args = [], { name = script } = {}) {     // a mechanic probe run on the playthrough's own record
   const { spawnSync } = require('child_process');
   const inF = path.join(OUTD, '_mech-in.json'), outF = path.join(OUTD, `_mech-out-${name}.json`);
-  return { inF, outF, run: () => spawnSync('node', [path.join(__dirname, '..', script), ...args], { env: { ...process.env, PT_SAVE: inF, PT_SAVE_OUT: outF, PROBE_OUT: path.join(OUTD, 'mech-' + name), PROBE_SHOTS: path.join(OUTD, 'mech-shots') }, encoding: 'utf8', timeout: 2400000, maxBuffer: 64 << 20 }) };
+  const once = () => spawnSync('node', [path.join(__dirname, '..', script), ...args], { env: { ...process.env, PT_SAVE: inF, PT_SAVE_OUT: outF, PROBE_OUT: path.join(OUTD, 'mech-' + name), PROBE_SHOTS: path.join(OUTD, 'mech-shots') }, encoding: 'utf8', timeout: 2400000, maxBuffer: 64 << 20 });
+  // One second try from the same record when the probe's robot misses (a snagged walk, a late release): on the cloud box
+  // a few dungeon probes per story run fail once and pass on replay (2026-11-26: 3 of about 43, three different dungeons). The miss is printed as a [RETRY] line and its log kept
+  // (mech-<id>.try1.log), and story_run.sh counts the retries, so a dungeon that needs them often is seen.
+  const run = () => {
+    let r = once(); const out = (r.stdout || '') + (r.stderr || ''), fails = out.split('\n').filter(l => l.startsWith('[FAIL]'));
+    if (process.env.PT_MECH_RETRY === '0' || (r.status === 0 && !fails.length && fs.existsSync(outF))) return r;
+    fs.writeFileSync(path.join(OUTD, `mech-${name}.try1.log`), out); try { fs.unlinkSync(outF); } catch (e) {}
+    console.log(`[RETRY] ${name}: the mechanic probe failed once (${(fails[0] || 'exit ' + r.status).slice(0, 220)}); second try from the same record`);
+    return once();
+  };
+  return { inF, outF, run };
 }
 // Run a dungeon's own end-to-end probe from the playthrough's record (she stands at the mouth's exit)
 // and continue from the record it leaves.
@@ -98,7 +109,7 @@ SEGS.a1b = async () => {                       // Crystal Cave: the way from Act
   const ok = await dungeonGenerated('crystalCave', 'crystalCave', { want: s => s.bosses.includes('serpent') });
   const s = await S.st(); await S.shot('act2-arrival');
   S.rec('Crystal Cave lets her out on the Act 2 side', s.map === 'overworld' && s.x === door('Crystal Cave (Act 2 side)').exit[0] && s.y === door('Crystal Cave (Act 2 side)').exit[1], [s.map, s.x, s.y]);
-  await compassIs('Ironkeep (first Act 2 stop)', 'Ironkeep');
+  await compassIs('Millbrook (the Sage is waiting for the Crystal Cave report; Ironkeep comes after it, see a2)', 'millbrook');
 };
 
 // ---------------------------------------------------------------- helpers for the later acts
@@ -106,11 +117,11 @@ const load = () => JSON.parse(fs.readFileSync(IN, 'utf8'));
 async function travelCell(x, y, what) { const sv = await S.capture(); sv.player.position = { mapId: 'overworld', x, y, floor: 1 }; await S.boot(sv); await L.noEncounters(S.page);
   const p = await L.pos(S.page); S.rec(`fast travel to ${what}`, p.map === 'overworld' && p.x === x && p.y === y, [p.map, p.x, p.y]); }
 // Real random encounters on the floor she stands on: pace back and forth until `n` battles are won (or time runs out).
-async function encounters(n, { maxMs = 240000, until = null } = {}) {
+async function encounters(n, { maxMs = 240000, until = null, sideways = false } = {}) {   // sideways: pace left-right (a door above or below her)
   const page = S.page, t0 = Date.now(); let won = 0, met = []; await page.evaluate(() => { try { delete window.__GAME_STATE__.encounterManager.onStep; } catch (e) {} });
   let dir = 1;
   while (won < n && Date.now() - t0 < maxMs && !(until && await until())) {
-    await L.stick(page, 0, dir, 700); dir = -dir;
+    if (sideways) await L.stick(page, dir, 0, 700); else await L.stick(page, 0, dir, 700); dir = -dir;
     if (await page.evaluate(() => window.__PHASER_GAME__.scene.isActive('BattleScene'))) { const fr = await S.fight(); met.push(fr.monster); if (fr.won) won++; await page.waitForTimeout(1500); await S.dismissAll(); await S.inject(); }
     else { const m = await S.ev(() => window.__PHASER_GAME__.scene.getScene('WorldMapScene').showingMessage); if (m) await S.dismissAll(); }
     const s = await S.st(); if (s.map === 'overworld' && n && !met.length && Date.now() - t0 > maxMs / 2) break;
@@ -239,15 +250,38 @@ async function isle(id, portal, script) {          // a portal on the overworld,
   if (!sv) throw new Error('no record back from ' + script);
   await S.open(sv); await S.inject(); await L.noEncounters(S.page); return true;
 }
+// A quest step with a person: talk (twice if the first line was another one), and check the quest moved.
+async function questTalk(npc, kind, q, label) {
+  let r = await S.talk(npc, { label: `${label} (${kind} ${q})` });
+  if (!r[kind].includes(q)) { const r2 = await S.talk(npc, { label: `${label} again (${kind} ${q})` }); r2.lines = r.lines.concat(r2.lines); r2.started = r.started.concat(r2.started); r2.finished = r.finished.concat(r2.finished); r = r2; }
+  S.rec(`${label}: ${q} ${kind}`, r[kind].includes(q), { started: r.started, finished: r.finished, shown: r.lines.map(t => t.slice(0, 160)) });
+  return r;
+}
+const qprog = (q, k) => S.ev(([q, k]) => ((window.__GAME_STATE__.player.state.questProgress || {})[q] || {})[k] || 0, [q, k]);
 SEGS.a5 = async () => {
   await S.open(load()); await S.buff();
-  await town('Last Bastion', async () => { await S.talk('veteran'); await S.talk('priestess'); await S.heal(); await S.townSave(); });
+  await town('Last Bastion', async () => { await questTalk('veteran', 'started', 'demonBarracksQuest', 'the Last Bastion veteran gives Thin the Ranks'); await S.talk('priestess'); await S.heal(); await S.townSave(); });
   await continueHere('Last Bastion save point');
   await town("Haven's Edge", async () => { await S.talk('kiki'); await S.talk('prophetess'); await S.heal(); });
-  // the bundle skips Malachar / the Void Rift (quests nobody gives); the runtime points at the first portal
-  await compassIsWithout('kikisChallenge', 'the first portal (Stormreach Isles) while the Demon Castle is sealed', 'Portal - Stormreach Isles');
+  // The game's own Act 5 chain (quests AUDIT rows 18, 19, G12): Thin the Ranks -> Kiki's Resolve -> the four portals.
+  await compassIsWithout('kikisChallenge', 'the Demon Barracks (Thin the Ranks active)', 'Demon Barracks');
   await dungeonAuthored('demonBarracks', 'Demon Barracks', 'mech/guard-lanterns.cjs');
+  // Ten demons: real random encounters on the Demon's Threshold fields at the barracks door (the zone rolls `demon` 4 in 10).
+  const d0 = await qprog('demonBarracksQuest', 'demon'); const t0 = Date.now();
+  const e = await encounters(40, { maxMs: 600000, sideways: true, until: async () => (await qprog('demonBarracksQuest', 'demon')) >= 10 });
+  const d1 = await qprog('demonBarracksQuest', 'demon'); await S.shot('ten-demons');
+  S.rec('Thin the Ranks: 10 demons beaten in real random encounters (not simulated)', d1 >= 10, { before: d0, after: d1, won: e.won, met: e.met, secs: Math.round((Date.now() - t0) / 1000) });
+  await compassIsWithout('kikisChallenge', 'Last Bastion (10 demons beaten: report to the veteran)', 'Last Bastion');
+  await town('Last Bastion', async () => { await questTalk('veteran', 'finished', 'demonBarracksQuest', 'the veteran takes the report'); await S.dismissAll(); });
+  const hb = await S.st(); S.rec('the veteran\'s reward, the Holy Blade, is in her bag', hb.inv.some(i => /^holyBlade/.test(i)), { inv: hb.inv });
+  await town("Haven's Edge", async () => { await questTalk('kiki', 'started', 'kikisResolve', 'Haven\'s Edge Kiki gives Kiki\'s Resolve'); });
+  await compassIsWithout('kikisChallenge', 'the Void Rift (Kiki\'s Resolve active)', 'Void Rift');
   await dungeonAuthored('voidRift', 'Void Rift', 'mech/drifting-blocks.cjs');
+  S.rec('Kiki\'s Resolve: the Void Rift visit counted by the game on the real walk in', (await qprog('kikisResolve', 'voidRift')) >= 1, await S.ev(() => window.__GAME_STATE__.player.state.questProgress.kikisResolve));
+  await compassIsWithout('kikisChallenge', 'Haven\'s Edge (Void Rift visited: report to Kiki)', "Haven's Edge");
+  await town("Haven's Edge", async () => { await questTalk('kiki', 'finished', 'kikisResolve', 'Kiki takes the report'); await S.dismissAll(); });
+  const q = await S.st(); S.rec('The Four Relics starts after Kiki\'s Resolve', q.active.includes('portalRelics') || q.done.includes('portalRelics'), { active: q.active });
+  await compassIsWithout('kikisChallenge', 'the first portal (Stormreach Isles) while the Demon Castle is sealed', 'Portal - Stormreach Isles');
   await S.shot('act5-mid');
 };
 SEGS.a5k = async () => {                        // re-check of a5's two misses on its own record: Last Bastion healer, portal compass
@@ -283,14 +317,15 @@ SEGS.a5s = async () => {                        // the Sunken Temple again (its 
   const eq = await S.ev(() => ({ ...window.__GAME_STATE__.player.state.equipment }));
   S.rec('the four portal guardians left the four relics the Demon Castle asks for', need.every(n => s.inv.includes(n) || Object.values(eq).includes(n)), { inv: s.inv, eq });
 };
-SEGS.a5c = async () => {                         // the Demon Castle (the bundle's generated floors) and the Demon King
+SEGS.a5c = async () => {                         // the Demon Castle (authored mirror rooms since build 98) and the Demon King
   await S.open(load()); await S.buff();
   await town('Last Bastion', async () => { await S.heal(); });
   await compassIsWithout('kikisChallenge', 'the Demon Castle (all four relics in hand)', 'Demon Castle');
-  const ok = await dungeonGenerated('demonCastle', 'Demon Castle', { want: s => s.bosses.includes('demonKing') });
-  const sc = await S.ev(() => window.__PHASER_GAME__.scene.getScenes(true).map(s => s.scene.key)); await S.shot('ending');
-  const s = await S.st().catch(() => null);
-  S.rec('the Demon King is defeated (boss.demonKing.defeated) and the ending plays', !!(s && s.bosses.includes('demonKing')) || sc.includes('VictoryScene'), { scenes: sc, bosses: s && s.bosses });
+  // The castle is an authored dungeon now: its own end-to-end probe plays it on the story record, fights the
+  // Demon King and checks that the ending (VictoryScene) starts. The generated-floor solver loops on its stairs.
+  let sv = null; try { sv = await dungeonAuthored('demonCastle', 'Demon Castle', 'mech/mirror-rooms.cjs'); } catch (e) { S.rec('demonCastle: a record comes back from the castle', false, String(e).slice(0, 300)); }
+  const f = sv ? sv.player.storyFlags : {};
+  S.rec('the Demon King is defeated (boss.demonKing.defeated) on the story record', !!f['boss.demonKing.defeated'], { flag: !!f['boss.demonKing.defeated'] });
 };
 
 (async () => {

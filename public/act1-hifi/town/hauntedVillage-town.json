@@ -26,6 +26,8 @@
   "axis": "south",
   "note": "toX/toY = overworld exit cell from exits.json (tools/apply_exits.py), not maps.ts."
  },
+ "occluders": [{"id": "shop-counter", "baseY": 16.7, "polygon": [[49.0, 15.82], [51.0, 16.15], [51.0, 17.2], [49.0, 17.2]]}],
+ "_occludersNote": "2026-11-27 (design review T3): the shopkeeper was drawn standing on her stall. She now stands at the counter (`cell`; the cell of before is `cellOld`) and `occluders` names the counter's front, traced along its painted top edge: town.html draws that piece of the same plate again, at the same place, right after her (`baseY` is her feet plus 0.05 cells: the painter's line) and before anyone standing south of her, so the counter covers her legs and she shows from the waist up, and it can never cover the hero, who has no ground north of that line near the counter (scripts/auto/checks/field-town-reach.cjs proves it for every reachable point). No new art; nothing in the plate is cut or moved. Old look: qok-f2-old=shopband.",
  "shopId": "hauntedVillage",
  "shopCounter": [
   52.5,
@@ -66,6 +68,8 @@
   },
   {
    "id": "hauntedGuard",
+   "spacePlug": [[26, 4, 28, 1]],
+   "spacePlugNote": "2026-11-27 (FT2, review of the town changes): his space ended 3 px short of the wall east of him, a slit 30 px long; the way round (west of him) is open. Closed.",
    "dialogueKey": "npc.hauntedGuard",
    "nameKey": "npc.hauntedGuard.name",
    "sheet": "town/npc/hauntedVillage-hauntedGuard-4x3-64.png",
@@ -98,12 +102,19 @@
   },
   {
    "id": "shopkeeper",
+   "talkReach": 3.6,
+   "talkReachNote": "2026-11-27 (design review T3): behind the counter her feet are 44 px north of the ground in front of the stall; the default 2.7 cells ended 1 px short of it.",
+   "fixed": true,
+   "_fixedNote": "2026-11-27 (design review T3): she now stands behind the painted counter, deeper than the south talk band scripts/check_town_talkable.py measures; like the Last Bastion and Ruins Camp keepers she is `fixed` (the hero is served at shopCounter, on the ground at the counter front; town.html's own band still reaches her from there).",
+   "cellOld": [50.0, 17.3],
+   "space": [6, 6, 6],
+   "spaceNote": "behind the painted counter: a small body that stays inside the counter (the counter itself keeps the hero a body away)",
    "dialogueKey": "npc.shopkeeper",
    "nameKey": "npc.shopkeeper.name",
    "sheet": "town/npc/hauntedVillage-shopkeeper-4x3-64.png",
    "cell": [
     50.0,
-    17.3
+    16.65
    ],
    "_note": "behind the painted counter; the hero talks across it from shopCounter",
    "name": "Shopkeeper",

@@ -11,11 +11,27 @@ const OUT = process.env.PROBE_OUT || path.resolve('probe-out');
 fs.mkdirSync(OUT, { recursive: true });
 
 function save(o = {}) {
-  const { mapId = 'overworld', x = 80, y = 262, floor = 1, flags = {}, inventory = [{ itemId: 'herb', quantity: 5 }], activeQuests = [], completedQuests = [], locale = 'en', kanjiMode = false } = o;
+  const { mapId = 'overworld', x = 80, y = 262, floor = 1, flags = {}, inventory: inv0 = [{ itemId: 'herb', quantity: 5 }], activeQuests = [], completedQuests = [], locale = 'en', kanjiMode = false } = o;
+  const inventory = inv0.map(i => ({ ...i }));
+  // A seeded save must be one the game could have written: a beaten boss's story item is in the bag.
+  // Otherwise the old-save repair in battle-recovery.js hands the items over with message boxes on load.
+  const F = { 'intro.done': true, 'acts.geo2': true, ...flags }, has = id => inventory.some(i => i.itemId === id), eq = o.equipment || {};
+  const need = (id, n = 1) => { if (!has(id) && !Object.values(eq).includes(id)) inventory.push({ itemId: id, quantity: n }); };
+  if (F['boss.sandGolem.defeated'] && !F['boss.lavaWyrm.defeated']) need('flameCloak');
+  if (F['boss.stormHarpy.defeated'] && !F['canyon.windCleared']) need('windbreakerStone');
+  for (const [b, id] of [['swordWraith', 'excalibur'], ['celestialGuardian', 'aegisOfDawn'], ['stormSentinel', 'galeShield'], ['frostMonarch', 'crownOfWisdom']]) if (F[`boss.${b}.defeated`]) need(id);
+  if (!F['boss.demonKing.defeated'] && !has('crystalOfKnowledge')) { const n = ['serpent', 'stormHarpy', 'dragon', 'sandGolem', 'flameTitan'].filter(b => F[`boss.${b}.defeated`]).length; if (n) need('shadowCrystal', n); }
+  // ...and the story quests that end by themselves with a boss (acts-runtime.js AUTO_END) are done, or they end one
+  // after another in message boxes while a probe is trying to test something else.
+  const done = completedQuests.slice(), q = id => { if (!done.includes(id) && !activeQuests.includes(id)) done.push(id); };
+  if (o.autoQuests !== false && Object.keys(F).some(k => /^boss\..*\.defeated$/.test(k) && F[k])) {   // autoQuests: false leaves them open (the quest check's own subject)
+    for (const [b, id] of [['serpent', 'crystalCaveGate'], ['stormHarpy', 'stormPass'], ['dragon', 'shadowGate'], ['sandGolem', 'desertGate'], ['lavaWyrm', 'magmaPath'], ['flameTitan', 'volcanicGate']]) if (F[`boss.${b}.defeated`]) q(id);
+    if (['swordWraith', 'celestialGuardian', 'stormSentinel', 'frostMonarch'].every(b => F[`boss.${b}.defeated`])) q('portalRelics');
+  }
   return { version: 4, timestamp: Date.now(), player: { name: 'Probe', heroColor: 'gray', level: 50, exp: 0, expToNext: 100,
     hp: 9999, maxHp: 9999, atk: 9999, def: 9999, spd: 999,
     equipment: { weapon: null, armor: null, shield: null, helmet: null, accessory: null }, inventory, gold: 5000,
-    position: { mapId, x, y, floor }, storyFlags: { 'intro.done': true, 'acts.geo2': true, ...flags }, activeQuests, completedQuests, questProgress: {},
+    position: { mapId, x, y, floor }, storyFlags: { 'intro.done': true, 'acts.geo2': true, ...flags }, activeQuests, completedQuests: done, questProgress: {},
     timerEnabled: false, quizDifficulty: '3', locale, soundEnabled: false, masterVolume: 0, kanjiMode }, playtime: 0, quizStats: {} };
 }
 const BOSSES = ['giantToad', 'serpent', 'stormHarpy', 'phantomStag', 'dragon', 'sandWyrm', 'banditKing', 'pharaoh', 'magmaGolem',
@@ -44,6 +60,7 @@ async function toTitle(page) {
 }
 // Seed a v4 save (plus any extra localStorage keys, e.g. the kill switch) and Continue into it.
 async function bootSave(page, s, { url = URL_, extra = {}, settle = 2500, ready = true } = {}) {
+  if (process.env.PROBE_LS) extra = { ...JSON.parse(process.env.PROBE_LS), ...extra };   // e.g. PROBE_LS='{"qok-quest-repairs":"0"}' to bisect a switch
   await page.goto(url, { waitUntil: 'domcontentloaded' });
   await page.evaluate(([s, extra]) => { localStorage.clear(); localStorage.setItem('edu-rpg-save', JSON.stringify(s)); for (const k in extra) localStorage.setItem(k, extra[k]); }, [s, extra]);
   await page.reload({ waitUntil: 'load' });
@@ -103,4 +120,18 @@ function decodePng(buf) {
 function pngDiff(a, b) { const A = decodePng(a), B = decodePng(b); if (A.w !== B.w || A.h !== B.h || A.bpp !== B.bpp) return -1; let n = 0;
   for (let i = 0; i < A.data.length; i += A.bpp) if (A.data[i] !== B.data[i] || A.data[i + 1] !== B.data[i + 1] || A.data[i + 2] !== B.data[i + 2]) n++; return n; }
 const multi = page => page.evaluate(() => (window.__QOK_MULTIACT__ ? window.__QOK_MULTIACT__.status() : null));
-module.exports = { chromium, URL_, OUT, save, allFlags, BOSSES, launch, toTitle, bootSave, noEncounters, pos, shot, stick, walkCells, multi, decodePng, pngDiff };
+// Selectors to tap to answer the live battle quiz with choice idx. Since 2026-11-24 the quiz is a
+// number keypad (digits, ± for a negative, then Enter = Attack/Defend); localStorage qok-keypad=0
+// brings back the four [data-act="quizAns"] buttons. Usage: for (const s of await quizTaps(page, i)) await tap(s);
+const QUIZ_UP = '#qok-ui .kpad, [data-act="quizAns"]';
+const quizTaps = (page, idx) => page.evaluate(i => {
+  i = Math.max(0, i);
+  if (!document.querySelector('#qok-ui .kpad')) return [`[data-act="quizAns"][data-i="${i}"]`];
+  const b = window.__PHASER_GAME__.scene.getScene('BattleScene'), a = ((b && b.quizQuestion && b.quizQuestion.answers) || [])[i];
+  const v = String((a && a.text && a.text.en) || '0'), out = [];
+  for (const c of v.replace('-', '')) out.push(`[data-act="kpKey"][data-k="${c}"]`);
+  if (v.startsWith('-')) out.push('[data-act="kpKey"][data-k="pm"]');
+  out.push('[data-act="kpKey"][data-k="go"]');
+  return out;
+}, idx);
+module.exports = { chromium, URL_, OUT, save, allFlags, BOSSES, launch, toTitle, bootSave, noEncounters, pos, shot, stick, walkCells, multi, decodePng, pngDiff, QUIZ_UP, quizTaps };

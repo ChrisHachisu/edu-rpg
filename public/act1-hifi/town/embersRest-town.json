@@ -26,6 +26,8 @@
   "axis": "south",
   "note": "toX/toY = overworld exit cell from exits.json (tools/apply_exits.py), not maps.ts."
  },
+ "occluders": [{"id": "shop-counter", "baseY": 36.65, "polygon": [[46.7, 36.0], [48.6, 36.0], [48.6, 37.5], [46.7, 37.5]]}],
+ "_occludersNote": "2026-11-27 (design review T3): the shopkeeper was drawn standing on her stall. She now stands at the counter (`cell`; the cell of before is `cellOld`) and `occluders` names the counter's front, traced along its painted top edge: town.html draws that piece of the same plate again, at the same place, right after her (`baseY` is her feet plus 0.05 cells: the painter's line) and before anyone standing south of her, so the counter covers her legs and she shows from the waist up, and it can never cover the hero, who has no ground north of that line near the counter (scripts/auto/checks/field-town-reach.cjs proves it for every reachable point). No new art; nothing in the plate is cut or moved. Old look: qok-f2-old=shopband.",
  "shopId": "embersRest",
  "shopCounter": [
   47.0,
@@ -50,12 +52,16 @@
   },
   {
    "id": "forgemaster",
+   "cellOld": [38.59, 16.0],
+   "space": [21, 27, 30],
+   "spaceNote": "2026-11-27 (design review T4): a wide sprite; his space is 1 px wider each side.",
+   "cellNote": "2026-11-27 (FT2, review of the town changes): he stood in the street (40 px deep) and his space left a slit 1 to 2 px wide under him, where the 10 px body of before left 14 px. He now stands a cell north-west, on the sand in front of his barrel with the wall at his back: the street keeps 18 px below his space and the path north stays open beside him.",
    "dialogueKey": "npc.forgemaster",
    "nameKey": "npc.forgemaster.name",
    "sheet": "town/npc/embersRest-forgemaster-4x3-64.png",
    "cell": [
-    38.59,
-    16.0
+    37.6,
+    15.0
    ],
    "mapsTs": [
     9,
@@ -82,12 +88,15 @@
   },
   {
    "id": "shopkeeper",
+   "cellOld": [47.0, 35.8],
+   "space": [6, 6, 6],
+   "spaceNote": "behind the painted counter: a small body that stays inside the counter (the counter itself keeps the hero a body away)",
    "dialogueKey": "npc.shopkeeper",
    "nameKey": "npc.shopkeeper.name",
    "sheet": "town/npc/embersRest-shopkeeper-4x3-64.png",
    "cell": [
-    47.0,
-    35.8
+    47.56,
+    36.6
    ],
    "_note": "behind the painted counter; the hero talks across it from shopCounter",
    "name": "Shopkeeper",

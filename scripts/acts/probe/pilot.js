@@ -20,7 +20,9 @@
   const log=[];
   function msgText(){const w=W();try{const t=w.messageText&&w.messageText.text;if(t)return t;}catch(e){}
     try{const el=document.querySelector('#qok-ui .msg, #qok-ui [class*="dialog"], #qok-ui [class*="msg"]');return el?el.innerText:'';}catch(e){return '';}}
-  async function dismiss(max=12){let n=0;const w=W();const seen=[];
+  // A Quest Complete card (ui-overhaul.js) holds her as a message box does: tap its button, as a player does.
+  const card=()=>{const c=document.getElementById('qok-quest-completion');if(c&&!c.hidden){const b=c.querySelector('button');if(b){b.click();return true;}}return false;};
+  async function dismiss(max=12){let n=0;const w=W();const seen=[];if(card())await wait(400);
     while(onField()&&w.showingMessage&&n<max){const t=(document.getElementById('qok-ui')||document.body).innerText.slice(0,0);seen.push(lastMsg());await tapKey('z');await wait(260);n++;}
     return seen;}
   let _hook=false,_msgs=[];
@@ -87,6 +89,7 @@
       if(performance.now()-T0>maxMs)return {ok:false,why:'timeout',steps,at:[w.heroTileX,w.heroTileY],pt:window.__PT};
       if(!onField())return {ok:false,why:'scene',steps};
       if(w.currentMapId!==m0||w.currentFloor!==f0)return {ok:true,why:'transition',steps};
+      if(card()){await wait(400);msgLoops++;if(msgLoops>25)return {ok:false,why:'msg-loop',msg:'quest card',steps};continue;}
       if(w.showingMessage){const t=lastMsg();await dismiss();msgLoops++;if(msgLoops>25)return {ok:false,why:'msg-loop',msg:t,steps,at:[w.heroTileX,w.heroTileY]};if(onMsg){const r=onMsg(t);if(r)return {ok:false,why:'msg',msg:t,steps};}continue;}
       if(overlay())return {ok:false,why:'overlay',steps};
       if(w.isMoving||w.tweens.isTweening(w.hero)){await wait(30);stuck++;if(stuck>200)return {ok:false,why:'isMoving-stuck',steps};continue;}

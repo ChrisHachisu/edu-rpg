@@ -1712,7 +1712,7 @@
    "joins": []
   }
  ],
- "staticObstacles": [],
+ "staticObstacles": [{"id": "well-sides", "kind": "well", "note": "2026-11-27 (design review T6): the well's own outline (rim arc, wall, base arc) widened by 8 px on the left and right, where the wall stands up. The traced base let her feet come to the stones' edge, and beside the well her sprite was then drawn over the wall. An oval, not a rectangle; the plate is untouched.", "polygon": [{"x": 480.4, "y": 585.6}, {"x": 485.1, "y": 576.6}, {"x": 498.1, "y": 570.0}, {"x": 515.8, "y": 567.6}, {"x": 533.5, "y": 570.0}, {"x": 546.5, "y": 576.6}, {"x": 551.2, "y": 585.6}, {"x": 551.2, "y": 606.4}, {"x": 546.5, "y": 615.4}, {"x": 533.5, "y": 622.0}, {"x": 515.8, "y": 624.4}, {"x": 498.1, "y": 622.0}, {"x": 485.1, "y": 615.4}, {"x": 480.4, "y": 606.4}]}],
  "dynamicBlockers": [],
  "landmarkAnchors": [],
  "semanticRoutes": [],

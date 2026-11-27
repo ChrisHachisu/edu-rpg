@@ -63,24 +63,30 @@
     },
     {
       "id": "villager2",
+      "cellOld": [41.31, 37.31],
+      "cellNote": "2026-11-27 (FT2, review of the town changes): he stood in the mouth of the lane that runs east from the plaza to the healer (58 px deep there), and a body's space round him and the fisherman together closed it: the walk from the gate to the healer went from 465 to 1218 px, round the north. He now stands on the plaza's cobbles at the west side of the well, 1.3 cells west and 1.7 north, with his whole space; the lane is open beside him.",
       "dialogueKey": "npc.villager2",
       "nameKey": "npc.villager2.name",
       "sheet": "town/npc/greenhollow-villager2-4x3-64.png",
       "cell": [
-        41.31,
-        37.31
+        40.0,
+        35.63
       ],
       "name": "Villager",
       "text": "Monsters roam outside the palisade now. Fight them and you will grow stronger, but run if a fight turns against you."
     },
     {
       "id": "fisherman",
+      "cellOld": [43.44, 39.12],
+      "cellNote": "2026-11-27 (FT2, review of the town changes): he stood in the middle of the same lane (42 to 50 px deep), which no body's space fits in. He now stands at the lane's north edge at the foot of the well (the only water the painting has), 2.1 cells west and 2.5 north, on the cobbles' first row; 24 px of lane stay open below his space.",
+      "space": [20, 27, 27],
+      "spaceNote": "2026-11-27 (FT2, review of the town changes): 3 px shorter to the south than a whole space (30), so the lane keeps 24 px below him; her feet stop 29 to 31 px south of his and the two sprites overlap by up to 3 px, inside the 4 px the checks allow everyone.",
       "dialogueKey": "npc.fisherman",
       "nameKey": "npc.fisherman.name",
       "sheet": "town/npc/greenhollow-fisherman-4x3-64.png",
       "cell": [
-        43.44,
-        39.12
+        41.31,
+        36.59
       ],
       "name": "Fisherman",
       "text": "The stream runs down to Millbrook, and the mill folk trade well. Long walk, though. Pack something to eat."

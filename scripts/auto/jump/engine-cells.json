@@ -1,0 +1,85 @@
+{
+ "note": "Written by scripts/auto/jump/calibrate.cjs from the running game; do not edit by hand.",
+ "generated": "2026-11-23T03:44:27.812Z",
+ "dungeons": {
+  "crystalCave": {
+   "floors": {
+    "1": {
+     "land": [
+      77,
+      33
+     ],
+     "up": [
+      76,
+      32
+     ],
+     "size": [
+      100,
+      100
+     ]
+    },
+    "2": {
+     "land": [
+      50,
+      61
+     ],
+     "up": [
+      49,
+      60
+     ],
+     "size": [
+      100,
+      100
+     ]
+    },
+    "3": {
+     "land": [
+      26,
+      23
+     ],
+     "up": [
+      26,
+      25
+     ],
+     "size": [
+      100,
+      100
+     ]
+    },
+    "4": {
+     "land": [
+      45,
+      70
+     ],
+     "up": [
+      44,
+      69
+     ],
+     "size": [
+      100,
+      100
+     ]
+    },
+    "5": {
+     "land": [
+      25,
+      19
+     ],
+     "up": [
+      26,
+      18
+     ],
+     "size": [
+      100,
+      100
+     ],
+     "boss": [
+      4,
+      41
+     ]
+    }
+   },
+   "bossFloor": 5
+  }
+ }
+}

@@ -90,6 +90,7 @@ class Run {
               for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const n = [cx + dx, cy + dy]; if (prev.has(n.join()) || B.tile(n[0], n[1]) === undefined) continue; if (!(n[0] === x && n[1] === y) && !pass(B.tile(n[0], n[1]))) continue; prev.set(n.join(), [cx, cy]); q.push(n); } }
             return null; }, [mx, my]);
           if (cells) for (let i = 1; i < cells.length; i++) path.push([cells[i][0] - cells[i - 1][0], cells[i][1] - cells[i - 1][1]]); }
+        await this.ev(() => window.__B.settle(600, 8000));   // a line left open on the isle (a save repair, a quest card) holds her
         let last = null; for (const d of path) { last = await step(d[0], d[1]); if (last[0] !== this.isle) break; await this.page.waitForTimeout(250); }
         r = { ok: !!last && last[0] === this.id, steps: path.length, last, mouth: m[0] };
       } }
@@ -129,9 +130,9 @@ class Run {
       if (!s.active) { await page.waitForTimeout(900); return Object.assign({ entered: true, won: !s.over, rounds: roundsN, monster }, s.over ? { dmg: await dmg() } : {}); }
       monster = monster || s.mon;
       if (s.phase === 'playerMenu') { await tap('[data-act="battleMenu"][data-i="0"]'); await page.waitForTimeout(500); }
-      else if (/quiz/i.test(String(s.phase)) || (await page.evaluate(() => { const e = document.querySelector('[data-act="quizAns"]'); return !!(e && e.offsetParent !== null); }))) {
+      else if (/quiz/i.test(String(s.phase)) || (await page.evaluate(() => { const e = document.querySelector('#qok-ui .kpad, [data-act="quizAns"]'); return !!(e && e.offsetParent !== null); }))) {
         const idx = await page.evaluate(() => { const b = window.__PHASER_GAME__.scene.getScene('BattleScene'); const a = (b.quizQuestion && b.quizQuestion.answers) || []; return a.findIndex(x => !!x.isCorrect); }); roundsN++;
-        if (idx < 0) await page.waitForTimeout(500); else { await tap(`[data-act="quizAns"][data-i="${idx}"]`); await page.waitForTimeout(800); } }
+        if (idx < 0) await page.waitForTimeout(500); else { for (const qs of await L.quizTaps(page, idx)) await tap(qs); await page.waitForTimeout(800); } }
       else if (s.phase === 'message') { const t = await tap('[data-act="battleAdvance"]', 1500); if (!t) await page.mouse.click(195, 600).catch(() => {}); await page.waitForTimeout(450); }
       else { await page.waitForTimeout(300); await tap('[data-act="battleAdvance"]', 400); }
     }
@@ -178,7 +179,7 @@ class Run {
   async exitByBossCell(asset) {
     const page = this.page; let how = '';
     const t = await this.ev(([x, y]) => window.__B.tile(x, y), [asset.x, asset.y]); how = 'boss-cell tile ' + t;
-    await page.waitForTimeout(400);
+    await this.ev(() => window.__B.settle());   // a quest that ends with the boss says so first
     const s = await this.st(); await this.ev(([vx, vy]) => window.__B.push(vx, vy, 1500), [(asset.x + .5) * CELL - s.hx, (asset.y + .5) * CELL - s.hy]);
     await page.waitForTimeout(600);
     if ((await this.ev(() => window.__PHASER_GAME__.scene.getScene('WorldMapScene').currentMapId)) === this.id) { how += ' -> walked into it'; await this.pilot(); await this.go({ centre: [asset.x, asset.y] }, { hold: 900 }); }

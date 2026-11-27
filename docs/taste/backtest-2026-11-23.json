@@ -1,0 +1,57 @@
+{
+ "date": "2026-11-23",
+ "guide": "holdout: rulings before 2026-11-03",
+ "cases": 30,
+ "correct": 30,
+ "recorded_alt_cases": 19,
+ "recorded_alt_correct": 19,
+ "rule_based": [
+  18,
+  18
+ ],
+ "guess": [
+  12,
+  12
+ ],
+ "by_area": {
+  "dungeon-mechanic": [
+   10,
+   10
+  ],
+  "puzzle-feel": [
+   5,
+   5
+  ],
+  "dungeon-layout": [
+   3,
+   3
+  ],
+  "screens": [
+   7,
+   7
+  ],
+  "difficulty": [
+   2,
+   2
+  ],
+  "direction": [
+   2,
+   2
+  ],
+  "overworld-art": [
+   1,
+   1
+  ]
+ },
+ "misses": [],
+ "baseline_no_guide": {
+  "correct": 29,
+  "cases": 30,
+  "recorded_alt_correct": 18,
+  "misses": [
+   "D13"
+  ],
+  "note": "options shuffled; predictor saw no guide"
+ },
+ "verdict": "INVALID AS EVIDENCE. With the guide: 30/30. With no guide at all: 29/30. The cases leak the answer through option wording (the chosen option is written in the owner's own words; foils are plainly worse), so this run says nothing about the guide. Redo with options written by an agent that does not know the answer, equal length and detail, and with the real mockup images where they exist; or rely on forward predict-then-check."
+}

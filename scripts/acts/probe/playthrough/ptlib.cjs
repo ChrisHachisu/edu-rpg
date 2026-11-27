@@ -39,8 +39,11 @@ const HELP = () => {
   function plan(goal, step = 4, clear = 6) {
     const f = frame(); const t = f.contentWindow.__ACT1_TOWN__, p = t.position(), Wd = Math.ceil(t.town.cells * t.town.worldPxPerCell / step);
     const inside = (x, y) => t.isInsideWalkable({ x, y }), memo = new Map();
+    // Right beside the goal (a person's body, a counter) there is no room to keep: the clearance is waived within 16 px of
+    // it, and kept everywhere else, so one tight spot at the end does not send the whole route along the walls.
+    const nearGoal = (x, y) => { for (const d of [0, 8, 16]) for (const [a, b] of [[d, 0], [-d, 0], [0, d], [0, -d], [d, d], [d, -d], [-d, d], [-d, -d]]) if (goal(x + a, y + b)) return true; return false; };
     const ok = (gx, gy) => { if (gx < 0 || gy < 0 || gx >= Wd || gy >= Wd) return false; const k = gx * 100000 + gy; let v = memo.get(k); if (v !== undefined) return v; const x = gx * step, y = gy * step;
-      v = inside(x, y) && (!clear || (inside(x + clear, y) && inside(x - clear, y) && inside(x, y + clear) && inside(x, y - clear))); memo.set(k, v); return v; };
+      v = inside(x, y) && (!clear || (inside(x + clear, y) && inside(x - clear, y) && inside(x, y + clear) && inside(x, y - clear)) || nearGoal(x, y)); memo.set(k, v); return v; };
     const sx = Math.round(p.x / step), sy = Math.round(p.y / step), prev = new Map(), q = [[sx, sy]]; prev.set(sx + ',' + sy, null);
     for (let i = 0; i < q.length && i < 200000; i++) { const [x, y] = q[i];
       if (goal(x * step, y * step)) { const out = []; let k = x + ',' + y; while (k) { const [a, b] = k.split(',').map(Number); out.push([a * step, b * step]); k = prev.get(k); } return out.reverse(); }
@@ -68,10 +71,22 @@ const HELP = () => {
   async function walkToNpc(id) {
     const f = frame(); if (!f) return { ok: false, why: 'no town' }; const t = f.contentWindow.__ACT1_TOWN__, n = t.npcs.find(n => n.id === id); if (!n) return { ok: false, why: 'no npc ' + id, npcs: t.npcs.map(n => n.id) };
     const C = t.town.worldPxPerCell;
-    const r = await townWalk((x, y) => Math.abs(x - n.point.x) <= C * 0.6 && y - n.point.y >= C * 0.45 && y - n.point.y <= C * 1.6);
-    if (r.ok || r.why !== 'nopath') return r;
+    // The band is the town's own (town.html inTalkBand / talkTargetAt, 2026-11-27: a person now keeps a body's space, so the
+    // band's numbers moved, and two people standing close share ground where the nearer one takes the Talk); a build
+    // without them has the numbers of before. She "arrives" within 3 px of the planned point, so a goal point must still
+    // be hers 5 px away on every side.
+    const mine = typeof t.talkTargetAt === 'function' ? (x, y) => t.talkTargetAt({ x, y }) === id : typeof t.inTalkBand === 'function' ? (x, y) => t.inTalkBand(id, { x, y }) : null;
+    const band = mine ? (x, y) => mine(x, y) && mine(x - 5, y) && mine(x + 5, y) && mine(x, y - 5) && mine(x, y + 5) : null;
+    const r = await townWalk((x, y) => Math.abs(x - n.point.x) <= C * 0.6 && y - n.point.y >= C * 0.45 && (band ? band(x, y) : y - n.point.y <= C * 1.6));
+    // FT2 (2026-11-27): the result says which tier found the goal, and each walk logs it. `middle`: the comfortable middle
+    // of the band; `band`: anywhere in it with 5 px of room; `sliver`: a single point where Talk names her, which a child
+    // cannot find. The story robot counts a sliver as a FAIL (talk() and heal() below); so does town-looks.cjs.
+    const done = (res, tier) => { const out = { ...res, tier }; try { console.log(`[PTH] walkToNpc ${id}: tier ${tier}, ${res.ok ? 'ok' : 'not ok'} (${res.why})`); } catch (e) {} return out; };
+    if (r.ok || r.why !== 'nopath') return done(r, 'middle');
     // nothing in the comfortable middle of the band: anywhere in town.html's own band (|dx| <= 1.1, dy -0.35..2.1 cells)
-    return townWalk((x, y) => Math.abs(x - n.point.x) <= C * 1.0 && y - n.point.y >= C * -0.25 && y - n.point.y <= C * 2.0);
+    const r2 = await townWalk((x, y) => band ? band(x, y) : (Math.abs(x - n.point.x) <= C * 1.0 && y - n.point.y >= C * -0.25 && y - n.point.y <= C * 2.0));
+    if (r2.ok || r2.why !== 'nopath' || !mine) return done(r2, 'band');
+    return done(await townWalk(mine), 'sliver');     // a sliver of a band: any point of it
   }
   async function walkToCell(cx, cy, r = 0.5) { const f = frame(); if (!f) return { ok: false, why: 'no town' }; const C = f.contentWindow.__ACT1_TOWN__.town.worldPxPerCell; return townWalk((x, y) => Math.hypot(x - cx * C, y - cy * C) <= r * C); }
   const pressTalk = () => { fkey('keydown', 'Enter'); fkey('keyup', 'Enter'); };
@@ -134,7 +149,8 @@ class Session {
   async travel(doorName, { s = null } = {}) { const d = door(doorName); const sv = s || await this.capture(); sv.player.position = { mapId: 'overworld', x: d.exit[0], y: d.exit[1], floor: 1 };
     await this.boot(sv); await L.noEncounters(this.page); const p = await L.pos(this.page);
     this.rec(`fast travel to ${d.name}: Continue lands on its exit cell`, p.map === 'overworld' && p.x === d.exit[0] && p.y === d.exit[1], [p.map, p.x, p.y]); return d; }
-  async walkInto(doorName, { maxMs = 25000 } = {}) { const d = door(doorName); const r = await L.walkCells(this.page, [d.at], { maxMs }); await this.page.waitForTimeout(1500); return r; }
+  async walkInto(doorName, { maxMs = 25000 } = {}) { const d = door(doorName); if ((await this.st()).msg) await this.dismissAll();   // a line left open (a save repair, a quest) holds her
+    const r = await L.walkCells(this.page, [d.at], { maxMs }); await this.page.waitForTimeout(1500); return r; }
   async enterTown(doorName) {
     const d = door(doorName), id = d.virtual || d.mapId;
     const r = await this.walkInto(doorName);
@@ -156,8 +172,9 @@ class Session {
     await page.waitForTimeout(600); lines = lines.concat(await this.dismissAll());
     const log = await this.ev(() => window.__PTH.log().map(m => m.t)); const after = await this.st();
     const started = after.active.filter(q => !before.active.includes(q)), finished = after.done.filter(q => !before.done.includes(q));
-    const ok = g.ok && near === npc && (log.length > 0 || lines.length > 0) && (!want || want(after, { started, finished, log }));
-    this.rec(`talks to ${label}` + (want ? ' (story step)' : ''), ok, { walk: g.why, near, started, finished, shown: lines.map(t => t.slice(0, 200)) });
+    // a walk that only found a one-point sliver of the band is a FAIL: the robot can stand on one point, a child cannot (FT2, 2026-11-27)
+    const ok = g.ok && g.tier !== 'sliver' && near === npc && (log.length > 0 || lines.length > 0) && (!want || want(after, { started, finished, log }));
+    this.rec(`talks to ${label}` + (want ? ' (story step)' : ''), ok, { walk: g.why, tier: g.tier, near, started, finished, shown: lines.map(t => t.slice(0, 200)) });
     return { ok, log, lines, started, finished, after };
   }
   async townSave() {
@@ -177,7 +194,7 @@ class Session {
     const gold0 = (await this.st()).gold; await this.ev(() => window.__PTH.pressTalk()); await page.waitForTimeout(1000);
     for (let i = 0; i < 6; i++) { const o = await this.ev(() => !!window.__PHASER_GAME__.scene.getScene('WorldMapScene').healerOverlayOpen); if (!o) break; await this.ev(() => window.__P.tapKey('z')); await page.waitForTimeout(500); }
     const lines = await this.dismissAll(); const s = await this.st();
-    this.rec('the healer restores her (inn/healer service)', g.ok && s.hp === s.maxHp, { walk: g.why, hp: [s.hp, s.maxHp], gold: [gold0, s.gold], lines });
+    this.rec('the healer restores her (inn/healer service)', g.ok && g.tier !== 'sliver' && s.hp === s.maxHp, { walk: g.why, tier: g.tier, hp: [s.hp, s.maxHp], gold: [gold0, s.gold], lines });
   }
   async leaveTown() {
     const page = this.page; await this.dismissAll(); const s0 = await this.st(); const ex = s0.town && s0.town.exit; if (!ex) return false;
@@ -206,9 +223,9 @@ class Session {
       if (!s.active) { await page.waitForTimeout(900); const over = await page.evaluate(() => window.__PHASER_GAME__.scene.isActive('GameOverScene')); return { entered: true, won: !over, lost: over, rounds, monster }; }
       monster = monster || s.mon;
       if (s.phase === 'playerMenu') { await tap('[data-act="battleMenu"][data-i="0"]'); await page.waitForTimeout(500); }
-      else if (/quiz/i.test(String(s.phase)) || (await page.evaluate(() => { const e = document.querySelector('[data-act="quizAns"]'); return !!(e && e.offsetParent !== null); }))) {
+      else if (/quiz/i.test(String(s.phase)) || (await page.evaluate(() => { const e = document.querySelector('#qok-ui .kpad, [data-act="quizAns"]'); return !!(e && e.offsetParent !== null); }))) {
         const idx = await page.evaluate(lose => { const b = window.__PHASER_GAME__.scene.getScene('BattleScene'); const a = (b.quizQuestion && b.quizQuestion.answers) || []; return lose ? a.findIndex(x => !x.isCorrect) : a.findIndex(x => !!x.isCorrect); }, lose); rounds++;
-        if (idx < 0) await page.waitForTimeout(500); else { await tap(`[data-act="quizAns"][data-i="${idx}"]`); await page.waitForTimeout(800); } }
+        if (idx < 0) await page.waitForTimeout(500); else { for (const qs of await L.quizTaps(page, idx)) await tap(qs); await page.waitForTimeout(800); } }
       else if (s.phase === 'message') { const t = await tap('[data-act="battleAdvance"]', 1500); if (!t) await page.mouse.click(195, 600).catch(() => {}); await page.waitForTimeout(450); }
       else { await page.waitForTimeout(300); await tap('[data-act="battleAdvance"]', 400); }
     }
@@ -228,7 +245,33 @@ class Session {
       const r = await this.ev(() => window.__P.solveFloor({ free: true, lava: true })).catch(e => ({ ok: false, why: 'threw ' + String(e).slice(0, 200) }));
       log.push(`f${f0}:` + r.why + (r.notes ? ' ' + r.notes.slice(-3).join(';').slice(0, 200) : ''));
       await page.waitForTimeout(1500); await this.inject();
-      if (!r.ok && r.why !== 'scene') { const s2 = await this.st(); if (s2.map === id && s2.floor === f0 && !s2.scenes.includes('BattleScene') && !s2.msg) { log.push('STUCK ' + JSON.stringify(r).slice(0, 400)); break; } }
+      if (!r.ok && r.why !== 'scene') { const s2 = await this.st(); if (s2.map === id && s2.floor === f0 && !s2.scenes.includes('BattleScene') && !s2.msg) {
+        // no path right after arriving: the floor's walk mask may still be loading on a busy machine; wait and look again
+        if (r.why === 'nopath') { if (!this._nopath) this._nopath = {}; const kN = id + f0; this._nopath[kN] = (this._nopath[kN] || 0) + 1; if (this._nopath[kN] <= 3) { log.push('nopath-wait'); await page.waitForTimeout(4000); await this.inject(); continue; } }
+        // she can end up standing on the boss without the bump having started the fight: the game then offers its Battle pill
+        const pill = page.locator('#a1mInteract.a1m-show').first();
+        if (!this._pills) this._pills = 0;
+        if (this._pills < 6 && (await pill.boundingBox().catch(() => null))) { this._pills++; const txt = await pill.textContent().catch(() => ''); await pill.tap({ timeout: 3000 }).catch(() => {}); await page.waitForTimeout(1200); log.push('pill:' + txt); continue; }
+        // the solver's bump on a boss is marginal (it pushes from one side only): walk to each open side of the boss in turn,
+        // lean on it, and take the game's Battle pill if the lean alone did not start the fight
+        if (!this._sides) this._sides = {};
+        const bossAt = await this.ev(() => { const w = window.__PHASER_GAME__.scene.getScene('WorldMapScene'), md = w.mapData; for (let y = 0; y < md.length; y++) for (let x = 0; x < md[y].length; x++) if (md[y][x] === 7) return [x, y]; return null; });
+        const kS = id + f0; this._sides[kS] = this._sides[kS] || 0;
+        if (bossAt && this._sides[kS] < 2) { this._sides[kS]++; let started = false;
+          // the game's bump looks 24 px ahead of her SOLES (about 31 px under the sprite centre): lean from the soles toward the boss tile
+          const lean = () => this.ev(async ([bx, by]) => { const w = window.__PHASER_GAME__.scene.getScene('WorldMapScene'), t0 = performance.now();
+            while (performance.now() - t0 < 900 && !w.showingMessage && window.__PHASER_GAME__.scene.isActive('WorldMapScene')) { const vx = bx * 48 + 24 - w.hero.x, vy = by * 48 + 24 - (w.hero.y + 31), l = Math.hypot(vx, vy) || 1;
+              window.__DQ_STICK__ = { x: vx / l, y: vy / l, m: 1 }; await new Promise(r => requestAnimationFrame(r)); }
+            window.__DQ_STICK__ = { x: 0, y: 0, m: 0 }; }, bossAt);
+          const tryNow = async tag => { await lean(); await page.waitForTimeout(300);
+            if (await pill.boundingBox().catch(() => null)) { await pill.tap({ timeout: 3000 }).catch(() => {}); await page.waitForTimeout(800); }
+            const s3 = await this.st(), on = s3.msg || s3.scenes.includes('BattleScene') || s3.map !== id; log.push(`${tag}:${on ? 'started' : '-'}`); return on; };
+          for (let j = 0; j < 2 && !started; j++) started = await tryNow('lean');
+          for (const [dx, dy] of [[0, 1], [1, 0], [-1, 0], [0, -1]]) { if (started) break;
+            await this.ev(([x, y]) => window.__P.fineWalk(x, y, { bump: false, maxMs: 30000 }).catch(e => ({ ok: false, why: String(e).slice(0, 80) })), [bossAt[0] + dx, bossAt[1] + dy]);
+            started = await tryNow(`side:${dx},${dy}`); }
+          if (started) continue; }
+        log.push('STUCK ' + JSON.stringify(r).slice(0, 400)); break; } }
     }
     const end = await this.st();
     return { end: { map: end.map, floor: end.floor, x: end.x, y: end.y }, boss, log };

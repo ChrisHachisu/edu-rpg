@@ -56,11 +56,11 @@
      var(--sa-bottom) the parent posts in, for the same reason #dialogue uses it: env() resolves to
      0 inside this same-origin iframe. */
   #prompt { position: absolute; left: 50%;
-    bottom: calc(260px + var(--sa-bottom, env(safe-area-inset-bottom, 0px)));
+    bottom: calc(260px + var(--sa-bottom, env(safe-area-inset-bottom, 0px)) + var(--prompt-lift, 0px));
     transform: translateX(-50%);
     padding: 10px 20px; border-radius: 999px; background: rgba(8,14,20,.82);
     border: 1px solid rgba(150,200,230,.34); color: #dcecf7; font-size: 15px;
-    white-space: nowrap; opacity: 0; transition: opacity .12s ease; pointer-events: none;
+    white-space: nowrap; opacity: 0; transition: opacity .12s ease, bottom .12s ease; pointer-events: none;
     touch-action: manipulation; z-index: 12; }
   /* Hit-target only while visible: an invisible pill must never swallow a tap meant for the map. */
   #prompt[data-show="true"] { opacity: 1; pointer-events: auto; }
@@ -167,12 +167,14 @@ const townId = search.get('town') || 'portSapphire';
 // postTownChrome(): env() cannot be trusted inside this iframe, so the parent measures and
 // posts. Registered before the awaits below so nothing is missed while the town loads.
 let townInputReady = false;
+let saBottomPx = 0;   // the real bottom inset, as posted by the parent (placePrompt() needs the pill's home in px)
 addEventListener('message', event => {
   const d = event.data;
   if (!d || d.type !== 'act1-town-chrome' || event.source !== parent) return;
   document.body.dataset.ctrl = d.ctrl === 'left' || d.ctrl === 'center' ? d.ctrl : 'right';
   const s = document.documentElement.style;
-  s.setProperty('--sa-bottom', (Number(d.safeBottom) || 0) + 'px');
+  saBottomPx = Number(d.safeBottom) || 0;
+  s.setProperty('--sa-bottom', saBottomPx + 'px');
   s.setProperty('--sa-left', (Number(d.safeLeft) || 0) + 'px');
   s.setProperty('--sa-right', (Number(d.safeRight) || 0) + 'px');
   // The PARENT's message box is a text box too, and the town could not see it. Its own controls
@@ -206,12 +208,87 @@ const walkable = await fetch(`./${town.walkable}`).then(r => r.json());
 // Computed from `town.worldPxPerCell` inline rather than through cellToWorld(): validation has to
 // run before the renderer's own constants exist, so that helper is not defined yet at this point in
 // the file and calling it here would throw on its temporal dead zone.
-const NPC_BLOCK_RADIUS = 7, NPC_CELL_W = town.worldPxPerCell;
+// M16 (census 2026-11-23): with the 7 px disc her feet stopped 11 px from an NPC's, so walking up
+// to talk stacked the two sprites (36 world px tall). The NPC's body is now a short capsule running
+// from her feet 7 px SOUTH, 10 px half-width: the hero (foot radius 4) stops 21 px south of the
+// NPC's feet (inside the 33.6 px talk band, her head just reaching the NPC's feet), 14 px to either
+// side (still inside the 17.6 px band), and 14 px north. Reachability of every NPC band, service
+// spot and the exit is guarded by scripts/auto/checks/field-town-reach.cjs. An NPC standing in a
+// passage too narrow for that body carries `body: [halfWidth, south]` in her town json (with a
+// `bodyNote`), so she never closes the way past her. Old disc everywhere: qok-f2-old=npcbody.
+const F2_OLD = (() => { let v = ''; try { v = localStorage.getItem('qok-f2-old') || ''; } catch (e) {}
+  try { v += ',' + (new URLSearchParams(location.search).get('f2old') || ''); } catch (e) {}
+  return name => v.split(',').some(s => s.trim() === 'all' || s.trim() === name); })();
+const NPC_BLOCK_RADIUS = F2_OLD('npcbody') ? 7 : 10, NPC_BODY_SOUTH = F2_OLD('npcbody') ? 0 : 7, NPC_CELL_W = town.worldPxPerCell;
+// Sideways talk reach in cells. With the 10 px body she stops 14.5 px beside a person, and the old 1.1 cells (14.5 px) put that
+// spot exactly on the edge of the band: where the south side is closed (the Last Bastion and Cinderwatch healers stand behind
+// their stalls) a hero half a pixel off pressed Talk and nothing happened (2026-11-26). 1.5 cells leaves about 5 px of room.
+// The wider reach holds only while she stands level with the person (no more than one cell south of her feet; beside her body she stands 0.6 to 0.7 cells south): further south
+// the band stays 1.1 cells, or a shopkeeper behind a counter would take the prompt from the shop spot in front of it.
+// T4 (design review 2026-11-27, day 1 M16 again): with the 10 px body her feet stopped 21 px south of a person's and 14 px
+// beside them, and the two 36 px sprites still overlapped by a third to half a body. Owner ruling: the hero stays fully
+// visible and is not drawn over the person. Each person now keeps a SPACE the size of the two sprites together: her feet
+// stop 34 px south of theirs (her head at their feet), 24 px to either side (the sprites' edges meet) and 31 px north (so
+// she cannot stand half hidden behind them). The space is `NPC_SPACE` = [half-width, north, south] world px around the
+// person's feet with corners rounded to `NPC_SPACE_R`, built from a row of capsules side by side so the walkable authority
+// slides her round it exactly as it slides her round the old single capsule. The talk band grows with it (side 2.3 cells
+// while she is no more than 1.8 cells south, 2.7 cells south) so Talk shows wherever she touches the space, with 9 to 13 px
+// of room (the healer fix of 2026-11-26 needs that room: beside a stall there is only the side to stand on).
+// A person standing where that space would close the way past carries her own `space` in the town json (with a
+// `spaceNote`); a shopkeeper behind a painted counter carries a small one that stays inside the counter.
+// scripts/auto/checks/field-town-reach.cjs guards every band, spot, exit and the "no path closed" rule.
+// Old 10 px body and bands: qok-f2-old=npcspace (the 7 px disc of before that is still qok-f2-old=npcbody).
+const NPC_SPACE_ON = !F2_OLD('npcbody') && !F2_OLD('npcspace');
+const NPC_SPACE = [20, 27, 30], NPC_SPACE_R = 7;
+const NPC_TALK_SIDE = F2_OLD('npcbody') ? 1.1 : NPC_SPACE_ON ? 2.3 : 1.5, NPC_TALK_SIDE_DY = NPC_SPACE_ON ? 1.8 : 1.0;
+const NPC_TALK_SOUTH = NPC_SPACE_ON ? 2.7 : 2.1;
+// FT2 (review of 2026-11-27, item 5): round the two south corners of a person's space she stands further than 1.8 cells south
+// and up to 1.4 cells to the side, and the band below 1.8 cells was still the 1.1 cells of before: no Talk at either corner
+// (4 of the 41 directions she can stand in). The band is 1.7 cells wide down to 2.4 cells south: the foot of a space is
+// 2.15 cells south and 1.6 cells would do for most, but the drake's space is 3 px wider each side, and a `spacePlug` ends
+// up to 4 px below its person's space. Further south it stays 1.1, so a keeper behind a counter (`talkReach`) still does
+// not reach round the shop spot.
+const NPC_TALK_CORNER = NPC_SPACE_ON ? 1.7 : 1.1, NPC_TALK_CORNER_DY = NPC_SPACE_ON ? 2.4 : 0;
+const NPC_NEAR_KX = NPC_SPACE_ON ? (NPC_SPACE[2] + 4) / (NPC_SPACE[0] + 4) : 1;   // see nearestNpc()
+// T3: a shopkeeper who was drawn standing on her stall now stands at the counter (`cell`), her legs behind the counter's
+// front (`town.occluders`, see draw()). The cell and talk reach of before are kept as `cellOld` / `talkReachOld`:
+// qok-f2-old=shopband puts her back and drops the band.
+const SHOPBAND_ON = !F2_OLD('shopband');
+// T7 / T4 / T10 (same review): a few people and Port Sapphire's save spot moved a step (off scenery, out of a street's
+// mouth, apart from each other); their places of before are `cellOld` / `savePointOld`: qok-f2-old=townplace.
+const PLACE_OLD = F2_OLD('townplace');
+const npcCell = n => Array.isArray(n.cellOld) && (n.id === 'shopkeeper' ? !SHOPBAND_ON : PLACE_OLD) ? n.cellOld : n.cell;
+// FT2 (item 4): a person put back at her place of before (qok-f2-old=townplace) has the body of before there too. Several
+// moved BECAUSE a body's space did not fit where they stood: with the switch alone the new space at the old cell closed
+// Ironkeep's west street and Ruins Camp's north path.
+const npcAtOld = n => PLACE_OLD && n.id !== 'shopkeeper' && Array.isArray(n.cellOld);
+const walkableBare = { ...walkable, dynamicBlockers: [...(walkable.dynamicBlockers || [])] };   // the town without its people
 walkable.dynamicBlockers = [
   ...(walkable.dynamicBlockers || []),
-  ...town.npcs.map(n => {
-    const point = { x: n.cell[0] * NPC_CELL_W, y: n.cell[1] * NPC_CELL_W };
-    return { id: `npc-${n.id}`, from: point, to: point, halfWidth: NPC_BLOCK_RADIUS };
+  ...town.npcs.flatMap(n => {
+    const cell = npcCell(n), point = { x: cell[0] * NPC_CELL_W, y: cell[1] * NPC_CELL_W };
+    if (NPC_SPACE_ON && !npcAtOld(n)) {
+      // one shape = [half-width, north, south, corner radius (default NPC_SPACE_R)]. `spaceAlso` (town json) is a second shape
+      // for the same person: in a lane her `space` is cut short to keep the way open, and `spaceAlso` is the body she had
+      // before (10 px round, 7 px south), so the hero never comes nearer to her than she did.
+      // FT2 (item 3): `spacePlug` (town json) closes a slit: where a space ends a few px short of a wall, the strip between
+      // them was a way through too narrow to find (and a longer way round exists). One plug = [dx, dy0, dy1, half-width]:
+      // an upright bar, world px from her feet. Nobody moves and nothing is drawn; scripts/auto/checks/field-town-reach.cjs
+      // ("no slit beside a person", "no walk is more than 1.15 times as long") guards them.
+      const plugs = (Array.isArray(n.spacePlug) ? n.spacePlug : []).map(([dx, dy0, dy1, hw], pi) =>
+        ({ id: `npc-${n.id}-plug${pi}`, from: { x: point.x + dx, y: point.y + dy0 }, to: { x: point.x + dx, y: point.y + dy1 }, halfWidth: hw }));
+      return [...plugs, ...[Array.isArray(n.space) ? n.space : NPC_SPACE, ...(Array.isArray(n.spaceAlso) ? [n.spaceAlso] : [])].flatMap(([hw, north, south, rr], si) => {
+        const r = Math.min(rr ?? NPC_SPACE_R, hw), off = hw - r;
+        const y0 = point.y - Math.max(0, north - r), y1 = point.y + Math.max(0, south - r);
+        // capsules no further apart than their own width, so the row is solid to within 2 px (two 7 px ones 26 px apart left a gap she walked into)
+        const k = off > 0 ? Math.ceil(off / r) + 1 : 1;
+        return Array.from({ length: k }, (_, i) => { const o = k > 1 ? -off + 2 * off * i / (k - 1) : 0;
+          return { id: `npc-${n.id}${si ? '-also' : ''}${i ? '-' + i : ''}`, from: { x: point.x + o, y: y0 }, to: { x: point.x + o, y: y1 }, halfWidth: r }; });
+      })];
+    }
+    const own = !F2_OLD('npcbody') && Array.isArray(n.body) ? n.body : null;
+    const half = own ? own[0] : NPC_BLOCK_RADIUS, south = own ? own[1] : NPC_BODY_SOUTH;
+    return [{ id: `npc-${n.id}`, from: point, to: { x: point.x, y: point.y + south }, halfWidth: half }];
   }),
 ];
 validateWalkableGeometry(walkable);
@@ -283,7 +360,8 @@ const cellToWorld = c => ({ x: c[0] * CELL_W, y: c[1] * CELL_W });
 // NPC sheets are 3 cols x 4 rows of 64. The owner made these stationary, so only column 0 /
 // row 0 -- the front-facing idle -- is ever drawn; the other rows exist but are unused.
 const NPC_FRAME = 64;
-const npcs = town.npcs.map((n, i) => ({ ...n, sheet: npcSheets[i], point: cellToWorld(n.cell) }));
+const npcs = town.npcs.map((n, i) => ({ ...n, cell: npcCell(n), sheet: npcSheets[i], point: cellToWorld(npcCell(n)),
+  talkReach: (!SHOPBAND_ON && n.talkReachOld !== undefined) ? n.talkReachOld : n.talkReach }));
 
 const camera = { x: 0, y: 0, zoom: 1 };
 function resize() {
@@ -440,6 +518,16 @@ const firstEntry = search.get('first') === '1' && Boolean(town.firstEntryCell);
 const startCell = atParam.length === 2 && atParam.every(Number.isFinite)
   ? atParam : (firstEntry ? town.firstEntryCell : town.startCell);
 let position = cellToWorld(startCell);
+// T4: a start that is legal ground but inside a person's space (the opening in front of the elder, a save made beside
+// someone before the space grew) steps straight out of it, south first, instead of falling back to the gate.
+if (!isInsideWalkable(position, walkable) && isInsideWalkable(position, walkableBare)) {
+  search: for (let r = 2; r <= 48; r += 2) {
+    for (const a of [90, 60, 120, 30, 150, 0, 180, -30, -150, -60, -120, -90]) {
+      const p = { x: position.x + r * Math.cos(a * Math.PI / 180), y: position.y + r * Math.sin(a * Math.PI / 180) };
+      if (isInsideWalkable(p, walkable)) { position = p; break search; }
+    }
+  }
+}
 if (!isInsideWalkable(position, walkable)) {
   // A malformed, stale, or blocked saved `?at=` must not make the town fail to boot. First return
   // to the authored spawn for this kind of entry, then use the old northward probe as its final
@@ -519,7 +607,7 @@ const EXIT_FADE_MS = 300;
 // flow -- so she is resolved here rather than in nearestNpc().
 const services = [
   { kind: 'shop', cell: town.shopCounter, label: 'Shop' },
-  { kind: 'save', cell: town.savePoint, label: 'Save' },
+  { kind: 'save', cell: PLACE_OLD && Array.isArray(town.savePointOld) ? town.savePointOld : town.savePoint, label: 'Save' },
 ].filter(s => Array.isArray(s.cell));
 function nearestService() {
   let best = null;
@@ -532,13 +620,24 @@ function nearestService() {
   return best;
 }
 
-function nearestNpc() {
+// Whether a hero standing at `p` is inside `npc`'s talk band. One copy of the rule: nearestNpc() below, and the test
+// walkers through __ACT1_TOWN__.inTalkBand (they used to carry their own copy of these numbers).
+function inTalkBand(npc, p) {
+  // Approach is from the SOUTH by owner rule, so the band that counts is below the NPC.
+  const dx = p.x - npc.point.x, dy = p.y - npc.point.y;
+  // `talkReach` (cells, town json): a person standing BEHIND a painted counter is talked to across
+  // it, from the counter's front (explorer X04: Ruins Camp, Oasis Haven, Last Bastion shopkeepers).
+  return !(Math.abs(dx) > CELL_W * (dy <= CELL_W * NPC_TALK_SIDE_DY ? NPC_TALK_SIDE : dy <= CELL_W * NPC_TALK_CORNER_DY ? NPC_TALK_CORNER : 1.1) || dy < -CELL_W * 0.35 || dy > CELL_W * (npc.talkReach ?? NPC_TALK_SOUTH));
+}
+function nearestNpc(at = position) {
   let best = null;
   for (const npc of npcs) {
-    // Approach is from the SOUTH by owner rule, so the band that counts is below the NPC.
-    const dx = position.x - npc.point.x, dy = position.y - npc.point.y;
-    if (Math.abs(dx) > CELL_W * 1.1 || dy < -CELL_W * 0.35 || dy > CELL_W * 2.1) continue;
-    const d = Math.hypot(dx, dy);
+    const dx = at.x - npc.point.x, dy = at.y - npc.point.y;
+    if (!inTalkBand(npc, at)) continue;
+    // T4: nearness is measured against the space she stops at (34 px below a person, 24 px beside): with the plain
+    // distance a hero who had walked straight up to one of two people standing close was offered the other one,
+    // because beside is nearer than below (Greenhollow: the villager and the fisherman).
+    const d = Math.hypot(dx * NPC_NEAR_KX, dy);
     if (!best || d < best.d) best = { npc, d };
   }
   return best?.npc ?? null;
@@ -627,6 +726,33 @@ function interact() {
 
 // ---- draw ---------------------------------------------------------------------------------------
 const artScale = WORLD / screenArt.naturalWidth;   // 1885 art px -> 1040 world px
+// T3 (design review 2026-11-27): COUNTER BANDS. `town.occluders` lists pieces of the plate that stand IN FRONT of a person:
+// the front of a shop counter, traced along its painted top edge (`polygon`, cells). Each is drawn again from the SAME plate
+// pixels at the SAME place, clipped to that outline, in the painter's order at `baseY` (cells), a line just south of the
+// feet of the person it covers: right after the shopkeeper (so the counter covers her legs and she shows from the waist
+// up) and before anyone standing further south. The hero has no ground north of that line near a counter, so the band
+// never covers her (field-town-reach.cjs proves it for every reachable point; with the line at the counter's foot a hero
+// pressed against Last Bastion's counter stood 0.6 px north of it and vanished behind the band). No new art and nothing is cut or
+// moved in the plate: where no person stands behind it the redraw changes no pixel. This is what the Greenhollow fence
+// layer does with a separate file; here the clip outline does it, so the layer cannot drift from the plate.
+const occluders = (SHOPBAND_ON ? town.occluders || [] : [])
+  .filter(o => Array.isArray(o.polygon) && o.polygon.length >= 3 && Number.isFinite(o.baseY))
+  .map(o => {
+    const path = new Path2D();
+    o.polygon.forEach((c, i) => (i ? path.lineTo(c[0] * CELL_W, c[1] * CELL_W) : path.moveTo(c[0] * CELL_W, c[1] * CELL_W)));
+    path.closePath();
+    // source rectangle on whole art pixels, so the redraw lands on the plate's own pixel grid
+    const xs = o.polygon.map(c => c[0] * CELL_W), ys = o.polygon.map(c => c[1] * CELL_W);
+    const sx = Math.floor(Math.min(...xs) / artScale), sy = Math.floor(Math.min(...ys) / artScale);
+    const sw = Math.ceil(Math.max(...xs) / artScale) - sx, sh = Math.ceil(Math.max(...ys) / artScale) - sy;
+    return { id: o.id, y: o.baseY * CELL_W, path, sx, sy, sw, sh };
+  });
+function drawOccluder(o) {
+  ctx.save();
+  ctx.clip(o.path);
+  ctx.drawImage(screenArt, o.sx, o.sy, o.sw, o.sh, o.sx * artScale, o.sy * artScale, o.sw * artScale, o.sh * artScale);
+  ctx.restore();
+}
 function drawActor(sheet, point, col, row, cells, time, moving) {
   const bob = moving ? Math.sin(time / 125 * Math.PI) * 0.55 : Math.sin(time / 400) * 0.18;
   ctx.save();
@@ -703,6 +829,7 @@ function draw(time) {
   // Painter's order by foot Y, so a character in front of a building overlaps correctly.
   const actors = [...npcs.map(n => ({ y: n.point.y, draw: () =>
       drawActor(n.sheet, n.point, 0, 0, NPC_FRAME, time, false) })),
+    ...occluders.map(o => ({ y: o.y, draw: () => drawOccluder(o) })),
     { y: position.y, draw: () => drawActor(heroSheet, position,
         state.moving ? [0, 1, 0, 2][Math.floor(time / locks.walkPoseMs) % 4] : 0,
         // ROW 4 IS NORTH, NOT ROW 3. The g3 sheet is 3 pose columns x 8 DIRECTION rows, a 45-degree
@@ -741,14 +868,90 @@ function cameraAxisTarget(center, viewport, zoom, world, edgeReveal = 0) {
   const view = viewport / zoom;
   return Math.max(-edgeReveal, Math.min(world + edgeReveal - view, center - view / 2));
 }
+// m2 (census 2026-11-23): the world clamp above lets the view run down to the bottom of the
+// 65-cell plate, and past a SOUTH mouth that is the painted map-end void (draw(), EDGE_MARGIN), so
+// every town opened with 8-15% of the screen black above the tab bar. Past a NORTH mouth (Port
+// Sapphire) the same clamp put her at the very top, beside the HUD panels. The vertical target now
+//   * treats the void past the mouth as the end of the map: the view's visible bottom (the parent's
+//     tab bar top) stops half-way into the void's fade, except that
+//   * she is never pushed lower than VIEW_CLEAR_BOTTOM above the tab bar (joystick height), and
+//   * past a north mouth she is never higher than VIEW_CLEAR_TOP below the top (under the HUD
+//     panels the view may then show the void, which is where those panels sit).
+// The plate is not rescaled; only where the camera rests changes. Old camera: qok-f2-old=towncam.
+// T11 (design review 2026-11-27): 212 kept her below the Quests panel, but the panels do not reach the middle of the screen
+// where she arrives, and the price was a black band about 95 px tall across the top of Port Sapphire's arrival view.
+// She now rests the same 130 px from the top that she rests from the tab bar in a south-mouth town: the band is gone
+// (what is left is the void's own fade) and she stands clear of every panel. Old value: qok-f2-old=towncamn.
+const VIEW_CLEAR_BOTTOM = 130, VIEW_CLEAR_TOP = F2_OLD('towncamn') ? 212 : 130;   // CSS px, measured on a 390x844 phone
+let tabTopCache = { t: -1, v: 0 };
+function visibleBottom(height) {
+  const now = performance.now();
+  if (now - tabTopCache.t < 400) return tabTopCache.v || height;
+  let v = height;
+  try {
+    const el = parent !== window && parent.document.getElementById('fieldTabs');
+    if (el) { const r = el.getBoundingClientRect(); if (r.height > 0 && r.top > height * 0.5 && r.top < height) v = r.top; }
+  } catch (e) {}
+  tabTopCache = { t: now, v };
+  return v;
+}
+function cameraYTarget(height) {
+  const z = camera.zoom, worldClamped = cameraAxisTarget(position.y, height, z, WORLD);
+  if (F2_OLD('towncam')) return worldClamped;
+  let y = worldClamped;
+  if (EXIT_SIGN === 1) {
+    const voidLine = (exitCell[1] + EDGE_MARGIN + FADE_CELLS * 0.5) * CELL_W;
+    const bottom = visibleBottom(height) / z;                  // world px from the view top to the tab bar
+    if (y + bottom > voidLine) y = Math.max(voidLine - bottom, position.y - (bottom - VIEW_CLEAR_BOTTOM / z));
+    y = Math.max(y, Math.min(worldClamped, 0));                // never above the plate's top on a south-mouth town
+  } else {
+    const voidLine = (exitCell[1] - EDGE_MARGIN - FADE_CELLS * 0.5) * CELL_W;
+    y = Math.min(Math.max(y, voidLine), WORLD - height / z);   // not into the void, not past the plate's bottom
+    y = Math.min(y, position.y - VIEW_CLEAR_TOP / z);
+  }
+  return y;
+}
 function cameraTarget() {
   const width = canvas.clientWidth, height = canvas.clientHeight;
   return {
     x: cameraAxisTarget(position.x, width, camera.zoom, WORLD, HERO_EDGE_REVEAL_X),
-    y: cameraAxisTarget(position.y, height, camera.zoom, WORLD),
+    y: cameraYTarget(height),
   };
 }
 Object.assign(camera, cameraTarget());
+
+// T5 (design review 2026-11-27): the pill's home is above the stick, where the dungeons have it (owner 2026-08-24). When the
+// camera is clamped at the south edge she stands low on the screen and that home is exactly where she or the person she
+// faces is drawn: the pill hid the healer in Ember's Rest and sat on the hero in Ironkeep. The pill stays home unless
+// its box would touch the hero's sprite or a person's; then it rises just clear above them (never into the HUD panels'
+// band) and comes home when they have moved away. 6 px of room to leave, 14 px to return, so it does not flutter.
+// Old fixed pill: qok-f2-old=pill.
+const PROMPT_FIXED = F2_OLD('pill');
+let promptLift = 0;
+function spriteBox(point) {                       // an actor's drawn box in CSS px (36 px sprite, feet at row 58 of 64)
+  const z = camera.zoom, x = (point.x - camera.x) * z, y = (point.y - camera.y) * z;
+  return { l: x - 15 * z, r: x + 15 * z, t: y - 31 * z, b: y + 2 * z };
+}
+function placePrompt(shown) {
+  if (PROMPT_FIXED) return;
+  let lift = 0;
+  if (shown) {
+    const r = promptEl.getBoundingClientRect();
+    if (r.width > 0) {
+      // the home box from the stylesheet's own numbers (bottom: 260px + inset), not from the moving element: its
+      // `bottom` is eased, so its box lags the lift for a few frames
+      const hb = canvas.clientHeight - 260 - saBottomPx, home = { l: r.left, r: r.right, t: hb - r.height, b: hb };
+      const boxes = [spriteBox(position), ...npcs.map(n => spriteBox(n.point))];
+      const hits = (up, m) => boxes.find(b => home.l - m < b.r && home.r + m > b.l && home.t - up - m < b.b && home.b - up + m > b.t);
+      if (hits(0, promptLift ? 14 : 6)) {
+        for (let i = 0; i < 6; i++) { const b = hits(lift, 6); if (!b) break; lift = home.b - b.t + 10; }
+        const most = home.t - 232;                // not into the band of the parent's HUD panels
+        if (lift > most || hits(lift, 6)) lift = hits(Math.max(0, most), 6) ? 0 : Math.max(0, most);
+      }
+    }
+  }
+  if (lift !== promptLift) { promptLift = lift; promptEl.style.setProperty('--prompt-lift', `${Math.round(lift)}px`); }
+}
 
 let last = 0;
 function frame(now) {
@@ -817,7 +1020,10 @@ function frame(now) {
       // facing back into the door.
       parent.postMessage({ type: 'act1-town-exit', town: town.id,
                            targetMapId: town.exit?.targetMapId ?? 'overworld',
-                           toX: town.exit?.toX, toY: town.exit?.toY, facing: state.facing }, '*');
+                           // `exit.land` (Port Sapphire): where she lands, when the door's front
+                           // cell toX/toY lies under the town's own icon (see the town json's landNote)
+                           toX: town.exit?.land?.[0] ?? town.exit?.toX, toY: town.exit?.land?.[1] ?? town.exit?.toY,
+                           facing: state.facing }, '*');
     }, EXIT_FADE_MS);
   }
 
@@ -828,12 +1034,15 @@ function frame(now) {
   draw(now);
   const nearNpc = talking ? null : nearestNpc();
   const nearSvc = talking ? null : (nearNpc?.id === 'healer' ? null : nearestService());
-  const label = nearSvc ? nearSvc.label
-    : nearNpc ? (nearNpc.id === 'healer' ? `Talk to ${nearNpc.name || nearNpc.id}`
-                                         : `Talk to ${nearNpc.name || nearNpc.id}`)
+  // The words come from the parent (it owns i18n; census M12: this was English in Japanese too).
+  let tl = null; try { tl = parent.__QOK_TOWN_LABEL__; } catch (e) { tl = null; }
+  const npcName = nearNpc ? (nearNpc.name || nearNpc.id) : '';
+  const label = nearSvc ? ((typeof tl === 'function' && tl(nearSvc.kind)) || nearSvc.label)
+    : nearNpc ? ((typeof tl === 'function' && tl('talk', npcName, nearNpc.nameKey)) || `Talk to ${npcName}`)
     : null;
   promptEl.dataset.show = label ? 'true' : 'false';
   if (label) promptEl.textContent = label;
+  placePrompt(Boolean(label));
   if (debugEl && search.has('debug')) {
     debugEl.textContent = `cell ${(position.x / CELL_W).toFixed(1)}, ${(position.y / CELL_W).toFixed(1)}`
       + `\nview ${VIEW_W} world px  hero ${HERO_H}`;
@@ -846,6 +1055,8 @@ document.body.dataset.heroSheet = `${heroSheet.naturalWidth}x${heroSheet.natural
 document.body.dataset.heroVariant = heroVariant;
 document.body.dataset.heroSource = heroSource;
 window.__ACT1_TOWN__ = { town, walkable, npcs, state, interact, nearestNpc, nearestService,
+  inTalkBand: (id, point) => { const n = npcs.find(q => q.id === id); return Boolean(n && inTalkBand(n, point)); },
+  talkTargetAt: point => nearestNpc(point)?.id ?? null,   // whom Talk would name with her feet at `point` (the test walkers plan with it)
   // The parent reads this at the native save boundary. It is deliberately the same polygon
   // authority used by constrainWalkableMovement, so a stale or forged service message cannot
   // persist a point outside the town's legal hero region.

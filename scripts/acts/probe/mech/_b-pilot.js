@@ -28,7 +28,11 @@
     cx: w.hero ? Math.floor(w.hero.x / T) : null, cy: w.hero ? Math.floor((w.hero.y + fdy()) / T) : null,
     w: w.mapData[0].length, h: w.mapData.length, msg: !!w.showingMessage, field: onField(), battle: G().scene.isActive('BattleScene'),
     waiting: !!w.__a1dEntryWaiting, d2: d && d.state ? d.state() : null, hp: window.__GAME_STATE__.player.state.hp, maxHp: window.__GAME_STATE__.player.state.maxHp, moving: !!w.isMoving }; };
-  const dismiss = async (max = 14) => { let n = 0; const w = W(); while (onField() && w.showingMessage && n < max) { await tapKey('z'); await wait(260); n++; } return n; };
+  // A Quest Complete card (ui-overhaul.js) holds her as a message box does: tap its button, as a player does.
+  const card=()=>{const c=document.getElementById('qok-quest-completion');if(c&&!c.hidden){const b=c.querySelector('button');if(b){b.click();return true;}}return false;};
+  const dismiss = async (max = 14) => { let n = 0; const w = W(); if (card()) await wait(400); while (onField() && w.showingMessage && n < max) { await tapKey('z'); await wait(260); n++; } if (card()) await wait(400); return n; };
+  // After a boss the game may say several things in a row (the boss's words, a quest that ends by itself): wait until it has been quiet for `quiet` ms.
+  const settle = async (quiet = 1500, max = 15000) => { const t0 = performance.now(); let q = 0; while (performance.now() - t0 < max && q < quiet) { const c = document.getElementById('qok-quest-completion'); if ((c && !c.hidden) || (onField() && W().showingMessage)) { await dismiss(); q = 0; } else { await wait(150); q += 150; } } };
   const tile = (x, y) => { const r = W().mapData[y]; return r ? r[x] : undefined; };
   const isWay = (x, y) => { const t = tile(x, y); return t === 6 || t === 9 || t === 10 || t === 12; };
   const here = () => { const w = W(); return [w.hero.x, w.hero.y + fdy()]; };
@@ -200,7 +204,7 @@
   const standCell = route => { for (let i = route.length - 2; i >= 0; i--) { const [x, y] = route[i]; if (!isWay(x, y) && !isWay(x, y - 1)) return route[i]; } return route[0]; };
   const findTile = t => { const w = W(), out = []; for (let y = 0; y < w.mapData.length; y++) for (let x = 0; x < w.mapData[y].length; x++) if (w.mapData[y][x] === t) out.push([x, y]); return out; };
   const d2flags = () => { const f = window.__GAME_STATE__.player.state.storyFlags, o = {}; for (const k in f) if (k.indexOf('d2.') === 0) o[k] = f[k]; return o; };
-  window.__B = { state, dismiss, plan, drive, go, push, lean, wait, raf, waitFor, tapKey, onField, hook, tile, prompt, fdy, here, timedGo, tplan, tileWalk, findTile, standCell, isWay,
+  window.__B = { state, dismiss, settle, plan, drive, go, push, lean, wait, raf, waitFor, tapKey, onField, hook, tile, prompt, fdy, here, timedGo, tplan, tileWalk, findTile, standCell, isWay,
     msgs: () => msgs, clearMsgs: () => { msgs = []; }, flags: () => ({ ...window.__GAME_STATE__.player.state.storyFlags }), d2flags,
     mstate, ctx, mod, logic: () => { const m = mod(); return m && m.logic; }, kit: () => window.__QOK_D2KIT_B__, T };
   hook();

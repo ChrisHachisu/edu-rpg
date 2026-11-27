@@ -73,8 +73,12 @@ const mid = d => [d[0][0], d[Math.floor(d.length / 2)][1]];                  // 
 
       if (f === 1) {                                                           // the rule, in the open hall beside the gate
         const A = rooms[0], d = A.doors.entry, dc = mid(d), inX = A.rect[0] + 2;
-        await R.go({ cell: [dc[0] - 2, dc[1]] }); await R.shot('f1-mirror-frame'); await R.ev(() => window.__B.clearMsgs());
-        const a = await R.ev(() => window.__BM.rawPush(1, 0, 1700)); await page.waitForTimeout(200); let st = await ms(); s = await R.st();
+        // She comes at the doorway along its upper cell. Along the lower wall (soles at y 1134) the base of the mirror frame's post
+        // sticks 6 px out of the wall line at x 2212-2248 and stops her dead 20 px short of the room, with no slide: that was the
+        // "robot miss" of 2026-11-24 and 2026-11-26 (about two runs in five). It is a game finding (PACKET-QUEUE R1), not this check's subject.
+        await R.go({ cell: [dc[0] - 2, d[0][1]] }); await R.shot('f1-mirror-frame'); await R.ev(() => window.__B.clearMsgs());
+        const a = await R.ev(() => window.__BM.rawPush(1, 0, 1700)); await page.waitForTimeout(200);
+        let st = await ms(); s = await R.st();
         const said = await R.ev(() => window.__BM.msgHas('left and right are swapped'));
         R.rec('f1: walking right through the frame carries her on into the room (she is not thrown back); the rule is told once; the door she came by is kept in the story flags',
           a.dx > 60 && s.cx >= A.rect[0] && st.room === A.id && said && (await R.ev(() => window.__B.d2flags()))[`d2.${ID}.f1.door`] === `${A.id}:entry`, { a, st, said });

@@ -81,6 +81,23 @@
     for (var i = 0; i < S.gates.length; i++) { place(S.gates[i], S.tick); S.gates[i].joins = joins(S.gates[i]); }
     S.ok = true; return true;
   }
+  // Day 4 (DC-14): an open join was a hard pale bar 6 px wide in the gap, which read as a rendering fault. It is
+  // the cue that she may step across here, so it stays, drawn as a soft violet light along the join (a little
+  // brighter for the first moment after a block docks). It must be seen at least as well as the bar was: its heart
+  // is as wide as the bar (6 px) and as strong at every moment of the pulse, with soft shoulders and a faint halo
+  // out to 12 px either side instead of the bar's ruled edges, and its two ends fade.
+  // localStorage 'qok-d4-looks' = '0': the old bar.
+  var LOOKS = (function () { try { return window.localStorage.getItem('qok-d4-looks') !== '0'; } catch (e) { return true; } })();
+  function joinTex(sc, K) {                                                  // a strip of light, 1 texture px = 1 world px across: a flat-topped heart, soft shoulders, a halo; both ends fade
+    return K.canvasTex(sc, 'd2b_joinglow', 32, 64, function (g, w, h) {
+      var im = g.createImageData(w, h), px = im.data, x, y, o;
+      for (y = 0; y < h; y++) { var e = Math.min(y + 0.5, h - y - 0.5) / (h * 0.12); e = e >= 1 ? 1 : e * e * (3 - 2 * e);
+        for (x = 0; x < w; x++) { var d = Math.abs(x + 0.5 - w / 2), core = Math.exp(-Math.pow(d / 5.5, 4)), win = d <= 11 ? 1 : Math.max(0, 1 - (d - 11) / 5);
+          var halo = 0.30 * Math.exp(-d * d / 81) * win * win * (3 - 2 * win), a = Math.min(1, 0.97 * core + halo * (1 - core)) * e; o = (y * w + x) * 4;
+          px[o] = Math.round(190 + 42 * core); px[o + 1] = Math.round(170 + 52 * core); px[o + 2] = 255; px[o + 3] = Math.round(a * 255); } }
+      g.putImageData(im, 0, 0);
+    });
+  }
   function build(ctx) {
     var S = ctx.state, K = S.K, sc = ctx.scene, kb = K.art(sc, 'void-block'); if (!kb) return;
     var dg = ctx.depth.ground, rails = ctx.own(sc.add.graphics().setDepth(dg + 0.1)), i, j;
@@ -91,16 +108,23 @@
         rails.fillStyle(0x9a86ff, 0.05); rails.fillRect(L.x0 + 7, L.top, B - 14, L.bot - L.top);
         row.push(ctx.own(sc.add.image(L.x0, L.y0, kb).setOrigin(0, 0).setDepth(dg + 0.4))); }
       S.spr.blocks.push(row); }
-    for (i = 0; i < 8; i++) { var g = ctx.own(sc.add.rectangle(0, 0, 8, 8, 0xd8ccff, 0.9).setDepth(dg + 0.5).setVisible(false)); try { g.setBlendMode(1); } catch (e) {} S.spr.glow.push(g); }
+    var jt = LOOKS ? joinTex(sc, K) : null; S.spr.soft = !!jt;
+    for (i = 0; i < 8; i++) { var g = ctx.own(jt ? sc.add.image(0, 0, jt).setDepth(dg + 0.5).setVisible(false) : sc.add.rectangle(0, 0, 8, 8, 0xd8ccff, 0.9).setDepth(dg + 0.5).setVisible(false)); try { g.setBlendMode(1); } catch (e) {} S.spr.glow.push(g); }
   }
   function paint(ctx) {
     var S = ctx.state; if (!S.spr) { build(ctx); if (!S.spr) return; }
-    var i, j, n = 0, pulse = 0.55 + 0.35 * Math.sin(S.tick * 2.6);
+    var i, j, n = 0, pulse = 0.55 + 0.35 * Math.sin(S.tick * 2.6), open = S.open || (S.open = {}), live = {}, k;
     for (i = 0; i < S.gates.length; i++) { var G = S.gates[i];
       for (j = 0; j < G.lanes.length; j++) S.spr.blocks[i][j].setPosition(G.lanes[j].x0, G.lanes[j].y0);
       for (j = 0; j < G.joins.length && n < S.spr.glow.length; j++, n++) { var e = G.joins[j].edge, g = S.spr.glow[n], v = e[0] === e[2];
+        if (S.spr.soft) { var id = i + '.' + G.joins[j].kind + '.' + G.joins[j].lane, len = v ? e[3] - e[1] : e[2] - e[0];
+          if (open[id] === undefined) open[id] = S.tick;                     // this join has just opened
+          live[id] = 1; var fresh = Math.max(0, 1 - mod(S.tick - open[id], S.period) / 2.5);
+          g.setPosition((e[0] + e[2]) / 2, (e[1] + e[3]) / 2).setDisplaySize(32 + 6 * fresh, len + 10).setRotation(v ? 0 : Math.PI / 2).setVisible(true).setAlpha(Math.min(1, 0.62 + 0.30 * Math.sin(S.tick * 2.6) + 0.3 * fresh));   // never under the old bar's pulse (0.9 x (0.55 + 0.35 sin))
+          continue; }
         g.setPosition((e[0] + e[2]) / 2, (e[1] + e[3]) / 2).setDisplaySize(v ? 6 : e[2] - e[0], v ? e[3] - e[1] : 6).setVisible(true).setAlpha(pulse); } }
     for (; n < S.spr.glow.length; n++) S.spr.glow[n].setVisible(false);
+    for (k in open) if (!live[k]) delete open[k];
   }
 
   D.register('drifting-blocks', {

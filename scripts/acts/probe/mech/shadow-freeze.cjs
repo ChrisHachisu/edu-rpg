@@ -68,7 +68,7 @@ const SH = `(() => { const A = window.__A, T = 48;
       if (stairs) { if (!(await R.stairs(stairs, f + 1))) break; continue; }
       if (!(await R.boss(bossAsset, f))) break;
       await R.pilot(); await inject();
-      if (m2) { await page.waitForTimeout(500);
+      if (m2) { await page.waitForTimeout(500); await R.ev(() => window.__A.settle());   // The Shadow Gate ends with the dragon and says so first
         const q = await R.ev(([x, y]) => ({ tile: window.__A.tile(x, y), free: window.__QOK_DNG2__.free(x * 48 + 24, y * 48 + 24 - window.__A.fdy()) }), [m2.x, m2.y]);
         R.rec(`f${f}: the dragon down, the second mouth opens without leaving the floor (way-out tile, soles allowed)`, q.tile === 10 && q.free === true, q);
         await sgo({ beside: [m2.x, m2.y], reach: 60 }); await R.shot(`f${f}-second-mouth-open`);
