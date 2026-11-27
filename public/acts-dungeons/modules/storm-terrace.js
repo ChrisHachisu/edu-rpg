@@ -47,12 +47,50 @@
   // grades K-2: a longer glow, the same strike, the same order; each group's slot grows so that after a
   // strike the terrace stays calm for calmMs before the next group starts to glow (the plan's slots have
   // no such gap: the next glow starts as a strike lands). M.plan keeps the plan's numbers.
-  function kidScale(M, ms) {
-    M.plan = { glow: M.glow, gap: M.gap, period: M.period }; M.kid = false;
+  function kidScale(M, ms, opt) {
+    M.plan = { glow: M.glow, gap: M.gap, period: M.thin ? M.period / 2 : M.period, strike: M.strike }; M.kid = false; M.opt = '';
     if (!KT.young()) return M;
     var glow = KT.warnTicks(M.glow, ms), gap = Math.max(M.gap + glow - M.glow, glow + M.strike + KT.calmTicks(ms));
-    if (glow === M.glow && gap === M.gap) return M;
-    M.period = M.period / M.gap * gap; M.glow = glow; M.gap = gap; M.kid = true; return M;
+    if (glow !== M.glow || gap !== M.gap) { M.period = M.period / M.gap * gap; M.glow = glow; M.gap = gap; M.kid = true; }
+    M.opt = opt || '';
+    if (M.opt.indexOf('b') >= 0 && M.strike > 1) M.strike = 1;              // option (b): the slot keeps its length, so the calm after a strike grows by the tick the strike lost
+    return M;
+  }
+  // Day 4 (kid-timing track KT), the narrow-band floors: two options the owner has not ruled on, each behind its own value
+  // of the kid-timing switch, neither on by default. localStorage 'qok-kid-timing' = 'a': a strike covers fewer bands at
+  // once (thin, below); 'b': a strike lasts one tick instead of two; 'ab': both; '1': the age rule with neither option.
+  // SPIRE_OPT is what plays for each age group when the switch is not set ('' = neither: one line to change after the
+  // ruling). With the switch at '0', or a grade the helper does not know, the plan plays and no option applies.
+  var SPIRE_OPT = { young: '', mid: '', high: '' };
+  function spireOpt() {
+    var v = null; try { v = window.localStorage.getItem('qok-kid-timing'); } catch (e) {}
+    return (v === 'a' || v === 'b' || v === 'ab') ? v : (v === '1' ? '' : (SPIRE_OPT[KT.tier()] || ''));
+  }
+  // Option (a): every plan group's stones are struck in two turns instead of one. A group's bands (its connected runs of
+  // cells) are dealt out one by one, top to bottom, each taking the other turn from its nearest band already dealt, so
+  // two neighbouring bands of a group are not struck together. Groups g and g + G are the two halves of plan group g;
+  // the order is the plan's, gone through twice; the period doubles; glow and strike lengths are untouched. It is still
+  // the whole terrace, struck in timed turns, the stone glowing first. Works on a copy: the plan's rows are not changed.
+  function thin(M) {
+    var G = M.G, of = {}, seen = {}, comps = [], g, i, j, c, DX = [1, -1, 0, 0], DY = [0, 0, 1, -1];
+    if (G * 2 > 10) return M;                                               // the group grid is one digit a cell
+    for (g = 0; g < G; g++) for (i = 0; i < M.cells[g].length; i++) of[M.cells[g][i][0] + ',' + M.cells[g][i][1]] = g;
+    for (g = 0; g < G; g++) for (i = 0; i < M.cells[g].length; i++) { c = M.cells[g][i]; if (seen[c[0] + ',' + c[1]]) continue;
+      var q = [c], cs = [], sx = 0, sy = 0; seen[c[0] + ',' + c[1]] = 1;
+      while (q.length) { var p = q.pop(); cs.push(p); sx += p[0]; sy += p[1];
+        for (j = 0; j < 4; j++) { var nk = (p[0] + DX[j]) + ',' + (p[1] + DY[j]); if (of[nk] === g && !seen[nk]) { seen[nk] = 1; q.push([p[0] + DX[j], p[1] + DY[j]]); } } }
+      comps.push({ g: g, cells: cs, x: sx / cs.length, y: sy / cs.length, half: 0 }); }
+    comps.sort(function (a, b) { return (a.y - b.y) || (a.x - b.x) || (a.g - b.g); });
+    for (i = 0; i < comps.length; i++) { var best = null, bd = 1e9;
+      for (j = 0; j < i; j++) if (comps[j].g === comps[i].g) { var d = Math.abs(comps[j].x - comps[i].x) + Math.abs(comps[j].y - comps[i].y); if (d < bd) { bd = d; best = comps[j]; } }
+      comps[i].half = best ? 1 - best.half : 0; }
+    var cells = [], rows = [], grid = [];
+    for (g = 0; g < G * 2; g++) cells.push([]);
+    for (i = 0; i < M.rows.length; i++) grid.push(M.rows[i].split(''));
+    for (i = 0; i < comps.length; i++) { var ng = comps[i].g + G * comps[i].half;
+      for (j = 0; j < comps[i].cells.length; j++) { c = comps[i].cells[j]; cells[ng].push(c); grid[c[1]][c[0]] = String(ng); } }
+    for (i = 0; i < grid.length; i++) rows.push(grid[i].join(''));
+    return { G: G * 2, gap: M.gap, period: M.period * 2, strike: M.strike, glow: M.glow, rows: rows, cells: cells, thin: true, planG: G };
   }
   function groupAt(M, cx, cy) { var r = M.rows[cy]; if (!r) return -1; var ch = r.charCodeAt(cx) - 48; return (ch >= 0 && ch < M.G) ? ch : -1; }
   function mod(a, n) { return ((a % n) + n) % n; }
@@ -63,7 +101,8 @@
   function ready(ctx) {
     var S = ctx.state; if (S.ok) return true;
     var K = kit(); if (!K) return false;
-    S.K = K; S.ms = K.tickMs(ctx.mechanic.params); S.M = kidScale(model(ctx), S.ms); S.grace = Math.max(4, Math.round(2500 / S.ms)); S.spr = null; S.was = {};   // no bolt can hurt her in the first 2.5 s on a floor (arrival, or Continue out on a terrace)
+    S.K = K; S.ms = K.tickMs(ctx.mechanic.params); S.opt = KT.young() ? spireOpt() : '';
+    S.M = kidScale(S.opt.indexOf('a') >= 0 ? thin(model(ctx)) : model(ctx), S.ms, S.opt); S.grace = Math.max(4, Math.round(2500 / S.ms)); S.spr = null; S.was = {};   // no bolt can hurt her in the first 2.5 s on a floor (arrival, or Continue out on a terrace)
     S.tick = K.clock(ctx, 0, S.M.period, S.ms); K.quiet(ctx.scene);
     S.ok = true; return true;
   }
@@ -286,7 +325,7 @@
   }
 
   D.register('storm-terrace', {
-    logic: { model: model, kidScale: kidScale, groupAt: groupAt, striking: striking, glowing: glowing },
+    logic: { model: model, kidScale: kidScale, thin: thin, spireOpt: spireOpt, groupAt: groupAt, striking: striking, glowing: glowing },
     load: function (ctx) { ready(ctx); },
     unload: function (ctx) {                                                   // the groups' soft pictures are named for this floor: they go with it (a return draws them again)
       var S = ctx.state, sp = S && S.spr, tm = ctx.scene && ctx.scene.textures, g, i; if (!sp || sp.look !== 2) return;

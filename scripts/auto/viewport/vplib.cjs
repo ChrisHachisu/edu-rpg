@@ -94,9 +94,16 @@ class Session {
   tap(sel, timeout = 4000) { return U.tap(this.page, sel, timeout); }
   active(k) { return U.active(this.page, k); }
   async setKanji() { if (this.LG.kanji) await this.page.evaluate(() => { try { window.__GAME_STATE__.player.state.kanjiMode = true; } catch (e) {} }); }
-  boot(o = {}, bootOpts = {}) {
+  // Seeded saves start as a mid-game hero with plausible figures (level 12, HP 86/120), not the probe's 9999s.
+  // On arrival the Quests panel opens by itself for 4 s when the game adds its story quest: wait until it has folded again.
+  async boot(o = {}, bootOpts = {}) {
     const mut = o.mutate;
-    return U.boot(this.page, { ...this.LG, ...o, mutate: s => { Object.assign(s.player, { level: 12, hp: 86, maxHp: 120, atk: 48, def: 40, spd: 30, gold: 1250 }); if (mut) mut(s); } }, bootOpts);
+    const r = await U.boot(this.page, { ...this.LG, ...o, mutate: s => { Object.assign(s.player, { level: 12, hp: 86, maxHp: 120, atk: 48, def: 40, spd: 30, gold: 1250 }); if (mut) mut(s); } }, bootOpts);
+    await this.page.evaluate(() => new Promise(res => { const t0 = performance.now(); let saw = false;   // open-then-folded, or folded for 8 s
+      const tick = () => { const q = document.getElementById('qfh-quest'), open = !!q && !q.classList.contains('collapsed') && q.getBoundingClientRect().width > 70, t = performance.now() - t0;
+        if (open) saw = true; if ((!open && (saw || t > 8000)) || t > 16000) return res(open); setTimeout(tick, 150); }; tick(); })).then(open => { if (open) this.notes.push('Quests panel still open 16 s after arrival'); }).catch(() => {});
+    await this.page.waitForTimeout(400);
+    return r;
   }
 }
 
@@ -120,9 +127,10 @@ async function until(S, pred, ms = 30000, onMsg = null) {
   return bst(S.page);
 }
 const setQuestions = (page, list) => page.evaluate(list => { const m = window.__GAME_STATE__.quizManager; if (!m.__vpOrig) m.__vpOrig = m.getQuestion; let i = 0; m.getQuestion = () => JSON.parse(JSON.stringify(list[Math.min(i++, list.length - 1)])); }, list);
-const launchBattle = (page, id, zone) => page.evaluate(({ id, zone }) => { const g = window.__PHASER_GAME__, wm = g.scene.getScene('WorldMapScene'), em = window.__GAME_STATE__.encounterManager, w = console.warn; console.warn = () => {};
+const launchBattle0 = (page, id, zone) => page.evaluate(({ id, zone }) => { const g = window.__PHASER_GAME__, wm = g.scene.getScene('WorldMapScene'), em = window.__GAME_STATE__.encounterManager, w = console.warn; console.warn = () => {};
   let m; try { m = em.rollEncounter({ monsters: [{ monsterId: id, weight: 1 }] }); } finally { console.warn = w; }
   if (!m) return 'no monster'; wm.currentEncounterZone = zone; wm.scene.launch('BattleScene', { monster: m, zone }); wm.scene.pause(); return 'launched'; }, { id, zone });
+const launchBattle = async (page, id, zone) => { const r = await launchBattle0(page, id, zone); await page.waitForFunction(() => { const g = window.__PHASER_GAME__, b = g.scene.getScene('BattleScene'); return g.scene.isActive('BattleScene') && b && !!b.phase && !!document.querySelector('#qok-ui.battle, #qok-ui .enemy-card'); }, { timeout: 15000 }).catch(() => {}); return r; };
 const answers = page => page.evaluate(() => { const b = window.__PHASER_GAME__.scene.getScene('BattleScene'), a = (b.quizQuestion && b.quizQuestion.answers) || []; return { right: a.findIndex(x => x.isCorrect), wrong: a.findIndex(x => !x.isCorrect), rt: a.filter(x => x.isCorrect).map(x => x.text.en)[0] }; });
 async function answer(S, right) {
   const st = await bst(S.page), a = await answers(S.page);
@@ -167,7 +175,7 @@ async function partField(S) {
     inventory: [{ itemId: 'herb', quantity: 5 }, { itemId: 'potion', quantity: 2 }, { itemId: 'ironSword', quantity: 1 }, { itemId: 'leatherArmor', quantity: 1 }] });
   await page.waitForTimeout(1500);
   await S.shoot('overworld');
-  if (await page.locator('.qfq-title').count()) { await S.tap('.qfq-title'); await page.waitForTimeout(500); await S.shoot('quest-open'); await S.tap('.qfq-title'); await page.waitForTimeout(300); }
+  await S.tap('#qfh-quest-toggle', 2500); await page.waitForTimeout(700); await S.shoot('quest-open'); await S.tap('#qfh-quest-toggle', 2500); await page.waitForTimeout(500);   // the Quests panel as the player opens it (four quests listed)
   await S.tap('#qfh-map', 2500); await page.waitForTimeout(900); await S.shoot('minimap-folded'); await S.tap('#qfh-map', 2500); await page.waitForTimeout(600);
   const names = ['status', 'items', 'equip', 'settings'];
   for (let i = 0; i < 4; i++) {

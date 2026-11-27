@@ -10,6 +10,9 @@
 //   tap-small        a tap target whose hittable extent around its centre is under 44 x 44
 //   tap-covered      a tap target whose centre is covered by something else
 //   tap-off-screen   a tap target partly outside the viewport
+//   scrolls          a scroller holds more than its box (fine for a long list, a defect for a one-screen form)
+//   tap-unreachable  a button that is still cut or covered when its scroller is at its end
+//   black-bar / inset-band / map-smaller-than-view   see vplib.cjs (edge scan of a 1x screenshot) and the camera test below
 //   overlap          two named HUD pieces (or the hero and a HUD piece) share screen area
 //   safe-top/-bottom/-left/-right   text or a tap target inside the simulated safe-area inset
 //   img-broken / img-stretched / bg-stretched   art that did not load or is drawn off its aspect
@@ -84,6 +87,14 @@ async (o) => {
     }
   }
 
+  // ---- can the end of every scroller be reached? scroll it to its end and hit-test the buttons that are then in view
+  for (const F of frames) for (const sc of F.doc.body.querySelectorAll('*')) { const s = cs(sc, F); if (!/(auto|scroll)/.test(s.overflowY) || sc.scrollHeight <= sc.clientHeight + 4 || sc.clientHeight < 40 || !shown(sc, F)) continue;
+    const top0 = sc.scrollTop; sc.scrollTop = sc.scrollHeight; const sb = sc.getBoundingClientRect();
+    try { for (const el of sc.querySelectorAll('button, a[href], input, select, [data-act], [role="button"]')) { if (!shown(el, F) || cs(el, F).pointerEvents === 'none') continue; const b = el.getBoundingClientRect(); if (b.width < 1 || b.height < 1 || b.bottom < sb.top + 2 || b.top < sb.top - 1) continue;
+        if (b.bottom > sb.bottom + 2) { issue('tap-unreachable', el, F, { cutAtEnd: r1(b.bottom - sb.bottom), scroller: one(sc) }, el.innerText); continue; }
+        const e = F.doc.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2); if (e && !related(e, el) && !/Noop$/.test(el.getAttribute('data-act') || '')) issue('tap-unreachable', el, F, { coveredBy: sig(e, F), scroller: one(sc), atEnd: [r1(b.left + b.width / 2 + F.ox), r1(b.top + b.height / 2 + F.oy)] }, el.innerText); } }
+    finally { sc.scrollTop = top0; } }
+
   // ---- text (pointer-events forced on, so elementFromPoint follows paint order)
   const styles = frames.map(F => { const s = F.doc.createElement('style'); s.textContent = '*{pointer-events:auto !important}'; F.doc.documentElement.appendChild(s); return s; });
   try {
@@ -149,8 +160,8 @@ async (o) => {
 
   // ---- named pieces: rectangles, overlap, the hero
   const G = {}; const put = (name, el, F) => { if (!el || !shown(el, F)) return; const b = el.getBoundingClientRect(); if (b.width < 2 || b.height < 2) return; G[name] = R(b, F); };
-  const NAMED = { hp: '#qok-field-hud .qfhp', compass: '#qfh-compass', minimap: '#qfh-map', floor: '#qfh-floor', quests: '#qfh-quest', dialog: '#qfh-dialog', saved: '#qok-saved-badge', tabs: '#fieldTabs', stick: '#dpad',
-    prompt: '#a1mInteract.a1m-show', townPill: '#qok-town-pill48', advance: '#qok-msg-advance', questCard: '#qok-quest-completion', toast: '#qok-town-quest-toast', notepad: '#qok-notepad',
+  const NAMED = { hp: '#qok-field-hud .qfhp', compass: '#qfh-compass', minimap: '#qfh-map', floor: '#qfh-floor', quests: '#qfh-quest', dialog: '#qfh-dialog, #dialogue[data-open="true"]', saved: '#qok-saved-badge', tabs: '#fieldTabs', stick: '#dpad, #pad',
+    prompt: '#a1mInteract.a1m-show, #prompt[data-show="true"]', townPill: '#qok-town-pill48', advance: '#qok-msg-advance', questCard: '#qok-quest-completion', toast: '#qok-town-quest-toast', notepad: '#qok-notepad',
     enemy: '#qok-ui .bmon', enemyCard: '#qok-ui .enemy-card', battleHud: '#qok-ui .hudwrap', keypad: '#qok-ui .kpad', kpDisplay: '#qok-kpdisp', quizQ: '#qok-ui .quiz-q, #qok-ui .qtext, #qok-ui .question', msg: '#qok-ui .msg', col: '#qok-ui .col', menuTabbar: '#qok-ui .tabbar', topbar: '#qok-ui .topbar', pbar: '#qok-ui .pbar' };
   for (const F of frames) for (const k in NAMED) { if (G[k]) continue; try { put(k, F.doc.querySelector(NAMED[k]), F); } catch (e) {} }
   for (const F of frames) { const ks = F.doc.querySelectorAll('#qok-ui .kpad [data-act="kpKey"]'); if (ks.length) { let mw = 1e9, mh = 1e9; for (const k of ks) { const b = k.getBoundingClientRect(); if (b.width) { mw = Math.min(mw, b.width); mh = Math.min(mh, b.height); } } metrics.keypadKey = [r1(mw), r1(mh)]; }
@@ -161,8 +172,11 @@ async (o) => {
         const sx = x => c.left + ((x - cam.worldView.x) * cam.zoom + cam.x) * (c.width / g.scale.width), sy = y => c.top + ((y - cam.worldView.y) * cam.zoom + cam.y) * (c.height / g.scale.height);
         const tf = document.querySelector('#act1-hifi-preserved-root iframe'), inTown = !!(tf && tf.checkVisibility() && tf.getBoundingClientRect().width > 2);
         metrics.heroDbg = { vis: w.hero.visible, alpha: w.hero.alpha, inTown, b: [r1(hb.left), r1(hb.top), r1(hb.width), r1(hb.height)] };
+        if (inTown) { try { const T = tf.contentWindow.__ACT1_TOWN__, p = T.position(), c = T.camera, fb = tf.getBoundingClientRect(), hh = 36, z = c.zoom;   // town.html draws her HERO_H = 36 world px tall around her feet
+          const x = fb.left + (p.x - c.x) * z, y = fb.top + (p.y - c.y) * z; G.hero = { l: x - hh / 2 * z, t: y - hh * 58 / 64 * z, r: x + hh / 2 * z, b: y + hh * 6 / 64 * z, w: hh * z, h: hh * z };
+          metrics.town = { zoom: r1(z * 100) / 100, viewWorld: [r1(fb.width / z), r1(fb.height / z)], frame: [r1(fb.left), r1(fb.top), r1(fb.width), r1(fb.height)] }; } catch (e) { metrics.townErr = String(e).slice(0, 80); } }
         if (!inTown) G.hero = { l: sx(hb.left), t: sy(hb.top), r: sx(hb.right), b: sy(hb.bottom), w: hb.width * cam.zoom, h: hb.height * cam.zoom };
-        if (cam.useBounds && cam._bounds && (cam.worldView.width > cam._bounds.width + 2 || cam.worldView.height > cam._bounds.height + 2)) issues.push({ rule: 'map-smaller-than-view', sig: 'camera', n: { view: [r1(cam.worldView.width), r1(cam.worldView.height)], map: [cam._bounds.width, cam._bounds.height] } });
+        if (!inTown && cam.useBounds && cam._bounds && (cam.worldView.width > cam._bounds.width + 2 || cam.worldView.height > cam._bounds.height + 2)) issues.push({ rule: 'map-smaller-than-view', sig: 'camera', n: { view: [r1(cam.worldView.width), r1(cam.worldView.height)], map: [cam._bounds.width, cam._bounds.height] } });
         metrics.camera = { zoom: r1(cam.zoom * 100) / 100, view: [r1(cam.worldView.width), r1(cam.worldView.height)], map: w.currentMapId, bounds: cam._bounds ? [cam._bounds.x, cam._bounds.y, cam._bounds.width, cam._bounds.height] : null, useBounds: !!cam.useBounds }; } } } catch (e) { metrics.cameraErr = String(e).slice(0, 80); }
   const names = Object.keys(G), hit = (a, b) => { const dx = Math.min(a.r, b.r) - Math.max(a.l, b.l), dy = Math.min(a.b, b.b) - Math.max(a.t, b.t); return dx > 3 && dy > 3 ? dx * dy : 0; };
   const FIELD = ['hp', 'compass', 'minimap', 'floor', 'quests', 'dialog', 'saved', 'tabs', 'stick', 'prompt', 'townPill', 'questCard', 'toast', 'hero'];

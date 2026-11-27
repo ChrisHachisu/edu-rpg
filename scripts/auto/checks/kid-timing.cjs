@@ -25,7 +25,7 @@ async function seed(page, id, n, grade, kidOff) {
   const s = L.save({ mapId: id, floor: n, x: xy[0], y: xy[1], flags: { ...L.allFlags(), ...F.ALLB }, inventory: F.INV, completedQuests: F.QUESTS });
   s.player.name = 'Mika'; s.player.quizDifficulty = grade;
   await page.goto(F.URL_, { waitUntil: 'domcontentloaded' });
-  await page.evaluate(([s, off]) => { localStorage.clear(); localStorage.setItem('edu-rpg-save', JSON.stringify(s)); if (off) localStorage.setItem('qok-kid-timing', '0'); }, [s, kidOff]);
+  await page.evaluate(([s, off]) => { localStorage.clear(); localStorage.setItem('edu-rpg-save', JSON.stringify(s)); if (off) localStorage.setItem('qok-kid-timing', off === true ? '0' : off); }, [s, kidOff]);   // true = '0' (the plan); a string = that switch value (day 4)
   await page.reload({ waitUntil: 'load' });
   await L.toTitle(page);
   await page.evaluate(() => { const t = window.__PHASER_GAME__.scene.getScene('TitleScene'); const i = t.menuItems.findIndex(m => m.getData && m.getData('action') === 'continue'); t.selectedIndex = i; t.confirmTitle(); });
@@ -34,6 +34,17 @@ async function seed(page, id, n, grade, kidOff) {
   const ready = await page.waitForFunction(() => { const d = window.__QOK_DNG2__, s = d && d.state && d.state(); const c = d && d.ctx && d.ctx(); return s && s.module && c && c.state && (c.state.spr || c.state.lanes || c.state.L || c.state.P); }, { timeout: 60000, polling: 100 }).then(() => true).catch(() => false);
   await F.dismiss(page);
   return { pos: await L.pos(page), ready };
+}
+
+// Day 4: the floor she stands on, read again for another grade or switch value without a new save: the module's own
+// unload, its pictures destroyed, a fresh state, its own load (what the engine does on a floor change).
+function reloadAs(page, grade, sw) {
+  return page.evaluate(([grade, sw]) => { const c = window.__QOK_DNG2__.ctx();
+    window.__GAME_STATE__.player.state.quizDifficulty = grade; if (sw === null) localStorage.removeItem('qok-kid-timing'); else localStorage.setItem('qok-kid-timing', sw);
+    try { if (c.mod.unload) c.mod.unload(c); } catch (e) {}
+    for (const o of c._owned.splice(0)) { try { o.destroy(); } catch (e) {} }
+    const old = c.state; for (const k of Object.keys(old)) delete old[k];
+    try { if (c.mod.load) c.mod.load(c); } catch (e) { return String(e); } return true; }, [grade, sw]);
 }
 
 // the module's warning: from state, then as drawn over one full warning, timed on the module clock
@@ -113,6 +124,72 @@ function measure(page, kind) {
       }
     }
   } catch (e) { F.ok(false, 'kid-timing magma/shadow checks ran', String(e).slice(0, 200)); }
+  // ---- Day 4 (track KT, 2026-11-27) -------------------------------------------------------------------------------
+  // (1) Every module that carries the helper carries the same one (whichever loads first defines it), read from the build.
+  try {
+    const srcs = await page.evaluate(async () => { const m = await (await fetch('acts-dungeons/manifest.json')).json(), out = {};
+      for (const u of m.modules || []) { const t = await (await fetch(u)).text(), i = t.indexOf('window.__QOK_KIDTIME__ = {'); if (i < 0) continue; const j = t.indexOf('\n  });', i); out[u.split('/').pop()] = t.slice(i, j).replace(/\r/g, ''); }
+      return out; });
+    const names = Object.keys(srcs), same = names.every(k => srcs[k] === srcs[names[0]]);
+    F.ok(names.length >= 3 && same, `the kid-timing helper is the same in the ${names.length} modules that carry it`, names.map(k => `${k} ${srcs[k].length} B`).join(', '));
+  } catch (e) { F.ok(false, 'kid-timing helper copies read', String(e).slice(0, 200)); }
+  // (2) Shadow Cave, every floor: the crystals' flicker (the cue that the light is about to change) lasts the age group's
+  // warning and the shine lasts as much longer; the steady light, the dim stretch and the shadows' pace are the plan's.
+  // One save a floor (grade 1); the other grades and the switch are read after the module's own unload and load.
+  try {
+    const TK = 185, shadowState = () => page.evaluate(() => { const S = window.__QOK_DNG2__.ctx().state; return { fm: S.fm || 1000, shine: S.P.shineTicks, dim: S.P.dimTicks, step: S.P.shadowStepDimTicks, kid: !!S.kid }; });
+    for (let n = 1; n <= 5; n++) {
+      const name = `Shadow Cave ${n}F`, p = plan('shadowCave', n).mechanic.params, s = await seed(page, 'shadowCave', n, '1', false);
+      if (!F.ok(s.pos.map === 'shadowCave' && s.pos.floor === n && s.ready, `${name} reached`, `at ${s.pos.map} ${s.pos.floor}F`)) continue;
+      for (const [grade, sw, label] of [['1', null, 'grade 1'], ['3', null, 'grade 3'], ['6', null, 'grade 6'], ['1', '0', "grade 1, qok-kid-timing='0'"]]) {
+        if (!(grade === '1' && sw === null)) { const re = await reloadAs(page, grade, sw); if (!F.ok(re === true, `${name} ${label}: module loaded again`, String(re))) continue; }
+        await page.waitForTimeout(250);
+        const r = await shadowState(), steady = r.shine * TK - r.fm, planSteady = p.shineTicks * TK - 1000;
+        F.info(`${name} ${label}`, JSON.stringify(r) + ` plan shine ${p.shineTicks} ticks, flicker 1000 ms`);
+        if (sw === null && grade === '1') F.ok(r.fm >= 1400, `${name} grade 1: the crystals flicker >= 1.4 s before the light changes`, `${r.fm} ms (plan 1000 ms)`);
+        else if (sw === null && grade === '3') F.ok(r.fm >= 1150, `${name} grade 3: the crystals flicker >= 1.15 s before the light changes`, `${r.fm} ms (plan 1000 ms)`);
+        else F.ok(r.fm === 1000 && r.shine === p.shineTicks, `${name} ${label}: flicker and shine equal the plan`, `${r.fm} ms, ${r.shine} ticks (plan 1000 ms, ${p.shineTicks} ticks)`);
+        F.ok(Math.abs(steady - planSteady) <= 1 && r.dim === p.dimTicks && r.step === p.shadowStepDimTicks, `${name} ${label}: the steady light, the dim stretch and the shadows' pace equal the plan's`, `steady ${steady} ms (plan ${planSteady} ms), dim ${r.dim} ticks, step ${r.step} ticks`);
+      }
+      if (n === 3) {   // the flicker as drawn (the crystals' glow), timed on the module's clock, lasts the whole warning
+        await reloadAs(page, '1', null); await page.waitForTimeout(250);
+        const d = await page.evaluate(() => new Promise(res => { const c = window.__QOK_DNG2__.ctx(), S = c.state, sc = c.scene, t0 = Date.now(); let steady = false, start = null, prev = null, maxStep = 0;
+          function step() { const a = S.crystals[0].glow.alpha, d = prev === null ? 0 : S.t - prev; prev = S.t; if (d > maxStep) maxStep = d;
+            if (!S.dim) { if (start === null) { if (a >= 0.999) steady = true; else if (steady) start = S.t; } }
+            else { if (start !== null) return fin({ drawnMs: Math.round(S.t - start), fm: S.fm || 1000, maxStepMs: Math.round(maxStep) }); steady = false; }
+            if (Date.now() - t0 > 30000) fin({ timeout: true, fm: S.fm || 1000 }); }
+          function fin(o) { sc.events.off('postupdate', step); res(o); }
+          sc.events.on('postupdate', step); }));
+        const tol = (d.maxStepMs || 17) + 60;
+        F.ok(!d.timeout && Math.abs(d.drawnMs - d.fm) <= tol, `${name} grade 1: the flicker is drawn for the whole warning`, `drawn ${d.drawnMs} ms vs ${d.fm} ms (tolerance ${tol} ms)`);
+      }
+    }
+  } catch (e) { F.ok(false, 'kid-timing Shadow Cave checks ran', String(e).slice(0, 200)); }
+  // (3) Stormreach Spire 3F (a narrow-band floor): the two options the owner has not ruled on, each behind its own value
+  // of the switch and neither on unless asked for. 'b': a strike lasts one tick. 'a': a strike covers fewer bands at once
+  // (every plan group is struck in two halves, so the period doubles); every terrace cell is still struck in its turn.
+  try {
+    const id = 'stormreachSpire', n = 3, name = 'Stormreach Spire 3F', pp = plan(id, n).mechanic.params;
+    const read = () => page.evaluate(() => { const c = window.__QOK_DNG2__.ctx(), S = c.state, M = S.M, rows = c.mechanic.strikeGroups, G0 = (c.mechanic.params || {}).groups || 1;
+      let planCells = 0, total = 0, halves = 0; for (const r of rows) for (let x = 0; x < r.length; x++) { const ch = r.charCodeAt(x) - 48; if (ch >= 0 && ch < G0) planCells++; }
+      for (let g = 0; g < M.G; g++) for (const q of M.cells[g]) { total++; if (rows[q[1]].charCodeAt(q[0]) - 48 === g % G0) halves++; }
+      return { opt: M.opt || '', G: M.G, glow: M.glow, strike: M.strike, gap: M.gap, period: M.period, pictures: S.spr ? S.spr.glow.length : 0, planCells, total, halves }; });
+    const at = async (sw, label) => { const s = await seed(page, id, n, '1', sw); return F.ok(s.pos.map === id && s.pos.floor === n && s.ready, `${name} reached (${label})`, `at ${s.pos.map} ${s.pos.floor}F`); };
+    let d = null;
+    if (await at(false, 'grade 1')) { d = await read(); F.info(`${name} grade 1`, JSON.stringify(d));
+      F.ok(d.opt === '' && d.G === pp.groups && d.strike === (pp.strikeTicks || 2), `${name} grade 1, switch not set: neither option plays`, `option '${d.opt}', ${d.G} groups, strike ${d.strike} ticks`); }
+    if (d && await at('b', "grade 1, qok-kid-timing='b'")) { const b = await read(); F.info(`${name} grade 1 'b'`, JSON.stringify(b));
+      F.ok(b.strike === 1 && b.glow === d.glow && b.gap === d.gap && b.G === d.G, `${name} grade 1, qok-kid-timing='b': a strike lasts one tick; glow, turn length and groups as without it`, `strike ${b.strike} tick(s), glow ${b.glow}, turn ${b.gap}, groups ${b.G} (without: ${d.strike}, ${d.glow}, ${d.gap}, ${d.G})`);
+      const r = await measure(page, 'storm'), tol = (r.maxStepMs || 17) + 60;
+      F.ok(!r.timeout && Math.abs(r.drawnMs - r.stateMs) <= tol, `${name} grade 1, qok-kid-timing='b': the cue is drawn for the whole warning`, `drawn ${r.drawnMs} ms vs ${r.stateMs} ms (tolerance ${tol} ms)`); }
+    if (d && await at('a', "grade 1, qok-kid-timing='a'")) { const a = await read(); F.info(`${name} grade 1 'a'`, JSON.stringify(a));
+      F.ok(a.G === 2 * d.G && a.period === 2 * d.period && a.glow === d.glow && a.strike === d.strike && a.gap === d.gap, `${name} grade 1, qok-kid-timing='a': every plan group is struck in two halves (twice the groups, twice the period; glow, strike and turn length as without it)`, `${a.G} groups, period ${a.period} ticks (without: ${d.G}, ${d.period})`);
+      F.ok(a.total === a.planCells && a.halves === a.total && a.pictures === a.G, `${name} grade 1, qok-kid-timing='a': every terrace cell is still struck, in a half of its own plan group, and every half has its glow picture`, `${a.total} of ${a.planCells} cells, ${a.halves} in their own group, ${a.pictures} pictures`);
+      const r = await measure(page, 'storm'), tol = (r.maxStepMs || 17) + 60;
+      F.ok(!r.timeout && Math.abs(r.drawnMs - r.stateMs) <= tol, `${name} grade 1, qok-kid-timing='a': the cue is drawn for the whole warning`, `drawn ${r.drawnMs} ms vs ${r.stateMs} ms (tolerance ${tol} ms)`); }
+    if (await at(true, "grade 1, qok-kid-timing='0'")) { const z = await read();
+      F.ok(z.opt === '' && z.G === pp.groups && z.glow === pp.glowTicks && z.strike === (pp.strikeTicks || 2) && z.gap === pp.ticksBetweenGroups, `${name} grade 1, qok-kid-timing='0': the plan plays (no option)`, `${z.G} groups, glow ${z.glow}, strike ${z.strike}, turn ${z.gap} ticks`); }
+  } catch (e) { F.ok(false, 'kid-timing Stormreach option checks ran', String(e).slice(0, 200)); }
   await browser.close();
   F.done('kid-timing');
 })().catch(e => { console.error('CRASH', e); process.exit(1); });

@@ -12,6 +12,32 @@
   'use strict';
   var K=window.__QOK_D2KIT_A__; if(!K){ setTimeout(boot,40); return; }
   var TILE=K.TILE, TICK=K.TICK;
+  // Kid timing (owner P9; day-4 kid-timing track, 2026-11-27). The same helper as storm-terrace.js, gust-walkways.js and
+  // crust-bridges.js (whichever loads first defines it; every copy is identical). Here: the crystals' flicker, which
+  // tells her the light is about to change, lasts the age group's warning (K-2: 1.5 s, grades 3-4: 1.25 s, grades 5-6
+  // and unknown: the plan's 1.0 s), and the shine lasts as much longer, so the steady light is as long as the plan's;
+  // the dim stretch and the shadows' pace are the plan's. localStorage 'qok-kid-timing' = '0': the plan for every grade.
+  var KT = window.__QOK_KIDTIME__ || (window.__QOK_KIDTIME__ = {
+    warnMs: 1500,      // the warning: about twice a grade-1 reaction (0.7 s)
+    calmMs: 1000,      // Stormreach: after a group's strike the whole terrace is calm this long before the next glow
+    gustShare: 6,      // Storm Nest: a lane blows for at most 1/6 of its cycle (a 200 ms late stop rarely meets a gust)
+    mid: { warnMs: 1250, calmMs: 1600, gustShare: 5, gustWarnMs: 1000 },   // grades 3 and 4: 2.5x a 0.5 s reaction (Storm Nest: 2x, measured better)
+    high: { warnMs: 700, calmMs: 600, gustShare: 0 },    // grades 5 and 6: the plan's glow (at least twice a 0.35 s reaction) plus a short calm stretch; gust lanes keep the plan
+    tier: function () {
+      try { if (window.localStorage && window.localStorage.getItem('qok-kid-timing') === '0') return null; } catch (e) {}
+      var q; try { q = String(window.__GAME_STATE__.player.state.quizDifficulty).toLowerCase(); } catch (e) { return null; }
+      if (q === 'k' || q === '0' || q === '1' || q === '2') return 'young';
+      if (q === '3' || q === '4') return 'mid';
+      if (q === '5' || q === '6') return 'high';
+      return null;
+    },
+    young: function () { return this.tier() !== null; },
+    cfg: function () { var t = this.tier(); return t === 'mid' ? this.mid : (t === 'high' ? this.high : this); },
+    warnTicks: function (planTicks, ms, kind) { var c = this.cfg(); return Math.max(planTicks, Math.round(((kind === 'gust' && c.gustWarnMs) || c.warnMs) / ms)); },
+    calmTicks: function (ms) { return Math.round(this.cfg().calmMs / ms); },
+    share: function () { return this.cfg().gustShare; }
+  });
+  var FLICK=1000;                                           // ms: the plan's flicker at the end of each phase
   // Day-4 look (census DA-03, DA-19). The reach of a prowling shadow (the 3x3 cells in which it
   // catches her) was a flat purple square with a ruled outline: it read as a debug zone. It is
   // the danger area a child needs, so it stays, drawn as part of the cave: a pool of deeper dark
@@ -83,6 +109,8 @@
     load:function(ctx){
       var sc=ctx.scene, st=ctx.state, mech=ctx.plan.mech||[], sh=(ctx.mechanic.shadows)||[], P=ctx.mechanic.params||{}, i, cam=sc.cameras.main;
       st.P={dimTicks:P.dimTicks||24, shineTicks:P.shineTicks||24, shadowStepDimTicks:P.shadowStepDimTicks||4};
+      st.plan={shineTicks:st.P.shineTicks, flickMs:FLICK}; st.fm=FLICK; st.kid=false;   // kid timing: the flicker grows by whole ticks and the shine by the same ticks
+      if(KT.young()){ var kadd=Math.round((Math.max(FLICK,KT.cfg().warnMs)-FLICK)/TICK); if(kadd>0){ st.fm=FLICK+kadd*TICK; st.P.shineTicks+=kadd; st.kid=true; } }
       st.t=st.P.dimTicks*TICK-1500;                          // she arrives late in a dim phase: a first look at the prowl, then the light
       st.shadows=[]; st.crystals=[]; st.solid=[]; st.sort=[]; st.pending=null;
       st.dark=ctx.own(sc.add.rectangle(cam.width/2,cam.height/2,cam.width*3,cam.height*3,0x050214,1).setScrollFactor(0).setDepth(44).setAlpha(0));
@@ -108,10 +136,10 @@
           if(!ctx.battle('shadow',function(){ st.grace=900; })) st.grace=600; } return; }
       if(sc.showingMessage) return;                         // the cave waits while she reads
       dt=Math.min(dt,100); st.t+=dt; if(st.grace>0) st.grace-=dt;
-      var c=cycle(st.P,st.t/TICK), flick=(c.left*TICK<1000) ? (0.5+0.5*Math.sin(st.t/55)) : 1;
+      var c=cycle(st.P,st.t/TICK), flick=(c.left*TICK<st.fm) ? (0.5+0.5*Math.sin(st.t/55)) : 1;
       st.dim=c.dim;
-      var lit=c.dim?(c.left*TICK<1000?0.25*flick:0):(0.55+0.45*flick);
-      st.dark.setAlpha(c.dim?0.5-0.18*(c.left*TICK<1000?flick:0):0.12+0.2*(1-flick));
+      var lit=c.dim?(c.left*TICK<st.fm?0.25*flick:0):(0.55+0.45*flick);
+      st.dark.setAlpha(c.dim?0.5-0.18*(c.left*TICK<st.fm?flick:0):0.12+0.2*(1-flick));
       for(i=0;i<st.crystals.length;i++){ var cr=st.crystals[i]; cr.glow.setAlpha(lit); cr.img.setTexture(texCrystal(sc,lit>0.4));
         if(cr.rim){ var ra=lit>0.4?0:(0.46+0.10*Math.sin(st.t/700+i*1.7)), rd=RIM_OVER;
           // The rim is drawn over the dim (depth 45), her sprite at 10: with her soles south of the crystal's base she is
