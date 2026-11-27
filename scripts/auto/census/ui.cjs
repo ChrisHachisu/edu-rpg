@@ -19,9 +19,19 @@ const nm = s => `ui-${s}-${LANG.tag}`;
 let page, errors;
 const snap = (s, shows, how) => C.snap(page, nm(s), { area: 'ui', lang: LANG.tag, shows, how });
 async function tap(sel, timeout = 5000) {
-  const loc = page.locator(sel).first();
-  try { await loc.waitFor({ state: 'visible', timeout }); await loc.tap({ timeout }); return true; }
-  catch (e) { try { await loc.click({ timeout: 2000, force: true }); return true; } catch (e2) { C.log('tap miss', sel); return false; } }
+  // a real tap on the first VISIBLE match (a backdrop sharing a data-act is skipped: day 1's Sell and New Game+ taps hit it)
+  const loc = page.locator(sel), t0 = Date.now();
+  while (Date.now() - t0 < timeout) {
+    const n = await loc.count();
+    for (let i = 0; i < n; i++) {
+      const el = loc.nth(i); if (!(await el.isVisible().catch(() => false))) continue;
+      const tag = await el.evaluate(e => e.tagName).catch(() => '');
+      if (n > 1 && tag === 'DIV' && i === 0) { const b = await loc.evaluateAll(es => es.some(e => e.tagName === 'BUTTON')); if (b) continue; }
+      try { await el.tap({ timeout: 3000 }); return true; } catch (e) { /* retry */ }
+    }
+    await page.waitForTimeout(200);
+  }
+  try { await loc.first().click({ timeout: 1500, force: true }); return true; } catch (e2) { C.log('tap miss', sel); return false; }
 }
 const active = k => page.evaluate(k => window.__PHASER_GAME__.scene.isActive(k), k).catch(() => false);
 async function setKanji() { if (LANG.kanji) await page.evaluate(() => { try { window.__GAME_STATE__.player.state.kanjiMode = true; } catch (e) {} }); }

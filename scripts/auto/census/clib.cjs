@@ -20,11 +20,28 @@ const log = (...a) => console.log(`[${((Date.now() - T0) / 1000).toFixed(0)}s]`,
 // Every capture: wait a beat, screenshot, and record. `meta`: { area, shows, how, lang }
 async function snap(page, name, meta = {}) {
   const f = path.join(OUT, name + '.png');
-  try { await page.screenshot({ path: f }); } catch (e) { log('shot fail', name, e.message); return null; }
+  let blank = null;
+  await page.waitForFunction(() => { const c = window.__QOK_COVER__; return !c || !c.phase || c.phase() !== 'world'; }, { timeout: 30000 }).catch(() => log('cover still up', name));
+  for (let tries = 0; tries < 4; tries++) {
+    const ph = await page.evaluate(() => { const c = window.__QOK_COVER__; return c && c.phase ? c.phase() : null; }).catch(() => null);
+    if (ph === 'error') { log('cover error, pressing Retry', name); await page.evaluate(() => { const b = document.querySelector('.bc-retry'); if (b) b.click(); }).catch(() => {}); await page.waitForTimeout(6000); }          // day 4: a black / spinner / flat frame is retaken after a wait (loading covers)
+    try { await page.screenshot({ path: f }); } catch (e) { log('shot fail', name, e.message); return null; }
+    blank = frameStats(f);
+    if (!blank.flat) break;
+    log('flat frame, retry', name, JSON.stringify(blank)); await page.waitForTimeout(2200);
+  }
+  const ph2 = await page.evaluate(() => { const c = window.__QOK_COVER__; return c && c.phase ? c.phase() : null; }).catch(() => null);
+  if ((blank && blank.flat) || ph2 === 'error') meta = { ...meta, flatFrame: true, coverPhase: ph2 };
   let state = null; try { state = await page.evaluate(() => { const g = window.__PHASER_GAME__, w = g && g.scene.getScene('WorldMapScene');
     return { scenes: g ? g.scene.getScenes(true).map(s => s.scene.key) : [], map: w && w.currentMapId, floor: w && w.currentFloor, x: w && w.heroTileX, y: w && w.heroTileY }; }); } catch (e) {}
   fs.appendFileSync(path.join(OUT, 'index.jsonl'), JSON.stringify({ file: name + '.jpg', ...meta, state, at: new Date().toISOString() }) + '\n');
   log('shot', name); return f;
+}
+// Mean and spread of luminance over a sparse sample of the frame: a loading cover or black frame has almost none.
+function frameStats(file) {
+  try { const P = L.decodePng(fs.readFileSync(file)), n = P.w * P.h; let sum = 0, sq = 0, c = 0;
+    for (let i = 0; i < n; i += 97) { const o = i * P.bpp, v = 0.3 * P.data[o] + 0.59 * P.data[o + 1] + 0.11 * P.data[o + 2]; sum += v; sq += v * v; c++; }
+    const m = sum / c, sd = Math.sqrt(Math.max(0, sq / c - m * m)); return { mean: Math.round(m), sd: Math.round(sd), flat: sd < 14 }; } catch (e) { return { err: String(e).slice(0, 60), flat: false }; }
 }
 async function open() { return L.launch({ dpr: 2 }); }
 // Boot a seeded save; options: locale 'en'|'ja', kanji bool, plus any L.save fields.
@@ -50,4 +67,4 @@ async function dismiss(page, max = 20) {
   }
   return max;
 }
-module.exports = { L, ROOT, OUT, acts, dman, LANDMARKS, snap, open, boot, LANGS, sleep, nudge, scenes, dismiss, log };
+module.exports = { frameStats, L, ROOT, OUT, acts, dman, LANDMARKS, snap, open, boot, LANGS, sleep, nudge, scenes, dismiss, log };

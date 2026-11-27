@@ -19,7 +19,7 @@ async function walkTo(page, cx, cy, r = 0.9) { return page.evaluate(([x, y, r]) 
 async function townDismiss(page) {
   for (let i = 0; i < 12; i++) {
     const m = await page.evaluate(() => { const w = window.__PHASER_GAME__.scene.getScene('WorldMapScene'); return !!(w && w.showingMessage); }).catch(() => false);
-    if (!m) return; await page.evaluate(() => window.__PTH.pressTalk()); await page.waitForTimeout(350);
+    if (!m) return; await page.evaluate(() => window.__P.tapKey('z')); await page.waitForTimeout(350);
   }
 }
 (async () => {
