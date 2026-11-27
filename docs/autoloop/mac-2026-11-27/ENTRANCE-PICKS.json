@@ -1,0 +1,102 @@
+{
+ "how": "entrances_apply.py <job> $ENTRANCES_PKG/out/<job>/<job>-try<N>.png $ENTRANCES_PKG/anchors/<job>-paint.png <args>; script /home/user/work/acts-scripts/apply_all.sh. pkg-current = entrances_pkg.py anchors regenerated from the pre-entrance render (ACTS_ENTRANCES=0). Picks found by template-matching the reviewed after; args reconstructed by grid search (exact values unrecorded; iron-mine 38,18 confirmed by shared README). Score = 544x416 reviewed after crop vs ours.",
+ "picks": [
+  {
+   "job": "entrance-crystal-cave-act-2-side",
+   "try": 1,
+   "args": "",
+   "after_mean_abs_diff": 0.01,
+   "after_px_gt24_pct": 0.02,
+   "collision_xor_px": 41
+  },
+  {
+   "job": "entrance-iron-mine",
+   "try": 1,
+   "args": "--mouth-shift 38,18 --mouth-box 168,210,248,288 --foot-clip 290",
+   "after_mean_abs_diff": 0.29,
+   "after_px_gt24_pct": 0.37,
+   "collision_xor_px": 1001
+  },
+  {
+   "job": "entrance-haunted-forest",
+   "try": 2,
+   "args": "--labels --current $ACTS_OUT/pkg-current/anchors/<job>-paint.png --mouth-shift 0,32 --mouth-box 200,192,286,288",
+   "after_mean_abs_diff": 0.11,
+   "after_px_gt24_pct": 0.11,
+   "collision_xor_px": 59
+  },
+  {
+   "job": "entrance-shadow-cave",
+   "try": 2,
+   "args": "--labels --current $ACTS_OUT/pkg-current/anchors/<job>-paint.png",
+   "after_mean_abs_diff": 0.0,
+   "after_px_gt24_pct": 0.0,
+   "collision_xor_px": 0
+  },
+  {
+   "job": "entrance-shadow-cave-act-3-side",
+   "try": 1,
+   "args": "--labels --current $ACTS_OUT/pkg-current/anchors/<job>-paint.png",
+   "after_mean_abs_diff": 0.0,
+   "after_px_gt24_pct": 0.0,
+   "collision_xor_px": 0
+  },
+  {
+   "job": "entrance-scorched-ruins",
+   "try": 3,
+   "args": "--labels --current $ACTS_OUT/pkg-current/anchors/<job>-paint.png --mouth-shift 0,32 --mouth-box 200,162,300,290",
+   "after_mean_abs_diff": 0.15,
+   "after_px_gt24_pct": 0.22,
+   "collision_xor_px": 252
+  },
+  {
+   "job": "entrance-magma-tunnels",
+   "try": 1,
+   "args": "--labels --current $ACTS_OUT/pkg-current/anchors/<job>-paint.png",
+   "after_mean_abs_diff": 26.66,
+   "after_px_gt24_pct": 23.06,
+   "collision_xor_px": 0,
+   "note": "diff is only the crop rows outside Act 3 raster (reviewed filled them from Act 4 render); inside: 0.001"
+  },
+  {
+   "job": "entrance-magma-tunnels-act-4-side",
+   "try": 1,
+   "args": "--labels --current $ACTS_OUT/pkg-current/anchors/<job>-paint.png",
+   "after_mean_abs_diff": 0.0,
+   "after_px_gt24_pct": 0.0,
+   "collision_xor_px": 0
+  },
+  {
+   "job": "entrance-ember-mines",
+   "try": 1,
+   "args": "--labels --current $ACTS_OUT/pkg-current/anchors/<job>-paint.png --mouth-shift 0,40 --mouth-only --mouth-box 198,191,292,261",
+   "after_mean_abs_diff": 0.12,
+   "after_px_gt24_pct": 0.18,
+   "collision_xor_px": 126
+  },
+  {
+   "job": "entrance-volcanic-forge",
+   "try": 1,
+   "args": "--labels --current $ACTS_OUT/pkg-current/anchors/<job>-paint.png",
+   "after_mean_abs_diff": 0.0,
+   "after_px_gt24_pct": 0.0,
+   "collision_xor_px": 1
+  },
+  {
+   "job": "entrance-volcanic-forge-act-5-side",
+   "try": 2,
+   "args": "--labels --current $ACTS_OUT/pkg-current/anchors/<job>-paint.png",
+   "after_mean_abs_diff": 0.02,
+   "after_px_gt24_pct": 0.03,
+   "collision_xor_px": 0
+  },
+  {
+   "job": "entrance-crystal-cave-act1",
+   "try": 2,
+   "args": "--labels --current $ACTS_OUT/pkg-current/anchors/<job>-paint.png --mouth-shift=-40,60 --mouth-only --extend-jambs --mouth-box 232,160,316,244",
+   "after_mean_abs_diff": 0.52,
+   "after_px_gt24_pct": 0.84,
+   "collision_xor_px": 398
+  }
+ ]
+}
