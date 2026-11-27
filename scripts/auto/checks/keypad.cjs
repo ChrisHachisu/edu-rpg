@@ -101,7 +101,7 @@ async function timing(page) {
       ls({}); ask('4', 3, 2); const T = qm.getTimerSeconds('normal');
       out.half = { T, at: T / 2, bonusAtHalf: !!attack(0.5, 999).speedBonus, bonusJustAfter: !!attack(0.499, 999).speedBonus, critBeatsBonus: !!attack(0.9, 1).critical };
       Math.random = () => 0.5;
-      const defend = (right, ratio) => { const e = Object.create(b.engine), fake = { totalDef: 0, isAlive: true, state: { name: 'x' }, hit: 0, takeDamage(n) { this.hit += n; } }; e.player = fake; e.monsterHp = e.monster.baseHp; e.isCharging = false; e.isDefending = false; e.rageActive = true; e.resolveEnemyAttack(right, ratio); return fake.hit; };
+      const defend = (right, ratio) => { const e = Object.create(b.engine), fake = { totalDef: 0, isAlive: true, state: { name: 'x' }, hit: 0, takeDamage(n) { this.hit += n; } }; e.player = fake; e.monster = Object.assign({}, b.engine.monster, { baseAtk: 1000, bossAbilities: [] }); e.monsterHp = e.monster.baseHp; e.isCharging = false;   /* a big hit, so whole-number rounding cannot blur 0.6 and 0.8 */ e.isDefending = false; e.rageActive = true; e.resolveEnemyAttack(right, ratio); return fake.hit; };
       out.def = { wrong: defend(false, 0.9), sure: defend(true, 0.5), late: defend(true, 0.499) };
       Math.random = keep.rnd;
       // k15: every grade, act, row (also an unknown row, a negative-number row and an old-bank question), tier and streak
@@ -120,7 +120,7 @@ async function timing(page) {
         b.quizQuestion = q; }
       out.all = { n, longer, bad: bad.slice(0, 5), nBad: bad.length, offBad: offBad.slice(0, 5), nOffBad: offBad.length, winBad: winBad.slice(0, 5), nWinBad: winBad.length, maxT, maxW };
       // the clamp does not trust the table: poison one cell and read the factors and the seconds back
-      ls({}); ask('4', 3, 2); const cell = C.table['4'][2], was = cell[2], probe = v => { cell[2] = v; return { crit: C.mult(b.quizQuestion), timer: C.timerMult(b.quizQuestion), four: (ls({ 'qok-keypad': '0' }), qm.getTimerSeconds('normal')), win: (ls({}), windowS()) }; };
+      ls({}); ask('4', 3, 2); const cell = C.table['4'][2], was = cell[2], probe = v => { cell[2] = v; return { crit: C.mult(b.quizQuestion), timer: C.timerMult ? C.timerMult(b.quizQuestion) : null, four: (ls({ 'qok-keypad': '0' }), qm.getTimerSeconds('normal')), win: (ls({}), windowS()) }; };
       out.clamp = { big: probe(9), small: probe(0.2), text: probe('x'), neg: probe(-3), nan: probe(NaN) }; cell[2] = was; out.clamp.back = probe(was);
     } finally { Math.random = keep.rnd; b.quizQuestion = keep.q; qm.difficulty = keep.d; qm.consecutiveCorrect = keep.c; qm.consecutiveWrong = keep.w; KEYS.forEach((k, i) => keepLs[i] == null ? localStorage.removeItem(k) : localStorage.setItem(k, keepLs[i])); }
     return out;

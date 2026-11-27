@@ -318,7 +318,7 @@ const lib = page => page.evaluate(() => { if (window.__dl2) return; const g = wi
 // Item 9: the way out must show in the dark. Six cells from the mouth of a dark floor the mouth lies outside her lamp
 // (the darkness is drawn at depth 8, the floor glow under it). The exit region (the mouth's width, one cell either
 // side of the map's edge) against the dark beside it (the same band, two to three and a half cells to each side).
-const FAR_OLD = { ironMine: 63.4, shadowCave: 56.0 };       // the margin of the tree before day 4 (37de040, the engine's spill over the dark), measured by this same function on :5570
+const FAR_OLD = { ironMine: 63.4, shadowCave: { 'crystals shining': 56.0, 'crystals dim': 32.0 } };       // the margin of the tree before day 4 (37de040, the engine's spill over the dark), measured by this same function on :5570
 async function far(page) {
   for (const id of ['ironMine', 'shadowCave']) {
     const f = fl(id, 1), ms = f.assets.filter(a => a.kind === 'mouth'), xs = ms.map(a => a.x), x0 = Math.min(...xs) * T, x1 = (Math.max(...xs) + 1) * T, ey = f.height * T, xm = (x0 + x1) / 2;
@@ -328,12 +328,21 @@ async function far(page) {
     await shotIf(page, `far-${id}-in-the-mouth`);
     await place(page, xm, ey - 6 * T); await sleep(page, 700);
     const s = await d4(page); await shotIf(page, `far-${id}-six-cells`);
-    const r = await page.evaluate(async ([x0, x1, ey, T]) => { await window.__dl2.snap('far'); const L = window.__dl2.lum;
-      const sc = window.__PHASER_GAME__.scene.getScene('WorldMapScene'), h = sc.hero, z = sc.cameras.main.zoom;
-      return { exit: L('far', x0, ey - T, x1, ey + T), left: L('far', x0 - 3.5 * T, ey - T, x0 - 2 * T, ey + T), right: L('far', x1 + 2 * T, ey - T, x1 + 3.5 * T, ey + T), zoom: z, heroToEdge: Math.round(ey - h.y) }; }, [x0, x1, ey, T]);
-    const sides = [r.left, r.right].filter(Boolean), dark = sides.length ? sides.reduce((a, b) => a + b.mean, 0) / sides.length : null, margin = r.exit && dark !== null ? +(r.exit.mean - dark).toFixed(1) : null;
-    F.info(`${id} B1F, six cells from the mouth`, JSON.stringify({ ...r, dark, margin, far: s && s.mouths[0] && s.mouths[0].far, nearFar: nearS && nearS.mouths[0] && nearS.mouths[0].far }));
-    F.ok(margin !== null && margin >= FAR_OLD[id] * 0.95, `${id}: six cells from the mouth, in the dark, the way out is brighter than the dark beside it by at least the old build's margin`, `exit ${r.exit && r.exit.mean} against ${dark === null ? 'nothing' : dark.toFixed(1)}: margin ${margin} (old build ${FAR_OLD[id]})`);
+    // Shadow Cave lays its own dark over the whole floor, deeper while the crystals are dim: the margin is read once in each
+    // phase (the module's clock stood still), against the old build in the same phase
+    const phases = id === 'shadowCave' ? [['crystals shining', 'return S.dark && !S.dim && S.dark.alpha < 0.2;'], ['crystals dim', 'return S.dark && S.dim && S.dark.alpha > 0.45;']] : [['', null]];
+    let r = null;
+    for (const [ph, cond] of phases) {
+      const held = cond ? await freeze(page, cond, 30000) : true; if (cond) await sleep(page, 150);
+      r = await page.evaluate(async ([x0, x1, ey, T]) => { await window.__dl2.snap('far'); const L = window.__dl2.lum;
+        const c = window.__QOK_DNG2__.ctx(), sc = window.__PHASER_GAME__.scene.getScene('WorldMapScene'), h = sc.hero, z = sc.cameras.main.zoom;
+        return { exit: L('far', x0, ey - T, x1, ey + T), left: L('far', x0 - 3.5 * T, ey - T, x0 - 2 * T, ey + T), right: L('far', x1 + 2 * T, ey - T, x1 + 3.5 * T, ey + T), zoom: z, heroToEdge: Math.round(ey - h.y), floorDark: c && c.state && c.state.dark ? +c.state.dark.alpha.toFixed(2) : null }; }, [x0, x1, ey, T]);
+      if (cond) await thaw(page);
+      const sides = [r.left, r.right].filter(Boolean), dark = sides.length ? sides.reduce((a, b) => a + b.mean, 0) / sides.length : null, margin = r.exit && dark !== null ? +(r.exit.mean - dark).toFixed(1) : null;
+      const old = cond ? FAR_OLD[id][ph] : FAR_OLD[id], tag = ph ? ` (${ph})` : '';
+      F.info(`${id} B1F, six cells from the mouth${tag}`, JSON.stringify({ ...r, held, dark, margin, far: s && s.mouths[0] && s.mouths[0].far, nearFar: nearS && nearS.mouths[0] && nearS.mouths[0].far }));
+      F.ok(held && margin !== null && margin >= old * 0.95, `${id}: six cells from the mouth, in the dark${tag}, the way out is brighter than the dark beside it by at least the old build's margin`, `exit ${r.exit && r.exit.mean} against ${dark === null ? 'nothing' : dark.toFixed(1)}: margin ${margin} (old build ${old})`);
+    }
     const fm = s && s.mouths[0] && s.mouths[0].far, nm = nearS && nearS.mouths[0] && nearS.mouths[0].far;
     F.ok(fm && fm.visible && fm.depth > 8 && fm.alpha >= 0.6 && nm && nm.alpha <= 0.05, `${id}: the glow over the dark is on only while the mouth is outside her light (off when she stands in the mouth: no second glare on top of the floor glow)`, JSON.stringify({ far: fm, atTheMouth: nm }));
     F.ok(r.exit && r.exit.max <= 249, `${id}: the far glow is never pure white`, `brightest point ${r.exit && r.exit.max}`);

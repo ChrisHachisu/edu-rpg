@@ -338,10 +338,13 @@
       // 2026-11-27c (day 4 B2, review of 27b): grades K and 1 keep the lower HP of 27b but get the hits of 27a back (rage 1.6, charge 1.5).
       // 27b had RAISED them to bring the win rate down, which took the worst single hit from 68% to 83% of a kindergartner's max HP.
       // The harder variant stays selectable: qok-dk-k1=hard (DK_K1_HARD below).
+      // Grade 5 rage 1.35 -> 1.3 (the value of 27a): 27b raised it together with the HP cut and no run ever compared the two at hp 1250.
+      // Out of sample (seed 5551xx, three heroes, 90 tries each) the morning's child won 62% at 1.35 and 60% at 1.3: no difference that
+      // can be seen, both inside 55-80%, and the worst hit drops from 80% to 76% of her max HP.
       demonKing:          { hp: 1500, regen: 0.01, poison: 0.02, rage: 1.5, charge: 1.6, grade: {
         'k': { hp: 900, rage: 1.6, charge: 1.5 }, '1': { hp: 1050, rage: 1.6, charge: 1.5 }, '2': { hp: 1300, rage: 1.75, charge: 1.6 },
         '3': { hp: 1400 }, '4': { hp: 1400 },
-        '5': { hp: 1250, rage: 1.35, charge: 1.45 }, '6': { hp: 1400, rage: 1.3, charge: 1.45 } } }
+        '5': { hp: 1250, rage: 1.3, charge: 1.45 }, '6': { hp: 1400, rage: 1.3, charge: 1.45 } } }
     },
     // Ten dungeons roll a neighbour's monster table although the zone table holds one written for them.
     dungeonZones: {
