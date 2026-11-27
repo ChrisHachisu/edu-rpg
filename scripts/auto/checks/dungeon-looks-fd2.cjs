@@ -398,7 +398,7 @@ async function voidr(page) {
   }
   F.info('void rift 1F: what the join light adds to the picture at the dimmest and the brightest moment of its pulse', JSON.stringify(meas));
   // the old bar (37de040) measured by these same lines on :5570: per world px of join length, so a longer or shorter overlap compares fairly
-  const JOIN_OLD = { low: { changedPerPx: +(process.env.DL2_JL_CH || 0), peak: +(process.env.DL2_JL_PK || 0), core: +(process.env.DL2_JL_CO || 0) }, high: { changedPerPx: +(process.env.DL2_JH_CH || 0), peak: +(process.env.DL2_JH_PK || 0), core: +(process.env.DL2_JH_CO || 0) } };
+  const JOIN_OLD = { low: { changedPerPx: 6.0, peak: 42, core: 40.8 }, high: { changedPerPx: 6.0, peak: 180, core: 138.9 } };   // the 6 px bar of the tree before day 4, measured by this same code on :5570
   const cmp = k => meas[k] ? { changedPerPx: +(meas[k].changed / meas[k].len).toFixed(2), peak: meas[k].peak, core: meas[k].core } : null, now = { low: cmp('low'), high: cmp('high') };
   const asGood = k => now[k] && now[k].changedPerPx >= JOIN_OLD[k].changedPerPx && now[k].peak >= JOIN_OLD[k].peak * 0.97 && now[k].core >= JOIN_OLD[k].core * 0.97;
   F.ok(r.glows.every(g => g.type === 'Image') && asGood('low') && asGood('high'), 'Void Rift: the soft join light is at least as visible as the old 6 px bar (changed pixels, peak and core contrast, at the dimmest and the brightest moment of the pulse)', JSON.stringify({ now, oldBar: JOIN_OLD }));

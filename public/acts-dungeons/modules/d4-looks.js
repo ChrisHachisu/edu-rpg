@@ -100,7 +100,7 @@
   // mouth is deep: nothing while the mouth is in her light (the floor glow is seen as it is), the whole glow once
   // the mouth is in the dark. Same picture, same place, ordinary blending: where both show, the light only tends
   // toward the glow's own colour, never past it (no glare, never white).
-  var GLOW_FAR=0.72;                                         // the far glow's strength in full darkness: six cells off, the mouth then stands out of the dark a little more than the old spill did (measured: 69 and 61 against 63 and 56 of 255)
+  var GLOW_FAR=0.72;                                         // the far glow's strength in full darkness: six cells off, the mouth then stands out of the dark a little more than the old spill did (measured, exit against the dark beside it: 70 and 62 of 255 on Iron Mine and Shadow Cave B1F, the old spill gave 63 and 56)
   function glowTex(sc,cells){
     var key='d4mouth_w'+cells, W=Math.round((cells+2*GLOW_PAD)*TILE/GLOW_S), H=Math.round((GLOW_IN+GLOW_OUT)*TILE/GLOW_S);
     return canvasTex(sc,key,W,H,function(g){                 // built for a mouth that faces DOWN: the map's edge is the row at GLOW_IN cells

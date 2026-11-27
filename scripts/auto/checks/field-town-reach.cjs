@@ -85,6 +85,7 @@ function modelFrom(html) {
   if (sp) { m.side = num(/NPC_TALK_SIDE = [^;]*?NPC_SPACE_ON \? ([\d.]+)/, NaN); m.sideDy = num(/NPC_TALK_SIDE_DY = NPC_SPACE_ON \? ([\d.]+)/, NaN); m.reachS = num(/NPC_TALK_SOUTH = NPC_SPACE_ON \? ([\d.]+)/, NaN); }
   else { m.side = num(/NPC_TALK_SIDE = (?:F2_OLD\('npcbody'\) \? [\d.]+ : )?([\d.]+)/, 1.1); m.sideDy = num(/NPC_TALK_SIDE_DY = ([\d.]+)/, 99); m.reachS = 2.1; }
   m.kx = sp && /NPC_NEAR_KX = NPC_SPACE_ON \? \(NPC_SPACE\[2\] \+ 4\) \/ \(NPC_SPACE\[0\] \+ 4\)/.test(html) ? (m.space[2] + 4) / (m.space[0] + 4) : 1;   // nearestNpc()'s sideways weight
+  m.sideLow = 1.1;
   return m;
 }
 // town.html's blockers for one person: [{ x0, y0, x1, y1, hw }]
@@ -94,8 +95,64 @@ function segs(n, M, mode) {
     const k = off > 0 ? Math.ceil(off / r) + 1 : 1; return Array.from({ length: k }, (_, i) => { const o = k > 1 ? -off + 2 * off * i / (k - 1) : 0; return { x0: n.x + o, y0, x1: n.x + o, y1, hw: r }; }); });
   const b = M.own && n.body ? n.body : [M.r, M.south]; return [{ x0: n.x, y0: n.y, x1: n.x, y1: n.y + b[1], hw: b[0] }];
 }
+// town.html's own prompt rules, replicated (inTalkBand / nearestNpc / nearestService) for people [{ id, x, y, reach }]
+function promptRules(C, M, npcs, services) {
+  const inBand = (n, x, y) => { const dx = x - n.x, dy = y - n.y; return !(Math.abs(dx) > C * (dy <= C * M.sideDy ? M.side : M.sideLow) || dy < -C * 0.35 || dy > C * n.reach); };
+  const nearestNpc = (x, y) => { let b = null; for (const n of npcs) { if (!inBand(n, x, y)) continue; const d = Math.hypot((x - n.x) * M.kx, y - n.y); if (!b || d < b.d) b = { n, d }; } return b ? b.n : null; };
+  const nearestService = (x, y) => { let b = null; for (const [kind, c] of services) { const dx = x / C - c[0], dy = y / C - c[1]; if (Math.abs(dx) > 1.2 || Math.abs(dy) > 1.2) continue; const d = Math.hypot(dx, dy); if (!b || d < b.d) b = { kind, d }; } return b ? b.kind : null; };
+  return { inBand, nearestNpc, nearestService };
+}
+// ---- FT2 (review of 2026-11-27): how far she walks. One town on one set of files: the ground she can reach from the gate
+// (2 px grid, the flood of the main check) and the shortest walk over it (8 directions, no cutting a corner) from the gate,
+// the save spot and the opening spot to every person's talk spot, the shop, the save spot and the exit line.
+function people(T, M, html, opts = {}) { const C = T.worldPxPerCell, old = opts.cellOld || [];
+  return T.npcs.map(n => { const c = old.includes(n.id) && Array.isArray(n.cellOld) ? n.cellOld : n.cell;
+    return { id: n.id, x: c[0] * C, y: c[1] * C, reach: M.reach && n.talkReach ? n.talkReach : M.reachS, body: n.body, space: M.space ? (opts.space ? opts.space(n) : n.space) : null, also: M.space && /n\.spaceAlso/.test(html) && !(opts.space && opts.space(n) !== n.space) ? n.spaceAlso : null, max: n.spaceMax, note: n.spaceNote || n.bodyNote }; }); }
+function bareGrid(W, T, base, STEP = 2) { const WORLD = T.cells * T.worldPxPerCell, N = Math.ceil(WORLD / STEP) + 1, bare = new Uint8Array(N * N);
+  for (let gy = 0; gy < N; gy++) for (let gx = 0; gx < N; gx++) bare[gy * N + gx] = W.isInsideWalkable({ x: gx * STEP, y: gy * STEP }, base) ? 1 : 0; return bare; }
+function carve(bare, N, STEP, npcs, M, mode, fr) { const inside = Uint8Array.from(bare);
+  for (const n of npcs) for (const s of segs(n, M, mode)) { const R = s.hw + fr + 1e-6;
+    for (let gy = Math.max(0, Math.floor((s.y0 - R) / STEP)); gy <= Math.min(N - 1, Math.ceil((s.y1 + R) / STEP)); gy++) for (let gx = Math.max(0, Math.floor((s.x0 - R) / STEP)); gx <= Math.min(N - 1, Math.ceil((s.x0 + R) / STEP)); gx++) {
+      const x = gx * STEP, y = gy * STEP; if (Math.hypot(x - s.x0, y - Math.min(Math.max(y, s.y0), s.y1)) <= R) inside[gy * N + gx] = 0; } }
+  return inside; }
+function nearestFree(inside, N, STEP, x, y, R = 24) { const sx = Math.round(x / STEP), sy = Math.round(y / STEP); let best = -1, bd = 1e9;
+  for (let dy = -R; dy <= R; dy++) for (let dx = -R; dx <= R; dx++) { const gx = sx + dx, gy = sy + dy; if (gx < 0 || gy < 0 || gx >= N || gy >= N || !inside[gy * N + gx]) continue; const d = Math.hypot(gx * STEP - x, gy * STEP - y); if (d < bd) { bd = d; best = gy * N + gx; } }
+  return best; }
+// shortest walks from one grid point (Dijkstra, binary heap)
+function walks(inside, N, STEP, src) { const dist = new Float32Array(N * N).fill(Infinity), hk = [src], hd = [0]; dist[src] = 0; const D = STEP * Math.SQRT2;
+  const push = (k, d) => { let i = hk.length; hk.push(k); hd.push(d); while (i > 0) { const p = (i - 1) >> 1; if (hd[p] <= d) break; hk[i] = hk[p]; hd[i] = hd[p]; i = p; } hk[i] = k; hd[i] = d; };
+  const pop = () => { const k = hk[0], d = hd[0], lk = hk.pop(), ld = hd.pop(), n = hk.length; if (n) { let i = 0; for (;;) { let c = 2 * i + 1; if (c >= n) break; if (c + 1 < n && hd[c + 1] < hd[c]) c++; if (hd[c] >= ld) break; hk[i] = hk[c]; hd[i] = hd[c]; i = c; } hk[i] = lk; hd[i] = ld; } return [k, d]; };
+  while (hk.length) { const [k, d] = pop(); if (d > dist[k]) continue; const x = k % N, y = (k - x) / N;
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]]) { const nx = x + dx, ny = y + dy; if (nx < 0 || ny < 0 || nx >= N || ny >= N) continue; const nk = ny * N + nx; if (!inside[nk]) continue;
+      if (dx && dy && (!inside[y * N + nx] || !inside[ny * N + x])) continue; const nd = d + (dx && dy ? D : STEP); if (nd < dist[nk]) { dist[nk] = nd; push(nk, nd); } } }
+  return dist; }
+// opts: bare (a grid already made), cellOld [ids standing at their cellOld], space(n) (a person's space, when a switch changes it), saveOld
+function measure(W, T, base, M, html, opts = {}) {
+  const C = T.worldPxPerCell, STEP = 2, N = Math.ceil(T.cells * C / STEP) + 1, fr = base.actorFootRadius || 0;
+  const npcs = opts.npcs || people(T, M, html, opts), bare = opts.bare || bareGrid(W, T, base, STEP), inside = carve(bare, N, STEP, npcs, M, 'cur', fr);
+  const save = opts.saveOld && Array.isArray(T.savePointOld) ? T.savePointOld : T.savePoint;
+  const services = [['shop', T.shopCounter], ['save', save]].filter(s => Array.isArray(s[1])), P = promptRules(C, M, npcs, services);
+  const src = { gate: nearestFree(inside, N, STEP, T.startCell[0] * C, T.startCell[1] * C) };
+  const fromGate = walks(inside, N, STEP, src.gate), seen = new Uint8Array(N * N); for (let k = 0; k < N * N; k++) if (fromGate[k] < Infinity) seen[k] = 1;
+  // the other places she starts a walk from: the save spot (where she stands to save: the reachable point nearest its cell) and the opening spot
+  const reachNear = (x, y) => { let best = -1, bd = 1e9; for (let dy = -20; dy <= 20; dy++) for (let dx = -20; dx <= 20; dx++) { const gx = Math.round(x / STEP) + dx, gy = Math.round(y / STEP) + dy; if (gx < 0 || gy < 0 || gx >= N || gy >= N || !seen[gy * N + gx]) continue; const d = Math.hypot(gx * STEP - x, gy * STEP - y); if (d < bd) { bd = d; best = gy * N + gx; } } return best; };
+  if (Array.isArray(save)) src.save = reachNear(save[0] * C, save[1] * C);
+  if (Array.isArray(T.firstEntryCell)) src.opening = reachNear(T.firstEntryCell[0] * C, T.firstEntryCell[1] * C);
+  // the places she walks to: a person's (where Talk names her), the shop's (its spot, or its keeper), the save spot's, the exit line
+  const exitY = (T.exit && T.exit.cell ? T.exit.cell[1] : T.startCell[1]) * C, exitX = (T.exit && T.exit.cell ? T.exit.cell[0] : T.startCell[0]) * C, north = T.exit && T.exit.axis ? T.exit.axis === 'north' : (T.exit && T.exit.cell && T.exit.cell[1] < T.cells / 2);
+  const goal = {}; const add = (name, k) => (goal[name] = goal[name] || []).push(k);
+  for (let k = 0; k < N * N; k++) { if (!seen[k]) continue; const x = (k % N) * STEP, y = Math.floor(k / N) * STEP, n = P.nearestNpc(x, y), s = P.nearestService(x, y);
+    if (n && (n.id === 'healer' || n.id === 'shopkeeper' || !s)) add(n.id === 'shopkeeper' ? 'shop' : n.id, k);
+    if (s && !(n && (n.id === 'healer' || (n.id === 'shopkeeper' && s !== 'shop')))) add(s, k);
+    if ((north ? y <= exitY : y >= exitY) && Math.abs(x - exitX) < 2.4 * C) add('exit', k); }
+  const dist = {};
+  for (const [name, k] of Object.entries(src)) { if (k < 0) continue; const d = name === 'gate' ? fromGate : walks(inside, N, STEP, k); dist[name] = {};
+    for (const [g, ks] of Object.entries(goal)) { if (g === name) continue; let m = Infinity; for (const q of ks) if (d[q] < m) m = d[q]; dist[name][g] = m < Infinity ? +m.toFixed(1) : null; }
+    for (const n of npcs) { const g = n.id === 'shopkeeper' ? 'shop' : n.id; if (!(g in dist[name])) dist[name][g] = null; } }
+  return { N, STEP, C, fr, npcs, bare, inside, seen, dist, P, services };
+}
 // the outlines, lists and box readers are shared with the browser check (town-looks.cjs)
-module.exports = { TOWNS, PROPS, BANDED, ONGROUND, HERO, BODY_HALF, BODY_UP, ovalRing, inRing, spriteBox, png };
+module.exports = { TOWNS, PROPS, BANDED, ONGROUND, HERO, BODY_HALF, BODY_UP, ovalRing, inRing, spriteBox, png, modelFrom, segs, measure, people, bareGrid, carve, walks, promptRules };
 if (require.main === module) (async () => {
   const W = await import(path.join(ROOT, 'public/act1-hifi/walkable-polygons.js'));
   const html = await get('act1-hifi/town.html'), M = modelFrom(html);
