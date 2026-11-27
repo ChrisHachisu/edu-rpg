@@ -23,6 +23,7 @@
   var LOOKS=(function(){ try{ return window.localStorage.getItem('qok-d4-looks')!=='0'; }catch(e){ return true; } })();
   var AURA_TEX=128, AURA_R0=0.84, AURA_REACH=1.85;          // texture px; the rim's radius in texture half-widths; the rim's reach in cells (a 4th-power round square through the 3x3's corners)
   var AURA_PX=2*AURA_REACH*TILE/AURA_R0;                    // on-screen size of the texture at rest
+  var RIM_OVER=45, RIM_UNDER=9.404;                         // the crystal rim's depth: over the dim (44); or just above the crystal standing behind her (K.ysort's 9.4), under her (10)
   function auraField(u,v){                                  // 0 at the shadow, 1 on the rim; the rim only ever bulges outward
     var a=Math.atan2(v,u), wob=1+0.028*(1+Math.sin(3*a+0.7))+0.018*(1+Math.sin(5*a+2.1))+0.010*(1+Math.sin(8*a+4.0));
     return Math.pow(u*u*u*u+v*v*v*v,0.25)/(AURA_R0*wob);
@@ -89,7 +90,7 @@
       for(i=0;i<mech.length;i++){ if(mech[i].kind!=='crystalLight') continue; var a=mech[i];
         var o=K.img(ctx,texCrystal(sc,false),a.x*TILE+TILE/2,a.y*TILE+TILE/2-8,9.4); o.__by=a.y*TILE+TILE-6;
         var gl=K.img(ctx,texGlow(sc),a.x*TILE+TILE/2,a.y*TILE+TILE/2-10,46); try{ gl.setBlendMode('ADD'); }catch(e){} gl.setAlpha(0).setScale(1.5);
-        var rm=null; if(LOOKS){ rm=K.img(ctx,texCrystalRim(sc),o.x,o.y,45); rm.setAlpha(0); }
+        var rm=null; if(LOOKS){ rm=K.img(ctx,texCrystalRim(sc),o.x,o.y,RIM_OVER); rm.setAlpha(0); }
         st.crystals.push({img:o,glow:gl,rim:rm}); st.sort.push(o);
         if(ctx.terrain(a.x,a.y)!=='#') st.solid.push({x:a.x,y:a.y}); }
       for(i=0;i<sh.length;i++){ if(K.get(ctx,'shadow'+sh[i].id+'.gone')) continue;
@@ -112,7 +113,15 @@
       var lit=c.dim?(c.left*TICK<1000?0.25*flick:0):(0.55+0.45*flick);
       st.dark.setAlpha(c.dim?0.5-0.18*(c.left*TICK<1000?flick:0):0.12+0.2*(1-flick));
       for(i=0;i<st.crystals.length;i++){ var cr=st.crystals[i]; cr.glow.setAlpha(lit); cr.img.setTexture(texCrystal(sc,lit>0.4));
-        if(cr.rim) cr.rim.setAlpha(lit>0.4?0:(0.46+0.10*Math.sin(st.t/700+i*1.7))); }
+        if(cr.rim){ var ra=lit>0.4?0:(0.46+0.10*Math.sin(st.t/700+i*1.7)), rd=RIM_OVER;
+          // The rim is drawn over the dim (depth 45), her sprite at 10: with her soles south of the crystal's base she is
+          // in FRONT of it, and the rim's lines would cross her head. While her picture's box meets the rim's, the rim
+          // takes the crystal's own place in the sorting (just above it, under her) and is made stronger by what the
+          // dim layer above it takes away, so it looks the same and she covers it.
+          var hs=sc.hero, hf=ra>0?ctx.hero():null;
+          if(hf && hs && hf.footY>=cr.img.__by){ var hl=hs.x-(hs.displayWidth||48)*hs.originX, ht=hs.y-(hs.displayHeight||60)*hs.originY;
+            if(hl<cr.rim.x+26 && hl+(hs.displayWidth||48)>cr.rim.x-26 && ht<cr.rim.y+32 && ht+(hs.displayHeight||60)>cr.rim.y-32){ rd=RIM_UNDER; ra=Math.min(1,ra/Math.max(0.3,1-st.dark.alpha)); } }
+          cr.rim.setAlpha(ra); if(cr.rim.depth!==rd) cr.rim.setDepth(rd); } }
       var h=ctx.hero(), so=K.soles(ctx), g=st.ring; g.clear();
       for(i=0;i<st.shadows.length;i++){ var s=st.shadows[i], cell=cellOf(s,st.P,c.dimTicks);
         s.cx=cell[0]; s.cy=cell[1];

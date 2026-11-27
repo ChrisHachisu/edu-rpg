@@ -191,6 +191,9 @@
   // outer end of the stick's top edge, level with the prompt pill and clear of it), and no longer floats over her
   // head where it covered what stood behind it (a chest, on 4F). Same picture, same fade, shown exactly while the
   // old badge was (its alpha is still kept on spr.badge, which is not drawn). 'qok-d4-looks' = '0': over her head.
+  // The stick is not always there: #touch-controls is display:none outside the touch media query (a mouse and
+  // keyboard, index.html) and while a message box is open. So the old badge is hidden ONLY while the stick has a
+  // rendered box (asked each time the chip is placed, at most every 0.4 s); otherwise the mark stays over her head.
   var LOOKS = (function () { try { return window.localStorage.getItem('qok-d4-looks') !== '0'; } catch (e) { return true; } })();
   var chipEl = null;
   function chipDrop() { if (chipEl) { try { chipEl.parentNode.removeChild(chipEl); } catch (e) {} chipEl = null; } }
@@ -206,12 +209,14 @@
     } catch (e) { chipEl = null; }
     return chipEl;
   }
-  function chipPlace() {                                                      // above the stick, at the end of it that is nearer the screen's edge
-    if (!chipEl) return;
+  function chipPlace() {                                                      // above the stick, at the end of it that is nearer the screen's edge; true = the stick is on screen (the chip can be seen)
+    if (!chipEl) return false;
+    var shown = false;
     try { var d = document.getElementById('dpad'), r = d && d.getBoundingClientRect(), vw = window.innerWidth || 390, x, y;
-      if (r && r.width > 20) { x = (r.left + r.width / 2 > vw / 2) ? r.right - 60 : r.left; y = r.top - 30 - 10; }
+      if (r && r.width > 20 && r.height > 20) { x = (r.left + r.width / 2 > vw / 2) ? r.right - 60 : r.left; y = r.top - 30 - 10; shown = true; }
       else { x = vw - 60 - 20; y = (window.innerHeight || 844) - 300; }
-      chipEl.style.left = Math.round(x) + 'px'; chipEl.style.top = Math.round(y) + 'px'; } catch (e) {}
+      chipEl.style.left = Math.round(x) + 'px'; chipEl.style.top = Math.round(y) + 'px'; } catch (e) { shown = false; }
+    return shown;
   }
   function fallbackKnight(sc, K) {                                            // only if the Dark Knight's picture cannot be had
     return K.canvasTex(sc, 'd2m_knight', 40, 56, function (g) {
@@ -250,7 +255,7 @@
     for (i = 0; i < M.knights.length; i++) { var body = ctx.own(sc.add.image(0, 0, kk).setOrigin(0.5, 0.92)), s0 = 66 / Math.max(1, body.height || 66); body.setScale(s0);
       spr.knights[M.knights[i].id] = { body: body, scale: s0, shadow: ctx.own(sc.add.ellipse(0, 0, 36, 12, 0x000000, 0.32).setDepth(ctx.depth.object)) }; }
     spr.badge = ctx.own(sc.add.image(0, 0, badgeTex(sc, K)).setOrigin(0.5, 1).setDepth(60).setAlpha(0));
-    if (LOOKS && chipMake(sc, K)) { spr.badge.setVisible(false); spr.chip = chipEl; S.chipAt = -1e9; }
+    if (LOOKS && chipMake(sc, K)) { spr.chip = chipEl; S.chipAt = -1e9; S.chipOn = false; }   // the badge stays (alpha 0) until the stick is seen on screen
     S.spr = spr;
   }
   function paint(ctx, dt) {
@@ -270,8 +275,9 @@
       if (q.dx) o.body.setFlipX(q.dx < 0); }
     if (sp.badge) { var on = S.swap && !S.fall && h, a = sp.badge.alpha + ((on ? 1 : 0) - sp.badge.alpha) * Math.min(1, dt / 140);
       sp.badge.setAlpha(a < 0.01 ? 0 : a); if (h) sp.badge.setPosition(h.x, h.y - 34 - 2 * Math.sin(w * 4));
-      if (sp.chip && sp.chip === chipEl) { if (a >= 0.01 && S.t - S.chipAt > 400) { S.chipAt = S.t; chipPlace(); }
-        var op = (a < 0.01 ? 0 : a).toFixed(2); if (chipEl.__op !== op) { chipEl.__op = op; chipEl.style.opacity = op; } } }
+      if (sp.chip && sp.chip === chipEl) { if (a >= 0.01 && S.t - S.chipAt > 400) { S.chipAt = S.t; S.chipOn = chipPlace(); }
+        if (sp.badge.visible === !!S.chipOn) sp.badge.setVisible(!S.chipOn);   // over her head wherever the stick is not on screen
+        var op = (a < 0.01 || !S.chipOn ? 0 : a).toFixed(2); if (chipEl.__op !== op) { chipEl.__op = op; chipEl.style.opacity = op; } } }
   }
 
   // ---- the fall -------------------------------------------------------------------------------------

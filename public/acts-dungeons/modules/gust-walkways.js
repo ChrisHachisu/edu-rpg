@@ -89,6 +89,7 @@
   // The clock, the lane cells and the window glow are untouched. 'qok-d4-looks'='0' = the old look.
   var LOOKS=(function(){ try{ return window.localStorage.getItem('qok-d4-looks')!=='0'; }catch(e){ return true; } })();
   var WIND_W=512, WIND_H=256, WIND_FEATHER=32;              // the band's tile: 512 px down-wind, 256 px across (the lane plus half a cell of feather each side)
+  var BAND_H=64;                                            // the band sprite's own height before it is stretched across the lane (its canvas is lane length x this)
   function texWind(sc){
     var key=K.tex(sc,'d2a_gust_wind',WIND_W,WIND_H,function(g){
       var y, i, s=11;
@@ -107,9 +108,11 @@
     try{ sc.textures.get(key).setFilter(0); }catch(e){}     // 0 = LINEAR: soft, not pixel-stepped
     return key;
   }
-  // one wisp near her: tapered like wisp(), every piece faded by its own distance from her
-  function wispNear(g,x,y,dx,dy,len,wmax,amax,col,sway,hx,hy,R0,R1){
-    var N=7, px=-dy, py=dx, i, drawn=0;
+  // one wisp near her: tapered like wisp(), every piece faded by its own distance from her. N pieces: the pale
+  // wisp takes 4 and the cool shade under it 3 (they were 7 and 7: half the strokes a frame; at phone size a wisp
+  // is 54 to 104 px long, so a piece is still only 14 to 26 px and the taper reads the same)
+  function wispNear(g,x,y,dx,dy,len,wmax,amax,col,sway,hx,hy,R0,R1,N){
+    var px=-dy, py=dx, i, drawn=0;
     for(i=0;i<N;i++){ var u0=i/N, u1=(i+1)/N, um=(u0+u1)/2, k=Math.sin(Math.PI*um);
       var mx=x+dx*len*um, my=y+dy*len*um, d=Math.sqrt((mx-hx)*(mx-hx)+(my-hy)*(my-hy)), f=d<=R0?1:(d>=R1?0:1-(d-R0)/(R1-R0)), al=amax*k*f;
       if(al<0.012) continue;
@@ -141,8 +144,12 @@
         var L={id:z[i].id,rect:z[i].rect,dir:z[i].dir,cells:z[i].cells,period:z[i].period,active:z[i].active,warn:z[i].warn,phase:z[i].phase||0,chev:[],win:null}; kidLane(L,st.kid);
         if(st.looks){                                        // the lane's air: one band the length of the lane, turned to the wind
           var bw=(L.dir[0]!==0?(L.rect[2]-L.rect[0]+1):(L.rect[3]-L.rect[1]+1))*TILE, ba=(L.dir[0]!==0?(L.rect[3]-L.rect[1]+1):(L.rect[2]-L.rect[0]+1))*TILE;
-          L.band=ctx.own(sc.add.tileSprite((L.rect[0]+L.rect[2]+1)/2*TILE,(L.rect[1]+L.rect[3]+1)/2*TILE,bw,WIND_H,texWind(sc)));
-          L.band.setDepth(2.5).setRotation(Math.atan2(L.dir[1],L.dir[0])).setScale(1,(ba+TILE)/WIND_H).setAlpha(0).setVisible(false); L.off=0; L.dustOff=0; }
+          // A tile sprite keeps a canvas of its own size (lane length x its height: 2.2 MB a lane at 256 px tall, 11 MB
+          // on 5F). The sprite is BAND_H tall and stretched to the lane instead, with the tile squeezed by the same
+          // factor: the picture on screen is the same (the 256 px tile is still what is sampled), the canvas a quarter.
+          L.band=ctx.own(sc.add.tileSprite((L.rect[0]+L.rect[2]+1)/2*TILE,(L.rect[1]+L.rect[3]+1)/2*TILE,bw,BAND_H,texWind(sc)));
+          try{ L.band.setTileScale(1,BAND_H/WIND_H); }catch(e){}
+          L.band.setDepth(2.5).setRotation(Math.atan2(L.dir[1],L.dir[0])).setScale(1,(ba+TILE)/BAND_H).setAlpha(0).setVisible(false); L.off=0; L.dustOff=0; }
         for(j=0;j<L.cells.length;j++){ st.cell[L.cells[j][0]+','+L.cells[j][1]]=L; if(st.looks) continue;
           var c=K.img(ctx,texChevron(sc),L.cells[j][0]*TILE+TILE/2,L.cells[j][1]*TILE+TILE/2,2.6); c.setRotation(Math.atan2(L.dir[1],L.dir[0])); c.setAlpha(0.12); L.chev.push(c); }
         st.lanes.push(L); }
@@ -184,8 +191,8 @@
             for(ss=Math.floor((Ha-r1-WL-GAP)/GAP)*GAP; ss<Ha+r1+GAP; ss+=GAP){
               qq=ss+(sg>0?L.off+shf:GAP-L.off+shf);
               var wx=HZ?qq:la, wy=HZ?la:qq;
-              wispNear(g,wx+(HZ?0:2),wy+(HZ?2:0),L.dir[0],L.dir[1],WL,WW+1.6,WA*0.5,0x3c5f88,swy,Hx,Hy,r0,r1);   // the cool shade
-              st.drawn+=wispNear(g,wx,wy,L.dir[0],L.dir[1],WL,WW,WA,COL,swy,Hx,Hy,r0,r1); } }
+              wispNear(g,wx+(HZ?0:2),wy+(HZ?2:0),L.dir[0],L.dir[1],WL,WW+1.6,WA*0.5,0x3c5f88,swy,Hx,Hy,r0,r1,3);   // the cool shade
+              st.drawn+=wispNear(g,wx,wy,L.dir[0],L.dir[1],WL,WW,WA,COL,swy,Hx,Hy,r0,r1,4); } }
           var dg=st.dust, nd=p.on?12:5, m;                    // dust carried down-wind
           for(m=0;m<nd;m++){ var along=((m*71.3+L.dustOff)%(2*r1)); along=Ha+(sg>0?along-r1:r1-along);
             var lt=lat0+(((m*0.618)%1)*0.86+0.07)*across+Math.sin(st.t/170+m*1.9)*3, mx2=HZ?along:lt, my2=HZ?lt:along;

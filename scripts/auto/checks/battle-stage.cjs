@@ -467,7 +467,8 @@ async function u2(page) {
   await B.launch(page, 'demonKing');
   const d = await findMsg(page, /ダメージが/, { ms: 60000 }); await shot(page, 'u2-wrap-off-enemy-attack-kanji');
   const tw = await page.evaluate(() => { const e = document.querySelector('#qok-ui .msg .ml'); if (!e) return null; const c = getComputedStyle(e); return c.textWrapStyle || c.textWrap || '?'; });
-  const k = await findMsg(page, /きりを|霧を|はなった|放った/, { ms: 45000 }); await shot(page, 'u2-wrap-off-boss-skill-kanji'); await B.leave(page);
+  await B.leave(page); await B.launch(page, 'demonKing');   // a fresh fight for the skill line, as the ja group does
+  const k = await findMsg(page, /きりを|霧を|はなった|放った/, { ms: 75000 }); await shot(page, 'u2-wrap-off-boss-skill-kanji'); await B.leave(page);
   const box = x => !!(x && x.over.length === 0 && x.rows.length >= 1 && x.rows.every(r => r.pad >= 14));
   rec('u2 wrap fallback (kanji, text-wrap:balance switched off): the long enemy-attack message of the last boss stays inside the box padding, no phrase split', box(d) && tw !== 'balance', d ? { textWrap: tw, rows: d.rows, over: d.over } : 'message not reached');
   rec('u2 wrap fallback (kanji, text-wrap:balance switched off): the boss skill line with no phrase spaces stays inside the box padding', box(k) && k.size >= 15, k ? { size: k.size, rows: k.rows, over: k.over } : 'message not reached');

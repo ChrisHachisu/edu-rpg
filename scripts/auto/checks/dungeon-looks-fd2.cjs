@@ -8,11 +8,11 @@
 //   drifting-blocks.js   Void Rift: the open join is a soft light, not a hard bar
 //   matching-portals.js  Twilight Sanctum: the pool of every portal turns
 //   glyph-plates.js      Desert Tomb: the order is a carved slab over the stele; pressed plates sink; no plate marked as next
-//   cracked-walls.js     Scorched Ruins: ash drifts out of the crack (a hint, not a marker)
+//   cracked-walls.js     Scorched Ruins: ash drifts by the hint, toward the crack, never at the wall (a hint, not a marker)
 //   sluice-wheels.js     Oasis Depths: a wheel in the dark is dark; state by the handle, wheel by its inlay shape
 // Switch: localStorage qok-d4-looks=0 gives the old looks (FIELD_LS=qok-d4-looks=0 makes this check fail on a build that has them).
 //   NODE_PATH=/opt/node-tools/node_modules PROBE_URL=http://127.0.0.1:5572/ node scripts/auto/checks/dungeon-looks-fd2.cjs [group ...]
-//   groups: storm guard mirror ice void portal glyph ash sluice   (default: all)
+//   groups: storm stormwalk guard mirror ice void portal glyph ash sluice   (default: all)
 //   FD2_SHOTS=<dir>/ also saves the owner's pictures there (780 px wide JPEG), named <group>-<what>-<FD2_TAG>.jpg.
 const fs = require('fs'), path = require('path');
 const F = require('./field-lib.cjs');
@@ -49,7 +49,7 @@ async function strip(page, name, conds, gap) {
 async function freeze(page, cond, ms = 25000) {
   return page.evaluate(([cond, ms]) => new Promise(res => {
     const c = window.__QOK_DNG2__.ctx(), sc = c.scene, m = c.mod, f = new Function('c', 'S', 'M', cond); let done = false;
-    if (!m.__fd2) { const orig = m.tick; m.tick = function (ctx, dt) { return orig.call(this, ctx, window.__fd2Freeze ? 0 : dt); }; m.__fd2 = orig; }
+    if (!m.__fd2) { const orig = m.tick; m.tick = function (ctx, dt) { if (window.__fd2Stop) return undefined; return orig.call(this, ctx, window.__fd2Freeze ? 0 : dt); }; m.__fd2 = orig; }   // __fd2Stop: the tick does not run at all (a picture can then be changed by hand for one screenshot)
     window.__fd2Freeze = false;
     function step() { if (done) return; let ok = false; try { ok = f(c, c.state, c.state.M); } catch (e) {} if (ok) { done = true; window.__fd2Freeze = true; sc.events.off('postupdate', step); setTimeout(() => res(true), 120); } }
     sc.events.on('postupdate', step); setTimeout(() => { if (!done) { done = true; sc.events.off('postupdate', step); res(false); } }, ms);
@@ -62,6 +62,12 @@ const texAlpha = (page, key, pts) => page.evaluate(([key, pts]) => {
     for (let i = 0; i < w; i++) border = Math.max(border, d[i * 4 + 3], d[((h - 1) * w + i) * 4 + 3]);
     for (let j = 0; j < h; j++) border = Math.max(border, d[(j * w) * 4 + 3], d[(j * w + w - 1) * 4 + 3]);
     return { w, h, border, at: (pts || []).map(p => d[(Math.min(h - 1, Math.max(0, Math.round(p[1]))) * w + Math.min(w - 1, Math.max(0, Math.round(p[0])))) * 4 + 3]) }; } catch (e) { return null; } }, [key, pts]);
+
+// In-page helper (DL2): the game canvas alone (the renderer's own snapshot: no stick, tabs or HUD over it), kept in the page under a name.
+const lib = page => page.evaluate(() => { if (window.__dl2) return; const g = window.__PHASER_GAME__, W = () => g.scene.getScene('WorldMapScene');
+  window.__dl2 = { shots: {},
+    snap: name => new Promise(res => g.renderer.snapshot(img => { const c = document.createElement('canvas'); c.width = img.width; c.height = img.height; const x = c.getContext('2d'); x.drawImage(img, 0, 0);
+      const im = x.getImageData(0, 0, c.width, c.height), v = W().cameras.main.worldView; im.view = { x: v.x, y: v.y, k: c.width / v.width }; window.__dl2.shots[name] = im; res({ w: c.width, h: c.height, k: im.view.k }); })) }; });
 
 // ---- Stormreach Spire (DC-02, DC-03) ---------------------------------------------------------------
 async function storm(page) {
@@ -150,6 +156,34 @@ async function storm(page) {
   }
 }
 
+// ---- Stormreach: the warning over the walkable part of every struck cell (DL2 item 5) --------------
+// The group's soft picture is cut by the painted floor's brightness (artClip: the light stays off the sky beyond the
+// terrace's painted edge). A darker floor picture could dim the warning INSIDE a cell that strikes her. The second
+// review measured the shipped pictures: none. This line holds that: on two floors, for two groups, at every one of
+// the 64 picture px of every struck cell where her soles may stand (the painted mask), the warning is at full strength.
+const WARN_FULL = 0.9;                                                         // of the picture's full strength (an own cell's px is 1.0 unless the art cut dims it)
+async function stormwalk(page) {
+  for (const n of [1, 2]) {
+    const f = fl('stormreachSpire', n);
+    await seed(page, 'stormreachSpire', n, n === 1 ? [10, 9] : F.landing(f));
+    const up = await waitSt(page, 'S && S.ok && S.spr && S.spr.look === 2 && S.spr.clipped', 30000);
+    const r = await page.evaluate(FULL => { const c = window.__QOK_DNG2__.ctx(), S = c.state, M = S.M, sc = c.scene, out = [];
+      if (!S.spr || S.spr.look !== 2) return null;
+      for (const g of [0, 1]) { const o = S.spr.glow[g], t = sc.textures.get(o.texture.key), src = t.getSourceImage(), d = src.getContext('2d').getImageData(0, 0, src.width, src.height).data, sx = o.scaleX;
+        let cells = 0, pts = 0, weak = 0, min = 255, worst = null, noWalk = 0, all = 0, weakAll = 0;
+        for (const [cx, cy] of M.cells[g]) { cells++; let here = 0;
+          for (let v = 0; v < 8; v++) for (let u = 0; u < 8; u++) { const wx = cx * 48 + (u + 0.5) * 6, wy = cy * 48 + (v + 0.5) * 6, tx = Math.floor((wx - o.x) / sx), ty = Math.floor((wy - o.y) / sx), al = d[(ty * src.width + tx) * 4 + 3];
+            all++; if (al < FULL * 255) weakAll++;
+            if (!c.maskFree(wx, wy)) continue; here++; pts++; if (al < min) { min = al; worst = [cx, cy, u, v]; } if (al < FULL * 255) weak++; }
+          if (!here) noWalk++; }
+        out.push({ g, key: o.texture.key, clipped: t.__lit, cells, walkablePx: pts, weak, min, worst, cellsWithNoWalkablePx: noWalk, allPx: all, weakAllPx: weakAll }); }
+      return out; }, WARN_FULL);
+    F.info(`stormreach ${n}F: the warning picture over the struck cells of groups 0 and 1`, JSON.stringify(r));
+    F.ok(up && r && r.length === 2 && r.every(q => q.clipped === 2 && q.cells > 0 && q.walkablePx > q.cells * 8 && q.weak === 0), `Stormreach ${n}F: over the walkable part of every struck cell of two groups the warning is at full strength (the art cut dims nothing she can stand on)`,
+      r ? r.map(q => `group ${q.g}: ${q.cells} cells, ${q.walkablePx} walkable px, ${q.weak} under ${Math.round(WARN_FULL * 100)}% (weakest ${q.min}/255 at ${JSON.stringify(q.worst)}); all px of the cells: ${q.weakAllPx} of ${q.allPx} under`).join('; ') : 'no soft warning picture');
+  }
+}
+
 // put her soles at world px (x, y): the hero sprite moves with its own foot offset
 const place = (page, x, y) => page.evaluate(([x, y]) => { const c = window.__QOK_DNG2__.ctx(), sc = c.scene, h = c.hero(), dy = h.footY - h.y;
   sc.hero.x = x; sc.hero.y = y - dy; sc.heroTileX = Math.floor(x / 48); sc.heroTileY = Math.floor(y / 48); return true; }, [x, y]);
@@ -204,6 +238,55 @@ async function guard(page) {
     return out;
   });
   F.info('barracks 5F, the census spot: lit cells on screen over one beat, and how many belong to a guard off screen (the far end of its cone)', JSON.stringify(lone));
+  // DL2 items 1 and 2, from the same spot, over one whole beat (60 ticks), read on every frame:
+  //  * the bright pool against the rule: on 20 of the 60 ticks (every third), on each of their frames, the light drawn at
+  //    the centre of every cell on screen (all pool pictures summed, as they are added on screen) against the cells that
+  //    catch her at that moment (the module's own litBy). CORE is the brightness a child reads as "lit": every catch cell
+  //    must reach it, no other cell may.
+  //  * the cost: every redraw of a pool picture (one texture upload), counted per frame and per guard; and whether the
+  //    guard it belongs to throws any light within a cell of the screen on this tick, the next or the last.
+  const CORE = 0.11;
+  const beat = await page.evaluate(CORE => new Promise(res => {
+    const c = window.__QOK_DNG2__.ctx(), S = c.state, M = S.M, sc = c.scene, lg = c.mod.logic; S.grace = 1e12;
+    const out = { pools: !!(S.spr && S.spr.look === 2), frames: 0, ticks: {}, catchCells: 0, otherCells: 0, minCatch: 9, maxOther: 0, minAt: null, maxAt: null, wrong: 0, uploads: 0, maxFrame: 0, maxGuardFrame: 0, tickFrameMax: 0, offscreen: 0, guardsDrawn: {} };
+    if (!out.pools) return res(out);
+    let frameUp = [], last = performance.now(), lastT = S.tick, total = 0, lastA = -1, done = false; const dts = [], dtTick = [], cache = {};
+    for (const g of M.guards) { const e = S.spr.g[g.id]; if (!e || !e.pool) continue; e.pool.forEach((im, j) => { const t = im.texture; if (t.__dl2) return; t.__dl2 = true; const orig = t.refresh; t.refresh = function () { frameUp.push([g.id, j]); return orig.apply(this, arguments); }; }); }
+    function texOf(im, sig) { const ck = im.texture.key + '#' + sig; let h = cache[ck]; if (!h) { const t = im.texture.getSourceImage(); h = cache[ck] = { w: t.width, d: t.getContext('2d').getImageData(0, 0, t.width, t.height).data }; } return h; }
+    function step() {
+      const now = performance.now(), dt = now - last; last = now;
+      const t = S.tick; total += ((t - lastT) % M.period + M.period) % M.period; lastT = t;
+      const a = ((Math.floor(t) % M.period) + M.period) % M.period, b = (a + 1) % M.period, z = (a - 1 + M.period) % M.period, v = sc.cameras.main.worldView, turned = a !== lastA; lastA = a;
+      if (out.frames > 0) { dts.push(dt); if (turned) dtTick.push(dt); }
+      out.uploads += frameUp.length; out.maxFrame = Math.max(out.maxFrame, frameUp.length); if (turned) out.tickFrameMax = Math.max(out.tickFrameMax, frameUp.length);
+      const per = {}; for (const [gid, j] of frameUp) { per[gid] = (per[gid] || 0) + 1; out.guardsDrawn[gid] = 1;
+        const g = M.guards.find(x => x.id === gid); let nearView = false;
+        for (const tt of [a, b, z]) { const lit = lg.litBy(c, M, g, tt); for (const k in lit) { const q = k.split(','), x = +q[0], y = +q[1]; if ((x + 2) * 48 > v.x && (x - 1) * 48 < v.right && (y + 2) * 48 > v.y && (y - 1) * 48 < v.bottom) { nearView = true; break; } } if (nearView) break; }
+        if (!nearView) out.offscreen++; }
+      for (const k in per) out.maxGuardFrame = Math.max(out.maxGuardFrame, per[k]);
+      frameUp = [];
+      if (a % 3 === 0) { out.ticks[a] = 1;
+        const catchSet = {}, ims = [];
+        for (const g of M.guards) { if (g.gone) continue; const lit = lg.litBy(c, M, g, t); for (const k in lit) catchSet[k] = 1;
+          const e = S.spr.g[g.id]; if (e && e.pool) e.pool.forEach((im, j) => { if (im.visible && im.alpha > 0) ims.push([im, texOf(im, e.sig[j])]); }); }
+        for (let cy = Math.ceil(v.y / 48); (cy + 1) * 48 <= v.bottom; cy++) for (let cx = Math.ceil(v.x / 48); (cx + 1) * 48 <= v.right; cx++) {
+          const wx = (cx + 0.5) * 48, wy = (cy + 0.5) * 48; let L = 0;
+          for (const [im, h] of ims) { const u = Math.floor((wx - im.x) / im.scaleX), w = Math.floor((wy - im.y) / im.scaleY); if (u < 0 || w < 0 || u >= h.w || w >= h.w) continue; L += im.alpha * h.d[(w * h.w + u) * 4 + 3] / 255; }
+          if (catchSet[cx + ',' + cy]) { out.catchCells++; if (L < CORE) out.wrong++; if (L < out.minCatch) { out.minCatch = L; out.minAt = [cx, cy, a, +(t % 1).toFixed(2)]; } }
+          else { out.otherCells++; if (L >= CORE) out.wrong++; if (L > out.maxOther) { out.maxOther = L; out.maxAt = [cx, cy, a, +(t % 1).toFixed(2)]; } } } }
+      out.frames++;
+      if (total > M.period + 1) fin();
+    }
+    function med(x) { if (!x.length) return null; const y = x.slice().sort((p, q) => p - q); return +y[y.length >> 1].toFixed(1); }
+    function fin() { if (done) return; done = true; sc.events.off('postupdate', step); out.ticks = Object.keys(out.ticks).length; out.guardsDrawn = Object.keys(out.guardsDrawn).length;
+      out.minCatch = +out.minCatch.toFixed(3); out.maxOther = +out.maxOther.toFixed(3); out.frameMs = { all: med(dts), tickFrames: med(dtTick) }; out.guards = M.guards.filter(g => !g.gone).length; res(out); }
+    sc.events.on('postupdate', step); setTimeout(fin, 60000);
+  }), CORE);
+  F.info('barracks 5F, the census spot, one beat: the light against the rule, and the pool redraws', JSON.stringify(beat));
+  F.ok(beat.pools && beat.ticks === 20 && beat.catchCells > 100 && beat.wrong === 0 && beat.minCatch >= CORE && beat.maxOther < CORE, 'Barracks 5F: on 20 sampled ticks (every frame of each) every catch cell on screen is inside the bright pool and no cell of the bright pool is a non-catch cell',
+    beat.pools ? `${beat.catchCells} catch cell-frames, dimmest ${beat.minCatch} at ${JSON.stringify(beat.minAt)}; ${beat.otherCells} other cell-frames, brightest ${beat.maxOther} at ${JSON.stringify(beat.maxAt)}; bright from ${CORE}; ${beat.wrong} wrong` : 'no soft pools');
+  F.ok(beat.pools && beat.uploads > 0 && beat.maxGuardFrame <= 1, 'Barracks 5F: no frame redraws more than one pool picture of a guard (the catching light on the frame the tick turns, the two faint ones on the frames after)', `${beat.uploads} redraws in one beat over ${beat.frames} frames, at most ${beat.maxFrame} in a frame (${beat.tickFrameMax} on a tick's own frame), at most ${beat.maxGuardFrame} per guard per frame, ${beat.guardsDrawn} of ${beat.guards} guards redrawn`);
+  F.ok(beat.pools && beat.offscreen === 0, 'Barracks 5F: a guard whose light reaches no cell near the screen redraws nothing', `${beat.offscreen} redraws for a guard with no lit cell within a cell of the screen`);
 }
 
 // ---- Demon Castle mirror rooms (DC-05) -----------------------------------------------------------
@@ -212,10 +295,12 @@ async function mirror(page) {
   await seed(page, 'demonCastle', 1, at);
   F.ok(await waitSt(page, 'S && S.spr && S.swap === true'), 'Demon Castle 1F: inside the mirror room her controls are swapped');
   await sleep(page, 700);
-  const read = () => page.evaluate(() => {
+  const read = (pg = page) => pg.evaluate(() => {
     const c = window.__QOK_DNG2__.ctx(), S = c.state, b = S.spr.badge, ch = document.getElementById('d2mSwapChip'), dp = document.getElementById('dpad'), tk = document.getElementById('a1mInteract');
     const rect = el => { if (!el) return null; const r = el.getBoundingClientRect(); return [Math.round(r.left), Math.round(r.top), Math.round(r.right), Math.round(r.bottom)]; };
-    return { swap: S.swap, badge: { visible: b.visible, alpha: +b.alpha.toFixed(2) }, chip: ch ? { rect: rect(ch), op: +getComputedStyle(ch).opacity, shown: ch.checkVisibility ? ch.checkVisibility() : true } : null, dpad: rect(dp), talk: tk && tk.classList.contains('a1m-show') ? rect(tk) : null };
+    const h = c.scene.hero, db = dp ? dp.getBoundingClientRect() : null, tc = document.getElementById('touch-controls');
+    return { swap: S.swap, badge: { visible: b.visible, alpha: +b.alpha.toFixed(2), dx: Math.round(b.x - h.x), dy: Math.round(b.y - h.y), depth: b.depth }, chip: ch ? { rect: rect(ch), op: +getComputedStyle(ch).opacity, shown: ch.checkVisibility ? ch.checkVisibility() : true } : null, dpad: rect(dp),
+      stickOnScreen: !!(db && db.width > 20 && db.height > 20), touchControls: tc ? getComputedStyle(tc).display : null, view: [window.innerWidth, window.innerHeight], talk: tk && tk.classList.contains('a1m-show') ? rect(tk) : null };
   });
   const r = await read();
   F.info('demon castle 1F, in the mirror room', JSON.stringify(r));
@@ -231,6 +316,21 @@ async function mirror(page) {
   await waitSt(page, 'S && S.swap === false', 8000); await sleep(page, 900);
   const r2 = await read();
   F.ok(r2.swap === false && (!r2.chip || r2.chip.op <= 0.05) && !(r2.badge.visible && r2.badge.alpha > 0.05), 'Demon Castle: outside the room the mark is gone', JSON.stringify(r2));
+  // DL2 item 8: the chip lives in #touch-controls, which is display:none outside the touch media query (index.html). On a
+  // screen with no stick the mark must stay over her head. Same room, a desktop-style page: 1280x800, a mouse, no touch.
+  F.ok(r.stickOnScreen && r.view[0] === 390 && r.view[1] === 844 && r.chip && r.chip.op >= 0.9 && r.chip.shown && !(r.badge.visible && r.badge.alpha > 0.05), 'Demon Castle, 390x844 with the stick on screen: the swap mark is the chip by the stick, and only that', JSON.stringify({ view: r.view, stick: r.stickOnScreen, chip: r.chip, badge: r.badge }));
+  const dctx = await page.context().browser().newContext({ viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 });
+  try {
+    await dctx.addInitScript(() => { window.Capacitor = { isNativePlatform: () => true }; }); dctx.setDefaultTimeout(60000);
+    const dp = await dctx.newPage();
+    await seed(dp, 'demonCastle', 1, at);
+    const sw = await waitSt(dp, 'S && S.spr && S.swap === true'); await sleep(dp, 900);
+    const d = await read(dp);
+    F.info('demon castle 1F, in the mirror room, desktop page', JSON.stringify(d));
+    F.ok(sw && !d.stickOnScreen && d.touchControls === 'none', 'Demon Castle, desktop page (1280x800, no touch): the touch controls are not shown and her controls are swapped in the room', JSON.stringify({ swap: d.swap, touchControls: d.touchControls, dpad: d.dpad }));
+    F.ok(sw && d.badge.visible && d.badge.alpha >= 0.9 && Math.abs(d.badge.dx) <= 2 && d.badge.dy < -20 && d.badge.dy > -50, 'Demon Castle, no stick on screen: the swap mark is shown over her head (it is not lost with the hidden controls)', JSON.stringify(d.badge));
+    F.ok(!d.chip || !d.chip.shown || d.chip.op <= 0.05, 'Demon Castle, no stick on screen: no chip is drawn (one mark, not two)', JSON.stringify(d.chip));
+  } finally { await dctx.close(); }
 }
 
 // ---- Frostfall Cavern push-ice (DC-10) -----------------------------------------------------------
@@ -271,6 +371,37 @@ async function voidr(page) {
   F.ok(r.glows.length > 0 && r.glows.every(g => g.type === 'Image' && g.key === 'd2b_joinglow'), 'Void Rift: the join is not drawn as a hard pale bar (a soft light picture instead)', r.glows.map(g => g.type + ':' + g.key).join(' '));
   const tx = await texAlpha(page, 'd2b_joinglow', [[16, 32]]);
   F.ok(tx && tx.border <= 16 && tx.at[0] >= 200, 'Void Rift: the join light fades out to both sides and both ends (no hard edge)', JSON.stringify(tx));
+  // DL2 item 4: the light is the cue that she may step across, so it must be seen at least as well as the old 6 px bar.
+  // The game canvas with the light and without it (the module stopped, the light hidden by hand), at the dimmest and the
+  // brightest moment of the pulse, a join that has been open a while (no "just docked" boost), in the band 22 px either
+  // side of the join: `changed` = canvas px whose colour differs by more than 24, `peak` = the largest brightness the
+  // light adds, `core` = the mean it adds over the old bar's own 6 px.
+  await lib(page);
+  const meas = {};
+  for (const [name, q] of [['low', 'Math.sin(S.tick * 2.6) < -0.94'], ['high', 'Math.sin(S.tick * 2.6) > 0.94']]) {
+    const cond = `let open = false; S.gates.forEach(G => G.joins.forEach(x => { if (x.kind === "ledgeL") open = true; })); if (!open) { window.__jT = null; return false; } if (window.__jT == null) window.__jT = S.tick; const age = ((S.tick - window.__jT) % S.period + S.period) % S.period; return age > 3 && age < S.period / 2 && ${q};`;
+    if (!(await freeze(page, cond, 45000))) continue;
+    meas[name] = await page.evaluate(async () => {
+      const c = window.__QOK_DNG2__.ctx(), S = c.state, D = window.__dl2, wait = () => new Promise(r => setTimeout(r, 90)); let e = null;
+      S.gates.forEach(G => G.joins.forEach(x => { if (!e && x.kind === 'ledgeL') e = x.edge; })); if (!e) return null;
+      const g0 = S.spr.glow.filter(g => g.visible).sort((p, q2) => Math.abs(p.x - e[0]) - Math.abs(q2.x - e[0]))[0];
+      window.__fd2Stop = true; await wait(); await D.snap('A');
+      const vis = S.spr.glow.filter(g => g.visible); vis.forEach(g => g.setVisible(false)); await wait(); await D.snap('B'); vis.forEach(g => g.setVisible(true)); window.__fd2Stop = false;
+      const A = D.shots.A, B = D.shots.B, v = A.view; let changed = 0, peak = 0, core = 0, nc = 0;
+      for (let y = Math.max(0, Math.round((e[1] - 8 - v.y) * v.k)); y < Math.min(A.height, (e[3] + 8 - v.y) * v.k); y++) for (let x = Math.max(0, Math.round((e[0] - 22 - v.x) * v.k)); x < Math.min(A.width, (e[0] + 22 - v.x) * v.k); x++) { const o = (y * A.width + x) * 4;
+        const d0 = A.data[o] - B.data[o], d1 = A.data[o + 1] - B.data[o + 1], d2 = A.data[o + 2] - B.data[o + 2], m = Math.max(Math.abs(d0), Math.abs(d1), Math.abs(d2)), l = (d0 + d1 + d2) / 3;
+        if (m > 24) changed++; if (l > peak) peak = l;
+        const wx = v.x + (x + 0.5) / v.k, wy = v.y + (y + 0.5) / v.k; if (Math.abs(wx - e[0]) <= 3 && wy > e[1] + 14 && wy < e[3] - 14) { core += l; nc++; } }
+      return { changed, peak: Math.round(peak), core: nc ? +(core / nc).toFixed(1) : null, k: +v.k.toFixed(3), alpha: g0 ? +g0.alpha.toFixed(2) : null, w: g0 ? Math.round(g0.displayWidth) : null, type: g0 ? g0.type : null, len: e[3] - e[1] };
+    });
+    await thaw(page);
+  }
+  F.info('void rift 1F: what the join light adds to the picture at the dimmest and the brightest moment of its pulse', JSON.stringify(meas));
+  // the old bar (37de040) measured by these same lines on :5570: per world px of join length, so a longer or shorter overlap compares fairly
+  const JOIN_OLD = { low: { changedPerPx: +(process.env.DL2_JL_CH || 0), peak: +(process.env.DL2_JL_PK || 0), core: +(process.env.DL2_JL_CO || 0) }, high: { changedPerPx: +(process.env.DL2_JH_CH || 0), peak: +(process.env.DL2_JH_PK || 0), core: +(process.env.DL2_JH_CO || 0) } };
+  const cmp = k => meas[k] ? { changedPerPx: +(meas[k].changed / meas[k].len).toFixed(2), peak: meas[k].peak, core: meas[k].core } : null, now = { low: cmp('low'), high: cmp('high') };
+  const asGood = k => now[k] && now[k].changedPerPx >= JOIN_OLD[k].changedPerPx && now[k].peak >= JOIN_OLD[k].peak * 0.97 && now[k].core >= JOIN_OLD[k].core * 0.97;
+  F.ok(r.glows.every(g => g.type === 'Image') && asGood('low') && asGood('high'), 'Void Rift: the soft join light is at least as visible as the old 6 px bar (changed pixels, peak and core contrast, at the dimmest and the brightest moment of the pulse)', JSON.stringify({ now, oldBar: JOIN_OLD }));
   if (SHOTS) {                                                               // the picture: beside the join, the moment it is open
     const e = await page.evaluate(() => { const S = window.__QOK_DNG2__.ctx().state; for (const G of S.gates) for (const j of G.joins) if (j.kind === 'ledgeL') return j.edge; for (const G of S.gates) if (G.joins.length) return G.joins[0].edge; return null; });
     if (e) { await place(page, e[0] - 40, (e[1] + e[3]) / 2 + 10); await sleep(page, 500); }
@@ -341,22 +472,35 @@ async function glyph(page) {
 
 // ---- Scorched Ruins draught (DB-15) --------------------------------------------------------------
 async function ash(page) {
-  const f = fl('scorchedRuins', 5), hint = f.mech.find(m => m.kind === 'hint' && m.type === 'draught in the ash'), sec = f.mechanic.secrets[hint.secret];
+  const f = fl('scorchedRuins', 5), hint = f.mech.find(m => m.kind === 'hint' && m.type === 'draught in the ash'), sec = f.mechanic.secrets.find(q => q.id === hint.secret) || f.mechanic.secrets[hint.secret];
   await seed(page, 'scorchedRuins', 5, F.nearestWalk(f, hint.x + 2, hint.y) || F.landing(f));
   await place(page, (hint.x + 1) * T + 24, (hint.y + 2) * T + 30);           // a little below the crack's front: the crack at the screen's middle
   F.ok(await waitSt(page, 'S && S.hints && S.hints.length'), 'Scorched Ruins 5F: the crack module is running');
-  const run = await page.evaluate(() => new Promise(res => {
-    const c = window.__QOK_DNG2__.ctx(), S = c.state, sc = c.scene, h = S.hints.find(x => x.type === 'draught in the ash'); const t0 = performance.now(); let frames = 0, maxVis = 0, travel = 0, gusts = 0, lastN = 0;
+  // DL2 item 11 (owner: "secrets neither too hard nor too obvious: a faint crack plus a small hint"): the ash rises at the
+  // HINT's cell and drifts toward the crack; nothing is drawn at the wall. The wall face on her side, from the plan:
+  const cx0 = Math.min(...sec.crack.map(c => c[0])), cx1 = Math.max(...sec.crack.map(c => c[0])), cy0 = Math.min(...sec.crack.map(c => c[1])), cy1 = Math.max(...sec.crack.map(c => c[1]));
+  const ddx = (cx0 + cx1) / 2 - sec.front[0], ddy = (cy0 + cy1) / 2 - sec.front[1], dir = Math.abs(ddx) >= Math.abs(ddy) ? [ddx > 0 ? 1 : -1, 0] : [0, ddy > 0 ? 1 : -1];
+  const geo = { nx: -dir[0], ny: -dir[1], fx: dir[0] ? (dir[0] > 0 ? cx0 * T : (cx1 + 1) * T) : (cx0 + cx1 + 1) / 2 * T, fy: dir[1] ? (dir[1] > 0 ? cy0 * T : (cy1 + 1) * T) : (cy0 + cy1 + 1) / 2 * T, hx: hint.x * T + 24, hy: hint.y * T + 24 };
+  const run = await page.evaluate(G => new Promise(res => {
+    const c = window.__QOK_DNG2__.ctx(), S = c.state, sc = c.scene, h = S.hints.find(x => x.type === 'draught in the ash'); const t0 = performance.now(); let frames = 0, maxVis = 0, gusts = 0, lastN = 0;
     if (!h || !h.dr) return res({ none: true, objs: sc.children.list.filter(o => o.texture && o.texture.key === 'd2a_ashpuff').length });
-    const D = h.dr;
-    function step() { frames++; let n = 0; for (const m of D.motes) if (m.img.visible) { n++; travel = Math.max(travel, (m.img.x - D.fx) * D.ux + (m.img.y - D.fy) * D.uy); }
+    const D = h.dr, born = new Map(); let minClear = 1e9, minCentre = 1e9, birthMax = 0, toward = 0, seenMotes = 0, nearWall = 0;
+    const tl = Math.hypot(G.fx - G.hx, G.fy - G.hy) || 1, ux = (G.fx - G.hx) / tl, uy = (G.fy - G.hy) / tl;       // from the hint toward the crack
+    function step() { frames++; let n = 0;
+      for (const m of D.motes) { const im = m.img; if (!im.visible) { born.delete(m); continue; } n++;
+        if (!born.has(m)) { born.set(m, [im.x, im.y]); seenMotes++; birthMax = Math.max(birthMax, Math.hypot(im.x - G.hx, im.y - G.hy)); }
+        if (im.alpha <= 0.02) continue;                                        // not drawn (the first and the last moment of its life)
+        const dist = (im.x - G.fx) * G.nx + (im.y - G.fy) * G.ny, clear = dist - im.displayWidth / 2;   // floor between its whole puff and the wall face
+        if (clear < minClear) minClear = clear; if (dist < minCentre) minCentre = dist; if (clear < 24) nearWall++;
+        const b = born.get(m); toward = Math.max(toward, (im.x - b[0]) * ux + (im.y - b[1]) * uy); }
       if (n > lastN + 2) gusts++; lastN = n; maxVis = Math.max(maxVis, n);
-      if (performance.now() - t0 > 5600) { sc.events.off('postupdate', step); res({ frames, maxVis, travel: Math.round(travel), gusts, depth: D.motes[0].img.depth, from: [D.fx, D.fy], dir: [+D.ux.toFixed(2), +D.uy.toFixed(2)] }); } }
+      if (performance.now() - t0 > 5600) { sc.events.off('postupdate', step); res({ frames, maxVis, gusts, depth: D.motes[0].img.depth, motes: seenMotes, minClear: Math.round(minClear), minCentre: Math.round(minCentre), nearWall, birthMax: Math.round(birthMax), toward: Math.round(toward), hintToWall: Math.round((G.hx - G.fx) * G.nx + (G.hy - G.fy) * G.ny) }); } }
     sc.events.on('postupdate', step);
-  }));
+  }), geo);
   F.info('scorched ruins 5F draught', JSON.stringify(run));
-  F.ok(!run.none && run.maxVis >= 4, 'Scorched Ruins: ash visibly drifts out of the crack (several motes at once)', `${run.maxVis || 0} motes at most`);
-  F.ok(!run.none && run.travel >= 48 && run.travel <= 140, 'Scorched Ruins: the ash travels about a cell or two from the wall, then is gone (a hint, not a trail to follow)', `${run.travel || 0} px`);
+  F.ok(!run.none && run.maxVis >= 4, 'Scorched Ruins: ash visibly drifts on the floor by the hint (several motes at once)', `${run.maxVis || 0} motes at most`);
+  F.ok(!run.none && run.motes >= 6 && run.nearWall === 0 && run.minClear >= 24, 'Scorched Ruins: no mote is drawn within half a cell of the wall face (its whole puff counted): the ash does not mark the wall', `nearest: ${run.minClear} px of floor between a puff and the wall face (its centre ${run.minCentre} px away); ${run.nearWall} mote-frames nearer than 24 px, ${run.motes} motes watched`);
+  F.ok(!run.none && run.birthMax <= 40 && run.toward >= 12 && run.toward <= 80, 'Scorched Ruins: the ash rises in the hint\'s own cell and drifts a short way toward the crack, then is gone (a hint, not a trail to follow)', `born at most ${run.birthMax} px from the hint cell's centre; farthest drift toward the crack ${run.toward} px (the hint is ${run.hintToWall} px from the wall)`);
   F.ok(!run.none && run.depth < 3, 'Scorched Ruins: the ash lies on the floor (under her, no glow, no marker)', `depth ${run.depth}`);
   const ph = (a, b) => `return S.t % 2600 > ${a} && S.t % 2600 < ${b};`;
   // how much a breath changes the picture: screen px (at this dpr) that differ by more than 30 between the quiet moment just
@@ -404,7 +548,7 @@ async function sluice(page) {
   return shapes;
 }
 
-const GROUPS = [['storm', storm], ['guard', guard], ['mirror', mirror], ['ice', ice], ['void', voidr], ['portal', portal], ['glyph', glyph], ['ash', ash], ['sluice', sluice]];
+const GROUPS = [['storm', storm], ['stormwalk', stormwalk], ['guard', guard], ['mirror', mirror], ['ice', ice], ['void', voidr], ['portal', portal], ['glyph', glyph], ['ash', ash], ['sluice', sluice]];
 (async () => {
   const { browser, page, errors } = await F.L.launch({ dpr: +(process.env.FIELD_DPR || 2) });
   for (const [name, fn] of GROUPS) {

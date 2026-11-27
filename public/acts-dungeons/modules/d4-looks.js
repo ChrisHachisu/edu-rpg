@@ -37,7 +37,7 @@
   function ls(k){ try{ return window.localStorage.getItem(k); }catch(e){ return null; } }
   var ON=ls('qok-d4-looks')!=='0', BOSS_ART=ls('qok-boss-field')==='art';
   var LINEAR=(window.Phaser&&Phaser.Textures&&Phaser.Textures.FilterMode)?Phaser.Textures.FilterMode.LINEAR:0;
-  var S={ scene:null, key:null, ctx:null, objs:[], glare:[], mouths:[], edges:0, rims:[], boss:{}, frame:0, plaque:null, err:null };
+  var S={ scene:null, key:null, ctx:null, objs:[], glare:[], mouths:[], edges:0, rims:[], boss:{}, frame:0, plaque:null, err:null, tex:[] };   // tex: this floor's own textures (removed with it)
 
   function alive(o){ return !!(o && o.scene && o.active!==false); }
   function kill(o){ try{ if(o&&o.destroy) o.destroy(); }catch(e){} }
@@ -94,6 +94,13 @@
   // GLOW_IN cells inward and GLOW_OUT cells past the edge, and is a round-cornered pool rather than
   // a ball (a 2.6-power ellipse), so it fills the corridor's width and still has no straight side.
   var GLOW_IN=3.0, GLOW_OUT=1.15, GLOW_PAD=1.4, GLOW_C=0.45, GLOW_S=2;   // cells inward / outward of the edge; to each side of the mouth; heart inside the edge; world px per texel
+  // The glow lies on the floor, UNDER her lamp's darkness (depth 8): once she walks a few cells away the dark
+  // covers it and the way out no longer shows (the engine's spill over the dark, at 8.2, is hidden with the rest
+  // of its glare). So the same soft picture is laid once more ABOVE the darkness, as strong as the dark at the
+  // mouth is deep: nothing while the mouth is in her light (the floor glow is seen as it is), the whole glow once
+  // the mouth is in the dark. Same picture, same place, ordinary blending: where both show, the light only tends
+  // toward the glow's own colour, never past it (no glare, never white).
+  var GLOW_FAR=0.72;                                         // the far glow's strength in full darkness: six cells off, the mouth then stands out of the dark a little more than the old spill did (measured: 69 and 61 against 63 and 56 of 255)
   function glowTex(sc,cells){
     var key='d4mouth_w'+cells, W=Math.round((cells+2*GLOW_PAD)*TILE/GLOW_S), H=Math.round((GLOW_IN+GLOW_OUT)*TILE/GLOW_S);
     return canvasTex(sc,key,W,H,function(g){                 // built for a mouth that faces DOWN: the map's edge is the row at GLOW_IN cells
@@ -136,14 +143,22 @@
       else if(side==='up') im.setOrigin(0,0).setPosition(0,0).setDisplaySize(W,EDGE_MAX);
       else if(side==='left') im.setOrigin(0,0).setPosition(0,0).setDisplaySize(EDGE_MAX,H);
       else im.setOrigin(1,0).setPosition(W,0).setDisplaySize(EDGE_MAX,H);
-      im.__d4='edge:'+side; S.objs.push(im); S.edges++; }
+      im.__d4='edge:'+side; S.objs.push(im); S.edges++; if(S.tex.indexOf(tk)<0) S.tex.push(tk); }
     for(i=0;i<groups.length;i++){ var G=groups[i], gk=glowTex(sc,G.n); if(!gk) continue;
       var mid=(G.a0+G.a1+1)/2*TILE, px, py, rot;
       if(G.side==='down'){ px=mid; py=H; rot=0; } else if(G.side==='up'){ px=mid; py=0; rot=Math.PI; }
       else if(G.side==='left'){ px=0; py=mid; rot=Math.PI/2; } else { px=W; py=mid; rot=-Math.PI/2; }
       var gi=sc.add.image(px,py,gk).setOrigin(0.5,GLOW_IN/(GLOW_IN+GLOW_OUT)).setRotation(rot).setDepth(2.47);
       gi.setDisplaySize((G.n+2*GLOW_PAD)*TILE,(GLOW_IN+GLOW_OUT)*TILE);
-      gi.__d4='mouth:'+G.side; G.img=gi; G.x=px; G.y=py; S.objs.push(gi); }
+      gi.__d4='mouth:'+G.side; G.img=gi; G.x=px; G.y=py; S.objs.push(gi);
+      var far=sc.add.image(px,py,gk).setOrigin(0.5,GLOW_IN/(GLOW_IN+GLOW_OUT)).setRotation(rot).setDepth(8.2).setAlpha(0).setVisible(false);
+      far.setDisplaySize((G.n+2*GLOW_PAD)*TILE,(GLOW_IN+GLOW_OUT)*TILE);
+      far.__d4='mouthfar:'+G.side; G.far=far; S.objs.push(far);
+      G.hx=px+(G.side==='left'?1:G.side==='right'?-1:0)*GLOW_C*TILE; G.hy=py+(G.side==='up'?1:G.side==='down'?-1:0)*GLOW_C*TILE; }   // the glow's heart
+  }
+  function mouthsTick(sc){                                   // the far glow follows the darkness at the mouth
+    for(var i=0;i<S.mouths.length;i++){ var G=S.mouths[i]; if(!G.far || !alive(G.far)) continue;
+      var a=GLOW_FAR*fogT(sc,G.hx,G.hy); G.farA=a; G.far.setAlpha(a); if(G.far.visible!==(a>0.02)) G.far.setVisible(a>0.02); }
   }
   function hideEngineGlare(sc){                              // dq-tiles.js a2dGlareSetup: wash, edge, spill
     var l=sc.children&&sc.children.list, i; if(!l) return;
@@ -212,7 +227,7 @@
       g.globalAlpha=0.35; g.lineWidth=1.4; g.beginPath(); g.moveTo(P+9,P+h*0.36); g.lineTo(P+w-9,P+h*0.36); g.moveTo(P+9,P+h*0.64); g.lineTo(P+w-9,P+h*0.64); g.stroke(); g.globalAlpha=1;   // the two carved lines of text, faintly
     }); if(!tk) return;
     var im=sc.add.image((p.x0+p.x1)/2,(p.y0+p.y1)/2,tk).setScale(0.5).setTint(0xd9e6f2).setDepth(8.05).setAlpha(0);
-    im.__d4='rim:plaque'; S.objs.push(im);
+    im.__d4='rim:plaque'; S.objs.push(im); if(S.tex.indexOf(tk)<0) S.tex.push(tk);
     S.rims.push({img:im,target:im,fixed:true,kind:'plaque',base:0.62});
   }
   function findRimTargets(sc,ctx){
@@ -252,7 +267,7 @@
       mg.drawImage(im,bx,by,bw,bh,0,0,w*2,ART_H*2);
       var ct=sc.textures.createCanvas(key,w,ART_H), g=ct.context; g.imageSmoothingEnabled=true; try{ g.imageSmoothingQuality='high'; }catch(e){}
       g.drawImage(mid,0,0,w*2,ART_H*2,0,0,w,ART_H); ct.refresh(); try{ ct.setFilter(LINEAR); }catch(e){}
-    }catch(e){ S.err='boss art '+e; bossReq[bossId]=0; } };
+    }catch(e){ S.err='boss art '+e; setTimeout(function(){ bossReq[bossId]=0; },5000); } };   // back off as onerror does: bossTick asks every frame
     im.onerror=function(){ setTimeout(function(){ bossReq[bossId]=0; },5000); };
     im.src='assets/monsters-hd/monster-'+bossId+'.webp';
     return null;
@@ -290,6 +305,9 @@
     for(i=0;i<S.rims.length;i++){ kill(S.rims[i].img); if(S.rims[i].target) S.rims[i].target.__d4rim=null; }
     for(i=0;i<S.glare.length;i++){ try{ if(alive(S.glare[i])) S.glare[i].setVisible(true); }catch(e){} }
     S.objs=[]; S.rims=[]; S.glare=[]; S.mouths=[]; S.edges=0;
+    // the floor's own textures go with it (its pictures are destroyed above); a return to the floor draws them again
+    try{ var tm=window.__PHASER_GAME__&&window.__PHASER_GAME__.textures; for(i=0;tm&&i<S.tex.length;i++) if(tm.exists(S.tex[i])) tm.remove(S.tex[i]); }catch(e){ S.err='drop '+e; }
+    S.tex=[];
   }
   function frame(){
     var g=window.__PHASER_GAME__, sc=null, D=window.__QOK_DNG2__;
@@ -299,11 +317,13 @@
     var id=sc.currentMapId, key=id+'-f'+(sc.currentFloor||1), ctx=null;
     try{ ctx=D&&D.ctx&&D.ctx(); if(ctx && (ctx.scene!==sc || ctx.key!==key)) ctx=null; }catch(e){ ctx=null; }
     if(ON){
-      if(S.scene!==sc || S.key!==key || S.ctx!==ctx){
+      // also when the scene was rebuilt under the same floor (a Retry): its pictures died with it, the floor did not change
+      if(S.scene!==sc || S.key!==key || S.ctx!==ctx || (S.objs.length && !alive(S.objs[0]))){
         drop(); S.scene=sc; S.key=key; S.ctx=ctx;
         try{ if(ctx){ buildFloor(sc,ctx,key); hideEngineGlare(sc); } else plaqueRim(sc,key); }catch(e){ S.err='build '+e; }
       }
       if(ctx && (S.frame%30)===0){ try{ hideEngineGlare(sc); }catch(e){} }
+      try{ mouthsTick(sc); }catch(e){ S.err='mouth '+e; }
       try{ findRimTargets(sc,ctx); rimsTick(sc); }catch(e){ S.err='rims '+e; }
     }
     if(BOSS_ART){ try{ bossTick(sc); }catch(e){ S.err='boss '+e; } }
@@ -317,7 +337,9 @@
     state:function(){ var b=[], k; for(k in S.boss){ var f=S.boss[k]; b.push({bossId:f.bossId,ballVisible:!!f.ball.visible,ballDepth:f.ball.depth,artDepth:f.art.depth,artAlpha:f.art.alpha,
         artH:Math.round(f.art.displayHeight),artW:Math.round(f.art.displayWidth),x:f.art.x,y:f.art.y,shadowAlpha:f.shadow.alpha,shadowW:Math.round(f.shadow.displayWidth)}); }
       return { on:ON, bossArt:BOSS_ART, key:S.key, authored:!!S.ctx, edges:S.edges, err:S.err,
-        mouths:S.mouths.map(function(m){ return {side:m.side,n:m.n,x:m.x,y:m.y,w:m.img?m.img.displayWidth:0,h:m.img?m.img.displayHeight:0,depth:m.img?m.img.depth:null}; }),
+        mouths:S.mouths.map(function(m){ return {side:m.side,n:m.n,x:m.x,y:m.y,w:m.img?m.img.displayWidth:0,h:m.img?m.img.displayHeight:0,depth:m.img?m.img.depth:null,
+          far:m.far?{alpha:+(m.far.alpha||0).toFixed(3),visible:!!m.far.visible,depth:m.far.depth}:null}; }),
+        tex:S.tex.slice(),
         engineGlare:S.glare.map(function(o){ return {tag:o.__a2dGlare,visible:!!o.visible}; }),
         rims:S.rims.map(function(e){ return {kind:e.kind,alpha:+(e.img.alpha||0).toFixed(3),visible:!!e.img.visible,depth:e.img.depth}; }),
         boss:b }; } };

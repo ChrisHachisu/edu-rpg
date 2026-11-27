@@ -288,6 +288,13 @@
   D.register('storm-terrace', {
     logic: { model: model, kidScale: kidScale, groupAt: groupAt, striking: striking, glowing: glowing },
     load: function (ctx) { ready(ctx); },
+    unload: function (ctx) {                                                   // the groups' soft pictures are named for this floor: they go with it (a return draws them again)
+      var S = ctx.state, sp = S && S.spr, tm = ctx.scene && ctx.scene.textures, g, i; if (!sp || sp.look !== 2) return;
+      for (g = 0; g < sp.glow.length; g++) { var k = sp.glow[g] && sp.glow[g].texture && sp.glow[g].texture.key, three = [sp.wash[g], sp.glow[g], sp.hit[g]];
+        for (i = 0; i < 3; i++) { try { if (three[i]) three[i].destroy(); } catch (e) {} }
+        try { if (k && k.indexOf('d2s_stone_') === 0 && tm && tm.exists(k)) tm.remove(k); } catch (e) {} }
+      S.spr = null;
+    },
     tick: function (ctx, dt) {
       if (!ready(ctx)) return;
       var S = ctx.state, K = S.K, M = S.M, t0 = S.tick;

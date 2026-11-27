@@ -82,16 +82,20 @@
     S.ok = true; return true;
   }
   // Day 4 (DC-14): an open join was a hard pale bar 6 px wide in the gap, which read as a rendering fault. It is
-  // the cue that she may step across here, so it stays, drawn as a soft violet light along the join (a blurred
-  // strip three times as wide, a little brighter for the first moment after a block docks).
+  // the cue that she may step across here, so it stays, drawn as a soft violet light along the join (a little
+  // brighter for the first moment after a block docks). It must be seen at least as well as the bar was: its heart
+  // is as wide as the bar (6 px) and as strong at every moment of the pulse, with soft shoulders and a faint halo
+  // out to 12 px either side instead of the bar's ruled edges, and its two ends fade.
   // localStorage 'qok-d4-looks' = '0': the old bar.
   var LOOKS = (function () { try { return window.localStorage.getItem('qok-d4-looks') !== '0'; } catch (e) { return true; } })();
-  function joinTex(sc, K) {                                                  // a strip of light: bright along its middle line, fading to both sides and at both ends
+  function joinTex(sc, K) {                                                  // a strip of light, 1 texture px = 1 world px across: a flat-topped heart, soft shoulders, a halo; both ends fade
     return K.canvasTex(sc, 'd2b_joinglow', 32, 64, function (g, w, h) {
-      var a = g.createLinearGradient(0, 0, w, 0); a.addColorStop(0, 'rgba(190,170,255,0)'); a.addColorStop(0.36, 'rgba(190,170,255,0.30)'); a.addColorStop(0.5, 'rgba(232,222,255,0.95)'); a.addColorStop(0.64, 'rgba(190,170,255,0.30)'); a.addColorStop(1, 'rgba(190,170,255,0)');
-      g.fillStyle = a; g.fillRect(0, 0, w, h);
-      var b = g.createLinearGradient(0, 0, 0, h); b.addColorStop(0, 'rgba(0,0,0,1)'); b.addColorStop(0.14, 'rgba(0,0,0,0)'); b.addColorStop(0.86, 'rgba(0,0,0,0)'); b.addColorStop(1, 'rgba(0,0,0,1)');
-      g.globalCompositeOperation = 'destination-out'; g.fillStyle = b; g.fillRect(0, 0, w, h); g.globalCompositeOperation = 'source-over';
+      var im = g.createImageData(w, h), px = im.data, x, y, o;
+      for (y = 0; y < h; y++) { var e = Math.min(y + 0.5, h - y - 0.5) / (h * 0.12); e = e >= 1 ? 1 : e * e * (3 - 2 * e);
+        for (x = 0; x < w; x++) { var d = Math.abs(x + 0.5 - w / 2), core = Math.exp(-Math.pow(d / 5.5, 4)), win = d <= 11 ? 1 : Math.max(0, 1 - (d - 11) / 5);
+          var halo = 0.30 * Math.exp(-d * d / 81) * win * win * (3 - 2 * win), a = Math.min(1, 0.97 * core + halo * (1 - core)) * e; o = (y * w + x) * 4;
+          px[o] = Math.round(190 + 42 * core); px[o + 1] = Math.round(170 + 52 * core); px[o + 2] = 255; px[o + 3] = Math.round(a * 255); } }
+      g.putImageData(im, 0, 0);
     });
   }
   function build(ctx) {
@@ -116,7 +120,7 @@
         if (S.spr.soft) { var id = i + '.' + G.joins[j].kind + '.' + G.joins[j].lane, len = v ? e[3] - e[1] : e[2] - e[0];
           if (open[id] === undefined) open[id] = S.tick;                     // this join has just opened
           live[id] = 1; var fresh = Math.max(0, 1 - mod(S.tick - open[id], S.period) / 2.5);
-          g.setPosition((e[0] + e[2]) / 2, (e[1] + e[3]) / 2).setDisplaySize(18 + 6 * fresh, len + 10).setRotation(v ? 0 : Math.PI / 2).setVisible(true).setAlpha(Math.min(1, 0.50 + 0.22 * Math.sin(S.tick * 2.6) + 0.3 * fresh));
+          g.setPosition((e[0] + e[2]) / 2, (e[1] + e[3]) / 2).setDisplaySize(32 + 6 * fresh, len + 10).setRotation(v ? 0 : Math.PI / 2).setVisible(true).setAlpha(Math.min(1, 0.62 + 0.30 * Math.sin(S.tick * 2.6) + 0.3 * fresh));   // never under the old bar's pulse (0.9 x (0.55 + 0.35 sin))
           continue; }
         g.setPosition((e[0] + e[2]) / 2, (e[1] + e[3]) / 2).setDisplaySize(v ? 6 : e[2] - e[0], v ? e[3] - e[1] : 6).setVisible(true).setAlpha(pulse); } }
     for (; n < S.spr.glow.length; n++) S.spr.glow[n].setVisible(false);

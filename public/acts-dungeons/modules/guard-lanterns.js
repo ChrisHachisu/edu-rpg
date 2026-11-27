@@ -120,12 +120,16 @@
   // ---- the look (day 4): a soft pool of warm light and a drawn lantern -----------------------------------
   // The lit cells are the same cells (litCells, the trigger itself) at the same strength per cell as the square
   // cells below; they are drawn as one soft picture per guard instead: every lit cell fully inside it, no lines
-  // between cells, the edge fading outward over about a quarter cell. While a guard steps to its next cell the
-  // light it is about to throw fades in over that tick and the light it has left fades out over the next one,
-  // so the pool glides with the guard; the light of the current tick is always there in full.
+  // between cells, the edge fading outward over about a quarter cell. The light of the current tick is always
+  // there in full, and it is the ONLY bright light: a child reads the light as the rule, so the bright pool is
+  // exactly the cells that catch her, on every tick. The light a guard is about to throw and the light it has
+  // just left are only a faint breath (GHOST of the pool's strength, well under the dimmest lit cell), fading in
+  // over the tick before and out over the tick after, so the pool does not jump from nothing.
+  // Cost: a picture is redrawn only when its cells change and only while its lit cells are near the screen; on
+  // the frame a tick turns only the catching light is redrawn, the two faint ones one and two frames later.
   // localStorage 'qok-d4-looks' = '0' draws the old square cells and the old flat lantern.
   var LOOKS = (function () { try { return window.localStorage.getItem('qok-d4-looks') !== '0'; } catch (e) { return true; } })();
-  var RES = 6, PAD = 2, LIGHT = 0.30;                                        // mask px per cell, cells of margin, the old cells' alpha beside the guard
+  var RES = 6, PAD = 2, LIGHT = 0.30, GHOST = 0.16;                          // mask px per cell, cells of margin, the old cells' alpha beside the guard, the coming and leaving light's share of it
   function grow(A, W, H) { var B = new Float32Array(W * H), x, y, i, m;
     for (y = 0; y < H; y++) for (x = 0; x < W; x++) { i = y * W + x; m = A[i];
       if (x > 0 && A[i - 1] > m) m = A[i - 1]; if (x < W - 1 && A[i + 1] > m) m = A[i + 1]; if (y > 0 && A[i - W] > m) m = A[i - W]; if (y < H - 1 && A[i + W] > m) m = A[i + W]; B[i] = m; }
@@ -140,13 +144,16 @@
     var key = pos.join(','), hit = M.soft[key]; if (hit) return hit;
     if ((M.softN = (M.softN || 0) + 1) > 96) { M.soft = {}; M.softN = 1; }      // a guard's beat revisits the same few cells: keep the latest (three per guard are live each frame)
     var lit = litCells(ctx, pos, M.R, M.cosHalf, M.cache), n = M.R + 1 + PAD, x0 = pos[0] - n, y0 = pos[1] - n, W = (2 * n + 1) * RES, A = new Float32Array(W * W), k, x, y;
+    var bx0 = 1e9, by0 = 1e9, bx1 = -1e9, by1 = -1e9;                          // the lit cells' own box (cells): what decides whether the picture is near the screen
     for (k in lit) { var c = k.split(','), cx = +c[0], cy = +c[1], d = Math.max(Math.abs(cx - pos[0]), Math.abs(cy - pos[1])), v = (d <= 1 ? 0.30 : Math.max(0.12, 0.28 - d * 0.022)) / LIGHT;   // the old cells' own alpha
       var px = (cx - x0) * RES, py = (cy - y0) * RES; if (px < 0 || py < 0 || px + RES > W || py + RES > W) continue;
+      if (cx < bx0) bx0 = cx; if (cx > bx1) bx1 = cx; if (cy < by0) by0 = cy; if (cy > by1) by1 = cy;
       for (y = 0; y < RES; y++) for (x = 0; x < RES; x++) A[(py + y) * W + px + x] = v; }
     A = blur(grow(A, W, W), W, W, 2);
     for (k = 0; k < A.length; k++) A[k] = Math.min(1, A[k] * 1.2);
-    return (M.soft[key] = { key: key, x: x0 * T, y: y0 * T, w: W, a: A });
+    return (M.soft[key] = { key: key, x: x0 * T, y: y0 * T, w: W, a: A, bx0: bx0 * T, by0: by0 * T, bx1: (bx1 + 1) * T, by1: (by1 + 1) * T });
   }
+  function near(A, v) { return !v || (A.bx0 - T / 2 < v.right && A.bx1 + T / 2 > v.x && A.by0 - T / 2 < v.bottom && A.by1 + T / 2 > v.y); }   // its lit cells (and the soft edge, half a cell) reach the camera's view
   function put(sc, key, A, B) {                                               // picture A, less picture B where they overlap (the light that is new, or left behind)
     try { var t = sc.textures.exists(key) ? sc.textures.get(key) : sc.textures.createCanvas(key, A.w, A.w), g = t.getContext(), im = g.createImageData(A.w, A.w), d = im.data, W = A.w, x, y, i, v;
       var ox = B ? Math.round((A.x - B.x) / T * RES) : 0, oy = B ? Math.round((A.y - B.y) / T * RES) : 0;
@@ -196,7 +203,8 @@
     if (S.spr.look !== 2) return paintOld(ctx);
     var t0 = Math.floor(S.tick), fr = S.tick - t0, a = ((t0 % M.period) + M.period) % M.period, b = (a + 1) % M.period, z = (a - 1 + M.period) % M.period, i, j, v = null;
     try { v = sc.cameras.main.worldView; } catch (x) {}
-    var ms = S.tick * S.ms, ease = fr * fr * (3 - 2 * fr);
+    var ms = S.tick * S.ms, ease = fr * fr * (3 - 2 * fr), sp = S.spr;
+    if (sp.t0 !== t0) { sp.t0 = t0; sp.since = 0; } else sp.since++;          // frames since the tick turned
     for (i = 0; i < M.guards.length; i++) { var g = M.guards[i], e = S.spr.g[g.id]; if (!e) continue;
       if (g.gone) { e.body.setVisible(false); e.shadow.setVisible(false); e.lamp.setVisible(false); e.halo.setVisible(false); for (j = 0; j < 3; j++) e.pool[j].setVisible(false); continue; }
       var p = g.seq[a], q = g.seq[b], x = (p[0] + (q[0] - p[0]) * fr + 0.5) * T, y = (p[1] + (q[1] - p[1]) * fr + 0.5) * T;
@@ -206,13 +214,15 @@
       e.lamp.setPosition(x + p[2] * 18 + (p[3] ? 14 : 0), y - 26 + p[3] * 6 - bob); e.lamp.setDepth(e.body.depth + (p[3] < 0 ? -0.05 : 0.05));
       var fl = 1.05 + 0.035 * Math.sin(ms * 0.011 + i * 2.1) + 0.02 * Math.sin(ms * 0.029 + i);   // a slow flicker, never dimmer than the old cells
       e.halo.setPosition(e.lamp.x, e.lamp.y + 21).setDepth(e.lamp.depth - 0.02).setScale(0.86 * fl).setAlpha(0.8 * fl - 0.1);
-      // the pool: three pictures, each redrawn only when the cells it shows change
-      var C = soft(ctx, M, p), N = soft(ctx, M, q), P = soft(ctx, M, g.seq[z]), want = [[C, null, LIGHT], [N, C, LIGHT * ease], [P, C, LIGHT * 0.7 * (1 - ease)]];
-      var seen = !v || (C.x < v.right + T && C.x + C.w * T / RES > v.x - T && C.y < v.bottom + T && C.y + C.w * T / RES > v.y - T);
+      // the pool: three pictures, each redrawn only when the cells it shows change and only while its lit cells are near the screen.
+      // 0 is the light that catches her: in full, and redrawn on the very frame the tick turns. 1 and 2 (the light coming, the
+      // light left behind; never bright, see GHOST) wait one and two frames, hidden meanwhile, so one frame never carries all three.
+      var C = soft(ctx, M, p), N = soft(ctx, M, q), P = soft(ctx, M, g.seq[z]), want = [[C, null, LIGHT], [N, C, LIGHT * GHOST * ease], [P, C, LIGHT * GHOST * (1 - ease)]];
       for (j = 0; j < 3; j++) { var im = e.pool[j], A = want[j][0], B = want[j][1];
-        if (!seen || (B && A.key === B.key)) { im.setVisible(false); continue; }
+        if ((B && A.key === B.key) || !near(A, v)) { im.setVisible(false); continue; }
         var sig = A.key + (B ? '|' + B.key : '');
-        if (e.sig[j] !== sig) { e.sig[j] = sig; put(sc, im.texture.key, A, B); im.setPosition(A.x, A.y); }
+        if (e.sig[j] !== sig) { if (j > sp.since) { im.setVisible(false); continue; }
+          e.sig[j] = sig; put(sc, im.texture.key, A, B); im.setPosition(A.x, A.y); }
         im.setVisible(true).setAlpha(Math.min(1, want[j][2] * fl)); }
     }
   }
@@ -230,6 +240,14 @@
   D.register('guard-lanterns', {
     logic: { seq: seq, litCells: litCells, model: model, seenBy: seenBy, litBy: litBy },
     load: function (ctx) { ready(ctx); },
+    unload: function (ctx) {                                                   // the pools' own textures (three per guard, named for this floor) go with the floor; a return draws them again
+      var S = ctx.state, sp = S && S.spr, tm = ctx.scene && ctx.scene.textures, id, j; if (!sp || sp.look !== 2) return;
+      for (id in sp.g) { var e = sp.g[id];
+        for (j = 0; e.pool && j < e.pool.length; j++) { var im = e.pool[j], k = im && im.texture && im.texture.key;
+          try { im.destroy(); if (k && k.indexOf('d2b_pool_') === 0 && tm && tm.exists(k)) tm.remove(k); } catch (x) {} }
+        e.pool = []; }
+      S.spr = null;
+    },
     tick: function (ctx, dt) {
       if (!ready(ctx)) return;
       var S = ctx.state, K = S.K;

@@ -558,7 +558,7 @@ async function d4off(page) {
   const eq = await page.evaluate(() => ({ rows: [...document.querySelectorAll('#qok-ui [data-act="equipSlot"]')].map(r => Math.round(r.getBoundingClientRect().height)), eqslot: document.querySelectorAll('#qok-ui .eqslot').length,
     close: Math.round((document.querySelector('#qok-ui [data-act="close"]') || document.body).getBoundingClientRect().width) }));
   await shot(page, 'd4off-equip');
-  rec('d4off 48 px targets: the five equip slot rows are under 36 px again and the close button is 40 px', eq.rows.length === 5 && eq.rows.every(h => h < 36) && eq.eqslot === 0 && eq.close === 40, eq);
+  rec('d4off 48 px targets: the five equip slot rows are under 36 px again and the close button is 44 px (the phone size before day 4)', eq.rows.length === 5 && eq.rows.every(h => h < 36) && eq.eqslot === 0 && eq.close === 44, eq);
   await closeMenu(page); await openTab(page, 3);
   const st = await page.evaluate(() => { const rows = [...document.querySelectorAll('#qok-ui .setrow')], g = rows.find(x => /Quiz Difficulty/.test(x.textContent)), c = rows.find(x => /Controls/.test(x.textContent)), v = rows.find(x => x.querySelector('#qok-volume'));
     return { grade: g ? { text: g.textContent.trim(), act: g.getAttribute('data-act'), info: g.classList.contains('info') } : null,
@@ -593,6 +593,8 @@ async function d4off(page) {
 async function u2(page) {
   await U.boot(page, { locale: 'en', all: false, mapId: 'overworld', x: 69, y: 258, activeQuests: ['kikisChallenge', 'owlsLesson'] }); await page.waitForTimeout(1200);
   const entries = () => page.evaluate(() => [...document.querySelectorAll('#qfh-quest-content .qfq-entry')].map(e => ({ id: e.getAttribute('data-quest-id'), open: e.classList.contains('open') })));
+  try {   // the quest half may stop on a build without the folded panel; the defeat half below still runs
+  if (!(await panel(page) || {}).collapsed) { rec('U2-3 the quests panel is folded on arrival (UE-03), so a tap opens it', false, await panel(page)); throw new Error('panel not folded on arrival'); }
   await page.locator('#qfh-quest-toggle').tap(); await page.waitForTimeout(600);
   const e0 = await entries(), shut = e0.find(e => !e.open);
   if (shut) { await page.locator(`#qfh-quest-content .qfq-entry[data-quest-id="${shut.id}"] .qfq-title`).tap(); await page.waitForTimeout(500); }
@@ -605,6 +607,7 @@ async function u2(page) {
   await startQuest(page, 'lunasMap'); const o3 = await until(page, false, 2500); await page.waitForTimeout(400);
   const e3 = await entries();
   rec('U2-3 guard: added while the panel is folded, the new quest and only it shows its objective (as before)', o3 !== null && e3.length >= 4 && e3.every(e => e.open === (e.id === 'lunasMap')), e3);
+  } catch (eq) { rec('U2-3: the quest half ran to the end', false, String(eq && eq.message || eq).slice(0, 200)); }
   // the defeat screen in kanji
   await U.boot(page, { ...U.LANGS['ja-kanji'], all: false, mapId: 'overworld', x: 69, y: 258 });
   await page.evaluate(() => { const st = window.__GAME_STATE__.player.state; st.hp = 1; st.gold = 1001; });
