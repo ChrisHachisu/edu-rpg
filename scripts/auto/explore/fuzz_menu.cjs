@@ -147,7 +147,10 @@ SC['battle'] = async c => {
   // play it out: tap answers until the battle ends
   let end = false; const tb = Date.now();
   while (Date.now() - tb < 90000) { if (!(await c.page.evaluate(() => window.__PHASER_GAME__.scene.isActive('BattleScene')))) { end = true; break; }
-    if (!(await tapAct(c.page, '[data-act="kpKey"], [data-act="quizAns"]')) && !(await tapAct(c.page, '[data-act="battleAdvance"]'))) await keyZ(c.page);
+    // keypad (since build 99): type the right answer with the keypad's own keys, then Enter. The old line tapped the first visible key forever.
+    const up = await c.page.evaluate(() => !!document.querySelector('#qok-ui .kpad, [data-act="quizAns"]'));
+    if (up) { for (const sel of await L.quizTaps(c.page, 0)) await tapAct(c.page, sel); }
+    else if (!(await tapAct(c.page, '[data-act="battleMenu"][data-i="0"]')) && !(await tapAct(c.page, '[data-act="battleAdvance"]'))) await keyZ(c.page);
     await c.page.waitForTimeout(400); }
   await c.page.waitForTimeout(1500); await dismiss(c.page); await L.noEncounters(c.page);
   s = await st(c.page); const mv = await canMove(c.page);
