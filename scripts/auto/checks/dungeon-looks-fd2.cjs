@@ -359,6 +359,19 @@ async function ash(page) {
   F.ok(!run.none && run.travel >= 48 && run.travel <= 140, 'Scorched Ruins: the ash travels about a cell or two from the wall, then is gone (a hint, not a trail to follow)', `${run.travel || 0} px`);
   F.ok(!run.none && run.depth < 3, 'Scorched Ruins: the ash lies on the floor (under her, no glow, no marker)', `depth ${run.depth}`);
   const ph = (a, b) => `return S.t % 2600 > ${a} && S.t % 2600 < ${b};`;
+  // how much a breath changes the picture: screen px (at this dpr) that differ by more than 30 between the quiet moment just
+  // before a breath and the breath at its fullest, inside the 4 x 4 cells in front of the crack (the census measured 100 to
+  // 500 px over 4 s on the old picture)
+  async function region() { const cam = await page.evaluate(() => { const v = window.__QOK_DNG2__.ctx().scene.cameras.main.worldView; return [v.x, v.y, v.width]; });
+    const img = await F.grab(page), k = img.w / cam[2], out = []; const x0 = (sec.front[0] - 0.5) * T, y0 = (sec.front[1] - 1.5) * T;
+    for (let y = y0; y < y0 + 4 * T; y += 1 / k) for (let x = x0; x < x0 + 4 * T; x += 1 / k) { const sx = (x - cam[0]) * k, sy = (y - cam[1]) * k; if (sx >= 0 && sy >= 0 && sx < img.w && sy < img.h) out.push(F.px(img, sx, sy)); }
+    return out; }
+  let moved = null;
+  if (await freeze(page, ph(2480, 2580))) { const a1 = await region(); await thaw(page);
+    if (await freeze(page, ph(600, 700))) { const a2 = await region(); await thaw(page); moved = 0;
+      for (let i = 0; i < Math.min(a1.length, a2.length); i++) if (Math.max(Math.abs(a1[i][0] - a2[i][0]), Math.abs(a1[i][1] - a2[i][1]), Math.abs(a1[i][2] - a2[i][2])) > 30) moved++; } }
+  F.info('scorched ruins: screen px in front of the crack that a breath changes (quiet vs fullest)', String(moved));
+  F.ok(moved !== null && moved >= 250, 'Scorched Ruins: a breath of the draught changes the picture several times more than the old breathing patch did (old: about 50 px)', `${moved} px`);
   if (SHOTS) await strip(page, 'scorched-draught', [ph(250, 330), ph(650, 730), ph(1100, 1180), ph(1600, 1680)]);
 }
 

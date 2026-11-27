@@ -2189,7 +2189,7 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
     if (qm && !qm.__qokKpTimer && typeof qm.getTimerSeconds === 'function') {
       var origTimer = qm.getTimerSeconds;
       qm.__qokKpTimer = true;
-      qm.getTimerSeconds = function () { var sec = origTimer.apply(this, arguments), m = critMul(); return kpOn() ? Math.round(sec * 1.5 * m) : (m !== 1 ? Math.round(sec * m) : sec); };
+      qm.getTimerSeconds = function () { var sec = origTimer.apply(this, arguments), m = critMul(); if (m !== 1) sec = Math.round(sec * m); /* class first (never under the frozen value: m >= 1), then the keypad's 1.5x of that rounded time, so keypad time = round(1.5 x the four-button time) as check k6 expects */ return kpOn() ? Math.round(sec * 1.5) : sec; };
     }
     if (npIsOpen() && !((bs.phase === 'playerQuiz' || bs.phase === 'enemyQuiz') && bs.quizQuestion === _kp.q)) npClose(true);
     if (!bs.__qokHitPatched) {
