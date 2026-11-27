@@ -158,7 +158,8 @@ async function partTitle(S) {
   if (await page.locator('[data-act="titleSlots"]').count()) { await S.tap('[data-act="titleSlots"]'); await page.waitForTimeout(700); await S.shoot('slots'); await S.tap('[data-act="slotPick"][data-i="1"]'); await page.waitForTimeout(1500); }
   else { await S.tap('[data-act="titleNew"]'); await page.waitForTimeout(1500); }
   await page.waitForSelector('[data-act="introStart"]', { timeout: 15000 }).catch(() => {});
-  if (LG.kanji && !(await page.evaluate(() => !!window.__GAME_STATE__.player.state.kanjiMode))) { await S.tap('[data-act="introKanji"]'); await page.waitForTimeout(400); }
+  // no player exists yet on Create Your Hero, and its toggle lights かんたん until one does: read the labels (名前 = kanji, なまえ = kana)
+  if (LG.kanji && !(await page.evaluate(() => /名前/.test(document.body.innerText)))) { await S.tap('[data-act="introKanji"]'); await page.waitForTimeout(400); }
   const name = page.locator('#qok-name'); if (await name.count()) { await name.fill(LG.locale === 'ja' ? 'ミカ' : 'Mika'); await page.waitForTimeout(400); await page.evaluate(() => { const e = document.activeElement; if (e && e.blur) e.blur(); }); }
   await S.shoot('newgame');
   // the real first minutes: Start, then whatever the game shows until the hero stands in the world
