@@ -1088,7 +1088,7 @@
     'dungeon.frostfallCavern.plaque': { en: 'The ice moves when you push it... shape your own path.', ja: 'こおりは おせば うごく…じぶんで みちを つくれ。', kj: '氷は 押せば 動く…自分で 道を つくれ。' },
     'npc.villager1.name': { en: 'Villager', ja: 'むらびと', kj: '村人' },
     'npc.villager2.name': { en: 'Villager', ja: 'むらびと', kj: '村人' },
-    'npc.oasisElder.name': { en: 'Oasis Elder', ja: 'オアシスの ちょうろう', kj: 'オアシスの長老' },
+    'npc.oasisElder.name': { en: 'Oasis Elder', ja: 'オアシスのちょうろう', kj: 'オアシスの長老' },
     'gameover.restart_save': { ja: 'セーブポイントから つづける', kj: 'セーブポイントから 続ける' },
     'npc.survivor': {
       en: 'I barely escaped the Bandit Hideout alive. Listen carefully: the place is full of tripwires and pressure plates. When you see a wire glint, tap the Cut button before you step on it. One wrong step and the whole corridor comes down on you.',
@@ -1116,22 +1116,113 @@
     'dungeon.obsidianCavern.boss.dialog3': { ja: 'すいしょうヒドラが みっつの こえで ほえた！たたかいの じゅんびを！', kj: '水晶ヒドラが 三つの 声で ほえた！戦いの 準備を！' },
     'npc.sailor.act5done': { ja: 'どこでも あんぜんな たびだぜ！まおうは もういねえ！', kj: 'どこでも 安全な 旅だぜ！魔王は もういねえ！' },
     'quest.demonBarracksQuest.title': { ja: 'まぞくの へいしを へらせ', kj: '魔族の 兵士を 減らせ' },
-    'equip.sandstormCloak.desc': { ja: 'さばくの かぜで おられた マント。ほのおも こおりも かぜも ふせぐ。' }
+    'equip.sandstormCloak.desc': { ja: 'さばくの かぜで おられた マント。ほのおも こおりも かぜも ふせぐ。', kj: '砂漠の 風で 織られた マント。炎も 氷も 風も 防ぐ。' },
+    // ---- T2 (day 4, second text pass; docs: autoloop/day4/words/REPORT-T2.md) ----
+    // UJ-02: labels of the first screens were written with no spaces between phrases.
+    'title.pressStart': { ja: 'エンターキーで スタート', kj: 'エンターキーで スタート' },
+    'create.title': { ja: 'ゆうしゃを つくろう', kj: '勇者を つくろう' },
+    'create.namePlaceholder': { ja: 'なまえを いれてね…', kj: '名前を 入れてね…' },
+    'create.startGame': { ja: 'ぼうけんに でる', kj: '冒険に 出る' },
+    'create.nameRequired': { ja: 'なまえを いれてね！', kj: '名前を 入れてね！' },
+    'settings.difficulty': { ja: 'もんだいの むずかしさ', kj: '問題の 難しさ' },
+    'settings.timerOff': { ja: 'なし（じかん むせいげん）' },
+    'menu.noItems': { ja: 'どうぐが ない', kj: '道具が ない' },
+    'menu.activeQuests': { ja: 'すすめている クエスト', kj: '進行中の クエスト' },
+    'menu.noQuests': { ja: 'クエストが ありません', kj: 'クエストが ありません' },
+    'quest.objectivesComplete': { ja: 'クエストの もくひょう たっせい！', kj: 'クエストの 目標 達成！' },
+    'quest.offerTitle': { ja: 'クエストが あります', kj: 'クエストが あります' },
+    'shop.noItemsToSell': { ja: 'うる ものが ない', kj: '売る ものが ない' },
+    'victory.titleScreen': { ja: 'タイトルに もどる', kj: 'タイトルに 戻る' },
+    'victory.pressEnter': { ja: 'エンターキーで もどる', kj: 'エンターキーで 戻る' },
+    'quest.stolenBook.title': { ja: 'ぬすまれた ほん', kj: '盗まれた 本' },
+    'npc.frostElder.name': { ja: 'しものちょうろう' },
+    // B13 / W52: two monsters were both "Dark Knight" (and both 暗黒騎士). The silver one in the wastes is renamed;
+    // battle sentences are handled by W_FOE below (this row answers the name bar's own lookup).
+    'monster.knight': { en: 'Rogue Knight', ja: 'はぐれきし', kj: 'はぐれ騎士' },
+    // The enemy's quiz: Enter reads Defend, so the prompt says defend too (it said "dodge").
+    'quiz.answerToDefend': { en: 'A fragment of lost knowledge appears! Answer to defend!' },
+    // W29 / W30: the Desert Tomb rule today is glyph-plates.js (the tablet shows the order; a wrong plate wakes a
+    // Tomb Guardian). Same words as kit-a.js tomb.*. W_OLD_TRIAL keeps the bundle's own text while its old corridor runs.
+    'dungeon.desertTomb.plaque': { en: 'The stone tablet knows the way... step on the plates in the same order.', ja: 'せきばんが みちを しっている…おなじ じゅんばんで いたを ふめ。', kj: '石板が 道を 知っている…同じ 順番で 板を 踏め。' },
+    'dungeon.desertTomb.glyphs.signRule': {
+      en: 'Trial of the Glyphs. Step on the plates in the order on the stone tablet. A wrong plate wakes a Tomb Guardian.',
+      ja: 'もようの しれん。せきばんと おなじ じゅんばんで ゆかの いたを ふめ。まちがえると はかの ばんにんが あらわれる。',
+      kj: '模様の 試練。石板と 同じ 順番で 床の 板を 踏め。間違えると 墓の 番人が 現れる。' },
+    'dungeon.desertTomb.glyphs.intro': {
+      en: 'Glyph plates cover the floor ahead. Read the stone tablet first: it shows the order to step in.',
+      ja: 'ゆかに もようの いたが ならんでいる。さきに せきばんを よもう。ふむ じゅんばんが かいてある。',
+      kj: '床に 模様の 板が 並んでいる。先に 石板を 読もう。踏む 順番が 書いてある。' },
+    'dungeon.desertTomb.glyphs.success': { en: 'Every glyph is lit. The far door grinds open!', ja: 'すべての もようが ひかった。おくの とびらが ひらいた！', kj: 'すべての 模様が 光った。奥の 扉が 開いた！' },
+    'dungeon.desertTomb.glyphs.wrong': { en: 'Wrong plate! A Tomb Guardian rises from the sand!', ja: 'ちがう いただ！すなの なかから はかの ばんにんが あらわれた！', kj: '違う 板だ！砂の 中から 墓の 番人が 現れた！' },
+    'dungeon.desertTomb.glyphs.sym.eye': { en: 'Eye', ja: 'め', kj: '目' },
+    'dungeon.desertTomb.glyphs.sym.falcon': { en: 'Bird', ja: 'とり', kj: '鳥' }
   };
   // [from, to] in the order they run. en: English; ja: kana (and kana left in kanji mode); kj: kanji only.
   var W_TERMS = {
     en: [[/Darkfang Grotto/g, 'Misty Grotto'], [/Flame Cloak/g, 'Magma Cloak'], [/Ironkeep Fortress/g, 'Ironkeep'],
-      [/Crystal of Wisdom/g, 'Crystal of Math Knowledge'], [/crabs in the basement/g, 'crabs in the cellar'], [/across 4 lands/g, 'across four lands']],
+      [/Crystal of Wisdom/g, 'Crystal of Math Knowledge'], [/crabs in the basement/g, 'crabs in the cellar'], [/across 4 lands/g, 'across four lands'],
+      [/ defends!/g, ' guards!']],                                   // T2: the menu command is Guard (ui-overhaul.js, keypad design); Defend is the Enter key of the enemy's quiz
     ja: [[/くらやみのどうくつ/g, 'きりのどうくつ'], [/かいがんのさんごしょう/g, 'さんごのいわば'], [/さんごしょう/g, 'さんごのいわば'],
       [/アイアンキープようさい/g, 'アイアンキープ'], [/トリップワイヤ(?!ー)/g, 'トリップワイヤー'], [/ほのおのマント/g, 'マグマのマント'],
       [/かじし(?=[のにをがはも])/g, 'かじのおやかた'], [/ちえのクリスタル/g, 'さんすうのクリスタル'], [/こだい しんでん/g, 'こだいしんでん'],
-      [/えいちのかんむり/g, 'ちえのかんむり'], [/まものが てごわい/g, 'モンスターが てごわい']],
+      [/えいちのかんむり/g, 'ちえのかんむり'], [/まものが てごわい/g, 'モンスターが てごわい'],
+      // T2. Guard (みがまえる) has its own line; a wrong reading; the Iron Mine and Frostfall Cavern under their map names;
+      // place names in one piece; する-verbs in one piece; a colour takes の like the kanji row; a number stands alone.
+      [/は みをまもっている！/g, 'は みがまえた！'], [/ほっかいちゅう/g, 'はっくつちゅう'],
+      [/てつこうざんダンジョン/g, 'てつのこうざん'], [/てつこうざん/g, 'てつのこうざん'], [/フロストフォールどうくつ/g, 'フロストフォールの どうくつ'],
+      [/さばくの はか/g, 'さばくのはか'], [/かざんの かじば/g, 'かざんのかじば'], [/かくし つうろ/g, 'かくしつうろ'],
+      [/かいふく し(ますか|ました)/g, 'かいふくし$1'], [/G で /g, 'Gで '], [/ていさつ している/g, 'ていさつしている'], [/たんけんして くれる/g, 'たんけんしてくれる'],
+      [/(あか|あお|みどり|きいろ|むらさき|\{color\})すいしょうが/g, '$1の すいしょうが'], [/HPを(?=\d)/g, 'HPを '],
+      [/(みなみにし|にし|ひがし|きた|みなみ)にある/g, '$1に ある'],
+      [/みなみにし/g, 'なんせい'], [/みなみひがし/g, 'なんとう']],      // 南西, 南東: the readings the Acts 2-5 rows already use
     kj: [[/暗闇の洞窟/g, '霧の洞窟'], [/海岸の珊瑚礁/g, '珊瑚の岩場'], [/珊瑚礁/g, '珊瑚の岩場'], [/アイアンキープ要塞/g, 'アイアンキープ'],
       [/炎のマント/g, 'マグマのマント'], [/鍛冶師/g, '鍛冶の親方'], [/知恵のクリスタル/g, '算数のクリスタル'], [/古代 神殿/g, '古代神殿'],
       [/叡智の冠/g, '知恵の冠'], [/魔物が 手ごわい/g, 'モンスターが 手ごわい'], [/皮の鎧/g, '革の鎧'], [/皮で 作った鎧/g, '革で 作った鎧'], [/皮の帽子/g, '革の帽子'],
       [/大王烏賊/g, 'クラーケン'], [/海月/g, 'クラゲ'], [/飛竜/g, 'ワイバーン'], [/洞窟蜘蛛/g, '洞窟ぐも'], [/嵐の猛禽/g, 'ストームラプター'],
-      [/闇狼/g, '闇おおかみ'], [/氷狼/g, '氷おおかみ'], [/嵐の番人/g, 'ストームセンチネル']]
+      [/闇狼/g, '闇おおかみ'], [/氷狼/g, '氷おおかみ'], [/嵐の番人/g, 'ストームセンチネル'],
+      // T2. 欠片 is written かけら; the enemy skill lines had no spaces at all (UJ-03's text half) and two stiff words.
+      [/は 身を守っている！/g, 'は 身構えた！'], [/欠片/g, 'かけら'],
+      [/鉄鉱山ダンジョン/g, '鉄の鉱山'], [/鉄鉱山/g, '鉄の鉱山'], [/フロストフォール洞窟/g, 'フロストフォールの 洞窟'],
+      [/砂漠の 墓/g, '砂漠の墓'], [/火山の 鍛冶場/g, '火山の鍛冶場'], [/回復 し(ますか|ました)/g, '回復し$1'],
+      [/は(\d+|\{value\})HP回復した/g, 'は $1HP 回復した'], [/は毒で(\d+|\{damage\})ダメージ/g, 'は 毒で $1 ダメージ'],
+      [/は力を溜めている/g, 'は 力を ためている'], [/は激怒した！攻撃力が上がった/g, 'は 激しく 怒った！攻撃力が 上がった'],
+      [/聳え/g, 'そびえ'], [/煌め/g, 'きらめ'],        // one spelling per word: the tables already write そびえ立つ and きらめく elsewhere
+      [/(南西|西|東|北|南)にある/g, '$1に ある']]
   };
+  // T2. PHRASE SPACES (UJ-02). Each entry is a phrase as it should read; the same text WITHOUT its spaces is what a
+  // table has, and is replaced wherever it stands (after the terms above). ja runs in kanji mode too.
+  // A name (place, person, monster, item) stays one piece; quest titles and sentences are spaced by phrase.
+  var W_SPACE = {
+    ja: ['みを まもれ', 'あたらしい クエスト', 'クエスト かんりょう', 'つかえる どうぐが', 'よく きた', 'わかき ゆうしゃよ', '5つの かけら', '5つの クリスタルのかけら',
+      'あるに ちがいない', 'でんせつの けん', 'でんせつの ちからの', 'みちを ふさぐ', 'たりない もの', 'きたえられた つるぎ', 'ほのおを まとう', 'つくられた けん',
+      'あくを うちはらう', 'つくった よろい', 'くさりで つくった', 'とても つよい', 'とても かたい', 'ドラゴンの うろこで', 'その かがやきは', 'ゆうしゃの けん',
+      'かたい かわで', 'つくった たて', 'するどい けん', 'はなつ ゆみ', 'いにしえの けん', 'しんぞうの いしで', 'するどい ダガー', 'きたえた けん', 'あしの よろい',
+      'でんせつの たて', 'でんせつの かんむり', 'つくった マント', 'でんせつの クリスタル', 'がけの むこうに', 'この いせきには', 'ふかい ところから', 'こうちの かいろうを',
+      'しっかり してから', 'いどむ まえに', 'くらい だいちの', 'きりの なか', 'なきごえと ともに', 'おおきな ものが', 'ものすごい おとで', 'にごった みずに', 'くらい みず',
+      'きらきら ひかって', 'あたたかい ひかりが', 'のぼるに つれて', 'あらしの かぜに', 'ハーピーの すから', 'ほうこうと ともに', 'こおった みずうみに', 'くらい やまの',
+      'いちばん おくの', 'どうくつ ぜんたいを', 'やみの ほのおが', 'やさしい ひかりの', 'ものの においが', 'すきな ものを', 'きょだいな ものが', 'しろく かがやく',
+      'やみの おうざに', 'あの ゆうしゃの', 'おうざの まに', 'ひかりの なかに', 'ストームリーチの とうが', 'おじぎを して', 'かぜの なかに', 'うなりを あげる', 'とおい くにへ',
+      'たびの ことを', 'ゆうしゃの ことを', 'きみの こと', 'きみの ものだ', 'みかんせいの まま', 'さがしに いけ', 'はなしかけた ほうが', 'たてと なって', 'みに しみわたる',
+      'いきき できるように なった', 'べつの みちを', 'この ふかみを', 'のった ものを', 'つよき ものを', 'ためいきを つく', 'いきた サンゴの', 'かんむりを つけた', 'もようを えがく',
+      'もえる けんを', 'メイスを もった', 'みため いじょうに', 'ほろぼした ものを', 'くろい ガラスは', 'えだの あいだから', 'はいの なかで', 'たんさく できるほど', 'この ちいきへの',
+      'よわく なったみたい', 'てつの やまじゃ', 'みえた ときには', 'この はいきょは', 'かえた もの', 'こんな もの', 'つぎの くにへ', 'この おれに', 'この けんは', 'この けんを',
+      'この したの', 'その さきに', 'いきを する', 'うずを まく', 'けっしょうと なって'],
+    kj: ['身を 守れ', '新しい クエスト', 'クエスト 完了', '使える 道具が', 'よく 来た', '若き 勇者よ', '伝説の 剣', '伝説の 力の', '道を 塞ぐ', '足りない もの', '鍛えられた 剣',
+      '炎を まとう', '作られた 剣', '悪を 打ち払う', '作った 鎧', '鎖で 作った', 'とても 強い', 'とても 硬い', 'ドラゴンの 鱗で', 'その 輝きは', '勇者の 剣', '硬い 皮で', '作った 盾',
+      '鋭い 剣', '放つ 弓', '古の 剣', '心臓の 石で', '鋭い ダガー', '鍛えた 剣', '足の 鎧', '伝説の 盾', '伝説の 冠', '作った マント', '伝説の クリスタル', '崖の 向こうに',
+      'この 遺跡には', '深い ところから', '挑む 前に', 'この 暗い 大地の', '霧の 中', '鳴き声と ともに', '大きな ものが', 'ものすごい 音で', '濁った 水に', '暗い 水', 'きらきら 光って',
+      '温かい 光が', '登るに つれて', '嵐の 風に', 'ハーピーの 巣から', '咆哮と ともに', '凍った 湖に', '暗い 山の', '一番 奥の', '洞窟 全体を', '闇の 炎が', '優しい 光の',
+      '物の 匂いが', '好きな ものを', '巨大な ものが', '白く 輝く', '闇の 王座に', 'あの 勇者の', '王座の 間に', '光の 中に', 'ストームリーチの 塔が', 'お辞儀を して',
+      '風の 中に', '唸りを あげる', '遠い 国へ', '旅の ことを', '勇者の ことを', '君の こと', '君の ものだ', '未完成の まま', '探しに 行け', '話しかけた ほうが', '盾と なって',
+      '身に しみわたる', '行き来 できるように なった', '別の 道を', 'この 深みを', '乗った 者を', '強き 者を', '溜息を つく', '冠を つけた', '模様を 描く', '燃える 剣を',
+      'メイスを 持った', '見た目 以上に', '滅ぼした ものを', '黒い ガラスは', '枝の 間から', '灰の 中で', '探索 できるほど', 'この 地域への', '弱く なったみたい', '鉄の 山じゃ',
+      '見えた 時には', '変えた 者', 'こんな もの', '次の 国へ', 'この 俺に', 'この 剣は', 'この 剣を', 'この 下の', 'その 先に', '息を する', '渦を 巻く',
+      'は 毒の 霧を 放った', 'は バリアを 張った', 'の バリアが 消えた', '氷の 上を', '冒険の 記録を', '霧が 晴れた', '大ガエルが 倒れ', '道が 開けた', '冷たい 風が',
+      'トリップワイヤーを 切った', '罠は 解除された', '古の 学問を', 'この 大陸の', 'この 世界で', '開けた 場所へ', '結晶と なって']
+  };
+  // T2. B13 / W52: a battle sentence carries the monster's name as plain text ("Dark Knight appeared!"), and two
+  // monsters had that name. While the battle on screen is with one of these, its old name reads as the new one.
+  var W_FOE = { knight: 'monster.knight' };
   var W_MODE = null, W_REV = null, W_RULES = null, W_RULES_MODE = '', W_CACHE = {}, W_NCACHE = 0;
   function rawZ() { var q = window.__QOK, z = q && q.Z; return z && (z.__base || z); }
   // 'en' | 'ja' | 'kj', from the bundle's own language and the kanji flag (the kanji table answers a
@@ -1147,7 +1238,17 @@
     if (W_RULES_MODE === mode && W_RULES) return W_RULES;
     W_RULES_MODE = mode; W_CACHE = {}; W_NCACHE = 0;
     W_RULES = mode === 'en' ? W_TERMS.en : (mode === 'ja' ? W_TERMS.ja : W_TERMS.ja.concat(W_TERMS.kj));
+    var sp = mode === 'en' ? null : wSpaceRule(mode === 'ja' ? W_SPACE.ja : W_SPACE.ja.concat(W_SPACE.kj));
+    if (sp) W_RULES = W_RULES.concat([sp]);
     return W_RULES;
+  }
+  // One rule for all the phrases of a mode: the longest unspaced form first, replaced by its spaced form.
+  function wSpaceRule(list) {
+    var map = {}, keys = [];
+    for (var i = 0; i < list.length; i++) { var g = list[i].split(' ').join(''); if (g !== list[i] && !map[g]) { map[g] = list[i]; keys.push(g); } }
+    if (!keys.length) return null;
+    keys.sort(function (a, b) { return b.length - a.length; });
+    return [new RegExp(keys.map(function (k) { return k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }).join('|'), 'g'), function (m) { return map[m]; }];
   }
   function wTerms(s, mode) {
     if (typeof s !== 'string' || s.length < 2) return s;
@@ -1156,23 +1257,48 @@
     if (W_NCACHE > 600) { W_CACHE = {}; W_NCACHE = 0; }
     W_CACHE[s] = t; W_NCACHE++; return t;
   }
-  function wRow(k, mode) { var r = W_FIX[k]; return r && typeof r[mode] === 'string' ? r[mode] : null; }
+  // The bundle's old Desert Tomb corridor ("step only on the X glyph") is switched off on the authored floors
+  // (dq-tiles.js a2dLegacyOff). If it ever runs (authored floors off), its own strings are the true rule again.
+  var W_OLD_TRIAL = 'dungeon.desertTomb.glyphs.';
+  function wOldTrial() { var s = scene(); return !!(s && s.glyphTrialActive === true); }
+  function wRow(k, mode) {
+    var r = W_FIX[k]; if (!r || typeof r[mode] !== 'string') return null;
+    if (k.indexOf(W_OLD_TRIAL) === 0 && wOldTrial()) return null;
+    return r[mode];
+  }
+  // The monster of the battle on screen (BattleScene.monster is set in init(), before its first line is written).
+  function wFoeId() {
+    try { var g = game(), b = g && g.scene.getScene('BattleScene'), st = b && b.sys && b.sys.settings.status; return (b && b.monster && st >= 1 && st <= 6) ? b.monster.id : null; } catch (e) { return null; }
+  }
+  function wFoe(s, mode) {
+    for (var id in W_FOE) {
+      var to = wRow(W_FOE[id], mode), z = rawZ(), old = null; if (to === null || typeof z !== 'function') continue;
+      try { old = z(W_FOE[id]); } catch (e) {}
+      if (typeof old === 'string' && old !== to && s.indexOf(old) >= 0 && wFoeId() === id) s = s.split(old).join(to);
+    }
+    return s;
+  }
   function wParams(t, p) { if (p && typeof t === 'string') for (var i in p) if (Object.prototype.hasOwnProperty.call(p, i)) t = t.split('{' + i + '}').join(String(p[i])); return t; }
   // The bundle's own text for each row's key, in the live language: a string that is exactly this is replaced.
   function wRev(mode) {
     if (W_REV && W_REV.mode === mode) return W_REV;
-    var z = rawZ(), m = {}; W_REV = { mode: mode, map: m };
+    var z = rawZ(), m = {}; W_REV = { mode: mode, map: m, trial: {} };
     if (typeof z !== 'function') return W_REV;
-    for (var k in W_FIX) { var to = wRow(k, mode); if (to === null) continue; var old = null; try { old = z(k); } catch (e) {} if (typeof old === 'string' && old !== to) m[old] = to; }
+    var foe = {}; for (var id in W_FOE) foe[W_FOE[id]] = 1;
+    for (var k in W_FIX) {
+      var r = W_FIX[k], to = r && typeof r[mode] === 'string' ? r[mode] : null; if (to === null || foe[k]) continue;   // a shared monster name is not replaced by its text alone (wFoe)
+      var old = null; try { old = z(k); } catch (e) {}
+      if (typeof old === 'string' && old !== to) { m[old] = to; if (k.indexOf(W_OLD_TRIAL) === 0) W_REV.trial[old] = 1; }
+    }
     return W_REV;
   }
   var W_KEY = /\[((?:mechanic|dungeon|npc|sign|map|quest)\.[A-Za-z0-9_.]+)\]/g;
   // Shown text (Phaser setText, a message): an exact bundle row, then any "[key]" a row answers, then terms.
   function wText(s) {
     if (typeof s !== 'string' || s.length < 2) return s;
-    var mode = wMode(), hit = wRev(mode).map[s]; if (hit !== undefined) return hit;
+    var mode = wMode(), rev = wRev(mode), hit = rev.map[s]; if (hit !== undefined && !(rev.trial[s] && wOldTrial())) return hit;
     if (s.indexOf('[') >= 0 && s.indexOf('.') > 0) s = s.replace(W_KEY, function (all, k) { var r = wRow(k, mode); return r === null ? all : r; });
-    return wTerms(s, mode);
+    return wFoe(wTerms(s, mode), mode);
   }
   // Four English strings that live in markup of files this layer does not own (dq-tiles.js's loading veil,
   // town.html's dialogue hint). A MutationObserver on each element puts the player's language over them
@@ -1195,7 +1321,51 @@
     wDomSet(el);
     try { new MutationObserver(function () { wDomSet(el); }).observe(el, { childList: true, characterData: true, subtree: true }); } catch (e) {}
   }
+  // T2. Japanese that is written as literals in ui-overhaul.js (not this layer's file; the clean fix is the same
+  // text there, REPORT-T2.md): a text node that is exactly the old text gets the new one, before the frame is painted.
+  var W_UI = {
+    'タイトルへもどりますか？': 'タイトルへ もどりますか？', 'タイトルへ戻りますか？': 'タイトルへ 戻りますか？',
+    'クエストかんりょう': 'クエスト かんりょう', 'クエスト完了': 'クエスト 完了',
+    '報酬を受け取りました': '報酬を 受け取った', '冒険を続ける': '冒険を 続ける',
+    'クエストを読み込んでいます…': 'クエストを 読み込んでいます…', 'クエスト情報を表示できません': 'クエストを 表示できません',
+    'はじめから はじめる？': 'さいしょから はじめる？', '最初から始める？': '最初から 始める？', 'セーブした冒険は消えます。': 'セーブした 冒険は 消えます。'
+  };
+  // UJ-09: the "NEW" pill beside new gear (ui-overhaul.js picks 'NEW' in Japanese): the player's own script.
+  var W_PILL = { ja: 'あたらしい', kj: '新しい' };
+  // UJ-10: the compass dial's letters (SVG text, in the order N S E W of ui-overhaul.js). Kana mode has no room
+  // for みなみ / ひがし inside the dial: north alone is named, as the elder says (コンパスは つねに きたを さす).
+  var W_COMPASS = { en: ['N', 'S', 'E', 'W'], ja: ['きた', '', '', ''], kj: ['北', '南', '東', '西'] };
+  function wUiNode(n) {
+    var t = n.nodeValue, to = W_UI[t];
+    if (to === undefined && t === 'NEW' && n.parentNode && n.parentNode.className === 'newpill') to = W_PILL[wMode()];
+    if (typeof to === 'string' && to !== t) n.nodeValue = to;
+  }
+  function wUiWalk(root) {
+    if (!root) return;
+    if (root.nodeType === 3) { wUiNode(root); return; }
+    if (root.nodeType !== 1) return;
+    var w = document.createTreeWalker(root, 4, null, false), n; while ((n = w.nextNode())) wUiNode(n);
+  }
+  var W_UI_ON = false;
+  function wUiWatch() {
+    if (W_UI_ON || !document.body || typeof MutationObserver !== 'function') return; W_UI_ON = true;
+    wUiWalk(document.body);
+    try {
+      new MutationObserver(function (ms) {
+        for (var i = 0; i < ms.length; i++) {
+          var m = ms[i]; if (m.type === 'characterData') { wUiNode(m.target); continue; }
+          for (var j = 0; j < m.addedNodes.length; j++) wUiWalk(m.addedNodes[j]);
+        }
+      }).observe(document.body, { childList: true, characterData: true, subtree: true });
+    } catch (e) {}
+  }
+  function wCompass() {
+    var c = document.getElementById('qfh-compass'), t = c && c.getElementsByTagName('text'); if (!t || t.length !== 4) return;
+    var want = W_COMPASS[wMode()] || W_COMPASS.en;
+    for (var i = 0; i < 4; i++) if (t[i].textContent !== want[i]) t[i].textContent = want[i];
+  }
   function wDomScan() {
+    wUiWatch(); wCompass();
     wDomWatch(document.getElementById('a1a-veil-text')); wDomWatch(document.getElementById('a1a-veil-retry'));
     var fr = document.getElementsByTagName('iframe');
     for (var i = 0; i < fr.length; i++) { try { var d = fr[i].contentDocument; if (d) wDomWatch(d.querySelector('#dialogue small')); } catch (e) {} }
@@ -1210,7 +1380,7 @@
     var f = function (v) { if (typeof v === 'string') { try { v = wText(v); } catch (e) {} } return orig.call(this, v); };
     f.__words = true; T.prototype.setText = f; W_PHASER = true;
   }
-  window.__QOK_WORDS__ = { fix: W_FIX, terms: W_TERMS, mode: function () { return wMode(); }, text: wText };
+  window.__QOK_WORDS__ = { fix: W_FIX, terms: W_TERMS, space: W_SPACE, ui: W_UI, mode: function () { return wMode(); }, text: wText };
 
   function wrapText() {
     var q = window.__QOK;
