@@ -398,6 +398,7 @@ window.__QOK_D4_UI__ = true;
   function retryBoss() {
     var go = scene('GameOverScene'), t = GS(), bf = bossFight;
     if (!go || !t || !bf || !bf.record) return false;
+    if (returnMark && Date.now() - returnMark < RETURN_GUARD_MS) return false;   // this defeat was already answered (town or retry)
     try { go.input.keyboard && go.input.keyboard.removeAllListeners(); } catch (e) {}
     // Load the fight's starting record through the bundle's own loader, via the auto key, then put
     // the real auto save back. Nothing is written to the slot.
@@ -409,6 +410,7 @@ window.__QOK_D4_UI__ = true;
     } catch (e) { ok = false; }
     finally { if (prev == null) del(CANON_AUTO); else set(CANON_AUTO, prev); suspend--; }
     if (!ok) return false;
+    returnMark = Date.now(); try { go.events.once('shutdown', function () { returnMark = 0; }); } catch (e2) {}   // one answer per defeat: "boss again" then "Return to town" in one frame must not also halve the gold
     resetWatch();
     beginLoad('gameover-boss-retry');
     go.scene.start('WorldMapScene');
@@ -2553,14 +2555,15 @@ window.__QOK_D4_UI__ = true;
     if (!(z > 0) || Math.abs(z - 1) < 0.001) return 1;
     var key = z.toFixed(4);
     if (_btZoomK[key] == null) {
-      var k = 1;
+      var k = 1, got = false;
       try {
         var p = document.createElement('div');
         p.style.cssText = 'position:fixed;left:0;top:0;width:100px;height:100px;margin:0;padding:0;border:0;visibility:hidden;pointer-events:none;zoom:' + z + ';';
         document.body.appendChild(p);
         var h = p.getBoundingClientRect().height; document.body.removeChild(p);
-        if (h > 0) k = h / (100 * z);
-      } catch (e) { k = 1; }
+        if (h > 0) { k = h / (100 * z); got = true; }
+      } catch (e) { k = 1; got = false; }
+      if (!got) return 1;                                   // nothing measured (not laid out yet): do not cache a guess for the session
       _btZoomK[key] = (k > 0.05 && k < 20) ? k : 1;
     }
     return _btZoomK[key];
@@ -3711,7 +3714,13 @@ window.__QOK_D4_UI__ = true;
           // the new quest, and only it, shows its objective (the list is repainted on the next tick)
           // U2-3: only when the panel is folded. With the panel open the player may have opened a quest's
           // details; rewriting every entry's state there closed them under the reader's eyes.
-          if (added && wm.questTrackerCollapsed) { ids.forEach(function (id) { fieldQuestOpen[id] = prev.indexOf(id) < 0; }); fieldQuestSig = null; }
+          // Second read (day 4): a peek the game opened by itself is not the player's choice, so news during a peek is
+          // treated like news on a folded panel; on a panel the player opened, the new quest opens and nothing else moves.
+          if (added) {
+            if (wm.questTrackerCollapsed || wm.__qokQuestPeekUntil) ids.forEach(function (id) { fieldQuestOpen[id] = prev.indexOf(id) < 0; });
+            else ids.forEach(function (id) { if (prev.indexOf(id) < 0) fieldQuestOpen[id] = true; });
+            fieldQuestSig = null;
+          }
           if (wm.questTrackerCollapsed) { wm.questTrackerCollapsed = false; wm.__qokQuestManual = false; wm.__qokQuestPeekUntil = now + QUEST_PEEK_MS; }
           else if (wm.__qokQuestPeekUntil) wm.__qokQuestPeekUntil = now + QUEST_PEEK_MS;   // more news during a peek: start the clock again
         }
