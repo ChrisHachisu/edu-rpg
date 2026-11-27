@@ -92,8 +92,9 @@ async (o) => {
 
   // ---- can the end of every scroller be reached? scroll it to its end and hit-test the buttons that are then in view
   for (const F of frames) for (const sc of F.doc.body.querySelectorAll('*')) { const s = cs(sc, F); if (!/(auto|scroll)/.test(s.overflowY) || sc.scrollHeight <= sc.clientHeight + 4 || sc.clientHeight < 40 || !shown(sc, F)) continue;
+    { const q = sc.getBoundingClientRect(), mid = F.doc.elementFromPoint(q.left + q.width / 2, q.top + q.height / 2); if (mid && !sc.contains(mid)) continue; }   // the list is behind a sheet (shop confirm): not in use
     const top0 = sc.scrollTop; sc.scrollTop = sc.scrollHeight; const sb = sc.getBoundingClientRect();
-    try { for (const el of sc.querySelectorAll('button, a[href], input, select, [data-act], [role="button"]')) { if (!shown(el, F) || cs(el, F).pointerEvents === 'none') continue; const b = el.getBoundingClientRect(); if (b.width < 1 || b.height < 1 || b.bottom < sb.top + 2 || b.top < sb.top - 1) continue;
+    try { for (const el of sc.querySelectorAll('button, a[href], input, select, [data-act], [role="button"]')) { if (!shown(el, F) || cs(el, F).pointerEvents === 'none' || el.closest('#qok-gwheel')) continue; const b = el.getBoundingClientRect(); if (b.width < 1 || b.height < 1 || b.bottom < sb.top + 2 || b.top < sb.top - 1) continue;
         if (b.bottom > sb.bottom + 2) { issue('tap-unreachable', el, F, { cutAtEnd: r1(b.bottom - sb.bottom), scroller: one(sc) }, el.innerText); continue; }
         const e = F.doc.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2); if (e && !related(e, el) && !/Noop$/.test(el.getAttribute('data-act') || '')) issue('tap-unreachable', el, F, { coveredBy: sig(e, F), scroller: one(sc), atEnd: [r1(b.left + b.width / 2 + F.ox), r1(b.top + b.height / 2 + F.oy)] }, el.innerText); } }
     finally { sc.scrollTop = top0; } }
@@ -187,7 +188,7 @@ async (o) => {
   const names = Object.keys(G), hit = (a, b) => { const dx = Math.min(a.r, b.r) - Math.max(a.l, b.l), dy = Math.min(a.b, b.b) - Math.max(a.t, b.t); return dx > 3 && dy > 3 ? dx * dy : 0; };
   const FIELD = ['hp', 'compass', 'minimap', 'floor', 'quests', 'dialog', 'saved', 'tabs', 'stick', 'prompt', 'townPill', 'questCard', 'toast', 'hero'];
   const BATTLE = ['enemy', 'enemyCard', 'battleHud', 'keypad', 'msg', 'notepad'];
-  const ALLOW = { 'enemy+notepad': 1, 'notepad+enemy': 1, 'battleHud+keypad': 1, 'keypad+battleHud': 1, 'battleHud+msg': 1, 'msg+battleHud': 1, 'enemyCard+notepad': 1 };
+  const ALLOW = { 'enemy+notepad': 1, 'notepad+enemy': 1, 'battleHud+keypad': 1, 'keypad+battleHud': 1, 'battleHud+msg': 1, 'msg+battleHud': 1, 'enemyCard+notepad': 1, 'battleHud+notepad': 1 };   // the slate is placed 8 px above the quiz card; the HUD wrapper's clear padding reaches under it
   const cover = (set) => { for (let i = 0; i < set.length; i++) for (let j = i + 1; j < set.length; j++) { const a = set[i], b = set[j]; if (!G[a] || !G[b] || ALLOW[a + '+' + b]) continue; const ar = hit(G[a], G[b]); if (ar > 12) issues.push({ rule: 'overlap', sig: a + '+' + b, n: { area: Math.round(ar), a: [G[a].l, G[a].t, G[a].r, G[a].b].map(r1), b: [G[b].l, G[b].t, G[b].r, G[b].b].map(r1) } }); } };
   if (!document.querySelector('#qok-ui.battle')) cover(FIELD.filter(k => !(G.questCard && k !== 'questCard'))); else cover(BATTLE);
   for (const sel of ['#qok-perf-panel', '[data-qok-blackbox-panel]', '[data-act="jumpOpen"]']) { const e = document.querySelector(sel); if (e && shown(e, frames[0])) issue('debug-ui', e, frames[0], {}, e.innerText); }

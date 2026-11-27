@@ -162,7 +162,7 @@ function judge(rows, profile, kind) {
     if (rate > hi) bad.push(`win rate above ${pct(hi)}`);
     if (r.worstPct > HIT_CAP) bad.push(`worst hit ${pct(r.worstPct)} of max HP (limit ${pct(HIT_CAP)})`);
     if (ROUND_CAP[r.boss] && r.roundsMedian > ROUND_CAP[r.boss]) bad.push(`median ${r.roundsMedian} rounds (limit ${ROUND_CAP[r.boss]})`);
-    if (!careful && r.boss === 'demonKing' && sec > DK_SEC) bad.push(`won fights take a median ${Math.round(sec)} s (limit ${DK_SEC})`);
+    if (!careful && r.boss === 'demonKing' && sec > DK_SEC) bad.push(r.wins ? `won fights take a median ${Math.round(sec)} s (limit ${DK_SEC})` : `no fight was won; the lost fights take a median ${Math.round(sec)} s (limit for a won fight ${DK_SEC})`);
     if (!careful && r.boss === 'demonKing' && r.itemsMedian > DK_ITEMS) bad.push(`median ${r.itemsMedian} heal items (limit ${DK_ITEMS})`);
     if (r.stuck) bad.push(`${r.stuck} fights did not end`);
     if (careful && sec > DK_SEC) info(`careful ${r.boss}: won fights take a median ${Math.round(sec)} s, longer than the reference limit ${DK_SEC} s (not failed: defend and heal turns are turns)`);
