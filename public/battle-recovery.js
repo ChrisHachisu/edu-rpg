@@ -316,7 +316,7 @@
       stormSentinel:      { charge: 1.4 },    // charge 2 -> 1.4
       frostMonarch:       { regen: 0.03 },    // regen 0.06 -> 0.03
       swordWraith:        { charge: 1.5 },    // charge 2 -> 1.5
-      celestialGuardian:  { regen: 0.03 },    // regen 0.06 -> 0.03
+      celestialGuardian:  { regen: 0.03, grade: { '5': { regen: 0.02 } } },   // 2026-11-27b: the grade 5 child's median fight sat on the 12-round limit (12; 11 with 0.02)    // regen 0.06 -> 0.03
       // hp 1875 -> 1500 (1400 grades 5-6); regen 0.03 -> 0.01;
       // rage 1.6 -> 1.5 (1.6 kept grades K-2, 1.3 grades 5-6); charge 2 -> 1.6 (1.5 grades K-2, 1.45 grades 5-6);
       // poison 0.05 -> 0.02 (a turn spent defending or healing no longer costs a twentieth of her HP);

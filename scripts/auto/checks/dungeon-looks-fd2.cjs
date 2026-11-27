@@ -3,7 +3,7 @@
 // objects the game drew (pixels only where only the picture can tell) and time the warnings on the modules' own clocks.
 //   storm-terrace.js     Stormreach: the stone glows (soft picture, no squares), same warning time, bolts on the terrace, clear of the HUD
 //   guard-lanterns.js    Demon Barracks: a soft pool over exactly the lit cells, a drawn lantern with a glow
-//   mirror-rooms.js      Demon Castle: the swap badge sits with the controls, not over her head
+//   mirror-rooms.js      Demon Castle: the swap badge sits with the controls while a stick is on screen, over her head when none is
 //   push-ice.js          Frostfall: the plinth lies under her, only the boulder sorts in front
 //   drifting-blocks.js   Void Rift: the open join is a soft light, not a hard bar
 //   matching-portals.js  Twilight Sanctum: the pool of every portal turns
@@ -139,13 +139,20 @@ async function storm(page) {
     for (const [x, y] of cells0) { const sx0 = (x * T - cam[0]) * k, sy0 = (y * T - cam[1]) * k, n = T * k; if (sx0 < 0 || sy0 < 0 || sx0 + n > img.w || sy0 + n > img.h * 0.62) continue;
       for (let yy = sy0 + n * 0.1; yy < sy0 + n * 0.9; yy += 3) for (let xx = sx0 + n * 0.1; xx < sx0 + n * 0.9; xx += 3) out.push(F.px(img, xx, yy)); }
     return out; }
-  const vis = {};
+  const vis = {}, mids = [];
   if (await freeze(page, calmQ)) { const base = await grabCells(); await thaw(page);
     for (const k of [0.95, 0.66, 0.33]) { if (!(await freeze(page, `const left = ((0 * M.gap - S.tick) % M.period + M.period) % M.period; return left > M.glow * ${k} - 0.35 && left < M.glow * ${k};`))) continue;
-      const now = await grabCells(); await thaw(page); let d = 0; for (let i = 0; i < Math.min(base.length, now.length); i++) d += (Math.abs(now[i][0] - base[i][0]) + Math.abs(now[i][1] - base[i][1]) + Math.abs(now[i][2] - base[i][2])) / 3;
+      // the warning pulses (its strength swings by a quarter several times a second): the frozen clock is set on the nearest
+      // moment the pulse is at its middle, so one frame measures the look and not the phase it happened to catch
+      const mid = await page.evaluate(() => { const S = window.__QOK_DNG2__.ctx().state, M = S.M, mod = (a, b) => ((a % b) + b) % b;
+        const f = t => { const left = mod(-t, M.period); let ga = left <= M.glow ? 1 - left / M.glow : 0; if (M.kid && ga > 0) ga = 0.2 + 0.8 * ga; return Math.abs(Math.sin(t * (3 + 5 * ga))); };
+        for (let i = 0; i <= 700; i++) for (const sg of [1, -1]) { const d = sg * i * 0.001; if (f(S.tick + d) < 0.02) { S.__fd2Tick = S.tick; S.tick += d; return d; } } return null; });
+      if (mid === null) { await thaw(page); continue; }
+      mids.push(+mid.toFixed(3)); await sleep(page, 120);
+      const now = await grabCells(); await page.evaluate(() => { const S = window.__QOK_DNG2__.ctx().state; S.tick = S.__fd2Tick; }); await thaw(page); let d = 0; for (let i = 0; i < Math.min(base.length, now.length); i++) d += (Math.abs(now[i][0] - base[i][0]) + Math.abs(now[i][1] - base[i][1]) + Math.abs(now[i][2] - base[i][2])) / 3;
       vis[k] = base.length ? +(d / base.length).toFixed(1) : null; } }
-  F.info('stormreach warning visibility: mean colour change on the warned cells at 95 %, 66 %, 33 % of the warning time left', JSON.stringify(vis));
-  const OLD = { 0.95: 24.8, 0.66: 29.9, 0.33: 46.0 };                       // the old square cells measured the same way (37de040, mean of two runs: the pulse makes a single frame vary by +-6)
+  F.info('stormreach warning visibility: mean colour change on the warned cells at 95 %, 66 %, 33 % of the warning time left, the pulse at its middle', JSON.stringify(vis) + ' (clock moved by ' + mids.join(', ') + ' ticks to the middle of the pulse)');
+  const OLD = { 0.95: 24.8, 0.66: 35.6, 0.33: 46.0 };                       // the old square cells measured the same way (37de040, mean of two runs: the pulse makes a single frame vary by +-6; the middle value is the old tree's own 35.6 again). With the pulse at its middle the old tree on :5570 reads 22.5, 35.4 and 34.2, today's look 31.6, 40.6 and 45.7 (two runs each)
   F.ok(Object.keys(OLD).every(k => vis[k] !== undefined && vis[k] !== null && vis[k] >= OLD[k] * 0.95), 'Stormreach: the warning is at least as visible as the old square cells at every stage', JSON.stringify({ now: vis, old: OLD }));
   // pictures: a late moment of a warning, and a strike
   if (SHOTS) {
@@ -244,7 +251,7 @@ async function guard(page) {
   //    catch her at that moment (the module's own litBy). CORE is the brightness a child reads as "lit": every catch cell
   //    must reach it, no other cell may.
   //  * the cost: every redraw of a pool picture (one texture upload), counted per frame and per guard; and whether the
-  //    guard it belongs to throws any light within a cell of the screen on this tick, the next or the last.
+  //    box of that picture's own lit cells (this tick's, the next one's or the last one's) is within a cell of the screen.
   const CORE = 0.11;
   const beat = await page.evaluate(CORE => new Promise(res => {
     const c = window.__QOK_DNG2__.ctx(), S = c.state, M = S.M, sc = c.scene, lg = c.mod.logic; S.grace = 1e12;
@@ -261,7 +268,9 @@ async function guard(page) {
       out.uploads += frameUp.length; out.maxFrame = Math.max(out.maxFrame, frameUp.length); if (turned) out.tickFrameMax = Math.max(out.tickFrameMax, frameUp.length);
       const per = {}; for (const [gid, j] of frameUp) { per[gid] = (per[gid] || 0) + 1; out.guardsDrawn[gid] = 1;
         const g = M.guards.find(x => x.id === gid); let nearView = false;
-        for (const tt of [a, b, z]) { const lit = lg.litBy(c, M, g, tt); for (const k in lit) { const q = k.split(','), x = +q[0], y = +q[1]; if ((x + 2) * 48 > v.x && (x - 1) * 48 < v.right && (y + 2) * 48 > v.y && (y - 1) * 48 < v.bottom) { nearView = true; break; } } if (nearView) break; }
+        { const lit = lg.litBy(c, M, g, [a, b, z][j]); let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;        // the picture redrawn is this tick's, the next one's or the last one's: the box of ITS lit cells, a cell of margin
+          for (const k in lit) { const q = k.split(','), x = +q[0], y = +q[1]; if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+          nearView = (x1 + 2) * 48 > v.x && (x0 - 1) * 48 < v.right && (y1 + 2) * 48 > v.y && (y0 - 1) * 48 < v.bottom; }
         if (!nearView) out.offscreen++; }
       for (const k in per) out.maxGuardFrame = Math.max(out.maxGuardFrame, per[k]);
       frameUp = [];
@@ -286,7 +295,7 @@ async function guard(page) {
   F.ok(beat.pools && beat.ticks === 20 && beat.catchCells > 100 && beat.wrong === 0 && beat.minCatch >= CORE && beat.maxOther < CORE, 'Barracks 5F: on 20 sampled ticks (every frame of each) every catch cell on screen is inside the bright pool and no cell of the bright pool is a non-catch cell',
     beat.pools ? `${beat.catchCells} catch cell-frames, dimmest ${beat.minCatch} at ${JSON.stringify(beat.minAt)}; ${beat.otherCells} other cell-frames, brightest ${beat.maxOther} at ${JSON.stringify(beat.maxAt)}; bright from ${CORE}; ${beat.wrong} wrong` : 'no soft pools');
   F.ok(beat.pools && beat.uploads > 0 && beat.maxGuardFrame <= 1, 'Barracks 5F: no frame redraws more than one pool picture of a guard (the catching light on the frame the tick turns, the two faint ones on the frames after)', `${beat.uploads} redraws in one beat over ${beat.frames} frames, at most ${beat.maxFrame} in a frame (${beat.tickFrameMax} on a tick's own frame), at most ${beat.maxGuardFrame} per guard per frame, ${beat.guardsDrawn} of ${beat.guards} guards redrawn`);
-  F.ok(beat.pools && beat.offscreen === 0, 'Barracks 5F: a guard whose light reaches no cell near the screen redraws nothing', `${beat.offscreen} redraws for a guard with no lit cell within a cell of the screen`);
+  F.ok(beat.pools && beat.offscreen === 0, 'Barracks 5F: a pool picture whose lit cells\' own box is not within a cell of the screen is not redrawn', `${beat.offscreen} redraws of a picture with its lit cells\' box more than a cell off screen`);
 }
 
 // ---- Demon Castle mirror rooms (DC-05) -----------------------------------------------------------
@@ -488,11 +497,13 @@ async function ash(page) {
     const tl = Math.hypot(G.fx - G.hx, G.fy - G.hy) || 1, ux = (G.fx - G.hx) / tl, uy = (G.fy - G.hy) / tl;       // from the hint toward the crack
     function step() { frames++; let n = 0;
       for (const m of D.motes) { const im = m.img; if (!im.visible) { born.delete(m); continue; } n++;
-        if (!born.has(m)) { born.set(m, [im.x, im.y]); seenMotes++; birthMax = Math.max(birthMax, Math.hypot(im.x - G.hx, im.y - G.hy)); }
+        const was = born.get(m);                                               // a mote is used again the moment its life ends: its start time tells one life from the next
+        if (!was || was[2] !== m.t0) { if (S.t - m.t0 < 80) { born.set(m, [im.x, im.y, m.t0]); seenMotes++; birthMax = Math.max(birthMax, Math.hypot(im.x - G.hx, im.y - G.hy)); }
+          else born.set(m, [null, null, m.t0]); }                              // (already in flight when the watch began: its start was not seen, its distance from the wall still counts)
         if (im.alpha <= 0.02) continue;                                        // not drawn (the first and the last moment of its life)
         const dist = (im.x - G.fx) * G.nx + (im.y - G.fy) * G.ny, clear = dist - im.displayWidth / 2;   // floor between its whole puff and the wall face
         if (clear < minClear) minClear = clear; if (dist < minCentre) minCentre = dist; if (clear < 24) nearWall++;
-        const b = born.get(m); toward = Math.max(toward, (im.x - b[0]) * ux + (im.y - b[1]) * uy); }
+        const b = born.get(m); if (b[0] !== null) toward = Math.max(toward, (im.x - b[0]) * ux + (im.y - b[1]) * uy); }
       if (n > lastN + 2) gusts++; lastN = n; maxVis = Math.max(maxVis, n);
       if (performance.now() - t0 > 5600) { sc.events.off('postupdate', step); res({ frames, maxVis, gusts, depth: D.motes[0].img.depth, motes: seenMotes, minClear: Math.round(minClear), minCentre: Math.round(minCentre), nearWall, birthMax: Math.round(birthMax), toward: Math.round(toward), hintToWall: Math.round((G.hx - G.fx) * G.nx + (G.hy - G.fy) * G.ny) }); } }
     sc.events.on('postupdate', step);

@@ -26,7 +26,7 @@
 //   T7   the two people who stood on scenery stand on open ground (the plate's own pixels under their feet).
 // The served files are fetched from PROBE_URL so the same check runs against any build.
 //   node scripts/auto/checks/field-town-reach.cjs [townId ...]
-const path = require('path'), zlib = require('zlib');
+const path = require('path'), zlib = require('zlib'), fs = require('fs'), cp = require('child_process');
 const ROOT = path.resolve(__dirname, '../../..');
 const URL_ = process.env.PROBE_URL || 'http://127.0.0.1:5503/';
 const TOWNS = ['greenhollow', 'millbrook', 'portSapphire', 'ironkeep', 'frostwatch', 'hauntedVillage', 'ruinsCamp', 'oasisHaven', 'embersRest', 'cinderwatch', 'lastBastion', 'havensEdge'];
@@ -76,6 +76,10 @@ const BANDED = ['lastBastion', 'embersRest', 'ruinsCamp', 'havensEdge', 'oasisHa
 const ONGROUND = { cinderwatch: { id: 'cinderVillager', was: [26.41, 46.72], scenery: (r, g, b) => r + g + b < 150 || (r > 150 && g < 110 && b < 80), what: 'rubble' },
   millbrook: { id: 'herbalist', was: [40.44, 29.12], scenery: (r, g, b) => g > r * 1.12 && g > b * 1.5, what: 'the leafy verge' } };
 
+// FT2: ground that may be lost to a person's space, by name: { town: [{ cell: [x, y], r: cells, why }] }. Empty: nothing may be lost.
+const LOST_OK = {};
+// FT2 item 1: ways that must stay open with ROOM px to spare on each side of her feet (town: [[from, to], ...])
+const ROOM = 6, ROOMY = { greenhollow: [['gate', 'healer'], ['save', 'healer']] };
 // The people's bodies and talk bands the served town.html registers (current mode, i.e. without a qok-f2-old switch).
 function modelFrom(html) {
   const num = (re, d) => { const m = re.exec(html); return m ? +m[1] : d; };
@@ -119,24 +123,29 @@ function nearestFree(inside, N, STEP, x, y, R = 24) { const sx = Math.round(x / 
   for (let dy = -R; dy <= R; dy++) for (let dx = -R; dx <= R; dx++) { const gx = sx + dx, gy = sy + dy; if (gx < 0 || gy < 0 || gx >= N || gy >= N || !inside[gy * N + gx]) continue; const d = Math.hypot(gx * STEP - x, gy * STEP - y); if (d < bd) { bd = d; best = gy * N + gx; } }
   return best; }
 // shortest walks from one grid point (Dijkstra, binary heap)
-function walks(inside, N, STEP, src) { const dist = new Float32Array(N * N).fill(Infinity), hk = [src], hd = [0]; dist[src] = 0; const D = STEP * Math.SQRT2;
+function walks(inside, N, STEP, src) { const dist = new Float64Array(N * N).fill(Infinity), hk = [src], hd = [0]; dist[src] = 0; const D = STEP * Math.SQRT2;
   const push = (k, d) => { let i = hk.length; hk.push(k); hd.push(d); while (i > 0) { const p = (i - 1) >> 1; if (hd[p] <= d) break; hk[i] = hk[p]; hd[i] = hd[p]; i = p; } hk[i] = k; hd[i] = d; };
   const pop = () => { const k = hk[0], d = hd[0], lk = hk.pop(), ld = hd.pop(), n = hk.length; if (n) { let i = 0; for (;;) { let c = 2 * i + 1; if (c >= n) break; if (c + 1 < n && hd[c + 1] < hd[c]) c++; if (hd[c] >= ld) break; hk[i] = hk[c]; hd[i] = hd[c]; i = c; } hk[i] = lk; hd[i] = ld; } return [k, d]; };
   while (hk.length) { const [k, d] = pop(); if (d > dist[k]) continue; const x = k % N, y = (k - x) / N;
     for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]]) { const nx = x + dx, ny = y + dy; if (nx < 0 || ny < 0 || nx >= N || ny >= N) continue; const nk = ny * N + nx; if (!inside[nk]) continue;
       if (dx && dy && (!inside[y * N + nx] || !inside[ny * N + x])) continue; const nd = d + (dx && dy ? D : STEP); if (nd < dist[nk]) { dist[nk] = nd; push(nk, nd); } } }
   return dist; }
-// opts: bare (a grid already made), cellOld [ids standing at their cellOld], space(n) (a person's space, when a switch changes it), saveOld
+// opts: bare (a grid already made), cellOld [ids standing at their cellOld], space(n) (a person's space, when a switch changes it), saveOld, saveFrom, room
 function measure(W, T, base, M, html, opts = {}) {
   const C = T.worldPxPerCell, STEP = 2, N = Math.ceil(T.cells * C / STEP) + 1, fr = base.actorFootRadius || 0;
   const npcs = opts.npcs || people(T, M, html, opts), bare = opts.bare || bareGrid(W, T, base, STEP), inside = carve(bare, N, STEP, npcs, M, 'cur', fr);
+  // opts.room (px): she keeps that far from every wall and person (the ground is shrunk by it), to ask "is this way open with room"
+  if (opts.room) { const r = Math.round(opts.room / STEP), src0 = Uint8Array.from(inside); for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) { if (!src0[y * N + x]) continue;
+    close: for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) { if (dx * dx + dy * dy > r * r) continue; const X = x + dx, Y = y + dy; if (X < 0 || Y < 0 || X >= N || Y >= N || !src0[Y * N + X]) { inside[y * N + x] = 0; break close; } } } }
   const save = opts.saveOld && Array.isArray(T.savePointOld) ? T.savePointOld : T.savePoint;
   const services = [['shop', T.shopCounter], ['save', save]].filter(s => Array.isArray(s[1])), P = promptRules(C, M, npcs, services);
   const src = { gate: nearestFree(inside, N, STEP, T.startCell[0] * C, T.startCell[1] * C) };
   const fromGate = walks(inside, N, STEP, src.gate), seen = new Uint8Array(N * N); for (let k = 0; k < N * N; k++) if (fromGate[k] < Infinity) seen[k] = 1;
   // the other places she starts a walk from: the save spot (where she stands to save: the reachable point nearest its cell) and the opening spot
   const reachNear = (x, y) => { let best = -1, bd = 1e9; for (let dy = -20; dy <= 20; dy++) for (let dx = -20; dx <= 20; dx++) { const gx = Math.round(x / STEP) + dx, gy = Math.round(y / STEP) + dy; if (gx < 0 || gy < 0 || gx >= N || gy >= N || !seen[gy * N + gx]) continue; const d = Math.hypot(gx * STEP - x, gy * STEP - y); if (d < bd) { bd = d; best = gy * N + gx; } } return best; };
-  if (Array.isArray(save)) src.save = reachNear(save[0] * C, save[1] * C);
+  // opts.saveFrom: she starts from THIS save cell (today's), whatever the files' own save spot is: like for like when a spot was moved on purpose
+  const saveFrom = Array.isArray(opts.saveFrom) ? opts.saveFrom : save;
+  if (Array.isArray(saveFrom)) src.save = reachNear(saveFrom[0] * C, saveFrom[1] * C);
   if (Array.isArray(T.firstEntryCell)) src.opening = reachNear(T.firstEntryCell[0] * C, T.firstEntryCell[1] * C);
   // the places she walks to: a person's (where Talk names her), the shop's (its spot, or its keeper), the save spot's, the exit line
   const exitY = (T.exit && T.exit.cell ? T.exit.cell[1] : T.startCell[1]) * C, exitX = (T.exit && T.exit.cell ? T.exit.cell[0] : T.startCell[0]) * C, north = T.exit && T.exit.axis ? T.exit.axis === 'north' : (T.exit && T.exit.cell && T.exit.cell[1] < T.cells / 2);
@@ -151,12 +160,70 @@ function measure(W, T, base, M, html, opts = {}) {
     for (const n of npcs) { const g = n.id === 'shopkeeper' ? 'shop' : n.id; if (!(g in dist[name])) dist[name][g] = null; } }
   return { N, STEP, C, fr, npcs, bare, inside, seen, dist, P, services };
 }
+// ---- FT2 item 3: slits. Round every person, on a 1 px grid: ground narrower than `w` px (it does not hold a disc `w` px
+// across) that she can walk THROUGH from one roomy place to another, where the way round is longer by more than `w` px or
+// does not exist. A dead-end nook, the rounded-off corner of a room and the rough edge of a wall are not ways through.
+// Ground that is just as narrow without the people (the painted street itself) is reported apart (`painted`).
+function slits(W, base, npcs, M, fr, w, world) {
+  const out = [], R = w / 2, disc = []; for (let dy = -Math.ceil(R); dy <= Math.ceil(R); dy++) for (let dx = -Math.ceil(R); dx <= Math.ceil(R); dx++) if (dx * dx + dy * dy <= R * R) disc.push([dx, dy]);
+  // one window per group of people standing close (their boxes, 44 px of room round them, merged while they touch)
+  let boxes = npcs.map(n => { const s = segs(n, M, 'cur'), m = 44 + fr; return [Math.min(...s.map(q => q.x0 - q.hw)) - m, Math.min(...s.map(q => q.y0 - q.hw)) - m, Math.max(...s.map(q => q.x0 + q.hw)) + m, Math.max(...s.map(q => q.y1 + q.hw)) + m, [n.id]]; });
+  for (let again = true; again;) { again = false; outer: for (let i = 0; i < boxes.length; i++) for (let j = i + 1; j < boxes.length; j++) { const a = boxes[i], b = boxes[j];
+    if (a[0] <= b[2] && b[0] <= a[2] && a[1] <= b[3] && b[1] <= a[3]) { boxes[i] = [Math.min(a[0], b[0]), Math.min(a[1], b[1]), Math.max(a[2], b[2]), Math.max(a[3], b[3]), [...a[4], ...b[4]]]; boxes.splice(j, 1); again = true; break outer; } } }
+  for (const [bx0, by0, bx1, by1, who] of boxes) {
+    const x0 = Math.max(0, Math.floor(bx0)), y0 = Math.max(0, Math.floor(by0)), x1 = Math.min(world, Math.ceil(bx1)), y1 = Math.min(world, Math.ceil(by1)), w_ = x1 - x0 + 1, h_ = y1 - y0 + 1, n_ = w_ * h_;
+    const bare = new Uint8Array(n_), free = new Uint8Array(n_), blockers = npcs.flatMap(n => segs(n, M, 'cur'));
+    for (let y = 0; y < h_; y++) for (let x = 0; x < w_; x++) { const px = x0 + x, py = y0 + y, k = y * w_ + x; if (!W.isInsideWalkable({ x: px, y: py }, base)) continue; bare[k] = 1;
+      free[k] = blockers.some(s => Math.hypot(px - s.x0, py - Math.min(Math.max(py, s.y0), s.y1)) <= s.hw + fr + 1e-6) ? 0 : 1; }
+    // opening: the ground that holds the disc (outside the window counts as roomy, so the window's own edge makes nothing narrow)
+    const open = g => { const er = new Uint8Array(n_), op = new Uint8Array(n_);
+      for (let y = 0; y < h_; y++) for (let x = 0; x < w_; x++) { if (!g[y * w_ + x]) continue; let all = 1; for (const [dx, dy] of disc) { const X = x + dx, Y = y + dy; if (X < 0 || Y < 0 || X >= w_ || Y >= h_) continue; if (!g[Y * w_ + X]) { all = 0; break; } } er[y * w_ + x] = all; }
+      for (let y = 0; y < h_; y++) for (let x = 0; x < w_; x++) { if (!er[y * w_ + x]) continue; for (const [dx, dy] of disc) { const X = x + dx, Y = y + dy; if (X < 0 || Y < 0 || X >= w_ || Y >= h_) continue; op[Y * w_ + X] = 1; } }
+      return op; };
+    const roomy = open(free), roomyBare = open(bare), lab = new Int32Array(n_); let nl = 0;
+    const N8 = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]];
+    for (let k0 = 0; k0 < n_; k0++) { if (!free[k0] || roomy[k0] || lab[k0]) continue; nl++; const comp = [k0]; lab[k0] = nl;
+      for (let i = 0; i < comp.length; i++) { const k = comp[i], x = k % w_, y = (k - x) / w_; for (const [dx, dy] of N8) { const X = x + dx, Y = y + dy; if (X < 0 || Y < 0 || X >= w_ || Y >= h_) continue; const q = Y * w_ + X; if (free[q] && !roomy[q] && !lab[q]) { lab[q] = nl; comp.push(q); } } }
+      // where the narrow piece meets roomy ground: its mouths (roomy points next to it, grouped while they lie within 3 px of each other)
+      const mouthPts = []; const seenM = new Set();
+      for (const k of comp) { const x = k % w_, y = (k - x) / w_; for (const [dx, dy] of N8) { const X = x + dx, Y = y + dy; if (X < 0 || Y < 0 || X >= w_ || Y >= h_) continue; const q = Y * w_ + X; if (roomy[q] && !seenM.has(q)) { seenM.add(q); mouthPts.push(q); } } }
+      const mouths = []; const mseen = new Set();
+      for (const s of mouthPts) { if (mseen.has(s)) continue; const g = [s]; mseen.add(s);
+        for (let i = 0; i < g.length; i++) { const x = g[i] % w_, y = (g[i] - x) / w_; for (const q of mouthPts) { if (mseen.has(q)) continue; const X = q % w_, Y = (q - X) / w_; if (Math.abs(X - x) <= 3 && Math.abs(Y - y) <= 3) { mseen.add(q); g.push(q); } } }
+        mouths.push(g); }
+      if (mouths.length < 2) continue;
+      // walks inside the window (8 directions): through the narrow piece, and round it
+      const bfs = (from, okAt, goal) => { const d = new Float64Array(n_).fill(Infinity), q = []; for (const k of from) { d[k] = 0; q.push(k); } const G = new Set(goal); let best = Infinity;
+        for (let i = 0; i < q.length; i++) { const k = q[i]; if (G.has(k)) { best = Math.min(best, d[k]); continue; } const x = k % w_, y = (k - x) / w_; for (const [dx, dy] of N8) { const X = x + dx, Y = y + dy; if (X < 0 || Y < 0 || X >= w_ || Y >= h_) continue; const p = Y * w_ + X; if (!okAt(p)) continue; const nd = d[k] + (dx && dy ? Math.SQRT2 : 1); if (nd < d[p] - 1e-9) { d[p] = nd; q.push(p); } } }
+        return best; };
+      let worst = null;
+      for (let a = 0; a < mouths.length; a++) for (let b = a + 1; b < mouths.length; b++) {
+        const through = bfs(mouths[a], p => lab[p] === nl || mouths[b].includes(p), mouths[b]), round = bfs(mouths[a], p => free[p] && lab[p] !== nl, mouths[b]);
+        if (through < Infinity && round > through + w && (!worst || round - through > worst.round - worst.through)) worst = { through, round }; }
+      if (!worst) continue;
+      let sx = 0, sy = 0, painted = 0; for (const k of comp) { const x = k % w_, y = (k - x) / w_; sx += x; sy += y; if (bare[k] && !roomyBare[k]) painted++; }
+      // how wide it is at its narrowest: the least number of narrow points across, read as twice the largest clearance along the walk through
+      out.push({ who, at: [+(x0 + sx / comp.length).toFixed(0), +(y0 + sy / comp.length).toFixed(0)], area: comp.length, long: +worst.through.toFixed(0), round: worst.round < Infinity ? +worst.round.toFixed(0) : null, painted: painted > comp.length * 0.5 });
+    }
+  }
+  return out;
+}
 // the outlines, lists and box readers are shared with the browser check (town-looks.cjs)
-module.exports = { TOWNS, PROPS, BANDED, ONGROUND, HERO, BODY_HALF, BODY_UP, ovalRing, inRing, spriteBox, png, modelFrom, segs, measure, people, bareGrid, carve, walks, promptRules };
+module.exports = { slits, TOWNS, PROPS, BANDED, ONGROUND, HERO, BODY_HALF, BODY_UP, ovalRing, inRing, spriteBox, png, modelFrom, segs, measure, people, bareGrid, carve, walks, promptRules };
 if (require.main === module) (async () => {
   const W = await import(path.join(ROOT, 'public/act1-hifi/walkable-polygons.js'));
+  // ---- FT2 item 2: the walks of before. `--write-base` measures them on the 37de040 files (town.html, town json, walkable json:
+  // the tree before the people's spaces grew) and stores them next to this check; a run reads the stored file.
+  const BASE_FILE = path.join(__dirname, 'field-town-reach-base.json'), BASE_REV = '37de040';
+  if (process.argv[2] === '--write-base') {
+    const show = f => cp.execSync(`git -C ${ROOT} show ${BASE_REV}:${f}`, { maxBuffer: 1 << 26 }).toString(), oh = show('public/act1-hifi/town.html'), OM = modelFrom(oh), out = { rev: BASE_REV, what: "shortest walks in world px on a 2 px grid (field-town-reach.cjs measure()) on the files of this revision: its ground, its people at their places and its talk bands. From the gate (arrival cell), the opening spot and the save spot to every person, the shop, the save spot and the exit line. She starts from TODAY's save cell (`saveFrom`, read from the working tree when this file was written), so a save spot that was moved on purpose is compared like for like: Port Sapphire's moved 2.4 cells on 2026-11-27 (T10); from its old cell the walks to the Wise Woman and the shop were 22 and 83 px.", saveFrom: {}, towns: {} };
+    for (const id of TOWNS) { const T = JSON.parse(show(`public/act1-hifi/town/${id}-town.json`)), base = JSON.parse(show(`public/act1-hifi/${T.walkable}`)), now = JSON.parse(fs.readFileSync(path.join(ROOT, `public/act1-hifi/town/${id}-town.json`), 'utf8'));
+      out.saveFrom[id] = now.savePoint || null; out.towns[id] = measure(W, T, base, OM, oh, { saveFrom: now.savePoint }).dist; console.log(id, JSON.stringify(out.towns[id])); }
+    fs.writeFileSync(BASE_FILE, JSON.stringify(out, null, 1) + '\n'); console.log('wrote', BASE_FILE); return;
+  }
   const html = await get('act1-hifi/town.html'), M = modelFrom(html);
   console.log(`[INFO] people's bodies in the served town.html: ${M.space ? `space ${JSON.stringify(M.space)} px (half-width, north, south), corners ${M.spaceR} px` : `capsule half-width ${M.r} px, ${M.south} px south of the feet`}; talk band side ${M.side} cells (to ${M.sideDy} cells south), south ${M.reachS} cells; nearest person weighs sideways distance x${M.kx.toFixed(2)}`);
+  const BASE_ALL = JSON.parse(fs.readFileSync(BASE_FILE, 'utf8')), BASE = BASE_ALL.towns, LONGER = 1.15;
   const want = process.argv.slice(2).length ? process.argv.slice(2) : TOWNS;
   for (const id of want) {
     const T = JSON.parse(await get(`act1-hifi/town/${id}-town.json`)), base = JSON.parse(await get(`act1-hifi/${T.walkable}`));
@@ -172,8 +239,7 @@ if (require.main === module) (async () => {
     const withBodies = mode => ({ ...base, dynamicBlockers: [...(base.dynamicBlockers || []), ...npcs.flatMap(n => segs(n, M, mode).map((s, i) => ({ id: `npc-${n.id}-${i}`, from: { x: s.x0, y: s.y0 }, to: { x: s.x1, y: s.y1 }, halfWidth: s.hw })))] });
     // the authority once for the town without its people; the people's capsules by the authority's own rule
     // (isInsideWalkable: blocked when the distance to the segment is no more than halfWidth + actorFootRadius)
-    const bare = new Uint8Array(N * N);
-    for (let gy = 0; gy < N; gy++) for (let gx = 0; gx < N; gx++) bare[gy * N + gx] = W.isInsideWalkable({ x: gx * STEP, y: gy * STEP }, base) ? 1 : 0;
+    const bare = bareGrid(W, T, base, STEP);
     function flood(mode) {
       const inside = Uint8Array.from(bare), seen = new Uint8Array(N * N);
       for (const n of npcs) for (const s of segs(n, M, mode)) { const R = s.hw + fr + 1e-6;
@@ -190,18 +256,16 @@ if (require.main === module) (async () => {
     const cur = flood('cur'), old = flood('old');
     // town.html's own prompt rules, replicated (nearestNpc / nearestService)
     const services = [['shop', T.shopCounter], ['save', T.savePoint]].filter(s => Array.isArray(s[1]));
-    const inBand = (n, x, y) => { const dx = x - n.x, dy = y - n.y; return !(Math.abs(dx) > C * (dy <= C * M.sideDy ? M.side : 1.1) || dy < -C * 0.35 || dy > C * n.reach); };
-    const nearestNpc = (x, y) => { let b = null; for (const n of npcs) { if (!inBand(n, x, y)) continue; const d = Math.hypot((x - n.x) * M.kx, y - n.y); if (!b || d < b.d) b = { n, d }; } return b ? b.n : null; };
-    const nearestService = (x, y) => { let b = null; for (const [kind, c] of services) { const dx = x / C - c[0], dy = y / C - c[1]; if (Math.abs(dx) > 1.2 || Math.abs(dy) > 1.2) continue; const d = Math.hypot(dx, dy); if (!b || d < b.d) b = { kind, d }; } return b ? b.kind : null; };
+    const { inBand, nearestNpc, nearestService } = promptRules(C, M, npcs, services);
     const overlap = (n, x, y) => { const dx = x - n.x, dy = y - n.y, ox = Math.min(HERO[2] + dx, n.box[2]) - Math.max(HERO[0] + dx, n.box[0]), oy = Math.min(HERO[3] + dy, n.box[3]) - Math.max(HERO[1] + dy, n.box[1]); return ox > 0 && oy > 0 ? Math.min(ox, oy) : 0; };
     const dBody = (n, x, y) => Math.min(...segs(n, M, 'cur').map(s => Math.hypot(x - Math.min(Math.max(x, Math.min(s.x0, s.x1)), Math.max(s.x0, s.x1)), y - Math.min(Math.max(y, s.y0), s.y1)) - s.hw));
-    const talk = {}, talkN = {}, svc = {}, minS = {}, minSide = {}, nearAt = {}, nearD = {}, worst = {}, worstAt = {}, stolen = {}, stolenAt = {}; let crossExit = false, lost = 0, lostAt = null;
+    const talk = {}, talkN = {}, svc = {}, minS = {}, minSide = {}, nearAt = {}, nearD = {}, worst = {}, worstAt = {}, stolen = {}, stolenAt = {}; let crossExit = false, lost = 0, lostAt = null, lostNamed = 0;
     const exitY = (T.exit && T.exit.cell ? T.exit.cell[1] : T.startCell[1]) * C, north = T.exit && T.exit.axis ? T.exit.axis === 'north' : (T.exit && T.exit.cell && T.exit.cell[1] < T.cells / 2);
     const bandRing = band ? band.polygon.map(c => [c[0] * C, c[1] * C]) : null; let hidden = 0, hiddenAt = null;
     const props = (PROPS[id] || []).map(p => ({ ...p, ring: p.oval ? ovalRing(p.oval) : p.cells.map(c => [c[0] * C, c[1] * C]), deep: 0, deepAt: null }));
     for (let k = 0; k < N * N; k++) {
       const x = (k % N) * STEP, y = Math.floor(k / N) * STEP;
-      if (old[k] && !cur[k]) { const nearBody = npcs.some(n => dBody(n, x, y) <= fr + STEP * 1.5); if (!nearBody) { lost++; lostAt = lostAt || [+(x / C).toFixed(1), +(y / C).toFixed(1)]; } }
+      if (old[k] && !cur[k]) { const nearBody = npcs.some(n => dBody(n, x, y) <= fr + STEP * 1.5); if (!nearBody) { if ((LOST_OK[id] || []).some(q => Math.hypot(x / C - q.cell[0], y / C - q.cell[1]) <= q.r)) lostNamed++; else { lost++; lostAt = lostAt || [+(x / C).toFixed(1), +(y / C).toFixed(1)]; } } }
       if (!cur[k]) continue;
       if (north ? y < exitY : y > exitY) crossExit = true;
       const n = nearestNpc(x, y), s = nearestService(x, y);
@@ -243,8 +307,25 @@ if (require.main === module) (async () => {
     }
     for (const [kind] of services) ok(svc[kind], `${id}: the ${kind} spot can be used`, svc[kind] ? '' : 'no reachable spot where the prompt names it');
     ok(crossExit, `${id}: the exit line can be crossed`);
-    // a pocket smaller than a quarter of a cell, shut in between two people's bodies and a wall, is not a path
-    ok(lost * STEP * STEP <= 64, `${id}: no path closed by the NPC bodies`, lost ? `${lost * STEP * STEP} px2 lost away from any NPC, first at cell ${lostAt} (a pocket of up to 64 px2 between two bodies is allowed)` : '');
+    // FT2 item 2: zero lost ground again (2026-11-27 it was loosened to 64 px2, and that hid Greenhollow's closed lane). A patch that
+    // may be lost is named in LOST_OK with its reason; none is today.
+    ok(lost === 0, `${id}: no path closed by the NPC bodies`, lost ? `${lost * STEP * STEP} px2 lost away from any NPC, first at cell ${lostAt}${lostNamed ? ` (and ${lostNamed * STEP * STEP} px2 in the patches named in LOST_OK)` : ''}` : lostNamed ? `${lostNamed * STEP * STEP} px2 lost, all of it in the patches named in LOST_OK` : '');
+    // FT2 item 2: no walk grew. From the gate, the save spot and the opening spot to every person, the shop, the save spot and the exit.
+    { const ms = measure(W, T, base, M, html, { bare, npcs }), was = BASE[id] || {}, over = [], all = []; let worstR = 0, worstP = '';
+      for (const [s, row] of Object.entries(was)) for (const [g, a] of Object.entries(row)) { if (a == null) continue; const b = ms.dist[s] ? ms.dist[s][g] : undefined;
+        if (b == null) { over.push(`${s} to ${g}: ${a.toFixed(0)} px before, NO WAY now`); continue; }
+        const r = a > 0 ? b / a : (b > 0 ? Infinity : 1); all.push(`${s}>${g} ${a.toFixed(0)}>${b.toFixed(0)}`); if (r > worstR) { worstR = r; worstP = `${s} to ${g} ${a.toFixed(0)} px before, ${b.toFixed(0)} px now`; }
+        if (b > a * LONGER + 1e-6) over.push(`${s} to ${g}: ${a.toFixed(0)} px before, ${b.toFixed(0)} px now (x${r.toFixed(2)})`); }
+      console.log(`[INFO] ${id}: walks before>now (px): ${all.join(', ')}`);
+      const sf = BASE_ALL.saveFrom[id], sameSave = JSON.stringify(sf || null) === JSON.stringify(T.savePoint || null);
+      ok(Object.keys(was).length > 0 && sameSave && !over.length, `${id}: no walk is more than ${LONGER} times as long as before (${BASE_REV})`, !Object.keys(was).length ? 'no stored walks for this town' : !sameSave ? `the stored walks start from save cell ${JSON.stringify(sf)}, the town's is ${JSON.stringify(T.savePoint)}: a moved save spot needs field-town-reach.cjs --write-base (and a look at what the move costs)` : over.length ? over.join('; ') : `longest growth x${worstR.toFixed(2)} (${worstP})`);
+      // FT2 item 1: the direct ways of a town that today's spaces closed stay open WITH ROOM: a walker who keeps ROOM px from every wall and person
+      for (const [s, g] of ROOMY[id] || []) { const a = was[s] && was[s][g], mr = measure(W, T, base, M, html, { bare, npcs, room: ROOM }), b = mr.dist[s] ? mr.dist[s][g] : null;
+        ok(a != null && b != null && b <= a * LONGER, `${id}: the direct way from the ${s} to the ${g} is open with room`, `a walker who keeps ${ROOM} px from every wall and person (a way ${2 * ROOM} px wide for her feet's centre: her ${2 * fr} px body and ${2 * ROOM} px to spare) walks ${b == null ? 'NO WAY' : b.toFixed(0) + ' px'}; before ${a == null ? 'n/a' : a.toFixed(0) + ' px'} (allowed x${LONGER})`); } }
+    // FT2 item 3: no slits. Ground narrower than her own body (her feet's disc, ${2 * fr} px) that is a way through.
+    { const sl = slits(W, base, npcs, M, fr, 2 * fr, WORLD), mine = sl.filter(q => !q.painted);
+      for (const q of sl.filter(q => q.painted)) console.log(`[INFO] ${id}: a painted way narrower than ${2 * fr} px beside ${q.who.join('/')} at ${q.at} (as narrow without the people; not counted)`);
+      ok(!mine.length, `${id}: no slit beside a person (a way through narrower than her ${2 * fr} px body)`, mine.length ? mine.map(q => `beside ${q.who.join('/')} at world px ${q.at}: ${q.long} px long, the way round is ${q.round == null ? 'not within 44 px' : q.round + ' px'}`).join('; ') : ''); }
     // ---- T6
     for (const p of props) {
       const wasIn = W.isInsideWalkable({ x: p.was[0], y: p.was[1] }, withBodies('cur'));

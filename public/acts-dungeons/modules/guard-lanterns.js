@@ -215,13 +215,14 @@
       var fl = 1.05 + 0.035 * Math.sin(ms * 0.011 + i * 2.1) + 0.02 * Math.sin(ms * 0.029 + i);   // a slow flicker, never dimmer than the old cells
       e.halo.setPosition(e.lamp.x, e.lamp.y + 21).setDepth(e.lamp.depth - 0.02).setScale(0.86 * fl).setAlpha(0.8 * fl - 0.1);
       // the pool: three pictures, each redrawn only when the cells it shows change and only while its lit cells are near the screen.
-      // 0 is the light that catches her: in full, and redrawn on the very frame the tick turns. 1 and 2 (the light coming, the
-      // light left behind; never bright, see GHOST) wait one and two frames, hidden meanwhile, so one frame never carries all three.
+      // 0 is the light that catches her: in full, and redrawn on the very frame the tick turns. 2 and 1 (the light left behind,
+      // then the light coming, which starts from nothing; never bright, see GHOST) wait one and two frames, hidden meanwhile, so
+      // one frame never carries all three.
       var C = soft(ctx, M, p), N = soft(ctx, M, q), P = soft(ctx, M, g.seq[z]), want = [[C, null, LIGHT], [N, C, LIGHT * GHOST * ease], [P, C, LIGHT * GHOST * (1 - ease)]];
       for (j = 0; j < 3; j++) { var im = e.pool[j], A = want[j][0], B = want[j][1];
         if ((B && A.key === B.key) || !near(A, v)) { im.setVisible(false); continue; }
         var sig = A.key + (B ? '|' + B.key : '');
-        if (e.sig[j] !== sig) { if (j > sp.since) { im.setVisible(false); continue; }
+        if (e.sig[j] !== sig) { if (j && 3 - j > sp.since) { im.setVisible(false); continue; }
           e.sig[j] = sig; put(sc, im.texture.key, A, B); im.setPosition(A.x, A.y); }
         im.setVisible(true).setAlpha(Math.min(1, want[j][2] * fl)); }
     }
