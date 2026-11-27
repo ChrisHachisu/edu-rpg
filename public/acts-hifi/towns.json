@@ -52,7 +52,7 @@
   "geo.dungeon.shadowCave.locked": {
    "en": "A dark barrier seals the cave entrance... Perhaps a crystal shard from the Storm Nest far to the south could break it.",
    "ja": "やみの けっかいが みちを ふさいでいる…あらしのすの かけらが ひつようだ。",
-   "jaKanji": "闇の 結界が 道を 塞いでいる…嵐の巣の 欠片が 必要だ。"
+   "jaKanji": "闇の 結界が 道を 塞いでいる…嵐の巣の かけらが 必要だ。"
   },
   "geo.npc.gordo.questReminder": {
    "en": "Still need 3 Iron Ore! Head west to the Iron Mine dungeon. The beasts inside drop ore when defeated. Good ore makes a good blade, remember?",
@@ -147,7 +147,7 @@
   "npc.luna.questReminder": {
    "en": "The star map fragment awaits in the Oasis Depths... the stars will guide you if you listen.",
    "ja": "ほしの ちずの かけらは オアシスの おくふかくに…ほしの みちびきを しんじて。",
-   "jaKanji": "星の 地図の 欠片は オアシスの 奥深くに…星の 導きを 信じて。"
+   "jaKanji": "星の 地図の かけらは オアシスの 奥深くに…星の 導きを 信じて。"
   }
  }
 }
