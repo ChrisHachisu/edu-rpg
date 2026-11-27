@@ -71,8 +71,9 @@ async function flow(page) {
   // k12 the critical window grows with the time: a right answer after 4 s is critical on the keypad, not after 5 s, and not on the four buttons
   const crit = await page.evaluate(() => { const b = window.__PHASER_GAME__.scene.getScene('BattleScene');
     const hit = el => { const e = Object.create(b.engine); e.monsterHp = 1e9; const r = e.resolvePlayerAttack(true, 0.2, el); return !!(r && r.critical); };   // a copy: the real fight is untouched
-    const on4 = hit(4), on5 = hit(5); localStorage.setItem('qok-keypad', '0'); const off4 = hit(4), off2 = hit(2); localStorage.removeItem('qok-keypad'); return { on4, on5, off4, off2 }; });
-  rec('k12 the critical window is 4.5 s on the keypad (3 s on the four buttons)', crit.on4 && !crit.on5 && !crit.off4 && crit.off2, crit);
+    const mu = window.__QOK_CRITCLASS__ ? window.__QOK_CRITCLASS__.mult(b.quizQuestion) : 1;   // day 4: a harder question's window is 4.5 s x its class (battle-recovery.js, qok-crit-class); 1 on the old bank or with the switch off
+    const on4 = hit(4 * mu), on5 = hit(5 * mu); localStorage.setItem('qok-keypad', '0'); const off4 = hit(4 * mu), off2 = hit(2 * mu); localStorage.removeItem('qok-keypad'); return { on4, on5, off4, off2 }; });
+  rec('k12 the critical window is 4.5 s on the keypad (3 s on the four buttons), times the question class', crit.on4 && !crit.on5 && !crit.off4 && crit.off2, crit);
   // k8 notepad
   await tap(page, '[data-act="kpKey"][data-k="note"]', 2000); await page.waitForTimeout(300);
   const np = await page.evaluate(() => { const e = document.getElementById('qok-notepad'); if (!e || e.style.display === 'none') return null; const r = e.getBoundingClientRect(); return { x: r.left, y: r.top, w: r.width, h: r.height }; });

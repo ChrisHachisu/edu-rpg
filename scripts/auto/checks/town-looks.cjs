@@ -29,6 +29,15 @@ const port = new URL(F.URL_).port, ONLY = (process.env.LOOKS_ONLY || 'arrival,np
 const inject = page => page.evaluate(`(${HELP.trim().replace(/;\s*$/, '')})()`);
 const get = async p => { const r = await fetch(new URL(p, F.URL_)); if (!r.ok) throw new Error(`${p}: ${r.status}`); return Buffer.from(await r.arrayBuffer()); };
 const shot = (page, id, what) => F.grab(page, path.join(F.OUT, `looks-${id}-${what}-${port}.png`));
+// A frame whose pixels are compared with the plate: the state read before the grab and after it must agree (the camera eases for a
+// while after a walk, and on the busy box it was still moving between look() and the grab: the band then read as 13 of 255 off).
+async function steadyShot(page, id, what) {
+  let s0 = await look(page), img = null;
+  for (let i = 0; i < 6; i++) { img = await shot(page, id, what); const s1 = await look(page);
+    if (Math.abs(s1.cam.x - s0.cam.x) < 0.01 && Math.abs(s1.cam.y - s0.cam.y) < 0.01 && s1.cam.z === s0.cam.z && Math.abs(s1.x - s0.x) < 0.01 && Math.abs(s1.y - s0.y) < 0.01) return { s: s1, img };
+    s0 = s1; await page.waitForTimeout(300); }
+  return { s: s0, img };
+}
 async function townDismiss(page) {
   for (let i = 0; i < 24; i++) {
     const m = await page.evaluate(() => { const w = window.__PHASER_GAME__.scene.getScene('WorldMapScene'); const f = document.querySelector('#act1-hifi-preserved-root iframe');
@@ -151,7 +160,7 @@ const walkCell = (page, cx, cy, r) => page.evaluate(([x, y, r]) => window.__PTH.
       // ---- T3, T5: the shop spot
       if (ONLY.includes('shop') && Array.isArray(TJ.shopCounter)) {
         const g = await walkCell(page, TJ.shopCounter[0], TJ.shopCounter[1], 0.6); await page.waitForTimeout(600);
-        let s = await look(page), img = await shot(page, id, 'shop');
+        let { s, img } = await steadyShot(page, id, 'shop');
         F.ok(g.ok && s.pill && (s.svc === 'shop' || s.near === 'shopkeeper'), `${id}: the shop spot offers the shop`, `walk ${g.why}; pill "${s.pill ? s.pill.text : 'none'}"`);
         if (s.pill) pillClear(s, 'shopkeeper', 'at the shop spot');
         if (R.BANDED.includes(id)) {
@@ -171,10 +180,10 @@ const walkCell = (page, cx, cy, r) => page.evaluate(([x, y, r]) => window.__PTH.
                 return { cnt, diff: cnt ? sum / cnt : 0 }; };
               const legs = part(bandTop + 1, ky + 2, true), torso = part(bandTop - 16, bandTop + 4, false); return { cnt: legs.cnt, diff: legs.diff, torso: torso.diff, tcnt: torso.cnt }; };
             let m = measure(s, img);
-            if (m.cnt < 6 || m.tcnt < 6) { await push(page, ['ArrowDown'], 700); s = await look(page); img = await shot(page, id, 'shop-back'); m = measure(s, img); }
+            if (m.cnt < 6 || m.tcnt < 6) { await push(page, ['ArrowDown'], 700); ({ s, img } = await steadyShot(page, id, 'shop-back')); m = measure(s, img); }
             F.ok(m.cnt >= 6 && m.tcnt >= 6 && m.diff <= 3 && m.torso >= 20, `${id}: the shopkeeper's legs are behind the counter`, `from the band's top edge down to her feet (${m.cnt} blocks) the screen is the plate's own paint to within ${m.diff.toFixed(1)} of 255 (allowed 3); above the band, where she is drawn, it differs by ${m.torso.toFixed(1)} (need 20)`);
             // and the counter never covers HER: pressed against it, her own sprite is on screen (her body's middle differs from the plate)
-            await push(page, ['ArrowUp'], 700); s = await look(page); img = await shot(page, id, 'shop-close');
+            await push(page, ['ArrowUp'], 700); ({ s, img } = await steadyShot(page, id, 'shop-close'));
             const seen = (() => { let sum = 0, cnt = 0;
               for (let by = s.y - 24; by < s.y - 3; by += 3) for (let bx = s.x - 6; bx < s.x + 6; bx += 3) { const d = blockDiff(img, s, P, ak, bx, by, bx + 3, by + 3, null); if (d !== null) { sum += d; cnt++; } }
               return cnt ? sum / cnt : 0; })();
