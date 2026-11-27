@@ -50,7 +50,10 @@ for (const act of (SEC.includes('bound') ? Object.keys(FLOORS).sort() : [])) { c
 // ---- flat: 8 per act ----------------------------------------------------------------------------------------------
 const DIRS = [['E', 1, 0], ['S', 0, 1], ['W', -1, 0], ['N', 0, -1]];
 function flatAt(m, b, ux, uy) { const lx = -uy, ly = ux; for (const s of [1, -1]) for (let k = 0; k <= 30; k++) { const px = b.x + s * k * lx, py = b.y + s * k * ly; if (!S.free(m, px, py)) break; if (S.free(m, px + ux * 5, py + uy * 5)) return false; } return true; }
+// a room where the mechanic turns the stick round (Demon Castle's mirror rooms): a "push east" walks west there, so it is no test of a wall
+function turned(m, p) { const cx = Math.floor(p.x / 48), cy = Math.floor(p.y / 48); return (m.fl.zones || []).some(z => /mirror/i.test(z.kind || '') && z.rect && cx >= z.rect[0] - 1 && cx <= z.rect[2] + 1 && cy >= z.rect[1] - 1 && cy <= z.rect[3] + 1); }
 function flatSite(m, key, p0, d, ux, uy, mag, objs, why) {
+  if (!why && turned(m, p0)) return null;
   const b = S.walk(m, p0, ux, uy, 180, { mag }), fo = OLD.walk(m, p0, ux, uy, 180, { mag, trace: 'exact' }), fn = NEW.walk(m, p0, ux, uy, 180, { mag, trace: 'exact' });
   const side = Math.abs((b.x - p0.x) * -uy + (b.y - p0.y) * ux), along = (b.x - p0.x) * ux + (b.y - p0.y) * uy;
   const ok = b.dead && side <= 3 && along >= 4 && along <= 40 && flatAt(m, b, ux, uy) && fn.bent === 0 && Math.hypot(fn.x - b.x, fn.y - b.y) < 0.01;

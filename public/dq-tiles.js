@@ -8954,7 +8954,7 @@
     // the isle's cullingEnabled, and an id such as sunkenTempleDungeon matches the name test below: either way the
     // overworld reskin dressed the dungeon's floor with trees and mountains until the next fresh load.
     try { var id=scene.currentMapId; if(typeof a2dIs==='function' && a2dIs(id)) return false;
-      return scene.cullingEnabled===true || id==='overworld' || /[Oo]verworld|[Ii]sles|[Pp]eaks|Realm|Temple/.test(String(id||'')); }
+      return scene.cullingEnabled===true || id==='overworld' || /[Oo]verworld|[Ii]sles|[Pp]eaks|Realm|TempleIsle/.test(String(id||'')); }
     catch(e){ return false; }
   }
   var lastReskinMapId=null;

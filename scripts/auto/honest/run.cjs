@@ -41,6 +41,8 @@ const slim = f => { const o = {}; for (const k of ['m', 'boss', 'res', 'lvl0', '
     await L.bootSave(page, sv, { settle: 1500 });
     await ev(() => { try { delete window.__GAME_STATE__.encounterManager.onStep; } catch (e) {} });     // bootSave silences encounters; the real roll is wanted here
     await page.evaluate(INPAGE);
+    // HONEST_PRICE='{"leatherCap":15}': what-if shop prices for this process only (day 4 B2, measuring a price without changing the game)
+    if (process.env.HONEST_PRICE) await ev(pr => { const db = window.__QOK.db; for (const k of Object.keys(pr)) if (db[k]) db[k].buyPrice = pr[k]; }, JSON.parse(process.env.HONEST_PRICE));
     await ev(c => window.__HON.init(c), { seed: hash(`${PROFILE}|${VARIANT}|${REP}|${ck.next}`), profile: prof, policy: VARIANT === 'savvy' ? SAVVY : POLICY });
     const st0 = await ev(() => window.__HON.status());
     if (st0.grade !== prof.grade) throw new Error('grade not carried: ' + st0.grade);

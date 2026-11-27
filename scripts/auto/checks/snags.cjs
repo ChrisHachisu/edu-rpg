@@ -42,6 +42,7 @@ const F = require('./field-lib.cjs');
 const L = F.L;
 const SITES = JSON.parse(fs.readFileSync(path.join(F.ROOT, 'scripts/auto/snags/sites.json'), 'utf8'));
 const ONLY = process.env.SNAGS_ONLY ? process.env.SNAGS_ONLY.split(',') : null;
+const SAFETY = process.env.SNAGS_SAFETY === '1';   // SNAGS_SAFETY=1 (debug): only the safety lines of track S2, on every floor they need; the other lines are not run
 const S2 = JSON.parse(fs.readFileSync(path.join(F.ROOT, 'scripts/auto/snags/sites-s2.json'), 'utf8'));
 const S2_TRACE = process.env.SNAGS_TRACE || null;                              // a folder: every safety walk's positions are written there (evidence)
 const ACT1 = (SITES.act1 && SITES.act1.floors) || {};
@@ -219,6 +220,7 @@ const STALL = 6;   // frames she may stand at a lip before the glide carries her
     for (const key of keys) {
       const A1 = !!ACT1[key], S = A1 ? ACT1[key] : SITES.floors[key], s = await seed(page, key);
       if (!F.ok(s.ok && (A1 ? !s.live.authored : s.live.authored), `${key}: reached (Continue on the floor)`, `at ${s.pos.map} ${s.pos.floor}F${A1 ? ' (Act 1: the mover alone, no mechanic)' : ''}`)) continue;
+      if (SAFETY) { await s2Floor(page, key); continue; }
       if (A1) F.ok(s.live.api && s.live.on && s.live.a1 && s.live.a1live, `${key}: the wall glide is live in the mover (Act 1)`, JSON.stringify(s.live));
       else F.ok(s.live.api && s.live.on && s.live.wrapped, `${key}: the wall glide is live on this floor's mechanic (${s.live.mech})`, JSON.stringify(s.live));
       let refused = 0, turned = 0, frames = 0;
@@ -287,14 +289,14 @@ const STALL = 6;   // frames she may stand at a lip before the glide carries her
     }
     // the switch off: the first floor's lips stop her again
     const keys25 = keys.filter(k => !ACT1[k]), keysA1 = keys.filter(k => ACT1[k]);
-    if (keys25.length) {
+    if (!SAFETY && keys25.length) {
       const key = keys25.includes('shadowCave-f3') ? 'shadowCave-f3' : keys25[0], S = SITES.floors[key], s = await seed(page, key, 'qok-snag-slide=0');
       F.ok(s.ok && s.live.api && !s.live.on && !s.live.wrapped, `${key} with qok-snag-slide=0: reached, the glide is off`, JSON.stringify(s.live));
       let dead = 0;
       for (const p of S.lips || []) { const [ux, uy] = DV[p.d], r = await walk(page, [p.start[0], p.start[1], ux, uy, 1300, null, p.need]); if (r.passMs === null && r.endDead >= 10) dead++; }
       F.ok(dead >= Math.ceil((S.lips || []).length / 2), `${key} with qok-snag-slide=0: the lips stop her dead as before`, `${dead} of ${(S.lips || []).length} lips`);
     }
-    if (keysA1.length) {                                                       // the same switch turns the Act 1 glide off
+    if (!SAFETY && keysA1.length) {                                                       // the same switch turns the Act 1 glide off
       const key = keysA1[0], S = ACT1[key], s = await seed(page, key, 'qok-snag-slide=0');
       F.ok(s.ok && s.live.a1 && !s.live.a1live && !s.live.on, `${key} (Act 1) with qok-snag-slide=0: reached, the glide is off`, JSON.stringify(s.live));
       let dead = 0;
@@ -302,7 +304,7 @@ const STALL = 6;   // frames she may stand at a lip before the glide carries her
       F.ok(dead >= Math.ceil((S.lips || []).length / 2), `${key} (Act 1) with qok-snag-slide=0: the lips stop her dead as before`, `${dead} of ${(S.lips || []).length} lips`);
     }
   } catch (e) { F.ok(false, 'snags check ran', String(e && e.stack || e).slice(0, 400)); }
-  if (!ONLY) { F.ok(lipWalks >= 60 && a1Lips >= 16, 'lips were walked in every dungeon', `${lipWalks} lip walks on ${keys.length} floors, ${a1Lips} of them on the Act 1 floors`); F.ok(wallWalks >= 20 && blockers >= 3, 'walls and blockers were tested', `${wallWalks} wall walks, ${blockers} blockers, ${chests} chests`); }
+  if (!ONLY && !SAFETY) { F.ok(lipWalks >= 60 && a1Lips >= 16, 'lips were walked in every dungeon', `${lipWalks} lip walks on ${keys.length} floors, ${a1Lips} of them on the Act 1 floors`); F.ok(wallWalks >= 20 && blockers >= 3, 'walls and blockers were tested', `${wallWalks} wall walks, ${blockers} blockers, ${chests} chests`); }
   F.info('walks', `${lipPass}/${lipWalks} lips passed (Act 1: ${a1Pass}/${a1Lips}), ${robots} robot spots, ${wallWalks} walls, ${blockers} blockers, ${chests} chests`);
   await browser.close();
   F.done('snags');

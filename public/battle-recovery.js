@@ -293,8 +293,17 @@
  *      - putting gear on can never delete the piece it replaces (legendary auto-equip included);
  *      - a save that already lost a story item to this gets it back on load.
  *
- * 2. BALANCE (tuning, one table, switchable).  localStorage['qok-balance'] = '0' restores the
- *    shipped numbers, zones included.  Every value below is "shipped -> tuned" in the comment.
+ * 2. BALANCE (tuning, one table, switchable).  Every value below is "shipped -> tuned" in the comment.
+ *    localStorage['qok-balance'] picks the table (day 4 B2: every earlier table stays in the file and can be chosen):
+ *      (not set)  the current table, 2026-11-27c, when quiz bank v2 is live; table 2026-11-27a when the old
+ *                 bank is live (qok-quiz2=0): 27b and 27c were tuned for the longer answers of bank v2
+ *      '27c'      the current table whatever the bank
+ *      '27b'      the table of the afternoon of 2026-11-27 (bank v2, Demon King of grades K and 1 with the harder hits)
+ *      '27a'      the table of the morning of 2026-11-27 (the last one tuned on the old bank)
+ *      '0'        the shipped numbers, zones included
+ *    localStorage['qok-dk-k1'] = 'hard' (table 27c only) gives the Demon King of grades K and 1 the harder
+ *    hits of table 27b back (rage 1.7, charge 1.6); the default keeps the hits of 27a (rage 1.6, charge 1.5).
+ *    Zones are the same in every table except '0'.
  *    Fields: hp/atk/def = the boss's base numbers (before the grade scale the engine applies:
  *    x0.85 grades K-2, x1.3 grades 5-6); regen/poison = fraction per turn; rage/charge = attack
  *    multipliers; chargeEvery = turns between charges; grade[g].scale = extra factor on
@@ -304,7 +313,7 @@
   'use strict';
   var CAP = 20;
   var BALANCE = {
-    version: '2026-11-27b',
+    version: '2026-11-27c',
     bosses: {
       // regen 0.07 -> 0.03; grades 5-6: hp/atk/def x0.77 (cancels the x1.3 grade scale for the first boss only);
       // 2026-11-27 grade 5: x0.65 (the grades K-2 fight: 78/17/10; x0.77 won 61% for the grade 5 child, x0.65 won 92-100% from every hero seen)
@@ -326,8 +335,11 @@
       // 2026-11-27b (quiz bank v2: a child spends 10-40% longer on every answer, so the same fight ran 410-550 s against the 390 s limit):
       // fewer boss HP, and the rage and charge of grades K, 1 and 2 raised so the win rate stays inside 55-80%. hp grades K 1300 -> 900,
       // 1 1500 -> 1050, 2 1500 -> 1300, 3 and 4 1500 -> 1400, 5 1400 -> 1250; rage K and 1 1.6 -> 1.7, 2 1.7 -> 1.75, charge K and 1 1.5 -> 1.6.
+      // 2026-11-27c (day 4 B2, review of 27b): grades K and 1 keep the lower HP of 27b but get the hits of 27a back (rage 1.6, charge 1.5).
+      // 27b had RAISED them to bring the win rate down, which took the worst single hit from 68% to 83% of a kindergartner's max HP.
+      // The harder variant stays selectable: qok-dk-k1=hard (DK_K1_HARD below).
       demonKing:          { hp: 1500, regen: 0.01, poison: 0.02, rage: 1.5, charge: 1.6, grade: {
-        'k': { hp: 900, rage: 1.7, charge: 1.6 }, '1': { hp: 1050, rage: 1.7, charge: 1.6 }, '2': { hp: 1300, rage: 1.75, charge: 1.6 },
+        'k': { hp: 900, rage: 1.6, charge: 1.5 }, '1': { hp: 1050, rage: 1.6, charge: 1.5 }, '2': { hp: 1300, rage: 1.75, charge: 1.6 },
         '3': { hp: 1400 }, '4': { hp: 1400 },
         '5': { hp: 1250, rage: 1.35, charge: 1.45 }, '6': { hp: 1400, rage: 1.3, charge: 1.45 } } }
     },
@@ -350,7 +362,30 @@
     starterPlains: { from: 'whispering-woods', to: 'greenhollow-plains', xMax: 85, yMin: 240, yMax: 330 }
   };
 
-  function on() { try { return global.localStorage.getItem('qok-balance') !== '0'; } catch (_) { return true; } }
+  // Earlier tables, kept whole for the bosses that differ from the current one (a boss not named here has the current row).
+  var OLDER = {
+    '2026-11-27a': {
+      celestialGuardian:  { regen: 0.03 },
+      demonKing:          { hp: 1500, regen: 0.01, poison: 0.02, rage: 1.5, charge: 1.6, grade: {
+        'k': { hp: 1300, rage: 1.6, charge: 1.5 }, '1': { rage: 1.6, charge: 1.5 }, '2': { rage: 1.7, charge: 1.6 },
+        '5': { hp: 1400, rage: 1.3, charge: 1.45 }, '6': { hp: 1400, rage: 1.3, charge: 1.45 } } }
+    },
+    '2026-11-27b': {
+      demonKing:          { hp: 1500, regen: 0.01, poison: 0.02, rage: 1.5, charge: 1.6, grade: {
+        'k': { hp: 900, rage: 1.7, charge: 1.6 }, '1': { hp: 1050, rage: 1.7, charge: 1.6 }, '2': { hp: 1300, rage: 1.75, charge: 1.6 },
+        '3': { hp: 1400 }, '4': { hp: 1400 },
+        '5': { hp: 1250, rage: 1.35, charge: 1.45 }, '6': { hp: 1400, rage: 1.3, charge: 1.45 } } }
+    }
+  };
+  var DK_K1_HARD = { 'k': { hp: 900, rage: 1.7, charge: 1.6 }, '1': { hp: 1050, rage: 1.7, charge: 1.6 } };   // qok-dk-k1=hard: the 27b rows
+  var NAMES = { '27a': '2026-11-27a', '27b': '2026-11-27b', '27c': '2026-11-27c' };
+  function ls(k) { try { return global.localStorage.getItem(k); } catch (_) { return null; } }
+  function oldBank() { try { var q = global.__QOK_QUIZ2__; return q && typeof q.on === 'function' ? !q.on() : ls('qok-quiz2') === '0'; } catch (_) { return false; } }
+  // which table is live: '0' (shipped numbers) or a version name
+  function which() { var v = ls('qok-balance'); if (v === '0') return '0'; if (NAMES[v]) return NAMES[v]; return oldBank() ? NAMES['27a'] : BALANCE.version; }
+  function on() { return which() !== '0'; }
+  function dkHard() { return ls('qok-dk-k1') === 'hard'; }
+  function bossRow(id) { var w = which(), o = OLDER[w]; return w === '0' ? null : (o && o[id]) || BALANCE.bosses[id] || null; }
   function GS() { return global.__GAME_STATE__; }
   function scene(k) { try { return global.__PHASER_GAME__.scene.getScene(k); } catch (_) { return null; } }
   function active(k) { try { return global.__PHASER_GAME__.scene.isActive(k); } catch (_) { return false; } }
@@ -359,9 +394,10 @@
 
   // ---------------------------------------------------------------- balance
   function tuned(m, grade) {
-    var t = on() && m && BALANCE.bosses[m.id];
+    var t = m && bossRow(m.id);
     if (!t) return m;
     var g = (t.grade && t.grade[String(grade)]) || {}, c = Object.assign({}, m);
+    if (m.id === 'demonKing' && which() === BALANCE.version && dkHard() && DK_K1_HARD[String(grade)]) g = DK_K1_HARD[String(grade)];
     function pick(k) { return g[k] != null ? g[k] : t[k]; }
     if (pick('hp') != null) c.baseHp = pick('hp');
     if (pick('atk') != null) c.baseAtk = pick('atk');
@@ -561,7 +597,7 @@
       }
     } catch (e) { api.lastError = String(e && e.message || e); }
   }
-  var api = global.__QOK_BALANCE__ = { on: on, table: BALANCE, tuned: tuned, zoneFor: zoneFor, starterZone: starterZone, canAdd: canAdd, isProtected: isProtected, cap: CAP, installed: done, lastError: null };
+  var api = global.__QOK_BALANCE__ = { on: on, which: which, older: OLDER, dkHard: dkHard, table: BALANCE, tuned: tuned, zoneFor: zoneFor, starterZone: starterZone, canAdd: canAdd, isProtected: isProtected, cap: CAP, installed: done, lastError: null };
   function loop() {
     tick();
     global.setTimeout(loop, done.player && done.world && done.battle && done.zone && done.steps ? 500 : 50);
@@ -572,28 +608,39 @@
  * CRITICAL-HIT CLASS (day 4, quiz bank v2).  Bank v2 questions take a child longer (model: 3.2 to 7.1 s a question, the old bank
  * 2.5 to 4.6 s), but the quiz timer and the keypad's 4.5 s critical-hit window were sized for the old bank.  Each plan row (kind of
  * question) of the new bank gets a class factor m = (its mean solve time by the effort model) / (the old bank's mean for that
- * grade), never under 1 and at most 2; the timer and the critical window are multiplied by m (ui-overhaul.js critMul()).  A
- * child who answers at her grade's normal pace then lands criticals and beats the timer about as often as on the old bank.
+ * grade), never under 1; the timer and the critical window are multiplied by it (ui-overhaul.js critMul() and timerMul()).
  * The table is generated: node scripts/auto/honest/mkcritclass.cjs (from effort-ref.json, which effortref.cjs measures).
- * localStorage['qok-crit-class'] = '0' gives 1 everywhere (the fixed values of builds up to 99), and so does qok-quiz2=0
- * (the old bank carries no row, so it is never scaled).
+ * The effort model is a judgement table, not stopwatch data: no number here was measured on a child.
+ *
+ * Day 4 B2 (review of the first version):
+ *   - two clamps, both applied HERE whatever the table holds: mult() = the critical-hit window factor, within [1, 2];
+ *     timerMult() = the quiz timer factor, within [1, 3].  A longer timer never punishes a child, so the timer may grow further
+ *     than the window that hands out the 1.5x critical.  The speed bonus (1.2x for a right answer in the first half of the timer)
+ *     and the sure defence (0.6x damage for a right answer in the first half) are shares of the timer in the bundle, so they grow
+ *     with timerMult(): also the safe side (scripts/auto/checks/keypad.cjs k14 pins the seconds).
+ *   - a factor can only lengthen: with the class on, no question at any grade has a shorter timer or window than with it off.
+ * Switches: localStorage['qok-crit-class'] = '0' gives 1 everywhere (the fixed values of builds up to 99), and so does
+ * qok-quiz2=0 (the old bank carries no row, so it is never scaled).  localStorage['qok-timer-cap'] = '2' puts the timer back
+ * under the same cap as the window (the first version of 2026-11-27).
  */
 (function installCritClass(global) {
   'use strict';
-  var VERSION = '2026-11-27a';
+  var VERSION = '2026-11-27b', CRIT_CAP = 2, TIMER_CAP = 3;
   // ---- generated table: CLASS[grade][act - 1][row] = factor; NEG[grade] = the grade 6 look-ahead at negatives ----
   var CLASS = {
-    '1': [[1,1,1.35,1],[1,1.2,2,1.35,1.2,1],[1.45,2,2,1.3,1.8],[1.55,1.45,2,1.85],[2,1.85,1.55,1.45,1.2,1,1.55]],
-    '2': [[1.3,1.45,1.25,1.35,1.4],[1.75,1.95,1.25,1.35,1.3,1.45],[1,1.75,1.95,2],[1.2,1,2,2,1.6],[1.05,1.45,2,2,1.35,1.35,1.25,1.6]],
-    '3': [[1,1,1.65,1.8,1.6,1.7],[1.05,1.35,1,2,1.7],[1.75,1.15,1.1,1.6,1.1,2],[1.85,2,1.25,1.75,1.25,1.25,1.45,2],[1.85,2,2,1.75,1.75,1.15,1.55,2,2]],
-    '4': [[1.7,2,1.55,1.1,1.5,1.8],[1.65,1.55,1.1,2,1.35,1.7],[1.85,2,2,1.35,2],[2,2,1.95,1.85,2],[2,2,2,2,1.55,1.1,2,2]],
-    '5': [[1,1.6,1.3,1.5,1.2],[1.2,1.85,1.2,1.2,1.4],[1,1.5,2,1.25,1.2,1.9],[1.25,1.3,2,1.65,1.5,2],[1.5,1.45,1.55,2,1.5,1.2,2]],
-    '6': [[1.2,1,1.25],[1.4,1.5,1.1,1.1,1,1.25],[1,1.3,1.5,1.65,1.5],[1.5,1.35,1.5,1.3,1.6,1.5],[1.5,1.5,1.4,1.5,1.3,1.35,1.65,2]],
+    '1': [[1,1,1.35,1],[1,1.2,2,1.35,1.2,1],[1.45,2.2,2.05,1.3,1.8],[1.55,1.45,2.65,1.85],[2.65,1.85,1.55,1.45,1.2,1,1.55]],
+    '2': [[1.3,1.45,1.25,1.35,1.4],[1.75,1.95,1.25,1.35,1.3,1.45],[1,1.75,1.95,2.75],[1.2,1,2.25,2.75,1.6],[1.05,1.45,2.25,2.75,1.35,1.35,1.25,1.6]],
+    '3': [[1,1,1.65,1.8,1.6,1.7],[1.05,1.35,1,2.15,1.7],[1.75,1.15,1.1,1.6,1.1,2.2],[1.85,2.6,1.25,1.75,1.25,1.25,1.45,2.1],[1.85,2,2.05,1.75,1.75,1.15,1.55,2.15,2.6]],
+    '4': [[1.7,2.35,1.55,1.1,1.5,1.8],[1.65,1.55,1.1,2.2,1.35,1.7],[1.85,2.05,2.75,1.35,2.2],[2.1,2.85,1.95,1.85,2.7],[2.55,2,2.25,2.05,1.55,1.1,2,2.75]],
+    '5': [[1,1.6,1.3,1.5,1.2],[1.2,1.85,1.2,1.2,1.4],[1,1.5,2.1,1.25,1.2,1.9],[1.25,1.3,2.1,1.65,1.5,2.05],[1.5,1.45,1.55,2.5,1.5,1.2,2.05]],
+    '6': [[1.2,1,1.25],[1.4,1.5,1.1,1.1,1,1.25],[1,1.3,1.5,1.65,1.5],[1.5,1.35,1.5,1.3,1.6,1.5],[1.5,1.5,1.4,1.5,1.3,1.35,1.65,2.5]],
     k: [[1,1.1,1,1.2],[1.3,1.1,1,1],[1.15,1.45,1.1,1.15,1.55],[1.4,1.25,1.1,1.3,1.75],[1.45,1.5,1.95,1.1,1.3]]
   };   // @@CLASS@@
   var NEG = {6:1.55};     // @@NEG@@
   function on() { try { return global.localStorage.getItem('qok-crit-class') !== '0'; } catch (_) { return true; } }
-  function mult(q) {
+  function timerCap() { try { return global.localStorage.getItem('qok-timer-cap') === '2' ? CRIT_CAP : TIMER_CAP; } catch (_) { return TIMER_CAP; } }
+  // the table's factor for this question, as written (1 when the class is off, the bank is the old one or the row is unknown)
+  function raw(q) {
     try {
       if (!on() || !q || !q.qz2 || typeof q.qz2.act !== 'number') return 1;
       var g = String(q.gradeLevel), r = q.qz2.row, t;
@@ -602,6 +649,10 @@
       return t && typeof r === 'number' && r >= 0 && t[r] > 0 ? t[r] : 1;
     } catch (_) { return 1; }
   }
-  global.__QOK_CRITCLASS__ = { on: on, mult: mult, table: CLASS, neg: NEG, version: VERSION };
+  // the clamp does not trust the table: anything that is not a number from 1 up gives 1, anything over the cap gives the cap
+  function clamp(v, cap) { return typeof v === 'number' && v >= 1 ? Math.min(cap, v) : 1; }
+  function mult(q) { return clamp(raw(q), CRIT_CAP); }           // critical-hit window
+  function timerMult(q) { return clamp(raw(q), timerCap()); }    // quiz timer (and with it the speed-bonus and sure-defence halves)
+  global.__QOK_CRITCLASS__ = { on: on, mult: mult, timerMult: timerMult, raw: raw, table: CLASS, neg: NEG, version: VERSION, critCap: CRIT_CAP, timerCap: timerCap };
 })(typeof window !== 'undefined' ? window : globalThis);
 // ==== end QOK balance + bag (autoloop 2026-11-23) ====

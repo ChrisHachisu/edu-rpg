@@ -94,7 +94,14 @@
         // Day 4 (quiz bank v2): her thinking time follows the question. prof.eff = the old bank's mean effort for her grade (effort-ref.json); the page asks
         // the host (__HON_EFF) for the effort model's seconds for THIS question's text, so t = prof.t * effort / prof.eff (same average on the old bank).
         let sc = 1; if (prof.eff && window.__HON_EFF) { const e = await window.__HON_EFF(bs.quizQuestion.questionText.en, prof.grade); if (e > 0) { sc = e / prof.eff; L.eff = (L.eff || 0) + e; L.effn = (L.effn || 0) + 1; } else L.effmiss = (L.effmiss || 0) + 1; }
-        const T = bs.quizTimerSeconds, timed = !!(s.timerEnabled && bs.quizTimerBar && bs.quizTimerBarFullWidth), t = think() * sc + (kp ? kp.first + kp.key * keys : 0), right = rnd() < pEff; L.q++;
+        // Day 4 B2 (prof.child = slow | median | fast): the INDEPENDENT child of childmodel.cjs. The host names the kind of THIS question from its text
+        // and answers with her median thinking time, its spread, and how her right-answer share moves with the kind's difficulty. Nothing in it comes
+        // from effort-ref.json or the game's class table (that pair made the day 4 result circular); prof.eff is then ignored.
+        let ind = null; if (prof.child && window.__HON_CHILD) ind = await window.__HON_CHILD(bs.quizQuestion.questionText.en, prof.grade, prof.child);
+        const pInd = ind ? Math.max(0.05, Math.min(0.98, ((kp && kp.noGuess ? Math.max(0, (prof.p - 0.25) / 0.75) : prof.p) + ind.accAdd) * ind.accMul)) * (kp ? 1 - (kp.slip || 0) : 1) : null;
+        const typing = kp ? (kp.first + kp.key * keys) * (ind ? ind.typeMul : 1) : 0, thinking = ind ? Math.max(0.8, ind.median * Math.exp(gauss() * ind.sd)) : think() * sc;
+        const T = bs.quizTimerSeconds, timed = !!(s.timerEnabled && bs.quizTimerBar && bs.quizTimerBarFullWidth), t = thinking + typing, right = rnd() < (ind ? pInd : pEff); L.q++;
+        if (ind) { L.tsum = (L.tsum || 0) + Math.min(t, timed ? T : t); L.hardq = (L.hardq || 0) + (ind.cls === 'hard' || ind.cls === 'written' ? 1 : 0); L.psum = (L.psum || 0) + pInd; L.tlim = (L.tlim || 0) + T; }
         if (timed && t >= T) { L.to++; L.sec += T + 2.8; bs.onQuizTimeout(); continue; }
         if (timed) bs.quizTimerBar.displayWidth = bs.quizTimerBarFullWidth * (1 - t / T);      // where the bundle's linear tween stands after t seconds
         const a = bs.quizQuestion.answers, good = a.findIndex(x => !!x.isCorrect), bad = a.map((x, i) => i).filter(i => i !== good);

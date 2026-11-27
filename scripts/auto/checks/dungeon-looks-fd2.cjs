@@ -140,16 +140,21 @@ async function storm(page) {
       for (let yy = sy0 + n * 0.1; yy < sy0 + n * 0.9; yy += 3) for (let xx = sx0 + n * 0.1; xx < sx0 + n * 0.9; xx += 3) out.push(F.px(img, xx, yy)); }
     return out; }
   const vis = {}, mids = [];
-  if (await freeze(page, calmQ)) { const base = await grabCells(); await thaw(page);
+  // the picture to compare with: no group warned or struck (a strike next door throws its flash over these cells too)
+  const calmAll = 'for (let g = 0; g < M.G; g++) { const l = ((g * M.gap - S.tick) % M.period + M.period) % M.period, u = ((S.tick - g * M.gap) % M.period + M.period) % M.period; if (l <= M.glow + 0.3 || u < M.strike + 0.6) return false; } return true;';
+  if (await freeze(page, calmAll)) { const base = await grabCells(); await thaw(page);
     for (const k of [0.95, 0.66, 0.33]) { if (!(await freeze(page, `const left = ((0 * M.gap - S.tick) % M.period + M.period) % M.period; return left > M.glow * ${k} - 0.35 && left < M.glow * ${k};`))) continue;
       // the warning pulses (its strength swings by a quarter several times a second): the frozen clock is set on the nearest
       // moment the pulse is at its middle, so one frame measures the look and not the phase it happened to catch
       const mid = await page.evaluate(() => { const S = window.__QOK_DNG2__.ctx().state, M = S.M, mod = (a, b) => ((a % b) + b) % b;
         const f = t => { const left = mod(-t, M.period); let ga = left <= M.glow ? 1 - left / M.glow : 0; if (M.kid && ga > 0) ga = 0.2 + 0.8 * ga; return Math.abs(Math.sin(t * (3 + 5 * ga))); };
-        for (let i = 0; i <= 700; i++) for (const sg of [1, -1]) { const d = sg * i * 0.001; if (f(S.tick + d) < 0.02) { S.__fd2Tick = S.tick; S.tick += d; return d; } } return null; });
+        if (typeof S.clk !== 'number' || !(S.ms > 0)) return null;             // (the module's clock: S.tick is read from it on every frame)
+        for (let i = 0; i <= 700; i++) for (const sg of [1, -1]) { const d = sg * i * 0.0005; if (f(S.tick + d) < 0.02) { S.__fd2Clk = S.clk; S.clk += d * S.ms; return d; } } return null; });
       if (mid === null) { await thaw(page); continue; }
-      mids.push(+mid.toFixed(3)); await sleep(page, 120);
-      const now = await grabCells(); await page.evaluate(() => { const S = window.__QOK_DNG2__.ctx().state; S.tick = S.__fd2Tick; }); await thaw(page); let d = 0; for (let i = 0; i < Math.min(base.length, now.length); i++) d += (Math.abs(now[i][0] - base[i][0]) + Math.abs(now[i][1] - base[i][1]) + Math.abs(now[i][2] - base[i][2])) / 3;
+      await sleep(page, 150);
+      const at = await page.evaluate(() => { const S = window.__QOK_DNG2__.ctx().state, M = S.M, mod = (a, b) => ((a % b) + b) % b, left = mod(-S.tick, M.period); let ga = left <= M.glow ? 1 - left / M.glow : 0; if (M.kid && ga > 0) ga = 0.2 + 0.8 * ga; return +Math.sin(S.tick * (3 + 5 * ga)).toFixed(3); });
+      mids.push(+mid.toFixed(3) + ' (pulse ' + at + ')');
+      const now = await grabCells(); await page.evaluate(() => { const S = window.__QOK_DNG2__.ctx().state; S.clk = S.__fd2Clk; }); await thaw(page); let d = 0; for (let i = 0; i < Math.min(base.length, now.length); i++) d += (Math.abs(now[i][0] - base[i][0]) + Math.abs(now[i][1] - base[i][1]) + Math.abs(now[i][2] - base[i][2])) / 3;
       vis[k] = base.length ? +(d / base.length).toFixed(1) : null; } }
   F.info('stormreach warning visibility: mean colour change on the warned cells at 95 %, 66 %, 33 % of the warning time left, the pulse at its middle', JSON.stringify(vis) + ' (clock moved by ' + mids.join(', ') + ' ticks to the middle of the pulse)');
   const OLD = { 0.95: 24.8, 0.66: 35.6, 0.33: 46.0 };                       // the old square cells measured the same way (37de040, mean of two runs: the pulse makes a single frame vary by +-6; the middle value is the old tree's own 35.6 again). With the pulse at its middle the old tree on :5570 reads 22.5, 35.4 and 34.2, today's look 31.6, 40.6 and 45.7 (two runs each)

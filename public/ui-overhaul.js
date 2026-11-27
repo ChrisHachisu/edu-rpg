@@ -2040,12 +2040,17 @@ window.__QOK_D4_UI__ = true;
   function kpOn() { try { return window.localStorage.getItem('qok-keypad') !== '0'; } catch (e) { return true; } }
   // Critical-hit class (day 4, quiz bank v2): a harder question gets a longer timer and a longer critical window, by its kind
   // (grade, act, plan row; the table is in the balance block of battle-recovery.js). 1 = today's fixed values; qok-crit-class=0 gives 1 always.
-  function critMul() {
+  // Two factors (day 4 B2): critMul() for the critical-hit window (the table clamps it to 1..2), timerMul() for the quiz timer
+  // (1..3; qok-timer-cap=2 puts it under the window's cap again). Neither is ever under 1: a class can only give a child more time.
+  function classMul(timer) {
     try {
       var cc = window.__QOK_CRITCLASS__, sc = window.__PHASER_GAME__ && window.__PHASER_GAME__.scene.getScene('BattleScene');
-      return cc && sc && sc.quizQuestion ? cc.mult(sc.quizQuestion) : 1;
+      var m = cc && sc && sc.quizQuestion ? (timer && cc.timerMult ? cc.timerMult(sc.quizQuestion) : cc.mult(sc.quizQuestion)) : 1;
+      return typeof m === 'number' && m >= 1 ? Math.min(timer ? 3 : 2, m) : 1;
     } catch (e) { return 1; }
   }
+  function critMul() { return classMul(false); }
+  function timerMul() { return classMul(true); }
   var _kp = { q: null, v: '', miss: null, busy: false, typed: null };
   var KP_MISS_MS = 900;
   function kpRight(q) { var a = (q && q.answers) || []; for (var i = 0; i < a.length; i++) if (a[i].isCorrect) return String(a[i].text && a[i].text.en); return ''; }
@@ -2237,7 +2242,7 @@ window.__QOK_D4_UI__ = true;
     if (qm && !qm.__qokKpTimer && typeof qm.getTimerSeconds === 'function') {
       var origTimer = qm.getTimerSeconds;
       qm.__qokKpTimer = true;
-      qm.getTimerSeconds = function () { var sec = origTimer.apply(this, arguments), m = critMul(); if (m !== 1) sec = Math.round(sec * m); /* class first (never under the frozen value: m >= 1), then the keypad's 1.5x of that rounded time, so keypad time = round(1.5 x the four-button time) as check k6 expects */ return kpOn() ? Math.round(sec * 1.5) : sec; };
+      qm.getTimerSeconds = function () { var sec = origTimer.apply(this, arguments), m = timerMul(); if (m !== 1) sec = Math.max(sec, Math.round(sec * m)); /* timer class first (never under the frozen value: m >= 1), then the keypad's 1.5x of that rounded time, so keypad time = round(1.5 x the four-button time) as check k6 expects. The bundle's speed bonus and sure defence are the first half of this timer, so they grow with it. */ return kpOn() ? Math.round(sec * 1.5) : sec; };
     }
     if (npIsOpen() && !((bs.phase === 'playerQuiz' || bs.phase === 'enemyQuiz') && bs.quizQuestion === _kp.q)) npClose(true);
     if (!bs.__qokHitPatched) {

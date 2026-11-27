@@ -1,10 +1,12 @@
 'use strict';
 // Write the critical-hit class table into the balance block of public/battle-recovery.js (the lines marked @@CLASS@@ and @@NEG@@).
-//   node scripts/auto/honest/mkcritclass.cjs [effort-ref.json] [--cap 2] [--dry]
+//   node scripts/auto/honest/mkcritclass.cjs [effort-ref.json] [--cap 3] [--dry]
 // factor of a plan row = mean effort of that row (new bank, effort model) / mean effort of the OLD bank for the grade, rounded to 0.05, within [1, cap].
+// Day 4 B2: the table is written with cap 3 (the highest raw factor is 2.85, so nothing is cut). The game clamps it again when it uses it:
+// mult() to [1, 2] for the critical-hit window, timerMult() to [1, 3] for the quiz timer (public/battle-recovery.js, CRIT_CAP and TIMER_CAP).
 const fs = require('fs'), path = require('path');
 const f = process.argv.slice(2).find(a => a.endsWith('.json')) || path.join(__dirname, 'effort-ref.json');
-const cap = +(process.argv.includes('--cap') ? process.argv[process.argv.indexOf('--cap') + 1] : 2), dry = process.argv.includes('--dry');
+const cap = +(process.argv.includes('--cap') ? process.argv[process.argv.indexOf('--cap') + 1] : 3), dry = process.argv.includes('--dry');
 const E = JSON.parse(fs.readFileSync(f, 'utf8')), CL = {}, NEG = {};
 const q = v => Math.round(v * 20) / 20;
 for (const g of Object.keys(E.rows)) { CL[g] = [];
