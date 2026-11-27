@@ -52,6 +52,8 @@
   },
   {
    "id": "watchCaptain",
+   "spacePlug": [[27, 18, 30, 2]],
+   "spacePlugNote": "2026-11-27 (FT2, review of the town changes): his space ended 2 to 6 px short of the wall at his south-east corner; the way round is open. Closed.",
    "dialogueKey": "npc.watchCaptain",
    "nameKey": "npc.watchCaptain.name",
    "sheet": "town/npc/cinderwatch-watchCaptain-4x3-64.png",

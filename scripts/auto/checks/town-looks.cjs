@@ -36,7 +36,9 @@ async function steadyShot(page, id, what) {
   for (let i = 0; i < 6; i++) { img = await shot(page, id, what); const s1 = await look(page);
     if (Math.abs(s1.cam.x - s0.cam.x) < 0.01 && Math.abs(s1.cam.y - s0.cam.y) < 0.01 && s1.cam.z === s0.cam.z && Math.abs(s1.x - s0.x) < 0.01 && Math.abs(s1.y - s0.y) < 0.01) return { s: s1, img };
     s0 = s1; await page.waitForTimeout(300); }
-  return { s: s0, img };
+  // FT2 (2026-11-27): it used to hand back the last frame without a word. A frame that never came to rest is not to be read.
+  F.ok(false, `${id}: the view came to rest for the ${what} frame`, 'the camera or the hero was still moving after six grabs; the lines read from this frame cannot be trusted (run this town again alone)');
+  return { s: s0, img, unsteady: true };
 }
 async function townDismiss(page) {
   for (let i = 0; i < 24; i++) {
@@ -49,14 +51,18 @@ async function townDismiss(page) {
 const look = page => page.evaluate(() => { const f = document.querySelector('#act1-hifi-preserved-root iframe'), w = f.contentWindow, t = w.__ACT1_TOWN__, p = t.position(), c = t.camera, fr = f.getBoundingClientRect();
   const e = w.document.querySelector('#prompt'), r = e.getBoundingClientRect(), on = e.dataset.show === 'true';
   const tabs = document.getElementById('fieldTabs'), tr = tabs && tabs.getBoundingClientRect();
-  const near = t.nearestNpc(), svc = t.nearestService();
-  return { x: p.x, y: p.y, cam: { x: c.x, y: c.y, z: c.zoom }, ox: fr.left, oy: fr.top, W: innerWidth, H: innerHeight, tabTop: tr && tr.height > 0 ? tr.top : innerHeight,
+  const near = t.nearestNpc(), svc = t.nearestService(), tl = window.__QOK_TOWN_LABEL__, lab = (...a) => (typeof tl === 'function' && tl(...a)) || null;
+  const words = { shop: lab('shop') || 'Shop', save: lab('save') || 'Save' }; for (const n of t.npcs) { const nm = n.name || n.id; words[n.id] = lab('talk', nm, n.nameKey) || `Talk to ${nm}`; }
+  return { words, x: p.x, y: p.y, cam: { x: c.x, y: c.y, z: c.zoom }, ox: fr.left, oy: fr.top, W: innerWidth, H: innerHeight, tabTop: tr && tr.height > 0 ? tr.top : innerHeight,
     pill: on ? { text: e.textContent, box: [r.left + fr.left, r.top + fr.top, r.right + fr.left, r.bottom + fr.top] } : null, near: near ? near.id : null, svc: svc ? svc.kind : null,
     npcs: t.npcs.map(n => ({ id: n.id, x: n.point.x, y: n.point.y })) }; });
 // the HUD panels drawn over the town view (the Quests panel, the map button, the compass): [{ id, box }] in page CSS px
 const hudPanels = page => page.evaluate(() => [...document.querySelectorAll('#qfh-quest, #qfh-map, #qfh-compass, #qfh-floor')].map(e => { const r = e.getBoundingClientRect(), st = getComputedStyle(e);
   return r.width > 8 && r.height > 8 && st.visibility !== 'hidden' && st.display !== 'none' && +st.opacity > 0.1 ? { id: e.id, box: [r.left, r.top, r.right, r.bottom] } : null; }).filter(Boolean));
 const onScreen = (s, x, y, box) => [s.ox + (x + box[0] - s.cam.x) * s.cam.z, s.oy + (y + box[1] - s.cam.y) * s.cam.z, s.ox + (x + box[2] - s.cam.x) * s.cam.z, s.oy + (y + box[3] - s.cam.y) * s.cam.z];
+// FT2 item 8: is the pill on screen THIS person's? Its words are compared with the label the game makes for her (a keeper's pill may read
+// Shop: she is the shop). `near === id` alone proved nothing: the walker plans to points where the town already names her.
+const pillIs = (s, id) => !!s.pill && (s.pill.text === s.words[id] || (id === 'shopkeeper' && s.pill.text === s.words.shop));
 const cross = (a, b) => { const w = Math.min(a[2], b[2]) - Math.max(a[0], b[0]), h = Math.min(a[3], b[3]) - Math.max(a[1], b[1]); return w > 0 && h > 0 ? Math.min(w, h) : 0; };
 // Screen against plate, for one world-px rectangle: the mean colour of the device pixels whose centres lie in it, against the
 // plate read at the very same places (nearest pixel, as town.html draws it: imageSmoothingEnabled = false), so a camera
@@ -119,8 +125,9 @@ const walkCell = (page, cx, cy, r) => page.evaluate(([x, y, r]) => window.__PTH.
         const isSvc = n.id === 'healer' || n.id === 'shopkeeper', lim = Array.isArray(n.space) && Number.isFinite(n.spaceMax) ? n.spaceMax : 4;
         const g = await page.evaluate(x => window.__PTH.walkToNpc(x), n.id); await page.waitForTimeout(500);
         let s = await look(page);
-        const first = g.ok && s.near === n.id && (isSvc || !s.svc) && s.pill && !(!isSvc && /^Save$|^Shop$|セーブ|みせ|店/.test(s.pill.text));
-        const firstWhy = `walk ${g.why}; pill "${s.pill ? s.pill.text : 'none'}"${s.svc && !isSvc ? `, the ${s.svc} spot takes it` : ''}; her feet ${(s.x - n.cell[0] * C).toFixed(0)},${(s.y - n.cell[1] * C).toFixed(0)} px from theirs`;
+        // FT2 item 8: the words on the pill are hers, and the walker found her band with room (not a one-point sliver)
+        const first = g.ok && g.tier !== 'sliver' && s.near === n.id && (isSvc || !s.svc) && pillIs(s, n.id) && !(!isSvc && /^Save$|^Shop$|セーブ|みせ|店/.test(s.pill.text));
+        const firstWhy = `walk ${g.why} (${g.tier || 'no tier'}); pill should read "${s.words[n.id]}"; pill "${s.pill ? s.pill.text : 'none'}"${s.svc && !isSvc ? `, the ${s.svc} spot takes it` : ''}; her feet ${(s.x - n.cell[0] * C).toFixed(0)},${(s.y - n.cell[1] * C).toFixed(0)} px from theirs`;
         // a keeper behind a counter is reached at the shop spot (below); a walker without the town's own band cannot plan to her
         if (n.id === 'shopkeeper' && !g.ok) F.info(`${id}: the walker found no way into the shopkeeper's talk band`, firstWhy);
         else F.ok(first, `${id}: the first spot of ${n.id}'s talk band offers ${n.id}`, firstWhy);
@@ -141,7 +148,7 @@ const walkCell = (page, cx, cy, r) => page.evaluate(([x, y, r]) => window.__PTH.
         await shot(page, id, `npc-${n.id}`);
         const o1 = cross(onScreen(s, s.x, s.y, R.HERO), onScreen(s, p0.x, p0.y, boxes[n.id])) / s.cam.z;
         let o2 = 0, sideWhy = 'no room beside';
-        const talks = s.near === n.id && !!s.pill;
+        const talks = s.near === n.id && pillIs(s, n.id);
         if (talks) pillClear(s, n.id, below ? `below ${n.id}` : `at ${n.id}'s talk spot`); else if (n.id === 'shopkeeper' && !g.ok) F.info(`${id}: no Talk at the keeper away from the shop spot`, `near ${s.near}`);
         else F.ok(false, `${id}: Talk shows when she has walked right up to ${n.id}`, `near ${s.near}, pill ${s.pill ? s.pill.text : 'none'}; her feet ${(s.x - p0.x).toFixed(0)},${(s.y - p0.y).toFixed(0)} px from theirs`);
         const south = [s.x - p0.x, s.y - p0.y];
@@ -151,7 +158,12 @@ const walkCell = (page, cx, cy, r) => page.evaluate(([x, y, r]) => window.__PTH.
           await push(page, [side > 0 ? 'ArrowLeft' : 'ArrowRight'], 900); const s2 = await look(page);
           o2 = cross(onScreen(s2, s2.x, s2.y, R.HERO), onScreen(s2, p0.x, p0.y, boxes[n.id])) / s2.cam.z; sideWhy = `from the ${side > 0 ? 'east' : 'west'} her feet ${(s2.x - p0.x).toFixed(0)},${(s2.y - p0.y).toFixed(0)}`;
           await shot(page, id, `npc-${n.id}-side`);
-          if (s2.near === n.id && s2.pill) pillClear(s2, n.id, `at ${n.id}'s side`);
+          // FT2 item 8 (and item 5: Talk from every side she can stand on): pushed in from the side she is at the edge of the space,
+          // level with the person. The pill must be up and its words hers; it used to be looked at only when it happened to show.
+          const beside = Math.abs(s2.y - p0.y) <= C * 1.8 && Math.abs(s2.x - p0.x) <= C * 2.3;
+          if (beside) F.ok(pillIs(s2, n.id), `${id}: Talk shows at ${n.id}'s side`, `pill ${s2.pill ? `"${s2.pill.text}"` : 'none'} (should read "${s2.words[n.id]}"), the town names ${s2.near || 'nobody'}; ${sideWhy}`);
+          else F.info(`${id}: pushing in from the ${side > 0 ? 'east' : 'west'} she did not come level with ${n.id}`, sideWhy);
+          if (pillIs(s2, n.id)) pillClear(s2, n.id, `at ${n.id}'s side`);
           break;
         }
         F.ok(o1 <= lim && o2 <= lim, `${id}: she stops a body away from ${n.id}`, `sprite boxes overlap ${o1.toFixed(1)} px ${below ? 'walking up from below' : 'at her talk spot'} (her feet ${south[0].toFixed(0)},${south[1].toFixed(0)} px from theirs), ${o2.toFixed(1)} px from the side (${sideWhy}); allowed ${lim}${lim !== 4 ? ' (a lane too narrow for two bodies)' : ''}`);

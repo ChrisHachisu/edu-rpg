@@ -24,18 +24,32 @@
 // asked by the mover itself there (dq-tiles.js a1mSnagBend). One floor of each (sites.json `act1`): lips of the three
 // sizes from the model's census, flat walls, a chest at its corner, and the switch off.
 // The game clock is stepped 1/60 s per drawn frame (steady frames, as on the device): see seed().
+// SAFETY (track S2, the same day; scripts/auto/snags/sites-s2.json, built by mksites2.cjs from the static model). A code
+// review found that the first glide could (1) walk her along a flat wall for as long as the stick was held and (2) carry
+// her onto trigger cells she had not walked onto. Three kinds of line, all walked with the game stepped frame by frame:
+//   (a) 40 pushes square into a flat face, 8 per act (the review's two places among them), held 3 s: no bent frame, she
+//       stands still from her first stop, and ends no further sideways than the mover alone takes her on the way in;
+//   (b) the Demon Barracks 1F pillar and 30 more places beside a trigger zone (guard light, shadow reach, storm cells,
+//       glyph plates, ice, a trip wire, exits): the walk with the glide reaches no zone that the same walk with the glide
+//       taken out does not reach (an exit counts when the mover asks for the floor change; the change itself is held back);
+//   (c) 200 near-wall pushes per act: her sideways travel on bent frames never passes the glide's allowance, 28 px against
+//       one obstacle (level = max(0, level - 0.5 x her own un-bent advance along the push), plus each bent frame's travel
+//       across the push). Twelve or more of each act's 200 are the widest carries the first glide made in the model.
+// All three FAIL on the build with the first glide and pass on a build without any glide (nothing is bent there).
 // SNAGS_ONLY=<floorKey,floorKey> limits the floors (debug). The check FAILS on a build without the module.
 const fs = require('fs'), path = require('path');
 const F = require('./field-lib.cjs');
 const L = F.L;
 const SITES = JSON.parse(fs.readFileSync(path.join(F.ROOT, 'scripts/auto/snags/sites.json'), 'utf8'));
 const ONLY = process.env.SNAGS_ONLY ? process.env.SNAGS_ONLY.split(',') : null;
+const S2 = JSON.parse(fs.readFileSync(path.join(F.ROOT, 'scripts/auto/snags/sites-s2.json'), 'utf8'));
+const S2_TRACE = process.env.SNAGS_TRACE || null;                              // a folder: every safety walk's positions are written there (evidence)
 const ACT1 = (SITES.act1 && SITES.act1.floors) || {};
 const DV = { E: [1, 0], W: [-1, 0], S: [0, 1], N: [0, -1] }, FACE = { E: 2, W: 1, S: 0, N: 3 };
 
 async function seed(page, key, ls) {
   const id = key.replace(/-f\d+$/, ''), n = Number(key.match(/-f(\d+)$/)[1]);
-  let xy; if (ACT1[key]) xy = ACT1[key].seed; else { const fl = F.floorOf(id, n); xy = F.midCell(fl, F.landing(fl)) || F.landing(fl); }
+  let xy; if (ACT1[key]) xy = ACT1[key].seed; else if (S2.seeds && S2.seeds[key]) xy = S2.seeds[key]; else { const fl = F.floorOf(id, n); xy = F.midCell(fl, F.landing(fl)) || F.landing(fl); }
   const old = process.env.FIELD_LS; if (ls) process.env.FIELD_LS = [old, ls].filter(Boolean).join(',');
   let pos; try { pos = await F.seedDungeon(page, id, n, xy); } finally { if (ls) { if (old === undefined) delete process.env.FIELD_LS; else process.env.FIELD_LS = old; } }
   await page.waitForTimeout(1500); await F.dismiss(page);
@@ -128,6 +142,64 @@ const PIT = () => {
 };
 const FALLS = () => { const c = window.__QOK_DNG2__.ctx(); return c && c.state ? (c.state.falls || 0) : 0; };
 
+// ---- safety walks (track S2) ----------------------------------------------------------------------------------------
+// One walk with the game stepped by hand, one 1/60 s frame per call (seed()'s steady clock), so a walk costs no waiting:
+// soles (sx,sy), stick (ux,uy) at magnitude mag for `frames` frames. glide false: the same walk with the glide taken out
+// (the mechanic's own input hook put back for the walk; the Act 1 mover's switch off). A floor change the mover asks for
+// is noted and held back, so she stays on the floor. Every frame: [sole x, sole y, 1 if the glide bent this frame].
+const WALK2 = ([sx, sy, ux, uy, mag, frames, glide]) => {
+  const D = window.__QOK_DNG2__, c = D && D.ctx && D.ctx(), g = window.__PHASER_GAME__, w = c ? c.scene : g.scene.getScene('WorldMapScene'), A1 = window.__QOK_SNAG_A1__, sn = window.__QOK_SNAG__;
+  const fd = c ? D.footDy() : (A1 ? A1.footDy(w) : 30.88125), raf = g.loop.raf;
+  if (!raf || !raf.__steady) return { why: 'no steady clock', tr: [], a: [sx, sy], fd };
+  const m = c && c.mod, wrapped = !!(m && m.__snag), wi = wrapped ? m.input : null, on = sn ? sn.on : null, pt = w.performTransition; let asked = 0;
+  if (!glide) { if (wrapped) m.input = m.__snag.input; if (sn) sn.on = false; }
+  w.performTransition = function () { asked++; };
+  const step = () => raf.callback(performance.now());
+  try {
+    window.__DQ_STICK__ = { x: 0, y: 0, m: 0 };
+    if (c) c.place(sx, sy - fd); else { const h = w.hero; h.x = sx; h.y = sy - fd; w.heroTileX = Math.floor(sx / 48); w.heroTileY = Math.floor((sy - fd) / 48); try { w.updatePosition(); } catch (e) {} }
+    try { w.updateCamera(); } catch (e) {}
+    step(); step();
+    const a = [w.hero.x, w.hero.y + fd], tr = []; let b0 = sn && sn.stats ? sn.stats.bent : 0, why = w.showingMessage ? 'message before the walk' : 'time', way = -1;
+    for (let i = 0; i < frames && why === 'time'; i++) { window.__DQ_STICK__ = { x: ux, y: uy, m: mag }; step();
+      const nb = sn && sn.stats ? sn.stats.bent : 0; tr.push([w.hero.x, w.hero.y + fd, nb > b0 ? 1 : 0]); b0 = nb;
+      if (asked && way < 0) way = i;
+      if (w.showingMessage) why = 'message'; else if (!g.scene.isActive('WorldMapScene') || g.scene.isActive('BattleScene')) why = 'scene'; }
+    window.__DQ_STICK__ = { x: 0, y: 0, m: 0 }; step();
+    return { a, tr, why, fd, way, api: !!sn };
+  } finally { w.performTransition = pt; if (!glide) { if (wrapped) m.input = wi; if (sn) sn.on = on; } }
+};
+async function walk2(page, args, tag) {
+  await F.dismiss(page);
+  let r = await page.evaluate(WALK2, args);
+  if (r.why === 'message before the walk') { await F.dismiss(page); r = await page.evaluate(WALK2, args); }
+  if (r.why === 'message') await F.dismiss(page);
+  if (S2_TRACE && tag) { try { fs.mkdirSync(S2_TRACE, { recursive: true }); fs.appendFileSync(path.join(S2_TRACE, 'walks.jsonl'), JSON.stringify({ tag, url: process.env.PROBE_URL, args, why: r.why, way: r.way, a: r.a, tr: r.tr.map(q => [Math.round(q[0] * 100) / 100, Math.round(q[1] * 100) / 100, q[2]]) }) + '\n'); } catch (e) {} }
+  return r;
+}
+// the glide's allowance over one press (snag-slide.js BOUND / REFILL), from the frames of a walk
+function s2Level(r, ux, uy) { let lv = 0, top = 0, prev = r.a, bent = 0; for (const q of r.tr) { const dx = q[0] - prev[0], dy = q[1] - prev[1], adv = dx * ux + dy * uy, lat = -dx * uy + dy * ux; prev = q; if (q[2]) { bent++; lv += Math.abs(lat); if (lv > top) top = lv; } else if (adv > 0) lv = Math.max(0, lv - S2.refill * adv); } return { top, bent }; }
+function s2In(shape, q, fd) { const x = q[0], y = shape.centre ? q[1] - fd : q[1];
+  if (shape.cells) { const cx = Math.floor(x / 48), cy = Math.floor(y / 48); return shape.cells.some(c => c[0] === cx && c[1] === cy); }
+  if (shape.rect) return x >= shape.rect[0] && x < shape.rect[2] && y >= shape.rect[1] && y < shape.rect[3];
+  if (shape.disc) return Math.hypot(x - shape.disc[0], y - shape.disc[1]) <= shape.disc[2];
+  return false; }
+const s2 = { flat: [], haz: [], push: {}, floors: new Set() };
+const s2Keys = () => { const k = new Set(); for (const e of S2.flat) k.add(e.key); for (const e of S2.hazard) k.add(e.key); for (const a in S2.pushes) for (const e of S2.pushes[a]) k.add(e.key); return [...k].sort(); };
+async function s2Floor(page, key) {
+  if (s2.floors.has(key)) return; s2.floors.add(key);
+  for (const e of S2.flat.filter(q => q.key === key)) { const [ux, uy] = DV[e.d], r = await walk2(page, [e.start[0], e.start[1], ux, uy, e.m, 180, true], 'flat ' + key);
+    let stop = -1, after = 0, prev = r.a; r.tr.forEach((q, i) => { const mv = Math.hypot(q[0] - prev[0], q[1] - prev[1]); prev = q; if (stop < 0 && mv < 0.01) stop = i; else if (stop >= 0) after = Math.max(after, Math.hypot(q[0] - r.tr[stop][0], q[1] - r.tr[stop][1])); });
+    const end = r.tr.length ? r.tr[r.tr.length - 1] : r.a, side = Math.abs((end[0] - r.a[0]) * -uy + (end[1] - r.a[1]) * ux), bent = r.tr.filter(q => q[2]).length;
+    s2.flat.push({ e, ok: r.why === 'time' && r.tr.length === 180 && bent === 0 && stop >= 0 && after < 0.01 && side <= e.side + 1.5, bent, side, after, stop, why: r.why }); }
+  for (const e of S2.hazard.filter(q => q.key === key)) { const a = e.deg * Math.PI / 180, args = [e.start[0], e.start[1], Math.cos(a), Math.sin(a), 1, e.frames];
+    const u = await walk2(page, args.concat([false]), 'hazard, glide out ' + key), g = await walk2(page, args.concat([true]), 'hazard ' + key);
+    const hit = r => { const i = r.tr.findIndex(q => s2In(e.shape, q, r.fd)); return e.shape.centre && r.way >= 0 ? (i < 0 ? r.way : Math.min(i, r.way)) : i; };
+    const gi = hit(g), ui = hit(u); s2.haz.push({ e, ok: !(gi >= 0 && ui < 0), gi, ui, bent: g.tr.filter(q => q[2]).length, gEnd: g.tr.length ? g.tr[g.tr.length - 1] : g.a, uEnd: u.tr.length ? u.tr[u.tr.length - 1] : u.a, why: g.why + '/' + u.why }); }
+  for (const act in S2.pushes) for (const e of S2.pushes[act].filter(q => q.key === key)) { const a = e.deg * Math.PI / 180, ux = Math.cos(a), uy = Math.sin(a), r = await walk2(page, [e.start[0], e.start[1], ux, uy, 1, 45, true], 'push ' + key);
+    const L = s2Level(r, ux, uy); (s2.push[act] = s2.push[act] || []).push({ e, top: L.top, bent: L.bent, ok: L.top <= S2.bound + 0.01, frames: r.tr.length, why: r.why }); }
+}
+
 // One walk: no message box is open when it starts; what a walk that ended on a message said is kept.
 async function walk(page, args) {
   await F.dismiss(page);
@@ -189,6 +261,29 @@ const STALL = 6;   // frames she may stand at a lip before the glide carries her
       if (A1 && !s.live.a1) F.ok(false, `${key}: she never stood on a spot the mover refuses`, 'not run: this build has no Act 1 probe (window.__QOK_SNAG_A1__)');
       else F.ok(refused === 0, `${key}: she never stood on a spot the mover refuses`, `${refused} of ${frames} frames`);
       F.ok(turned === 0, `${key}: she kept facing the way she pushed on every moving frame of the lip walks`, `${turned} frame(s) turned`);
+      await s2Floor(page, key);                                                // the safety walks of this floor (reported below, after every floor)
+    }
+    // ---- safety (track S2): the floors only the safety walks need, then the three kinds of line ----
+    for (const key of s2Keys().filter(k => !s2.floors.has(k) && (!ONLY || ONLY.includes(k)))) {
+      const s = await seed(page, key);
+      if (!F.ok(s.ok, `${key}: reached (Continue on the floor) for the safety walks`, `at ${s.pos.map} ${s.pos.floor}F`)) continue;
+      await s2Floor(page, key);
+    }
+    {
+      const fb = s2.flat.filter(q => !q.ok), fmt = q => `${q.e.key} ${q.e.d} from ${q.e.start.map(Math.round)}${q.e.kind !== 'plain' ? ' (' + q.e.kind + ')' : ''}: ${q.bent} bent frame(s), ${q.side.toFixed(1)} px sideways, ${q.after.toFixed(1)} px after her first stop${q.why !== 'time' ? ', ' + q.why : ''}`;
+      F.ok(fb.length === 0 && (ONLY || s2.flat.length >= 40), `safety (a): a push square into a flat wall, held 3 s, never moves her sideways (${s2.flat.length} places on all five acts, the review's two among them)`,
+        fb.length ? `${fb.length} of ${s2.flat.length} moved: ` + fb.slice(0, 6).map(fmt).join(' | ') : `${s2.flat.length} places: 0 bent frames, 0.0 px after the first stop everywhere; widest sideways on the way in ${Math.max(0, ...s2.flat.map(q => q.side)).toFixed(1)} px (the mover's own)`);
+      const named = s2.flat.filter(q => q.e.kind === 'named'); for (const q of named) F.info(`safety (a), the review's place ${q.e.key}`, fmt(q));
+      const hb = s2.haz.filter(q => !q.ok), kinds = {}; for (const q of s2.haz) kinds[q.e.kind] = (kinds[q.e.kind] || 0) + 1;
+      const hf = q => `${q.e.key} ${q.e.zone} (soles ${q.e.start.map(Math.round)}, push ${q.e.deg} deg): ${q.gi >= 0 ? 'in the zone at frame ' + q.gi : 'never in the zone'} with the glide (${q.bent} bent), ${q.ui >= 0 ? 'in it at frame ' + q.ui : 'never in it'} with the glide out; ends ${q.gEnd.map(v => v.toFixed(1))} against ${q.uEnd.map(v => v.toFixed(1))}`;
+      const pil = s2.haz.find(q => q.e.pillar);
+      if (pil || !ONLY) F.ok(!!pil && pil.ok, 'safety (b), the Demon Barracks 1F pillar (north into its south face, near its east end): the glide does not slide her into the lit column', pil ? hf(pil) : 'not walked');
+      F.ok(hb.length === 0 && (ONLY || s2.haz.length >= 31), `safety (b): beside a trigger zone the walk with the glide reaches no zone the walk without it does not (${s2.haz.length} places: ${Object.keys(kinds).map(k => kinds[k] + ' ' + k).join(', ')})`,
+        hb.length ? `${hb.length} of ${s2.haz.length} reached one: ` + hb.slice(0, 5).map(hf).join(' | ') : `${s2.haz.length} places, none reached`);
+      for (const act of Object.keys(S2.pushes).sort()) { const l = s2.push[act] || [], bad = l.filter(q => !q.ok), worst = l.reduce((a, q) => q.top > a.top ? q : a, { top: 0 });
+        if (!l.length && ONLY) continue;
+        F.ok(bad.length === 0 && (ONLY || l.length === 200), `safety (c), Act ${act}: ${l.length} near-wall pushes, her sideways travel on bent frames never passes the allowance of ${S2.bound} px`,
+          bad.length ? `${bad.length} of ${l.length} passed it: ` + bad.sort((a, b) => b.top - a.top).slice(0, 5).map(q => `${q.e.key} soles ${q.e.start.map(Math.round)} push ${q.e.deg} deg: ${q.top.toFixed(1)} px (${q.bent} bent frames)`).join(' | ') : `widest ${worst.top.toFixed(2)} px${worst.e ? ' (' + worst.e.key + ', soles ' + worst.e.start.map(Math.round) + ', push ' + worst.e.deg + ' deg)' : ''}; ${l.filter(q => q.bent).length} of the walks were bent at all, ${l.reduce((a, q) => a + q.bent, 0)} bent frames`); }
     }
     // the switch off: the first floor's lips stop her again
     const keys25 = keys.filter(k => !ACT1[k]), keysA1 = keys.filter(k => ACT1[k]);

@@ -52,6 +52,8 @@
   },
   {
    "id": "soldier",
+   "spacePlug": [[29, -22, 0, 2]],
+   "spacePlugNote": "2026-11-27 (FT2, review of the town changes): his space ended 7 px short of the wall east of him, a slit 12 px long; the way round (west of him) is open. Closed.",
    "dialogueKey": "npc.soldier",
    "nameKey": "npc.soldier.name",
    "sheet": "town/npc/ironkeep-soldier-4x3-64.png",
@@ -68,16 +70,18 @@
   },
   {
    "id": "blacksmith",
+   "cellOld": [18.28, 18.28],
    "space": [20, 27, 10],
    "spaceMax": 15,
    "spaceNote": "2026-11-27 (design review T4): he stands in the middle of the forge street, 36 px deep, in front of the quench trough (a step back would stand him on the trough). A full body's space closed the street, so his `space` ends 10 px south of his feet and `spaceAlso` is the body he had before (10 px round, 7 px south): from either side the hero stops a body away, below him she comes no nearer than she did, and passing there her sprite still overlaps his by up to `spaceMax` px.",
    "spaceAlso": [10, 10, 17, 10],
+   "cellNote": "2026-11-27 (FT2, review of the town changes): 5 px (0.34 cells) back, to the foot of the quench trough: under the round body of before the street was 3 to 4 px wide at one point; it is 8 px now.",
    "dialogueKey": "npc.blacksmith",
    "nameKey": "npc.blacksmith.name",
    "sheet": "town/npc/ironkeep-blacksmith-4x3-64.png",
    "cell": [
     18.28,
-    18.28
+    17.94
    ],
    "mapsTs": [
     4,

@@ -68,6 +68,8 @@
   },
   {
    "id": "hauntedGuard",
+   "spacePlug": [[26, 4, 28, 1]],
+   "spacePlugNote": "2026-11-27 (FT2, review of the town changes): his space ended 3 px short of the wall east of him, a slit 30 px long; the way round (west of him) is open. Closed.",
    "dialogueKey": "npc.hauntedGuard",
    "nameKey": "npc.hauntedGuard.name",
    "sheet": "town/npc/hauntedVillage-hauntedGuard-4x3-64.png",

@@ -242,6 +242,13 @@ const NPC_SPACE_ON = !F2_OLD('npcbody') && !F2_OLD('npcspace');
 const NPC_SPACE = [20, 27, 30], NPC_SPACE_R = 7;
 const NPC_TALK_SIDE = F2_OLD('npcbody') ? 1.1 : NPC_SPACE_ON ? 2.3 : 1.5, NPC_TALK_SIDE_DY = NPC_SPACE_ON ? 1.8 : 1.0;
 const NPC_TALK_SOUTH = NPC_SPACE_ON ? 2.7 : 2.1;
+// FT2 (review of 2026-11-27, item 5): round the two south corners of a person's space she stands further than 1.8 cells south
+// and up to 1.4 cells to the side, and the band below 1.8 cells was still the 1.1 cells of before: no Talk at either corner
+// (4 of the 41 directions she can stand in). The band is 1.7 cells wide down to 2.4 cells south: the foot of a space is
+// 2.15 cells south and 1.6 cells would do for most, but the drake's space is 3 px wider each side, and a `spacePlug` ends
+// up to 4 px below its person's space. Further south it stays 1.1, so a keeper behind a counter (`talkReach`) still does
+// not reach round the shop spot.
+const NPC_TALK_CORNER = NPC_SPACE_ON ? 1.7 : 1.1, NPC_TALK_CORNER_DY = NPC_SPACE_ON ? 2.4 : 0;
 const NPC_NEAR_KX = NPC_SPACE_ON ? (NPC_SPACE[2] + 4) / (NPC_SPACE[0] + 4) : 1;   // see nearestNpc()
 // T3: a shopkeeper who was drawn standing on her stall now stands at the counter (`cell`), her legs behind the counter's
 // front (`town.occluders`, see draw()). The cell and talk reach of before are kept as `cellOld` / `talkReachOld`:
@@ -251,23 +258,33 @@ const SHOPBAND_ON = !F2_OLD('shopband');
 // mouth, apart from each other); their places of before are `cellOld` / `savePointOld`: qok-f2-old=townplace.
 const PLACE_OLD = F2_OLD('townplace');
 const npcCell = n => Array.isArray(n.cellOld) && (n.id === 'shopkeeper' ? !SHOPBAND_ON : PLACE_OLD) ? n.cellOld : n.cell;
+// FT2 (item 4): a person put back at her place of before (qok-f2-old=townplace) has the body of before there too. Several
+// moved BECAUSE a body's space did not fit where they stood: with the switch alone the new space at the old cell closed
+// Ironkeep's west street and Ruins Camp's north path.
+const npcAtOld = n => PLACE_OLD && n.id !== 'shopkeeper' && Array.isArray(n.cellOld);
 const walkableBare = { ...walkable, dynamicBlockers: [...(walkable.dynamicBlockers || [])] };   // the town without its people
 walkable.dynamicBlockers = [
   ...(walkable.dynamicBlockers || []),
   ...town.npcs.flatMap(n => {
     const cell = npcCell(n), point = { x: cell[0] * NPC_CELL_W, y: cell[1] * NPC_CELL_W };
-    if (NPC_SPACE_ON) {
+    if (NPC_SPACE_ON && !npcAtOld(n)) {
       // one shape = [half-width, north, south, corner radius (default NPC_SPACE_R)]. `spaceAlso` (town json) is a second shape
       // for the same person: in a lane her `space` is cut short to keep the way open, and `spaceAlso` is the body she had
       // before (10 px round, 7 px south), so the hero never comes nearer to her than she did.
-      return [Array.isArray(n.space) ? n.space : NPC_SPACE, ...(Array.isArray(n.spaceAlso) ? [n.spaceAlso] : [])].flatMap(([hw, north, south, rr], si) => {
+      // FT2 (item 3): `spacePlug` (town json) closes a slit: where a space ends a few px short of a wall, the strip between
+      // them was a way through too narrow to find (and a longer way round exists). One plug = [dx, dy0, dy1, half-width]:
+      // an upright bar, world px from her feet. Nobody moves and nothing is drawn; scripts/auto/checks/field-town-reach.cjs
+      // ("no slit beside a person", "no walk is more than 1.15 times as long") guards them.
+      const plugs = (Array.isArray(n.spacePlug) ? n.spacePlug : []).map(([dx, dy0, dy1, hw], pi) =>
+        ({ id: `npc-${n.id}-plug${pi}`, from: { x: point.x + dx, y: point.y + dy0 }, to: { x: point.x + dx, y: point.y + dy1 }, halfWidth: hw }));
+      return [...plugs, ...[Array.isArray(n.space) ? n.space : NPC_SPACE, ...(Array.isArray(n.spaceAlso) ? [n.spaceAlso] : [])].flatMap(([hw, north, south, rr], si) => {
         const r = Math.min(rr ?? NPC_SPACE_R, hw), off = hw - r;
         const y0 = point.y - Math.max(0, north - r), y1 = point.y + Math.max(0, south - r);
         // capsules no further apart than their own width, so the row is solid to within 2 px (two 7 px ones 26 px apart left a gap she walked into)
         const k = off > 0 ? Math.ceil(off / r) + 1 : 1;
         return Array.from({ length: k }, (_, i) => { const o = k > 1 ? -off + 2 * off * i / (k - 1) : 0;
           return { id: `npc-${n.id}${si ? '-also' : ''}${i ? '-' + i : ''}`, from: { x: point.x + o, y: y0 }, to: { x: point.x + o, y: y1 }, halfWidth: r }; });
-      });
+      })];
     }
     const own = !F2_OLD('npcbody') && Array.isArray(n.body) ? n.body : null;
     const half = own ? own[0] : NPC_BLOCK_RADIUS, south = own ? own[1] : NPC_BODY_SOUTH;
@@ -610,7 +627,7 @@ function inTalkBand(npc, p) {
   const dx = p.x - npc.point.x, dy = p.y - npc.point.y;
   // `talkReach` (cells, town json): a person standing BEHIND a painted counter is talked to across
   // it, from the counter's front (explorer X04: Ruins Camp, Oasis Haven, Last Bastion shopkeepers).
-  return !(Math.abs(dx) > CELL_W * (dy <= CELL_W * NPC_TALK_SIDE_DY ? NPC_TALK_SIDE : 1.1) || dy < -CELL_W * 0.35 || dy > CELL_W * (npc.talkReach ?? NPC_TALK_SOUTH));
+  return !(Math.abs(dx) > CELL_W * (dy <= CELL_W * NPC_TALK_SIDE_DY ? NPC_TALK_SIDE : dy <= CELL_W * NPC_TALK_CORNER_DY ? NPC_TALK_CORNER : 1.1) || dy < -CELL_W * 0.35 || dy > CELL_W * (npc.talkReach ?? NPC_TALK_SOUTH));
 }
 function nearestNpc(at = position) {
   let best = null;

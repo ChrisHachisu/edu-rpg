@@ -130,10 +130,19 @@ const WALK = async ([y, x0, dir, goal]) => {
       const P = plan(1), r0 = P.mechanic.rooms[0], cs = r0.doors.entry;
       const d = { room: r0.id, name: 'entry', x: cs[0][0], y0: cs[0][1], y1: cs[cs.length - 1][1], west: true, rx0: r0.rect[0] * T, rx1: (r0.rect[2] + 1) * T };
       const ln = await page.evaluate(LANES, [d, T]);
+      // Steady frames for this walk (day 4, track S2), as scripts/auto/checks/snags.cjs seed() steps them: the game clock moves
+      // 1/60 s per drawn frame. Collision is sampled once per substep, so on a loaded box, where the frame time jitters and her
+      // step length with it, the mover's own slide steps past the post by luck or not (measured day 4: 2 of 3 walks passed on a
+      // jittery clock, 9 of 9 stopped on a steady one, with or without the wall glide). The line is about the switch, not the box.
+      const steady = await page.evaluate(() => { const g = window.__PHASER_GAME__, raf = g && g.loop && g.loop.raf;
+        if (raf && raf.callback && !raf.__steady) { const cb = raf.callback; let t = performance.now(); raf.__steady = true; raf.callback = function () { t += 1000 / 60; return cb.call(this, t); }; }
+        return !!(raf && raf.__steady); });
+      await page.waitForTimeout(300);
       await page.evaluate(WALK, [ln.hi, ln.start, ln.dir, ln.goal]);
       const off = await page.evaluate(() => window.__QOK_DNG2__.ctx().state.lips);
-      const r = await page.evaluate(WALK, [ln.lo, ln.start, ln.dir, ln.goal]);
-      F.ok(off === false && !r.ok && r.to[0] > d.x * T - 70 && r.to[0] < d.x * T + T, `1F first doorway, qok-door-lips=0: hugging the lower wall (soles y ${ln.lo}) she stops dead short of the room as before`, `module switch ${off}, from x ${r.from[0]} to x ${r.to[0]} (room from x ${ln.goal})`);
+      const bentOf = () => page.evaluate(() => { const sn = window.__QOK_SNAG__; return sn && sn.stats ? sn.stats.bent : 0; });   // the wall glide's bent frames (0 on a build without it)
+      const bent0 = await bentOf(), r = await page.evaluate(WALK, [ln.lo, ln.start, ln.dir, ln.goal]), bent = (await bentOf()) - bent0;
+      F.ok(off === false && steady && !r.ok && r.to[0] > d.x * T - 70 && r.to[0] < d.x * T + T && bent === 0, `1F first doorway, qok-door-lips=0: hugging the lower wall (soles y ${ln.lo}) she stops dead short of the room as before`, `module switch ${off}, from x ${r.from[0]} to x ${r.to[0]} (room from x ${ln.goal}), steady game clock ${steady}, the wall glide bent ${bent} frame(s) of the walk`);
     }
   } catch (e) { F.ok(false, 'door-lips check ran', String(e && e.stack || e).slice(0, 400)); }
   if (!ONLY) F.ok(wallsDone >= 2, 'a real wall beside a doorway was found and tested at least twice', `${wallsDone} wall walks`);

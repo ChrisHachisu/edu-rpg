@@ -78,11 +78,15 @@ const HELP = () => {
     const mine = typeof t.talkTargetAt === 'function' ? (x, y) => t.talkTargetAt({ x, y }) === id : typeof t.inTalkBand === 'function' ? (x, y) => t.inTalkBand(id, { x, y }) : null;
     const band = mine ? (x, y) => mine(x, y) && mine(x - 5, y) && mine(x + 5, y) && mine(x, y - 5) && mine(x, y + 5) : null;
     const r = await townWalk((x, y) => Math.abs(x - n.point.x) <= C * 0.6 && y - n.point.y >= C * 0.45 && (band ? band(x, y) : y - n.point.y <= C * 1.6));
-    if (r.ok || r.why !== 'nopath') return r;
+    // FT2 (2026-11-27): the result says which tier found the goal, and each walk logs it. `middle`: the comfortable middle
+    // of the band; `band`: anywhere in it with 5 px of room; `sliver`: a single point where Talk names her, which a child
+    // cannot find. The story robot counts a sliver as a FAIL (talk() and heal() below); so does town-looks.cjs.
+    const done = (res, tier) => { const out = { ...res, tier }; try { console.log(`[PTH] walkToNpc ${id}: tier ${tier}, ${res.ok ? 'ok' : 'not ok'} (${res.why})`); } catch (e) {} return out; };
+    if (r.ok || r.why !== 'nopath') return done(r, 'middle');
     // nothing in the comfortable middle of the band: anywhere in town.html's own band (|dx| <= 1.1, dy -0.35..2.1 cells)
     const r2 = await townWalk((x, y) => band ? band(x, y) : (Math.abs(x - n.point.x) <= C * 1.0 && y - n.point.y >= C * -0.25 && y - n.point.y <= C * 2.0));
-    if (r2.ok || r2.why !== 'nopath' || !mine) return r2;
-    return townWalk(mine);     // a sliver of a band: any point of it
+    if (r2.ok || r2.why !== 'nopath' || !mine) return done(r2, 'band');
+    return done(await townWalk(mine), 'sliver');     // a sliver of a band: any point of it
   }
   async function walkToCell(cx, cy, r = 0.5) { const f = frame(); if (!f) return { ok: false, why: 'no town' }; const C = f.contentWindow.__ACT1_TOWN__.town.worldPxPerCell; return townWalk((x, y) => Math.hypot(x - cx * C, y - cy * C) <= r * C); }
   const pressTalk = () => { fkey('keydown', 'Enter'); fkey('keyup', 'Enter'); };
@@ -168,8 +172,9 @@ class Session {
     await page.waitForTimeout(600); lines = lines.concat(await this.dismissAll());
     const log = await this.ev(() => window.__PTH.log().map(m => m.t)); const after = await this.st();
     const started = after.active.filter(q => !before.active.includes(q)), finished = after.done.filter(q => !before.done.includes(q));
-    const ok = g.ok && near === npc && (log.length > 0 || lines.length > 0) && (!want || want(after, { started, finished, log }));
-    this.rec(`talks to ${label}` + (want ? ' (story step)' : ''), ok, { walk: g.why, near, started, finished, shown: lines.map(t => t.slice(0, 200)) });
+    // a walk that only found a one-point sliver of the band is a FAIL: the robot can stand on one point, a child cannot (FT2, 2026-11-27)
+    const ok = g.ok && g.tier !== 'sliver' && near === npc && (log.length > 0 || lines.length > 0) && (!want || want(after, { started, finished, log }));
+    this.rec(`talks to ${label}` + (want ? ' (story step)' : ''), ok, { walk: g.why, tier: g.tier, near, started, finished, shown: lines.map(t => t.slice(0, 200)) });
     return { ok, log, lines, started, finished, after };
   }
   async townSave() {
@@ -189,7 +194,7 @@ class Session {
     const gold0 = (await this.st()).gold; await this.ev(() => window.__PTH.pressTalk()); await page.waitForTimeout(1000);
     for (let i = 0; i < 6; i++) { const o = await this.ev(() => !!window.__PHASER_GAME__.scene.getScene('WorldMapScene').healerOverlayOpen); if (!o) break; await this.ev(() => window.__P.tapKey('z')); await page.waitForTimeout(500); }
     const lines = await this.dismissAll(); const s = await this.st();
-    this.rec('the healer restores her (inn/healer service)', g.ok && s.hp === s.maxHp, { walk: g.why, hp: [s.hp, s.maxHp], gold: [gold0, s.gold], lines });
+    this.rec('the healer restores her (inn/healer service)', g.ok && g.tier !== 'sliver' && s.hp === s.maxHp, { walk: g.why, tier: g.tier, hp: [s.hp, s.maxHp], gold: [gold0, s.gold], lines });
   }
   async leaveTown() {
     const page = this.page; await this.dismissAll(); const s0 = await this.st(); const ex = s0.town && s0.town.exit; if (!ex) return false;

@@ -52,6 +52,8 @@
   },
   {
    "id": "grizzledKnight",
+   "spacePlug": [[-18, 38, 38, 3]],
+   "spacePlugNote": "2026-11-27 (FT2, review of the town changes): his space ended 4 px above the wall at his south-west corner; the way round is open. Closed.",
    "dialogueKey": "npc.grizzledKnight",
    "nameKey": "npc.grizzledKnight.name",
    "sheet": "town/npc/havensEdge-grizzledKnight-4x3-64.png",

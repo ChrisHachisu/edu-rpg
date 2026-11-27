@@ -109,7 +109,7 @@
         m.t0=t; m.life=(puff?1500:1150)+Math.random()*500; m.ph=Math.random()*6.28; m.size=puff?1.1+Math.random()*0.6:0.26+Math.random()*0.14; m.peak=puff?0.5:0.9; m.wob=puff?3:6;
         // it rises in the hint's cell, on the half away from the wall, and goes toward the crack only as far as leaves
         // WALL_CLEAR of floor between its whole puff (at its largest) and the wall face
-        var away=8+Math.random()*14, side=(Math.random()-0.5)*36; m.x=D.hx+D.nx*away-D.ny*side; m.y=D.hy+D.ny*away+D.nx*side;
+        var away=2+Math.random()*22, side=(Math.random()-0.5)*TILE; m.x=D.hx+D.nx*away-D.ny*side; m.y=D.hy+D.ny*away+D.nx*side;
         var room=(m.x-D.fx)*D.nx+(m.y-D.fy)*D.ny-WALL_CLEAR-ASH_R*m.size*1.7-m.wob-2, toward=Math.max(0.2,-(D.ux*D.nx+D.uy*D.ny)), nat=sp*m.life/1000*0.68;
         if(room<0){ m.x-=D.nx*room; m.y-=D.ny*room; room=0; }                    // (a hint that lies nearer the wall than that: the puff stands back)
         var f=Math.min(1,room/toward/nat); m.vx=D.ux*sp*f; m.vy=D.uy*sp*f;

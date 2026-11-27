@@ -52,14 +52,16 @@
   },
   {
    "id": "forgemaster",
+   "cellOld": [38.59, 16.0],
    "space": [21, 27, 30],
    "spaceNote": "2026-11-27 (design review T4): a wide sprite; his space is 1 px wider each side.",
+   "cellNote": "2026-11-27 (FT2, review of the town changes): he stood in the street (40 px deep) and his space left a slit 1 to 2 px wide under him, where the 10 px body of before left 14 px. He now stands a cell north-west, on the sand in front of his barrel with the wall at his back: the street keeps 18 px below his space and the path north stays open beside him.",
    "dialogueKey": "npc.forgemaster",
    "nameKey": "npc.forgemaster.name",
    "sheet": "town/npc/embersRest-forgemaster-4x3-64.png",
    "cell": [
-    38.59,
-    16.0
+    37.6,
+    15.0
    ],
    "mapsTs": [
     9,

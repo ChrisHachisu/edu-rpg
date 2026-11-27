@@ -84,12 +84,14 @@
   },
   {
    "id": "luna",
+   "cellOld": [26.41, 14.22],
+   "cellNote": "2026-11-27 (FT2, review of the town changes): she stood in the middle of the street, and her space left 4 px between it and the jars north of her (20 px with the body of before). She now stands 0.7 cells south, at the street's edge by the reeds of the pool: 14 px stay open north of her, and she is talked to from her west side as before (the reeds are south of her either way).",
    "dialogueKey": "npc.luna.greeting",
    "nameKey": "npc.luna.name",
    "sheet": "town/npc/oasisHaven-luna-4x3-64.png",
    "cell": [
-    26.41,
-    14.22
+    26.44,
+    14.94
    ],
    "mapsTs": [
     6,

@@ -418,7 +418,7 @@ async function tex(page) {
     const k1 = await keys(); let walked = true; const seen = [];
     for (const [n, from] of [[2, 1], [3, 2], [2, 3], [1, 2]]) { walked = (await hop(n, from)) && walked; seen.push((await keys()).length); }
     const k2 = await keys(), here = `${id}-f1`, stale = k2.filter(k => k.indexOf(here + '_') < 0 && k.indexOf(here + 'b_') < 0);
-    const st2 = await page.evaluate(() => { const c = window.__QOK_DNG2__.ctx(), S = c.state, sc = c.scene, d = window.__QOK_D4LOOKS__.state();
+    const st2 = await page.evaluate(() => { const c = window.__QOK_DNG2__.ctx(), S = c.state, sc = c.scene, d = window.__QOK_D4LOOKS__ ? window.__QOK_D4LOOKS__.state() : { edges: 0, err: null };   // (a tree before day 4 has no such module: the line below then fails, it does not throw)
       const pics = sc.children.list.filter(o => o.texture && /^(d4edge_|d2b_pool_|d2s_stone_)/.test(o.texture.key)); return { key: c.key, edges: d.edges, err: d.err, pics: pics.length, dead: pics.filter(o => !o.texture.source || !o.texture.source[0] || !o.frame || !o.frame.source).length, spr: !!S.spr, look: S.spr && S.spr.look }; });
     F.info(`${id}: textures named for a floor`, JSON.stringify({ onArrival: k1.length, afterEachHop: seen, atTheEnd: k2.length, stale: stale.slice(0, 6), state: st2 }));
     F.ok(walked && st2.key === here, `${id}: walked floors 1, 2, 3 and back to 1 by the engine's own floor change`, JSON.stringify({ walked, key: st2.key }));

@@ -325,11 +325,11 @@
       // 64% won; now 69% in 364 s); grade 2 rage 1.7 and charge 1.6 (87% won, above the 55-80% band; now about 70%)
       // 2026-11-27b (quiz bank v2: a child spends 10-40% longer on every answer, so the same fight ran 410-550 s against the 390 s limit):
       // fewer boss HP, and the rage and charge of grades K, 1 and 2 raised so the win rate stays inside 55-80%. hp grades K 1300 -> 900,
-      // 1 1500 -> 1050, 2 1500 -> 1300, 3 and 4 1500 -> 1400, 5 1400 -> 1300; rage K and 1 1.6 -> 1.7, 2 1.7 -> 1.75, charge K and 1 1.5 -> 1.6.
+      // 1 1500 -> 1050, 2 1500 -> 1300, 3 and 4 1500 -> 1400, 5 1400 -> 1250; rage K and 1 1.6 -> 1.7, 2 1.7 -> 1.75, charge K and 1 1.5 -> 1.6.
       demonKing:          { hp: 1500, regen: 0.01, poison: 0.02, rage: 1.5, charge: 1.6, grade: {
         'k': { hp: 900, rage: 1.7, charge: 1.6 }, '1': { hp: 1050, rage: 1.7, charge: 1.6 }, '2': { hp: 1300, rage: 1.75, charge: 1.6 },
         '3': { hp: 1400 }, '4': { hp: 1400 },
-        '5': { hp: 1300, rage: 1.35, charge: 1.45 }, '6': { hp: 1400, rage: 1.3, charge: 1.45 } } }
+        '5': { hp: 1250, rage: 1.35, charge: 1.45 }, '6': { hp: 1400, rage: 1.3, charge: 1.45 } } }
     },
     // Ten dungeons roll a neighbour's monster table although the zone table holds one written for them.
     dungeonZones: {

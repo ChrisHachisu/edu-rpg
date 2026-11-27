@@ -7728,9 +7728,15 @@
      twice. Not the overworld, not a town. Crystal Cave has no walk mask and never reaches this mover.
      OFF: localStorage 'qok-snag-slide' = '0' (the module's own switch). Without the module (its script
      not loaded, 'qok-dungeons2' = '0') nothing here changes anything.
-     Check: scripts/auto/checks/snags.cjs. window.__QOK_SNAG_A1__ is for that check only. */
+     Check: scripts/auto/checks/snags.cjs. window.__QOK_SNAG_A1__ is for that check only.
+     MADE SAFE (track S2, same day; the three guarantees are written out in snag-slide.js): the glide gets
+     the frame time this step uses (snagDt) and the floor plan (plan), so it can work out the very
+     substeps a bent stick will take, bound her sideways travel across her push, and keep a bent frame
+     off every trigger cell. A bent stick carries the stick she pushed (.snag): a1mStep judges exits on
+     that one, steps the bent one without ever sliding (a refused substep ends the frame), and restores
+     it. This holds for Acts 2-5 too (the bent stick comes back through the mechanic hook there). */
   var a1mSnagC=null;
-  function a1mSnagBend(scene,m,inp,x,y){
+  function a1mSnagBend(scene,m,inp,x,y,dtms){
     var sn=window.__QOK_SNAG__;
     if(!sn||!sn.on||!sn.glide||!m||m.ow||a2dCtx||A1D_MAPS[scene.currentMapId]!==1){ a1mSnagC=null; return null; }
     var key=a1mStateKey(scene), c=a1mSnagC;
@@ -7742,7 +7748,8 @@
         return a1mTileAt(scene,px,py)===6 && a1dIsMouthCell(scene,(px/TILE)|0,(py/TILE)|0); },   // the floor-1 mouth cell is hers to stand in, as in a1mFree
       tile:function(cx,cy){ var row=scene.mapData&&scene.mapData[cy]; return row?row[cx]:undefined; } };
     if(!inp){ c.__snag=null; return null; }                                  // no push: the glide forgets
-    c.snagFootDy=a1mFootDy(scene,m);
+    c.snagFootDy=a1mFootDy(scene,m); c.snagDt=dtms;
+    try{ c.plan=a1dFloorFor(scene)||null; }catch(e){ c.plan=null; }           // the floor's own rows and assets: the glide's trigger table (no plan: no bends)
     var r; try{ r=sn.glide(c,inp,x,y); }catch(e){ r=undefined; if(window.__DQ_DEBUG__) console.log('a1 snag '+e); }
     return r||null;
   }
@@ -7755,8 +7762,9 @@
     live:function(){ var sn=window.__QOK_SNAG__; return !!(sn&&sn.on&&sn.glide); },
     free:function(scene,x,y){ var mm=null; try{ mm=a1mFor(scene); }catch(e){} return !!(mm&&!mm.ow&&a1mFree(scene,mm,x,y)); },
     footDy:function(scene){ var mm=null; try{ mm=a1mFor(scene); }catch(e){} return a1mFootDy(scene,mm); },
-    state:function(){ return a1mSnagC?a1mSnagC.__snag:null; } };
-  /* ==== end of SNAG GLIDE, ACT 1 DUNGEONS (two marked lines in a1mStep below use it) ==== */
+    state:function(){ return a1mSnagC?a1mSnagC.__snag:null; },
+    ctx:function(){ return a1mSnagC; } };
+  /* ==== end of SNAG GLIDE, ACT 1 DUNGEONS (the lines marked SNAG GLIDE in a1mStep below use it) ==== */
   function a1mStep(scene,dtms){
     var m=a1mAnyFor(scene); if(!m) return;
     var hero=scene.hero; if(!hero||!hero.scene) return;
@@ -7781,8 +7789,10 @@
     }
 
     var inp=a1mInput(scene), moved=0;
+    if(a2dCtx && !m.ow) a2dCtx.snagDt=dtms;                                   // SNAG GLIDE: the glide (wrapped round the mechanic's input hook) plans its bent step with the frame time this step uses
     if(a2dCtx && !m.ow && a2dCtx.mod && a2dCtx.mod.input){                    // authored mechanic: may bend or hold the stick
       try{ var a2i=a2dCtx.mod.input(a2dCtx,inp,x,y); if(a2i!==undefined) inp=a2i; }catch(e){} }
+    var snagBent=null; if(inp && inp.snag){ snagBent=inp; inp=inp.snag; }      // SNAG GLIDE: a bent stick only steps this frame; the exits below are judged on the stick she pushed (inp.snag)
     // A transition query consumes the frozen scene's one-frame cooldown even
     // when it returns null. Preserve that authored F1 mouth query while the
     // player remains on the same cell, but require current outward input before
@@ -7801,8 +7811,9 @@
     }
     if(a2dCtx && !m.ow){ var a2w=a2dOpenedUnder(scene,inp,x,y+a1mFootDy(scene,m));   // authored: the boss's way out opens where she stands
       if(a2w){ try{ scene.performTransition(a2w); }catch(e){ if(window.__DQ_DEBUG__) console.log('a2d way '+e); } return; } }
-    var snagInp=null;                                                        // SNAG GLIDE, ACT 1 (a1mSnagBend above): the stick may be bent for this frame's steps
-    if(!m.ow && !a2dCtx){ var snagB=a1mSnagBend(scene,m,inp,x,y); if(snagB){ snagInp=inp; inp=snagB; } }
+    var snagInp=null;                                                        // SNAG GLIDE (Act 1: a1mSnagBend above; Acts 2-5: snagBent, from the mechanic hook): the stick may be bent for this frame's steps
+    if(!m.ow && !a2dCtx) snagBent=a1mSnagBend(scene,m,inp,x,y,dtms);
+    if(snagBent){ snagInp=inp; inp=snagBent; }
     if(inp){
       // Facing dead band: near a 45-degree push |x| and |y| trade places with every thumb tremor and
       // she flickered between two facings. Keep the axis she already faces until the other one
@@ -7826,6 +7837,7 @@
       for(k=0;k<n;k++){
         var nx=x+sx, ny=y+sy;
         if(a1mFree(scene,m,nx,ny)){ x=nx; y=ny; moved+=Math.sqrt(sx*sx+sy*sy); continue; }
+        if(snagInp) break;                                                   // SNAG GLIDE: a bent frame is the straight walk the glide checked substep by substep; a refused step ends it, it never slides, bumps or asks a door
         if(a2dCtx && !m.ow) a2dPush(scene,m,x,y,sx,sy,false);               // authored mechanic: told of every refused step, glide or not
         // The step was refused: give the engine its ASK-FIRST chance before anything glides past
         // the thing she walked into. See a1mDoor -- this is where the town entrances live.
@@ -7859,7 +7871,7 @@
         if(!slid){ a1mBump(scene,m,x,y,sx,sy); break; }
       }
     }
-    if(snagInp){ a1mSnagFace(scene); inp=snagInp; }                          // SNAG GLIDE, ACT 1: her facing and the stick are as she pushed them
+    if(snagInp){ if(!a2dCtx) a1mSnagFace(scene); inp=snagInp; }              // SNAG GLIDE: the stick is as she pushed it again (Acts 2-5 too), and her facing (Act 1; Acts 2-5: the module's tick)
     var physicalMoved=moved*(scaled?OW_SCALE:1);
     a1mState.phase += physicalMoved;                                         // physical EUCLIDEAN px travelled
     // 12 frames = dir*3 + pose (hero-override.js). The cycle and its rate are the town's, held at

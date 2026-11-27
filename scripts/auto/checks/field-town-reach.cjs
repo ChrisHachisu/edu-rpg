@@ -90,18 +90,22 @@ function modelFrom(html) {
   else { m.side = num(/NPC_TALK_SIDE = (?:F2_OLD\('npcbody'\) \? [\d.]+ : )?([\d.]+)/, 1.1); m.sideDy = num(/NPC_TALK_SIDE_DY = ([\d.]+)/, 99); m.reachS = 2.1; }
   m.kx = sp && /NPC_NEAR_KX = NPC_SPACE_ON \? \(NPC_SPACE\[2\] \+ 4\) \/ \(NPC_SPACE\[0\] \+ 4\)/.test(html) ? (m.space[2] + 4) / (m.space[0] + 4) : 1;   // nearestNpc()'s sideways weight
   m.sideLow = 1.1;
+  // FT2: the band round the south corners of a space (item 5), the plugs that close a slit (item 3), the body of before at a place of before (item 4)
+  const corner = /NPC_TALK_CORNER_DY \? NPC_TALK_CORNER : 1\.1/.test(html);
+  m.corner = corner ? num(/NPC_TALK_CORNER = NPC_SPACE_ON \? ([\d.]+)/, 1.1) : 1.1; m.cornerDy = corner && sp ? num(/NPC_TALK_CORNER_DY = NPC_SPACE_ON \? ([\d.]+)/, 0) : 0;
+  m.plug = /n\.spacePlug/.test(html); m.oldBodyAtOld = /NPC_SPACE_ON && !npcAtOld\(n\)/.test(html);
   return m;
 }
 // town.html's blockers for one person: [{ x0, y0, x1, y1, hw }]
 function segs(n, M, mode) {
   if (mode === 'old') return [{ x0: n.x, y0: n.y, x1: n.x, y1: n.y, hw: 7 }];
-  if (M.space) return [Array.isArray(n.space) ? n.space : M.space, ...(Array.isArray(n.also) ? [n.also] : [])].flatMap(([hw, north, south, rr]) => { const r = Math.min(rr ?? M.spaceR, hw), off = hw - r, y0 = n.y - Math.max(0, north - r), y1 = n.y + Math.max(0, south - r);
-    const k = off > 0 ? Math.ceil(off / r) + 1 : 1; return Array.from({ length: k }, (_, i) => { const o = k > 1 ? -off + 2 * off * i / (k - 1) : 0; return { x0: n.x + o, y0, x1: n.x + o, y1, hw: r }; }); });
+  if (M.space && !(n.atOld && M.oldBodyAtOld)) return [...(M.plug && Array.isArray(n.plug) ? n.plug.map(([dx, dy0, dy1, hw]) => ({ x0: n.x + dx, y0: n.y + dy0, x1: n.x + dx, y1: n.y + dy1, hw })) : []), ...[Array.isArray(n.space) ? n.space : M.space, ...(Array.isArray(n.also) ? [n.also] : [])].flatMap(([hw, north, south, rr]) => { const r = Math.min(rr ?? M.spaceR, hw), off = hw - r, y0 = n.y - Math.max(0, north - r), y1 = n.y + Math.max(0, south - r);
+    const k = off > 0 ? Math.ceil(off / r) + 1 : 1; return Array.from({ length: k }, (_, i) => { const o = k > 1 ? -off + 2 * off * i / (k - 1) : 0; return { x0: n.x + o, y0, x1: n.x + o, y1, hw: r }; }); })];
   const b = M.own && n.body ? n.body : [M.r, M.south]; return [{ x0: n.x, y0: n.y, x1: n.x, y1: n.y + b[1], hw: b[0] }];
 }
 // town.html's own prompt rules, replicated (inTalkBand / nearestNpc / nearestService) for people [{ id, x, y, reach }]
 function promptRules(C, M, npcs, services) {
-  const inBand = (n, x, y) => { const dx = x - n.x, dy = y - n.y; return !(Math.abs(dx) > C * (dy <= C * M.sideDy ? M.side : M.sideLow) || dy < -C * 0.35 || dy > C * n.reach); };
+  const inBand = (n, x, y) => { const dx = x - n.x, dy = y - n.y; return !(Math.abs(dx) > C * (dy <= C * M.sideDy ? M.side : dy <= C * M.cornerDy ? M.corner : M.sideLow) || dy < -C * 0.35 || dy > C * n.reach); };
   const nearestNpc = (x, y) => { let b = null; for (const n of npcs) { if (!inBand(n, x, y)) continue; const d = Math.hypot((x - n.x) * M.kx, y - n.y); if (!b || d < b.d) b = { n, d }; } return b ? b.n : null; };
   const nearestService = (x, y) => { let b = null; for (const [kind, c] of services) { const dx = x / C - c[0], dy = y / C - c[1]; if (Math.abs(dx) > 1.2 || Math.abs(dy) > 1.2) continue; const d = Math.hypot(dx, dy); if (!b || d < b.d) b = { kind, d }; } return b ? b.kind : null; };
   return { inBand, nearestNpc, nearestService };
@@ -111,7 +115,7 @@ function promptRules(C, M, npcs, services) {
 // the save spot and the opening spot to every person's talk spot, the shop, the save spot and the exit line.
 function people(T, M, html, opts = {}) { const C = T.worldPxPerCell, old = opts.cellOld || [];
   return T.npcs.map(n => { const c = old.includes(n.id) && Array.isArray(n.cellOld) ? n.cellOld : n.cell;
-    return { id: n.id, x: c[0] * C, y: c[1] * C, reach: M.reach && n.talkReach ? n.talkReach : M.reachS, body: n.body, space: M.space ? (opts.space ? opts.space(n) : n.space) : null, also: M.space && /n\.spaceAlso/.test(html) && !(opts.space && opts.space(n) !== n.space) ? n.spaceAlso : null, max: n.spaceMax, note: n.spaceNote || n.bodyNote }; }); }
+    return { id: n.id, x: c[0] * C, y: c[1] * C, reach: M.reach && n.talkReach ? n.talkReach : M.reachS, body: n.body, space: M.space ? (opts.space ? opts.space(n) : n.space) : null, also: M.space && /n\.spaceAlso/.test(html) && !(opts.space && opts.space(n) !== n.space) ? n.spaceAlso : null, plug: n.spacePlug, atOld: old.includes(n.id) && Array.isArray(n.cellOld), max: n.spaceMax, note: n.spaceNote || n.bodyNote }; }); }
 function bareGrid(W, T, base, STEP = 2) { const WORLD = T.cells * T.worldPxPerCell, N = Math.ceil(WORLD / STEP) + 1, bare = new Uint8Array(N * N);
   for (let gy = 0; gy < N; gy++) for (let gx = 0; gx < N; gx++) bare[gy * N + gx] = W.isInsideWalkable({ x: gx * STEP, y: gy * STEP }, base) ? 1 : 0; return bare; }
 function carve(bare, N, STEP, npcs, M, mode, fr) { const inside = Uint8Array.from(bare);
@@ -209,7 +213,7 @@ function slits(W, base, npcs, M, fr, w, world) {
   return out;
 }
 // the outlines, lists and box readers are shared with the browser check (town-looks.cjs)
-module.exports = { slits, TOWNS, PROPS, BANDED, ONGROUND, HERO, BODY_HALF, BODY_UP, ovalRing, inRing, spriteBox, png, modelFrom, segs, measure, people, bareGrid, carve, walks, promptRules };
+module.exports = { slits, nearestFree, TOWNS, PROPS, BANDED, ONGROUND, HERO, BODY_HALF, BODY_UP, ovalRing, inRing, spriteBox, png, modelFrom, segs, measure, people, bareGrid, carve, walks, promptRules };
 if (require.main === module) (async () => {
   const W = await import(path.join(ROOT, 'public/act1-hifi/walkable-polygons.js'));
   // ---- FT2 item 2: the walks of before. `--write-base` measures them on the 37de040 files (town.html, town json, walkable json:
@@ -233,7 +237,7 @@ if (require.main === module) (async () => {
     // REACH_TRY='{"millbrook/shopkeeper":{"space":[16,27,20]}}' tries a person's cell / space / spaceMax before it is written to the town json
     for (const n of T.npcs) Object.assign(n, TRY[`${id}/${n.id}`] || {});
     for (const n of T.npcs) { let box = null; try { box = spriteBox(png(await getBuf(`act1-hifi/${n.sheet}`))); } catch (e) { box = [-11, -29, 11, 1.2]; }
-      npcs.push({ id: n.id, x: n.cell[0] * C, y: n.cell[1] * C, reach: M.reach && n.talkReach ? n.talkReach : M.reachS, body: n.body, space: M.space ? n.space : null, also: M.space && /n\.spaceAlso/.test(html) ? n.spaceAlso : null, max: n.spaceMax, note: n.spaceNote || n.bodyNote, box }); }
+      npcs.push({ id: n.id, x: n.cell[0] * C, y: n.cell[1] * C, reach: M.reach && n.talkReach ? n.talkReach : M.reachS, body: n.body, space: M.space ? n.space : null, also: M.space && /n\.spaceAlso/.test(html) ? n.spaceAlso : null, plug: n.spacePlug, max: n.spaceMax, note: n.spaceNote || n.bodyNote, box }); }
     // a keeper behind a counter band shows only above the band's top edge
     if (band) { const k = npcs.find(n => n.id === 'shopkeeper'); if (k) { const top = Math.min(...band.polygon.filter(p => Math.abs(p[0] * C - k.x) < 20).map(p => p[1] * C)); if (Number.isFinite(top)) k.box = [k.box[0], k.box[1], k.box[2], Math.min(k.box[3], top - k.y)]; } }
     const withBodies = mode => ({ ...base, dynamicBlockers: [...(base.dynamicBlockers || []), ...npcs.flatMap(n => segs(n, M, mode).map((s, i) => ({ id: `npc-${n.id}-${i}`, from: { x: s.x0, y: s.y0 }, to: { x: s.x1, y: s.y1 }, halfWidth: s.hw })))] });
@@ -300,6 +304,19 @@ if (require.main === module) (async () => {
       // T4: the two sprites at every spot where Talk names her
       const lim = n.space && Number.isFinite(n.max) ? n.max : 4, w = worst[n.id] || 0;
       ok(w <= lim, `${id}: the hero's sprite and ${n.id}'s do not overlap where Talk names her`, `worst overlap ${w.toFixed(1)} px${worstAt[n.id] && w ? ` with her feet ${(worstAt[n.id][0] - n.x).toFixed(0)},${(worstAt[n.id][1] - n.y).toFixed(0)} px from theirs` : ''} (allowed ${lim}${lim !== 4 ? ': a lane too narrow for two bodies, see her spaceNote' : ''})`);
+      // FT2 item 5: Talk from every side she can stand on. 72 directions round her feet; in each, the first point 1 px outside her own
+      // space; where the hero can stand there (reachable ground) in front of her or beside her (not behind: the band starts 0.35 cells
+      // north of her feet, approach is from the south by owner rule), the prompt must be hers.
+      // Two people standing close share ground, and there the town names the one she stands nearer to (nearestNpc()'s own rule): that is a
+      // prompt, not a dead spot, and it is counted apart and told.
+      { const all = withBodies('cur'), dead = []; let stood = 0, other = 0;
+        for (let a = 0; a < 72; a++) { const th = a * 5 * Math.PI / 180, ux = Math.cos(th), uy = Math.sin(th); let r = 1; while (r < 90 && dBody(n, n.x + r * ux, n.y + r * uy) < fr + 1) r += 0.5;
+          const x = n.x + r * ux, y = n.y + r * uy; if (r >= 90 || y - n.y < -C * 0.35 || !W.isInsideWalkable({ x, y }, all)) continue;
+          const gx = Math.floor(x / STEP), gy = Math.floor(y / STEP); if (![[0, 0], [1, 0], [0, 1], [1, 1]].some(([dx, dy]) => cur[(gy + dy) * N + gx + dx])) continue;
+          stood++; const nn = nearestNpc(x, y), ss = nearestService(x, y), hers = nn && nn.id === n.id && (isSvc || !ss);
+          if (!hers && nn && nn.id !== n.id && !ss) { other++; continue; }
+          if (!hers) dead.push(`${a * 5} deg (${(x - n.x).toFixed(0)},${(y - n.y).toFixed(0)}: ${ss && !(nn && nn.id === 'healer') ? ss : nn ? 'talk to ' + nn.id : 'no prompt'})`); }
+        ok(!dead.length, `${id}: Talk names ${n.id} from every side she can stand on`, `${stood} of 72 directions have a reachable spot at the edge of her space, in front of or beside her${other ? `; in ${other} of them she stands nearer to a neighbour and Talk names the neighbour` : ''}${dead.length ? `; ${dead.length} without her Talk: ${dead.slice(0, 6).join(', ')}${dead.length > 6 ? ', ...' : ''}` : ''}`); }
       // walking right up to her (the reachable spot of her talk band closest to her), the prompt must be HER (m3)
       if (nearAt[n.id] && !isSvc) { const [x, y] = nearAt[n.id], nn = nearestNpc(x, y), ss = nearestService(x, y);
         ok(nn && nn.id === n.id && !ss, `${id}: walking right up to ${n.id} offers her talk`, `at cell ${(x / C).toFixed(1)},${(y / C).toFixed(1)} the prompt is ${ss ? ss + ' (service)' : nn ? 'talk to ' + nn.id : 'none'}`);
@@ -322,9 +339,29 @@ if (require.main === module) (async () => {
       // FT2 item 1: the direct ways of a town that today's spaces closed stay open WITH ROOM: a walker who keeps ROOM px from every wall and person
       for (const [s, g] of ROOMY[id] || []) { const a = was[s] && was[s][g], mr = measure(W, T, base, M, html, { bare, npcs, room: ROOM }), b = mr.dist[s] ? mr.dist[s][g] : null;
         ok(a != null && b != null && b <= a * LONGER, `${id}: the direct way from the ${s} to the ${g} is open with room`, `a walker who keeps ${ROOM} px from every wall and person (a way ${2 * ROOM} px wide for her feet's centre: her ${2 * fr} px body and ${2 * ROOM} px to spare) walks ${b == null ? 'NO WAY' : b.toFixed(0) + ' px'}; before ${a == null ? 'n/a' : a.toFixed(0) + ' px'} (allowed x${LONGER})`); } }
+    // FT2: is a street closed? Ground that one set of people leaves further from the gate than another set does, by more than FAR px
+    // (FAR: more than the way round one person's space, less than the way round a block), or does not leave reachable at all.
+    const FAR = 120, gateWalks = inside => walks(inside, N, STEP, nearestFree(inside, N, STEP, T.startCell[0] * C, T.startCell[1] * C));
+    const closed = (who, now, ref) => { let gone = 0, far = 0, at = null; for (let k = 0; k < N * N; k++) { if (ref[k] === Infinity) continue; const x = (k % N) * STEP, y = Math.floor(k / N) * STEP;
+        if (who.some(n => Math.min(...segs(n, M, 'cur').map(q => Math.hypot(x - q.x0, y - Math.min(Math.max(y, q.y0), q.y1)) - q.hw)) <= fr + STEP * 1.5)) continue;
+        if (now[k] === Infinity) { gone++; at = at || [+(x / C).toFixed(1), +(y / C).toFixed(1)]; } else if (now[k] > ref[k] + FAR) { far++; at = at || [+(x / C).toFixed(1), +(y / C).toFixed(1)]; } }
+      return { gone, far, at }; };
+    const gateNow = gateWalks(carve(bare, N, STEP, npcs, M, 'cur', fr));
+    // told, not judged: against the 7 px discs of before. A way that a space closes for good is allowed when no walk to a person, shop, save spot or
+    // exit grows past the 1.15 rule (the line above); this says where that happened, for a person to look at.
+    { const { gone, far, at } = closed(npcs, gateNow, gateWalks(carve(bare, N, STEP, npcs, M, 'old', fr)));
+      console.log(`[INFO] ${id}: ground a person's space puts out of reach ${gone * STEP * STEP} px2, more than ${FAR} px further from the gate ${far * STEP * STEP} px2${at ? `, first at cell ${at}` : ''} (against the 7 px discs of before)`); }
     // FT2 item 3: no slits. Ground narrower than her own body (her feet's disc, ${2 * fr} px) that is a way through.
     { const sl = slits(W, base, npcs, M, fr, 2 * fr, WORLD), mine = sl.filter(q => !q.painted);
       for (const q of sl.filter(q => q.painted)) console.log(`[INFO] ${id}: a painted way narrower than ${2 * fr} px beside ${q.who.join('/')} at ${q.at} (as narrow without the people; not counted)`);
+      // FT2 item 4: qok-f2-old=townplace alone (the people and the save spot at their places of before, everything else as today)
+      const back = T.npcs.filter(n => n.id !== 'shopkeeper' && Array.isArray(n.cellOld)).map(n => n.id);
+      if (back.length) { const mo = measure(W, T, base, M, html, { bare, cellOld: back, saveOld: true }), was = BASE[id] || {}, over = [];
+        for (const s of ['gate', 'opening']) for (const [g, a] of Object.entries(was[s] || {})) { if (a == null || g === 'save') continue; const b = mo.dist[s] ? mo.dist[s][g] : null; if (b == null || b > a * LONGER + 1e-6) over.push(`${s} to ${g}: ${a.toFixed(0)} px before, ${b == null ? 'NO WAY' : b.toFixed(0) + ' px'} with the switch`); }
+        ok(!over.length, `${id}: with qok-f2-old=townplace alone no walk is more than ${LONGER} times as long as before`, `${back.join(', ')} at their places of before, ${M.oldBodyAtOld ? 'with the body of before' : 'WITH THE NEW SPACE (the served town.html gives a place of before no body of before)'}${over.length ? ': ' + over.join('; ') : ''}`);
+        // and the switch itself closes nothing: against today's places, the ground is still reached, by a walk from the gate no more than FAR px longer
+        const { gone, far, at } = closed(mo.npcs, gateWalks(mo.inside), gateNow);
+        ok(!gone && !far, `${id}: with qok-f2-old=townplace alone no street is closed`, gone || far ? `${gone * STEP * STEP} px2 of ground can no longer be reached and ${far * STEP * STEP} px2 is more than ${FAR} px further from the gate than without the switch, first at cell ${at}` : `every bit of ground is reached, none more than ${FAR} px further from the gate than without the switch`); }
       ok(!mine.length, `${id}: no slit beside a person (a way through narrower than her ${2 * fr} px body)`, mine.length ? mine.map(q => `beside ${q.who.join('/')} at world px ${q.at}: ${q.long} px long, the way round is ${q.round == null ? 'not within 44 px' : q.round + ' px'}`).join('; ') : ''); }
     // ---- T6
     for (const p of props) {

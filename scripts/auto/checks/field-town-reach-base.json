@@ -1,6 +1,56 @@
 {
  "rev": "37de040",
- "what": "shortest walks in world px on a 2 px grid (field-town-reach.cjs measure()), from the gate (arrival cell), the save spot and the opening spot to every person, the shop, the save spot and the exit line, on the files of this revision",
+ "what": "shortest walks in world px on a 2 px grid (field-town-reach.cjs measure()) on the files of this revision: its ground, its people at their places and its talk bands. From the gate (arrival cell), the opening spot and the save spot to every person, the shop, the save spot and the exit line. She starts from TODAY's save cell (`saveFrom`, read from the working tree when this file was written), so a save spot that was moved on purpose is compared like for like: Port Sapphire's moved 2.4 cells on 2026-11-27 (T10); from its old cell the walks to the Wise Woman and the shop were 22 and 83 px.",
+ "saveFrom": {
+  "greenhollow": [
+   37,
+   34
+  ],
+  "millbrook": [
+   32.62,
+   32.5
+  ],
+  "portSapphire": [
+   34.9,
+   32
+  ],
+  "ironkeep": [
+   30.47,
+   50.78
+  ],
+  "frostwatch": [
+   34.53,
+   42.66
+  ],
+  "hauntedVillage": [
+   34.53,
+   42.66
+  ],
+  "ruinsCamp": [
+   34.53,
+   42.66
+  ],
+  "oasisHaven": [
+   34.53,
+   42.66
+  ],
+  "embersRest": [
+   34.53,
+   42.66
+  ],
+  "cinderwatch": [
+   34.53,
+   42.66
+  ],
+  "lastBastion": [
+   34.53,
+   42.66
+  ],
+  "havensEdge": [
+   34.53,
+   42.66
+  ]
+ },
  "towns": {
   "greenhollow": {
    "gate": {
@@ -66,12 +116,12 @@
     "sailor": 791.7
    },
    "save": {
-    "exit": 438,
-    "wisewoman": 21.7,
-    "healer": 128.5,
-    "shop": 82.8,
-    "drake": 165.5,
-    "sailor": 378.9
+    "exit": 461.3,
+    "wisewoman": 52.1,
+    "healer": 96.6,
+    "shop": 121.3,
+    "drake": 149.9,
+    "sailor": 361.1
    }
   },
   "ironkeep": {
