@@ -27,8 +27,8 @@ const SIZES = [
 // Every screen a run is expected to reach, in order. A screen that is not reached is reported.
 const SCREENS = ['title', 'slots', 'newgame', 'first-arrival',
   'overworld', 'quest-open', 'minimap-folded', 'menu-status', 'menu-items', 'menu-equip', 'menu-equip-pick', 'menu-settings',
-  'battle-start', 'battle-menu', 'quiz-keypad', 'quiz-notepad', 'quiz-wrong', 'float-player', 'float-enemy', 'victory', 'levelup',
-  'quiz-long', 'quiz-shapes', 'quiz4', 'quiz4-long', 'defeat',
+  'battle-start', 'battle-menu', 'quiz-keypad', 'quiz-notepad', 'float-enemy', 'float-player', 'quiz-wrong', 'levelup',
+  'quiz-long', 'quiz-shapes', 'victory', 'quiz4', 'quiz4-long', 'defeat',
   'town-arrive', 'town-talk', 'dialog-1', 'dialog-2', 'shop', 'shop-confirm', 'shop-sell', 'healer', 'town-menu-save', 'town-saved',
   'dungeon-prompt', 'dungeon', 'crystal-menu', 'dungeon-act1', 'dungeon-chest',
   'boss-room', 'boss-start', 'boss-menu', 'boss-win', 'boss-after',
@@ -202,7 +202,7 @@ async function partField(S) {
   // right answer with a weak arm (the enemy survives: a number floats off it), wrong on its turn (a number floats off the hero),
   // wrong on ours (typed answer struck out), then strong and right until the win
   let seen = {}; const onMsg = async (tx, st) => { const lv = st.bv === 'lvl', vic = st.bv === 'win';
-    if (vic && !seen.vic) { seen.vic = 1; await S.shoot('victory', { hold: true, settle: 250 }); } if (lv && !seen.lv) { seen.lv = 1; await S.shoot('levelup', { hold: true, settle: 250 }); } };
+    if (lv && !seen.lv) { seen.lv = 1; await S.shoot('levelup', { hold: true, settle: 250 }); } };   // this win levels her up: the Victory beat gives way to "Level 5!" after a moment, so Victory is photographed in the next fight
   await answer(S, true); if (await waitDmg(page)) await S.shoot('float-enemy', { freeze: true, hold: true });
   let s = await nextQuiz(S, onMsg);
   for (let i = 0; i < 14 && s.on && s.q; i++) {
@@ -221,8 +221,9 @@ async function partField(S) {
   log('battle', await launchBattle(page, 'rabbit', 'greenhollow-plains'));
   await fight(S); if ((await bst(page)).q) { await S.shoot('quiz-long'); await answer(S, false); }
   s = await nextQuiz(S); if (s.q) { await S.shoot('quiz-shapes'); await answer(S, true); }
-  s = await nextQuiz(S); for (let i = 0; i < 5 && s.on && s.q; i++) { await answer(S, true); s = await nextQuiz(S); }
-  await until(S, s => !s.on, 20000); await page.waitForTimeout(1000); await dismissField(S);
+  const onWin = async (tx, st) => { if (st.bv === 'win' && !seen.vic) { seen.vic = 1; await S.shoot('victory', { hold: true, settle: 250 }); } };
+  s = await nextQuiz(S, onWin); for (let i = 0; i < 5 && s.on && s.q; i++) { await answer(S, true); s = await nextQuiz(S, onWin); }
+  await until(S, s => !s.on, 20000, onWin); await page.waitForTimeout(1000); await dismissField(S);
   // ---- the four-button quiz (switch qok-keypad=0)
   await page.evaluate(() => localStorage.setItem('qok-keypad', '0'));
   await setQuestions(page, [QS.normal, long, QS.normal]);
@@ -257,8 +258,12 @@ async function walkIntoBattle(S, ms = 25000) {
   const page = S.page, t0 = Date.now();
   await page.evaluate(() => { window.__DQ_STICK__ = { x: 0, y: -1, m: 1 }; });
   try { while (Date.now() - t0 < ms) {
-    const st = await page.evaluate(() => { const g = window.__PHASER_GAME__, w = g.scene.getScene('WorldMapScene'), on = g.scene.isActive('BattleScene'); if (on) { try { g.scene.getScene('BattleScene').time.paused = true; } catch (e) {} } return { on, msg: !!(w && w.showingMessage) }; }).catch(() => ({}));
-    if (st.on) return true; if (st.msg) { await page.keyboard.press('z'); await page.waitForTimeout(250); } else await page.waitForTimeout(80);
+    // one page task decides and acts: a story box is closed with a Z key event only while no battle is up, so the key can never land in the battle's opening
+    const st = await page.evaluate(() => { const g = window.__PHASER_GAME__, w = g.scene.getScene('WorldMapScene'), on = g.scene.isActive('BattleScene');
+      if (on) { try { g.scene.getScene('BattleScene').time.paused = true; } catch (e) {} return { on }; }
+      if (w && w.showingMessage) { for (const t of ['keydown', 'keyup']) window.dispatchEvent(new KeyboardEvent(t, { key: 'z', code: 'KeyZ', keyCode: 90, which: 90, bubbles: true })); return { on, msg: true }; }
+      return { on }; }).catch(() => ({}));
+    if (st.on) return true; await page.waitForTimeout(st.msg ? 250 : 80);
   } } finally { await page.evaluate(() => { window.__DQ_STICK__ = { x: 0, y: 0, m: 0 }; }).catch(() => {}); }
   return false;
 }

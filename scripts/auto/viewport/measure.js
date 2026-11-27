@@ -41,6 +41,9 @@ async (o) => {
     const m = /rgba?\(([^)]+)\)/.exec(s.backgroundColor || ''); if (m) { const v = m[1].split(/[,/ ]+/).map(Number); if ((v.length < 4 ? 1 : v[3]) > 0.55) return true; } return false; };
   const related = (a, b) => a === b || a.contains(b) || b.contains(a);
   const big = b => b.width * b.height >= 0.8 * W * H || (b.width >= 0.98 * W && b.height >= 0.6 * H);
+  // a cover: most of the screen, or the whole of a full-height column (the tap-to-continue layer of the centred battle column on a wide screen)
+  const isCover = el => { const b = el.getBoundingClientRect(); if (big(b)) return true; const p = el.parentElement; if (!p) return false; const q = p.getBoundingClientRect();
+    return q.height >= 0.9 * H && q.width >= 0.5 * W && b.width >= 0.97 * q.width && b.height >= 0.9 * q.height; };
 
   // ---- page scroll
   const se = document.scrollingElement || document.documentElement;
@@ -60,7 +63,7 @@ async (o) => {
     for (const el of F.doc.body.querySelectorAll('*')) { if (cand.has(el)) continue; const s = cs(el, F); if (s.cursor === 'pointer' && (!el.parentElement || cs(el.parentElement, F).cursor !== 'pointer')) cand.add(el); }
     for (const el of cand) {
       if (!shown(el, F)) continue; const s = cs(el, F); if (s.pointerEvents === 'none' || el.disabled) continue;
-      const b = el.getBoundingClientRect(); if (b.width < 1 || b.height < 1) continue; if (big(b)) continue;
+      const b = el.getBoundingClientRect(); if (b.width < 1 || b.height < 1) continue; if (isCover(el)) continue;
       if (/Noop$/.test(el.getAttribute('data-act') || '')) continue;      // card bodies that only swallow a tap
       if (el.tagName === 'DIV' && [...cand].some(c => c !== el && el.contains(c) && shown(c, F)) && !el.getAttribute('data-act')) continue;   // a pointer container around real buttons
       const cx = b.left + b.width / 2, cy = b.top + b.height / 2;
@@ -71,7 +74,7 @@ async (o) => {
         if (ps.overflowY !== 'visible') { if (pb.t > rr.t + 1 || pb.b < rr.b - 1) cutBy = p; rr.t = Math.max(rr.t, pb.t); rr.b = Math.min(rr.b, pb.b); } if (ps.overflowX !== 'visible') { if (pb.l > rr.l + 1 || pb.r < rr.r - 1) cutBy = p; rr.l = Math.max(rr.l, pb.l); rr.r = Math.min(rr.r, pb.r); } }
       if (rr.b - rr.t < 1 || rr.r - rr.l < 1) continue;   // scrolled out of its list
       if (!hitAt(cx, cy)) { const e = F.doc.elementFromPoint(cx, cy);   // under a full-screen cover, the notepad slate or the edge of the grade wheel: not a defect
-        let modal = false, m = e; while (m && !m.contains(el)) { if (big(m.getBoundingClientRect())) modal = true; m = m.parentElement; }
+        let modal = false, m = e; while (m && !m.contains(el)) { if (isCover(m)) modal = true; m = m.parentElement; }
         if (e && !modal && !e.closest('#qok-notepad') && !el.closest('#qok-gwheel')) issue('tap-covered', el, F, { by: sig(e, F), at: [r1(cx + F.ox), r1(cy + F.oy)] }, el.innerText); continue; }
       const ext = (dx, dy) => { let k = 0; while (k < 24 && hitAt(cx + dx * (k + 0.5), cy + dy * (k + 0.5))) k++; return k; };
       const ew = ext(-1, 0) + ext(1, 0), eh = ext(0, -1) + ext(0, 1);   // hittable extent around the centre, capped at 48
@@ -114,7 +117,7 @@ async (o) => {
         for (const [x, y] of pts) { if (x < 0 || y < 0 || x >= F.win.innerWidth || y >= F.win.innerHeight) continue; const e = F.doc.elementFromPoint(x, y); if (!e || related(e, el)) continue;
           let c = e, painted = null; while (c && !c.contains(el)) { if (shown(c, F) && paints(c, F)) painted = c; c = c.parentElement; }
           if (!painted) { if (/\S/.test(e.textContent || '') && e.children.length === 0) painted = e; else continue; }
-          let m = painted, modal = false; while (m && !m.contains(el)) { if (big(m.getBoundingClientRect())) modal = true; m = m.parentElement; }
+          let m = painted, modal = false; while (m && !m.contains(el)) { if (isCover(m)) modal = true; m = m.parentElement; }
           if (modal) { under = true; break; } cover = cover || e; }
         // a frame's own content can sit under a cover of the parent document
         if (!under && F.ox + F.oy >= 0 && F !== frames[0]) { const e = document.elementFromPoint((q0.left + q0.width / 2) + F.ox, (q0.top + q0.height / 2) + F.oy); if (e && e.tagName !== 'IFRAME') { let c = e, p = null; while (c && c !== document.body) { if (paints(c, frames[0]) && shown(c, frames[0])) p = c; c = c.parentElement; } if (p) { if (big(p.getBoundingClientRect())) under = true; else cover = cover || e; } } }
@@ -178,6 +181,9 @@ async (o) => {
         if (!inTown) G.hero = { l: sx(hb.left), t: sy(hb.top), r: sx(hb.right), b: sy(hb.bottom), w: hb.width * cam.zoom, h: hb.height * cam.zoom };
         if (!inTown && cam.useBounds && cam._bounds && (cam.worldView.width > cam._bounds.width + 2 || cam.worldView.height > cam._bounds.height + 2)) issues.push({ rule: 'map-smaller-than-view', sig: 'camera', n: { view: [r1(cam.worldView.width), r1(cam.worldView.height)], map: [cam._bounds.width, cam._bounds.height] } });
         metrics.camera = { zoom: r1(cam.zoom * 100) / 100, view: [r1(cam.worldView.width), r1(cam.worldView.height)], map: w.currentMapId, bounds: cam._bounds ? [cam._bounds.x, cam._bounds.y, cam._bounds.width, cam._bounds.height] : null, useBounds: !!cam.useBounds }; } } } catch (e) { metrics.cameraErr = String(e).slice(0, 80); }
+  // the hero against the screen: the same person should not be a speck on one tablet and a quarter of the screen on another (phones: 15 to 18% of the short side)
+  if (G.hero && metrics.heroDbg && metrics.heroDbg.vis) { const hw = G.hero.r - G.hero.l, hh = G.hero.b - G.hero.t, short = Math.min(W, H), n = { hero: [r1(hw), r1(hh)], ofShortSide: r1(100 * hw / short), ofHeight: r1(100 * hh / H), zoom: ((metrics.heroDbg.inTown ? metrics.town : metrics.camera) || {}).zoom };
+    if (hh > 0.2 * H) issues.push({ rule: 'hero-scale', sig: 'large', n }); else if (hw < 0.11 * short) issues.push({ rule: 'hero-scale', sig: 'small', n }); }
   const names = Object.keys(G), hit = (a, b) => { const dx = Math.min(a.r, b.r) - Math.max(a.l, b.l), dy = Math.min(a.b, b.b) - Math.max(a.t, b.t); return dx > 3 && dy > 3 ? dx * dy : 0; };
   const FIELD = ['hp', 'compass', 'minimap', 'floor', 'quests', 'dialog', 'saved', 'tabs', 'stick', 'prompt', 'townPill', 'questCard', 'toast', 'hero'];
   const BATTLE = ['enemy', 'enemyCard', 'battleHud', 'keypad', 'msg', 'notepad'];

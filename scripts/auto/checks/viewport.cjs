@@ -15,6 +15,7 @@
 // the page (scripts/auto/viewport/measure.js): text clipped by its box or the screen, text or buttons covered by
 // another piece, HUD pieces / joystick / hero overlapping, tap targets under 44 x 44, text under 12 px, page
 // scroll, forms that need scrolling, art that is stretched or missing, black bars, the map not filling the view,
+// the hero far smaller or larger against the screen than on a phone,
 // and text or buttons inside the device's safe-area insets (simulated: Emulation.setSafeAreaInsetsOverride).
 //
 // Known failures: scripts/auto/viewport/known-fails.json lists every failure measured on 2026-11-27, by size,
@@ -33,7 +34,7 @@ const ALL = [];
 for (const s of V.SIZES) ALL.push(s.id);
 for (const s of V.SIZES) for (const l of s.langs) if (l !== 'en') ALL.push(s.id + ':' + l);
 const RULES = ['page-scroll', 'scrolls', 'text-clipped', 'text-off-screen', 'text-covered', 'text-small', 'tap-small', 'tap-covered', 'tap-off-screen', 'tap-unreachable', 'overlap',
-  'safe-top', 'safe-bottom', 'safe-left', 'safe-right', 'img-broken', 'img-stretched', 'bg-stretched', 'black-bar', 'inset-band', 'map-smaller-than-view', 'debug-ui', 'measure-error'];
+  'safe-top', 'safe-bottom', 'safe-left', 'safe-right', 'img-broken', 'img-stretched', 'bg-stretched', 'black-bar', 'inset-band', 'map-smaller-than-view', 'hero-scale', 'debug-ui', 'measure-error'];
 
 function runner() {
   const { spawnSync } = require('child_process');
