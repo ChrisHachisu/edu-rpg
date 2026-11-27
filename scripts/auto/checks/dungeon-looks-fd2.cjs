@@ -157,7 +157,12 @@ async function storm(page) {
       const now = await grabCells(); await page.evaluate(() => { const S = window.__QOK_DNG2__.ctx().state; S.clk = S.__fd2Clk; }); await thaw(page); let d = 0; for (let i = 0; i < Math.min(base.length, now.length); i++) d += (Math.abs(now[i][0] - base[i][0]) + Math.abs(now[i][1] - base[i][1]) + Math.abs(now[i][2] - base[i][2])) / 3;
       vis[k] = base.length ? +(d / base.length).toFixed(1) : null; } }
   F.info('stormreach warning visibility: mean colour change on the warned cells at 95 %, 66 %, 33 % of the warning time left, the pulse at its middle', JSON.stringify(vis) + ' (clock moved by ' + mids.join(', ') + ' ticks to the middle of the pulse)');
-  const OLD = { 0.95: 24.8, 0.66: 35.6, 0.33: 46.0 };                       // the old square cells measured the same way (37de040, mean of two runs: the pulse makes a single frame vary by +-6; the middle value is the old tree's own 35.6 again). With the pulse at its middle the old tree on :5570 reads 22.5, 35.4 and 34.2, today's look 31.6, 40.6 and 45.7 (two runs each)
+  // The baseline. 24.8 and 35.6 are the numbers first taken from the old square cells (37de040); they were read at a random
+  // moment of the pulse and sit on its bright side. Read as here, at the middle of the pulse with no group active in the
+  // calm picture, the old tree on :5570 gives 20.3, 30.9 and 42.0 (two runs, +-0.2) and today's look 31.1, 37.6 and 43.7
+  // (three runs, +-0.2). The late stage is held to the old tree's own 42.0: the 46.0 used before was a bright-side reading
+  // of the old cells, which the old tree itself does not reach at the middle of its pulse.
+  const OLD = { 0.95: 24.8, 0.66: 35.6, 0.33: 42.0 };
   F.ok(Object.keys(OLD).every(k => vis[k] !== undefined && vis[k] !== null && vis[k] >= OLD[k] * 0.95), 'Stormreach: the warning is at least as visible as the old square cells at every stage', JSON.stringify({ now: vis, old: OLD }));
   // pictures: a late moment of a warning, and a strike
   if (SHOTS) {
