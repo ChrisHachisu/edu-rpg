@@ -1044,10 +1044,10 @@
     return (v && VIRTUAL[v] && VIRTUAL[v].mapId === mapId) ? v : mapId;
   };
   function text(k) {
-    var row = k && M && M.strings && M.strings[k]; if (!row) return null;
-    var p = pstate();
-    if (!p || p.locale !== 'ja') return row.en;
-    return p.kanjiMode ? row.jaKanji : row.ja;
+    var row = k && M && M.strings && M.strings[k];
+    if (!row) { var fx = k && W_FIX[k]; if (!fx) return null; var m = wMode(); return (m === 'kj' ? fx.kj : m === 'ja' ? fx.ja : fx.en) || fx.en || null; }
+    var p = pstate(), md = wMode();
+    return wTerms(!p || p.locale !== 'ja' ? row.en : (p.kanjiMode ? row.jaKanji : row.ja), md);
   }
   var GEO_KEYS = null;   // not GEO: that name is the migration flag below
   function geoText(t) {
@@ -1063,17 +1063,171 @@
   // translate function for 'map.<engine map id>'. Inside a hosted town that is the HOST's name, so
   // the exposed function is wrapped: the hosted town's own name while she is in it, and the index's
   // text for any key the bundle does not know. The bundle's own closure is not touched.
+  // ---------------------------------------------------------------- words (text fixes, day 4)
+  // The bundle's text tables are closed over (Z reads `Ba[locale][key]` and the kanji table `Da`), so a
+  // wrong string cannot be edited there. These rows and terms are applied on the way OUT instead, at the
+  // three places a player's text passes:
+  //   1. window.__QOK.Z (the wrapper below): ui-overhaul.js, dq-tiles.js, the town frame's strings and
+  //      the dungeon modules ask for text through it.
+  //   2. Phaser's Text.setText: every message box, sign, banner and battle line the bundle writes with its
+  //      own (unreachable) Z. A row replaces a string that is EXACTLY the bundle's text for its key in the
+  //      player's language; a missing key's "[key]" is replaced wherever it stands in the text.
+  //   3. text(k) below: a key no table knows (npc.oasisElder.name) is answered from the rows, like a
+  //      hosted town's own strings.
+  // W_FIX rows are { en, ja (kana), kj (kanji) }, any of them left out = the bundle's text stays.
+  // W_TERMS give ONE name to a thing the bundle calls by several (docs: autoloop/day4/words/REPORT-T.md).
+  // Both are checked by scripts/auto/checks/words.cjs. The kill switch (qok-multiact-hifi=0) removes them.
+  var W_FIX = {
+    'npc.mercenary': { kj: '山賊の 親分が 東の 洞窟に 隠れているらしい。みんな 探したが 見つからなかった。隠し部屋が あるに ちがいない。罠も たくさん しかけてあるそうだ。気をつけろ。' },
+    'npc.skyKeeper': { ja: 'とうの てっぺんに ストームセンチネルが おる。ゲイルシールドを まもっておるのじゃ。ゆうかんな ものだけが たどりつけるぞ。' },
+    'sign.oasisHavenFork': { ja: '← オアシスのやかた\n↓ さんぞくのアジト\n↑ やけたいせき', kj: '← オアシスの館\n↓ 山賊のアジト\n↑ 焼けた遺跡' },
+    'dungeon.banditHideout.spikeTrap': { ja: 'わなを ふんだ！ゆかから トゲが とびだした！', kj: '罠を 踏んだ！床から トゲが 飛び出した！' },
+    'mechanic.pitFall': { en: 'You fell into a pit!', ja: 'あなに おちてしまった！', kj: '穴に 落ちてしまった！' },
+    'mechanic.pitTreasure': { en: 'You found treasure in the pit!', ja: 'あなの なかで たからを みつけた！', kj: '穴の 中で 宝を 見つけた！' },
+    'mechanic.lavaDamage': { en: 'The lava burns!', ja: 'ようがんで やけどした！', kj: '溶岩で やけどした！' },
+    'dungeon.frostfallCavern.plaque': { en: 'The ice moves when you push it... shape your own path.', ja: 'こおりは おせば うごく…じぶんで みちを つくれ。', kj: '氷は 押せば 動く…自分で 道を つくれ。' },
+    'npc.villager1.name': { en: 'Villager', ja: 'むらびと', kj: '村人' },
+    'npc.villager2.name': { en: 'Villager', ja: 'むらびと', kj: '村人' },
+    'npc.oasisElder.name': { en: 'Oasis Elder', ja: 'オアシスの ちょうろう', kj: 'オアシスの長老' },
+    'gameover.restart_save': { ja: 'セーブポイントから つづける', kj: 'セーブポイントから 続ける' },
+    'npc.survivor': {
+      en: 'I barely escaped the Bandit Hideout alive. Listen carefully: the place is full of tripwires and pressure plates. When you see a wire glint, tap the Cut button before you step on it. One wrong step and the whole corridor comes down on you.',
+      ja: 'かろうじて さんぞくの アジトから にげのびたよ。よく きいてくれ。なかは トリップワイヤーと ふむと うごく ゆかだらけだ。ワイヤが きらめいたら ふむ まえに「ワイヤを きる」を おすんだ。いっぽ まちがえたら つうろが くずれるぞ。',
+      kj: 'かろうじて 山賊の アジトから 逃げのびたよ。よく 聞いてくれ。中は トリップワイヤーと 踏むと 動く 床だらけだ。ワイヤが きらめいたら 踏む 前に「ワイヤを 切る」を 押すんだ。一歩 間違えば 通路が 崩れるぞ。' },
+    'npc.gordo.greeting': {
+      ja: 'おう、わしの かじばへ ようこそじゃ！わしは ゴルド、4つの くにで いちばんの かじやじゃ。ぶきや ぼうぐなら まかせとけ！',
+      kj: 'おう、わしの 鍛冶場へ ようこそじゃ！わしは ゴルド、4つの 国で 一番の 鍛冶屋じゃ。武器や 防具なら 任せとけ！' },
+    'dungeon.coastalReef.boss.defeat': { ja: 'サンゴのきょじんが すなと かいがらに くずれた…いわばが しずまった。', kj: '珊瑚の巨人が 砂と 貝殻に 崩れた…岩場が 静まった。' },
+    'dungeon.coastalReef.victory': { ja: 'いわばに へいわが もどった。しおが ひき かくされた つうろが あらわれた！', kj: '岩場に 平和が 戻った。潮が 引き 隠された 通路が 現れた！' },
+    'map.stormreachIsles': { ja: 'ストームリーチしょとう', kj: 'ストームリーチ諸島' },
+    'map.stormreachVillage': { ja: 'ストームリーチの むら', kj: 'ストームリーチの 村' },
+    'map.stormreachSpire': { ja: 'ストームリーチの とう', kj: 'ストームリーチの 塔' },
+    'map.frostfallPeaks': { ja: 'フロストフォールさんみゃく', kj: 'フロストフォール山脈' },
+    'map.frostfallVillage': { ja: 'フロストフォールの むら', kj: 'フロストフォールの 村' },
+    'map.frostfallCavern': { ja: 'フロストフォールの どうくつ', kj: 'フロストフォールの 洞窟' },
+    'map.sunkenTempleIsle': { ja: 'こだいしんでんの しま', kj: '古代神殿の 島' },
+    'map.sunkenTempleVillage': { ja: 'こだいしんでんの むら', kj: '古代神殿の 村' },
+    'map.sunkenTempleDungeon': { ja: 'こだいしんでん', kj: '古代神殿' },
+    'map.twilightRealm': { ja: 'トワイライトの くに', kj: 'トワイライトの 国' },
+    'map.twilightVillage': { ja: 'トワイライトの むら', kj: 'トワイライトの 村' },
+    'map.twilightDungeon': { ja: 'トワイライトの せいいき', kj: 'トワイライトの 聖域' },
+    'item.holyAmulet.desc': { ja: 'やみの ベールを つらぬく いにしえの おまもり。' },
+    'dungeon.sunkenTempleDungeon.plaque': { ja: 'いにしえの おまもりの ひかりだけが ぼうれいの ベールを つらぬける…' },
+    'dungeon.obsidianCavern.boss.dialog3': { ja: 'すいしょうヒドラが みっつの こえで ほえた！たたかいの じゅんびを！', kj: '水晶ヒドラが 三つの 声で ほえた！戦いの 準備を！' },
+    'npc.sailor.act5done': { ja: 'どこでも あんぜんな たびだぜ！まおうは もういねえ！', kj: 'どこでも 安全な 旅だぜ！魔王は もういねえ！' },
+    'quest.demonBarracksQuest.title': { ja: 'まぞくの へいしを へらせ', kj: '魔族の 兵士を 減らせ' },
+    'equip.sandstormCloak.desc': { ja: 'さばくの かぜで おられた マント。ほのおも こおりも かぜも ふせぐ。' }
+  };
+  // [from, to] in the order they run. en: English; ja: kana (and kana left in kanji mode); kj: kanji only.
+  var W_TERMS = {
+    en: [[/Darkfang Grotto/g, 'Misty Grotto'], [/Flame Cloak/g, 'Magma Cloak'], [/Ironkeep Fortress/g, 'Ironkeep'],
+      [/Crystal of Wisdom/g, 'Crystal of Math Knowledge'], [/crabs in the basement/g, 'crabs in the cellar'], [/across 4 lands/g, 'across four lands']],
+    ja: [[/くらやみのどうくつ/g, 'きりのどうくつ'], [/かいがんのさんごしょう/g, 'さんごのいわば'], [/さんごしょう/g, 'さんごのいわば'],
+      [/アイアンキープようさい/g, 'アイアンキープ'], [/トリップワイヤ(?!ー)/g, 'トリップワイヤー'], [/ほのおのマント/g, 'マグマのマント'],
+      [/かじし(?=[のにをがはも])/g, 'かじのおやかた'], [/ちえのクリスタル/g, 'さんすうのクリスタル'], [/こだい しんでん/g, 'こだいしんでん'],
+      [/えいちのかんむり/g, 'ちえのかんむり'], [/まものが てごわい/g, 'モンスターが てごわい']],
+    kj: [[/暗闇の洞窟/g, '霧の洞窟'], [/海岸の珊瑚礁/g, '珊瑚の岩場'], [/珊瑚礁/g, '珊瑚の岩場'], [/アイアンキープ要塞/g, 'アイアンキープ'],
+      [/炎のマント/g, 'マグマのマント'], [/鍛冶師/g, '鍛冶の親方'], [/知恵のクリスタル/g, '算数のクリスタル'], [/古代 神殿/g, '古代神殿'],
+      [/叡智の冠/g, '知恵の冠'], [/魔物が 手ごわい/g, 'モンスターが 手ごわい'], [/皮の鎧/g, '革の鎧'], [/皮で 作った鎧/g, '革で 作った鎧'], [/皮の帽子/g, '革の帽子'],
+      [/大王烏賊/g, 'クラーケン'], [/海月/g, 'クラゲ'], [/飛竜/g, 'ワイバーン'], [/洞窟蜘蛛/g, '洞窟ぐも'], [/嵐の猛禽/g, 'ストームラプター'],
+      [/闇狼/g, '闇おおかみ'], [/氷狼/g, '氷おおかみ'], [/嵐の番人/g, 'ストームセンチネル']]
+  };
+  var W_MODE = null, W_REV = null, W_RULES = null, W_RULES_MODE = '', W_CACHE = {}, W_NCACHE = 0;
+  function rawZ() { var q = window.__QOK, z = q && q.Z; return z && (z.__base || z); }
+  // 'en' | 'ja' | 'kj', from the bundle's own language and the kanji flag (the kanji table answers a
+  // kanji-only key with kanji, so one probe key tells which table is live).
+  function wMode() {
+    var q = window.__QOK, z = rawZ(), loc = 'en';
+    try { loc = q && typeof q.loc === 'function' ? q.loc() : 'en'; } catch (e) {}
+    if (loc !== 'ja' || typeof z !== 'function') return 'en';
+    var probe = ''; try { probe = z('menu.items'); } catch (e) {}
+    return /[一-鿿]/.test(probe) ? 'kj' : 'ja';
+  }
+  function wRules(mode) {
+    if (W_RULES_MODE === mode && W_RULES) return W_RULES;
+    W_RULES_MODE = mode; W_CACHE = {}; W_NCACHE = 0;
+    W_RULES = mode === 'en' ? W_TERMS.en : (mode === 'ja' ? W_TERMS.ja : W_TERMS.ja.concat(W_TERMS.kj));
+    return W_RULES;
+  }
+  function wTerms(s, mode) {
+    if (typeof s !== 'string' || s.length < 2) return s;
+    var rules = wRules(mode), c = W_CACHE[s]; if (c !== undefined) return c;
+    var t = s; for (var i = 0; i < rules.length; i++) { rules[i][0].lastIndex = 0; t = t.replace(rules[i][0], rules[i][1]); }
+    if (W_NCACHE > 600) { W_CACHE = {}; W_NCACHE = 0; }
+    W_CACHE[s] = t; W_NCACHE++; return t;
+  }
+  function wRow(k, mode) { var r = W_FIX[k]; return r && typeof r[mode] === 'string' ? r[mode] : null; }
+  function wParams(t, p) { if (p && typeof t === 'string') for (var i in p) if (Object.prototype.hasOwnProperty.call(p, i)) t = t.split('{' + i + '}').join(String(p[i])); return t; }
+  // The bundle's own text for each row's key, in the live language: a string that is exactly this is replaced.
+  function wRev(mode) {
+    if (W_REV && W_REV.mode === mode) return W_REV;
+    var z = rawZ(), m = {}; W_REV = { mode: mode, map: m };
+    if (typeof z !== 'function') return W_REV;
+    for (var k in W_FIX) { var to = wRow(k, mode); if (to === null) continue; var old = null; try { old = z(k); } catch (e) {} if (typeof old === 'string' && old !== to) m[old] = to; }
+    return W_REV;
+  }
+  var W_KEY = /\[((?:mechanic|dungeon|npc|sign|map|quest)\.[A-Za-z0-9_.]+)\]/g;
+  // Shown text (Phaser setText, a message): an exact bundle row, then any "[key]" a row answers, then terms.
+  function wText(s) {
+    if (typeof s !== 'string' || s.length < 2) return s;
+    var mode = wMode(), hit = wRev(mode).map[s]; if (hit !== undefined) return hit;
+    if (s.indexOf('[') >= 0 && s.indexOf('.') > 0) s = s.replace(W_KEY, function (all, k) { var r = wRow(k, mode); return r === null ? all : r; });
+    return wTerms(s, mode);
+  }
+  // Four English strings that live in markup of files this layer does not own (dq-tiles.js's loading veil,
+  // town.html's dialogue hint). A MutationObserver on each element puts the player's language over them
+  // before the frame is painted. The clean fix is a locale branch in those files (FOR-THE-LEAD.md).
+  var W_DOM = {
+    'Loading the world...': { ja: 'せかいを よみこんでいます…', kj: '世界を 読み込んでいます…' },
+    'The world could not load.': { ja: 'せかいを よみこめませんでした。', kj: '世界を 読み込めませんでした。' },
+    'Retry': { ja: 'もういちど', kj: 'もう一度' },
+    'Tap to close': { ja: 'タップで とじる', kj: 'タップで 閉じる' }
+  };
+  var W_DOM_BACK = {}; for (var wd in W_DOM) { W_DOM_BACK[W_DOM[wd].ja] = wd; W_DOM_BACK[W_DOM[wd].kj] = wd; }
+  function wDomSet(el) {
+    var t = el.textContent, mode = wMode(), en = W_DOM[t] ? t : W_DOM_BACK[t];
+    if (!en) return;
+    var want = mode === 'en' ? en : W_DOM[en][mode];
+    if (want !== t) el.textContent = want;
+  }
+  function wDomWatch(el) {
+    if (!el || el.__wordsDom) return; el.__wordsDom = true;
+    wDomSet(el);
+    try { new MutationObserver(function () { wDomSet(el); }).observe(el, { childList: true, characterData: true, subtree: true }); } catch (e) {}
+  }
+  function wDomScan() {
+    wDomWatch(document.getElementById('a1a-veil-text')); wDomWatch(document.getElementById('a1a-veil-retry'));
+    var fr = document.getElementsByTagName('iframe');
+    for (var i = 0; i < fr.length; i++) { try { var d = fr[i].contentDocument; if (d) wDomWatch(d.querySelector('#dialogue small')); } catch (e) {} }
+  }
+  var W_PHASER = false;
+  function wordsInstall() {
+    wrapText(); wDomScan();
+    if (W_PHASER) return;
+    var P = window.Phaser, T = P && P.GameObjects && P.GameObjects.Text;
+    if (!T || !T.prototype || typeof T.prototype.setText !== 'function' || T.prototype.setText.__words) return;
+    var orig = T.prototype.setText;
+    var f = function (v) { if (typeof v === 'string') { try { v = wText(v); } catch (e) {} } return orig.call(this, v); };
+    f.__words = true; T.prototype.setText = f; W_PHASER = true;
+  }
+  window.__QOK_WORDS__ = { fix: W_FIX, terms: W_TERMS, mode: function () { return wMode(); }, text: wText };
+
   function wrapText() {
     var q = window.__QOK;
     if (!q || typeof q.Z !== 'function' || q.Z.__acts) return;
     var base = q.Z;
     var f = function (k) {
-      if (typeof k === 'string' && k.indexOf('map.') === 0) {
+      if (typeof k === 'string' && k.indexOf('map.') === 0 && M) {
         var v = currentVirtual();
         if (v && VIRTUAL[v] && k === 'map.' + VIRTUAL[v].mapId) { var own = text('map.' + v); if (own) return own; }
       }
       var r = base.apply(this, arguments);
-      if (M.strings && M.strings[k] && (r === k || (typeof r === 'string' && r.charAt(0) === '['))) { var t = text(k); if (t) return t; }
+      if (typeof k === 'string' && typeof r === 'string') {
+        if (M && M.strings && M.strings[k] && (r === k || r.charAt(0) === '[')) { var t = text(k); if (t) return t; }
+        var md = wMode(), fx = wRow(k, md);
+        if (fx !== null) return wParams(fx, arguments[1]);
+        r = wTerms(r, md);
+      }
       return r;
     };
     f.__acts = true; f.__base = base; q.Z = f;
@@ -1540,12 +1694,13 @@
   var ovReady = false;
   function tick() {
     loadIndex();
+    try { wordsInstall(); } catch (e) {}
     var s = scene(), g = game();
     if (!M || !s) return;
     ticks++;
     try { snapTick(s); } catch (e) {}
     if (!ovReady) { ovReady = true; ovInit(); gatesInit(); }
-    wrap(s); wrapZone(); wrapText(); wrapCoverage(); minimap();
+    wrap(s); wrapZone(); wrapCoverage(); minimap();
     if (QR_ON) { try { questTick(s); } catch (e) { stats.questErrors = (stats.questErrors || 0) + 1; } }
     schedule(s);
     var on = s.currentMapId === 'overworld' && s.sys && s.sys.isActive() && !!s.mapData && s.mapData.length === GH;

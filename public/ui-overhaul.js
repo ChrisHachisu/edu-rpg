@@ -3867,7 +3867,7 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
     h += '<button class="btn ' + (d.boss ? 'btn-slate' : 'btn-gold') + '" data-act="defeatTown" style="width:100%;font-size:18px;">' +
       esc(ja ? (town + (kj ? 'に 戻る' : 'に もどる')) : ('Return to ' + town)) + '</button>' +
       '<div class="go-note">' + esc(t3('Full HP. You keep everything except half your gold (' + d.goldLost + ' G).',
-        'HPは ぜんかい。ゴールドが はんぶんに なる（' + d.goldLost + ' G）。ほかは そのまま。',
+        'HPは まんたんに なる。ゴールドが はんぶんに なる（' + d.goldLost + ' G）。ほかは そのまま。',
         'HPは 全快。ゴールドが 半分に なる（' + d.goldLost + ' G）。ほかは そのまま。')) + '</div>' +
       '<button class="btn btn-slate" data-act="defeatTitle" style="width:100%;font-size:18px;">' + esc(Z('gameover.title_screen')) + '</button>';
     h += '</div></div>';
