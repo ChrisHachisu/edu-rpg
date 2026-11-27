@@ -17,7 +17,7 @@ with open(os.path.join(src, 'index.jsonl')) as f:
 
 def group_of(name, r):
     if name.startswith('battle-'): return 'battles'
-    if name.startswith(('ui-', 'quiz-')): return 'ui'
+    if name.startswith(('ui-', 'quiz-', 'day4-')): return 'ui'
     if name.startswith(('town-',)): return 'towns'
     if name.startswith('ow-gate-'): return 'towns'
     if name.startswith(('mech-', 'dungeon-')): return 'dungeons'
@@ -47,6 +47,17 @@ try:
             for n in t.get('npcs', []):
                 if n.get('walk') != 'arrived' or n.get('near') != n.get('id'): unreached[f"town-{t['id']}-npc-{n['id']}"] = n.get('walk')
 except Exception as e: print('no npc report', e)
+try:
+    with open(os.path.join(src, 'towns-shop-report.jsonl')) as f:
+        for line in f:
+            line = line.strip()
+            if not line: continue
+            t = json.loads(line)
+            for n in t.get('npcs', []):
+                k = f"town-{t['id']}-npc-{n['id']}"
+                if n.get('near') == n.get('id'): unreached.pop(k, None)
+                else: unreached[k] = n.get('walk')
+except Exception as e: print('no shop report', e)
 out, broken = [], []
 for name, r in sorted(rows.items()):
     stem = name[:-4]
@@ -64,6 +75,7 @@ for name, r in sorted(rows.items()):
     if stem in unreached or any(stem.startswith(k + '-') for k in unreached):
         k = stem if stem in unreached else next(k for k in unreached if stem.startswith(k + '-'))
         row['unreached'] = True; row['what'] += f" [NOT REACHED: the town walker returned '{unreached[k]}' for this person, so the Talk button is not showing for them and the hero stands elsewhere]"
+    if r.get('tree'): row['tree'] = r['tree']
     if r.get('flatFrame'): row['flatFrame'] = True; broken.append(stem)
     for k in ('mechanic', 'element', 'role'):
         if r.get(k): row[k] = r[k]
