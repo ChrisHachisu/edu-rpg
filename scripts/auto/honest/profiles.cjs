@@ -1,0 +1,19 @@
+'use strict';
+// The seven simulated children (one place, used by run.cjs and sampler.cjs).
+// g1, g3, g6 are the day 1 profiles (REPORT.md, "Profiles"). gk, g2, g4, g5 (day 4) are INTERPOLATED, not measured on
+// children: right-answer share p, mean thinking time t (log-normal, sd 0.35) and the keypad cost (first key, each further
+// key) move in even steps between the three measured anchors; kindergarten extends the grade 1 to 3 slope one step down.
+// Every number here is an assumption about a child, not an observation.
+const PROFILES = {
+  gk: { grade: 'k', p: 0.65, t: 7,    sd: 0.35 },
+  g1: { grade: '1', p: 0.70, t: 6,    sd: 0.35 },
+  g2: { grade: '2', p: 0.75, t: 5,    sd: 0.35 },
+  g3: { grade: '3', p: 0.80, t: 4,    sd: 0.35 },
+  g4: { grade: '4', p: 0.833, t: 3.67, sd: 0.35 },
+  g5: { grade: '5', p: 0.867, t: 3.33, sd: 0.35 },
+  g6: { grade: '6', p: 0.90, t: 3,    sd: 0.35 },
+};
+const KEYPAD = { gk: { first: 0.7, key: 0.4 }, g1: { first: 0.6, key: 0.35 }, g2: { first: 0.55, key: 0.32 }, g3: { first: 0.5, key: 0.3 }, g4: { first: 0.47, key: 0.28 }, g5: { first: 0.43, key: 0.27 }, g6: { first: 0.4, key: 0.25 } };
+// HONEST_KEYPAD: 'same' (default) typing time and a 3% slip, same knowledge; 'noguess' also no lucky pick among four buttons; 'off' the old four-button child.
+const keypadOf = profile => { const m = process.env.HONEST_KEYPAD || 'same'; return m === 'off' ? null : { ...KEYPAD[profile], slip: 0.03, noGuess: m === 'noguess' }; };
+module.exports = { PROFILES, KEYPAD, keypadOf };

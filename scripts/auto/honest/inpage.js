@@ -164,6 +164,11 @@
       if (stat(it.itemId) > stat(s.equipment[d.type])) continue; const n = it.quantity; s.gold += d.sellPrice * n; p.removeItem(it.itemId, n); (log.sold = log.sold || []).push(it.itemId + (n > 1 ? '*' + n : '')); } };
     log.bag0 = s.inventory.length; sellOld();
     log.upgrades = 0; log.affordable = 0;
+    { // day 4: what the shop offers against her purse, before she buys (cheapest upgrade, best upgrade by ATK+DEF, cheapest heal item)
+      const ups = []; for (const slot of ['weapon', 'armor', 'shield', 'helmet']) for (const d of (o.shop || []).map(id => db[id])) if (d && d.type === slot && stat(d.id) > stat(s.equipment[slot])) ups.push(d);
+      const cheap = ups.slice().sort((a, b) => a.buyPrice - b.buyPrice)[0], top = ups.slice().sort((a, b) => stat(b.id) - stat(a.id) || a.buyPrice - b.buyPrice)[0];
+      const hl = (o.shop || []).map(id => db[id]).filter(d => d && d.type === 'consumable' && d.effect && d.effect.type === 'heal').sort((a, b) => a.buyPrice - b.buyPrice)[0];
+      log.goldShop = s.gold; if (cheap) log.cheapUp = cheap.id + ':' + cheap.buyPrice; if (top) log.bestUp = top.id + ':' + top.buyPrice; if (hl) log.cheapHeal = hl.id + ':' + hl.buyPrice; log.shopHasUp = ups.length; }
     for (const slot of ['weapon', 'armor', 'shield', 'helmet']) {
       const better = (o.shop || []).map(id => db[id]).filter(d => d && d.type === slot && stat(d.id) > stat(s.equipment[slot])).sort((a, b) => stat(b.id) - stat(a.id));
       if (!better.length) continue; log.upgrades++;

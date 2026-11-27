@@ -6,7 +6,7 @@ const fs = require('fs'), path = require('path');
 const DIR = process.argv[2] || process.env.HONEST_DIR || '/home/user/work/honest/runs';
 const OUT = process.argv[3] || '/mnt/project-files/edu-rpg/autoloop/honest/';
 const W = require('./world.cjs').build();
-const PROFILES = ['g1', 'g3', 'g6'], PNAME = { g1: 'grade 1', g3: 'grade 3', g6: 'grade 6' };
+const PROFILES = (process.env.HONEST_PROFILES || 'g1,g3,g6').split(','), PNAME = Object.fromEntries(PROFILES.map(p => [p, p === 'gk' ? 'kindergarten' : 'grade ' + p.slice(1)]));   // HONEST_PROFILES=gk,g2,g4,g5 for day 4
 const mean = a => a.length ? a.reduce((x, y) => x + y, 0) / a.length : null, sum = a => a.reduce((x, y) => x + y, 0);
 const r1 = v => v == null ? '–' : (Math.round(v * 10) / 10).toString(), r0 = v => v == null ? '–' : Math.round(v).toString(), pct = v => v == null ? '–' : Math.round(v * 100) + '%';
 const rng = a => a.length ? (Math.min(...a) === Math.max(...a) ? '' + a[0] : `${Math.min(...a)}–${Math.max(...a)}`) : '–';
@@ -14,7 +14,7 @@ const rng = a => a.length ? (Math.min(...a) === Math.max(...a) ? '' + a[0] : `${
 // ---------------------------------------------------------------- load
 const runs = {};      // variant -> profile -> [ { rep, events, done } ]
 for (const d of fs.existsSync(DIR) ? fs.readdirSync(DIR) : []) {
-  const m = /^(g\d)(?:-([a-z]+))?-r(\d+)$/.exec(d); if (!m) continue; const f = path.join(DIR, d, 'events.jsonl'); if (!fs.existsSync(f)) continue;
+  const m = /^(g[k\d])(?:-([a-z]+))?-r(\d+)$/.exec(d); if (!m) continue; const f = path.join(DIR, d, 'events.jsonl'); if (!fs.existsSync(f)) continue;
   const events = fs.readFileSync(f, 'utf8').split('\n').filter(Boolean).map(l => { try { return JSON.parse(l); } catch (e) { return null; } }).filter(Boolean);
   let ck = null; try { ck = JSON.parse(fs.readFileSync(path.join(DIR, d, 'ckpt.json'), 'utf8')); } catch (e) {}
   const v = m[2] || 'main'; ((runs[v] = runs[v] || {})[m[1]] = runs[v][m[1]] || []).push({ rep: +m[3], events, done: !!(ck && ck.done), forced: ck ? ck.meta.forced : [], next: ck ? ck.next : null });
@@ -100,7 +100,7 @@ function flags(v, p, rows) {
 const agg = {}, allFlags = [];
 for (const v of Object.keys(runs)) { agg[v] = {}; for (const p of PROFILES) if (runs[v][p]) { agg[v][p] = aggregate(runs[v][p]); allFlags.push(...flags(v, p, agg[v][p])); } }
 const meta = { generated: new Date().toISOString(), runsDir: DIR, world: { wander: W.wander, chestDetour: W.chestDetour }, runs: Object.fromEntries(Object.entries(runs).map(([v, o]) => [v, Object.fromEntries(Object.entries(o).map(([p, l]) => [p, l.map(r => ({ rep: r.rep, stops: r.events.length, done: r.done, forced: r.forced }))]))])) };
-const results = { meta, profiles: { g1: { quizDifficulty: '1', pCorrect: 0.70, meanAnswerSec: 6, sd: 0.35 }, g3: { quizDifficulty: '3', pCorrect: 0.80, meanAnswerSec: 4, sd: 0.35 }, g6: { quizDifficulty: '6', pCorrect: 0.90, meanAnswerSec: 3, sd: 0.35 } },
+const results = { meta, profiles: Object.fromEntries(PROFILES.map(p => [p, { quizDifficulty: require('./profiles.cjs').PROFILES[p].grade, pCorrect: require('./profiles.cjs').PROFILES[p].p, meanAnswerSec: require('./profiles.cjs').PROFILES[p].t, sd: 0.35 }])),
   policy: { healAtHpFraction: 0.35, fleeAtHpFraction: 0.2, fleeOnlyWithoutHealItems: true, neverFleesBoss: true, wander: W.wander, chestDetourSteps: W.chestDetour, bossTries: 20, deathCap: 6, healStock: 6, itemShareOfGold: 0.5 }, rows: agg, flags: allFlags };
 
 let md = '';

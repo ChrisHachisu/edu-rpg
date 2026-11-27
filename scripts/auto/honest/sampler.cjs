@@ -10,7 +10,7 @@
 const fs = require('fs'), path = require('path');
 process.env.PROBE_URL = process.env.PROBE_URL || 'http://127.0.0.1:5500/';
 process.env.PROBE_OUT = process.env.PROBE_OUT || '/home/user/work/honest/probe-out';
-const PROFILES = { g1: { grade: '1', p: 0.70, t: 6, sd: 0.35 }, g3: { grade: '3', p: 0.80, t: 4, sd: 0.35 }, g6: { grade: '6', p: 0.90, t: 3, sd: 0.35 } };
+const { PROFILES, keypadOf } = require('./profiles.cjs');
 const POLICIES = { reference: { healAt: 0.35, fleeAt: 0.2, bossHealAt: 0, defendCharge: false }, savvy: { healAt: 0.35, fleeAt: 0.2, bossHealAt: 0.5, defendCharge: true } };
 const median = a => { if (!a.length) return null; const s = a.slice().sort((x, y) => x - y), m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
 const mean = a => a.length ? a.reduce((x, y) => x + y, 0) / a.length : null;
@@ -18,8 +18,6 @@ const mean = a => a.length ? a.reduce((x, y) => x + y, 0) / a.length : null;
 // doors: [{ boss, zone, record: { state, quizStats }, from, tries? }]   ->   rows, one per door
 // HONEST_KEYPAD: how the child is modelled on the number keypad. 'same' (default): typing time and a 3% slip, same knowledge.
 // 'noguess': also no lucky pick among four buttons. 'off': the old four-button child (use with PROBE_LS qok-keypad=0).
-const KEYPAD = { g1: { first: 0.6, key: 0.35 }, g3: { first: 0.5, key: 0.3 }, g6: { first: 0.4, key: 0.25 } };
-const keypadOf = profile => { const m = process.env.HONEST_KEYPAD || 'same'; return m === 'off' ? null : { ...KEYPAD[profile], slip: 0.03, noGuess: m === 'noguess' }; };
 async function sample({ profile, doors, tries = 20, over = null, balanceOff = false, policy = 'reference', seed = 20261123, log = null }) {
   const L = require('../../acts/probe/lib.cjs');
   const INPAGE = fs.readFileSync(path.join(__dirname, 'inpage.js'), 'utf8');

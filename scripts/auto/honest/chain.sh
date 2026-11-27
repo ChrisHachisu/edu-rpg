@@ -6,7 +6,7 @@
 PROFILES="${1:-g1 g3 g6}"; REPS="${2:-1 2 3}"; VARIANT="$3"
 export HONEST_DIR="${HONEST_DIR:-/home/user/work/honest/runs}"; export NODE_PATH=/opt/node-tools/node_modules
 HERE="$(cd "$(dirname "$0")" && pwd)"; mkdir -p "$HONEST_DIR"
-curl -s -o /dev/null http://127.0.0.1:5500/ || { nohup python3 -m http.server 5500 --bind 127.0.0.1 --directory /home/user/work/dist >/dev/null 2>&1 & sleep 2; }
+[ -n "$PROBE_URL" ] || curl -s -o /dev/null http://127.0.0.1:5500/ || { nohup python3 -m http.server 5500 --bind 127.0.0.1 --directory /home/user/work/dist >/dev/null 2>&1 & sleep 2; }
 for r in $REPS; do for p in $PROFILES; do
   fails=0
   while :; do

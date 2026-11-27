@@ -5,21 +5,24 @@
 // Report: /mnt/project-files/edu-rpg/autoloop/honest/REPORT-after.md
 //
 //   NODE_PATH=/opt/node-tools/node_modules PROBE_URL=http://127.0.0.1:5504/ \
-//     node scripts/auto/checks/balance.cjs [g1] [g3] [g6] [zones]
+//     node scripts/auto/checks/balance.cjs [gk] [g1] [g2] [g3] [g4] [g5] [g6] [zones]
 //
-// With no group all four run, one after another, each in its own process (one Chromium at a time,
-// each under ~8 minutes; the whole check takes about 11-15 minutes). HONEST_DIST (default
+// With no group all of them run, one after another, each in its own process (one Chromium at a time,
+// each under ~8 minutes; the whole check takes about 25-35 minutes for the eight groups). HONEST_DIST (default
 // /home/user/work/dist) is a built copy of the game: the bundle and the floor data are read from it. Output: [PASS]/[FAIL]/[INFO]
 // lines, one summary line, exit 1 on a FAIL.
 //
-// g1 / g3 / g6   A reduced boss sampler. The hero is the one an honest playthrough brought to each
+// gk g1 g2 g3 g4 g5 g6   (gk = kindergarten)   A reduced boss sampler. The hero is the one an honest playthrough brought to each
 //                boss door (scripts/auto/checks/balance-doors.json: level, gear, bag and HP as she
 //                arrived, no grinding). She fights each boss BALANCE_TRIES times (default 40; the
 //                Demon King BALANCE_TRIES_DK, default 100) in the real BattleScene with the
-//                reference policy: answers right 70 / 80 / 90 % of the time, never defends, drinks
+//                reference policy: answers right 65 / 70 / 75 / 80 / 83 / 87 / 90 % of the time (K to 6, scripts/auto/honest/profiles.cjs; grades K, 2, 4, 5 are interpolated), never defends, drinks
 //                under 35 % HP. Targets (the lead's, 2026-11-23):
+//                  (Doors of g1, g3, g6 come from the day 1 four-button playthroughs, r1; those of gk, g2, g4, g5 from day 4
+//                  playthroughs with the keypad child, the median-level run per door: see 'sources' in the json.)
 //                  Mosswarden            win rate >= 85 % at every grade
-//                  every other boss      >= 80 % at grades 1 and 3, >= 65 % at grade 6
+//                  every other boss      >= 80 % at grades K to 4, >= 65 % at grades 5 and 6 (the grades where the
+//                                        engine scales monsters x1.3; grades 4 and 5 are the day 4 extension: NEEDS-CONSULT)
 //                  Demon King            55-80 % at every grade, median <= 25 rounds,
 //                                        median <= 6.5 minutes of play, median <= 8 heal items
 //                  every boss            the worst single hit (wrong defence answer, top damage
@@ -45,7 +48,7 @@ const OUT = process.env.BALANCE_OUT || path.join(os.tmpdir(), 'qok-balance');
 fs.mkdirSync(OUT, { recursive: true });
 process.env.PROBE_OUT = process.env.PROBE_OUT || path.join(OUT, 'probe-out');
 process.env.PROBE_URL = process.env.PROBE_URL || 'http://127.0.0.1:5504/';
-const GROUPS = ['g1', 'g3', 'g6', 'zones'];
+const GROUPS = ['gk', 'g1', 'g2', 'g3', 'g4', 'g5', 'g6', 'zones'];
 const GROUP_MS = 470000;
 const TRIES = +(process.env.BALANCE_TRIES || 40), TRIES_DK = +(process.env.BALANCE_TRIES_DK || 100), TRIES_CAREFUL = +(process.env.BALANCE_TRIES_CAREFUL || 40);
 const DOORS = path.join(__dirname, 'balance-doors.json');
@@ -78,7 +81,7 @@ const rec = (ok, name, detail) => { console.log(`[${ok ? 'PASS' : 'FAIL'}] ${GRO
 const info = t => console.log(`[INFO] ${GROUP} ${t}`);
 const pct = v => v == null ? '-' : Math.round(v * 100) + '%';
 function wilson(k, n, z = 1.96) { if (!n) return [0, 1]; const p = k / n, d = 1 + z * z / n, c = (p + z * z / (2 * n)) / d, h = z * Math.sqrt(p * (1 - p) / n + z * z / (4 * n * n)) / d; return [Math.max(0, c - h), Math.min(1, c + h)]; }
-function band(boss, profile) { return boss === 'demonKing' ? [0.55, 0.80] : boss === 'mosswarden' ? [0.85, 1] : [profile === 'g6' ? 0.65 : 0.80, 1]; }
+function band(boss, profile) { return boss === 'demonKing' ? [0.55, 0.80] : boss === 'mosswarden' ? [0.85, 1] : [profile === 'g6' || profile === 'g5' ? 0.65 : 0.80, 1]; }
 const ROUND_CAP = { celestialGuardian: 12, frostMonarch: 12, demonKing: 25 };
 const HIT_CAP = 0.85, DK_SEC = 390, DK_ITEMS = 8;
 

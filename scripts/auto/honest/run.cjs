@@ -9,18 +9,14 @@ process.env.PROBE_URL = process.env.PROBE_URL || 'http://127.0.0.1:5500/';
 process.env.PROBE_OUT = process.env.PROBE_OUT || '/home/user/work/honest/probe-out';
 const DIR = process.env.HONEST_DIR || '/home/user/work/honest/runs';
 const arg = (k, d) => { const i = process.argv.indexOf('--' + k); return i > 0 ? process.argv[i + 1] : d; };
-const PROFILES = {            // the three children (REPORT.md, "Profiles")
-  g1: { grade: '1', p: 0.70, t: 6, sd: 0.35 },
-  g3: { grade: '3', p: 0.80, t: 4, sd: 0.35 },
-  g6: { grade: '6', p: 0.90, t: 3, sd: 0.35 },
-};
+const { PROFILES, keypadOf } = require('./profiles.cjs');
 const POLICY = { healAt: 0.35, fleeAt: 0.2 };
 const SAVVY = { healAt: 0.35, fleeAt: 0.2, bossHealAt: 0.5, defendCharge: true };   // variant 'savvy': heals at half HP against a boss and defends on the turn a boss was announced to be charging
 const PROFILE = arg('profile', 'g1'), REP = +arg('rep', 1), BUDGET = +arg('budget', 330) * 1000, TRIES = +arg('tries', 20), TO = +arg('to', 999), DEATH_CAP = +arg('deathcap', 6);
 const VARIANT = arg('variant', '');           // '' (sells outgrown gear) | 'nosell' (never sells: the brief's literal policy) | 'savvy' (see SAVVY) | 'allchests' (every visible chest)
 if (VARIANT === 'allchests') process.env.HONEST_CHEST_DETOUR = '9999';
 const SELL = VARIANT !== 'nosell';
-const prof = PROFILES[PROFILE]; if (!prof) throw new Error('unknown profile ' + PROFILE);
+const prof = PROFILES[PROFILE] && { ...PROFILES[PROFILE], keypad: keypadOf(PROFILE) }; if (!prof) throw new Error('unknown profile ' + PROFILE);   // HONEST_KEYPAD=same|noguess|off (default same)
 const L = require('../../acts/probe/lib.cjs');
 const WORLD = require('./world.cjs');
 const INPAGE = fs.readFileSync(path.join(__dirname, 'inpage.js'), 'utf8');

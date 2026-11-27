@@ -2,7 +2,7 @@
 // Exploration: real New Game for a grade through the phone's own title path; dump the game's own start record.
 const fs = require('fs');
 process.env.PROBE_URL = process.env.PROBE_URL || 'http://127.0.0.1:5500/';
-process.env.PROBE_OUT = '/home/user/work/honest/probe-out';
+process.env.PROBE_OUT = process.env.PROBE_OUT || '/home/user/work/honest/probe-out';
 const L = require('../../acts/probe/lib.cjs');
 (async () => {
   const grade = process.argv[2] || '1';
@@ -25,7 +25,7 @@ const L = require('../../acts/probe/lib.cjs');
     await page.waitForTimeout(3000);
     const st = await page.evaluate(() => { const gs = window.__GAME_STATE__; return { state: gs.player.state, tot: [gs.player.totalAtk, gs.player.totalDef, gs.player.totalMaxHp], encMult: gs.encounterManager.encounterRateMultiplier, qd: gs.quizManager.difficulty, globals: Object.keys(window).filter(k => k.startsWith('__')), qok: Object.keys(window.__QOK || {}), multi: Object.keys(window.__QOK_MULTIACT__ || {}) }; });
     console.log(JSON.stringify(st, null, 1));
-    fs.writeFileSync(`/home/user/work/honest/newgame-g${grade}.json`, JSON.stringify(st.state));
+    fs.writeFileSync(process.env.NEWGAME_OUT || `/home/user/work/honest/newgame-g${grade}.json`, JSON.stringify(st.state));
     console.log('errors', JSON.stringify(o.errors.slice(0, 5)));
   } finally { await o.browser.close(); }
 })().catch(e => { console.error('FATAL', e); process.exit(1); });
