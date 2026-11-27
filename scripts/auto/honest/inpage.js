@@ -58,7 +58,7 @@
     const rp = eng.resolvePlayerAttack, re = eng.resolveEnemyAttack, pt = eng.processTurnAbilities; let hpBefore = s.hp;
     const tr = o.trace ? (L.trace = []) : null, r3 = v => typeof v === 'number' ? Math.round(v * 1000) / 1000 : v;
     eng.resolvePlayerAttack = function (c, ratio, el) { const m0 = this.monsterHp, r = rp.apply(this, arguments); L.dealt += Math.max(0, m0 - this.monsterHp);
-      if (c && el !== void 0 && el <= (window.__QOK_KEYPAD__ && window.__QOK_KEYPAD__.on() ? 4.5 : 3)) L.crit++; else if (c && ratio !== void 0 && ratio >= 0.5) L.fast++;          // the bundle's own two thresholds
+      if (c && el !== void 0 && el <= (window.__QOK_KEYPAD__ && window.__QOK_KEYPAD__.on() ? 4.5 : 3) * (window.__QOK_CRITCLASS__ && bs.quizQuestion ? window.__QOK_CRITCLASS__.mult(bs.quizQuestion) : 1)) L.crit++; else if (c && ratio !== void 0 && ratio >= 0.5) L.fast++;          // the bundle's own two thresholds
       if (tr) tr.push(['P', !!c, r3(ratio), r3(el), m0 - this.monsterHp, r && r.state]); return r; };
     eng.resolveEnemyAttack = function (c, ratio) { const h0 = ST().hp, r = re.apply(this, arguments), d = h0 - ST().hp; L.taken += d; L.hits++; if (d > L.maxHit) L.maxHit = d; if (tr) tr.push(['E', !!c, r3(ratio), d, r && r.state]); return r; };
     eng.processTurnAbilities = function () { const h0 = ST().hp, m0 = this.monsterHp, r = pt.apply(this, arguments); L.taken += h0 - ST().hp; if (tr) tr.push(['T', h0 - ST().hp, this.monsterHp - m0, r.length]); return r; };
@@ -91,7 +91,10 @@
         const kp = prof.keypad && window.__QOK_KEYPAD__ && window.__QOK_KEYPAD__.on() ? prof.keypad : null;
         const keys = kp ? String((((bs.quizQuestion.answers.find(x => !!x.isCorrect) || {}).text || {}).en) || '0').length : 0;
         const pEff = kp ? (kp.noGuess ? Math.max(0, (prof.p - 0.25) / 0.75) : prof.p) * (1 - (kp.slip || 0)) : prof.p;
-        const T = bs.quizTimerSeconds, timed = !!(s.timerEnabled && bs.quizTimerBar && bs.quizTimerBarFullWidth), t = think() + (kp ? kp.first + kp.key * keys : 0), right = rnd() < pEff; L.q++;
+        // Day 4 (quiz bank v2): her thinking time follows the question. prof.eff = the old bank's mean effort for her grade (effort-ref.json); the page asks
+        // the host (__HON_EFF) for the effort model's seconds for THIS question's text, so t = prof.t * effort / prof.eff (same average on the old bank).
+        let sc = 1; if (prof.eff && window.__HON_EFF) { const e = await window.__HON_EFF(bs.quizQuestion.questionText.en, prof.grade); if (e > 0) { sc = e / prof.eff; L.eff = (L.eff || 0) + e; L.effn = (L.effn || 0) + 1; } else L.effmiss = (L.effmiss || 0) + 1; }
+        const T = bs.quizTimerSeconds, timed = !!(s.timerEnabled && bs.quizTimerBar && bs.quizTimerBarFullWidth), t = think() * sc + (kp ? kp.first + kp.key * keys : 0), right = rnd() < pEff; L.q++;
         if (timed && t >= T) { L.to++; L.sec += T + 2.8; bs.onQuizTimeout(); continue; }
         if (timed) bs.quizTimerBar.displayWidth = bs.quizTimerBarFullWidth * (1 - t / T);      // where the bundle's linear tween stands after t seconds
         const a = bs.quizQuestion.answers, good = a.findIndex(x => !!x.isCorrect), bad = a.map((x, i) => i).filter(i => i !== good);

@@ -49,7 +49,7 @@ fs.mkdirSync(OUT, { recursive: true });
 process.env.PROBE_OUT = process.env.PROBE_OUT || path.join(OUT, 'probe-out');
 process.env.PROBE_URL = process.env.PROBE_URL || 'http://127.0.0.1:5504/';
 const GROUPS = ['gk', 'g1', 'g2', 'g3', 'g4', 'g5', 'g6', 'zones'];
-const GROUP_MS = 470000;
+const GROUP_MS = +(process.env.BALANCE_GROUP_MS || 1500000);   // a group takes 3-6 minutes alone on the box, 8 with BALANCE_NOGUESS=1; the box is shared at times
 const TRIES = +(process.env.BALANCE_TRIES || 40), TRIES_DK = +(process.env.BALANCE_TRIES_DK || 100), TRIES_CAREFUL = +(process.env.BALANCE_TRIES_CAREFUL || 40);
 const DOORS = path.join(__dirname, 'balance-doors.json');
 
@@ -96,6 +96,16 @@ async function bosses(profile) {
   fs.writeFileSync(path.join(OUT, `rows-${profile}.json`), JSON.stringify(rows, null, 1));
   if (rows[0]) info(`balance table ${rows[0].balance.balance ? (rows[0].balance.on ? 'on, version ' + rows[0].balance.version : 'present, switched off') : 'absent (unfixed build)'}`);
   judge(rows, profile, false);
+  // sensitivity column (BALANCE_NOGUESS=1): the same heroes, but a child who has no lucky pick among four buttons on the keypad (HONEST_KEYPAD=noguess). Reported as [INFO], never failed.
+  if (process.env.BALANCE_NOGUESS === '1') {
+    const keep = process.env.HONEST_KEYPAD; process.env.HONEST_KEYPAD = 'noguess';
+    try {
+      const ng = await S.sample({ profile, doors, balanceOff: process.env.BALANCE_OFF === '1', seed: +(process.env.BALANCE_SEED || 20261123) + 900 });
+      fs.writeFileSync(path.join(OUT, `rows-${profile}-noguess.json`), JSON.stringify(ng, null, 1));
+      for (const r of ng) { const [lo, hi] = band(r.boss, profile), [wl, wh] = wilson(r.wins, r.n), out = wh < lo ? 'BELOW band' : wl > hi ? 'above band' : 'in band';
+        info(`noguess ${r.boss.padEnd(19)} L${r.level} | wins ${String(r.wins).padStart(3)}/${r.n} ${pct(r.wins / r.n).padStart(4)} (95% ${pct(wl)}-${pct(wh)}; ${out}) | rounds ${r.roundsMedian} | ${Math.round(r.secMedian)} s | crit ${pct(r.critPerRound)} | timeouts ${pct(r.toRate)}`); }
+    } finally { if (keep === undefined) delete process.env.HONEST_KEYPAD; else process.env.HONEST_KEYPAD = keep; }
+  }
   // careful play against the Demon King, from the careful playthrough's own door record
   const sd = fx.savvyDoors && fx.savvyDoors[profile] && fx.savvyDoors[profile].demonKing;
   if (only && !only.includes('demonKing')) return;
@@ -117,7 +127,7 @@ function judge(rows, profile, careful) {
     if (r.stuck) bad.push(`${r.stuck} fights did not end`);
     if (careful && r.secMedian > DK_SEC) info(`careful ${r.boss}: median ${Math.round(r.secMedian)} s, longer than the reference limit ${DK_SEC} s (not failed: defend and heal turns are turns)`);
     if (careful) { const hi2 = 0.90; if (wl > hi2) info(`careful ${r.boss}: win rate ${pct(rate)} (95% ${pct(wl)}-${pct(wh)}) lies above the soft ceiling ${pct(hi2)}`); }
-    rec(!bad.length, `${careful ? 'careful ' : ''}${r.boss.padEnd(19)} L${r.level} | wins ${String(r.wins).padStart(3)}/${r.n} ${pct(rate).padStart(4)} (95% ${pct(wl)}-${pct(wh)}; band ${pct(lo)}${hi < 1 ? '-' + pct(hi) : '+'}) | rounds ${r.roundsMedian} | ${Math.round(r.secMedian)} s | items ${r.itemsMedian} | worst hit ${pct(r.worstPct)}`, bad.join('; '));
+    rec(!bad.length, `${careful ? 'careful ' : ''}${r.boss.padEnd(19)} L${r.level} | wins ${String(r.wins).padStart(3)}/${r.n} ${pct(rate).padStart(4)} (95% ${pct(wl)}-${pct(wh)}; band ${pct(lo)}${hi < 1 ? '-' + pct(hi) : '+'}) | rounds ${r.roundsMedian} | ${Math.round(r.secMedian)} s | items ${r.itemsMedian} | worst hit ${pct(r.worstPct)} | crit ${pct(r.critPerRound)} to ${pct(r.toRate)}`, bad.join('; '));
   }
 }
 

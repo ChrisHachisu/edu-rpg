@@ -90,7 +90,7 @@
       g.fillStyle = '#d8d0c0'; g.fillRect(9, 0, 3, 6); g.fillRect(28, 0, 3, 6); g.fillStyle = '#241018'; g.fillRect(11, 48, 7, 8); g.fillRect(22, 48, 7, 8);
     });
   }
-  function build(ctx) {
+  function buildOld(ctx) {
     var S = ctx.state, K = S.K, sc = ctx.scene, key = K.monsterTex(sc, S.monster);
     if (!key) { S.waited = (S.waited || 0) + 1; if (S.monster && S.waited < 180) return; key = fallbackTex(sc, K); }
     S.spr = { light: ctx.own(sc.add.graphics().setDepth(ctx.depth.ground + 0.3)), g: {} };
@@ -100,8 +100,8 @@
       var sc0 = 62 / Math.max(1, body.height || 62); body.setScale(sc0);
       S.spr.g[g.id] = { body: body, shadow: sh, lamp: ctx.own(sc.add.image(0, 0, lanternTex(sc, K)).setOrigin(0.5, 0)), scale: sc0 }; }
   }
-  function paint(ctx) {
-    var S = ctx.state, M = S.M, K = S.K; if (!S.spr) { build(ctx); if (!S.spr) return; }
+  function paintOld(ctx) {
+    var S = ctx.state, M = S.M, K = S.K; if (!S.spr) { buildOld(ctx); if (!S.spr) return; }
     var t0 = Math.floor(S.tick), fr = S.tick - t0, a = ((t0 % M.period) + M.period) % M.period, b = (a + 1) % M.period, i;
     for (i = 0; i < M.guards.length; i++) { var g = M.guards[i], e = S.spr.g[g.id]; if (!e) continue;
       if (g.gone) { e.body.setVisible(false); e.shadow.setVisible(false); e.lamp.setVisible(false); continue; }
@@ -116,6 +116,105 @@
         for (k in lit) { if (seen[k]) continue; seen[k] = 1; var c = k.split(','), cx = +c[0], cy = +c[1];
           var d = Math.max(Math.abs(cx - gp[0]), Math.abs(cy - gp[1]));
           L.fillStyle(0xffd24a, d <= 1 ? 0.30 : Math.max(0.12, 0.28 - d * 0.022)); L.fillRect(cx * T + 1, cy * T + 1, T - 2, T - 2); } } }
+  }
+  // ---- the look (day 4): a soft pool of warm light and a drawn lantern -----------------------------------
+  // The lit cells are the same cells (litCells, the trigger itself) at the same strength per cell as the square
+  // cells below; they are drawn as one soft picture per guard instead: every lit cell fully inside it, no lines
+  // between cells, the edge fading outward over about a quarter cell. While a guard steps to its next cell the
+  // light it is about to throw fades in over that tick and the light it has left fades out over the next one,
+  // so the pool glides with the guard; the light of the current tick is always there in full.
+  // localStorage 'qok-d4-looks' = '0' draws the old square cells and the old flat lantern.
+  var LOOKS = (function () { try { return window.localStorage.getItem('qok-d4-looks') !== '0'; } catch (e) { return true; } })();
+  var RES = 6, PAD = 2, LIGHT = 0.30;                                        // mask px per cell, cells of margin, the old cells' alpha beside the guard
+  function grow(A, W, H) { var B = new Float32Array(W * H), x, y, i, m;
+    for (y = 0; y < H; y++) for (x = 0; x < W; x++) { i = y * W + x; m = A[i];
+      if (x > 0 && A[i - 1] > m) m = A[i - 1]; if (x < W - 1 && A[i + 1] > m) m = A[i + 1]; if (y > 0 && A[i - W] > m) m = A[i - W]; if (y < H - 1 && A[i + W] > m) m = A[i + W]; B[i] = m; }
+    return B; }
+  function blur(A, W, H, n) { var B = new Float32Array(W * H), x, y, i, k;
+    for (k = 0; k < n; k++) {
+      for (y = 0; y < H; y++) for (x = 0; x < W; x++) { i = y * W + x; B[i] = (A[i] * 2 + A[x > 0 ? i - 1 : i] + A[x < W - 1 ? i + 1 : i]) * 0.25; }
+      for (y = 0; y < H; y++) for (x = 0; x < W; x++) { i = y * W + x; A[i] = (B[i] * 2 + B[y > 0 ? i - W : i] + B[y < H - 1 ? i + W : i]) * 0.25; } }
+    return A; }
+  // soft(pos): the soft picture of the cells a guard at `pos` lights: {x, y (world px of its corner), w (px, square), a}
+  function soft(ctx, M, pos) {
+    var key = pos.join(','), hit = M.soft[key]; if (hit) return hit;
+    if ((M.softN = (M.softN || 0) + 1) > 24) { M.soft = {}; M.softN = 1; }      // a guard's beat revisits the same few cells: keep the latest
+    var lit = litCells(ctx, pos, M.R, M.cosHalf, M.cache), n = M.R + 1 + PAD, x0 = pos[0] - n, y0 = pos[1] - n, W = (2 * n + 1) * RES, A = new Float32Array(W * W), k, x, y;
+    for (k in lit) { var c = k.split(','), cx = +c[0], cy = +c[1], d = Math.max(Math.abs(cx - pos[0]), Math.abs(cy - pos[1])), v = (d <= 1 ? 0.30 : Math.max(0.12, 0.28 - d * 0.022)) / LIGHT;   // the old cells' own alpha
+      var px = (cx - x0) * RES, py = (cy - y0) * RES; if (px < 0 || py < 0 || px + RES > W || py + RES > W) continue;
+      for (y = 0; y < RES; y++) for (x = 0; x < RES; x++) A[(py + y) * W + px + x] = v; }
+    A = blur(grow(A, W, W), W, W, 2);
+    for (k = 0; k < A.length; k++) A[k] = Math.min(1, A[k] * 1.2);
+    return (M.soft[key] = { key: key, x: x0 * T, y: y0 * T, w: W, a: A });
+  }
+  function put(sc, key, A, B) {                                               // picture A, less picture B where they overlap (the light that is new, or left behind)
+    try { var t = sc.textures.exists(key) ? sc.textures.get(key) : sc.textures.createCanvas(key, A.w, A.w), g = t.getContext(), im = g.createImageData(A.w, A.w), d = im.data, W = A.w, x, y, i, v;
+      var ox = B ? Math.round((A.x - B.x) / T * RES) : 0, oy = B ? Math.round((A.y - B.y) / T * RES) : 0;
+      for (y = 0; y < W; y++) for (x = 0; x < W; x++) { i = y * W + x; v = A.a[i];
+        if (B && v > 0) { var bx = x + ox, by = y + oy; if (bx >= 0 && by >= 0 && bx < W && by < W) v -= B.a[by * W + bx]; }
+        d[i * 4] = 255; d[i * 4 + 1] = 255; d[i * 4 + 2] = 255; d[i * 4 + 3] = v > 0 ? Math.round(v * 255) : 0; }
+      g.putImageData(im, 0, 0); t.refresh(); try { t.setFilter(0); } catch (e) {}
+      return key; } catch (e) { return null; }
+  }
+  function lanternTex2(sc, K) {                                              // a small iron lantern: ring, cap, glass with a flame, foot
+    return K.canvasTex(sc, 'd2b_lantern2', 24, 36, function (g) {
+      g.strokeStyle = '#1c140e'; g.lineWidth = 2; g.beginPath(); g.arc(12, 5, 3.5, 0, Math.PI * 2); g.stroke();
+      g.fillStyle = '#1c140e'; g.beginPath(); g.moveTo(8, 8); g.lineTo(16, 8); g.lineTo(20, 13); g.lineTo(4, 13); g.closePath(); g.fill();
+      g.fillStyle = '#5a4a3a'; g.fillRect(9, 9, 6, 1);
+      var gl = g.createRadialGradient(12, 21, 1, 12, 21, 10); gl.addColorStop(0, '#fffbe2'); gl.addColorStop(0.35, '#ffe07a'); gl.addColorStop(0.8, '#f5a030'); gl.addColorStop(1, '#b8601a');
+      g.fillStyle = gl; g.fillRect(5, 13, 14, 16);
+      g.fillStyle = '#fff6c8'; g.beginPath(); g.moveTo(12, 16); g.quadraticCurveTo(15.5, 21, 12, 25.5); g.quadraticCurveTo(8.5, 21, 12, 16); g.closePath(); g.fill();
+      g.fillStyle = '#ffffff'; g.fillRect(11, 21, 2, 3);
+      g.fillStyle = '#1c140e'; g.fillRect(4, 13, 1.6, 16); g.fillRect(18.4, 13, 1.6, 16); g.fillRect(11.4, 13, 1.2, 3); g.fillRect(11.4, 26.5, 1.2, 2.5);
+      g.fillRect(3, 29, 18, 3.5); g.fillRect(6, 32, 12, 2); g.fillStyle = '#6a5846'; g.fillRect(4, 29, 16, 1);
+    });
+  }
+  function haloTex(sc, K) {                                                   // the glow round the lantern itself
+    return K.canvasTex(sc, 'd2b_lhalo', 64, 64, function (g) {
+      var f = g.createRadialGradient(32, 32, 2, 32, 32, 32); f.addColorStop(0, 'rgba(255,236,170,0.85)'); f.addColorStop(0.35, 'rgba(255,196,90,0.38)'); f.addColorStop(1, 'rgba(255,160,50,0)');
+      g.fillStyle = f; g.fillRect(0, 0, 64, 64);
+    });
+  }
+  function build(ctx) {
+    var S = ctx.state, K = S.K, sc = ctx.scene, key = K.monsterTex(sc, S.monster), dg = ctx.depth.ground;
+    if (!key) { S.waited = (S.waited || 0) + 1; if (S.monster && S.waited < 180) return; key = fallbackTex(sc, K); }
+    S.spr = { light: null, g: {}, look: 2 }; S.M.soft = {};
+    for (var i = 0; i < S.M.guards.length; i++) { var g = S.M.guards[i]; if (g.gone) continue;
+      var body = ctx.own(sc.add.image(0, 0, key).setOrigin(0.5, 0.92)), sh = ctx.own(sc.add.ellipse(0, 0, 34, 12, 0x000000, 0.3).setDepth(ctx.depth.object));
+      var sc0 = 62 / Math.max(1, body.height || 62); body.setScale(sc0);
+      var e = S.spr.g[g.id] = { body: body, shadow: sh, lamp: ctx.own(sc.add.image(0, 0, lanternTex2(sc, K)).setOrigin(0.5, 0)), scale: sc0, pool: [], sig: ['', '', ''] };
+      e.halo = ctx.own(sc.add.image(0, 0, haloTex(sc, K)).setAlpha(0.8)); try { e.halo.setBlendMode(1); } catch (x) {}
+      for (var j = 0; j < 3; j++) {                                           // 0: this tick's light, 1: the light coming, 2: the light left behind
+        var tk = put(sc, 'd2b_pool_' + ctx.key + '_' + g.id + '_' + j, soft(ctx, S.M, g.seq[0]), j ? soft(ctx, S.M, g.seq[0]) : null);
+        if (!tk) { S.spr = null; LOOKS = false; return buildOld(ctx); }       // no canvas: the square cells still show the light
+        var im = ctx.own(sc.add.image(0, 0, tk).setOrigin(0, 0).setScale(T / RES).setDepth(dg + 0.3).setTint(0xffcc55).setVisible(false)); try { im.setBlendMode(1); } catch (x) {}
+        e.pool.push(im); } }
+  }
+  function paint(ctx) {
+    if (!LOOKS) return paintOld(ctx);
+    var S = ctx.state, M = S.M, K = S.K, sc = ctx.scene; if (!S.spr) { build(ctx); if (!S.spr) return; }
+    if (S.spr.look !== 2) return paintOld(ctx);
+    var t0 = Math.floor(S.tick), fr = S.tick - t0, a = ((t0 % M.period) + M.period) % M.period, b = (a + 1) % M.period, z = (a - 1 + M.period) % M.period, i, j, v = null;
+    try { v = sc.cameras.main.worldView; } catch (x) {}
+    var ms = S.tick * S.ms, ease = fr * fr * (3 - 2 * fr);
+    for (i = 0; i < M.guards.length; i++) { var g = M.guards[i], e = S.spr.g[g.id]; if (!e) continue;
+      if (g.gone) { e.body.setVisible(false); e.shadow.setVisible(false); e.lamp.setVisible(false); e.halo.setVisible(false); for (j = 0; j < 3; j++) e.pool[j].setVisible(false); continue; }
+      var p = g.seq[a], q = g.seq[b], x = (p[0] + (q[0] - p[0]) * fr + 0.5) * T, y = (p[1] + (q[1] - p[1]) * fr + 0.5) * T;
+      var bob = (p[0] !== q[0] || p[1] !== q[1]) ? Math.abs(Math.sin(S.tick * Math.PI)) * 3 : 0;
+      e.body.setPosition(x, y + 16 - bob); e.shadow.setPosition(x, y + 15); e.body.setDepth(K.sortDepth(ctx, y + 16));
+      if (p[2]) e.body.setFlipX(p[2] < 0);
+      e.lamp.setPosition(x + p[2] * 18 + (p[3] ? 14 : 0), y - 26 + p[3] * 6 - bob); e.lamp.setDepth(e.body.depth + (p[3] < 0 ? -0.05 : 0.05));
+      var fl = 1.05 + 0.035 * Math.sin(ms * 0.011 + i * 2.1) + 0.02 * Math.sin(ms * 0.029 + i);   // a slow flicker, never dimmer than the old cells
+      e.halo.setPosition(e.lamp.x, e.lamp.y + 21).setDepth(e.lamp.depth - 0.02).setScale(0.86 * fl).setAlpha(0.8 * fl - 0.1);
+      // the pool: three pictures, each redrawn only when the cells it shows change
+      var C = soft(ctx, M, p), N = soft(ctx, M, q), P = soft(ctx, M, g.seq[z]), want = [[C, null, LIGHT], [N, C, LIGHT * ease], [P, C, LIGHT * 0.7 * (1 - ease)]];
+      var seen = !v || (C.x < v.right + T && C.x + C.w * T / RES > v.x - T && C.y < v.bottom + T && C.y + C.w * T / RES > v.y - T);
+      for (j = 0; j < 3; j++) { var im = e.pool[j], A = want[j][0], B = want[j][1];
+        if (!seen || (B && A.key === B.key)) { im.setVisible(false); continue; }
+        var sig = A.key + (B ? '|' + B.key : '');
+        if (e.sig[j] !== sig) { e.sig[j] = sig; put(sc, im.texture.key, A, B); im.setPosition(A.x, A.y); }
+        im.setVisible(true).setAlpha(Math.min(1, want[j][2] * fl)); }
+    }
   }
   function caught(ctx, list) {
     var S = ctx.state, K = S.K, sc = ctx.scene, i;

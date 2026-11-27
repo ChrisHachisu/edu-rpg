@@ -26,6 +26,8 @@
   "axis": "south",
   "note": "toX/toY = overworld exit cell from exits.json (tools/apply_exits.py), not maps.ts."
  },
+ "occluders": [{"id": "shop-counter", "baseY": 34.45, "polygon": [[46.6, 33.79], [48.8, 33.79], [48.8, 35.3], [46.6, 35.3]]}],
+ "_occludersNote": "2026-11-27 (design review T3): the shopkeeper was drawn standing on her stall. She now stands at the counter (`cell`; the cell of before is `cellOld`) and `occluders` names the counter's front, traced along its painted top edge: town.html draws that piece of the same plate again, at the same place, right after her (`baseY` is her feet plus 0.05 cells: the painter's line) and before anyone standing south of her, so the counter covers her legs and she shows from the waist up, and it can never cover the hero, who has no ground north of that line near the counter (scripts/auto/checks/field-town-reach.cjs proves it for every reachable point). No new art; nothing in the plate is cut or moved. Old look: qok-f2-old=shopband.",
  "shopId": "ruinsCamp",
  "shopCounter": [
   47.5,
@@ -66,12 +68,14 @@
   },
   {
    "id": "mercenary",
+   "cellOld": [38.59, 14.22],
+   "cellNote": "2026-11-27 (design review T4): she stood in the mouth of the path north, and a body's space round her closed it. Moved 1.7 cells west onto the open sand in front of the crates; the path is open beside her.",
    "dialogueKey": "npc.mercenary",
    "nameKey": "npc.mercenary.name",
    "sheet": "town/npc/ruinsCamp-mercenary-4x3-64.png",
    "cell": [
-    38.59,
-    14.22
+    36.9,
+    14.6
    ],
    "mapsTs": [
     9,
@@ -82,14 +86,17 @@
   },
   {
    "id": "shopkeeper",
-      "talkReach": 4.0,
+   "cellOld": [47.5, 33.5],
+   "space": [6, 6, 6],
+   "spaceNote": "behind the painted counter: a small body that stays inside the counter (the counter itself keeps the hero a body away)",
+      "talkReachOld": 4.0,
       "talkReachNote": "2026-11-23 (explorer X04): she stands behind the painted counter, deeper than the default 2.1-cell talk band, so no standable point could talk to her (the shop still opened from shopCounter). town.html now lets a person carry a longer band: 4.0 cells (the counter's distance plus the 1.2-cell shop-spot radius) covers every spot in front of the counter where the Shop prompt shows. The counter stays solid.",
    "dialogueKey": "npc.shopkeeper",
    "nameKey": "npc.shopkeeper.name",
    "sheet": "town/npc/ruinsCamp-shopkeeper-4x3-64.png",
    "cell": [
-    47.5,
-    33.5
+    47.7,
+    34.4
    ],
    "_note": "fixed: behind the painted counter, deeper than the talk band; the hero is served at shopCounter on the ground at the counter front",
    "fixed": true,

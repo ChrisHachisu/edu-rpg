@@ -77,6 +77,38 @@
     else { for(i=0;i<8;i++){ var x4=8+r()*30, y4=16+r()*20, s4=3+r()*6; K.shadow(g,x4+s4/2,y4+s4,s4*0.7,1.8,0.3);
         g.fillStyle='#1a1410'; g.fillRect(x4-1,y4-1,s4+2,s4+1); g.fillStyle=['#7a6857','#655647','#8c7966'][i%3]; g.fillRect(x4,y4,s4,s4-1); g.fillStyle='rgba(255,255,255,0.18)'; g.fillRect(x4,y4,s4,1); } }
   }); }
+  // ---- the look (day 4, DB-15): the draught in the ash --------------------------------------------
+  // The draught was a still picture whose alpha breathed: a few hundred px changed in four seconds. Now ash moves:
+  // every 2.6 s a breath comes out of the crack (the game's own line: "A draught blows from the wall") and carries
+  // a handful of pale puffs and motes along the floor, from the foot of the cracked stretch out past the ash
+  // patch, about a cell and a half; a mote now and then in between. It is ash on the floor, not a marker: no
+  // arrow, no glow, and it stops for good once the wall is open. localStorage 'qok-d4-looks' = '0': the old picture only.
+  var LOOKS=(function(){ try{ return window.localStorage.getItem('qok-d4-looks')!=='0'; }catch(e){ return true; } })();
+  var GUST_MS=2600, GUST_ON=760;
+  function texAsh(sc){ return K.tex(sc,'d2a_ashpuff',24,24,function(g){
+    var f=g.createRadialGradient(12,12,0.5,12,12,12); f.addColorStop(0,'rgba(255,255,255,0.95)'); f.addColorStop(0.45,'rgba(255,255,255,0.42)'); f.addColorStop(1,'rgba(255,255,255,0)');
+    g.fillStyle=f; g.fillRect(0,0,24,24); }); }
+  function draughtMake(ctx,h){
+    var sc=ctx.scene, G=h.S, d=G.dir, i, key=texAsh(sc);
+    // the foot of the cracked stretch on her side, and the way the breath goes: out from the wall, bent toward the ash patch
+    var fx=d[0]?(d[0]>0?G.x0:G.x1):(G.x0+G.x1)/2, fy=d[1]?(d[1]>0?G.y0:G.y1):(G.y0+G.y1)/2;
+    var tx=h.x*TILE+TILE/2-fx, ty=h.y*TILE+TILE/2-fy, tl=Math.sqrt(tx*tx+ty*ty)||1, ux=-d[0]*0.55+tx/tl*0.45, uy=-d[1]*0.55+ty/tl*0.45, ul=Math.sqrt(ux*ux+uy*uy)||1;
+    h.dr={fx:fx, fy:fy, ux:ux/ul, uy:uy/ul, along:d[0]?[0,1]:[1,0], span:(d[0]?G.y1-G.y0:G.x1-G.x0)*0.36, next:0, motes:[]};
+    for(i=0;i<16;i++){ var o=K.img(ctx,key,fx,fy,2.26).setVisible(false); h.dr.motes.push({img:o, t0:-1e9, life:1}); }
+  }
+  function draughtTick(st,h){
+    var D=h.dr, t=st.t, i, ph=t%GUST_MS, gust=ph<GUST_ON;
+    if(h.S.open){ if(!D.off){ D.off=true; for(i=0;i<D.motes.length;i++) D.motes[i].img.setVisible(false); } return; }
+    if(t>=D.next){ D.next=t+(gust?62:520);                                     // a breath, then a mote now and then
+      for(i=0;i<D.motes.length;i++){ var m=D.motes[i]; if(t-m.t0<m.life) continue;
+        var puff=gust&&Math.random()<0.45, a=(Math.random()-0.5)*2*D.span, sp=(gust?58:34)+Math.random()*26;
+        m.t0=t; m.life=(puff?1500:1150)+Math.random()*500; m.x=D.fx+D.along[0]*a-D.ux*2; m.y=D.fy+D.along[1]*a-D.uy*2;
+        m.vx=D.ux*sp; m.vy=D.uy*sp; m.ph=Math.random()*6.28; m.size=puff?0.55+Math.random()*0.3:0.16+Math.random()*0.12; m.peak=puff?0.34:0.8; m.wob=puff?3:6;
+        m.img.setTint(puff?0xd9d2c8:0xf2ece2).setVisible(true); break; } }
+    for(i=0;i<D.motes.length;i++){ var q=D.motes[i], age=t-q.t0; if(age>=q.life){ if(q.img.visible) q.img.setVisible(false); continue; }
+      var k=age/q.life, s=age/1000, w=Math.sin(age/240+q.ph)*q.wob*k;
+      q.img.setPosition(q.x+q.vx*s*(1-0.32*k)-D.uy*w, q.y+q.vy*s*(1-0.32*k)+D.ux*w).setScale(q.size*(0.7+1.0*k)).setAlpha(q.peak*Math.pow(Math.sin(Math.PI*Math.min(1,k*1.15)),0.7)); }
+  }
   K.ready(function(K,D){ D.register('cracked-walls',{
     load:function(ctx){
       var sc=ctx.scene, st=ctx.state, ss=(ctx.mechanic&&ctx.mechanic.secrets)||[], mech=ctx.plan.mech||[], i, j;
@@ -90,7 +122,8 @@
         for(j=0;j<st.secrets.length;j++) if(st.secrets[j].id===a.secret) S=st.secrets[j];
         var o=K.img(ctx,texHint(sc,a.type),a.x*TILE+TILE/2,a.y*TILE+TILE/2,2.2);
         if(S && a.type!=='sign' && a.type!=='ember glow' && a.type!=='loose stones') o.setRotation(Math.atan2((S.y0+S.y1)/2-o.y,(S.x0+S.x1)/2-o.x));   // trails and draughts point at the crack
-        st.hints.push({x:a.x,y:a.y,type:a.type,img:o,S:S}); }
+        var hh={x:a.x,y:a.y,type:a.type,img:o,S:S}; st.hints.push(hh);
+        if(LOOKS && S && a.type==='draught in the ash'){ try{ draughtMake(ctx,hh); }catch(e){} } }
     },
     _breach:function(ctx,G,quiet){
       var sc=ctx.scene;
@@ -114,7 +147,7 @@
           if(a<=0.02) continue; g.fillStyle(0xff7a1a,Math.min(1,a)*0.35); g.fillCircle(e[0],e[1],e[3]+2.5); g.fillStyle(0xffc060,Math.min(1,a)); g.fillCircle(e[0],e[1],e[3]*0.7); }
         if(G.crack){ G.crack.setAlpha(live?0.85:0.6); G.crack.setPosition((G.x0+G.x1)/2+(lean>0?Math.sin(st.t/18)*1.5*lean:0),(G.y0+G.y1)/2); }
         if(st.t-G.last>160) G.acc=Math.max(0,G.acc-dt*2); }
-      for(i=0;i<st.hints.length;i++){ var h=st.hints[i]; if(h.type==='ember glow') h.img.setAlpha(0.75+0.25*Math.sin(st.t/210+i)); else if(h.type==='draught in the ash') h.img.setAlpha(0.6+0.3*Math.sin(st.t/340+i)); }
+      for(i=0;i<st.hints.length;i++){ var h=st.hints[i]; if(h.type==='ember glow') h.img.setAlpha(0.75+0.25*Math.sin(st.t/210+i)); else if(h.type==='draught in the ash'){ h.img.setAlpha(0.6+0.3*Math.sin(st.t/340+i)); if(h.dr) draughtTick(st,h); } }
     },
     bump:function(ctx,tx,ty,ux,uy,tile,info){
       var st=ctx.state, i; if(!st.secrets||!info) return;

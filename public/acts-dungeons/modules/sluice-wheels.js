@@ -131,6 +131,52 @@
     g.fillStyle=c[0]; g.beginPath(); g.arc(cx,cy,4.5,0,Math.PI*2); g.fill();
     g.fillStyle=c[2]; g.fillRect(cx-2,cy-3,2,2);
     g.fillStyle=c[0]; g.beginPath(); g.arc(cx,cy-19,3.2,0,Math.PI*2); g.fill(); }); }   // the coloured spoke ends in a knob: up = start, down = turned
+  // ---- the look (day 4, DB-09) -------------------------------------------------------------------
+  // 1. A wheel (and a mimic) stands above the lamp's darkness in the draw order (it is sorted against her), so one
+  //    far outside her light shone at full brightness over a black floor. It now takes the darkness's own falloff
+  //    (the engine's rule for wall tops: dq-tiles.js a2dOver), so it fades with the floor it stands on.
+  // 2. The hub's colour is not a state light: it names the wheel (1 red, 2 green, 3 violet) and matches the inlays
+  //    of the sills it works. So that nobody needs the colour: each wheel has its own inlay SHAPE too (1 diamond,
+  //    2 disc, 3 triangle), cut into the hub and into its sills. The wheel's state (turned or not) is the marked
+  //    spoke, which now carries a pale handle past the rim: handle up = as found, handle down = turned.
+  // localStorage 'qok-d4-looks' = '0': the old wheel, diamonds everywhere, no fading.
+  var LOOKS=(function(){ try{ return window.localStorage.getItem('qok-d4-looks')!=='0'; }catch(e){ return true; } })();
+  function inlay(g,id,cx,cy,r,dark,lite){                    // the wheel's own mark: 1 diamond, 2 disc, 3 triangle
+    function shape(q){ g.beginPath();
+      if(!LOOKS||id===1||!(id===2||id===3)){ g.moveTo(cx,cy-q); g.lineTo(cx+q,cy); g.lineTo(cx,cy+q); g.lineTo(cx-q,cy); }
+      else if(id===2) g.arc(cx,cy,q*0.86,0,Math.PI*2);
+      else { g.moveTo(cx,cy-q); g.lineTo(cx+q,cy+q*0.8); g.lineTo(cx-q,cy+q*0.8); }
+      g.closePath(); g.fill(); }
+    g.fillStyle=dark; shape(r); g.fillStyle=lite; shape(r-1);
+  }
+  function texWheel2(sc,id){ var c=COL[id]||COL[1]; return K.tex(sc,'d2c_wheel2_'+id,48,48,function(g){
+    var cx=24, cy=24, i, a;
+    g.lineCap='round';
+    for(i=0;i<6;i++){ a=i*Math.PI/3-Math.PI/2; g.strokeStyle='#3a2410'; g.lineWidth=5; g.beginPath(); g.moveTo(cx,cy); g.lineTo(cx+Math.cos(a)*18,cy+Math.sin(a)*18); g.stroke();
+      g.strokeStyle=i===0?c[0]:'#9a6a34'; g.lineWidth=3; g.beginPath(); g.moveTo(cx+Math.cos(a)*5,cy+Math.sin(a)*5); g.lineTo(cx+Math.cos(a)*17,cy+Math.sin(a)*17); g.stroke(); }
+    g.strokeStyle='#2b1a0b'; g.lineWidth=7; g.beginPath(); g.arc(cx,cy,18,0,Math.PI*2); g.stroke();
+    g.strokeStyle='#a8743a'; g.lineWidth=4; g.beginPath(); g.arc(cx,cy,18,0,Math.PI*2); g.stroke();
+    g.strokeStyle='#d9a660'; g.lineWidth=1; g.beginPath(); g.arc(cx,cy,19,Math.PI*1.05,Math.PI*1.7); g.stroke();
+    for(i=1;i<6;i++){ a=i*Math.PI/3-Math.PI/2; g.fillStyle='#4a4a52'; g.fillRect(cx+Math.cos(a)*18-1.5,cy+Math.sin(a)*18-1.5,3,3); }
+    g.fillStyle='#22160b'; g.beginPath(); g.arc(cx,cy,8,0,Math.PI*2); g.fill();
+    g.fillStyle='#caa66c'; g.beginPath(); g.arc(cx,cy,7,0,Math.PI*2); g.fill();          // a stone boss with the wheel's mark cut in it
+    inlay(g,id,cx,cy,5.5,c[1],c[0]);
+    g.fillStyle='#22160b'; g.fillRect(cx-4,0,8,9); g.fillStyle='#f0dcae'; g.fillRect(cx-3,1,6,7);   // the handle on the marked spoke: up = as found, down = turned
+    g.fillStyle='#fff6dc'; g.fillRect(cx-3,1,2,7); g.fillStyle=c[0]; g.fillRect(cx-3,6,6,2); }); }
+  // The lamp's darkness at a world point, as the engine draws it (dq-tiles.js updateFog / a2dOver's fk): 255 lit .. 5 dark.
+  function fogImage(sc,st){
+    var f=st.fogImg; if(f && f.scene && f.texture && f.texture.key==='dqdngfog') return (f.visible&&f.alpha>0)?f:null;
+    if(st.fogSeek>st.age) return null; st.fogSeek=st.age+500; st.fogImg=null;
+    try{ var l=sc.children.list, i; for(i=0;i<l.length;i++) if(l[i].texture && l[i].texture.key==='dqdngfog'){ st.fogImg=l[i]; break; } }catch(e){}
+    f=st.fogImg; return (f&&f.visible&&f.alpha>0)?f:null;
+  }
+  function shade(sc,st,list){
+    var hero=sc.hero, on=hero&&fogImage(sc,st), i, zz=1, FR=(typeof window.__DQ_FOG_R__==='number')?window.__DQ_FOG_R__:FOG_R, FS=16, FF=6;
+    try{ zz=sc.cameras.main.zoom||1; }catch(e){}
+    for(i=0;i<list.length;i++){ var o=list[i]; if(!o) continue; var v=255;
+      if(on){ var dx=(o.x-hero.x)*zz/FF, dy=((o.__by!==undefined?o.__by-TILE/2:o.y)-hero.y)*zz/FF, t=(Math.sqrt(dx*dx+dy*dy)-(FR-FS))/(2*FS); t=t<0?0:(t>1?1:t); v=Math.round(255*(1-(t*t*(3-2*t))*0.98)); }
+      if(o.__shade!==v){ o.__shade=v; try{ if(v>=255) o.clearTint(); else o.setTint(v*65793); }catch(e){} } }
+  }
   function texHousing(sc){ return K.tex(sc,'d2c_housing',56,46,function(g){
     K.shadow(g,28,40,25,6,0.38);
     K.box(g,6,14,44,28,'#b88a55','#3c2612','#dcb47c');               // sandstone housing
@@ -161,7 +207,7 @@
     return {c:c, x0:x0, y0:y0, w:w, h:h, horiz:horiz, ends:ends, inletLow:inletLow, level:0, from:0, to:0, t:0, dur:0, mode:'fill', wet:0, off:0, redraw:0, img:null, bed:null, tk:null};
   }
   function bedTex(sc,ctx,C){                               // dry walkway: flagstones over the painted bed, sills at the open ends
-    var painted=art(sc), key='d2c_bed'+(painted?'p':'')+'_'+ctx.key+'_'+C.c.id, col=COL[C.c.wheel]||COL[1];
+    var painted=art(sc), key='d2c_bed'+(painted?'p':'')+(LOOKS?'2':'')+'_'+ctx.key+'_'+C.c.id, col=COL[C.c.wheel]||COL[1];
     C.bedPainted=painted;
     if(painted) return K.tex(sc,key,C.w,C.h,function(g,w,h){      // a sunk bed of pebbles and shells, shaded under its banks
       var pb=pat(sc,g,'d2c_p_bed'), ps=pat(sc,g,'d2c_p_sill'), gr, i;
@@ -174,8 +220,7 @@
       function kerb(x,y,len,vert){ g.save(); g.translate(x,y); if(vert){ g.translate(10,0); g.rotate(Math.PI/2); }
         g.fillStyle=ps||'#c9a36b'; g.fillRect(0,0,len,10); g.fillStyle='rgba(20,12,4,0.35)'; g.fillRect(0,10,len,3); g.restore();
         var n=Math.max(2,Math.round(len/48)); for(i=0;i<n;i++){ var t=(i+0.5)*len/n, cx=vert?x+5:x+t, cy=vert?y+t:y+5;
-          g.fillStyle=col[1]; g.beginPath(); g.moveTo(cx,cy-4); g.lineTo(cx+4,cy); g.lineTo(cx,cy+4); g.lineTo(cx-4,cy); g.closePath(); g.fill();
-          g.fillStyle=col[0]; g.beginPath(); g.moveTo(cx,cy-3); g.lineTo(cx+3,cy); g.lineTo(cx,cy+3); g.lineTo(cx-3,cy); g.closePath(); g.fill();
+          inlay(g,C.c.wheel,cx,cy,4,col[1],col[0]);
           g.fillStyle='rgba(255,255,255,0.45)'; g.fillRect(cx-1,cy-2,1,1); } }
       if(C.ends.l) kerb(0,0,h,true); if(C.ends.r) kerb(w-10,0,h,true); if(C.ends.t) kerb(0,0,w,false); if(C.ends.b) kerb(0,h-10,w,false);
     });
@@ -190,8 +235,7 @@
       function sill(x,y,sw,sh){ g.fillStyle='#4a3218'; g.fillRect(x,y,sw,sh); g.fillStyle='#c9a36b'; g.fillRect(x+1,y+1,sw-2,sh-2);
         g.fillStyle='#e6c690'; if(sw>sh) g.fillRect(x+1,y+1,sw-2,1); else g.fillRect(x+1,y+1,1,sh-2);
         var n=3, i, L=Math.max(sw,sh); for(i=0;i<n;i++){ var t=(i+0.5)*L/n, cx=sw>sh?x+t:x+sw/2, cy=sw>sh?y+sh/2:y+t;
-          g.fillStyle=col[1]; g.beginPath(); g.moveTo(cx,cy-4); g.lineTo(cx+4,cy); g.lineTo(cx,cy+4); g.lineTo(cx-4,cy); g.closePath(); g.fill();
-          g.fillStyle=col[0]; g.beginPath(); g.moveTo(cx,cy-3); g.lineTo(cx+3,cy); g.lineTo(cx,cy+3); g.lineTo(cx-3,cy); g.closePath(); g.fill(); } }
+          inlay(g,C.c.wheel,cx,cy,4,col[1],col[0]); } }
       if(C.ends.l) sill(0,0,8,h); if(C.ends.r) sill(w-8,0,8,h); if(C.ends.t) sill(0,0,w,8); if(C.ends.b) sill(0,h-8,w,8);
     });
   }
@@ -275,7 +319,7 @@
       var ws=mech.wheels||[];
       for(i=0;i<ws.length;i++){ var w=ws[i], px=w.at[0]*TILE+TILE/2, by=(w.at[1]+1)*TILE-4;
         var base=K.img(ctx,texHousing(sc),px,by+2,9.4); try{ base.setOrigin(0.5,1); }catch(e){} base.__by=by;
-        var wi=K.img(ctx,texWheel(sc,w.id),px,by-30,9.41); wi.__by=by; try{ wi.setRotation(turned(ctx,w.id)?Math.PI:0); }catch(e){}
+        var wi=K.img(ctx,(LOOKS?texWheel2:texWheel)(sc,w.id),px,by-30,9.41); wi.__by=by; try{ wi.setRotation(turned(ctx,w.id)?Math.PI:0); }catch(e){}
         st.wheels.push({id:w.id, x:w.at[0], y:w.at[1], channels:w.channels||[], base:base, img:wi}); st.sort.push(base, wi); }
       var mm=ctx.plan.mech||[];
       for(i=0;i<mm.length;i++){ if(mm[i].kind!=='mimic') continue; var a=mm[i];
@@ -327,6 +371,7 @@
       if(!st.painted && art(sc)){ st.painted=true;                 // the painted set has arrived: beds and water take it
         for(i=0;i<st.ch.length;i++){ var Cp=st.ch[i]; try{ Cp.bed.setTexture(bedTex(sc,ctx,Cp)); Cp.bed.setOrigin(0,0); }catch(e){} Cp.pp=null; paintWater(sc,Cp); } }
       var h=ctx.hero(); if(h) K.ysort(st.sort,h.footY,10.2,9.4);
+      if(LOOKS) shade(sc,st,st.sort);
       // the mimics: the engine's own chest picture (shut until sprung, then open and empty)
       for(i=0;i<st.mimics.length;i++){ var Mi=st.mimics[i], nm=Mi.sprung?'chestOpen':'chest', tk=chestTex(sc,nm);
         if(!tk) continue;

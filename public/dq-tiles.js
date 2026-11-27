@@ -7714,6 +7714,49 @@
     }
     return null;
   }
+  /* ==== SNAG GLIDE, ACT 1 DUNGEONS (day 4, track S, 2026-11-27) =================================
+     Walking straight ALONG a cave wall, a1mSlide has nothing to slide along (the distance field at her
+     pixel reads "the wall is exactly beside me"), the two axis retries are the same refused step, and
+     she stops dead at any unevenness of the wall: a 1 px step of the walk mask is enough. Static census,
+     day 4: 4,081 such places of 24 px or less on the 12 Act 1 floors (43,062 on the Acts 2-5 floors).
+     Acts 2-5 are served through the mechanic hook: acts-dungeons/modules/snag-slide.js wraps every
+     mechanic's input. Act 1 has no mechanic, so the SAME glide (that file's function, not a copy) is
+     asked from here. It only BENDS THE STICK for this frame: every position is still accepted or refused
+     by a1mFree in the substep loop below, a bent step only goes onto painted floor, and the glide stands
+     down at chest / sign / crystal / boss cells (walking into one is how it is used).
+     WHERE: only an Act 1 mask floor (A1D_MAPS) with no authored Acts 2-5 floor live, so it never acts
+     twice. Not the overworld, not a town. Crystal Cave has no walk mask and never reaches this mover.
+     OFF: localStorage 'qok-snag-slide' = '0' (the module's own switch). Without the module (its script
+     not loaded, 'qok-dungeons2' = '0') nothing here changes anything.
+     Check: scripts/auto/checks/snags.cjs. window.__QOK_SNAG_A1__ is for that check only. */
+  var a1mSnagC=null;
+  function a1mSnagBend(scene,m,inp,x,y){
+    var sn=window.__QOK_SNAG__;
+    if(!sn||!sn.on||!sn.glide||!m||m.ow||a2dCtx||A1D_MAPS[scene.currentMapId]!==1){ a1mSnagC=null; return null; }
+    var key=a1mStateKey(scene), c=a1mSnagC;
+    if(!c||c.scene!==scene||c.key!==key) c=a1mSnagC={ scene:scene, key:key, mod:null, state:null, __snag:null,
+      snagFree:function(px,py){ var mm=null; try{ mm=a1mFor(scene); }catch(e){} return !!(mm&&a1mFree(scene,mm,px,py)); },
+      maskFree:function(px,py){ var mm=null; try{ mm=a1mFor(scene); }catch(e){} if(!mm) return false;
+        var gx=(px-mm.ox)|0, gy=(py-mm.oy)|0; if(gx<1||gy<1||gx>=mm.W-1||gy>=mm.H-1) return false;
+        if(mm.dist[gy*mm.W+gx] >= a1mNeed(mm,gx,gy)) return true;
+        return a1mTileAt(scene,px,py)===6 && a1dIsMouthCell(scene,(px/TILE)|0,(py/TILE)|0); },   // the floor-1 mouth cell is hers to stand in, as in a1mFree
+      tile:function(cx,cy){ var row=scene.mapData&&scene.mapData[cy]; return row?row[cx]:undefined; } };
+    if(!inp){ c.__snag=null; return null; }                                  // no push: the glide forgets
+    c.snagFootDy=a1mFootDy(scene,m);
+    var r; try{ r=sn.glide(c,inp,x,y); }catch(e){ r=undefined; if(window.__DQ_DEBUG__) console.log('a1 snag '+e); }
+    return r||null;
+  }
+  function a1mSnagFace(scene){                                               // a bent frame must not turn her: she faces the way she pushed
+    var c=a1mSnagC, S=c&&c.__snag, b=S&&S.bent, sn=window.__QOK_SNAG__;
+    if(!b||!sn||!sn.facing) return;
+    S.bent=null; scene.heroDir=sn.facing(b.ux,b.uy,b.dir);
+  }
+  window.__QOK_SNAG_A1__={                                                   // probes (the check): sprite coordinates, as a1mFree takes them
+    live:function(){ var sn=window.__QOK_SNAG__; return !!(sn&&sn.on&&sn.glide); },
+    free:function(scene,x,y){ var mm=null; try{ mm=a1mFor(scene); }catch(e){} return !!(mm&&!mm.ow&&a1mFree(scene,mm,x,y)); },
+    footDy:function(scene){ var mm=null; try{ mm=a1mFor(scene); }catch(e){} return a1mFootDy(scene,mm); },
+    state:function(){ return a1mSnagC?a1mSnagC.__snag:null; } };
+  /* ==== end of SNAG GLIDE, ACT 1 DUNGEONS (two marked lines in a1mStep below use it) ==== */
   function a1mStep(scene,dtms){
     var m=a1mAnyFor(scene); if(!m) return;
     var hero=scene.hero; if(!hero||!hero.scene) return;
@@ -7758,6 +7801,8 @@
     }
     if(a2dCtx && !m.ow){ var a2w=a2dOpenedUnder(scene,inp,x,y+a1mFootDy(scene,m));   // authored: the boss's way out opens where she stands
       if(a2w){ try{ scene.performTransition(a2w); }catch(e){ if(window.__DQ_DEBUG__) console.log('a2d way '+e); } return; } }
+    var snagInp=null;                                                        // SNAG GLIDE, ACT 1 (a1mSnagBend above): the stick may be bent for this frame's steps
+    if(!m.ow && !a2dCtx){ var snagB=a1mSnagBend(scene,m,inp,x,y); if(snagB){ snagInp=inp; inp=snagB; } }
     if(inp){
       // Facing dead band: near a 45-degree push |x| and |y| trade places with every thumb tremor and
       // she flickered between two facings. Keep the axis she already faces until the other one
@@ -7814,6 +7859,7 @@
         if(!slid){ a1mBump(scene,m,x,y,sx,sy); break; }
       }
     }
+    if(snagInp){ a1mSnagFace(scene); inp=snagInp; }                          // SNAG GLIDE, ACT 1: her facing and the stick are as she pushed them
     var physicalMoved=moved*(scaled?OW_SCALE:1);
     a1mState.phase += physicalMoved;                                         // physical EUCLIDEAN px travelled
     // 12 frames = dir*3 + pose (hero-override.js). The cycle and its rate are the town's, held at
@@ -9564,9 +9610,9 @@
       return shuffle(seen).map(function(m){ return {text:{en:String(m),ja:String(m)},isCorrect:m===n}; });
     }
     function kanjiMode(){ try{ var gs=window.__GAME_STATE__; return !!(gs&&gs.player&&gs.player.state&&gs.player.state.kanjiMode); }catch(e){ return false; } }
-    function build(c,grade,tier,act){
+    function build(c,grade,tier,act,rowi){
       return { questionText:{en:c.en,ja:kanjiMode()?c.kj:c.ja}, answers:choices(c.a,!!c.neg,c.d), category:c.c, gradeLevel:grade, difficultyTier:tier,
-               qz2:{act:act,kana:c.ja,kanji:c.kj} };
+               qz2:{act:act,row:rowi,kana:c.ja,kanji:c.kj} };   // row: which plan row (kind) made it; -1 look-ahead at negatives, -2 unknown. Read only: the balance block's critical-hit class (qok-crit-class) keys on grade, act, row
     }
     var texts=[], answers=[];
     function count(list,v,window){ var n=0; for(var i=Math.max(0,list.length-window);i<list.length;i++) if(list[i]===v) n++; return n; }
@@ -9578,17 +9624,17 @@
     function question(qm,zone,isBoss){
       var grade=String(typeof qm.getEffectiveGrade==='function'?qm.getEffectiveGrade():qm.difficulty);
       if(!PLAN[grade]) return null;
-      var tier='medium', act=5, best=null, bestScore=Infinity, spare=null, skip={}, round, row, i, c, gen, score;
+      var tier='medium', act=5, best=null, bestRow=-2, curRow=-2, bestScore=Infinity, spare=null, skip={}, round, row, i, c, gen, score;
       if(zone){ tier=TIER[zone]||'medium'; if(isBoss) tier=BOSS[tier]; act=actOf(zone); }
       for(round=0;!best;round++){
-        if(round===0&&wantNeg(grade,act)) gen=neg;
-        else { row=pick(grade,act,tier,skip); if(row<0) break; skip[row]=true; gen=PLAN[grade][act][row][1]; }
+        if(round===0&&wantNeg(grade,act)){ gen=neg; curRow=-1; }
+        else { row=pick(grade,act,tier,skip); if(row<0) break; skip[row]=true; curRow=row; gen=PLAN[grade][act][row][1]; }
         for(i=0;i<DRAWS;i++){
           try{ c=gen(); }catch(e){ c=null; }
           if(!sound(c)) continue;
           if(count(texts,c.en,WIN[grade])){ spare=spare||c; continue; }
           score=count(answers,c.a,ANS_WINDOW);
-          if(score<bestScore){ bestScore=score; best=c; }
+          if(score<bestScore){ bestScore=score; best=c; bestRow=curRow; }
           if(score===0) break;
         }
       }
@@ -9597,7 +9643,7 @@
       texts.push(best.en); answers.push(best.a);
       while(texts.length>120) texts.shift();
       while(answers.length>ANS_WINDOW) answers.shift();
-      return build(best,grade,tier,act);
+      return build(best,grade,tier,act,bestRow);
     }
     function on(){ try{ return window.localStorage.getItem('qok-quiz2')!=='0'; }catch(e){ return true; } }
     return { on:on, question:question, draw:draw, actOf:actOf, WIN:WIN, NEG_SHARE:NEG_SHARE, version:'2026-11-27' };

@@ -304,7 +304,7 @@
   'use strict';
   var CAP = 20;
   var BALANCE = {
-    version: '2026-11-27a',
+    version: '2026-11-27b',
     bosses: {
       // regen 0.07 -> 0.03; grades 5-6: hp/atk/def x0.77 (cancels the x1.3 grade scale for the first boss only);
       // 2026-11-27 grade 5: x0.65 (the grades K-2 fight: 78/17/10; x0.77 won 61% for the grade 5 child, x0.65 won 92-100% from every hero seen)
@@ -323,9 +323,13 @@
       // 2026-11-24 with the lower poison: charge grades K-2 1.6 -> 1.5, grades 5-6 1.35 -> 1.45
       // 2026-11-27 (grades K and 2 were never measured before): kindergarten hp 1300 (a median fight of 420 s ran past the 390 s limit,
       // 64% won; now 69% in 364 s); grade 2 rage 1.7 and charge 1.6 (87% won, above the 55-80% band; now about 70%)
+      // 2026-11-27b (quiz bank v2: a child spends 10-40% longer on every answer, so the same fight ran 410-550 s against the 390 s limit):
+      // fewer boss HP, and the rage and charge of grades K, 1 and 2 raised so the win rate stays inside 55-80%. hp grades K 1300 -> 900,
+      // 1 1500 -> 1050, 2 1500 -> 1300, 3 1500 -> 1400, 5 1400 -> 1300; rage K and 1 1.6 -> 1.7, 2 1.7 -> 1.75, charge K and 1 1.5 -> 1.6.
       demonKing:          { hp: 1500, regen: 0.01, poison: 0.02, rage: 1.5, charge: 1.6, grade: {
-        'k': { hp: 1300, rage: 1.6, charge: 1.5 }, '1': { rage: 1.6, charge: 1.5 }, '2': { rage: 1.7, charge: 1.6 },
-        '5': { hp: 1400, rage: 1.3, charge: 1.45 }, '6': { hp: 1400, rage: 1.3, charge: 1.45 } } }
+        'k': { hp: 900, rage: 1.7, charge: 1.6 }, '1': { hp: 1050, rage: 1.7, charge: 1.6 }, '2': { hp: 1300, rage: 1.75, charge: 1.6 },
+        '3': { hp: 1400 },
+        '5': { hp: 1300, rage: 1.35, charge: 1.45 }, '6': { hp: 1400, rage: 1.3, charge: 1.45 } } }
     },
     // Ten dungeons roll a neighbour's monster table although the zone table holds one written for them.
     dungeonZones: {
@@ -563,5 +567,41 @@
     global.setTimeout(loop, done.player && done.world && done.battle && done.zone && done.steps ? 500 : 50);
   }
   if (global.setTimeout) loop();
+})(typeof window !== 'undefined' ? window : globalThis);
+/*
+ * CRITICAL-HIT CLASS (day 4, quiz bank v2).  Bank v2 questions take a child longer (model: 3.2 to 7.1 s a question, the old bank
+ * 2.5 to 4.6 s), but the quiz timer and the keypad's 4.5 s critical-hit window were sized for the old bank.  Each plan row (kind of
+ * question) of the new bank gets a class factor m = (its mean solve time by the effort model) / (the old bank's mean for that
+ * grade), never under 1 and at most 2; the timer and the critical window are multiplied by m (ui-overhaul.js critMul()).  A
+ * child who answers at her grade's normal pace then lands criticals and beats the timer about as often as on the old bank.
+ * The table is generated: node scripts/auto/honest/mkcritclass.cjs (from effort-ref.json, which effortref.cjs measures).
+ * localStorage['qok-crit-class'] = '0' gives 1 everywhere (the fixed values of builds up to 99), and so does qok-quiz2=0
+ * (the old bank carries no row, so it is never scaled).
+ */
+(function installCritClass(global) {
+  'use strict';
+  var VERSION = '2026-11-27a';
+  // ---- generated table: CLASS[grade][act - 1][row] = factor; NEG[grade] = the grade 6 look-ahead at negatives ----
+  var CLASS = {
+    '1': [[1,1,1.35,1],[1,1.2,2,1.35,1.2,1],[1.45,2,2,1.3,1.8],[1.55,1.45,2,1.85],[2,1.85,1.55,1.45,1.2,1,1.55]],
+    '2': [[1.3,1.45,1.25,1.35,1.4],[1.75,1.95,1.25,1.35,1.3,1.45],[1,1.75,1.95,2],[1.2,1,2,2,1.6],[1.05,1.45,2,2,1.35,1.35,1.25,1.6]],
+    '3': [[1,1,1.65,1.8,1.6,1.7],[1.05,1.35,1,2,1.7],[1.75,1.15,1.1,1.6,1.1,2],[1.85,2,1.25,1.75,1.25,1.25,1.45,2],[1.85,2,2,1.75,1.75,1.15,1.55,2,2]],
+    '4': [[1.7,2,1.55,1.1,1.5,1.8],[1.65,1.55,1.1,2,1.35,1.7],[1.85,2,2,1.35,2],[2,2,1.95,1.85,2],[2,2,2,2,1.55,1.1,2,2]],
+    '5': [[1,1.6,1.3,1.5,1.2],[1.2,1.85,1.2,1.2,1.4],[1,1.5,2,1.25,1.2,1.9],[1.25,1.3,2,1.65,1.5,2],[1.5,1.45,1.55,2,1.5,1.2,2]],
+    '6': [[1.2,1,1.25],[1.4,1.5,1.1,1.1,1,1.25],[1,1.3,1.5,1.65,1.5],[1.5,1.35,1.5,1.3,1.6,1.5],[1.5,1.5,1.4,1.5,1.3,1.35,1.65,2]],
+    k: [[1,1.1,1,1.2],[1.3,1.1,1,1],[1.15,1.45,1.1,1.15,1.55],[1.4,1.25,1.1,1.3,1.75],[1.45,1.5,1.95,1.1,1.3]]
+  };   // @@CLASS@@
+  var NEG = {6:1.55};     // @@NEG@@
+  function on() { try { return global.localStorage.getItem('qok-crit-class') !== '0'; } catch (_) { return true; } }
+  function mult(q) {
+    try {
+      if (!on() || !q || !q.qz2 || typeof q.qz2.act !== 'number') return 1;
+      var g = String(q.gradeLevel), r = q.qz2.row, t;
+      if (r === -1) return NEG[g] || 1;
+      t = CLASS[g] && CLASS[g][q.qz2.act - 1];
+      return t && typeof r === 'number' && r >= 0 && t[r] > 0 ? t[r] : 1;
+    } catch (_) { return 1; }
+  }
+  global.__QOK_CRITCLASS__ = { on: on, mult: mult, table: CLASS, neg: NEG, version: VERSION };
 })(typeof window !== 'undefined' ? window : globalThis);
 // ==== end QOK balance + bag (autoloop 2026-11-23) ====

@@ -92,11 +92,20 @@
       g.fillStyle = '#31425e'; g.fillRect(11, 44, 26, 3); g.fillStyle = '#dff1ff'; g.beginPath(); g.arc(24, 50, 3.5, 0, Math.PI * 2); g.fill();
     });
   }
+  // Day 4 (DC-10): the block's picture is a boulder on a floor plinth a little wider than its cell. Sorted as one
+  // picture, the plinth's rim hid her right half when she stood beside the block to push it. The plinth lies on
+  // the floor, so the whole picture is now drawn once under her (`.under`), and only the boulder (the picture
+  // without the plinth's rim: BOULDER, texture px) keeps the old in-front / behind sorting.
+  // localStorage 'qok-d4-looks' = '0': one picture, sorted whole, as before.
+  var LOOKS = (function () { try { return window.localStorage.getItem('qok-d4-looks') !== '0'; } catch (e) { return true; } })();
+  var BOULDER = [15, 0, 82, 90];                                             // x, y, w, h of the boulder inside the 112 x 108 picture
+  function both(e) { return e.under ? [e, e.under] : [e]; }
   function build(ctx) {
     var S = ctx.state, K = S.K, sc = ctx.scene, kb = K.art(sc, 'ice-block'), kr = K.art(sc, 'ice-bridge'); if (!kb || !kr) return;
     S.spr = { blk: {}, br: {}, bell: {}, kb: kb, kr: kr };
     for (var i = 0; i < S.rooms.length; i++) { var R = S.rooms[i], j;
-      for (j = 0; j < R.blocks.length; j++) S.spr.blk[R.id + '.' + j] = ctx.own(sc.add.image(0, 0, kb).setOrigin(0.5, 1).setVisible(false));
+      for (j = 0; j < R.blocks.length; j++) { var top = S.spr.blk[R.id + '.' + j] = ctx.own(sc.add.image(0, 0, kb).setOrigin(0.5, 1).setVisible(false));
+        if (LOOKS) { top.under = ctx.own(sc.add.image(0, 0, kb).setOrigin(0.5, 1).setDepth(ctx.depth.ground + 0.5).setVisible(false)); try { top.setCrop(BOULDER[0], BOULDER[1], BOULDER[2], BOULDER[3]); } catch (x) {} } }
       for (j = 0; j < R.need; j++) { var p = cellPx(R, R.gw + j, R.row);
         S.spr.br[R.id + '.' + j] = ctx.own(sc.add.image(p[0] + C / 2, p[1] + C / 2, kr).setDisplaySize(C + 2, C + 2).setDepth(ctx.depth.ground + 0.2).setVisible(j < R.fill)); }
       if (R.bell) S.spr.bell[R.id] = ctx.own(sc.add.image(R.bell.x * T + T / 2, R.bell.y * T + T - 2, bellTex(sc, K)).setOrigin(0.5, 1));
@@ -105,17 +114,18 @@
   function sync(ctx, R) {                                                     // sprites to the model (no animation)
     var S = ctx.state; if (!S.spr) return;
     for (var j = 0; j < R.blocks.length; j++) { var e = S.spr.blk[R.id + '.' + j], b = R.blocks[j];
-      if (!b) { e.setVisible(false); continue; } var p = cellPx(R, b[0], b[1]); e.setPosition(p[0] + C / 2, p[1] + C + 6).setVisible(true).setAlpha(1); }
+      if (!b) { e.setVisible(false); if (e.under) e.under.setVisible(false); continue; } var p = cellPx(R, b[0], b[1]); e.setPosition(p[0] + C / 2, p[1] + C + 6).setVisible(true).setAlpha(1);
+      if (e.under) e.under.setPosition(e.x, e.y).setVisible(true).setAlpha(1); }
     for (j = 0; j < R.need; j++) S.spr.br[R.id + '.' + j].setVisible(j < R.fill);
   }
   function slide(ctx, R, k, res) {
     var S = ctx.state, e = S.spr && S.spr.blk[R.id + '.' + k], p = cellPx(R, res.to[0], res.to[1]), ms = Math.min(520, 90 + res.cells * 70);
     S.busy = ms + 60;
     if (!e) return;
-    var done = function () { if (res.sunk) { e.setVisible(false); var br = S.spr.br[R.id + '.' + (R.fill - 1)]; if (br) { br.setVisible(true).setAlpha(0.2);
+    var done = function () { if (res.sunk) { e.setVisible(false); if (e.under) e.under.setVisible(false); var br = S.spr.br[R.id + '.' + (R.fill - 1)]; if (br) { br.setVisible(true).setAlpha(0.2);
         try { ctx.scene.tweens.add({ targets: br, alpha: 1, duration: 260 }); } catch (x) { br.setAlpha(1); } } } };
-    try { ctx.scene.tweens.add({ targets: e, x: p[0] + C / 2, y: p[1] + C + 6, duration: ms, ease: 'Sine.easeOut', onComplete: done }); }
-    catch (x) { e.setPosition(p[0] + C / 2, p[1] + C + 6); done(); }
+    try { ctx.scene.tweens.add({ targets: both(e), x: p[0] + C / 2, y: p[1] + C + 6, duration: ms, ease: 'Sine.easeOut', onComplete: done }); }
+    catch (x) { e.setPosition(p[0] + C / 2, p[1] + C + 6); if (e.under) e.under.setPosition(e.x, e.y); done(); }
   }
 
   // Which block is she leaning on, and which way? The sole point sits just outside the block's
@@ -143,7 +153,7 @@
   }
   function ring(ctx, R) {
     var S = ctx.state, K = S.K, changed = bell(R); store(ctx, R); sync(ctx, R); S.rings = (S.rings || 0) + 1;
-    if (changed && S.spr) for (var j = 0; j < R.blocks.length; j++) { var e = S.spr.blk[R.id + '.' + j]; e.setAlpha(0.15); try { ctx.scene.tweens.add({ targets: e, alpha: 1, duration: 420 }); } catch (x) { e.setAlpha(1); } }
+    if (changed && S.spr) for (var j = 0; j < R.blocks.length; j++) { var e = S.spr.blk[R.id + '.' + j]; e.setAlpha(0.15); if (e.under) e.under.setAlpha(0.15); try { ctx.scene.tweens.add({ targets: both(e), alpha: 1, duration: 420 }); } catch (x) { e.setAlpha(1); if (e.under) e.under.setAlpha(1); } }
     var bs = S.spr && S.spr.bell[R.id]; if (bs) { try { ctx.scene.tweens.add({ targets: bs, angle: 9, duration: 90, yoyo: true, repeat: 3 }); } catch (x) {} }
     ctx.say(K.text(changed ? 'd2.ice.bell' : 'd2.ice.bellIdle'));
   }

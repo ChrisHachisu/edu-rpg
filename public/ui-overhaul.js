@@ -42,6 +42,25 @@
    acts-hifi/jump-points.json all disappear. localStorage['qok-testers'] = '1' turns it on anyway
    (cloud probes). */
 window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public App Store release
+/* FIRST LAUNCH FOLLOWS THE DEVICE LANGUAGE (explorer Q01, lead's decision, day 4). The frozen bundle
+   reads localStorage['edu-rpg-locale'] once, when its module is evaluated, and falls back to "ja";
+   so a first launch on an English phone opened on the Japanese title. This file is a classic script
+   in the body and the bundle is a deferred module, so this runs first: with NO stored language and
+   NO save of any kind on the device, the key is written from navigator.language (Japanese when it
+   starts with "ja", English otherwise) and the bundle then reads it as if the player had chosen.
+   A stored choice is never touched, and a device that already holds a save but no language key
+   (it has been playing on the bundle's default) keeps that default. The title's own language
+   toggle is unchanged. localStorage['qok-first-lang'] = '0' gives the old behaviour. */
+(function () {
+  try {
+    var ls = window.localStorage;
+    if (!ls || ls.getItem('qok-first-lang') === '0' || ls.getItem('edu-rpg-locale') != null) return;
+    for (var i = 0; i < ls.length; i++) { var k = ls.key(i) || ''; if (k === 'edu-rpg-save' || k === 'edu-rpg-autosave' || /^qok-slot-\d+-(save|auto)$/.test(k)) return; }
+    var nav = window.navigator || {}, lang = String((nav.languages && nav.languages[0]) || nav.language || '').toLowerCase();
+    ls.setItem('edu-rpg-locale', lang.indexOf('ja') === 0 ? 'ja' : 'en');
+    window.__QOK_FIRST_LANG__ = lang;
+  } catch (e) {}
+})();
 (function () {
   'use strict';
   var CANON_SAVE = 'edu-rpg-save', CANON_AUTO = 'edu-rpg-autosave';
@@ -308,9 +327,16 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
   function townFlags(town) {
     var f = {}; if (town && town.hosted) f['acts.town.' + town.hosted] = true; return f;
   }
+  // NO TOWN ON RECORD (explorer D04, day 4): a save migrated from before the slots, lost in a dungeon
+  // before its first town arrival under this build (or a tester jump), had nothing for lastTown() to
+  // find, and the fallback below reloaded the dungeon auto save: no half-gold loss, HP from the
+  // record. The locked rule has no such exception, so the first town stands in: Greenhollow, at its
+  // arrival cell by the gate (startCell of act1-hifi/town/greenhollow-town.json).
+  var FIRST_TOWN = { mapId: 'greenhollow', x: 32.19, y: 55.5 };
+  function defeatTownRecord() { return lastTown() || (TOWNS[FIRST_TOWN.mapId] ? { mapId: FIRST_TOWN.mapId, x: FIRST_TOWN.x, y: FIRST_TOWN.y } : null); }
   function defeatInfo() {
     var t = GS(), st = t && t.player && t.player.state;
-    var town = lastTown();
+    var town = defeatTownRecord();
     return {
       boss: !!(bossFight && bossFight.record),
       town: town, townName: town ? placeName(town, townFlags(town)) : '',
@@ -321,11 +347,11 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
   function returnToTown() {
     var go = scene('GameOverScene'), t = GS();
     if (!go || !t || !t.player) return false;
-    var town = lastTown(), st = t.player.state;
+    var town = defeatTownRecord(), st = t.player.state;
     try { go.input.keyboard && go.input.keyboard.removeAllListeners(); } catch (e) {}
     if (!town) {
-      // No town on record (should not happen once the first town is reached): fall back to the
-      // newest record of this slot, which is what the old "Try Again" did.
+      // Unreachable now that defeatTownRecord() falls back to the first town; kept as the last
+      // resort it always was: the newest record of this slot, which is what the old "Try Again" did.
       beginLoad('gameover-fallback');
       var ok = false; try { ok = t.loadAutoSave() || t.loadGame(); } catch (e) {}
       go.scene.start(ok ? 'WorldMapScene' : 'TitleScene');
@@ -573,6 +599,8 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
     // settings-row category icons
     '<symbol id="qok-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 7v5l3.5 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>' +
     '<symbol id="qok-speaker" viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 5v14l-4.5-4.5H4z" fill="currentColor"/><path d="M15.5 9a4 4 0 010 6M18 6.5a8 8 0 010 11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>' +
+    '<symbol id="qok-speakeroff" viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 5v14l-4.5-4.5H4z" fill="currentColor"/><path d="M15.5 9.5l5 5M20.5 9.5l-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>' +
+    '<symbol id="qok-volbars" viewBox="0 0 24 24"><g fill="currentColor"><rect x="3.5" y="14" width="3.6" height="6" rx="1"/><rect x="10.2" y="9.5" width="3.6" height="10.5" rx="1"/><rect x="16.9" y="4.5" width="3.6" height="15.5" rx="1"/></g></symbol>' +
     '<symbol id="qok-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3.5 12h17M12 3c3.2 2.5 3.2 15.5 0 18M12 3c-3.2 2.5-3.2 15.5 0 18" fill="none" stroke="currentColor" stroke-width="1.5"/></symbol>' +
     '<symbol id="qok-gauge" viewBox="0 0 24 24"><path d="M3.5 17a8.5 8.5 0 0117 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 17l5-4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="17" r="1.8" fill="currentColor"/></symbol>' +
     '<symbol id="qok-dpad" viewBox="0 0 24 24"><path d="M9.5 3.5h5V9H20v5h-5.5v5.5h-5V14H4V9h5.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>' +
@@ -836,6 +864,7 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
   function activate(name, isBattle) {
     if (!root.classList.contains('active')) root.classList.add('active');
     root.classList.toggle('battle', !!isBattle);
+    root.classList.toggle('ja', isJa());   // language hook for CSS (UJ-11: heading tracking)
     if (!isBattle) clearBattleBg();
     try { document.body.classList.add('qok-overlay'); } catch (e) {} // hide the Phaser canvas under us (no old-UI flash)
     if (curScreen !== name) {
@@ -1089,7 +1118,9 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
     var filter = ms.equipTypeFilter || 'weapon';
     var h = '<div class="body"><div class="zc pad stack g10 grid2"><div class="eyebrow">' + esc(Z('menu.equip')) + '</div>';
     // equipped slots panel
-    h += '<div class="panel span2" style="padding:11px 13px;display:flex;flex-direction:column;gap:4px;">';
+    // UE-06 (day 4): the five slot rows were 29 px tall with a 33 px pitch. `.eqslot` makes each a
+    // 48 px target (ui-overhaul.css); the panel gives up its row gap and most of its padding for it.
+    h += '<div class="panel span2" style="padding:5px 6px;display:flex;flex-direction:column;gap:0;">';
     for (var s = 0; s < SLOTS.length; s++) {
       var slot = SLOTS[s], id = st.equipment[slot];
       var sel = (ms.equipMode === 'equipped' && s === ms.equipSlotIndex);
@@ -1100,13 +1131,13 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
         if (dat.stats.atk) statStr += ' +' + dat.stats.atk + Z('menu.atk');
         if (dat.stats.def) statStr += ' +' + dat.stats.def + Z('menu.def');
       }
-      h += '<div class="row" data-act="equipSlot" data-i="' + s + '" style="justify-content:space-between;padding:5px 6px;border-radius:8px;cursor:pointer;' + (sel ? 'background:var(--gold-glow);outline:2px solid var(--gold);' : '') + '">' +
-        '<span class="row" style="gap:7px;font-weight:800;font-size:13px;color:' + (sel ? 'var(--ink)' : 'var(--ink-soft)') + ';">' + catIcon(slot, 18) + esc(Z(SLOT_KEY[slot])) + '</span>' +
-        '<span style="font-weight:800;font-size:13px;color:' + (id ? 'var(--ink)' : 'var(--ink-soft)') + ';">' + esc(nm) + '<span style="color:#1f8a44;font-weight:800;">' + esc(statStr) + '</span></span></div>';
+      h += '<div class="row eqslot" data-act="equipSlot" data-i="' + s + '" style="' + (sel ? 'background:var(--gold-glow);outline:2px solid var(--gold);outline-offset:-2px;' : '') + '">' +
+        '<span class="row" style="gap:9px;font-weight:800;font-size:15px;color:' + (sel ? 'var(--ink)' : 'var(--ink-soft)') + ';">' + catIcon(slot, 22) + esc(Z(SLOT_KEY[slot])) + '</span>' +
+        '<span style="font-weight:800;font-size:14px;text-align:right;min-width:0;color:' + (id ? 'var(--ink)' : 'var(--ink-soft)') + ';">' + esc(nm) + '<span style="color:var(--emerald);font-weight:800;">' + esc(statStr) + '</span></span></div>';
     }
     h += '</div>';
     // owned header + type filter
-    h += '<div class="row span2" style="gap:6px;"><b style="font-size:11px;letter-spacing:.1em;color:var(--gold);font-weight:800;flex:1;">' + esc(Z('equip.owned')) + '</b></div>';
+    h += '<div class="row span2" style="gap:6px;"><b class="ownedhd" style="font-size:11px;color:var(--gold);font-weight:800;flex:1;">' + esc(Z('equip.owned')) + '</b></div>';
     h += '<div class="seg segcat span2">';
     var upgradeTypes = equipUpgradeTypes();
     for (var f = 0; f < SLOTS.length; f++) {
@@ -1132,7 +1163,8 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
         // NOT Z('equip.new'): that key is in no locale table and not in the frozen bundle, so the
         // shipped translate would answer "[equip.new]" and print it -- the same defect the villager
         // names had. A local literal has no key to miss.
-        var newPill = isNewThisVisit(idt.id) ? '<span class="newpill">' + (isJa() ? 'NEW' : 'New') + '</span>' : '';
+        // UJ-09 (day 4): Japanese showed the Latin "NEW", which a kana-mode reader may not read.
+        var newPill = isNewThisVisit(idt.id) ? '<span class="newpill">' + T3('New', 'あたらしい', '新しい') + '</span>' : '';
         h += '<div class="card' + (isel ? ' sel' : '') + '" data-act="equipInv" data-i="' + k + '">' +
           '<div class="ic">' + itemIcon(idt) + '</div>' +
           '<div class="t"><div class="n">' + esc(Z(idt.nameKey)) + newPill + '</div><div class="d">' + esc(ss) + '</div></div>' + dHtml + '</div>';
@@ -1141,7 +1173,9 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
     return h + '</div></div>';
   }
 
-  var SETTING_ICON = { difficulty: 'gauge', language: 'globe', kanji: 'text', timer: 'clock', sound: 'speaker', volume: 'speaker', controlOrientation: 'dpad' };
+  // UE-17 (day 4): Sound and Volume shared the speaker. Sound keeps it (crossed out when off);
+  // Volume is the rising bars, and its row dims while Sound is off because it does nothing then.
+  var SETTING_ICON = { difficulty: 'gauge', language: 'globe', kanji: 'text', timer: 'clock', sound: 'speaker', volume: 'volbars', controlOrientation: 'dpad' };
   // Owner-reported gap (TestFlight build 29): Settings had no way back to the title screen.
   // ms.settingsList is a bundle getter (difficulty/language/kanji/timer/sound/volume/controlOrientation
   // only) and cannot be edited, so the "return to title" row is DOM-only, appended after the grid,
@@ -1152,7 +1186,7 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
   // accurate loss, not a blanket "your data will not be saved".
   var settingsQuitConfirm = false;
   function settingsQuitConfirmBody() {
-    var heading = isJa() ? J('タイトルへもどりますか？', 'タイトルへ戻りますか？') : 'Return to Title?';
+    var heading = isJa() ? J('タイトルへ もどりますか？', 'タイトルへ 戻りますか？') : 'Return to Title?';
     // Returning to the title auto saves first (save slots, 2026-11-04), so nothing is lost.
     var warn = isJa()
       ? (kanji() ? '冒険は オートセーブされます。' : 'ぼうけんは オートセーブされます。')
@@ -1161,8 +1195,10 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
       '<div class="scene-h">' + esc(heading) + '</div>' +
       '<div class="panel" style="padding:16px;text-align:center;font-weight:700;color:var(--ink-soft);font-size:14px;line-height:1.5;">' + esc(warn) + '</div>' +
       '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px;">' +
-        '<button class="btn btn-em" data-act="quitCancel">' + esc(Z('settings.back')) + '</button>' +
-        '<button class="btn btn-slate" data-act="quitConfirm">' + esc(Z('gameover.title_screen')) + '</button>' +
+        // UE-21 (day 4), one colour rule on every dialog: gold = the action asked for, green = confirm
+        // and spend (Buy, Heal), outline = cancel. Back was green here, as if it spent something.
+        '<button class="btn btn-slate" data-act="quitCancel">' + esc(Z('settings.back')) + '</button>' +
+        '<button class="btn btn-gold" data-act="quitConfirm">' + esc(Z('gameover.title_screen')) + '</button>' +
       '</div>' +
     '</div></div>';
   }
@@ -1272,7 +1308,9 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
     var h = '<div class="body"><div class="zc pad stack g8 grid2"><div class="eyebrow">' + esc(Z('menu.settings')) + '</div>';
     for (var i = 0; i < listArr.length; i++) {
       var key = listArr[i], sel = (ms.listIndex === i), ctrl = '', lab = '';
-      if (key === 'difficulty') { lab = Z('settings.difficulty'); ctrl = '<span class="val">' + esc(Z('grade.' + st.quizDifficulty)) + ' ›</span>'; }
+      // D01 (explorer, day 4): the grade is fixed after New Game (bundle, by design), so this row is
+      // information: no chevron, no tap action, no pressed state (class "info", and no data-act below).
+      if (key === 'difficulty') { lab = Z('settings.difficulty'); ctrl = '<span class="val">' + esc(Z('grade.' + st.quizDifficulty)) + '</span>'; }
       else if (key === 'language') {
         lab = Z('settings.language');
         ctrl = '<div class="toggle" style="pointer-events:none;"><span class="' + (!isJa() ? 'on' : '') + '">English</span><span class="' + (isJa() ? 'on' : '') + '">日本語</span></div>';
@@ -1288,10 +1326,19 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
       } else if (key === 'controlOrientation') {
         lab = isJa() ? (st.kanjiMode ? '操作ボタン' : 'そうさボタン') : 'Controls';
         var ori = (window.localStorage && localStorage.getItem('eduControlOrientation')) || 'right';
-        ctrl = '<div class="seg" style="pointer-events:none;flex:1;max-width:230px;"><b class="' + (ori === 'left' ? 'on' : '') + '">◀</b><b class="' + (ori === 'center' ? 'on' : '') + '">●</b><b class="' + (ori === 'right' ? 'on' : '') + '">▶</b></div>';
+        // UE-17 (day 4): three bare glyphs (◀ ● ▶) said nothing about the joystick's side, and a tap
+        // anywhere only stepped to the next one. Each position is a word and its own button now
+        // (routeMenu 'ctrlSide'); a tap on the rest of the row still steps, as the keyboard does.
+        ctrl = '<div class="seg ctrlseg">' +
+          '<b class="' + (ori === 'left' ? 'on' : '') + '" data-act="ctrlSide" data-side="left">' + esc(T3('Left', 'ひだり', '左')) + '</b>' +
+          '<b class="' + (ori === 'center' ? 'on' : '') + '" data-act="ctrlSide" data-side="center">' + esc(T3('Middle', 'まんなか', '真ん中')) + '</b>' +
+          '<b class="' + (ori === 'right' ? 'on' : '') + '" data-act="ctrlSide" data-side="right">' + esc(T3('Right', 'みぎ', '右')) + '</b></div>';
       }
       var sp = (key === 'volume' || key === 'controlOrientation') ? ' span2' : '';
-      h += '<div class="setrow' + (sel ? ' sel' : '') + sp + '" data-act="setting" data-i="' + i + '"><span class="lab">' + use(SETTING_ICON[key] || 'gear') + esc(lab) + '</span>' + ctrl + '</div>';
+      var icon = (key === 'sound' && !st.soundEnabled) ? 'speakeroff' : (SETTING_ICON[key] || 'gear');
+      var dim = (key === 'volume' && !st.soundEnabled) ? ' dim' : '';
+      var info = key === 'difficulty';
+      h += '<div class="setrow' + (sel ? ' sel' : '') + sp + dim + (info ? ' info"' : '" data-act="setting" data-i="' + i + '"') + '><span class="lab">' + use(icon) + esc(lab) + '</span>' + ctrl + '</div>';
     }
     if (testersOn()) h += '<div class="setrow span2" data-act="jumpOpen"><span class="lab">' + use('arrow') + esc(T3('Testers: Jump to…', 'テスター：ジャンプ…', 'テスター：ジャンプ…')) + '</span><span class="val">›</span></div>';
     return h + '</div>' +
@@ -1328,8 +1375,16 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
   var townQuestSource = null, townQuestToast = null;
   function runTownQuestToast() {
     var wm = getScene('WorldMapScene');
-    var active = document.body.classList.contains('act1-hifi-active') && sceneActive('WorldMapScene');
+    // UJ-04 (day 4): the same toast serves the FIELD. There the bundle's banner is canvas text at
+    // the top of the view, so the DOM HUD drew over it: the HP chip and minimap hid its first
+    // characters and the compass its end. While the DOM HUD is up the canvas banner is hidden and
+    // its words are shown the way a town already shows them.
+    var fieldHud = !!(fieldRoot && fieldRoot.classList.contains('active'));
+    var active = (fieldHud || document.body.classList.contains('act1-hifi-active')) && sceneActive('WorldMapScene');
     var source = wm && wm.questNotifText;
+    if (fieldHud && source && source.scene) {
+      try { source.setVisible(false); if (wm.questNotifBg && wm.questNotifBg.setVisible) wm.questNotifBg.setVisible(false); } catch (eq) {}
+    }
     if (!active || !source || !source.scene || !source.text) {
       if (townQuestToast) townQuestToast.remove();
       townQuestToast = null;
@@ -1349,6 +1404,26 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
         townQuestToast.style.setProperty(name, theme.getPropertyValue(name));
       });
     }
+  }
+  /* THE TOWN'S TALK PILL IS A 48 px TARGET (day 4, design review UE-06). "Talk to Elder Rowan" /
+     "Shop" / "Save" is the only way to act in a town on a phone and it measured 38 px tall. The
+     pill belongs to the town page (act1-hifi/town.html, a same-origin frame), which this layer
+     does not edit: one small style element is added to the frame's document instead, once per
+     frame load. It keeps the pill's bottom edge where the town put it (clear of the stick), so it
+     grows upward. localStorage['qok-town-pill48']='0' leaves the town's own size.
+     The dungeon's twin of this pill (#a1mInteract) gets the same size in ui-overhaul.css. */
+  var townPillDoc = null;
+  function syncTownPill() {
+    if (!document.body.classList.contains('act1-hifi-active')) return;
+    var f = document.querySelector('#act1-hifi-preserved-root iframe'), doc = null;
+    try { doc = f && f.contentDocument; } catch (e) { doc = null; }
+    if (!doc || doc === townPillDoc || !doc.head || !doc.getElementById('prompt')) return;
+    townPillDoc = doc;
+    try { if (localStorage.getItem('qok-town-pill48') === '0') return; } catch (e2) {}
+    if (doc.getElementById('qok-town-pill48')) return;
+    var s = doc.createElement('style'); s.id = 'qok-town-pill48';
+    s.textContent = '#prompt{min-height:48px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;padding-top:0;padding-bottom:0;font-size:16px;}';
+    doc.head.appendChild(s);
   }
   function runItemToast(ms) {
     patchItemMsg(ms);
@@ -1409,8 +1484,10 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
     // `.topbar` is a flexbox and `.who` is the flex:1 child, so the title simply moves left.
     var h = '<div class="topbar">' +
       '<div class="who" style="min-width:0;">' +
+        // UE-04 / UJ-12 (day 4): the title's line box was shorter than its glyphs (tails of "g" cut
+        // flat) and the greeting sat 0 px under it at 10 px; both are set in ui-overhaul.css now.
         (shopTitle ? '<div class="nm" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + esc(shopTitle) + '</div>' : '') +
-        '<div class="lv" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">' + esc(Z('shop.welcome')) + '</div>' +
+        '<div class="lv shop-greet">' + esc(Z('shop.welcome')) + '</div>' +
       '</div>' +
       '<div class="coins">◎ ' + st.gold + '</div>' +
       '<button class="xbtn" data-act="shopLeave" aria-label="Close">✕</button></div>';
@@ -1430,7 +1507,7 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
         h += '<div class="card' + (ssel ? ' sel' : '') + '" data-act="shopSell" data-i="' + s + '">' +
           '<div class="ic">' + itemIcon(sit) + '</div>' +
           '<div class="t"><div class="n">' + esc(Z(sit.nameKey)) + ' ×' + sl[s].quantity + '</div><div class="d">' + esc(Z(sit.descriptionKey)) + '</div></div>' +
-          '<div class="pill" style="background:#e0b75726;color:#8a6a26;">' + sit.sellPrice + ' G</div></div>';
+          '<div class="pill price">' + sit.sellPrice + ' G</div></div>';
       }
     } else {
       // buy (default)
@@ -1447,7 +1524,9 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
         if (it.stats) { for (var k in it.stats) statStr += '+' + it.stats[k] + statLabel(k) + ' '; }   // census m7: was k.toUpperCase(), English ATK/DEF in Japanese
         var cnt = '';
         if (!isEq && owned > 0) cnt = '<div class="cnt">' + Z('shop.ownedEquip') + ' ×' + owned + '</div>';
-        var price = blocked ? '<div class="pill" style="background:#00000014;color:var(--ink-soft);">' + esc(Z('shop.ownedEquip')) + '</div>' : '<div class="pill" style="background:#e0b75726;color:' + (afford ? '#8a6a26' : '#bb3a32') + ';">' + it.buyPrice + ' G</div>';
+        // UE-14 / UJ-12 (day 4): the price was dim gold on a 15% gold wash (#8a6a26 on charcoal, about
+        // 3:1), the lowest-contrast text on the screen. `.pill.price` is the Items tab's solid count pill.
+        var price = blocked ? '<div class="pill" style="background:#ffffff0f;color:var(--ink-soft);">' + esc(Z('shop.ownedEquip')) + '</div>' : '<div class="pill price' + (afford ? '' : ' no') + '">' + it.buyPrice + ' G</div>';
         h += '<div class="card' + (sel ? ' sel' : '') + '" data-act="shopBuy" data-i="' + i + '" style="' + (blocked ? 'opacity:.72;' : '') + '">' +
           '<div class="ic">' + itemIcon(it) + '</div>' +
           '<div class="t"><div class="n">' + esc(Z(it.nameKey)) + '</div>' + cnt + '<div class="d">' + esc(statStr || Z(it.descriptionKey)) + '</div></div>' + price + '</div>';
@@ -1500,7 +1579,7 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
     var ja = isJa();
     var qtyBlock = isEq ? '' :
       '<div class="qtyrow">' +
-        '<button class="qtybtn" data-act="shopQty" data-d="-1"' + (qty <= 1 ? ' disabled' : '') + '>-</button>' +
+        '<button class="qtybtn" data-act="shopQty" data-d="-1"' + (qty <= 1 ? ' disabled' : '') + '>−</button>' +
         '<div class="qtyval">' + qty + '</div>' +
         '<button class="qtybtn" data-act="shopQty" data-d="1"' + (qty >= max ? ' disabled' : '') + '>+</button>' +
       '</div>';
@@ -1536,7 +1615,7 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
       '<div class="panel" style="padding:16px;">' +
         '<div class="row" style="justify-content:space-between;font-size:14px;font-weight:800;color:var(--ink-soft);margin-bottom:8px;"><span>' + esc(Z('menu.hp')) + '</span><span>' + st.hp + ' → <b style="color:#1f8a44;">' + max + '</b></span></div>' +
         '<div class="hp" style="height:14px;"><i style="width:' + (hpR * 100) + '%;"></i></div>' +
-        '<div style="text-align:center;margin-top:14px;font-size:15px;font-weight:800;color:var(--ink);">' + esc(T3('Price', 'ねだん', '値段')) + ': <span style="color:#8a6a26;">' + price + ' G</span></div>' +
+        '<div style="text-align:center;margin-top:14px;font-size:15px;font-weight:800;color:var(--ink);">' + esc(T3('Price', 'ねだん', '値段')) + ': <span style="color:var(--gold);">' + price + ' G</span></div>' +   // UJ-12: was #8a6a26, dim on charcoal
       '</div>' +
       '<div style="display:grid;grid-template-columns:1.4fr 1fr;gap:10px;">' +
         '<button class="btn btn-em' + (wm.healerOverlayIndex === 0 ? ' sel' : '') + '" data-act="healConfirm">' + use('check', 'ic') + esc(Z('npc.healer.healOption')) + '</button>' +
@@ -1772,7 +1851,10 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
     var variantOpts = '';
     for (var vo = 0; vo < VARIANTS.length; vo++) {
       var vv = VARIANTS[vo];
-      variantOpts += '<button class="variant-opt' + (vv === variant ? ' sel' : '') + '" data-act="introVariant" data-variant="' + vv + '" style="flex:1;min-width:0;display:flex;align-items:center;justify-content:center;background:' + (vv === variant ? 'rgba(201,168,76,.22)' : 'transparent') + ';border:2px solid ' + (vv === variant ? '#c9a84c' : '#d8c9a0') + ';border-radius:12px;padding:8px;cursor:pointer;">' + variantImg(48, vv) + '</button>';
+      // UE-16 (day 4): the choices were 48 px sprites whose unselected frame (bright cream, 2 px)
+      // read as strongly as the selected gold one. Twice the size; the look is `.variant-opt` in
+      // ui-overhaul.css: thin grey when not chosen, gold frame, wash and tick when chosen.
+      variantOpts += '<button class="variant-opt' + (vv === variant ? ' sel' : '') + '" data-act="introVariant" data-variant="' + vv + '" aria-pressed="' + (vv === variant) + '">' + variantImg(88, vv) + '</button>';
     }
     /* DIFFICULTY WHEEL, not chips. Owner, build 38: "the quiz difficulty selector needs to be a
        scrolling wheel list rather than a tappable list (show the full text rather than generic
@@ -1790,8 +1872,11 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
     var kanjiRow = ja ? ('<div class="panel" style="padding:9px 13px;display:flex;justify-content:space-between;align-items:center;gap:10px;"><span style="font-weight:800;color:var(--ink-soft);font-size:13px;">' + J('もじ', '文字') + '</span><div class="toggle" data-act="introKanji"><span class="' + (!pstate() || !pstate().kanjiMode ? 'on' : '') + '">かんたん</span><span class="' + (pstate() && pstate().kanjiMode ? 'on' : '') + '">むずかしい</span></div></div>') : '';
 
     var h = '<div class="body"><div class="zc stack pad g8 grid2" style="padding-top:10px;padding-bottom:12px;">' +
-      '<div class="span2" style="display:flex;justify-content:flex-start;"><button data-act="introBack" style="background:#2a2c4d;border:1.5px solid #9a7a36;color:#f3ead2;font-weight:800;font-size:14px;cursor:pointer;padding:6px 14px;border-radius:10px;display:inline-flex;align-items:center;gap:5px;">‹ ' + esc(Z('settings.back')) + '</button></div>' +
-      '<div class="span2"><div class="scene-h">✦ ' + esc(Z('create.title')) + ' ✦</div></div>' +
+      // UE-06 / UE-16 (day 4): Back was a 70 x 34 navy chip that matched no other Back button. It is
+      // the standard outlined button at 48 px; and the New Game+ path says so under the heading.
+      '<div class="span2" style="display:flex;justify-content:flex-start;"><button class="btn btn-slate backbtn" data-act="introBack">‹ ' + esc(Z('settings.back')) + '</button></div>' +
+      '<div class="span2" style="text-align:center;"><div class="scene-h">✦ ' + esc(Z('create.title')) + ' ✦</div>' +
+        (ts.ngPlus ? '<span class="ngtag">★ ' + esc(T3('New Game+', 'つよくてニューゲーム', '強くてニューゲーム')) + '</span>' : '') + '</div>' +
       '<div class="span2" style="display:grid;place-items:center;margin:0;">' +
         '<div class="intro-hero">' + variantImg(88, variant) + '</div>' +
       '</div>' +
@@ -1801,7 +1886,7 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
          message telling the player that they need to enter the name when they are blocked from
          continuing. i want the screen to snap up as well." Both halves are one fix: put the message
          where the problem is, and bring that place into view. */
-      '<div class="panel" id="qok-name-panel" style="padding:9px 13px;">' +
+      '<div class="panel" id="qok-name-panel" style="padding:0 13px;">' +
         '<div style="display:flex;align-items:center;gap:10px;">' +
           '<div style="font-weight:800;color:var(--ink-soft);font-size:13px;">' + esc(Z('create.name')) + '</div>' +
           '<input id="qok-name" data-act="name" type="text" maxlength="8" placeholder="' + esc(Z('create.namePlaceholder')) + '" style="flex:1;min-width:0;border:none;background:transparent;font-weight:900;font-size:18px;color:var(--ink);outline:none;" />' +
@@ -1826,7 +1911,7 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
        screen is most of the time -- so the raw expression interpolated as "null", then as "false"
        the moment state appeared. That flipped the signature, rebuilt the screen mid-interaction and
        reset the wheel to the saved difficulty. Normalised, the term is only ever "true"/"false". */
-    var sig = 'intro|' + variant + '|' + ja + '|' + !!(pstate() && pstate().kanjiMode) + '|g' + grades.length +
+    var sig = 'intro|' + variant + '|' + ja + '|' + !!(pstate() && pstate().kanjiMode) + '|g' + grades.length + '|ng' + (ts.ngPlus ? 1 : 0) +
               '|e' + (nameErrShown ? 1 : 0);
     activate('intro', false);
     var rebuilt = (sig !== lastSig);
@@ -1876,9 +1961,9 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
   function battlePlayerBar(p, st) {
     var max = p.totalMaxHp, r = Math.max(0, Math.min(1, max ? st.hp / max : 0));
     return '<div class="pbar"><div class="av" style="width:36px;height:36px;">' + heroImg(22, st.heroColor) + '</div>' +
-      '<div style="flex:1;min-width:0;"><div style="font-weight:800;color:var(--ink);font-size:12px;margin-bottom:5px;">' + esc(st.name) + ' · ' + esc(Z('menu.level')) + ' ' + st.level + '</div>' +
+      '<div style="flex:1;min-width:0;"><div class="bpname" style="font-weight:800;color:var(--ink);font-size:15px;margin-bottom:5px;">' + esc(st.name) + ' · ' + esc(Z('menu.level')) + ' ' + st.level + '</div>' +
       '<div class="hp dark"><i style="width:' + (r * 100) + '%;"></i></div></div>' +
-      '<div style="font-size:11px;font-weight:800;color:var(--gold);">' + st.hp + '/' + max + '</div></div>';
+      '<div class="bhp" style="font-size:15px;font-weight:800;color:#f0cd78;">' + st.hp + '/' + max + '</div></div>';   // B14: was 12 / 11 px, small for readers aged 6 to 8
   }
   // ---- battle damage FX ----
   // The Phaser BattleScene plays hit-flash / crit / camera-shake on the CANVAS (and on
@@ -1905,6 +1990,14 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
      a notepad overlay to work sums out, and the menu's brace action relabelled Guard.
      Switch: localStorage['qok-keypad'] = '0' restores the four buttons. */
   function kpOn() { try { return window.localStorage.getItem('qok-keypad') !== '0'; } catch (e) { return true; } }
+  // Critical-hit class (day 4, quiz bank v2): a harder question gets a longer timer and a longer critical window, by its kind
+  // (grade, act, plan row; the table is in the balance block of battle-recovery.js). 1 = today's fixed values; qok-crit-class=0 gives 1 always.
+  function critMul() {
+    try {
+      var cc = window.__QOK_CRITCLASS__, sc = window.__PHASER_GAME__ && window.__PHASER_GAME__.scene.getScene('BattleScene');
+      return cc && sc && sc.quizQuestion ? cc.mult(sc.quizQuestion) : 1;
+    } catch (e) { return 1; }
+  }
   var _kp = { q: null, v: '', miss: null, busy: false, typed: null };
   var KP_MISS_MS = 900;
   function kpRight(q) { var a = (q && q.answers) || []; for (var i = 0; i < a.length; i++) if (a[i].isCorrect) return String(a[i].text && a[i].text.en); return ''; }
@@ -2096,7 +2189,7 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
     if (qm && !qm.__qokKpTimer && typeof qm.getTimerSeconds === 'function') {
       var origTimer = qm.getTimerSeconds;
       qm.__qokKpTimer = true;
-      qm.getTimerSeconds = function () { var sec = origTimer.apply(this, arguments); return kpOn() ? Math.round(sec * 1.5) : sec; };
+      qm.getTimerSeconds = function () { var sec = origTimer.apply(this, arguments), m = critMul(); return kpOn() ? Math.round(sec * 1.5 * m) : (m !== 1 ? Math.round(sec * m) : sec); };
     }
     if (npIsOpen() && !((bs.phase === 'playerQuiz' || bs.phase === 'enemyQuiz') && bs.quizQuestion === _kp.q)) npClose(true);
     if (!bs.__qokHitPatched) {
@@ -2110,6 +2203,7 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
               _lastHit = { who: this.quizForPlayer ? 'enemy' : 'player', dmg: x.damage | 0, crit: !!x.critical, seq: ++_hitSeq };
             } else if (x && x.state === 'victory') {
               _defeatSeq++;
+              btVictoryStart(this, x);   // rewards and level for the grand victory beats (UE-01)
             }
           } catch (e) {}
           return orig.apply(this, arguments);
@@ -2130,7 +2224,7 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
       if (correct || !(this.monsterHp > 0)) {
         // Keypad: the frozen 3 s critical-hit window grows with the 1.5x quiz time (4.5 s). Typing an
         // answer costs about a second, so at 3 s a child who knows the answer could hardly ever land one.
-        if (correct && kpOn() && typeof elapsed3s === 'number') return originalResolvePlayerAttack.call(this, correct, timeRatio, elapsed3s / 1.5);
+        if (correct && typeof elapsed3s === 'number') { var cm = critMul(); if (kpOn()) return originalResolvePlayerAttack.call(this, correct, timeRatio, elapsed3s / (1.5 * cm)); if (cm !== 1) return originalResolvePlayerAttack.call(this, correct, timeRatio, elapsed3s / cm); }
         return originalResolvePlayerAttack.apply(this, arguments);
       }
       return qokResolveWrongAnswer(this, Z);
@@ -2155,8 +2249,7 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
       var cflash = document.createElement('div'); cflash.className = 'qok-critflash'; fx.appendChild(cflash);
       setTimeout(function () { try { cflash.remove(); } catch (e) {} }, 440);
     }
-    var cx = rect ? rect.left + rect.width / 2 : (window.innerWidth / 2);
-    var cy = rect ? rect.top + rect.height * (toEnemy ? 0.42 : 0.3) : (window.innerHeight * (toEnemy ? 0.36 : 0.7));
+    var at = btFxAnchor(toEnemy, rect), cx = at[0], cy = at[1];   // UE-15: above the sprite / beside the HP figure, not on them
     var d = document.createElement('div');
     d.className = 'dmgnum ' + (miss ? 'miss' : (crit ? 'crit' : (toEnemy ? 'enemyhit' : 'playerhit')));
     var missTxt = Z('battle.miss'); if (missTxt === 'battle.miss') missTxt = 'Miss';
@@ -2167,7 +2260,7 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
     if (crit) {
       var critTxt = Z('battle.critical'); if (critTxt === 'battle.critical') critTxt = 'Critical!';
       var cl = document.createElement('div'); cl.className = 'critlabel'; cl.textContent = critTxt;
-      cl.style.left = cx + 'px'; cl.style.top = (cy - 40) + 'px';
+      cl.style.left = cx + 'px'; cl.style.top = (cy - 52) + 'px';
       fx.appendChild(cl);
       setTimeout(function () { try { cl.remove(); } catch (e) {} }, 1100);
     }
@@ -2185,6 +2278,8 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
     if (!root) return;
     var el = root.querySelector('.bmon');
     if (el) { el.classList.remove('qok-defeated'); void el.offsetWidth; el.classList.add('qok-defeated'); }
+    _btDefeat = { eng: (getScene('BattleScene') || {}).engine || null, at: Date.now() };   // so a repaint during the victory beats does not bring the sprite back
+    var fitBox = el && el.closest ? el.closest('.bfit') : null; if (fitBox) fitBox.classList.add('down');   // the ground shadow goes with it
     if (stage) {
       stage.classList.remove('qok-shake'); void stage.offsetWidth; stage.classList.add('qok-shake');
       setTimeout(function () { try { stage.classList.remove('qok-shake'); } catch (e) {} }, 460);
@@ -2207,12 +2302,25 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
     oasisDepths: 'desert', desertTomb: 'tomb_ruins', banditHideout: 'canyon', scorchedRuins: 'desert',
     emberMines: 'magma', magmaTunnels: 'magma', obsidianCavern: 'obsidian', volcanicForge: 'magma',
     demonBarracks: 'demon_castle', voidRift: 'void', demonCastle: 'demon_castle',
-    stormreachIsles: 'storm_peak', frostfallPeaks: 'frozen', sunkenTempleIsle: 'tomb_ruins', twilightRealm: 'void'
+    stormreachIsles: 'storm_peak', frostfallPeaks: 'frozen', sunkenTempleIsle: 'tomb_ruins', twilightRealm: 'void',
+    // B2 (day 4): the portal DUNGEONS have their own map ids, so every regular fight in them fell back to the meadow.
+    stormreachSpire: 'storm_peak', frostfallCavern: 'frozen', sunkenTempleDungeon: 'tomb_ruins', twilightDungeon: 'void'
   };
+  // B3 (day 4): an overworld fight takes its backdrop from the ENCOUNTER ZONE the fight was rolled in
+  // (BattleScene.currentZone), not from the hero's latitude. Acts 3 and 4 share the zone id
+  // scorched-wastes: the acts index gives rows below 88 to Act 4 (ash and lava), the rest to Act 3 (sand).
+  // Act 5's open ground is dead thorn wood under a dusk sky, not a castle hall. Latitude stays as the
+  // fallback for a zone this table does not know. Switch: localStorage qok-zone-bg=0 (latitude only).
+  var ZONE_BG = { 'greenhollow-plains': 'grass_plains', 'whispering-woods': 'forest', 'crystal-coast': 'coast', 'iron-mountains': 'mountains', 'demons-threshold': 'haunted_wood' };
+  function zoneBg(zone, y) {
+    if (!zone || !btOn('qok-zone-bg')) return null;
+    if (zone === 'scorched-wastes') return (y || 0) < 88 ? 'magma' : 'desert';
+    return ZONE_BG[zone] || null;
+  }
   var BOSS_BG = { stormSentinel: 'boss_storm_sentinel', frostMonarch: 'boss_frost_monarch', swordWraith: 'boss_sword_wraith', celestialGuardian: 'boss_celestial_guardian', demonKing: 'boss_demon_king' };
   // Per-bg enemy-feet Y (% of the scene height). Most platforms sit at the default 64%, but a few
   // boss daises are drawn higher in the frame, so the enemy must rise to land ON them. Tuned visually.
-  var FEET_Y = { boss_storm_sentinel: 58, boss_demon_king: 60 };
+  var FEET_Y = { boss_storm_sentinel: 58, boss_demon_king: 60, boss_frost_monarch: 60, boss_sword_wraith: 60, boss_celestial_guardian: 61 };   // last three: B11 (day 4), they stood on the front rim
   // Every boss (not just the 5 arena bosses) renders larger than a regular monster. A monster is a
   // boss if aiPattern==='boss' OR its id is in the engine's mid/late/final-boss tier lists (getEnemyTier).
   var BOSS_IDS = { demonKing:1, flameTitan:1, swordWraith:1, celestialGuardian:1, stormSentinel:1, frostMonarch:1,
@@ -2224,8 +2332,8 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
       var m = bs && bs.monster;
       if (m && m.id && BOSS_BG[m.id]) return BOSS_BG[m.id]; // 5 legendary/final bosses get their own arena
       var pos = (pstate() && pstate().position) || {};
-      if (pos.mapId && pos.mapId !== 'overworld') return MAP_BG[pos.mapId] || 'grass_plains';
-      return overworldBg(pos.y); // overworld: biome by latitude band
+      if (pos.mapId && pos.mapId !== 'overworld') return MAP_BG[pos.mapId] || 'cave_misty';   // an unknown dungeon is a cave, never the sunny meadow
+      return zoneBg(bs && bs.currentZone, pos.y) || overworldBg(pos.y); // overworld: by encounter zone, latitude band as the fallback
     } catch (e) { return 'grass_plains'; }
   }
   var _curBg = null;
@@ -2255,7 +2363,7 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
     var labs = rail.querySelectorAll('.railcmd .lab');
     rail.classList.add('fitting');
     for (var i = 0; i < labs.length; i++) {
-      var el = labs[i], size = 12.5;
+      var el = labs[i], size = 15;   // B14 / UE-18: was 12.5
       el.style.fontSize = '';
       for (var g = 0; g < 10 && el.scrollWidth > el.clientWidth; g++) {
         size -= 0.5;
@@ -2315,6 +2423,226 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
     fitRailLabels(rail);
   }
 
+  // ============================================================
+  //  BATTLE STAGE, day 4 design review
+  //  (battles B7 B9 B14, ui-en UE-01 UE-12 UE-13 UE-15, ui-ja UJ-03 UJ-05 UJ-06).
+  //  Switches, all localStorage, '0' = the look before this block:
+  //    qok-enemy-fit      enemy sized from its painted box + ground shadow (0: sized from the canvas, sticker glow)
+  //    qok-victory-grand  victory / level up / boss win as celebration beats (0: the plain four-line box)
+  //    qok-quiz-tag       a short Attack / Defend tag above the question (0: the two-line story header)
+  //    qok-zone-bg        overworld backdrop by encounter zone (0: by latitude only), see zoneBg()
+  //  Check: scripts/auto/checks/battle-stage.cjs.
+  // ============================================================
+  function btOn(k) { try { return window.localStorage.getItem(k) !== '0'; } catch (e) { return true; } }
+  // Painted bounds of every HD sprite: [canvasW, canvasH, left, top, right, bottom] in source pixels.
+  // GENERATED by scripts/auto/battle/monster_bounds.py (--check fails when a sprite changes); never
+  // measured at run time. All 75 files are 1024 px wide but the figure fills 487 to 923 px of that,
+  // so sizing from the canvas made a narrow boss smaller than its dungeon's bat (B7).
+  var MON_BOX = {
+    ancientSphinx:[1024,894,171,144,895,892], ashenGuardian:[1024,917,100,128,924,915], bandit:[1024,909,156,130,759,906],
+    banditArcher:[1024,940,179,109,858,938], banditLord:[1024,940,68,106,970,938], bat:[1024,579,85,138,935,577],
+    blizzardBear:[1024,918,122,107,892,916], bruiser:[1024,912,152,143,837,910], bug:[1024,783,169,229,855,781],
+    celestialGuardian:[1024,918,119,123,903,916], chimera:[1024,844,65,170,937,842], cloudWraith:[1024,913,155,143,859,911],
+    coralTitan:[1024,863,84,142,934,861], crab:[1024,811,129,225,890,809], crystalHydra:[1024,800,133,117,857,800],
+    darkKnight:[1024,815,168,84,846,815], darkSorcerer:[1024,922,158,120,828,920], demon:[1024,867,112,172,907,864],
+    demonKing:[1024,921,48,113,971,918], dragon:[1024,894,67,140,954,891], fireElemental:[1024,934,116,106,887,931],
+    flameBat:[1024,752,65,301,961,750], flameTitan:[1024,909,65,94,949,906], frostMonarch:[1024,915,191,72,836,913],
+    frostStalker:[1024,853,108,182,916,851], frostWolf:[1024,895,119,147,904,893], frozenSkeleton:[1024,903,129,125,784,901],
+    giantCrab:[1024,908,71,122,949,906], giantToad:[1024,820,106,217,918,818], glacialGolem:[1024,885,108,133,900,883],
+    golem:[1024,860,101,162,916,858], harpy:[1024,902,134,136,885,900], iceSprite:[1024,926,232,107,775,924], iceWyrm:[1024,880,154,117,881,877],
+    jellyfish:[1024,899,226,147,791,897], knifeSneak:[1024,901,195,119,856,899], knight:[1024,896,109,91,826,894], kraken:[1024,859,98,168,910,857],
+    lavaGolem:[1024,866,83,171,936,863], lavaWyrm:[1024,883,170,141,855,881], lich:[1024,928,151,111,872,926], lizard:[1024,875,175,141,841,872],
+    magmaBeetleKing:[1024,858,96,184,922,856], magmaSlime:[1024,765,103,316,911,762], merfolk:[1024,874,189,148,782,872],
+    mimic:[1024,891,166,172,848,889], mosswarden:[1024,876,121,163,888,874], mummy:[1024,879,225,153,796,877], mushroom:[1024,827,174,192,851,824],
+    nullDevourer:[1024,902,110,126,907,900], oreColossus:[1024,883,100,164,915,881], phantomStag:[1024,964,140,66,894,962],
+    piranha:[1024,847,164,126,886,845], rabbit:[1024,875,269,142,767,872], sandGolem:[1024,898,70,136,946,895],
+    sandSerpentQueen:[1024,929,186,113,842,926], sandWraith:[1024,924,116,110,894,921], seaStar:[1024,844,112,144,910,841],
+    serpent:[1024,854,199,135,813,851], shadow:[1024,962,126,101,889,960], shadowWisp:[1024,891,273,151,760,889], skeleton:[1024,892,132,145,803,890],
+    slime:[1024,678,156,194,889,678], spider:[1024,849,156,203,868,846], stormHarpy:[1024,927,95,93,930,925], stormRaptor:[1024,896,96,139,926,894],
+    stormSentinel:[1024,949,109,68,906,947], swordWraith:[1024,915,159,121,859,912], templeGuard:[1024,923,168,87,850,921],
+    thornvineLurker:[1024,872,104,152,909,870], voidShade:[1024,954,167,116,873,952], warGeneralMalachar:[1024,922,78,98,925,920],
+    wolf:[1024,852,250,178,835,850], wraith:[1024,923,176,132,842,921], wyvern:[1024,919,84,140,924,917]
+  };
+  // Sizes are in units of one regular enemy's height band: [height, width] the painted box must fit in.
+  // Small creatures stand at 75%, a boss at 1.4x, in every layout (the unit shrinks when the stage is short).
+  var BT_BAND = { reg: [1, 1.18], small: [0.75, 0.885], boss: [1.4, 1.72] }, BT_UNIT = 200, BT_FLY_LIFT = 18;
+  var MON_SMALL = { rabbit: 1, bug: 1, slime: 1, bat: 1, mushroom: 1, magmaSlime: 1, flameBat: 1, iceSprite: 1, shadowWisp: 1, seaStar: 1, piranha: 1, jellyfish: 1 };
+  // Creatures with no feet on the ground: lifted a little, with a smaller, fainter shadow under them (B9).
+  var MON_FLY = { bat: 1, flameBat: 1, cloudWraith: 1, fireElemental: 1, iceSprite: 1, jellyfish: 1, sandWraith: 1, shadow: 1, shadowWisp: 1, voidShade: 1, wraith: 1, piranha: 1, wyvern: 1 };
+  function btPct(v) { return (Math.round(v * 100000) / 1000) + '%'; }
+  var _btDefeat = null;   // { eng, at }: when the killing-blow collapse started on this fight's sprite
+  function btDownAttr(bs) {
+    var d = _btDefeat, none = { cls: '', style: '', gone: false };
+    if (!d || !bs || !bs.engine || d.eng !== bs.engine || bs.engine.state !== 'victory') return none;
+    var ms = Date.now() - d.at;
+    if (ms >= 620) return { cls: '', style: ' style="visibility:hidden;"', gone: true };
+    return { cls: ' qok-defeated', style: ' style="animation-delay:-' + ms + 'ms;"', gone: false, delay: ms };   // repainted mid-collapse: carry on from where it was
+  }
+  function btMonHtml(sprite, src, boss, down) {
+    var id = String(sprite || '').replace(/^monster-/, ''), b = MON_BOX[id];
+    if (!b || !src || !isMonsterHd(sprite)) return '';   // the 128 px stand-in shown while the HD file loads keeps the old sizing
+    var pw = b[4] - b[2], ph = b[5] - b[3], k = boss ? 'boss' : (MON_SMALL[id] ? 'small' : 'reg'), fly = !!MON_FLY[id];
+    var anim = down.gone ? '' : (down.cls ? 'animation-delay:-' + down.delay + 'ms;' : '');
+    return '<div class="bfit ' + k + (fly ? ' fly' : '') + (down.gone ? ' gone' : '') + (down.cls ? ' down' : '') + '" data-k="' + k + '" data-pw="' + pw + '" data-ph="' + ph + '" data-lift="' + (fly ? BT_FLY_LIFT : 0) + '" style="aspect-ratio:' + pw + '/' + ph + ';">' +
+      '<i class="bshadow"></i><div class="bfloat"' + (fly ? ' style="transform:translateY(-' + BT_FLY_LIFT + 'px);"' : '') + '>' +
+      '<img class="bmon hd' + down.cls + '" src="' + src + '" alt="" style="width:' + btPct(b[0] / pw) + ';left:' + btPct(-b[2] / pw) + ';top:' + btPct(-b[3] / ph) + ';' + anim + '" /></div></div>';
+  }
+  // The painted box in CSS px: as large as its band allows between the name bar and the feet line,
+  // so it can never reach the name bar, and the HUD below starts under the feet line.
+  function btFitEnemy() {
+    if (!stage) return;
+    var box = stage.querySelector('.bfit'), st = stage.querySelector('.bstage');
+    if (!box || !st) return;
+    var card = stage.querySelector('.enemy-card'), sr = st.getBoundingClientRect(), cr = card ? card.getBoundingClientRect() : null;
+    var band = BT_BAND[box.getAttribute('data-k')] || BT_BAND.reg, pw = +box.getAttribute('data-pw') || 1, ph = +box.getAttribute('data-ph') || 1;
+    var availH = sr.bottom - (cr ? cr.bottom : sr.top) - 10 - (+box.getAttribute('data-lift') || 0), availW = sr.width - 28;
+    var unit = Math.min(BT_UNIT * Math.max(1, Math.min(1.7, sr.width / 390)), availH / BT_BAND.boss[0], availW / BT_BAND.boss[1]);
+    var s = Math.max(0, Math.min(unit * band[0] / ph, unit * band[1] / pw));
+    box.style.width = Math.round(pw * s) + 'px'; box.style.height = Math.round(ph * s) + 'px';
+  }
+  // Japanese battle text. The strings put spaces between phrases but run their sentences together
+  // ("...あらわれた！こたえて こうげきだ！", "...攻撃！ 答えの 力で ダメージが 減った！ 1の ダメージ！"), so the box
+  // broke inside a sentence and parted a number from its noun. Here every sentence is its own line,
+  // every phrase is unbreakable, and "1の ダメージ" is one phrase. Wording is untouched.
+  function btSentences(text) {
+    var out = [];
+    String(text == null ? '' : text).replace(/(\d+の) (?=ダメージ)/g, '$1 ').split('\n').forEach(function (line) {
+      line.replace(/([！？。]+)\s*/g, '$1\n').replace(/([!?]+) +/g, '$1\n').split('\n').forEach(function (s) { s = s.replace(/^\s+|\s+$/g, ''); if (s) out.push(s); });
+    });
+    return out;
+  }
+  function btPhraseSpans(sentence) {
+    return sentence.split(/ +/).map(function (w) { return '<span class="mw">' + esc(w) + '</span>'; }).join(' ');
+  }
+  function btMsgLines(mt) {
+    // English too: "Shadow Wolf attacks! 12 damage!" broke between the number and "damage!". The single space
+    // between the line spans keeps textContent equal to the game's own string.
+    if (!mt || !btOn('qok-msg-lines')) return null;
+    return btSentences(mt).map(function (s) { return '<span class="ml">' + btPhraseSpans(s) + '</span>'; }).join(' ');
+  }
+  // A phrase with no spaces in it ("魔王マラカールは毒の霧を放った！") cannot wrap: shrink the text until it fits
+  // inside the padding instead of running edge to edge or splitting inside a word (UJ-03).
+  function btFitText() {
+    if (!stage) return;
+    var els = stage.querySelectorAll('.msg.mls, .qprompt.mls');
+    for (var i = 0; i < els.length; i++) {
+      var el = els[i], cs = window.getComputedStyle(el), size = parseFloat(cs.fontSize) || 22;
+      var avail = el.clientWidth - (parseFloat(cs.paddingLeft) || 0) - (parseFloat(cs.paddingRight) || 0), words = el.querySelectorAll('.mw');
+      // 1. a message sentence that is only a little too long for its line gives up to 3 px of size rather than
+      //    leave its last phrase alone on a second line ("...ダメージが / 減った！"); longer ones wrap balanced at a phrase space
+      var lines = (el.classList.contains('msg') && isJa()) ? el.querySelectorAll('.ml') : [], size0 = size;   // English wraps balanced at full size
+      var wrapped = function () {
+        for (var l = 0; l < lines.length; l++) { var ws = lines[l].querySelectorAll('.mw'); if (ws.length > 1 && ws[ws.length - 1].offsetTop > ws[0].offsetTop + 4) return true; }
+        return false;
+      };
+      while (size > size0 - 3 && wrapped()) { size -= 1; el.style.fontSize = size + 'px'; }
+      if (wrapped()) { size = size0; el.style.fontSize = ''; }   // not enough: back to full size, wrapped
+      // 2. a phrase wider than the box itself: shrink until it is inside the padding (never below 15 px)
+      for (var h = 0; h < 12 && size > 15; h++) {
+        var widest = 0; for (var w = 0; w < words.length; w++) widest = Math.max(widest, words[w].offsetWidth);
+        if (widest <= avail) break;
+        size -= 1; el.style.fontSize = size + 'px';
+      }
+    }
+  }
+  // Once per repaint. The marker lives on the painted node, not on the signature: paint() also rebuilds
+  // the stage for the SAME signature (lastSig is cleared when the HD sprite arrives), and a new node is unfitted.
+  function btAfterPaint(force) {
+    var node = stage && stage.firstChild;
+    if (!node || (node.__btFitted && !force)) return;
+    node.__btFitted = true;
+    try { btFitEnemy(); btFitText(); } catch (e) {}
+  }
+  try { window.addEventListener('resize', function () { if (curScreen === 'battle') btAfterPaint(true); }); } catch (e) {}
+  // ---- quiz header (UE-12, UJ-05) ----
+  // The two-line story sentence above every question becomes a short mode tag: the command's own
+  // icon and word, the same pair the keypad's Enter key carries. The question is the largest text.
+  function btQuizHead(bs, key) {
+    if (!btOn('qok-quiz-tag')) {
+      var text = Z(key);
+      if (!isJa()) return '<div class="qprompt">' + esc(text) + '</div>';
+      // switch off, Japanese: break between the two sentences first, never inside the second one
+      return '<div class="qprompt mls">' + btSentences(text).map(function (s) { return '<span class="ml">' + btPhraseSpans(s) + '</span>'; }).join(' ') + '</div>';
+    }
+    var atk = !!bs.quizForPlayer;
+    return '<div class="qtag ' + (atk ? 'atk' : 'def') + '">' + battleIcon(atk ? 0 : 1) + '<span>' + esc(Z(atk ? 'battle.attack' : 'battle.defend')) + '</span></div>';
+  }
+  function btUnits(s) { var n = 0; s = String(s == null ? '' : s); for (var i = 0; i < s.length; i++) n += s.charCodeAt(i) > 0x2e7f ? 2 : 1; return n; }
+  // Question size by length: the bank is proven to fit two lines at 24 px (checks/quiz-content.cjs FIT),
+  // so only a question short enough to stay on its lines is drawn larger.
+  function btQSize(text) { if (!btOn('qok-quiz-tag')) return ''; var u = btUnits(text); return u <= 14 ? ' q1' : (u <= 18 ? ' q2' : ' q3'); }
+  // Answer size in the four-button quiz (UE-13): digits at least as large as the question; a long word answer steps down to fit its button.
+  function btASize(text) { var u = btUnits(text); return u <= 5 ? ' a1' : (u <= 8 ? ' a2' : (u <= 11 ? ' a3' : '')); }
+  // ---- floating numbers (UE-15) ----
+  // A hit on the enemy starts just ABOVE the painted sprite (never on it, never under the name bar);
+  // a hit on the player starts above the HP figure at the right end of the player bar.
+  function btFxAnchor(toEnemy, rect) {
+    var W = window.innerWidth, H = window.innerHeight;
+    try {
+      if (toEnemy) {
+        var f = root.querySelector('.bfit'), r = f ? f.getBoundingClientRect() : rect, card = root.querySelector('.enemy-card');
+        if (!r) return [W / 2, H * 0.3];
+        var lift = f ? (+f.getAttribute('data-lift') || 0) : 0, floor = card ? card.getBoundingClientRect().bottom + 62 : 110;
+        return [r.left + r.width / 2, Math.max(floor, r.top - lift - (f ? 20 : -14))];
+      }
+      var hp = root.querySelector('.pbar .bhp'), pb = root.querySelector('.pbar');
+      if (hp && pb) { var a = hp.getBoundingClientRect(); return [Math.min(W - 44, a.left + a.width / 2), pb.getBoundingClientRect().top - 18]; }
+    } catch (e) {}
+    return rect ? [rect.left + rect.width / 2, rect.top] : [W / 2, H * (toEnemy ? 0.36 : 0.7)];
+  }
+  // ---- grand victory (UE-01) ----
+  // The frozen scene shows ONE message for a win ("Victory! / Gained 2 EXP! / Gained 1 G! / Mika reached
+  // Level 5!") and closes it by itself after at most 3 s, or on a tap. That window is kept exactly: the
+  // same message is drawn as beats in the vocabulary of the ending card the owner approved (stars, gold
+  // headline, rays, result tiles). Beat 1: Victory + EXP and gold tiles while the enemy falls. Beat 2,
+  // only on a level up: the hero in a sunburst under "Level N!". A boss win is the larger version (its
+  // name as the kicker, big rays, confetti). No new sentence is added and nothing waits longer than before:
+  // the scene's own timer still ends it, and a tap during beat 1 of a level up turns to beat 2 instead of waiting.
+  var _btVic = null, BT_BEAT_MS = 1100;
+  function btVictoryStart(bs, x) {
+    try { _btVic = { eng: bs.engine, exp: x.expGain | 0, gold: x.goldGain | 0, level: x.levelUp ? (x.levelUp.newLevel | 0) : 0, boss: isBossMonster(bs.monster), t0: 0, beat: 0 }; } catch (e) { _btVic = null; }
+  }
+  function btVicLive(bs) { var v = _btVic; return (v && bs && bs.engine && v.eng === bs.engine && bs.engine.state === 'victory' && btOn('qok-victory-grand')) ? v : null; }
+  function btVicTap(bs) {
+    var v = btVicLive(bs);
+    if (!v || !v.t0 || !v.level || v.beat) return false;
+    v.beat = 1; return true;
+  }
+  function btVicView(bs, mt, ename, st) {
+    var v = btVicLive(bs), head = Z('battle.victory');
+    if (!v || !mt || mt.indexOf(head) !== 0) return null;
+    if (!v.t0) v.t0 = Date.now();
+    if (v.level && !v.beat && Date.now() - v.t0 >= BT_BEAT_MS) v.beat = 1;
+    var lvl = !!(v.level && v.beat), i;
+    // Anything the scene appended after its four own lines (quest objectives complete, the crystal line) is kept, small, under the tiles.
+    var notes = mt.split('\n').slice(1 + (v.exp ? 1 : 0) + (v.gold ? 1 : 0) + (v.level ? 1 : 0));
+    var title = lvl ? T3('Level ' + v.level + '!', 'レベル' + v.level + '！', 'レベル' + v.level + '！') : head;
+    // headline width in em: the whole line, or for a boss its longest phrase (a boss headline may take two lines)
+    var em = 0, parts = v.boss ? title.split(' ') : [title];
+    for (i = 0; i < parts.length; i++) em = Math.max(em, btUnits(parts[i]) * 0.56);
+    var fx = '';
+    if (v.boss || lvl) {
+      var cols = ['#f0cd78', '#fff6d8', '#c9a961', '#6fd3c0', '#e8788a', '#a99cf0'];
+      if (v.boss) for (i = 0; i < 22; i++) {
+        var cw = 5 + (i % 3) * 2;
+        fx += '<span style="left:' + ((i * 37 + 11) % 100) + '%;width:' + cw + 'px;height:' + Math.round(cw * 1.6) + 'px;background:' + cols[i % cols.length] +
+          ';animation-duration:' + (4 + (i * 7 % 5)) + 's;animation-delay:' + (-((i * 13) % 40) / 10) + 's;"></span>';
+      }
+      for (i = 0; i < 7; i++) fx += '<em style="left:' + ((i * 23 + 8) % 92) + '%;top:' + ((i * 31 + 6) % 70) + '%;font-size:' + (10 + (i % 3) * 6) + 'px;animation-delay:' + (-(i * 0.37)).toFixed(2) + 's;">✦</em>';
+      fx = '<div class="bvfx">' + fx + '</div>';
+    }
+    var stageHtml = '<div class="bvic' + (v.boss ? ' boss' : '') + (lvl ? ' lvl' : ' win') + '"><i class="bvscrim"></i>' + fx +
+      '<div class="bvtop">' + (lvl ? '' : '<i class="bvrays"></i>') + '<div class="bvstars"><b>★</b><b>★</b><b>★</b></div>' +
+      ((v.boss && !lvl) ? '<div class="bvkick"><i></i><span>' + esc(ename) + '</span><i></i></div>' : '') +
+      '<div class="bvhead" style="--em:' + em.toFixed(2) + ';">' + esc(title) + '</div></div>' +
+      (lvl ? '<div class="bvhero">' + heroImg(104, st.heroColor) + '</div>' : '') + '</div>';
+    function tile(val, lab) { return '<div class="bvtile"><b>+' + val + '</b><span>' + esc(lab) + '</span></div>'; }
+    var hudHtml = '<div class="bvres' + (lvl ? ' still' : '') + '" data-act="battleAdvance"><div class="bvtiles">' + (v.exp ? tile(v.exp, Z('menu.exp')) : '') + (v.gold ? tile(v.gold, Z('menu.gold')) : '') + '</div>';
+    for (i = 0; i < notes.length; i++) if (notes[i]) hudHtml += '<div class="bvnote">' + esc(notes[i]) + '</div>';
+    return { stage: stageHtml, hud: hudHtml + '</div>', dyn: 'vic|' + (lvl ? 'L' : 'W') + '|' + mt + '|' + (lvl && getHeroSrc(st.heroColor) ? 1 : 0) };
+  }
+  window.__QOK_BATTLE_STAGE__ = { box: MON_BOX, band: BT_BAND, small: MON_SMALL, fly: MON_FLY, bgKey: function () { return _curBg; }, victory: function () { return _btVic ? { exp: _btVic.exp, gold: _btVic.gold, level: _btVic.level, boss: _btVic.boss, beat: _btVic.beat } : null; } };
+
   function renderBattle() {
     var bs = getScene('BattleScene'), p = player(), st = pstate();
     if (!bs || !p || !st) return;
@@ -2327,13 +2655,17 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
     var ename = bs.monster ? Z(bs.monster.nameKey) : '';
     var sprite = (bs.monster && bs.monster.spriteKey) ? bs.monster.spriteKey : '';
     var bossCls = isBossMonster(bs.monster) ? ' boss' : ''; // bosses render larger than regular monsters
-    var enemyCard = '<div class="enemy-card"><div style="flex:1;"><div style="font-weight:800;color:var(--ink);font-size:14px;">' + esc(ename) + '</div>' +
+    var enemyCard = '<div class="enemy-card"><div style="flex:1;"><div style="font-weight:800;color:var(--ink);font-size:16px;">' + esc(ename) + '</div>' +
       '<div class="hp dark mt6"><i style="width:' + (eR * 100) + '%;background:var(--ruby);"></i></div></div></div>';
     var msrc = getMonsterSrc(sprite);
     var hdCls = isMonsterHd(sprite) ? ' hd' : '';
-    var monImg = msrc ? '<img class="bmon' + bossCls + hdCls + '" src="' + msrc + '" alt="" />' : (sprite ? '<div class="bmon' + bossCls + '" style="display:flex;"></div>' : '');
+    var downAttr = btDownAttr(bs);   // a sprite already beaten stays beaten across the victory repaints
+    var fitOn = btOn('qok-enemy-fit');
+    if (root) root.classList.toggle('btfit', fitOn);
+    var monImg = (fitOn && btMonHtml(sprite, msrc, !!bossCls, downAttr)) ||
+      (msrc ? '<img class="bmon' + bossCls + hdCls + downAttr.cls + '"' + downAttr.style + ' src="' + msrc + '" alt="" />' : (sprite ? '<div class="bmon' + bossCls + '" style="display:flex;"></div>' : ''));
 
-    var content = '', dyn = '', showPlayerBar = true;
+    var content = '', dyn = '', showPlayerBar = true, stageExtra = '';
     if (isQuiz && kpOn()) {
       var kq = bs.quizQuestion;
       kpSync(bs);
@@ -2341,9 +2673,9 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
       var ktimer = st.timerEnabled ? '<div class="qtimer" id="qok-qtimer"><i style="width:100%;"></i></div>' : '';
       var kPromptKey = bs.quizForPlayer ? 'quiz.answerToAttack' : 'quiz.answerToDefend';
       content = '<div class="qcard panel kp">' + ktimer +
-        '<div class="qprompt">' + esc(Z(kPromptKey)) + '</div>' +
-        '<div class="qq">' + esc(kqtext) + '</div>' + kpHtml(bs) + '</div>';
-      dyn = 'kp|' + kPromptKey + '|' + kqtext + '|' + _kp.v + '|' + (_kp.miss ? 'm' : '') + '|' + (_kp.busy ? 'b' : '') + '|' + (npIsOpen() ? 'n' : '');
+        btQuizHead(bs, kPromptKey) +
+        '<div class="qq' + btQSize(kqtext) + '">' + esc(kqtext) + '</div>' + kpHtml(bs) + '</div>';
+      dyn = 'kp|' + btOn('qok-quiz-tag') + kPromptKey + '|' + kqtext + '|' + _kp.v + '|' + (_kp.miss ? 'm' : '') + '|' + (_kp.busy ? 'b' : '') + '|' + (npIsOpen() ? 'n' : '');
       showPlayerBar = false;
     } else if (isQuiz) {
       var q = bs.quizQuestion;
@@ -2353,13 +2685,13 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
       var ah = '';
       for (var a = 0; a < ans.length; a++) {
         var at = (ans[a].text && (ans[a].text[loc] || ans[a].text.en)) || '';
-        ah += '<button class="qbtn' + (a === bs.quizSelectedIndex ? ' sel' : '') + '" data-act="quizAns" data-i="' + a + '">' + esc(at) + '</button>';
+        ah += '<button class="qbtn' + btASize(at) + (a === bs.quizSelectedIndex ? ' sel' : '') + '" data-act="quizAns" data-i="' + a + '">' + esc(at) + '</button>';
       }
       var quizPromptKey = bs.quizForPlayer ? 'quiz.answerToAttack' : 'quiz.answerToDefend';
       content = '<div class="qcard panel">' + timer +
-        '<div class="qprompt">' + esc(Z(quizPromptKey)) + '</div>' +
-        '<div class="qq">' + esc(qtext) + '</div><div class="qans">' + ah + '</div></div>';
-      dyn = 'quiz|' + quizPromptKey + '|' + qtext + '|' + bs.quizSelectedIndex + '|' + ans.length;
+        btQuizHead(bs, quizPromptKey) +
+        '<div class="qq' + btQSize(qtext) + '">' + esc(qtext) + '</div><div class="qans">' + ah + '</div></div>';
+      dyn = 'quiz|' + btOn('qok-quiz-tag') + quizPromptKey + '|' + qtext + '|' + bs.quizSelectedIndex + '|' + ans.length;
       showPlayerBar = false; // the quiz card is tall; drop the player bar to keep the enemy on screen
     } else if (phase === 'itemSelect') {
       var ir = '<div class="itemrow">';
@@ -2383,7 +2715,7 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
       // put a resting selection on screen for one paint, which is the thing being removed.
       var ag = '<div class="rail"><div class="railplate" style="transform:translateX(' + (bs.menuIndex * 100) + '%);"></div>';
       for (var m = 0; m < BATTLE_ACT.length; m++) {
-        var act = BATTLE_ACT[m], lab = esc((act.key === 'battle.defend' && kpOn()) ? T3('Guard', 'みがまえる', '身構える') : Z(act.key));
+        var act = BATTLE_ACT[m], lab = esc((act.key === 'battle.defend') ? T3('Guard', 'みがまえる', '身構える') : Z(act.key));
         ag += '<button class="railcmd" style="--tint:' + act.col + ';"' +
           ' data-act="battleMenu" data-i="' + m + '" aria-label="' + lab + '">' +
           battleIcon(act.bi) + '<span class="lab">' + lab + '</span></button>';
@@ -2412,8 +2744,14 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
         content = '<div class="msg" style="text-align:center;font-weight:900;' + (_kpLine ? 'flex-direction:column;' : '') + 'color:' + (_ok ? '#5fd089' : '#ef6a60') + ';">' + _kpLine + esc(Z(_ok ? 'quiz.correct' : 'quiz.incorrect')) + '</div>';
         dyn = 'resolve' + _ok + '|' + _kpLine;
       } else {
+        var vicView = btVicView(bs, mt, ename, st);   // UE-01: the victory message as celebration beats (null: any other message, or qok-victory-grand=0)
+        var jaLines = vicView ? null : btMsgLines(mt); // UJ-03/UJ-06: Japanese, one sentence per line, phrases never split
+        if (vicView) { content = vicView.hud; stageExtra = vicView.stage; dyn = vicView.dyn; }
+        else if (jaLines) { content = '<div class="msg mls" data-act="battleAdvance" style="cursor:pointer;text-align:center;">' + jaLines + '</div>'; dyn = 'msgj' + mt; }
+        else {
         content = '<div class="msg" data-act="battleAdvance" style="cursor:pointer;text-align:center;white-space:pre-line;">' + esc(mt) + '</div>';
         dyn = 'msg' + mt;
+        }
       }
     } else {
       // intro / transitional — show only bars
@@ -2429,11 +2767,12 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
     // repainted on every HP tick, and animating those would strobe the panel.
     var swap = (phase !== _lastBattlePhase) ? ' swapin' : '';
     _lastBattlePhase = phase;
-    var hud = tapAdvance + '<div class="bstage">' + enemyCard + monImg + '</div><div class="hudwrap' + swap + '">' + content + (showPlayerBar ? battlePlayerBar(p, st) : '') + '</div>';
-    var sig = 'battle|' + phase + '|' + sprite + '|e' + ehp + '/' + emax + '|h' + st.hp + '/' + p.totalMaxHp + '|' + loc + '|' + dyn;
+    var hud = tapAdvance + '<div class="bstage">' + enemyCard + monImg + stageExtra + '</div><div class="hudwrap' + swap + '">' + content + (showPlayerBar ? battlePlayerBar(p, st) : '') + '</div>';
+    var sig = 'battle|' + phase + '|' + sprite + '|e' + ehp + '/' + emax + '|h' + st.hp + '/' + p.totalMaxHp + '|' + loc + '|' + (fitOn ? 'f' : '') + '|' + dyn;
     activate('battle', true);
     setBattleBg(bs); // biome/boss background behind the battle (cover-fit, full-bleed)
     paint(hud, sig);
+    btAfterPaint();   // size the enemy from its painted box and fit Japanese message lines (only when the screen was repainted)
     if (phase === 'playerMenu') paintRailSelection(bs.menuIndex);
     if (isQuiz) { updateQuizTimer(bs); npPlace(); }
     runBattleFx(bs); // spawn damage number / hit-flash / crit / shake (after paint, into the FX layer)
@@ -2483,9 +2822,9 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
     // markup and classes. Local literals, not Z(): the keys are in no locale table (see the
     // equip.new note above), and the Japanese follows the overlay's kana-first house style.
     if (titleConfirm && hasSave) {
-      var kj = !!(pstate() && pstate().kanjiMode);
-      var tTitle = ja ? (kj ? '最初から始める？' : 'はじめから はじめる？') : 'Start over?';
-      var tBody = ja ? (kj ? 'セーブした冒険は消えます。' : 'セーブした ぼうけんは きえます。') : 'Your saved adventure will be replaced.';
+      var kj = kanji();   // was pstate().kanjiMode: no player on the title, so a kanji-mode save got this dialog in kana (census m7 rule: follow the save)
+      var tTitle = ja ? (kj ? '最初から 始める？' : 'さいしょから はじめる？') : 'Start over?';
+      var tBody = ja ? (kj ? 'セーブした 冒険は 消えます。' :'セーブした ぼうけんは きえます。') : 'Your saved adventure will be replaced.';
       var tGo = ja ? (kj ? '始める' : 'はじめる') : 'Start over';
       var tNo = ja ? 'やめる' : 'Cancel';
       h += '<div class="shopconf" data-act="titleNewCancel"><div class="card2" data-act="titleNoop">' +
@@ -2824,6 +3163,7 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
     } else if (act === 'kpKey') {
       kpPress(bs, el ? el.getAttribute('data-k') : '');
     } else if (act === 'battleAdvance') {
+      if (btVicTap(bs)) { lastSig = null; return; }   // grand victory with a level up: the first tap turns to the level-up beat
       bs.advanceMessage();
     }
   }
@@ -3035,6 +3375,14 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
       ms.equipTypeFilter = el.getAttribute('data-type'); ms.equipInventoryIndex = 0; ms.equipScrollOffset = 0; ms.equipMode = 'equipped';
     } else if (act === 'setting') {
       ms.listIndex = i; ms.handleSettingToggle(1);
+    } else if (act === 'ctrlSide') {
+      // The joystick side by name (UE-17). Same two writes as the bundle's own step for this row:
+      // the saved value and the shell's applyOrientation, both inside __setControlOrientation.
+      var side = el ? el.getAttribute('data-side') : '';
+      if (side === 'left' || side === 'center' || side === 'right') {
+        if (window.__setControlOrientation) window.__setControlOrientation(side);
+        else { try { localStorage.setItem('eduControlOrientation', side); } catch (e2) {} }
+      }
     } else if (act === 'quitAsk') {
       settingsQuitConfirm = true;
     } else if (act === 'menuSave') {
@@ -3078,8 +3426,8 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
     var st = pstate() || {}, ja = isJa();
     if (!ja) return { complete:'Quest Complete', received:'Rewards received', continue:'Continue adventure', expand:'Expand quests', collapse:'Collapse quests', loading:'Reading quest progress…', unavailable:'Quest details unavailable', empty:Z('menu.noQuests') };
     return st.kanjiMode
-      ? { complete:'クエスト完了', received:'報酬を受け取りました', continue:'冒険を続ける', expand:'クエストを開く', collapse:'クエストを閉じる', loading:'クエストを読み込んでいます…', unavailable:'クエスト情報を表示できません', empty:Z('menu.noQuests') }
-      : { complete:'クエストかんりょう', received:'ほうしゅうを うけとった', continue:'ぼうけんを つづける', expand:'クエストを ひらく', collapse:'クエストを とじる', loading:'クエストを よみこんでいます…', unavailable:'クエストを ひょうじできません', empty:Z('menu.noQuests') };
+      ? { complete:'クエスト 完了', received:'報酬を 受け取った', continue:'冒険を 続ける', expand:'クエストを 開く', collapse:'クエストを 閉じる', loading:'クエストを 読み込んでいます…', unavailable:'クエストを 表示できません', empty:Z('menu.noQuests') }
+      : { complete:'クエスト かんりょう', received:'ほうしゅうを うけとった', continue:'ぼうけんを つづける', expand:'クエストを ひらく', collapse:'クエストを とじる', loading:'クエストを よみこんでいます…', unavailable:'クエストを ひょうじできません', empty:Z('menu.noQuests') };
   }
   function questRewardRows(rewards) {
     var rows = [], r = rewards || {};
@@ -3241,16 +3589,51 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
      player's own tap on the header wins (wm.__qokQuestManual) until the next new quest arrives.
      A quest set that only shrinks never re-opens it. localStorage['qok-quests-autocollapse']='0'
      restores the old always-as-left behaviour. */
+  /* THE QUESTS PANEL STARTS FOLDED (day 4, design review UE-03; owner rules P9 "HUD collapsed by
+     default" and P4 sparse screens). M15 still left it open whenever a quest was active, which is
+     nearly always: with the HP chip and the minimap it filled the left 40% of the view and covered
+     half of the Demon King on his own carpet. Now:
+       - on arrival it is folded to its icon, whatever the quest list holds;
+       - a tap on the icon opens it and a tap on the header folds it, and that choice holds;
+       - when a quest is added, or one ends and others remain, a FOLDED panel opens by itself for
+         QUEST_PEEK_MS and folds again. The clock only runs while the panel can be seen (not under a
+         dialogue box or the Quest Complete card). A panel the player opened is left alone.
+     Switches: localStorage['qok-quests-fold']='0' is the M15 behaviour described above;
+     localStorage['qok-quests-autocollapse']='0' still switches every automatic change off. */
+  var QUEST_PEEK_MS = 4000;
+  function questFoldOn() { try { return localStorage.getItem('qok-quests-fold') !== '0'; } catch (e) { return true; } }
   function questAutoCollapse(wm, quests) {
     if (!wm) return;
     try { if (localStorage.getItem('qok-quests-autocollapse') === '0') return; } catch (e) {}
+    var fold = questFoldOn(), now = Date.now(), st = pstate();
     var ids = quests.map(function (q) { return q.id; }), key = ids.join(',');
-    if (wm.__qokQuestIds === key) return;
-    var prev = wm.__qokQuestIds == null ? null : (wm.__qokQuestIds ? wm.__qokQuestIds.split(',') : []);
-    wm.__qokQuestIds = key;
-    var added = prev !== null && ids.some(function (id) { return prev.indexOf(id) < 0; });
-    if (added) { wm.questTrackerCollapsed = false; wm.__qokQuestManual = false; }
-    else if (!ids.length && !wm.__qokQuestManual) wm.questTrackerCollapsed = true;
+    if (fold && wm.__qokQuestFoldFor !== st) {
+      // a new adventure in this scene (first sight, or another save loaded): folded, and the list
+      // it starts with is not news
+      wm.__qokQuestFoldFor = st; wm.__qokQuestIds = key;
+      wm.questTrackerCollapsed = true; wm.__qokQuestManual = false; wm.__qokQuestPeekUntil = 0;
+    }
+    if (wm.__qokQuestIds !== key) {
+      var prev = wm.__qokQuestIds == null ? null : (wm.__qokQuestIds ? wm.__qokQuestIds.split(',') : []);
+      wm.__qokQuestIds = key;
+      var added = prev !== null && ids.some(function (id) { return prev.indexOf(id) < 0; });
+      if (!fold) {
+        if (added) { wm.questTrackerCollapsed = false; wm.__qokQuestManual = false; }
+        else if (!ids.length && !wm.__qokQuestManual) wm.questTrackerCollapsed = true;
+      } else {
+        var ended = prev !== null && ids.length > 0 && prev.some(function (id) { return ids.indexOf(id) < 0; });
+        if (added || ended) {
+          // the new quest, and only it, shows its objective (the list is repainted on the next tick)
+          if (added) { ids.forEach(function (id) { fieldQuestOpen[id] = prev.indexOf(id) < 0; }); fieldQuestSig = null; }
+          if (wm.questTrackerCollapsed) { wm.questTrackerCollapsed = false; wm.__qokQuestManual = false; wm.__qokQuestPeekUntil = now + QUEST_PEEK_MS; }
+          else if (wm.__qokQuestPeekUntil) wm.__qokQuestPeekUntil = now + QUEST_PEEK_MS;   // more news during a peek: start the clock again
+        }
+      }
+    }
+    if (fold && wm.__qokQuestPeekUntil) {
+      if (wm.showingMessage || (questCompletion && !questCompletion.hidden)) wm.__qokQuestPeekUntil = now + QUEST_PEEK_MS;
+      else if (now >= wm.__qokQuestPeekUntil) { wm.__qokQuestPeekUntil = 0; if (!wm.__qokQuestManual) wm.questTrackerCollapsed = true; }
+    }
   }
   function renderFieldQuests(wm) {
     if (!fieldQuest || !fieldQuestContent) return;
@@ -3349,7 +3732,7 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
         if (!questTapWithinSlop(fieldQuestToggle.__qokDown, e)) return;
       }
       var wm = getScene('WorldMapScene'); if (!wm) return;
-      wm.questTrackerCollapsed = !wm.questTrackerCollapsed; wm.__qokQuestManual = true; wm.questDotActive = false; renderFieldQuests(wm);
+      wm.questTrackerCollapsed = !wm.questTrackerCollapsed; wm.__qokQuestManual = true; wm.__qokQuestPeekUntil = 0; wm.questDotActive = false; renderFieldQuests(wm);
     }
     fieldQuestToggle.addEventListener('pointerup', toggleQuestPanel);
     fieldQuestToggle.addEventListener('click', toggleQuestPanel);
@@ -3365,6 +3748,8 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
         if (button !== fieldQuestContent.__qokDownButton || !questTapWithinSlop(fieldQuestContent.__qokDown, e)) return;
       }
       var entry = button.closest('.qfq-entry'), id = entry && entry.getAttribute('data-quest-id'); if (!id) return;
+      // reading a quest during the four-second peek keeps the panel open: it is the player's now
+      var wmq = getScene('WorldMapScene'); if (wmq && wmq.__qokQuestPeekUntil) { wmq.__qokQuestPeekUntil = 0; wmq.__qokQuestManual = true; }
       var open = !entry.classList.contains('open'); fieldQuestOpen[id] = open; entry.classList.toggle('open', open);
       button.setAttribute('aria-expanded', String(open)); var detail = entry.querySelector('.qfq-detail'); if (detail) detail.hidden = !open;
     }
@@ -3581,7 +3966,8 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
     var p = player(), st = pstate();
     if (p && st) {
       var max = Math.max(1, p.totalMaxHp || st.maxHp || 1), ratio = Math.max(0, Math.min(1, st.hp / max));
-      fieldHpText.textContent = Z('menu.level') + st.level + '  ' + Z('menu.hp') + ' ' + st.hp + '/' + max;
+      // "Lv 50", as the menu top bar and the save slots write it (UE-21, day 4: the chip said "Lv50").
+      fieldHpText.textContent = Z('menu.level') + ' ' + st.level + '  ' + Z('menu.hp') + ' ' + st.hp + '/' + max;
       fieldHpFill.style.width = Math.round(ratio * 100) + '%'; fieldHpFill.className = ratio <= .2 ? 'danger' : (ratio <= .5 ? 'warn' : '');
     }
     // MINIMAP AND COMPASS ARE OVERWORLD-ONLY. Owner 2026-08-07: "there should be no compass or
@@ -3615,13 +4001,24 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
       fieldMapCollapsed = !!wm.minimapCollapsed; fieldMap.classList.toggle('collapsed', fieldMapCollapsed); fieldMapIcon.style.display = fieldMapCollapsed ? 'block' : 'none';
       if (!fieldMapCollapsed) drawFieldMap(wm);
     }
-    var questTop = hasMap ? (fieldMapCollapsed ? 100 : 216) : 53;
+    var questTop = hasMap ? (fieldMapCollapsed ? 110 : 216) : 53;   // 110 = the folded map icon is 50 px now (a 48 px button in its frame, UE-06)
     if (!hasMap && floorText) questTop += Math.max(34, Math.ceil(fieldFloor.getBoundingClientRect().height)) + 6;
     fieldQuest.style.setProperty('--qfh-quest-top', 'calc(env(safe-area-inset-top,0px) + ' + questTop + 'px)');
     fieldQuestToggle.querySelector('span').textContent = Z('quest.tracker.title'); renderFieldQuests(wm);
     var compassOn = !!wm.compassEnabled;
     fieldCompass.style.display = compassOn ? 'block' : 'none';
     if (compassOn) {
+      // UJ-10 (day 4): in Japanese the dial carries one word, north, in the player's script, where
+      // it carried the Latin N, E, S, W (the elder tells the child the needle "points north").
+      // Text track (REPORT-T2): kanji mode names all four (北 南 東 西, the three others dim as S, E, W
+      // were); kana mode names north alone, as the elder does: みなみ and ひがし do not fit the dial.
+      var dial = isJa() ? (kanji() ? '北南東西' : 'きた') : 'NSEW';
+      if (fieldCompass.__qokDial !== dial) {
+        fieldCompass.__qokDial = dial;
+        fieldCompass.classList.toggle('ja', dial !== 'NSEW'); fieldCompass.classList.toggle('kana', dial === 'きた');
+        var dialText = fieldCompass.querySelectorAll('text.qfc-c'), dialSet = dial === 'きた' ? ['きた', '', '', ''] : dial.split('');
+        for (var di = 0; di < dialText.length && di < 4; di++) dialText[di].textContent = dialSet[di];   // markup order: N S E W
+      }
       var target = null; try { target = wm.getCompassTarget && wm.getCompassTarget(); } catch (e2) {}
       if (target) { setCompassBearing(Math.atan2(target.oy - wm.heroTileY, target.ox - wm.heroTileX) * 180 / Math.PI + 90); }
       else fieldCompassArrow.style.display = 'none';
@@ -3771,6 +4168,22 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
   // ============================================================
   //  GAME OVER (GameOverScene) — Storybook overlay
   // ============================================================
+  /* A GENTLE DEFEAT (day 4, design review UE-07; owner rule P14 "defeat is gentle"). The head of
+     this screen was a skull and crossbones over a dull red title, on a screen whose buttons already
+     say that nothing much is lost. It is now the hero, breathing, with a small heart, in a warm
+     glow, and the title in warm cream. No new art: the hero is the live sprite every menu uses and
+     the heart is drawn here. Buttons, their order and their words are untouched.
+     localStorage['qok-defeat-gentle']='0' restores the skull, the red and the 12.5 px notes. */
+  function defeatGentle() { try { return localStorage.getItem('qok-defeat-gentle') !== '0'; } catch (e) { return true; } }
+  function defeatHead() {
+    var title = '<div class="go-title">' + esc(Z('gameover.title')) + '</div>';
+    if (!defeatGentle()) return '<div class="go-head"><div class="go-skull">☠</div>' + title + '</div>';
+    var st = pstate() || {};
+    return '<div class="go-head"><div class="go-rest">' + heroImg(92, st.heroColor) +
+      '<svg class="go-heart" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-7.5-10.2a4.1 4.1 0 017.5-2.3 4.1 4.1 0 017.5 2.3c0 5.6-7.5 10.2-7.5 10.2z" fill="#f08a80" stroke="#fff3e6" stroke-width="1.4" stroke-linejoin="round"/></svg>' +
+      '</div>' + title + '</div>';
+  }
+  function defeatHeadSig() { var st = pstate() || {}; return (defeatGentle() ? 'g' : 's') + (getHeroSrc(st.heroColor) ? 1 : 0); }
   function renderGameOver() {
     var go = getScene('GameOverScene'); if (!go) return;
     var SV = window.__QOK_SAVES__;
@@ -3782,8 +4195,7 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
     ];
     // the scene disables "restart from save point" when there's no save
     var saveDisabled = !!(go.menuTexts && go.menuTexts[1] && go.menuTexts[1].getData && go.menuTexts[1].getData('disabled'));
-    var h = '<div class="go-screen"><div class="go-head"><div class="go-skull">☠</div>' +
-      '<div class="go-title">' + esc(Z('gameover.title')) + '</div></div><div class="go-actions">';
+    var h = '<div class="go-screen' + (defeatGentle() ? ' gentle' : '') + '">' + defeatHead() + '<div class="go-actions">';
     for (var i = 0; i < OPTS.length; i++) {
       var dis = (OPTS[i].a === 'restart_save' && saveDisabled);
       h += '<button class="btn ' + OPTS[i].cls + (dis ? ' go-dis' : '') + '"' +
@@ -3791,7 +4203,7 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
         ' style="width:100%;font-size:18px;">' + esc(Z(OPTS[i].k)) + '</button>';
     }
     h += '</div></div>';
-    var sig = 'gameover|' + saveDisabled + '|' + locale();
+    var sig = 'gameover|' + saveDisabled + '|' + locale() + '|' + defeatHeadSig();
     activate('gameover', false);
     paint(h, sig);
   }
@@ -3858,8 +4270,7 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
     var d = SV.defeatInfo(), ja = isJa(), kj = !!(pstate() && pstate().kanjiMode);
     function t3(en, kana, kanji) { return ja ? (kj ? kanji : kana) : en; }
     var town = d.townName || t3('town', 'まち', '町');
-    var h = '<div class="go-screen"><div class="go-head"><div class="go-skull">☠</div>' +
-      '<div class="go-title">' + esc(Z('gameover.title')) + '</div></div><div class="go-actions">';
+    var h = '<div class="go-screen' + (defeatGentle() ? ' gentle' : '') + '">' + defeatHead() + '<div class="go-actions">';
     if (d.boss) {
       h += '<button class="btn btn-gold" data-act="defeatBoss" style="width:100%;font-size:18px;">' + esc(t3('Try the boss again', 'もういちど ボスに いどむ', 'もう一度 ボスに 挑む')) + '</button>' +
         '<div class="go-note">' + esc(t3('The fight starts over as it began. No gold is lost.', 'たたかいの はじめから。ゴールドは へらない。', '戦いの 始めから。ゴールドは 減らない。')) + '</div>';
@@ -3872,7 +4283,7 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
       '<button class="btn btn-slate" data-act="defeatTitle" style="width:100%;font-size:18px;">' + esc(Z('gameover.title_screen')) + '</button>';
     h += '</div></div>';
     activate('gameover', false);
-    paint(h, 'defeat|' + d.boss + '|' + town + '|' + d.goldLost + '|' + locale() + '|' + kj);
+    paint(h, 'defeat|' + d.boss + '|' + town + '|' + d.goldLost + '|' + locale() + '|' + kj + '|' + defeatHeadSig());
   }
 
   // Overworld dialogue (WorldMapScene.showMessage) advances on a scene tap, but the DOM d-pad +
@@ -3928,6 +4339,7 @@ window.__QOK_TESTERS__ = true;   // TESTERS-ONLY: set to false for the public Ap
     syncMsgCatcher();
     updateFieldHud();
     runTownQuestToast();
+    try { syncTownPill(); } catch (eTp) {}
     // healer is a field overlay inside WorldMapScene — check before generic world
     var wm = getScene('WorldMapScene');
     if (wm && sceneActive('WorldMapScene') && wm.healerOverlayOpen) { renderHealer(); return; }

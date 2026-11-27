@@ -4,7 +4,8 @@
 // a real walk into the door; people and spots are then reached with the playthrough town walker.
 //   m2   arrival framing: at most 4% of the screen between the plate and the tab bar is black void
 //        (unfixed: 8-15%), she stands clear of the tab bar, and at Port Sapphire (north gate) she is
-//        not up against the HUD panels (her feet at least 200 CSS px from the top).
+//        not under a HUD panel or the top bar (her drawn box against the panels' own rectangles).
+//   T11  (design review 2026-11-27) no black band above the plate on arrival (Port Sapphire: 190 px unfixed).
 //   M16  after walking up to a person, the hero's feet are at least 20 world px from theirs when she
 //        is below them, or 13 px when beside them (unfixed: 11 px, the sprites stacked).
 //   m3   Port Sapphire: walking up to the wise woman offers "Talk to ..." and the talk key opens her
@@ -35,7 +36,11 @@ async function townDismiss(page) {
 async function framing(page, file) {
   const s = await page.evaluate(() => { const f = document.querySelector('#act1-hifi-preserved-root iframe'), t = f.contentWindow.__ACT1_TOWN__, p = t.position(), c = t.camera;
     const tabs = document.getElementById('fieldTabs'), r = tabs && tabs.getBoundingClientRect();
-    return { heroY: (p.y - c.y) * c.zoom, heroX: (p.x - c.x) * c.zoom, tabTop: r && r.height > 0 ? r.top : innerHeight, H: innerHeight, W: innerWidth }; });
+    // her drawn box (36 px sprite: 14.6 px either side of her feet, 31 px up) against the HUD panels that lie over the view
+    const fr = f.getBoundingClientRect(), hx = fr.left + (p.x - c.x) * c.zoom, hy = fr.top + (p.y - c.y) * c.zoom, box = [hx - 14.62 * c.zoom, hy - 30.94 * c.zoom, hx + 14.62 * c.zoom, hy + 0.56 * c.zoom];
+    let hud = 0, hudId = null; for (const e of document.querySelectorAll('#qfh-quest, #qfh-map, #qfh-compass, #qfh-floor')) { const q = e.getBoundingClientRect(), st = getComputedStyle(e); if (q.width <= 8 || q.height <= 8 || st.visibility === 'hidden' || st.display === 'none') continue;
+      const w = Math.min(box[2], q.right) - Math.max(box[0], q.left), h = Math.min(box[3], q.bottom) - Math.max(box[1], q.top); if (w > 0 && h > 0 && Math.min(w, h) > hud) { hud = Math.min(w, h); hudId = e.id; } }
+    return { heroY: (p.y - c.y) * c.zoom, heroX: (p.x - c.x) * c.zoom, heroTop: box[1], hud: +hud.toFixed(1), hudId, tabTop: r && r.height > 0 ? r.top : innerHeight, H: innerHeight, W: innerWidth }; });
   const img = await F.grab(page, file), k = img.w / s.W;
   let black = 0, rows = 0;
   for (let y = Math.round(s.H * 0.3 * k); y < Math.round(s.tabTop * k) - 2; y++) {        // the lower 70% of the view, down to the tab bar
@@ -43,6 +48,9 @@ async function framing(page, file) {
     rows++; if (dark / n >= 0.6) black++;                                               // the joystick ring may cross a void row
   }
   s.voidPct = +(100 * black / (s.H * k)).toFixed(1);
+  // T11: black rows in the upper half (read between the Quests panel and the right-hand buttons)
+  let top = 0; for (let y = Math.round(s.H * 0.04 * k); y < Math.round(s.H * 0.5 * k); y++) { let dark = 0, n = 0; for (let x = Math.round(175 * k); x < Math.round(330 * k); x += 3) { const q = F.px(img, x, y); if (q[0] + q[1] + q[2] < 36) dark++; n++; } if (dark / n >= 0.6) top++; }
+  s.topVoid = Math.round(top / k);
   return s;
 }
 (async () => {
@@ -63,7 +71,10 @@ async function framing(page, file) {
       const fr = await framing(page, path.join(F.OUT, `town-${id}-entry-${port}.png`));
       F.info(`${id} arrival framing`, JSON.stringify(fr));
       F.ok(fr.voidPct <= 4, `${id}: arrival view is filled by the town (no void band above the tab bar)`, `${fr.voidPct}% of the screen is black void`);
-      F.ok(fr.heroY <= fr.tabTop - 100 && fr.heroY >= 200, `${id}: she arrives clear of the tab bar and of the HUD panels`, `feet at ${Math.round(fr.heroY)} CSS px, tab bar at ${Math.round(fr.tabTop)}`);
+      // 2026-11-27 (design review T11): the rule was "feet at least 200 px from the top", which held her 212 px down at Port Sapphire's north
+      // gate and left a black band above the plate. The rule is now what it meant: her box does not lie under a HUD panel or the top bar.
+      F.ok(fr.heroY <= fr.tabTop - 100 && fr.hud <= 1 && fr.heroTop >= 60, `${id}: she arrives clear of the tab bar and of the HUD panels`, `feet at ${Math.round(fr.heroY)} CSS px, her head at ${Math.round(fr.heroTop)}, tab bar at ${Math.round(fr.tabTop)}; ${fr.hud > 1 ? `${fr.hud} px of her under ${fr.hudId}` : 'under no HUD panel'}`);
+      F.ok(fr.topVoid <= 16, `${id}: no black band above the plate on arrival`, `${fr.topVoid} CSS px of black rows in the upper half of the first view (allowed 16: the fade at the map's end)`);
       await townDismiss(page);
       if (id === 'portSapphire') {                                       // m3: the save point by the well
         const sp = await page.evaluate(() => { const f = document.querySelector('#act1-hifi-preserved-root iframe'); return f.contentWindow.__ACT1_TOWN__.town.savePoint; });

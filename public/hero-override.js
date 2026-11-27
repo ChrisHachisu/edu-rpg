@@ -167,6 +167,14 @@
     var hasSave = false;
     try { hasSave = !!localStorage.getItem('edu-rpg-save'); } catch (e) {}
     if (hasSave) { localeFixed = true; return; }          // existing player: keep their saved locale
+    // A STORED LANGUAGE IS NEVER FLIPPED (explorer Q01, day 4). "One-shot" was per launch, and the test
+    // above knows only the manual save: a player on an English phone who chose 日本語 and had only an
+    // auto save was toggled back to English on every cold start. ui-overhaul.js now writes the device
+    // language into the key before the bundle reads it on a first launch, so this function only still
+    // acts when that rule is switched off (localStorage['qok-first-lang'] = '0') and nothing is stored.
+    var stored = null;
+    try { stored = localStorage.getItem('edu-rpg-locale'); } catch (e) {}
+    if (stored === 'en' || stored === 'ja') { localeFixed = true; return; }
     var cur = null;
     try { cur = window.__QOK && window.__QOK.loc && window.__QOK.loc(); } catch (e) {}
     if (!cur) return;                                     // i18n not ready yet

@@ -34,12 +34,14 @@
  "npcs": [
   {
    "id": "healer",
+   "cellOld": [14.22, 54.84],
+   "cellNote": "2026-11-27 (design review T4): she stood in the middle of the street, 48 px deep, and a body's space round her closed it. She now stands on her own doorstep, 1.1 cells east and 1.8 north, like Frostwatch's healer; the street is open below her and the hero stops a body away.",
    "dialogueKey": "npc.healer",
    "nameKey": "npc.healer.name",
    "sheet": "town/npc/ironkeep-healer-4x3-64.png",
    "cell": [
-    14.22,
-    54.84
+    15.3,
+    53.0
    ],
    "mapsTs": [
     3,
@@ -66,6 +68,9 @@
   },
   {
    "id": "blacksmith",
+   "space": [20, 27, 10],
+   "spaceMax": 20,
+   "spaceNote": "2026-11-27 (design review T4): he stands in the middle of the forge street, 36 px deep, in front of the quench trough (moving him back would stand him on the trough). A full body's space closed the street, so his space ends 10 px south of his feet and the street keeps a 6 px way under him; passing there her sprite still overlaps his by up to `spaceMax` px (as before). From either side she stops a body away.",
    "dialogueKey": "npc.blacksmith",
    "nameKey": "npc.blacksmith.name",
    "sheet": "town/npc/ironkeep-blacksmith-4x3-64.png",

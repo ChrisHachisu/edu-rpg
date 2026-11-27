@@ -66,6 +66,51 @@
   function texPanel(sc,n){ return K.tex(sc,'d2a_tabpanel_'+n,n*40+16,56,function(g,w,h){
     g.fillStyle='rgba(21,22,28,0.9)'; g.fillRect(2,0,w-4,h); g.fillRect(0,2,w,h-4);
     g.fillStyle='rgba(201,169,97,0.8)'; g.fillRect(2,0,w-4,1); g.fillRect(2,h-1,w-4,1); g.fillRect(0,2,1,h-4); g.fillRect(w-1,2,1,h-4); }); }
+  // ---- the look (day 4, DB-07 and DB-06) ----------------------------------------------------------
+  // The order was shown in a dark UI box over the wall while the stele's own carving showed four other glyphs.
+  // Now the stele carries plain chiselled lines, and the order is a sandstone slab that stands directly over the
+  // stele while she is close (the same distance, the same fade): the stone's colours, a bevelled edge, and the
+  // plates' own glyph drawings cut into it in one row, in order, with a small chisel mark between them.
+  // A plate that is lit, or that she stands on, is drawn sunk (a shadow inside its top and left edges, its glyph
+  // two px lower). No plate is ever marked as the next one: unlit plates all look the same.
+  // localStorage 'qok-d4-looks' = '0': the old box, the old stele and flat plates.
+  var LOOKS=(function(){ try{ return window.localStorage.getItem('qok-d4-looks')!=='0'; }catch(e){ return true; } })();
+  function texTablet2(sc){ return K.tex(sc,'d2a_tablet2',48,64,function(g){
+    K.shadow(g,24,58,19,5,0.35);
+    g.fillStyle='#33230f'; g.beginPath(); g.moveTo(5,58); g.lineTo(5,18); g.quadraticCurveTo(24,-4,43,18); g.lineTo(43,58); g.closePath(); g.fill();
+    g.fillStyle='#c4a06a'; g.beginPath(); g.moveTo(7,56); g.lineTo(7,19); g.quadraticCurveTo(24,-1,41,19); g.lineTo(41,56); g.closePath(); g.fill();
+    g.fillStyle='#e2c48d'; g.fillRect(8,20,2,34); g.fillStyle='#9a7848'; g.fillRect(8,50,32,6);
+    K.speck(g,9,12,30,38,['#b08d58','#d6b67f'],46,5);
+    var rows=[[13,17,22],[12,24,24],[12,31,24],[12,38,24],[14,45,20]], i;      // chiselled lines, no glyph of its own
+    for(i=0;i<rows.length;i++){ g.fillStyle='#e8cf9c'; g.fillRect(rows[i][0],rows[i][1]+1,rows[i][2],1); g.fillStyle='#6b4f29'; g.fillRect(rows[i][0],rows[i][1],rows[i][2],1);
+      g.fillStyle='#c4a06a'; g.fillRect(rows[i][0]+5+i*3,rows[i][1],2,2); g.fillRect(rows[i][0]+15-i,rows[i][1],1,2); } }); }
+  function slabDims(n){ var pitch=n<=5?40:n<=7?36:33; return {pitch:pitch, w:n*pitch+22, h:pitch+22, size:pitch-8}; }
+  function texSlab(sc,ord){ var d=slabDims(ord.length);
+    return K.tex(sc,'d2a_slab_'+ord.join('.'),d.w,d.h,function(g,w,h){
+      g.imageSmoothingEnabled=true;
+      g.fillStyle='rgba(20,12,4,0.38)'; g.fillRect(3,5,w-3,h-5);                // its shadow on the wall
+      g.fillStyle='#3a2812'; g.fillRect(1,0,w-5,h-4); g.fillRect(0,1,w-3,h-6);
+      g.fillStyle='#caa66c'; g.fillRect(1,1,w-5,h-6);
+      K.speck(g,2,2,w-7,h-8,['#b8935a','#d8b983','#c09a60','#dcc08c'],Math.round(w*h/9),31);
+      g.fillStyle='#ecd4a2'; g.fillRect(1,1,w-5,2); g.fillRect(1,1,2,h-6);     // bevel: light from the upper left
+      g.fillStyle='#8a693a'; g.fillRect(1,h-7,w-5,2); g.fillRect(w-6,1,2,h-6);
+      g.fillStyle='#7d5f36'; g.fillRect(6,6,w-15,1); g.fillRect(6,6,1,h-16);   // a cut frame inside the edge
+      g.fillStyle='#e6cc98'; g.fillRect(6,h-11,w-15,1); g.fillRect(w-10,6,1,h-16);
+      g.strokeStyle='rgba(90,64,32,0.5)'; g.lineWidth=1; g.beginPath(); g.moveTo(w-30,2); g.lineTo(w-24,9); g.lineTo(w-27,14); g.stroke();   // one old crack
+      for(var i=0;i<ord.length;i++){ var cx=9+d.pitch/2+i*d.pitch, cy=(h-4)/2;
+        glyph(g,ord[i],cx+1.3,cy+1.4,d.size,'#f0dcae');                        // the cut's lit lower edge
+        glyph(g,ord[i],cx,cy,d.size,'#4a3318');                                // the cut itself, in shade
+        if(i){ var x=9+i*d.pitch; g.fillStyle='#f0dcae'; g.beginPath(); g.moveTo(x-1,cy-3); g.lineTo(x+3,cy+1); g.lineTo(x-1,cy+5); g.closePath(); g.fill();
+          g.fillStyle='#5a4020'; g.beginPath(); g.moveTo(x-2,cy-4); g.lineTo(x+2,cy); g.lineTo(x-2,cy+4); g.closePath(); g.fill(); } }
+    }); }
+  function texSink(sc,w,h){ return K.tex(sc,'d2a_sink_'+w+'x'+h,w,h,function(g){
+      g.imageSmoothingEnabled=true;
+      g.fillStyle='rgba(40,24,6,0.10)'; g.fillRect(0,0,w,h);
+      var a=g.createLinearGradient(0,0,0,16); a.addColorStop(0,'rgba(30,18,4,0.62)'); a.addColorStop(1,'rgba(30,18,4,0)'); g.fillStyle=a; g.fillRect(0,0,w,16);
+      var b=g.createLinearGradient(0,0,14,0); b.addColorStop(0,'rgba(30,18,4,0.55)'); b.addColorStop(1,'rgba(30,18,4,0)'); g.fillStyle=b; g.fillRect(0,0,14,h);
+      g.fillStyle='rgba(255,236,190,0.55)'; g.fillRect(2,h-3,w-4,2); g.fillRect(w-3,2,2,h-4);
+      g.fillStyle='rgba(20,12,2,0.75)'; g.fillRect(0,0,w,2); g.fillRect(0,0,2,h);
+    }); }
   // ---- rooms ------------------------------------------------------------------------------------
   function roomKey(R){ return 'room'+R.room; }
   function counts(R){ var a=[]; for(var i=0;i<=R.path.length;i++) a.push(String(i)); return a; }
@@ -122,8 +167,9 @@
       var sc=ctx.scene, st=ctx.state, rooms=(ctx.mechanic&&ctx.mechanic.rooms)||[], mech=ctx.plan.mech||[], i, j, k;
       st.rooms=[]; st.sort=[]; st.solid=[]; st.tablets=[]; st.pending=null; st.hintOpen=false; st.alive=true;
       st.fx=ctx.own(sc.add.graphics().setDepth(2.3));
-      for(i=0;i<rooms.length;i++){ var R=rooms[i], B=build(R), n=progress(ctx,R), V={R:R, B:B, n:n, imgs:{}, glows:{}, door:[], doorCells:R.door||[]};
+      for(i=0;i<rooms.length;i++){ var R=rooms[i], B=build(R), n=progress(ctx,R), V={R:R, B:B, n:n, imgs:{}, glows:{}, sinks:{}, door:[], doorCells:R.door||[]};
         for(k in B.plates){ var p=B.plates[k], cx=(p.x0+p.x1)/2, cy=(p.y0+p.y1)/2;
+          if(LOOKS){ V.sinks[k]=K.img(ctx,texSink(sc,p.x1-p.x0-6,p.y1-p.y0-6),cx,cy,2.25).setAlpha(0); V.sinks[k].__a=0; V.sinks[k].__cy=cy; }
           V.glows[k]=K.img(ctx,texGlow(sc),cx,cy,2.2).setAlpha(0); try{ V.glows[k].setBlendMode('ADD'); }catch(e){}
           V.imgs[k]=K.img(ctx,texGlyph(sc,p.name),cx,cy,2.4); }
         if(n<R.path.length) for(j=0;j<V.doorCells.length;j++){ var dc=V.doorCells[j];
@@ -132,10 +178,12 @@
       for(i=0;i<mech.length;i++){ if(mech[i].kind!=='tablet') continue; var a=mech[i], T={x:a.x,y:a.y,room:a.room,V:null};
         for(j=0;j<st.rooms.length;j++) if(st.rooms[j].R.room===a.room) T.V=st.rooms[j];
         if(!T.V) continue;
-        var o=K.img(ctx,texTablet(sc),a.x*TILE+TILE/2,a.y*TILE+TILE/2-10,9.4); o.__by=a.y*TILE+TILE-6; st.sort.push(o);
-        // the row of glyphs the tablet shows, floated over it while she stands close
-        var ord=T.V.R.order, w=ord.length*40+16; T.panel=[K.img(ctx,texPanel(sc,ord.length),a.x*TILE+TILE/2,a.y*TILE-52,45).setAlpha(0)];
-        for(j=0;j<ord.length;j++) T.panel.push(K.img(ctx,texGlyph(sc,ord[j]),a.x*TILE+TILE/2-w/2+28+j*40,a.y*TILE-52,45.1).setScale(0.36).setTint(0xffd35a).setAlpha(0));
+        var o=K.img(ctx,(LOOKS?texTablet2:texTablet)(sc),a.x*TILE+TILE/2,a.y*TILE+TILE/2-10,9.4); o.__by=a.y*TILE+TILE-6; st.sort.push(o);
+        // the row of glyphs the tablet shows, over it while she stands close
+        var ord=T.V.R.order, w=ord.length*40+16;
+        if(LOOKS){ var sd=slabDims(ord.length); T.slab=K.img(ctx,texSlab(sc,ord),a.x*TILE+TILE/2,a.y*TILE-20-sd.h/2,45).setAlpha(0); T.slabX=a.x*TILE+TILE/2; T.slabW=sd.w; T.panel=[T.slab]; }
+        else { T.panel=[K.img(ctx,texPanel(sc,ord.length),a.x*TILE+TILE/2,a.y*TILE-52,45).setAlpha(0)];
+        for(j=0;j<ord.length;j++) T.panel.push(K.img(ctx,texGlyph(sc,ord[j]),a.x*TILE+TILE/2-w/2+28+j*40,a.y*TILE-52,45.1).setScale(0.36).setTint(0xffd35a).setAlpha(0)); }
         T.show=0; st.tablets.push(T); st.solid.push({x:a.x,y:a.y}); }
     },
     unload:function(ctx){ ctx.state.alive=false; hintDrop(); },
@@ -165,7 +213,13 @@
             for(i=0;i<st.tablets.length;i++){ var T=st.tablets[i], want=(K.cellDist(so.x,so.y,T.x,T.y)<TILE*1.6)?1:0;
         T.show+=(want-T.show)*Math.min(1,dt/120); if(Math.abs(T.show-want)<0.03) T.show=want;
         for(var j=0;j<T.panel.length;j++) T.panel[j].setAlpha(T.show);
+        if(T.slab && T.show>0){ try{ var wv=sc.cameras.main.worldView, hw=T.slabW/2+4;    // a long row stays on screen
+          T.slab.x=Math.round(Math.max(wv.x+hw,Math.min(wv.right-hw,T.slabX))); }catch(e){} }
  }
+      // sunk plates: lit ones, and the one under her soles
+      if(LOOKS) for(i=0;i<st.rooms.length;i++){ var Vs=st.rooms[i], on=plateAt(Vs.B,so.x,so.y);
+        for(var sk in Vs.sinks){ var sn=Vs.sinks[sk], sl=litIndex(Vs.R,sk), down=(sl>=0&&sl<Vs.n)||(on&&on.key===sk)?1:0;
+          if(sn.__a!==down){ sn.__a+=(down-sn.__a)*Math.min(1,dt/90); if(Math.abs(sn.__a-down)<0.04) sn.__a=down; sn.setAlpha(sn.__a); Vs.imgs[sk].y=sn.__cy+2*sn.__a; } } }
       // the order strip: grades 1-2, a room whose tablet was read and that is not solved yet (the last one read wins)
       if(grade()<=2){ var hr=null;
         for(i=0;i<st.rooms.length;i++){ var Vh=st.rooms[i]; if(Vh.n<Vh.R.path.length && K.get(ctx,roomKey(Vh.R)+'.read')){ if(!hr || st.lastRead===Vh.R.room) hr=Vh; } }

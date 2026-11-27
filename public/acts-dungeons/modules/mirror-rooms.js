@@ -187,6 +187,32 @@
       g.beginPath(); g.moveTo(32, 14); g.lineTo(13, 14); g.stroke(); g.beginPath(); g.moveTo(10, 14); g.lineTo(16, 10.2); g.lineTo(16, 17.8); g.closePath(); g.fill();
     });
   }
+  // Day 4 (DC-05): the swap badge is a status of her CONTROLS, so it sits with the controls, beside the stick (the
+  // outer end of the stick's top edge, level with the prompt pill and clear of it), and no longer floats over her
+  // head where it covered what stood behind it (a chest, on 4F). Same picture, same fade, shown exactly while the
+  // old badge was (its alpha is still kept on spr.badge, which is not drawn). 'qok-d4-looks' = '0': over her head.
+  var LOOKS = (function () { try { return window.localStorage.getItem('qok-d4-looks') !== '0'; } catch (e) { return true; } })();
+  var chipEl = null;
+  function chipDrop() { if (chipEl) { try { chipEl.parentNode.removeChild(chipEl); } catch (e) {} chipEl = null; } }
+  function chipMake(sc, K) {
+    if (typeof document === 'undefined') return null;
+    chipDrop();
+    try {
+      var src = sc.textures.get(badgeTex(sc, K)).getSourceImage(), c = document.createElement('canvas'); c.id = 'd2mSwapChip'; c.width = 132; c.height = 66;
+      var g = c.getContext('2d'); g.imageSmoothingEnabled = true; g.drawImage(src, 0, 0, 44, 22, 0, 0, 132, 66);
+      c.style.cssText = 'position:fixed;left:0;top:0;width:60px;height:30px;opacity:0;pointer-events:none;z-index:5;filter:drop-shadow(0 0 5px rgba(0,0,0,.55));';
+      c.setAttribute('aria-hidden', 'true');
+      (document.getElementById('touch-controls') || document.body).appendChild(c); chipEl = c;
+    } catch (e) { chipEl = null; }
+    return chipEl;
+  }
+  function chipPlace() {                                                      // above the stick, at the end of it that is nearer the screen's edge
+    if (!chipEl) return;
+    try { var d = document.getElementById('dpad'), r = d && d.getBoundingClientRect(), vw = window.innerWidth || 390, x, y;
+      if (r && r.width > 20) { x = (r.left + r.width / 2 > vw / 2) ? r.right - 60 : r.left; y = r.top - 30 - 10; }
+      else { x = vw - 60 - 20; y = (window.innerHeight || 844) - 300; }
+      chipEl.style.left = Math.round(x) + 'px'; chipEl.style.top = Math.round(y) + 'px'; } catch (e) {}
+  }
   function fallbackKnight(sc, K) {                                            // only if the Dark Knight's picture cannot be had
     return K.canvasTex(sc, 'd2m_knight', 40, 56, function (g) {
       g.fillStyle = '#16121e'; g.fillRect(8, 14, 24, 34); g.fillStyle = '#4a4660'; g.fillRect(10, 16, 20, 30);
@@ -224,6 +250,7 @@
     for (i = 0; i < M.knights.length; i++) { var body = ctx.own(sc.add.image(0, 0, kk).setOrigin(0.5, 0.92)), s0 = 66 / Math.max(1, body.height || 66); body.setScale(s0);
       spr.knights[M.knights[i].id] = { body: body, scale: s0, shadow: ctx.own(sc.add.ellipse(0, 0, 36, 12, 0x000000, 0.32).setDepth(ctx.depth.object)) }; }
     spr.badge = ctx.own(sc.add.image(0, 0, badgeTex(sc, K)).setOrigin(0.5, 1).setDepth(60).setAlpha(0));
+    if (LOOKS && chipMake(sc, K)) { spr.badge.setVisible(false); spr.chip = chipEl; S.chipAt = -1e9; }
     S.spr = spr;
   }
   function paint(ctx, dt) {
@@ -242,7 +269,9 @@
       o.body.setPosition(q.x, q.y + 17 - bob); o.shadow.setPosition(q.x, q.y + 16); o.body.setDepth(K.sortDepth(ctx, q.y + 17));
       if (q.dx) o.body.setFlipX(q.dx < 0); }
     if (sp.badge) { var on = S.swap && !S.fall && h, a = sp.badge.alpha + ((on ? 1 : 0) - sp.badge.alpha) * Math.min(1, dt / 140);
-      sp.badge.setAlpha(a < 0.01 ? 0 : a); if (h) sp.badge.setPosition(h.x, h.y - 34 - 2 * Math.sin(w * 4)); }
+      sp.badge.setAlpha(a < 0.01 ? 0 : a); if (h) sp.badge.setPosition(h.x, h.y - 34 - 2 * Math.sin(w * 4));
+      if (sp.chip && sp.chip === chipEl) { if (a >= 0.01 && S.t - S.chipAt > 400) { S.chipAt = S.t; chipPlace(); }
+        var op = (a < 0.01 ? 0 : a).toFixed(2); if (chipEl.__op !== op) { chipEl.__op = op; chipEl.style.opacity = op; } } }
   }
 
   // ---- the fall -------------------------------------------------------------------------------------
@@ -295,7 +324,7 @@
     logic: { model: model, ring: ring, roomAt: roomAt, knightAt: knightAt, mirrored: mirrored, atLip: atLip, doorLip: doorLip, overPit: overPit, STR: STR },
     load: function (ctx) { ready(ctx); },
     unload: function (ctx) { var S = ctx.state, hero = ctx.scene && ctx.scene.hero;      // never leave her faded or small
-      if (S.fall && hero) { try { hero.setAlpha(1); hero.setScale(S.fall.sx, S.fall.sy); } catch (e) {} } S.fall = null; },
+      if (S.fall && hero) { try { hero.setAlpha(1); hero.setScale(S.fall.sx, S.fall.sy); } catch (e) {} } S.fall = null; chipDrop(); },
     input: function (ctx, stick, px, py) {
       if (!ready(ctx)) return undefined;
       var S = ctx.state;

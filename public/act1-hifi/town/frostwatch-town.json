@@ -34,6 +34,9 @@
  "npcs": [
   {
    "id": "healer",
+   "space": [20, 27, 10],
+   "spaceMax": 20,
+   "spaceNote": "2026-11-27 (design review T4): she stands on her doorstep at the north edge of a street 20 px deep (see bodyNote). A full body's space closed it, so her space ends 10 px south of her feet, as her body did; passing under her the hero's sprite still overlaps hers by up to `spaceMax` px. From either side she stops a body away.",
       "body": [10, 0],
       "bodyNote": "2026-11-23 (census M16): every town NPC now has a body that stops the hero beside her (town.html: 10 px half-width, 7 px south). The healer stands in the 1.5-cell lane in front of the clinic, and that body would close the lane east of her (field-town-reach.cjs). Here the body is a 10 px disc: the lane stays open and the hero stops 14 px to either side of her.",
    "dialogueKey": "npc.healer",

@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Snag census, step 0: every Acts 2-5 walk mask as a raw file the node tools read.
+"""Snag census, step 0: every dungeon walk mask (Acts 2-5 and Act 1) as a raw file the node tools read.
 
   python3 scripts/auto/snags/masks.py [out dir]      (default: $SNAG_MASKS or <tmp>/qok-snag-masks)
 
-One <floor>.bin per public/acts-dungeons/<id>/<floor>-walk.png: u32 width, u32 height, then one byte a pixel
+One <floor>.bin per public/acts-dungeons/<id>/<floor>-walk.png and public/act1-dungeon-art/<floor>-walk.png (Act 1): u32 width, u32 height, then one byte a pixel
 (1 = the mask's white, walkable, by the runtime's own test d[i*4] > 127 in dq-tiles.js a1mBuild).
 """
 import glob, os, struct, sys, tempfile
@@ -14,7 +14,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.a
 out = sys.argv[1] if len(sys.argv) > 1 else os.environ.get("SNAG_MASKS") or os.path.join(tempfile.gettempdir(), "qok-snag-masks")
 os.makedirs(out, exist_ok=True)
 n = 0
-for p in sorted(glob.glob(os.path.join(ROOT, "public", "acts-dungeons", "*", "*-walk.png"))):
+for p in sorted(glob.glob(os.path.join(ROOT, "public", "acts-dungeons", "*", "*-walk.png")) + glob.glob(os.path.join(ROOT, "public", "act1-dungeon-art", "*-walk.png"))):
     a = np.array(Image.open(p).convert("RGBA"))
     w = (a[:, :, 0] > 127).astype(np.uint8)
     h, wd = w.shape

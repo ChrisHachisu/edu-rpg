@@ -1,6 +1,7 @@
 'use strict';
 // Overlay screens check (track F1, census 2026-11-23). Guards:
 //   m4   the quiz header is readable for ages 6-8: sentence case, at least 15 px, above the question
+//        (day 4, UE-12: the header is now the short Attack / Defend tag .qtag; the story line .qprompt returns with qok-quiz-tag=0)
 //   m6   battle messages in Japanese break only at phrase spaces / after punctuation (was "26/の ダメージ")
 //   nit  equip tab: the selected slot row's text is readable on its highlight (was gold on gold)
 //   nit  status tab on a fresh save shows a dash, not "0/0 (0%)"
@@ -32,7 +33,7 @@ async function battle(page) {
     if (s.q) {
       await page.waitForTimeout(400);
       if (!quizSeen) {
-        const m = await page.evaluate(() => { const p = document.querySelector('#qok-ui .qprompt'), q = document.querySelector('#qok-ui .qq'), b = document.querySelector('#qok-ui .kpk, #qok-ui .qbtn'); const cs = getComputedStyle(p);
+        const m = await page.evaluate(() => { const p = document.querySelector('#qok-ui .qtag, #qok-ui .qprompt'), q = document.querySelector('#qok-ui .qq'), b = document.querySelector('#qok-ui .kpk, #qok-ui .qbtn'); const cs = getComputedStyle(p);
           return { size: parseFloat(cs.fontSize), transform: cs.textTransform, spacing: cs.letterSpacing, text: p.textContent, pBottom: p.getBoundingClientRect().bottom, qTop: q.getBoundingClientRect().top, btn: parseFloat(getComputedStyle(b).fontSize) }; });
         await shot(page, 'm4-quiz-ja-kana');
         rec('m4 quiz header: sentence case, >= 15 px, clear of the question', m.size >= 15 && m.transform === 'none' && m.pBottom <= m.qTop + 1, m);

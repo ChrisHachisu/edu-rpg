@@ -1,6 +1,7 @@
 'use strict';
 // The fix's own file (public/acts-dungeons/modules/snag-slide.js) run against the static mover model:
 // the module is loaded in a sandbox with a fake window.__QOK_DNG2__ whose free()/maskFree() are the model's.
+// Act 1 floors: as dq-tiles.js a1mSnagBend gives it (the floor-1 mouth cell counts as floor she may stand on).
 const fs = require('fs'), path = require('path'), vm = require('vm');
 const S = require('./snaglib.cjs');
 const SRC_PATH = process.env.SNAG_FIX && process.env.SNAG_FIX !== '1' ? process.env.SNAG_FIX : path.join(S.ROOT, 'public/acts-dungeons/modules/snag-slide.js');
@@ -15,7 +16,7 @@ function rig(m, opt) {
   vm.runInNewContext(SRC, { window: win, setInterval() { return 0; }, clearInterval() {}, console, Math, isNaN });
   const mod = mods.none, api = win.__QOK_SNAG__;
   const fresh = () => { const scene = { game: { loop }, heroDir: 0, hero: { x: 0, y: 0, frame: { name: 0 }, setFrame(n) { this.frame.name = n; } } };
-    ctx = { scene, mechanic: { id: 'none' }, state: {}, maskFree(px, py) { return S.maskFree(m, px, py); }, tile(cx, cy) { return m.prop[cy * m.cw + cx] || 0; } }; return ctx; };
+    ctx = { scene, mechanic: { id: 'none' }, state: {}, maskFree(px, py) { return S.maskFree(m, px, py) || !!(m.act1 && m.mouth && ((px / 48) | 0) === m.mouth[0] && ((py / 48) | 0) === m.mouth[1]); }, tile(cx, cy) { return m.prop[cy * m.cw + cx] || 0; } }; return ctx; };
   return { D, mod, api, loop, fresh };
 }
 const rigs = new Map();

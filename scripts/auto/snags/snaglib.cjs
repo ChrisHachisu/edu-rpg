@@ -7,6 +7,8 @@ const fs = require('fs'), path = require('path'), os = require('os');
 const ROOT = path.resolve(__dirname, '../../..');
 const MASKS = process.env.SNAG_MASKS || path.join(os.tmpdir(), 'qok-snag-masks');
 const MAN = JSON.parse(fs.readFileSync(path.join(process.env.SNAG_PUBLIC || path.join(ROOT, 'public'), 'acts-dungeons/manifest.json'), 'utf8'));
+// the Act 1 floors (Whispering Woods Cave, Sunken Cellar, Misty Grotto, Coastal Reef): same mover, their own floor file
+const A1 = (() => { try { return JSON.parse(fs.readFileSync(path.join(process.env.SNAG_PUBLIC || path.join(ROOT, 'public'), 'act1-dungeon-floors.json'), 'utf8')).floors; } catch (e) { return {}; } })();
 const TILE = 48, FOOT = 12, STEP = 6, CH = 3, LEAN = 4, LIFT = 3, SPEED = 260;
 const PROP_KIND = { chest: 4, sign: 18, save: 14, boss: 7 };
 
@@ -30,7 +32,7 @@ function build(key) {
         if (x > 0 && dist[i + W - 1] + 4 < v) v = dist[i + W - 1] + 4; }
       if (x < W - 1 && dist[i + 1] + 3 < v) v = dist[i + 1] + 3;
       dist[i] = v; } }
-  const fl = MAN.floors[key];
+  const act1 = !MAN.floors[key] && !!A1[key], fl = MAN.floors[key] || A1[key];
   // per-pixel legal map (mask rule only): 1 = a sole may stand here
   const ok = new Uint8Array(n);
   const base = FOOT * CH;
@@ -40,9 +42,9 @@ function build(key) {
     if (d >= need) ok[i] = 1; }
   // tile props (cells that stop her and are opened by a bump) and the mouth cell (enterable although masked)
   const prop = new Uint8Array((W / TILE) * (H / TILE)); const cw = W / TILE;
-  let mouth = null;
-  for (const a of (fl && fl.assets) || []) { if (PROP_KIND[a.kind]) prop[a.y * cw + a.x] = PROP_KIND[a.kind]; if (a.kind === 'mouth' && !mouth) mouth = [a.x, a.y]; }
-  return { key, W, H, dist, ok, prop, cw, mouth, fl };
+  let mouth = null;                                                        // (the Act 1 entrance crystal's cell is open: a1mFree)
+  for (const a of (fl && fl.assets) || []) { if (PROP_KIND[a.kind] && !(act1 && a.kind === 'save' && fl.floor === 1)) prop[a.y * cw + a.x] = PROP_KIND[a.kind]; if (a.kind === 'mouth' && !mouth) mouth = [a.x, a.y]; }
+  return { key, W, H, dist, ok, prop, cw, mouth, fl, act1 };
 }
 // mask-only: may her soles be at (fx,fy)?
 function maskFree(m, fx, fy) { if (fx < 1 || fy < 1 || fx >= m.W - 1 || fy >= m.H - 1) return false; return m.ok[(fy | 0) * m.W + (fx | 0)] === 1; }
@@ -108,4 +110,4 @@ function walk(m, p0, ux, uy, frames, opt) {
   for (f = 0; f < frames; f++) { const mv = frame(m, p, ux, uy, undefined, opt); if (mv < 1e-6) { dead++; if (dead >= 3) break; } else dead = 0; if (opt && opt.until && opt.until(p)) break; }
   return { x: p.x, y: p.y, dead: dead >= 3, frames: f };
 }
-module.exports = { ROOT, MAN, TILE, build, maskFree, free, need, slide, frame, walk, FOOT, STEP, LIFT, SPEED };
+module.exports = { ROOT, MAN, A1, TILE, build, maskFree, free, need, slide, frame, walk, FOOT, STEP, LIFT, SPEED };

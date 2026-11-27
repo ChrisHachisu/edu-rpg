@@ -9,14 +9,14 @@ process.env.PROBE_URL = process.env.PROBE_URL || 'http://127.0.0.1:5500/';
 process.env.PROBE_OUT = process.env.PROBE_OUT || '/home/user/work/honest/probe-out';
 const DIR = process.env.HONEST_DIR || '/home/user/work/honest/runs';
 const arg = (k, d) => { const i = process.argv.indexOf('--' + k); return i > 0 ? process.argv[i + 1] : d; };
-const { PROFILES, keypadOf } = require('./profiles.cjs');
+const { PROFILES, keypadOf, effOf, exposeEffort } = require('./profiles.cjs');
 const POLICY = { healAt: 0.35, fleeAt: 0.2 };
 const SAVVY = { healAt: 0.35, fleeAt: 0.2, bossHealAt: 0.5, defendCharge: true };   // variant 'savvy': heals at half HP against a boss and defends on the turn a boss was announced to be charging
 const PROFILE = arg('profile', 'g1'), REP = +arg('rep', 1), BUDGET = +arg('budget', 330) * 1000, TRIES = +arg('tries', 20), TO = +arg('to', 999), DEATH_CAP = +arg('deathcap', 6);
 const VARIANT = arg('variant', '');           // '' (sells outgrown gear) | 'nosell' (never sells: the brief's literal policy) | 'savvy' (see SAVVY) | 'allchests' (every visible chest)
 if (VARIANT === 'allchests') process.env.HONEST_CHEST_DETOUR = '9999';
 const SELL = VARIANT !== 'nosell';
-const prof = PROFILES[PROFILE] && { ...PROFILES[PROFILE], keypad: keypadOf(PROFILE) }; if (!prof) throw new Error('unknown profile ' + PROFILE);   // HONEST_KEYPAD=same|noguess|off (default same)
+const prof = PROFILES[PROFILE] && { ...PROFILES[PROFILE], keypad: keypadOf(PROFILE), eff: effOf(PROFILE) }; if (!prof) throw new Error('unknown profile ' + PROFILE);   // HONEST_KEYPAD=same|noguess|off (default same)
 const L = require('../../acts/probe/lib.cjs');
 const WORLD = require('./world.cjs');
 const INPAGE = fs.readFileSync(path.join(__dirname, 'inpage.js'), 'utf8');
@@ -24,7 +24,7 @@ const RUN = path.join(DIR, `${PROFILE}${VARIANT ? '-' + VARIANT : ''}-r${REP}`);
 const CK = path.join(RUN, 'ckpt.json'), EV = path.join(RUN, 'events.jsonl');
 const log = (...a) => console.log(new Date().toISOString().slice(11, 19), `[${PROFILE}${VARIANT ? '-' + VARIANT : ''} r${REP}]`, ...a);
 const hash = s => { let h = 2166136261; for (const c of s) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return h | 0; };
-const slim = f => { const o = {}; for (const k of ['m', 'boss', 'res', 'lvl0', 'lvl1', 'hp0', 'hpEnd', 'minHp', 'maxHp', 'atk', 'def', 'mhp', 'matk', 'mdef', 'mhpEnd', 'tier', 'rounds', 'q', 'ok', 'to', 'crit', 'fast', 'items', 'hidden', 'flee', 'defends', 'taken', 'maxHit', 'hits', 'dealt', 'xp', 'gold', 'sec', 'ms', 'stuckPhase']) if (f[k] !== undefined && f[k] !== 0 && f[k] !== false) o[k] = f[k]; return o; };
+const slim = f => { const o = {}; for (const k of ['m', 'boss', 'res', 'lvl0', 'lvl1', 'hp0', 'hpEnd', 'minHp', 'maxHp', 'atk', 'def', 'mhp', 'matk', 'mdef', 'mhpEnd', 'tier', 'rounds', 'q', 'ok', 'to', 'crit', 'fast', 'items', 'hidden', 'flee', 'defends', 'taken', 'maxHit', 'hits', 'dealt', 'xp', 'gold', 'sec', 'ms', 'stuckPhase', 'eff', 'effn', 'effmiss']) if (f[k] !== undefined && f[k] !== 0 && f[k] !== false) o[k] = f[k]; return o; };
 
 (async () => {
   const T0 = Date.now(), W = WORLD.build();
@@ -34,7 +34,7 @@ const slim = f => { const o = {}; for (const k of ['m', 'boss', 'res', 'lvl0', '
     ck = { next: 0, record: { state: st, quizStats: {} }, meta: { chests: {}, forced: [], deaths: 0 }, done: false };
     fs.writeFileSync(EV, ''); }
   if (ck.done) { log('already finished'); process.exit(0); }
-  const o = await L.launch(); const page = o.page; let code = 3;
+  const o = await L.launch(); const page = o.page; await exposeEffort(page); let code = 3;
   const ev = (fn, a) => page.evaluate(fn, a);
   try {
     const sv = { version: 4, timestamp: Date.now(), player: { ...ck.record.state, position: { mapId: 'overworld', x: 69, y: 256, floor: 1 } }, playtime: 0, quizStats: ck.record.quizStats || {} };

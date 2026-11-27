@@ -26,6 +26,8 @@
   "axis": "south",
   "note": "toX/toY = the door's exit cell in public/acts-hifi/manifest.json (scripts/build_acts_hifi_manifest.py), not maps.ts."
  },
+ "occluders": [{"id": "shop-counter", "baseY": 33.43, "polygon": [[17.3, 32.83], [19.4, 32.67], [19.4, 34.2], [17.3, 34.2]]}],
+ "_occludersNote": "2026-11-27 (design review T3): the shopkeeper was drawn standing on her stall. She now stands at the counter (`cell`; the cell of before is `cellOld`) and `occluders` names the counter's front, traced along its painted top edge: town.html draws that piece of the same plate again, at the same place, right after her (`baseY` is her feet plus 0.05 cells: the painter's line) and before anyone standing south of her, so the counter covers her legs and she shows from the waist up, and it can never cover the hero, who has no ground north of that line near the counter (scripts/auto/checks/field-town-reach.cjs proves it for every reachable point). No new art; nothing in the plate is cut or moved. Old look: qok-f2-old=shopband.",
  "shopId": "embersRest",
  "shopCounter": [
   18.0,
@@ -82,12 +84,14 @@
   },
   {
    "id": "cinderVillager",
+   "cellOld": [26.41, 46.72],
+   "cellNote": "2026-11-27 (design review T7): she stood on a pile of rubble rocks; moved 2.3 cells east onto open ground.",
    "dialogueKey": "npc.cinderVillager",
    "nameKey": "npc.cinderVillager.name",
    "sheet": "town/npc/cinderwatch-cinderVillager-4x3-64.png",
    "cell": [
-    26.41,
-    46.72
+    28.7,
+    47.1
    ],
    "mapsTs": [
     6,
@@ -98,12 +102,15 @@
   },
   {
    "id": "shopkeeper",
+   "cellOld": [18.0, 32.6],
+   "space": [6, 6, 6],
+   "spaceNote": "behind the painted counter: a small body that stays inside the counter (the counter itself keeps the hero a body away)",
    "dialogueKey": "npc.shopkeeper",
    "nameKey": "npc.shopkeeper.name",
    "sheet": "town/npc/cinderwatch-shopkeeper-4x3-64.png",
    "cell": [
-    18.0,
-    32.6
+    18.35,
+    33.38
    ],
    "_note": "behind the painted counter; the hero talks across it from shopCounter",
    "name": "Shopkeeper",

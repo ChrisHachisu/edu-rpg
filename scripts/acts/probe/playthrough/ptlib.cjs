@@ -71,10 +71,18 @@ const HELP = () => {
   async function walkToNpc(id) {
     const f = frame(); if (!f) return { ok: false, why: 'no town' }; const t = f.contentWindow.__ACT1_TOWN__, n = t.npcs.find(n => n.id === id); if (!n) return { ok: false, why: 'no npc ' + id, npcs: t.npcs.map(n => n.id) };
     const C = t.town.worldPxPerCell;
-    const r = await townWalk((x, y) => Math.abs(x - n.point.x) <= C * 0.6 && y - n.point.y >= C * 0.45 && y - n.point.y <= C * 1.6);
+    // The band is the town's own (town.html inTalkBand / talkTargetAt, 2026-11-27: a person now keeps a body's space, so the
+    // band's numbers moved, and two people standing close share ground where the nearer one takes the Talk); a build
+    // without them has the numbers of before. She "arrives" within 3 px of the planned point, so a goal point must still
+    // be hers 5 px away on every side.
+    const mine = typeof t.talkTargetAt === 'function' ? (x, y) => t.talkTargetAt({ x, y }) === id : typeof t.inTalkBand === 'function' ? (x, y) => t.inTalkBand(id, { x, y }) : null;
+    const band = mine ? (x, y) => mine(x, y) && mine(x - 5, y) && mine(x + 5, y) && mine(x, y - 5) && mine(x, y + 5) : null;
+    const r = await townWalk((x, y) => Math.abs(x - n.point.x) <= C * 0.6 && y - n.point.y >= C * 0.45 && (band ? band(x, y) : y - n.point.y <= C * 1.6));
     if (r.ok || r.why !== 'nopath') return r;
     // nothing in the comfortable middle of the band: anywhere in town.html's own band (|dx| <= 1.1, dy -0.35..2.1 cells)
-    return townWalk((x, y) => Math.abs(x - n.point.x) <= C * 1.0 && y - n.point.y >= C * -0.25 && y - n.point.y <= C * 2.0);
+    const r2 = await townWalk((x, y) => band ? band(x, y) : (Math.abs(x - n.point.x) <= C * 1.0 && y - n.point.y >= C * -0.25 && y - n.point.y <= C * 2.0));
+    if (r2.ok || r2.why !== 'nopath' || !mine) return r2;
+    return townWalk(mine);     // a sliver of a band: any point of it
   }
   async function walkToCell(cx, cy, r = 0.5) { const f = frame(); if (!f) return { ok: false, why: 'no town' }; const C = f.contentWindow.__ACT1_TOWN__.town.worldPxPerCell; return townWalk((x, y) => Math.hypot(x - cx * C, y - cy * C) <= r * C); }
   const pressTalk = () => { fkey('keydown', 'Enter'); fkey('keyup', 'Enter'); };

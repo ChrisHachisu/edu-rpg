@@ -16,4 +16,14 @@ const PROFILES = {
 const KEYPAD = { gk: { first: 0.7, key: 0.4 }, g1: { first: 0.6, key: 0.35 }, g2: { first: 0.55, key: 0.32 }, g3: { first: 0.5, key: 0.3 }, g4: { first: 0.47, key: 0.28 }, g5: { first: 0.43, key: 0.27 }, g6: { first: 0.4, key: 0.25 } };
 // HONEST_KEYPAD: 'same' (default) typing time and a 3% slip, same knowledge; 'noguess' also no lucky pick among four buttons; 'off' the old four-button child.
 const keypadOf = profile => { const m = process.env.HONEST_KEYPAD || 'same'; return m === 'off' ? null : { ...KEYPAD[profile], slip: 0.03, noGuess: m === 'noguess' }; };
-module.exports = { PROFILES, KEYPAD, keypadOf };
+// Per-question solve time (quiz bank v2): the child's mean answer time t belongs to a question of the OLD bank's mean effort for her grade
+// (effort-ref.json "ref", measured by effortref.cjs); a question of effort e takes t * e / ref. HONEST_EFFORT=off gives one number per grade (day 1-3 model).
+const fs = require('fs'), path = require('path');
+let REF = null; try { REF = JSON.parse(fs.readFileSync(path.join(__dirname, 'effort-ref.json'), 'utf8')).ref; } catch (e) {}
+const effOf = profile => process.env.HONEST_EFFORT === 'off' || !REF ? 0 : REF[PROFILES[profile].grade] || 0;
+// give the page its host side: __HON_EFF(text, grade) = the effort model's seconds for that question (null when it cannot read it)
+async function exposeEffort(page) {
+  process.env.QUIZ_CONTENT_LIB = '1'; const Q = require('../checks/quiz-content.cjs');
+  await page.exposeFunction('__HON_EFF', (text, grade) => { try { const p = Q.solve(text, 'en'); return p.ok ? Q.effort(grade, p) : null; } catch (e) { return null; } });
+}
+module.exports = { PROFILES, KEYPAD, keypadOf, effOf, exposeEffort };

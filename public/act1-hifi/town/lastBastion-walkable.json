@@ -1352,7 +1352,7 @@
    "joins": []
   }
  ],
- "staticObstacles": [],
+ "staticObstacles": [{"id": "chimney-top", "kind": "chimney", "note": "2026-11-27 (design review T6): the chimney of the house south of the healer's street rises above the street's traced edge, and she could stand on its top. Traced round the painted cap with 6 px of room each side, so her sprite is never drawn over it.", "polygon": [{"x": 720.0, "y": 633.6}, {"x": 720.0, "y": 622.4}, {"x": 728.8, "y": 616.0}, {"x": 748.0, "y": 615.2}, {"x": 756.8, "y": 619.2}, {"x": 760.8, "y": 626.4}, {"x": 760.8, "y": 633.6}]}],
  "dynamicBlockers": [],
  "landmarkAnchors": [],
  "semanticRoutes": [],

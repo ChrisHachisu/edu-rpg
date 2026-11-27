@@ -10,7 +10,7 @@
 const fs = require('fs'), path = require('path');
 process.env.PROBE_URL = process.env.PROBE_URL || 'http://127.0.0.1:5500/';
 process.env.PROBE_OUT = process.env.PROBE_OUT || '/home/user/work/honest/probe-out';
-const { PROFILES, keypadOf } = require('./profiles.cjs');
+const { PROFILES, keypadOf, effOf, exposeEffort } = require('./profiles.cjs');
 const POLICIES = { reference: { healAt: 0.35, fleeAt: 0.2, bossHealAt: 0, defendCharge: false }, savvy: { healAt: 0.35, fleeAt: 0.2, bossHealAt: 0.5, defendCharge: true } };
 const median = a => { if (!a.length) return null; const s = a.slice().sort((x, y) => x - y), m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
 const mean = a => a.length ? a.reduce((x, y) => x + y, 0) / a.length : null;
@@ -21,8 +21,8 @@ const mean = a => a.length ? a.reduce((x, y) => x + y, 0) / a.length : null;
 async function sample({ profile, doors, tries = 20, over = null, balanceOff = false, policy = 'reference', seed = 20261123, log = null }) {
   const L = require('../../acts/probe/lib.cjs');
   const INPAGE = fs.readFileSync(path.join(__dirname, 'inpage.js'), 'utf8');
-  const prof0 = PROFILES[profile]; if (!prof0) throw new Error('profile ' + profile); const prof = { ...prof0, keypad: keypadOf(profile) };
-  const o = await L.launch(); const page = o.page, rows = [];
+  const prof0 = PROFILES[profile]; if (!prof0) throw new Error('profile ' + profile); const prof = { ...prof0, keypad: keypadOf(profile), eff: effOf(profile) };
+  const o = await L.launch(); const page = o.page, rows = []; await exposeEffort(page);
   try {
     const first = doors[0].record;
     await L.bootSave(page, { version: 4, timestamp: Date.now(), player: { ...first.state, position: { mapId: 'overworld', x: 69, y: 256, floor: 1 } }, playtime: 0, quizStats: first.quizStats || {} },
@@ -43,7 +43,7 @@ async function sample({ profile, doors, tries = 20, over = null, balanceOff = fa
       const row = { profile, boss: d.boss, from: d.from || null, level: at.level, maxHp: at.maxHp, atk: at.atk, def: at.def, hpIn: at.hp, heals: at.heals, n: T.length, wins: wins.length,
         worst, worstPct: worst / at.maxHp, mhp: T[0] ? T[0].mhp : null, matk: T[0] ? T[0].matk : null, mdef: T[0] ? T[0].mdef : null, roundsMedian: median(T.map(t => t.rounds || 0)), roundsMedianWins: median(wins.map(t => t.rounds || 0)), secMedian: median(T.map(t => t.sec || 0)),
         itemsMedian: median(T.map(t => t.items || 0)), itemsMean: mean(T.map(t => t.items || 0)), itemsMax: Math.max(...T.map(t => t.items || 0)), maxHit: Math.max(...T.map(t => t.maxHit || 0)),
-        maxHitPct: Math.max(...T.map(t => (t.maxHit || 0) / t.maxHp)), hpLeftWins: mean(wins.map(t => t.hpEnd / t.maxHp)), bossLeftLoss: mean(loss.map(t => t.mhpEnd / t.mhp)), stuck: T.filter(t => t.res === 'stuck').length, balance: info };
+        maxHitPct: Math.max(...T.map(t => (t.maxHit || 0) / t.maxHp)), hpLeftWins: mean(wins.map(t => t.hpEnd / t.maxHp)), bossLeftLoss: mean(loss.map(t => t.mhpEnd / t.mhp)), stuck: T.filter(t => t.res === 'stuck').length, critPerRound: T.reduce((x, t) => x + (t.crit || 0), 0) / Math.max(1, T.reduce((x, t) => x + (t.rounds || 0), 0)), toRate: T.reduce((x, t) => x + (t.to || 0), 0) / Math.max(1, T.reduce((x, t) => x + (t.q || 0), 0)), q: T.reduce((x, t) => x + (t.q || 0), 0), effMean: T.reduce((x, t) => x + (t.eff || 0), 0) / Math.max(1, T.reduce((x, t) => x + (t.effn || 0), 0)), balance: info };
       rows.push(row); if (log) log(row);
     }
   } finally { await o.browser.close(); }

@@ -22,6 +22,9 @@
    a bridge, a breach) and never past anything a mechanic or a prop tile refuses (blocks, levers, gates, doors,
    chests, signs, crystals, the boss): those are not "rock ahead", so walking into them is untouched, bump and all.
 
+   ACT 1 (Whispering Woods Cave, Sunken Cellar, Misty Grotto, Coastal Reef) has no mechanic hook: there the mover
+   itself (dq-tiles.js a1mSnagBend, a marked block at a1mStep) asks this file's glide, the same way.
+
    Switch: localStorage 'qok-snag-slide' = '0' restores the mover's own behaviour (nothing is wrapped).
    The Demon Castle doorway fix of day 3 (mirror-rooms.js, 'qok-door-lips') is independent and stays; with that
    switch at '0' the glide leaves the doorway posts alone too, so it still restores the old stop there.
@@ -52,7 +55,7 @@
     ux /= l; uy /= l;
     var mag = (typeof inp.m === 'number') ? Math.max(0, Math.min(1, inp.m)) : 1;
     var total = speed() * (0.45 + 0.55 * mag) * Math.min(0.12, dt / 1000), n = Math.max(1, Math.ceil(total / STEP)), st = total / n;
-    var fd = D.footDy(), L = S.last, g = S.g;
+    var free = ctx.snagFree || D.free, fd = (typeof ctx.snagFootDy === 'number') ? ctx.snagFootDy : D.footDy(), L = S.last, g = S.g;   // (Act 1: the mover's own, see dq-tiles.js a1mSnagBend)
     // what the last frame did with the same push
     if (L && L.f === f - 1 && (L.ux * ux + L.uy * uy) > SAME) {
       var dx = x - L.x, dy = y - L.y, mv = Math.sqrt(dx * dx + dy * dy);
@@ -61,9 +64,9 @@
     S.last = { f: f, x: x, y: y, ux: ux, uy: uy };
     if (g && (g.ux * ux + g.uy * uy) < SAME) S.g = g = null;                // she turned the stick: a new push
 
-    function floor(px, py) { return ctx.maskFree(px, py + fd) && D.free(px, py); }            // painted floor the mover allows too
+    function floor(px, py) { return ctx.maskFree(px, py + fd) && free(px, py); }            // painted floor the mover allows too
     function run(rx, ry) { for (var j = 1; j <= n; j++) if (!floor(x + rx * st * j, y + ry * st * j)) return false; return true; }
-    function pushFree() { for (var j = 1; j <= n; j++) if (!D.free(x + ux * st * j, y + uy * st * j)) return false; return true; }   // her own straight step: the mover's word alone
+    function pushFree() { for (var j = 1; j <= n; j++) if (!free(x + ux * st * j, y + uy * st * j)) return false; return true; }   // her own straight step: the mover's word alone
     function rock(ex, ey) {                                                // is it the PAINTED WALL that refuses the step ahead (not an object)?
       if (ctx.maskFree(x + ex * st, y + ey * st + fd)) return false;
       var lg = ctx.mod && ctx.mod.logic;                                   // 'qok-door-lips' = '0' (Demon Castle): a doorway's post stops her as it did
@@ -156,6 +159,8 @@
     return mod;
   }
   API._debug = { glide: glide, wrap: wrap, facing: facing };
+  // The Act 1 dungeons have no mechanic to wrap: the mover itself asks this same glide there (dq-tiles.js a1mSnagBend).
+  API.glide = glide; API.facing = facing;
 
   // every mechanic module, whenever it registers; the two dungeons without a mechanic get an empty one
   var reg = D.register;
