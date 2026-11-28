@@ -341,8 +341,10 @@
       // Grade 5 rage 1.35 -> 1.3 (the value of 27a): 27b raised it together with the HP cut and no run ever compared the two at hp 1250.
       // Out of sample (seed 5551xx, three heroes, 90 tries each) the morning's child won 62% at 1.35 and 60% at 1.3: no difference that
       // can be seen, both inside 55-80%, and the worst hit drops from 80% to 76% of her max HP.
+      // 28 Nov (review of B2): grade 2 rage 1.75 -> 1.7 (the value of 27a). At 1.75 the worst single hit was 86% of an under-levelled
+      // hero's max HP. At 1.75 the morning's child won 70% at grade 2 (band 55-80%); the softer hit should lift that a little, measured in the next full check.
       demonKing:          { hp: 1500, regen: 0.01, poison: 0.02, rage: 1.5, charge: 1.6, grade: {
-        'k': { hp: 900, rage: 1.6, charge: 1.5 }, '1': { hp: 1050, rage: 1.6, charge: 1.5 }, '2': { hp: 1300, rage: 1.75, charge: 1.6 },
+        'k': { hp: 900, rage: 1.6, charge: 1.5 }, '1': { hp: 1050, rage: 1.6, charge: 1.5 }, '2': { hp: 1300, rage: 1.7, charge: 1.6 },
         '3': { hp: 1400 }, '4': { hp: 1400 },
         '5': { hp: 1250, rage: 1.3, charge: 1.45 }, '6': { hp: 1400, rage: 1.3, charge: 1.45 } } }
     },

@@ -169,7 +169,8 @@
      "deadAt": [
       2914.26,
       389.5
-     ]
+     ],
+     "stop": "guard-hall pillar corner: passing needs a bent step into another cell of the hall, which the plain-floor rule forbids; she stops where the mover alone stops (REVIEW-S2, 28 Nov)"
     },
     {
      "cls": "11-24",
@@ -183,7 +184,8 @@
      "deadAt": [
       3012.72,
       1207.5
-     ]
+     ],
+     "stop": "guard-hall pillar corner: passing needs a bent step into another cell of the hall, which the plain-floor rule forbids; she stops where the mover alone stops (REVIEW-S2, 28 Nov)"
     }
    ],
    "walls": [

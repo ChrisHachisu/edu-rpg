@@ -46,7 +46,7 @@ ACT1_OVERLAY_FILES = {
     # 2026-09-21: additive loss/retry guard. It restores the live player after
     # defeat without changing the frozen bundle and polls until its hooks exist.
     "battle-recovery.js": (
-        27768, "ba954235ef4edbb52e08d48513177536cd385c8fb3fdcff375555e589a0f565e"),
+        37138, "a2413ed306f10cd422b303b9de2b0b26c3f5b21ecf174caa1d95d95689b40f82"),
     # 2026-08-03, owner: "make the game controllable with the keypad ... use the joy stick type
     # keypad on the port sapphire screen". The 4-way d-pad held exactly ONE arrow key at a time
     # (setDir released the previous), so a diagonal was impossible and a corner boundary could
@@ -121,7 +121,7 @@ ACT1_OVERLAY_FILES = {
     # other 12 settle one cell north once; largest rescue nudge 28 px against a 96 px bound).
     # Updated 2026-10-03 for the approved scoped forest+mountain visible-terrain union.
     "dq-tiles.js": (
-        723051, "5bbd6665c70013f74ef350e0f56a842e410dc4fa4ee31771907051978d0b8b41"),
+        771323, "ceadb50023925c073157d55aa50343c47e6666147e6b27ceb2199c06a3c2202f"),
     # 2026-08-07: THE OVERWORLD'S COLLISION SHAPE, baked -- the overworld's answer to the dungeons'
     # `<floor>-walk.png` above, and as much a shipped authority as they are. Deriving it at runtime
     # was correct and unaffordable: owmBuild() evaluated waterField/mountainField per pixel over a
@@ -158,7 +158,7 @@ ACT1_OVERLAY_FILES = {
     # old sheet. The 48px sheet is a RE-CUT of the canonical 64px g3 asset, not new art --
     # scripts/build_hero_g3_walk.py, soles aligned to the shipped sheet's measured baseline so the
     # hero does not float. The two retired sheets stay on disk: they are baseline runtime files.
-    "hero-override.js": (13069, "20d00157c4f4fff92bf89ce5d66d87d48ba624f1d6a402ec9dcead92b8f9744b"),
+    "hero-override.js": (13764, "fa7bdcd40a89e0f3ce7a1257a378937e2fdcabd4c8b61146d99929d93415c5a3"),
     # Re-pinned 2026-08-06: the g3 source sheet's NORTH row (row 4) was damaged art -- drawn
     # ~15% oversize, so the crown was sheared flat off the top of the cell -- and walking north
     # is the one direction the tile runtime draws from it. Replaced with generated pixels;
@@ -183,7 +183,7 @@ ACT1_OVERLAY_FILES = {
     # the control-orientation setting, into the frame. First override of this file since the
     # v1.17.1 baseline was frozen, which is why it had no entry before.
     "ui-overhaul.js": (
-        266368, "7b840b6d50ce7b310b172af5f2292500065b1e5e635744f7033105135ccd510c"),
+        312550, "09fadf362db75b8e181237fe07f3fc1b4417875d1d91fb3ba8861fb237601993"),
     # 2026-08-06, owner pick: "Charcoal & Gold Leaf" (direction 4 of
     # design/ui-overhaul/chic-style-board.html). The same gold as before -- the pixel art, the
     # dungeon plates and the town screens were all approved against it -- spent differently:
@@ -193,7 +193,7 @@ ACT1_OVERLAY_FILES = {
     # bundled rather than fetched; the short version is that it never reached the phone at all.
     # Like ui-overhaul.js above, first override of this file since the baseline was frozen.
     "ui-overhaul.css": (
-        70137, "dea296c7ed1ef1b66bd1077eb4bc3180eb603fc6c247b50aa104a7b891ebecdb"),
+        96094, "9079c8bc10f5ea5471f4c12d572ac11656fc856beca287573da7eb72e84f9eb9"),
 }
 # 2026-08-06, owner-picked ("Charcoal & Gold Leaf", direction 4 of
 # design/ui-overhaul/chic-style-board.html): the chrome the theme needs on disk rather than
@@ -279,7 +279,7 @@ UI_ASSET_FILES = {
     # Pinned by hash like every other shipped asset: a silent swap of a music file is exactly as
     # invisible as a silent swap of art, and the override FAILS SOFT (it keeps the chiptune) so a
     # missing or corrupt track would not announce itself at runtime.
-    "music-override.js": (23398, "c2caf8474172b280bd0a3264e49f529b8c053c69a9025cb8a62b044125df5476"),
+    "music-override.js": (28497, "b6800905dbde8a1026dd1cd40e5221682befe5d11355e2b1527f39341d71308d"),
     "audio/battle.m4a": (366808, "ec61f086099d4c9ea687563597198bdf17a9360e9861eb64d02ee9dbb6b8aa00"),
     "audio/bossBattle.m4a": (366492, "4fe64bc355274c1193a695c343a5cb39152e3d62709ecf26cb1bf71cfeaee254"),
     "audio/dungeon.m4a": (366236, "6ae4b9707338920f2c3bf410495217db9985ed65f55a1dd623aea091ee6ed029"),
@@ -471,9 +471,9 @@ ACT1_TOWN_FILES = {
     # Selected male town protagonist, using the existing approved sheet.
     "act1-hifi/hero-g3/hero-act1-male-walk-8x3-64-g3.png": (125699, "02162ba11fec942c3524fd0c528f66be8ee86e7bb574c196dbeb93b99f37b90b"),
     "act1-hifi/town.html": (
-        60608, "ddfbab3dc195aa509636f6ba9806250c6530f15abd3f3275756b1ba5d2a5c93e"),
+        73204, "bf114f19280f41e2d9e917d96683921a01fe2301f6de4b68febf7e4abceb5a35"),
     "act1-hifi/town/portSapphire-town.json": (
-        12958, "794e6e9bffc03a3d7f69cb28a55a3ad87c9b7029dceba20115e21c2cc3aa8e01"),
+        13579, "530cc5f02f4d6b84b3170e9c3e76e4456351ab18c7b011ce241de23a391dfcac"),
     "act1-hifi/town/portSapphire-walkable.json": (
         26439, "5bffa523782a65736de9ac4ce70a6047385f9ce69f10c48e175ecba5593bf590"),
     "act1-hifi/town/portSapphire-screen.png": (
@@ -517,7 +517,7 @@ ACT1_TOWN_FILES = {
     # can see: it reports "0 updated", leaves the zeros in place, and the very next step fails with
     # "Act 1 town identity mismatch" pointing at the file you just added. Cost 2026-08-21.
     "act1-hifi/town/greenhollow-town.json": (
-        14994, "528d6685fc8737b55386d6c2377d8dbd8c296313411dc678ce87d406052cbc61"),
+        16181, "bad058745e6bbe5959e73c16b62fb5ecdb55e6d55b580063cb234ec83580aec7"),
     "act1-hifi/town/greenhollow-walkable.json": (
         37034, "2a5fcb42919627e99d1de21972c895452584b4181b781398d300822c6a4a16cb"),
     "act1-hifi/town/npc/greenhollow-elder-4x3-64.png": (
@@ -556,7 +556,7 @@ ACT1_TOWN_FILES = {
     "act1-hifi/town/millbrook-walkable.json": (
         39256, "7e43d448441c4d19fe36eed22d55970f65a29a9a98f51237812e9623473aab53"),
     "act1-hifi/town/millbrook-town.json": (
-        11645, "b9e15c20b3f3b1ced504175f0e83179b6c8421a0105da07c3db1bddedac65238"),
+        12510, "37012eb9d4ebe3ae1f0d0eb08a9d32b75704b2e8ce3474c2306ecf661bcf5924"),
     # 2026-08-21: the two plates the note above was waiting for. Both are the four-tile bake,
     # exposure-matched per tile and quilted on a minimum-error cut by scripts/stitch_plate.py.
     # Placeholder zeros; `npm run repin` fills the real size/hash in -- and the FILES ARE ON DISK

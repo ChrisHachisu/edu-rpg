@@ -45,7 +45,11 @@ const F = require('./field-lib.cjs');
       F.info(`${id} mouth`, JSON.stringify({ at: [p.map, p.floor], side, near, far, whitePct: tot ? +(100 * white / tot).toFixed(1) : null }));
       if (!near) F.info(`${id}: the map's edge at the mouth is off screen here (the camera stops at it)`, 'only the glare inside is judged');
       else {
-        F.ok(lum(near) >= 70 && near[0] >= near[2], `${id}: past the mouth's edge it is daylight, not black`, `rgb ${near} just outside`);
+        // 28 Nov (integration): day 4's d4-looks.js replaced the engine's broad glare wash with one soft warm glow on the mouth (reviewed,
+        // pictures in autoloop/day4/fixes/dungeons/ironmine-mouth-*.jpg). Just past the edge it now reads lum 67 (rgb 80,65,48) against 8
+        // a cell further on: warm daylight, not black, but under the old 70 that was set on the old wash (199,175,133). The rule keeps its
+        // meaning (warm, far brighter than the dark beyond) at 55.
+        F.ok(lum(near) >= 55 && near[0] >= near[2], `${id}: past the mouth's edge it is daylight, not black`, `rgb ${near} just outside`);
         F.ok(far && lum(far) < lum(near) - 20, `${id}: the daylight fades out beyond the edge (no hard line)`, `rgb ${near} at 0.4 cell -> ${far} at 2.5 cells`);
       }
       F.ok(tot > 0 && white / tot <= 0.01, `${id}: no pure-white glare in the mouth`, `${white}/${tot} sampled pixels pure white`);

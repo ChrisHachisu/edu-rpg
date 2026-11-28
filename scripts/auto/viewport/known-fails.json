@@ -189,7 +189,6 @@
    },
    "newgame": {
     "inset-band|edge-top": "VP-14",
-    "scrolls|div.body < div.col < div.screen": "VP-20",
     "tap-small|div.gopt < div.gwheel-list < div#qok-gwheel.gwheel": "VP-10"
    },
    "overworld": {
@@ -339,7 +338,6 @@
    },
    "newgame": {
     "inset-band|edge-top": "VP-14",
-    "scrolls|div.body < div.col < div.screen": "VP-20",
     "tap-small|div.gopt < div.gwheel-list < div#qok-gwheel.gwheel": "VP-10"
    },
    "overworld": {
@@ -568,33 +566,24 @@
     "text-small|span < button.ft < div#fieldTabs.field-tabs": "VP-6"
    },
    "dungeon-prompt": {
-    "hero-dark|dungeon": "VP-19",
     "inset-band|edge-top": "VP-3",
     "text-small|span < button.ft < div#fieldTabs.field-tabs": "VP-6"
    },
    "dungeon": {
-    "hero-dark|dungeon": "VP-19",
     "text-small|span < button.ft < div#fieldTabs.field-tabs": "VP-6"
    },
    "crystal-menu": {
-    "hero-dark|dungeon": "VP-19",
     "text-small|span < button.ft < div#fieldTabs.field-tabs": "VP-6"
    },
    "dungeon-act1": {
-    "hero-dark|dungeon": "VP-19",
     "inset-band|edge-top": "VP-3",
     "text-small|span < button.ft < div#fieldTabs.field-tabs": "VP-6"
    },
    "dungeon-chest": {
-    "hero-dark|dungeon": "VP-19",
     "inset-band|edge-top": "VP-3"
    },
    "boss-room": {
-    "hero-dark|dungeon": "VP-19",
     "text-small|span < button.ft < div#fieldTabs.field-tabs": "VP-6"
-   },
-   "boss-after": {
-    "hero-dark|dungeon": "VP-19"
    },
    "ending": {
     "inset-band|edge-top": "VP-14"
@@ -612,9 +601,7 @@
     "text-small|span.sn < button.slotcard.empty < div.slotlist": "VP-7"
    },
    "newgame": {
-    "inset-band|edge-top": "VP-14",
-    "safe-bottom|button.btn.btn-gold < div.zc.stack < div.body": "VP-20",
-    "scrolls|div.body < div.col < div.screen": "VP-20"
+    "inset-band|edge-top": "VP-14"
    },
    "overworld": {
     "inset-band|edge-top": "VP-3",
@@ -688,33 +675,24 @@
     "text-small|span < button.ft < div#fieldTabs.field-tabs": "VP-6"
    },
    "dungeon-prompt": {
-    "hero-dark|dungeon": "VP-19",
     "inset-band|edge-top": "VP-3",
     "text-small|span < button.ft < div#fieldTabs.field-tabs": "VP-6"
    },
    "dungeon": {
-    "hero-dark|dungeon": "VP-19",
     "text-small|span < button.ft < div#fieldTabs.field-tabs": "VP-6"
    },
    "crystal-menu": {
-    "hero-dark|dungeon": "VP-19",
     "text-small|span < button.ft < div#fieldTabs.field-tabs": "VP-6"
    },
    "dungeon-act1": {
-    "hero-dark|dungeon": "VP-19",
     "inset-band|edge-top": "VP-3",
     "text-small|span < button.ft < div#fieldTabs.field-tabs": "VP-6"
    },
    "dungeon-chest": {
-    "hero-dark|dungeon": "VP-19",
     "inset-band|edge-top": "VP-3"
    },
    "boss-room": {
-    "hero-dark|dungeon": "VP-19",
     "text-small|span < button.ft < div#fieldTabs.field-tabs": "VP-6"
-   },
-   "boss-after": {
-    "hero-dark|dungeon": "VP-19"
    },
    "ending": {
     "inset-band|edge-top": "VP-14"
@@ -732,9 +710,7 @@
     "text-small|span.sn < button.slotcard.empty < div.slotlist": "VP-7"
    },
    "newgame": {
-    "inset-band|edge-top": "VP-14",
-    "safe-bottom|button.btn.btn-gold < div.zc.stack < div.body": "VP-20",
-    "scrolls|div.body < div.col < div.screen": "VP-20"
+    "inset-band|edge-top": "VP-14"
    },
    "overworld": {
     "inset-band|edge-top": "VP-3",
@@ -811,33 +787,24 @@
     "text-small|span < button.ft < div#fieldTabs.field-tabs": "VP-6"
    },
    "dungeon-prompt": {
-    "hero-dark|dungeon": "VP-19",
     "inset-band|edge-top": "VP-3",
     "text-small|span < button.ft < div#fieldTabs.field-tabs": "VP-6"
    },
    "dungeon": {
-    "hero-dark|dungeon": "VP-19",
     "text-small|span < button.ft < div#fieldTabs.field-tabs": "VP-6"
    },
    "crystal-menu": {
-    "hero-dark|dungeon": "VP-19",
     "text-small|span < button.ft < div#fieldTabs.field-tabs": "VP-6"
    },
    "dungeon-act1": {
-    "hero-dark|dungeon": "VP-19",
     "inset-band|edge-top": "VP-3",
     "text-small|span < button.ft < div#fieldTabs.field-tabs": "VP-6"
    },
    "dungeon-chest": {
-    "hero-dark|dungeon": "VP-19",
     "inset-band|edge-top": "VP-3"
    },
    "boss-room": {
-    "hero-dark|dungeon": "VP-19",
     "text-small|span < button.ft < div#fieldTabs.field-tabs": "VP-6"
-   },
-   "boss-after": {
-    "hero-dark|dungeon": "VP-19"
    },
    "ending": {
     "inset-band|edge-top": "VP-14"
@@ -945,39 +912,33 @@
     "text-small|span < button.ft < div#fieldTabs.field-tabs": "VP-6"
    },
    "dungeon-prompt": {
-    "hero-dark|dungeon": "VP-19",
     "inset-band|edge-top": "VP-3",
     "text-small|span < button.ft < div#fieldTabs.field-tabs": "VP-6"
    },
    "dungeon": {
-    "hero-dark|dungeon": "VP-19",
-    "text-small|span < button.ft < div#fieldTabs.field-tabs": "VP-6"
+    "text-small|span < button.ft < div#fieldTabs.field-tabs": "VP-6",
+    "inset-band|edge-top": "VP-3"
    },
    "crystal-menu": {
-    "hero-dark|dungeon": "VP-19",
-    "text-small|span < button.ft < div#fieldTabs.field-tabs": "VP-6"
+    "text-small|span < button.ft < div#fieldTabs.field-tabs": "VP-6",
+    "inset-band|edge-top": "VP-3"
    },
    "dungeon-act1": {
-    "hero-dark|dungeon": "VP-19",
     "inset-band|edge-top": "VP-3",
     "text-small|span < button.ft < div#fieldTabs.field-tabs": "VP-6"
    },
    "dungeon-chest": {
-    "hero-dark|dungeon": "VP-19",
     "inset-band|edge-top": "VP-3"
    },
    "boss-room": {
-    "hero-dark|dungeon": "VP-19",
-    "text-small|span < button.ft < div#fieldTabs.field-tabs": "VP-6"
+    "text-small|span < button.ft < div#fieldTabs.field-tabs": "VP-6",
+    "inset-band|edge-top": "VP-3"
    },
    "boss-start": {
     "overlap|enemy+enemyCard": "VP-5"
    },
    "boss-menu": {
     "overlap|enemy+enemyCard": "VP-5"
-   },
-   "boss-after": {
-    "hero-dark|dungeon": "VP-19"
    },
    "final-start": {
     "overlap|enemy+enemyCard": "VP-5"
@@ -987,6 +948,9 @@
    },
    "ending-later": {
     "inset-band|edge-top": "VP-14"
+   },
+   "boss-after": {
+    "inset-band|edge-top": "VP-3"
    }
   },
   "mini/en": {
@@ -1199,33 +1163,24 @@
     "text-small|span < button.ft < div#fieldTabs.field-tabs": "VP-6"
    },
    "dungeon-prompt": {
-    "hero-dark|dungeon": "VP-19",
     "inset-band|edge-top": "VP-3",
     "text-small|span < button.ft < div#fieldTabs.field-tabs": "VP-6"
    },
    "dungeon": {
-    "hero-dark|dungeon": "VP-19",
     "text-small|span < button.ft < div#fieldTabs.field-tabs": "VP-6"
    },
    "crystal-menu": {
-    "hero-dark|dungeon": "VP-19",
     "text-small|span < button.ft < div#fieldTabs.field-tabs": "VP-6"
    },
    "dungeon-act1": {
-    "hero-dark|dungeon": "VP-19",
     "inset-band|edge-top": "VP-3",
     "text-small|span < button.ft < div#fieldTabs.field-tabs": "VP-6"
    },
    "dungeon-chest": {
-    "hero-dark|dungeon": "VP-19",
     "inset-band|edge-top": "VP-3"
    },
    "boss-room": {
-    "hero-dark|dungeon": "VP-19",
     "text-small|span < button.ft < div#fieldTabs.field-tabs": "VP-6"
-   },
-   "boss-after": {
-    "hero-dark|dungeon": "VP-19"
    },
    "ending": {
     "inset-band|edge-top": "VP-14"
@@ -1332,39 +1287,33 @@
     "text-small|span < button.ft < div#fieldTabs.field-tabs": "VP-6"
    },
    "dungeon-prompt": {
-    "hero-dark|dungeon": "VP-19",
     "inset-band|edge-top": "VP-3",
     "text-small|span < button.ft < div#fieldTabs.field-tabs": "VP-6"
    },
    "dungeon": {
-    "hero-dark|dungeon": "VP-19",
-    "text-small|span < button.ft < div#fieldTabs.field-tabs": "VP-6"
+    "text-small|span < button.ft < div#fieldTabs.field-tabs": "VP-6",
+    "inset-band|edge-top": "VP-3"
    },
    "crystal-menu": {
-    "hero-dark|dungeon": "VP-19",
-    "text-small|span < button.ft < div#fieldTabs.field-tabs": "VP-6"
+    "text-small|span < button.ft < div#fieldTabs.field-tabs": "VP-6",
+    "inset-band|edge-top": "VP-3"
    },
    "dungeon-act1": {
-    "hero-dark|dungeon": "VP-19",
     "inset-band|edge-top": "VP-3",
     "text-small|span < button.ft < div#fieldTabs.field-tabs": "VP-6"
    },
    "dungeon-chest": {
-    "hero-dark|dungeon": "VP-19",
     "inset-band|edge-top": "VP-3"
    },
    "boss-room": {
-    "hero-dark|dungeon": "VP-19",
-    "text-small|span < button.ft < div#fieldTabs.field-tabs": "VP-6"
+    "text-small|span < button.ft < div#fieldTabs.field-tabs": "VP-6",
+    "inset-band|edge-top": "VP-3"
    },
    "boss-start": {
     "overlap|enemy+enemyCard": "VP-5"
    },
    "boss-menu": {
     "overlap|enemy+enemyCard": "VP-5"
-   },
-   "boss-after": {
-    "hero-dark|dungeon": "VP-19"
    },
    "final-start": {
     "overlap|enemy+enemyCard": "VP-5"
@@ -1374,6 +1323,9 @@
    },
    "ending-later": {
     "inset-band|edge-top": "VP-14"
+   },
+   "boss-after": {
+    "inset-band|edge-top": "VP-3"
    }
   },
   "promax/en": {
@@ -1697,7 +1649,6 @@
    },
    "newgame": {
     "inset-band|edge-top": "VP-14",
-    "scrolls|div.body < div.col < div.screen": "VP-20",
     "tap-small|div.gopt < div.gwheel-list < div#qok-gwheel.gwheel": "VP-10"
    },
    "overworld": {
@@ -1856,7 +1807,6 @@
    },
    "newgame": {
     "inset-band|edge-top": "VP-14",
-    "scrolls|div.body < div.col < div.screen": "VP-20",
     "tap-small|div.gopt < div.gwheel-list < div#qok-gwheel.gwheel": "VP-10"
    },
    "overworld": {

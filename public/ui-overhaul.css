@@ -939,6 +939,17 @@ body.qok-dialogue #qok-field-hud #qfh-dialog{bottom:calc(env(safe-area-inset-bot
    the preview, and without it Start stays on the first screen (owner, build 38: "everything should
    fit in one screen"). */
 @media (max-height:720px){ :where(html:not(.qok-d4off)) #qok-ui .span2:has(> .intro-hero){ display:none !important; } }
+/* VP-20 (2026-11-28): Japanese adds the もじ row (one 60 to 70 px panel more than English), and Start was cut off on
+   iPhone SE, iPhone 13 and iPad. While that row is on the screen the preview goes up to iPad height too. */
+@media (max-height:1200px){ :where(html:not(.qok-d4off)) #qok-ui:has([data-act=introKanji]) .span2:has(> .intro-hero){ display:none !important; } }
+/* VP-20 on a short phone (iPhone SE, 667 px): the preview is already gone there and Japanese was still 59 px over, so the
+   two looks, the toggle rows and the gaps get smaller while the もじ row is shown. */
+@media (max-height:720px){
+  :where(html:not(.qok-d4off)) #qok-ui:has([data-act=introKanji]) .variant-opt{ min-height:66px; padding:4px; }
+  :where(html:not(.qok-d4off)) #qok-ui:has([data-act=introKanji]) .variant-opt img{ width:58px; height:58px; }
+  :where(html:not(.qok-d4off)) #qok-ui:has([data-act=introKanji]) .panel:has(> .toggle){ padding-top:5px !important; padding-bottom:5px !important; }
+  :where(html:not(.qok-d4off)) #qok-ui:has([data-act=introKanji]) .stack.g8{ gap:6px; }
+}
 
 /* UE-17 SETTINGS. The three joystick positions are words, and each one is its own button. */
 #qok-ui .ctrlseg{ flex:1; max-width:250px; }

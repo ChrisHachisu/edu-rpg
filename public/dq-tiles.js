@@ -5095,7 +5095,7 @@
     // floor picture underneath still shows the whole pillar), and comes back as she steps clear.
     var hx0=hero.x-13, hx1=hero.x+13, hy0=hero.y-26, hy1=foot;
     var FR=(typeof window.__DQ_FOG_R__==='number')?window.__DQ_FOG_R__:34, FS=16, FF=(dngState&&dngState.scene===scene)?dngState.FOGF:0, zz=1;
-    try{ zz=scene.cameras.main.zoom||1; }catch(e){}
+    try{ zz=f2Old('fogzoom')?(scene.cameras.main.zoom||1):1; }catch(e){}   // VP-19: fog px are world px / F at any zoom
     for(i=0;i<a2dOver.imgs.length;i++){ o=a2dOver.imgs[i]; d=(foot<o.__by)?10.6:9.4;
       if(o.depth!==d) o.setDepth(d);
       want=(d>10 && hx1>o.x && hx0<o.x+o.width && hy1>o.y && hy0<o.y+o.height)?0.45:1;
@@ -8664,8 +8664,13 @@
   // heroTileX/Y and is likewise untouched. [checked against the foot-contact fix, 2026-08-05]
   function updateFog(scene){
     if (!dngState || dngState.scene!==scene) return; var cam=scene.cameras.main, hero=dngHero(scene); if(!hero) return;
-    var F=dngState.FOGF, fw=dngState.fw, fh=dngState.fh, z=cam.zoom||1;
-    var hx=((hero.x-cam.scrollX)*z)/F, hy=((hero.y-cam.scrollY)*z)/F;            // hero in fog-pixel screen space
+    // VP-19 (2026-11-28): the fog image is setScrollFactor(0) but the camera's zoom still scales it about the
+    // screen centre, exactly as it scales the floor. So fog pixel = (world - scroll) / F at any zoom; the old
+    // "* zoom" put her light z times as far from the screen's top-left, off screen on every iPad (zoom 2 or 3),
+    // and the whole floor went black. Phones run at zoom 1, where both formulas agree. Old maths:
+    // localStorage['qok-f2-old']='fogzoom'.
+    var F=dngState.FOGF, fw=dngState.fw, fh=dngState.fh, z=f2Old('fogzoom')?(cam.zoom||1):1;
+    var hx=((hero.x-cam.scrollX)*z)/F, hy=((hero.y-cam.scrollY)*z)/F;            // hero in fog-pixel space
     var R=(typeof window.__DQ_FOG_R__==='number')?window.__DQ_FOG_R__:34, soft=16; // radius + falloff (fog px)
     var ctx=dngState.fogCt.context, img=ctx.createImageData(fw,fh), d=img.data;
     for (var y=0;y<fh;y++) for (var x=0;x<fw;x++){

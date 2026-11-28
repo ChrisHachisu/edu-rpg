@@ -227,6 +227,13 @@ const STALL = 6;   // frames she may stand at a lip before the glide carries her
       for (const p of S.lips || []) {
         const [ux, uy] = DV[p.d], r = await walk(page, [p.start[0], p.start[1], ux, uy, 1300, FACE[p.d], p.need]); lipWalks++;
         refused += r.refused; turned += r.turned; frames += r.frames;
+        if (typeof p.stop === 'string') {   // a wanted stop (28 Nov, REVIEW-S2; Act 1 lips carry a numeric "stop" point, not this): the glide must leave her exactly where the mover alone stops, in her own cell
+          const end = r.b || r.a, off = Math.hypot(end[0] - p.deadAt[0], end[1] - p.deadAt[1]);
+          // 4 px: the model's mover and the browser's differ by up to 2.9 px at these corners (integration run 28 Nov); what matters is 0 bent frames and not past
+          F.ok(r.passMs === null && (r.bent || 0) === 0 && off <= 4 && r.why === 'time', `${key}: lip ${p.cls} px (push ${p.d} from soles ${p.start.map(Math.round)}): she stops where the mover alone stops, no bent frame`,
+            `${r.bent || 0} bent frame(s), ends ${end.map(v => v.toFixed(1))}, the mover alone ${p.deadAt.map(v => v.toFixed(1))} (${off.toFixed(1)} px apart${r.passMs !== null ? ', she got past' : ''}); ${p.stop}`);
+          continue;
+        }
         const ok = r.passMs !== null && r.stallBefore <= STALL && r.why === 'time'; if (ok) lipPass++; if (A1) { a1Lips++; if (ok) a1Pass++; }
         F.ok(ok, `${key}: lip ${p.cls} px (push ${p.d} along the wall from soles ${p.start.map(Math.round)}): she walks on past it`,
           r.passMs !== null ? `past it (${p.need} px along) after ${(r.passMs / 1000).toFixed(2)} s, longest stall on the way ${r.stallBefore} frame(s); ${r.along.toFixed(1)} px along in ${(r.ms / 1000).toFixed(1)} s`
